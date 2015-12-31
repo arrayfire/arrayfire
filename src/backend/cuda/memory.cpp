@@ -65,6 +65,12 @@ namespace cuda
     }
 
     template<typename T>
+    void memFreeUnlinked(T *ptr, bool free_unlinked)
+    {
+        cudaFreeWrapper(ptr); // Free it because we are not sure what the size is
+    }
+
+    template<typename T>
     void memPop(const T *ptr)
     {
         return;
@@ -232,7 +238,7 @@ namespace cuda
     }
 
     template<typename T>
-    void memFree(T *ptr)
+    void memFreeUnlinked(T *ptr, bool free_unlinked)
     {
         int n = getActiveDeviceId();
         mem_iter iter = memory_maps[n].find((void *)ptr);
@@ -240,7 +246,9 @@ namespace cuda
         if (iter != memory_maps[n].end()) {
 
             iter->second.is_free = true;
-            if ((iter->second).is_unlinked) return;
+            if ((iter->second).is_unlinked && !free_unlinked) return;
+
+            iter->second.is_unlinked = false;
 
             used_bytes[n] -= iter->second.bytes;
             used_buffers[n]--;
@@ -248,6 +256,12 @@ namespace cuda
         } else {
             cudaFreeWrapper(ptr); // Free it because we are not sure what the size is
         }
+    }
+
+    template<typename T>
+    void memFree(T *ptr)
+    {
+        memFreeUnlinked(ptr, false);
     }
 
     template<typename T>
@@ -368,13 +382,14 @@ namespace cuda
 
 #endif
 
-#define INSTANTIATE(T)                                  \
-    template T* memAlloc(const size_t &elements);       \
-    template void memFree(T* ptr);                      \
-    template void memPop(const T* ptr);                 \
-    template void memPush(const T* ptr);                \
-    template T* pinnedAlloc(const size_t &elements);    \
-    template void pinnedFree(T* ptr);                   \
+#define INSTANTIATE(T)                                          \
+    template T* memAlloc(const size_t &elements);               \
+    template void memFree(T* ptr);                              \
+    template void memFreeUnlinked(T* ptr, bool free_unlinked);  \
+    template void memPop(const T* ptr);                         \
+    template void memPush(const T* ptr);                        \
+    template T* pinnedAlloc(const size_t &elements);            \
+    template void pinnedFree(T* ptr);                           \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)

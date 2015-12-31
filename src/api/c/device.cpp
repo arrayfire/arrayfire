@@ -309,7 +309,7 @@ af_err af_alloc_pinned(void **ptr, const dim_t bytes)
 af_err af_free_device(void *ptr)
 {
     try {
-        memFree<char>((char *)ptr);
+        memFreeUnlinked<char>((char *)ptr, true);
     } CATCHALL;
     return AF_SUCCESS;
 }

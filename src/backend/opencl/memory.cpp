@@ -150,13 +150,20 @@ namespace opencl
 
     void bufferFree(cl::Buffer *ptr)
     {
+        bufferFreeUnlinked(ptr, false);
+    }
+
+    void bufferFreeUnlinked(cl::Buffer *ptr, bool free_unlinked)
+    {
         int n = getActiveDeviceId();
         mem_iter iter = memory_maps[n].find(ptr);
 
         if (iter != memory_maps[n].end()) {
 
             iter->second.is_free = true;
-            if ((iter->second).is_unlinked) return;
+            if ((iter->second).is_unlinked && !free_unlinked) return;
+
+            iter->second.is_unlinked = false;
 
             used_bytes[n] -= iter->second.bytes;
             used_buffers[n]--;
@@ -212,7 +219,13 @@ namespace opencl
     template<typename T>
     void memFree(T *ptr)
     {
-        return bufferFree((cl::Buffer *)ptr);
+        return bufferFreeUnlinked((cl::Buffer *)ptr, false);
+    }
+
+    template<typename T>
+    void memFreeUnlinked(T *ptr, bool free_unlinked)
+    {
+        return bufferFreeUnlinked((cl::Buffer *)ptr, free_unlinked);
     }
 
     template<typename T>
@@ -341,13 +354,14 @@ namespace opencl
         return pinnedBufferFree((void *) ptr);
     }
 
-#define INSTANTIATE(T)                                  \
-    template T* memAlloc(const size_t &elements);       \
-    template void memFree(T* ptr);                      \
-    template void memPop(const T* ptr);                 \
-    template void memPush(const T* ptr);                \
-    template T* pinnedAlloc(const size_t &elements);    \
-    template void pinnedFree(T* ptr);                   \
+#define INSTANTIATE(T)                                          \
+    template T* memAlloc(const size_t &elements);               \
+    template void memFree(T* ptr);                              \
+    template void memFreeUnlinked(T* ptr, bool free_unlinked);  \
+    template void memPop(const T* ptr);                         \
+    template void memPush(const T* ptr);                        \
+    template T* pinnedAlloc(const size_t &elements);            \
+    template void pinnedFree(T* ptr);                           \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)

@@ -156,7 +156,7 @@ T* memAlloc(const size_t &elements)
 }
 
 template<typename T>
-void memFree(T *ptr)
+void memFreeUnlinked(T *ptr, bool free_unlinked)
 {
     std::lock_guard<std::mutex> lock(memory_map_mutex);
 
@@ -165,14 +165,21 @@ void memFree(T *ptr)
     if (iter != memory_map.end()) {
 
         iter->second.is_free = true;
-        if ((iter->second).is_unlinked) return;
+        if ((iter->second).is_unlinked && !free_unlinked) return;
 
+        iter->second.is_unlinked = false;
         used_bytes -= iter->second.bytes;
         used_buffers--;
 
     } else {
         freeWrapper(ptr); // Free it because we are not sure what the size is
     }
+}
+
+template<typename T>
+void memFree(T *ptr)
+{
+    memFreeUnlinked(ptr, false);
 }
 
 template<typename T>
@@ -226,13 +233,14 @@ void pinnedFree(T* ptr)
     memFree<T>(ptr);
 }
 
-#define INSTANTIATE(T)                                  \
-    template T* memAlloc(const size_t &elements);       \
-    template void memFree(T* ptr);                      \
-    template void memPop(const T* ptr);                 \
-    template void memPush(const T* ptr);                \
-    template T* pinnedAlloc(const size_t &elements);    \
-    template void pinnedFree(T* ptr);                   \
+#define INSTANTIATE(T)                                          \
+    template T* memAlloc(const size_t &elements);               \
+    template void memFree(T* ptr);                              \
+    template void memFreeUnlinked(T* ptr, bool free_unlinked);  \
+    template void memPop(const T* ptr);                         \
+    template void memPush(const T* ptr);                        \
+    template T* pinnedAlloc(const size_t &elements);            \
+    template void pinnedFree(T* ptr);                           \
 
 INSTANTIATE(float)
 INSTANTIATE(cfloat)

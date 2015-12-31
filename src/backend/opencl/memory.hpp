@@ -16,9 +16,11 @@ namespace opencl
 
     cl::Buffer *bufferAlloc(const size_t &bytes);
     void bufferFree(cl::Buffer *buf);
+    void bufferFreeUnlinked(cl::Buffer *buf, bool free_unlinked);
 
     template<typename T> T *memAlloc(const size_t &elements);
-    template<typename T> void memFree(T *ptr);
+    template<typename T> void memFree(T* ptr);
+    template<typename T> void memFreeUnlinked(T* ptr, bool free_unlinked);
     template<typename T> void memPop(const T *ptr);
     template<typename T> void memPush(const T *ptr);
 
