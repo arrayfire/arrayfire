@@ -214,29 +214,34 @@ af_err af_get_device_ptr(void **data, const af_array arr)
 }
 
 template <typename T>
-inline void lockDevicePtr(const af_array arr)
+inline void lockArray(const af_array arr)
 {
     memPop<T>((const T *)getArray<T>(arr).get());
 }
 
 af_err af_lock_device_ptr(const af_array arr)
 {
+    return af_lock_array(arr);
+}
+
+af_err af_lock_array(const af_array arr)
+{
     try {
         af_dtype type = getInfo(arr).getType();
 
         switch (type) {
-        case f32: lockDevicePtr<float  >(arr); break;
-        case f64: lockDevicePtr<double >(arr); break;
-        case c32: lockDevicePtr<cfloat >(arr); break;
-        case c64: lockDevicePtr<cdouble>(arr); break;
-        case s32: lockDevicePtr<int    >(arr); break;
-        case u32: lockDevicePtr<uint   >(arr); break;
-        case s64: lockDevicePtr<intl   >(arr); break;
-        case u64: lockDevicePtr<uintl  >(arr); break;
-        case s16: lockDevicePtr<short  >(arr); break;
-        case u16: lockDevicePtr<ushort >(arr); break;
-        case u8 : lockDevicePtr<uchar  >(arr); break;
-        case b8 : lockDevicePtr<char   >(arr); break;
+        case f32: lockArray<float  >(arr); break;
+        case f64: lockArray<double >(arr); break;
+        case c32: lockArray<cfloat >(arr); break;
+        case c64: lockArray<cdouble>(arr); break;
+        case s32: lockArray<int    >(arr); break;
+        case u32: lockArray<uint   >(arr); break;
+        case s64: lockArray<intl   >(arr); break;
+        case u64: lockArray<uintl  >(arr); break;
+        case s16: lockArray<short  >(arr); break;
+        case u16: lockArray<ushort >(arr); break;
+        case u8 : lockArray<uchar  >(arr); break;
+        case b8 : lockArray<char   >(arr); break;
         default: TYPE_ERROR(4, type);
         }
 
@@ -246,29 +251,34 @@ af_err af_lock_device_ptr(const af_array arr)
 }
 
 template <typename T>
-inline void unlockDevicePtr(const af_array arr)
+inline void unlockArray(const af_array arr)
 {
     memPush<T>((const T *)getArray<T>(arr).get());
 }
 
 af_err af_unlock_device_ptr(const af_array arr)
 {
+    return af_unlock_array(arr);
+}
+
+af_err af_unlock_array(const af_array arr)
+{
     try {
         af_dtype type = getInfo(arr).getType();
 
         switch (type) {
-        case f32: unlockDevicePtr<float  >(arr); break;
-        case f64: unlockDevicePtr<double >(arr); break;
-        case c32: unlockDevicePtr<cfloat >(arr); break;
-        case c64: unlockDevicePtr<cdouble>(arr); break;
-        case s32: unlockDevicePtr<int    >(arr); break;
-        case u32: unlockDevicePtr<uint   >(arr); break;
-        case s64: unlockDevicePtr<intl   >(arr); break;
-        case u64: unlockDevicePtr<uintl  >(arr); break;
-        case s16: unlockDevicePtr<short  >(arr); break;
-        case u16: unlockDevicePtr<ushort >(arr); break;
-        case u8 : unlockDevicePtr<uchar  >(arr); break;
-        case b8 : unlockDevicePtr<char   >(arr); break;
+        case f32: unlockArray<float  >(arr); break;
+        case f64: unlockArray<double >(arr); break;
+        case c32: unlockArray<cfloat >(arr); break;
+        case c64: unlockArray<cdouble>(arr); break;
+        case s32: unlockArray<int    >(arr); break;
+        case u32: unlockArray<uint   >(arr); break;
+        case s64: unlockArray<intl   >(arr); break;
+        case u64: unlockArray<uintl  >(arr); break;
+        case s16: unlockArray<short  >(arr); break;
+        case u16: unlockArray<ushort >(arr); break;
+        case u8 : unlockArray<uchar  >(arr); break;
+        case b8 : unlockArray<char   >(arr); break;
         default: TYPE_ERROR(4, type);
         }
 

@@ -346,9 +346,12 @@ extern "C" {
     /**
        Lock the device buffer in the memory manager.
 
-       Locked buffers are not freed by memory manager until \ref af_unlock_device_ptr is called.
+       Locked buffers are not freed by memory manager until \ref af_unlock_array is called.
        \ingroup device_func_mem
     */
+#if AF_API_VERSION >= 33
+    DEPRECATED("Use af_lock_array instead")
+#endif
     AFAPI af_err af_lock_device_ptr(const af_array arr);
 #endif
 
@@ -359,7 +362,30 @@ extern "C" {
        This function will give back the control over the device pointer to the memory manager.
        \ingroup device_func_mem
     */
+#if AF_API_VERSION >= 33
+    DEPRECATED("Use af_unlock_array instead")
+#endif
     AFAPI af_err af_unlock_device_ptr(const af_array arr);
+#endif
+
+#if AF_API_VERSION >= 33
+    /**
+       Lock the device buffer in the memory manager.
+
+       Locked buffers are not freed by memory manager until \ref af_unlock_array is called.
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_lock_array(const af_array arr);
+#endif
+
+#if AF_API_VERSION >= 33
+    /**
+       Unlock device buffer in the memory manager.
+
+       This function will give back the control over the device pointer to the memory manager.
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_unlock_array(const af_array arr);
 #endif
 
     /**
