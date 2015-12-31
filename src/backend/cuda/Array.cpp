@@ -229,12 +229,6 @@ namespace cuda
     }
 
     template<typename T>
-    void evalArray(const Array<T> &A)
-    {
-        A.eval();
-    }
-
-    template<typename T>
     void
     writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
     {
@@ -279,7 +273,6 @@ namespace cuda
                                                        const std::vector<af_seq> &index, \
                                                        bool copy);      \
     template       void      destroyArray<T>          (Array<T> *A);    \
-    template       void      evalArray<T>             (const Array<T> &A); \
     template       Array<T>  createNodeArray<T>       (const dim4 &size, JIT::Node_ptr node); \
     template       Array<T>::Array(af::dim4 dims, const T * const in_data, \
                                    bool is_device, bool copy_device);   \

@@ -11,11 +11,14 @@
 #include <af/defines.h>
 #include <platform.hpp>
 #include <sstream>
+#include <queue.hpp>
+#include <array>
 #include <algorithm>
 #include <iostream>
 #include <string>
 #include <defines.hpp>
 #include <version.hpp>
+#include <queue.hpp>
 
 #ifdef _WIN32
 #include <limits.h>
@@ -246,9 +249,17 @@ int getActiveDeviceId()
     return 0;
 }
 
+static const int MAX_QUEUES = 1;
+
+
+queue& getQueue(int idx) {
+    static std::array<queue, MAX_QUEUES> queues;
+    return queues[idx];
+}
+
 void sync(int device)
 {
-    // Nothing here
+    getQueue().sync();
 }
 
 }

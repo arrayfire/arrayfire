@@ -23,6 +23,8 @@
 #include <lu.hpp>
 #include <identity.hpp>
 #include <solve.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 namespace cpu
 {
@@ -48,6 +50,7 @@ INV_FUNC(getri , cdouble, z)
 template<typename T>
 Array<T> inverse(const Array<T> &in)
 {
+    in.eval();
 
     int M = in.dims()[0];
     int N = in.dims()[1];
@@ -58,12 +61,14 @@ Array<T> inverse(const Array<T> &in)
     }
 
     Array<T> A = copyArray<T>(in);
-
     Array<int> pivot = lu_inplace<T>(A, false);
 
-    getri_func<T>()(AF_LAPACK_COL_MAJOR, M,
-                    A.get(), A.strides()[1],
-                    pivot.get());
+    auto func = [=] (Array<T> A, Array<int> pivot, int M) {
+        getri_func<T>()(AF_LAPACK_COL_MAJOR, M,
+                A.get(), A.strides()[1],
+                pivot.get());
+    };
+    getQueue().enqueue(func, A, pivot, M);
 
     return A;
 }

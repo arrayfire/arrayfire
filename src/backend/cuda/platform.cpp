@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <cstring>
 #include <err_cuda.hpp>
+#include <util.hpp>
 
 using namespace std;
 
@@ -406,6 +407,11 @@ void sync(int device)
     setDevice(device);
     CUDA_CHECK(cudaStreamSynchronize(getStream(getActiveDeviceId())));
     setDevice(currDevice);
+}
+
+bool synchronize_calls() {
+    static bool sync = getEnvVar("AF_SYNCHRONOUS_CALLS") == "1";
+    return sync;
 }
 
 }

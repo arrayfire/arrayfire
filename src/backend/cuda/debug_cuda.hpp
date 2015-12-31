@@ -51,8 +51,12 @@
 
 #else
 
-#define POST_LAUNCH_CHECK() do {                \
-        CUDA_CHECK(cudaPeekAtLastError());      \
-    } while(0)                                  \
+#define POST_LAUNCH_CHECK() do {                                        \
+    if(cuda::synchronize_calls()) {                                     \
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId()))); \
+    } else {                                                            \
+        CUDA_CHECK(cudaPeekAtLastError());                              \
+    }                                                                   \
+  } while(0)                                                            \
 
 #endif

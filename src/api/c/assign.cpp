@@ -39,7 +39,7 @@ void assign(Array<Tout> &out, const unsigned &ndims, const af_seq *index, const 
     DIM_ASSERT(0, (outDs.ndims()>=iDims.ndims()));
     DIM_ASSERT(0, (outDs.ndims()>=(dim_t)ndims));
 
-    evalArray(out);
+    out.eval();
 
     vector<af_seq> index_(index, index+ndims);
 

@@ -11,39 +11,41 @@
 
 namespace cpu
 {
-    uint abs(uint val) { return val; }
-    uchar abs(uchar val) { return val; }
-    uintl abs(uintl val) { return val; }
 
-    cfloat  scalar(float val)
-    {
-        cfloat  cval = {(float)val, 0};
-        return cval;
-    }
+uint abs(uint val) { return val; }
+uchar abs(uchar val) { return val; }
+uintl abs(uintl val) { return val; }
 
-    cdouble scalar(double val)
-    {
-        cdouble  cval = {val, 0};
-        return cval;
-    }
+cfloat  scalar(float val)
+{
+    cfloat  cval = {(float)val, 0};
+    return cval;
+}
 
-    cfloat min(cfloat lhs, cfloat rhs)
-    {
-        return abs(lhs) < abs(rhs) ? lhs : rhs;
-    }
+cdouble scalar(double val)
+{
+    cdouble  cval = {val, 0};
+    return cval;
+}
 
-    cdouble min(cdouble lhs, cdouble rhs)
-    {
-        return abs(lhs) < abs(rhs) ? lhs : rhs;
-    }
+cfloat min(cfloat lhs, cfloat rhs)
+{
+    return abs(lhs) < abs(rhs) ? lhs : rhs;
+}
 
-    cfloat max(cfloat lhs, cfloat rhs)
-    {
-        return abs(lhs) > abs(rhs) ? lhs : rhs;
-    }
+cdouble min(cdouble lhs, cdouble rhs)
+{
+    return abs(lhs) < abs(rhs) ? lhs : rhs;
+}
 
-    cdouble max(cdouble lhs, cdouble rhs)
-    {
-        return abs(lhs) > abs(rhs) ? lhs : rhs;
-    }
+cfloat max(cfloat lhs, cfloat rhs)
+{
+    return abs(lhs) > abs(rhs) ? lhs : rhs;
+}
+
+cdouble max(cdouble lhs, cdouble rhs)
+{
+    return abs(lhs) > abs(rhs) ? lhs : rhs;
+}
+
 }
