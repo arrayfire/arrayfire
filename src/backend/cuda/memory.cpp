@@ -156,8 +156,8 @@ namespace cuda
 
     typedef struct
     {
-        bool is_free;
-        bool is_unlinked;
+        bool mngr_lock;
+        bool user_lock;
         size_t bytes;
     } mem_info;
 
@@ -176,9 +176,9 @@ namespace cuda
         for(mem_iter iter = memory_maps[n].begin();
             iter != memory_maps[n].end(); ++iter) {
 
-            if ((iter->second).is_free) {
+            if (!(iter->second.mngr_lock)) {
 
-                if (!(iter->second).is_unlinked) {
+                if (!(iter->second.user_lock)) {
                     cudaFreeWrapper(iter->first);
                     total_bytes[n] -= iter->second.bytes;
                 }
@@ -189,7 +189,7 @@ namespace cuda
         mem_iter memory_end  = memory_maps[n].end();
 
         while(memory_curr != memory_end) {
-            if (memory_curr->second.is_free  && !memory_curr->second.is_unlinked) {
+            if (!(memory_curr->second.mngr_lock) && !(memory_curr->second.user_lock)) {
                 memory_maps[n].erase(memory_curr++);
             } else {
                 ++memory_curr;
@@ -209,14 +209,14 @@ namespace cuda
         for(mem_iter iter = memory_maps[device].begin();
             iter != memory_maps[device].end(); ++iter) {
 
-            std::string status_af("Unknown");
-            std::string status_us("Unknown");
+            std::string status_mngr("Unknown");
+            std::string status_user("Unknown");
 
-            if(!(iter->second.is_free))    status_af = "Yes";
-            else                           status_af = " No";
+            if(iter->second.mngr_lock)  status_mngr = "Yes";
+            else                        status_mngr = " No";
 
-            if((iter->second.is_unlinked)) status_us = "Yes";
-            else                           status_us = " No";
+            if(iter->second.user_lock)  status_user = "Yes";
+            else                        status_user = " No";
 
             std::string unit = "KB";
             double size = (double)(iter->second.bytes) / 1024;
@@ -227,8 +227,8 @@ namespace cuda
 
             std::cout << "|  " << std::right << std::setw(14) << iter->first << " "
                       << " | " << std::setw(7) << std::setprecision(4) << size << " " << unit
-                      << " | " << std::setw(9) << status_af
-                      << " | " << std::setw(9) << status_us
+                      << " | " << std::setw(9) << status_mngr
+                      << " | " << std::setw(9) << status_user
                       << " |"  << std::endl;
         }
 
@@ -256,11 +256,11 @@ namespace cuda
 
                 mem_info info = iter->second;
 
-                if (  info.is_free &&
-                     !info.is_unlinked &&
-                      info.bytes == alloc_bytes) {
+                if (!info.mngr_lock &&
+                    !info.user_lock &&
+                     info.bytes == alloc_bytes) {
 
-                    iter->second.is_free = false;
+                    iter->second.mngr_lock = true;
                     used_bytes[n] += alloc_bytes;
                     used_buffers[n]++;
                     return (T *)iter->first;
@@ -273,7 +273,7 @@ namespace cuda
                 CUDA_CHECK(cudaMalloc((void **)(&ptr), alloc_bytes));
             }
 
-            mem_info info = {false, false, alloc_bytes};
+            mem_info info = {true, false, alloc_bytes};
             memory_maps[n][ptr] = info;
             used_bytes[n] += alloc_bytes;
             used_buffers[n]++;
@@ -290,10 +290,10 @@ namespace cuda
 
         if (iter != memory_maps[n].end()) {
 
-            iter->second.is_free = true;
-            if ((iter->second).is_unlinked && !free_unlinked) return;
+            iter->second.mngr_lock = false;
+            if ((iter->second.user_lock) && !free_unlinked) return;
 
-            iter->second.is_unlinked = false;
+            iter->second.user_lock = false;
 
             used_bytes[n] -= iter->second.bytes;
             used_buffers[n]--;
@@ -316,10 +316,10 @@ namespace cuda
         mem_iter iter = memory_maps[n].find((void *)ptr);
 
         if (iter != memory_maps[n].end()) {
-            iter->second.is_unlinked = true;
+            iter->second.user_lock = true;
         } else {
 
-            mem_info info = { false,
+            mem_info info = { true,
                               true,
                               100 }; //This number is not relevant
 
@@ -333,7 +333,7 @@ namespace cuda
         int n = getActiveDeviceId();
         mem_iter iter = memory_maps[n].find((void *)ptr);
         if (iter != memory_maps[n].end()) {
-            iter->second.is_unlinked = false;
+            iter->second.user_lock = false;
         }
     }
 
@@ -354,7 +354,7 @@ namespace cuda
     void pinnedGarbageCollect()
     {
         for(mem_iter iter = pinned_maps.begin(); iter != pinned_maps.end(); ++iter) {
-            if ((iter->second).is_free) {
+            if (!(iter->second.mngr_lock)) {
                 pinnedFreeWrapper(iter->first);
             }
         }
@@ -363,7 +363,7 @@ namespace cuda
         mem_iter memory_end  = pinned_maps.end();
 
         while(memory_curr != memory_end) {
-            if (memory_curr->second.is_free) {
+            if (!(memory_curr->second.mngr_lock)) {
                 pinned_maps.erase(memory_curr++);
             } else {
                 ++memory_curr;
@@ -392,8 +392,8 @@ namespace cuda
                 iter != pinned_maps.end(); ++iter) {
 
                 mem_info info = iter->second;
-                if (info.is_free && info.bytes == alloc_bytes) {
-                    iter->second.is_free = false;
+                if (!info.mngr_lock && info.bytes == alloc_bytes) {
+                    iter->second.mngr_lock = true;
                     pinned_used_bytes += alloc_bytes;
                     return (T *)iter->first;
                 }
@@ -405,7 +405,7 @@ namespace cuda
                 CUDA_CHECK(cudaMallocHost((void **)(&ptr), alloc_bytes));
             }
 
-            mem_info info = {false, false, alloc_bytes};
+            mem_info info = {true, false, alloc_bytes};
             pinned_maps[ptr] = info;
             pinned_used_bytes += alloc_bytes;
         }
@@ -418,7 +418,7 @@ namespace cuda
         mem_iter iter = pinned_maps.find((void *)ptr);
 
         if (iter != pinned_maps.end()) {
-            iter->second.is_free = true;
+            iter->second.mngr_lock = false;
             pinned_used_bytes -= iter->second.bytes;
         } else {
             pinnedFreeWrapper(ptr); // Free it because we are not sure what the size is
