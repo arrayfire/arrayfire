@@ -98,10 +98,10 @@ void garbageCollect()
     mem_iter memory_end  = memory_map.end();
 
     while(memory_curr != memory_end) {
-        if (!(memory_curr->second.mngr_lock) && !memory_curr->second.user_lock) {
-            memory_map.erase(memory_curr++);
-        } else {
+        if (memory_curr->second.mngr_lock || memory_curr->second.user_lock) {
             ++memory_curr;
+        } else {
+            memory_map.erase(memory_curr++);
         }
     }
 }

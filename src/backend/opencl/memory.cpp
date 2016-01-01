@@ -97,10 +97,10 @@ namespace opencl
         mem_iter memory_end  = memory_maps[n].end();
 
         while(memory_curr != memory_end) {
-            if (!memory_curr->second.mngr_lock && !memory_curr->second.user_lock) {
-                memory_curr = memory_maps[n].erase(memory_curr);
-            } else {
+            if (memory_curr->second.mngr_lock || memory_curr->second.user_lock) {
                 ++memory_curr;
+            } else {
+                memory_maps[n].erase(memory_curr++);
             }
         }
     }
@@ -311,10 +311,10 @@ namespace opencl
         pinned_iter memory_end  = pinned_maps[n].end();
 
         while(memory_curr != memory_end) {
-            if (!memory_curr->second.info.mngr_lock) {
-                memory_curr = pinned_maps[n].erase(memory_curr);
-            } else {
+            if (memory_curr->second.info.mngr_lock) {
                 ++memory_curr;
+            } else {
+                memory_curr = pinned_maps[n].erase(memory_curr);
             }
         }
 

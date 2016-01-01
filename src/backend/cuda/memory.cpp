@@ -189,10 +189,10 @@ namespace cuda
         mem_iter memory_end  = memory_maps[n].end();
 
         while(memory_curr != memory_end) {
-            if (!(memory_curr->second.mngr_lock) && !(memory_curr->second.user_lock)) {
-                memory_maps[n].erase(memory_curr++);
-            } else {
+            if (memory_curr->second.mngr_lock || memory_curr->second.user_lock) {
                 ++memory_curr;
+            } else {
+                memory_maps[n].erase(memory_curr++);
             }
         }
     }
@@ -363,10 +363,10 @@ namespace cuda
         mem_iter memory_end  = pinned_maps.end();
 
         while(memory_curr != memory_end) {
-            if (!(memory_curr->second.mngr_lock)) {
-                pinned_maps.erase(memory_curr++);
-            } else {
+            if (memory_curr->second.mngr_lock) {
                 ++memory_curr;
+            } else {
+                pinned_maps.erase(memory_curr++);
             }
         }
     }
