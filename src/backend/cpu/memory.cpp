@@ -60,8 +60,8 @@ static void managerInit()
 
 typedef struct
 {
-    bool is_free;
-    bool is_unlinked;
+    bool mngr_lock; // True if locked by memory manager, false if free
+    bool user_lock; // True if locked by user, false if free
     size_t bytes;
 } mem_info;
 
@@ -85,9 +85,9 @@ void garbageCollect()
     for(mem_iter iter = memory_map.begin();
         iter != memory_map.end(); ++iter) {
 
-        if ((iter->second).is_free) {
+        if (!(iter->second).mngr_lock) {
 
-            if (!(iter->second).is_unlinked) {
+            if (!(iter->second).user_lock) {
                 freeWrapper(iter->first);
                 total_bytes -= iter->second.bytes;
             }
@@ -98,7 +98,7 @@ void garbageCollect()
     mem_iter memory_end  = memory_map.end();
 
     while(memory_curr != memory_end) {
-        if (memory_curr->second.is_free && !memory_curr->second.is_unlinked) {
+        if (!(memory_curr->second.mngr_lock) && !memory_curr->second.user_lock) {
             memory_map.erase(memory_curr++);
         } else {
             ++memory_curr;
@@ -117,14 +117,14 @@ void printMemInfo(const char *msg, const int device)
     for(mem_iter iter = memory_map.begin();
         iter != memory_map.end(); ++iter) {
 
-        std::string status_af("Unknown");
-        std::string status_us("Unknown");
+        std::string status_mngr("Unknown");
+        std::string status_user("Unknown");
 
-        if(!(iter->second.is_free))    status_af = "Yes";
-        else                           status_af = " No";
+        if(iter->second.mngr_lock)  status_mngr = "Yes";
+        else                        status_mngr = " No";
 
-        if((iter->second.is_unlinked)) status_us = "Yes";
-        else                           status_us = " No";
+        if(iter->second.user_lock)  status_user = "Yes";
+        else                        status_user = " No";
 
         std::string unit = "KB";
         double size = (double)(iter->second.bytes) / 1024;
@@ -135,8 +135,8 @@ void printMemInfo(const char *msg, const int device)
 
         std::cout << "|  " << std::right << std::setw(14) << iter->first << " "
                   << " | " << std::setw(7) << std::setprecision(4) << size << " " << unit
-                  << " | " << std::setw(9) << status_af
-                  << " | " << std::setw(9) << status_us
+                  << " | " << std::setw(9) << status_mngr
+                  << " | " << std::setw(9) << status_user
                   << " |"  << std::endl;
     }
 
@@ -167,11 +167,11 @@ T* memAlloc(const size_t &elements)
 
             mem_info info = iter->second;
 
-            if ( info.is_free &&
-                !info.is_unlinked &&
+            if (!info.mngr_lock &&
+                !info.user_lock &&
                  info.bytes == alloc_bytes) {
 
-                iter->second.is_free = false;
+                iter->second.mngr_lock = true;
                 used_bytes += alloc_bytes;
                 used_buffers++;
                 return (T *)iter->first;
@@ -185,7 +185,7 @@ T* memAlloc(const size_t &elements)
             AF_ERROR("Can not allocate memory", AF_ERR_NO_MEM);
         }
 
-        mem_info info = {false, false, alloc_bytes};
+        mem_info info = {true, false, alloc_bytes};
         memory_map[ptr] = info;
 
         used_bytes += alloc_bytes;
@@ -204,10 +204,10 @@ void memFreeUnlinked(T *ptr, bool free_unlinked)
 
     if (iter != memory_map.end()) {
 
-        iter->second.is_free = true;
-        if ((iter->second).is_unlinked && !free_unlinked) return;
+        iter->second.mngr_lock = false;
+        if ((iter->second).user_lock && !free_unlinked) return;
 
-        iter->second.is_unlinked = false;
+        iter->second.user_lock = false;
         used_bytes -= iter->second.bytes;
         used_buffers--;
 
@@ -230,9 +230,9 @@ void memPop(const T *ptr)
     mem_iter iter = memory_map.find((void *)ptr);
 
     if (iter != memory_map.end()) {
-        iter->second.is_unlinked = true;
+        iter->second.user_lock = true;
     } else {
-        mem_info info = { false,
+        mem_info info = { true,
                           true,
                           100 }; //This number is not relevant
 
@@ -246,7 +246,7 @@ void memPush(const T *ptr)
     std::lock_guard<std::mutex> lock(memory_map_mutex);
     mem_iter iter = memory_map.find((void *)ptr);
     if (iter != memory_map.end()) {
-        iter->second.is_unlinked = false;
+        iter->second.user_lock = false;
     }
 }
 
