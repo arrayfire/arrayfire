@@ -196,7 +196,7 @@ T* memAlloc(const size_t &elements)
 }
 
 template<typename T>
-void memFreeUnlinked(T *ptr, bool free_unlinked)
+void memFreeLocked(T *ptr, bool freeLocked)
 {
     std::lock_guard<std::mutex> lock(memory_map_mutex);
 
@@ -205,7 +205,7 @@ void memFreeUnlinked(T *ptr, bool free_unlinked)
     if (iter != memory_map.end()) {
 
         iter->second.mngr_lock = false;
-        if ((iter->second).user_lock && !free_unlinked) return;
+        if ((iter->second).user_lock && !freeLocked) return;
 
         iter->second.user_lock = false;
         used_bytes -= iter->second.bytes;
@@ -219,7 +219,7 @@ void memFreeUnlinked(T *ptr, bool free_unlinked)
 template<typename T>
 void memFree(T *ptr)
 {
-    memFreeUnlinked(ptr, false);
+    memFreeLocked(ptr, false);
 }
 
 template<typename T>
@@ -276,7 +276,7 @@ void pinnedFree(T* ptr)
 #define INSTANTIATE(T)                                          \
     template T* memAlloc(const size_t &elements);               \
     template void memFree(T* ptr);                              \
-    template void memFreeUnlinked(T* ptr, bool free_unlinked);  \
+    template void memFreeLocked(T* ptr, bool freeLocked);       \
     template void memPop(const T* ptr);                         \
     template void memPush(const T* ptr);                        \
     template T* pinnedAlloc(const size_t &elements);            \

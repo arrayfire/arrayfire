@@ -68,7 +68,7 @@ namespace cuda
     }
 
     template<typename T>
-    void memFreeUnlinked(T *ptr, bool free_unlinked)
+    void memFreeLocked(T *ptr, bool freeLocked)
     {
         cudaFreeWrapper(ptr); // Free it because we are not sure what the size is
     }
@@ -283,7 +283,7 @@ namespace cuda
     }
 
     template<typename T>
-    void memFreeUnlinked(T *ptr, bool free_unlinked)
+    void memFreeLocked(T *ptr, bool freeLocked)
     {
         int n = getActiveDeviceId();
         mem_iter iter = memory_maps[n].find((void *)ptr);
@@ -291,7 +291,7 @@ namespace cuda
         if (iter != memory_maps[n].end()) {
 
             iter->second.mngr_lock = false;
-            if ((iter->second.user_lock) && !free_unlinked) return;
+            if ((iter->second.user_lock) && !freeLocked) return;
 
             iter->second.user_lock = false;
 
@@ -306,7 +306,7 @@ namespace cuda
     template<typename T>
     void memFree(T *ptr)
     {
-        memFreeUnlinked(ptr, false);
+        memFreeLocked(ptr, false);
     }
 
     template<typename T>
@@ -430,7 +430,7 @@ namespace cuda
 #define INSTANTIATE(T)                                          \
     template T* memAlloc(const size_t &elements);               \
     template void memFree(T* ptr);                              \
-    template void memFreeUnlinked(T* ptr, bool free_unlinked);  \
+    template void memFreeLocked(T* ptr, bool freeLocked);       \
     template void memPop(const T* ptr);                         \
     template void memPush(const T* ptr);                        \
     template T* pinnedAlloc(const size_t &elements);            \

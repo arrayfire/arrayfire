@@ -191,10 +191,10 @@ namespace opencl
 
     void bufferFree(cl::Buffer *ptr)
     {
-        bufferFreeUnlinked(ptr, false);
+        bufferFreeLocked(ptr, false);
     }
 
-    void bufferFreeUnlinked(cl::Buffer *ptr, bool free_unlinked)
+    void bufferFreeLocked(cl::Buffer *ptr, bool freeLocked)
     {
         int n = getActiveDeviceId();
         mem_iter iter = memory_maps[n].find(ptr);
@@ -202,7 +202,7 @@ namespace opencl
         if (iter != memory_maps[n].end()) {
 
             iter->second.mngr_lock = false;
-            if ((iter->second).user_lock && !free_unlinked) return;
+            if ((iter->second).user_lock && !freeLocked) return;
 
             iter->second.user_lock = false;
 
@@ -260,13 +260,13 @@ namespace opencl
     template<typename T>
     void memFree(T *ptr)
     {
-        return bufferFreeUnlinked((cl::Buffer *)ptr, false);
+        return bufferFreeLocked((cl::Buffer *)ptr, false);
     }
 
     template<typename T>
-    void memFreeUnlinked(T *ptr, bool free_unlinked)
+    void memFreeLocked(T *ptr, bool freeLocked)
     {
-        return bufferFreeUnlinked((cl::Buffer *)ptr, free_unlinked);
+        return bufferFreeLocked((cl::Buffer *)ptr, freeLocked);
     }
 
     template<typename T>
@@ -398,7 +398,7 @@ namespace opencl
 #define INSTANTIATE(T)                                          \
     template T* memAlloc(const size_t &elements);               \
     template void memFree(T* ptr);                              \
-    template void memFreeUnlinked(T* ptr, bool free_unlinked);  \
+    template void memFreeLocked(T* ptr, bool freeLocked);       \
     template void memPop(const T* ptr);                         \
     template void memPush(const T* ptr);                        \
     template T* pinnedAlloc(const size_t &elements);            \
