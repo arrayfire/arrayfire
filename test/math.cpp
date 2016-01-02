@@ -14,6 +14,7 @@
 
 using namespace std;
 using namespace af;
+using std::abs;
 
 const int num = 10000;
 const float flt_err = 1e-3;

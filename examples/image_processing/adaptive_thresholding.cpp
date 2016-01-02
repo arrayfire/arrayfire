@@ -13,6 +13,7 @@
 #include <arrayfire.h>
 
 using namespace af;
+using std::abs;
 
 typedef enum {
     MEAN = 0,

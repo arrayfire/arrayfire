@@ -14,6 +14,7 @@
 
 using namespace af;
 using std::vector;
+using std::abs;
 
 template<typename T>
 class Diagonal : public ::testing::Test
