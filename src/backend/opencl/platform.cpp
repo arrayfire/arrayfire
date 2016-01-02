@@ -174,7 +174,7 @@ DeviceManager::DeviceManager()
 #if defined(WITH_GRAPHICS)
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
-    if(!noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
+    if(noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
         try {
             int devCount = mDevices.size();
             fg::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();
