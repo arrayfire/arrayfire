@@ -1057,11 +1057,11 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
 
     void array::lock() const
     {
-        AF_THROW(af_lock_device_ptr(get()));
+        AF_THROW(af_lock_array(get()));
     }
 
     void array::unlock() const
     {
-        AF_THROW(af_unlock_device_ptr(get()));
+        AF_THROW(af_unlock_array(get()));
     }
 }

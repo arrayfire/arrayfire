@@ -147,6 +147,16 @@ AFAPI array loadImageNative(const char* filename);
 AFAPI void saveImageNative(const char* filename, const array& in);
 #endif
 
+#if AF_API_VERSION >= 33
+/**
+    Function to check if Image IO is available
+
+    \returns true if ArrayFire was commpiled with ImageIO support, false otherwise.
+    \ingroup imageio_func_available
+*/
+AFAPI bool isImageIOAvailable();
+#endif
+
 /**
     C++ Interface for resizing an image to specified dimensions
 
@@ -792,6 +802,20 @@ extern "C" {
         \ingroup imageio_func_save
     */
     AFAPI af_err af_save_image_native(const char* filename, const af_array in);
+#endif
+
+#if AF_API_VERSION >= 33
+    /**
+        Function to check if Image IO is available
+
+        \param[out] out is true if ArrayFire was commpiled with ImageIO support,
+        false otherwise.
+
+        \return     \ref AF_SUCCESS if successful
+
+        \ingroup imageio_func_available
+    */
+    AFAPI af_err af_is_image_io_available(bool *out);
 #endif
 
     /**

@@ -13,9 +13,6 @@
 
 #if defined(OS_WIN)
 #include <Windows.h>
-typedef HMODULE LibHandle;
-#else
-#include <dlfcn.h>
 #endif
 
 using std::string;
@@ -23,18 +20,18 @@ using std::string;
 string getEnvVar(const std::string &key)
 {
 #if defined(OS_WIN)
-  DWORD bufSize = 32767; // limit according to GetEnvironment Variable documentation
-  string retVal;
-  retVal.resize(bufSize);
-  bufSize = GetEnvironmentVariable(key.c_str(), &retVal[0], bufSize);
-  if (!bufSize) {
-    return string("");
-  } else {
+    DWORD bufSize = 32767; // limit according to GetEnvironment Variable documentation
+    string retVal;
     retVal.resize(bufSize);
-    return retVal;
-  }
+    bufSize = GetEnvironmentVariable(key.c_str(), &retVal[0], bufSize);
+    if (!bufSize) {
+        return string("");
+    } else {
+        retVal.resize(bufSize);
+        return retVal;
+    }
 #else
-  char * str = getenv(key.c_str());
-  return str==NULL ? string("") : string(str);
+    char * str = getenv(key.c_str());
+    return str==NULL ? string("") : string(str);
 #endif
 }

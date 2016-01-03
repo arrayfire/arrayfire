@@ -14,6 +14,9 @@
 #include <dispatch.hpp>
 #include <cstdlib>
 #include <mutex>
+#include <iostream>
+#include <iomanip>
+#include <string>
 #include <platform.hpp>
 #include <queue.hpp>
 
@@ -57,8 +60,8 @@ static void managerInit()
 
 typedef struct
 {
-    bool is_free;
-    bool is_unlinked;
+    bool mngr_lock; // True if locked by memory manager, false if free
+    bool user_lock; // True if locked by user, false if free
     size_t bytes;
 } mem_info;
 
@@ -82,9 +85,9 @@ void garbageCollect()
     for(mem_iter iter = memory_map.begin();
         iter != memory_map.end(); ++iter) {
 
-        if ((iter->second).is_free) {
+        if (!(iter->second).mngr_lock) {
 
-            if (!(iter->second).is_unlinked) {
+            if (!(iter->second).user_lock) {
                 freeWrapper(iter->first);
                 total_bytes -= iter->second.bytes;
             }
@@ -95,12 +98,49 @@ void garbageCollect()
     mem_iter memory_end  = memory_map.end();
 
     while(memory_curr != memory_end) {
-        if (memory_curr->second.is_free && !memory_curr->second.is_unlinked) {
-            memory_map.erase(memory_curr++);
-        } else {
+        if (memory_curr->second.mngr_lock || memory_curr->second.user_lock) {
             ++memory_curr;
+        } else {
+            memory_map.erase(memory_curr++);
         }
     }
+}
+
+void printMemInfo(const char *msg, const int device)
+{
+    std::cout << msg << std::endl;
+
+    static const std::string head("|     POINTER      |    SIZE    |  AF LOCK  | USER LOCK |");
+    static const std::string line(head.size(), '-');
+    std::cout << line << std::endl << head << std::endl << line << std::endl;
+
+    for(mem_iter iter = memory_map.begin();
+        iter != memory_map.end(); ++iter) {
+
+        std::string status_mngr("Unknown");
+        std::string status_user("Unknown");
+
+        if(iter->second.mngr_lock)  status_mngr = "Yes";
+        else                        status_mngr = " No";
+
+        if(iter->second.user_lock)  status_user = "Yes";
+        else                        status_user = " No";
+
+        std::string unit = "KB";
+        double size = (double)(iter->second.bytes) / 1024;
+        if(size >= 1024) {
+            size = size / 1024;
+            unit = "MB";
+        }
+
+        std::cout << "|  " << std::right << std::setw(14) << iter->first << " "
+                  << " | " << std::setw(7) << std::setprecision(4) << size << " " << unit
+                  << " | " << std::setw(9) << status_mngr
+                  << " | " << std::setw(9) << status_user
+                  << " |"  << std::endl;
+    }
+
+    std::cout << line << std::endl;
 }
 
 template<typename T>
@@ -127,11 +167,11 @@ T* memAlloc(const size_t &elements)
 
             mem_info info = iter->second;
 
-            if ( info.is_free &&
-                !info.is_unlinked &&
+            if (!info.mngr_lock &&
+                !info.user_lock &&
                  info.bytes == alloc_bytes) {
 
-                iter->second.is_free = false;
+                iter->second.mngr_lock = true;
                 used_bytes += alloc_bytes;
                 used_buffers++;
                 return (T *)iter->first;
@@ -145,7 +185,7 @@ T* memAlloc(const size_t &elements)
             AF_ERROR("Can not allocate memory", AF_ERR_NO_MEM);
         }
 
-        mem_info info = {false, false, alloc_bytes};
+        mem_info info = {true, false, alloc_bytes};
         memory_map[ptr] = info;
 
         used_bytes += alloc_bytes;
@@ -156,7 +196,7 @@ T* memAlloc(const size_t &elements)
 }
 
 template<typename T>
-void memFree(T *ptr)
+void memFreeLocked(T *ptr, bool freeLocked)
 {
     std::lock_guard<std::mutex> lock(memory_map_mutex);
 
@@ -164,15 +204,22 @@ void memFree(T *ptr)
 
     if (iter != memory_map.end()) {
 
-        iter->second.is_free = true;
-        if ((iter->second).is_unlinked) return;
+        iter->second.mngr_lock = false;
+        if ((iter->second).user_lock && !freeLocked) return;
 
+        iter->second.user_lock = false;
         used_bytes -= iter->second.bytes;
         used_buffers--;
 
     } else {
         freeWrapper(ptr); // Free it because we are not sure what the size is
     }
+}
+
+template<typename T>
+void memFree(T *ptr)
+{
+    memFreeLocked(ptr, false);
 }
 
 template<typename T>
@@ -183,9 +230,9 @@ void memPop(const T *ptr)
     mem_iter iter = memory_map.find((void *)ptr);
 
     if (iter != memory_map.end()) {
-        iter->second.is_unlinked = true;
+        iter->second.user_lock = true;
     } else {
-        mem_info info = { false,
+        mem_info info = { true,
                           true,
                           100 }; //This number is not relevant
 
@@ -199,7 +246,7 @@ void memPush(const T *ptr)
     std::lock_guard<std::mutex> lock(memory_map_mutex);
     mem_iter iter = memory_map.find((void *)ptr);
     if (iter != memory_map.end()) {
-        iter->second.is_unlinked = false;
+        iter->second.user_lock = false;
     }
 }
 
@@ -226,13 +273,14 @@ void pinnedFree(T* ptr)
     memFree<T>(ptr);
 }
 
-#define INSTANTIATE(T)                                  \
-    template T* memAlloc(const size_t &elements);       \
-    template void memFree(T* ptr);                      \
-    template void memPop(const T* ptr);                 \
-    template void memPush(const T* ptr);                \
-    template T* pinnedAlloc(const size_t &elements);    \
-    template void pinnedFree(T* ptr);                   \
+#define INSTANTIATE(T)                                          \
+    template T* memAlloc(const size_t &elements);               \
+    template void memFree(T* ptr);                              \
+    template void memFreeLocked(T* ptr, bool freeLocked);       \
+    template void memPop(const T* ptr);                         \
+    template void memPush(const T* ptr);                        \
+    template T* pinnedAlloc(const size_t &elements);            \
+    template void pinnedFree(T* ptr);                           \
 
 INSTANTIATE(float)
 INSTANTIATE(cfloat)

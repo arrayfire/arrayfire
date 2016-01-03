@@ -430,6 +430,12 @@ Save an array to disk as an image
 Supported formats include JPG, PNG, PPM and other formats supported by freeimage
 
 
+\defgroup imageio_func_available isImageIoAvailable
+\ingroup imageio_mat
+
+Returns true if ArrayFire was compiled with ImageIO (FreeImage) support
+
+
 \defgroup imagemem_func_load loadImageMem
 \ingroup imageio_mat
 

@@ -153,4 +153,11 @@ namespace af
         AF_THROW(af_norm(&out, in.get(), type, p, q));
         return out;
     }
+
+    bool isLAPACKAvailable()
+    {
+        bool out = false;
+        AF_THROW(af_is_lapack_available(&out));
+        return out;
+    }
 }

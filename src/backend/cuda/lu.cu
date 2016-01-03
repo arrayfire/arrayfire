@@ -156,6 +156,11 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
     return pivot;
 }
 
+bool isLAPACKAvailable()
+{
+    return true;
+}
+
 #define INSTANTIATE_LU(T)                                                                           \
     template Array<int> lu_inplace<T>(Array<T> &in, const bool convert_pivot);                      \
     template void lu<T>(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in);
@@ -186,6 +191,11 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
     return cpu::lu_inplace(in, convert_pivot);
 }
 
+bool isLAPACKAvailable()
+{
+    return true;
+}
+
 #define INSTANTIATE_LU(T)                                                                           \
     template Array<int> lu_inplace<T>(Array<T> &in, const bool convert_pivot);                      \
     template void lu<T>(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in);
@@ -211,6 +221,11 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 {
     AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
              AF_ERR_NOT_CONFIGURED);
+}
+
+bool isLAPACKAvailable()
+{
+    return false;
 }
 
 #define INSTANTIATE_LU(T)                                                                           \

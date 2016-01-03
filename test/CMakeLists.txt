@@ -120,8 +120,8 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 FILE(GLOB FILES "*.cpp" "*.c")
 LIST(SORT FILES)  # Tests execute in alphabetical order
 
-# We only build info.cpp and backend.cpp for Unified backend
-SET(UNIFIED_FILES "backend.cpp;info.cpp")
+# We only build backend.cpp for Unified backend
+SET(UNIFIED_FILES "backend.cpp")
 LIST(SORT UNIFIED_FILES)  # Tests execute in alphabetical order
 
 # Next we build each example using every backend.

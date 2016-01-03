@@ -373,6 +373,12 @@ af_err af_save_image_native(const char* filename, const af_array in)
     return AF_SUCCESS;
 }
 
+af_err af_is_image_io_available(bool *out)
+{
+    *out = true;
+    return AF_SUCCESS;
+}
+
 #else   // WITH_FREEIMAGE
 #include <af/image.h>
 #include <stdio.h>
@@ -385,5 +391,11 @@ af_err af_load_image_native(af_array *out, const char* filename)
 af_err af_save_image_native(const char* filename, const af_array in)
 {
     AF_RETURN_ERROR("ArrayFire compiled without Image IO (FreeImage) support", AF_ERR_NOT_CONFIGURED);
+}
+
+af_err af_is_image_io_available(bool *out)
+{
+    *out = false;
+    return AF_SUCCESS;
 }
 #endif  // WITH_FREEIMAGE

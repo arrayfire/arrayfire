@@ -11,6 +11,7 @@
 #include <af/device.h>
 #include <err_common.hpp>
 #include <type_util.hpp>
+#include <util.hpp>
 #include <string>
 #include <sstream>
 #include <cstring>
@@ -155,9 +156,9 @@ static std::string global_err_string;
 void
 print_error(const string &msg)
 {
-    const char* perr = getenv("AF_PRINT_ERRORS");
-    if(perr != nullptr) {
-        if(std::strncmp(perr, "0", 1) != 0)
+    std::string perr = getEnvVar("AF_PRINT_ERRORS");
+    if(!perr.empty()) {
+        if(perr != "0")
             fprintf(stderr, "%s\n", msg.c_str());
     }
     global_err_string = msg;
@@ -165,42 +166,51 @@ print_error(const string &msg)
 
 void af_get_last_error(char **str, dim_t *len)
 {
-    *len = std::min(MAX_ERR_SIZE, (int)global_err_string.size());
+    dim_t slen = std::min(MAX_ERR_SIZE, (int)global_err_string.size());
 
-    if (*len == 0) {
+    if (len && slen == 0) {
+        *len = 0;
         *str = NULL;
+        return;
     }
 
-    af_alloc_host((void**)str, sizeof(char) * (*len + 1));
-    global_err_string.copy(*str, *len);
+    af_alloc_host((void**)str, sizeof(char) * (slen + 1));
+    global_err_string.copy(*str, slen);
 
-    (*str)[*len] = '\0';
+    (*str)[slen] = '\0';
     global_err_string = std::string("");
+
+    if(len) *len = slen;
 }
 
 const char *af_err_to_string(const af_err err)
 {
     switch (err) {
-    case AF_SUCCESS:            return "Success";
-    case AF_ERR_INTERNAL:       return "Internal error";
-    case AF_ERR_NO_MEM:         return "Device out of memory";
-    case AF_ERR_DRIVER:         return "Driver not available or incompatible";
-    case AF_ERR_RUNTIME:        return "Runtime error ";
-    case AF_ERR_INVALID_ARRAY:  return "Invalid array";
-    case AF_ERR_ARG:            return "Invalid input argument";
-    case AF_ERR_SIZE:           return "Invalid input size";
-    case AF_ERR_DIFF_TYPE:      return "Input types are not the same";
-    case AF_ERR_NOT_SUPPORTED:  return "Function not supported";
-    case AF_ERR_NOT_CONFIGURED: return "Function not configured to build";
-    case AF_ERR_TYPE:           return "Function does not support this data type";
-    case AF_ERR_NO_DBL:         return "Double precision not supported for this device";
-    case AF_ERR_LOAD_LIB:       return "Failed to load dynamic library. See http://www.arrayfire.com/docs/unifiedbackend.htm for instructions to set up environment for Unified backend";
-    case AF_ERR_LOAD_SYM:       return "Failed to load symbol";
-    case AF_ERR_ARR_BKND_MISMATCH   :
-                                return "There was a mismatch between an array and the current backend";
+    case AF_SUCCESS:                return "Success";
+    case AF_ERR_NO_MEM:             return "Device out of memory";
+    case AF_ERR_DRIVER:             return "Driver not available or incompatible";
+    case AF_ERR_RUNTIME:            return "Runtime error ";
+    case AF_ERR_INVALID_ARRAY:      return "Invalid array";
+    case AF_ERR_ARG:                return "Invalid input argument";
+    case AF_ERR_SIZE:               return "Invalid input size";
+    case AF_ERR_TYPE:               return "Function does not support this data type";
+    case AF_ERR_DIFF_TYPE:          return "Input types are not the same";
+    case AF_ERR_BATCH:              return "Invalid batch configuration";
+    case AF_ERR_NOT_SUPPORTED:      return "Function not supported";
+    case AF_ERR_NOT_CONFIGURED:     return "Function not configured to build";
+    case AF_ERR_NONFREE:            return "Function unavailable."
+                                           "ArrayFire compiled without Non-Free algorithms support";
+    case AF_ERR_NO_DBL:             return "Double precision not supported for this device";
+    case AF_ERR_NO_GFX:             return "Graphics functionality unavailable."
+                                           "ArrayFire compiled without Graphics support";
+    case AF_ERR_LOAD_LIB:           return "Failed to load dynamic library."
+                                           "See http://www.arrayfire.com/docs/unifiedbackend.htm"
+                                           "for instructions to set up environment for Unified backend";
+    case AF_ERR_LOAD_SYM:           return "Failed to load symbol";
+    case AF_ERR_ARR_BKND_MISMATCH:  return "There was a mismatch between an array and the current backend";
+    case AF_ERR_INTERNAL:           return "Internal error";
     case AF_ERR_UNKNOWN:
-    default:
-        return "Unknown error";
+    default:                        return "Unknown error";
     }
 }
 

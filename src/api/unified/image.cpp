@@ -55,6 +55,11 @@ af_err af_save_image_native(const char* filename, const af_array in)
     return CALL(filename, in);
 }
 
+af_err af_is_image_io_available(bool *out)
+{
+    return CALL(out);
+}
+
 af_err af_resize(af_array *out, const af_array in, const dim_t odim0, const dim_t odim1, const af_interp_type method)
 {
     CHECK_ARRAYS(in);

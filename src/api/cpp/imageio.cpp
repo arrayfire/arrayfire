@@ -68,4 +68,11 @@ void saveImageNative(const char* filename, const array& in)
     AF_THROW(af_save_image_native(filename, in.get()));
 }
 
+bool isImageIOAvailable()
+{
+    bool out = false;
+    AF_THROW(af_is_image_io_available(&out));
+    return out;
+}
+
 }

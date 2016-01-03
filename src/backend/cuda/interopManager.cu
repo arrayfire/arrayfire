@@ -14,6 +14,7 @@
 
 #include <interopManager.hpp>
 #include <err_cuda.hpp>
+#include <util.hpp>
 #include <cstdio>
 
 namespace cuda
@@ -36,10 +37,10 @@ InteropManager::~InteropManager()
         }
     } catch (AfError &ex) {
 
-        const char* perr = getenv("AF_PRINT_ERRORS");
-
-        if(perr && perr[0] != '0') {
-            fprintf(stderr, "%s\n", ex.what());
+        std::string perr = getEnvVar("AF_PRINT_ERRORS");
+        if(!perr.empty()) {
+            if(perr != "0")
+                fprintf(stderr, "%s\n", ex.what());
         }
     }
 }

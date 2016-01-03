@@ -121,6 +121,11 @@ af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
     return CALL(alloc_bytes, alloc_buffers, lock_bytes, lock_buffers);
 }
 
+af_err af_print_mem_info(const char *msg, const int device_id)
+{
+    return CALL(msg, device_id);
+}
+
 af_err af_device_gc()
 {
     return CALL_NO_PARAMS();
@@ -143,6 +148,18 @@ af_err af_lock_device_ptr(const af_array arr)
 }
 
 af_err af_unlock_device_ptr(const af_array arr)
+{
+    CHECK_ARRAYS(arr);
+    return CALL(arr);
+}
+
+af_err af_lock_array(const af_array arr)
+{
+    CHECK_ARRAYS(arr);
+    return CALL(arr);
+}
+
+af_err af_unlock_array(const af_array arr)
 {
     CHECK_ARRAYS(arr);
     return CALL(arr);
