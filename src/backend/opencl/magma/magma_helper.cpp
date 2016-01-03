@@ -159,6 +159,14 @@ magma_int_t magma_get_geqrf_nb<magmaDoubleComplex>( magma_int_t m )
     else                return 128;
 }
 
+#if defined(__GNUC__) || defined(__GNUG__)
+    /* GCC/G++, Clang/LLVM, Intel ICC */
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wmissing-braces"
+#else
+    /* Other */
+#endif
+
 template<typename T> T magma_make(double r, double i) { return (T) r; }
 template float magma_make<float>(double r, double i);
 template double magma_make<double>(double r, double i);
@@ -172,3 +180,10 @@ template<> magmaDoubleComplex magma_make<magmaDoubleComplex>(double r, double i)
     magmaDoubleComplex tmp = {r, i};
     return tmp;
 }
+
+#if defined(__GNUC__) || defined(__GNUG__)
+    /* GCC/G++, Clang/LLVM, Intel ICC */
+    #pragma GCC diagnostic pop
+#else
+    /* Other */
+#endif

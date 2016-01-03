@@ -18,6 +18,7 @@
 
 using std::string;
 using std::vector;
+using std::abs;
 
 template<typename T>
 class Histogram : public ::testing::Test

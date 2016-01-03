@@ -15,6 +15,7 @@
 
 using namespace af;
 using std::vector;
+using std::abs;
 
 TEST(GettingStarted, SNIPPET_getting_started_gen)
 {

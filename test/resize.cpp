@@ -20,6 +20,7 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using std::abs;
 using af::cfloat;
 using af::cdouble;
 

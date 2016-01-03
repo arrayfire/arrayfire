@@ -125,7 +125,7 @@ af_err af_assign_seq(af_array *out,
 
         ArrayInfo lInfo = getInfo(lhs);
 
-        if (ndims == 1 && ndims != (dim_t)lInfo.ndims()) {
+        if (ndims == 1 && ndims != lInfo.ndims()) {
             af_array tmp_in, tmp_out;
             AF_CHECK(af_flat(&tmp_in, lhs));
             AF_CHECK(af_assign_seq(&tmp_out, tmp_in, ndims, index, rhs));

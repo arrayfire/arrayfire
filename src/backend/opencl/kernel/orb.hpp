@@ -29,8 +29,24 @@ using cl::LocalSpaceArg;
 using cl::NDRange;
 using std::vector;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#if defined(__clang__)
+    /* Clang/LLVM */
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+    /* Intel ICC/ICPC */
+    // Fix the warning code here, if any
+#elif defined(__GNUC__) || defined(__GNUG__)
+    /* GNU GCC/G++ */
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#elif defined(_MSC_VER)
+    /* Microsoft Visual Studio */
+    #pragma warning( push )
+    #pragma warning( disable : 4700 )
+#else
+    /* Other */
+#endif
 
 namespace opencl
 {
@@ -505,4 +521,19 @@ void orb(unsigned* out_feat,
 } //namespace kernel
 
 } //namespace opencl
-#pragma GCC diagnostic pop
+
+#if defined(__clang__)
+    /* Clang/LLVM */
+    #pragma clang diagnostic pop
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+    /* Intel ICC/ICPC */
+    // Fix the warning code here, if any
+#elif defined(__GNUC__) || defined(__GNUG__)
+    /* GNU GCC/G++ */
+    #pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+    /* Microsoft Visual Studio */
+    #pragma warning( pop )
+#else
+    /* Other */
+#endif
