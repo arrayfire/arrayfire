@@ -57,6 +57,8 @@ FOREACH(VER 20 30 32 35 50 52 53)
 ENDFOREACH()
 
 IF(UNIX)
+    # Forcing STRICT ANSI should resolve a bunch of issues that NVIDIA seems to face with GCC compilers.
+    ADD_DEFINITIONS(-D__STRICT_ANSI__)
     SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler -fvisibility=hidden)
     REMOVE_DEFINITIONS(-std=c++0x)
     IF(${WITH_COVERAGE})
