@@ -109,6 +109,11 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
     AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }
 
+bool isLAPACKAvailable()
+{
+    return false;
+}
+
 }
 
 #endif
