@@ -32,6 +32,11 @@ EXECUTE_PROCESS(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+IF(NOT GIT_COMMIT_HASH)
+    MESSAGE(STATUS "No git. Setting hash to default")
+    SET(GIT_COMMIT_HASH "default")
+ENDIF()
+
 CONFIGURE_FILE(
     ${CMAKE_MODULE_PATH}/version.h.in
     ${CMAKE_SOURCE_DIR}/include/af/version.h
