@@ -9,4 +9,4 @@
 	url = https://chromium.googlesource.com/external/googletest
 [submodule "src/backend/cpu/threads"]
 	path = src/backend/cpu/threads
-	url = git@github.com:alltheflops/threads.git
+	url = https://github.com/alltheflops/threads.git
