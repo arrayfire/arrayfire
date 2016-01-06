@@ -70,9 +70,9 @@ ENDIF()
 
 ADD_DEFINITIONS(-DAF_CUDA)
 
-IF(${CUDA_VERSION_MAJOR} LESS 7)
+IF(${CUDA_VERSION_MAJOR} LESS 7 OR ${CUDA_COMPUTE_53})
     # Use CPU Lapack as fallback?
-    OPTION(CUDA_LAPACK_CPU_FALLBACK "Use CPU LAPACK as fallback for CUDA LAPACK when CUDA is 6.5 or older" OFF)
+    OPTION(CUDA_LAPACK_CPU_FALLBACK "Use CPU LAPACK as fallback for CUDA LAPACK when cusolver is not available" OFF)
     MARK_AS_ADVANCED(CUDA_LAPACK_CPU_FALLBACK)
 
     IF(${CUDA_LAPACK_CPU_FALLBACK})
@@ -84,9 +84,9 @@ IF(${CUDA_VERSION_MAJOR} LESS 7)
         ENDIF(APPLE)
 
         IF(NOT LAPACK_FOUND)
-            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. Linear Algebra will not be available.")
+            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. Linear Algebra will not be available.")
         ELSE(NOT LAPACK_FOUND)
-            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. But CPU LAPACK libraries are available. Will fallback to using host side code.")
+            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. But CPU LAPACK libraries are available. Will fallback to using host side code.")
             ADD_DEFINITIONS(-DWITH_CPU_LINEAR_ALGEBRA)
             IF(USE_CUDA_MKL)
                 MESSAGE("Using MKL")
@@ -94,13 +94,13 @@ IF(${CUDA_VERSION_MAJOR} LESS 7)
             ENDIF()
         ENDIF()
     ELSE()
-        MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. Linear Algebra will not be available.")
+        MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. Linear Algebra will not be available.")
     ENDIF()
     IF(CMAKE_VERSION VERSION_LESS 3.2)
         SET(CUDA_cusolver_LIBRARY)
         MARK_AS_ADVANCED(CUDA_cusolver_LIBRARY)
     ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
-ELSE(${CUDA_VERSION_MAJOR} LESS 7)
+ELSE(${CUDA_VERSION_MAJOR} LESS 7 OR ${CUDA_COMPUTE_53})
     MESSAGE(STATUS "CUDA cusolver library available in CUDA Version ${CUDA_VERSION_STRING}")
     ADD_DEFINITIONS(-DWITH_CUDA_LINEAR_ALGEBRA)
     IF(CMAKE_VERSION VERSION_LESS 3.2)
@@ -113,7 +113,7 @@ ELSE(${CUDA_VERSION_MAJOR} LESS 7)
             NO_DEFAULT_PATH
             )
     ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
-ENDIF(${CUDA_VERSION_MAJOR} LESS 7)
+ENDIF(${CUDA_VERSION_MAJOR} LESS 7 OR ${CUDA_COMPUTE_53})
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
