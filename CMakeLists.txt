@@ -31,9 +31,6 @@ OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
 OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
 
 OPTION(BUILD_NONFREE "Build ArrayFire nonfree algorithms" OFF)
-OPTION(BUILD_SIFT "Build ArrayFire nonfree algorithms" OFF)
-
-MARK_AS_ADVANCED(BUILD_SIFT)
 
 OPTION(BUILD_UNIFIED "Build Backend-Independent ArrayFire API" ON)
 
@@ -91,17 +88,18 @@ IF(BUILD_GRAPHICS)
 
 ENDIF(BUILD_GRAPHICS)
 
-IF(BUILD_NONFREE)
-  MESSAGE(WARNING "Building With NONFREE ON requires the following patents")
-  SET(BUILD_SIFT ON)
-ENDIF(BUILD_NONFREE)
+IF(${BUILD_NONFREE})
+    MESSAGE(WARNING "Building With NONFREE ON requires the following patents")
+    SET(BUILD_NONFREE_SIFT ON CACHE BOOL "Build ArrayFire with SIFT")
+    MARK_AS_ADVANCED(BUILD_NONFREE_SIFT)
+ELSE(${BUILD_NONFREE})
+    UNSET(BUILD_NONFREE_SIFT CACHE) # BUILD_NONFREE_SIFT cannot be built without BUILD_NONFREE
+ENDIF(${BUILD_NONFREE})
 
-IF(BUILD_SIFT)
-  ADD_DEFINITIONS(-DAF_BUILD_SIFT)
+IF(${BUILD_NONFREE_SIFT})
+  ADD_DEFINITIONS(-DAF_BUILD_NONFREE_SIFT)
 
-  IF (NOT BUILD_NONFREE)
-    MESSAGE(WARNING "Building with SIFT requires the following patents")
-  ENDIF()
+  MESSAGE(WARNING "Building with SIFT requires the following patents")
 
   MESSAGE("Method and apparatus for identifying scale invariant features"
     "in an image and use of same for locating an object in an image,\" David"
@@ -110,7 +108,7 @@ IF(BUILD_SIFT)
     "further details, contact David Lowe (lowe@cs.ubc.ca) or the"
     "University-Industry Liaison Office of the University of British"
     "Columbia.")
-ENDIF(BUILD_SIFT)
+ENDIF(${BUILD_NONFREE_SIFT})
 
 INCLUDE_DIRECTORIES(
     "${CMAKE_CURRENT_SOURCE_DIR}/include"

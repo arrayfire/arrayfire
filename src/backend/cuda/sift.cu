@@ -15,7 +15,7 @@
 #include <err_cuda.hpp>
 #include <handle.hpp>
 
-#ifdef AF_BUILD_SIFT
+#ifdef AF_BUILD_NONFREE_SIFT
 #include <kernel/sift_nonfree.hpp>
 #endif
 
@@ -34,7 +34,7 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
               const float img_scale, const float feature_ratio,
               const bool compute_GLOH)
 {
-#ifdef AF_BUILD_SIFT
+#ifdef AF_BUILD_NONFREE_SIFT
     const dim4 dims = in.dims();
 
     unsigned nfeat_out;
