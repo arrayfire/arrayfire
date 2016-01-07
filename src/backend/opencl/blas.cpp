@@ -20,6 +20,8 @@
 #include <math.hpp>
 #include <transpose.hpp>
 
+#include <cpu/cpu_blas.hpp>
+
 namespace opencl
 {
 
@@ -113,6 +115,10 @@ template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
 {
+    if(OpenCLCPUOffload()) {
+        return cpu::matmul(lhs, rhs, optLhs, optRhs);
+    }
+
     initBlas();
     clblasTranspose lOpts = toClblasTranspose(optLhs);
     clblasTranspose rOpts = toClblasTranspose(optRhs);

@@ -36,6 +36,7 @@ template<typename T, bool isBVector>
 void MatMulCheck(string TestFile)
 {
     if (noDoubleTests<T>()) return;
+    af::info();
 
     using std::vector;
     vector<af::dim4> numDims;
