@@ -7,9 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #include <string>
 
 namespace cpu {
+    class queue;
+
     int getBackend();
 
     std::string getInfo();
@@ -25,4 +29,6 @@ namespace cpu {
     int getActiveDeviceId();
 
     void sync(int device);
+
+    queue& getQueue(int idx = 0);
 }

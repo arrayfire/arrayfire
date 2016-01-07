@@ -18,25 +18,14 @@ namespace cuda
 {
 namespace kernel
 {
-
-    static unsigned long long seed = 0;
+    //FIXME : Make this cleaner
+    static const int THREADS = CURAND_THREADS;
+    static const int BLOCKS  = CURAND_BLOCKS;
     static unsigned philoxcounter = 0;
-    static const int THREADS = 256;
-    static const int BLOCKS  = 64;
-    static curandState_t *states[DeviceManager::MAX_DEVICES];
-    static bool is_init[DeviceManager::MAX_DEVICES] = {0};
 
     void setup_states()
     {
-        int device = getActiveDeviceId();
-
-        if (!is_init[device]) {
-            CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
-        }
-
-        CUDA_LAUNCH((setup_kernel), BLOCKS, THREADS, states[device], seed);
-        POST_LAUNCH_CHECK();
-        is_init[device] = true;
+        curandState_t *state = getcurandState();
     }
 
     template<typename T>
@@ -49,7 +38,9 @@ namespace kernel
                     int threads = THREADS;
                     int blocks  = divup(elements, THREADS);
                     if (blocks > BLOCKS) blocks = BLOCKS;
-                    CUDA_LAUNCH(uniform_kernel, blocks, threads, out, states[device], elements);
+                    curandState_t *state = getcurandState();
+                    CUDA_LAUNCH(uniform_kernel, blocks, threads, out, state, elements);
+                    POST_LAUNCH_CHECK();
                     break;
                 }
             case AF_RANDOM_PHILOX:
@@ -57,13 +48,14 @@ namespace kernel
                     int threads = THREADS;
                     int elementsPerBlockIteration = THREADS*4*sizeof(unsigned)/sizeof(T);
                     int blocks = divup(elements, elementsPerBlockIteration);
+                    //FIXME : Use a different seed for philox
                     CUDA_LAUNCH(philox_uniform_kernel, blocks, threads,
-                            out, seed, philoxcounter, elementsPerBlockIteration, elements);
+                            out, seeds[getActiveDeviceId()], philoxcounter, elementsPerBlockIteration, elements);
+                    POST_LAUNCH_CHECK();
                     ++philoxcounter;
                     break;
                 }
         }
-        POST_LAUNCH_CHECK();
     }
 
     template<typename T>
@@ -75,15 +67,9 @@ namespace kernel
         int blocks  = divup(elements, THREADS);
         if (blocks > BLOCKS) blocks = BLOCKS;
 
-        if (!states[device]) {
-            CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
+        curandState_t *state = getcurandState();
 
-            CUDA_LAUNCH(setup_kernel, BLOCKS, THREADS, states[device], seed);
-
-            POST_LAUNCH_CHECK();
-        }
-
-        CUDA_LAUNCH(normal_kernel, blocks, threads, out, states[device], elements);
+        CUDA_LAUNCH(normal_kernel, blocks, threads, out, state, elements);
 
         POST_LAUNCH_CHECK();
     }

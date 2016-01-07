@@ -588,9 +588,9 @@ namespace af
 
 #if AF_API_VERSION >= 31
     /**
-       \param[inout]  a is the array whose values are replaced with values from \p b when \p cond is true
+       \param[inout]  a is the array whose values are replaced with values from \p b when \p cond is false
        \param[in]  cond is the conditional array
-       \param[in]  b is the array containing elements which replace elements in \p a when \p cond is true
+       \param[in]  b is the array containing elements which replace elements in \p a when \p cond is false
 
        \ingroup data_func_replace
     */
@@ -599,9 +599,9 @@ namespace af
 
 #if AF_API_VERSION >= 31
     /**
-       \param[inout]  a is the array whose values are replaced with values from \p b when \p cond is true
+       \param[inout]  a is the array whose values are replaced with values from \p b when \p cond is false
        \param[in]  cond is the conditional array
-       \param[in]  b is value that replaces elements in \p a when \p cond is true
+       \param[in]  b is value that replaces elements in \p a when \p cond is false
 
        \ingroup data_func_replace
     */
@@ -919,7 +919,7 @@ extern "C" {
 
 #if AF_API_VERSION >= 31
     /**
-       \param[inout] a is the array whose values are replaced by \p b when \p cond is true
+       \param[inout] a is the array whose values are replaced by \p b when \p cond is false
        \param[in]  cond is the conditional array
        \param[in]  b is the array containing elements that replaces elements of a where \p cond is false
 
@@ -930,7 +930,7 @@ extern "C" {
 
 #if AF_API_VERSION >= 31
     /**
-       \param[inout] a is the array whose values are replaced by \p b when \p cond is true
+       \param[inout] a is the array whose values are replaced by \p b when \p cond is false
        \param[in]  cond is the conditional array
        \param[in]  b is the scalar that replaces the false parts of \p a
 

@@ -17,6 +17,7 @@
 
 using std::string;
 using std::vector;
+using std::abs;
 
 template<typename T>
 class MedianFilter : public ::testing::Test
@@ -91,6 +92,7 @@ template<typename T,bool isColor>
 void medfiltImageTest(string pTestFile, dim_t w_len, dim_t w_wid)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     using af::dim4;
 

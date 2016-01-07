@@ -11,6 +11,8 @@
 
 #include <hist_graphics.hpp>
 #include <err_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 namespace cpu
 {
@@ -18,6 +20,8 @@ namespace cpu
 template<typename T>
 void copy_histogram(const Array<T> &data, const fg::Histogram* hist)
 {
+    data.eval();
+    getQueue().sync();
     CheckGL("Begin copy_histogram");
 
     glBindBuffer(GL_ARRAY_BUFFER, hist->vbo());

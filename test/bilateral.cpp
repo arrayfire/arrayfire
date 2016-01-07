@@ -18,12 +18,14 @@
 
 using std::string;
 using std::vector;
+using std::abs;
 using af::dim4;
 
 template<typename T, bool isColor>
 void bilateralTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>       inDims;
     vector<string>    inFiles;

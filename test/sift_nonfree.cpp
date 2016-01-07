@@ -20,6 +20,7 @@
 
 using std::string;
 using std::vector;
+using std::abs;
 using af::dim4;
 
 typedef struct
@@ -159,6 +160,7 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr, float edgeT
 {
 #ifdef AF_BUILD_SIFT
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>           inDims;
     vector<string>         inFiles;
@@ -276,6 +278,7 @@ TEST(SIFT, CPP)
 {
 #ifdef AF_BUILD_SIFT
     if (noDoubleTests<float>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>           inDims;
     vector<string>         inFiles;

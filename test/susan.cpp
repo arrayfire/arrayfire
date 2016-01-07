@@ -20,6 +20,7 @@
 
 using std::string;
 using std::vector;
+using std::abs;
 using af::dim4;
 
 typedef struct
@@ -63,6 +64,7 @@ template<typename T>
 void susanTest(string pTestFile, float t, float g)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>        inDims;
     vector<string>     inFiles;

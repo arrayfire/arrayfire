@@ -113,6 +113,8 @@
 
      @defgroup lapack_ops_mat Matrix operations
      inverse, det, rank, norm etc.
+
+     @defgroup lapack_helper LAPACK Helper functions
    @}
 
    @defgroup image_mat Image Processing

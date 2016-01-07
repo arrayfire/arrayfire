@@ -50,7 +50,7 @@ namespace opencl
                                             >::type;
 
 
-        template<typename T, bool isInverse, af_interp_type method>
+        template<typename T, bool isInverse, bool isPerspective, af_interp_type method>
         void transform(Param out, const Param in, const Param tf)
         {
             try {
@@ -64,11 +64,13 @@ namespace opencl
                 std::call_once( compileFlags[device], [device] () {
                     ToNum<T> toNum;
                     std::ostringstream options;
-                    options << " -D T="        << dtype_traits<T>::getName()
-                            << " -D INVERSE="  << (isInverse ? 1 : 0)
-                            << " -D ZERO="     << toNum(scalar<T>(0));
-                    options << " -D VT="       << dtype_traits<vtype_t<T>>::getName();
-                    options << " -D WT="       << dtype_traits<wtype_t<BT>>::getName();
+                    options << " -D T="           << dtype_traits<T>::getName()
+                            << " -D INVERSE="     << (isInverse ? 1 : 0)
+                            << " -D PERSPECTIVE=" << (isPerspective ? 1 : 0)
+                            << " -D TRANSF_LEN="  << (isPerspective ? 9 : 6)
+                            << " -D ZERO="        << toNum(scalar<T>(0));
+                    options << " -D VT="          << dtype_traits<vtype_t<T>>::getName();
+                    options << " -D WT="          << dtype_traits<wtype_t<BT>>::getName();
 
                     if((af_dtype) dtype_traits<T>::af_type == c32 ||
                        (af_dtype) dtype_traits<T>::af_type == c64) {

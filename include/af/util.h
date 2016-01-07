@@ -95,7 +95,8 @@ namespace af
 #if AF_API_VERSION >= 31
     /**
         \param[out] output is the pointer to the c-string that will hold the data. The memory for
-        output is allocated by the function. The user is responsible for deleting the memory.
+        output is allocated by the function. The user is responsible for deleting the memory using
+        af::freeHost() or af_free_host().
         \param[in] exp is an expression, generally the name of the array
         \param[in] arr is the input array
         \param[in] precision is the precision length for display
@@ -106,6 +107,24 @@ namespace af
     */
     AFAPI void toString(char **output, const char *exp, const array &arr,
                         const int precision = 4, const bool transpose = true);
+#endif
+
+#if AF_API_VERSION >= 33
+    /**
+        \param[in] exp is an expression, generally the name of the array
+        \param[in] arr is the input array
+        \param[in] precision is the precision length for display
+        \param[in] transpose determines whether or not to transpose the array before storing it in
+        the string
+
+        \return output is the pointer to the c-string that will hold the data. The memory for
+        output is allocated by the function. The user is responsible for deleting the memory using
+        af::freeHost() or af_free_host().
+
+        \ingroup print_func_tostring
+    */
+    AFAPI const char* toString(const char *exp, const array &arr,
+                               const int precision = 4, const bool transpose = true);
 #endif
 
     // Purpose of Addition: "How to add Function" documentation
@@ -229,9 +248,19 @@ extern "C" {
     AFAPI af_err af_example_function(af_array* out, const af_array in, const af_someenum_t param);
 
     ///
-    ///Get the version information of the library
+    /// Get the version information of the library
     ///
     AFAPI af_err af_get_version(int *major, int *minor, int *patch);
+
+
+#if AF_API_VERSION >= 33
+    ///
+    /// Get the revision (commit) information of the library.
+    /// This returns a constant string from compile time and should not be
+    /// freed by the user.
+    ///
+    AFAPI const char *af_get_revision();
+#endif
 
 #ifdef __cplusplus
 }

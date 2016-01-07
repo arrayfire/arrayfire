@@ -50,6 +50,9 @@ int setDevice(int device);
 
 void sync(int device);
 
+// Returns true if the AF_SYNCHRONIZE_CALLS environment variable is set to 1
+bool synchronize_calls();
+
 cudaDeviceProp getDeviceProp(int device);
 
 struct cudaDevice_t {

@@ -11,10 +11,14 @@
 #include <af/defines.h>
 #include <platform.hpp>
 #include <sstream>
+#include <queue.hpp>
+#include <array>
 #include <algorithm>
 #include <iostream>
 #include <string>
 #include <defines.hpp>
+#include <version.hpp>
+#include <queue.hpp>
 
 #ifdef _WIN32
 #include <limits.h>
@@ -203,7 +207,7 @@ std::string getInfo()
     info << string("[0] ") << cinfo.vendor() <<": " << cinfo.model() << " ";
     info << "Max threads("<< cinfo.threads()<<") ";
 #ifndef NDEBUG
-    info << AF_CMPLR_STR;
+    info << AF_COMPILER_STR;
 #endif
     info << std::endl;
     return info.str();
@@ -220,7 +224,7 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     snprintf(d_name, 64, "%s", cinfo.vendor().c_str());
     snprintf(d_platform, 10, "CPU");
     // report the compiler for toolkit
-    snprintf(d_toolkit, 64, "%s", AF_CMPLR_STR);
+    snprintf(d_toolkit, 64, "%s", AF_COMPILER_STR);
     snprintf(d_compute, 10, "%s", "0.0");
 }
 
@@ -245,9 +249,17 @@ int getActiveDeviceId()
     return 0;
 }
 
+static const int MAX_QUEUES = 1;
+
+
+queue& getQueue(int idx) {
+    static std::array<queue, MAX_QUEUES> queues;
+    return queues[idx];
+}
+
 void sync(int device)
 {
-    // Nothing here
+    getQueue().sync();
 }
 
 }

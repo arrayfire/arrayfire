@@ -20,6 +20,7 @@
 
 using std::string;
 using std::vector;
+using std::abs;
 using af::dim4;
 
 template<typename T>
@@ -59,6 +60,7 @@ void homographyTest(string pTestFile, const af_homography_type htype,
                     const bool rotate, const float size_ratio)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>           inDims;
     vector<string>         inFiles;
@@ -216,6 +218,8 @@ void homographyTest(string pTestFile, const af_homography_type htype,
 //
 TEST(Homography, CPP)
 {
+    if (noImageIOTests()) return;
+
     vector<dim4>           inDims;
     vector<string>         inFiles;
     vector<vector<float> > gold;

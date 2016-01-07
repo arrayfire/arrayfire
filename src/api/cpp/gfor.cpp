@@ -32,7 +32,7 @@ namespace af
 
     array batchFunc(const array &lhs, const array &rhs, batchFunc_t func)
     {
-        if (gforGet()) AF_THROW_MSG("batchFunc can not be used inside GFOR",
+        if (gforGet()) AF_THROW_ERR("batchFunc can not be used inside GFOR",
                                     AF_ERR_ARG);
         gforSet(true);
         array res = func(lhs, rhs);

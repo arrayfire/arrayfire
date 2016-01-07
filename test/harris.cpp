@@ -20,6 +20,7 @@
 
 using std::string;
 using std::vector;
+using std::abs;
 using af::dim4;
 
 typedef struct
@@ -63,6 +64,7 @@ template<typename T>
 void harrisTest(string pTestFile, float sigma, unsigned block_size)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>        inDims;
     vector<string>     inFiles;
@@ -164,6 +166,7 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size)
 TEST(FloatHarris, CPP)
 {
     if (noDoubleTests<float>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>        inDims;
     vector<string>     inFiles;

@@ -14,6 +14,7 @@
 #include <testHelpers.hpp>
 
 using namespace std;
+using std::abs;
 using namespace af;
 
 const int num = 10000;

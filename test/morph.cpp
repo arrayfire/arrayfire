@@ -18,6 +18,7 @@
 
 using std::string;
 using std::vector;
+using std::abs;
 
 template<typename T>
 class Morph : public ::testing::Test
@@ -121,6 +122,7 @@ template<typename T, bool isDilation, bool isColor>
 void morphImageTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     using af::dim4;
 
@@ -341,6 +343,7 @@ template<typename T, bool isDilation, bool isColor>
 void cppMorphImageTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     using af::dim4;
 

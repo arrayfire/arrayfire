@@ -42,7 +42,7 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
     try {
 
         ArrayInfo iInfo = getInfo(in);
-        if (ndims == 1 && ndims != (dim_t)iInfo.ndims()) {
+        if (ndims == 1 && ndims != iInfo.ndims()) {
             af_array tmp_in;
             AF_CHECK(af_flat(&tmp_in, in));
             AF_CHECK(af_index(result, tmp_in, ndims, index));

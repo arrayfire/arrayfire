@@ -13,6 +13,8 @@
 #include <vector>
 #include <algorithm>
 #include <limits>
+#include <stdexcept>
+#include <cfloat>
 #include <arrayfire.h>
 #include <af/dim4.hpp>
 #include <af/array.h>
@@ -384,6 +386,20 @@ bool noDoubleTests()
     bool isDoubleSupported = af::isDoubleAvailable(dev);
 
     return ((isTypeDouble && !isDoubleSupported) ? true : false);
+}
+
+bool noImageIOTests()
+{
+    bool ret = !af::isImageIOAvailable();
+    if(ret) printf("Image IO Not Configured. Test will exit\n");
+    return ret;
+}
+
+bool noLAPACKTests()
+{
+    bool ret = !af::isLAPACKAvailable();
+    if(ret) printf("LAPACK Not Configured. Test will exit\n");
+    return ret;
 }
 
 // TODO: perform conversion on device for CUDA and OpenCL

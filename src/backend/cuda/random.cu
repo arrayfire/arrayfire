@@ -20,7 +20,7 @@ namespace cuda
     Array<T> randu(const af::dim4 &dims, const af::randomType &rtype)
     {
         if (rtype == AF_RANDOM_DEFAULT) {
-            if (!kernel::is_init[getActiveDeviceId()]) kernel::setup_states();
+            kernel::setup_states();
         }
         Array<T> out = createEmptyArray<T>(dims);
         kernel::randu(out.get(), out.elements(), rtype);
@@ -30,7 +30,7 @@ namespace cuda
     template<typename T>
     Array<T> randn(const af::dim4 &dims)
     {
-        if (!kernel::is_init[getActiveDeviceId()]) kernel::setup_states();
+        kernel::setup_states();
         Array<T> out  = createEmptyArray<T>(dims);
         kernel::randn(out.get(), out.elements());
         return out;
@@ -57,13 +57,15 @@ namespace cuda
 
     void setSeed(const uintl seed)
     {
-        kernel::seed = seed;
+        int id = getActiveDeviceId();
+        kernel::seeds[id] = seed;
         kernel::setup_states();
     }
 
     uintl getSeed()
     {
-        return kernel::seed;
+        int id = getActiveDeviceId();
+        return kernel::seeds[id];
     }
 
 

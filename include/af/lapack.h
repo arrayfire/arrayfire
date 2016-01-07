@@ -237,6 +237,18 @@ namespace af
     */
     AFAPI double norm(const array &in, const normType type=AF_NORM_EUCLID,
                       const double p=1, const double q=1);
+
+#if AF_API_VERSION >= 33
+    /**
+       Returns true is ArrayFire is compiled with LAPACK support
+
+       \returns true is LAPACK support is available, false otherwise
+
+       \ingroup lapack_ops_func_norm
+    */
+    AFAPI bool isLAPACKAvailable();
+#endif
+
 }
 #endif
 
@@ -424,6 +436,19 @@ extern "C" {
        \ingroup lapack_ops_func_norm
     */
     AFAPI af_err af_norm(double *out, const af_array in, const af_norm_type type, const double p, const double q);
+
+#if AF_API_VERSION >= 33
+    /**
+       Returns true is ArrayFire is compiled with LAPACK support
+
+       \param[out] out is true if LAPACK support is available, false otherwise
+
+       \returns AF_SUCCESS if successful (does not depend on the value of out)
+
+       \ingroup lapack_ops_func_norm
+    */
+    AFAPI af_err af_is_lapack_available(bool *out);
+#endif
 
 
 #ifdef __cplusplus

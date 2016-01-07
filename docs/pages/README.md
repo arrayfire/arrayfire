@@ -76,7 +76,7 @@ Each ArrayFire installation comes with:
 ArrayFire supports batched operations on N-dimensional arrays.
 Batch operations in ArrayFire are run in parallel ensuring an optimal usage of your CUDA or OpenCL device.
 
-You can get the best performance out of ArrayFire using [vectorization techniques]().
+You can get the best performance out of ArrayFire using [vectorization techniques](\ref vectorization).
 
 ArrayFire can also execute loop iterations in parallel with
 [the gfor function](\ref gfor).
@@ -92,8 +92,8 @@ Read more about how [ArrayFire JIT](http://arrayfire.com/performance-of-arrayfir
 
 ## Simple Example
 
-Here's a live example to let you see ArrayFire code. You create [arrays](\ref
-construct_mat) which reside on CUDA or OpenCL devices. Then you can use
+Here's a live example to let you see ArrayFire code. You create [arrays](\ref construct_mat)
+which reside on CUDA or OpenCL devices. Then you can use
 [ArrayFire functions](modules.htm) on those [arrays](\ref construct_mat).
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}

@@ -64,6 +64,22 @@ static void print(const char *exp, af_array arr, const int precision, std::ostre
     }
 
     const ArrayInfo info = getInfo(arr);
+
+    std::ios_base::fmtflags backup = os.flags();
+
+    os << "[" << info.dims() << "]\n";
+#ifndef NDEBUG
+    os <<"   Offsets: [" << info.offsets() << "]" << std::endl;
+    os <<"   Strides: [" << info.strides() << "]" << std::endl;
+#endif
+
+    // Handle empty array
+    if(info.elements() == 0) {
+        os << "<empty>" << std::endl;
+        os.flags(backup);
+        return;
+    }
+
     vector<T> data(info.elements());
 
     af_array arrT;
@@ -80,14 +96,6 @@ static void print(const char *exp, af_array arr, const int precision, std::ostre
     if(transpose) {
         AF_CHECK(af_release_array(arrT));
     }
-
-    std::ios_base::fmtflags backup = os.flags();
-
-    os << "[" << info.dims() << "]\n";
-#ifndef NDEBUG
-    os <<"   Offsets: [" << info.offsets() << "]" << std::endl;
-    os <<"   Strides: [" << info.strides() << "]" << std::endl;
-#endif
 
     printer(os, &data.front(), infoT, infoT.ndims() - 1, precision);
 
@@ -172,8 +180,8 @@ af_err af_array_to_string(char **output, const char *exp, const af_array arr,
         default:    TYPE_ERROR(1, type);
         }
         std::string str = ss.str();
-        *output = new char[str.size() + 1];
-        std::copy(str.begin(), str.end(), *output);
+        af_alloc_host((void**)output, sizeof(char) * (str.size() + 1));
+        str.copy(*output, str.size());
         (*output)[str.size()] = '\0'; // don't forget the terminating 0
     }
     CATCHALL;

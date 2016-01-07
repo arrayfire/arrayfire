@@ -190,4 +190,9 @@ div.fragment
     border              :   1px solid #DFDFDF;
 }
 
+pre
+{
+    overflow            : hidden;
+}
+
 /* @end */

@@ -13,6 +13,7 @@
 #include <arrayfire.h>
 
 using namespace af;
+using std::abs;
 
 typedef enum {
     MEAN = 0,
@@ -105,13 +106,5 @@ int main(int argc, char **argv)
         fprintf(stderr, "%s\n", e.what());
         throw;
     }
-
-#ifdef WIN32 // pause in Windows
-    if (!(argc == 2 && argv[1][0] == '-')) {
-        printf("hit [enter]...");
-        fflush(stdout);
-        getchar();
-    }
-#endif
     return 0;
 }

@@ -1,6 +1,81 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.2.2
+==============
+
+Bug Fixes
+--------------
+
+* Fixed [memory leak](https://github.com/arrayfire/arrayfire/pull/1145) in
+  CUDA Random number generators
+* Fixed [bug](https://github.com/arrayfire/arrayfire/issues/1157) in
+  af::select() and af::replace() tests
+* Fixed [exception](https://github.com/arrayfire/arrayfire/issues/1164)
+  thrown when printing empty arrays with af::print()
+* Fixed [bug](https://github.com/arrayfire/arrayfire/issues/1170) in CPU
+  random number generation. Changed the generator to
+  [mt19937](http://en.cppreference.com/w/cpp/numeric/random)
+* Fixed exception handling (internal)
+    * [Exceptions](https://github.com/arrayfire/arrayfire/issues/1188)
+      now show function, short file name and line number
+    * Added [AF_RETURN_ERROR](https://github.com/arrayfire/arrayfire/issues/1186)
+      macro to handle returning errors.
+    * Removed THROW macro, and renamed AF_THROW_MSG to AF_THROW_ERR.
+* Fixed [bug](https://github.com/arrayfire/arrayfire/commit/9459c6)
+  in \ref af::identity() that may have affected CUDA Compute 5.2 cards
+
+
+Build
+------
+* Added a [MIN_BUILD_TIME](https://github.com/arrayfire/arrayfire/issues/1193)
+  option to build with minimum optimization compiler flags resulting in faster
+  compile times
+* Fixed [issue](https://github.com/arrayfire/arrayfire/issues/1143) in CBLAS
+  detection by CMake
+* Fixed tests failing for builds without optional components
+  [FreeImage](https://github.com/arrayfire/arrayfire/issues/1143) and
+  [LAPACK](https://github.com/arrayfire/arrayfire/issues/1167)
+* Added a [test](https://github.com/arrayfire/arrayfire/issues/1192)
+  for unified backend
+* Only [info and backend tests](https://github.com/arrayfire/arrayfire/issues/1192)
+  are now built for unified backend
+* [Sort tests](https://github.com/arrayfire/arrayfire/issues/1199)
+  execution alphabetically
+* Fixed compilation flags and errors in tests and examples
+* [Moved AF_REVISION and AF_COMPILER_STR](https://github.com/arrayfire/arrayfire/commit/2287c5)
+  into src/backend. This is because as revision is updated with every commit,
+  entire ArrayFire would have to be rebuilt in the old code.
+    * v3.3 will add a af_get_revision() function to get the revision string.
+* [Clean up examples](https://github.com/arrayfire/arrayfire/pull/1158)
+    * Remove getchar for Windows (this will be handled by the installer)
+    * Other miscellaneous code cleanup
+    * Fixed bug in [plot3.cpp](\ref graphics/plot3.cpp) example
+* [Rename](https://github.com/arrayfire/arrayfire/commit/35f0fc2) clBLAS/clFFT
+  external project suffix from external -> ext
+* [Add OpenBLAS](https://github.com/arrayfire/arrayfire/pull/1197) as a
+  lapack/lapacke alternative
+
+Improvements
+------------
+* Added \ref AF_MEM_INFO macro to print memory info from ArrayFire's memory
+  manager ([cross issue](https://github.com/arrayfire/arrayfire/issues/1172))
+* Added [additional paths](https://github.com/arrayfire/arrayfire/issues/1184)
+  for searching for `libaf*` for Unified backend on unix-style OS.
+    * Note: This still requires dependencies such as forge, CUDA, NVVM etc to be
+      in `LD_LIBRARY_PATH` as described in [Unified Backend](\ref unifiedbackend)
+* [Create streams](https://github.com/arrayfire/arrayfire/commit/ed0373f)
+  for devices only when required in CUDA Backend
+
+Documentation
+------
+* [Hide scrollbars](https://github.com/arrayfire/arrayfire/commit/9d218a5)
+  appearing for pre and code styles
+* Fix [documentation](https://github.com/arrayfire/arrayfire/commit/ac09f91) for af::replace
+* Add [code sample](https://github.com/arrayfire/arrayfire/commit/4e06483)
+  for converting the output of af::getAvailableBackends() into bools
+* Minor fixes in documentation
+
 v3.2.1
 ==============
 

@@ -22,6 +22,7 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using std::abs;
 using af::cfloat;
 using af::cdouble;
 
@@ -54,6 +55,7 @@ void svdTest(const int M, const int N)
 {
 
     if (noDoubleTests<T>()) return;
+    if (noLAPACKTests()) return;
 
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 

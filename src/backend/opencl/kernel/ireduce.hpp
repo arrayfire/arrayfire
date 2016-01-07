@@ -281,6 +281,14 @@ namespace kernel
         }
     }
 
+#if defined(__GNUC__) || defined(__GNUG__)
+    /* GCC/G++, Clang/LLVM, Intel ICC */
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wunused-function"
+#else
+    /* Other */
+#endif
+
     template<typename T> double cabs(const T in) { return (double)in; }
     static double cabs(const cfloat in) { return (double)abs(in); }
     static double cabs(const cdouble in) { return (double)abs(in); }
@@ -327,6 +335,12 @@ namespace kernel
         }
     };
 
+#if defined(__GNUC__) || defined(__GNUG__)
+    /* GCC/G++, Clang/LLVM, Intel ICC */
+    #pragma GCC diagnostic pop
+#else
+    /* Other */
+#endif
 
     template<typename T, af_op_t op>
     T ireduce_all(uint *loc, Param in)

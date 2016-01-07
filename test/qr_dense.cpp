@@ -22,6 +22,7 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using std::abs;
 using af::cfloat;
 using af::cdouble;
 
@@ -29,6 +30,7 @@ using af::cdouble;
 TEST(QRFactorized, CPP)
 {
     if (noDoubleTests<float>()) return;
+    if (noLAPACKTests()) return;
 
     int resultIdx = 0;
 
@@ -82,6 +84,7 @@ void qrTester(const int m, const int n, double eps)
 {
     try {
         if (noDoubleTests<T>()) return;
+        if (noLAPACKTests()) return;
 
 #if 1
         af::array in = cpu_randu<T>(af::dim4(m, n));

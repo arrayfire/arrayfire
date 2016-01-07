@@ -16,5 +16,10 @@
 #include <iostream>
 #define CL_DEBUG_FINISH(Q) Q.finish()
 #else
-#define CL_DEBUG_FINISH(Q)
+#define CL_DEBUG_FINISH(Q)                      \
+    do {                                        \
+        if(synchronize_calls()) {               \
+            Q.finish();                         \
+        }                                       \
+    } while (false); 
 #endif

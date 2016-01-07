@@ -23,10 +23,12 @@ const float h_sy_kernel[] = { -1, 0, 1,
     -2, 0, 2,
     -1, 0, 1
 };
-const float h_lp_kernel[] = { -0.5f, -1.0f, -0.5f,
-    -1.0f,  6.0f, -1.0f,
-    -0.5f, -1.0f, -0.5f
-};
+
+// Unused
+//const float h_lp_kernel[] = { -0.5f, -1.0f, -0.5f,
+//    -1.0f,  6.0f, -1.0f,
+//    -0.5f, -1.0f, -0.5f
+//};
 
 array edges_slice(array x)
 {
@@ -163,5 +165,6 @@ int main(int argc, char* argv[])
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
     }
+
     return 0;
 }

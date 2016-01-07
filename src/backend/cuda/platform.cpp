@@ -11,6 +11,8 @@
 #include <af/cuda.h>
 #include <platform.hpp>
 #include <defines.hpp>
+#include <util.hpp>
+#include <version.hpp>
 #include <driver.h>
 #include <vector>
 #include <string>
@@ -20,6 +22,7 @@
 #include <cstdio>
 #include <cstring>
 #include <err_cuda.hpp>
+#include <util.hpp>
 
 using namespace std;
 
@@ -288,7 +291,17 @@ int getDeviceIdFromNativeId(int nativeId)
 
 cudaStream_t getStream(int device)
 {
-    return DeviceManager::getInstance().streams[device];
+    cudaStream_t str = DeviceManager::getInstance().streams[device];
+    // if the stream has not yet been initialized, ie. the device has not been
+    // set to active at least once (cuz that's where the stream is created)
+    // then set the device, get the stream, reset the device to current
+    if(!str) {
+        int active_dev = DeviceManager::getInstance().activeDev;
+        setDevice(device);
+        str = DeviceManager::getInstance().streams[device];
+        setDevice(active_dev);
+    }
+    return str;
 }
 
 int setDevice(int device)
@@ -331,13 +344,13 @@ DeviceManager::DeviceManager()
 
     sortDevices();
 
-    for(int i = 0; i < nDevices; i++) {
-        setActiveDevice(i, cuDevices[i].nativeId);
-        CUDA_CHECK(cudaStreamCreate(&streams[i]));
-    }
+    // Initialize all streams to 0.
+    // Streams will be created in setActiveDevice()
+    for(int i = 0; i < (int)MAX_DEVICES; i++)
+        streams[i] = (cudaStream_t)0;
 
-    const char* deviceENV = getenv("AF_CUDA_DEFAULT_DEVICE");
-    if(!deviceENV) {
+    std::string deviceENV = getEnvVar("AF_CUDA_DEFAULT_DEVICE");
+    if(deviceENV.empty()) {
         setActiveDevice(0, cuDevices[0].nativeId);
     } else {
         stringstream s(deviceENV);
@@ -380,6 +393,11 @@ int DeviceManager::setActiveDevice(int device, int nId)
         if(nId == -1) nId = getDeviceNativeId(device);
         CUDA_CHECK(cudaSetDevice(nId));
         activeDev = device;
+
+        if(!streams[device]) {
+            CUDA_CHECK(cudaStreamCreate(&streams[device]));
+        }
+
         return old;
     }
 }
@@ -390,6 +408,11 @@ void sync(int device)
     setDevice(device);
     CUDA_CHECK(cudaStreamSynchronize(getStream(getActiveDeviceId())));
     setDevice(currDevice);
+}
+
+bool synchronize_calls() {
+    static bool sync = getEnvVar("AF_SYNCHRONOUS_CALLS") == "1";
+    return sync;
 }
 
 }

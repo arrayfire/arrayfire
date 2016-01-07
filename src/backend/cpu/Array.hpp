@@ -20,6 +20,19 @@
 #include <memory>
 #include <algorithm>
 #include <vector>
+#include <platform.hpp>
+#include <queue.hpp>
+
+// cpu::Array class forward declaration
+namespace cpu
+{
+template<typename T> class Array;
+// kernel::evalArray fn forward declaration
+namespace kernel
+{
+template<typename T> void evalArray(cpu::Array<T> in);
+}
+}
 
 namespace cpu
 {
@@ -62,9 +75,6 @@ namespace cpu
     Array<T> createSubArray(const Array<T>& parent,
                             const std::vector<af_seq> &index,
                             bool copy=true);
-
-    template<typename T>
-    void evalArray(const Array<T> &A);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
@@ -162,6 +172,7 @@ namespace cpu
 
         T* device()
         {
+            getQueue().sync();
             if (!isOwner() || data.use_count() > 1) {
                 *this = Array<T>(dims(), get(), true, true);
             }
@@ -204,8 +215,9 @@ namespace cpu
                                           const std::vector<af_seq> &index,
                                           bool copy);
 
+        friend void kernel::evalArray<T>(Array<T> in);
+
         friend void destroyArray<T>(Array<T> *arr);
-        friend void evalArray<T>(const Array<T> &arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);
     };
 
