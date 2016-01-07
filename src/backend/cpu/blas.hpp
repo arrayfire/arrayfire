@@ -10,6 +10,7 @@
 #include <af/defines.h>
 #include <af/blas.h>
 #include <Array.hpp>
+#include <types.hpp>
 
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
@@ -45,10 +46,4 @@ template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
              af_mat_prop optLhs, af_mat_prop optRhs);
 
-typedef std::complex<float>     cfloat;
-typedef std::complex<double>    cdouble;
-
-template<typename T> struct is_complex          { static const bool value = false;  };
-template<> struct           is_complex<cfloat>  { static const bool value = true;   };
-template<> struct           is_complex<cdouble> { static const bool value = true;   };
 }
