@@ -17,25 +17,25 @@
 
 namespace cuda
 {
-    template<typename T> static const std::string cplx_name() { return "@___noop"; }
-    template<> STATIC_ const std::string cplx_name<cfloat >() { return cuMangledName<float , true>("___cplx"); }
-    template<> STATIC_ const std::string cplx_name<cdouble>() { return cuMangledName<double, true>("___cplx"); }
+    template<typename T> static const std::string cplx_name() { return cuMangledName<T, false>("___noop");       }
+    template<> STATIC_ const std::string cplx_name<cfloat >() { return cuMangledName<float , true>("___cplx");   }
+    template<> STATIC_ const std::string cplx_name<cdouble>() { return cuMangledName<double, true>("___cplx");   }
 
-    template<typename T> static const std::string real_name() { return "@___noop"; }
+    template<typename T> static const std::string real_name() { return cuMangledName<T, false>("___noop");       }
     template<> STATIC_ const std::string real_name<cfloat >() { return cuMangledName<cfloat , false>("___real"); }
     template<> STATIC_ const std::string real_name<cdouble>() { return cuMangledName<cdouble, false>("___real"); }
 
-    template<typename T> static const std::string imag_name() { return "@___noop"; }
+    template<typename T> static const std::string imag_name() { return cuMangledName<T, false>("___noop");       }
     template<> STATIC_ const std::string imag_name<cfloat >() { return cuMangledName<cfloat , false>("___imag"); }
     template<> STATIC_ const std::string imag_name<cdouble>() { return cuMangledName<cdouble, false>("___imag"); }
 
-    template<typename T> static const std::string abs_name() { return "@___noop"; }
-    template<> STATIC_ const std::string abs_name<float  >() { return cuMangledName<float  , false>("___abs"); }
-    template<> STATIC_ const std::string abs_name<double >() { return cuMangledName<double , false>("___abs"); }
-    template<> STATIC_ const std::string abs_name<cfloat >() { return cuMangledName<cfloat , false>("___abs"); }
-    template<> STATIC_ const std::string abs_name<cdouble>() { return cuMangledName<cdouble, false>("___abs"); }
+    template<typename T> static const std::string abs_name()  { return cuMangledName<T, false>("___noop");       }
+    template<> STATIC_ const std::string abs_name<float  >()  { return cuMangledName<float  , false>("___abs");  }
+    template<> STATIC_ const std::string abs_name<double >()  { return cuMangledName<double , false>("___abs");  }
+    template<> STATIC_ const std::string abs_name<cfloat >()  { return cuMangledName<cfloat , false>("___abs");  }
+    template<> STATIC_ const std::string abs_name<cdouble>()  { return cuMangledName<cdouble, false>("___abs");  }
 
-    template<typename T> static const std::string conj_name() { return "@___noop"; }
+    template<typename T> static const std::string conj_name() { return cuMangledName<T, false>("___noop");       }
     template<> STATIC_ const std::string conj_name<cfloat >() { return cuMangledName<cfloat , false>("___conj"); }
     template<> STATIC_ const std::string conj_name<cdouble>() { return cuMangledName<cdouble, false>("___conj"); }
 
