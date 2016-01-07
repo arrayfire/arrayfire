@@ -281,6 +281,29 @@ namespace opencl
         return bufferPush((cl::Buffer *)ptr);
     }
 
+    template<typename T>
+    T *getMappedPtr(const cl::Buffer *buf)
+    {
+        int n = getActiveDeviceId();
+        mem_iter iter = memory_maps[n].find(const_cast<cl::Buffer*>(buf));
+
+        if (iter == memory_maps[n].end()) {
+            // Buffer not found in memory manager
+            // Very Very Bad
+            return NULL;
+        }
+        size_t alloc_bytes = iter->second.bytes;
+
+        T *ptr = (T*)getQueue().enqueueMapBuffer(
+                     *buf, true, CL_MAP_READ, 0, alloc_bytes);
+        return ptr;
+    }
+
+    void unmapPtr(const cl::Buffer *buf, void *ptr)
+    {
+        getQueue().enqueueUnmapMemObject(*buf, ptr);
+    }
+
     // pinned memory manager
     typedef struct {
         cl::Buffer *buf;
@@ -403,6 +426,7 @@ namespace opencl
     template void memPush(const T* ptr);                        \
     template T* pinnedAlloc(const size_t &elements);            \
     template void pinnedFree(T* ptr);                           \
+    template T* getMappedPtr(const cl::Buffer *buf);            \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)
@@ -416,4 +440,6 @@ namespace opencl
     INSTANTIATE(uintl)
     INSTANTIATE(short)
     INSTANTIATE(ushort)
+
+    template void* getMappedPtr(const cl::Buffer *buf);
 }
