@@ -8,14 +8,16 @@
  ********************************************************/
 
 #include <cholesky.hpp>
-#include <copy.hpp>
 #include <err_common.hpp>
-#include <blas.hpp>
 #include <err_opencl.hpp>
+#include <blas.hpp>
+#include <copy.hpp>
 
 #if defined(WITH_OPENCL_LINEAR_ALGEBRA)
 #include <magma/magma.h>
 #include <triangle.hpp>
+#include <platform.hpp>
+#include <cpu/cpu_cholesky.hpp>
 
 namespace opencl
 {
@@ -24,6 +26,10 @@ template<typename T>
 int cholesky_inplace(Array<T> &in, const bool is_upper)
 {
     try {
+        if(OpenCLCPUOffload()) {
+            return cpu::cholesky_inplace(in, is_upper);
+        }
+
         initBlas();
 
         dim4 iDims = in.dims();
@@ -46,6 +52,9 @@ template<typename T>
 Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
 {
     try {
+        if(OpenCLCPUOffload()) {
+            return cpu::cholesky(info, in, is_upper);
+        }
 
         Array<T> out = copyArray<T>(in);
         *info = cholesky_inplace(out, is_upper);
