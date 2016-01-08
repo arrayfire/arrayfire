@@ -25,6 +25,9 @@
 #include <algorithm>
 #include <string>
 
+#include <platform.hpp>
+#include <cpu/cpu_solve.hpp>
+
 namespace opencl
 {
 
@@ -32,6 +35,10 @@ template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
                  const Array<T> &b, const af_mat_prop options)
 {
+    if(OpenCLCPUOffload()) {
+        return cpu::solveLU(A, pivot, b, options);
+    }
+
     int N = A.dims()[0];
     int NRHS = b.dims()[1];
 
@@ -296,6 +303,10 @@ template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
     try {
+        if(OpenCLCPUOffload()) {
+            return cpu::solve(a, b, options);
+        }
+
         initBlas();
 
         if (options & AF_MAT_UPPER ||
