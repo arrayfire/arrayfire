@@ -63,9 +63,9 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                 } else {
                     // Non 8-bit types do not use ordering
                     // See Pixel Access Functions Chapter in FreeImage Doc
-                    pDst0[indx] = (float) *(src + (x * step + 0));
-                    pDst1[indx] = (float) *(src + (x * step + 1));
-                    pDst2[indx] = (float) *(src + (x * step + 2));
+                    pDst0[indx] = (float) *(src + (x * step + FI_RGBA_RED));
+                    pDst1[indx] = (float) *(src + (x * step + FI_RGBA_GREEN));
+                    pDst2[indx] = (float) *(src + (x * step + FI_RGBA_BLUE));
                 }
                 if (fo_color == 4) pDst3[indx] = (float) *(src + (x * step + FI_RGBA_ALPHA));
             }
@@ -104,9 +104,9 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                 } else {
                     // Non 8-bit types do not use ordering
                     // See Pixel Access Functions Chapter in FreeImage Doc
-                    r = (T) *(src + (x * step + 0));
-                    g = (T) *(src + (x * step + 1));
-                    b = (T) *(src + (x * step + 2));
+                    r = (T) *(src + (x * step + FI_RGBA_RED));
+                    g = (T) *(src + (x * step + FI_RGBA_GREEN));
+                    b = (T) *(src + (x * step + FI_RGBA_BLUE));
                 }
                 pDst[indx] = r * 0.2989f + g * 0.5870f + b * 0.1140f;
             }
@@ -333,10 +333,10 @@ af_err af_save_image(const char* filename, const af_array in_)
             // Copy the array into FreeImage buffer
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
-                    *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
-                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
-                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
-                    *(pDstLine + x * step + 3) = (uchar) pSrc3[indx]; // a
+                    *(pDstLine + x * step + FI_RGBA_RED  ) = (uchar) pSrc0[indx]; // r
+                    *(pDstLine + x * step + FI_RGBA_GREEN) = (uchar) pSrc1[indx]; // g
+                    *(pDstLine + x * step + FI_RGBA_BLUE ) = (uchar) pSrc2[indx]; // b
+                    *(pDstLine + x * step + FI_RGBA_ALPHA) = (uchar) pSrc3[indx]; // a
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -362,9 +362,9 @@ af_err af_save_image(const char* filename, const af_array in_)
             // Copy the array into FreeImage buffer
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
-                    *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
-                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
-                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
+                    *(pDstLine + x * step + FI_RGBA_RED  ) = (uchar) pSrc0[indx]; // r
+                    *(pDstLine + x * step + FI_RGBA_GREEN) = (uchar) pSrc1[indx]; // g
+                    *(pDstLine + x * step + FI_RGBA_BLUE ) = (uchar) pSrc2[indx]; // b
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -602,10 +602,10 @@ af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_forma
             // Copy the array into FreeImage buffer
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
-                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
-                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
-                    *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
-                    *(pDstLine + x * step + 3) = (uchar) pSrc3[indx]; // a
+                    *(pDstLine + x * step + FI_RGBA_RED  ) = (uchar) pSrc0[indx]; // r
+                    *(pDstLine + x * step + FI_RGBA_GREEN) = (uchar) pSrc1[indx]; // g
+                    *(pDstLine + x * step + FI_RGBA_BLUE ) = (uchar) pSrc2[indx]; // b
+                    *(pDstLine + x * step + FI_RGBA_ALPHA) = (uchar) pSrc3[indx]; // a
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -631,9 +631,9 @@ af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_forma
             // Copy the array into FreeImage buffer
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
-                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
-                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
-                    *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
+                    *(pDstLine + x * step + FI_RGBA_RED  ) = (uchar) pSrc0[indx]; // r
+                    *(pDstLine + x * step + FI_RGBA_GREEN) = (uchar) pSrc1[indx]; // g
+                    *(pDstLine + x * step + FI_RGBA_BLUE ) = (uchar) pSrc2[indx]; // b
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
