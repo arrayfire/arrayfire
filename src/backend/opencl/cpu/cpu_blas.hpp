@@ -16,8 +16,5 @@ namespace cpu
     template<typename T>
     Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                     af_mat_prop optLhs, af_mat_prop optRhs);
-//    template<typename T>
-//    Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-//                 af_mat_prop optLhs, af_mat_prop optRhs);
 }
 }

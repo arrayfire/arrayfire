@@ -13,7 +13,6 @@
 #include <cassert>
 #include <err_common.hpp>
 #include <platform.hpp>
-#include <af/macros.h>
 
 namespace opencl
 {
@@ -169,7 +168,6 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     dim4 lStrides = lhs.strides();
     dim4 rStrides = rhs.strides();
     using BT  =       typename blas_base<T>::type;
-    using CBT = const typename blas_base<T>::type;
 
     // get host pointers from mapped memory
     BT *lPtr = getMappedPtr<BT>(lhs.get());
@@ -204,48 +202,6 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     return out;
 }
 
-//template<typename T> T
-//conj(T  x) { return x; }
-//
-//template<> cfloat  conj<cfloat> (cfloat  c) { return std::conj(c); }
-//template<> cdouble conj<cdouble>(cdouble c) { return std::conj(c); }
-//
-//template<typename T, bool conjugate, bool both_conjugate>
-//Array<T> dot_(const Array<T> &lhs, const Array<T> &rhs,
-//        af_mat_prop optLhs, af_mat_prop optRhs)
-//{
-//    int N = lhs.dims()[0];
-//
-//    T out = 0;
-//    const T *pL = lhs.get();
-//    const T *pR = rhs.get();
-//
-//    for(int i = 0; i < N; i++)
-//        out += (conjugate ? cpu::conj(pL[i]) : pL[i]) * pR[i];
-//
-//    if(both_conjugate) out = cpu::conj(out);
-//
-//    return createValueArray(af::dim4(1), out);
-//}
-//
-//template<typename T>
-//Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-//        af_mat_prop optLhs, af_mat_prop optRhs)
-//{
-//    if(optLhs == AF_MAT_CONJ && optRhs == AF_MAT_CONJ) {
-//        return dot_<T, false, true>(lhs, rhs, optLhs, optRhs);
-//    } else if (optLhs == AF_MAT_CONJ && optRhs == AF_MAT_NONE) {
-//        return dot_<T, true, false>(lhs, rhs, optLhs, optRhs);
-//    } else if (optLhs == AF_MAT_NONE && optRhs == AF_MAT_CONJ) {
-//        return dot_<T, true, false>(rhs, lhs, optRhs, optLhs);
-//    } else {
-//        return dot_<T, false, false>(lhs, rhs, optLhs, optRhs);
-//    }
-//}
-
-#undef BT
-#undef REINTEPRET_CAST
-
 #define INSTANTIATE_BLAS(TYPE)                                                          \
     template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,   \
                                       af_mat_prop optLhs, af_mat_prop optRhs);
@@ -254,15 +210,6 @@ INSTANTIATE_BLAS(float)
 INSTANTIATE_BLAS(cfloat)
 INSTANTIATE_BLAS(double)
 INSTANTIATE_BLAS(cdouble)
-
-//#define INSTANTIATE_DOT(TYPE)                                                               \
-//    template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,          \
-//                                   af_mat_prop optLhs, af_mat_prop optRhs);
-//
-//INSTANTIATE_DOT(float)
-//INSTANTIATE_DOT(double)
-//INSTANTIATE_DOT(cfloat)
-//INSTANTIATE_DOT(cdouble)
 
 }
 }
