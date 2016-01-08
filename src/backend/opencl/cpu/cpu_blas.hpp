@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <cpu/cpu_helper.hpp>
+#include <Array.hpp>
 
 namespace opencl
 {

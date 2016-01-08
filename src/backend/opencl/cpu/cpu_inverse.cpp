@@ -7,11 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <cpu/cpu_lapack_helper.hpp>
+#include <cpu/cpu_helper.hpp>
 #include <cpu/cpu_inverse.hpp>
-#include <err_common.hpp>
-#include <copy.hpp>
 #include <cpu/cpu_lu.hpp>
+#include <copy.hpp>
 
 namespace opencl
 {

@@ -9,6 +9,9 @@
 
 #ifndef CPU_LAPACK_TRIANGLE
 #define CPU_LAPACK_TRIANGLE
+
+#include <math.hpp>
+
 namespace opencl
 {
 namespace cpu

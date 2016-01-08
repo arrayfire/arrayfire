@@ -7,10 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <cpu/cpu_lapack_helper.hpp>
+#include <cpu/cpu_helper.hpp>
 #include <cpu/cpu_svd.hpp>
-#include <err_common.hpp>
-
 #include <copy.hpp>
 
 namespace opencl
@@ -82,6 +80,10 @@ namespace cpu
         svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', 'A', M, N, iPtr, in.strides()[1],
                           sPtr, uPtr, u.strides()[1], vPtr, vt.strides()[1], &superb[0]);
 #endif
+        unmapPtr(s.get() , sPtr);
+        unmapPtr(u.get() , uPtr);
+        unmapPtr(vt.get(), vPtr);
+        unmapPtr(in.get(), iPtr);
     }
 
     template <typename T, typename Tr>
