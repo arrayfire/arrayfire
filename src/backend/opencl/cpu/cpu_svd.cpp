@@ -67,23 +67,28 @@ namespace cpu
         int M = iDims[0];
         int N = iDims[1];
 
-        Tr *sPtr = getMappedPtr<Tr>(s.get());
-        T  *uPtr = getMappedPtr<T >(u.get());
-        T  *vPtr = getMappedPtr<T >(vt.get());
-        T  *iPtr = getMappedPtr<T >(in.get());
+        std::shared_ptr<Tr> sPtr = s.getMappedPtr();
+        std::shared_ptr<T > uPtr = u.getMappedPtr();
+        std::shared_ptr<T > vPtr = vt.getMappedPtr();
+        std::shared_ptr<T > iPtr = in.getMappedPtr();
 
 #if defined(USE_MKL) || defined(__APPLE__)
-        svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', M, N, iPtr, in.strides()[1],
-                          sPtr, uPtr, u.strides()[1], vPtr, vt.strides()[1]);
+        svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A',
+                          M, N,
+                          iPtr.get(), in.strides()[1],
+                          sPtr.get(),
+                          uPtr.get(), u.strides()[1],
+                          vPtr.get(), vt.strides()[1]);
 #else
         std::vector<Tr> superb(std::min(M, N));
-        svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', 'A', M, N, iPtr, in.strides()[1],
-                          sPtr, uPtr, u.strides()[1], vPtr, vt.strides()[1], &superb[0]);
+        svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', 'A',
+                          M, N,
+                          iPtr.get(), in.strides()[1],
+                          sPtr.get(),
+                          uPtr.get(), u.strides()[1],
+                          vPtr.get(), vt.strides()[1],
+                          &superb[0]);
 #endif
-        unmapPtr(s.get() , sPtr);
-        unmapPtr(u.get() , uPtr);
-        unmapPtr(vt.get(), vPtr);
-        unmapPtr(in.get(), iPtr);
     }
 
     template <typename T, typename Tr>

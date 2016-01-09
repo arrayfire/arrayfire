@@ -21,6 +21,7 @@
 #include <memory.hpp>
 #include <memory>
 #include <err_common.hpp>
+#include <err_opencl.hpp>
 
 namespace opencl
 {
@@ -208,6 +209,48 @@ namespace opencl
         }
 
         JIT::Node_ptr getNode() const;
+
+    private:
+        bool is_const() const
+        {
+            return true;
+        }
+
+        bool is_const()
+        {
+            return false;
+        }
+
+    public:
+        std::shared_ptr<T> getMappedPtr() const
+        {
+            auto func = [=] (void* ptr) {
+                try {
+                    if(ptr != nullptr)
+                        getQueue().enqueueUnmapMemObject(*data, ptr);
+                        ptr = nullptr;
+                } catch(cl::Error err) {
+                    CL_TO_AF_ERROR(err);
+                }
+            };
+
+            T *ptr = nullptr;
+            try {
+                if(ptr == nullptr) {
+                    if(is_const()) {
+                        ptr = (T*)getQueue().enqueueMapBuffer(*const_cast<cl::Buffer*>(get()), true, CL_MAP_READ,
+                                getOffset(), getDataDims().elements() * sizeof(T));
+                    } else {
+                        ptr = (T*)getQueue().enqueueMapBuffer(*(get()), true, CL_MAP_READ|CL_MAP_WRITE,
+                                getOffset(), getDataDims().elements() * sizeof(T));
+                    }
+                }
+            } catch(cl::Error err) {
+                CL_TO_AF_ERROR(err);
+            }
+
+            return std::shared_ptr<T>(ptr, func);
+        }
 
         friend Array<T> createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T> createHostDataArray<T>(const af::dim4 &size, const T * const data);

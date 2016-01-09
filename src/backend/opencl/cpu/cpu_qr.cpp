@@ -70,20 +70,16 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
     dim4 rdims(M, N);
     r = createEmptyArray<T>(rdims);
 
-    T *qPtr = getMappedPtr<T>(q.get());
-    T *rPtr = getMappedPtr<T>(r.get());
-    T *tPtr = getMappedPtr<T>(t.get());
+    std::shared_ptr<T> qPtr = q.getMappedPtr();
+    std::shared_ptr<T> rPtr = r.getMappedPtr();
+    std::shared_ptr<T> tPtr = t.getMappedPtr();
 
-    triangle<T, true, false>(rPtr, qPtr, rdims, r.strides(), q.strides());
+    triangle<T, true, false>(rPtr.get(), qPtr.get(), rdims, r.strides(), q.strides());
 
     gqr_func<T>()(AF_LAPACK_COL_MAJOR,
                   M, M, min(M, N),
-                  qPtr, q.strides()[1],
-                  tPtr);
-
-    unmapPtr(q.get(), qPtr);
-    unmapPtr(r.get(), rPtr);
-    unmapPtr(t.get(), tPtr);
+                  qPtr.get(), q.strides()[1],
+                  tPtr.get());
 
     q.resetDims(dim4(M, M));
 }
@@ -97,15 +93,12 @@ Array<T> qr_inplace(Array<T> &in)
 
     Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
 
-    T *iPtr = getMappedPtr<T>(in.get());
-    T *tPtr = getMappedPtr<T>(t.get());
+    std::shared_ptr<T> iPtr = in.getMappedPtr();
+    std::shared_ptr<T> tPtr = t.getMappedPtr();
 
     geqrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
-                    iPtr, in.strides()[1],
-                    tPtr);
-
-    unmapPtr(in.get(), iPtr);
-    unmapPtr(t.get(), tPtr);
+                    iPtr.get(), in.strides()[1],
+                    tPtr.get());
 
     return t;
 }

@@ -85,19 +85,15 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
 
     Array<T> B = copyArray<T>(b);
 
-    T *aPtr = getMappedPtr<T>(A.get());
-    T *bPtr = getMappedPtr<T>(B.get());
-    int *pPtr = getMappedPtr<int>(pivot.get());
+    std::shared_ptr<T  > aPtr = A.getMappedPtr();
+    std::shared_ptr<T  > bPtr = B.getMappedPtr();
+    std::shared_ptr<int> pPtr = pivot.getMappedPtr();
 
     getrs_func<T>()(AF_LAPACK_COL_MAJOR, 'N',
                     N, NRHS,
-                    aPtr, A.strides()[1],
-                    pPtr,
-                    bPtr, B.strides()[1]);
-
-    unmapPtr(A.get(), aPtr);
-    unmapPtr(B.get(), bPtr);
-    unmapPtr(pivot.get(), pPtr);
+                    aPtr.get(), A.strides()[1],
+                    pPtr.get(),
+                    bPtr.get(), B.strides()[1]);
 
     return B;
 }
@@ -109,19 +105,16 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop o
     int N = B.dims()[0];
     int NRHS = B.dims()[1];
 
-    T *aPtr = getMappedPtr<T>(A.get());
-    T *bPtr = getMappedPtr<T>(B.get());
+    std::shared_ptr<T> aPtr = A.getMappedPtr();
+    std::shared_ptr<T> bPtr = B.getMappedPtr();
 
     trtrs_func<T>()(AF_LAPACK_COL_MAJOR,
                     options & AF_MAT_UPPER ? 'U' : 'L',
                     'N', // transpose flag
                     options & AF_MAT_DIAG_UNIT ? 'U' : 'N',
                     N, NRHS,
-                    aPtr, A.strides()[1],
-                    bPtr, B.strides()[1]);
-
-    unmapPtr(A.get(), aPtr);
-    unmapPtr(B.get(), bPtr);
+                    aPtr.get(), A.strides()[1],
+                    bPtr.get(), B.strides()[1]);
 
     return B;
 }
@@ -143,28 +136,25 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
     Array<T> A = copyArray<T>(a);
     Array<T> B = padArray<T, T>(b, dim4(max(M, N), K), scalar<T>(0));
 
-    T *aPtr = getMappedPtr<T>(A.get());
-    T *bPtr = getMappedPtr<T>(B.get());
+    std::shared_ptr<T> aPtr = A.getMappedPtr();
+    std::shared_ptr<T> bPtr = B.getMappedPtr();
 
     if(M == N) {
         std::vector<int> pivot(N);
         gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K,
-                       aPtr, A.strides()[1],
+                       aPtr.get(), A.strides()[1],
                        &pivot.front(),
-                       bPtr, B.strides()[1]);
+                       bPtr.get(), B.strides()[1]);
     } else {
         int sM = a.strides()[1];
         int sN = a.strides()[2] / sM;
 
         gels_func<T>()(AF_LAPACK_COL_MAJOR, 'N',
                        M, N, K,
-                       aPtr, A.strides()[1],
-                       bPtr, max(sM, sN));
+                       aPtr.get(), A.strides()[1],
+                       bPtr.get(), max(sM, sN));
         B.resetDims(dim4(N, K));
     }
-
-    unmapPtr(A.get(), aPtr);
-    unmapPtr(B.get(), bPtr);
 
     return B;
 }

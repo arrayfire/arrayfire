@@ -40,9 +40,13 @@ LU_FUNC(getrf , cdouble, z)
 template<typename T>
 void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in)
 {
-    T *l = getMappedPtr<T>(lower.get());
-    T *u = getMappedPtr<T>(upper.get());
-    T *i = getMappedPtr<T>(in.get());
+    std::shared_ptr<T> ls = lower.getMappedPtr();
+    std::shared_ptr<T> us = upper.getMappedPtr();
+    std::shared_ptr<T> is = in.getMappedPtr();
+
+    T *l = ls.get();
+    T *u = us.get();
+    T *i = is.get();
 
     dim4 ldm = lower.dims();
     dim4 udm = upper.dims();
@@ -91,18 +95,17 @@ void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in)
             }
         }
     }
-
-    unmapPtr(lower.get(), l);
-    unmapPtr(upper.get(), u);
-    unmapPtr(in.get(), i);
 }
 
 void convertPivot(Array<int> &pivot, int out_sz)
 {
     Array<int> p = range<int>(dim4(out_sz), 0); // Runs opencl
 
-    int *d_pi = getMappedPtr<int>(pivot.get());
-    int *d_po = getMappedPtr<int>(p.get());
+    std::shared_ptr<int> pi = pivot.getMappedPtr();
+    std::shared_ptr<int> po = p.getMappedPtr();
+
+    int *d_pi = pi.get();
+    int *d_po = po.get();
 
     dim_t d0 = pivot.dims()[0];
 
@@ -111,8 +114,8 @@ void convertPivot(Array<int> &pivot, int out_sz)
         std::swap(d_po[j], d_po[d_pi[j] - 1]);
     }
 
-    unmapPtr(pivot.get(), d_pi);
-    unmapPtr(p.get(), d_po);
+    pi.reset();
+    po.reset();
 
     pivot = p;
 }
@@ -145,15 +148,15 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 
     Array<int> pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
 
-    T *inPtr = getMappedPtr<T>(in.get());
-    int *pivotPtr = getMappedPtr<int>(pivot.get());
+    std::shared_ptr<T>   inPtr = in.getMappedPtr();
+    std::shared_ptr<int> piPtr = pivot.getMappedPtr();
 
     getrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
-                    inPtr, in.strides()[1],
-                    pivotPtr);
+                    inPtr.get(), in.strides()[1],
+                    piPtr.get());
 
-    unmapPtr(in.get(), inPtr);
-    unmapPtr(pivot.get(), pivotPtr);
+    inPtr.reset();
+    piPtr.reset();
 
     if(convert_pivot) convertPivot(pivot, M);
 

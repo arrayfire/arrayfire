@@ -51,15 +51,13 @@ Array<T> inverse(const Array<T> &in)
 
     Array<int> pivot = cpu::lu_inplace<T>(A, false);
 
-    T *aPtr = getMappedPtr<T>(A.get());
-    int *pPtr = getMappedPtr<int>(pivot.get());
+
+    std::shared_ptr<T>   aPtr = A.getMappedPtr();
+    std::shared_ptr<int> pPtr = pivot.getMappedPtr();
 
     getri_func<T>()(AF_LAPACK_COL_MAJOR, M,
-                    aPtr, A.strides()[1],
-                    pPtr);
-
-    unmapPtr(A.get(), aPtr);
-    unmapPtr(pivot.get(), pPtr);
+                    aPtr.get(), A.strides()[1],
+                    pPtr.get());
 
     return A;
 }

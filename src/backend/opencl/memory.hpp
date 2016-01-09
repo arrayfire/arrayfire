@@ -32,9 +32,6 @@ namespace opencl
     template<typename T> void memPop(const T *ptr);
     template<typename T> void memPush(const T *ptr);
 
-    template<typename T> T *getMappedPtr(const cl::Buffer *buf);
-    void unmapPtr(const cl::Buffer *buf, void *ptr);
-
     template<typename T> T* pinnedAlloc(const size_t &elements);
     template<typename T> void pinnedFree(T* ptr);
 
