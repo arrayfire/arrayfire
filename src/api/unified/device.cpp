@@ -35,6 +35,12 @@ af_err af_get_backend_id(af_backend *result, const af_array in)
     return CALL(result, in);
 }
 
+af_err af_get_active_backend(af_backend *result)
+{
+    *result = unified::AFSymbolManager::getInstance().getActiveBackend();
+    return AF_SUCCESS;
+}
+
 af_err af_info()
 {
     return CALL_NO_PARAMS();
