@@ -44,6 +44,37 @@ AF_OPENCL_DEFAULT_DEVICE=1 ./myprogram_opencl
 Note: af::setDevice call in the source code will take precedence over this
 variable.
 
+AF_OPENCL_DEFAULT_DEVICE_TYPE {#af_opencl_default_device_type}
+-------------------------------------------------------------------------------
+
+Use this variable to set the default OpenCL device type. Valid values for this
+variable are: CPU, GPU, ACC (Accelerators).
+
+When set, the first device of the specified type is chosen as default device.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+AF_OPENCL_DEFAULT_DEVICE_TYPE=CPU ./myprogram_opencl
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Note: `AF_OPENCL_DEFAULT_DEVICE`  and af::setDevice takes precedence over this variable.
+
+AF_OPENCL_DEVICE_TYPE {#af_opencl_device_type}
+-------------------------------------------------------------------------------
+
+Use this variable to only choose OpenCL devices of specified type. Valid values for this
+variable are:
+
+- ALL: All OpenCL devices. (Default behavior).
+- CPU: CPU devices only.
+- GPU: GPU devices only.
+- ACC: Accelerator devices only.
+
+When set, the remaining OpenCL device types are ignored by the OpenCL backend.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+AF_OPENCL_DEVICE_TYPE=CPU ./myprogram_opencl
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 AF_DISABLE_GRAPHICS {#af_disable_graphics}
 -------------------------------------------------------------------------------
 
