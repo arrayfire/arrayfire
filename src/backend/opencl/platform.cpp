@@ -212,6 +212,18 @@ DeviceManager::DeviceManager()
         cl_device_type DEVICE_TYPES = CL_DEVICE_TYPE_ALL;
 #endif
 
+        std::string deviceENV = getEnvVar("AF_OPENCL_DEVICE_TYPE");
+
+        if (deviceENV.compare("GPU") == 0) {
+            DEVICE_TYPES = CL_DEVICE_TYPE_GPU;
+        } else if (deviceENV.compare("CPU") == 0) {
+            DEVICE_TYPES = CL_DEVICE_TYPE_CPU;
+        } else if (deviceENV.compare("ACC") >= 0) {
+            DEVICE_TYPES = CL_DEVICE_TYPE_ACCELERATOR;
+        }
+
+
+
         // Iterate through platforms, get all available devices and store them
         for (auto &platform : platforms) {
             std::vector<Device> current_devices;
@@ -229,11 +241,14 @@ DeviceManager::DeviceManager()
             }
         }
 
+        int nDevices = mDevices.size();
+
+        if (nDevices == 0) AF_ERROR("No OpenCL devices found", AF_ERR_RUNTIME);
+
         // Sort OpenCL devices based on default criteria
         std::stable_sort(mDevices.begin(), mDevices.end(), compare_default);
 
         // Create contexts and queues once the sort is done
-        int nDevices = mDevices.size();
         for (int i = 0; i < nDevices; i++) {
             cl_platform_id device_platform = mDevices[i]->getInfo<CL_DEVICE_PLATFORM>();
             cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM,
@@ -247,7 +262,8 @@ DeviceManager::DeviceManager()
             mIsGLSharingOn.push_back(false);
         }
 
-        std::string deviceENV = getEnvVar("AF_OPENCL_DEFAULT_DEVICE");
+        bool default_device_set = false;
+        deviceENV = getEnvVar("AF_OPENCL_DEFAULT_DEVICE");
         if(!deviceENV.empty()) {
             std::stringstream s(deviceENV);
             int def_device = -1;
@@ -257,18 +273,48 @@ DeviceManager::DeviceManager()
                 printf("Setting default device as 0\n");
             } else {
                 setContext(def_device);
+                default_device_set = true;
             }
         }
+
+        deviceENV = getEnvVar("AF_OPENCL_DEFAULT_DEVICE_TYPE");
+        if (!default_device_set && !deviceENV.empty())
+        {
+            cl_device_type default_device_type = CL_DEVICE_TYPE_GPU;
+            if (deviceENV.compare("CPU") == 0) {
+                default_device_type = CL_DEVICE_TYPE_CPU;
+            } else if (deviceENV.compare("ACC") >= 0) {
+                default_device_type = CL_DEVICE_TYPE_ACCELERATOR;
+            }
+
+            bool default_device_set = false;
+            for (int i = 0; i < nDevices; i++) {
+                if (mDevices[i]->getInfo<CL_DEVICE_TYPE>() == default_device_type) {
+                    default_device_set = true;
+                    setContext(i);
+                    break;
+                }
+            }
+
+            if (!default_device_set) {
+                printf("WARNING: AF_OPENCL_DEFAULT_DEVICE_TYPE=%s is not available\n",
+                       deviceENV.c_str());
+                printf("Using default device as 0\n");
+            }
+        }
+
     } catch (const cl::Error &error) {
             CL_TO_AF_ERROR(error);
     }
-    /* loop over devices and replace contexts with
-     * OpenGL shared contexts whereever applicable */
+
+
 #if defined(WITH_GRAPHICS)
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
     if(noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
         try {
+            /* loop over devices and replace contexts with
+             * OpenGL shared contexts whereever applicable */
             int devCount = mDevices.size();
             fg::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();
             for(int i=0; i<devCount; ++i)
