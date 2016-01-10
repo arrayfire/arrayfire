@@ -39,7 +39,9 @@ af_err af_get_backend_count(unsigned* num_backends)
 
 af_err af_get_available_backends(int* result)
 {
-    *result = getBackend();
+    try {
+        *result = getBackend();
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
@@ -67,7 +69,9 @@ af_err af_init()
 
 af_err af_info()
 {
-    printf("%s", getInfo().c_str());
+    try {
+        printf("%s", getInfo().c_str());
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
@@ -326,7 +330,6 @@ af_err af_free_pinned(void *ptr)
 af_err af_alloc_host(void **ptr, const dim_t bytes)
 {
     try {
-        AF_CHECK(af_init());
         *ptr = malloc(bytes);
     } CATCHALL;
     return AF_SUCCESS;
@@ -335,7 +338,6 @@ af_err af_alloc_host(void **ptr, const dim_t bytes)
 af_err af_free_host(void *ptr)
 {
     try {
-        AF_CHECK(af_init());
         free(ptr);
     } CATCHALL;
     return AF_SUCCESS;
@@ -376,12 +378,16 @@ af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
 
 af_err af_set_mem_step_size(const size_t step_bytes)
 {
-    detail::setMemStepSize(step_bytes);
+    try{
+        detail::setMemStepSize(step_bytes);
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err af_get_mem_step_size(size_t *step_bytes)
 {
-    *step_bytes =  detail::getMemStepSize();
+    try {
+        *step_bytes =  detail::getMemStepSize();
+    } CATCHALL;
     return AF_SUCCESS;
 }

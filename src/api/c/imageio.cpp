@@ -60,14 +60,15 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                     pDst0[indx] = (float) *(src + (x * step + FI_RGBA_RED));
                     pDst1[indx] = (float) *(src + (x * step + FI_RGBA_GREEN));
                     pDst2[indx] = (float) *(src + (x * step + FI_RGBA_BLUE));
+                    if (fo_color == 4) pDst3[indx] = (float) *(src + (x * step + FI_RGBA_ALPHA));
                 } else {
                     // Non 8-bit types do not use ordering
                     // See Pixel Access Functions Chapter in FreeImage Doc
-                    pDst0[indx] = (float) *(src + (x * step + FI_RGBA_RED));
-                    pDst1[indx] = (float) *(src + (x * step + FI_RGBA_GREEN));
-                    pDst2[indx] = (float) *(src + (x * step + FI_RGBA_BLUE));
+                    pDst0[indx] = (float) *(src + (x * step + 0));
+                    pDst1[indx] = (float) *(src + (x * step + 1));
+                    pDst2[indx] = (float) *(src + (x * step + 2));
+                    if (fo_color == 4) pDst3[indx] = (float) *(src + (x * step + 3));
                 }
-                if (fo_color == 4) pDst3[indx] = (float) *(src + (x * step + FI_RGBA_ALPHA));
             }
             indx++;
         }
@@ -104,9 +105,9 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                 } else {
                     // Non 8-bit types do not use ordering
                     // See Pixel Access Functions Chapter in FreeImage Doc
-                    r = (T) *(src + (x * step + FI_RGBA_RED));
-                    g = (T) *(src + (x * step + FI_RGBA_GREEN));
-                    b = (T) *(src + (x * step + FI_RGBA_BLUE));
+                    r = (T) *(src + (x * step + 0));
+                    g = (T) *(src + (x * step + 1));
+                    b = (T) *(src + (x * step + 2));
                 }
                 pDst[indx] = r * 0.2989f + g * 0.5870f + b * 0.1140f;
             }

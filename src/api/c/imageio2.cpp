@@ -58,14 +58,15 @@ static af_err readImage_t(af_array *rImage, const uchar* pSrcLine, const int nSr
                     pDst0[indx] = (T) *(src + (x * step + FI_RGBA_RED));
                     pDst1[indx] = (T) *(src + (x * step + FI_RGBA_GREEN));
                     pDst2[indx] = (T) *(src + (x * step + FI_RGBA_BLUE));
+                    if (fi_color == 4) pDst3[indx] = (T) *(src + (x * step + FI_RGBA_ALPHA));
                 } else {
                     // Non 8-bit types do not use ordering
                     // See Pixel Access Functions Chapter in FreeImage Doc
                     pDst0[indx] = (T) *(src + (x * step + 0));
                     pDst1[indx] = (T) *(src + (x * step + 1));
                     pDst2[indx] = (T) *(src + (x * step + 2));
+                    if (fi_color == 4) pDst3[indx] = (T) *(src + (x * step + 3));
                 }
-                if (fi_color == 4) pDst3[indx] = (T) *(src + (x * step + FI_RGBA_ALPHA));
             }
             indx++;
         }
@@ -239,18 +240,19 @@ static void save_t(T* pDstLine, const af_array in, const dim4 dims, uint nDstPit
                 *(pDstLine + x * step + FI_RGBA_RED) = (T) pSrc0[indx]; // r -> 0
             } else if(channels >=3) {
                 if((af_dtype) af::dtype_traits<T>::af_type == u8) {
-                    *(pDstLine + x * step + FI_RGBA_BLUE)  = (T) pSrc2[indx]; // b -> 0
+                    *(pDstLine + x * step + FI_RGBA_RED  ) = (T) pSrc0[indx]; // r -> 0
                     *(pDstLine + x * step + FI_RGBA_GREEN) = (T) pSrc1[indx]; // g -> 1
-                    *(pDstLine + x * step + FI_RGBA_RED)   = (T) pSrc0[indx]; // r -> 2
+                    *(pDstLine + x * step + FI_RGBA_BLUE ) = (T) pSrc2[indx]; // b -> 2
+                    if(channels >= 4) *(pDstLine + x * step + FI_RGBA_ALPHA) = (T) pSrc3[indx]; // a
                 } else {
                     // Non 8-bit types do not use ordering
                     // See Pixel Access Functions Chapter in FreeImage Doc
                     *(pDstLine + x * step + 0) = (T) pSrc0[indx]; // r -> 0
                     *(pDstLine + x * step + 1) = (T) pSrc1[indx]; // g -> 1
                     *(pDstLine + x * step + 2) = (T) pSrc2[indx]; // b -> 2
+                    if(channels >= 4) *(pDstLine + x * step + 3) = (T) pSrc3[indx]; // a
                 }
             }
-            if(channels >= 4) *(pDstLine + x * step + FI_RGBA_ALPHA) = (T) pSrc3[indx]; // a
             ++indx;
         }
         pDstLine = (T*)(((uchar*)pDstLine) - nDstPitch);

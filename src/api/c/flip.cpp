@@ -74,9 +74,9 @@ af_err af_flip(af_array *result, const af_array in, const unsigned dim)
         case u8:     out = flipArray<uchar>   (in, dim);  break;
         default:    TYPE_ERROR(1, in_type);
         }
+        swap(*result, out);
     }
     CATCHALL
 
-    swap(*result, out);
     return AF_SUCCESS;
 }
