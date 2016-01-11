@@ -386,20 +386,58 @@ void DeviceManager::sortDevices(sort_mode mode)
 
 int DeviceManager::setActiveDevice(int device, int nId)
 {
-    if(device > (int)cuDevices.size()) {
-        return -1;
-    } else {
-        int old = activeDev;
-        if(nId == -1) nId = getDeviceNativeId(device);
-        CUDA_CHECK(cudaSetDevice(nId));
-        activeDev = device;
+    static bool first = true;
 
-        if(!streams[device]) {
-            CUDA_CHECK(cudaStreamCreate(&streams[device]));
-        }
+    int numDevices = cuDevices.size();
 
+    if(device > numDevices) return -1;
+
+    int old = activeDev;
+    if(nId == -1) nId = getDeviceNativeId(device);
+    CUDA_CHECK(cudaSetDevice(nId));
+    cudaError_t err = cudaStreamCreate(&streams[device]);
+    activeDev = device;
+
+    if (err == cudaSuccess) return old;
+
+    // Comes when user sets device
+    // If success, return. Else throw error
+    if (!first) {
+        CUDA_CHECK(err);
         return old;
     }
+
+    // Comes only when first is true. Set it to false
+    first = false;
+
+    while(device < numDevices) {
+        // Check for errors other than DevicesUnavailable
+        // If success, return. Else throw error
+        // If DevicesUnavailable, try other devices (while loop below)
+        if (err != cudaErrorDevicesUnavailable) {
+            CUDA_CHECK(err);
+            activeDev = device;
+            return old;
+        }
+        cudaGetLastError(); // Reset error stack
+        printf("Warning: Device %d is unavailable. Incrementing to next device \n", device);
+
+        // Comes here is the device is in exclusive mode or
+        // otherwise fails streamCreate with this error.
+        // All other errors will error out
+        device++;
+
+        // Can't call getNativeId here as it will cause an infinite loop with the constructor
+        nId = cuDevices[device].nativeId;
+
+        CUDA_CHECK(cudaSetDevice(nId));
+        err = cudaStreamCreate(&streams[device]);
+    }
+
+    // If all devices fail with DevicesUnavailable, then throw this error
+    CUDA_CHECK(err);
+
+    return old;
 }
 
 void sync(int device)

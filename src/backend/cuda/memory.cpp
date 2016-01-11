@@ -45,8 +45,16 @@ public:
     {
         common::lock_guard_t lock(this->memory_mutex);
         for (int n = 0; n < getDeviceCount(); n++) {
-            cuda::setDevice(n);
-            this->garbageCollect();
+            try {
+                cuda::setDevice(n);
+                this->garbageCollect();
+            } catch(AfError err) {
+                if(err.getError() == AF_ERR_DRIVER) { // Can happen from cudaErrorDevicesUnavailable
+                    continue;
+                } else {
+                    throw err;
+                }
+            }
         }
     }
 };
