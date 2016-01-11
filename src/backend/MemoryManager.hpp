@@ -16,8 +16,8 @@
 namespace common
 {
 
-typedef std::mutex mutex_t;
-typedef std::lock_guard<std::mutex> lock_guard_t;
+typedef std::recursive_mutex mutex_t;
+typedef std::lock_guard<mutex_t> lock_guard_t;
 
 class MemoryManager
 {

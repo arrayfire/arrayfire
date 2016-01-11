@@ -25,6 +25,7 @@ MemoryManager::MemoryManager(int num_devices, unsigned MAX_BUFFERS, unsigned MAX
     memory(num_devices),
     debug_mode(debug)
 {
+    lock_guard_t lock(this->memory_mutex);
     std::string env_var = getEnvVar("AF_MEM_DEBUG");
     if (!env_var.empty()) {
         this->debug_mode = env_var[0] != '0';
@@ -36,6 +37,7 @@ void MemoryManager::garbageCollect()
 {
     if (this->debug_mode) return;
 
+    lock_guard_t lock(this->memory_mutex);
     memory_info& current = this->getCurrentMemoryInfo();
 
     for(buffer_iter iter = current.map.begin();
@@ -66,8 +68,8 @@ void MemoryManager::garbageCollect()
 
 void MemoryManager::unlock(void *ptr, bool user_unlock)
 {
-    memory_info& current = this->getCurrentMemoryInfo();
     lock_guard_t lock(this->memory_mutex);
+    memory_info& current = this->getCurrentMemoryInfo();
 
     buffer_iter iter = current.map.find((void *)ptr);
 
@@ -93,14 +95,13 @@ void MemoryManager::unlock(void *ptr, bool user_unlock)
 
 void *MemoryManager::alloc(const size_t bytes)
 {
-    memory_info& current = this->getCurrentMemoryInfo();
+    lock_guard_t lock(this->memory_mutex);
 
     void *ptr = NULL;
     size_t alloc_bytes = this->debug_mode ? bytes : (divup(bytes, mem_step_size) * mem_step_size);
 
     if (bytes > 0) {
-
-        lock_guard_t lock(this->memory_mutex);
+        memory_info& current = this->getCurrentMemoryInfo();
 
         // There is no memory cache in debug mode
         if (!this->debug_mode) {
@@ -240,8 +241,8 @@ void MemoryManager::printInfo(const char *msg, const int device)
 void MemoryManager::bufferInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                                size_t *lock_bytes,  size_t *lock_buffers)
 {
-    memory_info current = this->getCurrentMemoryInfo();
     lock_guard_t lock(this->memory_mutex);
+    memory_info current = this->getCurrentMemoryInfo();
     if (alloc_bytes   ) *alloc_bytes   = current.total_bytes;
     if (alloc_buffers ) *alloc_buffers = current.map.size();
     if (lock_bytes    ) *lock_bytes    = current.lock_bytes;
