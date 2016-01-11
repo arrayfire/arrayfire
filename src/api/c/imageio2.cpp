@@ -237,7 +237,7 @@ static void save_t(T* pDstLine, const af_array in, const dim4 dims, uint nDstPit
     for (uint y = 0; y < fi_h; ++y) {
         for (uint x = 0; x < fi_w; ++x) {
             if(channels == 1) {
-                *(pDstLine + x * step + FI_RGBA_RED) = (T) pSrc0[indx]; // r -> 0
+                *(pDstLine + x * step) = (T) pSrc0[indx]; // r -> 0
             } else if(channels >=3) {
                 if((af_dtype) af::dtype_traits<T>::af_type == u8) {
                     *(pDstLine + x * step + FI_RGBA_RED  ) = (T) pSrc0[indx]; // r -> 0
