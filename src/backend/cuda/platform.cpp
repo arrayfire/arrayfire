@@ -62,13 +62,13 @@ static inline int compute2cores(int major, int minor)
     return 0;
 }
 
-// compare two cards based on (in order):
-//   1. flops (theoretical)
-//   2. total memory
-
+// Return true if greater, false if lesser.
+// if equal, it continues to next comparison
 #define COMPARE(a,b,f) do {                     \
-        return ((a)->f >= (b)->f);              \
-    } while (0);
+        if ((a)->f > (b)->f) return true;       \
+        if ((a)->f < (b)->f) return false;      \
+        break;                                  \
+    } while (0)
 
 
 static inline bool card_compare_compute(const cudaDevice_t &l, const cudaDevice_t &r)
@@ -81,7 +81,7 @@ static inline bool card_compare_compute(const cudaDevice_t &l, const cudaDevice_
     COMPARE(lc, rc, flops);
     COMPARE(lc, rc, prop.totalGlobalMem);
     COMPARE(lc, rc, nativeId);
-    return 0;
+    return false;
 }
 
 static inline bool card_compare_flops(const cudaDevice_t &l, const cudaDevice_t &r)
@@ -94,7 +94,7 @@ static inline bool card_compare_flops(const cudaDevice_t &l, const cudaDevice_t 
     COMPARE(lc, rc, prop.major);
     COMPARE(lc, rc, prop.minor);
     COMPARE(lc, rc, nativeId);
-    return 0;
+    return false;
 }
 
 static inline bool card_compare_mem(const cudaDevice_t &l, const cudaDevice_t &r)
@@ -107,7 +107,7 @@ static inline bool card_compare_mem(const cudaDevice_t &l, const cudaDevice_t &r
     COMPARE(lc, rc, prop.major);
     COMPARE(lc, rc, prop.minor);
     COMPARE(lc, rc, nativeId);
-    return 0;
+    return false;
 }
 
 static inline bool card_compare_num(const cudaDevice_t &l, const cudaDevice_t &r)
@@ -116,7 +116,7 @@ static inline bool card_compare_num(const cudaDevice_t &l, const cudaDevice_t &r
     const cudaDevice_t *rc = &r;
 
     COMPARE(lc, rc, nativeId);
-    return 0;
+    return false;
 }
 
 static const std::string get_system(void)
@@ -370,16 +370,16 @@ void DeviceManager::sortDevices(sort_mode mode)
 {
     switch(mode) {
         case memory :
-            sort(cuDevices.begin(), cuDevices.end(), card_compare_mem);
+            std::stable_sort(cuDevices.begin(), cuDevices.end(), card_compare_mem);
             break;
         case flops :
-            sort(cuDevices.begin(), cuDevices.end(), card_compare_flops);
+            std::stable_sort(cuDevices.begin(), cuDevices.end(), card_compare_flops);
             break;
         case compute :
-            sort(cuDevices.begin(), cuDevices.end(), card_compare_compute);
+            std::stable_sort(cuDevices.begin(), cuDevices.end(), card_compare_compute);
             break;
         case none : default :
-            sort(cuDevices.begin(), cuDevices.end(), card_compare_num);
+            std::stable_sort(cuDevices.begin(), cuDevices.end(), card_compare_num);
             break;
     }
 }
