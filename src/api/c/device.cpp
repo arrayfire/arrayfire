@@ -298,6 +298,7 @@ af_err af_alloc_device(void **ptr, const dim_t bytes)
     try {
         AF_CHECK(af_init());
         *ptr = (void *)memAlloc<char>(bytes);
+        memLock<char>((const char *)*ptr);
     } CATCHALL;
     return AF_SUCCESS;
 }
