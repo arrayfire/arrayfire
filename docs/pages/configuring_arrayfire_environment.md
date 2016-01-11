@@ -97,3 +97,15 @@ detailed. This helps in locating the exact failure.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 AF_PRINT_ERRORS=1 ./myprogram_opencl
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+AF_MEM_DEBUG (#af_mem_debug)
+-------------------------------------------------------------------------------
+
+When AF_MEM_DEBUG is set to 1 (or anything not equal to 0), the caching mechanism in the memory manager.
+The device buffers are allocated using native functions as needed and freed when going out of scope.
+
+When the environment variable is not set, it is treated to be non zero.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+AF_MEM_DEBUG=1 ./myprogram
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
