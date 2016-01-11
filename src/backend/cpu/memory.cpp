@@ -36,7 +36,10 @@ public:
     ~MemoryManager()
     {
         common::lock_guard_t lock(this->memory_mutex);
-        this->garbageCollect();
+        for (int n = 0; n < getDeviceCount(); n++) {
+            cpu::setDevice(n);
+            this->garbageCollect();
+        }
     }
 };
 

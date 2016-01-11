@@ -39,7 +39,10 @@ public:
     ~MemoryManager()
     {
         common::lock_guard_t lock(this->memory_mutex);
-        this->garbageCollect();
+        for (int n = 0; n < getDeviceCount(); n++) {
+            opencl::setDevice(n);
+            this->garbageCollect();
+        }
     }
 };
 
@@ -60,8 +63,9 @@ public:
     ~MemoryManagerPinned()
     {
         common::lock_guard_t lock(this->memory_mutex);
-        this->garbageCollect();
-        for (int n = 0; n < (int)pinned_maps.size(); n++) {
+        for (int n = 0; n < getDeviceCount(); n++) {
+            opencl::setDevice(n);
+            this->garbageCollect();
             auto pinned_curr_iter = pinned_maps[n].begin();
             auto pinned_end_iter  = pinned_maps[n].end();
             while (pinned_curr_iter != pinned_end_iter) {

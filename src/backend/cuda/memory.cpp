@@ -44,7 +44,10 @@ public:
     ~MemoryManager()
     {
         common::lock_guard_t lock(this->memory_mutex);
-        this->garbageCollect();
+        for (int n = 0; n < getDeviceCount(); n++) {
+            cuda::setDevice(n);
+            this->garbageCollect();
+        }
     }
 };
 
@@ -58,7 +61,10 @@ public:
     ~MemoryManagerPinned()
     {
         common::lock_guard_t lock(this->memory_mutex);
-        this->garbageCollect();
+        for (int n = 0; n < getDeviceCount(); n++) {
+            cuda::setDevice(n);
+            this->garbageCollect();
+        }
     }
 };
 
