@@ -195,7 +195,7 @@ void bufferFree(cl::Buffer *buf)
 template<typename T>
 void memFreeLocked(T *ptr, bool user_unlock)
 {
-    return getMemoryManager().unlock((void *)ptr, user_unlock);
+    getMemoryManager().unlock((void *)ptr, user_unlock);
 }
 
 template<typename T>

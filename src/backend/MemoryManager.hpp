@@ -84,7 +84,7 @@ public:
 
     virtual void nativeFree(void *ptr)
     {
-        return free((void *)ptr);
+        free((void *)ptr);
     }
 
     virtual ~MemoryManager()
