@@ -221,7 +221,7 @@ af_err af_get_device_ptr(void **data, const af_array arr)
 template <typename T>
 inline void lockArray(const af_array arr)
 {
-    memPop<T>((const T *)getArray<T>(arr).get());
+    memLock<T>((const T *)getArray<T>(arr).get());
 }
 
 af_err af_lock_device_ptr(const af_array arr)
@@ -258,7 +258,7 @@ af_err af_lock_array(const af_array arr)
 template <typename T>
 inline void unlockArray(const af_array arr)
 {
-    memPush<T>((const T *)getArray<T>(arr).get());
+    memUnlock<T>((const T *)getArray<T>(arr).get());
 }
 
 af_err af_unlock_device_ptr(const af_array arr)

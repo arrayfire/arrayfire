@@ -68,19 +68,19 @@ namespace cuda
     }
 
     template<typename T>
-    void memFreeLocked(T *ptr, bool freeLocked)
+    void memFreeLocked(T *ptr, bool user_unlock)
     {
         cudaFreeWrapper(ptr); // Free it because we are not sure what the size is
     }
 
     template<typename T>
-    void memPop(const T *ptr)
+    void memLock(const T *ptr)
     {
         return;
     }
 
     template<typename T>
-    void memPush(const T *ptr)
+    void memUnlock(const T *ptr)
     {
         return;
     }
@@ -283,7 +283,7 @@ namespace cuda
     }
 
     template<typename T>
-    void memFreeLocked(T *ptr, bool freeLocked)
+    void memFreeLocked(T *ptr, bool user_unlock)
     {
         int n = getActiveDeviceId();
         mem_iter iter = memory_maps[n].find((void *)ptr);
@@ -291,7 +291,7 @@ namespace cuda
         if (iter != memory_maps[n].end()) {
 
             iter->second.mngr_lock = false;
-            if ((iter->second.user_lock) && !freeLocked) return;
+            if ((iter->second.user_lock) && !user_unlock) return;
 
             iter->second.user_lock = false;
 
@@ -310,7 +310,7 @@ namespace cuda
     }
 
     template<typename T>
-    void memPop(const T *ptr)
+    void memLock(const T *ptr)
     {
         int n = getActiveDeviceId();
         mem_iter iter = memory_maps[n].find((void *)ptr);
@@ -328,7 +328,7 @@ namespace cuda
     }
 
     template<typename T>
-    void memPush(const T *ptr)
+    void memUnlock(const T *ptr)
     {
         int n = getActiveDeviceId();
         mem_iter iter = memory_maps[n].find((void *)ptr);
@@ -427,14 +427,14 @@ namespace cuda
 
 #endif
 
-#define INSTANTIATE(T)                                          \
-    template T* memAlloc(const size_t &elements);               \
-    template void memFree(T* ptr);                              \
-    template void memFreeLocked(T* ptr, bool freeLocked);       \
-    template void memPop(const T* ptr);                         \
-    template void memPush(const T* ptr);                        \
-    template T* pinnedAlloc(const size_t &elements);            \
-    template void pinnedFree(T* ptr);                           \
+#define INSTANTIATE(T)                                      \
+    template T* memAlloc(const size_t &elements);           \
+    template void memFree(T* ptr);                          \
+    template void memFreeLocked(T* ptr, bool user_unlock);  \
+    template void memLock(const T* ptr);                    \
+    template void memUnlock(const T* ptr);                  \
+    template T* pinnedAlloc(const size_t &elements);        \
+    template void pinnedFree(T* ptr);                       \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)

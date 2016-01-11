@@ -196,7 +196,7 @@ T* memAlloc(const size_t &elements)
 }
 
 template<typename T>
-void memFreeLocked(T *ptr, bool freeLocked)
+void memFreeLocked(T *ptr, bool user_unlock)
 {
     std::lock_guard<std::mutex> lock(memory_map_mutex);
 
@@ -205,7 +205,7 @@ void memFreeLocked(T *ptr, bool freeLocked)
     if (iter != memory_map.end()) {
 
         iter->second.mngr_lock = false;
-        if ((iter->second).user_lock && !freeLocked) return;
+        if ((iter->second).user_lock && !user_unlock) return;
 
         iter->second.user_lock = false;
         used_bytes -= iter->second.bytes;
@@ -223,7 +223,7 @@ void memFree(T *ptr)
 }
 
 template<typename T>
-void memPop(const T *ptr)
+void memLock(const T *ptr)
 {
     std::lock_guard<std::mutex> lock(memory_map_mutex);
 
@@ -241,7 +241,7 @@ void memPop(const T *ptr)
 }
 
 template<typename T>
-void memPush(const T *ptr)
+void memUnlock(const T *ptr)
 {
     std::lock_guard<std::mutex> lock(memory_map_mutex);
     mem_iter iter = memory_map.find((void *)ptr);
@@ -273,14 +273,14 @@ void pinnedFree(T* ptr)
     memFree<T>(ptr);
 }
 
-#define INSTANTIATE(T)                                          \
-    template T* memAlloc(const size_t &elements);               \
-    template void memFree(T* ptr);                              \
-    template void memFreeLocked(T* ptr, bool freeLocked);       \
-    template void memPop(const T* ptr);                         \
-    template void memPush(const T* ptr);                        \
-    template T* pinnedAlloc(const size_t &elements);            \
-    template void pinnedFree(T* ptr);                           \
+#define INSTANTIATE(T)                                      \
+    template T* memAlloc(const size_t &elements);           \
+    template void memFree(T* ptr);                          \
+    template void memFreeLocked(T* ptr, bool user_unlock);  \
+    template void memLock(const T* ptr);                    \
+    template void memUnlock(const T* ptr);                  \
+    template T* pinnedAlloc(const size_t &elements);        \
+    template void pinnedFree(T* ptr);                       \
 
 INSTANTIATE(float)
 INSTANTIATE(cfloat)
