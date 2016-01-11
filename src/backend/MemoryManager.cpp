@@ -31,6 +31,12 @@ MemoryManager::MemoryManager(int num_devices, unsigned MAX_BUFFERS, unsigned MAX
         this->debug_mode = env_var[0] != '0';
     }
     if (this->debug_mode) mem_step_size = 1;
+
+    for (int n = 0; n < num_devices; n++) {
+        memory[n].total_bytes = 0;
+        memory[n].lock_bytes = 0;
+        memory[n].lock_buffers = 0;
+    }
 }
 
 void MemoryManager::garbageCollect()
