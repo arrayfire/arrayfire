@@ -249,12 +249,17 @@ static af_array checkVersionAndRead(const char *filename, const unsigned index)
 {
     char version = 0;
 
-    std::fstream fs(filename, std::fstream::in | std::fstream::binary);
+    std::string filenameStr = std::string(filename);
+    std::fstream fs(filenameStr, std::fstream::in | std::fstream::binary);
     // Throw exception if file is not open
-    if(!fs.is_open()) AF_ERROR("File failed to open", AF_ERR_ARG);
+    if(!fs.is_open()) {
+        std::string errStr = "Failed to open: " + filenameStr;
+        AF_ERROR(errStr.c_str(), AF_ERR_ARG);
+    }
 
     if(fs.peek() == std::fstream::traits_type::eof()) {
-        AF_ERROR("File is empty", AF_ERR_ARG);
+        std::string errStr = filenameStr + " is empty";
+        AF_ERROR(errStr.c_str(), AF_ERR_ARG);
     } else {
         fs.read(&version, sizeof(char));
     }
@@ -270,13 +275,18 @@ int checkVersionAndFindIndex(const char *filename, const char *k)
 {
     char version = 0;
     std::string key(k);
+    std::string filenameStr(filename);
+    std::ifstream fs(filenameStr, std::ifstream::in | std::ifstream::binary);
 
-    std::ifstream fs(filename, std::ifstream::in | std::ifstream::binary);
     // Throw exception if file is not open
-    if(!fs.is_open()) AF_ERROR("File failed to open", AF_ERR_ARG);
+    if(!fs.is_open()) {
+        std::string errStr = "Failed to open: " + filenameStr;
+        AF_ERROR(errStr.c_str(), AF_ERR_ARG);
+    }
 
     if(fs.peek() == std::ifstream::traits_type::eof()) {
-        AF_ERROR("File is empty", AF_ERR_ARG);
+        std::string errStr = filenameStr + " is empty";
+        AF_ERROR(errStr.c_str(), AF_ERR_ARG);
     } else {
         fs.read(&version, sizeof(char));
     }
