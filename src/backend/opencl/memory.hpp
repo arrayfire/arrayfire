@@ -15,12 +15,7 @@ namespace opencl
 {
 
     cl::Buffer *bufferAlloc(const size_t &bytes);
-
-    // Need these as 2 separate function and not a default argument
-    // This is because it is used as the deleter in shared pointer
-    // which cannot support default arguments
     void bufferFree(cl::Buffer *buf);
-    void bufferFreeLocked(cl::Buffer *buf, bool user_unlock);
 
     template<typename T> T *memAlloc(const size_t &elements);
 

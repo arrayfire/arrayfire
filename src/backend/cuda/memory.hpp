@@ -9,6 +9,7 @@
 #pragma once
 
 #include <af/defines.h>
+
 namespace cuda
 {
     template<typename T> T* memAlloc(const size_t &elements);

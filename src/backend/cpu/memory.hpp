@@ -9,6 +9,7 @@
 #pragma once
 
 #include <af/defines.h>
+
 namespace cpu
 {
     template<typename T> T* memAlloc(const size_t &elements);
