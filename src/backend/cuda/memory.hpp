@@ -9,6 +9,7 @@
 #pragma once
 
 #include <af/defines.h>
+
 namespace cuda
 {
     template<typename T> T* memAlloc(const size_t &elements);
@@ -17,9 +18,9 @@ namespace cuda
     // This is because it is used as the deleter in shared pointer
     // which cannot support default arguments
     template<typename T> void memFree(T* ptr);
-    template<typename T> void memFreeLocked(T* ptr, bool freeLocked);
-    template<typename T> void memPop(const T *ptr);
-    template<typename T> void memPush(const T *ptr);
+    template<typename T> void memFreeLocked(T* ptr, bool user_unlock);
+    template<typename T> void memLock(const T *ptr);
+    template<typename T> void memUnlock(const T *ptr);
 
     template<typename T> T* pinnedAlloc(const size_t &elements);
     template<typename T> void pinnedFree(T* ptr);

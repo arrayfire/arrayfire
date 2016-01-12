@@ -25,7 +25,7 @@ When AF_PRINT_ERRORS is set to 1, the exceptions thrown are more verbose and
 detailed. This helps in locating the exact failure.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AF_PRINT_ERRORS=1 ./myprogram_opencl
+AF_PRINT_ERRORS=1 ./myprogram
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 AF_CUDA_DEFAULT_DEVICE {#af_cuda_default_device}
@@ -53,6 +53,37 @@ AF_OPENCL_DEFAULT_DEVICE=1 ./myprogram_opencl
 
 Note: af::setDevice call in the source code will take precedence over this
 variable.
+
+AF_OPENCL_DEFAULT_DEVICE_TYPE {#af_opencl_default_device_type}
+-------------------------------------------------------------------------------
+
+Use this variable to set the default OpenCL device type. Valid values for this
+variable are: CPU, GPU, ACC (Accelerators).
+
+When set, the first device of the specified type is chosen as default device.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+AF_OPENCL_DEFAULT_DEVICE_TYPE=CPU ./myprogram_opencl
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Note: `AF_OPENCL_DEFAULT_DEVICE` and af::setDevice takes precedence over this variable.
+
+AF_OPENCL_DEVICE_TYPE {#af_opencl_device_type}
+-------------------------------------------------------------------------------
+
+Use this variable to only choose OpenCL devices of specified type. Valid values for this
+variable are:
+
+- ALL: All OpenCL devices. (Default behavior).
+- CPU: CPU devices only.
+- GPU: GPU devices only.
+- ACC: Accelerator devices only.
+
+When set, the remaining OpenCL device types are ignored by the OpenCL backend.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+AF_OPENCL_DEVICE_TYPE=CPU ./myprogram_opencl
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 AF_OPENCL_CPU_OFFLOAD {#af_opencl_cpu_offload}
 -------------------------------------------------------------------------------
@@ -99,3 +130,15 @@ path where the ArrayFire backend libraries are loaded from.
 If the libraries are loaded from system paths, such as PATH or LD_LIBRARY_PATH
 etc, then it will print "system path". If the libraries are loaded from other
 paths, then those paths are shown in full.
+
+AF_MEM_DEBUG {#af_mem_debug}
+-------------------------------------------------------------------------------
+
+When AF_MEM_DEBUG is set to 1 (or anything not equal to 0), the caching mechanism in the memory manager.
+The device buffers are allocated using native functions as needed and freed when going out of scope.
+
+When the environment variable is not set, it is treated to be non zero.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+AF_MEM_DEBUG=1 ./myprogram
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

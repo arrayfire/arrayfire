@@ -141,9 +141,9 @@ af_err af_create_window(af_window *out, const int width, const int height, const
 
         wnd = new fg::Window(width, height, title, mainWnd);
         wnd->setFont(fgMngr.getFont());
+        *out = reinterpret_cast<af_window>(wnd);
     }
     CATCHALL;
-    *out = reinterpret_cast<af_window>(wnd);
     return AF_SUCCESS;
 #else
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);

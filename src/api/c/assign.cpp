@@ -350,10 +350,10 @@ af_err af_assign_gen(af_array *out,
             throw;
         }
         if (is_vector) { AF_CHECK(af_release_array(rhs)); }
+
+        std::swap(*out, output);
     }
     CATCHALL;
-
-    std::swap(*out, output);
 
     return AF_SUCCESS;
 }

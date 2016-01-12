@@ -67,10 +67,10 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
         case u8:     indexArray<uchar>   (out, in, ndims, index);  break;
         default:    TYPE_ERROR(1, in_type);
         }
+        swap(*result, out);
     }
     CATCHALL
 
-    swap(*result, out);
     return AF_SUCCESS;
 }
 
@@ -127,11 +127,9 @@ af_err af_lookup(af_array *out, const af_array in, const af_array indices, const
             case  u8: output = lookup<uchar   >(in, indices, dim); break;
             default : TYPE_ERROR(1, idxType);
         }
+        std::swap(*out, output);
     }
     CATCHALL;
-
-    std::swap(*out, output);
-
     return AF_SUCCESS;
 }
 

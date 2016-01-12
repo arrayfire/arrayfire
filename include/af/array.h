@@ -672,6 +672,8 @@ namespace af
            Get the device pointer from the array and lock the buffer in memory manager.
            @{
 
+           The device memory returned by this function is not freed until unlock() is called.
+
            \ingroup arrayfire_func
            \ingroup device_mat
         */
@@ -961,7 +963,7 @@ namespace af
         /// \brief Locks the device buffer in the memory manager.
         ///
         /// This method can be called to take control of the device pointer from the memory manager.
-        /// While a buffer is locked, the memory manager does not free the memory.
+        /// While a buffer is locked, the memory manager doesn't free the memory until unlock() is invoked.
         void lock() const;
 
         ///

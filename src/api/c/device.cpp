@@ -39,7 +39,9 @@ af_err af_get_backend_count(unsigned* num_backends)
 
 af_err af_get_available_backends(int* result)
 {
-    *result = getBackend();
+    try {
+        *result = getBackend();
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
@@ -73,7 +75,9 @@ af_err af_init()
 
 af_err af_info()
 {
-    printf("%s", getInfo().c_str());
+    try {
+        printf("%s", getInfo().c_str());
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
@@ -223,7 +227,7 @@ af_err af_get_device_ptr(void **data, const af_array arr)
 template <typename T>
 inline void lockArray(const af_array arr)
 {
-    memPop<T>((const T *)getArray<T>(arr).get());
+    memLock<T>((const T *)getArray<T>(arr).get());
 }
 
 af_err af_lock_device_ptr(const af_array arr)
@@ -260,7 +264,7 @@ af_err af_lock_array(const af_array arr)
 template <typename T>
 inline void unlockArray(const af_array arr)
 {
-    memPush<T>((const T *)getArray<T>(arr).get());
+    memUnlock<T>((const T *)getArray<T>(arr).get());
 }
 
 af_err af_unlock_device_ptr(const af_array arr)
@@ -300,6 +304,7 @@ af_err af_alloc_device(void **ptr, const dim_t bytes)
     try {
         AF_CHECK(af_init());
         *ptr = (void *)memAlloc<char>(bytes);
+        memLock<char>((const char *)*ptr);
     } CATCHALL;
     return AF_SUCCESS;
 }
@@ -332,7 +337,6 @@ af_err af_free_pinned(void *ptr)
 af_err af_alloc_host(void **ptr, const dim_t bytes)
 {
     try {
-        AF_CHECK(af_init());
         *ptr = malloc(bytes);
     } CATCHALL;
     return AF_SUCCESS;
@@ -341,7 +345,6 @@ af_err af_alloc_host(void **ptr, const dim_t bytes)
 af_err af_free_host(void *ptr)
 {
     try {
-        AF_CHECK(af_init());
         free(ptr);
     } CATCHALL;
     return AF_SUCCESS;
@@ -382,12 +385,16 @@ af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
 
 af_err af_set_mem_step_size(const size_t step_bytes)
 {
-    detail::setMemStepSize(step_bytes);
+    try{
+        detail::setMemStepSize(step_bytes);
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err af_get_mem_step_size(size_t *step_bytes)
 {
-    *step_bytes =  detail::getMemStepSize();
+    try {
+        *step_bytes =  detail::getMemStepSize();
+    } CATCHALL;
     return AF_SUCCESS;
 }
