@@ -59,6 +59,10 @@ public:
     }
 };
 
+// CUDA Pinned Memory does not depend on device
+// So we pass 1 as numDevices to the constructor so that it creates 1 vector
+// of memory_info
+// When allocating and freeing, it doesn't really matter which device is active
 class MemoryManagerPinned  : public common::MemoryManager
 {
     int getActiveDeviceId();
@@ -69,18 +73,7 @@ public:
     ~MemoryManagerPinned()
     {
         common::lock_guard_t lock(this->memory_mutex);
-        for (int n = 0; n < getDeviceCount(); n++) {
-            try {
-                cuda::setDevice(n);
-                this->garbageCollect();
-            } catch(AfError err) {
-                if(err.getError() == AF_ERR_DRIVER) { // Can happen from cudaErrorDevicesUnavailable
-                    continue;
-                } else {
-                    throw err;
-                }
-            }
-        }
+        this->garbageCollect();
     }
 };
 
@@ -116,11 +109,11 @@ static MemoryManager &getMemoryManager()
 
 int MemoryManagerPinned::getActiveDeviceId()
 {
-    return cuda::getActiveDeviceId();
+    return 0; // pinned uses a single vector
 }
 
 MemoryManagerPinned::MemoryManagerPinned() :
-    common::MemoryManager(getDeviceCount(), MAX_BUFFERS, MAX_BYTES, AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG)
+    common::MemoryManager(1, MAX_BUFFERS, MAX_BYTES, AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG)
 {}
 
 void *MemoryManagerPinned::nativeAlloc(const size_t bytes)

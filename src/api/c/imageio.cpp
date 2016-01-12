@@ -301,13 +301,14 @@ af_err af_save_image(const char* filename, const af_array in_)
             free_in = true;
         } else if(max_real < 256) {
             in = in_;
-        }
-        else if (max_real < 65536) {
+        } else if (max_real < 65536) {
             af_array c255 = 0;
             AF_CHECK(af_constant(&c255, 257.0, info.ndims(), info.dims().get(), f32));
             AF_CHECK(af_div(&in, in_, c255, false));
             AF_CHECK(af_release_array(c255));
             free_in = true;
+        } else {
+            in = in_;
         }
 
         // FI = row major | AF = column major
