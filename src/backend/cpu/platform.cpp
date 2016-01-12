@@ -237,11 +237,11 @@ int getDeviceCount()
 int setDevice(int device)
 {
     static bool flag;
-    if(!flag) {
-        printf("WARNING: af_set_device not supported for CPU\n");
+    if(!flag && device != 0) {
+        printf("WARNING af_set_device(device): device can only be 0 for CPU\n");
         flag = 1;
     }
-    return 1;
+    return 0;
 }
 
 int getActiveDeviceId()

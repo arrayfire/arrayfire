@@ -60,7 +60,6 @@ IF(UNIX)
     # Forcing STRICT ANSI should resolve a bunch of issues that NVIDIA seems to face with GCC compilers.
     ADD_DEFINITIONS(-D__STRICT_ANSI__)
     SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler -fvisibility=hidden)
-    REMOVE_DEFINITIONS(-std=c++0x)
     IF(${WITH_COVERAGE})
         SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -fprofile-arcs -Xcompiler -ftest-coverage -Xlinker -fprofile-arcs -Xlinker -ftest-coverage")
     ENDIF(${WITH_COVERAGE})

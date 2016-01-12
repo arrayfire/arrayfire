@@ -77,7 +77,7 @@ namespace opencl
     void *getDevicePtr(const Array<T>& arr)
     {
         cl::Buffer *buf = arr.device();
-        memPop((T *)buf);
+        memLock((T *)buf);
         return (void *)((*buf)());
     }
 

@@ -108,6 +108,8 @@ namespace af
     /// \param[in] type is the type of the elements to allocate
     /// \returns the pointer to the memory
     ///
+    /// \note The device memory returned by this function is only freed if af::free() is called explicitly
+
     AFAPI void *alloc(const size_t elements, const dtype type);
 
     /// \brief Allocates memory using ArrayFire's memory manager
@@ -118,6 +120,8 @@ namespace af
     ///
     /// \note the size of the memory allocated is the number of \p elements *
     ///         sizeof(type)
+    ///
+    /// \note The device memory returned by this function is only freed if af::free() is called explicitly
     template<typename T>
     T* alloc(const size_t elements);
     /// @}
@@ -126,6 +130,8 @@ namespace af
     ///
     /// \copydoc device_func_free
     /// \param[in] ptr the memory to free
+    ///
+    /// This function will free a device pointer even if it has been previously locked.
     AFAPI void free(const void *ptr);
 
     /// \ingroup device_func_pinned
@@ -292,11 +298,15 @@ extern "C" {
 
     /**
        \ingroup device_func_alloc
+
+       This device memory returned by this function can only be freed using af_free_device
     */
     AFAPI af_err af_alloc_device(void **ptr, const dim_t bytes);
 
     /**
        \ingroup device_func_free
+
+       This function will free a device pointer even if it has been previously locked.
     */
     AFAPI af_err af_free_device(void *ptr);
 

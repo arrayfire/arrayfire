@@ -86,7 +86,7 @@ namespace cuda
     void *getDevicePtr(const Array<T>& arr)
     {
         T *ptr = arr.device();
-        memPop(ptr);
+        memLock(ptr);
         return (void *)ptr;
     }
 
