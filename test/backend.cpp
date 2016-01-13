@@ -21,11 +21,8 @@
 using std::string;
 using std::vector;
 
-const char *getActiveBackendString()
+const char *getActiveBackendString(af_backend active)
 {
-    af_backend active = (af_backend)0;
-    af_get_active_backend(&active);
-
     switch(active) {
         case AF_BACKEND_CPU   : return "AF_BACKEND_CPU";
         case AF_BACKEND_CUDA  : return "AF_BACKEND_CUDA";
@@ -39,11 +36,20 @@ void testFunction()
 {
     af_info();
 
-    printf("Active Backend Enum = %s\n", getActiveBackendString());
+    af_backend activeBackend = (af_backend)0;
+    af_get_active_backend(&activeBackend);
+
+    printf("Active Backend Enum = %s\n", getActiveBackendString(activeBackend));
 
     af_array outArray = 0;
     dim_t dims[] = {32, 32};
     ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, 2, dims, (af_dtype) af::dtype_traits<T>::af_type));
+
+    // Verify backends returned by array and by function are the same
+    af_backend arrayBackend = (af_backend)0;
+    af_get_backend_id(&arrayBackend, outArray);
+    ASSERT_EQ(arrayBackend, activeBackend);
+
     // cleanup
     if(outArray != 0) ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }

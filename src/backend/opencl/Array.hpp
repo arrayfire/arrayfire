@@ -210,17 +210,6 @@ namespace opencl
 
         JIT::Node_ptr getNode() const;
 
-    private:
-        bool is_const() const
-        {
-            return true;
-        }
-
-        bool is_const()
-        {
-            return false;
-        }
-
     public:
         std::shared_ptr<T> getMappedPtr() const
         {
@@ -237,13 +226,9 @@ namespace opencl
             T *ptr = nullptr;
             try {
                 if(ptr == nullptr) {
-                    if(is_const()) {
-                        ptr = (T*)getQueue().enqueueMapBuffer(*const_cast<cl::Buffer*>(get()), true, CL_MAP_READ,
-                                getOffset(), getDataDims().elements() * sizeof(T));
-                    } else {
-                        ptr = (T*)getQueue().enqueueMapBuffer(*(get()), true, CL_MAP_READ|CL_MAP_WRITE,
-                                getOffset(), getDataDims().elements() * sizeof(T));
-                    }
+                    ptr = (T*)getQueue().enqueueMapBuffer(*const_cast<cl::Buffer*>(get()),
+                            true, CL_MAP_READ|CL_MAP_WRITE,
+                            getOffset(), getDataDims().elements() * sizeof(T));
                 }
             } catch(cl::Error err) {
                 CL_TO_AF_ERROR(err);

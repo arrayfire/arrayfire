@@ -177,33 +177,6 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     return out;
 }
 
-// Keeping this around for future reference
-//template<typename T, bool conjugate, bool both_conjugate>
-//Array<T> dot_(const Array<T> &lhs, const Array<T> &rhs,
-//              af_mat_prop optLhs, af_mat_prop optRhs)
-//{
-//    initBlas();
-//
-//    int N = lhs.dims()[0];
-//    dot_func<T, conjugate> dot;
-//    cl::Event event;
-//    Array<T> out = createEmptyArray<T>(af::dim4(1));
-//    cl::Buffer scratch(getContext(), CL_MEM_READ_WRITE, sizeof(T) * N);
-//    CLBLAS_CHECK(
-//        dot(N,
-//            (*out.get())(), out.getOffset(),
-//            (*lhs.get())(),  lhs.getOffset(), lhs.strides()[0],
-//            (*rhs.get())(),  rhs.getOffset(), rhs.strides()[0],
-//            scratch(),
-//            1, &getQueue()(), 0, nullptr, &event())
-//        );
-//
-//    if(both_conjugate)
-//        transpose_inplace<T>(out, true);
-//
-//    return out;
-//}
-
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
              af_mat_prop optLhs, af_mat_prop optRhs)

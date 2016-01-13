@@ -200,28 +200,6 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
 
 }
 
-// Keeping this around for future reference
-//template<typename T, bool conjugate, bool both_conjugate>
-//Array<T> dot_(const Array<T> &lhs, const Array<T> &rhs,
-//              af_mat_prop optLhs, af_mat_prop optRhs)
-//{
-//    int N = lhs.dims()[0];
-//
-//    T out;
-//
-//    CUBLAS_CHECK((dot_func<T, conjugate>()(
-//                 getHandle(),
-//                 N,
-//                 lhs.get(), lhs.strides()[0],
-//                 rhs.get(), rhs.strides()[0],
-//                 &out)));
-//
-//    if(both_conjugate)
-//        return createValueArray(af::dim4(1), conj(out));
-//    else
-//        return createValueArray(af::dim4(1), out);
-//}
-
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
              af_mat_prop optLhs, af_mat_prop optRhs)
