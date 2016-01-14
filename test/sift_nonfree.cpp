@@ -158,7 +158,7 @@ TYPED_TEST_CASE(SIFT, TestTypes);
 template<typename T>
 void siftTest(string pTestFile, unsigned nLayers, float contrastThr, float edgeThr, float initSigma, bool doubleInput)
 {
-#ifdef AF_BUILD_SIFT
+#ifdef AF_BUILD_NONFREE_SIFT
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
 
@@ -276,7 +276,7 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr, float edgeT
 //
 TEST(SIFT, CPP)
 {
-#ifdef AF_BUILD_SIFT
+#ifdef AF_BUILD_NONFREE_SIFT
     if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 

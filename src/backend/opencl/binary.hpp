@@ -22,7 +22,7 @@ namespace opencl
     {
         const char *name()
         {
-            return "noop";
+            return "__invalid";
         }
     };
 

@@ -395,6 +395,9 @@ std::string getInfo()
         info << " -- FP64 Support: "
              << (device->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False")
              << "";
+        info << "Unified Memory("
+             << (isHostUnifiedMemory(*device) ? "True" : "False")
+             << ")";
 #endif
         info << std::endl;
 
@@ -450,6 +453,26 @@ const cl::Device& getDevice()
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
     return *(devMngr.mDevices[devMngr.mActiveQId]);
+}
+
+cl_device_type getDeviceType()
+{
+    cl::Device device = getDevice();
+    cl_device_type type = device.getInfo<CL_DEVICE_TYPE>();
+    return type;
+}
+
+bool isHostUnifiedMemory(const cl::Device &device)
+{
+    return device.getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
+}
+
+bool OpenCLCPUOffload()
+{
+    static const bool sync = getEnvVar("AF_OPENCL_CPU_OFFLOAD") == "1";
+    bool offload = false;
+    if(sync) offload = isHostUnifiedMemory(getDevice());
+    return offload;
 }
 
 bool isGLSharingSupported()

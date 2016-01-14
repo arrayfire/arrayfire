@@ -97,6 +97,12 @@ cl::CommandQueue& getQueue();
 
 const cl::Device& getDevice();
 
+cl_device_type getDeviceType();
+
+bool isHostUnifiedMemory(const cl::Device &device);
+
+bool OpenCLCPUOffload();
+
 bool isGLSharingSupported();
 
 bool isDoubleSupported(int device);

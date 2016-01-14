@@ -158,7 +158,7 @@ TYPED_TEST_CASE(GLOH, TestTypes);
 template<typename T>
 void glohTest(string pTestFile)
 {
-#ifdef AF_BUILD_SIFT
+#ifdef AF_BUILD_NONFREE_SIFT
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
 
@@ -270,7 +270,7 @@ void glohTest(string pTestFile)
 //
 TEST(GLOH, CPP)
 {
-#ifdef AF_BUILD_SIFT
+#ifdef AF_BUILD_NONFREE_SIFT
     if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 

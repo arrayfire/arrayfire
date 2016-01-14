@@ -9,16 +9,19 @@
 
 #include <qr.hpp>
 #include <err_common.hpp>
+#include <err_opencl.hpp>
 #include <blas.hpp>
 #include <copy.hpp>
-#include <identity.hpp>
-#include <err_opencl.hpp>
+
+#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+
 #include <magma/magma.h>
 #include <magma/magma_helper.h>
 #include <magma/magma_data.h>
 #include <kernel/triangle.hpp>
-
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#include <platform.hpp>
+#include <identity.hpp>
+#include <cpu/cpu_qr.hpp>
 
 namespace opencl
 {
@@ -27,6 +30,10 @@ template<typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig)
 {
     try {
+        if(OpenCLCPUOffload()) {
+            return cpu::qr(q, r, t, orig);
+        }
+
         initBlas();
         dim4 iDims = orig.dims();
         int M = iDims[0];
@@ -81,6 +88,10 @@ template<typename T>
 Array<T> qr_inplace(Array<T> &in)
 {
     try {
+        if(OpenCLCPUOffload()) {
+            return cpu::qr_inplace(in);
+        }
+
         initBlas();
         dim4 iDims = in.dims();
         int M = iDims[0];

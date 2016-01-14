@@ -55,6 +55,12 @@ af_err af_get_backend_id(af_backend *result, const af_array in)
     return AF_SUCCESS;
 }
 
+af_err af_get_active_backend(af_backend *result)
+{
+    *result = (af_backend)getBackend();
+    return AF_SUCCESS;
+}
+
 af_err af_init()
 {
     try {

@@ -44,6 +44,7 @@ MACRO(SET_COMPUTE VERSION)
     SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
     SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
     LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
+    ADD_DEFINITIONS(-DCUDA_COMPUTE_${VERSION})
     MESSAGE(STATUS "Setting Compute ${VERSION} to ON")
 ENDMACRO(SET_COMPUTE)
 
@@ -69,9 +70,32 @@ ENDIF()
 
 ADD_DEFINITIONS(-DAF_CUDA)
 
-IF(${CUDA_VERSION_MAJOR} LESS 7)
+# CMake 3.2 Adds CUDA_cusolver_LIBRARY variable to FindCUDA
+# Older version, use FIND_LIBRARY
+IF(CMAKE_VERSION VERSION_LESS 3.2)
+    IF(${CUDA_cusolver_LIBRARY} MATCHES " ")
+        UNSET(CUDA_cusolver_LIBRARY CACHE)  # When going from higher version to lower version
+    ENDIF()
+    FIND_LIBRARY (
+        CUDA_cusolver_LIBRARY
+        NAMES "cusolver"
+        PATHS ${CUDA_TOOLKIT_ROOT_DIR}
+        PATH_SUFFIXES "lib64" "lib/x64" "lib"
+        DOC "CUDA cusolver Library"
+        NO_DEFAULT_PATH
+        )
+ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
+
+IF(${CUDA_VERSION_MAJOR} LESS 7 AND CUDA_cusolver_LIBRARY)
+  UNSET(CUDA_cusolver_LIBRARY CACHE)  # Failsafe when going from higher version to lower version
+ENDIF()
+
+IF(CUDA_cusolver_LIBRARY)
+    MESSAGE(STATUS "CUDA cusolver library available in CUDA Version ${CUDA_VERSION_STRING}")
+    ADD_DEFINITIONS(-DWITH_CUDA_LINEAR_ALGEBRA)
+ELSE(CUDA_cusolver_LIBRARY)
     # Use CPU Lapack as fallback?
-    OPTION(CUDA_LAPACK_CPU_FALLBACK "Use CPU LAPACK as fallback for CUDA LAPACK when CUDA is 6.5 or older" OFF)
+    OPTION(CUDA_LAPACK_CPU_FALLBACK "Use CPU LAPACK as fallback for CUDA LAPACK when cusolver is not available" OFF)
     MARK_AS_ADVANCED(CUDA_LAPACK_CPU_FALLBACK)
 
     IF(${CUDA_LAPACK_CPU_FALLBACK})
@@ -83,9 +107,9 @@ IF(${CUDA_VERSION_MAJOR} LESS 7)
         ENDIF(APPLE)
 
         IF(NOT LAPACK_FOUND)
-            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. Linear Algebra will not be available.")
+            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. Linear Algebra will not be available.")
         ELSE(NOT LAPACK_FOUND)
-            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. But CPU LAPACK libraries are available. Will fallback to using host side code.")
+            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. But CPU LAPACK libraries are available. Will fallback to using host side code.")
             ADD_DEFINITIONS(-DWITH_CPU_LINEAR_ALGEBRA)
             IF(USE_CUDA_MKL)
                 MESSAGE("Using MKL")
@@ -93,26 +117,10 @@ IF(${CUDA_VERSION_MAJOR} LESS 7)
             ENDIF()
         ENDIF()
     ELSE()
-        MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. Linear Algebra will not be available.")
+        MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. Linear Algebra will not be available.")
     ENDIF()
-    IF(CMAKE_VERSION VERSION_LESS 3.2)
-        SET(CUDA_cusolver_LIBRARY)
-        MARK_AS_ADVANCED(CUDA_cusolver_LIBRARY)
-    ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
-ELSE(${CUDA_VERSION_MAJOR} LESS 7)
-    MESSAGE(STATUS "CUDA cusolver library available in CUDA Version ${CUDA_VERSION_STRING}")
-    ADD_DEFINITIONS(-DWITH_CUDA_LINEAR_ALGEBRA)
-    IF(CMAKE_VERSION VERSION_LESS 3.2)
-        FIND_LIBRARY(
-            CUDA_cusolver_LIBRARY
-            NAMES "cusolver"
-            PATHS ${CUDA_TOOLKIT_ROOT_DIR}
-            PATH_SUFFIXES "lib64" "lib/x64" "lib"
-            DOC "CUDA cusolver Library"
-            NO_DEFAULT_PATH
-            )
-    ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
-ENDIF(${CUDA_VERSION_MAJOR} LESS 7)
+    UNSET(CUDA_cusolver_LIBRARY CACHE)  # Failsafe when going from higher version to lower version
+ENDIF(CUDA_cusolver_LIBRARY)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
@@ -309,7 +317,6 @@ ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
 TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
                                 PRIVATE ${CUDA_LIBRARIES}
-                                PRIVATE ${CUDA_cusolver_LIBRARY}
                                 PRIVATE ${FreeImage_LIBS}
                                 PRIVATE ${CUDA_CUFFT_LIBRARIES}
                                 PRIVATE ${CUDA_NVVM_LIBRARIES}
@@ -319,8 +326,10 @@ IF(FORGE_FOUND)
     TARGET_LINK_LIBRARIES(afcuda PRIVATE ${FORGE_LIBRARIES})
 ENDIF()
 
-IF(CUDA_LAPACK_CPU_FALLBACK)
-  TARGET_LINK_LIBRARIES(afcuda PRIVATE ${LAPACK_LIBRARIES})
+IF(CUDA_cusolver_LIBRARY)
+    TARGET_LINK_LIBRARIES(afcuda PRIVATE ${CUDA_cusolver_LIBRARY})
+ELSEIF(CUDA_LAPACK_CPU_FALLBACK)
+    TARGET_LINK_LIBRARIES(afcuda PRIVATE ${LAPACK_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afcuda PROPERTIES

@@ -15,7 +15,7 @@
 #include <err_opencl.hpp>
 #include <handle.hpp>
 
-#ifdef AF_BUILD_SIFT
+#ifdef AF_BUILD_NONFREE_SIFT
 #include <kernel/sift_nonfree.hpp>
 #endif
 
@@ -34,7 +34,7 @@ unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
               const float img_scale, const float feature_ratio,
               const bool compute_GLOH)
 {
-#ifdef AF_BUILD_SIFT
+#ifdef AF_BUILD_NONFREE_SIFT
     unsigned nfeat_out;
     unsigned desc_len;
 

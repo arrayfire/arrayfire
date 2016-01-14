@@ -42,6 +42,13 @@ namespace af
         return result;
     }
 
+    af::Backend getActiveBackend()
+    {
+        af::Backend result = (af::Backend)0;
+        AF_THROW(af_get_active_backend(&result));
+        return result;
+    }
+
     void info()
     {
         AF_THROW(af_info());

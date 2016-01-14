@@ -18,6 +18,9 @@
 #include <math.hpp>
 #include <err_common.hpp>
 #include <cublasManager.hpp>
+#include <arith.hpp>
+#include <reduce.hpp>
+#include <complex.hpp>
 
 namespace cuda
 {
@@ -197,40 +200,15 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
 
 }
 
-template<typename T, bool conjugate, bool both_conjugate>
-Array<T> dot_(const Array<T> &lhs, const Array<T> &rhs,
-              af_mat_prop optLhs, af_mat_prop optRhs)
-{
-    int N = lhs.dims()[0];
-
-    T out;
-
-    CUBLAS_CHECK((dot_func<T, conjugate>()(
-                 getHandle(),
-                 N,
-                 lhs.get(), lhs.strides()[0],
-                 rhs.get(), rhs.strides()[0],
-                 &out)));
-
-    if(both_conjugate)
-        return createValueArray(af::dim4(1), conj(out));
-    else
-        return createValueArray(af::dim4(1), out);
-}
-
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
              af_mat_prop optLhs, af_mat_prop optRhs)
 {
-    if(optLhs == AF_MAT_CONJ && optRhs == AF_MAT_CONJ) {
-        return dot_<T, false, true>(lhs, rhs, optLhs, optRhs);
-    } else if (optLhs == AF_MAT_CONJ && optRhs == AF_MAT_NONE) {
-        return dot_<T, true, false>(lhs, rhs, optLhs, optRhs);
-    } else if (optLhs == AF_MAT_NONE && optRhs == AF_MAT_CONJ) {
-        return dot_<T, true, false>(rhs, lhs, optRhs, optLhs);
-    } else {
-        return dot_<T, false, false>(lhs, rhs, optLhs, optRhs);
-    }
+    const Array<T> lhs_ = (optLhs == AF_MAT_NONE ? lhs : conj<T>(lhs));
+    const Array<T> rhs_ = (optRhs == AF_MAT_NONE ? rhs : conj<T>(rhs));
+
+    const Array<T> temp = arithOp<T, af_mul_t>(lhs_, rhs_, lhs_.dims());
+    return reduce<af_add_t, T, T>(temp, 0, false, 0);
 }
 
 template<typename T>

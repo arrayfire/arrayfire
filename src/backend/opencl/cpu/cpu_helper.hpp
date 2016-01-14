@@ -7,21 +7,38 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#ifndef AF_OPENCL_CPU
+#define AF_OPENCL_CPU
+
 #include <af/defines.h>
-#include <af/blas.h>
 #include <Array.hpp>
+#include <memory.hpp>
 #include <types.hpp>
+#include <err_common.hpp>
+#include <platform.hpp>
+
+#define lapack_complex_float opencl::cfloat
+#define lapack_complex_double opencl::cdouble
+#define LAPACK_PREFIX LAPACKE_
+#define ORDER_TYPE int
+#define AF_LAPACK_COL_MAJOR LAPACK_COL_MAJOR
+#define LAPACK_NAME(fn) LAPACKE_##fn
 
 #ifdef __APPLE__
-#include <Accelerate/Accelerate.h>
+    #include <Accelerate/Accelerate.h>
+    #include <lapacke.hpp>
+    #undef AF_LAPACK_COL_MAJOR
+    #define AF_LAPACK_COL_MAJOR 0
 #else
-#ifdef USE_MKL
-#include <mkl_cblas.h>
-#else
-extern "C" {
-#include <cblas.h>
-}
-#endif
+    #ifdef USE_MKL
+        #include <mkl_cblas.h>
+        #include<mkl_lapacke.h>
+    #else
+        extern "C" {
+        #include <cblas.h>
+        }
+        #include<lapacke.h>
+    #endif
 #endif
 
 // TODO: Ask upstream for a more official way to detect it
@@ -36,14 +53,11 @@ extern "C" {
 typedef int blasint;
 #endif
 
+namespace opencl
+{
 namespace cpu
 {
-
-template<typename T>
-Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
-                af_mat_prop optLhs, af_mat_prop optRhs);
-template<typename T>
-Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-             af_mat_prop optLhs, af_mat_prop optRhs);
-
 }
+}
+
+#endif

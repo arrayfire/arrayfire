@@ -123,6 +123,12 @@ FILE(GLOB conv_ker_headers
 FILE(GLOB conv_ker_sources
      "kernel/convolve/*.cpp")
 
+FILE(GLOB cpu_headers
+     "cpu/*.hpp")
+
+FILE(GLOB cpu_sources
+     "cpu/*.cpp")
+
 source_group(backend\\opencl\\Headers FILES ${opencl_headers})
 source_group(backend\\opencl\\Sources FILES ${opencl_sources})
 source_group(backend\\opencl\\JIT FILES ${jit_sources})
@@ -131,6 +137,8 @@ source_group(backend\\opencl\\kernel\\cl FILES ${opencl_kernels})
 source_group(backend\\opencl\\kernel\\Sources FILES ${kernel_sources})
 source_group(backend\\opencl\\kernel\\convolve\\Headers FILES ${conv_ker_headers})
 source_group(backend\\opencl\\kernel\\convolve\\Sources FILES ${conv_ker_sources})
+source_group(backend\\opencl\\cpu\\Headers FILES ${cpu_headers})
+source_group(backend\\opencl\\cpu\\Sources FILES ${cpu_sources})
 
 IF(LAPACK_FOUND)
     FILE(GLOB magma_sources
@@ -206,6 +214,8 @@ IF(DEFINED BLAS_SYM_FILE)
                 ${kernel_sources}
                 ${conv_ker_headers}
                 ${conv_ker_sources}
+                ${cpu_headers}
+                ${cpu_sources}
                 ${backend_headers}
                 ${backend_sources}
                 ${magma_sources}
@@ -244,6 +254,8 @@ ELSE(DEFINED BLAS_SYM_FILE)
                 ${kernel_sources}
                 ${conv_ker_headers}
                 ${conv_ker_sources}
+                ${cpu_sources}
+                ${cpu_sources}
                 ${backend_headers}
                 ${backend_sources}
                 ${c_headers}

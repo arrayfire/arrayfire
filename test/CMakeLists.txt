@@ -18,9 +18,27 @@ ELSE()
     FIND_PACKAGE(ArrayFire REQUIRED)
     INCLUDE_DIRECTORIES(${ArrayFire_INCLUDE_DIRS})
     OPTION(BUILD_NONFREE "Build Tests for nonfree algorithms" OFF)
-    IF(${BUILD_NONFREE}) # Add definition. Not required when building with AF
-        ADD_DEFINITIONS(-DAF_BUILD_SIFT)
+
+    IF(${BUILD_NONFREE})
+        MESSAGE(WARNING "Building With NONFREE ON requires the following patents")
+        SET(BUILD_NONFREE_SIFT ON CACHE BOOL "Build ArrayFire with SIFT")
+    ELSE(${BUILD_NONFREE})
+        UNSET(BUILD_NONFREE_SIFT CACHE) # BUILD_NONFREE_SIFT cannot be built without BUILD_NONFREE
     ENDIF(${BUILD_NONFREE})
+
+    IF(${BUILD_NONFREE_SIFT})
+      ADD_DEFINITIONS(-DAF_BUILD_NONFREE_SIFT)
+
+      MESSAGE(WARNING "Building with SIFT requires the following patents")
+
+      MESSAGE("Method and apparatus for identifying scale invariant features"
+        "in an image and use of same for locating an object in an image,\" David"
+        "G. Lowe, US Patent 6,711,293 (March 23, 2004). Provisional application"
+        "filed March 8, 1999. Asignee: The University of British Columbia. For"
+        "further details, contact David Lowe (lowe@cs.ubc.ca) or the"
+        "University-Industry Liaison Office of the University of British"
+        "Columbia.")
+    ENDIF(${BUILD_NONFREE_SIFT})
 
     # ENABLE_TESTING is required when building only tests
     # When building from source, enable_testing is picked from from the main

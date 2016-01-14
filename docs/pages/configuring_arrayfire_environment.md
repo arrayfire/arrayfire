@@ -18,6 +18,16 @@ This is the path with ArrayFire gets installed, ie. the includes and libs are
 present in this directory. You can use this variable to add include paths and
 libraries to your projects.
 
+AF_PRINT_ERRORS {#af_print_errors}
+-------------------------------------------------------------------------------
+
+When AF_PRINT_ERRORS is set to 1, the exceptions thrown are more verbose and
+detailed. This helps in locating the exact failure.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+AF_PRINT_ERRORS=1 ./myprogram
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 AF_CUDA_DEFAULT_DEVICE {#af_cuda_default_device}
 -------------------------------------------------------------------------------
 
@@ -56,7 +66,7 @@ When set, the first device of the specified type is chosen as default device.
 AF_OPENCL_DEFAULT_DEVICE_TYPE=CPU ./myprogram_opencl
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Note: `AF_OPENCL_DEFAULT_DEVICE`  and af::setDevice takes precedence over this variable.
+Note: `AF_OPENCL_DEFAULT_DEVICE` and af::setDevice takes precedence over this variable.
 
 AF_OPENCL_DEVICE_TYPE {#af_opencl_device_type}
 -------------------------------------------------------------------------------
@@ -75,30 +85,53 @@ When set, the remaining OpenCL device types are ignored by the OpenCL backend.
 AF_OPENCL_DEVICE_TYPE=CPU ./myprogram_opencl
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+AF_OPENCL_CPU_OFFLOAD {#af_opencl_cpu_offload}
+-------------------------------------------------------------------------------
+
+When this variable is set to 1, and the selected OpenCL device has unified
+memory with the host (ie. `CL_DEVICE_HOST_UNIFIED_MEMORY` is true for device),
+then certain functions are offloaded to run on the CPU using mapped buffers.
+
+This takes advantage of fast libraries such as MKL while spending no time
+copying memory from device to host. The device memory is mapped to a host
+pointer which can be used in the offloaded functions.
+
+AF_OPENCL_SHOW_BUILD_INFO {#af_opencl_show_build_info}
+-------------------------------------------------------------------------------
+
+This variable is useful when debuggin OpenCL kernel compilation failures. When
+this variable is set to 1, and an error occurs during a OpenCL kernel
+compilation, then the log and kernel are printed to screen.
+
 AF_DISABLE_GRAPHICS {#af_disable_graphics}
 -------------------------------------------------------------------------------
 
-Setting this variable will disable window creation when graphics functions are
-being called. Simply setting this variable will disable functionality, any
-value will suffice. Disabling window creation will disable all other graphics
-calls at runtime as well.
+Setting this variable to 1 will disable window creation when graphics
+functions are being called. Disabling window creation will disable all other
+graphics calls at runtime as well.
 
 This is a useful enviornment variable when running code on servers and systems
 without displays. When graphics calls are run on such machines, they will
 print warning about window creation failing. To suppress those calls, set this
 variable.
 
-AF_PRINT_ERRORS {#af_print_errors}
+AF_SYNCHRONOUS_CALLS {#af_synchronous_calls}
 -------------------------------------------------------------------------------
 
-When AF_PRINT_ERRORS is set to 1, the exceptions thrown are more verbose and
-detailed. This helps in locating the exact failure.
+When this environment variable is set to 1, ArrayFire will execute all
+functions synchronously.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AF_PRINT_ERRORS=1 ./myprogram_opencl
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+AF_SHOW_LOAD_PATH {#af_show_load_path}
+-------------------------------------------------------------------------------
 
-AF_MEM_DEBUG (#af_mem_debug)
+When using the Unified backend, if this variable is set to 1, it will show the
+path where the ArrayFire backend libraries are loaded from.
+
+If the libraries are loaded from system paths, such as PATH or LD_LIBRARY_PATH
+etc, then it will print "system path". If the libraries are loaded from other
+paths, then those paths are shown in full.
+
+AF_MEM_DEBUG {#af_mem_debug}
 -------------------------------------------------------------------------------
 
 When AF_MEM_DEBUG is set to 1 (or anything not equal to 0), the caching mechanism in the memory manager.

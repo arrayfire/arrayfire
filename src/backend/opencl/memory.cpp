@@ -14,7 +14,7 @@
 #include <iomanip>
 #include <string>
 #include <types.hpp>
-#include "err_opencl.hpp"
+#include <err_opencl.hpp>
 
 #include <MemoryManager.hpp>
 
