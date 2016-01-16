@@ -224,6 +224,18 @@ AFAPI array rotate(const array& in, const float theta, const bool crop=true, con
 AFAPI array transform(const array& in, const array& transform, const dim_t odim0 = 0, const dim_t odim1 = 0, const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
 
 /**
+    C++ Interface for transforming coordinates
+
+    \param[in] tf is transformation matrix
+    \param[in] d0 is the first input dimension
+    \param[in] d1 is the second input dimension
+    \return the transformed coordinates
+
+    \ingroup transform_func_coordinates
+*/
+AFAPI array transformCoordinates(const array& tf, const float d0, const float d1);
+
+/**
     C++ Interface for translating an image
 
     \param[in] in is input image
@@ -852,6 +864,19 @@ extern "C" {
     AFAPI af_err af_transform(af_array *out, const af_array in, const af_array transform,
                               const dim_t odim0, const dim_t odim1,
                               const af_interp_type method, const bool inverse);
+
+    /**
+       C Interface for transforming an image
+       C++ Interface for transforming coordinates
+
+       \param[out] out the transformed coordinates
+       \param[in] tf is transformation matrix
+       \param[in] d0 is the first input dimension
+       \param[in] d1 is the second input dimension
+
+       \ingroup transform_func_coordinates
+    */
+    AFAPI af_err af_transform_coordinates(af_array *out, const af_array tf, const float d0, const float d1);
 
     /**
        C Interface for rotating an image
