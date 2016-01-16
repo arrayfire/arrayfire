@@ -700,6 +700,18 @@ AF_INTERP_LOWER are allowed.
 Affine transforms can be used for various purposes. \ref af::translate, \ref af::scale and \ref af::skew
 are specializations of the transform function.
 
+
+\defgroup transform_func_coordinates transformcoordinates
+\ingroup transform_mat
+
+Transform input coordinates
+
+The transform function uses a perspective transform matrix to transform input
+coordinates (given as two dimensions) into a coordinates matrix.
+
+The output is a 4x2 matrix, indicating the coordinates of the 4 bidimensional
+transformed points.
+
 =======================================================================
 
 \defgroup image_func_sat SAT
