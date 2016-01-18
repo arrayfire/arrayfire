@@ -167,9 +167,9 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     using BT  =       typename blas_base<T>::type;
 
     // get host pointers from mapped memory
-    std::shared_ptr<BT> lPtr = lhs.getMappedPtr();
-    std::shared_ptr<BT> rPtr = rhs.getMappedPtr();
-    std::shared_ptr<BT> oPtr = out.getMappedPtr();
+    auto lPtr = lhs.getMappedPtr();
+    auto rPtr = rhs.getMappedPtr();
+    auto oPtr = out.getMappedPtr();
 
     if(rDims[bColDim] == 1) {
         N = lDims[aColDim];
@@ -177,19 +177,19 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
             CblasColMajor, lOpts,
             lDims[0], lDims[1],
             alpha,
-            lPtr.get(), lStrides[1],
-            rPtr.get(), rStrides[0],
+            (BT*)lPtr.get(), lStrides[1],
+            (BT*)rPtr.get(), rStrides[0],
             beta,
-            oPtr.get(), 1);
+            (BT*)oPtr.get(), 1);
     } else {
         gemm_func<T>()(
             CblasColMajor, lOpts, rOpts,
             M, N, K,
             alpha,
-            lPtr.get(), lStrides[1],
-            rPtr.get(), rStrides[1],
+            (BT*)lPtr.get(), lStrides[1],
+            (BT*)rPtr.get(), rStrides[1],
             beta,
-            oPtr.get(), out.dims()[0]);
+            (BT*)oPtr.get(), out.dims()[0]);
     }
 
     return out;
