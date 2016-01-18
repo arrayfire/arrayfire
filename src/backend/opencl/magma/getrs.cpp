@@ -61,6 +61,7 @@
 #include <platform.hpp>
 #include <algorithm>
 #include <string>
+#include <af/opencl.h>
 
 template<typename Ty>  magma_int_t
 magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
@@ -168,8 +169,7 @@ magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
     clblasTranspose cltrans =(trans == MagmaNoTrans) ? clblasNoTrans :
         (trans == MagmaTrans ? clblasTrans : clblasConjTrans);
 
-    std::string pName = opencl::getPlatformName(opencl::getDevice());
-    bool cond = pName.find("NVIDIA") != std::string::npos;
+    bool cond = opencl::getActivePlatform() == AFCL_PLATFORM_NVIDIA;
     cl_mem dAT = 0;
     if (nrhs > 1 && cond) {
         magma_malloc<Ty>(&dAT, n * n);

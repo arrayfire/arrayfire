@@ -49,6 +49,9 @@ class DeviceManager
 
     friend void removeDeviceContext(cl_device_id dev, cl_context ctx);
 
+    friend int getActiveDeviceType();
+    friend int getActivePlatform();
+
     public:
         static const unsigned MAX_DEVICES = 32;
 
@@ -77,6 +80,8 @@ class DeviceManager
         std::vector<cl::Context*>     mContexts;
         std::vector<cl::CommandQueue*>  mQueues;
         std::vector<bool>        mIsGLSharingOn;
+        std::vector<int>         mDeviceTypes;
+        std::vector<int>         mPlatforms;
         unsigned mUserDeviceOffset;
 
         unsigned mActiveCtxId;
@@ -122,5 +127,8 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx);
 void sync(int device);
 
 bool synchronize_calls();
+
+int getActiveDeviceType();
+int getActivePlatform();
 
 }
