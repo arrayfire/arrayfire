@@ -199,7 +199,7 @@ magma_int_t magma_potrf_gpu(
                 magma_getmatrix_async<Ty>(jb, jb, dA(j,j), ldda, work, jb, queue, &event);
 
                 // apply all previous updates to block row right of diagonal block
-                if (j+jb < n) {
+                if (j+jb < n && j > 0) {
                     CLBLAS_CHECK(gpu_blas_gemm(
                                      transType, clblasNoTrans,
                                      jb, n-j-jb, j,
@@ -259,7 +259,7 @@ magma_int_t magma_potrf_gpu(
                 magma_getmatrix_async<Ty>(jb, jb, dA(j,j), ldda, work, jb, queue, &event);
 
                 // apply all previous updates to block column below diagonal block
-                if (j+jb < n) {
+                if (j+jb < n && j > 0) {
                     CLBLAS_CHECK(gpu_blas_gemm(
                                      clblasNoTrans, transType,
                                      n-j-jb, jb, j,
