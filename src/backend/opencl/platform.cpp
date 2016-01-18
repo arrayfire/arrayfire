@@ -181,14 +181,14 @@ static inline bool compare_default(const Device *ldev, const Device *rdev)
         auto lversion =  ldev->getInfo<CL_DEVICE_VERSION>();
         auto rversion =  rdev->getInfo<CL_DEVICE_VERSION>();
 
-        auto lres = (lversion[7] > rversion[7]) ||
+        bool lres = (lversion[7] > rversion[7]) ||
             ((lversion[7] == rversion[7]) && (lversion[9] > rversion[9]));
 
-        auto rres = (lversion[7] < rversion[7]) ||
+        bool rres = (lversion[7] < rversion[7]) ||
             ((lversion[7] == rversion[7]) && (lversion[9] < rversion[9]));
 
-        if (lres > 0) return true;
-        if (rres < 0) return false;
+        if (lres) return true;
+        if (rres) return false;
     }
 
     // Default crietria, sort based on memory
