@@ -181,14 +181,14 @@ static inline bool compare_default(const Device *ldev, const Device *rdev)
         auto lversion =  ldev->getInfo<CL_DEVICE_VERSION>();
         auto rversion =  rdev->getInfo<CL_DEVICE_VERSION>();
 
-        auto lres = (lversion[7] > rversion[7]) ||
+        bool lres = (lversion[7] > rversion[7]) ||
             ((lversion[7] == rversion[7]) && (lversion[9] > rversion[9]));
 
-        auto rres = (lversion[7] < rversion[7]) ||
+        bool rres = (lversion[7] < rversion[7]) ||
             ((lversion[7] == rversion[7]) && (lversion[9] < rversion[9]));
 
-        if (lres > 0) return true;
-        if (rres < 0) return false;
+        if (lres) return true;
+        if (rres) return false;
     }
 
     // Default crietria, sort based on memory
@@ -197,6 +197,25 @@ static inline bool compare_default(const Device *ldev, const Device *rdev)
     auto r_mem = rdev->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
     return l_mem >= r_mem;
 }
+
+static afcl::deviceType getDeviceTypeEnum(cl::Device dev)
+{
+    return (afcl::deviceType)dev.getInfo<CL_DEVICE_TYPE>();
+}
+
+
+static afcl::platform getPlatformEnum(cl::Device dev)
+{
+    std::string pname = getPlatformName(dev);
+    if (verify_present(pname, "AMD")) return AFCL_PLATFORM_AMD;
+    if (verify_present(pname, "NVIDIA")) return AFCL_PLATFORM_NVIDIA;
+    if (verify_present(pname, "INTEL")) return AFCL_PLATFORM_INTEL;
+    if (verify_present(pname, "APPLE")) return AFCL_PLATFORM_APPLE;
+    if (verify_present(pname, "BEIGNET")) return AFCL_PLATFORM_BEIGNET;
+    if (verify_present(pname, "POCL")) return AFCL_PLATFORM_POCL;
+    return AFCL_PLATFORM_UNKNOWN;
+}
+
 
 DeviceManager::DeviceManager()
     : mUserDeviceOffset(0), mActiveCtxId(0), mActiveQId(0)
@@ -260,6 +279,8 @@ DeviceManager::DeviceManager()
             mContexts.push_back(ctx);
             mQueues.push_back(cq);
             mIsGLSharingOn.push_back(false);
+            mDeviceTypes.push_back(getDeviceTypeEnum(*mDevices[i]));
+            mPlatforms.push_back(getPlatformEnum(*mDevices[i]));
         }
 
         bool default_device_set = false;
@@ -437,6 +458,17 @@ int getDeviceIdFromNativeId(cl_device_id id)
     return devId;
 }
 
+int getActiveDeviceType()
+{
+    DeviceManager &instance = DeviceManager::getInstance();
+    return instance.mDeviceTypes[instance.mActiveQId];
+}
+
+int getActivePlatform()
+{
+    DeviceManager &instance = DeviceManager::getInstance();
+    return instance.mPlatforms[instance.mActiveQId];
+}
 const Context& getContext()
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
@@ -730,6 +762,18 @@ bool synchronize_calls() {
 }
 
 using namespace opencl;
+
+af_err afcl_get_device_type(afcl_device_type *res)
+{
+    *res = (afcl_device_type)getActiveDeviceType();
+    return AF_SUCCESS;
+}
+
+af_err afcl_get_platform(afcl_platform *res)
+{
+    *res = (afcl_platform)getActivePlatform();
+    return AF_SUCCESS;
+}
 
 af_err afcl_get_context(cl_context *ctx, const bool retain)
 {

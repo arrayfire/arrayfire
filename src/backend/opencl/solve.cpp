@@ -21,6 +21,7 @@
 #include <blas.hpp>
 #include <transpose.hpp>
 #include <math.hpp>
+#include <af/opencl.h>
 
 #include <algorithm>
 #include <string>
@@ -226,9 +227,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
                               (*dT)(), tmp.getOffset() + NB * MN,
                               NB, 0, queue);
 
-
-        std::string pName = getPlatformName(getDevice());
-        if(pName.find("NVIDIA") != std::string::npos)
+        if(getActivePlatform() == AFCL_PLATFORM_NVIDIA)
         {
             Array<T> AT = transpose<T>(A, true);
             cl::Buffer* AT_buf = AT.get();
@@ -268,8 +267,7 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop o
     cl_event event = 0;
     cl_command_queue queue = getQueue()();
 
-    std::string pName = getPlatformName(getDevice());
-    if(pName.find("NVIDIA") != std::string::npos && (options & AF_MAT_UPPER))
+    if(getActivePlatform() == AFCL_PLATFORM_NVIDIA && (options & AF_MAT_UPPER))
     {
         Array<T> AT = transpose<T>(A, true);
 

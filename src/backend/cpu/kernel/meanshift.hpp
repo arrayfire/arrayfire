@@ -34,12 +34,9 @@ void meanShift(Array<T> out, const Array<T> in, const float s_sigma,
     const dim_t radius = std::max((int)(space_ * 1.5f), 1);
     const float cvar      = c_sigma*c_sigma;
 
-    std::vector<float> means;
-    std::vector<float> centers;
-    std::vector<float> tmpclrs;
-    means.reserve(channels);
-    centers.reserve(channels);
-    tmpclrs.reserve(channels);
+    std::vector<float> means(channels);
+    std::vector<float> centers(channels);
+    std::vector<float> tmpclrs(channels);
 
     T *outData       = out.get();
     const T * inData = in.get();

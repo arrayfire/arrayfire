@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
 #if defined(__APPLE__) || defined(__MACOSX)
 #include <OpenCL/cl.h>
 #else
@@ -17,6 +18,29 @@
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#if AF_API_VERSION >= 33
+typedef enum
+{
+    AFCL_DEVICE_TYPE_CPU     = CL_DEVICE_TYPE_CPU,
+    AFCL_DEVICE_TYPE_GPU     = CL_DEVICE_TYPE_GPU,
+    AFCL_DEVICE_TYPE_ACC     = CL_DEVICE_TYPE_ACCELERATOR,
+    AFCL_DEVICE_TYPE_UNKNOWN = -1
+} afcl_device_type;
+#endif
+
+#if AF_API_VERSION >= 33
+typedef enum
+{
+    AFCL_PLATFORM_AMD     = 0,
+    AFCL_PLATFORM_APPLE   = 1,
+    AFCL_PLATFORM_INTEL   = 2,
+    AFCL_PLATFORM_NVIDIA  = 3,
+    AFCL_PLATFORM_BEIGNET = 4,
+    AFCL_PLATFORM_POCL    = 5,
+    AFCL_PLATFORM_UNKNOWN = -1
+} afcl_platform;
 #endif
 
 /**
@@ -108,6 +132,20 @@ AFAPI af_err afcl_set_device_context(cl_device_id dev, cl_context ctx);
    this function has been called.
 */
 AFAPI af_err afcl_delete_device_context(cl_device_id dev, cl_context ctx);
+#endif
+
+#if AF_API_VERSION >= 33
+/**
+   Get the type of the current device
+*/
+AFAPI af_err afcl_get_device_type(afcl_device_type *res);
+#endif
+
+#if AF_API_VERSION >= 33
+/**
+   Get the platform of the current device
+*/
+AFAPI af_err afcl_get_platform(afcl_platform *res);
 #endif
 
 /**
@@ -253,6 +291,38 @@ static inline void deleteDevice(cl_device_id dev, cl_context ctx)
 }
 #endif
 
+
+#if AF_API_VERSION >= 33
+ typedef afcl_device_type deviceType;
+ typedef afcl_platform platform;
+#endif
+
+#if AF_API_VERSION >= 33
+/**
+   Get the type of the current device
+*/
+static inline deviceType getDeviceType()
+{
+    afcl_device_type res = AFCL_DEVICE_TYPE_UNKNOWN;
+    af_err err = afcl_get_device_type(&res);
+    if (err!=AF_SUCCESS) throw af::exception("Failed to get OpenCL device type");
+    return res;
+}
+#endif
+
+#if AF_API_VERSION >= 33
+/**
+   Get the type of the current device
+*/
+static inline platform getPlatform()
+{
+    afcl_platform res = AFCL_PLATFORM_UNKNOWN;
+    af_err err = afcl_get_platform(&res);
+    if (err!=AF_SUCCESS) throw af::exception("Failed to get OpenCL platform");
+    return res;
+}
+#endif
+
  /**
  Create an af::array object from an OpenCL cl_mem buffer
 
@@ -369,15 +439,15 @@ static inline void deleteDevice(cl_device_id dev, cl_context ctx)
      return afcl::array(af::dim4(dim0, dim1, dim2, dim3), buf, type, retain);
  }
 
- /**
+/**
    @}
- */
-
+*/
 }
 
 namespace af
 {
 
+#if !defined(AF_OPENCL)
 template<> AFAPI cl_mem *array::device() const
 {
     cl_mem *mem = new cl_mem;
@@ -385,6 +455,7 @@ template<> AFAPI cl_mem *array::device() const
     if (err != AF_SUCCESS) throw af::exception("Failed to get cl_mem from array object");
     return mem;
 }
+#endif
 
 }
 

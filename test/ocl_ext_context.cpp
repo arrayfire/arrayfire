@@ -105,6 +105,25 @@ TEST(OCLExtContext, pop)
     printf("%d devices after afcl::deleteDevice\n", af::getDeviceCount());
     af::info();
 }
+
+TEST(OCLCheck, DeviceType)
+{
+    afcl::deviceType devType = afcl::getDeviceType();
+    cl_device_type type = -100;
+    clGetDeviceInfo(afcl::getDeviceId(),
+                    CL_DEVICE_TYPE,
+                    sizeof(cl_device_type),
+                    &type,
+                    NULL);
+    ASSERT_EQ(type, (cl_device_type)devType);
+}
+
+TEST(OCLCheck, DevicePlatform)
+{
+    afcl::platform platform = afcl::getPlatform();
+    ASSERT_NE(platform, AFCL_PLATFORM_UNKNOWN);
+}
+
 #else
 TEST(OCLExtContext, NoopCPU)
 {
