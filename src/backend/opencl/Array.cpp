@@ -16,6 +16,8 @@
 #include <memory.hpp>
 #include <platform.hpp>
 #include <cstddef>
+#include <af/opencl.h>
+#include <util.hpp>
 
 using af::dim4;
 
@@ -23,6 +25,7 @@ namespace opencl
 {
 
     const int MAX_JIT_LEN = 20;
+    const int MAX_JIT_LEN_AMD = 16; //FIXME: Change this when bug is fixed
     using JIT::BufferNode;
     using JIT::Node;
     using JIT::Node_ptr;
@@ -153,6 +156,14 @@ namespace opencl
 
     using af::dim4;
 
+    inline bool is_max_jit_len(const unsigned &len)
+    {
+        if (getActivePlatform() == AFCL_PLATFORM_AMD) {
+            return len >= MAX_JIT_LEN_AMD;
+        }
+        return len >= MAX_JIT_LEN;
+    }
+
     template<typename T>
     Array<T> createNodeArray(const dim4 &dims, Node_ptr node)
     {
@@ -166,7 +177,7 @@ namespace opencl
         n->getInfo(length, buf_count, bytes);
         n->resetFlags();
 
-        if (length > MAX_JIT_LEN ||
+        if (is_max_jit_len(length) ||
             buf_count >= MAX_BUFFERS ||
             bytes >= MAX_BYTES) {
             out.eval();
