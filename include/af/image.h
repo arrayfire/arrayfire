@@ -223,6 +223,7 @@ AFAPI array rotate(const array& in, const float theta, const bool crop=true, con
 */
 AFAPI array transform(const array& in, const array& transform, const dim_t odim0 = 0, const dim_t odim1 = 0, const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
 
+#if AF_API_VERSION >= 33
 /**
     C++ Interface for transforming coordinates
 
@@ -234,6 +235,7 @@ AFAPI array transform(const array& in, const array& transform, const dim_t odim0
     \ingroup transform_func_coordinates
 */
 AFAPI array transformCoordinates(const array& tf, const float d0, const float d1);
+#endif
 
 /**
     C++ Interface for translating an image
@@ -865,6 +867,7 @@ extern "C" {
                               const dim_t odim0, const dim_t odim1,
                               const af_interp_type method, const bool inverse);
 
+#if AF_API_VERSION >= 33
     /**
        C Interface for transforming an image
        C++ Interface for transforming coordinates
@@ -877,6 +880,7 @@ extern "C" {
        \ingroup transform_func_coordinates
     */
     AFAPI af_err af_transform_coordinates(af_array *out, const af_array tf, const float d0, const float d1);
+#endif
 
     /**
        C Interface for rotating an image
