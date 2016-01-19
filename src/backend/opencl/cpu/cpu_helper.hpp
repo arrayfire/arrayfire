@@ -17,6 +17,11 @@
 #include <err_common.hpp>
 #include <platform.hpp>
 
+//********************************************************/
+// LAPACK
+//********************************************************/
+#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+
 #define lapack_complex_float opencl::cfloat
 #define lapack_complex_double opencl::cdouble
 #define LAPACK_PREFIX LAPACKE_
@@ -31,13 +36,26 @@
     #define AF_LAPACK_COL_MAJOR 0
 #else
     #ifdef USE_MKL
-        #include <mkl_cblas.h>
         #include<mkl_lapacke.h>
+    #else
+        #include<lapacke.h>
+    #endif
+#endif //OS
+
+#endif // WITH_OPENCL_LINEAR_ALGEBRA
+
+//********************************************************/
+// BLAS
+//********************************************************/
+#ifdef __APPLE__
+    #include <Accelerate/Accelerate.h>
+#else
+    #ifdef USE_MKL
+        #include <mkl_cblas.h>
     #else
         extern "C" {
         #include <cblas.h>
         }
-        #include<lapacke.h>
     #endif
 #endif
 
@@ -52,12 +70,5 @@
 #ifndef IS_OPENBLAS
 typedef int blasint;
 #endif
-
-namespace opencl
-{
-namespace cpu
-{
-}
-}
 
 #endif

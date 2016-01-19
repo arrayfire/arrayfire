@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
 #include <cpu/cpu_helper.hpp>
 #include <cpu/cpu_lu.hpp>
 #include <math.hpp>
@@ -174,3 +175,4 @@ INSTANTIATE_LU(cdouble)
 
 }
 }
+#endif

@@ -23,7 +23,9 @@
 #include <reduce.hpp>
 #include <complex.hpp>
 
+#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
 #include <cpu/cpu_blas.hpp>
+#endif
 
 namespace opencl
 {
@@ -118,9 +120,11 @@ template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
 {
+#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
     if(OpenCLCPUOffload()) {
         return cpu::matmul(lhs, rhs, optLhs, optRhs);
     }
+#endif
 
     initBlas();
     clblasTranspose lOpts = toClblasTranspose(optLhs);
