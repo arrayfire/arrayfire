@@ -150,7 +150,7 @@ namespace cuda
 
         if (length > MAX_JIT_LEN ||
             buf_count >= MAX_BUFFERS ||
-            bytes >= MAX_BYTES) {
+            bytes >= getMaxBytes()) {
             out.eval();
         }
 

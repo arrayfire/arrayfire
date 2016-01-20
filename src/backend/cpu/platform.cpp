@@ -20,6 +20,7 @@
 #include <version.hpp>
 #include <queue.hpp>
 #include <host_memory.hpp>
+#include <cctype>
 
 #ifdef _WIN32
 #include <limits.h>
@@ -215,8 +216,12 @@ std::string getInfo()
     info << "ArrayFire v" << AF_VERSION
          << " (CPU, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
     std::string model = cinfo.model();
-    info << string("[0] ") << cinfo.vendor() <<": " << ltrim(model)
-         << ", " << (int)(getDeviceMemorySize(getActiveDeviceId()) / 1048576.0) << " MB, ";
+    size_t memMB = getDeviceMemorySize(getActiveDeviceId()) / 1048576;
+    info << string("[0] ") << cinfo.vendor() <<": " << ltrim(model);
+
+    if(memMB) info << ", " << memMB << " MB, ";
+    else      info << ", Unknown MB, ";
+
     info << "Max threads("<< cinfo.threads()<<") ";
 #ifndef NDEBUG
     info << AF_COMPILER_STR;

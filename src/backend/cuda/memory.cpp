@@ -37,6 +37,7 @@ namespace cuda
 class MemoryManager  : public common::MemoryManager
 {
     int getActiveDeviceId();
+    size_t getMaxMemorySize(int id);
 public:
     MemoryManager();
     void *nativeAlloc(const size_t bytes);
@@ -66,6 +67,7 @@ public:
 class MemoryManagerPinned  : public common::MemoryManager
 {
     int getActiveDeviceId();
+    size_t getMaxMemorySize(int id);
 public:
     MemoryManagerPinned();
     void *nativeAlloc(const size_t bytes);
@@ -82,8 +84,13 @@ int MemoryManager::getActiveDeviceId()
     return cuda::getActiveDeviceId();
 }
 
+size_t MemoryManager::getMaxMemorySize(int id)
+{
+    return cuda::getDeviceMemorySize(id);
+}
+
 MemoryManager::MemoryManager() :
-    common::MemoryManager(getDeviceCount(), MAX_BUFFERS, MAX_BYTES, AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG)
+    common::MemoryManager(getDeviceCount(), MAX_BUFFERS, AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG)
 {}
 
 void *MemoryManager::nativeAlloc(const size_t bytes)
@@ -112,8 +119,13 @@ int MemoryManagerPinned::getActiveDeviceId()
     return 0; // pinned uses a single vector
 }
 
+size_t MemoryManagerPinned::getMaxMemorySize(int id)
+{
+    return cuda::getHostMemorySize();
+}
+
 MemoryManagerPinned::MemoryManagerPinned() :
-    common::MemoryManager(1, MAX_BUFFERS, MAX_BYTES, AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG)
+    common::MemoryManager(1, MAX_BUFFERS, AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG)
 {}
 
 void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
@@ -147,6 +159,10 @@ size_t getMemStepSize(void)
     return getMemoryManager().getMemStepSize();
 }
 
+size_t getMaxBytes()
+{
+    return getMemoryManager().getMaxBytes();
+}
 
 void garbageCollect()
 {

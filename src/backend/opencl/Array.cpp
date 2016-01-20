@@ -179,7 +179,7 @@ namespace opencl
 
         if (is_max_jit_len(length) ||
             buf_count >= MAX_BUFFERS ||
-            bytes >= MAX_BYTES) {
+            bytes >= getMaxBytes()) {
             out.eval();
         }
 

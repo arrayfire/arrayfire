@@ -10,6 +10,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <algorithm>
 #include "MemoryManager.hpp"
 #include "dispatch.hpp"
 #include "err_common.hpp"
@@ -18,10 +19,9 @@
 namespace common
 {
 
-MemoryManager::MemoryManager(int num_devices, unsigned MAX_BUFFERS, unsigned MAX_BYTES, bool debug):
+MemoryManager::MemoryManager(int num_devices, unsigned MAX_BUFFERS, bool debug):
     mem_step_size(1024),
     max_buffers(MAX_BUFFERS),
-    max_bytes(MAX_BYTES),
     memory(num_devices),
     debug_mode(debug)
 {
@@ -32,9 +32,16 @@ MemoryManager::MemoryManager(int num_devices, unsigned MAX_BUFFERS, unsigned MAX
     }
     if (this->debug_mode) mem_step_size = 1;
 
+    static const size_t oneGB = 1 << 30;
     for (int n = 0; n < num_devices; n++) {
-        memory[n].total_bytes = 0;
-        memory[n].lock_bytes = 0;
+        size_t memsize = getMaxMemorySize(n);
+        // Calls garbage collection when:
+        // total_bytes > memsize * 0.75 when memsize <  4GB
+        // total_bytes > memsize - 1 GB when memsize >= 4GB
+        // If memsize returned 0, then use 1GB
+        memory[n].max_bytes    = memsize == 0 ? oneGB : std::max(memsize * 0.75, (double)(memsize - oneGB));
+        memory[n].total_bytes  = 0;
+        memory[n].lock_bytes   = 0;
         memory[n].lock_buffers = 0;
     }
 }
@@ -115,7 +122,7 @@ void *MemoryManager::alloc(const size_t bytes)
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
             if (current.map.size() > this->max_buffers ||
-                current.lock_bytes >= this->max_bytes) {
+                current.lock_bytes >= current.max_bytes) {
 
                 this->garbageCollect();
             }
@@ -202,6 +209,12 @@ void MemoryManager::setMemStepSize(size_t new_step_size)
 {
     lock_guard_t lock(this->memory_mutex);
     this->mem_step_size = new_step_size;
+}
+
+size_t MemoryManager::getMaxBytes()
+{
+    lock_guard_t lock(this->memory_mutex);
+    return this->getCurrentMemoryInfo().max_bytes;
 }
 
 void MemoryManager::printInfo(const char *msg, const int device)

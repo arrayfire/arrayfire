@@ -161,7 +161,7 @@ createNodeArray(const dim4 &dims, Node_ptr node)
 
     if (length > MAX_TNJ_LEN ||
         buf_count >= MAX_BUFFERS ||
-        bytes >= MAX_BYTES) {
+        bytes >= getMaxBytes()) {
         out.eval();
     }
 
