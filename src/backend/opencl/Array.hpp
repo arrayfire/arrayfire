@@ -227,8 +227,10 @@ namespace opencl
             try {
                 if(ptr == nullptr) {
                     ptr = (T*)getQueue().enqueueMapBuffer(*const_cast<cl::Buffer*>(get()),
-                            true, CL_MAP_READ|CL_MAP_WRITE,
-                            getOffset(), getDataDims().elements() * sizeof(T));
+                                                          true, CL_MAP_READ|CL_MAP_WRITE,
+                                                          getOffset(),
+                                                          (getDataDims().elements() - getOffset())
+                                                          * sizeof(T));
                 }
             } catch(cl::Error err) {
                 CL_TO_AF_ERROR(err);
