@@ -395,7 +395,11 @@ int DeviceManager::setActiveDevice(int device, int nId)
     int old = activeDev;
     if(nId == -1) nId = getDeviceNativeId(device);
     CUDA_CHECK(cudaSetDevice(nId));
-    cudaError_t err = cudaStreamCreate(&streams[device]);
+
+    cudaError_t err = cudaSuccess;
+    if(!streams[device])
+        err = cudaStreamCreate(&streams[device]);
+
     activeDev = device;
 
     if (err == cudaSuccess) return old;
