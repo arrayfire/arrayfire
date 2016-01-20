@@ -46,6 +46,10 @@ int getDeviceNativeId(int device);
 
 cudaStream_t getStream(int device);
 
+size_t getDeviceMemorySize(int device);
+
+size_t getHostMemorySize();
+
 int setDevice(int device);
 
 void sync(int device);

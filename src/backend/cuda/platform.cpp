@@ -23,6 +23,7 @@
 #include <cstring>
 #include <err_cuda.hpp>
 #include <util.hpp>
+#include <host_memory.hpp>
 
 using namespace std;
 
@@ -302,6 +303,16 @@ cudaStream_t getStream(int device)
         setDevice(active_dev);
     }
     return str;
+}
+
+size_t getDeviceMemorySize(int device)
+{
+    return getDeviceProp(device).totalGlobalMem;
+}
+
+size_t getHostMemorySize()
+{
+    return common::getHostMemorySize();
 }
 
 int setDevice(int device)

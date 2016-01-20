@@ -28,6 +28,10 @@ namespace cpu {
 
     int getActiveDeviceId();
 
+    size_t getDeviceMemorySize(int device);
+
+    size_t getHostMemorySize();
+
     void sync(int device);
 
     queue& getQueue(int idx = 0);

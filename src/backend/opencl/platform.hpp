@@ -33,7 +33,9 @@ class DeviceManager
 
     friend cl::CommandQueue& getQueue();
 
-    friend const cl::Device& getDevice();
+    friend const cl::Device& getDevice(int id);
+
+    friend size_t getDeviceMemorySize(int device);
 
     friend bool isGLSharingSupported();
 
@@ -100,7 +102,11 @@ const cl::Context& getContext();
 
 cl::CommandQueue& getQueue();
 
-const cl::Device& getDevice();
+const cl::Device& getDevice(int id = -1);
+
+size_t getDeviceMemorySize(int device);
+
+size_t getHostMemorySize();
 
 cl_device_type getDeviceType();
 

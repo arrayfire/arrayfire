@@ -43,6 +43,7 @@
 #include <errorcodes.hpp>
 #include <err_opencl.hpp>
 #include <util.hpp>
+#include <host_memory.hpp>
 
 using std::string;
 using std::vector;
@@ -404,7 +405,9 @@ std::string getInfo()
             std::to_string(nDevices) +
             (show_braces ? string("]") : "-");
 
-        info << id << " " << getPlatformName(*device) << ": " << ltrim(dstr);
+        size_t msize = device->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
+        info << id << " " << getPlatformName(*device) << ": " << ltrim(dstr)
+             << ", " << msize / 1048576 << " MB";
 #ifndef NDEBUG
         info << " -- ";
         string devVersion = device->getInfo<CL_DEVICE_VERSION>();
@@ -481,10 +484,23 @@ CommandQueue& getQueue()
     return *(devMngr.mQueues[devMngr.mActiveQId]);
 }
 
-const cl::Device& getDevice()
+const cl::Device& getDevice(int id)
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
-    return *(devMngr.mDevices[devMngr.mActiveQId]);
+    if(id == -1) id = devMngr.mActiveQId;
+    return *(devMngr.mDevices[id]);
+}
+
+size_t getDeviceMemorySize(int device)
+{
+    const cl::Device& dev = getDevice(device);
+    size_t msize = dev.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
+    return msize;
+}
+
+size_t getHostMemorySize()
+{
+    return common::getHostMemorySize();
 }
 
 cl_device_type getDeviceType()
