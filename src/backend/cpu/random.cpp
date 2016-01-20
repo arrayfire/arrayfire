@@ -12,6 +12,7 @@
 #include <af/defines.h>
 #include <Array.hpp>
 #include <random.hpp>
+#include <err_cpu.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <kernel/random.hpp>
@@ -20,15 +21,20 @@ namespace cpu
 {
 
 template<typename T>
-Array<T> randu(const af::dim4 &dims)
+Array<T> randu(const af::dim4 &dims, const af::randomType &rtype)
 {
+    switch (rtype)  {
+        case AF_RANDOM_PHILOX:
+            CPU_NOT_SUPPORTED();
+            break;
+    }
     Array<T> outArray = createEmptyArray<T>(dims);
     getQueue().enqueue(kernel::randu<T>, outArray);
     return outArray;
 }
 
 #define INSTANTIATE_UNIFORM(T)                              \
-    template Array<T>  randu<T>    (const af::dim4 &dims);
+    template Array<T>  randu<T>    (const af::dim4 &dims, const af::randomType &rtype);
 
 INSTANTIATE_UNIFORM(float)
 INSTANTIATE_UNIFORM(double)
@@ -59,7 +65,7 @@ INSTANTIATE_NORMAL(cfloat)
 INSTANTIATE_NORMAL(cdouble)
 
 template<>
-Array<char> randu(const af::dim4 &dims)
+Array<char> randu(const af::dim4 &dims, const af::randomType &rtype)
 {
     static unsigned long long my_seed = 0;
     if (kernel::is_first) {

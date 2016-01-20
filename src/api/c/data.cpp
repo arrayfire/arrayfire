@@ -294,9 +294,9 @@ static inline af_array randn_(const af::dim4 &dims)
 }
 
 template<typename T>
-static inline af_array randu_(const af::dim4 &dims)
+static inline af_array randu_(const af::dim4 &dims, const af_random_type rtype)
 {
-    return getHandle(randu<T>(dims));
+    return getHandle(randu<T>(dims, rtype));
 }
 
 template<typename T>
@@ -307,25 +307,32 @@ static inline af_array identity_(const af::dim4 &dims)
 
 af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
 {
+    return af_randu_gen(out, ndims, dims, type, AF_RANDOM_DEFAULT);
+}
+
+af_err af_randu_gen(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type,
+        const af_random_type rtype)
+{
     try {
         af_array result;
         AF_CHECK(af_init());
+        ARG_ASSERT(4, (rtype == AF_RANDOM_DEFAULT) || (rtype == AF_RANDOM_PHILOX));
 
         dim4 d = verifyDims(ndims, dims);
 
         switch(type) {
-        case f32:   result = randu_<float  >(d);    break;
-        case c32:   result = randu_<cfloat >(d);    break;
-        case f64:   result = randu_<double >(d);    break;
-        case c64:   result = randu_<cdouble>(d);    break;
-        case s32:   result = randu_<int    >(d);    break;
-        case u32:   result = randu_<uint   >(d);    break;
-        case s64:   result = randu_<intl   >(d);    break;
-        case u64:   result = randu_<uintl  >(d);    break;
-        case s16:   result = randu_<short  >(d);    break;
-        case u16:   result = randu_<ushort >(d);    break;
-        case u8:    result = randu_<uchar  >(d);    break;
-        case b8:    result = randu_<char  >(d);    break;
+        case f32:   result = randu_<float  >(d,rtype);    break;
+        case c32:   result = randu_<cfloat >(d,rtype);    break;
+        case f64:   result = randu_<double >(d,rtype);    break;
+        case c64:   result = randu_<cdouble>(d,rtype);    break;
+        case s32:   result = randu_<int    >(d,rtype);    break;
+        case u32:   result = randu_<uint   >(d,rtype);    break;
+        case s64:   result = randu_<intl   >(d,rtype);    break;
+        case u64:   result = randu_<uintl  >(d,rtype);    break;
+        case s16:   result = randu_<short  >(d,rtype);    break;
+        case u16:   result = randu_<ushort >(d,rtype);    break;
+        case u8:    result = randu_<uchar  >(d,rtype);    break;
+        case b8:    result = randu_<char  >(d,rtype);    break;
         default:    TYPE_ERROR(3, type);
         }
         std::swap(*out, result);

@@ -148,6 +148,77 @@ namespace af
     /**
         \param[in] dims is the dimensions of the array to be generated
         \param[in] ty is the type of the array
+        \param[in] rtype is the type of random number generator algorithm
+
+        \return array of size \p dims
+
+        \ingroup data_func_randu
+    */
+    AFAPI array randu(const dim4 &dims, const dtype ty,
+                      const af::randomType rtype);
+
+    /**
+        \param[in] d0 is the size of the first dimension
+        \param[in] ty is the type of the array
+        \param[in] rtype is the type of random number generator algorithm
+
+        \return array of size \p d0
+
+        \ingroup data_func_randu
+    */
+    AFAPI array randu(const dim_t d0, const dtype ty,
+                      const af::randomType rtype);
+
+    /**
+        \param[in] d0 is the size of the first dimension
+        \param[in] d1 is the size of the second dimension
+        \param[in] ty is the type of the array
+        \param[in] rtype is the type of random number generator algorithm
+
+        \return array of size \p d0 x \p d1
+
+        \ingroup data_func_randu
+    */
+    AFAPI array randu(const dim_t d0,
+                      const dim_t d1, const dtype ty,
+                      const af::randomType rtype);
+
+    /**
+        \param[in] d0 is the size of the first dimension
+        \param[in] d1 is the size of the second dimension
+        \param[in] d2 is the size of the third dimension
+        \param[in] ty is the type of the array
+        \param[in] rtype is the type of random number generator algorithm
+
+        \return array of size \p d0 x \p d1 x \p d2
+
+        \ingroup data_func_randu
+    */
+    AFAPI array randu(const dim_t d0,
+                      const dim_t d1, const dim_t d2, const dtype ty,
+                      const af::randomType rtype);
+
+    /**
+        \param[in] d0 is the size of the first dimension
+        \param[in] d1 is the size of the second dimension
+        \param[in] d2 is the size of the third dimension
+        \param[in] d3 is the size of the fourth dimension
+        \param[in] ty is the type of the array
+        \param[in] rtype is the type of random number generator algorithm
+
+        \return array of size \p d0 x \p d1 x \p d2 x \p d3
+
+        \ingroup data_func_randu
+    */
+    AFAPI array randu(const dim_t d0,
+                      const dim_t d1, const dim_t d2,
+                      const dim_t d3, const dtype ty,
+                      const af::randomType rtype);
+
+
+    /**
+        \param[in] dims is the dimensions of the array to be generated
+        \param[in] ty is the type of the array
 
         \return array of size \p dims
 
@@ -642,6 +713,18 @@ extern "C" {
        \ingroup data_func_randn
     */
     AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type);
+
+    /**
+        \param[out] out is the generated array
+        \param[in] ndims is size of dimension array \p dims
+        \param[in] dims is the array containing sizes of the dimension
+        \param[in] type is the type of array to generate
+        \param[in] rtype is the type of random number generator algorithm
+
+       \ingroup data_func_randu
+    */
+    AFAPI af_err af_randu_gen(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type,
+                              const af_random_type rtype);
 
     /**
         \param[in] seed is a 64 bit unsigned integer

@@ -301,7 +301,7 @@ void generate(T *one, T *two, threefry2_ctr_t *c, threefry2_key_t k)
 }
 #endif
 
-__kernel void random(__global T *output, unsigned numel,
+__kernel void random_threefry(__global T *output, unsigned numel,
                     unsigned counter, unsigned lo, unsigned hi)
 {
     unsigned gid = get_group_id(0);

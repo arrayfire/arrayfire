@@ -13,7 +13,7 @@
 namespace cpu
 {
     template<typename T>
-    Array<T> randu(const af::dim4 &dims);
+    Array<T> randu(const af::dim4 &dims, const af::randomType &rtype=AF_RANDOM_DEFAULT);
 
     template<typename T>
     Array<T> randn(const af::dim4 &dims);

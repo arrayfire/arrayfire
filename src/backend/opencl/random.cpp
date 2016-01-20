@@ -14,15 +14,16 @@
 #include <cassert>
 #include <kernel/random.hpp>
 #include <err_opencl.hpp>
+#include <debug_opencl.hpp>
 
 namespace opencl
 {
     template<typename T>
-    Array<T> randu(const af::dim4 &dims)
+    Array<T> randu(const af::dim4 &dims, const af::randomType &rtype)
     {
         verifyDoubleSupport<T>();
         Array<T> out = createEmptyArray<T>(dims);
-        kernel::random<T, true>(*out.get(), out.elements());
+        kernel::random<T, true>(*out.get(), out.elements(), rtype);
         return out;
     }
 
@@ -31,37 +32,47 @@ namespace opencl
     {
         verifyDoubleSupport<T>();
         Array<T> out = createEmptyArray<T>(dims);
-        kernel::random<T, false>(*out.get(), out.elements());
+        kernel::random<T, false>(*out.get(), out.elements(), AF_RANDOM_DEFAULT);
         return out;
     }
 
-    template Array<float>  randu<float>   (const af::dim4 &dims);
-    template Array<double> randu<double>  (const af::dim4 &dims);
-    template Array<int>    randu<int>     (const af::dim4 &dims);
-    template Array<uint>   randu<uint>    (const af::dim4 &dims);
-    template Array<intl>   randu<intl>    (const af::dim4 &dims);
-    template Array<uintl>  randu<uintl>   (const af::dim4 &dims);
-    template Array<short>  randu<short>   (const af::dim4 &dims);
-    template Array<ushort> randu<ushort>  (const af::dim4 &dims);
-    template Array<char>   randu<char>    (const af::dim4 &dims);
-    template Array<uchar>  randu<uchar>   (const af::dim4 &dims);
+    template Array<float>  randu<float>   (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<double> randu<double>  (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<int>    randu<int>     (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<uint>   randu<uint>    (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<intl>   randu<intl>    (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<uintl>  randu<uintl>   (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<short>  randu<short>   (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<ushort> randu<ushort>  (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<char>   randu<char>    (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<uchar>  randu<uchar>   (const af::dim4 &dims, const af::randomType &rtype);
 
     template Array<float>  randn<float>   (const af::dim4 &dims);
     template Array<double> randn<double>  (const af::dim4 &dims);
 
-#define COMPLEX_RANDOM(fn, T, TR, is_randu)                 \
-    template<> Array<T> fn<T>(const af::dim4 &dims)         \
-    {                                                       \
-        Array<T> out = createEmptyArray<T>(dims);           \
-        dim_t elements = out.elements() * 2;             \
-        kernel::random<TR, is_randu>(*out.get(), elements); \
-        return out;                                         \
-    }                                                       \
+#define COMPLEX_RANDU(T, TR)                                    \
+    template<> Array<T> randu<T>(const af::dim4 &dims,          \
+            const af::randomType &rtype)                        \
+    {                                                           \
+        Array<T> out = createEmptyArray<T>(dims);               \
+        dim_t elements = out.elements() * 2;                    \
+        kernel::random<TR, true>(*out.get(), elements, rtype);  \
+        return out;                                             \
+    }                                                           \
 
-    COMPLEX_RANDOM(randu, cfloat, float, true)
-    COMPLEX_RANDOM(randu, cdouble, double, true)
-    COMPLEX_RANDOM(randn, cfloat, float, false)
-    COMPLEX_RANDOM(randn, cdouble, double, false)
+#define COMPLEX_RANDN(T, TR)                                                    \
+    template<> Array<T> randn<T>(const af::dim4 &dims)                          \
+    {                                                                           \
+        Array<T> out = createEmptyArray<T>(dims);                               \
+        dim_t elements = out.elements() * 2;                                    \
+        kernel::random<TR, false>(*out.get(), elements, AF_RANDOM_DEFAULT);     \
+        return out;                                                             \
+    }                                                                           \
+
+    COMPLEX_RANDU(cfloat, float)
+    COMPLEX_RANDU(cdouble, double)
+    COMPLEX_RANDN(cfloat, float)
+    COMPLEX_RANDN(cdouble, double)
 
 
     void setSeed(const uintl seed)

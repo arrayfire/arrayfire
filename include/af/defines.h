@@ -371,6 +371,11 @@ typedef enum {
 } af_backend;
 #endif
 
+typedef enum {
+    AF_RANDOM_DEFAULT = 0,  ///< Default Random number generator. Backend specific.
+    AF_RANDOM_PHILOX = 1,   ///< Philox PRNG from Random123
+} af_random_type;
+
 // Below enum is purely added for example purposes
 // it doesn't and shoudn't be used anywhere in the
 // code. No Guarantee's provided if it is used.
@@ -416,9 +421,10 @@ namespace af
 #endif
 #if AF_API_VERSION >= 32
     typedef af_backend Backend;
-#endif
-#if AF_API_VERSION >= 32
     typedef af_marker_type markerType;
+#endif
+#if AF_API_VERSION >= 33
+    typedef af_random_type randomType;
 #endif
 }
 

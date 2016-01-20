@@ -54,6 +54,12 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, c
     return CALL(out, ndims, dims, type);
 }
 
+af_err af_randu_gen(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type,
+        const af_random_type rtype)
+{
+    return CALL(out, ndims, dims, type, rtype);
+}
+
 af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
 {
     return CALL(out, ndims, dims, type);
