@@ -221,7 +221,7 @@ ENDIF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
 SET(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 SET(BACKEND_DIR "src/backend/\${lowerbackend}")
 CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireConfig.cmake.in
+    ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfig.cmake
     @ONLY)
 
@@ -231,11 +231,11 @@ STRING(REGEX REPLACE "[^/]+" ".." reldir "${AF_INSTALL_CMAKE_DIR}")
 SET(INCLUDE_DIR "\${CMAKE_CURRENT_LIST_DIR}/${reldir}/include")
 set(BACKEND_DIR)
 CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireConfig.cmake.in
+    ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
     @ONLY)
 CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireConfigVersion.cmake.in
+    ${CMAKE_MODULE_PATH}/ArrayFireConfigVersion.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfigVersion.cmake
     @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
@@ -263,4 +263,4 @@ ENDIF(APPLE)
 ##
 # Packaging
 ##
-include(${CMAKE_CURRENT_SOURCE_DIR}/CPack.cmake)
+include(${CMAKE_MODULE_PATH}/CPackConfig.cmake)
