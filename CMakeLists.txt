@@ -152,6 +152,10 @@ ELSE(${UNIX}) #Windows
         # http://www.kitware.com/blog/home/post/434
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /Gm-")
         SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} /MP /Gm-")
+
+        # Builds that contain debug info require /bigobj
+        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /bigobj")
+        SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /bigobj")
     ENDIF(MSVC)
 ENDIF()
 
