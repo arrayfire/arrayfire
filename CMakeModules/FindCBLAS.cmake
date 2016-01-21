@@ -53,19 +53,40 @@ SET(CBLAS_ROOT_DIR CACHE STRING
 INCLUDE(CheckTypeSize)
 CHECK_TYPE_SIZE("void*" SIZE_OF_VOIDP)
 
-SET(CBLAS_LIB_DIR)
+IF (NOT INTEL_MKL_ROOT_DIR)
+  SET(INTEL_MKL_ROOT_DIR $ENV{INTEL_MKL_ROOT})
+ENDIF()
 
-SET(CBLAS_ROOT_DIR "${INTEL_MKL_ROOT_DIR}")
+IF(NOT CBLAS_ROOT_DIR)
 
-IF(CBLAS_ROOT_DIR)
-    IF(INTEL_MKL_ROOT_DIR)
-      IF ("${SIZE_OF_VOIDP}" EQUAL 8)
-        SET(CBLAS_LIB_DIR "${INTEL_MKL_ROOT_DIR}/lib/intel64")
-      ELSE()
-        SET(CBLAS_LIB_DIR "${INTEL_MKL_ROOT_DIR}/lib/ia32")
-      ENDIF()
+  IF (ENV{CBLASDIR})
+    SET(CBLAS_ROOT_DIR $ENV{CBLASDIR})
+    IF ("${SIZE_OF_VOIDP}" EQUAL 8)
+      SET(CBLAS_LIB64_DIR "${INTEL_MKL_ROOT_DIR}/lib64")
+    ELSE()
+      SET(CBLAS_LIB32_DIR "${INTEL_MKL_ROOT_DIR}/lib")
     ENDIF()
-    SET(CBLAS_INCLUDE_DIR "${INTEL_MKL_ROOT_DIR}/include")
+  ENDIF()
+
+  IF (ENV{CBLAS_ROOT_DIR})
+    SET(CBLAS_ROOT_DIR $ENV{CBLAS_ROOT_DIR})
+    IF ("${SIZE_OF_VOIDP}" EQUAL 8)
+      SET(CBLAS_LIB64_DIR "${INTEL_MKL_ROOT_DIR}/lib64")
+    ELSE()
+      SET(CBLAS_LIB32_DIR "${INTEL_MKL_ROOT_DIR}/lib")
+    ENDIF()
+  ENDIF()
+
+  IF (INTEL_MKL_ROOT_DIR)
+    SET(CBLAS_ROOT_DIR ${INTEL_MKL_ROOT_DIR})
+    IF ("${SIZE_OF_VOIDP}" EQUAL 8)
+      SET(CBLAS_LIB64_DIR "${INTEL_MKL_ROOT_DIR}/lib/intel64")
+    ELSE()
+      SET(CBLAS_LIB32_DIR "${INTEL_MKL_ROOT_DIR}/lib/ia32")
+    ENDIF()
+  ENDIF()
+
+  SET(CBLAS_INCLUDE_DIR "${CBLAS_ROOT_DIR}/include")
 ENDIF()
 
 # Old CBLAS search
@@ -116,14 +137,14 @@ MACRO(CHECK_ALL_LIBRARIES
           NAMES ${_library}
           PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64
           ENV DYLD_LIBRARY_PATH
-          "{CBLAS_LIB_DIR}"
+          "${CBLAS_LIB_DIR}" "${CBLAS_LIB32_DIR}" "${CBLAS_LIB64_DIR}"
           )
       ELSE(APPLE)
         FIND_LIBRARY(${_prefix}_${_library}_LIBRARY
           NAMES ${_library}
           PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64
           ENV LD_LIBRARY_PATH
-          "${CBLAS_LIB_DIR}"
+          "${CBLAS_LIB_DIR}" "${CBLAS_LIB32_DIR}" "${CBLAS_LIB64_DIR}"
           PATH_SUFFIXES atlas
           )
         IF(NOT ${_prefix}_${library}_LIBRARY)
@@ -132,7 +153,7 @@ MACRO(CHECK_ALL_LIBRARIES
               NAMES ${_library}
               PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64
               ENV LD_LIBRARY_PATH
-              "${CBLAS_LIB_DIR}"
+              "${CBLAS_LIB_DIR}" "${CBLAS_LIB32_DIR}" "${CBLAS_LIB64_DIR}"
               PATH_SUFFIXES atlas
               )
           ENDIF(NOT ${_prefix}_${library}_LIBRARY)
@@ -193,6 +214,23 @@ MACRO(CHECK_ALL_LIBRARIES
     SET(${LIBRARIES} NOTFOUND)
   ENDIF(NOT _libraries_work)
 ENDMACRO(CHECK_ALL_LIBRARIES)
+
+# MKL CBLAS library?
+IF(NOT CBLAS_LIBRARIES)
+  CHECK_ALL_LIBRARIES(
+    CBLAS_LIBRARIES
+    CBLAS
+    cblas_dgemm
+    ""
+    "mkl_rt"
+    "mkl_cblas.h"
+    FALSE,
+    TRUE)
+ENDIF(NOT CBLAS_LIBRARIES)
+
+IF(CBLAS_LIBRARIES)
+  SET(MKL_FOUND ON)
+ENDIF()
 
 # Apple CBLAS library?
 IF(NOT CBLAS_LIBRARIES)
