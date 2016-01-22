@@ -699,6 +699,7 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que)
         devMngr.mDevices.push_back(tDevice);
         devMngr.mContexts.push_back(tContext);
         devMngr.mQueues.push_back(tQueue);
+        devMngr.mPlatforms.push_back(getPlatformEnum(*tDevice));
         // FIXME: add OpenGL Interop for user provided contexts later
         devMngr.mIsGLSharingOn.push_back(false);
     } catch (const cl::Error &ex) {
@@ -757,6 +758,7 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx)
             devMngr.mDevices.erase(devMngr.mDevices.begin()+deleteIdx);
             devMngr.mContexts.erase(devMngr.mContexts.begin()+deleteIdx);
             devMngr.mQueues.erase(devMngr.mQueues.begin()+deleteIdx);
+            devMngr.mPlatforms.erase(devMngr.mPlatforms.begin()+deleteIdx);
             // FIXME: add OpenGL Interop for user provided contexts later
             devMngr.mIsGLSharingOn.erase(devMngr.mIsGLSharingOn.begin()+deleteIdx);
             // OTHERWISE, update(decrement) the `mActive*Id` variables
