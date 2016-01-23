@@ -425,7 +425,7 @@ int DeviceManager::setActiveDevice(int device, int nId)
     // Comes only when first is true. Set it to false
     first = false;
 
-    while(device < numDevices) {
+    while(true) {
         // Check for errors other than DevicesUnavailable
         // If success, return. Else throw error
         // If DevicesUnavailable, try other devices (while loop below)
@@ -435,12 +435,15 @@ int DeviceManager::setActiveDevice(int device, int nId)
             return old;
         }
         cudaGetLastError(); // Reset error stack
+#ifndef NDEBUG
         printf("Warning: Device %d is unavailable. Incrementing to next device \n", device);
+#endif
 
         // Comes here is the device is in exclusive mode or
         // otherwise fails streamCreate with this error.
         // All other errors will error out
         device++;
+        if (device >= numDevices) break;
 
         // Can't call getNativeId here as it will cause an infinite loop with the constructor
         nId = cuDevices[device].nativeId;
