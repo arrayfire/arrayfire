@@ -2,6 +2,22 @@
 \addtogroup arrayfire_func
 @{
 
+\defgroup device_func_prop deviceInfo
+\ingroup device_mat
+
+\brief Gets the information about device and platform as strings
+
+\param d_name pointer to a user-allocated char array. Recommended minimum size is 64.
+The name of the device is stored in this array.
+\param d_platform pointer to a user-allocated char array. Recommended minimum size is 10.
+The platform information is stored in this array.
+\param d_toolkit pointer to a user-allocated char array. Recommended minimum size is 64.
+The toolkit information is stored in this array.
+\param d_compute pointer to a user-allocated char array. Recommended minimum size is 10.
+The compute version of the device is stored in this array.
+
+===============================================================================
+
 \defgroup device_func_count getDeviceCount
 \ingroup device_mat
 

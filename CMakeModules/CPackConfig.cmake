@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/Version.cmake")
+INCLUDE("${CMAKE_MODULE_PATH}/Version.cmake")
 
 # CPack package generation
 #SET(CPACK_GENERATOR "TGZ;STGZ")

@@ -19,6 +19,8 @@
 #include <defines.hpp>
 #include <version.hpp>
 #include <queue.hpp>
+#include <host_memory.hpp>
+#include <cctype>
 
 #ifdef _WIN32
 #include <limits.h>
@@ -197,6 +199,15 @@ static const std::string get_system(void)
 #endif
 }
 
+// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring/217605#217605
+// trim from start
+static inline std::string &ltrim(std::string &s)
+{
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+                                    std::not1(std::ptr_fun<int, int>(std::isspace))));
+    return s;
+}
+
 std::string getInfo()
 {
     std::ostringstream info;
@@ -204,7 +215,13 @@ std::string getInfo()
 
     info << "ArrayFire v" << AF_VERSION
          << " (CPU, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
-    info << string("[0] ") << cinfo.vendor() <<": " << cinfo.model() << " ";
+    std::string model = cinfo.model();
+    size_t memMB = getDeviceMemorySize(getActiveDeviceId()) / 1048576;
+    info << string("[0] ") << cinfo.vendor() <<": " << ltrim(model);
+
+    if(memMB) info << ", " << memMB << " MB, ";
+    else      info << ", Unknown MB, ";
+
     info << "Max threads("<< cinfo.threads()<<") ";
 #ifndef NDEBUG
     info << AF_COMPILER_STR;
@@ -247,6 +264,16 @@ int setDevice(int device)
 int getActiveDeviceId()
 {
     return 0;
+}
+
+size_t getDeviceMemorySize(int device)
+{
+    return common::getHostMemorySize();
+}
+
+size_t getHostMemorySize()
+{
+    return common::getHostMemorySize();
 }
 
 static const int MAX_QUEUES = 1;

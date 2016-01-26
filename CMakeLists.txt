@@ -152,6 +152,10 @@ ELSE(${UNIX}) #Windows
         # http://www.kitware.com/blog/home/post/434
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /Gm-")
         SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} /MP /Gm-")
+
+        # Builds that contain debug info require /bigobj
+        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /bigobj")
+        SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /bigobj")
     ENDIF(MSVC)
 ENDIF()
 
@@ -221,7 +225,7 @@ ENDIF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
 SET(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 SET(BACKEND_DIR "src/backend/\${lowerbackend}")
 CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireConfig.cmake.in
+    ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfig.cmake
     @ONLY)
 
@@ -231,11 +235,11 @@ STRING(REGEX REPLACE "[^/]+" ".." reldir "${AF_INSTALL_CMAKE_DIR}")
 SET(INCLUDE_DIR "\${CMAKE_CURRENT_LIST_DIR}/${reldir}/include")
 set(BACKEND_DIR)
 CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireConfig.cmake.in
+    ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
     @ONLY)
 CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireConfigVersion.cmake.in
+    ${CMAKE_MODULE_PATH}/ArrayFireConfigVersion.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfigVersion.cmake
     @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
@@ -263,4 +267,4 @@ ENDIF(APPLE)
 ##
 # Packaging
 ##
-include(${CMAKE_CURRENT_SOURCE_DIR}/CPack.cmake)
+include(${CMAKE_MODULE_PATH}/CPackConfig.cmake)

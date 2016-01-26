@@ -32,6 +32,7 @@ namespace opencl
 class MemoryManager  : public common::MemoryManager
 {
     int getActiveDeviceId();
+    size_t getMaxMemorySize(int id);
 public:
     MemoryManager();
     void *nativeAlloc(const size_t bytes);
@@ -52,6 +53,7 @@ class MemoryManagerPinned  : public common::MemoryManager
         std::map<void *, cl::Buffer>
         > pinned_maps;
     int getActiveDeviceId();
+    size_t getMaxMemorySize(int id);
 
 public:
 
@@ -80,8 +82,13 @@ int MemoryManager::getActiveDeviceId()
     return opencl::getActiveDeviceId();
 }
 
+size_t MemoryManager::getMaxMemorySize(int id)
+{
+    return opencl::getDeviceMemorySize(id);
+}
+
 MemoryManager::MemoryManager() :
-    common::MemoryManager(getDeviceCount(), MAX_BUFFERS, MAX_BYTES, AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG)
+    common::MemoryManager(getDeviceCount(), MAX_BUFFERS, AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG)
 {}
 
 void *MemoryManager::nativeAlloc(const size_t bytes)
@@ -113,8 +120,13 @@ int MemoryManagerPinned::getActiveDeviceId()
     return opencl::getActiveDeviceId();
 }
 
+size_t MemoryManagerPinned::getMaxMemorySize(int id)
+{
+    return opencl::getDeviceMemorySize(id);
+}
+
 MemoryManagerPinned::MemoryManagerPinned() :
-    common::MemoryManager(getDeviceCount(), MAX_BUFFERS, MAX_BYTES, AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG),
+    common::MemoryManager(getDeviceCount(), MAX_BUFFERS, AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG),
     pinned_maps(getDeviceCount())
 {}
 
@@ -163,6 +175,10 @@ size_t getMemStepSize(void)
     return getMemoryManager().getMemStepSize();
 }
 
+size_t getMaxBytes()
+{
+    return getMemoryManager().getMaxBytes();
+}
 
 void garbageCollect()
 {

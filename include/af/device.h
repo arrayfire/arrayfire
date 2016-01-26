@@ -50,19 +50,11 @@ namespace af
     */
 
     /**
-       \defgroup device_func_prop deviceInfo
+        \copydoc device_func_prop
 
-       Get device information
-
-       @{
-
-       \ingroup arrayfire_func
-       \ingroup device_mat
+        \ingroup device_func_prop
     */
     AFAPI void deviceInfo(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
-    /**
-       @}
-    */
 
     /// \brief Gets the number of devices
     ///
@@ -267,7 +259,9 @@ extern "C" {
     AFAPI af_err af_info_string(char** str, const bool verbose);
 
     /**
-       \ingroup device_func_prop
+        \copydoc device_func_prop
+
+        \ingroup device_func_prop
     */
     AFAPI af_err af_device_info(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 

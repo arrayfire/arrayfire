@@ -29,6 +29,7 @@ namespace cpu
 class MemoryManager  : public common::MemoryManager
 {
     int getActiveDeviceId();
+    size_t getMaxMemorySize(int id);
 public:
     MemoryManager();
     void *nativeAlloc(const size_t bytes);
@@ -48,8 +49,13 @@ int MemoryManager::getActiveDeviceId()
     return cpu::getActiveDeviceId();
 }
 
+size_t MemoryManager::getMaxMemorySize(int id)
+{
+    return cpu::getDeviceMemorySize(id);
+}
+
 MemoryManager::MemoryManager() :
-    common::MemoryManager(getDeviceCount(), MAX_BUFFERS, MAX_BYTES, AF_MEM_DEBUG || AF_CPU_MEM_DEBUG)
+    common::MemoryManager(getDeviceCount(), MAX_BUFFERS, AF_MEM_DEBUG || AF_CPU_MEM_DEBUG)
 {}
 
 
@@ -79,6 +85,10 @@ size_t getMemStepSize(void)
     return getMemoryManager().getMemStepSize();
 }
 
+size_t getMaxBytes()
+{
+    return getMemoryManager().getMaxBytes();
+}
 
 void garbageCollect()
 {

@@ -25,8 +25,9 @@ namespace cuda
     template<typename T> T* pinnedAlloc(const size_t &elements);
     template<typename T> void pinnedFree(T* ptr);
 
-    static const unsigned MAX_BUFFERS   = 100;
-    static const unsigned MAX_BYTES     = (1 << 30);
+    static const unsigned MAX_BUFFERS   = 1000;
+
+    size_t getMaxBytes();
 
     void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                           size_t *lock_bytes,  size_t *lock_buffers);

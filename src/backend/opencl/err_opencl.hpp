@@ -23,8 +23,8 @@
         char opencl_err_msg[1024];                              \
         snprintf(opencl_err_msg,                                \
                  sizeof(opencl_err_msg),                        \
-                 "OpenCL Error: %s when calling %s",            \
-                 getErrorMessage(ERR.err()).c_str(),            \
+                 "OpenCL Error (%d): %s when calling %s",       \
+                 ERR.err(), getErrorMessage(ERR.err()).c_str(), \
                  ERR.what());                                   \
         if (ERR.err() == CL_MEM_OBJECT_ALLOCATION_FAILURE) {    \
             AF_ERROR(opencl_err_msg, AF_ERR_NO_MEM);            \

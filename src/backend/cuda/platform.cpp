@@ -23,6 +23,7 @@
 #include <cstring>
 #include <err_cuda.hpp>
 #include <util.hpp>
+#include <host_memory.hpp>
 
 using namespace std;
 
@@ -213,7 +214,7 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     cudaDeviceProp dev = getDeviceProp(getActiveDeviceId());
 
     // Name
-    snprintf(d_name, 32, "%s", dev.name);
+    snprintf(d_name, 64, "%s", dev.name);
 
     //Platform
     std::string cudaRuntime = getCUDARuntimeVersion();
@@ -224,7 +225,7 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     snprintf(d_compute, 10, "%d.%d", dev.major, dev.minor);
 
     // Sanitize input
-    for (int i = 0; i < 31; i++) {
+    for (int i = 0; i < 63; i++) {
         if (d_name[i] == ' ') {
             if (d_name[i + 1] == 0 || d_name[i + 1] == ' ') d_name[i] = 0;
             else d_name[i] = '_';
@@ -302,6 +303,16 @@ cudaStream_t getStream(int device)
         setDevice(active_dev);
     }
     return str;
+}
+
+size_t getDeviceMemorySize(int device)
+{
+    return getDeviceProp(device).totalGlobalMem;
+}
+
+size_t getHostMemorySize()
+{
+    return common::getHostMemorySize();
 }
 
 int setDevice(int device)
@@ -414,7 +425,7 @@ int DeviceManager::setActiveDevice(int device, int nId)
     // Comes only when first is true. Set it to false
     first = false;
 
-    while(device < numDevices) {
+    while(true) {
         // Check for errors other than DevicesUnavailable
         // If success, return. Else throw error
         // If DevicesUnavailable, try other devices (while loop below)
@@ -424,12 +435,15 @@ int DeviceManager::setActiveDevice(int device, int nId)
             return old;
         }
         cudaGetLastError(); // Reset error stack
+#ifndef NDEBUG
         printf("Warning: Device %d is unavailable. Incrementing to next device \n", device);
+#endif
 
         // Comes here is the device is in exclusive mode or
         // otherwise fails streamCreate with this error.
         // All other errors will error out
         device++;
+        if (device >= numDevices) break;
 
         // Can't call getNativeId here as it will cause an infinite loop with the constructor
         nId = cuDevices[device].nativeId;

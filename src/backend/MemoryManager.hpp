@@ -37,11 +37,11 @@ class MemoryManager
         size_t lock_bytes;
         size_t lock_buffers;
         size_t total_bytes;
+        size_t max_bytes;
     } memory_info;
 
     size_t mem_step_size;
     unsigned max_buffers;
-    unsigned max_bytes;
     std::vector<memory_info> memory;
     bool debug_mode;
 
@@ -55,8 +55,13 @@ class MemoryManager
         return 0;
     }
 
+    virtual size_t getMaxMemorySize(int id)
+    {
+        return 0;
+    }
+
 public:
-    MemoryManager(int num_devices, unsigned MAX_BUFFERS, unsigned MAX_BYTES, bool debug);
+    MemoryManager(int num_devices, unsigned MAX_BUFFERS, bool debug);
 
     void *alloc(const size_t bytes);
 
@@ -74,6 +79,8 @@ public:
     void userUnlock(const void *ptr);
 
     size_t getMemStepSize();
+
+    size_t getMaxBytes();
 
     void setMemStepSize(size_t new_step_size);
 

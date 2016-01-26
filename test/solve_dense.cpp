@@ -186,15 +186,12 @@ SOLVE_TESTS(cdouble, 1E-5)
 #define SOLVE_TESTS(T, eps)                     \
     TEST(SOLVE, T##RectOver)                    \
     {                                           \
-        solveTester<T>(800, 600, 50, eps);      \
+        solveTester<T>(800, 600, 64, eps);      \
     }
 
 SOLVE_TESTS(float, 0.01)
 SOLVE_TESTS(double, 1E-5)
-// Fails on Windows on some devices
-#if !(defined(OS_WIN) && defined(AF_OPENCL))
 SOLVE_TESTS(cfloat, 0.01)
 SOLVE_TESTS(cdouble, 1E-5)
-#endif
 
 #undef SOLVE_TESTS
