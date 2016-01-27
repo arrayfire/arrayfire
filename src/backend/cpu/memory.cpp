@@ -61,7 +61,9 @@ MemoryManager::MemoryManager() :
 
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
-    return malloc(bytes);
+    void *ptr = malloc(bytes);
+    if (!ptr) AF_ERROR("Unable to allocate memory", AF_ERR_NO_MEM);
+    return ptr;
 }
 
 void MemoryManager::nativeFree(void *ptr)

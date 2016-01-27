@@ -145,12 +145,13 @@ void *MemoryManager::alloc(const size_t bytes)
         }
 
         // Perform garbage collection if memory can not be allocated
-        ptr = this->nativeAlloc(alloc_bytes);
-
-        if (!ptr) {
+        try {
+            ptr = this->nativeAlloc(alloc_bytes);
+        } catch (AfError &ex) {
+            // If out of memory, run garbage collect and try again
+            if (ex.getError() != AF_ERR_NO_MEM) throw;
             this->garbageCollect();
             ptr = this->nativeAlloc(alloc_bytes);
-            if (!ptr) AF_ERROR("Can not allocate memory", AF_ERR_NO_MEM);
         }
 
         buffer_info info = {true, false, alloc_bytes};
