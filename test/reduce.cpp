@@ -109,16 +109,6 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
-vector<af_seq> init_subs()
-{
-    vector<af_seq> subs;
-    subs.push_back(af_make_seq(2, 6, 1));
-    subs.push_back(af_make_seq(1, 5, 1));
-    subs.push_back(af_make_seq(1, 3, 1));
-    subs.push_back(af_make_seq(1, 2, 1));
-    return subs;
-}
-
 template<typename T,reduceFunc OP>
 struct promote_type {
     typedef T type;
