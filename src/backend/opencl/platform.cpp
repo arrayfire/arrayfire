@@ -417,7 +417,7 @@ std::string getInfo()
         info << devVersion;
         info << " -- Device driver " << driVersion;
         info << " -- FP64 Support: "
-             << (device->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False")
+             << (device->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False");
         info << " -- Unified Memory ("
              << (isHostUnifiedMemory(*device) ? "True" : "False")
              << ")";
