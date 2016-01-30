@@ -277,6 +277,7 @@ namespace cuda
     template       Array<T>::Array(af::dim4 dims, const T * const in_data, \
                                    bool is_device, bool copy_device);   \
     template       Array<T>::~Array        ();                          \
+    template       Node_ptr Array<T>::getNode() const;             \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
