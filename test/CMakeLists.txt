@@ -6,6 +6,8 @@ SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 FIND_PACKAGE(CUDA QUIET)
 FIND_PACKAGE(OpenCL QUIET)
 
+OPTION(BUILD_SINGLE_TEST_FILE "Build tests in a single file" OFF)
+
 # If the tests are not being built at the same time as ArrayFire,
 # we need to first find the ArrayFire library
 IF(TARGET afcpu OR TARGET afcuda OR TARGET afopencl OR TARGET af)
@@ -58,14 +60,36 @@ MACRO(CREATE_TESTS BACKEND AFLIBNAME GTEST_LIBS OTHER_LIBS)
       SET(TEST_FILES ${FILES})
     ENDIF(${BACKEND} STREQUAL "unified")
 
-    FOREACH(FILE ${TEST_FILES})
+    IF (${BUILD_SINGLE_TEST_FILE})
+      SET(TEST_NAME test_${BACKEND})
+      SET(TEST_NAME_BASIC test_basic_${BACKEND})
+      ADD_EXECUTABLE(${TEST_NAME} ${CPP_FILES})
+      ADD_EXECUTABLE(${TEST_NAME_BASIC} basic_c.c)
+
+      TARGET_LINK_LIBRARIES(${TEST_NAME}  PRIVATE ${AFLIBNAME}
+        PRIVATE ${THREAD_LIB_FLAG}
+        PRIVATE ${GTEST_LIBS}
+        PRIVATE ${OTHER_LIBS})
+
+      TARGET_LINK_LIBRARIES(${TEST_NAME_BASIC}  PRIVATE ${AFLIBNAME}
+        PRIVATE ${THREAD_LIB_FLAG}
+        PRIVATE ${GTEST_LIBS}
+        PRIVATE ${OTHER_LIBS})
+
+      SET_TARGET_PROPERTIES(${TEST_NAME_BASIC}
+        PROPERTIES
+        COMPILE_FLAGS -DAF_${DEF_NAME}
+        FOLDER "Tests/${BACKEND}")
+
+    ELSE()
+      FOREACH(FILE ${TEST_FILES})
         GET_FILENAME_COMPONENT(FNAME ${FILE} NAME_WE)
         SET(TEST_NAME ${FNAME}_${BACKEND})
 
         IF(NOT ${BUILD_NONFREE} AND "${FILE}" MATCHES ".nonfree.")
-            MESSAGE(STATUS "Removing ${FILE} from ctest")
+          MESSAGE(STATUS "Removing ${FILE} from ctest")
         ELSEIF("${FILE}" MATCHES ".manual.")
-            MESSAGE(STATUS "Removing ${FILE} from ctest")
+          MESSAGE(STATUS "Removing ${FILE} from ctest")
         ELSE()
           ADD_TEST(Test_${TEST_NAME} ${TEST_NAME})
         ENDIF()
@@ -73,15 +97,16 @@ MACRO(CREATE_TESTS BACKEND AFLIBNAME GTEST_LIBS OTHER_LIBS)
         FILE(GLOB TEST_FILE "${FNAME}.cpp" "${FNAME}.c")
         ADD_EXECUTABLE(${TEST_NAME} ${TEST_FILE})
         TARGET_LINK_LIBRARIES(${TEST_NAME}  PRIVATE ${AFLIBNAME}
-                                            PRIVATE ${THREAD_LIB_FLAG}
-                                            PRIVATE ${GTEST_LIBS}
-                                            PRIVATE ${OTHER_LIBS})
+          PRIVATE ${THREAD_LIB_FLAG}
+          PRIVATE ${GTEST_LIBS}
+          PRIVATE ${OTHER_LIBS})
 
         SET_TARGET_PROPERTIES(${TEST_NAME}
-                      PROPERTIES
-                      COMPILE_FLAGS -DAF_${DEF_NAME}
-                      FOLDER "Tests/${BACKEND}")
-    ENDFOREACH()
+          PROPERTIES
+          COMPILE_FLAGS -DAF_${DEF_NAME}
+          FOLDER "Tests/${BACKEND}")
+      ENDFOREACH()
+    ENDIF()
 
 ENDMACRO(CREATE_TESTS)
 
@@ -136,10 +161,11 @@ INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 FILE(GLOB FILES "*.cpp" "*.c")
+FILE(GLOB CPP_FILES "*.cpp")
 LIST(SORT FILES)  # Tests execute in alphabetical order
 
 # We only build backend.cpp for Unified backend
-SET(UNIFIED_FILES "backend.cpp")
+SET(UNIFIED_FILES "backend.cpp;main.cpp")
 LIST(SORT UNIFIED_FILES)  # Tests execute in alphabetical order
 
 # Next we build each example using every backend.

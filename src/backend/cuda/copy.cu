@@ -71,7 +71,6 @@ namespace cuda
         ARG_ASSERT(1, (in.ndims() == dims.ndims()));
         Array<outType> ret = createEmptyArray<outType>(dims);
         kernel::copy<inType, outType>(ret, in, in.ndims(), default_value, factor);
-        CUDA_CHECK(cudaDeviceSynchronize());
         return ret;
     }
 

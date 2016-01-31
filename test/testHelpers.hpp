@@ -6,6 +6,8 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 #include <string>
 #include <fstream>
@@ -127,11 +129,11 @@ void readTestsFromFile(const std::string &FileName, std::vector<af::dim4> &input
     }
 }
 
-void readImageTests(const std::string        &pFileName,
-                    std::vector<af::dim4>    &pInputDims,
-                    std::vector<std::string> &pTestInputs,
-                    std::vector<dim_t>    &pTestOutSizes,
-                    std::vector<std::string> &pTestOutputs)
+inline void readImageTests(const std::string        &pFileName,
+                           std::vector<af::dim4>    &pInputDims,
+                           std::vector<std::string> &pTestInputs,
+                           std::vector<dim_t>    &pTestOutSizes,
+                           std::vector<std::string> &pTestOutputs)
 {
     using std::vector;
 
@@ -364,18 +366,18 @@ struct cond_type<false, T, Other> {
 };
 
 template<typename T>
-double real(T val) { return (double)val; }
+inline double real(T val) { return (double)val; }
 template<>
-double real<af::cdouble>(af::cdouble val) { return real(val); }
+inline double real<af::cdouble>(af::cdouble val) { return real(val); }
 template<>
-double real<af::cfloat> (af::cfloat val) { return real(val); }
+inline double real<af::cfloat> (af::cfloat val) { return real(val); }
 
 template<typename T>
-double imag(T val) { return (double)val; }
+inline double imag(T val) { return (double)val; }
 template<>
-double imag<af::cdouble>(af::cdouble val) { return imag(val); }
+inline double imag<af::cdouble>(af::cdouble val) { return imag(val); }
 template<>
-double imag<af::cfloat> (af::cfloat val) { return imag(val); }
+inline double imag<af::cfloat> (af::cfloat val) { return imag(val); }
 
 template<typename T>
 bool noDoubleTests()
@@ -388,14 +390,14 @@ bool noDoubleTests()
     return ((isTypeDouble && !isDoubleSupported) ? true : false);
 }
 
-bool noImageIOTests()
+inline bool noImageIOTests()
 {
     bool ret = !af::isImageIOAvailable();
     if(ret) printf("Image IO Not Configured. Test will exit\n");
     return ret;
 }
 
-bool noLAPACKTests()
+inline bool noLAPACKTests()
 {
     bool ret = !af::isLAPACKAvailable();
     if(ret) printf("LAPACK Not Configured. Test will exit\n");
@@ -450,3 +452,5 @@ af::array cpu_randu(const af::dim4 dims)
 
     return af::array(dims, (T *)&out[0]);
 }
+
+#pragma GCC diagnostic pop
