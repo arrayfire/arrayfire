@@ -41,7 +41,7 @@ void select_kernel(__global T *optr, KParam oinfo,
     const int idw = get_group_id(1) / groups_1;
 
     const int group_id_0 = get_group_id(0) - idz * groups_0;
-    const int group_id_1 = get_group_id(1) - idz * groups_1;
+    const int group_id_1 = get_group_id(1) - idw * groups_1;
 
     const int idx = group_id_0 * get_local_size(0) + get_local_id(0);
     const int idy = group_id_1 * get_local_size(1) + get_local_id(1);
@@ -80,7 +80,7 @@ void select_scalar_kernel(__global T *optr, KParam oinfo,
     const int idw = get_group_id(1) / groups_1;
 
     const int group_id_0 = get_group_id(0) - idz * groups_0;
-    const int group_id_1 = get_group_id(1) - idz * groups_1;
+    const int group_id_1 = get_group_id(1) - idw * groups_1;
 
     const int idx = group_id_0 * get_local_size(0) + get_local_id(0);
     const int idy = group_id_1 * get_local_size(1) + get_local_id(1);
