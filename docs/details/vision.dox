@@ -166,9 +166,12 @@ from the other and returns the result.
 
 \brief Template Matching
 
-Template matching is an image processing technique to find small patches of an image which
-match a given template image. A more in depth discussion on the topic can be found
-[here](http://en.wikipedia.org/wiki/Template_matching).
+Template matching is an image processing technique to find small patches of an image which match a given template image. Currently, this function doesn't support the following three metrics yet.
+- \ref AF_NCC
+- \ref AF_ZNCC
+- \ref AF_SHD
+
+A more in depth discussion about template matching can be found [here](http://en.wikipedia.org/wiki/Template_matching).
 
 =======================================================================
 
