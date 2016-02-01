@@ -320,6 +320,7 @@ namespace opencl
     template       Array<T>  createNodeArray<T>       (const dim4 &size, JIT::Node_ptr node); \
     template       Array<T>::Array(af::dim4 dims, cl_mem mem, size_t src_offset, bool copy); \
     template       Array<T>::~Array        ();                          \
+    template       Node_ptr Array<T>::getNode() const;             \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \

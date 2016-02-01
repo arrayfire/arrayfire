@@ -29,6 +29,7 @@ using std::swap;
 template<typename T>
 Array<T> modDims(const Array<T>& in, const af::dim4 &newDims);
 
+
 template<typename Tout, typename Tin>
 static
 void assign(Array<Tout> &out, const unsigned &ndims, const af_seq *index, const Array<Tin> &in_)
