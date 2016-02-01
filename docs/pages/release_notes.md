@@ -1,6 +1,76 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.3.0
+==============
+
+Major Updates
+-------------
+
+* CPU backend supports aysnchronous execution.
+* Performance improvements to OpenCL BLAS and FFT functions.
+* Improved performance of memory manager.
+* Improvements to visualization functions.
+* Improved sorted order for OpenCL devices.
+* Integration with external OpenCL projects.
+
+Features
+----------
+
+* \ref af::getActiveBackend(): Returns the current backend being used.
+* [Scatter plot](https://github.com/arrayfire/arrayfire/pull/1116) added to graphics.
+* \ref af::transform() now supports perspective transformation matrices.
+* \ref af::infoString(): Returns `af::info()` as a string.
+* \ref af::allocHost(): Allocates memory on host.
+* \ref af::freeHost(): Frees host side memory allocated by arrayfire.
+* Functions specific to OpenCl backend.
+    * \ref afcl::addDevice(): Adds an external device and context to ArrayFire's device manager.
+    * \ref afcl::deleteDevice(): Removes an external device and context from ArrayFire's device manager.
+    * \ref afcl::setDevice(): Sets an external device and context from ArrayFire's device manager.
+    * \ref afcl::getDeviceType(): Gets the device type of the current device.
+    * \ref afcl::getPlatform(): Gets the platform of the current device.
+
+Bug Fixes
+--------------
+
+* Fixed [errors when using 3D / 4D arrays](https://github.com/arrayfire/arrayfire/pull/1251) in select and replace
+* Fixed [JIT errors on AMD devices](https://github.com/arrayfire/arrayfire/pull/1238) for OpenCL backend.
+* Fixed [imageio bugs](https://github.com/arrayfire/arrayfire/pull/1229) for 16 bit images.
+* Fixed [bugs when loading and storing images](https://github.com/arrayfire/arrayfire/pull/1228) natively.
+* Fixed [bug in FFT for NVIDIA GPUs](https://github.com/arrayfire/arrayfire/issues/615) when using OpenCL backend.
+
+Improvements
+--------------
+
+* Optionally [offload BLAS and LAPACK](https://github.com/arrayfire/arrayfire/pull/1221) functions to CPU implementations to improve performance.
+* Performance improvements to the memory manager.
+* Error messages are now more detailed.
+* Improved sorted order for OpenCL devices.
+
+Examples
+----------
+
+* New visualization [example simulating gravity](\ref graphics/gravity_sim.cpp).
+
+Build
+----------
+
+* Support for Intel `icc` compiler
+* Support to compile with Intel MKL as a BLAS and LAPACK provider
+
+Deprecations
+-----------
+
+* `af_lock_device_arr` is now deprecated to be removed in v4.0.0. Use \ref af_lock_array() instead.
+* `af_unlock_device_arr` is now deprecated to be removed in v4.0.0. use \ref af_unlock_array() instead.
+
+Documentation
+--------------
+
+* Fixes to documentation for matchTemplate.
+* Improved documentation for deviceInfo.
+
+
 v3.2.2
 ==============
 
