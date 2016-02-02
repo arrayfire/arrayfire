@@ -159,7 +159,9 @@ namespace kernel
                 out.info.strides[k] = total;
             }
 
-            get_out_idx<T>(out.data, otmp, rtmp, in, threads_x, groups_x, groups_y);
+            if (total > 0) {
+                get_out_idx<T>(out.data, otmp, rtmp, in, threads_x, groups_x, groups_y);
+            }
 
             bufferFree(rtmp.data);
             bufferFree(otmp.data);
