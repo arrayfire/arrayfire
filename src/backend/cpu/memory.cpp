@@ -56,7 +56,9 @@ size_t MemoryManager::getMaxMemorySize(int id)
 
 MemoryManager::MemoryManager() :
     common::MemoryManager(getDeviceCount(), MAX_BUFFERS, AF_MEM_DEBUG || AF_CPU_MEM_DEBUG)
-{}
+{
+    this->setMaxMemorySize();
+}
 
 
 void *MemoryManager::nativeAlloc(const size_t bytes)

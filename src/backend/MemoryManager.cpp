@@ -19,6 +19,7 @@
 namespace common
 {
 
+const size_t ONE_GB = 1 << 30;
 MemoryManager::MemoryManager(int num_devices, unsigned MAX_BUFFERS, bool debug):
     mem_step_size(1024),
     max_buffers(MAX_BUFFERS),
@@ -32,17 +33,25 @@ MemoryManager::MemoryManager(int num_devices, unsigned MAX_BUFFERS, bool debug):
     }
     if (this->debug_mode) mem_step_size = 1;
 
-    static const size_t oneGB = 1 << 30;
     for (int n = 0; n < num_devices; n++) {
-        size_t memsize = getMaxMemorySize(n);
+        // Calling getMaxMemorySize() here calls the virtual function that returns 0
+        // Call it from outside the constructor.
+        memory[n].max_bytes    = ONE_GB;
+        memory[n].total_bytes  = 0;
+        memory[n].lock_bytes   = 0;
+        memory[n].lock_buffers = 0;
+    }
+}
+
+void MemoryManager::setMaxMemorySize()
+{
+    for (unsigned n = 0; n < memory.size(); n++) {
         // Calls garbage collection when:
         // total_bytes > memsize * 0.75 when memsize <  4GB
         // total_bytes > memsize - 1 GB when memsize >= 4GB
         // If memsize returned 0, then use 1GB
-        memory[n].max_bytes    = memsize == 0 ? oneGB : std::max(memsize * 0.75, (double)(memsize - oneGB));
-        memory[n].total_bytes  = 0;
-        memory[n].lock_bytes   = 0;
-        memory[n].lock_buffers = 0;
+        size_t memsize = this->getMaxMemorySize(n);
+        memory[n].max_bytes = memsize == 0 ? ONE_GB : std::max(memsize * 0.75, (double)(memsize - ONE_GB));
     }
 }
 

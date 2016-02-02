@@ -89,7 +89,9 @@ size_t MemoryManager::getMaxMemorySize(int id)
 
 MemoryManager::MemoryManager() :
     common::MemoryManager(getDeviceCount(), MAX_BUFFERS, AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG)
-{}
+{
+    this->setMaxMemorySize();
+}
 
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
@@ -128,7 +130,9 @@ size_t MemoryManagerPinned::getMaxMemorySize(int id)
 MemoryManagerPinned::MemoryManagerPinned() :
     common::MemoryManager(getDeviceCount(), MAX_BUFFERS, AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG),
     pinned_maps(getDeviceCount())
-{}
+{
+    this->setMaxMemorySize();
+}
 
 void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
 {

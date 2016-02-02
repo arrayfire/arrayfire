@@ -63,6 +63,8 @@ class MemoryManager
 public:
     MemoryManager(int num_devices, unsigned MAX_BUFFERS, bool debug);
 
+    void setMaxMemorySize();
+
     void *alloc(const size_t bytes);
 
     void unlock(void *ptr, bool user_unlock);

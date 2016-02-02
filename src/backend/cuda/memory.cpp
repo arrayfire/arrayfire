@@ -91,7 +91,9 @@ size_t MemoryManager::getMaxMemorySize(int id)
 
 MemoryManager::MemoryManager() :
     common::MemoryManager(getDeviceCount(), MAX_BUFFERS, AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG)
-{}
+{
+    this->setMaxMemorySize();
+}
 
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
@@ -126,7 +128,9 @@ size_t MemoryManagerPinned::getMaxMemorySize(int id)
 
 MemoryManagerPinned::MemoryManagerPinned() :
     common::MemoryManager(1, MAX_BUFFERS, AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG)
-{}
+{
+    this->setMaxMemorySize();
+}
 
 void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
 {
