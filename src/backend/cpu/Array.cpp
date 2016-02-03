@@ -19,6 +19,7 @@
 #include <queue.hpp>
 #include <cstring>
 #include <cstddef>
+#include <MemoryManager.hpp>
 
 namespace cpu
 {
@@ -159,8 +160,8 @@ createNodeArray(const dim4 &dims, Node_ptr node)
     n->getInfo(length, buf_count, bytes);
     n->reset();
 
-    if (length > MAX_TNJ_LEN ||
-        buf_count >= MAX_BUFFERS ||
+    if (length > getMaxJitSize() ||
+        buf_count >= getMaxBuffers() ||
         bytes >= getMaxBytes()) {
         out.eval();
     }

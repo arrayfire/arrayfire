@@ -16,6 +16,7 @@
 #include <memory.hpp>
 #include <platform.hpp>
 #include <cstddef>
+#include <MemoryManager.hpp>
 
 using af::dim4;
 
@@ -148,8 +149,8 @@ namespace cuda
         n->getInfo(length, buf_count, bytes);
         n->resetFlags();
 
-        if (length > MAX_JIT_LEN ||
-            buf_count >= MAX_BUFFERS ||
+        if (length > getMaxJitSize() ||
+            buf_count >= getMaxBuffers() ||
             bytes >= getMaxBytes()) {
             out.eval();
         }

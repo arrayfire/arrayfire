@@ -35,4 +35,6 @@ namespace cpu {
     void sync(int device);
 
     queue& getQueue(int idx = 0);
+
+    unsigned getMaxJitSize();
 }
