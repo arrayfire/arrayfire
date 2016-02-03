@@ -19,6 +19,9 @@ namespace common
 typedef std::recursive_mutex mutex_t;
 typedef std::lock_guard<mutex_t> lock_guard_t;
 
+const unsigned MAX_BUFFERS   = 1000;
+const size_t ONE_GB = 1 << 30;
+
 class MemoryManager
 {
     typedef struct
@@ -65,7 +68,7 @@ public:
 
     void setMaxMemorySize();
 
-    void *alloc(const size_t bytes);
+    void *alloc(const size_t bytes, bool user_lock);
 
     void unlock(void *ptr, bool user_unlock);
 
@@ -83,6 +86,8 @@ public:
     size_t getMemStepSize();
 
     size_t getMaxBytes();
+
+    unsigned getMaxBuffers();
 
     void setMemStepSize(size_t new_step_size);
 

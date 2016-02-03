@@ -19,7 +19,6 @@
 namespace common
 {
 
-const size_t ONE_GB = 1 << 30;
 MemoryManager::MemoryManager(int num_devices, unsigned MAX_BUFFERS, bool debug):
     mem_step_size(1024),
     max_buffers(MAX_BUFFERS),
@@ -115,7 +114,7 @@ void MemoryManager::unlock(void *ptr, bool user_unlock)
     }
 }
 
-void *MemoryManager::alloc(const size_t bytes)
+void *MemoryManager::alloc(const size_t bytes, bool user_lock)
 {
     lock_guard_t lock(this->memory_mutex);
 
@@ -277,4 +276,10 @@ void MemoryManager::bufferInfo(size_t *alloc_bytes, size_t *alloc_buffers,
     if (lock_bytes    ) *lock_bytes    = current.lock_bytes;
     if (lock_buffers  ) *lock_buffers  = current.lock_buffers;
 }
+
+unsigned MemoryManager::getMaxBuffers()
+{
+    return this->max_buffers;
+}
+
 }
