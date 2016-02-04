@@ -59,6 +59,7 @@ void randuTest(af::dim4 & dims)
 
     af_array outArray = 0;
     ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(af_sync(-1), AF_SUCCESS);
     if(outArray != 0) af_release_array(outArray);
 }
 
@@ -69,6 +70,7 @@ void randnTest(af::dim4 &dims)
 
     af_array outArray = 0;
     ASSERT_EQ(AF_SUCCESS, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(af_sync(-1), AF_SUCCESS);
     if(outArray != 0) af_release_array(outArray);
 }
 
@@ -124,6 +126,7 @@ void randuArgsTest()
     dim_t dims[] = {1, 2, 3, 0};
     af_array outArray = 0;
     ASSERT_EQ(AF_ERR_SIZE, af_randu(&outArray, ndims, dims, (af_dtype) af::dtype_traits<char>::af_type));
+    ASSERT_EQ(af_sync(-1), AF_SUCCESS);
     if(outArray != 0) af_release_array(outArray);
 }
 
@@ -143,6 +146,7 @@ TEST(Random, CPP)
     af::dim4 dims(1, 2, 3, 1);
     af::array out1 = af::randu(dims);
     af::array out2 = af::randn(dims);
+    af::sync();
 }
 
 template<typename T>
