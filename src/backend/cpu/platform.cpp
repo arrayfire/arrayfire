@@ -180,6 +180,22 @@ CPUInfo::CPUInfo()
 namespace cpu
 {
 
+unsigned getMaxJitSize()
+{
+    const int MAX_JIT_LEN = 20;
+
+    static int length = 0;
+    if (length == 0) {
+        std::string env_var = getEnvVar("AF_CPU_MAX_JIT_LEN");
+        if (!env_var.empty()) {
+            length = std::stoi(env_var);
+        } else {
+            length = MAX_JIT_LEN;
+        }
+    }
+    return length;
+}
+
 int getBackend()
 {
     return AF_BACKEND_CPU;

@@ -13,21 +13,22 @@
 namespace cuda
 {
     template<typename T> T* memAlloc(const size_t &elements);
+    void *memAllocUser(const size_t &bytes);
 
     // Need these as 2 separate function and not a default argument
     // This is because it is used as the deleter in shared pointer
     // which cannot support default arguments
     template<typename T> void memFree(T* ptr);
-    template<typename T> void memFreeLocked(T* ptr, bool user_unlock);
-    template<typename T> void memLock(const T *ptr);
-    template<typename T> void memUnlock(const T *ptr);
+    void memFreeUser(void* ptr);
+
+    void memLock(const void *ptr);
+    void memUnlock(const void *ptr);
 
     template<typename T> T* pinnedAlloc(const size_t &elements);
     template<typename T> void pinnedFree(T* ptr);
 
-    static const unsigned MAX_BUFFERS   = 1000;
-
     size_t getMaxBytes();
+    unsigned getMaxBuffers();
 
     void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                           size_t *lock_bytes,  size_t *lock_buffers);

@@ -55,8 +55,10 @@ size_t MemoryManager::getMaxMemorySize(int id)
 }
 
 MemoryManager::MemoryManager() :
-    common::MemoryManager(getDeviceCount(), MAX_BUFFERS, AF_MEM_DEBUG || AF_CPU_MEM_DEBUG)
-{}
+    common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS, AF_MEM_DEBUG || AF_CPU_MEM_DEBUG)
+{
+    this->setMaxMemorySize();
+}
 
 
 void *MemoryManager::nativeAlloc(const size_t bytes)
@@ -92,6 +94,11 @@ size_t getMaxBytes()
     return getMemoryManager().getMaxBytes();
 }
 
+unsigned getMaxBuffers()
+{
+    return getMemoryManager().getMaxBuffers();
+}
+
 void garbageCollect()
 {
     getMemoryManager().garbageCollect();
@@ -105,33 +112,33 @@ void printMemInfo(const char *msg, const int device)
 template<typename T>
 T* memAlloc(const size_t &elements)
 {
-    return (T *)getMemoryManager().alloc(elements * sizeof(T));
+    return (T *)getMemoryManager().alloc(elements * sizeof(T), false);
 }
 
+void* memAllocUser(const size_t &bytes)
+{
+    return getMemoryManager().alloc(bytes, true);
+}
 template<typename T>
 void memFree(T *ptr)
 {
     return getMemoryManager().unlock((void *)ptr, false);
 }
 
-template<typename T>
-void memFreeLocked(T *ptr, bool user_unlock)
+void memFreeUser(void *ptr)
 {
-    getMemoryManager().unlock((void *)ptr, user_unlock);
+    getMemoryManager().unlock((void *)ptr, true);
 }
 
-template<typename T>
-void memLock(const T *ptr)
+void memLock(const void *ptr)
 {
     getMemoryManager().userLock((void *)ptr);
 }
 
-template<typename T>
-void memUnlock(const T *ptr)
+void memUnlock(const void *ptr)
 {
     getMemoryManager().userUnlock((void *)ptr);
 }
-
 
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                       size_t *lock_bytes,  size_t *lock_buffers)
@@ -144,7 +151,7 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 template<typename T>
 T* pinnedAlloc(const size_t &elements)
 {
-    return (T *)getMemoryManager().alloc(elements * sizeof(T));
+    return (T *)getMemoryManager().alloc(elements * sizeof(T), false);
 }
 
 template<typename T>
@@ -156,9 +163,6 @@ void pinnedFree(T* ptr)
 #define INSTANTIATE(T)                                      \
     template T* memAlloc(const size_t &elements);           \
     template void memFree(T* ptr);                          \
-    template void memFreeLocked(T* ptr, bool user_unlock);  \
-    template void memLock(const T* ptr);                    \
-    template void memUnlock(const T* ptr);                  \
     template T* pinnedAlloc(const size_t &elements);        \
     template void pinnedFree(T* ptr);                       \
 

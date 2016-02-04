@@ -200,6 +200,8 @@ namespace af
     //                              manager
     /// \param[out] lock_bytes The number of bytes in use
     /// \param[out] lock_buffers The number of buffers in use
+    ///
+    /// \note This function performs a synchronization operation
     AFAPI void deviceMemInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                              size_t *lock_bytes, size_t *lock_buffers);
 
@@ -213,6 +215,7 @@ namespace af
     //
     /// \ingroup device_func_mem
     ///
+    /// \note This function performs a synchronization operation
     AFAPI void printMemInfo(const char *msg = NULL, const int device_id = -1);
 #endif
 

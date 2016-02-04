@@ -19,6 +19,7 @@
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
 #include <functional>
+#include <af/opencl.h>
 
 namespace opencl
 {
@@ -180,13 +181,16 @@ void evalNodes(Param &out, Node *node)
         uint groups_1 = 1;
         uint num_odims = 4;
 
+        // CPUs seem to perform better with work group size 1024
+        const int work_group_size = (getActiveDeviceType() == AFCL_DEVICE_TYPE_CPU) ? 1024 : 256;
+
         while (num_odims >= 1) {
             if (out.info.dims[num_odims - 1] == 1) num_odims--;
             else break;
         }
 
         if (is_linear) {
-            local_0 = 256;
+            local_0 = work_group_size;
             uint out_elements = out.info.dims[3] * out.info.strides[3];
             uint groups = divup(out_elements, local_0);
 
@@ -194,8 +198,8 @@ void evalNodes(Param &out, Node *node)
             global_0 = divup(groups, global_1) * local_0;
 
         } else {
-            local_0 = 64;
             local_1 =  4;
+            local_0 = work_group_size / local_1;
 
             groups_0 = divup(out.info.dims[0], local_0);
             groups_1 = divup(out.info.dims[1], local_1);

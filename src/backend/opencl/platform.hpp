@@ -98,6 +98,8 @@ int getDeviceCount();
 
 int getActiveDeviceId();
 
+unsigned getMaxJitSize();
+
 const cl::Context& getContext();
 
 cl::CommandQueue& getQueue();

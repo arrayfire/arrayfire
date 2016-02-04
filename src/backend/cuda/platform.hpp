@@ -38,6 +38,8 @@ bool isDoubleSupported(int device);
 
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
+unsigned getMaxJitSize();
+
 int getDeviceCount();
 
 int getActiveDeviceId();

@@ -142,3 +142,28 @@ When the environment variable is not set, it is treated to be non zero.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 AF_MEM_DEBUG=1 ./myprogram
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+AF_MAX_BUFFERS {#af_max_buffers}
+-------------------------------------------------------------------------
+
+When AF_MAX_BUFFERS is set, this environment variable specifies the maximum number of buffers allocated before garbage collection kicks in.
+
+Please note that the total number of buffers that can exist simultaneously can be higher than this number. This variable tells the garbage collector that it should free any available buffers immediately if the treshold is reached.
+
+When not set, the default value is 1000.
+
+AF_OPENCL_MAX_JIT_LEN {#af_opencl_max_jit_len}
+-------------------------------------------------------------------------------
+
+When set, this environment variable specifies the maximum length of the OpenCL JIT tree after which evaluation is forced. The default value for this is 16 for AMD devices and 20 otherwise.
+
+AF_CUDA_MAX_JIT_LEN {#af_cuda_max_jit_len}
+-------------------------------------------------------------------------------
+
+When set, this environment variable specifies the maximum length of the CUDA JIT tree after which evaluation is forced. The default value for this is 20.
+
+AF_CPU_MAX_JIT_LEN {#af_cpu_max_jit_len}
+-------------------------------------------------------------------------------
+
+When set, this environment variable specifies the maximum length of the CPU JIT tree after which evaluation is forced. The default value for this is 20.

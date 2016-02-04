@@ -776,6 +776,28 @@ bool synchronize_calls() {
     return sync;
 }
 
+
+unsigned getMaxJitSize()
+{
+    const int MAX_JIT_LEN = 20;
+    const int MAX_JIT_LEN_AMD = 16; //FIXME: Change this when bug is fixed
+
+    static int length = 0;
+    if (length == 0) {
+        std::string env_var = getEnvVar("AF_OPENCL_MAX_JIT_LEN");
+        if (!env_var.empty()) {
+            length = std::stoi(env_var);
+        } else {
+            length = MAX_JIT_LEN;
+        }
+    }
+
+    if (getActivePlatform() == AFCL_PLATFORM_AMD) {
+        return std::min(length, MAX_JIT_LEN_AMD);
+    }
+    return length;
+}
+
 }
 
 using namespace opencl;
