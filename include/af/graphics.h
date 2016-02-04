@@ -30,6 +30,8 @@ namespace af
 
    \brief Window object to render af::arrays
 
+   Windows are not CopyConstructible or CopyAssignable.
+
    \ingroup graphics_func
  */
 class AFAPI Window {
@@ -42,6 +44,9 @@ class AFAPI Window {
         ColorMap _cmap;
 
         void initWindow(const int width, const int height, const char* const title);
+
+        Window(const Window&);                 // Prevent copy-construction
+        Window& operator=(const Window&);      // Prevent assignment
 
     public:
         /**
@@ -84,6 +89,7 @@ class AFAPI Window {
            \ingroup gfx_func_window
          */
         Window(const af_window wnd);
+
         /**
            Destroys the window handle
 
