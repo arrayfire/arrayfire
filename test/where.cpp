@@ -121,3 +121,10 @@ TYPED_TEST(Where, CPP)
                                                         << std::endl;
     }
 }
+
+TEST(Where, ISSUE_1259)
+{
+    af::array a = af::randu(10, 10, 10);
+    af::array indices = af::where(a > 2);
+    ASSERT_EQ(indices.elements(), 0);
+}
