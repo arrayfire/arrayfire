@@ -95,6 +95,7 @@ namespace opencl
         bool owner;
 
         Array(af::dim4 dims);
+
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         Array(Param &tmp);
         explicit Array(af::dim4 dims, JIT::Node_ptr n);
@@ -102,6 +103,9 @@ namespace opencl
         explicit Array(af::dim4 dims, cl_mem mem, size_t offset, bool copy);
 
     public:
+
+        Array(af::dim4 dims, af::dim4 strides, dim_t offset,
+              const T * const in_data, bool is_device = false);
 
         void resetInfo(const af::dim4& dims)        { info.resetInfo(dims);         }
         void resetDims(const af::dim4& dims)        { info.resetDims(dims);         }

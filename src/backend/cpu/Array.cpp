@@ -68,6 +68,21 @@ Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, c
     ready(true), owner(false)
 { }
 
+template<typename T>
+Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
+                const T * const in_data, bool is_device) :
+    info(getActiveDeviceId(), dims, af::dim4(offset_), strides, (af_dtype)dtype_traits<T>::af_type),
+    data(is_device ? (T*)in_data : memAlloc<T>(info.elements()), memFree<T>),
+    data_dims(dims),
+    node(),
+    offset(offset_),
+    ready(true),
+    owner(true)
+{
+    if (!is_device) {
+        std::copy(in_data, in_data + dims.elements(), data.get());
+    }
+}
 
 template<typename T>
 void Array<T>::eval()
@@ -240,6 +255,9 @@ writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     template       void Array<T>::eval() const;                         \
     template       Array<T>::Array(af::dim4 dims, const T * const in_data, \
                                    bool is_device, bool copy_device);   \
+    template       Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset, \
+                                   const T * const in_data,             \
+                                   bool is_device);                     \
     template       TNJ::Node_ptr Array<T>::getNode() const;             \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \

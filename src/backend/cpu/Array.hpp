@@ -106,11 +106,16 @@ namespace cpu
 
         Array() = default;
         Array(dim4 dims);
+
         explicit Array(dim4 dims, const T * const in_data, bool is_device, bool copy_device=false);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         explicit Array(af::dim4 dims, TNJ::Node_ptr n);
 
     public:
+
+
+        Array(af::dim4 dims, af::dim4 strides, dim_t offset,
+              const T * const in_data, bool is_device = false);
 
         void resetInfo(const af::dim4& dims)        { info.resetInfo(dims);         }
         void resetDims(const af::dim4& dims)        { info.resetDims(dims);         }

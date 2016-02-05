@@ -86,6 +86,24 @@ namespace cuda
     {
     }
 
+    template<typename T>
+    Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
+                    const T * const in_data, bool is_device) :
+        info(getActiveDeviceId(), dims, af::dim4(offset_), strides, (af_dtype)dtype_traits<T>::af_type),
+        data(is_device ? (T*)in_data : memAlloc<T>(info.elements()), memFree<T>),
+        data_dims(dims),
+        node(),
+        offset(offset_),
+        ready(true),
+        owner(true)
+    {
+        if (!is_device) {
+            cudaStream_t stream = getStream(getActiveDeviceId());
+            CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, info.elements() * sizeof(T),
+                                       cudaMemcpyHostToDevice, stream));
+            CUDA_CHECK(cudaStreamSynchronize(stream));
+        }
+    }
 
     template<typename T>
     void Array<T>::eval()
@@ -275,6 +293,9 @@ namespace cuda
                                                        bool copy);      \
     template       void      destroyArray<T>          (Array<T> *A);    \
     template       Array<T>  createNodeArray<T>       (const dim4 &size, JIT::Node_ptr node); \
+    template       Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset, \
+                                   const T * const in_data,             \
+                                   bool is_device);                     \
     template       Array<T>::Array(af::dim4 dims, const T * const in_data, \
                                    bool is_device, bool copy_device);   \
     template       Array<T>::~Array        ();                          \

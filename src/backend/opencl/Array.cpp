@@ -99,6 +99,24 @@ namespace opencl
     {
     }
 
+    template<typename T>
+    Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
+                    const T * const in_data, bool is_device) :
+        info(getActiveDeviceId(), dims, af::dim4(offset_), strides, (af_dtype)dtype_traits<T>::af_type),
+        data(is_device ?
+             (new cl::Buffer((cl_mem)in_data)) :
+             (bufferAlloc(info.elements() * sizeof(T))), bufferFree),
+        data_dims(dims),
+        node(),
+        offset(offset_),
+        ready(true),
+        owner(true)
+    {
+        if (!is_device) {
+            getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T) * info.elements(), in_data);
+        }
+    }
+
 
     template<typename T>
     void Array<T>::eval()
@@ -308,6 +326,9 @@ namespace opencl
                                                        bool copy);      \
     template       void      destroyArray<T>          (Array<T> *A);    \
     template       Array<T>  createNodeArray<T>       (const dim4 &size, JIT::Node_ptr node); \
+    template       Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset, \
+                                   const T * const in_data,             \
+                                   bool is_device);                     \
     template       Array<T>::Array(af::dim4 dims, cl_mem mem, size_t src_offset, bool copy); \
     template       Array<T>::~Array        ();                          \
     template       Node_ptr Array<T>::getNode() const;             \

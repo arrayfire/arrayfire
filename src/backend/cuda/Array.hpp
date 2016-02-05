@@ -103,11 +103,15 @@ namespace cuda
         bool owner;
 
         Array(af::dim4 dims);
+
         explicit Array(af::dim4 dims, const T * const in_data, bool is_device = false, bool copy_device = false);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         Array(Param<T> &tmp);
         Array(af::dim4 dims, JIT::Node_ptr n);
     public:
+
+        Array(af::dim4 dims, af::dim4 strides, dim_t offset,
+              const T * const in_data, bool is_device = false);
 
         void resetInfo(const af::dim4& dims)        { info.resetInfo(dims);         }
         void resetDims(const af::dim4& dims)        { info.resetDims(dims);         }
