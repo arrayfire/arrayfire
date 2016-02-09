@@ -8,7 +8,40 @@
  ********************************************************/
 
 #include <util.hpp>
+
+//FIXME: Is there a better way to check for std::future not being supported ?
+#if defined(AF_DISABLE_CPU_ASYNC) || (defined(__GNUC__) && (__GCC_ATOMIC_INT_LOCK_FREE < 2 || __GCC_ATOMIC_POINTER_LOCK_FREE < 2))
+
+#include <functional>
+using std::function;
+#include <err_cpu.hpp>
+#define __SYNCHRONOUS_ARCH 1
+class queue_impl
+{
+public:
+    template <typename F, typename... Args>
+    void enqueue(const F func, Args... args) const {
+        AF_ERROR("Incorrectly configured", AF_ERR_INTERNAL);
+    }
+
+    void sync() const {
+        AF_ERROR("Incorrectly configured", AF_ERR_INTERNAL);
+    }
+
+    bool is_worker() const {
+        AF_ERROR("Incorrectly configured", AF_ERR_INTERNAL);
+        return false;
+    }
+
+};
+
+#else
+
 #include <async_queue.hpp>
+#define __SYNCHRONOUS_ARCH 0
+typedef async_queue queue_impl;
+
+#endif
 
 #pragma once
 
@@ -18,7 +51,7 @@ namespace cpu {
 class queue {
 public:
   queue()
-    : sync_calls( getEnvVar("AF_SYNCHRONOUS_CALLS") == "1") {}
+    : sync_calls( __SYNCHRONOUS_ARCH == 1 || getEnvVar("AF_SYNCHRONOUS_CALLS") == "1") {}
 
   template <typename F, typename... Args>
   void enqueue(const F func, Args... args) {
@@ -40,7 +73,7 @@ public:
 
 private:
   const bool sync_calls;
-  async_queue aQueue;
+  queue_impl aQueue;
 };
 
 }

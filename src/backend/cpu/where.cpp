@@ -17,7 +17,6 @@
 #include <ops.hpp>
 #include <vector>
 #include <platform.hpp>
-#include <async_queue.hpp>
 
 using af::dim4;
 

@@ -10,7 +10,6 @@
 #include <Array.hpp>
 #include <tile.hpp>
 #include <platform.hpp>
-#include <async_queue.hpp>
 #include <kernel/tile.hpp>
 
 namespace cpu

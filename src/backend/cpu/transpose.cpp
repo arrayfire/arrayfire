@@ -13,7 +13,6 @@
 #include <Array.hpp>
 #include <transpose.hpp>
 #include <platform.hpp>
-#include <async_queue.hpp>
 #include <kernel/transpose.hpp>
 #include <utility>
 #include <cassert>
