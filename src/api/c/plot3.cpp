@@ -48,13 +48,13 @@ fg::Plot3* setup_plot3(const af_array P, fg::PlotType ptype, fg::MarkerType mtyp
 
     T max[3], min[3];
     if(P_dims[0] == 3) {
-        af_get_data_ptr(max, getHandle(reduce<af_max_t, T, T>(pIn, 1)));
-        af_get_data_ptr(min, getHandle(reduce<af_min_t, T, T>(pIn, 1)));
+        copyData(max, reduce<af_max_t, T, T>(pIn, 1));
+        copyData(min, reduce<af_min_t, T, T>(pIn, 1));
     }
 
     if(P_dims[1] == 3) {
-        af_get_data_ptr(max, getHandle(reduce<af_max_t, T, T>(pIn, 0)));
-        af_get_data_ptr(min, getHandle(reduce<af_min_t, T, T>(pIn, 0)));
+        copyData(max, reduce<af_max_t, T, T>(pIn, 0));
+        copyData(min, reduce<af_min_t, T, T>(pIn, 0));
     }
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
