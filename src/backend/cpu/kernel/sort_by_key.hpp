@@ -15,6 +15,7 @@
 #include <numeric>
 #include <queue>
 #include <err_cpu.hpp>
+#include <functional>
 
 namespace cpu
 {

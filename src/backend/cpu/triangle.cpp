@@ -13,7 +13,6 @@
 #include <triangle.hpp>
 #include <math.hpp>
 #include <platform.hpp>
-#include <async_queue.hpp>
 #include <kernel/triangle.hpp>
 
 namespace cpu

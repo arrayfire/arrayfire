@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <numeric>
 #include <err_cpu.hpp>
+#include <functional>
 
 namespace cpu
 {
