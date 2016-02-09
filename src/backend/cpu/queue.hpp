@@ -10,7 +10,7 @@
 #include <util.hpp>
 
 //FIXME: Is there a better way to check for std::future not being supported ?
-#if defined(__GNUC__) && (__GCC_ATOMIC_INT_LOCK_FREE < 2 || __GCC_ATOMIC_POINTER_LOCK_FREE < 2)
+#if defined(AF_DISABLE_CPU_ASYNC) || (defined(__GNUC__) && (__GCC_ATOMIC_INT_LOCK_FREE < 2 || __GCC_ATOMIC_POINTER_LOCK_FREE < 2))
 
 #include <functional>
 using std::function;
