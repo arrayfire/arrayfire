@@ -44,7 +44,7 @@ Array<T> exampleFunction(const Array<T> &in, const af_someenum_t method)
 
     //dim4 in_dims    = in.dims();        // you can retrieve dimensions
 
-    //dim4 in_offsets = in.offsets();     // you can retrieve offsets - used when given array
+    //dim_t in_offset = in.getOffset(); // you can retrieve the offset - used when given array
                                         // is an sub-array pointing to some other array and
                                         // doesn't have memory of its own
 
@@ -77,4 +77,3 @@ INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 
 }
-

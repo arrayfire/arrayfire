@@ -100,7 +100,6 @@ namespace cpu
         af::dim4 data_dims;
         TNJ::Node_ptr node;
 
-        dim_t offset;
         bool ready;
         bool owner;
 
@@ -108,7 +107,7 @@ namespace cpu
         Array(dim4 dims);
 
         explicit Array(dim4 dims, const T * const in_data, bool is_device, bool copy_device=false);
-        Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+        Array(const Array<T>& parnt, const dim4 &dims, const dim_t &offset, const dim4 &stride);
         explicit Array(af::dim4 dims, TNJ::Node_ptr n);
 
     public:
@@ -127,7 +126,6 @@ namespace cpu
     RET_TYPE NAME() const { return info.NAME(); }
 
         INFO_FUNC(const af_dtype& ,getType)
-        INFO_FUNC(const af::dim4& ,offsets)
         INFO_FUNC(const af::dim4& ,strides)
         INFO_FUNC(size_t          ,elements)
         INFO_FUNC(size_t          ,ndims)
@@ -165,7 +163,7 @@ namespace cpu
         void eval();
         void eval() const;
 
-        dim_t getOffset() const { return offset; }
+        dim_t getOffset() const { return info.getOffset(); }
         shared_ptr<T> getData() const {return data; }
 
         dim4 getDataDims() const
@@ -197,7 +195,7 @@ namespace cpu
         const T* get(bool withOffset = true) const
         {
             if (!isReady()) eval();
-            return data.get() + (withOffset ? offset : 0);
+            return data.get() + (withOffset ? getOffset() : 0);
         }
 
         int useCount() const

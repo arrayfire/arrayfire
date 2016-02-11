@@ -33,16 +33,16 @@ using af::dim4;
 
 template<typename T>
 Array<T>::Array(dim4 dims):
-    info(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+    info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
     data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
-    node(), offset(0), ready(true), owner(true)
+    node(), ready(true), owner(true)
 { }
 
 template<typename T>
 Array<T>::Array(dim4 dims, const T * const in_data, bool is_device, bool copy_device):
-    info(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+    info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
     data((is_device & !copy_device) ? (T*)in_data : memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
-    node(), offset(0), ready(true), owner(true)
+    node(), ready(true), owner(true)
 {
     static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
     static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
@@ -53,29 +53,27 @@ Array<T>::Array(dim4 dims, const T * const in_data, bool is_device, bool copy_de
 
 template<typename T>
 Array<T>::Array(af::dim4 dims, TNJ::Node_ptr n) :
-    info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+    info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
     data(), data_dims(dims),
-    node(n), offset(0), ready(false), owner(true)
+    node(n), ready(false), owner(true)
 {
 }
 
 template<typename T>
-Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &strides) :
-    info(parent.getDevId(), dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
+Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim_t &offset_, const dim4 &strides) :
+    info(parent.getDevId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
     data(parent.getData()), data_dims(parent.getDataDims()),
     node(),
-    offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
     ready(true), owner(false)
 { }
 
 template<typename T>
 Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
                 const T * const in_data, bool is_device) :
-    info(getActiveDeviceId(), dims, af::dim4(offset_), strides, (af_dtype)dtype_traits<T>::af_type),
+    info(getActiveDeviceId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
     data(is_device ? (T*)in_data : memAlloc<T>(info.elements()), memFree<T>),
     data_dims(dims),
     node(),
-    offset(offset_),
     ready(true),
     owner(true)
 {
@@ -119,7 +117,7 @@ Node_ptr Array<T>::getNode() const
 
         BufferNode<T> *buf_node = new BufferNode<T>(data,
                                                     bytes,
-                                                    offset,
+                                                    getOffset(),
                                                     dims().get(),
                                                     strides().get(),
                                                     isLinear());
@@ -194,18 +192,23 @@ Array<T> createSubArray(const Array<T>& parent,
     dim4 dDims = parent.getDataDims();
     dim4 pDims = parent.dims();
 
-    dim4 dims   = toDims  (index, pDims);
-    dim4 offset = toOffset(index, dDims);
-    dim4 stride = toStride (index, dDims);
+    dim4 dims    = toDims  (index, pDims);
+    dim4 strides = toStride (index, dDims);
 
-    Array<T> out = Array<T>(parent, dims, offset, stride);
+    // Find total offsets after indexing
+    dim4 offsets = toOffset(index, pDims);
+    dim4 parent_strides = parent.strides();
+    dim_t offset = parent.getOffset();
+    for (int i = 0; i < 4; i++) offset += offsets[i] * parent_strides[i];
+
+    Array<T> out = Array<T>(parent, dims, offset, strides);
 
     if (!copy) return out;
 
-    if (stride[0] != 1 ||
-        stride[1] <  0 ||
-        stride[2] <  0 ||
-        stride[3] <  0) {
+    if (strides[0] != 1 ||
+        strides[1] <  0 ||
+        strides[2] <  0 ||
+        strides[3] <  0) {
 
         out = copyArray(out);
     }

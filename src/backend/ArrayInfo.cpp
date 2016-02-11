@@ -18,15 +18,6 @@
 
 using af::dim4;
 
-dim_t
-calcOffset(const af::dim4 &strides, const af::dim4 &offsets)
-{
-    dim_t offset = 0;
-    for (int i = 0; i < 4; i++) offset += offsets[i] * strides[i];
-    return offset;
-}
-
-
 const ArrayInfo&
 getInfo(af_array arr)
 {

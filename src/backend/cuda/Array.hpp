@@ -98,14 +98,13 @@ namespace cuda
         af::dim4 data_dims;
 
         JIT::Node_ptr node;
-        dim_t offset;
         bool ready;
         bool owner;
 
         Array(af::dim4 dims);
 
         explicit Array(af::dim4 dims, const T * const in_data, bool is_device = false, bool copy_device = false);
-        Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+        Array(const Array<T>& parnt, const dim4 &dims, const dim_t &offset, const dim4 &stride);
         Array(Param<T> &tmp);
         Array(af::dim4 dims, JIT::Node_ptr n);
     public:
@@ -123,7 +122,6 @@ namespace cuda
     RET_TYPE NAME() const { return info.NAME(); }
 
         INFO_FUNC(const af_dtype& ,getType)
-        INFO_FUNC(const af::dim4& ,offsets)
         INFO_FUNC(const af::dim4& ,strides)
         INFO_FUNC(size_t          ,elements)
         INFO_FUNC(size_t          ,ndims)
@@ -160,7 +158,7 @@ namespace cuda
         void eval();
         void eval() const;
 
-        dim_t getOffset() const { return offset; }
+        dim_t getOffset() const { return info.getOffset(); }
         shared_ptr<T> getData() const { return data; }
 
         dim4 getDataDims() const
@@ -193,7 +191,7 @@ namespace cuda
         const   T* get(bool withOffset = true) const
         {
             if (!isReady()) eval();
-            return data.get() + (withOffset ? offset : 0);
+            return data.get() + (withOffset ? getOffset() : 0);
         }
 
         int useCount() const

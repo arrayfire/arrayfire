@@ -84,26 +84,7 @@ af_err af_get_offset(dim_t *offset, const af_array arr)
 {
     try {
 
-        dim_t res = 0;
-
-        af_dtype ty = getInfo(arr).getType();
-
-        switch (ty) {
-        case f32: res = getArray<float  >(arr).getOffset(); break;
-        case f64: res = getArray<double >(arr).getOffset(); break;
-        case c32: res = getArray<cfloat >(arr).getOffset(); break;
-        case c64: res = getArray<cdouble>(arr).getOffset(); break;
-        case u32: res = getArray<uint   >(arr).getOffset(); break;
-        case s32: res = getArray<int    >(arr).getOffset(); break;
-        case u64: res = getArray<uintl  >(arr).getOffset(); break;
-        case s64: res = getArray<intl   >(arr).getOffset(); break;
-        case u16: res = getArray<ushort >(arr).getOffset(); break;
-        case s16: res = getArray<short  >(arr).getOffset(); break;
-        case b8 : res = getArray<char   >(arr).getOffset(); break;
-        case u8 : res = getArray<uchar  >(arr).getOffset(); break;
-        default: TYPE_ERROR(6, ty);
-        }
-
+        dim_t res = getInfo(arr).getOffset();
         std::swap(*offset, res);
     }
     CATCHALL;
