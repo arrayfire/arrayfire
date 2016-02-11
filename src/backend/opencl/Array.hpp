@@ -83,6 +83,12 @@ namespace opencl
     }
 
     template<typename T>
+    void *getRawPtr(const Array<T>& arr)
+    {
+        return (void *)(arr.get());
+    }
+
+    template<typename T>
     class Array
     {
         ArrayInfo info; // This must be the first element of Array<T>
@@ -261,6 +267,7 @@ namespace opencl
 
         friend void destroyArray<T>(Array<T> *arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);
+        friend void *getRawPtr<T>(const Array<T>& arr);
     };
 
 }

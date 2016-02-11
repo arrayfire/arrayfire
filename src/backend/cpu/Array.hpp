@@ -88,6 +88,12 @@ namespace cpu
         return (void *)ptr;
     }
 
+    template<typename T>
+    void *getRawPtr(const Array<T>& arr)
+    {
+        return (void *)(arr.get(false));
+    }
+
     // Array Array Implementation
     template<typename T>
     class Array
@@ -227,6 +233,7 @@ namespace cpu
 
         friend void destroyArray<T>(Array<T> *arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);
+        friend void *getRawPtr<T>(const Array<T>& arr);
     };
 
 }

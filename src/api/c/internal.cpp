@@ -109,18 +109,18 @@ af_err af_get_raw_ptr(void **ptr, const af_array arr)
         af_dtype ty = getInfo(arr).getType();
 
         switch (ty) {
-        case f32: res = (void *)getArray<float  >(arr).get(); break;
-        case f64: res = (void *)getArray<double >(arr).get(); break;
-        case c32: res = (void *)getArray<cfloat >(arr).get(); break;
-        case c64: res = (void *)getArray<cdouble>(arr).get(); break;
-        case u32: res = (void *)getArray<uint   >(arr).get(); break;
-        case s32: res = (void *)getArray<int    >(arr).get(); break;
-        case u64: res = (void *)getArray<uintl  >(arr).get(); break;
-        case s64: res = (void *)getArray<intl   >(arr).get(); break;
-        case u16: res = (void *)getArray<ushort >(arr).get(); break;
-        case s16: res = (void *)getArray<short  >(arr).get(); break;
-        case b8 : res = (void *)getArray<char   >(arr).get(); break;
-        case u8 : res = (void *)getArray<uchar  >(arr).get(); break;
+        case f32: res = (void *)getRawPtr(getArray<float  >(arr)); break;
+        case f64: res = (void *)getRawPtr(getArray<double >(arr)); break;
+        case c32: res = (void *)getRawPtr(getArray<cfloat >(arr)); break;
+        case c64: res = (void *)getRawPtr(getArray<cdouble>(arr)); break;
+        case u32: res = (void *)getRawPtr(getArray<uint   >(arr)); break;
+        case s32: res = (void *)getRawPtr(getArray<int    >(arr)); break;
+        case u64: res = (void *)getRawPtr(getArray<uintl  >(arr)); break;
+        case s64: res = (void *)getRawPtr(getArray<intl   >(arr)); break;
+        case u16: res = (void *)getRawPtr(getArray<ushort >(arr)); break;
+        case s16: res = (void *)getRawPtr(getArray<short  >(arr)); break;
+        case b8 : res = (void *)getRawPtr(getArray<char   >(arr)); break;
+        case u8 : res = (void *)getRawPtr(getArray<uchar  >(arr)); break;
         default: TYPE_ERROR(6, ty);
         }
 
