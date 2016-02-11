@@ -20,14 +20,14 @@
 
 using namespace detail;
 
-af_err af_create_array_with_strides(af_array *arr,
-                                    const void *data,
-                                    const dim_t offset,
-                                    const unsigned ndims,
-                                    const dim_t *const dims_,
-                                    const dim_t *const strides_,
-                                    const af_dtype ty,
-                                    const af_source location)
+af_err af_create_strided_array(af_array *arr,
+                               const void *data,
+                               const dim_t offset,
+                               const unsigned ndims,
+                               const dim_t *const dims_,
+                               const dim_t *const strides_,
+                               const af_dtype ty,
+                               const af_source location)
 {
     try {
 

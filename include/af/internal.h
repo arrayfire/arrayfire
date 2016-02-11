@@ -31,10 +31,10 @@ namespace af
 
        \ingroup internal_func_create
     */
-    AFAPI array createArray(const void *data, const dim_t offset,
-                            const dim4 dims, const dim4 strides,
-                            const af::dtype ty,
-                            const af::source location);
+    AFAPI array createStridedArray(const void *data, const dim_t offset,
+                                   const dim4 dims, const dim4 strides,
+                                   const af::dtype ty,
+                                   const af::source location);
 #endif
 
 #if AF_API_VERSION >= 33
@@ -111,14 +111,14 @@ extern "C"
 
        \ingroup internal_func_create
     */
-    AFAPI af_err af_create_array_with_strides(af_array *arr,
-                                              const void *data,
-                                              const dim_t offset,
-                                              const unsigned ndims,
-                                              const dim_t *const dims,
-                                              const dim_t *const strides,
-                                              const af_dtype ty,
-                                              const af_source location);
+    AFAPI af_err af_create_strided_array(af_array *arr,
+                                         const void *data,
+                                         const dim_t offset,
+                                         const unsigned ndims,
+                                         const dim_t *const dims,
+                                         const dim_t *const strides,
+                                         const af_dtype ty,
+                                         const af_source location);
 #endif
 
 #if AF_API_VERSION >= 33

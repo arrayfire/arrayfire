@@ -13,15 +13,15 @@
 
 namespace af
 {
-    array createArray(const void *data, const dim_t offset,
-                      const dim4 dims, const dim4 strides,
-                      const af::dtype ty,
-                      const af::source location)
+    array createStridedArray(const void *data, const dim_t offset,
+                             const dim4 dims, const dim4 strides,
+                             const af::dtype ty,
+                             const af::source location)
     {
         af_array res;
-        AF_THROW(af_create_array_with_strides(&res, data, offset,
-                                              dims.ndims(), dims.get(), strides.get(),
-                                              ty, location));
+        AF_THROW(af_create_strided_array(&res, data, offset,
+                                         dims.ndims(), dims.get(), strides.get(),
+                                         ty, location));
         return array(res);
     }
 
