@@ -257,7 +257,7 @@ namespace cuda
 
         T *ptr = arr.get();
 
-        CUDA_CHECK(cudaMemcpyAsync(ptr + arr.getOffset(), data, bytes, cudaMemcpyHostToDevice,
+        CUDA_CHECK(cudaMemcpyAsync(ptr, data, bytes, cudaMemcpyHostToDevice,
                     cuda::getStream(cuda::getActiveDeviceId())));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
@@ -274,7 +274,7 @@ namespace cuda
 
         T *ptr = arr.get();
 
-        CUDA_CHECK(cudaMemcpyAsync(ptr + arr.getOffset(), data,
+        CUDA_CHECK(cudaMemcpyAsync(ptr, data,
                                    bytes, cudaMemcpyDeviceToDevice,
                                    cuda::getStream(cuda::getActiveDeviceId())));
 

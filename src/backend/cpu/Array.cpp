@@ -227,7 +227,7 @@ writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
     if(!arr.isOwner()) {
         arr = createEmptyArray<T>(arr.dims());
     }
-    memcpy(arr.get() + arr.getOffset(), data, bytes);
+    memcpy(arr.get(), data, bytes);
 }
 
 template<typename T>
@@ -237,7 +237,7 @@ writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     if(!arr.isOwner()) {
         arr = createEmptyArray<T>(arr.dims());
     }
-    memcpy(arr.get() + arr.getOffset(), (const T * const)data, bytes);
+    memcpy(arr.get(), (const T * const)data, bytes);
 }
 
 #define INSTANTIATE(T)                                                  \
