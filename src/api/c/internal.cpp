@@ -37,6 +37,10 @@ af_err af_create_strided_array(af_array *arr,
         ARG_ASSERT(5, strides_ != NULL);
         ARG_ASSERT(5, strides_[0] == 1);
 
+        for (int i = 1; i < (int)ndims; i++) {
+            ARG_ASSERT(5, strides_[i] > 0);
+        }
+
         dim4 dims(ndims, dims_);
         dim4 strides(ndims, strides_);
 
