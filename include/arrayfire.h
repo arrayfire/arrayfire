@@ -209,6 +209,15 @@
 
    @}
 
+   @defgroup internal_func Functions to work with internal array layout
+   @{
+
+     Functions to work with arrayfire's internal data structure.
+
+     Note: The behavior of these functions is not promised to be consistent across versions.
+
+   @}
+
    @defgroup external Interface Functions
    @{
 
