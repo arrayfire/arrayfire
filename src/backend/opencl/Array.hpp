@@ -200,6 +200,11 @@ namespace opencl
             return isOwner() ? dims() : data_dims;
         }
 
+        void setDataDims(const dim4 &new_dims)
+        {
+            data_dims = new_dims;
+        }
+
         operator Param() const
         {
             KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},

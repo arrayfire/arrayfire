@@ -32,6 +32,7 @@ Array<T> modDims(const Array<T>& in, const af::dim4 &newDims)
     }
 
     Out.modDims(newDims);
+    Out.setDataDims(newDims);
 
     return Out;
 }

@@ -173,6 +173,11 @@ namespace cpu
             return isOwner() ? info.dims() : data_dims;
         }
 
+        void setDataDims(const dim4 &new_dims)
+        {
+            data_dims = new_dims;
+        }
+
         T* device()
         {
             getQueue().sync();

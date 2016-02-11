@@ -168,6 +168,11 @@ namespace cuda
             return isOwner() ? dims() : data_dims;
         }
 
+        void setDataDims(const dim4 &new_dims)
+        {
+            data_dims = new_dims;
+        }
+
         T* device()
         {
             if (!isOwner() || data.use_count() > 1) {
