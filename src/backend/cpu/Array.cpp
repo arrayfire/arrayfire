@@ -71,14 +71,14 @@ template<typename T>
 Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
                 const T * const in_data, bool is_device) :
     info(getActiveDeviceId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
-    data(is_device ? (T*)in_data : memAlloc<T>(info.elements()), memFree<T>),
+    data(is_device ? (T*)in_data : memAlloc<T>(info.total()), memFree<T>),
     data_dims(dims),
     node(),
     ready(true),
     owner(true)
 {
     if (!is_device) {
-        std::copy(in_data, in_data + dims.elements(), data.get());
+        std::copy(in_data, in_data + info.total(), data.get());
     }
 }
 

@@ -90,7 +90,7 @@ namespace cuda
     Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
                     const T * const in_data, bool is_device) :
         info(getActiveDeviceId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
-        data(is_device ? (T*)in_data : memAlloc<T>(info.elements()), memFree<T>),
+        data(is_device ? (T*)in_data : memAlloc<T>(info.total()), memFree<T>),
         data_dims(dims),
         node(),
         ready(true),
@@ -98,7 +98,7 @@ namespace cuda
     {
         if (!is_device) {
             cudaStream_t stream = getStream(getActiveDeviceId());
-            CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, info.elements() * sizeof(T),
+            CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, info.total() * sizeof(T),
                                        cudaMemcpyHostToDevice, stream));
             CUDA_CHECK(cudaStreamSynchronize(stream));
         }

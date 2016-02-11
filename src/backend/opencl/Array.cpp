@@ -105,14 +105,14 @@ namespace opencl
         info(getActiveDeviceId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
         data(is_device ?
              (new cl::Buffer((cl_mem)in_data)) :
-             (bufferAlloc(info.elements() * sizeof(T))), bufferFree),
+             (bufferAlloc(info.total() * sizeof(T))), bufferFree),
         data_dims(dims),
         node(),
         ready(true),
         owner(true)
     {
         if (!is_device) {
-            getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T) * info.elements(), in_data);
+            getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T) * info.total(), in_data);
         }
     }
 

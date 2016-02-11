@@ -40,6 +40,10 @@ af_err af_create_array_with_strides(af_array *arr,
         dim4 dims(ndims, dims_);
         dim4 strides(ndims, strides_);
 
+        for (int i = ndims; i < 4; i++) {
+            strides[i] = strides[i - 1] * dims[i - 1];
+        }
+
         bool isdev = location == afDevice;
 
         af_array res;

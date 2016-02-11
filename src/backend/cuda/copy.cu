@@ -28,7 +28,7 @@ namespace cuda
         Array<T> out = A;
         const T *ptr = NULL;
 
-        if (A.isOwner() || // No offsets, No strides
+        if (A.isLinear() || // No offsets, No strides
             A.ndims() == 1 // Simple offset, no strides.
             ) {
 
