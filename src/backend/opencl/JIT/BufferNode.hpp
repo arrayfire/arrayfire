@@ -24,7 +24,6 @@ namespace JIT
         const std::shared_ptr<cl::Buffer> m_data;
         const Param m_param;
         const unsigned m_bytes;
-        bool m_set_arg;
         bool m_linear;
 
     public:
@@ -39,7 +38,6 @@ namespace JIT
               m_data(data),
               m_param(param),
               m_bytes(bytes),
-              m_set_arg(false),
               m_linear(is_linear)
         {}
 
@@ -140,12 +138,7 @@ namespace JIT
 
         void resetFlags()
         {
-            m_set_id = false;
-            m_gen_func = false;
-            m_gen_param = false;
-            m_gen_offset = false;
-            m_gen_name = false;
-            m_set_arg = false;
+            resetCommonFlags();
         }
     };
 

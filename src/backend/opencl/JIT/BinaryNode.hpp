@@ -51,6 +51,9 @@ namespace JIT
 
         int setArgs(cl::Kernel &ker, int id)
         {
+            if (m_set_arg) return id;
+            m_set_arg = true;
+
             id = m_lhs->setArgs(ker, id);
             id = m_rhs->setArgs(ker, id);
             return id;
@@ -120,10 +123,7 @@ namespace JIT
 
         void resetFlags()
         {
-            m_set_id = false;
-            m_gen_func = false;
-            m_gen_param = false;
-            m_gen_offset = false;
+            resetCommonFlags();
             m_lhs->resetFlags();
             m_rhs->resetFlags();
         }
