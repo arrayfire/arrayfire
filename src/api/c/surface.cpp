@@ -49,21 +49,29 @@ fg::Surface* setup_surface(const af_array xVals, const af_array yVals, const af_
     af::dim4 Y_dims = Yinfo.dims();
     af::dim4 Z_dims = Zinfo.dims();
 
-    dim4   rdims(1, 0, 2, 3);
-    dim4 x_tdims(1, Y_dims[0], 1, 1);
-    dim4 y_tdims(1, X_dims[0], 1, 1);
     if(Xinfo.isVector()){
+        // Convert xIn is a column vector
+        xIn.modDims(xIn.elements());
+        // Now tile along second dimension
+        dim4 x_tdims(1, Y_dims[0], 1, 1);
         xIn = tile(xIn, x_tdims);
+
+        // Convert yIn to a row vector
+        yIn.modDims(af::dim4(1, yIn.elements()));
+        // Now tile along first dimension
+        dim4 y_tdims(X_dims[0], 1, 1, 1);
         yIn = tile(yIn, y_tdims);
-        yIn = reorder(yIn, rdims);
     }
 
-    xIn.modDims(xIn.elements());
-    yIn.modDims(yIn.elements());
-    zIn.modDims(zIn.elements());
-    Array<T> Z = join(1, join(1, xIn, yIn), zIn);
-    Z = reorder(Z, rdims);
-    Z.modDims(Z.elements());
+    // Flatten xIn, yIn and zIn into row vectors
+    dim4 rowDims = dim4(1, zIn.elements());
+    xIn.modDims(rowDims);
+    yIn.modDims(rowDims);
+    zIn.modDims(rowDims);
+
+    // Now join along first dimension, skip reorder
+    std::vector<Array<T> > inputs{xIn, yIn, zIn};
+    Array<T> Z = join(0, inputs);
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
     fg::Surface* surface = fgMngr.getSurface(Z_dims[0], Z_dims[1], getGLType<T>());

@@ -39,14 +39,19 @@ fg::Plot* setup_plot(const af_array X, const af_array Y, fg::PlotType type, fg::
 
     dim4 rdims(1, 0, 2, 3);
 
-    Array<T> Z = join(1, xIn, yIn);
-    Array<T> P = reorder(Z, rdims);
+    dim_t elements = xIn.elements();
+    dim4 rowDims = dim4(1, elements, 1, 1);
 
-    ArrayInfo Xinfo = getInfo(X);
-    af::dim4 X_dims = Xinfo.dims();
+    // Force the vectors to be row vectors
+    // This ensures we can use join(0,..) and skip reorder
+    xIn.modDims(rowDims);
+    yIn.modDims(rowDims);
+
+    // join along first dimension, skip reorder
+    Array<T> P = join(0, xIn, yIn);
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
-    fg::Plot* plot = fgMngr.getPlot(X_dims.elements(), getGLType<T>(), type, marker);
+    fg::Plot* plot = fgMngr.getPlot(elements, getGLType<T>(), type, marker);
     plot->setColor(1.0, 0.0, 0.0);
     plot->setAxesLimits(xmax, xmin, ymax, ymin);
     plot->setAxesTitles("X Axis", "Y Axis");

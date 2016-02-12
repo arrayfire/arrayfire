@@ -46,16 +46,13 @@ fg::Plot3* setup_plot3(const af_array P, fg::PlotType ptype, fg::MarkerType mtyp
         P_dims = pIn.dims();
     }
 
-    T max[3], min[3];
-    if(P_dims[0] == 3) {
-        af_get_data_ptr(max, getHandle(reduce<af_max_t, T, T>(pIn, 1)));
-        af_get_data_ptr(min, getHandle(reduce<af_min_t, T, T>(pIn, 1)));
+    if(P_dims[1] == 3){
+        pIn = transpose(pIn, false);
     }
 
-    if(P_dims[1] == 3) {
-        af_get_data_ptr(max, getHandle(reduce<af_max_t, T, T>(pIn, 0)));
-        af_get_data_ptr(min, getHandle(reduce<af_min_t, T, T>(pIn, 0)));
-    }
+    T max[3], min[3];
+    copyData(max, reduce<af_max_t, T, T>(pIn, 1));
+    copyData(min, reduce<af_min_t, T, T>(pIn, 1));
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
     fg::Plot3* plot3 = fgMngr.getPlot3(P_dims.elements()/3, getGLType<T>(), ptype, mtype);
@@ -64,12 +61,7 @@ fg::Plot3* setup_plot3(const af_array P, fg::PlotType ptype, fg::MarkerType mtyp
                          max[1], min[1],
                          max[2], min[2]);
     plot3->setAxesTitles("X Axis", "Y Axis", "Z Axis");
-
-    if(P_dims[1] == 3){
-        pIn = transpose(pIn, false);
-    }
     copy_plot3<T>(pIn, plot3);
-
     return plot3;
 }
 
