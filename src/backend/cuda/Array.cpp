@@ -30,17 +30,17 @@ namespace cuda
 
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
-        info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
-        node(), offset(0), ready(true), owner(true)
+        node(), ready(true), owner(true)
     {}
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data, bool is_device, bool copy_device) :
-        info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(((is_device & !copy_device) ? (T *)in_data : memAlloc<T>(dims.elements())), memFree<T>),
         data_dims(dims),
-        node(), offset(0), ready(true), owner(true)
+        node(), ready(true), owner(true)
     {
 #if __cplusplus > 199711L
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
@@ -58,34 +58,51 @@ namespace cuda
     }
 
     template<typename T>
-    Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &strides) :
-        info(parent.getDevId(), dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
+    Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim_t &offset_, const dim4 &strides) :
+        info(parent.getDevId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()), data_dims(parent.getDataDims()),
         node(),
-        offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
         ready(true), owner(false)
     { }
 
     template<typename T>
     Array<T>::Array(Param<T> &tmp) :
-        info(getActiveDeviceId(), af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]),
-                  af::dim4(0, 0, 0, 0),
-                  af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
-                  (af_dtype)dtype_traits<T>::af_type),
+        info(getActiveDeviceId(),
+             af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]),
+             0,
+             af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
+             (af_dtype)dtype_traits<T>::af_type),
         data(tmp.ptr, memFree<T>),
         data_dims(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3])),
-        node(), offset(0), ready(true), owner(true)
+        node(), ready(true), owner(true)
     {
     }
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
-        info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(), data_dims(dims),
-        node(n), offset(0), ready(false), owner(true)
+        node(n), ready(false), owner(true)
     {
     }
 
+    template<typename T>
+    Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
+                    const T * const in_data, bool is_device) :
+        info(getActiveDeviceId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
+        data(is_device ? (T*)in_data : memAlloc<T>(info.total()), memFree<T>),
+        data_dims(dims),
+        node(),
+        ready(true),
+        owner(true)
+    {
+        if (!is_device) {
+            cudaStream_t stream = getStream(getActiveDeviceId());
+            CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, info.total() * sizeof(T),
+                                       cudaMemcpyHostToDevice, stream));
+            CUDA_CHECK(cudaStreamSynchronize(stream));
+        }
+    }
 
     template<typename T>
     void Array<T>::eval()
@@ -198,18 +215,23 @@ namespace cuda
         dim4 dDims = parent.getDataDims();
         dim4 pDims = parent.dims();
 
-        dim4 dims   = toDims  (index, pDims);
-        dim4 offset = toOffset(index, dDims);
-        dim4 stride = toStride (index, dDims);
+        dim4 dims    = toDims  (index, pDims);
+        dim4 strides = toStride (index, dDims);
 
-        Array<T> out = Array<T>(parent, dims, offset, stride);
+        // Find total offsets after indexing
+        dim4 offsets = toOffset(index, pDims);
+        dim4 parent_strides = parent.strides();
+        dim_t offset = parent.getOffset();
+        for (int i = 0; i < 4; i++) offset += offsets[i] * parent_strides[i];
+
+        Array<T> out = Array<T>(parent, dims, offset, strides);
 
         if (!copy) return out;
 
-        if (stride[0] != 1 ||
-            stride[1] <  0 ||
-            stride[2] <  0 ||
-            stride[3] <  0) {
+        if (strides[0] != 1 ||
+            strides[1] <  0 ||
+            strides[2] <  0 ||
+            strides[3] <  0) {
 
             out = copyArray(out);
         }
@@ -239,7 +261,7 @@ namespace cuda
 
         T *ptr = arr.get();
 
-        CUDA_CHECK(cudaMemcpyAsync(ptr + arr.getOffset(), data, bytes, cudaMemcpyHostToDevice,
+        CUDA_CHECK(cudaMemcpyAsync(ptr, data, bytes, cudaMemcpyHostToDevice,
                     cuda::getStream(cuda::getActiveDeviceId())));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
@@ -256,7 +278,7 @@ namespace cuda
 
         T *ptr = arr.get();
 
-        CUDA_CHECK(cudaMemcpyAsync(ptr + arr.getOffset(), data,
+        CUDA_CHECK(cudaMemcpyAsync(ptr, data,
                                    bytes, cudaMemcpyDeviceToDevice,
                                    cuda::getStream(cuda::getActiveDeviceId())));
 
@@ -275,6 +297,9 @@ namespace cuda
                                                        bool copy);      \
     template       void      destroyArray<T>          (Array<T> *A);    \
     template       Array<T>  createNodeArray<T>       (const dim4 &size, JIT::Node_ptr node); \
+    template       Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset, \
+                                   const T * const in_data,             \
+                                   bool is_device);                     \
     template       Array<T>::Array(af::dim4 dims, const T * const in_data, \
                                    bool is_device, bool copy_device);   \
     template       Array<T>::~Array        ();                          \

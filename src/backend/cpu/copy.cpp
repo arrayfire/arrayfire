@@ -30,7 +30,7 @@ void copyData(T *to, const Array<T> &from)
 {
     from.eval();
     getQueue().sync();
-    if(from.isOwner()) {
+    if(from.isLinear()) {
         // FIXME: Check for errors / exceptions
         memcpy(to, from.get(), from.elements()*sizeof(T));
     } else {

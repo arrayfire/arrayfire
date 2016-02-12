@@ -16,9 +16,6 @@
 #include <vector>
 #include <cstddef>
 
-dim_t
-calcOffset(const af::dim4 &strides, const af::dim4 &offsets);
-
 af::dim4
 calcStrides(const af::dim4 &parentDim);
 
@@ -48,14 +45,15 @@ private:
     int             devId;
     af_dtype        type;
     af::dim4        dim_size;
-    af::dim4        dim_offsets, dim_strides;
+    dim_t           offset;
+    af::dim4        dim_strides;
 
 public:
-    ArrayInfo(int id, af::dim4 size, af::dim4 offset, af::dim4 stride, af_dtype af_type):
+    ArrayInfo(int id, af::dim4 size, dim_t offset_, af::dim4 stride, af_dtype af_type):
         devId(id),
         type(af_type),
         dim_size(size),
-        dim_offsets(offset),
+        offset(offset_),
         dim_strides(stride)
     {
         af_init();
@@ -77,13 +75,14 @@ public:
 
     const af_dtype& getType() const     { return type;                  }
 
-    const af::dim4& offsets() const     { return dim_offsets;           }
+    dim_t getOffset() const             { return offset;                }
 
     const af::dim4& strides() const     { return dim_strides;           }
 
     size_t elements() const             { return dim_size.elements();   }
     size_t ndims() const                { return dim_size.ndims();      }
     const af::dim4& dims() const        { return dim_size;              }
+    size_t total() const                { return offset + dim_strides[3] * dim_size[3]; }
 
     int getDevId() const;
 
@@ -97,7 +96,7 @@ public:
     {
         dim_size = dims;
         dim_strides = calcStrides(dims);
-        dim_offsets = af::dim4(0,0,0,0);
+        offset = 0;
     }
 
     void resetDims(const af::dim4& dims)

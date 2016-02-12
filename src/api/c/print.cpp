@@ -14,6 +14,7 @@
 #include <sstream>
 #include <af/array.h>
 #include <af/data.h>
+#include <af/internal.h>
 #include <copy.hpp>
 #include <print.hpp>
 #include <ArrayInfo.hpp>
@@ -69,7 +70,7 @@ static void print(const char *exp, af_array arr, const int precision, std::ostre
 
     os << "[" << info.dims() << "]\n";
 #ifndef NDEBUG
-    os <<"   Offsets: [" << info.offsets() << "]" << std::endl;
+    os <<"   Offset: " << info.getOffset() << std::endl;
     os <<"   Strides: [" << info.strides() << "]" << std::endl;
 #endif
 

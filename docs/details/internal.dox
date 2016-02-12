@@ -1,0 +1,29 @@
+/**
+\addtogroup internal_func
+@{
+
+\defgroup internal_func_create createStridedArray
+
+Create an array with specified strides and offset.
+
+
+\defgroup internal_func_strides getStrides
+
+Get strides of underlying data.
+
+
+\defgroup internal_func_offset getOffset
+
+Get Offset of the underlying data.
+
+
+\defgroup internal_func_linear isLinear
+
+Check if all elements in array are contiguous.
+
+\defgroup internal_func_owner isOwner
+
+Check if underlying data is owned by the current array.
+
+@}
+*/

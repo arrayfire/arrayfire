@@ -83,6 +83,12 @@ namespace opencl
     }
 
     template<typename T>
+    void *getRawPtr(const Array<T>& arr)
+    {
+        return (void *)(arr.get());
+    }
+
+    template<typename T>
     class Array
     {
         ArrayInfo info; // This must be the first element of Array<T>
@@ -90,18 +96,21 @@ namespace opencl
         af::dim4 data_dims;
 
         JIT::Node_ptr node;
-        dim_t offset;
         bool ready;
         bool owner;
 
         Array(af::dim4 dims);
-        Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+
+        Array(const Array<T>& parnt, const dim4 &dims, const dim_t &offset, const dim4 &stride);
         Array(Param &tmp);
         explicit Array(af::dim4 dims, JIT::Node_ptr n);
         explicit Array(af::dim4 dims, const T * const in_data);
         explicit Array(af::dim4 dims, cl_mem mem, size_t offset, bool copy);
 
     public:
+
+        Array(af::dim4 dims, af::dim4 strides, dim_t offset,
+              const T * const in_data, bool is_device = false);
 
         void resetInfo(const af::dim4& dims)        { info.resetInfo(dims);         }
         void resetDims(const af::dim4& dims)        { info.resetDims(dims);         }
@@ -113,7 +122,6 @@ namespace opencl
     RET_TYPE NAME() const { return info.NAME(); }
 
         INFO_FUNC(const af_dtype& ,getType)
-        INFO_FUNC(const af::dim4& ,offsets)
         INFO_FUNC(const af::dim4& ,strides)
         INFO_FUNC(size_t          ,elements)
         INFO_FUNC(size_t          ,ndims)
@@ -183,7 +191,7 @@ namespace opencl
 
         const dim_t getOffset() const
         {
-            return offset;
+            return info.getOffset();
         }
 
         Buffer_ptr getData() const
@@ -196,6 +204,11 @@ namespace opencl
             // This is for moddims
             // dims and data_dims are different when moddims is used
             return isOwner() ? dims() : data_dims;
+        }
+
+        void setDataDims(const dim4 &new_dims)
+        {
+            data_dims = new_dims;
         }
 
         operator Param() const
@@ -254,6 +267,7 @@ namespace opencl
 
         friend void destroyArray<T>(Array<T> *arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);
+        friend void *getRawPtr<T>(const Array<T>& arr);
     };
 
 }

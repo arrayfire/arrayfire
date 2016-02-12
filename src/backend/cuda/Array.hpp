@@ -91,6 +91,12 @@ namespace cuda
     }
 
     template<typename T>
+    void *getRawPtr(const Array<T>& arr)
+    {
+        return (void *)(arr.get(false));
+    }
+
+    template<typename T>
     class Array
     {
         ArrayInfo       info; // This must be the first element of Array<T>
@@ -98,16 +104,19 @@ namespace cuda
         af::dim4 data_dims;
 
         JIT::Node_ptr node;
-        dim_t offset;
         bool ready;
         bool owner;
 
         Array(af::dim4 dims);
+
         explicit Array(af::dim4 dims, const T * const in_data, bool is_device = false, bool copy_device = false);
-        Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+        Array(const Array<T>& parnt, const dim4 &dims, const dim_t &offset, const dim4 &stride);
         Array(Param<T> &tmp);
         Array(af::dim4 dims, JIT::Node_ptr n);
     public:
+
+        Array(af::dim4 dims, af::dim4 strides, dim_t offset,
+              const T * const in_data, bool is_device = false);
 
         void resetInfo(const af::dim4& dims)        { info.resetInfo(dims);         }
         void resetDims(const af::dim4& dims)        { info.resetDims(dims);         }
@@ -119,7 +128,6 @@ namespace cuda
     RET_TYPE NAME() const { return info.NAME(); }
 
         INFO_FUNC(const af_dtype& ,getType)
-        INFO_FUNC(const af::dim4& ,offsets)
         INFO_FUNC(const af::dim4& ,strides)
         INFO_FUNC(size_t          ,elements)
         INFO_FUNC(size_t          ,ndims)
@@ -156,7 +164,7 @@ namespace cuda
         void eval();
         void eval() const;
 
-        dim_t getOffset() const { return offset; }
+        dim_t getOffset() const { return info.getOffset(); }
         shared_ptr<T> getData() const { return data; }
 
         dim4 getDataDims() const
@@ -164,6 +172,11 @@ namespace cuda
             // This is for moddims
             // dims and data_dims are different when moddims is used
             return isOwner() ? dims() : data_dims;
+        }
+
+        void setDataDims(const dim4 &new_dims)
+        {
+            data_dims = new_dims;
         }
 
         T* device()
@@ -189,7 +202,7 @@ namespace cuda
         const   T* get(bool withOffset = true) const
         {
             if (!isReady()) eval();
-            return data.get() + (withOffset ? offset : 0);
+            return data.get() + (withOffset ? getOffset() : 0);
         }
 
         int useCount() const
@@ -232,6 +245,7 @@ namespace cuda
 
         friend void destroyArray<T>(Array<T> *arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);
+        friend void *getRawPtr<T>(const Array<T>& arr);
     };
 
 }

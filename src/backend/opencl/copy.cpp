@@ -29,7 +29,7 @@ namespace opencl
         cl::Buffer buf;
         Array<T> out = A;
 
-        if (A.isOwner() || // No offsets, No strides
+        if (A.isLinear() || // No offsets, No strides
             A.ndims() == 1 // Simple offset, no strides.
             ) {
             buf = *A.get();
