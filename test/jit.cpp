@@ -65,3 +65,53 @@ TEST(JIT, CPP_JIT_HASH)
         delete[] hF2;
     }
 }
+
+TEST(JIT, CPP_JIT_Reset_Binary)
+{
+    using af::array;
+
+    af::array a = af::constant(2, 5,5);
+    af::array b = af::constant(1, 5,5);
+    af::array c = a + b;
+    af::array d = a - b;
+    af::array e = c * d;
+    e.eval();
+    af::array f = c - d;
+    f.eval();
+    af::array g = d - c;
+    g.eval();
+
+    std::vector<float> hf(f.elements());
+    std::vector<float> hg(g.elements());
+    f.host(&hf[0]);
+    g.host(&hg[0]);
+
+    for (int i = 0; i < (int)f.elements(); i++) {
+        ASSERT_EQ(hf[i], -hg[i]);
+    }
+}
+
+TEST(JIT, CPP_JIT_Reset_Unary)
+{
+    using af::array;
+
+    af::array a = af::constant(2, 5,5);
+    af::array b = af::constant(1, 5,5);
+    af::array c = af::sin(a);
+    af::array d = af::cos(b);
+    af::array e = c * d;
+    e.eval();
+    af::array f = c - d;
+    f.eval();
+    af::array g = d - c;
+    g.eval();
+
+    std::vector<float> hf(f.elements());
+    std::vector<float> hg(g.elements());
+    f.host(&hf[0]);
+    g.host(&hg[0]);
+
+    for (int i = 0; i < (int)f.elements(); i++) {
+        ASSERT_EQ(hf[i], -hg[i]);
+    }
+}

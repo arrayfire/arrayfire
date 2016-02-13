@@ -37,6 +37,19 @@ namespace JIT
         bool m_set_arg;
         bool m_gen_name;
 
+    protected:
+
+        void resetCommonFlags()
+        {
+            m_set_id = false;
+            m_gen_func = false;
+            m_gen_param = false;
+            m_gen_offset = false;
+            m_set_arg = false;
+            m_gen_name = false;
+        }
+
+
     public:
 
         Node(const char *type_str, const char *name_str)
@@ -62,7 +75,11 @@ namespace JIT
         virtual void setArgs(std::vector<void *> &args, bool is_linear) { m_set_arg = true; }
         virtual bool isLinear(dim_t dims[4]) { return true; }
 
-        virtual void resetFlags() {}
+        virtual void resetFlags()
+        {
+            resetCommonFlags();
+        }
+
         virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
         {
             len = 0;
