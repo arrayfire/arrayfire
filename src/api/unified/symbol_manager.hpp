@@ -59,6 +59,8 @@ class AFSymbolManager {
             return funcHandle(args...);
         }
 
+        LibHandle getHandle() { return activeHandle; }
+
     protected:
         AFSymbolManager();
 
@@ -107,4 +109,10 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg)
 #else
 #define CALL(...) unified::AFSymbolManager::getInstance().call(__func__, __VA_ARGS__)
 #define CALL_NO_PARAMS() unified::AFSymbolManager::getInstance().call(__func__)
+#endif
+
+#if defined(OS_WIN)
+#define LOAD_SYMBOL() GetProcAddress(unified::AFSymbolManager::getInstance().getHandle(), __FUNCTION__)
+#else
+#define LOAD_SYMBOL() dlsym(unified::AFSymbolManager::getInstance().getHandle(), __func__)
 #endif

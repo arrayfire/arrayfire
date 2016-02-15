@@ -203,3 +203,7 @@ void print_error(const std::string &msg);
                       __AF_FILENAME__, __LINE__,            \
                       "\n", __err);                         \
     } while(0)
+
+
+static const int MAX_ERR_SIZE = 1024;
+std::string& get_global_error_string();
