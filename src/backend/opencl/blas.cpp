@@ -121,7 +121,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
 {
 #if defined(WITH_OPENCL_LINEAR_ALGEBRA)
-    if(OpenCLCPUOffload()) {
+    if(OpenCLCPUOffload(false)) {   // Do not force offload gemm on OSX Intel devices
         return cpu::matmul(lhs, rhs, optLhs, optRhs);
     }
 #endif
