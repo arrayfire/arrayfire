@@ -53,9 +53,7 @@ const char *af_err_to_string(const af_err err)
     case AF_ERR_NO_DBL:             return "Double precision not supported for this device";
     case AF_ERR_NO_GFX:             return "Graphics functionality unavailable. "
                                            "ArrayFire compiled without Graphics support";
-    case AF_ERR_LOAD_LIB:           return "Failed to load dynamic library. "
-                                           "See http://www.arrayfire.com/docs/unifiedbackend.htm "
-                                           "for instructions to set up environment for Unified backend";
+    case AF_ERR_LOAD_LIB:           return "Failed to load dynamic library. ";
     case AF_ERR_LOAD_SYM:           return "Failed to load symbol";
     case AF_ERR_ARR_BKND_MISMATCH:  return "There was a mismatch between an array and the current backend";
     case AF_ERR_INTERNAL:           return "Internal error";

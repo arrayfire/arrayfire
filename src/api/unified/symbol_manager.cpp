@@ -203,8 +203,9 @@ af_err AFSymbolManager::setBackend(af::Backend bknd)
             activeHandle = defaultHandle;
             activeBackend = defaultBackend;
             return AF_SUCCESS;
-        } else
-            return AF_ERR_LOAD_LIB;
+        } else {
+            UNIFIED_ERROR_LOAD_LIB();
+        }
     }
     int idx = bknd >> 1;    // Convert 1, 2, 4 -> 0, 1, 2
     if(bkndHandles[idx]) {
@@ -212,7 +213,7 @@ af_err AFSymbolManager::setBackend(af::Backend bknd)
         activeBackend = bknd;
         return AF_SUCCESS;
     } else {
-        return AF_ERR_LOAD_LIB;
+        UNIFIED_ERROR_LOAD_LIB();
     }
 }
 

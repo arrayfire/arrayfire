@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/array.h>
+#include <af/backend.h>
 #include "symbol_manager.hpp"
 
 af_err af_create_array(af_array *arr, const void * const data, const unsigned ndims, const dim_t * const dims, const af_dtype type)
