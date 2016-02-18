@@ -95,15 +95,6 @@ af_err af_info_string(char **str, const bool verbose)
     return AF_SUCCESS;
 }
 
-af_err af_get_version(int *major, int *minor, int *patch)
-{
-    *major = AF_VERSION_MAJOR;
-    *minor = AF_VERSION_MINOR;
-    *patch = AF_VERSION_PATCH;
-
-    return AF_SUCCESS;
-}
-
 af_err af_device_info(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
 {
     try {

@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/array.h>
+#include <af/backend.h>
 #include "symbol_manager.hpp"
 
 af_err af_create_array(af_array *arr, const void * const data, const unsigned ndims, const dim_t * const dims, const af_dtype type)
@@ -40,8 +41,16 @@ af_err af_get_data_ptr(void *data, const af_array arr)
 
 af_err af_release_array(af_array arr)
 {
-    CHECK_ARRAYS(arr);
-    return CALL(arr);
+    af_backend curr = unified::AFSymbolManager::getInstance().getActiveBackend();
+    af_backend other = curr;
+
+    af_err err = af_get_backend_id(&other, arr);
+    if (err != AF_SUCCESS) return err;
+
+    unified::AFSymbolManager::getInstance().setBackend(other);
+    err = CALL(arr);
+    unified::AFSymbolManager::getInstance().setBackend(curr);
+    return err;
 }
 
 af_err af_retain_array(af_array *out, const af_array in)

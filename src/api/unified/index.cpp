@@ -52,3 +52,37 @@ af_err af_assign_gen( af_array *out,
     CHECK_ARRAYS(lhs, rhs);
     return CALL(out, lhs, ndims, indices, rhs);
 }
+
+af_seq af_make_seq(double begin, double end, double step)
+{
+    af_seq seq = {begin, end, step};
+    return seq;
+}
+
+af_err af_create_indexers(af_index_t** indexers)
+{
+    return CALL(indexers);
+}
+
+af_err af_set_array_indexer(af_index_t* indexer, const af_array idx, const dim_t dim)
+{
+    CHECK_ARRAYS(idx);
+    return CALL(indexer, idx, dim);
+}
+
+af_err af_set_seq_indexer(af_index_t* indexer, const af_seq* idx, const dim_t dim, const bool is_batch)
+{
+    return CALL(indexer, idx, dim, is_batch);
+}
+
+af_err af_set_seq_param_indexer(af_index_t* indexer,
+                              const double begin, const double end, const double step,
+                              const dim_t dim, const bool is_batch)
+{
+    return CALL(indexer, begin, end, step, dim, is_batch);
+}
+
+af_err af_release_indexers(af_index_t* indexers)
+{
+    return CALL(indexers);
+}
