@@ -187,6 +187,9 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
             AF_ERROR("FreeImage Error: Bits per channel not supported", AF_ERR_NOT_SUPPORTED);
         }
 
+        // data type
+        FREE_IMAGE_TYPE image_type = FreeImage_GetImageType(pBitmap);
+
         // sizes
         uint fi_w = FreeImage_GetWidth(pBitmap);
         uint fi_h = FreeImage_GetHeight(pBitmap);
@@ -204,21 +207,36 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
                 else if(fi_bpc == 16)
                     AF_CHECK((readImage<ushort, AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float,  AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    switch(image_type) {
+                        case FIT_UINT32: AF_CHECK((readImage<uint,  AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_INT32: AF_CHECK((readImage<int,   AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_FLOAT: AF_CHECK((readImage<float,  AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        default: AF_ERROR("FreeImage Error: Unknown image type", AF_ERR_NOT_SUPPORTED); break;
+                    }
             } else if (fi_color == 1) {
                 if(fi_bpc == 8)
                     AF_CHECK((readImage<uchar,  AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
                     AF_CHECK((readImage<ushort, AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float,  AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    switch(image_type) {
+                        case FIT_UINT32: AF_CHECK((readImage<uint,  AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_INT32: AF_CHECK((readImage<int,   AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_FLOAT: AF_CHECK((readImage<float,  AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        default: AF_ERROR("FreeImage Error: Unknown image type", AF_ERR_NOT_SUPPORTED); break;
+                    }
             } else {             //3 channel image
                 if(fi_bpc == 8)
                     AF_CHECK((readImage<uchar,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
                     AF_CHECK((readImage<ushort, AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    switch(image_type) {
+                        case FIT_UINT32: AF_CHECK((readImage<uint,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_INT32: AF_CHECK((readImage<int,   AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_FLOAT: AF_CHECK((readImage<float,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        default: AF_ERROR("FreeImage Error: Unknown image type", AF_ERR_NOT_SUPPORTED); break;
+                    }
             }
         } else {                    //output gray irrespective
             if(fi_color == 1) {     //4 channel image
@@ -227,14 +245,24 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
                 else if(fi_bpc == 16)
                     AF_CHECK((readImage<ushort, AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float,  AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    switch(image_type) {
+                        case FIT_UINT32: AF_CHECK((readImage<uint,  AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_INT32: AF_CHECK((readImage<int,   AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_FLOAT: AF_CHECK((readImage<float,  AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        default: AF_ERROR("FreeImage Error: Unknown image type", AF_ERR_NOT_SUPPORTED); break;
+                    }
             } else if (fi_color == 3 || fi_color == 4) {
                 if(fi_bpc == 8)
                     AF_CHECK((readImage<uchar,  AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
                     AF_CHECK((readImage<ushort, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float,  AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    switch(image_type) {
+                        case FIT_UINT32: AF_CHECK((readImage<uint,  AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_INT32: AF_CHECK((readImage<int,   AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_FLOAT: AF_CHECK((readImage<float,  AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        default: AF_ERROR("FreeImage Error: Unknown image type", AF_ERR_NOT_SUPPORTED); break;
+                    }
             }
         }
 
