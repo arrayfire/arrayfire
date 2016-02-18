@@ -514,11 +514,22 @@ bool isHostUnifiedMemory(const cl::Device &device)
     return device.getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
 }
 
-bool OpenCLCPUOffload()
+bool OpenCLCPUOffload(bool forceOffloadOSX)
 {
-    static const bool sync = getEnvVar("AF_OPENCL_CPU_OFFLOAD") == "1";
+    static const bool offloadEnv = getEnvVar("AF_OPENCL_CPU_OFFLOAD") == "1";
     bool offload = false;
-    if(sync) offload = isHostUnifiedMemory(getDevice());
+    if(offloadEnv) offload = isHostUnifiedMemory(getDevice());
+#if OS_MAC
+    // FORCED OFFLOAD FOR LAPACK FUNCTIONS ON OSX UNIFIED MEMORY DEVICES
+    //
+    // On OSX Unified Memory devices (Intel), always offload LAPACK but not GEMM
+    // irrespective of the AF_OPENCL_CPU_OFFLOAD value
+    // From GEMM, OpenCLCPUOffload(false) is called which will render the
+    // variable inconsequential to the returned result.
+    //
+    // Issue https://github.com/arrayfire/arrayfire/issues/662
+    offload = offload || forceOffloadOSX;
+#endif
     return offload;
 }
 

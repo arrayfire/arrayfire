@@ -114,7 +114,7 @@ cl_device_type getDeviceType();
 
 bool isHostUnifiedMemory(const cl::Device &device);
 
-bool OpenCLCPUOffload();
+bool OpenCLCPUOffload(bool forceOffloadOSX = true);
 
 bool isGLSharingSupported();
 
