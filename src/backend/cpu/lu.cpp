@@ -44,6 +44,9 @@ LU_FUNC(getrf , cdouble, z)
 template<typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 {
+    lower.eval();
+    upper.eval();
+    pivot.eval();
     in.eval();
 
     dim4 iDims = in.dims();
