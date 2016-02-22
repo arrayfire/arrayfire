@@ -87,6 +87,7 @@ void MemoryManager::garbageCollect()
             kv.second.pop_back();
         }
     }
+    current.free_map.clear();
 }
 
 void MemoryManager::unlock(void *ptr, bool user_unlock)
