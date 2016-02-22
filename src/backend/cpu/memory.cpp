@@ -112,13 +112,30 @@ void printMemInfo(const char *msg, const int device)
 template<typename T>
 T* memAlloc(const size_t &elements)
 {
-    return (T *)getMemoryManager().alloc(elements * sizeof(T), false);
+    T *ptr = nullptr;
+
+    try {
+        ptr = (T *)getMemoryManager().alloc(elements * sizeof(T), false);
+    } catch(...) {
+        getQueue().sync();
+        ptr = (T *)getMemoryManager().alloc(elements * sizeof(T), false);
+    }
+    return ptr;
 }
 
 void* memAllocUser(const size_t &bytes)
 {
-    return getMemoryManager().alloc(bytes, true);
+    void *ptr = nullptr;
+
+    try {
+        ptr = getMemoryManager().alloc(bytes, true);
+    } catch(...) {
+        getQueue().sync();
+        ptr = getMemoryManager().alloc(bytes, true);
+    }
+    return ptr;
 }
+
 template<typename T>
 void memFree(T *ptr)
 {
