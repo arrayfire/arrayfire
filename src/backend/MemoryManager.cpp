@@ -153,8 +153,7 @@ void *MemoryManager::alloc(const size_t bytes, bool user_lock)
 
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
-            if (current.lock_bytes >= current.max_bytes ||
-                current.total_buffers >= this->max_buffers) {
+            if (this->checkMemoryLimit()) {
                 this->garbageCollect();
             }
 
@@ -303,6 +302,12 @@ void MemoryManager::bufferInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 unsigned MemoryManager::getMaxBuffers()
 {
     return this->max_buffers;
+}
+
+bool MemoryManager::checkMemoryLimit()
+{
+    memory_info& current = this->getCurrentMemoryInfo();
+    return current.lock_bytes >= current.max_bytes || current.total_buffers >= this->max_buffers;
 }
 
 }

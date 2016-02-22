@@ -111,6 +111,8 @@ public:
     {
     }
 
+    bool checkMemoryLimit();
+
 protected:
     mutex_t memory_mutex;
 
