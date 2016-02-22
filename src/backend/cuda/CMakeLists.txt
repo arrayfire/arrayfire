@@ -102,7 +102,15 @@ ELSE(CUDA_cusolver_LIBRARY)
     IF(${CUDA_LAPACK_CPU_FALLBACK})
         ## Try to use CPU side lapack
         IF(APPLE)
-            FIND_PACKAGE(LAPACK)
+            FIND_PACKAGE(LAPACKE QUIET) # For finding MKL
+            IF(NOT LAPACK_FOUND)
+                # UNSET THE VARIABLES FROM LAPACKE
+                UNSET(LAPACKE_LIB CACHE)
+                UNSET(LAPACK_LIB CACHE)
+                UNSET(LAPACKE_INCLUDES CACHE)
+                UNSET(LAPACKE_ROOT_DIR CACHE)
+                FIND_PACKAGE(LAPACK)
+            ENDIF()
         ELSE(APPLE) # Linux and Windows
             FIND_PACKAGE(LAPACKE)
         ENDIF(APPLE)
