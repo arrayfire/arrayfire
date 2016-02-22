@@ -92,6 +92,9 @@ void MemoryManager::garbageCollect()
 
 void MemoryManager::unlock(void *ptr, bool user_unlock)
 {
+    // Shortcut for empty arrays
+    if (!ptr) return;
+
     lock_guard_t lock(this->memory_mutex);
     memory_info& current = this->getCurrentMemoryInfo();
 
