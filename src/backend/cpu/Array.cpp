@@ -228,8 +228,9 @@ void
 writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
 {
     if(!arr.isOwner()) {
-        arr = createEmptyArray<T>(arr.dims());
+        arr = copyArray<T>(arr);
     }
+    arr.eval();
     memcpy(arr.get(), data, bytes);
 }
 
@@ -238,7 +239,7 @@ void
 writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
 {
     if(!arr.isOwner()) {
-        arr = createEmptyArray<T>(arr.dims());
+        arr = copyArray<T>(arr);
     }
     memcpy(arr.get(), (const T * const)data, bytes);
 }
