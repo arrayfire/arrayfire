@@ -42,8 +42,9 @@ void copyData(T *to, const Array<T> &from)
 template<typename T>
 Array<T> copyArray(const Array<T> &A)
 {
+    A.eval();
     Array<T> out = createEmptyArray<T>(A.dims());
-    copyData(out.get(), A);
+    getQueue().enqueue(kernel::copy<T, T>, out, A, scalar<T>(0), 1.0);
     return out;
 }
 
