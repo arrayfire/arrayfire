@@ -65,7 +65,7 @@ af_err af_init()
     try {
         static bool first = true;
         if(first) {
-            getInfo();
+            getDeviceInfo();
             first = false;
         }
     } CATCHALL;
@@ -75,7 +75,7 @@ af_err af_init()
 af_err af_info()
 {
     try {
-        printf("%s", getInfo().c_str());
+        printf("%s", getDeviceInfo().c_str());
     } CATCHALL;
     return AF_SUCCESS;
 }
@@ -83,7 +83,7 @@ af_err af_info()
 af_err af_info_string(char **str, const bool verbose)
 {
     try {
-        std::string infoStr = getInfo();
+        std::string infoStr = getDeviceInfo();
         af_alloc_host((void**)str, sizeof(char) * (infoStr.size() + 1));
 
         // Need to do a deep copy
