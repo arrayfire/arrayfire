@@ -18,26 +18,6 @@
 
 using af::dim4;
 
-const ArrayInfo&
-getInfo(af_array arr)
-{
-    const ArrayInfo *info = static_cast<ArrayInfo*>(reinterpret_cast<void *>(arr));
-    return *info;
-}
-
-af_err
-af_get_elements(dim_t *elems, const af_array arr)
-{
-    *elems =  getInfo(arr).elements();
-    return AF_SUCCESS; //FIXME: Catch exceptions correctly
-}
-
-af_err af_get_type(af_dtype *type, const af_array arr)
-{
-    *type = getInfo(arr).getType();
-    return AF_SUCCESS; //FIXME: Catch exceptions correctly
-}
-
 dim4 calcStrides(const dim4 &parentDim)
 {
     dim4 out(1, 1, 1, 1);

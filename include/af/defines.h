@@ -120,6 +120,13 @@ typedef enum {
     AF_ERR_BATCH          = 207,
 
 
+#if AF_API_VERSION >= 33
+    ///
+    /// Input does not belong to the current device.
+    ///
+    AF_ERR_DEVICE         = 208,
+#endif
+
     // 300-399 Errors for missing software features
 
     ///
