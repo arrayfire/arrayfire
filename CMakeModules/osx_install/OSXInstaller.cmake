@@ -13,15 +13,28 @@ SET(OSX_INSTALL_DIR ${CMAKE_MODULE_PATH}/osx_install)
 ################################################################################
 SET(OSX_TEMP "${CMAKE_BINARY_DIR}/osx_install_files")
 
+# Common files - libforge, ArrayFireConfig*.cmake
 FILE(GLOB COMMONLIB "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_LIB_DIR}/libforge*.dylib")
 FILE(GLOB COMMONCMAKE "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_CMAKE_DIR}/ArrayFireConfig*.cmake")
 
+ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_COMMON)
+FOREACH(SRC ${COMMONLIB} ${COMMONCMAKE})
+    FILE(RELATIVE_PATH SRC_REL ${CMAKE_INSTALL_PREFIX} ${SRC})
+    ADD_CUSTOM_COMMAND(TARGET OSX_INSTALL_SETUP_COMMON PRE_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy
+                       ${SRC} "${OSX_TEMP}/common/${SRC_REL}"
+                       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                       COMMENT "Copying Common files to temporary OSX Install Dir"
+                       )
+ENDFOREACH()
+
+# Backends - CPU, CUDA, OpenCL, Unified
 MACRO(OSX_INSTALL_SETUP BACKEND LIB)
     FILE(GLOB ${BACKEND}LIB "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_LIB_DIR}/lib${LIB}*.dylib")
     FILE(GLOB ${BACKEND}CMAKE "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_CMAKE_DIR}/ArrayFire${BACKEND}*.cmake")
 
     ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_${BACKEND})
-    FOREACH(SRC ${${BACKEND}LIB} ${COMMONLIB} ${${BACKEND}CMAKE} ${COMMONCMAKE})
+    FOREACH(SRC ${${BACKEND}LIB} ${${BACKEND}CMAKE})
         FILE(RELATIVE_PATH SRC_REL ${CMAKE_INSTALL_PREFIX} ${SRC})
         ADD_CUSTOM_COMMAND(TARGET OSX_INSTALL_SETUP_${BACKEND} PRE_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy
@@ -157,6 +170,14 @@ PKG_BUILD(  PKG_NAME        ArrayFireUNIFIED
             PATH_TO_FILES   ${OSX_TEMP}/Unified
             FILTERS         cpu cuda opencl)
 
+PKG_BUILD(  PKG_NAME        ArrayFireCommon
+            DEPENDS         OSX_INSTALL_SETUP_COMMON
+            TARGETS         common_package
+            INSTALL_LOCATION /usr/local
+            IDENTIFIER      com.arrayfire.pkg.arrayfire.libcommon
+            PATH_TO_FILES   ${OSX_TEMP}/common
+            FILTERS         cpu cuda opencl unified)
+
 PKG_BUILD(  PKG_NAME        ArrayFireHeaders
             DEPENDS         OSX_INSTALL_SETUP_INCLUDE
             TARGETS         header_package
@@ -180,5 +201,5 @@ PKG_BUILD(  PKG_NAME        ArrayFireDoc
             PATH_TO_FILES   ${OSX_TEMP}/doc
             FILTERS         cmake)
 
-PRODUCT_BUILD(DEPENDS ${cpu_package} ${cuda_package} ${opencl_package} ${unified_package} ${header_package} ${examples_package} ${doc_package})
+PRODUCT_BUILD(DEPENDS ${cpu_package} ${cuda_package} ${opencl_package} ${unified_package} ${common_package} ${header_package} ${examples_package} ${doc_package})
 
