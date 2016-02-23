@@ -35,6 +35,12 @@ af_err af_get_backend_id(af_backend *result, const af_array in)
     return CALL(result, in);
 }
 
+af_err af_get_device_id(int *device, const af_array in)
+{
+    CHECK_ARRAYS(in);
+    return CALL(device, in);
+}
+
 af_err af_get_active_backend(af_backend *result)
 {
     *result = unified::AFSymbolManager::getInstance().getActiveBackend();

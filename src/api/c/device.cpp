@@ -48,8 +48,18 @@ af_err af_get_backend_id(af_backend *result, const af_array in)
 {
     try {
         ARG_ASSERT(1, in != 0);
-        ArrayInfo info = getInfo(in);
+        ArrayInfo info = getInfo(in, false);
         *result = info.getBackendId();
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_get_device_id(int *device, const af_array in)
+{
+    try {
+        ARG_ASSERT(1, in != 0);
+        ArrayInfo info = getInfo(in, false);
+        *device = info.getDevId();
     } CATCHALL;
     return AF_SUCCESS;
 }
