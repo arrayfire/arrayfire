@@ -35,33 +35,33 @@ int ArrayInfo::getDevId() const
 {
     // The actual device ID is only stored in the first 4 bits of devId
     // See ArrayInfo.hpp for more
-    return devId & 0xf;
+    return devId & 0xff;
 }
 
 void ArrayInfo::setId(int id) const
 {
-    // 1 << (backendId + 3) sets the 4th, 5th or 6th bit of devId to 1
+    // 1 << (backendId + 8) sets the 9th, 10th or 11th bit of devId to 1
     // for CPU, CUDA and OpenCL respectively
     // See ArrayInfo.hpp for more
     int backendId = detail::getBackend() >> 1; // Convert enums 1, 2, 4 to ints 0, 1, 2
-    const_cast<ArrayInfo *>(this)->setId(id | 1 << (backendId + 3));
+    const_cast<ArrayInfo *>(this)->setId(id | 1 << (backendId + 8));
 }
 
 void ArrayInfo::setId(int id)
 {
-    // 1 << (backendId + 3) sets the 4th, 5th or 6th bit of devId to 1
+    // 1 << (backendId + 3) sets the 9th, 10th or 11th bit of devId to 1
     // for CPU, CUDA and OpenCL respectively
     // See ArrayInfo.hpp for more
     int backendId = detail::getBackend() >> 1; // Convert enums 1, 2, 4 to ints 0, 1, 2
-    devId = id | 1 << (backendId + 3);
+    devId = id | 1 << (backendId + 8);
 }
 
 af_backend ArrayInfo::getBackendId() const
 {
-    // devId >> 3 converts the backend info to 1, 2, 4 which are enums
+    // devId >> 8 converts the backend info to 1, 2, 4 which are enums
     // for CPU, CUDA and OpenCL respectively
     // See ArrayInfo.hpp for more
-    int backendId = devId >> 3;
+    int backendId = devId >> 8;
     return (af_backend)backendId;
 }
 
