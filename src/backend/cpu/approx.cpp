@@ -38,6 +38,10 @@ Array<Ty> approx1(const Array<Ty> &in, const Array<Tp> &pos,
             getQueue().enqueue(kernel::approx1<Ty, Tp, AF_INTERP_LINEAR>,
                                out, in, pos, offGrid);
             break;
+        case AF_INTERP_CUBIC:
+            getQueue().enqueue(kernel::approx1<Ty, Tp, AF_INTERP_CUBIC>,
+                               out, in, pos, offGrid);
+            break;
         default:
             break;
     }
