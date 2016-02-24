@@ -53,7 +53,7 @@ namespace opencl
             compute::buffer out_data((*out.get())());
 
             compute::buffer_iterator< type_t<T> > begin(out_data, 0);
-            compute::buffer_iterator< type_t<T> > end(out_data, out.dims()[0]);
+            compute::buffer_iterator< type_t<T> > end(out_data, out.elements());
 
             if (!is_sorted) {
                 compute::sort(begin, end, queue);
@@ -83,7 +83,7 @@ namespace opencl
                 unique_second = setUnique(second, false);
             }
 
-            size_t out_size = unique_first.dims()[0] + unique_second.dims()[0];
+            size_t out_size = unique_first.elements() + unique_second.elements();
             Array<T> out = createEmptyArray<T>(dim4(out_size, 1, 1, 1));
 
             compute::command_queue queue(getQueue()());
@@ -93,9 +93,9 @@ namespace opencl
             compute::buffer out_data((*out.get())());
 
             compute::buffer_iterator< type_t<T> > first_begin(first_data, 0);
-            compute::buffer_iterator< type_t<T> > first_end(first_data, unique_first.dims()[0]);
+            compute::buffer_iterator< type_t<T> > first_end(first_data, unique_first.elements());
             compute::buffer_iterator< type_t<T> > second_begin(second_data, 0);
-            compute::buffer_iterator< type_t<T> > second_end(second_data, unique_second.dims()[0]);
+            compute::buffer_iterator< type_t<T> > second_end(second_data, unique_second.elements());
             compute::buffer_iterator< type_t<T> > out_begin(out_data, 0);
 
             compute::buffer_iterator< type_t<T> > out_end = compute::set_union(
@@ -124,7 +124,7 @@ namespace opencl
                 unique_second = setUnique(second, false);
             }
 
-            size_t out_size = std::max(unique_first.dims()[0], unique_second.dims()[0]);
+            size_t out_size = std::max(unique_first.elements(), unique_second.elements());
             Array<T> out = createEmptyArray<T>(dim4(out_size, 1, 1, 1));
 
             compute::command_queue queue(getQueue()());
@@ -134,9 +134,9 @@ namespace opencl
             compute::buffer out_data((*out.get())());
 
             compute::buffer_iterator< type_t<T> > first_begin(first_data, 0);
-            compute::buffer_iterator< type_t<T> > first_end(first_data, unique_first.dims()[0]);
+            compute::buffer_iterator< type_t<T> > first_end(first_data, unique_first.elements());
             compute::buffer_iterator< type_t<T> > second_begin(second_data, 0);
-            compute::buffer_iterator< type_t<T> > second_end(second_data, unique_second.dims()[0]);
+            compute::buffer_iterator< type_t<T> > second_end(second_data, unique_second.elements());
             compute::buffer_iterator< type_t<T> > out_begin(out_data, 0);
 
             compute::buffer_iterator< type_t<T> > out_end = compute::set_intersection(
