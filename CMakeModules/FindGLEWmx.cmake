@@ -55,7 +55,6 @@ ELSE (WIN32)
         /sw/lib
         /opt/local/lib
         ${GLEW_ROOT_DIR}/lib
-        NO_DEFAULT_PATH
         DOC "The GLEWmx library")
 
     SET(PX ${CMAKE_STATIC_LIBRARY_PREFIX})
@@ -72,7 +71,6 @@ ELSE (WIN32)
         /sw/lib
         /opt/local/lib
         ${GLEW_ROOT_DIR}/lib
-        NO_DEFAULT_PATH
         DOC "The GLEWmx library")
     UNSET(PX)
     UNSET(SX)
