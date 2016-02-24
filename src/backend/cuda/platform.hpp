@@ -22,8 +22,7 @@ namespace cuda
 
 int getBackend();
 
-std::string getInfo();
-
+std::string getDeviceInfo();
 std::string getDeviceInfo(int device);
 
 std::string getPlatformInfo();
@@ -31,8 +30,6 @@ std::string getPlatformInfo();
 std::string getDriverVersion();
 
 std::string getCUDARuntimeVersion();
-
-std::string getInfo();
 
 bool isDoubleSupported(int device);
 
@@ -82,7 +79,7 @@ class DeviceManager
 
         friend std::string getCUDARuntimeVersion();
 
-        friend std::string getInfo();
+        friend std::string getDeviceInfo();
 
         friend int getDeviceCount();
 

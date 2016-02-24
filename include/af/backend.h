@@ -66,6 +66,18 @@ AFAPI af_err af_get_backend_id(af_backend *backend, const af_array in);
 AFAPI af_err af_get_active_backend(af_backend *backend);
 #endif
 
+#if AF_API_VERSION >= 33
+/**
+   \param[out] dev contains the device on which \p in was created.
+   \param[in] in is the array who's device is to be queried.
+   \returns \ref af_err error code
+
+   \ingroup unified_func_getdeviceid
+ */
+AFAPI af_err af_get_device_id(int *device, const af_array in);
+#endif
+
+
 #ifdef __cplusplus
 }
 #endif
@@ -119,6 +131,18 @@ AFAPI af::Backend getBackendId(const array &in);
    \ingroup unified_func_getctivebackend
  */
 AFAPI af::Backend getActiveBackend();
+#endif
+
+#if AF_API_VERSION >= 33
+/**
+   \param[in] in is the array who's device is to be queried.
+   \returns The id of the device on which this array was created.
+
+   \note Device ID can be the same for arrays belonging to different backends.
+
+   \ingroup unified_func_getdeviceid
+ */
+AFAPI int getDeviceId(const array &in);
 #endif
 
 }

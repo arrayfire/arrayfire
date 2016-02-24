@@ -383,7 +383,7 @@ static std::string platformMap(std::string &platStr)
     }
 }
 
-std::string getInfo()
+std::string getDeviceInfo()
 {
     ostringstream info;
     info << "ArrayFire v" << AF_VERSION

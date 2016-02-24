@@ -224,7 +224,7 @@ static inline std::string &ltrim(std::string &s)
     return s;
 }
 
-std::string getInfo()
+std::string getDeviceInfo()
 {
     std::ostringstream info;
     static CPUInfo cinfo;
