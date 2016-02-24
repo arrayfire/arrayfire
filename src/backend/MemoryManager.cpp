@@ -153,8 +153,7 @@ void *MemoryManager::alloc(const size_t bytes, bool user_lock)
 
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
-            if (current.lock_bytes >= current.max_bytes ||
-                current.total_buffers >= this->max_buffers) {
+            if (this->checkMemoryLimit()) {
                 this->garbageCollect();
             }
 
@@ -258,7 +257,7 @@ void MemoryManager::printInfo(const char *msg, const int device)
             unit = "MB";
         }
 
-        std::cout << " |  " << std::right << std::setw(14) << kv.first << " "
+        std::cout << "|  " << std::right << std::setw(14) << kv.first << " "
                   << " | " << std::setw(7) << std::setprecision(4) << size << " " << unit
                   << " | " << std::setw(9) << status_mngr
                   << " | " << std::setw(9) << status_user
@@ -278,7 +277,7 @@ void MemoryManager::printInfo(const char *msg, const int device)
         }
 
         for (auto &ptr : kv.second) {
-            std::cout << " |  " << std::right << std::setw(14) << ptr << " "
+            std::cout << "|  " << std::right << std::setw(14) << ptr << " "
                       << " | " << std::setw(7) << std::setprecision(4) << size << " " << unit
                       << " | " << std::setw(9) << status_mngr
                       << " | " << std::setw(9) << status_user
@@ -303,6 +302,12 @@ void MemoryManager::bufferInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 unsigned MemoryManager::getMaxBuffers()
 {
     return this->max_buffers;
+}
+
+bool MemoryManager::checkMemoryLimit()
+{
+    memory_info& current = this->getCurrentMemoryInfo();
+    return current.lock_bytes >= current.max_bytes || current.total_buffers >= this->max_buffers;
 }
 
 }

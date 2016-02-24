@@ -31,6 +31,8 @@ void nearest_neighbour(Array<uint>& idx, Array<To>& dist,
         CPU_NOT_SUPPORTED();
     }
 
+    idx.eval();
+    dist.eval();
     query.eval();
     train.eval();
 
