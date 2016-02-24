@@ -87,10 +87,14 @@ void MemoryManager::garbageCollect()
             kv.second.pop_back();
         }
     }
+    current.free_map.clear();
 }
 
 void MemoryManager::unlock(void *ptr, bool user_unlock)
 {
+    // Shortcut for empty arrays
+    if (!ptr) return;
+
     lock_guard_t lock(this->memory_mutex);
     memory_info& current = this->getCurrentMemoryInfo();
 
@@ -122,6 +126,8 @@ void MemoryManager::unlock(void *ptr, bool user_unlock)
         // Just free memory in debug mode
         if ((iter->second).bytes > 0) {
             this->nativeFree(iter->first);
+            current.total_buffers--;
+            current.total_bytes -= iter->second.bytes;
         }
     } else {
         // In regular mode, move buffer to free map
