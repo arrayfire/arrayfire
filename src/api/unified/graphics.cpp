@@ -89,6 +89,11 @@ af_err af_is_window_closed(bool *out, const af_window wind)
     return CALL(out, wind);
 }
 
+af_err af_set_visibility(const af_window wind, const bool is_visible)
+{
+    return CALL(wind, is_visible);
+}
+
 af_err af_destroy_window(const af_window wind)
 {
     return CALL(wind);

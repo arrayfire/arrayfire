@@ -289,6 +289,17 @@ class AFAPI Window {
         */
         bool close();
 
+#if AF_API_VERSION >= 33
+        /**
+           Hide/Show the window
+
+           \param[in] isVisible indicates if the window is to be hidden or brought into focus
+
+           \ingroup gfx_func_window
+         */
+        void setVisibility(const bool isVisible);
+#endif
+
         /**
            This function is used to keep track of which cell in the grid mode is
            being currently rendered. When a user does Window(0,0), we internally
@@ -546,6 +557,18 @@ AFAPI af_err af_show(const af_window wind);
    \ingroup gfx_func_window
 */
 AFAPI af_err af_is_window_closed(bool *out, const af_window wind);
+
+#if AF_API_VERSION >= 33
+/**
+   Hide/Show a window
+
+   \param[in] wind is the window whose visibility is to be changed
+   \param[in] is_visible indicates if the window is to be hidden or brought into focus
+
+   \ingroup gfx_func_window
+ */
+AFAPI af_err af_set_visibility(const af_window wind, const bool is_visible);
+#endif
 
 /**
    C Interface wrapper for destroying a window handle
