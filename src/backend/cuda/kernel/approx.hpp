@@ -192,6 +192,9 @@ namespace cuda
                 case AF_INTERP_LINEAR:
                     core_linear1(idx, idy, idz, idw, out, in, pos, offGrid, pBatch);
                     break;
+                case AF_INTERP_CUBIC:
+                    core_linear1(idx, idy, idz, idw, out, in, pos, offGrid, pBatch);
+                    break;
                 default:
                     break;
             }
@@ -221,6 +224,9 @@ namespace cuda
                     core_nearest2(idx, idy, idz, idw, out, in, pos, qos, offGrid, pBatch);
                     break;
                 case AF_INTERP_LINEAR:
+                    core_linear2(idx, idy, idz, idw, out, in, pos, qos, offGrid, pBatch);
+                    break;
+                case AF_INTERP_CUBIC:
                     core_linear2(idx, idy, idz, idw, out, in, pos, qos, offGrid, pBatch);
                     break;
                 default:
