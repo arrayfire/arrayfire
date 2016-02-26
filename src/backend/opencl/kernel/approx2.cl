@@ -9,6 +9,7 @@
 
 #define NEAREST core_nearest2
 #define LINEAR core_linear2
+#define CUBIC core_linear2
 
 #if CPLX
 #define set(a, b) a = b

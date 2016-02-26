@@ -33,6 +33,9 @@ namespace opencl
             case AF_INTERP_LINEAR:
                 kernel::approx1<Ty, Tp, AF_INTERP_LINEAR> (out, in, pos, offGrid);
                 break;
+            case AF_INTERP_CUBIC:
+                kernel::approx1<Ty, Tp, AF_INTERP_CUBIC> (out, in, pos, offGrid);
+                break;
             default:
                 break;
         }
@@ -56,6 +59,9 @@ namespace opencl
                 break;
             case AF_INTERP_LINEAR:
                 kernel::approx2<Ty, Tp, AF_INTERP_LINEAR> (out, in, pos0, pos1, offGrid);
+                break;
+            case AF_INTERP_CUBIC:
+                kernel::approx2<Ty, Tp, AF_INTERP_CUBIC> (out, in, pos0, pos1, offGrid);
                 break;
             default:
                 break;
