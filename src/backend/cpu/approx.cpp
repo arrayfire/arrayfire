@@ -72,6 +72,10 @@ Array<Ty> approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &p
             getQueue().enqueue(kernel::approx2<Ty, Tp, AF_INTERP_LINEAR>,
                                out, in, pos0, pos1, offGrid);
             break;
+        case AF_INTERP_CUBIC:
+            getQueue().enqueue(kernel::approx2<Ty, Tp, AF_INTERP_CUBIC>,
+                               out, in, pos0, pos1, offGrid);
+            break;
         default:
             break;
     }

@@ -148,11 +148,11 @@ struct approx1_op<InT, LocT, AF_INTERP_CUBIC>
             // Compute Left and Right points and tangents
             InT pl = condr ? in[ioff] : offGrid;
             InT pr = condl1 ? in[ioff + 1] : offGrid;
-            InT tl = condr ? (in[ioff + 1] - in[ioff])/(InT)2 + (in[ioff] - in[ioff - 1])/(InT)2 :
-                             (in[ioff + 1] - in[ioff])/(InT)2 + (in[ioff] - (InT)offGrid)/(InT)2;
-            InT tr = condl2 ? (in[ioff + 2] - in[ioff + 1])/(InT)2 + (in[ioff + 1] - in[ioff])/(InT)2 :
-                condl1? ((InT)offGrid - in[ioff + 1])/(InT)2 + (in[ioff + 1] - in[ioff])/(InT)2 :
-                        ((InT)offGrid - (InT)offGrid) /(InT)2 + ((InT)offGrid - in[ioff])/(InT)2;
+            InT tl = condr ? scalar<InT>(0.5) * ((in[ioff + 1] - in[ioff]) + (in[ioff] - in[ioff - 1])) :
+                             scalar<InT>(0.5) * ((in[ioff + 1] - in[ioff]) + (in[ioff] - (InT)offGrid));
+            InT tr = condl2 ? scalar<InT>(0.5) * ((in[ioff + 2] - in[ioff + 1]) + (in[ioff + 1] - in[ioff])) :
+                condl1? scalar<InT>(0.5) * (((InT)offGrid - in[ioff + 1]) + (in[ioff + 1] - in[ioff])) :
+                        scalar<InT>(0.5) * (((InT)offGrid - (InT)offGrid) + ((InT)offGrid - in[ioff]));
             // Write final value
             out[omId] = h00 * pl + h10 * tl + h01 * pr + h11 * tr;
         }
