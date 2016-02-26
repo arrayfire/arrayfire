@@ -6,6 +6,8 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 #include <string>
 #include <fstream>
@@ -127,11 +129,11 @@ void readTestsFromFile(const std::string &FileName, std::vector<af::dim4> &input
     }
 }
 
-void readImageTests(const std::string        &pFileName,
-                    std::vector<af::dim4>    &pInputDims,
-                    std::vector<std::string> &pTestInputs,
-                    std::vector<dim_t>    &pTestOutSizes,
-                    std::vector<std::string> &pTestOutputs)
+inline void readImageTests(const std::string        &pFileName,
+                           std::vector<af::dim4>    &pInputDims,
+                           std::vector<std::string> &pTestInputs,
+                           std::vector<dim_t>    &pTestOutSizes,
+                           std::vector<std::string> &pTestOutputs)
 {
     using std::vector;
 
@@ -364,18 +366,18 @@ struct cond_type<false, T, Other> {
 };
 
 template<typename T>
-double real(T val) { return (double)val; }
+inline double real(T val) { return (double)val; }
 template<>
-double real<af::cdouble>(af::cdouble val) { return real(val); }
+inline double real<af::cdouble>(af::cdouble val) { return real(val); }
 template<>
-double real<af::cfloat> (af::cfloat val) { return real(val); }
+inline double real<af::cfloat> (af::cfloat val) { return real(val); }
 
 template<typename T>
-double imag(T val) { return (double)val; }
+inline double imag(T val) { return (double)val; }
 template<>
-double imag<af::cdouble>(af::cdouble val) { return imag(val); }
+inline double imag<af::cdouble>(af::cdouble val) { return imag(val); }
 template<>
-double imag<af::cfloat> (af::cfloat val) { return imag(val); }
+inline double imag<af::cfloat> (af::cfloat val) { return imag(val); }
 
 template<typename T>
 bool noDoubleTests()
@@ -388,37 +390,18 @@ bool noDoubleTests()
     return ((isTypeDouble && !isDoubleSupported) ? true : false);
 }
 
-bool noImageIOTests()
+inline bool noImageIOTests()
 {
-    af_array arr = 0;
-    const af_err err = af_load_image(&arr, TEST_DIR"/imageio/color_small.png", true);
-
-    if(arr != 0) af_release_array(arr);
-
-    if(err == AF_ERR_NOT_CONFIGURED)
-        return true;    // Yes, disable test
-    else
-        return false;   // No, let test continue
+    bool ret = !af::isImageIOAvailable();
+    if(ret) printf("Image IO Not Configured. Test will exit\n");
+    return ret;
 }
 
-bool noLAPACKTests()
+inline bool noLAPACKTests()
 {
-    // Run LU
-    af::dim4 dims(5, 5);
-    af_array in = 0, l = 0, u = 0, p= 0;
-    af_randu(&in, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type);
-
-    af_err err = af_lu(&l, &u, &p, in);
-
-    if(in != 0) af_release_array(in);
-    if(l  != 0) af_release_array(l);
-    if(u  != 0) af_release_array(u);
-    if(p  != 0) af_release_array(p);
-
-    if(err == AF_ERR_NOT_CONFIGURED)
-        return true;    // Yes, disable test
-    else
-        return false;   // No, let test continue
+    bool ret = !af::isLAPACKAvailable();
+    if(ret) printf("LAPACK Not Configured. Test will exit\n");
+    return ret;
 }
 
 // TODO: perform conversion on device for CUDA and OpenCL
@@ -469,3 +452,5 @@ af::array cpu_randu(const af::dim4 dims)
 
     return af::array(dims, (T *)&out[0]);
 }
+
+#pragma GCC diagnostic pop

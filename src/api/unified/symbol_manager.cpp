@@ -43,25 +43,6 @@ inline string getBkndLibName(const int backend_index)
     return LIB_AF_BKND_PREFIX + LIB_AF_BKND_NAME[i] + LIB_AF_BKND_SUFFIX;
 }
 
-inline std::string getEnvVar(const std::string &key)
-{
-#if defined(OS_WIN)
-    DWORD bufSize = 32767; // limit according to GetEnvironment Variable documentation
-    string retVal;
-    retVal.resize(bufSize);
-    bufSize = GetEnvironmentVariable(key.c_str(), &retVal[0], bufSize);
-    if (!bufSize) {
-        return string("");
-    } else {
-        retVal.resize(bufSize);
-        return retVal;
-    }
-#else
-    char * str = getenv(key.c_str());
-    return str==NULL ? string("") : string(str);
-#endif
-}
-
 /*flag parameter is not used on windows platform */
 LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
 {
@@ -222,8 +203,9 @@ af_err AFSymbolManager::setBackend(af::Backend bknd)
             activeHandle = defaultHandle;
             activeBackend = defaultBackend;
             return AF_SUCCESS;
-        } else
-            return AF_ERR_LOAD_LIB;
+        } else {
+            UNIFIED_ERROR_LOAD_LIB();
+        }
     }
     int idx = bknd >> 1;    // Convert 1, 2, 4 -> 0, 1, 2
     if(bkndHandles[idx]) {
@@ -231,7 +213,7 @@ af_err AFSymbolManager::setBackend(af::Backend bknd)
         activeBackend = bknd;
         return AF_SUCCESS;
     } else {
-        return AF_ERR_LOAD_LIB;
+        UNIFIED_ERROR_LOAD_LIB();
     }
 }
 

@@ -16,7 +16,7 @@ namespace opencl
 {
 
 template<af_op_t op>
-static const char *unaryName() { return "noop"; }
+static const char *unaryName() { return "__noop"; }
 
 #define UNARY_DECL(OP, FNAME)                   \
     template<> STATIC_                          \

@@ -287,5 +287,13 @@ This function can return the norm using various metrics based on the type paramt
 
 ===============================================================================
 
+\defgroup lapack_helper_func_available isLAPACKAvailable
+
+\ingroup lapack_helper
+
+\brief Returns true is ArrayFire is compiled with LAPACK support
+
+===============================================================================
+
 @}
 */

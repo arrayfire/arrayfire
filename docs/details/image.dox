@@ -430,6 +430,12 @@ Save an array to disk as an image
 Supported formats include JPG, PNG, PPM and other formats supported by freeimage
 
 
+\defgroup imageio_func_available isImageIoAvailable
+\ingroup imageio_mat
+
+Returns true if ArrayFire was compiled with ImageIO (FreeImage) support
+
+
 \defgroup imagemem_func_load loadImageMem
 \ingroup imageio_mat
 
@@ -501,10 +507,12 @@ grad(dx, dy, in);
 
 Resize an input image
 
-Resizing an input image can be done using either \ref AF_INTERP_NEAREST or
-\ref AF_INTERP_BILINEAR interpolations. Nearest interpolation will pick the
-nearest value to the location, whereas bilinear interpolation will do a
-weighted interpolation for calculate the new size.
+Resizing an input image can be done using either \ref AF_INTERP_NEAREST,
+\ref AF_INTERP_BILINEAR or \ref AF_INTERP_LOWER, interpolations. Nearest
+interpolation will pick the nearest value to the location, bilinear
+interpolation will do a weighted interpolation for calculate the new size
+and lower interpolation is similar to the nearest, except it will use the
+floor function to get the lower neighbor.
 
 This function does not differentiate between images and data. As long as
 the array is defined and the output dimensions are not 0, it will resize any
@@ -556,10 +564,10 @@ Rotate an input image
 
 The angle theta is in radians.
 
-Rotating an input image can be done using either \ref AF_INTERP_NEAREST or
-\ref AF_INTERP_BILINEAR interpolations. Nearest interpolation will pick the
-nearest value to the location, whereas bilinear interpolation will do a
-weighted interpolation for calculate the new size.
+Rotating an input image can be done using \ref AF_INTERP_NEAREST,
+\ref AF_INTERP_BILINEAR or \ref AF_INTERP_LOWER interpolations. Nearest
+interpolation will pick the nearest value to the location, whereas bilinear
+interpolation will do a weighted interpolation for calculate the new size.
 
 This function does not differentiate between images and data. As long as
 the array is defined, it will rotate any type or size of array.
@@ -659,25 +667,50 @@ Skew is a special case of the \ref af::transform function.
 
 Transform an input image
 
-The transform function uses an affine transform matrix to tranform an input
+The transform function uses an affine or perspective transform matrix to tranform an input
 image into a new one.
 
-The transform matrix \p tf is a 3x2 matrix of type float. The matrix operation
-is applied to each location (x, y) that is then transformed to (x', y') of the
+If matrix \p tf is is a 3x2 matrix, an affine transformation will be performed. The matrix
+operation is applied to each location (x, y) that is then transformed to (x', y') of the
 new array. Hence the transformation is an element-wise operation.
 
-The operation is as below:
-tf = [r00 r10
-      r01 r11
+The operation is as below:\n
+tf = [r00 r10\n
+      r01 r11\n
       t0  t1]
 
-x' = x * r00 + y * r01 + t0;
+x' = x * r00 + y * r01 + t0;\n
 y' = x * r10 + y * r11 + t1;
 
-Interpolation types of \ref AF_INTERP_NEAREST and \ref AF_INTERP_BILINEAR are allowed.
+If matrix \p tf is is a 3x3 matrix, a perspective transformation will be performed.
+
+The operation is as below:\n
+tf = [r00 r10 r20\n
+      r01 r11 r21\n
+      t0  t1  t2]
+
+x' = (x * r00 + y * r01 + t0) / (x * r20 + y * r21 + t2);\n
+y' = (x * r10 + y * r11 + t1) / (x * r20 + y * r21 + t2);
+
+The transformation matrix \p tf should always be of type f32.
+
+Interpolation types of \ref AF_INTERP_NEAREST, \ref AF_INTERP_BILINEAR and
+AF_INTERP_LOWER are allowed.
 
 Affine transforms can be used for various purposes. \ref af::translate, \ref af::scale and \ref af::skew
 are specializations of the transform function.
+
+
+\defgroup transform_func_coordinates transformcoordinates
+\ingroup transform_mat
+
+Transform input coordinates
+
+The transform function uses a perspective transform matrix to transform input
+coordinates (given as two dimensions) into a coordinates matrix.
+
+The output is a 4x2 matrix, indicating the coordinates of the 4 bidimensional
+transformed points.
 
 =======================================================================
 

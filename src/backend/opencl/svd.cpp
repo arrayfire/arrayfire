@@ -20,6 +20,8 @@
 #include <magma/magma.h>
 #include <magma/magma_cpu_lapack.h>
 #include <magma/magma_helper.h>
+#include <platform.hpp>
+#include <cpu/cpu_svd.hpp>
 
 namespace opencl
 {
@@ -196,6 +198,10 @@ void svd(Array<T > &arrU,
 template<typename T, typename Tr>
 void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
 {
+    if(OpenCLCPUOffload()) {
+        return cpu::svdInPlace(s, u, vt, in);
+    }
+
     initBlas();
     svd<T, Tr>(u, s, vt, in, true);
 }
@@ -203,6 +209,10 @@ void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
 template<typename T, typename Tr>
 void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
 {
+    if(OpenCLCPUOffload()) {
+        return cpu::svd(s, u, vt, in);
+    }
+
     dim4 iDims = in.dims();
     int M = iDims[0];
     int N = iDims[1];

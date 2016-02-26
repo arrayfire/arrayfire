@@ -20,6 +20,7 @@
 
 using std::string;
 using std::vector;
+using std::abs;
 using af::dim4;
 
 typedef struct
@@ -38,7 +39,7 @@ typedef struct
     unsigned d[8];
 } desc_t;
 
-bool feat_cmp(feat_desc_t i, feat_desc_t j)
+static bool feat_cmp(feat_desc_t i, feat_desc_t j)
 {
     for (int k = 0; k < 5; k++)
         if (i.f[k] != j.f[k])
@@ -47,7 +48,7 @@ bool feat_cmp(feat_desc_t i, feat_desc_t j)
     return true;
 }
 
-void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* score, float* ori, float* size, unsigned* desc, unsigned nfeat)
+static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* score, float* ori, float* size, unsigned* desc, unsigned nfeat)
 {
     feat.resize(nfeat);
     for (size_t i = 0; i < feat.size(); i++) {
@@ -61,7 +62,7 @@ void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* sc
     }
 }
 
-void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* score, float* ori, float* size, vector<vector<unsigned> >& desc, unsigned nfeat)
+static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* score, float* ori, float* size, vector<vector<unsigned> >& desc, unsigned nfeat)
 {
     feat.resize(nfeat);
     for (size_t i = 0; i < feat.size(); i++) {
@@ -75,7 +76,7 @@ void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* sc
     }
 }
 
-void array_to_feat(vector<feat_t>& feat, float *x, float *y, float *score, float *ori, float *size, unsigned nfeat)
+static void array_to_feat(vector<feat_t>& feat, float *x, float *y, float *score, float *ori, float *size, unsigned nfeat)
 {
     feat.resize(nfeat);
     for (unsigned i = 0; i < feat.size(); i++) {
@@ -87,7 +88,7 @@ void array_to_feat(vector<feat_t>& feat, float *x, float *y, float *score, float
     }
 }
 
-void split_feat_desc(vector<feat_desc_t>& fd, vector<feat_t>& f, vector<desc_t>& d)
+static void split_feat_desc(vector<feat_desc_t>& fd, vector<feat_t>& f, vector<desc_t>& d)
 {
     f.resize(fd.size());
     d.resize(fd.size());
@@ -102,7 +103,7 @@ void split_feat_desc(vector<feat_desc_t>& fd, vector<feat_t>& f, vector<desc_t>&
     }
 }
 
-unsigned popcount(unsigned x)
+static unsigned popcount(unsigned x)
 {
     x = x - ((x >> 1) & 0x55555555);
     x = (x & 0x33333333) + ((x >> 2) & 0x33333333);

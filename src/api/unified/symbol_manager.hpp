@@ -11,6 +11,9 @@
 #include <af/defines.h>
 #include <string>
 #include <stdlib.h>
+#include <util.hpp>
+#include <err_common.hpp>
+
 #if defined(OS_WIN)
 #include <Windows.h>
 typedef HMODULE LibHandle;
@@ -24,6 +27,13 @@ namespace unified
 
 const int NUM_BACKENDS = 3;
 const int NUM_ENV_VARS = 2;
+
+#define UNIFIED_ERROR_LOAD_LIB()                                        \
+    AF_RETURN_ERROR("Failed to load dynamic library. "                  \
+                    "See http://www.arrayfire.com/docs/unifiedbackend.htm " \
+                    "for instructions to set up environment for Unified backend.", \
+                    AF_ERR_LOAD_LIB)
+
 
 class AFSymbolManager {
     public:
@@ -41,8 +51,9 @@ class AFSymbolManager {
 
         template<typename... CalleeArgs>
         af_err call(const char* symbolName, CalleeArgs... args) {
-            if (!activeHandle)
-                return AF_ERR_LOAD_LIB;
+            if (!activeHandle) {
+                UNIFIED_ERROR_LOAD_LIB();
+            }
             typedef af_err(*af_func)(CalleeArgs...);
             af_func funcHandle;
 #if defined(OS_WIN)
@@ -51,11 +62,16 @@ class AFSymbolManager {
             funcHandle = (af_func)dlsym(activeHandle, symbolName);
 #endif
             if (!funcHandle) {
-                return AF_ERR_LOAD_SYM;
+                std::string str = "Failed to load symbol: ";
+                str += symbolName;
+                AF_RETURN_ERROR(str.c_str(),
+                                AF_ERR_LOAD_SYM);
             }
 
             return funcHandle(args...);
         }
+
+        LibHandle getHandle() { return activeHandle; }
 
     protected:
         AFSymbolManager();
@@ -93,11 +109,12 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg)
 
 // Macro to check af_array as inputs. The arguments to this macro should be
 // only input af_arrays. Not outputs or other types.
-#define CHECK_ARRAYS(...) do {                                                              \
-    af_backend backendId = unified::AFSymbolManager::getInstance().getActiveBackend();      \
-    if(!unified::checkArrays(backendId, __VA_ARGS__))                                       \
-        return AF_ERR_ARR_BKND_MISMATCH;                                                    \
-} while(0)
+#define CHECK_ARRAYS(...) do {                                          \
+        af_backend backendId = unified::AFSymbolManager::getInstance().getActiveBackend(); \
+        if(!unified::checkArrays(backendId, __VA_ARGS__))               \
+            AF_RETURN_ERROR("Input array does not belong to current backend", \
+                            AF_ERR_ARR_BKND_MISMATCH);                  \
+    } while(0)
 
 #if defined(OS_WIN)
 #define CALL(...) unified::AFSymbolManager::getInstance().call(__FUNCTION__, __VA_ARGS__)
@@ -105,4 +122,10 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg)
 #else
 #define CALL(...) unified::AFSymbolManager::getInstance().call(__func__, __VA_ARGS__)
 #define CALL_NO_PARAMS() unified::AFSymbolManager::getInstance().call(__func__)
+#endif
+
+#if defined(OS_WIN)
+#define LOAD_SYMBOL() GetProcAddress(unified::AFSymbolManager::getInstance().getHandle(), __FUNCTION__)
+#else
+#define LOAD_SYMBOL() dlsym(unified::AFSymbolManager::getInstance().getHandle(), __func__)
 #endif

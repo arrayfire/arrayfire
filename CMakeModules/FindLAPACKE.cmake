@@ -9,15 +9,33 @@
 #   LAPACK_INCLUDES            ... LAPACKE include directory
 #
 
-IF(NOT LAPACKE_ROOT AND ENV{LAPACKEDIR})
-  SET(LAPACKE_ROOT $ENV{LAPACKEDIR})
+SET(LAPACKE_ROOT_DIR CACHE STRING
+  "Root directory for custom LAPACK implementation")
+
+IF (NOT INTEL_MKL_ROOT_DIR)
+  SET(INTEL_MKL_ROOT_DIR $ENV{INTEL_MKL_ROOT})
+ENDIF()
+
+IF(NOT LAPACKE_ROOT_DIR)
+
+  IF (ENV{LAPACKEDIR})
+    SET(LAPACKE_ROOT_DIR $ENV{LAPACKEDIR})
+  ENDIF()
+
+  IF (ENV{LAPACKE_ROOT_DIR_DIR})
+    SET(LAPACKE_ROOT_DIR $ENV{LAPACKE_ROOT_DIR})
+  ENDIF()
+
+  IF (INTEL_MKL_ROOT_DIR)
+    SET(LAPACKE_ROOT_DIR ${INTEL_MKL_ROOT_DIR})
+  ENDIF()
 ENDIF()
 
 # Check if we can use PkgConfig
 FIND_PACKAGE(PkgConfig)
 
 #Determine from PKG
-IF(PKG_CONFIG_FOUND AND NOT LAPACKE_ROOT)
+IF(PKG_CONFIG_FOUND AND NOT LAPACKE_ROOT_DIR)
   PKG_CHECK_MODULES( PC_LAPACKE QUIET "lapacke")
 ENDIF()
 
@@ -48,40 +66,41 @@ IF(PC_LAPACKE_FOUND)
 
 ELSE(PC_LAPACKE_FOUND)
 
-    IF(LAPACKE_ROOT)
+    IF(LAPACKE_ROOT_DIR)
         #find libs
         FIND_LIBRARY(
             LAPACKE_LIB
-            NAMES "lapacke" "LAPACKE" "liblapacke"
-            PATHS ${LAPACKE_ROOT}
-            PATH_SUFFIXES "lib" "lib64"
+            NAMES "lapacke" "LAPACKE" "liblapacke" "mkl_rt"
+            PATHS ${LAPACKE_ROOT_DIR}
+            PATH_SUFFIXES "lib" "lib64" "lib/ia32" "lib/intel64"
             DOC "LAPACKE Library"
             NO_DEFAULT_PATH
             )
         FIND_LIBRARY(
             LAPACK_LIB
-            NAMES "lapack" "LAPACK" "liblapack"
-            PATHS ${LAPACKE_ROOT}
-            PATH_SUFFIXES "lib" "lib64"
+            NAMES "lapack" "LAPACK" "liblapack" "mkl_rt"
+            PATHS ${LAPACKE_ROOT_DIR}
+            PATH_SUFFIXES "lib" "lib64" "lib/ia32" "lib/intel64"
             DOC "LAPACK Library"
             NO_DEFAULT_PATH
             )
         FIND_PATH(
             LAPACKE_INCLUDES
-            NAMES "lapacke.h"
-            PATHS ${LAPACKE_ROOT}
+            NAMES "lapacke.h" "mkl_lapacke.h"
+            PATHS ${LAPACKE_ROOT_DIR}
             PATH_SUFFIXES "include"
             DOC "LAPACKE Include Directory"
             NO_DEFAULT_PATH
             )
-
     ELSE()
         FIND_LIBRARY(
             LAPACKE_LIB
-            NAMES "lapacke" "liblapacke" "openblas"
+            NAMES "lapacke" "liblapacke" "openblas" "mkl_rt"
             PATHS
             ${PC_LAPACKE_LIBRARY_DIRS}
             ${LIB_INSTALL_DIR}
+            /opt/intel/mkl/lib/ia32
+            /opt/intel/mkl/lib/intel64
             /usr/lib64
             /usr/lib
             /usr/local/lib64
@@ -92,10 +111,12 @@ ELSE(PC_LAPACKE_FOUND)
             )
         FIND_LIBRARY(
            LAPACK_LIB
-            NAMES "lapack" "liblapack" "openblas"
+            NAMES "lapack" "liblapack" "openblas" "mkl_rt"
             PATHS
             ${PC_LAPACKE_LIBRARY_DIRS}
             ${LIB_INSTALL_DIR}
+            /opt/intel/mkl/lib/ia32
+            /opt/intel/mkl/lib/intel64
             /usr/lib64
             /usr/lib
             /usr/local/lib64
@@ -106,21 +127,26 @@ ELSE(PC_LAPACKE_FOUND)
             )
         FIND_PATH(
             LAPACKE_INCLUDES
-            NAMES "lapacke.h"
+            NAMES "lapacke.h" "mkl_lapacke.h"
             PATHS
             ${PC_LAPACKE_INCLUDE_DIRS}
             ${INCLUDE_INSTALL_DIR}
+            /opt/intel/mkl/include
             /usr/include
             /usr/local/include
             /sw/include
             /opt/local/include
             DOC "LAPACKE Include Directory"
             )
-    ENDIF(LAPACKE_ROOT)
+    ENDIF(LAPACKE_ROOT_DIR)
 ENDIF(PC_LAPACKE_FOUND)
 
-SET(LAPACK_LIBRARIES ${LAPACKE_LIB} ${LAPACK_LIB})
-SET(LAPACK_INCLUDE_DIR ${LAPACKE_INCLUDES})
+IF(LAPACKE_LIB AND LAPACK_LIB)
+    SET(LAPACK_LIBRARIES ${LAPACKE_LIB} ${LAPACK_LIB})
+ENDIF()
+IF(LAPACKE_INCLUDES)
+    SET(LAPACK_INCLUDE_DIR ${LAPACKE_INCLUDES})
+ENDIF()
 
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(LAPACK DEFAULT_MSG

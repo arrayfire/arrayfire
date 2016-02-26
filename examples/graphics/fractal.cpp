@@ -10,13 +10,14 @@
 #include <stdio.h>
 #include <iostream>
 #include <arrayfire.h>
-#include <math.h>
+#include <cmath>
 #include <cstdlib>
 
 #define WIDTH 400 // Width of image
 #define HEIGHT 400 // Width of image
 
 using namespace af;
+using std::abs;
 
 array complex_grid(int width, int height, float zoom, float center[2])
 {

@@ -27,6 +27,9 @@ public:
     exception(const char *msg);
     exception(const char *file, unsigned line, af_err err);
     exception(const char *msg, const char *file, unsigned line, af_err err);
+#if AF_API_VERSION >= 33
+    exception(const char *msg, const char *func, const char *file, unsigned line, af_err err);
+#endif
     virtual ~exception() throw() {}
     virtual const char *what() const throw() { return m_msg; }
     friend inline std::ostream& operator<<(std::ostream &s, const exception &e)

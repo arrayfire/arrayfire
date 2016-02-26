@@ -39,16 +39,20 @@ int LAPACKE_dlacgv_work(Args... args) { return 0; }
 #define ORDER_TYPE int
 #define LAPACK_NAME(fn) LAPACKE_##fn
 
-#if defined(__APPLE__)
-    #define LAPACK_COL_MAJOR 102
-    #include "../../lapacke.hpp"
+#ifdef USE_MKL
+    #include<mkl_lapacke.h>
 #else
-    #ifdef USE_MKL
-        #include<mkl_lapacke.h>
+    #ifdef __APPLE__
+        #include <Accelerate/Accelerate.h>
+        #include <lapacke.hpp>
+        #undef LAPACK_COL_MAJOR
+        #define LAPACK_COL_MAJOR 102
+        #undef AF_LAPACK_COL_MAJOR
+        #define AF_LAPACK_COL_MAJOR 0
     #else // NETLIB LAPACKE
         #include<lapacke.h>
-    #endif  // MKL/NETLIB
-#endif  //APPLE
+    #endif
+#endif
 
 #define LAPACKE_CHECK(fn) do {                  \
         int __info = fn;                        \

@@ -21,7 +21,7 @@ namespace opencl
 
 class DeviceManager
 {
-    friend std::string getInfo();
+    friend std::string getDeviceInfo();
 
     friend int getDeviceCount();
 
@@ -33,7 +33,9 @@ class DeviceManager
 
     friend cl::CommandQueue& getQueue();
 
-    friend const cl::Device& getDevice();
+    friend const cl::Device& getDevice(int id);
+
+    friend size_t getDeviceMemorySize(int device);
 
     friend bool isGLSharingSupported();
 
@@ -43,8 +45,17 @@ class DeviceManager
 
     friend int setDevice(int device);
 
+    friend void addDeviceContext(cl_device_id dev, cl_context cxt, cl_command_queue que);
+
+    friend void setDeviceContext(cl_device_id dev, cl_context cxt);
+
+    friend void removeDeviceContext(cl_device_id dev, cl_context ctx);
+
+    friend int getActiveDeviceType();
+    friend int getActivePlatform();
+
     public:
-        static const unsigned MAX_DEVICES = 16;
+        static const unsigned MAX_DEVICES = 32;
 
         static DeviceManager& getInstance();
 
@@ -67,12 +78,13 @@ class DeviceManager
 
     private:
         // Attributes
-        std::vector<cl::CommandQueue*>  mQueues;
         std::vector<cl::Device*>       mDevices;
         std::vector<cl::Context*>     mContexts;
-        std::vector<cl::Platform*>   mPlatforms;
-        std::vector<unsigned>       mCtxOffsets;
+        std::vector<cl::CommandQueue*>  mQueues;
         std::vector<bool>        mIsGLSharingOn;
+        std::vector<int>         mDeviceTypes;
+        std::vector<int>         mPlatforms;
+        unsigned mUserDeviceOffset;
 
         unsigned mActiveCtxId;
         unsigned mActiveQId;
@@ -80,17 +92,29 @@ class DeviceManager
 
 int getBackend();
 
-std::string getInfo();
+std::string getDeviceInfo();
 
 int getDeviceCount();
 
 int getActiveDeviceId();
 
+unsigned getMaxJitSize();
+
 const cl::Context& getContext();
 
 cl::CommandQueue& getQueue();
 
-const cl::Device& getDevice();
+const cl::Device& getDevice(int id = -1);
+
+size_t getDeviceMemorySize(int device);
+
+size_t getHostMemorySize();
+
+cl_device_type getDeviceType();
+
+bool isHostUnifiedMemory(const cl::Device &device);
+
+bool OpenCLCPUOffload(bool forceOffloadOSX = true);
 
 bool isGLSharingSupported();
 
@@ -102,6 +126,17 @@ std::string getPlatformName(const cl::Device &device);
 
 int setDevice(int device);
 
+void addDeviceContext(cl_device_id dev, cl_context cxt, cl_command_queue que);
+
+void setDeviceContext(cl_device_id dev, cl_context cxt);
+
+void removeDeviceContext(cl_device_id dev, cl_context ctx);
+
 void sync(int device);
+
+bool synchronize_calls();
+
+int getActiveDeviceType();
+int getActivePlatform();
 
 }

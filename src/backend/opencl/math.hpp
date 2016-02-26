@@ -17,6 +17,14 @@
 #include "backend.hpp"
 #include "types.hpp"
 
+#if defined(__GNUC__) || defined(__GNUG__)
+    /* GCC/G++, Clang/LLVM, Intel ICC */
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wunused-function"
+#else
+    /* Other */
+#endif
+
 namespace opencl
 {
 
@@ -123,3 +131,10 @@ namespace opencl
     cfloat operator *(cfloat a, cfloat b);
     cdouble operator *(cdouble a, cdouble b);
 }
+
+#if defined(__GNUC__) || defined(__GNUG__)
+    /* GCC/G++, Clang/LLVM, Intel ICC */
+    #pragma GCC diagnostic pop
+#else
+    /* Other */
+#endif

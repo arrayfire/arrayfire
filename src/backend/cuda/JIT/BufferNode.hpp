@@ -178,12 +178,7 @@ namespace JIT
 
         void resetFlags()
         {
-            m_set_id = false;
-            m_gen_func = false;
-            m_gen_param = false;
-            m_gen_offset = false;
-            m_gen_name = false;
-            m_set_arg = false;
+            resetCommonFlags();
         }
 
         void setArgs(std::vector<void *> &args, bool is_linear)

@@ -23,6 +23,7 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using std::abs;
 using af::cfloat;
 using af::cdouble;
 
@@ -41,27 +42,27 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int, intl
 TYPED_TEST_CASE(Wrap, TestTypes);
 
 template<typename T>
-double get_val(T val)
+inline double get_val(T val)
 {
     return val;
 }
 
-template<> double get_val<cfloat>(cfloat val)
+template<> inline double get_val<cfloat>(cfloat val)
 {
     return abs(val);
 }
 
-template<> double get_val<cdouble>(cdouble val)
+template<> inline double get_val<cdouble>(cdouble val)
 {
     return abs(val);
 }
 
-template<> double get_val<unsigned char>(unsigned char val)
+template<> inline double get_val<unsigned char>(unsigned char val)
 {
     return ((int)(val)) % 256;
 }
 
-template<> double get_val<char>(char val)
+template<> inline double get_val<char>(char val)
 {
     return (val != 0);
 }

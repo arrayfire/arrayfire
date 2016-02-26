@@ -78,17 +78,6 @@ void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=
     if(tempArray != 0) af_release_array(tempArray);
 }
 
-vector<af_seq> init_subs()
-{
-    vector<af_seq> subs;
-    subs.push_back(af_make_seq(2, 6, 1));
-    subs.push_back(af_make_seq(1, 5, 1));
-    subs.push_back(af_make_seq(1, 3, 1));
-    subs.push_back(af_make_seq(1, 2, 1));
-    return subs;
-}
-
-
 #define WHERE_TESTS(T)                          \
     TEST(Where,Test_##T)                        \
     {                                           \
@@ -131,4 +120,11 @@ TYPED_TEST(Where, CPP)
         ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
                                                         << std::endl;
     }
+}
+
+TEST(Where, ISSUE_1259)
+{
+    af::array a = af::randu(10, 10, 10);
+    af::array indices = af::where(a > 2);
+    ASSERT_EQ(indices.elements(), 0);
 }

@@ -19,6 +19,13 @@
 #include <err_clblas.hpp>
 #include <math.hpp>
 #include <transpose.hpp>
+#include <arith.hpp>
+#include <reduce.hpp>
+#include <complex.hpp>
+
+#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#include <cpu/cpu_blas.hpp>
+#endif
 
 namespace opencl
 {
@@ -113,6 +120,12 @@ template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
 {
+#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+    if(OpenCLCPUOffload(false)) {   // Do not force offload gemm on OSX Intel devices
+        return cpu::matmul(lhs, rhs, optLhs, optRhs);
+    }
+#endif
+
     initBlas();
     clblasTranspose lOpts = toClblasTranspose(optLhs);
     clblasTranspose rOpts = toClblasTranspose(optRhs);
@@ -168,45 +181,15 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     return out;
 }
 
-template<typename T, bool conjugate, bool both_conjugate>
-Array<T> dot_(const Array<T> &lhs, const Array<T> &rhs,
-              af_mat_prop optLhs, af_mat_prop optRhs)
-{
-    initBlas();
-
-    int N = lhs.dims()[0];
-    dot_func<T, conjugate> dot;
-    cl::Event event;
-    Array<T> out = createEmptyArray<T>(af::dim4(1));
-    cl::Buffer scratch(getContext(), CL_MEM_READ_WRITE, sizeof(T) * N);
-    CLBLAS_CHECK(
-        dot(N,
-            (*out.get())(), out.getOffset(),
-            (*lhs.get())(),  lhs.getOffset(), lhs.strides()[0],
-            (*rhs.get())(),  rhs.getOffset(), rhs.strides()[0],
-            scratch(),
-            1, &getQueue()(), 0, nullptr, &event())
-        );
-
-    if(both_conjugate)
-        transpose_inplace<T>(out, true);
-
-    return out;
-}
-
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
              af_mat_prop optLhs, af_mat_prop optRhs)
 {
-    if(optLhs == AF_MAT_CONJ && optRhs == AF_MAT_CONJ) {
-        return dot_<T, false, true>(lhs, rhs, optLhs, optRhs);
-    } else if (optLhs == AF_MAT_CONJ && optRhs == AF_MAT_NONE) {
-        return dot_<T, true, false>(lhs, rhs, optLhs, optRhs);
-    } else if (optLhs == AF_MAT_NONE && optRhs == AF_MAT_CONJ) {
-        return dot_<T, true, false>(rhs, lhs, optRhs, optLhs);
-    } else {
-        return dot_<T, false, false>(lhs, rhs, optLhs, optRhs);
-    }
+    const Array<T> lhs_ = (optLhs == AF_MAT_NONE ? lhs : conj<T>(lhs));
+    const Array<T> rhs_ = (optRhs == AF_MAT_NONE ? rhs : conj<T>(rhs));
+
+    const Array<T> temp = arithOp<T, af_mul_t>(lhs_, rhs_, lhs_.dims());
+    return reduce<af_add_t, T, T>(temp, 0, false, 0);
 }
 
 #define INSTANTIATE_BLAS(TYPE)                                                          \

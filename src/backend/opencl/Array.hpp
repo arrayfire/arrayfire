@@ -21,6 +21,7 @@
 #include <memory.hpp>
 #include <memory>
 #include <err_common.hpp>
+#include <err_opencl.hpp>
 
 namespace opencl
 {
@@ -69,9 +70,6 @@ namespace opencl
                             const std::vector<af_seq> &index,
                             bool copy=true);
 
-    template<typename T>
-    void evalArray(const Array<T> &A);
-
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     void destroyArray(Array<T> *A);
@@ -80,8 +78,14 @@ namespace opencl
     void *getDevicePtr(const Array<T>& arr)
     {
         cl::Buffer *buf = arr.device();
-        memPop((T *)buf);
+        memLock((T *)buf);
         return (void *)((*buf)());
+    }
+
+    template<typename T>
+    void *getRawPtr(const Array<T>& arr)
+    {
+        return (void *)(arr.get());
     }
 
     template<typename T>
@@ -92,18 +96,21 @@ namespace opencl
         af::dim4 data_dims;
 
         JIT::Node_ptr node;
-        dim_t offset;
         bool ready;
         bool owner;
 
         Array(af::dim4 dims);
-        Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+
+        Array(const Array<T>& parnt, const dim4 &dims, const dim_t &offset, const dim4 &stride);
         Array(Param &tmp);
         explicit Array(af::dim4 dims, JIT::Node_ptr n);
         explicit Array(af::dim4 dims, const T * const in_data);
         explicit Array(af::dim4 dims, cl_mem mem, size_t offset, bool copy);
 
     public:
+
+        Array(af::dim4 dims, af::dim4 strides, dim_t offset,
+              const T * const in_data, bool is_device = false);
 
         void resetInfo(const af::dim4& dims)        { info.resetInfo(dims);         }
         void resetDims(const af::dim4& dims)        { info.resetDims(dims);         }
@@ -115,7 +122,6 @@ namespace opencl
     RET_TYPE NAME() const { return info.NAME(); }
 
         INFO_FUNC(const af_dtype& ,getType)
-        INFO_FUNC(const af::dim4& ,offsets)
         INFO_FUNC(const af::dim4& ,strides)
         INFO_FUNC(size_t          ,elements)
         INFO_FUNC(size_t          ,ndims)
@@ -185,7 +191,7 @@ namespace opencl
 
         const dim_t getOffset() const
         {
-            return offset;
+            return info.getOffset();
         }
 
         Buffer_ptr getData() const
@@ -200,6 +206,11 @@ namespace opencl
             return isOwner() ? dims() : data_dims;
         }
 
+        void setDataDims(const dim4 &new_dims)
+        {
+            data_dims = new_dims;
+        }
+
         operator Param() const
         {
             KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},
@@ -211,6 +222,35 @@ namespace opencl
         }
 
         JIT::Node_ptr getNode() const;
+
+    public:
+        std::shared_ptr<T> getMappedPtr() const
+        {
+            auto func = [=] (void* ptr) {
+                try {
+                    if(ptr != nullptr)
+                        getQueue().enqueueUnmapMemObject(*data, ptr);
+                        ptr = nullptr;
+                } catch(cl::Error err) {
+                    CL_TO_AF_ERROR(err);
+                }
+            };
+
+            T *ptr = nullptr;
+            try {
+                if(ptr == nullptr) {
+                    ptr = (T*)getQueue().enqueueMapBuffer(*const_cast<cl::Buffer*>(get()),
+                                                          true, CL_MAP_READ|CL_MAP_WRITE,
+                                                          getOffset(),
+                                                          (getDataDims().elements() - getOffset())
+                                                          * sizeof(T));
+                }
+            } catch(cl::Error err) {
+                CL_TO_AF_ERROR(err);
+            }
+
+            return std::shared_ptr<T>(ptr, func);
+        }
 
         friend Array<T> createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T> createHostDataArray<T>(const af::dim4 &size, const T * const data);
@@ -226,8 +266,8 @@ namespace opencl
                                           bool copy);
 
         friend void destroyArray<T>(Array<T> *arr);
-        friend void evalArray<T>(const Array<T> &arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);
+        friend void *getRawPtr<T>(const Array<T>& arr);
     };
 
 }

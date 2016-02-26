@@ -151,7 +151,7 @@ array medianfilter(const array &in, int window_width, int window_height)
     return ret_val;
 }
 
-array gaussianblur(const array &in, int window_width, int window_height, int sigma)
+array gaussianblur(const array &in, int window_width, int window_height, double sigma)
 {
     array g = gaussianKernel(window_width, window_height, sigma, sigma);
     return convolve(in, g);

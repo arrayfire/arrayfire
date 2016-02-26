@@ -113,6 +113,8 @@
 
      @defgroup lapack_ops_mat Matrix operations
      inverse, det, rank, norm etc.
+
+     @defgroup lapack_helper LAPACK Helper functions
    @}
 
    @defgroup image_mat Image Processing
@@ -204,6 +206,15 @@
    @{
 
      Functions to set current backend and utilities
+
+   @}
+
+   @defgroup internal_func Functions to work with internal array layout
+   @{
+
+     Functions to work with arrayfire's internal data structure.
+
+     Note: The behavior of these functions is not promised to be consistent across versions.
 
    @}
 

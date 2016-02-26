@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 PROJECT(ARRAYFIRE)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -9,7 +9,6 @@ INCLUDE(AFInstallDirs)
 
 OPTION(BUILD_TEST "Build Tests" ON)
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
-OPTION(BUILD_GTEST "Download gtest and check for updates. Necessary if you change compilers" ON)
 
 OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" ON)
 
@@ -31,9 +30,6 @@ OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
 OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
 
 OPTION(BUILD_NONFREE "Build ArrayFire nonfree algorithms" OFF)
-OPTION(BUILD_SIFT "Build ArrayFire nonfree algorithms" OFF)
-
-MARK_AS_ADVANCED(BUILD_SIFT)
 
 OPTION(BUILD_UNIFIED "Build Backend-Independent ArrayFire API" ON)
 
@@ -91,17 +87,18 @@ IF(BUILD_GRAPHICS)
 
 ENDIF(BUILD_GRAPHICS)
 
-IF(BUILD_NONFREE)
-  MESSAGE(WARNING "Building With NONFREE ON requires the following patents")
-  SET(BUILD_SIFT ON)
-ENDIF(BUILD_NONFREE)
+IF(${BUILD_NONFREE})
+    MESSAGE(WARNING "Building With NONFREE ON requires the following patents")
+    SET(BUILD_NONFREE_SIFT ON CACHE BOOL "Build ArrayFire with SIFT")
+    MARK_AS_ADVANCED(BUILD_NONFREE_SIFT)
+ELSE(${BUILD_NONFREE})
+    UNSET(BUILD_NONFREE_SIFT CACHE) # BUILD_NONFREE_SIFT cannot be built without BUILD_NONFREE
+ENDIF(${BUILD_NONFREE})
 
-IF(BUILD_SIFT)
-  ADD_DEFINITIONS(-DAF_BUILD_SIFT)
+IF(${BUILD_NONFREE_SIFT})
+  ADD_DEFINITIONS(-DAF_BUILD_NONFREE_SIFT)
 
-  IF (NOT BUILD_NONFREE)
-    MESSAGE(WARNING "Building with SIFT requires the following patents")
-  ENDIF()
+  MESSAGE(WARNING "Building with SIFT requires the following patents")
 
   MESSAGE("Method and apparatus for identifying scale invariant features"
     "in an image and use of same for locating an object in an image,\" David"
@@ -110,7 +107,7 @@ IF(BUILD_SIFT)
     "further details, contact David Lowe (lowe@cs.ubc.ca) or the"
     "University-Industry Liaison Office of the University of British"
     "Columbia.")
-ENDIF(BUILD_SIFT)
+ENDIF(${BUILD_NONFREE_SIFT})
 
 INCLUDE_DIRECTORIES(
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -154,6 +151,10 @@ ELSE(${UNIX}) #Windows
         # http://www.kitware.com/blog/home/post/434
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /Gm-")
         SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} /MP /Gm-")
+
+        # Builds that contain debug info require /bigobj
+        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /bigobj")
+        SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /bigobj")
     ENDIF(MSVC)
 ENDIF()
 
@@ -223,7 +224,7 @@ ENDIF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
 SET(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 SET(BACKEND_DIR "src/backend/\${lowerbackend}")
 CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireConfig.cmake.in
+    ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfig.cmake
     @ONLY)
 
@@ -233,11 +234,11 @@ STRING(REGEX REPLACE "[^/]+" ".." reldir "${AF_INSTALL_CMAKE_DIR}")
 SET(INCLUDE_DIR "\${CMAKE_CURRENT_LIST_DIR}/${reldir}/include")
 set(BACKEND_DIR)
 CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireConfig.cmake.in
+    ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
     @ONLY)
 CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireConfigVersion.cmake.in
+    ${CMAKE_MODULE_PATH}/ArrayFireConfigVersion.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfigVersion.cmake
     @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
@@ -265,4 +266,4 @@ ENDIF(APPLE)
 ##
 # Packaging
 ##
-include(${CMAKE_CURRENT_SOURCE_DIR}/CPack.cmake)
+include(${CMAKE_MODULE_PATH}/CPackConfig.cmake)

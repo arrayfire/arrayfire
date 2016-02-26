@@ -29,6 +29,7 @@ using std::swap;
 template<typename T>
 Array<T> modDims(const Array<T>& in, const af::dim4 &newDims);
 
+
 template<typename Tout, typename Tin>
 static
 void assign(Array<Tout> &out, const unsigned &ndims, const af_seq *index, const Array<Tin> &in_)
@@ -39,7 +40,7 @@ void assign(Array<Tout> &out, const unsigned &ndims, const af_seq *index, const 
     DIM_ASSERT(0, (outDs.ndims()>=iDims.ndims()));
     DIM_ASSERT(0, (outDs.ndims()>=(dim_t)ndims));
 
-    evalArray(out);
+    out.eval();
 
     vector<af_seq> index_(index, index+ndims);
 
@@ -125,7 +126,7 @@ af_err af_assign_seq(af_array *out,
 
         ArrayInfo lInfo = getInfo(lhs);
 
-        if (ndims == 1 && ndims != (dim_t)lInfo.ndims()) {
+        if (ndims == 1 && ndims != lInfo.ndims()) {
             af_array tmp_in, tmp_out;
             AF_CHECK(af_flat(&tmp_in, lhs));
             AF_CHECK(af_assign_seq(&tmp_out, tmp_in, ndims, index, rhs));
@@ -350,10 +351,10 @@ af_err af_assign_gen(af_array *out,
             throw;
         }
         if (is_vector) { AF_CHECK(af_release_array(rhs)); }
+
+        std::swap(*out, output);
     }
     CATCHALL;
-
-    std::swap(*out, output);
 
     return AF_SUCCESS;
 }

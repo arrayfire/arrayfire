@@ -52,12 +52,6 @@ a.codeRef, a.codeRef:visited, a.lineRef, a.lineRef:visited
     color       :   #4665A2;
 }
 
-@font-face
-{
-    font-family :   prototype;
-    src         :   url('Prototype.ttf');
-}
-
 /*image and image groups*/
 div.image_group
 {
@@ -96,7 +90,6 @@ div.support *
 
 #under_logo
 {
-    font-family :   prototype;
     font-size   :   2em;
     max-width   :   25px;
     color       :   #000000;
@@ -104,7 +97,6 @@ div.support *
 
 #projectbrief
 {
-    font-family :   prototype;
     color       :   #555555
 }
 
@@ -121,7 +113,6 @@ div.support *
 
 #projectname
 {
-    font-family     :   prototype;
     font-size       :   3em;
     max-width       :   25px;
     color           :   #555555

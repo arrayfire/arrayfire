@@ -136,3 +136,43 @@ TEST(Select, NaN)
         ASSERT_EQ(hc[i], std::isnan(ha[i]) ? b : ha[i]);
     }
 }
+
+TEST(Select, ISSUE_1249)
+{
+    dim4 dims(2, 3, 4);
+    array cond = af::randu(dims) > 0.5;
+    array a = af::randu(dims);
+    array b = select(cond, a - a * 0.9, a);
+    array c = a - a * cond * 0.9;
+
+    int num = (int)dims.elements();
+    std::vector<float> hb(num);
+    std::vector<float> hc(num);
+
+    b.host(&hb[0]);
+    c.host(&hc[0]);
+
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ(hc[i], hb[i]) << "at " << i;
+    }
+}
+
+TEST(Select, 4D)
+{
+    dim4 dims(2, 3, 4, 2);
+    array cond = af::randu(dims) > 0.5;
+    array a = af::randu(dims);
+    array b = select(cond, a - a * 0.9, a);
+    array c = a - a * cond * 0.9;
+
+    int num = (int)dims.elements();
+    std::vector<float> hb(num);
+    std::vector<float> hc(num);
+
+    b.host(&hb[0]);
+    c.host(&hc[0]);
+
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ(hc[i], hb[i]) << "at " << i;
+    }
+}

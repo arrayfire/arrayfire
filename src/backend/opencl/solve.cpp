@@ -21,9 +21,13 @@
 #include <blas.hpp>
 #include <transpose.hpp>
 #include <math.hpp>
+#include <af/opencl.h>
 
 #include <algorithm>
 #include <string>
+
+#include <platform.hpp>
+#include <cpu/cpu_solve.hpp>
 
 namespace opencl
 {
@@ -32,6 +36,10 @@ template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
                  const Array<T> &b, const af_mat_prop options)
 {
+    if(OpenCLCPUOffload()) {
+        return cpu::solveLU(A, pivot, b, options);
+    }
+
     int N = A.dims()[0];
     int NRHS = b.dims()[1];
 
@@ -219,9 +227,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
                               (*dT)(), tmp.getOffset() + NB * MN,
                               NB, 0, queue);
 
-
-        std::string pName = getPlatformName(getDevice());
-        if(pName.find("NVIDIA") != std::string::npos)
+        if(getActivePlatform() == AFCL_PLATFORM_NVIDIA)
         {
             Array<T> AT = transpose<T>(A, true);
             cl::Buffer* AT_buf = AT.get();
@@ -261,8 +267,7 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop o
     cl_event event = 0;
     cl_command_queue queue = getQueue()();
 
-    std::string pName = getPlatformName(getDevice());
-    if(pName.find("NVIDIA") != std::string::npos && (options & AF_MAT_UPPER))
+    if(getActivePlatform() == AFCL_PLATFORM_NVIDIA && (options & AF_MAT_UPPER))
     {
         Array<T> AT = transpose<T>(A, true);
 
@@ -296,6 +301,10 @@ template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
     try {
+        if(OpenCLCPUOffload()) {
+            return cpu::solve(a, b, options);
+        }
+
         initBlas();
 
         if (options & AF_MAT_UPPER ||

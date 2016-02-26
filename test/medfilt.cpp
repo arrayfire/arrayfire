@@ -17,6 +17,7 @@
 
 using std::string;
 using std::vector;
+using std::abs;
 
 template<typename T>
 class MedianFilter : public ::testing::Test

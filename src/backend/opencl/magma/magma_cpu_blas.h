@@ -13,16 +13,16 @@
 #include <defines.hpp>
 #include "magma_types.h"
 
-#ifdef __APPLE__
-#include <Accelerate/Accelerate.h>
-#else
 #ifdef USE_MKL
-#include <mkl_cblas.h>
+    #include <mkl_cblas.h>
 #else
-extern "C" {
-#include <cblas.h>
-}
-#endif
+    #ifdef __APPLE__
+        #include <Accelerate/Accelerate.h>
+    #else
+        extern "C" {
+            #include <cblas.h>
+        }
+    #endif
 #endif
 
 // Todo: Ask upstream for a more official way to detect it

@@ -30,6 +30,7 @@ GLenum glForceErrorCheck(const char *msg, const char* file, int line);
 #define ForceCheckGL(msg) glForceErrorCheck(msg, __AF_FILENAME__, __LINE__)
 #define CheckGLSkip(msg)  glErrorSkip      (msg, __AF_FILENAME__, __LINE__)
 
+fg::MarkerType getFGMarker(const af_marker_type af_marker);
 namespace graphics
 {
 
@@ -82,8 +83,8 @@ class ForgeManager
         fg::Font* getFont(const bool dontCreate=false);
         fg::Window* getMainWindow(const bool dontCreate=false);
         fg::Image* getImage(int w, int h, fg::ChannelFormat mode, fg::dtype type);
-        fg::Plot* getPlot(int nPoints, fg::dtype type);
-        fg::Plot3* getPlot3(int nPoints, fg::dtype type);
+        fg::Plot* getPlot(int nPoints, fg::dtype dtype, fg::PlotType ptype, fg::MarkerType mtype);
+        fg::Plot3* getPlot3(int nPoints, fg::dtype dtype,fg::PlotType ptype, fg::MarkerType mtype);
         fg::Histogram* getHistogram(int nBins, fg::dtype type);
         fg::Surface* getSurface(int nX, int nY, fg::dtype type);
 

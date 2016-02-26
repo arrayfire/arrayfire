@@ -20,6 +20,19 @@
 #include <memory>
 #include <algorithm>
 #include <vector>
+#include <platform.hpp>
+#include <queue.hpp>
+
+// cpu::Array class forward declaration
+namespace cpu
+{
+template<typename T> class Array;
+// kernel::evalArray fn forward declaration
+namespace kernel
+{
+template<typename T> void evalArray(cpu::Array<T> in);
+}
+}
 
 namespace cpu
 {
@@ -63,9 +76,6 @@ namespace cpu
                             const std::vector<af_seq> &index,
                             bool copy=true);
 
-    template<typename T>
-    void evalArray(const Array<T> &A);
-
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     void destroyArray(Array<T> *A);
@@ -74,8 +84,14 @@ namespace cpu
     void *getDevicePtr(const Array<T>& arr)
     {
         T *ptr = arr.device();
-        memPop(ptr);
+        memLock(ptr);
         return (void *)ptr;
+    }
+
+    template<typename T>
+    void *getRawPtr(const Array<T>& arr)
+    {
+        return (void *)(arr.get(false));
     }
 
     // Array Array Implementation
@@ -90,17 +106,21 @@ namespace cpu
         af::dim4 data_dims;
         TNJ::Node_ptr node;
 
-        dim_t offset;
         bool ready;
         bool owner;
 
         Array() = default;
         Array(dim4 dims);
+
         explicit Array(dim4 dims, const T * const in_data, bool is_device, bool copy_device=false);
-        Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+        Array(const Array<T>& parnt, const dim4 &dims, const dim_t &offset, const dim4 &stride);
         explicit Array(af::dim4 dims, TNJ::Node_ptr n);
 
     public:
+
+
+        Array(af::dim4 dims, af::dim4 strides, dim_t offset,
+              const T * const in_data, bool is_device = false);
 
         void resetInfo(const af::dim4& dims)        { info.resetInfo(dims);         }
         void resetDims(const af::dim4& dims)        { info.resetDims(dims);         }
@@ -112,7 +132,6 @@ namespace cpu
     RET_TYPE NAME() const { return info.NAME(); }
 
         INFO_FUNC(const af_dtype& ,getType)
-        INFO_FUNC(const af::dim4& ,offsets)
         INFO_FUNC(const af::dim4& ,strides)
         INFO_FUNC(size_t          ,elements)
         INFO_FUNC(size_t          ,ndims)
@@ -150,7 +169,7 @@ namespace cpu
         void eval();
         void eval() const;
 
-        dim_t getOffset() const { return offset; }
+        dim_t getOffset() const { return info.getOffset(); }
         shared_ptr<T> getData() const {return data; }
 
         dim4 getDataDims() const
@@ -160,8 +179,14 @@ namespace cpu
             return isOwner() ? info.dims() : data_dims;
         }
 
+        void setDataDims(const dim4 &new_dims)
+        {
+            data_dims = new_dims;
+        }
+
         T* device()
         {
+            getQueue().sync();
             if (!isOwner() || data.use_count() > 1) {
                 *this = Array<T>(dims(), get(), true, true);
             }
@@ -181,7 +206,7 @@ namespace cpu
         const T* get(bool withOffset = true) const
         {
             if (!isReady()) eval();
-            return data.get() + (withOffset ? offset : 0);
+            return data.get() + (withOffset ? getOffset() : 0);
         }
 
         int useCount() const
@@ -204,9 +229,11 @@ namespace cpu
                                           const std::vector<af_seq> &index,
                                           bool copy);
 
+        friend void kernel::evalArray<T>(Array<T> in);
+
         friend void destroyArray<T>(Array<T> *arr);
-        friend void evalArray<T>(const Array<T> &arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);
+        friend void *getRawPtr<T>(const Array<T>& arr);
     };
 
 }

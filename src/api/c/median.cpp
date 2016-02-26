@@ -37,11 +37,17 @@ static double median(const af_array& in)
 
     Array<T> sortedArr = sort<T, true>(input, 0);
 
+    af_array sarrHandle = getHandle<T>(sortedArr);
+
     double result;
     T resPtr[2];
     af_array res = 0;
-    AF_CHECK(af_index(&res, getHandle<T>(sortedArr), 1, mdSpan));
+    AF_CHECK(af_index(&res, sarrHandle, 1, mdSpan));
     AF_CHECK(af_get_data_ptr((void*)&resPtr, res));
+
+    AF_CHECK(af_release_array(res));
+    AF_CHECK(af_release_array(sarrHandle));
+    AF_CHECK(af_release_array(temp));
 
     if (nElems % 2 == 1) {
         result = resPtr[0];
@@ -52,9 +58,6 @@ static double median(const af_array& in)
             result = division((float)resPtr[0] + (float)resPtr[1], 2);
         }
     }
-
-    AF_CHECK(af_release_array(res));
-    AF_CHECK(af_release_array(temp));
 
     return result;
 }

@@ -9,329 +9,70 @@
 
 #include <Array.hpp>
 #include <approx.hpp>
-#include <math.hpp>
-#include <stdexcept>
-#include <err_cpu.hpp>
+#include <kernel/approx1.hpp>
+#include <kernel/approx2.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 namespace cpu
 {
-    ///////////////////////////////////////////////////////////////////////////
-    // Approx1
-    ///////////////////////////////////////////////////////////////////////////
-    template<typename Ty, typename Tp, af_interp_type method>
-    struct approx1_op
-    {
-        void operator()(Ty *out, const af::dim4 &odims, const dim_t oElems,
-                  const Ty *in,  const af::dim4 &idims, const dim_t iElems,
-                  const Tp *pos, const af::dim4 &pdims,
-                  const af::dim4 &ostrides, const af::dim4 &istrides, const af::dim4 &pstrides,
-                  const float offGrid, const bool pBatch,
-                  const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw)
-        {
-            return;
-        }
-    };
 
-    template<typename Ty, typename Tp>
-    struct approx1_op<Ty, Tp, AF_INTERP_NEAREST>
-    {
-        void operator()(Ty *out, const af::dim4 &odims, const dim_t oElems,
-                  const Ty *in,  const af::dim4 &idims, const dim_t iElems,
-                  const Tp *pos, const af::dim4 &pdims,
-                  const af::dim4 &ostrides, const af::dim4 &istrides, const af::dim4 &pstrides,
-                  const float offGrid, const bool pBatch,
-                  const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw)
-        {
-            dim_t pmId = idx;
-            if(pBatch) pmId += idw * pstrides[3] + idz * pstrides[2] + idy * pstrides[1];
+template<typename Ty, typename Tp>
+Array<Ty> approx1(const Array<Ty> &in, const Array<Tp> &pos,
+                  const af_interp_type method, const float offGrid)
+{
+    in.eval();
+    pos.eval();
 
-            const Tp x = pos[pmId];
-            bool gFlag = false;
-            if (x < 0 || idims[0] < x+1) {  // No need to check y
-                gFlag = true;
-            }
+    af::dim4 odims = in.dims();
+    odims[0] = pos.dims()[0];
 
-            const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
-                             + idy * ostrides[1] + idx;
-            if(gFlag) {
-                out[omId] = scalar<Ty>(offGrid);
-            } else {
-                dim_t ioff = idw * istrides[3] + idz * istrides[2]
-                           + idy * istrides[1];
-                const dim_t iMem = round(x) + ioff;
+    Array<Ty> out = createEmptyArray<Ty>(odims);
 
-                out[omId] = in[iMem];
-            }
-        }
-    };
-
-    template<typename Ty, typename Tp>
-    struct approx1_op<Ty, Tp, AF_INTERP_LINEAR>
-    {
-        void operator()(Ty *out, const af::dim4 &odims, const dim_t oElems,
-                  const Ty *in,  const af::dim4 &idims, const dim_t iElems,
-                  const Tp *pos, const af::dim4 &pdims,
-                  const af::dim4 &ostrides, const af::dim4 &istrides, const af::dim4 &pstrides,
-                  const float offGrid, const bool pBatch,
-                  const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw)
-        {
-            dim_t pmId = idx;
-            if(pBatch) pmId += idw * pstrides[3] + idz * pstrides[2] + idy * pstrides[1];
-
-            const Tp x = pos[pmId];
-            bool gFlag = false;
-            if (x < 0 || idims[0] < x+1) {
-                gFlag = true;
-            }
-
-            const dim_t grid_x = floor(x);  // nearest grid
-            const Tp off_x = x - grid_x; // fractional offset
-
-            const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
-                             + idy * ostrides[1] + idx;
-            if(gFlag) {
-                out[omId] = scalar<Ty>(offGrid);
-            } else {
-                dim_t ioff = idw * istrides[3] + idz * istrides[2] + idy * istrides[1] + grid_x;
-
-                // Check if x and x + 1 are both valid indices
-                bool cond = (x < idims[0] - 1);
-                // Compute Left and Right Weighted Values
-                Ty yl = ((Tp)1.0 - off_x) * in[ioff];
-                Ty yr = cond ? (off_x) * in[ioff + 1] : scalar<Ty>(0);
-                Ty yo = yl + yr;
-                // Compute Weight used
-                Tp wt = cond ? (Tp)1.0 : (Tp)(1.0 - off_x);
-                // Write final value
-                out[omId] = (yo / wt);
-            }
-        }
-    };
-
-    template<typename Ty, typename Tp, af_interp_type method>
-    void approx1_(Ty *out, const af::dim4 &odims, const dim_t oElems,
-            const Ty *in,  const af::dim4 &idims, const dim_t iElems,
-            const Tp *pos, const af::dim4 &pdims,
-            const af::dim4 &ostrides, const af::dim4 &istrides, const af::dim4 &pstrides,
-            const float offGrid)
-    {
-        approx1_op<Ty, Tp, method> op;
-        bool pBatch = !(pdims[1] == 1 && pdims[2] == 1 && pdims[3] == 1);
-
-        for(dim_t w = 0; w < odims[3]; w++) {
-            for(dim_t z = 0; z < odims[2]; z++) {
-                for(dim_t y = 0; y < odims[1]; y++) {
-                    for(dim_t x = 0; x < odims[0]; x++) {
-                        op(out, odims, oElems, in, idims, iElems, pos, pdims,
-                           ostrides, istrides, pstrides, offGrid, pBatch, x, y, z, w);
-                    }
-                }
-            }
-        }
+    switch(method) {
+        case AF_INTERP_NEAREST:
+            getQueue().enqueue(kernel::approx1<Ty, Tp, AF_INTERP_NEAREST>,
+                               out, in, pos, offGrid);
+            break;
+        case AF_INTERP_LINEAR:
+            getQueue().enqueue(kernel::approx1<Ty, Tp, AF_INTERP_LINEAR>,
+                               out, in, pos, offGrid);
+            break;
+        default:
+            break;
     }
+    return out;
+}
 
-    template<typename Ty, typename Tp>
-    Array<Ty> approx1(const Array<Ty> &in, const Array<Tp> &pos,
-                       const af_interp_type method, const float offGrid)
-    {
-        af::dim4 odims = in.dims();
-        odims[0] = pos.dims()[0];
 
-        // Create output placeholder
-        Array<Ty> out = createEmptyArray<Ty>(odims);
+template<typename Ty, typename Tp>
+Array<Ty> approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &pos1,
+                  const af_interp_type method, const float offGrid)
+{
+    in.eval();
+    pos0.eval();
+    pos1.eval();
 
-        switch(method) {
-            case AF_INTERP_NEAREST:
-                approx1_<Ty, Tp, AF_INTERP_NEAREST>
-                        (out.get(), out.dims(), out.elements(),
-                         in.get(), in.dims(), in.elements(), pos.get(), pos.dims(),
-                         out.strides(), in.strides(), pos.strides(), offGrid);
-                break;
-            case AF_INTERP_LINEAR:
-                approx1_<Ty, Tp, AF_INTERP_LINEAR>
-                        (out.get(), out.dims(), out.elements(),
-                         in.get(), in.dims(), in.elements(), pos.get(), pos.dims(),
-                         out.strides(), in.strides(), pos.strides(), offGrid);
-                break;
-            default:
-                break;
-        }
-        return out;
+    af::dim4 odims = in.dims();
+    odims[0] = pos0.dims()[0];
+    odims[1] = pos0.dims()[1];
+
+    Array<Ty> out = createEmptyArray<Ty>(odims);
+
+    switch(method) {
+        case AF_INTERP_NEAREST:
+            getQueue().enqueue(kernel::approx2<Ty, Tp, AF_INTERP_NEAREST>,
+                               out, in, pos0, pos1, offGrid);
+            break;
+        case AF_INTERP_LINEAR:
+            getQueue().enqueue(kernel::approx2<Ty, Tp, AF_INTERP_LINEAR>,
+                               out, in, pos0, pos1, offGrid);
+            break;
+        default:
+            break;
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Approx2
-    ///////////////////////////////////////////////////////////////////////////
-    template<typename Ty, typename Tp, af_interp_type method>
-    struct approx2_op
-    {
-        void operator()(Ty *out, const af::dim4 &odims, const dim_t oElems,
-                  const Ty *in,  const af::dim4 &idims, const dim_t iElems,
-                  const Tp *pos, const af::dim4 &pdims, const Tp *qos, const af::dim4 &qdims,
-                  const af::dim4 &ostrides, const af::dim4 &istrides,
-                  const af::dim4 &pstrides, const af::dim4 &qstrides,
-                  const float offGrid, const bool pBatch,
-                  const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw)
-        {
-            return;
-        }
-    };
-
-    template<typename Ty, typename Tp>
-    struct approx2_op<Ty, Tp, AF_INTERP_NEAREST>
-    {
-        void operator()(Ty *out, const af::dim4 &odims, const dim_t oElems,
-                  const Ty *in,  const af::dim4 &idims, const dim_t iElems,
-                  const Tp *pos, const af::dim4 &pdims, const Tp *qos, const af::dim4 &qdims,
-                  const af::dim4 &ostrides, const af::dim4 &istrides,
-                  const af::dim4 &pstrides, const af::dim4 &qstrides,
-                  const float offGrid, const bool pBatch,
-                  const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw)
-        {
-            dim_t pmId = idy * pstrides[1] + idx;
-            dim_t qmId = idy * qstrides[1] + idx;
-            if(pBatch) {
-                pmId += idw * pstrides[3] + idz * pstrides[2];
-                qmId += idw * qstrides[3] + idz * qstrides[2];
-            }
-
-            bool gFlag = false;
-            const Tp x = pos[pmId], y = qos[qmId];
-            if (x < 0 || y < 0 || idims[0] < x+1 || idims[1] < y+1) {
-                gFlag = true;
-            }
-
-            const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
-                             + idy * ostrides[1] + idx;
-            if(gFlag) {
-                out[omId] = scalar<Ty>(offGrid);
-            } else {
-                const dim_t grid_x = round(x), grid_y = round(y); // nearest grid
-                const dim_t imId = idw * istrides[3] + idz * istrides[2] +
-                                grid_y * istrides[1] + grid_x;
-                out[omId] = in[imId];
-            }
-        }
-    };
-
-    template<typename Ty, typename Tp>
-    struct approx2_op<Ty, Tp, AF_INTERP_LINEAR>
-    {
-        void operator()(Ty *out, const af::dim4 &odims, const dim_t oElems,
-                  const Ty *in,  const af::dim4 &idims, const dim_t iElems,
-                  const Tp *pos, const af::dim4 &pdims, const Tp *qos, const af::dim4 &qdims,
-                  const af::dim4 &ostrides, const af::dim4 &istrides,
-                  const af::dim4 &pstrides, const af::dim4 &qstrides,
-                  const float offGrid, const bool pBatch,
-                  const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw)
-        {
-            dim_t pmId = idy * pstrides[1] + idx;
-            dim_t qmId = idy * qstrides[1] + idx;
-            if(pBatch) {
-                pmId += idw * pstrides[3] + idz * pstrides[2];
-                qmId += idw * qstrides[3] + idz * qstrides[2];
-            }
-
-            bool gFlag = false;
-            const Tp x = pos[pmId], y = qos[qmId];
-            if (x < 0 || y < 0 || idims[0] < x+1 || idims[1] < y+1) {
-                gFlag = true;
-            }
-
-            const dim_t grid_x = floor(x),   grid_y = floor(y);   // nearest grid
-            const Tp off_x  = x - grid_x, off_y  = y - grid_y; // fractional offset
-
-            // Check if pVal and pVal + 1 are both valid indices
-            bool condY = (y < idims[1] - 1);
-            bool condX = (x < idims[0] - 1);
-
-            // Compute wieghts used
-            Tp wt00 = ((Tp)1.0 - off_x) * ((Tp)1.0 - off_y);
-            Tp wt10 = (condY) ? ((Tp)1.0 - off_x) * (off_y) : 0;
-            Tp wt01 = (condX) ? (off_x) * ((Tp)1.0 - off_y) : 0;
-            Tp wt11 = (condX && condY) ? (off_x) * (off_y)  : 0;
-
-            Tp wt = wt00 + wt10 + wt01 + wt11;
-            Ty zero = scalar<Ty>(0);
-
-            const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
-                             + idy * ostrides[1] + idx;
-            if(gFlag) {
-                out[omId] = scalar<Ty>(offGrid);
-            } else {
-                dim_t ioff = idw * istrides[3] + idz * istrides[2]
-                        + grid_y * istrides[1] + grid_x;
-
-                // Compute Weighted Values
-                Ty y00 =                    wt00 * in[ioff];
-                Ty y10 = (condY) ?          wt10 * in[ioff + istrides[1]]     : zero;
-                Ty y01 = (condX) ?          wt01 * in[ioff + 1]               : zero;
-                Ty y11 = (condX && condY) ? wt11 * in[ioff + istrides[1] + 1] : zero;
-
-                Ty yo = y00 + y10 + y01 + y11;
-
-                // Write Final Value
-                out[omId] = (yo / wt);
-            }
-        }
-    };
-
-    template<typename Ty, typename Tp, af_interp_type method>
-    void approx2_(Ty *out, const af::dim4 &odims, const dim_t oElems,
-            const Ty *in,  const af::dim4 &idims, const dim_t iElems,
-            const Tp *pos, const af::dim4 &pdims, const Tp *qos, const af::dim4 &qdims,
-            const af::dim4 &ostrides, const af::dim4 &istrides,
-            const af::dim4 &pstrides, const af::dim4 &qstrides,
-            const float offGrid)
-    {
-        approx2_op<Ty, Tp, method> op;
-        bool pBatch = !(pdims[2] == 1 && pdims[3] == 1);
-
-        for(dim_t w = 0; w < odims[3]; w++) {
-            for(dim_t z = 0; z < odims[2]; z++) {
-                for(dim_t y = 0; y < odims[1]; y++) {
-                    for(dim_t x = 0; x < odims[0]; x++) {
-                        op(out, odims, oElems, in, idims, iElems, pos, pdims, qos, qdims,
-                           ostrides, istrides, pstrides, qstrides, offGrid, pBatch, x, y, z, w);
-                    }
-                }
-            }
-        }
-    }
-
-    template<typename Ty, typename Tp>
-    Array<Ty> approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &pos1,
-                       const af_interp_type method, const float offGrid)
-    {
-        af::dim4 odims = in.dims();
-        odims[0] = pos0.dims()[0];
-        odims[1] = pos0.dims()[1];
-
-        // Create output placeholder
-        Array<Ty> out = createEmptyArray<Ty>(odims);
-
-        switch(method) {
-            case AF_INTERP_NEAREST:
-                approx2_<Ty, Tp, AF_INTERP_NEAREST>
-                        (out.get(), out.dims(), out.elements(),
-                         in.get(), in.dims(), in.elements(),
-                         pos0.get(), pos0.dims(), pos1.get(), pos1.dims(),
-                         out.strides(), in.strides(), pos0.strides(), pos1.strides(),
-                         offGrid);
-                break;
-            case AF_INTERP_LINEAR:
-                approx2_<Ty, Tp, AF_INTERP_LINEAR>
-                        (out.get(), out.dims(), out.elements(),
-                         in.get(), in.dims(), in.elements(),
-                         pos0.get(), pos0.dims(), pos1.get(), pos1.dims(),
-                         out.strides(), in.strides(), pos0.strides(), pos1.strides(),
-                         offGrid);
-                break;
-            default:
-                break;
-        }
-        return out;
-    }
+    return out;
+}
 
 #define INSTANTIATE(Ty, Tp)                                                                    \
     template Array<Ty> approx1<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos,              \
@@ -340,8 +81,9 @@ namespace cpu
                                        const Array<Tp> &pos1, const af_interp_type method,     \
                                        const float offGrid);                                   \
 
-    INSTANTIATE(float  , float )
-    INSTANTIATE(double , double)
-    INSTANTIATE(cfloat , float )
-    INSTANTIATE(cdouble, double)
+INSTANTIATE(float  , float )
+INSTANTIATE(double , double)
+INSTANTIATE(cfloat , float )
+INSTANTIATE(cdouble, double)
+
 }

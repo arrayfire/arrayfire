@@ -23,12 +23,12 @@ namespace cuda
     void copyData(T *data, const Array<T> &A)
     {
         // FIXME: Merge this with copyArray
-        evalArray(A);
+        A.eval();
 
         Array<T> out = A;
         const T *ptr = NULL;
 
-        if (A.isOwner() || // No offsets, No strides
+        if (A.isLinear() || // No offsets, No strides
             A.ndims() == 1 // Simple offset, no strides.
             ) {
 
@@ -71,7 +71,6 @@ namespace cuda
         ARG_ASSERT(1, (in.ndims() == dims.ndims()));
         Array<outType> ret = createEmptyArray<outType>(dims);
         kernel::copy<inType, outType>(ret, in, in.ndims(), default_value, factor);
-        CUDA_CHECK(cudaDeviceSynchronize());
         return ret;
     }
 

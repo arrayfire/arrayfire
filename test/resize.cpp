@@ -20,6 +20,7 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using std::abs;
 using af::cfloat;
 using af::cdouble;
 
@@ -64,7 +65,7 @@ TYPED_TEST(Resize, InvalidDims)
 {
     if (noDoubleTests<TypeParam>()) return;
 
-    vector<TypeParam> in(8,8);
+    vector<TypeParam> in(8*8);
 
     af_array inArray  = 0;
     af_array outArray = 0;

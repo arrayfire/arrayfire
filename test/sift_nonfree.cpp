@@ -20,6 +20,7 @@
 
 using std::string;
 using std::vector;
+using std::abs;
 using af::dim4;
 
 typedef struct
@@ -37,8 +38,8 @@ typedef struct
 {
     float d[128];
 } desc_t;
-
-bool feat_cmp(feat_desc_t i, feat_desc_t j)
+#ifdef AF_BUILD_NONFREE_SIFT
+static bool feat_cmp(feat_desc_t i, feat_desc_t j)
 {
     for (int k = 0; k < 5; k++)
         if (round(i.f[k]*1e1f) != round(j.f[k]*1e1f))
@@ -47,7 +48,7 @@ bool feat_cmp(feat_desc_t i, feat_desc_t j)
     return true;
 }
 
-void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* score, float* ori, float* size, float* desc, unsigned nfeat)
+static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* score, float* ori, float* size, float* desc, unsigned nfeat)
 {
     feat.resize(nfeat);
     for (size_t i = 0; i < feat.size(); i++) {
@@ -61,7 +62,7 @@ void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* sc
     }
 }
 
-void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* score, float* ori, float* size, vector<vector<float> >& desc, unsigned nfeat)
+static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* score, float* ori, float* size, vector<vector<float> >& desc, unsigned nfeat)
 {
     feat.resize(nfeat);
     for (size_t i = 0; i < feat.size(); i++) {
@@ -75,7 +76,7 @@ void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* sc
     }
 }
 
-void array_to_feat(vector<feat_t>& feat, float *x, float *y, float *score, float *ori, float *size, unsigned nfeat)
+static void array_to_feat(vector<feat_t>& feat, float *x, float *y, float *score, float *ori, float *size, unsigned nfeat)
 {
     feat.resize(nfeat);
     for (unsigned i = 0; i < feat.size(); i++) {
@@ -87,7 +88,7 @@ void array_to_feat(vector<feat_t>& feat, float *x, float *y, float *score, float
     }
 }
 
-void split_feat_desc(vector<feat_desc_t>& fd, vector<feat_t>& f, vector<desc_t>& d)
+static void split_feat_desc(vector<feat_desc_t>& fd, vector<feat_t>& f, vector<desc_t>& d)
 {
     f.resize(fd.size());
     d.resize(fd.size());
@@ -102,7 +103,7 @@ void split_feat_desc(vector<feat_desc_t>& fd, vector<feat_t>& f, vector<desc_t>&
     }
 }
 
-unsigned popcount(unsigned x)
+static unsigned popcount(unsigned x)
 {
     x = x - ((x >> 1) & 0x55555555);
     x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
@@ -112,7 +113,7 @@ unsigned popcount(unsigned x)
     return x & 0x0000003F;
 }
 
-bool compareEuclidean(dim_t desc_len, dim_t ndesc, float *cpu, float *gpu, float unit_thr = 1.f, float euc_thr = 1.f)
+static bool compareEuclidean(dim_t desc_len, dim_t ndesc, float *cpu, float *gpu, float unit_thr = 1.f, float euc_thr = 1.f)
 {
     bool ret = true;
     float sum = 0.0f;
@@ -142,6 +143,7 @@ bool compareEuclidean(dim_t desc_len, dim_t ndesc, float *cpu, float *gpu, float
 
     return ret;
 }
+#endif
 
 template<typename T>
 class SIFT : public ::testing::Test
@@ -157,7 +159,7 @@ TYPED_TEST_CASE(SIFT, TestTypes);
 template<typename T>
 void siftTest(string pTestFile, unsigned nLayers, float contrastThr, float edgeThr, float initSigma, bool doubleInput)
 {
-#ifdef AF_BUILD_SIFT
+#ifdef AF_BUILD_NONFREE_SIFT
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
 
@@ -275,7 +277,7 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr, float edgeT
 //
 TEST(SIFT, CPP)
 {
-#ifdef AF_BUILD_SIFT
+#ifdef AF_BUILD_NONFREE_SIFT
     if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 

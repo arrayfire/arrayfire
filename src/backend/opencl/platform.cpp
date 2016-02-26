@@ -29,6 +29,7 @@
 #include <defines.hpp>
 #include <version.hpp>
 #include <platform.hpp>
+#include <util.hpp>
 #include <functional>
 #include <algorithm>
 #include <cctype>
@@ -41,6 +42,8 @@
 #include <map>
 #include <errorcodes.hpp>
 #include <err_opencl.hpp>
+#include <util.hpp>
+#include <host_memory.hpp>
 
 using std::string;
 using std::vector;
@@ -99,7 +102,6 @@ DeviceManager::~DeviceManager()
     for (auto q: mQueues) delete q;
     for (auto d : mDevices) delete d;
     for (auto c : mContexts) delete c;
-    for (auto p : mPlatforms) delete p;
 #endif
 }
 
@@ -109,56 +111,182 @@ void DeviceManager::setContext(int device)
     mActiveCtxId = device;
 }
 
+static inline bool verify_present(std::string pname, const char *ref)
+{
+    return pname.find(ref) != std::string::npos;
+}
+
+static inline bool compare_default(const Device *ldev, const Device *rdev)
+{
+    const cl_device_type device_types[] = {CL_DEVICE_TYPE_GPU,
+                                           CL_DEVICE_TYPE_ACCELERATOR};
+
+    auto l_dev_type = ldev->getInfo<CL_DEVICE_TYPE>();
+    auto r_dev_type = rdev->getInfo<CL_DEVICE_TYPE>();
+
+    // This ensures GPU > ACCELERATOR > CPU
+    for (auto current_type : device_types) {
+        auto is_l_curr_type = l_dev_type == current_type;
+        auto is_r_curr_type = r_dev_type == current_type;
+
+        if ( is_l_curr_type && !is_r_curr_type) return true;
+        if (!is_l_curr_type &&  is_r_curr_type) return false;
+    }
+
+    // For GPUs, this ensures discreet > integrated
+    auto is_l_integrared = ldev->getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
+    auto is_r_integrared = rdev->getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
+
+    if (!is_l_integrared &&  is_r_integrared) return true;
+    if ( is_l_integrared && !is_r_integrared) return false;
+
+    // At this point, the devices are of same type.
+    // Sort based on emperical evidence of preferred platforms
+
+    // Prefer AMD first
+    std::string lPlatName = getPlatformName(*ldev);
+    std::string rPlatName = getPlatformName(*rdev);
+
+    if (l_dev_type == CL_DEVICE_TYPE_GPU &&
+        r_dev_type == CL_DEVICE_TYPE_GPU ) {
+        // If GPU, prefer AMD > NVIDIA > Beignet / Intel > APPLE
+        const char *platforms[] = {"AMD", "NVIDIA", "APPLE", "INTEL", "BEIGNET"};
+
+        for (auto ref_name : platforms) {
+            if ( verify_present(lPlatName, ref_name) &&
+                !verify_present(rPlatName, ref_name)) return true;
+
+            if (!verify_present(lPlatName, ref_name) &&
+                 verify_present(rPlatName, ref_name)) return false;
+        }
+
+        // Intel falls back to compare based on memory
+    } else {
+        // If CPU, prefer Intel > AMD > POCL > APPLE
+        const char *platforms[] = {"INTEL", "AMD", "POCL", "APPLE"};
+
+        for (auto ref_name : platforms) {
+            if ( verify_present(lPlatName, ref_name) &&
+                !verify_present(rPlatName, ref_name)) return true;
+
+            if (!verify_present(lPlatName, ref_name) &&
+                 verify_present(rPlatName, ref_name)) return false;
+        }
+    }
+
+
+    // Compare device compute versions
+
+    {
+        // Check Device OpenCL Version
+        auto lversion =  ldev->getInfo<CL_DEVICE_VERSION>();
+        auto rversion =  rdev->getInfo<CL_DEVICE_VERSION>();
+
+        bool lres = (lversion[7] > rversion[7]) ||
+            ((lversion[7] == rversion[7]) && (lversion[9] > rversion[9]));
+
+        bool rres = (lversion[7] < rversion[7]) ||
+            ((lversion[7] == rversion[7]) && (lversion[9] < rversion[9]));
+
+        if (lres) return true;
+        if (rres) return false;
+    }
+
+    // Default crietria, sort based on memory
+    // Sort based on memory
+    auto l_mem = ldev->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
+    auto r_mem = rdev->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
+    return l_mem >= r_mem;
+}
+
+static afcl::deviceType getDeviceTypeEnum(cl::Device dev)
+{
+    return (afcl::deviceType)dev.getInfo<CL_DEVICE_TYPE>();
+}
+
+
+static afcl::platform getPlatformEnum(cl::Device dev)
+{
+    std::string pname = getPlatformName(dev);
+    if (verify_present(pname, "AMD")) return AFCL_PLATFORM_AMD;
+    if (verify_present(pname, "NVIDIA")) return AFCL_PLATFORM_NVIDIA;
+    if (verify_present(pname, "INTEL")) return AFCL_PLATFORM_INTEL;
+    if (verify_present(pname, "APPLE")) return AFCL_PLATFORM_APPLE;
+    if (verify_present(pname, "BEIGNET")) return AFCL_PLATFORM_BEIGNET;
+    if (verify_present(pname, "POCL")) return AFCL_PLATFORM_POCL;
+    return AFCL_PLATFORM_UNKNOWN;
+}
+
+
 DeviceManager::DeviceManager()
-    : mActiveCtxId(0), mActiveQId(0)
+    : mUserDeviceOffset(0), mActiveCtxId(0), mActiveQId(0)
 {
     try {
         std::vector<cl::Platform>   platforms;
         Platform::get(&platforms);
 
-        cl_device_type DEVC_TYPES[] = {
-            CL_DEVICE_TYPE_GPU,
-#ifndef OS_MAC
-            CL_DEVICE_TYPE_ACCELERATOR,
-            CL_DEVICE_TYPE_CPU
+        // This is all we need because the sort takes care of the order of devices
+#ifdef OS_MAC
+        cl_device_type DEVICE_TYPES = CL_DEVICE_TYPE_GPU;
+#else
+        cl_device_type DEVICE_TYPES = CL_DEVICE_TYPE_ALL;
 #endif
-        };
 
-        for (auto &platform : platforms)
-            mPlatforms.push_back(new Platform(platform));
+        std::string deviceENV = getEnvVar("AF_OPENCL_DEVICE_TYPE");
 
-        unsigned nDevices = 0;
-        for (auto devType : DEVC_TYPES) {
-            for (auto &platform : platforms) {
+        if (deviceENV.compare("GPU") == 0) {
+            DEVICE_TYPES = CL_DEVICE_TYPE_GPU;
+        } else if (deviceENV.compare("CPU") == 0) {
+            DEVICE_TYPES = CL_DEVICE_TYPE_CPU;
+        } else if (deviceENV.compare("ACC") >= 0) {
+            DEVICE_TYPES = CL_DEVICE_TYPE_ACCELERATOR;
+        }
 
-                cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM,
-                    (cl_context_properties)(platform()),
-                    0};
 
-                std::vector<Device> devs;
-                try {
-                    platform.getDevices(devType, &devs);
-                } catch(const cl::Error &err) {
-                    if (err.err() != CL_DEVICE_NOT_FOUND) {
-                        throw;
-                    }
+
+        // Iterate through platforms, get all available devices and store them
+        for (auto &platform : platforms) {
+            std::vector<Device> current_devices;
+
+            try {
+                platform.getDevices(DEVICE_TYPES, &current_devices);
+            } catch(const cl::Error &err) {
+                if (err.err() != CL_DEVICE_NOT_FOUND) {
+                    throw;
                 }
+            }
 
-                for (auto dev : devs) {
-                    nDevices++;
-                    Context *ctx = new Context(dev, cps);
-                    CommandQueue *cq = new CommandQueue(*ctx, dev);
-                    mDevices.push_back(new Device(dev));
-                    mContexts.push_back(ctx);
-                    mQueues.push_back(cq);
-                    mCtxOffsets.push_back(nDevices);
-                    mIsGLSharingOn.push_back(false);
-                }
+            for (auto dev : current_devices) {
+                mDevices.push_back(new Device(dev));
             }
         }
 
-        const char* deviceENV = getenv("AF_OPENCL_DEFAULT_DEVICE");
-        if(deviceENV) {
+        int nDevices = mDevices.size();
+
+        if (nDevices == 0) AF_ERROR("No OpenCL devices found", AF_ERR_RUNTIME);
+
+        // Sort OpenCL devices based on default criteria
+        std::stable_sort(mDevices.begin(), mDevices.end(), compare_default);
+
+        // Create contexts and queues once the sort is done
+        for (int i = 0; i < nDevices; i++) {
+            cl_platform_id device_platform = mDevices[i]->getInfo<CL_DEVICE_PLATFORM>();
+            cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM,
+                                            (cl_context_properties)(device_platform),
+                                            0};
+
+            Context *ctx = new Context(*mDevices[i], cps);
+            CommandQueue *cq = new CommandQueue(*ctx, *mDevices[i]);
+            mContexts.push_back(ctx);
+            mQueues.push_back(cq);
+            mIsGLSharingOn.push_back(false);
+            mDeviceTypes.push_back(getDeviceTypeEnum(*mDevices[i]));
+            mPlatforms.push_back(getPlatformEnum(*mDevices[i]));
+        }
+
+        bool default_device_set = false;
+        deviceENV = getEnvVar("AF_OPENCL_DEFAULT_DEVICE");
+        if(!deviceENV.empty()) {
             std::stringstream s(deviceENV);
             int def_device = -1;
             s >> def_device;
@@ -167,18 +295,48 @@ DeviceManager::DeviceManager()
                 printf("Setting default device as 0\n");
             } else {
                 setContext(def_device);
+                default_device_set = true;
             }
         }
+
+        deviceENV = getEnvVar("AF_OPENCL_DEFAULT_DEVICE_TYPE");
+        if (!default_device_set && !deviceENV.empty())
+        {
+            cl_device_type default_device_type = CL_DEVICE_TYPE_GPU;
+            if (deviceENV.compare("CPU") == 0) {
+                default_device_type = CL_DEVICE_TYPE_CPU;
+            } else if (deviceENV.compare("ACC") >= 0) {
+                default_device_type = CL_DEVICE_TYPE_ACCELERATOR;
+            }
+
+            bool default_device_set = false;
+            for (int i = 0; i < nDevices; i++) {
+                if (mDevices[i]->getInfo<CL_DEVICE_TYPE>() == default_device_type) {
+                    default_device_set = true;
+                    setContext(i);
+                    break;
+                }
+            }
+
+            if (!default_device_set) {
+                printf("WARNING: AF_OPENCL_DEFAULT_DEVICE_TYPE=%s is not available\n",
+                       deviceENV.c_str());
+                printf("Using default device as 0\n");
+            }
+        }
+
     } catch (const cl::Error &error) {
             CL_TO_AF_ERROR(error);
     }
-    /* loop over devices and replace contexts with
-     * OpenGL shared contexts whereever applicable */
+
+
 #if defined(WITH_GRAPHICS)
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
-    const char* noGraphicsENV = getenv("AF_DISABLE_GRAPHICS");
-    if(!noGraphicsENV) { // If AF_DISABLE_GRAPHICS is not defined
+    std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
+    if(noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
         try {
+            /* loop over devices and replace contexts with
+             * OpenGL shared contexts whereever applicable */
             int devCount = mDevices.size();
             fg::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();
             for(int i=0; i<devCount; ++i)
@@ -187,6 +345,7 @@ DeviceManager::DeviceManager()
         }
     }
 #endif
+    mUserDeviceOffset = mDevices.size();
 }
 
 
@@ -206,11 +365,12 @@ static std::string platformMap(std::string &platStr)
     typedef std::map<std::string, std::string> strmap_t;
     static strmap_t platMap;
     if (isFirst) {
-        platMap["NVIDIA CUDA"] = "NVIDIA  ";
-        platMap["Intel(R) OpenCL"] = "INTEL   ";
+        platMap["NVIDIA CUDA"]                         = "NVIDIA  ";
+        platMap["Intel(R) OpenCL"]                     = "INTEL   ";
         platMap["AMD Accelerated Parallel Processing"] = "AMD     ";
-        platMap["Intel Gen OCL Driver"] = "BEIGNET ";
-        platMap["Apple"] = "APPLE   ";
+        platMap["Intel Gen OCL Driver"]                = "BEIGNET ";
+        platMap["Apple"]                               = "APPLE   ";
+        platMap["Portable Computing Language"]         = "POCL    ";
         isFirst = false;
     }
 
@@ -223,45 +383,48 @@ static std::string platformMap(std::string &platStr)
     }
 }
 
-std::string getInfo()
+std::string getDeviceInfo()
 {
     ostringstream info;
     info << "ArrayFire v" << AF_VERSION
          << " (OpenCL, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
 
     unsigned nDevices = 0;
-    for (auto context : DeviceManager::getInstance().mContexts) {
-        vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
+    for(auto &device: DeviceManager::getInstance().mDevices) {
+        const Platform platform(device->getInfo<CL_DEVICE_PLATFORM>());
 
-        for(auto &device:devices) {
-            const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
+        string dstr = device->getInfo<CL_DEVICE_NAME>();
 
-            string platStr = platform.getInfo<CL_PLATFORM_NAME>();
-            string dstr = device.getInfo<CL_DEVICE_NAME>();
+        // Remove null termination character from the strings
+        dstr.pop_back();
 
-            // Remove null termination character from the strings
-            platStr.pop_back();
-            dstr.pop_back();
+        bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
 
-            bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
-            string id = (show_braces ? string("[") : "-") + std::to_string(nDevices) +
-                        (show_braces ? string("]") : "-");
-            info << id << " " << platformMap(platStr) << ": " << ltrim(dstr) << " ";
+        string id =
+            (show_braces ? string("[") : "-") +
+            std::to_string(nDevices) +
+            (show_braces ? string("]") : "-");
+
+        size_t msize = device->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
+        info << id << " " << getPlatformName(*device) << ": " << ltrim(dstr)
+             << ", " << msize / 1048576 << " MB";
 #ifndef NDEBUG
-            string devVersion = device.getInfo<CL_DEVICE_VERSION>();
-            string driVersion = device.getInfo<CL_DRIVER_VERSION>();
-            devVersion.pop_back();
-            driVersion.pop_back();
-            info << devVersion;
-            info << " Device driver " << driVersion;
-            info << " FP64 Support("
-                 << (device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False")
-                 << ")";
+        info << " -- ";
+        string devVersion = device->getInfo<CL_DEVICE_VERSION>();
+        string driVersion = device->getInfo<CL_DRIVER_VERSION>();
+        devVersion.pop_back();
+        driVersion.pop_back();
+        info << devVersion;
+        info << " -- Device driver " << driVersion;
+        info << " -- FP64 Support: "
+             << (device->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False");
+        info << " -- Unified Memory ("
+             << (isHostUnifiedMemory(*device) ? "True" : "False")
+             << ")";
 #endif
-            info << std::endl;
+        info << std::endl;
 
-            nDevices++;
-        }
+        nDevices++;
     }
     return info.str();
 }
@@ -270,6 +433,8 @@ std::string getPlatformName(const cl::Device &device)
 {
     const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
     std::string platStr = platform.getInfo<CL_PLATFORM_NAME>();
+    // Remove null termination character from the strings
+    platStr.pop_back();
     return platformMap(platStr);
 }
 
@@ -295,6 +460,17 @@ int getDeviceIdFromNativeId(cl_device_id id)
     return devId;
 }
 
+int getActiveDeviceType()
+{
+    DeviceManager &instance = DeviceManager::getInstance();
+    return instance.mDeviceTypes[instance.mActiveQId];
+}
+
+int getActivePlatform()
+{
+    DeviceManager &instance = DeviceManager::getInstance();
+    return instance.mPlatforms[instance.mActiveQId];
+}
 const Context& getContext()
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
@@ -307,10 +483,54 @@ CommandQueue& getQueue()
     return *(devMngr.mQueues[devMngr.mActiveQId]);
 }
 
-const cl::Device& getDevice()
+const cl::Device& getDevice(int id)
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
-    return *(devMngr.mDevices[devMngr.mActiveQId]);
+    if(id == -1) id = devMngr.mActiveQId;
+    return *(devMngr.mDevices[id]);
+}
+
+size_t getDeviceMemorySize(int device)
+{
+    const cl::Device& dev = getDevice(device);
+    size_t msize = dev.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
+    return msize;
+}
+
+size_t getHostMemorySize()
+{
+    return common::getHostMemorySize();
+}
+
+cl_device_type getDeviceType()
+{
+    cl::Device device = getDevice();
+    cl_device_type type = device.getInfo<CL_DEVICE_TYPE>();
+    return type;
+}
+
+bool isHostUnifiedMemory(const cl::Device &device)
+{
+    return device.getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
+}
+
+bool OpenCLCPUOffload(bool forceOffloadOSX)
+{
+    static const bool offloadEnv = getEnvVar("AF_OPENCL_CPU_OFFLOAD") == "1";
+    bool offload = false;
+    if(offloadEnv) offload = isHostUnifiedMemory(getDevice());
+#if OS_MAC
+    // FORCED OFFLOAD FOR LAPACK FUNCTIONS ON OSX UNIFIED MEMORY DEVICES
+    //
+    // On OSX Unified Memory devices (Intel), always offload LAPACK but not GEMM
+    // irrespective of the AF_OPENCL_CPU_OFFLOAD value
+    // From GEMM, OpenCLCPUOffload(false) is called which will render the
+    // variable inconsequential to the returned result.
+    //
+    // Issue https://github.com/arrayfire/arrayfire/issues/662
+    offload = offload || forceOffloadOSX;
+#endif
+    return offload;
 }
 
 bool isGLSharingSupported()
@@ -478,9 +698,132 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
 }
 #endif
 
+void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que)
+{
+    try {
+        DeviceManager& devMngr   = DeviceManager::getInstance();
+        cl::Device* tDevice      = new cl::Device(dev);
+        cl::Context* tContext    = new cl::Context(ctx);
+        cl::CommandQueue* tQueue = (que==NULL ?
+                new cl::CommandQueue(*tContext, *tDevice) : new cl::CommandQueue(que));
+        devMngr.mDevices.push_back(tDevice);
+        devMngr.mContexts.push_back(tContext);
+        devMngr.mQueues.push_back(tQueue);
+        devMngr.mPlatforms.push_back(getPlatformEnum(*tDevice));
+        // FIXME: add OpenGL Interop for user provided contexts later
+        devMngr.mIsGLSharingOn.push_back(false);
+    } catch (const cl::Error &ex) {
+        CL_TO_AF_ERROR(ex);
+    }
+}
+
+void setDeviceContext(cl_device_id dev, cl_context ctx)
+{
+    // FIXME: add OpenGL Interop for user provided contexts later
+    try {
+        DeviceManager& devMngr = DeviceManager::getInstance();
+        const int dCount = devMngr.mDevices.size();
+        for (int i=0; i<dCount; ++i) {
+            if(devMngr.mDevices[i]->operator()()==dev &&
+                    devMngr.mContexts[i]->operator()()==ctx) {
+                setDevice(i);
+                return;
+            }
+        }
+    } catch (const cl::Error &ex) {
+        CL_TO_AF_ERROR(ex);
+    }
+    AF_ERROR("No matching device found", AF_ERR_ARG);
+}
+
+void removeDeviceContext(cl_device_id dev, cl_context ctx)
+{
+    try {
+        if (getDevice()() == dev && getContext()()==ctx) {
+            AF_ERROR("Cannot pop the device currently in use", AF_ERR_ARG);
+        }
+
+        DeviceManager& devMngr = DeviceManager::getInstance();
+        const int dCount = devMngr.mDevices.size();
+        int deleteIdx = -1;
+        for (int i = 0; i<dCount; ++i) {
+            if(devMngr.mDevices[i]->operator()()==dev &&
+                    devMngr.mContexts[i]->operator()()==ctx) {
+                deleteIdx = i;
+                break;
+            }
+        }
+        if (deleteIdx < (int)devMngr.mUserDeviceOffset) {
+            AF_ERROR("Cannot pop ArrayFire internal devices", AF_ERR_ARG);
+        } else if (deleteIdx == -1) {
+            AF_ERROR("No matching device found", AF_ERR_ARG);
+        } else {
+            // FIXME: this case can potentially cause issues due to the
+            // modification of the device pool stl containers.
+
+            // IF the current active device is enumerated at a position
+            // that lies ahead of the device that has been requested
+            // to be removed. We just pop the entries from pool since it
+            // has no side effects.
+            devMngr.mDevices.erase(devMngr.mDevices.begin()+deleteIdx);
+            devMngr.mContexts.erase(devMngr.mContexts.begin()+deleteIdx);
+            devMngr.mQueues.erase(devMngr.mQueues.begin()+deleteIdx);
+            devMngr.mPlatforms.erase(devMngr.mPlatforms.begin()+deleteIdx);
+            // FIXME: add OpenGL Interop for user provided contexts later
+            devMngr.mIsGLSharingOn.erase(devMngr.mIsGLSharingOn.begin()+deleteIdx);
+            // OTHERWISE, update(decrement) the `mActive*Id` variables
+            if (deleteIdx < (int)devMngr.mActiveCtxId) {
+                --devMngr.mActiveCtxId;
+                --devMngr.mActiveQId;
+            }
+        }
+    } catch (const cl::Error &ex) {
+        CL_TO_AF_ERROR(ex);
+    }
+}
+
+bool synchronize_calls() {
+    static bool sync = getEnvVar("AF_SYNCHRONOUS_CALLS") == "1";
+    return sync;
+}
+
+
+unsigned getMaxJitSize()
+{
+    const int MAX_JIT_LEN = 20;
+    const int MAX_JIT_LEN_AMD = 16; //FIXME: Change this when bug is fixed
+
+    static int length = 0;
+    if (length == 0) {
+        std::string env_var = getEnvVar("AF_OPENCL_MAX_JIT_LEN");
+        if (!env_var.empty()) {
+            length = std::stoi(env_var);
+        } else {
+            length = MAX_JIT_LEN;
+        }
+    }
+
+    if (getActivePlatform() == AFCL_PLATFORM_AMD) {
+        return std::min(length, MAX_JIT_LEN_AMD);
+    }
+    return length;
+}
+
 }
 
 using namespace opencl;
+
+af_err afcl_get_device_type(afcl_device_type *res)
+{
+    *res = (afcl_device_type)getActiveDeviceType();
+    return AF_SUCCESS;
+}
+
+af_err afcl_get_platform(afcl_platform *res)
+{
+    *res = (afcl_platform)getActivePlatform();
+    return AF_SUCCESS;
+}
 
 af_err afcl_get_context(cl_context *ctx, const bool retain)
 {
@@ -506,5 +849,23 @@ af_err afcl_get_device_id(cl_device_id *id)
 af_err afcl_set_device_id(cl_device_id id)
 {
     setDevice(getDeviceIdFromNativeId(id));
+    return AF_SUCCESS;
+}
+
+af_err afcl_add_device_context(cl_device_id dev, cl_context ctx, cl_command_queue que)
+{
+    addDeviceContext(dev, ctx, que);
+    return AF_SUCCESS;
+}
+
+af_err afcl_set_device_context(cl_device_id dev, cl_context ctx)
+{
+    setDeviceContext(dev, ctx);
+    return AF_SUCCESS;
+}
+
+af_err afcl_delete_device_context(cl_device_id dev, cl_context ctx)
+{
+    removeDeviceContext(dev, ctx);
     return AF_SUCCESS;
 }

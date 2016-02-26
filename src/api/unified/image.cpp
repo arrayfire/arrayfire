@@ -55,6 +55,11 @@ af_err af_save_image_native(const char* filename, const af_array in)
     return CALL(filename, in);
 }
 
+af_err af_is_image_io_available(bool *out)
+{
+    return CALL(out);
+}
+
 af_err af_resize(af_array *out, const af_array in, const dim_t odim0, const dim_t odim1, const af_interp_type method)
 {
     CHECK_ARRAYS(in);
@@ -67,6 +72,13 @@ af_err af_transform(af_array *out, const af_array in, const af_array transform,
 {
     CHECK_ARRAYS(in, transform);
     return CALL(out, in, transform, odim0, odim1, method, inverse);
+}
+
+af_err af_transform_coordinates(af_array *out, const af_array tf,
+        const float d0, const float d1)
+{
+    CHECK_ARRAYS(tf);
+    return CALL(out, tf, d0, d1);
 }
 
 af_err af_rotate(af_array *out, const af_array in, const float theta,

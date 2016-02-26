@@ -12,37 +12,40 @@
 #include <Array.hpp>
 #include <plot3.hpp>
 #include <err_cpu.hpp>
-#include <stdexcept>
 #include <graphics_common.hpp>
-#include <reduce.hpp>
-#include <memory.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 using af::dim4;
 
 namespace cpu
 {
-    template<typename T>
-    void copy_plot3(const Array<T> &P, fg::Plot3* plot3)
-    {
-        CheckGL("Before CopyArrayToVBO");
 
-        glBindBuffer(GL_ARRAY_BUFFER, plot3->vbo());
-        glBufferSubData(GL_ARRAY_BUFFER, 0, plot3->size(), P.get());
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+template<typename T>
+void copy_plot3(const Array<T> &P, fg::Plot3* plot3)
+{
+    P.eval();
+    getQueue().sync();
+    CheckGL("Before CopyArrayToVBO");
 
-        CheckGL("In CopyArrayToVBO");
-    }
+    glBindBuffer(GL_ARRAY_BUFFER, plot3->vbo());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, plot3->size(), P.get());
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    #define INSTANTIATE(T)  \
-        template void copy_plot3<T>(const Array<T> &P, fg::Plot3* plot3);
+    CheckGL("In CopyArrayToVBO");
+}
 
-    INSTANTIATE(float)
-    INSTANTIATE(double)
-    INSTANTIATE(int)
-    INSTANTIATE(uint)
-    INSTANTIATE(uchar)
-    INSTANTIATE(short)
-    INSTANTIATE(ushort)
+#define INSTANTIATE(T)  \
+    template void copy_plot3<T>(const Array<T> &P, fg::Plot3* plot3);
+
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(uchar)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
+
 }
 
 #endif  // WITH_GRAPHICS

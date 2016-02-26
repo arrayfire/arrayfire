@@ -448,8 +448,6 @@ Raise an array to a power
 
 Exponential of input
 
-\copydoc arith_real_only
-
 
 \defgroup arith_func_expm1 expm1
 

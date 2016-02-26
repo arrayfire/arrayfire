@@ -2,6 +2,22 @@
 \addtogroup arrayfire_func
 @{
 
+\defgroup device_func_prop deviceInfo
+\ingroup device_mat
+
+\brief Gets the information about device and platform as strings
+
+\param d_name pointer to a user-allocated char array. Recommended minimum size is 64.
+The name of the device is stored in this array.
+\param d_platform pointer to a user-allocated char array. Recommended minimum size is 10.
+The platform information is stored in this array.
+\param d_toolkit pointer to a user-allocated char array. Recommended minimum size is 64.
+The toolkit information is stored in this array.
+\param d_compute pointer to a user-allocated char array. Recommended minimum size is 10.
+The compute version of the device is stored in this array.
+
+===============================================================================
+
 \defgroup device_func_count getDeviceCount
 \ingroup device_mat
 
@@ -62,6 +78,16 @@ allocation
 
 ===============================================================================
 
+\defgroup device_func_free free
+\ingroup device_mat
+
+\brief Free device memory allocated by ArrayFire's memory manager
+
+These calls free the device memory. These functions need to be called on
+pointers allocated using alloc function.
+
+===============================================================================
+
 \defgroup device_func_pinned pinned
 \ingroup device_mat
 
@@ -73,12 +99,39 @@ a limited resource.
 
 ===============================================================================
 
-\defgroup device_func_free free
+\defgroup device_func_free_pinned freePinned
 \ingroup device_mat
 
-\brief Free device memory allocated by ArrayFire's memory manager
+\brief Free pinned memory allocated by ArrayFire's memory manager
 
-These calls free the device or pinned memory. These functions need to be called
+These calls free the pinned memory on host. These functions need to be called on
+pointers allocated using pinned function.
+
+===============================================================================
+
+\defgroup device_func_alloc_host allocHost
+\ingroup device_mat
+
+\brief Allocate memory on host
+
+This function is used for allocating regular memory on host. This is useful
+where the compiler version of ArrayFire library is different from the
+executable's compiler version.
+
+It does not use ArrayFire's memory manager.
+
+===============================================================================
+
+\defgroup device_func_free_host freeHost
+\ingroup device_mat
+
+\brief Free memory allocated on host internally by ArrayFire
+
+This function is used for freeing memory on host that was allocated within
+ArrayFire. This is useful where the compiler version of ArrayFire library is
+different from the executable's compiler version.
+
+It does not use ArrayFire's memory manager.
 
 ===============================================================================
 

@@ -14,7 +14,7 @@ ENDIF()
 ExternalProject_Add(
     clFFT-ext
     GIT_REPOSITORY https://github.com/arrayfire/clFFT.git
-    GIT_TAG 1597f0f35a644789c7ad77efe79014236cca2fab
+    GIT_TAG af3.3.0
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""

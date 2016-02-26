@@ -71,5 +71,23 @@ The return value specifies which backend the array was created on.
 
 =======================================================================
 
+\defgroup unified_func_getactivebackend getActiveBackend
+
+\brief Get's the backend enum for the active backend
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup unified_func_getdeviceid getDeviceId
+
+\brief Get's the id of the device an array was created on.
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
 @}
 */

@@ -65,7 +65,11 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr,
     lvl_best[max_levels-1] = max_feat - feat_sum;
 
     // Hold multi-scale image pyramids
-    img_pyr.reserve(max_levels);
+    static const dim4 dims0;
+    static const CParam<T> emptyCParam(NULL, dims0.get(), dims0.get());
+    // Need to do this as CParam does not have a default constructor
+    // And resize needs a default constructor or default value prior to C++11
+    img_pyr.resize(max_levels, emptyCParam);
 
     // Create multi-scale image pyramid
     for (unsigned i = 0; i < max_levels; i++) {

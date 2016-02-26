@@ -32,7 +32,19 @@ namespace JIT
         bool m_gen_func;
         bool m_gen_param;
         bool m_gen_offset;
+        bool m_set_arg;
         bool m_gen_name;
+
+    protected:
+        void resetCommonFlags()
+        {
+            m_set_id = false;
+            m_gen_func = false;
+            m_gen_param = false;
+            m_gen_offset = false;
+            m_set_arg = false;
+            m_gen_name = false;
+        }
 
     public:
 
@@ -44,6 +56,7 @@ namespace JIT
               m_gen_func(false),
               m_gen_param(false),
               m_gen_offset(false),
+              m_set_arg(false),
               m_gen_name(false)
         {}
 
@@ -64,7 +77,10 @@ namespace JIT
         }
 
 
-        virtual void resetFlags() {}
+        virtual void resetFlags()
+        {
+            resetCommonFlags();
+        }
 
         virtual bool isLinear(dim_t dims[4]) { return true; }
 

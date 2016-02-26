@@ -147,6 +147,16 @@ AFAPI array loadImageNative(const char* filename);
 AFAPI void saveImageNative(const char* filename, const array& in);
 #endif
 
+#if AF_API_VERSION >= 33
+/**
+    Function to check if Image IO is available
+
+    \returns true if ArrayFire was commpiled with ImageIO support, false otherwise.
+    \ingroup imageio_func_available
+*/
+AFAPI bool isImageIOAvailable();
+#endif
+
 /**
     C++ Interface for resizing an image to specified dimensions
 
@@ -212,6 +222,20 @@ AFAPI array rotate(const array& in, const float theta, const bool crop=true, con
     \ingroup transform_func_transform
 */
 AFAPI array transform(const array& in, const array& transform, const dim_t odim0 = 0, const dim_t odim1 = 0, const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
+
+#if AF_API_VERSION >= 33
+/**
+    C++ Interface for transforming coordinates
+
+    \param[in] tf is transformation matrix
+    \param[in] d0 is the first input dimension
+    \param[in] d1 is the second input dimension
+    \return the transformed coordinates
+
+    \ingroup transform_func_coordinates
+*/
+AFAPI array transformCoordinates(const array& tf, const float d0, const float d1);
+#endif
 
 /**
     C++ Interface for translating an image
@@ -794,6 +818,20 @@ extern "C" {
     AFAPI af_err af_save_image_native(const char* filename, const af_array in);
 #endif
 
+#if AF_API_VERSION >= 33
+    /**
+        Function to check if Image IO is available
+
+        \param[out] out is true if ArrayFire was commpiled with ImageIO support,
+        false otherwise.
+
+        \return     \ref AF_SUCCESS if successful
+
+        \ingroup imageio_func_available
+    */
+    AFAPI af_err af_is_image_io_available(bool *out);
+#endif
+
     /**
        C Interface for resizing an image to specified dimensions
 
@@ -828,6 +866,21 @@ extern "C" {
     AFAPI af_err af_transform(af_array *out, const af_array in, const af_array transform,
                               const dim_t odim0, const dim_t odim1,
                               const af_interp_type method, const bool inverse);
+
+#if AF_API_VERSION >= 33
+    /**
+       C Interface for transforming an image
+       C++ Interface for transforming coordinates
+
+       \param[out] out the transformed coordinates
+       \param[in] tf is transformation matrix
+       \param[in] d0 is the first input dimension
+       \param[in] d1 is the second input dimension
+
+       \ingroup transform_func_coordinates
+    */
+    AFAPI af_err af_transform_coordinates(af_array *out, const af_array tf, const float d0, const float d1);
+#endif
 
     /**
        C Interface for rotating an image

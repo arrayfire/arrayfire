@@ -120,6 +120,13 @@ typedef enum {
     AF_ERR_BATCH          = 207,
 
 
+#if AF_API_VERSION >= 33
+    ///
+    /// Input does not belong to the current device.
+    ///
+    AF_ERR_DEVICE         = 208,
+#endif
+
     // 300-399 Errors for missing software features
 
     ///
@@ -378,6 +385,19 @@ typedef enum {
     AF_ID = 0
 } af_someenum_t;
 
+#if AF_API_VERSION >=32
+typedef enum {
+    AF_MARKER_NONE         = 0,
+    AF_MARKER_POINT        = 1,
+    AF_MARKER_CIRCLE       = 2,
+    AF_MARKER_SQUARE       = 3,
+    AF_MARKER_TRIANGLE     = 4,
+    AF_MARKER_CROSS        = 5,
+    AF_MARKER_PLUS         = 6,
+    AF_MARKER_STAR         = 7
+} af_marker_type;
+#endif
+
 #ifdef __cplusplus
 namespace af
 {
@@ -403,6 +423,9 @@ namespace af
 #endif
 #if AF_API_VERSION >= 32
     typedef af_backend Backend;
+#endif
+#if AF_API_VERSION >= 32
+    typedef af_marker_type markerType;
 #endif
 }
 

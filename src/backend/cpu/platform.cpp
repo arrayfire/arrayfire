@@ -11,11 +11,16 @@
 #include <af/defines.h>
 #include <platform.hpp>
 #include <sstream>
+#include <queue.hpp>
+#include <array>
 #include <algorithm>
 #include <iostream>
 #include <string>
 #include <defines.hpp>
 #include <version.hpp>
+#include <queue.hpp>
+#include <host_memory.hpp>
+#include <cctype>
 
 #ifdef _WIN32
 #include <limits.h>
@@ -175,6 +180,22 @@ CPUInfo::CPUInfo()
 namespace cpu
 {
 
+unsigned getMaxJitSize()
+{
+    const int MAX_JIT_LEN = 20;
+
+    static int length = 0;
+    if (length == 0) {
+        std::string env_var = getEnvVar("AF_CPU_MAX_JIT_LEN");
+        if (!env_var.empty()) {
+            length = std::stoi(env_var);
+        } else {
+            length = MAX_JIT_LEN;
+        }
+    }
+    return length;
+}
+
 int getBackend()
 {
     return AF_BACKEND_CPU;
@@ -194,14 +215,29 @@ static const std::string get_system(void)
 #endif
 }
 
-std::string getInfo()
+// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring/217605#217605
+// trim from start
+static inline std::string &ltrim(std::string &s)
+{
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+                                    std::not1(std::ptr_fun<int, int>(std::isspace))));
+    return s;
+}
+
+std::string getDeviceInfo()
 {
     std::ostringstream info;
     static CPUInfo cinfo;
 
     info << "ArrayFire v" << AF_VERSION
          << " (CPU, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
-    info << string("[0] ") << cinfo.vendor() <<": " << cinfo.model() << " ";
+    std::string model = cinfo.model();
+    size_t memMB = getDeviceMemorySize(getActiveDeviceId()) / 1048576;
+    info << string("[0] ") << cinfo.vendor() <<": " << ltrim(model);
+
+    if(memMB) info << ", " << memMB << " MB, ";
+    else      info << ", Unknown MB, ";
+
     info << "Max threads("<< cinfo.threads()<<") ";
 #ifndef NDEBUG
     info << AF_COMPILER_STR;
@@ -234,11 +270,11 @@ int getDeviceCount()
 int setDevice(int device)
 {
     static bool flag;
-    if(!flag) {
-        printf("WARNING: af_set_device not supported for CPU\n");
+    if(!flag && device != 0) {
+        printf("WARNING af_set_device(device): device can only be 0 for CPU\n");
         flag = 1;
     }
-    return 1;
+    return 0;
 }
 
 int getActiveDeviceId()
@@ -246,9 +282,27 @@ int getActiveDeviceId()
     return 0;
 }
 
+size_t getDeviceMemorySize(int device)
+{
+    return common::getHostMemorySize();
+}
+
+size_t getHostMemorySize()
+{
+    return common::getHostMemorySize();
+}
+
+static const int MAX_QUEUES = 1;
+
+
+queue& getQueue(int idx) {
+    static std::array<queue, MAX_QUEUES> queues;
+    return queues[idx];
+}
+
 void sync(int device)
 {
-    // Nothing here
+    getQueue().sync();
 }
 
 }

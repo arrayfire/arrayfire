@@ -7,3 +7,6 @@
 [submodule "test/gtest"]
 	path = test/gtest
 	url = https://chromium.googlesource.com/external/googletest
+[submodule "src/backend/cpu/threads"]
+	path = src/backend/cpu/threads
+	url = https://github.com/alltheflops/threads.git

@@ -119,6 +119,19 @@ MATH_CAST(lgamma, intl  , float)
 MATH_CAST(lgamma, ushort, float)
 MATH_CAST(lgamma, short , float)
 
+MATH_NOOP(noop, float)
+MATH_NOOP(noop, double)
+MATH_NOOP(noop, cfloat)
+MATH_NOOP(noop, cdouble)
+MATH_NOOP(noop, int)
+MATH_NOOP(noop, uint)
+MATH_NOOP(noop, char)
+MATH_NOOP(noop, uchar)
+MATH_NOOP(noop, uintl)
+MATH_NOOP(noop, intl)
+MATH_NOOP(noop, ushort)
+MATH_NOOP(noop, short)
+
 __device__ float ___abs(cfloat a) { return cuCabsf(a); }
 __device__ double ___abs(cdouble a) { return cuCabs(a); }
 

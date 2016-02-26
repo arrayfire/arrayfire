@@ -24,14 +24,12 @@ namespace JIT
     {
     private:
         const T m_val;
-        bool m_set_arg;
 
     public:
 
         ScalarNode(T val)
             : Node(dtype_traits<T>::getName(), shortname<T>(false)),
-              m_val(val),
-              m_set_arg(false)
+              m_val(val)
         {
         }
 
@@ -101,12 +99,7 @@ namespace JIT
 
         void resetFlags()
         {
-            m_set_id = false;
-            m_gen_func = false;
-            m_gen_param = false;
-            m_gen_offset = false;
-            m_gen_name = false;
-            m_set_arg = false;
+            resetCommonFlags();
         }
     };
 

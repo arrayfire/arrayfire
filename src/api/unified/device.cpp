@@ -35,6 +35,18 @@ af_err af_get_backend_id(af_backend *result, const af_array in)
     return CALL(result, in);
 }
 
+af_err af_get_device_id(int *device, const af_array in)
+{
+    CHECK_ARRAYS(in);
+    return CALL(device, in);
+}
+
+af_err af_get_active_backend(af_backend *result)
+{
+    *result = unified::AFSymbolManager::getInstance().getActiveBackend();
+    return AF_SUCCESS;
+}
+
 af_err af_info()
 {
     return CALL_NO_PARAMS();
@@ -43,6 +55,11 @@ af_err af_info()
 af_err af_init()
 {
     return CALL_NO_PARAMS();
+}
+
+af_err af_info_string(char **str, const bool verbose)
+{
+    return CALL(str, verbose);
 }
 
 af_err af_device_info(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
@@ -95,6 +112,16 @@ af_err af_free_pinned(void *ptr)
     return CALL(ptr);
 }
 
+af_err af_alloc_host(void **ptr, const dim_t bytes)
+{
+    return CALL(ptr, bytes);
+}
+
+af_err af_free_host(void *ptr)
+{
+    return CALL(ptr);
+}
+
 af_err af_device_array(af_array *arr, const void *data, const unsigned ndims, const dim_t * const dims, const af_dtype type)
 {
     return CALL(arr, data, ndims, dims, type);
@@ -104,6 +131,11 @@ af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
         size_t *lock_bytes, size_t *lock_buffers)
 {
     return CALL(alloc_bytes, alloc_buffers, lock_bytes, lock_buffers);
+}
+
+af_err af_print_mem_info(const char *msg, const int device_id)
+{
+    return CALL(msg, device_id);
 }
 
 af_err af_device_gc()
@@ -128,6 +160,18 @@ af_err af_lock_device_ptr(const af_array arr)
 }
 
 af_err af_unlock_device_ptr(const af_array arr)
+{
+    CHECK_ARRAYS(arr);
+    return CALL(arr);
+}
+
+af_err af_lock_array(const af_array arr)
+{
+    CHECK_ARRAYS(arr);
+    return CALL(arr);
+}
+
+af_err af_unlock_array(const af_array arr)
 {
     CHECK_ARRAYS(arr);
     return CALL(arr);

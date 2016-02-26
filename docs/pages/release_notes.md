@@ -1,6 +1,128 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.3.0
+==============
+
+Major Updates
+-------------
+
+* CPU backend supports aysnchronous execution.
+* Performance improvements to OpenCL BLAS and FFT functions.
+* Improved performance of memory manager.
+* Improvements to visualization functions.
+* Improved sorted order for OpenCL devices.
+* Integration with external OpenCL projects.
+
+Features
+----------
+
+* \ref af::getActiveBackend(): Returns the current backend being used.
+* [Scatter plot](https://github.com/arrayfire/arrayfire/pull/1116) added to graphics.
+* \ref af::transform() now supports perspective transformation matrices.
+* \ref af::infoString(): Returns `af::info()` as a string.
+* \ref af::printMemInfo(): Print a table showing information about buffer from the memory manager
+    * The \ref AF_MEM_INFO macro prints numbers and total sizes of all buffers (requires including af/macros.h)
+* \ref af::allocHost(): Allocates memory on host.
+* \ref af::freeHost(): Frees host side memory allocated by arrayfire.
+* OpenCL functions can now use CPU implementation.
+    * Currently limited to Unified Memory devices (CPU and On-board Graphics).
+    * Functions: af::matmul() and all [LAPACK](\ref linalg_mat) functions.
+    * Takes advantage of optimized libraries such as MKL without doing memory copies.
+    * Use the environment variable `AF_OPENCL_CPU_OFFLOAD=1` to take advantage of this feature.
+* Functions specific to OpenCL backend.
+    * \ref afcl::addDevice(): Adds an external device and context to ArrayFire's device manager.
+    * \ref afcl::deleteDevice(): Removes an external device and context from ArrayFire's device manager.
+    * \ref afcl::setDevice(): Sets an external device and context from ArrayFire's device manager.
+    * \ref afcl::getDeviceType(): Gets the device type of the current device.
+    * \ref afcl::getPlatform(): Gets the platform of the current device.
+* \ref af::createStridedArray() allows [array creation user-defined strides](https://github.com/arrayfire/arrayfire/issues/1177) and device pointer.
+* [Expose functions](https://github.com/arrayfire/arrayfire/issues/1131) that provide information
+  about memory layout of Arrays.
+    * \ref af::getStrides(): Gets the strides for each dimension of the array.
+    * \ref af::getOffset(): Gets the offsets for each dimension of the array.
+    * \ref af::getRawPtr(): Gets raw pointer to the location of the array on device.
+    * \ref af::isLinear(): Returns true if all elements in the array are contiguous.
+    * \ref af::isOwner(): Returns true if the array owns the raw pointer, false if it is a sub-array.
+    * \ref af::getStrides(): Gets the strides of the array.
+    * \ref af::getStrides(): Gets the strides of the array.
+* \ref af::getDeviceId(): Gets the device id on which the array resides.
+* \ref af::isImageIOAvailable(): Returns true if ArrayFire was compiled with Freeimage enabled
+* \ref af::isLAPACKAvailable(): Returns true if ArrayFire was compiled with LAPACK functions enabled
+
+Bug Fixes
+--------------
+
+* Fixed [errors when using 3D / 4D arrays](https://github.com/arrayfire/arrayfire/pull/1251) in select and replace
+* Fixed [JIT errors on AMD devices](https://github.com/arrayfire/arrayfire/pull/1238) for OpenCL backend.
+* Fixed [imageio bugs](https://github.com/arrayfire/arrayfire/pull/1229) for 16 bit images.
+* Fixed [bugs when loading and storing images](https://github.com/arrayfire/arrayfire/pull/1228) natively.
+* Fixed [bug in FFT for NVIDIA GPUs](https://github.com/arrayfire/arrayfire/issues/615) when using OpenCL backend.
+* Fixed [bug when using external context](https://github.com/arrayfire/arrayfire/pull/1241) with OpenCL backend.
+* Fixed [memory leak](https://github.com/arrayfire/arrayfire/issues/1269) in \ref af_median_all().
+* Fixed [memory leaks and performance](https://github.com/arrayfire/arrayfire/pull/1274) in graphics functions.
+* Fixed [bugs when indexing followed by moddims](https://github.com/arrayfire/arrayfire/issues/1275).
+* \ref af_get_revision() now returns actual commit rather than AF_REVISION.
+* Fixed [releasing arrays](https://github.com/arrayfire/arrayfire/issues/1282) when using different backends.
+* OS X OpenCL: [LAPACK functions](\ref linalg_mat) on CPU devices use OpenCL offload (previously threw errors).
+* [Add support for 32-bit integer image types](https://github.com/arrayfire/arrayfire/pull/1287) in Image IO.
+* Fixed [set operations for row vectors](https://github.com/arrayfire/arrayfire/issues/1300)
+* Fixed [bugs](https://github.com/arrayfire/arrayfire/issues/1243) in \ref af::meanShift() and af::orb().
+
+Improvements
+--------------
+
+* Optionally [offload BLAS and LAPACK](https://github.com/arrayfire/arrayfire/pull/1221) functions to CPU implementations to improve performance.
+* Performance improvements to the memory manager.
+* Error messages are now more detailed.
+* Improved sorted order for OpenCL devices.
+* JIT heuristics can now be tweaked using environment variables. See
+  [Environment Variables](\ref configuring_environment) tutorial.
+* Add `BUILD_<BACKEND>` [options to examples and tests](https://github.com/arrayfire/arrayfire/issues/1286)
+  to toggle backends when compiling independently.
+
+Examples
+----------
+
+* New visualization [example simulating gravity](\ref graphics/gravity_sim.cpp).
+
+Build
+----------
+
+* Support for Intel `icc` compiler
+* Support to compile with Intel MKL as a BLAS and LAPACK provider
+* Tests are now available for building as standalone (like examples)
+* Tests can now be built as a single file for each backend
+* Better handling of NONFREE build options
+* [Searching for GLEW in CMake default paths](https://github.com/arrayfire/arrayfire/pull/1292)
+* Fixes for compiling with MKL on OSX.
+
+Installers
+----------
+* Improvements to OSX Installer
+    * CMake config files are now installed with libraries
+    * Independent options for installing examples and documentation components
+
+Deprecations
+-----------
+
+* `af_lock_device_arr` is now deprecated to be removed in v4.0.0. Use \ref af_lock_array() instead.
+* `af_unlock_device_arr` is now deprecated to be removed in v4.0.0. use \ref af_unlock_array() instead.
+
+Documentation
+--------------
+
+* Fixes to documentation for \ref matchTemplate().
+* Improved documentation for deviceInfo.
+* Fixes to documentation for \ref exp().
+
+Known Issues
+------------
+
+* [Solve OpenCL fails on NVIDIA Maxwell devices](https://github.com/arrayfire/arrayfire/issues/1246)
+  for f32 and c32 when M > N and K % 4 is 1 or 2.
+
+
 v3.2.2
 ==============
 

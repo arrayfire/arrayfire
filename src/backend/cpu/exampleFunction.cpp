@@ -24,6 +24,13 @@ namespace cpu
 template<typename T>
 Array<T> exampleFunction(const Array<T> &in, const af_someenum_t method)
 {
+    in.eval();                          // All input Arrays should call eval mandatorily
+                                        // in CPU backend function implementations. Since
+                                        // the cpu fns are asynchronous launches, any Arrays
+                                        // that are either views/JIT nodes needs to evaluated
+                                        // before they are passed onto functions that are
+                                        // enqueued onto the queues.
+
     dim4 outputDims;                    // this should be '= in.dims();' in most cases
                                         // but would definitely depend on the type of
                                         // algorithm you are implementing.
@@ -37,7 +44,7 @@ Array<T> exampleFunction(const Array<T> &in, const af_someenum_t method)
 
     //dim4 in_dims    = in.dims();        // you can retrieve dimensions
 
-    //dim4 in_offsets = in.offsets();     // you can retrieve offsets - used when given array
+    //dim_t in_offset = in.getOffset(); // you can retrieve the offset - used when given array
                                         // is an sub-array pointing to some other array and
                                         // doesn't have memory of its own
 
@@ -70,4 +77,3 @@ INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 
 }
-

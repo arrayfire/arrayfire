@@ -15,13 +15,11 @@
 #include <handle.hpp>
 #include <homography.hpp>
 #include <arith.hpp>
-#include <ireduce.hpp>
 #include <random.hpp>
-#include <svd.hpp>
-#include <memory.hpp>
 #include <cstring>
-
 #include <cfloat>
+#include <platform.hpp>
+#include <queue.hpp>
 
 using af::dim4;
 
@@ -154,12 +152,9 @@ unsigned updateIterations(float inlier_ratio, unsigned iter)
 }
 
 template<typename T>
-int computeHomography(T* H_ptr,
-                      const float* rnd_ptr,
-                      const float* x_src_ptr,
-                      const float* y_src_ptr,
-                      const float* x_dst_ptr,
-                      const float* y_dst_ptr)
+int computeHomography(T* H_ptr, const float* rnd_ptr,
+                      const float* x_src_ptr, const float* y_src_ptr,
+                      const float* x_dst_ptr, const float* y_dst_ptr)
 {
     if ((unsigned)rnd_ptr[0] == (unsigned)rnd_ptr[1] || (unsigned)rnd_ptr[0] == (unsigned)rnd_ptr[2] ||
         (unsigned)rnd_ptr[0] == (unsigned)rnd_ptr[3] || (unsigned)rnd_ptr[1] == (unsigned)rnd_ptr[2] ||
@@ -192,6 +187,8 @@ int computeHomography(T* H_ptr,
     float dst_scale = sqrt(2.0f) / sqrt(dst_var);
 
     Array<T> A = createValueArray<T>(af::dim4(9, 9), (T)0);
+    A.eval();
+    getQueue().sync();
     af::dim4 Adims = A.dims();
     T* A_ptr = A.get();
 
@@ -217,6 +214,8 @@ int computeHomography(T* H_ptr,
     }
 
     Array<T> V = createValueArray<T>(af::dim4(Adims[1], Adims[1]), (T)0);
+    V.eval();
+    getQueue().sync();
     JacobiSVD<T>(A.get(), V.get(), 9, 9);
 
     af::dim4 Vdims = V.dims();
@@ -262,6 +261,8 @@ int findBestHomography(Array<T> &bestH,
     const float* y_dst_ptr = y_dst.get();
 
     Array<T> H = createValueArray<T>(af::dim4(9, iterations), (T)0);
+    H.eval();
+    getQueue().sync();
 
     const af::dim4 rdims = rnd.dims();
     const af::dim4 Hdims = H.dims();
@@ -278,8 +279,7 @@ int findBestHomography(Array<T> &bestH,
         const unsigned ridx = rdims[0] * i;
         const float* rnd_ptr = rnd.get() + ridx;
 
-        if (computeHomography<T>(H_ptr, rnd_ptr, x_src_ptr, y_src_ptr,
-                                 x_dst_ptr, y_dst_ptr))
+        if (computeHomography<T>(H_ptr, rnd_ptr, x_src_ptr, y_src_ptr, x_dst_ptr, y_dst_ptr))
             continue;
 
         if (htype == AF_HOMOGRAPHY_RANSAC) {
@@ -320,7 +320,6 @@ int findBestHomography(Array<T> &bestH,
                 minMedian = median;
                 bestIdx = i;
             }
-
         }
     }
 
@@ -355,6 +354,11 @@ int homography(Array<T> &bestH,
                const float inlier_thr,
                const unsigned iterations)
 {
+    x_src.eval();
+    y_src.eval();
+    x_dst.eval();
+    y_dst.eval();
+
     const af::dim4 idims = x_src.dims();
     const unsigned nsamples = idims[0];
 
@@ -366,6 +370,8 @@ int homography(Array<T> &bestH,
     Array<float> frnd = randu<float>(rdims);
     Array<float> fctr = createValueArray<float>(rdims, (float)nsamples);
     Array<float> rnd = arithOp<float, af_mul_t>(frnd, fctr, rdims);
+    rnd.eval();
+    getQueue().sync();
 
     return findBestHomography<T>(bestH, x_src, y_src, x_dst, y_dst, rnd, iter, nsamples, inlier_thr, htype);
 }

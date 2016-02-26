@@ -14,7 +14,9 @@
 #include <kernel/lu_split.hpp>
 #include <copy.hpp>
 #include <blas.hpp>
+#include <platform.hpp>
 #include <magma/magma.h>
+#include <cpu/cpu_lu.hpp>
 
 namespace opencl
 {
@@ -41,8 +43,11 @@ Array<int> convertPivot(int *ipiv, int in_sz, int out_sz)
 template<typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 {
-
     try {
+        if(OpenCLCPUOffload()) {
+            return cpu::lu(lower, upper, pivot, in);
+        }
+
         dim4 iDims = in.dims();
         int M = iDims[0];
         int N = iDims[1];
@@ -67,6 +72,10 @@ template<typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 {
     try {
+        if(OpenCLCPUOffload()) {
+            return cpu::lu_inplace(in, convert_pivot);
+        }
+
         initBlas();
         dim4 iDims = in.dims();
         int M = iDims[0];
@@ -86,6 +95,11 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
     } catch(cl::Error &err) {
         CL_TO_AF_ERROR(err);
     }
+}
+
+bool isLAPACKAvailable()
+{
+    return true;
 }
 
 #define INSTANTIATE_LU(T)                                                                           \
@@ -114,6 +128,11 @@ template<typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
+}
+
+bool isLAPACKAvailable()
+{
+    return false;
 }
 
 #define INSTANTIATE_LU(T)                                                                           \

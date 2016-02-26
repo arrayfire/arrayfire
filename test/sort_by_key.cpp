@@ -26,7 +26,7 @@ using af::cfloat;
 using af::cdouble;
 
 template<typename T>
-class Sort : public ::testing::Test
+class SortByKey : public ::testing::Test
 {
     public:
         virtual void SetUp() {
@@ -41,7 +41,7 @@ class Sort : public ::testing::Test
 typedef ::testing::Types<float, double, uint, int, uchar, short, ushort, intl, uintl> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Sort, TestTypes);
+TYPED_TEST_CASE(SortByKey, TestTypes);
 
 template<typename T>
 void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const unsigned resultIdx1, bool isSubRef = false, const vector<af_seq> * seqv = NULL)
@@ -104,10 +104,10 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     if(tempArray != 0) af_release_array(tempArray);
 }
 
-#define SORT_INIT(desc, file, dir, resultIdx0, resultIdx1)                                       \
-    TYPED_TEST(Sort, desc)                                                                       \
-    {                                                                                            \
-        sortTest<TypeParam>(string(TEST_DIR"/sort/"#file".test"), dir, resultIdx0, resultIdx1);  \
+#define SORT_INIT(desc, file, dir, resultIdx0, resultIdx1)              \
+    TYPED_TEST(SortByKey, desc)                                         \
+    {                                                                   \
+        sortTest<TypeParam>(string(TEST_DIR"/sort/"#file".test"), dir, resultIdx0, resultIdx1); \
     }
 
     SORT_INIT(Sort0True,      sort_by_key_tiny,  true,  0, 1);
@@ -116,9 +116,8 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     SORT_INIT(Sort10x10False, sort_by_key_2D,    false, 2, 3);
     SORT_INIT(Sort1000True,   sort_by_key_1000,  true,  0, 1);
     SORT_INIT(SortMedTrue,    sort_by_key_med,   true,  0, 1);
-    // FIXME: below two tests are disabled temporarily until issue#995 is fixed
-    //SORT_INIT(Sort1000False,  sort_by_key_1000,  false, 2, 3);
-    //SORT_INIT(SortMedFalse,   sort_by_key_med,   false, 2, 3);
+    SORT_INIT(Sort1000False,  sort_by_key_1000,  false, 2, 3);
+    SORT_INIT(SortMedFalse,   sort_by_key_med,   false, 2, 3);
     // Takes too much time in current implementation. Enable when everything is parallel
     //SORT_INIT(SortLargeTrue,  sort_by_key_large, true,  0, 1);
     //SORT_INIT(SortLargeFalse, sort_by_key_large, false, 2, 3);
@@ -169,4 +168,3 @@ TEST(SortByKey, CPP)
     delete[] keyData;
     delete[] valData;
 }
-

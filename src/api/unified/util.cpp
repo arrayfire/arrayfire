@@ -56,8 +56,3 @@ af_err af_example_function(af_array* out, const af_array in, const af_someenum_t
     CHECK_ARRAYS(in);
     return CALL(out, in, param);
 }
-
-af_err af_get_version(int *major, int *minor, int *patch)
-{
-    return CALL(major, minor, patch);
-}

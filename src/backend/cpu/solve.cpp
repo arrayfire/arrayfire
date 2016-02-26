@@ -11,52 +11,40 @@
 #include <err_common.hpp>
 
 #if defined(WITH_CPU_LINEAR_ALGEBRA)
-
 #include <af/dim4.hpp>
 #include <handle.hpp>
-#include <range.hpp>
-#include <iostream>
 #include <cassert>
 #include <err_cpu.hpp>
-
 #include <lapack_helper.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 namespace cpu
 {
 
 template<typename T>
 using gesv_func_def = int (*)(ORDER_TYPE, int, int,
-                              T *, int,
-                              int *,
-                              T *, int);
+                              T *, int, int *, T *, int);
 
 template<typename T>
-using gels_func_def = int (*)(ORDER_TYPE, char,
-                              int, int, int,
-                              T *, int,
-                              T *, int);
+using gels_func_def = int (*)(ORDER_TYPE, char, int, int, int,
+                              T *, int, T *, int);
 
 template<typename T>
-using getrs_func_def = int (*)(ORDER_TYPE, char,
-                               int, int,
-                               const T *, int,
-                               const int *,
-                               T *, int);
+using getrs_func_def = int (*)(ORDER_TYPE, char, int, int,
+                               const T *, int, const int *, T *, int);
 
 template<typename T>
-using trtrs_func_def = int (*)(ORDER_TYPE,
-                               char, char, char,
-                               int, int,
-                               const T *, int,
-                               T *, int);
+using trtrs_func_def = int (*)(ORDER_TYPE, char, char, char, int, int,
+                               const T *, int, T *, int);
 
 
-#define SOLVE_FUNC_DEF( FUNC )                                      \
+#define SOLVE_FUNC_DEF( FUNC )                                 \
 template<typename T> FUNC##_func_def<T> FUNC##_func();
 
 
-#define SOLVE_FUNC( FUNC, TYPE, PREFIX )                            \
-template<> FUNC##_func_def<TYPE>     FUNC##_func<TYPE>()            \
+#define SOLVE_FUNC( FUNC, TYPE, PREFIX )                       \
+template<> FUNC##_func_def<TYPE>     FUNC##_func<TYPE>()       \
 { return & LAPACK_NAME(PREFIX##FUNC); }
 
 SOLVE_FUNC_DEF( gesv )
@@ -87,16 +75,20 @@ template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
                  const Array<T> &b, const af_mat_prop options)
 {
-    int N = A.dims()[0];
-    int NRHS = b.dims()[1];
+    A.eval();
+    pivot.eval();
+    b.eval();
 
+    int N        = A.dims()[0];
+    int NRHS     = b.dims()[1];
     Array< T > B = copyArray<T>(b);
 
-    getrs_func<T>()(AF_LAPACK_COL_MAJOR, 'N',
-                    N, NRHS,
-                    A.get(), A.strides()[1],
-                    pivot.get(),
-                    B.get(), B.strides()[1]);
+    auto func = [=] (Array<T> A, Array<T> B, Array<int> pivot, int N, int NRHS) {
+        getrs_func<T>()(AF_LAPACK_COL_MAJOR, 'N',
+                        N, NRHS, A.get(), A.strides()[1],
+                        pivot.get(), B.get(), B.strides()[1]);
+    };
+    getQueue().enqueue(func, A, B, pivot, N, NRHS);
 
     return B;
 }
@@ -104,17 +96,24 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
 template<typename T>
 Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop options)
 {
-    Array<T> B = copyArray<T>(b);
-    int N = B.dims()[0];
-    int NRHS = B.dims()[1];
+    A.eval();
+    b.eval();
 
-    trtrs_func<T>()(AF_LAPACK_COL_MAJOR,
-                    options & AF_MAT_UPPER ? 'U' : 'L',
-                    'N', // transpose flag
-                    options & AF_MAT_DIAG_UNIT ? 'U' : 'N',
-                    N, NRHS,
-                    A.get(), A.strides()[1],
-                    B.get(), B.strides()[1]);
+    Array<T> B = copyArray<T>(b);
+    int N      = B.dims()[0];
+    int NRHS   = B.dims()[1];
+
+    auto func = [=] (Array<T> A, Array<T> B, int N, int NRHS, const af_mat_prop options) {
+        trtrs_func<T>()(AF_LAPACK_COL_MAJOR,
+                        options & AF_MAT_UPPER ? 'U' : 'L',
+                        'N', // transpose flag
+                        options & AF_MAT_DIAG_UNIT ? 'U' : 'N',
+                        N, NRHS,
+                        A.get(), A.strides()[1],
+                        B.get(), B.strides()[1]);
+    };
+    getQueue().enqueue(func, A, B, N, NRHS, options);
+
     return B;
 }
 
@@ -122,9 +121,10 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop o
 template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
+    a.eval();
+    b.eval();
 
-    if (options & AF_MAT_UPPER ||
-        options & AF_MAT_LOWER) {
+    if (options & AF_MAT_UPPER || options & AF_MAT_LOWER) {
         return triangleSolve<T>(a, b, options);
     }
 
@@ -132,40 +132,33 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
     int N = a.dims()[1];
     int K = b.dims()[1];
 
-
     Array<T> A = copyArray<T>(a);
     Array<T> B = padArray<T, T>(b, dim4(max(M, N), K));
 
     if(M == N) {
         Array<int> pivot = createEmptyArray<int>(dim4(N, 1, 1));
-        gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K,
-                       A.get(), A.strides()[1],
-                       pivot.get(),
-                       B.get(), B.strides()[1]);
-    } else {
-        int sM = a.strides()[1];
-        int sN = a.strides()[2] / sM;
 
-        gels_func<T>()(AF_LAPACK_COL_MAJOR, 'N',
-                       M, N, K,
-                       A.get(), A.strides()[1],
-                       B.get(), max(sM, sN));
+        auto func = [=] (Array<T> A, Array<T> B, Array<int> pivot, int N, int K) {
+            gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K, A.get(), A.strides()[1],
+                           pivot.get(), B.get(), B.strides()[1]);
+        };
+        getQueue().enqueue(func, A, B, pivot, N, K);
+    } else {
+        auto func = [=] (Array<T> A, Array<T> B, int M, int N, int K) {
+            int sM = A.strides()[1];
+            int sN = A.strides()[2] / sM;
+
+            gels_func<T>()(AF_LAPACK_COL_MAJOR, 'N',
+                    M, N, K,
+                    A.get(), A.strides()[1],
+                    B.get(), max(sM, sN));
+        };
         B.resetDims(dim4(N, K));
+        getQueue().enqueue(func, A, B, M, N, K);
     }
 
     return B;
 }
-
-#define INSTANTIATE_SOLVE(T)                                            \
-    template Array<T> solve<T>(const Array<T> &a, const Array<T> &b,    \
-                               const af_mat_prop options);              \
-    template Array<T> solveLU<T>(const Array<T> &A, const Array<int> &pivot, \
-                                 const Array<T> &b, const af_mat_prop options); \
-
-INSTANTIATE_SOLVE(float)
-INSTANTIATE_SOLVE(cfloat)
-INSTANTIATE_SOLVE(double)
-INSTANTIATE_SOLVE(cdouble)
 
 }
 
@@ -178,16 +171,21 @@ template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
                  const Array<T> &b, const af_mat_prop options)
 {
-    AF_ERROR("Linear Algebra is diabled on CPU",
-             AF_ERR_NOT_CONFIGURED);
+    AF_ERROR("Linear Algebra is diabled on CPU", AF_ERR_NOT_CONFIGURED);
 }
 
 template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
-    AF_ERROR("Linear Algebra is diabled on CPU",
-              AF_ERR_NOT_CONFIGURED);
+    AF_ERROR("Linear Algebra is diabled on CPU", AF_ERR_NOT_CONFIGURED);
 }
+
+}
+
+#endif
+
+namespace cpu
+{
 
 #define INSTANTIATE_SOLVE(T)                                            \
     template Array<T> solve<T>(const Array<T> &a, const Array<T> &b,    \
@@ -199,6 +197,5 @@ INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)
 INSTANTIATE_SOLVE(double)
 INSTANTIATE_SOLVE(cdouble)
-}
 
-#endif
+}

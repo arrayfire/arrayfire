@@ -22,8 +22,7 @@ namespace cuda
 
 int getBackend();
 
-std::string getInfo();
-
+std::string getDeviceInfo();
 std::string getDeviceInfo(int device);
 
 std::string getPlatformInfo();
@@ -32,11 +31,11 @@ std::string getDriverVersion();
 
 std::string getCUDARuntimeVersion();
 
-std::string getInfo();
-
 bool isDoubleSupported(int device);
 
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+
+unsigned getMaxJitSize();
 
 int getDeviceCount();
 
@@ -46,9 +45,16 @@ int getDeviceNativeId(int device);
 
 cudaStream_t getStream(int device);
 
+size_t getDeviceMemorySize(int device);
+
+size_t getHostMemorySize();
+
 int setDevice(int device);
 
 void sync(int device);
+
+// Returns true if the AF_SYNCHRONIZE_CALLS environment variable is set to 1
+bool synchronize_calls();
 
 cudaDeviceProp getDeviceProp(int device);
 
@@ -73,7 +79,7 @@ class DeviceManager
 
         friend std::string getCUDARuntimeVersion();
 
-        friend std::string getInfo();
+        friend std::string getDeviceInfo();
 
         friend int getDeviceCount();
 

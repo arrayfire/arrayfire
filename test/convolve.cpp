@@ -17,6 +17,7 @@
 
 using std::vector;
 using std::string;
+using std::abs;
 using af::cfloat;
 using af::cdouble;
 

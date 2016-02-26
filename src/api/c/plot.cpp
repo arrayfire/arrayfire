@@ -27,7 +27,7 @@ using namespace detail;
 using namespace graphics;
 
 template<typename T>
-fg::Plot* setup_plot(const af_array X, const af_array Y)
+fg::Plot* setup_plot(const af_array X, const af_array Y, fg::PlotType type, fg::MarkerType marker)
 {
     Array<T> xIn = getArray<T>(X);
     Array<T> yIn = getArray<T>(Y);
@@ -39,14 +39,19 @@ fg::Plot* setup_plot(const af_array X, const af_array Y)
 
     dim4 rdims(1, 0, 2, 3);
 
-    Array<T> Z = join(1, xIn, yIn);
-    Array<T> P = reorder(Z, rdims);
+    dim_t elements = xIn.elements();
+    dim4 rowDims = dim4(1, elements, 1, 1);
 
-    ArrayInfo Xinfo = getInfo(X);
-    af::dim4 X_dims = Xinfo.dims();
+    // Force the vectors to be row vectors
+    // This ensures we can use join(0,..) and skip reorder
+    xIn.modDims(rowDims);
+    yIn.modDims(rowDims);
+
+    // join along first dimension, skip reorder
+    Array<T> P = join(0, xIn, yIn);
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
-    fg::Plot* plot = fgMngr.getPlot(X_dims.elements(), getGLType<T>());
+    fg::Plot* plot = fgMngr.getPlot(elements, getGLType<T>(), type, marker);
     plot->setColor(1.0, 0.0, 0.0);
     plot->setAxesLimits(xmax, xmin, ymax, ymin);
     plot->setAxesTitles("X Axis", "Y Axis");
@@ -55,11 +60,9 @@ fg::Plot* setup_plot(const af_array X, const af_array Y)
 
     return plot;
 }
-#endif
 
-af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props)
+af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, const af_cell* const props, fg::PlotType type=fg::FG_LINE, fg::MarkerType marker=fg::FG_NONE)
 {
-#if defined(WITH_GRAPHICS)
     if(wind==0) {
         std::cerr<<"Not a valid window"<<std::endl;
         return AF_SUCCESS;
@@ -85,12 +88,12 @@ af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, co
         fg::Plot* plot = NULL;
 
         switch(Xtype) {
-            case f32: plot = setup_plot<float  >(X, Y); break;
-            case s32: plot = setup_plot<int    >(X, Y); break;
-            case u32: plot = setup_plot<uint   >(X, Y); break;
-            case s16: plot = setup_plot<short  >(X, Y); break;
-            case u16: plot = setup_plot<ushort >(X, Y); break;
-            case u8 : plot = setup_plot<uchar  >(X, Y); break;
+            case f32: plot = setup_plot<float  >(X, Y, type, marker); break;
+            case s32: plot = setup_plot<int    >(X, Y, type, marker); break;
+            case u32: plot = setup_plot<uint   >(X, Y, type, marker); break;
+            case s16: plot = setup_plot<short  >(X, Y, type, marker); break;
+            case u16: plot = setup_plot<ushort >(X, Y, type, marker); break;
+            case u8 : plot = setup_plot<uchar  >(X, Y, type, marker); break;
             default:  TYPE_ERROR(1, Xtype);
         }
 
@@ -101,6 +104,24 @@ af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, co
     }
     CATCHALL;
     return AF_SUCCESS;
+}
+
+#endif // WITH_GRAPHICS
+
+af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props)
+{
+#if defined(WITH_GRAPHICS)
+    return plotWrapper(wind, X, Y, props);
+#else
+    return AF_ERR_NO_GFX;
+#endif
+}
+
+af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y, const af_marker_type af_marker, const af_cell* const props)
+{
+#if defined(WITH_GRAPHICS)
+    fg::MarkerType fg_marker = getFGMarker(af_marker);
+    return plotWrapper(wind, X, Y, props, fg::FG_SCATTER, fg_marker);
 #else
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif

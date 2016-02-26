@@ -49,8 +49,18 @@ namespace kernel
 
         ~curandStateManager()
         {
-            //if(_state != NULL) memFree((char*)_state);
-            if(_state != NULL) CUDA_CHECK(cudaFree(_state));
+            try {
+                if (_state != NULL) {
+                    cudaError_t err = cudaFree(_state);
+                    if (err != cudaErrorCudartUnloading) {
+                        CUDA_CHECK(err);
+                    }
+                }
+            } catch (AfError err) {
+                if (err.getError() != AF_ERR_DRIVER) { // Can happen from cudaErrorDevicesUnavailable
+                    throw err;
+                }
+            }
         }
 
         unsigned long long getSeed() const
@@ -69,7 +79,6 @@ namespace kernel
             if(_state)
                 return _state;
 
-            //_state = (curandState_t*)memAlloc<char>(BLOCKS * THREADS * sizeof(curandState_t));
             CUDA_CHECK(cudaMalloc((void **)&_state, BLOCKS * THREADS * sizeof(curandState_t)));
             this->resetSeed();
             return _state;

@@ -141,9 +141,9 @@ af_err af_create_window(af_window *out, const int width, const int height, const
 
         wnd = new fg::Window(width, height, title, mainWnd);
         wnd->setFont(fgMngr.getFont());
+        *out = reinterpret_cast<af_window>(wnd);
     }
     CATCHALL;
-    *out = reinterpret_cast<af_window>(wnd);
     return AF_SUCCESS;
 #else
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
@@ -256,6 +256,28 @@ af_err af_is_window_closed(bool *out, const af_window wind)
     try {
         fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
         *out = wnd->close();
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+#else
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
+#endif
+}
+
+af_err af_set_visibility(const af_window wind, const bool is_visible)
+{
+#if defined(WITH_GRAPHICS)
+    if(wind==0) {
+        std::cerr<<"Not a valid window"<<std::endl;
+        return AF_SUCCESS;
+    }
+
+    try {
+        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        if (is_visible)
+            wnd->show();
+        else
+            wnd->hide();
     }
     CATCHALL;
     return AF_SUCCESS;

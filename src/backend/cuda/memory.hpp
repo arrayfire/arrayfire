@@ -9,24 +9,36 @@
 #pragma once
 
 #include <af/defines.h>
+
 namespace cuda
 {
     template<typename T> T* memAlloc(const size_t &elements);
+    void *memAllocUser(const size_t &bytes);
+
+    // Need these as 2 separate function and not a default argument
+    // This is because it is used as the deleter in shared pointer
+    // which cannot support default arguments
     template<typename T> void memFree(T* ptr);
-    template<typename T> void memPop(const T *ptr);
-    template<typename T> void memPush(const T *ptr);
+    void memFreeUser(void* ptr);
+
+    void memLock(const void *ptr);
+    void memUnlock(const void *ptr);
 
     template<typename T> T* pinnedAlloc(const size_t &elements);
     template<typename T> void pinnedFree(T* ptr);
 
-    static const unsigned MAX_BUFFERS   = 100;
-    static const unsigned MAX_BYTES     = (1 << 30);
+    size_t getMaxBytes();
+    unsigned getMaxBuffers();
 
     void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                           size_t *lock_bytes,  size_t *lock_buffers);
     void garbageCollect();
     void pinnedGarbageCollect();
 
+    void printMemInfo(const char *msg, const int device);
+
     void setMemStepSize(size_t step_bytes);
     size_t getMemStepSize(void);
+
+    bool checkMemoryLimit();
 }

@@ -30,6 +30,8 @@ namespace af
 
    \brief Window object to render af::arrays
 
+   Windows are not CopyConstructible or CopyAssignable.
+
    \ingroup graphics_func
  */
 class AFAPI Window {
@@ -42,6 +44,9 @@ class AFAPI Window {
         ColorMap _cmap;
 
         void initWindow(const int width, const int height, const char* const title);
+
+        Window(const Window&);                 // Prevent copy-construction
+        Window& operator=(const Window&);      // Prevent assignment
 
     public:
         /**
@@ -84,6 +89,7 @@ class AFAPI Window {
            \ingroup gfx_func_window
          */
         Window(const af_window wnd);
+
         /**
            Destroys the window handle
 
@@ -177,8 +183,38 @@ class AFAPI Window {
 
            \ingroup gfx_func_draw
          */
-
         void plot(const array& X, const array& Y, const char* const title=NULL);
+
+#if AF_API_VERSION >= 33
+        /**
+           Renders the input arrays as a 2D scatter-plot to the window
+
+           \param[in] X is an \ref array with the x-axis data points
+           \param[in] Y is an \ref array with the y-axis data points
+           \param[in] marker is an \ref markerType enum specifying which marker to use in the scatter plot
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p X and \p Y should be vectors.
+
+           \ingroup gfx_func_draw
+         */
+        void scatter(const array& X, const array& Y,
+                     const af::markerType marker = AF_MARKER_POINT, const char* const title = NULL);
+#endif
+
+#if AF_API_VERSION >= 33
+        /**
+           Renders the input arrays as a 3D scatter-plot to the window
+
+           \param[in] P is an \ref af_array or matrix with the xyz-values of the points
+           \param[in] marker is an \ref markerType enum specifying which marker to use in the scatter plot
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \ingroup gfx_func_draw
+         */
+        void scatter3(const array& P, const af::markerType marker = AF_MARKER_POINT,
+                      const char* const title = NULL);
+#endif
 
         /**
            Renders the input array as a histogram to the window
@@ -252,6 +288,17 @@ class AFAPI Window {
            \ingroup gfx_func_window
         */
         bool close();
+
+#if AF_API_VERSION >= 33
+        /**
+           Hide/Show the window
+
+           \param[in] isVisible indicates if the window is to be hidden or brought into focus
+
+           \ingroup gfx_func_window
+         */
+        void setVisibility(const bool isVisible);
+#endif
 
         /**
            This function is used to keep track of which cell in the grid mode is
@@ -371,6 +418,47 @@ AFAPI af_err af_draw_image(const af_window wind, const af_array in, const af_cel
 */
 AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props);
 
+#if AF_API_VERSION >= 33
+/**
+   C Interface wrapper for drawing an array as a plot
+
+   \param[in]   wind is the window handle
+   \param[in]   X is an \ref af_array with the x-axis data points
+   \param[in]   Y is an \ref af_array with the y-axis data points
+   \param[in]   marker is an \ref af_marker_type enum specifying which marker to use in the scatter plot
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p X and \p Y should be vectors.
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y,
+                             const af_marker_type marker, const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 33
+/**
+   C Interface wrapper for drawing an array as a plot
+
+   \param[in]   wind is the window handle
+   \param[in]   P is an \ref af_array or matrix with the xyz-values of the points
+   \param[in]   marker is an \ref af_marker_type enum specifying which marker to use in the scatter plot
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_scatter3(const af_window wind, const af_array P,
+                              const af_marker_type marker, const af_cell* const props);
+#endif
+
 #if AF_API_VERSION >= 32
 /**
    C Interface wrapper for drawing an array as a plot
@@ -469,6 +557,18 @@ AFAPI af_err af_show(const af_window wind);
    \ingroup gfx_func_window
 */
 AFAPI af_err af_is_window_closed(bool *out, const af_window wind);
+
+#if AF_API_VERSION >= 33
+/**
+   Hide/Show a window
+
+   \param[in] wind is the window whose visibility is to be changed
+   \param[in] is_visible indicates if the window is to be hidden or brought into focus
+
+   \ingroup gfx_func_window
+ */
+AFAPI af_err af_set_visibility(const af_window wind, const bool is_visible);
+#endif
 
 /**
    C Interface wrapper for destroying a window handle

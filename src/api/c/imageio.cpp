@@ -24,6 +24,7 @@
 #include <traits.hpp>
 #include <memory.hpp>
 #include <err_common.hpp>
+#include <handle.hpp>
 
 #include <string>
 #include <cstring>
@@ -60,14 +61,15 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                     pDst0[indx] = (float) *(src + (x * step + FI_RGBA_RED));
                     pDst1[indx] = (float) *(src + (x * step + FI_RGBA_GREEN));
                     pDst2[indx] = (float) *(src + (x * step + FI_RGBA_BLUE));
+                    if (fo_color == 4) pDst3[indx] = (float) *(src + (x * step + FI_RGBA_ALPHA));
                 } else {
                     // Non 8-bit types do not use ordering
                     // See Pixel Access Functions Chapter in FreeImage Doc
                     pDst0[indx] = (float) *(src + (x * step + 0));
                     pDst1[indx] = (float) *(src + (x * step + 1));
                     pDst2[indx] = (float) *(src + (x * step + 2));
+                    if (fo_color == 4) pDst3[indx] = (float) *(src + (x * step + 3));
                 }
-                if (fo_color == 4) pDst3[indx] = (float) *(src + (x * step + FI_RGBA_ALPHA));
             }
             indx++;
         }
@@ -186,6 +188,9 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
             AF_ERROR("FreeImage Error: Bits per channel not supported", AF_ERR_NOT_SUPPORTED);
         }
 
+        // data type
+        FREE_IMAGE_TYPE image_type = FreeImage_GetImageType(pBitmap);
+
         // sizes
         uint fi_w = FreeImage_GetWidth(pBitmap);
         uint fi_h = FreeImage_GetHeight(pBitmap);
@@ -203,21 +208,36 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
                 else if(fi_bpc == 16)
                     AF_CHECK((readImage<ushort, AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float,  AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    switch(image_type) {
+                        case FIT_UINT32: AF_CHECK((readImage<uint,  AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_INT32: AF_CHECK((readImage<int,   AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_FLOAT: AF_CHECK((readImage<float,  AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        default: AF_ERROR("FreeImage Error: Unknown image type", AF_ERR_NOT_SUPPORTED); break;
+                    }
             } else if (fi_color == 1) {
                 if(fi_bpc == 8)
                     AF_CHECK((readImage<uchar,  AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
                     AF_CHECK((readImage<ushort, AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float,  AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    switch(image_type) {
+                        case FIT_UINT32: AF_CHECK((readImage<uint,  AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_INT32: AF_CHECK((readImage<int,   AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_FLOAT: AF_CHECK((readImage<float,  AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        default: AF_ERROR("FreeImage Error: Unknown image type", AF_ERR_NOT_SUPPORTED); break;
+                    }
             } else {             //3 channel image
                 if(fi_bpc == 8)
                     AF_CHECK((readImage<uchar,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
                     AF_CHECK((readImage<ushort, AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    switch(image_type) {
+                        case FIT_UINT32: AF_CHECK((readImage<uint,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_INT32: AF_CHECK((readImage<int,   AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_FLOAT: AF_CHECK((readImage<float,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        default: AF_ERROR("FreeImage Error: Unknown image type", AF_ERR_NOT_SUPPORTED); break;
+                    }
             }
         } else {                    //output gray irrespective
             if(fi_color == 1) {     //4 channel image
@@ -226,14 +246,24 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
                 else if(fi_bpc == 16)
                     AF_CHECK((readImage<ushort, AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float,  AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    switch(image_type) {
+                        case FIT_UINT32: AF_CHECK((readImage<uint,  AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_INT32: AF_CHECK((readImage<int,   AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_FLOAT: AF_CHECK((readImage<float,  AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        default: AF_ERROR("FreeImage Error: Unknown image type", AF_ERR_NOT_SUPPORTED); break;
+                    }
             } else if (fi_color == 3 || fi_color == 4) {
                 if(fi_bpc == 8)
                     AF_CHECK((readImage<uchar,  AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
                     AF_CHECK((readImage<ushort, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float,  AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    switch(image_type) {
+                        case FIT_UINT32: AF_CHECK((readImage<uint,  AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_INT32: AF_CHECK((readImage<int,   AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        case FIT_FLOAT: AF_CHECK((readImage<float,  AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h)); break;
+                        default: AF_ERROR("FreeImage Error: Unknown image type", AF_ERR_NOT_SUPPORTED); break;
+                    }
             }
         }
 
@@ -298,6 +328,14 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_CHECK(af_mul(&in, in_, c255, false));
             AF_CHECK(af_release_array(c255));
             free_in = true;
+        } else if(max_real < 256) {
+            in = in_;
+        } else if (max_real < 65536) {
+            af_array c255 = 0;
+            AF_CHECK(af_constant(&c255, 257.0, info.ndims(), info.dims().get(), f32));
+            AF_CHECK(af_div(&in, in_, c255, false));
+            AF_CHECK(af_release_array(c255));
+            free_in = true;
         } else {
             in = in_;
         }
@@ -333,10 +371,10 @@ af_err af_save_image(const char* filename, const af_array in_)
             // Copy the array into FreeImage buffer
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
-                    *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
-                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
-                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
-                    *(pDstLine + x * step + 3) = (uchar) pSrc3[indx]; // a
+                    *(pDstLine + x * step + FI_RGBA_RED  ) = (uchar) pSrc0[indx]; // r
+                    *(pDstLine + x * step + FI_RGBA_GREEN) = (uchar) pSrc1[indx]; // g
+                    *(pDstLine + x * step + FI_RGBA_BLUE ) = (uchar) pSrc2[indx]; // b
+                    *(pDstLine + x * step + FI_RGBA_ALPHA) = (uchar) pSrc3[indx]; // a
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -362,9 +400,9 @@ af_err af_save_image(const char* filename, const af_array in_)
             // Copy the array into FreeImage buffer
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
-                    *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
-                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
-                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
+                    *(pDstLine + x * step + FI_RGBA_RED  ) = (uchar) pSrc0[indx]; // r
+                    *(pDstLine + x * step + FI_RGBA_GREEN) = (uchar) pSrc1[indx]; // g
+                    *(pDstLine + x * step + FI_RGBA_BLUE ) = (uchar) pSrc2[indx]; // b
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -602,10 +640,10 @@ af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_forma
             // Copy the array into FreeImage buffer
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
-                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
-                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
-                    *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
-                    *(pDstLine + x * step + 3) = (uchar) pSrc3[indx]; // a
+                    *(pDstLine + x * step + FI_RGBA_RED  ) = (uchar) pSrc0[indx]; // r
+                    *(pDstLine + x * step + FI_RGBA_GREEN) = (uchar) pSrc1[indx]; // g
+                    *(pDstLine + x * step + FI_RGBA_BLUE ) = (uchar) pSrc2[indx]; // b
+                    *(pDstLine + x * step + FI_RGBA_ALPHA) = (uchar) pSrc3[indx]; // a
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -631,9 +669,9 @@ af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_forma
             // Copy the array into FreeImage buffer
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
-                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
-                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
-                    *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
+                    *(pDstLine + x * step + FI_RGBA_RED  ) = (uchar) pSrc0[indx]; // r
+                    *(pDstLine + x * step + FI_RGBA_GREEN) = (uchar) pSrc1[indx]; // g
+                    *(pDstLine + x * step + FI_RGBA_BLUE ) = (uchar) pSrc2[indx]; // b
                     ++indx;
                 }
                 pDstLine -= nDstPitch;

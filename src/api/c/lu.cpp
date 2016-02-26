@@ -95,3 +95,13 @@ af_err af_lu_inplace(af_array *pivot, af_array in, const bool is_lapack_piv)
 
     return AF_SUCCESS;
 }
+
+af_err af_is_lapack_available(bool *out)
+{
+    try {
+        *out = isLAPACKAvailable();
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}

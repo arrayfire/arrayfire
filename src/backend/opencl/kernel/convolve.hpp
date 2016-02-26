@@ -52,6 +52,7 @@ void convolve_nd(Param out, const Param signal, const Param filter, ConvolveBatc
         case 3: conv3<T, accType, expand>(param, out, signal, filter); break;
     }
 
+    CL_DEBUG_FINISH(getQueue());
     bufferFree(param.impulse);
 }
 

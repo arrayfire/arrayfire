@@ -79,6 +79,18 @@ void Window::plot(const array& X, const array& Y, const char* const title)
     AF_THROW(af_draw_plot(get(), X.get(), Y.get(), &temp));
 }
 
+void Window::scatter(const array& X, const array& Y, af::markerType marker, const char* const title)
+{
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_draw_scatter(get(), X.get(), Y.get(), marker, &temp));
+}
+
+void Window::scatter3(const array& P, af::markerType marker, const char* const title)
+{
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_draw_scatter3(get(), P.get(), marker, &temp));
+}
+
 void Window::plot3(const array& P, const char* const title)
 {
     af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
@@ -93,7 +105,6 @@ void Window::hist(const array& X, const double minval, const double maxval, cons
 }
 
 void Window::surface(const array& S, const char* const title){
-    //TODO: fix offset on forge?
     af::array xVals = seq(0, S.dims(0)-1);
     af::array yVals = seq(0, S.dims(1)-1);
     af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
@@ -123,6 +134,11 @@ bool Window::close()
     bool temp = true;
     AF_THROW(af_is_window_closed(&temp, get()));
     return temp;
+}
+
+void Window::setVisibility(const bool isVisible)
+{
+    AF_THROW(af_set_visibility(get(), isVisible));
 }
 
 }

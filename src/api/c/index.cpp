@@ -42,7 +42,7 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
     try {
 
         ArrayInfo iInfo = getInfo(in);
-        if (ndims == 1 && ndims != (dim_t)iInfo.ndims()) {
+        if (ndims == 1 && ndims != iInfo.ndims()) {
             af_array tmp_in;
             AF_CHECK(af_flat(&tmp_in, in));
             AF_CHECK(af_index(result, tmp_in, ndims, index));
@@ -67,10 +67,10 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
         case u8:     indexArray<uchar>   (out, in, ndims, index);  break;
         default:    TYPE_ERROR(1, in_type);
         }
+        swap(*result, out);
     }
     CATCHALL
 
-    swap(*result, out);
     return AF_SUCCESS;
 }
 
@@ -127,11 +127,9 @@ af_err af_lookup(af_array *out, const af_array in, const af_array indices, const
             case  u8: output = lookup<uchar   >(in, indices, dim); break;
             default : TYPE_ERROR(1, idxType);
         }
+        std::swap(*out, output);
     }
     CATCHALL;
-
-    std::swap(*out, output);
-
     return AF_SUCCESS;
 }
 
@@ -230,5 +228,73 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
 
     std::swap(*out, output);
 
+    return AF_SUCCESS;
+}
+
+af_seq af_make_seq(double begin, double end, double step)
+{
+    af_seq seq = {begin, end, step};
+    return seq;
+}
+
+af_err af_create_indexers(af_index_t** indexers)
+{
+    try {
+        af_index_t* out = new af_index_t[4];
+        std::swap(*indexers, out);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_set_array_indexer(af_index_t* indexer, const af_array idx, const dim_t dim)
+{
+    try {
+        ARG_ASSERT(0, (indexer!=NULL));
+        ARG_ASSERT(1, (idx!=NULL));
+        ARG_ASSERT(2, (dim>=0 && dim<=3));
+        indexer[dim].idx.arr = idx;
+        indexer[dim].isBatch = false;
+        indexer[dim].isSeq   = false;
+    }
+    CATCHALL
+    return AF_SUCCESS;
+}
+
+af_err af_set_seq_indexer(af_index_t* indexer, const af_seq* idx, const dim_t dim, const bool is_batch)
+{
+    try {
+        ARG_ASSERT(0, (indexer!=NULL));
+        ARG_ASSERT(1, (idx!=NULL));
+        ARG_ASSERT(2, (dim>=0 && dim<=3));
+        indexer[dim].idx.seq = *idx;
+        indexer[dim].isBatch = is_batch;
+        indexer[dim].isSeq   = true;
+    }
+    CATCHALL
+    return AF_SUCCESS;
+}
+
+af_err af_set_seq_param_indexer(af_index_t* indexer,
+                              const double begin, const double end, const double step,
+                              const dim_t dim, const bool is_batch)
+{
+    try {
+        ARG_ASSERT(0, (indexer!=NULL));
+        ARG_ASSERT(4, (dim>=0 && dim<=3));
+        indexer[dim].idx.seq = af_make_seq(begin, end, step);
+        indexer[dim].isBatch = is_batch;
+        indexer[dim].isSeq   = true;
+    }
+    CATCHALL
+    return AF_SUCCESS;
+}
+
+af_err af_release_indexers(af_index_t* indexers)
+{
+    try {
+        delete[] indexers;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }

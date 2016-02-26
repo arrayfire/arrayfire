@@ -29,19 +29,32 @@ namespace af
     */
 
     /**
-       \defgroup device_func_prop deviceInfo
+       \defgroup device_func_info_string infoString
 
-       Get device information
+       Get af::info() as a string
 
        @{
+
+       \brief Returns the output of af::info() as a string
+
+       \param[in] verbose flag to return verbose info
+
+       \returns string containing output of af::info()
 
        \ingroup arrayfire_func
        \ingroup device_mat
     */
-    AFAPI void deviceInfo(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+    AFAPI const char* infoString(const bool verbose = false);
     /**
        @}
     */
+
+    /**
+        \copydoc device_func_prop
+
+        \ingroup device_func_prop
+    */
+    AFAPI void deviceInfo(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
     /// \brief Gets the number of devices
     ///
@@ -87,6 +100,8 @@ namespace af
     /// \param[in] type is the type of the elements to allocate
     /// \returns the pointer to the memory
     ///
+    /// \note The device memory returned by this function is only freed if af::free() is called explicitly
+
     AFAPI void *alloc(const size_t elements, const dtype type);
 
     /// \brief Allocates memory using ArrayFire's memory manager
@@ -97,9 +112,19 @@ namespace af
     ///
     /// \note the size of the memory allocated is the number of \p elements *
     ///         sizeof(type)
+    ///
+    /// \note The device memory returned by this function is only freed if af::free() is called explicitly
     template<typename T>
     T* alloc(const size_t elements);
     /// @}
+
+    /// \ingroup device_func_free
+    ///
+    /// \copydoc device_func_free
+    /// \param[in] ptr the memory to free
+    ///
+    /// This function will free a device pointer even if it has been previously locked.
+    AFAPI void free(const void *ptr);
 
     /// \ingroup device_func_pinned
     /// @{
@@ -119,15 +144,51 @@ namespace af
     T* pinned(const size_t elements);
     /// @}
 
-    /// \ingroup device_func_free
-    /// @{
-    /// \copydoc device_func_free
+    /// \ingroup device_func_free_pinned
+    ///
+    /// \copydoc device_func_free_pinned
     /// \param[in] ptr the memory to free
-    AFAPI void free(const void *ptr);
-
-    /// \copydoc free()
     AFAPI void freePinned(const void *ptr);
-    ///@}
+
+#if AF_API_VERSION >= 33
+    /// \brief Allocate memory on host
+    ///
+    /// \copydoc device_func_alloc_host
+    ///
+    /// \param[in] elements the number of elements to allocate
+    /// \param[in] type is the type of the elements to allocate
+    /// \returns the pointer to the memory
+    ///
+    /// \ingroup device_func_alloc_host
+    AFAPI void *allocHost(const size_t elements, const dtype type);
+#endif
+
+#if AF_API_VERSION >= 33
+    /// \brief Allocate memory on host
+    ///
+    /// \copydoc device_func_alloc_host
+    ///
+    /// \param[in] elements the number of elements to allocate
+    /// \returns the pointer to the memory
+    ///
+    /// \note the size of the memory allocated is the number of \p elements *
+    ///         sizeof(type)
+    ///
+    /// \ingroup device_func_alloc_host
+    template<typename T>
+    AFAPI T* allocHost(const size_t elements);
+#endif
+
+#if AF_API_VERSION >= 33
+    /// \brief Free memory allocated internally by ArrayFire
+    //
+    /// \copydoc device_func_free_host
+    ///
+    /// \param[in] ptr the memory to free
+    ///
+    /// \ingroup device_func_free_host
+    AFAPI void freeHost(const void *ptr);
+#endif
 
     /// \ingroup device_func_mem
     /// @{
@@ -139,8 +200,24 @@ namespace af
     //                              manager
     /// \param[out] lock_bytes The number of bytes in use
     /// \param[out] lock_buffers The number of buffers in use
+    ///
+    /// \note This function performs a synchronization operation
     AFAPI void deviceMemInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                              size_t *lock_bytes, size_t *lock_buffers);
+
+#if AF_API_VERSION >= 33
+    ///
+    /// Prints buffer details from the ArrayFire Device Manager
+    //
+    /// \param [in] msg A message to print before the table
+    /// \param [in] device_id print the memory info of the specified device.
+    ///  -1 signifies active device.
+    //
+    /// \ingroup device_func_mem
+    ///
+    /// \note This function performs a synchronization operation
+    AFAPI void printMemInfo(const char *msg = NULL, const int device_id = -1);
+#endif
 
     /// \brief Call the garbage collection function in the memory manager
     ///
@@ -169,10 +246,25 @@ extern "C" {
     */
     AFAPI af_err af_info();
 
+    /**
+       \ingroup device_func_info
+    */
     AFAPI af_err af_init();
 
     /**
-       \ingroup device_func_info
+       \brief Gets the output of af_info() as a string
+
+       \param[out] str contains the string
+       \param[in] verbose flag to return verbose info
+
+       \ingroup device_func_info_string
+    */
+    AFAPI af_err af_info_string(char** str, const bool verbose);
+
+    /**
+        \copydoc device_func_prop
+
+        \ingroup device_func_prop
     */
     AFAPI af_err af_device_info(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
@@ -203,8 +295,17 @@ extern "C" {
 
     /**
        \ingroup device_func_alloc
+
+       This device memory returned by this function can only be freed using af_free_device
     */
     AFAPI af_err af_alloc_device(void **ptr, const dim_t bytes);
+
+    /**
+       \ingroup device_func_free
+
+       This function will free a device pointer even if it has been previously locked.
+    */
+    AFAPI af_err af_free_device(void *ptr);
 
     /**
        \ingroup device_func_pinned
@@ -212,14 +313,23 @@ extern "C" {
     AFAPI af_err af_alloc_pinned(void **ptr, const dim_t bytes);
 
     /**
-       \ingroup device_func_free
-    */
-    AFAPI af_err af_free_device(void *ptr);
-
-    /**
        \ingroup device_func_free_pinned
     */
     AFAPI af_err af_free_pinned(void *ptr);
+
+#if AF_API_VERSION >= 33
+    /**
+       \ingroup device_func_alloc_host
+    */
+    AFAPI af_err af_alloc_host(void **ptr, const dim_t bytes);
+#endif
+
+#if AF_API_VERSION >= 33
+    /**
+       \ingroup device_func_free_host
+    */
+    AFAPI af_err af_free_host(void *ptr);
+#endif
 
     /**
        Create array from device memory
@@ -233,6 +343,21 @@ extern "C" {
     */
     AFAPI af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
                                     size_t *lock_bytes, size_t *lock_buffers);
+
+#if AF_API_VERSION >= 33
+    ///
+    /// Prints buffer details from the ArrayFire Device Manager
+    //
+    /// \param [in] msg A message to print before the table
+    /// \param [in] device_id print the memory info of the specified device.
+    ///  -1 signifies active device.
+    ///
+    /// return AF_SUCCESS if successful
+    ///
+    /// \ingroup device_func_mem
+    ///
+    AFAPI af_err af_print_mem_info(const char *msg, const int device_id);
+#endif
 
     /**
        Call the garbage collection routine
@@ -256,9 +381,12 @@ extern "C" {
     /**
        Lock the device buffer in the memory manager.
 
-       Locked buffers are not freed by memory manager until \ref af_unlock_device_ptr is called.
+       Locked buffers are not freed by memory manager until \ref af_unlock_array is called.
        \ingroup device_func_mem
     */
+#if AF_API_VERSION >= 33
+    DEPRECATED("Use af_lock_array instead")
+#endif
     AFAPI af_err af_lock_device_ptr(const af_array arr);
 #endif
 
@@ -269,7 +397,30 @@ extern "C" {
        This function will give back the control over the device pointer to the memory manager.
        \ingroup device_func_mem
     */
+#if AF_API_VERSION >= 33
+    DEPRECATED("Use af_unlock_array instead")
+#endif
     AFAPI af_err af_unlock_device_ptr(const af_array arr);
+#endif
+
+#if AF_API_VERSION >= 33
+    /**
+       Lock the device buffer in the memory manager.
+
+       Locked buffers are not freed by memory manager until \ref af_unlock_array is called.
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_lock_array(const af_array arr);
+#endif
+
+#if AF_API_VERSION >= 33
+    /**
+       Unlock device buffer in the memory manager.
+
+       This function will give back the control over the device pointer to the memory manager.
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_unlock_array(const af_array arr);
 #endif
 
     /**

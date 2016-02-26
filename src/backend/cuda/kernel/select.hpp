@@ -41,7 +41,7 @@ namespace cuda
             const int idw = blockIdx.y / blk_y;
 
             const int blockIdx_x = blockIdx.x - idz * blk_x;
-            const int blockIdx_y = blockIdx.y - idz * blk_y;
+            const int blockIdx_y = blockIdx.y - idw * blk_y;
 
             const int idx = blockIdx_x * blockDim.x + threadIdx.x;
             const int idy = blockIdx_y * blockDim.y + threadIdx.y;
@@ -110,7 +110,7 @@ namespace cuda
             const int idw = blockIdx.y / blk_y;
 
             const int blockIdx_x = blockIdx.x - idz * blk_x;
-            const int blockIdx_y = blockIdx.y - idz * blk_y;
+            const int blockIdx_y = blockIdx.y - idw * blk_y;
 
             const int idx = blockIdx_x * blockDim.x + threadIdx.x;
             const int idy = blockIdx_y * blockDim.y + threadIdx.y;

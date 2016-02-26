@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <math.hpp>
 #include <types.hpp>
 #include <af/traits.hpp>
 
@@ -27,15 +29,27 @@ namespace cpu
     void transform_n(T *out, const T *in, const float *tmat, const af::dim4 &idims,
                       const af::dim4 &ostrides, const af::dim4 &istrides,
                       const dim_t nimages, const dim_t o_offset,
-                      const dim_t xx, const dim_t yy)
+                      const dim_t xx, const dim_t yy, const bool perspective)
     {
+        dim_t yi = 0, xi = 0;
         // Compute output index
-        const dim_t xi = round(xx * tmat[0]
-                             + yy * tmat[1]
-                                  + tmat[2]);
-        const dim_t yi = round(xx * tmat[3]
-                             + yy * tmat[4]
-                                  + tmat[5]);
+        if (perspective) {
+            const float W = xx * tmat[6] + yy * tmat[7] + tmat[8];
+            xi = round((xx * tmat[0]
+                      + yy * tmat[1]
+                           + tmat[2]) / W);
+            yi = round((xx * tmat[3]
+                      + yy * tmat[4]
+                           + tmat[5]) / W);
+        }
+        else {
+            xi = round(xx * tmat[0]
+                     + yy * tmat[1]
+                          + tmat[2]);
+            yi = round(xx * tmat[3]
+                     + yy * tmat[4]
+                          + tmat[5]);
+        }
 
         // Compute memory location of indices
         dim_t loci = (yi * istrides[1] + xi);
@@ -62,16 +76,28 @@ namespace cpu
     void transform_b(T *out, const T *in, const float *tmat, const af::dim4 &idims,
                       const af::dim4 &ostrides, const af::dim4 &istrides,
                       const dim_t nimages, const dim_t o_offset,
-                      const dim_t xx, const dim_t yy)
+                      const dim_t xx, const dim_t yy, const bool perspective)
     {
         dim_t loco = (yy * ostrides[1] + xx);
         // Compute input index
-        const float xi = xx * tmat[0]
-                       + yy * tmat[1]
-                            + tmat[2];
-        const float yi = xx * tmat[3]
-                       + yy * tmat[4]
-                            + tmat[5];
+        float xi = 0.0f, yi = 0.0f;
+        if (perspective) {
+            const float W = xx * tmat[6] + yy * tmat[7] + tmat[8];
+            xi = (xx * tmat[0]
+                + yy * tmat[1]
+                     + tmat[2]) / W;
+            yi = (xx * tmat[3]
+                + yy * tmat[4]
+                     + tmat[5]) / W;
+        }
+        else {
+            xi = xx * tmat[0]
+               + yy * tmat[1]
+                    + tmat[2];
+            yi = xx * tmat[3]
+               + yy * tmat[4]
+                    + tmat[5];
+        }
 
         if (xi < -0.0001 || yi < -0.0001 || idims[0] < xi || idims[1] < yi) {
             for(int i_idx = 0; i_idx < (int)nimages; i_idx++) {
@@ -126,15 +152,27 @@ namespace cpu
     void transform_l(T *out, const T *in, const float *tmat, const af::dim4 &idims,
                       const af::dim4 &ostrides, const af::dim4 &istrides,
                       const dim_t nimages, const dim_t o_offset,
-                      const dim_t xx, const dim_t yy)
+                      const dim_t xx, const dim_t yy, const bool perspective)
     {
         // Compute output index
-        const dim_t xi = floor(xx * tmat[0]
-                             + yy * tmat[1]
-                                  + tmat[2]);
-        const dim_t yi = floor(xx * tmat[3]
-                             + yy * tmat[4]
-                                  + tmat[5]);
+        dim_t xi = 0, yi = 0;
+        if (perspective) {
+            const float W = xx * tmat[6] + yy * tmat[7] + tmat[8];
+            xi = floor((xx * tmat[0]
+                      + yy * tmat[1]
+                           + tmat[2]) / W);
+            yi = floor((xx * tmat[3]
+                      + yy * tmat[4]
+                           + tmat[5]) / W);
+        }
+        else {
+            xi = floor(xx * tmat[0]
+                     + yy * tmat[1]
+                          + tmat[2]);
+            yi = floor(xx * tmat[3]
+                     + yy * tmat[4]
+                          + tmat[5]);
+        }
 
         // Compute memory location of indices
         dim_t loci = (yi * istrides[1] + xi);
