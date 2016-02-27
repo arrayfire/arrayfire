@@ -9,7 +9,7 @@
 
 #define NEAREST core_nearest1
 #define LINEAR core_linear1
-#define CUBIC core_linear1
+#define CUBIC core_cubic
 
 #if CPLX
 #define set(a, b) a = b
@@ -98,6 +98,57 @@ void core_linear1(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t
 
     // Write final value
     set(d_out[omId], div(yo, wt));
+}
+
+///////////////////////////////////////////////////////////////////////////
+// cubic resampling
+///////////////////////////////////////////////////////////////////////////
+void core_cubic(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
+                   __global       Ty *d_out, const KParam out,
+                   __global const Ty *d_in,  const KParam in,
+                   __global const Tp *d_pos, const KParam pos,
+                   const float offGrid, const bool pBatch)
+{
+    const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
+                     + idy * out.strides[1] + idx;
+    dim_t pmId = idx;
+    if(pBatch) pmId += idw * pos.strides[3] + idz * pos.strides[2] + idy * pos.strides[1];
+
+    const Tp pVal = d_pos[pmId];
+    if (pVal < 0 || in.dims[0] < pVal+1) {
+        set_scalar(d_out[omId], offGrid);
+        return;
+    }
+
+    const dim_t grid_x = floor(pVal);  // nearest grid
+    const Tp off_x = pVal - grid_x; // fractional offset
+
+    dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1] + grid_x;
+
+    // Check if x-1, x, and x+1, x+2 are both valid indices
+    bool condl1 = (pVal < in.dims[0] - 1);
+    bool condl2 = (pVal < in.dims[0] - 2);
+    bool condr = (pVal > 0);
+
+    //compute basis function values
+    Ty h00 = (1 + 2 * off_x) * (1 - off_x)*(1 - off_x);
+    Ty h10 = off_x * (1 - off_x)*(1 - off_x);
+    Ty h01 = off_x * off_x * (3 - 2 * off_x);
+    Ty h11 = off_x * off_x * (off_x - 1);
+
+    Ty zero = ZERO;
+
+    // Compute Left and Right Weighted Values
+    Ty pl = condr ? d_in[ioff] : offGrid;
+    Ty pr = condl1 ? d_in[ioff + 1] : offGrid;
+    Ty tl = condr ? 0.5 * ((d_in[ioff + 1] -d_in[ioff]) + (d_in[ioff] -d_in[ioff - 1])) :
+                    0.5 * ((d_in[ioff + 1] -d_in[ioff]) + (d_in[ioff] - offGrid));
+    Ty tr = condl2 ? 0.5 * ((d_in[ioff + 2] -d_in[ioff + 1]) + (d_in[ioff + 1] - d_in[ioff])) :
+            condl1 ? 0.5 * ((offGrid - d_in[ioff + 1]) + d_in[ioff + 1] - d_in[ioff]) :
+                     0.5 * ((offGrid - d_in[ioff]));
+
+    // Write final value
+    set(d_out[omId], h00 * pl + h10 * tl + h01 * pr + h11 * tr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
