@@ -146,6 +146,101 @@ namespace cuda
             bool condY = (y < in.dims[1] - 1);
             bool condX = (x < in.dims[0] - 1);
 
+            // Compute weghts used
+            Tp wt00 = ((Tp)1.0 - off_x) * ((Tp)1.0 - off_y);
+            Tp wt10 = (condY) ? ((Tp)1.0 - off_x) * (off_y) : 0;
+            Tp wt01 = (condX) ? (off_x) * ((Tp)1.0 - off_y) : 0;
+            Tp wt11 = (condX && condY) ? (off_x) * (off_y)  : 0;
+
+            Tp wt = wt00 + wt10 + wt01 + wt11;
+
+            // Compute Weighted Values
+            Ty zero = scalar<Ty>(0);
+            Ty y00 =                    wt00 * in.ptr[ioff];
+            Ty y10 = (condY) ?          wt10 * in.ptr[ioff + in.strides[1]]     : zero;
+            Ty y01 = (condX) ?          wt01 * in.ptr[ioff + 1]                 : zero;
+            Ty y11 = (condX && condY) ? wt11 * in.ptr[ioff + in.strides[1] + 1] : zero;
+            Ty yo = y00 + y10 + y01 + y11;
+
+            // Write Final Value
+            out.ptr[omId] = (yo / wt);
+        }
+
+        ///////////////////////////////////////////////////////////////////////////
+        // cubic resampling
+        ///////////////////////////////////////////////////////////////////////////
+        template<typename Ty, typename Tp>
+        __device__ inline static
+        void core_cubic1(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
+                          Param<Ty> out, CParam<Ty> in, CParam<Tp> pos,
+                          const float offGrid, const bool pBatch)
+        {
+            const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
+                             + idy * out.strides[1] + idx;
+            dim_t pmId = idx;
+            if(pBatch) pmId += idw * pos.strides[3] + idz * pos.strides[2] + idy * pos.strides[1];
+            const Tp pVal = pos.ptr[pmId];
+            if (pVal < 0 || in.dims[0] < pVal+1) {
+                out.ptr[omId] = scalar<Ty>(offGrid);
+                return;
+            }
+
+            const dim_t grid_x = floor(pVal);  // nearest grid
+            const Tp off_x = pVal - grid_x; // fractional offset
+
+            dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1] + grid_x;
+            //compute basis function values
+            Tp h00 = (1 + 2*off_x) * (1 - off_x) * (1 - off_x);
+            Tp h10 = off_x * (1 - off_x)*(1 - off_x);
+            Tp h01 = off_x * off_x*(3 - 2 * off_x);
+            Tp h11 = off_x * off_x * (off_x - 1);
+            // Check if x-1, x, and x+1, x+2 are both valid indices
+            bool condr  = (pVal > 0);
+            bool condl1 = (pVal < in.dims[0] - 1);
+            bool condl2 = (pVal < in.dims[0] - 2);
+            // Compute Left and Right points and tangents
+            Ty pl = condr  ? in.ptr[ioff] : scalar<Ty>(offGrid);
+            Ty pr = condl1 ? in.ptr[ioff + 1] : scalar<Ty>(offGrid);
+            Ty tl = condr  ? scalar<Ty>(0.5) * ((in.ptr[ioff + 1] - in.ptr[ioff]) + (in.ptr[ioff] - in.ptr[ioff - 1])) :
+                            scalar<Ty>(0.5) * ((in.ptr[ioff + 1] - in.ptr[ioff]) + (in.ptr[ioff] - scalar<Ty>(offGrid)));
+            Ty tr = condl2 ? scalar<Ty>(0.5) * ((in.ptr[ioff + 2] - in.ptr[ioff + 1]) + (in.ptr[ioff + 1] - in.ptr[ioff])) :
+                condl1? scalar<Ty>(0.5) * ((scalar<Ty>(offGrid) - in.ptr[ioff + 1]) + (in.ptr[ioff + 1] - in.ptr[ioff])) :
+                        scalar<Ty>(0.5) * ((scalar<Ty>(offGrid) - scalar<Ty>(offGrid)) + (scalar<Ty>(offGrid) - in.ptr[ioff]));
+            // Write final value
+            out.ptr[omId] = h00 * pl + h10 * tl + h01 * pr + h11 * tr;
+        }
+
+        template<typename Ty, typename Tp>
+        __device__ inline static
+        void core_cubic2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
+                           Param<Ty> out, CParam<Ty> in,
+                           CParam<Tp> pos, CParam<Tp> qos, const float offGrid, const bool pBatch)
+        {
+            const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
+                             + idy * out.strides[1] + idx;
+            dim_t pmId = idy * pos.strides[1] + idx;
+            dim_t qmId = idy * qos.strides[1] + idx;
+            if(pBatch) {
+                pmId += idw * pos.strides[3] + idz * pos.strides[2];
+                qmId += idw * qos.strides[3] + idz * qos.strides[2];
+            }
+
+
+            const Tp x = pos.ptr[pmId], y = qos.ptr[qmId];
+            if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
+                out.ptr[omId] = scalar<Ty>(offGrid);
+                return;
+            }
+
+            const dim_t grid_x = floor(x),   grid_y = floor(y);   // nearest grid
+            const Tp off_x  = x - grid_x, off_y  = y - grid_y; // fractional offset
+
+            dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + grid_y * in.strides[1] + grid_x;
+
+            // Check if pVal and pVal + 1 are both valid indices
+            bool condY = (y < in.dims[1] - 1);
+            bool condX = (x < in.dims[0] - 1);
+
             // Compute wieghts used
             Tp wt00 = ((Tp)1.0 - off_x) * ((Tp)1.0 - off_y);
             Tp wt10 = (condY) ? ((Tp)1.0 - off_x) * (off_y) : 0;
@@ -193,7 +288,7 @@ namespace cuda
                     core_linear1(idx, idy, idz, idw, out, in, pos, offGrid, pBatch);
                     break;
                 case AF_INTERP_CUBIC:
-                    core_linear1(idx, idy, idz, idw, out, in, pos, offGrid, pBatch);
+                    core_cubic1(idx, idy, idz, idw, out, in, pos, offGrid, pBatch);
                     break;
                 default:
                     break;
@@ -227,7 +322,7 @@ namespace cuda
                     core_linear2(idx, idy, idz, idw, out, in, pos, qos, offGrid, pBatch);
                     break;
                 case AF_INTERP_CUBIC:
-                    core_linear2(idx, idy, idz, idw, out, in, pos, qos, offGrid, pBatch);
+                    core_cubic2(idx, idy, idz, idw, out, in, pos, qos, offGrid, pBatch);
                     break;
                 default:
                     break;
