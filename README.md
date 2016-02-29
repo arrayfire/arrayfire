@@ -1,6 +1,5 @@
 <a href="http://arrayfire.com/"><img src="http://arrayfire.com/logos/arrayfire_logo_whitebkgnd.png" width="300"></a>
 
-### Build Status
 |         | Linux x86 | Linux armv7l | Linux aarch64 | Windows | OSX |
 |:-------:|:---------:|:------------:|:-------------:|:-------:|:---:|
 | Build   | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/build/devel)](http://ci.arrayfire.org/job/arrayfire-linux/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrak1/build/devel)](http://ci.arrayfire.org/job/arrayfire-tegrak1/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrax1/build/devel)](http://ci.arrayfire.org/job/arrayfire-tegrax1/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/build/devel)](http://ci.arrayfire.org/job/arrayfire-windows/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/build/devel)](http://ci.arrayfire.org/job/arrayfire-osx/job/build/branch/devel/) |
