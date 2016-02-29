@@ -77,17 +77,19 @@ int main(int argc, char *argv[])
 
 ```
 
-More examples can be found in the [examples](https://github.com/arrayfire/arrayfire/tree/devel/examples) directory.
+Visit the [examples](https://github.com/arrayfire/arrayfire/tree/devel/examples)
+directory for more examples.
 
 ### Installing
 
-ArrayFire binary installers can be downloaded at the
-[downloads](http://go.arrayfire.com/l/37882/2015-03-31/mmhqy) page.
+Visit our [downloads](http://go.arrayfire.com/l/37882/2015-03-31/mmhqy) page to
+download ArrayFire binary installers.
 
 ### Building
 
-To build ArrayFire from source, please follow the instructions on our
-[wiki](https://github.com/arrayfire/arrayfire/wiki).
+Please follow the instructions on our
+[wiki](https://github.com/arrayfire/arrayfire/wiki) to build ArrayFire from
+source.
 
 ### Documentation
 
