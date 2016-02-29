@@ -79,12 +79,12 @@ int main(int argc, char *argv[])
 
 More examples can be found in the [examples](https://github.com/arrayfire/arrayfire/tree/devel/examples) directory.
 
-### Install
+### Installing
 
 ArrayFire binary installers can be downloaded at the
-[ArrayFire Downloads](http://go.arrayfire.com/l/37882/2015-03-31/mmhqy) page.
+[downloads](http://go.arrayfire.com/l/37882/2015-03-31/mmhqy) page.
 
-### Build
+### Building
 
 To build ArrayFire from source, please follow the instructions on our
 [wiki](https://github.com/arrayfire/arrayfire/wiki).
@@ -94,15 +94,14 @@ To build ArrayFire from source, please follow the instructions on our
 You can find our complete [documentation](http://www.arrayfire.com/docs/index.htm) and [tutorials](http://www.arrayfire.com/docs/usergroup0.htm) on the
 [ArrayFire website](http://www.arrayfire.com).
 
+### Contributing
+
+Contributions of any kind are welcome! Please refer to
+[CONTRIBUTING.md](https://github.com/arrayfire/arrayfire/blob/master/CONTRIBUTING.md)
+to learn more about how you can get involved with ArrayFire.
+
 ### Support and Contact Info [![Join the chat at https://gitter.im/arrayfire/arrayfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arrayfire/arrayfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 * [Mailing list](https://groups.google.com/forum/#!forum/arrayfire-users)
+* [Blog](http://arrayfire.com/blog/)
 * ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/)
-* [ArrayFire Blog](http://arrayfire.com/blog/)
-* Email: <mailto:technical@arrayfire.com>
-
-### Contribute
-
-Contributions of any kind are welcome! Please refer to
-[this document](https://github.com/arrayfire/arrayfire/blob/master/CONTRIBUTING.md)
-to learn more about how you can get involved with ArrayFire.
