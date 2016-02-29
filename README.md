@@ -15,16 +15,6 @@ platform independent and highly portable.
 A few lines of code in ArrayFire can replace dozens of lines of parallel
 computing code, saving you valuable time and lowering development costs.
 
-### Build ArrayFire from source
-
-To build ArrayFire from source, please follow the instructions on our
-[wiki](https://github.com/arrayfire/arrayfire/wiki).
-
-### Download ArrayFire Installers
-
-ArrayFire binary installers can be downloaded at the
-[ArrayFire Downloads](http://go.arrayfire.com/l/37882/2015-03-31/mmhqy) page.
-
 ### Example
 
 ``` C++
@@ -89,6 +79,16 @@ int main(int argc, char *argv[])
 
 More examples can be found in the [examples](https://github.com/arrayfire/arrayfire/tree/devel/examples) directory.
 
+### Install
+
+ArrayFire binary installers can be downloaded at the
+[ArrayFire Downloads](http://go.arrayfire.com/l/37882/2015-03-31/mmhqy) page.
+
+### Build
+
+To build ArrayFire from source, please follow the instructions on our
+[wiki](https://github.com/arrayfire/arrayfire/wiki).
+
 ### Documentation
 
 You can find our complete [documentation](http://www.arrayfire.com/docs/index.htm) and [tutorials](http://www.arrayfire.com/docs/usergroup0.htm) on the
@@ -106,5 +106,3 @@ You can find our complete [documentation](http://www.arrayfire.com/docs/index.ht
 Contributions of any kind are welcome! Please refer to
 [this document](https://github.com/arrayfire/arrayfire/blob/master/CONTRIBUTING.md)
 to learn more about how you can get involved with ArrayFire.
- 
-
