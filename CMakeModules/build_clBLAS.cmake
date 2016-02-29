@@ -14,7 +14,7 @@ ENDIF()
 ExternalProject_Add(
     clBLAS-ext
     GIT_REPOSITORY https://github.com/arrayfire/clBLAS.git
-    GIT_TAG arrayfire-release-test
+    GIT_TAG af3.3.0
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""

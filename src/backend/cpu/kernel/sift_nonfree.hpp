@@ -969,6 +969,7 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
                    const bool compute_GLOH)
 {
     in.eval();
+    getQueue().sync();
     af::dim4 idims = in.dims();
 
     const unsigned min_dim = (double_input) ? min(idims[0]*2, idims[1]*2)

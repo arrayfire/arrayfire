@@ -32,7 +32,7 @@ namespace cuda
         Array<T> out = copyArray<T>(in);
 
         thrust::device_ptr<T> out_ptr = thrust::device_pointer_cast<T>(out.get());
-        thrust::device_ptr<T> out_ptr_end = out_ptr + out.dims()[0];
+        thrust::device_ptr<T> out_ptr_end = out_ptr + out.elements();
 
         if(!is_sorted) THRUST_SELECT(thrust::sort, out_ptr, out_ptr_end);
         thrust::device_ptr<T> out_ptr_last;
@@ -55,14 +55,14 @@ namespace cuda
             unique_second = setUnique(second, false);
         }
 
-        dim_t out_size = unique_first.dims()[0] + unique_second.dims()[0];
+        dim_t out_size = unique_first.elements() + unique_second.elements();
         Array<T> out = createEmptyArray<T>(dim4(out_size));
 
         thrust::device_ptr<T> first_ptr = thrust::device_pointer_cast<T>(unique_first.get());
-        thrust::device_ptr<T> first_ptr_end = first_ptr + unique_first.dims()[0];
+        thrust::device_ptr<T> first_ptr_end = first_ptr + unique_first.elements();
 
         thrust::device_ptr<T> second_ptr = thrust::device_pointer_cast<T>(unique_second.get());
-        thrust::device_ptr<T> second_ptr_end = second_ptr + unique_second.dims()[0];
+        thrust::device_ptr<T> second_ptr_end = second_ptr + unique_second.elements();
 
         thrust::device_ptr<T> out_ptr = thrust::device_pointer_cast<T>(out.get());
 
@@ -87,14 +87,14 @@ namespace cuda
             unique_second = setUnique(second, false);
         }
 
-        dim_t out_size = std::max(unique_first.dims()[0], unique_second.dims()[0]);
+        dim_t out_size = std::max(unique_first.elements(), unique_second.elements());
         Array<T> out = createEmptyArray<T>(dim4(out_size));
 
         thrust::device_ptr<T> first_ptr = thrust::device_pointer_cast<T>(unique_first.get());
-        thrust::device_ptr<T> first_ptr_end = first_ptr + unique_first.dims()[0];
+        thrust::device_ptr<T> first_ptr_end = first_ptr + unique_first.elements();
 
         thrust::device_ptr<T> second_ptr = thrust::device_pointer_cast<T>(unique_second.get());
-        thrust::device_ptr<T> second_ptr_end = second_ptr + unique_second.dims()[0];
+        thrust::device_ptr<T> second_ptr_end = second_ptr + unique_second.elements();
 
         thrust::device_ptr<T> out_ptr = thrust::device_pointer_cast<T>(out.get());
 

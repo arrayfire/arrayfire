@@ -140,12 +140,6 @@ public:
     static_assert(std::is_standard_layout<ArrayInfo>::value, "ArrayInfo must be a standard layout type");
 #endif
 
-// Returns size and time info for an array object.
-// Note this doesn't require template parameters.
-const  ArrayInfo&
-getInfo(const af_array arr);
-
-
 af::dim4 toDims(const std::vector<af_seq>& seqs, const af::dim4 &parentDims);
 
 af::dim4 toOffset(const std::vector<af_seq>& seqs, const af::dim4 &parentDims);

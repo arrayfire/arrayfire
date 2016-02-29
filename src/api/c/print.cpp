@@ -21,6 +21,7 @@
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <type_util.hpp>
+#include <handle.hpp>
 
 #include <af/index.h>
 
