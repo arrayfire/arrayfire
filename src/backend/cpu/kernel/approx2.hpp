@@ -20,22 +20,6 @@ namespace cpu
 namespace kernel
 {
 
-float a_inverse[] = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                      0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                     -3, 3, 0, 0,-2,-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                      2,-2, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                      0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
-                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
-                      0, 0, 0, 0, 0, 0, 0, 0,-3, 3, 0, 0,-2,-1, 0, 0,
-                      0, 0, 0, 0, 0, 0, 0, 0, 2,-2, 0, 0, 1, 1, 0, 0,
-                     -3, 0, 3, 0, 0, 0, 0, 0,-2, 0,-1, 0, 0, 0, 0, 0,
-                      0, 0, 0, 0,-3, 0, 3, 0, 0, 0, 0, 0,-2, 0,-1, 0,
-                      9,-9,-9, 9, 6, 3,-6,-3, 6,-6, 3,-3, 4, 2, 2, 1,
-                     -6, 6, 6,-6,-3,-3, 3, 3,-4, 4,-2, 2,-2,-2,-1,-1,
-                      2, 0,-2, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0,
-                      0, 0, 0, 0, 2, 0,-2, 0, 0, 0, 0, 0, 1, 0, 1, 0,
-                     -6, 6, 6,-6,-4,-2, 4, 2,-3, 3,-3, 3,-2,-1,-2,-1,
-                      4,-4,-4, 4, 2, 2,-2,-2, 2,-2, 2,-2, 1, 1, 1, 1 };
 
 template<typename InT, typename LocT, af_interp_type Method>
 struct approx2_op
@@ -151,6 +135,21 @@ struct approx2_op<InT, LocT, AF_INTERP_LINEAR>
     }
 };
 
+template<typename InT, typename LocT> inline static
+InT cubicInterpolate(InT p[4], LocT x) {
+    return p[1] + scalar<InT>(0.5) * x * (p[2] - p[0] + x * (scalar<InT>(2.0) * p[0] - scalar<InT>(5.0) * p[1] + scalar<InT>(4.0) * p[2] - p[3] + x*(scalar<InT>(3.0)*(p[1] - p[2]) + p[3] - p[0])));
+}
+
+template<typename InT, typename LocT> inline static
+InT bicubicInterpolate(InT p[4][4], LocT x, LocT y) {
+    InT arr[4];
+    arr[0] = cubicInterpolate(p[0], x);
+    arr[1] = cubicInterpolate(p[1], x);
+    arr[2] = cubicInterpolate(p[2], x);
+    arr[3] = cubicInterpolate(p[3], x);
+    return cubicInterpolate(arr, y);
+}
+
 template<typename InT, typename LocT>
 struct approx2_op<InT, LocT, AF_INTERP_CUBIC>
 {
@@ -171,21 +170,22 @@ struct approx2_op<InT, LocT, AF_INTERP_CUBIC>
 
         bool gFlag = false;
         LocT const x = pos[pmId], y = qos[qmId];
-        if (x < 0 || y < 0 || idims[0] < x+1 || idims[1] < y+1) { //check index in bounds
+        if (x < 0 || y < 0 || idims[0] < x+1 || idims[1] < y+1) {
             gFlag = true;
         }
 
         dim_t const grid_x = floor(x),   grid_y = floor(y);   // nearest grid
         LocT const off_x  = x - grid_x, off_y  = y - grid_y; // fractional offset
 
-        // Check if pVal - 1, pVal, and pVal + 1 are both valid indices
-        bool condY = (y > 0 && y < idims[1] - 2);
-        bool condX = (x > 0 && x < idims[0] - 2);
+        // Check if pVal - 1, pVal, and pVal + 1, pVal + 2 are both valid indices
+        bool condY  = (y > 0 && y < idims[1] - 3);
+        bool condX  = (x > 0 && x < idims[0] - 3);
+        bool condXl = (x > 0);
+        bool condYl = (y > 0);
+        bool condXrr= (x > idims[0] - 3);
+        bool condYrr = (y > idims[1] - 3);
 
-        // Compute weights used
-        //f0x = (in[ioff + 1] - in[ioff])/(InT)2 + (in[ioff] - in[ioff - 1])/(InT)2 
-        InT zero = scalar<InT>(0);
-
+        // Compute wieghts used
         dim_t const omId = idw * ostrides[3] + idz * ostrides[2]
                          + idy * ostrides[1] + idx;
         if(gFlag) {
@@ -193,48 +193,44 @@ struct approx2_op<InT, LocT, AF_INTERP_CUBIC>
         } else {
             dim_t ioff = idw * istrides[3] + idz * istrides[2]
                     + grid_y * istrides[1] + grid_x;
-            InT f00 = in[ioff];
-            InT f10 = in[ioff + 1];
-            InT f01 = in[ioff + istrides[1]];
-            InT f11 = in[ioff + istrides[1] + 1];
-            InT f00x  = ((in[ioff + 1] - in[ioff - 1]))*scalar<InT>(0.5);
-            InT f10x  = ((in[ioff + 2] - in[ioff]))*scalar<InT>(0.5);
-            InT f01x  = ((in[ioff + istrides[1] + 1] - in[ioff + istrides[1] - 1]))*scalar<InT>(0.5);
-            InT f11x  = ((in[ioff + istrides[1] + 2] - in[ioff + istrides[1]]))*scalar<InT>(0.5);
-            InT f00y  = 0; //((in[ioff + istrides[1]] - in[ioff - istrides[1]]))*scalar<InT>(0.5);
-            InT f10y  = 0; //((in[ioff + istrides[1] + 1] - in[ioff - istrides[1] + 1]))*scalar<InT>(0.5);
-            InT f01y  = ((in[ioff + 2*istrides[1]] - in[ioff]))*scalar<InT>(0.5);
-            InT f11y  = ((in[ioff + 2*istrides[1] + 1] - in[ioff + 1]))*scalar<InT>(0.5);
 
-            InT f00xy = 0; //(in[ioff + istrides[1] + 1] - in[ioff - istrides[1] + 1] - in[ioff + istrides[1] - 1] + in[ioff - istrides[1] - 1])*scalar<InT>(0.25);
-            InT f10xy = 0; //(in[ioff + istrides[1] + 2] - in[ioff - istrides[1] + 2] - in[ioff + istrides[1]] + in[ioff - istrides[1]])*scalar<InT>(0.25);
-            InT f01xy = (in[ioff + 2*istrides[1] + 1] - in[ioff + 1] - in[ioff + 2*istrides[1] - 1] + in[ioff - 1])*scalar<InT>(0.25);
-            InT f11xy = (in[ioff + 2*istrides[1] + 2] - in[ioff + 2] - in[ioff + 2*istrides[1]] + in[ioff])*scalar<InT>(0.25);
+            InT patch[4][4];
 
-            InT x[] = { f00, f10, f01, f11, f00x, f10x, f01x, f11x, f00y, f10y, f01y, f11y, f00xy, f10xy, f01xy, f11xy };
-            af::dim4  d(16, 1,1,1);
-            af::dim4 d2(16,16,1,1);
+            //inner square
+            //assumption is that inner patch consisting of 4 points is minimum requirement for bicubic interpolation
+            patch[1][1] = in[ioff];
+            patch[1][2] = in[ioff + 1];
+            patch[2][1] = in[ioff + istrides[1]];
+            patch[2][2] = in[ioff + istrides[1] + 1];
 
-            Array<InT> ax = createHostDataArray(d, x);
-            Array<InT> aAi = castArray<InT>(getHandle(createHostDataArray(d2, a_inverse)));
-            //Array<InT> aAi = createHostDataArray(d2, a_inverse);
-            //af_print_array(getHandle(ax));
-            //af_print_array(getHandle(aAi));
+            //top left corner 
+            patch[0][0] = (condXl && condYl)? in[ioff - istrides[1] - 1] : scalar<InT>(offGrid);
+            //
+            //leftside
+            patch[1][0] = (condXl)? in[ioff - 1] : scalar<InT>(offGrid);
+            patch[2][0] = (condXl)? in[ioff + istrides[1] -1] : scalar<InT>(offGrid);
+            //bottom left corner
+            patch[3][0] = (condXl && !condYrr)? in[ioff + 2*istrides[1] - 1] : scalar<InT>(offGrid);
+            //
+            //top side
+            patch[0][1] = (condYl)?  in[ioff-istrides[1]] : scalar<InT>(offGrid);
+            patch[0][2] = (condYl)?  in[ioff-istrides[1]+1] : scalar<InT>(offGrid);
+            //top right corner
+            patch[0][3] = (condYl && !condXrr)? in[ioff - istrides[1] + 1] : scalar<InT>(offGrid);
+            //
+            //right side
+            patch[1][3] = (condXrr)? scalar<InT>(offGrid) : in[ioff + 2];
+            patch[2][3] = (condXrr)? scalar<InT>(offGrid) : in[ioff + istrides[1] + 2];
+            //bottom right corner
+            //
+            patch[3][3] = (!condXrr && !condYrr)? in[ioff + 2 * istrides[1] + 2] : scalar<InT>(offGrid);
+            //bottom corner
+            patch[3][1] = (condYrr)? scalar<InT>(offGrid) : in[ioff + 2*istrides[1]];
+            patch[3][2] = (condYrr)? scalar<InT>(offGrid) : in[ioff + 2*istrides[1] + 1];
 
-            Array<InT> a_consts = matmul(aAi, ax, AF_MAT_TRANS, AF_MAT_NONE);
-            //af_print_array(getHandle(a_consts));
-            InT * a = a_consts.get();
-
-            InT x2 = off_x * off_x;
-            InT x3 = x2 * off_x;
-            InT y2 = off_y * off_y;
-            InT y3 = y2 * off_y;
 
             // Write Final Value
-            out[omId] = (a[0] + a[4] * off_y + a[8]  * y2 + a[12] * y3) +
-                        (a[1] + a[5] * off_y + a[9]  * y2 + a[13] * y3) * off_x +
-                        (a[2] + a[6] * off_y + a[10] * y2 + a[14] * y3) * x2 +
-                        (a[3] + a[6] * off_y + a[11] * y2 + a[15] * y3) * x3;
+            out[omId] = bicubicInterpolate(patch, off_x, off_y);
         }
     }
 };

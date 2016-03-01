@@ -186,7 +186,7 @@ namespace cuda
             }
 
             const dim_t grid_x = floor(pVal);  // nearest grid
-            const Tp off_x = pVal - grid_x; // fractional offset
+            const Tp off_x = pVal - grid_x;    // fractional offset
 
             dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1] + grid_x;
             //compute basis function values
@@ -212,6 +212,23 @@ namespace cuda
 
         template<typename Ty, typename Tp>
         __device__ inline static
+        Ty cubicInterpolate(Ty p[4], Tp x) {
+            return p[1] + scalar<Ty>(0.5) * x * (p[2] - p[0] + x * (scalar<Ty>(2.0) * p[0] - scalar<Ty>(5.0) * p[1] + scalar<Ty>(4.0) * p[2] - p[3] + x*(scalar<Ty>(3.0)*(p[1] - p[2]) + p[3] - p[0])));
+        }
+
+        template<typename Ty, typename Tp>
+        __device__ inline static
+        Ty bicubicInterpolate(Ty p[4][4], Tp x, Tp y) {
+            Ty arr[4];
+            arr[0] = cubicInterpolate(p[0], x);
+            arr[1] = cubicInterpolate(p[1], x);
+            arr[2] = cubicInterpolate(p[2], x);
+            arr[3] = cubicInterpolate(p[3], x);
+            return cubicInterpolate(arr, y);
+        }
+
+        template<typename Ty, typename Tp>
+        __device__ inline static
         void core_cubic2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
                            Param<Ty> out, CParam<Ty> in,
                            CParam<Tp> pos, CParam<Tp> qos, const float offGrid, const bool pBatch)
@@ -233,32 +250,43 @@ namespace cuda
             }
 
             const dim_t grid_x = floor(x),   grid_y = floor(y);   // nearest grid
-            const Tp off_x  = x - grid_x, off_y  = y - grid_y; // fractional offset
+            const Tp off_x  = x - grid_x, off_y  = y - grid_y;    // fractional offset
+
+            // Check if pVal - 1, pVal, and pVal + 1, pVal + 2 are both valid indices
+            bool condY  = (y > 0 && y < in.dims[1] - 3);
+            bool condX  = (x > 0 && x < in.dims[0] - 3);
+            bool condXl = (x < 1);
+            bool condYl = (y < 1);
+            bool condXg = (x > in.dims[0] - 2);
+            bool condYg = (y > in.dims[1] - 2);
 
             dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + grid_y * in.strides[1] + grid_x;
 
-            // Check if pVal and pVal + 1 are both valid indices
-            bool condY = (y < in.dims[1] - 1);
-            bool condX = (x < in.dims[0] - 1);
+            Ty patch[4][4] = {{in.ptr[ioff - in.strides[1] - 1], in.ptr[ioff - in.strides[1]], in.ptr[ioff - in.strides[1] + 1], in.ptr[ioff - in.strides[1] + 2]},
+                              {in.ptr[ioff - 1], in.ptr[ioff], in.ptr[ioff + 1], in.ptr[ioff + 2]},
+                              {in.ptr[ioff + in.strides[1] - 1], in.ptr[ioff + in.strides[1]], in.ptr[ioff + in.strides[1] + 1], in.ptr[ioff + in.strides[1] + 2]},
+                              {in.ptr[ioff - 2 * in.strides[1] - 1], in.ptr[ioff - 2 * in.strides[1]], in.ptr[ioff - 2 * in.strides[1] + 1], in.ptr[ioff - 2 * in.strides[1] + 2]}};
 
-            // Compute wieghts used
-            Tp wt00 = ((Tp)1.0 - off_x) * ((Tp)1.0 - off_y);
-            Tp wt10 = (condY) ? ((Tp)1.0 - off_x) * (off_y) : 0;
-            Tp wt01 = (condX) ? (off_x) * ((Tp)1.0 - off_y) : 0;
-            Tp wt11 = (condX && condY) ? (off_x) * (off_y)  : 0;
+            /*
+            patch[0][0] = (condXl)? patch[0][0] : scalar<Ty>(offGrid);
+            patch[1][0] = (condXl)? patch[1][0] : scalar<Ty>(offGrid);
+            patch[2][0] = (condXl)? patch[2][0] : scalar<Ty>(offGrid);
+            patch[3][0] = (condXl)? patch[3][0] : scalar<Ty>(offGrid);
+            patch[0][0] = (condYl)? patch[0][0] : scalar<Ty>(offGrid);
+            patch[0][1] = (condYl)? patch[0][1] : scalar<Ty>(offGrid);
+            patch[0][2] = (condYl)? patch[0][2] : scalar<Ty>(offGrid);
+            patch[0][3] = (condYl)? patch[0][3] : scalar<Ty>(offGrid);
+            patch[0][3] = (condXg)? patch[0][3] : scalar<Ty>(offGrid);
+            patch[1][3] = (condXg)? patch[1][3] : scalar<Ty>(offGrid);
+            patch[2][3] = (condXg)? patch[2][3] : scalar<Ty>(offGrid);
+            patch[3][3] = (condXg)? patch[3][3] : scalar<Ty>(offGrid);
+            patch[3][0] = (condYg)? patch[3][0] : scalar<Ty>(offGrid);
+            patch[3][1] = (condYg)? patch[3][1] : scalar<Ty>(offGrid);
+            patch[3][2] = (condYg)? patch[3][2] : scalar<Ty>(offGrid);
+            patch[3][3] = (condYg)? patch[3][3] : scalar<Ty>(offGrid);
+            */
 
-            Tp wt = wt00 + wt10 + wt01 + wt11;
-
-            // Compute Weighted Values
-            Ty zero = scalar<Ty>(0);
-            Ty y00 =                    wt00 * in.ptr[ioff];
-            Ty y10 = (condY) ?          wt10 * in.ptr[ioff + in.strides[1]]     : zero;
-            Ty y01 = (condX) ?          wt01 * in.ptr[ioff + 1]                 : zero;
-            Ty y11 = (condX && condY) ? wt11 * in.ptr[ioff + in.strides[1] + 1] : zero;
-            Ty yo = y00 + y10 + y01 + y11;
-
-            // Write Final Value
-            out.ptr[omId] = (yo / wt);
+            out.ptr[omId] = bicubicInterpolate<Ty, Tp>(patch, off_x, off_y);
         }
 
         ///////////////////////////////////////////////////////////////////////////
