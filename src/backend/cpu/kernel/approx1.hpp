@@ -127,10 +127,11 @@ struct approx1_op<InT, LocT, AF_INTERP_CUBIC>
         }
 
         dim_t const grid_x = floor(x);  // nearest grid
-        LocT const off_x = x - grid_x;  // fractional offset
+        LocT  const off_x  = x - grid_x;  // fractional offset
 
         dim_t const omId = idw * ostrides[3] + idz * ostrides[2]
                          + idy * ostrides[1] + idx;
+
         if(gFlag) {
             out[omId] = scalar<InT>(offGrid);
         } else {
@@ -146,13 +147,14 @@ struct approx1_op<InT, LocT, AF_INTERP_CUBIC>
             bool condl2 = (x < idims[0] - 2);
             bool condr = (x > 0);
             // Compute Left and Right points and tangents
-            InT pl = condr ? in[ioff] : offGrid;
-            InT pr = condl1 ? in[ioff + 1] : offGrid;
-            InT tl = condr ? scalar<InT>(0.5) * ((in[ioff + 1] - in[ioff]) + (in[ioff] - in[ioff - 1])) :
-                             scalar<InT>(0.5) * ((in[ioff + 1] - in[ioff]) + (in[ioff] - (InT)offGrid));
+            InT pl = condr  ? in[ioff] : scalar<InT>(offGrid);
+            InT pr = condl1 ? in[ioff + 1] : scalar<InT>(offGrid);
+            InT tl = condr  ? scalar<InT>(0.5) * ((in[ioff + 1] - in[ioff]) + (in[ioff] - in[ioff - 1])) :
+                              scalar<InT>(0.5) * ((in[ioff + 1] - in[ioff]) + (in[ioff] - (InT)offGrid));
             InT tr = condl2 ? scalar<InT>(0.5) * ((in[ioff + 2] - in[ioff + 1]) + (in[ioff + 1] - in[ioff])) :
-                condl1? scalar<InT>(0.5) * (((InT)offGrid - in[ioff + 1]) + (in[ioff + 1] - in[ioff])) :
-                        scalar<InT>(0.5) * (((InT)offGrid - (InT)offGrid) + ((InT)offGrid - in[ioff]));
+                     condl1 ? scalar<InT>(0.5) * (((InT)offGrid - in[ioff + 1]) + (in[ioff + 1] - in[ioff])) :
+                              scalar<InT>(0.5) * (((InT)offGrid - (InT)offGrid) + ((InT)offGrid - in[ioff]));
+
             // Write final value
             out[omId] = h00 * pl + h10 * tl + h01 * pr + h11 * tr;
         }
