@@ -256,7 +256,7 @@ namespace cuda
     writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
     {
         if (!arr.isOwner()) {
-            arr = createEmptyArray<T>(arr.dims());
+            arr = copyArray<T>(arr);
         }
 
         T *ptr = arr.get();
@@ -273,7 +273,7 @@ namespace cuda
     writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     {
         if (!arr.isOwner()) {
-            arr = createEmptyArray<T>(arr.dims());
+            arr = copyArray<T>(arr);
         }
 
         T *ptr = arr.get();

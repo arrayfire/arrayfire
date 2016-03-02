@@ -24,6 +24,7 @@
 #include <traits.hpp>
 #include <memory.hpp>
 #include <err_common.hpp>
+#include <handle.hpp>
 
 #include <string>
 #include <cstring>

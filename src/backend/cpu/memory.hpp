@@ -39,4 +39,5 @@ namespace cpu
 
     void setMemStepSize(size_t step_bytes);
     size_t getMemStepSize(void);
+    bool checkMemoryLimit();
 }

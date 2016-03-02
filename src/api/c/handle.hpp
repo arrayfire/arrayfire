@@ -16,6 +16,8 @@
 #include <copy.hpp>
 #include <cast.hpp>
 
+const ArrayInfo& getInfo(const af_array arr, bool check = true);
+
 template<typename T>
 static const detail::Array<T> &
 getArray(const af_array &arr)

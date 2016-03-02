@@ -146,7 +146,7 @@ namespace cuda
             bool condY = (y < in.dims[1] - 1);
             bool condX = (x < in.dims[0] - 1);
 
-            // Compute wieghts used
+            // Compute weghts used
             Tp wt00 = ((Tp)1.0 - off_x) * ((Tp)1.0 - off_y);
             Tp wt10 = (condY) ? ((Tp)1.0 - off_x) * (off_y) : 0;
             Tp wt01 = (condX) ? (off_x) * ((Tp)1.0 - off_y) : 0;
@@ -164,6 +164,129 @@ namespace cuda
 
             // Write Final Value
             out.ptr[omId] = (yo / wt);
+        }
+
+        ///////////////////////////////////////////////////////////////////////////
+        // cubic resampling
+        ///////////////////////////////////////////////////////////////////////////
+        template<typename Ty, typename Tp>
+        __device__ inline static
+        void core_cubic1(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
+                          Param<Ty> out, CParam<Ty> in, CParam<Tp> pos,
+                          const float offGrid, const bool pBatch)
+        {
+            const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
+                             + idy * out.strides[1] + idx;
+            dim_t pmId = idx;
+            if(pBatch) pmId += idw * pos.strides[3] + idz * pos.strides[2] + idy * pos.strides[1];
+            const Tp pVal = pos.ptr[pmId];
+            if (pVal < 0 || in.dims[0] < pVal+1) {
+                out.ptr[omId] = scalar<Ty>(offGrid);
+                return;
+            }
+
+            const dim_t grid_x = floor(pVal);  // nearest grid
+            const Tp off_x = pVal - grid_x;    // fractional offset
+
+            dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1] + grid_x;
+            //compute basis function values
+            Tp h00 = (1 + 2*off_x) * (1 - off_x) * (1 - off_x);
+            Tp h10 = off_x * (1 - off_x)*(1 - off_x);
+            Tp h01 = off_x * off_x*(3 - 2 * off_x);
+            Tp h11 = off_x * off_x * (off_x - 1);
+            // Check if x-1, x, and x+1, x+2 are both valid indices
+            bool condr  = (pVal > 0);
+            bool condl1 = (pVal < in.dims[0] - 1);
+            bool condl2 = (pVal < in.dims[0] - 2);
+            // Compute Left and Right points and tangents
+            Ty pl = condr  ? in.ptr[ioff] : scalar<Ty>(offGrid);
+            Ty pr = condl1 ? in.ptr[ioff + 1] : scalar<Ty>(offGrid);
+            Ty tl = condr  ? scalar<Ty>(0.5) * ((in.ptr[ioff + 1] - in.ptr[ioff]) + (in.ptr[ioff] - in.ptr[ioff - 1])) :
+                            scalar<Ty>(0.5) * ((in.ptr[ioff + 1] - in.ptr[ioff]) + (in.ptr[ioff] - scalar<Ty>(offGrid)));
+            Ty tr = condl2 ? scalar<Ty>(0.5) * ((in.ptr[ioff + 2] - in.ptr[ioff + 1]) + (in.ptr[ioff + 1] - in.ptr[ioff])) :
+                condl1? scalar<Ty>(0.5) * ((scalar<Ty>(offGrid) - in.ptr[ioff + 1]) + (in.ptr[ioff + 1] - in.ptr[ioff])) :
+                        scalar<Ty>(0.5) * ((scalar<Ty>(offGrid) - scalar<Ty>(offGrid)) + (scalar<Ty>(offGrid) - in.ptr[ioff]));
+            // Write final value
+            out.ptr[omId] = h00 * pl + h10 * tl + h01 * pr + h11 * tr;
+        }
+
+        template<typename Ty, typename Tp>
+        __device__ inline static
+        Ty cubicInterpolate(Ty p[4], Tp x) {
+            return p[1] + scalar<Ty>(0.5) * x * (p[2] - p[0] + x * (scalar<Ty>(2.0) * p[0] - scalar<Ty>(5.0) * p[1] + scalar<Ty>(4.0) * p[2] - p[3] + x*(scalar<Ty>(3.0)*(p[1] - p[2]) + p[3] - p[0])));
+        }
+
+        template<typename Ty, typename Tp>
+        __device__ inline static
+        Ty bicubicInterpolate(Ty p[4][4], Tp x, Tp y) {
+            Ty arr[4];
+            arr[0] = cubicInterpolate(p[0], x);
+            arr[1] = cubicInterpolate(p[1], x);
+            arr[2] = cubicInterpolate(p[2], x);
+            arr[3] = cubicInterpolate(p[3], x);
+            return cubicInterpolate(arr, y);
+        }
+
+        template<typename Ty, typename Tp>
+        __device__ inline static
+        void core_cubic2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
+                           Param<Ty> out, CParam<Ty> in,
+                           CParam<Tp> pos, CParam<Tp> qos, const float offGrid, const bool pBatch)
+        {
+            const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
+                             + idy * out.strides[1] + idx;
+            dim_t pmId = idy * pos.strides[1] + idx;
+            dim_t qmId = idy * qos.strides[1] + idx;
+            if(pBatch) {
+                pmId += idw * pos.strides[3] + idz * pos.strides[2];
+                qmId += idw * qos.strides[3] + idz * qos.strides[2];
+            }
+
+
+            const Tp x = pos.ptr[pmId], y = qos.ptr[qmId];
+            if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
+                out.ptr[omId] = scalar<Ty>(offGrid);
+                return;
+            }
+
+            const dim_t grid_x = floor(x),   grid_y = floor(y);   // nearest grid
+            const Tp off_x  = x - grid_x, off_y  = y - grid_y;    // fractional offset
+
+            // Check if pVal - 1, pVal, and pVal + 1, pVal + 2 are both valid indices
+            bool condY  = (y > 0 && y < in.dims[1] - 3);
+            bool condX  = (x > 0 && x < in.dims[0] - 3);
+            bool condXl = (x < 1);
+            bool condYl = (y < 1);
+            bool condXg = (x > in.dims[0] - 2);
+            bool condYg = (y > in.dims[1] - 2);
+
+            dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + grid_y * in.strides[1] + grid_x;
+
+            Ty patch[4][4] = {{in.ptr[ioff - in.strides[1] - 1], in.ptr[ioff - in.strides[1]], in.ptr[ioff - in.strides[1] + 1], in.ptr[ioff - in.strides[1] + 2]},
+                              {in.ptr[ioff - 1], in.ptr[ioff], in.ptr[ioff + 1], in.ptr[ioff + 2]},
+                              {in.ptr[ioff + in.strides[1] - 1], in.ptr[ioff + in.strides[1]], in.ptr[ioff + in.strides[1] + 1], in.ptr[ioff + in.strides[1] + 2]},
+                              {in.ptr[ioff - 2 * in.strides[1] - 1], in.ptr[ioff - 2 * in.strides[1]], in.ptr[ioff - 2 * in.strides[1] + 1], in.ptr[ioff - 2 * in.strides[1] + 2]}};
+
+            /*
+            patch[0][0] = (condXl)? patch[0][0] : scalar<Ty>(offGrid);
+            patch[1][0] = (condXl)? patch[1][0] : scalar<Ty>(offGrid);
+            patch[2][0] = (condXl)? patch[2][0] : scalar<Ty>(offGrid);
+            patch[3][0] = (condXl)? patch[3][0] : scalar<Ty>(offGrid);
+            patch[0][0] = (condYl)? patch[0][0] : scalar<Ty>(offGrid);
+            patch[0][1] = (condYl)? patch[0][1] : scalar<Ty>(offGrid);
+            patch[0][2] = (condYl)? patch[0][2] : scalar<Ty>(offGrid);
+            patch[0][3] = (condYl)? patch[0][3] : scalar<Ty>(offGrid);
+            patch[0][3] = (condXg)? patch[0][3] : scalar<Ty>(offGrid);
+            patch[1][3] = (condXg)? patch[1][3] : scalar<Ty>(offGrid);
+            patch[2][3] = (condXg)? patch[2][3] : scalar<Ty>(offGrid);
+            patch[3][3] = (condXg)? patch[3][3] : scalar<Ty>(offGrid);
+            patch[3][0] = (condYg)? patch[3][0] : scalar<Ty>(offGrid);
+            patch[3][1] = (condYg)? patch[3][1] : scalar<Ty>(offGrid);
+            patch[3][2] = (condYg)? patch[3][2] : scalar<Ty>(offGrid);
+            patch[3][3] = (condYg)? patch[3][3] : scalar<Ty>(offGrid);
+            */
+
+            out.ptr[omId] = bicubicInterpolate<Ty, Tp>(patch, off_x, off_y);
         }
 
         ///////////////////////////////////////////////////////////////////////////
@@ -193,7 +316,7 @@ namespace cuda
                     core_linear1(idx, idy, idz, idw, out, in, pos, offGrid, pBatch);
                     break;
                 case AF_INTERP_CUBIC:
-                    core_linear1(idx, idy, idz, idw, out, in, pos, offGrid, pBatch);
+                    core_cubic1(idx, idy, idz, idw, out, in, pos, offGrid, pBatch);
                     break;
                 default:
                     break;
@@ -227,7 +350,7 @@ namespace cuda
                     core_linear2(idx, idy, idz, idw, out, in, pos, qos, offGrid, pBatch);
                     break;
                 case AF_INTERP_CUBIC:
-                    core_linear2(idx, idy, idz, idw, out, in, pos, qos, offGrid, pBatch);
+                    core_cubic2(idx, idy, idz, idw, out, in, pos, qos, offGrid, pBatch);
                     break;
                 default:
                     break;

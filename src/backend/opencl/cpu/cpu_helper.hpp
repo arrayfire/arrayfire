@@ -29,32 +29,32 @@
 #define AF_LAPACK_COL_MAJOR LAPACK_COL_MAJOR
 #define LAPACK_NAME(fn) LAPACKE_##fn
 
-#ifdef __APPLE__
-    #include <Accelerate/Accelerate.h>
-    #include <lapacke.hpp>
-    #undef AF_LAPACK_COL_MAJOR
-    #define AF_LAPACK_COL_MAJOR 0
+#ifdef USE_MKL
+    #include<mkl_lapacke.h>
 #else
-    #ifdef USE_MKL
-        #include<mkl_lapacke.h>
-    #else
+    #ifdef __APPLE__
+        #include <Accelerate/Accelerate.h>
+        #include <lapacke.hpp>
+        #undef AF_LAPACK_COL_MAJOR
+        #define AF_LAPACK_COL_MAJOR 0
+    #else // NETLIB LAPACKE
         #include<lapacke.h>
     #endif
-#endif //OS
+#endif
 
 #endif // WITH_OPENCL_LINEAR_ALGEBRA
 
 //********************************************************/
 // BLAS
 //********************************************************/
-#ifdef __APPLE__
-    #include <Accelerate/Accelerate.h>
+#ifdef USE_MKL
+    #include <mkl_cblas.h>
 #else
-    #ifdef USE_MKL
-        #include <mkl_cblas.h>
+    #ifdef __APPLE__
+        #include <Accelerate/Accelerate.h>
     #else
         extern "C" {
-        #include <cblas.h>
+            #include <cblas.h>
         }
     #endif
 #endif

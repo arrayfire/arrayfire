@@ -80,5 +80,14 @@ The return value specifies which backend the array was created on.
 
 =======================================================================
 
+\defgroup unified_func_getdeviceid getDeviceId
+
+\brief Get's the id of the device an array was created on.
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
 @}
 */

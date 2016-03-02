@@ -150,18 +150,6 @@ int getBackend()
     return AF_BACKEND_CUDA;
 }
 
-string getInfo()
-{
-    ostringstream info;
-    info << "ArrayFire v" << AF_VERSION
-         << " (CUDA, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
-    info << getPlatformInfo();
-    for (int i = 0; i < getDeviceCount(); ++i) {
-        info << getDeviceInfo(i);
-    }
-    return info.str();
-}
-
 string getDeviceInfo(int device)
 {
     cudaDeviceProp dev = getDeviceProp(device);
@@ -184,6 +172,18 @@ string getDeviceInfo(int device)
               memory + string(", ") +
              compute + string("\n");
     return info;
+}
+
+string getDeviceInfo()
+{
+    ostringstream info;
+    info << "ArrayFire v" << AF_VERSION
+         << " (CUDA, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
+    info << getPlatformInfo();
+    for (int i = 0; i < getDeviceCount(); ++i) {
+        info << getDeviceInfo(i);
+    }
+    return info.str();
 }
 
 string getPlatformInfo()

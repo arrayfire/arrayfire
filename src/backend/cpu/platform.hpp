@@ -16,7 +16,7 @@ namespace cpu {
 
     int getBackend();
 
-    std::string getInfo();
+    std::string getDeviceInfo();
 
     bool isDoubleSupported(int device);
 
