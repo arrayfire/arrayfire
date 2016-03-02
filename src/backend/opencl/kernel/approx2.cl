@@ -31,19 +31,6 @@ Ty div(Ty a, Tp b) { a.x = a.x / b; a.y = a.y / b; return a; }
 
 #endif
 
-Ty cubicInterpolate(Ty p[4], Tp x) {
-    return p[1] + (Ty)0.5 * x * (p[2] - p[0] + x * ((Ty)2.0 * p[0] - (Ty)5.0 * p[1] + (Ty)4.0 * p[2] - p[3] + x*((Ty)3.0*(p[1] - p[2]) + p[3] - p[0])));
-}
-
-Ty bicubicInterpolate(Ty p[4][4], Tp x, Tp y) {
-    Ty arr[4];
-    arr[0] = cubicInterpolate(p[0], x);
-    arr[1] = cubicInterpolate(p[1], x);
-    arr[2] = cubicInterpolate(p[2], x);
-    arr[3] = cubicInterpolate(p[3], x);
-    return cubicInterpolate(arr, y);
-}
-
 ///////////////////////////////////////////////////////////////////////////
 // nearest-neighbor resampling
 ///////////////////////////////////////////////////////////////////////////
@@ -136,6 +123,20 @@ void core_linear2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t
 ///////////////////////////////////////////////////////////////////////////
 // cubic resampling
 ///////////////////////////////////////////////////////////////////////////
+
+Ty cubicInterpolate(Ty p[4], Tp x) {
+    return p[1] + (Ty)0.5 * x * (p[2] - p[0] + x * ((Ty)2.0 * p[0] - (Ty)5.0 * p[1] + (Ty)4.0 * p[2] - p[3] + x*((Ty)3.0*(p[1] - p[2]) + p[3] - p[0])));
+}
+
+Ty bicubicInterpolate(Ty p[4][4], Tp x, Tp y) {
+    Ty arr[4];
+    arr[0] = cubicInterpolate(p[0], x);
+    arr[1] = cubicInterpolate(p[1], x);
+    arr[2] = cubicInterpolate(p[2], x);
+    arr[3] = cubicInterpolate(p[3], x);
+    return cubicInterpolate(arr, y);
+}
+
 void core_cubic2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
                   __global       Ty *d_out, const KParam out,
                   __global const Ty *d_in,  const KParam in,
@@ -163,8 +164,8 @@ void core_cubic2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t 
 
     dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + grid_y * in.strides[1] + grid_x;
     // used for setting values at boundaries
-    bool condXl = (x < 0);
-    bool condYl = (y < 0);
+    bool condXl = (x < 1);
+    bool condYl = (y < 1);
     bool condXg = (x > in.dims[0] - 3);
     bool condYg = (y > in.dims[1] - 3);
 
@@ -187,10 +188,10 @@ void core_cubic2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t 
     patch[1][3] = (condXg)? (Ty)offGrid : d_in[ioff + 2];
     patch[2][3] = (condXg)? (Ty)offGrid : d_in[ioff + in.strides[1] + 2];
     //corners
-    patch[0][0] = (condXl && condYl)? d_in[ioff - in.strides[1] - 1]     : (Ty)offGrid;
-    patch[0][3] = (condYl && condXg)? d_in[ioff - in.strides[1] + 1]     : (Ty)offGrid;
-    patch[3][0] = (condXl && condYg)? d_in[ioff + 2 * in.strides[1] - 1] : (Ty)offGrid;
-    patch[3][3] = (condXg && condYg)? d_in[ioff + 2 * in.strides[1] + 2] : (Ty)offGrid;
+    patch[0][0] = (condXl || condYl)? (Ty)offGrid : d_in[ioff - in.strides[1] - 1]     ;
+    patch[0][3] = (condYl || condXg)? (Ty)offGrid : d_in[ioff - in.strides[1] + 1]     ;
+    patch[3][0] = (condXl || condYg)? (Ty)offGrid : d_in[ioff + 2 * in.strides[1] - 1] ;
+    patch[3][3] = (condXg || condYg)? (Ty)offGrid : d_in[ioff + 2 * in.strides[1] + 2] ;
 
     set(d_out[omId], bicubicInterpolate(patch, off_x, off_y));
 }

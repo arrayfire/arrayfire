@@ -187,8 +187,8 @@ struct approx2_op<InT, LocT, AF_INTERP_CUBIC>
         }
 
         // used for setting values at boundaries
-        bool condXl = (x < 0);
-        bool condYl = (y < 0);
+        bool condXl = (x < 1);
+        bool condYl = (y < 1);
         bool condXg = (x > idims[0] - 3);
         bool condYg = (y > idims[1] - 3);
 
@@ -211,10 +211,10 @@ struct approx2_op<InT, LocT, AF_INTERP_CUBIC>
         patch[1][3] = (condXg)? scalar<InT>(offGrid) : in[ioff + 2];
         patch[2][3] = (condXg)? scalar<InT>(offGrid) : in[ioff + istrides[1] + 2];
         //corners
-        patch[0][0] = (condXl && condYl)? in[ioff - istrides[1] - 1]     : scalar<InT>(offGrid);
-        patch[0][3] = (condYl && condXg)? in[ioff - istrides[1] + 1]     : scalar<InT>(offGrid);
-        patch[3][0] = (condXl && condYg)? in[ioff + 2 * istrides[1] - 1] : scalar<InT>(offGrid);
-        patch[3][3] = (condXg && condYg)? in[ioff + 2 * istrides[1] + 2] : scalar<InT>(offGrid);
+        patch[0][0] =(condXl || condYl)? scalar<InT>(offGrid) : in[ioff - istrides[1] - 1]    ;
+        patch[0][3] =(condYl || condXg)? scalar<InT>(offGrid) : in[ioff - istrides[1] + 1]    ;
+        patch[3][0] =(condXl || condYg)? scalar<InT>(offGrid) : in[ioff + 2 * istrides[1] - 1];
+        patch[3][3] =(condXg || condYg)? scalar<InT>(offGrid) : in[ioff + 2 * istrides[1] + 2];
 
         // Write Final Value
         out[omId] = bicubicInterpolate(patch, off_x, off_y);
