@@ -138,22 +138,21 @@ struct approx1_op<InT, LocT, AF_INTERP_CUBIC>
             dim_t ioff = idw * istrides[3] + idz * istrides[2] + idy * istrides[1] + grid_x;
 
             //compute basis function values
-            InT h00 = (1+2*off_x) * (1 - off_x)*(1 - off_x);
-            InT h10 = off_x * (1 - off_x)*(1 - off_x);
-            InT h01 = off_x * off_x*(3 - 2 * off_x);
+            InT h00 = (1 + 2 * off_x) * (1 - off_x) * (1 - off_x);
+            InT h10 = off_x * (1 - off_x) * (1 - off_x);
+            InT h01 = off_x * off_x * (3 - 2 * off_x);
             InT h11 = off_x * off_x * (off_x - 1);
             // Check if x-1, x, and x+1, x+2 are both valid indices
+            bool condr  = (x > 0);
             bool condl1 = (x < idims[0] - 1);
             bool condl2 = (x < idims[0] - 2);
-            bool condr = (x > 0);
             // Compute Left and Right points and tangents
-            InT pl = condr  ? in[ioff] : scalar<InT>(offGrid);
+            InT pl = condr  ? in[ioff]     : scalar<InT>(offGrid);
             InT pr = condl1 ? in[ioff + 1] : scalar<InT>(offGrid);
-            InT tl = condr  ? scalar<InT>(0.5) * ((in[ioff + 1] - in[ioff]) + (in[ioff] - in[ioff - 1])) :
-                              scalar<InT>(0.5) * ((in[ioff + 1] - in[ioff]) + (in[ioff] - (InT)offGrid));
-            InT tr = condl2 ? scalar<InT>(0.5) * ((in[ioff + 2] - in[ioff + 1]) + (in[ioff + 1] - in[ioff])) :
-                     condl1 ? scalar<InT>(0.5) * (((InT)offGrid - in[ioff + 1]) + (in[ioff + 1] - in[ioff])) :
-                              scalar<InT>(0.5) * (((InT)offGrid - (InT)offGrid) + ((InT)offGrid - in[ioff]));
+            InT tl = condr  ? scalar<InT>(0.5)  * ((in[ioff + 1] - in[ioff - 1])) :
+                              scalar<InT>(0.5)  * ((in[ioff + 1] - scalar<InT>(offGrid)));
+            InT tr = condl2 ? scalar<InT>(0.5)  * ((in[ioff + 2] - in[ioff])) :
+                              scalar<InT>(0.5)  * ((scalar<InT>(offGrid) - in[ioff]));
 
             // Write final value
             out[omId] = h00 * pl + h10 * tl + h01 * pr + h11 * tr;
