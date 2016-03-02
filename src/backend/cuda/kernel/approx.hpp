@@ -189,23 +189,26 @@ namespace cuda
             const Tp off_x = pVal - grid_x;    // fractional offset
 
             dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1] + grid_x;
-            //compute basis function values
-            Tp h00 = (1 + 2*off_x) * (1 - off_x) * (1 - off_x);
-            Tp h10 = off_x * (1 - off_x)*(1 - off_x);
-            Tp h01 = off_x * off_x*(3 - 2 * off_x);
-            Tp h11 = off_x * off_x * (off_x - 1);
+
             // Check if x-1, x, and x+1, x+2 are both valid indices
             bool condr  = (pVal > 0);
             bool condl1 = (pVal < in.dims[0] - 1);
             bool condl2 = (pVal < in.dims[0] - 2);
+
+            //compute basis function values
+            Tp h00 = (1 + 2 * off_x) * (1 - off_x) * (1 - off_x);
+            Tp h10 = off_x * (1 - off_x) * (1 - off_x);
+            Tp h01 = off_x * off_x * (3 - 2 * off_x);
+            Tp h11 = off_x * off_x * (off_x - 1);
+
             // Compute Left and Right points and tangents
-            Ty pl = condr  ? in.ptr[ioff] : scalar<Ty>(offGrid);
+            Ty pl = condr  ? in.ptr[ioff]     : scalar<Ty>(offGrid);
             Ty pr = condl1 ? in.ptr[ioff + 1] : scalar<Ty>(offGrid);
-            Ty tl = condr  ? scalar<Ty>(0.5) * ((in.ptr[ioff + 1] - in.ptr[ioff]) + (in.ptr[ioff] - in.ptr[ioff - 1])) :
-                            scalar<Ty>(0.5) * ((in.ptr[ioff + 1] - in.ptr[ioff]) + (in.ptr[ioff] - scalar<Ty>(offGrid)));
-            Ty tr = condl2 ? scalar<Ty>(0.5) * ((in.ptr[ioff + 2] - in.ptr[ioff + 1]) + (in.ptr[ioff + 1] - in.ptr[ioff])) :
-                condl1? scalar<Ty>(0.5) * ((scalar<Ty>(offGrid) - in.ptr[ioff + 1]) + (in.ptr[ioff + 1] - in.ptr[ioff])) :
-                        scalar<Ty>(0.5) * ((scalar<Ty>(offGrid) - scalar<Ty>(offGrid)) + (scalar<Ty>(offGrid) - in.ptr[ioff]));
+            Ty tl = condr  ? scalar<Ty>(0.5)  * ((in.ptr[ioff + 1] - in.ptr[ioff - 1])) :
+                             scalar<Ty>(0.5)  * ((in.ptr[ioff + 1] - scalar<Ty>(offGrid)));
+            Ty tr = condl2 ? scalar<Ty>(0.5)  * ((in.ptr[ioff + 2] - in.ptr[ioff])) :
+                             scalar<Ty>(0.5)  * ((scalar<Ty>(offGrid) - in.ptr[ioff]));
+
             // Write final value
             out.ptr[omId] = h00 * pl + h10 * tl + h01 * pr + h11 * tr;
         }
@@ -252,39 +255,37 @@ namespace cuda
             const dim_t grid_x = floor(x),   grid_y = floor(y);   // nearest grid
             const Tp off_x  = x - grid_x, off_y  = y - grid_y;    // fractional offset
 
-            // Check if pVal - 1, pVal, and pVal + 1, pVal + 2 are both valid indices
-            bool condY  = (y > 0 && y < in.dims[1] - 3);
-            bool condX  = (x > 0 && x < in.dims[0] - 3);
+            // used for setting values at boundaries
             bool condXl = (x < 1);
             bool condYl = (y < 1);
-            bool condXg = (x > in.dims[0] - 2);
-            bool condYg = (y > in.dims[1] - 2);
+            bool condXg = (x > in.dims[0] - 3);
+            bool condYg = (y > in.dims[1] - 3);
 
             dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + grid_y * in.strides[1] + grid_x;
 
-            Ty patch[4][4] = {{in.ptr[ioff - in.strides[1] - 1], in.ptr[ioff - in.strides[1]], in.ptr[ioff - in.strides[1] + 1], in.ptr[ioff - in.strides[1] + 2]},
-                              {in.ptr[ioff - 1], in.ptr[ioff], in.ptr[ioff + 1], in.ptr[ioff + 2]},
-                              {in.ptr[ioff + in.strides[1] - 1], in.ptr[ioff + in.strides[1]], in.ptr[ioff + in.strides[1] + 1], in.ptr[ioff + in.strides[1] + 2]},
-                              {in.ptr[ioff - 2 * in.strides[1] - 1], in.ptr[ioff - 2 * in.strides[1]], in.ptr[ioff - 2 * in.strides[1] + 1], in.ptr[ioff - 2 * in.strides[1] + 2]}};
+            //for bicubic interpolation, work with 4x4 patch at a time
+            Ty patch[4][4];
 
-            /*
-            patch[0][0] = (condXl)? patch[0][0] : scalar<Ty>(offGrid);
-            patch[1][0] = (condXl)? patch[1][0] : scalar<Ty>(offGrid);
-            patch[2][0] = (condXl)? patch[2][0] : scalar<Ty>(offGrid);
-            patch[3][0] = (condXl)? patch[3][0] : scalar<Ty>(offGrid);
-            patch[0][0] = (condYl)? patch[0][0] : scalar<Ty>(offGrid);
-            patch[0][1] = (condYl)? patch[0][1] : scalar<Ty>(offGrid);
-            patch[0][2] = (condYl)? patch[0][2] : scalar<Ty>(offGrid);
-            patch[0][3] = (condYl)? patch[0][3] : scalar<Ty>(offGrid);
-            patch[0][3] = (condXg)? patch[0][3] : scalar<Ty>(offGrid);
-            patch[1][3] = (condXg)? patch[1][3] : scalar<Ty>(offGrid);
-            patch[2][3] = (condXg)? patch[2][3] : scalar<Ty>(offGrid);
-            patch[3][3] = (condXg)? patch[3][3] : scalar<Ty>(offGrid);
-            patch[3][0] = (condYg)? patch[3][0] : scalar<Ty>(offGrid);
-            patch[3][1] = (condYg)? patch[3][1] : scalar<Ty>(offGrid);
-            patch[3][2] = (condYg)? patch[3][2] : scalar<Ty>(offGrid);
-            patch[3][3] = (condYg)? patch[3][3] : scalar<Ty>(offGrid);
-            */
+            //assumption is that inner patch consisting of 4 points is minimum requirement for bicubic interpolation
+            //inner square
+            patch[1][1] = in.ptr[ioff];
+            patch[1][2] = in.ptr[ioff + 1];
+            patch[2][1] = in.ptr[ioff + in.strides[1]];
+            patch[2][2] = in.ptr[ioff + in.strides[1] + 1];
+            //outer sides
+            patch[0][1] = (condYl)? scalar<Ty>(offGrid) : in.ptr[ioff - in.strides[1]];
+            patch[0][2] = (condYl)? scalar<Ty>(offGrid) : in.ptr[ioff - in.strides[1] + 1];
+            patch[3][1] = (condYg)? scalar<Ty>(offGrid) : in.ptr[ioff + 2 * in.strides[1]];
+            patch[3][2] = (condYg)? scalar<Ty>(offGrid) : in.ptr[ioff + 2 * in.strides[1] + 1];
+            patch[1][0] = (condXl)? scalar<Ty>(offGrid) : in.ptr[ioff - 1];
+            patch[2][0] = (condXl)? scalar<Ty>(offGrid) : in.ptr[ioff + in.strides[1] -1];
+            patch[1][3] = (condXg)? scalar<Ty>(offGrid) : in.ptr[ioff + 2];
+            patch[2][3] = (condXg)? scalar<Ty>(offGrid) : in.ptr[ioff + in.strides[1] + 2];
+            //corners
+            patch[0][0] = (condXl || condYl)? scalar<Ty>(offGrid) : in.ptr[ioff - in.strides[1] - 1]    ;
+            patch[0][3] = (condYl || condXg)? scalar<Ty>(offGrid) : in.ptr[ioff - in.strides[1] + 1]    ;
+            patch[3][0] = (condXl || condYg)? scalar<Ty>(offGrid) : in.ptr[ioff + 2 * in.strides[1] - 1];
+            patch[3][3] = (condXg || condYg)? scalar<Ty>(offGrid) : in.ptr[ioff + 2 * in.strides[1] + 2];
 
             out.ptr[omId] = bicubicInterpolate<Ty, Tp>(patch, off_x, off_y);
         }
