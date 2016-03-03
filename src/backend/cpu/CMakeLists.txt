@@ -95,6 +95,9 @@ FILE(GLOB cpu_headers
 FILE(GLOB cpu_sources
     "*.cpp")
 
+LIST(SORT cpu_headers)
+LIST(SORT cpu_sources)
+
 source_group(backend\\cpu\\Headers FILES ${cpu_headers})
 source_group(backend\\cpu\\Sources FILES ${cpu_sources})
 
@@ -106,6 +109,9 @@ FILE(GLOB backend_headers
 FILE(GLOB backend_sources
     "../*.cpp"
     )
+
+LIST(SORT backend_headers)
+LIST(SORT backend_sources)
 
 source_group(backend\\Headers FILES ${backend_headers})
 source_group(backend\\Sources FILES ${backend_sources})
@@ -119,12 +125,17 @@ FILE(GLOB c_sources
     "../../api/c/*.cpp"
     )
 
+LIST(SORT c_headers)
+LIST(SORT c_sources)
+
 source_group(api\\c\\Headers FILES ${c_headers})
 source_group(api\\c\\Sources FILES ${c_sources})
 
 FILE(GLOB cpp_sources
     "../../api/cpp/*.cpp"
     )
+
+LIST(SORT cpp_sources)
 
 source_group(api\\cpp\\Sources FILES ${cpp_sources})
 
