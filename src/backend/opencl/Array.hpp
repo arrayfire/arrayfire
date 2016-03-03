@@ -77,15 +77,18 @@ namespace opencl
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
-        cl::Buffer *buf = arr.device();
+        const cl::Buffer *buf = arr.device();
         memLock((T *)buf);
-        return (void *)((*buf)());
+        cl_mem mem = (*buf)();
+        return (void *)mem;
     }
 
     template<typename T>
     void *getRawPtr(const Array<T>& arr)
     {
-        return (void *)(arr.get());
+        const cl::Buffer *buf = arr.get();
+        cl_mem mem = (*buf)();
+        return (void *)mem;
     }
 
     template<typename T>
