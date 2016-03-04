@@ -428,6 +428,8 @@ extern "C" {
 
        The device pointer \p ptr is notfreed by memory manager until \ref af_unlock_device_ptr is called.
        \ingroup device_func_mem
+
+       \note For OpenCL backend *ptr should be cast to cl_mem.
     */
     AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr);
 
