@@ -24,6 +24,7 @@
 #include <identity.hpp>
 #include <diagonal.hpp>
 #include <triangle.hpp>
+#include <platform.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -404,7 +405,13 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_t * const dims
 af_err af_release_array(af_array arr)
 {
     try {
-        af_dtype type = getInfo(arr).getType();
+        int dev = getActiveDeviceId();
+
+        ArrayInfo info = getInfo(arr, false);
+
+        setDevice(info.getDevId());
+
+        af_dtype type = info.getType();
 
         switch(type) {
         case f32:   releaseHandle<float   >(arr); break;
@@ -421,6 +428,8 @@ af_err af_release_array(af_array arr)
         case u16:   releaseHandle<ushort  >(arr); break;
         default:    TYPE_ERROR(0, type);
         }
+
+        setDevice(dev);
     }
     CATCHALL
 
