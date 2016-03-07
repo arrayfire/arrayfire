@@ -75,6 +75,8 @@ namespace opencl
                             break;
                         case AF_INTERP_LINEAR:  options << " -D INTERP=LINEAR";
                             break;
+                        case AF_INTERP_CUBIC:  options << " -D INTERP=CUBIC";
+                            break;
                         default:
                             break;
                     }
@@ -142,6 +144,8 @@ namespace opencl
                         case AF_INTERP_NEAREST: options << " -D INTERP=NEAREST";
                             break;
                         case AF_INTERP_LINEAR:  options << " -D INTERP=LINEAR";
+                            break;
+                        case AF_INTERP_CUBIC:  options << " -D INTERP=CUBIC";
                             break;
                         default:
                             break;
