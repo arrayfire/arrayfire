@@ -72,7 +72,7 @@ void kmeans(array &means, array &clusters, const array in, int k, int iter=100)
     array maximum = max(in);
 
     gfor(seq ii, d) {
-        data(span, span, ii) = (in(span, span, ii) - minimum(ii)) / maximum(ii);
+        data(span, span, ii) = (in(span, span, ii) - minimum(ii).scalar<float>()) / maximum(ii).scalar<float>();
     }
 
     // Initial guess of means
