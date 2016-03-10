@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <cstddef>
 #include <gtest/gtest.h>
 #include <arrayfire.h>
 #include <testHelpers.hpp>
@@ -484,4 +485,10 @@ TEST(DeviceId, Different)
     af_err err = af_matmul(&c, a.get(), b.get(), AF_MAT_NONE, AF_MAT_NONE);
     ASSERT_EQ(err, AF_ERR_DEVICE);
     setDevice(id0);
+}
+
+TEST(Device, empty)
+{
+    array a = array();
+    ASSERT_EQ(a.device<float>() == NULL, 1);
 }

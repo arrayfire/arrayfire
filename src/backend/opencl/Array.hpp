@@ -78,6 +78,7 @@ namespace opencl
     void *getDevicePtr(const Array<T>& arr)
     {
         const cl::Buffer *buf = arr.device();
+        if (!buf) return NULL;
         memLock((T *)buf);
         cl_mem mem = (*buf)();
         return (void *)mem;
@@ -87,6 +88,7 @@ namespace opencl
     void *getRawPtr(const Array<T>& arr)
     {
         const cl::Buffer *buf = arr.get();
+        if (!buf) return NULL;
         cl_mem mem = (*buf)();
         return (void *)mem;
     }
