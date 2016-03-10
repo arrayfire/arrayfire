@@ -492,3 +492,9 @@ TEST(Device, empty)
     array a = array();
     ASSERT_EQ(a.device<float>() == NULL, 1);
 }
+
+TEST(Device, JIT)
+{
+    array a = constant(1, 5, 5);
+    ASSERT_EQ(a.device<float>() != NULL, 1);
+}

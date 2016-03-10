@@ -164,10 +164,10 @@ namespace opencl
 
         cl::Buffer* device()
         {
-            if (!isOwner() || data.use_count() > 1) {
+            if (!isOwner() || getOffset() || data.use_count() > 1) {
                 *this = Array<T>(dims(), (*get())(), (size_t)getOffset(), true);
             }
-            return this->data.get();
+            return this->get();
         }
 
         cl::Buffer* device() const
