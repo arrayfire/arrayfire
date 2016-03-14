@@ -133,6 +133,7 @@ ELSE(PC_LAPACKE_FOUND)
             ${INCLUDE_INSTALL_DIR}
             /opt/intel/mkl/include
             /usr/include
+            /usr/include/lapacke/
             /usr/local/include
             /sw/include
             /opt/local/include
