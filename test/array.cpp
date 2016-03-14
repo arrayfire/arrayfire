@@ -466,25 +466,30 @@ TEST(DeviceId, Different)
 {
     int ndevices = getDeviceCount();
     if (ndevices < 2) return;
-
     int id0 = getDevice();
     int id1 = (id0 + 1) % ndevices;
 
-    array a = randu(5,5);
-    ASSERT_EQ(getDeviceId(a), id0);
+    {
+        array a = randu(5,5);
+        ASSERT_EQ(getDeviceId(a), id0);
+        setDevice(id1);
+
+        array b = randu(5,5);
+
+        ASSERT_EQ(getDeviceId(a), id0);
+        ASSERT_EQ(getDeviceId(b), id1);
+        ASSERT_NE(getDevice(), getDeviceId(a));
+        ASSERT_EQ(getDevice(), getDeviceId(b));
+
+        af_array c;
+        af_err err = af_matmul(&c, a.get(), b.get(), AF_MAT_NONE, AF_MAT_NONE);
+        ASSERT_EQ(err, AF_ERR_DEVICE);
+    }
+
     setDevice(id1);
-
-    array b = randu(5,5);
-
-    ASSERT_EQ(getDeviceId(a), id0);
-    ASSERT_EQ(getDeviceId(b), id1);
-    ASSERT_NE(getDevice(), getDeviceId(a));
-    ASSERT_EQ(getDevice(), getDeviceId(b));
-
-    af_array c;
-    af_err err = af_matmul(&c, a.get(), b.get(), AF_MAT_NONE, AF_MAT_NONE);
-    ASSERT_EQ(err, AF_ERR_DEVICE);
+    af::deviceGC();
     setDevice(id0);
+    af::deviceGC();
 }
 
 TEST(Device, empty)
