@@ -1,139 +1,128 @@
 <a href="http://arrayfire.com/"><img src="http://arrayfire.com/logos/arrayfire_logo_whitebkgnd.png" width="300"></a>
 
-ArrayFire is a high performance software library for parallel computing with an easy-to-use API. Its **array** based function set makes parallel programming simple.
+ArrayFire is a high performance software library for parallel computing with an
+easy-to-use API. Its **array** based function set makes parallel programming
+simple.
 
-ArrayFire's multiple backends (**CUDA**, **OpenCL** and native **CPU**) make it platform independent and highly portable.
+ArrayFire's multiple backends (**CUDA**, **OpenCL** and native **CPU**) make it
+platform independent and highly portable. ArrayFire provides visualization
+capabilities using our OpenGL-based,
+[high performance visualization library](https://github.com/arrayfire/forge).
 
-A few lines of code in ArrayFire can replace dozens of lines of parallel computing code, saving you valuable time and lowering development costs.
+A few lines of code in ArrayFire can replace dozens of lines of parallel
+computing code, saving you valuable time and lowering development costs.
 
-### Build ArrayFire from source
-To build ArrayFire from source, please follow the instructions on our [wiki](https://github.com/arrayfire/arrayfire/wiki).
-
-### Download ArrayFire Installers
-ArrayFire binary installers can be downloaded at the [ArrayFire Downloads](http://go.arrayfire.com/l/37882/2015-03-31/mmhqy) page.
-
-### Support and Contact Info [![Join the chat at https://gitter.im/arrayfire/arrayfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arrayfire/arrayfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-* Google Groups: https://groups.google.com/forum/#!forum/arrayfire-users
-* ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/)
-* ArrayFire Blogs: http://arrayfire.com/blog/
-* Email: <mailto:technical@arrayfire.com>
-
-### Build Status
-|         | Linux x86 | Linux armv7l | Linux aarch64 | Windows | OSX |
-|:-------:|:---------:|:------------:|:-------------:|:-------:|:---:|
+|         | Linux x86_64 | Linux armv7l | Linux aarch64 | Windows | OSX |
+|:-------:|:------------:|:------------:|:-------------:|:-------:|:---:|
 | Build   | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/build/devel)](http://ci.arrayfire.org/job/arrayfire-linux/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrak1/build/devel)](http://ci.arrayfire.org/job/arrayfire-tegrak1/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrax1/build/devel)](http://ci.arrayfire.org/job/arrayfire-tegrax1/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/build/devel)](http://ci.arrayfire.org/job/arrayfire-windows/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/build/devel)](http://ci.arrayfire.org/job/arrayfire-osx/job/build/branch/devel/) |
 | Test    | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/test/devel)](http://ci.arrayfire.org/job/arrayfire-linux/job/test/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrak1/test/devel)](http://ci.arrayfire.org/job/arrayfire-tegrak1/job/test/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrax1/test/devel)](http://ci.arrayfire.org/job/arrayfire-tegrax1/job/test/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/test/devel)](http://ci.arrayfire.org/job/arrayfire-windows/job/test/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/test/devel)](http://ci.arrayfire.org/job/arrayfire-osx/job/test/branch/devel/) |
 
-Test coverage: [![Coverage Status](https://coveralls.io/repos/arrayfire/arrayfire/badge.svg?branch=HEAD)](https://coveralls.io/r/arrayfire/arrayfire?branch=HEAD)
+### Installation
 
-### Example
+You can install the ArrayFire library from one of the following ways:
 
-``` C++
+#### Official installers
 
-#include <arrayfire.h>
-#include <cstdio>
+Execute one of our [official binary installers](https://arrayfire.com/download)
+for Linux, OSX, and Windows platforms.
 
-using namespace af;
+#### Build from source
 
-int main(int argc, char *argv[])
-{
-    try {
+Build from source by following instructions on our
+[wiki](https://github.com/arrayfire/arrayfire/wiki).
 
-        // Select a device and display arrayfire info
-        int device = argc > 1 ? atoi(argv[1]) : 0;
-        af::setDevice(device);
-        af::info();
+### Examples
 
-        printf("Create a 5-by-3 matrix of random floats on the GPU\n");
-        array A = randu(5,3, f32);
-        af_print(A);
+The following examples are simplified versions of
+[`helloworld.cpp`](https://github.com/arrayfire/arrayfire/tree/devel/examples/helloworld/helloworld.cpp)
+and
+[`conway_pretty.cpp`](https://github.com/arrayfire/arrayfire/tree/devel/examples/graphics/conway_pretty.cpp),
+respectively. For more code examples, visit the
+[`examples/`](https://github.com/arrayfire/arrayfire/tree/devel/examples)
+directory.
 
-        printf("Element-wise arithmetic\n");
-        array B = sin(A) + 1.5;
-        af_print(B);
+#### Hello, world!
 
-        printf("Negate the first three elements of second column\n");
-        B(seq(0, 2), 1) = B(seq(0, 2), 1) * -1;
-        af_print(B);
+```cpp
+array A = randu(5, 3, f32); // Create 5x3 matrix of random floats on the GPU
+array B = sin(A) + 1.5;     // Element-wise arithmetic
+array C = fft(B);           // Fourier transform the result
 
-        printf("Fourier transform the result\n");
-        array C = fft(B);
-        af_print(C);
+float d[] = { 1, 2, 3, 4, 5, 6 };
+array D(2, 3, d, afHost);   // Create 2x3 matrix from host data
+D.col(0) = D.col(end);      // Copy last column onto first
 
-        printf("Grab last row\n");
-        array c = C.row(end);
-        af_print(c);
+array vals, inds;
+sort(vals, inds, A);        // Sort A and print sorted array and corresponding indices
+af_print(vals);
+af_print(inds);
+```
 
-        printf("Create 2-by-3 matrix from host data\n");
-        float d[] = { 1, 2, 3, 4, 5, 6 };
-        array D(2, 3, d, af::afHost);
-        af_print(D);
+#### Conway's Game of Life
 
-        printf("Copy last column onto first\n");
-        D.col(0) = D.col(end);
-        af_print(D);
+Visit the
+[Wikipedia page](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) for a
+description of Conway's Game of Life.
 
-        // Sort A
-        printf("Sort A and print sorted array and corresponding indices\n");
-        array vals, inds;
-        sort(vals, inds, A);
-        af_print(vals);
-        af_print(inds);
+```cpp
+static const float h_kernel[] = {1, 1, 1, 1, 0, 1, 1, 1, 1};
+static const array kernel(3, 3, h_kernel, afHost);
 
-    } catch (af::exception& e) {
-        fprintf(stderr, "%s\n", e.what());
-        throw;
-    }
+array state = (randu(128, 128, f32) > 0.5).as(f32); // Generate starting state
+Window myWindow(256, 256);
+while(!myWindow.close()) {
+  array nHood = convolve(state, kernel); // Obtain neighbors
+  array C0 = (nHood == 2);               // Generate conditions for life
+  array C1 = (nHood == 3);
+  state = state * C0 + C1;               // Update state
+  myWindow.image(state);                 // Display
 }
 
 ```
+
+<p align="center">
+<img src="https://github.com/arrayfire/assets/blob/master/gifs/conway.gif" alt="Conway's Game of Life" height="256" width="256">
+</p>
 
 ### Documentation
 
-You can find our complete documentation over [here](http://www.arrayfire.com/docs/index.htm).
+You can find our complete documentation [here](http://www.arrayfire.com/docs/index.htm).
 
 Quick links:
 
-- [Download Binaries](http://www.arrayfire.com/download/)
-- [List of functions](http://www.arrayfire.com/docs/group__arrayfire__func.htm)
-- [Tutorials](http://www.arrayfire.com/docs/gettingstarted.htm)
-- [Examples](http://www.arrayfire.com/docs/examples.htm)
+* [List of functions](http://www.arrayfire.org/docs/group__arrayfire__func.htm)
+* [Tutorials](http://www.arrayfire.org/docs/usergroup0.htm)
+* [Examples](http://www.arrayfire.org/docs/examples.htm)
+* [Blog](http://arrayfire.com/blog/)
 
-### Contribute
+### Language wrappers
+
+We currently support the following language wrappers for ArrayFire:
+
+* [`arrayfire-python`](https://github.com/arrayfire/arrayfire-python)
+* [`arrayfire-rust`](https://github.com/arrayfire/arrayfire-rust)
+
+Wrappers for other languages are a work in progress:
+
+[`arrayfire-dotnet`](https://github.com/arrayfire/arrayfire-dotnet), [`arrayfire-fortran`](https://github.com/arrayfire/arrayfire-fortran), [`arrayfire-go`](https://github.com/arrayfire/arrayfire-go), [`arrayfire-java`](https://github.com/arrayfire/arrayfire-java), [`arrayfire-lua`](https://github.com/arrayfire/arrayfire-lua), [`arrayfire-nodejs`](https://github.com/arrayfire/arrayfire-js), [`arrayfire-r`](https://github.com/arrayfire/arrayfire-r)
+
+### Contributing
 
 Contributions of any kind are welcome! Please refer to
-[this document](https://github.com/arrayfire/arrayfire/blob/master/CONTRIBUTING.md)
- to learn more about how you can get involved with ArrayFire.
+[CONTRIBUTING.md](https://github.com/arrayfire/arrayfire/blob/master/CONTRIBUTING.md)
+to learn more about how you can get involved with ArrayFire.
 
-## Citations and Acknowledgements
+### Citations and Acknowledgements
 
 If you redistribute ArrayFire, please follow the terms established in
-[the license](LICENSE).
-If you wish to cite ArrayFire in an academic publication, please use the
-following reference:
-
-Formatted:
-```
-Yalamanchili, P., Arshad, U., Mohammed, Z., Garigipati, P., Entschev, P.,
-Kloppenborg, B., Malcolm, J. and Melonakos, J. (2015).
-ArrayFire - A high performance software library for parallel computing with an
-easy-to-use API. Atlanta: AccelerEyes. Retrieved from https://github.com/arrayfire/arrayfire
-```
-
-BibTeX:
-```bibtex
-@misc{Yalamanchili2015,
-abstract = {ArrayFire is a high performance software library for parallel computing with an easy-to-use API. Its array based function set makes parallel programming simple. ArrayFire's multiple backends (CUDA, OpenCL and native CPU) make it platform independent and highly portable. A few lines of code in ArrayFire can replace dozens of lines of parallel computing code, saving you valuable time and lowering development costs.},
-address = {Atlanta},
-author = {Yalamanchili, Pavan and Arshad, Umar and Mohammed, Zakiuddin and Garigipati, Pradeep and Entschev, Peter and Kloppenborg, Brian and Malcolm, James and Melonakos, John},
-publisher = {AccelerEyes},
-title = {{ArrayFire - A high performance software library for parallel computing with an easy-to-use API}},
-url = {https://github.com/arrayfire/arrayfire},
-year = {2015}
-}
-```
+[the license](LICENSE). If you wish to cite ArrayFire in an academic
+publication, please use the following [citation document](.github/CITATION.md).
 
 ArrayFire development is funded by ArrayFire LLC and several third parties,
-please see the list of [acknowledgements](https://github.com/arrayfire/arrayfire/blob/master/ACKNOWLEDGEMENTS.md) for further details.
+please see the list of [acknowledgements](ACKNOWLEDGEMENTS.md) for further
+details.
 
+### Support and Contact Info [![Join the chat at https://gitter.im/arrayfire/arrayfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arrayfire/arrayfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+* [Google Groups](https://groups.google.com/forum/#!forum/arrayfire-users)
+* ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/)
