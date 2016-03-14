@@ -137,6 +137,8 @@ ELSE(PC_LAPACKE_FOUND)
             /sw/include
             /opt/local/include
             DOC "LAPACKE Include Directory"
+            PATH_SUFFIXES
+            lapacke
             )
     ENDIF(LAPACKE_ROOT_DIR)
 ENDIF(PC_LAPACKE_FOUND)
