@@ -42,12 +42,16 @@ class clFFTPlanner
 
     public:
         static clFFTPlanner& getInstance() {
-            static clFFTPlanner single_instance;
-            return single_instance;
+            static clFFTPlanner instances[opencl::DeviceManager::MAX_DEVICES];
+            return instances[opencl::getActiveDeviceId()];
         }
 
         ~clFFTPlanner() {
-            CLFFT_CHECK(clfftTeardown());
+            static bool flag = true;
+            if(flag) {
+                CLFFT_CHECK(clfftTeardown());
+                flag = false;
+            }
         }
 
     private:
