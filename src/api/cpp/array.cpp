@@ -1022,7 +1022,7 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
 
 // array_proxy instanciations
 #define TEMPLATE_MEM_FUNC(TYPE, RETURN_TYPE, FUNC)      \
-    template <>                                         \
+    template <> AFAPI                                   \
     RETURN_TYPE array::array_proxy::FUNC() const        \
     {                                                   \
         array out = *this;                              \
