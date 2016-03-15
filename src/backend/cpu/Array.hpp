@@ -174,9 +174,7 @@ namespace cpu
 
         dim4 getDataDims() const
         {
-            // This is for moddims
-            // dims and data_dims are different when moddims is used
-            return isOwner() ? info.dims() : data_dims;
+            return data_dims;
         }
 
         void setDataDims(const dim4 &new_dims)
