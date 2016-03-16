@@ -47,11 +47,17 @@ class clFFTPlanner
         }
 
         ~clFFTPlanner() {
+            //TODO: FIXME:
+            // clfftTeardown() cause a "Pure Virtual Function Called" crash on
+            // Window only when Intel devices are called. This causes tests to
+            // fail.
+            #ifndef OS_WIN
             static bool flag = true;
             if(flag) {
                 CLFFT_CHECK(clfftTeardown());
                 flag = false;
             }
+            #endif
         }
 
     private:
