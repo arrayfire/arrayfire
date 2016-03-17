@@ -930,7 +930,7 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     BINARY_OP(>=, af_ge)
     BINARY_OP(&&, af_and)
     BINARY_OP(||, af_or)
-    BINARY_OP(%, af_rem)
+    BINARY_OP(%, af_mod)
     BINARY_OP(&, af_bitand)
     BINARY_OP(|, af_bitor)
     BINARY_OP(^, af_bitxor)
@@ -1022,7 +1022,7 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
 
 // array_proxy instanciations
 #define TEMPLATE_MEM_FUNC(TYPE, RETURN_TYPE, FUNC)      \
-    template <>                                         \
+    template <> AFAPI                                   \
     RETURN_TYPE array::array_proxy::FUNC() const        \
     {                                                   \
         array out = *this;                              \

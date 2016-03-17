@@ -41,8 +41,8 @@ class cuFFTPlanner
 
     public:
         static cuFFTPlanner& getInstance() {
-            static cuFFTPlanner single_instance;
-            return single_instance;
+            static cuFFTPlanner instances[cuda::DeviceManager::MAX_DEVICES];
+            return instances[cuda::getActiveDeviceId()];
         }
 
     private:
