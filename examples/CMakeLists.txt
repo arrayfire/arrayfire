@@ -76,6 +76,7 @@ ENDMACRO()
 
 # Collect the source
 FILE(GLOB FILES "*/*.cpp")
+LIST(SORT FILES)
 ADD_DEFINITIONS("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
 # Next we build each example using every backend.

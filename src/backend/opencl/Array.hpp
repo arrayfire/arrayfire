@@ -77,15 +77,20 @@ namespace opencl
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
-        cl::Buffer *buf = arr.device();
+        const cl::Buffer *buf = arr.device();
+        if (!buf) return NULL;
         memLock((T *)buf);
-        return (void *)((*buf)());
+        cl_mem mem = (*buf)();
+        return (void *)mem;
     }
 
     template<typename T>
     void *getRawPtr(const Array<T>& arr)
     {
-        return (void *)(arr.get());
+        const cl::Buffer *buf = arr.get();
+        if (!buf) return NULL;
+        cl_mem mem = (*buf)();
+        return (void *)mem;
     }
 
     template<typename T>
@@ -159,10 +164,10 @@ namespace opencl
 
         cl::Buffer* device()
         {
-            if (!isOwner() || data.use_count() > 1) {
+            if (!isOwner() || getOffset() || data.use_count() > 1) {
                 *this = Array<T>(dims(), (*get())(), (size_t)getOffset(), true);
             }
-            return this->data.get();
+            return this->get();
         }
 
         cl::Buffer* device() const
@@ -201,9 +206,7 @@ namespace opencl
 
         dim4 getDataDims() const
         {
-            // This is for moddims
-            // dims and data_dims are different when moddims is used
-            return isOwner() ? dims() : data_dims;
+            return data_dims;
         }
 
         void setDataDims(const dim4 &new_dims)

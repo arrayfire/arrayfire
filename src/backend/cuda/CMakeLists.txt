@@ -168,6 +168,12 @@ FILE(GLOB kernel_headers
 FILE(GLOB ptx_sources
     "JIT/*.cu")
 
+LIST(SORT cuda_headers)
+LIST(SORT cuda_sources)
+LIST(SORT jit_sources)
+LIST(SORT kernel_headers)
+LIST(SORT ptx_sources)
+
 SOURCE_GROUP(backend\\cuda\\Headers FILES ${cuda_headers})
 SOURCE_GROUP(backend\\cuda\\Sources FILES ${cuda_sources})
 SOURCE_GROUP(backend\\cuda\\JIT FILES ${jit_sources})
@@ -181,6 +187,8 @@ IF(CUDA_LAPACK_CPU_FALLBACK)
 
     SOURCE_GROUP(backend\\cuda\\cpu_lapack\\Headers FILES ${cpu_lapack_headers})
     SOURCE_GROUP(backend\\cuda\\cpu_lapack\\Sources FILES ${cpu_lapack_sources})
+    LIST(SORT cpu_lapack_headers)
+    LIST(SORT cpu_lapack_sources)
 ENDIF()
 
 FILE(GLOB backend_headers
@@ -191,6 +199,9 @@ FILE(GLOB backend_headers
 FILE(GLOB backend_sources
     "../*.cpp"
     )
+
+LIST(SORT backend_headers)
+LIST(SORT backend_sources)
 
 SOURCE_GROUP(backend\\Headers FILES ${backend_headers})
 SOURCE_GROUP(backend\\Sources FILES ${backend_sources})
@@ -204,12 +215,17 @@ FILE(GLOB c_sources
     "../../api/c/*.cpp"
     )
 
+LIST(SORT c_headers)
+LIST(SORT c_sources)
+
 SOURCE_GROUP(api\\c\\Headers FILES ${c_headers})
 SOURCE_GROUP(api\\c\\Sources FILES ${c_sources})
 
 FILE(GLOB cpp_sources
     "../../api/cpp/*.cpp"
     )
+
+LIST(SORT cpp_sources)
 
 SOURCE_GROUP(api\\cpp\\Sources FILES ${cpp_sources})
 

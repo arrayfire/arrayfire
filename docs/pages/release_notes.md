@@ -1,6 +1,45 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.3.1
+==============
+
+Bug Fixes
+--------------
+
+* Fixes to \ref af::array::device()
+    * CPU Backend: [evaluate arrays](https://github.com/arrayfire/arrayfire/issues/1316)
+      before returning pointer with asynchronous calls in CPU backend.
+    * OpenCL Backend: [fix segfaults](https://github.com/arrayfire/arrayfire/issues/1324)
+      when requested for device pointers on empty arrays.
+* Fixed \ref af::array::operator%() from using [rem to mod](https://github.com/arrayfire/arrayfire/issues/1318).
+* Fixed [array destruction](https://github.com/arrayfire/arrayfire/issues/1321)
+  when backends are switched in Unified API.
+* Fixed [indexing](https://github.com/arrayfire/arrayfire/issues/1331) after
+  \ref af::moddims() is called.
+* Fixes FFT calls for CUDA and OpenCL backends when used on
+  [multiple devices](https://github.com/arrayfire/arrayfire/issues/1332).
+* Fixed [unresolved external](https://github.com/arrayfire/arrayfire/commit/32965ef)
+  for some functions from \ref af::array::array_proxy class.
+
+Build
+------
+* CMake compiles files in alphabetical order.
+* CMake fixes for BLAS and LAPACK on some Linux distributions.
+
+Improvements
+------------
+* Fixed [OpenCL FFT performance](https://github.com/arrayfire/arrayfire/issues/1323) regression.
+* \ref af::array::device() on OpenCL backend [returns](https://github.com/arrayfire/arrayfire/issues/1311)
+  `cl_mem` instead of `(void*)cl::Buffer*`.
+* In Unified backend, [load versioned libraries](https://github.com/arrayfire/arrayfire/issues/1312)
+  at runtime.
+
+Documentation
+------
+* Reorganized, cleaner README file.
+* Replaced non-free lena image in assets with free-to-distribute lena image.
+
 v3.3.0
 ==============
 
