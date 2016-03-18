@@ -3,7 +3,7 @@
 # This is because of how github handles it's release tar balls
 SET(VER 0.5)
 SET(URL https://github.com/boostorg/compute/archive/v${VER}.tar.gz)
-SET(MD5 69a52598ac539d3b7f6005a3dd2b6f58)
+SET(MD5 d41d8cd98f00b204e9800998ecf8427e)
 
 SET(thirdPartyDir "${CMAKE_BINARY_DIR}/third_party")
 SET(srcDir "${thirdPartyDir}/compute-${VER}")
