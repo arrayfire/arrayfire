@@ -12,11 +12,11 @@
 #ifdef AF_CPU
     #include <blas.hpp>
 #else
-    #ifdef __APPLE__
-        #include <Accelerate/Accelerate.h>
+    #ifdef USE_MKL
+        #include <mkl_cblas.h>
     #else
-        #ifdef USE_MKL
-            #include <mkl_cblas.h>
+        #ifdef __APPLE__
+            #include <Accelerate/Accelerate.h>
         #else
             extern "C" {
                 #include <cblas.h>

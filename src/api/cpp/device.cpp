@@ -42,6 +42,13 @@ namespace af
         return result;
     }
 
+    int getDeviceId(const array &in)
+    {
+        int device = getDevice();;
+        AF_THROW(af_get_device_id(&device, in.get()));
+        return device;
+    }
+
     af::Backend getActiveBackend()
     {
         af::Backend result = (af::Backend)0;

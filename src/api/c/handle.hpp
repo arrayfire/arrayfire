@@ -15,6 +15,9 @@
 #include <math.hpp>
 #include <copy.hpp>
 #include <cast.hpp>
+#include <af/dim4.hpp>
+
+const ArrayInfo& getInfo(const af_array arr, bool check = true);
 
 template<typename T>
 static const detail::Array<T> &
@@ -107,3 +110,5 @@ static void releaseHandle(const af_array arr)
 }
 
 af_array retain(const af_array in);
+
+af::dim4 verifyDims(const unsigned ndims, const dim_t * const dims);

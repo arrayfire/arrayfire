@@ -42,12 +42,22 @@ class clFFTPlanner
 
     public:
         static clFFTPlanner& getInstance() {
-            static clFFTPlanner single_instance;
-            return single_instance;
+            static clFFTPlanner instances[opencl::DeviceManager::MAX_DEVICES];
+            return instances[opencl::getActiveDeviceId()];
         }
 
         ~clFFTPlanner() {
-            CLFFT_CHECK(clfftTeardown());
+            //TODO: FIXME:
+            // clfftTeardown() cause a "Pure Virtual Function Called" crash on
+            // Window only when Intel devices are called. This causes tests to
+            // fail.
+            #ifndef OS_WIN
+            static bool flag = true;
+            if(flag) {
+                CLFFT_CHECK(clfftTeardown());
+                flag = false;
+            }
+            #endif
         }
 
     private:

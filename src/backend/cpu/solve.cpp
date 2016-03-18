@@ -96,6 +96,9 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
 template<typename T>
 Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop options)
 {
+    A.eval();
+    b.eval();
+
     Array<T> B = copyArray<T>(b);
     int N      = B.dims()[0];
     int NRHS   = B.dims()[1];

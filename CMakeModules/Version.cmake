@@ -2,7 +2,7 @@
 # Make a version file that includes the ArrayFire version and git revision
 #
 SET(AF_VERSION_MAJOR "3")
-SET(AF_VERSION_MINOR "3")
+SET(AF_VERSION_MINOR "4")
 SET(AF_VERSION_PATCH "0")
 
 SET(AF_VERSION "${AF_VERSION_MAJOR}.${AF_VERSION_MINOR}.${AF_VERSION_PATCH}")

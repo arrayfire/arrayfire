@@ -21,6 +21,7 @@ namespace cpu
 template<typename T, bool is_upper, bool is_unit_diag>
 void triangle(Array<T> &out, const Array<T> &in)
 {
+    in.eval();
     getQueue().enqueue(kernel::triangle<T, is_upper, is_unit_diag>, out, in);
 }
 

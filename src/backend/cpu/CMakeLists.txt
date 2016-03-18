@@ -14,9 +14,14 @@ IF(USE_CPU_F77_BLAS)
     ADD_DEFINITIONS(-DUSE_F77_BLAS)
 ENDIF()
 
-IF(USE_CPU_MKL)
-    MESSAGE("Using MKL")
+IF(USE_CPU_MKL) # Manual MKL Setup
+    MESSAGE("CPU Backend Using MKL")
     ADD_DEFINITIONS(-DUSE_MKL)
+ELSE(USE_CPU_MKL)
+    IF(${MKL_FOUND}) # Automatic MKL Setup from BLAS
+        MESSAGE("CPU Backend Using MKL RT")
+        ADD_DEFINITIONS(-DUSE_MKL)
+    ENDIF()
 ENDIF()
 
 IF (NOT CBLAS_LIBRARIES)
@@ -29,16 +34,20 @@ IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" AND "${APPLE}")
     ADD_DEFINITIONS(-flax-vector-conversions)
 ENDIF()
 
-IF(${MKL_FOUND})
-    ADD_DEFINITIONS(-DUSE_MKL)
-ENDIF()
-
 FIND_PACKAGE(FFTW REQUIRED)
 MESSAGE(STATUS "FFTW Found ? ${FFTW_FOUND}")
 MESSAGE(STATUS "FFTW Library: ${FFTW_LIBRARIES}")
 
 IF(APPLE)
-    FIND_PACKAGE(LAPACK)
+    FIND_PACKAGE(LAPACKE QUIET) # For finding MKL
+    IF(NOT LAPACK_FOUND)
+        # UNSET THE VARIABLES FROM LAPACKE
+        UNSET(LAPACKE_LIB CACHE)
+        UNSET(LAPACK_LIB CACHE)
+        UNSET(LAPACKE_INCLUDES CACHE)
+        UNSET(LAPACKE_ROOT_DIR CACHE)
+        FIND_PACKAGE(LAPACK)
+    ENDIF()
 ELSE(APPLE) # Linux and Windows
     FIND_PACKAGE(LAPACKE)
 ENDIF(APPLE)
@@ -86,6 +95,9 @@ FILE(GLOB cpu_headers
 FILE(GLOB cpu_sources
     "*.cpp")
 
+LIST(SORT cpu_headers)
+LIST(SORT cpu_sources)
+
 source_group(backend\\cpu\\Headers FILES ${cpu_headers})
 source_group(backend\\cpu\\Sources FILES ${cpu_sources})
 
@@ -97,6 +109,9 @@ FILE(GLOB backend_headers
 FILE(GLOB backend_sources
     "../*.cpp"
     )
+
+LIST(SORT backend_headers)
+LIST(SORT backend_sources)
 
 source_group(backend\\Headers FILES ${backend_headers})
 source_group(backend\\Sources FILES ${backend_sources})
@@ -110,12 +125,17 @@ FILE(GLOB c_sources
     "../../api/c/*.cpp"
     )
 
+LIST(SORT c_headers)
+LIST(SORT c_sources)
+
 source_group(api\\c\\Headers FILES ${c_headers})
 source_group(api\\c\\Sources FILES ${c_sources})
 
 FILE(GLOB cpp_sources
     "../../api/cpp/*.cpp"
     )
+
+LIST(SORT cpp_sources)
 
 source_group(api\\cpp\\Sources FILES ${cpp_sources})
 

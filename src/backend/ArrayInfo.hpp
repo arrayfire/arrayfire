@@ -29,14 +29,14 @@ class ArrayInfo
 {
 private:
     // The devId variable stores information about the deviceId as well as the backend.
-    // The 4 LSBs (0-3) are used to store the device ID.
-    // The 4th LSB is set to 1 if backend is CPU
-    // The 5th LSB is set to 1 if backend is CUDA
-    // The 6th LSB is set to 1 if backend is OpenCL
+    // The 8 LSBs (0-7) are used to store the device ID.
+    // The 09th LSB is set to 1 if backend is CPU
+    // The 10th LSB is set to 1 if backend is CUDA
+    // The 11th LSB is set to 1 if backend is OpenCL
     // This information can be retrieved directly from an af_array by doing
     //     int* devId = reinterpret_cast<int*>(a); // a is an af_array
-    //     af_backend backendID = *devId >> 3;  // Returns 1, 2, 4 for CPU, CUDA or OpenCL respectively
-    //     int        deviceID  = *devId & 0xf; // Returns devices ID between 0-15
+    //     af_backend backendID = *devId >> 8;   // Returns 1, 2, 4 for CPU, CUDA or OpenCL respectively
+    //     int        deviceID  = *devId & 0xff; // Returns devices ID between 0-255
     // This is possible by doing a static_assert on devId
     //
     // This can be changed in the future if the need arises for more devices as this
@@ -139,12 +139,6 @@ public:
 #if __cplusplus > 199711l
     static_assert(std::is_standard_layout<ArrayInfo>::value, "ArrayInfo must be a standard layout type");
 #endif
-
-// Returns size and time info for an array object.
-// Note this doesn't require template parameters.
-const  ArrayInfo&
-getInfo(const af_array arr);
-
 
 af::dim4 toDims(const std::vector<af_seq>& seqs, const af::dim4 &parentDims);
 

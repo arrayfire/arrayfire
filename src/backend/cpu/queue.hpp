@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <util.hpp>
+#include <memory.hpp>
 
 //FIXME: Is there a better way to check for std::future not being supported ?
 #if defined(AF_DISABLE_CPU_ASYNC) || (defined(__GNUC__) && (__GCC_ATOMIC_INT_LOCK_FREE < 2 || __GCC_ATOMIC_POINTER_LOCK_FREE < 2))
@@ -48,32 +49,45 @@ typedef async_queue queue_impl;
 namespace cpu {
 
 /// Wraps the async_queue class
-class queue {
+class queue
+{
 public:
-  queue()
-    : sync_calls( __SYNCHRONOUS_ARCH == 1 || getEnvVar("AF_SYNCHRONOUS_CALLS") == "1") {}
+    queue()
+        :
+        count(0),
+        sync_calls( __SYNCHRONOUS_ARCH == 1 || getEnvVar("AF_SYNCHRONOUS_CALLS") == "1")
+    {}
 
-  template <typename F, typename... Args>
-  void enqueue(const F func, Args... args) {
-
-    if(sync_calls) { func( args... ); }
-    else           { aQueue.enqueue( func, args... ); }
+    template <typename F, typename... Args>
+    void enqueue(const F func, Args... args)
+    {
+        count++;
+        if(sync_calls) { func( args... ); }
+        else           { aQueue.enqueue( func, args... ); }
 #ifndef NDEBUG
-    sync();
+        sync();
+#else
+        if (checkMemoryLimit() || count >= 25) {
+            sync();
+        }
 #endif
+    }
 
-  }
-  void sync() {
-    if(!sync_calls) aQueue.sync();
-  }
+    void sync()
+    {
+        count = 0;
+        if(!sync_calls) aQueue.sync();
+    }
 
-  bool is_worker() const {
-    return (!sync_calls) ? aQueue.is_worker() : false;
-  }
+    bool is_worker() const
+    {
+        return (!sync_calls) ? aQueue.is_worker() : false;
+    }
 
-private:
-  const bool sync_calls;
-  queue_impl aQueue;
+    private:
+        int count;
+        const bool sync_calls;
+        queue_impl aQueue;
 };
 
 }

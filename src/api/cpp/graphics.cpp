@@ -136,4 +136,9 @@ bool Window::close()
     return temp;
 }
 
+void Window::setVisibility(const bool isVisible)
+{
+    AF_THROW(af_set_visibility(get(), isVisible));
+}
+
 }

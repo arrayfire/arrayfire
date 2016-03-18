@@ -28,7 +28,9 @@ af_err af_set_unique(af_array *out, const af_array in, const bool is_sorted)
 {
     try {
 
-        af_dtype type = getInfo(in).getType();
+        ArrayInfo in_info = getInfo(in);
+        ARG_ASSERT(1, in_info.isVector());
+        af_dtype type = in_info.getType();
 
         af_array res;
         switch(type) {
@@ -62,8 +64,14 @@ af_err af_set_union(af_array *out, const af_array first, const af_array second, 
 {
     try {
 
-        af_dtype first_type = getInfo(first).getType();
-        af_dtype second_type = getInfo(second).getType();
+        ArrayInfo first_info = getInfo(first);
+        ArrayInfo second_info = getInfo(second);
+
+        ARG_ASSERT(1, first_info.isVector());
+        ARG_ASSERT(1, second_info.isVector());
+
+        af_dtype first_type = first_info.getType();
+        af_dtype second_type = second_info.getType();
 
         ARG_ASSERT(1, first_type == second_type);
 
@@ -98,8 +106,14 @@ af_err af_set_intersect(af_array *out, const af_array first, const af_array seco
 {
     try {
 
-        af_dtype first_type = getInfo(first).getType();
-        af_dtype second_type = getInfo(second).getType();
+        ArrayInfo first_info = getInfo(first);
+        ArrayInfo second_info = getInfo(second);
+
+        ARG_ASSERT(1, first_info.isVector());
+        ARG_ASSERT(1, second_info.isVector());
+
+        af_dtype first_type = first_info.getType();
+        af_dtype second_type = second_info.getType();
 
         ARG_ASSERT(1, first_type == second_type);
 

@@ -48,8 +48,18 @@ af_err af_get_backend_id(af_backend *result, const af_array in)
 {
     try {
         ARG_ASSERT(1, in != 0);
-        ArrayInfo info = getInfo(in);
+        ArrayInfo info = getInfo(in, false);
         *result = info.getBackendId();
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_get_device_id(int *device, const af_array in)
+{
+    try {
+        ARG_ASSERT(1, in != 0);
+        ArrayInfo info = getInfo(in, false);
+        *device = info.getDevId();
     } CATCHALL;
     return AF_SUCCESS;
 }
@@ -65,7 +75,7 @@ af_err af_init()
     try {
         static bool first = true;
         if(first) {
-            getInfo();
+            getDeviceInfo();
             first = false;
         }
     } CATCHALL;
@@ -75,7 +85,7 @@ af_err af_init()
 af_err af_info()
 {
     try {
-        printf("%s", getInfo().c_str());
+        printf("%s", getDeviceInfo().c_str());
     } CATCHALL;
     return AF_SUCCESS;
 }
@@ -83,7 +93,7 @@ af_err af_info()
 af_err af_info_string(char **str, const bool verbose)
 {
     try {
-        std::string infoStr = getInfo();
+        std::string infoStr = getDeviceInfo();
         af_alloc_host((void**)str, sizeof(char) * (infoStr.size() + 1));
 
         // Need to do a deep copy
@@ -144,5 +154,38 @@ af_err af_sync(const int device)
         int dev = device == -1 ? getActiveDeviceId() : device;
         detail::sync(dev);
     } CATCHALL;
+    return AF_SUCCESS;
+}
+
+
+template<typename T>
+static inline void eval(af_array arr)
+{
+    getArray<T>(arr).eval();
+    return;
+}
+
+af_err af_eval(af_array arr)
+{
+    try {
+        af_dtype type = getInfo(arr).getType();
+        switch (type) {
+        case f32: eval<float  >(arr); break;
+        case f64: eval<double >(arr); break;
+        case c32: eval<cfloat >(arr); break;
+        case c64: eval<cdouble>(arr); break;
+        case s32: eval<int    >(arr); break;
+        case u32: eval<uint   >(arr); break;
+        case u8 : eval<uchar  >(arr); break;
+        case b8 : eval<char   >(arr); break;
+        case s64: eval<intl   >(arr); break;
+        case u64: eval<uintl  >(arr); break;
+        case s16: eval<short  >(arr); break;
+        case u16: eval<ushort >(arr); break;
+        default:
+            TYPE_ERROR(0, type);
+        }
+    } CATCHALL;
+
     return AF_SUCCESS;
 }

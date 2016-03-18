@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <cstddef>
 #include <gtest/gtest.h>
 #include <arrayfire.h>
 #include <testHelpers.hpp>
@@ -453,4 +454,52 @@ TEST(Device, unequal)
         ASSERT_NE(ptr, a.device<float>());
         ASSERT_EQ(ptr, b.device<float>());
     }
+}
+
+TEST(DeviceId, Same)
+{
+    array a = randu(5,5);
+    ASSERT_EQ(getDevice(), getDeviceId(a));
+}
+
+TEST(DeviceId, Different)
+{
+    int ndevices = getDeviceCount();
+    if (ndevices < 2) return;
+    int id0 = getDevice();
+    int id1 = (id0 + 1) % ndevices;
+
+    {
+        array a = randu(5,5);
+        ASSERT_EQ(getDeviceId(a), id0);
+        setDevice(id1);
+
+        array b = randu(5,5);
+
+        ASSERT_EQ(getDeviceId(a), id0);
+        ASSERT_EQ(getDeviceId(b), id1);
+        ASSERT_NE(getDevice(), getDeviceId(a));
+        ASSERT_EQ(getDevice(), getDeviceId(b));
+
+        af_array c;
+        af_err err = af_matmul(&c, a.get(), b.get(), AF_MAT_NONE, AF_MAT_NONE);
+        ASSERT_EQ(err, AF_ERR_DEVICE);
+    }
+
+    setDevice(id1);
+    af::deviceGC();
+    setDevice(id0);
+    af::deviceGC();
+}
+
+TEST(Device, empty)
+{
+    array a = array();
+    ASSERT_EQ(a.device<float>() == NULL, 1);
+}
+
+TEST(Device, JIT)
+{
+    array a = constant(1, 5, 5);
+    ASSERT_EQ(a.device<float>() != NULL, 1);
 }

@@ -683,3 +683,39 @@ TEST(ifft3, InPlace)
         ASSERT_EQ(ha[i], hb[i]);
     }
 }
+
+void fft2InPlaceFunc()
+{
+    af::array a = af::randu(1024, 1024, c32);
+    af::array b = af::fft2(a);
+    af::fft2InPlace(a);
+
+    std::vector<af::cfloat> ha(a.elements());
+    std::vector<af::cfloat> hb(b.elements());
+
+    a.host(&ha[0]);
+    b.host(&hb[0]);
+
+    for (int i = 0; i < (int)a.elements(); i++) {
+        ASSERT_EQ(ha[i], hb[i]);
+    }
+}
+
+#define DEVICE_ITERATE(func) do {                                           \
+    const char* ENV = getenv("AF_MULTI_GPU_TESTS");                         \
+    if(ENV && ENV[0] == '0') {                                              \
+        func;                                                               \
+    } else {                                                                \
+        int oldDevice = af::getDevice();                                    \
+        for(int i = 0; i < af::getDeviceCount(); i++) {                     \
+            af::setDevice(i);                                               \
+            func;                                                           \
+        }                                                                   \
+        af::setDevice(oldDevice);                                           \
+    }                                                                       \
+} while(0);
+
+TEST(FFT2, MultiGPUInPlaceSquare_CPP)
+{
+    DEVICE_ITERATE((fft2InPlaceFunc()));
+}

@@ -17,7 +17,9 @@
     <pkg-ref id="com.arrayfire.arrayfire.opencl.lib"    version="${AF_VERSION}" onConclusion="none">ArrayFireOPENCL.pkg</pkg-ref>
     <pkg-ref id="com.arrayfire.arrayfire.unified.lib"   version="${AF_VERSION}" onConclusion="none">ArrayFireUNIFIED.pkg</pkg-ref>
     <pkg-ref id="com.arrayfire.arrayfire.inc"           version="${AF_VERSION}" onConclusion="none">ArrayFireHeaders.pkg</pkg-ref>
-    <pkg-ref id="com.arrayfire.arrayfire.extra"         version="${AF_VERSION}" onConclusion="none">ArrayFireExtra.pkg</pkg-ref>
+    <pkg-ref id="com.arrayfire.arrayfire.examples"      version="${AF_VERSION}" onConclusion="none">ArrayFireExamples.pkg</pkg-ref>
+    <pkg-ref id="com.arrayfire.arrayfire.doc"           version="${AF_VERSION}" onConclusion="none">ArrayFireDoc.pkg</pkg-ref>
+    <pkg-ref id="com.arrayfire.arrayfire.libcommon"     version="${AF_VERSION}" onConclusion="none">ArrayFireCommon.pkg</pkg-ref>
     <options customize="always" require-scripts="false"/>
     <choices-outline>
         <line choice="libs">
@@ -25,38 +27,51 @@
             <line choice="cuda_lib"/>
             <line choice="opencl_lib"/>
             <line choice="com.arrayfire.arrayfire.unified.lib"/>
+            <line choice="com.arrayfire.arrayfire.libcommon"/>
         </line>
         <line choice="com.arrayfire.arrayfire.inc"/>
-        <line choice="com.arrayfire.arrayfire.extra"/>
+        <line choice="com.arrayfire.arrayfire.examples"/>
+        <line choice="com.arrayfire.arrayfire.doc"/>
     </choices-outline>
     <choice id="libs" title="ArrayFire Libraries" visible="true" />
     <choice title="CPU Libraries"
-            description="ArrayFire targeting CPUs."
+            description="ArrayFire targeting CPUs. Also installs the corresponding CMake config files."
             id="cpu_lib" visible="true" enabled="true">
         <pkg-ref id="com.arrayfire.arrayfire.cpu.lib"/>
     </choice>
     <choice title="CUDA Libraries"
-            description="ArrayFire which targets the CUDA platform. This platform allows you to to take advantage of the CUDA enabled GPUs to run ArrayFire code."
+            description="ArrayFire which targets the CUDA platform. This platform allows you to to take advantage of the CUDA enabled GPUs to run ArrayFire code. Also installs the corresponding CMake config files."
             id="cuda_lib" visible="true" enabled="true">
         <pkg-ref id="com.arrayfire.arrayfire.cuda.lib"/>
     </choice>
     <choice title="OpenCL Libraries"
-            description="ArrayFire which targets the OpenCL platform. This platform allows you to use the ArrayFire library which targets OpenCL devices. NOTE: Currently ArrayFire does not support OpenCL for the Intel CPU on Apple."
+            description="ArrayFire which targets the OpenCL platform. This platform allows you to use the ArrayFire library which targets OpenCL devices. Also installs the corresponding CMake config files. NOTE: Currently ArrayFire does not support OpenCL for the Intel CPU on Apple."
             id="opencl_lib" visible="true" enabled="true">
         <pkg-ref id="com.arrayfire.arrayfire.opencl.lib"/>
     </choice>
     <choice title="Unified Library"
-            description="This library will allow you to choose the platform(cpu, cuda, opencl) at runtime. NOTE: This option requires the other platforms to work properly"
+            description="This library will allow you to choose the platform(cpu, cuda, opencl) at runtime. Also installs the corresponding CMake config files. NOTE: This option requires the other platforms to work properly"
             id="com.arrayfire.arrayfire.unified.lib"
             selected="CheckBackendSelected()"
             visible="true"
             enabled="CheckBackendSelected()">
         <pkg-ref id="com.arrayfire.arrayfire.unified.lib"/>
     </choice>
+    <choice title="Library Common"
+            description="Installs Forge and ArrayFireConfig.cmake files"
+            id="com.arrayfire.arrayfire.libcommon"
+            selected="CheckBackendSelected()"
+            visible="false"
+            enabled="CheckBackendSelected()">
+        <pkg-ref id="com.arrayfire.arrayfire.libcommon"/>
+    </choice>
     <choice title="ArrayFire Headers" description="ArrayFire Headers" id="com.arrayfire.arrayfire.inc" visible="true" enabled="true">
         <pkg-ref id="com.arrayfire.arrayfire.inc"/>
     </choice>
-    <choice title="Extras" description="Extra files include documentation, examples, and cmake scripts to find and use ArrayFire with cmake," id="com.arrayfire.arrayfire.extra" visible="true" enabled="true">
-        <pkg-ref id="com.arrayfire.arrayfire.extra"/>
+    <choice title="Examples" description="ArrayFire Examples" id="com.arrayfire.arrayfire.examples" visible="true" enabled="true">
+        <pkg-ref id="com.arrayfire.arrayfire.examples"/>
+    </choice>
+    <choice title="Documentation" description="ArrayFire Documentation" id="com.arrayfire.arrayfire.doc" visible="true" enabled="true">
+        <pkg-ref id="com.arrayfire.arrayfire.doc"/>
     </choice>
 </installer-gui-script>

@@ -27,8 +27,7 @@ template<af_op_t op, typename Ti, typename To>
 Array<To> scan(const Array<Ti>& in, const int dim)
 {
     dim4 dims     = in.dims();
-    Array<To> out = createValueArray<To>(dims, 0);
-    out.eval();
+    Array<To> out = createEmptyArray<To>(dims);
     in.eval();
 
     switch (in.ndims()) {

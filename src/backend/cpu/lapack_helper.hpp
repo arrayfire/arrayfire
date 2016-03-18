@@ -17,17 +17,17 @@
 #define AF_LAPACK_COL_MAJOR LAPACK_COL_MAJOR
 #define LAPACK_NAME(fn) LAPACKE_##fn
 
-#ifdef __APPLE__
-#include <Accelerate/Accelerate.h>
-#include <lapacke.hpp>
-#undef AF_LAPACK_COL_MAJOR
-#define AF_LAPACK_COL_MAJOR 0
-#else
 #ifdef USE_MKL
-#include<mkl_lapacke.h>
-#else // NETLIB LAPACKE
-#include<lapacke.h>
-#endif
+    #include<mkl_lapacke.h>
+#else
+    #ifdef __APPLE__
+        #include <Accelerate/Accelerate.h>
+        #include <lapacke.hpp>
+        #undef AF_LAPACK_COL_MAJOR
+        #define AF_LAPACK_COL_MAJOR 0
+    #else // NETLIB LAPACKE
+        #include<lapacke.h>
+    #endif
 #endif
 
 #endif

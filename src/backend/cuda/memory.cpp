@@ -229,6 +229,11 @@ void pinnedFree(T* ptr)
     return getMemoryManagerPinned().unlock((void *)ptr, false);
 }
 
+bool checkMemoryLimit()
+{
+    return getMemoryManager().checkMemoryLimit();
+}
+
 #define INSTANTIATE(T)                                      \
     template T* memAlloc(const size_t &elements);           \
     template void memFree(T* ptr);                          \

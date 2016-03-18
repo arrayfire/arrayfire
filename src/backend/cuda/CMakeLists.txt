@@ -102,7 +102,15 @@ ELSE(CUDA_cusolver_LIBRARY)
     IF(${CUDA_LAPACK_CPU_FALLBACK})
         ## Try to use CPU side lapack
         IF(APPLE)
-            FIND_PACKAGE(LAPACK)
+            FIND_PACKAGE(LAPACKE QUIET) # For finding MKL
+            IF(NOT LAPACK_FOUND)
+                # UNSET THE VARIABLES FROM LAPACKE
+                UNSET(LAPACKE_LIB CACHE)
+                UNSET(LAPACK_LIB CACHE)
+                UNSET(LAPACKE_INCLUDES CACHE)
+                UNSET(LAPACKE_ROOT_DIR CACHE)
+                FIND_PACKAGE(LAPACK)
+            ENDIF()
         ELSE(APPLE) # Linux and Windows
             FIND_PACKAGE(LAPACKE)
         ENDIF(APPLE)
@@ -112,9 +120,14 @@ ELSE(CUDA_cusolver_LIBRARY)
         ELSE(NOT LAPACK_FOUND)
             MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. But CPU LAPACK libraries are available. Will fallback to using host side code.")
             ADD_DEFINITIONS(-DWITH_CPU_LINEAR_ALGEBRA)
-            IF(USE_CUDA_MKL)
-                MESSAGE("Using MKL")
+            IF(USE_CUDA_MKL) # Manual MKL Setup
+                MESSAGE("CUDA LAPACK CPU Fallback Using MKL")
                 ADD_DEFINITIONS(-DUSE_MKL)
+            ELSE(USE_CUDA_MKL)
+                IF(${MKL_FOUND}) # Automatic MKL Setup from BLAS
+                    MESSAGE("CUDA LAPACK CPU Fallback Using MKL RT")
+                    ADD_DEFINITIONS(-DUSE_MKL)
+                ENDIF()
             ENDIF()
         ENDIF()
     ELSE()
@@ -155,6 +168,12 @@ FILE(GLOB kernel_headers
 FILE(GLOB ptx_sources
     "JIT/*.cu")
 
+LIST(SORT cuda_headers)
+LIST(SORT cuda_sources)
+LIST(SORT jit_sources)
+LIST(SORT kernel_headers)
+LIST(SORT ptx_sources)
+
 SOURCE_GROUP(backend\\cuda\\Headers FILES ${cuda_headers})
 SOURCE_GROUP(backend\\cuda\\Sources FILES ${cuda_sources})
 SOURCE_GROUP(backend\\cuda\\JIT FILES ${jit_sources})
@@ -168,6 +187,8 @@ IF(CUDA_LAPACK_CPU_FALLBACK)
 
     SOURCE_GROUP(backend\\cuda\\cpu_lapack\\Headers FILES ${cpu_lapack_headers})
     SOURCE_GROUP(backend\\cuda\\cpu_lapack\\Sources FILES ${cpu_lapack_sources})
+    LIST(SORT cpu_lapack_headers)
+    LIST(SORT cpu_lapack_sources)
 ENDIF()
 
 FILE(GLOB backend_headers
@@ -178,6 +199,9 @@ FILE(GLOB backend_headers
 FILE(GLOB backend_sources
     "../*.cpp"
     )
+
+LIST(SORT backend_headers)
+LIST(SORT backend_sources)
 
 SOURCE_GROUP(backend\\Headers FILES ${backend_headers})
 SOURCE_GROUP(backend\\Sources FILES ${backend_sources})
@@ -191,12 +215,17 @@ FILE(GLOB c_sources
     "../../api/c/*.cpp"
     )
 
+LIST(SORT c_headers)
+LIST(SORT c_sources)
+
 SOURCE_GROUP(api\\c\\Headers FILES ${c_headers})
 SOURCE_GROUP(api\\c\\Sources FILES ${c_sources})
 
 FILE(GLOB cpp_sources
     "../../api/cpp/*.cpp"
     )
+
+LIST(SORT cpp_sources)
 
 SOURCE_GROUP(api\\cpp\\Sources FILES ${cpp_sources})
 

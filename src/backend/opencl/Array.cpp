@@ -286,7 +286,7 @@ namespace opencl
     writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
     {
         if (!arr.isOwner()) {
-            arr = createEmptyArray<T>(arr.dims());
+            arr = copyArray<T>(arr);
         }
 
         getQueue().enqueueWriteBuffer(*arr.get(), CL_TRUE,
@@ -302,7 +302,7 @@ namespace opencl
     writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     {
         if (!arr.isOwner()) {
-            arr = createEmptyArray<T>(arr.dims());
+            arr = copyArray<T>(arr);
         }
 
         cl::Buffer& buf = *arr.get();
