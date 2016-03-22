@@ -36,13 +36,12 @@ template<af_op_t op>
 static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {
-        const af_dtype otype = implicit(lhs, rhs);
-
         ArrayInfo linfo = getInfo(lhs);
         ArrayInfo rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
+        const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
         af_array res;
         switch (otype) {
         case f32: res = arithOp<float  , op>(lhs, rhs, odims); break;
@@ -70,13 +69,13 @@ template<af_op_t op>
 static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {
-        const af_dtype otype = implicit(lhs, rhs);
 
         ArrayInfo linfo = getInfo(lhs);
         ArrayInfo rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
+        const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
         af_array res;
         switch (otype) {
         case f32: res = arithOp<float  , op>(lhs, rhs, odims); break;
