@@ -701,6 +701,11 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
 void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que)
 {
     try {
+
+        clRetainDevice(dev);
+        clRetainContext(ctx);
+        clRetainCommandQueue(que);
+
         DeviceManager& devMngr   = DeviceManager::getInstance();
         cl::Device* tDevice      = new cl::Device(dev);
         cl::Context* tContext    = new cl::Context(ctx);
@@ -758,6 +763,11 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx)
         } else if (deleteIdx == -1) {
             AF_ERROR("No matching device found", AF_ERR_ARG);
         } else {
+
+            clReleaseDevice((*devMngr.mDevices[deleteIdx])());
+            clReleaseContext((*devMngr.mContexts[deleteIdx])());
+            clReleaseCommandQueue((*devMngr.mQueues[deleteIdx])());
+
             // FIXME: this case can potentially cause issues due to the
             // modification of the device pool stl containers.
 
