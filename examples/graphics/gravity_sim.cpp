@@ -14,47 +14,75 @@
 using namespace af;
 using namespace std;
 
-static const int width = 512, height = 512;
-static const int pixels_per_unit = 20;
+static const int width = 768, height = 768;
+static const float eps = 10.f;
+static const int gravity_constant = 5000;
 
 void simulate(af::array *pos, af::array *vels, af::array *forces, float dt){
-    pos[0] += vels[0] * pixels_per_unit * dt;
-    pos[1] += vels[1] * pixels_per_unit * dt;
+    pos[0] += vels[0] * dt;
+    pos[1] += vels[1] * dt;
 
-    //calculate distance to center
-    af::array diff_x = pos[0] - width/2;
-    af::array diff_y = pos[1] - height/2;
-    af::array dist = sqrt( diff_x*diff_x + diff_y*diff_y );
+    //calculate forces to each particle
+    af::array diff_x = tile(pos[0], 1, pos[0].dims(0))-transpose(tile(pos[0], 1, pos[0].dims(0)));
+    af::array diff_y = tile(pos[1], 1, pos[1].dims(0))-transpose(tile(pos[1], 1, pos[1].dims(0)));
+    af::array dist = af::sqrt( diff_x*diff_x + diff_y*diff_y );
+    //dist = af::max(eps, dist);
+    dist *= dist * dist;
 
-    //calculate normalised force vectors
-    forces[0] = -1 * diff_x / dist;
-    forces[1] = -1 * diff_y / dist;
-    //update force scaled to time and magnitude constant
-    forces[0] *= pixels_per_unit * dt;
-    forces[1] *= pixels_per_unit * dt;
+    //calculate force vectors
+    forces[0] = -diff_x / dist;
+    forces[1] = -diff_y / dist;
+    forces[0](af::isNaN(forces[0]))  = 0;
+    forces[1](af::isNaN(forces[1]))  = 0;
+    forces[0] = sum(forces[0], 1);
+    forces[1] = sum(forces[1], 1);
+
+    //update force scaled to time, magnitude constant
+    forces[0] *= (gravity_constant);
+    forces[1] *= (gravity_constant);
+
+    //noise
+    /*
+    forces[0] += 0.1 * af::randn(forces[0].dims(0));
+    forces[0] += 0.1 * af::randn(forces[0].dims(0));
+    */
 
     //dampening
+    /*
     vels[0] *= 1 - (0.005*dt);
     vels[1] *= 1 - (0.005*dt);
+    */
 
     //update velocities from forces
-    vels[0] += forces[0];
-    vels[1] += forces[1];
+    vels[0] += forces[0] * dt;
+    vels[1] += forces[1] * dt;
+
+    //temporary
+    vels[0] = min(100, vels[0]);
+    vels[1] = min(100, vels[1]);
 
 }
 
 void collisions(af::array *pos, af::array *vels){
     //clamp particles inside screen border
-    af::array projected_px = min(width, max(0, pos[0]));
-    af::array projected_py = min(height - 1, max(0, pos[1]));
+    af::array invalid_x = -2 * (pos[0] > width-1 || pos[0] < 0) + 1;
+    af::array invalid_y = -2 * (pos[1] > height-1 || pos[1] < 0) + 1;
+    vels[0]= invalid_x * vels[0] ;
+    vels[1]= invalid_y * vels[1] ;
 
+    af::array projected_px = min(width-1, max(0, pos[0]));
+    af::array projected_py = min(height - 1, max(0, pos[1]));
+    pos[0] = projected_px;
+    pos[1] = projected_py;
+
+    /*
     //calculate distance to center
     af::array diff_x = projected_px - width/2;
     af::array diff_y = projected_py - height/2;
     af::array dist = sqrt( diff_x*diff_x + diff_y*diff_y );
 
     //collide with center sphere
-    const int radius = 50;
+    const int radius = 20;
     const float elastic_constant = 0.91f;
     if(sum<int>(dist<radius) > 0) {
         vels[0](dist<radius) = -elastic_constant * vels[0](dist<radius);
@@ -67,14 +95,15 @@ void collisions(af::array *pos, af::array *vels){
         pos[0](dist<radius) = width/2 + diff_x(dist<radius) * radius;
         pos[1](dist<radius) = height/2 +  diff_y(dist<radius) * radius;
     }
+    */
 }
 
 
 int main(int argc, char *argv[])
 {
     try {
-        const static int total_particles = 1000;
-        static const int reset = 500;
+        const static int total_particles = 300;
+        static const int reset = 5000;
 
         af::info();
 
@@ -93,8 +122,8 @@ int main(int argc, char *argv[])
         pos[0] = af::randu(total_particles) * width;
         pos[1] = af::randu(total_particles) * height;
 
-        vels[0] = af::randn(total_particles);
-        vels[1] = af::randn(total_particles);
+        vels[0] = 1 * af::randn(total_particles);
+        vels[1] = 10 * af::randn(total_particles);
 
         forces[0] = af::randn(total_particles);
         forces[1] = af::randn(total_particles);
@@ -108,8 +137,8 @@ int main(int argc, char *argv[])
             timer = af::timer::start();
 
             ids = (pos[0].as(u32) * height) + pos[1].as(u32);
-            image(ids) += 255;
-            image = convolve2(image, draw_kernel);
+            image(ids) += 5.f;
+            image = convolve(image, draw_kernel);
             myWindow.image(image);
             image = af::constant(0, image.dims());
             frame_count++;
@@ -123,11 +152,12 @@ int main(int argc, char *argv[])
                 vels[1] = af::randn(total_particles);
             }
 
-            //check for collisions and adjust positions/velocities accordingly
-            collisions(pos, vels);
 
             //run force simulation and update particles
             simulate(pos, vels, forces, dt);
+
+            //check for collisions and adjust positions/velocities accordingly
+            collisions(pos, vels);
 
         }
     } catch (af::exception& e) {
