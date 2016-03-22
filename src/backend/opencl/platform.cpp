@@ -815,57 +815,75 @@ using namespace opencl;
 
 af_err afcl_get_device_type(afcl_device_type *res)
 {
-    *res = (afcl_device_type)getActiveDeviceType();
+    try {
+        *res = (afcl_device_type)getActiveDeviceType();
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err afcl_get_platform(afcl_platform *res)
 {
-    *res = (afcl_platform)getActivePlatform();
+    try {
+        *res = (afcl_platform)getActivePlatform();
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err afcl_get_context(cl_context *ctx, const bool retain)
 {
-    *ctx = getContext()();
-    if (retain) clRetainContext(*ctx);
+    try {
+        *ctx = getContext()();
+        if (retain) clRetainContext(*ctx);
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
 
 af_err afcl_get_queue(cl_command_queue *queue, const bool retain)
 {
-    *queue = getQueue()();
-    if (retain) clRetainCommandQueue(*queue);
+    try {
+        *queue = getQueue()();
+        if (retain) clRetainCommandQueue(*queue);
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err afcl_get_device_id(cl_device_id *id)
 {
-    *id = getDevice()();
+    try {
+        *id = getDevice()();
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err afcl_set_device_id(cl_device_id id)
 {
-    setDevice(getDeviceIdFromNativeId(id));
+    try {
+        setDevice(getDeviceIdFromNativeId(id));
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err afcl_add_device_context(cl_device_id dev, cl_context ctx, cl_command_queue que)
 {
-    addDeviceContext(dev, ctx, que);
+    try {
+        addDeviceContext(dev, ctx, que);
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err afcl_set_device_context(cl_device_id dev, cl_context ctx)
 {
-    setDeviceContext(dev, ctx);
+    try {
+        setDeviceContext(dev, ctx);
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err afcl_delete_device_context(cl_device_id dev, cl_context ctx)
 {
-    removeDeviceContext(dev, ctx);
+    try {
+        removeDeviceContext(dev, ctx);
+    } CATCHALL;
     return AF_SUCCESS;
 }
