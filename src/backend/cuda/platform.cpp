@@ -492,18 +492,24 @@ bool synchronize_calls() {
 
 af_err afcu_get_stream(cudaStream_t* stream, int id)
 {
-    *stream = cuda::getStream(id);
+    try{
+        *stream = cuda::getStream(id);
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err afcu_get_native_id(int* nativeid, int id)
 {
-    *nativeid = cuda::getDeviceNativeId(id);
+    try {
+        *nativeid = cuda::getDeviceNativeId(id);
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err afcu_set_native_id(int nativeid)
 {
-    cuda::setDevice(cuda::getDeviceIdFromNativeId(nativeid));
+    try {
+        cuda::setDevice(cuda::getDeviceIdFromNativeId(nativeid));
+    } CATCHALL;
     return AF_SUCCESS;
 }

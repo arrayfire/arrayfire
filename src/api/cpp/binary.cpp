@@ -16,12 +16,12 @@
 namespace af
 {
 
-#define INSTANTIATE(cppfunc, cfunc)                     \
-    array cppfunc(const array &lhs, const array &rhs)   \
-    {                                                   \
-        af_array out = 0;                               \
-        cfunc(&out, lhs.get(), rhs.get(), gforGet());   \
-        return array(out);                              \
+#define INSTANTIATE(cppfunc, cfunc)                             \
+    array cppfunc(const array &lhs, const array &rhs)           \
+    {                                                           \
+        af_array out = 0;                                       \
+        AF_THROW(cfunc(&out, lhs.get(), rhs.get(), gforGet())); \
+        return array(out);                                      \
     }
 
     INSTANTIATE(min , af_minof)
