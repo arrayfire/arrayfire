@@ -31,6 +31,9 @@ ENDIF()
 LIST(LENGTH COMPUTES_DETECTED_LIST COMPUTES_LEN)
 IF(${COMPUTES_LEN} EQUAL 0 AND ${FALLBACK})
     MESSAGE(STATUS "No computes detected. Fall back to 20, 30, 50")
+    MESSAGE(STATUS "You can use -DCOMPUTES_DETECTED_LIST=\"AB;XY\" (semicolon
+    separated list of CUDA Compute versions to enable the specified computes")
+    MESSAGE(STATUS "Individual compute versions flags are also available under CMake Advance options")
     LIST(APPEND COMPUTES_DETECTED_LIST "20" "30" "50")
 ENDIF()
 
