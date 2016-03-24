@@ -40,7 +40,7 @@ void calcParamSizes(Param& sig_tmp,
                     Param& sig,
                     Param& filter,
                     const int baseDim,
-                    ConvolveBatchKind kind)
+                    AF_BATCH_KIND kind)
 {
     sig_tmp.info.dims[0] = filter_tmp.info.dims[0] = packed.info.dims[0];
     sig_tmp.info.strides[0] = filter_tmp.info.strides[0] = 1;
@@ -63,7 +63,7 @@ void calcParamSizes(Param& sig_tmp,
     sig_tmp.data = packed.data;
     filter_tmp.data = packed.data;
 
-    if (kind == CONVOLVE_BATCH_KERNEL) {
+    if (kind == AF_BATCH_KERNEL) {
         filter_tmp.info.offset = 0;
         sig_tmp.info.offset = filter_tmp.info.strides[3] * filter_tmp.info.dims[3] * 2;
     }
@@ -78,7 +78,7 @@ void packDataHelper(Param packed,
                     Param sig,
                     Param filter,
                     const int baseDim,
-                    ConvolveBatchKind kind)
+                    AF_BATCH_KIND kind)
 {
     try {
         static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
@@ -158,7 +158,7 @@ void complexMultiplyHelper(Param packed,
                            Param sig,
                            Param filter,
                            const int baseDim,
-                           ConvolveBatchKind kind)
+                           AF_BATCH_KIND kind)
 {
     try {
         static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
@@ -171,10 +171,10 @@ void complexMultiplyHelper(Param packed,
 
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D CONVOLVE_BATCH_NONE=" << (int)CONVOLVE_BATCH_NONE
-                        << " -D CONVOLVE_BATCH_SIGNAL=" << (int)CONVOLVE_BATCH_SIGNAL
-                        << " -D CONVOLVE_BATCH_KERNEL=" << (int)CONVOLVE_BATCH_KERNEL
-                        << " -D CONVOLVE_BATCH_SAME=" << (int)CONVOLVE_BATCH_SAME;
+                        << " -D AF_BATCH_NONE=" << (int)AF_BATCH_NONE
+                        << " -D AF_BATCH_SIGNAL=" << (int)AF_BATCH_SIGNAL
+                        << " -D AF_BATCH_KERNEL=" << (int)AF_BATCH_KERNEL
+                        << " -D AF_BATCH_SAME=" << (int)AF_BATCH_SAME;
 
                 if ((af_dtype) dtype_traits<convT>::af_type == c32) {
                     options << " -D CONVT=float";
@@ -231,7 +231,7 @@ void reorderOutputHelper(Param out,
                          Param sig,
                          Param filter,
                          const int baseDim,
-                         ConvolveBatchKind kind)
+                         AF_BATCH_KIND kind)
 {
     try {
         static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
@@ -287,7 +287,7 @@ void reorderOutputHelper(Param out,
                                 KParam, const int,
                                 const int, const int> (*roKernel[device]);
 
-        if (kind == CONVOLVE_BATCH_KERNEL) {
+        if (kind == AF_BATCH_KERNEL) {
             roOp(EnqueueArgs(getQueue(), global, local),
                  *out.data, out.info,
                  *filter_tmp.data, filter_tmp.info,

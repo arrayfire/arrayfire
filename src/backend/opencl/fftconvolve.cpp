@@ -49,7 +49,7 @@ static const dim4 calcPackedSize(Array<T> const& i1,
 }
 
 template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_t baseDim>
-Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind)
+Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool expand, AF_BATCH_KIND kind)
 {
     const dim4 sDims = signal.dims();
     const dim4 fDims = filter.dims();
@@ -57,7 +57,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
     dim4 oDims(1);
     if (expand) {
         for(dim_t d=0; d<4; ++d) {
-            if (kind==CONVOLVE_BATCH_NONE || kind==CONVOLVE_BATCH_KERNEL) {
+            if (kind==AF_BATCH_NONE || kind==AF_BATCH_KERNEL) {
                 oDims[d] = sDims[d]+fDims[d]-1;
             } else {
                 oDims[d] = (d<baseDim ? sDims[d]+fDims[d]-1 : sDims[d]);
@@ -65,7 +65,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
         }
     } else {
         oDims = sDims;
-        if (kind==CONVOLVE_BATCH_KERNEL) {
+        if (kind==AF_BATCH_KERNEL) {
             for (dim_t i=baseDim; i<4; ++i)
                 oDims[i] = fDims[i];
         }
@@ -81,7 +81,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
     kernel::complexMultiplyHelper<cT, T, isDouble, convT>(packed, signal, filter, baseDim, kind);
 
     // Compute inverse FFT only on complex-multiplied data
-    if (kind == CONVOLVE_BATCH_KERNEL) {
+    if (kind == AF_BATCH_KERNEL) {
         std::vector<af_seq> seqs;
         for (dim_t k = 0; k < 4; k++) {
             if (k < baseDim)
@@ -122,11 +122,11 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
 
 #define INSTANTIATE(T, convT, cT, isDouble, roundOut)                                                   \
     template Array<T> fftconvolve <T, convT, cT, isDouble, roundOut, 1>                                 \
-        (Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind);    \
+        (Array<T> const& signal, Array<T> const& filter, const bool expand, AF_BATCH_KIND kind);        \
     template Array<T> fftconvolve <T, convT, cT, isDouble, roundOut, 2>                                 \
-        (Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind);    \
+        (Array<T> const& signal, Array<T> const& filter, const bool expand, AF_BATCH_KIND kind);        \
     template Array<T> fftconvolve <T, convT, cT, isDouble, roundOut, 3>                                 \
-        (Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind);
+        (Array<T> const& signal, Array<T> const& filter, const bool expand, AF_BATCH_KIND kind);
 
 INSTANTIATE(double, double, cdouble, true , false)
 INSTANTIATE(float , float,  cfloat,  false, false)

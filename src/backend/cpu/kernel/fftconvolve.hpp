@@ -9,7 +9,6 @@
 
 #pragma once
 #include <Array.hpp>
-#include <convolve_common.hpp>
 
 namespace cpu
 {
@@ -88,14 +87,14 @@ void padArray(Array<To> out, const af::dim4 od, const af::dim4 os,
 template<typename T>
 void complexMultiply(Array<T> packed, const af::dim4 sig_dims, const af::dim4 sig_strides,
                      const af::dim4 fit_dims, const af::dim4 fit_strides,
-                     ConvolveBatchKind kind, const dim_t offset)
+                     AF_BATCH_KIND kind, const dim_t offset)
 {
-    T* out_ptr = packed.get() + (kind==CONVOLVE_BATCH_KERNEL? offset : 0);
+    T* out_ptr = packed.get() + (kind==AF_BATCH_KERNEL? offset : 0);
     T* in1_ptr = packed.get();
     T* in2_ptr = packed.get() + offset;
 
-    const af::dim4& od = (kind==CONVOLVE_BATCH_KERNEL ? fit_dims : sig_dims);
-    const af::dim4& os = (kind==CONVOLVE_BATCH_KERNEL ? fit_strides : sig_strides);
+    const af::dim4& od = (kind==AF_BATCH_KERNEL ? fit_dims : sig_dims);
+    const af::dim4& os = (kind==AF_BATCH_KERNEL ? fit_strides : sig_strides);
     const af::dim4& i1d = sig_dims;
     const af::dim4& i2d = fit_dims;
     const af::dim4& i1s = sig_strides;
@@ -105,7 +104,7 @@ void complexMultiply(Array<T> packed, const af::dim4 sig_dims, const af::dim4 si
         for (int d2 = 0; d2 < (int)od[2]; d2++) {
             for (int d1 = 0; d1 < (int)od[1]; d1++) {
                 for (int d0 = 0; d0 < (int)od[0] / 2; d0++) {
-                    if (kind == CONVOLVE_BATCH_NONE || kind == CONVOLVE_BATCH_SAME) {
+                    if (kind == AF_BATCH_NONE || kind == AF_BATCH_SAME) {
                         // Complex multiply each signal to equivalent filter
                         const int ridx = d3*os[3] + d2*os[2] + d1*os[1] + d0*2;
                         const int iidx = ridx + 1;
@@ -121,7 +120,7 @@ void complexMultiply(Array<T> packed, const af::dim4 sig_dims, const af::dim4 si
                         out_ptr[ridx] = ac - bd;
                         out_ptr[iidx] = (a+b) * (c+d) - ac - bd;
                     }
-                    else if (kind == CONVOLVE_BATCH_SIGNAL) {
+                    else if (kind == AF_BATCH_SIGNAL) {
                         // Complex multiply all signals to filter
                         const int ridx1 = d3*os[3] + d2*os[2] + d1*os[1] + d0*2;
                         const int iidx1 = ridx1 + 1;
@@ -139,7 +138,7 @@ void complexMultiply(Array<T> packed, const af::dim4 sig_dims, const af::dim4 si
                         out_ptr[ridx1] = ac - bd;
                         out_ptr[iidx1] = (a+b) * (c+d) - ac - bd;
                     }
-                    else if (kind == CONVOLVE_BATCH_KERNEL) {
+                    else if (kind == AF_BATCH_KERNEL) {
                         // Complex multiply signal to all filters
                         const int ridx2 = d3*os[3] + d2*os[2] + d1*os[1] + d0*2;
                         const int iidx2 = ridx2 + 1;
@@ -227,7 +226,7 @@ void reorder(Array<T> out, Array<convT> packed,
              const Array<T> filter, const dim_t sig_half_d0, const dim_t fftScale,
              const dim4 sig_tmp_dims, const dim4 sig_tmp_strides,
              const dim4 filter_tmp_dims, const dim4 filter_tmp_strides,
-             bool expand, ConvolveBatchKind kind)
+             bool expand, AF_BATCH_KIND kind)
 {
     T* out_ptr = out.get();
     const af::dim4 out_dims = out.dims();
@@ -240,7 +239,7 @@ void reorder(Array<T> out, Array<convT> packed,
     convT* filter_tmp_ptr = packed_ptr + sig_tmp_strides[3] * sig_tmp_dims[3];
 
     // Reorder the output
-    if (kind == CONVOLVE_BATCH_KERNEL) {
+    if (kind == AF_BATCH_KERNEL) {
         reorderHelper<T, convT, roundOut>(out_ptr, out_dims, out_strides,
                 filter_tmp_ptr, filter_tmp_dims, filter_tmp_strides,
                 filter_dims, sig_half_d0, baseDim, fftScale, expand);

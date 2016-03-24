@@ -88,7 +88,6 @@
 
 #pragma GCC diagnostic pop
 
-#include <convolve_common.hpp>
 #include <kernel/convolve_separable.hpp>
 #include <kernel/fast.hpp>
 #include <kernel/resize.hpp>

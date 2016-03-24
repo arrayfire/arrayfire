@@ -12,7 +12,6 @@
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
-#include <convolve_common.hpp>
 #include <kernel/convolve_separable.hpp>
 #include <kernel/fast.hpp>
 #include <kernel/resize.hpp>

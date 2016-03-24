@@ -32,7 +32,7 @@ static const int MAX_CONV3_FILTER_LEN = 5;
  * written in corresponding conv[1|2|3].cpp files under the same folder.
  */
 template<typename T, typename accType, int baseDim, bool expand>
-void convolve_nd(Param out, const Param signal, const Param filter, ConvolveBatchKind kind)
+void convolve_nd(Param out, const Param signal, const Param filter, AF_BATCH_KIND kind)
 {
     conv_kparam_t param;
 
@@ -40,9 +40,9 @@ void convolve_nd(Param out, const Param signal, const Param filter, ConvolveBatc
         param.o[i] = 0;
         param.s[i] = 0;
     }
-    param.launchMoreBlocks = kind==CONVOLVE_BATCH_SAME || kind==CONVOLVE_BATCH_KERNEL;
-    param.outHasNoOffset = kind==CONVOLVE_BATCH_SIGNAL || kind==CONVOLVE_BATCH_NONE;
-    param.inHasNoOffset  = kind!=CONVOLVE_BATCH_SAME;
+    param.launchMoreBlocks = kind==AF_BATCH_SAME || kind==AF_BATCH_KERNEL;
+    param.outHasNoOffset = kind==AF_BATCH_SIGNAL || kind==AF_BATCH_NONE;
+    param.inHasNoOffset  = kind!=AF_BATCH_SAME;
 
     prepareKernelArgs<T>(param, out.info.dims, filter.info.dims, baseDim);
 

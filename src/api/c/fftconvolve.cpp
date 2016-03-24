@@ -14,7 +14,6 @@
 #include <backend.hpp>
 #include <arith.hpp>
 #include <fftconvolve.hpp>
-#include <convolve_common.hpp>
 #include <dispatch.hpp>
 #include <complex.hpp>
 #include <fft_common.hpp>
@@ -89,24 +88,24 @@ af_array fftconvolve_fallback(const af_array signal, const af_array filter, bool
 }
 
 template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_t baseDim>
-inline static af_array fftconvolve(const af_array &s, const af_array &f, const bool expand, ConvolveBatchKind kind)
+inline static af_array fftconvolve(const af_array &s, const af_array &f, const bool expand, AF_BATCH_KIND kind)
 {
-    if (kind == CONVOLVE_BATCH_DIFF) return fftconvolve_fallback<T, convT, cT, baseDim>(s, f, expand);
+    if (kind == AF_BATCH_DIFF) return fftconvolve_fallback<T, convT, cT, baseDim>(s, f, expand);
     else return getHandle(fftconvolve<T, convT, cT, isDouble, roundOut, baseDim>(getArray<T>(s), castArray<T>(f), expand, kind));
 }
 
 template<dim_t baseDim>
-ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
+AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
 {
     dim_t sn = sDims.ndims();
     dim_t fn = fDims.ndims();
 
     if (sn==baseDim && fn==baseDim)
-        return CONVOLVE_BATCH_NONE;
+        return AF_BATCH_NONE;
     else if (sn==baseDim && (fn>baseDim && fn<=4))
-        return CONVOLVE_BATCH_KERNEL;
+        return AF_BATCH_KERNEL;
     else if ((sn>baseDim && sn<=4) && fn==baseDim)
-        return CONVOLVE_BATCH_SIGNAL;
+        return AF_BATCH_SIGNAL;
     else if ((sn>baseDim && sn<=4) && (fn>baseDim && fn<=4)) {
        bool doesDimensionsMatch = true;
         bool isInterleaved = true;
@@ -114,11 +113,11 @@ ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
             doesDimensionsMatch &= (sDims[i] == fDims[i]);
             isInterleaved &= (sDims[i] == 1 || fDims[i] == 1 || sDims[i] == fDims[i]);
         }
-        if (doesDimensionsMatch) return CONVOLVE_BATCH_SAME;
-        return (isInterleaved ? CONVOLVE_BATCH_DIFF : CONVOLVE_BATCH_UNSUPPORTED);
+        if (doesDimensionsMatch) return AF_BATCH_SAME;
+        return (isInterleaved ? AF_BATCH_DIFF : AF_BATCH_UNSUPPORTED);
     }
     else
-        return CONVOLVE_BATCH_UNSUPPORTED;
+        return AF_BATCH_UNSUPPORTED;
 }
 
 template<dim_t baseDim>
@@ -133,9 +132,9 @@ af_err fft_convolve(af_array *out, const af_array signal, const af_array filter,
         dim4 sdims = sInfo.dims();
         dim4 fdims = fInfo.dims();
 
-        ConvolveBatchKind convBT = identifyBatchKind<baseDim>(sdims, fdims);
+        AF_BATCH_KIND convBT = identifyBatchKind<baseDim>(sdims, fdims);
 
-        ARG_ASSERT(1, (convBT != CONVOLVE_BATCH_UNSUPPORTED));
+        ARG_ASSERT(1, (convBT != AF_BATCH_UNSUPPORTED));
 
         af_array output;
         switch(stype) {

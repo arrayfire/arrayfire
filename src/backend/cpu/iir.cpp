@@ -27,9 +27,9 @@ Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x)
     a.eval();
     x.eval();
 
-    ConvolveBatchKind type = x.ndims() == 1 ? CONVOLVE_BATCH_NONE : CONVOLVE_BATCH_SAME;
+    AF_BATCH_KIND type = x.ndims() == 1 ? AF_BATCH_NONE : AF_BATCH_SAME;
     if (x.ndims() != b.ndims()) {
-        type = (x.ndims() < b.ndims()) ? CONVOLVE_BATCH_KERNEL : CONVOLVE_BATCH_SIGNAL;
+        type = (x.ndims() < b.ndims()) ? AF_BATCH_KERNEL : AF_BATCH_SIGNAL;
     }
 
     // Extract the first N elements
