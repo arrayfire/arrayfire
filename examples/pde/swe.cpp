@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
 #include <arrayfire.h>
 #include "../common/progress.h"
@@ -18,10 +19,10 @@ array normalize(array a, float max)
 
 static void swe(bool console)
 {
-    double time_total = 20; // run for N seconds
+    double time_total = 40; // run for N seconds
     // Grid length, number and spacing
-    const unsigned Lx = 512, nx = Lx + 1;
-    const unsigned Ly = 512, ny = Ly + 1;
+    const unsigned Lx = 1600, nx = Lx + 1;
+    const unsigned Ly = 1600, ny = Ly + 1;
     const float dx = Lx / (nx - 1);
     const float dy = Ly / (ny - 1);
 
@@ -29,7 +30,7 @@ static void swe(bool console)
     array um = ZERO, vm = ZERO;
     unsigned io = (unsigned)floor(Lx  / 5.0f),
              jo = (unsigned)floor(Ly / 5.0f),
-             k = 20;
+             k = 15;
     array x = tile(moddims(seq(nx),nx,1), 1,ny);
     array y = tile(moddims(seq(ny),1,ny), nx,1);
 
@@ -41,19 +42,32 @@ static void swe(bool console)
 
     // conv kernels
     float h_diff_kernel[] = {9.81f * (dt / dx), 0, -9.81f * (dt / dx)};
-    float h_lap_kernel[] = {0, 1, 0, 1, -4, 1, 0, 1, 0};
+    float h_lap_kernel[] = {0, 1, 0,
+                            1, -4, 1, 
+                            0, 1, 0};
 
     array h_diff_kernel_arr(3, h_diff_kernel);
     array h_lap_kernel_arr(3, 3, h_lap_kernel);
 
     if(!console) {
-        win = new Window(512, 512,"Shallow Water Equations");
-        win->setColorMap(AF_COLORMAP_MOOD);
+        win = new Window(1536, 768,"Shallow Water Equations");
+        win->setColorMap(AF_COLORMAP_BLUE);
+        win->grid(2, 2);
     }
 
     timer t = timer::start();
     unsigned iter = 0;
-    while (progress(iter, t, time_total)) {
+    unsigned random_interval = 30;
+    //while (progress(iter, t, time_total)) {
+    while (!win->close()) {
+        //raindrops
+        if(iter % 100 == 0 || iter % 130 == 0 || iter % random_interval == 0) {
+            unsigned io = (unsigned)floor(rand() % Lx),
+                     jo = (unsigned)floor(rand() % Ly);
+            random_interval = rand() % 200;
+            eta += 0.01f * exp((-((x - io) * (x - io) + (y - jo) * (y - jo))) / (k * k));
+        }
+
         // compute
         array up = um + convolve(eta, h_diff_kernel_arr);
         array vp = um + convolve(eta, h_diff_kernel_arr.T());
@@ -62,9 +76,17 @@ static void swe(bool console)
 
         etam = eta;
         eta = etap;
+
+        m_eta = max<float>(etam);
+
         if (!console) {
-            win->image(normalize(eta, m_eta));
+            (*win)(0,0).image(normalize(eta, m_eta));
+            array hist_out = histogram(normalize(eta, m_eta), 15);
+            (*win)(0,1).hist(hist_out, 0, 1);
+            (*win)(1,0).plot(seq(up.dims(1)), vp.col(0), "Pressure at left boundary");
+            (*win)(1,1).plot3(join(1, flat(eta), flat(up), flat(vp)), "Gradients versus Magnitude");
             // viz
+            win->show();
         } else eval(eta, up, vp);
         iter++;
     }

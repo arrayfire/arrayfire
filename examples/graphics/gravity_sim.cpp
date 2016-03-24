@@ -10,63 +10,76 @@
 #include <arrayfire.h>
 #include <iostream>
 #include <cstdio>
+#include <vector>
 
 using namespace af;
 using namespace std;
 
-static const int width = 768, height = 768;
+static const bool is3D = false; const static int total_particles = 2500;
+static const int reset = 5000;
+static const int width = 768, height = 768, depth = 768;
 static const float eps = 10.f;
-static const int gravity_constant = 5000;
+static const int gravity_constant = 9000;
 
-void simulate(af::array *pos, af::array *vels, af::array *forces, float dt){
-    pos[0] += vels[0] * dt;
-    pos[1] += vels[1] * dt;
-
-    //calculate forces to each particle
-    af::array diff_x = tile(pos[0], 1, pos[0].dims(0))-transpose(tile(pos[0], 1, pos[0].dims(0)));
-    af::array diff_y = tile(pos[1], 1, pos[1].dims(0))-transpose(tile(pos[1], 1, pos[1].dims(0)));
-    af::array dist = af::sqrt( diff_x*diff_x + diff_y*diff_y );
-    //dist = af::max(eps, dist);
-    dist *= dist * dist;
-
-    //calculate force vectors
-    forces[0] = -diff_x / dist;
-    forces[1] = -diff_y / dist;
-    forces[0](af::isNaN(forces[0]))  = 0;
-    forces[1](af::isNaN(forces[1]))  = 0;
-    forces[0] = sum(forces[0], 1);
-    forces[1] = sum(forces[1], 1);
-
-    //update force scaled to time, magnitude constant
-    forces[0] *= (gravity_constant);
-    forces[1] *= (gravity_constant);
-
-    //noise
-    /*
-    forces[0] += 0.1 * af::randn(forces[0].dims(0));
-    forces[0] += 0.1 * af::randn(forces[0].dims(0));
-    */
-
-    //dampening
-    /*
-    vels[0] *= 1 - (0.005*dt);
-    vels[1] *= 1 - (0.005*dt);
-    */
-
-    //update velocities from forces
-    vels[0] += forces[0] * dt;
-    vels[1] += forces[1] * dt;
-
-    //temporary
-    vels[0] = min(100, vels[0]);
-    vels[1] = min(100, vels[1]);
-
+void initial_conditions_rand(vector<af::array> &pos, vector<af::array> &vels, vector<af::array> &forces) {
+    for(int i=0; i<pos.size(); ++i) {
+        pos[i]    = af::randn(total_particles) * width + width;
+        vels[i]   = 0 * af::randu(total_particles) - 0.5;
+        forces[i] = af::constant(0, total_particles);
+    }
 }
 
-void collisions(af::array *pos, af::array *vels){
+void simulate(vector<af::array> &pos, vector<af::array> &vels, vector<af::array> &forces, float dt) {
+    for(int i=0; i<pos.size(); ++i) {
+        pos[i] += vels[i] * dt;
+        pos[i].eval();
+    }
+
+    //calculate forces to each particle
+    vector<af::array> diff(pos.size());
+    af::array dist = af::constant(0, pos[0].dims(0),pos[0].dims(0));
+
+    for(int i=0; i<pos.size(); ++i) {
+        diff[i] = tile(pos[i], 1, pos[i].dims(0)) - transpose(tile(pos[i], 1, pos[i].dims(0)));
+        dist += (diff[i]*diff[i]);
+    }
+
+    dist = sqrt(dist);
+    dist = af::max(20, dist);
+    dist *= dist * dist;
+
+    for(int i=0; i<pos.size(); ++i) {
+        //calculate force vectors
+        forces[i] = diff[i] / dist;
+        forces[i].eval();
+
+        //af::array idx = af::where(af::isNaN(forces[i]));
+        //if(idx.elements() > 0)
+        //    forces[i](idx) = 0;
+        forces[i] = sum(forces[i]).T();
+
+        //update force scaled to time, magnitude constant
+        forces[i] *= (gravity_constant);
+        forces[i].eval();
+
+        //update velocities from forces
+        vels[i] += forces[i] * dt;
+        vels[i].eval();
+
+        //noise
+        //forces[i] += 0.1 * af::randn(forces[i].dims(0));
+
+        //dampening
+        //vels[i] *= 1 - (0.005*dt);
+    }
+}
+
+void collisions(vector<af::array> &pos, vector<af::array> &vels, bool is3D) {
     //clamp particles inside screen border
-    af::array invalid_x = -2 * (pos[0] > width-1 || pos[0] < 0) + 1;
-    af::array invalid_y = -2 * (pos[1] > height-1 || pos[1] < 0) + 1;
+    //af::array invalid_x = -2 * (pos[0] > width-1 || pos[0] < 0) + 1;
+    //af::array invalid_y = -2 * (pos[1] > height-1 || pos[1] < 0) + 1;
+    af::array invalid_x = (pos[0] < width-1 || pos[0] > 0);
+    af::array invalid_y = (pos[1] < height-1 || pos[1] > 0);
     vels[0]= invalid_x * vels[0] ;
     vels[1]= invalid_y * vels[1] ;
 
@@ -75,58 +88,37 @@ void collisions(af::array *pos, af::array *vels){
     pos[0] = projected_px;
     pos[1] = projected_py;
 
-    /*
-    //calculate distance to center
-    af::array diff_x = projected_px - width/2;
-    af::array diff_y = projected_py - height/2;
-    af::array dist = sqrt( diff_x*diff_x + diff_y*diff_y );
-
-    //collide with center sphere
-    const int radius = 20;
-    const float elastic_constant = 0.91f;
-    if(sum<int>(dist<radius) > 0) {
-        vels[0](dist<radius) = -elastic_constant * vels[0](dist<radius);
-        vels[1](dist<radius) = -elastic_constant * vels[1](dist<radius);
-
-        //normalize diff vector
-        diff_x /= dist;
-        diff_y /= dist;
-        //place all particle colliding with sphere on surface
-        pos[0](dist<radius) = width/2 + diff_x(dist<radius) * radius;
-        pos[1](dist<radius) = height/2 +  diff_y(dist<radius) * radius;
+    if(is3D){
+        af::array invalid_z = -2 * (pos[2] > depth-1 || pos[2] < 0) + 1;
+        vels[2]= invalid_z * vels[2] ;
+        af::array projected_pz = min(depth - 1, max(0, pos[2]));
+        pos[2] = projected_pz;
     }
-    */
 }
 
 
 int main(int argc, char *argv[])
 {
     try {
-        const static int total_particles = 300;
-        static const int reset = 5000;
 
         af::info();
 
         af::Window myWindow(width, height, "Gravity Simulation using ArrayFire");
+        myWindow.setColorMap(AF_COLORMAP_HEAT);
 
         int frame_count = 0;
 
         // Initialize the kernel array just once
-        const af::array draw_kernel = gaussianKernel(3, 3);
+        const af::array draw_kernel = gaussianKernel(5, 5);
 
-        af::array pos[2];
-        af::array vels[2];
-        af::array forces[2];
+        const int dims = (is3D)? 3 : 2;
+
+        vector<af::array> pos(dims);
+        vector<af::array> vels(dims);
+        vector<af::array> forces(dims);
 
         // Generate a random starting state
-        pos[0] = af::randu(total_particles) * width;
-        pos[1] = af::randu(total_particles) * height;
-
-        vels[0] = 1 * af::randn(total_particles);
-        vels[1] = 10 * af::randn(total_particles);
-
-        forces[0] = af::randn(total_particles);
-        forces[1] = af::randn(total_particles);
+        initial_conditions_rand(pos, vels, forces);
 
         af::array image = af::constant(0, width, height);
         af::array ids(total_particles, u32);
@@ -136,28 +128,32 @@ int main(int argc, char *argv[])
             float dt = af::timer::stop(timer);
             timer = af::timer::start();
 
-            ids = (pos[0].as(u32) * height) + pos[1].as(u32);
-            image(ids) += 5.f;
-            image = convolve(image, draw_kernel);
-            myWindow.image(image);
-            image = af::constant(0, image.dims());
+            //if(is3D) {
+                //array Pts = join(1, pos[0], pos[1], pos[2]);
+                //myWindow.scatter3(Pts);
+            //} else {
+                ids = (pos[0].as(u32) * height) + pos[1].as(u32);
+                image(ids) += 15.f;
+                image = convolve(image, draw_kernel);
+                myWindow.image(image);
+                image = af::constant(0, image.dims());
+                /*
+                myWindow.scatter(pos[0], pos[1]);
+                */
+            //}
+
             frame_count++;
 
             // Generate a random starting state
             if(frame_count % reset == 0) {
-                pos[0] = af::randu(total_particles) * width;
-                pos[1] = af::randu(total_particles) * height;
-
-                vels[0] = af::randn(total_particles);
-                vels[1] = af::randn(total_particles);
+                initial_conditions_rand(pos, vels, forces);
             }
 
-
-            //run force simulation and update particles
+            //simulate
             simulate(pos, vels, forces, dt);
 
             //check for collisions and adjust positions/velocities accordingly
-            collisions(pos, vels);
+            collisions(pos, vels, is3D);
 
         }
     } catch (af::exception& e) {
