@@ -43,15 +43,17 @@ namespace opencl
 
 
 #define INSTANTIATE1(Tk, isAscending)           \
-    INSTANTIATE(Tk, float , isAscending)        \
-    INSTANTIATE(Tk, double, isAscending)        \
-    INSTANTIATE(Tk, int   , isAscending)        \
-    INSTANTIATE(Tk, uint  , isAscending)        \
-    INSTANTIATE(Tk, char  , isAscending)        \
-    INSTANTIATE(Tk, uchar , isAscending)        \
-    INSTANTIATE(Tk, short , isAscending)        \
-    INSTANTIATE(Tk, ushort, isAscending)        \
-    INSTANTIATE(Tk, intl  , isAscending)        \
-    INSTANTIATE(Tk, uintl , isAscending)        \
+    INSTANTIATE(Tk, float  , isAscending)       \
+    INSTANTIATE(Tk, double , isAscending)       \
+    INSTANTIATE(Tk, cfloat , isAscending)       \
+    INSTANTIATE(Tk, cdouble, isAscending)       \
+    INSTANTIATE(Tk, int    , isAscending)       \
+    INSTANTIATE(Tk, uint   , isAscending)       \
+    INSTANTIATE(Tk, char   , isAscending)       \
+    INSTANTIATE(Tk, uchar  , isAscending)       \
+    INSTANTIATE(Tk, short  , isAscending)       \
+    INSTANTIATE(Tk, ushort , isAscending)       \
+    INSTANTIATE(Tk, intl   , isAscending)       \
+    INSTANTIATE(Tk, uintl  , isAscending)       \
 
 }

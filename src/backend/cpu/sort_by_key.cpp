@@ -46,6 +46,8 @@ void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
 #define INSTANTIATE1(Tk)       \
     INSTANTIATE(Tk, float)     \
     INSTANTIATE(Tk, double)    \
+    INSTANTIATE(Tk, cfloat)    \
+    INSTANTIATE(Tk, cdouble)   \
     INSTANTIATE(Tk, int)       \
     INSTANTIATE(Tk, uint)      \
     INSTANTIATE(Tk, char)      \
