@@ -42,11 +42,11 @@ namespace cuda
 
                         THRUST_SELECT(thrust::sequence, idx_ptr + idxOffset, idx_ptr + idxOffset + idx.dims[0]);
                         if(isAscending) {
-                            THRUST_SELECT(thrust::sort_by_key,
+                            THRUST_SELECT(thrust::stable_sort_by_key,
                                     val_ptr + valOffset, val_ptr + valOffset + val.dims[0],
                                     idx_ptr + idxOffset);
                         } else {
-                            THRUST_SELECT(thrust::sort_by_key,
+                            THRUST_SELECT(thrust::stable_sort_by_key,
                                         val_ptr + valOffset, val_ptr + valOffset + val.dims[0],
                                         idx_ptr + idxOffset, thrust::greater<T>());
                         }

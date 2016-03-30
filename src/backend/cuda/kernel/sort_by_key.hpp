@@ -44,9 +44,9 @@ namespace cuda
                         int ovalOffset = ovalWZ + y * oval.strides[1];
 
                         if(isAscending) {
-                            THRUST_SELECT(thrust::sort_by_key, okey_ptr + okeyOffset, okey_ptr + okeyOffset + okey.dims[0], oval_ptr + ovalOffset);
+                            THRUST_SELECT(thrust::stable_sort_by_key, okey_ptr + okeyOffset, okey_ptr + okeyOffset + okey.dims[0], oval_ptr + ovalOffset);
                         } else {
-                            THRUST_SELECT(thrust::sort_by_key, okey_ptr + okeyOffset, okey_ptr + okeyOffset + okey.dims[0], oval_ptr + ovalOffset, thrust::greater<Tk>());
+                            THRUST_SELECT(thrust::stable_sort_by_key, okey_ptr + okeyOffset, okey_ptr + okeyOffset + okey.dims[0], oval_ptr + ovalOffset, thrust::greater<Tk>());
                         }
                     }
                 }
