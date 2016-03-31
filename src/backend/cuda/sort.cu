@@ -22,10 +22,11 @@ namespace cuda
     {
         Array<T> out = copyArray<T>(in);
         switch(dim) {
-
-        case 0: kernel::sort0<T, isAscending>(out);
-            break;
-        default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
+            case 0: kernel::sort0<T, isAscending>(out); break;
+            case 1: kernel::sortBatched<T, isAscending, 1>(out); break;
+            case 2: kernel::sortBatched<T, isAscending, 2>(out); break;
+            case 3: kernel::sortBatched<T, isAscending, 3>(out); break;
+            default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
         return out;
     }

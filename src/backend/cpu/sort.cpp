@@ -15,10 +15,53 @@
 #include <functional>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <range.hpp>
+#include <iota.hpp>
+#include <handle.hpp>
+#include <sort_by_key.hpp>
 #include <kernel/sort.hpp>
 
 namespace cpu
 {
+
+template<typename T, bool isAscending, int dim>
+void sortBatched(Array<T>& val)
+{
+    af::dim4 inDims = val.dims();
+
+    // Sort dimension
+    af::dim4 tileDims(1);
+    af::dim4 seqDims = inDims;
+    tileDims[dim] = inDims[dim];
+    seqDims[dim] = 1;
+
+    Array<uint> key = iota<uint>(seqDims, tileDims);
+
+    Array<uint> *resKey = initArray<uint>();
+    Array<T   > *resVal = initArray<T>();
+
+    val.modDims(inDims.elements());
+    key.modDims(inDims.elements());
+
+    sort_by_key<T, uint, isAscending>(*resVal, *resKey, val, key, 0);
+
+    // Needs to be ascending (true) in order to maintain the indices properly
+    sort_by_key<uint, T, true>(key, val, *resKey, *resVal, 0);
+    val.eval();
+
+    val.modDims(inDims);
+}
+
+template<typename T, bool isAscending>
+void sort0(Array<T>& val)
+{
+    int higherDims = val.elements() / val.dims()[0];
+    // TODO Make a better heurisitic
+    if(higherDims > 10)
+        sortBatched<T, isAscending, 0>(val);
+    else
+        getQueue().enqueue(kernel::sort0Iterative<T, isAscending>, val);
+}
 
 template<typename T, bool isAscending>
 Array<T> sort(const Array<T> &in, const unsigned dim)
@@ -27,7 +70,10 @@ Array<T> sort(const Array<T> &in, const unsigned dim)
 
     Array<T> out = copyArray<T>(in);
     switch(dim) {
-        case 0: getQueue().enqueue(kernel::sort0<T, isAscending>, out); break;
+        case 0: sort0<T, isAscending>(out); break;
+        case 1: sortBatched<T, isAscending, 1>(out); break;
+        case 2: sortBatched<T, isAscending, 2>(out); break;
+        case 3: sortBatched<T, isAscending, 3>(out); break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
     }
     return out;

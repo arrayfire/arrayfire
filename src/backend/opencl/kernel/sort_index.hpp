@@ -15,6 +15,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <kernel/sort_helper.hpp>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -39,16 +40,6 @@ namespace opencl
 {
     namespace kernel
     {
-        using std::conditional;
-        using std::is_same;
-        template<typename T>
-        using ltype_t = typename conditional<is_same<T, intl>::value, cl_long, T>::type;
-
-        template<typename T>
-        using type_t = typename conditional<is_same<T, uintl>::value,
-                                            cl_ulong, ltype_t<T>
-                                           >::type;
-
         template<typename T, bool isAscending>
         void sort0_index(Param val, Param idx)
         {

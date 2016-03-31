@@ -42,8 +42,6 @@ af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool 
         af_dtype type = info.getType();
 
         DIM_ASSERT(1, info.elements() > 0);
-        // Only Dim 0 supported
-        ARG_ASSERT(2, dim == 0);
 
         af_array val;
 
