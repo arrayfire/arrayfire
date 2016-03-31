@@ -22,7 +22,7 @@
 
 #include <boost/compute/core.hpp>
 #include <boost/compute/algorithm/iota.hpp>
-#include <boost/compute/algorithm/stable_sort_by_key.hpp>
+#include <boost/compute/algorithm/sort_by_key.hpp>
 #include <boost/compute/functional/operator.hpp>
 #include <boost/compute/iterator/buffer_iterator.hpp>
 
@@ -64,12 +64,12 @@ namespace opencl
                             compute::iota(idx_begin, idx_begin + val.info.dims[0], 0, c_queue);
 
                             if(isAscending) {
-                                compute::stable_sort_by_key(
+                                compute::sort_by_key(
                                         compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset),
                                         compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset + val.info.dims[0]),
                                         idx_begin, compute::less< type_t<T> >(), c_queue);
                             } else {
-                                compute::stable_sort_by_key(
+                                compute::sort_by_key(
                                         compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset),
                                         compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset + val.info.dims[0]),
                                         idx_begin, compute::greater< type_t<T> >(), c_queue);

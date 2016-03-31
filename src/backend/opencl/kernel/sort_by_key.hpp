@@ -21,7 +21,7 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 #include <boost/compute/core.hpp>
-#include <boost/compute/algorithm/stable_sort_by_key.hpp>
+#include <boost/compute/algorithm/sort_by_key.hpp>
 #include <boost/compute/functional/operator.hpp>
 #include <boost/compute/iterator/buffer_iterator.hpp>
 
@@ -60,12 +60,12 @@ namespace opencl
                             int ovalOffset = ovalWZ + y * oval.info.strides[1];
 
                             compute::buffer_iterator< type_t<Tk> > start= compute::make_buffer_iterator< type_t<Tk> >(okey_buf, okeyOffset);
-                            compute::buffer_iterator< type_t<Tk> > end = compute::make_buffer_iterator< type_t<Tk> >(okey_buf, okeyOffset + okey.info.dims[0]);
+                            compute::buffer_iterator< type_t<Tk> > end  = compute::make_buffer_iterator< type_t<Tk> >(okey_buf, okeyOffset + okey.info.dims[0]);
                             compute::buffer_iterator< type_t<Tv> > vals = compute::make_buffer_iterator< type_t<Tv> >(oval_buf, ovalOffset);
                             if(isAscending) {
-                                compute::stable_sort_by_key(start, end, vals, c_queue);
+                                compute::sort_by_key(start, end, vals, c_queue);
                             } else {
-                                compute::stable_sort_by_key(start, end, vals,
+                                compute::sort_by_key(start, end, vals,
                                                             compute::greater< type_t<Tk> >(), c_queue);
                             }
                         }

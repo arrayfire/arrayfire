@@ -23,7 +23,7 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 #include <boost/compute/core.hpp>
-#include <boost/compute/algorithm/stable_sort.hpp>
+#include <boost/compute/algorithm/sort.hpp>
 #include <boost/compute/functional/operator.hpp>
 #include <boost/compute/iterator/buffer_iterator.hpp>
 
@@ -58,12 +58,12 @@ namespace opencl
                             int valOffset = valWZ + y * val.info.strides[1];
 
                             if(isAscending) {
-                                compute::stable_sort(
+                                compute::sort(
                                         compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset),
                                         compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset + val.info.dims[0]),
                                         compute::less< type_t<T> >(), c_queue);
                             } else {
-                                compute::stable_sort(
+                                compute::sort(
                                         compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset),
                                         compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset + val.info.dims[0]),
                                         compute::greater< type_t<T> >(), c_queue);
