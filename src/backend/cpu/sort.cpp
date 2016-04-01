@@ -37,19 +37,19 @@ void sortBatched(Array<T>& val)
 
     Array<uint> key = iota<uint>(seqDims, tileDims);
 
-    Array<uint> *resKey = initArray<uint>();
-    Array<T   > *resVal = initArray<T>();
+    Array<uint> resKey = createEmptyArray<uint>(dim4());
+    Array<T   > resVal = createEmptyArray<T>(dim4());
 
-    val.modDims(inDims.elements());
-    key.modDims(inDims.elements());
+    val.setDataDims(inDims.elements());
+    key.setDataDims(inDims.elements());
 
-    sort_by_key<T, uint, isAscending>(*resVal, *resKey, val, key, 0);
+    sort_by_key<T, uint, isAscending>(resVal, resKey, val, key, 0);
 
     // Needs to be ascending (true) in order to maintain the indices properly
-    sort_by_key<uint, T, true>(key, val, *resKey, *resVal, 0);
+    sort_by_key<uint, T, true>(key, val, resKey, resVal, 0);
     val.eval();
 
-    val.modDims(inDims);
+    val.setDataDims(inDims);
 }
 
 template<typename T, bool isAscending>
