@@ -17,13 +17,13 @@
 #include <debug_opencl.hpp>
 #include <kernel/sort_helper.hpp>
 #include <kernel/iota.hpp>
-#include <kernel/sort_by_key.hpp>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 #include <boost/compute/core.hpp>
 #include <boost/compute/algorithm/sort.hpp>
+#include <boost/compute/algorithm/sort_by_key.hpp>
 #include <boost/compute/functional/operator.hpp>
 #include <boost/compute/iterator/buffer_iterator.hpp>
 
@@ -125,10 +125,25 @@ namespace opencl
 
                 // Sort indices
                 // sort_by_key<T, uint, isAscending>(*resVal, *resKey, val, key, 0);
-                kernel::sort0_by_key<T, uint, isAscending>(pVal, pKey);
+                //kernel::sort0_by_key<T, uint, isAscending>(pVal, pKey);
+                compute::command_queue c_queue(getQueue()());
+
+                compute::buffer pKey_buf((*pKey.data)());
+                compute::buffer pVal_buf((*pVal.data)());
+
+                compute::buffer_iterator< type_t<T>    > val0 = compute::make_buffer_iterator< type_t<T>    >(pVal_buf, 0);
+                compute::buffer_iterator< type_t<T>    > valN = compute::make_buffer_iterator< type_t<T>    >(pVal_buf,+ pVal.info.dims[0]);
+                compute::buffer_iterator< type_t<uint> > key0 = compute::make_buffer_iterator< type_t<uint> >(pKey_buf, 0);
+                compute::buffer_iterator< type_t<uint> > keyN = compute::make_buffer_iterator< type_t<uint> >(pKey_buf, pKey.info.dims[0]);
+                if(isAscending) {
+                    compute::sort_by_key(val0, valN, key0, c_queue);
+                } else {
+                    compute::sort_by_key(val0, valN, key0, compute::greater< type_t<T> >(), c_queue);
+                }
 
                 // Needs to be ascending (true) in order to maintain the indices properly
-                kernel::sort0_by_key<uint, T, true>(pKey, pVal);
+                //kernel::sort0_by_key<uint, T, true>(pKey, pVal);
+                compute::sort_by_key(key0, keyN, val0, c_queue);
 
                 // No need of doing moddims here because the original Array<T>
                 // dimensions have not been changed

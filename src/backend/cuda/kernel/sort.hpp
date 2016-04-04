@@ -11,7 +11,6 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <kernel/iota.hpp>
-#include <kernel/sort_by_key.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include <thrust/device_ptr.h>
@@ -92,10 +91,29 @@ namespace cuda
 
             // Sort indices
             // sort_by_key<T, uint, isAscending>(*resVal, *resKey, val, key, 0);
-            kernel::sort0_by_key<T, uint, isAscending>(pVal, pKey);
+            //kernel::sort0_by_key<T, uint, isAscending>(pVal, pKey);
+            thrust::device_ptr<T>    pVal_ptr = thrust::device_pointer_cast(pVal.ptr);
+            thrust::device_ptr<uint> pKey_ptr = thrust::device_pointer_cast(pKey.ptr);
+            if(isAscending) {
+                THRUST_SELECT(thrust::stable_sort_by_key,
+                              pVal_ptr,
+                              pVal_ptr + pVal.dims[0],
+                              pKey_ptr);
+            } else {
+                THRUST_SELECT(thrust::stable_sort_by_key,
+                              pVal_ptr,
+                              pVal_ptr + pVal.dims[0],
+                              pKey_ptr, thrust::greater<T>());
+            }
+            POST_LAUNCH_CHECK();
 
             // Needs to be ascending (true) in order to maintain the indices properly
-            kernel::sort0_by_key<uint, T, true>(pKey, pVal);
+            //kernel::sort0_by_key<uint, T, true>(pKey, pVal);
+            THRUST_SELECT(thrust::stable_sort_by_key,
+                          pKey_ptr,
+                          pKey_ptr + pVal.dims[0],
+                          pVal_ptr);
+            POST_LAUNCH_CHECK();
 
             // No need of doing moddims here because the original Array<T>
             // dimensions have not been changed
