@@ -124,12 +124,11 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     //SORT_INIT(SortMed5False,  sort_med,   false, 2, 3);
     //SORT_INIT(SortLargeTrue,  sort_large, true,  0, 1);
     //SORT_INIT(SortLargeFalse, sort_large, false, 2, 3);
-;
 
 
 //////////////////////////////////// CPP /////////////////////////////////
 //
-TEST(SortIndex, CPP)
+TEST(SortIndex, CPPDim0)
 {
     if (noDoubleTests<float>()) return;
 

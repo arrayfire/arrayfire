@@ -91,8 +91,6 @@ af_err af_sort_index(af_array *out, af_array *indices, const af_array in, const 
         af_dtype type = info.getType();
 
         DIM_ASSERT(2, info.elements() > 0);
-        // Only Dim 0 supported
-        ARG_ASSERT(3, dim == 0);
 
         af_array val;
         af_array idx;

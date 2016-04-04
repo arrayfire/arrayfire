@@ -397,7 +397,7 @@ void orb(unsigned* out_feat,
         harris_idx.ptr = memAlloc<unsigned>(sort_elem);
 
         // Sort features according to Harris responses
-        sort0_index<float, false>(harris_sorted, harris_idx);
+        sort0Index<float, false>(harris_sorted, harris_idx);
 
         feat_pyr[i] = std::min(feat_pyr[i], lvl_best[i]);
 

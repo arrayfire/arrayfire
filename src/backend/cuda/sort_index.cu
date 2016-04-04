@@ -9,11 +9,13 @@
 
 #include <Array.hpp>
 #include <sort_index.hpp>
-#include <copy.hpp>
 #include <kernel/sort_index.hpp>
+#include <copy.hpp>
 #include <math.hpp>
 #include <stdexcept>
 #include <err_cuda.hpp>
+#include <range.hpp>
+#include <reorder.hpp>
 
 namespace cuda
 {
@@ -21,10 +23,14 @@ namespace cuda
     void sort_index(Array<T> &val, Array<uint> &idx, const Array<T> &in, const uint dim)
     {
         val = copyArray<T>(in);
-        idx = createEmptyArray<uint>(in.dims());
+        idx = range<uint>(in.dims(), dim);
+        idx.eval();
+
         switch(dim) {
-            case 0: kernel::sort0_index<T, isAscending>(val, idx);
-                    break;
+            case 0: kernel::sort0Index<T, isAscending>(val, idx); break;
+            case 1: kernel::sortIndexBatched<T, isAscending, 1>(val, idx); break;
+            case 2: kernel::sortIndexBatched<T, isAscending, 2>(val, idx); break;
+            case 3: kernel::sortIndexBatched<T, isAscending, 3>(val, idx); break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
     }

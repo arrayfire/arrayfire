@@ -339,7 +339,7 @@ void harris(unsigned* corners_out,
         harris_idx.ptr = memAlloc<unsigned>(sort_elem);
 
         // Sort Harris responses
-        sort0_index<float, false>(harris_responses, harris_idx);
+        sort0Index<float, false>(harris_responses, harris_idx);
 
         *x_out = memAlloc<float>(*corners_out);
         *y_out = memAlloc<float>(*corners_out);

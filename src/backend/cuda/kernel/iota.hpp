@@ -18,8 +18,8 @@ namespace cuda
     namespace kernel
     {
         // Kernel Launch Config Values
-        static const unsigned TX = 32;
-        static const unsigned TY = 8;
+        static const unsigned IOTA_TX = 32;
+        static const unsigned IOTA_TY = 8;
         static const unsigned TILEX = 512;
         static const unsigned TILEY = 32;
 
@@ -71,7 +71,7 @@ namespace cuda
         template<typename T>
         void iota(Param<T> out, const dim4 &sdims, const dim4 &tdims)
         {
-            dim3 threads(TX, TY, 1);
+            dim3 threads(IOTA_TX, IOTA_TY, 1);
 
             int blocksPerMatX = divup(out.dims[0], TILEX);
             int blocksPerMatY = divup(out.dims[1], TILEY);

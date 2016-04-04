@@ -14,6 +14,8 @@
 #include <numeric>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <range.hpp>
+#include <copy.hpp>
 #include <kernel/sort_index.hpp>
 
 namespace cpu
@@ -24,10 +26,15 @@ void sort_index(Array<T> &val, Array<uint> &idx, const Array<T> &in, const uint 
 {
     in.eval();
 
-    val = createEmptyArray<T>(in.dims());
-    idx = createEmptyArray<uint>(in.dims());
+    val = copyArray<T>(in);
+    idx = range<uint>(in.dims(), dim);
+    idx.eval();
+
     switch(dim) {
-        case 0: getQueue().enqueue(kernel::sort0_index<T, isAscending>, val, idx, in); break;
+        case 0: getQueue().enqueue(kernel::sort0Index<T, isAscending>, val, idx); break;
+        case 1: getQueue().enqueue(kernel::sortIndexBatched<T, isAscending, 1>, val, idx); break;
+        case 2: getQueue().enqueue(kernel::sortIndexBatched<T, isAscending, 2>, val, idx); break;
+        case 3: getQueue().enqueue(kernel::sortIndexBatched<T, isAscending, 3>, val, idx); break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
     }
 }
