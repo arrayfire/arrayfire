@@ -28,23 +28,23 @@ static void swe(bool console)
 
     array ZERO = constant(0, nx, ny);
     array um = ZERO, vm = ZERO;
-    unsigned io = (unsigned)floor(Lx  / 5.0f),
-             jo = (unsigned)floor(Ly / 5.0f),
+    unsigned io = (unsigned)floor(Lx  / 6.0f),
+             jo = (unsigned)floor(Ly / 6.0f),
              k = 15;
     array x = tile(moddims(seq(nx),nx,1), 1,ny);
     array y = tile(moddims(seq(ny),1,ny), nx,1);
 
-    // Initial condition
-    array etam = 0.01f * exp((-((x - io) * (x - io) + (y - jo) * (y - jo))) / (k * k));
+    //initial condition
+    array etam  = 0.01f * exp((-((x - io) * (x - io) + (y - jo) * (y - jo))) / (k * k));
     float m_eta = max<float>(etam);
-    array eta = etam;
+    array eta   = etam;
     float dt = 0.5;
 
     // conv kernels
     float h_diff_kernel[] = {9.81f * (dt / dx), 0, -9.81f * (dt / dx)};
-    float h_lap_kernel[] = {0, 1, 0,
-                            1, -4, 1, 
-                            0, 1, 0};
+    float h_lap_kernel[] = { 0,  1,  0,
+                             1, -4,  1,
+                             0,  1,  0 };
 
     array h_diff_kernel_arr(3, h_diff_kernel);
     array h_lap_kernel_arr(3, 3, h_lap_kernel);
@@ -58,13 +58,21 @@ static void swe(bool console)
     timer t = timer::start();
     unsigned iter = 0;
     unsigned random_interval = 30;
-    //while (progress(iter, t, time_total)) {
+
     while (!win->close()) {
+        if( iter>2000 ) {
+            // Initial condition
+            etam = 0.01f * exp((-((x - io) * (x - io) + (y - jo) * (y - jo))) / (k * k));
+            m_eta = max<float>(etam);
+            eta = etam;
+            iter = 0;
+        }
+
         //raindrops
         if(iter % 100 == 0 || iter % 130 == 0 || iter % random_interval == 0) {
             unsigned io = (unsigned)floor(rand() % Lx),
                      jo = (unsigned)floor(rand() % Ly);
-            random_interval = rand() % 200;
+            random_interval = rand() % 200 + 1;
             eta += 0.01f * exp((-((x - io) * (x - io) + (y - jo) * (y - jo))) / (k * k));
         }
 
@@ -78,19 +86,18 @@ static void swe(bool console)
         eta = etap;
 
         m_eta = max<float>(etam);
-
         if (!console) {
             (*win)(0,0).image(normalize(eta, m_eta));
             array hist_out = histogram(normalize(eta, m_eta), 15);
-            (*win)(0,1).hist(hist_out, 0, 1);
+            (*win)(0,1).hist(hist_out, 0, 1, "Normalized Pressure Distribution");
             (*win)(1,0).plot(seq(up.dims(1)), vp.col(0), "Pressure at left boundary");
-            (*win)(1,1).plot3(join(1, flat(eta), flat(up), flat(vp)), "Gradients versus Magnitude");
-            // viz
+            (*win)(1,1).plot3(join(1, flat(eta.col(0)), flat(up.col(0)), flat(vp.col(0))), "Gradients versus Magnitude at left boundary"); // viz
             win->show();
         } else eval(eta, up, vp);
         iter++;
     }
 }
+
 int main(int argc, char* argv[])
 {
     int device = argc > 1 ? atoi(argv[1]) : 0;
