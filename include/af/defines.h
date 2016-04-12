@@ -50,10 +50,6 @@
     typedef long long   dim_t;
 #endif
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) || defined(_WIN64)
-#define USE_CPUID
-#endif
-
 #include <stdlib.h>
 
 typedef long long intl;
