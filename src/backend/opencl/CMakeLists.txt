@@ -305,11 +305,10 @@ ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
 TARGET_LINK_LIBRARIES(afopencl
                                 PRIVATE ${OpenCL_LIBRARIES}
-                                PRIVATE ${FreeImage_LIBS}
                                 PRIVATE ${CLBLAS_LIBRARIES}
                                 PRIVATE ${CLFFT_LIBRARIES}
                                 PRIVATE ${CMAKE_DL_LIBS}
-                                PRIVATE ${Boost_LIBRARIES})
+                     )
 
 IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
     ADD_DEPENDENCIES(afopencl forge)
@@ -320,6 +319,8 @@ IF(LAPACK_FOUND)
     PRIVATE ${LAPACK_LIBRARIES}
     PRIVATE ${CBLAS_LIBRARIES})
 ENDIF()
+
+TARGET_LINK_LIBRARIES(afopencl PRIVATE ${FreeImage_LIBS})
 
 SET_TARGET_PROPERTIES(afopencl PROPERTIES
     VERSION "${AF_VERSION}"

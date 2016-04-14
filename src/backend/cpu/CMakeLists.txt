@@ -203,9 +203,10 @@ ELSE(DEFINED BLAS_SYM_FILE)
 ENDIF(DEFINED BLAS_SYM_FILE)
 
 TARGET_LINK_LIBRARIES(afcpu
-                            PRIVATE ${FreeImage_LIBS}
                             PRIVATE ${CBLAS_LIBRARIES}
-                            PRIVATE ${FFTW_LIBRARIES})
+                            PRIVATE ${FFTW_LIBRARIES}
+                            PRIVATE ${FreeImage_LIBS}
+                     )
 
 IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
   ADD_DEPENDENCIES(afcpu forge)
