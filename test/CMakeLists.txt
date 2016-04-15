@@ -21,6 +21,10 @@ ELSE()
     INCLUDE_DIRECTORIES(${ArrayFire_INCLUDE_DIRS})
     OPTION(BUILD_NONFREE "Build Tests for nonfree algorithms" OFF)
 
+    IF(WIN32)
+        ADD_DEFINITIONS(-DOS_WIN -DNOMINMAX)
+    ENDIF(WIN32)
+
     IF(${BUILD_NONFREE})
         MESSAGE(WARNING "Building With NONFREE ON requires the following patents")
         SET(BUILD_NONFREE_SIFT ON CACHE BOOL "Build ArrayFire with SIFT")
