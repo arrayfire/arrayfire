@@ -166,6 +166,8 @@ TEST(Sort, CPPDim1)
 
     af::array output = af::sort(input_, 1, dir);
 
+    output = reorder(output, 1, 0, 2, 3); // Required for checking with test data
+
     size_t nElems = tests[resultIdx0].size();
 
     // Get result
@@ -199,6 +201,8 @@ TEST(Sort, CPPDim2)
     af::array input_ = reorder(input, 1, 2, 0, 3);
 
     af::array output = af::sort(input_, 2, dir);
+
+    output = reorder(output, 2, 0, 1, 3); // Required for checking with test data
 
     size_t nElems = tests[resultIdx0].size();
 

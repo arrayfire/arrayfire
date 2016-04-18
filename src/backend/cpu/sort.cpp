@@ -19,6 +19,7 @@
 #include <iota.hpp>
 #include <handle.hpp>
 #include <sort_by_key.hpp>
+#include <reorder.hpp>
 #include <kernel/sort.hpp>
 
 namespace cpu
@@ -49,7 +50,7 @@ void sortBatched(Array<T>& val)
     sort_by_key<uint, T, true>(key, val, resKey, resVal, 0);
     val.eval();
 
-    val.setDataDims(inDims);
+    val.setDataDims(inDims); // This is correct only for dim0
 }
 
 template<typename T, bool isAscending>
@@ -75,6 +76,19 @@ Array<T> sort(const Array<T> &in, const unsigned dim)
         case 2: sortBatched<T, isAscending, 2>(out); break;
         case 3: sortBatched<T, isAscending, 3>(out); break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
+    }
+
+    if(dim != 0) {
+        af::dim4 preorderDims = out.dims();
+        af::dim4 reorderDims(0, 1, 2, 3);
+        reorderDims[dim] = 0;
+        preorderDims[0] = out.dims()[dim];
+        for(int i = 1; i <= (int)dim; i++) {
+            reorderDims[i - 1] = i;
+            preorderDims[i] = out.dims()[i - 1];
+        }
+
+        out = reorder<T>(out, reorderDims);
     }
     return out;
 }
