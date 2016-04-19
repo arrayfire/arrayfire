@@ -40,6 +40,7 @@ namespace cuda
                 preorderDims[i] = out.dims()[i - 1];
             }
 
+            out.setDataDims(preorderDims);
             out = reorder<T>(out, reorderDims);
         }
         return out;

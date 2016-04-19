@@ -88,6 +88,7 @@ Array<T> sort(const Array<T> &in, const unsigned dim)
             preorderDims[i] = out.dims()[i - 1];
         }
 
+        out.setDataDims(preorderDims);
         out = reorder<T>(out, reorderDims);
     }
     return out;

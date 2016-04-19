@@ -33,6 +33,23 @@ namespace cuda
             case 3: kernel::sortIndexBatched<T, isAscending, 3>(val, idx); break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
+
+        if(dim != 0) {
+            af::dim4 preorderDims = val.dims();
+            af::dim4 reorderDims(0, 1, 2, 3);
+            reorderDims[dim] = 0;
+            preorderDims[0] = val.dims()[dim];
+            for(int i = 1; i <= (int)dim; i++) {
+                reorderDims[i - 1] = i;
+                preorderDims[i] = val.dims()[i - 1];
+            }
+
+            val.setDataDims(preorderDims);
+            idx.setDataDims(preorderDims);
+
+            val = reorder<T>(val, reorderDims);
+            idx = reorder<uint>(idx, reorderDims);
+        }
     }
 
 #define INSTANTIATE(T)                                                  \
