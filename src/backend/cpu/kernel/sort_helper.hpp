@@ -13,15 +13,13 @@ namespace cpu
 {
     namespace kernel
     {
-        static const int copyPairIter = 4;
+        template <typename Tk, typename Tv>
+        using IndexPair = std::pair<Tk, Tv>;
 
-        template <typename T>
-        using IndexPair = std::pair<T, uint>;
-
-        template <typename T, bool isAscending>
+        template <typename Tk, typename Tv, bool isAscending>
         struct IPCompare
         {
-            bool operator()(const IndexPair<T> &lhs, const IndexPair<T> &rhs)
+            bool operator()(const IndexPair<Tk, Tv> &lhs, const IndexPair<Tk, Tv> &rhs)
             {
                 // Check stable sort condition
                 if(isAscending) return (lhs.first < rhs.first);
@@ -29,13 +27,13 @@ namespace cpu
             }
         };
 
-        template <typename T>
-        using KeyIndexPair = std::pair<IndexPair<T>, uint>;
+        template <typename Tk, typename Tv>
+        using KeyIndexPair = std::pair<IndexPair<Tk, Tv>, uint>;
 
-        template <typename T, bool isAscending>
+        template <typename Tk, typename Tv, bool isAscending>
         struct KIPCompareV
         {
-            bool operator()(const KeyIndexPair<T> &lhs, const KeyIndexPair<T> &rhs)
+            bool operator()(const KeyIndexPair<Tk, Tv> &lhs, const KeyIndexPair<Tk, Tv> &rhs)
             {
                 // Check stable sort condition
                 if(isAscending) return (lhs.first.first < rhs.first.first);
@@ -43,10 +41,10 @@ namespace cpu
             }
         };
 
-        template <typename T, bool isAscending>
+        template <typename Tk, typename Tv, bool isAscending>
         struct KIPCompareK
         {
-            bool operator()(const KeyIndexPair<T> &lhs, const KeyIndexPair<T> &rhs)
+            bool operator()(const KeyIndexPair<Tk, Tv> &lhs, const KeyIndexPair<Tk, Tv> &rhs)
             {
                 if(isAscending) return (lhs.second < rhs.second);
                 else return (lhs.second > rhs.second);

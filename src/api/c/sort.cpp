@@ -174,8 +174,6 @@ af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
 
         DIM_ASSERT(3, kinfo.elements() > 0);
         DIM_ASSERT(4, kinfo.dims() == vinfo.dims());
-        // Only Dim 0 supported
-        ARG_ASSERT(5, dim == 0);
 
         TYPE_ASSERT(kinfo.isReal());
 

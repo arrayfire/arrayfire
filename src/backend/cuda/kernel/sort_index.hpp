@@ -73,50 +73,51 @@ namespace cuda
             seqDims[dim] = 1;
 
             // Create/call iota
-            // Array<uint> key = iota<uint>(seqDims, tileDims);
+            // Array<uint> seq = iota<uint>(seqDims, tileDims);
             dim4 keydims = inDims;
             uint* key = memAlloc<uint>(keydims.elements());
-            Param<uint> pKey;
-            pKey.ptr = key;
-            pKey.strides[0] = 1;
-            pKey.dims[0] = keydims[0];
+            Param<uint> pSeq;
+            pSeq.ptr = key;
+            pSeq.strides[0] = 1;
+            pSeq.dims[0] = keydims[0];
             for(int i = 1; i < 4; i++) {
-                pKey.dims[i] = keydims[i];
-                pKey.strides[i] = pKey.strides[i - 1] * pKey.dims[i - 1];
+                pSeq.dims[i] = keydims[i];
+                pSeq.strides[i] = pSeq.strides[i - 1] * pSeq.dims[i - 1];
             }
-            cuda::kernel::iota<uint>(pKey, seqDims, tileDims);
+            cuda::kernel::iota<uint>(pSeq, seqDims, tileDims);
 
             // Flat - Not required since inplace and both are continuous
             //val.modDims(inDims.elements());
             //key.modDims(inDims.elements());
 
             // Make val, idx into a pair
-            thrust::device_vector<IndexPair<T> > X(inDims.elements());
-            IndexPair<T> *Xptr = thrust::raw_pointer_cast(X.data());
+            thrust::device_vector<IndexPair<T, uint> > X(inDims.elements());
+            IndexPair<T, uint> *Xptr = thrust::raw_pointer_cast(X.data());
 
             const int threads = 256;
             int blocks = divup(inDims.elements(), threads * copyPairIter);
-            CUDA_LAUNCH((makeIndexPair<unsigned, T>), blocks, threads,
-                        Xptr, pIdx.ptr, pVal.ptr, inDims.elements());
+            CUDA_LAUNCH((makeIndexPair<T, unsigned>), blocks, threads,
+                        Xptr, pVal.ptr, pIdx.ptr, inDims.elements());
 
             // Sort indices
             // sort_by_key<T, uint, isAscending>(*resVal, *resKey, val, key, 0);
+            thrust::device_ptr<uint> dSeq = thrust::device_pointer_cast(pSeq.ptr);
             THRUST_SELECT(thrust::stable_sort_by_key,
                           X.begin(), X.end(),
-                          pKey.ptr,
-                          IPCompare<T, isAscending>());
+                          dSeq,
+                          IPCompare<T, uint, isAscending>());
             POST_LAUNCH_CHECK();
 
             // Needs to be ascending (true) in order to maintain the indices properly
             //kernel::sort0_by_key<uint, T, true>(pKey, pVal);
             THRUST_SELECT(thrust::stable_sort_by_key,
-                          pKey.ptr,
-                          pKey.ptr + inDims.elements(),
+                          dSeq,
+                          dSeq + inDims.elements(),
                           X.begin());
             POST_LAUNCH_CHECK();
 
-            CUDA_LAUNCH((splitIndexPair<unsigned, T>), blocks, threads,
-                        pIdx.ptr, pVal.ptr, Xptr, inDims.elements());
+            CUDA_LAUNCH((splitIndexPair<T, unsigned>), blocks, threads,
+                        pVal.ptr, pIdx.ptr, Xptr, inDims.elements());
             POST_LAUNCH_CHECK();
 
             // No need of doing moddims here because the original Array<T>

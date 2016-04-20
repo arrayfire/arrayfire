@@ -29,7 +29,7 @@ void sort0IndexIterative(Array<T> val, Array<uint> idx)
     uint *idx_ptr = idx.get();
        T *val_ptr = val.get();
 
-    std::vector<IndexPair<T> > X;
+    std::vector<IndexPair<T, uint> > X;
     X.reserve(val.dims()[0]);
 
     for(dim_t w = 0; w < val.dims()[3]; w++) {
@@ -50,7 +50,7 @@ void sort0IndexIterative(Array<T> val, Array<uint> idx)
                                );
 
                 //comp_ptr = &X.front();
-                std::stable_sort(X.begin(), X.end(), IPCompare<T, isAscending>());
+                std::stable_sort(X.begin(), X.end(), IPCompare<T, uint, isAscending>());
 
                 for(unsigned it = 0; it < X.size(); it++) {
                     val_ptr[valOffset + it] = X[it].first;
@@ -84,13 +84,13 @@ void sortIndexBatched(Array<T> val, Array<uint> idx)
 
         for(dim_t w = 0; w < dims[3]; w++) {
             dim_t offW = w * strides[3];
-            T valW = (w % seqDims[3]) * seqDims[0] * seqDims[1] * seqDims[2];
+            uint valW = (w % seqDims[3]) * seqDims[0] * seqDims[1] * seqDims[2];
             for(dim_t z = 0; z < dims[2]; z++) {
                 dim_t offWZ = offW + z * strides[2];
-                T valZ = valW + (z % seqDims[2]) * seqDims[0] * seqDims[1];
+                uint valZ = valW + (z % seqDims[2]) * seqDims[0] * seqDims[1];
                 for(dim_t y = 0; y < dims[1]; y++) {
                     dim_t offWZY = offWZ + y * strides[1];
-                    T valY = valZ + (y % seqDims[1]) * seqDims[0];
+                    uint valY = valZ + (y % seqDims[1]) * seqDims[0];
                     for(dim_t x = 0; x < dims[0]; x++) {
                         dim_t id = offWZY + x;
                         out[id] = valY + (x % seqDims[0]);
@@ -104,7 +104,7 @@ void sortIndexBatched(Array<T> val, Array<uint> idx)
     uint *idx_ptr = idx.get();
        T *val_ptr = val.get();
 
-    std::vector<KeyIndexPair<T> > X;
+    std::vector<KeyIndexPair<T, uint> > X;
     X.reserve(val.elements());
 
     for(unsigned i = 0; i < val.elements(); i++) {
@@ -113,9 +113,9 @@ void sortIndexBatched(Array<T> val, Array<uint> idx)
 
     memFree(key); // key is no longer required
 
-    std::stable_sort(X.begin(), X.end(), KIPCompareV<T, isAscending>());
+    std::stable_sort(X.begin(), X.end(), KIPCompareV<T, uint, isAscending>());
 
-    std::stable_sort(X.begin(), X.end(), KIPCompareK<T, true>());
+    std::stable_sort(X.begin(), X.end(), KIPCompareK<T, uint, true>());
 
     for(unsigned it = 0; it < val.elements(); it++) {
         val_ptr[it] = X[it].first.first;

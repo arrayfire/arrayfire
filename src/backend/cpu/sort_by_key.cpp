@@ -11,6 +11,9 @@
 #include <sort_by_key.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <copy.hpp>
+#include <range.hpp>
+#include <reorder.hpp>
 #include <kernel/sort_by_key.hpp>
 
 namespace cpu
@@ -23,15 +26,32 @@ void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
     ikey.eval();
     ival.eval();
 
-    okey = createEmptyArray<Tk>(ikey.dims());
-    oval = createEmptyArray<Tv>(ival.dims());
-    Array<uint> oidx = createValueArray(ikey.dims(), 0u);
-    oidx.eval();
+    okey = copyArray<Tk>(ikey);
+    oval = copyArray<Tv>(ival);
 
     switch(dim) {
-        case 0: getQueue().enqueue(kernel::sort0_by_key<Tk, Tv, isAscending>,
-                                   okey, oval, oidx, ikey, ival); break;
+        case 0: getQueue().enqueue(kernel::sort0ByKey<Tk, Tv, isAscending>, okey, oval); break;
+        case 1: getQueue().enqueue(kernel::sortByKeyBatched<Tk, Tv, isAscending, 1>, okey, oval); break;
+        case 2: getQueue().enqueue(kernel::sortByKeyBatched<Tk, Tv, isAscending, 2>, okey, oval); break;
+        case 3: getQueue().enqueue(kernel::sortByKeyBatched<Tk, Tv, isAscending, 3>, okey, oval); break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
+    }
+
+    if(dim != 0) {
+        af::dim4 preorderDims = okey.dims();
+        af::dim4 reorderDims(0, 1, 2, 3);
+        reorderDims[dim] = 0;
+        preorderDims[0] = okey.dims()[dim];
+        for(int i = 1; i <= (int)dim; i++) {
+            reorderDims[i - 1] = i;
+            preorderDims[i] = okey.dims()[i - 1];
+        }
+
+        okey.setDataDims(preorderDims);
+        oval.setDataDims(preorderDims);
+
+        okey = reorder<Tk>(okey, reorderDims);
+        oval = reorder<Tv>(oval, reorderDims);
     }
 }
 
