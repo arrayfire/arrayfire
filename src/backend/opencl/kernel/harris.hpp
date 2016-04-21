@@ -16,7 +16,7 @@
 #include <convolve_common.hpp>
 #include <kernel/convolve_separable.hpp>
 #include <kernel/gradient.hpp>
-#include <kernel/sort_index.hpp>
+#include <kernel/sort_by_key.hpp>
 #include <kernel_headers/harris.hpp>
 #include <memory.hpp>
 #include <map>
@@ -287,7 +287,7 @@ void harris(unsigned* corners_out,
             harris_idx.data = bufferAlloc(sort_elem * sizeof(unsigned));
 
             // Sort Harris responses
-            sort0Index<float, false>(harris_resp, harris_idx);
+            sort0ByKey<float, uint, false>(harris_resp, harris_idx);
 
             x_out.data = bufferAlloc(*corners_out * sizeof(float));
             y_out.data = bufferAlloc(*corners_out * sizeof(float));

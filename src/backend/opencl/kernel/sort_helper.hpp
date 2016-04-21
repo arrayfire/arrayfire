@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <kernel_headers/sort_make_pair.hpp>
+#include <kernel_headers/sort_pair.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
@@ -82,8 +82,8 @@ namespace opencl
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   makePairProgs;
-                static std::map<int, Kernel*>  makePairKernels;
+                static std::map<int, Program*>   sortPairProgs;
+                static std::map<int, Kernel*>  sortPairKernels;
 
                 int device = getActiveDeviceId();
 
@@ -99,13 +99,13 @@ namespace opencl
                         options << " -D USE_DOUBLE";
                     }
                     Program prog;
-                    buildProgram(prog, sort_make_pair_cl, sort_make_pair_cl_len, options.str());
-                    makePairProgs[device]   = new Program(prog);
-                    makePairKernels[device] = new Kernel(*makePairProgs[device], "make_pair_kernel");
+                    buildProgram(prog, sort_pair_cl, sort_pair_cl_len, options.str());
+                    sortPairProgs[device]   = new Program(prog);
+                    sortPairKernels[device] = new Kernel(*sortPairProgs[device], "make_pair_kernel");
                 });
 
                 auto makePairOp = make_kernel<Buffer, const Buffer, const Buffer, const unsigned>
-                                          (*makePairKernels[device]);
+                                          (*sortPairKernels[device]);
 
                 NDRange local(256, 1, 1);
                 NDRange global(local[0] * divup(N, local[0] * copyPairIter), 1, 1);
@@ -124,8 +124,8 @@ namespace opencl
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   splitPairProgs;
-                static std::map<int, Kernel*>  splitPairKernels;
+                static std::map<int, Program*>   sortPairProgs;
+                static std::map<int, Kernel*>  sortPairKernels;
 
                 int device = getActiveDeviceId();
 
@@ -141,13 +141,13 @@ namespace opencl
                         options << " -D USE_DOUBLE";
                     }
                     Program prog;
-                    buildProgram(prog, sort_make_pair_cl, sort_make_pair_cl_len, options.str());
-                    splitPairProgs[device]   = new Program(prog);
-                    splitPairKernels[device] = new Kernel(*splitPairProgs[device], "split_pair_kernel");
+                    buildProgram(prog, sort_pair_cl, sort_pair_cl_len, options.str());
+                    sortPairProgs[device]   = new Program(prog);
+                    sortPairKernels[device] = new Kernel(*sortPairProgs[device], "split_pair_kernel");
                 });
 
                 auto splitPairOp = make_kernel<Buffer, Buffer, const Buffer, const unsigned>
-                                          (*splitPairKernels[device]);
+                                          (*sortPairKernels[device]);
 
                 NDRange local(256, 1, 1);
                 NDRange global(local[0] * divup(N, local[0] * copyPairIter), 1, 1);

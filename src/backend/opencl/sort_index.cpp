@@ -10,7 +10,7 @@
 #include <Array.hpp>
 #include <sort_index.hpp>
 #include <copy.hpp>
-#include <kernel/sort_index.hpp>
+#include <kernel/sort_by_key.hpp>
 #include <math.hpp>
 #include <stdexcept>
 #include <err_opencl.hpp>
@@ -20,36 +20,37 @@
 namespace opencl
 {
     template<typename T, bool isAscending>
-    void sort_index(Array<T> &val, Array<uint> &idx, const Array<T> &in, const uint dim)
+    void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in, const uint dim)
     {
         try {
-            val = copyArray<T>(in);
-            idx = range<uint>(in.dims(), dim);
-            idx.eval();
+            // okey contains values, oval contains indices
+            okey = copyArray<T>(in);
+            oval = range<uint>(in.dims(), dim);
+            oval.eval();
 
             switch(dim) {
-                case 0: kernel::sort0Index<T, isAscending>(val, idx); break;
-                case 1: kernel::sortIndexBatched<T, isAscending, 1>(val, idx); break;
-                case 2: kernel::sortIndexBatched<T, isAscending, 2>(val, idx); break;
-                case 3: kernel::sortIndexBatched<T, isAscending, 3>(val, idx); break;
+                case 0: kernel::sort0ByKey<T, uint, isAscending>(okey, oval); break;
+                case 1: kernel::sortByKeyBatched<T, uint, isAscending, 1>(okey, oval); break;
+                case 2: kernel::sortByKeyBatched<T, uint, isAscending, 2>(okey, oval); break;
+                case 3: kernel::sortByKeyBatched<T, uint, isAscending, 3>(okey, oval); break;
                 default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
             }
 
             if(dim != 0) {
-                af::dim4 preorderDims = val.dims();
+                af::dim4 preorderDims = okey.dims();
                 af::dim4 reorderDims(0, 1, 2, 3);
                 reorderDims[dim] = 0;
-                preorderDims[0] = val.dims()[dim];
+                preorderDims[0] = okey.dims()[dim];
                 for(int i = 1; i <= (int)dim; i++) {
                     reorderDims[i - 1] = i;
-                    preorderDims[i] = val.dims()[i - 1];
+                    preorderDims[i] = okey.dims()[i - 1];
                 }
 
-                val.setDataDims(preorderDims);
-                idx.setDataDims(preorderDims);
+                okey.setDataDims(preorderDims);
+                oval.setDataDims(preorderDims);
 
-                val = reorder<T>(val, reorderDims);
-                idx = reorder<uint>(idx, reorderDims);
+                okey = reorder<T>(okey, reorderDims);
+                oval = reorder<uint>(oval, reorderDims);
             }
         } catch (std::exception &ex) {
             AF_ERROR(ex.what(), AF_ERR_INTERNAL);

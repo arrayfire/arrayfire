@@ -16,7 +16,7 @@
 #include <kernel/convolve_separable.hpp>
 #include <kernel/fast.hpp>
 #include <kernel/resize.hpp>
-#include <kernel/sort_index.hpp>
+#include <kernel/sort_by_key.hpp>
 #include <kernel_headers/orb.hpp>
 #include <memory.hpp>
 #include <vector>
@@ -305,7 +305,7 @@ void orb(unsigned* out_feat,
             d_harris_sorted.data = d_score_harris;
             d_harris_idx.data = bufferAlloc((d_harris_idx.info.dims[0]) * sizeof(unsigned));
 
-            sort0Index<float, false>(d_harris_sorted, d_harris_idx);
+            sort0ByKey<float, uint, false>(d_harris_sorted, d_harris_idx);
 
             cl::Buffer* d_x_lvl = bufferAlloc(usable_feat * sizeof(float));
             cl::Buffer* d_y_lvl = bufferAlloc(usable_feat * sizeof(float));
