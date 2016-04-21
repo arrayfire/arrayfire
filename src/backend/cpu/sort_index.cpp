@@ -17,43 +17,44 @@
 #include <range.hpp>
 #include <copy.hpp>
 #include <reorder.hpp>
-#include <kernel/sort_index.hpp>
+#include <kernel/sort_by_key.hpp>
 
 namespace cpu
 {
 
 template<typename T, bool isAscending>
-void sort_index(Array<T> &val, Array<uint> &idx, const Array<T> &in, const uint dim)
+void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in, const uint dim)
 {
     in.eval();
 
-    val = copyArray<T>(in);
-    idx = range<uint>(in.dims(), dim);
-    idx.eval();
+    // okey is values, oval is indices
+    okey = copyArray<T>(in);
+    oval = range<uint>(in.dims(), dim);
+    oval.eval();
 
     switch(dim) {
-        case 0: getQueue().enqueue(kernel::sort0Index<T, isAscending>, val, idx); break;
-        case 1: getQueue().enqueue(kernel::sortIndexBatched<T, isAscending, 1>, val, idx); break;
-        case 2: getQueue().enqueue(kernel::sortIndexBatched<T, isAscending, 2>, val, idx); break;
-        case 3: getQueue().enqueue(kernel::sortIndexBatched<T, isAscending, 3>, val, idx); break;
+        case 0: getQueue().enqueue(kernel::sort0ByKey<T, uint, isAscending>, okey, oval); break;
+        case 1: getQueue().enqueue(kernel::sortByKeyBatched<T, uint, isAscending, 1>, okey, oval); break;
+        case 2: getQueue().enqueue(kernel::sortByKeyBatched<T, uint, isAscending, 2>, okey, oval); break;
+        case 3: getQueue().enqueue(kernel::sortByKeyBatched<T, uint, isAscending, 3>, okey, oval); break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
     }
 
     if(dim != 0) {
-        af::dim4 preorderDims = val.dims();
+        af::dim4 preorderDims = okey.dims();
         af::dim4 reorderDims(0, 1, 2, 3);
         reorderDims[dim] = 0;
-        preorderDims[0] = val.dims()[dim];
+        preorderDims[0] = okey.dims()[dim];
         for(int i = 1; i <= (int)dim; i++) {
             reorderDims[i - 1] = i;
-            preorderDims[i] = val.dims()[i - 1];
+            preorderDims[i] = okey.dims()[i - 1];
         }
 
-        val.setDataDims(preorderDims);
-        idx.setDataDims(preorderDims);
+        okey.setDataDims(preorderDims);
+        oval.setDataDims(preorderDims);
 
-        val = reorder<T>(val, reorderDims);
-        idx = reorder<uint>(idx, reorderDims);
+        okey = reorder<T>(okey, reorderDims);
+        oval = reorder<uint>(oval, reorderDims);
     }
 }
 
