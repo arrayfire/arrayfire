@@ -17,6 +17,7 @@
 #include <kernel/fast.hpp>
 #include <kernel/resize.hpp>
 #include <kernel/sort_by_key.hpp>
+#include <kernel/range.hpp>
 #include <kernel_headers/orb.hpp>
 #include <memory.hpp>
 #include <vector>
@@ -303,9 +304,11 @@ void orb(unsigned* out_feat,
             d_harris_sorted.info.offset = 0;
             d_harris_idx.info.offset = 0;
             d_harris_sorted.data = d_score_harris;
+            // Create indices using range
             d_harris_idx.data = bufferAlloc((d_harris_idx.info.dims[0]) * sizeof(unsigned));
+            kernel::range<uint>(d_harris_idx, 0);
 
-            sort0ByKey<float, uint, false>(d_harris_sorted, d_harris_idx);
+            kernel::sort0ByKey<float, uint, false>(d_harris_sorted, d_harris_idx);
 
             cl::Buffer* d_x_lvl = bufferAlloc(usable_feat * sizeof(float));
             cl::Buffer* d_y_lvl = bufferAlloc(usable_feat * sizeof(float));

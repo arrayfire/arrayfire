@@ -17,6 +17,7 @@
 #include <kernel/convolve_separable.hpp>
 #include <kernel/gradient.hpp>
 #include <kernel/sort_by_key.hpp>
+#include <kernel/range.hpp>
 #include <kernel_headers/harris.hpp>
 #include <memory.hpp>
 #include <map>
@@ -284,10 +285,12 @@ void harris(unsigned* corners_out,
 
             int sort_elem = harris_resp.info.strides[3] * harris_resp.info.dims[3];
             harris_resp.data = d_resp_corners;
+            // Create indices using range
             harris_idx.data = bufferAlloc(sort_elem * sizeof(unsigned));
+            kernel::range<uint>(harris_idx, 0);
 
             // Sort Harris responses
-            sort0ByKey<float, uint, false>(harris_resp, harris_idx);
+            kernel::sort0ByKey<float, uint, false>(harris_resp, harris_idx);
 
             x_out.data = bufferAlloc(*corners_out * sizeof(float));
             y_out.data = bufferAlloc(*corners_out * sizeof(float));
