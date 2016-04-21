@@ -44,6 +44,39 @@ makeCompareFunction()
     }
 }
 
+template<typename Tk>
+inline boost::compute::function<Tk(Tk)>
+flipFunction()
+{
+    BOOST_COMPUTE_FUNCTION(Tk, negateFn, (const Tk x),
+        {
+            return -x;
+        }
+    );
+
+    return negateFn;
+}
+
+#define INSTANTIATE_FLIP(TY, XMAX)                              \
+template<> inline boost::compute::function<TY(TY)>              \
+flipFunction<TY>()                                              \
+{                                                               \
+    BOOST_COMPUTE_FUNCTION(TY, negateFn, (const TY x),          \
+       {                                                        \
+            return XMAX - x;                                    \
+        }                                                       \
+    );                                                          \
+                                                                \
+    return negateFn;                                            \
+}
+
+INSTANTIATE_FLIP(unsigned, UINT_MAX)
+INSTANTIATE_FLIP(unsigned short, USHRT_MAX)
+INSTANTIATE_FLIP(unsigned char, UCHAR_MAX)
+INSTANTIATE_FLIP(cl_ulong, ULONG_MAX)
+
+#undef INSTANTIATE_FLIP
+
 namespace opencl
 {
     namespace kernel

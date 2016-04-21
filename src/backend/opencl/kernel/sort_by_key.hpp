@@ -15,6 +15,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <math.hpp>
 #include <kernel/sort_helper.hpp>
 #include <kernel/iota.hpp>
 
@@ -91,7 +92,6 @@ namespace opencl
         {
             typedef type_t<Tk_> Tk;
             typedef type_t<Tv_> Tv;
-            typedef std::pair<Tk, Tv> IndexPair;
 
             try {
                 af::dim4 inDims;
@@ -136,35 +136,46 @@ namespace opencl
                 compute::buffer pSeq_buf((*pSeq.data)());
                 compute::buffer_iterator<unsigned> seq0 = compute::make_buffer_iterator<unsigned>(pSeq_buf, 0);
                 compute::buffer_iterator<unsigned> seqN = compute::make_buffer_iterator<unsigned>(pSeq_buf, elements);
+                // Create buffer iterators for key and val
+                compute::buffer pKey_buf((*pKey.data)());
+                compute::buffer pVal_buf((*pVal.data)());
+                compute::buffer_iterator<Tk> key0 = compute::make_buffer_iterator<Tk>(pKey_buf, 0);
+                compute::buffer_iterator<Tk> keyN = compute::make_buffer_iterator<Tk>(pKey_buf, elements);
+                compute::buffer_iterator<Tv> val0 = compute::make_buffer_iterator<Tv>(pVal_buf, 0);
+                compute::buffer_iterator<Tv> valN = compute::make_buffer_iterator<Tv>(pVal_buf, elements);
 
-                // Copy key, val into X pair
-                cl::Buffer* X = bufferAlloc(elements * sizeof(IndexPair));
-                // Use Tk_ and Tv_ here, not Tk and Tv
-                kernel::makePair<Tk_, Tv_>(X, pKey.data, pVal.data, elements);
-                compute::buffer X_buf((*X)());
-                compute::buffer_iterator<IndexPair> X0 = compute::make_buffer_iterator<IndexPair>(X_buf, 0);
-                compute::buffer_iterator<IndexPair> XN = compute::make_buffer_iterator<IndexPair>(X_buf, elements);
+                // Sort By Key for descending is stable in the reverse
+                // (greater) order. Sorting in ascending with negated values
+                // will give the right result
+                if(!isAscending) compute::transform(key0, keyN, key0, flipFunction<Tk>(), c_queue);
 
-                // FIRST SORT CALL
-                compute::function<bool(IndexPair, IndexPair)> IPCompare =
-                    makeCompareFunction<Tk, Tv, isAscending>();
+                // Create a copy of the pKey buffer
+                cl::Buffer* cKey = bufferAlloc(elements * sizeof(Tk));
+                compute::buffer cKey_buf((*cKey)());
+                compute::buffer_iterator<Tk> cKey0 = compute::make_buffer_iterator<Tk>(cKey_buf, 0);
+                compute::buffer_iterator<Tk> cKeyN = compute::make_buffer_iterator<Tk>(cKey_buf, elements);
+                compute::copy(key0, keyN, cKey0, c_queue);
 
-                compute::sort_by_key(X0, XN, seq0, IPCompare, c_queue);
-                getQueue().finish();
+                // FIRST SORT
+                compute::sort_by_key(key0, keyN, seq0, c_queue);
+                compute::sort_by_key(cKey0, cKeyN, val0, c_queue);
 
+                // Create a copy of the seq buffer after first sort
+                cl::Buffer* cSeq = bufferAlloc(elements * sizeof(unsigned));
+                compute::buffer cSeq_buf((*cSeq)());
+                compute::buffer_iterator<unsigned> cSeq0 = compute::make_buffer_iterator<unsigned>(cSeq_buf, 0);
+                compute::buffer_iterator<unsigned> cSeqN = compute::make_buffer_iterator<unsigned>(cSeq_buf, elements);
+                compute::copy(seq0, seqN, cSeq0, c_queue);
+
+                // SECOND SORT
+                // First call will sort key, second sort will sort val
                 // Needs to be ascending (true) in order to maintain the indices properly
                 //kernel::sort0_by_key<Tv, T, true>(pKey, pVal);
-                //
-                // Because we use a pair as values, we need to use a custom comparator
-                BOOST_COMPUTE_FUNCTION(bool, Compare_Seq, (const unsigned lhs, const unsigned rhs),
-                    {
-                        return lhs < rhs;
-                    }
-                );
-                compute::sort_by_key(seq0, seqN, X0, Compare_Seq, c_queue);
-                getQueue().finish();
+                compute::sort_by_key(seq0, seqN, key0, c_queue);
+                compute::sort_by_key(cSeq0, cSeqN, val0, c_queue);
 
-                kernel::splitPair<Tk_, Tv_>(pKey.data, pVal.data, X, elements);
+                // If descending, flip it back
+                if(!isAscending) compute::transform(key0, keyN, key0, flipFunction<Tk>(), c_queue);
 
                 //// No need of doing moddims here because the original Array<T>
                 //// dimensions have not been changed
@@ -172,7 +183,8 @@ namespace opencl
 
                 CL_DEBUG_FINISH(getQueue());
                 bufferFree(key);
-                bufferFree(X);
+                bufferFree(cSeq);
+                bufferFree(cKey);
             } catch (cl::Error err) {
                 CL_TO_AF_ERROR(err);
                 throw;
@@ -184,7 +196,7 @@ namespace opencl
         {
             int higherDims =  pKey.info.dims[1] * pKey.info.dims[2] * pKey.info.dims[3];
             // TODO Make a better heurisitic
-            if(higherDims > 5)
+            if(higherDims > 0)
                 kernel::sortByKeyBatched<Tk, Tv, isAscending, 0>(pKey, pVal);
             else
                 kernel::sort0ByKeyIterative<Tk, Tv, isAscending>(pKey, pVal);

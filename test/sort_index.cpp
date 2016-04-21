@@ -258,7 +258,7 @@ TEST(SortIndex, CPPDim2)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        EXPECT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << std::endl;
     }
 
     // Delete
