@@ -305,7 +305,7 @@ void orb(unsigned* out_feat,
             d_harris_sorted.data = d_score_harris;
             d_harris_idx.data = bufferAlloc((d_harris_idx.info.dims[0]) * sizeof(unsigned));
 
-            sort0_index<float, false>(d_harris_sorted, d_harris_idx);
+            sort0Index<float, false>(d_harris_sorted, d_harris_idx);
 
             cl::Buffer* d_x_lvl = bufferAlloc(usable_feat * sizeof(float));
             cl::Buffer* d_y_lvl = bufferAlloc(usable_feat * sizeof(float));

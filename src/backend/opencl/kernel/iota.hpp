@@ -31,8 +31,8 @@ namespace opencl
     namespace kernel
     {
         // Kernel Launch Config Values
-        static const int TX = 32;
-        static const int TY = 8;
+        static const int IOTA_TX = 32;
+        static const int IOTA_TY = 8;
         static const int TILEX = 512;
         static const int TILEY = 32;
 
@@ -64,7 +64,7 @@ namespace opencl
                                           const int, const int, const int, const int,
                                           const int, const int> (*iotaKernels[device]);
 
-                NDRange local(TX, TY, 1);
+                NDRange local(IOTA_TX, IOTA_TY, 1);
 
                 int blocksPerMatX = divup(out.info.dims[0], TILEX);
                 int blocksPerMatY = divup(out.info.dims[1], TILEY);

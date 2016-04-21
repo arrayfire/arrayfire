@@ -131,10 +131,10 @@ namespace opencl
                 compute::buffer pKey_buf((*pKey.data)());
                 compute::buffer pVal_buf((*pVal.data)());
 
-                compute::buffer_iterator< type_t<T>    > val0 = compute::make_buffer_iterator< type_t<T>    >(pVal_buf, 0);
-                compute::buffer_iterator< type_t<T>    > valN = compute::make_buffer_iterator< type_t<T>    >(pVal_buf,+ pVal.info.dims[0]);
-                compute::buffer_iterator< type_t<uint> > key0 = compute::make_buffer_iterator< type_t<uint> >(pKey_buf, 0);
-                compute::buffer_iterator< type_t<uint> > keyN = compute::make_buffer_iterator< type_t<uint> >(pKey_buf, pKey.info.dims[0]);
+                compute::buffer_iterator<type_t<T> > val0 = compute::make_buffer_iterator<type_t<T> >(pVal_buf, 0);
+                compute::buffer_iterator<type_t<T> > valN = compute::make_buffer_iterator<type_t<T> >(pVal_buf,+ pVal.info.dims[0]);
+                compute::buffer_iterator<uint      > key0 = compute::make_buffer_iterator<uint>(pKey_buf, 0);
+                compute::buffer_iterator<uint      > keyN = compute::make_buffer_iterator<uint>(pKey_buf, pKey.info.dims[0]);
                 if(isAscending) {
                     compute::sort_by_key(val0, valN, key0, c_queue);
                 } else {

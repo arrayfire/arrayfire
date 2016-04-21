@@ -287,7 +287,7 @@ void harris(unsigned* corners_out,
             harris_idx.data = bufferAlloc(sort_elem * sizeof(unsigned));
 
             // Sort Harris responses
-            sort0_index<float, false>(harris_resp, harris_idx);
+            sort0Index<float, false>(harris_resp, harris_idx);
 
             x_out.data = bufferAlloc(*corners_out * sizeof(float));
             y_out.data = bufferAlloc(*corners_out * sizeof(float));
