@@ -109,6 +109,7 @@ namespace cuda
             POST_LAUNCH_CHECK();
 
             // Needs to be ascending (true) in order to maintain the indices properly
+            //kernel::sort0_by_key<uint, T, true>(pKey, pVal);
             THRUST_SELECT(thrust::stable_sort_by_key,
                           dSeq,
                           dSeq + inDims.elements(),
@@ -132,7 +133,7 @@ namespace cuda
             int higherDims =  okey.dims[1] * okey.dims[2] * okey.dims[3];
             // TODO Make a better heurisitic
             if(higherDims > 5)
-                sortByKeyBatched<Tk, Tv, isAscending, 0>(okey, oval);
+                kernel::sortByKeyBatched<Tk, Tv, isAscending, 0>(okey, oval);
             else
                 kernel::sort0ByKeyIterative<Tk, Tv, isAscending>(okey, oval);
         }

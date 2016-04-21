@@ -16,7 +16,7 @@
 #include <convolve_common.hpp>
 #include "convolve.hpp"
 #include "orb_patch.hpp"
-#include "sort_index.hpp"
+#include "sort_by_key.hpp"
 
 #include <boost/scoped_ptr.hpp>
 
@@ -397,7 +397,7 @@ void orb(unsigned* out_feat,
         harris_idx.ptr = memAlloc<unsigned>(sort_elem);
 
         // Sort features according to Harris responses
-        sort0Index<float, false>(harris_sorted, harris_idx);
+        sort0ByKey<float, uint, false>(harris_sorted, harris_idx);
 
         feat_pyr[i] = std::min(feat_pyr[i], lvl_best[i]);
 

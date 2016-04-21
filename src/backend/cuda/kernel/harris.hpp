@@ -18,7 +18,7 @@
 #include <convolve_common.hpp>
 #include "convolve.hpp"
 #include "gradient.hpp"
-#include "sort_index.hpp"
+#include "sort_by_key.hpp"
 
 namespace cuda
 {
@@ -339,7 +339,7 @@ void harris(unsigned* corners_out,
         harris_idx.ptr = memAlloc<unsigned>(sort_elem);
 
         // Sort Harris responses
-        sort0Index<float, false>(harris_responses, harris_idx);
+        sort0ByKey<float, uint, false>(harris_responses, harris_idx);
 
         *x_out = memAlloc<float>(*corners_out);
         *y_out = memAlloc<float>(*corners_out);
