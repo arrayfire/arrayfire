@@ -9,6 +9,7 @@
 
 #pragma once
 #include <kernel_headers/iota.hpp>
+#include <af/dim4.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
@@ -37,7 +38,7 @@ namespace opencl
         static const int TILEY = 32;
 
         template<typename T>
-        void iota(Param out, const dim4 &sdims, const dim4 &tdims)
+        void iota(Param out, const af::dim4 &sdims, const af::dim4 &tdims)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];

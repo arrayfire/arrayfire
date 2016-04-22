@@ -111,12 +111,10 @@ ENDIF()
 
 FILE(GLOB opencl_headers
   "*.hpp"
-  "*.h"
-  "sort_by_key/*.hpp")
+  "*.h")
 
 FILE(GLOB opencl_sources
-    "*.cpp"
-    "sort_by_key/*.cpp")
+    "*.cpp")
 
 FILE(GLOB jit_sources
     "jit/*.hpp")
@@ -128,7 +126,8 @@ FILE(GLOB opencl_kernels
     "kernel/*.cl")
 
 FILE(GLOB kernel_sources
-     "kernel/*.cpp")
+     "kernel/*.cpp"
+     "kernel/sort_by_key/*.cpp")
 
 FILE(GLOB conv_ker_headers
     "kernel/convolve/*.hpp")

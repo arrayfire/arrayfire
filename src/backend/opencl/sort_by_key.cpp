@@ -55,26 +55,36 @@ namespace opencl
         }
     }
 
-#define INSTANTIATE(Tk, Tv, isAscending)                                \
-    template void                                                       \
-    sort_by_key<Tk, Tv, isAscending>(Array<Tk> &okey, Array<Tv> &oval,  \
-                                     const Array<Tk> &ikey,             \
-                                     const Array<Tv> &ival,             \
-                                     const unsigned dim);               \
+#define INSTANTIATE(Tk, Tv)                                                         \
+    template void sort_by_key<Tk, Tv, true >(Array<Tk> &okey, Array<Tv> &oval,      \
+                const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim);      \
+    template void sort_by_key<Tk, Tv, false>(Array<Tk> &okey, Array<Tv> &oval,      \
+                const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim);      \
+
+#define INSTANTIATE1(Tk    ) \
+    INSTANTIATE(Tk, float  ) \
+    INSTANTIATE(Tk, double ) \
+    INSTANTIATE(Tk, cfloat ) \
+    INSTANTIATE(Tk, cdouble) \
+    INSTANTIATE(Tk, int    ) \
+    INSTANTIATE(Tk, uint   ) \
+    INSTANTIATE(Tk, short  ) \
+    INSTANTIATE(Tk, ushort ) \
+    INSTANTIATE(Tk, char   ) \
+    INSTANTIATE(Tk, uchar  ) \
+    INSTANTIATE(Tk, intl   ) \
+    INSTANTIATE(Tk, uintl  )
 
 
-#define INSTANTIATE1(Tk, isAscending)           \
-    INSTANTIATE(Tk, float  , isAscending)       \
-    INSTANTIATE(Tk, double , isAscending)       \
-    INSTANTIATE(Tk, cfloat , isAscending)       \
-    INSTANTIATE(Tk, cdouble, isAscending)       \
-    INSTANTIATE(Tk, int    , isAscending)       \
-    INSTANTIATE(Tk, uint   , isAscending)       \
-    INSTANTIATE(Tk, char   , isAscending)       \
-    INSTANTIATE(Tk, uchar  , isAscending)       \
-    INSTANTIATE(Tk, short  , isAscending)       \
-    INSTANTIATE(Tk, ushort , isAscending)       \
-    INSTANTIATE(Tk, intl   , isAscending)       \
-    INSTANTIATE(Tk, uintl  , isAscending)       \
+INSTANTIATE1(float )
+INSTANTIATE1(double)
+INSTANTIATE1(int   )
+INSTANTIATE1(uint  )
+INSTANTIATE1(short )
+INSTANTIATE1(ushort)
+INSTANTIATE1(char  )
+INSTANTIATE1(uchar )
+INSTANTIATE1(intl  )
+INSTANTIATE1(uintl )
 
 }

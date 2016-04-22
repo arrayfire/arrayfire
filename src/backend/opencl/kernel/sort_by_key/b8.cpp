@@ -7,10 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include "impl.hpp"
+#include <kernel/sort_by_key_impl.hpp>
 
 namespace opencl
 {
-    INSTANTIATE1(ushort,true)
-    INSTANTIATE1(ushort,false)
+namespace kernel
+{
+    INSTANTIATE1(char,true)
+    INSTANTIATE1(char,false)
+}
 }
