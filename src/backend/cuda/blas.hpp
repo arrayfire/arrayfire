@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <af/defines.h>
-#include <af/blas.h>
 #include <Array.hpp>
 
 namespace cuda
