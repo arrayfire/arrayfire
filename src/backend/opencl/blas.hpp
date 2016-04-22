@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <af/defines.h>
 #include <Array.hpp>
 #include <clBLAS.h>
 #include <mutex>

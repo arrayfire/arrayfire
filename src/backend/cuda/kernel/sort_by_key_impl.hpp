@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <kernel/sort_by_key.hpp>
 #include <af/dim4.hpp>
 #include <memory.hpp>
 #include <math.hpp>
@@ -15,6 +14,7 @@
 #include <Param.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include <kernel/sort_by_key.hpp>
 #include <kernel/iota.hpp>
 
 #include <thrust/device_ptr.h>

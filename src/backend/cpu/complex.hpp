@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <complex>
-#include <af/defines.h>
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <optypes.hpp>

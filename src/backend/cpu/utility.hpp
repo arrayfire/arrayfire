@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <af/defines.h>
 #include <af/constants.h>
 #include <cmath>
 #include <algorithm>

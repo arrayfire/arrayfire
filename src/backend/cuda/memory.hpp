@@ -8,7 +8,7 @@
  ********************************************************/
 #pragma once
 
-#include <af/defines.h>
+#include <cstdlib>
 
 namespace cuda
 {

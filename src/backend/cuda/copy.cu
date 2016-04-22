@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <cuda_runtime_api.h>
-#include <af/defines.h>
 #include <Array.hpp>
 #include <copy.hpp>
 #include <kernel/memcopy.hpp>

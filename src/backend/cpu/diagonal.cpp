@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <af/defines.h>
 #include <handle.hpp>
 #include <Array.hpp>
 #include <diagonal.hpp>

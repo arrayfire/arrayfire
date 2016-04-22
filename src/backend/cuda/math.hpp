@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <af/defines.h>
 #include <defines.hpp>
 #include <limits>
 #include <algorithm>
