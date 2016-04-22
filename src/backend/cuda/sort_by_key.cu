@@ -51,22 +51,36 @@ namespace cuda
         }
     }
 
-#define INSTANTIATE(Tk, Tv, dr)                                         \
-    template void                                                       \
-    sort_by_key<Tk, Tv, dr>(Array<Tk> &okey, Array<Tv> &oval,           \
-                            const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim); \
+#define INSTANTIATE(Tk, Tv)                                                         \
+    template void sort_by_key<Tk, Tv, true >(Array<Tk> &okey, Array<Tv> &oval,      \
+                const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim);      \
+    template void sort_by_key<Tk, Tv, false>(Array<Tk> &okey, Array<Tv> &oval,      \
+                const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim);      \
 
-#define INSTANTIATE1(Tk    , dr) \
-    INSTANTIATE(Tk, float  , dr) \
-    INSTANTIATE(Tk, double , dr) \
-    INSTANTIATE(Tk, cfloat , dr) \
-    INSTANTIATE(Tk, cdouble, dr) \
-    INSTANTIATE(Tk, int    , dr) \
-    INSTANTIATE(Tk, uint   , dr) \
-    INSTANTIATE(Tk, short  , dr) \
-    INSTANTIATE(Tk, ushort , dr) \
-    INSTANTIATE(Tk, char   , dr) \
-    INSTANTIATE(Tk, uchar  , dr) \
-    INSTANTIATE(Tk, intl   , dr) \
-    INSTANTIATE(Tk, uintl  , dr)
+#define INSTANTIATE1(Tk    ) \
+    INSTANTIATE(Tk, float  ) \
+    INSTANTIATE(Tk, double ) \
+    INSTANTIATE(Tk, cfloat ) \
+    INSTANTIATE(Tk, cdouble) \
+    INSTANTIATE(Tk, int    ) \
+    INSTANTIATE(Tk, uint   ) \
+    INSTANTIATE(Tk, short  ) \
+    INSTANTIATE(Tk, ushort ) \
+    INSTANTIATE(Tk, char   ) \
+    INSTANTIATE(Tk, uchar  ) \
+    INSTANTIATE(Tk, intl   ) \
+    INSTANTIATE(Tk, uintl  )
+
+
+INSTANTIATE1(float )
+INSTANTIATE1(double)
+INSTANTIATE1(int   )
+INSTANTIATE1(uint  )
+INSTANTIATE1(short )
+INSTANTIATE1(ushort)
+INSTANTIATE1(char  )
+INSTANTIATE1(uchar )
+INSTANTIATE1(intl  )
+INSTANTIATE1(uintl )
+
 }

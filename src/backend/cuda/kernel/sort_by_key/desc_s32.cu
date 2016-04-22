@@ -7,9 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <sort_by_key_impl.hpp>
+#include <kernel/sort_by_key_impl.hpp>
 
 namespace cuda
 {
-    INSTANTIATE1(char, false)
+namespace kernel
+{
+    INSTANTIATE1(int, false)
+}
 }

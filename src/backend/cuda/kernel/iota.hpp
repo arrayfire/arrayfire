@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/dim4.hpp>
 #include <math.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
@@ -69,7 +70,7 @@ namespace cuda
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
         template<typename T>
-        void iota(Param<T> out, const dim4 &sdims, const dim4 &tdims)
+        void iota(Param<T> out, const af::dim4 &sdims, const af::dim4 &tdims)
         {
             dim3 threads(IOTA_TX, IOTA_TY, 1);
 
