@@ -340,7 +340,7 @@ namespace opencl
         {
             int higherDims =  pKey.info.dims[1] * pKey.info.dims[2] * pKey.info.dims[3];
             // TODO Make a better heurisitic
-            if(higherDims > 0)
+            if(higherDims > 5)
                 kernel::sortByKeyBatched<Tk, Tv, isAscending, 0>(pKey, pVal);
             else
                 kernel::sort0ByKeyIterative<Tk, Tv, isAscending>(pKey, pVal);
