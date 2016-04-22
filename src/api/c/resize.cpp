@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/array.h>
+#include <af/image.h>
 #include <af/defines.h>
 #include <err_common.hpp>
 #include <handle.hpp>

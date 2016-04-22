@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <af/array.h>
 #include <optypes.hpp>
 #include <vector>
 #include <memory>

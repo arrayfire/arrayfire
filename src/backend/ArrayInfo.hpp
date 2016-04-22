@@ -9,7 +9,6 @@
 
 #pragma once
 #include <defines.hpp>
-#include <af/array.h>
 #include <af/util.h>
 #include <af/dim4.hpp>
 #include <af/device.h>
