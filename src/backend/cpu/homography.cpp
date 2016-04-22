@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <err_cpu.hpp>
 #include <handle.hpp>

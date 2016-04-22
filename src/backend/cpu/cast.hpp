@@ -9,7 +9,6 @@
 
 #pragma once
 #include <af/dim4.hpp>
-#include <ArrayInfo.hpp>
 #include <complex>
 #include <err_cpu.hpp>
 #include <math.hpp>

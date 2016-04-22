@@ -9,7 +9,6 @@
 
 #include <af/dim4.hpp>
 #include <af/features.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <err_cuda.hpp>
 #include <handle.hpp>

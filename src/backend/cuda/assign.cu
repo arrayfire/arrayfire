@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <handle.hpp>
 #include <assign.hpp>

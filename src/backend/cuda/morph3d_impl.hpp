@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <morph.hpp>
 #include <kernel/morph.hpp>
