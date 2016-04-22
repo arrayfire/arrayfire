@@ -9,7 +9,6 @@
 
 #pragma once
 #include <af/defines.h>
-#include <af/blas.h>
 #include <Array.hpp>
 #include <clBLAS.h>
 #include <mutex>

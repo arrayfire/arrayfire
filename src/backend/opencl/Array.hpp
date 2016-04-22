@@ -9,7 +9,6 @@
 
 #pragma once
 #include <platform.hpp>
-#include <af/array.h>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
 #include <traits.hpp>
