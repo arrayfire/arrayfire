@@ -14,7 +14,7 @@ namespace cpu
     namespace kernel
     {
         template <typename Tk, typename Tv>
-        using IndexPair = std::pair<Tk, Tv>;
+        using IndexPair = std::tuple<Tk, Tv>;
 
         template <typename Tk, typename Tv, bool isAscending>
         struct IPCompare
@@ -22,13 +22,15 @@ namespace cpu
             bool operator()(const IndexPair<Tk, Tv> &lhs, const IndexPair<Tk, Tv> &rhs)
             {
                 // Check stable sort condition
-                if(isAscending) return (lhs.first < rhs.first);
-                else return (lhs.first > rhs.first);
+                Tk lhsVal = std::get<0>(lhs);
+                Tk rhsVal = std::get<0>(rhs);
+                if(isAscending) return (lhsVal < rhsVal);
+                else return (lhsVal > rhsVal);
             }
         };
 
         template <typename Tk, typename Tv>
-        using KeyIndexPair = std::pair<IndexPair<Tk, Tv>, uint>;
+        using KeyIndexPair = std::tuple<Tk, Tv, uint>;
 
         template <typename Tk, typename Tv, bool isAscending>
         struct KIPCompareV
@@ -36,8 +38,10 @@ namespace cpu
             bool operator()(const KeyIndexPair<Tk, Tv> &lhs, const KeyIndexPair<Tk, Tv> &rhs)
             {
                 // Check stable sort condition
-                if(isAscending) return (lhs.first.first < rhs.first.first);
-                else return (lhs.first.first > rhs.first.first);
+                Tk lhsVal = std::get<0>(lhs);
+                Tk rhsVal = std::get<0>(rhs);
+                if(isAscending) return (lhsVal < rhsVal);
+                else return (lhsVal > rhsVal);
             }
         };
 
@@ -46,8 +50,10 @@ namespace cpu
         {
             bool operator()(const KeyIndexPair<Tk, Tv> &lhs, const KeyIndexPair<Tk, Tv> &rhs)
             {
-                if(isAscending) return (lhs.second < rhs.second);
-                else return (lhs.second > rhs.second);
+                uint lhsVal = std::get<2>(lhs);
+                uint rhsVal = std::get<2>(rhs);
+                if(isAscending) return (lhsVal < rhsVal);
+                else return (lhsVal > rhsVal);
             }
         };
     }
