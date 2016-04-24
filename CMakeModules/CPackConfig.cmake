@@ -2,16 +2,27 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 INCLUDE("${CMAKE_MODULE_PATH}/Version.cmake")
 
+OPTION(CREATE_STGZ "Create .sh install file" ON)
+MARK_AS_ADVANCED(CREATE_STGZ)
+
 # CPack package generation
-#SET(CPACK_GENERATOR "TGZ;STGZ")
-SET(CPACK_GENERATOR "STGZ")
-# Create the following installers are as follows:
-#  Windows: Use external packaging, do nothing here
-#  OSX: Deploy as TGZ and STGZ
-#IF("${CMAKE_SYSTEM}" MATCHES "Linux")
-#    #  Linux: TGZ, STGZ, DEB
-#    SET(CPACK_GENERATOR "TGZ;STGZ;DEB;RPM")
-#ENDIF()
+IF(${CREATE_STGZ})
+  LIST(APPEND CPACK_GENERATOR "STGZ")
+ENDIF()
+
+OPTION(CREATE_DEB "Create .deb install file" OFF)
+MARK_AS_ADVANCED(CREATE_DEB)
+
+IF(${CREATE_DEB})
+  LIST(APPEND CPACK_GENERATOR "DEB")
+ENDIF()
+
+OPTION(CREATE_RPM "Create .rpm install file" OFF)
+MARK_AS_ADVANCED(CREATE_RPM)
+
+IF(${CREATE_RPM})
+  LIST(APPEND CPACK_GENERATOR "RPM")
+ENDIF()
 
 # Common settings to all packaging tools
 SET(CPACK_PREFIX_DIR ${CMAKE_INSTALL_PREFIX})
@@ -59,16 +70,14 @@ SET(CPACK_COMPONENTS_ALL libraries headers documentation cmake)
 # Debian package
 ##
 SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${PROCESSOR_ARCHITECTURE})
-SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libfreeimage-dev, libatlas3gf-base, libfftw3-dev, liblapacke-dev")
-SET(CPACK_DEBIAN_PACKAGE_SUGGESTS "ocl-icd-libopencl1 (>= 2.0), nvidia-cuda-dev (>= 6.0)")
 
 ##
 # RPM package
 ##
 SET(CPACK_RPM_PACKAGE_LICENSE "BSD")
-SET(CPACK_PACKAGE_GROUP "Development/Libraries")
-SET(CPACK_RPM_PACKAGE_REQUIRES "freeimage atlas fftw lapack")
+set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
 
+SET(CPACK_PACKAGE_GROUP "Development/Libraries")
 ##
 # Source package
 ##
