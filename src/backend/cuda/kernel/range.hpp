@@ -18,10 +18,10 @@ namespace cuda
     namespace kernel
     {
         // Kernel Launch Config Values
-        static const unsigned TX = 32;
-        static const unsigned TY = 8;
-        static const unsigned TILEX = 512;
-        static const unsigned TILEY = 32;
+        static const unsigned RANGE_TX = 32;
+        static const unsigned RANGE_TY = 8;
+        static const unsigned RANGE_TILEX = 512;
+        static const unsigned RANGE_TILEY = 32;
 
         template<typename T>
         __global__
@@ -74,10 +74,10 @@ namespace cuda
         template<typename T>
         void range(Param<T> out, const int dim)
         {
-            dim3 threads(TX, TY, 1);
+            dim3 threads(RANGE_TX, RANGE_TY, 1);
 
-            int blocksPerMatX = divup(out.dims[0], TILEX);
-            int blocksPerMatY = divup(out.dims[1], TILEY);
+            int blocksPerMatX = divup(out.dims[0], RANGE_TILEX);
+            int blocksPerMatY = divup(out.dims[1], RANGE_TILEY);
             dim3 blocks(blocksPerMatX * out.dims[2],
                         blocksPerMatY * out.dims[3],
                         1);

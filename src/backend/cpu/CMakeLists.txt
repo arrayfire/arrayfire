@@ -108,7 +108,8 @@ FILE(GLOB cpu_headers
     "*.h")
 
 FILE(GLOB cpu_sources
-    "*.cpp")
+    "*.cpp"
+    "kernel/sort_by_key/*.cpp")
 
 LIST(SORT cpu_headers)
 LIST(SORT cpu_sources)

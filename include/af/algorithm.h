@@ -357,8 +357,6 @@ namespace af
        \return the sorted output
 
        \ingroup sort_func_sort
-
-       \note \p dim is currently restricted to 0.
     */
     AFAPI array sort(const array &in, const unsigned dim = 0, const bool isAscending = true);
 
@@ -372,8 +370,6 @@ namespace af
        \param[in] isAscending specifies the sorting order
 
        \ingroup sort_func_sort_index
-
-       \note \p dim is currently restricted to 0.
     */
     AFAPI void  sort(array &out, array &indices, const array &in, const unsigned dim = 0,
                      const bool isAscending = true);
@@ -388,8 +384,6 @@ namespace af
        \param[in] isAscending specifies the sorting order
 
        \ingroup sort_func_sort_keys
-
-       \note \p dim is currently restricted to 0.
     */
     AFAPI void  sort(array &out_keys, array &out_values, const array &keys, const array &values,
                      const unsigned dim = 0, const bool isAscending = true);
@@ -794,8 +788,6 @@ extern "C" {
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup sort_func_sort
-
-       \note \p dim is currently restricted to 0.
     */
     AFAPI af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool isAscending);
 
@@ -810,8 +802,6 @@ extern "C" {
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup sort_func_sort_index
-
-       \note \p dim is currently restricted to 0.
     */
     AFAPI af_err af_sort_index(af_array *out, af_array *indices, const af_array in,
                                const unsigned dim, const bool isAscending);
@@ -827,8 +817,6 @@ extern "C" {
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup sort_func_sort_keys
-
-       \note \p dim is currently restricted to 0.
     */
     AFAPI af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
                                 const af_array keys, const af_array values,

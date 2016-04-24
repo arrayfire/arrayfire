@@ -31,10 +31,10 @@ namespace opencl
     namespace kernel
     {
         // Kernel Launch Config Values
-        static const int TX = 32;
-        static const int TY = 8;
-        static const int TILEX = 512;
-        static const int TILEY = 32;
+        static const int RANGE_TX = 32;
+        static const int RANGE_TY = 8;
+        static const int RANGE_TILEX = 512;
+        static const int RANGE_TILEY = 32;
 
         template<typename T>
         void range(Param out, const int dim)
@@ -62,10 +62,10 @@ namespace opencl
                 auto rangeOp = make_kernel<Buffer, const KParam, const int,
                                            const int, const int> (*rangeKernels[device]);
 
-                NDRange local(TX, TY, 1);
+                NDRange local(RANGE_TX, RANGE_TY, 1);
 
-                int blocksPerMatX = divup(out.info.dims[0], TILEX);
-                int blocksPerMatY = divup(out.info.dims[1], TILEY);
+                int blocksPerMatX = divup(out.info.dims[0], RANGE_TILEX);
+                int blocksPerMatY = divup(out.info.dims[1], RANGE_TILEY);
                 NDRange global(local[0] * blocksPerMatX * out.info.dims[2],
                                local[1] * blocksPerMatY * out.info.dims[3],
                                1);

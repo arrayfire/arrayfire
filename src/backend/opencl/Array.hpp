@@ -211,6 +211,7 @@ namespace opencl
 
         void setDataDims(const dim4 &new_dims)
         {
+            modDims(new_dims);
             data_dims = new_dims;
         }
 

@@ -23,7 +23,7 @@ namespace kernel
 
 // Based off of http://stackoverflow.com/a/12399290
 template<typename T, bool isAscending>
-void sort0(Array<T> val)
+void sort0Iterative(Array<T> val)
 {
     // initialize original index locations
     T *val_ptr = val.get();
