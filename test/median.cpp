@@ -37,96 +37,142 @@ af::array generateArray<unsigned int>(int nx, int ny, int nz, int nw)
     return a;
 }
 
-template<typename To, typename Ti, bool flat>
-void median0(int nx, int ny=1, int nz=1, int nw=1)
+template<typename To, typename Ti>
+void median_flat(int nx, int ny=1, int nz=1, int nw=1)
 {
     if (noDoubleTests<Ti>()) return;
     array a = generateArray<Ti>(nx, ny, nz, nw);
-    array sa = sort(a);
 
-    Ti *h_sa = sa.host<Ti>();
+    // Verification
+    array sa = sort(flat(a));
+    dim_t mid = (sa.dims(0) + 1) / 2;
 
-    To *h_b = NULL;
-    To val = 0;
+    To verify;
 
-    if (flat) {
-        val = median<To>(a);
-        h_b = &val;
+    To *h_sa = sa.as((af_dtype)af::dtype_traits<To>::af_type).host<To>();
+    if(sa.dims(0) % 2 == 1) {
+        verify = h_sa[mid - 1];
     } else {
-        array b = median(a);
-        h_b = b.host<To>();
+        verify = (h_sa[mid - 1] + h_sa[mid]) / (To)2;
     }
 
-    for (int w = 0; w < nw; w++) {
-        for (int z = 0; z < nz; z++) {
-            for (int y = 0; y < ny; y++) {
+    // Test Part
+    To val = median<To>(a);
 
-                int off = (y  + ny * (z + nz * w));
-                int id = nx / 2;
-
-                if (nx & 2) {
-                    ASSERT_EQ(h_sa[id + off * nx], h_b[off]);
-                } else {
-                    To left = h_sa[id + off * nx - 1];
-                    To right = h_sa[id + off * nx];
-
-                    ASSERT_NEAR((left + right) / 2, h_b[off], 1e-5);
-                }
-            }
-        }
-    }
+    ASSERT_EQ(verify, val);
 
     delete[] h_sa;
-    if (!flat) delete[] h_b;
 }
 
-#define MEDIAN0(To, Ti)                         \
-    TEST(median0, Ti##_1D_even)                 \
+template<typename To, typename Ti, int dim>
+void median_test(int nx, int ny=1, int nz=1, int nw=1)
+{
+    if (noDoubleTests<Ti>()) return;
+
+    array a = generateArray<Ti>(nx, ny, nz, nw);
+
+    // If selected dim is higher than input ndims, then return
+    if(dim >= a.dims().ndims())
+        return;
+
+    array verify;
+
+    // Verification
+    array sa = sort(a, dim);
+
+    double mid = (a.dims(dim) + 1) / 2;
+    af::seq mSeq[4] = {span, span, span, span};
+    mSeq[dim] = af::seq(mid, mid, 1.0);
+
+    if(sa.dims(dim) % 2 == 1) {
+        mSeq[dim] = mSeq[dim] - 1.0;
+        verify = sa(mSeq[0], mSeq[1], mSeq[2], mSeq[3]);
+    } else {
+        dim_t sdim[4] = {0};
+        sdim[dim] = 1;
+        sa = sa.as((af_dtype)af::dtype_traits<To>::af_type);
+        array sas = shift(sa, sdim[0], sdim[1], sdim[2], sdim[3]);
+        verify = ((sa + sas) / 2)(mSeq[0], mSeq[1], mSeq[2], mSeq[3]);
+    }
+
+    // Test Part
+    array out = median(a, dim);
+
+    ASSERT_EQ(out.dims() == verify.dims(), true);
+    ASSERT_NEAR(0, sum<double>(af::abs(out - verify)), 1e-5);
+}
+
+#define MEDIAN_FLAT(To, Ti)                     \
+    TEST(MedianFlat, Ti##_flat_even)            \
     {                                           \
-        median0<To, Ti, false>(1000);           \
+        median_flat<To, Ti>(1000);              \
     }                                           \
-    TEST(median0, Ti##_2D_even)                 \
+    TEST(MedianFlat, Ti##_flat_odd)             \
     {                                           \
-        median0<To, Ti, false>(1000, 100);      \
+        median_flat<To, Ti>(783);               \
     }                                           \
-    TEST(median0, Ti##_3D_even)                 \
+    TEST(MedianFlat, Ti##_flat_multi_even)      \
     {                                           \
-        median0<To, Ti, false>(1000, 25, 4);    \
+        median_flat<To, Ti>(24, 11, 3);         \
     }                                           \
-    TEST(median0, Ti##_4D_even)                 \
+    TEST(MedianFlat, Ti##_flat_multi_odd)       \
     {                                           \
-        median0<To, Ti, false>(1000, 25, 2, 2); \
+        median_flat<To, Ti>(15, 21, 7);         \
     }                                           \
-    TEST(median0, Ti##_flat_even)               \
+
+MEDIAN_FLAT(float, float)
+MEDIAN_FLAT(float, int)
+MEDIAN_FLAT(float, uint)
+MEDIAN_FLAT(float, uchar)
+MEDIAN_FLAT(float, short)
+MEDIAN_FLAT(float, ushort)
+MEDIAN_FLAT(double, double)
+
+#define MEDIAN_TEST(To, Ti, dim)                \
+    TEST(Median, Ti##_1D_##dim##_even)          \
     {                                           \
-        median0<To, Ti, true>(1000);            \
+        median_test<To, Ti, dim>(1000);         \
     }                                           \
-    TEST(median0, Ti##_1D_odd)                  \
+    TEST(Median, Ti##_2D_##dim##_even)          \
     {                                           \
-        median0<To, Ti, false>(783);            \
+        median_test<To, Ti, dim>(1000, 25);     \
     }                                           \
-    TEST(median0, Ti##_2D_odd)                  \
+    TEST(Median, Ti##_3D_##dim##_even)          \
     {                                           \
-        median0<To, Ti, false>(783, 100);       \
+        median_test<To, Ti, dim>(100, 25, 4);   \
     }                                           \
-    TEST(median0, Ti##_3D_odd)                  \
+    TEST(Median, Ti##_4D_##dim##_even)          \
     {                                           \
-        median0<To, Ti, false>(783, 25, 4);     \
+        median_test<To, Ti, dim>(100, 25, 2, 2);\
     }                                           \
-    TEST(median0, Ti##_4D_odd)                  \
+    TEST(Median, Ti##_1D_##dim##_odd)           \
     {                                           \
-        median0<To, Ti, false>(783, 25, 2, 2);  \
+        median_test<To, Ti, dim>(783);          \
     }                                           \
-    TEST(median0, Ti##_flat_odd)                \
+    TEST(Median, Ti##_2D_##dim##_odd)           \
     {                                           \
-        median0<To, Ti, true>(783);             \
+        median_test<To, Ti, dim>(783, 25);      \
+    }                                           \
+    TEST(Median, Ti##_3D_##dim##_odd)           \
+    {                                           \
+        median_test<To, Ti, dim>(123, 25, 3);   \
+    }                                           \
+    TEST(Median, Ti##_4D_##dim##_odd)           \
+    {                                           \
+        median_test<To, Ti, dim>(123, 25, 3, 3);\
     }                                           \
 
 
-MEDIAN0(float, float)
-MEDIAN0(float, int)
-MEDIAN0(float, uint)
-MEDIAN0(float, uchar)
-MEDIAN0(float, short)
-MEDIAN0(float, ushort)
-MEDIAN0(double, double)
+#define MEDIAN(To, Ti)      \
+    MEDIAN_TEST(To, Ti, 0)  \
+    MEDIAN_TEST(To, Ti, 1)  \
+    MEDIAN_TEST(To, Ti, 2)  \
+    MEDIAN_TEST(To, Ti, 3)  \
+
+MEDIAN(float, float)
+MEDIAN(float, int)
+MEDIAN(float, uint)
+MEDIAN(float, uchar)
+MEDIAN(float, short)
+MEDIAN(float, ushort)
+MEDIAN(double, double)

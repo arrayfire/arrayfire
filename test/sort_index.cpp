@@ -119,17 +119,16 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     SORT_INIT(SortMedTrue,    sort_med1,  true,  0, 1);
     SORT_INIT(Sort1000False,  sort_1000,  false, 2, 3);
     SORT_INIT(SortMedFalse,   sort_med1,  false, 2, 3);
-    // Takes too much time in current implementation. Enable when everything is parallel
-    //SORT_INIT(SortMed5True,   sort_med,   true,  0, 1);
-    //SORT_INIT(SortMed5False,  sort_med,   false, 2, 3);
-    //SORT_INIT(SortLargeTrue,  sort_large, true,  0, 1);
-    //SORT_INIT(SortLargeFalse, sort_large, false, 2, 3);
-;
+
+    SORT_INIT(SortMed5True,   sort_med,   true,  0, 1);
+    SORT_INIT(SortMed5False,  sort_med,   false, 2, 3);
+    SORT_INIT(SortLargeTrue,  sort_large, true,  0, 1);
+    SORT_INIT(SortLargeFalse, sort_large, false, 2, 3);
 
 
 //////////////////////////////////// CPP /////////////////////////////////
 //
-TEST(SortIndex, CPP)
+TEST(SortIndex, CPPDim0)
 {
     if (noDoubleTests<float>()) return;
 
@@ -147,6 +146,101 @@ TEST(SortIndex, CPP)
     af::array outValues, outIndices;
     af::sort(outValues, outIndices, input, 0, dir);
 
+    size_t nElems = tests[resultIdx0].size();
+
+    // Get result
+    float* sxData = new float[tests[resultIdx0].size()];
+    outValues.host((void*)sxData);
+
+    // Compare result
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    // Get result
+    unsigned* ixData = new unsigned[tests[resultIdx1].size()];
+    outIndices.host((void*)ixData);
+
+    // Compare result
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    // Delete
+    delete[] sxData;
+    delete[] ixData;
+}
+
+TEST(SortIndex, CPPDim1)
+{
+    if (noDoubleTests<float>()) return;
+
+    const bool dir = true;
+    const unsigned resultIdx0 = 0;
+    const unsigned resultIdx1 = 1;
+
+    vector<af::dim4> numDims;
+    vector<vector<float> > in;
+    vector<vector<float> > tests;
+    readTests<float, float, int>(string(TEST_DIR"/sort/sort_10x10.test"),numDims,in,tests);
+
+    af::dim4 idims = numDims[0];
+    af::array input_(idims, &(in[0].front()));
+    af::array input = reorder(input_, 1, 0, 2, 3);
+
+    af::array outValues, outIndices;
+    af::sort(outValues, outIndices, input, 1, dir);
+
+    outValues  = reorder(outValues,  1, 0, 2, 3);
+    outIndices = reorder(outIndices, 1, 0, 2, 3);
+
+    size_t nElems = tests[resultIdx0].size();
+
+    // Get result
+    float* sxData = new float[tests[resultIdx0].size()];
+    outValues.host((void*)sxData);
+
+    // Compare result
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    // Get result
+    unsigned* ixData = new unsigned[tests[resultIdx1].size()];
+    outIndices.host((void*)ixData);
+
+    // Compare result
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    // Delete
+    delete[] sxData;
+    delete[] ixData;
+}
+
+TEST(SortIndex, CPPDim2)
+{
+    if (noDoubleTests<float>()) return;
+
+    const bool dir = false;
+    const unsigned resultIdx0 = 2;
+    const unsigned resultIdx1 = 3;
+
+    vector<af::dim4> numDims;
+    vector<vector<float> > in;
+    vector<vector<float> > tests;
+    readTests<float, float, int>(string(TEST_DIR"/sort/sort_med.test"),numDims,in,tests);
+
+    af::dim4 idims = numDims[0];
+    af::array input_(idims, &(in[0].front()));
+    af::array input = reorder(input_, 1, 2, 0, 3);
+
+    af::array outValues, outIndices;
+    af::sort(outValues, outIndices, input, 2, dir);
+
+    outValues  = reorder(outValues,  2, 0, 1, 3);
+    outIndices = reorder(outIndices, 2, 0, 1, 3);
     size_t nElems = tests[resultIdx0].size();
 
     // Get result

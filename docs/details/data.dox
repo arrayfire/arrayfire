@@ -338,8 +338,8 @@ array/value is selected.
 
 \brief Replace elements of an array based on an conditional array
 
-If the condition array has an element as true, then the element is
-replaced by the array/value, otherwise no change.
+- Input values are retained when corresponding elements from condition array are true.
+- Input values are replaced when corresponding elements from condition array are false.
 
 \ingroup manip_mat
 \ingroup arrayfire_func

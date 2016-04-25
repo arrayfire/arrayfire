@@ -158,6 +158,7 @@ PKG_BUILD(  PKG_NAME        ArrayFireOPENCL
             DEPENDS         OSX_INSTALL_SETUP_OpenCL
             TARGETS         opencl_package
             INSTALL_LOCATION /usr/local
+            SCRIPT_DIR      ${OSX_INSTALL_DIR}/opencl_scripts
             IDENTIFIER      com.arrayfire.pkg.arrayfire.opencl.lib
             PATH_TO_FILES   ${OSX_TEMP}/OpenCL
             FILTERS         cpu cuda unified)

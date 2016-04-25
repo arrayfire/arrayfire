@@ -31,6 +31,8 @@ ENDIF()
 LIST(LENGTH COMPUTES_DETECTED_LIST COMPUTES_LEN)
 IF(${COMPUTES_LEN} EQUAL 0 AND ${FALLBACK})
     MESSAGE(STATUS "No computes detected. Fall back to 20, 30, 50")
+    MESSAGE(STATUS "You can use -DCOMPUTES_DETECTED_LIST=\"AB;XY\" (semicolon separated list of CUDA Compute versions to enable the specified computes")
+    MESSAGE(STATUS "Individual compute versions flags are also available under CMake Advance options")
     LIST(APPEND COMPUTES_DETECTED_LIST "20" "30" "50")
 ENDIF()
 
@@ -156,7 +158,7 @@ FILE(GLOB cuda_headers
 FILE(GLOB cuda_sources
     "*.cu"
     "*.cpp"
-    "sort_by_key/*.cu"
+    "kernel/sort_by_key/*.cu"
     "kernel/*.cu")
 
 FILE(GLOB jit_sources
@@ -328,6 +330,24 @@ macro(MY_CUDA_ADD_LIBRARY cuda_target)
     )
 
 endmacro()
+
+IF(NOT CUDA_CUDA_LIBRARY)
+    MESSAGE(SEND_ERROR "CMake CUDA Variable CUDA_CUDA_LIBRARY Not found.")
+    MESSAGE("CUDA Driver Library (libcuda.so/libcuda.dylib/cuda.lib) cannot be found.")
+    FIND_FILE(CUDA_CUDA_LIBRARY_STUB
+              NAMES "libcuda.so" "libcuda.dylib" "cuda.lib"
+              PATHS ${CUDA_TOOLKIT_ROOT_DIR}
+              PATH_SUFFIXES "lib64" "lib64/stubs" "lib" "lib/stubs" "lib/x64" "lib/Win32"
+              DOC "CUDA Library STUB"
+             )
+    IF(CUDA_CUDA_LIBRARY_STUB)
+        MESSAGE("You can use the library stub available in the CUDA Toolkit: ${CUDA_CUDA_LIBRARY_STUB}")
+        MESSAGE("Run the following commands (Linux) to set it up:")
+        MESSAGE("ln -s ${CUDA_CUDA_LIBRARY_STUB} /usr/lib/libcuda.so.1")
+        MESSAGE("ln -s /usr/lib/libcuda.so.1 /usr/lib/libcuda.so")
+    ENDIF()
+    MESSAGE(FATAL_ERROR "Ending CMake configuration because of missing CUDA_CUDA_LIBRARY")
+ENDIF(NOT CUDA_CUDA_LIBRARY)
 
 MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cuda_headers}

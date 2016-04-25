@@ -149,7 +149,9 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
 
         int flags = 0;
         if(fif == FIF_JPEG) flags = flags | JPEG_ACCURATE;
+#ifdef JPEG_GREYSCALE
         if(fif == FIF_JPEG && !isColor) flags = flags | JPEG_GREYSCALE;
+#endif
 
         // check that the plugin has reading capabilities ...
         FIBITMAP* pBitmap = NULL;

@@ -3,7 +3,22 @@ ADD_DEFINITIONS(-DAF_CPU)
 
 FIND_PACKAGE(CBLAS REQUIRED)
 
-OPTION(BUILD_CPU_ASYNC "Build CPU backend with ASYNC support" ON)
+IF(NOT DEFINED BUILD_CPU_ASYNC)
+    IF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.8.4")
+        MESSAGE("Disabling CPU Async as GCC Version ${COMPILER_VERSION} has known issues.")
+        MESSAGE("CPU Backend will use Synchronous Calls")
+        OPTION(BUILD_CPU_ASYNC "Build CPU backend with ASYNC support" OFF)
+    ELSE()
+        OPTION(BUILD_CPU_ASYNC "Build CPU backend with ASYNC support" ON)
+    ENDIF()
+ENDIF(NOT DEFINED BUILD_CPU_ASYNC)
+MARK_AS_ADVANCED(USE_CPUID)
+
+if (USE_CPUID)
+  ADD_DEFINITIONS(-DUSE_CPUID=1)
+ELSE(USE_CPUID)
+  ADD_DEFINITIONS(-DUSE_CPUID=0)
+ENDIF(USE_CPUID)
 
 IF (NOT ${BUILD_CPU_ASYNC})
     ADD_DEFINITIONS(-DAF_DISABLE_CPU_ASYNC)
@@ -93,7 +108,8 @@ FILE(GLOB cpu_headers
     "*.h")
 
 FILE(GLOB cpu_sources
-    "*.cpp")
+    "*.cpp"
+    "kernel/sort_by_key/*.cpp")
 
 LIST(SORT cpu_headers)
 LIST(SORT cpu_sources)
@@ -188,9 +204,10 @@ ELSE(DEFINED BLAS_SYM_FILE)
 ENDIF(DEFINED BLAS_SYM_FILE)
 
 TARGET_LINK_LIBRARIES(afcpu
-                            PRIVATE ${FreeImage_LIBS}
                             PRIVATE ${CBLAS_LIBRARIES}
-                            PRIVATE ${FFTW_LIBRARIES})
+                            PRIVATE ${FFTW_LIBRARIES}
+                            PRIVATE ${FreeImage_LIBS}
+                     )
 
 IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
   ADD_DEPENDENCIES(afcpu forge)
