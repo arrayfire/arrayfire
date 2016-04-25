@@ -1,6 +1,49 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.3.2
+==============
+
+Improvements
+------------
+* Family of [Sort](\ref sort_mat) functions now support
+  [higher order dimensions](https://github.com/arrayfire/arrayfire/pull/1373).
+* Improved performance of batched sort on dim 0 for all [Sort](\ref sort_mat) functions.
+* [Median](\ref stat_func_median) now also supports higher order dimensions.
+
+Bug Fixes
+--------------
+
+* Fixes to [error handling](https://github.com/arrayfire/arrayfire/issues/1352) in C++ API for binary functions.
+* Fixes to [external OpenCL context management](https://github.com/arrayfire/arrayfire/issues/1350).
+* Fixes to [JPEG_GREYSCALE](https://github.com/arrayfire/arrayfire/issues/1360) for FreeImage versions <= 3.154.
+* Fixed for [non-float inputs](https://github.com/arrayfire/arrayfire/issues/1386) to \ref af::rgb2gray().
+
+Build
+------
+* [Disable CPU Async](https://github.com/arrayfire/arrayfire/issues/1378) when building with GCC < 4.8.4.
+* Add option to [disable CPUID](https://github.com/arrayfire/arrayfire/issues/1369) from CMake.
+* More verbose message when [CUDA Compute Detection fails](https://github.com/arrayfire/arrayfire/issues/1362).
+* Print message to use [CUDA library stub](https://github.com/arrayfire/arrayfire/issues/1363)
+  from CUDA Toolkit if CUDA Library is not found from default paths.
+* [Build Fixes](https://github.com/arrayfire/arrayfire/pull/1385) on Windows.
+  * For compiling tests our of source.
+  * For compiling ArrayFire with static MKL.
+* [Exclude <sys/sysctl.h>](https://github.com/arrayfire/arrayfire/pull/1368) when building on GNU Hurd.
+* Add [manual CMake options](https://github.com/arrayfire/arrayfire/pull/1389) to build DEB and RPM packages.
+
+Documentation
+-------------
+* Fixed documentation for \ref af::replace().
+* Fixed images in [Using on OSX](\ref using_on_osx) page.
+
+Installer
+---------
+* Linux x64 installers will now be compiled with GCC 4.9.2.
+* OSX installer gives better error messages on brew failures and
+  now includes link to [Fixing OS X Installer Failures] (https://github.com/arrayfire/arrayfire/wiki/Fixing-Common-OS-X-Installer-Failures)
+  for brew installation failures.
+
 v3.3.1
 ==============
 
@@ -361,7 +404,7 @@ Bug Fixes
 Documentation Updates
 ---------------------
 * Improved tutorials documentation
-    * More detailed Using on [Linux](\ref using_on_windows), [OSX](\ref using_on_windows),
+    * More detailed Using on [Linux](\ref using_on_linux), [OSX](\ref using_on_osx),
       [Windows](\ref using_on_windows) pages.
 * Added return type information for functions that return different type
   arrays
