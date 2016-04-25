@@ -10,16 +10,6 @@ IF(USE_OPENCL_F77_BLAS)
     ADD_DEFINITIONS(-DUSE_F77_BLAS)
 ENDIF()
 
-IF(USE_OPENCL_MKL) # Manual MKL Setup
-    MESSAGE("OpenCL Backend Using MKL")
-    ADD_DEFINITIONS(-DUSE_MKL)
-ELSE(USE_OPENCL_MKL)
-    IF(${MKL_FOUND}) # Automatic MKL Setup from BLAS
-        MESSAGE("OpenCL Backend Using MKL RT")
-        ADD_DEFINITIONS(-DUSE_MKL)
-    ENDIF()
-ENDIF()
-
 IF(APPLE)
     FIND_PACKAGE(LAPACKE QUIET) # For finding MKL
     IF(NOT LAPACK_FOUND)
@@ -53,6 +43,16 @@ ELSE(NOT LAPACK_FOUND)
       MESSAGE(STATUS "Using CBLAS Library: ${CBLAS_LIBRARIES}")
     ENDIF()
   ENDIF()
+ENDIF()
+
+IF(USE_OPENCL_MKL) # Manual MKL Setup
+    MESSAGE("OpenCL Backend Using MKL")
+    ADD_DEFINITIONS(-DUSE_MKL)
+ELSE(USE_OPENCL_MKL)
+    IF(${MKL_FOUND}) # Automatic MKL Setup from BLAS
+        MESSAGE("OpenCL Backend Using MKL RT")
+        ADD_DEFINITIONS(-DUSE_MKL)
+    ENDIF()
 ENDIF()
 
 IF(NOT UNIX)
@@ -111,12 +111,10 @@ ENDIF()
 
 FILE(GLOB opencl_headers
   "*.hpp"
-  "*.h"
-  "sort_by_key/*.hpp")
+  "*.h")
 
 FILE(GLOB opencl_sources
-    "*.cpp"
-    "sort_by_key/*.cpp")
+    "*.cpp")
 
 FILE(GLOB jit_sources
     "jit/*.hpp")
@@ -128,7 +126,8 @@ FILE(GLOB opencl_kernels
     "kernel/*.cl")
 
 FILE(GLOB kernel_sources
-     "kernel/*.cpp")
+     "kernel/*.cpp"
+     "kernel/sort_by_key/*.cpp")
 
 FILE(GLOB conv_ker_headers
     "kernel/convolve/*.hpp")
@@ -305,11 +304,10 @@ ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
 TARGET_LINK_LIBRARIES(afopencl
                                 PRIVATE ${OpenCL_LIBRARIES}
-                                PRIVATE ${FreeImage_LIBS}
                                 PRIVATE ${CLBLAS_LIBRARIES}
                                 PRIVATE ${CLFFT_LIBRARIES}
                                 PRIVATE ${CMAKE_DL_LIBS}
-                                PRIVATE ${Boost_LIBRARIES})
+                     )
 
 IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
     ADD_DEPENDENCIES(afopencl forge)
@@ -320,6 +318,8 @@ IF(LAPACK_FOUND)
     PRIVATE ${LAPACK_LIBRARIES}
     PRIVATE ${CBLAS_LIBRARIES})
 ENDIF()
+
+TARGET_LINK_LIBRARIES(afopencl PRIVATE ${FreeImage_LIBS})
 
 SET_TARGET_PROPERTIES(afopencl PROPERTIES
     VERSION "${AF_VERSION}"

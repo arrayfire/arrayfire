@@ -22,6 +22,13 @@
 #include <host_memory.hpp>
 #include <cctype>
 
+
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) || defined(_WIN64)
+#define CPUID_CAPABLE USE_CPUID
+#else
+#define CPUID_CAPABLE 0
+#endif
+
 #ifdef _WIN32
 #include <limits.h>
 #include <intrin.h>
@@ -32,7 +39,7 @@ typedef unsigned __int32  uint32_t;
 
 using namespace std;
 
-#ifdef USE_CPUID
+#if CPUID_CAPABLE
 
 #define MAX_INTEL_TOP_LVL 4
 
@@ -82,7 +89,7 @@ class CPUInfo {
         bool   mIsHTT;
 };
 
-#ifndef USE_CPUID
+#if !CPUID_CAPABLE
 
 CPUInfo::CPUInfo()
     : mVendorId(""), mModelName(""), mNumSMT(0), mNumCores(0), mNumLogCpus(0), mIsHTT(false)

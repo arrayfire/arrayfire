@@ -517,9 +517,11 @@ namespace af
 
 #if AF_API_VERSION >= 31
     /**
-       \param[inout]  a is the array whose values are replaced with values from \p b when \p cond is false
-       \param[in]  cond is the conditional array
-       \param[in]  b is the array containing elements which replace elements in \p a when \p cond is false
+       \param[inout]  a is the input array
+       \param[in]  cond is the conditional array.
+       \param[in]  b is the replacement array.
+
+       \note Values of \p a are replaced with corresponding values of \p b, when \p cond is false.
 
        \ingroup data_func_replace
     */
@@ -528,9 +530,11 @@ namespace af
 
 #if AF_API_VERSION >= 31
     /**
-       \param[inout]  a is the array whose values are replaced with values from \p b when \p cond is false
-       \param[in]  cond is the conditional array
-       \param[in]  b is value that replaces elements in \p a when \p cond is false
+       \param[inout]  a is the input array
+       \param[in]  cond is the conditional array.
+       \param[in]  b is the replacement value.
+
+       \note Values of \p a are replaced with corresponding values of \p b, when \p cond is false.
 
        \ingroup data_func_replace
     */
@@ -836,9 +840,11 @@ extern "C" {
 
 #if AF_API_VERSION >= 31
     /**
-       \param[inout] a is the array whose values are replaced by \p b when \p cond is false
-       \param[in]  cond is the conditional array
-       \param[in]  b is the array containing elements that replaces elements of a where \p cond is false
+       \param[inout]  a is the input array
+       \param[in]  cond is the conditional array.
+       \param[in]  b is the replacement array.
+
+       \note Values of \p a are replaced with corresponding values of \p b, when \p cond is false.
 
        \ingroup data_func_replace
     */
@@ -847,9 +853,11 @@ extern "C" {
 
 #if AF_API_VERSION >= 31
     /**
-       \param[inout] a is the array whose values are replaced by \p b when \p cond is false
-       \param[in]  cond is the conditional array
-       \param[in]  b is the scalar that replaces the false parts of \p a
+       \param[inout]  a is the input array
+       \param[in]  cond is the conditional array.
+       \param[in]  b is the replacement array.
+
+       \note Values of \p a are replaced with corresponding values of \p b, when \p cond is false.
 
        \ingroup data_func_replace
     */

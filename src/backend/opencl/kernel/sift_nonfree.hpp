@@ -92,10 +92,11 @@
 #include <kernel/convolve_separable.hpp>
 #include <kernel/fast.hpp>
 #include <kernel/resize.hpp>
-#include <kernel/sort_index.hpp>
 #include <kernel_headers/sift_nonfree.hpp>
 #include <memory.hpp>
 #include <vector>
+
+namespace compute = boost::compute;
 
 using cl::Buffer;
 using cl::Program;
