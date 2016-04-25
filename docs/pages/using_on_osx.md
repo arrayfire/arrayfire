@@ -27,75 +27,12 @@ any build system to create and compile projects that use ArrayFire.
 Among the many possible build systems on Linux we suggest using ArrayFire with
 either CMake or Makefiles with CMake being our preferred build system.
 
-## XCode
+## Build Instructions:
+* [CMake](#CMake)
+* [MakeFiles](#MakeFiles)
+* [XCode](#XCode)
 
-Although we recommend using CMake to build ArrayFire projects on OSX, you can
-use XCode if this is your preferred development platform.
-To save some time, we have created an sample XCode project in our 
-[ArrayFire Project Templates repository](https://github.com/arrayfire/arrayfire-project-templates).
-
-To set up a basic C/C++ project in XCode do the following:
-
-1. Start up XCode. Choose OSX -> Application, Command Line Tool for the project:
-<img src="xcode-setup/xcode-startup.png" alt="Create a command line too XCode Project" width="100%" />
-
-2. Fill in the details for your project and choose either C or C++ for the project:
-<img src="xcode-setup/project-options.png" alt="Create a C/C++ project" width="100%" />
-
-3. Next we need to configure the build settings. In the left-hand pane, click
-   on the project. In the center pane, click on "Build Settings" followed by
-   the "All" button:
-<img src="xcode-setup/build-settings.png" alt="Configure build settings" width="100%" />
-
-4. Now search for "Header Search Paths" and add `/usr/local/include` to the list:
-<img src="xcode-setup/header-search-paths.png" alt="Configure build settings" width="100%" />
-
-5. Then search for "Library Search Paths" and add `/usr/local/lib` to the list:
-<img src="xcode-setup/library-search-paths.png" alt="Configure build settings" width="100%" />
-
-6. Next, we need to make sure the executable is linked with an ArrayFire library:
-   To do this, click the "Build Phases" tab and expand the "Link with Binary Library"
-   menu:
-<img src="xcode-setup/build-phases.png" alt="Configure build settings" width="100%" />
-
-7. In the search dialog that pops up, choose the "Add Other" button from the
-   lower right. Specify the `/usr/local/lib` folder:
-<img src="xcode-setup/library-folder-path.png" alt="Configure build settings" width="100%" />
-
-8. Lastly, select the ArrayFire library with which you wish to link your program.
-  Your options will be:
-
-~~~~~
-libafcuda.*.dylib   - CUDA backend
-libafopencl.*.dylib - OpenCL backend
-libafcpu.*.dylib    - CPU backend
-libaf.*.dylib       - Unified backend
-~~~~~
-
-In the picture below, we have elected to link with the OpenCL backend:
-
-<img src="xcode-setup/pick-arrayfire-library.png" alt="Configure build settings" width="100%" />
-
-9. Lastly, lets test ArrayFire's functionality. In the left hand pane open
-   the main.cpp` file and insert the following code:
-
-~~~~~
-// Include the ArrayFire header file
-#include <arrayfire.h>
-
-int main(int argc, const char * argv[]) {
-    // Gather some information about the ArrayFire device
-    af::info();
-    return 0;
-}
-~~~~~
-
-Finally, click the build button and you should see some information about your
-graphics card in the lower-section of your screen:
-
-<img src="xcode-setup/afinfo-result.png" alt="Configure build settings" width="100%" />
-
-## CMake
+## <a name="CMake"></a>CMake
 
 We recommend that the CMake build system be used to create ArrayFire projects.
 If you are writing a new ArrayFire project in C/C++ from scratch, we suggest
@@ -193,7 +130,7 @@ would modify the `cmake` command above to contain the following definition:
 
 You can also specify this information in the ccmake command-line interface.
 
-## MakeFiles
+## <a name="MakeFiles"></a> MakeFiles
 
 Building ArrayFire projects with Makefiles is fairly similar to CMake except
 you must specify all paths and libraries manually.
@@ -217,3 +154,113 @@ Here is a minimial example MakeFile which uses ArrayFire's CPU backend:
 
     all: main.cpp Makefile
         $(CC) main.cpp -o test $(INCLUDES) $(LIBS) $(LIB_PATHS)
+
+## <a name="XCode"></a> XCode
+
+Although we recommend using CMake to build ArrayFire projects on OSX, you can
+use XCode if this is your preferred development platform.
+To save some time, we have created an sample XCode project in our
+[ArrayFire Project Templates repository](https://github.com/arrayfire/arrayfire-project-templates).
+
+To set up a basic C/C++ project in XCode do the following:
+
+1. Start up XCode. Choose OSX -> Application, Command Line Tool for the project:
+\htmlonly
+<br />
+<a href="xcode-setup/xcode-startup.png">
+<img src="xcode-setup/xcode-startup.png" alt="Create a command line too XCode Project" align="middle" width="50%" />
+</a>
+\endhtmlonly
+
+2. Fill in the details for your project and choose either C or C++ for the project:
+\htmlonly
+<br />
+<a href="xcode-setup/project-options.png">
+<img src="xcode-setup/project-options.png" alt="Create a C/C++ project" align="middle" width="50%" />
+</a>
+\endhtmlonly
+
+3. Next we need to configure the build settings. In the left-hand pane, click
+   on the project. In the center pane, click on "Build Settings" followed by
+   the "All" button:
+\htmlonly
+<br />
+<a href="xcode-setup/build-settings.png">
+<img src="xcode-setup/build-settings.png" alt="Configure build settings" align="middle" width="50%" />
+</a>
+\endhtmlonly
+
+4. Now search for "Header Search Paths" and add `/usr/local/include` to the list:
+\htmlonly
+<br />
+<a href="xcode-setup/header-search-paths.png">
+<img src="xcode-setup/header-search-paths.png" alt="Configure build settings" align="middle" width="50%" />
+</a>
+\endhtmlonly
+
+5. Then search for "Library Search Paths" and add `/usr/local/lib` to the list:
+\htmlonly
+<br />
+<a href="xcode-setup/library-search-paths.png">
+<img src="xcode-setup/library-search-paths.png" alt="Configure build settings" align="middle" width="50%" />
+</a>
+\endhtmlonly
+
+6. Next, we need to make sure the executable is linked with an ArrayFire library:
+   To do this, click the "Build Phases" tab and expand the "Link with Binary Library"
+   menu:
+\htmlonly
+<br />
+<a href="xcode-setup/build-phases.png">
+<img src="xcode-setup/build-phases.png" alt="Configure build settings" align="middle" width="50%" />
+</a>
+\endhtmlonly
+
+7. In the search dialog that pops up, choose the "Add Other" button from the
+   lower right. Specify the `/usr/local/lib` folder:
+\htmlonly
+<br />
+<a href="xcode-setup/library-folder-path.png">
+<img src="xcode-setup/library-folder-path.png" alt="Configure build settings" align="middle" width="50%" />
+</a>
+\endhtmlonly
+
+8. Lastly, select the ArrayFire library with which you wish to link your program.
+  Your options will be:
+~~~~~
+libafcuda.*.dylib   - CUDA backend
+libafopencl.*.dylib - OpenCL backend
+libafcpu.*.dylib    - CPU backend
+libaf.*.dylib       - Unified backend
+~~~~~
+In the picture below, we have elected to link with the OpenCL backend:
+\htmlonly
+<br />
+<a href="xcode-setup/pick-arrayfire-library.png">
+<img src="xcode-setup/pick-arrayfire-library.png" alt="Configure build settings" align="middle" width="50%" />
+</a>
+\endhtmlonly
+
+9. Lastly, lets test ArrayFire's functionality. In the left hand pane open
+   the main.cpp` file and insert the following code:
+
+~~~~~
+// Include the ArrayFire header file
+#include <arrayfire.h>
+
+int main(int argc, const char * argv[]) {
+    // Gather some information about the ArrayFire device
+    af::info();
+    return 0;
+}
+~~~~~
+
+Finally, click the build button and you should see some information about your
+graphics card in the lower-section of your screen:
+
+\htmlonly
+<br />
+<a href="xcode-setup/afinfo-result.png">
+<img src="xcode-setup/afinfo-result.png" alt="Configure build settings" align="middle" width="50%" />
+</a>
+\endhtmlonly
