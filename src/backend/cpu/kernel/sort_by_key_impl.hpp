@@ -31,8 +31,11 @@ void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval)
     Tk *okey_ptr = okey.get();
     Tv *oval_ptr = oval.get();
 
-    std::vector<IndexPair<Tk, Tv> > X;
-    X.reserve(okey.dims()[0]);
+    typedef IndexPair<Tk, Tv> CurrentPair;
+
+    dim_t size = okey.dims()[0];
+    size_t bytes = size * sizeof(CurrentPair);
+    CurrentPair *pairKeyVal = (CurrentPair *)memAlloc<char>(bytes);
 
     for(dim_t w = 0; w < okey.dims()[3]; w++) {
         dim_t okeyW = w * okey.strides()[3];
@@ -47,23 +50,24 @@ void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval)
                 dim_t okeyOffset = okeyWZ + y * okey.strides()[1];
                 dim_t ovalOffset = ovalWZ + y * oval.strides()[1];
 
-                X.clear();
-                std::transform(okey_ptr + okeyOffset, okey_ptr + okeyOffset + okey.dims()[0],
-                               oval_ptr + ovalOffset,
-                               std::back_inserter(X),
-                               [](Tk v_, Tv i_) { return std::make_pair(v_, i_); }
-                               );
+                Tk *okey_col_ptr = okey_ptr + okeyOffset;
+                Tv *oval_col_ptr = oval_ptr + ovalOffset;
 
-                std::stable_sort(X.begin(), X.end(), IPCompare<Tk, Tv, isAscending>());
+                for(dim_t x = 0; x < size; x++) {
+                   pairKeyVal[x] = std::make_tuple(okey_col_ptr[x], oval_col_ptr[x]);
+                }
 
-                for(unsigned it = 0; it < X.size(); it++) {
-                    okey_ptr[okeyOffset + it] = X[it].first;
-                    oval_ptr[ovalOffset + it] = X[it].second;
+                std::stable_sort(pairKeyVal, pairKeyVal + size, IPCompare<Tk, Tv, isAscending>());
+
+                for(unsigned x = 0; x < size; x++) {
+                    okey_ptr[okeyOffset + x] = std::get<0>(pairKeyVal[x]);
+                    oval_ptr[ovalOffset + x] = std::get<1>(pairKeyVal[x]);
                 }
             }
         }
     }
 
+    memFree((char *)pairKeyVal);
     return;
 }
 
@@ -108,24 +112,27 @@ void sortByKeyBatched(Array<Tk> okey, Array<Tv> oval)
     Tk *okey_ptr = okey.get();
     Tv *oval_ptr = oval.get();
 
-    std::vector<KeyIndexPair<Tk, Tv> > X;
-    X.reserve(okey.elements());
+    typedef KeyIndexPair<Tk, Tv> CurrentTuple;
+    size_t size = okey.elements();
+    size_t bytes = okey.elements() * sizeof(CurrentTuple);
+    CurrentTuple *tupleKeyValIdx = (CurrentTuple *)memAlloc<char>(bytes);
 
-    for(unsigned i = 0; i < okey.elements(); i++) {
-        X.push_back(std::make_pair(std::make_pair(okey_ptr[i], oval_ptr[i]), key[i]));
+    for(unsigned i = 0; i < size; i++) {
+        tupleKeyValIdx[i] = std::make_tuple(okey_ptr[i], oval_ptr[i], key[i]);
     }
 
     memFree(key); // key is no longer required
 
-    std::stable_sort(X.begin(), X.end(), KIPCompareV<Tk, Tv, isAscending>());
+    std::stable_sort(tupleKeyValIdx, tupleKeyValIdx + size, KIPCompareV<Tk, Tv, isAscending>());
 
-    std::stable_sort(X.begin(), X.end(), KIPCompareK<Tk, Tv, true>());
+    std::stable_sort(tupleKeyValIdx, tupleKeyValIdx + size, KIPCompareK<Tk, Tv, true>());
 
-    for(unsigned it = 0; it < okey.elements(); it++) {
-        okey_ptr[it] = X[it].first.first;
-        oval_ptr[it] = X[it].first.second;
+    for(unsigned x = 0; x < okey.elements(); x++) {
+        okey_ptr[x] = std::get<0>(tupleKeyValIdx[x]);
+        oval_ptr[x] = std::get<1>(tupleKeyValIdx[x]);
     }
 
+    memFree((char *)tupleKeyValIdx);
     return;
 }
 
@@ -163,4 +170,3 @@ void sort0ByKey(Array<Tk> okey, Array<Tv> oval)
     INSTANTIATE(Tk, uintl  , dr)
 }
 }
-
