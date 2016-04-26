@@ -76,18 +76,6 @@ static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, fl
     }
 }
 
-static void array_to_feat(vector<feat_t>& feat, float *x, float *y, float *score, float *ori, float *size, unsigned nfeat)
-{
-    feat.resize(nfeat);
-    for (unsigned i = 0; i < feat.size(); i++) {
-        feat[i].f[0] = x[i];
-        feat[i].f[1] = y[i];
-        feat[i].f[2] = score[i];
-        feat[i].f[3] = ori[i];
-        feat[i].f[4] = size[i];
-    }
-}
-
 static void split_feat_desc(vector<feat_desc_t>& fd, vector<feat_t>& f, vector<desc_t>& d)
 {
     f.resize(fd.size());
