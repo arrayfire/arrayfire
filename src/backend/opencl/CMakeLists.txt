@@ -126,8 +126,7 @@ FILE(GLOB opencl_kernels
     "kernel/*.cl")
 
 FILE(GLOB kernel_sources
-     "kernel/*.cpp"
-     "kernel/sort_by_key/*.cpp")
+     "kernel/*.cpp")
 
 FILE(GLOB conv_ker_headers
     "kernel/convolve/*.hpp")
@@ -237,6 +236,8 @@ IF(UNIX)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread -Wno-comment")
 ENDIF()
 
+INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
+
 IF(DEFINED BLAS_SYM_FILE)
 
     ADD_LIBRARY(afopencl_static STATIC
@@ -253,7 +254,8 @@ IF(DEFINED BLAS_SYM_FILE)
                 ${backend_headers}
                 ${backend_sources}
                 ${magma_sources}
-                ${magma_headers})
+                ${magma_headers}
+                ${SORT_BY_KEY_OBJECTS})
 
     ADD_LIBRARY(afopencl SHARED
                ${c_headers}
@@ -296,7 +298,8 @@ ELSE(DEFINED BLAS_SYM_FILE)
                 ${c_sources}
                 ${cpp_sources}
                 ${magma_sources}
-                ${magma_headers})
+                ${magma_headers}
+                ${SORT_BY_KEY_OBJECTS})
 
 ENDIF()
 
