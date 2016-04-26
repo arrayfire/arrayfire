@@ -158,7 +158,6 @@ FILE(GLOB cuda_headers
 FILE(GLOB cuda_sources
     "*.cu"
     "*.cpp"
-    "kernel/sort_by_key/*.cu"
     "kernel/*.cu")
 
 FILE(GLOB jit_sources
@@ -230,6 +229,8 @@ FILE(GLOB cpp_sources
 LIST(SORT cpp_sources)
 
 SOURCE_GROUP(api\\cpp\\Sources FILES ${cpp_sources})
+
+INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
 LIST(LENGTH COMPUTE_VERSIONS COMPUTE_COUNT)
 IF(${COMPUTE_COUNT} EQUAL 1)
@@ -361,6 +362,7 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${c_headers}
                 ${c_sources}
                 ${cpp_sources}
+                ${sort_by_key_sources}
                 OPTIONS ${CUDA_GENERATE_CODE})
 
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
