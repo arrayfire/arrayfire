@@ -9,11 +9,13 @@
 
 #include <kernel/sort_by_key_impl.hpp>
 
+// SBK_TYPES:float double int uint intl uintl short ushort char uchar
+
 namespace cpu
 {
 namespace kernel
 {
-    INSTANTIATE1(float,true)
-    INSTANTIATE1(float,false)
+    INSTANTIATE1(TYPE,true)
+    INSTANTIATE1(TYPE,false)
 }
 }

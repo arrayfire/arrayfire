@@ -108,8 +108,7 @@ FILE(GLOB cpu_headers
     "*.h")
 
 FILE(GLOB cpu_sources
-    "*.cpp"
-    "kernel/sort_by_key/*.cpp")
+    "*.cpp")
 
 LIST(SORT cpu_headers)
 LIST(SORT cpu_sources)
@@ -162,13 +161,15 @@ ELSE(${UNIX}) #Windows
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 ENDIF()
 
+INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
 IF(DEFINED BLAS_SYM_FILE)
   ADD_LIBRARY(afcpu_static STATIC
               ${cpu_headers}
               ${cpu_sources}
               ${backend_headers}
-              ${backend_sources})
+              ${backend_sources}
+              ${SORT_BY_KEY_OBJECTS})
 
   ADD_LIBRARY(afcpu SHARED
               ${c_headers}
@@ -192,14 +193,15 @@ IF(DEFINED BLAS_SYM_FILE)
 
 ELSE(DEFINED BLAS_SYM_FILE)
 
-  ADD_LIBRARY(afcpu SHARED
-              ${cpu_headers}
-              ${cpu_sources}
-              ${backend_headers}
-              ${backend_sources}
-              ${c_headers}
-              ${c_sources}
-              ${cpp_sources})
+ADD_LIBRARY(afcpu SHARED
+            ${cpu_headers}
+            ${cpu_sources}
+            ${backend_headers}
+            ${backend_sources}
+            ${c_headers}
+            ${c_sources}
+            ${cpp_sources}
+            ${SORT_BY_KEY_OBJECTS})
 
 ENDIF(DEFINED BLAS_SYM_FILE)
 
