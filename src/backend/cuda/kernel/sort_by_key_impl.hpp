@@ -198,18 +198,21 @@ namespace cuda
     template void sortByKeyBatched<Tk, Tv, dr, 2>(Param<Tk> okey, Param<Tv> oval);      \
     template void sortByKeyBatched<Tk, Tv, dr, 3>(Param<Tk> okey, Param<Tv> oval);      \
 
-#define INSTANTIATE1(Tk    , dr) \
+#define INSTANTIATE0(Tk    , dr) \
     INSTANTIATE(Tk, float  , dr) \
     INSTANTIATE(Tk, double , dr) \
     INSTANTIATE(Tk, cfloat , dr) \
     INSTANTIATE(Tk, cdouble, dr) \
+    INSTANTIATE(Tk, char   , dr) \
+    INSTANTIATE(Tk, uchar  , dr) \
+
+#define INSTANTIATE1(Tk    , dr) \
     INSTANTIATE(Tk, int    , dr) \
     INSTANTIATE(Tk, uint   , dr) \
     INSTANTIATE(Tk, short  , dr) \
     INSTANTIATE(Tk, ushort , dr) \
-    INSTANTIATE(Tk, char   , dr) \
-    INSTANTIATE(Tk, uchar  , dr) \
     INSTANTIATE(Tk, intl   , dr) \
     INSTANTIATE(Tk, uintl  , dr)
+
     }
 }

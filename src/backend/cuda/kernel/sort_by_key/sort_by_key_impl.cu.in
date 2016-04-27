@@ -9,11 +9,16 @@
 
 #include <kernel/sort_by_key_impl.hpp>
 
-namespace opencl
+// This file instantiates sort_by_key as separate object files from CMake
+// The 3 lines below are read by CMake to determenine the instantiations
+// SBK_TYPES:float double int uint intl uintl short ushort char uchar
+// SBK_DIRS:true false
+// SBK_INSTS:0 1
+
+namespace cuda
 {
 namespace kernel
 {
-    INSTANTIATE1(uintl,true)
-    INSTANTIATE1(uintl,false)
+    INSTANTIATE@SBK_INST@(@SBK_TYPE@, @SBK_DIR@)
 }
 }

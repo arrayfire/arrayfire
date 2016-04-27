@@ -9,10 +9,13 @@
 
 #include <kernel/sort_by_key_impl.hpp>
 
-namespace cuda
+// SBK_TYPES:float double int uint intl uintl short ushort char uchar
+
+namespace opencl
 {
 namespace kernel
 {
-    INSTANTIATE1(intl, true)
+    INSTANTIATE1(TYPE,true)
+    INSTANTIATE1(TYPE,false)
 }
 }

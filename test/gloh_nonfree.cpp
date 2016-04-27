@@ -77,18 +77,6 @@ static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, fl
     }
 }
 
-static void array_to_feat(vector<feat_t>& feat, float *x, float *y, float *score, float *ori, float *size, unsigned nfeat)
-{
-    feat.resize(nfeat);
-    for (unsigned i = 0; i < feat.size(); i++) {
-        feat[i].f[0] = x[i];
-        feat[i].f[1] = y[i];
-        feat[i].f[2] = score[i];
-        feat[i].f[3] = ori[i];
-        feat[i].f[4] = size[i];
-    }
-}
-
 static void split_feat_desc(vector<feat_desc_t>& fd, vector<feat_t>& f, vector<desc_t>& d)
 {
     f.resize(fd.size());
@@ -102,16 +90,6 @@ static void split_feat_desc(vector<feat_desc_t>& fd, vector<feat_t>& f, vector<d
         for (unsigned j = 0; j < 272; j++)
             d[i].d[j] = fd[i].d[j];
     }
-}
-
-static unsigned popcount(unsigned x)
-{
-    x = x - ((x >> 1) & 0x55555555);
-    x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
-    x = (x + (x >> 4)) & 0x0F0F0F0F;
-    x = x + (x >> 8);
-    x = x + (x >> 16);
-    return x & 0x0000003F;
 }
 
 static bool compareEuclidean(dim_t desc_len, dim_t ndesc, float *cpu, float *gpu, float unit_thr = 1.f, float euc_thr = 1.f)
