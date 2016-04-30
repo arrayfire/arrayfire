@@ -9,7 +9,8 @@ ENDFOREACH()
 
 FOREACH(SBK_TYPE ${SBK_TYPES})
     ADD_LIBRARY(opencl_sort_by_key_${SBK_TYPE} OBJECT
-        "${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/sort_by_key_impl.cpp")
+        "${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/sort_by_key_impl.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key_impl.hpp")
     ADD_DEPENDENCIES(opencl_sort_by_key_${SBK_TYPE} ${cl_kernel_targets})
     IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
         ADD_DEPENDENCIES(opencl_sort_by_key_${SBK_TYPE} forge)
