@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/defines.h>
 #include <Param.hpp>
 #include <platform.hpp>
 #include <kernel/KParam.hpp>

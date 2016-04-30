@@ -10,8 +10,6 @@
 #ifndef __KPARAM_H
 #define __KPARAM_H
 
-#include <af/defines.h>
-
 typedef struct
 {
     dim_t dims[4];
