@@ -20,8 +20,8 @@ namespace opencl
         template<typename Tk, typename Tv, bool isAscending>
         void sort0ByKeyIterative(Param pKey, Param pVal);
 
-        template<typename Tk_, typename Tv_, bool isAscending, int dim>
-        void sortByKeyBatched(Param pKey, Param pVal);
+        template<typename Tk_, typename Tv_, bool isAscending>
+        void sortByKeyBatched(Param pKey, Param pVal, const int dim);
 
         template<typename Tk, typename Tv, bool isAscending>
         void sort0ByKey(Param pKey, Param pVal);
