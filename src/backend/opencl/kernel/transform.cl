@@ -79,14 +79,20 @@ void transform_kernel(__global T *d_out, const KParam out,
 
     // Transform is in global memory.
     // Needs offset to correct transform being processed.
-    __global const float *tmat_ptr = c_tmat + t_idx * TRANSF_LEN;
-    float tmat[TRANSF_LEN];
+#if PERSPECTIVE
+    const int transf_len = 9;
+    float tmat[9];
+#else
+    const int transf_len = 6;
+    float tmat[6];
+#endif
+    __global const float *tmat_ptr = c_tmat + t_idx * transf_len;
 
     // We expect a inverse transform matrix by default
     // If it is an forward transform, then we need its inverse
     if(INVERSE == 1) {
         #pragma unroll 3
-        for(int i = 0; i < TRANSF_LEN; i++)
+        for(int i = 0; i < transf_len; i++)
             tmat[i] = tmat_ptr[i];
     } else {
         calc_transf_inverse(tmat, tmat_ptr);

@@ -69,7 +69,7 @@ namespace cuda
         __global__ static void
         transform_kernel(Param<T> out, CParam<T> in, const int nimages,
                          const int ntransforms, const int blocksXPerImage,
-                         const int transf_len, const bool perspective)
+                         const bool perspective)
         {
             // Compute which image set
             const int setId = blockIdx.x / blocksXPerImage;
@@ -99,8 +99,9 @@ namespace cuda
             const T *iptr = in.ptr  + setId * nimages * in.strides[2];
 
             // Transform is in constant memory.
+            const int transf_len = (perspective ? 9 : 6);
             const float *tmat_ptr = c_tmat + t_idx * transf_len;
-            float* tmat = new float[transf_len];
+            float tmat[9];
 
             // We expect a inverse transform matrix by default
             // If it is an forward transform, then we need its inverse
@@ -123,8 +124,6 @@ namespace cuda
                     transform_l(optr, out, iptr, in, tmat, xido, yido, limages, perspective); break;
                 default: break;
             }
-
-            delete[] tmat;
         }
 
         ///////////////////////////////////////////////////////////////////////////
@@ -161,11 +160,11 @@ namespace cuda
             if(inverse) {
                 CUDA_LAUNCH((transform_kernel<T, true, method>), blocks, threads,
                                 out, in, nimages, ntransforms, blocksXPerImage,
-                                transf_len, perspective);
+                                perspective);
             } else {
                 CUDA_LAUNCH((transform_kernel<T, false, method>), blocks, threads,
                                 out, in, nimages, ntransforms, blocksXPerImage,
-                                transf_len, perspective);
+                                perspective);
             }
             POST_LAUNCH_CHECK();
         }
