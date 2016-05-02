@@ -104,7 +104,7 @@ IF (${CUDA_FOUND})
         # Find NVVM
         FIND_LIBRARY( CUDA_NVVM_LIBRARY
           NAMES "nvvm"
-          PATH_SUFFIXES "nvvm/lib64" "nvvm/lib"
+          PATH_SUFFIXES "nvvm/lib64" "nvvm/lib" "nvvm/lib/x64"
           PATHS ${CUDA_TOOLKIT_ROOT_DIR}
           DOC "CUDA NVVM Library"
           )
