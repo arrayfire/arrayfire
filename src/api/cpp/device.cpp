@@ -129,6 +129,8 @@ namespace af
         case c64: return sizeof(double) * 2;
         case s16: return sizeof(short);
         case u16: return sizeof(unsigned short);
+        case s64: return sizeof(intl);
+        case u64: return sizeof(uintl);
         default: return sizeof(float);
         }
     }
@@ -229,5 +231,7 @@ namespace af
     INSTANTIATE(char)
     INSTANTIATE(short)
     INSTANTIATE(unsigned short)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
 
 }
