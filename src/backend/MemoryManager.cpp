@@ -189,7 +189,7 @@ void *MemoryManager::alloc(const size_t bytes, bool user_lock)
         }
 
 
-        locked_info info = {true, user_lock, alloc_bytes};
+        locked_info info = {!user_lock, user_lock, alloc_bytes};
         current.locked_map[ptr] = info;
         current.lock_bytes += alloc_bytes;
         current.lock_buffers++;
