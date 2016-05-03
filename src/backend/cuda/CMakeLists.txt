@@ -61,6 +61,12 @@ FOREACH(VER 20 30 32 35 37 50 52 53)
 ENDFOREACH()
 
 IF(UNIX)
+    # GCC 5.3 and above give errors for mempcy from <string.h>
+    # This is a (temporary) fix for that
+    IF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.3.0")
+        ADD_DEFINITIONS(-D_FORCE_INLINES)
+    ENDIF()
+
     # Forcing STRICT ANSI should resolve a bunch of issues that NVIDIA seems to face with GCC compilers.
     ADD_DEFINITIONS(-D__STRICT_ANSI__)
     SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler -fvisibility=hidden)
