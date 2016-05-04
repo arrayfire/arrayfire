@@ -1,70 +1,42 @@
 # - Find the NVVM include directory and libraries
 # Modified version of the file found here:
 # https://raw.githubusercontent.com/nvidia-compiler-sdk/nvvmir-samples/master/CMakeLists.txt
+# CUDA_NVVM_FOUND
+# CUDA_NVVM_INCLUDE_DIR
+# CUDA_NVVM_LIBRARY
 
 # libNVVM
-if(NOT DEFINED ENV{LIBNVVM_HOME})
-  set(LIBNVVM_HOME "${CUDA_TOOLKIT_ROOT_DIR}/nvvm")
-else()
-  set(LIBNVVM_HOME "$ENV{LIBNVVM_HOME}")
-endif()
-message(STATUS "Using LIBNVVM_HOME: ${LIBNVVM_HOME}")
+IF(NOT DEFINED ENV{CUDA_NVVM_HOME})
+    # If the toolkit path was changed then refind the library
+    IF(NOT "${CUDA_NVVM_HOME}" STREQUAL "${CUDA_TOOLKIT_ROOT_DIR}/nvvm")
+        UNSET(CUDA_NVVM_HOME CACHE)
+        UNSET(CUDA_nvvm_INCLUDE_DIR CACHE)
+        UNSET(CUDA_nvvm_LIBRARY CACHE)
+        SET(CUDA_NVVM_HOME "${CUDA_TOOLKIT_ROOT_DIR}/nvvm" CACHE INTERNAL "CUDA NVVM Directory")
+    ENDIF()
+ELSE()
+  SET(CUDA_NVVM_HOME "$ENV{CUDA_NVVM_HOME}" CACHE INTERNAL "CUDA NVVM Directory")
+  MESSAGE(STATUS "Using CUDA_NVVM_HOME: ${CUDA_NVVM_HOME}")
+ENDIF()
 
-IF(${CUDA_VERSION_MAJOR} LESS 7)
-	SET(NVVM_DLL_VERSION 20_0)
-ELSE(${CUDA_VERSION_MAJOR} LESS 7)
-	SET(NVVM_DLL_VERSION 30_0)
-ENDIF(${CUDA_VERSION_MAJOR} LESS 7)
+FIND_LIBRARY(CUDA_nvvm_LIBRARY
+             NAMES "nvvm"
+             PATHS ${CUDA_NVVM_HOME}
+             PATH_SUFFIXES "lib64" "lib" "lib/x64" "lib/Win32"
+             DOC "CUDA NVVM Library"
+            )
 
-if (CMAKE_SIZEOF_VOID_P STREQUAL "8")
-  if (WIN32)
-    set (CUDA_LIB_SEARCH_PATH "${CUDA_TOOLKIT_ROOT_DIR}/lib/x64")
-    set (NVVM_DLL_NAME nvvm64_${NVVM_DLL_VERSION}.dll)
-  else ()
-    set (CUDA_LIB_SEARCH_PATH "")
-  endif()
-else()
-  if (WIN32)
-    set (CUDA_LIB_SEARCH_PATH "${CUDA_TOOLKIT_ROOT_DIR}/lib/Win32")
-    set (NVVM_DLL_NAME nvvm32_${NVVM_DLL_VERSION}.dll)
-  else()
-    set (CUDA_LIB_SEARCH_PATH "")
-  endif()
-endif()
+FIND_PATH(CUDA_nvvm_INCLUDE_DIR
+          NAMES nvvm.h
+          PATHS ${CUDA_NVVM_HOME}
+          PATH_SUFFIXES "include"
+          DOC "CUDA NVVM Include Directory"
+         )
 
-### Find libNVVM
-# The directory structure for nvvm is a bit complex.
-# On Windows:
-#   32-bit -- nvvm/lib/Win32
-#   64-bit -- nvvm/lib/x64
-# On Linux:
-#   32-bit -- nvvm/lib
-#   64-bit -- nvvm/lib64
-# On Mac:
-#   Universal -- nvvm/lib
-if (CMAKE_SIZEOF_VOID_P STREQUAL "8")
-  if (WIN32)
-    set (LIB_ARCH_SUFFIX "/x64")
-  elseif (APPLE)
-    set (LIB_ARCH_SUFFIX "")
-  else ()
-    set (LIB_ARCH_SUFFIX "64")
-  endif()
-else()
-  if (WIN32)
-    set (LIB_ARCH_SUFFIX "/Win32")
-  else()
-    set (LIB_ARCH_SUFFIX "")
-  endif()
-endif()
+MARK_AS_ADVANCED(
+    CUDA_nvvm_INCLUDE_DIR
+    CUDA_nvvm_LIBRARY)
 
-find_library(NVVM_LIB nvvm PATHS "${LIBNVVM_HOME}/lib${LIB_ARCH_SUFFIX}")
-find_file(NVVM_H nvvm.h PATHS "${LIBNVVM_HOME}/include")
-
-if(NVVM_H)
-  get_filename_component(CUDA_NVVM_INCLUDE_DIR ${NVVM_H} PATH)
-else()
-  message(FATAL_ERROR "Unable to find nvvm.h")
-endif()
-
-set(CUDA_NVVM_LIBRARIES ${NVVM_LIB})
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(NVVM DEFAULT_MSG
+    CUDA_nvvm_INCLUDE_DIR CUDA_nvvm_LIBRARY)
