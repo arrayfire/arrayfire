@@ -12,6 +12,7 @@
 #include <af/compatible.h>
 #include <af/traits.hpp>
 #include <af/backend.h>
+#include "type_util.hpp"
 #include "error.hpp"
 
 namespace af
@@ -116,25 +117,6 @@ namespace af
 
     ///////////////////////////////////////////////////////////////////////////
     // Alloc and free host, pinned, zero copy
-    static unsigned size_of(af::dtype type)
-    {
-        switch(type) {
-        case f32: return sizeof(float);
-        case f64: return sizeof(double);
-        case s32: return sizeof(int);
-        case u32: return sizeof(unsigned);
-        case u8 : return sizeof(unsigned char);
-        case b8 : return sizeof(unsigned char);
-        case c32: return sizeof(float) * 2;
-        case c64: return sizeof(double) * 2;
-        case s16: return sizeof(short);
-        case u16: return sizeof(unsigned short);
-        case s64: return sizeof(intl);
-        case u64: return sizeof(uintl);
-        default: return sizeof(float);
-        }
-    }
-
     void *alloc(const size_t elements, const af::dtype type)
     {
         void *ptr;
