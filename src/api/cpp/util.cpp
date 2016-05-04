@@ -68,4 +68,11 @@ namespace af
         AF_THROW(af_array_to_string(&output, exp, arr.get(), precision, transpose));
         return output;
     }
+
+    size_t getSizeOf(af::dtype type)
+    {
+        size_t size = 0;
+        AF_THROW(af_get_size_of(&size, type));
+        return size;
+    }
 }

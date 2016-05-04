@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <af/defines.h>
 #include <Array.hpp>
 #include <triangle.hpp>
 #include <math.hpp>

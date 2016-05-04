@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/array.h>
-#include <af/defines.h>
 #include <Array.hpp>
 #include <copy.hpp>
 #include <kernel/memcopy.hpp>

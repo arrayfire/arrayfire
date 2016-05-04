@@ -18,6 +18,10 @@ FOREACH(SBK_TYPE ${SBK_TYPES})
         FOREACH(SBK_INST ${SBK_INSTS})
             CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/sort_by_key_impl.cu.in"
             "${CMAKE_CURRENT_BINARY_DIR}/sort_by_key/sort_by_key_impl_${SBK_TYPE}_${SBK_DIR}_${SBK_INST}.cu")
+            ADD_CUSTOM_COMMAND(
+              OUTPUT  "${CMAKE_CURRENT_BINARY_DIR}/sort_by_key/sort_by_key_impl_${SBK_TYPE}_${SBK_DIR}_${SBK_INST}.cu"
+              COMMAND  ${CMAKE_COMMAND} -E touch "${CMAKE_CURRENT_BINARY_DIR}/sort_by_key/sort_by_key_impl_${SBK_TYPE}_${SBK_DIR}_${SBK_INST}.cu"
+              DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key_impl.hpp")
         ENDFOREACH(SBK_INST ${SBK_INSTS})
     ENDFOREACH(SBK_DIR ${SBK_DIRS})
 ENDFOREACH(SBK_TYPE ${SBK_TYPES})

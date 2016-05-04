@@ -10,7 +10,6 @@
 #ifndef AF_OPENCL_CPU
 #define AF_OPENCL_CPU
 
-#include <af/defines.h>
 #include <Array.hpp>
 #include <memory.hpp>
 #include <types.hpp>

@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <kernel/sort_by_key.hpp>
 #include <af/dim4.hpp>
 #include <memory.hpp>
 #include <math.hpp>
@@ -15,6 +14,7 @@
 #include <Param.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include <kernel/sort_by_key.hpp>
 #include <kernel/iota.hpp>
 
 #include <thrust/device_ptr.h>
@@ -110,8 +110,8 @@ namespace cuda
             POST_LAUNCH_CHECK();
         }
 
-        template<typename Tk, typename Tv, bool isAscending, int dim>
-        void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal)
+        template<typename Tk, typename Tv, bool isAscending>
+        void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim)
         {
             af::dim4 inDims;
             for(int i = 0; i < 4; i++)
@@ -185,18 +185,15 @@ namespace cuda
             int higherDims =  okey.dims[1] * okey.dims[2] * okey.dims[3];
             // TODO Make a better heurisitic
             if(higherDims > 4)
-                kernel::sortByKeyBatched<Tk, Tv, isAscending, 0>(okey, oval);
+                kernel::sortByKeyBatched<Tk, Tv, isAscending>(okey, oval, 0);
             else
                 kernel::sort0ByKeyIterative<Tk, Tv, isAscending>(okey, oval);
         }
 
-#define INSTANTIATE(Tk, Tv, dr)                                                         \
-    template void sort0ByKey<Tk, Tv, dr>(Param<Tk> okey, Param<Tv> oval);               \
-    template void sort0ByKeyIterative<Tk, Tv, dr>(Param<Tk> okey, Param<Tv> oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 0>(Param<Tk> okey, Param<Tv> oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 1>(Param<Tk> okey, Param<Tv> oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 2>(Param<Tk> okey, Param<Tv> oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 3>(Param<Tk> okey, Param<Tv> oval);      \
+#define INSTANTIATE(Tk, Tv, dr)                                                                 \
+    template void sort0ByKey<Tk, Tv, dr>(Param<Tk> okey, Param<Tv> oval);                       \
+    template void sort0ByKeyIterative<Tk, Tv, dr>(Param<Tk> okey, Param<Tv> oval);              \
+    template void sortByKeyBatched<Tk, Tv, dr>(Param<Tk> okey, Param<Tv> oval, const int dim);
 
 #define INSTANTIATE0(Tk    , dr) \
     INSTANTIATE(Tk, float  , dr) \
@@ -204,7 +201,7 @@ namespace cuda
     INSTANTIATE(Tk, cfloat , dr) \
     INSTANTIATE(Tk, cdouble, dr) \
     INSTANTIATE(Tk, char   , dr) \
-    INSTANTIATE(Tk, uchar  , dr) \
+    INSTANTIATE(Tk, uchar  , dr)
 
 #define INSTANTIATE1(Tk    , dr) \
     INSTANTIATE(Tk, int    , dr) \

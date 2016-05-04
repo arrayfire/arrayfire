@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/defines.h>
-#include <af/blas.h>
 #include <Array.hpp>
 #include <types.hpp>
 

@@ -8,9 +8,6 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <af/defines.h>
-#include <af/constants.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <handle.hpp>
 #include <harris.hpp>

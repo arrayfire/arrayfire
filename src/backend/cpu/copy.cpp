@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <type_traits>
-#include <af/array.h>
 #include <Array.hpp>
 #include <copy.hpp>
 #include <cstring>

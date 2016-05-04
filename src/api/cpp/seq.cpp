@@ -83,7 +83,7 @@ seq::seq(seq other, bool is_gfor)
 
 seq::operator array() const
 {
-    dim_t diff = s.end - s.begin;
+    double diff = s.end - s.begin;
     dim_t len = (int)((diff + fabs(s.step) * (signbit(diff) == 0 ? 1 : -1)) / s.step);
 
     array tmp = (m_gfor) ? range(1, 1, 1, len, 3) : range(len);

@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <af/version.h>
-#include <af/defines.h>
 #include <platform.hpp>
 #include <sstream>
 #include <queue.hpp>

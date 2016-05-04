@@ -34,9 +34,9 @@ void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in, const uin
 
     switch(dim) {
         case 0: getQueue().enqueue(kernel::sort0ByKey<T, uint, isAscending>, okey, oval); break;
-        case 1: getQueue().enqueue(kernel::sortByKeyBatched<T, uint, isAscending, 1>, okey, oval); break;
-        case 2: getQueue().enqueue(kernel::sortByKeyBatched<T, uint, isAscending, 2>, okey, oval); break;
-        case 3: getQueue().enqueue(kernel::sortByKeyBatched<T, uint, isAscending, 3>, okey, oval); break;
+        case 1: getQueue().enqueue(kernel::sortByKeyBatched<T, uint, isAscending>, okey, oval, 1); break;
+        case 2: getQueue().enqueue(kernel::sortByKeyBatched<T, uint, isAscending>, okey, oval, 2); break;
+        case 3: getQueue().enqueue(kernel::sortByKeyBatched<T, uint, isAscending>, okey, oval, 3); break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
     }
 

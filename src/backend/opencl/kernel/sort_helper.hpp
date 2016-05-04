@@ -8,10 +8,10 @@
  ********************************************************/
 
 #pragma once
-#include <traits.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <type_traits>
 
 namespace opencl
 {

@@ -71,25 +71,6 @@ namespace af
         }
     }
 
-    static unsigned size_of(af::dtype type)
-    {
-        switch(type) {
-        case f32: return sizeof(float);
-        case f64: return sizeof(double);
-        case s32: return sizeof(int);
-        case u32: return sizeof(unsigned);
-        case s64: return sizeof(intl);
-        case u64: return sizeof(uintl);
-        case u8 : return sizeof(unsigned char);
-        case b8 : return sizeof(unsigned char);
-        case c32: return sizeof(float) * 2;
-        case c64: return sizeof(double) * 2;
-        case s16: return sizeof(short);
-        case u16: return sizeof(unsigned short);
-        default: return sizeof(float);
-        }
-    }
-
     static unsigned numDims(const af_array arr)
     {
         unsigned nd;
@@ -282,7 +263,7 @@ namespace af
     {
         dim_t nElements;
         AF_THROW(af_get_elements(&nElements, get()));
-        return nElements * size_of(type());
+        return nElements * getSizeOf(type());
     }
 
     array array::copy() const

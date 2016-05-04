@@ -8,7 +8,6 @@
  ********************************************************/
 #pragma once
 
-#include <af/array.h>
 #include <Array.hpp>
 
 namespace opencl

@@ -9,7 +9,6 @@
 #pragma once
 
 #include <platform.hpp>
-#include <af/defines.h>
 
 namespace opencl
 {

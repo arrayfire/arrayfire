@@ -31,9 +31,9 @@ void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
 
     switch(dim) {
         case 0: getQueue().enqueue(kernel::sort0ByKey<Tk, Tv, isAscending>, okey, oval); break;
-        case 1: getQueue().enqueue(kernel::sortByKeyBatched<Tk, Tv, isAscending, 1>, okey, oval); break;
-        case 2: getQueue().enqueue(kernel::sortByKeyBatched<Tk, Tv, isAscending, 2>, okey, oval); break;
-        case 3: getQueue().enqueue(kernel::sortByKeyBatched<Tk, Tv, isAscending, 3>, okey, oval); break;
+        case 1: getQueue().enqueue(kernel::sortByKeyBatched<Tk, Tv, isAscending>, okey, oval, 1); break;
+        case 2: getQueue().enqueue(kernel::sortByKeyBatched<Tk, Tv, isAscending>, okey, oval, 2); break;
+        case 3: getQueue().enqueue(kernel::sortByKeyBatched<Tk, Tv, isAscending>, okey, oval, 3); break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
     }
 

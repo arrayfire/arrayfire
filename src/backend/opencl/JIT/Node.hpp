@@ -9,7 +9,6 @@
 
 #pragma once
 #include <platform.hpp>
-#include <af/array.h>
 #include <optypes.hpp>
 #include <string>
 #include <vector>

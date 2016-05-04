@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/image.h>
 #include <Array.hpp>
 
 namespace cuda
