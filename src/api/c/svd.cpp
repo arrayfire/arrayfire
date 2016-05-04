@@ -11,7 +11,6 @@
 #include <af/array.h>
 #include <af/lapack.h>
 
-#include <af/util.h>
 #include <af/defines.h>
 #include <err_common.hpp>
 #include <backend.hpp>
