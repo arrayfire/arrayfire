@@ -6,6 +6,12 @@ FIND_PACKAGE(Boost REQUIRED)
 INCLUDE("${CMAKE_MODULE_PATH}/CLKernelToH.cmake")
 INCLUDE("${CMAKE_MODULE_PATH}/FindNVVM.cmake")
 
+MARK_AS_ADVANCED(
+    CUDA_BUILD_CUBIN
+    CUDA_BUILD_EMULATION
+    CUDA_SDK_ROOT_DIR
+    CUDA_VERBOSE_BUILD)
+
 # Disables running cuda_compute_check.c when build windows using remote
 OPTION(CUDA_COMPUTE_DETECT "Run autodetection of CUDA Architecture" ON)
 MARK_AS_ADVANCED(CUDA_COMPUTE_DETECT)

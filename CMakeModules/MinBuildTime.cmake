@@ -13,7 +13,7 @@ IF(${MIN_BUILD_TIME})
     # IF FLAG is ON, then the flags were already set, no need to set them again
     # IF FLAG is OFF, then the flags are not set, so set them now, and back up
     # release flags
-    MESSAGE(STATUS "Setting Release flags to no optimizations")
+    MESSAGE(STATUS "MIN_BUILD_TIME: Setting Release flags to no optimizations")
 
         # Backup Default Release Flags
         SET(CMAKE_CXX_FLAGS_RELEASE_DEFAULT ${CMAKE_CXX_FLAGS_RELEASE} CACHE
@@ -30,7 +30,6 @@ IF(${MIN_BUILD_TIME})
             INTERNAL "Default linker flags during release build" FORCE)
 
         IF(MSVC)
-            MESSAGE(STATUS "MSVC Flags")
             SET(CMAKE_CXX_FLAGS_RELEASE "/MD /Od /Ob1 /D NDEBUG" CACHE
                 STRING "Flags used by the compiler during release builds." FORCE)
             SET(CMAKE_C_FLAGS_RELEASE "/MD /Od /Ob1 /D NDEBUG" CACHE
@@ -44,7 +43,6 @@ IF(${MIN_BUILD_TIME})
             SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/INCREMENTAL:NO" CACHE
                 STRING "Flags used by the linker during release builds." FORCE)
         ELSE(MSVC)
-            MESSAGE(STATUS "Other Flags")
             SET(CMAKE_CXX_FLAGS_RELEASE "-O0 -DNDEBUG" CACHE
                 STRING "Flags used by the compiler during release builds." FORCE)
             SET(CMAKE_C_FLAGS_RELEASE "-O0 -DNDEBUG" CACHE
@@ -62,8 +60,6 @@ IF(${MIN_BUILD_TIME})
         SET(MINBUILDTIME_FLAG ON CACHE INTERNAL "Flag" FORCE)
     ENDIF()
 ELSE()
-  MESSAGE(STATUS "MIN_BUILD_TIME IS OFF")
-
     # MIN_BUILD_TIME is OFF. Change the flags back only if the flag was set before
     IF(${MINBUILDTIME_FLAG})
         MESSAGE(STATUS "MIN_BUILD_FLAG was toggled. Resetting Release FLags")
