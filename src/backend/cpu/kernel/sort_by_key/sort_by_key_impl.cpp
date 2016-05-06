@@ -7,9 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <sort_by_key_impl.hpp>
+#include <kernel/sort_by_key_impl.hpp>
 
-namespace cuda
+// SBK_TYPES:float double int uint intl uintl short ushort char uchar
+
+namespace cpu
 {
-    INSTANTIATE1(double, true)
+namespace kernel
+{
+    INSTANTIATE1(TYPE,true)
+    INSTANTIATE1(TYPE,false)
+}
 }

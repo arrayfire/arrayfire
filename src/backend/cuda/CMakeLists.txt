@@ -31,6 +31,8 @@ ENDIF()
 LIST(LENGTH COMPUTES_DETECTED_LIST COMPUTES_LEN)
 IF(${COMPUTES_LEN} EQUAL 0 AND ${FALLBACK})
     MESSAGE(STATUS "No computes detected. Fall back to 20, 30, 50")
+    MESSAGE(STATUS "You can use -DCOMPUTES_DETECTED_LIST=\"AB;XY\" (semicolon separated list of CUDA Compute versions to enable the specified computes")
+    MESSAGE(STATUS "Individual compute versions flags are also available under CMake Advance options")
     LIST(APPEND COMPUTES_DETECTED_LIST "20" "30" "50")
 ENDIF()
 
@@ -102,7 +104,15 @@ ELSE(CUDA_cusolver_LIBRARY)
     IF(${CUDA_LAPACK_CPU_FALLBACK})
         ## Try to use CPU side lapack
         IF(APPLE)
-            FIND_PACKAGE(LAPACK)
+            FIND_PACKAGE(LAPACKE QUIET) # For finding MKL
+            IF(NOT LAPACK_FOUND)
+                # UNSET THE VARIABLES FROM LAPACKE
+                UNSET(LAPACKE_LIB CACHE)
+                UNSET(LAPACK_LIB CACHE)
+                UNSET(LAPACKE_INCLUDES CACHE)
+                UNSET(LAPACKE_ROOT_DIR CACHE)
+                FIND_PACKAGE(LAPACK)
+            ENDIF()
         ELSE(APPLE) # Linux and Windows
             FIND_PACKAGE(LAPACKE)
         ENDIF(APPLE)
@@ -112,9 +122,14 @@ ELSE(CUDA_cusolver_LIBRARY)
         ELSE(NOT LAPACK_FOUND)
             MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. But CPU LAPACK libraries are available. Will fallback to using host side code.")
             ADD_DEFINITIONS(-DWITH_CPU_LINEAR_ALGEBRA)
-            IF(USE_CUDA_MKL)
-                MESSAGE("Using MKL")
+            IF(USE_CUDA_MKL) # Manual MKL Setup
+                MESSAGE("CUDA LAPACK CPU Fallback Using MKL")
                 ADD_DEFINITIONS(-DUSE_MKL)
+            ELSE(USE_CUDA_MKL)
+                IF(${MKL_FOUND}) # Automatic MKL Setup from BLAS
+                    MESSAGE("CUDA LAPACK CPU Fallback Using MKL RT")
+                    ADD_DEFINITIONS(-DUSE_MKL)
+                ENDIF()
             ENDIF()
         ENDIF()
     ELSE()
@@ -143,7 +158,6 @@ FILE(GLOB cuda_headers
 FILE(GLOB cuda_sources
     "*.cu"
     "*.cpp"
-    "sort_by_key/*.cu"
     "kernel/*.cu")
 
 FILE(GLOB jit_sources
@@ -154,6 +168,12 @@ FILE(GLOB kernel_headers
 
 FILE(GLOB ptx_sources
     "JIT/*.cu")
+
+LIST(SORT cuda_headers)
+LIST(SORT cuda_sources)
+LIST(SORT jit_sources)
+LIST(SORT kernel_headers)
+LIST(SORT ptx_sources)
 
 SOURCE_GROUP(backend\\cuda\\Headers FILES ${cuda_headers})
 SOURCE_GROUP(backend\\cuda\\Sources FILES ${cuda_sources})
@@ -168,6 +188,8 @@ IF(CUDA_LAPACK_CPU_FALLBACK)
 
     SOURCE_GROUP(backend\\cuda\\cpu_lapack\\Headers FILES ${cpu_lapack_headers})
     SOURCE_GROUP(backend\\cuda\\cpu_lapack\\Sources FILES ${cpu_lapack_sources})
+    LIST(SORT cpu_lapack_headers)
+    LIST(SORT cpu_lapack_sources)
 ENDIF()
 
 FILE(GLOB backend_headers
@@ -178,6 +200,9 @@ FILE(GLOB backend_headers
 FILE(GLOB backend_sources
     "../*.cpp"
     )
+
+LIST(SORT backend_headers)
+LIST(SORT backend_sources)
 
 SOURCE_GROUP(backend\\Headers FILES ${backend_headers})
 SOURCE_GROUP(backend\\Sources FILES ${backend_sources})
@@ -191,6 +216,9 @@ FILE(GLOB c_sources
     "../../api/c/*.cpp"
     )
 
+LIST(SORT c_headers)
+LIST(SORT c_sources)
+
 SOURCE_GROUP(api\\c\\Headers FILES ${c_headers})
 SOURCE_GROUP(api\\c\\Sources FILES ${c_sources})
 
@@ -198,7 +226,11 @@ FILE(GLOB cpp_sources
     "../../api/cpp/*.cpp"
     )
 
+LIST(SORT cpp_sources)
+
 SOURCE_GROUP(api\\cpp\\Sources FILES ${cpp_sources})
+
+INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
 LIST(LENGTH COMPUTE_VERSIONS COMPUTE_COUNT)
 IF(${COMPUTE_COUNT} EQUAL 1)
@@ -300,6 +332,24 @@ macro(MY_CUDA_ADD_LIBRARY cuda_target)
 
 endmacro()
 
+IF(NOT CUDA_CUDA_LIBRARY)
+    MESSAGE(SEND_ERROR "CMake CUDA Variable CUDA_CUDA_LIBRARY Not found.")
+    MESSAGE("CUDA Driver Library (libcuda.so/libcuda.dylib/cuda.lib) cannot be found.")
+    FIND_FILE(CUDA_CUDA_LIBRARY_STUB
+              NAMES "libcuda.so" "libcuda.dylib" "cuda.lib"
+              PATHS ${CUDA_TOOLKIT_ROOT_DIR}
+              PATH_SUFFIXES "lib64" "lib64/stubs" "lib" "lib/stubs" "lib/x64" "lib/Win32"
+              DOC "CUDA Library STUB"
+             )
+    IF(CUDA_CUDA_LIBRARY_STUB)
+        MESSAGE("You can use the library stub available in the CUDA Toolkit: ${CUDA_CUDA_LIBRARY_STUB}")
+        MESSAGE("Run the following commands (Linux) to set it up:")
+        MESSAGE("ln -s ${CUDA_CUDA_LIBRARY_STUB} /usr/lib/libcuda.so.1")
+        MESSAGE("ln -s /usr/lib/libcuda.so.1 /usr/lib/libcuda.so")
+    ENDIF()
+    MESSAGE(FATAL_ERROR "Ending CMake configuration because of missing CUDA_CUDA_LIBRARY")
+ENDIF(NOT CUDA_CUDA_LIBRARY)
+
 MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cuda_headers}
                 ${cuda_sources}
@@ -312,6 +362,7 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${c_headers}
                 ${c_sources}
                 ${cpp_sources}
+                ${sort_by_key_sources}
                 OPTIONS ${CUDA_GENERATE_CODE})
 
 ADD_DEPENDENCIES(afcuda ${ptx_targets})

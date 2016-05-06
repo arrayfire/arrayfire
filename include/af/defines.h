@@ -50,10 +50,6 @@
     typedef long long   dim_t;
 #endif
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) || defined(_WIN64)
-#define USE_CPUID
-#endif
-
 #include <stdlib.h>
 
 typedef long long intl;
@@ -385,6 +381,17 @@ typedef enum {
     AF_ID = 0
 } af_someenum_t;
 
+#if AF_API_VERSION >=34
+typedef enum {
+    AF_ADD  = 0,
+    AF_SUB  = 1,
+    AF_MUL  = 2,
+    AF_DIV  = 3,
+    AF_MIN  = 4,
+    AF_MAX  = 5
+} af_binary_op;
+#endif
+
 #if AF_API_VERSION >=32
 typedef enum {
     AF_MARKER_NONE         = 0,
@@ -426,6 +433,9 @@ namespace af
 #endif
 #if AF_API_VERSION >= 32
     typedef af_marker_type markerType;
+#endif
+#if AF_API_VERSION >= 34
+    typedef af_binary_op binaryOp;
 #endif
 }
 

@@ -80,6 +80,37 @@ TYPED_TEST(Diagonal, Extract)
     }
 }
 
+TYPED_TEST(Diagonal, ExtractRect)
+{
+    if (noDoubleTests<TypeParam>()) return;
+
+    try {
+        static const int size0 = 1000, size1 = 900;
+        vector<TypeParam> input (size0 * size1);
+        for(int i = 0; i < size0 * size1; i++) {
+            input[i] = i;
+        }
+
+        for(int jj = 10; jj < size0; jj += 100) {
+            for(int kk = 10; kk < size1; kk += 90) {
+                array data(jj, kk, &input.front(), afHost);
+                array out = diag(data, 0);
+
+                vector<TypeParam> h_out(out.elements());
+                out.host(&h_out.front());
+
+                ASSERT_EQ(out.dims(0), std::min(jj, kk));
+
+                for(int i =0; i < (int)out.dims(0); i++) {
+                    ASSERT_EQ(input[i * data.dims(0) + i], h_out[i]);
+                }
+            }
+        }
+    } catch (const af::exception& ex) {
+        FAIL() << ex.what() << std::endl;
+    }
+}
+
 TEST(Diagonal, ExtractGFOR)
 {
     dim4 dims = dim4(100, 100, 3);

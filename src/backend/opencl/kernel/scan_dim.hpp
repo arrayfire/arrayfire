@@ -35,7 +35,7 @@ namespace opencl
 {
 namespace kernel
 {
-    template<typename Ti, typename To, af_op_t op>
+    template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
     static Kernel get_scan_dim_kernels(int kerIdx, int dim, bool isFinalPass, uint threads_y)
     {
         std::string ref_name =
@@ -50,7 +50,9 @@ namespace kernel
             std::string("_") +
             std::to_string(op) +
             std::string("_") +
-            std::to_string(threads_y);
+            std::to_string(threads_y) +
+            std::string("_") +
+            std::to_string(int(inclusive_scan));
 
         int device = getActiveDeviceId();
         kc_t::iterator idx = kernelCaches[device].find(ref_name);
@@ -71,7 +73,8 @@ namespace kernel
                     << " -D init=" << toNum(scan.init())
                     << " -D " << binOpName<op>()
                     << " -D CPLX=" << af::iscplx<Ti>()
-                    << " -D isFinalPass=" << (int)(isFinalPass);
+                    << " -D isFinalPass=" << (int)(isFinalPass)
+                    << " -D inclusive_scan=" << inclusive_scan;
             if (std::is_same<Ti, double>::value ||
                 std::is_same<Ti, cdouble>::value) {
                 options << " -D USE_DOUBLE";
@@ -97,7 +100,7 @@ namespace kernel
         return entry.ker[kerIdx];
     }
 
-    template<typename Ti, typename To, af_op_t op>
+    template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
     static void scan_dim_launcher(Param &out,
                                   Param &tmp,
                                   const Param &in,
@@ -105,7 +108,7 @@ namespace kernel
                                   const uint groups_all[4])
     {
         try {
-            Kernel ker = get_scan_dim_kernels<Ti, To, op>(0, dim, isFinalPass, threads_y);
+            Kernel ker = get_scan_dim_kernels<Ti, To, op, inclusive_scan>(0, dim, isFinalPass, threads_y);
 
             NDRange local(THREADS_X, threads_y);
             NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -131,14 +134,14 @@ namespace kernel
         }
     }
 
-    template<typename Ti, typename To, af_op_t op>
+    template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
     static void bcast_dim_launcher(Param &out,
                                    Param &tmp,
                                    int dim, bool isFinalPass, uint threads_y,
                                    const uint groups_all[4])
     {
         try {
-            Kernel ker = get_scan_dim_kernels<Ti, To, op>(1, dim, isFinalPass, threads_y);
+            Kernel ker = get_scan_dim_kernels<Ti, To, op, inclusive_scan>(1, dim, isFinalPass, threads_y);
 
             NDRange local(THREADS_X, threads_y);
             NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -162,7 +165,7 @@ namespace kernel
         }
     }
 
-    template<typename Ti, typename To, af_op_t op>
+    template<typename Ti, typename To, af_op_t op, bool inclusive_scan = true>
     static void scan_dim(Param &out, const Param &in, int dim)
     {
         try {
@@ -178,7 +181,7 @@ namespace kernel
 
             if (groups_all[dim] == 1) {
 
-                scan_dim_launcher<Ti, To, op>(out, out, in,
+                scan_dim_launcher<Ti, To, op, inclusive_scan>(out, out, in,
                                               dim, true,
                                               threads_y,
                                               groups_all);
@@ -196,7 +199,7 @@ namespace kernel
                 // FIXME: Do I need to free this ?
                 tmp.data = bufferAlloc(tmp_elements * sizeof(To));
 
-                scan_dim_launcher<Ti, To, op>(out, tmp, in,
+                scan_dim_launcher<Ti, To, op, inclusive_scan>(out, tmp, in,
                                               dim, false,
                                               threads_y,
                                               groups_all);
@@ -205,19 +208,19 @@ namespace kernel
                 groups_all[dim] = 1;
 
                 if (op == af_notzero_t) {
-                    scan_dim_launcher<To, To, af_add_t>(tmp, tmp, tmp,
+                    scan_dim_launcher<To, To, af_add_t, true>(tmp, tmp, tmp,
                                                         dim, true,
                                                         threads_y,
                                                         groups_all);
                 } else {
-                    scan_dim_launcher<To, To,       op>(tmp, tmp, tmp,
+                    scan_dim_launcher<To, To,       op, true>(tmp, tmp, tmp,
                                                         dim, true,
                                                         threads_y,
                                                         groups_all);
                 }
 
                 groups_all[dim] = gdim;
-                bcast_dim_launcher<To, To, op>(out, tmp,
+                bcast_dim_launcher<To, To, op, inclusive_scan>(out, tmp,
                                                dim, true,
                                                threads_y,
                                                groups_all);

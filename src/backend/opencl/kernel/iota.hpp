@@ -9,6 +9,7 @@
 
 #pragma once
 #include <kernel_headers/iota.hpp>
+#include <af/dim4.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
@@ -31,13 +32,13 @@ namespace opencl
     namespace kernel
     {
         // Kernel Launch Config Values
-        static const int TX = 32;
-        static const int TY = 8;
+        static const int IOTA_TX = 32;
+        static const int IOTA_TY = 8;
         static const int TILEX = 512;
         static const int TILEY = 32;
 
         template<typename T>
-        void iota(Param out, const dim4 &sdims, const dim4 &tdims)
+        void iota(Param out, const af::dim4 &sdims, const af::dim4 &tdims)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -64,7 +65,7 @@ namespace opencl
                                           const int, const int, const int, const int,
                                           const int, const int> (*iotaKernels[device]);
 
-                NDRange local(TX, TY, 1);
+                NDRange local(IOTA_TX, IOTA_TY, 1);
 
                 int blocksPerMatX = divup(out.info.dims[0], TILEX);
                 int blocksPerMatY = divup(out.info.dims[1], TILEY);

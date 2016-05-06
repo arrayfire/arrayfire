@@ -37,7 +37,7 @@ namespace opencl
 namespace kernel
 {
 
-    template<typename Ti, typename To, af_op_t op>
+    template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
     static Kernel get_scan_first_kernels(int kerIdx, bool isFinalPass, uint threads_x)
     {
         std::string ref_name =
@@ -51,7 +51,9 @@ namespace kernel
             std::string("_") +
             std::to_string(op) +
             std::string("_") +
-            std::to_string(threads_x);
+            std::to_string(threads_x) +
+            std::string("_") +
+            std::to_string(int(inclusive_scan));
 
         int device = getActiveDeviceId();
         kc_t::iterator idx = kernelCaches[device].find(ref_name);
@@ -75,7 +77,8 @@ namespace kernel
                     << " -D init=" << toNum(scan.init())
                     << " -D " << binOpName<op>()
                     << " -D CPLX=" << af::iscplx<Ti>()
-                    << " -D isFinalPass=" << (int)(isFinalPass);
+                    << " -D isFinalPass=" << (int)(isFinalPass)
+                    << " -D inclusive_scan=" << inclusive_scan;
             if (std::is_same<Ti, double>::value ||
                 std::is_same<Ti, cdouble>::value) {
                 options << " -D USE_DOUBLE";
@@ -101,7 +104,7 @@ namespace kernel
         return entry.ker[kerIdx];
     }
 
-    template<typename Ti, typename To, af_op_t op>
+    template<typename Ti, typename To, af_op_t op, bool inclusive_scan = true>
     static void scan_first_launcher(Param &out,
                                     Param &tmp,
                                     const Param &in,
@@ -110,7 +113,7 @@ namespace kernel
                                     const uint groups_y,
                                     const uint threads_x)
     {
-        Kernel ker = get_scan_first_kernels<Ti, To, op>(0, isFinalPass, threads_x);
+        Kernel ker = get_scan_first_kernels<Ti, To, op, inclusive_scan>(0, isFinalPass, threads_x);
 
         NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
         NDRange global(groups_x * out.info.dims[2] * local[0],
@@ -130,7 +133,7 @@ namespace kernel
         CL_DEBUG_FINISH(getQueue());
     }
 
-    template<typename Ti, typename To, af_op_t op>
+    template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
     static void bcast_first_launcher(Param &out,
                                      Param &tmp,
                                      const bool isFinalPass,
@@ -139,7 +142,7 @@ namespace kernel
                                      const uint threads_x)
     {
 
-        Kernel ker = get_scan_first_kernels<Ti, To, op>(1, isFinalPass, threads_x);
+        Kernel ker = get_scan_first_kernels<Ti, To, op, inclusive_scan>(1, isFinalPass, threads_x);
 
         NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
         NDRange global(groups_x * out.info.dims[2] * local[0],
@@ -159,7 +162,7 @@ namespace kernel
     }
 
 
-    template<typename Ti, typename To, af_op_t op>
+    template<typename Ti, typename To, af_op_t op, bool inclusive_scan = true>
     static void scan_first(Param &out, const Param &in)
     {
         uint threads_x = nextpow2(std::max(32u, (uint)out.info.dims[0]));
@@ -170,7 +173,7 @@ namespace kernel
         uint groups_y = divup(out.info.dims[1], threads_y);
 
         if (groups_x == 1) {
-            scan_first_launcher<Ti, To, op>(out, out, in,
+            scan_first_launcher<Ti, To, op, inclusive_scan>(out, out, in,
                                             true,
                                             groups_x, groups_y,
                                             threads_x);
@@ -188,24 +191,24 @@ namespace kernel
 
             tmp.data = bufferAlloc(tmp_elements * sizeof(To));
 
-            scan_first_launcher<Ti, To, op>(out, tmp, in,
+            scan_first_launcher<Ti, To, op, inclusive_scan>(out, tmp, in,
                                             false,
                                             groups_x, groups_y,
                                             threads_x);
 
             if (op == af_notzero_t) {
-                scan_first_launcher<To, To, af_add_t>(tmp, tmp, tmp,
+                scan_first_launcher<To, To, af_add_t, true>(tmp, tmp, tmp,
                                                       true,
                                                       1, groups_y,
                                                       threads_x);
             } else {
-                scan_first_launcher<To, To,       op>(tmp, tmp, tmp,
+                scan_first_launcher<To, To,       op, true>(tmp, tmp, tmp,
                                                       true,
                                                       1, groups_y,
                                                       threads_x);
             }
 
-            bcast_first_launcher<To, To, op>(out, tmp,
+            bcast_first_launcher<To, To, op, inclusive_scan>(out, tmp,
                                              true,
                                              groups_x,
                                              groups_y,

@@ -62,28 +62,36 @@ IF(NOT CBLAS_ROOT_DIR)
   IF (ENV{CBLASDIR})
     SET(CBLAS_ROOT_DIR $ENV{CBLASDIR})
     IF ("${SIZE_OF_VOIDP}" EQUAL 8)
-      SET(CBLAS_LIB64_DIR "${INTEL_MKL_ROOT_DIR}/lib64")
+        SET(CBLAS_LIB64_DIR "${CBLAS_ROOT_DIR}/lib64")
     ELSE()
-      SET(CBLAS_LIB32_DIR "${INTEL_MKL_ROOT_DIR}/lib")
+        SET(CBLAS_LIB32_DIR "${CBLAS_ROOT_DIR}/lib")
     ENDIF()
   ENDIF()
 
   IF (ENV{CBLAS_ROOT_DIR})
     SET(CBLAS_ROOT_DIR $ENV{CBLAS_ROOT_DIR})
     IF ("${SIZE_OF_VOIDP}" EQUAL 8)
-      SET(CBLAS_LIB64_DIR "${INTEL_MKL_ROOT_DIR}/lib64")
+        SET(CBLAS_LIB64_DIR "${CBLAS_ROOT_DIR}/lib64")
     ELSE()
-      SET(CBLAS_LIB32_DIR "${INTEL_MKL_ROOT_DIR}/lib")
+        SET(CBLAS_LIB32_DIR "${CBLAS_ROOT_DIR}/lib")
     ENDIF()
   ENDIF()
 
   IF (INTEL_MKL_ROOT_DIR)
     SET(CBLAS_ROOT_DIR ${INTEL_MKL_ROOT_DIR})
-    IF ("${SIZE_OF_VOIDP}" EQUAL 8)
-      SET(CBLAS_LIB64_DIR "${INTEL_MKL_ROOT_DIR}/lib/intel64")
-    ELSE()
-      SET(CBLAS_LIB32_DIR "${INTEL_MKL_ROOT_DIR}/lib/ia32")
-    ENDIF()
+    IF(APPLE)
+        IF ("${SIZE_OF_VOIDP}" EQUAL 8)
+            SET(CBLAS_LIB64_DIR "${CBLAS_ROOT_DIR}/lib")
+        ELSE()
+            SET(CBLAS_LIB32_DIR "${CBLAS_ROOT_DIR}/lib")
+        ENDIF()
+    ELSE(APPLE) # Windows and Linux
+        IF ("${SIZE_OF_VOIDP}" EQUAL 8)
+            SET(CBLAS_LIB64_DIR "${CBLAS_ROOT_DIR}/lib/intel64")
+        ELSE()
+            SET(CBLAS_LIB32_DIR "${CBLAS_ROOT_DIR}/lib/ia32")
+        ENDIF()
+    ENDIF(APPLE)
   ENDIF()
 
   SET(CBLAS_INCLUDE_DIR "${CBLAS_ROOT_DIR}/include")
@@ -101,7 +109,7 @@ MACRO(CHECK_ALL_LIBRARIES
     _flags
     _list
     _include
-    _search_include,
+    _search_include
     _libraries_work_check)
   # This macro checks for the existence of the combination of fortran libraries
   # given by _list.  If the combination is found, this macro checks (using the
@@ -160,11 +168,6 @@ MACRO(CHECK_ALL_LIBRARIES
       ENDIF(APPLE)
       MARK_AS_ADVANCED(${_prefix}_${_library}_LIBRARY)
 
-      IF(${_prefix}_${_library}_LIBRARY)
-        GET_FILENAME_COMPONENT(_path ${${_prefix}_${_library}_LIBRARY} PATH)
-        LIST(APPEND _paths ${_path}/../include ${_path}/../../include ${CBLAS_ROOT_DIR}/include)
-      ENDIF(${_prefix}_${_library}_LIBRARY)
-
       SET(${LIBRARIES} ${${LIBRARIES}} ${${_prefix}_${_library}_LIBRARY})
       SET(_libraries_work ${${_prefix}_${_library}_LIBRARY})
     ENDIF(_libraries_work)
@@ -175,8 +178,17 @@ MACRO(CHECK_ALL_LIBRARIES
   SET(_bug_libraries_work_check ${_libraries_work_check}) #CMAKE BUG!!! SHOULD NOT BE THAT
 
   IF(_bug_search_include)
-    FIND_PATH(${_prefix}${_combined_name}_INCLUDE ${_include} ${_paths})
+    FIND_PATH(${_prefix}${_combined_name}_INCLUDE ${_include}
+      /opt/intel/mkl/include
+      /usr/include
+      /usr/local/include
+      /sw/include
+      /opt/local/include
+      PATH_SUFFIXES
+      openblas
+      )
     MARK_AS_ADVANCED(${_prefix}${_combined_name}_INCLUDE)
+
     IF(${_prefix}${_combined_name}_INCLUDE)
       IF (_verbose)
         MESSAGE(STATUS "Includes found")
@@ -186,6 +198,7 @@ MACRO(CHECK_ALL_LIBRARIES
     ELSE(${_prefix}${_combined_name}_INCLUDE)
       SET(_libraries_work FALSE)
     ENDIF(${_prefix}${_combined_name}_INCLUDE)
+
   ELSE(_bug_search_include)
     SET(${_prefix}_INCLUDE_DIR)
     SET(${_prefix}_INCLUDE_FILE ${_include})

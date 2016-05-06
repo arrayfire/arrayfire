@@ -101,7 +101,7 @@ namespace kernel
         int otmp_elements = otmp.strides[3] * otmp.dims[3];
         otmp.ptr = memAlloc<uint>(otmp_elements);
 
-        scan_first_launcher<T, uint, af_notzero_t, false>(otmp, rtmp, in,
+        scan_first_launcher<T, uint, af_notzero_t, false, true>(otmp, rtmp, in,
                                                           blocks_x, blocks_y,
                                                           threads_x);
 
@@ -113,7 +113,7 @@ namespace kernel
             ltmp.strides[k] = rtmp_elements;
         }
 
-        scan_first<uint, uint, af_add_t>(ltmp, ltmp);
+        scan_first<uint, uint, af_add_t, true>(ltmp, ltmp);
 
         // Get output size and allocate output
         uint total;

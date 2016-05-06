@@ -21,7 +21,7 @@
 namespace opencl
 {
     template<af_op_t op, typename Ti, typename To>
-    Array<To> scan(const Array<Ti>& in, const int dim)
+    Array<To> scan(const Array<Ti>& in, const int dim, bool inclusive_scan)
     {
         Array<To> out = createEmptyArray<To>(in.dims());
 
@@ -29,10 +29,17 @@ namespace opencl
             Param Out = out;
             Param In  =   in;
 
-            if (dim == 0)
-                kernel::scan_first<Ti, To, op>(Out, In);
-            else
-                kernel::scan_dim  <Ti, To, op>(Out, In, dim);
+            if (inclusive_scan) {
+                if (dim == 0)
+                    kernel::scan_first<Ti, To, op, true>(Out, In);
+                else
+                    kernel::scan_dim  <Ti, To, op, true>(Out, In, dim);
+            } else {
+                if (dim == 0)
+                    kernel::scan_first<Ti, To, op, false>(Out, In);
+                else
+                    kernel::scan_dim  <Ti, To, op, false>(Out, In, dim);
+            }
 
         } catch (cl::Error &ex) {
 
@@ -42,21 +49,30 @@ namespace opencl
         return out;
     }
 
-#define INSTANTIATE(ROp, Ti, To)                                        \
-    template Array<To> scan<ROp, Ti, To>(const Array<Ti>& in, const int dim); \
+#define INSTANTIATE(ROp, Ti, To)\
+    template Array<To> scan<ROp, Ti, To>(const Array<Ti> &in, const int dim, bool inclusive_scan);
+
+#define INSTANTIATE_SCAN(ROp)           \
+    INSTANTIATE(ROp, float  , float  )  \
+    INSTANTIATE(ROp, double , double )  \
+    INSTANTIATE(ROp, cfloat , cfloat )  \
+    INSTANTIATE(ROp, cdouble, cdouble)  \
+    INSTANTIATE(ROp, int    , int    )  \
+    INSTANTIATE(ROp, uint   , uint   )  \
+    INSTANTIATE(ROp, intl   , intl   )  \
+    INSTANTIATE(ROp, uintl  , uintl  )  \
+    INSTANTIATE(ROp, char   , int    )  \
+    INSTANTIATE(ROp, char   , uint   )  \
+    INSTANTIATE(ROp, uchar  , uint   )  \
+    INSTANTIATE(ROp, short  , int    )  \
+    INSTANTIATE(ROp, ushort , uint   )
 
     //accum
-    INSTANTIATE(af_add_t, float  , float  )
-    INSTANTIATE(af_add_t, double , double )
-    INSTANTIATE(af_add_t, cfloat , cfloat )
-    INSTANTIATE(af_add_t, cdouble, cdouble)
-    INSTANTIATE(af_add_t, int    , int    )
-    INSTANTIATE(af_add_t, uint   , uint   )
-    INSTANTIATE(af_add_t, intl   , intl   )
-    INSTANTIATE(af_add_t, uintl  , uintl  )
-    INSTANTIATE(af_add_t, char   , int    )
-    INSTANTIATE(af_add_t, uchar  , uint   )
-    INSTANTIATE(af_add_t, short  , int    )
-    INSTANTIATE(af_add_t, ushort , uint   )
     INSTANTIATE(af_notzero_t, char  , uint)
+    INSTANTIATE_SCAN(af_add_t)
+    INSTANTIATE_SCAN(af_sub_t)
+    INSTANTIATE_SCAN(af_mul_t)
+    INSTANTIATE_SCAN(af_div_t)
+    INSTANTIATE_SCAN(af_min_t)
+    INSTANTIATE_SCAN(af_max_t)
 }

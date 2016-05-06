@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <sys/param.h>
 
-#if defined(BSD)
+#if defined(BSD) && !defined(__gnu_hurd__)
 #include <sys/sysctl.h>
 #endif
 

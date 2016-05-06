@@ -104,6 +104,12 @@ af_err af_where(af_array *idx, const af_array in)
     return CALL(idx, in);
 }
 
+af_err af_scan(af_array* out, const af_array in, const int dim, af_binary_op op, bool inclusive_scan)
+{
+    CHECK_ARRAYS(in);
+    return CALL(out, in, dim, op, inclusive_scan);
+}
+
 af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool isAscending)
 {
     CHECK_ARRAYS(in);

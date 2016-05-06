@@ -84,12 +84,24 @@ void scan_dim_kernel(__global To *oData, KParam oInfo,
         }
 
         val = binOp(val, l_tmp[lidx]);
-        if (cond) *oData = val;
-        barrier(CLK_LOCAL_MEM_FENCE);
+
+        if (inclusive_scan != 0) {
+            if (cond) {
+                *oData = val;
+            }
+        }
+        else if (is_valid) {
+            if (id_dim == (out_dim - 1)) {
+                *(oData - (id_dim*ostride_dim)) = init_val;
+            } else if (id_dim < (out_dim - 1)) {
+                *(oData + ostride_dim) = val;
+            }
+        }
 
         id_dim += DIMY;
         iData += DIMY * istride_dim;
         oData += DIMY * ostride_dim;
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
 
     if (!isFinalPass &&

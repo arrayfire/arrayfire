@@ -68,7 +68,7 @@ AFAPI af_err af_get_active_backend(af_backend *backend);
 
 #if AF_API_VERSION >= 33
 /**
-   \param[out] dev contains the device on which \p in was created.
+   \param[out] device contains the device on which \p in was created.
    \param[in] in is the array who's device is to be queried.
    \returns \ref af_err error code
 

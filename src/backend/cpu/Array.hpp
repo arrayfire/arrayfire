@@ -85,12 +85,14 @@ namespace cpu
     {
         T *ptr = arr.device();
         memLock(ptr);
+
         return (void *)ptr;
     }
 
     template<typename T>
     void *getRawPtr(const Array<T>& arr)
     {
+        getQueue().sync();
         return (void *)(arr.get(false));
     }
 
@@ -174,23 +176,22 @@ namespace cpu
 
         dim4 getDataDims() const
         {
-            // This is for moddims
-            // dims and data_dims are different when moddims is used
-            return isOwner() ? info.dims() : data_dims;
+            return data_dims;
         }
 
         void setDataDims(const dim4 &new_dims)
         {
+            modDims(new_dims);
             data_dims = new_dims;
         }
 
         T* device()
         {
             getQueue().sync();
-            if (!isOwner() || data.use_count() > 1) {
+            if (!isOwner() || getOffset() || data.use_count() > 1) {
                 *this = Array<T>(dims(), get(), true, true);
             }
-            return this->data.get();
+            return this->get();
         }
 
         T* device() const

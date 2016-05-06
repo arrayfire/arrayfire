@@ -7,10 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include "impl.hpp"
+#include <kernel/sort_by_key_impl.hpp>
+
+// SBK_TYPES:float double int uint intl uintl short ushort char uchar
 
 namespace opencl
 {
-    INSTANTIATE1(char,true)
-    INSTANTIATE1(char,false)
+namespace kernel
+{
+    INSTANTIATE1(TYPE,true)
+    INSTANTIATE1(TYPE,false)
+}
 }
