@@ -115,7 +115,6 @@ af_err af_scan(af_array *out, const af_array in, const int dim, af_binary_op op,
         case s16:  res = scan_op<short  , int    >(in, dim, op, inclusive_scan); break;
         case u8:   res = scan_op<uchar  , uint   >(in, dim, op, inclusive_scan); break;
         case b8:   res = scan_op<char   , uint   >(in, dim, op, inclusive_scan); break;
-        // Make sure you are adding only "1" for every non zero value, even if op == af_add_t
         default:
             TYPE_ERROR(1, type);
         }
