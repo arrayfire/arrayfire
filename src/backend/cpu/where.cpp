@@ -9,8 +9,6 @@
 
 #include <complex>
 #include <af/dim4.hpp>
-#include <af/defines.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <memory.hpp>
 #include <where.hpp>

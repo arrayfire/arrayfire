@@ -232,8 +232,8 @@ namespace opencl
             }
         }
 
-        template<typename Tk_, typename Tv_, bool isAscending, int dim>
-        void sortByKeyBatched(Param pKey, Param pVal)
+        template<typename Tk_, typename Tv_, bool isAscending>
+        void sortByKeyBatched(Param pKey, Param pVal, const int dim)
         {
             typedef type_t<Tk_> Tk;
             typedef type_t<Tv_> Tv;
@@ -341,18 +341,15 @@ namespace opencl
             int higherDims =  pKey.info.dims[1] * pKey.info.dims[2] * pKey.info.dims[3];
             // TODO Make a better heurisitic
             if(higherDims > 5)
-                kernel::sortByKeyBatched<Tk, Tv, isAscending, 0>(pKey, pVal);
+                kernel::sortByKeyBatched<Tk, Tv, isAscending>(pKey, pVal, 0);
             else
                 kernel::sort0ByKeyIterative<Tk, Tv, isAscending>(pKey, pVal);
         }
 
-#define INSTANTIATE(Tk, Tv, dr)                                                 \
-    template void sort0ByKey<Tk, Tv, dr>(Param okey, Param oval);               \
-    template void sort0ByKeyIterative<Tk, Tv, dr>(Param okey, Param oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 0>(Param okey, Param oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 1>(Param okey, Param oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 2>(Param okey, Param oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 3>(Param okey, Param oval);      \
+#define INSTANTIATE(Tk, Tv, dr)                                                         \
+    template void sort0ByKey<Tk, Tv, dr>(Param okey, Param oval);                       \
+    template void sort0ByKeyIterative<Tk, Tv, dr>(Param okey, Param oval);              \
+    template void sortByKeyBatched<Tk, Tv, dr>(Param okey, Param oval, const int dim);
 
 #define INSTANTIATE1(Tk    , dr) \
     INSTANTIATE(Tk, float  , dr) \

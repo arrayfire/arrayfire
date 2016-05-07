@@ -20,6 +20,8 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using af::cfloat;
+using af::cdouble;
 
 const size_t step_bytes = 1024;
 
@@ -72,6 +74,159 @@ TEST(Memory, Scope)
 
     ASSERT_EQ(alloc_bytes, 1 * step_bytes);
     ASSERT_EQ(lock_bytes, 0u);
+}
+
+template<typename T>
+class MemAlloc: public ::testing::Test
+{
+    public:
+        virtual void SetUp() { }
+};
+
+// create a list of types to be tested
+typedef ::testing::Types<float, double, cfloat, cdouble,
+                         int, unsigned int, intl, uintl,
+                         char, unsigned char, short, ushort
+                        > TestTypes;
+
+// register the type list
+TYPED_TEST_CASE(MemAlloc, TestTypes);
+
+size_t roundUpToStep(size_t bytes)
+{
+    if (step_bytes == 0)
+        return bytes;
+
+    size_t remainder = bytes % step_bytes;
+    if (remainder == 0)
+        return bytes;
+
+    return bytes + step_bytes - remainder;
+}
+
+template<typename T>
+void memAllocArrayScopeTest(int elements)
+{
+    if (noDoubleTests<T>()) return;
+
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    cleanSlate(); // Clean up everything done so far
+
+    {
+        af::array a = af::randu(elements, (af_dtype)af::dtype_traits<T>::af_type);
+
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        ASSERT_EQ(alloc_buffers, 1u);
+        ASSERT_EQ(lock_buffers, 1u);
+
+        ASSERT_EQ(alloc_bytes, roundUpToStep(elements * sizeof(T)));
+        ASSERT_EQ(lock_bytes, roundUpToStep(elements * sizeof(T)));
+    }
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 1u);
+    ASSERT_EQ(lock_buffers, 0u); // 0 because a is out of scope
+
+    ASSERT_EQ(alloc_bytes, roundUpToStep(elements * sizeof(T)));
+    ASSERT_EQ(lock_bytes, 0u);
+}
+
+template<typename T>
+void memAllocPtrScopeTest(int elements)
+{
+    if (noDoubleTests<T>()) return;
+
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    cleanSlate(); // Clean up everything done so far
+
+    {
+        T *ptr = af::alloc<T>(elements);
+
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        ASSERT_EQ(alloc_buffers, 1u);
+        ASSERT_EQ(lock_buffers, 1u);
+
+        ASSERT_EQ(alloc_bytes, roundUpToStep(elements * sizeof(T)));
+        ASSERT_EQ(lock_bytes, roundUpToStep(elements * sizeof(T)));
+
+        af::free(ptr);
+    }
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 1u);
+    ASSERT_EQ(lock_buffers, 0u); // 0 because a is out of scope
+
+    ASSERT_EQ(alloc_bytes, roundUpToStep(elements * sizeof(T)));
+    ASSERT_EQ(lock_bytes, 0u);
+
+    // Do without using templated alloc
+    cleanSlate(); // Clean up everything done so far
+
+    {
+        void *ptr = af::alloc(elements, (af_dtype)af::dtype_traits<T>::af_type);
+
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        ASSERT_EQ(alloc_buffers, 1u);
+        ASSERT_EQ(lock_buffers, 1u);
+
+        ASSERT_EQ(alloc_bytes, roundUpToStep(elements * sizeof(T)));
+        ASSERT_EQ(lock_bytes, roundUpToStep(elements * sizeof(T)));
+
+        af::free(ptr);
+    }
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 1u);
+    ASSERT_EQ(lock_buffers, 0u); // 0 because a is out of scope
+
+    ASSERT_EQ(alloc_bytes, roundUpToStep(elements * sizeof(T)));
+    ASSERT_EQ(lock_bytes, 0u);
+}
+
+TYPED_TEST(MemAlloc, ArrayScope25)
+{
+    memAllocArrayScopeTest<TypeParam>(25);
+}
+
+TYPED_TEST(MemAlloc, ArrayScope2048)
+{
+    memAllocArrayScopeTest<TypeParam>(2048);
+}
+
+TYPED_TEST(MemAlloc, ArrayScope2293)
+{
+    memAllocArrayScopeTest<TypeParam>(2293);
+}
+
+TYPED_TEST(MemAlloc, PtrScope25)
+{
+    memAllocPtrScopeTest<TypeParam>(25);
+}
+
+TYPED_TEST(MemAlloc, PtrScope2048)
+{
+    memAllocPtrScopeTest<TypeParam>(2048);
+}
+
+TYPED_TEST(MemAlloc, PtrScope2293)
+{
+    memAllocPtrScopeTest<TypeParam>(2293);
 }
 
 TEST(Memory, SingleSizeLoop)

@@ -10,8 +10,6 @@
 #include <complex>
 #include <algorithm>
 #include <af/dim4.hpp>
-#include <af/defines.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <set.hpp>
 #include <copy.hpp>

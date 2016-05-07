@@ -10,8 +10,6 @@
 #include <Array.hpp>
 #include <resize.hpp>
 #include <math.hpp>
-#include <types.hpp>
-#include <af/traits.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <kernel/resize.hpp>

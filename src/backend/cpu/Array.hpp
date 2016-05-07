@@ -9,7 +9,6 @@
 
 //This is the array implementation class.
 #pragma once
-#include <af/array.h>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
 #include <backend.hpp>

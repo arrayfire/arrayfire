@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <af/defines.h>
 #include <kernel/sort_by_key.hpp>
 #include <kernel/sort_helper.hpp>
 #include <Array.hpp>
@@ -71,8 +70,8 @@ void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval)
     return;
 }
 
-template<typename Tk, typename Tv, bool isAscending, int dim>
-void sortByKeyBatched(Array<Tk> okey, Array<Tv> oval)
+template<typename Tk, typename Tv, bool isAscending>
+void sortByKeyBatched(Array<Tk> okey, Array<Tv> oval, const int dim)
 {
     af::dim4 inDims = okey.dims();
 
@@ -142,18 +141,15 @@ void sort0ByKey(Array<Tk> okey, Array<Tv> oval)
     int higherDims =  okey.dims()[1] * okey.dims()[2] * okey.dims()[3];
     // TODO Make a better heurisitic
     if(higherDims > 4)
-        kernel::sortByKeyBatched<Tk, Tv, isAscending, 0>(okey, oval);
+        kernel::sortByKeyBatched<Tk, Tv, isAscending>(okey, oval, 0);
     else
         kernel::sort0ByKeyIterative<Tk, Tv, isAscending>(okey, oval);
 }
 
-#define INSTANTIATE(Tk, Tv, dr)                                                         \
-    template void sort0ByKey<Tk, Tv, dr>(Array<Tk> okey, Array<Tv> oval);               \
-    template void sort0ByKeyIterative<Tk, Tv, dr>(Array<Tk> okey, Array<Tv> oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 0>(Array<Tk> okey, Array<Tv> oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 1>(Array<Tk> okey, Array<Tv> oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 2>(Array<Tk> okey, Array<Tv> oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 3>(Array<Tk> okey, Array<Tv> oval);      \
+#define INSTANTIATE(Tk, Tv, dr)                                                                 \
+    template void sort0ByKey<Tk, Tv, dr>(Array<Tk> okey, Array<Tv> oval);                       \
+    template void sort0ByKeyIterative<Tk, Tv, dr>(Array<Tk> okey, Array<Tv> oval);              \
+    template void sortByKeyBatched<Tk, Tv, dr>(Array<Tk> okey, Array<Tv> oval, const int dim);
 
 #define INSTANTIATE1(Tk    , dr) \
     INSTANTIATE(Tk, float  , dr) \

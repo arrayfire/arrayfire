@@ -20,8 +20,8 @@ namespace cuda
         template<typename Tk, typename Tv, bool isAscending>
         void sort0ByKeyIterative(Param<Tk> okey, Param<Tv> oval);
 
-        template<typename Tk, typename Tv, bool isAscending, int dim>
-        void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal);
+        template<typename Tk, typename Tv, bool isAscending>
+        void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim);
 
         template<typename Tk, typename Tv, bool isAscending>
         void sort0ByKey(Param<Tk> okey, Param<Tv> oval);

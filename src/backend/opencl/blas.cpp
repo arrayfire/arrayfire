@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <blas.hpp>
-#include <af/blas.h>
 #include <Array.hpp>
 #include <cassert>
 #include <string>

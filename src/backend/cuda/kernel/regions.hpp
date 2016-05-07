@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/defines.h>
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>

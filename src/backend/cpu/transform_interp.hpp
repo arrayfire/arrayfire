@@ -10,7 +10,7 @@
 #pragma once
 #include <math.hpp>
 #include <types.hpp>
-#include <af/traits.hpp>
+#include <type_traits>
 
 namespace cpu
 {

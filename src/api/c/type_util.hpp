@@ -31,3 +31,5 @@ struct ToNum<char>
 {
     inline int operator()(char val) { return static_cast<int>(val); }
 };
+
+size_t size_of(af_dtype type);
