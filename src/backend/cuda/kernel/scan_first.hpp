@@ -184,38 +184,6 @@ namespace kernel
                 out, tmp, in, blocks_x, blocks_y, lim); break;
         }
 
-        //if (inclusive_scan) {
-        //    switch (threads_x) {
-        //    case 32:
-        //        CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  32, true>), blocks, threads,
-        //            out, tmp, in, blocks_x, blocks_y, lim); break;
-        //    case 64:
-        //        CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  64, true>), blocks, threads,
-        //            out, tmp, in, blocks_x, blocks_y, lim); break;
-        //    case 128:
-        //        CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  128, true>), blocks, threads,
-        //            out, tmp, in, blocks_x, blocks_y, lim); break;
-        //    case 256:
-        //        CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  256, true>), blocks, threads,
-        //            out, tmp, in, blocks_x, blocks_y, lim); break;
-        //    }
-        //} else {
-        //    switch (threads_x) {
-        //    case 32:
-        //        CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  32, false>), blocks, threads,
-        //            out, tmp, in, blocks_x, blocks_y, lim); break;
-        //    case 64:
-        //        CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  64, false>), blocks, threads,
-        //            out, tmp, in, blocks_x, blocks_y, lim); break;
-        //    case 128:
-        //        CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  128, false>), blocks, threads,
-        //            out, tmp, in, blocks_x, blocks_y, lim); break;
-        //    case 256:
-        //        CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  256, false>), blocks, threads,
-        //            out, tmp, in, blocks_x, blocks_y, lim); break;
-        //    }
-        //}
-
         POST_LAUNCH_CHECK();
     }
 
