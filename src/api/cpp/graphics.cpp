@@ -44,7 +44,10 @@ Window::Window(const af_window window)
 
 Window::~Window()
 {
-    AF_THROW(af_destroy_window(wnd));
+    // THOU SHALL NOT THROW IN DESTRUCTORS
+    if (wnd) {
+        af_destroy_window(wnd);
+    }
 }
 
 void Window::setPos(const unsigned x, const unsigned y)

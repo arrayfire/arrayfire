@@ -231,9 +231,10 @@ namespace opencl
         {
             auto func = [=] (void* ptr) {
                 try {
-                    if(ptr != nullptr)
+                    if(ptr != nullptr) {
                         getQueue().enqueueUnmapMemObject(*data, ptr);
                         ptr = nullptr;
+                    }
                 } catch(cl::Error err) {
                     CL_TO_AF_ERROR(err);
                 }

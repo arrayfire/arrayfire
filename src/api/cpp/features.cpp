@@ -39,8 +39,9 @@ namespace af
 
     features::~features()
     {
-        if(AF_SUCCESS != af_release_features(feat)) {
-            fprintf(stderr, "Error: Couldn't release af::features: %p\n", this);
+        // THOU SHALL NOT THROW IN DESTRUCTORS
+        if (feat) {
+            af_release_features(feat);
         }
     }
 
