@@ -52,7 +52,8 @@ class clFFTPlanner
             #ifndef OS_WIN
             static bool flag = true;
             if(flag) {
-                CLFFT_CHECK(clfftTeardown());
+                // THOU SHALL NOT THROW IN DESTRUCTORS
+                clfftTeardown();
                 flag = false;
             }
             #endif
