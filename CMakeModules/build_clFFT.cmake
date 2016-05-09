@@ -14,7 +14,7 @@ ENDIF()
 ExternalProject_Add(
     clFFT-ext
     GIT_REPOSITORY https://github.com/arrayfire/clFFT.git
-    GIT_TAG af3.3.1
+    GIT_TAG arrayfire-release-test
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
