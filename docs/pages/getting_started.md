@@ -3,10 +3,22 @@ Getting Started {#gettingstarted}
 
 [TOC]
 
+# Introduction
+
+ArrayFire is a high performance software library for parallel computing with
+an easy-to-use API. ArrayFire abstracts away much of the details of
+programming parallel architectures by providing a high-level container object,
+the [array](\ref af::array), that represents data stored on a CPU, GPU, FPGA,
+or other type of accelerator. This abstraction permits developers to write
+massively parallel applications in a high-level language where they need
+not be concerned about low-level optimizations that are frequently required to
+achieve high throughput on most parallel architectures.
+
 # Supported data types {#gettingstarted_datatypes}
 
-There is one generic [array](\ref af::array) container object while the
-underlying data may be one of various [basic types](\ref af::af_dtype):
+ArrayFire provides one generic container object, the [array](\ref af::array)
+on which functions and mathematical operations are performed. The `array`
+can represent one of many different [basic data types](\ref af::af_dtype):
 
 * [b8](\ref b8) 8-bit boolean values (`bool`)
 * [f32](\ref f32) real single-precision (`float`)
@@ -20,30 +32,53 @@ underlying data may be one of various [basic types](\ref af::af_dtype):
 * [s16](\ref s16) 16-bit signed integer (`short`)
 * [u16](\ref u16) 16-bit unsigned integer (`unsigned short`)
 
-Older devices may not support double precision operations.
+Most of these data types are supported on all modern GPUs; however, some
+older devices may lack support for double precision arrays. In this case,
+a runtime error will be generated when the array is constructed.
+
+If not specified otherwise, `array`s are created as single precision floating
+point numbers (`f32`).
 
 # Creating and populating an ArrayFire array {#getting_started_af_arrays}
 
-ArrayFire [array](\ref af::array)s always exist on the device. They
-may be populated with data using an ArrayFire function, or filled with data
-found on the host. For example:
+ArrayFire [array](\ref af::array)s represent memory stored on the device.
+As such, creation and population of an array will consume memory on the device
+which cannot freed until the `array` object goes out of scope. As device memory
+allocation can be expensive, ArrayFire also includes a memory manager which
+will re-use device memory whenever possible.
+
+Arrays can be created using one of the [array constructors](\ref #construct_mat).
+Below we show how to create 1D, 2D, and 3D arrays with uninitialized values:
+
+\snippet test/getting_started.cpp ex_getting_started_constructors
+
+However, uninitialized memory is likely not useful in your application.
+ArrayFire provides several convenient functions for creating arrays that contain
+pre-populated values including constants, uniform random numbers, uniform
+normally distributed numbers, and the identity matrix:
 
 \snippet test/getting_started.cpp ex_getting_started_gen
 
 A complete list of ArrayFire functions that automatically generate data
 on the device may be found on the [functions to create arrays](\ref data_mat)
-page. The default data type for arrays is [f32](\ref f32) (a
+page. As stated above, the default data type for arrays is [f32](\ref f32) (a
 32-bit floating point number) unless specified otherwise.
 
-ArrayFire arrays may also be populated from data found on the host.
+ArrayFire `array`s may also be populated from data found on the host.
 For example:
 
 \snippet test/getting_started.cpp ex_getting_started_init
 
-ArrayFire also supports array initialization from a device pointer.
-For example ArrayFire can be populated directly by a call to `cudaMemcpy`
+ArrayFire also supports array initialization from memory already on the GPU.
+For example, with CUDA one can populate an `array` directly using a call
+to `cudaMemcpy`:
 
 \snippet test/getting_started.cpp ex_getting_started_dev_ptr
+
+Similar functionality exists for OpenCL too. If you wish to intermingle
+ArrayFire with CUDA or OpenCL code, we suggest you consult the
+[CUDA interoperability](\ref interop_cuda) or
+[OpenCL interoperability](\ref interop_opencl) pages for detailed instructions.
 
 # ArrayFire array contents, dimensions, and properties {#getting_started_array_properties}
 
