@@ -73,6 +73,7 @@ void transform(Array<T> output, const Array<T> input,
 {
     const af::dim4 idims    = input.dims();
     const af::dim4 odims    = output.dims();
+    const af::dim4 tdims    = transform.dims();
     const af::dim4 istrides = input.strides();
     const af::dim4 ostrides = output.strides();
 
@@ -80,9 +81,10 @@ void transform(Array<T> output, const Array<T> input,
     const T * in = input.get();
     const float* tf = transform.get();
 
-    dim_t nimages     = idims[2];
-    // Multiplied in src/backend/transform.cpp
-    dim_t ntransforms = odims[2] / idims[2];
+    int nImg2 = idims[2];
+    int nImg3 = idims[3];
+    int nTfs2 = tdims[2];
+    int nTfs3 = tdims[3];
 
     void (*t_fn)(T *, const T *, const float *, const af::dim4 &,
                  const af::dim4 &, const af::dim4 &,
@@ -106,23 +108,52 @@ void transform(Array<T> output, const Array<T> input,
 
     const int transf_len = (perspective) ? 9 : 6;
 
+    int batchImg2 = 1;
+    int batchImg3 = 1;
+    if(nImg2 != nTfs2 && nImg2 > 1)
+        batchImg2 = nImg2;
+    if(nImg3 != nTfs3 && nImg3 > 1)
+        batchImg3 = nImg3;
+
+    af::dim4 idims_ = idims;
+    idims_[3] = batchImg3;
+    idims_[2] = batchImg2;
+    const dim_t nimages  = batchImg2;
+
     // For each transform channel
-    for(int t_idx = 0; t_idx < (int)ntransforms; t_idx++) {
-        // Compute inverse if required
-        const float *tmat_ptr = tf + t_idx * transf_len;
-        float* tmat = new float[transf_len];
-        calc_transform_inverse(tmat, tmat_ptr, inverse, perspective, transf_len);
-
-        // Offset for output pointer
-        dim_t o_offset = t_idx * nimages * ostrides[2];
-
-        // Do transform for image
-        for(int yy = 0; yy < (int)odims[1]; yy++) {
-            for(int xx = 0; xx < (int)odims[0]; xx++) {
-                t_fn(out, in, tmat, idims, ostrides, istrides, nimages, o_offset, xx, yy, perspective);
-            }
+    for(int t_idx3 = 0; t_idx3 < nTfs3; t_idx3++) {
+        int offset3 = 0;
+        int i_offset3 = 0;
+        if(nTfs3 > 1) {       // Not Image Batched
+            offset3 = t_idx3 * ostrides[3];
+            if(nImg3 > 1) i_offset3 = t_idx3 * istrides[3]; // One to one batching
         }
-        delete[] tmat;
+
+        for(int t_idx2 = 0; t_idx2 < nTfs2; t_idx2++) {
+
+            // Compute inverse if required
+            const float *tmat_ptr = tf + (t_idx3 * nTfs2 + t_idx2) * transf_len;
+            float* tmat = new float[transf_len];
+            calc_transform_inverse(tmat, tmat_ptr, inverse, perspective, transf_len);
+
+            int offset2 = 0;
+            int i_offset2 = 0;
+            if(nTfs2 > 1) {       // Not Image Batched
+                offset2 = t_idx2 * ostrides[2];
+                if(nImg2 > 1) i_offset2 = t_idx2 * istrides[2]; // One to one batching
+            }
+
+            int i_offset = i_offset3 + i_offset2;
+
+            // Do transform for image
+            for(int yy = 0; yy < (int)odims[1]; yy++) {
+                for(int xx = 0; xx < (int)odims[0]; xx++) {
+                    t_fn(out, in + i_offset, tmat, idims_, ostrides, istrides,
+                         nimages, offset3 + offset2, xx, yy, perspective);
+                }
+            }
+            delete[] tmat;
+        }
     }
 }
 
