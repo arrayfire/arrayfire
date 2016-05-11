@@ -266,3 +266,79 @@ TEST(Transform, CPP)
     delete[] h_gold_img;
     delete[] h_out_img;
 }
+
+// This tests batching of different forms
+// tf0 rotates by 90 clockwise
+// tf1 rotates by 90 counter clockwise
+// This test simply makes sure the batching is working correctly
+TEST(TransformBatching, CPP)
+{
+    vector<af::dim4>        vDims;
+    vector<vector<float> >  in;
+    vector<vector<float> >  gold;
+
+    readTests<float, float, int>(string(TEST_DIR"/transform/transform_batching.test"), vDims, in, gold);
+
+    af::array img0     (vDims[0], &(in[0].front()));
+    af::array img1     (vDims[1], &(in[1].front()));
+    af::array ip_tile  (vDims[2], &(in[2].front()));
+    af::array ip_quad  (vDims[3], &(in[3].front()));
+    af::array ip_mult  (vDims[4], &(in[4].front()));
+    af::array ip_tile3 (vDims[5], &(in[5].front()));
+    af::array ip_quad3 (vDims[6], &(in[6].front()));
+
+    af::array tf0      (vDims[7 + 0], &(in[7 + 0].front()));
+    af::array tf1      (vDims[7 + 1], &(in[7 + 1].front()));
+    af::array tf_tile  (vDims[7 + 2], &(in[7 + 2].front()));
+    af::array tf_quad  (vDims[7 + 3], &(in[7 + 3].front()));
+    af::array tf_mult  (vDims[7 + 4], &(in[7 + 4].front()));
+    af::array tf_mult3 (vDims[7 + 5], &(in[7 + 5].front()));
+    af::array tf_mult3x(vDims[7 + 6], &(in[7 + 6].front()));
+
+    const int X = img0.dims(0);
+    const int Y = img0.dims(1);
+
+    ASSERT_EQ(gold.size(), 21u);
+    vector<af::array> out(gold.size());
+    out[0 ] = transform(img0    , tf0      , Y, X, AF_INTERP_NEAREST);  // 1,1 x 1,1
+    out[1 ] = transform(img0    , tf1      , Y, X, AF_INTERP_NEAREST);  // 1,1 x 1,1
+    out[2 ] = transform(img1    , tf0      , Y, X, AF_INTERP_NEAREST);  // 1,1 x 1,1
+    out[3 ] = transform(img1    , tf1      , Y, X, AF_INTERP_NEAREST);  // 1,1 x 1,1
+
+    out[4 ] = transform(img0    , tf_tile  , Y, X, AF_INTERP_NEAREST);  // 1,1 x N,1
+    out[5 ] = transform(img0    , tf_mult  , Y, X, AF_INTERP_NEAREST);  // 1,1 x N,N
+    out[6 ] = transform(img0    , tf_quad  , Y, X, AF_INTERP_NEAREST);  // 1,1 x 1,N
+
+    out[7 ] = transform(ip_tile , tf0      , Y, X, AF_INTERP_NEAREST);  // N,1 x 1,1
+    out[8 ] = transform(ip_tile , tf_tile  , Y, X, AF_INTERP_NEAREST);  // N,1 x N,1
+    out[9 ] = transform(ip_tile , tf_mult  , Y, X, AF_INTERP_NEAREST);  // N,N x N,N
+    out[10] = transform(ip_tile , tf_quad  , Y, X, AF_INTERP_NEAREST);  // N,1 x 1,N
+
+    out[11] = transform(ip_quad , tf0      , Y, X, AF_INTERP_NEAREST);  // 1,N x 1,1
+    out[12] = transform(ip_quad , tf_quad  , Y, X, AF_INTERP_NEAREST);  // 1,N x 1,N
+    out[13] = transform(ip_quad , tf_mult  , Y, X, AF_INTERP_NEAREST);  // 1,N x N,N
+    out[14] = transform(ip_quad , tf_tile  , Y, X, AF_INTERP_NEAREST);  // 1,N x N,1
+
+    out[15] = transform(ip_mult , tf0      , Y, X, AF_INTERP_NEAREST);  // N,N x 1,1
+    out[16] = transform(ip_mult , tf_tile  , Y, X, AF_INTERP_NEAREST);  // N,N x N,1
+    out[17] = transform(ip_mult , tf_mult  , Y, X, AF_INTERP_NEAREST);  // N,N x N,N
+    out[18] = transform(ip_mult , tf_quad  , Y, X, AF_INTERP_NEAREST);  // N,N x 1,N
+
+    out[19] = transform(ip_tile3, tf_mult3 , Y, X, AF_INTERP_NEAREST);  // N,1 x N,N
+    out[20] = transform(ip_quad3, tf_mult3x, Y, X, AF_INTERP_NEAREST);  // 1,N x N,N
+
+    af::array x_(af::dim4(35, 40, 1, 1), &(gold[1].front()));
+
+    for(int i = 0; i < (int)gold.size(); i++) {
+        // Get result
+        float *outData = new float[out[i].elements()];
+        out[i].host((void*)outData);
+
+        for(int iter = 0; iter < (int)gold[i].size(); iter++) {
+            ASSERT_EQ(gold[i][iter], outData[iter]) << "at: " << iter << std::endl
+                    << "for " << i << "-th operation"<< std::endl;
+        }
+
+        delete[] outData;
+    }
+}
