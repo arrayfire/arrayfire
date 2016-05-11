@@ -82,39 +82,57 @@ ArrayFire with CUDA or OpenCL code, we suggest you consult the
 
 # ArrayFire array contents, dimensions, and properties {#getting_started_array_properties}
 
+ArrayFire provides several functions to determine various aspects of arrays.
+This includes functions to print the contents, query the dimensions, and
+determine various other aspects of arrays.
+
 The [af_print](\ref af::af_print) function can be used to print arrays that
-have already been generated or an expression involving arrays:
+have already been generated or any expression involving arrays:
 
 \snippet test/getting_started.cpp ex_getting_started_print
 
-ArrayFire provides several convenient methods for accessing the dimensions.
-You may use either a [dim4](\ref af::dim4) object or access the dimensions
-directly using the [dims()](\ref af::array::dims) and
-[numdims()](\ref af::array::numdims) functions:
+The dimensions of an array may be determined using either a
+[dim4](\ref af::dim4) object or by accessing the dimensions directly using the
+[dims()](\ref af::array::dims) and [numdims()](\ref af::array::numdims)
+functions:
 
 \snippet test/getting_started.cpp ex_getting_started_dims
 
-Arrays also provide functions to determine their properties including:
+In addition to dimensions, arrays also carry several properties including
+methods to determine the underlying type and size (in bytes). You can even
+determine whether the array is empty, real/complex, a row/column, or a scalar
+or a vector:
 
 \snippet test/getting_started.cpp ex_getting_started_prop
 
+For further information on these capabilities, we suggest you consult the
+full documentation on the [array](\ref af::array).
+
 # Writing mathematical expressions in ArrayFire {#getting_started_writing_math}
 
-Most of ArrayFire's functions operate on an element-wise basis.
-This means that function like `c[i] = a[i] + b[i]` could simply be written
-as `c = a + b`.
-ArrayFire has an intelligent runtime JIT compliation engine which converts
-array expressions into the smallest number of OpenCL/CUDA kernels.
-This "kernel fusion" technology not only decreases the number of kernel calls,
-but, more importantly, avoids extraneous global memory operations.
+ArrayFire features an intelligent Just-In-Time (JIT) compilation engine that
+converts expressions using arrays into the smallest number of CUDA/OpenCL
+kernels. For most operations on arrays, ArrayFire functions like a vector library.
+That means that an element-wise operation, like `c[i] = a[i] + b[i]` in C,
+would be written more concisely without indexing, like `c = a + b`.
+When there are multiple expressions involving arrays, ArrayFire's JIT engine
+will merge them together. This "kernel fusion" technology not only decreases
+the number of kernel calls, but, more importantly, avoids extraneous global
+memory operations.
 Our JIT functionality extends across C/C++ function boundaries and only ends
 when a non-JIT function is encountered or a synchronization operation is
 explicitly called by the code.
 
-ArrayFire has [hundreds of functions](\ref arith_mat) for element-wise
-arithmetic. Here are a few examples:
+ArrayFire provides [hundreds of functions](\ref arith_mat) for element-wise
+operations. All of the standard operators (e.g. +,-,*,/) are supported
+as are most transcendental functions (sin, cos, log, sqrt, etc.).
+Here are a few examples:
 
 \snippet test/getting_started.cpp ex_getting_started_arith
+
+To see the complete list of functions please consult the documentation on
+[mathematical](\ref mathfunc_mat), [linear algebra](\ref linalg_mat),
+[signal processing](\ref signal_mat), and [statistics](\ref stats_mat).
 
 # Mathematical constants {#getting_started_constants}
 
@@ -154,11 +172,13 @@ use these functions.
 # Getting access to ArrayFire array memory on the host and device {#getting_started_memory_access}
 
 Memory in `af::array`s may be accessed using the [host()](\ref af::array::host)
-and device()](\ref af::array::device) functions.
+and [device()](\ref af::array::device) functions.
 The `host` function *copies* the data from the device and makes it available
-in a C-style array on the host.
-The `device` function returns a pointer to device memory for interoperability
-with external CUDA/OpenCL kernels.
+in a C-style array on the host. As such, it is up to the developer to manage
+any memory returned by `host`.
+The `device` function returns a pointer/reference to device memory for
+interoperability with external CUDA/OpenCL kernels. As this memory belongs to
+ArrayFire, the programmer should not attempt to free/deallocate the pointer.
 For example, here is how we can interact with both OpenCL and CUDA:
 
 \snippet test/getting_started.cpp ex_getting_started_ptr
@@ -174,7 +194,7 @@ get it using the [scalar()](\ref af::array::scalar) function:
 
 # Bitwise operators {#getting_started_bitwise_operators}
 
-In addition to supporting standard mathematical functions, `af::array`s
+In addition to supporting standard mathematical functions, arrays
 that contain integer data types also support bitwise operators including
 and, or, and shift:
 
