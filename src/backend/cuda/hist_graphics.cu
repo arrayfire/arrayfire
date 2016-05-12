@@ -21,23 +21,35 @@ namespace cuda
 template<typename T>
 void copy_histogram(const Array<T> &data, const fg::Histogram* hist)
 {
-    const T *d_P = data.get();
+    if(InteropManager::checkGraphicsInteropCapability()) {
+        const T *d_P = data.get();
 
-    InteropManager& intrpMngr = InteropManager::getInstance();
+        InteropManager& intrpMngr = InteropManager::getInstance();
 
-    cudaGraphicsResource *cudaVBOResource = intrpMngr.getBufferResource(hist);
-    // Map resource. Copy data to VBO. Unmap resource.
-    size_t num_bytes = hist->size();
-    T* d_vbo = NULL;
-    cudaGraphicsMapResources(1, &cudaVBOResource, 0);
-    cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, cudaVBOResource);
-    cudaMemcpyAsync(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice,
-                    cuda::getStream(cuda::getActiveDeviceId()));
-    cudaGraphicsUnmapResources(1, &cudaVBOResource, 0);
+        cudaGraphicsResource *cudaVBOResource = intrpMngr.getBufferResource(hist);
+        // Map resource. Copy data to VBO. Unmap resource.
+        size_t num_bytes = hist->size();
+        T* d_vbo = NULL;
+        cudaGraphicsMapResources(1, &cudaVBOResource, 0);
+        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, cudaVBOResource);
+        cudaMemcpyAsync(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice,
+                        cuda::getStream(cuda::getActiveDeviceId()));
+        cudaGraphicsUnmapResources(1, &cudaVBOResource, 0);
 
-    CheckGL("After cuda resource copy");
+        CheckGL("After cuda resource copy");
 
-    POST_LAUNCH_CHECK();
+        POST_LAUNCH_CHECK();
+    } else {
+        CheckGL("Begin CUDA fallback-resource copy");
+        glBindBuffer(GL_ARRAY_BUFFER, hist->vbo());
+        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        if (ptr) {
+            CUDA_CHECK(cudaMemcpy(ptr, data.get(), hist->size(), cudaMemcpyDeviceToHost));
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        CheckGL("End CUDA fallback-resource copy");
+    }
 }
 
 #define INSTANTIATE(T)  \
