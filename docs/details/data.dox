@@ -209,10 +209,10 @@ Creates copys of the array a specified number of times within the output array
 
 \defgroup manip_func_reorder reorder
 
-\brief Reorder the input by in the specified order
+\brief Reorder an array according to the specified dimensions.
 
-Exchanges dimensions within an array. The order of the data along each
-dimension does not change.
+Exchanges data within an array such that the requested change in dimension
+is satisfied. The linear ordering of data within the array is preserved.
 
 \code
 array a = randu(5, 4, 3);
