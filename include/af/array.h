@@ -330,7 +330,7 @@ namespace af
 
             \endcode
 
-            \note If \p src is \ref afHost, the first \p dim0 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does NOT take ownership of the underlying memory.
+            \note If \p src is \ref afHost, the first \p dim0 elements are copied. If \p src is \ref afDevice, no copy is done; the array object wraps the device pointer AND takes ownership" ownership of the underlying memory.
 
         */
         template<typename T>
@@ -354,7 +354,7 @@ namespace af
 
             \image html 2dArray.png
 
-            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does NOT take ownership of the underlying. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 elements are copied. If \p src is \ref afDevice, no copy is done; the array object wraps the device pointer AND takes ownership" ownership of the underlying memory. The data is treated as column major format when performing linear algebra operations.
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1,
