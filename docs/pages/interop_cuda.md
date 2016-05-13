@@ -54,6 +54,7 @@ operations within a stream are executed in order.
 This process is best illustrated with a fully worked example:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+// 1. Add includes
 #include <arrayfire.h>
 #include <af/cuda.h>
 
@@ -67,19 +68,19 @@ int main() {
 
     // Run a custom CUDA kernel in the ArrayFire CUDA stream
 
-    // 1. Obtain device pointers from ArrayFire array objects using
+    // 2. Obtain device pointers from ArrayFire array objects using
     //    the array::device() function:
     float *d_x = x.device<float>();
     float *d_y = y.device<float>();
 
-    // 2. Determine ArrayFire's CUDA stream
+    // 3. Determine ArrayFire's CUDA stream
     int af_id = af::getDevice();
     cudaStream_t af_cuda_stream = afcu::getStream(af_id);
 
-    // 3. Set arguments and run your kernel in ArrayFire's stream
-    run_custom_kernel(d_x, d_y, af_cuda_stream);
+    // 4. Set arguments and run your kernel in ArrayFire's stream
+    run_custom_kernel<blocks, threads, 0, stream>(d_x, d_y);
 
-    // 4. Return control of af::array memory to ArrayFire using
+    // 5. Return control of af::array memory to ArrayFire using
     //    the array::unlock() function:
     x.unlock();
     y.unlock();
@@ -112,8 +113,15 @@ own kernel and ensure your kernels are complete using `cudaDeviceSynchronize()`
 
 # Adding ArrayFire to an existing CUDA application
 
-Adding ArrayFire to an existing CUDA application is slightly more involved,
-but similarly simple. The generic approach is as follows:
+Adding ArrayFire to an existing CUDA application is slightly more involved
+and can be somewhat tricky due to several optimizations we implement. The
+most important are as follows:
+
+* ArrayFire assumes control of all memory provided to it.
+* ArrayFire does not (in general) support in-place memory transactions.
+
+We will discuss the implications of these items below. To add ArrayFire
+to existing code you need to:
 
 1. Include `arrayfire.h` and `af/cuda.h` in your source file
 2. Finish any pending CUDA operations
@@ -121,8 +129,10 @@ but similarly simple. The generic approach is as follows:
 3. Create ArrayFire arrays from existing CUDA pointers
 4. Perform operations on ArrayFire arrays
 5. Instruct ArrayFire to finish operations using af::sync()
-6. Continue your CUDA application.
-7. Compile and link with the appropriate paths and the `-lafcuda` flags.
+6. Obtain pointers to important memory
+7. Continue your CUDA application.
+8. Free non-managed memory
+9. Compile and link with the appropriate paths and the `-lafcuda` flags.
 
 To create the af::array objects, you should use one of the following
 constructors with `src=afDevice`:
@@ -138,41 +148,59 @@ array (dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3, const T *pointer, af::sou
 array (const dim4 &dims, const T *pointer, af::source src=afHost)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Much like above, this process is best illustrated using a fully-worked example:
+*NOTE*: With all of these constructors, ArrayFire's memory manager automatically
+assumes responsibility for any memory provided to it. Thus ArrayFire could free
+or reuse the memory at any later time. If this behavior is not desired, you
+may call `array::unlock()` and manage the memory yourself. However, if you do
+so, please be cautious not to free memory when ArrayFire might be using it!
+
+The seven steps above are best illustrated using a fully-worked example:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+// 1. Add includes
 #include <arrayfire.h>
 #include <af/cuda.h>
 
 int main() {
 
     // Create CUDA memory objects
-    size_t size = 100 * sizeof(float);
-    float *cudaMem;
-    cudaMalloc((void**) &cudaMem, size);
+    const int elements = 100;
+    size_t size = elements * sizeof(float);
+    float *inputSignal;
+    cudaMalloc((void**) &inputSignal, size);
 
     // ... perform many CUDA operations here
 
-    // 1. Finish any pending CUDA operations
+    // 2. Finish any pending CUDA operations
     cudaDeviceSynchronize();
 
-    // 2. Create ArrayFire arrays from existing CUDA pointers
-    //    Be sure to specify that the memory type is afDevice!
-    af::array d_A(size, cudaMem, afDevice);
+    // 3. Create ArrayFire arrays from existing CUDA pointers.
+    //    Be sure to specify that the memory type is afDevice.
+    af::array d_A(size, inputSignal, afDevice);
 
-    // 3. Perform operations on the ArrayFire Arrays.
-    //    Here we just add 10 to all elements in the array.
-    d_A = d_A + 10;
+    // NOTE: ArrayFire now manages inputSignal
 
-    // 4. Instruct ArrayFire to finish pending operations
+    // 4. Perform operations on the ArrayFire Arrays.
+
+    // For example, add uniformly distributed noise to a signal
+    d_A = d_A + randu(elements);
+
+    // NOTE: ArrayFire does not perform the above transaction using
+    // in-place memory, thus the pointers containing memory to d_A have
+    // likely changed.
+
+    // 5. Instruct ArrayFire to finish pending operations
     af::sync()
 
-    // ... continue CUDA application as normal
+    // 6. Get pointers to important memory objects.
+    //    Once device is called, ArrayFire will not manage the memory.
+    float * outputSignal = d_A.device<float>();
 
-    // Note that ArrayFire does NOT manage device memory if the array is
-    // constructed with src=afDevice. Thus the programmer must free any
-    // memory allocated using calls to cudaMalloc
-    cudaFree(cudaMem);
+    // 7. continue CUDA application as normal
+
+    // 8. Free non-managed memroy
+    //    We removed outputSignal from ArrayFire's control, we need to free it
+    cudaFree(outputSignal);
 
     return 0;
 }
