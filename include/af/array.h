@@ -330,7 +330,7 @@ namespace af
 
             \endcode
 
-            \note If \p src is \ref afHost, the first \p dim0 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer.
+            \note If \p src is \ref afHost, the first \p dim0 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does NOT take ownership of the underlying memory.
 
         */
         template<typename T>
@@ -354,7 +354,7 @@ namespace af
 
             \image html 2dArray.png
 
-            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does NOT take ownership of the underlying. The data is treated as column major format when performing linear algebra operations.
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1,
@@ -378,7 +378,7 @@ namespace af
             array A(3, 3, 2,  h_buffer);   // copy host data to 3D device array
             \endcode
 
-            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 * \p dim2 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 * \p dim2 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does not take ownership of the underlying memory. The data is treated as column major format when performing linear algebra operations.
 
             \image html 3dArray.png
         */
@@ -407,7 +407,7 @@ namespace af
             array A(2, 2, 2, 2, h_buffer);   // copy host data to 4D device array
             \endcode
 
-            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 * \p dim2 * \p dim3 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 * \p dim2 * \p dim3 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does not take ownership of the underlying memory. The data is treated as column major format when performing linear algebra operations.
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
@@ -444,7 +444,7 @@ namespace af
                                              // used in ArrayFire
             \endcode
 
-            \note If \p src is \ref afHost, the first dims.elements() elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first dims.elements() elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does not take ownership of the underlying memory. The data is treated as column major format when performing linear algebra operations.
         */
         template<typename T>
         explicit
