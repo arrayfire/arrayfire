@@ -16,17 +16,18 @@ focus on reducing potential synchronization conflicts between ArrayFire and CUDA
 It is fairly straightforward to interface ArrayFire with your own custom CUDA
 code. ArrayFire provides several functions to ease this process including:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-af::array(...)        // Construct an ArrayFire Array from device memory
-af::array.device()    // Returns a pointer to the underlying CUDA memory
-af::array.lock()      // Takes control of a CUDA pointer from ArrayFire
-af::array.unlock()    // Returns control of a CUDA pointer to ArrayFire
-af::getDevice()       // Gets the current ArrayFire device ID
-af::setDevice()       // Switches ArrayFire to the specified device
-afcu::getNativeId()   // Converts an ArrayFire device ID to a CUDA device ID
-afcu::setNativeId()   // Switches ArrayFire to the specified CUDA device ID
-afcu::getStream()     // Get the current CUDA stream used by ArrayFire
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| Function              | Purpose                                             |
+|-----------------------|-----------------------------------------------------|
+| af::array(...)        | Construct an ArrayFire Array from device memory     |
+| af::array.device()    | Returns a pointer to the underlying CUDA memory     |
+| af::array.lock()      | Takes control of a CUDA pointer from ArrayFire      |
+| af::array.unlock()    | Returns control of a CUDA pointer to ArrayFire      |
+| af::getDevice()       | Gets the current ArrayFire device ID                |
+| af::setDevice()       | Switches ArrayFire to the specified device          |
+| afcu::getNativeId()   | Converts an ArrayFire device ID to a CUDA device ID |
+| afcu::setNativeId()   | Switches ArrayFire to the specified CUDA device ID  |
+| afcu::getStream()     | Get the current CUDA stream used by ArrayFire       |
+
 
 Below we provide two worked examples on how ArrayFire can be integrated
 into new and existing projects.
@@ -188,11 +189,12 @@ IDs. Below is a quick listing of the various functions needed to switch
 between devices along with some disambiguation as to the device identifiers
 used with each function:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-cudaGetDevice()            // Gets the current CUDA device ID
-cudaSetDevice(cuda_id)     // Sets the current CUDA device
-af::getDevice()            // Gets the current ArrayFire device ID
-af::setDevice(af_id)       // Sets the current ArrayFire device
-afcu::getNativeId(af_id)   // Convert an ArrayFire device ID to a CUDA device ID
-afcu::setNativeId(cuda_id) // Set the current ArrayFire device from a CUDA ID
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| Function            | ID Type     | Purpose                                 |
+|---------------------|-------------|-----------------------------------------|
+| cudaGetDevice()     | CUDA        | Gets the current CUDA device ID         |
+| cudaSetDevice()     | CUDA        |Sets the current CUDA device             |
+| af::getDevice()     | AF          | Gets the current ArrayFire device ID    |
+| af::setDevice()     | AF          | Sets the current ArrayFire device       |
+| afcu::getNativeId() | AF -> CUDA  | Convert an ArrayFire device ID to a CUDA device ID |
+| afcu::setNativeId() | CUDA -> AF  |Set the current ArrayFire device from a CUDA ID |
+
