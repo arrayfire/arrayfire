@@ -55,7 +55,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
     dim4 oDims(1);
     if (expand) {
         for(dim_t d=0; d<4; ++d) {
-            if (kind==AF_BATCH_NONE || kind==AF_BATCH_KERNEL) {
+            if (kind==AF_BATCH_NONE || kind==AF_BATCH_RHS) {
                 oDims[d] = sDims[d]+fDims[d]-1;
             } else {
                 oDims[d] = (d<baseDim ? sDims[d]+fDims[d]-1 : sDims[d]);
@@ -63,7 +63,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
         }
     } else {
         oDims = sDims;
-        if (kind==AF_BATCH_KERNEL) {
+        if (kind==AF_BATCH_RHS) {
             for (dim_t i=baseDim; i<4; ++i)
                 oDims[i] = fDims[i];
         }
@@ -86,7 +86,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
     else
         kernel::complexMultiplyHelper<T, cT>(out, signal_packed, filter_packed, signal, filter, kind);
 
-    if (kind == AF_BATCH_KERNEL) {
+    if (kind == AF_BATCH_RHS) {
         fft_inplace<cT, baseDim, false>(filter_packed);
         if (expand)
             kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true >(out, filter_packed, signal, filter, kind);

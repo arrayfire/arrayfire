@@ -192,7 +192,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     dim4 oDims(1);
     if (expand) {
         for(dim_t d=0; d<4; ++d) {
-            if (kind==AF_BATCH_NONE || kind==AF_BATCH_KERNEL) {
+            if (kind==AF_BATCH_NONE || kind==AF_BATCH_RHS) {
                 oDims[d] = sd[d]+fd[d]-1;
             } else {
                 oDims[d] = (d<baseDim ? sd[d]+fd[d]-1 : sd[d]);
@@ -200,7 +200,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
         }
     } else {
         oDims = sd;
-        if (kind==AF_BATCH_KERNEL) {
+        if (kind==AF_BATCH_RHS) {
             for (dim_t i=baseDim; i<4; ++i)
                 oDims[i] = fd[i];
         }

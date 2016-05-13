@@ -143,7 +143,7 @@ void convolve_nd(Array<InT> out, Array<InT> const signal, Array<AccT> const filt
 
     for (dim_t i=1; i<4; ++i) {
         switch(kind) {
-            case AF_BATCH_SIGNAL:
+            case AF_BATCH_LHS:
                 out_step[i] = oStrides[i];
                 in_step[i]  = sStrides[i];
                 if (i>=baseDim) batch[i] = sDims[i];
@@ -154,7 +154,7 @@ void convolve_nd(Array<InT> out, Array<InT> const signal, Array<AccT> const filt
                 filt_step[i] = fStrides[i];
                 if (i>=baseDim) batch[i] = sDims[i];
                 break;
-            case AF_BATCH_KERNEL:
+            case AF_BATCH_RHS:
                 out_step[i]  = oStrides[i];
                 filt_step[i] = fStrides[i];
                 if (i>=baseDim) batch[i] = fDims[i];

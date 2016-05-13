@@ -43,9 +43,9 @@ AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
     if (sn==baseDim && fn==baseDim)
         return AF_BATCH_NONE;
     else if (sn==baseDim && (fn>baseDim && fn<=4))
-        return AF_BATCH_KERNEL;
+        return AF_BATCH_RHS;
     else if ((sn>baseDim && sn<=4) && fn==baseDim)
-        return AF_BATCH_SIGNAL;
+        return AF_BATCH_LHS;
     else if ((sn>baseDim && sn<=4) && (fn>baseDim && fn<=4)) {
         bool doesDimensionsMatch = true;
         bool isInterleaved = true;

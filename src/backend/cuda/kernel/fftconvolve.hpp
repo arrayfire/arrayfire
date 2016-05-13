@@ -152,7 +152,7 @@ __global__ void complexMultiply(
         out.ptr[ridx].x = c1.x*c2.x - c1.y*c2.y;
         out.ptr[ridx].y = (c1.x+c1.y) * (c2.x+c2.y) - c1.x*c2.x - c1.y*c2.y;
     }
-    else if (kind == AF_BATCH_SIGNAL) {
+    else if (kind == AF_BATCH_LHS) {
         // Complex multiply all signals to filter
         const int ridx1 = t;
         const int ridx2 = t % (in2.strides[3] * in2.dims[3]);
@@ -163,7 +163,7 @@ __global__ void complexMultiply(
         out.ptr[ridx1].x = c1.x*c2.x - c1.y*c2.y;
         out.ptr[ridx1].y = (c1.x+c1.y) * (c2.x+c2.y) - c1.x*c2.x - c1.y*c2.y;
     }
-    else if (kind == AF_BATCH_KERNEL) {
+    else if (kind == AF_BATCH_RHS) {
         // Complex multiply signal to all filters
         const int ridx1 = t % (in1.strides[3] * in1.dims[3]);
         const int ridx2 = t;
@@ -317,12 +317,12 @@ void complexMultiplyHelper(Param<T> out,
             CUDA_LAUNCH((complexMultiply<convT, AF_BATCH_NONE>), blocks, threads,
                     sig_packed, sig_packed, filter_packed, mul_elem);
             break;
-        case AF_BATCH_SIGNAL:
-            CUDA_LAUNCH((complexMultiply<convT, AF_BATCH_SIGNAL>), blocks, threads,
+        case AF_BATCH_LHS:
+            CUDA_LAUNCH((complexMultiply<convT, AF_BATCH_LHS>), blocks, threads,
                         sig_packed, sig_packed, filter_packed, mul_elem);
             break;
-        case AF_BATCH_KERNEL:
-            CUDA_LAUNCH((complexMultiply<convT, AF_BATCH_KERNEL>), blocks, threads,
+        case AF_BATCH_RHS:
+            CUDA_LAUNCH((complexMultiply<convT, AF_BATCH_RHS>), blocks, threads,
                     filter_packed, sig_packed, filter_packed, mul_elem);
             break;
         case AF_BATCH_SAME:

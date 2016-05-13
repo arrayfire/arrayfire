@@ -44,8 +44,8 @@ clipFilePath(std::string path, std::string str)
 typedef enum {
     AF_BATCH_UNSUPPORTED = -1, /* invalid inputs */
     AF_BATCH_NONE,             /* one signal, one filter   */
-    AF_BATCH_SIGNAL,           /* many signal, one filter  */
-    AF_BATCH_KERNEL,           /* one signal, many filter  */
+    AF_BATCH_LHS,              /* many signal, one filter  */
+    AF_BATCH_RHS,              /* one signal, many filter  */
     AF_BATCH_SAME,             /* signal and filter have same batch size */
     AF_BATCH_DIFF,             /* signal and filter have different batch size */
 } AF_BATCH_KIND;

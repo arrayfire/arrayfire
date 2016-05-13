@@ -40,9 +40,9 @@ void convolve_nd(Param out, const Param signal, const Param filter, AF_BATCH_KIN
         param.o[i] = 0;
         param.s[i] = 0;
     }
-    param.launchMoreBlocks = kind==AF_BATCH_SAME || kind==AF_BATCH_KERNEL;
-    param.outHasNoOffset = kind==AF_BATCH_SIGNAL || kind==AF_BATCH_NONE;
-    param.inHasNoOffset  = kind!=AF_BATCH_SAME;
+    param.launchMoreBlocks = kind==AF_BATCH_SAME || kind==AF_BATCH_RHS;
+    param.outHasNoOffset   = kind==AF_BATCH_LHS  || kind==AF_BATCH_NONE;
+    param.inHasNoOffset    = kind!=AF_BATCH_SAME;
 
     prepareKernelArgs<T>(param, out.info.dims, filter.info.dims, baseDim);
 

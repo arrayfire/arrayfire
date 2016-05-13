@@ -89,12 +89,12 @@ void complexMultiply(Array<T> packed, const af::dim4 sig_dims, const af::dim4 si
                      const af::dim4 fit_dims, const af::dim4 fit_strides,
                      AF_BATCH_KIND kind, const dim_t offset)
 {
-    T* out_ptr = packed.get() + (kind==AF_BATCH_KERNEL? offset : 0);
+    T* out_ptr = packed.get() + (kind==AF_BATCH_RHS? offset : 0);
     T* in1_ptr = packed.get();
     T* in2_ptr = packed.get() + offset;
 
-    const af::dim4& od = (kind==AF_BATCH_KERNEL ? fit_dims : sig_dims);
-    const af::dim4& os = (kind==AF_BATCH_KERNEL ? fit_strides : sig_strides);
+    const af::dim4& od  = (kind==AF_BATCH_RHS ? fit_dims : sig_dims);
+    const af::dim4& os  = (kind==AF_BATCH_RHS ? fit_strides : sig_strides);
     const af::dim4& i1d = sig_dims;
     const af::dim4& i2d = fit_dims;
     const af::dim4& i1s = sig_strides;
@@ -120,7 +120,7 @@ void complexMultiply(Array<T> packed, const af::dim4 sig_dims, const af::dim4 si
                         out_ptr[ridx] = ac - bd;
                         out_ptr[iidx] = (a+b) * (c+d) - ac - bd;
                     }
-                    else if (kind == AF_BATCH_SIGNAL) {
+                    else if (kind == AF_BATCH_LHS) {
                         // Complex multiply all signals to filter
                         const int ridx1 = d3*os[3] + d2*os[2] + d1*os[1] + d0*2;
                         const int iidx1 = ridx1 + 1;
@@ -138,7 +138,7 @@ void complexMultiply(Array<T> packed, const af::dim4 sig_dims, const af::dim4 si
                         out_ptr[ridx1] = ac - bd;
                         out_ptr[iidx1] = (a+b) * (c+d) - ac - bd;
                     }
-                    else if (kind == AF_BATCH_KERNEL) {
+                    else if (kind == AF_BATCH_RHS) {
                         // Complex multiply signal to all filters
                         const int ridx2 = d3*os[3] + d2*os[2] + d1*os[1] + d0*2;
                         const int iidx2 = ridx2 + 1;
@@ -239,7 +239,7 @@ void reorder(Array<T> out, Array<convT> packed,
     convT* filter_tmp_ptr = packed_ptr + sig_tmp_strides[3] * sig_tmp_dims[3];
 
     // Reorder the output
-    if (kind == AF_BATCH_KERNEL) {
+    if (kind == AF_BATCH_RHS) {
         reorderHelper<T, convT, roundOut>(out_ptr, out_dims, out_strides,
                 filter_tmp_ptr, filter_tmp_dims, filter_tmp_strides,
                 filter_dims, sig_half_d0, baseDim, fftScale, expand);

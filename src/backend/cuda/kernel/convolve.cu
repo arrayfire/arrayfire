@@ -470,9 +470,9 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<aT> filt, AF_BATCH_KIND 
         param.o[i] = 0;
         param.s[i] = 0;
     }
-    param.launchMoreBlocks = kind==AF_BATCH_SAME || kind==AF_BATCH_KERNEL;
-    param.outHasNoOffset = kind==AF_BATCH_SIGNAL || kind==AF_BATCH_NONE;
-    param.inHasNoOffset  = kind!=AF_BATCH_SAME;
+    param.launchMoreBlocks = kind==AF_BATCH_SAME || kind==AF_BATCH_RHS;
+    param.outHasNoOffset   = kind==AF_BATCH_LHS  || kind==AF_BATCH_NONE;
+    param.inHasNoOffset    = kind!=AF_BATCH_SAME;
 
     switch(baseDim) {
         case 1: convolve_1d<T, aT, expand>(param, out, signal, filt); break;

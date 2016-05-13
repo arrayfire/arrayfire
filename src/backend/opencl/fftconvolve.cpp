@@ -57,7 +57,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
     dim4 oDims(1);
     if (expand) {
         for(dim_t d=0; d<4; ++d) {
-            if (kind==AF_BATCH_NONE || kind==AF_BATCH_KERNEL) {
+            if (kind==AF_BATCH_NONE || kind==AF_BATCH_RHS) {
                 oDims[d] = sDims[d]+fDims[d]-1;
             } else {
                 oDims[d] = (d<baseDim ? sDims[d]+fDims[d]-1 : sDims[d]);
@@ -65,7 +65,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
         }
     } else {
         oDims = sDims;
-        if (kind==AF_BATCH_KERNEL) {
+        if (kind==AF_BATCH_RHS) {
             for (dim_t i=baseDim; i<4; ++i)
                 oDims[i] = fDims[i];
         }
@@ -81,7 +81,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
     kernel::complexMultiplyHelper<cT, T, isDouble, convT>(packed, signal, filter, baseDim, kind);
 
     // Compute inverse FFT only on complex-multiplied data
-    if (kind == AF_BATCH_KERNEL) {
+    if (kind == AF_BATCH_RHS) {
         std::vector<af_seq> seqs;
         for (dim_t k = 0; k < 4; k++) {
             if (k < baseDim)

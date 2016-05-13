@@ -33,7 +33,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, AF_BATCH_KI
     dim4 oDims(1);
     if (expand) {
         for(dim_t d=0; d<4; ++d) {
-            if (kind==AF_BATCH_NONE || kind==AF_BATCH_KERNEL) {
+            if (kind==AF_BATCH_NONE || kind==AF_BATCH_RHS) {
                 oDims[d] = sDims[d]+fDims[d]-1;
             } else {
                 oDims[d] = (d<baseDim ? sDims[d]+fDims[d]-1 : sDims[d]);
@@ -41,7 +41,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, AF_BATCH_KI
         }
     } else {
         oDims = sDims;
-        if (kind==AF_BATCH_KERNEL) {
+        if (kind==AF_BATCH_RHS) {
             for (dim_t i=baseDim; i<4; ++i)
                 oDims[i] = fDims[i];
         }
@@ -71,7 +71,7 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
 
         dim_t cflen = (dim_t)cfDims.elements();
         dim_t rflen = (dim_t)rfDims.elements();
-        // separable convolve only does AF_BATCH_NONE and standard batch(AF_BATCH_SIGNAL)
+        // separable convolve only does AF_BATCH_NONE and standard batch(AF_BATCH_LHS)
         tDims[0] += cflen - 1;
         oDims[0] += cflen - 1;
         oDims[1] += rflen - 1;

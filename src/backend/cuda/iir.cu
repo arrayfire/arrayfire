@@ -26,7 +26,7 @@ namespace cuda
 
         AF_BATCH_KIND type = x.ndims() == 1 ? AF_BATCH_NONE : AF_BATCH_SAME;
         if (x.ndims() != b.ndims()) {
-            type = (x.ndims() < b.ndims()) ? AF_BATCH_KERNEL : AF_BATCH_SIGNAL;
+            type = (x.ndims() < b.ndims()) ? AF_BATCH_RHS : AF_BATCH_LHS;
         }
 
         // Extract the first N elements

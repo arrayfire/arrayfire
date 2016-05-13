@@ -63,7 +63,7 @@ void calcParamSizes(Param& sig_tmp,
     sig_tmp.data = packed.data;
     filter_tmp.data = packed.data;
 
-    if (kind == AF_BATCH_KERNEL) {
+    if (kind == AF_BATCH_RHS) {
         filter_tmp.info.offset = 0;
         sig_tmp.info.offset = filter_tmp.info.strides[3] * filter_tmp.info.dims[3] * 2;
     }
@@ -172,8 +172,8 @@ void complexMultiplyHelper(Param packed,
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
                         << " -D AF_BATCH_NONE=" << (int)AF_BATCH_NONE
-                        << " -D AF_BATCH_SIGNAL=" << (int)AF_BATCH_SIGNAL
-                        << " -D AF_BATCH_KERNEL=" << (int)AF_BATCH_KERNEL
+                        << " -D AF_BATCH_LHS="  << (int)AF_BATCH_LHS
+                        << " -D AF_BATCH_RHS="  << (int)AF_BATCH_RHS
                         << " -D AF_BATCH_SAME=" << (int)AF_BATCH_SAME;
 
                 if ((af_dtype) dtype_traits<convT>::af_type == c32) {
@@ -287,7 +287,7 @@ void reorderOutputHelper(Param out,
                                 KParam, const int,
                                 const int, const int> (*roKernel[device]);
 
-        if (kind == AF_BATCH_KERNEL) {
+        if (kind == AF_BATCH_RHS) {
             roOp(EnqueueArgs(getQueue(), global, local),
                  *out.data, out.info,
                  *filter_tmp.data, filter_tmp.info,

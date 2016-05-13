@@ -35,9 +35,9 @@ AF_BATCH_KIND getTransformBatchKind(const dim4 &iDims, const dim4 &tDims)
     if (iNd == baseDim && tNd == baseDim)
         return AF_BATCH_NONE;
     else if (iNd == baseDim && tNd <= 4)
-        return AF_BATCH_KERNEL;
+        return AF_BATCH_RHS;
     else if (iNd <= 4 && tNd == baseDim)
-        return AF_BATCH_SIGNAL;
+        return AF_BATCH_LHS;
     else if (iNd <= 4 && tNd <= 4) {
         bool dimsMatch = true;
         bool isInterleaved = true;
@@ -107,12 +107,12 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
 
         switch(getTransformBatchKind(idims, tdims)) {
             case AF_BATCH_NONE:     // Both are exactly 2D
-            case AF_BATCH_SIGNAL:   // Image is 3/4D, transform is 2D
+            case AF_BATCH_LHS:   // Image is 3/4D, transform is 2D
             case AF_BATCH_SAME:     // Both are 3/4D and have the same dims
                 o2 = idims[2];
                 o3 = idims[3];
                 break;
-            case AF_BATCH_KERNEL:   // Image is 2D, transform is 3/4D
+            case AF_BATCH_RHS:   // Image is 2D, transform is 3/4D
                 o2 = tdims[2];
                 o3 = tdims[3];
                 break;
