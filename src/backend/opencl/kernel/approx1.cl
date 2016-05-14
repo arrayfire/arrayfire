@@ -32,15 +32,15 @@ Ty div(Ty a, Tp b) { a.x = a.x / b; a.y = a.y / b; return a; }
 ///////////////////////////////////////////////////////////////////////////
 // nearest-neighbor resampling
 ///////////////////////////////////////////////////////////////////////////
-void core_nearest1(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
+void core_nearest1(const int idx, const int idy, const int idz, const int idw,
                    __global       Ty *d_out, const KParam out,
                    __global const Ty *d_in,  const KParam in,
                    __global const Tp *d_pos, const KParam pos,
                    const float offGrid, const bool pBatch)
 {
-    const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
+    const int omId = idw * out.strides[3] + idz * out.strides[2]
                      + idy * out.strides[1] + idx;
-    dim_t pmId = idx;
+    int pmId = idx;
     if(pBatch) pmId += idw * pos.strides[3] + idz * pos.strides[2] + idy * pos.strides[1];
 
     const Tp pVal = d_pos[pmId];
@@ -49,8 +49,8 @@ void core_nearest1(const dim_t idx, const dim_t idy, const dim_t idz, const dim_
         return;
     }
 
-    dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1];
-    const dim_t imId = round(pVal) + ioff;
+    int ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1];
+    const int imId = round(pVal) + ioff;
 
     Ty y;
     set(y, d_in[imId]);
@@ -60,15 +60,15 @@ void core_nearest1(const dim_t idx, const dim_t idy, const dim_t idz, const dim_
 ///////////////////////////////////////////////////////////////////////////
 // linear resampling
 ///////////////////////////////////////////////////////////////////////////
-void core_linear1(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
+void core_linear1(const int idx, const int idy, const int idz, const int idw,
                    __global       Ty *d_out, const KParam out,
                    __global const Ty *d_in,  const KParam in,
                    __global const Tp *d_pos, const KParam pos,
                    const float offGrid, const bool pBatch)
 {
-    const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
+    const int omId = idw * out.strides[3] + idz * out.strides[2]
                      + idy * out.strides[1] + idx;
-    dim_t pmId = idx;
+    int pmId = idx;
     if(pBatch) pmId += idw * pos.strides[3] + idz * pos.strides[2] + idy * pos.strides[1];
 
     const Tp pVal = d_pos[pmId];
@@ -77,10 +77,10 @@ void core_linear1(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t
         return;
     }
 
-    const dim_t grid_x = floor(pVal);  // nearest grid
+    const int grid_x = floor(pVal);  // nearest grid
     const Tp off_x = pVal - grid_x; // fractional offset
 
-    dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1] + grid_x;
+    int ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1] + grid_x;
 
     // Check if pVal and pVal + 1 are both valid indices
     bool cond = (pVal < in.dims[0] - 1);
@@ -106,14 +106,14 @@ __kernel
 void approx1_kernel(__global       Ty *d_out, const KParam out,
                     __global const Ty *d_in,  const KParam in,
                     __global const Tp *d_pos, const KParam pos,
-                    const float offGrid, const dim_t blocksMatX, const int pBatch)
+                    const float offGrid, const int blocksMatX, const int pBatch)
 {
-    const dim_t idw = get_group_id(1) / out.dims[2];
-    const dim_t idz = get_group_id(1)  - idw * out.dims[2];
+    const int idw = get_group_id(1) / out.dims[2];
+    const int idz = get_group_id(1)  - idw * out.dims[2];
 
-    const dim_t idy = get_group_id(0) / blocksMatX;
-    const dim_t blockIdx_x = get_group_id(0) - idy * blocksMatX;
-    const dim_t idx = get_local_id(0) + blockIdx_x * get_local_size(0);
+    const int idy = get_group_id(0) / blocksMatX;
+    const int blockIdx_x = get_group_id(0) - idy * blocksMatX;
+    const int idx = get_local_id(0) + blockIdx_x * get_local_size(0);
 
     if(idx >= out.dims[0] ||
        idy >= out.dims[1] ||

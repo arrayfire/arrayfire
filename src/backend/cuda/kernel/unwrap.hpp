@@ -24,33 +24,33 @@ namespace cuda
         template<typename T, bool is_column>
         __global__
         void unwrap_kernel(Param<T> out, CParam<T> in,
-                           const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
-                           const dim_t px, const dim_t py, const dim_t nx, dim_t reps)
+                           const int wx, const int wy, const int sx, const int sy,
+                           const int px, const int py, const int nx, int reps)
         {
             // Compute channel and volume
-            const dim_t w = blockIdx.y / in.dims[2];
-            const dim_t z = blockIdx.y % in.dims[2];
+            const int w = blockIdx.y / in.dims[2];
+            const int z = blockIdx.y % in.dims[2];
 
             if(w >= in.dims[3] || z >= in.dims[2])
                 return;
 
             // Compute offset for channel and volume
-            const dim_t cOut = w * out.strides[3] + z * out.strides[2];
-            const dim_t cIn  = w *  in.strides[3] + z *  in.strides[2];
+            const int cOut = w * out.strides[3] + z * out.strides[2];
+            const int cIn  = w *  in.strides[3] + z *  in.strides[2];
 
             // Compute the output column index
-            const dim_t id = is_column ?
+            const int id = is_column ?
                 (blockIdx.x * blockDim.y + threadIdx.y) :
                 (blockIdx.x * blockDim.x + threadIdx.x);
 
             if (id >= (is_column ? out.dims[1] : out.dims[0])) return;
 
             // Compute the starting index of window in x and y of input
-            const dim_t startx = (id % nx) * sx;
-            const dim_t starty = (id / nx) * sy;
+            const int startx = (id % nx) * sx;
+            const int starty = (id / nx) * sy;
 
-            const dim_t spx = startx - px;
-            const dim_t spy = starty - py;
+            const int spx = startx - px;
+            const int spy = starty - py;
 
             // Offset the global pointers to the respective starting indices
             T* optr = out.ptr + cOut + id * (is_column ? out.strides[1] : 1);
@@ -61,7 +61,7 @@ namespace cuda
             for(int i = 0; i < reps; i++) {
 
                 // Compute output index local to column
-                const dim_t outIdx = is_column ?
+                const int outIdx = is_column ?
                     (i * blockDim.x + threadIdx.x) :
                     (i * blockDim.y + threadIdx.y);
 
@@ -69,16 +69,16 @@ namespace cuda
                     return;
 
                 // Compute input index local to window
-                const dim_t x = outIdx % wx;
-                const dim_t y = outIdx / wx;
+                const int x = outIdx % wx;
+                const int y = outIdx / wx;
 
-                const dim_t xpad = spx + x;
-                const dim_t ypad = spy + y;
+                const int xpad = spx + x;
+                const int ypad = spy + y;
 
                 // Copy
                 T val = scalar<T>(0.0);
                 if(cond || (xpad >= 0 && xpad < in.dims[0] && ypad >= 0 && ypad < in.dims[1])) {
-                    const dim_t inIdx = ypad * in.strides[1] + xpad;
+                    const int inIdx = ypad * in.strides[1] + xpad;
                     val = iptr[inIdx];
                 }
 
@@ -94,16 +94,16 @@ namespace cuda
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
         template <typename T>
-        void unwrap_col(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
-                        const dim_t sx, const dim_t sy,
-                        const dim_t px, const dim_t py, const dim_t nx)
+        void unwrap_col(Param<T> out, CParam<T> in, const int wx, const int wy,
+                        const int sx, const int sy,
+                        const int px, const int py, const int nx)
         {
-            dim_t TX = std::min(THREADS_PER_BLOCK, nextpow2(out.dims[0]));
+            int TX = std::min(THREADS_PER_BLOCK, nextpow2(out.dims[0]));
 
             dim3 threads(TX, THREADS_PER_BLOCK / TX);
             dim3 blocks(divup(out.dims[1], threads.y), out.dims[2] * out.dims[3]);
 
-            dim_t reps = divup((wx * wy), threads.x); // is > 1 only when TX == 256 && wx * wy > 256
+            int reps = divup((wx * wy), threads.x); // is > 1 only when TX == 256 && wx * wy > 256
 
             CUDA_LAUNCH((unwrap_kernel<T, true>), blocks, threads,
                         out, in, wx, wy, sx, sy, px, py, nx, reps);
@@ -112,14 +112,14 @@ namespace cuda
         }
 
         template<typename T>
-        void unwrap_row(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
-                        const dim_t sx, const dim_t sy,
-                        const dim_t px, const dim_t py, const dim_t nx)
+        void unwrap_row(Param<T> out, CParam<T> in, const int wx, const int wy,
+                        const int sx, const int sy,
+                        const int px, const int py, const int nx)
         {
             dim3 threads(THREADS_X, THREADS_Y);
             dim3 blocks(divup(out.dims[0], threads.x), out.dims[2] * out.dims[3]);
 
-            dim_t reps = divup((wx * wy), threads.y);
+            int reps = divup((wx * wy), threads.y);
 
             CUDA_LAUNCH((unwrap_kernel<T, false>), blocks, threads,
                         out, in, wx, wy, sx, sy, px, py, nx, reps);
@@ -128,9 +128,9 @@ namespace cuda
         }
 
         template <typename T>
-        void unwrap(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
-                    const dim_t sx, const dim_t sy,
-                    const dim_t px, const dim_t py, const dim_t nx, const bool is_column)
+        void unwrap(Param<T> out, CParam<T> in, const int wx, const int wy,
+                    const int sx, const int sy,
+                    const int px, const int py, const int nx, const bool is_column)
         {
 
             if (is_column) {
