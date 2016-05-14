@@ -48,34 +48,78 @@ __kernel
 void transform_kernel(__global T *d_out, const KParam out,
                       __global const T *d_in, const KParam in,
                       __global const float *c_tmat, const KParam tf,
-                      const int nimages, const int ntransforms,
-                      const int blocksXPerImage)
+                      const int nImg2, const int nImg3,
+                      const int nTfs2, const int nTfs3,
+                      const int batchImg2,
+                      const int blocksXPerImage, const int blocksYPerImage)
 {
-    // Compute which image set
-    const int setId = get_group_id(0) / blocksXPerImage;
-    const int blockIdx_x = get_group_id(0) - setId * blocksXPerImage;
+    // Image Ids
+    const int imgId2 = get_group_id(0) / blocksXPerImage;
+    const int imgId3 = get_group_id(1) / blocksYPerImage;
 
-    // Get thread indices
-    const int xx = get_local_id(0) + blockIdx_x * get_local_size(0);
-    const int yy = get_global_id(1);
+    // Block in local image
+    const int blockIdx_x = get_group_id(0) - imgId2 * blocksXPerImage;
+    const int blockIdx_y = get_group_id(1) - imgId3 * blocksYPerImage;
 
-    if(xx >= out.dims[0] * nimages || yy >= out.dims[1] * ntransforms)
+    // Get thread indices in local image
+    const int xx = blockIdx_x * get_local_size(0) + get_local_id(0);
+    const int yy = blockIdx_y * get_local_size(1) + get_local_id(1);
+
+    // Image iteration loop count for image batching
+    int limages = min(max((int)(out.dims[2] - imgId2 * nImg2), 1), batchImg2);
+
+    if(xx >= out.dims[0] || yy >= out.dims[1])
         return;
 
-    // Index of channel of images and transform
-    //int i_idx = xx / out.dims[0];
-    const int t_idx = yy / out.dims[1];
+    // Index of transform
+    const int eTfs2 = max((nTfs2 / nImg2), 1);
+    const int eTfs3 = max((nTfs3 / nImg3), 1);
 
-    const int limages = min((int)out.dims[2] - setId * nimages, nimages);
+    int t_idx3 = -1;    // init
+    int t_idx2 = -1;    // init
+    int t_idx2_offset = 0;
 
-    // Index in local channel -> This is output index
-    const int xido = xx; // - i_idx * out.dims[0];
-    const int yido = yy - t_idx * out.dims[1];
+    const int blockIdx_z = get_group_id(2);
+
+    if(nTfs3 == 1) {
+        t_idx3 = 0;     // Always 0 as only 1 transform defined
+    } else {
+        if(nTfs3 == nImg3) {
+            t_idx3 = imgId3;    // One to one batch with all transforms defined
+        } else {
+            t_idx3 = blockIdx_z / eTfs2;    // Transform batched, calculate
+            t_idx2_offset = t_idx3 * nTfs2;
+        }
+    }
+
+    if(nTfs2 == 1) {
+        t_idx2 = 0;     // Always 0 as only 1 transform defined
+    } else {
+        if(nTfs2 == nImg2) {
+            t_idx2 = imgId2;    // One to one batch with all transforms defined
+        } else {
+            t_idx2 = blockIdx_z - t_idx2_offset;   // Transform batched, calculate
+        }
+    }
+
+    // Linear transform index
+    const int t_idx = t_idx2 + t_idx3 * nTfs2;
 
     // Global offset
-    //          Offset for transform channel + Offset for image channel.
-    d_out += t_idx * nimages * out.strides[2] + setId * nimages * out.strides[2];
-    d_in  += setId * nimages * in.strides[2] + in.offset;
+    int offset = 0;
+    d_in += imgId2 * batchImg2 * in.strides[2] + imgId3 * in.strides[3] + in.offset;
+    if(nImg2 == nTfs2 || nImg2 > 1) {   // One-to-One or Image on dim2
+          offset += imgId2 * batchImg2 * out.strides[2];
+    } else {                            // Transform batched on dim2
+          offset += t_idx2 * out.strides[2];
+    }
+
+    if(nImg3 == nTfs3 || nImg3 > 1) {   // One-to-One or Image on dim3
+          offset += imgId3 * out.strides[3];
+    } else {                            // Transform batched on dim2
+          offset += t_idx3 * out.strides[3];
+    }
+    d_out += offset;
 
     // Transform is in global memory.
     // Needs offset to correct transform being processed.
@@ -98,7 +142,5 @@ void transform_kernel(__global T *d_out, const KParam out,
         calc_transf_inverse(tmat, tmat_ptr);
     }
 
-    if (xido >= out.dims[0] && yido >= out.dims[1]) return;
-
-    INTERP(d_out, out, d_in, in, tmat, xido, yido, limages);
+    INTERP(d_out, out, d_in, in, tmat, xx, yy, limages);
 }

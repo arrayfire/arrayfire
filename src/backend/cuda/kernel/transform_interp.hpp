@@ -55,8 +55,7 @@ namespace cuda
                 yidi = round((xido * tmat[3]
                             + yido * tmat[4]
                                    + tmat[5]) / W);
-            }
-            else {
+            } else {
                 xidi = round(xido * tmat[0]
                            + yido * tmat[1]
                                   + tmat[2]);
@@ -104,8 +103,7 @@ namespace cuda
                 yidi = (xido * tmat[3]
                       + yido * tmat[4]
                              + tmat[5]) / W;
-            }
-            else {
+            } else {
                 xidi = xido * tmat[0]
                      + yido * tmat[1]
                             + tmat[2];
@@ -172,8 +170,7 @@ namespace cuda
                 yidi = floor((xido * tmat[3]
                             + yido * tmat[4]
                                    + tmat[5]) / W);
-            }
-            else {
+            } else {
                 xidi = floor(xido * tmat[0]
                            + yido * tmat[1]
                                   + tmat[2]);

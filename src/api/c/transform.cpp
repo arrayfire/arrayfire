@@ -25,6 +25,33 @@ static inline af_array transform(const af_array in, const af_array tf, const af:
     return getHandle(transform<T>(getArray<T>(in), getArray<float>(tf), odims, method, inverse, perspective));
 }
 
+AF_BATCH_KIND getTransformBatchKind(const dim4 &iDims, const dim4 &tDims)
+{
+    static const int baseDim = 2;
+
+    dim_t iNd = iDims.ndims();
+    dim_t tNd = tDims.ndims();
+
+    if (iNd == baseDim && tNd == baseDim)
+        return AF_BATCH_NONE;
+    else if (iNd == baseDim && tNd <= 4)
+        return AF_BATCH_RHS;
+    else if (iNd <= 4 && tNd == baseDim)
+        return AF_BATCH_LHS;
+    else if (iNd <= 4 && tNd <= 4) {
+        bool dimsMatch = true;
+        bool isInterleaved = true;
+        for (dim_t i = baseDim; i < 4; i++) {
+            dimsMatch &= (iDims[i] == tDims[i]);
+            isInterleaved &= (iDims[i] == 1 || tDims[i] == 1 || iDims[i] == tDims[i]);
+        }
+        if (dimsMatch) return AF_BATCH_SAME;
+        return (isInterleaved ? AF_BATCH_DIFF : AF_BATCH_UNSUPPORTED);
+    }
+    else
+        return AF_BATCH_UNSUPPORTED;
+}
+
 af_err af_transform(af_array *out, const af_array in, const af_array tf,
                     const dim_t odim0, const dim_t odim1,
                     const af_interp_type method, const bool inverse)
@@ -37,23 +64,70 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         af::dim4 tdims = t_info.dims();
         af_dtype itype = i_info.getType();
 
+        // Assert type and interpolation
         ARG_ASSERT(2, t_info.getType() == f32);
         ARG_ASSERT(5, method == AF_INTERP_NEAREST  ||
                       method == AF_INTERP_BILINEAR ||
                       method == AF_INTERP_LOWER);
-        DIM_ASSERT(2, (tdims[0] == 3 && (tdims[1] == 2 || tdims[1] == 3)));
+
+        // Assert dimesions
+        // Image can be 2D or higher
         DIM_ASSERT(1, idims.elements() > 0);
-        DIM_ASSERT(1, (idims.ndims() == 2 || idims.ndims() == 3));
+        DIM_ASSERT(1, idims.ndims() >= 2);
+
+        // Transform can be 3x2 for affine transform or 3x3 for perspective transform
+        DIM_ASSERT(2, (tdims[0] == 3 && (tdims[1] == 2 || tdims[1] == 3)));
+
+        // If transform is batched, the output dimensions must be specified
+        if(tdims[2] * tdims[3] > 1) {
+            ARG_ASSERT(3, odim0 > 0);
+            ARG_ASSERT(4, odim1 > 0);
+        }
+
+        // If idims[2] > 1 and tdims[2] > 1, then both must be equal
+        // else at least one of them must be 1
+        if(tdims[2] != 1 && idims[2] != 1)
+            DIM_ASSERT(2, idims[2] == tdims[2]);
+        else
+            DIM_ASSERT(2, idims[2] == 1 || tdims[2] == 1);
+
+        // If idims[3] > 1 and tdims[3] > 1, then both must be equal
+        // else at least one of them must be 1
+        if(tdims[3] != 1 && idims[3] != 1)
+            DIM_ASSERT(2, idims[3] == tdims[3]);
+        else
+            DIM_ASSERT(2, idims[3] == 1 || tdims[3] == 1);
 
         const bool perspective = (tdims[1] == 3);
-
-        dim_t o0 = odim0, o1 = odim1;
-        dim_t o2 = idims[2] * tdims[2];
+        dim_t o0 = odim0, o1 = odim1, o2 = 0, o3 = 0;
         if (odim0 * odim1 == 0) {
             o0 = idims[0];
             o1 = idims[1];
         }
-        af::dim4 odims(o0, o1, o2, 1);
+
+        switch(getTransformBatchKind(idims, tdims)) {
+            case AF_BATCH_NONE:     // Both are exactly 2D
+            case AF_BATCH_LHS:   // Image is 3/4D, transform is 2D
+            case AF_BATCH_SAME:     // Both are 3/4D and have the same dims
+                o2 = idims[2];
+                o3 = idims[3];
+                break;
+            case AF_BATCH_RHS:   // Image is 2D, transform is 3/4D
+                o2 = tdims[2];
+                o3 = tdims[3];
+                break;
+            case AF_BATCH_DIFF:     // Both are 3/4D, but have different dims
+                o2 = idims[2] == 1 ? tdims[2] : idims[2];
+                o3 = idims[3] == 1 ? tdims[3] : idims[3];
+                break;
+            case AF_BATCH_UNSUPPORTED:
+            default:
+                AF_ERROR("Unsupported combination of batching parameters in transform",
+                          AF_ERR_NOT_SUPPORTED);
+                break;
+        }
+
+        af::dim4 odims(o0, o1, o2, o3);
 
         af_array output = 0;
         switch(itype) {

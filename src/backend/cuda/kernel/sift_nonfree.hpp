@@ -76,7 +76,6 @@
 #include <memory.hpp>
 #include "shared.hpp"
 
-#include <convolve_common.hpp>
 #include "convolve.hpp"
 #include "resize.hpp"
 

@@ -10,7 +10,6 @@
 #pragma once
 #include <af/defines.h>
 
-#include <convolve_common.hpp>
 #include <kernel_headers/convolve.hpp>
 
 #include <map>
