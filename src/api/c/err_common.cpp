@@ -224,3 +224,32 @@ std::string& get_global_error_string()
     static std::string global_error_string = std::string("");
     return global_error_string;
 }
+
+const char *af_err_to_string(const af_err err)
+{
+    switch (err) {
+    case AF_SUCCESS:                return "Success";
+    case AF_ERR_NO_MEM:             return "Device out of memory";
+    case AF_ERR_DRIVER:             return "Driver not available or incompatible";
+    case AF_ERR_RUNTIME:            return "Runtime error ";
+    case AF_ERR_INVALID_ARRAY:      return "Invalid array";
+    case AF_ERR_ARG:                return "Invalid input argument";
+    case AF_ERR_SIZE:               return "Invalid input size";
+    case AF_ERR_TYPE:               return "Function does not support this data type";
+    case AF_ERR_DIFF_TYPE:          return "Input types are not the same";
+    case AF_ERR_BATCH:              return "Invalid batch configuration";
+    case AF_ERR_NOT_SUPPORTED:      return "Function not supported";
+    case AF_ERR_NOT_CONFIGURED:     return "Function not configured to build";
+    case AF_ERR_NONFREE:            return "Function unavailable. "
+                                           "ArrayFire compiled without Non-Free algorithms support";
+    case AF_ERR_NO_DBL:             return "Double precision not supported for this device";
+    case AF_ERR_NO_GFX:             return "Graphics functionality unavailable. "
+                                           "ArrayFire compiled without Graphics support";
+    case AF_ERR_LOAD_LIB:           return "Failed to load dynamic library. ";
+    case AF_ERR_LOAD_SYM:           return "Failed to load symbol";
+    case AF_ERR_ARR_BKND_MISMATCH:  return "There was a mismatch between an array and the current backend";
+    case AF_ERR_INTERNAL:           return "Internal error";
+    case AF_ERR_UNKNOWN:
+    default:                        return "Unknown error";
+    }
+}
