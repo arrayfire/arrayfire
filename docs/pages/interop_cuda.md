@@ -19,9 +19,9 @@ code. ArrayFire provides several functions to ease this process including:
 | Function              | Purpose                                             |
 |-----------------------|-----------------------------------------------------|
 | af::array(...)        | Construct an ArrayFire Array from device memory     |
-| af::array.device()    | Returns a pointer to the underlying CUDA memory     |
-| af::array.lock()      | Takes control of a CUDA pointer from ArrayFire      |
-| af::array.unlock()    | Returns control of a CUDA pointer to ArrayFire      |
+| af::array.device()    | Obtain a pointer to the device memory (implies lock() |
+| af::array.lock()      | Removes ArrayFire's control of a device memory pointer |
+| af::array.unlock()    | Restore's ArrayFire's control over a device memory pointer |
 | af::getDevice()       | Gets the current ArrayFire device ID                |
 | af::setDevice()       | Switches ArrayFire to the specified device          |
 | afcu::getNativeId()   | Converts an ArrayFire device ID to a CUDA device ID |
@@ -139,13 +139,13 @@ constructors with `src=afDevice`:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 // 1D - 3D af::array constructors
-array (dim_t dim0, const T *pointer, af::source src=afHost)
-array (dim_t dim0, dim_t dim1, const T *pointer, af::source src=afHost)
-array (dim_t dim0, dim_t dim1, dim_t dim2, const T *pointer, af::source src=afHost)
-array (dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3, const T *pointer, af::source src=afHost)
+af::array (dim_t dim0, const T *pointer, af::source src=afHost)
+af::array (dim_t dim0, dim_t dim1, const T *pointer, af::source src=afHost)
+af::array (dim_t dim0, dim_t dim1, dim_t dim2, const T *pointer, af::source src=afHost)
+af::array (dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3, const T *pointer, af::source src=afHost)
 
 // af::array constructor using a dim4 object
-array (const dim4 &dims, const T *pointer, af::source src=afHost)
+af::array (const dim4 &dims, const T *pointer, af::source src=afHost)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 *NOTE*: With all of these constructors, ArrayFire's memory manager automatically
