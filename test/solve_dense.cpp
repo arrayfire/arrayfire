@@ -130,7 +130,7 @@ void solveTriangleTester(const int n, const int k, bool is_upper, double eps)
     ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (n * k), eps);
 }
 
-#define SOLVE_TESTS(T, eps)                             \
+#define SOLVE_LU_TESTS(T, eps)                          \
     TEST(SOLVE_LU, T##Reg)                              \
     {                                                   \
         solveLUTester<T>(1000, 100, eps);               \
@@ -139,6 +139,9 @@ void solveTriangleTester(const int n, const int k, bool is_upper, double eps)
     {                                                   \
         solveLUTester<T>(2048, 512, eps);               \
     }                                                   \
+
+
+#define SOLVE_TRIANGLE_TESTS(T, eps)                    \
     TEST(SOLVE_Upper, T##Reg)                           \
     {                                                   \
         solveTriangleTester<T>(1000, 100, true, eps);   \
@@ -155,6 +158,8 @@ void solveTriangleTester(const int n, const int k, bool is_upper, double eps)
     {                                                   \
         solveTriangleTester<T>(2048, 512, false, eps);  \
     }                                                   \
+
+#define SOLVE_GENERAL_TESTS(T, eps)                     \
     TEST(SOLVE, T##Square)                              \
     {                                                   \
         solveTester<T>(1000, 1000, 100, eps);           \
@@ -163,6 +168,8 @@ void solveTriangleTester(const int n, const int k, bool is_upper, double eps)
     {                                                   \
         solveTester<T>(2048, 2048, 512, eps);           \
     }                                                   \
+
+#define SOLVE_LEASTSQ_TESTS(T, eps)                     \
     TEST(SOLVE, T##RectUnder)                           \
     {                                                   \
         solveTester<T>(800, 1000, 200, eps);            \
@@ -171,23 +178,21 @@ void solveTriangleTester(const int n, const int k, bool is_upper, double eps)
     {                                                   \
         solveTester<T>(1536, 2048, 400, eps);           \
     }                                                   \
+    TEST(SOLVE, T##RectOver)                            \
+    {                                                   \
+        solveTester<T>(800, 600, 64, eps);              \
+    }                                                   \
     TEST(SOLVE, T##RectOverMultiple)                    \
     {                                                   \
         solveTester<T>(1536, 1024, 1, eps);             \
-    }
+    }                                                   \
 
-SOLVE_TESTS(float, 0.01)
-SOLVE_TESTS(double, 1E-5)
-SOLVE_TESTS(cfloat, 0.01)
-SOLVE_TESTS(cdouble, 1E-5)
+#define SOLVE_TESTS(T, eps)                             \
+    SOLVE_GENERAL_TESTS(T, eps)                         \
+    SOLVE_LEASTSQ_TESTS(T, eps)                         \
+    SOLVE_LU_TESTS(T, eps)                              \
+    SOLVE_TRIANGLE_TESTS(T, eps)                        \
 
-#undef SOLVE_TESTS
-
-#define SOLVE_TESTS(T, eps)                     \
-    TEST(SOLVE, T##RectOver)                    \
-    {                                           \
-        solveTester<T>(800, 600, 64, eps);      \
-    }
 
 SOLVE_TESTS(float, 0.01)
 SOLVE_TESTS(double, 1E-5)
