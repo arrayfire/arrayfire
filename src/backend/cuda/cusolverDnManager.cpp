@@ -11,6 +11,7 @@
 
 #include <cusolverDnManager.hpp>
 #include <platform.hpp>
+#include <debug_cuda.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -49,7 +50,6 @@ namespace cusolver {
             : handle(0)
         {
             CUSOLVER_CHECK(cusolverDnCreate(&handle));
-            CUSOLVER_CHECK(cusolverDnSetStream(handle, cuda::getStream(cuda::getActiveDeviceId())));
         }
 
         ~cusolverDnHandle()
@@ -73,6 +73,21 @@ namespace cusolver {
         if(!handle[id]) {
             handle[id].reset(new cusolverDnHandle());
         }
+
+        // FIXME
+        // This is not an ideal case. It's just a hack.
+        // The correct way to do is to use
+        // CUSOLVER_CHECK(cusolverDnSetStream(cuda::getStream(cuda::getActiveDeviceId())))
+        // in the class constructor.
+        // However, this is causing a lot of the cusolver functions to fail.
+        // The only way to fix them is to use cudaDeviceSynchronize() and cudaStreamSynchronize()
+        // all over the place, but even then some calls like getrs in solve_lu
+        // continue to fail on any stream other than 0.
+        //
+        // cuSolver Streams patch:
+        // https://gist.github.com/shehzan10/414c3d04a40e7c4a03ed3c2e1b9072e7
+        //
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(id)));
 
         return handle[id]->get();
     }
