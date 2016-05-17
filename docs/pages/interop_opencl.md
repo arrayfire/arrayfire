@@ -1,189 +1,254 @@
 Interoperability with OpenCL {#interop_opencl}
 ========
 
-As extensive as ArrayFire is, there are a few cases where you are still working
-with custom [CUDA] (@ref interop_cuda) or [OpenCL] (@ref interop_opencl) kernels.
-For example, you may want to integrate ArrayFire into an existing code base for
-productivity or you may want to keep it around the old implementation for testing
-purposes. Arrayfire provides a number of functions that allow it to work alongside
-native OpenCL commands. In this tutorial we are going to talk about how to use
-native OpenCL memory operations and custom OpenCL kernels alongside ArrayFire
-in a seamless fashion.
+Although ArrayFire is quite extensive, there remain many cases in which you
+may want to write custom kernels in OpenCL or [CUDA](\ref interop_cuda).
+For example, you may wish to add ArrayFire to an existing code base to increase
+your productivity, or you may need to supplement ArrayFire's functionality
+with your own custom implementation of specific algorithms.
 
-# OpenCL Kernels with Arrayfire arrays
-First, we will see how custom OpenCL kernels can be integrated into Arrayfire code.
-Let's consider the following code and then break it down bit by bit.
+ArrayFire manages its own context, queue, memory, and creates custom IDs
+for devices. As such, most of the interoperability functions focus on reducing
+potential synchronization conflicts between ArrayFire and OpenCL.
+
+# Basics
+
+It is fairly straightforward to interface ArrayFire with your own custom OpenCL
+code. ArrayFire provides several functions to ease this process including:
+
+| Function              | Purpose                                             |
+|-----------------------|-----------------------------------------------------|
+| af::array(...)        | Construct an ArrayFire array from cl_mem references or cl::Buffer objects |
+| af::array.device()    | Obtain a pointer to the cl_mem reference (implies lock()) |
+| af::array.lock()      | Removes ArrayFire's control of a cl_mem buffer            |
+| af::array.unlock()    | Restore's ArrayFire's control over a cl_mem buffer        |
+| afcl::getPlatform()   | Get ArrayFire's current cl_platform                       |
+| af::getDevice()       | Get the current ArrayFire Device ID                       |
+| afcl::getDeviceId()   | Get ArrayFire's current cl_device_id                      |
+| af::setDevice()       | Set ArrayFire's device from an ArrayFire device ID        |
+| afcl::setDeviceId()   | Set ArrayFire's device from a cl_device_id                |
+| afcl::setDevice()     | Set ArrayFire's device from a cl_device_id and cl_context |
+| afcl::getContext()    | Get ArrayFire's current cl_context                        |
+| afcl::getQueue()      | Get ArrayFire's current cl_command_queue                  |
+| afcl::getDeviceType() | Get the current afcl_device_type                          |
+
+Additionally, the OpenCL backend permits the programmer to add and remove custom
+devices from the ArrayFire device manager. These permit you to attach ArrayFire
+directly to the OpenCL queue used by other portions of your application.
+
+| Function              | Purpose                                           |
+|-----------------------|---------------------------------------------------|
+| afcl::addDevice()     | Add a new device to ArrayFire's device manager    |
+| afcl::deleteDevice()  | Remove a device from ArrayFire's device manager   |
+
+Below we provide two worked examples on how ArrayFire can be integrated
+into new and existing projects.
+
+# Adding custom OpenCL kernels to an existing ArrayFire application
+
+By default, ArrayFire manages its own context, queue, memory, and creates custom
+IDs for devices. Thus there is some bookkeeping that needs to be done to
+integrate your custom OpenCL kernel.
+
+If your kernels can share operate in the same queue as ArrayFire, you should:
+
+1. Add an include for `af/opencl.h` to your project
+2. Obtain the OpenCL context, device, and queue used by ArrayFire
+3. Obtain cl_mem references to af::array objects
+4. Load, build, and use your kernels
+5. Return control of af::array memory to ArrayFire
+
+Note, ArrayFire uses an in-order queue, thus when ArrayFire and your kernels
+are operating in the same queue, there is no need to perform any
+synchronization operations.
+
+This process is best illustrated with a fully worked example:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+#include <arrayfire.h>
+// 1. Add the af/opencl.h include to your project
+#include <af/opencl.h>
+
 int main() {
-    af::array x = randu(num);
-    af::array y = randu(num);
+    size_t length = 10;
 
-    float *d_x = x.device<float>();
-    float *d_y = y.device<float>();
+    // Create ArrayFire array objects:
+    af::array A = af::randu(length, f32);
+    af::array B = af::constant(0, length, f32);
 
-    // Launch kernel to do the following operations
-    // y = sin(x)^2 + cos(x)^2
-    launch_simple_kernel(d_x, d_y, num);
+    // ... additional ArrayFire operations here
 
-    x.unlock();
-    y.unlock();
+    // 2. Obtain the device, context, and queue used by ArrayFire
+    static cl_context af_context = afcl::getContext();
+    static cl_device_id af_device_id = afcl::getDeviceId();
+    static cl_command_queue af_queue = afcl::getQueue();
 
-    // check for errors, should be 0,
-    // since sin(x)^2 + cos(x)^2 == 1
-    float err = af::sum<float>(af::abs(y-1));
-    printf("Error: %f\n", err);
+    // 3. Obtain cl_mem references to af::array objects
+    cl_mem * d_A = A.device<cl_mem>();
+    cl_mem * d_B = B.device<cl_mem>();
+
+    // 4. Load, build, and use your kernels.
+    //    For the sake of readability, we have omitted error checking.
+    int status = CL_SUCCESS;
+
+    // A simple copy kernel, uses C++11 syntax for multi-line strings.
+    const char * kernel_name = "copy_kernel";
+    const char * source = R"(
+        void __kernel
+        copy_kernel(__global float * gA, __global float * gB)
+        {
+            int id = get_global_id(0);
+            gB[id] = gA[id];
+        }
+    )";
+
+    // Create the program, build the executable, and extract the entry point
+    // for the kernel.
+    cl_program program = clCreateProgramWithSource(af_context, 1, &source, NULL, &status);
+	status = clBuildProgram(program, 1, &af_device_id, NULL, NULL, NULL);
+    cl_kernel kernel = clCreateKernel(program, kernel_name, &status);
+
+    // Set arguments and launch your kernels
+    clSetKernelArg(kernel, 0, sizeof(cl_mem), d_A);
+    clSetKernelArg(kernel, 1, sizeof(cl_mem), d_B);
+	clEnqueueNDRangeKernel(af_queue, kernel, 1, NULL, &length, NULL, 0, NULL, NULL);
+
+    // 5. Return control of af::array memory to ArrayFire
+    A.unlock();
+    B.unlock();
+
+    // ... resume ArrayFire operations
+
+    // Because the device pointers, d_x and d_y, were returned to ArrayFire's
+    // control by the unlock function, there is no need to free them using
+    // clReleaseMemObject()
+
     return 0;
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-## Breakdown
-Most kernels require an input. In this case, we created a random uniform array `x`
-We also go ahead and prepare the output array. The necessary memory required is
-allocated in array `y` before the kernel launch.
+If your kernels needs to operate in their own OpenCL queue, the process is
+essentially identical, except you need to instruct ArrayFire to complete
+its computations using the af::sync() function prior to launching your
+own kernel and ensure your kernels are complete using `clFinish`
+(or similar) commands prior to returning control of the memory to ArrayFire:
+
+1. Add an include for `af/opencl.h` to your project
+2. Obtain the OpenCL context, device, and queue used by ArrayFire
+3. Obtain cl_mem references to af::array objects
+4. Instruct ArrayFire to finish operations using af::sync()
+5. Load, build, and use your kernels
+6. Instruct OpenCL to finish operations using clFinish() or similar commands.
+5. Return control of af::array memory to ArrayFire
+
+# Adding ArrayFire to an existing OpenCL application
+
+Adding ArrayFire to an existing OpenCL application is slightly more involved
+and can be somewhat tricky due to several optimizations we implement. The
+most important are as follows:
+
+* ArrayFire assumes control of all memory provided to it.
+* ArrayFire does not (in general) support in-place memory transactions.
+
+We will discuss the implications of these items below. To add ArrayFire
+to existing code you need to:
+
+1. Add includes
+2. Instruct OpenCL to complete its operations using clFinish (or similar)
+3. Instruct ArrayFire to use the user-created OpenCL Context
+4. Create ArrayFire arrays from OpenCL memory objects
+5. Perform ArrayFire operations on the Arrays
+6. Instruct ArrayFire to finish operations using af::sync()
+7. Obtain cl_mem references for important memory
+8. Continue your OpenCL application
+
+To create the af::array objects, you should use one of the following
+constructors:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-    af::array x = randu(num);
-    af::array y = randu(num);
+// 1D - 3D af::array constructors
+static af::array    array (dim_t dim0, cl_mem buf, af::dtype type, bool retain=false)
+static af::array    array (dim_t dim0, dim_t dim1, cl_mem buf, af::dtype type, bool retain=false)
+static af::array    array (dim_t dim0, dim_t dim1, dim_t dim2, cl_mem buf, af::dtype type, bool retain=false)
+static af::array    array (dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3, cl_mem buf, af::dtype type, bool retain=false)
+
+// af::array constructor using a dim4 object
+static af::array    array (af::dim4 idims, cl_mem buf, af::dtype type, bool retain=false)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In this example, the output is the same size as in the input. Note that the actual
-output data type is not specified. For such cases, ArrayFire assumes the data type
-is single precision floating point (\ref af::f32). If necessary, the data type can
-be specified at the end of the array(..) constructor. Once you have the input and
-output arrays, you will need to extract the device pointers / objects using
-af::array::device() method in the following manner.
+*NOTE*: With all of these constructors, ArrayFire's memory manager automatically
+assumes responsibility for any memory provided to it. If you are creating
+an array from a `cl::Buffer`, you should specify `retain=true` to ensure your
+memory is not deallocated if your `cl::Buffer` were to go out of scope.
+We use this technique in the example below.
+If you do not wish for ArrayFire to manage your memory, you may call the
+`array::unlock()` function and manage the memory yourself; however, if you do
+so, please be cautious not to call `clReleaseMemObj` on a `cl_mem`  when
+ArrayFire might be using it!
+
+The eight steps above are best illustrated using a fully-worked example. Below we
+use the OpenCL 2.0 C++ API and omit error checking to keep the code readable. 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-    float *d_x = x.device<float>();
-    float *d_y = y.device<float>();
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#include <CL/cl2.hpp>
 
-Accesing the device pointer in this manner internally sets a flag prohibiting
-the arrayfire object from further managing the memory. Ownership will need to be
-returned to the af::array object once we are finished using it.
+// 1. Add arrayfire.h and af/opencl.h to your application
+#include "arrayfire.h"
+#include "af/opencl.h"
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-    // Launch kernel to do the following operations
-    // y = sin(x)^2 + cos(x)^2
-    launch_simple_kernel(d_x, d_y, num);
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#include <cstdio>
+#include <vector>
 
-The function `launch_simple_kernel` handles the launching of your custom kernel.
-We will have a look at the specific functions Arrayfire provides to interface with
-OpenCL later in the post.
+int main() {
 
-Once you have finished your computations, you have to tell ArrayFire to take control
-of the memory objects.
+  // Set up the OpenCL context, device, and queues
+  cl::Context context(CL_DEVICE_TYPE_ALL);
+  vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
+  cl::Device device = devices[0];
+  cl::CommandQueue queue(context, device);
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-    x.unlock();
-    y.unlock();
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Create a buffer of size 10 filled with ones, copy it to the device
+  int length = 10;
+  vector<float> h_A(length, 1);
+  cl::Buffer cl_A(context, CL_MEM_READ_WRITE, length * sizeof(float), h_A.data());
 
-This is a very crucial step as ArrayFire believes the user is still in control
-of the pointer. This means that ArrayFire will not perform garbage collection
-on these objects resulting in memory leaks. You can now proceed with the rest of
-the program. In our particular example, we are just performing an error check and exiting.
+  // 2. Instruct OpenCL to complete its operations using clFinish (or similar)
+  queue.finish();
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-    // check for errors, should be 0,
-    // since sin(x)^2 + cos(x)^2 == 1
-    float err = af::sum(af::abs(y-1));
-    printf("Error: %f\n", err);
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // 3. Instruct ArrayFire to use the user-created context
+  //    First, create a device from the current OpenCL device + context + queue
+  afcl::addDevice(device(), context(), queue());
+  //    Next switch ArrayFire to the device using the device and context as 
+  //    identifiers:
+  afcl::setDevice(device(), context());
 
-## Launching an OpenCL kernel
-If you are integrating an OpenCL kernel into your ArrayFire code base you will
-need several additional steps to access Arrayfire's internal OpenCL context.
-Once you have access to the same context ArrayFire is using, the rest of the
-process is exactly the same as launching a stand alone OpenCL context.
+  // 4. Create ArrayFire arrays from OpenCL memory objects
+  af::array af_A = afcl::array(length, cl_A(), f32, true);
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-void inline launch_simple_kernel(float *d_y,
-                                 const float *d_x,
-                                 const int num)
-{
-    std::string simple_kernel_str = CONST_KERNEL_STRING;
+  // 5. Perform ArrayFire operations on the Arrays
+  af_A = af_A + af::randu(length);
+    
+  // NOTE: ArrayFire does not perform the above transaction using in-place memory, 
+  // thus the underlying OpenCL buffers containing the memory containing memory to 
+  // probably have changed
 
-    // Get OpenCL context from memory buffer and create a Queue
-    cl::Context context(afcl::getContext(true));
-    cl::CommandQueue queue(afcl::getQueue(true));
+  // 6. Instruct ArrayFire to finish operations using af::sync
+  af::sync();
 
-    //Build program and get the required kernel
-    cl::Program prog = cl::Program(context, simple_kernel_str, true);
-    cl::Kernel  kern = cl::Kernel(prog, "simple_kernel");
+  // 7. Obtain cl_mem references for important memory
+  cl_A = *af_A.device<cl_mem>();
 
-    //set global work dimensions
-    static const cl::NDRange global(num);
+  // 8. Continue your OpenCL application
 
-    //prepare argumenst
-    kern.setArg(0, d_y);
-    kern.setArg(1, d_x);
-    kern.setArg(2, num);
-
-    //run kernel
-    queue.enqueueNDRangeKernel(kern, cl::NullRange, global);
-    queue.finish();
-
-    return;
+  // ... 
+  
+  return 0;
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First of all, to access to OpenCL and the interoperability functions we need to
-include the appropriate headers.
+# Using multiple devices
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-#include <af/opencl.h>
-#include <CL/cl.hpp>
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The opencl.h header includes a number of functions for getting and setting the
-context, queue, and device ids used internally in Arrayfire. There are also a
-number of methods to construct an af::array from an OpenCL `cl_mem` buffer
-object.  There are both C and C++ versions of these functions, and the C++
-versions are wrapped inside the \ref afcl namespace. See full datails of these
-functions in the [af/opencl.h documentation] (\ref opencl_mat).
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-cl::Context context(afcl::getContext(true));
-cl::CommandQueue queue(afcl::getQueue(true));
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-We start to use these functions by getting Arrayfire's context and queue. For
-the C++ api, a `true` flag must be passed for the retain parameter which calls
-the `clRetainQueue()` and `clRetainContext()` functions before returning. This
-allows us to use Arrayfire's internal OpenCL structures inside of the
-cl::Context and cl::CommandQueue objects from the C++ api. Once we have them,
-we can proceed to set up and enqueue the kernel like we would in any other
-OpenCL program.  The kernel we are using is actually simple and can be seen
-below.
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-std::string CONST_KERNEL_STRING = R"(
-__kernel
-void simple_kernel(__global float *d_y,
-                   __global const float *d_x,
-                   const int num)
-{
-    const int id = get_global_id(0);
-
-    if (id < num) {
-        float x = d_x[id];
-        float sin_x = sin(x);
-        float cos_x = cos(x);
-        d_y[id] = (sin_x * sin_x) + (cos_x * cos_x);
-    }
-}
-)";
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Reversing the workflow: Arrayfire arrays from OpenCL Memory
-Unfortunately, Arrayfire's interoperability functions don't yet allow us to work with
-external OpenCL contexts. This is currently an open issue and can be tracked here:
-https://github.com/arrayfire/arrayfire/issues/1002.
-
-Once the issue is addressed, it will be possible to take the reverse route and start with
-completely custom OpenCL code, then transfer our results into af::array objects.
-
+If you are using ArrayFire and OpenCL with multiple devices be sure to use
+`afcl::addDevice` to add your custom context + device + queue to ArrayFire's
+device manager. This will let you switch ArrayFire devices using your current
+`cl_device_id` and `cl_context`.
