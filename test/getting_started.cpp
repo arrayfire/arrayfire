@@ -20,6 +20,14 @@ using std::abs;
 TEST(GettingStarted, SNIPPET_getting_started_gen)
 {
 
+    //! [ex_getting_started_constructors]
+    // Arrays may be created using the af::array constructor and dimensioned
+    // as 1D, 2D, 3D; however, the values in these arrays will be undefined
+    array undefined_1D = array(100);        // 1D array with 100 elements
+    array undefined_2D = array(10, 100);    // 2D array of size 10 x 100
+    array undefined_3D = array(10, 10, 10); // 3D array of size 10 x 10 x 10
+    //! [ex_getting_started_constructors]
+
     //! [ex_getting_started_gen]
     // Generate an array of size three filled with zeros.
     // If no data type is specified, ArrayFire defaults to f32.
