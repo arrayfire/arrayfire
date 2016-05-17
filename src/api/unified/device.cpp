@@ -114,12 +114,14 @@ af_err af_free_pinned(void *ptr)
 
 af_err af_alloc_host(void **ptr, const dim_t bytes)
 {
-    return CALL(ptr, bytes);
+    *ptr = malloc(bytes);
+    return (*ptr == NULL) ? AF_ERR_NO_MEM : AF_SUCCESS;
 }
 
 af_err af_free_host(void *ptr)
 {
-    return CALL(ptr);
+    free(ptr);
+    return AF_SUCCESS;
 }
 
 af_err af_device_array(af_array *arr, const void *data, const unsigned ndims, const dim_t * const dims, const af_dtype type)
