@@ -211,7 +211,7 @@ Creates copys of the array a specified number of times within the output array
 
 \brief Reorder an array according to the specified dimensions.
 
-Exchanges data within an array such that the requested change in dimension
+Exchanges data of an array such that the requested change in dimension
 is satisfied. The linear ordering of data within the array is preserved.
 
 \code

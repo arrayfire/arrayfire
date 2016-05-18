@@ -302,7 +302,7 @@ static inline deviceType getDeviceType()
 
 #if AF_API_VERSION >= 33
 /**
-   Get the type of the current platform
+   Get a vendor enumeration for the current platform
 */
 static inline platform getPlatform()
 {

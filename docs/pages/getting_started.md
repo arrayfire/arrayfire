@@ -124,7 +124,7 @@ when a non-JIT function is encountered or a synchronization operation is
 explicitly called by the code.
 
 ArrayFire provides [hundreds of functions](\ref arith_mat) for element-wise
-operations. All of the standard operators (e.g. +,-,*,/) are supported
+operations. All of the standard operators (e.g. +,-,\*,/) are supported
 as are most transcendental functions (sin, cos, log, sqrt, etc.).
 Here are a few examples:
 
