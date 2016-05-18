@@ -40,12 +40,14 @@ in order to integrate your custom CUDA kernel.
 
 If your kernels can share the ArrayFire CUDA stream, you should:
 
-1. Add an include for `af/cuda.h` to your project
-2. Obtain a device pointer from ArrayFire af::array objects
-3. Determine ArrayFire's CUDA stream
-4. Set arguments and launch your kernel in ArrayFire's CUDA stream
-5. Return control of af::array memory to ArrayFire
-6. Compile your application using `nvcc` with the appropriate paths.
+1. Include the 'af/afcuda.h' header in your source code
+2. Use ArrayFire as normal
+3. Ensure any JIT kernels have executed using ``af::eval()`
+4. Obtain device pointers from ArrayFire array objects using
+5. Determine ArrayFire's CUDA stream
+6. Set arguments and run your kernel in ArrayFire's stream
+7. Return control of af::array memory to ArrayFire
+8. Compile with `nvcc`, linking with the `afcuda` library.
 
 Notice that since ArrayFire and your kernels are sharing the same CUDA
 stream, there is no need to perform any synchronization operations as
@@ -60,32 +62,37 @@ This process is best illustrated with a fully worked example:
 
 int main() {
 
-    // Create ArrayFire array objects:
-    af::array x = randu(num);
-    af::array y = randu(num);
+    // 2. Use ArrayFire as normal
+    size_t num = 10;
+    af::array x = af::constant(0, num);
+    
+    // ... many ArrayFire operaitons here
 
-    // ... many ArrayFire operations here
+    // 3. Ensure any JIT kernels have executed
+    x.eval();
+    af_print(x);
 
     // Run a custom CUDA kernel in the ArrayFire CUDA stream
 
-    // 2. Obtain device pointers from ArrayFire array objects using
+    // 4. Obtain device pointers from ArrayFire array objects using
     //    the array::device() function:
     float *d_x = x.device<float>();
-    float *d_y = y.device<float>();
 
-    // 3. Determine ArrayFire's CUDA stream
+    // 5. Determine ArrayFire's CUDA stream
     int af_id = af::getDevice();
-    cudaStream_t af_cuda_stream = afcu::getStream(af_id);
+    int cuda_id = afcu::getNativeId(af_id);
+    cudaStream_t af_cuda_stream = afcu::getStream(cuda_id);
 
-    // 4. Set arguments and run your kernel in ArrayFire's stream
-    run_custom_kernel<blocks, threads, 0, stream>(d_x, d_y);
+    // 6. Set arguments and run your kernel in ArrayFire's stream
+    //    Here launch with 10 blocks of 10 threads
+    increment<<<1, num, 0, af_cuda_stream>>>(d_x);
 
-    // 5. Return control of af::array memory to ArrayFire using
+    // 7. Return control of af::array memory to ArrayFire using
     //    the array::unlock() function:
     x.unlock();
-    y.unlock();
 
     // ... resume ArrayFire operations
+    af_print(x);
 
     // Because the device pointers, d_x and d_y, were returned to ArrayFire's
     // control by the unlock function, there is no need to free them using
@@ -101,15 +108,17 @@ its computations using the af::sync() function prior to launching your
 own kernel and ensure your kernels are complete using `cudaDeviceSynchronize()`
 (or similar) commands prior to returning control of the memory to ArrayFire:
 
-1. Add an include for `af/cuda.h` to your project.
-2. Instruct ArrayFire to finish operations using af::sync()
-3. Obtain a device pointer from ArrayFire af::array objects
-4. Determine ArrayFire's CUDA stream using afcu::getStream()
-5. Set arguments and launch your kernel in ArrayFire's CUDA stream
-6. Ensure CUDA operations have finished using `cudaDeviceSyncronize()`
+1. Include the 'af/afcuda.h' header in your source code
+2. Use ArrayFire as normal
+3. Ensure any JIT kernels have executed using ``af::eval()`
+4. Instruct ArrayFire to finish operations using af::sync()
+5. Obtain device pointers from ArrayFire array objects using
+6. Determine ArrayFire's CUDA stream
+7. Set arguments and run your kernel in your custom stream
+8. Ensure CUDA operations have finished using `cudaDeviceSyncronize()`
    or similar commands.
-7. Return control of af::array memory to ArrayFire
-8. Compile your application using `nvcc` with the appropriate paths.
+9. Return control of af::array memory to ArrayFire
+10. Compile with `nvcc`, linking with the `afcuda` library.
 
 # Adding ArrayFire to an existing CUDA application
 
@@ -128,7 +137,7 @@ to existing code you need to:
    (e.g. use cudaDeviceSynchronize() or similar stream functions)
 3. Create ArrayFire arrays from existing CUDA pointers
 4. Perform operations on ArrayFire arrays
-5. Instruct ArrayFire to finish operations using af::sync()
+5. Instruct ArrayFire to finish operations using af::eval() and af::sync()
 6. Obtain pointers to important memory
 7. Continue your CUDA application.
 8. Free non-managed memory
@@ -161,13 +170,15 @@ The seven steps above are best illustrated using a fully-worked example:
 #include <arrayfire.h>
 #include <af/cuda.h>
 
+using namespace std;
+
 int main() {
 
-    // Create CUDA memory objects
+    // Create and populate CUDA memory objects
     const int elements = 100;
     size_t size = elements * sizeof(float);
-    float *inputSignal;
-    cudaMalloc((void**) &inputSignal, size);
+    float *cuda_A;
+    cudaMalloc((void**) &cuda_A, size);
 
     // ... perform many CUDA operations here
 
@@ -176,31 +187,30 @@ int main() {
 
     // 3. Create ArrayFire arrays from existing CUDA pointers.
     //    Be sure to specify that the memory type is afDevice.
-    af::array d_A(size, inputSignal, afDevice);
+    af::array d_A(elements, cuda_A, afDevice);
 
-    // NOTE: ArrayFire now manages inputSignal
+    // NOTE: ArrayFire now manages cuda_A
 
     // 4. Perform operations on the ArrayFire Arrays.
-
-    // For example, add uniformly distributed noise to a signal
-    d_A = d_A + randu(elements);
+    d_A = d_A * 2;
 
     // NOTE: ArrayFire does not perform the above transaction using
     // in-place memory, thus the pointers containing memory to d_A have
     // likely changed.
 
-    // 5. Instruct ArrayFire to finish pending operations
-    af::sync()
+    // 5. Instruct ArrayFire to finish pending operations using eval and sync.
+    af::eval(d_A);
+    af::sync();
 
     // 6. Get pointers to important memory objects.
     //    Once device is called, ArrayFire will not manage the memory.
-    float * outputSignal = d_A.device<float>();
+    float * outputValue = d_A.device<float>();
 
     // 7. continue CUDA application as normal
 
-    // 8. Free non-managed memroy
-    //    We removed outputSignal from ArrayFire's control, we need to free it
-    cudaFree(outputSignal);
+    // 8. Free non-managed memory
+    //    We removed outputValue from ArrayFire's control, we need to free it
+    cudaFree(outputValue);
 
     return 0;
 }
