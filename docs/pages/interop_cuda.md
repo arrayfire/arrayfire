@@ -42,7 +42,7 @@ If your kernels can share the ArrayFire CUDA stream, you should:
 
 1. Include the 'af/afcuda.h' header in your source code
 2. Use ArrayFire as normal
-3. Ensure any JIT kernels have executed using ``af::eval()`
+3. Ensure any JIT kernels have executed using `af::eval()`
 4. Obtain device pointers from ArrayFire array objects using
 5. Determine ArrayFire's CUDA stream
 6. Set arguments and run your kernel in ArrayFire's stream
@@ -65,7 +65,7 @@ int main() {
     // 2. Use ArrayFire as normal
     size_t num = 10;
     af::array x = af::constant(0, num);
-    
+
     // ... many ArrayFire operaitons here
 
     // 3. Ensure any JIT kernels have executed
@@ -110,7 +110,7 @@ own kernel and ensure your kernels are complete using `cudaDeviceSynchronize()`
 
 1. Include the 'af/afcuda.h' header in your source code
 2. Use ArrayFire as normal
-3. Ensure any JIT kernels have executed using ``af::eval()`
+3. Ensure any JIT kernels have executed using `af::eval()`
 4. Instruct ArrayFire to finish operations using af::sync()
 5. Obtain device pointers from ArrayFire array objects using
 6. Determine ArrayFire's CUDA stream
