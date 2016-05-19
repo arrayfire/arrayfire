@@ -6,6 +6,12 @@ FIND_PACKAGE(Boost REQUIRED)
 INCLUDE("${CMAKE_MODULE_PATH}/CLKernelToH.cmake")
 INCLUDE("${CMAKE_MODULE_PATH}/FindNVVM.cmake")
 
+MARK_AS_ADVANCED(
+    CUDA_BUILD_CUBIN
+    CUDA_BUILD_EMULATION
+    CUDA_SDK_ROOT_DIR
+    CUDA_VERBOSE_BUILD)
+
 # Disables running cuda_compute_check.c when build windows using remote
 OPTION(CUDA_COMPUTE_DETECT "Run autodetection of CUDA Architecture" ON)
 MARK_AS_ADVANCED(CUDA_COMPUTE_DETECT)
@@ -64,7 +70,14 @@ IF(UNIX)
     # GCC 5.3 and above give errors for mempcy from <string.h>
     # This is a (temporary) fix for that
     IF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.3.0")
-        ADD_DEFINITIONS(-D_FORCE_INLINES)
+      ADD_DEFINITIONS(-D_FORCE_INLINES)
+    ENDIF()
+
+    # GCC 6.0 and above default to g++14, enabling c++11 features by default
+    # Enabling c++11 with nvcc 7.5 + gcc 6.x doesn't seem to work
+    # Only solution for now is to force use c++03 for gcc 6.x
+    IF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "6.0.0")
+      SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -std=c++98")
     ENDIF()
 
     # Forcing STRICT ANSI should resolve a bunch of issues that NVIDIA seems to face with GCC compilers.
@@ -85,14 +98,23 @@ IF(CMAKE_VERSION VERSION_LESS 3.2)
     IF(${CUDA_cusolver_LIBRARY} MATCHES " ")
         UNSET(CUDA_cusolver_LIBRARY CACHE)  # When going from higher version to lower version
     ENDIF()
-    FIND_LIBRARY (
-        CUDA_cusolver_LIBRARY
-        NAMES "cusolver"
-        PATHS ${CUDA_TOOLKIT_ROOT_DIR}
-        PATH_SUFFIXES "lib64" "lib/x64" "lib"
-        DOC "CUDA cusolver Library"
-        NO_DEFAULT_PATH
-        )
+
+    # Use CUDA_cusolver_DIR to keep track of CUDA Toolkit for which cusolver was found.
+    # If the toolkit changed, then find cusolver again
+    IF(NOT "${CUDA_cusolver_DIR}" STREQUAL "${CUDA_TOOLKIT_ROOT_DIR}")
+        UNSET(CUDA_cusolver_DIR CACHE)
+        UNSET(CUDA_cusolver_LIBRARY CACHE)
+        FIND_LIBRARY (
+            CUDA_cusolver_LIBRARY
+            NAMES "cusolver"
+            PATHS ${CUDA_TOOLKIT_ROOT_DIR}
+            PATH_SUFFIXES "lib64" "lib/x64" "lib"
+            DOC "CUDA cusolver Library"
+            NO_DEFAULT_PATH
+            )
+        SET(CUDA_cusolver_DIR "${CUDA_TOOLKIT_ROOT_DIR}" CACHE INTERNAL "CUDA cusolver Root Directory")
+    ENDIF()
+    MARK_AS_ADVANCED(CUDA_cusolver_LIBRARY)
 ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
 
 IF(${CUDA_VERSION_MAJOR} LESS 7 AND CUDA_cusolver_LIBRARY)
@@ -150,7 +172,7 @@ INCLUDE_DIRECTORIES(
     ${CUDA_INCLUDE_DIRS}
     "${CMAKE_SOURCE_DIR}/src/backend/cuda"
     "${CMAKE_CURRENT_BINARY_DIR}"
-    ${CUDA_NVVM_INCLUDE_DIR}
+    ${CUDA_nvvm_INCLUDE_DIR}
     )
 
 IF(CUDA_LAPACK_CPU_FALLBACK)
@@ -377,7 +399,7 @@ TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
                                 PRIVATE ${CUDA_LIBRARIES}
                                 PRIVATE ${FreeImage_LIBS}
                                 PRIVATE ${CUDA_CUFFT_LIBRARIES}
-                                PRIVATE ${CUDA_NVVM_LIBRARIES}
+                                PRIVATE ${CUDA_nvvm_LIBRARY}
                                 PRIVATE ${CUDA_CUDA_LIBRARY})
 
 IF(FORGE_FOUND)

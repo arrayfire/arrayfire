@@ -122,7 +122,7 @@ void one2one_3d(InT *optr, InT const * const iptr, AccT const * const fptr, af::
 }
 
 template<typename InT, typename AccT, dim_t baseDim, bool Expand>
-void convolve_nd(Array<InT> out, Array<InT> const signal, Array<AccT> const filter, ConvolveBatchKind kind)
+void convolve_nd(Array<InT> out, Array<InT> const signal, Array<AccT> const filter, AF_BATCH_KIND kind)
 {
     InT * optr = out.get();
     InT const * const iptr = signal.get();
@@ -143,18 +143,18 @@ void convolve_nd(Array<InT> out, Array<InT> const signal, Array<AccT> const filt
 
     for (dim_t i=1; i<4; ++i) {
         switch(kind) {
-            case CONVOLVE_BATCH_SIGNAL:
+            case AF_BATCH_LHS:
                 out_step[i] = oStrides[i];
                 in_step[i]  = sStrides[i];
                 if (i>=baseDim) batch[i] = sDims[i];
                 break;
-            case CONVOLVE_BATCH_SAME:
+            case AF_BATCH_SAME:
                 out_step[i]  = oStrides[i];
                 in_step[i]   = sStrides[i];
                 filt_step[i] = fStrides[i];
                 if (i>=baseDim) batch[i] = sDims[i];
                 break;
-            case CONVOLVE_BATCH_KERNEL:
+            case AF_BATCH_RHS:
                 out_step[i]  = oStrides[i];
                 filt_step[i] = fStrides[i];
                 if (i>=baseDim) batch[i] = fDims[i];

@@ -16,7 +16,7 @@
 namespace opencl
 {
     template<typename T>
-    Array<T> transform(const Array<T> &in, const Array<float> &transform,
+    Array<T> transform(const Array<T> &in, const Array<float> &tf,
                        const af::dim4 &odims, const af_interp_type method,
                        const bool inverse, const bool perspective)
     {
@@ -27,15 +27,15 @@ namespace opencl
                 switch(method) {
                     case AF_INTERP_NEAREST:
                         kernel::transform<T, true, true, AF_INTERP_NEAREST>
-                                         (out, in, transform);
+                                         (out, in, tf);
                         break;
                     case AF_INTERP_BILINEAR:
                         kernel::transform<T, true, true, AF_INTERP_BILINEAR>
-                                         (out, in, transform);
+                                         (out, in, tf);
                         break;
                     case AF_INTERP_LOWER:
                         kernel::transform<T, true, true, AF_INTERP_LOWER>
-                                         (out, in, transform);
+                                         (out, in, tf);
                         break;
                     default:
                         AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
@@ -45,15 +45,15 @@ namespace opencl
                 switch(method) {
                     case AF_INTERP_NEAREST:
                         kernel::transform<T, true, false, AF_INTERP_NEAREST>
-                                         (out, in, transform);
+                                         (out, in, tf);
                         break;
                     case AF_INTERP_BILINEAR:
                         kernel::transform<T, true, false, AF_INTERP_BILINEAR>
-                                         (out, in, transform);
+                                         (out, in, tf);
                         break;
                     case AF_INTERP_LOWER:
                         kernel::transform<T, true, false, AF_INTERP_LOWER>
-                                         (out, in, transform);
+                                         (out, in, tf);
                         break;
                     default:
                         AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
@@ -65,15 +65,15 @@ namespace opencl
                 switch(method) {
                     case AF_INTERP_NEAREST:
                         kernel::transform<T, false, true, AF_INTERP_NEAREST>
-                                         (out, in, transform);
+                                         (out, in, tf);
                         break;
                     case AF_INTERP_BILINEAR:
                         kernel::transform<T, false, true, AF_INTERP_BILINEAR>
-                                         (out, in, transform);
+                                         (out, in, tf);
                         break;
                     case AF_INTERP_LOWER:
                         kernel::transform<T, false, true, AF_INTERP_LOWER>
-                                         (out, in, transform);
+                                         (out, in, tf);
                         break;
                     default:
                         AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
@@ -83,15 +83,15 @@ namespace opencl
                 switch(method) {
                     case AF_INTERP_NEAREST:
                         kernel::transform<T, false, false, AF_INTERP_NEAREST>
-                                         (out, in, transform);
+                                         (out, in, tf);
                         break;
                     case AF_INTERP_BILINEAR:
                         kernel::transform<T, false, false, AF_INTERP_BILINEAR>
-                                         (out, in, transform);
+                                         (out, in, tf);
                         break;
                     case AF_INTERP_LOWER:
                         kernel::transform<T, false, false, AF_INTERP_LOWER>
-                                         (out, in, transform);
+                                         (out, in, tf);
                         break;
                     default:
                         AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
@@ -105,7 +105,7 @@ namespace opencl
 
 
 #define INSTANTIATE(T)                                                                  \
-    template Array<T> transform(const Array<T> &in, const Array<float> &transform,      \
+    template Array<T> transform(const Array<T> &in, const Array<float> &tf,             \
                                 const af::dim4 &odims, const af_interp_type method,     \
                                 const bool inverse, const bool perspective);
 

@@ -12,7 +12,6 @@
 #include <debug_cuda.hpp>
 #include <memory.hpp>
 
-#include <convolve_common.hpp>
 #include "convolve.hpp"
 #include "orb_patch.hpp"
 #include "sort_by_key.hpp"

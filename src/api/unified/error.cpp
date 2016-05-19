@@ -42,10 +42,3 @@ void af_get_last_error(char **str, dim_t *len)
         func(str, len);
     }
 }
-
-const char *af_err_to_string(const af_err err)
-{
-    typedef char *(*af_func)(af_err);
-    af_func func = (af_func)LOAD_SYMBOL();
-    return func(err);
-}

@@ -134,6 +134,28 @@ cudaGraphicsResource* InteropManager::getBufferResource(const fg::Surface* key)
     return interop_maps[device][key_value];
 }
 
+bool InteropManager::checkGraphicsInteropCapability()
+{
+    static bool run_once = true;
+    static bool capable  = true;
+
+    if(run_once) {
+        unsigned int pCudaEnabledDeviceCount = 0;
+        int pCudaGraphicsEnabledDeviceIds = 0;
+        cudaGetLastError(); // Reset Errors
+        cudaError_t err = cudaGLGetDevices(&pCudaEnabledDeviceCount, &pCudaGraphicsEnabledDeviceIds, getDeviceCount(), cudaGLDeviceListAll);
+        if(err == 63) { // OS Support Failure - Happens when devices are only Tesla
+            capable = false;
+            printf("Warning: No CUDA Device capable of CUDA-OpenGL. CUDA-OpenGL Interop will use CPU fallback.\n");
+            printf("Corresponding CUDA Error (%d): %s.\n", err, cudaGetErrorString(err));
+            printf("This may happen if all CUDA Devices are in TCC Mode and/or not connected to a display.\n");
+        }
+        cudaGetLastError(); // Reset Errors
+        run_once = false;
+    }
+    return capable;
+}
+
 }
 
 #endif

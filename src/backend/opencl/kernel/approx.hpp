@@ -87,7 +87,7 @@ namespace opencl
 
 
                 auto approx1Op = make_kernel<Buffer, const KParam, const Buffer, const KParam,
-                                       const Buffer, const KParam, const float, const dim_t, const int>
+                                       const Buffer, const KParam, const float, const int, const int>
                                       (*approxKernels[device]);
 
                 NDRange local(THREADS, 1, 1);
@@ -155,7 +155,7 @@ namespace opencl
 
                 auto approx2Op = make_kernel<Buffer, const KParam, const Buffer, const KParam,
                                        const Buffer, const KParam, const Buffer, const KParam,
-                                       const float, const dim_t, const dim_t, const int>
+                                       const float, const int, const int, const int>
                                        (*approxKernels[device]);
 
                 NDRange local(TX, TY, 1);

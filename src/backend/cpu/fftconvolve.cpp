@@ -14,7 +14,6 @@
 #include <err_cpu.hpp>
 #include <fftw3.h>
 #include <copy.hpp>
-#include <convolve_common.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <kernel/fftconvolve.hpp>
@@ -24,7 +23,7 @@ namespace cpu
 
 template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
-                     const bool expand, ConvolveBatchKind kind)
+                     const bool expand, AF_BATCH_KIND kind)
 {
     signal.eval();
     filter.eval();
@@ -193,7 +192,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     dim4 oDims(1);
     if (expand) {
         for(dim_t d=0; d<4; ++d) {
-            if (kind==CONVOLVE_BATCH_NONE || kind==CONVOLVE_BATCH_KERNEL) {
+            if (kind==AF_BATCH_NONE || kind==AF_BATCH_RHS) {
                 oDims[d] = sd[d]+fd[d]-1;
             } else {
                 oDims[d] = (d<baseDim ? sd[d]+fd[d]-1 : sd[d]);
@@ -201,7 +200,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
         }
     } else {
         oDims = sd;
-        if (kind==CONVOLVE_BATCH_KERNEL) {
+        if (kind==AF_BATCH_RHS) {
             for (dim_t i=baseDim; i<4; ++i)
                 oDims[i] = fd[i];
         }
@@ -218,11 +217,11 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
 #define INSTANTIATE(T, convT, cT, isDouble, roundOut)                                                   \
     template Array<T> fftconvolve <T, convT, cT, isDouble, roundOut, 1>                                 \
-        (Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind);    \
+        (Array<T> const& signal, Array<T> const& filter, const bool expand, AF_BATCH_KIND kind);        \
     template Array<T> fftconvolve <T, convT, cT, isDouble, roundOut, 2>                                 \
-        (Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind);    \
+        (Array<T> const& signal, Array<T> const& filter, const bool expand, AF_BATCH_KIND kind);        \
     template Array<T> fftconvolve <T, convT, cT, isDouble, roundOut, 3>                                 \
-        (Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind);
+        (Array<T> const& signal, Array<T> const& filter, const bool expand, AF_BATCH_KIND kind);
 
 INSTANTIATE(double, double, cdouble, true , false)
 INSTANTIATE(float , float,  cfloat,  false, false)

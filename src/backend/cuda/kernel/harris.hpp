@@ -14,7 +14,6 @@
 #include <memory.hpp>
 
 #include "config.hpp"
-#include <convolve_common.hpp>
 #include "convolve.hpp"
 #include "gradient.hpp"
 #include "sort_by_key.hpp"

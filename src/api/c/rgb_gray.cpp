@@ -109,8 +109,13 @@ af_err convert(af_array* out, const af_array in, const float r, const float g, c
         af_dtype iType     = info.getType();
         af::dim4 inputDims = info.dims();
 
-        ARG_ASSERT(1, (inputDims.ndims()>=2));
+        // 2D is not required.
+        ARG_ASSERT(1, info.elements() > 0);
+
+        // If RGB is input, then assert 3 channels
+        // else 1 channel
         if (isRGB2GRAY) ARG_ASSERT(1, (inputDims[2]==3));
+        else            ARG_ASSERT(1, (inputDims[2]==1));
 
         af_array output = 0;
         switch(iType) {

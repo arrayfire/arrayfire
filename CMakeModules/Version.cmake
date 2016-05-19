@@ -1,12 +1,23 @@
 #
 # Make a version file that includes the ArrayFire version and git revision
 #
+CMAKE_POLICY(PUSH)
+
+# https://cmake.org/cmake/help/v3.1/policy/CMP0054.html
+IF("${CMAKE_VERSION}" VERSION_GREATER "3.1" OR "${CMAKE_VERSION}" VERSION_EQUAL "3.1")
+    CMAKE_POLICY(SET CMP0054 OLD)
+ENDIF()
+
 SET(AF_VERSION_MAJOR "3")
 SET(AF_VERSION_MINOR "4")
 SET(AF_VERSION_PATCH "0")
 
 SET(AF_VERSION "${AF_VERSION_MAJOR}.${AF_VERSION_MINOR}.${AF_VERSION_PATCH}")
 SET(AF_API_VERSION_CURRENT ${AF_VERSION_MAJOR}${AF_VERSION_MINOR})
+
+IF (${CMAKE_MAJOR_VERSION} GREATER 2 AND ${CMAKE_MINOR_VERSION} GREATER 1)
+    CMAKE_POLICY(SET CMP0054 OLD)
+ENDIF()
 
 # From CMake 3.0.0 CMAKE_<LANG>_COMPILER_ID is AppleClang for OSX machines
 # that use clang for compilations
@@ -46,3 +57,5 @@ CONFIGURE_FILE(
     ${CMAKE_MODULE_PATH}/version.hpp.in
     ${CMAKE_SOURCE_DIR}/src/backend/version.hpp
 )
+
+CMAKE_POLICY(POP)

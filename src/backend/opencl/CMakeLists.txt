@@ -6,7 +6,6 @@ FIND_PACKAGE(OpenCL REQUIRED)
 INCLUDE("${CMAKE_MODULE_PATH}/CLKernelToH.cmake")
 
 IF(USE_OPENCL_F77_BLAS)
-    MESSAGE("Using F77 BLAS")
     ADD_DEFINITIONS(-DUSE_F77_BLAS)
 ENDIF()
 
@@ -33,14 +32,11 @@ ELSE(NOT LAPACK_FOUND)
     FIND_PACKAGE(CBLAS REQUIRED)
 
     IF(USE_CPU_F77_BLAS)
-      MESSAGE("Using F77 BLAS")
       ADD_DEFINITIONS(-DUSE_F77_BLAS)
     ENDIF()
 
     IF (NOT CBLAS_LIBRARIES)
       MESSAGE(SEND_ERROR "CBLAS Library not set")
-    ELSE()
-      MESSAGE(STATUS "Using CBLAS Library: ${CBLAS_LIBRARIES}")
     ENDIF()
   ENDIF()
 ENDIF()
@@ -233,7 +229,12 @@ CL_KERNEL_TO_H(
 
 # OS Definitions
 IF(UNIX)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread -Wno-comment")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread -Wno-comment")
+    # GCC 6.0 and above enable -Wignored-attributes by default causing a lot of warnings
+    # Disable the trigger for gcc >= 6.0.0
+    IF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "6.0.0")
+        ADD_DEFINITIONS(-Wno-ignored-attributes)
+    ENDIF()
 ENDIF()
 
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")

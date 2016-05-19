@@ -451,7 +451,7 @@ void convolve_3d(conv_kparam_t &p, Param<T> out, CParam<T> sig, CParam<aT> filt)
 }
 
 template<typename T, typename aT, int baseDim, bool expand>
-void convolve_nd(Param<T> out, CParam<T> signal, CParam<aT> filt, ConvolveBatchKind kind)
+void convolve_nd(Param<T> out, CParam<T> signal, CParam<aT> filt, AF_BATCH_KIND kind)
 {
     bool callKernel = true;
 
@@ -470,9 +470,9 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<aT> filt, ConvolveBatchK
         param.o[i] = 0;
         param.s[i] = 0;
     }
-    param.launchMoreBlocks = kind==CONVOLVE_BATCH_SAME || kind==CONVOLVE_BATCH_KERNEL;
-    param.outHasNoOffset = kind==CONVOLVE_BATCH_SIGNAL || kind==CONVOLVE_BATCH_NONE;
-    param.inHasNoOffset  = kind!=CONVOLVE_BATCH_SAME;
+    param.launchMoreBlocks = kind==AF_BATCH_SAME || kind==AF_BATCH_RHS;
+    param.outHasNoOffset   = kind==AF_BATCH_LHS  || kind==AF_BATCH_NONE;
+    param.inHasNoOffset    = kind!=AF_BATCH_SAME;
 
     switch(baseDim) {
         case 1: convolve_1d<T, aT, expand>(param, out, signal, filt); break;
@@ -484,12 +484,12 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<aT> filt, ConvolveBatchK
 }
 
 #define INSTANTIATE(T, aT)  \
-    template void convolve_nd<T, aT, 1, true >(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
-    template void convolve_nd<T, aT, 1, false>(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
-    template void convolve_nd<T, aT, 2, true >(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
-    template void convolve_nd<T, aT, 2, false>(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
-    template void convolve_nd<T, aT, 3, true >(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
-    template void convolve_nd<T, aT, 3, false>(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
+    template void convolve_nd<T, aT, 1, true >(Param<T> out, CParam<T> signal, CParam<aT> filter, AF_BATCH_KIND kind);\
+    template void convolve_nd<T, aT, 1, false>(Param<T> out, CParam<T> signal, CParam<aT> filter, AF_BATCH_KIND kind);\
+    template void convolve_nd<T, aT, 2, true >(Param<T> out, CParam<T> signal, CParam<aT> filter, AF_BATCH_KIND kind);\
+    template void convolve_nd<T, aT, 2, false>(Param<T> out, CParam<T> signal, CParam<aT> filter, AF_BATCH_KIND kind);\
+    template void convolve_nd<T, aT, 3, true >(Param<T> out, CParam<T> signal, CParam<aT> filter, AF_BATCH_KIND kind);\
+    template void convolve_nd<T, aT, 3, false>(Param<T> out, CParam<T> signal, CParam<aT> filter, AF_BATCH_KIND kind);\
 
 
 INSTANTIATE(cdouble, cdouble)

@@ -221,7 +221,8 @@ AFAPI array rotate(const array& in, const float theta, const bool crop=true, con
 
     \ingroup transform_func_transform
 */
-AFAPI array transform(const array& in, const array& transform, const dim_t odim0 = 0, const dim_t odim1 = 0, const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
+AFAPI array transform(const array& in, const array& transform, const dim_t odim0 = 0, const dim_t odim1 = 0,
+                      const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
 
 #if AF_API_VERSION >= 33
 /**

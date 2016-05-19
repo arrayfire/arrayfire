@@ -99,10 +99,10 @@ namespace opencl
 
                 auto unwrapOp = make_kernel<Buffer, const KParam,
                                             const Buffer, const KParam,
-                                            const dim_t, const dim_t,
-                                            const dim_t, const dim_t,
-                                            const dim_t, const dim_t,
-                                            const dim_t, const dim_t> (*entry.ker);
+                                            const int, const int,
+                                            const int, const int,
+                                            const int, const int,
+                                            const int, const int> (*entry.ker);
 
                 unwrapOp(EnqueueArgs(getQueue(), global, local),
                        *out.data, out.info, *in.data, in.info, wx, wy, sx, sy, px, py, nx, reps);

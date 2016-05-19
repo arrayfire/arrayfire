@@ -39,10 +39,16 @@ void copy_surface(const Array<T> &P, fg::Surface* surface)
         shared_objects.push_back(*clPBOResource);
 
         glFinish();
-        getQueue().enqueueAcquireGLObjects(&shared_objects);
-        getQueue().enqueueCopyBuffer(*d_P, *clPBOResource, 0, 0, bytes, NULL, NULL);
-        getQueue().finish();
-        getQueue().enqueueReleaseGLObjects(&shared_objects);
+
+        // Use of events:
+        // https://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clEnqueueReleaseGLObjects.html
+        cl::Event event;
+
+        getQueue().enqueueAcquireGLObjects(&shared_objects, NULL, &event);
+        event.wait();
+        getQueue().enqueueCopyBuffer(*d_P, *clPBOResource, 0, 0, bytes, NULL, &event);
+        getQueue().enqueueReleaseGLObjects(&shared_objects, NULL, &event);
+        event.wait();
 
         CL_DEBUG_FINISH(getQueue());
         CheckGL("End OpenCL resource copy");
