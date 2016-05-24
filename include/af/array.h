@@ -122,6 +122,7 @@ namespace af
             bool isfloating() const;
             bool isinteger() const;
             bool isbool() const;
+            bool issparse() const;
             void eval() const;
             array as(dtype type) const;
             array T() const;
@@ -648,6 +649,11 @@ namespace af
            \brief Returns true if the array type is \ref b8
         */
         bool isbool() const;
+
+        /**
+           \brief Returns true if the array is a sparse array
+        */
+        bool issparse() const;
 
         /**
            \brief Evaluate any JIT expressions to generate data for the array
@@ -1528,6 +1534,16 @@ extern "C" {
         \returns error codes
     */
     AFAPI af_err af_is_bool         (bool *result, const af_array arr);
+
+    /**
+        \brief Check if an array is sparse
+
+        \param[out] result is true if arr is sparse, otherwise false
+        \param[in] arr is the input array
+
+        \returns error codes
+    */
+    AFAPI af_err af_is_sparse       (bool *result, const af_array arr);
     /**
         @}
     */

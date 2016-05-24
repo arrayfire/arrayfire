@@ -152,6 +152,7 @@ namespace cuda
         INFO_IS_FUNC(isInteger);
         INFO_IS_FUNC(isBool);
         INFO_IS_FUNC(isLinear);
+        INFO_IS_FUNC(isSparse);
 
 #undef INFO_IS_FUNC
 

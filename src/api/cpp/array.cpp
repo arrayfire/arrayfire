@@ -294,6 +294,7 @@ namespace af
     INSTANTIATE(floating)
     INSTANTIATE(integer)
     INSTANTIATE(bool)
+    INSTANTIATE(sparse)
 
 #undef INSTANTIATE
 
@@ -609,6 +610,7 @@ namespace af
     MEM_FUNC(bool                   , isfloating)
     MEM_FUNC(bool                   , isinteger)
     MEM_FUNC(bool                   , isbool)
+    MEM_FUNC(bool                   , issparse)
     MEM_FUNC(void                   , eval)
     //MEM_FUNC(void                   , unlock)
 #undef MEM_FUNC

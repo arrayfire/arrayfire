@@ -24,6 +24,7 @@ static const detail::Array<T> &
 getArray(const af_array &arr)
 {
     detail::Array<T> *A = reinterpret_cast<detail::Array<T>*>(arr);
+    ARG_ASSERT(0, A->isSparse() == false);
     return *A;
 }
 
@@ -59,6 +60,7 @@ static detail::Array<T> &
 getWritableArray(const af_array &arr)
 {
     const detail::Array<T> &A = getArray<T>(arr);
+    ARG_ASSERT(0, A.isSparse() == false);
     return const_cast<detail::Array<T>&>(A);
 }
 
