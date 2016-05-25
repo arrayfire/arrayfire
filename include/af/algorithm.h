@@ -318,17 +318,31 @@ namespace af
 
 #if AF_API_VERSION >=34
     /**
-       C++ Interface exclusive sum (cumulative sum) of an array
+       C++ Interface generalized scan of an array
 
        \param[in] in is the input array
-       \param[in] dim The dimension along which exclusive sum is performed
-       \param[in] op is the type of binary operations used
+       \param[in] dim The dimension along which scan is performed
+       \param[in] op is the type of binary operation used
        \param[in] inclusive_scan is flag specifying whether scan is inclusive
-       \return the output containing exclusive sums of the input
+       \return the output containing scan of the input
 
        \ingroup scan_func_scan
     */
-    AFAPI array scan(const array &in, const int dim = 0, af_binary_op op = AF_ADD, bool inclusive_scan = true);
+    AFAPI array scan(const array &in, const int dim = 0, af_binary_op op = AF_BINARY_ADD, bool inclusive_scan = true);
+
+    /**
+       C++ Interface generalized scan by key of an array
+
+       \param[in] key is the key array
+       \param[in] in is the input array
+       \param[in] dim The dimension along which scan is performed
+       \param[in] op is the type of binary operations used
+       \param[in] inclusive_scan is flag specifying whether scan is inclusive
+       \return the output containing scan of the input
+
+       \ingroup scan_func_scan
+    */
+    AFAPI array scanByKey(const array &key, const array& in, const int dim = 0, af_binary_op op = AF_BINARY_ADD, bool inclusive_scan = true);
 #endif
 
     /**
@@ -762,9 +776,9 @@ extern "C" {
     /**
        C Interface generalized scan of an array
 
-       \param[out] out will contain exclusive sums of the input
+       \param[out] out will contain scan of the input
        \param[in] in is the input array
-       \param[in] dim The dimension along which exclusive sum is performed
+       \param[in] dim The dimension along which scan is performed
        \param[in] op is the type of binary operations used
        \param[in] inclusive_scan is flag specifying whether scan is inclusive
        \return \ref AF_SUCCESS if the execution completes properly
@@ -772,6 +786,21 @@ extern "C" {
        \ingroup scan_func_scan
     */
     AFAPI af_err af_scan(af_array *out, const af_array in, const int dim, af_binary_op op, bool inclusive_scan);
+
+    /**
+       C Interface generalized scan by key of an array
+
+       \param[out] out will contain scan of the input
+       \param[in] key is the key array
+       \param[in] in is the input array
+       \param[in] dim The dimension along which scan is performed
+       \param[in] op is the type of binary operations used
+       \param[in] inclusive_scan is flag specifying whether scan is inclusive
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup scan_func_scan
+    */
+    AFAPI af_err af_scan_by_key(af_array *out, const af_array key, const af_array in, const int dim, af_binary_op op, bool inclusive_scan);
 #endif
 
     /**

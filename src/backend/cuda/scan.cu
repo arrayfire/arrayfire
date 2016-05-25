@@ -43,31 +43,27 @@ namespace cuda
         return out;
     }
 
-
-#define INSTANTIATE(ROp, Ti, To)\
+#define INSTANTIATE_SCAN(ROp, Ti, To)\
     template Array<To> scan<ROp, Ti, To>(const Array<Ti> &in, const int dim, bool inclusive_scan);
 
-#define INSTANTIATE_SCAN(ROp)           \
-    INSTANTIATE(ROp, float  , float  )  \
-    INSTANTIATE(ROp, double , double )  \
-    INSTANTIATE(ROp, cfloat , cfloat )  \
-    INSTANTIATE(ROp, cdouble, cdouble)  \
-    INSTANTIATE(ROp, int    , int    )  \
-    INSTANTIATE(ROp, uint   , uint   )  \
-    INSTANTIATE(ROp, intl   , intl   )  \
-    INSTANTIATE(ROp, uintl  , uintl  )  \
-    INSTANTIATE(ROp, char   , int    )  \
-    INSTANTIATE(ROp, char   , uint   )  \
-    INSTANTIATE(ROp, uchar  , uint   )  \
-    INSTANTIATE(ROp, short  , int    )  \
-    INSTANTIATE(ROp, ushort , uint   )
+#define INSTANTIATE_SCAN_ALL(ROp)                       \
+    INSTANTIATE_SCAN(ROp, float  , float  )             \
+    INSTANTIATE_SCAN(ROp, double , double )             \
+    INSTANTIATE_SCAN(ROp, cfloat , cfloat )             \
+    INSTANTIATE_SCAN(ROp, cdouble, cdouble)             \
+    INSTANTIATE_SCAN(ROp, int    , int    )             \
+    INSTANTIATE_SCAN(ROp, uint   , uint   )             \
+    INSTANTIATE_SCAN(ROp, intl   , intl   )             \
+    INSTANTIATE_SCAN(ROp, uintl  , uintl  )             \
+    INSTANTIATE_SCAN(ROp, char   , int    )             \
+    INSTANTIATE_SCAN(ROp, char   , uint   )             \
+    INSTANTIATE_SCAN(ROp, uchar  , uint   )             \
+    INSTANTIATE_SCAN(ROp, short  , int    )             \
+    INSTANTIATE_SCAN(ROp, ushort , uint   )
 
-    //accum
-    INSTANTIATE(af_notzero_t, char  , uint)
-    INSTANTIATE_SCAN(af_add_t)
-    INSTANTIATE_SCAN(af_sub_t)
-    INSTANTIATE_SCAN(af_mul_t)
-    INSTANTIATE_SCAN(af_div_t)
-    INSTANTIATE_SCAN(af_min_t)
-    INSTANTIATE_SCAN(af_max_t)
+    INSTANTIATE_SCAN(af_notzero_t, char, uint)
+    INSTANTIATE_SCAN_ALL(af_add_t)
+    INSTANTIATE_SCAN_ALL(af_mul_t)
+    INSTANTIATE_SCAN_ALL(af_min_t)
+    INSTANTIATE_SCAN_ALL(af_max_t)
 }

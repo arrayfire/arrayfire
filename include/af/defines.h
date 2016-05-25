@@ -383,12 +383,10 @@ typedef enum {
 
 #if AF_API_VERSION >=34
 typedef enum {
-    AF_ADD  = 0,
-    AF_SUB  = 1,
-    AF_MUL  = 2,
-    AF_DIV  = 3,
-    AF_MIN  = 4,
-    AF_MAX  = 5
+    AF_BINARY_ADD  = 0,
+    AF_BINARY_MUL  = 1,
+    AF_BINARY_MIN  = 2,
+    AF_BINARY_MAX  = 3
 } af_binary_op;
 #endif
 

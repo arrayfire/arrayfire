@@ -6,15 +6,16 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma once
 
-#include <Array.hpp>
 #include <ops.hpp>
+#include <Param.hpp>
 
-namespace cpu
+namespace cuda
 {
-    template<af_op_t op, typename Ti, typename To>
-    Array<To> scan(const Array<Ti>& in, const int dim, bool inclusive_scan = true);
-
-    template<af_op_t op, typename Ti, typename Tk, typename To>
-    Array<To> scan(const Array<Ti>& in, const Array<Tk>& key, const int dim, bool inclusive_scan = true);
+    namespace kernel
+    {
+        template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
+        void scan_first_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key);
+    }
 }

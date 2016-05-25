@@ -15,6 +15,7 @@
 #include <handle.hpp>
 #include <ops.hpp>
 #include <scan.hpp>
+#include <scan_by_key.hpp>
 #include <backend.hpp>
 
 using af::dim4;
@@ -26,18 +27,49 @@ static inline af_array scan(const af_array in, const int dim, bool inclusive_sca
     return getHandle(scan<op,Ti,To>(getArray<Ti>(in), dim, inclusive_scan));
 }
 
+template<af_op_t op, typename Ti, typename To>
+static inline af_array scan_key(const af_array key, const af_array in, const int dim, bool inclusive_scan = true)
+{
+    const ArrayInfo& key_info = getInfo(key);
+    af_dtype type = key_info.getType();
+    af_array out;
+
+    switch(type) {
+        case    s32:   out = getHandle(scan<op, Ti,   int, To>(getArray<  int>(key), getArray<Ti>(in), dim, inclusive_scan)); break;
+        case    u32:   out = getHandle(scan<op, Ti,  uint, To>(getArray< uint>(key), getArray<Ti>(in), dim, inclusive_scan)); break;
+        case    s64:   out = getHandle(scan<op, Ti,  intl, To>(getArray< intl>(key), getArray<Ti>(in), dim, inclusive_scan)); break;
+        case    u64:   out = getHandle(scan<op, Ti, uintl, To>(getArray<uintl>(key), getArray<Ti>(in), dim, inclusive_scan)); break;
+        default:
+            TYPE_ERROR(1, type);
+    }
+    return out;
+}
+
+template<typename Ti, typename To>
+static inline af_array scan_op(const af_array key, const af_array in, const int dim, af_binary_op op, bool inclusive_scan = true)
+{
+    af_array out;
+
+    switch(op) {
+    case AF_BINARY_ADD:    out = scan_key<af_add_t, Ti, To>(key, in, dim, inclusive_scan); break;
+    case AF_BINARY_MUL:    out = scan_key<af_mul_t, Ti, To>(key, in, dim, inclusive_scan); break;
+    case AF_BINARY_MIN:    out = scan_key<af_min_t, Ti, To>(key, in, dim, inclusive_scan); break;
+    case AF_BINARY_MAX:    out = scan_key<af_max_t, Ti, To>(key, in, dim, inclusive_scan); break;
+                    //TODO Error for op in default case
+    }
+    return out;
+}
+
 template<typename Ti, typename To>
 static inline af_array scan_op(const af_array in, const int dim, af_binary_op op, bool inclusive_scan)
 {
     af_array out;
 
     switch(op) {
-    case AF_ADD:    out = scan<af_add_t, Ti, To>(in, dim, inclusive_scan); break;
-    case AF_SUB:    out = scan<af_sub_t, Ti, To>(in, dim, inclusive_scan); break;
-    case AF_MUL:    out = scan<af_mul_t, Ti, To>(in, dim, inclusive_scan); break;
-    case AF_DIV:    out = scan<af_div_t, Ti, To>(in, dim, inclusive_scan); break;
-    case AF_MIN:    out = scan<af_min_t, Ti, To>(in, dim, inclusive_scan); break;
-    case AF_MAX:    out = scan<af_max_t, Ti, To>(in, dim, inclusive_scan); break;
+    case AF_BINARY_ADD:    out = scan<af_add_t, Ti, To>(in, dim, inclusive_scan); break;
+    case AF_BINARY_MUL:    out = scan<af_mul_t, Ti, To>(in, dim, inclusive_scan); break;
+    case AF_BINARY_MIN:    out = scan<af_min_t, Ti, To>(in, dim, inclusive_scan); break;
+    case AF_BINARY_MAX:    out = scan<af_max_t, Ti, To>(in, dim, inclusive_scan); break;
                     //TODO Error for op in default case
     }
     return out;
@@ -115,6 +147,47 @@ af_err af_scan(af_array *out, const af_array in, const int dim, af_binary_op op,
         case s16:  res = scan_op<short  , int    >(in, dim, op, inclusive_scan); break;
         case u8:   res = scan_op<uchar  , uint   >(in, dim, op, inclusive_scan); break;
         case b8:   res = scan_op<char   , uint   >(in, dim, op, inclusive_scan); break;
+        default:
+            TYPE_ERROR(1, type);
+        }
+
+        std::swap(*out, res);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_scan_by_key(af_array *out, const af_array key, const af_array in, const int dim, af_binary_op op, bool inclusive_scan)
+{
+    ARG_ASSERT(2, dim >= 0);
+    ARG_ASSERT(2, dim <  4);
+
+    try {
+
+        const ArrayInfo& in_info = getInfo(in);
+
+        if (dim >= (int)in_info.ndims()) {
+            *out = retain(in);
+            return AF_SUCCESS;
+        }
+
+        af_dtype type = in_info.getType();
+        af_array res;
+
+        switch(type) {
+        case f32:  res = scan_op<float  , float  >(key, in, dim, op, inclusive_scan); break;
+        case f64:  res = scan_op<double , double >(key, in, dim, op, inclusive_scan); break;
+        case c32:  res = scan_op<cfloat , cfloat >(key, in, dim, op, inclusive_scan); break;
+        case c64:  res = scan_op<cdouble, cdouble>(key, in, dim, op, inclusive_scan); break;
+        case u32:  res = scan_op<uint   , uint   >(key, in, dim, op, inclusive_scan); break;
+        case s32:  res = scan_op<int    , int    >(key, in, dim, op, inclusive_scan); break;
+        case u64:  res = scan_op<uintl  , uintl  >(key, in, dim, op, inclusive_scan); break;
+        case s64:  res = scan_op<intl   , intl   >(key, in, dim, op, inclusive_scan); break;
+        case u16:  res = scan_op<ushort , uint   >(key, in, dim, op, inclusive_scan); break;
+        case s16:  res = scan_op<short  , int    >(key, in, dim, op, inclusive_scan); break;
+        case u8:   res = scan_op<uchar  , uint   >(key, in, dim, op, inclusive_scan); break;
+        case b8:   res = scan_op<char   , uint   >(key, in, dim, op, inclusive_scan); break;
         default:
             TYPE_ERROR(1, type);
         }
