@@ -293,10 +293,45 @@ extern "C" {
     ///
     /// \brief Create an quadruple of af_index_t array
     ///
+    /// \code
+    /// af_index_t* indexers = 0;
+    /// af_err err = af_create_indexers(&indexers); // Memory is allocated on heap by the callee
+    /// // by default all the indexers span all the elements along the given dimension
+    ///
+    /// //Create array
+    /// af_array a;
+    /// unsigned ndims = 2;
+    /// dim_t dim[] = {10,10};
+    /// af_randu(&a, ndims, dim, f32);
+    ///
+    /// //Create index array
+    /// af_array idx;
+    /// unsigned n = 1;
+    /// dim_t d[] = {5};
+    /// af_range(&idx, n, d, 0, s64);
+    ///
+    /// af_print_array(a);
+    /// af_print_array(idx);
+    ///
+    /// //create array indexer
+    /// err = af_set_array_indexer(indexers, idx, 1);
+    /// if (err != AF_SUCCESS) {
+    ///     printf("Error from set array indexer: %d \n", err2);
+    ///     exit(1);
+    /// }
+    ///
+    /// //index with indexers
+    /// af_array out;
+    /// af_index_gen(&out, a, 2, indexers); // number of indexers should be two since
+    ///                                     // we have set only second af_index_t
+    /// af_print_array(out);
+    /// af_release_indexers(indexers);
+    /// \endcode
+    ///
     /// \param[out] indexers pointer to location where quadruple af_index_t array is created
     /// \returns \ref af_err error code
     ///
-    /// \ingroup index_func_util
+    /// \ingroup index_func_index
     ///
     AFAPI af_err af_create_indexers(af_index_t** indexers);
 #endif
@@ -310,7 +345,7 @@ extern "C" {
     /// \param[in] dim is the dimension to be indexed
     /// \returns \ref af_err error code
     ///
-    /// \ingroup index_func_util
+    /// \ingroup index_func_index
     ///
     AFAPI af_err af_set_array_indexer(af_index_t* indexer, const af_array idx, const dim_t dim);
 #endif
@@ -324,7 +359,7 @@ extern "C" {
     /// \param[in] dim is the dimension to be indexed
     /// \param[in] is_batch indicates if the sequence based indexing is inside a batch operation
     ///
-    /// \ingroup index_func_util
+    /// \ingroup index_func_index
     ///
     AFAPI af_err af_set_seq_indexer(af_index_t* indexer, const af_seq* idx,
                                   const dim_t dim, const bool is_batch);
@@ -342,7 +377,7 @@ extern "C" {
     /// \param[in] is_batch indicates if the sequence based indexing is inside a batch operation
     /// \returns \ref af_err error code
     ///
-    /// \ingroup index_func_util
+    /// \ingroup index_func_index
     ///
     AFAPI af_err af_set_seq_param_indexer(af_index_t* indexer,
                                         const double begin, const double end, const double step,
@@ -356,7 +391,7 @@ extern "C" {
     /// \param[in] indexers is pointer to location where quadruple af_index_t array is created
     //  \returns \ref af_err error code
     ///
-    /// \ingroup index_func_util
+    /// \ingroup index_func_index
     ///
     AFAPI af_err af_release_indexers(af_index_t* indexers);
 #endif
