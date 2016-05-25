@@ -241,6 +241,10 @@ af_err af_create_indexers(af_index_t** indexers)
 {
     try {
         af_index_t* out = new af_index_t[4];
+        for (int i=0; i<4; ++i) {
+            out[i].idx.seq = af_span;
+            out[i].isSeq = true;
+        }
         std::swap(*indexers, out);
     }
     CATCHALL;
