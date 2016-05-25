@@ -539,6 +539,7 @@ namespace af
     array::array_proxy&
     af::array::array_proxy::operator=(array_proxy &&other) {
         array out = other;
+        other.impl = nullptr;
         return *this = out;
     }
 #endif
