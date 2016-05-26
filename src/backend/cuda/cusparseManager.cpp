@@ -45,6 +45,7 @@ namespace cusparse {
             : handle(0)
         {
             CUSPARSE_CHECK(cusparseCreate(&handle));
+            CUSPARSE_CHECK(cusparseSetStream(handle, cuda::getStream(cuda::getActiveDeviceId())));
         }
 
         ~cusparseHandle()

@@ -10,71 +10,52 @@
 #include <af/sparse.h>
 #include <af/array.h>
 #include <af/algorithm.h>
-#include <sparse_t.hpp>
+#include <sparse_handle.hpp>
 #include <sparse.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 #include <err_common.hpp>
 #include <arith.hpp>
 #include <lookup.hpp>
+#include <platform.hpp>
 
 using namespace detail;
+using namespace common;
 using af::dim4;
 
-af_sparse_array getSparseHandle(const af_sparse_t sparse)
+const SparseArrayBase& getSparseArrayBase(const af_array in, bool device_check)
 {
-    af_sparse_t *sparseHandle = new af_sparse_t;
-    *sparseHandle = sparse;
-    return (af_sparse_array)sparseHandle;
-}
+    const SparseArrayBase *base = static_cast<SparseArrayBase*>(reinterpret_cast<void *>(in));
 
-af_sparse_t getSparse(const af_sparse_array sparseHandle)
-{
-    return *(af_sparse_t *)sparseHandle;
-}
-
-af_err af_release_sparse_array(af_sparse_array arr)
-{
-
-    try {
-        af_sparse_t sparse = *(af_sparse_t *)arr;
-        if (sparse.storage > 0) {
-            if (sparse.rowIdx != 0)     AF_CHECK(af_release_array(sparse.rowIdx));
-            if (sparse.colIdx != 0)     AF_CHECK(af_release_array(sparse.colIdx));
-            if (sparse.values != 0)     AF_CHECK(af_release_array(sparse.values));
-        }
-        delete (af_sparse_t *)arr;
+    if(!base->isSparse()) {
+        AF_ERROR("Input is not a SparseArray and cannot be used in Sparse functions",
+                 AF_ERR_ARG);
     }
-    CATCHALL;
-    return AF_SUCCESS;
-}
 
-af_err af_retain_sparse_array(af_sparse_array *out, const af_sparse_array in)
-{
-    try {
-        af_sparse_t input = getSparse(in);
-        af_sparse_t output;
-
-        output.storage  = input.storage;
-        output.nRows    = input.nRows;
-        output.nCols    = input.nCols;
-        output.nNZ      = input.nNZ;
-
-        AF_CHECK(af_retain_array(&output.values, input.values));
-        AF_CHECK(af_retain_array(&output.rowIdx, input.rowIdx));
-        AF_CHECK(af_retain_array(&output.colIdx, input.colIdx));
-
-        *out = getSparseHandle(output);
+    if (device_check && base->getDevId() != detail::getActiveDeviceId()) {
+        AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
     }
-    CATCHALL;
-    return AF_SUCCESS;
+
+    return *base;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Sparse Creation
 ////////////////////////////////////////////////////////////////////////////////
+template<typename T>
+af_array createSparseArray(const af::dim4 &dims, const af_array values,
+                           const af_array rowIdx, const af_array colIdx,
+                           const af::sparseStorage storage)
+{
+    SparseArray<T> sparse = common::createArrayDataSparseArray(
+                            dims, getArray<T>(values),
+                            getArray<int>(rowIdx), getArray<int>(colIdx),
+                            storage);
+    return getHandle(sparse);
+}
+
 af_err af_create_sparse_array(
-                 af_sparse_array *out,
+                 af_array *out,
                  const dim_t nRows, const dim_t nCols, const dim_t nNZ,
                  const af_array values, const af_array rowIdx, const af_array colIdx,
                  const af_sparse_storage storage)
@@ -104,28 +85,48 @@ af_err af_create_sparse_array(
         DIM_ASSERT(5, rInfo.isLinear());
         DIM_ASSERT(6, cInfo.isLinear());
 
-        af_sparse_t sparse;
-        sparse.storage = storage;
-        sparse.nRows = nRows;
-        sparse.nCols = nCols;
-        sparse.nNZ = nNZ;
+        af_array output = 0;
 
-        AF_CHECK(af_retain_array(&sparse.rowIdx, rowIdx));
-        AF_CHECK(af_retain_array(&sparse.colIdx, colIdx));
-        AF_CHECK(af_retain_array(&sparse.values, values));
+        af::dim4 dims(nRows, nCols);
 
-        *out = getSparseHandle(sparse);
+        switch(vInfo.getType()) {
+            case f32: output = createSparseArray<float  >(dims, values, rowIdx, colIdx, storage); break;
+            case f64: output = createSparseArray<double >(dims, values, rowIdx, colIdx, storage); break;
+            case c32: output = createSparseArray<cfloat >(dims, values, rowIdx, colIdx, storage); break;
+            case c64: output = createSparseArray<cdouble>(dims, values, rowIdx, colIdx, storage); break;
+            default : TYPE_ERROR(1, vInfo.getType());
+        }
+        std::swap(*out, output);
+
     } CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_create_sparse_array_from_host(
-                 af_sparse_array *out,
+template<typename T>
+af_array createSparseArrayFromPtr(
+        const af::dim4 &dims, const dim_t nNZ,
+        const T * const values, const int * const rowIdx, const int * const colIdx,
+        const af::sparseStorage storage, const af::source source)
+{
+    SparseArray<T> sparse = createEmptySparseArray<T>(dims, nNZ, storage);
+
+    if(source == afHost)
+        sparse = common::createHostDataSparseArray(
+                         dims, nNZ, values, rowIdx, colIdx, storage);
+    else if (source == afDevice)
+        sparse = common::createDeviceDataSparseArray(
+                         dims, nNZ, values, rowIdx, colIdx, storage);
+
+    return getHandle(sparse);
+}
+
+af_err af_create_sparse_array_from_ptr(
+                 af_array *out,
                  const dim_t nRows, const dim_t nCols, const dim_t nNZ,
-                 const void * const values,
-                 const int * const rowIdx, const int * const colIdx,
-                 const af_dtype type, const af_sparse_storage storage)
+                 const void * const values, const int * const rowIdx, const int * const colIdx,
+                 const af_dtype type, const af_sparse_storage storage,
+                 const af_source source)
 {
     try {
         // Checks:
@@ -145,40 +146,42 @@ af_err af_create_sparse_array_from_host(
         TYPE_ASSERT(type == f32 || type == f64
                  || type == c32 || type == c64);
 
-        af_sparse_t sparse;
-        sparse.storage = storage;
-        sparse.nRows = nRows;
-        sparse.nCols = nCols;
-        sparse.nNZ = nNZ;
 
-        AF_CHECK(af_create_array(&sparse.values, values, 1, &nNZ, type));
+        af_array output = 0;
 
-        if(storage == AF_SPARSE_COO) {
-            AF_CHECK(af_create_array(&sparse.rowIdx, rowIdx, 1, &nNZ, s32));
-            AF_CHECK(af_create_array(&sparse.colIdx, colIdx, 1, &nNZ, s32));
-        } else if(storage == AF_SPARSE_CSR) {
-            AF_CHECK(af_create_array(&sparse.rowIdx, rowIdx, 1, &nRows, s32));
-            AF_CHECK(af_create_array(&sparse.colIdx, colIdx, 1, &nNZ, s32));
-        } else if(storage == AF_SPARSE_CSC) {
-            AF_CHECK(af_create_array(&sparse.rowIdx, rowIdx, 1, &nNZ, s32));
-            AF_CHECK(af_create_array(&sparse.colIdx, colIdx, 1, &nCols, s32));
+        af::dim4 dims(nRows, nCols);
+
+        switch(type) {
+            case f32: output = createSparseArrayFromPtr<float  >
+                               (dims, nNZ, static_cast<const float  *>(values), rowIdx, colIdx, storage, source);
+                      break;
+            case f64: output = createSparseArrayFromPtr<double >
+                               (dims, nNZ, static_cast<const double *>(values), rowIdx, colIdx, storage, source);
+                      break;
+            case c32: output = createSparseArrayFromPtr<cfloat >
+                               (dims, nNZ, static_cast<const cfloat *>(values), rowIdx, colIdx, storage, source);
+                      break;
+            case c64: output = createSparseArrayFromPtr<cdouble>
+                               (dims, nNZ, static_cast<const cdouble *>(values), rowIdx, colIdx, storage, source);
+                      break;
+            default : TYPE_ERROR(1, type);
         }
+        std::swap(*out, output);
 
-        *out = getSparseHandle(sparse);
     } CATCHALL;
 
     return AF_SUCCESS;
 }
 
 template<typename T>
-void create_sparse_array_from_dense(af_sparse_t *out, const af_array in_,
-                                    const af_array nonZeroIdx_, const af_sparse_storage storage)
+af_array createSparseArrayFromDense(
+        const af::dim4 &dims, const dim_t nNZ,
+        const af_array _in, const af_array _nonZeroIdx,
+        const af_sparse_storage storage)
 {
-    Array<int> nonZeroIdx = castArray<int>(nonZeroIdx_);
+    Array<int> nonZeroIdx = castArray<int>(_nonZeroIdx);
+    const Array<T> in = getArray<T>(_in);
 
-    const Array<T> in = getArray<T>(in_);
-
-    dim_t nNZ = nonZeroIdx.elements();
     Array<int> constNNZ = createValueArray<int>(dim4(nNZ), nNZ);
 
     Array<int> rowIdx = *initArray<int>();
@@ -186,25 +189,22 @@ void create_sparse_array_from_dense(af_sparse_t *out, const af_array in_,
     Array<T>   values = *initArray<T>();
 
     if(storage == AF_SPARSE_COO) {
-
         rowIdx = arithOp<int, af_mod_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
         colIdx = arithOp<int, af_div_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
         values = lookup<T, int>(in, nonZeroIdx, 0);
-
     } else if(storage == AF_SPARSE_CSR) {
         dense2storage<T, AF_SPARSE_CSR>(values, rowIdx, colIdx, in);
-
     } else if(storage == AF_SPARSE_CSC) {
         dense2storage<T, AF_SPARSE_CSC>(values, rowIdx, colIdx, in);
     }
 
-    out->rowIdx = getHandle(rowIdx);
-    out->colIdx = getHandle(colIdx);
-    out->values = getHandle(values);
+    SparseArray<T> sparse = common::createArrayDataSparseArray(
+                            dims, values, rowIdx, colIdx, storage);
 
+    return getHandle(sparse);
 }
 
-af_err af_create_sparse_array_from_dense(af_sparse_array *out, const af_array in,
+af_err af_create_sparse_array_from_dense(af_array *out, const af_array in,
                                          const af_sparse_storage storage)
 {
     try {
@@ -220,9 +220,10 @@ af_err af_create_sparse_array_from_dense(af_sparse_array *out, const af_array in
             AF_ERROR("Storage type is out of range/unsupported", AF_ERR_ARG);
         }
 
-        TYPE_ASSERT(info.isFloating());
+        // Only matrices allowed
+        DIM_ASSERT(1, info.ndims() == 2);
 
-        af_sparse_t sparse;
+        TYPE_ASSERT(info.isFloating());
 
         af_array nonZeroIdx = 0; // Yes I know how this looks
         AF_CHECK(af_where(&nonZeroIdx, in));
@@ -230,22 +231,18 @@ af_err af_create_sparse_array_from_dense(af_sparse_array *out, const af_array in
         ArrayInfo nNZInfo = getInfo(nonZeroIdx);
         dim_t nNZ = nNZInfo.elements();
 
-        sparse.storage = storage;
-        sparse.nRows = info.dims()[0];
-        sparse.nCols = info.dims()[1];
-        sparse.nNZ = nNZ;
+        af::dim4 dims(info.dims()[0], info.dims()[1]);
+
+        af_array output = 0;
 
         switch(info.getType()) {
-            case f32: create_sparse_array_from_dense<float  >(&sparse, in, nonZeroIdx, storage); break;
-            case f64: create_sparse_array_from_dense<double >(&sparse, in, nonZeroIdx, storage); break;
-            case c32: create_sparse_array_from_dense<cfloat >(&sparse, in, nonZeroIdx, storage); break;
-            case c64: create_sparse_array_from_dense<cdouble>(&sparse, in, nonZeroIdx, storage); break;
+            case f32: output = createSparseArrayFromDense<float  >(dims, nNZ, in, nonZeroIdx, storage); break;
+            case f64: output = createSparseArrayFromDense<double >(dims, nNZ, in, nonZeroIdx, storage); break;
+            case c32: output = createSparseArrayFromDense<cfloat >(dims, nNZ, in, nonZeroIdx, storage); break;
+            case c64: output = createSparseArrayFromDense<cdouble>(dims, nNZ, in, nonZeroIdx, storage); break;
             default: TYPE_ERROR(1, info.getType());
         }
-
-        // Call the conversion in the backend here
-
-        *out = getSparseHandle(sparse);
+        std::swap(*out, output);
 
         if(nonZeroIdx != 0) AF_CHECK(af_release_array(nonZeroIdx));
     } CATCHALL;
@@ -256,65 +253,82 @@ af_err af_create_sparse_array_from_dense(af_sparse_array *out, const af_array in
 ////////////////////////////////////////////////////////////////////////////////
 // Get Functions
 ////////////////////////////////////////////////////////////////////////////////
-af_err af_sparse_get_values(af_array *out, const af_sparse_array in)
+template<typename T>
+af_array getSparseValues(const af_array in)
+{
+    return getHandle(getSparseArray<T>(in).getValues());
+}
+
+af_err af_sparse_get_values(af_array *out, const af_array in)
+{
+    try{
+        const SparseArrayBase base = getSparseArrayBase(in);
+
+        af_array output = 0;
+
+        switch(base.getType()) {
+            case f32: output = getSparseValues<float  >(in); break;
+            case f64: output = getSparseValues<double >(in); break;
+            case c32: output = getSparseValues<cfloat >(in); break;
+            case c64: output = getSparseValues<cdouble>(in); break;
+            default : TYPE_ERROR(1, base.getType());
+        }
+        std::swap(*out, output);
+    }
+    CATCHALL
+    return AF_SUCCESS;
+}
+
+af_err af_sparse_get_rows(af_array *out, const af_array in)
 {
     try {
-        af_sparse_t sparse = getSparse(in);
-        *out = sparse.values;
+        const SparseArrayBase base = getSparseArrayBase(in);
+        *out = getHandle(base.getRows());
     } CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_sparse_get_rows(af_array *out, const af_sparse_array in)
+af_err af_sparse_get_cols(af_array *out, const af_array in)
 {
     try {
-        af_sparse_t sparse = getSparse(in);
-        *out = sparse.rowIdx;
+        const SparseArrayBase base = getSparseArrayBase(in);
+        *out = getHandle(base.getColumns());
     } CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_sparse_get_cols(af_array *out, const af_sparse_array in)
+af_err af_sparse_get_num_values(dim_t *out, const af_array in)
 {
     try {
-        af_sparse_t sparse = getSparse(in);
-        *out = sparse.colIdx;
+        const SparseArrayBase base = getSparseArrayBase(in);
+        *out = base.getNNZ();
     } CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_sparse_get_num_values(dim_t *out, const af_sparse_array in)
+af_err af_sparse_get_num_rows(dim_t *out, const af_array in)
 {
     try {
-        af_sparse_t sparse = getSparse(in);
-        *out = sparse.nNZ;
+        const SparseArrayBase base = getSparseArrayBase(in);
+        *out = base.getRows().elements();
     } CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_sparse_get_num_rows(dim_t *out, const af_sparse_array in)
+af_err af_sparse_get_num_cols(dim_t *out, const af_array in)
 {
     try {
-        af_sparse_t sparse = getSparse(in);
-        *out = sparse.nRows;
+        const SparseArrayBase base = getSparseArrayBase(in);
+        *out = base.getColumns().elements();
     } CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_sparse_get_num_cols(dim_t *out, const af_sparse_array in)
+af_err af_sparse_get_storage(af_sparse_storage *out, const af_array in)
 {
     try {
-        af_sparse_t sparse = getSparse(in);
-        *out = sparse.nCols;
-    } CATCHALL;
-    return AF_SUCCESS;
-}
-
-af_err af_sparse_get_storage(af_sparse_storage *out, const af_sparse_array in)
-{
-    try {
-        af_sparse_t sparse = getSparse(in);
-        *out = sparse.storage;
+        const SparseArrayBase base = getSparseArrayBase(in);
+        *out = base.getStorage();
     } CATCHALL;
     return AF_SUCCESS;
 }

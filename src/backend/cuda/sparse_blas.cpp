@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <sparse_matmul.hpp>
+#include <sparse_blas.hpp>
 #include <cusparseManager.hpp>
 #include <cuda_runtime.h>
 #include <platform.hpp>
@@ -122,10 +122,8 @@ SPARSE_FUNC(csrmv, cdouble,Z)
 #undef SPARSE_FUNC_DEF
 
 template<typename T>
-Array<T> matmul(
-         const dim_t nRows, const dim_t nCols, const dim_t nNZ,
-         const Array<T> values, const Array<int> rowIdx, const Array<int> colIdx,
-         const Array<T> rhs, af_mat_prop optLhs, af_mat_prop optRhs)
+Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
+                af_mat_prop optLhs, af_mat_prop optRhs)
 {
     // Similar Operations to GEMM
     cusparseOperation_t lOpts = toCusparseTranspose(optLhs);
@@ -134,7 +132,7 @@ Array<T> matmul(
     int lColDim = (lOpts == CUSPARSE_OPERATION_NON_TRANSPOSE) ? 1 : 0;
     static const int rColDim = 1; //Unsupported : (rOpts == CUSPARSE_OPERATION_NON_TRANSPOSE) ? 1 : 0;
 
-    dim4 lDims(nRows, nRows);
+    dim4 lDims = lhs.dims();
     dim4 rDims = rhs.dims();
     int M = lDims[lRowDim];
     int N = rDims[rColDim];
@@ -149,17 +147,18 @@ Array<T> matmul(
     // Create Sparse Matrix Descriptor
     cusparseMatDescr_t descr = 0;
     CUSPARSE_CHECK(cusparseCreateMatDescr(&descr));
-    cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
-    cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
+    CUSPARSE_CHECK(cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL));
+    CUSPARSE_CHECK(cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO));
 
     // Call Matrix-Vector or Matrix-Matrix
     if(rDims[rColDim] == 1) {
         CUSPARSE_CHECK(csrmv_func<T>()(
                        getHandle(),
                        lOpts,
-                       M, K, nNZ,
+                       M, K, lhs.getNNZ(),
                        &alpha,
-                       descr, values.get(), rowIdx.get(), colIdx.get(),
+                       descr, lhs.getValues().get(),
+                       lhs.getRows().get(), lhs.getColumns().get(),
                        rhs.get(),
                        &beta,
                        out.get()));
@@ -167,9 +166,10 @@ Array<T> matmul(
         CUSPARSE_CHECK(csrmm_func<T>()(
                        getHandle(),
                        lOpts,
-                       M, N, K, nNZ,
+                       M, N, K, lhs.getNNZ(),
                        &alpha,
-                       descr, values.get(), rowIdx.get(), colIdx.get(),
+                       descr, lhs.getValues().get(),
+                       lhs.getRows().get(), lhs.getColumns().get(),
                        rhs.get(), rStrides[1],
                        &beta,
                        out.get(),
@@ -183,10 +183,8 @@ Array<T> matmul(
 }
 
 #define INSTANTIATE_SPARSE(T)                                                           \
-    template Array<T> matmul<T>(                                                        \
-        const dim_t nRows, const dim_t nCols, const dim_t nNZ,                          \
-        const Array<T> values, const Array<int> rowIdx, const Array<int> colIdx,        \
-        const Array<T> rhs, af_mat_prop optLhs, af_mat_prop optRhs);                    \
+    template Array<T> matmul<T>(const common::SparseArray<T> lhs, const Array<T> rhs,   \
+                                af_mat_prop optLhs, af_mat_prop optRhs);                \
 
 
 INSTANTIATE_SPARSE(float)

@@ -11,35 +11,22 @@
 #include <platform.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
+#include <sparse_handle.hpp>
 
 using namespace detail;
 
 const ArrayInfo&
-getInfo(const af_array arr, bool check)
-{
-    const ArrayInfo *info = static_cast<ArrayInfo*>(reinterpret_cast<void *>(arr));
-
-    // Check Sparse
-    ARG_ASSERT(0, info->isSparse() == false);
-
-    if (check && info->getDevId() != detail::getActiveDeviceId()) {
-        AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
-    }
-
-    return *info;
-}
-
-const ArrayInfo&
-getSparseInfo(const af_array arr, bool sparseCheck, bool check)
+getInfo(const af_array arr, bool sparse_check, bool device_check)
 {
     const ArrayInfo *info = static_cast<ArrayInfo*>(reinterpret_cast<void *>(arr));
 
     // Check Sparse -> If false, then both standard Array<T> and SparseArray<T> are accepted
-    if(sparseCheck) {
-        ARG_ASSERT(0, info->isSparse() == true);
+    // Otherwise only regular Array<T> is accepted
+    if(sparse_check) {
+        ARG_ASSERT(0, info->isSparse() == false);
     }
 
-    if (check && info->getDevId() != detail::getActiveDeviceId()) {
+    if (device_check && info->getDevId() != detail::getActiveDeviceId()) {
         AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
     }
 
@@ -169,7 +156,7 @@ af_err af_copy_array(af_array *out, const af_array in)
 af_err af_get_data_ref_count(int *use_count, const af_array in)
 {
     try {
-        ArrayInfo info = getSparseInfo(in, false, false);
+        ArrayInfo info = getInfo(in, false, false);
         const af_dtype type = info.getType();
 
         int res;
@@ -199,29 +186,39 @@ af_err af_release_array(af_array arr)
     try {
         int dev = getActiveDeviceId();
 
-        ArrayInfo info = getSparseInfo(arr, false, false);
-
-        setDevice(info.getDevId());
-
+        ArrayInfo info = getInfo(arr, false, false);
         af_dtype type = info.getType();
 
-        switch(type) {
-        case f32:   releaseHandle<float   >(arr); break;
-        case c32:   releaseHandle<cfloat  >(arr); break;
-        case f64:   releaseHandle<double  >(arr); break;
-        case c64:   releaseHandle<cdouble >(arr); break;
-        case b8:    releaseHandle<char    >(arr); break;
-        case s32:   releaseHandle<int     >(arr); break;
-        case u32:   releaseHandle<uint    >(arr); break;
-        case u8:    releaseHandle<uchar   >(arr); break;
-        case s64:   releaseHandle<intl    >(arr); break;
-        case u64:   releaseHandle<uintl   >(arr); break;
-        case s16:   releaseHandle<short   >(arr); break;
-        case u16:   releaseHandle<ushort  >(arr); break;
-        default:    TYPE_ERROR(0, type);
-        }
+        if(info.isSparse()) {
+            switch(type) {
+                case f32: releaseSparseHandle<float  >(arr); break;
+                case f64: releaseSparseHandle<double >(arr); break;
+                case c32: releaseSparseHandle<cfloat >(arr); break;
+                case c64: releaseSparseHandle<cdouble>(arr); break;
+                default : TYPE_ERROR(0, type);
+            }
+        } else {
 
-        setDevice(dev);
+            setDevice(info.getDevId());
+
+            switch(type) {
+            case f32:   releaseHandle<float   >(arr); break;
+            case c32:   releaseHandle<cfloat  >(arr); break;
+            case f64:   releaseHandle<double  >(arr); break;
+            case c64:   releaseHandle<cdouble >(arr); break;
+            case b8:    releaseHandle<char    >(arr); break;
+            case s32:   releaseHandle<int     >(arr); break;
+            case u32:   releaseHandle<uint    >(arr); break;
+            case u8:    releaseHandle<uchar   >(arr); break;
+            case s64:   releaseHandle<intl    >(arr); break;
+            case u64:   releaseHandle<uintl   >(arr); break;
+            case s16:   releaseHandle<short   >(arr); break;
+            case u16:   releaseHandle<ushort  >(arr); break;
+            default:    TYPE_ERROR(0, type);
+            }
+
+            setDevice(dev);
+        }
     }
     CATCHALL
 
@@ -240,22 +237,33 @@ static af_array retainHandle(const af_array in)
 
 af_array retain(const af_array in)
 {
-    af_dtype ty = getSparseInfo(in, false, false).getType();
-    switch(ty) {
-    case f32: return retainHandle<float           >(in);
-    case f64: return retainHandle<double          >(in);
-    case s32: return retainHandle<int             >(in);
-    case u32: return retainHandle<uint            >(in);
-    case u8:  return retainHandle<uchar           >(in);
-    case c32: return retainHandle<detail::cfloat  >(in);
-    case c64: return retainHandle<detail::cdouble >(in);
-    case b8:  return retainHandle<char            >(in);
-    case s64: return retainHandle<intl            >(in);
-    case u64: return retainHandle<uintl           >(in);
-    case s16: return retainHandle<short           >(in);
-    case u16: return retainHandle<ushort          >(in);
-    default:
-        TYPE_ERROR(1, ty);
+    ArrayInfo info = getInfo(in, false, false);
+    af_dtype ty = info.getType();
+
+    if(info.isSparse()) {
+        switch(ty) {
+        case f32: return retainSparseHandle<float          >(in);
+        case f64: return retainSparseHandle<double         >(in);
+        case c32: return retainSparseHandle<detail::cfloat >(in);
+        case c64: return retainSparseHandle<detail::cdouble>(in);
+        default: TYPE_ERROR(1, ty);
+        }
+    } else {
+        switch(ty) {
+        case f32: return retainHandle<float           >(in);
+        case f64: return retainHandle<double          >(in);
+        case s32: return retainHandle<int             >(in);
+        case u32: return retainHandle<uint            >(in);
+        case u8:  return retainHandle<uchar           >(in);
+        case c32: return retainHandle<detail::cfloat  >(in);
+        case c64: return retainHandle<detail::cdouble >(in);
+        case b8:  return retainHandle<char            >(in);
+        case s64: return retainHandle<intl            >(in);
+        case u64: return retainHandle<uintl           >(in);
+        case s16: return retainHandle<short           >(in);
+        case u16: return retainHandle<ushort          >(in);
+        default: TYPE_ERROR(1, ty);
+        }
     }
 }
 
@@ -309,7 +317,7 @@ af_err af_get_elements(dim_t *elems, const af_array arr)
 {
     try {
         // Do not check for device mismatch
-        *elems =  getSparseInfo(arr, false, false).elements();
+        *elems =  getInfo(arr, false, false).elements();
     } CATCHALL
     return AF_SUCCESS;
 }
@@ -355,7 +363,7 @@ af_err af_get_numdims(unsigned *nd, const af_array in)
     af_err fn1(bool *result, const af_array in)                 \
     {                                                           \
         try {                                                   \
-            ArrayInfo info = getSparseInfo(in, false, false);   \
+            ArrayInfo info = getInfo(in, false, false);         \
             *result = info.fn2();                               \
         }                                                       \
         CATCHALL                                                \

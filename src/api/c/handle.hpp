@@ -17,7 +17,7 @@
 #include <cast.hpp>
 #include <af/dim4.hpp>
 
-const ArrayInfo& getInfo(const af_array arr, bool check = true);
+const ArrayInfo& getInfo(const af_array arr, bool device_check = true, bool sparse_check = true);
 
 template<typename T>
 static const detail::Array<T> &

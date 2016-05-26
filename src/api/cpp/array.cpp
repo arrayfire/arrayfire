@@ -165,7 +165,7 @@ namespace af
                 dims[3]);                                               \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_t d0, const T *ptr, af::source src) \
+    array::array(dim_t d0, const T *ptr, af::source src)                \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0);                           \

@@ -6,19 +6,16 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-#pragma once
 
-#include <af/sparse.h>
+#include <Array.hpp>
+#include <SparseArray.hpp>
 
-typedef struct {
-    dim_t nRows, nCols, nNZ;
-    af_sparse_storage storage;
-    af_array rowIdx;
-    af_array colIdx;
-    af_array values;
-} af_sparse_t;
+namespace cuda
+{
 
-af_sparse_array getSparseHandle(const af_sparse_t sparse);
+template<typename T>
+Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
+                af_mat_prop optLhs, af_mat_prop optRhs);
 
-af_sparse_t getSparse(const af_sparse_array sparseHandle);
+}
 
