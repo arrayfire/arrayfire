@@ -495,6 +495,49 @@ TYPED_TEST(Indexing, 3D_to_1D)
     DimCheckND<TypeParam>(this->continuous3d_to_1d, TEST_DIR"/index/Continuous3Dto1D.test", 3);
 }
 
+
+TEST(Index, Docs_Util_C_API)
+{
+    //![ex_index_util_0]
+    af_index_t* indexers = 0;
+    af_err err = af_create_indexers(&indexers); // Memory is allocated on heap by the callee
+    // by default all the indexers span all the elements along the given dimension
+
+    //Create array
+    af_array a;
+    unsigned ndims = 2;
+    dim_t dim[] = {10,10};
+    af_randu(&a, ndims, dim, f32);
+
+    //Create index array
+    af_array idx;
+    unsigned n = 1;
+    dim_t d[] = {5};
+    af_range(&idx, n, d, 0, s64);
+
+    af_print_array(a);
+    af_print_array(idx);
+
+    //create array indexer
+    err = af_set_array_indexer(indexers, idx, 1);
+    if (err != AF_SUCCESS) {
+        printf("Error from set array indexer: %d \n", err);
+        exit(1);
+    }
+
+    //index with indexers
+    af_array out;
+    af_index_gen(&out, a, 2, indexers); // number of indexers should be two since
+                                        // we have set only second af_index_t
+    af_print_array(out);
+
+    af_release_indexers(indexers);
+    af_release_array(a);
+    af_release_array(idx);
+    af_release_array(out);
+    //![ex_index_util_0]
+}
+
 //////////////////////////////// CPP ////////////////////////////////
 TEST(Indexing2D, ColumnContiniousCPP)
 {

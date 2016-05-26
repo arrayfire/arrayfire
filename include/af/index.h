@@ -293,40 +293,7 @@ extern "C" {
     ///
     /// \brief Create an quadruple of af_index_t array
     ///
-    /// \code
-    /// af_index_t* indexers = 0;
-    /// af_err err = af_create_indexers(&indexers); // Memory is allocated on heap by the callee
-    /// // by default all the indexers span all the elements along the given dimension
-    ///
-    /// //Create array
-    /// af_array a;
-    /// unsigned ndims = 2;
-    /// dim_t dim[] = {10,10};
-    /// af_randu(&a, ndims, dim, f32);
-    ///
-    /// //Create index array
-    /// af_array idx;
-    /// unsigned n = 1;
-    /// dim_t d[] = {5};
-    /// af_range(&idx, n, d, 0, s64);
-    ///
-    /// af_print_array(a);
-    /// af_print_array(idx);
-    ///
-    /// //create array indexer
-    /// err = af_set_array_indexer(indexers, idx, 1);
-    /// if (err != AF_SUCCESS) {
-    ///     printf("Error from set array indexer: %d \n", err2);
-    ///     exit(1);
-    /// }
-    ///
-    /// //index with indexers
-    /// af_array out;
-    /// af_index_gen(&out, a, 2, indexers); // number of indexers should be two since
-    ///                                     // we have set only second af_index_t
-    /// af_print_array(out);
-    /// af_release_indexers(indexers);
-    /// \endcode
+    /// \snippet test/index.cpp ex_index_util_0
     ///
     /// \param[out] indexers pointer to location where quadruple af_index_t array is created
     /// \returns \ref af_err error code
@@ -339,6 +306,8 @@ extern "C" {
 #if AF_API_VERSION >= 32
     ///
     /// \brief set \p dim to given indexer af_array \p idx
+    ///
+    /// \snippet test/index.cpp ex_index_util_0
     ///
     /// \param[in] indexer pointer to location where quadruple af_index_t array was created
     /// \param[in] idx is the af_array indexer for given dimension \p dim
@@ -354,6 +323,9 @@ extern "C" {
     ///
     /// \brief set \p dim to given indexer af_array \p idx
     ///
+    /// This function is similar to \ref af_set_array_indexer in terms of functionality except
+    /// that this version accepts object of type \ref af_seq instead of \ref af_array.
+    ///
     /// \param[in] indexer pointer to location where quadruple af_index_t array was created
     /// \param[in] idx is the af_seq indexer for given dimension \p dim
     /// \param[in] dim is the dimension to be indexed
@@ -368,6 +340,10 @@ extern "C" {
 #if AF_API_VERSION >= 32
     ///
     /// \brief set \p dim to given indexer af_array \p idx
+    ///
+    ///  This function is alternative to \ref af_set_seq_indexer where instead of passing
+    ///  in an already prepared \ref af_seq object, you pass the arguments necessary for
+    ///  creating an af_seq directly.
     ///
     /// \param[in] indexer pointer to location where quadruple af_index_t array was created
     /// \param[in] begin is the beginning index of along dimension \p dim
@@ -387,6 +363,8 @@ extern "C" {
 #if AF_API_VERSION >= 32
     ///
     /// \brief Release's the memory resource used by the quadruple af_index_t array
+    ///
+    /// \snippet test/index.cpp ex_index_util_0
     ///
     /// \param[in] indexers is pointer to location where quadruple af_index_t array is created
     //  \returns \ref af_err error code
