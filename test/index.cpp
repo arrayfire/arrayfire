@@ -513,22 +513,37 @@ TEST(Index, Docs_Util_C_API)
     af_array idx;
     unsigned n = 1;
     dim_t d[] = {5};
-    af_range(&idx, n, d, 0, s64);
+    af_range(&idx, n, d, 0, s32);
 
     af_print_array(a);
     af_print_array(idx);
 
     //create array indexer
     err = af_set_array_indexer(indexers, idx, 1);
-    if (err != AF_SUCCESS) {
-        printf("Error from set array indexer: %d \n", err);
-        exit(1);
-    }
 
     //index with indexers
     af_array out;
     af_index_gen(&out, a, 2, indexers); // number of indexers should be two since
                                         // we have set only second af_index_t
+    if (err != AF_SUCCESS) {
+        printf("Failed in af_index_gen: %d\n", err);
+        throw;
+    }
+    af_print_array(out);
+    af_release_array(out);
+
+    af_seq zeroIndices = af_make_seq(0.0, 9.0, 2.0);
+
+    err = af_set_seq_indexer(indexers, &zeroIndices, 0, false);
+
+    af_print_array(a);
+    af_print_array(out);
+
+    err = af_index_gen(&out, a, 2, indexers);
+    if (err != AF_SUCCESS) {
+        printf("Failed in af_index_gen: %d\n", err);
+        throw;
+    }
     af_print_array(out);
 
     af_release_indexers(indexers);

@@ -326,6 +326,8 @@ extern "C" {
     /// This function is similar to \ref af_set_array_indexer in terms of functionality except
     /// that this version accepts object of type \ref af_seq instead of \ref af_array.
     ///
+    /// \snippet test/index.cpp ex_index_util_0
+    ///
     /// \param[in] indexer pointer to location where quadruple af_index_t array was created
     /// \param[in] idx is the af_seq indexer for given dimension \p dim
     /// \param[in] dim is the dimension to be indexed
