@@ -293,10 +293,12 @@ extern "C" {
     ///
     /// \brief Create an quadruple of af_index_t array
     ///
+    /// \snippet test/index.cpp ex_index_util_0
+    ///
     /// \param[out] indexers pointer to location where quadruple af_index_t array is created
     /// \returns \ref af_err error code
     ///
-    /// \ingroup index_func_util
+    /// \ingroup index_func_index
     ///
     AFAPI af_err af_create_indexers(af_index_t** indexers);
 #endif
@@ -305,12 +307,14 @@ extern "C" {
     ///
     /// \brief set \p dim to given indexer af_array \p idx
     ///
+    /// \snippet test/index.cpp ex_index_util_0
+    ///
     /// \param[in] indexer pointer to location where quadruple af_index_t array was created
     /// \param[in] idx is the af_array indexer for given dimension \p dim
     /// \param[in] dim is the dimension to be indexed
     /// \returns \ref af_err error code
     ///
-    /// \ingroup index_func_util
+    /// \ingroup index_func_index
     ///
     AFAPI af_err af_set_array_indexer(af_index_t* indexer, const af_array idx, const dim_t dim);
 #endif
@@ -319,12 +323,17 @@ extern "C" {
     ///
     /// \brief set \p dim to given indexer af_array \p idx
     ///
+    /// This function is similar to \ref af_set_array_indexer in terms of functionality except
+    /// that this version accepts object of type \ref af_seq instead of \ref af_array.
+    ///
+    /// \snippet test/index.cpp ex_index_util_0
+    ///
     /// \param[in] indexer pointer to location where quadruple af_index_t array was created
     /// \param[in] idx is the af_seq indexer for given dimension \p dim
     /// \param[in] dim is the dimension to be indexed
     /// \param[in] is_batch indicates if the sequence based indexing is inside a batch operation
     ///
-    /// \ingroup index_func_util
+    /// \ingroup index_func_index
     ///
     AFAPI af_err af_set_seq_indexer(af_index_t* indexer, const af_seq* idx,
                                   const dim_t dim, const bool is_batch);
@@ -334,6 +343,10 @@ extern "C" {
     ///
     /// \brief set \p dim to given indexer af_array \p idx
     ///
+    ///  This function is alternative to \ref af_set_seq_indexer where instead of passing
+    ///  in an already prepared \ref af_seq object, you pass the arguments necessary for
+    ///  creating an af_seq directly.
+    ///
     /// \param[in] indexer pointer to location where quadruple af_index_t array was created
     /// \param[in] begin is the beginning index of along dimension \p dim
     /// \param[in] end is the beginning index of along dimension \p dim
@@ -342,7 +355,7 @@ extern "C" {
     /// \param[in] is_batch indicates if the sequence based indexing is inside a batch operation
     /// \returns \ref af_err error code
     ///
-    /// \ingroup index_func_util
+    /// \ingroup index_func_index
     ///
     AFAPI af_err af_set_seq_param_indexer(af_index_t* indexer,
                                         const double begin, const double end, const double step,
@@ -353,10 +366,12 @@ extern "C" {
     ///
     /// \brief Release's the memory resource used by the quadruple af_index_t array
     ///
+    /// \snippet test/index.cpp ex_index_util_0
+    ///
     /// \param[in] indexers is pointer to location where quadruple af_index_t array is created
     //  \returns \ref af_err error code
     ///
-    /// \ingroup index_func_util
+    /// \ingroup index_func_index
     ///
     AFAPI af_err af_release_indexers(af_index_t* indexers);
 #endif
