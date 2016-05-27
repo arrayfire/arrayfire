@@ -28,6 +28,9 @@ IF(    CUDA_COMPUTE_20
     OR CUDA_COMPUTE_50
     OR CUDA_COMPUTE_52
     OR CUDA_COMPUTE_53
+    OR CUDA_COMPUTE_60
+    OR CUDA_COMPUTE_61
+    OR CUDA_COMPUTE_62
     )
     SET(FALLBACK OFF)
 ELSE()
@@ -36,10 +39,10 @@ ENDIF()
 
 LIST(LENGTH COMPUTES_DETECTED_LIST COMPUTES_LEN)
 IF(${COMPUTES_LEN} EQUAL 0 AND ${FALLBACK})
-    MESSAGE(STATUS "No computes detected. Fall back to 20, 30, 50")
+    MESSAGE(STATUS "No computes detected. Fall back to 20, 30, 50, 60")
     MESSAGE(STATUS "You can use -DCOMPUTES_DETECTED_LIST=\"AB;XY\" (semicolon separated list of CUDA Compute versions to enable the specified computes")
     MESSAGE(STATUS "Individual compute versions flags are also available under CMake Advance options")
-    LIST(APPEND COMPUTES_DETECTED_LIST "20" "30" "50")
+    LIST(APPEND COMPUTES_DETECTED_LIST "20" "30" "50" "60")
 ENDIF()
 
 LIST(LENGTH COMPUTES_DETECTED_LIST COMPUTES_LEN)
