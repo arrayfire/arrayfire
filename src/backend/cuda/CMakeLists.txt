@@ -267,7 +267,13 @@ ELSE()
     SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch sm_20")
 ENDIF()
 
+# PUSH/POP --keep-device-functions flag. Only available in CUDA 8 or newer
+SET(OLD_CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS})
+IF(${CUDA_VERSION_MAJOR} GREATER 7) # CUDA 8 or newer
+    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --keep-device-functions")
+ENDIF()
 CUDA_COMPILE_PTX(ptx_files ${ptx_sources})
+SET(CUDA_NVCC_FLAGS ${OLD_CUDA_NVCC_FLAGS})
 
 set(cuda_ptx "")
 foreach(ptx_src_file ${ptx_sources})
@@ -313,6 +319,14 @@ IF("${APPLE}")
         SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${STD_LIB_BINDING}")
         SET(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${STD_LIB_BINDING}")
         SET(CUDA_HOST_COMPILER "/usr/bin/clang++")
+    ENDIF()
+ENDIF()
+
+IF(UNIX)
+    FIND_PACKAGE(OpenMP)
+    IF(OPENMP_FOUND)
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     ENDIF()
 ENDIF()
 
