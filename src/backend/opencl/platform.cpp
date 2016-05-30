@@ -22,8 +22,6 @@
 
 #endif
 
-#include <cl.hpp>
-
 #include <af/version.h>
 #include <af/opencl.h>
 #include <defines.hpp>
