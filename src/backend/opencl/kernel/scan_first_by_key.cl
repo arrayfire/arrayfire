@@ -18,6 +18,43 @@ static char calculate_head_flags(const __global Tk *kptr, int id, int previd)
     return flag;
 }
 
+void scan_first_by_key_core(const bool invalid,
+        To *val, char *flag,
+        const __global Ti *in, const To init_val,
+        __local To *l_val0, __local To *l_val1,
+        __local char *l_flg0, __local char *l_flg1,
+        __local To *last_val, __local char *last_flag,
+        const int lid, const int lidx, const int lidy)
+{
+    bool flip = 0;
+    __local To *l_val = l_val0;
+    __local char *l_flg = l_flg0;
+    *val = invalid? init_val : transform(*in);
+
+    if ((lidx == 0) && (flag == 0)) {
+        *val = binOp(*val, last_val[lidy]);
+        *flag = *flag | last_flag[lidy];
+    }
+
+    l_val0[lid] = *val;
+    l_flg0[lid] = *flag;
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    for (int off = 1; off < DIMY; off *= 2) {
+
+        if (lidy >= off) {
+            *val = l_flg[lid] ? *val : binOp(*val, l_val[lid - off]);
+            *flag = l_flg[lid] | l_flg[lid - off];
+        }
+        flip = 1 - flip;
+        l_val = flip ? l_val1 : l_val0;
+        l_flg = flip ? l_flg1 : l_flg0;
+        l_val[lid] = *val;
+        l_flg[lid] = *flag;
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
+}
+
 __kernel
 void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
                        __global To *tData, KParam tInfo,
@@ -63,83 +100,51 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
     __local To l_val1[SHARED_MEM_SIZE];
     __local char l_flg0[SHARED_MEM_SIZE];
     __local char l_flg1[SHARED_MEM_SIZE];
-    __local To *l_val = l_val0;
-    __local char *l_flg = l_flg0;
-    __local To l_tmp[DIMY];
-    __local char l_ftmp[DIMY];
+    __local To last_val[DIMY];
+    __local char last_flag[DIMY];
     __local int boundaryid;
-
-    bool flip = 0;
 
     const To init_val = init;
     int id = xid;
     To val = init_val;
-
     const bool isLast = (lidx == (DIMX - 1));
 
+    char flag = 0;
+    if (!inclusive_scan) {
+        iData -= 1;
+    }
+
     if (isLast) {
-        l_tmp[lidy] = val;
-        l_ftmp[lidy] = 0;
+        last_val[lidy] = val;
+        last_flag[lidy] = 0;
         boundaryid = -1;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
     __local char *prev;
     if (lidx == 0) {
-        prev = &l_ftmp[lidy];
+        prev = &last_flag[lidy];
     } else {
-        prev = &l_flg[lidx-1];
+        prev = &l_flg0[lidx-1];
     }
-    __local char *curr = &l_flg[lidx];
+    __local char *curr = &l_flg0[lidx];
 
-    char flag = 0;
     for (int k = 0; k < lim; k++) {
-
-        //if (isLast) l_tmp[lidy] = val;
 
         bool cond = ((id < oInfo.dims[0]) && cond_yzw);
 
         if (cond) {
-            flag = calculate_head_flags(kData, id, id - kInfo.strides[0]);
+            flag = calculate_head_flags(kData, id, id - 1);
         } else {
             flag = 0;
         }
-        //val = cond ? transform(iData[id]) : init_val;
 
-        if (inclusive_scan) {
-            if (!cond) {
-                val = init_val;
-            } else {
-                val = transform(iData[id]);
-            }
-        } else {
-            if ((id == 0) || (!cond) || flag) {
-                val = init_val;
-            } else {
-                val = transform(iData[id - iInfo.strides[0]]);
-            }
-        }
+        bool invalid = !cond;
+        if (!inclusive_scan) invalid = invalid || (id == 0) || flag;
 
-        if ((lidx == 0) && (flag == 0)) {
-            val = binOp(val, l_tmp[lidy]);
-            flag = flag | l_ftmp[lidy];
-        }
-        l_val[lid] = val;
-        l_flg[lid] = flag;
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        for (int off = 1; off < DIMX; off *= 2) {
-            if (lidx >= off) {
-                val = l_flg[lid] ? val : binOp(val, l_val[lid - off]);
-                flag = l_flg[lid] | l_flg[lid - off];
-            }
-            flip = 1 - flip;
-            l_val = flip ? l_val1 : l_val0;
-            l_flg = flip ? l_flg1 : l_flg0;
-            l_val[lid] = val;
-            l_flg[lid] = flag;
-            barrier(CLK_LOCAL_MEM_FENCE);
-        }
+        scan_first_by_key_core(invalid, &val, &flag, iData, init_val,
+                l_val0, l_val1, l_flg0, l_flg1, last_val, last_flag,
+                lid, lidx, lidy);
 
         if ((*prev == 0) && (*curr == 1)) {
             boundaryid = id;
@@ -147,8 +152,8 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
 
         if (cond) oData[id] = val;
         if (isLast) {
-            l_tmp[lidy] = val;
-            l_ftmp[lidy] = flag;
+            last_val[lidy] = val;
+            last_flag[lidy] = flag;
         }
         id += DIMX;
         barrier(CLK_LOCAL_MEM_FENCE); //FIXME: May be needed only for non nvidia gpus
@@ -194,23 +199,26 @@ void scan_first_by_key_final_kernel(__global To *oData, KParam oInfo,
     __local To l_val1[SHARED_MEM_SIZE];
     __local char l_flg0[SHARED_MEM_SIZE];
     __local char l_flg1[SHARED_MEM_SIZE];
-    __local To *l_val = l_val0;
-    __local char *l_flg = l_flg0;
-    __local To l_tmp[DIMY];
-    __local char l_ftmp[DIMY];
-
-    bool flip = 0;
+    __local To last_val[DIMY];
+    __local char last_flag[DIMY];
 
     const To init_val = init;
     int id = xid;
     To val = init_val;
-
     const bool isLast = (lidx == (DIMX - 1));
+
+    if (!inclusive_scan) {
+        iData -= 1;
+    }
+
+    if (isLast) {
+        last_val[lidy] = val;
+        last_flag[lidy] = 0;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
 
     for (int k = 0; k < lim; k++) {
         char flag = 0;
-
-        //if (isLast) l_tmp[lidy] = val;
 
         bool cond = ((id < oInfo.dims[0]) && cond_yzw);
 
@@ -223,47 +231,18 @@ void scan_first_by_key_final_kernel(__global To *oData, KParam oInfo,
         } else {
             flag = kData[id];
         }
-        //val = cond ? transform(iData[id]) : init_val;
 
-        if (inclusive_scan) {
-            if (!cond) {
-                val = init_val;
-            } else {
-                val = transform(iData[id]);
-            }
-        } else {
-            if ((id == 0) || (!cond) || flag) {
-                val = init_val;
-            } else {
-                val = transform(iData[id - 1]);
-            }
-        }
+        bool invalid = !cond;
+        if (!inclusive_scan) invalid = invalid || (id == 0) || flag;
 
-        if ((lidx == 0) && (flag == 0)) {
-            val = binOp(val, l_tmp[lidy]);
-            flag = flag | l_ftmp[lidy];
-        }
-        l_val[lid] = val;
-        l_flg[lid] = flag;
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        for (int off = 1; off < DIMX; off *= 2) {
-            if (lidx >= off) {
-                val = l_flg[lid] ? val : binOp(val, l_val[lid - off]);
-                flag = l_flg[lid] | l_flg[lid - off];
-            }
-            flip = 1 - flip;
-            l_val = flip ? l_val1 : l_val0;
-            l_flg = flip ? l_flg1 : l_flg0;
-            l_val[lid] = val;
-            l_flg[lid] = flag;
-            barrier(CLK_LOCAL_MEM_FENCE);
-        }
+        scan_first_by_key_core(invalid, &val, &flag, iData, init_val,
+                l_val0, l_val1, l_flg0, l_flg1, last_val, last_flag,
+                lid, lidx, lidy);
 
         if (cond) oData[id] = val;
         if (isLast) {
-            l_tmp[lidy] = val;
-            l_ftmp[lidy] = flag;
+            last_val[lidy] = val;
+            last_flag[lidy] = flag;
         }
         id += DIMX;
         barrier(CLK_LOCAL_MEM_FENCE); //FIXME: May be needed only for non nvidia gpus

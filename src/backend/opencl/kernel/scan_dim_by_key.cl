@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-static char calculate_head_flags_dim(const __global Tk *kptr, int id, int stride)
+char calculate_head_flags_dim(const __global Tk *kptr, int id, int stride)
 {
     char flag;
     if (id == 0) {
@@ -16,6 +16,43 @@ static char calculate_head_flags_dim(const __global Tk *kptr, int id, int stride
         flag = ((*kptr) != (*(kptr - stride)));
     }
     return flag;
+}
+
+void scan_dim_by_key_core(const bool invalid,
+        To *val, char *flag,
+        const __global Ti *in, const To init_val,
+        __local To *l_val0, __local To *l_val1,
+        __local char *l_flg0, __local char *l_flg1,
+        __local To *last_val, __local char *last_flag,
+        const int lid, const int lidx, const int lidy)
+{
+    bool flip = 0;
+    __local To *l_val = l_val0;
+    __local char *l_flg = l_flg0;
+    *val = invalid? init_val : transform(*in);
+
+    if ((lidy == 0) && (*flag == 0)) {
+        *val = binOp(*val, last_val[lidx]);
+        *flag = *flag | last_flag[lidx];
+    }
+
+    l_val0[lid] = *val;
+    l_flg0[lid] = *flag;
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    for (int off = 1; off < DIMY; off *= 2) {
+
+        if (lidy >= off) {
+            *val = l_flg[lid] ? *val : binOp(*val, l_val[lid - off * THREADS_X]);
+            *flag = l_flg[lid] | l_flg[lid - off * THREADS_X];
+        }
+        flip = 1 - flip;
+        l_val = flip ? l_val1 : l_val0;
+        l_flg = flip ? l_flg1 : l_flg0;
+        l_val[lid] = *val;
+        l_flg[lid] = *flag;
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
 }
 
 __kernel
@@ -68,87 +105,56 @@ void scan_dim_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
 
     const int ostride_dim = oInfo.strides[dim];
     const int istride_dim =  iInfo.strides[dim];
+    const int kstride_dim = kInfo.strides[dim];
 
     __local To l_val0[THREADS_X * DIMY];
     __local To l_val1[THREADS_X * DIMY];
     __local char l_flg0[THREADS_X * DIMY];
     __local char l_flg1[THREADS_X * DIMY];
-    __local To *l_val = l_val0;
-    __local char *l_flg = l_flg0;
-    __local To l_tmp[THREADS_X];
-    __local char l_ftmp[THREADS_X];
+    __local To last_val[THREADS_X];
+    __local char last_flag[THREADS_X];
     __local int boundaryid;
 
-    bool flip = 0;
     const To init_val  = init;
     To val = init_val;
     const bool isLast = (lidy == (DIMY - 1));
 
+    char flag = 0;
+    if (!inclusive_scan) {
+        iData -= istride_dim;
+    }
+
     if (isLast) {
-        l_tmp[lidy] = val;
-        l_ftmp[lidy] = 0;
+        last_val[lidy] = val;
+        last_flag[lidy] = 0;
         boundaryid = -1;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
     __local char *prev;
     if (lidy == 0) {
-        prev = &l_ftmp[lidx];
+        prev = &last_flag[lidx];
     } else {
-        prev = &l_flg[lid-THREADS_X];
+        prev = &l_flg0[lid-THREADS_X];
     }
-    __local char *curr = &l_flg[lid];
+    __local char *curr = &l_flg0[lid];
 
-    char flag = 0;
     for (int k = 0; k < lim; k++) {
-
-        //if (isLast) l_tmp[lidx] = val;
 
         bool cond = (is_valid) && (id_dim < out_dim);
 
         if (cond) {
-            flag = calculate_head_flags_dim(kData, id_dim, kInfo.strides[dim]);
+            flag = calculate_head_flags_dim(kData, id_dim, kstride_dim);
         } else {
             flag = 0;
         }
 
-        //val = cond ? transform(*iData) : init_val;
+        bool invalid = !cond;
+        if (!inclusive_scan) invalid = invalid || (id_dim == 0) || flag;
 
-        if (inclusive_scan) {
-            if (!cond) {
-                val = init_val;
-            } else {
-                val = transform(*iData);
-            }
-        } else {
-            if ((id_dim == 0) || (!cond) || flag) {
-                val = init_val;
-            } else {
-                val = transform(*(iData - iInfo.strides[dim]));
-            }
-        }
-
-        if ((lidy == 0) && (flag == 0)) {
-            val = binOp(val, l_tmp[lidx]);
-            flag = flag | l_ftmp[lidx];
-        }
-        l_val[lid] = val;
-        l_flg[lid] = flag;
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        for (int off = 1; off < DIMY; off *= 2) {
-
-            if (lidy >= off) {
-                val = l_flg[lid] ? val : binOp(val, l_val[lid - off * THREADS_X]);
-                flag = l_flg[lid] | l_flg[lid - off * THREADS_X];
-            }
-            flip = 1 - flip;
-            l_val = flip ? l_val1 : l_val0;
-            l_flg = flip ? l_flg1 : l_flg0;
-            l_val[lid] = val;
-            l_flg[lid] = flag;
-            barrier(CLK_LOCAL_MEM_FENCE);
-        }
+        scan_dim_by_key_core(invalid, &val, &flag, iData, init_val,
+                l_val0, l_val1, l_flg0, l_flg1, last_val, last_flag,
+                lid, lidx, lidy);
 
         if ((*prev == 0) && (*curr == 1)) {
             boundaryid = id_dim;
@@ -156,11 +162,11 @@ void scan_dim_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
 
         if (cond) *oData = val;
         if (isLast) {
-            l_tmp[lidx] = val;
-            l_ftmp[lidx] = flag;
+            last_val[lidx] = val;
+            last_flag[lidx] = flag;
         }
         id_dim += DIMY;
-        kData += DIMY * kInfo.strides[dim];
+        kData += DIMY * kstride_dim;
         iData += DIMY * istride_dim;
         oData += DIMY * ostride_dim;
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -224,23 +230,24 @@ void scan_dim_by_key_final_kernel(__global To *oData, KParam oInfo,
     __local To l_val1[THREADS_X * DIMY];
     __local char l_flg0[THREADS_X * DIMY];
     __local char l_flg1[THREADS_X * DIMY];
-    __local To *l_val = l_val0;
-    __local char *l_flg = l_flg0;
-    __local To l_tmp[THREADS_X];
-    __local char l_ftmp[THREADS_X];
+    __local To last_val[THREADS_X];
+    __local char last_flag[THREADS_X];
 
-    bool flip = 0;
     const To init_val  = init;
     To val = init_val;
     const bool isLast = (lidy == (DIMY - 1));
 
+    char flag = 0;
+    if (!inclusive_scan) {
+        iData -= istride_dim;
+    }
+
     if (isLast) {
-        l_tmp[lidy] = val;
-        l_ftmp[lidy] = 0;
+        last_val[lidy] = val;
+        last_flag[lidy] = 0;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    char flag = 0;
     for (int k = 0; k < lim; k++) {
 
         bool cond = (is_valid) && (id_dim < out_dim);
@@ -255,46 +262,17 @@ void scan_dim_by_key_final_kernel(__global To *oData, KParam oInfo,
             flag = *kData;
         }
 
-        if (inclusive_scan) {
-            if (!cond) {
-                val = init_val;
-            } else {
-                val = transform(*iData);
-            }
-        } else {
-            if ((id_dim == 0) || (!cond) || flag) {
-                val = init_val;
-            } else {
-                val = transform(*(iData - iInfo.strides[dim]));
-            }
-        }
+        bool invalid = !cond;
+        if (!inclusive_scan) invalid = invalid || (id_dim == 0) || flag;
 
-        if ((lidy == 0) && (flag == 0)) {
-            val = binOp(val, l_tmp[lidx]);
-            flag = flag | l_ftmp[lidx];
-        }
-        l_val[lid] = val;
-        l_flg[lid] = flag;
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        for (int off = 1; off < DIMY; off *= 2) {
-
-            if (lidy >= off) {
-                val = l_flg[lid] ? val : binOp(val, l_val[lid - off * THREADS_X]);
-                flag = l_flg[lid] | l_flg[lid - off * THREADS_X];
-            }
-            flip = 1 - flip;
-            l_val = flip ? l_val1 : l_val0;
-            l_flg = flip ? l_flg1 : l_flg0;
-            l_val[lid] = val;
-            l_flg[lid] = flag;
-            barrier(CLK_LOCAL_MEM_FENCE);
-        }
+        scan_dim_by_key_core(invalid, &val, &flag, iData, init_val,
+                l_val0, l_val1, l_flg0, l_flg1, last_val, last_flag,
+                lid, lidx, lidy);
 
         if (cond) *oData = val;
         if (isLast) {
-            l_tmp[lidx] = val;
-            l_ftmp[lidx] = flag;
+            last_val[lidx] = val;
+            last_flag[lidx] = flag;
         }
         id_dim += DIMY;
         kData += DIMY * kInfo.strides[dim];
