@@ -98,6 +98,7 @@ namespace kernel
         __shared__ To s_val[THREADS_X * DIMY * 2];
         __shared__ char s_ftmp[THREADS_X];
         __shared__ To s_tmp[THREADS_X];
+        __shared__ int boundaryid;
         To *sptr =  s_val + tid;
         char *sfptr = s_flg + tid;
 
@@ -111,6 +112,7 @@ namespace kernel
         if (isLast) {
             s_tmp[tidx] = val;
             s_ftmp[tidx] = 0;
+            boundaryid = -1;
         }
         __syncthreads();
 
@@ -123,11 +125,10 @@ namespace kernel
         char *curr = &sfptr[tidy];
 
         char flag = 0;
-        int boundaryid = -1;
         for (int k = 0; k < lim; k++) {
 
             if (id_dim < out_dim) {
-                flag = calculate_head_flags_dim(kptr, id_dim, istride_dim);
+                flag = calculate_head_flags_dim(kptr, id_dim, key.strides[dim]);
             } else {
                 flag = 0;
             }
@@ -181,6 +182,7 @@ namespace kernel
                 s_ftmp[tidx] = flag;
             }
             id_dim += blockDim.y;
+            kptr += blockDim.y * key.strides[dim];
             iptr += blockDim.y * istride_dim;
             optr += blockDim.y * ostride_dim;
             __syncthreads();
@@ -266,7 +268,7 @@ namespace kernel
 
             if (calculateFlags) {
                 if (id_dim < out_dim) {
-                    flag = calculate_head_flags_dim(kptr, id_dim, istride_dim);
+                    flag = calculate_head_flags_dim(kptr, id_dim, key.strides[dim]);
                 } else {
                     flag = 0;
                 }
@@ -319,6 +321,7 @@ namespace kernel
                 s_ftmp[tidx] = flag;
             }
             id_dim += blockDim.y;
+            kptr += blockDim.y * key.strides[dim];
             iptr += blockDim.y * istride_dim;
             optr += blockDim.y * ostride_dim;
             __syncthreads();

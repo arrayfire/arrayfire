@@ -64,6 +64,7 @@ namespace kernel
         __shared__ To s_val[SHARED_MEM_SIZE];
         __shared__ char s_ftmp[DIMY];
         __shared__ To s_tmp[DIMY];
+        __shared__ int boundaryid;
 
         const int tidx = threadIdx.x;
         const int tidy = threadIdx.y;
@@ -84,6 +85,7 @@ namespace kernel
         if (isLast) {
             s_tmp[tidy] = init;
             s_ftmp[tidy] = 0;
+            boundaryid = -1;
         }
         __syncthreads();
 
@@ -109,10 +111,9 @@ namespace kernel
         char *curr = &sfptr[tidx];
 
         char flag = 0;
-        int boundaryid = -1;
         for (int k = 0; k < lim; k++) {
             if (id < out.dims[0]) {
-                flag = calculate_head_flags(kptr, id, id - istride);
+                flag = calculate_head_flags(kptr, id, id - key.strides[0]);
             } else {
                 flag = 0;
             }
@@ -238,7 +239,7 @@ namespace kernel
             char flag = 0;
             if (calculateFlags) {
                 if (id < out.dims[0]) {
-                    flag = calculate_head_flags(kptr, id, id - istride);
+                    flag = calculate_head_flags(kptr, id, id - key.strides[0]);
                 }
             } else {
                 flag = kptr[id];

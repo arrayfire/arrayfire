@@ -71,7 +71,6 @@ void scan_dim_kernel(__global To *oData, KParam oInfo,
         l_val[lid] = val;
         barrier(CLK_LOCAL_MEM_FENCE);
 
-        int start = 0;
         for (int off = 1; off < DIMY; off *= 2) {
 
             if (lidy >= off) val = binOp(val, l_val[lid - off * THREADS_X]);
