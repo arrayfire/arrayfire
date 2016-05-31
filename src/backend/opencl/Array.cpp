@@ -116,7 +116,6 @@ namespace opencl
         }
     }
 
-
     template<typename T>
     void Array<T>::eval()
     {
@@ -135,8 +134,7 @@ namespace opencl
         evalNodes(res, this->getNode().get());
         ready = true;
 
-        Node_ptr prev = node;
-        prev->resetFlags();
+        node->resetFlags();
         // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
         node.reset();
     }
@@ -146,6 +144,40 @@ namespace opencl
     {
         if (isReady()) return;
         const_cast<Array<T> *>(this)->eval();
+    }
+
+    template<typename T>
+    void evalMultiple(std::vector<Array<T>*> arrays)
+    {
+        std::vector<Param> outputs;
+        std::vector<Node *> nodes;
+
+        for (auto array : arrays) {
+            if (array->isReady()) continue;
+
+            const ArrayInfo info = array->info;
+
+            array->setId(getActiveDeviceId());
+            array->data = Buffer_ptr(bufferAlloc(info.elements() * sizeof(T)), bufferFree);
+
+            // Do not replace this with cast operator
+            KParam kInfo = {{info.dims()[0], info.dims()[1], info.dims()[2], info.dims()[3]},
+                            {info.strides()[0], info.strides()[1],
+                             info.strides()[2], info.strides()[3]},
+                            0};
+
+            Param res = {array->data.get(), kInfo};
+            outputs.push_back(res);
+            nodes.push_back(array->getNode().get());
+        }
+        evalNodes(outputs, nodes);
+        for (auto array : arrays) {
+            if (array->isReady()) continue;
+            array->ready = true;
+            array->node->resetFlags();
+            // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
+            array->node.reset();
+        }
     }
 
     template<typename T>
@@ -317,14 +349,13 @@ namespace opencl
         return;
     }
 
-
 #define INSTANTIATE(T)                                                  \
     template       Array<T>  createHostDataArray<T>   (const dim4 &size, const T * const data); \
     template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data); \
     template       Array<T>  createValueArray<T>      (const dim4 &size, const T &value); \
     template       Array<T>  createEmptyArray<T>      (const dim4 &size); \
     template       Array<T>  *initArray<T      >      ();               \
-    template       Array<T>  createParamArray<T>      (Param &tmp);  \
+    template       Array<T>  createParamArray<T>      (Param &tmp);     \
     template       Array<T>  createSubArray<T>        (const Array<T> &parent, \
                                                        const std::vector<af_seq> &index, \
                                                        bool copy);      \
@@ -335,11 +366,12 @@ namespace opencl
                                    bool is_device);                     \
     template       Array<T>::Array(af::dim4 dims, cl_mem mem, size_t src_offset, bool copy); \
     template       Array<T>::~Array        ();                          \
-    template       Node_ptr Array<T>::getNode() const;             \
+    template       Node_ptr Array<T>::getNode() const;                  \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
+    template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)
