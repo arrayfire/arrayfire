@@ -29,7 +29,11 @@ namespace opencl
 
     template<typename T> class Array;
 
+    template<typename T>
+    void evalMultiple(std::vector<Array<T> *> arrays);
+
     void evalNodes(Param &out, JIT::Node *node);
+    void evalNodes(std::vector<Param> &outputs, std::vector<JIT::Node *> nodes);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
@@ -255,6 +259,9 @@ namespace opencl
 
             return std::shared_ptr<T>(ptr, func);
         }
+
+
+        friend void evalMultiple<T>(std::vector<Array<T> *> arrays);
 
         friend Array<T> createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T> createHostDataArray<T>(const af::dim4 &size, const T * const data);

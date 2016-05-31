@@ -184,3 +184,11 @@ af_err af_get_device_ptr(void **ptr, const af_array arr)
     CHECK_ARRAYS(arr);
     return CALL(ptr, arr);
 }
+
+af_err af_eval_multiple(int num, af_array *arrays)
+{
+    for (int i = 0; i < num; i++) {
+        CHECK_ARRAYS(arrays[i]);
+    }
+    return CALL(num, arrays);
+}
