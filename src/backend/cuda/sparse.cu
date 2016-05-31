@@ -215,9 +215,6 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in)
 template<typename T, af_sparse_storage storage>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in)
 {
-    //if(storage == AF_SPARSE_COO)
-    //    return sparseConvertDenseToCOO(in);
-
     const int M = in.dims()[0];
     const int N = in.dims()[1];
 
@@ -291,9 +288,9 @@ Array<T> sparseConvertCOOToDense(const SparseArray<T> &in)
 {
     Array<T> dense = createValueArray<T>(in.dims(), scalar<T>(0));
 
-    Array<T>   values = in.getValues();
-    Array<int> rowIdx = in.getRowIdx();
-    Array<int> colIdx = in.getColIdx();
+    const Array<T>   values = in.getValues();
+    const Array<int> rowIdx = in.getRowIdx();
+    const Array<int> colIdx = in.getColIdx();
 
     kernel::coo2dense<T>(dense, values, rowIdx, colIdx);
 
@@ -303,9 +300,6 @@ Array<T> sparseConvertCOOToDense(const SparseArray<T> &in)
 template<typename T, af_sparse_storage storage>
 Array<T> sparseConvertStorageToDense(const SparseArray<T> &in)
 {
-    //if(storage == AF_SPARSE_COO)
-    //    return sparseConvertCOOToDense(in);
-
     // Create Sparse Matrix Descriptor
     cusparseMatDescr_t descr = 0;
     CUSPARSE_CHECK(cusparseCreateMatDescr(&descr));

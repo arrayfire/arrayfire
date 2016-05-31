@@ -194,6 +194,13 @@ public:
     Array<T>& getValues()                 { return values;  }
     const Array<T>& getValues()     const { return values;  }
 
+    void eval() const
+    {
+        getValues().eval();
+        getRowIdx().eval();
+        getColIdx().eval();
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Friend functions for Sparse Array Creation
     ////////////////////////////////////////////////////////////////////////////
