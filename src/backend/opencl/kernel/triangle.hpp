@@ -23,7 +23,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -80,7 +80,7 @@ void triangle(Param out, const Param in)
         NDRange global(groups_x * out.info.dims[2] * local[0],
                        groups_y * out.info.dims[3] * local[1]);
 
-        auto triangleOp = make_kernel<Buffer, KParam,
+        auto triangleOp = KernelFunctor<Buffer, KParam,
                                       const Buffer, KParam,
                                       const int, const int> (*trgKernels[device]);
 

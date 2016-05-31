@@ -27,7 +27,6 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -121,12 +120,12 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal, co
                     convKernels[device] = new Kernel(*convProgs[device], "convolve");
                 });
 
-        auto convOp = make_kernel<Buffer, KParam, Buffer, KParam,
-                                  cl::LocalSpaceArg, Buffer, KParam,
-                                  int, int,
-                                  int, int, int,
-                                  int, int, int
-                                 >(*convKernels[device]);
+        auto convOp = cl::KernelFunctor<Buffer, KParam, Buffer, KParam,
+                                        cl::LocalSpaceArg, Buffer, KParam,
+                                        int, int,
+                                        int, int, int,
+                                        int, int, int
+                                       >(*convKernels[device]);
 
         convOp(EnqueueArgs(getQueue(), param.global, param.local),
                 *out.data, out.info, *signal.data, signal.info, cl::Local(param.loc_size),

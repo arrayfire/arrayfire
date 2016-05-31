@@ -21,7 +21,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -71,7 +71,7 @@ void lookup(Param out, const Param in, const Param indices, int nDims)
         NDRange global(blk_x * out.info.dims[2] * THREADS_X,
                        blk_y * out.info.dims[3] * THREADS_Y);
 
-        auto arrIdxOp = make_kernel<Buffer, KParam,
+        auto arrIdxOp = KernelFunctor<Buffer, KParam,
                                     Buffer, KParam,
                                     Buffer, KParam,
                                     int, int>(*aiKernels[device]);

@@ -22,6 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::LocalSpaceArg;
 using cl::NDRange;
@@ -127,7 +128,7 @@ void packDataHelper(Param packed,
 
         // Pack signal in a complex matrix where first dimension is half the input
         // (allows faster FFT computation) and pad array to a power of 2 with 0s
-        auto pdOp = make_kernel<Buffer, KParam,
+        auto pdOp = KernelFunctor<Buffer, KParam,
                                 Buffer, KParam,
                                 const int, const int> (*pdKernel[device]);
 
@@ -140,7 +141,7 @@ void packDataHelper(Param packed,
         global = NDRange(blocks * THREADS);
 
         // Pad filter array with 0s
-        auto paOp = make_kernel<Buffer, KParam,
+        auto paOp = KernelFunctor<Buffer, KParam,
                                 Buffer, KParam> (*paKernel[device]);
 
         paOp(EnqueueArgs(getQueue(), global, local),
@@ -208,7 +209,7 @@ void complexMultiplyHelper(Param packed,
         NDRange global(blocks * THREADS);
 
         // Multiply filter and signal FFT arrays
-        auto cmOp = make_kernel<Buffer, KParam,
+        auto cmOp = KernelFunctor<Buffer, KParam,
                                 Buffer, KParam,
                                 Buffer, KParam,
                                 const int, const int> (*cmKernel[device]);
@@ -282,7 +283,7 @@ void reorderOutputHelper(Param out,
         NDRange local(THREADS);
         NDRange global(blocks * THREADS);
 
-        auto roOp = make_kernel<Buffer, KParam,
+        auto roOp = KernelFunctor<Buffer, KParam,
                                 Buffer, KParam,
                                 KParam, const int,
                                 const int, const int> (*roKernel[device]);

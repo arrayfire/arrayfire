@@ -22,7 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -78,7 +78,7 @@ void transpose(Param out, const Param in)
         NDRange global(blk_x * local[0] * in.info.dims[2],
                        blk_y * local[1] * in.info.dims[3]);
 
-        auto transposeOp = make_kernel<Buffer, const KParam,
+        auto transposeOp = KernelFunctor<Buffer, const KParam,
                                        const Buffer, const KParam,
                                        const int, const int> (*trsKernels[device]);
 

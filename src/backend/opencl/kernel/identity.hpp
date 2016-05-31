@@ -21,7 +21,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -65,7 +65,7 @@ namespace kernel
             NDRange global(groups_x * out.info.dims[2] * local[0],
                            groups_y * out.info.dims[3] * local[1]);
 
-            auto identityOp = make_kernel<Buffer, const KParam,
+            auto identityOp = KernelFunctor<Buffer, const KParam,
                                           int, int> (*identityKernels[device]);
 
             identityOp(EnqueueArgs(getQueue(), global, local),
