@@ -100,11 +100,11 @@ public:
     // Specialized functions for SparseArray
     ////////////////////////////////////////////////////////////////////////////
     // Get the internal arrays
-    Array<int>& getRows()                 { return rowIdx;              }
-    Array<int>& getColumns()              { return colIdx;              }
+    Array<int>& getRowIdx()                 { return rowIdx;            }
+    Array<int>& getColIdx()                 { return colIdx;            }
 
-    const Array<int>& getRows()     const { return rowIdx;              }
-    const Array<int>& getColumns()  const { return colIdx;              }
+    const Array<int>& getRowIdx()     const { return rowIdx;            }
+    const Array<int>& getColIdx()     const { return colIdx;            }
 
     // Dims, types etc
     dim_t getNNZ()                  const;
@@ -177,10 +177,10 @@ public:
     INSTANTIATE_INFO(dim_t              , getNNZ    )
     INSTANTIATE_INFO(af::sparseStorage  , getStorage)
 
-    Array<int>& getRows()                { return base.getRows();    }
-    Array<int>& getColumns()             { return base.getColumns(); }
-    const Array<int>& getRows()    const { return base.getRows();    }
-    const Array<int>& getColumns() const { return base.getColumns(); }
+    Array<int>& getRowIdx()                 { return base.getRowIdx(); }
+    Array<int>& getColIdx()                 { return base.getColIdx(); }
+    const Array<int>& getRowIdx()   const   { return base.getRowIdx(); }
+    const Array<int>& getColIdx()   const   { return base.getColIdx(); }
 
 #undef INSTANTIATE_INFO
 

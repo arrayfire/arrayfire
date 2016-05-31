@@ -40,6 +40,9 @@ extern "C" {
                  af_array *out, const af_array in,
                  const af_sparse_storage storage);
 
+    AFAPI af_err af_sparse_convert_storage(af_array *out, const af_array in,
+                                           const af_sparse_storage destStorage);
+
     AFAPI af_err af_sparse_get_arrays(af_array *values, af_array *rows, af_array *cols, const af_array in);
 
     AFAPI af_err af_sparse_get_values(af_array *out, const af_array in);
@@ -55,9 +58,6 @@ extern "C" {
     AFAPI af_err af_sparse_get_num_cols(dim_t *out, const af_array in);
 
     AFAPI af_err af_sparse_get_storage(af_sparse_storage *out, const af_array in);
-
-    AFAPI af_err af_sparse_convert_storage(af_array *out, const af_array in,
-                                           const af_sparse_storage destStorage);
 
 #ifdef __cplusplus
 }

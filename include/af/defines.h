@@ -394,12 +394,12 @@ typedef enum {
 } af_marker_type;
 #endif
 
-#if AF_API_VERSION >=34
+#if AF_API_VERSION >= 34
 typedef enum {
     AF_SPARSE_DENSE     = 0,
-    AF_SPARSE_COO       = 1,
-    AF_SPARSE_CSR       = 2,
-    AF_SPARSE_CSC       = 3,
+    AF_SPARSE_CSR       = 1,
+    AF_SPARSE_CSC       = 2,
+    AF_SPARSE_COO       = 3,
 } af_sparse_storage;
 #endif
 

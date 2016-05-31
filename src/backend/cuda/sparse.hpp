@@ -8,12 +8,18 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <SparseArray.hpp>
 
 namespace cuda
 {
 
-template<typename T, af_sparse_storage>
-void dense2storage(Array<T> &values, Array<int> &rowIdx, Array<int> &colIdx,
-                   const Array<T> in);
+template<typename T, af_sparse_storage storage>
+common::SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in);
+
+template<typename T, af_sparse_storage storage>
+Array<T> sparseConvertStorageToDense(const common::SparseArray<T> &in);
+
+template<typename T, af_sparse_storage src, af_sparse_storage dest>
+common::SparseArray<T> sparseConvertStorageToStorage(const common::SparseArray<T> &in);
 
 }
