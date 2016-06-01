@@ -245,15 +245,15 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in)
                         in.get(), in.strides()[1],
                         nnzPerDir.get(), &nNZ));
 
-    Array<int> *rowIdx = initArray<int>();
-    Array<int> *colIdx = initArray<int>();
+    Array<int> rowIdx = createEmptyArray<int>(dim4());
+    Array<int> colIdx = createEmptyArray<int>(dim4());
 
     if(storage == AF_SPARSE_CSR) {
-        *rowIdx = createEmptyArray<int>(dim4(M+1));
-        *colIdx = createEmptyArray<int>(dim4(nNZ));
+        rowIdx = createEmptyArray<int>(dim4(M+1));
+        colIdx = createEmptyArray<int>(dim4(nNZ));
     } else {
-        *rowIdx = createEmptyArray<int>(dim4(nNZ));
-        *colIdx = createEmptyArray<int>(dim4(N+1));
+        rowIdx = createEmptyArray<int>(dim4(nNZ));
+        colIdx = createEmptyArray<int>(dim4(N+1));
     }
     Array<T> values = createEmptyArray<T>(dim4(nNZ));
 
@@ -264,7 +264,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in)
                         descr,
                         in.get(), in.strides()[1],
                         nnzPerDir.get(),
-                        values.get(), (*rowIdx).get(), (*colIdx).get()));
+                        values.get(), rowIdx.get(), colIdx.get()));
     else
         CUSPARSE_CHECK(dense2csc_func<T>()(
                         getHandle(),
@@ -272,12 +272,12 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in)
                         descr,
                         in.get(), in.strides()[1],
                         nnzPerDir.get(),
-                        values.get(), (*rowIdx).get(), (*colIdx).get()));
+                        values.get(), rowIdx.get(), colIdx.get()));
 
     // Destory Sparse Matrix Descriptor
     CUSPARSE_CHECK(cusparseDestroyMatDescr(descr));
 
-    return createArrayDataSparseArray<T>(in.dims(), values, *rowIdx, *colIdx, storage);
+    return createArrayDataSparseArray<T>(in.dims(), values, rowIdx, colIdx, storage);
 }
 
 
