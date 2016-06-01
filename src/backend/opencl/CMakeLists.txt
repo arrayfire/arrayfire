@@ -239,6 +239,7 @@ ENDIF()
 
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
+INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_by_key/CMakeLists.txt")
 IF(DEFINED BLAS_SYM_FILE)
 
     ADD_LIBRARY(afopencl_static STATIC
@@ -256,7 +257,8 @@ IF(DEFINED BLAS_SYM_FILE)
                 ${backend_sources}
                 ${magma_sources}
                 ${magma_headers}
-                ${SORT_BY_KEY_OBJECTS})
+                ${SORT_BY_KEY_OBJECTS}
+                ${SCAN_BY_KEY_OBJECTS})
 
     ADD_LIBRARY(afopencl SHARED
                ${c_headers}
@@ -300,7 +302,8 @@ ELSE(DEFINED BLAS_SYM_FILE)
                 ${cpp_sources}
                 ${magma_sources}
                 ${magma_headers}
-                ${SORT_BY_KEY_OBJECTS})
+                ${SORT_BY_KEY_OBJECTS}
+                ${SCAN_BY_KEY_OBJECTS})
 
 ENDIF()
 

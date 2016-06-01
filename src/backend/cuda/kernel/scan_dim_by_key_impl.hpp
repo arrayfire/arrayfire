@@ -18,8 +18,6 @@
 #include <memory.hpp>
 #include "config.hpp"
 
-#include <kernel/scan_dim_by_key.hpp>
-
 namespace cuda
 {
 namespace kernel
