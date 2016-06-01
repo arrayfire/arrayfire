@@ -9,8 +9,9 @@
 
 #include <SparseArray.hpp>
 #include <backend.hpp>
-#include <platform.hpp>
 #include <copy.hpp>
+#include <math.hpp>
+#include <platform.hpp>
 
 namespace common
 {
@@ -29,10 +30,10 @@ using namespace detail;
 #define COL_LENGTH ((storage == AF_SPARSE_COO || storage == AF_SPARSE_CSR) ? _nNZ : (_dims[1] + 1))
 
 SparseArrayBase::SparseArrayBase(af::dim4 _dims, dim_t _nNZ, af::sparseStorage _storage, af_dtype _type):
-    info(getActiveDeviceId(), _dims, _nNZ, calcStrides(_dims), _type, true),
+    info(getActiveDeviceId(), _dims, 0, calcStrides(_dims), _type, true),
     storage(_storage),
-    rowIdx(createEmptyArray<int>(dim4(ROW_LENGTH))),
-    colIdx(createEmptyArray<int>(dim4(COL_LENGTH)))
+    rowIdx(createValueArray<int>(dim4(ROW_LENGTH), 0)),
+    colIdx(createValueArray<int>(dim4(COL_LENGTH), 0))
 {
 #if __cplusplus > 199711l
     static_assert(offsetof(SparseArrayBase, info) == 0,
@@ -48,11 +49,11 @@ SparseArrayBase::SparseArrayBase(af::dim4 _dims, dim_t _nNZ,
     storage(_storage),
     rowIdx(_is_device ?
           (!_copy_device ? createDeviceDataArray<int>(dim4(ROW_LENGTH), _rowIdx)
-                         : createEmptyArray<int>(dim4(ROW_LENGTH)))
+                         : createValueArray<int>(dim4(ROW_LENGTH), 0))
         : createHostDataArray<int>(dim4(ROW_LENGTH), _rowIdx)),
     colIdx(_is_device ?
           (!_copy_device ? createDeviceDataArray<int>(dim4(COL_LENGTH), _colIdx)
-                         : createEmptyArray<int>(dim4(COL_LENGTH)))
+                         : createValueArray<int>(dim4(COL_LENGTH), 0))
         : createHostDataArray<int>(dim4(COL_LENGTH), _colIdx))
 {
 #if __cplusplus > 199711L
@@ -156,7 +157,7 @@ void destroySparseArray(SparseArray<T> *sparse)
 template<typename T>
 SparseArray<T>::SparseArray(dim4 _dims, dim_t _nNZ, af::sparseStorage _storage):
     base(_dims, _nNZ, _storage, (af_dtype)dtype_traits<T>::af_type),
-    values(createEmptyArray<T>(dim4(_nNZ)))
+    values(createValueArray<T>(dim4(_nNZ), scalar<T>(0)))
 {
 #if __cplusplus > 199711L
         static_assert(std::is_standard_layout<SparseArray<T>>::value,
@@ -175,7 +176,7 @@ SparseArray<T>::SparseArray(af::dim4 _dims, dim_t _nNZ,
     base(_dims, _nNZ, _rowIdx, _colIdx, _storage, (af_dtype)dtype_traits<T>::af_type, _is_device, _copy_device),
     values(_is_device ?
           (!_copy_device ? createDeviceDataArray<T>(dim4(_nNZ), _values)
-                         : createEmptyArray<T>(dim4(_nNZ)))
+                         : createValueArray<T>(dim4(_nNZ), scalar<T>(0)))
         : createHostDataArray<T>(dim4(_nNZ), _values))
 {
 #if __cplusplus > 199711L
