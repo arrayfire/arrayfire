@@ -105,8 +105,8 @@ struct CopyImpl<T, T>
         af::dim4 src_strides    = src.strides();
         af::dim4 dst_strides    = dst.strides();
 
-        T const * const src_ptr = src.get();
-        T * dst_ptr = dst.get();
+        T const * src_ptr = src.get();
+        T * dst_ptr       = dst.get();
 
         // find the major-most dimension, which is linear in both arrays
         int linear_end = 0;
@@ -119,51 +119,33 @@ struct CopyImpl<T, T>
         }
 
         // traverse through the array using strides only until neccessary
-        if (linear_end == 4) {
+        if (linear_end == 4)
             std::memcpy(dst_ptr, src_ptr, sizeof(T) * src.elements());
+        else
+            copy_go(dst_ptr, dst_strides, dst_dims, src_ptr, src_strides, src_dims, 3, linear_end);
+    }
 
-        } else {
-            for(dim_t l=0; l<dst_dims[3]; ++l) {
-                dim_t src_loff = l*src_strides[3];
-                dim_t dst_loff = l*dst_strides[3];
+    static void copy_go(
+            T * dst_ptr,       const af::dim4 & dst_strides, const af::dim4 & dst_dims,
+            T const * src_ptr, const af::dim4 & src_strides, const af::dim4 & src_dims,
+            int dim, int linear_end)
+    {
+        for(dim_t i=0; i<dst_dims[dim]; ++i) {
 
-                if (linear_end == 3) {
-                    dim_t dst_idx = dst_loff;
-                    dim_t src_idx = src_loff;
-                    std::memcpy(dst_ptr + dst_idx, src_ptr + src_idx, sizeof(T) * src_strides[3]);
+            // 0th dimension is recursion bottom - copy element by element
+            if (dim == 0)
+                *dst_ptr = *src_ptr;
 
-                } else {
-                    for(dim_t k=0; k<dst_dims[2]; ++k) {
-                        dim_t src_koff = k*src_strides[2];
-                        dim_t dst_koff = k*dst_strides[2];
+            // if we are in a higher dimension, copy the entire stride if possible
+            else if (linear_end == dim)
+                std::memcpy(dst_ptr, src_ptr, sizeof(T) * src_strides[dim]);
 
-                        if (linear_end == 2) {
-                            dim_t dst_idx = dst_koff + dst_loff;
-                            dim_t src_idx = src_koff + src_loff;
-                            std::memcpy(dst_ptr + dst_idx, src_ptr + src_idx, sizeof(T) * src_strides[2]);
+            // otherwise recurse to a lower dimenstion
+            else
+                copy_go(dst_ptr, dst_strides, dst_dims, src_ptr, src_strides, src_dims, dim - 1, linear_end);
 
-                        } else {
-                            for(dim_t j=0; j<dst_dims[1]; ++j) {
-                                dim_t src_joff = j*src_strides[1];
-                                dim_t dst_joff = j*dst_strides[1];
-
-                                if (linear_end == 1) {
-                                    dim_t dst_idx = dst_joff + dst_koff + dst_loff;
-                                    dim_t src_idx = src_joff + src_koff + src_loff;
-                                    std::memcpy(dst_ptr + dst_idx, src_ptr + src_idx, sizeof(T) * src_strides[1]);
-
-                                } else {
-                                    for(dim_t i=0; i<dst_dims[0]; ++i) {
-                                        dim_t dst_idx = i*dst_strides[0] + dst_joff + dst_koff + dst_loff;
-                                        dim_t src_idx = i*src_strides[0] + src_joff + src_koff + src_loff;
-                                        dst_ptr[dst_idx] = src_ptr[src_idx];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            dst_ptr += dst_strides[dim];
+            src_ptr += src_strides[dim];
         }
     }
 };
