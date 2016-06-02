@@ -431,8 +431,13 @@ std::string getPlatformName(const cl::Device &device)
 {
     const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
     std::string platStr = platform.getInfo<CL_PLATFORM_NAME>();
+
+    // BELOW NULL TERMINATION character removal was required with
+    // cl.hpp header, however with cl2.hpp this is not needed anymore.
+    //
     // Remove null termination character from the strings
-    platStr.pop_back();
+    //platStr.pop_back();
+
     return platformMap(platStr);
 }
 
