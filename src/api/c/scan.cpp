@@ -55,7 +55,8 @@ static inline af_array scan_op(const af_array key, const af_array in, const int 
     case AF_BINARY_MUL:    out = scan_key<af_mul_t, Ti, To>(key, in, dim, inclusive_scan); break;
     case AF_BINARY_MIN:    out = scan_key<af_min_t, Ti, To>(key, in, dim, inclusive_scan); break;
     case AF_BINARY_MAX:    out = scan_key<af_max_t, Ti, To>(key, in, dim, inclusive_scan); break;
-                    //TODO Error for op in default case
+    default:
+        AF_ERROR("Incorrect binary operation enum for argument number 3", AF_ERR_ARG); break;
     }
     return out;
 }
@@ -70,17 +71,17 @@ static inline af_array scan_op(const af_array in, const int dim, af_binary_op op
     case AF_BINARY_MUL:    out = scan<af_mul_t, Ti, To>(in, dim, inclusive_scan); break;
     case AF_BINARY_MIN:    out = scan<af_min_t, Ti, To>(in, dim, inclusive_scan); break;
     case AF_BINARY_MAX:    out = scan<af_max_t, Ti, To>(in, dim, inclusive_scan); break;
-                    //TODO Error for op in default case
+    default:
+        AF_ERROR("Incorrect binary operation enum for argument number 2", AF_ERR_ARG); break;
     }
     return out;
 }
 
 af_err af_accum(af_array *out, const af_array in, const int dim)
 {
-    ARG_ASSERT(2, dim >= 0);
-    ARG_ASSERT(2, dim <  4);
-
     try {
+        ARG_ASSERT(2, dim >= 0);
+        ARG_ASSERT(2, dim <  4);
 
         const ArrayInfo& in_info = getInfo(in);
 
@@ -119,10 +120,9 @@ af_err af_accum(af_array *out, const af_array in, const int dim)
 
 af_err af_scan(af_array *out, const af_array in, const int dim, af_binary_op op, bool inclusive_scan)
 {
-    ARG_ASSERT(2, dim >= 0);
-    ARG_ASSERT(2, dim <  4);
-
     try {
+        ARG_ASSERT(2, dim >= 0);
+        ARG_ASSERT(2, dim <  4);
 
         const ArrayInfo& in_info = getInfo(in);
 
@@ -160,17 +160,19 @@ af_err af_scan(af_array *out, const af_array in, const int dim, af_binary_op op,
 
 af_err af_scan_by_key(af_array *out, const af_array key, const af_array in, const int dim, af_binary_op op, bool inclusive_scan)
 {
-    ARG_ASSERT(2, dim >= 0);
-    ARG_ASSERT(2, dim <  4);
-
     try {
+        ARG_ASSERT(2, dim >= 0);
+        ARG_ASSERT(2, dim <  4);
 
         const ArrayInfo& in_info = getInfo(in);
+        const ArrayInfo& key_info = getInfo(key);
 
         if (dim >= (int)in_info.ndims()) {
             *out = retain(in);
             return AF_SUCCESS;
         }
+
+        ARG_ASSERT(2, in_info.dims() == key_info.dims());
 
         af_dtype type = in_info.getType();
         af_array res;

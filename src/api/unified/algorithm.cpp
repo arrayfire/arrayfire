@@ -110,6 +110,12 @@ af_err af_scan(af_array* out, const af_array in, const int dim, af_binary_op op,
     return CALL(out, in, dim, op, inclusive_scan);
 }
 
+af_err af_scan_by_key(af_array* out, const af_array key, const af_array in, const int dim, af_binary_op op, bool inclusive_scan)
+{
+    CHECK_ARRAYS(in, key);
+    return CALL(out, key, in, dim, op, inclusive_scan);
+}
+
 af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool isAscending)
 {
     CHECK_ARRAYS(in);
