@@ -43,7 +43,16 @@ Array<T> copyArray(const Array<T> &A)
 {
     A.eval();
     Array<T> out = createEmptyArray<T>(A.dims());
-    getQueue().enqueue(kernel::copy<T, T>, out, A, scalar<T>(0), 1.0);
+
+    auto copyLinear = [=] (Array<T> out, const Array<T> in) {
+        std::memcpy(out.get(), in.get(), sizeof(T) * in.elements());
+    };
+
+    if (A.isLinear()) {
+        getQueue().enqueue(copyLinear, out, A);
+    } else {
+        getQueue().enqueue(kernel::copy<T, T>, out, A, scalar<T>(0), 1.0);
+    }
     return out;
 }
 
