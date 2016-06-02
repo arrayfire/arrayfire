@@ -16,7 +16,8 @@ af_err af_create_sparse_array(
        const af_array values, const af_array rowIdx, const af_array colIdx,
        const af_sparse_storage storage)
 {
-    CHECK_ARRAYS(values, rowIdx, colIdx); return CALL(out, nRows, nCols, nNZ, values, rowIdx, colIdx, storage);
+    CHECK_ARRAYS(values, rowIdx, colIdx);
+    return CALL(out, nRows, nCols, nNZ, values, rowIdx, colIdx, storage);
 }
 
 af_err af_create_sparse_array_from_ptr(
@@ -45,10 +46,10 @@ af_err af_sparse_convert_storage(af_array *out, const af_array in,
     return CALL(out, in, destStorage);
 }
 
-af_err af_sparse_get_arrays(af_array *values, af_array *rows, af_array *cols, const af_array in)
+af_err af_sparse_get_arrays(af_array *values, af_array *rowIdx, af_array *colIdx, const af_array in)
 {
     CHECK_ARRAYS(in);
-    return CALL(values, rows, cols, in);
+    return CALL(values, rowIdx, colIdx, in);
 }
 
 af_err af_sparse_get_values(af_array *out, const af_array in)
@@ -57,31 +58,19 @@ af_err af_sparse_get_values(af_array *out, const af_array in)
     return CALL(out, in);
 }
 
-af_err af_sparse_get_rows(af_array *out, const af_array in)
+af_err af_sparse_get_row_idx(af_array *out, const af_array in)
 {
     CHECK_ARRAYS(in);
     return CALL(out, in);
 }
 
-af_err af_sparse_get_cols(af_array *out, const af_array in)
+af_err af_sparse_get_col_idx(af_array *out, const af_array in)
 {
     CHECK_ARRAYS(in);
     return CALL(out, in);
 }
 
-af_err af_sparse_get_num_values(dim_t *out, const af_array in)
-{
-    CHECK_ARRAYS(in);
-    return CALL(out, in);
-}
-
-af_err af_sparse_get_num_rows(dim_t *out, const af_array in)
-{
-    CHECK_ARRAYS(in);
-    return CALL(out, in);
-}
-
-af_err af_sparse_get_num_cols(dim_t *out, const af_array in)
+af_err af_sparse_get_num_nonzero(dim_t *out, const af_array in)
 {
     CHECK_ARRAYS(in);
     return CALL(out, in);

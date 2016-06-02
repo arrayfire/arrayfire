@@ -342,8 +342,8 @@ af_err af_sparse_get_arrays(af_array *values, af_array *rows, af_array *cols,
 {
     try {
         if(values != NULL) AF_CHECK(af_sparse_get_values(values, in));
-        if(rows   != NULL) AF_CHECK(af_sparse_get_rows  (rows  , in));
-        if(cols   != NULL) AF_CHECK(af_sparse_get_cols  (cols  , in));
+        if(rows   != NULL) AF_CHECK(af_sparse_get_row_idx(rows  , in));
+        if(cols   != NULL) AF_CHECK(af_sparse_get_col_idx(cols  , in));
     }
     CATCHALL;
 
@@ -370,7 +370,7 @@ af_err af_sparse_get_values(af_array *out, const af_array in)
     return AF_SUCCESS;
 }
 
-af_err af_sparse_get_rows(af_array *out, const af_array in)
+af_err af_sparse_get_row_idx(af_array *out, const af_array in)
 {
     try {
         const SparseArrayBase base = getSparseArrayBase(in);
@@ -379,7 +379,7 @@ af_err af_sparse_get_rows(af_array *out, const af_array in)
     return AF_SUCCESS;
 }
 
-af_err af_sparse_get_cols(af_array *out, const af_array in)
+af_err af_sparse_get_col_idx(af_array *out, const af_array in)
 {
     try {
         const SparseArrayBase base = getSparseArrayBase(in);
@@ -388,29 +388,11 @@ af_err af_sparse_get_cols(af_array *out, const af_array in)
     return AF_SUCCESS;
 }
 
-af_err af_sparse_get_num_values(dim_t *out, const af_array in)
+af_err af_sparse_get_num_nonzero(dim_t *out, const af_array in)
 {
     try {
         const SparseArrayBase base = getSparseArrayBase(in);
         *out = base.getNNZ();
-    } CATCHALL;
-    return AF_SUCCESS;
-}
-
-af_err af_sparse_get_num_rows(dim_t *out, const af_array in)
-{
-    try {
-        const SparseArrayBase base = getSparseArrayBase(in);
-        *out = base.getRowIdx().elements();
-    } CATCHALL;
-    return AF_SUCCESS;
-}
-
-af_err af_sparse_get_num_cols(dim_t *out, const af_array in)
-{
-    try {
-        const SparseArrayBase base = getSparseArrayBase(in);
-        *out = base.getColIdx().elements();
     } CATCHALL;
     return AF_SUCCESS;
 }
