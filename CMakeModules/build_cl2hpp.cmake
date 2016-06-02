@@ -1,14 +1,13 @@
 INCLUDE(ExternalProject)
 
-SET(prefix ${CMAKE_BINARY_DIR}/third_party/cl2hpp/src/cl2hpp-ext-build)
+SET(prefix ${CMAKE_BINARY_DIR}/third_party/cl2hpp)
 
 ExternalProject_Add(
     cl2hpp-ext
-    GIT_REPOSITORY https://github.com/KhronosGroup/OpenCL-CLHPP.git
-    GIT_TAG 2b415bf8fc6ab035b6de6a14f3c579f91199fa2a
+    GIT_REPOSITORY https://github.com/9prady9/OpenCL-CLHPP.git
+    GIT_TAG install_targets
     PREFIX "${prefix}"
-    INSTALL_COMMAND ""
-    INSTALL_DIR "${prefix}"
+    INSTALL_DIR "${prefix}/package"
     UPDATE_COMMAND ""
     CONFIGURE_COMMAND ${CMAKE_COMMAND} -Wno-dev "-G${CMAKE_GENERATOR}" <SOURCE_DIR>
     -DCMAKE_SOURCE_DIR:PATH=<SOURCE_DIR>
@@ -17,12 +16,14 @@ ExternalProject_Add(
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
     -DBUILD_DOCS:BOOL=OFF
-    -DBUILD_EXAMPLES:BOOL=ON
+    -DBUILD_EXAMPLES:BOOL=OFF
     -DBUILD_TESTS:BOOL=OFF
     )
 
-ADD_CUSTOM_TARGET(cl2hpp DEPENDS "${prefix}/include/CL/cl2.hpp")
+ExternalProject_Get_Property(cl2hpp-ext install_dir)
+
+ADD_CUSTOM_TARGET(cl2hpp DEPENDS "${prefix}/package/CL/cl2.hpp")
 
 ADD_DEPENDENCIES(cl2hpp cl2hpp-ext)
 
-SET(CL2HPP_INCLUDE_DIRECTORY ${prefix}/include)
+SET(CL2HPP_INCLUDE_DIRECTORY ${install_dir})
