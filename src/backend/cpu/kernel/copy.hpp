@@ -119,10 +119,7 @@ struct CopyImpl<T, T>
         }
 
         // traverse through the array using strides only until neccessary
-        if (linear_end == 4)
-            std::memcpy(dst_ptr, src_ptr, sizeof(T) * src.elements());
-        else
-            copy_go(dst_ptr, dst_strides, dst_dims, src_ptr, src_strides, src_dims, 3, linear_end);
+        copy_go(dst_ptr, dst_strides, dst_dims, src_ptr, src_strides, src_dims, 3, linear_end);
     }
 
     static void copy_go(
@@ -130,20 +127,25 @@ struct CopyImpl<T, T>
             T const * src_ptr, const af::dim4 & src_strides, const af::dim4 & src_dims,
             int dim, int linear_end)
     {
-        for(dim_t i=0; i<dst_dims[dim]; ++i) {
+        // if we are in a higher dimension, copy the entire stride if possible
+        if (linear_end == dim + 1) {
+            std::memcpy(dst_ptr, src_ptr, sizeof(T) * src_strides[dim] * src_dims[dim]);
+            return;
+        }
 
-            // 0th dimension is recursion bottom - copy element by element
-            if (dim == 0)
+        // 0th dimension is recursion bottom - copy element by element
+        if (dim == 0) {
+            for(dim_t i=0; i<dst_dims[0]; ++i) {
                 *dst_ptr = *src_ptr;
+                dst_ptr += dst_strides[0];
+                src_ptr += src_strides[0];
+            }
+            return;
+        }
 
-            // if we are in a higher dimension, copy the entire stride if possible
-            else if (linear_end == dim)
-                std::memcpy(dst_ptr, src_ptr, sizeof(T) * src_strides[dim]);
-
-            // otherwise recurse to a lower dimenstion
-            else
-                copy_go(dst_ptr, dst_strides, dst_dims, src_ptr, src_strides, src_dims, dim - 1, linear_end);
-
+        // otherwise recurse to a lower dimenstion
+        for(dim_t i=0; i<dst_dims[dim]; ++i) {
+            copy_go(dst_ptr, dst_strides, dst_dims, src_ptr, src_strides, src_dims, dim - 1, linear_end);
             dst_ptr += dst_strides[dim];
             src_ptr += src_strides[dim];
         }
