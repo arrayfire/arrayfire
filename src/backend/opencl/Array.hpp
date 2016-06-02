@@ -115,6 +115,8 @@ namespace opencl
         explicit Array(af::dim4 dims, const T * const in_data);
         explicit Array(af::dim4 dims, cl_mem mem, size_t offset, bool copy);
 
+        void genBufferNode() const;
+
     public:
 
         Array(af::dim4 dims, af::dim4 strides, dim_t offset,

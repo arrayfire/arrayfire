@@ -29,12 +29,26 @@ namespace opencl
     using JIT::Node_ptr;
 
     template<typename T>
+    void Array<T>::genBufferNode() const
+    {
+        bool is_linear = isLinear();
+        unsigned bytes = this->getDataDims().elements() * sizeof(T);
+        BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
+                                              shortname<T>(true),
+                                              *this, data,
+                                              bytes,
+                                              is_linear);
+        const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
+    }
+
+    template<typename T>
     Array<T>::Array(af::dim4 dims) :
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(info.elements() * sizeof(T)), bufferFree),
         data_dims(dims),
         node(), ready(true), owner(true)
     {
+        this->genBufferNode();
     }
 
     template<typename T>
@@ -44,6 +58,7 @@ namespace opencl
         data_dims(dims),
         node(n), ready(false), owner(true)
     {
+        //this->genBufferNode();
     }
 
     template<typename T>
@@ -56,6 +71,7 @@ namespace opencl
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
         static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
         getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*info.elements(), in_data);
+        this->genBufferNode();
     }
 
     template<typename T>
@@ -72,6 +88,7 @@ namespace opencl
                                          src_offset, 0,
                                          sizeof(T) * info.elements());
         }
+        this->genBufferNode();
     }
 
     template<typename T>
@@ -82,7 +99,9 @@ namespace opencl
         node(),
         ready(true),
         owner(false)
-    { }
+    {
+        this->genBufferNode();
+    }
 
 
     template<typename T>
@@ -97,6 +116,7 @@ namespace opencl
         data_dims(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3])),
         node(), ready(true), owner(true)
     {
+        this->genBufferNode();
     }
 
     template<typename T>
@@ -114,6 +134,7 @@ namespace opencl
         if (!is_device) {
             getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T) * info.total(), in_data);
         }
+        this->genBufferNode();
     }
 
     template<typename T>
@@ -137,6 +158,7 @@ namespace opencl
         node->resetFlags();
         // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
         node.reset();
+        this->genBufferNode();
     }
 
     template<typename T>
@@ -187,17 +209,6 @@ namespace opencl
     template<typename T>
     Node_ptr Array<T>::getNode() const
     {
-        if (!node) {
-            bool is_linear = isLinear();
-            unsigned bytes = this->getDataDims().elements() * sizeof(T);
-            BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
-                                                  shortname<T>(true),
-                                                  *this, data,
-                                                  bytes,
-                                                  is_linear);
-            const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
-        }
-
         return node;
     }
 
