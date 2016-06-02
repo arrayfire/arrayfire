@@ -103,8 +103,8 @@ af_err af_matmul(af_array *out,
     using namespace detail;
 
     try {
-        ArrayInfo lhsInfo = getInfo(lhs, false, false);
-        ArrayInfo rhsInfo = getInfo(rhs, true, false);
+        ArrayInfo lhsInfo = getInfo(lhs, false, true);
+        ArrayInfo rhsInfo = getInfo(rhs, true, true);
 
         if(lhsInfo.isSparse())
             return af_sparse_matmul(out, lhs, rhs, optLhs, optRhs);
