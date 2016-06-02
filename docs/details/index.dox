@@ -4,7 +4,7 @@
 
 \defgroup index_func_index index
 
-\brief lookup values on array based on sequences
+\brief lookup values on array based on sequences and/or arrays
 
 \ingroup index_mat
 

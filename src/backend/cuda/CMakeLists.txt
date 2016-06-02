@@ -28,6 +28,9 @@ IF(    CUDA_COMPUTE_20
     OR CUDA_COMPUTE_50
     OR CUDA_COMPUTE_52
     OR CUDA_COMPUTE_53
+    OR CUDA_COMPUTE_60
+    OR CUDA_COMPUTE_61
+    OR CUDA_COMPUTE_62
     )
     SET(FALLBACK OFF)
 ELSE()
@@ -36,10 +39,10 @@ ENDIF()
 
 LIST(LENGTH COMPUTES_DETECTED_LIST COMPUTES_LEN)
 IF(${COMPUTES_LEN} EQUAL 0 AND ${FALLBACK})
-    MESSAGE(STATUS "No computes detected. Fall back to 20, 30, 50")
+    MESSAGE(STATUS "No computes detected. Fall back to 20, 30, 50, 60")
     MESSAGE(STATUS "You can use -DCOMPUTES_DETECTED_LIST=\"AB;XY\" (semicolon separated list of CUDA Compute versions to enable the specified computes")
     MESSAGE(STATUS "Individual compute versions flags are also available under CMake Advance options")
-    LIST(APPEND COMPUTES_DETECTED_LIST "20" "30" "50")
+    LIST(APPEND COMPUTES_DETECTED_LIST "20" "30" "50" "60")
 ENDIF()
 
 LIST(LENGTH COMPUTES_DETECTED_LIST COMPUTES_LEN)
@@ -69,15 +72,18 @@ ENDFOREACH()
 IF(UNIX)
     # GCC 5.3 and above give errors for mempcy from <string.h>
     # This is a (temporary) fix for that
+    # This was fixed in CUDA 8.0
     IF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.3.0")
-      ADD_DEFINITIONS(-D_FORCE_INLINES)
-    ENDIF()
+        IF(${CUDA_VERSION_MAJOR} LESS 8)
+            ADD_DEFINITIONS(-D_FORCE_INLINES)
+        ENDIF(${CUDA_VERSION_MAJOR} LESS 8)
 
-    # GCC 6.0 and above default to g++14, enabling c++11 features by default
-    # Enabling c++11 with nvcc 7.5 + gcc 6.x doesn't seem to work
-    # Only solution for now is to force use c++03 for gcc 6.x
-    IF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "6.0.0")
-      SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -std=c++98")
+        # GCC 6.0 and above default to g++14, enabling c++11 features by default
+        # Enabling c++11 with nvcc 7.5 + gcc 6.x doesn't seem to work
+        # Only solution for now is to force use c++03 for gcc 6.x
+        IF(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "6.0.0")
+          SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -std=c++98")
+        ENDIF()
     ENDIF()
 
     # Forcing STRICT ANSI should resolve a bunch of issues that NVIDIA seems to face with GCC compilers.
@@ -267,7 +273,13 @@ ELSE()
     SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch sm_20")
 ENDIF()
 
+# PUSH/POP --keep-device-functions flag. Only available in CUDA 8 or newer
+SET(OLD_CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS})
+IF(${CUDA_VERSION_MAJOR} GREATER 7) # CUDA 8 or newer
+    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --keep-device-functions")
+ENDIF()
 CUDA_COMPILE_PTX(ptx_files ${ptx_sources})
+SET(CUDA_NVCC_FLAGS ${OLD_CUDA_NVCC_FLAGS})
 
 set(cuda_ptx "")
 foreach(ptx_src_file ${ptx_sources})

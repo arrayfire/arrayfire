@@ -80,8 +80,10 @@ index::index(const af::index& idx0) {
 }
 
 index::~index() {
-    if (!impl.isSeq)
+    if (!impl.isSeq && impl.idx.arr)
         af_release_array(impl.idx.arr);
+
+
 }
 
 index & index::operator=(const index& idx0) {
@@ -97,10 +99,12 @@ index & index::operator=(const index& idx0) {
 #if __cplusplus > 199711L
 index::index(index &&idx0) {
     impl = idx0.impl;
+    idx0.impl.idx.arr = nullptr;
 }
 
 index& index::operator=(index &&idx0) {
     impl = idx0.impl;
+    idx0.impl.idx.arr = nullptr;
     return *this;
 }
 #endif

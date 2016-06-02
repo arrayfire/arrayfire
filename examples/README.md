@@ -40,7 +40,7 @@ the directory which contains the `ArrayFireConfig.cmake` as an argument to the
 if you were to install ArrayFire to the `local` directory within your home
 folder, the invocation of `cmake` above would be replaced with the following:
 
-    cmake -DArrayFire_ROOT=~/local/share/ArrayFire/ ..
+    cmake -DArrayFire_DIR=$HOME/local/share/ArrayFire/cmake ..
     
 ### Support and Contact Info
 
