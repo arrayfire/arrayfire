@@ -11,7 +11,10 @@ FOREACH(SBK_TYPE ${SBK_TYPES})
     ADD_LIBRARY(opencl_sort_by_key_${SBK_TYPE} OBJECT
         "${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/sort_by_key_impl.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key_impl.hpp")
-    ADD_DEPENDENCIES(opencl_sort_by_key_${SBK_TYPE} ${cl_kernel_targets} cl2hpp)
+    ADD_DEPENDENCIES(opencl_sort_by_key_${SBK_TYPE} ${cl_kernel_targets})
+    IF(NOT USE_SYSTEM_CL2HPP)
+        ADD_DEPENDENCIES(opencl_sort_by_key_${SBK_TYPE} cl2hpp)
+    ENDIF(NOT USE_SYSTEM_CL2HPP)
     IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
         ADD_DEPENDENCIES(opencl_sort_by_key_${SBK_TYPE} forge)
     ENDIF()
