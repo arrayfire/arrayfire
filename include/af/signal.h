@@ -1055,7 +1055,7 @@ AFAPI af_err af_fft_convolve2(af_array *out, const af_array signal, const af_arr
 AFAPI af_err af_fft_convolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
 
 /**
-   C++ Interface for finite impulse response  filter
+   C Interface for finite impulse response  filter
 
    \param[out] y is the output signal from the filter
    \param[in] b is the array containing the coefficients of the filter
@@ -1066,7 +1066,7 @@ AFAPI af_err af_fft_convolve3(af_array *out, const af_array signal, const af_arr
 AFAPI af_err af_fir(af_array *y, const af_array b, const af_array x);
 
 /**
-   C++ Interface for infinite impulse response filter
+   C Interface for infinite impulse response filter
 
    \param[out] y is the output signal from the filter
    \param[in] b is the array containing the feedforward coefficients
