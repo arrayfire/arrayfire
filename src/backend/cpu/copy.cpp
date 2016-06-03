@@ -43,7 +43,7 @@ Array<T> copyArray(const Array<T> &A)
 {
     A.eval();
     Array<T> out = createEmptyArray<T>(A.dims());
-    getQueue().enqueue(kernel::copy<T, T>, out, A, scalar<T>(0), 1.0);
+    getQueue().enqueue(kernel::copy<T, T>, out, A);
     return out;
 }
 
@@ -51,7 +51,7 @@ template<typename T>
 void multiply_inplace(Array<T> &in, double val)
 {
     in.eval();
-    getQueue().enqueue(kernel::copy<T, T>, in, in, 0, val);
+    getQueue().enqueue(kernel::copyElemwise<T, T>, in, in, 0, val);
 }
 
 template<typename inType, typename outType>
@@ -61,7 +61,8 @@ Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
     Array<outType> ret = createValueArray<outType>(dims, default_value);
     ret.eval();
     in.eval();
-    getQueue().enqueue(kernel::copy<outType, inType>, ret, in, outType(default_value), factor);
+    getQueue().enqueue(kernel::copyElemwise<outType, inType>, ret, in, outType(default_value), factor);
+
     return ret;
 }
 
@@ -70,7 +71,7 @@ void copyArray(Array<outType> &out, Array<inType> const &in)
 {
     out.eval();
     in.eval();
-    getQueue().enqueue(kernel::copy<outType, inType>, out, in, scalar<outType>(0), 1.0);
+    getQueue().enqueue(kernel::copy<outType, inType>, out, in);
 }
 
 #define INSTANTIATE(T)                                                  \
