@@ -39,6 +39,9 @@ namespace cuda
     template<typename T>
     void evalNodes(Param<T> &out, JIT::Node *node);
 
+    template<typename T>
+    void evalMultiple(std::vector<Array<T> *> arrays);
+
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T> createNodeArray(const af::dim4 &size, JIT::Node_ptr node);
@@ -228,6 +231,7 @@ namespace cuda
 
         JIT::Node_ptr getNode() const;
 
+        friend void evalMultiple<T>(std::vector<Array<T> *> arrays);
         friend Array<T> createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T> createHostDataArray<T>(const af::dim4 &size, const T * const data);
         friend Array<T> createDeviceDataArray<T>(const af::dim4 &size, const void *data);

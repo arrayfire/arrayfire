@@ -138,6 +138,17 @@ namespace cuda
     }
 
     template<typename T>
+    void evalMultiple(std::vector<Array<T>*> arrays)
+    {
+        //FIXME: implement this correctly
+        //Using fallback for now
+        for (int i = 0; i < (int)arrays.size(); i++) {
+            arrays[i]->eval();
+        }
+        return;
+    }
+
+    template<typename T>
     Array<T>::~Array() {}
 
     template<typename T>
@@ -308,6 +319,7 @@ namespace cuda
     template       void Array<T>::eval() const;                         \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
+    template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

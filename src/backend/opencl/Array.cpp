@@ -29,12 +29,26 @@ namespace opencl
     using JIT::Node_ptr;
 
     template<typename T>
+    void Array<T>::genBufferNode() const
+    {
+        bool is_linear = isLinear();
+        unsigned bytes = this->getDataDims().elements() * sizeof(T);
+        BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
+                                              shortname<T>(true),
+                                              *this, data,
+                                              bytes,
+                                              is_linear);
+        const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
+    }
+
+    template<typename T>
     Array<T>::Array(af::dim4 dims) :
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(info.elements() * sizeof(T)), bufferFree),
         data_dims(dims),
         node(), ready(true), owner(true)
     {
+        this->genBufferNode();
     }
 
     template<typename T>
@@ -44,6 +58,7 @@ namespace opencl
         data_dims(dims),
         node(n), ready(false), owner(true)
     {
+        //this->genBufferNode();
     }
 
     template<typename T>
@@ -56,6 +71,7 @@ namespace opencl
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
         static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
         getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*info.elements(), in_data);
+        this->genBufferNode();
     }
 
     template<typename T>
@@ -72,6 +88,7 @@ namespace opencl
                                          src_offset, 0,
                                          sizeof(T) * info.elements());
         }
+        this->genBufferNode();
     }
 
     template<typename T>
@@ -82,7 +99,9 @@ namespace opencl
         node(),
         ready(true),
         owner(false)
-    { }
+    {
+        this->genBufferNode();
+    }
 
 
     template<typename T>
@@ -97,6 +116,7 @@ namespace opencl
         data_dims(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3])),
         node(), ready(true), owner(true)
     {
+        this->genBufferNode();
     }
 
     template<typename T>
@@ -114,8 +134,8 @@ namespace opencl
         if (!is_device) {
             getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T) * info.total(), in_data);
         }
+        this->genBufferNode();
     }
-
 
     template<typename T>
     void Array<T>::eval()
@@ -135,10 +155,10 @@ namespace opencl
         evalNodes(res, this->getNode().get());
         ready = true;
 
-        Node_ptr prev = node;
-        prev->resetFlags();
+        node->resetFlags();
         // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
         node.reset();
+        this->genBufferNode();
     }
 
     template<typename T>
@@ -149,23 +169,46 @@ namespace opencl
     }
 
     template<typename T>
+    void evalMultiple(std::vector<Array<T>*> arrays)
+    {
+        std::vector<Param> outputs;
+        std::vector<Node *> nodes;
+
+        for (auto array : arrays) {
+            if (array->isReady()) continue;
+
+            const ArrayInfo info = array->info;
+
+            array->setId(getActiveDeviceId());
+            array->data = Buffer_ptr(bufferAlloc(info.elements() * sizeof(T)), bufferFree);
+
+            // Do not replace this with cast operator
+            KParam kInfo = {{info.dims()[0], info.dims()[1], info.dims()[2], info.dims()[3]},
+                            {info.strides()[0], info.strides()[1],
+                             info.strides()[2], info.strides()[3]},
+                            0};
+
+            Param res = {array->data.get(), kInfo};
+            outputs.push_back(res);
+            nodes.push_back(array->getNode().get());
+        }
+        evalNodes(outputs, nodes);
+        for (auto array : arrays) {
+            if (array->isReady()) continue;
+            array->ready = true;
+            array->node->resetFlags();
+            // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
+            array->node.reset();
+        }
+    }
+
+    template<typename T>
     Array<T>::~Array()
     { }
 
     template<typename T>
     Node_ptr Array<T>::getNode() const
     {
-        if (!node) {
-            bool is_linear = isLinear();
-            unsigned bytes = this->getDataDims().elements() * sizeof(T);
-            BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
-                                                  shortname<T>(true),
-                                                  *this, data,
-                                                  bytes,
-                                                  is_linear);
-            const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
-        }
-
         return node;
     }
 
@@ -317,14 +360,13 @@ namespace opencl
         return;
     }
 
-
 #define INSTANTIATE(T)                                                  \
     template       Array<T>  createHostDataArray<T>   (const dim4 &size, const T * const data); \
     template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data); \
     template       Array<T>  createValueArray<T>      (const dim4 &size, const T &value); \
     template       Array<T>  createEmptyArray<T>      (const dim4 &size); \
     template       Array<T>  *initArray<T      >      ();               \
-    template       Array<T>  createParamArray<T>      (Param &tmp);  \
+    template       Array<T>  createParamArray<T>      (Param &tmp);     \
     template       Array<T>  createSubArray<T>        (const Array<T> &parent, \
                                                        const std::vector<af_seq> &index, \
                                                        bool copy);      \
@@ -335,11 +377,12 @@ namespace opencl
                                    bool is_device);                     \
     template       Array<T>::Array(af::dim4 dims, cl_mem mem, size_t src_offset, bool copy); \
     template       Array<T>::~Array        ();                          \
-    template       Node_ptr Array<T>::getNode() const;             \
+    template       Node_ptr Array<T>::getNode() const;                  \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
+    template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)
