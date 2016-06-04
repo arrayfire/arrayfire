@@ -35,7 +35,6 @@ namespace opencl
         unsigned bytes = this->getDataDims().elements() * sizeof(T);
         BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
                                               shortname<T>(true),
-                                              *this, data,
                                               bytes,
                                               is_linear);
         const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
@@ -58,7 +57,6 @@ namespace opencl
         data_dims(dims),
         node(n), ready(false), owner(true)
     {
-        //this->genBufferNode();
     }
 
     template<typename T>
@@ -152,7 +150,7 @@ namespace opencl
 
         Param res = {data.get(), info};
 
-        evalNodes(res, this->getNode().get());
+        evalNodes(res, node.get());
         ready = true;
 
         node->resetFlags();
@@ -175,7 +173,9 @@ namespace opencl
         std::vector<Node *> nodes;
 
         for (auto array : arrays) {
-            if (array->isReady()) continue;
+            if (array->isReady()) {
+                continue;
+            }
 
             const ArrayInfo info = array->info;
 
@@ -190,7 +190,7 @@ namespace opencl
 
             Param res = {array->data.get(), kInfo};
             outputs.push_back(res);
-            nodes.push_back(array->getNode().get());
+            nodes.push_back(array->node.get());
         }
         evalNodes(outputs, nodes);
         for (auto array : arrays) {
@@ -204,12 +204,25 @@ namespace opencl
 
     template<typename T>
     Array<T>::~Array()
-    { }
+    {
+    }
+
+    template<typename T>
+    Node_ptr Array<T>::getNode()
+    {
+        if (node->isBuffer()) {
+            KParam kinfo = *this;
+            BufferNode *bufNode = reinterpret_cast<BufferNode *>(node.get());
+            bufNode->setData(kinfo, data);
+        }
+        return node;
+    }
+
 
     template<typename T>
     Node_ptr Array<T>::getNode() const
     {
-        return node;
+        return const_cast<Array<T> *>(this)->getNode();
     }
 
     using af::dim4;

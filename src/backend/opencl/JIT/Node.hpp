@@ -27,6 +27,7 @@ namespace JIT
         std::string m_type_str;
         std::string m_name_str;
         int m_id;
+        int m_level;
         bool m_set_id;
         bool m_gen_func;
         bool m_gen_param;
@@ -74,6 +75,8 @@ namespace JIT
             buf_count = 0;
             bytes = 0;
         }
+
+        virtual bool isBuffer() { return false; }
 
 
         virtual void resetFlags()

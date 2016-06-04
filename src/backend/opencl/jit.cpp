@@ -47,24 +47,19 @@ static string getFuncName(std::vector<Node *> nodes, bool is_linear, bool *is_do
         funcName << "G_";
     }
 
-    bool is_dbl = false;
     int id = 0;
     for (auto node :  nodes) {
+        funcName << "[";
         id = node->setId(id);
-        std::string outName = node->getNameStr();
-        funcName << outName;
-
+        funcName << node->getNameStr();
         node->genKerName(funcName);
-        string nameStr = funcName.str();
-        funcName << nameStr;
-
-        nameStr = nameStr + outName;
-        string dblChars = "dDzZ";
-        size_t loc = nameStr.find_first_of(dblChars);
-        is_dbl |= (loc != std::string::npos);
+        funcName << "]";
     }
 
-    *is_double = is_dbl;
+    string nameStr = funcName.str();
+    string dblChars = "dDzZ";
+    size_t loc = nameStr.find_first_of(dblChars);
+    *is_double = (loc != std::string::npos);
 
     std::hash<std::string> hash_fn;
     hashName << "KER" << hash_fn(funcName.str());
@@ -124,6 +119,8 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
     stringstream offsetsStream;
     stringstream opsStream;
 
+    int count  = 0;
+
     for (auto node : nodes) {
         int id = node->getId();
         node->genParams(inParamStream);
@@ -131,6 +128,7 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
         outWriteStream << "out" << id << "[idx] = " << "val" << id << ";\n";
         node->genOffsets(offsetsStream, is_linear);
         node->genFuncs(opsStream);
+        opsStream << "//" << ++count << std::endl << std::endl;
     }
 
     // Put various blocks into a single stream
@@ -161,7 +159,6 @@ static Kernel getKernel(std::vector<Node *> nodes, bool is_linear)
 
     bool is_dbl = false;
     string funcName = getFuncName(nodes, is_linear, &is_dbl);
-
     int device = getActiveDeviceId();
 
     kc_t::iterator idx = kernelCaches[device].find(funcName);
@@ -169,6 +166,8 @@ static Kernel getKernel(std::vector<Node *> nodes, bool is_linear)
 
     if (idx == kernelCaches[device].end()) {
         string jit_ker = getKernelString(funcName, nodes, is_linear);
+
+        std::cout << jit_ker << std::endl;
 
         const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
         const int ker_lens[] = {jit_cl_len, (int)jit_ker.size()};

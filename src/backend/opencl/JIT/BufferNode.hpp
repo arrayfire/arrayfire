@@ -21,8 +21,8 @@ namespace JIT
     class BufferNode : public Node
     {
     private:
-        const std::shared_ptr<cl::Buffer> m_data;
-        const Param m_param;
+        std::shared_ptr<cl::Buffer> m_data;
+        KParam m_info;
         const unsigned m_bytes;
         bool m_linear;
 
@@ -30,22 +30,31 @@ namespace JIT
 
         BufferNode(const char *type_str,
                    const char *name_str,
-                   const Param param,
-                   const std::shared_ptr<cl::Buffer> data,
                    const unsigned bytes,
                    const bool is_linear)
             : Node(type_str, name_str),
-              m_data(data),
-              m_param(param),
               m_bytes(bytes),
               m_linear(is_linear)
-        {}
+        {
+        }
+
+        bool isBuffer() { return true; }
+
+        ~BufferNode()
+        {
+        }
+
+        void setData(KParam info, std::shared_ptr<cl::Buffer> data)
+        {
+            m_info = info;
+            m_data = data;
+        }
 
         bool isLinear(dim_t dims[4])
         {
             bool same_dims = true;
             for (int i = 0; same_dims && i < 4; i++) {
-                same_dims &= (dims[i] == m_param.info.dims[i]);
+                same_dims &= (dims[i] == m_info.dims[i]);
             }
             return m_linear && same_dims;
         }
@@ -71,8 +80,8 @@ namespace JIT
         {
             if (m_set_arg) return id;
 
-            ker.setArg(id + 0, *m_param.data);
-            ker.setArg(id + 1,  m_param.info);
+            ker.setArg(id + 0, *m_data);
+            ker.setArg(id + 1,  m_info);
 
             m_set_arg = true;
             return id + 2;

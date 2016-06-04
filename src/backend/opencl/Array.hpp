@@ -24,9 +24,8 @@
 
 namespace opencl
 {
-    using af::dim4;
     typedef std::shared_ptr<cl::Buffer> Buffer_ptr;
-
+    using af::dim4;
     template<typename T> class Array;
 
     template<typename T>
@@ -230,7 +229,17 @@ namespace opencl
             return out;
         }
 
+        operator KParam() const
+        {
+            KParam kinfo = {{dims()[0], dims()[1], dims()[2], dims()[3]},
+                            {strides()[0], strides()[1], strides()[2], strides()[3]},
+                            getOffset()};
+
+            return kinfo;
+        }
+
         JIT::Node_ptr getNode() const;
+        JIT::Node_ptr getNode();
 
     public:
         std::shared_ptr<T> getMappedPtr() const
