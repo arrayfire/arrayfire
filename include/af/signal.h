@@ -1078,6 +1078,19 @@ AFAPI af_err af_fir(af_array *y, const af_array b, const af_array x);
    \ingroup signal_func_iir
 */
 AFAPI af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x);
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface for setting plan cache size
+
+   This function is doesn't do anything if called when CPU backend is active. The plans associated with
+   the most recently used array sizes are cached.
+
+   \param[in] cache_size is the number of plans that shall be cached
+*/
+AFAPI af_err af_set_fft_plan_cache_size(size_t cache_size);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
