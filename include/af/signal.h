@@ -1083,7 +1083,7 @@ AFAPI af_err af_iir(af_array *y, const af_array b, const af_array a, const af_ar
 /**
    C Interface for setting plan cache size
 
-   This function is doesn't do anything if called when CPU backend is active. The plans associated with
+   This function doesn't do anything if called when CPU backend is active. The plans associated with
    the most recently used array sizes are cached.
 
    \param[in] cache_size is the number of plans that shall be cached
