@@ -250,11 +250,9 @@ af_err af_fft3_c2r(af_array *out, const af_array in, const double norm_factor, c
 
 af_err af_set_fft_plan_cache_size(size_t cache_size)
 {
-#ifndef AF_CPU
     try {
         detail::setFFTPlanCacheSize(cache_size);
     }
     CATCHALL;
-#endif
     return AF_SUCCESS;
 }
