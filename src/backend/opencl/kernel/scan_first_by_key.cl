@@ -40,9 +40,9 @@ void scan_first_by_key_core(const bool invalid,
     l_flg0[lid] = *flag;
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    for (int off = 1; off < DIMY; off *= 2) {
+    for (int off = 1; off < DIMX; off *= 2) {
 
-        if (lidy >= off) {
+        if (lidx >= off) {
             *val = l_flg[lid] ? *val : binOp(*val, l_val[lid - off]);
             *flag = l_flg[lid] | l_flg[lid - off];
         }
