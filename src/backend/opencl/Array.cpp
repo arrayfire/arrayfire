@@ -199,6 +199,7 @@ namespace opencl
             array->node->resetFlags();
             // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
             array->node.reset();
+            array->genBufferNode();
         }
     }
 
