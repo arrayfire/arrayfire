@@ -185,10 +185,21 @@ af_err af_get_device_ptr(void **ptr, const af_array arr)
     return CALL(ptr, arr);
 }
 
-af_err af_eval_multiple(int num, af_array *arrays)
+af_err af_eval_multiple(const int num, af_array *arrays)
 {
     for (int i = 0; i < num; i++) {
         CHECK_ARRAYS(arrays[i]);
     }
     return CALL(num, arrays);
+}
+
+af_err af_set_internal_eval_flag(bool flag)
+{
+    return CALL(flag);
+}
+
+
+af_err af_get_internal_eval_flag(bool *flag)
+{
+    return CALL(flag);
 }

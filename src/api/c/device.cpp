@@ -244,3 +244,22 @@ af_err af_eval_multiple(int num, af_array *arrays)
 
     return AF_SUCCESS;
 }
+
+af_err af_set_internal_eval_flag(bool flag)
+{
+    try {
+        bool& backendFlag = evalFlag();
+        backendFlag = flag;
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+
+af_err af_get_internal_eval_flag(bool *flag)
+{
+    try {
+        bool backendFlag = evalFlag();
+        *flag = backendFlag;
+    } CATCHALL;
+    return AF_SUCCESS;
+}

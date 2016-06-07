@@ -179,16 +179,18 @@ createNodeArray(const dim4 &dims, Node_ptr node)
 {
     Array<T> out =  Array<T>(dims, node);
 
-    unsigned length =0, buf_count = 0, bytes = 0;
+    if (evalFlag()) {
+        unsigned length =0, buf_count = 0, bytes = 0;
 
-    Node *n = node.get();
-    n->getInfo(length, buf_count, bytes);
-    n->reset();
+        Node *n = node.get();
+        n->getInfo(length, buf_count, bytes);
+        n->reset();
 
-    if (length > getMaxJitSize() ||
-        buf_count >= getMaxBuffers() ||
-        bytes >= getMaxBytes()) {
-        out.eval();
+        if (length > getMaxJitSize() ||
+            buf_count >= getMaxBuffers() ||
+            bytes >= getMaxBytes()) {
+            out.eval();
+        }
     }
 
     return out;

@@ -311,4 +311,11 @@ void sync(int device)
     getQueue().sync();
 }
 
+bool& evalFlag()
+{
+    static bool flag = true;
+    return flag;
+}
+
+
 }

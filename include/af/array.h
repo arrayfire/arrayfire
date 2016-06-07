@@ -1249,6 +1249,10 @@ namespace af
     AFAPI void eval(array &a, array &b, array &c, array &d, array &e);
     AFAPI void eval(array &a, array &b, array &c, array &d, array &e, array &f);
     AFAPI void eval(int num, array **arrays);
+
+    AFAPI void setInternalEvalFlag(bool flag);
+    AFAPI bool getInternalEvalFlag();
+
     /**
        @}
     */
@@ -1351,6 +1355,23 @@ extern "C" {
        Evaluate multiple arrays together
     */
     AFAPI af_err af_eval_multiple(const int num, af_array *arrays);
+    /**
+      @}
+    */
+
+    /**
+       Manually set the internal eval flag
+    */
+    AFAPI af_err af_set_internal_eval_flag(bool flag);
+    /**
+      @}
+    */
+
+
+    /**
+       Get the current internal eval flag
+    */
+    AFAPI af_err af_get_internal_eval_flag(bool *flag);
     /**
       @}
     */
