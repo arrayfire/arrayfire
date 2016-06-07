@@ -1077,11 +1077,11 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
         AF_THROW(af_eval_multiple(6, arrays));
     }
 
-    void eval(int num, array *arrays)
+    void eval(int num, array **arrays)
     {
         std::vector<af_array> outputs(num);
         for (int i = 0; i < num; i++) {
-            outputs[i] = arrays[i].get();
+            outputs[i] = arrays[i]->get();
         }
         AF_THROW(af_eval_multiple(num, &outputs[0]));
     }

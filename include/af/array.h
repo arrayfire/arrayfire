@@ -1248,7 +1248,7 @@ namespace af
     AFAPI void eval(array &a, array &b, array &c, array &d);
     AFAPI void eval(array &a, array &b, array &c, array &d, array &e);
     AFAPI void eval(array &a, array &b, array &c, array &d, array &e, array &f);
-    AFAPI void eval(int num, array *arrays);
+    AFAPI void eval(int num, array **arrays);
     /**
        @}
     */
