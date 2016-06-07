@@ -34,6 +34,8 @@ namespace JIT
         bool m_gen_offset;
         bool m_set_arg;
         bool m_gen_name;
+        bool m_linear;
+        bool m_set_is_linear;
 
     protected:
         void resetCommonFlags()
@@ -44,6 +46,8 @@ namespace JIT
             m_gen_offset = false;
             m_set_arg = false;
             m_gen_name = false;
+            m_linear = false;
+            m_set_is_linear = false;
         }
 
     public:
@@ -57,7 +61,9 @@ namespace JIT
               m_gen_param(false),
               m_gen_offset(false),
               m_set_arg(false),
-              m_gen_name(false)
+              m_gen_name(false),
+              m_linear(false),
+              m_set_is_linear(false)
         {}
 
         virtual void genKerName(std::stringstream &kerStream) {}

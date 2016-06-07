@@ -34,7 +34,7 @@ namespace JIT
         CParam<T> m_param;
         unsigned m_bytes;
 
-        bool m_linear;
+        bool m_linear_buffer;
     public:
 
         BufferNode(const char *type_str,
@@ -47,17 +47,21 @@ namespace JIT
               sptr(data),
               m_param(param),
               m_bytes(bytes),
-              m_linear(is_linear)
+              m_linear_buffer(is_linear)
         {
         }
 
         bool isLinear(dim_t dims[4])
         {
-            bool same_dims = true;
-            for (int i = 0; same_dims && i < 4; i++) {
-                same_dims &= (dims[i] == m_param.dims[i]);
+            if (!m_set_is_linear) {
+                bool same_dims = true;
+                for (int i = 0; same_dims && i < 4; i++) {
+                    same_dims &= (dims[i] == m_param.dims[i]);
+                }
+                m_linear = m_linear_buffer && same_dims;
+                m_set_is_linear = true;
             }
-            return m_linear && same_dims;
+            return m_linear;
         }
 
         void genKerName(std::stringstream &kerStream)
@@ -178,7 +182,7 @@ namespace JIT
 
         void resetFlags()
         {
-            resetCommonFlags();
+            if (m_set_id) resetCommonFlags();
         }
 
         void setArgs(std::vector<void *> &args, bool is_linear)

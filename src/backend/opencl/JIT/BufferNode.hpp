@@ -24,7 +24,7 @@ namespace JIT
         std::shared_ptr<cl::Buffer> m_data;
         KParam m_info;
         const unsigned m_bytes;
-        bool m_linear;
+        bool m_linear_buffer;
 
     public:
 
@@ -34,7 +34,7 @@ namespace JIT
                    const bool is_linear)
             : Node(type_str, name_str),
               m_bytes(bytes),
-              m_linear(is_linear)
+              m_linear_buffer(is_linear)
         {
         }
 
@@ -52,11 +52,15 @@ namespace JIT
 
         bool isLinear(dim_t dims[4])
         {
-            bool same_dims = true;
-            for (int i = 0; same_dims && i < 4; i++) {
-                same_dims &= (dims[i] == m_info.dims[i]);
+            if (!m_set_is_linear) {
+                bool same_dims = true;
+                for (int i = 0; same_dims && i < 4; i++) {
+                    same_dims &= (dims[i] == m_info.dims[i]);
+                }
+                m_set_is_linear = true;
+                m_linear = m_linear_buffer && same_dims;
             }
-            return m_linear && same_dims;
+            return m_linear;
         }
 
         void genKerName(std::stringstream &kerStream)
@@ -147,7 +151,7 @@ namespace JIT
 
         void resetFlags()
         {
-            resetCommonFlags();
+            if (m_set_id) resetCommonFlags();
         }
     };
 

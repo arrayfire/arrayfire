@@ -82,10 +82,8 @@ namespace JIT
         int setId(int id)
         {
             if (m_set_id) return id;
-
             m_id = id;
             m_set_id = true;
-
             return m_id + 1;
         }
 
@@ -99,7 +97,7 @@ namespace JIT
 
         void resetFlags()
         {
-            resetCommonFlags();
+            if (m_set_id) resetCommonFlags();
         }
     };
 
