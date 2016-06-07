@@ -167,8 +167,6 @@ static Kernel getKernel(std::vector<Node *> nodes, bool is_linear)
     if (idx == kernelCaches[device].end()) {
         string jit_ker = getKernelString(funcName, nodes, is_linear);
 
-        std::cout << jit_ker << std::endl;
-
         const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
         const int ker_lens[] = {jit_cl_len, (int)jit_ker.size()};
         cl::Program prog;
@@ -187,6 +185,8 @@ static Kernel getKernel(std::vector<Node *> nodes, bool is_linear)
 void evalNodes(std::vector<Param> &outputs, std::vector<Node *> nodes)
 {
     try {
+
+        if (outputs.size() == 0) return;
 
         // Assume all ouputs are of same size
         //FIXME: Add assert to check if all outputs are same size?
