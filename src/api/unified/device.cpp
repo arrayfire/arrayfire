@@ -9,6 +9,7 @@
 
 #include <af/backend.h>
 #include <af/device.h>
+#include <af/array.h>
 #include "symbol_manager.hpp"
 
 af_err af_set_backend(const af_backend bknd)
