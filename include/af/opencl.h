@@ -163,13 +163,11 @@ AFAPI af_err afcl_get_platform(afcl_platform *res);
 namespace afcl
 {
 
-/**
-
- */
  /**
-     \ingroup opencl_mat
+     \addtogroup opencl_mat
      @{
  */
+
  /**
  Get a handle to ArrayFire's OpenCL context
 
@@ -304,7 +302,7 @@ static inline deviceType getDeviceType()
 
 #if AF_API_VERSION >= 33
 /**
-   Get the type of the current device
+   Get a vendor enumeration for the current platform
 */
 static inline platform getPlatform()
 {
@@ -436,19 +434,5 @@ static inline platform getPlatform()
 */
 }
 
-namespace af
-{
-
-#if !defined(AF_OPENCL)
-template<> AFAPI cl_mem *array::device() const
-{
-    cl_mem *mem_ptr = new cl_mem;
-    af_err err = af_get_device_ptr((void **)mem_ptr, get());
-    if (err != AF_SUCCESS) throw af::exception("Failed to get cl_mem from array object");
-    return mem_ptr;
-}
-#endif
-
-}
 
 #endif
