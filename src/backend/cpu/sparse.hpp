@@ -15,7 +15,6 @@ namespace cpu
 {
 
 #ifdef USE_MKL
-typedef char sp_op_t;
 typedef MKL_Complex8  sp_cfloat;
 typedef MKL_Complex16 sp_cdouble;
 #endif
