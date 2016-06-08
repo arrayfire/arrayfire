@@ -260,7 +260,8 @@ namespace kernel
                                              threads_x);
 
             bufferFree(tmp.data);
-
+            bufferFree(tmpflg.data);
+            bufferFree(tmpid.data);
         }
     }
 

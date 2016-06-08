@@ -540,6 +540,8 @@ namespace kernel
             bcast_dim_launcher<To, op, dim>(out, tmp, tmpid, threads_y, blocks_all);
 
             memFree(tmp.ptr);
+            memFree(tmpflg.ptr);
+            memFree(tmpid.ptr);
         }
     }
 

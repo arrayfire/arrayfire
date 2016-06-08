@@ -277,6 +277,8 @@ namespace kernel
                                                threads_y,
                                                groups_all);
                 bufferFree(tmp.data);
+                bufferFree(tmpflg.data);
+                bufferFree(tmpid.data);
             }
         } catch (cl::Error err) {
             CL_TO_AF_ERROR(err);

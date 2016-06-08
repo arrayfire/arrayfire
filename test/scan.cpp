@@ -17,6 +17,8 @@
 #include <string>
 #include <testHelpers.hpp>
 #include <af/device.h>
+#include "binary_ops.hpp"
+#include <utility>
 
 using std::vector;
 using std::string;
@@ -82,6 +84,155 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<a
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
+float randomInterval(float start, float end)
+{
+    return start + (end - start)*(std::rand()/float(RAND_MAX));
+}
+
+int randomInterval(int start, int end)
+{
+    return start + std::rand()%(end - start);
+}
+
+template <typename T>
+std::vector<T> createScanKey(af::dim4 dims, int scanDim,
+        const std::vector<int> &nodeLengths,
+        T keyStart, T keyEnd)
+{
+    int elemCount = dims.elements();
+    std::vector<T> key(elemCount);
+
+    int stride = 1;
+    for (int i = 0; i < scanDim; ++i) { stride *= dims[i]; }
+
+    for (int start = 0; start < stride; ++start) {
+        T keyval = (T)(0);
+        for (int index = start, i = 0;
+                index < elemCount;
+                index += stride, i = (i+1)%dims[scanDim]) {
+            bool isNode = false;
+            for (unsigned n = 0; n < nodeLengths.size(); ++n) {
+                if (i % nodeLengths[n] == 0) {
+                    isNode = true;
+                }
+            }
+            if (isNode) {
+                if (std::rand()%2) keyval =
+                    randomInterval(keyStart, keyEnd);
+            }
+            key[index] = keyval;
+        }
+    }
+    return key;
+}
+
+template <typename Ti, typename Tk, typename To, af_binary_op op, bool inclusive_scan>
+std::pair<std::vector<Ti>, std::vector<To> > createData(af::dim4 dims, const std::vector<Tk> &key,
+                int scanDim, Ti dataStart, Ti dataEnd)
+{
+    Binary<To, op> binOp;
+    int elemCount = dims.elements();
+    std::vector<To> out(elemCount);
+    std::vector<Ti> in(elemCount);
+
+    int stride = 1;
+    for (int i = 0; i < scanDim; ++i) { stride *= dims[i]; }
+
+    for (int start = 0; start < stride; ++start) {
+        Ti keyval = key[start];
+        if (!inclusive_scan) {
+            out[start] = binOp.init();
+            in[start] = randomInterval(dataStart, dataEnd);
+        }
+        for (int index = start + (!inclusive_scan)*stride, i = (!inclusive_scan);
+                index < elemCount;
+                index += stride, i = (i+1)%dims[scanDim]) {
+            in[index] = randomInterval(dataStart, dataEnd);
+            if ((key[index] != keyval) || (i == 0)) {
+                keyval = key[index];
+                out[index] = inclusive_scan? (To)in[index] : binOp.init();
+            } else {
+                To dataval = (To)in[index - (!inclusive_scan)*stride];
+                out[index] = binOp(out[index - stride], dataval);
+            }
+        }
+    }
+    return std::make_pair(in, out);
+}
+
+template<typename Ti, typename To, af_binary_op op, bool inclusive_scan>
+void scanByKeyTest(af::dim4 dims, int scanDim, std::vector<int> nodeLengths,
+        int keyStart, int keyEnd, Ti dataStart, Ti dataEnd)
+{
+    std::vector<int> key = createScanKey<int>(dims, scanDim, nodeLengths, keyStart, keyEnd);
+    std::pair<std::vector<Ti>, std::vector<To> > data =
+        createData<Ti, int, To, op, inclusive_scan>(dims, key, scanDim, dataStart, dataEnd);
+    std::vector<Ti> &in = data.first;
+    std::vector<To> &outgold = data.second;
+    af::array afkey(dims, key.data());
+    af::array afin(dims, in.data());
+    af::array afout = af::scanByKey(afkey, afin, scanDim, op, inclusive_scan);
+
+    std::vector<To> out(afout.elements());
+    afout.host(out.data());
+    for(unsigned i = 0; i < out.size(); ++i) {
+        ASSERT_NEAR(out[i], outgold[i], 1e-5);
+    }
+}
+
+#define SCAN_BY_KEY_TEST(FN, X, Y, Z, W, Ti, To, INC, DIM, DSTART, DEND)    \
+TEST(ScanByKey,Test_Scan_By_Key_##FN##_##Ti##_##INC##_##DIM)                \
+{                                                                           \
+    af::dim4 dims(X, Y, Z, W);                                            \
+    int scanDim = DIM;                                                      \
+    int nodel[] = {37, 256};                                                \
+    std::vector<int> nodeLengths(nodel, nodel+sizeof(nodel)/sizeof(int));   \
+    int keyStart = 0;                                                       \
+    int keyEnd = 15;                                                        \
+    int dataStart = DSTART;                                                 \
+    int dataEnd = DEND;                                                     \
+    scanByKeyTest<Ti, To, FN, INC>(dims, scanDim, nodeLengths,              \
+            keyStart, keyEnd, dataStart, dataEnd);                          \
+}
+
+SCAN_BY_KEY_TEST(AF_BINARY_ADD, 16*1024, 1024, 1, 1,   int,   int,  true, 0,   -15, 15);
+SCAN_BY_KEY_TEST(AF_BINARY_ADD, 16*1024, 1024, 1, 1,   int,   int, false, 0,   -15, 15);
+SCAN_BY_KEY_TEST(AF_BINARY_ADD, 16*1024, 1024, 1, 1, float, float,  true, 0, -0.25, 0.25);
+SCAN_BY_KEY_TEST(AF_BINARY_ADD, 16*1024, 1024, 1, 1, float, float, false, 0, -0.25, 0.25);
+
+TEST(ScanByKey,Test_Scan_By_key_Simple_0)
+{
+    af::dim4 dims(16, 8, 2, 1);
+    int scanDim = 0;
+    int nodel[] = {4, 8};
+    std::vector<int> nodeLengths(nodel, nodel+sizeof(nodel)/sizeof(int));
+    int keyStart = 0;
+    int keyEnd = 15;
+    int dataStart = 2;
+    int dataEnd = 4;
+    scanByKeyTest<int, int, AF_BINARY_ADD, false>(dims, scanDim, nodeLengths,
+            keyStart, keyEnd, dataStart, dataEnd);
+}
+
+//TEST(ScanByKey,Test_Scan_By_key_Simple_1)
+//{
+//    af::dim4 dims(8, 256+128, 1, 1);
+//    int scanDim = 1;
+//    int nodel[] = {4, 8};
+//    std::vector<int> nodeLengths(nodel, nodel+sizeof(nodel)/sizeof(int));
+//    int keyStart = 0;
+//    int keyEnd = 15;
+//    int dataStart = 2;
+//    int dataEnd = 4;
+//    scanByKeyTest<int, int, AF_BINARY_ADD, false>(dims, scanDim, nodeLengths,
+//            keyStart, keyEnd, dataStart, dataEnd);
+//}
+
+//SCAN_BY_KEY_TEST(AF_BINARY_ADD, 4*1024, 256, 1, 1,   int,   int,  true, 1,   -15, 15);
+//SCAN_BY_KEY_TEST(AF_BINARY_ADD, 4*1024, 256, 1, 1,   int,   int, false, 1,   -15, 15);
+//SCAN_BY_KEY_TEST(AF_BINARY_ADD, 4*1024, 256, 1, 1, float, float,  true, 1, -0.25, 0.25);
+//SCAN_BY_KEY_TEST(AF_BINARY_ADD, 4*1024, 256, 1, 1, float, float, false, 1, -0.25, 0.25);
+
 #define SCAN_TESTS(FN, TAG, Ti, To)             \
     TEST(Scan,Test_##FN##_##TAG)                \
     {                                           \
@@ -119,8 +270,7 @@ TEST(Scan,Test_Scan_Big1)
 }
 
 ///////////////////////////////// CPP ////////////////////////////////////
-//
-TEST(Scan, CPP)
+TEST(Accum, CPP)
 {
     vector<af::dim4> numDims;
 
