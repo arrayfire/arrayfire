@@ -88,7 +88,7 @@ void sparseTester(const int m, const int n, const int k, int factor, double eps)
     af::array dRes = matmul(A, B);
 
     // Create Sparse Array From Dense
-    af::array sA = af::createSparseArray(A, AF_SPARSE_CSR);
+    af::array sA = af::createSparseArray(A, AF_STORAGE_CSR);
 
     // Sparse Matmul
     af::array sRes = matmul(sA, B);

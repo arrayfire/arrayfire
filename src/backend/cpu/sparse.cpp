@@ -140,7 +140,7 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in)
     Array<int> colIdx = arithOp<int, af_div_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
     Array<T>   values = lookup<T, int>(in, nonZeroIdx, 0);
 
-    return createArrayDataSparseArray<T>(in.dims(), values, rowIdx, colIdx, AF_SPARSE_COO);
+    return createArrayDataSparseArray<T>(in.dims(), values, rowIdx, colIdx, AF_STORAGE_COO);
 }
 
 // Partial template specialization of sparseConvertStorageToDense for COO
@@ -166,7 +166,7 @@ Array<T> sparseConvertCOOToDense(const SparseArray<T> &in)
 #ifdef USE_MKL // Implementation using MKL
 ////////////////////////////////////////////////////////////////////////////////
 
-template<typename T, af_sparse_storage storage>
+template<typename T, af_storage stype>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
 {
     in_.eval();
@@ -175,7 +175,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
     // CSR <-> CSC is only supported if input is square
     uint nNZ = reduce_all<af_notzero_t, T, uint>(in_);
 
-    SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, AF_SPARSE_CSR);
+    SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, AF_STORAGE_CSR);
     sparse_.eval();
 
     auto func = [=] (SparseArray<T> sparse, const Array<T> in) {
@@ -209,7 +209,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
 
     getQueue().enqueue(func, sparse_, in_);
 
-    if(storage == AF_SPARSE_CSR)
+    if(stype == AF_STORAGE_CSR)
         return sparse_;
     else
         AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
@@ -217,13 +217,13 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
     return sparse_;
 }
 
-template<typename T, af_sparse_storage storage>
+template<typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 {
     // MKL only has dns<->csr.
     // CSR <-> CSC is only supported if input is square
 
-    if(storage == AF_SPARSE_CSC)
+    if(stype == AF_STORAGE_CSC)
         AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
 
     in_.eval();
@@ -262,7 +262,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 
     getQueue().enqueue(func, dense_, in_);
 
-    if(storage == AF_SPARSE_CSR)
+    if(stype == AF_STORAGE_CSR)
         return dense_;
     else
         AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
@@ -274,7 +274,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 #else // Implementation without using MKL
 ////////////////////////////////////////////////////////////////////////////////
 
-template<typename T, af_sparse_storage storage>
+template<typename T, af_storage stype>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
 {
     // TODO: Make an implementation without MKL
@@ -286,9 +286,9 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
 
     uint nNZ = reduce_all<af_notzero_t, T, uint>(in_);
 
-    SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, AF_SPARSE_CSR);
+    SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, AF_STORAGE_CSR);
 
-    if(storage == AF_SPARSE_CSR)
+    if(stype == AF_STORAGE_CSR)
         return sparse_;
     else
         AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
@@ -296,7 +296,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
     return sparse_;
 }
 
-template<typename T, af_sparse_storage storage>
+template<typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 {
     // TODO: Make an implementation without MKL
@@ -310,7 +310,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
     Array<T> dense_ = createValueArray<T>(in_.dims(), scalar<T>(0));
     dense_.eval();
 
-    if(storage == AF_SPARSE_CSR)
+    if(stype == AF_STORAGE_CSR)
         return dense_;
     else
         AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
@@ -325,7 +325,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 ////////////////////////////////////////////////////////////////////////////////
 // Common to MKL and Not MKL
 ////////////////////////////////////////////////////////////////////////////////
-template<typename T, af_sparse_storage src, af_sparse_storage dest>
+template<typename T, af_storage src, af_storage dest>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
     // Dummy function
@@ -340,28 +340,28 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 }
 
 #define INSTANTIATE_TO_STORAGE(T, S)                                                                        \
-    template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_SPARSE_CSR>(const SparseArray<T> &in);   \
-    template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_SPARSE_CSC>(const SparseArray<T> &in);   \
-    template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_SPARSE_COO>(const SparseArray<T> &in);   \
+    template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_STORAGE_CSR>(const SparseArray<T> &in);  \
+    template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_STORAGE_CSC>(const SparseArray<T> &in);  \
+    template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_STORAGE_COO>(const SparseArray<T> &in);  \
 
 #define INSTANTIATE_COO_SPECIAL(T)                                                                      \
-    template<> SparseArray<T> sparseConvertDenseToStorage<T, AF_SPARSE_COO>(const Array<T> &in)         \
+    template<> SparseArray<T> sparseConvertDenseToStorage<T, AF_STORAGE_COO>(const Array<T> &in)        \
     { return sparseConvertDenseToCOO<T>(in); }                                                          \
-    template<> Array<T> sparseConvertStorageToDense<T, AF_SPARSE_COO>(const SparseArray<T> &in)         \
+    template<> Array<T> sparseConvertStorageToDense<T, AF_STORAGE_COO>(const SparseArray<T> &in)        \
     { return sparseConvertCOOToDense<T>(in); }                                                          \
 
 #define INSTANTIATE_SPARSE(T)                                                                           \
-    template SparseArray<T> sparseConvertDenseToStorage<T, AF_SPARSE_CSR>(const Array<T> &in);          \
-    template SparseArray<T> sparseConvertDenseToStorage<T, AF_SPARSE_CSC>(const Array<T> &in);          \
+    template SparseArray<T> sparseConvertDenseToStorage<T, AF_STORAGE_CSR>(const Array<T> &in);         \
+    template SparseArray<T> sparseConvertDenseToStorage<T, AF_STORAGE_CSC>(const Array<T> &in);         \
                                                                                                         \
-    template Array<T> sparseConvertStorageToDense<T, AF_SPARSE_CSR>(const SparseArray<T> &in);          \
-    template Array<T> sparseConvertStorageToDense<T, AF_SPARSE_CSC>(const SparseArray<T> &in);          \
+    template Array<T> sparseConvertStorageToDense<T, AF_STORAGE_CSR>(const SparseArray<T> &in);         \
+    template Array<T> sparseConvertStorageToDense<T, AF_STORAGE_CSC>(const SparseArray<T> &in);         \
                                                                                                         \
     INSTANTIATE_COO_SPECIAL(T)                                                                          \
                                                                                                         \
-    INSTANTIATE_TO_STORAGE(T, AF_SPARSE_CSR)                                                            \
-    INSTANTIATE_TO_STORAGE(T, AF_SPARSE_CSC)                                                            \
-    INSTANTIATE_TO_STORAGE(T, AF_SPARSE_COO)                                                            \
+    INSTANTIATE_TO_STORAGE(T, AF_STORAGE_CSR)                                                           \
+    INSTANTIATE_TO_STORAGE(T, AF_STORAGE_CSC)                                                           \
+    INSTANTIATE_TO_STORAGE(T, AF_STORAGE_COO)                                                           \
 
 
 INSTANTIATE_SPARSE(float)

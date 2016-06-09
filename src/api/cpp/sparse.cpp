@@ -13,40 +13,40 @@
 
 namespace af
 {
-    array createSparseArray(const dim_t nRows, const dim_t nCols, const dim_t nNZ,
+    array createSparseArray(const dim_t nRows, const dim_t nCols,
                             const array values, const array rowIdx, const array colIdx,
-                            const af::sparseStorage storage)
+                            const af::storage stype)
     {
         af_array out = 0;
-        AF_THROW(af_create_sparse_array(&out, nRows, nCols, nNZ,
-                            values.get(), rowIdx.get(), colIdx.get(), storage));
+        AF_THROW(af_create_sparse_array(&out, nRows, nCols,
+                            values.get(), rowIdx.get(), colIdx.get(), stype));
         return array(out);
     }
 
     array createSparseArray(const dim_t nRows, const dim_t nCols, const dim_t nNZ,
                             const void * const values,
                             const int * const rowIdx, const int * const colIdx,
-                            const dtype type, const af::sparseStorage storage,
+                            const dtype type, const af::storage stype,
                             const af::source src)
     {
         af_array out = 0;
         AF_THROW(af_create_sparse_array_from_ptr(&out, nRows, nCols, nNZ,
-                            values, rowIdx, colIdx, type, storage, src));
+                            values, rowIdx, colIdx, type, stype, src));
         return array(out);
     }
 
 
-    array createSparseArray(const array dense, const af::sparseStorage storage)
+    array createSparseArray(const array dense, const af::storage stype)
     {
         af_array out = 0;
-        AF_THROW(af_create_sparse_array_from_dense(&out, dense.get(), storage));
+        AF_THROW(af_create_sparse_array_from_dense(&out, dense.get(), stype));
         return array(out);
     }
 
-    array sparseConvertStorage(const array in, const af::sparseStorage storage)
+    array sparseConvertStorage(const array in, const af::storage stype)
     {
         af_array out = 0;
-        AF_THROW(af_sparse_convert_storage(&out, in.get(), storage));
+        AF_THROW(af_sparse_convert_storage(&out, in.get(), stype));
         return array(out);
     }
 
@@ -89,9 +89,9 @@ namespace af
         return out;
     }
 
-    af::sparseStorage sparseGetStorage(const array in)
+    af::storage sparseGetStorage(const array in)
     {
-        af::sparseStorage out;
+        af::storage out;
         AF_THROW(af_sparse_get_storage(&out, in.get()));
         return out;
     }

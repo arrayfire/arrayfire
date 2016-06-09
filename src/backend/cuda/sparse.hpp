@@ -13,13 +13,13 @@
 namespace cuda
 {
 
-template<typename T, af_sparse_storage storage>
+template<typename T, af_storage stype>
 common::SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in);
 
-template<typename T, af_sparse_storage storage>
+template<typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const common::SparseArray<T> &in);
 
-template<typename T, af_sparse_storage src, af_sparse_storage dest>
+template<typename T, af_storage src, af_storage dest>
 common::SparseArray<T> sparseConvertStorageToStorage(const common::SparseArray<T> &in);
 
 }

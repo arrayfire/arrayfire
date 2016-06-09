@@ -48,15 +48,15 @@ af_err af_sparse_matmul(af_array *out,
     using namespace detail;
 
     try {
-        common::SparseArrayBase lhsInfo = getSparseArrayBase(lhs);
+        common::SparseArrayBase lhsBase = getSparseArrayBase(lhs);
         ArrayInfo rhsInfo = getInfo(rhs);
 
-        ARG_ASSERT(2, lhsInfo.isSparse() == true && rhsInfo.isSparse() == false);
+        ARG_ASSERT(2, lhsBase.isSparse() == true && rhsInfo.isSparse() == false);
 
-        af_dtype lhs_type = lhsInfo.getType();
+        af_dtype lhs_type = lhsBase.getType();
         af_dtype rhs_type = rhsInfo.getType();
 
-        ARG_ASSERT(1, lhsInfo.getStorage() == AF_SPARSE_CSR);
+        ARG_ASSERT(1, lhsBase.getStorage() == AF_STORAGE_CSR);
 
         if (!(optLhs == AF_MAT_NONE ||
               optLhs == AF_MAT_TRANS ||
@@ -75,7 +75,7 @@ af_err af_sparse_matmul(af_array *out,
 
         TYPE_ASSERT(lhs_type == rhs_type);
 
-        af::dim4 ldims = lhsInfo.dims();
+        af::dim4 ldims = lhsBase.dims();
         int lColDim = (optLhs == AF_MAT_NONE) ? 1 : 0;
         int rRowDim = (optRhs == AF_MAT_NONE) ? 0 : 1;
 

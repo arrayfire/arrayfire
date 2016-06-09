@@ -37,22 +37,22 @@ template<typename T> class SparseArray;
 class SparseArrayBase
 {
 private:
-    ArrayInfo  info;    // This must be the first element of SparseArray<T>.
-    af::sparseStorage storage;  // Storage format: CSR, CSC, COO
-    Array<int> rowIdx;  // Linear array containing row indices
-    Array<int> colIdx;  // Linear array containing col indices
+    ArrayInfo  info;        // This must be the first element of SparseArray<T>.
+    af::storage stype;      // Storage format: CSR, CSC, COO
+    Array<int> rowIdx;      // Linear array containing row indices
+    Array<int> colIdx;      // Linear array containing col indices
 
 public:
-    SparseArrayBase(af::dim4 _dims, dim_t _nNZ, af::sparseStorage _storage, af_dtype _type);
+    SparseArrayBase(af::dim4 _dims, dim_t _nNZ, af::storage _storage, af_dtype _type);
 
     SparseArrayBase(af::dim4 _dims, dim_t _nNZ,
                     const int * const _rowIdx, const int * const _colIdx,
-                    const af::sparseStorage _storage, af_dtype _type,
+                    const af::storage _storage, af_dtype _type,
                     bool _is_device = false, bool _copy_device = false);
 
     SparseArrayBase(af::dim4 _dims,
                     const Array<int> &_rowIdx, const Array<int> &_colIdx,
-                    const af::sparseStorage _storage, af_dtype _type,
+                    const af::storage _storage, af_dtype _type,
                     bool _copy = false);
 
     ~SparseArrayBase();
@@ -107,8 +107,8 @@ public:
     const Array<int>& getColIdx()     const { return colIdx;            }
 
     // Dims, types etc
-    dim_t getNNZ()                  const;
-    af::sparseStorage getStorage()  const { return storage;             }
+    dim_t getNNZ()                    const;
+    af::storage getStorage()          const { return stype;             }
 };
 #if __cplusplus > 199711L
         static_assert(std::is_standard_layout<SparseArrayBase>::value,
@@ -125,19 +125,19 @@ private:
     SparseArrayBase  base;    // This must be the first element of SparseArray<T>.
     Array<T>         values;  // Linear array containing actual values
 
-    SparseArray(af::dim4 _dims, dim_t _nNZ, af::sparseStorage storage);
+    SparseArray(af::dim4 _dims, dim_t _nNZ, af::storage stype);
 
     explicit
     SparseArray(af::dim4 _dims, dim_t _nNZ,
                 const T * const _values,
                 const int * const _rowIdx, const int * const _colIdx,
-                const af::sparseStorage _storage,
+                const af::storage _storage,
                 bool _is_device = false, bool _copy_device = false);
 
     SparseArray(af::dim4 _dims,
                 const Array<T> &_values,
                 const Array<int> &_rowIdx, const Array<int> &_colIdx,
-                const af::sparseStorage _storage, bool _copy = false);
+                const af::storage _storage, bool _copy = false);
 
 public:
 
@@ -175,7 +175,7 @@ public:
 
     // Function from Base but not in ArrayInfo
     INSTANTIATE_INFO(dim_t              , getNNZ    )
-    INSTANTIATE_INFO(af::sparseStorage  , getStorage)
+    INSTANTIATE_INFO(af::storage        , getStorage)
 
     Array<int>& getRowIdx()                 { return base.getRowIdx(); }
     Array<int>& getColIdx()                 { return base.getColIdx(); }
@@ -206,25 +206,25 @@ public:
     ////////////////////////////////////////////////////////////////////////////
 
     friend SparseArray<T> createEmptySparseArray<T>(
-            const af::dim4 &_dims, dim_t _nNZ, const af::sparseStorage _storage);
+            const af::dim4 &_dims, dim_t _nNZ, const af::storage _storage);
 
     friend SparseArray<T> createHostDataSparseArray<T>(
             const af::dim4 &_dims, const dim_t nNZ,
             const T * const _values,
             const int * const _rowIdx, const int * const _colIdx,
-            const af::sparseStorage _storage);
+            const af::storage _storage);
 
     friend SparseArray<T> createDeviceDataSparseArray<T>(
             const af::dim4 &_dims, const dim_t nNZ,
             const T * const _values,
             const int * const _rowIdx, const int * const _colIdx,
-            const af::sparseStorage _storage);
+            const af::storage _storage);
 
     friend SparseArray<T> createArrayDataSparseArray<T>(
             const af::dim4 &_dims,
             const Array<T> &_values,
             const Array<int> &_rowIdx, const Array<int> &_colIdx,
-            const af::sparseStorage _storage);
+            const af::storage _storage);
 
     friend SparseArray<T> *initSparseArray<T>();
 

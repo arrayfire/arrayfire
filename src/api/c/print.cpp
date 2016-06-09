@@ -118,10 +118,10 @@ static void printSparse(const char *exp, af_array arr, const int precision,
     os << name << std::endl;
     os << "Storage Format : ";
     switch(sparse.getStorage()) {
-        case AF_SPARSE_DENSE: os << "AF_SPARSE_DENSE\n";    break;
-        case AF_SPARSE_CSR  : os << "AF_SPARSE_CSR\n";      break;
-        case AF_SPARSE_CSC  : os << "AF_SPARSE_CSC\n";      break;
-        case AF_SPARSE_COO  : os << "AF_SPARSE_COO\n";      break;
+        case AF_STORAGE_DENSE: os << "AF_STORAGE_DENSE\n";    break;
+        case AF_STORAGE_CSR  : os << "AF_STORAGE_CSR\n";      break;
+        case AF_STORAGE_CSC  : os << "AF_STORAGE_CSC\n";      break;
+        case AF_STORAGE_COO  : os << "AF_STORAGE_COO\n";      break;
     }
     os << "[" << sparse.dims() << "]\n";
 

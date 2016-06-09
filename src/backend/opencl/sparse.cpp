@@ -46,17 +46,17 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in)
     Array<int> colIdx = arithOp<int, af_div_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
     Array<T>   values = lookup<T, int>(in, nonZeroIdx, 0);
 
-    return createArrayDataSparseArray<T>(in.dims(), values, rowIdx, colIdx, AF_SPARSE_COO);
+    return createArrayDataSparseArray<T>(in.dims(), values, rowIdx, colIdx, AF_STORAGE_COO);
 }
 
-template<typename T, af_sparse_storage storage>
+template<typename T, af_storage stype>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
 {
     in_.eval();
 
     uint nNZ = reduce_all<af_notzero_t, T, uint>(in_);
 
-    SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, AF_SPARSE_CSR);
+    SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, AF_STORAGE_CSR);
     sparse_.eval();
 
     return sparse_;
@@ -80,7 +80,7 @@ Array<T> sparseConvertCOOToDense(const SparseArray<T> &in)
     return dense;
 }
 
-template<typename T, af_sparse_storage storage>
+template<typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 {
     in_.eval();
@@ -91,7 +91,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
     return dense_;
 }
 
-template<typename T, af_sparse_storage src, af_sparse_storage dest>
+template<typename T, af_storage src, af_storage dest>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
     in.eval();
@@ -106,28 +106,28 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 
 
 #define INSTANTIATE_TO_STORAGE(T, S)                                                                        \
-    template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_SPARSE_CSR>(const SparseArray<T> &in);   \
-    template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_SPARSE_CSC>(const SparseArray<T> &in);   \
-    template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_SPARSE_COO>(const SparseArray<T> &in);   \
+    template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_STORAGE_CSR>(const SparseArray<T> &in);  \
+    template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_STORAGE_CSC>(const SparseArray<T> &in);  \
+    template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_STORAGE_COO>(const SparseArray<T> &in);  \
 
 #define INSTANTIATE_COO_SPECIAL(T)                                                                      \
-    template<> SparseArray<T> sparseConvertDenseToStorage<T, AF_SPARSE_COO>(const Array<T> &in)         \
+    template<> SparseArray<T> sparseConvertDenseToStorage<T, AF_STORAGE_COO>(const Array<T> &in)        \
     { return sparseConvertDenseToCOO<T>(in); }                                                          \
-    template<> Array<T> sparseConvertStorageToDense<T, AF_SPARSE_COO>(const SparseArray<T> &in)         \
+    template<> Array<T> sparseConvertStorageToDense<T, AF_STORAGE_COO>(const SparseArray<T> &in)        \
     { return sparseConvertCOOToDense<T>(in); }                                                          \
 
 #define INSTANTIATE_SPARSE(T)                                                                           \
-    template SparseArray<T> sparseConvertDenseToStorage<T, AF_SPARSE_CSR>(const Array<T> &in);          \
-    template SparseArray<T> sparseConvertDenseToStorage<T, AF_SPARSE_CSC>(const Array<T> &in);          \
+    template SparseArray<T> sparseConvertDenseToStorage<T, AF_STORAGE_CSR>(const Array<T> &in);         \
+    template SparseArray<T> sparseConvertDenseToStorage<T, AF_STORAGE_CSC>(const Array<T> &in);         \
                                                                                                         \
-    template Array<T> sparseConvertStorageToDense<T, AF_SPARSE_CSR>(const SparseArray<T> &in);          \
-    template Array<T> sparseConvertStorageToDense<T, AF_SPARSE_CSC>(const SparseArray<T> &in);          \
+    template Array<T> sparseConvertStorageToDense<T, AF_STORAGE_CSR>(const SparseArray<T> &in);         \
+    template Array<T> sparseConvertStorageToDense<T, AF_STORAGE_CSC>(const SparseArray<T> &in);         \
                                                                                                         \
     INSTANTIATE_COO_SPECIAL(T)                                                                          \
                                                                                                         \
-    INSTANTIATE_TO_STORAGE(T, AF_SPARSE_CSR)                                                            \
-    INSTANTIATE_TO_STORAGE(T, AF_SPARSE_CSC)                                                            \
-    INSTANTIATE_TO_STORAGE(T, AF_SPARSE_COO)                                                            \
+    INSTANTIATE_TO_STORAGE(T, AF_STORAGE_CSR)                                                           \
+    INSTANTIATE_TO_STORAGE(T, AF_STORAGE_CSC)                                                           \
+    INSTANTIATE_TO_STORAGE(T, AF_STORAGE_COO)                                                           \
 
 
 INSTANTIATE_SPARSE(float)

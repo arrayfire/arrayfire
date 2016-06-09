@@ -396,11 +396,11 @@ typedef enum {
 
 #if AF_API_VERSION >= 34
 typedef enum {
-    AF_SPARSE_DENSE     = 0,
-    AF_SPARSE_CSR       = 1,
-    AF_SPARSE_CSC       = 2,
-    AF_SPARSE_COO       = 3,
-} af_sparse_storage;
+    AF_STORAGE_DENSE     = 0,
+    AF_STORAGE_CSR       = 1,
+    AF_STORAGE_CSC       = 2,
+    AF_STORAGE_COO       = 3,
+} af_storage;
 #endif
 
 #ifdef __cplusplus
@@ -433,7 +433,7 @@ namespace af
     typedef af_marker_type markerType;
 #endif
 #if AF_API_VERSION >= 34
-    typedef af_sparse_storage sparseStorage;
+    typedef af_storage storage;
 #endif
 
 }
