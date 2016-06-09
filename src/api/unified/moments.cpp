@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2015, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -7,16 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
+#include <af/array.h>
+#include <af/moments.h>
+#include "symbol_manager.hpp"
 
-#include <Array.hpp>
-#include <graphics_common.hpp>
-#include <af/defines.h>
-
-namespace cpu
+af_err af_moments(af_array* out, const af_array in, const af_moment_type moment)
 {
-    template<typename T>
-    void copy_image(const Array<T> &in, const fg::Image* image);
+    CHECK_ARRAYS(in);
+    return CALL(out, in, moment);
 }
-
-#endif

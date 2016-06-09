@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2016, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -7,16 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
-
 #include <Array.hpp>
-#include <graphics_common.hpp>
 #include <af/defines.h>
 
 namespace cpu
 {
     template<typename T>
-    void copy_image(const Array<T> &in, const fg::Image* image);
+    Array<float> moments(const Array<T> &in, const af_moment_type moment);
 }
 
-#endif

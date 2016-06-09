@@ -12,6 +12,7 @@
 #include <interopManager.hpp>
 #include <Array.hpp>
 #include <image.hpp>
+#include <kernel/moments.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
 #include <stdexcept>
@@ -62,7 +63,7 @@ void copy_image(const Array<T> &in, const fg::Image* image)
     }
 }
 
-#define INSTANTIATE(T)      \
+#define INSTANTIATE(T)                                                              \
     template void copy_image<T>(const Array<T> &in, const fg::Image* image);
 
 INSTANTIATE(float)

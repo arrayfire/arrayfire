@@ -1348,6 +1348,7 @@ extern "C" {
     */
     AFAPI af_err af_rgb2ycbcr(af_array* out, const af_array in, const af_ycc_std standard);
 #endif
+
 #ifdef __cplusplus
 }
 #endif
