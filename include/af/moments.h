@@ -30,7 +30,7 @@ template<typename T> T moment(const array& in, const af_moment_type moment);
 
 #if AF_API_VERSION >= 34
 /**
-   C++ Interface for calculating an image moment
+   C++ Interface for calculating image moments
 
    \param[in]  in contains the input image(s)
    \param[moment] is the moment to calculate
@@ -61,6 +61,21 @@ extern "C" {
        \ingroup image_func_moments
     */
     AFAPI af_err af_moments(af_array *out, const af_array in, const af_moment_type moment);
+#endif
+
+#if AF_API_VERSION >= 34
+    /**
+       C Interface for calculating an image moment
+
+       \param[out] out is a pointer to the outputted moment
+       \param[in]  in is an array of image(s)
+       \param[moment] is the moment to calculate
+       \return     ref AF_SUCCESS if the moment calculation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_moments
+    */
+    AFAPI af_err af_moment(double *out, const af_array in, const af_moment_type moment);
 #endif
 
 #ifdef __cplusplus

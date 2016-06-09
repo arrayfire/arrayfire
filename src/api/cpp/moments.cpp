@@ -25,12 +25,12 @@ array moments(const array& in, const af_moment_type moment)
 
 #define INSTANTIATE_REAL(T)                                 \
     template<> AFAPI                                        \
-    T moment(const array &in, const af_moment_type moment)      \
+    T moment(const array &in, const af_moment_type moment)  \
     {                                                       \
-        af_array out;                                       \
-        AF_THROW(af_moments(&out, in.get(), moment));       \
-        return array(out).scalar<T>();                      \
-    }                                                       \
+        double out;                                         \
+        AF_THROW(af_moment(&out, in.get(), moment));        \
+        return (T)out;                                      \
+    }
 
 
 INSTANTIATE_REAL(float)
