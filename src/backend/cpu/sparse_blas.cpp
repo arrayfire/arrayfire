@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <sparse_blas.hpp>
-#include <mkl_spblas.h>
 
 #include <stdexcept>
 #include <string>
@@ -59,6 +58,8 @@ template<typename T>
 using scale_type   =    typename conditional<   is_complex<T>::value,
                                                 const typename blas_base<T>::type,
                                                 const T>::type;
+#ifdef USE_MKL
+
 // MKL
 // sparse_status_t mkl_sparse_z_create_csr (
 //                 sparse_matrix_t *A,
@@ -119,7 +120,6 @@ using mm_func_def         = sparse_status_t (*)
                             scale_type<T>,
                             ptr_type<T>, int);
 
-
 #define SPARSE_FUNC_DEF( FUNC )                         \
 template<typename T> FUNC##_func_def<T> FUNC##_func();
 
@@ -145,13 +145,17 @@ SPARSE_FUNC(mm , double  , d)
 SPARSE_FUNC(mm , cfloat  , c)
 SPARSE_FUNC(mm , cdouble , z)
 
-template<typename T, int value>
-scale_type<T> getScale()
+#else   // USE_MKL
+
+// From mkl_spblas.h
+typedef enum
 {
-    static T val(value);
-    //return (const typename blas_base<T>::type *)&val;
-    return *(const scale_type<T>*)&val;
-}
+    SPARSE_OPERATION_NON_TRANSPOSE          = 10,
+    SPARSE_OPERATION_TRANSPOSE              = 11,
+    SPARSE_OPERATION_CONJUGATE_TRANSPOSE    = 12,
+} sparse_operation_t;
+
+#endif  // USE_MKL
 
 sparse_operation_t
 toSparseTranspose(af_mat_prop opt)
@@ -166,6 +170,17 @@ toSparseTranspose(af_mat_prop opt)
     return out;
 }
 
+template<typename T, int value>
+scale_type<T> getScale()
+{
+    static T val(value);
+    //return (const typename blas_base<T>::type *)&val;
+    return *(const scale_type<T>*)&val;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+#ifdef USE_MKL // Implementation using MKL
+////////////////////////////////////////////////////////////////////////////////
 template<typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
@@ -180,7 +195,9 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
 
     int lRowDim = (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) ? 0 : 1;
     int lColDim = (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) ? 1 : 0;
-    static const int rColDim = 1; //Unsupported : (rOpts == 'N;) ? 1 : 0;
+
+    //Unsupported : (rOpts == SPARSE_OPERATION_NON_TRANSPOSE;) ? 1 : 0;
+    static const int rColDim = 1;
 
     dim4 lDims = lhs.dims();
     dim4 rDims = rhs.dims();
@@ -239,6 +256,68 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
 
     return out;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+#else // Implementation without using MKL
+////////////////////////////////////////////////////////////////////////////////
+
+template<typename T>
+Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
+                af_mat_prop optLhs, af_mat_prop optRhs)
+{
+    // TODO: Make a CPU Implementation for this
+    // Make separate function for MV and MM
+    // No need to support optRhs
+    lhs.eval();
+    rhs.eval();
+
+    // Similar Operations to GEMM
+    sparse_operation_t lOpts = toSparseTranspose(optLhs);
+
+    int lRowDim = (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) ? 0 : 1;
+    // Commenting to avoid unused variable warnings
+    //int lColDim = (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) ? 1 : 0;
+
+    //Unsupported : (rOpts == SPARSE_OPERATION_NON_TRANSPOSE;) ? 1 : 0;
+    static const int rColDim = 1;
+
+    dim4 lDims = lhs.dims();
+    dim4 rDims = rhs.dims();
+    int M = lDims[lRowDim];
+    int N = rDims[rColDim];
+    // Commenting to avoid unused variable warnings
+    //int K = lDims[lColDim];
+
+    Array<T> out = createValueArray<T>(af::dim4(M, N, 1, 1), scalar<T>(0));
+    out.eval();
+
+    // Commenting to avoid unused variable warnings
+    //auto func = [=] (Array<T> output, const SparseArray<T> left, const Array<T> right) {
+    //    auto alpha = getScale<T, 1>();
+    //    auto beta  = getScale<T, 0>();
+
+    //    int ldb = right.strides()[1];
+    //    int ldc = output.strides()[1];
+
+    //    Array<T  > values = left.getValues();
+    //    Array<int> rowIdx = left.getRowIdx();
+    //    Array<int> colIdx = left.getColIdx();
+
+    //    if(rDims[rColDim] == 1) {
+    //        // Call MV
+    //    } else {
+    //        // Call MM
+    //    }
+    //};
+
+    //getQueue().enqueue(func, out, lhs, rhs);
+
+    return out;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+#endif
+////////////////////////////////////////////////////////////////////////////////
 
 #define INSTANTIATE_SPARSE(T)                                                           \
     template Array<T> matmul<T>(const common::SparseArray<T> lhs, const Array<T> rhs,   \

@@ -9,7 +9,10 @@
 
 #include <Array.hpp>
 #include <SparseArray.hpp>
+
+#ifdef USE_MKL
 #include <mkl_spblas.h>
+#endif
 
 namespace cpu
 {
@@ -17,6 +20,9 @@ namespace cpu
 #ifdef USE_MKL
 typedef MKL_Complex8  sp_cfloat;
 typedef MKL_Complex16 sp_cdouble;
+#else
+typedef cfloat        sp_cfloat;
+typedef cdouble       sp_cdouble;
 #endif
 
 template<typename T, af_sparse_storage storage>

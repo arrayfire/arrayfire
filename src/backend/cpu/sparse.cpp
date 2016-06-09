@@ -62,6 +62,8 @@ using scale_type   =    typename conditional<   is_complex<T>::value,
                                                 const typename blas_base<T>::type *,
                                                 const T *>::type;
 
+#ifdef USE_MKL
+
 // void mkl_zdnscsr (const MKL_INT *job ,
 //                   const MKL_INT *m , const MKL_INT *n ,
 //                   MKL_Complex16 *adns , const MKL_INT *lda ,
@@ -113,6 +115,12 @@ SPARSE_FUNC(csrcsc, cdouble,z)
 #undef SPARSE_FUNC
 #undef SPARSE_FUNC_DEF
 
+#endif // USE_MKL
+
+////////////////////////////////////////////////////////////////////////////////
+// Common to MKL and Not MKL
+////////////////////////////////////////////////////////////////////////////////
+
 // Partial template specialization of sparseConvertDenseToStorage for COO
 // However, template specialization is not allowed
 template<typename T>
@@ -134,6 +142,29 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in)
 
     return createArrayDataSparseArray<T>(in.dims(), values, rowIdx, colIdx, AF_SPARSE_COO);
 }
+
+// Partial template specialization of sparseConvertStorageToDense for COO
+// However, template specialization is not allowed
+template<typename T>
+Array<T> sparseConvertCOOToDense(const SparseArray<T> &in)
+{
+    in.eval();
+
+    Array<T> dense = createValueArray<T>(in.dims(), scalar<T>(0));
+    dense.eval();
+
+    const Array<T>   values = in.getValues();
+    const Array<int> rowIdx = in.getRowIdx();
+    const Array<int> colIdx = in.getColIdx();
+
+    getQueue().enqueue(kernel::coo2dense<T>, dense, values, rowIdx, colIdx);
+
+    return dense;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+#ifdef USE_MKL // Implementation using MKL
+////////////////////////////////////////////////////////////////////////////////
 
 template<typename T, af_sparse_storage storage>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
@@ -184,26 +215,6 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
         AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
 
     return sparse_;
-}
-
-
-// Partial template specialization of sparseConvertStorageToDense for COO
-// However, template specialization is not allowed
-template<typename T>
-Array<T> sparseConvertCOOToDense(const SparseArray<T> &in)
-{
-    in.eval();
-
-    Array<T> dense = createValueArray<T>(in.dims(), scalar<T>(0));
-    dense.eval();
-
-    const Array<T>   values = in.getValues();
-    const Array<int> rowIdx = in.getRowIdx();
-    const Array<int> colIdx = in.getColIdx();
-
-    getQueue().enqueue(kernel::coo2dense<T>, dense, values, rowIdx, colIdx);
-
-    return dense;
 }
 
 template<typename T, af_sparse_storage storage>
@@ -259,18 +270,74 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
     return dense_;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+#else // Implementation without using MKL
+////////////////////////////////////////////////////////////////////////////////
+
+template<typename T, af_sparse_storage storage>
+SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
+{
+    // TODO: Make an implementation without MKL
+    // Support CSC as well. MKL does not support Dense->CSC. So this will be
+    // used as fallback
+    // Make these implementations like a struct. See approx1
+    AF_ERROR("CPU Implementation Without MKL Currently Not Supported", AF_ERR_NOT_SUPPORTED);
+    in_.eval();
+
+    uint nNZ = reduce_all<af_notzero_t, T, uint>(in_);
+
+    SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, AF_SPARSE_CSR);
+
+    if(storage == AF_SPARSE_CSR)
+        return sparse_;
+    else
+        AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
+
+    return sparse_;
+}
+
+template<typename T, af_sparse_storage storage>
+Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
+{
+    // TODO: Make an implementation without MKL
+    // Support CSC as well. MKL does not support CSC->Dense. So this will be
+    // used as fallback
+    // Make these implementations like a struct. See approx1
+
+    AF_ERROR("CPU Implementation Without MKL Currently Not Supported", AF_ERR_NOT_SUPPORTED);
+    in_.eval();
+
+    Array<T> dense_ = createValueArray<T>(in_.dims(), scalar<T>(0));
+    dense_.eval();
+
+    if(storage == AF_SPARSE_CSR)
+        return dense_;
+    else
+        AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
+
+    return dense_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+#endif //USE_MKL
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// Common to MKL and Not MKL
+////////////////////////////////////////////////////////////////////////////////
 template<typename T, af_sparse_storage src, af_sparse_storage dest>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
-    in.eval();
-
     // Dummy function
     // TODO finish this function when support is required
+    AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
+
+    in.eval();
+
     SparseArray<T> dense = createEmptySparseArray<T>(in.dims(), (int)in.getNNZ(), dest);
 
     return dense;
 }
-
 
 #define INSTANTIATE_TO_STORAGE(T, S)                                                                        \
     template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_SPARSE_CSR>(const SparseArray<T> &in);   \
