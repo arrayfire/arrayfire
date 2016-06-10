@@ -11,8 +11,6 @@
 #include <kernel/moments.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
-#include <stdexcept>
-#include <vector>
 
 namespace opencl
 {
@@ -33,18 +31,10 @@ Array<float> moments(const Array<T> &in, const af_moment_type moment)
     Array<float> out = createValueArray<float>(odims, 0.f);
 
     switch(moment) {
-        case AF_MOMENT_M00:
-            kernel::moments<T, AF_MOMENT_M00>(out, in);
-            break;
-        case AF_MOMENT_M01:
-            kernel::moments<T, AF_MOMENT_M01>(out, in);
-            break;
-        case AF_MOMENT_M10:
-            kernel::moments<T, AF_MOMENT_M10>(out, in);
-            break;
-        case AF_MOMENT_M11:
-            kernel::moments<T, AF_MOMENT_M11>(out, in);
-            break;
+        case AF_MOMENT_M00: kernel::moments<T, AF_MOMENT_M00>(out, in); break;
+        case AF_MOMENT_M01: kernel::moments<T, AF_MOMENT_M01>(out, in); break;
+        case AF_MOMENT_M10: kernel::moments<T, AF_MOMENT_M10>(out, in); break;
+        case AF_MOMENT_M11: kernel::moments<T, AF_MOMENT_M11>(out, in); break;
         default:  break;
     }
 

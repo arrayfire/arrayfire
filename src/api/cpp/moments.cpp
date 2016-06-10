@@ -28,7 +28,7 @@ array moments(const array& in, const af_moment_type moment)
     T moment(const array &in, const af_moment_type moment)  \
     {                                                       \
         double out;                                         \
-        AF_THROW(af_moment(&out, in.get(), moment));        \
+        AF_THROW(af_moments_all(&out, in.get(), moment));   \
         return (T)out;                                      \
     }
 
@@ -37,8 +37,8 @@ INSTANTIATE_REAL(float)
 INSTANTIATE_REAL(double)
 INSTANTIATE_REAL(int)
 INSTANTIATE_REAL(unsigned)
-INSTANTIATE_REAL(long long)
-INSTANTIATE_REAL(unsigned long long)
+INSTANTIATE_REAL(intl)
+INSTANTIATE_REAL(uintl)
 INSTANTIATE_REAL(short)
 INSTANTIATE_REAL(unsigned short)
 INSTANTIATE_REAL(char)

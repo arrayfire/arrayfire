@@ -14,10 +14,10 @@
 #include <kernel/moments.hpp>
 #include <queue.hpp>
 
-using af::dim4;
-
 namespace cpu
 {
+
+using af::dim4;
 
 template<typename T>
 Array<float> moments(const Array<T> &in, const af_moment_type moment)

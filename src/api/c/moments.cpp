@@ -73,7 +73,7 @@ static inline void moment_copy(double *out, const af_array moments)
     delete[] h_ptr;
 }
 
-af_err af_moment(double *out, const af_array in, const af_moment_type moment)
+af_err af_moments_all(double *out, const af_array in, const af_moment_type moment)
 {
     try {
         af_array moments_arr;

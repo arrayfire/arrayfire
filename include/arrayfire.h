@@ -268,7 +268,6 @@
 #include "af/image.h"
 #include "af/index.h"
 #include "af/lapack.h"
-#include "af/moments.h"
 #include "af/seq.h"
 #include "af/signal.h"
 #include "af/statistics.h"

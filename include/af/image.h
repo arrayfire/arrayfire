@@ -677,6 +677,32 @@ AFAPI array ycbcr2rgb(const array& in, const YCCStd standard=AF_YCC_601);
 AFAPI array rgb2ycbcr(const array& in, const YCCStd standard=AF_YCC_601);
 #endif
 
+#if AF_API_VERSION >= 34
+/**
+   C++ Interface for calculating an image moment
+
+   \param[in]  in is the input image
+   \param[moment] is the moment to calculate
+   \return      the value of the moment
+
+   \ingroup image_func_moments
+ */
+template<typename T> T moment(const array& in, const af_moment_type moment);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C++ Interface for calculating image moments
+
+   \param[in]  in contains the input image(s)
+   \param[moment] is the moment to calculate
+   \return array containing the requested moment of each image
+
+   \ingroup image_func_moments
+ */
+AFAPI array moments(const array& in, const af_moment_type moment);
+#endif
+
 }
 #endif
 
@@ -1347,6 +1373,36 @@ extern "C" {
        \ingroup image_func_rgb2ycbcr
     */
     AFAPI af_err af_rgb2ycbcr(af_array* out, const af_array in, const af_ycc_std standard);
+#endif
+
+#if AF_API_VERSION >= 34
+    /**
+       C Interface for finding image moments
+
+       \param[out] out is an array containing the calculated moments
+       \param[in]  in is an array of image(s)
+       \param[moment] is the moment to calculate
+       \return     ref AF_SUCCESS if the moment calculation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_moments
+    */
+    AFAPI af_err af_moments(af_array *out, const af_array in, const af_moment_type moment);
+#endif
+
+#if AF_API_VERSION >= 34
+    /**
+       C Interface for calculating an image moment
+
+       \param[out] out is a pointer to the outputted moment
+       \param[in]  in is an array of image(s)
+       \param[moment] is the moment to calculate
+       \return     ref AF_SUCCESS if the moment calculation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_moments
+    */
+    AFAPI af_err af_moments_all(double *out, const af_array in, const af_moment_type moment);
 #endif
 
 #ifdef __cplusplus

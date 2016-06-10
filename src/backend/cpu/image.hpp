@@ -11,7 +11,6 @@
 
 #include <Array.hpp>
 #include <graphics_common.hpp>
-#include <af/defines.h>
 
 namespace cpu
 {

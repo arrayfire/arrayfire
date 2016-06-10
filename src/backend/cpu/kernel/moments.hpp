@@ -65,7 +65,7 @@ struct moments_op<T, AF_MOMENT_M11>
 };
 
 template<typename T, af_moment_type Method>
-void moments(Array<float> &output, Array<T> const input)
+void moments(Array<float> &output, Array<T> const &input)
 {
     T const * const in       = input.get();
     af::dim4  const idims    = input.dims();
@@ -73,6 +73,7 @@ void moments(Array<float> &output, Array<T> const input)
     dim_t     const iElems   = input.elements();
 
     af::dim4  const odims    = output.dims();
+    af::dim4  const ostrides = output.strides();
 
     moments_op<T, Method> op;
     bool pBatch = !(idims[2] == 1 && idims[3] == 1);
@@ -91,7 +92,7 @@ void moments(Array<float> &output, Array<T> const input)
                     mId++;
                 }
             }
-            out[w * odims[0] + z] = (float)val;
+            out[w * ostrides[1] + z] = (float)val;
         }
     }
 }

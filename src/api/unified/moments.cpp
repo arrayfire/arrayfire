@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2015, ArrayFire
+ * Copyright (c) 2016, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -12,6 +12,12 @@
 #include "symbol_manager.hpp"
 
 af_err af_moments(af_array* out, const af_array in, const af_moment_type moment)
+{
+    CHECK_ARRAYS(in);
+    return CALL(out, in, moment);
+}
+
+af_err af_moments_all(double* out, const af_array in, const af_moment_type moment)
 {
     CHECK_ARRAYS(in);
     return CALL(out, in, moment);

@@ -17,7 +17,6 @@
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include <interopManager.hpp>
-#include <kernel/moments.hpp>
 
 using af::dim4;
 
@@ -58,7 +57,7 @@ void copy_image(const Array<T> &in, const fg::Image* image)
     }
 }
 
-#define INSTANTIATE(T)                                                          \
+#define INSTANTIATE(T)      \
     template void copy_image<T>(const Array<T> &in, const fg::Image* image);
 
 INSTANTIATE(float)

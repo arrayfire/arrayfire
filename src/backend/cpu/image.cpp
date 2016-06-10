@@ -12,13 +12,11 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <af/defines.h>
 #include <Array.hpp>
 #include <image.hpp>
 #include <err_cpu.hpp>
 #include <graphics_common.hpp>
 #include <platform.hpp>
-#include <kernel/moments.hpp>
 #include <queue.hpp>
 
 using af::dim4;

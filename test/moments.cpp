@@ -124,22 +124,22 @@ void momentsOnImageTest(string pTestFile, string pImageFile, bool isColor)
 
 TEST(IMAGE, MomentsImage)
 {
-    momentsOnImageTest(string(TEST_DIR"/image/gray_seq_16_moments.test"), string(TEST_DIR"/imageio/gray_seq_16.png"), false);
+    momentsOnImageTest(string(TEST_DIR"/moments/gray_seq_16_moments.test"), string(TEST_DIR"/imageio/gray_seq_16.png"), false);
 }
 
 TEST(Image, MomentsImageBatch)
 {
-    momentsTest<float>(string(TEST_DIR"/image/simple_mat_batch_moments.test"));
+    momentsTest<float>(string(TEST_DIR"/moments/simple_mat_batch_moments.test"));
 }
 
 TEST(Image, MomentsBatch2D)
 {
-    momentsOnImageTest(string(TEST_DIR"/image/color_seq_16_moments.test"), string(TEST_DIR"/imageio/color_seq_16.png"), true);
+    momentsOnImageTest(string(TEST_DIR"/moments/color_seq_16_moments.test"), string(TEST_DIR"/imageio/color_seq_16.png"), true);
 }
 
 TYPED_TEST(Image, MomentsSynthTypes)
 {
-    momentsTest<TypeParam>(string(TEST_DIR"/image/simple_mat_moments.test"));
+    momentsTest<TypeParam>(string(TEST_DIR"/moments/simple_mat_moments.test"));
 }
 
 

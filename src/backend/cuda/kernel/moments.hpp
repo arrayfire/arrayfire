@@ -96,7 +96,7 @@ namespace kernel
         }
         __syncthreads();
 
-        float *offset = const_cast<float *>(out.ptr + (idw * out.dims[0] + idz));
+        float *offset = const_cast<float *>(out.ptr + (idw * out.strides[1] + idz));
         if(threadIdx.x == 0)
             atomicAdd(offset, blk_moment_sum);
     }
@@ -113,7 +113,6 @@ namespace kernel
         CUDA_LAUNCH((moments_kernel<T, moment>), blocks, threads,
                      out, in, blocksMatX, pBatch);
         POST_LAUNCH_CHECK();
-        CUDA_CHECK(cudaDeviceSynchronize());
     }
 
 }

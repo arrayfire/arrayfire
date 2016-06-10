@@ -99,6 +99,6 @@ void moments_kernel(__global  float *d_out, const KParam out,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if(get_local_id(0) == 0)
-        fatomic_add_g(d_out + (idw * out.dims[0] + idz), wkg_moment_sum);
+        fatomic_add_g(d_out + (idw * out.strides[1] + idz), wkg_moment_sum);
 
 }
