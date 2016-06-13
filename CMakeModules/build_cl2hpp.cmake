@@ -4,7 +4,7 @@ SET(prefix ${CMAKE_BINARY_DIR}/third_party/cl2hpp)
 
 ExternalProject_Add(
     cl2hpp-ext
-    GIT_REPOSITORY https://github.com/9prady9/OpenCL-CLHPP.git
+    GIT_REPOSITORY https://github.com/arrayfire/OpenCL-CLHPP.git
     GIT_TAG install_targets
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}/package"
