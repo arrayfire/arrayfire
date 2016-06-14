@@ -174,16 +174,6 @@ void scanByKeyTest(af::dim4 dims, int scanDim, std::vector<int> nodeLengths,
     af::array afin(dims, in.data());
     af::array afout = af::scanByKey(afkey, afin, scanDim, op, inclusive_scan);
 
-#if 0
-    if (scanDim == 1) {
-        af_print(afkey.T());
-        af_print(afin.T());
-        af_print(afout.T());
-        af::array afgold(dims, outgold.data());
-        af_print(afgold.T());
-    }
-#endif
-
     std::vector<To> out(afout.elements());
     afout.host(out.data());
     for(unsigned i = 0; i < out.size(); ++i) {

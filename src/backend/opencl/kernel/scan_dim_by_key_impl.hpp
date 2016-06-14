@@ -26,7 +26,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -123,14 +123,14 @@ namespace kernel
 
             uint lim = divup(out.info.dims[dim], (threads_y * groups_all[dim]));
 
-            auto scanOp = make_kernel<Buffer, KParam,
-                                      Buffer, KParam,
-                                      Buffer, KParam,
-                                      Buffer, KParam,
-                                      Buffer, KParam,
-                                      Buffer, KParam,
-                                      uint, uint,
-                                      uint, uint>(ker);
+            auto scanOp = KernelFunctor<Buffer, KParam,
+                                        Buffer, KParam,
+                                        Buffer, KParam,
+                                        Buffer, KParam,
+                                        Buffer, KParam,
+                                        Buffer, KParam,
+                                        uint, uint,
+                                        uint, uint>(ker);
 
             scanOp(EnqueueArgs(getQueue(), global, local),
                    *out.data, out.info,
@@ -163,11 +163,11 @@ namespace kernel
 
             uint lim = divup(out.info.dims[dim], (threads_y * groups_all[dim]));
 
-            auto scanOp = make_kernel<Buffer, KParam,
-                                      Buffer, KParam,
-                                      Buffer, KParam,
-                                      uint, uint,
-                                      uint, uint>(ker);
+            auto scanOp = KernelFunctor<Buffer, KParam,
+                                        Buffer, KParam,
+                                        Buffer, KParam,
+                                        uint, uint,
+                                        uint, uint>(ker);
 
             scanOp(EnqueueArgs(getQueue(), global, local),
                    *out.data, out.info, *in.data, in.info, *key.data, key.info,
@@ -196,11 +196,11 @@ namespace kernel
 
             uint lim = divup(out.info.dims[dim], (threads_y * groups_all[dim]));
 
-            auto bcastOp = make_kernel<Buffer, KParam,
-                                       Buffer, KParam,
-                                       Buffer, KParam,
-                                       uint, uint,
-                                       uint, uint>(ker);
+            auto bcastOp = KernelFunctor<Buffer, KParam,
+                                         Buffer, KParam,
+                                         Buffer, KParam,
+                                         uint, uint,
+                                         uint, uint>(ker);
 
             bcastOp(EnqueueArgs(getQueue(), global, local),
                     *out.data, out.info, *tmp.data, tmp.info, *tmpid.data, tmpid.info,
