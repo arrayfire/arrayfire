@@ -7,15 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-static char calculate_head_flags_dim(const __global Tk *kptr, int id, int stride)
+char calculate_head_flags_dim(const __global Tk *kptr, int id, int stride)
 {
-    char flag;
-    if (id == 0) {
-        flag = 1;
-    } else {
-        flag = ((*kptr) != (*(kptr - stride)));
-    }
-    return flag;
+    return (id == 0)? 1 : ((*kptr) != (*(kptr - stride)));
 }
 
 __kernel
@@ -118,7 +112,7 @@ void scan_dim_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
 
         if ((lidy == 0) && (flag == 0)) {
             val = binOp(val, l_tmp[lidx]);
-            flag = flag | l_ftmp[lidx];
+            flag = l_ftmp[lidx];
         }
         l_val[lid] = val;
         l_flg[lid] = flag;
@@ -266,7 +260,7 @@ void scan_dim_by_key_final_kernel(__global To *oData, KParam oInfo,
 
         if ((lidy == 0) && (flag == 0)) {
             val = binOp(val, l_tmp[lidx]);
-            flag = flag | l_ftmp[lidx];
+            flag = l_ftmp[lidx];
         }
         l_val[lid] = val;
         l_flg[lid] = flag;

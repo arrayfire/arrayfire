@@ -117,9 +117,8 @@ std::vector<T> createScanKey(af::dim4 dims, int scanDim,
                     isNode = true;
                 }
             }
-            if (isNode) {
-                if (std::rand()%2) keyval =
-                    randomInterval(keyStart, keyEnd);
+            if (isNode && (std::rand()%2)) {
+                keyval = randomInterval(keyStart, keyEnd);
             }
             key[index] = keyval;
         }

@@ -7,15 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-static char calculate_head_flags(const __global Tk *kptr, int id, int previd)
+char calculate_head_flags(const __global Tk *kptr, int id, int previd)
 {
-    char flag;
-    if (id == 0) {
-        flag = 1;
-    } else {
-        flag = (kptr[id] != kptr[previd]);
-    }
-    return flag;
+    return (id == 0)? 1 : (kptr[id] != kptr[previd]);
 }
 
 __kernel
@@ -111,7 +105,7 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
 
         if ((lidx == 0) && (flag == 0)) {
             val = binOp(val, l_tmp[lidy]);
-            flag = flag | l_ftmp[lidy];
+            flag = l_ftmp[lidy];
         }
         l_val[lid] = val;
         l_flg[lid] = flag;

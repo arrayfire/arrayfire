@@ -20,6 +20,28 @@ using af::dim4;
 
 namespace cpu
 {
+    template<af_op_t op, typename Ti, typename Tk, typename To, bool inclusive_scan>
+    void scan_by_key(int ndims, Array<To>& out, const Array<Tk>& key, const Array<Ti>& in, const int dim)
+    {
+        switch (ndims) {
+            case 1:
+                kernel::scan_dim_by_key<op, Ti, Tk, To, 1, inclusive_scan> func1;
+                getQueue().enqueue(func1, out, 0, key, 0, in, 0, dim);
+                break;
+            case 2:
+                kernel::scan_dim_by_key<op, Ti, Tk, To, 2, inclusive_scan> func2;
+                getQueue().enqueue(func2, out, 0, key, 0, in, 0, dim);
+                break;
+            case 3:
+                kernel::scan_dim_by_key<op, Ti, Tk, To, 3, inclusive_scan> func3;
+                getQueue().enqueue(func3, out, 0, key, 0, in, 0, dim);
+                break;
+            case 4:
+                kernel::scan_dim_by_key<op, Ti, Tk, To, 4, inclusive_scan> func4;
+                getQueue().enqueue(func4, out, 0, key, 0, in, 0, dim);
+                break;
+        }
+    }
 
     template<af_op_t op, typename Ti, typename Tk, typename To>
     Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim, bool inclusive_scan)
@@ -29,47 +51,12 @@ namespace cpu
         in.eval();
 
         if (inclusive_scan) {
-            switch (in.ndims()) {
-                case 1:
-                    kernel::scan_dim_by_key<op, Ti, Tk, To, 1, true> func1;
-                    getQueue().enqueue(func1, out, 0, key, 0, in, 0, dim);
-                    break;
-                case 2:
-                    kernel::scan_dim_by_key<op, Ti, Tk, To, 2, true> func2;
-                    getQueue().enqueue(func2, out, 0, key, 0, in, 0, dim);
-                    break;
-                case 3:
-                    kernel::scan_dim_by_key<op, Ti, Tk, To, 3, true> func3;
-                    getQueue().enqueue(func3, out, 0, key, 0, in, 0, dim);
-                    break;
-                case 4:
-                    kernel::scan_dim_by_key<op, Ti, Tk, To, 4, true> func4;
-                    getQueue().enqueue(func4, out, 0, key, 0, in, 0, dim);
-                    break;
-            }
+            scan_by_key<op, Ti, Tk, To,  true>(in.ndims(), out, key, in, dim);
         } else {
-            switch (in.ndims()) {
-                case 1:
-                    kernel::scan_dim_by_key<op, Ti, Tk, To, 1, false> func1;
-                    getQueue().enqueue(func1, out, 0, key, 0, in, 0, dim);
-                    break;
-                case 2:
-                    kernel::scan_dim_by_key<op, Ti, Tk, To, 2, false> func2;
-                    getQueue().enqueue(func2, out, 0, key, 0, in, 0, dim);
-                    break;
-                case 3:
-                    kernel::scan_dim_by_key<op, Ti, Tk, To, 3, false> func3;
-                    getQueue().enqueue(func3, out, 0, key, 0, in, 0, dim);
-                    break;
-                case 4:
-                    kernel::scan_dim_by_key<op, Ti, Tk, To, 4, false> func4;
-                    getQueue().enqueue(func4, out, 0, key, 0, in, 0, dim);
-                    break;
-            }
+            scan_by_key<op, Ti, Tk, To, false>(in.ndims(), out, key, in, dim);
         }
 
         return out;
-
     }
 
 #define INSTANTIATE_SCAN_BY_KEY(ROp, Ti, Tk, To)\

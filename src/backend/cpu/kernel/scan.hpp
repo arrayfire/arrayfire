@@ -63,6 +63,8 @@ struct scan_dim<op, Ti, To, 0, inclusive_scan>
             To in_val = transform(in[i * istride]);
             out_val = scan(in_val, out_val);
             if (!inclusive_scan) {
+                //The loop shifts the output index by 1.
+                //The last index wraps around and writes the first element.
                 if (i == (idims[dim] - 1)) {
                     out[0] = scan.init();
                 } else {

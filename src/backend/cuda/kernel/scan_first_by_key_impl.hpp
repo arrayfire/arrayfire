@@ -26,13 +26,7 @@ namespace kernel
     __device__
     inline static char calculate_head_flags(const Tk *kptr, int id, int previd)
     {
-        char flag;
-        if (id == 0) {
-            flag = 1;
-        } else {
-            flag = (kptr[id] != kptr[previd]);
-        }
-        return flag;
+        return (id == 0)? 1 : (kptr[id] != kptr[previd]);
     }
 
     template<typename Ti, typename Tk, typename To, af_op_t op, uint DIMX, bool inclusive_scan>
@@ -123,7 +117,7 @@ namespace kernel
             //Add partial result from last iteration before scan operation
             if ((tidx == 0) && (flag == 0)) {
                 val = binop(val, s_tmp[tidy]);
-                flag = flag | s_ftmp[tidy];
+                flag = s_ftmp[tidy];
             }
 
             //Write to shared memory

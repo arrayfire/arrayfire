@@ -27,13 +27,7 @@ namespace kernel
     __device__
     inline static char calculate_head_flags_dim(const Tk *kptr, int id, int stride)
     {
-        char flag;
-        if (id == 0) {
-            flag = 1;
-        } else {
-            flag = ((*kptr) != (*(kptr - stride)));
-        }
-        return flag;
+        return (id == 0)? 1 : ((*kptr) != (*(kptr - stride)));
     }
 
     template<typename Ti, typename Tk, typename To, af_op_t op, int dim, uint DIMY, bool inclusive_scan>
@@ -140,7 +134,7 @@ namespace kernel
 
             if ((tidy == 0) && (flag == 0)) {
                 val = binop(val, s_tmp[tidx]);
-                flag = flag | s_ftmp[tidx];
+                flag = s_ftmp[tidx];
             }
 
             *sptr = val;
