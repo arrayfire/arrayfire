@@ -89,6 +89,7 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
             flag = 0;
         }
 
+        //Load val from global in
         if (inclusive_scan) {
             if (!cond) {
                 val = init_val;
@@ -103,14 +104,18 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
             }
         }
 
+        //Add partial result from last iteration before scan operation
         if ((lidx == 0) && (flag == 0)) {
             val = binOp(val, l_tmp[lidy]);
             flag = l_ftmp[lidy];
         }
+
+        //Write to shared memory
         l_val[lid] = val;
         l_flg[lid] = flag;
         barrier(CLK_LOCAL_MEM_FENCE);
 
+        //Segmented Scan
         for (int off = 1; off < DIMX; off *= 2) {
             if (lidx >= off) {
                 val = l_flg[lid] ? val : binOp(val, l_val[lid - off]);
@@ -123,6 +128,8 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
             l_flg[lid] = flag;
             barrier(CLK_LOCAL_MEM_FENCE);
         }
+
+        //Identify segment boundary
         if (lidx == 0) {
             if ((l_ftmp[lidy] == 0) && (l_flg[lid] == 1)) {
                 boundaryid[lidy] = id;
@@ -211,6 +218,7 @@ void scan_first_by_key_final_kernel(__global To *oData, KParam oInfo,
             flag = kData[id];
         }
 
+        //Load val from global in
         if (inclusive_scan) {
             if (!cond) {
                 val = init_val;
@@ -225,14 +233,18 @@ void scan_first_by_key_final_kernel(__global To *oData, KParam oInfo,
             }
         }
 
+        //Add partial result from last iteration before scan operation
         if ((lidx == 0) && (flag == 0)) {
             val = binOp(val, l_tmp[lidy]);
             flag = flag | l_ftmp[lidy];
         }
+
+        //Write to shared memory
         l_val[lid] = val;
         l_flg[lid] = flag;
         barrier(CLK_LOCAL_MEM_FENCE);
 
+        //Write to shared memory
         for (int off = 1; off < DIMX; off *= 2) {
             if (lidx >= off) {
                 val = l_flg[lid] ? val : binOp(val, l_val[lid - off]);

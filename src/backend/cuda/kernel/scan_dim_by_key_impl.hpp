@@ -132,15 +132,18 @@ namespace kernel
                 }
             }
 
+            //Add partial result from last iteration before scan operation
             if ((tidy == 0) && (flag == 0)) {
                 val = binop(val, s_tmp[tidx]);
                 flag = s_ftmp[tidx];
             }
 
+            //Write to shared memory
             *sptr = val;
             *sfptr = flag;
             __syncthreads();
 
+            //Segmented Scan
             int start = 0;
 #pragma unroll
             for (int off = 1; off < DIMY; off *= 2) {
@@ -156,6 +159,7 @@ namespace kernel
                 __syncthreads();
             }
 
+            //Identify segment boundary
             if (tidy == 0) {
                 if ((s_ftmp[tidx] == 0) && (sfptr[start * THREADS_X] == 1)) {
                     boundaryid[tidx] = id_dim;
@@ -282,15 +286,18 @@ namespace kernel
                 }
             }
 
+            //Add partial result from last iteration before scan operation
             if ((tidy == 0) && (flag == 0)) {
                 val = binop(val, s_tmp[tidx]);
                 flag = flag | s_ftmp[tidx];
             }
 
+            //Write to shared memory
             *sptr = val;
             *sfptr = flag;
             __syncthreads();
 
+            //Segmented Scan
             int start = 0;
 #pragma unroll
             for (int off = 1; off < DIMY; off *= 2) {

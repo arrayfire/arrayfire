@@ -96,6 +96,7 @@ void scan_dim_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
             flag = 0;
         }
 
+        //Load val from global in
         if (inclusive_scan) {
             if (!cond) {
                 val = init_val;
@@ -110,14 +111,18 @@ void scan_dim_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
             }
         }
 
+        //Add partial result from last iteration before scan operation
         if ((lidy == 0) && (flag == 0)) {
             val = binOp(val, l_tmp[lidx]);
             flag = l_ftmp[lidx];
         }
+
+        //Write to shared memory
         l_val[lid] = val;
         l_flg[lid] = flag;
         barrier(CLK_LOCAL_MEM_FENCE);
 
+        //Segmented Scan
         for (int off = 1; off < DIMY; off *= 2) {
 
             if (lidy >= off) {
@@ -132,6 +137,7 @@ void scan_dim_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
             barrier(CLK_LOCAL_MEM_FENCE);
         }
 
+        //Identify segment boundary
         if (lidy == 0) {
             if ((l_ftmp[lidx] == 0) && (l_flg[lid] == 1)) {
                 boundaryid[lidx] = id_dim;
@@ -244,6 +250,7 @@ void scan_dim_by_key_final_kernel(__global To *oData, KParam oInfo,
             flag = *kData;
         }
 
+        //Load val from global in
         if (inclusive_scan) {
             if (!cond) {
                 val = init_val;
@@ -258,14 +265,18 @@ void scan_dim_by_key_final_kernel(__global To *oData, KParam oInfo,
             }
         }
 
+        //Add partial result from last iteration before scan operation
         if ((lidy == 0) && (flag == 0)) {
             val = binOp(val, l_tmp[lidx]);
             flag = l_ftmp[lidx];
         }
+
+        //Write to shared memory
         l_val[lid] = val;
         l_flg[lid] = flag;
         barrier(CLK_LOCAL_MEM_FENCE);
 
+        //Segmented Scan
         for (int off = 1; off < DIMY; off *= 2) {
 
             if (lidy >= off) {
