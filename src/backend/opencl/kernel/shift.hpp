@@ -22,7 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -60,7 +60,7 @@ namespace opencl
                     shiftKernels[device] = new Kernel(*shiftProgs[device], "shift_kernel");
                 });
 
-                auto shiftOp = make_kernel<Buffer, const Buffer, const KParam, const KParam,
+                auto shiftOp = KernelFunctor<Buffer, const Buffer, const KParam, const KParam,
                                           const int, const int, const int, const int,
                                           const int, const int> (*shiftKernels[device]);
 

@@ -22,7 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -60,7 +60,7 @@ namespace opencl
                     iotaKernels[device] = new Kernel(*iotaProgs[device], "iota_kernel");
                 });
 
-                auto iotaOp = make_kernel<Buffer, const KParam,
+                auto iotaOp = KernelFunctor<Buffer, const KParam,
                                           const int, const int, const int, const int,
                                           const int, const int, const int, const int,
                                           const int, const int> (*iotaKernels[device]);

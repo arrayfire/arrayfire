@@ -64,7 +64,7 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, cons
             entry = idx->second;
         }
 
-        auto convOp = make_kernel<Buffer, KParam, Buffer, KParam,
+        auto convOp = cl::KernelFunctor<Buffer, KParam, Buffer, KParam,
                                   Buffer, KParam, int, int,
                                   int, int,
                                   int, int

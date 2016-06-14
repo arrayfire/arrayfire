@@ -41,7 +41,7 @@ namespace compute = boost::compute;
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -135,7 +135,7 @@ namespace opencl
                     sortPairKernels[device] = new Kernel(*sortPairProgs[device], "make_pair_kernel");
                 });
 
-                auto makePairOp = make_kernel<Buffer, const Buffer, const Buffer, const unsigned>
+                auto makePairOp = KernelFunctor<Buffer, const Buffer, const Buffer, const unsigned>
                                           (*sortPairKernels[device]);
 
                 NDRange local(256, 1, 1);
@@ -177,7 +177,7 @@ namespace opencl
                     sortPairKernels[device] = new Kernel(*sortPairProgs[device], "split_pair_kernel");
                 });
 
-                auto splitPairOp = make_kernel<Buffer, Buffer, const Buffer, const unsigned>
+                auto splitPairOp = KernelFunctor<Buffer, Buffer, const Buffer, const unsigned>
                                           (*sortPairKernels[device]);
 
                 NDRange local(256, 1, 1);

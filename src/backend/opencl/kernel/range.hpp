@@ -21,7 +21,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -59,7 +59,7 @@ namespace opencl
                     rangeKernels[device] = new Kernel(*rangeProgs[device], "range_kernel");
                 });
 
-                auto rangeOp = make_kernel<Buffer, const KParam, const int,
+                auto rangeOp = KernelFunctor<Buffer, const KParam, const int,
                                            const int, const int> (*rangeKernels[device]);
 
                 NDRange local(RANGE_TX, RANGE_TY, 1);

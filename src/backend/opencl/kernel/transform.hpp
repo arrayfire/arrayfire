@@ -25,7 +25,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -102,7 +102,7 @@ namespace opencl
                     transformKernels[device] = new Kernel(*transformProgs[device], "transform_kernel");
                 });
 
-                auto transformOp = make_kernel<Buffer, const KParam,
+                auto transformOp = KernelFunctor<Buffer, const KParam,
                                          const Buffer, const KParam, const Buffer, const KParam,
                                          const int, const int, const int, const int,
                                          const int, const int, const int>

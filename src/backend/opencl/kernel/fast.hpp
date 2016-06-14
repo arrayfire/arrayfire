@@ -20,6 +20,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::LocalSpaceArg;
 using cl::NDRange;
@@ -105,7 +106,7 @@ void fast(const unsigned arc_length,
         const NDRange local(FAST_THREADS_X, FAST_THREADS_Y);
         const NDRange global(blk_x * FAST_THREADS_X, blk_y * FAST_THREADS_Y);
 
-        auto lfOp = make_kernel<Buffer, KParam,
+        auto lfOp = KernelFunctor<Buffer, KParam,
                                 Buffer, const float, const unsigned,
                                 LocalSpaceArg> (entry.ker[0]);
 
@@ -130,7 +131,7 @@ void fast(const unsigned arc_length,
         cl::Buffer *d_counts  = bufferAlloc(blocks_sz);
         cl::Buffer *d_offsets = bufferAlloc(blocks_sz);
 
-        auto nmOp = make_kernel<Buffer, Buffer, Buffer,
+        auto nmOp = KernelFunctor<Buffer, Buffer, Buffer,
                                 Buffer, Buffer,
                                 KParam, const unsigned> (entry.ker[1]);
         nmOp(EnqueueArgs(getQueue(), global_nonmax, local_nonmax),
@@ -147,7 +148,7 @@ void fast(const unsigned arc_length,
             y_out.data = bufferAlloc(out_sz);
             score_out.data = bufferAlloc(out_sz);
 
-            auto gfOp = make_kernel<Buffer, Buffer, Buffer,
+            auto gfOp = KernelFunctor<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer,
                                     KParam, const unsigned,
                                     const unsigned> (entry.ker[2]);

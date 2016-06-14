@@ -23,7 +23,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -80,7 +80,7 @@ void lu_split_launcher(Param lower, Param upper, const Param in)
         NDRange global(groups_x * local[0] * in.info.dims[2],
                        groups_y * local[1] * in.info.dims[3]);
 
-        auto lu_split_op = make_kernel<Buffer, const KParam,
+        auto lu_split_op = KernelFunctor<Buffer, const KParam,
                                        Buffer, const KParam,
                                        const Buffer, const KParam,
                                        const int, const int> (*splitKernels[device]);
