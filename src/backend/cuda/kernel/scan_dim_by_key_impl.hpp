@@ -96,7 +96,7 @@ namespace kernel
         __shared__ To s_val[THREADS_X * DIMY * 2];
         __shared__ char s_ftmp[THREADS_X];
         __shared__ To s_tmp[THREADS_X];
-        __shared__ int boundaryid;
+        __shared__ int boundaryid[THREADS_X];
         To *sptr =  s_val + tid;
         char *sfptr = s_flg + tid;
 
@@ -110,17 +110,9 @@ namespace kernel
         if (isLast) {
             s_tmp[tidx] = val;
             s_ftmp[tidx] = 0;
-            boundaryid = -1;
+            boundaryid[tidx] = -1;
         }
         __syncthreads();
-
-        char *prev;
-        if (tidy == 0) {
-            prev = &s_ftmp[tidx];
-        } else {
-            prev = sfptr - THREADS_X;
-        }
-        char *curr = &sfptr[tidy];
 
         char flag = 0;
         for (int k = 0; k < lim; k++) {
@@ -170,8 +162,14 @@ namespace kernel
                 __syncthreads();
             }
 
-            if ((*prev == 0) && (*curr == 1)) {
-                boundaryid = id_dim;
+            if (tidy == 0) {
+                if ((s_ftmp[tidx] == 0) && (sfptr[start * THREADS_X] == 1)) {
+                    boundaryid[tidx] = id_dim;
+                }
+            } else {
+                if ((sfptr[(start - 1) * THREADS_X] == 0) && (sfptr[start * THREADS_X] == 1)) {
+                    boundaryid[tidx] = id_dim;
+                }
             }
 
             if (is_valid && (id_dim < out_dim)) *optr = val;
@@ -191,7 +189,8 @@ namespace kernel
             isLast) {
             *tptr = val;
             *tfptr = flag;
-            *tiptr = boundaryid;
+            int boundary = boundaryid[tidx];
+            *tiptr = (boundary == -1) ? id_dim : boundary;
             }
     }
 
@@ -494,23 +493,18 @@ namespace kernel
                                                      blocks_all);
 
         } else {
-
             Param<To> tmp = out;
             Param<char> tmpflg;
             Param<int> tmpid;
 
             tmp.dims[dim] = blocks_all[dim];
-            tmpflg.dims[dim] = blocks_all[dim];
-            tmpid.dims[dim] = blocks_all[dim];
             tmp.strides[0] = 1;
-            tmpflg.strides[0] = 1;
-            tmpid.strides[0] = 1;
-            for (int k = 1; k < 4; k++) {
-                tmpflg.dims[k] = out.dims[k];
-                tmpid.dims[k] = out.dims[k];
-                tmp.strides[k] = tmp.strides[k - 1] * tmp.dims[k - 1];
-                tmpflg.strides[k] = tmpflg.strides[k - 1] * tmpflg.dims[k - 1];
-                tmpid.strides[k] = tmpid.strides[k - 1] * tmpid.dims[k - 1];
+            for (int k = 1; k < 4; k++) tmp.strides[k] = tmp.strides[k - 1] * tmp.dims[k - 1];
+            for (int k = 0; k < 4; k++) {
+                tmpflg.strides[k] = tmp.strides[k];
+                tmpid.strides[k] = tmp.strides[k];
+                tmpflg.dims[k] = tmp.dims[k];
+                tmpid.dims[k] = tmp.dims[k];
             }
 
             int tmp_elements = tmp.strides[3] * tmp.dims[3];

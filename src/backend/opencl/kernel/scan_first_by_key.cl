@@ -67,7 +67,7 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
     __local char *l_flg = l_flg0;
     __local To l_tmp[DIMY];
     __local char l_ftmp[DIMY];
-    __local int boundaryid;
+    __local int boundaryid[DIMY];
 
     bool flip = 0;
 
@@ -80,22 +80,12 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
     if (isLast) {
         l_tmp[lidy] = val;
         l_ftmp[lidy] = 0;
-        boundaryid = -1;
+        boundaryid[lidy] = -1;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    __local char *prev;
-    if (lidx == 0) {
-        prev = &l_ftmp[lidy];
-    } else {
-        prev = &l_flg[lidx-1];
-    }
-    __local char *curr = &l_flg[lidx];
-
     char flag = 0;
     for (int k = 0; k < lim; k++) {
-
-        //if (isLast) l_tmp[lidy] = val;
 
         bool cond = ((id < oInfo.dims[0]) && cond_yzw);
 
@@ -104,7 +94,6 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
         } else {
             flag = 0;
         }
-        //val = cond ? transform(iData[id]) : init_val;
 
         if (inclusive_scan) {
             if (!cond) {
@@ -140,9 +129,14 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
             l_flg[lid] = flag;
             barrier(CLK_LOCAL_MEM_FENCE);
         }
-
-        if ((*prev == 0) && (*curr == 1)) {
-            boundaryid = id;
+        if (lidx == 0) {
+            if ((l_ftmp[lidy] == 0) && (l_flg[lid] == 1)) {
+                boundaryid[lidy] = id;
+            }
+        } else {
+            if ((l_flg[lid-1] == 0) && (l_flg[lid] == 1)) {
+                boundaryid[lidy] = id;
+            }
         }
 
         if (cond) oData[id] = val;
@@ -154,11 +148,11 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
         barrier(CLK_LOCAL_MEM_FENCE); //FIXME: May be needed only for non nvidia gpus
     }
 
-    if (isLast) {
-    //if (isLast && cond_yzw)
+    if (isLast && cond_yzw) {
         tData[groupId_x] = val;
         tfData[groupId_x] = flag;
-        tiData[groupId_x] = boundaryid;
+        int boundary = boundaryid[lidy];
+        tiData[groupId_x] = (boundary == -1)? id : boundary;
     }
 }
 
@@ -211,8 +205,6 @@ void scan_first_by_key_final_kernel(__global To *oData, KParam oInfo,
     for (int k = 0; k < lim; k++) {
         char flag = 0;
 
-        //if (isLast) l_tmp[lidy] = val;
-
         bool cond = ((id < oInfo.dims[0]) && cond_yzw);
 
         if (calculateFlags) {
@@ -224,7 +216,6 @@ void scan_first_by_key_final_kernel(__global To *oData, KParam oInfo,
         } else {
             flag = kData[id];
         }
-        //val = cond ? transform(iData[id]) : init_val;
 
         if (inclusive_scan) {
             if (!cond) {

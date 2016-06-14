@@ -47,11 +47,6 @@ namespace kernel
                                   uint blocks_y,
                                   uint lim)
     {
-        //parallel segmented scan
-        //calculate flags from keys
-        //write to tmp
-        //write to temporary flag
-        //write to temporary last id
         Transform<Ti, To, op> transform;
         Binary<To, op> binop;
         const To init = binop.init();
@@ -64,7 +59,7 @@ namespace kernel
         __shared__ To s_val[SHARED_MEM_SIZE];
         __shared__ char s_ftmp[DIMY];
         __shared__ To s_tmp[DIMY];
-        __shared__ int boundaryid;
+        __shared__ int boundaryid[DIMY];
 
         const int tidx = threadIdx.x;
         const int tidy = threadIdx.y;
@@ -85,7 +80,7 @@ namespace kernel
         if (isLast) {
             s_tmp[tidy] = init;
             s_ftmp[tidy] = 0;
-            boundaryid = -1;
+            boundaryid[tidy] = -1;
         }
         __syncthreads();
 
@@ -102,18 +97,10 @@ namespace kernel
         tfptr += wid * tflg.strides[3] + zid * tflg.strides[2] + yid * tflg.strides[1];
         tiptr += wid * tlid.strides[3] + zid * tlid.strides[2] + yid * tlid.strides[1];
 
-        char *prev;
-        if (tidx == 0) {
-            prev = &s_ftmp[tidy];
-        } else {
-            prev = &sfptr[tidx-1];
-        }
-        char *curr = &sfptr[tidx];
-
         char flag = 0;
         for (int k = 0; k < lim; k++) {
             if (id < out.dims[0]) {
-                flag = calculate_head_flags(kptr, id, id - key.strides[0]);
+                flag = calculate_head_flags(kptr, id, id - 1);
             } else {
                 flag = 0;
             }
@@ -160,8 +147,14 @@ namespace kernel
             }
 
             //Identify segment boundary
-            if ((*prev == 0) && (*curr == 1)) {
-                boundaryid = id;
+            if (tidx == 0) {
+                if ((s_ftmp[tidy] == 0) && (sfptr[tidx] == 1)) {
+                    boundaryid[tidy] = id;
+                }
+            } else {
+                if ((sfptr[tidx-1] == 0) && (sfptr[tidx] == 1)) {
+                    boundaryid[tidy] = id;
+                }
             }
 
             if (id < out.dims[0]) optr[id] = val;
@@ -175,7 +168,8 @@ namespace kernel
         if (isLast) {
             tptr[blockIdx_x] = val;
             tfptr[blockIdx_x] = flag;
-            tiptr[blockIdx_x] = boundaryid;
+            int boundary = boundaryid[tidy];
+            tiptr[blockIdx_x] = (boundary == -1)? id : boundary;
         }
     }
 
@@ -188,11 +182,6 @@ namespace kernel
                                   uint blocks_y,
                                   uint lim)
     {
-        //parallel segmented scan
-        //calculate flags from keys
-        //write to tmp
-        //write to temporary flag
-        //write to temporary last id
         Transform<Ti, To, op> transform;
         Binary<To, op> binop;
         const To init = binop.init();

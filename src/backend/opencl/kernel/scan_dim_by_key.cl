@@ -77,7 +77,7 @@ void scan_dim_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
     __local char *l_flg = l_flg0;
     __local To l_tmp[THREADS_X];
     __local char l_ftmp[THREADS_X];
-    __local int boundaryid;
+    __local int boundaryid[THREADS_X];
 
     bool flip = 0;
     const To init_val  = init;
@@ -85,24 +85,14 @@ void scan_dim_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
     const bool isLast = (lidy == (DIMY - 1));
 
     if (isLast) {
-        l_tmp[lidy] = val;
-        l_ftmp[lidy] = 0;
-        boundaryid = -1;
+        l_tmp[lidx] = val;
+        l_ftmp[lidx] = 0;
+        boundaryid[lidx] = -1;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    __local char *prev;
-    if (lidy == 0) {
-        prev = &l_ftmp[lidx];
-    } else {
-        prev = &l_flg[lid-THREADS_X];
-    }
-    __local char *curr = &l_flg[lid];
-
     char flag = 0;
     for (int k = 0; k < lim; k++) {
-
-        //if (isLast) l_tmp[lidx] = val;
 
         bool cond = (is_valid) && (id_dim < out_dim);
 
@@ -111,8 +101,6 @@ void scan_dim_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
         } else {
             flag = 0;
         }
-
-        //val = cond ? transform(*iData) : init_val;
 
         if (inclusive_scan) {
             if (!cond) {
@@ -150,8 +138,14 @@ void scan_dim_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
             barrier(CLK_LOCAL_MEM_FENCE);
         }
 
-        if ((*prev == 0) && (*curr == 1)) {
-            boundaryid = id_dim;
+        if (lidy == 0) {
+            if ((l_ftmp[lidx] == 0) && (l_flg[lid] == 1)) {
+                boundaryid[lidx] = id_dim;
+            }
+        } else {
+            if ((l_flg[lid - THREADS_X] == 0) && (l_flg[lid] == 1)) {
+                boundaryid[lidx] = id_dim;
+            }
         }
 
         if (cond) *oData = val;
@@ -171,7 +165,8 @@ void scan_dim_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
         isLast) {
         *tData = val;
         *tfData = flag;
-        *tiData = boundaryid;
+        int boundary = boundaryid[lidx];
+        *tiData = (boundary == -1)? id_dim : boundary;
     }
 }
 
@@ -235,8 +230,8 @@ void scan_dim_by_key_final_kernel(__global To *oData, KParam oInfo,
     const bool isLast = (lidy == (DIMY - 1));
 
     if (isLast) {
-        l_tmp[lidy] = val;
-        l_ftmp[lidy] = 0;
+        l_tmp[lidx] = val;
+        l_ftmp[lidx] = 0;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -339,7 +334,6 @@ void bcast_dim_kernel(__global To *oData, KParam oInfo,
         oData  += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] + ids[1] * oInfo.strides[1] + ids[0];
 
         const int id_dim = ids[dim];
-        const int out_dim = oInfo.dims[dim];
 
         bool is_valid =
             (ids[0] < oInfo.dims[0]) &&
