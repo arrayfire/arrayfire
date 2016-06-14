@@ -22,7 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::LocalSpaceArg;
 using cl::NDRange;
@@ -61,7 +61,7 @@ void meanshift(Param out, const Param in, float s_sigma, float c_sigma, uint ite
                     msKernels[device] = new Kernel(*msProgs[device], "meanshift");
                 });
 
-        auto meanshiftOp = make_kernel<Buffer, KParam,
+        auto meanshiftOp = KernelFunctor<Buffer, KParam,
                                        Buffer, KParam,
                                        LocalSpaceArg,
                                        int, float,

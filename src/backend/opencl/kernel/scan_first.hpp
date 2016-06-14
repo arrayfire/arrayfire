@@ -27,7 +27,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -121,7 +121,7 @@ namespace kernel
 
         uint lim = divup(out.info.dims[0], (threads_x * groups_x));
 
-        auto scanOp = make_kernel<Buffer, KParam,
+        auto scanOp = KernelFunctor<Buffer, KParam,
                                   Buffer, KParam,
                                   Buffer, KParam,
                                   uint, uint, uint>(ker);
@@ -150,7 +150,7 @@ namespace kernel
 
         uint lim = divup(out.info.dims[0], (threads_x * groups_x));
 
-        auto bcastOp = make_kernel<Buffer, KParam,
+        auto bcastOp = KernelFunctor<Buffer, KParam,
                                    Buffer, KParam,
                                    uint, uint, uint>(ker);
 

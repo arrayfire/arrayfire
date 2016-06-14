@@ -21,7 +21,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -74,7 +74,7 @@ void index(Param out, const Param in, const IndexKernelParam_t& p, Buffer *bPtr[
         NDRange global(blk_x * out.info.dims[2] * THREADS_X,
                 blk_y * out.info.dims[3] * THREADS_Y);
 
-        auto indexOp = make_kernel<Buffer, KParam, Buffer, KParam, IndexKernelParam_t,
+        auto indexOp = KernelFunctor<Buffer, KParam, Buffer, KParam, IndexKernelParam_t,
              Buffer, Buffer, Buffer, Buffer, int, int>(*idxKernels[device]);
 
         indexOp(EnqueueArgs(getQueue(), global, local),

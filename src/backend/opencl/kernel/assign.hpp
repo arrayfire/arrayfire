@@ -21,7 +21,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -74,7 +74,7 @@ void assign(Param out, const Param in, const AssignKernelParam_t& p, Buffer *bPt
         NDRange global(blk_x * in.info.dims[2] * THREADS_X,
                 blk_y * in.info.dims[3] * THREADS_Y);
 
-        auto assignOp = make_kernel<Buffer, KParam, Buffer, KParam, AssignKernelParam_t,
+        auto assignOp = KernelFunctor<Buffer, KParam, Buffer, KParam, AssignKernelParam_t,
              Buffer, Buffer, Buffer, Buffer, int, int>(*agnKernels[device]);
 
         assignOp(EnqueueArgs(getQueue(), global, local),

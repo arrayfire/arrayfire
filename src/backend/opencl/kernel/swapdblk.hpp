@@ -22,7 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -90,14 +90,18 @@ void swapdblk(int n, int nb,
 
     NDRange local(nb);
     NDRange global(nblocks * nb);
-    auto swapdOp = make_kernel<int,
-                               cl_mem, unsigned long long, int, int,
-                               cl_mem, unsigned long long, int, int>(*swpKernels[device]);
+
+    cl::Buffer dAObj(dA, true);
+    cl::Buffer dBObj(dB, true);
+
+    auto swapdOp = KernelFunctor<int,
+                               Buffer, unsigned long long, int, int,
+                               Buffer, unsigned long long, int, int>(*swpKernels[device]);
 
     swapdOp(EnqueueArgs(getQueue(), global, local),
             nb,
-            dA, dA_offset, ldda, inca,
-            dB, dB_offset, lddb, incb);
+            dAObj, dA_offset, ldda, inca,
+            dBObj, dB_offset, lddb, incb);
 
 }
 

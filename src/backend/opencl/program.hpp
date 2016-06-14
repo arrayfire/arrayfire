@@ -16,7 +16,6 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;

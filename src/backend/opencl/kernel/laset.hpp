@@ -23,7 +23,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -82,9 +82,12 @@ void laset(int m, int  n,
     NDRange global(groups_x * local[0],
                    groups_y * local[1]);
 
-    auto lasetOp = make_kernel<int, int, T, T, cl_mem, unsigned long long, int>(*setKernels[device]);
+    // retain the cl_mem object during cl::Buffer creation
+    cl::Buffer dAObj(dA, true);
+
+    auto lasetOp = KernelFunctor<int, int, T, T, Buffer, unsigned long long, int>(*setKernels[device]);
     lasetOp(EnqueueArgs(getQueue(), global, local),
-            m, n, offdiag, diag, dA, dA_offset, ldda);
+            m, n, offdiag, diag, dAObj, dA_offset, ldda);
 }
 
 }

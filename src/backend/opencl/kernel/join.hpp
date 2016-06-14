@@ -21,7 +21,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -66,7 +66,7 @@ namespace opencl
                     joinKernels[device] = new Kernel(*joinProgs[device], "join_kernel");
                 });
 
-                auto joinOp = make_kernel<Buffer, const KParam, const Buffer, const KParam,
+                auto joinOp = KernelFunctor<Buffer, const KParam, const Buffer, const KParam,
                               const int, const int, const int, const int,
                               const int, const int> (*joinKernels[device]);
 

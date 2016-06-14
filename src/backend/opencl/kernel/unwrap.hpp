@@ -25,7 +25,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -97,7 +97,7 @@ namespace opencl
                 NDRange global(local[0] * BX,
                                local[1] * BY);
 
-                auto unwrapOp = make_kernel<Buffer, const KParam,
+                auto unwrapOp = KernelFunctor<Buffer, const KParam,
                                             const Buffer, const KParam,
                                             const int, const int,
                                             const int, const int,

@@ -12,6 +12,8 @@
 namespace cpu
 {
 
+void setFFTPlanCacheSize(size_t numPlans);
+
 template<typename T, int rank, bool direction>
 void fft_inplace(Array<T> &in);
 

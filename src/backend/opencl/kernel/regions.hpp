@@ -36,6 +36,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 namespace compute = boost::compute;
@@ -103,7 +104,7 @@ void regions(Param out, Param in)
 
         const NDRange global(blk_x * THREADS_X, blk_y * THREADS_Y);
 
-        auto ilOp = make_kernel<Buffer, KParam,
+        auto ilOp = KernelFunctor<Buffer, KParam,
                                 Buffer, KParam> (*ilKernel[device]);
 
         ilOp(EnqueueArgs(getQueue(), global, local),
@@ -118,7 +119,7 @@ void regions(Param out, Param in)
             h_continue = 0;
             getQueue().enqueueWriteBuffer(*d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
 
-            auto ueOp = make_kernel<Buffer, KParam,
+            auto ueOp = KernelFunctor<Buffer, KParam,
                                     Buffer> (*ueKernel[device]);
 
             ueOp(EnqueueArgs(getQueue(), global, local),
@@ -204,7 +205,7 @@ void regions(Param out, Param in)
                                 c_queue);
 
         // Apply the correct labels to the equivalency map
-        auto frOp = make_kernel<Buffer, KParam,
+        auto frOp = KernelFunctor<Buffer, KParam,
                                 Buffer, KParam,
                                 Buffer> (*frKernel[device]);
 
