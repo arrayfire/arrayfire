@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <af/defines.h>
-#include <af/moments.h>
+#include <af/image.h>
 #include <af/array.h>
 #include "error.hpp"
 
@@ -22,28 +22,9 @@ array moments(const array& in, const af_moment_type moment)
     return array(out);
 }
 
-
-#define INSTANTIATE_REAL(T)                                 \
-    template<> AFAPI                                        \
-    T moment(const array &in, const af_moment_type moment)  \
-    {                                                       \
-        double out;                                         \
-        AF_THROW(af_moments_all(&out, in.get(), moment));   \
-        return (T)out;                                      \
-    }
-
-
-INSTANTIATE_REAL(float)
-INSTANTIATE_REAL(double)
-INSTANTIATE_REAL(int)
-INSTANTIATE_REAL(unsigned)
-INSTANTIATE_REAL(intl)
-INSTANTIATE_REAL(uintl)
-INSTANTIATE_REAL(short)
-INSTANTIATE_REAL(unsigned short)
-INSTANTIATE_REAL(char)
-INSTANTIATE_REAL(unsigned char)
-
-#undef INSTANTIATE_REAL
+void moments(double* out, const array& in, const af_moment_type moment)
+{
+    AF_THROW(af_moments_all(out, in.get(), moment));
+}
 
 }

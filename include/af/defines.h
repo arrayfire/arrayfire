@@ -359,10 +359,11 @@ typedef enum {
 
 #if AF_API_VERSION >=34
 typedef enum {
-    AF_MOMENT_M00 = 0,
-    AF_MOMENT_M01 = 1,
-    AF_MOMENT_M10 = 2,
-    AF_MOMENT_M11 = 3,
+    AF_MOMENT_M00 = 1,
+    AF_MOMENT_M01 = 2,
+    AF_MOMENT_M10 = 4,
+    AF_MOMENT_M11 = 8,
+    AF_MOMENT_FIRST_ORDER = 0xF
 } af_moment_type;
 #endif
 

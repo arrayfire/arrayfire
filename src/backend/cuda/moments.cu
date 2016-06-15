@@ -15,31 +15,30 @@
 namespace cuda
 {
 
+static inline int bitCount(int v) {
+    v = v - ((v >> 1) & 0x55555555);
+    v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
+    return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
+}
+
 using af::dim4;
 
 template<typename T>
 Array<float> moments(const Array<T> &in, const af_moment_type moment)
 {
-    dim4 odims, idims = in.dims();
-    odims[0] = odims[1] = odims[2] = odims[3] = 1;
-    if(idims[2] != 1) {
-        odims[0] = idims[2];
-    }
-    if(idims[3] != 1) {
-        odims[1] = idims[3];
-    }
-
     in.eval();
+    dim4 odims, idims = in.dims();
+    dim_t moments_dim = bitCount(moment);
+
+    odims[0] = moments_dim;
+    odims[1] = 1;
+    odims[2] = idims[2];
+    odims[3] = idims[3];
+
     Array<float> out = createValueArray<float>(odims, 0.f);
+    out.eval();
 
-    switch(moment) {
-        case AF_MOMENT_M00: kernel::moments<T, AF_MOMENT_M00>(out, in); break;
-        case AF_MOMENT_M01: kernel::moments<T, AF_MOMENT_M01>(out, in); break;
-        case AF_MOMENT_M10: kernel::moments<T, AF_MOMENT_M10>(out, in); break;
-        case AF_MOMENT_M11: kernel::moments<T, AF_MOMENT_M11>(out, in); break;
-        default:  break;
-    }
-
+    kernel::moments<T>(out, in, moment);
     return out;
 }
 

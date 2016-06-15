@@ -38,8 +38,8 @@ namespace opencl
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
-        template <typename T, af_moment_type moment>
-        void moments(Param out, const Param in)
+        template <typename T>
+        void moments(Param out, const Param in, af_moment_type moment)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -57,18 +57,6 @@ namespace opencl
                         options << " -D USE_DOUBLE";
                     }
 
-                    switch(moment) {
-                        case AF_MOMENT_M00:   options << " -D MOMENT=M00";
-                            break;
-                        case AF_MOMENT_M01:   options << " -D MOMENT=M01";
-                            break;
-                        case AF_MOMENT_M10:   options << " -D MOMENT=M10";
-                            break;
-                        case AF_MOMENT_M11:   options << " -D MOMENT=M11";
-                            break;
-                        default:
-                            break;
-                    }
 
                     Program prog;
                     buildProgram(prog, moments_cl, moments_cl_len, options.str());
@@ -78,20 +66,19 @@ namespace opencl
                 });
 
 
-                auto momentsp = make_kernel<Buffer, const KParam, const Buffer, const KParam,
-                                       const int, const int>
+                auto momentsp = make_kernel<Buffer, const KParam, const Buffer, const KParam, const int, const int, const int>
                                       (*momentsKernels[device]);
 
                 NDRange local(THREADS, 1, 1);
                 dim_t blocksMatX = divup(in.info.dims[0], local[0]);
-                NDRange global(blocksMatX * in.info.dims[1] * local[0] ,
+                NDRange global(in.info.dims[1] * local[0] ,
                                in.info.dims[2] * in.info.dims[3] * local[1] );
 
                 bool pBatch = !(in.info.dims[2] == 1 && in.info.dims[3] == 1);
 
                 momentsp(EnqueueArgs(getQueue(), global, local),
                           *out.data, out.info, *in.data, in.info,
-                          blocksMatX, (int)pBatch);
+                          (int)moment, blocksMatX, (int)pBatch);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

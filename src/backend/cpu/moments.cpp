@@ -17,34 +17,30 @@
 namespace cpu
 {
 
+static inline int bitCount(int v) {
+    v = v - ((v >> 1) & 0x55555555);
+    v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
+    return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
+}
+
 using af::dim4;
 
 template<typename T>
 Array<float> moments(const Array<T> &in, const af_moment_type moment)
 {
-    dim4 odims, idims = in.dims();
-    odims[0] = idims[2];
-    odims[1] = idims[3];
-    odims[2] = odims[3] = 1;
-
     in.eval();
-    Array<float> out = createEmptyArray<float>(odims);
+    dim4 odims, idims = in.dims();
+    dim_t moments_dim = bitCount(moment);
 
-    switch(moment) {
-        case AF_MOMENT_M00:
-            getQueue().enqueue(kernel::moments<T, AF_MOMENT_M00>, out, in);
-            break;
-        case AF_MOMENT_M01:
-            getQueue().enqueue(kernel::moments<T, AF_MOMENT_M01>, out, in);
-            break;
-        case AF_MOMENT_M10:
-            getQueue().enqueue(kernel::moments<T, AF_MOMENT_M10>, out, in);
-            break;
-        case AF_MOMENT_M11:
-            getQueue().enqueue(kernel::moments<T, AF_MOMENT_M11>, out, in);
-            break;
-        default:  break;
-    }
+    odims[0] = moments_dim;
+    odims[1] = 1;
+    odims[2] = idims[2];
+    odims[3] = idims[3];
+
+    Array<float> out = createValueArray<float>(odims, 0.f);
+    out.eval();
+
+    getQueue().enqueue(kernel::moments<T>, out, in, moment);
     getQueue().sync();
     return out;
 }

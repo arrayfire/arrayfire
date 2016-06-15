@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <af/array.h>
-#include <af/moments.h>
+#include <af/image.h>
 #include "symbol_manager.hpp"
 
 af_err af_moments(af_array* out, const af_array in, const af_moment_type moment)
