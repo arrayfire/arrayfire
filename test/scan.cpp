@@ -126,39 +126,52 @@ std::vector<T> createScanKey(af::dim4 dims, int scanDim,
     return key;
 }
 
+template <typename T>
+std::vector<T> createScanData(af::dim4 dims, T dataStart, T dataEnd)
+{
+    int elemCount = dims.elements();
+    std::vector<T> in(elemCount);
+    for (int i = 0; i < elemCount; ++i) {
+        in[i] = randomInterval(dataStart, dataEnd);
+    }
+    return in;
+}
+
 template <typename Ti, typename Tk, typename To, af_binary_op op, bool inclusive_scan>
-std::pair<std::vector<Ti>, std::vector<To> > createData(af::dim4 dims, const std::vector<Tk> &key,
-                int scanDim, Ti dataStart, Ti dataEnd)
+void verify(af::dim4 dims,
+        const std::vector<Ti> &in,
+        const std::vector<Tk> &key,
+        const std::vector<To> &out,
+        int scanDim, double eps)
 {
     std::srand(1);
     Binary<To, op> binOp;
     int elemCount = dims.elements();
-    std::vector<To> out(elemCount);
-    std::vector<Ti> in(elemCount);
 
     int stride = 1;
     for (int i = 0; i < scanDim; ++i) { stride *= dims[i]; }
 
     for (int start = 0; start < stride; ++start) {
-        Ti keyval = key[start];
-        if (!inclusive_scan) {
-            out[start] = binOp.init();
-            in[start] = randomInterval(dataStart, dataEnd);
-        }
+        Tk keyval = key[start];
+        To gold = binOp.init();
         for (int index = start + (!inclusive_scan)*stride, i = (!inclusive_scan);
                 index < elemCount;
                 index += stride, i = (i+1)%dims[scanDim]) {
-            in[index] = randomInterval(dataStart, dataEnd);
             if ((key[index] != keyval) || (i == 0)) {
                 keyval = key[index];
-                out[index] = inclusive_scan? (To)in[index] : binOp.init();
+                if (inclusive_scan) {
+                    gold = (To)in[index];
+                    ASSERT_NEAR(gold, out[index], eps);
+                } else {
+                    gold = binOp.init();
+                }
             } else {
                 To dataval = (To)in[index - (!inclusive_scan)*stride];
-                out[index] = binOp(out[index - stride], dataval);
+                gold = binOp(gold, dataval);
+                ASSERT_NEAR(gold, out[index], eps);
             }
         }
     }
-    return std::make_pair(in, out);
 }
 
 template<typename Ti, typename To, af_binary_op op, bool inclusive_scan>
@@ -166,19 +179,15 @@ void scanByKeyTest(af::dim4 dims, int scanDim, std::vector<int> nodeLengths,
         int keyStart, int keyEnd, Ti dataStart, Ti dataEnd, double eps)
 {
     std::vector<int> key = createScanKey<int>(dims, scanDim, nodeLengths, keyStart, keyEnd);
-    std::pair<std::vector<Ti>, std::vector<To> > data =
-        createData<Ti, int, To, op, inclusive_scan>(dims, key, scanDim, dataStart, dataEnd);
-    std::vector<Ti> &in = data.first;
-    std::vector<To> &outgold = data.second;
+    std::vector<Ti> in = createScanData<Ti>(dims, dataStart, dataEnd);
+
     af::array afkey(dims, key.data());
     af::array afin(dims, in.data());
     af::array afout = af::scanByKey(afkey, afin, scanDim, op, inclusive_scan);
-
     std::vector<To> out(afout.elements());
     afout.host(out.data());
-    for(unsigned i = 0; i < out.size(); ++i) {
-        ASSERT_NEAR(out[i], outgold[i], eps);
-    }
+
+    verify<Ti, int, To, op, inclusive_scan>(dims, in, key, out, scanDim, eps);
 }
 
 #define SCAN_BY_KEY_TEST(FN, X, Y, Z, W, Ti, To, INC, DIM, DSTART, DEND, EPS)   \
@@ -196,10 +205,35 @@ TEST(ScanByKey,Test_Scan_By_Key_##FN##_##Ti##_##INC##_##DIM)                    
             keyStart, keyEnd, dataStart, dataEnd, EPS);                         \
 }
 
-SCAN_BY_KEY_TEST(AF_BINARY_ADD, 16*1024+17, 1024, 1, 1,   int,   int,  true, 0,   -15,   15, 1e-5);
-SCAN_BY_KEY_TEST(AF_BINARY_ADD, 16*1024+17, 1024, 1, 1,   int,   int, false, 0,   -15,   15, 1e-5);
-SCAN_BY_KEY_TEST(AF_BINARY_ADD, 16*1024+17, 1024, 1, 1, float, float,  true, 0, -0.25, 0.25, 1e-5);
-SCAN_BY_KEY_TEST(AF_BINARY_ADD, 16*1024+17, 1024, 1, 1, float, float, false, 0, -0.25, 0.25, 1e-5);
+SCAN_BY_KEY_TEST(AF_BINARY_ADD, 16*1024, 1024, 1, 1,   int,   int,  true, 0,  -15,  15, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_ADD, 16*1024, 1024, 1, 1,   int,   int, false, 0,  -15,  15, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_ADD, 16*1024, 1024, 1, 1, float, float,  true, 0, -5.0, 5.0, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_ADD, 16*1024, 1024, 1, 1, float, float, false, 0, -5.0, 5.0, 1e-3);
+
+SCAN_BY_KEY_TEST(AF_BINARY_MIN, 16*1024, 1024, 1, 1,   int,   int,  true, 0,  -15,  15, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_MIN, 16*1024, 1024, 1, 1,   int,   int, false, 0,  -15,  15, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_MIN, 16*1024, 1024, 1, 1, float, float,  true, 0, -5.0, 5.0, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_MIN, 16*1024, 1024, 1, 1, float, float, false, 0, -5.0, 5.0, 1e-3);
+
+SCAN_BY_KEY_TEST(AF_BINARY_MAX, 16*1024, 1024, 1, 1,   int,   int,  true, 0,  -15,  15, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_MAX, 16*1024, 1024, 1, 1,   int,   int, false, 0,  -15,  15, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_MAX, 16*1024, 1024, 1, 1, float, float,  true, 0, -5.0, 5.0, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_MAX, 16*1024, 1024, 1, 1, float, float, false, 0, -5.0, 5.0, 1e-3);
+
+SCAN_BY_KEY_TEST(AF_BINARY_ADD,  4*1024,  512, 1, 1,   int,   int,  true, 1,  -15,  15, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_ADD,  4*1024,  512, 1, 1,   int,   int, false, 1,  -15,  15, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_ADD,  4*1024,  512, 1, 1, float, float,  true, 1,   -5,   5, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_ADD,  4*1024,  512, 1, 1, float, float, false, 1,   -5,   5, 1e-3);
+
+SCAN_BY_KEY_TEST(AF_BINARY_MIN,  4*1024,  512, 1, 1,   int,   int,  true, 1,  -15,  15, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_MIN,  4*1024,  512, 1, 1,   int,   int, false, 1,  -15,  15, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_MIN,  4*1024,  512, 1, 1, float, float,  true, 1,   -5,   5, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_MIN,  4*1024,  512, 1, 1, float, float, false, 1,   -5,   5, 1e-3);
+
+SCAN_BY_KEY_TEST(AF_BINARY_MAX,  4*1024,  512, 1, 1,   int,   int,  true, 1,  -15,  15, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_MAX,  4*1024,  512, 1, 1,   int,   int, false, 1,  -15,  15, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_MAX,  4*1024,  512, 1, 1, float, float,  true, 1,   -5,   5, 1e-3);
+SCAN_BY_KEY_TEST(AF_BINARY_MAX,  4*1024,  512, 1, 1, float, float, false, 1,   -5,   5, 1e-3);
 
 TEST(ScanByKey,Test_Scan_By_key_Simple_0)
 {
@@ -228,11 +262,6 @@ TEST(ScanByKey,Test_Scan_By_key_Simple_1)
     scanByKeyTest<int, int, AF_BINARY_ADD, false>(dims, scanDim, nodeLengths,
             keyStart, keyEnd, dataStart, dataEnd, 1e-5);
 }
-
-SCAN_BY_KEY_TEST(AF_BINARY_ADD, 4*1024, 512, 1, 1,   int,   int,  true, 1, -15, 15, 1e-4);
-SCAN_BY_KEY_TEST(AF_BINARY_ADD, 4*1024, 512, 1, 1,   int,   int, false, 1, -15, 15, 1e-4);
-SCAN_BY_KEY_TEST(AF_BINARY_ADD, 4*1024, 512, 1, 1, float, float,  true, 1,  -1,  1, 1e-4);
-SCAN_BY_KEY_TEST(AF_BINARY_ADD, 4*1024, 512, 1, 1, float, float, false, 1,  -1,  1, 1e-4);
 
 #define SCAN_TESTS(FN, TAG, Ti, To)             \
     TEST(Scan,Test_##FN##_##TAG)                \
