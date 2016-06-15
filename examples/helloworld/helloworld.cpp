@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
         af_print(r);
 
         printf("Scan\n");
-        array S = af::scan(r, 0, AF_MUL);
+        array S = af::scan(r, 0, AF_BINARY_MUL);
         af_print(S);
 
         printf("Create 2-by-3 matrix from host data\n");
