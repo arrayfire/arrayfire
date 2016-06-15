@@ -363,7 +363,7 @@ std::vector<Param> buildDoGPyr(
         const NDRange local(SIFT_THREADS, 1);
         const NDRange global(blk_x * SIFT_THREADS, 1);
 
-        auto suOp = make_kernel<Buffer, Buffer, unsigned, unsigned> (*suKernel);
+        auto suOp = KernelFunctor<Buffer, Buffer, unsigned, unsigned> (*suKernel);
 
         suOp(EnqueueArgs(getQueue(), global, local),
              *dog_pyr[o].data, *gauss_pyr[o].data, nel, dog_layers);
@@ -504,7 +504,7 @@ void sift(unsigned* out_feat,
 
             float extrema_thr = 0.5f * contrast_thr / n_layers;
 
-            auto deOp = make_kernel<Buffer, Buffer, Buffer, Buffer,
+            auto deOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer,
                                     Buffer, KParam, unsigned, float,
                                     LocalSpaceArg> (*deKernel[device]);
 
@@ -538,7 +538,7 @@ void sift(unsigned* out_feat,
             const NDRange local_interp(SIFT_THREADS, 1);
             const NDRange global_interp(blk_x_interp * SIFT_THREADS, 1);
 
-            auto ieOp = make_kernel<Buffer, Buffer, Buffer,
+            auto ieOp = KernelFunctor<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer, unsigned,
                                     Buffer, KParam, unsigned, unsigned, unsigned,
@@ -612,7 +612,7 @@ void sift(unsigned* out_feat,
             const NDRange local_nodup(SIFT_THREADS, 1);
             const NDRange global_nodup(blk_x_nodup * SIFT_THREADS, 1);
 
-            auto rdOp = make_kernel<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
+            auto rdOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer, Buffer, Buffer,
                                     unsigned> (*rdKernel[device]);
 
@@ -647,7 +647,7 @@ void sift(unsigned* out_feat,
             const NDRange local_ori(SIFT_THREADS_X, SIFT_THREADS_Y);
             const NDRange global_ori(SIFT_THREADS_X, blk_x_ori * SIFT_THREADS_Y);
 
-            auto coOp = make_kernel<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
+            auto coOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
                                     Buffer, KParam, unsigned, unsigned, int,
                                     LocalSpaceArg> (*coKernel[device]);
@@ -692,7 +692,7 @@ void sift(unsigned* out_feat,
             const unsigned histsz = 8;
 
             if (compute_GLOH) {
-                auto cgOp = make_kernel<Buffer, unsigned, unsigned,
+                auto cgOp = KernelFunctor<Buffer, unsigned, unsigned,
                                         Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
                                         Buffer, KParam, int, unsigned, unsigned, unsigned, float, int,
                                         LocalSpaceArg> (*cgKernel[device]);
@@ -705,7 +705,7 @@ void sift(unsigned* out_feat,
                      cl::Local(desc_len * (histsz+1) * sizeof(float)));
             }
             else {
-                auto cdOp = make_kernel<Buffer, unsigned, unsigned,
+                auto cdOp = KernelFunctor<Buffer, unsigned, unsigned,
                                         Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
                                         Buffer, KParam, int, int, float, int,
                                         LocalSpaceArg> (*cdKernel[device]);

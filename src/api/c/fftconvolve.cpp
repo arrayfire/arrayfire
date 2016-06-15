@@ -166,10 +166,18 @@ af_err af_fft_convolve1(af_array *out, const af_array signal, const af_array fil
 
 af_err af_fft_convolve2(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode)
 {
-    return fft_convolve<2>(out, signal, filter, mode == AF_CONV_EXPAND);
+    if (getInfo(signal).dims().ndims()<2 && getInfo(filter).dims().ndims()<2) {
+        return fft_convolve<1>(out, signal, filter, mode == AF_CONV_EXPAND);
+    } else {
+        return fft_convolve<2>(out, signal, filter, mode == AF_CONV_EXPAND);
+    }
 }
 
 af_err af_fft_convolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode)
 {
-    return fft_convolve<3>(out, signal, filter, mode == AF_CONV_EXPAND);
+    if (getInfo(signal).dims().ndims()<3 && getInfo(filter).dims().ndims()<3) {
+        return fft_convolve<2>(out, signal, filter, mode == AF_CONV_EXPAND);
+    } else {
+        return fft_convolve<3>(out, signal, filter, mode == AF_CONV_EXPAND);
+    }
 }

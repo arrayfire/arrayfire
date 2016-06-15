@@ -536,9 +536,6 @@ TEST(Index, Docs_Util_C_API)
 
     err = af_set_seq_indexer(indexers, &zeroIndices, 0, false);
 
-    af_print_array(a);
-    af_print_array(out);
-
     err = af_index_gen(&out, a, 2, indexers);
     if (err != AF_SUCCESS) {
         printf("Failed in af_index_gen: %d\n", err);

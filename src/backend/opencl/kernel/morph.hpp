@@ -22,7 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::LocalSpaceArg;
 using cl::NDRange;
@@ -68,7 +68,7 @@ void morph(Param         out,
                     morKernels[device] = new Kernel(*morProgs[device], "morph");
                 });
 
-        auto morphOp = make_kernel<Buffer, KParam,
+        auto morphOp = KernelFunctor<Buffer, KParam,
                                    Buffer, KParam,
                                    Buffer, cl::LocalSpaceArg,
                                    int, int
@@ -133,7 +133,7 @@ void morph3d(Param       out,
                     morKernels[device] = new Kernel(*morProgs[device], "morph3d");
                 });
 
-        auto morphOp = make_kernel<Buffer, KParam,
+        auto morphOp = KernelFunctor<Buffer, KParam,
                                    Buffer, KParam,
                                    Buffer, cl::LocalSpaceArg, int
                                   >(*morKernels[device]);

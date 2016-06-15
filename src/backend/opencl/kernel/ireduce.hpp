@@ -29,7 +29,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -101,7 +101,7 @@ namespace kernel
         NDRange global(groups_all[0] * groups_all[2] * local[0],
                        groups_all[1] * groups_all[3] * local[1]);
 
-        auto ireduceOp = make_kernel<Buffer, KParam, Buffer,
+        auto ireduceOp = KernelFunctor<Buffer, KParam, Buffer,
                                      Buffer, KParam, Buffer,
                                      uint, uint, uint>(*entry.ker);
 
@@ -214,7 +214,7 @@ namespace kernel
 
         uint repeat = divup(in.info.dims[0], (local[0] * groups_x));
 
-        auto ireduceOp = make_kernel<Buffer, KParam, Buffer,
+        auto ireduceOp = KernelFunctor<Buffer, KParam, Buffer,
                                      Buffer, KParam, Buffer,
                                      uint, uint, uint>(*entry.ker);
 

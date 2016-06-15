@@ -21,7 +21,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -70,7 +70,7 @@ void hsv2rgb_convert(Param out, const Param in)
         // parameter would be along 4th dimension
         NDRange global(blk_x * in.info.dims[3] * THREADS_X, blk_y * THREADS_Y);
 
-        auto hsvrgbOp = make_kernel<Buffer, KParam, Buffer, KParam, int> (*hrKernels[device]);
+        auto hsvrgbOp = KernelFunctor<Buffer, KParam, Buffer, KParam, int> (*hrKernels[device]);
 
         hsvrgbOp(EnqueueArgs(getQueue(), global, local),
                     *out.data, out.info, *in.data, in.info, blk_x);
