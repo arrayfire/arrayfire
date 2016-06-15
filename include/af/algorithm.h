@@ -328,7 +328,7 @@ namespace af
 
        \ingroup scan_func_scan
     */
-    AFAPI array scan(const array &in, const int dim = 0, af_binary_op op = AF_BINARY_ADD, bool inclusive_scan = true);
+    AFAPI array scan(const array &in, const int dim = 0, binaryOp op = AF_BINARY_ADD, bool inclusive_scan = true);
 
     /**
        C++ Interface generalized scan by key of an array
@@ -342,7 +342,7 @@ namespace af
 
        \ingroup scan_func_scan
     */
-    AFAPI array scanByKey(const array &key, const array& in, const int dim = 0, af_binary_op op = AF_BINARY_ADD, bool inclusive_scan = true);
+    AFAPI array scanByKey(const array &key, const array& in, const int dim = 0, binaryOp op = AF_BINARY_ADD, bool inclusive_scan = true);
 #endif
 
     /**

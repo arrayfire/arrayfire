@@ -20,14 +20,14 @@ namespace af
         return array(out);
     }
 
-    array scan(const array& in, const int dim, af_binary_op op, bool inclusive_scan)
+    array scan(const array& in, const int dim, binaryOp op, bool inclusive_scan)
     {
         af_array out = 0;
         AF_THROW(af_scan(&out, in.get(), dim, op, inclusive_scan));
         return array(out);
     }
 
-    array scanByKey(const array& key, const array& in, const int dim, af_binary_op op, bool inclusive_scan)
+    array scanByKey(const array& key, const array& in, const int dim, binaryOp op, bool inclusive_scan)
     {
         af_array out = 0;
         AF_THROW(af_scan_by_key(&out, key.get(), in.get(), dim, op, inclusive_scan));
