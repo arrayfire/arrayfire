@@ -29,11 +29,10 @@ namespace opencl
     using JIT::Node_ptr;
 
     template<typename T>
-    void Array<T>::genBufferNode() const
+    Node_ptr bufferNodePtr()
     {
-        BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
-                                              shortname<T>(true));
-        const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
+        return Node_ptr(reinterpret_cast<Node *>(new BufferNode(dtype_traits<T>::getName(),
+                                                                shortname<T>(true))));
     }
 
     template<typename T>
@@ -41,9 +40,8 @@ namespace opencl
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(info.elements() * sizeof(T)), bufferFree),
         data_dims(dims),
-        node(), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(true)
     {
-        this->genBufferNode();
     }
 
     template<typename T>
@@ -60,12 +58,11 @@ namespace opencl
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(info.elements()*sizeof(T)), bufferFree),
         data_dims(dims),
-        node(), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(true)
     {
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
         static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
         getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*info.elements(), in_data);
-        this->genBufferNode();
     }
 
     template<typename T>
@@ -73,7 +70,7 @@ namespace opencl
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(copy ? bufferAlloc(info.elements() * sizeof(T)) : new cl::Buffer(mem), bufferFree),
         data_dims(dims),
-        node(), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(true)
     {
         if (copy) {
             clRetainMemObject(mem);
@@ -82,7 +79,6 @@ namespace opencl
                                          src_offset, 0,
                                          sizeof(T) * info.elements());
         }
-        this->genBufferNode();
     }
 
     template<typename T>
@@ -90,11 +86,10 @@ namespace opencl
         info(parent.getDevId(), dims, offset_, stride, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()),
         data_dims(parent.getDataDims()),
-        node(),
+        node(bufferNodePtr<T>()),
         ready(true),
         owner(false)
     {
-        this->genBufferNode();
     }
 
 
@@ -108,9 +103,8 @@ namespace opencl
              (af_dtype)dtype_traits<T>::af_type),
         data(tmp.data, bufferFree),
         data_dims(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3])),
-        node(), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(true)
     {
-        this->genBufferNode();
     }
 
     template<typename T>
@@ -121,14 +115,13 @@ namespace opencl
              (new cl::Buffer((cl_mem)in_data)) :
              (bufferAlloc(info.total() * sizeof(T))), bufferFree),
         data_dims(dims),
-        node(),
+        node(bufferNodePtr<T>()),
         ready(true),
         owner(true)
     {
         if (!is_device) {
             getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T) * info.total(), in_data);
         }
-        this->genBufferNode();
     }
 
     template<typename T>
@@ -152,7 +145,7 @@ namespace opencl
         node->resetFlags();
         // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
         node.reset();
-        this->genBufferNode();
+        node = bufferNodePtr<T>();
     }
 
     template<typename T>
@@ -195,7 +188,7 @@ namespace opencl
             array->node->resetFlags();
             // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
             array->node.reset();
-            array->genBufferNode();
+            array->node = bufferNodePtr<T>();
         }
     }
 
@@ -216,11 +209,13 @@ namespace opencl
         return node;
     }
 
-
     template<typename T>
     Node_ptr Array<T>::getNode() const
     {
-        return const_cast<Array<T> *>(this)->getNode();
+        if (node->isBuffer()) {
+            return const_cast<Array<T> *>(this)->getNode();
+        }
+        return node;
     }
 
     using af::dim4;
