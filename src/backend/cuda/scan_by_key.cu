@@ -24,21 +24,18 @@ namespace cuda
         Array<To> out = createEmptyArray<To>(in.dims());
 
         if (inclusive_scan) {
-            switch (dim) {
-            case 0: kernel::scan_first_by_key<Ti, Tk, To, op   , true>(out, in, key); break;
-            case 1: kernel::scan_dim_by_key  <Ti, Tk, To, op, 1, true>(out, in, key); break;
-            case 2: kernel::scan_dim_by_key  <Ti, Tk, To, op, 2, true>(out, in, key); break;
-            case 3: kernel::scan_dim_by_key  <Ti, Tk, To, op, 3, true>(out, in, key); break;
+            if (dim == 0) {
+                kernel::scan_first_by_key<Ti, Tk, To, op, true>(out, in, key);
+            } else {
+                kernel::scan_dim_by_key  <Ti, Tk, To, op, true>(out, in, key, dim);
             }
         } else {
-            switch (dim) {
-            case 0: kernel::scan_first_by_key<Ti, Tk, To, op   , false>(out, in, key); break;
-            case 1: kernel::scan_dim_by_key  <Ti, Tk, To, op, 1, false>(out, in, key); break;
-            case 2: kernel::scan_dim_by_key  <Ti, Tk, To, op, 2, false>(out, in, key); break;
-            case 3: kernel::scan_dim_by_key  <Ti, Tk, To, op, 3, false>(out, in, key); break;
+            if (dim == 0) {
+                kernel::scan_first_by_key<Ti, Tk, To, op, false>(out, in, key);
+            } else {
+                kernel::scan_dim_by_key  <Ti, Tk, To, op, false>(out, in, key, dim);
             }
         }
-
         return out;
     }
 
