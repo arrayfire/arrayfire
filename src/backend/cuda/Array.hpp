@@ -40,6 +40,9 @@ namespace cuda
     void evalNodes(Param<T> &out, JIT::Node *node);
 
     template<typename T>
+    void evalNodes(std::vector<Param<T> > &out, std::vector<JIT::Node *> nodes);
+
+    template<typename T>
     void evalMultiple(std::vector<Array<T> *> arrays);
 
     // Creates a new Array object on the heap and returns a reference to it.

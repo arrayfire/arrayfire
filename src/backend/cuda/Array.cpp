@@ -130,9 +130,7 @@ namespace cuda
 
         evalNodes(res, this->getNode().get());
         ready = true;
-
-        Node_ptr prev = node;
-        prev->resetFlags();
+        node->resetFlags();
         // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
         node.reset();
         node = bufferNodePtr<T>();
@@ -148,10 +146,43 @@ namespace cuda
     template<typename T>
     void evalMultiple(std::vector<Array<T>*> arrays)
     {
-        //FIXME: implement this correctly
-        //Using fallback for now
+        std::vector<Param<T> > outputs;
+        std::vector<JIT::Node *> nodes;
+
         for (int i = 0; i < (int)arrays.size(); i++) {
-            arrays[i]->eval();
+            Array<T> *array = arrays[i];
+
+            if (array->isReady()) {
+                continue;
+            }
+
+            array->setId(getActiveDeviceId());
+            array->data = shared_ptr<T>(memAlloc<T>(array->elements()),
+                                        memFree<T>);
+
+            Param<T> res;
+            res.ptr = array->data.get();
+
+            for (int  i = 0; i < 4; i++) {
+                res.dims[i] = array->dims()[i];
+                res.strides[i] = array->strides()[i];
+            }
+
+            outputs.push_back(res);
+            nodes.push_back(array->node.get());
+        }
+
+        evalNodes(outputs, nodes);
+
+        for (int i = 0; i < (int)arrays.size(); i++) {
+            Array<T> *array = arrays[i];
+
+            if (array->isReady()) continue;
+            array->ready = true;
+            array->node->resetFlags();
+            // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
+            array->node.reset();
+            array->node = bufferNodePtr<T>();
         }
         return;
     }
