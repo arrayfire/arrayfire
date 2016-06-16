@@ -54,7 +54,7 @@ namespace opencl
             prog.build(targetDevices, (defaults + options).c_str());
 
         } catch (...) {
-            SHOW_DEBUG_BUILD_INFO(prog);
+            SHOW_BUILD_INFO(prog);
             throw;
         }
     }

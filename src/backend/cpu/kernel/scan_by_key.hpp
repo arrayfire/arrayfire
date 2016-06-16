@@ -15,43 +15,50 @@ namespace cpu
 namespace kernel
 {
 
-template<af_op_t op, typename Ti, typename To, int D, bool inclusive_scan>
-struct scan_dim
+template<af_op_t op, typename Ti, typename Tk, typename To, int D, bool inclusive_scan>
+struct scan_dim_by_key
 {
     void operator()(Array<To> out, dim_t outOffset,
+                    const Array<Tk> key, dim_t keyOffset,
                     const Array<Ti> in, dim_t inOffset,
                     const int dim) const
     {
         const dim4 odims    = out.dims();
         const dim4 ostrides = out.strides();
+        const dim4 kstrides = key.strides();
         const dim4 istrides = in.strides();
 
         const int D1 = D - 1;
         for (dim_t i = 0; i < odims[D1]; i++) {
-            scan_dim<op, Ti, To, D1, inclusive_scan> func;
+            scan_dim_by_key<op, Ti, Tk, To, D1, inclusive_scan> func;
             getQueue().enqueue(func,
                     out, outOffset + i * ostrides[D1],
+                    key, keyOffset + i * kstrides[D1],
                     in, inOffset + i * istrides[D1], dim);
             if (D1 == dim) break;
         }
     }
 };
 
-template<af_op_t op, typename Ti, typename To, bool inclusive_scan>
-struct scan_dim<op, Ti, To, 0, inclusive_scan>
+template<af_op_t op, typename Ti, typename Tk, typename To, bool inclusive_scan>
+struct scan_dim_by_key<op, Ti, Tk, To, 0, inclusive_scan>
 {
     void operator()(Array<To> output, dim_t outOffset,
-                    const Array<Ti> input,  dim_t inOffset,
+                    const Array<Tk> keyinput, dim_t keyOffset,
+                    const Array<Ti> input, dim_t inOffset,
                     const int dim) const
     {
-        const Ti* in = input.get() + inOffset;
-              To* out= output.get()+ outOffset;
+        const Ti* in  = input.get()    + inOffset;
+        const Tk* key = keyinput.get() + keyOffset;
+              To* out = output.get()   + outOffset;
 
         const dim4 ostrides = output.strides();
+        const dim4 kstrides = keyinput.strides();
         const dim4 istrides = input.strides();
         const dim4 idims    = input.dims();
 
         dim_t istride = istrides[dim];
+        dim_t kstride = kstrides[dim];
         dim_t ostride = ostrides[dim];
 
         Transform<Ti, To, op> transform;
@@ -59,20 +66,22 @@ struct scan_dim<op, Ti, To, 0, inclusive_scan>
         Binary<To, op> scan;
 
         To out_val = scan.init();
-        for (dim_t i = 0; i < idims[dim]; i++) {
+        Tk key_val = key[0];
+
+        dim_t k = !inclusive_scan;
+        if (!inclusive_scan) {
+            out[0] = scan.init();
+        }
+
+        for (dim_t i = 0; i < idims[dim] - (!inclusive_scan); i++, k++) {
             To in_val = transform(in[i * istride]);
-            out_val = scan(in_val, out_val);
-            if (!inclusive_scan) {
-                //The loop shifts the output index by 1.
-                //The last index wraps around and writes the first element.
-                if (i == (idims[dim] - 1)) {
-                    out[0] = scan.init();
-                } else {
-                    out[(i + 1) * ostride] = out_val;
-                }
+            if (key[k * kstride] != key_val) {
+                out_val = !inclusive_scan? scan.init() : in_val;
+                key_val = key[k * kstride];
             } else {
-                out[i * ostride] = out_val;
+                out_val = scan(in_val, out_val);
             }
+            out[k * ostride] = out_val;
         }
     }
 };
