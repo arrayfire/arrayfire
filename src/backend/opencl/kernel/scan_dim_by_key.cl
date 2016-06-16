@@ -147,6 +147,7 @@ void scan_dim_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
                 boundaryid[lidx] = id_dim;
             }
         }
+        barrier(CLK_LOCAL_MEM_FENCE);
 
         if (cond) *oData = val;
         if (isLast) {

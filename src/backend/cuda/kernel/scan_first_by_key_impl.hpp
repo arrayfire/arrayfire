@@ -150,6 +150,7 @@ namespace kernel
                     boundaryid[tidy] = id;
                 }
             }
+            __syncthreads();
 
             if (id < out.dims[0]) optr[id] = val;
             if (isLast) {

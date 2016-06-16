@@ -139,6 +139,7 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
                 boundaryid[lidy] = id;
             }
         }
+        barrier(CLK_LOCAL_MEM_FENCE);
 
         if (cond) oData[id] = val;
         if (isLast) {
@@ -146,7 +147,7 @@ void scan_first_by_key_nonfinal_kernel(__global To *oData, KParam oInfo,
             l_ftmp[lidy] = flag;
         }
         id += DIMX;
-        barrier(CLK_LOCAL_MEM_FENCE); //FIXME: May be needed only for non nvidia gpus
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
 
     if (isLast && cond_yzw) {
@@ -264,7 +265,7 @@ void scan_first_by_key_final_kernel(__global To *oData, KParam oInfo,
             l_ftmp[lidy] = flag;
         }
         id += DIMX;
-        barrier(CLK_LOCAL_MEM_FENCE); //FIXME: May be needed only for non nvidia gpus
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
 }
 

@@ -169,6 +169,7 @@ namespace kernel
                     boundaryid[tidx] = id_dim;
                 }
             }
+            __syncthreads();
 
             if (is_valid && (id_dim < out_dim)) *optr = val;
             if (isLast) {

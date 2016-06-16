@@ -81,7 +81,7 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
             }
         }
         id += DIMX;
-        barrier(CLK_LOCAL_MEM_FENCE); //FIXME: May be needed only for non nvidia gpus
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
 
     if (!isFinalPass && isLast && cond_yzw) {
