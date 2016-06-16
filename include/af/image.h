@@ -681,13 +681,14 @@ AFAPI array rgb2ycbcr(const array& in, const YCCStd standard=AF_YCC_601);
 /**
    C++ Interface for calculating an image moment
 
+   \param[out] out is a pointer to a pre-allocated array where the calculated moment(s) will be placed.
+   User is responsible for ensuring enough space to hold all requested moments
    \param[in]  in is the input image
-   \param[out] out is a pointer to the outputted moment(s)
-   \param[moment] is the moment(s) to calculate
+   \param[in] moment is moment(s) to calculate
 
    \ingroup image_func_moments
  */
-AFAPI void moments(double* out, const array& in, const af_moment_type moment);
+AFAPI void moments(double* out, const array& in, const momentType moment=AF_MOMENT_FIRST_ORDER);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -695,12 +696,12 @@ AFAPI void moments(double* out, const array& in, const af_moment_type moment);
    C++ Interface for calculating image moments
 
    \param[in]  in contains the input image(s)
-   \param[moment] is the moment to calculate
+   \param[in] moment is moment(s) to calculate
    \return array containing the requested moment of each image
 
    \ingroup image_func_moments
  */
-AFAPI array moments(const array& in, const af_moment_type moment);
+AFAPI array moments(const array& in, const momentType moment=AF_MOMENT_FIRST_ORDER);
 #endif
 
 }
@@ -1381,7 +1382,7 @@ extern "C" {
 
        \param[out] out is an array containing the calculated moments
        \param[in]  in is an array of image(s)
-       \param[moment] is the moment(s) to calculate
+       \param[in] moment is moment(s) to calculate
        \return     ref AF_SUCCESS if the moment calculation is successful,
        otherwise an appropriate error code is returned.
 
@@ -1394,9 +1395,10 @@ extern "C" {
     /**
        C Interface for calculating image moment(s) of a single image
 
-       \param[out] out is  a pointer to the outputted moment(s)
+       \param[out] out is a pointer to a pre-allocated array where the calculated moment(s) will be placed.
+       User is responsible for ensuring enough space to hold all requested moments
        \param[in] in is the input image
-       \param[moment] is the moment(s) to calculate
+       \param[in] moment is moment(s) to calculate
        \return     ref AF_SUCCESS if the moment calculation is successful,
        otherwise an appropriate error code is returned.
 

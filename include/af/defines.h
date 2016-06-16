@@ -363,7 +363,7 @@ typedef enum {
     AF_MOMENT_M01 = 2,
     AF_MOMENT_M10 = 4,
     AF_MOMENT_M11 = 8,
-    AF_MOMENT_FIRST_ORDER = 0xF
+    AF_MOMENT_FIRST_ORDER = AF_MOMENT_M00 | AF_MOMENT_M01 | AF_MOMENT_M10 | AF_MOMENT_M11
 } af_moment_type;
 #endif
 

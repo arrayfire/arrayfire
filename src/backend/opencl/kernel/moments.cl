@@ -47,8 +47,7 @@ inline void fatomic_add_g(volatile __global float *source, const float operand) 
 __kernel
 void moments_kernel(__global  float *d_out, const KParam out,
                     __global const T *d_in,  const KParam in,
-                    const int moment, const int blocksMatX,
-                    const int pBatch)
+                    const int moment, const int pBatch)
 {
     const dim_t idw = get_group_id(1) / in.dims[2];
     const dim_t idz = get_group_id(1)  - idw * in.dims[2];
@@ -56,27 +55,26 @@ void moments_kernel(__global  float *d_out, const KParam out,
     const dim_t idy = get_group_id(0);
     dim_t idx = get_local_id(0);
 
-    __local float wkg_moment_sum[4];
-    if(get_local_id(0) < 4) {
+    if(idy >= in.dims[1] ||
+       idz >= in.dims[2] ||
+       idw >= in.dims[3] )
+        return;
+
+    __local float wkg_moment_sum[MOMENTS_SZ];
+    if(get_local_id(0) < MOMENTS_SZ) {
          wkg_moment_sum[get_local_id(0)] = 0.f;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    for(unsigned i=0; i<blocksMatX; ++i) {
-        int mId = idy * in.strides[1] + idx;
-        if(pBatch) {
-           mId += idw * in.strides[3] + idz * in.strides[2];
-        }
+    int mId = idy * in.strides[1] + idx;
+    if(pBatch) {
+       mId += idw * in.strides[3] + idz * in.strides[2];
+    }
 
-        if(idx >= in.dims[0] ||
-           idy >= in.dims[1] ||
-           idz >= in.dims[2] ||
-           idw >= in.dims[3])
-            break;
-
-
+    for(; idx<in.dims[0]; idx+=get_local_size(0)) {
         dim_t m_off = 0;
         float val = d_in[mId];
+        mId += get_local_size(0);
 
         if((moment & AF_MOMENT_M00) > 0) {
             fatomic_add_l(wkg_moment_sum + m_off++, val);
@@ -90,7 +88,6 @@ void moments_kernel(__global  float *d_out, const KParam out,
         if((moment & AF_MOMENT_M11) > 0) {
             fatomic_add_l(wkg_moment_sum + m_off, idx * idy * val);
         }
-        idx += get_local_size(0);
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);

@@ -19,6 +19,7 @@
 #include <debug_opencl.hpp>
 #include <type_util.hpp>
 #include <math.hpp>
+#include <cache.hpp>
 #include "config.hpp"
 
 using cl::Buffer;
@@ -42,15 +43,20 @@ namespace opencl
         void moments(Param out, const Param in, af_moment_type moment)
         {
             try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>  momentsProgs;
-                static std::map<int, Kernel*> momentsKernels;
+                std::string ref_name =
+                std::string("moments_") +
+                std::string(dtype_traits<T>::getName()) +
+                std::string("_") +
+                std::to_string(out.info.dims[0]);
 
                 int device = getActiveDeviceId();
+                kc_t::iterator idx = kernelCaches[device].find(ref_name);
 
-                std::call_once( compileFlags[device], [device] () {
+                kc_entry_t entry;
+                if (idx == kernelCaches[device].end()) {
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName();
+                    options << " -D MOMENTS_SZ=" << out.info.dims[0];
 
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
@@ -60,17 +66,21 @@ namespace opencl
 
                     Program prog;
                     buildProgram(prog, moments_cl, moments_cl_len, options.str());
-                    momentsProgs[device] = new Program(prog);
 
-                    momentsKernels[device] = new Kernel(*momentsProgs[device], "moments_kernel");
-                });
+                    entry.prog = new Program(prog);
+                    entry.ker = new Kernel(*entry.prog, "moments_kernel");
+
+                    kernelCaches[device][ref_name] = entry;
+                } else {
+                    entry = idx->second;
+                }
 
 
-                auto momentsp = KernelFunctor<Buffer, const KParam, const Buffer, const KParam, const int, const int, const int>
-                                      (*momentsKernels[device]);
+                auto momentsp = KernelFunctor<Buffer, const KParam,
+                                              const Buffer, const KParam,
+                                              const int, const int>(*entry.ker);
 
                 NDRange local(THREADS, 1, 1);
-                dim_t blocksMatX = divup(in.info.dims[0], local[0]);
                 NDRange global(in.info.dims[1] * local[0] ,
                                in.info.dims[2] * in.info.dims[3] * local[1] );
 
@@ -78,7 +88,7 @@ namespace opencl
 
                 momentsp(EnqueueArgs(getQueue(), global, local),
                           *out.data, out.info, *in.data, in.info,
-                          (int)moment, blocksMatX, (int)pBatch);
+                          (int)moment, (int)pBatch);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
