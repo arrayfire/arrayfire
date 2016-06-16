@@ -68,7 +68,7 @@ namespace kernel
             std::ostringstream options;
             options << " -D To=" << dtype_traits<To>::getName()
                     << " -D Ti=" << dtype_traits<Ti>::getName()
-                    << " -D Tk=" << dtype_traits<Ti>::getName()
+                    << " -D Tk=" << dtype_traits<Tk>::getName()
                     << " -D T=To"
                     << " -D dim=" << dim
                     << " -D DIMY=" << threads_y
