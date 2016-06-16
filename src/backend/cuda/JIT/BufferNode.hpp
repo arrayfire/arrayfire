@@ -30,25 +30,25 @@ namespace JIT
     {
     private:
         // Keep the shared pointer for reference counting
-        shared_ptr<T> sptr;
-        CParam<T> m_param;
+        shared_ptr<T> m_data;
+        Param<T> m_param;
         unsigned m_bytes;
 
         bool m_linear_buffer;
     public:
 
         BufferNode(const char *type_str,
-                   const char *name_str,
-                   shared_ptr<T> data,
-                   CParam<T> param,
-                   unsigned bytes,
-                   bool is_linear)
-            : Node(type_str, name_str),
-              sptr(data),
-              m_param(param),
-              m_bytes(bytes),
-              m_linear_buffer(is_linear)
+                   const char *name_str)
+            : Node(type_str, name_str)
         {
+        }
+
+        void setData(Param<T> param, shared_ptr<T> data, const unsigned bytes, bool is_linear)
+        {
+            m_param = param;
+            m_data = data;
+            m_bytes = bytes;
+            m_linear_buffer = is_linear;
         }
 
         bool isLinear(dim_t dims[4])
@@ -63,6 +63,8 @@ namespace JIT
             }
             return m_linear;
         }
+
+        bool isBuffer() { return true; }
 
         void genKerName(std::stringstream &kerStream)
         {

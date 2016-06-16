@@ -29,10 +29,17 @@ namespace cuda
     using JIT::Node_ptr;
 
     template<typename T>
+    Node_ptr bufferNodePtr()
+    {
+        Node_ptr node(reinterpret_cast<Node *>(new BufferNode<T>(irname<T>(), afShortName<T>())));
+        return node;
+    }
+
+    template<typename T>
     Array<T>::Array(af::dim4 dims) :
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
-        node(), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(true)
     {}
 
     template<typename T>
@@ -40,7 +47,7 @@ namespace cuda
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(((is_device & !copy_device) ? (T *)in_data : memAlloc<T>(dims.elements())), memFree<T>),
         data_dims(dims),
-        node(), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(true)
     {
 #if __cplusplus > 199711L
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
@@ -61,7 +68,7 @@ namespace cuda
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim_t &offset_, const dim4 &strides) :
         info(parent.getDevId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()), data_dims(parent.getDataDims()),
-        node(),
+        node(bufferNodePtr<T>()),
         ready(true), owner(false)
     { }
 
@@ -74,7 +81,7 @@ namespace cuda
              (af_dtype)dtype_traits<T>::af_type),
         data(tmp.ptr, memFree<T>),
         data_dims(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3])),
-        node(), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(true)
     {
     }
 
@@ -92,7 +99,7 @@ namespace cuda
         info(getActiveDeviceId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
         data(is_device ? (T*)in_data : memAlloc<T>(info.total()), memFree<T>),
         data_dims(dims),
-        node(),
+        node(bufferNodePtr<T>()),
         ready(true),
         owner(true)
     {
@@ -128,6 +135,7 @@ namespace cuda
         prev->resetFlags();
         // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
         node.reset();
+        node = bufferNodePtr<T>();
     }
 
     template<typename T>
@@ -152,17 +160,23 @@ namespace cuda
     Array<T>::~Array() {}
 
     template<typename T>
+    Node_ptr Array<T>::getNode()
+    {
+        if (node->isBuffer()) {
+            unsigned bytes = this->getDataDims().elements() * sizeof(T);
+            BufferNode<T> *bufNode = reinterpret_cast<BufferNode<T> *>(node.get());
+            Param<T> param = *this;
+            bufNode->setData(param, data, bytes, isLinear());
+        }
+        return node;
+    }
+
+    template<typename T>
     Node_ptr Array<T>::getNode() const
     {
-        if (!node) {
-            bool is_linear = isLinear();
-            unsigned bytes = this->getDataDims().elements() * sizeof(T);
-            BufferNode<T> *buf_node = new BufferNode<T>(irname<T>(),
-                                                        afShortName<T>(), data,
-                                                        *this, bytes, is_linear);
-            const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
+        if (node->isBuffer()) {
+            return const_cast<Array<T> *>(this)->getNode();
         }
-
         return node;
     }
 

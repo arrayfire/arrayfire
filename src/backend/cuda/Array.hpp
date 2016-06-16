@@ -229,6 +229,7 @@ namespace cuda
             return out;
         }
 
+        JIT::Node_ptr getNode();
         JIT::Node_ptr getNode() const;
 
         friend void evalMultiple<T>(std::vector<Array<T> *> arrays);

@@ -92,6 +92,8 @@ namespace JIT
             bytes = 0;
         }
 
+        virtual bool isBuffer() { return false; }
+
         std::string getTypeStr() { return m_type_str; }
 
         bool isGenFunc() { return m_gen_func; }
