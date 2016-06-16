@@ -29,11 +29,8 @@ namespace JIT
     public:
 
         BufferNode(const char *type_str,
-                   const char *name_str,
-                   const bool is_linear)
-            : Node(type_str, name_str),
-              m_bytes(0),
-              m_linear_buffer(is_linear)
+                   const char *name_str)
+            : Node(type_str, name_str)
         {
         }
 
@@ -43,11 +40,12 @@ namespace JIT
         {
         }
 
-        void setData(KParam info, std::shared_ptr<cl::Buffer> data, const unsigned bytes)
+        void setData(KParam info, std::shared_ptr<cl::Buffer> data, const unsigned bytes, bool is_linear)
         {
             m_info = info;
             m_data = data;
             m_bytes = bytes;
+            m_linear_buffer = is_linear;
         }
 
         bool isLinear(dim_t dims[4])

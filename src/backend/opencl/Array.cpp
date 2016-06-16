@@ -31,10 +31,8 @@ namespace opencl
     template<typename T>
     void Array<T>::genBufferNode() const
     {
-        bool is_linear = isLinear();
         BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
-                                              shortname<T>(true),
-                                              is_linear);
+                                              shortname<T>(true));
         const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
     }
 
@@ -213,7 +211,7 @@ namespace opencl
             KParam kinfo = *this;
             BufferNode *bufNode = reinterpret_cast<BufferNode *>(node.get());
             unsigned bytes = this->getDataDims().elements() * sizeof(T);
-            bufNode->setData(kinfo, data, bytes);
+            bufNode->setData(kinfo, data, bytes, isLinear());
         }
         return node;
     }
