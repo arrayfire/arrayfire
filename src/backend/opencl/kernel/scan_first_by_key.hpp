@@ -7,11 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
-#include <ops.hpp>
+#pragma once
+#include <traits.hpp>
+#include <dispatch.hpp>
+#include <Param.hpp>
+#include <debug_opencl.hpp>
 
-namespace cuda
+namespace opencl
 {
-    template<af_op_t op, typename Ti, typename To>
-    Array<To> scan(const Array<Ti>& in, const int dim, bool inclusive_scan = true);
+namespace kernel
+{
+    template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
+    void scan_first(Param &out, const Param &in, const Param &key);
+}
 }
