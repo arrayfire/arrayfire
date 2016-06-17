@@ -41,6 +41,8 @@ TYPED_TEST_CASE(Image, TestTypes);
 template<typename T>
 void momentsTest(string pTestFile)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<T> >   in;
@@ -87,6 +89,7 @@ void momentsTest(string pTestFile)
 
 void momentsOnImageTest(string pTestFile, string pImageFile, bool isColor)
 {
+    if (noImageIOTests()) return;
     vector<af::dim4> numDims;
 
     vector<vector<float> >   in;
