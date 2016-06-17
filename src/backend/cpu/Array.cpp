@@ -108,6 +108,18 @@ void Array<T>::eval() const
     const_cast<Array<T> *>(this)->eval();
 }
 
+
+template<typename T>
+void evalMultiple(std::vector<Array<T>*> arrays)
+{
+    //FIXME: implement this correctly
+    //Using fallback for now
+    for (auto array : arrays) {
+        array->eval();
+    }
+    return;
+}
+
 template<typename T>
 Node_ptr Array<T>::getNode() const
 {
@@ -167,16 +179,18 @@ createNodeArray(const dim4 &dims, Node_ptr node)
 {
     Array<T> out =  Array<T>(dims, node);
 
-    unsigned length =0, buf_count = 0, bytes = 0;
+    if (evalFlag()) {
+        unsigned length =0, buf_count = 0, bytes = 0;
 
-    Node *n = node.get();
-    n->getInfo(length, buf_count, bytes);
-    n->reset();
+        Node *n = node.get();
+        n->getInfo(length, buf_count, bytes);
+        n->reset();
 
-    if (length > getMaxJitSize() ||
-        buf_count >= getMaxBuffers() ||
-        bytes >= getMaxBytes()) {
-        out.eval();
+        if (length > getMaxJitSize() ||
+            buf_count >= getMaxBuffers() ||
+            bytes >= getMaxBytes()) {
+            out.eval();
+        }
     }
 
     return out;
@@ -265,6 +279,7 @@ writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     template       TNJ::Node_ptr Array<T>::getNode() const;             \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
+    template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \
 
 INSTANTIATE(float)
 INSTANTIATE(double)

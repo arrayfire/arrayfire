@@ -864,6 +864,12 @@ unsigned getMaxJitSize()
     return length;
 }
 
+bool& evalFlag()
+{
+    static bool flag = true;
+    return flag;
+}
+
 }
 
 using namespace opencl;

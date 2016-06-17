@@ -488,6 +488,12 @@ bool synchronize_calls() {
     return sync;
 }
 
+bool& evalFlag()
+{
+    static bool flag = true;
+    return flag;
+}
+
 }
 
 af_err afcu_get_stream(cudaStream_t* stream, int id)

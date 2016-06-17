@@ -46,7 +46,7 @@ namespace TNJ
             return;
         }
 
-        void reset() { m_is_eval = false; }
+        void reset() { resetCommonFlags(); }
 
         bool isLinear(const dim_t *dims) { return true; }
     };

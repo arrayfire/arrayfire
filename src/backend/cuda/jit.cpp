@@ -47,19 +47,23 @@ const char *layout32 = "target datalayout = \"e-p:32:32:32-i1:8:8-i8:8:8-i16:16:
 const char *triple64 = "target triple = \"nvptx64-unknown-cuda\"\n\n";
 const char *triple32 = "target triple = \"nvptx-unknown-cuda\"\n\n";
 
-static string getFuncName(Node *node, bool is_linear)
+static string getFuncName(std::vector<Node *> nodes, bool is_linear)
 {
-    node->setId(0);
-
     stringstream funcName;
     stringstream hashName;
 
     if (is_linear) funcName << "L_"; //Kernel Linear
     else           funcName << "G_"; //Kernel General
 
-    funcName << node->getNameStr();
-    node->genKerName(funcName);
-    funcName.str();
+    int id = 0;
+
+    for (int i = 0; i < (int)nodes.size(); i++) {
+        funcName << "[";
+        id = nodes[i]->setId(id);
+        funcName << nodes[i]->getNameStr();
+        nodes[i]->genKerName(funcName);
+        funcName << "]";
+    }
 
     boost::hash<std::string> hash_fn;
 
@@ -68,13 +72,151 @@ static string getFuncName(Node *node, bool is_linear)
     return hashName.str();
 }
 
-static string getKernelString(string funcName, Node *node, bool is_linear)
+static string getKernelString(string funcName, std::vector<Node *> nodes, bool is_linear)
 {
+    static const char *defineVoid = "define void ";
+    static const char *dimParams = "\n"
+        "i32 %ostr0, i32 %ostr1, i32 %ostr2, i32 %ostr3,\n"
+        "i32 %odim0, i32 %odim1, i32 %odim2, i32 %odim3,\n"
+        "i32 %blkx, i32 %blky, i32 %ndims";
+
+    static const char *blockStart = "\n{\n\n"
+        "entry:\n\n";
+    static const char *blockEnd = "\n\n"
+        "ret void\n"
+        "\n\n}\n";
+
+    static const char *idAlias = "\n"
+        "%tidx = call i32 @llvm.nvvm.read.ptx.sreg.tid.x()\n"
+        "%bdmx = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x()\n"
+        "%bidx = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x()\n"
+        "%bidy = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.y()\n"
+        "%gdmx = call i32 @llvm.nvvm.read.ptx.sreg.nctaid.x()\n"
+        "\n\n";
+    static const char *earlyExit = "\n"
+        "end:\n\n"
+        "ret void\n";
+    static const char *core = "\n"
+        "core:\n\n";
+
+    static const char *generalIndex = "\n"
+        "%tidy = call i32 @llvm.nvvm.read.ptx.sreg.tid.y()\n"
+        "%bdmy = call i32 @llvm.nvvm.read.ptx.sreg.ntid.y()\n"
+        "%blk_x = alloca i32, align 4\n"
+        "%blk_y = alloca i32, align 4\n"
+        "%id_3 = alloca i32, align 4\n"
+        "%id_2 = alloca i32, align 4\n"
+        "store i32 %bidx, i32* %blk_x, align 4\n"
+        "store i32 %bidy, i32* %blk_y, align 4\n"
+        "store i32 0, i32* %id_2, align 4\n"
+        "store i32 0, i32* %id_3, align 4\n"
+        "%two = alloca i32, align 4\n"
+        "store i32 2, i32* %two, align 4\n"
+        "%twoval = load i32* %two, align 4\n"
+        "%is34 = icmp sgt i32 %ndims, %twoval\n"
+        "br i1 %is34, label %do34, label %do2\n"
+        "\ndo34:\n"
+        "%id2t = sdiv i32 %bidx, %blkx\n"
+        "store i32 %id2t, i32* %id_2, align 4\n"
+        "%id2m = mul i32 %id2t, %blkx\n"
+        "%blk_xx = sub i32 %bidx, %id2m\n"
+        "store i32 %blk_xx, i32* %blk_x, align 4\n"
+        "%three = alloca i32, align 4\n"
+        "store i32 3, i32* %three, align 4\n"
+        "%threeval = load i32* %three, align 4\n"
+        "%is4 = icmp sgt i32 %ndims, %threeval\n"
+        "br i1 %is4, label %do4, label %do2\n"
+        "\ndo4:\n"
+        "%id3t = sdiv i32 %bidy, %blky\n"
+        "store i32 %id3t, i32* %id_3, align 4\n"
+        "%id3m = mul i32 %id3t, %blky\n"
+        "%blk_yy = sub i32 %bidy, %id3m\n"
+        "store i32 %blk_yy, i32* %blk_y, align 4\n"
+        "br label %do2\n"
+        "\ndo2:\n"
+        "%id2 = load i32* %id_2, align 4\n"
+        "%id3 = load i32* %id_3, align 4\n"
+        "%tmp_x = load i32* %blk_x, align 4\n"
+        "%id0m = mul i32 %tmp_x, %bdmx\n"
+        "%id0 = add i32 %tidx, %id0m\n"
+        "%tmp_y = load i32* %blk_y, align 4\n"
+        "%id1m = mul i32 %tmp_y, %bdmy\n"
+        "%id1 = add i32 %tidy, %id1m\n"
+        "\n\n"
+        "%off3o = mul i32 %id3, %ostr3\n"
+        "%off2o = mul i32 %id2, %ostr2\n"
+        "%off1o = mul i32 %id1, %ostr1\n"
+        "%off23o = add i32 %off3o, %off2o\n"
+        "%off123o = add i32 %off23o, %off1o\n"
+        "%idxa = add i32 %off123o, %id0\n"
+        "%idx = sext i32 %idxa to i64\n"
+        "\n\n"
+        "%cmp3 = icmp slt i32 %id3, %odim3\n"
+        "%cmp2 = icmp slt i32 %id2, %odim2\n"
+        "%cmp1 = icmp slt i32 %id1, %odim1\n"
+        "%cmp0 = icmp slt i32 %id0, %odim0\n"
+        "br i1 %cmp3, label %check2, label %end\n"
+        "\ncheck2:\n"
+        "br i1 %cmp2, label %check1, label %end\n"
+        "\ncheck1:\n"
+        "br i1 %cmp1, label %check0, label %end\n"
+        "\ncheck0:\n"
+        "br i1 %cmp0, label %core, label %end\n";
+
+    static const char *linearIndex = "\n"
+        "%boff = mul i32 %bidy, %gdmx\n"
+        "%bid  = add i32 %boff, %bidx\n"
+        "%goff = mul i32 %bid , %bdmx\n"
+        "%gid  = add i32 %goff ,%tidx\n"
+        "%idx  = sext i32 %gid to i64\n"
+        "%el1  = mul i32 %odim0, %odim1\n"
+        "%el2  = mul i32 %el1  , %odim2\n"
+        "%el3  = mul i32 %el2  , %odim3\n"
+        "%cmp0 = icmp slt i32 %gid, %el3\n"
+        "br i1 %cmp0, label %core, label %end\n";
+
+    static const char *functionLoad = "\n"
+        "declare i32 @llvm.nvvm.read.ptx.sreg.tid.x() nounwind readnone\n"
+        "declare i32 @llvm.nvvm.read.ptx.sreg.tid.y() nounwind readnone\n"
+        "declare i32 @llvm.nvvm.read.ptx.sreg.ntid.x() nounwind readnone\n"
+        "declare i32 @llvm.nvvm.read.ptx.sreg.ntid.y() nounwind readnone\n"
+        "declare i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() nounwind readnone\n"
+        "declare i32 @llvm.nvvm.read.ptx.sreg.ctaid.y() nounwind readnone\n"
+        "declare i32 @llvm.nvvm.read.ptx.sreg.nctaid.x() nounwind readnone\n"
+        "\n";
+
+
     stringstream kerStream;
-    stringstream annStream;
+    stringstream inAnnStream;
+    stringstream outAnnStream;
+    stringstream inParamStream;
+    stringstream outParamStream;
+    stringstream funcBodyStream;
+    stringstream offsetsStream;
+    stringstream outWriteStream;
     str_map_t declStrs;
 
-    int id = node->getId();
+    for (int i = 0; i < (int)nodes.size(); i++) {
+        std::string outTypeStr = nodes[i]->getTypeStr();
+        int id = nodes[i]->getId();
+
+        nodes[i]->genParams(inParamStream, inAnnStream, is_linear);
+        outParamStream << outTypeStr << "* %out" << id << ",\n";
+        nodes[i]->genOffsets(offsetsStream, is_linear);
+        nodes[i]->genFuncs(funcBodyStream, declStrs, is_linear);
+
+        outWriteStream << "%outIdx" << id
+                       << "= getelementptr inbounds "
+                       << outTypeStr
+                       << "* %out" << id
+                       << ", i64 %idx\n";
+        outWriteStream << "store "
+                       << outTypeStr
+                       << " %val" << id << ", "
+                       << outTypeStr
+                       << "* %outIdx" << id << "\n";
+        outAnnStream << outTypeStr << "*,\n";
+    }
 
     if (sizeof(void *) == 8) {
         kerStream << layout64;
@@ -84,152 +226,34 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
         kerStream << triple32;
     }
 
-    kerStream << "define void " << funcName << " (" << std::endl;
-    node->genParams(kerStream, annStream, is_linear);
-    kerStream << node->getTypeStr() <<"* %out,\n"
-              << "i32 %ostr0, i32 %ostr1, i32 %ostr2, i32 %ostr3,\n"
-              << "i32 %odim0, i32 %odim1, i32 %odim2, i32 %odim3,\n"
-              << "i32 %blkx, i32 %blky, i32 %ndims) {"
-              << "\n\n";
+    const char *index = is_linear ? linearIndex : generalIndex;
 
-    kerStream << "entry:\n\n";
-    kerStream << "%tidx = call i32 @llvm.nvvm.read.ptx.sreg.tid.x()\n";
-    kerStream << "%bdmx = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x()\n";
-    kerStream << "%bidx = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x()\n";
-    kerStream << "%bidy = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.y()\n";
-    kerStream << "%gdmx = call i32 @llvm.nvvm.read.ptx.sreg.nctaid.x()\n";
-    kerStream << "\n\n";
-
-    if (!is_linear) {
-
-        kerStream << "%tidy = call i32 @llvm.nvvm.read.ptx.sreg.tid.y()\n";
-        kerStream << "%bdmy = call i32 @llvm.nvvm.read.ptx.sreg.ntid.y()\n";
-
-        kerStream << "%blk_x = alloca i32, align 4\n";
-        kerStream << "%blk_y = alloca i32, align 4\n";
-        kerStream << "%id_3 = alloca i32, align 4\n";
-        kerStream << "%id_2 = alloca i32, align 4\n";
-        kerStream << "store i32 %bidx, i32* %blk_x, align 4\n";
-        kerStream << "store i32 %bidy, i32* %blk_y, align 4\n";
-        kerStream << "store i32 0, i32* %id_2, align 4\n";
-        kerStream << "store i32 0, i32* %id_3, align 4\n";
-
-        kerStream << "%two = alloca i32, align 4\n";
-        kerStream << "store i32 2, i32* %two, align 4\n";
-        kerStream << "%twoval = load i32* %two, align 4\n";
-        kerStream << "%is34 = icmp sgt i32 %ndims, %twoval\n";
-        kerStream << "br i1 %is34, label %do34, label %do2\n";
-
-        kerStream << "\ndo34:\n";
-
-        kerStream << "%id2t = sdiv i32 %bidx, %blkx\n";
-        kerStream << "store i32 %id2t, i32* %id_2, align 4\n";
-        kerStream << "%id2m = mul i32 %id2t, %blkx\n";
-        kerStream << "%blk_xx = sub i32 %bidx, %id2m\n";
-        kerStream << "store i32 %blk_xx, i32* %blk_x, align 4\n";
-
-        kerStream << "%three = alloca i32, align 4\n";
-        kerStream << "store i32 3, i32* %three, align 4\n";
-        kerStream << "%threeval = load i32* %three, align 4\n";
-        kerStream << "%is4 = icmp sgt i32 %ndims, %threeval\n";
-        kerStream << "br i1 %is4, label %do4, label %do2\n";
-
-        kerStream << "\ndo4:\n";
-        kerStream << "%id3t = sdiv i32 %bidy, %blky\n";
-        kerStream << "store i32 %id3t, i32* %id_3, align 4\n";
-        kerStream << "%id3m = mul i32 %id3t, %blky\n";
-        kerStream << "%blk_yy = sub i32 %bidy, %id3m\n";
-        kerStream << "store i32 %blk_yy, i32* %blk_y, align 4\n";
-        kerStream << "br label %do2\n";
-
-        kerStream << "\ndo2:\n";
-        kerStream << "%id2 = load i32* %id_2, align 4\n";
-        kerStream << "%id3 = load i32* %id_3, align 4\n";
-
-        kerStream << "%tmp_x = load i32* %blk_x, align 4\n";
-        kerStream << "%id0m = mul i32 %tmp_x, %bdmx\n";
-        kerStream << "%id0 = add i32 %tidx, %id0m\n";
-
-        kerStream << "%tmp_y = load i32* %blk_y, align 4\n";
-        kerStream << "%id1m = mul i32 %tmp_y, %bdmy\n";
-        kerStream << "%id1 = add i32 %tidy, %id1m\n";
-        kerStream << "\n\n";
-
-        kerStream << "%off3o = mul i32 %id3, %ostr3\n";
-        kerStream << "%off2o = mul i32 %id2, %ostr2\n";
-        kerStream << "%off1o = mul i32 %id1, %ostr1\n";
-        kerStream << "%off23o = add i32 %off3o, %off2o\n";
-        kerStream << "%off123o = add i32 %off23o, %off1o\n";
-        kerStream << "%idxa = add i32 %off123o, %id0\n";
-        kerStream << "%idx = sext i32 %idxa to i64\n";
-        kerStream << "\n\n";
-
-        kerStream << "%cmp3 = icmp slt i32 %id3, %odim3\n";
-        kerStream << "%cmp2 = icmp slt i32 %id2, %odim2\n";
-        kerStream << "%cmp1 = icmp slt i32 %id1, %odim1\n";
-        kerStream << "%cmp0 = icmp slt i32 %id0, %odim0\n";
-
-        kerStream << "br i1 %cmp3, label %check2, label %end\n";
-        kerStream << "\ncheck2:\n";
-        kerStream << "br i1 %cmp2, label %check1, label %end\n";
-        kerStream << "\ncheck1:\n";
-        kerStream << "br i1 %cmp1, label %check0, label %end\n";
-        kerStream << "\ncheck0:\n";
-        kerStream << "br i1 %cmp0, label %core, label %end\n";
-
-    } else {
-
-        kerStream << "%boff = mul i32 %bidy, %gdmx\n";
-        kerStream << "%bid  = add i32 %boff, %bidx\n";
-        kerStream << "%goff = mul i32 %bid , %bdmx\n";
-        kerStream << "%gid  = add i32 %goff ,%tidx\n";
-        kerStream << "%idx  = sext i32 %gid to i64\n";
-        kerStream << "%el1  = mul i32 %odim0, %odim1\n";
-        kerStream << "%el2  = mul i32 %el1  , %odim2\n";
-        kerStream << "%el3  = mul i32 %el2  , %odim3\n";
-        kerStream << "%cmp0 = icmp slt i32 %gid, %el3\n";
-        kerStream << "br i1 %cmp0, label %core, label %end\n";
-    }
-
-    kerStream << "\n";
-    kerStream << "end:\n\n";
-    kerStream << "ret void\n";
-
-    kerStream <<"\n";
-    kerStream << "core:\n\n";
-    node->genOffsets(kerStream, is_linear);
-
-    node->genFuncs(kerStream, declStrs, is_linear);
-
-    kerStream << "%outIdx = getelementptr inbounds " << node->getTypeStr() << "* %out, i64 %idx\n";
-    kerStream << "store "
-              << node->getTypeStr()
-              << " %val" << id << ", "
-              << node->getTypeStr()
-              << "* %outIdx\n";
-
-    kerStream << "\nret void\n";
-    kerStream << "\n}\n\n";
+    kerStream << defineVoid
+              << funcName
+              << " (\n"
+              << inParamStream.str()
+              << outParamStream.str()
+              << dimParams
+              << " )\n"
+              << blockStart
+              << idAlias
+              << index
+              << earlyExit
+              << core
+              << offsetsStream.str()
+              << funcBodyStream.str()
+              << outWriteStream.str()
+              << blockEnd;
 
     for(str_map_iter iterator = declStrs.begin(); iterator != declStrs.end(); iterator++) {
         kerStream << iterator->first << "\n";
     }
-
-    kerStream
-        << "declare i32 @llvm.nvvm.read.ptx.sreg.tid.x() nounwind readnone\n"
-        << "declare i32 @llvm.nvvm.read.ptx.sreg.tid.y() nounwind readnone\n"
-        << "declare i32 @llvm.nvvm.read.ptx.sreg.ntid.x() nounwind readnone\n"
-        << "declare i32 @llvm.nvvm.read.ptx.sreg.ntid.y() nounwind readnone\n"
-        << "declare i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() nounwind readnone\n"
-        << "declare i32 @llvm.nvvm.read.ptx.sreg.ctaid.y() nounwind readnone\n"
-        << "declare i32 @llvm.nvvm.read.ptx.sreg.nctaid.x() nounwind readnone\n";
-
-    kerStream << "\n";
+    kerStream << functionLoad;
 
     kerStream << "!nvvm.annotations = !{!1}\n"
               << "!1 = metadata !{void (\n"
-              << annStream.str()
-              << node->getTypeStr() << "*,\n"
+              << inAnnStream.str()
+              << outAnnStream.str()
               << "i32, i32, i32, i32,\n"
               << "i32, i32, i32, i32,\n"
               << "i32, i32, i32\n"
@@ -388,10 +412,10 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
     return entry;
 }
 
-static CUfunction getKernel(Node *node, bool is_linear)
+static CUfunction getKernel(std::vector<Node *> nodes, bool is_linear)
 {
 
-    string funcName = getFuncName(node, is_linear);
+    string funcName = getFuncName(nodes, is_linear);
 
     typedef std::map<string, kc_entry_t> kc_t;
     static kc_t kernelCaches[DeviceManager::MAX_DEVICES];
@@ -401,7 +425,7 @@ static CUfunction getKernel(Node *node, bool is_linear)
     kc_entry_t entry = {NULL, NULL};
 
     if (idx == kernelCaches[device].end()) {
-        string jit_ker = getKernelString(funcName, node, is_linear);
+        string jit_ker = getKernelString(funcName, nodes, is_linear);
         entry = compileKernel(funcName.c_str(), jit_ker);
         kernelCaches[device][funcName] = entry;
     } else {
@@ -412,27 +436,19 @@ static CUfunction getKernel(Node *node, bool is_linear)
 }
 
 template<typename T>
-void evalNodes(Param<T> &out, Node *node)
+void evalNodes(std::vector<Param<T> >&outputs, std::vector<Node *> nodes)
 {
-    bool is_linear = node->isLinear(out.dims);
-    CUfunction ker = getKernel(node, is_linear);
-    vector<void *> args;
-    node->setArgs(args, is_linear);
+    int num_outputs = (int)outputs.size();
 
-    void *ptr = (void *)out.ptr;
-    int strides[] = {(int)out.strides[0],
-                     (int)out.strides[1],
-                     (int)out.strides[2],
-                     (int)out.strides[3]};
+    if (num_outputs == 0) return;
 
-    int dims[] = {(int)out.dims[0],
-                  (int)out.dims[1],
-                  (int)out.dims[2],
-                  (int)out.dims[3]};
+    bool is_linear = true;
 
-    args.push_back((void *)&ptr);
-    for (int i = 0; i < 4; i++) args.push_back((void *)(strides + i));
-    for (int i = 0; i < 4; i++) args.push_back((void *)(dims + i));
+    for (int i = 0; i < num_outputs; i++) {
+        is_linear &= nodes[i]->isLinear(outputs[0].dims);
+    }
+
+    CUfunction ker = getKernel(nodes, is_linear);
 
     int threads_x = 1, threads_y = 1;
     int blocks_x_ = 1, blocks_y_ = 1;
@@ -441,7 +457,7 @@ void evalNodes(Param<T> &out, Node *node)
     int num_odims = 4;
 
     while (num_odims >= 1) {
-        if (out.dims[num_odims - 1] == 1) num_odims--;
+        if (outputs[0].dims[num_odims - 1] == 1) num_odims--;
         else break;
     }
 
@@ -450,10 +466,10 @@ void evalNodes(Param<T> &out, Node *node)
         threads_x = 256;
         threads_y =  1;
 
-        int blocks = divup((out.dims[0] *
-                            out.dims[1] *
-                            out.dims[2] *
-                            out.dims[3]), threads_x);
+        int blocks = divup((outputs[0].dims[0] *
+                            outputs[0].dims[1] *
+                            outputs[0].dims[2] *
+                            outputs[0].dims[3]), threads_x);
 
         blocks_y_ = divup(blocks, 65535);
         blocks_x_ = divup(blocks, blocks_y_);
@@ -466,12 +482,35 @@ void evalNodes(Param<T> &out, Node *node)
         threads_x = 32;
         threads_y =  8;
 
-        blocks_x_ = divup(out.dims[0], threads_x);
-        blocks_y_ = divup(out.dims[1], threads_y);
+        blocks_x_ = divup(outputs[0].dims[0], threads_x);
+        blocks_y_ = divup(outputs[0].dims[1], threads_y);
 
-        blocks_x = blocks_x_ * out.dims[2];
-        blocks_y = blocks_y_ * out.dims[3];
+        blocks_x = blocks_x_ * outputs[0].dims[2];
+        blocks_y = blocks_y_ * outputs[0].dims[3];
     }
+
+    vector<void *> args;
+
+    for (int i = 0; i < num_outputs; i++) {
+        nodes[i]->setArgs(args, is_linear);
+    }
+
+    int strides[] = {(int)outputs[0].strides[0],
+                     (int)outputs[0].strides[1],
+                     (int)outputs[0].strides[2],
+                     (int)outputs[0].strides[3]};
+
+    int dims[] = {(int)outputs[0].dims[0],
+                  (int)outputs[0].dims[1],
+                  (int)outputs[0].dims[2],
+                  (int)outputs[0].dims[3]};
+
+    for (int i = 0; i < num_outputs; i++) {
+        args.push_back(&outputs[i].ptr);
+    }
+
+    for (int i = 0; i < 4; i++) args.push_back((void *)(strides + i));
+    for (int i = 0; i < 4; i++) args.push_back((void *)(dims + i));
 
     args.push_back((void *)&blocks_x_);
     args.push_back((void *)&blocks_y_);
@@ -490,6 +529,18 @@ void evalNodes(Param<T> &out, Node *node)
                             NULL));
 }
 
+template<typename T>
+void evalNodes(Param<T> &out, Node *node)
+{
+    std::vector<Param<T> > outputs;
+    std::vector<Node *> nodes;
+
+    outputs.push_back(out);
+    nodes.push_back(node);
+    evalNodes(outputs, nodes);
+    return;
+}
+
 template void evalNodes<float  >(Param<float  > &out, Node *node);
 template void evalNodes<double >(Param<double > &out, Node *node);
 template void evalNodes<cfloat >(Param<cfloat > &out, Node *node);
@@ -502,6 +553,20 @@ template void evalNodes<intl   >(Param<intl   > &out, Node *node);
 template void evalNodes<uintl  >(Param<uintl  > &out, Node *node);
 template void evalNodes<short  >(Param<short  > &out, Node *node);
 template void evalNodes<ushort >(Param<ushort > &out, Node *node);
+
+template void evalNodes<float  >(std::vector<Param<float  > > &out, std::vector<Node *> node);
+template void evalNodes<double >(std::vector<Param<double > > &out, std::vector<Node *> node);
+template void evalNodes<cfloat >(std::vector<Param<cfloat > > &out, std::vector<Node *> node);
+template void evalNodes<cdouble>(std::vector<Param<cdouble> > &out, std::vector<Node *> node);
+template void evalNodes<int    >(std::vector<Param<int    > > &out, std::vector<Node *> node);
+template void evalNodes<uint   >(std::vector<Param<uint   > > &out, std::vector<Node *> node);
+template void evalNodes<char   >(std::vector<Param<char   > > &out, std::vector<Node *> node);
+template void evalNodes<uchar  >(std::vector<Param<uchar  > > &out, std::vector<Node *> node);
+template void evalNodes<intl   >(std::vector<Param<intl   > > &out, std::vector<Node *> node);
+template void evalNodes<uintl  >(std::vector<Param<uintl  > > &out, std::vector<Node *> node);
+template void evalNodes<short  >(std::vector<Param<short  > > &out, std::vector<Node *> node);
+template void evalNodes<ushort >(std::vector<Param<ushort > > &out, std::vector<Node *> node);
+
 
 
 }

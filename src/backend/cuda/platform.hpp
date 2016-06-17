@@ -64,6 +64,8 @@ struct cudaDevice_t {
     int nativeId;
 };
 
+bool& evalFlag();
+
 class DeviceManager
 {
     public:
