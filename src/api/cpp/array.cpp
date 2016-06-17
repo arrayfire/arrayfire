@@ -1086,15 +1086,15 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
         AF_THROW(af_eval_multiple(num, &outputs[0]));
     }
 
-    void setInternalEvalFlag(bool flag)
+    void setManualEvalFlag(bool flag)
     {
-        AF_THROW(af_set_internal_eval_flag(flag));
+        AF_THROW(af_set_manual_eval_flag(flag));
     }
 
-    bool getInternalEvalFlag()
+    bool getManualEvalFlag()
     {
         bool flag;
-        AF_THROW(af_get_internal_eval_flag(&flag));
+        AF_THROW(af_get_manual_eval_flag(&flag));
         return flag;
     }
 }

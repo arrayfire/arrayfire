@@ -194,13 +194,13 @@ af_err af_eval_multiple(const int num, af_array *arrays)
     return CALL(num, arrays);
 }
 
-af_err af_set_internal_eval_flag(bool flag)
+af_err af_set_manual_eval_flag(bool flag)
 {
     return CALL(flag);
 }
 
 
-af_err af_get_internal_eval_flag(bool *flag)
+af_err af_get_manual_eval_flag(bool *flag)
 {
     return CALL(flag);
 }

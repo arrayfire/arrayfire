@@ -1250,8 +1250,13 @@ namespace af
     AFAPI void eval(array &a, array &b, array &c, array &d, array &e, array &f);
     AFAPI void eval(int num, array **arrays);
 
-    AFAPI void setInternalEvalFlag(bool flag);
-    AFAPI bool getInternalEvalFlag();
+    ///
+    /// Turn the manual eval flag on or off
+    ///
+    AFAPI void setManualEvalFlag(bool flag);
+
+    /// Get the manual eval flag
+    AFAPI bool getManualEvalFlag();
 
     /**
        @}
@@ -1360,18 +1365,18 @@ extern "C" {
     */
 
     /**
-       Manually set the internal eval flag
+       Turn the manual eval flag on or off
     */
-    AFAPI af_err af_set_internal_eval_flag(bool flag);
+    AFAPI af_err af_set_manual_eval_flag(bool flag);
     /**
       @}
     */
 
 
     /**
-       Get the current internal eval flag
+       Get the manual eval flag
     */
-    AFAPI af_err af_get_internal_eval_flag(bool *flag);
+    AFAPI af_err af_get_manual_eval_flag(bool *flag);
     /**
       @}
     */
