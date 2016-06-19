@@ -25,18 +25,16 @@ namespace cuda
         Array<To> out = createEmptyArray<To>(in.dims());
 
         if (inclusive_scan) {
-            switch (dim) {
-            case 0: kernel::scan_first<Ti, To, op   , true>(out, in); break;
-            case 1: kernel::scan_dim  <Ti, To, op, 1, true>(out, in); break;
-            case 2: kernel::scan_dim  <Ti, To, op, 2, true>(out, in); break;
-            case 3: kernel::scan_dim  <Ti, To, op, 3, true>(out, in); break;
+            if(dim == 0) {
+               kernel::scan_first<Ti, To, op, true>(out, in);
+            } else {
+                kernel::scan_dim <Ti, To, op, true>(out, in, dim);
             }
         } else {
-            switch (dim) {
-            case 0: kernel::scan_first<Ti, To, op   , false>(out, in); break;
-            case 1: kernel::scan_dim  <Ti, To, op, 1, false>(out, in); break;
-            case 2: kernel::scan_dim  <Ti, To, op, 2, false>(out, in); break;
-            case 3: kernel::scan_dim  <Ti, To, op, 3, false>(out, in); break;
+            if(dim == 0) {
+               kernel::scan_first<Ti, To, op, false>(out, in);
+            } else {
+                kernel::scan_dim <Ti, To, op, false>(out, in, dim);
             }
         }
 
