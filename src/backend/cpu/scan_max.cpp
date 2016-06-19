@@ -7,10 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <scan_by_key_impl.hpp>
+#include <scan_impl.hpp>
 
-namespace cuda
+namespace cpu
 {
-    INSTANTIATE_SCAN_BY_KEY_ALL_OP(af_max_t)
+    INSTANTIATE_SCAN_ALL(af_max_t)
 }
-

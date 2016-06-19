@@ -89,9 +89,4 @@ namespace cpu
     INSTANTIATE_SCAN(ROp, short  , int    )             \
     INSTANTIATE_SCAN(ROp, ushort , uint   )
 
-    INSTANTIATE_SCAN(af_notzero_t, char, uint)
-    INSTANTIATE_SCAN_ALL(af_add_t)
-    INSTANTIATE_SCAN_ALL(af_mul_t)
-    INSTANTIATE_SCAN_ALL(af_min_t)
-    INSTANTIATE_SCAN_ALL(af_max_t)
 }

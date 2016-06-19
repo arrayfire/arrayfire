@@ -7,42 +7,53 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <complex>
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <scan.hpp>
-#include <complex>
-#include <err_opencl.hpp>
+#include <scan_by_key.hpp>
+#include <ops.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
+#include <kernel/scan_by_key.hpp>
 
-#include <kernel/scan_first_by_key.hpp>
-#include <kernel/scan_dim_by_key.hpp>
+using af::dim4;
 
-namespace opencl
+namespace cpu
 {
+    template<af_op_t op, typename Ti, typename Tk, typename To, bool inclusive_scan>
+    void scan_by_key(int ndims, Array<To>& out, const Array<Tk>& key, const Array<Ti>& in, const int dim)
+    {
+        switch (ndims) {
+            case 1:
+                kernel::scan_dim_by_key<op, Ti, Tk, To, 1, inclusive_scan> func1;
+                getQueue().enqueue(func1, out, 0, key, 0, in, 0, dim);
+                break;
+            case 2:
+                kernel::scan_dim_by_key<op, Ti, Tk, To, 2, inclusive_scan> func2;
+                getQueue().enqueue(func2, out, 0, key, 0, in, 0, dim);
+                break;
+            case 3:
+                kernel::scan_dim_by_key<op, Ti, Tk, To, 3, inclusive_scan> func3;
+                getQueue().enqueue(func3, out, 0, key, 0, in, 0, dim);
+                break;
+            case 4:
+                kernel::scan_dim_by_key<op, Ti, Tk, To, 4, inclusive_scan> func4;
+                getQueue().enqueue(func4, out, 0, key, 0, in, 0, dim);
+                break;
+        }
+    }
+
     template<af_op_t op, typename Ti, typename Tk, typename To>
     Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim, bool inclusive_scan)
     {
-        Array<To> out = createEmptyArray<To>(in.dims());
+        dim4 dims     = in.dims();
+        Array<To> out = createEmptyArray<To>(dims);
+        in.eval();
 
-        try {
-            Param Out = out;
-            Param Key = key;
-            Param In  =   in;
-
-            if (inclusive_scan) {
-                if (dim == 0)
-                    kernel::scan_first<Ti, Tk, To, op, true>(Out, In, Key);
-                else
-                    kernel::scan_dim  <Ti, Tk, To, op, true>(Out, In, Key, dim);
-            } else {
-                if (dim == 0)
-                    kernel::scan_first<Ti, Tk, To, op, false>(Out, In, Key);
-                else
-                    kernel::scan_dim  <Ti, Tk, To, op, false>(Out, In, Key, dim);
-            }
-
-        } catch (cl::Error &ex) {
-
-            CL_TO_AF_ERROR(ex);
+        if (inclusive_scan) {
+            scan_by_key<op, Ti, Tk, To,  true>(in.ndims(), out, key, in, dim);
+        } else {
+            scan_by_key<op, Ti, Tk, To, false>(in.ndims(), out, key, in, dim);
         }
 
         return out;
@@ -65,14 +76,10 @@ namespace opencl
     INSTANTIATE_SCAN_BY_KEY(ROp, short  , Tk, int    )  \
     INSTANTIATE_SCAN_BY_KEY(ROp, ushort , Tk, uint   )
 
-#define INSTANTIATE_SCAN_BY_KEY_OP(ROp)     \
+#define INSTANTIATE_SCAN_BY_KEY_ALL_OP(ROp) \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, int  ) \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, uint ) \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, intl ) \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, uintl)
 
-    INSTANTIATE_SCAN_BY_KEY_OP(af_add_t)
-    INSTANTIATE_SCAN_BY_KEY_OP(af_mul_t)
-    INSTANTIATE_SCAN_BY_KEY_OP(af_min_t)
-    INSTANTIATE_SCAN_BY_KEY_OP(af_max_t)
 }

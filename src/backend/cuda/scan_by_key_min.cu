@@ -11,6 +11,6 @@
 
 namespace cuda
 {
-    INSTANTIATE_SCAN_OP(af_min_t)
+    INSTANTIATE_SCAN_BY_KEY_ALL_OP(af_min_t)
 }
 

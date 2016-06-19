@@ -9,8 +9,7 @@
 
 #include <scan_by_key_impl.hpp>
 
-namespace cuda
+namespace cpu
 {
-    INSTANTIATE_SCAN_BY_KEY_ALL_OP(af_max_t)
+    INSTANTIATE_SCAN_BY_KEY_ALL_OP(af_min_t)
 }
-

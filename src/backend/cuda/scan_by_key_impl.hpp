@@ -56,7 +56,7 @@ namespace cuda
     INSTANTIATE_SCAN_BY_KEY(ROp, short  , Tk, int    )  \
     INSTANTIATE_SCAN_BY_KEY(ROp, ushort , Tk, uint   )
 
-#define INSTANTIATE_SCAN_OP(ROp)            \
+#define INSTANTIATE_SCAN_BY_KEY_ALL_OP(ROp) \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, int  ) \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, uint ) \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, intl ) \
