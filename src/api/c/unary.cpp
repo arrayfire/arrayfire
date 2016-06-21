@@ -78,8 +78,8 @@ static af_err af_unary_complex(af_array *out, const af_array in)
         switch (type) {
         case f32 : res = unaryOp<float  , op>(in); break;
         case f64 : res = unaryOp<double , op>(in); break;
-        case c32 : res = unaryOpCplx<cfloat , float , op>(in); break;
-        case c64 : res = unaryOpCplx<cdouble, double, op>(in); break;
+        case c32 : res = unaryOpCplx<cfloat , float , op>()(in); break;
+        case c64 : res = unaryOpCplx<cdouble, double, op>()(in); break;
         default:
             TYPE_ERROR(1, in_type); break;
         }
@@ -136,6 +136,12 @@ UNARY(cbrt)
 
 UNARY(tgamma)
 UNARY(lgamma)
+
+UNARY_COMPLEX(exp)
+UNARY_COMPLEX(log)
+UNARY_COMPLEX(sin)
+UNARY_COMPLEX(sqrt)
+
 
 template<typename Tc, typename Tr>
 struct unaryOpCplx<Tc, Tr, af_exp_t>
@@ -223,18 +229,13 @@ struct unaryOpCplx<Tc, Tr, af_sqrt_t>
         // convert polar to cartesian
         Array<Tr> a_out_unit = unaryOp<Tr, af_cos_t>(phi_out);
         Array<Tr> b_out_unit = unaryOp<Tr, af_sin_t>(phi_out);
-        Array<Tr> a_out = arithOp<Tc, af_mul_t>(r_out, a_out_unit, r_out.dims());
-        Array<Tr> b_out = arithOp<Tc, af_mul_t>(r_out, b_out_unit, r_out.dims());
+        Array<Tr> a_out = arithOp<Tr, af_mul_t>(r_out, a_out_unit, r_out.dims());
+        Array<Tr> b_out = arithOp<Tr, af_mul_t>(r_out, b_out_unit, r_out.dims());
         Array<Tc> z_out  = cplx<Tc, Tr>(a_out, b_out, a_out.dims());
 
         return getHandle(z_out);
     }
 };
-
-UNARY_COMPLEX(exp)
-UNARY_COMPLEX(log)
-UNARY_COMPLEX(sin)
-UNARY_COMPLEX(sqrt)
 
 af_err af_not(af_array *out, const af_array in)
 {
