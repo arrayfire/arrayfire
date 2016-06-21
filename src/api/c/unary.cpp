@@ -134,13 +134,13 @@ UNARY(log10)
 UNARY(log1p)
 UNARY(log2)
 
-UNARY(sqrt)
 UNARY(cbrt)
 
 UNARY(tgamma)
 UNARY(lgamma)
 
 UNARY_COMPLEX(exp)
+UNARY_COMPLEX(sqrt)
 
 template<typename Tc, typename Tr>
 struct unaryOpCplx<Tc, Tr, af_exp_t>
@@ -161,6 +161,34 @@ struct unaryOpCplx<Tc, Tr, af_exp_t>
         Array<Tc> Result = arithOp<Tc, af_mul_t>(Scale, Unit, Scale.dims());
 
         return getHandle(Result);
+    }
+};
+
+template<typename Tc, typename Tr>
+struct unaryOpCplx<Tc, Tr, af_sqrt_t>
+{
+    af_array operator()(const af_array in)
+    {
+        // convert cartesian to polar
+        Array<Tc> z = getArray<Tc>(a);
+        Array<Tr> a = real<Tr, Tc>(In);
+        Array<Tr> b = imag<Tr, Tc>(In);
+        Array<Tr> r = arithOp<Tr, af_atan2_t>(b, a, b.dims());
+        Array<Tr> phi = abs<Tr>(z);
+
+        // compute sqrt
+        Array<Tr> two = createValueArray<Tr>(phi.dims(), 2.0);
+        Array<Tr> r_out = unaryOp<Tr, af_sqrt_t>(r);
+        Array<Tr> phi_out = arithOp<Tr, af_div_t>(phi, two, phi.dims());
+
+        // convert polar to cartesian
+        Array<Tr> a_out_unit = unaryOp<Tr, af_cos_t>(phi_out);
+        Array<Tr> b_out_unit = unaryOp<Tr, af_sin_t>(phi_out);
+        Array<Tr> a_out = arithOp<Tc, af_mul_t>(r_out, a_out_unit, SqrtAbs.dims());
+        Array<Tr> b_out = arithOp<Tc, af_mul_t>(r_out, b_out_unit, SqrtAbs.dims());
+        Array<Tc> z_out  = cplx<Tc, Tr>(a_out, b_out, a_out.dims());
+
+        return getHandle(z_out);
     }
 };
 
