@@ -128,7 +128,6 @@ UNARY(expm1)
 UNARY(erf)
 UNARY(erfc)
 
-UNARY(log)
 UNARY(log10)
 UNARY(log1p)
 UNARY(log2)
@@ -137,10 +136,6 @@ UNARY(cbrt)
 
 UNARY(tgamma)
 UNARY(lgamma)
-
-UNARY_COMPLEX(exp)
-UNARY_COMPLEX(sin)
-UNARY_COMPLEX(sqrt)
 
 template<typename Tc, typename Tr>
 struct unaryOpCplx<Tc, Tr, af_exp_t>
@@ -235,6 +230,11 @@ struct unaryOpCplx<Tc, Tr, af_sqrt_t>
         return getHandle(z_out);
     }
 };
+
+UNARY_COMPLEX(exp)
+UNARY_COMPLEX(log)
+UNARY_COMPLEX(sin)
+UNARY_COMPLEX(sqrt)
 
 af_err af_not(af_array *out, const af_array in)
 {
