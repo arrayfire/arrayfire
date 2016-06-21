@@ -156,7 +156,7 @@ When not set, the default value is 1000.
 AF_OPENCL_MAX_JIT_LEN {#af_opencl_max_jit_len}
 -------------------------------------------------------------------------------
 
-When set, this environment variable specifies the maximum length of the OpenCL JIT tree after which evaluation is forced. The default value for this is 16 for AMD devices and 20 otherwise.
+When set, this environment variable specifies the maximum length of the OpenCL JIT tree after which evaluation is forced. The default value for this is 20.
 
 AF_CUDA_MAX_JIT_LEN {#af_cuda_max_jit_len}
 -------------------------------------------------------------------------------
