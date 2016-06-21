@@ -101,8 +101,7 @@ static af_err af_unary_complex(af_array *out, const af_array in)
     {                                                   \
         return af_unary_complex<af_##fn##_t>(out, in);  \
     }
-
-UNARY(sin)
+    
 UNARY(cos)
 UNARY(tan)
 
@@ -140,6 +139,7 @@ UNARY(tgamma)
 UNARY(lgamma)
 
 UNARY_COMPLEX(exp)
+UNARY_COMPLEX(sin)
 UNARY_COMPLEX(sqrt)
 
 template<typename Tc, typename Tr>
@@ -179,6 +179,29 @@ struct unaryOpCplx<Tc, Tr, af_log_t>
         // compute log
         Array<Tr> a_out = unaryOp<Tr, af_log_t>(r);
         Array<Tr> b_out = phi;
+        Array<Tc> z_out  = cplx<Tc, Tr>(a_out, b_out, a_out.dims());
+
+        return getHandle(z_out);
+    }
+};
+
+template<typename Tc, typename Tr>
+struct unaryOpCplx<Tc, Tr, af_sin_t>
+{
+    af_array operator()(const af_array in)
+    {
+        Array<Tc> z = getArray<Tc>(a);
+        Array<Tr> a = real<Tr, Tc>(In);
+        Array<Tr> b = imag<Tr, Tc>(In);
+
+        // compute sin
+        Array<Tr> sin_a = unaryOp<Tr, af_sin_t>(a);
+        Array<Tr> cos_a = unaryOp<Tr, af_sin_t>(a);
+        Array<Tr> sinh_b = unaryOp<Tr, af_sin_t>(b);
+        Array<Tr> cosh_b = unaryOp<Tr, af_sin_t>(b);
+        Array<Tr> a_out = arithOp<Tr, af_mul_t>(sin_a, cosh_b, sin_a.dims());
+        Array<Tr> b_out = arithOp<Tr, af_mul_t>(cos_a, sinh_b, cos_a.dims());
+
         Array<Tc> z_out  = cplx<Tc, Tr>(a_out, b_out, a_out.dims());
 
         return getHandle(z_out);
