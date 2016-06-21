@@ -33,6 +33,9 @@ static inline af_array unaryOp(const af_array in)
     return res;
 }
 
+template<typename Tc, typename Tr, af_op_t op>
+struct unaryOpCplx;
+
 template<af_op_t op>
 static af_err af_unary(af_array *out, const af_array in)
 {
@@ -60,12 +63,44 @@ static af_err af_unary(af_array *out, const af_array in)
     return AF_SUCCESS;
 }
 
+template<af_op_t op>
+static af_err af_unary_complex(af_array *out, const af_array in)
+{
+    try {
+        ArrayInfo in_info = getInfo(in);
+
+        af_dtype in_type = in_info.getType();
+        af_array res;
+
+        // Convert all inputs to floats / doubles
+        af_dtype type = implicit(in_type, f32);
+
+        switch (type) {
+        case f32 : res = unaryOp<float  , op>(in); break;
+        case f64 : res = unaryOp<double , op>(in); break;
+        case c32 : res = unaryOpCplx<cfloat , float , op>(in); break;
+        case c64 : res = unaryOpCplx<cdouble, double, op>(in); break;
+        default:
+            TYPE_ERROR(1, in_type); break;
+        }
+
+        std::swap(*out, res);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
 #define UNARY(fn)                                       \
     af_err af_##fn(af_array *out, const af_array in)    \
     {                                                   \
         return af_unary<af_##fn##_t>(out, in);          \
     }
 
+#define UNARY_COMPLEX(fn)                               \
+    af_err af_##fn(af_array *out, const af_array in)    \
+    {                                                   \
+        return af_unary_complex<af_##fn##_t>(out, in);  \
+    }
 
 UNARY(sin)
 UNARY(cos)
@@ -105,50 +140,29 @@ UNARY(cbrt)
 UNARY(tgamma)
 UNARY(lgamma)
 
+UNARY_COMPLEX(exp)
+
 template<typename Tc, typename Tr>
-af_array expCplx(const af_array a)
+struct unaryOpCplx<Tc, Tr, af_exp_t>
 {
-    Array<Tc> In = getArray<Tc>(a);
-    Array<Tr> Real = real<Tr, Tc>(In);
-    Array<Tr> Imag = imag<Tr, Tc>(In);
+    af_array operator()(const af_array a)
+    {
+        Array<Tc> In = getArray<Tc>(a);
+        Array<Tr> Real = real<Tr, Tc>(In);
+        Array<Tr> Imag = imag<Tr, Tc>(In);
 
-    Array<Tr> ExpReal = unaryOp<Tr, af_exp_t>(Real);
-    Array<Tr> CosImag = unaryOp<Tr, af_cos_t>(Imag);
-    Array<Tr> SinImag = unaryOp<Tr, af_sin_t>(Imag);
+        Array<Tr> ExpReal = unaryOp<Tr, af_exp_t>(Real);
+        Array<Tr> CosImag = unaryOp<Tr, af_cos_t>(Imag);
+        Array<Tr> SinImag = unaryOp<Tr, af_sin_t>(Imag);
 
-    Array<Tc> Unit  = cplx<Tc, Tr>(CosImag, SinImag, CosImag.dims());
-    Array<Tc> Scale = cast<Tc, Tr>(ExpReal);
+        Array<Tc> Unit  = cplx<Tc, Tr>(CosImag, SinImag, CosImag.dims());
+        Array<Tc> Scale = cast<Tc, Tr>(ExpReal);
 
-    Array<Tc> Result = arithOp<Tc, af_mul_t>(Scale, Unit, Scale.dims());
+        Array<Tc> Result = arithOp<Tc, af_mul_t>(Scale, Unit, Scale.dims());
 
-    return getHandle(Result);
-}
-
-af_err af_exp(af_array *out, const af_array in)
-{
-    try {
-
-        ArrayInfo in_info = getInfo(in);
-        af_dtype in_type = in_info.getType();
-        af_array res;
-
-        // Convert all inputs to floats / doubles
-        af_dtype type = implicit(in_type, f32);
-
-        switch (type) {
-        case f32 : res = unaryOp<float  , af_exp_t>(in); break;
-        case f64 : res = unaryOp<double , af_exp_t>(in); break;
-        case c32 : res = expCplx<cfloat , float >(in); break;
-        case c64 : res = expCplx<cdouble, double>(in); break;
-        default:
-            TYPE_ERROR(1, in_type); break;
-        }
-
-        std::swap(*out, res);
+        return getHandle(Result);
     }
-    CATCHALL;
-    return AF_SUCCESS;
-}
+};
 
 af_err af_not(af_array *out, const af_array in)
 {
