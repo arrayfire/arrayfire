@@ -101,7 +101,7 @@ static af_err af_unary_complex(af_array *out, const af_array in)
     {                                                   \
         return af_unary_complex<af_##fn##_t>(out, in);  \
     }
-    
+
 UNARY(cos)
 UNARY(tan)
 
@@ -171,8 +171,8 @@ struct unaryOpCplx<Tc, Tr, af_log_t>
     {
         // convert cartesian to polar
         Array<Tc> z = getArray<Tc>(a);
-        Array<Tr> a = real<Tr, Tc>(In);
-        Array<Tr> b = imag<Tr, Tc>(In);
+        Array<Tr> a = real<Tr, Tc>(in);
+        Array<Tr> b = imag<Tr, Tc>(in);
         Array<Tr> r = arithOp<Tr, af_atan2_t>(b, a, b.dims());
         Array<Tr> phi = abs<Tr>(z);
 
@@ -191,8 +191,8 @@ struct unaryOpCplx<Tc, Tr, af_sin_t>
     af_array operator()(const af_array in)
     {
         Array<Tc> z = getArray<Tc>(a);
-        Array<Tr> a = real<Tr, Tc>(In);
-        Array<Tr> b = imag<Tr, Tc>(In);
+        Array<Tr> a = real<Tr, Tc>(in);
+        Array<Tr> b = imag<Tr, Tc>(in);
 
         // compute sin
         Array<Tr> sin_a = unaryOp<Tr, af_sin_t>(a);
@@ -215,8 +215,8 @@ struct unaryOpCplx<Tc, Tr, af_sqrt_t>
     {
         // convert cartesian to polar
         Array<Tc> z = getArray<Tc>(a);
-        Array<Tr> a = real<Tr, Tc>(In);
-        Array<Tr> b = imag<Tr, Tc>(In);
+        Array<Tr> a = real<Tr, Tc>(in);
+        Array<Tr> b = imag<Tr, Tc>(in);
         Array<Tr> r = arithOp<Tr, af_atan2_t>(b, a, b.dims());
         Array<Tr> phi = abs<Tr>(z);
 
@@ -228,8 +228,8 @@ struct unaryOpCplx<Tc, Tr, af_sqrt_t>
         // convert polar to cartesian
         Array<Tr> a_out_unit = unaryOp<Tr, af_cos_t>(phi_out);
         Array<Tr> b_out_unit = unaryOp<Tr, af_sin_t>(phi_out);
-        Array<Tr> a_out = arithOp<Tc, af_mul_t>(r_out, a_out_unit, SqrtAbs.dims());
-        Array<Tr> b_out = arithOp<Tc, af_mul_t>(r_out, b_out_unit, SqrtAbs.dims());
+        Array<Tr> a_out = arithOp<Tc, af_mul_t>(r_out, a_out_unit, r_out.dims());
+        Array<Tr> b_out = arithOp<Tc, af_mul_t>(r_out, b_out_unit, r_out.dims());
         Array<Tc> z_out  = cplx<Tc, Tr>(a_out, b_out, a_out.dims());
 
         return getHandle(z_out);
