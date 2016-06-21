@@ -165,6 +165,27 @@ struct unaryOpCplx<Tc, Tr, af_exp_t>
 };
 
 template<typename Tc, typename Tr>
+struct unaryOpCplx<Tc, Tr, af_log_t>
+{
+    af_array operator()(const af_array in)
+    {
+        // convert cartesian to polar
+        Array<Tc> z = getArray<Tc>(a);
+        Array<Tr> a = real<Tr, Tc>(In);
+        Array<Tr> b = imag<Tr, Tc>(In);
+        Array<Tr> r = arithOp<Tr, af_atan2_t>(b, a, b.dims());
+        Array<Tr> phi = abs<Tr>(z);
+
+        // compute log
+        Array<Tr> a_out = unaryOp<Tr, af_log_t>(r);
+        Array<Tr> b_out = phi;
+        Array<Tc> z_out  = cplx<Tc, Tr>(a_out, b_out, a_out.dims());
+
+        return getHandle(z_out);
+    }
+};
+
+template<typename Tc, typename Tr>
 struct unaryOpCplx<Tc, Tr, af_sqrt_t>
 {
     af_array operator()(const af_array in)
