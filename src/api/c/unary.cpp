@@ -197,9 +197,9 @@ struct unaryOpCplx<Tc, Tr, af_sin_t>
 
         // compute sin
         Array<Tr> sin_a = unaryOp<Tr, af_sin_t>(a);
-        Array<Tr> cos_a = unaryOp<Tr, af_sin_t>(a);
-        Array<Tr> sinh_b = unaryOp<Tr, af_sin_t>(b);
-        Array<Tr> cosh_b = unaryOp<Tr, af_sin_t>(b);
+        Array<Tr> cos_a = unaryOp<Tr, af_cos_t>(a);
+        Array<Tr> sinh_b = unaryOp<Tr, af_sinh_t>(b);
+        Array<Tr> cosh_b = unaryOp<Tr, af_cosh_t>(b);
         Array<Tr> a_out = arithOp<Tr, af_mul_t>(sin_a, cosh_b, sin_a.dims());
         Array<Tr> b_out = arithOp<Tr, af_mul_t>(cos_a, sinh_b, cos_a.dims());
 
