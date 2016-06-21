@@ -170,9 +170,9 @@ struct unaryOpCplx<Tc, Tr, af_log_t>
     af_array operator()(const af_array in)
     {
         // convert cartesian to polar
-        Array<Tc> z = getArray<Tc>(a);
-        Array<Tr> a = real<Tr, Tc>(in);
-        Array<Tr> b = imag<Tr, Tc>(in);
+        Array<Tc> z = getArray<Tc>(in);
+        Array<Tr> a = real<Tr, Tc>(z);
+        Array<Tr> b = imag<Tr, Tc>(z);
         Array<Tr> r = arithOp<Tr, af_atan2_t>(b, a, b.dims());
         Array<Tr> phi = abs<Tr>(z);
 
@@ -190,9 +190,9 @@ struct unaryOpCplx<Tc, Tr, af_sin_t>
 {
     af_array operator()(const af_array in)
     {
-        Array<Tc> z = getArray<Tc>(a);
-        Array<Tr> a = real<Tr, Tc>(in);
-        Array<Tr> b = imag<Tr, Tc>(in);
+        Array<Tc> z = getArray<Tc>(in);
+        Array<Tr> a = real<Tr, Tc>(z);
+        Array<Tr> b = imag<Tr, Tc>(z);
 
         // compute sin
         Array<Tr> sin_a = unaryOp<Tr, af_sin_t>(a);
@@ -214,9 +214,9 @@ struct unaryOpCplx<Tc, Tr, af_sqrt_t>
     af_array operator()(const af_array in)
     {
         // convert cartesian to polar
-        Array<Tc> z = getArray<Tc>(a);
-        Array<Tr> a = real<Tr, Tc>(in);
-        Array<Tr> b = imag<Tr, Tc>(in);
+        Array<Tc> z = getArray<Tc>(in);
+        Array<Tr> a = real<Tr, Tc>(z);
+        Array<Tr> b = imag<Tr, Tc>(z);
         Array<Tr> r = arithOp<Tr, af_atan2_t>(b, a, b.dims());
         Array<Tr> phi = abs<Tr>(z);
 
