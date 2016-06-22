@@ -102,8 +102,6 @@ static af_err af_unary_complex(af_array *out, const af_array in)
         return af_unary_complex<af_##fn##_t>(out, in);  \
     }
 
-UNARY(tan)
-
 UNARY(asin)
 UNARY(acos)
 UNARY(atan)
@@ -141,7 +139,7 @@ UNARY_COMPLEX(exp)
 UNARY_COMPLEX(log)
 UNARY_COMPLEX(sin)
 UNARY_COMPLEX(sqrt)
-
+UNARY_COMPLEX(tan)
 
 template<typename Tc, typename Tr>
 struct unaryOpCplx<Tc, Tr, af_exp_t>
@@ -231,6 +229,18 @@ struct unaryOpCplx<Tc, Tr, af_cos_t>
         Array<Tc> z_out  = cplx<Tc, Tr>(a_out, b_out, a_out.dims());
 
         return getHandle(z_out);
+    }
+};
+
+template<typename Tc, typename Tr>
+struct unaryOpCplx<Tc, Tr, af_tan_t>
+{
+    af_array operator()(const af_array in)
+    {
+        Array<Tc> sin_z = getArray<Tc>(unaryOpCplx<Tc, Tr, af_sin_t>()(in));
+        Array<Tc> cos_z = getArray<Tc>(unaryOpCplx<Tc, Tr, af_cos_t>()(in));
+        Array<Tc> tan_z = arithOp<Tc, af_div_t>(sin_z, cos_z, sin_z.dims());
+        return getHandle(tan_z);
     }
 };
 
