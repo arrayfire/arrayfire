@@ -115,7 +115,6 @@ static af_err af_unary_complex(af_array *out, const af_array in)
     }
 
 UNARY(asin)
-UNARY(acos)
 UNARY(atan)
 
 UNARY(trunc)
@@ -139,6 +138,7 @@ UNARY(tgamma)
 UNARY(lgamma)
 
 UNARY_COMPLEX(acosh)
+UNARY_COMPLEX(acos)
 UNARY_COMPLEX(asinh)
 UNARY_COMPLEX(atanh)
 UNARY_COMPLEX(cos)
@@ -346,6 +346,26 @@ struct unaryOpCplxFun<Tc, Tr, af_atanh_t>
         Array<Tc> w = arithOp<Tc, af_min_t>(log_one_plus_z, log_one_minus_z, log_one_plus_z.dims());
         Array<Tc> two = createValueArray<Tc>(z.dims(), Tc(2, 0));
         return arithOp<Tc, af_div_t>(w, two, w.dims());
+    }
+};
+
+template<typename Tc, typename Tr>
+struct unaryOpCplxFun<Tc, Tr, af_acos_t>
+{
+    Array<Tc> operator()(const Array<Tc> &z)
+    {
+        // acos(z) = pi/2+i*log(i*z+sqrt(1-z.^2))
+        Array<Tc> one = createValueArray<Tc>(z.dims(), Tc(1, 0));
+        Array<Tc> i = createValueArray<Tc>(z.dims(), Tc(0, 1));
+        Array<Tc> pi_half = createValueArray<Tc>(z.dims(), Tc(M_PI / 2.0, 0));
+
+        Array<Tc> z2 = arithOp<Tc, af_mul_t>(z, z, z.dims());
+        Array<Tc> one_minus_z2 = arithOp<Tc, af_sub_t>(one, z2, one.dims());
+        Array<Tc> sqrt_one_minus_z2 = unaryOpCplx<Tc, Tr, af_sqrt_t>(one_minus_z2);
+        Array<Tc> iz = arithOp<Tc, af_mul_t>(i, z, z.dims());
+        Array<Tc> w = arithOp<Tc, af_add_t>(iz, sqrt_one_minus_z2, iz.dims());
+        Array<Tc> log_w = unaryOpCplx<Tc, Tr, af_log_t>(w);
+        return arithOp<Tc, af_add_t>(pi_half, log_w, pi_half.dims());
     }
 };
 
