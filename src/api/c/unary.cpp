@@ -365,7 +365,8 @@ struct unaryOpCplxFun<Tc, Tr, af_acos_t>
         Array<Tc> iz = arithOp<Tc, af_mul_t>(i, z, z.dims());
         Array<Tc> w = arithOp<Tc, af_add_t>(iz, sqrt_one_minus_z2, iz.dims());
         Array<Tc> log_w = unaryOpCplx<Tc, Tr, af_log_t>(w);
-        return arithOp<Tc, af_add_t>(pi_half, log_w, pi_half.dims());
+        Array<Tc> i_log_w = arithOp<Tc, af_mul_t>(i, w, i.dims());
+        return arithOp<Tc, af_add_t>(pi_half, i_log_w, pi_half.dims());
     }
 };
 
