@@ -118,8 +118,6 @@ UNARY(asin)
 UNARY(acos)
 UNARY(atan)
 
-UNARY(atanh)
-
 UNARY(trunc)
 UNARY(sign)
 UNARY(round)
@@ -142,6 +140,7 @@ UNARY(lgamma)
 
 UNARY_COMPLEX(acosh)
 UNARY_COMPLEX(asinh)
+UNARY_COMPLEX(atanh)
 UNARY_COMPLEX(cos)
 UNARY_COMPLEX(cosh)
 UNARY_COMPLEX(exp)
@@ -330,6 +329,23 @@ struct unaryOpCplxFun<Tc, Tr, af_acosh_t>
         Array<Tc> sqrt_z2_plus_one = unaryOpCplx<Tc, Tr, af_sqrt_t>(z2_plus_one);
         Array<Tc> w = arithOp<Tc, af_add_t>(z, sqrt_z2_plus_one, z.dims());
         return unaryOpCplx<Tc, Tr, af_log_t>(w);
+    }
+};
+
+template<typename Tc, typename Tr>
+struct unaryOpCplxFun<Tc, Tr, af_atanh_t>
+{
+    Array<Tc> operator()(const Array<Tc> &z)
+    {
+        // atanh(z) = 0.5*(log(1+z)-log(1-z))
+        Array<Tc> one = createValueArray<Tc>(z.dims(), Tc(1, 0));
+        Array<Tc> one_plus_z = arithOp<Tc, af_add_t>(one, z, one.dims());
+        Array<Tc> one_minus_z = arithOp<Tc, af_min_t>(one, z, one.dims());
+        Array<Tc> log_one_plus_z = unaryOpCplx<Tc, Tr, af_log_t>(one_plus_z);
+        Array<Tc> log_one_minus_z = unaryOpCplx<Tc, Tr, af_log_t>(one_minus_z);
+        Array<Tc> w = arithOp<Tc, af_min_t>(log_one_plus_z, log_one_minus_z, log_one_plus_z.dims());
+        Array<Tc> two = createValueArray<Tr>(z.dims(), Tc(2, 0));
+        return arithOp<Tc, af_div_t>(w, two, w.dims());
     }
 };
 
