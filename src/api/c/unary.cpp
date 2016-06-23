@@ -118,10 +118,6 @@ UNARY(asin)
 UNARY(acos)
 UNARY(atan)
 
-UNARY(sinh)
-UNARY(cosh)
-UNARY(tanh)
-
 UNARY(asinh)
 UNARY(acosh)
 UNARY(atanh)
@@ -147,11 +143,14 @@ UNARY(tgamma)
 UNARY(lgamma)
 
 UNARY_COMPLEX(cos)
+UNARY_COMPLEX(cosh)
 UNARY_COMPLEX(exp)
 UNARY_COMPLEX(log)
 UNARY_COMPLEX(sin)
+UNARY_COMPLEX(sinh)
 UNARY_COMPLEX(sqrt)
 UNARY_COMPLEX(tan)
+UNARY_COMPLEX(tanh)
 
 template<typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_exp_t>
@@ -240,6 +239,57 @@ struct unaryOpCplxFun<Tc, Tr, af_tan_t>
         Array<Tc> sin_z = unaryOpCplx<Tc, Tr, af_sin_t>(z);
         Array<Tc> cos_z = unaryOpCplx<Tc, Tr, af_cos_t>(z);
         return arithOp<Tc, af_div_t>(sin_z, cos_z, sin_z.dims());
+    }
+};
+
+template<typename Tc, typename Tr>
+struct unaryOpCplxFun<Tc, Tr, af_sinh_t>
+{
+    Array<Tc> operator()(const Array<Tc> &z)
+    {
+        Array<Tr> a = real<Tr, Tc>(z);
+        Array<Tr> b = imag<Tr, Tc>(z);
+
+        // compute sinh
+        Array<Tr> sinh_a = unaryOp<Tr, af_sinh_t>(a);
+        Array<Tr> cosh_a = unaryOp<Tr, af_cosh_t>(a);
+        Array<Tr> sin_b = unaryOp<Tr, af_sin_t>(b);
+        Array<Tr> cos_b = unaryOp<Tr, af_cos_t>(b);
+        Array<Tr> a_out = arithOp<Tr, af_mul_t>(sinh_a, cos_b, sinh_a.dims());
+        Array<Tr> b_out = arithOp<Tr, af_mul_t>(cosh_a, sin_b, cosh_a.dims());
+
+        return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
+    }
+};
+
+template<typename Tc, typename Tr>
+struct unaryOpCplxFun<Tc, Tr, af_cosh_t>
+{
+    Array<Tc> operator()(const Array<Tc> &z)
+    {
+        Array<Tr> a = real<Tr, Tc>(z);
+        Array<Tr> b = imag<Tr, Tc>(z);
+
+        // compute cosh
+        Array<Tr> sinh_a = unaryOp<Tr, af_sinh_t>(a);
+        Array<Tr> cosh_a = unaryOp<Tr, af_cosh_t>(a);
+        Array<Tr> sin_b = unaryOp<Tr, af_sin_t>(b);
+        Array<Tr> cos_b = unaryOp<Tr, af_cos_t>(b);
+        Array<Tr> a_out = arithOp<Tr, af_mul_t>(cosh_a, cos_b, cosh_a.dims());
+        Array<Tr> b_out = arithOp<Tr, af_mul_t>(sinh_a, sin_b, sinh_a.dims());
+
+        return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
+    }
+};
+
+template<typename Tc, typename Tr>
+struct unaryOpCplxFun<Tc, Tr, af_tanh_t>
+{
+    Array<Tc> operator()(const Array<Tc> &z)
+    {
+        Array<Tc> sinh_z = unaryOpCplx<Tc, Tr, af_sinh_t>(z);
+        Array<Tc> cosh_z = unaryOpCplx<Tc, Tr, af_cosh_t>(z);
+        return arithOp<Tc, af_div_t>(sinh_z, cosh_z, sinh_z.dims());
     }
 };
 
