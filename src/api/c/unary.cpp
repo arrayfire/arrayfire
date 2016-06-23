@@ -344,7 +344,7 @@ struct unaryOpCplxFun<Tc, Tr, af_atanh_t>
         Array<Tc> log_one_plus_z = unaryOpCplx<Tc, Tr, af_log_t>(one_plus_z);
         Array<Tc> log_one_minus_z = unaryOpCplx<Tc, Tr, af_log_t>(one_minus_z);
         Array<Tc> w = arithOp<Tc, af_min_t>(log_one_plus_z, log_one_minus_z, log_one_plus_z.dims());
-        Array<Tc> two = createValueArray<Tr>(z.dims(), Tc(2, 0));
+        Array<Tc> two = createValueArray<Tc>(z.dims(), Tc(2, 0));
         return arithOp<Tc, af_div_t>(w, two, w.dims());
     }
 };
