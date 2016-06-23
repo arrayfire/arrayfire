@@ -34,7 +34,19 @@ static inline af_array unaryOp(const af_array in)
 }
 
 template<typename Tc, typename Tr, af_op_t op>
-struct unaryOpCplx;
+struct unaryOpCplxFun;
+
+template<typename Tc, typename Tr, af_op_t op>
+static inline Array<Tc> unaryOpCplx(const Array<Tc> &in)
+{
+    return unaryOpCplxFun<Tc, Tr, op>()(in);
+}
+
+template<typename Tc, typename Tr, af_op_t op>
+static inline af_array unaryOpCplx(const af_array in)
+{
+    return getHandle(unaryOpCplx<Tc, Tr, op>(castArray<Tc>(in)));
+}
 
 template<af_op_t op>
 static af_err af_unary(af_array *out, const af_array in)
@@ -78,8 +90,8 @@ static af_err af_unary_complex(af_array *out, const af_array in)
         switch (type) {
         case f32 : res = unaryOp<float  , op>(in); break;
         case f64 : res = unaryOp<double , op>(in); break;
-        case c32 : res = unaryOpCplx<cfloat , float , op>()(in); break;
-        case c64 : res = unaryOpCplx<cdouble, double, op>()(in); break;
+        case c32 : res = unaryOpCplx<cfloat , float , op>(in); break;
+        case c64 : res = unaryOpCplx<cdouble, double, op>(in); break;
         default:
             TYPE_ERROR(1, in_type); break;
         }
@@ -142,34 +154,29 @@ UNARY_COMPLEX(sqrt)
 UNARY_COMPLEX(tan)
 
 template<typename Tc, typename Tr>
-struct unaryOpCplx<Tc, Tr, af_exp_t>
+struct unaryOpCplxFun<Tc, Tr, af_exp_t>
 {
-    af_array operator()(const af_array a)
+    Array<Tc> operator()(const Array<Tc> &z)
     {
-        Array<Tc> In = getArray<Tc>(a);
-        Array<Tr> Real = real<Tr, Tc>(In);
-        Array<Tr> Imag = imag<Tr, Tc>(In);
+        Array<Tr> a = real<Tr, Tc>(z);
+        Array<Tr> b = imag<Tr, Tc>(z);
 
-        Array<Tr> ExpReal = unaryOp<Tr, af_exp_t>(Real);
-        Array<Tr> CosImag = unaryOp<Tr, af_cos_t>(Imag);
-        Array<Tr> SinImag = unaryOp<Tr, af_sin_t>(Imag);
+        Array<Tr> exp_a = unaryOp<Tr, af_exp_t>(a);
+        Array<Tr> cos_b = unaryOp<Tr, af_cos_t>(b);
+        Array<Tr> sin_b = unaryOp<Tr, af_sin_t>(b);
+        Array<Tr> a_out = arithOp<Tr, af_mul_t>(exp_a, cos_b, exp_a.dims());
+        Array<Tr> b_out = arithOp<Tr, af_mul_t>(exp_a, sin_b, exp_a.dims());
 
-        Array<Tc> Unit  = cplx<Tc, Tr>(CosImag, SinImag, CosImag.dims());
-        Array<Tc> Scale = cast<Tc, Tr>(ExpReal);
-
-        Array<Tc> Result = arithOp<Tc, af_mul_t>(Scale, Unit, Scale.dims());
-
-        return getHandle(Result);
+        return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
     }
 };
 
 template<typename Tc, typename Tr>
-struct unaryOpCplx<Tc, Tr, af_log_t>
+struct unaryOpCplxFun<Tc, Tr, af_log_t>
 {
-    af_array operator()(const af_array in)
+    Array<Tc> operator()(const Array<Tc> &z)
     {
         // convert cartesian to polar
-        Array<Tc> z = getArray<Tc>(in);
         Array<Tr> a = real<Tr, Tc>(z);
         Array<Tr> b = imag<Tr, Tc>(z);
         Array<Tr> r = arithOp<Tr, af_atan2_t>(b, a, b.dims());
@@ -178,18 +185,16 @@ struct unaryOpCplx<Tc, Tr, af_log_t>
         // compute log
         Array<Tr> a_out = unaryOp<Tr, af_log_t>(r);
         Array<Tr> b_out = phi;
-        Array<Tc> z_out  = cplx<Tc, Tr>(a_out, b_out, a_out.dims());
 
-        return getHandle(z_out);
+        return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
     }
 };
 
 template<typename Tc, typename Tr>
-struct unaryOpCplx<Tc, Tr, af_sin_t>
+struct unaryOpCplxFun<Tc, Tr, af_sin_t>
 {
-    af_array operator()(const af_array in)
+    Array<Tc> operator()(const Array<Tc> &z)
     {
-        Array<Tc> z = getArray<Tc>(in);
         Array<Tr> a = real<Tr, Tc>(z);
         Array<Tr> b = imag<Tr, Tc>(z);
 
@@ -201,18 +206,15 @@ struct unaryOpCplx<Tc, Tr, af_sin_t>
         Array<Tr> a_out = arithOp<Tr, af_mul_t>(sin_a, cosh_b, sin_a.dims());
         Array<Tr> b_out = arithOp<Tr, af_mul_t>(cos_a, sinh_b, cos_a.dims());
 
-        Array<Tc> z_out  = cplx<Tc, Tr>(a_out, b_out, a_out.dims());
-
-        return getHandle(z_out);
+        return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
     }
 };
 
 template<typename Tc, typename Tr>
-struct unaryOpCplx<Tc, Tr, af_cos_t>
+struct unaryOpCplxFun<Tc, Tr, af_cos_t>
 {
-    af_array operator()(const af_array in)
+    Array<Tc> operator()(const Array<Tc> &z)
     {
-        Array<Tc> z = getArray<Tc>(in);
         Array<Tr> a = real<Tr, Tc>(z);
         Array<Tr> b = imag<Tr, Tc>(z);
 
@@ -226,31 +228,27 @@ struct unaryOpCplx<Tc, Tr, af_cos_t>
         Array<Tr> b_out_neg = arithOp<Tr, af_mul_t>(sin_a, sinh_b, cos_a.dims());
         Array<Tr> b_out = arithOp<Tr, af_mul_t>(b_out_neg, b_out_neg, b_out_neg.dims());
 
-        Array<Tc> z_out  = cplx<Tc, Tr>(a_out, b_out, a_out.dims());
-
-        return getHandle(z_out);
+        return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
     }
 };
 
 template<typename Tc, typename Tr>
-struct unaryOpCplx<Tc, Tr, af_tan_t>
+struct unaryOpCplxFun<Tc, Tr, af_tan_t>
 {
-    af_array operator()(const af_array in)
+    Array<Tc> operator()(const Array<Tc> &z)
     {
-        Array<Tc> sin_z = getArray<Tc>(unaryOpCplx<Tc, Tr, af_sin_t>()(in));
-        Array<Tc> cos_z = getArray<Tc>(unaryOpCplx<Tc, Tr, af_cos_t>()(in));
-        Array<Tc> tan_z = arithOp<Tc, af_div_t>(sin_z, cos_z, sin_z.dims());
-        return getHandle(tan_z);
+        Array<Tc> sin_z = unaryOpCplx<Tc, Tr, af_sin_t>(z);
+        Array<Tc> cos_z = unaryOpCplx<Tc, Tr, af_cos_t>(z);
+        return arithOp<Tc, af_div_t>(sin_z, cos_z, sin_z.dims());
     }
 };
 
 template<typename Tc, typename Tr>
-struct unaryOpCplx<Tc, Tr, af_sqrt_t>
+struct unaryOpCplxFun<Tc, Tr, af_sqrt_t>
 {
-    af_array operator()(const af_array in)
+    Array<Tc> operator()(const Array<Tc> &z)
     {
         // convert cartesian to polar
-        Array<Tc> z = getArray<Tc>(in);
         Array<Tr> a = real<Tr, Tc>(z);
         Array<Tr> b = imag<Tr, Tc>(z);
         Array<Tr> r = arithOp<Tr, af_atan2_t>(b, a, b.dims());
@@ -266,9 +264,8 @@ struct unaryOpCplx<Tc, Tr, af_sqrt_t>
         Array<Tr> b_out_unit = unaryOp<Tr, af_sin_t>(phi_out);
         Array<Tr> a_out = arithOp<Tr, af_mul_t>(r_out, a_out_unit, r_out.dims());
         Array<Tr> b_out = arithOp<Tr, af_mul_t>(r_out, b_out_unit, r_out.dims());
-        Array<Tc> z_out  = cplx<Tc, Tr>(a_out, b_out, a_out.dims());
 
-        return getHandle(z_out);
+        return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
     }
 };
 
