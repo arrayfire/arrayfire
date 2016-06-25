@@ -180,16 +180,24 @@ createNodeArray(const dim4 &dims, Node_ptr node)
     Array<T> out =  Array<T>(dims, node);
 
     if (evalFlag()) {
-        unsigned length =0, buf_count = 0, bytes = 0;
+        size_t alloc_bytes, alloc_buffers;
+        size_t lock_bytes, lock_buffers;
 
-        Node *n = node.get();
-        n->getInfo(length, buf_count, bytes);
-        n->reset();
+        deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
+                         &lock_bytes, &lock_buffers);
 
-        if (length > getMaxJitSize() ||
-            buf_count >= getMaxBuffers() ||
-            bytes >= getMaxBytes()) {
-            out.eval();
+        // Check if approaching the memory limit
+        if (lock_bytes > getMaxBytes() ||
+            lock_buffers > getMaxBuffers()) {
+
+            unsigned length =0, buf_count = 0, bytes = 0;
+            Node *n = node.get();
+            n->getInfo(length, buf_count, bytes);
+            n->reset();
+
+            if (2 * bytes > lock_bytes) {
+                out.eval();
+            }
         }
     }
 
