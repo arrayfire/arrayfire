@@ -123,7 +123,7 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
 
     for (auto node : nodes) {
         int id = node->getId();
-        node->genParams(inParamStream);
+        node->genParams(inParamStream, is_linear);
         outParamStream << "__global " << node->getTypeStr() << " *out" << id << ", \n";
         outWriteStream << "out" << id << "[idx] = " << "val" << id << ";\n";
         node->genOffsets(offsetsStream, is_linear);
@@ -240,7 +240,7 @@ void evalNodes(std::vector<Param> &outputs, std::vector<Node *> nodes)
 
         int args = 0;
         for (auto node : nodes) {
-            args = node->setArgs(ker, args);
+            args = node->setArgs(ker, args, is_linear);
         }
 
         // Set output parameters
