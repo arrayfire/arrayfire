@@ -88,13 +88,24 @@ AF_OPENCL_DEVICE_TYPE=CPU ./myprogram_opencl
 AF_OPENCL_CPU_OFFLOAD {#af_opencl_cpu_offload}
 -------------------------------------------------------------------------------
 
-When this variable is set to 1, and the selected OpenCL device has unified
-memory with the host (ie. `CL_DEVICE_HOST_UNIFIED_MEMORY` is true for device),
-then certain functions are offloaded to run on the CPU using mapped buffers.
+When ArrayFire runs on devices with unified memory with the host (ie.
+`CL_DEVICE_HOST_UNIFIED_MENORY` is true for the device) then certain functions
+are offloaded to run on the CPU using mapped buffers.
 
-This takes advantage of fast libraries such as MKL while spending no time
+ArrayFire takes advantage of fast libraries such as MKL while spending no time
 copying memory from device to host. The device memory is mapped to a host
 pointer which can be used in the offloaded functions.
+
+This functionality can be disabled by using the environment variable
+`AF_OPENCL_CPU_OFFLOAD=0`.
+
+The default bevaior of this has changed in version 3.4.
+
+Prior to v3.4, CPU Offload functionality was used only when the user set
+`AF_OPENCL_CPU_OFFLOAD=1` and disabled otherwise.
+
+From v3.4 onwards, CPU Offload is enabled by default and is disabled only when
+`AF_OPENCL_CPU_OFFLOAD=0` is set.
 
 AF_OPENCL_SHOW_BUILD_INFO {#af_opencl_show_build_info}
 -------------------------------------------------------------------------------
