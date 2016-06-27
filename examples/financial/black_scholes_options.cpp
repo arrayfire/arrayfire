@@ -16,15 +16,36 @@
 #include "input.h"
 using namespace af;
 
-static array cnd(const array& x)
+// The following function is a modified version of http://www.johndcook.com/blog/cpp_phi/
+// The example above references Handbook of Mathematical Functions by Abramowitz and Stegun
+
+array cnd(array x)
 {
-    static float sqrt2 = sqrtf(2.0f);
-    array temp = (x > 0);
-    array y = temp * (0.5f + erf(x/sqrt2)/2) + (1-temp) * (0.5f - erf((-x)/sqrt2)/2);
-    return y;
+    // constants
+    const float a1 =  0.254829592;
+    const float a2 = -0.284496736;
+    const float a3 =  1.421413741;
+    const float a4 = -1.453152027;
+    const float a5 =  1.061405429;
+    const float p  =  0.3275911;
+    const float sqrt2 = sqrt(2.0);
+
+    // Save the sign of x
+    array xSign = sign(x);
+
+    x = abs(x) / sqrt2;
+
+    // A&S formula 7.1.26
+    array t = 1.0f / (1.0f + p*x);
+    array y = 1.0f + 0.5f * (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*exp(-x*x);
+
+    return xSign * y + !xSign * (1 - y); // equivalent of (x >= 0) ? y : (1 - y);
 }
 
-static void black_scholes(array& C, array& P, const array& S, const array& X, const array& R, const array& V, const array& T)
+static void black_scholes(array& C, array& P,
+                          const array& S, const array& X,
+                          const array& R, const array& V,
+                          const array& T)
 {
     // This function computes the call and put option prices based on
     // Black-Scholes Model
@@ -82,7 +103,7 @@ int main(int argc, char **argv)
         af::sync();
 
 
-        int iter = 100;
+        int iter = 1000;
         for (int n = 50; n <= 500; n += 50) {
 
             // Create GPU copies of the data
@@ -91,21 +112,21 @@ int main(int argc, char **argv)
             Rg = tile(GC3, n, 1);
             Vg = tile(GC4, n, 1);
             Tg = tile(GC5, n, 1);
+            af::eval(Sg, Xg, Rg, Vg, Tg);
 
             dim4 dims = Xg.dims();
-            printf("Input Data Size = %d x %d\n", (int)dims[0], (int)dims[1]);
-
             // Force compute on the GPU
             af::sync();
 
             timer::start();
             for (int i = 0; i < iter; i++) {
                 black_scholes(Cg, Pg, Sg,Xg,Rg,Vg,Tg);
-                eval(Cg,Pg);
+                eval(Cg, Pg);
             }
             af::sync();
 
-            printf("Mean GPU Time = %0.6fms\n\n\n", 1000 * timer::stop()/iter);
+            double t = timer::stop() / iter;
+            printf("Input Data Size = %8d. Mean GPU Time: %0.6f ms\n", (int)dims[0], 1000 * t);
         }
     } catch (af::exception& e){
         fprintf(stderr, "%s\n", e.what());
