@@ -37,7 +37,11 @@ namespace JIT
 
         bool isLinear(dim_t dims[4])
         {
-            return m_child->isLinear(dims);
+            if (!m_set_is_linear) {
+                m_linear = m_child->isLinear(dims);
+                m_set_is_linear = true;
+            }
+            return m_linear;
         }
 
         void genParams(std::stringstream &kerStream)
@@ -63,6 +67,7 @@ namespace JIT
 
         void genKerName(std::stringstream &kerStream)
         {
+            if (m_gen_name) return;
             m_child->genKerName(kerStream);
 
             // Make the dec representation of enum part of the Kernel name
@@ -88,12 +93,9 @@ namespace JIT
         int setId(int id)
         {
             if (m_set_id) return id;
-
             id = m_child->setId(id);
-
             m_id = id;
             m_set_id = true;
-
             return m_id + 1;
         }
 
@@ -110,8 +112,10 @@ namespace JIT
 
         void resetFlags()
         {
-            resetCommonFlags();
-            m_child->resetFlags();
+            if (m_set_id) {
+                resetCommonFlags();
+                m_child->resetFlags();
+            }
         }
     };
 

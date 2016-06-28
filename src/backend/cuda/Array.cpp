@@ -29,10 +29,17 @@ namespace cuda
     using JIT::Node_ptr;
 
     template<typename T>
+    Node_ptr bufferNodePtr()
+    {
+        Node_ptr node(reinterpret_cast<Node *>(new BufferNode<T>(irname<T>(), afShortName<T>())));
+        return node;
+    }
+
+    template<typename T>
     Array<T>::Array(af::dim4 dims) :
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
-        node(), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(true)
     {}
 
     template<typename T>
@@ -40,7 +47,7 @@ namespace cuda
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(((is_device & !copy_device) ? (T *)in_data : memAlloc<T>(dims.elements())), memFree<T>),
         data_dims(dims),
-        node(), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(true)
     {
 #if __cplusplus > 199711L
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
@@ -61,7 +68,7 @@ namespace cuda
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim_t &offset_, const dim4 &strides) :
         info(parent.getDevId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()), data_dims(parent.getDataDims()),
-        node(),
+        node(bufferNodePtr<T>()),
         ready(true), owner(false)
     { }
 
@@ -74,7 +81,7 @@ namespace cuda
              (af_dtype)dtype_traits<T>::af_type),
         data(tmp.ptr, memFree<T>),
         data_dims(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3])),
-        node(), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(true)
     {
     }
 
@@ -92,7 +99,7 @@ namespace cuda
         info(getActiveDeviceId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
         data(is_device ? (T*)in_data : memAlloc<T>(info.total()), memFree<T>),
         data_dims(dims),
-        node(),
+        node(bufferNodePtr<T>()),
         ready(true),
         owner(true)
     {
@@ -123,11 +130,10 @@ namespace cuda
 
         evalNodes(res, this->getNode().get());
         ready = true;
-
-        Node_ptr prev = node;
-        prev->resetFlags();
+        node->resetFlags();
         // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
         node.reset();
+        node = bufferNodePtr<T>();
     }
 
     template<typename T>
@@ -138,20 +144,70 @@ namespace cuda
     }
 
     template<typename T>
+    void evalMultiple(std::vector<Array<T>*> arrays)
+    {
+        std::vector<Param<T> > outputs;
+        std::vector<JIT::Node *> nodes;
+
+        for (int i = 0; i < (int)arrays.size(); i++) {
+            Array<T> *array = arrays[i];
+
+            if (array->isReady()) {
+                continue;
+            }
+
+            array->setId(getActiveDeviceId());
+            array->data = shared_ptr<T>(memAlloc<T>(array->elements()),
+                                        memFree<T>);
+
+            Param<T> res;
+            res.ptr = array->data.get();
+
+            for (int  i = 0; i < 4; i++) {
+                res.dims[i] = array->dims()[i];
+                res.strides[i] = array->strides()[i];
+            }
+
+            outputs.push_back(res);
+            nodes.push_back(array->node.get());
+        }
+
+        evalNodes(outputs, nodes);
+
+        for (int i = 0; i < (int)arrays.size(); i++) {
+            Array<T> *array = arrays[i];
+
+            if (array->isReady()) continue;
+            array->ready = true;
+            array->node->resetFlags();
+            // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
+            array->node.reset();
+            array->node = bufferNodePtr<T>();
+        }
+        return;
+    }
+
+    template<typename T>
     Array<T>::~Array() {}
+
+    template<typename T>
+    Node_ptr Array<T>::getNode()
+    {
+        if (node->isBuffer()) {
+            unsigned bytes = this->getDataDims().elements() * sizeof(T);
+            BufferNode<T> *bufNode = reinterpret_cast<BufferNode<T> *>(node.get());
+            Param<T> param = *this;
+            bufNode->setData(param, data, bytes, isLinear());
+        }
+        return node;
+    }
 
     template<typename T>
     Node_ptr Array<T>::getNode() const
     {
-        if (!node) {
-            bool is_linear = isLinear();
-            unsigned bytes = this->getDataDims().elements() * sizeof(T);
-            BufferNode<T> *buf_node = new BufferNode<T>(irname<T>(),
-                                                        afShortName<T>(), data,
-                                                        *this, bytes, is_linear);
-            const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
+        if (node->isBuffer()) {
+            return const_cast<Array<T> *>(this)->getNode();
         }
-
         return node;
     }
 
@@ -160,16 +216,18 @@ namespace cuda
     {
         Array<T> out =  Array<T>(dims, node);
 
-        unsigned length =0, buf_count = 0, bytes = 0;
+        if (evalFlag()) {
+            unsigned length =0, buf_count = 0, bytes = 0;
 
-        Node *n = node.get();
-        n->getInfo(length, buf_count, bytes);
-        n->resetFlags();
+            Node *n = node.get();
+            n->getInfo(length, buf_count, bytes);
+            n->resetFlags();
 
-        if (length > getMaxJitSize() ||
-            buf_count >= getMaxBuffers() ||
-            bytes >= getMaxBytes()) {
-            out.eval();
+            if (length > getMaxJitSize() ||
+                buf_count >= getMaxBuffers() ||
+                bytes >= getMaxBytes()) {
+                out.eval();
+            }
         }
 
         return out;
@@ -308,6 +366,7 @@ namespace cuda
     template       void Array<T>::eval() const;                         \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
+    template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

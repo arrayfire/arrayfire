@@ -10,6 +10,7 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <map>
+#include <vector>
 #include <stdexcept>
 #include <copy.hpp>
 #include <JIT/Node.hpp>
@@ -35,10 +36,8 @@ using cl::NDRange;
 using std::string;
 using std::stringstream;
 
-static string getFuncName(Node *node, bool is_linear, bool *is_double)
+static string getFuncName(std::vector<Node *> nodes, bool is_linear, bool *is_double)
 {
-    node->setId(0);
-
     stringstream hashName;
     stringstream funcName;
 
@@ -48,15 +47,16 @@ static string getFuncName(Node *node, bool is_linear, bool *is_double)
         funcName << "G_";
     }
 
-    std::string outName = node->getNameStr();
-    funcName << outName;
-
-    node->genKerName(funcName);
+    int id = 0;
+    for (auto node :  nodes) {
+        funcName << "[";
+        id = node->setId(id);
+        funcName << node->getNameStr();
+        node->genKerName(funcName);
+        funcName << "]";
+    }
 
     string nameStr = funcName.str();
-    funcName << nameStr;
-
-    nameStr = nameStr + outName;
     string dblChars = "dDzZ";
     size_t loc = nameStr.find_first_of(dblChars);
     *is_double = (loc != std::string::npos);
@@ -66,90 +66,106 @@ static string getFuncName(Node *node, bool is_linear, bool *is_double)
     return hashName.str();
 }
 
-static string getKernelString(string funcName, Node *node, bool is_linear)
+static string getKernelString(string funcName, std::vector<Node *> nodes, bool is_linear)
 {
-    stringstream kerStream;
-    int id = node->getId();
 
-    kerStream << "__kernel void" << "\n";
+    // Common OpenCL code
+    // This part of the code does not change with the kernel.
 
-    kerStream << funcName;
-    kerStream << "(" << "\n";
+    static const char *kernelVoid =  "__kernel void\n";
+    static const char *dimParams = "KParam oInfo, uint groups_0, uint groups_1, uint num_odims";
+    static const char *blockStart = "{\n\n";
+    static const char *blockEnd = "\n\n}";
 
-    node->genParams(kerStream);
-    kerStream << "__global " << node->getTypeStr() << " *out, KParam oInfo," << "\n";
-    kerStream << "uint groups_0, uint groups_1, uint num_odims)" << "\n";
+    static const char *linearIndex = "\n"
+        "uint groupId  = get_group_id(1) * get_num_groups(0) + get_group_id(0);\n"
+        "uint threadId = get_local_id(0);\n"
+        "int idx = groupId * get_local_size(0) * get_local_size(1) + threadId;\n"
+        "if (idx >= oInfo.dims[3] * oInfo.strides[3]) return;\n";
 
-    kerStream << "{" << "\n" << "\n";
+    static const char *generalIndex = "\n"
+        "uint id0 = 0, id1 = 0, id2 = 0, id3 = 0;\n"
+        "if (num_odims > 2) {\n"
+        "id2 = get_group_id(0) / groups_0;\n"
+        "id0 = get_group_id(0) - id2 * groups_0;\n"
+        "id0 = get_local_id(0) + id0 * get_local_size(0);\n"
+        "if (num_odims > 3) {\n"
+        "id3 = get_group_id(1) / groups_1;\n"
+        "id1 = get_group_id(1) - id3 * groups_1;\n"
+        "id1 = get_local_id(1) + id1 * get_local_size(1);\n"
+        "} else {\n"
+        "id1 = get_global_id(1);\n"
+        "}\n"
+        " } else {\n"
+        "id3 = 0;\n"
+        "id2 = 0;\n"
+        "id1 = get_global_id(1);\n"
+        "id0 = get_global_id(0);\n"
+        "}\n"
+        "bool cond = \n"
+        "id0 < oInfo.dims[0] && \n"
+        "id1 < oInfo.dims[1] && \n"
+        "id2 < oInfo.dims[2] && \n"
+        "id3 < oInfo.dims[3];\n\n"
+        "if (!cond) return;\n\n"
+        "int idx = "
+        "oInfo.strides[3] * id3 + oInfo.strides[2] * id2 + "
+        "oInfo.strides[1] * id1 + id0 + oInfo.offset;\n\n";
 
-    if (!is_linear) {
 
-        kerStream << "uint id0 = 0, id1 = 0, id2 = 0, id3 = 0;\n";
-        kerStream << "if (num_odims > 2) {\n";
+    stringstream inParamStream;
+    stringstream outParamStream;
+    stringstream outWriteStream;
+    stringstream offsetsStream;
+    stringstream opsStream;
 
-        kerStream << "id2 = get_group_id(0) / groups_0;" << "\n";
-        kerStream << "id0 = get_group_id(0) - id2 * groups_0;" << "\n";
-        kerStream << "id0 = get_local_id(0) + id0 * get_local_size(0);" << "\n";
+    int count  = 0;
 
-        kerStream << "if (num_odims > 3) {\n";
-        kerStream << "id3 = get_group_id(1) / groups_1;" << "\n";
-        kerStream << "id1 = get_group_id(1) - id3 * groups_1;" << "\n";
-        kerStream << "id1 = get_local_id(1) + id1 * get_local_size(1);" << "\n";
-        kerStream << "} else {\n";
-        kerStream << "id1 = get_global_id(1);" << "\n";
-        kerStream << "}\n";
-        kerStream << " } else {\n";
-        kerStream << "id3 = 0;" << "\n";
-        kerStream << "id2 = 0;" << "\n";
-        kerStream << "id1 = get_global_id(1);" << "\n";
-        kerStream << "id0 = get_global_id(0);" << "\n";
-        kerStream << "}\n";
-
-        kerStream << "bool cond = " << "\n";
-        kerStream << "id0 < oInfo.dims[0] && " << "\n";
-        kerStream << "id1 < oInfo.dims[1] && " << "\n";
-        kerStream << "id2 < oInfo.dims[2] && " << "\n";
-        kerStream << "id3 < oInfo.dims[3];" << "\n" << "\n";
-
-        kerStream << "if (!cond) return;" << "\n" << "\n";
-
-        kerStream << "int idx = ";
-        kerStream << "oInfo.strides[3] * id3 + oInfo.strides[2] * id2 + ";
-        kerStream << "oInfo.strides[1] * id1 + id0 + oInfo.offset;" << "\n" << "\n";
-
-    } else {
-
-        kerStream << "uint groupId  = get_group_id(1) * get_num_groups(0) + get_group_id(0);" << "\n";
-        kerStream << "uint threadId = get_local_id(0);" << "\n";
-        kerStream << "int idx = groupId * get_local_size(0) * get_local_size(1) + threadId;" << "\n";
-        kerStream << "if (idx >= oInfo.dims[3] * oInfo.strides[3]) return;" << "\n";
+    for (auto node : nodes) {
+        int id = node->getId();
+        node->genParams(inParamStream);
+        outParamStream << "__global " << node->getTypeStr() << " *out" << id << ", \n";
+        outWriteStream << "out" << id << "[idx] = " << "val" << id << ";\n";
+        node->genOffsets(offsetsStream, is_linear);
+        node->genFuncs(opsStream);
+        opsStream << "//" << ++count << std::endl << std::endl;
     }
 
-    node->genOffsets(kerStream, is_linear);
-    node->genFuncs(kerStream);
-    kerStream << "\n";
-
-    kerStream << "out[idx] = val"
-           << id << ";"  << "\n";
-
-    kerStream << "}" << "\n";
+    // Put various blocks into a single stream
+    stringstream kerStream;
+    kerStream << kernelVoid;
+    kerStream << funcName;
+    kerStream << "(\n";
+    kerStream << inParamStream.str();
+    kerStream << outParamStream.str();
+    kerStream << dimParams;
+    kerStream << ")\n";
+    kerStream << blockStart;
+    if (is_linear) {
+        kerStream << linearIndex;
+    } else {
+        kerStream << generalIndex;
+    }
+    kerStream << offsetsStream.str();
+    kerStream << opsStream.str();
+    kerStream << outWriteStream.str();
+    kerStream << blockEnd;
 
     return kerStream.str();
 }
 
-static Kernel getKernel(Node *node, bool is_linear)
+static Kernel getKernel(std::vector<Node *> nodes, bool is_linear)
 {
 
     bool is_dbl = false;
-    string funcName = getFuncName(node, is_linear, &is_dbl);
-
+    string funcName = getFuncName(nodes, is_linear, &is_dbl);
     int device = getActiveDeviceId();
 
     kc_t::iterator idx = kernelCaches[device].find(funcName);
     kc_entry_t entry;
 
     if (idx == kernelCaches[device].end()) {
-        string jit_ker = getKernelString(funcName, node, is_linear);
+        string jit_ker = getKernelString(funcName, nodes, is_linear);
 
         const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
         const int ker_lens[] = {jit_cl_len, (int)jit_ker.size()};
@@ -166,12 +182,23 @@ static Kernel getKernel(Node *node, bool is_linear)
     return *entry.ker;
 }
 
-void evalNodes(Param &out, Node *node)
+void evalNodes(std::vector<Param> &outputs, std::vector<Node *> nodes)
 {
     try {
 
-        bool is_linear = node->isLinear(out.info.dims);
-        Kernel ker = getKernel(node, is_linear);
+        if (outputs.size() == 0) return;
+
+        // Assume all ouputs are of same size
+        //FIXME: Add assert to check if all outputs are same size?
+        KParam out_info = outputs[0].info;
+
+        // Verify if all ASTs hold Linear Arrays
+        bool is_linear = true;
+        for (auto node : nodes) {
+            is_linear &= node->isLinear(out_info.dims);
+        }
+
+        Kernel ker = getKernel(nodes, is_linear);
 
         uint local_0 = 1;
         uint local_1 = 1;
@@ -185,13 +212,13 @@ void evalNodes(Param &out, Node *node)
         const int work_group_size = (getActiveDeviceType() == AFCL_DEVICE_TYPE_CPU) ? 1024 : 256;
 
         while (num_odims >= 1) {
-            if (out.info.dims[num_odims - 1] == 1) num_odims--;
+            if (out_info.dims[num_odims - 1] == 1) num_odims--;
             else break;
         }
 
         if (is_linear) {
             local_0 = work_group_size;
-            uint out_elements = out.info.dims[3] * out.info.strides[3];
+            uint out_elements = out_info.dims[3] * out_info.strides[3];
             uint groups = divup(out_elements, local_0);
 
             global_1 = divup(groups,     1000) * local_1;
@@ -201,22 +228,34 @@ void evalNodes(Param &out, Node *node)
             local_1 =  4;
             local_0 = work_group_size / local_1;
 
-            groups_0 = divup(out.info.dims[0], local_0);
-            groups_1 = divup(out.info.dims[1], local_1);
+            groups_0 = divup(out_info.dims[0], local_0);
+            groups_1 = divup(out_info.dims[1], local_1);
 
-            global_0 = groups_0 * local_0 * out.info.dims[2];
-            global_1 = groups_1 * local_1 * out.info.dims[3];
+            global_0 = groups_0 * local_0 * out_info.dims[2];
+            global_1 = groups_1 * local_1 * out_info.dims[3];
         }
 
         NDRange local(local_0, local_1);
         NDRange global(global_0, global_1);
 
-        int args = node->setArgs(ker, 0);
-        ker.setArg(args + 0, *out.data);
-        ker.setArg(args + 1,  out.info);
-        ker.setArg(args + 2,  groups_0);
-        ker.setArg(args + 3,  groups_1);
-        ker.setArg(args + 4,  num_odims);
+        int args = 0;
+        for (auto node : nodes) {
+            args = node->setArgs(ker, args);
+        }
+
+        // Set output parameters
+        for (auto output : outputs) {
+            ker.setArg(args, *(output.data));
+            ++args;
+        }
+
+        // Set dimensions
+        // All outputs are asserted to be of same size
+        // Just use the size from the first output
+        ker.setArg(args + 0,  out_info);
+        ker.setArg(args + 1,  groups_0);
+        ker.setArg(args + 2,  groups_1);
+        ker.setArg(args + 3,  num_odims);
 
         getQueue().enqueueNDRangeKernel(ker, cl::NullRange, global, local);
 
@@ -224,6 +263,13 @@ void evalNodes(Param &out, Node *node)
         CL_TO_AF_ERROR(ex);
     }
 
+}
+
+void evalNodes(Param &out, Node *node)
+{
+    std::vector<Param>  outputs{out};
+    std::vector<Node *> nodes{node};
+    return evalNodes(outputs, nodes);
 }
 
 }

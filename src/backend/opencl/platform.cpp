@@ -846,7 +846,6 @@ bool synchronize_calls() {
 unsigned getMaxJitSize()
 {
     const int MAX_JIT_LEN = 20;
-    const int MAX_JIT_LEN_AMD = 16; //FIXME: Change this when bug is fixed
 
     static int length = 0;
     if (length == 0) {
@@ -857,11 +856,13 @@ unsigned getMaxJitSize()
             length = MAX_JIT_LEN;
         }
     }
-
-    if (getActivePlatform() == AFCL_PLATFORM_AMD) {
-        return std::min(length, MAX_JIT_LEN_AMD);
-    }
     return length;
+}
+
+bool& evalFlag()
+{
+    static bool flag = true;
+    return flag;
 }
 
 }

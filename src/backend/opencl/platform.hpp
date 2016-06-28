@@ -147,4 +147,6 @@ bool synchronize_calls();
 int getActiveDeviceType();
 int getActivePlatform();
 
+bool& evalFlag();
+
 }

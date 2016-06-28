@@ -22,10 +22,51 @@ namespace TNJ
     {
 
     protected:
+
+        int x, y, z, w;
         bool m_is_eval;
+        bool m_linear;
+        bool m_set_is_linear;
+
+
+        void resetCommonFlags()
+        {
+            x = -1;
+            y = -1;
+            z = -1;
+            w = -1;
+            m_is_eval = false;
+            m_linear = false;
+            m_set_is_linear = false;
+        }
+
+        bool calcCurrent(int xc)
+        {
+            bool res = (x == xc);
+            x = xc;
+            return !res;
+        }
+
+        bool calcCurrent(int xc, int yc, int zc, int wc)
+        {
+            bool res = (xc == x) && (yc == y) && (zc == z) && (wc == w);
+            x = xc;
+            y = yc;
+            z = zc;
+            w = wc;
+            return !res;
+        }
 
     public:
-        Node() : m_is_eval(false) {}
+        Node() :
+            x(-1),
+            y(-1),
+            z(-1),
+            w(-1),
+            m_is_eval(false),
+            m_linear(false),
+            m_set_is_linear(false)
+        {}
 
         virtual void *calc(int x, int y, int z, int w)
         {
@@ -47,7 +88,7 @@ namespace TNJ
         }
 
         virtual bool isLinear(const dim_t *dims) { return true; }
-        virtual void reset() { m_is_eval = false;}
+        virtual void reset() { resetCommonFlags(); }
 
         virtual ~Node() {}
     };

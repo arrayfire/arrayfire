@@ -37,7 +37,11 @@ namespace JIT
 
         bool isLinear(dim_t dims[4])
         {
-            return m_child->isLinear(dims);
+            if (!m_set_is_linear) {
+                m_linear = m_child->isLinear(dims);
+                m_set_is_linear = true;
+            }
+            return m_linear;
         }
 
         void genParams(std::stringstream &kerStream,
@@ -58,9 +62,9 @@ namespace JIT
 
         void genKerName(std::stringstream &kerStream)
         {
-            m_child->genKerName(kerStream);
-
             if (m_gen_name) return;
+
+            m_child->genKerName(kerStream);
 
             // Make the hex representation of enum part of the Kernel name
             kerStream << "_" << std::setw(2) << std::setfill('0') << std::hex << m_op;
@@ -96,30 +100,27 @@ namespace JIT
         int setId(int id)
         {
             if (m_set_id) return id;
-
             id = m_child->setId(id);
-
             m_id = id;
             m_set_id = true;
-
             return m_id + 1;
         }
 
         void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
         {
             if (m_set_id) return;
-
             m_child->getInfo(len, buf_count, bytes);
             len++;
-
             m_set_id = true;
             return;
         }
 
         void resetFlags()
         {
-            resetCommonFlags();
-            m_child->resetFlags();
+            if (m_set_id) {
+                resetCommonFlags();
+                m_child->resetFlags();
+            }
         }
 
         void setArgs(std::vector<void *> &args, bool is_linear)

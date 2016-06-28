@@ -49,15 +49,19 @@ namespace TNJ
 
         void *calc(int x, int y, int z, int w)
         {
-            m_val = m_op.eval(*(Ti *)m_lhs->calc(x, y, z, w),
-                              *(Ti *)m_rhs->calc(x, y, z, w));
+            if (calcCurrent(x, y, z, w)) {
+                m_val = m_op.eval(*(Ti *)m_lhs->calc(x, y, z, w),
+                                  *(Ti *)m_rhs->calc(x, y, z, w));
+            }
             return  (void *)&m_val;
         }
 
         void *calc(int idx)
         {
-            m_val = m_op.eval(*(Ti *)m_lhs->calc(idx),
-                              *(Ti *)m_rhs->calc(idx));
+            if (calcCurrent(idx)) {
+                m_val = m_op.eval(*(Ti *)m_lhs->calc(idx),
+                                  *(Ti *)m_rhs->calc(idx));
+            }
             return (void *)&m_val;
         }
 
@@ -75,14 +79,20 @@ namespace TNJ
 
         void reset()
         {
-            m_lhs->reset();
-            m_rhs->reset();
-            m_is_eval = false;
+            if (m_is_eval) {
+                resetCommonFlags();
+                m_lhs->reset();
+                m_rhs->reset();
+            }
         }
 
         bool isLinear(const dim_t *dims)
         {
-            return m_lhs->isLinear(dims) && m_rhs->isLinear(dims);
+            if (!m_set_is_linear) {
+                m_linear = m_lhs->isLinear(dims) && m_rhs->isLinear(dims);
+                m_set_is_linear = true;
+            }
+            return m_linear;
         }
     };
 
