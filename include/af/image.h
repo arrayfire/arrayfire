@@ -355,6 +355,24 @@ AFAPI array meanShift(const array& in, const float spatial_sigma, const float ch
 */
 AFAPI array medfilt(const array& in, const dim_t wind_length = 3, const dim_t wind_width = 3, const borderType edge_pad = AF_PAD_ZERO);
 
+#if AF_API_VERSION >= 34
+/**
+    C++ Interface for median filter
+
+    \snippet test/medfilt.cpp ex_image_medfilt
+
+    \param[in]  in array is the input signal
+    \param[in]  wind_width is the kernel width
+    \param[in]  edge_pad value will decide what happens to border when running
+                filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
+    \return     the processed signal
+
+    \ingroup image_func_medfilt
+*/
+AFAPI array medfilt_1d(const array& in, const dim_t wind_width = 3, const borderType edge_pad = AF_PAD_ZERO);
+
+#endif
+
 /**
     C++ Interface for minimum filter
 
@@ -1070,6 +1088,23 @@ extern "C" {
     */
     AFAPI af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad);
 
+#if AF_API_VERSION >= 34
+    /**
+        C Interface for 1D median filter
+
+        \param[out] out array is the processed signal
+        \param[in]  in array is the input signal
+        \param[in]  wind_width is the kernel width
+        \param[in]  edge_pad value will decide what happens to border when running
+                    filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
+        \return     \ref AF_SUCCESS if the median filter is applied successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_medfilt
+    */
+    AFAPI af_err af_medfilt_1d(af_array *out, const af_array in, const dim_t wind_width, const af_border_type edge_pad);
+
+#endif
     /**
         C Interface for minimum filter
 

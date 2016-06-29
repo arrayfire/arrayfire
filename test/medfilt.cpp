@@ -26,11 +26,19 @@ class MedianFilter : public ::testing::Test
         virtual void SetUp() {}
 };
 
+template<typename T>
+class MedianFilter1d : public ::testing::Test
+{
+    public:
+        virtual void SetUp() {}
+};
+
 // create a list of types to be tested
 typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(MedianFilter, TestTypes);
+TYPED_TEST_CASE(MedianFilter1d, TestTypes);
 
 template<typename T>
 void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid, af_border_type pad)
@@ -86,6 +94,63 @@ TYPED_TEST(MedianFilter, BATCH_ZERO_PAD_3x3)
 TYPED_TEST(MedianFilter, BATCH_SYMMETRIC_PAD_3x3)
 {
     medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/batch_symmetric_pad_3x3_window.test"), 3, 3, AF_PAD_SYM);
+}
+
+
+template<typename T>
+void medfilt1d_Test(string pTestFile, dim_t w_wid, af_border_type pad)
+{
+    if (noDoubleTests<T>()) return;
+
+    vector<af::dim4>  numDims;
+    vector<vector<T> >      in;
+    vector<vector<T> >   tests;
+
+    readTests<T,T,int>(pTestFile, numDims, in, tests);
+
+    af::dim4 dims      = numDims[0];
+    af_array outArray  = 0;
+    af_array inArray   = 0;
+
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+                dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+
+    ASSERT_EQ(AF_SUCCESS, af_medfilt_1d(&outArray, inArray, w_wid, pad));
+
+    T *outData = new T[dims.elements()];
+
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+
+    vector<T> currGoldBar = tests[0];
+    size_t nElems        = currGoldBar.size();
+    for (size_t elIter=0; elIter<nElems; ++elIter) {
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+    }
+
+    // cleanup
+    delete[] outData;
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+}
+
+TYPED_TEST(MedianFilter1d, ZERO_PAD_3)
+{
+    medfilt1d_Test<TypeParam>(string(TEST_DIR"/medianfilter/zero_pad_3x1_window.test"), 3, AF_PAD_ZERO);
+}
+
+TYPED_TEST(MedianFilter1d, SYMMETRIC_PAD_3)
+{
+    medfilt1d_Test<TypeParam>(string(TEST_DIR"/medianfilter/symmetric_pad_3x1_window.test"), 3, AF_PAD_SYM);
+}
+
+TYPED_TEST(MedianFilter1d, BATCH_ZERO_PAD_3)
+{
+    medfilt1d_Test<TypeParam>(string(TEST_DIR"/medianfilter/batch_zero_pad_3x1_window.test"), 3, AF_PAD_ZERO);
+}
+
+TYPED_TEST(MedianFilter1d, BATCH_SYMMETRIC_PAD_3)
+{
+    medfilt1d_Test<TypeParam>(string(TEST_DIR"/medianfilter/batch_symmetric_pad_3x1_window.test"), 3, AF_PAD_SYM);
 }
 
 template<typename T,bool isColor>
@@ -187,6 +252,33 @@ TYPED_TEST(MedianFilter, InvalidWindow)
     medfiltWindowTest<TypeParam>();
 }
 
+
+template<typename T>
+void medfilt1d_WindowTest(void)
+{
+    if (noDoubleTests<T>()) return;
+
+    af_array inArray   = 0;
+    af_array outArray  = 0;
+
+    vector<T>   in(100, 1);
+
+    // Check for 4D inputs
+    af::dim4 dims(10, 10, 1, 1);
+
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt_1d(&outArray, inArray, -1, AF_PAD_ZERO));
+
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+}
+
+TYPED_TEST(MedianFilter1d, InvalidWindow)
+{
+    medfilt1d_WindowTest<TypeParam>();
+}
+
 template<typename T>
 void medfiltPadTest(void)
 {
@@ -215,6 +307,33 @@ TYPED_TEST(MedianFilter, InvalidPadType)
     medfiltPadTest<TypeParam>();
 }
 
+template<typename T>
+void medfilt1d_PadTest(void)
+{
+    if (noDoubleTests<T>()) return;
+
+    af_array inArray   = 0;
+    af_array outArray  = 0;
+
+    vector<T>   in(100, 1);
+
+    // Check for 4D inputs
+    af::dim4 dims(10, 10, 1, 1);
+
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt_1d(&outArray, inArray, 3, af_border_type(3)));
+
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt_1d(&outArray, inArray, 3, af_border_type(-1)));
+
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+}
+
+TYPED_TEST(MedianFilter1d, InvalidPadType)
+{
+    medfilt1d_PadTest<TypeParam>();
+}
 
 //////////////////////////////////// CPP ////////////////////////////////////
 //
@@ -235,6 +354,36 @@ TEST(MedianFilter, CPP)
     af::dim4 dims    = numDims[0];
     af::array input(dims, &(in[0].front()));
     af::array output = af::medfilt(input, w_len, w_wid, AF_PAD_SYM);
+
+    float *outData = new float[dims.elements()];
+    output.host((void*)outData);
+
+    vector<float> currGoldBar = tests[0];
+    size_t nElems = currGoldBar.size();
+    for (size_t elIter=0; elIter<nElems; ++elIter) {
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+    }
+
+    // cleanup
+    delete[] outData;
+}
+
+TEST(MedianFilter1d, CPP)
+{
+    if (noDoubleTests<float>()) return;
+
+    const dim_t w_wid = 3;
+
+    vector<af::dim4>  numDims;
+    vector<vector<float> >      in;
+    vector<vector<float> >   tests;
+
+    readTests<float,float,int>(string(TEST_DIR"/medianfilter/batch_symmetric_pad_3x1_window.test"),
+                               numDims, in, tests);
+
+    af::dim4 dims    = numDims[0];
+    af::array input(dims, &(in[0].front()));
+    af::array output = af::medfilt_1d(input, w_wid, AF_PAD_SYM);
 
     float *outData = new float[dims.elements()];
     output.host((void*)outData);
@@ -306,6 +455,23 @@ TEST(MedianFilter, GFOR)
     for(int ii = 0; ii < 3; ii++) {
         array c_ii = medfilt(A(span, span, ii));
         array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}
+
+TEST(MedianFilter1d, GFOR)
+{
+    dim4 dims = dim4(10, 10, 3);
+    array A = iota(dims);
+    array B = constant(0, dims);
+
+    gfor(seq ii, 3) {
+        B(span, ii) = medfilt_1d(A(span, ii));
+    }
+
+    for(int ii = 0; ii < 3; ii++) {
+        array c_ii = medfilt_1d(A(span, ii));
+        array b_ii = B(span, ii);
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }
 }

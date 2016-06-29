@@ -32,9 +32,25 @@ Array<T> medfilt(const Array<T> &in, dim_t w_len, dim_t w_wid)
     return out;
 }
 
-#define INSTANTIATE(T)\
-    template Array<T> medfilt<T, AF_PAD_ZERO     >(const Array<T> &in, dim_t w_len, dim_t w_wid); \
-    template Array<T> medfilt<T, AF_PAD_SYM>(const Array<T> &in, dim_t w_len, dim_t w_wid);
+template<typename T, af_border_type pad>
+Array<T> medfilt_1d(const Array<T> &in, dim_t w_wid)
+{
+    ARG_ASSERT(2, (w_wid<=kernel::MAX_MEDFILTER_LEN));
+
+    const dim4 dims = in.dims();
+
+    Array<T> out    = createEmptyArray<T>(dims);
+
+    kernel::medfilt_1d<T, pad>(out, in, w_wid);
+
+    return out;
+}
+
+#define INSTANTIATE(T)                                                                          \
+    template Array<T> medfilt_1d<T, AF_PAD_ZERO>(const Array<T> &in, dim_t w_wid);              \
+    template Array<T> medfilt_1d<T, AF_PAD_SYM >(const Array<T> &in, dim_t w_wid);              \
+    template Array<T> medfilt<T, AF_PAD_ZERO>(const Array<T> &in, dim_t w_len, dim_t w_wid);    \
+    template Array<T> medfilt<T, AF_PAD_SYM >(const Array<T> &in, dim_t w_len, dim_t w_wid);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

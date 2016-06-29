@@ -158,6 +158,12 @@ af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, con
     return CALL(out, in, wind_length, wind_width, edge_pad);
 }
 
+af_err af_medfilt_1d(af_array *out, const af_array in, const dim_t wind_width, const af_border_type edge_pad)
+{
+    CHECK_ARRAYS(in);
+    return CALL(out, in, wind_width, edge_pad);
+}
+
 af_err af_minfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad)
 {
     CHECK_ARRAYS(in);

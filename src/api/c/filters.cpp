@@ -67,6 +67,52 @@ af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, con
     return AF_SUCCESS;
 }
 
+template<typename T>
+static af_array medfilt_1d(af_array const &in, dim_t w_wid, af_border_type edge_pad)
+{
+    switch(edge_pad) {
+        case AF_PAD_ZERO : return getHandle<T>(medfilt_1d<T, AF_PAD_ZERO>(getArray<T>(in), w_wid)); break;
+        case AF_PAD_SYM  : return getHandle<T>(medfilt_1d<T, AF_PAD_SYM >(getArray<T>(in), w_wid)); break;
+        default          : return getHandle<T>(medfilt_1d<T, AF_PAD_ZERO>(getArray<T>(in), w_wid)); break;
+    }
+}
+
+af_err af_medfilt_1d(af_array *out, const af_array in, const dim_t wind_width, const af_border_type edge_pad)
+{
+    try {
+        ARG_ASSERT(2, (wind_width>0));
+        ARG_ASSERT(4, (edge_pad>=AF_PAD_ZERO && edge_pad<=AF_PAD_SYM));
+
+        ArrayInfo info = getInfo(in);
+        af::dim4 dims  = info.dims();
+
+        dim_t input_ndims = dims.ndims();
+        DIM_ASSERT(1, (input_ndims >= 1));
+
+        if (wind_width==1) {
+            *out = retain(in);
+        } else {
+            af_array output;
+            af_dtype type  = info.getType();
+            switch(type) {
+                case f32: output = medfilt_1d<float >(in, wind_width, edge_pad); break;
+                case f64: output = medfilt_1d<double>(in, wind_width, edge_pad); break;
+                case b8 : output = medfilt_1d<char  >(in, wind_width, edge_pad); break;
+                case s32: output = medfilt_1d<int   >(in, wind_width, edge_pad); break;
+                case u32: output = medfilt_1d<uint  >(in, wind_width, edge_pad); break;
+                case s16: output = medfilt_1d<short >(in, wind_width, edge_pad); break;
+                case u16: output = medfilt_1d<ushort>(in, wind_width, edge_pad); break;
+                case u8 : output = medfilt_1d<uchar >(in, wind_width, edge_pad); break;
+                default : TYPE_ERROR(1, type);
+            }
+            std::swap(*out, output);
+        }
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
 af_err af_minfilt(af_array *out, const af_array in, const dim_t wind_length,
                   const dim_t wind_width, const af_border_type edge_pad)
 {
