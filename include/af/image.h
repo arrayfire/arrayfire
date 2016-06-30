@@ -677,6 +677,33 @@ AFAPI array ycbcr2rgb(const array& in, const YCCStd standard=AF_YCC_601);
 AFAPI array rgb2ycbcr(const array& in, const YCCStd standard=AF_YCC_601);
 #endif
 
+#if AF_API_VERSION >= 34
+/**
+   C++ Interface for calculating an image moment
+
+   \param[out] out is a pointer to a pre-allocated array where the calculated moment(s) will be placed.
+   User is responsible for ensuring enough space to hold all requested moments
+   \param[in]  in is the input image
+   \param[in] moment is moment(s) to calculate
+
+   \ingroup image_func_moments
+ */
+AFAPI void moments(double* out, const array& in, const momentType moment=AF_MOMENT_FIRST_ORDER);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C++ Interface for calculating image moments
+
+   \param[in]  in contains the input image(s)
+   \param[in] moment is moment(s) to calculate
+   \return array containing the requested moment of each image
+
+   \ingroup image_func_moments
+ */
+AFAPI array moments(const array& in, const momentType moment=AF_MOMENT_FIRST_ORDER);
+#endif
+
 }
 #endif
 
@@ -1348,6 +1375,38 @@ extern "C" {
     */
     AFAPI af_err af_rgb2ycbcr(af_array* out, const af_array in, const af_ycc_std standard);
 #endif
+
+#if AF_API_VERSION >= 34
+    /**
+       C Interface for finding image moments
+
+       \param[out] out is an array containing the calculated moments
+       \param[in]  in is an array of image(s)
+       \param[in] moment is moment(s) to calculate
+       \return     ref AF_SUCCESS if the moment calculation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_moments
+    */
+    AFAPI af_err af_moments(af_array *out, const af_array in, const af_moment_type moment);
+#endif
+
+#if AF_API_VERSION >= 34
+    /**
+       C Interface for calculating image moment(s) of a single image
+
+       \param[out] out is a pointer to a pre-allocated array where the calculated moment(s) will be placed.
+       User is responsible for ensuring enough space to hold all requested moments
+       \param[in] in is the input image
+       \param[in] moment is moment(s) to calculate
+       \return     ref AF_SUCCESS if the moment calculation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_moments
+    */
+    AFAPI af_err af_moments_all(double* out, const af_array in, const af_moment_type moment);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
