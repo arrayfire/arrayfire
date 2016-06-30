@@ -403,6 +403,15 @@ typedef enum {
 } af_marker_type;
 #endif
 
+#if AF_API_VERSION >= 34
+typedef enum {
+    AF_STORAGE_DENSE     = 0,
+    AF_STORAGE_CSR       = 1,
+    AF_STORAGE_CSC       = 2,
+    AF_STORAGE_COO       = 3,
+} af_storage;
+#endif
+
 #ifdef __cplusplus
 namespace af
 {
@@ -431,6 +440,9 @@ namespace af
 #endif
 #if AF_API_VERSION >= 32
     typedef af_marker_type markerType;
+#endif
+#if AF_API_VERSION >= 34
+    typedef af_storage storage;
 #endif
 #if AF_API_VERSION >= 34
     typedef af_binary_op binaryOp;

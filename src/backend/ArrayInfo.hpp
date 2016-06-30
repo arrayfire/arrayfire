@@ -45,6 +45,7 @@ private:
     af::dim4        dim_size;
     dim_t           offset;
     af::dim4        dim_strides;
+    bool            is_sparse;
 
 public:
     ArrayInfo(int id, af::dim4 size, dim_t offset_, af::dim4 stride, af_dtype af_type):
@@ -52,7 +53,26 @@ public:
         type(af_type),
         dim_size(size),
         offset(offset_),
-        dim_strides(stride)
+        dim_strides(stride),
+        is_sparse(false)
+    {
+        af_init();
+        setId(id);
+#if __cplusplus > 199711l
+    static_assert(offsetof(ArrayInfo, devId) == 0,
+                  "ArrayInfo::devId must be the first member variable of ArrayInfo. \
+                   devId is used to encode the backend into the integer. \
+                   This is then used in the unified backend to check mismatched arrays.");
+#endif
+    }
+
+    ArrayInfo(int id, af::dim4 size, dim_t offset_, af::dim4 stride, af_dtype af_type, bool sparse):
+        devId(id),
+        type(af_type),
+        dim_size(size),
+        offset(offset_),
+        dim_strides(stride),
+        is_sparse(sparse)
     {
         af_init();
         setId(id);
@@ -133,6 +153,8 @@ public:
     bool isBool() const;
 
     bool isLinear() const;
+
+    bool isSparse() const;
 };
 #if __cplusplus > 199711l
     static_assert(std::is_standard_layout<ArrayInfo>::value, "ArrayInfo must be a standard layout type");
