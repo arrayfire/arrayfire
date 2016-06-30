@@ -25,7 +25,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -89,7 +89,7 @@ namespace opencl
                                local[1] * groups_y * out.info.dims[3]);
 
 
-                auto wrapOp = make_kernel<Buffer, const KParam,
+                auto wrapOp = KernelFunctor<Buffer, const KParam,
                                           const Buffer, const KParam,
                                           const int, const int,
                                           const int, const int,

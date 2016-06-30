@@ -381,6 +381,15 @@ typedef enum {
     AF_ID = 0
 } af_someenum_t;
 
+#if AF_API_VERSION >=34
+typedef enum {
+    AF_BINARY_ADD  = 0,
+    AF_BINARY_MUL  = 1,
+    AF_BINARY_MIN  = 2,
+    AF_BINARY_MAX  = 3
+} af_binary_op;
+#endif
+
 #if AF_API_VERSION >=32
 typedef enum {
     AF_MARKER_NONE         = 0,
@@ -435,7 +444,9 @@ namespace af
 #if AF_API_VERSION >= 34
     typedef af_storage storage;
 #endif
-
+#if AF_API_VERSION >= 34
+    typedef af_binary_op binaryOp;
+#endif
 }
 
 #endif

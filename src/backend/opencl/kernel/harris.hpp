@@ -182,7 +182,7 @@ void harris(unsigned* corners_out,
         const NDRange local_so(HARRIS_THREADS_PER_GROUP, 1);
         const NDRange global_so(blk_x_so * HARRIS_THREADS_PER_GROUP, 1);
 
-        auto soOp = make_kernel<Buffer, Buffer, Buffer,
+        auto soOp = KernelFunctor<Buffer, Buffer, Buffer,
                                 unsigned, Buffer, Buffer> (*soKernel[device]);
 
         // Compute second-order derivatives
@@ -206,7 +206,7 @@ void harris(unsigned* corners_out,
         const NDRange local_hr(HARRIS_THREADS_X, HARRIS_THREADS_Y);
         const NDRange global_hr(blk_x_hr * HARRIS_THREADS_X, blk_y_hr * HARRIS_THREADS_Y);
 
-        auto hrOp = make_kernel<Buffer, unsigned, unsigned,
+        auto hrOp = KernelFunctor<Buffer, unsigned, unsigned,
                                 Buffer, Buffer, Buffer,
                                 float, unsigned> (*hrKernel[device]);
 
@@ -234,7 +234,7 @@ void harris(unsigned* corners_out,
 
         const float min_r = (max_corners > 0) ? 0.f : min_response;
 
-        auto nmOp = make_kernel<Buffer, Buffer, Buffer, Buffer,
+        auto nmOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer,
                                 Buffer, unsigned, unsigned,
                                 float, unsigned, unsigned> (*nmKernel[device]);
 
@@ -300,7 +300,7 @@ void harris(unsigned* corners_out,
             const NDRange local_kc(HARRIS_THREADS_PER_GROUP, 1);
             const NDRange global_kc(blk_x_kc * HARRIS_THREADS_PER_GROUP, 1);
 
-            auto kcOp = make_kernel<Buffer, Buffer, Buffer,
+            auto kcOp = KernelFunctor<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer, Buffer,
                                     unsigned> (*kcKernel[device]);
 

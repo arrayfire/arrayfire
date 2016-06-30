@@ -16,7 +16,6 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -55,7 +54,7 @@ namespace opencl
             prog.build(targetDevices, (defaults + options).c_str());
 
         } catch (...) {
-            SHOW_DEBUG_BUILD_INFO(prog);
+            SHOW_BUILD_INFO(prog);
             throw;
         }
     }

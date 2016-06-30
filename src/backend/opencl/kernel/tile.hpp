@@ -21,7 +21,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -59,7 +59,7 @@ namespace opencl
                     tileKernels[device] = new Kernel(*tileProgs[device], "tile_kernel");
                 });
 
-                auto tileOp = make_kernel<Buffer, const Buffer, const KParam, const KParam,
+                auto tileOp = KernelFunctor<Buffer, const Buffer, const KParam, const KParam,
                                           const int, const int> (*tileKernels[device]);
 
                 NDRange local(TX, TY, 1);

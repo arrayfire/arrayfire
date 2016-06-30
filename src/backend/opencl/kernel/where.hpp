@@ -26,7 +26,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -72,7 +72,7 @@ namespace kernel
 
         uint lim = divup(otmp.info.dims[0], (threads_x * groups_x));
 
-        auto whereOp = make_kernel<Buffer,
+        auto whereOp = KernelFunctor<Buffer,
                                    Buffer, KParam,
                                    Buffer, KParam,
                                    Buffer, KParam,

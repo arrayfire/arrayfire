@@ -20,6 +20,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::LocalSpaceArg;
 using cl::NDRange;
@@ -69,7 +70,7 @@ void susan(cl::Buffer* out, const cl::Buffer* in,
                 suKernel[device] = new Kernel(*suProg[device], "susan_responses");
             });
 
-        auto susanOp = make_kernel<Buffer, Buffer,
+        auto susanOp = KernelFunctor<Buffer, Buffer,
                                    unsigned,
                                    unsigned, unsigned,
                                    float, float, unsigned>(*suKernel[device]);
@@ -119,7 +120,7 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
         cl::Buffer *d_corners_found = bufferAlloc(sizeof(unsigned));
         getQueue().enqueueWriteBuffer(*d_corners_found, CL_TRUE, 0, sizeof(unsigned), &corners_found);
 
-        auto nonMaximalOp = make_kernel<Buffer, Buffer, Buffer, Buffer,
+        auto nonMaximalOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer,
                                         unsigned, unsigned, Buffer,
                                         unsigned, unsigned>(*nmKernel[device]);
 

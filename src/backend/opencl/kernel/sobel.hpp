@@ -21,7 +21,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -68,7 +68,7 @@ void sobel(Param dx, Param dy, const Param in)
         NDRange global(blk_x * in.info.dims[2] * THREADS_X,
                        blk_y * in.info.dims[3] * THREADS_Y);
 
-        auto sobelOp = make_kernel<Buffer, KParam,
+        auto sobelOp = KernelFunctor<Buffer, KParam,
                                    Buffer, KParam,
                                    Buffer, KParam,
                                    cl::LocalSpaceArg,

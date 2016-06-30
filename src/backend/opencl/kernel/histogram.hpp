@@ -19,6 +19,7 @@
 #include <debug_opencl.hpp>
 
 using cl::Kernel;
+using cl::KernelFunctor;
 
 namespace opencl
 {
@@ -58,7 +59,7 @@ void histogram(Param out, const Param in, int nbins, float minval, float maxval)
                     histKernels[device] = new Kernel(*histProgs[device], "histogram");
                 });
 
-        auto histogramOp = make_kernel<Buffer, KParam, Buffer, KParam,
+        auto histogramOp = KernelFunctor<Buffer, KParam, Buffer, KParam,
                                        cl::LocalSpaceArg,
                                        int, int, float, float, int
                                       >(*histKernels[device]);

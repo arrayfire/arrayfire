@@ -3,6 +3,11 @@ PROJECT(ARRAYFIRE)
 
 FIND_PACKAGE(OpenCL REQUIRED)
 
+ADD_DEFINITIONS(-DCL_USE_DEPRECATED_OPENCL_1_2_APIS)
+
+IF(NOT USE_SYSTEM_CL2HPP)
+    INCLUDE("${CMAKE_MODULE_PATH}/build_cl2hpp.cmake")
+ENDIF(NOT USE_SYSTEM_CL2HPP)
 INCLUDE("${CMAKE_MODULE_PATH}/CLKernelToH.cmake")
 
 IF(USE_OPENCL_F77_BLAS)
@@ -94,6 +99,7 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
     "${CMAKE_SOURCE_DIR}/src/backend/opencl"
     ${OpenCL_INCLUDE_DIRS}
+    ${CL2HPP_INCLUDE_DIRECTORY}
     "${CMAKE_CURRENT_BINARY_DIR}"
     ${CLBLAS_INCLUDE_DIRS}
     ${CLFFT_INCLUDE_DIRS}
@@ -239,6 +245,7 @@ ENDIF()
 
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
+INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_by_key/CMakeLists.txt")
 IF(DEFINED BLAS_SYM_FILE)
 
     ADD_LIBRARY(afopencl_static STATIC
@@ -256,7 +263,8 @@ IF(DEFINED BLAS_SYM_FILE)
                 ${backend_sources}
                 ${magma_sources}
                 ${magma_headers}
-                ${SORT_BY_KEY_OBJECTS})
+                ${SORT_BY_KEY_OBJECTS}
+                ${SCAN_BY_KEY_OBJECTS})
 
     ADD_LIBRARY(afopencl SHARED
                ${c_headers}
@@ -300,10 +308,14 @@ ELSE(DEFINED BLAS_SYM_FILE)
                 ${cpp_sources}
                 ${magma_sources}
                 ${magma_headers}
-                ${SORT_BY_KEY_OBJECTS})
+                ${SORT_BY_KEY_OBJECTS}
+                ${SCAN_BY_KEY_OBJECTS})
 
 ENDIF()
 
+IF(NOT USE_SYSTEM_CL2HPP)
+    ADD_DEPENDENCIES(afopencl cl2hpp)
+ENDIF(NOT USE_SYSTEM_CL2HPP)
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
 TARGET_LINK_LIBRARIES(afopencl

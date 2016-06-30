@@ -22,7 +22,7 @@
 
 using cl::Buffer;
 using cl::Program;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -83,7 +83,7 @@ namespace kernel
             NDRange global(groups_0 * idims[2] * local_size[0],
                            groups_1 * idims[3] * local_size[1]);
 
-            auto memcopy_kernel = make_kernel< Buffer, dims_t,
+            auto memcopy_kernel = KernelFunctor< Buffer, dims_t,
                                                Buffer, dims_t,
                                                dims_t, int,
                                                int, int >(*cpyKernels[device]);
@@ -154,7 +154,7 @@ namespace kernel
                 trgt_dims= {{trgt_i, trgt_j, trgt_k, trgt_l}};
             }
 
-            auto copyOp = make_kernel<Buffer, KParam, Buffer, KParam,
+            auto copyOp = KernelFunctor<Buffer, KParam, Buffer, KParam,
                                       outType, float, dims_t,
                                       int, int
                                      >(*cpyKernels[device]);
