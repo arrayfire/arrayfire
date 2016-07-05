@@ -277,9 +277,6 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 template<typename T, af_storage stype>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
 {
-    // TODO: Make an implementation without MKL
-    // Support CSC as well. MKL does not support Dense->CSC. So this will be
-    // used as fallback
     in_.eval();
 
     uint nNZ = reduce_all<af_notzero_t, T, uint>(in_);
@@ -308,10 +305,6 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
 template<typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 {
-    // TODO: Make an implementation without MKL
-    // Support CSC as well. MKL does not support CSC->Dense. So this will be
-    // used as fallback
-    // Make these implementations like a struct. See approx1
     in_.eval();
 
     Array<T> dense_ = createValueArray<T>(in_.dims(), scalar<T>(0));
