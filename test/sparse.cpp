@@ -88,6 +88,7 @@ void sparseTester(const int m, const int n, const int k, int factor, double eps)
     // Result of GEMM
     af::array dRes1 = matmul(A, B);
     af::array dRes2 = matmul(A, C, AF_MAT_TRANS, AF_MAT_NONE);
+    af::array dRes3 = matmul(A, C, AF_MAT_CTRANS, AF_MAT_NONE);
 
     // Create Sparse Array From Dense
     af::array sA = af::createSparseArray(A, AF_STORAGE_CSR);
@@ -95,6 +96,7 @@ void sparseTester(const int m, const int n, const int k, int factor, double eps)
     // Sparse Matmul
     af::array sRes1 = matmul(sA, B);
     af::array sRes2 = matmul(sA, C, AF_MAT_TRANS, AF_MAT_NONE);
+    af::array sRes3 = matmul(sA, C, AF_MAT_CTRANS, AF_MAT_NONE);
 
     // Verify Results
     ASSERT_NEAR(0, af::sum<double>(af::abs(real(dRes1 - sRes1))) / (m * k), eps);
@@ -102,6 +104,9 @@ void sparseTester(const int m, const int n, const int k, int factor, double eps)
 
     ASSERT_NEAR(0, af::sum<double>(af::abs(real(dRes2 - sRes2))) / (n * k), eps);
     ASSERT_NEAR(0, af::sum<double>(af::abs(imag(dRes2 - sRes2))) / (n * k), eps);
+
+    ASSERT_NEAR(0, af::sum<double>(af::abs(real(dRes3 - sRes3))) / (n * k), eps);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(dRes3 - sRes3))) / (n * k), eps);
 }
 
 

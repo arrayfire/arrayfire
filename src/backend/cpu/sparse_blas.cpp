@@ -280,7 +280,7 @@ cdouble getConjugate(const cdouble &in)
     return std::conj(in);
 }
 
-template<typename T>
+template<typename T, bool conjugate>
 void mv(Array<T> output,
         const Array<T> values,
         const Array<int> rowIdx,
@@ -298,7 +298,11 @@ void mv(Array<T> output,
         outPtr[i] = scalar<T>(0);
         for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
             //If stride[0] of right is not 1 then rightPtr[colPtr[j]*stride]
-            outPtr[i] += valPtr[j] * rightPtr[colPtr[j]];
+            if (conjugate) {
+                outPtr[i] += getConjugate(valPtr[j]) * rightPtr[colPtr[j]];
+            } else {
+                outPtr[i] += valPtr[j] * rightPtr[colPtr[j]];
+            }
         }
     }
 }
@@ -333,7 +337,7 @@ void mtv(Array<T> output,
     }
 }
 
-template<typename T>
+template<typename T, bool conjugate>
 void mm(Array<T> output,
         const Array<T> values,
         const Array<int> rowIdx,
@@ -353,7 +357,11 @@ void mm(Array<T> output,
             outPtr[i] = scalar<T>(0);
             for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
                 //If stride[0] of right is not 1 then rightPtr[colPtr[j]*stride]
-                outPtr[i] += valPtr[j] * rightPtr[colPtr[j]];
+                if (conjugate) {
+                    outPtr[i] += getConjugate(valPtr[j]) * rightPtr[colPtr[j]];
+                } else {
+                    outPtr[i] += valPtr[j] * rightPtr[colPtr[j]];
+                }
             }
         }
         rightPtr += ldb;
@@ -427,7 +435,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
 
         if(rDims[rColDim] == 1) {
             if (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) {
-                mv(output, values, rowIdx, colIdx, right, M);
+                mv<T, false>(output, values, rowIdx, colIdx, right, M);
             } else if (lOpts == SPARSE_OPERATION_TRANSPOSE) {
                 mtv<T, false>(output, values, rowIdx, colIdx, right, M);
             } else if (lOpts == SPARSE_OPERATION_CONJUGATE_TRANSPOSE) {
@@ -435,7 +443,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
             }
         } else {
             if (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) {
-                mm(output, values, rowIdx, colIdx, right, M, N, ldb, ldc);
+                mm<T, false>(output, values, rowIdx, colIdx, right, M, N, ldb, ldc);
             } else if (lOpts == SPARSE_OPERATION_TRANSPOSE) {
                 mtm<T, false>(output, values, rowIdx, colIdx, right, M, N, ldb, ldc);
             } else if (lOpts == SPARSE_OPERATION_CONJUGATE_TRANSPOSE) {
