@@ -136,7 +136,12 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma, float c_sig
     int radius = (int)std::max(s_sigma * 1.5f, 1.f);
     int num_shrd_elems    = (THREADS_X + 2 * radius) * (THREADS_Y + 2 * radius);
     int num_gauss_elems   = (2 * radius + 1)*(2 * radius + 1);
-    int total_shrd_size   = sizeof(outType) * (num_shrd_elems + num_gauss_elems);
+    size_t total_shrd_size   = sizeof(outType) * (num_shrd_elems + num_gauss_elems);
+
+    size_t MAX_SHRD_SIZE = cuda::getDeviceProp(cuda::getActiveDeviceId()).sharedMemPerBlock;
+    if (total_shrd_size > MAX_SHRD_SIZE) {
+        CUDA_NOT_SUPPORTED();
+    }
 
     CUDA_LAUNCH_SMEM((bilateralKernel<inType, outType>), blocks, threads, total_shrd_size,
         out, in, s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y);

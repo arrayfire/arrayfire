@@ -83,6 +83,11 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
         int radius = (int)std::max(s_sigma * 1.5f, 1.f);
         int num_shrd_elems    = (THREADS_X + 2 * radius) * (THREADS_Y + 2 * radius);
         int num_gauss_elems   = (2*radius+1)*(2*radius+1);
+        size_t localMemSize   = (num_shrd_elems + num_gauss_elems)*sizeof(outType);
+        size_t MaxLocalSize   = getDevice(getActiveDeviceId()).getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
+        if (localMemSize>MaxLocalSize) {
+            OPENCL_NOT_SUPPORTED();
+        }
 
         bilateralOp(EnqueueArgs(getQueue(), global, local),
                     *out.data, out.info, *in.data, in.info,
