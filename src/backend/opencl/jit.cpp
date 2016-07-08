@@ -259,6 +259,10 @@ void evalNodes(std::vector<Param> &outputs, std::vector<Node *> nodes)
 
         getQueue().enqueueNDRangeKernel(ker, cl::NullRange, global, local);
 
+        for (auto node : nodes) {
+            node->resetFlags();
+        }
+
     } catch (const cl::Error &ex) {
         CL_TO_AF_ERROR(ex);
     }

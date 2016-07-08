@@ -141,10 +141,6 @@ namespace opencl
 
         evalNodes(res, node.get());
         ready = true;
-
-        node->resetFlags();
-        // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
-        node.reset();
         node = bufferNodePtr<T>();
     }
 
@@ -185,9 +181,6 @@ namespace opencl
         for (auto array : arrays) {
             if (array->isReady()) continue;
             array->ready = true;
-            array->node->resetFlags();
-            // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
-            array->node.reset();
             array->node = bufferNodePtr<T>();
         }
     }

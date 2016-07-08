@@ -93,12 +93,9 @@ void Array<T>::eval()
     data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
 
     getQueue().enqueue(kernel::evalArray<T>, *this);
-
+    // Reset shared_ptr
+    this->node.reset();
     ready = true;
-    Node_ptr prev = node;
-    prev->reset();
-    // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
-    node.reset();
 }
 
 template<typename T>

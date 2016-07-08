@@ -527,6 +527,10 @@ void evalNodes(std::vector<Param<T> >&outputs, std::vector<Node *> nodes)
                             getStream(getActiveDeviceId()),
                             &args.front(),
                             NULL));
+
+    for (int i = 0; i < num_outputs; i++) {
+        nodes[i]->resetFlags();
+    }
 }
 
 template<typename T>
