@@ -20,7 +20,7 @@
 ######## This FindFFTW.cmake file is a copy of the file from the eigen library
 ######## http://code.metager.de/source/xref/lib/eigen/cmake/FindFFTW.cmake
 
-IF(NOT FFTW_ROOT AND ENV{FFTWDIR})
+IF(NOT FFTW_ROOT)
     SET(FFTW_ROOT $ENV{FFTWDIR})
 ENDIF()
 
@@ -65,14 +65,14 @@ IF(FFTW_ROOT)
         FFTW_LIB
         NAMES "fftw3" "libfftw3-3" "fftw3-3" "mkl_rt"
         PATHS ${FFTW_ROOT}
-        PATH_SUFFIXES "lib" "lib64"
+        PATH_SUFFIXES "lib" "lib64" "lib/intel64"
         NO_DEFAULT_PATH
         )
     FIND_LIBRARY(
         FFTWF_LIB
         NAMES "fftw3f" "libfftw3f-3" "fftw3f-3" "mkl_rt"
         PATHS ${FFTW_ROOT}
-        PATH_SUFFIXES "lib" "lib64"
+        PATH_SUFFIXES "lib" "lib64" "lib/intel64"
         NO_DEFAULT_PATH
         )
 
