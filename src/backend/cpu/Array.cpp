@@ -187,6 +187,11 @@ createNodeArray(const dim4 &dims, Node_ptr node)
         if (lock_bytes > getMaxBytes() ||
             lock_buffers > getMaxBuffers()) {
 
+            // Calling sync to ensure the TNJ calls below
+            // don't overwrite the same nodes being evaluated
+            // FIXME: This should ideally be JIT specific mutex
+            getQueue().sync();
+
             unsigned length =0, buf_count = 0, bytes = 0;
             Node *n = node.get();
             n->getInfo(length, buf_count, bytes);
