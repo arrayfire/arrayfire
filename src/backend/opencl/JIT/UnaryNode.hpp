@@ -44,18 +44,18 @@ namespace JIT
             return m_linear;
         }
 
-        void genParams(std::stringstream &kerStream)
+        void genParams(std::stringstream &kerStream, bool is_linear)
         {
             if (m_gen_param) return;
-            if (!(m_child->isGenParam())) m_child->genParams(kerStream);
+            if (!(m_child->isGenParam())) m_child->genParams(kerStream, is_linear);
             m_gen_param = true;
         }
 
-        int setArgs(cl::Kernel &ker, int id)
+        int setArgs(cl::Kernel &ker, int id, bool is_linear)
         {
             if (m_set_arg) return id;
             m_set_arg = true;
-            return m_child->setArgs(ker, id);
+            return m_child->setArgs(ker, id, is_linear);
         }
 
         void genOffsets(std::stringstream &kerStream, bool is_linear)

@@ -93,12 +93,9 @@ void Array<T>::eval()
     data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
 
     getQueue().enqueue(kernel::evalArray<T>, *this);
-
+    // Reset shared_ptr
+    this->node.reset();
     ready = true;
-    Node_ptr prev = node;
-    prev->reset();
-    // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
-    node.reset();
 }
 
 template<typename T>
@@ -180,16 +177,29 @@ createNodeArray(const dim4 &dims, Node_ptr node)
     Array<T> out =  Array<T>(dims, node);
 
     if (evalFlag()) {
-        unsigned length =0, buf_count = 0, bytes = 0;
+        size_t alloc_bytes, alloc_buffers;
+        size_t lock_bytes, lock_buffers;
 
-        Node *n = node.get();
-        n->getInfo(length, buf_count, bytes);
-        n->reset();
+        deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
+                         &lock_bytes, &lock_buffers);
 
-        if (length > getMaxJitSize() ||
-            buf_count >= getMaxBuffers() ||
-            bytes >= getMaxBytes()) {
-            out.eval();
+        // Check if approaching the memory limit
+        if (lock_bytes > getMaxBytes() ||
+            lock_buffers > getMaxBuffers()) {
+
+            // Calling sync to ensure the TNJ calls below
+            // don't overwrite the same nodes being evaluated
+            // FIXME: This should ideally be JIT specific mutex
+            getQueue().sync();
+
+            unsigned length =0, buf_count = 0, bytes = 0;
+            Node *n = node.get();
+            n->getInfo(length, buf_count, bytes);
+            n->reset();
+
+            if (2 * bytes > lock_bytes) {
+                out.eval();
+            }
         }
     }
 

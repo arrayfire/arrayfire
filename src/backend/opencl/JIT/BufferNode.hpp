@@ -70,20 +70,31 @@ namespace JIT
             m_gen_name = true;
         }
 
-        void genParams(std::stringstream &kerStream)
+        void genParams(std::stringstream &kerStream, bool is_linear)
         {
             if (m_gen_param) return;
-            kerStream << "__global " << m_type_str << " *in" << m_id
-                      << ", KParam iInfo" << m_id << ", " << "\n";
+
+            if (!is_linear) {
+                kerStream << "__global " << m_type_str << " *in" << m_id
+                          << ", KParam iInfo" << m_id << ", " << "\n";
+            } else {
+                kerStream << "__global " << m_type_str << " *in" << m_id
+                          << ", dim_t iInfo" << m_id << "_offset, " << "\n";
+            }
             m_gen_param = true;
         }
 
-        int setArgs(cl::Kernel &ker, int id)
+        int setArgs(cl::Kernel &ker, int id, bool is_linear)
         {
             if (m_set_arg) return id;
 
             ker.setArg(id + 0, *m_data);
-            ker.setArg(id + 1,  m_info);
+
+            if (!is_linear) {
+                ker.setArg(id + 1,  m_info);
+            } else {
+                ker.setArg(id + 1, m_info.offset);
+            }
 
             m_set_arg = true;
             return id + 2;
@@ -108,7 +119,7 @@ namespace JIT
                           << "id0 + " << info_str << ".offset;"
                           << "\n";
             } else {
-                kerStream << idx_str << " = idx + " << info_str << ".offset;" << "\n";
+                kerStream << idx_str << " = idx + " << info_str << "_offset;" << "\n";
             }
 
             m_gen_offset = true;
