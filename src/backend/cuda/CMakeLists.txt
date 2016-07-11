@@ -61,7 +61,7 @@ MACRO(SET_COMPUTE VERSION)
 ENDMACRO(SET_COMPUTE)
 
 # Iterate over compute versions. Create variables and enable computes if needed
-FOREACH(VER 20 30 32 35 37 50 52 53)
+FOREACH(VER 20 30 32 35 37 50 52 53 60 61 62)
     OPTION(CUDA_COMPUTE_${VER} "CUDA Compute Capability ${VER}" OFF)
     MARK_AS_ADVANCED(CUDA_COMPUTE_${VER})
     IF(${CUDA_COMPUTE_${VER}})
