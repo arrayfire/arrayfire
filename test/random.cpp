@@ -23,6 +23,10 @@ using std::cout;
 using std::endl;
 using af::cfloat;
 using af::cdouble;
+using af::array;
+using af::randomEngine;
+using af::mean;
+using af::stdev;
 
 template<typename T>
 class Random : public ::testing::Test
@@ -234,4 +238,26 @@ void testGetSeed(const uintl seed0, const uintl seed1)
 TYPED_TEST(Random, getSeed)
 {
     testGetSeed<TypeParam>(1234, 9876);
+}
+
+TEST(Random, philoxEngine)
+{
+    int elem = 16*1024*1024;
+    af::randomEngine r(AF_RANDOM_PHILOX, 0);
+    array A = r.uniform(elem, f32);
+    float m = mean<float>(A);
+    float s = stdev<float>(A);
+    ASSERT_NEAR(m, 0.5, 1e-3);
+    ASSERT_NEAR(s, 0.2887, 1e-3);
+}
+
+TEST(Random, threefryEngine)
+{
+    int elem = 16*1024*1024;
+    af::randomEngine r(AF_RANDOM_THREEFRY, 0);
+    array A = r.uniform(elem, f32);
+    float m = mean<float>(A);
+    float s = stdev<float>(A);
+    ASSERT_NEAR(m, 0.5, 1e-3);
+    ASSERT_NEAR(s, 0.2887, 1e-3);
 }

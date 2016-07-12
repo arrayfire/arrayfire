@@ -398,6 +398,11 @@ typedef enum {
     AF_BINARY_MIN  = 2,
     AF_BINARY_MAX  = 3
 } af_binary_op;
+
+typedef enum {
+    AF_RANDOM_PHILOX = 0,
+    AF_RANDOM_THREEFRY = 1
+} af_random_type;
 #endif
 
 #if AF_API_VERSION >=32
@@ -447,6 +452,7 @@ namespace af
 #endif
 #if AF_API_VERSION >= 34
     typedef af_binary_op binaryOp;
+    typedef af_random_type randomType;
 #endif
 }
 
