@@ -51,7 +51,11 @@
 get_filename_component(ArrayFire_INCLUDE_DIRS "@INCLUDE_DIR@" ABSOLUTE)
 
 macro(find_backend backend libname)
-  set(targetFile ${CMAKE_CURRENT_LIST_DIR}/@BACKEND_DIR@/ArrayFire${backend}.cmake)
+  if (${backend} STREQUAL "Unified")
+    set(targetFile ${CMAKE_CURRENT_LIST_DIR}/@UNIFIED_DIR@/ArrayFire${backend}.cmake)
+  else ()
+    set(targetFile ${CMAKE_CURRENT_LIST_DIR}/@BACKEND_DIR@/ArrayFire${backend}.cmake)
+  endif ()
   if(EXISTS ${targetFile})
     include(${targetFile})
     set(ArrayFire_${backend}_FOUND ON)
