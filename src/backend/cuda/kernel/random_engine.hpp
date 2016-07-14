@@ -386,7 +386,7 @@ namespace kernel
     __global__ void uniformPhilox(T *out, uint hi, uint lo, uint counter, uint elementsPerBlock, uint elements)
     {
         uint index = blockIdx.x*elementsPerBlock + threadIdx.x;
-        uint key[2] = {index, hi};
+        uint key[2] = {index+counter, hi};
         uint ctr[4] = {index+counter, 0, 0, lo};
         if (blockIdx.x != (gridDim.x - 1)) {
             philox(key, ctr);
@@ -401,17 +401,17 @@ namespace kernel
     __global__ void uniformThreefry(T *out, uint hi, uint lo, uint counter, uint elementsPerBlock, uint elements)
     {
         uint index = blockIdx.x*elementsPerBlock + threadIdx.x;
-        uint key[2] = {index, hi};
+        uint key[2] = {index+counter, hi};
         uint ctr[2] = {index+counter, lo};
         uint o[4];
         if (blockIdx.x != (gridDim.x - 1)) {
             threefry(key, ctr, o);
-            ctr[1] += elements;
+            ctr[0] += elements;
             threefry(key, ctr, o + 2);
             writeOut256Bytes(out, index, o[0], o[1], o[2], o[3]);
         } else {
             threefry(key, ctr, o);
-            ctr[1] += elements;
+            ctr[0] += elements;
             threefry(key, ctr, o + 2);
             partialWriteOut256Bytes(out, index, o[0], o[1], o[2], o[3], elements);
         }
@@ -431,6 +431,7 @@ namespace kernel
                 out, hi, lo, count, elementsPerBlock, elements); break;
         case AF_RANDOM_THREEFRY : CUDA_LAUNCH(uniformThreefry, blocks, threads,
                 out, hi, lo, count, elementsPerBlock, elements); break;
+                                  //THROW
         }
         counter += elements;
     }

@@ -22,15 +22,30 @@ namespace opencl
 
         switch(type) {
         case AF_RANDOM_PHILOX: kernel::uniformDistribution<T, AF_RANDOM_PHILOX>(*out.get(), out.elements(), seed, counter); break;
-        case AF_RANDOM_THREEFRY: break;
+        case AF_RANDOM_THREEFRY: kernel::uniformDistribution<T, AF_RANDOM_THREEFRY>(*out.get(), out.elements(), seed, counter); break;
         }
         return out;
     }
 
+#define COMPLEX_UNIFORM_DISTRIBUTION(T, TR)\
+    template<>\
+    Array<T> uniformDistribution<T>(const af::dim4 &dims, const af_random_type type, const unsigned long long seed, unsigned long long &counter)\
+    {\
+        verifyDoubleSupport<T>();\
+        Array<T> out = createEmptyArray<T>(dims);\
+\
+        switch(type) {\
+        case AF_RANDOM_PHILOX: kernel::uniformDistribution<TR, AF_RANDOM_PHILOX>(*out.get(), out.elements()*2, seed, counter); break;\
+        case AF_RANDOM_THREEFRY: break;\
+        }\
+        return out;\
+    }\
+
+    COMPLEX_UNIFORM_DISTRIBUTION(cdouble, double)
+    COMPLEX_UNIFORM_DISTRIBUTION(cfloat, float)
+
     template Array<float>   uniformDistribution<float>   (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
     template Array<double>  uniformDistribution<double>  (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
-    template Array<cfloat>  uniformDistribution<cfloat>  (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
-    template Array<cdouble> uniformDistribution<cdouble> (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
     template Array<int>     uniformDistribution<int>     (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
     template Array<uint>    uniformDistribution<uint>    (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
     template Array<intl>    uniformDistribution<intl>    (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
