@@ -337,13 +337,13 @@ struct unaryOpCplxFun<Tc, Tr, af_atanh_t>
     Array<Tc> operator()(const Array<Tc> &z)
     {
         // atanh(z) = 0.5*(log(1+z)-log(1-z))
-        Array<Tc> one = createValueArray<Tc>(z.dims(), Tc(1, 0));
+        Array<Tc> one = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(1.0, 0.0));
         Array<Tc> one_plus_z = arithOp<Tc, af_add_t>(one, z, one.dims());
         Array<Tc> one_minus_z = arithOp<Tc, af_min_t>(one, z, one.dims());
         Array<Tc> log_one_plus_z = unaryOpCplx<Tc, Tr, af_log_t>(one_plus_z);
         Array<Tc> log_one_minus_z = unaryOpCplx<Tc, Tr, af_log_t>(one_minus_z);
         Array<Tc> w = arithOp<Tc, af_min_t>(log_one_plus_z, log_one_minus_z, log_one_plus_z.dims());
-        Array<Tc> two = createValueArray<Tc>(z.dims(), Tc(2, 0));
+        Array<Tc> two = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(2.0, 0.0));
         return arithOp<Tc, af_div_t>(w, two, w.dims());
     }
 };
@@ -354,9 +354,10 @@ struct unaryOpCplxFun<Tc, Tr, af_acos_t>
     Array<Tc> operator()(const Array<Tc> &z)
     {
         // acos(z) = pi/2+i*log(i*z+sqrt(1-z.^2))
-        Array<Tc> one = createValueArray<Tc>(z.dims(), Tc(1, 0));
-        Array<Tc> i = createValueArray<Tc>(z.dims(), Tc(0, 1));
-        Array<Tc> pi_half = createValueArray<Tc>(z.dims(), Tc(M_PI / 2.0, 0));
+        Array<Tc> one = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(1.0, 0.0));
+
+        Array<Tc> i = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(0.0, 1.0));
+        Array<Tc> pi_half = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(M_PI / 2.0, 0.0));
 
         Array<Tc> z2 = arithOp<Tc, af_mul_t>(z, z, z.dims());
         Array<Tc> one_minus_z2 = arithOp<Tc, af_sub_t>(one, z2, one.dims());
@@ -375,9 +376,9 @@ struct unaryOpCplxFun<Tc, Tr, af_asin_t>
     Array<Tc> operator()(const Array<Tc> &z)
     {
         // asin(z) = -i*log(i*z+sqrt(1-z^2))
-        Array<Tc> one = createValueArray<Tc>(z.dims(), Tc(1, 0));
-        Array<Tc> i = createValueArray<Tc>(z.dims(), Tc(0, 1));
-        Array<Tc> minus_i = createValueArray<Tc>(z.dims(), Tc(0, -1));
+        Array<Tc> one = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(1.0, 0.0));
+        Array<Tc> i = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(0.0, 1.0));
+        Array<Tc> minus_i = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(0.0, -1.0));
 
         Array<Tc> z2 = arithOp<Tc, af_mul_t>(z, z, z.dims());
         Array<Tc> one_minus_z2 = arithOp<Tc, af_sub_t>(one, z2, one.dims());
@@ -394,9 +395,9 @@ struct unaryOpCplxFun<Tc, Tr, af_atan_t>
     Array<Tc> operator()(const Array<Tc> &z)
     {
         // atan(z) = 0.5*i*(log(1-i*z)-log(1+i*z))
-        Array<Tc> one = createValueArray<Tc>(z.dims(), Tc(1, 0));
-        Array<Tc> i = createValueArray<Tc>(z.dims(), Tc(0, 1));
-        Array<Tc> i_half = createValueArray<Tc>(z.dims(), Tc(0, 0.5));
+        Array<Tc> one = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(1.0, 0.0));
+        Array<Tc> i = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(0.0, 1.0));
+        Array<Tc> i_half = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(0.0, 0.5));
         Array<Tc> iz = arithOp<Tc, af_mul_t>(i, z, z.dims());
         Array<Tc> one_minus_i2 = arithOp<Tc, af_sub_t>(one, iz, z.dims());
         Array<Tc> one_plus_i2 = arithOp<Tc, af_add_t>(one, iz, z.dims());
