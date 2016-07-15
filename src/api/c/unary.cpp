@@ -155,15 +155,24 @@ struct unaryOpCplxFun<Tc, Tr, af_exp_t>
 {
     Array<Tc> operator()(const Array<Tc> &z)
     {
+        // exp(a + ib)
+        // --> exp(a) * exp(ib)
+        // --> exp(a) * (cos(a) + i * sin(b))
+        // --> exp(a) * cos(a) + i * exp(a) * sin(b)
+
         Array<Tr> a = real<Tr, Tc>(z);
         Array<Tr> b = imag<Tr, Tc>(z);
 
         Array<Tr> exp_a = unaryOp<Tr, af_exp_t>(a);
         Array<Tr> cos_b = unaryOp<Tr, af_cos_t>(b);
         Array<Tr> sin_b = unaryOp<Tr, af_sin_t>(b);
+
+        // exp(a) * cos(b)
         Array<Tr> a_out = arithOp<Tr, af_mul_t>(exp_a, cos_b, exp_a.dims());
+        // exp(a) * sin(b)
         Array<Tr> b_out = arithOp<Tr, af_mul_t>(exp_a, sin_b, exp_a.dims());
 
+        // exp(a) * cos(b) + i * exp(a) * sin(b)
         return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
     }
 };
@@ -173,16 +182,28 @@ struct unaryOpCplxFun<Tc, Tr, af_log_t>
 {
     Array<Tc> operator()(const Array<Tc> &z)
     {
+        // log(a + ib)
+        // using r = abs(a + ib), phi == arg(a + ib)
+        // --> log(r * exp(i * phi))
+        // --> log(r) + i * phi
+
         // convert cartesian to polar
         Array<Tr> a = real<Tr, Tc>(z);
         Array<Tr> b = imag<Tr, Tc>(z);
-        Array<Tr> r = arithOp<Tr, af_atan2_t>(b, a, b.dims());
-        Array<Tr> phi = abs<Tr>(z);
+
+        // phi = arg(a + ib)
+        // --> phi = atan2(b, a)
+        Array<Tr> phi = arithOp<Tr, af_atan2_t>(b, a, b.dims());
+
+        Array<Tr> r = abs<Tr>(z);
 
         // compute log
+        // log(r)
         Array<Tr> a_out = unaryOp<Tr, af_log_t>(r);
+        // phi
         Array<Tr> b_out = phi;
 
+        // log(r) + i * phi
         return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
     }
 };
@@ -192,6 +213,10 @@ struct unaryOpCplxFun<Tc, Tr, af_sin_t>
 {
     Array<Tc> operator()(const Array<Tc> &z)
     {
+        // sin(a + ib)
+        // --> sin(a) * cos(ib) + cos(a) * sin(ib)
+        // --> sin(a) * cosh(b) + i * cos(a) * sinh(b)
+
         Array<Tr> a = real<Tr, Tc>(z);
         Array<Tr> b = imag<Tr, Tc>(z);
 
@@ -200,9 +225,13 @@ struct unaryOpCplxFun<Tc, Tr, af_sin_t>
         Array<Tr> cos_a = unaryOp<Tr, af_cos_t>(a);
         Array<Tr> sinh_b = unaryOp<Tr, af_sinh_t>(b);
         Array<Tr> cosh_b = unaryOp<Tr, af_cosh_t>(b);
+
+        // sin(a) * cosh(b)
         Array<Tr> a_out = arithOp<Tr, af_mul_t>(sin_a, cosh_b, sin_a.dims());
+        // cos(a) * sinh(b)
         Array<Tr> b_out = arithOp<Tr, af_mul_t>(cos_a, sinh_b, cos_a.dims());
 
+        // sin(a) * cosh(b) + i * cos(a) * sinh(b)
         return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
     }
 };
@@ -212,6 +241,10 @@ struct unaryOpCplxFun<Tc, Tr, af_cos_t>
 {
     Array<Tc> operator()(const Array<Tc> &z)
     {
+        // cos(a + ib)
+        // --> cos(a) * cos(ib) - sin(a) * sin(ib)
+        // --> cos(a) * cosh(b) - i * sin(a) * sinh(b)
+
         Array<Tr> a = real<Tr, Tc>(z);
         Array<Tr> b = imag<Tr, Tc>(z);
 
@@ -220,11 +253,16 @@ struct unaryOpCplxFun<Tc, Tr, af_cos_t>
         Array<Tr> cos_a = unaryOp<Tr, af_cos_t>(a);
         Array<Tr> sinh_b = unaryOp<Tr, af_sinh_t>(b);
         Array<Tr> cosh_b = unaryOp<Tr, af_cosh_t>(b);
-        Array<Tr> a_out = arithOp<Tr, af_mul_t>(cos_a, cosh_b, sin_a.dims());
-        Array<Tr> neg_one = createValueArray<Tr>(a_out.dims(), -1);
-        Array<Tr> b_out_neg = arithOp<Tr, af_mul_t>(sin_a, sinh_b, cos_a.dims());
-        Array<Tr> b_out = arithOp<Tr, af_mul_t>(b_out_neg, b_out_neg, b_out_neg.dims());
 
+        // cos(a) * cosh(b)
+        Array<Tr> a_out = arithOp<Tr, af_mul_t>(cos_a, cosh_b, sin_a.dims());
+        // -1
+        Array<Tr> neg_one = createValueArray<Tr>(a_out.dims(), -1);
+        // sin(a) * sinh(b)
+        Array<Tr> b_out_neg = arithOp<Tr, af_mul_t>(sin_a, sinh_b, cos_a.dims());
+        // -1 * sin(a) * sinh(b)
+        Array<Tr> b_out = arithOp<Tr, af_mul_t>(neg_one, b_out_neg, b_out_neg.dims());
+        // cos(a) * cosh(b) - i * sin(a) * sinh(b)
         return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
     }
 };
@@ -234,6 +272,7 @@ struct unaryOpCplxFun<Tc, Tr, af_tan_t>
 {
     Array<Tc> operator()(const Array<Tc> &z)
     {
+        // tan(a + ib) = sin(a + ib) / cos(a + ib)
         Array<Tc> sin_z = unaryOpCplx<Tc, Tr, af_sin_t>(z);
         Array<Tc> cos_z = unaryOpCplx<Tc, Tr, af_cos_t>(z);
         return arithOp<Tc, af_div_t>(sin_z, cos_z, sin_z.dims());
@@ -245,6 +284,10 @@ struct unaryOpCplxFun<Tc, Tr, af_sinh_t>
 {
     Array<Tc> operator()(const Array<Tc> &z)
     {
+        // sinh(a + ib)
+        // --> sinh(a) * cosh(ib) + cosh(a) * sinh(ib)
+        // --> sinh(a) * cos(b) + i * cosh(a) * sin(b)
+
         Array<Tr> a = real<Tr, Tc>(z);
         Array<Tr> b = imag<Tr, Tc>(z);
 
@@ -253,9 +296,13 @@ struct unaryOpCplxFun<Tc, Tr, af_sinh_t>
         Array<Tr> cosh_a = unaryOp<Tr, af_cosh_t>(a);
         Array<Tr> sin_b = unaryOp<Tr, af_sin_t>(b);
         Array<Tr> cos_b = unaryOp<Tr, af_cos_t>(b);
+
+        // sinh(a) * cos(b)
         Array<Tr> a_out = arithOp<Tr, af_mul_t>(sinh_a, cos_b, sinh_a.dims());
+        // cosh(a) * sin(b)
         Array<Tr> b_out = arithOp<Tr, af_mul_t>(cosh_a, sin_b, cosh_a.dims());
 
+        // sinh(a) * cos(b) + i * cosh(a) * sin(b)
         return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
     }
 };
@@ -265,6 +312,9 @@ struct unaryOpCplxFun<Tc, Tr, af_cosh_t>
 {
     Array<Tc> operator()(const Array<Tc> &z)
     {
+        // cosh(a + ib)
+        // --> cosh(a) * cosh(ib) + sinh(a) * sinh(ib)
+        // --> cosh(a) * cos(b) + i * sinh(a) * sin(b)
         Array<Tr> a = real<Tr, Tc>(z);
         Array<Tr> b = imag<Tr, Tc>(z);
 
@@ -273,9 +323,13 @@ struct unaryOpCplxFun<Tc, Tr, af_cosh_t>
         Array<Tr> cosh_a = unaryOp<Tr, af_cosh_t>(a);
         Array<Tr> sin_b = unaryOp<Tr, af_sin_t>(b);
         Array<Tr> cos_b = unaryOp<Tr, af_cos_t>(b);
+
+        // cosh(a) * cos(b)
         Array<Tr> a_out = arithOp<Tr, af_mul_t>(cosh_a, cos_b, cosh_a.dims());
+        // sinh(a) * sin(b)
         Array<Tr> b_out = arithOp<Tr, af_mul_t>(sinh_a, sin_b, sinh_a.dims());
 
+        // cosh(a) * cos(b) + i * sinh(a) * sin(b)
         return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
     }
 };
@@ -285,31 +339,10 @@ struct unaryOpCplxFun<Tc, Tr, af_tanh_t>
 {
     Array<Tc> operator()(const Array<Tc> &z)
     {
+        // tanh(a + ib) = sinh(a + ib) / cosh(a + ib)
         Array<Tc> sinh_z = unaryOpCplx<Tc, Tr, af_sinh_t>(z);
         Array<Tc> cosh_z = unaryOpCplx<Tc, Tr, af_cosh_t>(z);
         return arithOp<Tc, af_div_t>(sinh_z, cosh_z, sinh_z.dims());
-    }
-};
-
-template<typename Tc, typename Tr>
-struct unaryOpCplxFun<Tc, Tr, af_asinh_t>
-{
-    Array<Tc> operator()(const Array<Tc> &z)
-    {
-        // dont simplify this expression, as it might lead to branch cuts
-        // acosh(z) = log(z+sqrt(z+1)*sqrt(z-1))
-        Array<Tr> a = real<Tr, Tc>(z);
-        Array<Tr> b = imag<Tr, Tc>(z);
-        Array<Tr> one = createValueArray<Tr>(a.dims(), 1);
-        Array<Tr> a_plus_one = arithOp<Tr, af_add_t>(a, one, a.dims());
-        Array<Tr> a_minus_one = arithOp<Tr, af_sub_t>(a, one, a.dims());
-        Array<Tc> z_plus_one = cplx<Tc, Tr>(a_plus_one, b, b.dims());
-        Array<Tc> z_minus_one = cplx<Tc, Tr>(a_minus_one, b, b.dims());
-        Array<Tc> sqrt_z_plus_one = unaryOpCplx<Tc, Tr, af_sqrt_t>(z_plus_one);
-        Array<Tc> sqrt_z_minus_one = unaryOpCplx<Tc, Tr, af_sqrt_t>(z_minus_one);
-        Array<Tc> sqrt_prod = arithOp<Tc, af_mul_t>(sqrt_z_plus_one, sqrt_z_minus_one, sqrt_z_plus_one.dims());
-        Array<Tc> w = arithOp<Tc, af_add_t>(z, sqrt_prod, z.dims());
-        return unaryOpCplx<Tc, Tr, af_log_t>(w);
     }
 };
 
@@ -318,15 +351,45 @@ struct unaryOpCplxFun<Tc, Tr, af_acosh_t>
 {
     Array<Tc> operator()(const Array<Tc> &z)
     {
+        // dont simplify this expression, as it might lead to branch cuts
+        // acosh(z) = log(z+sqrt(z+1)*sqrt(z-1))
+
+        Array<Tc> one = createValueArray<Tc>(z.dims(), scalar<Tc>(1.0));
+
+        // (z + 1)
+        Array<Tc> z_plus_one = arithOp<Tc, af_add_t>(z, one, z.dims());
+        // (z - 1)
+        Array<Tc> z_minus_one = arithOp<Tc, af_sub_t>(z, one, z.dims());
+        // sqrt(z + 1)
+        Array<Tc> sqrt_z_plus_one = unaryOpCplx<Tc, Tr, af_sqrt_t>(z_plus_one);
+        // sqrt(z - 1)
+        Array<Tc> sqrt_z_minus_one = unaryOpCplx<Tc, Tr, af_sqrt_t>(z_minus_one);
+        // sqrt(z + 1) * sqrt(z - 1)
+        Array<Tc> sqrt_prod = arithOp<Tc, af_mul_t>(sqrt_z_plus_one, sqrt_z_minus_one, sqrt_z_plus_one.dims());
+        // z + sqrt(z + 1) * sqrt(z - 1)
+        Array<Tc> w = arithOp<Tc, af_add_t>(z, sqrt_prod, z.dims());
+        // log(z + sqrt(z + 1) * sqrt(z - 1))
+        return unaryOpCplx<Tc, Tr, af_log_t>(w);
+    }
+};
+
+template<typename Tc, typename Tr>
+struct unaryOpCplxFun<Tc, Tr, af_asinh_t>
+{
+    Array<Tc> operator()(const Array<Tc> &z)
+    {
         // asinh(z) = log(z+sqrt(z^2+1))
+        Array<Tc> one = createValueArray<Tc>(z.dims(), scalar<Tc>(1.0));
+
+        // z^2
         Array<Tc> z2 = arithOp<Tc, af_mul_t>(z, z, z.dims());
-        Array<Tr> a = real<Tr, Tc>(z2);
-        Array<Tr> b = imag<Tr, Tc>(z2);
-        Array<Tr> one = createValueArray<Tr>(a.dims(), 1);
-        Array<Tr> a_plus_one = arithOp<Tr, af_add_t>(a, one, a.dims());
-        Array<Tc> z2_plus_one = cplx<Tc, Tr>(a_plus_one, b, b.dims());
+        // ((a + 1) + i * b) --> z^2 + 1
+        Array<Tc> z2_plus_one = arithOp<Tc, af_add_t>(z2, one, z.dims());
+        // sqrt(z^2 + 1)
         Array<Tc> sqrt_z2_plus_one = unaryOpCplx<Tc, Tr, af_sqrt_t>(z2_plus_one);
+        // z + sqrt(z^2 + 1)
         Array<Tc> w = arithOp<Tc, af_add_t>(z, sqrt_z2_plus_one, z.dims());
+        // log(z + sqrt(z^2 + 1))
         return unaryOpCplx<Tc, Tr, af_log_t>(w);
     }
 };
@@ -338,13 +401,20 @@ struct unaryOpCplxFun<Tc, Tr, af_atanh_t>
     {
         // atanh(z) = 0.5*(log(1+z)-log(1-z))
         Array<Tc> one = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(1.0, 0.0));
+        Array<Tc> half = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(0.5, 0.0));
+
+        // (1 + z)
         Array<Tc> one_plus_z = arithOp<Tc, af_add_t>(one, z, one.dims());
-        Array<Tc> one_minus_z = arithOp<Tc, af_min_t>(one, z, one.dims());
+        // (1 - z)
+        Array<Tc> one_minus_z = arithOp<Tc, af_sub_t>(one, z, one.dims());
+        // log(1 + z)
         Array<Tc> log_one_plus_z = unaryOpCplx<Tc, Tr, af_log_t>(one_plus_z);
+        // log(1 - z)
         Array<Tc> log_one_minus_z = unaryOpCplx<Tc, Tr, af_log_t>(one_minus_z);
-        Array<Tc> w = arithOp<Tc, af_min_t>(log_one_plus_z, log_one_minus_z, log_one_plus_z.dims());
-        Array<Tc> two = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(2.0, 0.0));
-        return arithOp<Tc, af_div_t>(w, two, w.dims());
+        // (log(1 + z) - log(1 - z))
+        Array<Tc> w = arithOp<Tc, af_sub_t>(log_one_plus_z, log_one_minus_z, log_one_plus_z.dims());
+        // 0.5 * (log(1 + z) - log(1 - z))
+        return arithOp<Tc, af_mul_t>(w, half, w.dims());
     }
 };
 
@@ -353,19 +423,29 @@ struct unaryOpCplxFun<Tc, Tr, af_acos_t>
 {
     Array<Tc> operator()(const Array<Tc> &z)
     {
-        // acos(z) = pi/2+i*log(i*z+sqrt(1-z.^2))
+        // acos(z) = pi/2 + i*log(i*z+sqrt(1-z.^2))
+        // --> pi/2 - asinz(z)
+
         Array<Tc> one = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(1.0, 0.0));
 
         Array<Tc> i = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(0.0, 1.0));
         Array<Tc> pi_half = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(M_PI / 2.0, 0.0));
 
+        // z^2
         Array<Tc> z2 = arithOp<Tc, af_mul_t>(z, z, z.dims());
+        // 1 - z^2
         Array<Tc> one_minus_z2 = arithOp<Tc, af_sub_t>(one, z2, one.dims());
+        // sqrt(1 - z^2)
         Array<Tc> sqrt_one_minus_z2 = unaryOpCplx<Tc, Tr, af_sqrt_t>(one_minus_z2);
+        // i*z
         Array<Tc> iz = arithOp<Tc, af_mul_t>(i, z, z.dims());
+        // (i*z - sqrt(1 - z^2))
         Array<Tc> w = arithOp<Tc, af_add_t>(iz, sqrt_one_minus_z2, iz.dims());
+        // log(i*z - sqrt(1 - z^2))
         Array<Tc> log_w = unaryOpCplx<Tc, Tr, af_log_t>(w);
-        Array<Tc> i_log_w = arithOp<Tc, af_mul_t>(i, w, i.dims());
+        // i*log(i*z - sqrt(1 - z^2))
+        Array<Tc> i_log_w = arithOp<Tc, af_mul_t>(i, log_w, i.dims());
+        // pi/2 + i*log(i*z - sqrt(1 - z^2))
         return arithOp<Tc, af_add_t>(pi_half, i_log_w, pi_half.dims());
     }
 };
@@ -376,16 +456,25 @@ struct unaryOpCplxFun<Tc, Tr, af_asin_t>
     Array<Tc> operator()(const Array<Tc> &z)
     {
         // asin(z) = -i*log(i*z+sqrt(1-z^2))
+
         Array<Tc> one = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(1.0, 0.0));
         Array<Tc> i = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(0.0, 1.0));
         Array<Tc> minus_i = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(0.0, -1.0));
 
+        // z^2
         Array<Tc> z2 = arithOp<Tc, af_mul_t>(z, z, z.dims());
+        // 1 - z^2
         Array<Tc> one_minus_z2 = arithOp<Tc, af_sub_t>(one, z2, one.dims());
+        // sqrt(1 - z^2)
         Array<Tc> sqrt_one_minus_z2 = unaryOpCplx<Tc, Tr, af_sqrt_t>(one_minus_z2);
+        // i*z
         Array<Tc> iz = arithOp<Tc, af_mul_t>(i, z, z.dims());
+        // (i*z + sqrt(1 - z^2))
         Array<Tc> w = arithOp<Tc, af_add_t>(iz, sqrt_one_minus_z2, iz.dims());
-        return arithOp<Tc, af_mul_t>(minus_i, w, minus_i.dims());
+        // log(i*z + sqrt(1 - z^2))
+        Array<Tc> log_w = unaryOpCplx<Tc, Tr, af_log_t>(w);
+        // i*log(i*z + sqrt(1 - z^2))
+        return arithOp<Tc, af_mul_t>(minus_i, log_w, minus_i.dims());
     }
 };
 
@@ -394,16 +483,25 @@ struct unaryOpCplxFun<Tc, Tr, af_atan_t>
 {
     Array<Tc> operator()(const Array<Tc> &z)
     {
-        // atan(z) = 0.5*i*(log(1-i*z)-log(1+i*z))
+        // atan(z) = 0.5 * i * (log(1-i*z)-log(1+i*z))
         Array<Tc> one = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(1.0, 0.0));
         Array<Tc> i = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(0.0, 1.0));
+
+        // 0.5 * i
         Array<Tc> i_half = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(0.0, 0.5));
+        // i*z
         Array<Tc> iz = arithOp<Tc, af_mul_t>(i, z, z.dims());
-        Array<Tc> one_minus_i2 = arithOp<Tc, af_sub_t>(one, iz, z.dims());
-        Array<Tc> one_plus_i2 = arithOp<Tc, af_add_t>(one, iz, z.dims());
-        Array<Tc> log_minus = unaryOpCplx<Tc, Tr, af_log_t>(one_minus_i2);
-        Array<Tc> log_plus = unaryOpCplx<Tc, Tr, af_log_t>(one_plus_i2);
+        // 1 - i*z
+        Array<Tc> one_minus_iz = arithOp<Tc, af_sub_t>(one, iz, z.dims());
+        // 1 + i*z
+        Array<Tc> one_plus_iz = arithOp<Tc, af_add_t>(one, iz, z.dims());
+        // log(1 - i*z)
+        Array<Tc> log_minus = unaryOpCplx<Tc, Tr, af_log_t>(one_minus_iz);
+        // log(1 + i*z)
+        Array<Tc> log_plus = unaryOpCplx<Tc, Tr, af_log_t>(one_plus_iz);
+        // log(1 - i*z) - log(1 + i*z)
         Array<Tc> log_diff = arithOp<Tc, af_sub_t>(log_minus, log_plus, z.dims());
+        // 0.5 * i * (log(1 - i*z) - log(1 + i*z))
         return arithOp<Tc, af_mul_t>(i_half, log_diff, z.dims());
     }
 };
@@ -413,23 +511,42 @@ struct unaryOpCplxFun<Tc, Tr, af_sqrt_t>
 {
     Array<Tc> operator()(const Array<Tc> &z)
     {
+        // sqrt(a + ib)
+        // using r = abs(a + ib), phi == arg(a + ib)
+        // --> sqrt(r * exp(i * phi))
+        // --> sqrt(r) * exp(i * phi / 2)
+        // --> sqrt(r) * cos(phi/2) + i * sqrt(r) * sin(phi/2)
+
         // convert cartesian to polar
         Array<Tr> a = real<Tr, Tc>(z);
         Array<Tr> b = imag<Tr, Tc>(z);
-        Array<Tr> r = arithOp<Tr, af_atan2_t>(b, a, b.dims());
-        Array<Tr> phi = abs<Tr>(z);
+
+
+        // phi = arg(a + ib)
+        // --> phi = atan2(b, a)
+        Array<Tr> phi = arithOp<Tr, af_atan2_t>(b, a, b.dims());
+        Array<Tr> r = abs<Tr>(z);
 
         // compute sqrt
         Array<Tr> two = createValueArray<Tr>(phi.dims(), 2.0);
+
+        // sqrt(r)
         Array<Tr> r_out = unaryOp<Tr, af_sqrt_t>(r);
+
+        // phi/2
         Array<Tr> phi_out = arithOp<Tr, af_div_t>(phi, two, phi.dims());
 
         // convert polar to cartesian
+        // cos(phi/2)
         Array<Tr> a_out_unit = unaryOp<Tr, af_cos_t>(phi_out);
+        // sin(phi/2)
         Array<Tr> b_out_unit = unaryOp<Tr, af_sin_t>(phi_out);
+        // sqrt(r) * cos(phi/2)
         Array<Tr> a_out = arithOp<Tr, af_mul_t>(r_out, a_out_unit, r_out.dims());
+        // sqrt(r) * sin(phi/2)
         Array<Tr> b_out = arithOp<Tr, af_mul_t>(r_out, b_out_unit, r_out.dims());
 
+        // sqrt(r) * cos(phi/2) + i * sqrt(r) * sin(phi/2)
         return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
     }
 };
