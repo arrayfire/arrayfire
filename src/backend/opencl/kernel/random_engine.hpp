@@ -93,7 +93,7 @@ namespace opencl
                     uint lo = seed;
 
                     randomEngineOp(EnqueueArgs(getQueue(), global, local),
-                            out, elements, counter, lo, hi);
+                            out, elements, counter, hi, lo);
                     CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error ex) {
                 CL_TO_AF_ERROR(ex);

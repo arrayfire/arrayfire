@@ -45,24 +45,30 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *********************************************************/
 
+#pragma once
+namespace cpu
+{
+namespace kernel
+{
+
 #define m4x32_0 0xD2511F53
 #define m4x32_1 0xCD9E8D57
 #define w32_0 0x9E3779B9
 #define w32_1 0xBB67AE85
 
-inline void mulhilo(const uint a, const uint b, uint * const hi, uint * const lo)
+static inline void mulhilo(const uint a, const uint b, uint * const hi, uint * const lo)
 {
-    *hi = mul_hi(a, b);
+    *hi = (((uintl)a) * ((uintl)b))>>32;
     *lo = a*b;
 }
 
-inline void philoxBump(uint k[2])
+static inline void philoxBump(uint k[2])
 {
     k[0] += w32_0;
     k[1] += w32_1;
 }
 
-inline void philoxRound(const uint k[2], uint c[4])
+static inline void philoxRound(const uint k[2], uint c[4])
 {
     uint hi0, lo0, hi1, lo1;
     mulhilo(m4x32_0, c[0], &hi0, &lo0);
@@ -73,7 +79,7 @@ inline void philoxRound(const uint k[2], uint c[4])
     c[3] = lo0;
 }
 
-inline void philox(uint key[2], uint ctr[4])
+static inline void philox(uint key[2], uint ctr[4])
 {
     //10 Rounds
                        philoxRound(key, ctr);
@@ -88,22 +94,49 @@ inline void philox(uint key[2], uint ctr[4])
     philoxBump(key);   philoxRound(key, ctr);
 }
 
-__kernel void uniformDistribution(__global T *output, unsigned elements,
-        unsigned counter, unsigned hi, unsigned lo)
+/*
+template <> struct Random<AF_RANDOM_PHILOX>
 {
-    unsigned gid = get_group_id(0);
-    unsigned off = get_local_size(0);
-    unsigned index =  gid * ELEMENTS_PER_BLOCK + get_local_id(0);
+    uint hi;
+    uint lo;
+    uintl counter;
+    uint key[2];
+    uint ctr[4];
+    int reset;
 
-    uint key[2] = {index+counter, hi};
-    uint ctr[4] = {index+counter, 0, 0, lo};
+    template <typename T>
+    T uniform(void);
 
-    if (gid != get_num_groups(0) - 1) {
-        philox(key, ctr);
-        WRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3]);
-    } else {
-        philox(key, ctr);
-        PARTIALWRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3], &elements);
-    }
+    Random(uintl seed, uintl counter);
+};
+
+Random<AF_RANDOM_PHILOX>::Random(uintl seed, uintl counterInput) : hi(seed>>32), lo(seed), counter(counterInput), reset(0)
+{
+    key[0] = counter;
+    key[1] = hi;
+    ctr[0] = counter;
+    ctr[1] = 0;
+    ctr[2] = 0;
+    ctr[3] = lo;
 }
 
+template <typename T>
+void Random<AF_RANDOM_PHILOX>::uniform(T* out, size_t elements)
+{
+    int reset = (4*sizeof(uint))/sizeof(T);
+    philox(key, ctr);
+    for (int i = 0; i < (int)out.elements(); ++i) {
+        if (fresh == reset) {
+            philox(key, ctr);
+            ctr[0] += 4;
+            fresh = 0;
+        }
+        out[i] = transform<T>(ctr, fresh);
+        fresh++;
+    }
+
+}
+*/
+
+}
+}

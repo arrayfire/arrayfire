@@ -45,6 +45,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *********************************************************/
 
+#pragma once
+namespace cpu
+{
+namespace kernel
+{
+
 #define SKEIN_KS_PARITY 0x1BD11BDA
 
 #define R0 13
@@ -56,12 +62,12 @@
 #define R6 16
 #define R7 24
 
-inline uint rotL(uint x, uint N)
+static inline uint rotL(uint x, uint N)
 {
     return (x << (N & 31)) | (x >> ((32-N) & 31));
 }
 
-inline void threefry(uint k[2], uint c[2], uint X[2])
+static inline void threefry(uint k[2], uint c[2], uint X[2])
 {
     uint ks[3];
 
@@ -112,27 +118,46 @@ inline void threefry(uint k[2], uint c[2], uint X[2])
     X[1] += 4;
 }
 
-__kernel void uniformDistribution(__global T *output, unsigned elements,
-        unsigned counter, unsigned hi, unsigned lo)
+/*
+template <> struct Random<AF_RANDOM_THREEFRY>
 {
-    unsigned gid = get_group_id(0);
-    unsigned off = get_local_size(0);
-    unsigned index =  gid * ELEMENTS_PER_BLOCK + get_local_id(0);
+    uint hi;
+    uint lo;
+    uintl counter;
+    uint key[2];
+    uint ctr[2];
+    uint val[2];
+    int reset;
 
-    uint key[2] = {index+counter, hi};
-    uint ctr[2] = {index+counter, lo};
-    uint o[4];
+    template <typename T>
+    T uniform(void);
 
-    if (gid != get_num_groups(0) - 1) {
-        threefry(key, ctr, o);
-        ctr[0] += elements;
-        threefry(key, ctr, o+2);
-        WRITE(output, &index, &o[0], &o[1], &o[2], &o[3]);
-    } else {
-        threefry(key, ctr, o);
-        ctr[0] += elements;
-        threefry(key, ctr, o+2);
-        PARTIALWRITE(output, &index, &o[0], &o[1], &o[2], &o[3], &elements);
-    }
+    Random(uintl seed, uintl counter);
+};
+
+Random<AF_RANDOM_THREEFRY>::Random(uintl seed, uintl counterInput) : hi(seed>>32), lo(seed), counter(counterInput), reset(0)
+{
+    key[0] = counter;
+    key[1] = hi;
+    ctr[0] = counter;
+    ctr[2] = lo;
 }
 
+template <typename T>
+void Random<AF_RANDOM_THREEFRY>::uniform(T* out, size_t elements)
+{
+    int reset = (2*sizeof(uint))/sizeof(T);
+    threefry(key, ctr, val);
+    for (int i = 0; i < (int)out.elements(); ++i) {
+        if (fresh == reset) {
+            threefry(key, ctr, val);
+            ctr[0] += 2;
+            fresh = 0;
+        }
+        out[i] = transform<T>(ctr, fresh);
+        fresh++;
+    }
+}
+*/
+}
+}

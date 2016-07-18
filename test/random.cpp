@@ -248,7 +248,7 @@ TEST(Random, philoxEngine)
     float m = mean<float>(A);
     float s = stdev<float>(A);
     ASSERT_NEAR(m, 0.5, 1e-3);
-    ASSERT_NEAR(s, 0.2887, 1e-3);
+    ASSERT_NEAR(s, 0.2887, 1e-2);
 }
 
 TEST(Random, threefryEngine)
@@ -259,5 +259,5 @@ TEST(Random, threefryEngine)
     float m = mean<float>(A);
     float s = stdev<float>(A);
     ASSERT_NEAR(m, 0.5, 1e-3);
-    ASSERT_NEAR(s, 0.2887, 1e-3);
+    ASSERT_NEAR(s, 0.2887, 1e-2);
 }

@@ -15,7 +15,7 @@
 namespace opencl
 {
     template<typename T>
-    Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const unsigned long long seed, unsigned long long &counter)
+    Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const uintl seed, uintl &counter)
     {
         verifyDoubleSupport<T>();
         Array<T> out = createEmptyArray<T>(dims);
@@ -29,7 +29,7 @@ namespace opencl
 
 #define COMPLEX_UNIFORM_DISTRIBUTION(T, TR)\
     template<>\
-    Array<T> uniformDistribution<T>(const af::dim4 &dims, const af_random_type type, const unsigned long long seed, unsigned long long &counter)\
+    Array<T> uniformDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl seed, uintl &counter)\
     {\
         verifyDoubleSupport<T>();\
         Array<T> out = createEmptyArray<T>(dims);\
@@ -44,15 +44,15 @@ namespace opencl
     COMPLEX_UNIFORM_DISTRIBUTION(cdouble, double)
     COMPLEX_UNIFORM_DISTRIBUTION(cfloat, float)
 
-    template Array<float>   uniformDistribution<float>   (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
-    template Array<double>  uniformDistribution<double>  (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
-    template Array<int>     uniformDistribution<int>     (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
-    template Array<uint>    uniformDistribution<uint>    (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
-    template Array<intl>    uniformDistribution<intl>    (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
-    template Array<uintl>   uniformDistribution<uintl>   (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
-    template Array<char>    uniformDistribution<char>    (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
-    template Array<uchar>   uniformDistribution<uchar>   (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
-    template Array<short>   uniformDistribution<short>   (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
-    template Array<ushort>  uniformDistribution<ushort>  (const af::dim4 &dim, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
+    template Array<float>   uniformDistribution<float>   (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
+    template Array<double>  uniformDistribution<double>  (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
+    template Array<int>     uniformDistribution<int>     (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
+    template Array<uint>    uniformDistribution<uint>    (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
+    template Array<intl>    uniformDistribution<intl>    (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
+    template Array<uintl>   uniformDistribution<uintl>   (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
+    template Array<char>    uniformDistribution<char>    (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
+    template Array<uchar>   uniformDistribution<uchar>   (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
+    template Array<short>   uniformDistribution<short>   (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
+    template Array<ushort>  uniformDistribution<ushort>  (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
 
 }
