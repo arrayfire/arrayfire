@@ -21,7 +21,7 @@ namespace kernel
     //Utils
     static const int THREADS = 256;
     #define UINTMAXFLOAT 4294967296.0f
-    #define UINTLMAXDOUBLE 4294967296.0*4294967296.0
+    #define UINTLMAXDOUBLE (4294967296.0*4294967296.0)
     #define PI_VAL 3.1415926535897932384626433832795028841971693993751058209749445923078164
 
     __device__ static float getFloat(const uint &num)
@@ -435,5 +435,60 @@ namespace kernel
         }
         counter += elements;
     }
+
+    template <typename T>
+    __global__ void normalPhilox(T *out, uint hi, uint lo, uint counter, uint elementsPerBlock, uint elements)
+    {
+        uint index = blockIdx.x*elementsPerBlock + threadIdx.x;
+        uint key[2] = {index+counter, hi};
+        uint ctr[4] = {index+counter, 0, 0, lo};
+        if (blockIdx.x != (gridDim.x - 1)) {
+            philox(key, ctr);
+            normalizedWriteOut256Bytes(out, index, ctr[0], ctr[1], ctr[2], ctr[3]);
+        } else {
+            philox(key, ctr);
+            partialNormalizedWriteOut256Bytes(out, index, ctr[0], ctr[1], ctr[2], ctr[3], elements);
+        }
+    }
+
+    template <typename T>
+    __global__ void normalThreefry(T *out, uint hi, uint lo, uint counter, uint elementsPerBlock, uint elements)
+    {
+        uint index = blockIdx.x*elementsPerBlock + threadIdx.x;
+        uint key[2] = {index+counter, hi};
+        uint ctr[2] = {index+counter, lo};
+        uint o[4];
+        if (blockIdx.x != (gridDim.x - 1)) {
+            threefry(key, ctr, o);
+            ctr[0] += elements;
+            threefry(key, ctr, o + 2);
+            normalizedWriteOut256Bytes(out, index, o[0], o[1], o[2], o[3]);
+        } else {
+            threefry(key, ctr, o);
+            ctr[0] += elements;
+            threefry(key, ctr, o + 2);
+            partialNormalizedWriteOut256Bytes(out, index, o[0], o[1], o[2], o[3], elements);
+        }
+    }
+
+    template <typename T, af_random_type Type>
+    void normalDistribution(T *out, size_t elements, const uintl seed, uintl &counter)
+    {
+        int threads = THREADS;
+        int elementsPerBlock = threads*4*sizeof(uint)/sizeof(T);
+        int blocks = divup(elements, elementsPerBlock);
+        uint hi = seed>>32;
+        uint lo = seed;
+        uintl count = counter;
+        switch (Type) {
+        case AF_RANDOM_PHILOX : CUDA_LAUNCH(normalPhilox, blocks, threads,
+                out, hi, lo, count, elementsPerBlock, elements); break;
+        case AF_RANDOM_THREEFRY : CUDA_LAUNCH(normalThreefry, blocks, threads,
+                out, hi, lo, count, elementsPerBlock, elements); break;
+                                  //THROW
+        }
+        counter += elements;
+    }
+
 }
 }

@@ -15,4 +15,7 @@ namespace cpu
 {
     template<typename T>
     Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
+
+    template<typename T>
+    Array<T> normalDistribution(const af::dim4 &dims, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
 }

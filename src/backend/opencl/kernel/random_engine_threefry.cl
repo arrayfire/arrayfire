@@ -136,3 +136,27 @@ __kernel void uniformDistribution(__global T *output, unsigned elements,
     }
 }
 
+__kernel void normalDistribution(__global T *output, unsigned elements,
+        unsigned counter, unsigned hi, unsigned lo)
+{
+    unsigned gid = get_group_id(0);
+    unsigned off = get_local_size(0);
+    unsigned index =  gid * ELEMENTS_PER_BLOCK + get_local_id(0);
+
+    uint key[2] = {index+counter, hi};
+    uint ctr[2] = {index+counter, lo};
+    uint o[4];
+
+    if (gid != get_num_groups(0) - 1) {
+        threefry(key, ctr, o);
+        ctr[0] += elements;
+        threefry(key, ctr, o+2);
+        NORMALWRITE(output, &index, &o[0], &o[1], &o[2], &o[3]);
+    } else {
+        threefry(key, ctr, o);
+        ctr[0] += elements;
+        threefry(key, ctr, o+2);
+        NORMALPARTIALWRITE(output, &index, &o[0], &o[1], &o[2], &o[3], &elements);
+    }
+}
+

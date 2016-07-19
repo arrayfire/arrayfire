@@ -23,6 +23,7 @@ using detail::cfloat;
 using detail::cdouble;
 using detail::uchar;
 using detail::uniformDistribution;
+using detail::normalDistribution;
 
 typedef struct {
     af_random_type type;
@@ -50,6 +51,13 @@ static inline af_array uniformDistribution_(const af::dim4 &dims,
         const af_random_type type, const unsigned long long seed, unsigned long long &counter)
 {
     return getHandle(uniformDistribution<T>(dims, type, seed, counter));
+}
+
+template<typename T>
+static inline af_array normalDistribution_(const af::dim4 &dims,
+        const af_random_type type, const unsigned long long seed, unsigned long long &counter)
+{
+    return getHandle(normalDistribution<T>(dims, type, seed, counter));
 }
 
 af_err af_create_random_engine(af_random_engine *engineHandle, af_random_type rtype, unsigned long long seed)
@@ -84,6 +92,28 @@ af_err af_random_engine_uniform(af_array *out, af_random_engine engine, const un
         case u16:   result = uniformDistribution_<ushort >(d, e->type, e->seed, e->counter);    break;
         case u8:    result = uniformDistribution_<uchar  >(d, e->type, e->seed, e->counter);    break;
         case b8:    result = uniformDistribution_<char   >(d, e->type, e->seed, e->counter);    break;
+        default:    TYPE_ERROR(4, type);
+        }
+        std::swap(*out, result);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_random_engine_normal(af_array *out, af_random_engine engine, const unsigned ndims, const dim_t * const dims, const af_dtype type)
+{
+    try {
+        af_array result;
+        AF_CHECK(af_init());
+
+        af::dim4 d = verifyDims(ndims, dims);
+        af_random_engine_t *e = getRandomEngine(engine);
+
+        switch(type) {
+        case f32:   result = normalDistribution_<float  >(d, e->type, e->seed, e->counter);    break;
+        case c32:   result = normalDistribution_<cfloat >(d, e->type, e->seed, e->counter);    break;
+        case f64:   result = normalDistribution_<double >(d, e->type, e->seed, e->counter);    break;
+        case c64:   result = normalDistribution_<cdouble>(d, e->type, e->seed, e->counter);    break;
         default:    TYPE_ERROR(4, type);
         }
         std::swap(*out, result);

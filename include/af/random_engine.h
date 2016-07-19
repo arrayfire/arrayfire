@@ -31,6 +31,12 @@ namespace af
             array uniform(const dim_t dim0, const dim_t dim1, const dim_t dim2, const dtype ty = f32);
             array uniform(const dim_t dim0, const dim_t dim1, const dim_t dim2, const dim_t dim3, const dtype ty = f32);
             array uniform(const dim4& dims, const dtype ty = f32);
+
+            array normal(const dim_t dim0, const dtype ty = f32);
+            array normal(const dim_t dim0, const dim_t dim1, const dtype ty = f32);
+            array normal(const dim_t dim0, const dim_t dim1, const dim_t dim2, const dtype ty = f32);
+            array normal(const dim_t dim0, const dim_t dim1, const dim_t dim2, const dim_t dim3, const dtype ty = f32);
+            array normal(const dim4& dims, const dtype ty = f32);
     };
 }
 #endif
@@ -53,7 +59,7 @@ extern "C" {
     /**
        C Interface for creating an array of uniform numbers using a random engine
 
-       \param[out]  arr The pointer to the returned object.
+       \param[out]  out The pointer to the returned object.
        \param[in]   engine is the random engine object
        \param[in]   ndims The number of dimensions read from the \p dims parameter
        \param[in]   dims A C pointer with \p ndims elements. Each value represents the size of that dimension
@@ -61,12 +67,12 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the execution completes properly
     */
-    AFAPI af_err af_random_engine_uniform(af_array *arr, af_random_engine engine, const unsigned ndims, const dim_t * const dims, const af_dtype type);
+    AFAPI af_err af_random_engine_uniform(af_array *out, af_random_engine engine, const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
     /**
        C Interface for creating an array of normal numbers using a random engine
 
-       \param[out]  arr The pointer to the returned object.
+       \param[out]  out The pointer to the returned object.
        \param[in]   engine is the random engine object
        \param[in]   ndims The number of dimensions read from the \p dims parameter
        \param[in]   dims A C pointer with \p ndims elements. Each value represents the size of that dimension
@@ -74,7 +80,7 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the execution completes properly
     */
-    //AFAPI af_err af_random_engine_normal(af_array *arr, af_random_engine engine, const unsigned ndims, const dim_t * const dims, const af_dtype type);
+    AFAPI af_err af_random_engine_normal(af_array *out, af_random_engine engine, const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
     /**
        C Interface for releasing random engine

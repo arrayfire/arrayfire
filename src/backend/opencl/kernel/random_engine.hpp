@@ -99,5 +99,64 @@ namespace opencl
                 CL_TO_AF_ERROR(ex);
             }
         }
+
+        template <typename T, af_random_type Type>
+        void normalDistribution(cl::Buffer out, size_t elements, const uintl seed, uintl &counter)
+        {
+            try {
+                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>  ranProgs;
+                static std::map<int, Kernel*>   ranKernels;
+
+                int device = getActiveDeviceId();
+
+                std::call_once( compileFlags[device], [device] () {
+                        std::string kernelString;
+                        switch (Type) {
+                            case AF_RANDOM_PHILOX : kernelString = std::string(random_engine_write_cl, random_engine_write_cl_len) +
+                                                    std::string(random_engine_philox_cl, random_engine_philox_cl_len); break;
+                            case AF_RANDOM_THREEFRY : kernelString = std::string(random_engine_write_cl, random_engine_write_cl_len) +
+                                                    std::string(random_engine_threefry_cl, random_engine_threefry_cl_len); break;
+                                                    //THROW
+                        }
+                        uint elementsPerBlock = THREADS*4*sizeof(uint)/sizeof(T);
+
+                        Program::Sources setSrc;
+                        setSrc.emplace_back(kernelString.c_str(), kernelString.length());
+
+                        std::ostringstream options;
+                        options << " -D T=" << dtype_traits<T>::getName()
+                                << " -D THREADS=" << THREADS
+                                << " -D ELEMENTS_PER_BLOCK=" << elementsPerBlock;
+#if defined(OS_MAC) // Because apple is "special"
+                        options << " -D IS_APPLE"
+                                << " -D log10_val=" << std::log(10.0);
+#endif
+
+                        cl::Program prog;
+                        buildProgram(prog, kernelString.c_str(), kernelString.length(), options.str());
+                        ranProgs[device] = new Program(prog);
+                        ranKernels[device] = new Kernel(*ranProgs[device], "normalDistribution");
+                    });
+
+                    auto randomEngineOp = KernelFunctor<cl::Buffer, uint, uint, uint, uint>(*ranKernels[device]);
+
+                    uint elementsPerBlock = THREADS*4*sizeof(uint)/sizeof(T);
+                    uint groups = divup(elements, elementsPerBlock);
+                    counter += elements;
+
+                    NDRange local(THREADS, 1);
+                    NDRange global(THREADS * groups, 1);
+
+                    uint hi = seed>>32;
+                    uint lo = seed;
+
+                    randomEngineOp(EnqueueArgs(getQueue(), global, local),
+                            out, elements, counter, hi, lo);
+                    CL_DEBUG_FINISH(getQueue());
+            } catch (cl::Error ex) {
+                CL_TO_AF_ERROR(ex);
+            }
+        }
     }
 }

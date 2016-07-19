@@ -21,6 +21,11 @@ af_err af_random_engine_uniform(af_array *arr, af_random_engine engine, const un
     return CALL(arr, engine, ndims, dims, type);
 }
 
+af_err af_random_engine_normal(af_array *arr, af_random_engine engine, const unsigned ndims, const dim_t * const dims, const af_dtype type)
+{
+    return CALL(arr, engine, ndims, dims, type);
+}
+
 af_err af_release_random_engine(af_random_engine engineHandle)
 {
     return CALL(engineHandle);

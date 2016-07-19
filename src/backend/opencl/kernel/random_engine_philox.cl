@@ -107,3 +107,22 @@ __kernel void uniformDistribution(__global T *output, unsigned elements,
     }
 }
 
+__kernel void normalDistribution(__global T *output, unsigned elements,
+        unsigned counter, unsigned hi, unsigned lo)
+{
+    unsigned gid = get_group_id(0);
+    unsigned off = get_local_size(0);
+    unsigned index =  gid * ELEMENTS_PER_BLOCK + get_local_id(0);
+
+    uint key[2] = {index+counter, hi};
+    uint ctr[4] = {index+counter, 0, 0, lo};
+
+    if (gid != get_num_groups(0) - 1) {
+        philox(key, ctr);
+        NORMALWRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3]);
+    } else {
+        philox(key, ctr);
+        NORMALPARTIALWRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3], &elements);
+    }
+}
+

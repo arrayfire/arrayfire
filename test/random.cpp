@@ -240,7 +240,7 @@ TYPED_TEST(Random, getSeed)
     testGetSeed<TypeParam>(1234, 9876);
 }
 
-TEST(Random, philoxEngine)
+TEST(Random, philoxEngineUniform)
 {
     int elem = 16*1024*1024;
     af::randomEngine r(AF_RANDOM_PHILOX, 0);
@@ -251,7 +251,7 @@ TEST(Random, philoxEngine)
     ASSERT_NEAR(s, 0.2887, 1e-2);
 }
 
-TEST(Random, threefryEngine)
+TEST(Random, threefryEngineUniform)
 {
     int elem = 16*1024*1024;
     af::randomEngine r(AF_RANDOM_THREEFRY, 0);
@@ -260,4 +260,26 @@ TEST(Random, threefryEngine)
     float s = stdev<float>(A);
     ASSERT_NEAR(m, 0.5, 1e-3);
     ASSERT_NEAR(s, 0.2887, 1e-2);
+}
+
+TEST(Random, philoxEngineNormal)
+{
+    int elem = 16*1024*1024;
+    af::randomEngine r(AF_RANDOM_PHILOX, 0);
+    array A = r.normal(elem, f32);
+    float m = mean<float>(A);
+    float s = stdev<float>(A);
+    ASSERT_NEAR(m, 0, 1e-2);
+    ASSERT_NEAR(s, 1, 1e-1);
+}
+
+TEST(Random, threefryEngineNormal)
+{
+    int elem = 16*1024*1024;
+    af::randomEngine r(AF_RANDOM_THREEFRY, 0);
+    array A = r.normal(elem, f32);
+    float m = mean<float>(A);
+    float s = stdev<float>(A);
+    ASSERT_NEAR(m, 0, 1e-2);
+    ASSERT_NEAR(s, 1, 1e-1);
 }

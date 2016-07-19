@@ -57,4 +57,35 @@ namespace af
         AF_THROW(af_random_engine_uniform(&out, engine, dims.ndims(), dims.get(), ty));
         return array(out);
     }
+
+    array randomEngine::normal(const dim_t dim0, const dtype ty)
+    {
+        dim4 d(dim0, 1, 1, 1);
+        return normal(d, ty);
+    }
+
+    array randomEngine::normal(const dim_t dim0, const dim_t dim1, const dtype ty)
+    {
+        dim4 d(dim0, dim1, 1, 1);
+        return normal(d, ty);
+    }
+
+    array randomEngine::normal(const dim_t dim0, const dim_t dim1, const dim_t dim2, const dtype ty)
+    {
+        dim4 d(dim0, dim1, dim2, 1);
+        return normal(d, ty);
+    }
+
+    array randomEngine::normal(const dim_t dim0, const dim_t dim1, const dim_t dim2, const dim_t dim3, const dtype ty)
+    {
+        dim4 d(dim0, dim1, dim2, dim3);
+        return normal(d, ty);
+    }
+
+    array randomEngine::normal(const dim4& dims, const dtype ty)
+    {
+        af_array out;
+        AF_THROW(af_random_engine_normal(&out, engine, dims.ndims(), dims.get(), ty));
+        return array(out);
+    }
 }

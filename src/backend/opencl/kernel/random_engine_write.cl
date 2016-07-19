@@ -48,7 +48,7 @@
 typedef ulong uintl;
 typedef long intl;
 #define UINTMAXFLOAT 4294967296.0f
-#define UINTLMAXDOUBLE 4294967296.0*4294967296.0
+#define UINTLMAXDOUBLE (4294967296.0*4294967296.0)
 #define PI_VAL 3.1415926535897932384626433832795028841971693993751058209749445923078164
 
 float getFloat(const uint * const num)
@@ -70,11 +70,11 @@ double getDouble(const uint * const num1, const uint * const num2)
 void normalizePairFloat(float * const out1, float * const out2, const float r1, const float r2)
 {
 #if defined(IS_APPLE) // Because Apple is.. "special"
-    float r = sqrt((T)(-2.0) * log10(r1) * (float)log10_val);
+    float r = sqrt((float)(-2.0) * log10(r1) * (float)log10_val);
 #else
-    float r = sqrt((T)(-2.0) * log(r1));
+    float r = sqrt((float)(-2.0) * log(r1));
 #endif
-    float theta = 2 * (T)PI_VAL * (r2);
+    float theta = 2 * (float)PI_VAL * (r2);
     *out1 = r*sin(theta);
     *out2 = r*cos(theta);
 }
@@ -82,11 +82,11 @@ void normalizePairFloat(float * const out1, float * const out2, const float r1, 
 void normalizePairDouble(double * const out1, double * const out2, const double r1, const double r2)
 {
 #if defined(IS_APPLE) // Because Apple is.. "special"
-    double r = sqrt((T)(-2.0) * log10(r1) * (double)log10_val);
+    double r = sqrt((double)(-2.0) * log10(r1) * (double)log10_val);
 #else
-    double r = sqrt((T)(-2.0) * log(r1));
+    double r = sqrt((double)(-2.0) * log(r1));
 #endif
-    double theta = 2 * (T)PI_VAL * (r2);
+    double theta = 2 * (double)PI_VAL * (r2);
     *out1 = r*sin(theta);
     *out2 = r*cos(theta);
 }
@@ -394,4 +394,6 @@ void partialNormalizedWriteOut256Bytes_double(__global double *out, const uint *
 #define EVALUATE_T(function) EVALUATOR(function, T)
 #define WRITE EVALUATE_T(writeOut256Bytes)
 #define PARTIALWRITE EVALUATE_T(partialWriteOut256Bytes)
+#define NORMALWRITE EVALUATE_T(normalizedWriteOut256Bytes)
+#define NORMALPARTIALWRITE EVALUATE_T(partialNormalizedWriteOut256Bytes)
 
