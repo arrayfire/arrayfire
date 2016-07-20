@@ -55,8 +55,9 @@ namespace kernel
         uint ctr[4] = {(uint)counter, 0, 0, lo};
 
         int fresh = 0;
-        int reset = (4*sizeof(uint))/sizeof(T);
+        unsigned reset = (4*sizeof(uint))/sizeof(T);
         philox(key, ctr);
+        ++ctr[0]; ++key[0];
         for (int i = 0; i < (int)elements; ++i) {
             if (fresh == reset) {
                 philox(key, ctr);
@@ -65,6 +66,12 @@ namespace kernel
             }
             out[i] = transform<T>(ctr, fresh);
             fresh++;
+            ////philox(key, ctr);
+            ////++ctr[0]; ++key[0];
+            ////int lim = (reset < elements - i)? reset : elements - i;
+            ////for (int j = 0; j < lim; ++j) {
+            ////    out[i + j] = transform<T>(ctr, j);
+            ////}
         }
     }
 
@@ -78,7 +85,7 @@ namespace kernel
         uint val[2];
 
         int fresh = 0;
-        int reset = (2*sizeof(uint))/sizeof(T);
+        unsigned reset = (2*sizeof(uint))/sizeof(T);
         threefry(key, ctr, val);
         ++ctr[0]; ++key[0];
         for (int i = 0; i < (int)elements; ++i) {
@@ -89,6 +96,12 @@ namespace kernel
             }
             out[i] = transform<T>(val, fresh);
             fresh++;
+            ////threefry(key, ctr, val);
+            ////++ctr[0]; ++key[0];
+            ////int lim = (reset < elements - i)? reset : elements - i;
+            ////for (int j = 0; j < lim; ++j) {
+            ////    out[i + j] = transform<T>(ctr, j);
+            ////}
         }
     }
 

@@ -25,6 +25,7 @@ using af::cfloat;
 using af::cdouble;
 using af::array;
 using af::randomEngine;
+using af::randomType;
 using af::mean;
 using af::stdev;
 
@@ -53,8 +54,22 @@ class Random_norm : public ::testing::Test
 // create a list of types to be tested
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypesNorm;
 
+template<typename T>
+class RandomEngine : public ::testing::Test
+{
+    public:
+        virtual void SetUp() {
+        }
+};
+
 // register the type list
 TYPED_TEST_CASE(Random_norm, TestTypesNorm);
+
+// create a list of types to be tested
+typedef ::testing::Types<float, double> TestTypesEngine;
+
+// register the type list
+TYPED_TEST_CASE(RandomEngine, TestTypesEngine);
 
 template<typename T>
 void randuTest(af::dim4 & dims)
@@ -240,46 +255,52 @@ TYPED_TEST(Random, getSeed)
     testGetSeed<TypeParam>(1234, 9876);
 }
 
-TEST(Random, philoxEngineUniform)
+template <typename T>
+void testRandomEngineUniform(af_random_type type)
 {
+    if (noDoubleTests<T>()) return;
+    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+
     int elem = 16*1024*1024;
-    af::randomEngine r(AF_RANDOM_PHILOX, 0);
-    array A = r.uniform(elem, f32);
-    float m = mean<float>(A);
-    float s = stdev<float>(A);
+    af::randomEngine r(type, 0);
+    array A = r.uniform(elem, ty);
+    T m = mean<T>(A);
+    T s = stdev<T>(A);
     ASSERT_NEAR(m, 0.5, 1e-3);
     ASSERT_NEAR(s, 0.2887, 1e-2);
 }
 
-TEST(Random, threefryEngineUniform)
+template <typename T>
+void testRandomEngineNormal(af_random_type type)
 {
-    int elem = 16*1024*1024;
-    af::randomEngine r(AF_RANDOM_THREEFRY, 0);
-    array A = r.uniform(elem, f32);
-    float m = mean<float>(A);
-    float s = stdev<float>(A);
-    ASSERT_NEAR(m, 0.5, 1e-3);
-    ASSERT_NEAR(s, 0.2887, 1e-2);
-}
+    if (noDoubleTests<T>()) return;
+    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
-TEST(Random, philoxEngineNormal)
-{
     int elem = 16*1024*1024;
-    af::randomEngine r(AF_RANDOM_PHILOX, 0);
-    array A = r.normal(elem, f32);
-    float m = mean<float>(A);
-    float s = stdev<float>(A);
-    ASSERT_NEAR(m, 0, 1e-2);
+    af::randomEngine r(type, 0);
+    array A = r.normal(elem, ty);
+    T m = mean<T>(A);
+    T s = stdev<T>(A);
+    ASSERT_NEAR(m, 0, 1e-1);
     ASSERT_NEAR(s, 1, 1e-1);
 }
 
-TEST(Random, threefryEngineNormal)
+TYPED_TEST(RandomEngine, philoxRandomEngineUniform)
 {
-    int elem = 16*1024*1024;
-    af::randomEngine r(AF_RANDOM_THREEFRY, 0);
-    array A = r.normal(elem, f32);
-    float m = mean<float>(A);
-    float s = stdev<float>(A);
-    ASSERT_NEAR(m, 0, 1e-2);
-    ASSERT_NEAR(s, 1, 1e-1);
+    testRandomEngineUniform<TypeParam>(AF_RANDOM_PHILOX);
+}
+
+TYPED_TEST(RandomEngine, threefryRandomEngineUniform)
+{
+    testRandomEngineUniform<TypeParam>(AF_RANDOM_THREEFRY);
+}
+
+TYPED_TEST(RandomEngine, philoxRandomEngineNormal)
+{
+    testRandomEngineNormal<TypeParam>(AF_RANDOM_PHILOX);
+}
+
+TYPED_TEST(RandomEngine, threefryRandomEngineNormal)
+{
+    testRandomEngineNormal<TypeParam>(AF_RANDOM_THREEFRY);
 }
