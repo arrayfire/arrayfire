@@ -1002,17 +1002,12 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(T)                                              \
-    template<> AFAPI T* array::device() const                       \
-    {                                                               \
-        void *ptr = NULL;                                           \
-        AF_THROW(af_get_device_ptr(&ptr, get()));                   \
-        return (T *)ptr;                                            \
+    template<> AFAPI void* array::device() const
+    {
+        void *ptr = NULL;
+        AF_THROW(af_get_device_ptr(&ptr, get()));
+        return (void *)ptr;
     }
-
-INSTANTIATE(void)
-
-#undef INSTANTIATE
 
 // array_proxy instanciations
 #define TEMPLATE_MEM_FUNC(TYPE, RETURN_TYPE, FUNC)      \
