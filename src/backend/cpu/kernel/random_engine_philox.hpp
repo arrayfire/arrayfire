@@ -56,19 +56,19 @@ namespace kernel
 #define w32_0 0x9E3779B9
 #define w32_1 0xBB67AE85
 
-static inline void mulhilo(const uint a, const uint b, uint * const hi, uint * const lo)
+void mulhilo(const uint a, const uint b, uint * const hi, uint * const lo)
 {
     *hi = (((uintl)a) * ((uintl)b))>>32;
     *lo = a*b;
 }
 
-static inline void philoxBump(uint k[2])
+void philoxBump(uint * const k)
 {
     k[0] += w32_0;
     k[1] += w32_1;
 }
 
-static inline void philoxRound(const uint k[2], uint c[4])
+void philoxRound(const uint * const k, uint * const c)
 {
     uint hi0, lo0, hi1, lo1;
     mulhilo(m4x32_0, c[0], &hi0, &lo0);
@@ -79,8 +79,9 @@ static inline void philoxRound(const uint k[2], uint c[4])
     c[3] = lo0;
 }
 
-static inline void philox(uint key[2], uint ctr[4])
+void philox(uint * const key, uint * const ctr)
 {
+    ctr[0] = -1;
     //10 Rounds
                        philoxRound(key, ctr);
     philoxBump(key);   philoxRound(key, ctr);

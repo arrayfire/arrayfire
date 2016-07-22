@@ -11,25 +11,18 @@
 
 #include <platform.hpp>
 #include <af/defines.h>
-//#include <kernel_headers/random.hpp>
 #include <kernel_headers/random_engine_philox.hpp>
 #include <kernel_headers/random_engine_threefry.hpp>
 #include <kernel_headers/random_engine_write.hpp>
 #include <traits.hpp>
 #include <sstream>
 #include <string>
-#include <mutex>
-#include <map>
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
 #include <program.hpp>
 #include <type_util.hpp>
 #include <cache.hpp>
-#include "names.hpp"
-#include "config.hpp"
-
-#include <iostream>
 
 using cl::Buffer;
 using cl::Program;
@@ -46,25 +39,25 @@ namespace opencl
         static const uint THREADS = 256;
 
         template <typename T>
-        static Kernel get_random_engine_kernel(af_random_type type, std::string distribution, uint elementsPerBlock)
+        static Kernel get_random_engine_kernel(const af_random_type type, const int kerIdx, const uint elementsPerBlock)
         {
-            int kerIdx;
             std::string engineName;
-            std::string kernelString;
-            if (distribution == std::string("uniformDistribution")) {
-                kerIdx = 0;
-            } if (distribution == std::string("normalDistribution")) {
-                kerIdx = 1;
-            }
+            const char *ker_strs[2];
+            int ker_lens[2];
+            ker_strs[0] = random_engine_write_cl;
+            ker_lens[0] = random_engine_write_cl_len;
             switch (type) {
-                case AF_RANDOM_PHILOX : engineName = "Philox";
-                                        kernelString = std::string(random_engine_write_cl, random_engine_write_cl_len) +
-                                        std::string(random_engine_philox_cl, random_engine_philox_cl_len); break;
+                case AF_RANDOM_PHILOX   : engineName = "Philox";
+                                        ker_strs[1] = random_engine_philox_cl;
+                                        ker_lens[1] = random_engine_philox_cl_len;
+                                        break;
                 case AF_RANDOM_THREEFRY : engineName = "Threefry";
-                                        kernelString = std::string(random_engine_write_cl, random_engine_write_cl_len) +
-                                        std::string(random_engine_threefry_cl, random_engine_threefry_cl_len); break;
-                                        //THROW
+                                        ker_strs[1] = random_engine_threefry_cl;
+                                        ker_lens[1] = random_engine_threefry_cl_len;
+                                        break;
+                default                 : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
             }
+
             std::string ref_name =
                 std::string("random_engine_kernel_") + engineName +
                 std::string("_") + std::string(dtype_traits<T>::getName());
@@ -81,7 +74,7 @@ namespace opencl
                         << " -D log10_val=" << std::log(10.0);
 #endif
                 cl::Program prog;
-                buildProgram(prog, kernelString.c_str(), kernelString.length(), options.str());
+                buildProgram(prog, 2, ker_strs, ker_lens, options.str());
                 entry.prog = new Program(prog);
                 entry.ker = new Kernel[2];
                 entry.ker[0] = Kernel(*entry.prog, "uniformDistribution");
@@ -95,7 +88,7 @@ namespace opencl
         }
 
         template <typename T>
-        static void randomDistribution(af_random_type type, cl::Buffer out, size_t elements, const uintl seed, uintl &counter, std::string distribution)
+        static void randomDistribution(cl::Buffer out, const size_t elements, const af_random_type type, const uintl seed, uintl &counter, int kerIdx)
         {
             try {
                 uint elementsPerBlock = THREADS*4*sizeof(uint)/sizeof(T);
@@ -107,7 +100,7 @@ namespace opencl
                 NDRange local(THREADS, 1);
                 NDRange global(THREADS * groups, 1);
 
-                Kernel ker = get_random_engine_kernel<T>(type, distribution, elementsPerBlock);
+                Kernel ker = get_random_engine_kernel<T>(type, kerIdx, elementsPerBlock);
                 auto randomEngineOp = KernelFunctor<cl::Buffer, uint, uint, uint, uint>(ker);
 
                 randomEngineOp(EnqueueArgs(getQueue(), global, local),
@@ -121,16 +114,16 @@ namespace opencl
             }
         }
 
-        template <typename T, af_random_type Type>
-        void uniformDistribution(cl::Buffer out, size_t elements, const uintl seed, uintl &counter)
+        template <typename T>
+        void uniformDistribution(cl::Buffer out, const size_t elements, const af_random_type type, const uintl seed, uintl &counter)
         {
-            randomDistribution<T>(Type, out, elements, seed, counter, "uniformDistribution");
+            randomDistribution<T>(out, elements, type, seed, counter, 0);
         }
 
-        template <typename T, af_random_type Type>
-        void normalDistribution(cl::Buffer out, size_t elements, const uintl seed, uintl &counter)
+        template <typename T>
+        void normalDistribution(cl::Buffer out, const size_t elements, const af_random_type type, const uintl seed, uintl &counter)
         {
-            randomDistribution<T>(Type, out, elements, seed, counter, "normalDistribution");
+            randomDistribution<T>(out, elements, type, seed, counter, 1);
         }
 
     }

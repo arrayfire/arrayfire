@@ -9,6 +9,7 @@
 
 #pragma once
 #include <Array.hpp>
+#include <err_cpu.hpp>
 #include <kernel/random_engine_philox.hpp>
 #include <kernel/random_engine_threefry.hpp>
 
@@ -30,9 +31,47 @@ namespace kernel
 
     template <> char transform<char>(uint *val, int index)
     {
-        char v = transform<char>(val, index);
+        char v = val[index>>2]>>(8<<(index & 3));
         v = (v&0x1) ? 1 : 0;
         return v;
+    }
+
+    template <> uchar transform<uchar>(uint *val, int index)
+    {
+        uchar v = val[index>>2]>>(8<<(index & 3));
+        return v;
+    }
+
+    template <> ushort transform<ushort>(uint *val, int index)
+    {
+        ushort v = val[index>>1]>>(16<<(index & 1));
+        return v;
+    }
+
+    template <> short transform<short>(uint *val, int index)
+    {
+        return transform<ushort>(val, index);
+    }
+
+    template <> uint transform<uint>(uint *val, int index)
+    {
+        return val[index];
+    }
+
+    template <> int transform<int>(uint *val, int index)
+    {
+        return transform<uint>(val, index);
+    }
+
+    template <> uintl transform<uintl>(uint *val, int index)
+    {
+        uintl v = (((uintl)val[index<<1])<<32) | ((uintl)val[(index<<1)+1]);
+        return v;
+    }
+
+    template <> intl transform<intl>(uint *val, int index)
+    {
+        return transform<uintl>(val, index);
     }
 
     template <> float transform<float>(uint *val, int index)
@@ -47,36 +86,25 @@ namespace kernel
     }
 
     template <typename T>
-    void philoxUniform(T* out, size_t elements, const uintl seed, uintl &counter)
+    void philoxUniform(T* out, size_t elements, const uintl seed, uintl counter)
     {
         uint hi = seed>>32;
         uint lo = seed;
         uint key[2] = {(uint)counter, hi};
         uint ctr[4] = {(uint)counter, 0, 0, lo};
 
-        int fresh = 0;
-        unsigned reset = (4*sizeof(uint))/sizeof(T);
-        philox(key, ctr);
-        ++ctr[0]; ++key[0];
-        for (int i = 0; i < (int)elements; ++i) {
-            if (fresh == reset) {
-                philox(key, ctr);
-                ++ctr[0]; ++key[0];
-                fresh = 0;
+        int reset = (4*sizeof(uint))/sizeof(T);
+        for (int i = 0; i < (int)elements; i += reset) {
+            philox(key, ctr);
+            int lim = (reset < (int)(elements - i))? reset : (int)(elements - i);
+            for (int j = 0; j < lim; ++j) {
+                out[i + j] = transform<T>(ctr, j);
             }
-            out[i] = transform<T>(ctr, fresh);
-            fresh++;
-            ////philox(key, ctr);
-            ////++ctr[0]; ++key[0];
-            ////int lim = (reset < elements - i)? reset : elements - i;
-            ////for (int j = 0; j < lim; ++j) {
-            ////    out[i + j] = transform<T>(ctr, j);
-            ////}
         }
     }
 
     template <typename T>
-    void threefryUniform(T* out, size_t elements, const uintl seed, uintl &counter)
+    void threefryUniform(T* out, size_t elements, const uintl seed, uintl counter)
     {
         uint hi = seed>>32;
         uint lo = seed;
@@ -84,44 +112,21 @@ namespace kernel
         uint ctr[2] = {(uint)counter, lo};
         uint val[2];
 
-        int fresh = 0;
-        unsigned reset = (2*sizeof(uint))/sizeof(T);
-        threefry(key, ctr, val);
-        ++ctr[0]; ++key[0];
-        for (int i = 0; i < (int)elements; ++i) {
-            if (fresh == reset) {
-                threefry(key, ctr, val);
-                ++ctr[0]; ++key[0];
-                fresh = 0;
+        int reset = (2*sizeof(uint))/sizeof(T);
+        for (int i = 0; i < (int)elements; i += reset) {
+            threefry(key, ctr, val);
+            ++ctr[0]; ++key[0];
+            int lim = (reset < (int)(elements - i))? reset : (int)(elements - i);
+            for (int j = 0; j < lim; ++j) {
+                out[i + j] = transform<T>(val, j);
             }
-            out[i] = transform<T>(val, fresh);
-            fresh++;
-            ////threefry(key, ctr, val);
-            ////++ctr[0]; ++key[0];
-            ////int lim = (reset < elements - i)? reset : elements - i;
-            ////for (int j = 0; j < lim; ++j) {
-            ////    out[i + j] = transform<T>(ctr, j);
-            ////}
-        }
-    }
-
-    template <typename T, af_random_type Type>
-    void uniformDistribution(T* out, size_t elements, const uintl seed, uintl &counter)
-    {
-        switch(Type) {
-            case AF_RANDOM_PHILOX   :   philoxUniform(out, elements, seed, counter); break;
-            case AF_RANDOM_THREEFRY : threefryUniform(out, elements, seed, counter); break;
         }
     }
 
     template <typename T>
     void normalizePair(T * const out1, T * const out2, const T r1, const T r2)
     {
-#if defined(IS_APPLE) // Because Apple is.. "special"
-        T r = sqrt((T)(-2.0) * log10(r1) * (float)log10_val);
-#else
         T r = sqrt((T)(-2.0) * log(r1));
-#endif
         T theta = 2 * (T)PI_VAL * (r2);
         *out1 = r*sin(theta);
         *out2 = r*cos(theta);
@@ -129,18 +134,37 @@ namespace kernel
 
     void normalize(uint val[4], double *temp)
     {
-        uintl *v = (uintl*)val;
-        normalizePair(&temp[0], &temp[1], v[0]/UINTLMAXDOUBLE, v[1]/UINTLMAXDOUBLE);
+        normalizePair(&temp[0], &temp[1], transform<double>(val, 0), transform<double>(val,1));
     }
 
     void normalize(uint val[4], float *temp)
     {
-        normalizePair(&temp[0], &temp[1], val[0]/UINTMAXFLOAT, val[1]/UINTMAXFLOAT);
-        normalizePair(&temp[2], &temp[3], val[2]/UINTMAXFLOAT, val[3]/UINTMAXFLOAT);
+        normalizePair(&temp[0], &temp[1], transform<float>(val, 0), transform<float>(val, 1));
+        normalizePair(&temp[2], &temp[3], transform<float>(val, 2), transform<float>(val, 3));
     }
 
     template <typename T>
-    void threefryNormal(T* out, size_t elements, const uintl seed, uintl &counter)
+    void philoxNormal(T* out, size_t elements, const uintl seed, uintl counter)
+    {
+        uint hi = seed>>32;
+        uint lo = seed;
+        uint key[2] = {(uint)counter, hi};
+        uint ctr[4] = {(uint)counter, 0, 0, lo};
+        T temp[(4*sizeof(uint))/sizeof(T)];
+
+        int reset = (4*sizeof(uint))/sizeof(T);
+        for (int i = 0; i < (int)elements; i += reset) {
+            philox(key, ctr);
+            normalize(ctr, temp);
+            int lim = (reset < (int)(elements - i))? reset : (int)(elements - i);
+            for (int j = 0; j < lim; ++j) {
+                out[i + j] = temp[j];
+            }
+        }
+    }
+
+    template <typename T>
+    void threefryNormal(T* out, size_t elements, const uintl seed, uintl counter)
     {
         uint hi = seed>>32;
         uint lo = seed;
@@ -149,55 +173,37 @@ namespace kernel
         uint val[4];
         T temp[(4*sizeof(uint))/sizeof(T)];
 
-        int fresh = 0;
         int reset = (4*sizeof(uint))/sizeof(T);
-        threefry(key, ctr, val);
-        normalize(val, temp);
-        ++ctr[0]; ++key[0];
-        for (int i = 0; i < (int)elements; ++i) {
-            if (fresh == reset) {
-                threefry(key, ctr, val);
-                ++ctr[0]; ++key[0];
-                threefry(key, ctr, val+2);
-                fresh = 0;
-                normalize(val, temp);
+        for (int i = 0; i < (int)elements; i += reset) {
+            threefry(key, ctr, val);
+            ++ctr[0]; ++key[0];
+            threefry(key, ctr, val+2);
+            ++ctr[0]; ++key[0];
+            normalize(val, temp);
+            int lim = (reset < (int)(elements - i))? reset : (int)(elements - i);
+            for (int j = 0; j < lim; ++j) {
+                out[i + j] = temp[j];
             }
-            out[i] = temp[fresh];
-            fresh++;
         }
     }
 
     template <typename T>
-    void philoxNormal(T* out, size_t elements, const uintl seed, uintl &counter)
+    void uniformDistribution(T* out, size_t elements, af_random_type type, const uintl seed, uintl counter)
     {
-        uint hi = seed>>32;
-        uint lo = seed;
-        uint key[2] = {(uint)counter, hi};
-        uint ctr[4] = {(uint)counter, 0, 0, lo};
-        T temp[(4*sizeof(uint))/sizeof(T)];
-
-        int fresh = 0;
-        int reset = (4*sizeof(uint))/sizeof(T);
-        philox(key, ctr);
-        normalize(ctr, temp);
-        for (int i = 0; i < (int)elements; ++i) {
-            if (fresh == reset) {
-                philox(key, ctr);
-                ++ctr[0]; ++key[0];
-                fresh = 0;
-                normalize(ctr, temp);
-            }
-            out[i] = temp[fresh];
-            fresh++;
+        switch(type) {
+            case AF_RANDOM_PHILOX   :   philoxUniform(out, elements, seed, counter); break;
+            case AF_RANDOM_THREEFRY : threefryUniform(out, elements, seed, counter); break;
+            default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
     }
 
-    template <typename T, af_random_type Type>
-    void normalDistribution(T* out, size_t elements, const uintl seed, uintl &counter)
+    template <typename T>
+    void normalDistribution(T* out, size_t elements, af_random_type type, const uintl seed, uintl counter)
     {
-        switch(Type) {
+        switch(type) {
             case AF_RANDOM_PHILOX   :   philoxNormal(out, elements, seed, counter); break;
             case AF_RANDOM_THREEFRY : threefryNormal(out, elements, seed, counter); break;
+            default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
     }
 

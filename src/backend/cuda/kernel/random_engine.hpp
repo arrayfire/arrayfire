@@ -417,25 +417,6 @@ namespace kernel
         }
     }
 
-    template <typename T, af_random_type Type>
-    void uniformDistribution(T *out, size_t elements, const uintl seed, uintl &counter)
-    {
-        int threads = THREADS;
-        int elementsPerBlock = threads*4*sizeof(uint)/sizeof(T);
-        int blocks = divup(elements, elementsPerBlock);
-        uint hi = seed>>32;
-        uint lo = seed;
-        uintl count = counter;
-        switch (Type) {
-        case AF_RANDOM_PHILOX : CUDA_LAUNCH(uniformPhilox, blocks, threads,
-                out, hi, lo, count, elementsPerBlock, elements); break;
-        case AF_RANDOM_THREEFRY : CUDA_LAUNCH(uniformThreefry, blocks, threads,
-                out, hi, lo, count, elementsPerBlock, elements); break;
-                                  //THROW
-        }
-        counter += elements;
-    }
-
     template <typename T>
     __global__ void normalPhilox(T *out, uint hi, uint lo, uint counter, uint elementsPerBlock, uint elements)
     {
@@ -471,8 +452,8 @@ namespace kernel
         }
     }
 
-    template <typename T, af_random_type Type>
-    void normalDistribution(T *out, size_t elements, const uintl seed, uintl &counter)
+    template <typename T>
+    void uniformDistribution(T *out, size_t elements, af_random_type type, const uintl seed, uintl &counter)
     {
         int threads = THREADS;
         int elementsPerBlock = threads*4*sizeof(uint)/sizeof(T);
@@ -480,12 +461,31 @@ namespace kernel
         uint hi = seed>>32;
         uint lo = seed;
         uintl count = counter;
-        switch (Type) {
+        switch (type) {
+        case AF_RANDOM_PHILOX : CUDA_LAUNCH(uniformPhilox, blocks, threads,
+                out, hi, lo, count, elementsPerBlock, elements); break;
+        case AF_RANDOM_THREEFRY : CUDA_LAUNCH(uniformThreefry, blocks, threads,
+                out, hi, lo, count, elementsPerBlock, elements); break;
+        default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
+        }
+        counter += elements;
+    }
+
+    template <typename T>
+    void normalDistribution(T *out, size_t elements, af_random_type type, const uintl seed, uintl &counter)
+    {
+        int threads = THREADS;
+        int elementsPerBlock = threads*4*sizeof(uint)/sizeof(T);
+        int blocks = divup(elements, elementsPerBlock);
+        uint hi = seed>>32;
+        uint lo = seed;
+        uintl count = counter;
+        switch (type) {
         case AF_RANDOM_PHILOX : CUDA_LAUNCH(normalPhilox, blocks, threads,
                 out, hi, lo, count, elementsPerBlock, elements); break;
         case AF_RANDOM_THREEFRY : CUDA_LAUNCH(normalThreefry, blocks, threads,
                 out, hi, lo, count, elementsPerBlock, elements); break;
-                                  //THROW
+        default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
         counter += elements;
     }
