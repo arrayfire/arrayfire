@@ -88,7 +88,7 @@ inline void philox(uint key[2], uint ctr[4])
     philoxBump(key);   philoxRound(key, ctr);
 }
 
-__kernel void uniformDistribution(__global T *output, unsigned elements,
+__kernel void generate(__global T *output, unsigned elements,
         unsigned counter, unsigned hi, unsigned lo)
 {
     unsigned gid = get_group_id(0);
@@ -97,32 +97,12 @@ __kernel void uniformDistribution(__global T *output, unsigned elements,
 
     uint key[2] = {index+counter, hi};
     uint ctr[4] = {index+counter, 0, 0, lo};
+    philox(key, ctr);
 
     if (gid != get_num_groups(0) - 1) {
-        philox(key, ctr);
         WRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3]);
     } else {
-        philox(key, ctr);
-        PARTIALWRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3], &elements);
-    }
-}
-
-__kernel void normalDistribution(__global T *output, unsigned elements,
-        unsigned counter, unsigned hi, unsigned lo)
-{
-    unsigned gid = get_group_id(0);
-    unsigned off = get_local_size(0);
-    unsigned index =  gid * ELEMENTS_PER_BLOCK + get_local_id(0);
-
-    uint key[2] = {index+counter, hi};
-    uint ctr[4] = {index+counter, 0, 0, lo};
-
-    if (gid != get_num_groups(0) - 1) {
-        philox(key, ctr);
-        NORMALWRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3]);
-    } else {
-        philox(key, ctr);
-        NORMALPARTIALWRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3], &elements);
+        PARTIAL_WRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3], &elements);
     }
 }
 

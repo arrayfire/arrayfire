@@ -71,4 +71,5 @@ namespace opencl
 
     COMPLEX_NORMAL_DISTRIBUTION(cdouble, double)
     COMPLEX_NORMAL_DISTRIBUTION(cfloat, float)
+
 }

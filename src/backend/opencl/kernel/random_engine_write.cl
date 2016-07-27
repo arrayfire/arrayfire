@@ -45,8 +45,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *********************************************************/
 
-typedef ulong uintl;
-typedef long intl;
+//typedef ulong uintl;
+//typedef long intl;
 #define UINTMAXFLOAT 4294967296.0f
 #define UINTLMAXDOUBLE (4294967296.0*4294967296.0)
 #define PI_VAL 3.1415926535897932384626433832795028841971693993751058209749445923078164
@@ -54,41 +54,6 @@ typedef long intl;
 float getFloat(const uint * const num)
 {
     return ((float)(*num))/UINTMAXFLOAT;
-}
-
-float getFloatSimple(uint num)
-{
-    return ((float)(num))/UINTMAXFLOAT;
-}
-
-double getDouble(const uint * const num1, const uint * const num2)
-{
-    uintl num = (((uintl)*num1)<<32) | ((uintl)*num2);
-    return ((double)num)/UINTLMAXDOUBLE;
-}
-
-void normalizePairFloat(float * const out1, float * const out2, const float r1, const float r2)
-{
-#if defined(IS_APPLE) // Because Apple is.. "special"
-    float r = sqrt((float)(-2.0) * log10(r1) * (float)log10_val);
-#else
-    float r = sqrt((float)(-2.0) * log(r1));
-#endif
-    float theta = 2 * (float)PI_VAL * (r2);
-    *out1 = r*sin(theta);
-    *out2 = r*cos(theta);
-}
-
-void normalizePairDouble(double * const out1, double * const out2, const double r1, const double r2)
-{
-#if defined(IS_APPLE) // Because Apple is.. "special"
-    double r = sqrt((double)(-2.0) * log10(r1) * (double)log10_val);
-#else
-    double r = sqrt((double)(-2.0) * log(r1));
-#endif
-    double theta = 2 * (double)PI_VAL * (r2);
-    *out1 = r*sin(theta);
-    *out2 = r*cos(theta);
 }
 
 //Writes without boundary checking
@@ -114,7 +79,7 @@ void writeOut256Bytes_uchar(__global uchar *out, const uint * const index,
     out[*index + 15*THREADS] = *r4>>24;
 }
 
-void writeOut256Bytes_char(char *out, const uint * const index,
+void writeOut256Bytes_char(__global char *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     out[*index]              = (*r1   )&0x1;
@@ -179,23 +144,23 @@ void writeOut256Bytes_uint(__global uint *out, const uint * const index,
     out[*index + 3*THREADS] = *r4;
 }
 
-void writeOut256Bytes_intl(__global intl *out, const uint * const index,
+void writeOut256Bytes_long(__global long *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
-    intl c1 = *r2;
+    long c1 = *r2;
     c1 = (c1<<32) | *r1;
-    intl c2 = *r4;
+    long c2 = *r4;
     c2 = (c2<<32) | *r3;
     out[*index]           = c1;
     out[*index + THREADS] = c2;
 }
 
-void writeOut256Bytes_uintl(__global uintl *out, const uint * const index,
+void writeOut256Bytes_ulong(__global ulong *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
-    intl c1 = *r2;
+    long c1 = *r2;
     c1 = (c1<<32) | *r1;
-    intl c2 = *r4;
+    long c2 = *r4;
     c2 = (c2<<32) | *r3;
     out[*index]           = c1;
     out[*index + THREADS] = c2;
@@ -210,35 +175,9 @@ void writeOut256Bytes_float(__global float *out, const uint * const index,
     out[*index + 3*THREADS] = getFloat(r4);
 }
 
-void writeOut256Bytes_double(__global double *out, const uint * const index,
-        const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
-{
-    out[*index]           = getDouble(r1, r2);
-    out[*index + THREADS] = getDouble(r3, r4);
-}
 
-//Normalized writes without boundary checking
-
-void normalizedWriteOut256Bytes_float(__global float *out, const uint * const index,
-        const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
-{
-    float n1, n2, n3, n4;
-    normalizePairFloat(&n1, &n2, getFloat(r1), getFloat(r2));
-    normalizePairFloat(&n3, &n4, getFloat(r1), getFloat(r2));
-    out[*index]             = n1;
-    out[*index +   THREADS] = n2;
-    out[*index + 2*THREADS] = n3;
-    out[*index + 3*THREADS] = n4;
-}
-
-void normalizedWriteOut256Bytes_double(__global double *out, const uint * const index,
-        const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
-{
-    double n1, n2;
-    normalizePairDouble(&n1, &n2, getDouble(r1, r2), getDouble(r3, r4));
-    out[*index]           = n1;
-    out[*index + THREADS] = n2;
-}
+#if RAND_DIST == 1
+#endif
 
 //Writes with boundary checking
 
@@ -328,23 +267,23 @@ void partialWriteOut256Bytes_uint(__global uint *out, const uint * const index,
     if (*index + 3*THREADS < *elements) {out[*index + 3*THREADS] = *r4;}
 }
 
-void partialWriteOut256Bytes_intl(__global intl *out, const uint * const index,
+void partialWriteOut256Bytes_long(__global long *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
-    intl c1 = *r2;
+    long c1 = *r2;
     c1 = (c1<<32) | *r1;
-    intl c2 = *r4;
+    long c2 = *r4;
     c2 = (c2<<32) | *r3;
     if (*index           < *elements) {out[*index]           = c1;}
     if (*index + THREADS < *elements) {out[*index + THREADS] = c2;}
 }
 
-void partialWriteOut256Bytes_uintl(__global uintl *out, const uint * const index,
+void partialWriteOut256Bytes_ulong(__global ulong *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
-    intl c1 = *r2;
+    long c1 = *r2;
     c1 = (c1<<32) | *r1;
-    intl c2 = *r4;
+    long c2 = *r4;
     c2 = (c2<<32) | *r3;
     if (*index           < *elements) {out[*index]           = c1;}
     if (*index + THREADS < *elements) {out[*index + THREADS] = c2;}
@@ -359,6 +298,60 @@ void partialWriteOut256Bytes_float(__global float *out, const uint * const index
     if (*index + 3*THREADS < *elements) {out[*index + 3*THREADS] = getFloat(r4);}
 }
 
+#if RAND_DIST == 1
+void boxMullerTransform(T * const out1, T * const out2, const T r1, const T r2)
+{
+#if defined(IS_APPLE) // Because Apple is.. "special"
+    T r = sqrt((T)(-2.0) * log10(r1) * (T)log10_val);
+#else
+    T r = sqrt((T)(-2.0) * log(r1));
+#endif
+    T theta = 2 * (T)PI_VAL * (r2);
+    *out1 = r*sin(theta);
+    *out2 = r*cos(theta);
+}
+
+//Normalized writes without boundary checking
+void normalizedWriteOut256Bytes_float(__global float *out, const uint * const index,
+        const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
+{
+    float n1, n2, n3, n4;
+    boxMullerTransform(&n1, &n2, getFloat(r1), getFloat(r2));
+    boxMullerTransform(&n3, &n4, getFloat(r1), getFloat(r2));
+    out[*index]             = n1;
+    out[*index +   THREADS] = n2;
+    out[*index + 2*THREADS] = n3;
+    out[*index + 3*THREADS] = n4;
+}
+
+//Normalized writes with boundary checking
+void partialNormalizedWriteOut256Bytes_float(__global float *out, const uint * const index,
+        const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
+{
+    float n1, n2, n3, n4;
+    boxMullerTransform(&n1, &n2, getFloat(r1), getFloat(r2));
+    boxMullerTransform(&n3, &n4, getFloat(r3), getFloat(r4));
+    if (*index             < *elements) {out[*index]             = n1;}
+    if (*index +   THREADS < *elements) {out[*index +   THREADS] = n2;}
+    if (*index + 2*THREADS < *elements) {out[*index + 2*THREADS] = n3;}
+    if (*index + 3*THREADS < *elements) {out[*index + 3*THREADS] = n4;}
+}
+#endif
+
+#ifdef USE_DOUBLE
+double getDouble(const uint * const num1, const uint * const num2)
+{
+    ulong num = (((ulong)*num1)<<32) | ((ulong)*num2);
+    return ((double)num)/UINTLMAXDOUBLE;
+}
+
+void writeOut256Bytes_double(__global double *out, const uint * const index,
+        const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
+{
+    out[*index]           = getDouble(r1, r2);
+    out[*index + THREADS] = getDouble(r3, r4);
+}
+
 void partialWriteOut256Bytes_double(__global double *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
@@ -366,34 +359,39 @@ void partialWriteOut256Bytes_double(__global double *out, const uint * const ind
     if (*index + THREADS < *elements) {out[*index + THREADS] = getDouble(r3, r4);}
 }
 
-//Normalized writes with boundary checking
-
-void partialNormalizedWriteOut256Bytes_float(__global float *out, const uint * const index,
-        const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
+#if RAND_DIST == 1
+void normalizedWriteOut256Bytes_double(__global double *out, const uint * const index,
+        const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
-    float n1, n2, n3, n4;
-    normalizePairFloat(&n1, &n2, getFloat(r1), getFloat(r2));
-    normalizePairFloat(&n3, &n4, getFloat(r3), getFloat(r4));
-    if (*index             < *elements) {out[*index]             = n1;}
-    if (*index +   THREADS < *elements) {out[*index +   THREADS] = n2;}
-    if (*index + 2*THREADS < *elements) {out[*index + 2*THREADS] = n3;}
-    if (*index + 3*THREADS < *elements) {out[*index + 3*THREADS] = n4;}
+    double n1, n2;
+    boxMullerTransform(&n1, &n2, getDouble(r1, r2), getDouble(r3, r4));
+    out[*index]           = n1;
+    out[*index + THREADS] = n2;
 }
 
 void partialNormalizedWriteOut256Bytes_double(__global double *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     double n1, n2;
-    normalizePairDouble(&n1, &n2, getDouble(r1, r2), getDouble(r3, r4));
+    boxMullerTransform(&n1, &n2, getDouble(r1, r2), getDouble(r3, r4));
     if (*index           < *elements) {out[*index]           = n1;}
     if (*index + THREADS < *elements) {out[*index + THREADS] = n2;}
 }
+#endif
+#endif
 
 #define PASTER(x,y) x ## _ ## y
 #define EVALUATOR(x,y) PASTER(x,y)
 #define EVALUATE_T(function) EVALUATOR(function, T)
-#define WRITE EVALUATE_T(writeOut256Bytes)
-#define PARTIALWRITE EVALUATE_T(partialWriteOut256Bytes)
-#define NORMALWRITE EVALUATE_T(normalizedWriteOut256Bytes)
-#define NORMALPARTIALWRITE EVALUATE_T(partialNormalizedWriteOut256Bytes)
+#define UNIFORM_WRITE EVALUATE_T(writeOut256Bytes)
+#define UNIFORM_PARTIAL_WRITE EVALUATE_T(partialWriteOut256Bytes)
+#define NORMAL_WRITE EVALUATE_T(normalizedWriteOut256Bytes)
+#define NORMAL_PARTIAL_WRITE EVALUATE_T(partialNormalizedWriteOut257Bytes)
 
+#if RAND_DIST == 0
+#define WRITE UNIFORM_WRITE
+#define PARTIAL_WRITE UNIFORM_PARTIAL_WRITE
+#elif RAND_DIST == 1
+#define WRITE NORMAL_WRITE
+#define PARTIAL_WRITE NORMAL_PARTIAL_WRITE
+#endif

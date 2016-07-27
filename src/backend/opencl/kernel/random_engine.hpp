@@ -41,7 +41,9 @@ namespace opencl
         template <typename T>
         static Kernel get_random_engine_kernel(const af_random_type type, const int kerIdx, const uint elementsPerBlock)
         {
-            std::string engineName;
+            using std::string;
+            using std::to_string;
+            string engineName;
             const char *ker_strs[2];
             int ker_lens[2];
             ker_strs[0] = random_engine_write_cl;
@@ -58,9 +60,10 @@ namespace opencl
                 default                 : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
             }
 
-            std::string ref_name =
-                std::string("random_engine_kernel_") + engineName +
-                std::string("_") + std::string(dtype_traits<T>::getName());
+            string ref_name =
+                "random_engine_kernel_" + engineName +
+                "_" + string(dtype_traits<T>::getName()) +
+                "_" + to_string(kerIdx);
             int device = getActiveDeviceId();
             kc_t::iterator idx = kernelCaches[device].find(ref_name);
             kc_entry_t entry;
@@ -68,7 +71,11 @@ namespace opencl
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
                         << " -D THREADS=" << THREADS
-                        << " -D ELEMENTS_PER_BLOCK=" << elementsPerBlock;
+                        << " -D ELEMENTS_PER_BLOCK=" << elementsPerBlock
+                        << " -D RAND_DIST=" << kerIdx;
+                if (std::is_same<T, double>::value) {
+                    options << " -D USE_DOUBLE";
+                }
 #if defined(OS_MAC) // Because apple is "special"
                 options << " -D IS_APPLE"
                         << " -D log10_val=" << std::log(10.0);
@@ -76,9 +83,7 @@ namespace opencl
                 cl::Program prog;
                 buildProgram(prog, 2, ker_strs, ker_lens, options.str());
                 entry.prog = new Program(prog);
-                entry.ker = new Kernel[2];
-                entry.ker[0] = Kernel(*entry.prog, "uniformDistribution");
-                entry.ker[1] = Kernel(*entry.prog, "normalDistribution");
+                entry.ker = new Kernel(*entry.prog, "generate");
                 kernelCaches[device][ref_name] = entry;
             } else {
                 entry = idx->second;
