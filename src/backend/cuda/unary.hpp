@@ -40,6 +40,21 @@ struct UnOp
         }                                           \
     };                                              \
 
+#define UNARY_FN_LLVM(T, fn, fname)             \
+    template<>                                  \
+    struct UnOp<T, af_##fn##_t>                 \
+    {                                           \
+        std::string res;                        \
+        UnOp() :                                \
+            res(fname)                          \
+        {                                       \
+        }                                       \
+        const std::string name()                \
+        {                                       \
+            return res;                         \
+        }                                       \
+    };                                          \
+
 UNARY_FN(sin)
 UNARY_FN(cos)
 UNARY_FN(tan)
@@ -71,6 +86,9 @@ UNARY_FN(log10)
 UNARY_FN(log2)
 
 UNARY_FN(sqrt)
+UNARY_FN_LLVM(float, sqrt, "@llvm.sqrt.f32")
+UNARY_FN_LLVM(double, sqrt, "@llvm.sqrt.f64")
+
 UNARY_FN(cbrt)
 
 UNARY_FN(sign )

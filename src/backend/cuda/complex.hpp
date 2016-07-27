@@ -47,7 +47,9 @@ namespace cuda
                                                     afShortName<To>(),
                                                     cplx_name<To>(),
                                                     lhs_node,
-                                                    rhs_node, (int)(af_cplx2_t));
+                                                    rhs_node,
+                                                    (int)(af_cplx2_t),
+                                                    0);
 
         return createNodeArray<To>(odims, JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }

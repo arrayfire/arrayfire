@@ -289,7 +289,8 @@ static char *irToPtx(string IR, size_t *ptx_size)
 #if 0
     NVVM_CHECK(nvvmCompileProgram(prog, 0, NULL), "Failed to compile program");
 #else
-    nvvmResult comp_res = nvvmCompileProgram(prog, 0, NULL);
+    const char *options = "";
+    nvvmResult comp_res = nvvmCompileProgram(prog, 1, &options);
     if (comp_res != NVVM_SUCCESS) {
         size_t log_size = 0;
         nvvmGetProgramLogSize(prog, &log_size);
@@ -305,7 +306,6 @@ static char *irToPtx(string IR, size_t *ptx_size)
 
     char *ptx = new char[*ptx_size];
     NVVM_CHECK(nvvmGetCompiledResult(prog, ptx), "Can not get ptx from NVVM IR");
-
     NVVM_CHECK(nvvmDestroyProgram(&prog), "Failed to destroy program");
     return ptx;
 }
