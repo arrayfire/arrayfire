@@ -7,6 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+// This needs to be the first thing in the file
+#if defined(_WIN32) || defined(_MSC_VER)
+#define _USE_MATH_DEFINES
+#endif
+#include <cmath>
+
 #include <af/array.h>
 #include <af/defines.h>
 #include <af/arith.h>
@@ -429,7 +435,7 @@ struct unaryOpCplxFun<Tc, Tr, af_acos_t>
         Array<Tc> one = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(1.0, 0.0));
 
         Array<Tc> i = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(0.0, 1.0));
-        Array<Tc> pi_half = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(M_PI / 2.0, 0.0));
+        Array<Tc> pi_half = createValueArray<Tc>(z.dims(), scalar<Tc, Tr>(M_PI_2, 0.0));
 
         // z^2
         Array<Tc> z2 = arithOp<Tc, af_mul_t>(z, z, z.dims());
