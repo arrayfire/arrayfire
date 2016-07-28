@@ -5,6 +5,6 @@
   <Environment Id="ENVPATH" Action="set"
       Name="PATH" Permanent="no" System="yes" Part="last" Value="[INSTALL_ROOT]lib"/>
   <Environment Id="NVPATH" Action="set"
-      Name="PATH" Permanent="no" System="yes" Part="last" Value="[%CUDA_PATH_V8_0]\nvvm\bin"/>
+      Name="PATH" Permanent="no" System="yes" Part="last" Value="[%CUDA_PATH]\nvvm\bin"/>
   </CPackWiXFragment>
 </CPackWiXPatch>
