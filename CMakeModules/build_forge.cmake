@@ -2,22 +2,21 @@ INCLUDE(ExternalProject)
 
 SET(prefix ${CMAKE_BINARY_DIR}/third_party/forge)
 
+# FIXME: Cannot use $<CONFIG> generator expression here because add_custom_command
+#        does not yet support it for the OUTPUT argument, see also:
+#        - Old "duplicate":   https://cmake.org/Bug/view.php?id=12877
+#        - Old issue tracker: https://cmake.org/Bug/view.php?id=13840
+#        - New issue tracker: https://gitlab.kitware.com/cmake/cmake/issues/13840
+#        In the meantime, use CMAKE_BUILD_TYPE if set by user, assuming that it
+#        is the primary build configuration used. Otherwise, default to Release.
+IF(CMAKE_BUILD_TYPE)
+    SET(forge_lib_config ${CMAKE_BUILD_TYPE})
+ELSE()
+    SET(forge_lib_config Release)
+ENDIF()
 IF(CMAKE_GENERATOR MATCHES "Xcode") # TODO: Also for "Visual Studio"?
-    # FIXME: Cannot use $<CONFIG> generator expression here because add_custom_command
-    #        does not yet support it for the OUTPUT argument, see also:
-    #        - Old "duplicate":   https://cmake.org/Bug/view.php?id=12877
-    #        - Old issue tracker: https://cmake.org/Bug/view.php?id=13840
-    #        - New issue tracker: https://gitlab.kitware.com/cmake/cmake/issues/13840
-    #        In the meantime, use CMAKE_BUILD_TYPE if set by user, assuming that it
-    #        is the primary build configuration used. Otherwise, default to Release.
-    IF(CMAKE_BUILD_TYPE)
-        SET(forge_lib_config ${CMAKE_BUILD_TYPE})
-    ELSE()
-        SET(forge_lib_config Release)
-    ENDIF()
     SET(forge_lib_infix "/${forge_lib_config}")
 ELSE()
-    SET(forge_lib_config "$<CONFIG>")
     SET(forge_lib_infix)
 ENDIF()
 IF(WIN32)
