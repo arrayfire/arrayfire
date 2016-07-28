@@ -258,7 +258,7 @@ namespace opencl
                 if(ptr == nullptr) {
                     ptr = (T*)getQueue().enqueueMapBuffer(*const_cast<cl::Buffer*>(get()),
                                                           true, CL_MAP_READ|CL_MAP_WRITE,
-                                                          getOffset(),
+                                                          getOffset() * sizeof(T),
                                                           (getDataDims().elements() - getOffset())
                                                           * sizeof(T));
                 }
