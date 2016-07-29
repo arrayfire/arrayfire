@@ -262,12 +262,151 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
+T getConjugate(const T &in)
+{
+    // For non-complex types return same
+    return in;
+}
+
+template<>
+cfloat getConjugate(const cfloat &in)
+{
+    return std::conj(in);
+}
+
+template<>
+cdouble getConjugate(const cdouble &in)
+{
+    return std::conj(in);
+}
+
+template<typename T, bool conjugate>
+void mv(Array<T> output,
+        const Array<T> values,
+        const Array<int> rowIdx,
+        const Array<int> colIdx,
+        const Array<T> right,
+        int M)
+{
+    T   const * const   valPtr = values.get();
+    int const * const   rowPtr = rowIdx.get();
+    int const * const   colPtr = colIdx.get();
+    T   const * const rightPtr = right.get();
+    T         * const   outPtr = output.get();
+
+    for (int i = 0; i < rowIdx.dims()[0]-1; ++i) {
+        outPtr[i] = scalar<T>(0);
+        for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
+            //If stride[0] of right is not 1 then rightPtr[colPtr[j]*stride]
+            if (conjugate) {
+                outPtr[i] += getConjugate(valPtr[j]) * rightPtr[colPtr[j]];
+            } else {
+                outPtr[i] += valPtr[j] * rightPtr[colPtr[j]];
+            }
+        }
+    }
+}
+
+template<typename T, bool conjugate>
+void mtv(Array<T> output,
+        const Array<T> values,
+        const Array<int> rowIdx,
+        const Array<int> colIdx,
+        const Array<T> right,
+        int M)
+{
+    T   const * const   valPtr = values.get();
+    int const * const   rowPtr = rowIdx.get();
+    int const * const   colPtr = colIdx.get();
+    T   const * const rightPtr = right.get();
+    T         * const   outPtr = output.get();
+
+    for (int i = 0; i < M; ++i) {
+        outPtr[i] = scalar<T>(0);
+    }
+
+    for (int i = 0; i < rowIdx.dims()[0]-1; ++i) {
+        for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
+            //If stride[0] of right is not 1 then rightPtr[i*stride]
+            if (conjugate) {
+                outPtr[colPtr[j]] += getConjugate(valPtr[j]) * rightPtr[i];
+            } else {
+                outPtr[colPtr[j]] += valPtr[j] * rightPtr[i];
+            }
+        }
+    }
+}
+
+template<typename T, bool conjugate>
+void mm(Array<T> output,
+        const Array<T> values,
+        const Array<int> rowIdx,
+        const Array<int> colIdx,
+        const Array<T> right,
+        int M, int N,
+        int ldb, int ldc)
+{
+    T   const * const   valPtr = values.get();
+    int const * const   rowPtr = rowIdx.get();
+    int const * const   colPtr = colIdx.get();
+    T   const *       rightPtr = right.get();
+    T         *         outPtr = output.get();
+
+    for (int o = 0; o < N; ++o) {
+        for (int i = 0; i < rowIdx.dims()[0]-1; ++i) {
+            outPtr[i] = scalar<T>(0);
+            for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
+                //If stride[0] of right is not 1 then rightPtr[colPtr[j]*stride]
+                if (conjugate) {
+                    outPtr[i] += getConjugate(valPtr[j]) * rightPtr[colPtr[j]];
+                } else {
+                    outPtr[i] += valPtr[j] * rightPtr[colPtr[j]];
+                }
+            }
+        }
+        rightPtr += ldb;
+        outPtr += ldc;
+    }
+}
+
+template<typename T, bool conjugate>
+void mtm(Array<T> output,
+        const Array<T> values,
+        const Array<int> rowIdx,
+        const Array<int> colIdx,
+        const Array<T> right,
+        int M, int N,
+        int ldb, int ldc)
+{
+    T   const * const   valPtr = values.get();
+    int const * const   rowPtr = rowIdx.get();
+    int const * const   colPtr = colIdx.get();
+    T   const *       rightPtr = right.get();
+    T         *         outPtr = output.get();
+
+    for (int o = 0; o < N; ++o) {
+        for (int i = 0; i < M; ++i) {
+            outPtr[i] = scalar<T>(0);
+        }
+
+        for (int i = 0; i < rowIdx.dims()[0]-1; ++i) {
+            for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
+                //If stride[0] of right is not 1 then rightPtr[i*stride]
+                if (conjugate) {
+                    outPtr[colPtr[j]] += getConjugate(valPtr[j]) * rightPtr[i];
+                } else {
+                    outPtr[colPtr[j]] += valPtr[j] * rightPtr[i];
+                }
+            }
+        }
+        rightPtr += ldb;
+        outPtr += ldc;
+    }
+}
+template<typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
 {
-    // TODO: Make a CPU Implementation for this
-    // Make separate function for MV and MM
-    // No need to support optRhs
     lhs.eval();
     rhs.eval();
 
@@ -275,42 +414,45 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     sparse_operation_t lOpts = toSparseTranspose(optLhs);
 
     int lRowDim = (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) ? 0 : 1;
-    // Commenting to avoid unused variable warnings
-    //int lColDim = (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) ? 1 : 0;
 
-    //Unsupported : (rOpts == SPARSE_OPERATION_NON_TRANSPOSE;) ? 1 : 0;
     static const int rColDim = 1;
 
     dim4 lDims = lhs.dims();
     dim4 rDims = rhs.dims();
     int M = lDims[lRowDim];
     int N = rDims[rColDim];
-    // Commenting to avoid unused variable warnings
-    //int K = lDims[lColDim];
 
     Array<T> out = createValueArray<T>(af::dim4(M, N, 1, 1), scalar<T>(0));
     out.eval();
 
-    // Commenting to avoid unused variable warnings
-    //auto func = [=] (Array<T> output, const SparseArray<T> left, const Array<T> right) {
-    //    auto alpha = getScale<T, 1>();
-    //    auto beta  = getScale<T, 0>();
+    auto func = [=] (Array<T> output, const SparseArray<T> left, const Array<T> right) {
+        int ldb = right.strides()[1];
+        int ldc = output.strides()[1];
 
-    //    int ldb = right.strides()[1];
-    //    int ldc = output.strides()[1];
+        Array<T  > values = left.getValues();
+        Array<int> rowIdx = left.getRowIdx();
+        Array<int> colIdx = left.getColIdx();
 
-    //    Array<T  > values = left.getValues();
-    //    Array<int> rowIdx = left.getRowIdx();
-    //    Array<int> colIdx = left.getColIdx();
+        if(rDims[rColDim] == 1) {
+            if (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) {
+                mv<T, false>(output, values, rowIdx, colIdx, right, M);
+            } else if (lOpts == SPARSE_OPERATION_TRANSPOSE) {
+                mtv<T, false>(output, values, rowIdx, colIdx, right, M);
+            } else if (lOpts == SPARSE_OPERATION_CONJUGATE_TRANSPOSE) {
+                mtv<T, true>(output, values, rowIdx, colIdx, right, M);
+            }
+        } else {
+            if (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) {
+                mm<T, false>(output, values, rowIdx, colIdx, right, M, N, ldb, ldc);
+            } else if (lOpts == SPARSE_OPERATION_TRANSPOSE) {
+                mtm<T, false>(output, values, rowIdx, colIdx, right, M, N, ldb, ldc);
+            } else if (lOpts == SPARSE_OPERATION_CONJUGATE_TRANSPOSE) {
+                mtm<T, true>(output, values, rowIdx, colIdx, right, M, N, ldb, ldc);
+            }
+        }
+    };
 
-    //    if(rDims[rColDim] == 1) {
-    //        // Call MV
-    //    } else {
-    //        // Call MM
-    //    }
-    //};
-
-    //getQueue().enqueue(func, out, lhs, rhs);
+    getQueue().enqueue(func, out, lhs, rhs);
 
     return out;
 }

@@ -277,16 +277,22 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 template<typename T, af_storage stype>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
 {
-    // TODO: Make an implementation without MKL
-    // Support CSC as well. MKL does not support Dense->CSC. So this will be
-    // used as fallback
-    // Make these implementations like a struct. See approx1
-    AF_ERROR("CPU Implementation Without MKL Currently Not Supported", AF_ERR_NOT_SUPPORTED);
     in_.eval();
 
     uint nNZ = reduce_all<af_notzero_t, T, uint>(in_);
 
     SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, AF_STORAGE_CSR);
+    sparse_.eval();
+
+    auto func = [=] (SparseArray<T> sparse, const Array<T> in) {
+        Array<T  > values = sparse.getValues();
+        Array<int> rowIdx = sparse.getRowIdx();
+        Array<int> colIdx = sparse.getColIdx();
+
+        kernel::dns_csr<T>()(values, rowIdx, colIdx, in);
+    };
+
+    getQueue().enqueue(func, sparse_, in_);
 
     if(stype == AF_STORAGE_CSR)
         return sparse_;
@@ -299,16 +305,20 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
 template<typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 {
-    // TODO: Make an implementation without MKL
-    // Support CSC as well. MKL does not support CSC->Dense. So this will be
-    // used as fallback
-    // Make these implementations like a struct. See approx1
-
-    AF_ERROR("CPU Implementation Without MKL Currently Not Supported", AF_ERR_NOT_SUPPORTED);
     in_.eval();
 
     Array<T> dense_ = createValueArray<T>(in_.dims(), scalar<T>(0));
     dense_.eval();
+
+    auto func = [=] (Array<T> dense, const SparseArray<T> in) {
+        Array<T  > values = in.getValues();
+        Array<int> rowIdx = in.getRowIdx();
+        Array<int> colIdx = in.getColIdx();
+
+        kernel::csr_dns<T>()(dense, values, rowIdx, colIdx);
+    };
+
+    getQueue().enqueue(func, dense_, in_);
 
     if(stype == AF_STORAGE_CSR)
         return dense_;
