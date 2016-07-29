@@ -42,7 +42,7 @@ void coo2dense(Array<T> output,
 }
 
 template<typename T>
-struct dns_csr
+struct dense_csr
 {
     void operator()(Array<T> values, Array<int> rowIdx, Array<int> colIdx,
                     Array<T> const in)
@@ -70,7 +70,7 @@ struct dns_csr
 };
 
 template<typename T>
-struct csr_dns
+struct csr_dense
 {
     void operator()(Array<T> out,
                     Array<T> const values, Array<int> const rowIdx, Array<int> const colIdx)

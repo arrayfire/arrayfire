@@ -289,7 +289,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
         Array<int> rowIdx = sparse.getRowIdx();
         Array<int> colIdx = sparse.getColIdx();
 
-        kernel::dns_csr<T>()(values, rowIdx, colIdx, in);
+        kernel::dense_csr<T>()(values, rowIdx, colIdx, in);
     };
 
     getQueue().enqueue(func, sparse_, in_);
@@ -315,7 +315,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
         Array<int> rowIdx = in.getRowIdx();
         Array<int> colIdx = in.getColIdx();
 
-        kernel::csr_dns<T>()(dense, values, rowIdx, colIdx);
+        kernel::csr_dense<T>()(dense, values, rowIdx, colIdx);
     };
 
     getQueue().enqueue(func, dense_, in_);
