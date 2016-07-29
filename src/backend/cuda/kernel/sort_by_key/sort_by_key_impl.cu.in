@@ -19,6 +19,6 @@ namespace cuda
 {
 namespace kernel
 {
-    INSTANTIATE@SBK_INST@(@SBK_TYPE@, @SBK_DIR@)
+    INSTANTIATE@SBK_INST@(@SBK_TYPE@)
 }
 }

@@ -307,7 +307,7 @@ void orb(unsigned* out_feat,
             d_harris_idx.data = bufferAlloc((d_harris_idx.info.dims[0]) * sizeof(unsigned));
             kernel::range<uint>(d_harris_idx, 0);
 
-            kernel::sort0ByKey<float, uint, false>(d_harris_sorted, d_harris_idx);
+            kernel::sort0ByKey<float, uint>(d_harris_sorted, d_harris_idx, false);
 
             cl::Buffer* d_x_lvl = bufferAlloc(usable_feat * sizeof(float));
             cl::Buffer* d_y_lvl = bufferAlloc(usable_feat * sizeof(float));

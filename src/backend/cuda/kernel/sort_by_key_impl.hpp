@@ -76,8 +76,8 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
-        template<typename Tk, typename Tv, bool isAscending>
-        void sort0ByKeyIterative(Param<Tk> okey, Param<Tv> oval)
+        template<typename Tk, typename Tv>
+        void sort0ByKeyIterative(Param<Tk> okey, Param<Tv> oval, bool isAscending)
         {
             thrust::device_ptr<Tk>       okey_ptr = thrust::device_pointer_cast(okey.ptr);
             thrust::device_ptr<Tv>       oval_ptr = thrust::device_pointer_cast(oval.ptr);
@@ -110,8 +110,8 @@ namespace cuda
             POST_LAUNCH_CHECK();
         }
 
-        template<typename Tk, typename Tv, bool isAscending>
-        void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim)
+        template<typename Tk, typename Tv>
+        void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim, bool isAscending)
         {
             af::dim4 inDims;
             for(int i = 0; i < 4; i++)
@@ -154,10 +154,18 @@ namespace cuda
             // Need to convert pSeq to thrust::device_ptr, otherwise thrust
             // throws weird errors for all *64 data types (double, intl, uintl etc)
             thrust::device_ptr<uint> dSeq = thrust::device_pointer_cast(pSeq.ptr);
-            THRUST_SELECT(thrust::stable_sort_by_key,
-                          X, X + elements,
-                          dSeq,
-                          IPCompare<Tk, Tv, isAscending>());
+            if(isAscending) {
+              THRUST_SELECT(thrust::stable_sort_by_key,
+                            X, X + elements,
+                            dSeq,
+                            IPCompare<Tk, Tv, true>());
+            }
+            else {
+              THRUST_SELECT(thrust::stable_sort_by_key,
+                            X, X + elements,
+                            dSeq,
+                            IPCompare<Tk, Tv, false>());
+            }
             POST_LAUNCH_CHECK();
 
             // Needs to be ascending (true) in order to maintain the indices properly
@@ -179,37 +187,37 @@ namespace cuda
             memFree((char*)Xptr);
         }
 
-        template<typename Tk, typename Tv, bool isAscending>
-        void sort0ByKey(Param<Tk> okey, Param<Tv> oval)
+        template<typename Tk, typename Tv>
+        void sort0ByKey(Param<Tk> okey, Param<Tv> oval, bool isAscending)
         {
             int higherDims =  okey.dims[1] * okey.dims[2] * okey.dims[3];
             // TODO Make a better heurisitic
             if(higherDims > 4)
-                kernel::sortByKeyBatched<Tk, Tv, isAscending>(okey, oval, 0);
+                kernel::sortByKeyBatched<Tk, Tv>(okey, oval, 0, isAscending);
             else
-                kernel::sort0ByKeyIterative<Tk, Tv, isAscending>(okey, oval);
+                kernel::sort0ByKeyIterative<Tk, Tv>(okey, oval, isAscending);
         }
 
-#define INSTANTIATE(Tk, Tv, dr)                                                                 \
-    template void sort0ByKey<Tk, Tv, dr>(Param<Tk> okey, Param<Tv> oval);                       \
-    template void sort0ByKeyIterative<Tk, Tv, dr>(Param<Tk> okey, Param<Tv> oval);              \
-    template void sortByKeyBatched<Tk, Tv, dr>(Param<Tk> okey, Param<Tv> oval, const int dim);
+#define INSTANTIATE(Tk, Tv)                                                                 \
+      template void sort0ByKey<Tk, Tv>(Param<Tk> okey, Param<Tv> oval, bool);               \
+      template void sort0ByKeyIterative<Tk, Tv>(Param<Tk> okey, Param<Tv> oval, bool);      \
+      template void sortByKeyBatched<Tk, Tv>(Param<Tk> okey, Param<Tv> oval, const int dim, bool);
 
-#define INSTANTIATE0(Tk    , dr) \
-    INSTANTIATE(Tk, float  , dr) \
-    INSTANTIATE(Tk, double , dr) \
-    INSTANTIATE(Tk, cfloat , dr) \
-    INSTANTIATE(Tk, cdouble, dr) \
-    INSTANTIATE(Tk, char   , dr) \
-    INSTANTIATE(Tk, uchar  , dr)
+#define INSTANTIATE0(Tk    ) \
+    INSTANTIATE(Tk, float  ) \
+    INSTANTIATE(Tk, double ) \
+    INSTANTIATE(Tk, cfloat ) \
+    INSTANTIATE(Tk, cdouble) \
+    INSTANTIATE(Tk, char   ) \
+    INSTANTIATE(Tk, uchar  )
 
-#define INSTANTIATE1(Tk    , dr) \
-    INSTANTIATE(Tk, int    , dr) \
-    INSTANTIATE(Tk, uint   , dr) \
-    INSTANTIATE(Tk, short  , dr) \
-    INSTANTIATE(Tk, ushort , dr) \
-    INSTANTIATE(Tk, intl   , dr) \
-    INSTANTIATE(Tk, uintl  , dr)
+#define INSTANTIATE1(Tk    ) \
+    INSTANTIATE(Tk, int    ) \
+    INSTANTIATE(Tk, uint   ) \
+    INSTANTIATE(Tk, short  ) \
+    INSTANTIATE(Tk, ushort ) \
+    INSTANTIATE(Tk, intl   ) \
+    INSTANTIATE(Tk, uintl  )
 
     }
 }
