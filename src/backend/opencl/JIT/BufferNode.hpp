@@ -21,33 +21,44 @@ namespace JIT
     class BufferNode : public Node
     {
     private:
-        const std::shared_ptr<cl::Buffer> m_data;
-        const Param m_param;
-        const unsigned m_bytes;
-        bool m_linear;
+        std::shared_ptr<cl::Buffer> m_data;
+        KParam m_info;
+        unsigned m_bytes;
+        bool m_linear_buffer;
 
     public:
 
         BufferNode(const char *type_str,
-                   const char *name_str,
-                   const Param param,
-                   const std::shared_ptr<cl::Buffer> data,
-                   const unsigned bytes,
-                   const bool is_linear)
-            : Node(type_str, name_str),
-              m_data(data),
-              m_param(param),
-              m_bytes(bytes),
-              m_linear(is_linear)
-        {}
+                   const char *name_str)
+            : Node(type_str, name_str)
+        {
+        }
+
+        bool isBuffer() { return true; }
+
+        ~BufferNode()
+        {
+        }
+
+        void setData(KParam info, std::shared_ptr<cl::Buffer> data, const unsigned bytes, bool is_linear)
+        {
+            m_info = info;
+            m_data = data;
+            m_bytes = bytes;
+            m_linear_buffer = is_linear;
+        }
 
         bool isLinear(dim_t dims[4])
         {
-            bool same_dims = true;
-            for (int i = 0; same_dims && i < 4; i++) {
-                same_dims &= (dims[i] == m_param.info.dims[i]);
+            if (!m_set_is_linear) {
+                bool same_dims = true;
+                for (int i = 0; same_dims && i < 4; i++) {
+                    same_dims &= (dims[i] == m_info.dims[i]);
+                }
+                m_set_is_linear = true;
+                m_linear = m_linear_buffer && same_dims;
             }
-            return m_linear && same_dims;
+            return m_linear;
         }
 
         void genKerName(std::stringstream &kerStream)
@@ -59,20 +70,31 @@ namespace JIT
             m_gen_name = true;
         }
 
-        void genParams(std::stringstream &kerStream)
+        void genParams(std::stringstream &kerStream, bool is_linear)
         {
             if (m_gen_param) return;
-            kerStream << "__global " << m_type_str << " *in" << m_id
-                      << ", KParam iInfo" << m_id << ", " << "\n";
+
+            if (!is_linear) {
+                kerStream << "__global " << m_type_str << " *in" << m_id
+                          << ", KParam iInfo" << m_id << ", " << "\n";
+            } else {
+                kerStream << "__global " << m_type_str << " *in" << m_id
+                          << ", dim_t iInfo" << m_id << "_offset, " << "\n";
+            }
             m_gen_param = true;
         }
 
-        int setArgs(cl::Kernel &ker, int id)
+        int setArgs(cl::Kernel &ker, int id, bool is_linear)
         {
             if (m_set_arg) return id;
 
-            ker.setArg(id + 0, *m_param.data);
-            ker.setArg(id + 1,  m_param.info);
+            ker.setArg(id + 0, *m_data);
+
+            if (!is_linear) {
+                ker.setArg(id + 1,  m_info);
+            } else {
+                ker.setArg(id + 1, m_info.offset);
+            }
 
             m_set_arg = true;
             return id + 2;
@@ -97,7 +119,7 @@ namespace JIT
                           << "id0 + " << info_str << ".offset;"
                           << "\n";
             } else {
-                kerStream << idx_str << " = idx + " << info_str << ".offset;" << "\n";
+                kerStream << idx_str << " = idx + " << info_str << "_offset;" << "\n";
             }
 
             m_gen_offset = true;
@@ -138,7 +160,7 @@ namespace JIT
 
         void resetFlags()
         {
-            resetCommonFlags();
+            if (m_set_id) resetCommonFlags();
         }
     };
 

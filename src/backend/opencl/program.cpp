@@ -49,9 +49,14 @@ namespace opencl
                 std::string(dtype_traits<dim_t>::getName());
 
             prog = cl::Program(getContext(), setSrc);
-            std::vector<cl::Device> targetDevices;
-            targetDevices.push_back(getDevice());
-            prog.build(targetDevices, (defaults + options).c_str());
+            auto device = getDevice();
+
+            std::string cl_std =
+                std::string(" -cl-std=CL") +
+                device.getInfo<CL_DEVICE_OPENCL_C_VERSION>().substr(9, 3);
+
+            // Braces needed to list initialize the vector for the first argument
+            prog.build({device}, (cl_std + defaults + options).c_str());
 
         } catch (...) {
             SHOW_BUILD_INFO(prog);

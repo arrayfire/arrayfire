@@ -139,11 +139,13 @@ ELSE(${USE_RELATIVE_TEST_DIR})  # Not using relative test data directory
     SET(TESTDATA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
 ENDIF(${USE_RELATIVE_TEST_DIR})
 
-IF (${CMAKE_GENERATOR} STREQUAL "Xcode")
+# Workaround for Xcode generator escaping issue, see
+# - https://cmake.org/cmake/help/v3.5/release/3.5.html#deprecated-and-removed-features
+IF (CMAKE_VERSION VERSION_LESS 3.5 AND ${CMAKE_GENERATOR} STREQUAL "Xcode")
     ADD_DEFINITIONS("-D TEST_DIR=\"\\\\\"${TESTDATA_SOURCE_DIR}\\\\\"\"")
-ELSE (${CMAKE_GENERATOR} STREQUAL "Xcode")
+ELSE (CMAKE_VERSION VERSION_LESS 3.5 AND ${CMAKE_GENERATOR} STREQUAL "Xcode")
     ADD_DEFINITIONS("-D TEST_DIR=\"\\\"${TESTDATA_SOURCE_DIR}\\\"\"")
-ENDIF (${CMAKE_GENERATOR} STREQUAL "Xcode")
+ENDIF (CMAKE_VERSION VERSION_LESS 3.5 AND ${CMAKE_GENERATOR} STREQUAL "Xcode")
 
 IF(NOT ${USE_RELATIVE_TEST_DIR})
     # Check if data exists

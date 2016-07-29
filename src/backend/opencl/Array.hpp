@@ -24,12 +24,15 @@
 
 namespace opencl
 {
-    using af::dim4;
     typedef std::shared_ptr<cl::Buffer> Buffer_ptr;
-
+    using af::dim4;
     template<typename T> class Array;
 
+    template<typename T>
+    void evalMultiple(std::vector<Array<T> *> arrays);
+
     void evalNodes(Param &out, JIT::Node *node);
+    void evalNodes(std::vector<Param> &outputs, std::vector<JIT::Node *> nodes);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
@@ -225,7 +228,17 @@ namespace opencl
             return out;
         }
 
+        operator KParam() const
+        {
+            KParam kinfo = {{dims()[0], dims()[1], dims()[2], dims()[3]},
+                            {strides()[0], strides()[1], strides()[2], strides()[3]},
+                            getOffset()};
+
+            return kinfo;
+        }
+
         JIT::Node_ptr getNode() const;
+        JIT::Node_ptr getNode();
 
     public:
         std::shared_ptr<T> getMappedPtr() const
@@ -246,7 +259,7 @@ namespace opencl
                 if(ptr == nullptr) {
                     ptr = (T*)getQueue().enqueueMapBuffer(*const_cast<cl::Buffer*>(get()),
                                                           true, CL_MAP_READ|CL_MAP_WRITE,
-                                                          getOffset(),
+                                                          getOffset() * sizeof(T),
                                                           (getDataDims().elements() - getOffset())
                                                           * sizeof(T));
                 }
@@ -256,6 +269,9 @@ namespace opencl
 
             return std::shared_ptr<T>(ptr, func);
         }
+
+
+        friend void evalMultiple<T>(std::vector<Array<T> *> arrays);
 
         friend Array<T> createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T> createHostDataArray<T>(const af::dim4 &size, const T * const data);

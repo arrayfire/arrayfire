@@ -159,11 +159,12 @@ void luTester(const int m, const int n, double eps)
     l2 = l2(af::span, af::seq(mn));
     u2 = u2(af::seq(mn), af::span);
 
-    ASSERT_NEAR(0, af::max<double>(af::abs(real(l2 - l))), eps);
-    ASSERT_NEAR(0, af::max<double>(af::abs(imag(l2 - l))), eps);
+    af::array a_recon2 = af::matmul(l2, u2);
+    af::array a_perm2 = a_orig(pivot2, af::span);
 
-    ASSERT_NEAR(0, af::max<double>(af::abs(real(u2 - u))), eps);
-    ASSERT_NEAR(0, af::max<double>(af::abs(imag(u2 - u))), eps);
+    ASSERT_NEAR(0, af::max<double>(af::abs(real(a_recon2 - a_perm2))), eps);
+    ASSERT_NEAR(0, af::max<double>(af::abs(imag(a_recon2 - a_perm2))), eps);
+
 }
 
 #define LU_BIG_TESTS(T, eps)                    \

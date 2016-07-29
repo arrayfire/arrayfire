@@ -1249,11 +1249,21 @@ namespace af
        @{
     */
     inline array &eval(array &a) { a.eval(); return a; }
-    inline void eval(array &a, array &b) { eval(a); b.eval(); }
-    inline void eval(array &a, array &b, array &c) { eval(a, b); c.eval(); }
-    inline void eval(array &a, array &b, array &c, array &d) { eval(a, b, c); d.eval(); }
-    inline void eval(array &a, array &b, array &c, array &d, array &e) { eval(a, b, c, d); e.eval(); }
-    inline void eval(array &a, array &b, array &c, array &d, array &e, array &f) { eval(a, b, c, d, e); f.eval(); }
+    AFAPI void eval(array &a, array &b);
+    AFAPI void eval(array &a, array &b, array &c);
+    AFAPI void eval(array &a, array &b, array &c, array &d);
+    AFAPI void eval(array &a, array &b, array &c, array &d, array &e);
+    AFAPI void eval(array &a, array &b, array &c, array &d, array &e, array &f);
+    AFAPI void eval(int num, array **arrays);
+
+    ///
+    /// Turn the manual eval flag on or off
+    ///
+    AFAPI void setManualEvalFlag(bool flag);
+
+    /// Get the manual eval flag
+    AFAPI bool getManualEvalFlag();
+
     /**
        @}
     */
@@ -1350,6 +1360,33 @@ extern "C" {
     /**
       @}
     */
+
+
+    /**
+       Evaluate multiple arrays together
+    */
+    AFAPI af_err af_eval_multiple(const int num, af_array *arrays);
+    /**
+      @}
+    */
+
+    /**
+       Turn the manual eval flag on or off
+    */
+    AFAPI af_err af_set_manual_eval_flag(bool flag);
+    /**
+      @}
+    */
+
+
+    /**
+       Get the manual eval flag
+    */
+    AFAPI af_err af_get_manual_eval_flag(bool *flag);
+    /**
+      @}
+    */
+
 
     /**
         \ingroup method_mat

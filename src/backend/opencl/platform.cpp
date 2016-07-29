@@ -519,7 +519,7 @@ bool isHostUnifiedMemory(const cl::Device &device)
 
 bool OpenCLCPUOffload(bool forceOffloadOSX)
 {
-    static const bool offloadEnv = getEnvVar("AF_OPENCL_CPU_OFFLOAD") == "1";
+    static const bool offloadEnv = getEnvVar("AF_OPENCL_CPU_OFFLOAD") != "0";
     bool offload = false;
     if(offloadEnv) offload = isHostUnifiedMemory(getDevice());
 #if OS_MAC
@@ -531,7 +531,11 @@ bool OpenCLCPUOffload(bool forceOffloadOSX)
     // variable inconsequential to the returned result.
     //
     // Issue https://github.com/arrayfire/arrayfire/issues/662
-    offload = offload || forceOffloadOSX;
+    //
+    // Make sure device has unified memory
+    bool osx_offload = isHostUnifiedMemory(getDevice());
+    // Force condition
+    offload = osx_offload && (offload || forceOffloadOSX);
 #endif
     return offload;
 }
@@ -846,7 +850,6 @@ bool synchronize_calls() {
 unsigned getMaxJitSize()
 {
     const int MAX_JIT_LEN = 20;
-    const int MAX_JIT_LEN_AMD = 16; //FIXME: Change this when bug is fixed
 
     static int length = 0;
     if (length == 0) {
@@ -857,11 +860,13 @@ unsigned getMaxJitSize()
             length = MAX_JIT_LEN;
         }
     }
-
-    if (getActivePlatform() == AFCL_PLATFORM_AMD) {
-        return std::min(length, MAX_JIT_LEN_AMD);
-    }
     return length;
+}
+
+bool& evalFlag()
+{
+    static bool flag = true;
+    return flag;
 }
 
 }

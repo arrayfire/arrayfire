@@ -39,6 +39,9 @@ namespace cpu
     using std::shared_ptr;
     using af::dim4;
 
+    template<typename T>
+    void evalMultiple(std::vector<Array<T> *> arrays);
+
     template<typename T> class Array;
 
     // Creates a new Array object on the heap and returns a reference to it.
@@ -217,6 +220,8 @@ namespace cpu
         }
 
         TNJ::Node_ptr getNode() const;
+
+        friend void evalMultiple<T>(std::vector<Array<T> *> arrays);
 
         friend Array<T> createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T> createHostDataArray<T>(const af::dim4 &size, const T * const data);

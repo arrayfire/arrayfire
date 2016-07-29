@@ -53,6 +53,9 @@ static inline int compute2cores(int major, int minor)
         { 0x50, 128 },
         { 0x52, 128 },
         { 0x53, 128 },
+        { 0x60, 128 },
+        { 0x61, 64  },
+        { 0x62, 128 },
         {   -1, -1  },
     };
 
@@ -486,6 +489,12 @@ void sync(int device)
 bool synchronize_calls() {
     static bool sync = getEnvVar("AF_SYNCHRONOUS_CALLS") == "1";
     return sync;
+}
+
+bool& evalFlag()
+{
+    static bool flag = true;
+    return flag;
 }
 
 }

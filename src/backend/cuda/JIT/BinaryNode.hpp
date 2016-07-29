@@ -38,7 +38,11 @@ namespace JIT
 
         bool isLinear(dim_t dims[4])
         {
-            return m_lhs->isLinear(dims) && m_rhs->isLinear(dims);
+            if (!m_set_is_linear) {
+                m_linear = m_lhs->isLinear(dims) && m_rhs->isLinear(dims);
+                m_set_is_linear = true;
+            }
+            return m_linear;
         }
 
         void genParams(std::stringstream &kerStream,
@@ -60,10 +64,10 @@ namespace JIT
 
         void genKerName(std::stringstream &kerStream)
         {
+            if (m_gen_name) return;
             m_lhs->genKerName(kerStream);
             m_rhs->genKerName(kerStream);
 
-            if (m_gen_name) return;
             // Make the hex representation of enum part of the Kernel name
             kerStream << "_" << std::setw(2) << std::setfill('0') << std::hex << m_op;
             kerStream << std::setw(2) << std::setfill('0') << std::hex << m_lhs->getId();
@@ -102,42 +106,37 @@ namespace JIT
         int setId(int id)
         {
             if (m_set_id) return id;
-
             id = m_lhs->setId(id);
             id = m_rhs->setId(id);
-
             m_id = id;
             m_set_id = true;
-
             return m_id + 1;
         }
 
         void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
         {
             if (m_set_id) return;
-
             m_lhs->getInfo(len, buf_count, bytes);
             m_rhs->getInfo(len, buf_count, bytes);
             len++;
-
             m_set_id = true;
             return;
         }
 
         void resetFlags()
         {
-            resetCommonFlags();
-            m_lhs->resetFlags();
-            m_rhs->resetFlags();
+            if (m_set_id) {
+                resetCommonFlags();
+                m_lhs->resetFlags();
+                m_rhs->resetFlags();
+            }
         }
 
         void setArgs(std::vector<void *> &args, bool is_linear)
         {
             if (m_set_arg) return;
-
             m_lhs->setArgs(args, is_linear);
             m_rhs->setArgs(args, is_linear);
-
             m_set_arg = true;
         }
     };

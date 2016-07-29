@@ -51,6 +51,9 @@ void evalArray(Array<T> in)
             }
         }
     }
+
+    // Reset TNJ flags
+    in.node->reset();
 }
 
 }
