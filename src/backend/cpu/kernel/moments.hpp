@@ -24,10 +24,7 @@ void moments(Array<float> &output, Array<T> const &input, af_moment_type moment)
 {
     T const * const in       = input.get();
     af::dim4  const idims    = input.dims();
-    af::dim4  const istrides = input.strides();
-    dim_t     const iElems   = input.elements();
 
-    af::dim4  const odims    = output.dims();
     af::dim4  const ostrides = output.strides();
 
     float *out = output.get();
