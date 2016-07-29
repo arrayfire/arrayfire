@@ -82,8 +82,4 @@ namespace cpu
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, intl ) \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, uintl)
 
-    INSTANTIATE_SCAN_BY_KEY_ALL_OP(af_add_t)
-    INSTANTIATE_SCAN_BY_KEY_ALL_OP(af_mul_t)
-    INSTANTIATE_SCAN_BY_KEY_ALL_OP(af_min_t)
-    INSTANTIATE_SCAN_BY_KEY_ALL_OP(af_max_t)
 }

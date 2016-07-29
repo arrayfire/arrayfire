@@ -7,44 +7,35 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
 #include <Array.hpp>
-#include <scan.hpp>
-#include <complex>
-#include <err_opencl.hpp>
+#include <ops.hpp>
 
+#undef _GLIBCXX_USE_INT128
+#include <scan_by_key.hpp>
+#include <complex>
 #include <kernel/scan_first_by_key.hpp>
 #include <kernel/scan_dim_by_key.hpp>
 
-namespace opencl
+namespace cuda
 {
     template<af_op_t op, typename Ti, typename Tk, typename To>
     Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim, bool inclusive_scan)
     {
         Array<To> out = createEmptyArray<To>(in.dims());
 
-        try {
-            Param Out = out;
-            Param Key = key;
-            Param In  =   in;
-
-            if (inclusive_scan) {
-                if (dim == 0)
-                    kernel::scan_first<Ti, Tk, To, op, true>(Out, In, Key);
-                else
-                    kernel::scan_dim  <Ti, Tk, To, op, true>(Out, In, Key, dim);
+        if (inclusive_scan) {
+            if (dim == 0) {
+                kernel::scan_first_by_key<Ti, Tk, To, op, true>(out, in, key);
             } else {
-                if (dim == 0)
-                    kernel::scan_first<Ti, Tk, To, op, false>(Out, In, Key);
-                else
-                    kernel::scan_dim  <Ti, Tk, To, op, false>(Out, In, Key, dim);
+                kernel::scan_dim_by_key  <Ti, Tk, To, op, true>(out, in, key, dim);
             }
-
-        } catch (cl::Error &ex) {
-
-            CL_TO_AF_ERROR(ex);
+        } else {
+            if (dim == 0) {
+                kernel::scan_first_by_key<Ti, Tk, To, op, false>(out, in, key);
+            } else {
+                kernel::scan_dim_by_key  <Ti, Tk, To, op, false>(out, in, key, dim);
+            }
         }
-
         return out;
     }
 
@@ -65,14 +56,10 @@ namespace opencl
     INSTANTIATE_SCAN_BY_KEY(ROp, short  , Tk, int    )  \
     INSTANTIATE_SCAN_BY_KEY(ROp, ushort , Tk, uint   )
 
-#define INSTANTIATE_SCAN_BY_KEY_OP(ROp)     \
+#define INSTANTIATE_SCAN_BY_KEY_ALL_OP(ROp) \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, int  ) \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, uint ) \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, intl ) \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, uintl)
 
-    INSTANTIATE_SCAN_BY_KEY_OP(af_add_t)
-    INSTANTIATE_SCAN_BY_KEY_OP(af_mul_t)
-    INSTANTIATE_SCAN_BY_KEY_OP(af_min_t)
-    INSTANTIATE_SCAN_BY_KEY_OP(af_max_t)
 }

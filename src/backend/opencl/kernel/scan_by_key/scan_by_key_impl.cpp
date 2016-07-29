@@ -7,20 +7,25 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+// This file instantiates scan_dim_by_key as separate object files from CMake
+// The line below is read by CMake to determenine the instantiations
+// SBK_DIMS:first dim
+// SBK_BINARY_OPS:af_add_t af_mul_t af_max_t af_min_t
+
+#define FIRST INSTANTIATE_SCAN_FIRST_BY_KEY_OP
+#define DIM   INSTANTIATE_SCAN_DIM_BY_KEY_OP
+
 #include <ops.hpp>
 #include <backend.hpp>
 #include <kernel/scan_first_by_key_impl.hpp>
 #include <kernel/scan_dim_by_key_impl.hpp>
 
-// This file instantiates scan_dim_by_key as separate object files from CMake
-// The line below is read by CMake to determenine the instantiations
-// SBK_BINARY_OPS:af_add_t af_mul_t af_max_t af_min_t
-
 namespace opencl
 {
 namespace kernel
 {
-    INSTANTIATE_SCAN_FIRST_BY_KEY_OP(TYPE)
-    INSTANTIATE_SCAN_DIM_BY_KEY_OP(TYPE)
+  // ORDER is defined as FIRST or DIM in CMakeLists.txt
+  ORDER(TYPE)
+
 }
 }

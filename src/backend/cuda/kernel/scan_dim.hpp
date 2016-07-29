@@ -22,11 +22,12 @@ namespace cuda
 namespace kernel
 {
 
-    template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass, uint DIMY, bool inclusive_scan>
+    template<typename Ti, typename To, af_op_t op, bool isFinalPass, uint DIMY, bool inclusive_scan>
     __global__
     static void scan_dim_kernel(Param<To> out,
                                 Param<To> tmp,
                                 CParam<Ti>  in,
+                                int dim,
                                 uint blocks_x,
                                 uint blocks_y,
                                 uint blocks_dim,
@@ -128,10 +129,11 @@ namespace kernel
             }
     }
 
-    template<typename To, af_op_t op, int dim>
+    template<typename To, af_op_t op>
     __global__
     static void bcast_dim_kernel(Param<To> out,
                                  CParam<To> tmp,
+                                 int dim,
                                  uint blocks_x,
                                  uint blocks_y,
                                  uint blocks_dim,
@@ -186,10 +188,11 @@ namespace kernel
         }
     }
 
-    template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass, bool inclusive_scan>
+    template<typename Ti, typename To, af_op_t op, bool isFinalPass, bool inclusive_scan>
     static void scan_dim_launcher(Param<To> out,
                            Param<To> tmp,
                            CParam<Ti> in,
+                           int dim,
                            const uint threads_y,
                            const uint blocks_all[4])
     {
@@ -202,17 +205,17 @@ namespace kernel
 
         switch (threads_y) {
         case 8:
-            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 8, inclusive_scan>), blocks, threads,
-                out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
+            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, isFinalPass, 8, inclusive_scan>), blocks, threads,
+                out, tmp, in, dim, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
         case 4:
-            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 4, inclusive_scan>), blocks, threads,
-                out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
+            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, isFinalPass, 4, inclusive_scan>), blocks, threads,
+                out, tmp, in, dim, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
         case 2:
-            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 2, inclusive_scan>), blocks, threads,
-                out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
+            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, isFinalPass, 2, inclusive_scan>), blocks, threads,
+                out, tmp, in, dim, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
         case 1:
-            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 1, inclusive_scan>), blocks, threads,
-                out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
+            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, isFinalPass, 1, inclusive_scan>), blocks, threads,
+                out, tmp, in, dim, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
         }
 
         POST_LAUNCH_CHECK();
@@ -220,9 +223,10 @@ namespace kernel
 
 
 
-    template<typename To, af_op_t op, int dim>
+    template<typename To, af_op_t op>
     static void bcast_dim_launcher(Param<To> out,
                                    CParam<To> tmp,
+                                   int dim,
                                    const uint threads_y,
                                    const uint blocks_all[4])
     {
@@ -234,14 +238,14 @@ namespace kernel
 
         uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
-        CUDA_LAUNCH((bcast_dim_kernel<To, op, dim>), blocks, threads,
-            out, tmp, blocks_all[0], blocks_all[1], blocks_all[dim], lim);
+        CUDA_LAUNCH((bcast_dim_kernel<To, op>), blocks, threads,
+            out, tmp, dim, blocks_all[0], blocks_all[1], blocks_all[dim], lim);
 
         POST_LAUNCH_CHECK();
     }
 
-    template<typename Ti, typename To, af_op_t op, int dim, bool inclusive_scan>
-    static void scan_dim(Param<To> out, CParam<Ti> in)
+    template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
+    static void scan_dim(Param<To> out, CParam<Ti> in, int dim)
     {
         uint threads_y = std::min(THREADS_Y, nextpow2(out.dims[dim]));
         uint threads_x = THREADS_X;
@@ -253,8 +257,8 @@ namespace kernel
 
         if (blocks_all[dim] == 1) {
 
-            scan_dim_launcher<Ti, To, op, dim, true, inclusive_scan>(out, out, in,
-                                                     threads_y,
+            scan_dim_launcher<Ti, To, op, true, inclusive_scan>(out, out, in,
+                                                     dim, threads_y,
                                                      blocks_all);
 
         } else {
@@ -268,8 +272,8 @@ namespace kernel
             int tmp_elements = tmp.strides[3] * tmp.dims[3];
             tmp.ptr = memAlloc<To>(tmp_elements);
 
-            scan_dim_launcher<Ti, To, op, dim, false, inclusive_scan>(out, tmp, in,
-                                                      threads_y,
+            scan_dim_launcher<Ti, To, op, false, inclusive_scan>(out, tmp, in,
+                                                      dim, threads_y,
                                                       blocks_all);
 
             int bdim = blocks_all[dim];
@@ -277,17 +281,17 @@ namespace kernel
 
             //FIXME: Is there an alternative to the if condition ?
             if (op == af_notzero_t) {
-                scan_dim_launcher<To, To, af_add_t, dim, true, true>(tmp, tmp, tmp,
-                                                               threads_y,
+                scan_dim_launcher<To, To, af_add_t, true, true>(tmp, tmp, tmp,
+                                                               dim, threads_y,
                                                                blocks_all);
             } else {
-                scan_dim_launcher<To, To,       op, dim, true, true>(tmp, tmp, tmp,
-                                                               threads_y,
+                scan_dim_launcher<To, To,       op, true, true>(tmp, tmp, tmp,
+                                                               dim, threads_y,
                                                                blocks_all);
             }
 
             blocks_all[dim] = bdim;
-            bcast_dim_launcher<To, op, dim>(out, tmp, threads_y, blocks_all);
+            bcast_dim_launcher<To, op>(out, tmp, dim, threads_y, blocks_all);
 
             memFree(tmp.ptr);
         }
