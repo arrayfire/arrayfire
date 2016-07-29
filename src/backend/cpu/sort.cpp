@@ -25,8 +25,8 @@
 namespace cpu
 {
 
-template<typename T, bool isAscending, int dim>
-void sortBatched(Array<T>& val)
+template<typename T, int dim>
+void sortBatched(Array<T>& val, bool isAscending)
 {
     af::dim4 inDims = val.dims();
 
@@ -44,37 +44,37 @@ void sortBatched(Array<T>& val)
     val.setDataDims(inDims.elements());
     key.setDataDims(inDims.elements());
 
-    sort_by_key<T, uint, isAscending>(resVal, resKey, val, key, 0);
+    sort_by_key<T, uint>(resVal, resKey, val, key, 0, isAscending);
 
     // Needs to be ascending (true) in order to maintain the indices properly
-    sort_by_key<uint, T, true>(key, val, resKey, resVal, 0);
+    sort_by_key<uint, T>(key, val, resKey, resVal, 0, true);
     val.eval();
 
     val.setDataDims(inDims); // This is correct only for dim0
 }
 
-template<typename T, bool isAscending>
-void sort0(Array<T>& val)
+template<typename T>
+void sort0(Array<T>& val, bool isAscending)
 {
     int higherDims = val.elements() / val.dims()[0];
     // TODO Make a better heurisitic
     if(higherDims > 10)
-        sortBatched<T, isAscending, 0>(val);
+        sortBatched<T, 0>(val, isAscending);
     else
-        getQueue().enqueue(kernel::sort0Iterative<T, isAscending>, val);
+        getQueue().enqueue(kernel::sort0Iterative<T>, val, isAscending);
 }
 
-template<typename T, bool isAscending>
-Array<T> sort(const Array<T> &in, const unsigned dim)
+template<typename T>
+Array<T> sort(const Array<T> &in, const unsigned dim, bool isAscending)
 {
     in.eval();
 
     Array<T> out = copyArray<T>(in);
     switch(dim) {
-        case 0: sort0<T, isAscending>(out); break;
-        case 1: sortBatched<T, isAscending, 1>(out); break;
-        case 2: sortBatched<T, isAscending, 2>(out); break;
-        case 3: sortBatched<T, isAscending, 3>(out); break;
+        case 0: sort0<T>(out, isAscending); break;
+        case 1: sortBatched<T, 1>(out, isAscending); break;
+        case 2: sortBatched<T, 2>(out, isAscending); break;
+        case 3: sortBatched<T, 3>(out, isAscending); break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
     }
 
@@ -95,8 +95,7 @@ Array<T> sort(const Array<T> &in, const unsigned dim)
 }
 
 #define INSTANTIATE(T)                                                  \
-    template Array<T> sort<T, true>(const Array<T> &in, const unsigned dim); \
-    template Array<T> sort<T,false>(const Array<T> &in, const unsigned dim); \
+    template Array<T> sort<T>(const Array<T> &in, const unsigned dim, bool isAscending);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

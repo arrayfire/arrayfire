@@ -289,7 +289,7 @@ void harris(unsigned* corners_out,
             kernel::range<uint>(harris_idx, 0);
 
             // Sort Harris responses
-            kernel::sort0ByKey<float, uint, false>(harris_resp, harris_idx);
+            kernel::sort0ByKey<float, uint>(harris_resp, harris_idx, false);
 
             x_out.data = bufferAlloc(*corners_out * sizeof(float));
             y_out.data = bufferAlloc(*corners_out * sizeof(float));
