@@ -129,7 +129,7 @@ namespace cuda
         {
             int higherDims =  val.dims[1] * val.dims[2] * val.dims[3];
             // TODO Make a better heurisitic
-            if(higherDims > 10)
+            if(higherDims > 16)
               sortBatched<T, 0>(val, isAscending);
             else
               kernel::sort0Iterative<T>(val, isAscending);

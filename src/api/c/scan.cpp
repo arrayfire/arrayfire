@@ -35,10 +35,10 @@ static inline af_array scan_key(const af_array key, const af_array in, const int
     af_array out;
 
     switch(type) {
-        case    s32:   out = getHandle(scan<op, Ti,   int, To>(getArray<  int>(key), getArray<Ti>(in), dim, inclusive_scan)); break;
-        case    u32:   out = getHandle(scan<op, Ti,  uint, To>(getArray< uint>(key), getArray<Ti>(in), dim, inclusive_scan)); break;
-        case    s64:   out = getHandle(scan<op, Ti,  intl, To>(getArray< intl>(key), getArray<Ti>(in), dim, inclusive_scan)); break;
-        case    u64:   out = getHandle(scan<op, Ti, uintl, To>(getArray<uintl>(key), getArray<Ti>(in), dim, inclusive_scan)); break;
+        case    s32:   out = getHandle(scan<op, Ti,   int, To>(getArray<  int>(key), castArray<Ti>(in), dim, inclusive_scan)); break;
+        case    u32:   out = getHandle(scan<op, Ti,  uint, To>(getArray< uint>(key), castArray<Ti>(in), dim, inclusive_scan)); break;
+        case    s64:   out = getHandle(scan<op, Ti,  intl, To>(getArray< intl>(key), castArray<Ti>(in), dim, inclusive_scan)); break;
+        case    u64:   out = getHandle(scan<op, Ti, uintl, To>(getArray<uintl>(key), castArray<Ti>(in), dim, inclusive_scan)); break;
         default:
             TYPE_ERROR(1, type);
     }
@@ -186,10 +186,10 @@ af_err af_scan_by_key(af_array *out, const af_array key, const af_array in, cons
         case s32:  res = scan_op<int    , int    >(key, in, dim, op, inclusive_scan); break;
         case u64:  res = scan_op<uintl  , uintl  >(key, in, dim, op, inclusive_scan); break;
         case s64:  res = scan_op<intl   , intl   >(key, in, dim, op, inclusive_scan); break;
-        case u16:  res = scan_op<ushort , uint   >(key, in, dim, op, inclusive_scan); break;
-        case s16:  res = scan_op<short  , int    >(key, in, dim, op, inclusive_scan); break;
-        case u8:   res = scan_op<uchar  , uint   >(key, in, dim, op, inclusive_scan); break;
-        case b8:   res = scan_op<char   , uint   >(key, in, dim, op, inclusive_scan); break;
+        case u16:  res = scan_op<uint   , uint   >(key, in, dim, op, inclusive_scan); break;
+        case s16:  res = scan_op<int    , int    >(key, in, dim, op, inclusive_scan); break;
+        case u8:   res = scan_op<uint   , uint   >(key, in, dim, op, inclusive_scan); break;
+        case b8:   res = scan_op<uint   , uint   >(key, in, dim, op, inclusive_scan); break;
         default:
             TYPE_ERROR(1, type);
         }

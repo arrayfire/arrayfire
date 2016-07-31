@@ -29,10 +29,14 @@ struct IndexPair
     Tv second;
 };
 
-template <typename Tk, typename Tv, bool isAscending>
+template <typename Tk, typename Tv>
 struct IPCompare
 {
-    __host__ __device__
+    bool isAscending;
+    IPCompare(bool ascendFlag) : isAscending(ascendFlag)
+    {
+    }
+    __device__
     bool operator()(const IndexPair<Tk, Tv> &lhs, const IndexPair<Tk, Tv> &rhs) const
     {
         // Check stable sort condition
@@ -154,18 +158,10 @@ namespace cuda
             // Need to convert pSeq to thrust::device_ptr, otherwise thrust
             // throws weird errors for all *64 data types (double, intl, uintl etc)
             thrust::device_ptr<uint> dSeq = thrust::device_pointer_cast(pSeq.ptr);
-            if(isAscending) {
-              THRUST_SELECT(thrust::stable_sort_by_key,
-                            X, X + elements,
-                            dSeq,
-                            IPCompare<Tk, Tv, true>());
-            }
-            else {
-              THRUST_SELECT(thrust::stable_sort_by_key,
-                            X, X + elements,
-                            dSeq,
-                            IPCompare<Tk, Tv, false>());
-            }
+            THRUST_SELECT(thrust::stable_sort_by_key,
+                          X, X + elements,
+                          dSeq,
+                          IPCompare<Tk, Tv>(isAscending));
             POST_LAUNCH_CHECK();
 
             // Needs to be ascending (true) in order to maintain the indices properly

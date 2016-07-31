@@ -23,18 +23,10 @@ namespace cuda
     {
         Array<To> out = createEmptyArray<To>(in.dims());
 
-        if (inclusive_scan) {
-            if (dim == 0) {
-                kernel::scan_first_by_key<Ti, Tk, To, op, true>(out, in, key);
-            } else {
-                kernel::scan_dim_by_key  <Ti, Tk, To, op, true>(out, in, key, dim);
-            }
+        if (dim == 0) {
+            kernel::scan_first_by_key<Ti, Tk, To, op>(out, in, key, inclusive_scan);
         } else {
-            if (dim == 0) {
-                kernel::scan_first_by_key<Ti, Tk, To, op, false>(out, in, key);
-            } else {
-                kernel::scan_dim_by_key  <Ti, Tk, To, op, false>(out, in, key, dim);
-            }
+            kernel::scan_dim_by_key  <Ti, Tk, To, op>(out, in, key, dim, inclusive_scan);
         }
         return out;
     }
@@ -51,10 +43,6 @@ namespace cuda
     INSTANTIATE_SCAN_BY_KEY(ROp, uint   , Tk, uint   )  \
     INSTANTIATE_SCAN_BY_KEY(ROp, intl   , Tk, intl   )  \
     INSTANTIATE_SCAN_BY_KEY(ROp, uintl  , Tk, uintl  )  \
-    INSTANTIATE_SCAN_BY_KEY(ROp, char   , Tk, uint   )  \
-    INSTANTIATE_SCAN_BY_KEY(ROp, uchar  , Tk, uint   )  \
-    INSTANTIATE_SCAN_BY_KEY(ROp, short  , Tk, int    )  \
-    INSTANTIATE_SCAN_BY_KEY(ROp, ushort , Tk, uint   )
 
 #define INSTANTIATE_SCAN_OP(ROp)            \
     INSTANTIATE_SCAN_BY_KEY_ALL(ROp, int  ) \

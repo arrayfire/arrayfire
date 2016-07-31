@@ -45,7 +45,7 @@ namespace cuda
         }
         return out;
     }
-  
+
 #define INSTANTIATE(T)                                                  \
     template Array<T> sort<T>(const Array<T> &in, const unsigned dim, bool isAscending);
 
