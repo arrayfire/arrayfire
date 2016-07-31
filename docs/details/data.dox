@@ -134,7 +134,7 @@ array b = iota(dim4(5, 3), dim4(1, 2))
 =======================================================================
 
 \defgroup data_func_diag diag
-\brief Extract diagonal from a matrix when \p extract is set to true. Create a diagonal marix from input array when \p extract is set to false
+\brief Extract diagonal from a matrix when \p extract is set to true. Create a diagonal matrix from input array when \p extract is set to false
 
 \code
 // Extraction
@@ -287,7 +287,7 @@ Simply returns the array as a vector. This is a noop.
 
 \defgroup manip_func_flip flip
 
-\brief Flip the input along sepcified dimension
+\brief Flip the input along specified dimension
 
 Mirrors the array along the specified dimensions.
 
@@ -298,7 +298,7 @@ Mirrors the array along the specified dimensions.
 
 \defgroup data_func_lower lower
 
-\brief Create a lower triangular marix from input array
+\brief Create a lower triangular matrix from input array
 
 \ingroup data_mat
 \ingroup arrayfire_func
@@ -307,7 +307,7 @@ Mirrors the array along the specified dimensions.
 
 \defgroup data_func_upper upper
 
-\brief Create a upper triangular marix from input array
+\brief Create a upper triangular matrix from input array
 
 \ingroup data_mat
 \ingroup arrayfire_func
