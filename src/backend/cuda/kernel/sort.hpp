@@ -13,8 +13,8 @@
 #include <kernel/iota.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
-#include <thrust/device_ptr.h>
 #include <thrust/sort.h>
+#include <kernel/thrust_sort_by_key.hpp>
 
 namespace cuda
 {
@@ -26,8 +26,6 @@ namespace cuda
         template<typename T>
         void sort0Iterative(Param<T> val, bool isAscending)
         {
-            thrust::device_ptr<T> val_ptr = thrust::device_pointer_cast(val.ptr);
-
             for(int w = 0; w < val.dims[3]; w++) {
                 int valW = w * val.strides[3];
                 for(int z = 0; z < val.dims[2]; z++) {
@@ -37,9 +35,14 @@ namespace cuda
                         int valOffset = valWZ + y * val.strides[1];
 
                         if(isAscending) {
-                            THRUST_SELECT(thrust::sort, val_ptr + valOffset, val_ptr + valOffset + val.dims[0]);
+                            THRUST_SELECT(thrust::sort,
+                                          val.ptr + valOffset,
+                                          val.ptr + valOffset + val.dims[0]);
                         } else {
-                            THRUST_SELECT(thrust::sort, val_ptr + valOffset, val_ptr + valOffset + val.dims[0], thrust::greater<T>());
+                            THRUST_SELECT(thrust::sort,
+                                          val.ptr + valOffset,
+                                          val.ptr + valOffset + val.dims[0],
+                                          thrust::greater<T>());
                         }
                     }
                 }
@@ -91,29 +94,10 @@ namespace cuda
 
             // Sort indices
             // sort_by_key<T, uint, isAscending>(*resVal, *resKey, val, key, 0);
-            //kernel::sort0_by_key<T, uint, isAscending>(pVal, pKey);
-            thrust::device_ptr<T>    pVal_ptr = thrust::device_pointer_cast(pVal.ptr);
-            thrust::device_ptr<uint> pKey_ptr = thrust::device_pointer_cast(pKey.ptr);
-            if(isAscending) {
-                THRUST_SELECT(thrust::stable_sort_by_key,
-                              pVal_ptr,
-                              pVal_ptr + pVal.dims[0],
-                              pKey_ptr);
-            } else {
-                THRUST_SELECT(thrust::stable_sort_by_key,
-                              pVal_ptr,
-                              pVal_ptr + pVal.dims[0],
-                              pKey_ptr, thrust::greater<T>());
-            }
-            POST_LAUNCH_CHECK();
+            thrustSortByKey(pVal.ptr, pKey.ptr, pVal.dims[0], isAscending);
 
             // Needs to be ascending (true) in order to maintain the indices properly
-            //kernel::sort0_by_key<uint, T, true>(pKey, pVal);
-            THRUST_SELECT(thrust::stable_sort_by_key,
-                          pKey_ptr,
-                          pKey_ptr + pVal.dims[0],
-                          pVal_ptr);
-            POST_LAUNCH_CHECK();
+            thrustSortByKey(pKey.ptr, pVal.ptr, pVal.dims[0], true);
 
             // No need of doing moddims here because the original Array<T>
             // dimensions have not been changed

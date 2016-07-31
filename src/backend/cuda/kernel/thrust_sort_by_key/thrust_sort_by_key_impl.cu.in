@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <kernel/sort_by_key_impl.hpp>
+#include <kernel/thrust_sort_by_key_impl.hpp>
 
 // This file instantiates sort_by_key as separate object files from CMake
 // The 3 lines below are read by CMake to determenine the instantiations
