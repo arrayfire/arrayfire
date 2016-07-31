@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <kernel_headers/sort_pair.hpp>
 #include <kernel/sort_by_key.hpp>
 #include <kernel/sort_helper.hpp>
 #include <program.hpp>
@@ -109,90 +108,6 @@ namespace opencl
         static const int copyPairIter = 4;
 
         template<typename Tk, typename Tv>
-        void makePair(cl::Buffer *out, const cl::Buffer *first, const cl::Buffer *second, const unsigned N)
-        {
-            try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   sortPairProgs;
-                static std::map<int, Kernel*>  sortPairKernels;
-
-                int device = getActiveDeviceId();
-
-                std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D Tk="      << dtype_traits<Tk>::getName()
-                            << " -D Tv="      << dtype_traits<Tv>::getName()
-                            << " -D copyPairIter=" << copyPairIter;
-                    if (std::is_same<Tk, double >::value ||
-                        std::is_same<Tk, cdouble>::value ||
-                        std::is_same<Tv, double >::value ||
-                        std::is_same<Tv, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
-                    Program prog;
-                    buildProgram(prog, sort_pair_cl, sort_pair_cl_len, options.str());
-                    sortPairProgs[device]   = new Program(prog);
-                    sortPairKernels[device] = new Kernel(*sortPairProgs[device], "make_pair_kernel");
-                });
-
-                auto makePairOp = KernelFunctor<Buffer, const Buffer, const Buffer, const unsigned>
-                                          (*sortPairKernels[device]);
-
-                NDRange local(256, 1, 1);
-                NDRange global(local[0] * divup(N, local[0] * copyPairIter), 1, 1);
-
-                makePairOp(EnqueueArgs(getQueue(), global, local), *out, *first, *second, N);
-
-                CL_DEBUG_FINISH(getQueue());
-            } catch (cl::Error err) {
-                CL_TO_AF_ERROR(err);
-                throw;
-            }
-        }
-
-        template<typename Tk, typename Tv>
-        void splitPair(cl::Buffer *first, cl::Buffer *second, const cl::Buffer *in, const unsigned N)
-        {
-            try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   sortPairProgs;
-                static std::map<int, Kernel*>  sortPairKernels;
-
-                int device = getActiveDeviceId();
-
-                std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D Tk="      << dtype_traits<Tk>::getName()
-                            << " -D Tv="      << dtype_traits<Tv>::getName()
-                            << " -D copyPairIter=" << copyPairIter;
-                    if (std::is_same<Tk, double >::value ||
-                        std::is_same<Tk, cdouble>::value ||
-                        std::is_same<Tv, double >::value ||
-                        std::is_same<Tv, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
-                    Program prog;
-                    buildProgram(prog, sort_pair_cl, sort_pair_cl_len, options.str());
-                    sortPairProgs[device]   = new Program(prog);
-                    sortPairKernels[device] = new Kernel(*sortPairProgs[device], "split_pair_kernel");
-                });
-
-                auto splitPairOp = KernelFunctor<Buffer, Buffer, const Buffer, const unsigned>
-                                          (*sortPairKernels[device]);
-
-                NDRange local(256, 1, 1);
-                NDRange global(local[0] * divup(N, local[0] * copyPairIter), 1, 1);
-
-                splitPairOp(EnqueueArgs(getQueue(), global, local), *first, *second, *in, N);
-
-                CL_DEBUG_FINISH(getQueue());
-            } catch (cl::Error err) {
-                CL_TO_AF_ERROR(err);
-                throw;
-            }
-        }
-
-        template<typename Tk, typename Tv>
         void sort0ByKeyIterative(Param pKey, Param pVal, bool isAscending)
         {
             try {
@@ -252,9 +167,9 @@ namespace opencl
 
                 // Create/call iota
                 // Array<Tv> key = iota<Tv>(seqDims, tileDims);
-                cl::Buffer* key = bufferAlloc(inDims.elements() * sizeof(unsigned));
+                cl::Buffer* Seq = bufferAlloc(inDims.elements() * sizeof(unsigned));
                 Param pSeq;
-                pSeq.data = key;
+                pSeq.data = Seq;
                 pSeq.info.offset = 0;
                 pSeq.info.dims[0] = inDims[0];
                 pSeq.info.strides[0] = 1;
@@ -326,7 +241,7 @@ namespace opencl
                 ////val.modDims(inDims);
 
                 CL_DEBUG_FINISH(getQueue());
-                bufferFree(key);
+                bufferFree(Seq);
                 bufferFree(cSeq);
                 bufferFree(cKey);
             } catch (cl::Error err) {
@@ -339,8 +254,11 @@ namespace opencl
         void sort0ByKey(Param pKey, Param pVal, bool isAscending)
         {
             int higherDims =  pKey.info.dims[1] * pKey.info.dims[2] * pKey.info.dims[3];
-            // TODO Make a better heurisitic
-            if(higherDims > 5)
+            // Batced sort performs 4x sort by keys
+            // But this is only useful before GPU is saturated
+            // The GPU is saturated at around 1000,000 integers
+            // Call batched sort only if both conditions are met
+            if(higherDims > 4 && pKey.info.dims[0] < 1000000)
                 kernel::sortByKeyBatched<Tk, Tv>(pKey, pVal, 0, isAscending);
             else
                 kernel::sort0ByKeyIterative<Tk, Tv>(pKey, pVal, isAscending);

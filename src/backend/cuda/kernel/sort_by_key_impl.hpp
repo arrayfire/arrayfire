@@ -21,71 +21,34 @@
 #include <thrust/device_vector.h>
 #include <thrust/sort.h>
 
-// This needs to be in global namespace as it is used by thrust
-template<typename Tk, typename Tv>
-struct IndexPair
-{
-    Tk first;
-    Tv second;
-};
-
-template <typename Tk, typename Tv>
-struct IPCompare
-{
-    bool isAscending;
-    IPCompare(bool ascendFlag) : isAscending(ascendFlag)
-    {
-    }
-    __device__
-    bool operator()(const IndexPair<Tk, Tv> &lhs, const IndexPair<Tk, Tv> &rhs) const
-    {
-        // Check stable sort condition
-        if(isAscending) return (lhs.first < rhs.first);
-        else return (lhs.first > rhs.first);
-    }
-};
-
 namespace cuda
 {
     namespace kernel
     {
         static const int copyPairIter = 4;
 
-        template <typename Tk, typename Tv>
-        __global__
-        void makeIndexPair(IndexPair<Tk, Tv> *out, const Tk *first, const Tv *second, const int N)
-        {
-            int tIdx = blockIdx.x * blockDim.x * copyPairIter + threadIdx.x;
-
-            for(int i = tIdx; i < N; i += blockDim.x)
-            {
-                out[i].first = first[i];
-                out[i].second = second[i];
-            }
-        }
-
-        template <typename Tk, typename Tv>
-        __global__
-        void splitIndexPair(Tk *first, Tv *second, const IndexPair<Tk, Tv> *out, const int N)
-        {
-            int tIdx = blockIdx.x * blockDim.x * copyPairIter + threadIdx.x;
-
-            for(int i = tIdx; i < N; i += blockDim.x)
-            {
-                first[i]  = out[i].first;
-                second[i] = out[i].second;
-            }
-        }
-
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
         template<typename Tk, typename Tv>
+        void sortByKey(Tk *keyPtr, Tv *valPtr, int elements, bool isAscending)
+        {
+            if (isAscending) {
+                THRUST_SELECT(thrust::stable_sort_by_key,
+                              keyPtr,
+                              keyPtr + elements,
+                              valPtr);
+            } else {
+                THRUST_SELECT(thrust::stable_sort_by_key,
+                              keyPtr,
+                              keyPtr + elements,
+                              valPtr, thrust::greater<Tk>());
+            }
+        }
+
+        template<typename Tk, typename Tv>
         void sort0ByKeyIterative(Param<Tk> okey, Param<Tv> oval, bool isAscending)
         {
-            thrust::device_ptr<Tk>       okey_ptr = thrust::device_pointer_cast(okey.ptr);
-            thrust::device_ptr<Tv>       oval_ptr = thrust::device_pointer_cast(oval.ptr);
-
             for(int w = 0; w < okey.dims[3]; w++) {
                 int okeyW = w * okey.strides[3];
                 int ovalW = w * oval.strides[3];
@@ -97,17 +60,10 @@ namespace cuda
                         int okeyOffset = okeyWZ + y * okey.strides[1];
                         int ovalOffset = ovalWZ + y * oval.strides[1];
 
-                        if(isAscending) {
-                            THRUST_SELECT(thrust::stable_sort_by_key,
-                                          okey_ptr + okeyOffset,
-                                          okey_ptr + okeyOffset + okey.dims[0],
-                                          oval_ptr + ovalOffset);
-                        } else {
-                            THRUST_SELECT(thrust::stable_sort_by_key,
-                                          okey_ptr + okeyOffset,
-                                          okey_ptr + okeyOffset + okey.dims[0],
-                                          oval_ptr + ovalOffset, thrust::greater<Tk>());
-                        }
+                        sortByKey<Tk, Tv>(okey.ptr + okeyOffset,
+                                          oval.ptr + ovalOffset,
+                                          okey.dims[0],
+                                          isAscending);
                     }
                 }
             }
@@ -132,9 +88,9 @@ namespace cuda
 
             // Create/call iota
             // Array<uint> key = iota<uint>(seqDims, tileDims);
-            uint* key = memAlloc<uint>(elements);
+            uint* Seq = memAlloc<uint>(elements);
             Param<uint> pSeq;
-            pSeq.ptr = key;
+            pSeq.ptr = Seq;
             pSeq.strides[0] = 1;
             pSeq.dims[0] = inDims[0];
             for(int i = 1; i < 4; i++) {
@@ -143,52 +99,43 @@ namespace cuda
             }
             cuda::kernel::iota<uint>(pSeq, seqDims, tileDims);
 
-            // Make pkey, pVal into a pair
-            IndexPair<Tk, Tv> *Xptr = (IndexPair<Tk, Tv>*)memAlloc<char>(sizeof(IndexPair<Tk, Tv>) * elements);
+            Tk *Key = pKey.ptr;
+            Tk *cKey = memAlloc<Tk>(elements);
+            CUDA_CHECK(cudaMemcpyAsync(cKey, Key, elements * sizeof(Tk),
+                                       cudaMemcpyDeviceToDevice,
+                                       getStream(cuda::getActiveDeviceId())));
 
-            const int threads = 256;
-            int blocks = divup(elements, threads * copyPairIter);
-            CUDA_LAUNCH((makeIndexPair<Tk, Tv>), blocks, threads,
-                        Xptr, pKey.ptr, pVal.ptr, elements);
-            POST_LAUNCH_CHECK();
+            Tv *Val = pVal.ptr;
+            sortByKey(Key, Val, elements, isAscending);
+            sortByKey(cKey, Seq, elements, isAscending);
 
-            thrust::device_ptr<IndexPair<Tk, Tv> > X = thrust::device_pointer_cast(Xptr);
+            uint *cSeq = memAlloc<uint>(elements);
+            CUDA_CHECK(cudaMemcpyAsync(cSeq, Seq, elements * sizeof(uint),
+                                       cudaMemcpyDeviceToDevice,
+                                       getStream(cuda::getActiveDeviceId())));
 
-            // Sort indices
-            // Need to convert pSeq to thrust::device_ptr, otherwise thrust
-            // throws weird errors for all *64 data types (double, intl, uintl etc)
-            thrust::device_ptr<uint> dSeq = thrust::device_pointer_cast(pSeq.ptr);
-            THRUST_SELECT(thrust::stable_sort_by_key,
-                          X, X + elements,
-                          dSeq,
-                          IPCompare<Tk, Tv>(isAscending));
-            POST_LAUNCH_CHECK();
-
-            // Needs to be ascending (true) in order to maintain the indices properly
-            //kernel::sort0_by_key<uint, T, true>(pKey, pVal);
-            THRUST_SELECT(thrust::stable_sort_by_key,
-                          dSeq, dSeq + elements,
-                          X);
-            POST_LAUNCH_CHECK();
-
-            CUDA_LAUNCH((splitIndexPair<Tk, Tv>), blocks, threads,
-                        pKey.ptr, pVal.ptr, Xptr, elements);
-            POST_LAUNCH_CHECK();
+            // This always needs to be ascending
+            sortByKey(Seq, Val, elements, true);
+            sortByKey(cSeq, Key, elements, true);
 
             // No need of doing moddims here because the original Array<T>
             // dimensions have not been changed
             //val.modDims(inDims);
 
-            memFree(key);
-            memFree((char*)Xptr);
+            memFree(Seq);
+            memFree(cSeq);
+            memFree(cKey);
         }
 
         template<typename Tk, typename Tv>
         void sort0ByKey(Param<Tk> okey, Param<Tv> oval, bool isAscending)
         {
             int higherDims =  okey.dims[1] * okey.dims[2] * okey.dims[3];
-            // TODO Make a better heurisitic
-            if(higherDims > 4)
+            // Batced sort performs 4x sort by keys
+            // But this is only useful before GPU is saturated
+            // The GPU is saturated at around 100,000 integers
+            // Call batched sort only if both conditions are met
+            if(higherDims > 4 && okey.dims[0] < 100000)
                 kernel::sortByKeyBatched<Tk, Tv>(okey, oval, 0, isAscending);
             else
                 kernel::sort0ByKeyIterative<Tk, Tv>(okey, oval, isAscending);
