@@ -194,7 +194,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     sparse_operation_t lOpts = toSparseTranspose(optLhs);
 
     int lRowDim = (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) ? 0 : 1;
-    int lColDim = (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) ? 1 : 0;
+    //int lColDim = (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) ? 1 : 0;
 
     //Unsupported : (rOpts == SPARSE_OPERATION_NON_TRANSPOSE;) ? 1 : 0;
     static const int rColDim = 1;
@@ -203,7 +203,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     dim4 rDims = rhs.dims();
     int M = lDims[lRowDim];
     int N = rDims[rColDim];
-    int K = lDims[lColDim];
+    //int K = lDims[lColDim];
 
     Array<T> out = createValueArray<T>(af::dim4(M, N, 1, 1), scalar<T>(0));
     out.eval();
@@ -223,7 +223,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
         int *pE = rowIdx.get() + 1;
 
         sparse_matrix_t csrLhs;
-        create_csr_func<T>()(&csrLhs, SPARSE_INDEX_BASE_ZERO, M, K,
+        create_csr_func<T>()(&csrLhs, SPARSE_INDEX_BASE_ZERO, left.dims()[0], left.dims()[1],
                              pB, pE, colIdx.get(),
                              reinterpret_cast<ptr_type<T>>(values.get()));
 
