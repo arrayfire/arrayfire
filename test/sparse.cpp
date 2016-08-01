@@ -44,9 +44,7 @@ af::array makeSparse<cfloat>(af::array A, int factor)
     r = floor(r * 1000);
     r = r * ((r % factor) == 0) / 1000;
 
-    af::array i = real(A);
-    i = floor(i * 1000);
-    i = i * ((i % factor) == 0) / 1000;
+    af::array i = r / 2;
 
     A = af::complex(r, i);
     return A;
@@ -59,9 +57,7 @@ af::array makeSparse<cdouble>(af::array A, int factor)
     r = floor(r * 1000);
     r = r * ((r % factor) == 0) / 1000;
 
-    af::array i = real(A);
-    i = floor(i * 1000);
-    i = i * ((i % factor) == 0) / 1000;
+    af::array i = r / 2;
 
     A = af::complex(r, i);
     return A;
@@ -77,7 +73,6 @@ void sparseTester(const int m, const int n, const int k, int factor, double eps)
 #if 1
     af::array A = cpu_randu<T>(af::dim4(m, n));
     af::array B = cpu_randu<T>(af::dim4(n, k));
-    af::array C = cpu_randu<T>(af::dim4(m, k));
 #else
     af::array A = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
     af::array B = af::randu(n, k, (af::dtype)af::dtype_traits<T>::af_type);
@@ -87,21 +82,47 @@ void sparseTester(const int m, const int n, const int k, int factor, double eps)
 
     // Result of GEMM
     af::array dRes1 = matmul(A, B);
-    af::array dRes2 = matmul(A, C, AF_MAT_TRANS, AF_MAT_NONE);
-    af::array dRes3 = matmul(A, C, AF_MAT_CTRANS, AF_MAT_NONE);
 
     // Create Sparse Array From Dense
     af::array sA = af::createSparseArray(A, AF_STORAGE_CSR);
 
     // Sparse Matmul
     af::array sRes1 = matmul(sA, B);
-    af::array sRes2 = matmul(sA, C, AF_MAT_TRANS, AF_MAT_NONE);
-    af::array sRes3 = matmul(sA, C, AF_MAT_CTRANS, AF_MAT_NONE);
 
     // Verify Results
     ASSERT_NEAR(0, af::sum<double>(af::abs(real(dRes1 - sRes1))) / (m * k), eps);
     ASSERT_NEAR(0, af::sum<double>(af::abs(imag(dRes1 - sRes1))) / (m * k), eps);
+}
 
+template<typename T>
+void sparseTransposeTester(const int m, const int n, const int k, int factor, double eps)
+{
+    af::deviceGC();
+
+    if (noDoubleTests<T>()) return;
+
+#if 1
+    af::array A = cpu_randu<T>(af::dim4(m, n));
+    af::array B = cpu_randu<T>(af::dim4(m, k));
+#else
+    af::array A = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
+    af::array B = af::randu(m, k, (af::dtype)af::dtype_traits<T>::af_type);
+#endif
+
+    A = makeSparse<T>(A, factor);
+
+    // Result of GEMM
+    af::array dRes2 = matmul(A, B, AF_MAT_TRANS, AF_MAT_NONE);
+    af::array dRes3 = matmul(A, B, AF_MAT_CTRANS, AF_MAT_NONE);
+
+    // Create Sparse Array From Dense
+    af::array sA = af::createSparseArray(A, AF_STORAGE_CSR);
+
+    // Sparse Matmul
+    af::array sRes2 = matmul(sA, B, AF_MAT_TRANS, AF_MAT_NONE);
+    af::array sRes3 = matmul(sA, B, AF_MAT_CTRANS, AF_MAT_NONE);
+
+    // Verify Results
     ASSERT_NEAR(0, af::sum<double>(af::abs(real(dRes2 - sRes2))) / (n * k), eps);
     ASSERT_NEAR(0, af::sum<double>(af::abs(imag(dRes2 - sRes2))) / (n * k), eps);
 
@@ -109,20 +130,40 @@ void sparseTester(const int m, const int n, const int k, int factor, double eps)
     ASSERT_NEAR(0, af::sum<double>(af::abs(imag(dRes3 - sRes3))) / (n * k), eps);
 }
 
+#define SPARSE_TESTS(T, eps)                                    \
+    TEST(SPARSE, T##Square)                                     \
+    {                                                           \
+        sparseTester<T>(1000, 1000, 100, 5, eps);               \
+    }                                                           \
+    TEST(SPARSE, T##RectMultiple)                               \
+    {                                                           \
+        sparseTester<T>(2048, 1024, 512, 3, eps);               \
+    }                                                           \
+    TEST(SPARSE, T##RectDense)                                  \
+    {                                                           \
+        sparseTester<T>(500, 1000, 250, 1, eps);                \
+    }                                                           \
+    TEST(SPARSE, T##MatVec)                                     \
+    {                                                           \
+        sparseTester<T>(625, 1331, 1, 2, eps);                  \
+    }                                                           \
+    TEST(SPARSE_TRANSPOSE, T##Square)                           \
+    {                                                           \
+        sparseTransposeTester<T>(1000, 1000, 100, 5, eps);      \
+    }                                                           \
+    TEST(SPARSE_TRANSPOSE, T##RectMultiple)                     \
+    {                                                           \
+        sparseTransposeTester<T>(2048, 1024, 512, 3, eps);      \
+    }                                                           \
+    TEST(SPARSE_TRANSPOSE, T##RectDense)                        \
+    {                                                           \
+        sparseTransposeTester<T>(453, 751, 397, 1, eps);        \
+    }                                                           \
+    TEST(SPARSE_TRANSPOSE, T##MatVec)                           \
+    {                                                           \
+        sparseTransposeTester<T>(625, 1331, 1, 2, eps);         \
+    }                                                           \
 
-#define SPARSE_TESTS(T, eps)                            \
-    TEST(SPARSE, T##Square)                             \
-    {                                                   \
-        sparseTester<T>(1000, 1000, 100, 5, eps);       \
-    }                                                   \
-    TEST(SPARSE, T##RectMultiple)                       \
-    {                                                   \
-        sparseTester<T>(2048, 1024, 512, 3, eps);       \
-    }                                                   \
-    TEST(SPARSE, T##RectDense)                          \
-    {                                                   \
-        sparseTester<T>(500, 1000, 250, 1, eps);        \
-    }                                                   \
 
 SPARSE_TESTS(float, 0.01)
 SPARSE_TESTS(double, 1E-5)
