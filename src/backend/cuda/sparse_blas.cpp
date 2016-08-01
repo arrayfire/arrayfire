@@ -129,14 +129,14 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     cusparseOperation_t lOpts = toCusparseTranspose(optLhs);
 
     int lRowDim = (lOpts == CUSPARSE_OPERATION_NON_TRANSPOSE) ? 0 : 1;
-    int lColDim = (lOpts == CUSPARSE_OPERATION_NON_TRANSPOSE) ? 1 : 0;
+    //int lColDim = (lOpts == CUSPARSE_OPERATION_NON_TRANSPOSE) ? 1 : 0;
     static const int rColDim = 1; //Unsupported : (rOpts == CUSPARSE_OPERATION_NON_TRANSPOSE) ? 1 : 0;
 
     dim4 lDims = lhs.dims();
     dim4 rDims = rhs.dims();
     int M = lDims[lRowDim];
     int N = rDims[rColDim];
-    int K = lDims[lColDim];
+    //int K = lDims[lColDim];
 
     Array<T> out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
     T alpha = scalar<T>(1);
@@ -151,11 +151,15 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     CUSPARSE_CHECK(cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO));
 
     // Call Matrix-Vector or Matrix-Matrix
+    // Note:
+    // Do not use M, N, K here. Use lDims and rDims instead.
+    // This is because the function wants row/col of A
+    // and not OP(A) (gemm wants row/col of OP(A)).
     if(rDims[rColDim] == 1) {
         CUSPARSE_CHECK(csrmv_func<T>()(
                        getHandle(),
                        lOpts,
-                       M, K, lhs.getNNZ(),
+                       lDims[0], lDims[1], lhs.getNNZ(),
                        &alpha,
                        descr, lhs.getValues().get(),
                        lhs.getRowIdx().get(), lhs.getColIdx().get(),
@@ -166,7 +170,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
         CUSPARSE_CHECK(csrmm_func<T>()(
                        getHandle(),
                        lOpts,
-                       M, N, K, lhs.getNNZ(),
+                       lDims[0], rDims[rColDim], lDims[1], lhs.getNNZ(),
                        &alpha,
                        descr, lhs.getValues().get(),
                        lhs.getRowIdx().get(), lhs.getColIdx().get(),
