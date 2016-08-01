@@ -51,7 +51,7 @@ static double median(const af_array& in)
     double mid      = (nElems + 1) / 2;
     af_seq mdSpan[1]= {af_make_seq(mid-1, mid, 1)};
 
-    Array<T> sortedArr = sort<T, true>(input, 0);
+    Array<T> sortedArr = sort<T>(input, 0, true);
 
     af_array sarrHandle = getHandle<T>(sortedArr);
 
@@ -89,7 +89,7 @@ static af_array median(const af_array& in, const dim_t dim)
         return getHandle<T>(result);
     }
 
-    Array<T> sortedIn   = sort<T, true>(input, dim);
+    Array<T> sortedIn   = sort<T>(input, dim, true);
 
     int dimLength = input.dims()[dim];
     double mid    = (dimLength + 1) / 2;

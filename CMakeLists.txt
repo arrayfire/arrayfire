@@ -220,6 +220,7 @@ ENDIF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
 ## configuration to be used from the binary directory directly
 SET(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 SET(BACKEND_DIR "src/backend/\${lowerbackend}")
+SET(UNIFIED_DIR "src/api/unified")
 CONFIGURE_FILE(
     ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfig.cmake
@@ -230,6 +231,7 @@ CONFIGURE_FILE(
 STRING(REGEX REPLACE "[^/]+" ".." reldir "${AF_INSTALL_CMAKE_DIR}")
 SET(INCLUDE_DIR "\${CMAKE_CURRENT_LIST_DIR}/${reldir}/include")
 set(BACKEND_DIR)
+set(UNIFIED_DIR)
 CONFIGURE_FILE(
     ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake

@@ -16,14 +16,14 @@ namespace cpu
 namespace kernel
 {
 
-template<typename Tk, typename Tv, bool isAscending>
-void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval);
+template<typename Tk, typename Tv>
+void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval, bool isAscending);
 
-template<typename Tk, typename Tv, bool isAscending>
-void sortByKeyBatched(Array<Tk> okey, Array<Tv> oval, const int dim);
+template<typename Tk, typename Tv>
+void sortByKeyBatched(Array<Tk> okey, Array<Tv> oval, const int dim, bool isAscending);
 
-template<typename Tk, typename Tv, bool isAscending>
-void sort0ByKey(Array<Tk> okey, Array<Tv> oval);
+template<typename Tk, typename Tv>
+void sort0ByKey(Array<Tk> okey, Array<Tv> oval, bool isAscending);
 
 }
 }

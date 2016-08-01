@@ -300,10 +300,6 @@ namespace kernel
     INSTANTIATE_SCAN_DIM_BY_KEY(ROp, uint   , Tk, uint   )  \
     INSTANTIATE_SCAN_DIM_BY_KEY(ROp, intl   , Tk, intl   )  \
     INSTANTIATE_SCAN_DIM_BY_KEY(ROp, uintl  , Tk, uintl  )  \
-    INSTANTIATE_SCAN_DIM_BY_KEY(ROp, char   , Tk, uint   )  \
-    INSTANTIATE_SCAN_DIM_BY_KEY(ROp, uchar  , Tk, uint   )  \
-    INSTANTIATE_SCAN_DIM_BY_KEY(ROp, short  , Tk, int    )  \
-    INSTANTIATE_SCAN_DIM_BY_KEY(ROp, ushort , Tk, uint   )
 
 #define INSTANTIATE_SCAN_DIM_BY_KEY_OP(ROp)         \
     INSTANTIATE_SCAN_DIM_BY_KEY_TYPES(ROp, int  )   \

@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <arrayfire.h>
-#include "../common/progress.h"
 
 using namespace af;
 
@@ -19,7 +18,6 @@ array normalize(array a, float max)
 
 static void swe(bool console)
 {
-    double time_total = 40; // run for N seconds
     // Grid length, number and spacing
     const unsigned Lx = 1600, nx = Lx + 1;
     const unsigned Ly = 1600, ny = Ly + 1;
@@ -55,7 +53,6 @@ static void swe(bool console)
         win->grid(2, 2);
     }
 
-    timer t = timer::start();
     unsigned iter = 0;
     unsigned random_interval = 30;
 

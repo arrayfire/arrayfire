@@ -15,9 +15,12 @@ namespace cpu
 namespace kernel
 {
 
-template<af_op_t op, typename Ti, typename Tk, typename To, int D, bool inclusive_scan>
+template<af_op_t op, typename Ti, typename Tk, typename To, int D>
 struct scan_dim_by_key
 {
+    bool inclusive_scan;
+    scan_dim_by_key(bool inclusiveSanKey) : inclusive_scan(inclusiveSanKey) {}
+
     void operator()(Array<To> out, dim_t outOffset,
                     const Array<Tk> key, dim_t keyOffset,
                     const Array<Ti> in, dim_t inOffset,
@@ -30,7 +33,7 @@ struct scan_dim_by_key
 
         const int D1 = D - 1;
         for (dim_t i = 0; i < odims[D1]; i++) {
-            scan_dim_by_key<op, Ti, Tk, To, D1, inclusive_scan> func;
+            scan_dim_by_key<op, Ti, Tk, To, D1> func(inclusive_scan);
             getQueue().enqueue(func,
                     out, outOffset + i * ostrides[D1],
                     key, keyOffset + i * kstrides[D1],
@@ -40,9 +43,12 @@ struct scan_dim_by_key
     }
 };
 
-template<af_op_t op, typename Ti, typename Tk, typename To, bool inclusive_scan>
-struct scan_dim_by_key<op, Ti, Tk, To, 0, inclusive_scan>
+template<af_op_t op, typename Ti, typename Tk, typename To>
+struct scan_dim_by_key<op, Ti, Tk, To, 0>
 {
+    bool inclusive_scan;
+    scan_dim_by_key(bool inclusiveSanKey) : inclusive_scan(inclusiveSanKey) {}
+
     void operator()(Array<To> output, dim_t outOffset,
                     const Array<Tk> keyinput, dim_t keyOffset,
                     const Array<Ti> input, dim_t inOffset,

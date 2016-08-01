@@ -264,7 +264,7 @@ LIST(SORT cpp_sources)
 
 SOURCE_GROUP(api\\cpp\\Sources FILES ${cpp_sources})
 
-INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
+INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/thrust_sort_by_key/CMakeLists.txt")
 
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_by_key/CMakeLists.txt")
 
@@ -414,7 +414,7 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${c_headers}
                 ${c_sources}
                 ${cpp_sources}
-                ${sort_by_key_sources}
+                ${thrust_sort_by_key_sources}
                 ${scan_by_key_sources}
                 OPTIONS ${CUDA_GENERATE_CODE})
 
