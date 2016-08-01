@@ -1,16 +1,29 @@
 <a href="http://arrayfire.com/"><img src="http://arrayfire.com/logos/arrayfire_logo_whitebkgnd.png" width="300"></a>
 
-ArrayFire is a high performance software library for parallel computing with an
-easy-to-use API. Its **array** based function set makes parallel programming
-simple.
+ArrayFire is a general-purpose library that simplifies the process of developing 
+software that targets parallel and massively-parallel architectures including 
+CPUs, GPUs, and other hardware acceleration devices.
+To achieve this goal, ArrayFire provides software developers with a high-level 
+abstraction of data which resides on the accelerator, the `af::array` object 
+(or C-style struct).
+Developers write code which performs operations on ArrayFire arrays which, in turn,
+are automatically translated into near-optimal kernels that execute on the computational
+device. 
+ArrayFire is successfully used on devices ranging from low-power mobile phones to 
+high-power GPU-enabled supercomputers including CPUs from all major vendors (Intel, AMD, Arm), 
+GPUs from the dominant manufacturers (NVIDIA, AMD, and Qualcomm), as well as a variety 
+of other accelerator devices on Windows, Mac, and Linux.
 
-ArrayFire's multiple backends (**CUDA**, **OpenCL** and native **CPU**) make it
-platform independent and highly portable. ArrayFire provides visualization
-capabilities using our OpenGL-based,
-[high performance visualization library](https://github.com/arrayfire/forge).
+Several of ArrayFire's benefits include:
 
-A few lines of code in ArrayFire can replace dozens of lines of parallel
-computing code, saving you valuable time and lowering development costs.
+* [Easy to use](http://arrayfire.org/docs/gettingstarted.htm), stable, 
+  [well-documented](http://arrayfire.org/docs) API.
+* Rigorously Tested for Performance and Accuracy 
+* Commercially Friendly Open-Source Licensing
+* Commercial support from [ArrayFire](http://arrayfire.com)
+* [Read about more benefits on Arrayfire.com](http://arrayfire.com/the-arrayfire-library/)
+ 
+### Build and Test Status
 
 |         | Linux x86_64 | Linux armv7l | Linux aarch64 | Windows | OSX |
 |:-------:|:------------:|:------------:|:-------------:|:-------:|:---:|
@@ -126,3 +139,10 @@ details.
 
 * [Google Groups](https://groups.google.com/forum/#!forum/arrayfire-users)
 * ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/)
+
+### Trademark Policy
+
+The literal mark “ArrayFire” and ArrayFire logos are trademarks of 
+AccelerEyes LLC DBA ArrayFire.
+If you wish to use either of these marks in your own project, please consult
+[ArrayFire's Trademark Policy](http://arrayfire.com/trademark-policy/)
