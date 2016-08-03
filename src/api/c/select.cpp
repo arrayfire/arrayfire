@@ -36,6 +36,10 @@ af_err af_select(af_array *out, const af_array cond, const af_array a, const af_
         ArrayInfo binfo = getInfo(b);
         ArrayInfo cinfo = getInfo(cond);
 
+        if(cinfo.ndims() == 0) {
+            return af_retain_array(out, cond);
+        }
+
         ARG_ASSERT(2, ainfo.getType() == binfo.getType());
         ARG_ASSERT(1, cinfo.getType() == b8);
 

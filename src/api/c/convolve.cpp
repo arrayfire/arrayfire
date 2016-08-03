@@ -72,6 +72,10 @@ af_err convolve(af_array *out, const af_array signal, const af_array filter)
         dim4 sdims = sInfo.dims();
         dim4 fdims = fInfo.dims();
 
+        if(fdims.ndims() == 0 || sdims.ndims() ==  0) {
+            return af_retain_array(out, signal);
+        }
+
         AF_BATCH_KIND convBT = identifyBatchKind<baseDim>(sdims, fdims);
 
         ARG_ASSERT(1, (convBT != AF_BATCH_UNSUPPORTED && convBT != AF_BATCH_DIFF));

@@ -35,6 +35,10 @@ af_err af_histogram(af_array *out, const af_array in,
         ArrayInfo info = getInfo(in);
         af_dtype type  = info.getType();
 
+        if(info.ndims() == 0) {
+            return af_retain_array(out, in);
+        }
+
         af_array output;
         switch(type) {
             case f32: output = histogram<float , uint>(in, nbins, minval, maxval, info.isLinear()); break;

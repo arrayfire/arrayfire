@@ -28,7 +28,6 @@
 
 using af::dim4;
 using namespace detail;
-using namespace std;
 
 dim4 verifyDims(const unsigned ndims, const dim_t * const dims)
 {
@@ -54,7 +53,14 @@ af_err af_constant(af_array *result, const double value,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(result, AF_MAX_DIMS, my_dims, type);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
+
 
         switch(type) {
         case f32:   out = createHandleFromValue<float  >(d, value); break;
@@ -229,6 +235,11 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_t * const dims
         af_array result;
         AF_CHECK(af_init());
 
+        if(ndims == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        }
+
         dim4 d = verifyDims(ndims, dims);
 
         switch(type) {
@@ -301,6 +312,11 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_t * const dims,
         af_array out;
         AF_CHECK(af_init());
 
+        if(ndims == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(result, AF_MAX_DIMS, my_dims, type);
+        }
+
         DIM_ASSERT(1, ndims > 0 && ndims <= 4);
         DIM_ASSERT(3, t_ndims > 0 && t_ndims <= 4);
 
@@ -345,6 +361,12 @@ af_err af_diag_create(af_array *out, const af_array in, const int num)
         af_dtype type = in_info.getType();
 
         af_array result;
+
+        if(in_info.dims()[0] == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        }
+
         switch(type) {
         case f32:   result = diagCreate<float  >(in, num);    break;
         case c32:   result = diagCreate<cfloat >(in, num);    break;
@@ -372,8 +394,14 @@ af_err af_diag_extract(af_array *out, const af_array in, const int num)
 
     try {
         ArrayInfo in_info = getInfo(in);
-        DIM_ASSERT(1, in_info.ndims() >= 2);
         af_dtype type = in_info.getType();
+
+        if(in_info.ndims() == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        }
+
+        DIM_ASSERT(1, in_info.ndims() >= 2);
 
         af_array result;
         switch(type) {

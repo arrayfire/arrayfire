@@ -107,6 +107,10 @@ af_err af_lookup(af_array *out, const af_array in, const af_array indices, const
 
         ArrayInfo idxInfo= getInfo(indices);
 
+        if(idxInfo.ndims() == 0) {
+            return af_retain_array(out, indices);
+        }
+
         ARG_ASSERT(2, idxInfo.isVector() || idxInfo.isScalar());
 
         af_dtype idxType = idxInfo.getType();
@@ -204,10 +208,13 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
         }
 
         dim4 iDims = iInfo.dims();
-
-        ARG_ASSERT(1, (iDims.ndims()>0));
-
         af_dtype inType = getInfo(in).getType();
+
+        if(iDims.ndims() <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, inType);
+        }
+
         switch(inType) {
             case c64: output = genIndex<cdouble>(in, idxrs); break;
             case f64: output = genIndex<double >(in, idxrs); break;
