@@ -3,6 +3,7 @@
 ArrayFire is a general-purpose library that simplifies the process of developing 
 software that targets parallel and massively-parallel architectures including 
 CPUs, GPUs, and other hardware acceleration devices.
+
 To achieve this goal, ArrayFire provides software developers with a high-level 
 abstraction of data which resides on the accelerator, the `af::array` object 
 (or C-style struct).
