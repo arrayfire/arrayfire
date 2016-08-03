@@ -1,0 +1,43 @@
+INCLUDE(ExternalProject)
+
+SET(prefix ${CMAKE_BINARY_DIR}/third_party/clSPARSE)
+SET(clSPARSE_location ${prefix}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}clSPARSE${CMAKE_STATIC_LIBRARY_SUFFIX})
+IF(CMAKE_VERSION VERSION_LESS 3.2)
+    IF(CMAKE_GENERATOR MATCHES "Ninja")
+        MESSAGE(WARNING "Building clSPARSE with Ninja has known issues with CMake older than 3.2")
+    endif()
+    SET(byproducts)
+ELSE()
+    SET(byproducts BYPRODUCTS ${clSPARSE_location})
+ENDIF()
+
+# Builds the src directory of clSPARSE and not the wrapper top level directory
+ExternalProject_Add(
+    clSPARSE-ext
+    GIT_REPOSITORY https://github.com/arrayfire/clSPARSE.git
+    GIT_TAG arrayfire-release-test
+    PREFIX "${prefix}"
+    INSTALL_DIR "${prefix}"
+    UPDATE_COMMAND ""
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} -Wno-dev "-G${CMAKE_GENERATOR}" <SOURCE_DIR>/src
+    -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+    "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} -w -fPIC"
+    -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+    "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} -w -fPIC"
+    -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+    -DclSPARSE_LIBRARY_TYPE:STRING=STATIC
+    -DLIBRARY_DEBUG_POSTFIX:STRING=
+    -DSUFFIX_LIB:STRING=
+    -DBUILD_BENCHMARKS:BOOL=OFF
+    -DBUILD_TESTS:BOOL=OFF
+    ${byproducts}
+    )
+
+ExternalProject_Get_Property(clSPARSE-ext prefix)
+ADD_LIBRARY(clSPARSE IMPORTED STATIC)
+SET_TARGET_PROPERTIES(clSPARSE PROPERTIES IMPORTED_LOCATION ${clSPARSE_location})
+ADD_DEPENDENCIES(clSPARSE clSPARSE-ext)
+SET(CLSPARSE_INCLUDE_DIRS ${prefix}/include)
+SET(CLSPARSE_LIBRARIES clSPARSE)
+SET(CLSPARSE_FOUND ON)
