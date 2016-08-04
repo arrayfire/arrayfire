@@ -25,21 +25,18 @@ void moments(Array<float> &output, Array<T> const &input, af_moment_type moment)
     T const * const in       = input.get();
     af::dim4  const idims    = input.dims();
     af::dim4  const istrides = input.strides();
-    dim_t     const iElems   = input.elements();
-
-    af::dim4  const odims    = output.dims();
     af::dim4  const ostrides = output.strides();
 
     float *out = output.get();
 
-    dim_t mId = 0;
     for(dim_t w = 0; w < idims[3]; w++) {
         for(dim_t z = 0; z < idims[2]; z++) {
             dim_t out_off = w * ostrides[3] + z * ostrides[2];
             for(dim_t y = 0; y < idims[1]; y++) {
+                dim_t in_off = y * istrides[1] + z * istrides[2] + w * istrides[3];
                 for(dim_t x = 0; x < idims[0]; x++) {
                     dim_t m_off=0;
-                    float val = in[mId];
+                    float val = in[in_off + x];
                     if((moment & AF_MOMENT_M00) > 0) {
                         out[out_off + m_off] += val;
                         m_off++;
@@ -56,7 +53,6 @@ void moments(Array<float> &output, Array<T> const &input, af_moment_type moment)
                         out[out_off + m_off] += x * y * val;
                         m_off++;
                     }
-                    mId++;
                 }
             }
         }

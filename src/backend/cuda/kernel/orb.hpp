@@ -398,7 +398,7 @@ void orb(unsigned* out_feat,
         kernel::range<uint>(harris_idx, 0);
 
         // Sort features according to Harris responses
-        kernel::sort0ByKey<float, uint, false>(harris_sorted, harris_idx);
+        kernel::sort0ByKey<float, uint>(harris_sorted, harris_idx, false);
 
         feat_pyr[i] = std::min(feat_pyr[i], lvl_best[i]);
 

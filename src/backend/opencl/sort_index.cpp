@@ -19,8 +19,8 @@
 
 namespace opencl
 {
-    template<typename T, bool isAscending>
-    void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in, const uint dim)
+    template<typename T>
+    void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in, const uint dim, bool isAscending)
     {
         try {
             // okey contains values, oval contains indices
@@ -29,10 +29,10 @@ namespace opencl
             oval.eval();
 
             switch(dim) {
-                case 0: kernel::sort0ByKey<T, uint, isAscending>(okey, oval); break;
-                case 1: kernel::sortByKeyBatched<T, uint, isAscending>(okey, oval, 1); break;
-                case 2: kernel::sortByKeyBatched<T, uint, isAscending>(okey, oval, 2); break;
-                case 3: kernel::sortByKeyBatched<T, uint, isAscending>(okey, oval, 3); break;
+                case 0: kernel::sort0ByKey<T, uint>(okey, oval, isAscending); break;
+                case 1:
+                case 2:
+                case 3: kernel::sortByKeyBatched<T, uint>(okey, oval, dim, isAscending); break;
                 default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
             }
 
@@ -58,10 +58,9 @@ namespace opencl
     }
 
 #define INSTANTIATE(T)                                                  \
-    template void sort_index<T, true>(Array<T> &val, Array<uint> &idx, const Array<T> &in, \
-                                      const uint dim);                  \
-    template void sort_index<T,false>(Array<T> &val, Array<uint> &idx, const Array<T> &in, \
-                                      const uint dim);                  \
+  template void sort_index<T>(Array<T> &val, Array<uint> &idx,          \
+                              const Array<T> &in, const uint dim,       \
+                              bool isAscending);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

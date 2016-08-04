@@ -15,7 +15,7 @@ namespace cuda
 {
     namespace kernel
     {
-        template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
-        void scan_first_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key);
+        template<typename Ti, typename Tk, typename To, af_op_t op>
+        void scan_first_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key, bool inclusive_scan);
     }
 }

@@ -27,7 +27,7 @@ float mass_range = 0;
 float min_mass   = 0;
 
 void initial_conditions_rand(af::array &mass, vector<af::array> &pos, vector<af::array> &vels, vector<af::array> &forces) {
-    for(int i=0; i<pos.size(); ++i) {
+    for(int i=0; i< (int)pos.size(); ++i) {
         pos[i]    = af::randn(total_particles) * width + width;
         vels[i]   = 0 * af::randu(total_particles) - 0.5;
         forces[i] = af::constant(0, total_particles);
@@ -39,7 +39,7 @@ void initial_conditions_galaxy(af::array &mass, vector<af::array> &pos, vector<a
     af::array initial_cond_consts(af::dim4(7, total_particles), hbd);
     initial_cond_consts = initial_cond_consts.T();
 
-    for(int i=0; i<pos.size(); ++i) {
+    for(int i=0; i< (int)pos.size(); ++i) {
         pos[i]    = af::randn(total_particles) * width + width;
         vels[i]   = 0 * (af::randu(total_particles) - 0.5);
         forces[i] = af::constant(0, total_particles);
@@ -101,7 +101,7 @@ af::array ids_from_3D(vector<af::array> &pos, float Rx, float Ry, float Rz, af::
 
 
 void simulate(af::array &mass, vector<af::array> &pos, vector<af::array> &vels, vector<af::array> &forces, float dt) {
-    for(int i=0; i<pos.size(); ++i) {
+    for(int i=0; i< (int)pos.size(); ++i) {
         pos[i] += vels[i] * dt;
         pos[i].eval();
     }
@@ -110,7 +110,7 @@ void simulate(af::array &mass, vector<af::array> &pos, vector<af::array> &vels, 
     vector<af::array> diff(pos.size());
     af::array dist = af::constant(0, pos[0].dims(0),pos[0].dims(0));
 
-    for(int i=0; i<pos.size(); ++i) {
+    for(int i=0; i< (int)pos.size(); ++i) {
         diff[i] = tile(pos[i], 1, pos[i].dims(0)) - transpose(tile(pos[i], 1, pos[i].dims(0)));
         dist += (diff[i]*diff[i]);
     }
@@ -119,7 +119,7 @@ void simulate(af::array &mass, vector<af::array> &pos, vector<af::array> &vels, 
     dist = af::max(min_dist, dist);
     dist *= dist * dist;
 
-    for(int i=0; i<pos.size(); ++i) {
+    for(int i=0; i< (int)pos.size(); ++i) {
         //calculate force vectors
         forces[i] = diff[i] / dist;
         forces[i].eval();
@@ -240,4 +240,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-

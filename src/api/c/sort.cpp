@@ -28,11 +28,7 @@ template<typename T>
 static inline af_array sort(const af_array in, const unsigned dim, const bool isAscending)
 {
     const Array<T> &inArray = getArray<T>(in);
-    if(isAscending) {
-        return getHandle(sort<T, 1>(inArray, dim));
-    } else {
-        return getHandle(sort<T, 0>(inArray, dim));
-    }
+    return getHandle(sort<T>(inArray, dim, isAscending));
 }
 
 af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool isAscending)
@@ -75,11 +71,7 @@ static inline void sort_index(af_array *val, af_array *idx, const af_array in,
     Array<T> valArray = createEmptyArray<T>(af::dim4());
     Array<uint> idxArray = createEmptyArray<uint>(af::dim4());
 
-    if(isAscending) {
-        sort_index<T, 1>(valArray, idxArray, inArray, dim);
-    } else {
-        sort_index<T, 0>(valArray, idxArray, inArray, dim);
-    }
+    sort_index<T>(valArray, idxArray, inArray, dim, isAscending);
     *val = getHandle(valArray);
     *idx = getHandle(idxArray);
 }
@@ -127,11 +119,7 @@ static inline void sort_by_key(af_array *okey, af_array *oval, const af_array ik
     Array<Tk> okeyArray = createEmptyArray<Tk>(af::dim4());
     Array<Tv> ovalArray = createEmptyArray<Tv>(af::dim4());
 
-    if(isAscending) {
-        sort_by_key<Tk, Tv, 1>(okeyArray, ovalArray, ikeyArray, ivalArray, dim);
-    } else {
-        sort_by_key<Tk, Tv, 0>(okeyArray, ovalArray, ikeyArray, ivalArray, dim);
-    }
+    sort_by_key<Tk, Tv>(okeyArray, ovalArray, ikeyArray, ivalArray, dim, isAscending);
     *okey = getHandle(okeyArray);
     *oval = getHandle(ovalArray);
 }
