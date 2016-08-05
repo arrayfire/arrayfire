@@ -103,8 +103,13 @@ namespace JIT
                           << m_child->getTypeStr() << " "
                           << "%val" << m_child->getId() << ")\n";
 
-                kerStream << "%val" << m_id << " = "
-                          << "trunc i32 %tmp" << m_id << " to " << m_type_str << "\n";
+                if (m_type_str[0] == 'i') {
+                    kerStream << "%val" << m_id << " = "
+                              << "trunc i32 %tmp" << m_id << " to " << m_type_str << "\n";
+                } else {
+                    kerStream << "%val" << m_id << " = "
+                              << "sitofp i32 %tmp" << m_id << " to " << m_type_str << "\n";
+                }
 
             } else {
                 kerStream << "%val" << m_id << " = call "
