@@ -12,10 +12,57 @@
 #include <af/seq.h>
 #include <af/util.h>
 #include <af/index.h>
+#include <af/exception.h>
 
 #ifdef __cplusplus
 #include <af/traits.hpp>
 #include <vector>
+#ifdef AF_ENABLE_STL_CAST
+#include <valarray>
+#endif
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+    /**
+        \ingroup construct_mat
+        @{
+    */
+    /**
+       Create an \ref af_array handle initialized with user defined data
+
+       This function will create an \ref af_array handle from the memory provided in \p data
+
+       \param[out]  arr The pointer to the returned object.
+       \param[in]   data The data which will be loaded into the array
+       \param[in]   ndims The number of dimensions read from the \p dims parameter
+       \param[in]   dims A C pointer with \p ndims elements. Each value represents the size of that dimension
+       \param[in]   type The type of the \ref af_array object
+
+       \returns \ref AF_SUCCESS if the operation was a success
+    */
+    AFAPI af_err af_create_array(af_array *arr, const void * const data, const unsigned ndims, const dim_t * const dims, const af_dtype type);
+    /**
+      @}
+    */
+
+    /**
+       \ingroup method_mat
+       @{
+    */
+    /**
+       \brief Reduce the reference count of the \ref af_array
+    */
+    AFAPI af_err af_release_array(af_array arr);
+    /**
+      @}
+    */
+
+#ifdef __cplusplus
+}
+#endif
+
 namespace af
 {
 
@@ -682,6 +729,64 @@ namespace af
            @}
         */
 
+#ifdef AF_ENABLE_STL_CAST
+        template<typename T> array& operator=(const std::vector<T> &other)
+        {
+            //TODO: Unsafe. loses data if af_weak_copy fails
+            if(this->arr != 0) {
+                af_err err = af_release_array(this->arr);
+                if(err != AF_SUCCESS) { throw af::exception(err); }
+            }
+
+            af_array temp = 0;
+            dim_t sz = other.size();
+            af_dtype type = (af_dtype)dtype_traits<T>::af_type;
+            af_err err = af_create_array(&temp, (const void*)&other[0], 1, &sz, type);
+            if(err != AF_SUCCESS) { throw af::exception(err); }
+            this->arr = temp;
+            return *this;
+        }
+
+        template<typename T> array& operator=(std::valarray<T> &other)
+        {
+            //TODO: Unsafe. loses data if af_weak_copy fails
+            if(this->arr != 0) {
+                af_err err = af_release_array(this->arr);
+                if(err != AF_SUCCESS) { throw af::exception(err); }
+            }
+
+            af_array temp = 0;
+            dim_t sz = other.size();
+            af_dtype type = (af_dtype)dtype_traits<T>::af_type;
+            af_err err = af_create_array(&temp, &other[0], 1, &sz, type);
+            if(err != AF_SUCCESS) { throw af::exception(err); }
+            this->arr = temp;
+            return *this;
+        }
+
+        template<typename T> operator std::vector<T>() {
+            std::vector<T> out(this->elements());
+            af::dtype oType = (af::dtype)dtype_traits<T>::af_type;
+            if(type() != oType) {
+                this->as(oType).host(&out[0]);
+            } else {
+                this->host(&out[0]);
+            }
+            return out;
+        }
+
+        template<typename T> operator std::valarray<T>() {
+            std::valarray<T> out(this->elements());
+            af::dtype oType = (af::dtype)dtype_traits<T>::af_type;
+            if(type() != oType) {
+                this->as(oType).host(&out[0]);
+            } else {
+                this->host(&out[0]);
+            }
+            return out;
+        }
+#endif
+
         // INDEXING
         // Single arguments
 
@@ -1275,21 +1380,6 @@ extern "C" {
     */
 
     /**
-       Create an \ref af_array handle initialized with user defined data
-
-       This function will create an \ref af_array handle from the memory provided in \p data
-
-       \param[out]  arr The pointer to the returned object.
-       \param[in]   data The data which will be loaded into the array
-       \param[in]   ndims The number of dimensions read from the \p dims parameter
-       \param[in]   dims A C pointer with \p ndims elements. Each value represents the size of that dimension
-       \param[in]   type The type of the \ref af_array object
-
-       \returns \ref AF_SUCCESS if the operation was a success
-    */
-    AFAPI af_err af_create_array(af_array *arr, const void * const data, const unsigned ndims, const dim_t * const dims, const af_dtype type);
-
-    /**
        Create af_array handle
 
        \param[out]  arr The pointer to the retured object.
@@ -1324,11 +1414,6 @@ extern "C" {
        Needs to used in conjunction with the two functions above
     */
     AFAPI af_err af_get_data_ptr(void *data, const af_array arr);
-
-    /**
-       \brief Reduce the reference count of the \ref af_array
-    */
-    AFAPI af_err af_release_array(af_array arr);
 
     /**
        Increments an \ref af_array reference count
