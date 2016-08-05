@@ -93,10 +93,15 @@ static string getFuncName(std::vector<Node *> nodes, bool is_linear)
 static string getKernelString(string funcName, std::vector<Node *> nodes, bool is_linear)
 {
     static const char *defineVoid = "define void ";
-    static const char *dimParams = "\n"
+    static const char *generalDimParams = "\n"
         "i32 %ostr0, i32 %ostr1, i32 %ostr2, i32 %ostr3,\n"
         "i32 %odim0, i32 %odim1, i32 %odim2, i32 %odim3,\n"
         "i32 %blkx, i32 %blky, i32 %ndims";
+
+    static const char *linearDimParams = "\n"
+        "i32 %nelem, i32 %blkx, i32 %blky";
+
+    const char *dimParams = is_linear ? linearDimParams : generalDimParams;
 
     static const char *blockStart = "\n{\n\n"
         "entry:\n\n";
@@ -187,10 +192,7 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
         "%goff = mul i32 %bid , %bdmx\n"
         "%gid  = add i32 %goff ,%tidx\n"
         "%idx  = sext i32 %gid to i64\n"
-        "%el1  = mul i32 %odim0, %odim1\n"
-        "%el2  = mul i32 %el1  , %odim2\n"
-        "%el3  = mul i32 %el2  , %odim3\n"
-        "%cmp0 = icmp slt i32 %gid, %el3\n"
+        "%cmp0 = icmp slt i32 %gid, %nelem\n"
         "br i1 %cmp0, label %core, label %end\n";
 
     static const char *functionLoad = "\n"
@@ -271,11 +273,17 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
     kerStream << "!nvvm.annotations = !{!1}\n"
               << "!1 = metadata !{void (\n"
               << inAnnStream.str()
-              << outAnnStream.str()
-              << "i32, i32, i32, i32,\n"
-              << "i32, i32, i32, i32,\n"
-              << "i32, i32, i32\n"
-              << ")* " << funcName << ",\n "
+              << outAnnStream.str();
+
+    if (is_linear) {
+        kerStream << "i32, i32, i32\n";
+    } else {
+        kerStream  << "i32, i32, i32, i32,\n"
+                   << "i32, i32, i32, i32,\n"
+                   << "i32, i32, i32\n";
+    }
+
+    kerStream << ")* " << funcName << ",\n "
               << "metadata !\"kernel\", i32 1}\n";
 
     return kerStream.str();
@@ -522,26 +530,38 @@ void evalNodes(std::vector<Param<T> >&outputs, std::vector<Node *> nodes)
         nodes[i]->setArgs(args, is_linear);
     }
 
-    int strides[] = {(int)outputs[0].strides[0],
-                     (int)outputs[0].strides[1],
-                     (int)outputs[0].strides[2],
-                     (int)outputs[0].strides[3]};
-
-    int dims[] = {(int)outputs[0].dims[0],
-                  (int)outputs[0].dims[1],
-                  (int)outputs[0].dims[2],
-                  (int)outputs[0].dims[3]};
-
     for (int i = 0; i < num_outputs; i++) {
         args.push_back(&outputs[i].ptr);
     }
 
-    for (int i = 0; i < 4; i++) args.push_back((void *)(strides + i));
-    for (int i = 0; i < 4; i++) args.push_back((void *)(dims + i));
+
+    if (is_linear) {
+        int nelem = 1;
+        for (int i = 0; i < 4; i++) {
+            nelem *= outputs[0].dims[i];
+        }
+        args.push_back((void *)&nelem);
+    } else {
+        int strides[] = {(int)outputs[0].strides[0],
+                         (int)outputs[0].strides[1],
+                         (int)outputs[0].strides[2],
+                         (int)outputs[0].strides[3]};
+
+        int dims[] = {(int)outputs[0].dims[0],
+                      (int)outputs[0].dims[1],
+                      (int)outputs[0].dims[2],
+                      (int)outputs[0].dims[3]};
+
+        for (int i = 0; i < 4; i++) args.push_back((void *)(strides + i));
+        for (int i = 0; i < 4; i++) args.push_back((void *)(dims + i));
+    }
 
     args.push_back((void *)&blocks_x_);
     args.push_back((void *)&blocks_y_);
-    args.push_back((void *)&num_odims);
+
+    if (!is_linear) {
+        args.push_back((void *)&num_odims);
+    }
 
     CU_CHECK(cuLaunchKernel(ker,
                             blocks_x,
