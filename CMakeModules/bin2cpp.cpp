@@ -146,8 +146,9 @@ int main(int argc, const char * const * const argv)
         options["--type"]     = "char";
     }
     add_tabs(level);
-    cout << "static const " << options["--type"] << " " << options["--name"] << "[] = {\n";
 
+    // Always create unsigned char to avoid narrowing
+    cout << "static const " << "unsigned char" << " " << options["--name"] << "_uchar [] = {\n";
 
     ifstream input(options["--file"]);
     size_t char_cnt = 0;
@@ -169,6 +170,14 @@ int main(int argc, const char * const * const argv)
 
     cout << "};\n";
     add_tabs(--level);
+
+    // Cast to proper output type
+    cout << "static const "
+         << options["--type"] << " *"
+         << options["--name"] << " = (const "
+         << options["--type"] << " *)"
+         << options["--name"] << "_uchar;\n";
+
     cout << "static const size_t " << options["--name"] << "_len" << " = " << std::dec << char_cnt << ";\n";
 
     while(ns_cnt--) {
