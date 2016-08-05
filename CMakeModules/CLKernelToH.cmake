@@ -56,8 +56,8 @@ function(CL_KERNEL_TO_H)
 
         list(APPEND _output_files ${_output_file})
     endforeach()
-    ADD_CUSTOM_TARGET(${RTCS_NAMESPACE}_bin_target DEPENDS ${_output_files})
+    ADD_CUSTOM_TARGET(${RTCS_NAMESPACE}_${RTCS_OUTPUT_DIR}_bin_target DEPENDS ${_output_files})
 
     set("${RTCS_VARNAME}" ${_output_files} PARENT_SCOPE)
-    set("${RTCS_TARGETS}" ${RTCS_NAMESPACE}_bin_target PARENT_SCOPE)
+    set("${RTCS_TARGETS}" ${RTCS_NAMESPACE}_${RTCS_OUTPUT_DIR}_bin_target PARENT_SCOPE)
 endfunction(CL_KERNEL_TO_H)

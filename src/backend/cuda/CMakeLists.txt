@@ -314,6 +314,44 @@ CL_KERNEL_TO_H(
     EOF "1"
     )
 
+SET(libdevice_bc "")
+SET(libdevice_computes "")
+LIST(APPEND libdevice_computes "20" "30" "35" "50")
+FOREACH(libdevice_compute ${libdevice_computes})
+  SET(_libdevice_bc_file "${CUDA_NVVM_HOME}/libdevice/libdevice.compute_${libdevice_compute}.10.bc")
+  SET(_libdevice_bc_copy "${CMAKE_BINARY_DIR}/src/backend/cuda/compute_${libdevice_compute}.bc")
+  IF (EXISTS ${_libdevice_bc_file})
+    ADD_CUSTOM_COMMAND(
+      OUTPUT "${_libdevice_bc_copy}"
+      DEPENDS "${_libdevice_bc_file}"
+      COMMAND ${CMAKE_COMMAND} -E copy "${_libdevice_bc_file}" "${_libdevice_bc_copy}")
+    LIST(APPEND libdevice_bc ${_libdevice_bc_copy})
+    ADD_DEFINITIONS(-D"__LIBDEVICE_COMPUTE_${libdevice_compute}")
+  ENDIF()
+ENDFOREACH()
+
+LIST(LENGTH libdevice_bc libdevice_bc_len)
+
+IF (${libdevice_bc_len} GREATER 0)
+
+  SET(libdevice_headers
+    "libdevice_headers")
+
+  CL_KERNEL_TO_H(
+    SOURCES ${libdevice_bc}
+    VARNAME libdevice_files
+    EXTENSION "hpp"
+    OUTPUT_DIR ${libdevice_headers}
+    TARGETS libdevice_targets
+    NAMESPACE "cuda"
+    EOF "1"
+    )
+
+  ADD_DEFINITIONS(-DUSE_LIBDEVICE)
+ELSE()
+  MESSAGE(STATUS "LIBDEVICE not found on system. CUDA JIT may be slower")
+ENDIF()
+
 IF("${APPLE}")
     ADD_DEFINITIONS(-D__STRICT_ANSI__)
     IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
@@ -419,6 +457,10 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 OPTIONS ${CUDA_GENERATE_CODE})
 
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
+
+IF (${libdevice_bc_len} GREATER 0)
+  ADD_DEPENDENCIES(afcuda ${libdevice_targets})
+ENDIF()
 
 TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
                                 PRIVATE ${CUDA_LIBRARIES}
