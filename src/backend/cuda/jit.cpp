@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <copy.hpp>
 #include <JIT/Node.hpp>
+
 #include <ptx_headers/arith.hpp>
 #include <ptx_headers/logic.hpp>
 #include <ptx_headers/exp.hpp>
@@ -20,6 +21,23 @@
 #include <ptx_headers/trig.hpp>
 #include <ptx_headers/hyper.hpp>
 #include <ptx_headers/cast.hpp>
+
+#if defined(__LIBDEVICE_COMPUTE_20)
+#include <libdevice_headers/compute_20.hpp>
+#endif
+
+#if defined(__LIBDEVICE_COMPUTE_30)
+#include <libdevice_headers/compute_30.hpp>
+#endif
+
+#if defined(__LIBDEVICE_COMPUTE_35)
+#include <libdevice_headers/compute_35.hpp>
+#endif
+
+#if defined(__LIBDEVICE_COMPUTE_50)
+#include <libdevice_headers/compute_50.hpp>
+#endif
+
 #include <platform.hpp>
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
@@ -267,7 +285,7 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
         nvvmResult res = fn;                    \
         if (res == NVVM_SUCCESS) break;         \
         char nvvm_err_msg[1024];                \
-        snprintf(nvvm_err_msg,                    \
+        snprintf(nvvm_err_msg,                  \
                  sizeof(nvvm_err_msg),          \
                  "NVVM Error (%d): %s\n",       \
                  (int)(res), msg);              \
@@ -282,15 +300,24 @@ static char *irToPtx(string IR, size_t *ptx_size)
 
     NVVM_CHECK(nvvmCreateProgram(&prog), "Failed to create program");
 
+#if defined(USE_LIBDEVICE)
+    //FIXME: Use proper compute
+    NVVM_CHECK(nvvmAddModuleToProgram(prog, compute_20_bc, compute_20_bc_len, "libdevice kernels"),
+               "Failed to add libdevice");
+#endif
+
     NVVM_CHECK(nvvmAddModuleToProgram(prog, IR.c_str(), IR.size(), "generated kernel"),
                "Failed to add module");
 
+    //FIXME: Use proper compute
+    const char *options = NULL;
+    const int noptions = 0;
+
 //#ifdef NDEBUG
 #if 0
-    NVVM_CHECK(nvvmCompileProgram(prog, 0, NULL), "Failed to compile program");
+    NVVM_CHECK(nvvmCompileProgram(prog, noptions, &options), "Failed to compile program");
 #else
-    const char *options = "";
-    nvvmResult comp_res = nvvmCompileProgram(prog, 1, &options);
+    nvvmResult comp_res = nvvmCompileProgram(prog, noptions, &options);
     if (comp_res != NVVM_SUCCESS) {
         size_t log_size = 0;
         nvvmGetProgramLogSize(prog, &log_size);

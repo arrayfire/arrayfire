@@ -6,6 +6,8 @@ FIND_PACKAGE(Boost REQUIRED)
 INCLUDE("${CMAKE_MODULE_PATH}/CLKernelToH.cmake")
 INCLUDE("${CMAKE_MODULE_PATH}/FindNVVM.cmake")
 
+OPTION(USE_LIBDEVICE "Use libdevice for CUDA JIT" ON)
+
 MARK_AS_ADVANCED(
     CUDA_BUILD_CUBIN
     CUDA_BUILD_EMULATION
@@ -315,20 +317,22 @@ CL_KERNEL_TO_H(
     )
 
 SET(libdevice_bc "")
-SET(libdevice_computes "")
-LIST(APPEND libdevice_computes "20" "30" "35" "50")
-FOREACH(libdevice_compute ${libdevice_computes})
-  SET(_libdevice_bc_file "${CUDA_NVVM_HOME}/libdevice/libdevice.compute_${libdevice_compute}.10.bc")
-  SET(_libdevice_bc_copy "${CMAKE_BINARY_DIR}/src/backend/cuda/compute_${libdevice_compute}.bc")
-  IF (EXISTS ${_libdevice_bc_file})
-    ADD_CUSTOM_COMMAND(
-      OUTPUT "${_libdevice_bc_copy}"
-      DEPENDS "${_libdevice_bc_file}"
-      COMMAND ${CMAKE_COMMAND} -E copy "${_libdevice_bc_file}" "${_libdevice_bc_copy}")
-    LIST(APPEND libdevice_bc ${_libdevice_bc_copy})
-    ADD_DEFINITIONS(-D"__LIBDEVICE_COMPUTE_${libdevice_compute}")
-  ENDIF()
-ENDFOREACH()
+IF (USE_LIBDEVICE)
+  SET(libdevice_computes "")
+  LIST(APPEND libdevice_computes "20" "30" "35" "50")
+  FOREACH(libdevice_compute ${libdevice_computes})
+    SET(_libdevice_bc_file "${CUDA_NVVM_HOME}/libdevice/libdevice.compute_${libdevice_compute}.10.bc")
+    SET(_libdevice_bc_copy "${CMAKE_BINARY_DIR}/src/backend/cuda/compute_${libdevice_compute}.bc")
+    IF (EXISTS ${_libdevice_bc_file})
+      ADD_CUSTOM_COMMAND(
+        OUTPUT "${_libdevice_bc_copy}"
+        DEPENDS "${_libdevice_bc_file}"
+        COMMAND ${CMAKE_COMMAND} -E copy "${_libdevice_bc_file}" "${_libdevice_bc_copy}")
+      LIST(APPEND libdevice_bc ${_libdevice_bc_copy})
+      ADD_DEFINITIONS(-D"__LIBDEVICE_COMPUTE_${libdevice_compute}")
+    ENDIF()
+  ENDFOREACH()
+ENDIF()
 
 LIST(LENGTH libdevice_bc libdevice_bc_len)
 
@@ -347,6 +351,7 @@ IF (${libdevice_bc_len} GREATER 0)
     EOF "1"
     )
 
+  MESSAGE(STATUS "LIBDEVICE found.")
   ADD_DEFINITIONS(-DUSE_LIBDEVICE)
 ELSE()
   MESSAGE(STATUS "LIBDEVICE not found on system. CUDA JIT may be slower")
