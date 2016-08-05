@@ -30,8 +30,10 @@ struct UnOp
     struct UnOp<T, af_##fn##_t>                     \
     {                                               \
         std::string res;                            \
+        bool is_check;                              \
         UnOp() :                                    \
-            res(cuMangledName<T, false>("___"#fn))  \
+            res(cuMangledName<T, false>("___"#fn)), \
+            is_check(false)                         \
         {                                           \
         }                                           \
         const std::string name()                    \
@@ -45,8 +47,10 @@ struct UnOp
     struct UnOp<T, af_##op##_t>                     \
     {                                               \
         std::string res;                            \
+        bool is_check;                              \
         UnOp() :                                    \
-            res(cuMangledName<T, false>("___"#fn))  \
+            res(cuMangledName<T, false>("___"#fn)), \
+            is_check(false)                         \
         {                                           \
         }                                           \
         const std::string name()                    \
@@ -61,8 +65,27 @@ struct UnOp
     struct UnOp<T, af_##fn##_t>                 \
     {                                           \
         std::string res;                        \
+        bool is_check;                          \
         UnOp() :                                \
-            res("@__nv_"#fname)                 \
+            res("@__nv_"#fname),                \
+            is_check(false)                     \
+        {                                       \
+        }                                       \
+        const std::string name()                \
+        {                                       \
+            return res;                         \
+        }                                       \
+    };                                          \
+
+#define NVVM_SPECIALIZE_CHECK(T, fn, fname)     \
+    template<>                                  \
+    struct UnOp<T, af_##fn##_t>                 \
+    {                                           \
+        std::string res;                        \
+        bool is_check;                          \
+        UnOp() :                                \
+            res("@__nv_"#fname),                \
+            is_check(true)                      \
         {                                       \
         }                                       \
         const std::string name()                \
@@ -73,6 +96,7 @@ struct UnOp
 
 #else
 #define #define NVVM_SPECIALIZE_TYPE(T, fn, fname)  // no specialization
+#define #define NVVM_SPECIALIZE_CHECK(T, fn, fname)  // no specialization
 #endif
 
 #define NVVM_SPECIALIZE_FLOATING_NAME(fn, fname)    \
@@ -114,16 +138,16 @@ NVVM_SPECIALIZE_FLOATING(ceil)
 NVVM_SPECIALIZE_FLOATING(floor)
 
 UNARY_FN(sign )
-NVVM_SPECIALIZE_TYPE(float , sign, signbitf)
-NVVM_SPECIALIZE_TYPE(double, sign, signbitd)
+NVVM_SPECIALIZE_CHECK(float , sign, signbitf)
+NVVM_SPECIALIZE_CHECK(double, sign, signbitd)
 
 UNARY_FN_NAME(isnan, isNaN)
-NVVM_SPECIALIZE_TYPE(float , isnan, isnand)
-NVVM_SPECIALIZE_TYPE(double, isnan, isnanf)
+NVVM_SPECIALIZE_CHECK(float , isnan, isnanf)
+NVVM_SPECIALIZE_CHECK(double, isnan, isnand)
 
 UNARY_FN_NAME(isinf, isINF)
-NVVM_SPECIALIZE_TYPE(float , isinf, isinfd)
-NVVM_SPECIALIZE_TYPE(double, isinf, isinff)
+NVVM_SPECIALIZE_CHECK(float , isinf, isinff)
+NVVM_SPECIALIZE_CHECK(double, isinf, isinfd)
 
 UNARY_FN_NAME(iszero, iszero)
 UNARY_FN(sigmoid)
@@ -141,7 +165,7 @@ UNARY_FN(sigmoid)
         JIT::UnaryNode *node = new JIT::UnaryNode(irname<T>(),
                                                   afShortName<T>(),
                                                   uop.name(),
-                                                  in_node, op);
+                                                  in_node, op, uop.is_check);
 
         return createNodeArray<T>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }
@@ -155,7 +179,7 @@ UNARY_FN(sigmoid)
         JIT::UnaryNode *node = new JIT::UnaryNode(irname<char>(),
                                                   afShortName<char>(),
                                                   uop.name(),
-                                                  in_node, op);
+                                                  in_node, op, uop.is_check);
         return createNodeArray<char>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }
 }
