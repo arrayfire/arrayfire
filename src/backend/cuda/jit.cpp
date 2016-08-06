@@ -534,6 +534,19 @@ void evalNodes(std::vector<Param<T> >&outputs, std::vector<Node *> nodes)
         args.push_back(&outputs[i].ptr);
     }
 
+    // DO NOT PUT THESE IN A SCOPE.
+    // The pointers are used later.
+    // Scoping them results in undefined behavior.
+
+    int strides[] = {(int)outputs[0].strides[0],
+                     (int)outputs[0].strides[1],
+                     (int)outputs[0].strides[2],
+                     (int)outputs[0].strides[3]};
+
+    int dims[] = {(int)outputs[0].dims[0],
+                  (int)outputs[0].dims[1],
+                  (int)outputs[0].dims[2],
+                  (int)outputs[0].dims[3]};
 
     if (is_linear) {
         int nelem = 1;
@@ -542,16 +555,6 @@ void evalNodes(std::vector<Param<T> >&outputs, std::vector<Node *> nodes)
         }
         args.push_back((void *)&nelem);
     } else {
-        int strides[] = {(int)outputs[0].strides[0],
-                         (int)outputs[0].strides[1],
-                         (int)outputs[0].strides[2],
-                         (int)outputs[0].strides[3]};
-
-        int dims[] = {(int)outputs[0].dims[0],
-                      (int)outputs[0].dims[1],
-                      (int)outputs[0].dims[2],
-                      (int)outputs[0].dims[3]};
-
         for (int i = 0; i < 4; i++) args.push_back((void *)(strides + i));
         for (int i = 0; i < 4; i++) args.push_back((void *)(dims + i));
     }
