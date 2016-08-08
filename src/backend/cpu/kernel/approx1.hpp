@@ -121,7 +121,7 @@ struct approx1_op<InT, LocT, AF_INTERP_CUBIC>
 
         LocT const x = pos[pmId];
         bool gFlag = false;
-        if (x < 0 || idims[0] < x+1) { //check index of bounds
+        if (x < 0 || idims[0] < x + 1) { //check index of bounds
             gFlag = true;
         }
 
@@ -142,16 +142,14 @@ struct approx1_op<InT, LocT, AF_INTERP_CUBIC>
             InT h01 = off_x * off_x * (3 - 2 * off_x);
             InT h11 = off_x * off_x * (off_x - 1);
             // Check if x-1, x, and x+1, x+2 are both valid indices
-            bool condr  = (x > 0);
-            bool condl1 = (x < idims[0] - 1);
-            bool condl2 = (x < idims[0] - 2);
+            bool condr  = (grid_x > 0);
+            bool condl1 = (grid_x < idims[0] - 1);
+            bool condl2 = (grid_x < idims[0] - 2);
             // Compute Left and Right points and tangents
-            InT pl = condr  ? in[ioff]     : scalar<InT>(offGrid);
-            InT pr = condl1 ? in[ioff + 1] : scalar<InT>(offGrid);
-            InT tl = condr  ? scalar<InT>(0.5)  * ((in[ioff + 1] - in[ioff - 1])) :
-                              scalar<InT>(0.5)  * ((in[ioff + 1] - scalar<InT>(offGrid)));
-            InT tr = condl2 ? scalar<InT>(0.5)  * ((in[ioff + 2] - in[ioff])) :
-                              scalar<InT>(0.5)  * ((scalar<InT>(offGrid) - in[ioff]));
+            InT pl = in[ioff];
+            InT pr = condl1  ? in[ioff + 1] : in[ioff];
+            InT tl = condr   ? scalar<InT>(0.5) * (in[ioff + 1] - in[ioff - 1]) : (in[ioff + 1] - in[ioff]);
+            InT tr = condl2  ? scalar<InT>(0.5) * (in[ioff + 2] - in[ioff]) : (condl1) ? in[ioff + 1] - in[ioff] : (in[ioff] - in[ioff - 1]);
 
             // Write final value
             out[omId] = h00 * pl + h10 * tl + h01 * pr + h11 * tr;

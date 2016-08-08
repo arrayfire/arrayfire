@@ -13,6 +13,7 @@
 #include <af/signal.h>
 #include <af/index.h>
 #include <af/traits.hpp>
+#include <af/dim4.hpp>
 #include <vector>
 #include <iostream>
 #include <complex>
@@ -86,7 +87,7 @@ void approx1Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
     size_t nElems = tests[resultIdx].size();
     bool ret = true;
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ret = (abs(tests[resultIdx][elIter] - outData[elIter]) < 0.0005);
+        ret = abs(tests[resultIdx][elIter] - outData[elIter]) < 0.0005;
         ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
     }
 
@@ -99,14 +100,84 @@ void approx1Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
     if(tempArray != 0) af_release_array(tempArray);
 }
 
-#define APPROX1_INIT(desc, file, resultIdx, method)                               \
-    TYPED_TEST(Approx1, desc)                                                                    \
-    {                                                                                           \
-        approx1Test<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method);\
+#define APPROX1_INIT(desc, file, resultIdx, method)                                         \
+    TYPED_TEST(Approx1, desc)                                                               \
+    {                                                                                       \
+        approx1Test<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method);  \
     }
 
     APPROX1_INIT(Approx1Nearest, approx1, 0, AF_INTERP_NEAREST);
-    APPROX1_INIT(Approx1Linear, approx1, 1, AF_INTERP_LINEAR);
+    APPROX1_INIT(Approx1Linear,  approx1, 1, AF_INTERP_LINEAR);
+
+template<typename T>
+void approx1CubicTest(string pTestFile, const unsigned resultIdx, const af_interp_type method, bool isSubRef = false, const vector<af_seq> * seqv = NULL)
+{
+    if (noDoubleTests<T>()) return;
+
+    typedef typename af::dtype_traits<T>::base_type BT;
+    vector<af::dim4> numDims;
+    vector<vector<BT> > in;
+    vector<vector<T> > tests;
+    readTests<BT, T, float>(pTestFile,numDims,in,tests);
+
+    af::dim4 idims = numDims[0];
+    af::dim4 pdims = numDims[1];
+
+    af_array inArray = 0;
+    af_array posArray = 0;
+    af_array outArray = 0;
+    af_array tempArray = 0;
+
+    vector<T> input(in[0].begin(), in[0].end());
+
+    if (isSubRef) {
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
+    } else {
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    }
+
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&posArray, &(in[1].front()), pdims.ndims(), pdims.get(), (af_dtype) af::dtype_traits<BT>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_approx1(&outArray, inArray, posArray, method, 0));
+
+    // Get result
+    T* outData = new T[tests[resultIdx].size()];
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+
+    // Compare result
+    size_t nElems = tests[resultIdx].size();
+    bool ret = true;
+
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        double integral;
+        //test that control points are exact
+        if((std::modf(in[1][elIter], &integral) < 0.001) || (std::modf(in[1][elIter], &integral) > 0.999))  {
+            ret = abs(tests[resultIdx][elIter] - outData[elIter]) < 0.001;
+            ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
+        } else {
+            //match intermediate values withing a threshold
+            ret = abs(tests[resultIdx][elIter] - outData[elIter]) < 8;
+            //ret = abs(tests[resultIdx][elIter] - outData[elIter]) < 0.05 * range; //TODO: percentage
+            ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
+        }
+    }
+
+    // Delete
+    delete[] outData;
+
+    if(inArray   != 0) af_release_array(inArray);
+    if(posArray  != 0) af_release_array(posArray);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
+}
+
+#define APPROX1_INIT_CUBIC(desc, file, resultIdx, method)                                       \
+    TYPED_TEST(Approx1, desc)                                                                   \
+    {                                                                                           \
+        approx1CubicTest<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method); \
+    }
+
+APPROX1_INIT_CUBIC(Approx1Cubic, approx1_cubic, 0, AF_INTERP_CUBIC);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Test Argument Failure Cases
@@ -150,7 +221,6 @@ void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
     APPROX1_ARGS(Approx1NearestArgsPos2D, approx1_pos2d, 0, AF_INTERP_NEAREST, AF_ERR_SIZE);
     APPROX1_ARGS(Approx1LinearArgsPos2D, approx1_pos2d, 1, AF_INTERP_LINEAR, AF_ERR_SIZE);
     APPROX1_ARGS(Approx1ArgsInterpBilinear, approx1, 0, AF_INTERP_BILINEAR, AF_ERR_ARG);
-    APPROX1_ARGS(Approx1ArgsInterpCubic, approx1, 0, AF_INTERP_CUBIC, AF_ERR_ARG);
 
 template<typename T>
 void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const af_interp_type method)
@@ -186,14 +256,15 @@ void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
     if(outArray  != 0) af_release_array(outArray);
 }
 
-#define APPROX1_ARGSP(desc, file, resultIdx, method)                                           \
-    TYPED_TEST(Approx1, desc)                                                                    \
-    {                                                                                           \
-        approx1ArgsTestPrecision<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method);\
+#define APPROX1_ARGSP(desc, file, resultIdx, method)                                                    \
+    TYPED_TEST(Approx1, desc)                                                                           \
+    {                                                                                                   \
+        approx1ArgsTestPrecision<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method); \
     }
 
     APPROX1_ARGSP(Approx1NearestArgsPrecision, approx1, 0, AF_INTERP_NEAREST);
     APPROX1_ARGSP(Approx1LinearArgsPrecision, approx1, 1, AF_INTERP_LINEAR);
+    APPROX1_ARGSP(Approx1CubicArgsPrecision, approx1_cubic, 2, AF_INTERP_CUBIC);
 
 
 //////////////////////////////////////// CPP //////////////////////////////////
@@ -275,6 +346,29 @@ TEST(Approx1, CPPLinearBatch)
     af::array outGFOR(pos.dims());
     gfor(af::seq i, pos.dims(1)) {
         outGFOR(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_LINEAR);
+    }
+
+    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outSerial)), 1e-3);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outGFOR)), 1e-3);
+}
+
+TEST(Approx1, CPPCubicBatch)
+{
+    if (noDoubleTests<float>()) return;
+
+    af::array input = af::iota(af::dim4(10000, 20), c32);
+    af::array pos   = input.dims(0) * af::randu(50000, 20);
+
+    af::array outBatch = af::approx1(input, pos, AF_INTERP_CUBIC);
+
+    af::array outSerial(pos.dims());
+    for(int i = 0; i < pos.dims(1); i++) {
+        outSerial(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_CUBIC);
+    }
+
+    af::array outGFOR(pos.dims());
+    gfor(af::seq i, pos.dims(1)) {
+        outGFOR(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_CUBIC);
     }
 
     ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outSerial)), 1e-3);

@@ -191,9 +191,9 @@ namespace cuda
             dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1] + grid_x;
 
             // Check if x-1, x, and x+1, x+2 are both valid indices
-            bool condr  = (pVal > 0);
-            bool condl1 = (pVal < in.dims[0] - 1);
-            bool condl2 = (pVal < in.dims[0] - 2);
+            bool condr  = (grid_x > 0);
+            bool condl1 = (grid_x < in.dims[0] - 1);
+            bool condl2 = (grid_x < in.dims[0] - 2);
 
             //compute basis function values
             Tp h00 = (1 + 2 * off_x) * (1 - off_x) * (1 - off_x);
@@ -202,12 +202,10 @@ namespace cuda
             Tp h11 = off_x * off_x * (off_x - 1);
 
             // Compute Left and Right points and tangents
-            Ty pl = condr  ? in.ptr[ioff]     : scalar<Ty>(offGrid);
-            Ty pr = condl1 ? in.ptr[ioff + 1] : scalar<Ty>(offGrid);
-            Ty tl = condr  ? scalar<Ty>(0.5)  * ((in.ptr[ioff + 1] - in.ptr[ioff - 1])) :
-                             scalar<Ty>(0.5)  * ((in.ptr[ioff + 1] - scalar<Ty>(offGrid)));
-            Ty tr = condl2 ? scalar<Ty>(0.5)  * ((in.ptr[ioff + 2] - in.ptr[ioff])) :
-                             scalar<Ty>(0.5)  * ((scalar<Ty>(offGrid) - in.ptr[ioff]));
+            Ty pl = in.ptr[ioff];
+            Ty pr = condl1  ? in.ptr[ioff + 1] : in.ptr[ioff];
+            Ty tl = condr   ? scalar<Ty>(0.5) * (in.ptr[ioff + 1] - in.ptr[ioff - 1]) : (in.ptr[ioff + 1] - in.ptr[ioff]);
+            Ty tr = condl2  ? scalar<Ty>(0.5) * (in.ptr[ioff + 2] - in.ptr[ioff]) : (condl1) ? in.ptr[ioff + 1] - in.ptr[ioff] : (in.ptr[ioff] - in.ptr[ioff - 1]);
 
             // Write final value
             out.ptr[omId] = h00 * pl + h10 * tl + h01 * pr + h11 * tr;

@@ -126,9 +126,9 @@ void core_cubic(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t i
     dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1] + grid_x;
 
     // Check if x-1, x, and x+1, x+2 are both valid indices
-    bool condr  = (pVal > 0);
-    bool condl1 = (pVal < in.dims[0] - 1);
-    bool condl2 = (pVal < in.dims[0] - 2);
+    bool condr  = (grid_x > 0);
+    bool condl1 = (grid_x < in.dims[0] - 1);
+    bool condl2 = (grid_x < in.dims[0] - 2);
 
     //compute basis function values
     Ty h00 = (1 + 2 * off_x) * (1 - off_x) * (1 - off_x);
@@ -137,12 +137,10 @@ void core_cubic(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t i
     Ty h11 = off_x * off_x * (off_x - 1);
 
     // Compute Left and Right Weighted Values
-    Ty pl = condr  ? d_in[ioff]     : offGrid;
-    Ty pr = condl1 ? d_in[ioff + 1] : offGrid;
-    Ty tl = condr  ? 0.5 * (d_in[ioff + 1] - d_in[ioff - 1]) :
-                     0.5 * (d_in[ioff + 1] - offGrid);
-    Ty tr = condl2 ? 0.5 * (d_in[ioff + 2] - d_in[ioff]) :
-                     0.5 * (offGrid - d_in[ioff]);
+    Ty pl = d_in[ioff];
+    Ty pr = condl1  ? d_in[ioff + 1] : d_in[ioff];
+    Ty tl = condr   ? 0.5 * (d_in[ioff + 1] - d_in[ioff - 1]) : (d_in[ioff + 1] - d_in[ioff]);
+    Ty tr = condl2  ? 0.5 * (d_in[ioff + 2] - d_in[ioff]) : (condl1) ? d_in[ioff + 1] - d_in[ioff] : (d_in[ioff] - d_in[ioff - 1]);
 
     // Write final value
     set(d_out[omId], h00 * pl + h10 * tl + h01 * pr + h11 * tr);
