@@ -69,6 +69,20 @@ FOREACH(VER 20 30 32 35 37 50 52 53 60 61 62)
     ENDIF()
 ENDFOREACH()
 
+# Error out if Compute 6x is enabled but CUDA version is less than 8
+IF(${CUDA_VERSION_MAJOR} LESS 8)
+    IF(   CUDA_COMPUTE_60
+       OR CUDA_COMPUTE_61
+       OR CUDA_COMPUTE_62
+      )
+        MESSAGE(FATAL_ERROR
+                "CUDA Compute 6x was enabled.\
+                CUDA Compute 6x (Pascal) GPUs require CUDA 8 or greater.\
+                Your CUDA Version is ${CUDA_VERSION}."
+                )
+    ENDIF()
+ENDIF(${CUDA_VERSION_MAJOR} LESS 8)
+
 IF(UNIX)
     # GCC 5.3 and above give errors for mempcy from <string.h>
     # This is a (temporary) fix for that
