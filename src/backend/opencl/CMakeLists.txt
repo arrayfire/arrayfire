@@ -85,11 +85,13 @@ ADD_DEFINITIONS( -DBOOST_ALL_NO_LIB )
 SET(Boost_USE_STATIC_LIBS OFF)
 FIND_PACKAGE(Boost 1.48 REQUIRED)
 
-OPTION(USE_SYSTEM_BOOST_COMPUTE "Use system BoostCompute" OFF)
-IF(USE_SYSTEM_BOOST_COMPUTE)
-    FIND_PACKAGE(BoostCompute REQUIRED)
-ELSE()
-    INCLUDE("${CMAKE_MODULE_PATH}/build_boost_compute.cmake")
+IF(Boost_VERSION VERSION_LESS "1.61")
+    OPTION(USE_SYSTEM_BOOST_COMPUTE "Use system BoostCompute" OFF)
+    IF(USE_SYSTEM_BOOST_COMPUTE)
+        FIND_PACKAGE(BoostCompute REQUIRED)
+    ELSE()
+        INCLUDE("${CMAKE_MODULE_PATH}/build_boost_compute.cmake")
+    ENDIF()
 ENDIF()
 
 SET( cl_kernel_headers
