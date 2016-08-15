@@ -348,6 +348,7 @@ IF (${libdevice_bc_len} GREATER 0)
     OUTPUT_DIR ${libdevice_headers}
     TARGETS libdevice_targets
     NAMESPACE "cuda"
+    BINARY TRUE
     EOF "1"
     )
 

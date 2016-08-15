@@ -22,6 +22,7 @@ xxd but adds support for namespaces.
 | --file        | input file                                                        |
 | --output      | output file (If no output is specified then it prints to stdout   |
 | --type        | Type of variable (default: char)                                  |
+| --binary      | If the file contents are in binary form                           |
 | --namespace   | A space seperated list of namespaces                              |
 | --formatted   | Tabs for formatting                                               |
 | --version     | Prints my name                                                    |
@@ -47,6 +48,7 @@ namespace blah {
 }
 
 static bool formatted;
+static bool binary = false;
 
 void add_tabs(const int level ){
     if(formatted) {
@@ -73,6 +75,9 @@ parse_options(const vector<string>& args) {
     for(auto arg : args) {
         if(arg == "--verbose") {
             verbose = true;
+        }
+        else if(arg == "--binary") {
+            binary = true;
         }
         else if(arg == "--formatted") {
             formatted = true;
@@ -150,7 +155,7 @@ int main(int argc, const char * const * const argv)
     // Always create unsigned char to avoid narrowing
     cout << "static const " << "unsigned char" << " " << options["--name"] << "_uchar [] = {\n";
 
-    ifstream input(options["--file"]);
+    ifstream input(options["--file"], (binary ? std::ios::binary : std::ios::in));
     size_t char_cnt = 0;
     add_tabs(++level);
     for(char i; input.get(i);) {
