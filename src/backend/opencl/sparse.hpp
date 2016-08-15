@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <SparseArray.hpp>
+#include <err_clsparse.hpp>
 
 namespace opencl
 {
@@ -21,5 +22,9 @@ Array<T> sparseConvertStorageToDense(const common::SparseArray<T> &in);
 
 template<typename T, af_storage src, af_storage dest>
 common::SparseArray<T> sparseConvertStorageToStorage(const common::SparseArray<T> &in);
+
+void clSPARSEInit();
+
+clsparseControl getControl();
 
 }
