@@ -21,7 +21,6 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <CL/cl2.hpp>
 #pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
 
 #include <vector>
 #include <string>
