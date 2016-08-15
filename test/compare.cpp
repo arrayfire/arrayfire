@@ -25,6 +25,7 @@ TYPED_TEST_CASE(Compare, TestTypes);
     TYPED_TEST(Compare, Test_##Name)                            \
     {                                                           \
         typedef TypeParam T;                                    \
+        if (noDoubleTests<T>()) return;                         \
         const int num = 1 << 20;                                \
         af_dtype ty = (af_dtype) af::dtype_traits<T>::af_type;  \
         af::array a = af::randu(num, ty);                       \
