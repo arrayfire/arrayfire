@@ -9,6 +9,7 @@
 
 #pragma once
 #include <af/defines.h>
+#include <limits>
 #include <Array.hpp>
 #include <utility.hpp>
 
@@ -38,7 +39,8 @@ void morph(Array<T> out, Array<T> const in, Array<T> const mask)
                 // j steps along 2nd dimension
                 for(dim_t i=0; i<dims[0]; ++i) {
                     // i steps along 1st dimension
-                    T filterResult = inData[ getIdx(istrides, i, j) ];
+                    T filterResult = isDilation ? (std::is_integral<T>::value ? std::numeric_limits<T>::lowest() : -std::numeric_limits<T>::infinity())
+			: (std::is_integral<T>::value ? std::numeric_limits<T>::max() : std::numeric_limits<T>::infinity());
 
                     // wj,wi steps along 2nd & 1st dimensions of filter window respectively
                     for(dim_t wj=0; wj<window[1]; wj++) {
@@ -97,7 +99,8 @@ void morph3d(Array<T> out, Array<T> const in, Array<T> const mask)
                 // j steps along 2nd dimension
                 for(dim_t i=0; i<dims[0]; ++i) {
                     // i steps along 1st dimension
-                    T filterResult = inData[ getIdx(istrides, i, j, k) ];
+                    T filterResult = isDilation ? (std::is_integral<T>::value ? std::numeric_limits<T>::lowest() : -std::numeric_limits<T>::infinity())
+			: (std::is_integral<T>::value ? std::numeric_limits<T>::max() : std::numeric_limits<T>::infinity());
 
                     // wk, wj,wi steps along 2nd & 1st dimensions of filter window respectively
                     for(dim_t wk=0; wk<window[2]; wk++) {

@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/defines.h>
+#include <limits>
 #include <backend.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
@@ -103,7 +104,8 @@ static __global__ void morphKernel(Param<T> out, CParam<T> in,
     __syncthreads();
 
     const T * d_filt = (const T *)cFilter;
-    T acc = shrdMem[ lIdx(i, j, shrdLen, 1) ];
+    T acc = isDilation ? (std::is_integral<T>::value ? std::numeric_limits<T>::lowest() : -std::numeric_limits<T>::infinity())
+	: (std::is_integral<T>::value ? std::numeric_limits<T>::max() : std::numeric_limits<T>::infinity());
 #pragma unroll
     for(int wj=0; wj<windLen; ++wj) {
         int joff   = wj*windLen;
@@ -197,7 +199,8 @@ static __global__ void morph3DKernel(Param<T> out, CParam<T> in, int nBBS)
     int k  = lz + halo;
 
     const T * d_filt = (const T *)cFilter;
-    T acc = shrdMem[ lIdx3D(i, j, k, shrdArea, shrdLen, 1) ];
+    T acc = isDilation ? (std::is_integral<T>::value ? std::numeric_limits<T>::lowest() : -std::numeric_limits<T>::infinity())
+	: (std::is_integral<T>::value ? std::numeric_limits<T>::max() : std::numeric_limits<T>::infinity());
 #pragma unroll
     for(int wk=0; wk<windLen; ++wk) {
         int koff   = wk*se_area;
