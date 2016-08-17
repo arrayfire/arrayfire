@@ -23,6 +23,7 @@ xxd but adds support for namespaces.
 | --output      | output file (If no output is specified then it prints to stdout   |
 | --type        | Type of variable (default: char)                                  |
 | --binary      | If the file contents are in binary form                           |
+| --nullterm    | Add a null character to the end of the file                       |
 | --namespace   | A space seperated list of namespaces                              |
 | --formatted   | Tabs for formatting                                               |
 | --version     | Prints my name                                                    |
@@ -49,6 +50,7 @@ namespace blah {
 
 static bool formatted;
 static bool binary = false;
+static bool nullterm = false;
 
 void add_tabs(const int level ){
     if(formatted) {
@@ -67,7 +69,6 @@ parse_options(const vector<string>& args) {
     options["--file"]       = "";
     options["--output"]     = "";
     options["--namespace"]  = "";
-    options["--eof"]        = "0";
 
     //Parse Arguments
     string curr_opt;
@@ -78,6 +79,9 @@ parse_options(const vector<string>& args) {
         }
         else if(arg == "--binary") {
             binary = true;
+        }
+        else if(arg == "--nullterm") {
+            nullterm = true;
         }
         else if(arg == "--formatted") {
             formatted = true;
@@ -167,7 +171,7 @@ int main(int argc, const char * const * const argv)
         }
     }
 
-    if (options["--eof"].c_str()[0] == '1') {
+    if (nullterm) {
         // Add end of file character
         cout << "0x0";
         char_cnt++;

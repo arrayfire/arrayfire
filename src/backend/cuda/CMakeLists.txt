@@ -327,7 +327,7 @@ CL_KERNEL_TO_H(
     OUTPUT_DIR ${ptx_headers}
     TARGETS ptx_targets
     NAMESPACE "cuda"
-    EOF "1"
+    NULLTERM TRUE
     )
 
 SET(libdevice_bc "")
@@ -363,7 +363,6 @@ IF (${libdevice_bc_len} GREATER 0)
     TARGETS libdevice_targets
     NAMESPACE "cuda"
     BINARY TRUE
-    EOF "1"
     )
 
   MESSAGE(STATUS "LIBDEVICE found.")

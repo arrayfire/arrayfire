@@ -28,7 +28,7 @@ include(CMakeParseArguments)
 set(BIN2CPP_PROGRAM "bin2cpp")
 
 function(CL_KERNEL_TO_H)
-    cmake_parse_arguments(RTCS "" "VARNAME;EXTENSION;OUTPUT_DIR;TARGETS;NAMESPACE;BINARY;EOF" "SOURCES" ${ARGN})
+    cmake_parse_arguments(RTCS "" "VARNAME;EXTENSION;OUTPUT_DIR;TARGETS;NAMESPACE;BINARY;NULLTERM" "SOURCES" ${ARGN})
 
     set(_output_files "")
     foreach(_input_file ${RTCS_SOURCES})
@@ -42,6 +42,9 @@ function(CL_KERNEL_TO_H)
         if(${RTCS_BINARY})
             set(_binary "--binary")
         endif(${RTCS_BINARY})
+        if(${RTCS_NULLTERM})
+            set(_nullterm "--nullterm")
+        endif(${RTCS_NULLTERM})
 
         string(REPLACE "." "_" var_name ${var_name})
 
@@ -53,7 +56,7 @@ function(CL_KERNEL_TO_H)
             DEPENDS ${_input_file} ${BIN2CPP_PROGRAM}
             COMMAND ${CMAKE_COMMAND} -E make_directory "${_output_path}"
             COMMAND ${CMAKE_COMMAND} -E echo "\\#include \\<${_path}/${_name_we}.hpp\\>"  >>"${_output_file}"
-            COMMAND ${BIN2CPP_PROGRAM} --file ${_name} --namespace ${_namespace} --output ${_output_file} --name ${var_name} ${_binary} --eof ${RTCS_EOF}
+            COMMAND ${BIN2CPP_PROGRAM} --file ${_name} --namespace ${_namespace} --output ${_output_file} --name ${var_name} ${_binary} ${_nullterm}
             WORKING_DIRECTORY "${_path}"
             COMMENT "Compiling ${_input_file} to C++ source"
         )
