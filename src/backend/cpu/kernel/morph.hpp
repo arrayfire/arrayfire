@@ -8,10 +8,8 @@
  ********************************************************/
 
 #pragma once
-#include <limits>
 #include <Array.hpp>
 #include <utility.hpp>
-#include <ops.hpp>
 
 namespace cpu
 {
@@ -32,8 +30,6 @@ void morph(Array<T> out, Array<T> const in, Array<T> const mask)
     const dim_t R0      = window[0]/2;
     const dim_t R1      = window[1]/2;
 
-    T init = IsDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
-
     for(dim_t b3=0; b3<dims[3]; ++b3) {
         for(dim_t b2=0; b2<dims[2]; ++b2) {
             // either channels or batch is handled by outer most loop
@@ -41,7 +37,7 @@ void morph(Array<T> out, Array<T> const in, Array<T> const mask)
                 // j steps along 2nd dimension
                 for(dim_t i=0; i<dims[0]; ++i) {
                     // i steps along 1st dimension
-                    T filterResult = init;
+                    T filterResult = inData[ getIdx(istrides, i, j) ];
 
                     // wj,wi steps along 2nd & 1st dimensions of filter window respectively
                     for(dim_t wj=0; wj<window[1]; wj++) {
@@ -92,8 +88,6 @@ void morph3d(Array<T> out, Array<T> const in, Array<T> const mask)
     const T*   inData   = in.get();
     const T*   filter   = mask.get();
 
-    T init = IsDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
-
     for(dim_t batchId=0; batchId<bCount; ++batchId) {
         // either channels or batch is handled by outer most loop
         for(dim_t k=0; k<dims[2]; ++k) {
@@ -102,7 +96,7 @@ void morph3d(Array<T> out, Array<T> const in, Array<T> const mask)
                 // j steps along 2nd dimension
                 for(dim_t i=0; i<dims[0]; ++i) {
                     // i steps along 1st dimension
-                    T filterResult = init;
+                    T filterResult = inData[ getIdx(istrides, i, j, k) ];
 
                     // wk, wj,wi steps along 2nd & 1st dimensions of filter window respectively
                     for(dim_t wk=0; wk<window[2]; wk++) {
