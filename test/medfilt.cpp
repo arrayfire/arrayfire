@@ -58,7 +58,7 @@ void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid, af_border_type pad)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
                 dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_medfilt(&outArray, inArray, w_len, w_wid, pad));
+    ASSERT_EQ(AF_SUCCESS, af_medfilt2(&outArray, inArray, w_len, w_wid, pad));
 
     T *outData = new T[dims.elements()];
 
@@ -98,7 +98,7 @@ TYPED_TEST(MedianFilter, BATCH_SYMMETRIC_PAD_3x3)
 
 
 template<typename T>
-void medfilt1d_Test(string pTestFile, dim_t w_wid, af_border_type pad)
+void medfilt1_Test(string pTestFile, dim_t w_wid, af_border_type pad)
 {
     if (noDoubleTests<T>()) return;
 
@@ -115,7 +115,7 @@ void medfilt1d_Test(string pTestFile, dim_t w_wid, af_border_type pad)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
                 dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_medfilt_1d(&outArray, inArray, w_wid, pad));
+    ASSERT_EQ(AF_SUCCESS, af_medfilt1(&outArray, inArray, w_wid, pad));
 
     T *outData = new T[dims.elements()];
 
@@ -135,22 +135,22 @@ void medfilt1d_Test(string pTestFile, dim_t w_wid, af_border_type pad)
 
 TYPED_TEST(MedianFilter1d, ZERO_PAD_3)
 {
-    medfilt1d_Test<TypeParam>(string(TEST_DIR"/medianfilter/zero_pad_3x1_window.test"), 3, AF_PAD_ZERO);
+    medfilt1_Test<TypeParam>(string(TEST_DIR"/medianfilter/zero_pad_3x1_window.test"), 3, AF_PAD_ZERO);
 }
 
 TYPED_TEST(MedianFilter1d, SYMMETRIC_PAD_3)
 {
-    medfilt1d_Test<TypeParam>(string(TEST_DIR"/medianfilter/symmetric_pad_3x1_window.test"), 3, AF_PAD_SYM);
+    medfilt1_Test<TypeParam>(string(TEST_DIR"/medianfilter/symmetric_pad_3x1_window.test"), 3, AF_PAD_SYM);
 }
 
 TYPED_TEST(MedianFilter1d, BATCH_ZERO_PAD_3)
 {
-    medfilt1d_Test<TypeParam>(string(TEST_DIR"/medianfilter/batch_zero_pad_3x1_window.test"), 3, AF_PAD_ZERO);
+    medfilt1_Test<TypeParam>(string(TEST_DIR"/medianfilter/batch_zero_pad_3x1_window.test"), 3, AF_PAD_ZERO);
 }
 
 TYPED_TEST(MedianFilter1d, BATCH_SYMMETRIC_PAD_3)
 {
-    medfilt1d_Test<TypeParam>(string(TEST_DIR"/medianfilter/batch_symmetric_pad_3x1_window.test"), 3, AF_PAD_SYM);
+    medfilt1_Test<TypeParam>(string(TEST_DIR"/medianfilter/batch_symmetric_pad_3x1_window.test"), 3, AF_PAD_SYM);
 }
 
 template<typename T,bool isColor>
@@ -184,7 +184,7 @@ void medfiltImageTest(string pTestFile, dim_t w_len, dim_t w_wid)
         ASSERT_EQ(AF_SUCCESS, af_load_image(&goldArray, outFiles[testId].c_str(), isColor));
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_medfilt(&outArray, inArray, w_len, w_wid, AF_PAD_ZERO));
+        ASSERT_EQ(AF_SUCCESS, af_medfilt2(&outArray, inArray, w_len, w_wid, AF_PAD_ZERO));
 
         T * outData = new T[nElems];
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
@@ -216,7 +216,7 @@ void medfiltInputTest(void)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_ERR_SIZE, af_medfilt(&outArray, inArray, 1, 1, AF_PAD_ZERO));
+    ASSERT_EQ(AF_ERR_SIZE, af_medfilt2(&outArray, inArray, 1, 1, AF_PAD_ZERO));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
@@ -242,7 +242,7 @@ void medfiltWindowTest(void)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, 3, 5, AF_PAD_ZERO));
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt2(&outArray, inArray, 3, 5, AF_PAD_ZERO));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
@@ -269,7 +269,7 @@ void medfilt1d_WindowTest(void)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_medfilt_1d(&outArray, inArray, -1, AF_PAD_ZERO));
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt1(&outArray, inArray, -1, AF_PAD_ZERO));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
@@ -295,9 +295,9 @@ void medfiltPadTest(void)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, 3, 3, af_border_type(3)));
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt2(&outArray, inArray, 3, 3, af_border_type(3)));
 
-    ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, 3, 3, af_border_type(-1)));
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt2(&outArray, inArray, 3, 3, af_border_type(-1)));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
@@ -323,9 +323,9 @@ void medfilt1d_PadTest(void)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_medfilt_1d(&outArray, inArray, 3, af_border_type(3)));
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt1(&outArray, inArray, 3, af_border_type(3)));
 
-    ASSERT_EQ(AF_ERR_ARG, af_medfilt_1d(&outArray, inArray, 3, af_border_type(-1)));
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt1(&outArray, inArray, 3, af_border_type(-1)));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
@@ -383,7 +383,7 @@ TEST(MedianFilter1d, CPP)
 
     af::dim4 dims    = numDims[0];
     af::array input(dims, &(in[0].front()));
-    af::array output = af::medfilt_1d(input, w_wid, AF_PAD_SYM);
+    af::array output = af::medfilt1(input, w_wid, AF_PAD_SYM);
 
     float *outData = new float[dims.elements()];
     output.host((void*)outData);
@@ -466,11 +466,11 @@ TEST(MedianFilter1d, GFOR)
     array B = constant(0, dims);
 
     gfor(seq ii, 3) {
-        B(span, ii) = medfilt_1d(A(span, ii));
+        B(span, ii) = medfilt1(A(span, ii));
     }
 
     for(int ii = 0; ii < 3; ii++) {
-        array c_ii = medfilt_1d(A(span, ii));
+        array c_ii = medfilt1(A(span, ii));
         array b_ii = B(span, ii);
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }

@@ -13,9 +13,9 @@ namespace opencl
 {
 
 template<typename T, af_border_type edge_pad>
-Array<T> medfilt(const Array<T> &in, dim_t w_len, dim_t w_wid);
+Array<T> medfilt1(const Array<T> &in, dim_t w_wid);
 
 template<typename T, af_border_type edge_pad>
-Array<T> medfilt_1d(const Array<T> &in, dim_t w_wid);
+Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid);
 
 }

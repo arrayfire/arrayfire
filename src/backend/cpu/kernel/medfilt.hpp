@@ -18,7 +18,7 @@ namespace kernel
 {
 
 template<typename T, af_border_type Pad>
-void medfilt_1d(Array<T> out, const Array<T> in, dim_t w_wid)
+void medfilt1(Array<T> out, const Array<T> in, dim_t w_wid)
 {
     const af::dim4 dims     = in.dims();
     const af::dim4 istrides = in.strides();
@@ -100,7 +100,7 @@ void medfilt_1d(Array<T> out, const Array<T> in, dim_t w_wid)
 
 
 template<typename T, af_border_type Pad>
-void medfilt(Array<T> out, const Array<T> in, dim_t w_len, dim_t w_wid)
+void medfilt2(Array<T> out, const Array<T> in, dim_t w_len, dim_t w_wid)
 {
     const af::dim4 dims     = in.dims();
     const af::dim4 istrides = in.strides();
