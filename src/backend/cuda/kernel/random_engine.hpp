@@ -13,6 +13,8 @@
 #include <af/defines.h>
 #include <kernel/random_engine_philox.hpp>
 #include <kernel/random_engine_threefry.hpp>
+#include <kernel/random_engine_mersenne.hpp>
+#include <random_engine.hpp>
 
 namespace cuda
 {
@@ -418,6 +420,67 @@ namespace kernel
     }
 
     template <typename T>
+    __global__ void uniformMersenne(T * const out,
+            uint * const gState,
+            uint const * const pos_tbl,
+            uint const * const sh1_tbl,
+            uint const * const sh2_tbl,
+            uint mask,
+            uint const * const g_recursion_table,
+            uint const * const g_temper_table,
+            uint elementsPerBlock, size_t elements)
+    {
+        __shared__ uint state[STATE_SIZE];
+        __shared__ uint recursion_table[TABLE_SIZE];
+        __shared__ uint temper_table[TABLE_SIZE];
+        uint start = blockIdx.x*elementsPerBlock;
+        uint end = start + elementsPerBlock;
+        end = (end > elements)? elements : end;
+        int iter = divup((end - start)*sizeof(T), blockDim.x*4*sizeof(uint));
+
+        uint pos = pos_tbl[blockIdx.x];
+        uint sh1 = sh1_tbl[blockIdx.x];
+        uint sh2 = sh2_tbl[blockIdx.x];
+        state_read(state, gState);
+        read_table(recursion_table, g_recursion_table);
+        read_table(temper_table, g_temper_table);
+        __syncthreads();
+
+        uint index = start;
+        int elementsPerBlockIteration = blockDim.x*4*sizeof(uint)/sizeof(T);
+        uint o[4];
+        int offsetX1 = (STATE_SIZE - N + threadIdx.x          ) % STATE_SIZE;
+        int offsetX2 = (STATE_SIZE - N + threadIdx.x + 1      ) % STATE_SIZE;
+        int offsetY  = (STATE_SIZE - N + threadIdx.x + pos    ) % STATE_SIZE;
+        int offsetT  = (STATE_SIZE - N + threadIdx.x + pos - 1) % STATE_SIZE;
+        int offsetO  = threadIdx.x;
+
+        for (int i = 0; i < iter; ++i) {
+            for (int ii = 0; ii < 4; ++ii) {
+                uint r = recursion(recursion_table, mask, sh1, sh2,
+                        state[offsetX1],
+                        state[offsetX2],
+                        state[offsetY ]);
+                state[offsetO] = r;
+                o[ii] = temper(temper_table, r, state[offsetT]);
+                offsetX1 = (offsetX1 + blockDim.x) % STATE_SIZE;
+                offsetX2 = (offsetX2 + blockDim.x) % STATE_SIZE;
+                offsetY  = (offsetY  + blockDim.x) % STATE_SIZE;
+                offsetT  = (offsetT  + blockDim.x) % STATE_SIZE;
+                offsetO  = (offsetO  + blockDim.x) % STATE_SIZE;
+                __syncthreads();
+            }
+            if (i == iter - 1) {
+                partialWriteOut256Bytes(out, index+threadIdx.x, o[0], o[1], o[2], o[3], elements);
+            } else {
+                writeOut256Bytes(out, index+threadIdx.x, o[0], o[1], o[2], o[3]);
+            }
+            index += elementsPerBlockIteration;
+        }
+        state_write(gState, state);
+    }
+
+    template <typename T>
     __global__ void normalPhilox(T *out, uint hi, uint lo, uint counter, uint elementsPerBlock, uint elements)
     {
         uint index = blockIdx.x*elementsPerBlock + threadIdx.x;
@@ -453,42 +516,137 @@ namespace kernel
     }
 
     template <typename T>
-    void uniformDistribution(T *out, size_t elements, af_random_type type, const uintl seed, uintl &counter)
+    __global__ void normalMersenne(T * const out,
+            uint * const gState,
+            uint const * const pos_tbl,
+            uint const * const sh1_tbl,
+            uint const * const sh2_tbl,
+            uint mask,
+            uint const * const g_recursion_table,
+            uint const * const g_temper_table,
+            uint elementsPerBlock, uint elements)
+    {
+
+        __shared__ uint state[STATE_SIZE];
+        __shared__ uint recursion_table[TABLE_SIZE];
+        __shared__ uint temper_table[TABLE_SIZE];
+        uint start = blockIdx.x*elementsPerBlock;
+        uint end = start + elementsPerBlock;
+        end = (end > elements)? elements : end;
+        int iter = divup((end - start)*sizeof(T), blockDim.x*4*sizeof(uint));
+
+        uint pos = pos_tbl[blockIdx.x];
+        uint sh1 = sh1_tbl[blockIdx.x];
+        uint sh2 = sh2_tbl[blockIdx.x];
+        state_read(state, gState);
+        read_table(recursion_table, g_recursion_table);
+        read_table(temper_table, g_temper_table);
+        __syncthreads();
+
+        uint index = start;
+        int elementsPerBlockIteration = blockDim.x*4*sizeof(uint)/sizeof(T);
+        uint o[4];
+        int offsetX1 = (STATE_SIZE - N + threadIdx.x          ) % STATE_SIZE;
+        int offsetX2 = (STATE_SIZE - N + threadIdx.x + 1      ) % STATE_SIZE;
+        int offsetY  = (STATE_SIZE - N + threadIdx.x + pos    ) % STATE_SIZE;
+        int offsetT  = (STATE_SIZE - N + threadIdx.x + pos - 1) % STATE_SIZE;
+        int offsetO  = threadIdx.x;
+
+        for (int i = 0; i < iter; ++i) {
+            for (int ii = 0; ii < 4; ++ii) {
+                uint r = recursion(recursion_table, mask, sh1, sh2,
+                        state[offsetX1],
+                        state[offsetX2],
+                        state[offsetY ]);
+                state[offsetO] = r;
+                o[ii] = temper(temper_table, r, state[offsetT]);
+                offsetX1 = (offsetX1 + blockDim.x) % STATE_SIZE;
+                offsetX2 = (offsetX2 + blockDim.x) % STATE_SIZE;
+                offsetY  = (offsetY  + blockDim.x) % STATE_SIZE;
+                offsetT  = (offsetT  + blockDim.x) % STATE_SIZE;
+                offsetO  = (offsetO  + blockDim.x) % STATE_SIZE;
+                __syncthreads();
+            }
+            if (i == iter - 1) {
+                partialNormalizedWriteOut256Bytes(out, index+threadIdx.x, o[0], o[1], o[2], o[3], elements);
+            } else {
+                normalizedWriteOut256Bytes(out, index+threadIdx.x, o[0], o[1], o[2], o[3]);
+            }
+            index += elementsPerBlockIteration;
+        }
+        state_write(gState, state);
+    }
+
+    template <typename T>
+    void uniformDistribution(T* out, size_t elements,
+            uint * const state,
+            uint const * const pos,
+            uint const * const sh1,
+            uint const * const sh2,
+            uint mask,
+            uint const * const recursion_table,
+            uint const * const temper_table)
+    {
+        int threads = THREADS;
+        int min_elements_per_block = 32*threads*4*sizeof(uint)/sizeof(T);
+        int blocks = divup(elements, min_elements_per_block);
+        blocks = (blocks > BLOCKS)? BLOCKS : blocks;
+        uint elementsPerBlock = divup(elements, blocks);
+        CUDA_LAUNCH(uniformMersenne, blocks, threads, out, state, pos, sh1, sh2, mask, recursion_table, temper_table, elementsPerBlock, elements);
+    }
+
+    template <typename T>
+    void normalDistribution(T* out, size_t elements,
+            uint * const state,
+            uint const * const pos,
+            uint const * const sh1,
+            uint const * const sh2,
+            uint mask,
+            uint const * const recursion_table,
+            uint const * const temper_table)
+    {
+        int threads = THREADS;
+        int min_elements_per_block = 32*threads*4*sizeof(uint)/sizeof(T);
+        int blocks = divup(elements, min_elements_per_block);
+        blocks = (blocks > BLOCKS)? BLOCKS : blocks;
+        uint elementsPerBlock = divup(elements, blocks);
+        CUDA_LAUNCH(normalMersenne, blocks, threads, out, state, pos, sh1, sh2, mask, recursion_table, temper_table, elementsPerBlock, elements);
+    }
+
+    template <typename T>
+    void uniformDistribution(T* out, size_t elements, const af_random_type type, const uintl &seed, uintl &counter)
     {
         int threads = THREADS;
         int elementsPerBlock = threads*4*sizeof(uint)/sizeof(T);
         int blocks = divup(elements, elementsPerBlock);
         uint hi = seed>>32;
         uint lo = seed;
-        uintl count = counter;
         switch (type) {
         case AF_RANDOM_PHILOX : CUDA_LAUNCH(uniformPhilox, blocks, threads,
-                out, hi, lo, count, elementsPerBlock, elements); break;
+                out, hi, lo, counter, elementsPerBlock, elements); break;
         case AF_RANDOM_THREEFRY : CUDA_LAUNCH(uniformThreefry, blocks, threads,
-                out, hi, lo, count, elementsPerBlock, elements); break;
+                out, hi, lo, counter, elementsPerBlock, elements); break;
         default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
         counter += elements;
     }
 
     template <typename T>
-    void normalDistribution(T *out, size_t elements, af_random_type type, const uintl seed, uintl &counter)
+    void normalDistribution(T *out, size_t elements, const af_random_type type, const uintl &seed, uintl &counter)
     {
         int threads = THREADS;
         int elementsPerBlock = threads*4*sizeof(uint)/sizeof(T);
         int blocks = divup(elements, elementsPerBlock);
         uint hi = seed>>32;
         uint lo = seed;
-        uintl count = counter;
         switch (type) {
         case AF_RANDOM_PHILOX : CUDA_LAUNCH(normalPhilox, blocks, threads,
-                out, hi, lo, count, elementsPerBlock, elements); break;
+                out, hi, lo, counter, elementsPerBlock, elements); break;
         case AF_RANDOM_THREEFRY : CUDA_LAUNCH(normalThreefry, blocks, threads,
-                out, hi, lo, count, elementsPerBlock, elements); break;
+                out, hi, lo, counter, elementsPerBlock, elements); break;
         default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
         counter += elements;
     }
-
 }
 }

@@ -401,7 +401,8 @@ typedef enum {
 
 typedef enum {
     AF_RANDOM_PHILOX = 0,
-    AF_RANDOM_THREEFRY = 1
+    AF_RANDOM_THREEFRY = 1,
+    AF_RANDOM_MERSENNE = 2
 } af_random_type;
 #endif
 

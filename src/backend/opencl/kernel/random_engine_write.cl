@@ -386,7 +386,7 @@ void partialNormalizedWriteOut256Bytes_double(__global double *out, const uint *
 #define UNIFORM_WRITE EVALUATE_T(writeOut256Bytes)
 #define UNIFORM_PARTIAL_WRITE EVALUATE_T(partialWriteOut256Bytes)
 #define NORMAL_WRITE EVALUATE_T(normalizedWriteOut256Bytes)
-#define NORMAL_PARTIAL_WRITE EVALUATE_T(partialNormalizedWriteOut257Bytes)
+#define NORMAL_PARTIAL_WRITE EVALUATE_T(partialNormalizedWriteOut256Bytes)
 
 #if RAND_DIST == 0
 #define WRITE UNIFORM_WRITE

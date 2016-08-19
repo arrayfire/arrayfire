@@ -6,6 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma once
 
 #include <Array.hpp>
 #include <af/defines.h>
@@ -13,9 +14,21 @@
 
 namespace opencl
 {
-    template<typename T>
-    Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
+    Array<uint> initMersenneState(const uintl seed, Array<uint> tbl);
 
     template<typename T>
-    Array<T> normalDistribution(const af::dim4 &dims, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
+    Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter);
+
+    template<typename T>
+    Array<T> normalDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter);
+
+    template<typename T>
+    Array<T> uniformDistribution(const af::dim4 &dims,
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state);
+
+    template<typename T>
+    Array<T> normalDistribution(const af::dim4 &dims,
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state);
 }
