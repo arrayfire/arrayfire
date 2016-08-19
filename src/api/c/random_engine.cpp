@@ -110,12 +110,12 @@ af_err af_create_random_engine(af_random_engine *engineHandle, af_random_type rt
         e.counter = 0;
         if (rtype == AF_RANDOM_MERSENNE) {
             //TODO Add AF_CHECK(af_* calls)
-            af_create_array(&e.pos, pos, 1, &MaxBlocks, u32);
-            af_create_array(&e.sh1, sh1, 1, &MaxBlocks, u32);
-            af_create_array(&e.sh2, sh2, 1, &MaxBlocks, u32);
+            AF_CHECK(af_create_array(&e.pos, pos, 1, &MaxBlocks, u32));
+            AF_CHECK(af_create_array(&e.sh1, sh1, 1, &MaxBlocks, u32));
+            AF_CHECK(af_create_array(&e.sh2, sh2, 1, &MaxBlocks, u32));
             e.mask = mask;
-            af_create_array(&e.recursion_table, recursion_tbl, 1, &TableLength, u32);
-            af_create_array(&e.temper_table, temper_tbl, 1, &TableLength, u32);
+            AF_CHECK(af_create_array(&e.recursion_table, recursion_tbl, 1, &TableLength, u32));
+            AF_CHECK(af_create_array(&e.temper_table, temper_tbl, 1, &TableLength, u32));
             e.state = getHandle(initMersenneState(seed, getArray<uint>(e.recursion_table)));
         }
         *engineHandle = getRandomEngineHandle(e);
@@ -181,12 +181,12 @@ af_err af_release_random_engine(af_random_engine engineHandle)
     try {
         af_random_engine_t *e = getRandomEngine(engineHandle);
         if (e->type == AF_RANDOM_MERSENNE) {
-            af_release_array(e->pos);
-            af_release_array(e->sh1);
-            af_release_array(e->sh2);
-            af_release_array(e->recursion_table);
-            af_release_array(e->temper_table);
-            af_release_array(e->state);
+            AF_CHECK(af_release_array(e->pos));
+            AF_CHECK(af_release_array(e->sh1));
+            AF_CHECK(af_release_array(e->sh2));
+            AF_CHECK(af_release_array(e->recursion_table));
+            AF_CHECK(af_release_array(e->temper_table));
+            AF_CHECK(af_release_array(e->state));
         }
         delete e;
     }

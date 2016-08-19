@@ -578,7 +578,7 @@ namespace kernel
     }
 
     template <typename T>
-    void uniformDistribution(T* out, size_t elements,
+    void uniformDistributionMT(T* out, size_t elements,
             uint * const state,
             uint const * const pos,
             uint const * const sh1,
@@ -596,7 +596,7 @@ namespace kernel
     }
 
     template <typename T>
-    void normalDistribution(T* out, size_t elements,
+    void normalDistributionMT(T* out, size_t elements,
             uint * const state,
             uint const * const pos,
             uint const * const sh1,
@@ -614,7 +614,7 @@ namespace kernel
     }
 
     template <typename T>
-    void uniformDistribution(T* out, size_t elements, const af_random_type type, const uintl &seed, uintl &counter)
+    void uniformDistributionCBRNG(T* out, size_t elements, const af_random_type type, const uintl &seed, uintl &counter)
     {
         int threads = THREADS;
         int elementsPerBlock = threads*4*sizeof(uint)/sizeof(T);
@@ -632,7 +632,7 @@ namespace kernel
     }
 
     template <typename T>
-    void normalDistribution(T *out, size_t elements, const af_random_type type, const uintl &seed, uintl &counter)
+    void normalDistributionCBRNG(T *out, size_t elements, const af_random_type type, const uintl &seed, uintl &counter)
     {
         int threads = THREADS;
         int elementsPerBlock = threads*4*sizeof(uint)/sizeof(T);

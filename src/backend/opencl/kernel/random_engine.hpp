@@ -194,21 +194,21 @@ namespace opencl
         }
 
         template <typename T>
-        void uniformDistribution(cl::Buffer out, const size_t elements,
+        void uniformDistributionCBRNG(cl::Buffer out, const size_t elements,
                 const af_random_type type, const uintl &seed, uintl &counter)
         {
             randomDistribution<T>(out, elements, type, seed, counter, 0);
         }
 
         template <typename T>
-        void normalDistribution(cl::Buffer out, const size_t elements,
+        void normalDistributionCBRNG(cl::Buffer out, const size_t elements,
                 const af_random_type type, const uintl &seed, uintl &counter)
         {
             randomDistribution<T>(out, elements, type, seed, counter, 1);
         }
 
         template <typename T>
-        void uniformDistribution(cl::Buffer out, const size_t elements,
+        void uniformDistributionMT(cl::Buffer out, const size_t elements,
                 cl::Buffer state, cl::Buffer pos, cl::Buffer sh1, cl::Buffer sh2,
                 const uint mask, cl::Buffer recursion_table, cl::Buffer temper_table)
         {
@@ -216,7 +216,7 @@ namespace opencl
         }
 
         template <typename T>
-        void normalDistribution(cl::Buffer out, const size_t elements,
+        void normalDistributionMT(cl::Buffer out, const size_t elements,
                 cl::Buffer state, cl::Buffer pos, cl::Buffer sh1, cl::Buffer sh2,
                 const uint mask, cl::Buffer recursion_table, cl::Buffer temper_table)
         {

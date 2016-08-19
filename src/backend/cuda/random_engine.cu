@@ -30,7 +30,7 @@ namespace cuda
     Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)
     {
         Array<T> out = createEmptyArray<T>(dims);
-        kernel::uniformDistribution<T>(out.get(), out.elements(), type, seed, counter);
+        kernel::uniformDistributionCBRNG<T>(out.get(), out.elements(), type, seed, counter);
         return out;
     }
 
@@ -38,7 +38,7 @@ namespace cuda
     Array<T> normalDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)
     {
         Array<T> out = createEmptyArray<T>(dims);
-        kernel::normalDistribution<T>(out.get(), out.elements(), type, seed, counter);
+        kernel::normalDistributionCBRNG<T>(out.get(), out.elements(), type, seed, counter);
         return out;
     }
 
@@ -48,7 +48,7 @@ namespace cuda
             Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)
     {
         Array<T> out = createEmptyArray<T>(dims);
-        kernel::uniformDistribution<T>(
+        kernel::uniformDistributionMT<T>(
               out.get(), out.elements(),
               state.get(), pos.get(),
               sh1.get(), sh2.get(),
@@ -63,7 +63,7 @@ namespace cuda
             Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)
     {
         Array<T> out = createEmptyArray<T>(dims);
-        kernel::normalDistribution<T>(
+        kernel::normalDistributionMT<T>(
               out.get(), out.elements(),
               state.get(), pos.get(),
               sh1.get(), sh2.get(),
@@ -95,7 +95,7 @@ namespace cuda
         Array<T> out = createEmptyArray<T>(dims);\
         TR *outPtr = (TR*)out.get();\
         size_t elements = out.elements()*2;\
-        kernel::uniformDistribution<TR>(outPtr, elements, type, seed, counter);\
+        kernel::uniformDistributionCBRNG<TR>(outPtr, elements, type, seed, counter);\
         return out;\
     }\
     \
@@ -107,7 +107,7 @@ namespace cuda
         Array<T> out = createEmptyArray<T>(dims);\
         TR *outPtr = (TR*)out.get();\
         size_t elements = out.elements()*2;\
-        kernel::uniformDistribution<TR>(\
+        kernel::uniformDistributionMT<TR>(\
               outPtr, elements,\
               state.get(), pos.get(),\
               sh1.get(), sh2.get(),\
@@ -123,7 +123,7 @@ namespace cuda
         Array<T> out = createEmptyArray<T>(dims);\
         TR *outPtr = (TR*)out.get();\
         size_t elements = out.elements()*2;\
-        kernel::normalDistribution<TR>(outPtr, elements, type, seed, counter);\
+        kernel::normalDistributionCBRNG<TR>(outPtr, elements, type, seed, counter);\
         return out;\
     }\
     \
@@ -135,7 +135,7 @@ namespace cuda
         Array<T> out = createEmptyArray<T>(dims);\
         TR *outPtr = (TR*)out.get();\
         size_t elements = out.elements()*2;\
-        kernel::normalDistribution<TR>(\
+        kernel::normalDistributionMT<TR>(\
               outPtr, elements,\
               state.get(), pos.get(),\
               sh1.get(), sh2.get(),\

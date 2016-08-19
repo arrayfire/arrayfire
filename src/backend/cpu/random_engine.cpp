@@ -9,19 +9,28 @@
 
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <random.hpp>
 #include <kernel/random_engine.hpp>
 #include <cassert>
+#include <MersenneTwister.hpp>
+
+using common::MtStateLength;
+using common::MaxBlocks;
+using common::MersenneN;
 
 namespace cpu
 {
+    Array<uint> initMersenneState(const uintl seed, const Array<uint> tbl)
+    {
+        Array<uint> state = createEmptyArray<uint>(MtStateLength);
+        getQueue().enqueue(kernel::initMersenneState, state.get(), tbl.get(), seed);
+        return state;
+    }
+
     template<typename T>
     Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const uintl seed, uintl &counter)
     {
         Array<T> out = createEmptyArray<T>(dims);
-        getQueue().enqueue(kernel::uniformDistribution<T>, out.get(), out.elements(), type, seed, counter);
-        out.eval();
-        getQueue().sync();
+        getQueue().enqueue(kernel::uniformDistributionCBRNG<T>, out.get(), out.elements(), type, seed, counter);
         counter += out.elements();
         return out;
     }
@@ -30,10 +39,56 @@ namespace cpu
     Array<T> normalDistribution(const af::dim4 &dims, const af_random_type type, const uintl seed, uintl &counter)
     {
         Array<T> out = createEmptyArray<T>(dims);
-        getQueue().enqueue(kernel::normalDistribution<T>, out.get(), out.elements(), type, seed, counter);
+        getQueue().enqueue(kernel::normalDistributionCBRNG<T>, out.get(), out.elements(), type, seed, counter);
         counter += out.elements();
         return out;
     }
+
+    template<typename T>
+    Array<T> uniformDistribution(const af::dim4 &dims,
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)
+    {
+        Array<T> out = createEmptyArray<T>(dims);
+        getQueue().enqueue(kernel::uniformDistributionMT<T>,
+              out.get(), out.elements(),
+              state.get(), pos.get(),
+              sh1.get(), sh2.get(),
+              mask, recursion_table.get(),
+              temper_table.get());
+        return out;
+    }
+
+    template<typename T>
+    Array<T> normalDistribution(const af::dim4 &dims,
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)
+    {
+        Array<T> out = createEmptyArray<T>(dims);
+        getQueue().enqueue(kernel::normalDistributionMT<T>,
+              out.get(), out.elements(),
+              state.get(), pos.get(),
+              sh1.get(), sh2.get(),
+              mask, recursion_table.get(),
+              temper_table.get());
+        return out;
+    }
+
+#define INSTANTIATE_UNIFORM(T)\
+    template\
+    Array<T> uniformDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl seed, uintl &counter);\
+    template\
+    Array<T> uniformDistribution<T>(const af::dim4 &dims,\
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,\
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state);\
+
+#define INSTANTIATE_NORMAL(T)\
+    template\
+    Array<T> normalDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl seed, uintl &counter);\
+    template\
+    Array<T> normalDistribution<T>(const af::dim4 &dims,\
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,\
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state);\
 
 #define COMPLEX_UNIFORM_DISTRIBUTION(T, TR)\
     template<>\
@@ -42,8 +97,25 @@ namespace cpu
         Array<T> out = createEmptyArray<T>(dims);\
         TR *outPtr = (TR*)out.get();\
         size_t elements = out.elements()*2;\
-        getQueue().enqueue(kernel::uniformDistribution<TR>, outPtr, elements, type, seed, counter);\
+        getQueue().enqueue(kernel::uniformDistributionCBRNG<TR>, outPtr, elements, type, seed, counter);\
         counter += elements;\
+        return out;\
+    }\
+    \
+    template<>\
+    Array<T> uniformDistribution<T>(const af::dim4 &dims,\
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,\
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)\
+    {\
+        Array<T> out = createEmptyArray<T>(dims);\
+        TR *outPtr = (TR*)out.get();\
+        size_t elements = out.elements()*2;\
+        getQueue().enqueue(kernel::uniformDistributionMT<TR>,\
+              outPtr, elements,\
+              state.get(), pos.get(),\
+              sh1.get(), sh2.get(),\
+              mask, recursion_table.get(),\
+              temper_table.get());\
         return out;\
     }\
 
@@ -54,29 +126,46 @@ namespace cpu
         Array<T> out = createEmptyArray<T>(dims);\
         TR *outPtr = (TR*)out.get();\
         size_t elements = out.elements()*2;\
-        getQueue().enqueue(kernel::normalDistribution<TR>, outPtr, elements, type, seed, counter);\
+        getQueue().enqueue(kernel::normalDistributionCBRNG<TR>, outPtr, elements, type, seed, counter);\
         counter += elements;\
         return out;\
     }\
+    \
+    template<>\
+    Array<T> normalDistribution<T>(const af::dim4 &dims,\
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,\
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)\
+    {\
+        Array<T> out = createEmptyArray<T>(dims);\
+        TR *outPtr = (TR*)out.get();\
+        size_t elements = out.elements()*2;\
+        getQueue().enqueue(kernel::normalDistributionMT<TR>,\
+              outPtr, elements,\
+              state.get(), pos.get(),\
+              sh1.get(), sh2.get(),\
+              mask, recursion_table.get(),\
+              temper_table.get());\
+        return out;\
+    }\
 
-    template Array<float>  uniformDistribution<float> (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
-    template Array<double> uniformDistribution<double>(const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
-    template Array<uint>   uniformDistribution<uint>  (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
-    template Array<int>    uniformDistribution<int>   (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
-    template Array<intl>   uniformDistribution<intl>  (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
-    template Array<uintl>  uniformDistribution<uintl> (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
-    template Array<char>   uniformDistribution<char>  (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
-    template Array<uchar>  uniformDistribution<uchar> (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
-    template Array<short>  uniformDistribution<short> (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
-    template Array<ushort> uniformDistribution<ushort>(const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
+    INSTANTIATE_UNIFORM(float )
+    INSTANTIATE_UNIFORM(double)
+    INSTANTIATE_UNIFORM(int   )
+    INSTANTIATE_UNIFORM(uint  )
+    INSTANTIATE_UNIFORM(intl  )
+    INSTANTIATE_UNIFORM(uintl )
+    INSTANTIATE_UNIFORM(char  )
+    INSTANTIATE_UNIFORM(uchar )
+    INSTANTIATE_UNIFORM(short )
+    INSTANTIATE_UNIFORM(ushort)
 
-    template Array<float>  normalDistribution<float>  (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
-    template Array<double> normalDistribution<double> (const af::dim4 &dim, const af_random_type type, const uintl seed, uintl &counter);
-
-    COMPLEX_NORMAL_DISTRIBUTION(cdouble, double)
-    COMPLEX_NORMAL_DISTRIBUTION(cfloat, float)
+    INSTANTIATE_NORMAL(float )
+    INSTANTIATE_NORMAL(double)
 
     COMPLEX_UNIFORM_DISTRIBUTION(cdouble, double)
     COMPLEX_UNIFORM_DISTRIBUTION(cfloat, float)
+
+    COMPLEX_NORMAL_DISTRIBUTION(cdouble, double)
+    COMPLEX_NORMAL_DISTRIBUTION(cfloat, float)
 
 }

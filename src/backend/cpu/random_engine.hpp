@@ -13,9 +13,21 @@
 
 namespace cpu
 {
+    Array<uint> initMersenneState(const uintl seed, Array<uint> tbl);
+
     template<typename T>
     Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
 
     template<typename T>
     Array<T> normalDistribution(const af::dim4 &dims, const af_random_type type, const unsigned long long seed, unsigned long long &counter);
+
+    template<typename T>
+    Array<T> uniformDistribution(const af::dim4 &dims,
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state);
+
+    template<typename T>
+    Array<T> normalDistribution(const af::dim4 &dims,
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state);
 }

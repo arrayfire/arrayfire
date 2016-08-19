@@ -30,7 +30,7 @@ namespace opencl
     Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)
     {
         Array<T> out = createEmptyArray<T>(dims);
-        kernel::uniformDistribution<T>(*out.get(), out.elements(), type, seed, counter);
+        kernel::uniformDistributionCBRNG<T>(*out.get(), out.elements(), type, seed, counter);
         return out;
     }
 
@@ -38,7 +38,7 @@ namespace opencl
     Array<T> normalDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)
     {
         Array<T> out = createEmptyArray<T>(dims);
-        kernel::normalDistribution<T>(*out.get(), out.elements(), type, seed, counter);
+        kernel::normalDistributionCBRNG<T>(*out.get(), out.elements(), type, seed, counter);
         return out;
     }
 
@@ -48,7 +48,7 @@ namespace opencl
             Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)
     {
         Array<T> out = createEmptyArray<T>(dims);
-        kernel::uniformDistribution<T>(
+        kernel::uniformDistributionMT<T>(
               *out.get(), out.elements(),
               *state.get(), *pos.get(),
               *sh1.get(), *sh2.get(),
@@ -63,7 +63,7 @@ namespace opencl
             Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)
     {
         Array<T> out = createEmptyArray<T>(dims);
-        kernel::normalDistribution<T>(
+        kernel::normalDistributionMT<T>(
               *out.get(), out.elements(),
               *state.get(), *pos.get(),
               *sh1.get(), *sh2.get(),
@@ -94,7 +94,7 @@ namespace opencl
     {\
         Array<T> out = createEmptyArray<T>(dims);\
         size_t elements = out.elements()*2;\
-        kernel::uniformDistribution<TR>(*out.get(), elements, type, seed, counter);\
+        kernel::uniformDistributionCBRNG<TR>(*out.get(), elements, type, seed, counter);\
         return out;\
     }\
     \
@@ -105,7 +105,7 @@ namespace opencl
     {\
         Array<T> out = createEmptyArray<T>(dims);\
         size_t elements = out.elements()*2;\
-        kernel::uniformDistribution<TR>(\
+        kernel::uniformDistributionMT<TR>(\
               *out.get(), elements,\
               *state.get(), *pos.get(),\
               *sh1.get(), *sh2.get(),\
@@ -120,7 +120,7 @@ namespace opencl
     {\
         Array<T> out = createEmptyArray<T>(dims);\
         size_t elements = out.elements()*2;\
-        kernel::normalDistribution<TR>(*out.get(), elements, type, seed, counter);\
+        kernel::normalDistributionCBRNG<TR>(*out.get(), elements, type, seed, counter);\
         return out;\
     }\
     \
@@ -131,7 +131,7 @@ namespace opencl
     {\
         Array<T> out = createEmptyArray<T>(dims);\
         size_t elements = out.elements()*2;\
-        kernel::normalDistribution<TR>(\
+        kernel::normalDistributionMT<TR>(\
               *out.get(), elements,\
               *state.get(), *pos.get(),\
               *sh1.get(), *sh2.get(),\

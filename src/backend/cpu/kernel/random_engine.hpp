@@ -12,6 +12,7 @@
 #include <err_cpu.hpp>
 #include <kernel/random_engine_philox.hpp>
 #include <kernel/random_engine_threefry.hpp>
+#include <kernel/random_engine_mersenne.hpp>
 
 namespace cpu
 {
@@ -21,6 +22,7 @@ namespace kernel
     #define UINTMAXFLOAT 4294967296.0f
     #define UINTLMAXDOUBLE (4294967296.0*4294967296.0)
     #define PI_VAL 3.1415926535897932384626433832795028841971693993751058209749445923078164
+    #define N 351
 
     template <typename T>
     T transform(uint *val, int index)
@@ -188,7 +190,69 @@ namespace kernel
     }
 
     template <typename T>
-    void uniformDistribution(T* out, size_t elements, af_random_type type, const uintl seed, uintl counter)
+    void uniformDistributionMT(T* out, size_t elements,
+            uint * const state,
+            uint const * const pos,
+            uint const * const sh1,
+            uint const * const sh2,
+            uint mask,
+            uint const * const recursion_table,
+            uint const * const temper_table)
+    {
+        uint l_state[STATE_SIZE];
+        uint o[4];
+        uint lpos = pos[0];
+        uint lsh1 = sh1[0];
+        uint lsh2 = sh2[0];
+
+        state_read(l_state, state);
+
+        int reset = (4*sizeof(uint))/sizeof(T);
+        for (int i = 0; i < (int)elements; i += reset) {
+            mersenne(o, l_state, i, lpos, lsh1, lsh2, mask, recursion_table, temper_table);
+            int lim = (reset < (int)(elements - i))? reset : (int)(elements - i);
+            for (int j = 0; j < lim; ++j) {
+                out[i + j] = transform<T>(o, j);
+            }
+        }
+
+        state_write(state, l_state);
+    }
+
+    template <typename T>
+    void normalDistributionMT(T* out, size_t elements,
+            uint * const state,
+            uint const * const pos,
+            uint const * const sh1,
+            uint const * const sh2,
+            uint mask,
+            uint const * const recursion_table,
+            uint const * const temper_table)
+    {
+        T temp[(4*sizeof(uint))/sizeof(T)];
+        uint l_state[STATE_SIZE];
+        uint o[4];
+        uint lpos = pos[0];
+        uint lsh1 = sh1[0];
+        uint lsh2 = sh2[0];
+
+        state_read(l_state, state);
+
+        int reset = (4*sizeof(uint))/sizeof(T);
+        for (int i = 0; i < (int)elements; i += reset) {
+            mersenne(o, l_state, i, lpos, lsh1, lsh2, mask, recursion_table, temper_table);
+            normalize(o, temp);
+            int lim = (reset < (int)(elements - i))? reset : (int)(elements - i);
+            for (int j = 0; j < lim; ++j) {
+                out[i + j] = temp[j];
+            }
+        }
+
+        state_write(state, l_state);
+    }
+
+    template <typename T>
+    void uniformDistributionCBRNG(T* out, size_t elements, af_random_type type, const uintl seed, uintl counter)
     {
         switch(type) {
             case AF_RANDOM_PHILOX   :   philoxUniform(out, elements, seed, counter); break;
@@ -198,7 +262,7 @@ namespace kernel
     }
 
     template <typename T>
-    void normalDistribution(T* out, size_t elements, af_random_type type, const uintl seed, uintl counter)
+    void normalDistributionCBRNG(T* out, size_t elements, af_random_type type, const uintl seed, uintl counter)
     {
         switch(type) {
             case AF_RANDOM_PHILOX   :   philoxNormal(out, elements, seed, counter); break;
@@ -207,5 +271,17 @@ namespace kernel
         }
     }
 
+    void initMersenneState(uint * const state, const uint * const tbl, const uintl seed)
+    {
+        uint hidden_seed = tbl[4] ^ (tbl[8] << 16);
+        uint tmp = hidden_seed;
+        tmp += tmp >> 16;
+        tmp += tmp >> 8;
+        state[0] = seed;
+        state[1] = hidden_seed;
+            for (int i = 1; i < N; ++i) {
+                state[i] ^= (uint)(1812433253) * (state[i-1] ^ (state[i-1] >> 30)) + i;
+            }
+    }
 }
 }
