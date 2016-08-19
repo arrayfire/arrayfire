@@ -33,6 +33,10 @@ af_err af_transpose(af_array *out, af_array in, const bool conjugate)
         af_dtype type = info.getType();
         af::dim4 dims = info.dims();
 
+        if (dims.elements() == 0) {
+            return af_retain_array(out, in);
+        }
+
         if (dims[0]==1 || dims[1]==1) {
             af::dim4 outDims(dims[1],dims[0],dims[2],dims[3]);
             if(conjugate) {

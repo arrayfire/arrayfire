@@ -98,7 +98,13 @@ af_err af_constant_complex(af_array *result, const double real, const double ima
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(result, AF_MAX_DIMS, my_dims, type);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
 
         switch (type) {
         case c32: out = createCplx<cfloat , float >(d, real, imag); break;
@@ -119,7 +125,13 @@ af_err af_constant_long(af_array *result, const intl val,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(result, AF_MAX_DIMS, my_dims, s64);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
 
         out = getHandle(createValueArray<intl>(d, val));
 
@@ -136,7 +148,13 @@ af_err af_constant_ulong(af_array *result, const uintl val,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(result, AF_MAX_DIMS, my_dims, u64);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
         out = getHandle(createValueArray<uintl>(d, val));
 
         std::swap(*result, out);
@@ -169,7 +187,13 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, c
         af_array result;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
 
         switch(type) {
         case f32:   result = randu_<float  >(d);    break;
@@ -198,7 +222,13 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, c
         af_array result;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
 
         switch(type) {
         case f32:   result = randn_<float  >(d);    break;
@@ -278,7 +308,13 @@ af_err af_range(af_array *result, const unsigned ndims, const dim_t * const dims
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(result, AF_MAX_DIMS, my_dims, type);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
 
         switch(type) {
         case f32:   out = range_<float  >(d, seq_dim); break;
@@ -439,7 +475,13 @@ af_array triangle(const af_array in, bool is_unit_diag)
 af_err af_lower(af_array *out, const af_array in, bool is_unit_diag)
 {
     try {
-        af_dtype type = getInfo(in).getType();
+        ArrayInfo info = getInfo(in);
+        af_dtype type = info.getType();
+
+        if(info.ndims() == 0) {
+            return af_retain_array(out, in);
+        }
+
         af_array res;
         switch(type) {
         case f32: res = triangle<float   , false>(in, is_unit_diag); break;
@@ -465,7 +507,13 @@ af_err af_lower(af_array *out, const af_array in, bool is_unit_diag)
 af_err af_upper(af_array *out, const af_array in, bool is_unit_diag)
 {
     try {
-        af_dtype type = getInfo(in).getType();
+        ArrayInfo info = getInfo(in);
+        af_dtype type = info.getType();
+
+        if(info.ndims() == 0) {
+            return af_retain_array(out, in);
+        }
+
         af_array res;
         switch(type) {
         case f32: res = triangle<float   , true>(in, is_unit_diag); break;

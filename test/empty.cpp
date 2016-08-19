@@ -10,11 +10,9 @@
 #include <gtest/gtest.h>
 #include <arrayfire.h>
 #include <cstdio>
-#include <iostream>
 #include <cstdlib>
 
 using namespace af;
-using namespace std;
 
 template<typename T>
 class Array : public ::testing::Test
@@ -129,8 +127,8 @@ TEST(Array, TestEmptyLinAlg) {
     ASSERT_EQ( det<float>(constant(0,0)), 1);
     ASSERT_EQ( det<cfloat>(constant(0,0)).real, 1);
     ASSERT_EQ( det<cdouble>(constant(0,0)).real, 1);
-    ASSERT_EQ( norm(constant(0,0)), 0);
-    ASSERT_EQ( rank(constant(0,0)), 0);
+    ASSERT_EQ( af::norm(constant(0,0)), 0);
+    ASSERT_EQ( af::rank(constant(0,0)), 0);
     array tau_qr, arr = constant(0,0);
     qrInPlace(tau_qr, arr);
     ASSERT_EQ(tau_qr.numdims(), 0);
@@ -240,7 +238,7 @@ TEST(Array, TestEmptyVecOp) {
 TEST(Array, TestEmptyArrMod) {
     ASSERT_EQ(diag(constant(0,0)).numdims(), 0);
     ASSERT_EQ(diag(constant(0,0), true).numdims(), 0);
-    ASSERT_EQ(identity(0).numdims(), 0);
+    ASSERT_EQ(af::identity(0).numdims(), 0);
     ASSERT_EQ(iota(dim4(0)).numdims(), 0);
     ASSERT_EQ(lower(constant(0,0)).numdims(), 0);
     ASSERT_EQ(upper(constant(0,0)).numdims(), 0);
