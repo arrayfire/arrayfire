@@ -90,7 +90,7 @@ namespace opencl
 
 #define COMPLEX_UNIFORM_DISTRIBUTION(T, TR)\
     template<>\
-    Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)\
+    Array<T> uniformDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)\
     {\
         Array<T> out = createEmptyArray<T>(dims);\
         size_t elements = out.elements()*2;\
@@ -99,7 +99,7 @@ namespace opencl
     }\
     \
     template<>\
-    Array<T> uniformDistribution(const af::dim4 &dims,\
+    Array<T> uniformDistribution<T>(const af::dim4 &dims,\
             Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,\
             Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)\
     {\
@@ -116,7 +116,7 @@ namespace opencl
 
 #define COMPLEX_NORMAL_DISTRIBUTION(T, TR)\
     template<>\
-    Array<T> normalDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)\
+    Array<T> normalDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)\
     {\
         Array<T> out = createEmptyArray<T>(dims);\
         size_t elements = out.elements()*2;\
@@ -125,7 +125,7 @@ namespace opencl
     }\
     \
     template<>\
-    Array<T> normalDistribution(const af::dim4 &dims,\
+    Array<T> normalDistribution<T>(const af::dim4 &dims,\
             Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,\
             Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)\
     {\

@@ -90,7 +90,7 @@ namespace cuda
 
 #define COMPLEX_UNIFORM_DISTRIBUTION(T, TR)\
     template<>\
-    Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)\
+    Array<T> uniformDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)\
     {\
         Array<T> out = createEmptyArray<T>(dims);\
         TR *outPtr = (TR*)out.get();\
@@ -100,7 +100,7 @@ namespace cuda
     }\
     \
     template<>\
-    Array<T> uniformDistribution(const af::dim4 &dims,\
+    Array<T> uniformDistribution<T>(const af::dim4 &dims,\
             Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,\
             Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)\
     {\
@@ -118,7 +118,7 @@ namespace cuda
 
 #define COMPLEX_NORMAL_DISTRIBUTION(T, TR)\
     template<>\
-    Array<T> normalDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)\
+    Array<T> normalDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)\
     {\
         Array<T> out = createEmptyArray<T>(dims);\
         TR *outPtr = (TR*)out.get();\
@@ -128,7 +128,7 @@ namespace cuda
     }\
     \
     template<>\
-    Array<T> normalDistribution(const af::dim4 &dims,\
+    Array<T> normalDistribution<T>(const af::dim4 &dims,\
             Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,\
             Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)\
     {\
