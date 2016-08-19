@@ -55,20 +55,35 @@ typedef struct {
     af_array state;
 } af_random_engine_t;
 
-af_random_engine getRandomEngineHandle(const af_random_engine_t engine)
+class RandomEngine
 {
-    af_random_engine_t *engineHandle = new af_random_engine_t;
+    public :
+    af_random_type type;
+    unsigned long long seed;
+    unsigned long long counter;
+    af_array pos;
+    af_array sh1;
+    af_array sh2;
+    uint mask;
+    af_array recursion_table;
+    af_array temper_table;
+    af_array state;
+};
+
+af_random_engine getRandomEngineHandle(const RandomEngine engine)
+{
+    RandomEngine *engineHandle = new RandomEngine;
     *engineHandle = engine;
     return static_cast<af_random_engine>(engineHandle);
 }
 
-af_random_engine_t* getRandomEngine(const af_random_engine engineHandle)
+RandomEngine* getRandomEngine(const af_random_engine engineHandle)
 {
-    return (af_random_engine_t *)engineHandle;
+    return (RandomEngine *)engineHandle;
 }
 
 template<typename T>
-static inline af_array uniformDistribution_(const af::dim4 &dims, af_random_engine_t *e)
+static inline af_array uniformDistribution_(const af::dim4 &dims, RandomEngine *e)
 {
     if (e->type == AF_RANDOM_MERSENNE) {
         return getHandle(uniformDistribution<T>(dims,
@@ -85,7 +100,7 @@ static inline af_array uniformDistribution_(const af::dim4 &dims, af_random_engi
 }
 
 template<typename T>
-static inline af_array normalDistribution_(const af::dim4 &dims, af_random_engine_t *e)
+static inline af_array normalDistribution_(const af::dim4 &dims, RandomEngine *e)
 {
     if (e->type == AF_RANDOM_MERSENNE) {
         return getHandle(normalDistribution<T>(dims,
@@ -104,7 +119,7 @@ static inline af_array normalDistribution_(const af::dim4 &dims, af_random_engin
 af_err af_create_random_engine(af_random_engine *engineHandle, af_random_type rtype, unsigned long long seed)
 {
     try {
-        af_random_engine_t e;
+        RandomEngine e;
         e.type = rtype;
         e.seed = seed;
         e.counter = 0;
@@ -131,7 +146,7 @@ af_err af_random_engine_uniform(af_array *out, af_random_engine engine, const un
         AF_CHECK(af_init());
 
         af::dim4 d = verifyDims(ndims, dims);
-        af_random_engine_t *e = getRandomEngine(engine);
+        RandomEngine *e = getRandomEngine(engine);
 
         switch(type) {
         case f32:   result = uniformDistribution_<float  >(d, e); break;
@@ -161,7 +176,7 @@ af_err af_random_engine_normal(af_array *out, af_random_engine engine, const uns
         AF_CHECK(af_init());
 
         af::dim4 d = verifyDims(ndims, dims);
-        af_random_engine_t *e = getRandomEngine(engine);
+        RandomEngine *e = getRandomEngine(engine);
 
         switch(type) {
         case f32:   result = normalDistribution_<float  >(d, e); break;
@@ -179,7 +194,7 @@ af_err af_random_engine_normal(af_array *out, af_random_engine engine, const uns
 af_err af_release_random_engine(af_random_engine engineHandle)
 {
     try {
-        af_random_engine_t *e = getRandomEngine(engineHandle);
+        RandomEngine *e = getRandomEngine(engineHandle);
         if (e->type == AF_RANDOM_MERSENNE) {
             AF_CHECK(af_release_array(e->pos));
             AF_CHECK(af_release_array(e->sh1));
