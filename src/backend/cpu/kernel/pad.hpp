@@ -128,7 +128,6 @@ Array<T> createCroppedArray(const Array<T>& in, const af::dim4 cropSizes, const 
     getCropInfo(inOffsets, outDims, in.dims(), cropSizes, direction);
 
     Array<T> out = createEmptyArray<T>(outDims);
-    out.eval();
     cropArray(out, in, cropSizes, direction);
     return out;
 }
