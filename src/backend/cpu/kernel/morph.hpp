@@ -12,7 +12,7 @@
 #include <Array.hpp>
 #include <utility.hpp>
 #include <ops.hpp>
-#include <cassert>
+#include <kernel/pad.hpp>
 
 namespace cpu
 {
@@ -31,12 +31,12 @@ void getOffsets(const af::dim4& strides, const Array<T>& mask, std::vector<dim_t
 
     offsets.reserve(mask.elements());
     for (dim_t j = 0; j < dim1; ++j) {
-	for (dim_t i = 0; i < dim0; ++i) {
-	    if (filter[ getIdx(fstrides, i, j) ] > (T)0) {
-		dim_t offset = (j - R1) * strides[1] + (i - R0) * strides[0];
-		offsets.push_back(offset);
-	    }
-	}
+        for (dim_t i = 0; i < dim0; ++i) {
+            if (filter[ getIdx(fstrides, i, j) ] > (T)0) {
+                dim_t offset = (j - R1) * strides[1] + (i - R0) * strides[0];
+                offsets.push_back(offset);
+            }
+        }
     }
 }
 
@@ -44,47 +44,54 @@ void getOffsets(const af::dim4& strides, const Array<T>& mask, std::vector<dim_t
 template<typename T, bool IsDilation>
 void morph(Array<T> out, Array<T> const in, Array<T> const mask)
 {
-    const af::dim4 ostrides = out.strides();
-    const af::dim4 istrides = in.strides();
-    const af::dim4 dims     = in.dims();
-
-    assert(dims[0] == out.dims()[0]);
-    assert(dims[1] == out.dims()[1]);
-    assert(dims[2] == out.dims()[2]);
-    assert(dims[3] == out.dims()[3]);
-
-    T* outData          = out.get();
-    const T*   inData   = in.get();
-
+    assert(in.dims()[0] == out.dims()[0]);
+    assert(in.dims()[1] == out.dims()[1]);
+    assert(in.dims()[2] == out.dims()[2]);
+    assert(in.dims()[3] == out.dims()[3]);
+    
     T init = IsDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
 
-    dim_t batchNumElements = dims[0] * dims[1];
+    const af::dim4 padsize(mask.dims()[0]/2, mask.dims()[1]/2, 0, 0);
+    const PadDirection paddir[4] = {BOTH};
+    Array<T> padded = createPaddedArray(in, padsize, init, paddir);
+    Array<T> paddedOut = createEmptyArray<T>(padded.dims());
+    
+    const af::dim4 ostrides = paddedOut.strides();
+    T * outData = paddedOut.get();
+
+    const af::dim4 istrides = padded.strides();
+    const af::dim4 dims = padded.dims();
+    const T * inData = padded.get();
+
     std::vector<dim_t> offsets;
     getOffsets(istrides, mask, offsets);
 
+    dim_t batchNumElements = dims[0] * dims[1];
     for(dim_t b3=0; b3<dims[3]; ++b3) {
         for(dim_t b2=0; b2<dims[2]; ++b2) {
-	    for (dim_t n = 0; n < batchNumElements; ++n) {
-		T filterResult = init;
-		for (size_t oi = 0; oi < offsets.size(); ++oi) {
-		    dim_t x = n + offsets[oi];
-		    if (x >= 0 && x < batchNumElements) {
-			T inValue = inData[x];
-			if (IsDilation) {
-			    filterResult = std::max(filterResult, inValue);
-			} else {
-			    filterResult = std::min(filterResult, inValue);
-			}
-		    }
-		}
-		outData[n] = filterResult;
-	    }
+            for (dim_t n = 0; n < batchNumElements; ++n) {
+                T filterResult = init;
+                for (size_t oi = 0; oi < offsets.size(); ++oi) {
+                    dim_t x = n + offsets[oi];
+                    if (x >= 0 && x < batchNumElements) {
+                        T inValue = inData[x];
+                        if (IsDilation) {
+                            filterResult = std::max(filterResult, inValue);
+                        } else {
+                            filterResult = std::min(filterResult, inValue);
+                        }
+                    }
+                }
+                outData[n] = filterResult;
+            }
 
             // next iteration will be next batch if any
             outData += ostrides[2];
             inData  += istrides[2];
         }
     }
+
+    cropArray(out, paddedOut, padsize, paddir);
 }
 
 template<typename T, bool IsDilation>
