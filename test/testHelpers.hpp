@@ -322,8 +322,12 @@ bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance)
     accum /= data_size;
     double NRMSD = std::sqrt(accum)/(maxion-minion);
 
-    if (std::isnan(NRMSD) || NRMSD > tolerance)
+    if (std::isnan(NRMSD) || NRMSD > tolerance) {
+#ifndef NDEBUG
+        printf("Comparison failed, NRMSD value: %lf\n", NRMSD);
+#endif
         return false;
+    }
 
     return true;
 }
