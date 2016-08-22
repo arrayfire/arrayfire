@@ -92,6 +92,10 @@ af_err af_medfilt2(af_array *out, const af_array in, const dim_t wind_length, co
         ArrayInfo info = getInfo(in);
         af::dim4 dims  = info.dims();
 
+        if(info.isColumn()) {
+            return af_medfilt1(out, in, wind_width, edge_pad);
+        }
+
         dim_t input_ndims = dims.ndims();
         DIM_ASSERT(1, (input_ndims >= 2));
 

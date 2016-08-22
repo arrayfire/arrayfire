@@ -12,6 +12,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_cuda.hpp>
+#include "shared.hpp"
 
 namespace cuda
 {
@@ -19,7 +20,8 @@ namespace cuda
 namespace kernel
 {
 
-static const int MAX_MEDFILTER_LEN = 15;
+static const int MAX_MEDFILTER1_LEN = 121;
+static const int MAX_MEDFILTER2_LEN = 15;
 
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
@@ -206,11 +208,12 @@ void medfilt2(Param<T> out, CParam<T> in, int nBBS0, int nBBS1)
     }
 }
 
-template<typename T, af_border_type pad, unsigned w_wid>
+template<typename T, af_border_type pad, unsigned ARR_SIZE>
 __global__
-void medfilt1(Param<T> out, CParam<T> in, int nBBS0)
+void medfilt1(Param<T> out, CParam<T> in, unsigned w_wid, int nBBS0)
 {
-    __shared__ T shrdMem[(THREADS_X+w_wid-1)];
+    SharedMemory<T> shared;
+    T * shrdMem = shared.getPointer();
 
     // calculate necessary offset and window parameters
     const int padding = w_wid-1;
@@ -240,7 +243,7 @@ void medfilt1(Param<T> out, CParam<T> in, int nBBS0)
 
     // Only continue if we're at a valid location
     if (gx < in.dims[0]) {
-        const int ARR_SIZE = (w_wid-w_wid/2) + 1;
+        const int ARR_BOUNDARY = (w_wid-w_wid/2) + 1;
         // pull top half from shared memory into local memory
         T v[ARR_SIZE];
 
@@ -252,21 +255,21 @@ void medfilt1(Param<T> out, CParam<T> in, int nBBS0)
         // initial sort
         // ensure min in first half, max in second half
 #pragma unroll
-        for(int i = 0; i < ARR_SIZE/2; i++) {
-            swap(v[i], v[ARR_SIZE-1-i]);
+        for(int i = 0; i < ARR_BOUNDARY/2; i++) {
+            swap(v[i], v[ARR_BOUNDARY-1-i]);
         }
         // move min in first half to first pos
 #pragma unroll
-        for(int i = 1; i < (ARR_SIZE+1)/2; i++) {
+        for(int i = 1; i < (ARR_BOUNDARY+1)/2; i++) {
             swap(v[0], v[i]);
         }
         // move max in second half to last pos
 #pragma unroll
-        for(int i = ARR_SIZE-2; i >= ARR_SIZE/2; i--) {
-            swap(v[i], v[ARR_SIZE-1]);
+        for(int i = ARR_BOUNDARY-2; i >= ARR_BOUNDARY/2; i--) {
+            swap(v[i], v[ARR_BOUNDARY-1]);
         }
 
-        int last = ARR_SIZE-1;
+        int last = ARR_BOUNDARY-1;
 
         for(int k = w_wid/2 + 2; k < w_wid; k++) {
             // add new contestant to first position in array
@@ -293,16 +296,16 @@ void medfilt1(Param<T> out, CParam<T> in, int nBBS0)
         // each outer loop drops the min and max
         for(int k = 0; k < last; k++) {
             // move max/min into respective halves
-            for(int i = k; i < ARR_SIZE/2; i++) {
-                swap(v[i], v[ARR_SIZE-1-i]);
+            for(int i = k; i < ARR_BOUNDARY/2; i++) {
+                swap(v[i], v[ARR_BOUNDARY-1-i]);
             }
             // move min into first pos
-            for(int i = k+1; i <= ARR_SIZE/2; i++) {
+            for(int i = k+1; i <= ARR_BOUNDARY/2; i++) {
                 swap(v[k], v[i]);
             }
             // move max into last pos
-            for(int i = ARR_SIZE-k-2; i >= ARR_SIZE/2; i--) {
-                swap(v[i], v[ARR_SIZE-1-k]);
+            for(int i = ARR_BOUNDARY-k-2; i >= ARR_BOUNDARY/2; i--) {
+                swap(v[i], v[ARR_BOUNDARY-1-k]);
             }
         }
 
@@ -343,14 +346,19 @@ void medfilt1(Param<T> out, CParam<T> in, int w_wid)
 
     dim3 blocks(blk_x*in.dims[1], in.dims[2], in.dims[3] );
 
+    const size_t shrdMemBytes = sizeof(T) * (THREADS_X + w_wid - 1);
+
     switch(w_wid) {
-        case  3: CUDA_LAUNCH((medfilt1<T,pad, 3>), blocks, threads, out, in, blk_x); break;
-        case  5: CUDA_LAUNCH((medfilt1<T,pad, 5>), blocks, threads, out, in, blk_x); break;
-        case  7: CUDA_LAUNCH((medfilt1<T,pad, 7>), blocks, threads, out, in, blk_x); break;
-        case  9: CUDA_LAUNCH((medfilt1<T,pad, 9>), blocks, threads, out, in, blk_x); break;
-        case 11: CUDA_LAUNCH((medfilt1<T,pad,11>), blocks, threads, out, in, blk_x); break;
-        case 13: CUDA_LAUNCH((medfilt1<T,pad,13>), blocks, threads, out, in, blk_x); break;
-        case 15: CUDA_LAUNCH((medfilt1<T,pad,15>), blocks, threads, out, in, blk_x); break;
+        case  3: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 3>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
+        case  5: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 4>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
+        case  7: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 5>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
+        case  9: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 6>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
+        case 11: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 7>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
+        case 13: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 8>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
+        case 15: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 9>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
+        case 17: CUDA_LAUNCH_SMEM((medfilt1<T,pad,10>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
+        case 19: CUDA_LAUNCH_SMEM((medfilt1<T,pad,11>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
+        default: CUDA_LAUNCH_SMEM((medfilt1<T,pad,62>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
     }
 
     POST_LAUNCH_CHECK();

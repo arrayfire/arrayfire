@@ -42,7 +42,6 @@ void medfilt1(Array<T> out, const Array<T> in, dim_t w_wid)
 
                     wind_vals.clear();
                     for(int wi=0; wi<(int)w_wid; ++wi) {
-                        bool isRowOff = false;
 
                         int im_row = row + wi-w_wid/2;
                         int im_roff;
@@ -50,36 +49,24 @@ void medfilt1(Array<T> out, const Array<T> in, dim_t w_wid)
                             case AF_PAD_ZERO:
                                 im_roff = im_row * istrides[0];
                                 if (im_row < 0 || im_row>=(int)dims[0])
-                                    isRowOff = true;
+                                    wind_vals.push_back(0);
+                                else
+                                    wind_vals.push_back(in_ptr[im_roff]);
                                 break;
                             case AF_PAD_SYM:
                                 {
                                     if (im_row < 0) {
                                         im_row *= -1;
-                                        isRowOff = true;
                                     }
 
                                     if (im_row>=(int)dims[0]) {
                                         im_row = 2*((int)dims[0]-1) - im_row;
-                                        isRowOff = true;
                                     }
 
                                     im_roff = im_row * istrides[0];
+                                    wind_vals.push_back(in_ptr[im_roff]);
                                 }
                                 break;
-                        }
-
-                        if(isRowOff) {
-                            switch(Pad) {
-                                case AF_PAD_ZERO:
-                                    wind_vals.push_back(0);
-                                    break;
-                                case AF_PAD_SYM:
-                                    wind_vals.push_back(in_ptr[im_roff]);
-                                    break;
-                            }
-                        } else {
-                            wind_vals.push_back(in_ptr[im_roff]);
                         }
                     }
 

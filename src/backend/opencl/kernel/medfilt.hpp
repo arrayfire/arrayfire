@@ -33,13 +33,14 @@ namespace opencl
 namespace kernel
 {
 
-static const int MAX_MEDFILTER_LEN = 15;
+static const int MAX_MEDFILTER2_LEN = 15;
+static const int MAX_MEDFILTER1_LEN = 121;
 
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename T, af_border_type pad, unsigned w_wid>
-void medfilt1(Param out, const Param in)
+template<typename T, af_border_type pad>
+void medfilt1(Param out, const Param in, unsigned w_wid)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -48,7 +49,7 @@ void medfilt1(Param out, const Param in)
 
         int device = getActiveDeviceId();
 
-        std::call_once( compileFlags[device], [device] () {
+        std::call_once( compileFlags[device], [device, w_wid] () {
 
                 const int ARR_SIZE = (w_wid-w_wid/2) + 1;
 
