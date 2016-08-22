@@ -16,12 +16,17 @@ __kernel void initState(__global uint *state, __global uint *tbl, ulong seed)
     uint tmp = hidden_seed;
     tmp += tmp >> 16;
     tmp += tmp >> 8;
+    tmp &= 0xff;
+    tmp |= tmp << 8;
+    tmp |= tmp << 16;
+    lstate[get_local_id(0)] = tmp;
+    barrier(CLK_LOCAL_MEM_FENCE);
     if (get_local_id(0) == 0) {
         lstate[0] = seed;
         lstate[1] = hidden_seed;
-            for (int i = 1; i < N; ++i) {
-                lstate[i] ^= (uint)(1812433253) * (lstate[i-1] ^ (lstate[i-1] >> 30)) + i;
-            }
+        for (int i = 1; i < N; ++i) {
+            lstate[i] ^= (uint)(1812433253) * (lstate[i-1] ^ (lstate[i-1] >> 30)) + i;
+        }
     }
     barrier(CLK_LOCAL_MEM_FENCE);
     state[N*get_group_id(0) + get_local_id(0)] = lstate[get_local_id(0)];

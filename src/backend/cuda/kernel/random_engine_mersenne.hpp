@@ -72,6 +72,11 @@ namespace kernel
         uint tmp = hidden_seed;
         tmp += tmp >> 16;
         tmp += tmp >> 8;
+        tmp &= 0xff;
+        tmp |= tmp << 8;
+        tmp |= tmp << 16;
+        lstate[threadIdx.x] = tmp;
+        __syncthreads();
         if (threadIdx.x == 0) {
             lstate[0] = seed;
             lstate[1] = hidden_seed;

@@ -287,20 +287,30 @@ void testRandomEngineNormal(af_random_type type)
 
 TYPED_TEST(RandomEngine, philoxRandomEngineUniform)
 {
-    testRandomEngineUniform<TypeParam>(AF_RANDOM_PHILOX);
-}
-
-TYPED_TEST(RandomEngine, threefryRandomEngineUniform)
-{
-    testRandomEngineUniform<TypeParam>(AF_RANDOM_THREEFRY);
+    testRandomEngineUniform<TypeParam>(AF_RANDOM_PHILOX_4X32_10);
 }
 
 TYPED_TEST(RandomEngine, philoxRandomEngineNormal)
 {
-    testRandomEngineNormal<TypeParam>(AF_RANDOM_PHILOX);
+    testRandomEngineNormal<TypeParam>(AF_RANDOM_PHILOX_4X32_10);
+}
+
+TYPED_TEST(RandomEngine, threefryRandomEngineUniform)
+{
+    testRandomEngineUniform<TypeParam>(AF_RANDOM_THREEFRY_2X32_16);
 }
 
 TYPED_TEST(RandomEngine, threefryRandomEngineNormal)
 {
-    testRandomEngineNormal<TypeParam>(AF_RANDOM_THREEFRY);
+    testRandomEngineNormal<TypeParam>(AF_RANDOM_THREEFRY_2X32_16);
+}
+
+TYPED_TEST(RandomEngine, mersenneRandomEngineUniform)
+{
+    testRandomEngineUniform<TypeParam>(AF_RANDOM_MERSENNE_GP11213);
+}
+
+TYPED_TEST(RandomEngine, mersenneRandomEngineNormal)
+{
+    testRandomEngineNormal<TypeParam>(AF_RANDOM_MERSENNE_GP11213);
 }

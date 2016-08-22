@@ -19,9 +19,6 @@
 #include <random_engine.hpp>
 #include <MersenneTwister.hpp>
 
-#include <af/util.h>
-#include <iostream>
-
 using detail::cfloat;
 using detail::cdouble;
 using detail::uchar;
@@ -130,6 +127,8 @@ af_err af_random_engine_set_seed(const uintl seed, af_random_engine engine)
         e->seed = seed;
         if (e->type == AF_RANDOM_MERSENNE) {
             initMersenneState(getArray<uint>(e->state), seed, getArray<uint>(e->recursion_table));
+        } else {
+            e->counter = 0;
         }
     }
     CATCHALL;
