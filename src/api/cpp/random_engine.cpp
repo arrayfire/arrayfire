@@ -15,7 +15,7 @@
 
 namespace af
 {
-    randomEngine::randomEngine(randomType type, unsigned long long seed)
+    randomEngine::randomEngine(randomType type, uintl seed)
     {
         AF_THROW(af_create_random_engine(&engine, type, seed));
     }
@@ -88,4 +88,17 @@ namespace af
         AF_THROW(af_random_engine_normal(&out, engine, dims.ndims(), dims.get(), ty));
         return array(out);
     }
+
+    void randomEngine::setSeed(const uintl seed)
+    {
+        AF_THROW(af_random_engine_set_seed(seed, engine));
+    }
+
+    uintl randomEngine::getSeed(void)
+    {
+        uintl seed;
+        AF_THROW(af_random_engine_get_seed(&seed, engine));
+        return seed;
+    }
+
 }

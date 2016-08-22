@@ -30,3 +30,13 @@ af_err af_release_random_engine(af_random_engine engineHandle)
 {
     return CALL(engineHandle);
 }
+
+af_err af_random_engine_set_seed(const uintl seed, af_random_engine engine)
+{
+    return CALL(seed, engine);
+}
+
+af_err af_random_engine_get_seed(uintl * const seed, af_random_engine engine)
+{
+    return CALL(seed, engine);
+}
