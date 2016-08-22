@@ -38,8 +38,8 @@ namespace af
             array normal(const dim_t dim0, const dim_t dim1, const dim_t dim2, const dim_t dim3, const dtype ty = f32);
             array normal(const dim4& dims, const dtype ty = f32);
 
-            void setSeed(uintl seed);
-            uintl getSeed();
+            void setSeed(const uintl seed);
+            uintl getSeed(void);
     };
 }
 #endif
