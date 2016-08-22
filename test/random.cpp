@@ -256,7 +256,7 @@ TYPED_TEST(Random, getSeed)
 }
 
 template <typename T>
-void testRandomEngineUniform(af_random_type type)
+void testRandomEngineUniform(randomType type)
 {
     if (noDoubleTests<T>()) return;
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
@@ -271,7 +271,7 @@ void testRandomEngineUniform(af_random_type type)
 }
 
 template <typename T>
-void testRandomEngineNormal(af_random_type type)
+void testRandomEngineNormal(randomType type)
 {
     if (noDoubleTests<T>()) return;
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
@@ -313,4 +313,69 @@ TYPED_TEST(RandomEngine, mersenneRandomEngineUniform)
 TYPED_TEST(RandomEngine, mersenneRandomEngineNormal)
 {
     testRandomEngineNormal<TypeParam>(AF_RANDOM_MERSENNE_GP11213);
+}
+
+template <typename T>
+void testRandomEngineSeed(randomType type, bool is_norm = false)
+{
+    int elem = 4*32*1024;
+    uintl orig_seed = 0;
+    uintl new_seed = 1;
+    af::randomEngine e(type, orig_seed);
+
+    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    array d1 = is_norm ? e.normal(elem, ty) : e.uniform(elem, ty);
+    e.setSeed(new_seed);
+    array d2 = is_norm ? e.normal(elem, ty) : e.uniform(elem, ty);
+    e.setSeed(orig_seed);
+    array d3 = is_norm ? e.normal(elem, ty) : e.uniform(elem, ty);
+    array d4 = is_norm ? e.normal(elem, ty) : e.uniform(elem, ty);
+
+    std::vector<T> h1(elem);
+    std::vector<T> h2(elem);
+    std::vector<T> h3(elem);
+    std::vector<T> h4(elem);
+
+    d1.host((void*)h1.data());
+    d2.host((void*)h2.data());
+    d3.host((void*)h3.data());
+    d4.host((void*)h4.data());
+
+    for (int i = 0; i < elem; i++) {
+        ASSERT_EQ(h1[i], h3[i]) << "at : " << i;
+        if (ty != b8 && ty != u8) {
+            ASSERT_NE(h1[i], h2[i]);
+            ASSERT_NE(h3[i], h4[i]);
+        }
+    }
+}
+
+TYPED_TEST(RandomEngine, philoxSeedUniform)
+{
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_PHILOX, false);
+}
+
+TYPED_TEST(RandomEngine, threefrySeedUniform)
+{
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_THREEFRY, false);
+}
+
+TYPED_TEST(RandomEngine, mersenneSeedUniform)
+{
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_MERSENNE, false);
+}
+
+TYPED_TEST(RandomEngine, philoxSeedNormal)
+{
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_PHILOX, true);
+}
+
+TYPED_TEST(RandomEngine, threefrySeedNormal)
+{
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_THREEFRY, true);
+}
+
+TYPED_TEST(RandomEngine, mersenneSeedNormal)
+{
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_MERSENNE, true);
 }
