@@ -95,7 +95,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
         Array<unsigned> harris_idx = createEmptyArray<unsigned>(dim4(corners_found));
 
         // Sort Harris responses
-        sort_index<float, false>(harris_sorted, harris_idx, respCorners, 0);
+        sort_index<float>(harris_sorted, harris_idx, respCorners, 0, false);
 
         x_out = createEmptyArray<float>(dim4(corners_out));
         y_out = createEmptyArray<float>(dim4(corners_out));

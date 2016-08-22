@@ -22,7 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -78,7 +78,7 @@ namespace opencl
             NDRange global(groups_x * local[0],
                            groups_y * y.info.dims[3] * local[1]);
 
-            auto iirOp = make_kernel<Buffer, KParam,
+            auto iirOp = KernelFunctor<Buffer, KParam,
                                      Buffer, KParam,
                                      Buffer, KParam,
                                      int>(*iirKernels[device]);

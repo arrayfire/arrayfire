@@ -25,7 +25,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -127,7 +127,7 @@ namespace opencl
                         ranKernels[device] = new Kernel(*ranProgs[device], "random");
                     });
 
-                auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(*ranKernels[device]);
+                auto randomOp = KernelFunctor<cl::Buffer, uint, uint, uint, uint>(*ranKernels[device]);
 
                 uint groups = divup(elements, THREADS * REPEAT);
                 counter += divup(elements, THREADS * groups);

@@ -23,7 +23,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -80,7 +80,7 @@ namespace opencl
             NDRange global(groups_0 * out.info.dims[2] * local[0],
                            groups_1 * out.info.dims[3] * local[1]);
 
-            auto selectOp = make_kernel<Buffer, KParam,
+            auto selectOp = KernelFunctor<Buffer, KParam,
                                         Buffer, KParam,
                                         Buffer, KParam,
                                         Buffer, KParam,
@@ -158,7 +158,7 @@ namespace opencl
             NDRange global(groups_0 * out.info.dims[2] * local[0],
                            groups_1 * out.info.dims[3] * local[1]);
 
-            auto selectOp = make_kernel<Buffer, KParam,
+            auto selectOp = KernelFunctor<Buffer, KParam,
                                         Buffer, KParam,
                                         Buffer, KParam,
                                         T,

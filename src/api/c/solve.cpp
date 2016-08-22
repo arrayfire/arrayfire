@@ -51,6 +51,11 @@ af_err af_solve(af_array *out, const af_array a, const af_array b, const af_mat_
         DIM_ASSERT(1, bdims[2] == adims[2]);
         DIM_ASSERT(1, bdims[3] == adims[3]);
 
+        if(a_info.ndims() == 0 || b_info.ndims() == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, a_type);
+        }
+
         bool is_triangle_solve = (options & AF_MAT_LOWER) || (options & AF_MAT_UPPER);
 
         if (options != AF_MAT_NONE && !is_triangle_solve) {
@@ -116,6 +121,11 @@ af_err af_solve_lu(af_array *out, const af_array a,
         DIM_ASSERT(1, bdims[0] == adims[0]);
         DIM_ASSERT(1, bdims[2] == adims[2]);
         DIM_ASSERT(1, bdims[3] == adims[3]);
+
+        if(a_info.ndims() == 0 || b_info.ndims() == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, a_type);
+        }
 
         if (options != AF_MAT_NONE) {
             AF_ERROR("Using this property is not yet supported in solveLU", AF_ERR_NOT_SUPPORTED);

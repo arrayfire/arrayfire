@@ -45,6 +45,10 @@ af_err af_inverse(af_array *out, const af_array in, const af_mat_prop options)
 
         af_array output;
 
+        if(i_info.ndims() == 0) {
+            return af_retain_array(out, in);
+        }
+
         switch(type) {
             case f32: output = inverse<float  >(in);  break;
             case f64: output = inverse<double >(in);  break;

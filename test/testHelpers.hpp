@@ -382,8 +382,8 @@ inline double imag<af::cfloat> (af::cfloat val) { return imag(val); }
 template<typename T>
 bool noDoubleTests()
 {
-    bool isTypeDouble = is_same_type<T, double>::value || is_same_type<T, af::cdouble>::value;
-
+    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    bool isTypeDouble = (ty == f64) || (ty == c64);
     int dev = af::getDevice();
     bool isDoubleSupported = af::isDoubleAvailable(dev);
 

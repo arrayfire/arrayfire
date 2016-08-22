@@ -55,6 +55,11 @@ af_err af_approx1(af_array *out, const af_array in, const af_array pos,
                       (pdims[1] == idims[1] && pdims[2] == idims[2] && pdims[3] == idims[3]));
         ARG_ASSERT(3, (method == AF_INTERP_LINEAR || method == AF_INTERP_NEAREST));
 
+        if(idims.ndims() == 0 || pdims.ndims() ==  0) {
+            dim_t my_dims[] = { 0, 0, 0, 0 };
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, itype);
+        }
+
         af_array output;
 
         switch(itype) {
@@ -97,6 +102,11 @@ af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const a
         DIM_ASSERT(2, (pdims[2] == 1        && pdims[3] == 1) ||
                       (pdims[2] == idims[2] && pdims[3] == idims[3]));
         ARG_ASSERT(3, (method == AF_INTERP_LINEAR || method == AF_INTERP_NEAREST));
+
+        if(idims.ndims() == 0 || pdims.ndims() ==  0 || qdims.ndims() == 0) {
+            dim_t my_dims[] = { 0, 0, 0, 0 };
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, itype);
+        }
 
         af_array output;
 

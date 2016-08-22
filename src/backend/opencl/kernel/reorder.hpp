@@ -21,7 +21,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -59,7 +59,7 @@ namespace opencl
                     reorderKernels[device] = new Kernel(*reorderProgs[device], "reorder_kernel");
                 });
 
-                auto reorderOp = make_kernel<Buffer, const Buffer, const KParam, const KParam,
+                auto reorderOp = KernelFunctor<Buffer, const Buffer, const KParam, const KParam,
                                           const int, const int, const int, const int,
                                           const int, const int> (*reorderKernels[device]);
 

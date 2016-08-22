@@ -17,13 +17,13 @@ namespace opencl
 {
     namespace kernel
     {
-        template<typename Tk, typename Tv, bool isAscending>
-        void sort0ByKeyIterative(Param pKey, Param pVal);
+        template<typename Tk, typename Tv>
+        void sort0ByKeyIterative(Param pKey, Param pVal, bool isAscending);
 
-        template<typename Tk_, typename Tv_, bool isAscending>
-        void sortByKeyBatched(Param pKey, Param pVal, const int dim);
+        template<typename Tk_, typename Tv_>
+        void sortByKeyBatched(Param pKey, Param pVal, const int dim, bool isAscending);
 
-        template<typename Tk, typename Tv, bool isAscending>
-        void sort0ByKey(Param pKey, Param pVal);
+        template<typename Tk, typename Tv>
+        void sort0ByKey(Param pKey, Param pVal, bool isAscending);
     }
 }

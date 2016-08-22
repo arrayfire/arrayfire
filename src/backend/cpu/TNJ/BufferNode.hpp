@@ -26,10 +26,11 @@ namespace TNJ
     protected:
         shared_ptr<T> ptr;
         unsigned m_bytes;
-        bool m_is_linear;
+        bool m_linear_buffer;
         dim_t m_off;
         dim_t m_strides[4];
         dim_t m_dims[4];
+        T m_val;
     public:
 
         BufferNode(shared_ptr<T> data,
@@ -41,8 +42,9 @@ namespace TNJ
             Node(),
             ptr(data),
             m_bytes(bytes),
-            m_is_linear(is_linear),
-            m_off(data_off)
+            m_linear_buffer(is_linear),
+            m_off(data_off),
+            m_val(0)
         {
             for (int i = 0; i < 4; i++) {
                 m_strides[i] = strs[i];
@@ -52,17 +54,23 @@ namespace TNJ
 
         void *calc(int x, int y, int z, int w)
         {
-            dim_t l_off = 0;
-            l_off += (w < (int)m_dims[3]) * w * m_strides[3];
-            l_off += (z < (int)m_dims[2]) * z * m_strides[2];
-            l_off += (y < (int)m_dims[1]) * y * m_strides[1];
-            l_off += (x < (int)m_dims[0]) * x;
-            return (void *)(ptr.get() + m_off + l_off);
+            if (calcCurrent(x, y, z, w)) {
+                dim_t l_off = 0;
+                l_off += (w < (int)m_dims[3]) * w * m_strides[3];
+                l_off += (z < (int)m_dims[2]) * z * m_strides[2];
+                l_off += (y < (int)m_dims[1]) * y * m_strides[1];
+                l_off += (x < (int)m_dims[0]) * x;
+                m_val = *(ptr.get() + m_off + l_off);
+            }
+            return (void *)&m_val;
         }
 
         void *calc(int idx)
         {
-            return (void *)(ptr.get() + idx + m_off);
+            if (calcCurrent(idx)) {
+                m_val = *(ptr.get() + idx + m_off);
+            }
+            return (void *)&m_val;
         }
 
         void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
@@ -78,16 +86,22 @@ namespace TNJ
 
         void reset()
         {
-            m_is_eval = false;
+            if (m_is_eval) {
+                resetCommonFlags();
+            }
         }
 
         bool isLinear(const dim_t *dims)
         {
-            return m_is_linear &&
-                dims[0] == m_dims[0] &&
-                dims[1] == m_dims[1] &&
-                dims[2] == m_dims[2] &&
-                dims[3] == m_dims[3];
+            if (!m_set_is_linear) {
+                m_linear = m_linear_buffer &&
+                    dims[0] == m_dims[0] &&
+                    dims[1] == m_dims[1] &&
+                    dims[2] == m_dims[2] &&
+                    dims[3] == m_dims[3];
+                m_set_is_linear = true;
+            }
+            return m_linear;
         }
     };
 

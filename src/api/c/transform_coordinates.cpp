@@ -9,69 +9,57 @@
 
 #include <af/dim4.hpp>
 #include <af/defines.h>
-#include <af/vision.h>
 #include <af/image.h>
-#include <af/arith.h>
-#include <af/blas.h>
-#include <af/data.h>
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <handle.hpp>
 #include <convolve.hpp>
 #include <arith.hpp>
+#include <blas.hpp>
+#include <join.hpp>
+#include <vector>
 
 using af::dim4;
 using namespace detail;
 
 template<typename T>
+Array<T> multiplyIndexed(const Array<T> &lhs, const Array<T> &rhs, std::vector<af_seq> idx)
+{
+    return matmul(lhs, createSubArray(rhs, idx), AF_MAT_NONE, AF_MAT_NONE);
+}
+
+template<typename T>
 static af_array transform_coordinates(const af_array& tf, const float d0, const float d1)
 {
-    dim_t in_dims[2] = { 4, 3 };
+    af::dim4 h_dims(4, 3);
     T h_in[4*3] = { (T)0, (T)0,  (T)d1, (T)d1,
                     (T)0, (T)d0, (T)d0, (T)0,
                     (T)1, (T)1,  (T)1,  (T)1 };
 
-    af_array in  = 0;
-    af_array w   = 0;
-    af_array tmp = 0;
-    af_array xt  = 0;
-    af_array yt  = 0;
-    af_array t   = 0;
+    const Array<T> TF = getArray<T>(tf);
+    Array<T> IN = createHostDataArray<T>(h_dims, h_in);
 
-    AF_CHECK(af_create_array(&in, h_in, 2, in_dims, (af_dtype) af::dtype_traits<T>::af_type));
+    std::vector<af_seq> idx(2);
+    idx[0] = af_make_seq(0, 2, 1);
 
-    af_array tfIdx = 0;
-    af_index_t tfIndexs[2];
-    tfIndexs[0].isSeq = true;
-    tfIndexs[1].isSeq = true;
-    tfIndexs[0].idx.seq = af_make_seq(0, 2, 1);
-    tfIndexs[1].idx.seq = af_make_seq(2, 2, 1);
-    AF_CHECK(af_index_gen(&tfIdx, tf, 2, tfIndexs));
+    // w = 1.0 / matmul(TF, IN(span, 2));
+    // iw = matmul(TF, IN(span, 2));
+    idx[1] = af_make_seq(2, 2, 1);
+    Array<T> IW = multiplyIndexed(IN, TF, idx);
 
-    AF_CHECK(af_matmul(&tmp, in, tfIdx, AF_MAT_NONE, AF_MAT_NONE));
-    T h_w[4] = { 1, 1, 1, 1 };
-    dim_t w_dims = 4;
-    AF_CHECK(af_create_array(&w, h_w, 1, &w_dims, (af_dtype) af::dtype_traits<T>::af_type));
-    AF_CHECK(af_div(&w, w, tmp, false));
+    // xt = w * matmul(TF, IN(span, 0));
+    // xt = matmul(TF, IN(span, 0)) / iw;
+    idx[1] = af_make_seq(0, 0, 1);
+    Array<T> XT = arithOp<T, af_div_t>(multiplyIndexed(IN, TF, idx), IW, IW.dims());
 
-    tfIndexs[1].idx.seq = af_make_seq(0, 0, 1);
-    AF_CHECK(af_index_gen(&tfIdx, tf, 2, tfIndexs));
-    AF_CHECK(af_matmul(&tmp, in, tfIdx, AF_MAT_NONE, AF_MAT_NONE));
-    AF_CHECK(af_mul(&xt, tmp, w, false));
+    // yt = w * matmul(TF, IN(span, 1));
+    // yt = matmul(TF, IN(span, 1)) / iw;
+    idx[1] = af_make_seq(1, 1, 1);
+    Array<T> YT = arithOp<T, af_div_t>(multiplyIndexed(IN, TF, idx), IW, IW.dims());
 
-    tfIndexs[1].idx.seq = af_make_seq(1, 1, 1);
-    AF_CHECK(af_index_gen(&tfIdx, tf, 2, tfIndexs));
-    AF_CHECK(af_matmul(&tmp, in, tfIdx, AF_MAT_NONE, AF_MAT_NONE));
-    AF_CHECK(af_mul(&yt, tmp, w, false));
-
-    AF_CHECK(af_join(&t, 1, xt, yt));
-
-    AF_CHECK(af_release_array(w));
-    AF_CHECK(af_release_array(tmp));
-    AF_CHECK(af_release_array(xt));
-    AF_CHECK(af_release_array(yt));
-
-    return t;
+    // return join(1, xt, yt)
+    Array<T> R = join(1, XT, YT);
+    return getHandle(R);
 }
 
 af_err af_transform_coordinates(af_array *out, const af_array tf, const float d0, const float d1)

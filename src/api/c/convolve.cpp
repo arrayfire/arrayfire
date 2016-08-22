@@ -72,6 +72,10 @@ af_err convolve(af_array *out, const af_array signal, const af_array filter)
         dim4 sdims = sInfo.dims();
         dim4 fdims = fInfo.dims();
 
+        if(fdims.ndims() == 0 || sdims.ndims() ==  0) {
+            return af_retain_array(out, signal);
+        }
+
         AF_BATCH_KIND convBT = identifyBatchKind<baseDim>(sdims, fdims);
 
         ARG_ASSERT(1, (convBT != AF_BATCH_UNSUPPORTED && convBT != AF_BATCH_DIFF));
@@ -195,7 +199,7 @@ af_err af_convolve1(af_array *out, const af_array signal, const af_array filter,
 af_err af_convolve2(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode, af_conv_domain domain)
 {
     try {
-        if (getInfo(signal).dims().ndims()<2 && getInfo(filter).dims().ndims()<2) {
+        if (getInfo(signal).dims().ndims()<2 || getInfo(filter).dims().ndims()<2) {
             return af_convolve1(out, signal, filter, mode, domain);
         }
 
@@ -212,7 +216,7 @@ af_err af_convolve2(af_array *out, const af_array signal, const af_array filter,
 af_err af_convolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode, af_conv_domain domain)
 {
     try {
-        if (getInfo(signal).dims().ndims()<3 && getInfo(filter).dims().ndims()<3) {
+        if (getInfo(signal).dims().ndims()<3 || getInfo(filter).dims().ndims()<3) {
             return af_convolve2(out, signal, filter, mode, domain);
         }
 

@@ -94,7 +94,7 @@ int computeH(
         const NDRange global_ch(blk_x_ch * HG_THREADS_X, blk_y_ch * HG_THREADS_Y);
 
         // Build linear system and solve SVD
-        auto chOp = make_kernel<Buffer, KParam,
+        auto chOp = KernelFunctor<Buffer, KParam,
                                 Buffer, Buffer, Buffer, Buffer,
                                 Buffer, KParam, unsigned>(*chKernel[device]);
 
@@ -129,7 +129,7 @@ int computeH(
             median.data = bufferAlloc(sizeof(float));
 
         // Compute (and for RANSAC, evaluate) homographies
-        auto ehOp = make_kernel<Buffer, Buffer, Buffer, KParam,
+        auto ehOp = KernelFunctor<Buffer, Buffer, Buffer, KParam,
                                 Buffer, KParam,
                                 Buffer, Buffer, Buffer, Buffer,
                                 Buffer, unsigned, unsigned, float>(*ehKernel[device]);
@@ -145,13 +145,13 @@ int computeH(
         if (htype == AF_HOMOGRAPHY_LMEDS) {
             // TODO: Improve this sorting, if the number of iterations is
             // sufficiently large, this can be *very* slow
-            kernel::sort0<float, true>(err);
+            kernel::sort0<float>(err, true);
 
             unsigned minIdx;
             float minMedian;
 
             // Compute median of every iteration
-            auto cmOp = make_kernel<Buffer, Buffer, Buffer, KParam,
+            auto cmOp = KernelFunctor<Buffer, Buffer, Buffer, KParam,
                                     unsigned>(*cmKernel[device]);
 
             cmOp(EnqueueArgs(getQueue(), global_eh, local_eh),
@@ -167,7 +167,7 @@ int computeH(
                 cl::Buffer* finalMedian = bufferAlloc(sizeof(float));
                 cl::Buffer* finalIdx = bufferAlloc(sizeof(unsigned));
 
-                auto fmOp = make_kernel<Buffer, Buffer, Buffer, KParam,
+                auto fmOp = KernelFunctor<Buffer, Buffer, Buffer, KParam,
                                         Buffer>(*fmKernel[device]);
 
                 fmOp(EnqueueArgs(getQueue(), global_fm, local_fm),
@@ -193,7 +193,7 @@ int computeH(
             const NDRange local_cl(HG_THREADS);
             const NDRange global_cl(blk_x_cl * HG_THREADS);
 
-            auto clOp = make_kernel<Buffer, Buffer,
+            auto clOp = KernelFunctor<Buffer, Buffer,
                                     Buffer, Buffer, Buffer, Buffer,
                                     float, unsigned>(*clKernel[device]);
 

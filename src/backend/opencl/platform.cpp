@@ -22,8 +22,6 @@
 
 #endif
 
-#include <cl.hpp>
-
 #include <af/version.h>
 #include <af/opencl.h>
 #include <defines.hpp>
@@ -433,8 +431,13 @@ std::string getPlatformName(const cl::Device &device)
 {
     const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
     std::string platStr = platform.getInfo<CL_PLATFORM_NAME>();
+
+    // BELOW NULL TERMINATION character removal was required with
+    // cl.hpp header, however with cl2.hpp this is not needed anymore.
+    //
     // Remove null termination character from the strings
-    platStr.pop_back();
+    //platStr.pop_back();
+
     return platformMap(platStr);
 }
 
@@ -516,7 +519,7 @@ bool isHostUnifiedMemory(const cl::Device &device)
 
 bool OpenCLCPUOffload(bool forceOffloadOSX)
 {
-    static const bool offloadEnv = getEnvVar("AF_OPENCL_CPU_OFFLOAD") == "1";
+    static const bool offloadEnv = getEnvVar("AF_OPENCL_CPU_OFFLOAD") != "0";
     bool offload = false;
     if(offloadEnv) offload = isHostUnifiedMemory(getDevice());
 #if OS_MAC
@@ -528,7 +531,11 @@ bool OpenCLCPUOffload(bool forceOffloadOSX)
     // variable inconsequential to the returned result.
     //
     // Issue https://github.com/arrayfire/arrayfire/issues/662
-    offload = offload || forceOffloadOSX;
+    //
+    // Make sure device has unified memory
+    bool osx_offload = isHostUnifiedMemory(getDevice());
+    // Force condition
+    offload = osx_offload && (offload || forceOffloadOSX);
 #endif
     return offload;
 }
@@ -644,14 +651,12 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
         if (device >= (int)mQueues.size() ||
                 device>= (int)DeviceManager::MAX_DEVICES) {
             throw cl::Error(CL_INVALID_DEVICE, "Invalid device passed for CL-GL Interop");
-        }
-        else {
+        } else {
             mQueues[device]->finish();
 
             // check if the device has CL_GL sharing extension enabled
             bool temp = checkExtnAvailability(*mDevices[device], CL_GL_SHARING_EXT);
             if (!temp) {
-                printf("Device[%d] has no support for OpenGL Interoperation\n",device);
                 /* return silently if given device has not OpenGL sharing extension
                  * enabled so that regular queue is used for it */
                 return;
@@ -659,6 +664,7 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
 
             // call forge to get OpenGL sharing context and details
             cl::Platform plat(mDevices[device]->getInfo<CL_DEVICE_PLATFORM>());
+
 #ifdef OS_MAC
             CGLContextObj cgl_current_ctx = CGLGetCurrentContext();
             CGLShareGroupObj cgl_share_group = CGLGetShareGroup(cgl_current_ctx);
@@ -678,17 +684,60 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
                 CL_CONTEXT_PLATFORM, (cl_context_properties)plat(),
                 0
             };
+
+            // Check if current OpenCL device is belongs to the OpenGL context
+            {
+                cl_context_properties test_cps[] = {
+                    CL_GL_CONTEXT_KHR, (cl_context_properties)wHandle->context(),
+                    CL_CONTEXT_PLATFORM, (cl_context_properties)plat(),
+                    0
+                };
+
+                // Load the extension
+                // If cl_khr_gl_sharing is available, this function should be present
+                // This has been checked earlier, it comes to this point only if it is found
+                auto func = (clGetGLContextInfoKHR_fn)
+                    clGetExtensionFunctionAddressForPlatform(plat(), "clGetGLContextInfoKHR");
+
+                // If the function doesn't load, bail early
+                if (!func) return;
+
+                // Get all devices associated with opengl context
+                std::vector<cl_device_id> devices(16);
+                size_t ret = 0;
+                cl_int err = func(test_cps,
+                                  CL_DEVICES_FOR_GL_CONTEXT_KHR,
+                                  devices.size() * sizeof(cl_device_id),
+                                  &devices[0],
+                                  &ret);
+                if (err != CL_SUCCESS) return;
+                int num = ret / sizeof(cl_device_id);
+                devices.resize(num);
+
+                // Check if current device is present in the associated devices
+                cl_device_id current_device = (*mDevices[device])();
+                auto res = std::find(std::begin(devices),
+                                     std::end(devices),
+                                     current_device);
+
+                if (res == std::end(devices)) return;
+            }
 #endif
+
+            // Change current device to use GL sharing
             Context * ctx = new Context(*mDevices[device], cps);
             CommandQueue * cq = new CommandQueue(*ctx, *mDevices[device]);
 
+            // May be fixes the AMD GL issues we see on windows?
+#if !defined(_WIN32) && !defined(_MSC_VER)
             delete mContexts[device];
             delete mQueues[device];
+#endif
 
             mContexts[device] = ctx;
             mQueues[device] = cq;
+            mIsGLSharingOn[device] = true;
         }
-        mIsGLSharingOn[device] = true;
     } catch (const cl::Error &ex) {
         /* If replacing the original context with GL shared context
          * failes, don't throw an error and instead fall back to
@@ -801,7 +850,6 @@ bool synchronize_calls() {
 unsigned getMaxJitSize()
 {
     const int MAX_JIT_LEN = 20;
-    const int MAX_JIT_LEN_AMD = 16; //FIXME: Change this when bug is fixed
 
     static int length = 0;
     if (length == 0) {
@@ -812,11 +860,13 @@ unsigned getMaxJitSize()
             length = MAX_JIT_LEN;
         }
     }
-
-    if (getActivePlatform() == AFCL_PLATFORM_AMD) {
-        return std::min(length, MAX_JIT_LEN_AMD);
-    }
     return length;
+}
+
+bool& evalFlag()
+{
+    static bool flag = true;
+    return flag;
 }
 
 }

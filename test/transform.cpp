@@ -47,6 +47,7 @@ template<typename T>
 void transformTest(string pTestFile, string pHomographyFile, const af_interp_type method, const bool invert)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     vector<af::dim4> inNumDims;
     vector<string>   inFiles;
@@ -213,6 +214,8 @@ TYPED_TEST(TransformInt, PerspectiveLowerInvert)
 //
 TEST(Transform, CPP)
 {
+    if (noImageIOTests()) return;
+
     vector<af::dim4>   inDims;
     vector<string> inFiles;
     vector<dim_t>  goldDim;

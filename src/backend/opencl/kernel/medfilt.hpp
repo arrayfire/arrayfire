@@ -22,7 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -135,7 +135,7 @@ void medfilt2(Param out, const Param in)
         NDRange global(blk_x * in.info.dims[2] * THREADS_X,
                        blk_y * in.info.dims[3] * THREADS_Y);
 
-        auto medfiltOp = make_kernel<Buffer, KParam,
+        auto medfiltOp = KernelFunctor<Buffer, KParam,
                                      Buffer, KParam,
                                      cl::LocalSpaceArg,
                                      int, int> (*mfKernels[device]);

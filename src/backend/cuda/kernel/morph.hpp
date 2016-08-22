@@ -7,11 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <limits>
 #include <backend.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_cuda.hpp>
 #include <math.hpp>
+#include <ops.hpp>
 #include "shared.hpp"
 
 namespace cuda
@@ -102,7 +104,7 @@ static __global__ void morphKernel(Param<T> out, CParam<T> in,
     __syncthreads();
 
     const T * d_filt = (const T *)cFilter;
-    T acc = shrdMem[ lIdx(i, j, shrdLen, 1) ];
+    T acc = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
 #pragma unroll
     for(int wj=0; wj<windLen; ++wj) {
         int joff   = wj*windLen;
@@ -196,7 +198,7 @@ static __global__ void morph3DKernel(Param<T> out, CParam<T> in, int nBBS)
     int k  = lz + halo;
 
     const T * d_filt = (const T *)cFilter;
-    T acc = shrdMem[ lIdx3D(i, j, k, shrdArea, shrdLen, 1) ];
+    T acc = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
 #pragma unroll
     for(int wk=0; wk<windLen; ++wk) {
         int koff   = wk*se_area;

@@ -181,6 +181,8 @@ MACRO(CHECK_ALL_LIBRARIES
 
   IF(_bug_search_include)
     FIND_PATH(${_prefix}${_combined_name}_INCLUDE ${_include}
+      PATHS
+      ${CBLAS_ROOT_DIR}/include
       /opt/intel/mkl/include
       /usr/include
       /usr/local/include

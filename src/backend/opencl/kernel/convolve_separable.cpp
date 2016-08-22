@@ -22,7 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -86,7 +86,7 @@ void convSep(Param out, const Param signal, const Param filter)
             entry = idx->second;
         }
 
-        auto convOp = make_kernel<Buffer, KParam, Buffer, KParam, Buffer,
+        auto convOp = KernelFunctor<Buffer, KParam, Buffer, KParam, Buffer,
                                   int, int>(*entry.ker);
 
         NDRange local(THREADS_X, THREADS_Y);

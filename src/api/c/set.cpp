@@ -29,6 +29,9 @@ af_err af_set_unique(af_array *out, const af_array in, const bool is_sorted)
     try {
 
         ArrayInfo in_info = getInfo(in);
+        if(in_info.isEmpty()) {
+            return af_retain_array(out, in);
+        }
         ARG_ASSERT(1, in_info.isVector());
         af_dtype type = in_info.getType();
 
@@ -67,6 +70,15 @@ af_err af_set_union(af_array *out, const af_array first, const af_array second, 
         ArrayInfo first_info = getInfo(first);
         ArrayInfo second_info = getInfo(second);
 
+        af_array res;
+        if(first_info.isEmpty()) {
+            return af_retain_array(out, second);
+        }
+
+        if(second_info.isEmpty()) {
+            return af_retain_array(out, first);
+        }
+
         ARG_ASSERT(1, first_info.isVector());
         ARG_ASSERT(1, second_info.isVector());
 
@@ -75,7 +87,6 @@ af_err af_set_union(af_array *out, const af_array first, const af_array second, 
 
         ARG_ASSERT(1, first_type == second_type);
 
-        af_array res;
         switch(first_type) {
         case f32: res = setUnion<float  >(first, second, is_unique); break;
         case f64: res = setUnion<double >(first, second, is_unique); break;
@@ -108,6 +119,15 @@ af_err af_set_intersect(af_array *out, const af_array first, const af_array seco
 
         ArrayInfo first_info = getInfo(first);
         ArrayInfo second_info = getInfo(second);
+
+        //TODO: fix for set intersect from union
+        if(first_info.isEmpty()) {
+            return af_retain_array(out, first);
+        }
+
+        if(second_info.isEmpty()) {
+            return af_retain_array(out, second);
+        }
 
         ARG_ASSERT(1, first_info.isVector());
         ARG_ASSERT(1, second_info.isVector());

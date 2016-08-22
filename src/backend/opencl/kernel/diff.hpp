@@ -21,7 +21,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -58,7 +58,7 @@ namespace opencl
                     diffKernels[device] = new Kernel(*diffProgs[device], "diff_kernel");
                 });
 
-                auto diffOp = make_kernel<Buffer, const Buffer, const KParam, const KParam,
+                auto diffOp = KernelFunctor<Buffer, const Buffer, const KParam, const KParam,
                                           const int, const int, const int>
                                           (*diffKernels[device]);
 

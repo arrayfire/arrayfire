@@ -68,9 +68,20 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
         }
 
         val = binOp(val, l_tmp[lidy]);
-        if (cond) oData[id] = val;
+        if (inclusive_scan != 0) {
+            if (cond) {
+                oData[id] = val;
+            }
+        }
+        else {
+            if (id == (oInfo.dims[0] - 1)) {
+                oData[0] = init_val;
+            } else if (id < (oInfo.dims[0] - 1)) {
+                oData[id + 1] = val;
+            }
+        }
         id += DIMX;
-        barrier(CLK_LOCAL_MEM_FENCE); //FIXME: May be needed only for non nvidia gpus
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
 
     if (!isFinalPass && isLast && cond_yzw) {

@@ -105,6 +105,9 @@ af_err af_dot(      af_array *out,
         af_dtype lhs_type = lhsInfo.getType();
         af_dtype rhs_type = rhsInfo.getType();
 
+        if(lhsInfo.ndims() == 0) {
+            return af_retain_array(out, lhs);
+        }
         if (lhsInfo.ndims() > 1 ||
             rhsInfo.ndims() > 1) {
             AF_ERROR("dot can not be used in batch mode", AF_ERR_BATCH);

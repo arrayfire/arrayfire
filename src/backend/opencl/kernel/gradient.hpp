@@ -24,7 +24,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -71,7 +71,7 @@ namespace opencl
                     gradKernels[device] = new Kernel(*gradProgs[device], "gradient_kernel");
                 });
 
-                auto gradOp = make_kernel<Buffer, const KParam, Buffer, const KParam,
+                auto gradOp = KernelFunctor<Buffer, const KParam, Buffer, const KParam,
                                     const Buffer, const KParam, const int, const int>
                                         (*gradKernels[device]);
 

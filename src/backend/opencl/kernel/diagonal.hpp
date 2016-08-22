@@ -22,7 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -65,7 +65,7 @@ namespace kernel
             NDRange global(groups_x * local[0] * out.info.dims[2],
                            groups_y * local[1]);
 
-            auto diagCreateOp = make_kernel<Buffer, const KParam,
+            auto diagCreateOp = KernelFunctor<Buffer, const KParam,
                                             Buffer, const KParam,
                                             int, int> (*diagCreateKernels[device]);
 
@@ -109,7 +109,7 @@ namespace kernel
             NDRange global(groups_x * local[0],
                            groups_z * local[1] * out.info.dims[3]);
 
-            auto diagExtractOp = make_kernel<Buffer, const KParam,
+            auto diagExtractOp = KernelFunctor<Buffer, const KParam,
                                              Buffer, const KParam,
                                              int, int> (*diagExtractKernels[device]);
 

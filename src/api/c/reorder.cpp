@@ -30,6 +30,10 @@ af_err af_reorder(af_array *out, const af_array in, const af::dim4 &rdims)
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
 
+        if(info.elements() == 0) {
+            return af_retain_array(out, in);
+        }
+
         DIM_ASSERT(1, info.elements() > 0);
 
         // Check that dimensions are not repeated

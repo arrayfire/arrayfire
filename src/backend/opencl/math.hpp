@@ -10,6 +10,7 @@
 #pragma once
 
 #include <af/defines.h>
+#include "defines.hpp"
 
 #include <complex>
 #include <limits>
@@ -38,10 +39,6 @@ namespace opencl
     template<typename T> static inline T division(T lhs, double rhs) { return lhs / rhs; }
     cfloat division(cfloat lhs, double rhs);
     cdouble division(cdouble lhs, double rhs);
-
-#ifndef STATIC_
-#define STATIC_
-#endif
 
     template<> STATIC_
     cfloat max<cfloat>(cfloat lhs, cfloat rhs)

@@ -39,20 +39,7 @@ af::array perspectiveTransform(af::dim4 inDims, af::array H)
 {
     T d0 = (T)inDims[0];
     T d1 = (T)inDims[1];
-    af::dim4 dims(4, 3);
-    T h_in[4*3] = { (T)0, (T)0,  (T)d1, (T)d1,
-                    (T)0, (T)d0, (T)d0, (T)0,
-                    (T)1, (T)1,  (T)1,  (T)1 };
-
-    af::array in(dims, h_in);
-
-    af::array w = 1.f / af::matmul(in, H(af::span, 2));
-    af::array xt = af::matmul(in, H(af::span, 0)) * w;
-    af::array yt = af::matmul(in, H(af::span, 1)) * w;
-
-    af::array t = join(1, xt, yt);
-
-    return t;
+    return transformCoordinates(H, d0, d1);
 }
 
 template<typename T>
@@ -105,6 +92,7 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     const float theta = af::Pi * 0.5f;
     const dim_t test_d0 = inDims[0][0] * size_ratio;
     const dim_t test_d1 = inDims[0][1] * size_ratio;
+    const dim_t tDims[] = {test_d0, test_d1};
     if (rotate)
         ASSERT_EQ(AF_SUCCESS, af_rotate(&queryArray, trainArray, theta, false, AF_INTERP_NEAREST));
     else
@@ -171,8 +159,10 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     T* out_t = new T[8];
     t.host(out_t);
 
-    for (int elIter = 0; elIter < 8; elIter++)
-        ASSERT_LE(fabs(out_t[elIter] - gold_t[elIter]), 70.f) << "at: " << elIter << std::endl;
+    for (int elIter = 0; elIter < 8; elIter++) {
+        ASSERT_LE(fabs(out_t[elIter] - gold_t[elIter]) / tDims[elIter & 1], 0.1f)
+            << "at: " << elIter << std::endl;
+    }
 
     delete[] gold_t;
     delete[] out_t;
@@ -273,8 +263,10 @@ TEST(Homography, CPP)
     float* out_t = new float[4*2];
     t.host(out_t);
 
-    for (int elIter = 0; elIter < 8; elIter++)
-        ASSERT_LE(fabs(out_t[elIter] - gold_t[elIter]), 70.f) << "at: " << elIter << std::endl;
+    for (int elIter = 0; elIter < 8; elIter++) {
+        ASSERT_LE(fabs(out_t[elIter] - gold_t[elIter]) / tDims[elIter & 1], 0.1f)
+            << "at: " << elIter << std::endl;
+    }
 
     delete[] gold_t;
     delete[] out_t;

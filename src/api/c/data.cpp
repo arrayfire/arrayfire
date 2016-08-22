@@ -28,7 +28,6 @@
 
 using af::dim4;
 using namespace detail;
-using namespace std;
 
 dim4 verifyDims(const unsigned ndims, const dim_t * const dims)
 {
@@ -54,7 +53,14 @@ af_err af_constant(af_array *result, const double value,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(result, AF_MAX_DIMS, my_dims, type);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
+
 
         switch(type) {
         case f32:   out = createHandleFromValue<float  >(d, value); break;
@@ -92,7 +98,13 @@ af_err af_constant_complex(af_array *result, const double real, const double ima
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(result, AF_MAX_DIMS, my_dims, type);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
 
         switch (type) {
         case c32: out = createCplx<cfloat , float >(d, real, imag); break;
@@ -113,7 +125,13 @@ af_err af_constant_long(af_array *result, const intl val,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(result, AF_MAX_DIMS, my_dims, s64);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
 
         out = getHandle(createValueArray<intl>(d, val));
 
@@ -130,7 +148,13 @@ af_err af_constant_ulong(af_array *result, const uintl val,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(result, AF_MAX_DIMS, my_dims, u64);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
         out = getHandle(createValueArray<uintl>(d, val));
 
         std::swap(*result, out);
@@ -163,7 +187,13 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, c
         af_array result;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
 
         switch(type) {
         case f32:   result = randu_<float  >(d);    break;
@@ -192,7 +222,13 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, c
         af_array result;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
 
         switch(type) {
         case f32:   result = randn_<float  >(d);    break;
@@ -228,6 +264,11 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_t * const dims
     try {
         af_array result;
         AF_CHECK(af_init());
+
+        if(ndims == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        }
 
         dim4 d = verifyDims(ndims, dims);
 
@@ -267,7 +308,13 @@ af_err af_range(af_array *result, const unsigned ndims, const dim_t * const dims
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d = verifyDims(ndims, dims);
+        dim4 d(1, 1, 1, 1);
+        if(ndims <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(result, AF_MAX_DIMS, my_dims, type);
+        } else {
+            d = verifyDims(ndims, dims);
+        }
 
         switch(type) {
         case f32:   out = range_<float  >(d, seq_dim); break;
@@ -300,6 +347,11 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_t * const dims,
     try {
         af_array out;
         AF_CHECK(af_init());
+
+        if(ndims == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(result, AF_MAX_DIMS, my_dims, type);
+        }
 
         DIM_ASSERT(1, ndims > 0 && ndims <= 4);
         DIM_ASSERT(3, t_ndims > 0 && t_ndims <= 4);
@@ -345,6 +397,12 @@ af_err af_diag_create(af_array *out, const af_array in, const int num)
         af_dtype type = in_info.getType();
 
         af_array result;
+
+        if(in_info.dims()[0] == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        }
+
         switch(type) {
         case f32:   result = diagCreate<float  >(in, num);    break;
         case c32:   result = diagCreate<cfloat >(in, num);    break;
@@ -372,8 +430,14 @@ af_err af_diag_extract(af_array *out, const af_array in, const int num)
 
     try {
         ArrayInfo in_info = getInfo(in);
-        DIM_ASSERT(1, in_info.ndims() >= 2);
         af_dtype type = in_info.getType();
+
+        if(in_info.ndims() == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        }
+
+        DIM_ASSERT(1, in_info.ndims() >= 2);
 
         af_array result;
         switch(type) {
@@ -411,7 +475,13 @@ af_array triangle(const af_array in, bool is_unit_diag)
 af_err af_lower(af_array *out, const af_array in, bool is_unit_diag)
 {
     try {
-        af_dtype type = getInfo(in).getType();
+        ArrayInfo info = getInfo(in);
+        af_dtype type = info.getType();
+
+        if(info.ndims() == 0) {
+            return af_retain_array(out, in);
+        }
+
         af_array res;
         switch(type) {
         case f32: res = triangle<float   , false>(in, is_unit_diag); break;
@@ -437,7 +507,13 @@ af_err af_lower(af_array *out, const af_array in, bool is_unit_diag)
 af_err af_upper(af_array *out, const af_array in, bool is_unit_diag)
 {
     try {
-        af_dtype type = getInfo(in).getType();
+        ArrayInfo info = getInfo(in);
+        af_dtype type = info.getType();
+
+        if(info.ndims() == 0) {
+            return af_retain_array(out, in);
+        }
+
         af_array res;
         switch(type) {
         case f32: res = triangle<float   , true>(in, is_unit_diag); break;

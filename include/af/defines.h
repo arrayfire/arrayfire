@@ -357,6 +357,16 @@ typedef enum {
 } af_image_format;
 #endif
 
+#if AF_API_VERSION >=34
+typedef enum {
+    AF_MOMENT_M00 = 1,
+    AF_MOMENT_M01 = 2,
+    AF_MOMENT_M10 = 4,
+    AF_MOMENT_M11 = 8,
+    AF_MOMENT_FIRST_ORDER = AF_MOMENT_M00 | AF_MOMENT_M01 | AF_MOMENT_M10 | AF_MOMENT_M11
+} af_moment_type;
+#endif
+
 #if AF_API_VERSION >= 32
 typedef enum {
     AF_HOMOGRAPHY_RANSAC = 0,   ///< Computes homography using RANSAC
@@ -380,6 +390,15 @@ typedef enum {
 typedef enum {
     AF_ID = 0
 } af_someenum_t;
+
+#if AF_API_VERSION >=34
+typedef enum {
+    AF_BINARY_ADD  = 0,
+    AF_BINARY_MUL  = 1,
+    AF_BINARY_MIN  = 2,
+    AF_BINARY_MAX  = 3
+} af_binary_op;
+#endif
 
 #if AF_API_VERSION >=32
 typedef enum {
@@ -422,6 +441,12 @@ namespace af
 #endif
 #if AF_API_VERSION >= 32
     typedef af_marker_type markerType;
+#endif
+#if AF_API_VERSION >=34
+    typedef af_moment_type momentType;
+#endif
+#if AF_API_VERSION >= 34
+    typedef af_binary_op binaryOp;
 #endif
 }
 

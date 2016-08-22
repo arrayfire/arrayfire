@@ -22,7 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::LocalSpaceArg;
 using cl::NDRange;
@@ -63,7 +63,7 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
                     bilKernels[device] = new Kernel(*bilProgs[device], "bilateral");
                 });
 
-        auto bilateralOp = make_kernel<Buffer, KParam,
+        auto bilateralOp = KernelFunctor<Buffer, KParam,
                                        Buffer, KParam,
                                        LocalSpaceArg,
                                        LocalSpaceArg,
