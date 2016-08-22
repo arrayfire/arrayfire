@@ -46,6 +46,14 @@ af_err af_join(af_array *out, const int dim, const af_array first, const af_arra
 
         ARG_ASSERT(1, dim >= 0 && dim < 4);
         ARG_ASSERT(2, finfo.getType() == sinfo.getType());
+        if(sinfo.elements() == 0) {
+            return af_retain_array(out, first);
+        }
+
+        if(finfo.elements() == 0) {
+            return af_retain_array(out, second);
+        }
+
         DIM_ASSERT(2, sinfo.elements() > 0);
         DIM_ASSERT(3, finfo.elements() > 0);
 

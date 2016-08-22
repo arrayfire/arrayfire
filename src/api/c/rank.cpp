@@ -60,6 +60,10 @@ af_err af_rank(uint *out, const af_array in, const double tol)
         ARG_ASSERT(1, i_info.isFloating());                       // Only floating and complex types
 
         uint output;
+        if(i_info.ndims() == 0) {
+            output = 0;
+            return AF_SUCCESS;
+        }
 
         switch(type) {
             case f32: output = rank<float  >(in, tol);  break;
