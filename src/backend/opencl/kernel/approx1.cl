@@ -139,8 +139,8 @@ void core_cubic(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t i
     // Compute Left and Right Weighted Values
     Ty pl = d_in[ioff];
     Ty pr = condl1  ? d_in[ioff + 1] : d_in[ioff];
-    Ty tl = condr   ? 0.5 * (d_in[ioff + 1] - d_in[ioff - 1]) : (d_in[ioff + 1] - d_in[ioff]);
-    Ty tr = condl2  ? 0.5 * (d_in[ioff + 2] - d_in[ioff]) : (condl1) ? d_in[ioff + 1] - d_in[ioff] : (d_in[ioff] - d_in[ioff - 1]);
+    Ty tl = condr   ? (Ty)0.5 * (d_in[ioff + 1] - d_in[ioff - 1]) : (d_in[ioff + 1] - d_in[ioff]);
+    Ty tr = condl2  ? (Ty)0.5 * (d_in[ioff + 2] - d_in[ioff]) : (condl1) ? d_in[ioff + 1] - d_in[ioff] : (d_in[ioff] - d_in[ioff - 1]);
 
     // Write final value
     set(d_out[omId], h00 * pl + h10 * tl + h01 * pr + h11 * tr);

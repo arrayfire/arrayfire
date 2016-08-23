@@ -87,8 +87,9 @@ void approx1Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
     size_t nElems = tests[resultIdx].size();
     bool ret = true;
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ret = abs(tests[resultIdx][elIter] - outData[elIter]) < 0.0005;
-        ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
+        ret = (abs(tests[resultIdx][elIter] - outData[elIter]) < 0.0005);
+        if(!ret)printf("error: %f", abs(tests[resultIdx][elIter] - outData[elIter]));
+        //ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
     }
 
     // Delete
@@ -148,6 +149,14 @@ void approx1CubicTest(string pTestFile, const unsigned resultIdx, const af_inter
     size_t nElems = tests[resultIdx].size();
     bool ret = true;
 
+    float max = real(outData[0]), min = real(outData[0]);
+    for(int i=1; i < nElems; ++i) {
+        min = (real(outData[i]) < min) ? real(outData[i]) : min;
+        max = (real(outData[i]) > max) ? real(outData[i]) : max;
+    }
+    float range = max - min;
+    ASSERT_GT(range, 0.f);
+
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
         double integral;
         //test that control points are exact
@@ -156,8 +165,7 @@ void approx1CubicTest(string pTestFile, const unsigned resultIdx, const af_inter
             ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
         } else {
             //match intermediate values withing a threshold
-            ret = abs(tests[resultIdx][elIter] - outData[elIter]) < 8;
-            //ret = abs(tests[resultIdx][elIter] - outData[elIter]) < 0.05 * range; //TODO: percentage
+            ret = abs(tests[resultIdx][elIter] - outData[elIter]) < 0.035 * range;
             ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
         }
     }
@@ -265,7 +273,6 @@ void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
     APPROX1_ARGSP(Approx1NearestArgsPrecision, approx1, 0, AF_INTERP_NEAREST);
     APPROX1_ARGSP(Approx1LinearArgsPrecision, approx1, 1, AF_INTERP_LINEAR);
     APPROX1_ARGSP(Approx1CubicArgsPrecision, approx1_cubic, 2, AF_INTERP_CUBIC);
-
 
 //////////////////////////////////////// CPP //////////////////////////////////
 //

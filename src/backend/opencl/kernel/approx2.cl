@@ -164,10 +164,10 @@ void core_cubic2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t 
 
     dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + grid_y * in.strides[1] + grid_x;
     // used for setting values at boundaries
-    bool condXl = (x < 1);
-    bool condYl = (y < 1);
-    bool condXg = (x > in.dims[0] - 3);
-    bool condYg = (y > in.dims[1] - 3);
+    bool condXl = (grid_x < 1);
+    bool condYl = (grid_y < 1);
+    bool condXg = (grid_x > in.dims[0] - 3);
+    bool condYg = (grid_y > in.dims[1] - 3);
 
     //for bicubic interpolation, work with 4x4 patch at a time
     Ty patch[4][4];
@@ -179,19 +179,19 @@ void core_cubic2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t 
     patch[2][1] = d_in[ioff + in.strides[1]];
     patch[2][2] = d_in[ioff + in.strides[1] + 1];
     //outer sides
-    patch[0][1] = (condYl)? (Ty)offGrid : d_in[ioff - in.strides[1]];
-    patch[0][2] = (condYl)? (Ty)offGrid : d_in[ioff - in.strides[1] + 1];
-    patch[3][1] = (condYg)? (Ty)offGrid : d_in[ioff + 2 * in.strides[1]];
-    patch[3][2] = (condYg)? (Ty)offGrid : d_in[ioff + 2 * in.strides[1] + 1];
-    patch[1][0] = (condXl)? (Ty)offGrid : d_in[ioff - 1];
-    patch[2][0] = (condXl)? (Ty)offGrid : d_in[ioff + in.strides[1] -1];
-    patch[1][3] = (condXg)? (Ty)offGrid : d_in[ioff + 2];
-    patch[2][3] = (condXg)? (Ty)offGrid : d_in[ioff + in.strides[1] + 2];
+    patch[0][1] = (condYl)? d_in[ioff]     : d_in[ioff - in.strides[1]];
+    patch[0][2] = (condYl)? d_in[ioff + 1] : d_in[ioff - in.strides[1] + 1];
+    patch[3][1] = (condYg)? d_in[ioff + in.strides[1]]     : d_in[ioff + 2 * in.strides[1]];
+    patch[3][2] = (condYg)? d_in[ioff + in.strides[1] + 1] : d_in[ioff + 2 * in.strides[1] + 1];
+    patch[1][0] = (condXl)? d_in[ioff] : d_in[ioff - 1];
+    patch[2][0] = (condXl)? d_in[ioff + in.strides[1]] : d_in[ioff + in.strides[1] - 1];
+    patch[1][3] = (condXg)? d_in[ioff + 1] : d_in[ioff + 2];
+    patch[2][3] = (condXg)? d_in[ioff + in.strides[1] + 1] : d_in[ioff + in.strides[1] + 2];
     //corners
-    patch[0][0] = (condXl || condYl)? (Ty)offGrid : d_in[ioff - in.strides[1] - 1]     ;
-    patch[0][3] = (condYl || condXg)? (Ty)offGrid : d_in[ioff - in.strides[1] + 1]     ;
-    patch[3][0] = (condXl || condYg)? (Ty)offGrid : d_in[ioff + 2 * in.strides[1] - 1] ;
-    patch[3][3] = (condXg || condYg)? (Ty)offGrid : d_in[ioff + 2 * in.strides[1] + 2] ;
+    patch[0][0] = (condXl || condYl)? d_in[ioff] : d_in[ioff - in.strides[1] - 1]    ;
+    patch[0][3] = (condYl || condXg)? d_in[ioff + 1] : d_in[ioff - in.strides[1] + 1]    ;
+    patch[3][0] = (condXl || condYg)? d_in[ioff + in.strides[1]] : d_in[ioff + 2 * in.strides[1] - 1];
+    patch[3][3] = (condXg || condYg)? d_in[ioff + in.strides[1] + 1] : d_in[ioff + 2 * in.strides[1] + 2];
 
     set(d_out[omId], bicubicInterpolate(patch, off_x, off_y));
 }
