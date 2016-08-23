@@ -254,8 +254,8 @@ namespace kernel
     void uniformDistributionCBRNG(T* out, size_t elements, af_random_type type, const uintl seed, uintl counter)
     {
         switch(type) {
-            case AF_RANDOM_PHILOX   :   philoxUniform(out, elements, seed, counter); break;
-            case AF_RANDOM_THREEFRY : threefryUniform(out, elements, seed, counter); break;
+            case AF_RANDOM_PHILOX_4X32_10   :   philoxUniform(out, elements, seed, counter); break;
+            case AF_RANDOM_THREEFRY_2X32_16 : threefryUniform(out, elements, seed, counter); break;
             default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
     }
@@ -264,8 +264,8 @@ namespace kernel
     void normalDistributionCBRNG(T* out, size_t elements, af_random_type type, const uintl seed, uintl counter)
     {
         switch(type) {
-            case AF_RANDOM_PHILOX   :   philoxNormal(out, elements, seed, counter); break;
-            case AF_RANDOM_THREEFRY : threefryNormal(out, elements, seed, counter); break;
+            case AF_RANDOM_PHILOX_4X32_10   :   philoxNormal(out, elements, seed, counter); break;
+            case AF_RANDOM_THREEFRY_2X32_16 : threefryNormal(out, elements, seed, counter); break;
             default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
     }

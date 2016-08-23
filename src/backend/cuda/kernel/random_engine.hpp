@@ -623,9 +623,9 @@ namespace kernel
         uint hi = seed>>32;
         uint lo = seed;
         switch (type) {
-        case AF_RANDOM_PHILOX : CUDA_LAUNCH(uniformPhilox, blocks, threads,
+        case AF_RANDOM_PHILOX_4X32_10   : CUDA_LAUNCH(uniformPhilox, blocks, threads,
                 out, hi, lo, counter, elementsPerBlock, elements); break;
-        case AF_RANDOM_THREEFRY : CUDA_LAUNCH(uniformThreefry, blocks, threads,
+        case AF_RANDOM_THREEFRY_2X32_16 : CUDA_LAUNCH(uniformThreefry, blocks, threads,
                 out, hi, lo, counter, elementsPerBlock, elements); break;
         default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
@@ -641,9 +641,9 @@ namespace kernel
         uint hi = seed>>32;
         uint lo = seed;
         switch (type) {
-        case AF_RANDOM_PHILOX : CUDA_LAUNCH(normalPhilox, blocks, threads,
+        case AF_RANDOM_PHILOX_4X32_10   : CUDA_LAUNCH(normalPhilox, blocks, threads,
                 out, hi, lo, counter, elementsPerBlock, elements); break;
-        case AF_RANDOM_THREEFRY : CUDA_LAUNCH(normalThreefry, blocks, threads,
+        case AF_RANDOM_THREEFRY_2X32_16 : CUDA_LAUNCH(normalThreefry, blocks, threads,
                 out, hi, lo, counter, elementsPerBlock, elements); break;
         default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }

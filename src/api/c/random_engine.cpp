@@ -66,7 +66,7 @@ RandomEngine* getRandomEngine(const af_random_engine engineHandle)
 template<typename T>
 static inline af_array uniformDistribution_(const af::dim4 &dims, RandomEngine *e)
 {
-    if (e->type == AF_RANDOM_MERSENNE) {
+    if (e->type == AF_RANDOM_MERSENNE_GP11213) {
         return getHandle(uniformDistribution<T>(dims,
                     getArray<uint>(e->pos),
                     getArray<uint>(e->sh1),
@@ -83,7 +83,7 @@ static inline af_array uniformDistribution_(const af::dim4 &dims, RandomEngine *
 template<typename T>
 static inline af_array normalDistribution_(const af::dim4 &dims, RandomEngine *e)
 {
-    if (e->type == AF_RANDOM_MERSENNE) {
+    if (e->type == AF_RANDOM_MERSENNE_GP11213) {
         return getHandle(normalDistribution<T>(dims,
                     getArray<uint>(e->pos),
                     getArray<uint>(e->sh1),
@@ -104,7 +104,7 @@ af_err af_create_random_engine(af_random_engine *engineHandle, af_random_type rt
         e.type = rtype;
         e.seed = seed;
         e.counter = 0;
-        if (rtype == AF_RANDOM_MERSENNE) {
+        if (rtype == AF_RANDOM_MERSENNE_GP11213) {
             AF_CHECK(af_create_array(&e.pos, pos, 1, &MaxBlocks, u32));
             AF_CHECK(af_create_array(&e.sh1, sh1, 1, &MaxBlocks, u32));
             AF_CHECK(af_create_array(&e.sh2, sh2, 1, &MaxBlocks, u32));
@@ -125,7 +125,7 @@ af_err af_random_engine_set_seed(const uintl seed, af_random_engine engine)
         AF_CHECK(af_init());
         RandomEngine *e = getRandomEngine(engine);
         e->seed = seed;
-        if (e->type == AF_RANDOM_MERSENNE) {
+        if (e->type == AF_RANDOM_MERSENNE_GP11213) {
             initMersenneState(getWritableArray<uint>(e->state), seed, getArray<uint>(e->recursion_table));
         } else {
             e->counter = 0;
@@ -202,7 +202,7 @@ af_err af_release_random_engine(af_random_engine engineHandle)
 {
     try {
         RandomEngine *e = getRandomEngine(engineHandle);
-        if (e->type == AF_RANDOM_MERSENNE) {
+        if (e->type == AF_RANDOM_MERSENNE_GP11213) {
             AF_CHECK(af_release_array(e->pos));
             AF_CHECK(af_release_array(e->sh1));
             AF_CHECK(af_release_array(e->sh2));

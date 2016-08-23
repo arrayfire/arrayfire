@@ -364,30 +364,30 @@ void testRandomEngineSeed(randomType type, bool is_norm = false)
 
 TYPED_TEST(RandomEngineSeed, philoxSeedUniform)
 {
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_PHILOX, false);
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_PHILOX_4X32_10, false);
 }
 
 TYPED_TEST(RandomEngineSeed, threefrySeedUniform)
 {
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_THREEFRY, false);
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_THREEFRY_2X32_16, false);
 }
 
 TYPED_TEST(RandomEngineSeed, mersenneSeedUniform)
 {
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_MERSENNE, false);
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_MERSENNE_GP11213, false);
 }
 
 TYPED_TEST(RandomEngineSeed, philoxSeedNormal)
 {
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_PHILOX, true);
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_PHILOX_4X32_10, true);
 }
 
 TYPED_TEST(RandomEngineSeed, threefrySeedNormal)
 {
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_THREEFRY, true);
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_THREEFRY_2X32_16, true);
 }
 
 TYPED_TEST(RandomEngineSeed, mersenneSeedNormal)
 {
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_MERSENNE, true);
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_MERSENNE_GP11213, true);
 }
