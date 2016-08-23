@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2015, ArrayFire
+ * Copyright (c) 2015,  ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -8,6 +8,9 @@
  ********************************************************/
 
 #pragma once
+#include <af/defines.h>
+#include <handle.hpp>
+#include <cast.hpp>
 #include <Array.hpp>
 #include <math.hpp>
 
@@ -15,6 +18,7 @@ namespace cpu
 {
 namespace kernel
 {
+
 
 template<typename InT, typename LocT, af_interp_type Method>
 struct approx2_op
@@ -99,7 +103,7 @@ struct approx2_op<InT, LocT, AF_INTERP_LINEAR>
         bool condY = (y < idims[1] - 1);
         bool condX = (x < idims[0] - 1);
 
-        // Compute wieghts used
+        // Compute weights used
         LocT wt00 = ((LocT)1.0 - off_x) * ((LocT)1.0 - off_y);
         LocT wt10 = (condY) ? ((LocT)1.0 - off_x) * (off_y) : 0;
         LocT wt01 = (condX) ? (off_x) * ((LocT)1.0 - off_y) : 0;
@@ -127,6 +131,97 @@ struct approx2_op<InT, LocT, AF_INTERP_LINEAR>
             // Write Final Value
             out[omId] = (yo / wt);
         }
+    }
+};
+
+template<typename InT, typename LocT> inline static
+InT cubicInterpolate(InT p[4], LocT x) {
+    return p[1] + scalar<InT>(0.5) * x *
+        (p[2] - p[0] + x * (scalar<InT>(2.0) *
+                     p[0] - scalar<InT>(5.0) *
+                     p[1] + scalar<InT>(4.0) *
+                     p[2] - p[3] + x * (scalar<InT>(3.0) *
+                     (p[1] - p[2]) + p[3] - p[0])));
+}
+
+template<typename InT, typename LocT> inline static
+InT bicubicInterpolate(InT p[4][4], LocT x, LocT y) {
+    InT arr[4];
+    arr[0] = cubicInterpolate(p[0], x);
+    arr[1] = cubicInterpolate(p[1], x);
+    arr[2] = cubicInterpolate(p[2], x);
+    arr[3] = cubicInterpolate(p[3], x);
+    return cubicInterpolate(arr, y);
+}
+
+template<typename InT, typename LocT>
+struct approx2_op<InT, LocT, AF_INTERP_CUBIC>
+{
+    void operator()(InT *out, af::dim4 const & odims, dim_t const oElems,
+              InT const * const in,  af::dim4 const & idims, dim_t const iElems,
+              LocT const * const pos, af::dim4 const & pdims, LocT const * const qos, af::dim4 const & qdims,
+              af::dim4 const & ostrides, af::dim4 const & istrides,
+              af::dim4 const & pstrides, af::dim4 const & qstrides,
+              float const offGrid, bool const pBatch,
+              dim_t const idx, dim_t const idy, dim_t const idz, dim_t const idw)
+    {
+        dim_t pmId = idy * pstrides[1] + idx;
+        dim_t qmId = idy * qstrides[1] + idx;
+        if(pBatch) {
+            pmId += idw * pstrides[3] + idz * pstrides[2];
+            qmId += idw * qstrides[3] + idz * qstrides[2];
+        }
+
+        LocT const x = pos[pmId], y = qos[qmId];
+
+
+        dim_t const grid_x = floor(x),   grid_y = floor(y);   // nearest grid
+        LocT  const off_x  = x - grid_x, off_y  = y - grid_y; // 0-1 fractional offset
+
+        //input and output indices
+        dim_t const omId = idw * ostrides[3] + idz * ostrides[2]
+                         + idy * ostrides[1] + idx;
+        dim_t ioff = idw * istrides[3] + idz * istrides[2]
+                + grid_y * istrides[1] + grid_x;
+
+        // Check if x,y are in bounds
+        if (x < 0 || y < 0 || x > idims[0] - 1 || y > idims[1] - 1) {
+            out[omId] = scalar<InT>(offGrid);
+            return;
+        }
+
+        // used for setting values at boundaries
+        bool condXl = (grid_x < 1);
+        bool condYl = (grid_y < 1);
+        bool condXg = (grid_x > idims[0] - 3);
+        bool condYg = (grid_y > idims[1] - 3);
+
+        //for bicubic interpolation, work with 4x4 patch at a time
+        InT patch[4][4];
+
+        //assumption is that inner patch consisting of 4 points is minimum requirement for bicubic interpolation
+        //inner square
+        patch[1][1] = in[ioff];
+        patch[1][2] = in[ioff + 1];
+        patch[2][1] = in[ioff + istrides[1]];
+        patch[2][2] = in[ioff + istrides[1] + 1];
+        //outer sides
+        patch[0][1] = (condYl)? in[ioff]     : in[ioff - istrides[1]];
+        patch[0][2] = (condYl)? in[ioff + 1] : in[ioff - istrides[1] + 1];
+        patch[3][1] = (condYg)? in[ioff + istrides[1]]     : in[ioff + 2 * istrides[1]];
+        patch[3][2] = (condYg)? in[ioff + istrides[1] + 1] : in[ioff + 2 * istrides[1] + 1];
+        patch[1][0] = (condXl)? in[ioff] : in[ioff - 1];
+        patch[2][0] = (condXl)? in[ioff + istrides[1]] : in[ioff + istrides[1] - 1];
+        patch[1][3] = (condXg)? in[ioff + 1] : in[ioff + 2];
+        patch[2][3] = (condXg)? in[ioff + istrides[1] + 1] : in[ioff + istrides[1] + 2];
+        //corners
+        patch[0][0] = (condXl || condYl)? in[ioff] : in[ioff - istrides[1] - 1]    ;
+        patch[0][3] = (condYl || condXg)? in[ioff + 1] : in[ioff - istrides[1] + 1]    ;
+        patch[3][0] = (condXl || condYg)? in[ioff + istrides[1]] : in[ioff + 2 * istrides[1] - 1];
+        patch[3][3] = (condXg || condYg)? in[ioff + istrides[1] + 1] : in[ioff + 2 * istrides[1] + 2];
+
+        // Write Final Value
+        out[omId] = bicubicInterpolate(patch, off_x, off_y);
     }
 };
 

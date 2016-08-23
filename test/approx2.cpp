@@ -159,7 +159,6 @@ void approx2ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
     APPROX2_ARGS(Approx2LinearArgsPos3D,       approx2_pos3d,   1, AF_INTERP_LINEAR,   AF_ERR_SIZE);
     APPROX2_ARGS(Approx2NearestArgsPosUnequal, approx2_unequal, 0, AF_INTERP_NEAREST,  AF_ERR_SIZE);
     APPROX2_ARGS(Approx2ArgsInterpBilinear,    approx2,         0, AF_INTERP_BILINEAR, AF_ERR_ARG);
-    APPROX2_ARGS(Approx2ArgsInterpCubic,       approx2,         0, AF_INTERP_CUBIC,    AF_ERR_ARG);
 
 template<typename T>
 void approx2ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const af_interp_type method)
@@ -241,6 +240,55 @@ TEST(Approx2, CPP)
     bool ret = true;
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
         ret = (std::abs(tests[resultIdx][elIter] - outData[elIter]) < 0.001);
+        ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
+    }
+
+    // Delete
+    delete[] outData;
+
+#undef BT
+}
+
+TEST(Approx2Cubic, CPP)
+{
+    if (noDoubleTests<float>()) return;
+    const unsigned resultIdx = 0;
+#define BT af::dtype_traits<float>::base_type
+    vector<af::dim4> numDims;
+    vector<vector<BT> > in;
+    vector<vector<float> > tests;
+    readTests<BT, float, float>(string(TEST_DIR"/approx/approx2_cubic.test"),numDims,in,tests);
+
+    af::dim4 idims = numDims[0];
+    af::dim4 pdims = numDims[1];
+    af::dim4 qdims = numDims[2];
+
+    af::array input(idims,&(in[0].front()));
+    input = input.T();
+    af::array pos0(pdims,&(in[1].front()));
+    af::array pos1(qdims,&(in[2].front()));
+    pos0 = tile(pos0, 1, pos0.dims(0));
+    pos1 = tile(pos1.T(), pos1.dims(0));
+    af::array output = af::approx2(input, pos0, pos1, AF_INTERP_CUBIC, 0).T();
+
+    // Get result
+    float* outData = new float[tests[resultIdx].size()];
+    output.host((void*)outData);
+
+    // Compare result
+    size_t nElems = tests[resultIdx].size();
+    bool ret = true;
+
+    float max = real(outData[0]), min = real(outData[0]);
+    for(int i=1; i < nElems; ++i) {
+        min = (real(outData[i]) < min) ? real(outData[i]) : min;
+        max = (real(outData[i]) > max) ? real(outData[i]) : max;
+    }
+    float range = max - min;
+    ASSERT_GT(range, 0.f);
+
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ret = (std::abs(tests[resultIdx][elIter] - outData[elIter]) < 0.01 * range);
         ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
     }
 
