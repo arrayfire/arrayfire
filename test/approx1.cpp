@@ -88,8 +88,7 @@ void approx1Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
     bool ret = true;
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
         ret = (abs(tests[resultIdx][elIter] - outData[elIter]) < 0.0005);
-        if(!ret)printf("error: %f", abs(tests[resultIdx][elIter] - outData[elIter]));
-        //ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
+        ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
     }
 
     // Delete

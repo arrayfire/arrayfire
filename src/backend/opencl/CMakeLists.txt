@@ -87,7 +87,9 @@ FIND_PACKAGE(Boost 1.48 REQUIRED)
 
 OPTION(USE_SYSTEM_BOOST_COMPUTE "Use system BoostCompute" OFF)
 IF(USE_SYSTEM_BOOST_COMPUTE)
-    FIND_PACKAGE(BoostCompute REQUIRED)
+    IF(Boost_VERSION VERSION_LESS "1.61")
+        FIND_PACKAGE(BoostCompute REQUIRED)
+    ENDIF()
 ELSE()
     INCLUDE("${CMAKE_MODULE_PATH}/build_boost_compute.cmake")
 ENDIF()
@@ -230,7 +232,6 @@ CL_KERNEL_TO_H(
     OUTPUT_DIR ${cl_kernel_headers}
     TARGETS cl_kernel_targets
     NAMESPACE "opencl"
-    EOF "0"
     )
 
 # OS Definitions

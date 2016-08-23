@@ -136,7 +136,12 @@ struct approx2_op<InT, LocT, AF_INTERP_LINEAR>
 
 template<typename InT, typename LocT> inline static
 InT cubicInterpolate(InT p[4], LocT x) {
-    return p[1] + scalar<InT>(0.5) * x * (p[2] - p[0] + x * (scalar<InT>(2.0) * p[0] - scalar<InT>(5.0) * p[1] + scalar<InT>(4.0) * p[2] - p[3] + x*(scalar<InT>(3.0)*(p[1] - p[2]) + p[3] - p[0])));
+    return p[1] + scalar<InT>(0.5) * x *
+        (p[2] - p[0] + x * (scalar<InT>(2.0) *
+                     p[0] - scalar<InT>(5.0) *
+                     p[1] + scalar<InT>(4.0) *
+                     p[2] - p[3] + x * (scalar<InT>(3.0) *
+                     (p[1] - p[2]) + p[3] - p[0])));
 }
 
 template<typename InT, typename LocT> inline static

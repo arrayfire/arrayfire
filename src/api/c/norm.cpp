@@ -138,6 +138,8 @@ af_err af_norm(double *out, const af_array in,
 
         *out = 0;
 
+        if(i_info.ndims() == 0) { return AF_SUCCESS; }
+
         switch(i_type) {
         case f32: *out = norm<float  >(in, type, p, q);  break;
         case f64: *out = norm<double >(in, type, p, q);  break;

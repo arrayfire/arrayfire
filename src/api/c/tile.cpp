@@ -55,6 +55,9 @@ af_err af_tile(af_array *out, const af_array in, const af::dim4 &tileDims)
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
 
+        if(info.ndims() == 0) {
+            return af_retain_array(out, in);
+        }
         DIM_ASSERT(1, info.dims().elements() > 0);
         DIM_ASSERT(2, tileDims.elements() > 0);
 

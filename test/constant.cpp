@@ -130,10 +130,10 @@ void IdentityCPPError() {
         array out = af::identity(num, 0, 10, dty);
     }
     catch(const af::exception &ex) {
-        SUCCEED();
+        FAIL() << "Incorrectly thrown 0-length exception";
         return;
     }
-    FAIL() << "Failed to throw an exception";
+    SUCCEED();
 }
 
 TYPED_TEST(Constant, basicCPP)

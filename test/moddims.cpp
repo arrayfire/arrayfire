@@ -136,7 +136,7 @@ void moddimsArgsTest(string pTestFile)
     af::dim4 newDims(1);
     newDims[0] = dims[1];
     newDims[1] = dims[0]*dims[2];
-    ASSERT_EQ(AF_ERR_ARG, af_moddims(&outArray,inArray,0,newDims.get()));
+    ASSERT_EQ(AF_SUCCESS, af_moddims(&outArray,inArray,0,newDims.get()));
     ASSERT_EQ(AF_ERR_ARG, af_moddims(&outArray,inArray,newDims.ndims(),NULL));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));

@@ -48,6 +48,13 @@ static af_array cast(const af_array in, const af_dtype type)
 af_err af_cast(af_array *out, const af_array in, const af_dtype type)
 {
     try {
+        const ArrayInfo info = getInfo(in);
+        dim4 idims = info.dims();
+        if(idims.elements() == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        }
+
         af_array res = cast(in, type);
         std::swap(*out, res);
     }

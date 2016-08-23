@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <copy.hpp>
 #include <JIT/Node.hpp>
+
 #include <ptx_headers/arith.hpp>
 #include <ptx_headers/logic.hpp>
 #include <ptx_headers/exp.hpp>
@@ -20,6 +21,23 @@
 #include <ptx_headers/trig.hpp>
 #include <ptx_headers/hyper.hpp>
 #include <ptx_headers/cast.hpp>
+
+#if defined(__LIBDEVICE_COMPUTE_20)
+#include <libdevice_headers/compute_20.hpp>
+#endif
+
+#if defined(__LIBDEVICE_COMPUTE_30)
+#include <libdevice_headers/compute_30.hpp>
+#endif
+
+#if defined(__LIBDEVICE_COMPUTE_35)
+#include <libdevice_headers/compute_35.hpp>
+#endif
+
+#if defined(__LIBDEVICE_COMPUTE_50)
+#include <libdevice_headers/compute_50.hpp>
+#endif
+
 #include <platform.hpp>
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
@@ -75,10 +93,15 @@ static string getFuncName(std::vector<Node *> nodes, bool is_linear)
 static string getKernelString(string funcName, std::vector<Node *> nodes, bool is_linear)
 {
     static const char *defineVoid = "define void ";
-    static const char *dimParams = "\n"
+    static const char *generalDimParams = "\n"
         "i32 %ostr0, i32 %ostr1, i32 %ostr2, i32 %ostr3,\n"
         "i32 %odim0, i32 %odim1, i32 %odim2, i32 %odim3,\n"
         "i32 %blkx, i32 %blky, i32 %ndims";
+
+    static const char *linearDimParams = "\n"
+        "i32 %nelem, i32 %blkx, i32 %blky";
+
+    const char *dimParams = is_linear ? linearDimParams : generalDimParams;
 
     static const char *blockStart = "\n{\n\n"
         "entry:\n\n";
@@ -169,10 +192,7 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
         "%goff = mul i32 %bid , %bdmx\n"
         "%gid  = add i32 %goff ,%tidx\n"
         "%idx  = sext i32 %gid to i64\n"
-        "%el1  = mul i32 %odim0, %odim1\n"
-        "%el2  = mul i32 %el1  , %odim2\n"
-        "%el3  = mul i32 %el2  , %odim3\n"
-        "%cmp0 = icmp slt i32 %gid, %el3\n"
+        "%cmp0 = icmp slt i32 %gid, %nelem\n"
         "br i1 %cmp0, label %core, label %end\n";
 
     static const char *functionLoad = "\n"
@@ -253,11 +273,17 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
     kerStream << "!nvvm.annotations = !{!1}\n"
               << "!1 = metadata !{void (\n"
               << inAnnStream.str()
-              << outAnnStream.str()
-              << "i32, i32, i32, i32,\n"
-              << "i32, i32, i32, i32,\n"
-              << "i32, i32, i32\n"
-              << ")* " << funcName << ",\n "
+              << outAnnStream.str();
+
+    if (is_linear) {
+        kerStream << "i32, i32, i32\n";
+    } else {
+        kerStream  << "i32, i32, i32, i32,\n"
+                   << "i32, i32, i32, i32,\n"
+                   << "i32, i32, i32\n";
+    }
+
+    kerStream << ")* " << funcName << ",\n "
               << "metadata !\"kernel\", i32 1}\n";
 
     return kerStream.str();
@@ -267,7 +293,7 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
         nvvmResult res = fn;                    \
         if (res == NVVM_SUCCESS) break;         \
         char nvvm_err_msg[1024];                \
-        snprintf(nvvm_err_msg,                    \
+        snprintf(nvvm_err_msg,                  \
                  sizeof(nvvm_err_msg),          \
                  "NVVM Error (%d): %s\n",       \
                  (int)(res), msg);              \
@@ -282,14 +308,24 @@ static char *irToPtx(string IR, size_t *ptx_size)
 
     NVVM_CHECK(nvvmCreateProgram(&prog), "Failed to create program");
 
+#if defined(USE_LIBDEVICE)
+    //FIXME: Use proper compute
+    NVVM_CHECK(nvvmAddModuleToProgram(prog, compute_20_bc, compute_20_bc_len, "libdevice kernels"),
+               "Failed to add libdevice");
+#endif
+
     NVVM_CHECK(nvvmAddModuleToProgram(prog, IR.c_str(), IR.size(), "generated kernel"),
                "Failed to add module");
 
+    //FIXME: Use proper compute
+    const char *options = NULL;
+    const int noptions = 0;
+
 //#ifdef NDEBUG
 #if 0
-    NVVM_CHECK(nvvmCompileProgram(prog, 0, NULL), "Failed to compile program");
+    NVVM_CHECK(nvvmCompileProgram(prog, noptions, &options), "Failed to compile program");
 #else
-    nvvmResult comp_res = nvvmCompileProgram(prog, 0, NULL);
+    nvvmResult comp_res = nvvmCompileProgram(prog, noptions, &options);
     if (comp_res != NVVM_SUCCESS) {
         size_t log_size = 0;
         nvvmGetProgramLogSize(prog, &log_size);
@@ -305,7 +341,6 @@ static char *irToPtx(string IR, size_t *ptx_size)
 
     char *ptx = new char[*ptx_size];
     NVVM_CHECK(nvvmGetCompiledResult(prog, ptx), "Can not get ptx from NVVM IR");
-
     NVVM_CHECK(nvvmDestroyProgram(&prog), "Failed to destroy program");
     return ptx;
 }
@@ -495,6 +530,14 @@ void evalNodes(std::vector<Param<T> >&outputs, std::vector<Node *> nodes)
         nodes[i]->setArgs(args, is_linear);
     }
 
+    for (int i = 0; i < num_outputs; i++) {
+        args.push_back(&outputs[i].ptr);
+    }
+
+    // DO NOT PUT THESE IN A SCOPE.
+    // The pointers are used later.
+    // Scoping them results in undefined behavior.
+
     int strides[] = {(int)outputs[0].strides[0],
                      (int)outputs[0].strides[1],
                      (int)outputs[0].strides[2],
@@ -505,16 +548,23 @@ void evalNodes(std::vector<Param<T> >&outputs, std::vector<Node *> nodes)
                   (int)outputs[0].dims[2],
                   (int)outputs[0].dims[3]};
 
-    for (int i = 0; i < num_outputs; i++) {
-        args.push_back(&outputs[i].ptr);
+    if (is_linear) {
+        int nelem = 1;
+        for (int i = 0; i < 4; i++) {
+            nelem *= outputs[0].dims[i];
+        }
+        args.push_back((void *)&nelem);
+    } else {
+        for (int i = 0; i < 4; i++) args.push_back((void *)(strides + i));
+        for (int i = 0; i < 4; i++) args.push_back((void *)(dims + i));
     }
-
-    for (int i = 0; i < 4; i++) args.push_back((void *)(strides + i));
-    for (int i = 0; i < 4; i++) args.push_back((void *)(dims + i));
 
     args.push_back((void *)&blocks_x_);
     args.push_back((void *)&blocks_y_);
-    args.push_back((void *)&num_odims);
+
+    if (!is_linear) {
+        args.push_back((void *)&num_odims);
+    }
 
     CU_CHECK(cuLaunchKernel(ker,
                             blocks_x,

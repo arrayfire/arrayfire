@@ -23,16 +23,19 @@ namespace JIT
         std::string m_op_str;
         Node_ptr m_child;
         int m_op;
+        bool m_is_check;
 
     public:
         UnaryNode(const char *out_type_str, const char *name_str,
                   const std::string &op_str,
-                  Node_ptr child, int op)
+                  Node_ptr child, int op, bool is_check=false)
             : Node(out_type_str, name_str),
               m_op_str(op_str),
               m_child(child),
-              m_op(op)
+              m_op(op),
+              m_is_check(is_check)
         {
+
         }
 
         bool isLinear(dim_t dims[4])
@@ -80,19 +83,41 @@ namespace JIT
             if (!(m_child->isGenFunc())) m_child->genFuncs(kerStream, declStrs, is_linear);
 
             std::stringstream declStream;
-            declStream << "declare " << m_type_str << " " << m_op_str
-                       << "(" << m_child->getTypeStr() << ")\n";
+
+            if (m_is_check) {
+                declStream << "declare " << "i32 " << m_op_str
+                           << "(" << m_child->getTypeStr() << ")\n";
+            } else {
+                declStream << "declare " << m_type_str << " " << m_op_str
+                           << "(" << m_child->getTypeStr() << ")\n";
+            }
 
             str_map_iter loc = declStrs.find(declStream.str());
             if (loc == declStrs.end()) {
                 declStrs[declStream.str()] = true;
             }
 
-            kerStream << "%val" << m_id << " = call "
-                      << m_type_str << " "
-                      << m_op_str << "("
-                      << m_child->getTypeStr() << " "
-                      << "%val" << m_child->getId() << ")\n";
+            if (m_is_check) {
+                kerStream << "%tmp" << m_id << " = call i32 "
+                          << m_op_str << "("
+                          << m_child->getTypeStr() << " "
+                          << "%val" << m_child->getId() << ")\n";
+
+                if (m_type_str[0] == 'i') {
+                    kerStream << "%val" << m_id << " = "
+                              << "trunc i32 %tmp" << m_id << " to " << m_type_str << "\n";
+                } else {
+                    kerStream << "%val" << m_id << " = "
+                              << "sitofp i32 %tmp" << m_id << " to " << m_type_str << "\n";
+                }
+
+            } else {
+                kerStream << "%val" << m_id << " = call "
+                          << m_type_str << " "
+                          << m_op_str << "("
+                          << m_child->getTypeStr() << " "
+                          << "%val" << m_child->getId() << ")\n";
+            }
 
             m_gen_func = true;
         }
@@ -118,6 +143,7 @@ namespace JIT
         void resetFlags()
         {
             if (m_set_id) {
+                m_is_check = false;
                 resetCommonFlags();
                 m_child->resetFlags();
             }
