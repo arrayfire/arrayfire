@@ -19,10 +19,9 @@ namespace cpu
 namespace kernel
 {
     //Utils
-    #define UINTMAXFLOAT 4294967296.0f
-    #define UINTLMAXDOUBLE (4294967296.0*4294967296.0)
-    #define PI_VAL 3.1415926535897932384626433832795028841971693993751058209749445923078164
-    #define N 351
+    static const float UINTMAXFLOAT = 4294967296.0f;
+    static const float UINTLMAXDOUBLE = (4294967296.0*4294967296.0);
+    static const double PI_VAL = 3.1415926535897932384626433832795028841971693993751058209749445923078164;
 
     template <typename T>
     T transform(uint *val, int index)

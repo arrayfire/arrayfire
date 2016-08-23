@@ -11,10 +11,11 @@ namespace cuda
 {
 namespace kernel
 {
-#define N 351
-#define BLOCKS 32
-#define STATE_SIZE 786
-#define TABLE_SIZE 16
+
+    static const uint N = 351;
+    static const uint BLOCKS = 32;
+    static const uint STATE_SIZE = (256*3);
+    static const uint TABLE_SIZE = 16;
 
     //Utils
     static inline __device__ void read_table(uint * const sharedTable, const uint * const table)
@@ -81,7 +82,7 @@ namespace kernel
             lstate[0] = seed;
             lstate[1] = hidden_seed;
             for (int i = 1; i < N; ++i) {
-                lstate[i] ^= (uint)(1812433253) * (lstate[i-1] ^ (lstate[i-1] >> 30)) + i;
+                lstate[i] ^= ((uint)(1812433253) * (lstate[i-1] ^ (lstate[i-1] >> 30)) + i);
             }
         }
         __syncthreads();

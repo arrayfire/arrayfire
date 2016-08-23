@@ -12,8 +12,9 @@ namespace cuda
 namespace kernel
 {
     //Utils
-#define SKEIN_KS_PARITY32 0x1BD11BDA
-#define SKEIN_KS_PARITY64 0x1BD11BDAA9FC1A22
+
+    static const uint  SKEIN_KS_PARITY32 = 0x1BD11BDA;
+    static const uintl SKEIN_KS_PARITY64 = 0x1BD11BDAA9FC1A22;
 
     static const uint R0_32=13;
     static const uint R1_32=15;

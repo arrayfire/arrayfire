@@ -36,10 +36,10 @@ using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
 
-#define N 351
-#define TABLE_SIZE 16
-#define MAX_BLOCKS 32
-#define STATE_SIZE 786
+static const int N = 351;
+static const int TABLE_SIZE = 16;
+static const int MAX_BLOCKS = 32;
+static const int STATE_SIZE = (256*3);
 
 namespace opencl
 {

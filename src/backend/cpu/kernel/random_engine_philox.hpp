@@ -51,10 +51,10 @@ namespace cpu
 namespace kernel
 {
 
-#define m4x32_0 0xD2511F53
-#define m4x32_1 0xCD9E8D57
-#define w32_0 0x9E3779B9
-#define w32_1 0xBB67AE85
+    static const uint m4x32_0 = 0xD2511F53;
+    static const uint m4x32_1 = 0xCD9E8D57;
+    static const uint w32_0   = 0x9E3779B9;
+    static const uint w32_1   = 0xBB67AE85;
 
     void mulhilo(const uint a, const uint b, uint * const hi, uint * const lo)
     {
@@ -81,7 +81,6 @@ namespace kernel
 
     void philox(uint * const key, uint * const ctr)
     {
-        ctr[0] = -1;
         //10 Rounds
                            philoxRound(key, ctr);
         philoxBump(key);   philoxRound(key, ctr);

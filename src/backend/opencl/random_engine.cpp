@@ -26,7 +26,7 @@ namespace opencl
         return state;
     }
 
-    void initMersenneState(Array<uint> state, const uintl seed, const Array<uint> tbl)
+    void initMersenneState(Array<uint> &state, const uintl seed, const Array<uint> tbl)
     {
         kernel::initMersenneState(*state.get(), *tbl.get(), seed);
     }

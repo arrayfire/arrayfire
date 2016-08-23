@@ -51,113 +51,72 @@ namespace cpu
 namespace kernel
 {
 
-#define SKEIN_KS_PARITY 0x1BD11BDA
+    static const uint SKEIN_KS_PARITY = 0x1BD11BDA;
 
-#define R0 13
-#define R1 15
-#define R2 26
-#define R3  6
-#define R4 17
-#define R5 29
-#define R6 16
-#define R7 24
+    static const uint R0 = 13;
+    static const uint R1 = 15;
+    static const uint R2 = 26;
+    static const uint R3 =  6;
+    static const uint R4 = 17;
+    static const uint R5 = 29;
+    static const uint R6 = 16;
+    static const uint R7 = 24;
 
-static inline uint rotL(uint x, uint N)
-{
-    return (x << (N & 31)) | (x >> ((32-N) & 31));
-}
-
-static inline void threefry(uint k[2], uint c[2], uint X[2])
-{
-    uint ks[3];
-
-    ks[2] = SKEIN_KS_PARITY;
-    ks[0] = k[0];
-    X[0] = c[0];
-    ks[2] ^= k[0];
-    ks[1] = k[1];
-    X[1] = c[1];
-    ks[2] ^= k[1];
-
-    X[0] += ks[0]; X[1] += ks[1];
-
-    X[0] += X[1]; X[1] = rotL(X[1],R0); X[1] ^= X[0];
-    X[0] += X[1]; X[1] = rotL(X[1],R1); X[1] ^= X[0];
-    X[0] += X[1]; X[1] = rotL(X[1],R2); X[1] ^= X[0];
-    X[0] += X[1]; X[1] = rotL(X[1],R3); X[1] ^= X[0];
-
-    /* InjectKey(r=1) */
-    X[0] += ks[1]; X[1] += ks[2];
-    X[1] += 1;     /* X[2-1] += r  */
-
-    X[0] += X[1]; X[1] = rotL(X[1],R4); X[1] ^= X[0];
-    X[0] += X[1]; X[1] = rotL(X[1],R5); X[1] ^= X[0];
-    X[0] += X[1]; X[1] = rotL(X[1],R6); X[1] ^= X[0];
-    X[0] += X[1]; X[1] = rotL(X[1],R7); X[1] ^= X[0];
-
-    /* InjectKey(r=2) */
-    X[0] += ks[2]; X[1] += ks[0];
-    X[1] += 2;
-
-    X[0] += X[1]; X[1] = rotL(X[1],R0); X[1] ^= X[0];
-    X[0] += X[1]; X[1] = rotL(X[1],R1); X[1] ^= X[0];
-    X[0] += X[1]; X[1] = rotL(X[1],R2); X[1] ^= X[0];
-    X[0] += X[1]; X[1] = rotL(X[1],R3); X[1] ^= X[0];
-
-    /* InjectKey(r=3) */
-    X[0] += ks[0]; X[1] += ks[1];
-    X[1] += 3;
-
-    X[0] += X[1]; X[1] = rotL(X[1],R4); X[1] ^= X[0];
-    X[0] += X[1]; X[1] = rotL(X[1],R5); X[1] ^= X[0];
-    X[0] += X[1]; X[1] = rotL(X[1],R6); X[1] ^= X[0];
-    X[0] += X[1]; X[1] = rotL(X[1],R7); X[1] ^= X[0];
-
-    /* InjectKey(r=4) */
-    X[0] += ks[1]; X[1] += ks[2];
-    X[1] += 4;
-}
-
-/*
-template <> struct Random<AF_RANDOM_THREEFRY>
-{
-    uint hi;
-    uint lo;
-    uintl counter;
-    uint key[2];
-    uint ctr[2];
-    uint val[2];
-    int reset;
-
-    template <typename T>
-    T uniform(void);
-
-    Random(uintl seed, uintl counter);
-};
-
-Random<AF_RANDOM_THREEFRY>::Random(uintl seed, uintl counterInput) : hi(seed>>32), lo(seed), counter(counterInput), reset(0)
-{
-    key[0] = counter;
-    key[1] = hi;
-    ctr[0] = counter;
-    ctr[2] = lo;
-}
-
-template <typename T>
-void Random<AF_RANDOM_THREEFRY>::uniform(T* out, size_t elements)
-{
-    int reset = (2*sizeof(uint))/sizeof(T);
-    threefry(key, ctr, val);
-    for (int i = 0; i < (int)out.elements(); ++i) {
-        if (fresh == reset) {
-            threefry(key, ctr, val);
-            ctr[0] += 2;
-            fresh = 0;
-        }
-        out[i] = transform<T>(ctr, fresh);
-        fresh++;
+    static inline uint rotL(uint x, uint N)
+    {
+        return (x << (N & 31)) | (x >> ((32-N) & 31));
     }
-}
-*/
+
+    static inline void threefry(uint k[2], uint c[2], uint X[2])
+    {
+        uint ks[3];
+
+        ks[2] = SKEIN_KS_PARITY;
+        ks[0] = k[0];
+        X[0] = c[0];
+        ks[2] ^= k[0];
+        ks[1] = k[1];
+        X[1] = c[1];
+        ks[2] ^= k[1];
+
+        X[0] += ks[0]; X[1] += ks[1];
+
+        X[0] += X[1]; X[1] = rotL(X[1],R0); X[1] ^= X[0];
+        X[0] += X[1]; X[1] = rotL(X[1],R1); X[1] ^= X[0];
+        X[0] += X[1]; X[1] = rotL(X[1],R2); X[1] ^= X[0];
+        X[0] += X[1]; X[1] = rotL(X[1],R3); X[1] ^= X[0];
+
+        /* InjectKey(r=1) */
+        X[0] += ks[1]; X[1] += ks[2];
+        X[1] += 1;     /* X[2-1] += r  */
+
+        X[0] += X[1]; X[1] = rotL(X[1],R4); X[1] ^= X[0];
+        X[0] += X[1]; X[1] = rotL(X[1],R5); X[1] ^= X[0];
+        X[0] += X[1]; X[1] = rotL(X[1],R6); X[1] ^= X[0];
+        X[0] += X[1]; X[1] = rotL(X[1],R7); X[1] ^= X[0];
+
+        /* InjectKey(r=2) */
+        X[0] += ks[2]; X[1] += ks[0];
+        X[1] += 2;
+
+        X[0] += X[1]; X[1] = rotL(X[1],R0); X[1] ^= X[0];
+        X[0] += X[1]; X[1] = rotL(X[1],R1); X[1] ^= X[0];
+        X[0] += X[1]; X[1] = rotL(X[1],R2); X[1] ^= X[0];
+        X[0] += X[1]; X[1] = rotL(X[1],R3); X[1] ^= X[0];
+
+        /* InjectKey(r=3) */
+        X[0] += ks[0]; X[1] += ks[1];
+        X[1] += 3;
+
+        X[0] += X[1]; X[1] = rotL(X[1],R4); X[1] ^= X[0];
+        X[0] += X[1]; X[1] = rotL(X[1],R5); X[1] ^= X[0];
+        X[0] += X[1]; X[1] = rotL(X[1],R6); X[1] ^= X[0];
+        X[0] += X[1]; X[1] = rotL(X[1],R7); X[1] ^= X[0];
+
+        /* InjectKey(r=4) */
+        X[0] += ks[1]; X[1] += ks[2];
+        X[1] += 4;
+    }
+
 }
 }

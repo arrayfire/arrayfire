@@ -21,6 +21,7 @@ namespace cuda
 namespace kernel
 {
     //Utils
+
     static const int THREADS = 256;
     #define UINTMAXFLOAT 4294967296.0f
     #define UINTLMAXDOUBLE (4294967296.0*4294967296.0)
@@ -436,7 +437,8 @@ namespace kernel
         uint start = blockIdx.x*elementsPerBlock;
         uint end = start + elementsPerBlock;
         end = (end > elements)? elements : end;
-        int iter = divup((end - start)*sizeof(T), blockDim.x*4*sizeof(uint));
+        int elementsPerBlockIteration = (blockDim.x*4*sizeof(uint))/sizeof(T);
+        int iter = divup((end - start), elementsPerBlockIteration);
 
         uint pos = pos_tbl[blockIdx.x];
         uint sh1 = sh1_tbl[blockIdx.x];
@@ -447,7 +449,6 @@ namespace kernel
         __syncthreads();
 
         uint index = start;
-        int elementsPerBlockIteration = blockDim.x*4*sizeof(uint)/sizeof(T);
         uint o[4];
         int offsetX1 = (STATE_SIZE - N + threadIdx.x          ) % STATE_SIZE;
         int offsetX2 = (STATE_SIZE - N + threadIdx.x + 1      ) % STATE_SIZE;

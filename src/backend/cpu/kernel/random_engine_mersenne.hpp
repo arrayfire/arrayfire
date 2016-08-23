@@ -14,8 +14,8 @@ namespace cpu
 namespace kernel
 {
 
-    #define N 351
-    #define STATE_SIZE 786
+    static const int N = 351;
+    static const int STATE_SIZE = 256*3;
 
     uint recursion(const uint * const recursion_table, const uint mask,
             const uint sh1, const uint sh2, const uint x1, const uint x2, uint y)

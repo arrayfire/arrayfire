@@ -26,7 +26,7 @@ namespace cpu
         return state;
     }
 
-    void initMersenneState(Array<uint> state, const uintl seed, const Array<uint> tbl)
+    void initMersenneState(Array<uint> &state, const uintl seed, const Array<uint> tbl)
     {
         getQueue().enqueue(kernel::initMersenneState, state.get(), tbl.get(), seed);
     }

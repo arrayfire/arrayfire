@@ -16,7 +16,7 @@ namespace cuda
 {
     Array<uint> initMersenneState(const uintl seed, Array<uint> tbl);
 
-    void initMersenneState(Array<uint> state, const uintl seed, const Array<uint> tbl);
+    void initMersenneState(Array<uint> &state, const uintl seed, const Array<uint> tbl);
 
     template<typename T>
     Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter);

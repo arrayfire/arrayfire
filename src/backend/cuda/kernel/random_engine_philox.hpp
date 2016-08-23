@@ -12,10 +12,11 @@ namespace cuda
 namespace kernel
 {
     //Utils
-#define m4x32_0 uint(0xD2511F53)
-#define m4x32_1 uint(0xCD9E8D57)
-#define w32_0 uint(0x9E3779B9)
-#define w32_1 uint(0xBB67AE85)
+
+    static const uint m4x32_0 = 0xD2511F53;
+    static const uint m4x32_1 = 0xCD9E8D57;
+    static const uint w32_0   = 0x9E3779B9;
+    static const uint w32_1   = 0xBB67AE85;
 
     static inline __device__ void mulhilo(const uint &a, const uint &b, uint &hi, uint &lo)
     {
@@ -29,11 +30,11 @@ namespace kernel
         k[1] += w32_1;
     }
 
-    static inline __device__ void philoxRound(const uint k[2], uint c[4])
+    static inline __device__ void philoxRound(const uint m0, const uint m1, const uint k[2], uint c[4])
     {
         uint hi0, lo0, hi1, lo1;
-        mulhilo(m4x32_0, c[0], hi0, lo0);
-        mulhilo(m4x32_1, c[2], hi1, lo1);
+        mulhilo(m0, c[0], hi0, lo0);
+        mulhilo(m1, c[2], hi1, lo1);
         c[0] = hi1^c[1]^k[0];
         c[1] = lo1;
         c[2] = hi0^c[3]^k[1];
@@ -43,16 +44,16 @@ namespace kernel
     static inline __device__ void philox(uint key[2], uint ctr[4])
     {
         //10 Rounds
-                           philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
+                           philoxRound(m4x32_0, m4x32_1, key, ctr);
+        philoxBump(key);   philoxRound(m4x32_0, m4x32_1, key, ctr);
+        philoxBump(key);   philoxRound(m4x32_0, m4x32_1, key, ctr);
+        philoxBump(key);   philoxRound(m4x32_0, m4x32_1, key, ctr);
+        philoxBump(key);   philoxRound(m4x32_0, m4x32_1, key, ctr);
+        philoxBump(key);   philoxRound(m4x32_0, m4x32_1, key, ctr);
+        philoxBump(key);   philoxRound(m4x32_0, m4x32_1, key, ctr);
+        philoxBump(key);   philoxRound(m4x32_0, m4x32_1, key, ctr);
+        philoxBump(key);   philoxRound(m4x32_0, m4x32_1, key, ctr);
+        philoxBump(key);   philoxRound(m4x32_0, m4x32_1, key, ctr);
     }
 }
 }
