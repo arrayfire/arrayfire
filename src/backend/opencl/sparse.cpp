@@ -23,6 +23,8 @@
 #include <reduce.hpp>
 #include <where.hpp>
 
+#define ENABLE_CLSPARSE 0
+
 namespace opencl
 {
 
@@ -153,6 +155,8 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
     SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, stype);
     sparse_.eval();
 
+#if ENABLE_CLSPARSE
+
     // Assign to clSparse Dense
     cldenseMatrix clDenseMat;
     CLSPARSE_CHECK(cldenseInitMatrix(&clDenseMat));
@@ -176,7 +180,13 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
         CLSPARSE_CHECK(dense2csr_func<T>()(&clDenseMat, &clSparseMat, getControl()));
     else
         AF_ERROR("OpenCL Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
+#else
+    Array<T> &values = sparse_.getValues();
+    Array<int> &rowIdx = sparse_.getRowIdx();
+    Array<int> &colIdx = sparse_.getColIdx();
 
+    kernel::dense2csr<T>(values, rowIdx, colIdx, in_);
+#endif
     return sparse_;
 }
 
