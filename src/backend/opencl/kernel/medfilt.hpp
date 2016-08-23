@@ -78,10 +78,10 @@ void medfilt1(Param out, const Param in, unsigned w_wid)
                                            in.info.dims[2],
                                            in.info.dims[3]);
 
-        auto medfiltOp = make_kernel<Buffer, KParam,
-                                     Buffer, KParam,
-                                     cl::LocalSpaceArg,
-                                     int> (*mfKernels[device]);
+        auto medfiltOp = KernelFunctor<Buffer, KParam,
+                                       Buffer, KParam,
+                                       cl::LocalSpaceArg,
+                                       int> (*mfKernels[device]);
 
         size_t loc_size = (THREADS_X+w_wid-1)*sizeof(T);
 
