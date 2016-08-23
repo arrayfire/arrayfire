@@ -62,6 +62,14 @@ class RandomEngine : public ::testing::Test
         }
 };
 
+template<typename T>
+class RandomEngineSeed : public ::testing::Test
+{
+    public:
+        virtual void SetUp() {
+        }
+};
+
 // register the type list
 TYPED_TEST_CASE(Random_norm, TestTypesNorm);
 
@@ -70,6 +78,10 @@ typedef ::testing::Types<float, double> TestTypesEngine;
 
 // register the type list
 TYPED_TEST_CASE(RandomEngine, TestTypesEngine);
+
+typedef ::testing::Types<float, double> TestTypesEngineSeed;
+// register the type list
+TYPED_TEST_CASE(RandomEngineSeed, TestTypesEngineSeed);
 
 template<typename T>
 void randuTest(af::dim4 & dims)
@@ -344,38 +356,38 @@ void testRandomEngineSeed(randomType type, bool is_norm = false)
     for (int i = 0; i < elem; i++) {
         ASSERT_EQ(h1[i], h3[i]) << "at : " << i;
         if (ty != b8 && ty != u8) {
-            ASSERT_NE(h1[i], h2[i]);
-            ASSERT_NE(h3[i], h4[i]);
+            ASSERT_NE(h1[i], h2[i]) << "at : " << i;
+            ASSERT_NE(h3[i], h4[i]) << "at : " << i;
         }
     }
 }
 
-TYPED_TEST(RandomEngine, philoxSeedUniform)
+TYPED_TEST(RandomEngineSeed, philoxSeedUniform)
 {
     testRandomEngineSeed<TypeParam>(AF_RANDOM_PHILOX, false);
 }
 
-TYPED_TEST(RandomEngine, threefrySeedUniform)
+TYPED_TEST(RandomEngineSeed, threefrySeedUniform)
 {
     testRandomEngineSeed<TypeParam>(AF_RANDOM_THREEFRY, false);
 }
 
-TYPED_TEST(RandomEngine, mersenneSeedUniform)
+TYPED_TEST(RandomEngineSeed, mersenneSeedUniform)
 {
     testRandomEngineSeed<TypeParam>(AF_RANDOM_MERSENNE, false);
 }
 
-TYPED_TEST(RandomEngine, philoxSeedNormal)
+TYPED_TEST(RandomEngineSeed, philoxSeedNormal)
 {
     testRandomEngineSeed<TypeParam>(AF_RANDOM_PHILOX, true);
 }
 
-TYPED_TEST(RandomEngine, threefrySeedNormal)
+TYPED_TEST(RandomEngineSeed, threefrySeedNormal)
 {
     testRandomEngineSeed<TypeParam>(AF_RANDOM_THREEFRY, true);
 }
 
-TYPED_TEST(RandomEngine, mersenneSeedNormal)
+TYPED_TEST(RandomEngineSeed, mersenneSeedNormal)
 {
     testRandomEngineSeed<TypeParam>(AF_RANDOM_MERSENNE, true);
 }
