@@ -5,7 +5,6 @@
  * This file is distributed under 3-clause BSD license.
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
- *
  ********************************************************/
 
 #define divup(N, D) (((N) + (D) - 1)/(D));
