@@ -41,7 +41,7 @@ namespace kernel
     }
 
     template <typename T>
-    __device__ static void normalize(T * const out1, T * const out2, const T &r1, const T &r2)
+    __device__ static void boxMullerTransform(T * const out1, T * const out2, const T &r1, const T &r2)
     {
         T r = sqrt((T)(-2.0) * log(r1));
         T theta = 2 * (T)PI_VAL * r2;
@@ -51,7 +51,7 @@ namespace kernel
 
     //Writes without boundary checking
 
-    __device__ static void writeOut256Bytes(uchar *out, const uint &index,
+    __device__ static void writeOut128Bytes(uchar *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
         out[index]                 =     r1;
@@ -72,7 +72,7 @@ namespace kernel
         out[index + 15*blockDim.x] = r4>>24;
     }
 
-    __device__ static void writeOut256Bytes(char *out, const uint &index,
+    __device__ static void writeOut128Bytes(char *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
         out[index]                 = (r1   )&0x1;
@@ -93,7 +93,7 @@ namespace kernel
         out[index + 15*blockDim.x] = (r4>>3)&0x1;
     }
 
-    __device__ static void writeOut256Bytes(short *out, const uint &index,
+    __device__ static void writeOut128Bytes(short *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
         out[index]                =     r1;
@@ -106,13 +106,13 @@ namespace kernel
         out[index + 7*blockDim.x] = r4>>16;
     }
 
-    __device__ static void writeOut256Bytes(ushort *out, const uint &index,
+    __device__ static void writeOut128Bytes(ushort *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
-        writeOut256Bytes((short*)(out), index, r1, r2, r3, r4);
+        writeOut128Bytes((short*)(out), index, r1, r2, r3, r4);
     }
 
-    __device__ static void writeOut256Bytes(int *out, const uint &index,
+    __device__ static void writeOut128Bytes(int *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
         out[index]                = r1;
@@ -121,13 +121,13 @@ namespace kernel
         out[index + 3*blockDim.x] = r4;
     }
 
-    __device__ static void writeOut256Bytes(uint *out, const uint &index,
+    __device__ static void writeOut128Bytes(uint *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
-        writeOut256Bytes((int*)(out), index, r1, r2, r3, r4);
+        writeOut128Bytes((int*)(out), index, r1, r2, r3, r4);
     }
 
-    __device__ static void writeOut256Bytes(intl *out, const uint &index,
+    __device__ static void writeOut128Bytes(intl *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
         intl c1 = r2;
@@ -138,13 +138,13 @@ namespace kernel
         out[index + blockDim.x] = c2;
     }
 
-    __device__ static void writeOut256Bytes(uintl *out, const uint &index,
+    __device__ static void writeOut128Bytes(uintl *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
-        writeOut256Bytes((intl*)(out), index, r1, r2, r3, r4);
+        writeOut128Bytes((intl*)(out), index, r1, r2, r3, r4);
     }
 
-    __device__ static void writeOut256Bytes(float *out, const uint &index,
+    __device__ static void writeOut128Bytes(float *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
         out[index]                = getFloat(r1);
@@ -153,7 +153,7 @@ namespace kernel
         out[index + 3*blockDim.x] = getFloat(r4);
     }
 
-    __device__ static void writeOut256Bytes(cfloat *out, const uint &index,
+    __device__ static void writeOut128Bytes(cfloat *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
         out[index].x              = getFloat(r1);
@@ -162,14 +162,14 @@ namespace kernel
         out[index + blockDim.x].y = getFloat(r4);
     }
 
-    __device__ static void writeOut256Bytes(double *out, const uint &index,
+    __device__ static void writeOut128Bytes(double *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
         out[index]              = getDouble(r1, r2);
         out[index + blockDim.x] = getDouble(r3, r4);
     }
 
-    __device__ static void writeOut256Bytes(cdouble *out, const uint &index,
+    __device__ static void writeOut128Bytes(cdouble *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
         out[index].x = getDouble(r1, r2);
@@ -178,35 +178,35 @@ namespace kernel
 
     //Normalized writes without boundary checking
 
-    __device__ static void normalizedWriteOut256Bytes(float *out, const uint &index,
+    __device__ static void boxMullerWriteOut128Bytes(float *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
-        normalize(&out[index]               , &out[index +   blockDim.x], getFloat(r1), getFloat(r2));
-        normalize(&out[index + 2*blockDim.x], &out[index + 3*blockDim.x], getFloat(r1), getFloat(r2));
+        boxMullerTransform(&out[index]               , &out[index +   blockDim.x], getFloat(r1), getFloat(r2));
+        boxMullerTransform(&out[index + 2*blockDim.x], &out[index + 3*blockDim.x], getFloat(r1), getFloat(r2));
     }
 
-    __device__ static void normalizedWriteOut256Bytes(cfloat *out, const uint &index,
+    __device__ static void boxMullerWriteOut128Bytes(cfloat *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
-        normalize(&out[index].x             , &out[index].y             , getFloat(r1), getFloat(r2));
-        normalize(&out[index + blockDim.x].x, &out[index + blockDim.x].y, getFloat(r3), getFloat(r4));
+        boxMullerTransform(&out[index].x             , &out[index].y             , getFloat(r1), getFloat(r2));
+        boxMullerTransform(&out[index + blockDim.x].x, &out[index + blockDim.x].y, getFloat(r3), getFloat(r4));
     }
 
-    __device__ static void normalizedWriteOut256Bytes(double *out, const uint &index,
+    __device__ static void boxMullerWriteOut128Bytes(double *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
-        normalize(&out[index], &out[index + blockDim.x], getDouble(r1, r2), getDouble(r3, r4));
+        boxMullerTransform(&out[index], &out[index + blockDim.x], getDouble(r1, r2), getDouble(r3, r4));
     }
 
-    __device__ static void normalizedWriteOut256Bytes(cdouble *out, const uint &index,
+    __device__ static void boxMullerWriteOut128Bytes(cdouble *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4)
     {
-        normalize(&out[index].x, &out[index].y, getDouble(r1, r2), getDouble(r3, r4));
+        boxMullerTransform(&out[index].x, &out[index].y, getDouble(r1, r2), getDouble(r3, r4));
     }
 
     //Writes with boundary checking
 
-    __device__ static void partialWriteOut256Bytes(uchar *out, const uint &index,
+    __device__ static void partialWriteOut128Bytes(uchar *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         if (index                 < elements) {out[index]                 =     r1;}
@@ -227,7 +227,7 @@ namespace kernel
         if (index + 15*blockDim.x < elements) {out[index + 15*blockDim.x] = r4>>24;}
     }
 
-    __device__ static void partialWriteOut256Bytes(char *out, const uint &index,
+    __device__ static void partialWriteOut128Bytes(char *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         if (index                 < elements) {out[index]                 = (r1   )&0x1;}
@@ -248,7 +248,7 @@ namespace kernel
         if (index + 15*blockDim.x < elements) {out[index + 15*blockDim.x] = (r4>>3)&0x1;}
     }
 
-    __device__ static void partialWriteOut256Bytes(short *out, const uint &index,
+    __device__ static void partialWriteOut128Bytes(short *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         if (index                < elements) {out[index]                =     r1;}
@@ -261,13 +261,13 @@ namespace kernel
         if (index + 7*blockDim.x < elements) {out[index + 7*blockDim.x] = r4>>16;}
     }
 
-    __device__ static void partialWriteOut256Bytes(ushort *out, const uint &index,
+    __device__ static void partialWriteOut128Bytes(ushort *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
-        partialWriteOut256Bytes((short*)(out), index, r1, r2, r3, r4, elements);
+        partialWriteOut128Bytes((short*)(out), index, r1, r2, r3, r4, elements);
     }
 
-    __device__ static void partialWriteOut256Bytes(int *out, const uint &index,
+    __device__ static void partialWriteOut128Bytes(int *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         if (index                < elements) {out[index]                = r1;}
@@ -276,13 +276,13 @@ namespace kernel
         if (index + 3*blockDim.x < elements) {out[index + 3*blockDim.x] = r4;}
     }
 
-    __device__ static void partialWriteOut256Bytes(uint *out, const uint &index,
+    __device__ static void partialWriteOut128Bytes(uint *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
-        partialWriteOut256Bytes((int*)(out), index, r1, r2, r3, r4, elements);
+        partialWriteOut128Bytes((int*)(out), index, r1, r2, r3, r4, elements);
     }
 
-    __device__ static void partialWriteOut256Bytes(intl *out, const uint &index,
+    __device__ static void partialWriteOut128Bytes(intl *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         intl c1 = r2;
@@ -293,13 +293,13 @@ namespace kernel
         if (index + blockDim.x < elements) {out[index + blockDim.x] = c2;}
     }
 
-    __device__ static void partialWriteOut256Bytes(uintl *out, const uint &index,
+    __device__ static void partialWriteOut128Bytes(uintl *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
-        partialWriteOut256Bytes((intl*)(out), index, r1, r2, r3, r4, elements);
+        partialWriteOut128Bytes((intl*)(out), index, r1, r2, r3, r4, elements);
     }
 
-    __device__ static void partialWriteOut256Bytes(float *out, const uint &index,
+    __device__ static void partialWriteOut128Bytes(float *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         if (index                < elements) {out[index]                = getFloat(r1);}
@@ -308,7 +308,7 @@ namespace kernel
         if (index + 3*blockDim.x < elements) {out[index + 3*blockDim.x] = getFloat(r4);}
     }
 
-    __device__ static void partialWriteOut256Bytes(cfloat *out, const uint &index,
+    __device__ static void partialWriteOut128Bytes(cfloat *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         if (index              < elements) {
@@ -321,14 +321,14 @@ namespace kernel
         }
     }
 
-    __device__ static void partialWriteOut256Bytes(double *out, const uint &index,
+    __device__ static void partialWriteOut128Bytes(double *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         if (index              < elements) {out[index]              = getDouble(r1, r2);}
         if (index + blockDim.x < elements) {out[index + blockDim.x] = getDouble(r3, r4);}
     }
 
-    __device__ static void partialWriteOut256Bytes(cdouble *out, const uint &index,
+    __device__ static void partialWriteOut128Bytes(cdouble *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         if (index < elements) {
@@ -339,24 +339,24 @@ namespace kernel
 
     //Normalized writes with boundary checking
 
-    __device__ static void partialNormalizedWriteOut256Bytes(float *out, const uint &index,
+    __device__ static void partialBoxMullerWriteOut128Bytes(float *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         float n1, n2, n3, n4;
-        normalize(&n1, &n2, getFloat(r1), getFloat(r2));
-        normalize(&n3, &n4, getFloat(r3), getFloat(r4));
+        boxMullerTransform(&n1, &n2, getFloat(r1), getFloat(r2));
+        boxMullerTransform(&n3, &n4, getFloat(r3), getFloat(r4));
         if (index                < elements) {out[index]                = n1;}
         if (index +   blockDim.x < elements) {out[index +   blockDim.x] = n2;}
         if (index + 2*blockDim.x < elements) {out[index + 2*blockDim.x] = n3;}
         if (index + 3*blockDim.x < elements) {out[index + 3*blockDim.x] = n4;}
     }
 
-    __device__ static void partialNormalizedWriteOut256Bytes(cfloat *out, const uint &index,
+    __device__ static void partialBoxMullerWriteOut128Bytes(cfloat *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         float n1, n2, n3, n4;
-        normalize(&n1, &n2, getFloat(r1), getFloat(r2));
-        normalize(&n3, &n4, getFloat(r3), getFloat(r4));
+        boxMullerTransform(&n1, &n2, getFloat(r1), getFloat(r2));
+        boxMullerTransform(&n3, &n4, getFloat(r3), getFloat(r4));
         if (index              < elements) {
             out[index].x              = n1;
             out[index].y              = n2;
@@ -367,20 +367,20 @@ namespace kernel
         }
     }
 
-    __device__ static void partialNormalizedWriteOut256Bytes(double *out, const uint &index,
+    __device__ static void partialBoxMullerWriteOut128Bytes(double *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         double n1, n2;
-        normalize(&n1, &n2, getDouble(r1, r2), getDouble(r3, r4));
+        boxMullerTransform(&n1, &n2, getDouble(r1, r2), getDouble(r3, r4));
         if (index              < elements) {out[index]              = n1;}
         if (index + blockDim.x < elements) {out[index + blockDim.x] = n2;}
     }
 
-    __device__ static void partialNormalizedWriteOut256Bytes(cdouble *out, const uint &index,
+    __device__ static void partialBoxMullerWriteOut128Bytes(cdouble *out, const uint &index,
             const uint &r1, const uint &r2, const uint &r3, const uint &r4, const uint &elements)
     {
         double n1, n2;
-        normalize(&n1, &n2, getDouble(r1, r2), getDouble(r3, r4));
+        boxMullerTransform(&n1, &n2, getDouble(r1, r2), getDouble(r3, r4));
         if (index < elements) {
             out[index].x = n1;
             out[index].y = n2;
@@ -395,10 +395,10 @@ namespace kernel
         uint ctr[4] = {index+counter, 0, 0, lo};
         if (blockIdx.x != (gridDim.x - 1)) {
             philox(key, ctr);
-            writeOut256Bytes(out, index, ctr[0], ctr[1], ctr[2], ctr[3]);
+            writeOut128Bytes(out, index, ctr[0], ctr[1], ctr[2], ctr[3]);
         } else {
             philox(key, ctr);
-            partialWriteOut256Bytes(out, index, ctr[0], ctr[1], ctr[2], ctr[3], elements);
+            partialWriteOut128Bytes(out, index, ctr[0], ctr[1], ctr[2], ctr[3], elements);
         }
     }
 
@@ -413,12 +413,12 @@ namespace kernel
             threefry(key, ctr, o);
             ctr[0] += elements;
             threefry(key, ctr, o + 2);
-            writeOut256Bytes(out, index, o[0], o[1], o[2], o[3]);
+            writeOut128Bytes(out, index, o[0], o[1], o[2], o[3]);
         } else {
             threefry(key, ctr, o);
             ctr[0] += elements;
             threefry(key, ctr, o + 2);
-            partialWriteOut256Bytes(out, index, o[0], o[1], o[2], o[3], elements);
+            partialWriteOut128Bytes(out, index, o[0], o[1], o[2], o[3], elements);
         }
     }
 
@@ -474,9 +474,9 @@ namespace kernel
                 __syncthreads();
             }
             if (i == iter - 1) {
-                partialWriteOut256Bytes(out, index+threadIdx.x, o[0], o[1], o[2], o[3], elements);
+                partialWriteOut128Bytes(out, index+threadIdx.x, o[0], o[1], o[2], o[3], elements);
             } else {
-                writeOut256Bytes(out, index+threadIdx.x, o[0], o[1], o[2], o[3]);
+                writeOut128Bytes(out, index+threadIdx.x, o[0], o[1], o[2], o[3]);
             }
             index += elementsPerBlockIteration;
         }
@@ -491,10 +491,10 @@ namespace kernel
         uint ctr[4] = {index+counter, 0, 0, lo};
         if (blockIdx.x != (gridDim.x - 1)) {
             philox(key, ctr);
-            normalizedWriteOut256Bytes(out, index, ctr[0], ctr[1], ctr[2], ctr[3]);
+            boxMullerWriteOut128Bytes(out, index, ctr[0], ctr[1], ctr[2], ctr[3]);
         } else {
             philox(key, ctr);
-            partialNormalizedWriteOut256Bytes(out, index, ctr[0], ctr[1], ctr[2], ctr[3], elements);
+            partialBoxMullerWriteOut128Bytes(out, index, ctr[0], ctr[1], ctr[2], ctr[3], elements);
         }
     }
 
@@ -509,12 +509,12 @@ namespace kernel
             threefry(key, ctr, o);
             ctr[0] += elements;
             threefry(key, ctr, o + 2);
-            normalizedWriteOut256Bytes(out, index, o[0], o[1], o[2], o[3]);
+            boxMullerWriteOut128Bytes(out, index, o[0], o[1], o[2], o[3]);
         } else {
             threefry(key, ctr, o);
             ctr[0] += elements;
             threefry(key, ctr, o + 2);
-            partialNormalizedWriteOut256Bytes(out, index, o[0], o[1], o[2], o[3], elements);
+            partialBoxMullerWriteOut128Bytes(out, index, o[0], o[1], o[2], o[3], elements);
         }
     }
 
@@ -571,9 +571,9 @@ namespace kernel
                 __syncthreads();
             }
             if (i == iter - 1) {
-                partialNormalizedWriteOut256Bytes(out, index+threadIdx.x, o[0], o[1], o[2], o[3], elements);
+                partialBoxMullerWriteOut128Bytes(out, index+threadIdx.x, o[0], o[1], o[2], o[3], elements);
             } else {
-                normalizedWriteOut256Bytes(out, index+threadIdx.x, o[0], o[1], o[2], o[3]);
+                boxMullerWriteOut128Bytes(out, index+threadIdx.x, o[0], o[1], o[2], o[3]);
             }
             index += elementsPerBlockIteration;
         }

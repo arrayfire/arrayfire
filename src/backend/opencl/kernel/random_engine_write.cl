@@ -18,7 +18,7 @@ float getFloat(const uint * const num)
 
 //Writes without boundary checking
 
-void writeOut256Bytes_uchar(__global uchar *out, const uint * const index,
+void writeOut128Bytes_uchar(__global uchar *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     out[*index]              =     *r1;
@@ -39,7 +39,7 @@ void writeOut256Bytes_uchar(__global uchar *out, const uint * const index,
     out[*index + 15*THREADS] = *r4>>24;
 }
 
-void writeOut256Bytes_char(__global char *out, const uint * const index,
+void writeOut128Bytes_char(__global char *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     out[*index]              = (*r1   )&0x1;
@@ -60,7 +60,7 @@ void writeOut256Bytes_char(__global char *out, const uint * const index,
     out[*index + 15*THREADS] = (*r4>>3)&0x1;
 }
 
-void writeOut256Bytes_short(__global short *out, const uint * const index,
+void writeOut128Bytes_short(__global short *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     out[*index]             =     *r1;
@@ -73,7 +73,7 @@ void writeOut256Bytes_short(__global short *out, const uint * const index,
     out[*index + 7*THREADS] = *r4>>16;
 }
 
-void writeOut256Bytes_ushort(__global ushort *out, const uint * const index,
+void writeOut128Bytes_ushort(__global ushort *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     out[*index]             =     *r1;
@@ -86,7 +86,7 @@ void writeOut256Bytes_ushort(__global ushort *out, const uint * const index,
     out[*index + 7*THREADS] = *r4>>16;
 }
 
-void writeOut256Bytes_int(__global int *out, const uint * const index,
+void writeOut128Bytes_int(__global int *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     out[*index]             = *r1;
@@ -95,7 +95,7 @@ void writeOut256Bytes_int(__global int *out, const uint * const index,
     out[*index + 3*THREADS] = *r4;
 }
 
-void writeOut256Bytes_uint(__global uint *out, const uint * const index,
+void writeOut128Bytes_uint(__global uint *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     out[*index]             = *r1;
@@ -104,7 +104,7 @@ void writeOut256Bytes_uint(__global uint *out, const uint * const index,
     out[*index + 3*THREADS] = *r4;
 }
 
-void writeOut256Bytes_long(__global long *out, const uint * const index,
+void writeOut128Bytes_long(__global long *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     long c1 = *r2;
@@ -115,7 +115,7 @@ void writeOut256Bytes_long(__global long *out, const uint * const index,
     out[*index + THREADS] = c2;
 }
 
-void writeOut256Bytes_ulong(__global ulong *out, const uint * const index,
+void writeOut128Bytes_ulong(__global ulong *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     long c1 = *r2;
@@ -126,7 +126,7 @@ void writeOut256Bytes_ulong(__global ulong *out, const uint * const index,
     out[*index + THREADS] = c2;
 }
 
-void writeOut256Bytes_float(__global float *out, const uint * const index,
+void writeOut128Bytes_float(__global float *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     out[*index]             = getFloat(r1);
@@ -141,7 +141,7 @@ void writeOut256Bytes_float(__global float *out, const uint * const index,
 
 //Writes with boundary checking
 
-void partialWriteOut256Bytes_uchar(__global uchar *out, const uint * const index,
+void partialWriteOut128Bytes_uchar(__global uchar *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     if (*index              < *elements) {out[*index]              =     *r1;}
@@ -162,7 +162,7 @@ void partialWriteOut256Bytes_uchar(__global uchar *out, const uint * const index
     if (*index + 15*THREADS < *elements) {out[*index + 15*THREADS] = *r4>>24;}
 }
 
-void partialWriteOut256Bytes_char(__global char *out, const uint * const index,
+void partialWriteOut128Bytes_char(__global char *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     if (*index              < *elements) {out[*index]              = (*r1   )&0x1;}
@@ -183,7 +183,7 @@ void partialWriteOut256Bytes_char(__global char *out, const uint * const index,
     if (*index + 15*THREADS < *elements) {out[*index + 15*THREADS] = (*r4>>3)&0x1;}
 }
 
-void partialWriteOut256Bytes_short(__global short *out, const uint * const index,
+void partialWriteOut128Bytes_short(__global short *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     if (*index             < *elements) {out[*index]             =     *r1;}
@@ -196,7 +196,7 @@ void partialWriteOut256Bytes_short(__global short *out, const uint * const index
     if (*index + 7*THREADS < *elements) {out[*index + 7*THREADS] = *r4>>16;}
 }
 
-void partialWriteOut256Bytes_ushort(__global ushort *out, const uint * const index,
+void partialWriteOut128Bytes_ushort(__global ushort *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     if (*index             < *elements) {out[*index]             =     *r1;}
@@ -209,7 +209,7 @@ void partialWriteOut256Bytes_ushort(__global ushort *out, const uint * const ind
     if (*index + 7*THREADS < *elements) {out[*index + 7*THREADS] = *r4>>16;}
 }
 
-void partialWriteOut256Bytes_int(__global int *out, const uint * const index,
+void partialWriteOut128Bytes_int(__global int *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     if (*index             < *elements) {out[*index]             = *r1;}
@@ -218,7 +218,7 @@ void partialWriteOut256Bytes_int(__global int *out, const uint * const index,
     if (*index + 3*THREADS < *elements) {out[*index + 3*THREADS] = *r4;}
 }
 
-void partialWriteOut256Bytes_uint(__global uint *out, const uint * const index,
+void partialWriteOut128Bytes_uint(__global uint *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     if (*index             < *elements) {out[*index]             = *r1;}
@@ -227,7 +227,7 @@ void partialWriteOut256Bytes_uint(__global uint *out, const uint * const index,
     if (*index + 3*THREADS < *elements) {out[*index + 3*THREADS] = *r4;}
 }
 
-void partialWriteOut256Bytes_long(__global long *out, const uint * const index,
+void partialWriteOut128Bytes_long(__global long *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     long c1 = *r2;
@@ -238,7 +238,7 @@ void partialWriteOut256Bytes_long(__global long *out, const uint * const index,
     if (*index + THREADS < *elements) {out[*index + THREADS] = c2;}
 }
 
-void partialWriteOut256Bytes_ulong(__global ulong *out, const uint * const index,
+void partialWriteOut128Bytes_ulong(__global ulong *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     long c1 = *r2;
@@ -249,7 +249,7 @@ void partialWriteOut256Bytes_ulong(__global ulong *out, const uint * const index
     if (*index + THREADS < *elements) {out[*index + THREADS] = c2;}
 }
 
-void partialWriteOut256Bytes_float(__global float *out, const uint * const index,
+void partialWriteOut128Bytes_float(__global float *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     if (*index             < *elements) {out[*index]             = getFloat(r1);}
@@ -271,8 +271,8 @@ void boxMullerTransform(T * const out1, T * const out2, const T r1, const T r2)
     *out2 = r*cos(theta);
 }
 
-//Normalized writes without boundary checking
-void normalizedWriteOut256Bytes_float(__global float *out, const uint * const index,
+//BoxMuller writes without boundary checking
+void boxMullerWriteOut128Bytes_float(__global float *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     float n1, n2, n3, n4;
@@ -284,8 +284,8 @@ void normalizedWriteOut256Bytes_float(__global float *out, const uint * const in
     out[*index + 3*THREADS] = n4;
 }
 
-//Normalized writes with boundary checking
-void partialNormalizedWriteOut256Bytes_float(__global float *out, const uint * const index,
+//BoxMuller writes with boundary checking
+void partialBoxMullerWriteOut128Bytes_float(__global float *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     float n1, n2, n3, n4;
@@ -305,14 +305,14 @@ double getDouble(const uint * const num1, const uint * const num2)
     return ((double)num)/UINTLMAXDOUBLE;
 }
 
-void writeOut256Bytes_double(__global double *out, const uint * const index,
+void writeOut128Bytes_double(__global double *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     out[*index]           = getDouble(r1, r2);
     out[*index + THREADS] = getDouble(r3, r4);
 }
 
-void partialWriteOut256Bytes_double(__global double *out, const uint * const index,
+void partialWriteOut128Bytes_double(__global double *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     if (*index           < *elements) {out[*index]           = getDouble(r1, r2);}
@@ -320,7 +320,7 @@ void partialWriteOut256Bytes_double(__global double *out, const uint * const ind
 }
 
 #if RAND_DIST == 1
-void normalizedWriteOut256Bytes_double(__global double *out, const uint * const index,
+void boxMullerWriteOut128Bytes_double(__global double *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
     double n1, n2;
@@ -329,7 +329,7 @@ void normalizedWriteOut256Bytes_double(__global double *out, const uint * const 
     out[*index + THREADS] = n2;
 }
 
-void partialNormalizedWriteOut256Bytes_double(__global double *out, const uint * const index,
+void partialBoxMullerWriteOut128Bytes_double(__global double *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
     double n1, n2;
@@ -343,10 +343,10 @@ void partialNormalizedWriteOut256Bytes_double(__global double *out, const uint *
 #define PASTER(x,y) x ## _ ## y
 #define EVALUATOR(x,y) PASTER(x,y)
 #define EVALUATE_T(function) EVALUATOR(function, T)
-#define UNIFORM_WRITE EVALUATE_T(writeOut256Bytes)
-#define UNIFORM_PARTIAL_WRITE EVALUATE_T(partialWriteOut256Bytes)
-#define NORMAL_WRITE EVALUATE_T(normalizedWriteOut256Bytes)
-#define NORMAL_PARTIAL_WRITE EVALUATE_T(partialNormalizedWriteOut256Bytes)
+#define UNIFORM_WRITE EVALUATE_T(writeOut128Bytes)
+#define UNIFORM_PARTIAL_WRITE EVALUATE_T(partialWriteOut128Bytes)
+#define NORMAL_WRITE EVALUATE_T(boxMullerWriteOut128Bytes)
+#define NORMAL_PARTIAL_WRITE EVALUATE_T(partialBoxMullerWriteOut128Bytes)
 
 #if RAND_DIST == 0
 #define WRITE UNIFORM_WRITE

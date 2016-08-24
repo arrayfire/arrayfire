@@ -126,7 +126,7 @@ namespace kernel
     }
 
     template <typename T>
-    void normalizePair(T * const out1, T * const out2, const T r1, const T r2)
+    void boxMullerTransform(T * const out1, T * const out2, const T r1, const T r2)
     {
         T r = sqrt((T)(-2.0) * log(r1));
         T theta = 2 * (T)PI_VAL * (r2);
@@ -134,15 +134,15 @@ namespace kernel
         *out2 = r*cos(theta);
     }
 
-    void normalize(uint val[4], double *temp)
+    void boxMullerTransform(uint val[4], double *temp)
     {
-        normalizePair(&temp[0], &temp[1], transform<double>(val, 0), transform<double>(val,1));
+        boxMullerTransform(&temp[0], &temp[1], transform<double>(val, 0), transform<double>(val,1));
     }
 
-    void normalize(uint val[4], float *temp)
+    void boxMullerTransform(uint val[4], float *temp)
     {
-        normalizePair(&temp[0], &temp[1], transform<float>(val, 0), transform<float>(val, 1));
-        normalizePair(&temp[2], &temp[3], transform<float>(val, 2), transform<float>(val, 3));
+        boxMullerTransform(&temp[0], &temp[1], transform<float>(val, 0), transform<float>(val, 1));
+        boxMullerTransform(&temp[2], &temp[3], transform<float>(val, 2), transform<float>(val, 3));
     }
 
     template <typename T>
@@ -157,7 +157,7 @@ namespace kernel
         int reset = (4*sizeof(uint))/sizeof(T);
         for (int i = 0; i < (int)elements; i += reset) {
             philox(key, ctr);
-            normalize(ctr, temp);
+            boxMullerTransform(ctr, temp);
             int lim = (reset < (int)(elements - i))? reset : (int)(elements - i);
             for (int j = 0; j < lim; ++j) {
                 out[i + j] = temp[j];
@@ -181,7 +181,7 @@ namespace kernel
             ++ctr[0]; ++key[0];
             threefry(key, ctr, val+2);
             ++ctr[0]; ++key[0];
-            normalize(val, temp);
+            boxMullerTransform(val, temp);
             int lim = (reset < (int)(elements - i))? reset : (int)(elements - i);
             for (int j = 0; j < lim; ++j) {
                 out[i + j] = temp[j];
@@ -241,7 +241,7 @@ namespace kernel
         int reset = (4*sizeof(uint))/sizeof(T);
         for (int i = 0; i < (int)elements; i += reset) {
             mersenne(o, l_state, i, lpos, lsh1, lsh2, mask, recursion_table, temper_table);
-            normalize(o, temp);
+            boxMullerTransform(o, temp);
             int lim = (reset < (int)(elements - i))? reset : (int)(elements - i);
             for (int j = 0; j < lim; ++j) {
                 out[i + j] = temp[j];
