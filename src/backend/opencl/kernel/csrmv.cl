@@ -97,7 +97,7 @@ csrmv_block(__global T *output,
 #endif
         if (rowId >= M) return;
 
-        __local T s_outval[THREADS_PER_GROUP];
+        __local T s_outval[THREADS];
 
         int colStart = rowidx[rowId];
         int colEnd   = rowidx[rowId + 1];
@@ -109,7 +109,7 @@ csrmv_block(__global T *output,
         s_outval[lid] = outval;
         barrier(CLK_LOCAL_MEM_FENCE);
 
-        for (int n = off / 2; n > 0; n /= 2) {
+        for (int n = THREADS / 2; n > 0; n /= 2) {
             if (lid < n) s_outval[lid] += s_outval[lid + n];
             barrier(CLK_LOCAL_MEM_FENCE);
         }

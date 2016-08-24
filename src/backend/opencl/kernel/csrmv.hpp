@@ -53,6 +53,9 @@ namespace opencl
                     ((getActivePlatform() == AFCL_PLATFORM_AMD) ||
                      (getActivePlatform() == AFCL_PLATFORM_NVIDIA));
 
+                // FIXME: Find a better number based on average non zeros per row
+                int threads = 64;
+
                 std::string ref_name =
                     std::string("csrmv_") +
                     std::string(dtype_traits<T>::getName()) +
@@ -61,7 +64,9 @@ namespace opencl
                     std::string("_") +
                     std::to_string(use_beta) +
                     std::string("_") +
-                    std::to_string(use_greedy);
+                    std::to_string(use_greedy) +
+                    std::string("_") +
+                    std::to_string(threads);
 
                 int device = getActiveDeviceId();
                 auto idx = kernelCaches[device].find(ref_name);
@@ -74,7 +79,7 @@ namespace opencl
                     options << " -D USE_ALPHA=" << use_alpha;
                     options << " -D USE_BETA=" << use_beta;
                     options << " -D USE_GREEDY=" << use_greedy;
-                    options << " -D THREADS_PER_GROUP=" << THREADS_PER_GROUP;
+                    options << " -D THREADS=" << threads;
 
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
@@ -115,7 +120,7 @@ namespace opencl
                                                 int,
                                                 Buffer, KParam, T, T, Buffer>(csrmv_kernel);
 
-                NDRange local(THREADS_PER_GROUP, 1);
+                NDRange local(is_csrmv_block ? threads : THREADS_PER_GROUP, 1);
                 int M = rowIdx.info.dims[0] - 1;
 
                 int groups_x = is_csrmv_block ? divup(M, REPEAT) : divup(M, REPEAT * local[0]);
