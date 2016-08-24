@@ -86,6 +86,8 @@ namespace opencl
                         << " -D THREADS=" << THREADS
                         << " -D RAND_DIST=" << kerIdx;
                 if (type == AF_RANDOM_MERSENNE_GP11213) {
+                    //These defines do not need to be a part of the hashing string
+                    //because they are the same for all Mersenne Twister kernels.
                     options << " -D STATE_SIZE=" << STATE_SIZE
                             << " -D TABLE_SIZE=" << TABLE_SIZE
                             << " -D N=" << N;
@@ -124,6 +126,8 @@ namespace opencl
             kc_entry_t entry;
             if (idx == kernelCaches[device].end()) {
                 std::ostringstream options;
+                //These defines do not need to be a part of the hashing string
+                //because they are the same for all Mersenne Twister kernels.
                 options << " -D N=" << N << " -D TABLE_SIZE=" << TABLE_SIZE;
                 cl::Program prog;
                 buildProgram(prog, 1, &ker_str, &ker_len, options.str());
