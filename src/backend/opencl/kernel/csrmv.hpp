@@ -37,7 +37,7 @@ namespace opencl
 {
     namespace kernel
     {
-        const int MAX_GROUPS = 4096;
+        static const int MAX_CSRMV_GROUPS = 4096;
         template<typename T>
         void csrmv(Param out,
                    const Param &values, const Param &rowIdx, const Param &colIdx,
@@ -109,7 +109,7 @@ namespace opencl
                 int M = rowIdx.info.dims[0] - 1;
 
                 int groups_x = is_csrmv_block ? divup(M, REPEAT) : divup(M, REPEAT * local[0]);
-                groups_x = std::min(groups_x, MAX_GROUPS);
+                groups_x = std::min(groups_x, MAX_CSRMV_GROUPS);
                 NDRange global(local[0] * groups_x, 1);
 
                 csrmv_func(EnqueueArgs(getQueue(), global, local),
