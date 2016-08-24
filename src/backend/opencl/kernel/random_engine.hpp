@@ -162,7 +162,6 @@ namespace opencl
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
                 CL_TO_AF_ERROR(err);
-                throw;
             }
         }
 
@@ -189,7 +188,6 @@ namespace opencl
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
                 CL_TO_AF_ERROR(err);
-                throw;
             }
         }
 
@@ -235,7 +233,6 @@ namespace opencl
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
                 CL_TO_AF_ERROR(err);
-                throw;
             }
         }
     }
