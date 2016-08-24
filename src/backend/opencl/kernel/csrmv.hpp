@@ -24,6 +24,7 @@
 #include "reduce.hpp"
 #include "scan_first.hpp"
 #include "config.hpp"
+#include <af/opencl.h>
 
 using cl::Buffer;
 using cl::Program;
@@ -46,13 +47,21 @@ namespace opencl
             try {
                 bool use_alpha = (alpha != scalar<T>(1.0));
                 bool use_beta = (beta != scalar<T>(0.0));
+
+                // Use other metrics for this as well
+                bool use_greedy = (getActiveDeviceType() == AFCL_DEVICE_TYPE_GPU) &&
+                    ((getActivePlatform() == AFCL_PLATFORM_AMD) ||
+                     (getActivePlatform() == AFCL_PLATFORM_NVIDIA));
+
                 std::string ref_name =
                     std::string("csrmv_") +
                     std::string(dtype_traits<T>::getName()) +
                     std::string("_") +
                     std::to_string(use_alpha) +
                     std::string("_") +
-                    std::to_string(use_beta);
+                    std::to_string(use_beta) +
+                    std::string("_") +
+                    std::to_string(use_greedy);
 
                 int device = getActiveDeviceId();
                 auto idx = kernelCaches[device].find(ref_name);
@@ -64,6 +73,7 @@ namespace opencl
                     options << " -D T=" << dtype_traits<T>::getName();
                     options << " -D USE_ALPHA=" << use_alpha;
                     options << " -D USE_BETA=" << use_beta;
+                    options << " -D USE_GREEDY=" << use_greedy;
                     options << " -D THREADS_PER_GROUP=" << THREADS_PER_GROUP;
 
                     if (std::is_same<T, double>::value ||

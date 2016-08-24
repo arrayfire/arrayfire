@@ -34,12 +34,19 @@ csrmv_thread(__global T *output,
              const T beta,
              __global int *counter)
 {
-    while (true) {
-        int rid = atomic_inc(counter);
-        if (rid >= M) return;
 
-        int colStart = rowidx[rid];
-        int colEnd   = rowidx[rid + 1];
+    int rowNext = get_global_id(0);
+    while (true) {
+#if USE_GREEDY
+        int rowId = atomic_inc(counter);
+#else
+        int rowId = rowNext;
+        rowNext += get_global_size(0);
+#endif
+        if (rowId >= M) return;
+
+        int colStart = rowidx[rowId];
+        int colEnd   = rowidx[rowId + 1];
         T outval = 0;
 
         for (int id = colStart; id < colEnd; id++) {
@@ -52,9 +59,9 @@ csrmv_thread(__global T *output,
 #endif
 
 #if USE_BETA
-        output[rid] = outval + beta * output[rid];
+        output[rowId] = outval + beta * output[rowId];
 #else
-        output[rid] = outval;
+        output[rowId] = outval;
 #endif
     }
 }
@@ -74,21 +81,26 @@ csrmv_block(__global T *output,
     int lid = get_local_id(0);
     int off = get_local_size(0);
 
-    __local int s_rid;
-
+    int rowNext = get_group_id(0);
+    __local int s_rowId;
     while (true) {
 
+#if USE_GREEDY
         if (lid == 0) {
-            s_rid = atomic_inc(counter);
+            s_rowId = atomic_inc(counter);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
-        int rid = s_rid;
-        if (rid >= M) return;
+        int rowId = s_rowId;
+#else
+        int rowId = rowNext;
+        rowNext += get_num_groups(0);
+#endif
+        if (rowId >= M) return;
 
         __local T s_outval[THREADS_PER_GROUP];
 
-        int colStart = rowidx[rid];
-        int colEnd   = rowidx[rid + 1];
+        int colStart = rowidx[rowId];
+        int colEnd   = rowidx[rowId + 1];
         T outval = 0;
         for (int id = colStart + lid; id < colEnd; id += off) {
             int cid = colidx[id];
@@ -110,9 +122,9 @@ csrmv_block(__global T *output,
 #endif
 
 #if USE_BETA
-            output[rid] = outval + beta * output[rid];
+            output[rowId] = outval + beta * output[rowId];
 #else
-            output[rid] = outval;
+            output[rowId] = outval;
 #endif
         }
     }

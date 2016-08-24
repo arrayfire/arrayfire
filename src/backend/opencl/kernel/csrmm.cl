@@ -49,11 +49,23 @@ csrmm_nt(__global T *output,
     __local int s_colidx[THREADS_PER_GROUP];
 
     // FIXME: Implement better load balancing using atomic counter
-    for (int rid = get_group_id(1); rid < M; rid += get_num_groups(1)) {
+    int rowNext = get_group_id(1);
+    __local int s_rowId;
+    while(true) {
+#if USE_GREEDY
+        if (lid == 0) {
+            s_rowId = atomic_inc(counter + get_group_id(0));
+        }
         barrier(CLK_LOCAL_MEM_FENCE);
+        int rowId = s_rowId;
+#else
+        int rowId = rowNext;
+        rowNext += get_num_groups(1);
+#endif
+        if (rowId >= M) return;
 
-        const int colStart = rowidx[rid];
-        const int colEnd   = rowidx[rid + 1];
+        const int colStart = rowidx[rowId];
+        const int colEnd   = rowidx[rowId + 1];
 
         T outval = 0;
         for (int id = colStart; id < colEnd; id += off) {
@@ -74,9 +86,9 @@ csrmm_nt(__global T *output,
 #endif
 
 #if USE_BETA
-            output[rid] = outval + beta * output[rid];
+            output[rowId] = outval + beta * output[rowId];
 #else
-            output[rid] = outval;
+            output[rowId] = outval;
 #endif
         }
     }
