@@ -31,29 +31,32 @@ csrmv_thread(__global T *output,
              __global const T *rhs,
              const KParam rinfo,
              const T alpha,
-             const T beta)
+             const T beta,
+             __global int *counter)
 {
-    int rid = get_global_id(0) + get_global_size(0) * get_global_id(1);
-    if (rid >= M) return;
+    while (true) {
+        int rid = atomic_inc(counter);
+        if (rid >= M) return;
 
-    int colStart = rowidx[rid];
-    int colEnd   = rowidx[rid + 1];
-    T val = 0;
+        int colStart = rowidx[rid];
+        int colEnd   = rowidx[rid + 1];
+        T outval = 0;
 
-    for (int id = colStart; id < colEnd; id++) {
-        int cid = colidx[id];
-        val += MUL(values[id], rhs[cid]);
-    }
+        for (int id = colStart; id < colEnd; id++) {
+            int cid = colidx[id];
+            outval += MUL(values[id], rhs[cid]);
+        }
 
 #if USE_ALPHA
-    val *= alpa;
+        outval *= alpa;
 #endif
 
 #if USE_BETA
-    output[rid] = val + beta * output[rid];
+        output[rid] = outval + beta * output[rid];
 #else
-    output[rid] = val;
+        output[rid] = outval;
 #endif
+    }
 }
 
 __kernel void
@@ -65,41 +68,52 @@ csrmv_block(__global T *output,
             __global const T *rhs,
             const KParam rinfo,
             const T alpha,
-            const T beta)
+            const T beta,
+            __global int *counter)
 {
-    int rid = get_group_id(0) + get_num_groups(0) * get_group_id(1);
     int lid = get_local_id(0);
     int off = get_local_size(0);
-    if (rid >= M) return;
 
-    __local T s_val[THREADS_PER_GROUP];
+    __local int s_rid;
 
-    int colStart = rowidx[rid];
-    int colEnd   = rowidx[rid + 1];
-    T val = 0;
-    for (int id = colStart + lid; id < colEnd; id += off) {
-        int cid = colidx[id];
-        val += MUL(values[id], rhs[cid]);
-    }
-    s_val[lid] = val;
-    barrier(CLK_LOCAL_MEM_FENCE);
+    while (true) {
 
-    for (int n = off / 2; n > 0; n /= 2) {
-        if (lid < n) s_val[lid] += s_val[lid + n];
+        if (lid == 0) {
+            s_rid = atomic_inc(counter);
+        }
         barrier(CLK_LOCAL_MEM_FENCE);
-    }
+        int rid = s_rid;
+        if (rid >= M) return;
 
-    if (lid == 0) {
+        __local T s_outval[THREADS_PER_GROUP];
+
+        int colStart = rowidx[rid];
+        int colEnd   = rowidx[rid + 1];
+        T outval = 0;
+        for (int id = colStart + lid; id < colEnd; id += off) {
+            int cid = colidx[id];
+            outval += MUL(values[id], rhs[cid]);
+        }
+        s_outval[lid] = outval;
+        barrier(CLK_LOCAL_MEM_FENCE);
+
+        for (int n = off / 2; n > 0; n /= 2) {
+            if (lid < n) s_outval[lid] += s_outval[lid + n];
+            barrier(CLK_LOCAL_MEM_FENCE);
+        }
+
+        if (lid == 0) {
 #if USE_ALPHA
-        val = alpha * s_val[0];
+            outval = alpha * s_outval[0];
 #else
-        val = s_val[0];
+            outval = s_outval[0];
 #endif
 
 #if USE_BETA
-        output[rid] = val + beta * output[rid];
+            output[rid] = outval + beta * output[rid];
 #else
-        output[rid] = val;
+            output[rid] = outval;
 #endif
+        }
     }
 }

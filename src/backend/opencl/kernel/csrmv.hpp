@@ -37,7 +37,7 @@ namespace opencl
 {
     namespace kernel
     {
-        const int MAX_GROUPS_X = 4096 * 4;
+        const int MAX_GROUPS = 4096;
         template<typename T>
         void csrmv(Param out,
                    const Param &values, const Param &rowIdx, const Param &colIdx,
@@ -90,26 +90,34 @@ namespace opencl
                     entry = idx->second;
                 }
 
+                int count = 0;
+                cl::Buffer *counter = bufferAlloc(sizeof(int));
+                getQueue().enqueueWriteBuffer(*counter, CL_TRUE,
+                                              0,
+                                              sizeof(int),
+                                              (void *)&count);
+
                 // TODO: Figure out the proper way to choose either csrmv_thread or csrmv_block
                 bool is_csrmv_block = true;
                 auto csrmv_kernel = is_csrmv_block ? entry.ker[1] : entry.ker[0];
                 auto csrmv_func = KernelFunctor<Buffer,
                                                 Buffer, Buffer, Buffer,
                                                 int,
-                                                Buffer, KParam, T, T>(csrmv_kernel);
+                                                Buffer, KParam, T, T, Buffer>(csrmv_kernel);
 
                 NDRange local(THREADS_PER_GROUP, 1);
                 int M = rowIdx.info.dims[0] - 1;
-                int num_groups = is_csrmv_block ? M : divup(M, local[0]);
-                int groups_y = divup(num_groups, MAX_GROUPS_X);
-                int groups_x = divup(num_groups, groups_y);
-                NDRange global(local[0] * groups_x, local[1] * groups_y);
+
+                int groups_x = is_csrmv_block ? divup(M, REPEAT) : divup(M, REPEAT * local[0]);
+                groups_x = std::min(groups_x, MAX_GROUPS);
+                NDRange global(local[0] * groups_x, 1);
 
                 csrmv_func(EnqueueArgs(getQueue(), global, local),
                            *out.data, *values.data, *rowIdx.data, *colIdx.data,
-                           M, *rhs.data, rhs.info, alpha, beta);
+                           M, *rhs.data, rhs.info, alpha, beta, *counter);
 
                 CL_DEBUG_FINISH(getQueue());
+                bufferFree(counter);
             } catch (cl::Error &ex) {
                 CL_TO_AF_ERROR(ex);
             }
