@@ -8,6 +8,8 @@
  ********************************************************/
 
 #include <sparse_blas.hpp>
+#include <kernel/csrmv.hpp>
+#include <kernel/csrmm.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -17,8 +19,10 @@
 #include <complex.hpp>
 #include <handle.hpp>
 #include <err_common.hpp>
+#include <err_opencl.hpp>
 #include <math.hpp>
 #include <platform.hpp>
+#include <transpose.hpp>
 
 namespace opencl
 {
@@ -26,10 +30,38 @@ namespace opencl
 using namespace common;
 
 template<typename T>
-Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
+Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhsIn,
                 af_mat_prop optLhs, af_mat_prop optRhs)
 {
-    Array<T> out = createValueArray<T>(af::dim4(lhs.dims()[0], rhs.dims()[0], 1, 1), scalar<T>(0));
+
+    if (optLhs != AF_MAT_NONE) OPENCL_NOT_SUPPORTED();
+
+
+    int lRowDim = (optLhs == AF_MAT_NONE) ? 0 : 1;
+    //int lColDim = (optLhs == AF_MAT_NONE) ? 1 : 0;
+    static const int rColDim = 1; //Unsupported : (optRhs == AF_MAT_NONE) ? 1 : 0;
+
+    dim4 lDims = lhs.dims();
+    dim4 rDims = rhsIn.dims();
+    int M = lDims[lRowDim];
+    int N = rDims[rColDim];
+    //int K = lDims[lColDim];
+
+    const Array<T> rhs = (N != 1 && optLhs == AF_MAT_NONE) ? transpose(rhsIn, false) : rhsIn;
+    Array<T> out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
+
+    static const T alpha = scalar<T>(1.0);
+    static const T beta  = scalar<T>(0.0);
+
+    const Array<T> &values = lhs.getValues();
+    const Array<int> &rowIdx = lhs.getRowIdx();
+    const Array<int> &colIdx = lhs.getColIdx();
+
+    if (N == 1) {
+        kernel::csrmv(out, values, rowIdx, colIdx, rhs, alpha, beta);
+    } else {
+        kernel::csrmm_nt(out, values, rowIdx, colIdx, rhs, alpha, beta);
+    }
     return out;
 }
 
