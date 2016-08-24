@@ -46,6 +46,7 @@
  *********************************************************/
 
 #pragma once
+
 namespace cpu
 {
 namespace kernel

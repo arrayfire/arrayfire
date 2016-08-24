@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+
 #include <Array.hpp>
 #include <err_cpu.hpp>
 #include <kernel/random_engine_philox.hpp>
@@ -270,21 +271,5 @@ namespace kernel
         }
     }
 
-    void initMersenneState(uint * const state, const uint * const tbl, const uintl seed)
-    {
-        uint hidden_seed = tbl[4] ^ (tbl[8] << 16);
-        uint tmp = hidden_seed;
-        tmp += tmp >> 16;
-        tmp += tmp >> 8;
-        tmp &= 0xff;
-        tmp |= tmp << 8;
-        tmp |= tmp << 16;
-        state[0] = seed;
-        state[1] = hidden_seed ^ ((uint)(1812433253) * (state[0] ^ (state[0] >> 30)) + 1);
-        for (int i = 2; i < N; ++i) {
-            state[i] = tmp;
-            state[i] ^= (uint)(1812433253) * (state[i-1] ^ (state[i-1] >> 30)) + i;
-        }
-    }
 }
 }
