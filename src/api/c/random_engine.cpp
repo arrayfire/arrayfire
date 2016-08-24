@@ -119,6 +119,30 @@ af_err af_create_random_engine(af_random_engine *engineHandle, af_random_type rt
     return AF_SUCCESS;
 }
 
+af_err af_retain_random_engine(af_random_engine *outHandle, const af_random_engine engineHandle)
+{
+    try {
+
+        RandomEngine engine = *(getRandomEngine(engineHandle));
+        RandomEngine out;
+
+        out.type = engine.type;
+        out.seed = engine.seed;
+        out.counter = engine.counter;
+        AF_CHECK(af_retain_array(&out.pos, engine.pos));
+        AF_CHECK(af_retain_array(&out.sh1, engine.sh1));
+        AF_CHECK(af_retain_array(&out.sh2, engine.sh2));
+        out.mask = engine.mask;
+        AF_CHECK(af_retain_array(&out.recursion_table, engine.recursion_table));
+        AF_CHECK(af_retain_array(&out.temper_table, engine.temper_table));
+        AF_CHECK(af_retain_array(&out.state, engine.state));
+
+        *outHandle = getRandomEngineHandle(out);
+
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_random_engine_set_seed(const uintl seed, af_random_engine engine)
 {
     try {

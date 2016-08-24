@@ -27,6 +27,15 @@ namespace af
         }
     }
 
+    randomEngine& randomEngine::operator= (const randomEngine& other)
+    {
+        if (this != &other) {
+            AF_THROW(af_release_random_engine(engine));
+            AF_THROW(af_retain_random_engine(&engine, other.get()));
+        }
+        return *this;
+    }
+
     array randomEngine::uniform(const dim_t dim0, const dtype ty)
     {
         dim4 d(dim0, 1, 1, 1);
@@ -94,11 +103,16 @@ namespace af
         AF_THROW(af_random_engine_set_seed(seed, engine));
     }
 
-    uintl randomEngine::getSeed(void)
+    uintl randomEngine::getSeed(void) const
     {
         uintl seed;
         AF_THROW(af_random_engine_get_seed(&seed, engine));
         return seed;
+    }
+
+    af_random_engine randomEngine::get() const
+    {
+        return engine;
     }
 
 }

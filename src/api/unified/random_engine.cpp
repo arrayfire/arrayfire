@@ -16,6 +16,11 @@ af_err af_create_random_engine(af_random_engine *engineHandle, af_random_type rt
     return CALL(engineHandle, rtype, seed);
 }
 
+af_err af_retain_random_engine(af_random_engine *outHandle, const af_random_engine engineHandle)
+{
+    return CALL(outHandle, engineHandle);
+}
+
 af_err af_random_engine_uniform(af_array *arr, af_random_engine engine, const unsigned ndims, const dim_t * const dims, const af_dtype type)
 {
     return CALL(arr, engine, ndims, dims, type);

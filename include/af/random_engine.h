@@ -26,6 +26,8 @@ namespace af
             randomEngine(randomType typeIn = AF_RANDOM_DEFAULT, uintl seedIn = 0);
             ~randomEngine();
 
+            randomEngine& operator= (const randomEngine& other);
+
             array uniform(const dim_t dim0, const dtype ty = f32);
             array uniform(const dim_t dim0, const dim_t dim1, const dtype ty = f32);
             array uniform(const dim_t dim0, const dim_t dim1, const dim_t dim2, const dtype ty = f32);
@@ -39,7 +41,8 @@ namespace af
             array normal(const dim4& dims, const dtype ty = f32);
 
             void setSeed(const uintl seed);
-            uintl getSeed(void);
+            uintl getSeed(void) const;
+            af_random_engine get() const;
     };
 }
 #endif
@@ -59,6 +62,15 @@ extern "C" {
     */
     AFAPI af_err af_create_random_engine(af_random_engine *engine, af_random_type rtype, uintl seed);
 
+    /**
+       C Interface for retaining random engine
+
+       \param[out]  out is the pointer to the returned random engine object
+       \param[in]   engine is the random engine object
+
+       \returns \ref AF_SUCCESS if the execution completes properly
+    */
+    AFAPI af_err af_retain_random_engine(af_random_engine *out, const af_random_engine engine);
     /**
        C Interface for creating an array of uniform numbers using a random engine
 
