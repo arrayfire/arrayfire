@@ -131,11 +131,16 @@ __kernel void generate(__global T *output,
                     l_state[offsetY ]);
             l_state[offsetO] = r;
             o[ii] = temper(l_temper_table, r, l_state[offsetT]);
-            offsetX1 = (offsetX1 + THREADS) % STATE_SIZE;
-            offsetX2 = (offsetX2 + THREADS) % STATE_SIZE;
-            offsetY  = (offsetY  + THREADS) % STATE_SIZE;
-            offsetT  = (offsetT  + THREADS) % STATE_SIZE;
-            offsetO  = (offsetO  + THREADS) % STATE_SIZE;
+            offsetX1 += THREADS;
+            offsetX2 += THREADS;
+            offsetY  += THREADS;
+            offsetT  += THREADS;
+            offsetO  += THREADS;
+            offsetX1 = (offsetX1 >= STATE_SIZE)? offsetX1 - STATE_SIZE : offsetX1;
+            offsetX2 = (offsetX2 >= STATE_SIZE)? offsetX2 - STATE_SIZE : offsetX2;
+            offsetY  = (offsetY  >= STATE_SIZE)? offsetY  - STATE_SIZE : offsetY ;
+            offsetT  = (offsetT  >= STATE_SIZE)? offsetT  - STATE_SIZE : offsetT ;
+            offsetO  = (offsetO  >= STATE_SIZE)? offsetO  - STATE_SIZE : offsetO ;
             barrier(CLK_LOCAL_MEM_FENCE);
         }
         uint writeIndex = index + get_local_id(0);
