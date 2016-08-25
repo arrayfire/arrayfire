@@ -85,13 +85,7 @@ namespace opencl
                 options << " -D T=" << dtype_traits<T>::getName()
                         << " -D THREADS=" << THREADS
                         << " -D RAND_DIST=" << kerIdx;
-                if (type == AF_RANDOM_MERSENNE_GP11213) {
-                    //These defines do not need to be a part of the hashing string
-                    //because they are the same for all Mersenne Twister kernels.
-                    options << " -D STATE_SIZE=" << STATE_SIZE
-                            << " -D TABLE_SIZE=" << TABLE_SIZE
-                            << " -D N=" << N;
-                } else {
+                if (type != AF_RANDOM_MERSENNE_GP11213) {
                     options << " -D ELEMENTS_PER_BLOCK=" << elementsPerBlock;
                 }
                 if (std::is_same<T, double>::value) {
@@ -125,12 +119,9 @@ namespace opencl
             kc_t::iterator idx = kernelCaches[device].find(ref_name);
             kc_entry_t entry;
             if (idx == kernelCaches[device].end()) {
-                std::ostringstream options;
-                //These defines do not need to be a part of the hashing string
-                //because they are the same for all Mersenne Twister kernels.
-                options << " -D N=" << N << " -D TABLE_SIZE=" << TABLE_SIZE;
+                std::string emptyOptionString;
                 cl::Program prog;
-                buildProgram(prog, 1, &ker_str, &ker_len, options.str());
+                buildProgram(prog, 1, &ker_str, &ker_len, emptyOptionString);
                 entry.prog = new Program(prog);
                 entry.ker = new Kernel(*entry.prog, "initState");
                 kernelCaches[device][ref_name] = entry;

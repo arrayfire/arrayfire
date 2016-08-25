@@ -42,7 +42,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************/
 
-#define divup(N, D) (((N) + (D) - 1)/(D));
+#define N 351
+#define TABLE_SIZE 16
+#define STATE_SIZE (256*3)
+
+#define divup(NUM, DEN) (((NUM) + (DEN) - 1)/(DEN));
 
 void read_table(__local uint * const localTable, __global const uint * const table)
 {

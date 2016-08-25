@@ -42,6 +42,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************/
 
+#define N 351
+#define TABLE_SIZE 16
+
 __kernel void initState(__global uint *state, __global uint *tbl, ulong seed)
 {
     __local uint lstate[N];
