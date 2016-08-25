@@ -46,9 +46,10 @@ namespace opencl
             try {
                 bool use_alpha = (alpha != scalar<T>(1.0));
                 bool use_beta = (beta != scalar<T>(0.0));
-                bool use_greedy = (getActiveDeviceType() == AFCL_DEVICE_TYPE_GPU) &&
-                    ((getActivePlatform() == AFCL_PLATFORM_AMD) ||
-                     (getActivePlatform() == AFCL_PLATFORM_NVIDIA));
+
+                // Using greedy indexing is causing performance issues on many platforms
+                // FIXME: Figure out why
+                bool use_greedy = false;
 
                 std::string ref_name =
                     std::string("csrmm_") +
