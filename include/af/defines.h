@@ -398,7 +398,9 @@ typedef enum {
     AF_BINARY_MIN  = 2,
     AF_BINARY_MAX  = 3
 } af_binary_op;
+#endif
 
+#if AF_API_VERSION >=34
 typedef enum {
     AF_RANDOM_PHILOX_4X32_10 = 100,
     AF_RANDOM_THREEFRY_2X32_16 = 200,
