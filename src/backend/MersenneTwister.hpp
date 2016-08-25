@@ -42,6 +42,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************/
 
+/*
+ * These numbers have been obtained from the following file :
+ * https://github.com/MersenneTwister-Lab/MTGP/blob/master/cuda-sample/mtgp32dc-param-11213.c
+ */
+
 #pragma once
 
 #include <af/defines.h>
