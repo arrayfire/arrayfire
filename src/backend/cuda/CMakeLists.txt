@@ -3,8 +3,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 FIND_PACKAGE(CUDA REQUIRED)
 FIND_PACKAGE(Boost REQUIRED)
 
-INCLUDE("${CMAKE_MODULE_PATH}/CLKernelToH.cmake")
-INCLUDE("${CMAKE_MODULE_PATH}/FindNVVM.cmake")
+INCLUDE(CLKernelToH)
+INCLUDE(FindNVVM)
 
 OPTION(USE_LIBDEVICE "Use libdevice for CUDA JIT" ON)
 
@@ -19,7 +19,7 @@ OPTION(CUDA_COMPUTE_DETECT "Run autodetection of CUDA Architecture" ON)
 MARK_AS_ADVANCED(CUDA_COMPUTE_DETECT)
 
 IF(CUDA_COMPUTE_DETECT AND NOT DEFINED COMPUTES_DETECTED_LIST)
-    INCLUDE("${CMAKE_MODULE_PATH}/CUDACheckCompute.cmake")
+    INCLUDE(CUDACheckCompute)
 ENDIF()
 
 IF(    CUDA_COMPUTE_20
@@ -192,7 +192,7 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
     ${Boost_INCLUDE_DIR}
     ${CUDA_INCLUDE_DIRS}
-    "${CMAKE_SOURCE_DIR}/src/backend/cuda"
+    "${PROJECT_SOURCE_DIR}/src/backend/cuda"
     "${CMAKE_CURRENT_BINARY_DIR}"
     ${CUDA_nvvm_INCLUDE_DIR}
     )
@@ -305,9 +305,9 @@ foreach(ptx_src_file ${ptx_sources})
       get_filename_component(_name "${ptx_src_file}" NAME_WE)
 
       set(_gen_file_name
-        "${CMAKE_BINARY_DIR}/src/backend/cuda/cuda_compile_ptx_generated_${_name}.cu.ptx")
+        "${PROJECT_BINARY_DIR}/src/backend/cuda/cuda_compile_ptx_generated_${_name}.cu.ptx")
       set(_out_file_name
-        "${CMAKE_BINARY_DIR}/src/backend/cuda/${_name}.ptx")
+        "${PROJECT_BINARY_DIR}/src/backend/cuda/${_name}.ptx")
 
       ADD_CUSTOM_COMMAND(
         OUTPUT "${_out_file_name}"
@@ -336,7 +336,7 @@ IF (USE_LIBDEVICE)
   LIST(APPEND libdevice_computes "20" "30" "35" "50")
   FOREACH(libdevice_compute ${libdevice_computes})
     SET(_libdevice_bc_file "${CUDA_NVVM_HOME}/libdevice/libdevice.compute_${libdevice_compute}.10.bc")
-    SET(_libdevice_bc_copy "${CMAKE_BINARY_DIR}/src/backend/cuda/compute_${libdevice_compute}.bc")
+    SET(_libdevice_bc_copy "${PROJECT_BINARY_DIR}/src/backend/cuda/compute_${libdevice_compute}.bc")
     IF (EXISTS ${_libdevice_bc_file})
       ADD_CUSTOM_COMMAND(
         OUTPUT "${_libdevice_bc_copy}"
@@ -506,7 +506,7 @@ INSTALL(TARGETS afcuda EXPORT CUDA DESTINATION "${AF_INSTALL_LIB_DIR}"
         COMPONENT libraries)
 
 IF(APPLE)
-    INSTALL(SCRIPT "${CMAKE_MODULE_PATH}/osx_install/InstallTool.cmake")
+    INSTALL(SCRIPT "${PROJECT_SOURCE_DIR}/CMakeModules/osx_install/InstallTool.cmake")
 ENDIF(APPLE)
 
 export(TARGETS afcuda FILE ArrayFireCUDA.cmake)

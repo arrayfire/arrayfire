@@ -12,9 +12,9 @@ SET(AF_DOCS_LAYOUT_OUT "${CMAKE_CURRENT_BINARY_DIR}/layout.xml.out")
 
 SET(DOCS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../assets")
-SET(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
-SET(EXAMPLES_DIR "${CMAKE_SOURCE_DIR}/examples")
-SET(SNIPPETS_DIR "${CMAKE_SOURCE_DIR}/test")
+SET(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
+SET(EXAMPLES_DIR "${PROJECT_SOURCE_DIR}/examples")
+SET(SNIPPETS_DIR "${PROJECT_SOURCE_DIR}/test")
 CONFIGURE_FILE(${AF_DOCS_CONFIG} ${AF_DOCS_CONFIG_OUT})
 CONFIGURE_FILE(${AF_DOCS_LAYOUT} ${AF_DOCS_LAYOUT_OUT})
 
@@ -40,7 +40,7 @@ ENDFOREACH(SRC ${EXAMPLES_CPP})
 
 # Write string containing file names to examples.dox
 CONFIGURE_FILE(
-    ${CMAKE_MODULE_PATH}/examples.dox.in
+    ${PROJECT_SOURCE_DIR}/CMakeModules/examples.dox.in
     ${DOCS_DIR}/details/examples.dox
 )
 ###########################################################
