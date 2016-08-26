@@ -43,6 +43,9 @@ namespace kernel
     template <typename T>
     __device__ static void boxMullerTransform(T * const out1, T * const out2, const T &r1, const T &r2)
     {
+        /*
+         * The log of a real value x where 0 < x < 1 is negative.
+         */
         T r = sqrt((T)(-2.0) * log(r1));
         T theta = 2 * (T)PI_VAL * r2;
         *out1 = r*sin(theta);
