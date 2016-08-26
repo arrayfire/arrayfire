@@ -36,6 +36,11 @@ namespace af
         return *this;
     }
 
+    void randomEngine::setType(const randomType type)
+    {
+        AF_THROW(af_random_engine_set_type(&engine, type));
+    }
+
     array randomEngine::uniform(const dim_t dim0, const dtype ty)
     {
         dim4 d(dim0, 1, 1, 1);
@@ -100,7 +105,7 @@ namespace af
 
     void randomEngine::setSeed(const uintl seed)
     {
-        AF_THROW(af_random_engine_set_seed(seed, engine));
+        AF_THROW(af_random_engine_set_seed(&engine, seed));
     }
 
     uintl randomEngine::getSeed(void) const
@@ -113,6 +118,85 @@ namespace af
     af_random_engine randomEngine::get() const
     {
         return engine;
+    }
+
+    array randu(const dim4 &dims, const af::dtype type)
+    {
+        af_array res;
+        AF_THROW(af_randu(&res, dims.ndims(), dims.get(), type));
+        return array(res);
+    }
+
+    array randu(const dim_t d0, const af::dtype ty)
+    {
+        return randu(dim4(d0), ty);
+    }
+
+    array randu(const dim_t d0,
+                const dim_t d1, const af::dtype ty)
+    {
+        return randu(dim4(d0, d1), ty);
+    }
+
+    array randu(const dim_t d0,
+                const dim_t d1, const dim_t d2, const af::dtype ty)
+    {
+        return randu(dim4(d0, d1, d2), ty);
+    }
+
+    array randu(const dim_t d0,
+                const dim_t d1, const dim_t d2,
+                const dim_t d3, const af::dtype ty)
+    {
+        return randu(dim4(d0, d1, d2, d3), ty);
+    }
+
+    array randn(const dim4 &dims, const af::dtype type)
+    {
+        af_array res;
+        AF_THROW(af_randn(&res, dims.ndims(), dims.get(), type));
+        return array(res);
+    }
+
+    array randn(const dim_t d0, const af::dtype ty)
+    {
+        return randn(dim4(d0), ty);
+    }
+
+    array randn(const dim_t d0,
+                const dim_t d1, const af::dtype ty)
+    {
+        return randn(dim4(d0, d1), ty);
+    }
+
+    array randn(const dim_t d0,
+                const dim_t d1, const dim_t d2, const af::dtype ty)
+    {
+        return randn(dim4(d0, d1, d2), ty);
+    }
+
+    array randn(const dim_t d0,
+                const dim_t d1, const dim_t d2,
+                const dim_t d3, const af::dtype ty)
+    {
+        return randn(dim4(d0, d1, d2, d3), ty);
+    }
+
+    void setDefaultRandomEngine(randomType rtype)
+    {
+        AF_THROW(af_default_random_engine_set_type(rtype));
+    }
+
+    void setSeed(const uintl seed)
+    {
+        AF_THROW(af_set_seed(seed));
+    }
+
+    uintl getSeed()
+    {
+        uintl seed = 0;
+        AF_THROW(af_get_seed(&seed));
+        return seed;
     }
 
 }

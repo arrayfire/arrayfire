@@ -17,7 +17,6 @@
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <handle.hpp>
-#include <random.hpp>
 #include <math.hpp>
 #include <range.hpp>
 #include <iota.hpp>
@@ -140,87 +139,9 @@ af_err af_constant_ulong(af_array *result, const uintl val,
 }
 
 template<typename T>
-static inline af_array randn_(const af::dim4 &dims)
-{
-    return getHandle(randn<T>(dims));
-}
-
-template<typename T>
-static inline af_array randu_(const af::dim4 &dims)
-{
-    return getHandle(randu<T>(dims));
-}
-
-template<typename T>
 static inline af_array identity_(const af::dim4 &dims)
 {
     return getHandle(detail::identity<T>(dims));
-}
-
-af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
-{
-    try {
-        af_array result;
-        AF_CHECK(af_init());
-
-        dim4 d = verifyDims(ndims, dims);
-
-        switch(type) {
-        case f32:   result = randu_<float  >(d);    break;
-        case c32:   result = randu_<cfloat >(d);    break;
-        case f64:   result = randu_<double >(d);    break;
-        case c64:   result = randu_<cdouble>(d);    break;
-        case s32:   result = randu_<int    >(d);    break;
-        case u32:   result = randu_<uint   >(d);    break;
-        case s64:   result = randu_<intl   >(d);    break;
-        case u64:   result = randu_<uintl  >(d);    break;
-        case s16:   result = randu_<short  >(d);    break;
-        case u16:   result = randu_<ushort >(d);    break;
-        case u8:    result = randu_<uchar  >(d);    break;
-        case b8:    result = randu_<char  >(d);    break;
-        default:    TYPE_ERROR(3, type);
-        }
-        std::swap(*out, result);
-    }
-    CATCHALL
-    return AF_SUCCESS;
-}
-
-af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
-{
-    try {
-        af_array result;
-        AF_CHECK(af_init());
-
-        dim4 d = verifyDims(ndims, dims);
-
-        switch(type) {
-        case f32:   result = randn_<float  >(d);    break;
-        case c32:   result = randn_<cfloat >(d);    break;
-        case f64:   result = randn_<double >(d);    break;
-        case c64:   result = randn_<cdouble>(d);    break;
-        default:    TYPE_ERROR(3, type);
-        }
-        std::swap(*out, result);
-    }
-    CATCHALL
-    return AF_SUCCESS;
-}
-
-af_err af_set_seed(const uintl seed)
-{
-    try {
-        setSeed(seed);
-    } CATCHALL;
-    return AF_SUCCESS;
-}
-
-af_err af_get_seed(uintl *seed)
-{
-    try {
-        *seed = getSeed();
-    } CATCHALL;
-    return AF_SUCCESS;
 }
 
 af_err af_identity(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)

@@ -51,9 +51,6 @@ class Random_norm : public ::testing::Test
         }
 };
 
-// create a list of types to be tested
-typedef ::testing::Types<float, cfloat, double, cdouble> TestTypesNorm;
-
 template<typename T>
 class RandomEngine : public ::testing::Test
 {
@@ -70,18 +67,32 @@ class RandomEngineSeed : public ::testing::Test
         }
 };
 
+template<typename T>
+class RandomSeed : public ::testing::Test
+{
+    public:
+        virtual void SetUp() {
+        }
+};
+
+// create a list of types to be tested
+typedef ::testing::Types<float, cfloat, double, cdouble> TestTypesNorm;
 // register the type list
 TYPED_TEST_CASE(Random_norm, TestTypesNorm);
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double> TestTypesEngine;
-
 // register the type list
 TYPED_TEST_CASE(RandomEngine, TestTypesEngine);
 
 typedef ::testing::Types<float, double> TestTypesEngineSeed;
 // register the type list
 TYPED_TEST_CASE(RandomEngineSeed, TestTypesEngineSeed);
+
+// create a list of types to be tested
+typedef ::testing::Types<unsigned> TestTypesSeed;
+// register the type list
+TYPED_TEST_CASE(RandomSeed, TestTypesSeed);
 
 template<typename T>
 void randuTest(af::dim4 & dims)
@@ -181,7 +192,7 @@ TEST(Random, CPP)
 }
 
 template<typename T>
-void testSetSeed(const uintl seed0, const uintl seed1, bool is_norm = false)
+void testSetSeed(const uintl seed0, const uintl seed1)
 {
 
     if (noDoubleTests<T>()) return;
@@ -192,14 +203,14 @@ void testSetSeed(const uintl seed0, const uintl seed1, bool is_norm = false)
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
     af::setSeed(seed0);
-    af::array in0 = is_norm ? af::randn(num, ty) : af::randu(num, ty);
+    af::array in0 = af::randu(num, ty);
 
     af::setSeed(seed1);
-    af::array in1 = is_norm ? af::randn(num, ty) : af::randu(num, ty);
+    af::array in1 = af::randu(num, ty);
 
     af::setSeed(seed0);
-    af::array in2 = is_norm ? af::randn(num, ty) : af::randu(num, ty);
-    af::array in3 = is_norm ? af::randn(num, ty) : af::randu(num, ty);
+    af::array in2 = af::randu(num, ty);
+    af::array in3 = af::randu(num, ty);
 
     std::vector<T> h_in0(num);
     std::vector<T> h_in1(num);
@@ -217,24 +228,19 @@ void testSetSeed(const uintl seed0, const uintl seed1, bool is_norm = false)
 
         // Verify different arrays created with different seeds differ
         // b8 and u9 can clash because they generate a small set of values
-        if (ty != b8 && ty != u8) ASSERT_NE(h_in0[i], h_in1[i]);
+        if (ty != b8 && ty != u8) ASSERT_NE(h_in0[i], h_in1[i]) << "at : " << i;
 
         // Verify different arrays created one after the other with same seed differ
         // b8 and u9 can clash because they generate a small set of values
-        if (ty != b8 && ty != u8) ASSERT_NE(h_in2[i], h_in3[i]);
+        if (ty != b8 && ty != u8) ASSERT_NE(h_in2[i], h_in3[i]) << "at : " << i;
     }
 
     af::setSeed(orig_seed); // Reset the seed
 }
 
-TYPED_TEST(Random, setSeed)
+TYPED_TEST(RandomSeed, setSeed)
 {
-    testSetSeed<TypeParam>(10101, 23232, false);
-}
-
-TYPED_TEST(Random_norm, setSeed)
-{
-    testSetSeed<TypeParam>(456, 789, true);
+    testSetSeed<TypeParam>(10101, 23232);
 }
 
 template<typename T>

@@ -17,6 +17,7 @@
 #include <err_common.hpp>
 #include <handle.hpp>
 #include <random_engine.hpp>
+#include <random.hpp>
 #include <MersenneTwister.hpp>
 
 using detail::cfloat;
@@ -25,6 +26,10 @@ using detail::uchar;
 using detail::uniformDistribution;
 using detail::normalDistribution;
 using detail::initMersenneState;
+using detail::randu;
+using detail::randn;
+using detail::setSeed;
+using detail::getSeed;
 
 using common::MaxBlocks;
 using common::TableLength;
@@ -49,6 +54,8 @@ class RandomEngine
     af_array recursion_table;
     af_array temper_table;
     af_array state;
+
+    RandomEngine(void) : type(AF_RANDOM_THREEFRY), seed(0), counter(0) {}
 };
 
 af_random_engine getRandomEngineHandle(const RandomEngine engine)
@@ -56,6 +63,12 @@ af_random_engine getRandomEngineHandle(const RandomEngine engine)
     RandomEngine *engineHandle = new RandomEngine;
     *engineHandle = engine;
     return static_cast<af_random_engine>(engineHandle);
+}
+
+af_random_engine DefaultRandomEngine(void)
+{
+    static RandomEngine r;
+    return static_cast<af_random_engine>(&r);
 }
 
 RandomEngine* getRandomEngine(const af_random_engine engineHandle)
@@ -143,11 +156,44 @@ af_err af_retain_random_engine(af_random_engine *outHandle, const af_random_engi
     return AF_SUCCESS;
 }
 
-af_err af_random_engine_set_seed(const uintl seed, af_random_engine engine)
+af_err af_random_engine_set_type(af_random_engine *engine, const af_random_type rtype)
+{
+    try {
+        RandomEngine e = *(getRandomEngine(engine));
+        if (rtype != e.type) {
+            bool empty;
+            if (rtype == AF_RANDOM_MERSENNE_GP11213) {
+                af_is_empty(&empty, e.state);
+                if (empty) {
+                    AF_CHECK(af_create_array(&e.pos, pos, 1, &MaxBlocks, u32));
+                    AF_CHECK(af_create_array(&e.sh1, sh1, 1, &MaxBlocks, u32));
+                    AF_CHECK(af_create_array(&e.sh2, sh2, 1, &MaxBlocks, u32));
+                    e.mask = mask;
+                    AF_CHECK(af_create_array(&e.recursion_table, recursion_tbl, 1, &TableLength, u32));
+                    AF_CHECK(af_create_array(&e.temper_table, temper_tbl, 1, &TableLength, u32));
+                    e.state = getHandle(initMersenneState(e.seed, getArray<uint>(e.recursion_table)));
+                }
+            }
+            e.type = rtype;
+        }
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_default_random_engine_set_type(const af_random_type rtype)
+{
+    try {
+        af_random_engine e = DefaultRandomEngine();
+        af_random_engine_set_type(&e, rtype);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_random_engine_set_seed(af_random_engine *engine, const uintl seed)
 {
     try {
         AF_CHECK(af_init());
-        RandomEngine *e = getRandomEngine(engine);
+        RandomEngine *e = getRandomEngine(*engine);
         e->seed = seed;
         if (e->type == AF_RANDOM_MERSENNE_GP11213) {
             initMersenneState(getWritableArray<uint>(e->state), seed, getArray<uint>(e->recursion_table));
@@ -239,3 +285,73 @@ af_err af_release_random_engine(af_random_engine engineHandle)
     CATCHALL;
     return AF_SUCCESS;
 }
+
+af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
+{
+    try {
+        af_array result;
+        AF_CHECK(af_init());
+
+        RandomEngine *e = getRandomEngine(DefaultRandomEngine());
+        af::dim4 d = verifyDims(ndims, dims);
+
+        switch(type) {
+        case f32: result = uniformDistribution_<float  >(d, e); break;
+        case c32: result = uniformDistribution_<cfloat >(d, e); break;
+        case f64: result = uniformDistribution_<double >(d, e); break;
+        case c64: result = uniformDistribution_<cdouble>(d, e); break;
+        case s32: result = uniformDistribution_<int    >(d, e); break;
+        case u32: result = uniformDistribution_<uint   >(d, e); break;
+        case s64: result = uniformDistribution_<intl   >(d, e); break;
+        case u64: result = uniformDistribution_<uintl  >(d, e); break;
+        case s16: result = uniformDistribution_<short  >(d, e); break;
+        case u16: result = uniformDistribution_<ushort >(d, e); break;
+        case u8:  result = uniformDistribution_<uchar  >(d, e); break;
+        case b8:  result = uniformDistribution_<char   >(d, e); break;
+        default:  TYPE_ERROR(3, type);
+        }
+        std::swap(*out, result);
+    }
+    CATCHALL
+    return AF_SUCCESS;
+}
+
+af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
+{
+    try {
+        af_array result;
+        AF_CHECK(af_init());
+
+        RandomEngine *e = getRandomEngine(DefaultRandomEngine());
+        af::dim4 d = verifyDims(ndims, dims);
+
+        switch(type) {
+        case f32: result = normalDistribution_<float  >(d, e); break;
+        case c32: result = normalDistribution_<cfloat >(d, e); break;
+        case f64: result = normalDistribution_<double >(d, e); break;
+        case c64: result = normalDistribution_<cdouble>(d, e); break;
+        default:  TYPE_ERROR(3, type);
+        }
+        std::swap(*out, result);
+    }
+    CATCHALL
+    return AF_SUCCESS;
+}
+
+af_err af_set_seed(const uintl seed)
+{
+    try {
+        af_random_engine e = DefaultRandomEngine();
+        af_random_engine_set_seed(&e, seed);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_get_seed(uintl *seed)
+{
+    try {
+        af_random_engine_get_seed(seed, DefaultRandomEngine());
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
