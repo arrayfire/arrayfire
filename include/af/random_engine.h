@@ -266,7 +266,7 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the execution completes properly
     */
-    AFAPI af_err af_default_random_engine_set_type(const af_random_type rtype);
+    AFAPI af_err af_set_default_random_engine(const af_random_type rtype);
 
     /**
        C Interface for getting the seed of a random engine

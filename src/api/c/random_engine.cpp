@@ -180,7 +180,7 @@ af_err af_random_engine_set_type(af_random_engine *engine, const af_random_type 
     return AF_SUCCESS;
 }
 
-af_err af_default_random_engine_set_type(const af_random_type rtype)
+af_err af_set_default_random_engine(const af_random_type rtype)
 {
     try {
         af_random_engine e = DefaultRandomEngine();

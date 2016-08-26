@@ -184,7 +184,7 @@ namespace af
 
     void setDefaultRandomEngine(randomType rtype)
     {
-        AF_THROW(af_default_random_engine_set_type(rtype));
+        AF_THROW(af_set_default_random_engine(rtype));
     }
 
     void setSeed(const uintl seed)
