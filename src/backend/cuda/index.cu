@@ -60,6 +60,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     }
 
     Array<T> out = createEmptyArray<T>(oDims);
+    if(oDims.elements() == 0) { return out; }
 
     kernel::index<T>(out, in, p);
 

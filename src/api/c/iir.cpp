@@ -65,6 +65,10 @@ af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x)
         dim4 bdims = binfo.dims();
         dim4 xdims = xinfo.dims();
 
+        if(xinfo.ndims() == 0) {
+            return af_retain_array(y, x);
+        }
+
         if (xinfo.ndims() > 1) {
             if (binfo.ndims() > 1) {
                 for (int i = 1; i < 3; i++) {

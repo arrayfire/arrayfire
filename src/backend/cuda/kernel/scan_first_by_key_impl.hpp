@@ -29,17 +29,18 @@ namespace kernel
         return (id == 0)? 1 : (kptr[id] != kptr[previd]);
     }
 
-    template<typename Ti, typename Tk, typename To, af_op_t op, uint DIMX, bool inclusive_scan>
+    template<typename Ti, typename Tk, typename To, af_op_t op, uint DIMX>
     __global__
     static void scan_nonfinal_kernel(Param<To> out,
-                                  Param<To> tmp,
-                                  Param<char> tflg,
-                                  Param<int> tlid,
-                                  CParam<Ti> in,
-                                  CParam<Tk> key,
-                                  uint blocks_x,
-                                  uint blocks_y,
-                                  uint lim)
+                                     Param<To> tmp,
+                                     Param<char> tflg,
+                                     Param<int> tlid,
+                                     CParam<Ti> in,
+                                     CParam<Tk> key,
+                                     uint blocks_x,
+                                     uint blocks_y,
+                                     uint lim,
+                                     bool inclusive_scan)
     {
         Transform<Ti, To, op> transform;
         Binary<To, op> binop;
@@ -168,14 +169,16 @@ namespace kernel
         }
     }
 
-    template<typename Ti, typename Tk, typename To, af_op_t op, uint DIMX, bool calculateFlags, bool inclusive_scan>
+    template<typename Ti, typename Tk, typename To, af_op_t op, uint DIMX>
     __global__
     static void scan_final_kernel(Param<To> out,
                                   CParam<Ti> in,
                                   CParam<Tk> key,
                                   uint blocks_x,
                                   uint blocks_y,
-                                  uint lim)
+                                  uint lim,
+                                  bool calculateFlags,
+                                  bool inclusive_scan)
     {
         Transform<Ti, To, op> transform;
         Binary<To, op> binop;
@@ -280,16 +283,17 @@ namespace kernel
         }
     }
 
-    template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
+    template<typename Ti, typename Tk, typename To, af_op_t op>
     static void scan_nonfinal_launcher(Param<To> out,
-                             Param<To> tmp,
-                             Param<char> tflg,
-                             Param<int> tlid,
-                             CParam<Ti> in,
-                             CParam<Tk> key,
-                             const uint blocks_x,
-                             const uint blocks_y,
-                             const uint threads_x)
+                                       Param<To> tmp,
+                                       Param<char> tflg,
+                                       Param<int> tlid,
+                                       CParam<Ti> in,
+                                       CParam<Tk> key,
+                                       const uint blocks_x,
+                                       const uint blocks_y,
+                                       const uint threads_x,
+                                       bool inclusive_scan)
     {
 
         dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
@@ -300,29 +304,35 @@ namespace kernel
 
         switch (threads_x) {
         case 32:
-            CUDA_LAUNCH((scan_nonfinal_kernel<Ti, Tk, To, op, 32, inclusive_scan>),
-                    blocks, threads, out, tmp, tflg, tlid, in, key, blocks_x, blocks_y, lim); break;
+            CUDA_LAUNCH((scan_nonfinal_kernel<Ti, Tk, To, op, 32>),
+                        blocks, threads, out, tmp, tflg, tlid, in, key,
+                        blocks_x, blocks_y, lim, inclusive_scan); break;
         case 64:
-            CUDA_LAUNCH((scan_nonfinal_kernel<Ti, Tk, To, op, 64, inclusive_scan>),
-                    blocks, threads, out, tmp, tflg, tlid, in, key, blocks_x, blocks_y, lim); break;
+            CUDA_LAUNCH((scan_nonfinal_kernel<Ti, Tk, To, op, 64>),
+                        blocks, threads, out, tmp, tflg, tlid, in, key,
+                        blocks_x, blocks_y, lim, inclusive_scan); break;
         case 128:
-            CUDA_LAUNCH((scan_nonfinal_kernel<Ti, Tk, To, op, 128, inclusive_scan>),
-                    blocks, threads, out, tmp, tflg, tlid, in, key, blocks_x, blocks_y, lim); break;
+            CUDA_LAUNCH((scan_nonfinal_kernel<Ti, Tk, To, op, 128>),
+                        blocks, threads, out, tmp, tflg, tlid, in, key,
+                        blocks_x, blocks_y, lim, inclusive_scan); break;
         case 256:
-            CUDA_LAUNCH((scan_nonfinal_kernel<Ti, Tk, To, op, 256, inclusive_scan>),
-                    blocks, threads, out, tmp, tflg, tlid, in, key, blocks_x, blocks_y, lim); break;
+            CUDA_LAUNCH((scan_nonfinal_kernel<Ti, Tk, To, op, 256>),
+                        blocks, threads, out, tmp, tflg, tlid, in, key,
+                        blocks_x, blocks_y, lim, inclusive_scan); break;
         }
 
         POST_LAUNCH_CHECK();
     }
 
-    template<typename Ti, typename Tk, typename To, af_op_t op, bool calculateFlags, bool inclusive_scan>
+    template<typename Ti, typename Tk, typename To, af_op_t op>
     static void scan_final_launcher(Param<To> out,
-                             CParam<Ti> in,
-                             CParam<Tk> key,
-                             const uint blocks_x,
-                             const uint blocks_y,
-                             const uint threads_x)
+                                    CParam<Ti> in,
+                                    CParam<Tk> key,
+                                    const uint blocks_x,
+                                    const uint blocks_y,
+                                    const uint threads_x,
+                                    bool calculateFlags,
+                                    bool inclusive_scan)
     {
 
         dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
@@ -333,17 +343,21 @@ namespace kernel
 
         switch (threads_x) {
         case 32:
-            CUDA_LAUNCH((scan_final_kernel<Ti, Tk, To, op, 32, calculateFlags, inclusive_scan>),
-                    blocks, threads, out, in, key, blocks_x, blocks_y, lim); break;
+            CUDA_LAUNCH((scan_final_kernel<Ti, Tk, To, op, 32>),
+                        blocks, threads, out, in, key, blocks_x,
+                        blocks_y, lim, calculateFlags, inclusive_scan); break;
         case 64:
-            CUDA_LAUNCH((scan_final_kernel<Ti, Tk, To, op, 64, calculateFlags, inclusive_scan>),
-                    blocks, threads, out, in, key, blocks_x, blocks_y, lim); break;
+            CUDA_LAUNCH((scan_final_kernel<Ti, Tk, To, op, 64>),
+                        blocks, threads, out, in, key, blocks_x,
+                        blocks_y, lim, calculateFlags, inclusive_scan); break;
         case 128:
-            CUDA_LAUNCH((scan_final_kernel<Ti, Tk, To, op, 128, calculateFlags, inclusive_scan>),
-                    blocks, threads, out, in, key, blocks_x, blocks_y, lim); break;
+            CUDA_LAUNCH((scan_final_kernel<Ti, Tk, To, op, 128>),
+                        blocks, threads, out, in, key, blocks_x,
+                        blocks_y, lim, calculateFlags, inclusive_scan); break;
         case 256:
-            CUDA_LAUNCH((scan_final_kernel<Ti, Tk, To, op, 256, calculateFlags, inclusive_scan>),
-                    blocks, threads, out, in, key, blocks_x, blocks_y, lim); break;
+            CUDA_LAUNCH((scan_final_kernel<Ti, Tk, To, op, 256>),
+                        blocks, threads, out, in, key, blocks_x,
+                        blocks_y, lim, calculateFlags, inclusive_scan); break;
         }
 
         POST_LAUNCH_CHECK();
@@ -411,8 +425,8 @@ namespace kernel
         POST_LAUNCH_CHECK();
     }
 
-    template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
-    void scan_first_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key)
+    template<typename Ti, typename Tk, typename To, af_op_t op>
+    void scan_first_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key, bool inclusive_scan)
     {
         uint threads_x = nextpow2(std::max(32u, (uint)out.dims[0]));
         threads_x = std::min(threads_x, THREADS_PER_BLOCK);
@@ -422,9 +436,10 @@ namespace kernel
         uint blocks_y = divup(out.dims[1], threads_y);
 
         if (blocks_x == 1) {
-            scan_final_launcher<Ti, Tk, To, op, true, inclusive_scan>(
-                                                out, in, key,
-                                                blocks_x, blocks_y, threads_x);
+            scan_final_launcher<Ti, Tk, To, op>(
+                out, in, key,
+                blocks_x, blocks_y, threads_x,
+                true, inclusive_scan);
 
         } else {
 
@@ -451,20 +466,15 @@ namespace kernel
             tmpflg.ptr = memAlloc<char>(tmp_elements);
             tmpid.ptr = memAlloc<int>(tmp_elements);
 
-            scan_nonfinal_launcher<Ti, Tk, To, op, inclusive_scan>(
-                                                out, tmp, tmpflg, tmpid, in, key,
-                                                blocks_x, blocks_y, threads_x);
+            scan_nonfinal_launcher<Ti, Tk, To, op>(
+                out, tmp, tmpflg, tmpid, in, key,
+                blocks_x, blocks_y, threads_x,
+                inclusive_scan);
 
-            //FIXME: Is there an alternative to the if condition ?
-            if (op == af_notzero_t) {
-                scan_final_launcher<To, char, To, af_add_t, false, true>(
-                                                tmp, tmp, tmpflg,
-                                                1, blocks_y, threads_x);
-            } else {
-                scan_final_launcher<To, char, To, op, false, true>(
-                                                tmp, tmp, tmpflg,
-                                                1, blocks_y, threads_x);
-            }
+            scan_final_launcher<To, char, To, op>(
+                tmp, tmp, tmpflg,
+                1, blocks_y, threads_x,
+                false, true);
 
             bcast_first_launcher<To, op>(out, tmp, tmpid, blocks_x, blocks_y, threads_x);
 
@@ -476,8 +486,7 @@ namespace kernel
 }
 
 #define INSTANTIATE_SCAN_FIRST_BY_KEY(ROp, Ti, Tk, To)\
-    template void scan_first_by_key<Ti, Tk, To, ROp,  true>(Param<To> out, CParam<Ti> in, CParam<Tk> key);  \
-    template void scan_first_by_key<Ti, Tk, To, ROp, false>(Param<To> out, CParam<Ti> in, CParam<Tk> key);
+    template void scan_first_by_key<Ti, Tk, To, ROp>(Param<To> out, CParam<Ti> in, CParam<Tk> key, bool inclusive_scan); \
 
 #define INSTANTIATE_SCAN_FIRST_BY_KEY_TYPES(ROp, Tk)        \
     INSTANTIATE_SCAN_FIRST_BY_KEY(ROp, float  , Tk, float  )\
@@ -488,10 +497,6 @@ namespace kernel
     INSTANTIATE_SCAN_FIRST_BY_KEY(ROp, uint   , Tk, uint   )\
     INSTANTIATE_SCAN_FIRST_BY_KEY(ROp, intl   , Tk, intl   )\
     INSTANTIATE_SCAN_FIRST_BY_KEY(ROp, uintl  , Tk, uintl  )\
-    INSTANTIATE_SCAN_FIRST_BY_KEY(ROp, char   , Tk, uint   )\
-    INSTANTIATE_SCAN_FIRST_BY_KEY(ROp, uchar  , Tk, uint   )\
-    INSTANTIATE_SCAN_FIRST_BY_KEY(ROp, short  , Tk, int    )\
-    INSTANTIATE_SCAN_FIRST_BY_KEY(ROp, ushort , Tk, uint   )
 
 #define INSTANTIATE_SCAN_FIRST_BY_KEY_OP(ROp)       \
     INSTANTIATE_SCAN_FIRST_BY_KEY_TYPES(ROp, int  ) \

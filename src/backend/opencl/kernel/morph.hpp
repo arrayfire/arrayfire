@@ -18,6 +18,8 @@
 #include <Param.hpp>
 #include <debug_opencl.hpp>
 #include <memory.hpp>
+#include <ops.hpp>
+#include <type_util.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -54,19 +56,22 @@ void morph(Param         out,
         int device = getActiveDeviceId();
 
         std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D T=" << dtype_traits<T>::getName()
-                            << " -D isDilation="<< isDilation
-                            << " -D windLen=" << windLen;
-                    if (std::is_same<T, double>::value ||
-                        std::is_same<T, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
-                    Program prog;
-                    buildProgram(prog, morph_cl, morph_cl_len, options.str());
-                    morProgs[device]   = new Program(prog);
-                    morKernels[device] = new Kernel(*morProgs[device], "morph");
-                });
+                ToNum<T> toNum;
+                T init = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
+                std::ostringstream options;
+                options << " -D T=" << dtype_traits<T>::getName()
+                        << " -D isDilation="<< isDilation
+                        << " -D init=" << toNum(init)
+                        << " -D windLen=" << windLen;
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+                Program prog;
+                buildProgram(prog, morph_cl, morph_cl_len, options.str());
+                morProgs[device]   = new Program(prog);
+                morKernels[device] = new Kernel(*morProgs[device], "morph");
+            });
 
         auto morphOp = KernelFunctor<Buffer, KParam,
                                    Buffer, KParam,
@@ -119,19 +124,22 @@ void morph3d(Param       out,
         int device = getActiveDeviceId();
 
         std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D T=" << dtype_traits<T>::getName()
-                            << " -D isDilation="<< isDilation
-                            << " -D windLen=" << windLen;
-                    if (std::is_same<T, double>::value ||
-                        std::is_same<T, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
-                    Program prog;
-                    buildProgram(prog, morph_cl, morph_cl_len, options.str());
-                    morProgs[device]   = new Program(prog);
-                    morKernels[device] = new Kernel(*morProgs[device], "morph3d");
-                });
+                ToNum<T> toNum;
+                T init = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
+                std::ostringstream options;
+                options << " -D T=" << dtype_traits<T>::getName()
+                        << " -D isDilation="<< isDilation
+                        << " -D init=" << toNum(init)
+                        << " -D windLen=" << windLen;
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+                Program prog;
+                buildProgram(prog, morph_cl, morph_cl_len, options.str());
+                morProgs[device]   = new Program(prog);
+                morKernels[device] = new Kernel(*morProgs[device], "morph3d");
+            });
 
         auto morphOp = KernelFunctor<Buffer, KParam,
                                    Buffer, KParam,

@@ -28,11 +28,7 @@ template<typename T>
 static inline af_array sort(const af_array in, const unsigned dim, const bool isAscending)
 {
     const Array<T> &inArray = getArray<T>(in);
-    if(isAscending) {
-        return getHandle(sort<T, 1>(inArray, dim));
-    } else {
-        return getHandle(sort<T, 0>(inArray, dim));
-    }
+    return getHandle(sort<T>(inArray, dim, isAscending));
 }
 
 af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool isAscending)
@@ -41,6 +37,9 @@ af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool 
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
 
+        if(info.elements() == 0) {
+            return af_retain_array(out, in);
+        }
         DIM_ASSERT(1, info.elements() > 0);
 
         af_array val;
@@ -75,11 +74,7 @@ static inline void sort_index(af_array *val, af_array *idx, const af_array in,
     Array<T> valArray = createEmptyArray<T>(af::dim4());
     Array<uint> idxArray = createEmptyArray<uint>(af::dim4());
 
-    if(isAscending) {
-        sort_index<T, 1>(valArray, idxArray, inArray, dim);
-    } else {
-        sort_index<T, 0>(valArray, idxArray, inArray, dim);
-    }
+    sort_index<T>(valArray, idxArray, inArray, dim, isAscending);
     *val = getHandle(valArray);
     *idx = getHandle(idxArray);
 }
@@ -90,7 +85,12 @@ af_err af_sort_index(af_array *out, af_array *indices, const af_array in, const 
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
 
-        DIM_ASSERT(2, info.elements() > 0);
+        if(info.elements() <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            AF_CHECK(af_create_handle(out,     AF_MAX_DIMS, my_dims, type));
+            AF_CHECK(af_create_handle(indices, AF_MAX_DIMS, my_dims, type));
+            return AF_SUCCESS;
+        }
 
         af_array val;
         af_array idx;
@@ -127,11 +127,7 @@ static inline void sort_by_key(af_array *okey, af_array *oval, const af_array ik
     Array<Tk> okeyArray = createEmptyArray<Tk>(af::dim4());
     Array<Tv> ovalArray = createEmptyArray<Tv>(af::dim4());
 
-    if(isAscending) {
-        sort_by_key<Tk, Tv, 1>(okeyArray, ovalArray, ikeyArray, ivalArray, dim);
-    } else {
-        sort_by_key<Tk, Tv, 0>(okeyArray, ovalArray, ikeyArray, ivalArray, dim);
-    }
+    sort_by_key<Tk, Tv>(okeyArray, ovalArray, ikeyArray, ivalArray, dim, isAscending);
     *okey = getHandle(okeyArray);
     *oval = getHandle(ovalArray);
 }
@@ -172,8 +168,13 @@ af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
 
         ArrayInfo vinfo = getInfo(values);
 
-        DIM_ASSERT(3, kinfo.elements() > 0);
         DIM_ASSERT(4, kinfo.dims() == vinfo.dims());
+        if(kinfo.elements() == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            AF_CHECK(af_create_handle(out_keys,   AF_MAX_DIMS, my_dims, ktype));
+            AF_CHECK(af_create_handle(out_values, AF_MAX_DIMS, my_dims, ktype));
+            return AF_SUCCESS;
+        }
 
         TYPE_ASSERT(kinfo.isReal());
 

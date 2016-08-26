@@ -15,7 +15,6 @@ namespace opencl
 {
 namespace kernel
 {
-    INSTANTIATE1(TYPE,true)
-    INSTANTIATE1(TYPE,false)
+    INSTANTIATE1(TYPE)
 }
 }

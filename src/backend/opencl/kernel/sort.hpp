@@ -41,8 +41,8 @@ namespace opencl
 {
     namespace kernel
     {
-        template<typename T, bool isAscending>
-        void sort0Iterative(Param val)
+        template<typename T>
+        void sort0Iterative(Param val, bool isAscending)
         {
             try {
                 compute::command_queue c_queue(getQueue()());
@@ -79,8 +79,8 @@ namespace opencl
             }
         }
 
-        template<typename T, bool isAscending, int dim>
-        void sortBatched(Param pVal)
+        template<typename T, int dim>
+        void sortBatched(Param pVal, bool isAscending)
         {
             try{
                 af::dim4 inDims;
@@ -157,15 +157,15 @@ namespace opencl
             }
         }
 
-        template<typename T, bool isAscending>
-        void sort0(Param val)
+        template<typename T>
+        void sort0(Param val, bool isAscending)
         {
             int higherDims =  val.info.dims[1] * val.info.dims[2] * val.info.dims[3];
             // TODO Make a better heurisitic
             if(higherDims > 10)
-                sortBatched<T, isAscending, 0>(val);
+                sortBatched<T, 0>(val, isAscending);
             else
-                kernel::sort0Iterative<T, isAscending>(val);
+                kernel::sort0Iterative<T>(val, isAscending);
         }
     }
 }

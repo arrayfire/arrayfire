@@ -67,11 +67,11 @@ namespace JIT
         {}
 
         virtual void genKerName(std::stringstream &kerStream) {}
-        virtual void genParams  (std::stringstream &kerStream) {}
+        virtual void genParams  (std::stringstream &kerStream, bool is_linear) {}
         virtual void genOffsets (std::stringstream &kerStream, bool is_linear) {}
         virtual void genFuncs   (std::stringstream &kerStream) { m_gen_func = true;}
 
-        virtual int setArgs (cl::Kernel &ker, int id) { return id; }
+        virtual int setArgs (cl::Kernel &ker, int id, bool is_linear) { return id; }
 
         virtual int setId(int id) { m_set_id = true; return id; }
 

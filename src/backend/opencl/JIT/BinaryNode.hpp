@@ -45,21 +45,21 @@ namespace JIT
             return m_linear;
         }
 
-        void genParams(std::stringstream &kerStream)
+        void genParams(std::stringstream &kerStream, bool is_linear)
         {
             if (m_gen_param) return;
-            if (!(m_lhs->isGenParam())) m_lhs->genParams(kerStream);
-            if (!(m_rhs->isGenParam())) m_rhs->genParams(kerStream);
+            if (!(m_lhs->isGenParam())) m_lhs->genParams(kerStream, is_linear);
+            if (!(m_rhs->isGenParam())) m_rhs->genParams(kerStream, is_linear);
             m_gen_param = true;
         }
 
-        int setArgs(cl::Kernel &ker, int id)
+        int setArgs(cl::Kernel &ker, int id, bool is_linear)
         {
             if (m_set_arg) return id;
             m_set_arg = true;
 
-            id = m_lhs->setArgs(ker, id);
-            id = m_rhs->setArgs(ker, id);
+            id = m_lhs->setArgs(ker, id, is_linear);
+            id = m_rhs->setArgs(ker, id, is_linear);
             return id;
         }
 

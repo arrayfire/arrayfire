@@ -38,6 +38,11 @@ af_err convert(af_array* out, const af_array& in)
         af_dtype iType = info.getType();
         af::dim4 inputDims = info.dims();
 
+        if(info.ndims() == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, iType);
+        }
+
         ARG_ASSERT(1, (inputDims.ndims() >= 3));
 
         af_array output = 0;

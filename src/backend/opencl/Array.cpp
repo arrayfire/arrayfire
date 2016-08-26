@@ -141,10 +141,6 @@ namespace opencl
 
         evalNodes(res, node.get());
         ready = true;
-
-        node->resetFlags();
-        // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
-        node.reset();
         node = bufferNodePtr<T>();
     }
 
@@ -185,9 +181,6 @@ namespace opencl
         for (auto array : arrays) {
             if (array->isReady()) continue;
             array->ready = true;
-            array->node->resetFlags();
-            // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
-            array->node.reset();
             array->node = bufferNodePtr<T>();
         }
     }
@@ -224,20 +217,26 @@ namespace opencl
     Array<T> createNodeArray(const dim4 &dims, Node_ptr node)
     {
         verifyDoubleSupport<T>();
-
         Array<T> out =  Array<T>(dims, node);
 
         if (evalFlag()) {
-            unsigned length =0, buf_count = 0, bytes = 0;
+            size_t alloc_bytes, alloc_buffers;
+            size_t lock_bytes, lock_buffers;
 
-            Node *n = node.get();
-            n->getInfo(length, buf_count, bytes);
-            n->resetFlags();
+            deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
+                             &lock_bytes, &lock_buffers);
 
-            if (length > getMaxJitSize() ||
-                buf_count >= getMaxBuffers() ||
-                bytes >= getMaxBytes()) {
-                out.eval();
+            if (lock_bytes > getMaxBytes() ||
+                lock_buffers > getMaxBuffers()) {
+
+                unsigned length =0, buf_count = 0, bytes = 0;
+                Node *n = node.get();
+                n->getInfo(length, buf_count, bytes);
+                n->resetFlags();
+
+                if (2 * bytes > lock_bytes) {
+                    out.eval();
+                }
             }
         }
 

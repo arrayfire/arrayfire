@@ -53,6 +53,9 @@ af_err af_moddims(af_array *out, const af_array in,
                   const unsigned ndims, const dim_t * const dims)
 {
     try {
+        if(ndims == 0) {
+            return af_retain_array(out, in);
+        }
         ARG_ASSERT(2, ndims >= 1);
         ARG_ASSERT(3, dims != NULL);
 
