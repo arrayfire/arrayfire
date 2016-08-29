@@ -1,6 +1,3 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(ARRAYFIRE_DOCS)
-
 # Doxygen is required for the documentation to be built. Do not fail silently.
 FIND_PACKAGE(Doxygen REQUIRED)
 
