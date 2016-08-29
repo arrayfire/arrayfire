@@ -85,7 +85,7 @@ typedef ::testing::Types<float, double> TestTypesEngine;
 // register the type list
 TYPED_TEST_CASE(RandomEngine, TestTypesEngine);
 
-typedef ::testing::Types<float, double> TestTypesEngineSeed;
+typedef ::testing::Types<unsigned> TestTypesEngineSeed;
 // register the type list
 TYPED_TEST_CASE(RandomEngineSeed, TestTypesEngineSeed);
 
@@ -334,7 +334,7 @@ TYPED_TEST(RandomEngine, mersenneRandomEngineNormal)
 }
 
 template <typename T>
-void testRandomEngineSeed(randomType type, bool is_norm = false)
+void testRandomEngineSeed(randomType type)
 {
     int elem = 4*32*1024;
     uintl orig_seed = 0;
@@ -342,12 +342,12 @@ void testRandomEngineSeed(randomType type, bool is_norm = false)
     af::randomEngine e(type, orig_seed);
 
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
-    array d1 = is_norm ? e.normal(elem, ty) : e.uniform(elem, ty);
+    array d1 = e.uniform(elem, ty);
     e.setSeed(new_seed);
-    array d2 = is_norm ? e.normal(elem, ty) : e.uniform(elem, ty);
+    array d2 = e.uniform(elem, ty);
     e.setSeed(orig_seed);
-    array d3 = is_norm ? e.normal(elem, ty) : e.uniform(elem, ty);
-    array d4 = is_norm ? e.normal(elem, ty) : e.uniform(elem, ty);
+    array d3 = e.uniform(elem, ty);
+    array d4 = e.uniform(elem, ty);
 
     std::vector<T> h1(elem);
     std::vector<T> h2(elem);
@@ -370,30 +370,15 @@ void testRandomEngineSeed(randomType type, bool is_norm = false)
 
 TYPED_TEST(RandomEngineSeed, philoxSeedUniform)
 {
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_PHILOX_4X32_10, false);
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_PHILOX_4X32_10);
 }
 
 TYPED_TEST(RandomEngineSeed, threefrySeedUniform)
 {
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_THREEFRY_2X32_16, false);
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_THREEFRY_2X32_16);
 }
 
 TYPED_TEST(RandomEngineSeed, mersenneSeedUniform)
 {
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_MERSENNE_GP11213, false);
-}
-
-TYPED_TEST(RandomEngineSeed, philoxSeedNormal)
-{
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_PHILOX_4X32_10, true);
-}
-
-TYPED_TEST(RandomEngineSeed, threefrySeedNormal)
-{
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_THREEFRY_2X32_16, true);
-}
-
-TYPED_TEST(RandomEngineSeed, mersenneSeedNormal)
-{
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_MERSENNE_GP11213, true);
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_MERSENNE_GP11213);
 }
