@@ -95,8 +95,8 @@ struct UnOp
     };                                          \
 
 #else
-#define #define NVVM_SPECIALIZE_TYPE(T, fn, fname)  // no specialization
-#define #define NVVM_SPECIALIZE_CHECK(T, fn, fname)  // no specialization
+#define NVVM_SPECIALIZE_TYPE(T, fn, fname)  // no specialization
+#define NVVM_SPECIALIZE_CHECK(T, fn, fname)  // no specialization
 #endif
 
 #define NVVM_SPECIALIZE_FLOATING_NAME(fn, fname)    \
