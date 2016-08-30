@@ -329,16 +329,6 @@ typedef enum {
     AF_NORM_EUCLID = AF_NORM_VECTOR_2, ///< The default. Same as AF_NORM_VECTOR_2
 } af_norm_type;
 
-typedef enum {
-    AF_COLORMAP_DEFAULT = 0,    ///< Default grayscale map
-    AF_COLORMAP_SPECTRUM= 1,    ///< Spectrum map
-    AF_COLORMAP_COLORS  = 2,    ///< Colors
-    AF_COLORMAP_RED     = 3,    ///< Red hue map
-    AF_COLORMAP_MOOD    = 4,    ///< Mood map
-    AF_COLORMAP_HEAT    = 5,    ///< Heat map
-    AF_COLORMAP_BLUE    = 6     ///< Blue hue map
-} af_colormap;
-
 #if AF_API_VERSION >= 31
 typedef enum {
     AF_FIF_BMP          = 0,    ///< FreeImage Enum for Bitmap File
@@ -400,7 +390,21 @@ typedef enum {
 } af_binary_op;
 #endif
 
-#if AF_API_VERSION >=32
+////////////////////////////////////////////////////////////////////////////////
+// FORGE / Graphics Related Enums
+// These enums have values corresponsding to Forge enums in forge defines.h
+////////////////////////////////////////////////////////////////////////////////
+typedef enum {
+    AF_COLORMAP_DEFAULT = 0,    ///< Default grayscale map
+    AF_COLORMAP_SPECTRUM= 1,    ///< Spectrum map
+    AF_COLORMAP_COLORS  = 2,    ///< Colors
+    AF_COLORMAP_RED     = 3,    ///< Red hue map
+    AF_COLORMAP_MOOD    = 4,    ///< Mood map
+    AF_COLORMAP_HEAT    = 5,    ///< Heat map
+    AF_COLORMAP_BLUE    = 6     ///< Blue hue map
+} af_colormap;
+
+#if AF_API_VERSION >= 32
 typedef enum {
     AF_MARKER_NONE         = 0,
     AF_MARKER_POINT        = 1,
@@ -412,6 +416,7 @@ typedef enum {
     AF_MARKER_STAR         = 7
 } af_marker_type;
 #endif
+////////////////////////////////////////////////////////////////////////////////
 
 #ifdef __cplusplus
 namespace af
@@ -442,7 +447,7 @@ namespace af
 #if AF_API_VERSION >= 32
     typedef af_marker_type markerType;
 #endif
-#if AF_API_VERSION >=34
+#if AF_API_VERSION >= 34
     typedef af_moment_type momentType;
 #endif
 #if AF_API_VERSION >= 34
