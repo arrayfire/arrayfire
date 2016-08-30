@@ -3,7 +3,7 @@
     <title>${AF_TITLE}</title>
     <welcome    file="${WELCOME_FILE_OUT}" />
     <readme     file="${README_FILE_OUT}" mime-type="test/html" />
-    <license    file="${CMAKE_MODULE_PATH}/../LICENSE" mime-type="test/plain" />
+    <license    file="${PROJECT_SOURCE_DIR}/LICENSE" mime-type="test/plain" />
     <script>
       function CheckBackendSelected() {
       return choices.opencl_lib.selected ||

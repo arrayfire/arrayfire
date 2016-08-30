@@ -1,6 +1,6 @@
 INCLUDE(ExternalProject)
 
-SET(prefix ${CMAKE_BINARY_DIR}/third_party/clBLAS)
+SET(prefix ${PROJECT_BINARY_DIR}/third_party/clBLAS)
 SET(clBLAS_location ${prefix}/lib/import/${CMAKE_STATIC_LIBRARY_PREFIX}clBLAS${CMAKE_STATIC_LIBRARY_SUFFIX})
 IF(CMAKE_VERSION VERSION_LESS 3.2)
     IF(CMAKE_GENERATOR MATCHES "Ninja")
