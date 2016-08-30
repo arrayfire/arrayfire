@@ -25,8 +25,8 @@ TEST(Array, TestEmptyAssignment) {
     array C = constant(0,0);
     array B = A(isNaN(A));
     A(isNaN(A)) = C;
-    ASSERT_EQ(B.numdims(), 0);
-    ASSERT_EQ(A.numdims(), 1);
+    ASSERT_EQ(B.numdims(), 0u);
+    ASSERT_EQ(A.numdims(), 1u);
     ASSERT_EQ(lookup(constant(1,9), constant(0,0)).numdims(), 0);
 }
 
