@@ -28,7 +28,7 @@ using namespace detail;
 using namespace graphics;
 
 template<typename T>
-fg::Surface* setup_surface(const af_array xVals, const af_array yVals, const af_array zVals)
+forge::Surface* setup_surface(const af_array xVals, const af_array yVals, const af_array zVals)
 {
     Array<T> xIn = getArray<T>(xVals);
     Array<T> yIn = getArray<T>(yVals);
@@ -74,10 +74,11 @@ fg::Surface* setup_surface(const af_array xVals, const af_array yVals, const af_
     Array<T> Z = join(0, inputs);
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
-    fg::Surface* surface = fgMngr.getSurface(Z_dims[0], Z_dims[1], getGLType<T>());
-    surface->setColor(1.0, 0.0, 0.0);
-    surface->setAxesLimits(xmax, xmin, ymax, ymin, zmax, zmin);
-    surface->setAxesTitles("X Axis", "Y Axis", "Z Axis");
+    forge::Surface* surface = fgMngr.getSurface(Z_dims[0], Z_dims[1], getGLType<T>());
+    surface->setColor(1.0, 0.0, 0.0, 1.0);
+    // FORGE FIX ME
+    //surface->setAxesLimits(xmax, xmin, ymax, ymin, zmax, zmin);
+    //surface->setAxesTitles("X Axis", "Y Axis", "Z Axis");
 
     copy_surface<T>(Z, surface);
 
@@ -116,9 +117,9 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
             DIM_ASSERT(3, ( X_dims[0] * Y_dims[0] == (dim_t)Sinfo.elements()));
         }
 
-        fg::Window* window = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
         window->makeCurrent();
-        fg::Surface* surface = NULL;
+        forge::Surface* surface = NULL;
 
         switch(Xtype) {
             case f32: surface = setup_surface<float  >(xVals, yVals , S); break;
@@ -130,10 +131,11 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
             default:  TYPE_ERROR(1, Xtype);
         }
 
-        if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, *surface, props->title);
-        else
-            window->draw(*surface);
+        // FORGE FIX ME
+        //if (props->col>-1 && props->row>-1)
+        //    window->draw(props->col, props->row, *surface, props->title);
+        //else
+        //    window->draw(*surface);
     }
     CATCHALL;
     return AF_SUCCESS;

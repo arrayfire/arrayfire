@@ -22,14 +22,18 @@ using af::dim4;
 
 namespace opencl
 {
+using namespace gl;
 
 template<typename T>
-void copy_plot(const Array<T> &P, fg::Plot* plot)
+void copy_plot(const Array<T> &P, forge::Plot* plot)
 {
+    // Make sure to do this
+    glbinding::Binding::useCurrentContext();
+
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = P.get();
-        size_t bytes = plot->size();
+        size_t bytes = plot->verticesSize();
 
         InteropManager& intrpMngr = InteropManager::getInstance();
 
@@ -54,10 +58,10 @@ void copy_plot(const Array<T> &P, fg::Plot* plot)
         CheckGL("End OpenCL resource copy");
     } else {
         CheckGL("Begin OpenCL fallback-resource copy");
-        glBindBuffer(GL_ARRAY_BUFFER, plot->vbo());
+        glBindBuffer(GL_ARRAY_BUFFER, plot->vertices());
         GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
-            getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, plot->size(), ptr);
+            getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, plot->verticesSize(), ptr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -66,7 +70,7 @@ void copy_plot(const Array<T> &P, fg::Plot* plot)
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_plot<T>(const Array<T> &P, fg::Plot* plot);
+    template void copy_plot<T>(const Array<T> &P, forge::Plot* plot);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

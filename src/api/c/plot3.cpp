@@ -14,7 +14,7 @@
 #include <graphics_common.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
-#include <plot3.hpp>
+#include <plot.hpp>
 #include <reduce.hpp>
 #include <join.hpp>
 #include <transpose.hpp>
@@ -30,7 +30,7 @@ using namespace detail;
 using namespace graphics;
 
 template<typename T>
-fg::Plot3* setup_plot3(const af_array P, fg::PlotType ptype, fg::MarkerType mtype)
+forge::Plot* setup_plot3(const af_array P, forge::PlotType ptype, forge::MarkerType mtype)
 {
     Array<T> pIn = getArray<T>(P);
     ArrayInfo Pinfo = getInfo(P);
@@ -55,17 +55,18 @@ fg::Plot3* setup_plot3(const af_array P, fg::PlotType ptype, fg::MarkerType mtyp
     copyData(min, reduce<af_min_t, T, T>(pIn, 1));
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
-    fg::Plot3* plot3 = fgMngr.getPlot3(P_dims.elements()/3, getGLType<T>(), ptype, mtype);
-    plot3->setColor(1.0, 0.0, 0.0);
-    plot3->setAxesLimits(max[0], min[0],
-                         max[1], min[1],
-                         max[2], min[2]);
-    plot3->setAxesTitles("X Axis", "Y Axis", "Z Axis");
-    copy_plot3<T>(pIn, plot3);
+    forge::Plot* plot3 = fgMngr.getPlot(P_dims.elements()/3, getGLType<T>(), FG_CHART_3D, ptype, mtype);
+    plot3->setColor(1.0, 0.0, 0.0, 1.0);
+    // FORGE FIX ME
+    //plot3->setAxesLimits(max[0], min[0],
+    //                     max[1], min[1],
+    //                     max[2], min[2]);
+    //plot3->setAxesTitles("X Axis", "Y Axis", "Z Axis");
+    copy_plot<T>(pIn, plot3);
     return plot3;
 }
 
-af_err plot3Wrapper(const af_window wind, const af_array P, const af_cell* const props, const fg::PlotType type=fg::FG_LINE, const fg::MarkerType marker=fg::FG_NONE)
+af_err plot3Wrapper(const af_window wind, const af_array P, const af_cell* const props, const forge::PlotType type=FG_PLOT_LINE, const forge::MarkerType marker=FG_MARKER_NONE)
 {
     if(wind==0) {
         std::cerr<<"Not a valid window"<<std::endl;
@@ -76,9 +77,9 @@ af_err plot3Wrapper(const af_window wind, const af_array P, const af_cell* const
         ArrayInfo Pinfo = getInfo(P);
         af_dtype Ptype  = Pinfo.getType();
 
-        fg::Window* window = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
         window->makeCurrent();
-        fg::Plot3* plot3 = NULL;
+        forge::Plot* plot3 = NULL;
 
         switch(Ptype) {
             case f32: plot3 = setup_plot3<float >(P, type, marker); break;
@@ -90,10 +91,11 @@ af_err plot3Wrapper(const af_window wind, const af_array P, const af_cell* const
             default:  TYPE_ERROR(1, Ptype);
         }
 
-        if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, *plot3, props->title);
-        else
-            window->draw(*plot3);
+        // FORGE FIX ME
+        //if (props->col>-1 && props->row>-1)
+        //    window->draw(props->col, props->row, *plot3, props->title);
+        //else
+        //    window->draw(*plot3);
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -113,8 +115,8 @@ af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* cons
 af_err af_draw_scatter3(const af_window wind, const af_array P, const af_marker_type af_marker, const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
-    fg::MarkerType fg_marker = getFGMarker(af_marker);
-    return plot3Wrapper(wind, P, props, fg::FG_SCATTER, fg_marker);
+    forge::MarkerType fg_marker = getFGMarker(af_marker);
+    return plot3Wrapper(wind, P, props, FG_PLOT_SCATTER, fg_marker);
 #else
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif

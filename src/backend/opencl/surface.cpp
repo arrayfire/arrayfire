@@ -22,14 +22,18 @@ using af::dim4;
 
 namespace opencl
 {
+using namespace gl;
 
 template<typename T>
-void copy_surface(const Array<T> &P, fg::Surface* surface)
+void copy_surface(const Array<T> &P, forge::Surface* surface)
 {
+    // Make sure to do this
+    glbinding::Binding::useCurrentContext();
+
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = P.get();
-        size_t bytes = surface->size();
+        size_t bytes = surface->verticesSize();
 
         InteropManager& intrpMngr = InteropManager::getInstance();
 
@@ -54,10 +58,10 @@ void copy_surface(const Array<T> &P, fg::Surface* surface)
         CheckGL("End OpenCL resource copy");
     } else {
         CheckGL("Begin OpenCL fallback-resource copy");
-        glBindBuffer(GL_ARRAY_BUFFER, surface->vbo());
+        glBindBuffer(GL_ARRAY_BUFFER, surface->vertices());
         GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
-            getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, surface->size(), ptr);
+            getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, surface->verticesSize(), ptr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -66,7 +70,7 @@ void copy_surface(const Array<T> &P, fg::Surface* surface)
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_surface<T>(const Array<T> &P, fg::Surface* surface);
+    template void copy_surface<T>(const Array<T> &P, forge::Surface* surface);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

@@ -54,7 +54,7 @@ Array<float> normalizePerType<float>(const Array<float>& in)
 }
 
 template<typename T>
-static fg::Image* convert_and_copy_image(const af_array in)
+static forge::Image* convert_and_copy_image(const af_array in)
 {
     const Array<T> _in  = getArray<T>(in);
     dim4 inDims = _in.dims();
@@ -65,9 +65,9 @@ static fg::Image* convert_and_copy_image(const af_array in)
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
 
-    // The inDims[2] * 100 is a hack to convert to fg::ChannelFormat
+    // The inDims[2] * 100 is a hack to convert to forge::ChannelFormat
     // TODO Write a proper conversion function
-    fg::Image* ret_val = fgMngr.getImage(inDims[1], inDims[0], (fg::ChannelFormat)(inDims[2] * 100), getGLType<T>());
+    forge::Image* ret_val = fgMngr.getImage(inDims[1], inDims[0], (forge::ChannelFormat)(inDims[2] * 100), getGLType<T>());
 
     copy_image<T>(normalizePerType<T>(imgData), ret_val);
 
@@ -91,9 +91,9 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
         DIM_ASSERT(0, in_dims[2] == 1 || in_dims[2] == 3 || in_dims[2] == 4);
         DIM_ASSERT(0, in_dims[3] == 1);
 
-        fg::Window* window = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
         window->makeCurrent();
-        fg::Image* image = NULL;
+        forge::Image* image = NULL;
 
         switch(type) {
             case f32: image = convert_and_copy_image<float >(in); break;
@@ -106,7 +106,7 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
             default:  TYPE_ERROR(1, type);
         }
 
-        window->setColorMap((fg::ColorMap)props->cmap);
+        window->setColorMap((forge::ColorMap)props->cmap);
         if (props->col>-1 && props->row>-1)
             window->draw(props->col, props->row, *image, props->title);
         else
@@ -123,10 +123,10 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
 af_err af_create_window(af_window *out, const int width, const int height, const char* const title)
 {
 #if defined(WITH_GRAPHICS)
-    fg::Window* wnd;
+    forge::Window* wnd;
     try {
         graphics::ForgeManager& fgMngr = graphics::ForgeManager::getInstance();
-        fg::Window* mainWnd = NULL;
+        forge::Window* mainWnd = NULL;
 
         try {
             mainWnd = fgMngr.getMainWindow();
@@ -139,7 +139,7 @@ af_err af_create_window(af_window *out, const int width, const int height, const
             return AF_SUCCESS;
         }
 
-        wnd = new fg::Window(width, height, title, mainWnd);
+        wnd = new forge::Window(width, height, title, mainWnd);
         wnd->setFont(fgMngr.getFont());
         *out = reinterpret_cast<af_window>(wnd);
     }
@@ -159,7 +159,7 @@ af_err af_set_position(const af_window wind, const unsigned x, const unsigned y)
     }
 
     try {
-        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
         wnd->setPos(x, y);
     }
     CATCHALL;
@@ -178,7 +178,7 @@ af_err af_set_title(const af_window wind, const char* const title)
     }
 
     try {
-        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
         wnd->setTitle(title);
     }
     CATCHALL;
@@ -197,7 +197,7 @@ af_err af_set_size(const af_window wind, const unsigned w, const unsigned h)
     }
 
     try {
-        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
         wnd->setSize(w, h);
     }
     CATCHALL;
@@ -216,7 +216,7 @@ af_err af_grid(const af_window wind, const int rows, const int cols)
     }
 
     try {
-        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
         wnd->grid(rows, cols);
     }
     CATCHALL;
@@ -235,7 +235,7 @@ af_err af_show(const af_window wind)
     }
 
     try {
-        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
         wnd->swapBuffers();
     }
     CATCHALL;
@@ -254,7 +254,7 @@ af_err af_is_window_closed(bool *out, const af_window wind)
     }
 
     try {
-        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
         *out = wnd->close();
     }
     CATCHALL;
@@ -273,7 +273,7 @@ af_err af_set_visibility(const af_window wind, const bool is_visible)
     }
 
     try {
-        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
         if (is_visible)
             wnd->show();
         else
@@ -295,7 +295,7 @@ af_err af_destroy_window(const af_window wind)
     }
 
     try {
-        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
         delete wnd;
     }
     CATCHALL;

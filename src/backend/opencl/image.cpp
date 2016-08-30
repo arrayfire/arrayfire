@@ -19,10 +19,14 @@
 
 namespace opencl
 {
+using namespace gl;
 
 template<typename T>
-void copy_image(const Array<T> &in, const fg::Image* image)
+void copy_image(const Array<T> &in, const forge::Image* image)
 {
+    // Make sure to do this
+    glbinding::Binding::useCurrentContext();
+
     if (isGLSharingSupported()) {
         CheckGL("Begin opencl resource copy");
         InteropManager& intrpMngr = InteropManager::getInstance();
@@ -63,7 +67,7 @@ void copy_image(const Array<T> &in, const fg::Image* image)
 }
 
 #define INSTANTIATE(T)      \
-    template void copy_image<T>(const Array<T> &in, const fg::Image* image);
+    template void copy_image<T>(const Array<T> &in, const forge::Image* image);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

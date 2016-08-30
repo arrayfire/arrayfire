@@ -27,7 +27,7 @@ using namespace detail;
 using namespace graphics;
 
 template<typename T>
-fg::Plot* setup_plot(const af_array X, const af_array Y, fg::PlotType type, fg::MarkerType marker)
+forge::Plot* setup_plot(const af_array X, const af_array Y, forge::PlotType type, forge::MarkerType marker)
 {
     Array<T> xIn = getArray<T>(X);
     Array<T> yIn = getArray<T>(Y);
@@ -51,17 +51,19 @@ fg::Plot* setup_plot(const af_array X, const af_array Y, fg::PlotType type, fg::
     Array<T> P = join(0, xIn, yIn);
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
-    fg::Plot* plot = fgMngr.getPlot(elements, getGLType<T>(), type, marker);
-    plot->setColor(1.0, 0.0, 0.0);
-    plot->setAxesLimits(xmax, xmin, ymax, ymin);
-    plot->setAxesTitles("X Axis", "Y Axis");
+    // FORGE FIX ME FG_CHART_2D
+    forge::Plot* plot = fgMngr.getPlot(elements, getGLType<T>(), FG_CHART_2D, type, marker);
+    plot->setColor(1.0, 0.0, 0.0, 1.0);
+    // FORGE FIX ME
+    //plot->setAxesLimits(xmax, xmin, ymax, ymin);
+    //plot->setAxesTitles("X Axis", "Y Axis");
 
     copy_plot<T>(P, plot);
 
     return plot;
 }
 
-af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, const af_cell* const props, fg::PlotType type=fg::FG_LINE, fg::MarkerType marker=fg::FG_NONE)
+af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, const af_cell* const props, forge::PlotType type=FG_PLOT_LINE, forge::MarkerType marker=FG_MARKER_NONE)
 {
     if(wind==0) {
         std::cerr<<"Not a valid window"<<std::endl;
@@ -83,9 +85,9 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, con
 
         TYPE_ASSERT(Xtype == Ytype);
 
-        fg::Window* window = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
         window->makeCurrent();
-        fg::Plot* plot = NULL;
+        forge::Plot* plot = NULL;
 
         switch(Xtype) {
             case f32: plot = setup_plot<float  >(X, Y, type, marker); break;
@@ -97,10 +99,11 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, con
             default:  TYPE_ERROR(1, Xtype);
         }
 
-        if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, *plot, props->title);
-        else
-            window->draw(*plot);
+        //FORGE FIX ME
+        //if (props->col>-1 && props->row>-1)
+        //    window->draw(props->col, props->row, *plot, props->title);
+        //else
+        //    window->draw(*plot);
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -120,8 +123,8 @@ af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, co
 af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y, const af_marker_type af_marker, const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
-    fg::MarkerType fg_marker = getFGMarker(af_marker);
-    return plotWrapper(wind, X, Y, props, fg::FG_SCATTER, fg_marker);
+    forge::MarkerType fg_marker = getFGMarker(af_marker);
+    return plotWrapper(wind, X, Y, props, FG_PLOT_SCATTER, fg_marker);
 #else
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif

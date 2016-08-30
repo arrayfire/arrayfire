@@ -24,7 +24,7 @@ using namespace detail;
 using namespace graphics;
 
 template<typename T>
-fg::Histogram* setup_histogram(const af_array in, const double minval, const double maxval)
+forge::Histogram* setup_histogram(const af_array in, const double minval, const double maxval)
 {
     Array<T> histogramInput = getArray<T>(in);
     dim_t nBins = histogramInput.elements();
@@ -33,13 +33,14 @@ fg::Histogram* setup_histogram(const af_array in, const double minval, const dou
 
     /* retrieve Forge Histogram with nBins and array type */
     ForgeManager& fgMngr = ForgeManager::getInstance();
-    fg::Histogram* hist = fgMngr.getHistogram(nBins, getGLType<T>());
+    forge::Histogram* hist = fgMngr.getHistogram(nBins, getGLType<T>());
     /* set histogram bar colors to orange */
-    hist->setBarColor(0.929f, 0.486f, 0.2745f);
+    hist->setColor(0.929f, 0.486f, 0.2745f, 1.0f);
     /* set x axis limits to maximum and minimum values of data
      * and y axis limits to range [0, nBins]*/
-    hist->setAxesLimits(maxval, minval, double(freqMax), 0.0f);
-    hist->setAxesTitles("Bins", "Frequency");
+    // FORGE FIX ME
+    //hist->setAxesLimits(maxval, minval, double(freqMax), 0.0f);
+    //hist->setAxesTitles("Bins", "Frequency");
 
     copy_histogram<T>(histogramInput, hist);
 
@@ -62,9 +63,9 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
 
         ARG_ASSERT(0, Xinfo.isVector());
 
-        fg::Window* window = reinterpret_cast<fg::Window*>(wind);
+        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
         window->makeCurrent();
-        fg::Histogram* hist = NULL;
+        forge::Histogram* hist = NULL;
 
         switch(Xtype) {
             case f32: hist = setup_histogram<float  >(X, minval, maxval); break;
@@ -76,10 +77,12 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
             default:  TYPE_ERROR(1, Xtype);
         }
 
-        if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, *hist, props->title);
-        else
-            window->draw(*hist);
+        // FORGE FIX ME
+        // Window's draw function requires either image or chart
+        //if (props->col>-1 && props->row>-1)
+        //    //window->draw(props->col, props->row, *hist, props->title);
+        //else
+        //    window->draw(*hist);
     }
     CATCHALL;
     return AF_SUCCESS;

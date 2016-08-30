@@ -17,7 +17,7 @@
 #include <OpenGL/OpenGL.h>
 #include <libkern/OSAtomic.h>
 #else
-#include <GL/gl.h>
+#include <glbinding/gl/gl.h>
 #endif // !__APPLE__
 
 #endif
@@ -336,7 +336,7 @@ DeviceManager::DeviceManager()
             /* loop over devices and replace contexts with
              * OpenGL shared contexts whereever applicable */
             int devCount = mDevices.size();
-            fg::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();
+            forge::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();
             for(int i=0; i<devCount; ++i)
                 markDeviceForInterop(i, wHandle);
         } catch (...) {
@@ -645,7 +645,7 @@ bool checkExtnAvailability(const Device &pDevice, std::string pName)
 }
 
 #if defined(WITH_GRAPHICS)
-void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHandle)
+void DeviceManager::markDeviceForInterop(const int device, const forge::Window* wHandle)
 {
     try {
         if (device >= (int)mQueues.size() ||

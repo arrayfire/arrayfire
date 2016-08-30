@@ -15,37 +15,40 @@
 #include <platform.hpp>
 #include <util.hpp>
 
+#include <glbinding/Meta.h>
+
 using namespace std;
+using namespace gl;
 
 template<typename T>
 GLenum getGLType() { return GL_FLOAT; }
 
-fg::MarkerType getFGMarker(const af_marker_type af_marker) {
-    fg::MarkerType fg_marker;
+forge::MarkerType getFGMarker(const af_marker_type af_marker) {
+    forge::MarkerType fg_marker;
     switch (af_marker) {
-        case AF_MARKER_NONE: fg_marker = fg::FG_NONE; break;
-        case AF_MARKER_POINT: fg_marker = fg::FG_POINT; break;
-        case AF_MARKER_CIRCLE: fg_marker = fg::FG_CIRCLE; break;
-        case AF_MARKER_SQUARE: fg_marker = fg::FG_SQUARE; break;
-        case AF_MARKER_TRIANGLE: fg_marker = fg::FG_TRIANGLE; break;
-        case AF_MARKER_CROSS: fg_marker = fg::FG_CROSS; break;
-        case AF_MARKER_PLUS: fg_marker = fg::FG_PLUS; break;
-        case AF_MARKER_STAR: fg_marker = fg::FG_STAR; break;
-        default: fg_marker = fg::FG_NONE; break;
+        case AF_MARKER_NONE     : fg_marker = FG_MARKER_NONE;        break;
+        case AF_MARKER_POINT    : fg_marker = FG_MARKER_POINT;       break;
+        case AF_MARKER_CIRCLE   : fg_marker = FG_MARKER_CIRCLE;      break;
+        case AF_MARKER_SQUARE   : fg_marker = FG_MARKER_SQUARE;      break;
+        case AF_MARKER_TRIANGLE : fg_marker = FG_MARKER_TRIANGLE;    break;
+        case AF_MARKER_CROSS    : fg_marker = FG_MARKER_CROSS;       break;
+        case AF_MARKER_PLUS     : fg_marker = FG_MARKER_PLUS;        break;
+        case AF_MARKER_STAR     : fg_marker = FG_MARKER_STAR;        break;
+        default                 : fg_marker = FG_MARKER_NONE;        break;
     }
     return fg_marker;
 }
 
 #define INSTANTIATE_GET_FG_TYPE(T, ForgeEnum)\
-    template<> fg::dtype getGLType<T>() { return ForgeEnum; }
+    template<> forge::dtype getGLType<T>() { return ForgeEnum; }
 
-INSTANTIATE_GET_FG_TYPE(float, fg::f32);
-INSTANTIATE_GET_FG_TYPE(int  , fg::s32);
-INSTANTIATE_GET_FG_TYPE(unsigned, fg::u32);
-INSTANTIATE_GET_FG_TYPE(char, fg::s8);
-INSTANTIATE_GET_FG_TYPE(unsigned char, fg::u8);
-INSTANTIATE_GET_FG_TYPE(unsigned short, fg::u16);
-INSTANTIATE_GET_FG_TYPE(short, fg::s16);
+INSTANTIATE_GET_FG_TYPE(float, forge::f32);
+INSTANTIATE_GET_FG_TYPE(int  , forge::s32);
+INSTANTIATE_GET_FG_TYPE(unsigned, forge::u32);
+INSTANTIATE_GET_FG_TYPE(char, forge::s8);
+INSTANTIATE_GET_FG_TYPE(unsigned char, forge::u8);
+INSTANTIATE_GET_FG_TYPE(unsigned short, forge::u16);
+INSTANTIATE_GET_FG_TYPE(short, forge::s16);
 
 GLenum glErrorSkip(const char *msg, const char* file, int line)
 {
@@ -53,12 +56,12 @@ GLenum glErrorSkip(const char *msg, const char* file, int line)
     GLenum x = glGetError();
     if (x != GL_NO_ERROR) {
         char buf[1024];
-        sprintf(buf, "GL Error Skipped at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+        sprintf(buf, "GL Error Skipped at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, (int)x, glbinding::Meta::getString(x).c_str());
         AF_ERROR(buf, AF_ERR_INTERNAL);
     }
     return x;
 #else
-    return 0;
+    return (GLenum)0;
 #endif
 }
 
@@ -70,12 +73,12 @@ GLenum glErrorCheck(const char *msg, const char* file, int line)
 
     if (x != GL_NO_ERROR) {
         char buf[1024];
-        sprintf(buf, "GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+        sprintf(buf, "GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, (int)x, glbinding::Meta::getString(x).c_str());
         AF_ERROR(buf, AF_ERR_INTERNAL);
     }
     return x;
 #else
-    return 0;
+    return (GLenum)0;
 #endif
 }
 
@@ -85,7 +88,7 @@ GLenum glForceErrorCheck(const char *msg, const char* file, int line)
 
     if (x != GL_NO_ERROR) {
         char buf[1024];
-        sprintf(buf, "GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+        sprintf(buf, "GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, (int)x, glbinding::Meta::getString(x).c_str());
         AF_ERROR(buf, AF_ERR_INTERNAL);
     }
     return x;
@@ -119,19 +122,19 @@ ForgeManager::~ForgeManager()
     destroyResources();
 }
 
-fg::Font* ForgeManager::getFont(const bool dontCreate)
+forge::Font* ForgeManager::getFont(const bool dontCreate)
 {
     static bool flag = true;
-    static fg::Font* fnt = NULL;
+    static forge::Font* fnt = NULL;
 
     CheckGL("Begin ForgeManager::getFont");
 
     if (flag && !dontCreate) {
-        fnt = new fg::Font();
+        fnt = new forge::Font();
 #if defined(_WIN32) || defined(_MSC_VER)
-        fnt->loadSystemFont("Arial", 32);
+        fnt->loadSystemFont("Arial");
 #else
-        fnt->loadSystemFont("Vera", 32);
+        fnt->loadSystemFont("Vera");
 #endif
         CheckGL("End ForgeManager::getFont");
         flag = false;
@@ -140,16 +143,17 @@ fg::Font* ForgeManager::getFont(const bool dontCreate)
     return fnt;
 }
 
-fg::Window* ForgeManager::getMainWindow(const bool dontCreate)
+forge::Window* ForgeManager::getMainWindow(const bool dontCreate)
 {
     static bool flag = true;
-    static fg::Window* wnd = NULL;
+    static forge::Window* wnd = NULL;
 
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
     if(noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
         if (flag && !dontCreate) {
-            wnd = new fg::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
+            wnd = new forge::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
+            wnd->makeCurrent();
             CheckGL("End ForgeManager::getMainWindow");
             flag = false;
         };
@@ -157,7 +161,7 @@ fg::Window* ForgeManager::getMainWindow(const bool dontCreate)
     return wnd;
 }
 
-fg::Image* ForgeManager::getImage(int w, int h, fg::ChannelFormat mode, fg::dtype type)
+forge::Image* ForgeManager::getImage(int w, int h, forge::ChannelFormat mode, forge::dtype type)
 {
     /* w, h needs to fall in the range of [0, 2^16]
      * for the ForgeManager to correctly retrieve
@@ -171,14 +175,14 @@ fg::Image* ForgeManager::getImage(int w, int h, fg::ChannelFormat mode, fg::dtyp
 
     ImgMapIter iter = mImgMap.find(key);
     if (iter==mImgMap.end()) {
-        fg::Image* temp = new fg::Image(w, h, mode, type);
+        forge::Image* temp = new forge::Image(w, h, mode, type);
         mImgMap[key] = temp;
     }
 
     return mImgMap[key];
 }
 
-fg::Plot* ForgeManager::getPlot(int nPoints, fg::dtype dtype, fg::PlotType ptype, fg::MarkerType mtype)
+forge::Plot* ForgeManager::getPlot(int nPoints, forge::dtype dtype, forge::ChartType ctype, forge::PlotType ptype, forge::MarkerType mtype)
 {
     /* nPoints needs to fall in the range of [0, 2^48]
      * for the ForgeManager to correctly retrieve
@@ -191,34 +195,14 @@ fg::Plot* ForgeManager::getPlot(int nPoints, fg::dtype dtype, fg::PlotType ptype
 
     PltMapIter iter = mPltMap.find(key);
     if (iter==mPltMap.end()) {
-        fg::Plot* temp = new fg::Plot(nPoints, dtype, ptype, mtype);
+        forge::Plot* temp = new forge::Plot(nPoints, dtype, ctype, ptype, mtype);
         mPltMap[key] = temp;
     }
 
     return mPltMap[key];
 }
 
-fg::Plot3* ForgeManager::getPlot3(int nPoints, fg::dtype dtype, fg::PlotType ptype, fg::MarkerType mtype)
-{
-    /* nPoints needs to fall in the range of [0, 2^48]
-     * for the ForgeManager to correctly retrieve
-     * the necessary Forge Plot object. So, this implementation
-     * is a limitation on how big of an plot graph can be rendered
-     * using arrayfire graphics funtionality */
-    assert(nPoints <= 2ll<<48);
-    long long key = ((nPoints & _48BIT) << 48);
-    key |= (((((dtype & 0x000F) << 12) | (ptype & 0x000F)) << 8) | (mtype & 0x000F));
-
-    Plt3MapIter iter = mPlt3Map.find(key);
-    if (iter==mPlt3Map.end()) {
-        fg::Plot3* temp = new fg::Plot3(nPoints, dtype, ptype, mtype);
-        mPlt3Map[key] = temp;
-    }
-
-    return mPlt3Map[key];
-}
-
-fg::Histogram* ForgeManager::getHistogram(int nBins, fg::dtype type)
+forge::Histogram* ForgeManager::getHistogram(int nBins, forge::dtype type)
 {
     /* nBins needs to fall in the range of [0, 2^48]
      * for the ForgeManager to correctly retrieve
@@ -230,14 +214,14 @@ fg::Histogram* ForgeManager::getHistogram(int nBins, fg::dtype type)
 
     HstMapIter iter = mHstMap.find(key);
     if (iter==mHstMap.end()) {
-        fg::Histogram* temp = new fg::Histogram(nBins, type);
+        forge::Histogram* temp = new forge::Histogram(nBins, type);
         mHstMap[key] = temp;
     }
 
     return mHstMap[key];
 }
 
-fg::Surface* ForgeManager::getSurface(int nX, int nY, fg::dtype type)
+forge::Surface* ForgeManager::getSurface(int nX, int nY, forge::dtype type)
 {
     /* nX * nY needs to fall in the range of [0, 2^48]
      * for the ForgeManager to correctly retrieve
@@ -249,7 +233,7 @@ fg::Surface* ForgeManager::getSurface(int nX, int nY, fg::dtype type)
 
     SfcMapIter iter = mSfcMap.find(key);
     if (iter==mSfcMap.end()) {
-        fg::Surface* temp = new fg::Surface(nX, nY, type);
+        forge::Surface* temp = new forge::Surface(nX, nY, type);
         mSfcMap[key] = temp;
     }
 

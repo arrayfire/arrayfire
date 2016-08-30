@@ -206,7 +206,7 @@ af_err processException()
         print_error(ss.str());
         err = ex.getError();
 #if defined(WITH_GRAPHICS) && !defined(AF_UNIFIED)
-    } catch (const fg::Error &ex) {
+    } catch (const forge::Error &ex) {
         ss << ex << "\n";
         print_error(ss.str());
         err = AF_ERR_INTERNAL;

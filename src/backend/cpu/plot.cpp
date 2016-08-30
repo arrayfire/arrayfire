@@ -20,23 +20,28 @@ using af::dim4;
 
 namespace cpu
 {
+using namespace gl;
 
 template<typename T>
-void copy_plot(const Array<T> &P, fg::Plot* plot)
+void copy_plot(const Array<T> &P, forge::Plot* plot)
 {
     P.eval();
     getQueue().sync();
+
+    // Make sure to do this
+    glbinding::Binding::useCurrentContext();
+
     CheckGL("Before CopyArrayToVBO");
 
-    glBindBuffer(GL_ARRAY_BUFFER, plot->vbo());
-    glBufferSubData(GL_ARRAY_BUFFER, 0, plot->size(), P.get());
+    glBindBuffer(GL_ARRAY_BUFFER, plot->vertices());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, plot->verticesSize(), P.get());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     CheckGL("In CopyArrayToVBO");
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_plot<T>(const Array<T> &P, fg::Plot* plot);
+    template void copy_plot<T>(const Array<T> &P, forge::Plot* plot);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
