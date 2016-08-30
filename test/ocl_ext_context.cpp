@@ -13,6 +13,9 @@
 #include <af/opencl.h>
 #include <iostream>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 using namespace std;
 
 inline void checkErr(cl_int err, const char * name) {
@@ -129,3 +132,5 @@ TEST(OCLExtContext, NoopCPU)
 {
 }
 #endif
+
+#pragma GCC diagnostic pop
