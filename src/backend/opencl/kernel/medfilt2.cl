@@ -37,13 +37,13 @@ void load2ShrdMem(__local T *           shrd,
 }
 
 __kernel
-void medfilt(__global T *       out,
-             KParam             oInfo,
-             __global const T * in,
-             KParam             iInfo,
-             __local T *        localMem,
-             int           nBBS0,
-             int           nBBS1)
+void medfilt2(__global T *       out,
+              KParam             oInfo,
+              __global const T * in,
+              KParam             iInfo,
+              __local T *        localMem,
+              int           nBBS0,
+              int           nBBS1)
 {
     // calculate necessary offset and window parameters
     const int padding = w_len-1;

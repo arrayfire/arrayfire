@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/image.h>
+#include <af/signal.h>
 #include <af/array.h>
 #include "error.hpp"
 
@@ -16,8 +17,22 @@ namespace af
 
 array medfilt(const array& in, const dim_t wind_length, const dim_t wind_width, const borderType edge_pad)
 {
+     af_array out = 0;
+     AF_THROW(af_medfilt(&out, in.get(), wind_length, wind_width, edge_pad));
+     return array(out);
+}
+
+array medfilt1(const array& in, const dim_t wind_width, const borderType edge_pad)
+{
     af_array out = 0;
-    AF_THROW(af_medfilt(&out, in.get(), wind_length, wind_width, edge_pad));
+    AF_THROW(af_medfilt1(&out, in.get(), wind_width, edge_pad));
+    return array(out);
+}
+
+array medfilt2(const array& in, const dim_t wind_length, const dim_t wind_width, const borderType edge_pad)
+{
+    af_array out = 0;
+    AF_THROW(af_medfilt2(&out, in.get(), wind_length, wind_width, edge_pad));
     return array(out);
 }
 

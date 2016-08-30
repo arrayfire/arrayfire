@@ -152,12 +152,6 @@ af_err af_mean_shift(af_array *out, const af_array in, const float spatial_sigma
     return CALL(out, in, spatial_sigma, chromatic_sigma, iter, is_color);
 }
 
-af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad)
-{
-    CHECK_ARRAYS(in);
-    return CALL(out, in, wind_length, wind_width, edge_pad);
-}
-
 af_err af_minfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad)
 {
     CHECK_ARRAYS(in);
