@@ -90,14 +90,14 @@ ELSE()
     MESSAGE(STATUS "threads submodule unavailable. Updating submodules.")
     EXECUTE_PROCESS(
         COMMAND git submodule update --init --recursive
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         )
 ENDIF()
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
-    "${CMAKE_SOURCE_DIR}/src/backend/cpu"
-    "${CMAKE_SOURCE_DIR}/src/backend/cpu/threads"
+    "${PROJECT_SOURCE_DIR}/src/backend/cpu"
+    "${PROJECT_SOURCE_DIR}/src/backend/cpu/threads"
     ${FFTW_INCLUDES}
     ${CBLAS_INCLUDE_DIR}
     )
@@ -188,10 +188,10 @@ IF(DEFINED BLAS_SYM_FILE)
         PROPERTIES LINK_FLAGS -Wl,-exported_symbols_list,${BLAS_SYM_FILE})
     TARGET_LINK_LIBRARIES(afcpu PUBLIC $<TARGET_FILE:afcpu_static>)
   ELSE(APPLE)
-    add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/afcpu_static.renamed
-      COMMAND objcopy --redefine-syms ${BLAS_SYM_FILE} $<TARGET_FILE:afcpu_static> ${CMAKE_BINARY_DIR}/afcpu_static.renamed
+    add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/afcpu_static.renamed
+      COMMAND objcopy --redefine-syms ${BLAS_SYM_FILE} $<TARGET_FILE:afcpu_static> ${PROJECT_BINARY_DIR}/afcpu_static.renamed
       DEPENDS $<TARGET_FILE:afcpu_static>)
-      TARGET_LINK_LIBRARIES(afcpu PUBLIC ${CMAKE_BINARY_DIR}/afcpu_static.renamed)
+      TARGET_LINK_LIBRARIES(afcpu PUBLIC ${PROJECT_BINARY_DIR}/afcpu_static.renamed)
   ENDIF(APPLE)
 
 ELSE(DEFINED BLAS_SYM_FILE)
@@ -234,7 +234,7 @@ INSTALL(TARGETS afcpu EXPORT CPU DESTINATION "${AF_INSTALL_LIB_DIR}"
         COMPONENT libraries)
 
 IF(APPLE)
-    INSTALL(SCRIPT "${CMAKE_MODULE_PATH}/osx_install/InstallTool.cmake")
+    INSTALL(SCRIPT "${PROJECT_SOURCE_DIR}/CMakeModules/osx_install/InstallTool.cmake")
 ENDIF(APPLE)
 
 export(TARGETS afcpu FILE ArrayFireCPU.cmake)

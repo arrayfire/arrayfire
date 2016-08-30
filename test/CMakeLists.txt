@@ -172,7 +172,7 @@ IF(NOT ${USE_RELATIVE_TEST_DIR})
         MESSAGE(STATUS "Test submodules unavailable. Updating submodules.")
         EXECUTE_PROCESS(
             COMMAND git submodule update --init --recursive
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
             OUTPUT_QUIET
         )
     ENDIF()
@@ -182,7 +182,7 @@ OPTION(USE_SYSTEM_GTEST "Use GTEST from system libraries" OFF)
 IF(USE_SYSTEM_GTEST)
     FIND_PACKAGE(GTest REQUIRED)
 ELSE(USE_SYSTEM_GTEST)
-    INCLUDE("${CMAKE_MODULE_PATH}/build_gtest.cmake")
+    INCLUDE("${PROJECT_SOURCE_DIR}/CMakeModules/build_gtest.cmake")
 ENDIF(USE_SYSTEM_GTEST)
 
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
