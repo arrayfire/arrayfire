@@ -51,41 +51,23 @@ namespace cuda
 namespace kernel
 {
     //Utils
+    //Source of these constants :
+    //github.com/DEShawResearch/Random123-Boost/blob/master/boost/random/threefry.hpp
 
     static const uint  SKEIN_KS_PARITY32 = 0x1BD11BDA;
-    static const uintl SKEIN_KS_PARITY64 = 0x1BD11BDAA9FC1A22;
 
-    static const uint R0_32=13;
-    static const uint R1_32=15;
-    static const uint R2_32=26;
-    static const uint R3_32= 6;
-    static const uint R4_32=17;
-    static const uint R5_32=29;
-    static const uint R6_32=16;
-    static const uint R7_32=24;
-
-    static const uint R0_64=16;
-    static const uint R1_64=42;
-    static const uint R2_64=12;
-    static const uint R3_64=31;
-    static const uint R4_64=16;
-    static const uint R5_64=32;
-    static const uint R6_64=24;
-    static const uint R7_64=21;
+    static const uint R0=13;
+    static const uint R1=15;
+    static const uint R2=26;
+    static const uint R3= 6;
+    static const uint R4=17;
+    static const uint R5=29;
+    static const uint R6=16;
+    static const uint R7=24;
 
     static inline __device__ void setSkeinParity(uint *ptr)
     {
         *ptr = SKEIN_KS_PARITY32;
-    }
-
-    static inline __device__ void setSkeinParity(uintl *ptr)
-    {
-        *ptr = SKEIN_KS_PARITY64;
-    }
-
-    static inline __device__ uintl rotL(uintl x, uint N)
-    {
-        return (x << (N & 63)) | (x >> ((64-N) & 63));
     }
 
     static inline __device__ uint rotL(uint x, uint N)
@@ -93,10 +75,9 @@ namespace kernel
         return (x << (N & 31)) | (x >> ((32-N) & 31));
     }
 
-    template <typename T, uint R0, uint R1, uint R2, uint R3, uint R4, uint R5, uint R6, uint R7>
-    static inline __device__ void threefry_kernel(T k[2], T c[2], T X[2])
+    __device__ void threefry(uint k[2], uint c[2], uint X[2])
     {
-        T ks[3];
+        uint ks[3];
 
         setSkeinParity(&ks[2]);
         ks[0] = k[0];
@@ -145,14 +126,5 @@ namespace kernel
         X[1] += 4;
     }
 
-    __device__ void threefry(uint k[2], uint c[2], uint X[2])
-    {
-        threefry_kernel<uint, R0_32, R1_32, R2_32, R3_32, R4_32, R5_32, R6_32, R7_32>(k, c, X);
-    }
-
-    __device__ void threefry(uintl k[2], uintl c[2], uintl X[2])
-    {
-        threefry_kernel<uintl, R0_64, R1_64, R2_64, R3_64, R4_64, R5_64, R6_64, R7_64>(k, c, X);
-    }
 }
 }

@@ -51,6 +51,8 @@ namespace cuda
 namespace kernel
 {
     //Utils
+    //Source of these constants :
+    //github.com/DEShawResearch/Random123-Boost/blob/master/boost/random/philox.hpp
 
     static const uint m4x32_0 = 0xD2511F53;
     static const uint m4x32_1 = 0xCD9E8D57;

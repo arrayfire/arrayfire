@@ -24,6 +24,7 @@ namespace af
         public:
             explicit
             randomEngine(randomType typeIn = AF_RANDOM_DEFAULT, uintl seedIn = 0);
+            randomEngine(const randomEngine& other);
             ~randomEngine();
 
             randomEngine& operator= (const randomEngine& other);

@@ -20,6 +20,13 @@ namespace af
         AF_THROW(af_create_random_engine(&engine, type, seed));
     }
 
+    randomEngine::randomEngine(const randomEngine& other)
+    {
+        if (this != &other) {
+            AF_THROW(af_retain_random_engine(&engine, other.get()));
+        }
+    }
+
     randomEngine::~randomEngine()
     {
         if (engine) {

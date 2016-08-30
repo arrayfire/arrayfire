@@ -77,8 +77,8 @@ namespace kernel
             uint sh1,
             uint sh2,
             uint mask,
-            uint const * const recursion_table,
-            uint const * const temper_table)
+            const uint * const recursion_table,
+            const uint * const temper_table)
     {
         int index    = i % STATE_SIZE;
         int offsetX1 = (STATE_SIZE - N + index          ) % STATE_SIZE;

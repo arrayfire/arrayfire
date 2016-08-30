@@ -19,7 +19,9 @@
 #include <random_engine.hpp>
 #include <random.hpp>
 #include <MersenneTwister.hpp>
+#include <types.hpp>
 
+using detail::uint;
 using detail::cfloat;
 using detail::cdouble;
 using detail::uchar;
@@ -65,7 +67,7 @@ af_random_engine getRandomEngineHandle(const RandomEngine engine)
     return static_cast<af_random_engine>(engineHandle);
 }
 
-af_random_engine DefaultRandomEngine(void)
+af_random_engine defaultRandomEngine(void)
 {
     static RandomEngine r;
     return static_cast<af_random_engine>(&r);
@@ -73,6 +75,9 @@ af_random_engine DefaultRandomEngine(void)
 
 RandomEngine* getRandomEngine(const af_random_engine engineHandle)
 {
+    if (engineHandle == 0) {
+        AF_ERROR("Uninitialized random engine", AF_ERR_ARG);
+    }
     return (RandomEngine *)engineHandle;
 }
 
@@ -110,9 +115,23 @@ static inline af_array normalDistribution_(const af::dim4 &dims, RandomEngine *e
     }
 }
 
+static void validateRandomType(const af_random_type type)
+{
+    if ((type != AF_RANDOM_PHILOX_4X32_10)
+    &&  (type != AF_RANDOM_THREEFRY_2X32_16)
+    &&  (type != AF_RANDOM_MERSENNE_GP11213)
+    &&  (type != AF_RANDOM_PHILOX)
+    &&  (type != AF_RANDOM_THREEFRY)
+    &&  (type != AF_RANDOM_MERSENNE)
+    &&  (type != AF_RANDOM_DEFAULT)) {
+        AF_ERROR("Invalid random type", AF_ERR_ARG);
+    }
+}
+
 af_err af_create_random_engine(af_random_engine *engineHandle, af_random_type rtype, uintl seed)
 {
     try {
+        validateRandomType(rtype);
         RandomEngine e;
         e.type = rtype;
         e.seed = seed;
@@ -159,11 +178,12 @@ af_err af_retain_random_engine(af_random_engine *outHandle, const af_random_engi
 af_err af_random_engine_set_type(af_random_engine *engine, const af_random_type rtype)
 {
     try {
+        validateRandomType(rtype);
         RandomEngine e = *(getRandomEngine(engine));
         if (rtype != e.type) {
-            bool empty;
             if (rtype == AF_RANDOM_MERSENNE_GP11213) {
-                af_is_empty(&empty, e.state);
+                bool empty;
+                AF_CHECK(af_is_empty(&empty, e.state));
                 if (empty) {
                     AF_CHECK(af_create_array(&e.pos, pos, 1, &MaxBlocks, u32));
                     AF_CHECK(af_create_array(&e.sh1, sh1, 1, &MaxBlocks, u32));
@@ -183,8 +203,9 @@ af_err af_random_engine_set_type(af_random_engine *engine, const af_random_type 
 af_err af_set_default_random_engine(const af_random_type rtype)
 {
     try {
-        af_random_engine e = DefaultRandomEngine();
-        af_random_engine_set_type(&e, rtype);
+        AF_CHECK(af_init());
+        af_random_engine e = defaultRandomEngine();
+        AF_CHECK(af_random_engine_set_type(&e, rtype));
     } CATCHALL;
     return AF_SUCCESS;
 }
@@ -292,7 +313,7 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, c
         af_array result;
         AF_CHECK(af_init());
 
-        RandomEngine *e = getRandomEngine(DefaultRandomEngine());
+        RandomEngine *e = getRandomEngine(defaultRandomEngine());
         af::dim4 d = verifyDims(ndims, dims);
 
         switch(type) {
@@ -322,7 +343,7 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, c
         af_array result;
         AF_CHECK(af_init());
 
-        RandomEngine *e = getRandomEngine(DefaultRandomEngine());
+        RandomEngine *e = getRandomEngine(defaultRandomEngine());
         af::dim4 d = verifyDims(ndims, dims);
 
         switch(type) {
@@ -341,8 +362,8 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, c
 af_err af_set_seed(const uintl seed)
 {
     try {
-        af_random_engine e = DefaultRandomEngine();
-        af_random_engine_set_seed(&e, seed);
+        af_random_engine e = defaultRandomEngine();
+        AF_CHECK(af_random_engine_set_seed(&e, seed));
     } CATCHALL;
     return AF_SUCCESS;
 }
@@ -350,8 +371,7 @@ af_err af_set_seed(const uintl seed)
 af_err af_get_seed(uintl *seed)
 {
     try {
-        af_random_engine_get_seed(seed, DefaultRandomEngine());
+        AF_CHECK(af_random_engine_get_seed(seed, defaultRandomEngine()));
     } CATCHALL;
     return AF_SUCCESS;
 }
-

@@ -195,12 +195,12 @@ namespace kernel
     template <typename T>
     void uniformDistributionMT(T* out, size_t elements,
             uint * const state,
-            uint const * const pos,
-            uint const * const sh1,
-            uint const * const sh2,
+            const uint * const pos,
+            const uint * const sh1,
+            const uint * const sh2,
             uint mask,
-            uint const * const recursion_table,
-            uint const * const temper_table)
+            const uint * const recursion_table,
+            const uint * const temper_table)
     {
         uint l_state[STATE_SIZE];
         uint o[4];
@@ -225,12 +225,12 @@ namespace kernel
     template <typename T>
     void normalDistributionMT(T* out, size_t elements,
             uint * const state,
-            uint const * const pos,
-            uint const * const sh1,
-            uint const * const sh2,
+            const uint * const pos,
+            const uint * const sh1,
+            const uint * const sh2,
             uint mask,
-            uint const * const recursion_table,
-            uint const * const temper_table)
+            const uint * const recursion_table,
+            const uint * const temper_table)
     {
         T temp[(4*sizeof(uint))/sizeof(T)];
         uint l_state[STATE_SIZE];

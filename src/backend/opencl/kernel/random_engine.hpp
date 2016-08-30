@@ -58,19 +58,23 @@ namespace opencl
             ker_strs[0] = random_engine_write_cl;
             ker_lens[0] = random_engine_write_cl_len;
             switch (type) {
-                case AF_RANDOM_PHILOX_4X32_10   : engineName = "Philox";
-                                                ker_strs[1] = random_engine_philox_cl;
-                                                ker_lens[1] = random_engine_philox_cl_len;
-                                                break;
-                case AF_RANDOM_THREEFRY_2X32_16 : engineName = "Threefry";
-                                                ker_strs[1] = random_engine_threefry_cl;
-                                                ker_lens[1] = random_engine_threefry_cl_len;
-                                                break;
-                case AF_RANDOM_MERSENNE_GP11213 : engineName = "Mersenne";
-                                                ker_strs[1] = random_engine_mersenne_cl;
-                                                ker_lens[1] = random_engine_mersenne_cl_len;
-                                                break;
-                default                         : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
+                case AF_RANDOM_PHILOX_4X32_10   :
+                    engineName = "Philox";
+                    ker_strs[1] = random_engine_philox_cl;
+                    ker_lens[1] = random_engine_philox_cl_len;
+                    break;
+                case AF_RANDOM_THREEFRY_2X32_16 :
+                    engineName = "Threefry";
+                    ker_strs[1] = random_engine_threefry_cl;
+                    ker_lens[1] = random_engine_threefry_cl_len;
+                    break;
+                case AF_RANDOM_MERSENNE_GP11213 :
+                    engineName = "Mersenne";
+                    ker_strs[1] = random_engine_mersenne_cl;
+                    ker_lens[1] = random_engine_mersenne_cl_len;
+                    break;
+                default :
+                    AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
             }
 
             string ref_name =

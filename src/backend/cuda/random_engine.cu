@@ -77,77 +77,75 @@ namespace cuda
         return out;
     }
 
-#define INSTANTIATE_UNIFORM(T)\
-    template\
-    Array<T> uniformDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter);\
-    template\
-    Array<T> uniformDistribution<T>(const af::dim4 &dims,\
-            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,\
-            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state);\
+#define INSTANTIATE_UNIFORM(T)                                                                                              \
+    template                                                                                                                \
+    Array<T> uniformDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter);    \
+    template                                                                                                                \
+    Array<T> uniformDistribution<T>(const af::dim4 &dims,                                                                   \
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,                                                   \
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state);                                      \
 
-#define INSTANTIATE_NORMAL(T)\
-    template\
-    Array<T> normalDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter);\
-    template\
-    Array<T> normalDistribution<T>(const af::dim4 &dims,\
-            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,\
-            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state);\
+#define INSTANTIATE_NORMAL(T)                                                                                               \
+    template                                                                                                                \
+    Array<T> normalDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter);     \
+    template                                                                                                                \
+    Array<T> normalDistribution<T>(const af::dim4 &dims,                                                                    \
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,                                                   \
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state);                                      \
 
-#define COMPLEX_UNIFORM_DISTRIBUTION(T, TR)\
-    template<>\
-    Array<T> uniformDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)\
-    {\
-        Array<T> out = createEmptyArray<T>(dims);\
-        TR *outPtr = (TR*)out.get();\
-        size_t elements = out.elements()*2;\
-        kernel::uniformDistributionCBRNG<TR>(outPtr, elements, type, seed, counter);\
-        return out;\
-    }\
-    \
-    template<>\
-    Array<T> uniformDistribution<T>(const af::dim4 &dims,\
-            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,\
-            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)\
-    {\
-        Array<T> out = createEmptyArray<T>(dims);\
-        TR *outPtr = (TR*)out.get();\
-        size_t elements = out.elements()*2;\
-        kernel::uniformDistributionMT<TR>(\
-              outPtr, elements,\
-              state.get(), pos.get(),\
-              sh1.get(), sh2.get(),\
-              mask, recursion_table.get(),\
-              temper_table.get());\
-        return out;\
-    }\
+#define COMPLEX_UNIFORM_DISTRIBUTION(T, TR)                                                                                 \
+    template<>                                                                                                              \
+    Array<T> uniformDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)     \
+    {                                                                                                                       \
+        Array<T> out = createEmptyArray<T>(dims);                                                                           \
+        TR *outPtr = (TR*)out.get();                                                                                        \
+        size_t elements = out.elements()*2;                                                                                 \
+        kernel::uniformDistributionCBRNG<TR>(outPtr, elements, type, seed, counter);                                        \
+        return out;                                                                                                         \
+    }                                                                                                                       \
+    template<>                                                                                                              \
+    Array<T> uniformDistribution<T>(const af::dim4 &dims,                                                                   \
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,                                                   \
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)                                       \
+    {                                                                                                                       \
+        Array<T> out = createEmptyArray<T>(dims);                                                                           \
+        TR *outPtr = (TR*)out.get();                                                                                        \
+        size_t elements = out.elements()*2;                                                                                 \
+        kernel::uniformDistributionMT<TR>(                                                                                  \
+              outPtr, elements,                                                                                             \
+              state.get(), pos.get(),                                                                                       \
+              sh1.get(), sh2.get(),                                                                                         \
+              mask, recursion_table.get(),                                                                                  \
+              temper_table.get());                                                                                          \
+        return out;                                                                                                         \
+    }                                                                                                                       \
 
-#define COMPLEX_NORMAL_DISTRIBUTION(T, TR)\
-    template<>\
-    Array<T> normalDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)\
-    {\
-        Array<T> out = createEmptyArray<T>(dims);\
-        TR *outPtr = (TR*)out.get();\
-        size_t elements = out.elements()*2;\
-        kernel::normalDistributionCBRNG<TR>(outPtr, elements, type, seed, counter);\
-        return out;\
-    }\
-    \
-    template<>\
-    Array<T> normalDistribution<T>(const af::dim4 &dims,\
-            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,\
-            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)\
-    {\
-        Array<T> out = createEmptyArray<T>(dims);\
-        TR *outPtr = (TR*)out.get();\
-        size_t elements = out.elements()*2;\
-        kernel::normalDistributionMT<TR>(\
-              outPtr, elements,\
-              state.get(), pos.get(),\
-              sh1.get(), sh2.get(),\
-              mask, recursion_table.get(),\
-              temper_table.get());\
-        return out;\
-    }\
+#define COMPLEX_NORMAL_DISTRIBUTION(T, TR)                                                                                  \
+    template<>                                                                                                              \
+    Array<T> normalDistribution<T>(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter)      \
+    {                                                                                                                       \
+        Array<T> out = createEmptyArray<T>(dims);                                                                           \
+        TR *outPtr = (TR*)out.get();                                                                                        \
+        size_t elements = out.elements()*2;                                                                                 \
+        kernel::normalDistributionCBRNG<TR>(outPtr, elements, type, seed, counter);                                         \
+        return out;                                                                                                         \
+    }                                                                                                                       \
+    template<>                                                                                                              \
+    Array<T> normalDistribution<T>(const af::dim4 &dims,                                                                    \
+            Array<uint> pos, Array<uint> sh1, Array<uint> sh2, uint mask,                                                   \
+            Array<uint> recursion_table, Array<uint> temper_table, Array<uint> state)                                       \
+    {                                                                                                                       \
+        Array<T> out = createEmptyArray<T>(dims);                                                                           \
+        TR *outPtr = (TR*)out.get();                                                                                        \
+        size_t elements = out.elements()*2;                                                                                 \
+        kernel::normalDistributionMT<TR>(                                                                                   \
+              outPtr, elements,                                                                                             \
+              state.get(), pos.get(),                                                                                       \
+              sh1.get(), sh2.get(),                                                                                         \
+              mask, recursion_table.get(),                                                                                  \
+              temper_table.get());                                                                                          \
+        return out;                                                                                                         \
+    }                                                                                                                       \
 
     INSTANTIATE_UNIFORM(float )
     INSTANTIATE_UNIFORM(double)

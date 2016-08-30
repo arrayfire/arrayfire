@@ -79,7 +79,7 @@ namespace kernel
         }
     }
 
-    static inline __device__ uint recursion(uint const * const recursion_table,
+    static inline __device__ uint recursion(const uint * const recursion_table,
             const uint mask, const uint sh1, const uint sh2,
             const uint x1, const uint x2, uint y)
     {

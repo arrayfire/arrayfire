@@ -45,6 +45,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *********************************************************/
 
+//Utils
+//Source of these constants :
+//github.com/DEShawResearch/Random123-Boost/blob/master/boost/random/philox.hpp
+
 #define m4x32_0 0xD2511F53
 #define m4x32_1 0xCD9E8D57
 #define w32_0 0x9E3779B9

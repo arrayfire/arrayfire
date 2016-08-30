@@ -45,6 +45,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *********************************************************/
 
+//Utils
+//Source of these constants :
+//github.com/DEShawResearch/Random123-Boost/blob/master/boost/random/threefry.hpp
+
 #define SKEIN_KS_PARITY 0x1BD11BDA
 
 #define R0 13

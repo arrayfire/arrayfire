@@ -428,12 +428,12 @@ namespace kernel
     template <typename T>
     __global__ void uniformMersenne(T * const out,
             uint * const gState,
-            uint const * const pos_tbl,
-            uint const * const sh1_tbl,
-            uint const * const sh2_tbl,
+            const uint * const pos_tbl,
+            const uint * const sh1_tbl,
+            const uint * const sh2_tbl,
             uint mask,
-            uint const * const g_recursion_table,
-            uint const * const g_temper_table,
+            const uint * const g_recursion_table,
+            const uint * const g_temper_table,
             uint elementsPerBlock, size_t elements)
     {
         __shared__ uint state[STATE_SIZE];
@@ -524,12 +524,12 @@ namespace kernel
     template <typename T>
     __global__ void normalMersenne(T * const out,
             uint * const gState,
-            uint const * const pos_tbl,
-            uint const * const sh1_tbl,
-            uint const * const sh2_tbl,
+            const uint * const pos_tbl,
+            const uint * const sh1_tbl,
+            const uint * const sh2_tbl,
             uint mask,
-            uint const * const g_recursion_table,
-            uint const * const g_temper_table,
+            const uint * const g_recursion_table,
+            const uint * const g_temper_table,
             uint elementsPerBlock, uint elements)
     {
 
@@ -586,12 +586,12 @@ namespace kernel
     template <typename T>
     void uniformDistributionMT(T* out, size_t elements,
             uint * const state,
-            uint const * const pos,
-            uint const * const sh1,
-            uint const * const sh2,
+            const uint * const pos,
+            const uint * const sh1,
+            const uint * const sh2,
             uint mask,
-            uint const * const recursion_table,
-            uint const * const temper_table)
+            const uint * const recursion_table,
+            const uint * const temper_table)
     {
         int threads = THREADS;
         int min_elements_per_block = 32*threads*4*sizeof(uint)/sizeof(T);
@@ -604,12 +604,12 @@ namespace kernel
     template <typename T>
     void normalDistributionMT(T* out, size_t elements,
             uint * const state,
-            uint const * const pos,
-            uint const * const sh1,
-            uint const * const sh2,
+            const uint * const pos,
+            const uint * const sh1,
+            const uint * const sh2,
             uint mask,
-            uint const * const recursion_table,
-            uint const * const temper_table)
+            const uint * const recursion_table,
+            const uint * const temper_table)
     {
         int threads = THREADS;
         int min_elements_per_block = 32*threads*4*sizeof(uint)/sizeof(T);
@@ -628,10 +628,10 @@ namespace kernel
         uint hi = seed>>32;
         uint lo = seed;
         switch (type) {
-        case AF_RANDOM_PHILOX_4X32_10   : CUDA_LAUNCH(uniformPhilox, blocks, threads,
-                out, hi, lo, counter, elementsPerBlock, elements); break;
-        case AF_RANDOM_THREEFRY_2X32_16 : CUDA_LAUNCH(uniformThreefry, blocks, threads,
-                out, hi, lo, counter, elementsPerBlock, elements); break;
+        case AF_RANDOM_PHILOX_4X32_10   :
+            CUDA_LAUNCH(uniformPhilox, blocks, threads, out, hi, lo, counter, elementsPerBlock, elements); break;
+        case AF_RANDOM_THREEFRY_2X32_16 :
+            CUDA_LAUNCH(uniformThreefry, blocks, threads, out, hi, lo, counter, elementsPerBlock, elements); break;
         default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
         counter += elements;
@@ -646,10 +646,10 @@ namespace kernel
         uint hi = seed>>32;
         uint lo = seed;
         switch (type) {
-        case AF_RANDOM_PHILOX_4X32_10   : CUDA_LAUNCH(normalPhilox, blocks, threads,
-                out, hi, lo, counter, elementsPerBlock, elements); break;
-        case AF_RANDOM_THREEFRY_2X32_16 : CUDA_LAUNCH(normalThreefry, blocks, threads,
-                out, hi, lo, counter, elementsPerBlock, elements); break;
+        case AF_RANDOM_PHILOX_4X32_10   :
+            CUDA_LAUNCH(normalPhilox, blocks, threads, out, hi, lo, counter, elementsPerBlock, elements); break;
+        case AF_RANDOM_THREEFRY_2X32_16 :
+            CUDA_LAUNCH(normalThreefry, blocks, threads, out, hi, lo, counter, elementsPerBlock, elements); break;
         default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
         counter += elements;
