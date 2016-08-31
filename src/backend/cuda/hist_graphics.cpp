@@ -43,7 +43,7 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
     } else {
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, hist->vertices());
-        GLubyte* ptr = (GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
+        gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
         if (ptr) {
             CUDA_CHECK(cudaMemcpy(ptr, data.get(), hist->verticesSize(), cudaMemcpyDeviceToHost));
             glUnmapBuffer((gl::GLenum)GL_ARRAY_BUFFER);

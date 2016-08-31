@@ -48,7 +48,7 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
     } else {
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, plot->vertices());
-        GLubyte* ptr = (GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
+        gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
         if (ptr) {
             CUDA_CHECK(cudaMemcpy(ptr, P.get(), plot->verticesSize(), cudaMemcpyDeviceToHost));
             glUnmapBuffer((gl::GLenum)GL_ARRAY_BUFFER);

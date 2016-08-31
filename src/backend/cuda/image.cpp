@@ -48,7 +48,7 @@ void copy_image(const Array<T> &in, const forge::Image* image)
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, image->pbo());
         glBufferData((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, image->size(), 0, (gl::GLenum)GL_STREAM_DRAW);
-        GLubyte* ptr = (GLubyte*)glMapBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
+        gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
         if (ptr) {
             CUDA_CHECK(cudaMemcpy(ptr, in.get(), image->size(), cudaMemcpyDeviceToHost));
             glUnmapBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER);

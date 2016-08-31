@@ -48,7 +48,7 @@ void copy_surface(const Array<T> &P, forge::Surface* surface)
     } else {
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, surface->vertices());
-        GLubyte* ptr = (GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
+        gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
         if (ptr) {
             CUDA_CHECK(cudaMemcpy(ptr, P.get(), surface->verticesSize(), cudaMemcpyDeviceToHost));
             glUnmapBuffer((gl::GLenum)GL_ARRAY_BUFFER);
