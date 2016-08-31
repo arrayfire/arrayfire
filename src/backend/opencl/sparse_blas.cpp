@@ -10,6 +10,7 @@
 #include <sparse_blas.hpp>
 #include <kernel/csrmv.hpp>
 #include <kernel/csrmm.hpp>
+#include <kernel/cscmv.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -33,10 +34,6 @@ template<typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhsIn,
                 af_mat_prop optLhs, af_mat_prop optRhs)
 {
-
-    if (optLhs != AF_MAT_NONE) OPENCL_NOT_SUPPORTED();
-
-
     int lRowDim = (optLhs == AF_MAT_NONE) ? 0 : 1;
     //int lColDim = (optLhs == AF_MAT_NONE) ? 1 : 0;
     static const int rColDim = 1; //Unsupported : (optRhs == AF_MAT_NONE) ? 1 : 0;
@@ -57,10 +54,19 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhsIn,
     const Array<int> &rowIdx = lhs.getRowIdx();
     const Array<int> &colIdx = lhs.getColIdx();
 
-    if (N == 1) {
-        kernel::csrmv(out, values, rowIdx, colIdx, rhs, alpha, beta);
+    if (optLhs == AF_MAT_NONE) {
+        if (N == 1) {
+            kernel::csrmv(out, values, rowIdx, colIdx, rhs, alpha, beta);
+        } else {
+            kernel::csrmm_nt(out, values, rowIdx, colIdx, rhs, alpha, beta);
+        }
     } else {
-        kernel::csrmm_nt(out, values, rowIdx, colIdx, rhs, alpha, beta);
+        // CSR transpose is a CSC matrix
+        if (N == 1) {
+            kernel::cscmv(out, values, rowIdx, colIdx, rhs, alpha, beta, optLhs == AF_MAT_CTRANS);
+        } else {
+            //kernel::csrmm_nt(out, values, rowIdx, colIdx, rhs, alpha, beta);
+        }
     }
     return out;
 }
