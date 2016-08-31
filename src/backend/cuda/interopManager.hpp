@@ -12,6 +12,10 @@
 
 #if defined(WITH_GRAPHICS)
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 // cuda_gl_interop.h does not include OpenGL headers for ARM
 #include <glbinding/gl/gl.h>
 #include <glbinding/Binding.h>
