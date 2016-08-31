@@ -22,9 +22,6 @@ using namespace gl;
 template<typename T>
 void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
 {
-    // Make sure to do this
-    glbinding::Binding::useCurrentContext();
-
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = data.get();

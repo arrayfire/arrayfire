@@ -118,7 +118,7 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
         }
 
         forge::Window* window = reinterpret_cast<forge::Window*>(wind);
-        window->makeCurrent();
+        makeContextCurrent(window);
         forge::Surface* surface = NULL;
 
         switch(Xtype) {

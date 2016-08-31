@@ -32,6 +32,9 @@ gl::GLenum glForceErrorCheck(const char *msg, const char* file, int line);
 #define CheckGLSkip(msg)  glErrorSkip      (msg, __AF_FILENAME__, __LINE__)
 
 forge::MarkerType getFGMarker(const af_marker_type af_marker);
+
+void makeContextCurrent(forge::Window *window);
+
 namespace graphics
 {
 

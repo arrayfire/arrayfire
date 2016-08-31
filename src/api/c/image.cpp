@@ -92,7 +92,7 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
         DIM_ASSERT(0, in_dims[3] == 1);
 
         forge::Window* window = reinterpret_cast<forge::Window*>(wind);
-        window->makeCurrent();
+        makeContextCurrent(window);
         forge::Image* image = NULL;
 
         switch(type) {

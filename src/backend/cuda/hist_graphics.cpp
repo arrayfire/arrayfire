@@ -41,9 +41,6 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
 
         POST_LAUNCH_CHECK();
     } else {
-        // Make sure to do this
-        glbinding::Binding::useCurrentContext();
-
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, hist->vertices());
         GLubyte* ptr = (GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);

@@ -108,6 +108,13 @@ size_t getTypeSize(GLenum type)
     }
 }
 
+void makeContextCurrent(forge::Window *window)
+{
+    window->makeCurrent();
+    glbinding::Binding::useCurrentContext();
+    CheckGL("End makeContextCurrent");
+}
+
 namespace graphics
 {
 
@@ -153,7 +160,7 @@ forge::Window* ForgeManager::getMainWindow(const bool dontCreate)
     if(noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
         if (flag && !dontCreate) {
             wnd = new forge::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
-            wnd->makeCurrent();
+            makeContextCurrent(wnd);
             CheckGL("End ForgeManager::getMainWindow");
             flag = false;
         };

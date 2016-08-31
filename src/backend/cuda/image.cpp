@@ -45,9 +45,6 @@ void copy_image(const Array<T> &in, const forge::Image* image)
         POST_LAUNCH_CHECK();
         CheckGL("After cuda resource copy");
     } else {
-        // Make sure to do this
-        glbinding::Binding::useCurrentContext();
-
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, image->pbo());
         glBufferData((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, image->size(), 0, (gl::GLenum)GL_STREAM_DRAW);

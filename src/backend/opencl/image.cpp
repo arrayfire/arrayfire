@@ -24,9 +24,6 @@ using namespace gl;
 template<typename T>
 void copy_image(const Array<T> &in, const forge::Image* image)
 {
-    // Make sure to do this
-    glbinding::Binding::useCurrentContext();
-
     if (isGLSharingSupported()) {
         CheckGL("Begin opencl resource copy");
         InteropManager& intrpMngr = InteropManager::getInstance();

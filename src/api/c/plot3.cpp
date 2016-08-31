@@ -78,7 +78,7 @@ af_err plot3Wrapper(const af_window wind, const af_array P, const af_cell* const
         af_dtype Ptype  = Pinfo.getType();
 
         forge::Window* window = reinterpret_cast<forge::Window*>(wind);
-        window->makeCurrent();
+        makeContextCurrent(window);
         forge::Plot* plot3 = NULL;
 
         switch(Ptype) {

@@ -27,9 +27,6 @@ using namespace gl;
 template<typename T>
 void copy_plot(const Array<T> &P, forge::Plot* plot)
 {
-    // Make sure to do this
-    glbinding::Binding::useCurrentContext();
-
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = P.get();

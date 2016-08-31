@@ -86,7 +86,7 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, con
         TYPE_ASSERT(Xtype == Ytype);
 
         forge::Window* window = reinterpret_cast<forge::Window*>(wind);
-        window->makeCurrent();
+        makeContextCurrent(window);
         forge::Plot* plot = NULL;
 
         switch(Xtype) {

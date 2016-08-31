@@ -28,9 +28,6 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
     P.eval();
     getQueue().sync();
 
-    // Make sure to do this
-    glbinding::Binding::useCurrentContext();
-
     CheckGL("Before CopyArrayToVBO");
 
     glBindBuffer(GL_ARRAY_BUFFER, plot->vertices());

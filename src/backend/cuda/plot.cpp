@@ -46,9 +46,6 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
 
         POST_LAUNCH_CHECK();
     } else {
-        // Make sure to do this
-        glbinding::Binding::useCurrentContext();
-
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, plot->vertices());
         GLubyte* ptr = (GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);

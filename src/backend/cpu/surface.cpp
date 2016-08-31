@@ -28,9 +28,6 @@ void copy_surface(const Array<T> &P, forge::Surface* surface)
     P.eval();
     getQueue().sync();
 
-    // Make sure to do this
-    glbinding::Binding::useCurrentContext();
-
     CheckGL("Before CopyArrayToVBO");
 
     glBindBuffer(GL_ARRAY_BUFFER, surface->vertices());

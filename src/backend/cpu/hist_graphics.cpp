@@ -24,9 +24,6 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
     data.eval();
     getQueue().sync();
 
-    // Make sure to do this
-    glbinding::Binding::useCurrentContext();
-
     CheckGL("Begin copy_histogram");
 
     glBindBuffer(GL_ARRAY_BUFFER, hist->vertices());

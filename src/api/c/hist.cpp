@@ -64,7 +64,7 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
         ARG_ASSERT(0, Xinfo.isVector());
 
         forge::Window* window = reinterpret_cast<forge::Window*>(wind);
-        window->makeCurrent();
+        makeContextCurrent(window);
         forge::Histogram* hist = NULL;
 
         switch(Xtype) {
