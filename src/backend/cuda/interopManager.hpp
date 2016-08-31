@@ -13,10 +13,13 @@
 #if defined(WITH_GRAPHICS)
 
 // cuda_gl_interop.h does not include OpenGL headers for ARM
-//#if defined(__arm__) || defined (__aarch64__)
 #include <glbinding/gl/gl.h>
 #include <glbinding/Binding.h>
-//#endif
+
+#if defined(__arm__) || defined(__aarch64__)
+using namespace gl;
+#define GL_VERSION gl::GL_VERSION
+#endif
 
 #include <platform.hpp>
 #include <graphics_common.hpp>
