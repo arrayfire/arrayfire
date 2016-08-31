@@ -102,14 +102,13 @@ namespace opencl
                 auto csrmm_nt_kernel = entry.ker[0];
                 auto csrmm_nt_func = KernelFunctor<Buffer,
                                                    Buffer, Buffer, Buffer,
-                                                   int, int, int,
+                                                   int, int,
                                                    Buffer, KParam, T, T, Buffer>(csrmm_nt_kernel);
                 NDRange local(THREADS_PER_GROUP, 1);
                 int M = rowIdx.info.dims[0] - 1;
-                int N = rhs.info.dims[1];
-                int K = rhs.info.dims[0];
+                int N = rhs.info.dims[0];
 
-                int groups_x = divup(K, local[0]);
+                int groups_x = divup(N, local[0]);
                 int groups_y = divup(M, REPEAT);
                 groups_y = std::min(groups_y, MAX_CSRMM_GROUPS);
                 NDRange global(local[0] * groups_x, local[1] * groups_y);
@@ -123,7 +122,7 @@ namespace opencl
 
                 csrmm_nt_func(EnqueueArgs(getQueue(), global, local),
                               *out.data, *values.data, *rowIdx.data, *colIdx.data,
-                              M, N, K, *rhs.data, rhs.info, alpha, beta, *counter);
+                              M, N, *rhs.data, rhs.info, alpha, beta, *counter);
 
                 bufferFree(counter);
             } catch (cl::Error &ex) {
