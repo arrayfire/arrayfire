@@ -15,13 +15,14 @@
 #include <platform.hpp>
 #include <util.hpp>
 
+#include <glbinding/gl/gl.h>
 #include <glbinding/Meta.h>
 
 using namespace std;
 using namespace gl;
 
 template<typename T>
-GLenum getGLType() { return GL_FLOAT; }
+gl::GLenum getGLType() { return GL_FLOAT; }
 
 forge::MarkerType getFGMarker(const af_marker_type af_marker) {
     forge::MarkerType fg_marker;
@@ -50,10 +51,10 @@ INSTANTIATE_GET_FG_TYPE(unsigned char, forge::u8);
 INSTANTIATE_GET_FG_TYPE(unsigned short, forge::u16);
 INSTANTIATE_GET_FG_TYPE(short, forge::s16);
 
-GLenum glErrorSkip(const char *msg, const char* file, int line)
+gl::GLenum glErrorSkip(const char *msg, const char* file, int line)
 {
 #ifndef NDEBUG
-    GLenum x = glGetError();
+    gl::GLenum x = glGetError();
     if (x != GL_NO_ERROR) {
         char buf[1024];
         sprintf(buf, "GL Error Skipped at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, (int)x, glbinding::Meta::getString(x).c_str());
@@ -61,15 +62,15 @@ GLenum glErrorSkip(const char *msg, const char* file, int line)
     }
     return x;
 #else
-    return (GLenum)0;
+    return (gl::GLenum)0;
 #endif
 }
 
-GLenum glErrorCheck(const char *msg, const char* file, int line)
+gl::GLenum glErrorCheck(const char *msg, const char* file, int line)
 {
 // Skipped in release mode
 #ifndef NDEBUG
-    GLenum x = glGetError();
+    gl::GLenum x = glGetError();
 
     if (x != GL_NO_ERROR) {
         char buf[1024];
@@ -78,13 +79,13 @@ GLenum glErrorCheck(const char *msg, const char* file, int line)
     }
     return x;
 #else
-    return (GLenum)0;
+    return (gl::GLenum)0;
 #endif
 }
 
-GLenum glForceErrorCheck(const char *msg, const char* file, int line)
+gl::GLenum glForceErrorCheck(const char *msg, const char* file, int line)
 {
-    GLenum x = glGetError();
+    gl::GLenum x = glGetError();
 
     if (x != GL_NO_ERROR) {
         char buf[1024];
@@ -94,7 +95,7 @@ GLenum glForceErrorCheck(const char *msg, const char* file, int line)
     return x;
 }
 
-size_t getTypeSize(GLenum type)
+size_t getTypeSize(gl::GLenum type)
 {
     switch(type) {
         case GL_FLOAT:          return sizeof(float);
