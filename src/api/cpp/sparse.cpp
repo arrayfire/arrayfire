@@ -82,10 +82,10 @@ namespace af
         return array(out);
     }
 
-    dim_t sparseGetNumNonZero(const array in)
+    dim_t sparseGetNNZ(const array in)
     {
         dim_t out = 0;
-        AF_THROW(af_sparse_get_num_nonzero(&out, in.get()));
+        AF_THROW(af_sparse_get_nnz(&out, in.get()));
         return out;
     }
 

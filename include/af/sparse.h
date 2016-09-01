@@ -37,7 +37,7 @@ namespace af
 
     AFAPI array sparseGetColIdx(const array in);
 
-    AFAPI dim_t sparseGetNumNonZero(const array in);
+    AFAPI dim_t sparseGetNNZ(const array in);
 
     AFAPI af::storage sparseGetStorage(const array in);
 }
@@ -76,7 +76,7 @@ extern "C" {
 
     AFAPI af_err af_sparse_get_col_idx(af_array *out, const af_array in);
 
-    AFAPI af_err af_sparse_get_num_nonzero(dim_t *out, const af_array in);
+    AFAPI af_err af_sparse_get_nnz(dim_t *out, const af_array in);
 
     AFAPI af_err af_sparse_get_storage(af_storage *out, const af_array in);
 

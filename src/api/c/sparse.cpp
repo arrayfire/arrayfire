@@ -388,7 +388,7 @@ af_err af_sparse_get_col_idx(af_array *out, const af_array in)
     return AF_SUCCESS;
 }
 
-af_err af_sparse_get_num_nonzero(dim_t *out, const af_array in)
+af_err af_sparse_get_nnz(dim_t *out, const af_array in)
 {
     try {
         const SparseArrayBase base = getSparseArrayBase(in);
