@@ -50,14 +50,16 @@ namespace af
         return array(out);
     }
 
-    void sparseGetArrays(array &values, array &rowIdx, array &colIdx,
-                         const array in)
+    void sparseGetInfo(array &values, array &rowIdx, array &colIdx, storage &stype,
+                       const array in)
     {
         af_array values_ = 0, rowIdx_ = 0, colIdx_ = 0;
-        AF_THROW(af_sparse_get_arrays(&values_, &rowIdx_, &colIdx_, in.get()));
+        af_storage stype_ = AF_STORAGE_DENSE;
+        AF_THROW(af_sparse_get_info(&values_, &rowIdx_, &colIdx_, &stype_, in.get()));
         values = array(values_);
         rowIdx = array(rowIdx_);
         colIdx = array(colIdx_);
+        stype  = stype_;
         return;
     }
 

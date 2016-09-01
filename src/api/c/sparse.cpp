@@ -337,13 +337,14 @@ af_array getSparseValues(const af_array in)
     return getHandle(getSparseArray<T>(in).getValues());
 }
 
-af_err af_sparse_get_arrays(af_array *values, af_array *rows, af_array *cols,
-                      const af_array in)
+af_err af_sparse_get_info(af_array *values, af_array *rows, af_array *cols, af_storage *stype,
+                          const af_array in)
 {
     try {
         if(values != NULL) AF_CHECK(af_sparse_get_values(values, in));
-        if(rows   != NULL) AF_CHECK(af_sparse_get_row_idx(rows  , in));
-        if(cols   != NULL) AF_CHECK(af_sparse_get_col_idx(cols  , in));
+        if(rows   != NULL) AF_CHECK(af_sparse_get_row_idx(rows , in));
+        if(cols   != NULL) AF_CHECK(af_sparse_get_col_idx(cols , in));
+        if(stype  != NULL) AF_CHECK(af_sparse_get_storage(stype, in));
     }
     CATCHALL;
 

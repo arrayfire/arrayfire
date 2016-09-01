@@ -46,10 +46,11 @@ af_err af_sparse_convert_storage(af_array *out, const af_array in,
     return CALL(out, in, destStorage);
 }
 
-af_err af_sparse_get_arrays(af_array *values, af_array *rowIdx, af_array *colIdx, const af_array in)
+af_err af_sparse_get_info(af_array *values, af_array *rowIdx, af_array *colIdx, af_storage *stype,
+                          const af_array in)
 {
     CHECK_ARRAYS(in);
-    return CALL(values, rowIdx, colIdx, in);
+    return CALL(values, rowIdx, colIdx, stype, in);
 }
 
 af_err af_sparse_get_values(af_array *out, const af_array in)

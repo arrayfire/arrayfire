@@ -29,7 +29,8 @@ namespace af
 
     AFAPI array sparseConvertStorage(const array in, const af::storage stype);
 
-    AFAPI void sparseGetArrays(array &values, array &rowIdx, array &colIdx, const array in);
+    AFAPI void sparseGetInfo(array &values, array &rowIdx, array &colIdx, af::storage &stype,
+                             const array in);
 
     AFAPI array sparseGetValues(const array in);
 
@@ -68,7 +69,8 @@ extern "C" {
     AFAPI af_err af_sparse_convert_storage(af_array *out, const af_array in,
                                            const af_storage destStorage);
 
-    AFAPI af_err af_sparse_get_arrays(af_array *values, af_array *rowIdx, af_array *colIdx, const af_array in);
+    AFAPI af_err af_sparse_get_info(af_array *values, af_array *rowIdx, af_array *colIdx, af_storage *stype,
+                                    const af_array in);
 
     AFAPI af_err af_sparse_get_values(af_array *out, const af_array in);
 
