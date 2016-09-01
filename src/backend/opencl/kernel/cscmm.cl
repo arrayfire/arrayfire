@@ -54,8 +54,8 @@ int binary_search(__global const int *ptr, int len, int val)
     return start;
 }
 
-// Each thread performs Matrix Vector multiplications for ROWS_PER_GROUP rows and (K / THREAD) columns.
-// This generates a local output buffer of size ROWS_PER_THREAD for each thread.
+// Each group computes an output of size ROWS_PER_GROUP x COLS_PER_GROUP
+// Each thread in a group maintains the partial outputs of size ROWS_PER_GROUP x COLS_PER_GROUP
 // The outputs from each thread are added up to generate the final result.
 __kernel void
 cscmm_nn(__global T *output,
@@ -83,6 +83,7 @@ cscmm_nn(__global T *output,
     rhs += colOff * rinfo.strides[1] + rinfo.offset;
     output += colOff * M;
 
+    // Initialize partial output to 0
     T l_outvals[COLS_PER_GROUP][ROWS_PER_GROUP];
     for (int j = 0; j < colLim; j++) {
         for (int i = 0; i < rowLim; i++) {
@@ -90,6 +91,7 @@ cscmm_nn(__global T *output,
         }
     }
 
+    // Dot requires you to traverse the entire inner dimension
     for (int colId = lid; colId < K; colId += THREADS) {
 
         int rowStart = colidx[colId];
@@ -99,17 +101,20 @@ cscmm_nn(__global T *output,
         // Find the location of the next non zero element after rowOff
         int rowPos   = binary_search(rowidx + rowStart, nonZeroCount, rowOff);
 
+        // Read the rhs values from all the columns as they can be reused for all rows
         T rhsvals[COLS_PER_GROUP];
         for (int j = 0; j < colLim; j++) {
             rhsvals[j] = rhs[colId + j * rinfo.strides[1]];
         }
 
+        // Traversing through nonzero elements in the current chunk
         for (int id =  rowPos + rowStart; id < rowEnd; id++) {
             int rowId = rowidx[id];
 
-            // This work will be done by next few blocks
+            // Exit if going past current chunk
             if (rowId >= rowOff + ROWS_PER_GROUP) break;
 
+            // Read the row value and multiply with all columns
             T lhsval = values[id];
             for (int j = 0; j < colLim; j++) {
                 l_outvals[j][rowId - rowOff] += CMUL(lhsval, rhsvals[j]);
@@ -118,16 +123,22 @@ cscmm_nn(__global T *output,
     }
 
     __local T s_outvals[THREADS];
+
+    // For each row and col of output, copy registers to local memory, add results, write to output.
     for (int j = 0; j < colLim; j++) {
         for (int i = 0; i < rowLim; i++) {
+
+            // Copying to local memory
             s_outvals[lid] = l_outvals[j][i];
             barrier(CLK_LOCAL_MEM_FENCE);
 
+            // Adding the results through reduction
             for (int n = THREADS / 2; n > 0; n /= 2) {
                 if (lid < n) s_outvals[lid] += s_outvals[lid + n];
                 barrier(CLK_LOCAL_MEM_FENCE);
             }
 
+            // Writing to output
             if (lid == 0) {
                 T outval = s_outvals[0];
 

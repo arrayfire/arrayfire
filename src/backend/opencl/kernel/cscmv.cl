@@ -91,10 +91,11 @@ cscmv_block(__global T *output,
         int rowPos   = binary_search(rowidx + rowStart, nonZeroCount, rowOff);
         T rhsval = rhs[colId];
 
+        // Traversing through nonzero elements in the current chunk
         for (int id =  rowPos + rowStart; id < rowEnd; id++) {
             int rowId = rowidx[id];
 
-            // This work will be done by next few blocks
+            // Exit if moving past current chunk
             if (rowId >= rowOff + ROWS_PER_GROUP) break;
 
             l_outvals[rowId - rowOff] += CMUL(values[id], rhsval);
@@ -107,22 +108,27 @@ cscmv_block(__global T *output,
     // s_output is used to store the final output into local memory
     __local T s_output[ROWS_PER_GROUP];
 
+    // For each row of output, copy registers to local memory, add results, write to output.
     for (int i = 0; i < rowLim; i++) {
+
+        // Copying to local memory
         s_outvals[lid] = l_outvals[i];
         barrier(CLK_LOCAL_MEM_FENCE);
 
+        // Adding the results through reduction
         for (int n = THREADS / 2; n > 0; n /= 2) {
             if (lid < n) s_outvals[lid] += s_outvals[lid + n];
             barrier(CLK_LOCAL_MEM_FENCE);
         }
 
+        // Store to another local buffer so it can be written in a coalesced manner later
         if (lid == 0) {
             s_output[i] = s_outvals[0];
         }
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    // s_output is used to write global output in coalesced manner
+    // For each row in output, write output in coalesced manner
     for (int i = lid; i < ROWS_PER_GROUP; i += THREADS) {
         T outval = s_output[i];
 
