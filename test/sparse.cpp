@@ -89,7 +89,7 @@ void sparseTester(const int m, const int n, const int k, int factor, double eps)
     af::array dRes1 = matmul(A, B);
 
     // Create Sparse Array From Dense
-    af::array sA = af::createSparseArray(A, AF_STORAGE_CSR);
+    af::array sA = af::sparse(A, AF_STORAGE_CSR);
 
     // Sparse Matmul
     af::array sRes1 = matmul(sA, B);
@@ -121,7 +121,7 @@ void sparseTransposeTester(const int m, const int n, const int k, int factor, do
     af::array dRes3 = matmul(A, B, AF_MAT_CTRANS, AF_MAT_NONE);
 
     // Create Sparse Array From Dense
-    af::array sA = af::createSparseArray(A, AF_STORAGE_CSR);
+    af::array sA = af::sparse(A, AF_STORAGE_CSR);
 
     // Sparse Matmul
     af::array sRes2 = matmul(sA, B, AF_MAT_TRANS, AF_MAT_NONE);
@@ -146,7 +146,7 @@ void convertCSR(const int M, const int N, const float ratio)
 #endif
     a = a * (a > ratio);
 
-    af::array s = af::createSparseArray(a, AF_STORAGE_CSR);
+    af::array s = af::sparse(a, AF_STORAGE_CSR);
     af::array aa = af::sparseConvertStorage(s, AF_STORAGE_DENSE);
 
     ASSERT_EQ(0, af::max<double>(af::abs(a - aa)));

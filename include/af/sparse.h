@@ -15,17 +15,17 @@ namespace af
 {
     class array;
 
-    AFAPI array createSparseArray(const dim_t nRows, const dim_t nCols,
-                                  const array values, const array rowIdx, const array colIdx,
-                                  const af::storage stype = AF_STORAGE_CSR);
+    AFAPI array sparse(const dim_t nRows, const dim_t nCols,
+                       const array values, const array rowIdx, const array colIdx,
+                       const af::storage stype = AF_STORAGE_CSR);
 
-    AFAPI array createSparseArray(const dim_t nRows, const dim_t nCols, const dim_t nNZ,
-                                  const void* const values,
-                                  const int * const rowIdx, const int * const colIdx,
-                                  const dtype type = f32, const af::storage stype = AF_STORAGE_CSR,
-                                  const af::source src = afHost);
+    AFAPI array sparse(const dim_t nRows, const dim_t nCols, const dim_t nNZ,
+                       const void* const values,
+                       const int * const rowIdx, const int * const colIdx,
+                       const dtype type = f32, const af::storage stype = AF_STORAGE_CSR,
+                       const af::source src = afHost);
 
-    AFAPI array createSparseArray(const array dense, const af::storage stype = AF_STORAGE_CSR);
+    AFAPI array sparse(const array dense, const af::storage stype = AF_STORAGE_CSR);
 
     AFAPI array sparseConvertStorage(const array in, const af::storage stype);
 

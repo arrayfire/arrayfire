@@ -13,9 +13,9 @@
 
 namespace af
 {
-    array createSparseArray(const dim_t nRows, const dim_t nCols,
-                            const array values, const array rowIdx, const array colIdx,
-                            const af::storage stype)
+    array sparse(const dim_t nRows, const dim_t nCols,
+                 const array values, const array rowIdx, const array colIdx,
+                 const af::storage stype)
     {
         af_array out = 0;
         AF_THROW(af_create_sparse_array(&out, nRows, nCols,
@@ -23,11 +23,11 @@ namespace af
         return array(out);
     }
 
-    array createSparseArray(const dim_t nRows, const dim_t nCols, const dim_t nNZ,
-                            const void * const values,
-                            const int * const rowIdx, const int * const colIdx,
-                            const dtype type, const af::storage stype,
-                            const af::source src)
+    array sparse(const dim_t nRows, const dim_t nCols, const dim_t nNZ,
+                 const void * const values,
+                 const int * const rowIdx, const int * const colIdx,
+                 const dtype type, const af::storage stype,
+                 const af::source src)
     {
         af_array out = 0;
         AF_THROW(af_create_sparse_array_from_ptr(&out, nRows, nCols, nNZ,
@@ -36,7 +36,7 @@ namespace af
     }
 
 
-    array createSparseArray(const array dense, const af::storage stype)
+    array sparse(const array dense, const af::storage stype)
     {
         af_array out = 0;
         AF_THROW(af_create_sparse_array_from_dense(&out, dense.get(), stype));
