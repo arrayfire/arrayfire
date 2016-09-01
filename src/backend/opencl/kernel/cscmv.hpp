@@ -48,11 +48,8 @@ namespace opencl
                 bool use_beta = (beta != scalar<T>(0.0));
 
                 int threads = 256;
-                auto dev = getDevice(getActiveDeviceId());
-                // Artificially limiting it to 32768 because some NVIDIA GPUs complain
-                // when we use all the available local memory
-                int  max_local_size= std::min(32768, (int)dev.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>());
-                int rows_per_group = max_local_size / (threads * sizeof(T));
+                //TODO: rows_per_group limited by register pressure. Find better way to handle this.
+                int rows_per_group = 64;
 
                 std::string ref_name =
                     std::string("cscmv_") +

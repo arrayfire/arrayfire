@@ -37,7 +37,7 @@ T __ccmul(T lhs, T rhs)
 #define CMUL(a, b) (a) * (b)
 #endif
 
-int binary_search(__global int *ptr, int len, int val)
+int binary_search(__global const int *ptr, int len, int val)
 {
     int start = 0;
     int end   = len;
@@ -70,16 +70,16 @@ cscmv_block(__global T *output,
             const T beta)
 {
     int lid = get_local_id(0);
-    int loff = lid * ROWS_PER_GROUP;
-    __local T s_outvals[THREADS * ROWS_PER_GROUP];
 
     // Get the row offset for the current group in the uncompressed matrix
     int rowOff = get_group_id(0) * ROWS_PER_GROUP;
+    int rowLim = min(ROWS_PER_GROUP, M - rowOff);
+    rhs += rinfo.offset;
 
-    for (int i = 0; i < ROWS_PER_GROUP; i++) {
-        s_outvals[loff + i] = 0;
+    T l_outvals[ROWS_PER_GROUP];
+    for (int i = 0; i < rowLim; i++) {
+        l_outvals[i] = 0;
     }
-    barrier(CLK_LOCAL_MEM_FENCE);
 
     for (int colId = lid; colId < K; colId += THREADS) {
 
@@ -97,29 +97,43 @@ cscmv_block(__global T *output,
             // This work will be done by next few blocks
             if (rowId >= rowOff + ROWS_PER_GROUP) break;
 
-            s_outvals[loff + rowId - rowOff] += CMUL(values[id], rhsval);
+            l_outvals[rowId - rowOff] += CMUL(values[id], rhsval);
         }
     }
 
+    // s_outvals is used for reduction
+    __local T s_outvals[THREADS];
+
+    // s_output is used to store the final output into local memory
+    __local T s_output[ROWS_PER_GROUP];
+
+    for (int i = 0; i < rowLim; i++) {
+        s_outvals[lid] = l_outvals[i];
+        barrier(CLK_LOCAL_MEM_FENCE);
+
+        for (int n = THREADS / 2; n > 0; n /= 2) {
+            if (lid < n) s_outvals[lid] += s_outvals[lid + n];
+            barrier(CLK_LOCAL_MEM_FENCE);
+        }
+
+        if (lid == 0) {
+            s_output[i] = s_outvals[0];
+        }
+    }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    // Each thread is adding up values from one row at a time.
-    for (int n = lid; n < ROWS_PER_GROUP; n += THREADS) {
-        if (rowOff + n >= M) break;
-        T outval = 0;
-        // Add up the partial results from all the threads.
-        for (int i = 0; i < THREADS; i++) {
-            outval += s_outvals[i * ROWS_PER_GROUP + n];
-        }
+    // s_output is used to write global output in coalesced manner
+    for (int i = lid; i < ROWS_PER_GROUP; i += THREADS) {
+        T outval = s_output[i];
 
 #if USE_ALPHA
         outval = MUL(alpha, outval);
 #endif
 
 #if USE_BETA
-        output[rowOff + n] = outval + MUL(beta, output[rowOff + n]);
+        output[rowOff + i] = outval + MUL(beta, output[j * M + rowOff + i]);
 #else
-        output[rowOff + n] = outval;
+        output[rowOff + i] = outval;
 #endif
     }
 }
