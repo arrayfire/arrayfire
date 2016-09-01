@@ -63,6 +63,11 @@ af::array makeSparse<cdouble>(af::array A, int factor)
     return A;
 }
 
+double calc_norm(af::array lhs, af::array rhs)
+{
+    return af::max<double>(af::abs(lhs - rhs) / (af::abs(lhs) + af::abs(rhs) + 1E-5));
+}
+
 template<typename T>
 void sparseTester(const int m, const int n, const int k, int factor, double eps)
 {
@@ -90,8 +95,8 @@ void sparseTester(const int m, const int n, const int k, int factor, double eps)
     af::array sRes1 = matmul(sA, B);
 
     // Verify Results
-    ASSERT_NEAR(0, af::sum<double>(af::abs(real(dRes1 - sRes1))) / (m * k), eps);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(dRes1 - sRes1))) / (m * k), eps);
+    ASSERT_NEAR(0, calc_norm(real(dRes1), real(sRes1)), eps);
+    ASSERT_NEAR(0, calc_norm(imag(dRes1), imag(sRes1)), eps);
 }
 
 template<typename T>
@@ -123,51 +128,51 @@ void sparseTransposeTester(const int m, const int n, const int k, int factor, do
     af::array sRes3 = matmul(sA, B, AF_MAT_CTRANS, AF_MAT_NONE);
 
     // Verify Results
-    ASSERT_NEAR(0, af::sum<double>(af::abs(real(dRes2 - sRes2))) / (n * k), eps);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(dRes2 - sRes2))) / (n * k), eps);
+    ASSERT_NEAR(0, calc_norm(real(dRes2), real(sRes2)), eps);
+    ASSERT_NEAR(0, calc_norm(imag(dRes2), imag(sRes2)), eps);
 
-    ASSERT_NEAR(0, af::sum<double>(af::abs(real(dRes3 - sRes3))) / (n * k), eps);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(dRes3 - sRes3))) / (n * k), eps);
+    ASSERT_NEAR(0, calc_norm(real(dRes3), real(sRes3)), eps);
+    ASSERT_NEAR(0, calc_norm(imag(dRes3), imag(sRes3)), eps);
 }
 
-#define SPARSE_TESTS(T, eps)                                    \
-    TEST(SPARSE, T##Square)                                     \
-    {                                                           \
-        sparseTester<T>(1000, 1000, 100, 5, eps);               \
-    }                                                           \
-    TEST(SPARSE, T##RectMultiple)                               \
-    {                                                           \
-        sparseTester<T>(2048, 1024, 512, 3, eps);               \
-    }                                                           \
-    TEST(SPARSE, T##RectDense)                                  \
-    {                                                           \
-        sparseTester<T>(500, 1000, 250, 1, eps);                \
-    }                                                           \
-    TEST(SPARSE, T##MatVec)                                     \
-    {                                                           \
-        sparseTester<T>(625, 1331, 1, 2, eps);                  \
-    }                                                           \
-    TEST(SPARSE_TRANSPOSE, T##Square)                           \
-    {                                                           \
-        sparseTransposeTester<T>(1000, 1000, 100, 5, eps);      \
-    }                                                           \
-    TEST(SPARSE_TRANSPOSE, T##RectMultiple)                     \
-    {                                                           \
-        sparseTransposeTester<T>(2048, 1024, 512, 3, eps);      \
-    }                                                           \
-    TEST(SPARSE_TRANSPOSE, T##RectDense)                        \
-    {                                                           \
-        sparseTransposeTester<T>(453, 751, 397, 1, eps);        \
-    }                                                           \
-    TEST(SPARSE_TRANSPOSE, T##MatVec)                           \
-    {                                                           \
-        sparseTransposeTester<T>(625, 1331, 1, 2, eps);         \
-    }                                                           \
+#define SPARSE_TESTS(T, eps)                                \
+    TEST(SPARSE, T##Square)                                 \
+    {                                                       \
+        sparseTester<T>(1000, 1000, 100, 5, eps);           \
+    }                                                       \
+    TEST(SPARSE, T##RectMultiple)                           \
+    {                                                       \
+        sparseTester<T>(2048, 1024, 512, 3, eps);           \
+    }                                                       \
+    TEST(SPARSE, T##RectDense)                              \
+    {                                                       \
+        sparseTester<T>(500, 1000, 250, 1, eps);            \
+    }                                                       \
+    TEST(SPARSE, T##MatVec)                                 \
+    {                                                       \
+        sparseTester<T>(625, 1331, 1, 2, eps);              \
+    }                                                       \
+    TEST(SPARSE_TRANSPOSE, T##MatVec)                       \
+    {                                                       \
+        sparseTransposeTester<T>(625, 1331, 1, 2, eps);     \
+    }                                                       \
+    TEST(SPARSE_TRANSPOSE, T##Square)                       \
+    {                                                       \
+        sparseTransposeTester<T>(1000, 1000, 100, 5, eps);  \
+    }                                                       \
+    TEST(SPARSE_TRANSPOSE, T##RectMultiple)                 \
+    {                                                       \
+        sparseTransposeTester<T>(2048, 1024, 512, 3, eps);  \
+    }                                                       \
+    TEST(SPARSE_TRANSPOSE, T##RectDense)                    \
+    {                                                       \
+        sparseTransposeTester<T>(453, 751, 397, 1, eps);    \
+    }                                                       \
 
 
-SPARSE_TESTS(float, 0.01)
+SPARSE_TESTS(float, 1E-3)
 SPARSE_TESTS(double, 1E-5)
-SPARSE_TESTS(cfloat, 0.01)
+SPARSE_TESTS(cfloat, 1E-3)
 SPARSE_TESTS(cdouble, 1E-5)
 
 #undef SPARSE_TESTS
