@@ -147,7 +147,7 @@ void convertCSR(const int M, const int N, const float ratio)
     a = a * (a > ratio);
 
     af::array s = af::sparse(a, AF_STORAGE_CSR);
-    af::array aa = af::sparseConvertStorage(s, AF_STORAGE_DENSE);
+    af::array aa = af::dense(s);
 
     ASSERT_EQ(0, af::max<double>(af::abs(a - aa)));
 }

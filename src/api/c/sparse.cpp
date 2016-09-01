@@ -292,8 +292,8 @@ af_array sparseConvertStorage(const af_array in_, const af_storage destStorage)
     return NULL;
 }
 
-af_err af_sparse_convert_storage(af_array *out, const af_array in,
-                           const af_storage destStorage)
+af_err af_sparse_convert_to(af_array *out, const af_array in,
+                            const af_storage destStorage)
 {
     // Right now dest_storage can only be AF_STORAGE_DENSE
     try {
@@ -320,6 +320,30 @@ af_err af_sparse_convert_storage(af_array *out, const af_array in,
             case f64: output = sparseConvertStorage<double >(in, destStorage); break;
             case c32: output = sparseConvertStorage<cfloat >(in, destStorage); break;
             case c64: output = sparseConvertStorage<cdouble>(in, destStorage); break;
+            default : AF_ERROR("Output storage type is not valid", AF_ERR_ARG);
+        }
+        std::swap(*out, output);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_sparse_to_dense(af_array *out, const af_array in)
+{
+    try {
+        af_array output = 0;
+
+        const SparseArrayBase base = getSparseArrayBase(in);
+
+        // Dense not allowed as input -> Should never happen
+        // To convert from dense to type, use the create* functions
+        ARG_ASSERT(1, base.getStorage() != AF_STORAGE_DENSE);
+
+        switch(base.getType()) {
+            case f32: output = sparseConvertStorage<float  >(in, AF_STORAGE_DENSE); break;
+            case f64: output = sparseConvertStorage<double >(in, AF_STORAGE_DENSE); break;
+            case c32: output = sparseConvertStorage<cfloat >(in, AF_STORAGE_DENSE); break;
+            case c64: output = sparseConvertStorage<cdouble>(in, AF_STORAGE_DENSE); break;
             default : AF_ERROR("Output storage type is not valid", AF_ERR_ARG);
         }
         std::swap(*out, output);

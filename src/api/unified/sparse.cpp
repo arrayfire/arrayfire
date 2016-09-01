@@ -39,11 +39,17 @@ af_err af_create_sparse_array_from_dense(
     return CALL(out, in, stype);
 }
 
-af_err af_sparse_convert_storage(af_array *out, const af_array in,
-                                 const af_storage destStorage)
+af_err af_sparse_convert_to(af_array *out, const af_array in,
+                            const af_storage destStorage)
 {
     CHECK_ARRAYS(in);
     return CALL(out, in, destStorage);
+}
+
+af_err af_sparse_to_dense(af_array *out, const af_array in)
+{
+    CHECK_ARRAYS(in);
+    return CALL(out, in);
 }
 
 af_err af_sparse_get_info(af_array *values, af_array *rowIdx, af_array *colIdx, af_storage *stype,

@@ -43,10 +43,17 @@ namespace af
         return array(out);
     }
 
-    array sparseConvertStorage(const array in, const af::storage stype)
+    array sparseConvertTo(const array in, const af::storage stype)
     {
         af_array out = 0;
-        AF_THROW(af_sparse_convert_storage(&out, in.get(), stype));
+        AF_THROW(af_sparse_convert_to(&out, in.get(), stype));
+        return array(out);
+    }
+
+    array dense(const array sparse)
+    {
+        af_array out = 0;
+        AF_THROW(af_sparse_to_dense(&out, sparse.get()));
         return array(out);
     }
 

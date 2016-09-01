@@ -27,7 +27,9 @@ namespace af
 
     AFAPI array sparse(const array dense, const af::storage stype = AF_STORAGE_CSR);
 
-    AFAPI array sparseConvertStorage(const array in, const af::storage stype);
+    AFAPI array sparseConvertTo(const array in, const af::storage stype);
+
+    AFAPI array dense(const array sparse);
 
     AFAPI void sparseGetInfo(array &values, array &rowIdx, array &colIdx, af::storage &stype,
                              const array in);
@@ -66,8 +68,10 @@ extern "C" {
                  af_array *out, const af_array in,
                  const af_storage stype);
 
-    AFAPI af_err af_sparse_convert_storage(af_array *out, const af_array in,
-                                           const af_storage destStorage);
+    AFAPI af_err af_sparse_convert_to(af_array *out, const af_array in,
+                                      const af_storage destStorage);
+
+    AFAPI af_err af_sparse_to_dense(af_array *out, const af_array in);
 
     AFAPI af_err af_sparse_get_info(af_array *values, af_array *rowIdx, af_array *colIdx, af_storage *stype,
                                     const af_array in);
