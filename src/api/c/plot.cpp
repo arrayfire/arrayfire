@@ -27,7 +27,10 @@ using namespace detail;
 using namespace graphics;
 
 template<typename T>
-forge::Plot* setup_plot(const af_array X, const af_array Y, forge::PlotType type, forge::MarkerType marker)
+forge::Chart* setup_plot(const forge::Window* const window,
+                         const af_array X, const af_array Y,
+                         const af_cell* const props,
+                         forge::PlotType type, forge::MarkerType marker)
 {
     Array<T> xIn = getArray<T>(X);
     Array<T> yIn = getArray<T>(Y);
@@ -51,19 +54,30 @@ forge::Plot* setup_plot(const af_array X, const af_array Y, forge::PlotType type
     Array<T> P = join(0, xIn, yIn);
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
-    // FORGE FIX ME FG_CHART_2D
-    forge::Plot* plot = fgMngr.getPlot(elements, getGLType<T>(), FG_CHART_2D, type, marker);
+
+    // Get the chart for the current grid position (if any)
+    forge::Chart* chart = NULL;
+    if (props->col>-1 && props->row>-1)
+        chart = fgMngr.getChart(window, props->row, props->col, FG_CHART_2D);
+    else
+        chart = fgMngr.getChart(window, 0, 0, FG_CHART_2D);
+
+    forge::Plot* plot = fgMngr.getPlot(chart, elements, getGLType<T>(), type, marker);
+
     plot->setColor(1.0, 0.0, 0.0, 1.0);
-    // FORGE FIX ME
-    //plot->setAxesLimits(xmax, xmin, ymax, ymin);
-    //plot->setAxesTitles("X Axis", "Y Axis");
+
+    chart->setAxesLimits(xmin, xmax, ymin, ymax);
+
+    chart->setAxesTitles("X Axis", "Y Axis");
 
     copy_plot<T>(P, plot);
 
-    return plot;
+    return chart;
 }
 
-af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, const af_cell* const props, forge::PlotType type=FG_PLOT_LINE, forge::MarkerType marker=FG_MARKER_NONE)
+af_err plotWrapper(const af_window wind, const af_array X, const af_array Y,
+                   const af_cell* const props,
+                   forge::PlotType type = FG_PLOT_LINE, forge::MarkerType marker = FG_MARKER_NONE)
 {
     if(wind==0) {
         std::cerr<<"Not a valid window"<<std::endl;
@@ -87,23 +101,24 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, con
 
         forge::Window* window = reinterpret_cast<forge::Window*>(wind);
         makeContextCurrent(window);
-        forge::Plot* plot = NULL;
+
+        forge::Chart* chart = NULL;
 
         switch(Xtype) {
-            case f32: plot = setup_plot<float  >(X, Y, type, marker); break;
-            case s32: plot = setup_plot<int    >(X, Y, type, marker); break;
-            case u32: plot = setup_plot<uint   >(X, Y, type, marker); break;
-            case s16: plot = setup_plot<short  >(X, Y, type, marker); break;
-            case u16: plot = setup_plot<ushort >(X, Y, type, marker); break;
-            case u8 : plot = setup_plot<uchar  >(X, Y, type, marker); break;
+            case f32: chart = setup_plot<float  >(window, X, Y, props, type, marker); break;
+            case s32: chart = setup_plot<int    >(window, X, Y, props, type, marker); break;
+            case u32: chart = setup_plot<uint   >(window, X, Y, props, type, marker); break;
+            case s16: chart = setup_plot<short  >(window, X, Y, props, type, marker); break;
+            case u16: chart = setup_plot<ushort >(window, X, Y, props, type, marker); break;
+            case u8 : chart = setup_plot<uchar  >(window, X, Y, props, type, marker); break;
             default:  TYPE_ERROR(1, Xtype);
         }
 
-        //FORGE FIX ME
-        //if (props->col>-1 && props->row>-1)
-        //    window->draw(props->col, props->row, *plot, props->title);
-        //else
-        //    window->draw(*plot);
+        // Window's draw function requires either image or chart
+        if (props->col>-1 && props->row>-1)
+            window->draw(props->col, props->row, *chart, props->title);
+        else
+            window->draw(*chart);
     }
     CATCHALL;
     return AF_SUCCESS;

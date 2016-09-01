@@ -15,6 +15,7 @@
 #include <forge.h>
 #include <glbinding/gl/gl.h>
 #include <glbinding/Binding.h>
+#include <vector>
 #include <map>
 
 // default to f32(float) type
@@ -57,6 +58,12 @@ typedef PlotMap_t::iterator PltMapIter;
 typedef HistogramMap_t::iterator HstMapIter;
 typedef SurfaceMap_t::iterator SfcMapIter;
 
+typedef std::vector<forge::Chart*> ChartVec_t;
+typedef std::map<const forge::Window*, ChartVec_t> ChartMap_t;
+typedef ChartVec_t::iterator ChartVecIter;
+typedef ChartMap_t::iterator ChartMapIter;
+
+
 /**
  * ForgeManager class follows a single pattern. Any user of this class, has
  * to call ForgeManager::getInstance inorder to use Forge resources for rendering.
@@ -76,16 +83,29 @@ class ForgeManager
         HistogramMap_t  mHstMap;
         SurfaceMap_t    mSfcMap;
 
+        ChartMap_t      mChartMap;
+
     public:
         static ForgeManager& getInstance();
         ~ForgeManager();
 
-        forge::Font* getFont(const bool dontCreate=false);
-        forge::Window* getMainWindow(const bool dontCreate=false);
-        forge::Image* getImage(int w, int h, forge::ChannelFormat mode, forge::dtype type);
-        forge::Plot* getPlot(int nPoints, forge::dtype dtype, forge::ChartType ctype, forge::PlotType ptype, forge::MarkerType mtype);
-        forge::Histogram* getHistogram(int nBins, forge::dtype type);
-        forge::Surface* getSurface(int nX, int nY, forge::dtype type);
+        forge::Font*    getFont(const bool dontCreate=false);
+        forge::Window*  getMainWindow(const bool dontCreate=false);
+
+        void            setWindowChartGrid(const forge::Window* window,
+                                           const int r, const int c);
+
+        forge::Chart*   getChart(const forge::Window* window, const int r, const int c,
+                                 const forge::ChartType ctype);
+
+        forge::Image* getImage          (int w, int h, forge::ChannelFormat mode,
+                                         forge::dtype type);
+        forge::Image* getImage          (forge::Chart* chart, int w, int h,
+                                         forge::ChannelFormat mode, forge::dtype type);
+        forge::Plot * getPlot           (forge::Chart* chart, int nPoints, forge::dtype dtype,
+                                         forge::PlotType ptype, forge::MarkerType mtype);
+        forge::Histogram* getHistogram  (forge::Chart* chart, int nBins, forge::dtype type);
+        forge::Surface* getSurface      (forge::Chart* chart, int nX, int nY, forge::dtype type);
 
     protected:
         ForgeManager() {}

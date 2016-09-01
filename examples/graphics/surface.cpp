@@ -27,8 +27,6 @@ int main(int argc, char *argv[])
         const array x = iota(dim4(N, 1), dim4(1, N)) / M - 1;
         const array y = iota(dim4(1, N), dim4(N, 1)) / M - 1;
 
-        std::cout << x.dims()  << y.dims() << std::endl;
-
         static float t=0;
         while(!myWindow.close()) {
             t+=0.07;

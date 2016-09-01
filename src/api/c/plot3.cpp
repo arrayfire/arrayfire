@@ -30,7 +30,9 @@ using namespace detail;
 using namespace graphics;
 
 template<typename T>
-forge::Plot* setup_plot3(const af_array P, forge::PlotType ptype, forge::MarkerType mtype)
+forge::Chart* setup_plot3(const forge::Window* const window, const af_array P,
+                          const af_cell* const props,
+                          forge::PlotType ptype, forge::MarkerType mtype)
 {
     Array<T> pIn = getArray<T>(P);
     ArrayInfo Pinfo = getInfo(P);
@@ -55,15 +57,27 @@ forge::Plot* setup_plot3(const af_array P, forge::PlotType ptype, forge::MarkerT
     copyData(min, reduce<af_min_t, T, T>(pIn, 1));
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
-    forge::Plot* plot3 = fgMngr.getPlot(P_dims.elements()/3, getGLType<T>(), FG_CHART_3D, ptype, mtype);
+
+    // Get the chart for the current grid position (if any)
+    forge::Chart* chart = NULL;
+    if (props->col>-1 && props->row>-1)
+        chart = fgMngr.getChart(window, props->row, props->col, FG_CHART_2D);
+    else
+        chart = fgMngr.getChart(window, 0, 0, FG_CHART_2D);
+
+    forge::Plot* plot3 = fgMngr.getPlot(chart, P_dims.elements()/3, getGLType<T>(), ptype, mtype);
+
     plot3->setColor(1.0, 0.0, 0.0, 1.0);
-    // FORGE FIX ME
-    //plot3->setAxesLimits(max[0], min[0],
-    //                     max[1], min[1],
-    //                     max[2], min[2]);
-    //plot3->setAxesTitles("X Axis", "Y Axis", "Z Axis");
+
+    chart->setAxesLimits(min[0], max[0],
+                         min[1], max[1],
+                         min[2], max[2]);
+
+    chart->setAxesTitles("X Axis", "Y Axis", "Z Axis");
+
     copy_plot<T>(pIn, plot3);
-    return plot3;
+
+    return chart;
 }
 
 af_err plot3Wrapper(const af_window wind, const af_array P, const af_cell* const props, const forge::PlotType type=FG_PLOT_LINE, const forge::MarkerType marker=FG_MARKER_NONE)
@@ -79,23 +93,23 @@ af_err plot3Wrapper(const af_window wind, const af_array P, const af_cell* const
 
         forge::Window* window = reinterpret_cast<forge::Window*>(wind);
         makeContextCurrent(window);
-        forge::Plot* plot3 = NULL;
+
+        forge::Chart* chart = NULL;
 
         switch(Ptype) {
-            case f32: plot3 = setup_plot3<float >(P, type, marker); break;
-            case s32: plot3 = setup_plot3<int   >(P, type, marker); break;
-            case u32: plot3 = setup_plot3<uint  >(P, type, marker); break;
-            case s16: plot3 = setup_plot3<short >(P, type, marker); break;
-            case u16: plot3 = setup_plot3<ushort>(P, type, marker); break;
-            case u8 : plot3 = setup_plot3<uchar >(P, type, marker); break;
+            case f32: chart = setup_plot3<float >(window, P, props, type, marker); break;
+            case s32: chart = setup_plot3<int   >(window, P, props, type, marker); break;
+            case u32: chart = setup_plot3<uint  >(window, P, props, type, marker); break;
+            case s16: chart = setup_plot3<short >(window, P, props, type, marker); break;
+            case u16: chart = setup_plot3<ushort>(window, P, props, type, marker); break;
+            case u8 : chart = setup_plot3<uchar >(window, P, props, type, marker); break;
             default:  TYPE_ERROR(1, Ptype);
         }
 
-        // FORGE FIX ME
-        //if (props->col>-1 && props->row>-1)
-        //    window->draw(props->col, props->row, *plot3, props->title);
-        //else
-        //    window->draw(*plot3);
+        if (props->col>-1 && props->row>-1)
+            window->draw(props->col, props->row, *chart, props->title);
+        else
+            window->draw(*chart);
     }
     CATCHALL;
     return AF_SUCCESS;

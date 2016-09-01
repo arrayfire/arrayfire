@@ -43,6 +43,10 @@ af_err af_create_window(af_window *out, const int width, const int height, const
 
         wnd = new forge::Window(width, height, title, mainWnd);
         wnd->setFont(fgMngr.getFont());
+
+        // Create a chart map
+        fgMngr.setWindowChartGrid(wnd, 1, 1);
+
         *out = reinterpret_cast<af_window>(wnd);
     }
     CATCHALL;
@@ -120,6 +124,10 @@ af_err af_grid(const af_window wind, const int rows, const int cols)
     try {
         forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
         wnd->grid(rows, cols);
+
+        // Recreate a chart map
+        ForgeManager& fgMngr = ForgeManager::getInstance();
+        fgMngr.setWindowChartGrid(wnd, rows, cols);
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -198,6 +206,11 @@ af_err af_destroy_window(const af_window wind)
 
     try {
         forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
+
+        // Delete chart map
+        ForgeManager& fgMngr = ForgeManager::getInstance();
+        fgMngr.setWindowChartGrid(wnd, 0, 0);
+
         delete wnd;
     }
     CATCHALL;
