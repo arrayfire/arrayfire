@@ -52,7 +52,7 @@ namespace opencl
                 bool use_greedy = false;
 
                 std::string ref_name =
-                    std::string("csrmm_") +
+                    std::string("csrmm_nt_") +
                     std::string(dtype_traits<T>::getName()) +
                     std::string("_") +
                     std::to_string(use_alpha) +
