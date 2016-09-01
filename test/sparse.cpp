@@ -135,6 +135,23 @@ void sparseTransposeTester(const int m, const int n, const int k, int factor, do
     ASSERT_NEAR(0, calc_norm(imag(dRes3), imag(sRes3)), eps);
 }
 
+template<typename T>
+void convertCSR(const int M, const int N, const float ratio)
+{
+    if (noDoubleTests<T>()) return;
+#if 1
+    af::array a = cpu_randu<T>(af::dim4(M, N));
+#else
+    af::array a = af::randu(M, N);
+#endif
+    a = a * (a > ratio);
+
+    af::array s = af::createSparseArray(a, AF_STORAGE_CSR);
+    af::array aa = af::sparseConvertStorage(s, AF_STORAGE_DENSE);
+
+    ASSERT_EQ(0, af::max<double>(af::abs(a - aa)));
+}
+
 #define SPARSE_TESTS(T, eps)                                \
     TEST(SPARSE, T##Square)                                 \
     {                                                       \
@@ -168,7 +185,10 @@ void sparseTransposeTester(const int m, const int n, const int k, int factor, do
     {                                                       \
         sparseTransposeTester<T>(453, 751, 397, 1, eps);    \
     }                                                       \
-
+    TEST(SPARSE, T##ConvertCSR)                             \
+    {                                                       \
+        convertCSR<T>(2345, 5678, 0.5);                     \
+    }                                                       \
 
 SPARSE_TESTS(float, 1E-3)
 SPARSE_TESTS(double, 1E-5)

@@ -222,6 +222,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
     Array<T> dense_ = createValueArray<T>(in_.dims(), scalar<T>(0));
     dense_.eval();
 
+#if ENABLE_CLSPARSE
     // Assign to clSparse CSR
     clsparseCsrMatrix clSparseMat;
     CLSPARSE_CHECK(clsparseInitCsrMatrix(&clSparseMat));
@@ -245,6 +246,17 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
         CLSPARSE_CHECK(csr2dense_func<T>()(&clSparseMat, &clDenseMat, getControl()));
     else
         AF_ERROR("OpenCL Backend only supports CSR or COO to Dense", AF_ERR_NOT_SUPPORTED);
+#else
+    const Array<T> &values = in_.getValues();
+    const Array<int> &rowIdx = in_.getRowIdx();
+    const Array<int> &colIdx = in_.getColIdx();
+
+    if(stype == AF_STORAGE_CSR)
+        kernel::csr2dense<T>(dense_, values, rowIdx, colIdx);
+    else
+        AF_ERROR("OpenCL Backend only supports CSR or COO to Dense", AF_ERR_NOT_SUPPORTED);
+
+#endif
 
     return dense_;
 }

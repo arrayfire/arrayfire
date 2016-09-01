@@ -9,6 +9,7 @@
 
 #pragma once
 #include <kernel_headers/coo2dense.hpp>
+#include <kernel_headers/csr2dense.hpp>
 #include <kernel_headers/dense2csr.hpp>
 #include <program.hpp>
 #include <traits.hpp>
@@ -89,6 +90,65 @@ namespace opencl
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
+                CL_TO_AF_ERROR(err);
+            }
+        }
+
+        template<typename T>
+        void csr2dense(Param output, const Param values, const Param rowIdx, const Param colIdx)
+        {
+            try {
+                const int MAX_GROUPS = 4096;
+                int M = rowIdx.info.dims[0] - 1;
+                //FIXME: This needs to be based non nonzeros per row
+                int threads = 64;
+
+                std::string ref_name =
+                    std::string("csr2dense_") +
+                    std::string(dtype_traits<T>::getName()) +
+                    std::string("_") +
+                    std::to_string(threads);
+
+                int device = getActiveDeviceId();
+                auto idx = kernelCaches[device].find(ref_name);
+                kc_entry_t entry;
+
+                if (idx == kernelCaches[device].end()) {
+
+                    std::ostringstream options;
+                    options << " -D T=" << dtype_traits<T>::getName();
+                    options << " -D THREADS=" << threads;
+
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+
+                    const char *ker_strs[] = {csr2dense_cl};
+                    const int   ker_lens[] = {csr2dense_cl_len};
+
+                    Program prog;
+                    buildProgram(prog, 1, ker_strs, ker_lens, options.str());
+                    entry.prog = new Program(prog);
+                    entry.ker  = new Kernel(*entry.prog, "csr2dense");
+                } else {
+                    entry = idx->second;
+                }
+
+                NDRange local(threads, 1);
+                int groups_x = std::min((int)(divup(M, local[0])), MAX_GROUPS);
+                NDRange global(local[0] * groups_x, 1);
+                auto csr2dense_kernel = *entry.ker;
+                auto csr2dense_func = KernelFunctor<Buffer,
+                                                    Buffer, Buffer, Buffer,
+                                                    int> (csr2dense_kernel);
+
+                csr2dense_func(EnqueueArgs(getQueue(), global, local),
+                               *output.data, *values.data, *rowIdx.data, *colIdx.data, M);
+
+                CL_DEBUG_FINISH(getQueue());
+
+            } catch(cl::Error err) {
                 CL_TO_AF_ERROR(err);
             }
         }
