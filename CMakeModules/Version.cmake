@@ -38,7 +38,7 @@ SET(AF_COMPILER_STRING "${COMPILER_NAME} ${COMPILER_VERSION}")
 
 EXECUTE_PROCESS(
     COMMAND git log -1 --format=%h
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     OUTPUT_VARIABLE GIT_COMMIT_HASH
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -49,13 +49,13 @@ IF(NOT GIT_COMMIT_HASH)
 ENDIF()
 
 CONFIGURE_FILE(
-    ${CMAKE_MODULE_PATH}/version.h.in
-    ${CMAKE_SOURCE_DIR}/include/af/version.h
+    ${PROJECT_SOURCE_DIR}/CMakeModules/version.h.in
+    ${PROJECT_SOURCE_DIR}/include/af/version.h
 )
 
 CONFIGURE_FILE(
-    ${CMAKE_MODULE_PATH}/version.hpp.in
-    ${CMAKE_SOURCE_DIR}/src/backend/version.hpp
+    ${PROJECT_SOURCE_DIR}/CMakeModules/version.hpp.in
+    ${PROJECT_SOURCE_DIR}/src/backend/version.hpp
 )
 
 CMAKE_POLICY(POP)

@@ -28,8 +28,13 @@ namespace cuda
     template<> STATIC_ const std::string imag_name<cdouble>() { return cuMangledName<cdouble, false>("___imag"); }
 
     template<typename T> static const std::string abs_name()  { return cuMangledName<T, false>("___noop");       }
-    template<> STATIC_ const std::string abs_name<float  >()  { return cuMangledName<float  , false>("___abs");  }
-    template<> STATIC_ const std::string abs_name<double >()  { return cuMangledName<double , false>("___abs");  }
+#if defined(USE_LIBDEVICE)
+    template<> STATIC_ const std::string abs_name<float  >()  { return "@__nv_fabsf";  }
+    template<> STATIC_ const std::string abs_name<double >()  { return "@__nv_fabs" ;  }
+#else
+    template<> STATIC_ const std::string abs_name<float >()  { return cuMangledName<float , false>("___abs");  }
+    template<> STATIC_ const std::string abs_name<double>()  { return cuMangledName<double, false>("___abs");  }
+#endif
     template<> STATIC_ const std::string abs_name<cfloat >()  { return cuMangledName<cfloat , false>("___abs");  }
     template<> STATIC_ const std::string abs_name<cdouble>()  { return cuMangledName<cdouble, false>("___abs");  }
 
@@ -47,7 +52,9 @@ namespace cuda
                                                     afShortName<To>(),
                                                     cplx_name<To>(),
                                                     lhs_node,
-                                                    rhs_node, (int)(af_cplx2_t));
+                                                    rhs_node,
+                                                    (int)(af_cplx2_t),
+                                                    0);
 
         return createNodeArray<To>(odims, JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }

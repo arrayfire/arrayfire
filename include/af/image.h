@@ -340,22 +340,6 @@ AFAPI array histogram(const array &in, const unsigned nbins);
 AFAPI array meanShift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color=false);
 
 /**
-    C++ Interface for median filter
-
-    \snippet test/medfilt.cpp ex_image_medfilt
-
-    \param[in]  in array is the input image
-    \param[in]  wind_length is the kernel height
-    \param[in]  wind_width is the kernel width
-    \param[in]  edge_pad value will decide what happens to border when running
-                filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
-    \return     the processed image
-
-    \ingroup image_func_medfilt
-*/
-AFAPI array medfilt(const array& in, const dim_t wind_length = 3, const dim_t wind_width = 3, const borderType edge_pad = AF_PAD_ZERO);
-
-/**
     C++ Interface for minimum filter
 
     \param[in]  in array is the input image
@@ -1080,22 +1064,6 @@ extern "C" {
         \ingroup image_func_mean_shift
     */
     AFAPI af_err af_mean_shift(af_array *out, const af_array in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color);
-
-    /**
-        C Interface for median filter
-
-        \param[out] out array is the processed image
-        \param[in]  in array is the input image
-        \param[in]  wind_length is the kernel height
-        \param[in]  wind_width is the kernel width
-        \param[in]  edge_pad value will decide what happens to border when running
-                    filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
-        \return     \ref AF_SUCCESS if the median filter is applied successfully,
-        otherwise an appropriate error code is returned.
-
-        \ingroup image_func_medfilt
-    */
-    AFAPI af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad);
 
     /**
         C Interface for minimum filter

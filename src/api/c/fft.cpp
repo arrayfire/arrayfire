@@ -33,6 +33,10 @@ static af_err fft(af_array *out, const af_array in, const double norm_factor, co
         af_dtype type  = info.getType();
         af::dim4 dims  = info.dims();
 
+        if(dims.ndims() == 0) {
+            return af_retain_array(out, in);
+        }
+
         DIM_ASSERT(1, (dims.ndims()>=rank));
 
         af_array output;
@@ -104,6 +108,9 @@ static af_err fft_inplace(af_array in, const double norm_factor)
         af_dtype type  = info.getType();
         af::dim4 dims  = info.dims();
 
+        if(dims.ndims() == 0) {
+            return AF_SUCCESS;
+        }
         DIM_ASSERT(1, (dims.ndims()>=rank));
 
         switch(type) {
@@ -163,6 +170,9 @@ static af_err fft_r2c(af_array *out, const af_array in, const double norm_factor
         af_dtype type  = info.getType();
         af::dim4 dims  = info.dims();
 
+        if(dims.ndims() == 0) {
+            return af_retain_array(out, in);
+        }
         DIM_ASSERT(1, (dims.ndims()>=rank));
 
         af_array output;
@@ -215,6 +225,9 @@ static af_err fft_c2r(af_array *out, const af_array in, const double norm_factor
         af_dtype type  = info.getType();
         af::dim4 idims  = info.dims();
 
+        if(idims.ndims() == 0) {
+            return af_retain_array(out, in);
+        }
         DIM_ASSERT(1, (idims.ndims()>=rank));
 
         dim4 odims = idims;

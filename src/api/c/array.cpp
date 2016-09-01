@@ -130,6 +130,11 @@ af_err af_copy_array(af_array *out, const af_array in)
         ArrayInfo info = getInfo(in);
         const af_dtype type = info.getType();
 
+        if(info.ndims() == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        }
+
         af_array res;
         switch(type) {
         case f32:   res = copyArray<float   >(in); break;

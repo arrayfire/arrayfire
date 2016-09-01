@@ -2,16 +2,16 @@
 # Builds ArrayFire Installers for OSX
 #
 INCLUDE(CMakeParseArguments)
-INCLUDE(${CMAKE_MODULE_PATH}/Version.cmake)
+INCLUDE(Version)
 
 SET(BIN2CPP_PROGRAM "bin2cpp")
 
-SET(OSX_INSTALL_DIR ${CMAKE_MODULE_PATH}/osx_install)
+SET(OSX_INSTALL_SOURCE ${PROJECT_SOURCE_DIR}/CMakeModules/osx_install)
 
 ################################################################################
 ## Create Directory Structure
 ################################################################################
-SET(OSX_TEMP "${CMAKE_BINARY_DIR}/osx_install_files")
+SET(OSX_TEMP "${PROJECT_BINARY_DIR}/osx_install_files")
 
 # Common files - libforge, ArrayFireConfig*.cmake
 FILE(GLOB COMMONLIB "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_LIB_DIR}/libforge*.dylib")
@@ -23,7 +23,7 @@ FOREACH(SRC ${COMMONLIB} ${COMMONCMAKE})
     ADD_CUSTOM_COMMAND(TARGET OSX_INSTALL_SETUP_COMMON PRE_BUILD
                        COMMAND ${CMAKE_COMMAND} -E copy
                        ${SRC} "${OSX_TEMP}/common/${SRC_REL}"
-                       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                        COMMENT "Copying Common files to temporary OSX Install Dir"
                        )
 ENDFOREACH()
@@ -39,7 +39,7 @@ MACRO(OSX_INSTALL_SETUP BACKEND LIB)
         ADD_CUSTOM_COMMAND(TARGET OSX_INSTALL_SETUP_${BACKEND} PRE_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy
                            ${SRC} "${OSX_TEMP}/${BACKEND}/${SRC_REL}"
-                           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                           WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                            COMMENT "Copying ${BACKEND} files to temporary OSX Install Dir"
                            )
     ENDFOREACH()
@@ -54,7 +54,7 @@ OSX_INSTALL_SETUP(Unified af)
 ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_INCLUDE
                   COMMAND ${CMAKE_COMMAND} -E copy_directory
                   ${CMAKE_INSTALL_PREFIX}/include "${OSX_TEMP}/include"
-                  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                   COMMENT "Copying header files to temporary OSX Install Dir"
                   )
 
@@ -62,7 +62,7 @@ ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_INCLUDE
 ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_EXAMPLES
                   COMMAND ${CMAKE_COMMAND} -E copy_directory
                   "${CMAKE_INSTALL_PREFIX}/share/ArrayFire/examples" "${OSX_TEMP}/examples"
-                  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                   COMMENT "Copying examples files to temporary OSX Install Dir"
                   )
 
@@ -70,7 +70,7 @@ ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_EXAMPLES
 ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_DOC
                   COMMAND ${CMAKE_COMMAND} -E copy_directory
                   "${CMAKE_INSTALL_PREFIX}/share/ArrayFire/doc" "${OSX_TEMP}/doc"
-                  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                   COMMENT "Copying documentation files to temporary OSX Install Dir"
                   )
 ################################################################################
@@ -105,13 +105,13 @@ ENDFUNCTION(PKG_BUILD)
 
 FUNCTION(PRODUCT_BUILD)
     CMAKE_PARSE_ARGUMENTS(ARGS "" "" "DEPENDS" ${ARGN})
-    SET(DISTRIBUTION_FILE       "${OSX_INSTALL_DIR}/distribution.dist")
+    SET(DISTRIBUTION_FILE       "${OSX_INSTALL_SOURCE}/distribution.dist")
     SET(DISTRIBUTION_FILE_OUT   "${CMAKE_CURRENT_BINARY_DIR}/distribution.dist.out")
 
-    SET(WELCOME_FILE       "${OSX_INSTALL_DIR}/welcome.html")
+    SET(WELCOME_FILE       "${OSX_INSTALL_SOURCE}/welcome.html")
     SET(WELCOME_FILE_OUT   "${CMAKE_CURRENT_BINARY_DIR}/welcome.html.out")
 
-    SET(README_FILE       "${OSX_INSTALL_DIR}/readme.html")
+    SET(README_FILE       "${OSX_INSTALL_SOURCE}/readme.html")
     SET(README_FILE_OUT   "${CMAKE_CURRENT_BINARY_DIR}/readme.html.out")
 
     SET(AF_TITLE    "ArrayFire ${AF_VERSION}")
@@ -140,7 +140,7 @@ PKG_BUILD(  PKG_NAME        ArrayFireCPU
             DEPENDS         OSX_INSTALL_SETUP_CPU
             TARGETS         cpu_package
             INSTALL_LOCATION /usr/local
-            SCRIPT_DIR      ${OSX_INSTALL_DIR}/cpu_scripts
+            SCRIPT_DIR      ${OSX_INSTALL_SOURCE}/cpu_scripts
             IDENTIFIER      com.arrayfire.pkg.arrayfire.cpu.lib
             PATH_TO_FILES   ${OSX_TEMP}/CPU
             FILTERS         opencl cuda unified)
@@ -149,7 +149,7 @@ PKG_BUILD(  PKG_NAME        ArrayFireCUDA
             DEPENDS         OSX_INSTALL_SETUP_CUDA
             TARGETS         cuda_package
             INSTALL_LOCATION /usr/local
-            SCRIPT_DIR      ${OSX_INSTALL_DIR}/cuda_scripts
+            SCRIPT_DIR      ${OSX_INSTALL_SOURCE}/cuda_scripts
             IDENTIFIER      com.arrayfire.pkg.arrayfire.cuda.lib
             PATH_TO_FILES   ${OSX_TEMP}/CUDA
             FILTERS         cpu opencl unified)
@@ -158,7 +158,7 @@ PKG_BUILD(  PKG_NAME        ArrayFireOPENCL
             DEPENDS         OSX_INSTALL_SETUP_OpenCL
             TARGETS         opencl_package
             INSTALL_LOCATION /usr/local
-            SCRIPT_DIR      ${OSX_INSTALL_DIR}/opencl_scripts
+            SCRIPT_DIR      ${OSX_INSTALL_SOURCE}/opencl_scripts
             IDENTIFIER      com.arrayfire.pkg.arrayfire.opencl.lib
             PATH_TO_FILES   ${OSX_TEMP}/OpenCL
             FILTERS         cpu cuda unified)

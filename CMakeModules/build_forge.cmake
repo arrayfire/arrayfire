@@ -1,6 +1,6 @@
 INCLUDE(ExternalProject)
 
-SET(prefix ${CMAKE_BINARY_DIR}/third_party/forge)
+SET(prefix ${PROJECT_BINARY_DIR}/third_party/forge)
 
 # FIXME: Cannot use $<CONFIG> generator expression here because add_custom_command
 #        does not yet support it for the OUTPUT argument, see also:

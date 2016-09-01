@@ -1,6 +1,6 @@
 INCLUDE(ExternalProject)
 
-SET(prefix ${CMAKE_BINARY_DIR}/third_party/cl2hpp)
+SET(prefix ${PROJECT_BINARY_DIR}/third_party/cl2hpp)
 
 ExternalProject_Add(
     cl2hpp-ext

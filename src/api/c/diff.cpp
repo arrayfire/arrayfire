@@ -40,6 +40,11 @@ af_err af_diff1(af_array *out, const af_array in, const int dim)
         af_dtype type = info.getType();
 
         af::dim4 in_dims = info.dims();
+        if(in_dims[dim] < 2) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        }
+
         DIM_ASSERT(1, in_dims[dim] >= 2);
 
         af_array output;
@@ -77,6 +82,10 @@ af_err af_diff2(af_array *out, const af_array in, const int dim)
         af_dtype type = info.getType();
 
         af::dim4 in_dims = info.dims();
+        if(in_dims[dim] < 3) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+        }
         DIM_ASSERT(1, in_dims[dim] >= 3);
 
         af_array output;

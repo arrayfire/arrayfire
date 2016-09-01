@@ -4,7 +4,7 @@ PROJECT(ARRAYFIRE)
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
-INCLUDE(${CMAKE_MODULE_PATH}/UploadCoveralls.cmake)
+INCLUDE(UploadCoveralls)
 INCLUDE(AFInstallDirs)
 
 OPTION(BUILD_TEST "Build Tests" ON)
@@ -42,7 +42,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 OPTION(MIN_BUILD_TIME "This flag compiles ArrayFire with O0, which is the fastest way to compile" OFF)
-INCLUDE(${CMAKE_MODULE_PATH}/MinBuildTime.cmake)
+INCLUDE(MinBuildTime)
 
 FIND_PACKAGE(FreeImage)
 IF(FREEIMAGE_FOUND)
@@ -60,7 +60,7 @@ IF(BUILD_GRAPHICS)
     IF(USE_SYSTEM_FORGE)
         FIND_PACKAGE(Forge)
     ELSE(USE_SYSTEM_FORGE)
-        INCLUDE("${CMAKE_MODULE_PATH}/build_forge.cmake")
+        INCLUDE(build_forge)
     ENDIF(USE_SYSTEM_FORGE)
 
     IF(FORGE_FOUND)
@@ -156,10 +156,10 @@ ELSE(${UNIX}) #Windows
 ENDIF()
 
 # Architechture Definitions
-INCLUDE(${CMAKE_MODULE_PATH}/TargetArch.cmake)
+INCLUDE(TargetArch)
 target_architecture(ARCH)
 
-INCLUDE(${CMAKE_MODULE_PATH}/Version.cmake)
+INCLUDE(Version)
 
 IF(${BUILD_CPU})
     ADD_SUBDIRECTORY(src/backend/cpu)
@@ -182,7 +182,7 @@ IF(${BUILD_DOCS})
     ADD_SUBDIRECTORY(docs)
 ENDIF()
 
-ADD_EXECUTABLE(bin2cpp ${CMAKE_MODULE_PATH}/bin2cpp.cpp)
+ADD_EXECUTABLE(bin2cpp ${PROJECT_SOURCE_DIR}/CMakeModules/bin2cpp.cpp)
 
 IF(${BUILD_TEST})
     ENABLE_TESTING()
@@ -207,12 +207,12 @@ INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION "${AF_INSTA
 ## The ArrayFire version file is generated and won't be included above, install
 ## it separately.
 INSTALL(FILES
-    ${CMAKE_SOURCE_DIR}/include/af/version.h DESTINATION "${AF_INSTALL_INC_DIR}/af/"
+    ${PROJECT_SOURCE_DIR}/include/af/version.h DESTINATION "${AF_INSTALL_INC_DIR}/af/"
     COMPONENT headers
 )
 
 IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
-    INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/third_party/forge/lib/" DESTINATION "${AF_INSTALL_LIB_DIR}"
+    INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/third_party/forge/lib/" DESTINATION "${AF_INSTALL_LIB_DIR}"
         COMPONENT libraries
     )
 ENDIF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
@@ -222,7 +222,7 @@ SET(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 SET(BACKEND_DIR "src/backend/\${lowerbackend}")
 SET(UNIFIED_DIR "src/api/unified")
 CONFIGURE_FILE(
-    ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
+    ${PROJECT_SOURCE_DIR}/CMakeModules/ArrayFireConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfig.cmake
     @ONLY)
 
@@ -233,11 +233,11 @@ SET(INCLUDE_DIR "\${CMAKE_CURRENT_LIST_DIR}/${reldir}/include")
 set(BACKEND_DIR)
 set(UNIFIED_DIR)
 CONFIGURE_FILE(
-    ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
+    ${PROJECT_SOURCE_DIR}/CMakeModules/ArrayFireConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
     @ONLY)
 CONFIGURE_FILE(
-    ${CMAKE_MODULE_PATH}/ArrayFireConfigVersion.cmake.in
+    ${PROJECT_SOURCE_DIR}/CMakeModules/ArrayFireConfigVersion.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfigVersion.cmake
     @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
@@ -259,10 +259,10 @@ INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/assets/examples"
     COMPONENT examples)
 
 IF(APPLE)
-    INCLUDE("${CMAKE_MODULE_PATH}/osx_install/OSXInstaller.cmake")
+    INCLUDE(osx_install/OSXInstaller)
 ENDIF(APPLE)
 
 ##
 # Packaging
 ##
-include(${CMAKE_MODULE_PATH}/CPackConfig.cmake)
+include(CPackConfig)

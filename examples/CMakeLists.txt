@@ -18,7 +18,7 @@ IF(TARGET afcpu OR TARGET afcuda OR TARGET afopencl OR TARGET af)
         MESSAGE(STATUS "Assests submodule unavailable. Updating submodules.")
         EXECUTE_PROCESS(
             COMMAND git submodule update --init --recursive
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
             OUTPUT_QUIET
         )
     ENDIF()

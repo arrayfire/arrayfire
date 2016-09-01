@@ -6,11 +6,11 @@
 # based on http://stackoverflow.com/questions/2285185/easiest-way-to-test-for-existence-of-cuda-capable-gpu-from-cmake/2297877#2297877 (Christopher Bruns)
 
 IF(CUDA_FOUND)
-    MESSAGE(STATUS "${CMAKE_MODULE_PATH}/cuda_compute_capability.cpp")
+    MESSAGE(STATUS "${PROJECT_SOURCE_DIR}/CMakeModules/cuda_compute_capability.cpp")
 
     TRY_RUN(RUN_RESULT_VAR COMPILE_RESULT_VAR
-        ${CMAKE_BINARY_DIR}
-        ${CMAKE_MODULE_PATH}/cuda_compute_capability.cpp
+        ${PROJECT_BINARY_DIR}
+        ${PROJECT_SOURCE_DIR}/CMakeModules/cuda_compute_capability.cpp
         CMAKE_FLAGS
         -DINCLUDE_DIRECTORIES:STRING=${CUDA_TOOLKIT_INCLUDE}
         -DLINK_LIBRARIES:STRING=${CUDA_CUDART_LIBRARY}

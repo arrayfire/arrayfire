@@ -35,6 +35,10 @@ af_err af_replace(af_array a, const af_array cond, const af_array b)
         ArrayInfo binfo = getInfo(b);
         ArrayInfo cinfo = getInfo(cond);
 
+        if(cinfo.ndims() == 0) {
+            return AF_SUCCESS;
+        }
+
         ARG_ASSERT(2, ainfo.getType() == binfo.getType());
         ARG_ASSERT(1, cinfo.getType() == b8);
 

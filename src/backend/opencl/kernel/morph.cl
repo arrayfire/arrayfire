@@ -69,7 +69,7 @@ void morph(__global T *              out,
     int j = ly + halo;
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    T acc = localMem[ lIdx(i, j, shrdLen, 1) ];
+    T acc = init;
 #pragma unroll
     for(int wj=0; wj<windLen; ++wj) {
         int joff   = wj*windLen;
@@ -169,7 +169,7 @@ void morph3d(__global T *         out,
     int j  = ly + halo;
     int k  = lz + halo;
 
-    T acc = localMem[ lIdx3D(i, j, k, shrdArea, shrdLen, 1) ];
+    T acc = init;
 #pragma unroll
     for(int wk=0; wk<windLen; ++wk) {
         int koff   = wk*se_area;

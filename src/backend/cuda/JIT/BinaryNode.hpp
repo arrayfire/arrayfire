@@ -23,16 +23,18 @@ namespace JIT
         std::string m_op_str;
         Node_ptr m_lhs, m_rhs;
         int m_op;
+        int m_call_type;
 
     public:
         BinaryNode(const char *out_type_str, const char *name_str,
                    const std::string &op_str,
-                   Node_ptr lhs, Node_ptr rhs, int op)
+                   Node_ptr lhs, Node_ptr rhs, int op, int call_type)
             : Node(out_type_str, name_str),
               m_op_str(op_str),
               m_lhs(lhs),
               m_rhs(rhs),
-              m_op(op)
+              m_op(op),
+              m_call_type(call_type)
         {
         }
 
@@ -83,23 +85,45 @@ namespace JIT
             if (!(m_lhs->isGenFunc())) m_lhs->genFuncs(kerStream, declStrs, is_linear);
             if (!(m_rhs->isGenFunc())) m_rhs->genFuncs(kerStream, declStrs, is_linear);
 
-            std::stringstream declStream;
-            declStream << "declare " << m_type_str << " " << m_op_str
-                       << "(" << m_lhs->getTypeStr() << " , " << m_rhs->getTypeStr() << ")\n";
+            if (m_call_type == 0) {
+                std::stringstream declStream;
+                declStream << "declare " << m_type_str << " " << m_op_str
+                           << "(" << m_lhs->getTypeStr() << " , " << m_rhs->getTypeStr() << ")\n";
 
-            str_map_iter loc = declStrs.find(declStream.str());
-            if (loc == declStrs.end()) {
-                declStrs[declStream.str()] = true;
+                str_map_iter loc = declStrs.find(declStream.str());
+                if (loc == declStrs.end()) {
+                    declStrs[declStream.str()] = true;
+                }
+
+                kerStream << "%val" << m_id << " = call "
+                          << m_type_str << " "
+                          << m_op_str << "("
+                          << m_lhs->getTypeStr() << " "
+                          << "%val" << m_lhs->getId() << ", "
+                          << m_rhs->getTypeStr() << " "
+                          << "%val" << m_rhs->getId() << ")\n";
+
+            } else {
+                if (m_call_type == 1) {
+                    // arithmetic operations
+                    kerStream << "%val" << m_id << " = "
+                              << m_op_str << " "
+                              << m_type_str << " "
+                              << "%val" << m_lhs->getId() << ", "
+                              << "%val" << m_rhs->getId() << "\n";
+                } else {
+                    // logical operators
+                    kerStream << "%tmp" << m_id << " = "
+                              << m_op_str << " "
+                              << m_lhs->getTypeStr() << " "
+                              << "%val" << m_lhs->getId() << ", "
+                              << "%val" << m_rhs->getId() << "\n";
+
+                    kerStream << "%val" << m_id << " = "
+                              << "zext i1 %tmp" << m_id << " to i8\n";
+
+                }
             }
-
-            kerStream << "%val" << m_id << " = call "
-                      << m_type_str << " "
-                      << m_op_str << "("
-                      << m_lhs->getTypeStr() << " "
-                      << "%val" << m_lhs->getId() << ", "
-                      << m_rhs->getTypeStr() << " "
-                      << "%val" << m_rhs->getId() << ")\n";
-
             m_gen_func = true;
         }
 

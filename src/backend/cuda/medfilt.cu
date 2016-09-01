@@ -19,22 +19,40 @@ namespace cuda
 {
 
 template<typename T, af_border_type pad>
-Array<T> medfilt(const Array<T> &in, dim_t w_len, dim_t w_wid)
+Array<T> medfilt1(const Array<T> &in, dim_t w_wid)
 {
-    ARG_ASSERT(2, (w_len<=kernel::MAX_MEDFILTER_LEN));
+    ARG_ASSERT(2, (w_wid<=kernel::MAX_MEDFILTER1_LEN));
+    ARG_ASSERT(2, (w_wid % 2 != 0));
 
-    const dim4 dims     = in.dims();
+    const dim4 dims = in.dims();
 
-    Array<T> out      = createEmptyArray<T>(dims);
+    Array<T> out    = createEmptyArray<T>(dims);
 
-    kernel::medfilt<T, pad>(out, in, w_len, w_wid);
+    kernel::medfilt1<T, pad>(out, in, w_wid);
 
     return out;
 }
 
-#define INSTANTIATE(T)\
-    template Array<T> medfilt<T, AF_PAD_ZERO     >(const Array<T> &in, dim_t w_len, dim_t w_wid); \
-    template Array<T> medfilt<T, AF_PAD_SYM>(const Array<T> &in, dim_t w_len, dim_t w_wid);
+template<typename T, af_border_type pad>
+Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid)
+{
+    ARG_ASSERT(2, (w_len<=kernel::MAX_MEDFILTER2_LEN));
+    ARG_ASSERT(2, (w_len % 2 != 0));
+
+    const dim4 dims   = in.dims();
+
+    Array<T> out      = createEmptyArray<T>(dims);
+
+    kernel::medfilt2<T, pad>(out, in, w_len, w_wid);
+
+    return out;
+}
+
+#define INSTANTIATE(T)                                                                          \
+    template Array<T> medfilt1<T, AF_PAD_ZERO>(const Array<T> &in, dim_t w_wid);                \
+    template Array<T> medfilt1<T, AF_PAD_SYM >(const Array<T> &in, dim_t w_wid);                \
+    template Array<T> medfilt2<T, AF_PAD_ZERO>(const Array<T> &in, dim_t w_len, dim_t w_wid);   \
+    template Array<T> medfilt2<T, AF_PAD_SYM >(const Array<T> &in, dim_t w_len, dim_t w_wid);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

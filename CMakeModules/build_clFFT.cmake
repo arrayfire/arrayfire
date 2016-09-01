@@ -1,6 +1,6 @@
 INCLUDE(ExternalProject)
 
-SET(prefix "${CMAKE_BINARY_DIR}/third_party/clFFT")
+SET(prefix "${PROJECT_BINARY_DIR}/third_party/clFFT")
 SET(clFFT_location ${prefix}/lib/import/${CMAKE_STATIC_LIBRARY_PREFIX}clFFT${CMAKE_STATIC_LIBRARY_SUFFIX})
 IF(CMAKE_VERSION VERSION_LESS 3.2)
     IF(CMAKE_GENERATOR MATCHES "Ninja")

@@ -37,6 +37,9 @@ af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool 
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
 
+        if(info.elements() == 0) {
+            return af_retain_array(out, in);
+        }
         DIM_ASSERT(1, info.elements() > 0);
 
         af_array val;
@@ -82,7 +85,12 @@ af_err af_sort_index(af_array *out, af_array *indices, const af_array in, const 
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
 
-        DIM_ASSERT(2, info.elements() > 0);
+        if(info.elements() <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            AF_CHECK(af_create_handle(out,     AF_MAX_DIMS, my_dims, type));
+            AF_CHECK(af_create_handle(indices, AF_MAX_DIMS, my_dims, type));
+            return AF_SUCCESS;
+        }
 
         af_array val;
         af_array idx;
@@ -160,8 +168,13 @@ af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
 
         ArrayInfo vinfo = getInfo(values);
 
-        DIM_ASSERT(3, kinfo.elements() > 0);
         DIM_ASSERT(4, kinfo.dims() == vinfo.dims());
+        if(kinfo.elements() == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            AF_CHECK(af_create_handle(out_keys,   AF_MAX_DIMS, my_dims, ktype));
+            AF_CHECK(af_create_handle(out_values, AF_MAX_DIMS, my_dims, ktype));
+            return AF_SUCCESS;
+        }
 
         TYPE_ASSERT(kinfo.isReal());
 
