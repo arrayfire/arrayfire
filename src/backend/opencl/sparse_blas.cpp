@@ -8,9 +8,11 @@
  ********************************************************/
 
 #include <sparse_blas.hpp>
+
 #include <kernel/csrmv.hpp>
 #include <kernel/csrmm.hpp>
 #include <kernel/cscmv.hpp>
+#include <kernel/cscmm.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -65,7 +67,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhsIn,
         if (N == 1) {
             kernel::cscmv(out, values, rowIdx, colIdx, rhs, alpha, beta, optLhs == AF_MAT_CTRANS);
         } else {
-            //kernel::csrmm_nt(out, values, rowIdx, colIdx, rhs, alpha, beta);
+            kernel::cscmm_nn(out, values, rowIdx, colIdx, rhs, alpha, beta, optLhs == AF_MAT_CTRANS);
         }
     }
     return out;
