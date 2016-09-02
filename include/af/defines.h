@@ -402,13 +402,13 @@ typedef enum {
 
 #if AF_API_VERSION >=34
 typedef enum {
-    AF_RANDOM_ENGINE_PHILOX_4X32_10 = 100,
-    AF_RANDOM_ENGINE_THREEFRY_2X32_16 = 200,
-    AF_RANDOM_ENGINE_MERSENNE_GP11213 = 300,
-    AF_RANDOM_ENGINE_PHILOX = AF_RANDOM_ENGINE_PHILOX_4X32_10,
-    AF_RANDOM_ENGINE_THREEFRY = AF_RANDOM_ENGINE_THREEFRY_2X32_16,
-    AF_RANDOM_ENGINE_MERSENNE = AF_RANDOM_ENGINE_MERSENNE_GP11213,
-    AF_RANDOM_ENGINE_DEFAULT = AF_RANDOM_ENGINE_PHILOX
+    AF_RANDOM_ENGINE_PHILOX_4X32_10     = 100,                                  //Philox variant with N = 4, W = 32 and Rounds = 10
+    AF_RANDOM_ENGINE_THREEFRY_2X32_16   = 200,                                  //Threefry variant with N = 2, W = 32 and Rounds = 16
+    AF_RANDOM_ENGINE_MERSENNE_GP11213   = 300,                                  //Mersenne variant with MEXP = 11213
+    AF_RANDOM_ENGINE_PHILOX             = AF_RANDOM_ENGINE_PHILOX_4X32_10,      //Resolves to Philox 4x32_10
+    AF_RANDOM_ENGINE_THREEFRY           = AF_RANDOM_ENGINE_THREEFRY_2X32_16,    //Resolves to Threefry 2X32_16
+    AF_RANDOM_ENGINE_MERSENNE           = AF_RANDOM_ENGINE_MERSENNE_GP11213,    //Resolves to Mersenne GP 11213
+    AF_RANDOM_ENGINE_DEFAULT            = AF_RANDOM_ENGINE_PHILOX               //Resolves to Philox
 } af_random_engine_type;
 #endif
 
