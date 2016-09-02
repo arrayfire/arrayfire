@@ -83,7 +83,7 @@ struct csr_dense
         int stride = out.strides()[1];
 
         int r = rowIdx.dims()[0];
-        for (int i = 0; i < r; i++) {
+        for (int i = 0; i < r - 1; i++) {
             for (int ii = rPtr[i]; ii < rPtr[i+1]; ++ii) {
                 int j = cPtr[ii];
                 T v = vPtr[ii];
