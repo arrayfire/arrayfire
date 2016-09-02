@@ -25,7 +25,7 @@ using af::cfloat;
 using af::cdouble;
 using af::array;
 using af::randomEngine;
-using af::randomType;
+using af::randomEngineType;
 using af::mean;
 using af::stdev;
 
@@ -274,14 +274,14 @@ TYPED_TEST(Random, getSeed)
 }
 
 template <typename T>
-void testRandomEngineUniform(randomType type)
+void testRandomEngineUniform(randomEngineType type)
 {
     if (noDoubleTests<T>()) return;
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
     int elem = 16*1024*1024;
     af::randomEngine r(type, 0);
-    array A = r.uniform(elem, ty);
+    array A = randu(elem, ty, r);
     T m = mean<T>(A);
     T s = stdev<T>(A);
     ASSERT_NEAR(m, 0.5, 1e-3);
@@ -289,14 +289,14 @@ void testRandomEngineUniform(randomType type)
 }
 
 template <typename T>
-void testRandomEngineNormal(randomType type)
+void testRandomEngineNormal(randomEngineType type)
 {
     if (noDoubleTests<T>()) return;
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
     int elem = 16*1024*1024;
     af::randomEngine r(type, 0);
-    array A = r.normal(elem, ty);
+    array A = randn(elem, ty, r);
     T m = mean<T>(A);
     T s = stdev<T>(A);
     ASSERT_NEAR(m, 0, 1e-1);
@@ -305,36 +305,36 @@ void testRandomEngineNormal(randomType type)
 
 TYPED_TEST(RandomEngine, philoxRandomEngineUniform)
 {
-    testRandomEngineUniform<TypeParam>(AF_RANDOM_PHILOX_4X32_10);
+    testRandomEngineUniform<TypeParam>(AF_RANDOM_ENGINE_PHILOX_4X32_10);
 }
 
 TYPED_TEST(RandomEngine, philoxRandomEngineNormal)
 {
-    testRandomEngineNormal<TypeParam>(AF_RANDOM_PHILOX_4X32_10);
+    testRandomEngineNormal<TypeParam>(AF_RANDOM_ENGINE_PHILOX_4X32_10);
 }
 
 TYPED_TEST(RandomEngine, threefryRandomEngineUniform)
 {
-    testRandomEngineUniform<TypeParam>(AF_RANDOM_THREEFRY_2X32_16);
+    testRandomEngineUniform<TypeParam>(AF_RANDOM_ENGINE_THREEFRY_2X32_16);
 }
 
 TYPED_TEST(RandomEngine, threefryRandomEngineNormal)
 {
-    testRandomEngineNormal<TypeParam>(AF_RANDOM_THREEFRY_2X32_16);
+    testRandomEngineNormal<TypeParam>(AF_RANDOM_ENGINE_THREEFRY_2X32_16);
 }
 
 TYPED_TEST(RandomEngine, mersenneRandomEngineUniform)
 {
-    testRandomEngineUniform<TypeParam>(AF_RANDOM_MERSENNE_GP11213);
+    testRandomEngineUniform<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
 }
 
 TYPED_TEST(RandomEngine, mersenneRandomEngineNormal)
 {
-    testRandomEngineNormal<TypeParam>(AF_RANDOM_MERSENNE_GP11213);
+    testRandomEngineNormal<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
 }
 
 template <typename T>
-void testRandomEngineSeed(randomType type)
+void testRandomEngineSeed(randomEngineType type)
 {
     int elem = 4*32*1024;
     uintl orig_seed = 0;
@@ -342,12 +342,12 @@ void testRandomEngineSeed(randomType type)
     af::randomEngine e(type, orig_seed);
 
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
-    array d1 = e.uniform(elem, ty);
+    array d1 = randu(elem, ty, e);
     e.setSeed(new_seed);
-    array d2 = e.uniform(elem, ty);
+    array d2 = randu(elem, ty, e);
     e.setSeed(orig_seed);
-    array d3 = e.uniform(elem, ty);
-    array d4 = e.uniform(elem, ty);
+    array d3 = randu(elem, ty, e);
+    array d4 = randu(elem, ty, e);
 
     std::vector<T> h1(elem);
     std::vector<T> h2(elem);
@@ -370,15 +370,15 @@ void testRandomEngineSeed(randomType type)
 
 TYPED_TEST(RandomEngineSeed, philoxSeedUniform)
 {
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_PHILOX_4X32_10);
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_ENGINE_PHILOX_4X32_10);
 }
 
 TYPED_TEST(RandomEngineSeed, threefrySeedUniform)
 {
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_THREEFRY_2X32_16);
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_ENGINE_THREEFRY_2X32_16);
 }
 
 TYPED_TEST(RandomEngineSeed, mersenneSeedUniform)
 {
-    testRandomEngineSeed<TypeParam>(AF_RANDOM_MERSENNE_GP11213);
+    testRandomEngineSeed<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
 }

@@ -20,10 +20,10 @@ namespace cuda
     void initMersenneState(Array<uint> &state, const uintl seed, const Array<uint> tbl);
 
     template<typename T>
-    Array<T> uniformDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter);
+    Array<T> uniformDistribution(const af::dim4 &dims, const af_random_engine_type type, const uintl &seed, uintl &counter);
 
     template<typename T>
-    Array<T> normalDistribution(const af::dim4 &dims, const af_random_type type, const uintl &seed, uintl &counter);
+    Array<T> normalDistribution(const af::dim4 &dims, const af_random_engine_type type, const uintl &seed, uintl &counter);
 
     template<typename T>
     Array<T> uniformDistribution(const af::dim4 &dims,

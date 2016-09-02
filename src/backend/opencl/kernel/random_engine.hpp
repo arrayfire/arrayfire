@@ -48,7 +48,7 @@ namespace opencl
         static const uint THREADS = 256;
 
         template <typename T>
-        static Kernel get_random_engine_kernel(const af_random_type type, const int kerIdx, const uint elementsPerBlock)
+        static Kernel get_random_engine_kernel(const af_random_engine_type type, const int kerIdx, const uint elementsPerBlock)
         {
             using std::string;
             using std::to_string;
@@ -58,17 +58,17 @@ namespace opencl
             ker_strs[0] = random_engine_write_cl;
             ker_lens[0] = random_engine_write_cl_len;
             switch (type) {
-                case AF_RANDOM_PHILOX_4X32_10   :
+                case AF_RANDOM_ENGINE_PHILOX_4X32_10   :
                     engineName = "Philox";
                     ker_strs[1] = random_engine_philox_cl;
                     ker_lens[1] = random_engine_philox_cl_len;
                     break;
-                case AF_RANDOM_THREEFRY_2X32_16 :
+                case AF_RANDOM_ENGINE_THREEFRY_2X32_16 :
                     engineName = "Threefry";
                     ker_strs[1] = random_engine_threefry_cl;
                     ker_lens[1] = random_engine_threefry_cl_len;
                     break;
-                case AF_RANDOM_MERSENNE_GP11213 :
+                case AF_RANDOM_ENGINE_MERSENNE_GP11213 :
                     engineName = "Mersenne";
                     ker_strs[1] = random_engine_mersenne_cl;
                     ker_lens[1] = random_engine_mersenne_cl_len;
@@ -89,7 +89,7 @@ namespace opencl
                 options << " -D T=" << dtype_traits<T>::getName()
                         << " -D THREADS=" << THREADS
                         << " -D RAND_DIST=" << kerIdx;
-                if (type != AF_RANDOM_MERSENNE_GP11213) {
+                if (type != AF_RANDOM_ENGINE_MERSENNE_GP11213) {
                     options << " -D ELEMENTS_PER_BLOCK=" << elementsPerBlock;
                 }
                 if (std::is_same<T, double>::value) {
@@ -138,7 +138,7 @@ namespace opencl
 
         template <typename T>
         static void randomDistribution(cl::Buffer out, const size_t elements,
-                const af_random_type type, const uintl &seed, uintl &counter, int kerIdx)
+                const af_random_engine_type type, const uintl &seed, uintl &counter, int kerIdx)
         {
             try {
                 uint elementsPerBlock = THREADS*4*sizeof(uint)/sizeof(T);
@@ -150,7 +150,7 @@ namespace opencl
                 NDRange local(THREADS, 1);
                 NDRange global(THREADS * groups, 1);
 
-                if ((type == AF_RANDOM_PHILOX_4X32_10) || (type == AF_RANDOM_THREEFRY_2X32_16)) {
+                if ((type == AF_RANDOM_ENGINE_PHILOX_4X32_10) || (type == AF_RANDOM_ENGINE_THREEFRY_2X32_16)) {
                     Kernel ker = get_random_engine_kernel<T>(type, kerIdx, elementsPerBlock);
                     auto randomEngineOp = KernelFunctor<cl::Buffer, uint, uint, uint, uint>(ker);
                     randomEngineOp(EnqueueArgs(getQueue(), global, local),
@@ -179,7 +179,7 @@ namespace opencl
 
                 NDRange local(threads, 1);
                 NDRange global(threads * blocks, 1);
-                Kernel ker = get_random_engine_kernel<T>(AF_RANDOM_MERSENNE_GP11213, kerIdx, elementsPerBlock);
+                Kernel ker = get_random_engine_kernel<T>(AF_RANDOM_ENGINE_MERSENNE_GP11213, kerIdx, elementsPerBlock);
                 auto randomEngineOp = KernelFunctor<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer,
                      uint, cl::Buffer, cl::Buffer, uint, uint>(ker);
                 randomEngineOp(EnqueueArgs(getQueue(), global, local),
@@ -192,14 +192,14 @@ namespace opencl
 
         template <typename T>
         void uniformDistributionCBRNG(cl::Buffer out, const size_t elements,
-                const af_random_type type, const uintl &seed, uintl &counter)
+                const af_random_engine_type type, const uintl &seed, uintl &counter)
         {
             randomDistribution<T>(out, elements, type, seed, counter, 0);
         }
 
         template <typename T>
         void normalDistributionCBRNG(cl::Buffer out, const size_t elements,
-                const af_random_type type, const uintl &seed, uintl &counter)
+                const af_random_engine_type type, const uintl &seed, uintl &counter)
         {
             randomDistribution<T>(out, elements, type, seed, counter, 1);
         }

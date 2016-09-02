@@ -58,17 +58,17 @@ namespace common
     const dim_t MersenneN = 351;
     const dim_t MtStateLength = MaxBlocks * MersenneN;
 
-    static int pos[] = {
+    static unsigned pos[] = {
     88, 84, 25, 42, 22, 11, 76, 11, 42, 60, 45, 80, 81, 16, 63, 38,
     3, 55, 9, 75, 70, 63, 32, 70, 58, 33, 18, 9, 14, 91, 90, 86,
     };
 
-    static int sh1[] = {
+    static unsigned sh1[] = {
     19, 15, 4, 20, 1, 16, 16, 15, 6, 6, 12, 6, 8, 1, 14, 28,
     30, 1, 9, 17, 15, 15, 7, 12, 21, 7, 7, 12, 16, 4, 10, 6,
     };
 
-    static int sh2[] = {
+    static unsigned sh2[] = {
     5, 12, 18, 9, 5, 1, 6, 16, 11, 11, 13, 9, 18, 19, 18, 1,
     2, 16, 15, 6, 6, 17, 15, 10, 2, 10, 13, 13, 3, 2, 14, 7,
     };

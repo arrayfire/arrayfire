@@ -15,9 +15,14 @@
 
 namespace af
 {
-    randomEngine::randomEngine(randomType type, uintl seed)
+    randomEngine::randomEngine(randomEngineType type, uintl seed)
     {
         AF_THROW(af_create_random_engine(&engine, type, seed));
+    }
+
+    randomEngine::randomEngine(void)
+    {
+        af_get_default_random_engine(&engine);
     }
 
     randomEngine::randomEngine(const randomEngine& other)
@@ -43,71 +48,16 @@ namespace af
         return *this;
     }
 
-    void randomEngine::setType(const randomType type)
+    randomEngineType randomEngine::getType(void)
+    {
+        af_random_engine_type type;
+        AF_THROW(af_random_engine_get_type(&type, engine));
+        return type;
+    }
+
+    void randomEngine::setType(const randomEngineType type)
     {
         AF_THROW(af_random_engine_set_type(&engine, type));
-    }
-
-    array randomEngine::uniform(const dim_t dim0, const dtype ty)
-    {
-        dim4 d(dim0, 1, 1, 1);
-        return uniform(d, ty);
-    }
-
-    array randomEngine::uniform(const dim_t dim0, const dim_t dim1, const dtype ty)
-    {
-        dim4 d(dim0, dim1, 1, 1);
-        return uniform(d, ty);
-    }
-
-    array randomEngine::uniform(const dim_t dim0, const dim_t dim1, const dim_t dim2, const dtype ty)
-    {
-        dim4 d(dim0, dim1, dim2, 1);
-        return uniform(d, ty);
-    }
-
-    array randomEngine::uniform(const dim_t dim0, const dim_t dim1, const dim_t dim2, const dim_t dim3, const dtype ty)
-    {
-        dim4 d(dim0, dim1, dim2, dim3);
-        return uniform(d, ty);
-    }
-
-    array randomEngine::uniform(const dim4& dims, const dtype ty)
-    {
-        af_array out;
-        AF_THROW(af_random_engine_uniform(&out, engine, dims.ndims(), dims.get(), ty));
-        return array(out);
-    }
-
-    array randomEngine::normal(const dim_t dim0, const dtype ty)
-    {
-        dim4 d(dim0, 1, 1, 1);
-        return normal(d, ty);
-    }
-
-    array randomEngine::normal(const dim_t dim0, const dim_t dim1, const dtype ty)
-    {
-        dim4 d(dim0, dim1, 1, 1);
-        return normal(d, ty);
-    }
-
-    array randomEngine::normal(const dim_t dim0, const dim_t dim1, const dim_t dim2, const dtype ty)
-    {
-        dim4 d(dim0, dim1, dim2, 1);
-        return normal(d, ty);
-    }
-
-    array randomEngine::normal(const dim_t dim0, const dim_t dim1, const dim_t dim2, const dim_t dim3, const dtype ty)
-    {
-        dim4 d(dim0, dim1, dim2, dim3);
-        return normal(d, ty);
-    }
-
-    array randomEngine::normal(const dim4& dims, const dtype ty)
-    {
-        af_array out;
-        AF_THROW(af_random_engine_normal(&out, engine, dims.ndims(), dims.get(), ty));
-        return array(out);
     }
 
     void randomEngine::setSeed(const uintl seed)
@@ -122,9 +72,23 @@ namespace af
         return seed;
     }
 
-    af_random_engine randomEngine::get() const
+    af_random_engine randomEngine::get(void) const
     {
         return engine;
+    }
+
+    AFAPI array randu(const dim4 &dims, const dtype ty, randomEngine &r)
+    {
+        af_array out;
+        AF_THROW(af_random_uniform(&out, dims.ndims(), dims.get(), ty, r.get()));
+        return array(out);
+    }
+
+    AFAPI array randn(const dim4 &dims, const dtype ty, randomEngine &r)
+    {
+        af_array out;
+        AF_THROW(af_random_normal(&out, dims.ndims(), dims.get(), ty, r.get()));
+        return array(out);
     }
 
     array randu(const dim4 &dims, const af::dtype type)
@@ -189,7 +153,7 @@ namespace af
         return randn(dim4(d0, d1, d2, d3), ty);
     }
 
-    void setDefaultRandomEngine(randomType rtype)
+    void setDefaultRandomEngine(randomEngineType rtype)
     {
         AF_THROW(af_set_default_random_engine(rtype));
     }

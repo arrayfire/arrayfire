@@ -620,7 +620,7 @@ namespace kernel
     }
 
     template <typename T>
-    void uniformDistributionCBRNG(T* out, size_t elements, const af_random_type type, const uintl &seed, uintl &counter)
+    void uniformDistributionCBRNG(T* out, size_t elements, const af_random_engine_type type, const uintl &seed, uintl &counter)
     {
         int threads = THREADS;
         int elementsPerBlock = threads*4*sizeof(uint)/sizeof(T);
@@ -628,9 +628,9 @@ namespace kernel
         uint hi = seed>>32;
         uint lo = seed;
         switch (type) {
-        case AF_RANDOM_PHILOX_4X32_10   :
+        case AF_RANDOM_ENGINE_PHILOX_4X32_10   :
             CUDA_LAUNCH(uniformPhilox, blocks, threads, out, hi, lo, counter, elementsPerBlock, elements); break;
-        case AF_RANDOM_THREEFRY_2X32_16 :
+        case AF_RANDOM_ENGINE_THREEFRY_2X32_16 :
             CUDA_LAUNCH(uniformThreefry, blocks, threads, out, hi, lo, counter, elementsPerBlock, elements); break;
         default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
@@ -638,7 +638,7 @@ namespace kernel
     }
 
     template <typename T>
-    void normalDistributionCBRNG(T *out, size_t elements, const af_random_type type, const uintl &seed, uintl &counter)
+    void normalDistributionCBRNG(T *out, size_t elements, const af_random_engine_type type, const uintl &seed, uintl &counter)
     {
         int threads = THREADS;
         int elementsPerBlock = threads*4*sizeof(uint)/sizeof(T);
@@ -646,9 +646,9 @@ namespace kernel
         uint hi = seed>>32;
         uint lo = seed;
         switch (type) {
-        case AF_RANDOM_PHILOX_4X32_10   :
+        case AF_RANDOM_ENGINE_PHILOX_4X32_10   :
             CUDA_LAUNCH(normalPhilox, blocks, threads, out, hi, lo, counter, elementsPerBlock, elements); break;
-        case AF_RANDOM_THREEFRY_2X32_16 :
+        case AF_RANDOM_ENGINE_THREEFRY_2X32_16 :
             CUDA_LAUNCH(normalThreefry, blocks, threads, out, hi, lo, counter, elementsPerBlock, elements); break;
         default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
