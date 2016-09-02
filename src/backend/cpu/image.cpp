@@ -23,17 +23,19 @@ using af::dim4;
 
 namespace cpu
 {
+using namespace gl;
 
 template<typename T>
-void copy_image(const Array<T> &in, const fg::Image* image)
+void copy_image(const Array<T> &in, const forge::Image* image)
 {
     in.eval();
     getQueue().sync();
+
     CheckGL("Before CopyArrayToPBO");
     const T *d_X = in.get();
     size_t data_size = image->size();
 
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, image->pbo());
+    glBindBuffer(gl::GL_PIXEL_UNPACK_BUFFER, image->pbo());
     glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, data_size, d_X);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
@@ -41,7 +43,7 @@ void copy_image(const Array<T> &in, const fg::Image* image)
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_image<T>(const Array<T> &in, const fg::Image* image);
+    template void copy_image<T>(const Array<T> &in, const forge::Image* image);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

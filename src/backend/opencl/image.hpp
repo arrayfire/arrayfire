@@ -15,7 +15,7 @@
 namespace opencl
 {
     template<typename T>
-    void copy_image(const Array<T> &in, const fg::Image* image);
+    void copy_image(const Array<T> &in, const forge::Image* image);
 }
 
 #endif

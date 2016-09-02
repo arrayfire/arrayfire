@@ -12,6 +12,19 @@
 
 #if defined(WITH_GRAPHICS)
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
+// cuda_gl_interop.h does not include OpenGL headers for ARM
+#include <glbinding/gl/gl.h>
+#include <glbinding/Binding.h>
+
+#if defined(__arm__) || defined(__aarch64__)
+using namespace gl;
+#define GL_VERSION gl::GL_VERSION
+#endif
+
 #include <platform.hpp>
 #include <graphics_common.hpp>
 
@@ -40,11 +53,10 @@ class InteropManager
         static bool checkGraphicsInteropCapability();
 
         ~InteropManager();
-        cudaGraphicsResource* getBufferResource(const fg::Image* handle);
-        cudaGraphicsResource* getBufferResource(const fg::Plot* handle);
-        cudaGraphicsResource* getBufferResource(const fg::Plot3* handle);
-        cudaGraphicsResource* getBufferResource(const fg::Histogram* handle);
-        cudaGraphicsResource* getBufferResource(const fg::Surface* handle);
+        cudaGraphicsResource* getBufferResource(const forge::Image* handle);
+        cudaGraphicsResource* getBufferResource(const forge::Plot* handle);
+        cudaGraphicsResource* getBufferResource(const forge::Histogram* handle);
+        cudaGraphicsResource* getBufferResource(const forge::Surface* handle);
 
     protected:
         InteropManager() {}

@@ -20,23 +20,25 @@ using af::dim4;
 
 namespace cpu
 {
+using namespace gl;
 
 template<typename T>
-void copy_surface(const Array<T> &P, fg::Surface* surface)
+void copy_surface(const Array<T> &P, forge::Surface* surface)
 {
     P.eval();
     getQueue().sync();
+
     CheckGL("Before CopyArrayToVBO");
 
-    glBindBuffer(GL_ARRAY_BUFFER, surface->vbo());
-    glBufferSubData(GL_ARRAY_BUFFER, 0, surface->size(), P.get());
+    glBindBuffer(GL_ARRAY_BUFFER, surface->vertices());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, surface->verticesSize(), P.get());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     CheckGL("In CopyArrayToVBO");
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_surface<T>(const Array<T> &P, fg::Surface* surface);
+    template void copy_surface<T>(const Array<T> &P, forge::Surface* surface);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

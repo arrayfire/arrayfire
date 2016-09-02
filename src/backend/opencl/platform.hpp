@@ -82,7 +82,7 @@ class DeviceManager
         DeviceManager(DeviceManager const&);
         void operator=(DeviceManager const&);
 #if defined(WITH_GRAPHICS)
-        void markDeviceForInterop(const int device, const fg::Window* wHandle);
+        void markDeviceForInterop(const int device, const forge::Window* wHandle);
 #endif
 
     private:

@@ -22,9 +22,10 @@ using af::dim4;
 
 namespace cuda
 {
+using namespace gl;
 
 template<typename T>
-void copy_image(const Array<T> &in, const fg::Image* image)
+void copy_image(const Array<T> &in, const forge::Image* image)
 {
     if(InteropManager::checkGraphicsInteropCapability()) {
         InteropManager& intrpMngr = InteropManager::getInstance();
@@ -45,20 +46,20 @@ void copy_image(const Array<T> &in, const fg::Image* image)
         CheckGL("After cuda resource copy");
     } else {
         CheckGL("Begin CUDA fallback-resource copy");
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, image->pbo());
-        glBufferData(GL_PIXEL_UNPACK_BUFFER, image->size(), 0, GL_STREAM_DRAW);
-        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+        glBindBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, image->pbo());
+        glBufferData((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, image->size(), 0, (gl::GLenum)GL_STREAM_DRAW);
+        gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
         if (ptr) {
             CUDA_CHECK(cudaMemcpy(ptr, in.get(), image->size(), cudaMemcpyDeviceToHost));
-            glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+            glUnmapBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER);
         }
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+        glBindBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, 0);
         CheckGL("End CUDA fallback-resource copy");
     }
 }
 
 #define INSTANTIATE(T)      \
-    template void copy_image<T>(const Array<T> &in, const fg::Image* image);
+    template void copy_image<T>(const Array<T> &in, const forge::Image* image);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

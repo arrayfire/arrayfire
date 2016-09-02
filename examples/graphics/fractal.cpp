@@ -50,8 +50,8 @@ array mandelbrot(const array &in, int iter, float maxval)
         Z = Z * (1 - cond);
 
         // Ensuring the JIT does not become too large
-        C.eval();
-        Z.eval();
+        af::eval(C, Z);
+        mag.eval();
     }
 
     // Normalize

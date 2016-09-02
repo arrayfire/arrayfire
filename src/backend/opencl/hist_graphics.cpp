@@ -17,14 +17,15 @@
 
 namespace opencl
 {
+using namespace gl;
 
 template<typename T>
-void copy_histogram(const Array<T> &data, const fg::Histogram* hist)
+void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
 {
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = data.get();
-        size_t bytes = hist->size();
+        size_t bytes = hist->verticesSize();
 
         InteropManager& intrpMngr = InteropManager::getInstance();
 
@@ -49,10 +50,10 @@ void copy_histogram(const Array<T> &data, const fg::Histogram* hist)
         CheckGL("End OpenCL resource copy");
     } else {
         CheckGL("Begin OpenCL fallback-resource copy");
-        glBindBuffer(GL_ARRAY_BUFFER, hist->vbo());
+        glBindBuffer(GL_ARRAY_BUFFER, hist->vertices());
         GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
-            getQueue().enqueueReadBuffer(*data.get(), CL_TRUE, 0, hist->size(), ptr);
+            getQueue().enqueueReadBuffer(*data.get(), CL_TRUE, 0, hist->verticesSize(), ptr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -61,7 +62,7 @@ void copy_histogram(const Array<T> &data, const fg::Histogram* hist)
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_histogram<T>(const Array<T> &data, const fg::Histogram* hist);
+    template void copy_histogram<T>(const Array<T> &data, const forge::Histogram* hist);
 
 INSTANTIATE(float)
 INSTANTIATE(int)

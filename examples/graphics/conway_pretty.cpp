@@ -29,19 +29,21 @@ int main(int argc, char *argv[])
                   << "3. Any live cell with more than three live neighbours dies, as if by overcrowding." << std::endl
                   << "4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction." << std::endl
                   << "Each white block in the visualization represents 1 alive cell, black space represents dead cells" << std::endl
-                  ;
+                  << std::endl;
+
         std::cout << "The conway_pretty example visualizes all the states in Conway" << std::endl
                   << "Red   : Cells that have died due to under population"          << std::endl
                   << "Yellow: Cells that continue to live from previous state"       << std::endl
                   << "Green : Cells that are new as a result of reproduction"        << std::endl
                   << "Blue  : Cells that have died due to over population"           << std::endl
-                  ;
+                  << std::endl;
+
         std::cout << "This examples is throttled so as to be a better visualization" << std::endl;
 
         af::Window simpleWindow(512, 512, "Conway's Game Of Life - Current State");
         af::Window prettyWindow(512, 512, "Conway's Game Of Life - Visualizing States");
-        simpleWindow.setPos(25, 25);
-        prettyWindow.setPos(125, 15);
+        simpleWindow.setPos(32, 32);
+        prettyWindow.setPos(512 + 32, 32);
 
         int frame_count = 0;
 

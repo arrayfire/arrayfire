@@ -35,7 +35,7 @@ InteropManager& InteropManager::getInstance()
     return my_instance;
 }
 
-cl::Buffer* InteropManager::getBufferResource(const fg::Image* image)
+cl::Buffer* InteropManager::getBufferResource(const forge::Image* image)
 {
     void * key = (void*)image;
     int device = getActiveDeviceId();
@@ -47,50 +47,38 @@ cl::Buffer* InteropManager::getBufferResource(const fg::Image* image)
     return interop_maps[device][key];
 }
 
-cl::Buffer* InteropManager::getBufferResource(const fg::Plot* plot)
+cl::Buffer* InteropManager::getBufferResource(const forge::Plot* plot)
 {
     void * key = (void*)plot;
     int device = getActiveDeviceId();
     iter_t iter = interop_maps[device].find(key);
 
     if (iter == interop_maps[device].end())
-        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot->vbo(), NULL);
+        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot->vertices(), NULL);
 
     return interop_maps[device][key];
 }
 
-cl::Buffer* InteropManager::getBufferResource(const fg::Plot3* plot3)
-{
-    void * key = (void*)plot3;
-    int device = getActiveDeviceId();
-    iter_t iter = interop_maps[device].find(key);
-
-    if (iter == interop_maps[device].end())
-        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot3->vbo(), NULL);
-
-    return interop_maps[device][key];
-}
-
-cl::Buffer* InteropManager::getBufferResource(const fg::Histogram* hist)
+cl::Buffer* InteropManager::getBufferResource(const forge::Histogram* hist)
 {
     void * key = (void*)hist;
     int device = getActiveDeviceId();
     iter_t iter = interop_maps[device].find(key);
 
     if (iter == interop_maps[device].end())
-        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, hist->vbo(), NULL);
+        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, hist->vertices(), NULL);
 
     return interop_maps[device][key];
 }
 
-cl::Buffer* InteropManager::getBufferResource(const fg::Surface* surface)
+cl::Buffer* InteropManager::getBufferResource(const forge::Surface* surface)
 {
     void * key = (void*)surface;
     int device = getActiveDeviceId();
     iter_t iter = interop_maps[device].find(key);
 
     if (iter == interop_maps[device].end())
-        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, surface->vbo(), NULL);
+        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, surface->vertices(), NULL);
 
     return interop_maps[device][key];
 }
