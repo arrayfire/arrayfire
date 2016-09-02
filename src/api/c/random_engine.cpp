@@ -113,6 +113,7 @@ af_err af_get_default_random_engine(af_random_engine *r)
 af_err af_create_random_engine(af_random_engine *engineHandle, af_random_engine_type rtype, uintl seed)
 {
     try {
+        AF_CHECK(af_init());
         validateRandomType(rtype);
         RandomEngine e;
         e.type = rtype;
@@ -148,6 +149,7 @@ af_err af_create_random_engine(af_random_engine *engineHandle, af_random_engine_
 af_err af_retain_random_engine(af_random_engine *outHandle, const af_random_engine engineHandle)
 {
     try {
+        AF_CHECK(af_init());
         RandomEngine engine = *(getRandomEngine(engineHandle));
         RandomEngine out;
 
@@ -253,8 +255,8 @@ af_err af_random_engine_get_seed(uintl * const seed, af_random_engine engine)
 af_err af_random_uniform(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type, af_random_engine engine)
 {
     try {
-        af_array result;
         AF_CHECK(af_init());
+        af_array result;
 
         af::dim4 d = verifyDims(ndims, dims);
         RandomEngine *e = getRandomEngine(engine);
@@ -283,8 +285,8 @@ af_err af_random_uniform(af_array *out, const unsigned ndims, const dim_t * cons
 af_err af_random_normal(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type, af_random_engine engine)
 {
     try {
-        af_array result;
         AF_CHECK(af_init());
+        af_array result;
 
         af::dim4 d = verifyDims(ndims, dims);
         RandomEngine *e = getRandomEngine(engine);
@@ -305,6 +307,7 @@ af_err af_random_normal(af_array *out, const unsigned ndims, const dim_t * const
 af_err af_release_random_engine(af_random_engine engineHandle)
 {
     try {
+        AF_CHECK(af_init());
         RandomEngine *e = getRandomEngine(engineHandle);
         if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
             AF_CHECK(af_release_array(e->pos));
@@ -323,8 +326,8 @@ af_err af_release_random_engine(af_random_engine engineHandle)
 af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
 {
     try {
-        af_array result;
         AF_CHECK(af_init());
+        af_array result;
 
         af_random_engine engine;
         AF_CHECK(af_get_default_random_engine(&engine));
@@ -355,8 +358,8 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, c
 af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
 {
     try {
-        af_array result;
         AF_CHECK(af_init());
+        af_array result;
 
         af_random_engine engine;
         AF_CHECK(af_get_default_random_engine(&engine));
@@ -379,6 +382,7 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, c
 af_err af_set_seed(const uintl seed)
 {
     try {
+        AF_CHECK(af_init());
         af_random_engine engine;
         AF_CHECK(af_get_default_random_engine(&engine));
         AF_CHECK(af_random_engine_set_seed(&engine, seed));
@@ -389,6 +393,7 @@ af_err af_set_seed(const uintl seed)
 af_err af_get_seed(uintl *seed)
 {
     try {
+        AF_CHECK(af_init());
         af_random_engine e;
         AF_CHECK(af_get_default_random_engine(&e));
         AF_CHECK(af_random_engine_get_seed(seed, e));
