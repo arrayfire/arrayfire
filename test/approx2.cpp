@@ -158,7 +158,6 @@ void approx2ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
     APPROX2_ARGS(Approx2NearestArgsPos3D,      approx2_pos3d,   0, AF_INTERP_NEAREST,  AF_ERR_SIZE);
     APPROX2_ARGS(Approx2LinearArgsPos3D,       approx2_pos3d,   1, AF_INTERP_LINEAR,   AF_ERR_SIZE);
     APPROX2_ARGS(Approx2NearestArgsPosUnequal, approx2_unequal, 0, AF_INTERP_NEAREST,  AF_ERR_SIZE);
-    APPROX2_ARGS(Approx2ArgsInterpBilinear,    approx2,         0, AF_INTERP_BILINEAR, AF_ERR_ARG);
 
 template<typename T>
 void approx2ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const af_interp_type method)

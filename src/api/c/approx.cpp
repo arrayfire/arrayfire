@@ -105,7 +105,9 @@ af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const a
                       (pdims[2] == idims[2] && pdims[3] == idims[3]));
         ARG_ASSERT(3, (method == AF_INTERP_LINEAR  ||
                        method == AF_INTERP_NEAREST ||
-                       method == AF_INTERP_CUBIC));
+                       method == AF_INTERP_CUBIC   ||
+                       method == AF_INTERP_BILINEAR ||
+                       method == AF_INTERP_BICUBIC));
 
         if(idims.ndims() == 0 || pdims.ndims() ==  0 || qdims.ndims() == 0) {
             dim_t my_dims[] = { 0, 0, 0, 0 };
