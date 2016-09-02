@@ -83,7 +83,7 @@ struct approx1_op<InT, LocT, AF_INTERP_LINEAR>
         }
 
         dim_t const grid_x = floor(x);  // nearest grid
-        LocT const off_x = x - grid_x; // fractional offset
+        LocT const off_x = x - grid_x;  // fractional offset
 
         dim_t const omId = idw * ostrides[3] + idz * ostrides[2]
                          + idy * ostrides[1] + idx;
@@ -102,6 +102,57 @@ struct approx1_op<InT, LocT, AF_INTERP_LINEAR>
             LocT wt = cond ? (LocT)1.0 : (LocT)(1.0 - off_x);
             // Write final value
             out[omId] = (yo / wt);
+        }
+    }
+};
+
+template<typename InT, typename LocT>
+struct approx1_op<InT, LocT, AF_INTERP_CUBIC>
+{
+    void operator()(InT *out, af::dim4 const & odims, dim_t const oElems,
+              InT const * const in,  af::dim4 const & idims, dim_t const iElems,
+              LocT const * const pos, af::dim4 const & pdims,
+              af::dim4 const & ostrides, af::dim4 const & istrides, af::dim4 const & pstrides,
+              float const offGrid, bool const pBatch,
+              dim_t const idx, dim_t const idy, dim_t const idz, dim_t const idw)
+    {
+        dim_t pmId = idx;
+        if(pBatch) pmId += idw * pstrides[3] + idz * pstrides[2] + idy * pstrides[1];
+
+        LocT const x = pos[pmId];
+        bool gFlag = false;
+        if (x < 0 || idims[0] < x + 1) { //check index of bounds
+            gFlag = true;
+        }
+
+        dim_t const grid_x = floor(x);  // nearest grid
+        LocT  const off_x  = x - grid_x;  // fractional offset
+
+        dim_t const omId = idw * ostrides[3] + idz * ostrides[2]
+                         + idy * ostrides[1] + idx;
+
+        if(gFlag) {
+            out[omId] = scalar<InT>(offGrid);
+        } else {
+            dim_t ioff = idw * istrides[3] + idz * istrides[2] + idy * istrides[1] + grid_x;
+
+            //compute basis function values
+            InT h00 = (1 + 2 * off_x) * (1 - off_x) * (1 - off_x);
+            InT h10 = off_x * (1 - off_x) * (1 - off_x);
+            InT h01 = off_x * off_x * (3 - 2 * off_x);
+            InT h11 = off_x * off_x * (off_x - 1);
+            // Check if x-1, x, and x+1, x+2 are both valid indices
+            bool condr  = (grid_x > 0);
+            bool condl1 = (grid_x < idims[0] - 1);
+            bool condl2 = (grid_x < idims[0] - 2);
+            // Compute Left and Right points and tangents
+            InT pl = in[ioff];
+            InT pr = condl1  ? in[ioff + 1] : in[ioff];
+            InT tl = condr   ? scalar<InT>(0.5) * (in[ioff + 1] - in[ioff - 1]) : (in[ioff + 1] - in[ioff]);
+            InT tr = condl2  ? scalar<InT>(0.5) * (in[ioff + 2] - in[ioff]) : (condl1) ? in[ioff + 1] - in[ioff] : (in[ioff] - in[ioff - 1]);
+
+            // Write final value
+            out[omId] = h00 * pl + h10 * tl + h01 * pr + h11 * tr;
         }
     }
 };
