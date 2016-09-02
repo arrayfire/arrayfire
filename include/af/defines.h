@@ -226,6 +226,9 @@ typedef enum {
     AF_INTERP_LINEAR,   ///< Linear Interpolation
     AF_INTERP_BILINEAR, ///< Bilinear Interpolation
     AF_INTERP_CUBIC,    ///< Cubic Interpolation
+#if AF_API_VERSION >= 34
+    AF_INTERP_BICUBIC,  ///< Bicubic Interpolation
+#endif
     AF_INTERP_LOWER     ///< Floor Indexed
 } af_interp_type;
 
