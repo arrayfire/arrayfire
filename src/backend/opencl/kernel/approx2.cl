@@ -163,35 +163,24 @@ void core_cubic2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t 
     const Tp off_x  = x - grid_x, off_y  = y - grid_y; // fractional offset
 
     dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + grid_y * in.strides[1] + grid_x;
+
     // used for setting values at boundaries
-    bool condXl = (grid_x < 1);
-    bool condYl = (grid_y < 1);
-    bool condXg = (grid_x > in.dims[0] - 3);
-    bool condYg = (grid_y > in.dims[1] - 3);
+    bool condX[4] = {grid_x - 1 >= 0, true, grid_x + 1 < in.dims[0], grid_x + 2 < in.dims[0]};
+    bool condY[4] = {grid_y - 1 >= 0, true, grid_y + 1 < in.dims[1], grid_y + 2 < in.dims[1]};
+    int  offX[4]  = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0 , condX[3] ? 2 : (condX[2] ? 1 : 0)};
+    int  offY[4]  = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0 , condY[3] ? 2 : (condY[2] ? 1 : 0)};
 
     //for bicubic interpolation, work with 4x4 patch at a time
     Ty patch[4][4];
 
-    //assumption is that inner patch consisting of 4 points is minimum requirement for bicubic interpolation
-    //inner square
-    patch[1][1] = d_in[ioff];
-    patch[1][2] = d_in[ioff + 1];
-    patch[2][1] = d_in[ioff + in.strides[1]];
-    patch[2][2] = d_in[ioff + in.strides[1] + 1];
-    //outer sides
-    patch[0][1] = (condYl)? d_in[ioff]     : d_in[ioff - in.strides[1]];
-    patch[0][2] = (condYl)? d_in[ioff + 1] : d_in[ioff - in.strides[1] + 1];
-    patch[3][1] = (condYg)? d_in[ioff + in.strides[1]]     : d_in[ioff + 2 * in.strides[1]];
-    patch[3][2] = (condYg)? d_in[ioff + in.strides[1] + 1] : d_in[ioff + 2 * in.strides[1] + 1];
-    patch[1][0] = (condXl)? d_in[ioff] : d_in[ioff - 1];
-    patch[2][0] = (condXl)? d_in[ioff + in.strides[1]] : d_in[ioff + in.strides[1] - 1];
-    patch[1][3] = (condXg)? d_in[ioff + 1] : d_in[ioff + 2];
-    patch[2][3] = (condXg)? d_in[ioff + in.strides[1] + 1] : d_in[ioff + in.strides[1] + 2];
-    //corners
-    patch[0][0] = (condXl || condYl)? d_in[ioff] : d_in[ioff - in.strides[1] - 1]    ;
-    patch[0][3] = (condYl || condXg)? d_in[ioff + 1] : d_in[ioff - in.strides[1] + 1]    ;
-    patch[3][0] = (condXl || condYg)? d_in[ioff + in.strides[1]] : d_in[ioff + 2 * in.strides[1] - 1];
-    patch[3][3] = (condXg || condYg)? d_in[ioff + in.strides[1] + 1] : d_in[ioff + 2 * in.strides[1] + 2];
+#pragma unroll
+    for (int j = 0; j < 4; j++) {
+        int ioff_j = ioff + offY[j] * in.strides[1];
+#pragma unroll
+        for (int i = 0; i < 4; i++) {
+            patch[j][i] = d_in[ioff_j + offX[i]];
+        }
+    }
 
     set(d_out[omId], bicubicInterpolate(patch, off_x, off_y));
 }

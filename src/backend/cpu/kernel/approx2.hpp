@@ -191,34 +191,19 @@ struct approx2_op<InT, LocT, AF_INTERP_CUBIC>
         }
 
         // used for setting values at boundaries
-        bool condXl = (grid_x < 1);
-        bool condYl = (grid_y < 1);
-        bool condXg = (grid_x > idims[0] - 3);
-        bool condYg = (grid_y > idims[1] - 3);
+        bool condX[4] = {grid_x - 1 >= 0, true, grid_x + 1 < idims[0], grid_x + 2 < idims[0]};
+        bool condY[4] = {grid_y - 1 >= 0, true, grid_y + 1 < idims[1], grid_y + 2 < idims[1]};
+        int  offX[4]  = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0 , condX[3] ? 2 : (condX[2] ? 1 : 0)};
+        int  offY[4]  = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0 , condY[3] ? 2 : (condY[2] ? 1 : 0)};
 
         //for bicubic interpolation, work with 4x4 patch at a time
         InT patch[4][4];
-
-        //assumption is that inner patch consisting of 4 points is minimum requirement for bicubic interpolation
-        //inner square
-        patch[1][1] = in[ioff];
-        patch[1][2] = in[ioff + 1];
-        patch[2][1] = in[ioff + istrides[1]];
-        patch[2][2] = in[ioff + istrides[1] + 1];
-        //outer sides
-        patch[0][1] = (condYl)? in[ioff]     : in[ioff - istrides[1]];
-        patch[0][2] = (condYl)? in[ioff + 1] : in[ioff - istrides[1] + 1];
-        patch[3][1] = (condYg)? in[ioff + istrides[1]]     : in[ioff + 2 * istrides[1]];
-        patch[3][2] = (condYg)? in[ioff + istrides[1] + 1] : in[ioff + 2 * istrides[1] + 1];
-        patch[1][0] = (condXl)? in[ioff] : in[ioff - 1];
-        patch[2][0] = (condXl)? in[ioff + istrides[1]] : in[ioff + istrides[1] - 1];
-        patch[1][3] = (condXg)? in[ioff + 1] : in[ioff + 2];
-        patch[2][3] = (condXg)? in[ioff + istrides[1] + 1] : in[ioff + istrides[1] + 2];
-        //corners
-        patch[0][0] = (condXl || condYl)? in[ioff] : in[ioff - istrides[1] - 1]    ;
-        patch[0][3] = (condYl || condXg)? in[ioff + 1] : in[ioff - istrides[1] + 1]    ;
-        patch[3][0] = (condXl || condYg)? in[ioff + istrides[1]] : in[ioff + 2 * istrides[1] - 1];
-        patch[3][3] = (condXg || condYg)? in[ioff + istrides[1] + 1] : in[ioff + 2 * istrides[1] + 2];
+        for (int j = 0; j < 4; j++) {
+            int ioff_j = ioff + offY[j] * istrides[1];
+            for (int i = 0; i < 4; i++) {
+                patch[j][i] = in[ioff_j + offX[i]];
+            }
+        }
 
         // Write Final Value
         out[omId] = bicubicInterpolate(patch, off_x, off_y);

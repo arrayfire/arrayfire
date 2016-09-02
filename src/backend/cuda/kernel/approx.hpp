@@ -253,37 +253,25 @@ namespace cuda
             const dim_t grid_x = floor(x),   grid_y = floor(y);   // nearest grid
             const Tp off_x  = x - grid_x, off_y  = y - grid_y;    // fractional offset
 
-            // used for setting values at boundaries
-            bool condXl = (grid_x < 1);
-            bool condYl = (grid_y < 1);
-            bool condXg = (grid_x > in.dims[0] - 3);
-            bool condYg = (grid_y > in.dims[1] - 3);
-
             dim_t ioff = idw * in.strides[3] + idz * in.strides[2] + grid_y * in.strides[1] + grid_x;
 
             //for bicubic interpolation, work with 4x4 patch at a time
             Ty patch[4][4];
 
-            //assumption is that inner patch consisting of 4 points is minimum requirement for bicubic interpolation
-            //inner square
-            patch[1][1] = in.ptr[ioff];
-            patch[1][2] = in.ptr[ioff + 1];
-            patch[2][1] = in.ptr[ioff + in.strides[1]];
-            patch[2][2] = in.ptr[ioff + in.strides[1] + 1];
-            //outer sides
-            patch[0][1] = (condYl)? in.ptr[ioff]     : in.ptr[ioff - in.strides[1]];
-            patch[0][2] = (condYl)? in.ptr[ioff + 1] : in.ptr[ioff - in.strides[1] + 1];
-            patch[3][1] = (condYg)? in.ptr[ioff + in.strides[1]]     : in.ptr[ioff + 2 * in.strides[1]];
-            patch[3][2] = (condYg)? in.ptr[ioff + in.strides[1] + 1] : in.ptr[ioff + 2 * in.strides[1] + 1];
-            patch[1][0] = (condXl)? in.ptr[ioff] : in.ptr[ioff - 1];
-            patch[2][0] = (condXl)? in.ptr[ioff + in.strides[1]] : in.ptr[ioff + in.strides[1] - 1];
-            patch[1][3] = (condXg)? in.ptr[ioff + 1] : in.ptr[ioff + 2];
-            patch[2][3] = (condXg)? in.ptr[ioff + in.strides[1] + 1] : in.ptr[ioff + in.strides[1] + 2];
-            //corners
-            patch[0][0] = (condXl || condYl)? in.ptr[ioff] : in.ptr[ioff - in.strides[1] - 1]    ;
-            patch[0][3] = (condYl || condXg)? in.ptr[ioff + 1] : in.ptr[ioff - in.strides[1] + 1]    ;
-            patch[3][0] = (condXl || condYg)? in.ptr[ioff + in.strides[1]] : in.ptr[ioff + 2 * in.strides[1] - 1];
-            patch[3][3] = (condXg || condYg)? in.ptr[ioff + in.strides[1] + 1] : in.ptr[ioff + 2 * in.strides[1] + 2];
+            // used for setting values at boundaries
+            bool condX[4] = {grid_x - 1 >= 0, true, grid_x + 1 < in.dims[0], grid_x + 2 < in.dims[0]};
+            bool condY[4] = {grid_y - 1 >= 0, true, grid_y + 1 < in.dims[1], grid_y + 2 < in.dims[1]};
+            int  offX[4]  = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0 , condX[3] ? 2 : (condX[2] ? 1 : 0)};
+            int  offY[4]  = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0 , condY[3] ? 2 : (condY[2] ? 1 : 0)};
+
+#pragma unroll
+            for (int j = 0; j < 4; j++) {
+                int ioff_j = ioff + offY[j] * in.strides[1];
+#pragma unroll
+                for (int i = 0; i < 4; i++) {
+                    patch[j][i] = in.ptr[ioff_j + offX[i]];
+                }
+            }
 
             out.ptr[omId] = bicubicInterpolate<Ty, Tp>(patch, off_x, off_y);
         }
