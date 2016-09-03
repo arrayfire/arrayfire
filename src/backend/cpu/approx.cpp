@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 #include <approx.hpp>
-#include <kernel/approx1.hpp>
-#include <kernel/approx2.hpp>
+#include <kernel/approx.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 
