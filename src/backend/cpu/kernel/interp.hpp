@@ -7,10 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #pragma once
-#define _USE_MATH_DEFINES
-#include <cmath>
 #include <Array.hpp>
 #include <math.hpp>
+#include <af/constants.h>
 
 namespace cpu
 {
@@ -104,7 +103,7 @@ struct Interp1<InT, LocT, 2>
         LocT ratio = off_x;
         if (method == AF_INTERP_LINEAR_COSINE) {
             // Smooth the factional part with cosine
-            ratio = (1 - std::cos(ratio * M_PI))/2;
+            ratio = (1 - std::cos(ratio * af::Pi))/2;
         }
 
         return linearInterpFunc(val, ratio);
