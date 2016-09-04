@@ -279,7 +279,7 @@ TEST(Approx2Cubic, CPP)
     bool ret = true;
 
     float max = real(outData[0]), min = real(outData[0]);
-    for(int i=1; i < nElems; ++i) {
+    for(int i=1; i < (int)nElems; ++i) {
         min = (real(outData[i]) < min) ? real(outData[i]) : min;
         max = (real(outData[i]) > max) ? real(outData[i]) : max;
     }
