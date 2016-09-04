@@ -109,19 +109,28 @@ struct Interp1
 template<typename Ty, typename Tp>
 struct Interp1<Ty, Tp, 1>
 {
-    __device__ Ty operator()(CParam<Ty> in, int ioff, Tp x, af_interp_type method)
+    __device__ void operator()(Param<Ty> out, int ooff,
+                               CParam<Ty> in, int ioff, Tp x,
+                               af_interp_type method, int batch)
     {
         int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
-        const int idx = ioff + xid;
         Ty zero = scalar<Ty>(0);
-        return xid >= 0 && xid < in.dims[0] ? in.ptr[idx] : zero;
+        bool cond = xid >= 0 && xid < in.dims[0];
+        const int idx = ioff + xid;
+
+        for (int n = 0; n < batch; n++) {
+            Ty outval = cond ? in.ptr[idx + n * in.strides[1]] : zero;
+            out.ptr[ooff + n * out.strides[1]] = outval;
+        }
     }
 };
 
 template<typename Ty, typename Tp>
 struct Interp1<Ty, Tp, 2>
 {
-    __device__ Ty operator()(CParam<Ty> in, int ioff, Tp x, af_interp_type method)
+    __device__ void operator()(Param<Ty> out, int ooff,
+                               CParam<Ty> in, int ioff, Tp x,
+                               af_interp_type method, int batch)
     {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
@@ -129,22 +138,31 @@ struct Interp1<Ty, Tp, 2>
         const int grid_x = floor(x);    // nearest grid
         const WT off_x = x - grid_x;    // fractional offset
         const int idx = ioff + grid_x;
-        VT val[2] = {in.ptr[idx], x + 1 < in.dims[0] ? in.ptr[idx + 1] : scalar<VT>(0)};
 
+        bool cond[2] = {grid_x >= 0, grid_x + 1 < in.dims[0]};
         WT ratio = off_x;
         if (method == AF_INTERP_LINEAR_COSINE) {
             // Smooth the factional part with cosine
             ratio = (1 - cos(ratio * CUDART_PI))/2;
         }
 
-        return linearInterpFunc(val, ratio);
+        Ty zero = scalar<Ty>(0);
+
+        for (int n = 0; n < batch; n++) {
+            int idx_n = idx + n * in.strides[1];
+            VT val[2] = {cond[0] ? in.ptr[idx_n] : zero,
+                         cond[1] ? in.ptr[idx_n + 1] : zero};
+            out.ptr[ooff + n * out.strides[1]] = linearInterpFunc(val, ratio);
+        }
     }
 };
 
 template<typename Ty, typename Tp>
 struct Interp1<Ty, Tp, 3>
 {
-    __device__ Ty operator()(CParam<Ty> in, int ioff, Tp x, af_interp_type method)
+    __device__ void operator()(Param<Ty> out, int ooff,
+                               CParam<Ty> in, int ioff, Tp x,
+                               af_interp_type method, int batch)
     {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
@@ -154,13 +172,17 @@ struct Interp1<Ty, Tp, 3>
         const int idx = ioff + grid_x;
 
         bool cond[4] = {grid_x - 1 >= 0, true, grid_x + 1 < in.dims[0], grid_x + 2 < in.dims[0]};
-        int  off[4]  = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0, cond[3] ? 2 : (cond[2] ? 1 : 0)};
+        int  offx[4]  = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0, cond[3] ? 2 : (cond[2] ? 1 : 0)};
 
-        VT val[4];
-        for (int i = 0; i < 4; i++) {
-            val[i] = in.ptr[idx + off[i]];
+        bool spline = method == AF_INTERP_CUBIC_SPLINE;
+        for (int n = 0; n < batch; n++) {
+            int idx_n = idx + n * in.strides[1];
+            VT val[4];
+            for (int i = 0; i < 4; i++) {
+                val[i] = in.ptr[idx_n + offx[i]];
+            }
+            out.ptr[ooff + n * out.strides[1]] = cubicInterpFunc(val, off_x, spline);
         }
-        return cubicInterpFunc(val, off_x, method == AF_INTERP_CUBIC_SPLINE);
     }
 };
 
@@ -172,24 +194,36 @@ struct Interp2
 template<typename Ty, typename Tp>
 struct Interp2<Ty, Tp, 1>
 {
-    __device__ Ty operator()(CParam<Ty> in, int ioff, Tp x, Tp y, af_interp_type method)
+    __device__ void operator()(Param<Ty> out, int ooff,
+                               CParam<Ty> in, int ioff, Tp x, Tp y,
+                               af_interp_type method,
+                               int nimages)
     {
         int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
         int yid = (method == AF_INTERP_LOWER ? floor(y) : round(y));
+        int idx = ioff + yid * in.strides[1] + xid;
 
         bool condX = xid >= 0 && xid < in.dims[0];
         bool condY = yid >= 0 && yid < in.dims[1];
 
-        int idx = ioff + yid * in.strides[1] + xid;
         Ty zero = scalar<Ty>(0);
-        return condX && condY ? in.ptr[idx] : zero;
+        bool cond = condX && condY;
+
+        for (int n = 0; n < nimages; n++) {
+            int idx_n = idx + n * in.strides[2];
+            Ty val = cond ? in.ptr[idx_n] : zero;
+            out.ptr[ooff + n * out.strides[2]] = val;
+        }
     }
 };
 
 template<typename Ty, typename Tp>
 struct Interp2<Ty, Tp, 2>
 {
-    __device__ Ty operator()(CParam<Ty> in, int ioff, Tp x, Tp y, af_interp_type method)
+    __device__ void operator()(Param<Ty> out, int ooff,
+                               CParam<Ty> in, int ioff, Tp x, Tp y,
+                               af_interp_type method,
+                               int nimages)
     {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
@@ -205,14 +239,6 @@ struct Interp2<Ty, Tp, 2>
         bool condX[2] = {true, x + 1 < in.dims[0]};
         bool condY[2] = {true, y + 1 < in.dims[1]};
 
-        VT val[2][2];
-        for (int j = 0; j < 2; j++) {
-            int off_y = idx + j * in.strides[1];
-            for (int i = 0; i < 2; i++) {
-                val[j][i] = condX[i] && condY[j] ? in.ptr[off_y + i] : scalar<Ty>(0);
-            }
-        }
-
         WT xratio = off_x, yratio = off_y;
         if (method == AF_INTERP_LINEAR_COSINE ||
             method == AF_INTERP_BILINEAR_COSINE) {
@@ -220,14 +246,28 @@ struct Interp2<Ty, Tp, 2>
             xratio = (1 - cos(xratio * CUDART_PI))/2;
             yratio = (1 - cos(yratio * CUDART_PI))/2;
         }
-        return bilinearInterpFunc(val, xratio, yratio);
+
+        for (int n = 0; n < nimages; n++) {
+            int idx_n = idx + n * in.strides[2];
+            VT val[2][2];
+            for (int j = 0; j < 2; j++) {
+                int off_y = idx_n + j * in.strides[1];
+                for (int i = 0; i < 2; i++) {
+                    val[j][i] = condX[i] && condY[j] ? in.ptr[off_y + i] : scalar<Ty>(0);
+                }
+            }
+            out.ptr[ooff + n * out.strides[2]] = bilinearInterpFunc(val, xratio, yratio);
+        }
     }
 };
 
 template<typename Ty, typename Tp>
 struct Interp2<Ty, Tp, 3>
 {
-    __device__ Ty operator()(CParam<Ty> in, int ioff, Tp x, Tp y, af_interp_type method)
+    __device__ void operator()(Param<Ty> out, int ooff,
+                               CParam<Ty> in, int ioff, Tp x, Tp y,
+                               af_interp_type method,
+                               int nimages)
     {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
@@ -240,26 +280,28 @@ struct Interp2<Ty, Tp, 3>
 
         const int idx = ioff + grid_y * in.strides[1] + grid_x;
 
-        //for bicubic interpolation, work with 4x4 val at a time
-        VT val[4][4];
-
         // used for setting values at boundaries
         bool condX[4] = {grid_x - 1 >= 0, true, grid_x + 1 < in.dims[0], grid_x + 2 < in.dims[0]};
         bool condY[4] = {grid_y - 1 >= 0, true, grid_y + 1 < in.dims[1], grid_y + 2 < in.dims[1]};
         int  offX[4]  = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0 , condX[3] ? 2 : (condX[2] ? 1 : 0)};
         int  offY[4]  = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0 , condY[3] ? 2 : (condY[2] ? 1 : 0)};
 
-#pragma unroll
-        for (int j = 0; j < 4; j++) {
-            int ioff_j = idx + offY[j] * in.strides[1];
-#pragma unroll
-            for (int i = 0; i < 4; i++) {
-                val[j][i] = in.ptr[ioff_j + offX[i]];
-            }
-        }
-
+        //for bicubic interpolation, work with 4x4 val at a time
         bool spline = (method == AF_INTERP_CUBIC_SPLINE || method == AF_INTERP_BICUBIC_SPLINE);
-        return bicubicInterpFunc(val, off_x, off_y, spline);
+        for (int n = 0; n < nimages; n++) {
+            int idx_n = idx + n * out.strides[2];
+            VT val[4][4];
+#pragma unroll
+            for (int j = 0; j < 4; j++) {
+                int ioff_j = idx_n + offY[j] * in.strides[1];
+#pragma unroll
+                for (int i = 0; i < 4; i++) {
+                    val[j][i] = in.ptr[ioff_j + offX[i]];
+                }
+            }
+
+            out.ptr[ooff + n * out.strides[2]] = bicubicInterpFunc(val, off_x, off_y, spline);
+        }
     }
 };
 

@@ -66,10 +66,7 @@ namespace cuda
             const int loco = outoff + (yido * out.strides[1] + xido);
 
             Interp2<T, WT, order> interp;
-            for(int i = 0; i < limages; i++) {
-                int ioff = inoff + (i * in.strides[2]);
-                out.ptr[loco + i * out.strides[2]] = interp(in, ioff, xidi, yidi, method);
-            }
+            interp(out, loco, in, inoff, xidi, yidi, method, limages);
         }
 
         ///////////////////////////////////////////////////////////////////////////

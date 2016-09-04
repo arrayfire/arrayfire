@@ -57,7 +57,7 @@ namespace cuda
             int ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1];
 
             Interp1<Ty, Tp, order> interp;
-            out.ptr[omId] = interp(in, ioff, x, method);
+            interp(out, omId, in, ioff, x, method, 1);
         }
 
         template<typename Ty, typename Tp, int order>
@@ -98,7 +98,7 @@ namespace cuda
             int ioff = idw * in.strides[3] + idz * in.strides[2];
 
             Interp2<Ty, Tp, order> interp;
-            out.ptr[omId] = interp(in, ioff, x, y, method);
+            interp(out, omId, in, ioff, x, y, method, 1);
         }
 
         ///////////////////////////////////////////////////////////////////////////
