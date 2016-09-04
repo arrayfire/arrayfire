@@ -44,8 +44,9 @@ namespace opencl
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
-        template <typename Ty, typename Tp, af_interp_type method>
-        void approx1(Param out, const Param in, const Param xpos, const float offGrid)
+        template <typename Ty, typename Tp, int order>
+        void approx1(Param out, const Param in, const Param xpos, const float offGrid,
+                     af_interp_type method)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -57,9 +58,11 @@ namespace opencl
                 std::call_once( compileFlags[device], [device] () {
                     ToNum<Ty> toNum;
                     std::ostringstream options;
-                    options << " -D Ty="        << dtype_traits<Ty>::getName()
-                            << " -D Tp="        << dtype_traits<Tp>::getName()
-                            << " -D ZERO="      << toNum(scalar<Ty>(0));
+                    options << " -D Ty="          << dtype_traits<Ty>::getName()
+                            << " -D Tp="          << dtype_traits<Tp>::getName()
+                            << " -D InterpInTy="  << dtype_traits<Ty>::getName()
+                            << " -D InterpPosTy=" << dtype_traits<Tp>::getName()
+                            << " -D ZERO="        << toNum(scalar<Ty>(0));
 
                     if((af_dtype) dtype_traits<Ty>::af_type == c32 ||
                        (af_dtype) dtype_traits<Ty>::af_type == c64) {
@@ -72,7 +75,8 @@ namespace opencl
                         options << " -D USE_DOUBLE";
                     }
 
-                    options << " -D " << getInterpName<method>();
+                    options << " -D INTERP_ORDER=" << order;
+                    addInterpEnumOptions(options);
 
                     Program prog;
                     const char *ker_strs[] = {interp_cl, approx1_cl};
@@ -85,7 +89,8 @@ namespace opencl
 
 
                 auto approx1Op = KernelFunctor<Buffer, const KParam, const Buffer, const KParam,
-                                       const Buffer, const KParam, const Ty, const int, const int>
+                                               const Buffer, const KParam, const Ty,
+                                               const int, const int, const int>
                                       (*approxKernels[device]);
 
                 NDRange local(THREADS, 1, 1);
@@ -100,7 +105,8 @@ namespace opencl
 
                 approx1Op(EnqueueArgs(getQueue(), global, local),
                           *out.data, out.info, *in.data, in.info,
-                          *xpos.data, xpos.info, scalar<Ty>(offGrid), blocksPerMat, (int)batch);
+                          *xpos.data, xpos.info, scalar<Ty>(offGrid),
+                          blocksPerMat, (int)batch, (int)method);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
@@ -109,8 +115,9 @@ namespace opencl
             }
         }
 
-        template <typename Ty, typename Tp, af_interp_type method>
-        void approx2(Param out, const Param in, const Param xpos, const Param ypos, const float offGrid)
+        template <typename Ty, typename Tp, int order>
+        void approx2(Param out, const Param in, const Param xpos, const Param ypos,
+                     const float offGrid, af_interp_type method)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -124,6 +131,8 @@ namespace opencl
                     std::ostringstream options;
                     options << " -D Ty="        << dtype_traits<Ty>::getName()
                             << " -D Tp="        << dtype_traits<Tp>::getName()
+                            << " -D InterpInTy="  << dtype_traits<Ty>::getName()
+                            << " -D InterpPosTy=" << dtype_traits<Tp>::getName()
                             << " -D ZERO="      << toNum(scalar<Ty>(0));
 
                     if((af_dtype) dtype_traits<Ty>::af_type == c32 ||
@@ -137,7 +146,8 @@ namespace opencl
                         options << " -D USE_DOUBLE";
                     }
 
-                    options << " -D " << getInterpName<method>();
+                    options << " -D INTERP_ORDER=" << order;
+                    addInterpEnumOptions(options);
 
                     Program prog;
                     const char *ker_strs[] = {interp_cl, approx2_cl};
@@ -150,7 +160,7 @@ namespace opencl
 
                 auto approx2Op = KernelFunctor<Buffer, const KParam, const Buffer, const KParam,
                                        const Buffer, const KParam, const Buffer, const KParam,
-                                       const Ty, const int, const int, const int>
+                                               const Ty, const int, const int, const int, const int>
                                        (*approxKernels[device]);
 
                 NDRange local(TX, TY, 1);
@@ -168,7 +178,7 @@ namespace opencl
                           *in.data, in.info,
                           *xpos.data, xpos.info,
                           *ypos.data, ypos.info,
-                          scalar<Ty>(offGrid), blocksPerMatX, blocksPerMatY, (int)batch);
+                          scalar<Ty>(offGrid), blocksPerMatX, blocksPerMatY, (int)batch, (int)method);
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
                 CL_TO_AF_ERROR(err);

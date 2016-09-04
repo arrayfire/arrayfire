@@ -11,7 +11,7 @@ __kernel
 void approx1_kernel(__global       Ty *d_out, const KParam out,
                     __global const Ty *d_in,  const KParam in,
                     __global const Tp *d_xpos, const KParam xpos,
-                    const Ty offGrid, const int blocksMatX, const int batch)
+                    const Ty offGrid, const int blocksMatX, const int batch, const int method)
 {
     const int idw = get_group_id(1) / out.dims[2];
     const int idz = get_group_id(1)  - idw * out.dims[2];
@@ -38,5 +38,5 @@ void approx1_kernel(__global       Ty *d_out, const KParam out,
     }
 
     int ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1] + in.offset;
-    d_out[omId] = interp1(d_in, in, ioff, x);
+    d_out[omId] = interp1(d_in, in, ioff, x, method);
 }

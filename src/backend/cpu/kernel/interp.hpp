@@ -6,8 +6,9 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
 #pragma once
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include <Array.hpp>
 #include <math.hpp>
 
@@ -18,66 +19,80 @@ namespace kernel
 
 
 template<typename InT, typename LocT>
-InT linearInterpFunc(InT val[2], LocT frac)
+InT linearInterpFunc(InT val[2], LocT ratio)
 {
-    return (1 - frac) * val[0] + frac * val[1];
+    return (1 - ratio) * val[0] + ratio * val[1];
 }
 
 template<typename InT, typename LocT>
-InT bilinearInterpFunc(InT val[2][2], LocT xfrac, LocT yfrac)
+InT bilinearInterpFunc(InT val[2][2], LocT xratio, LocT yratio)
 {
     InT res[2];
-    res[0] = linearInterpFunc(val[0], xfrac);
-    res[1] = linearInterpFunc(val[1], xfrac);
-    return linearInterpFunc(res, yfrac);
+    res[0] = linearInterpFunc(val[0], xratio);
+    res[1] = linearInterpFunc(val[1], xratio);
+    return linearInterpFunc(res, yratio);
 }
 
 template<typename InT, typename LocT>
-InT cubicInterpFunc(InT val[4], LocT xfrac)
+InT cubicInterpFunc(InT val[4], LocT xratio, bool spline)
 {
-    InT a0 =
-        scalar<InT>(-0.5) * val[0] + scalar<InT>( 1.5) * val[1] +
-        scalar<InT>(-1.5) * val[2] + scalar<InT>( 0.5) * val[3];
+    InT a0, a1, a2, a3;
+    if (spline) {
+        a0 =
+            scalar<InT>(-0.5) * val[0] + scalar<InT>( 1.5) * val[1] +
+            scalar<InT>(-1.5) * val[2] + scalar<InT>( 0.5) * val[3];
 
-    InT a1 =
-        scalar<InT>( 1.0) * val[0] + scalar<InT>(-2.5) * val[1] +
-        scalar<InT>( 2.0) * val[2] + scalar<InT>(-0.5) * val[3];
+        a1 =
+            scalar<InT>( 1.0) * val[0] + scalar<InT>(-2.5) * val[1] +
+            scalar<InT>( 2.0) * val[2] + scalar<InT>(-0.5) * val[3];
 
-    InT a2 = scalar<InT>(-0.5) * val[0] + scalar<InT>(0.5) * val[2];
+        a2 = scalar<InT>(-0.5) * val[0] + scalar<InT>(0.5) * val[2];
 
-    InT a3 = val[1];
+        a3 = val[1];
+    } else {
+        a0 = val[3] - val[2] - val[0] + val[1];
+        a1 = val[0] - val[1] - a0;
+        a2 = val[2] - val[0];
+        a3 = val[1];
+    }
 
-    LocT xfrac2 = xfrac * xfrac;
-    LocT xfrac3 = xfrac2 * xfrac;
+    LocT xratio2 = xratio * xratio;
+    LocT xratio3 = xratio2 * xratio;
 
-    return a0 * xfrac3 + a1 * xfrac2 + a2 * xfrac + a3;
+    return a0 * xratio3 + a1 * xratio2 + a2 * xratio + a3;
 }
 
 template<typename InT, typename LocT>
-InT bicubicInterpFunc(InT val[4][4], LocT xfrac, LocT yfrac) {
+InT bicubicInterpFunc(InT val[4][4], LocT xratio, LocT yratio, bool spline)
+{
     InT res[4];
-    res[0] = cubicInterpFunc(val[0], xfrac);
-    res[1] = cubicInterpFunc(val[1], xfrac);
-    res[2] = cubicInterpFunc(val[2], xfrac);
-    res[3] = cubicInterpFunc(val[3], xfrac);
-    return cubicInterpFunc(res, yfrac);
+    res[0] = cubicInterpFunc(val[0], xratio, spline);
+    res[1] = cubicInterpFunc(val[1], xratio, spline);
+    res[2] = cubicInterpFunc(val[2], xratio, spline);
+    res[3] = cubicInterpFunc(val[3], xratio, spline);
+    return cubicInterpFunc(res, yratio, spline);
 }
 
-template<typename InT, typename LocT, af_interp_type>
+template<typename InT, typename LocT, int order>
 struct Interp1
 {
-    InT operator()(const Array<InT> &in, int ioff, LocT x)
+};
+
+template<typename InT, typename LocT>
+struct Interp1<InT, LocT, 1>
+{
+    InT operator()(const Array<InT> &in, int ioff, LocT x, af_interp_type method)
     {
         const InT *inptr = in.get();
-        const int idx = round(x) + ioff;
+        int idx = ioff + (method == AF_INTERP_LOWER ? floor(x) : round(x));
         return inptr[idx];
     }
 };
 
 template<typename InT, typename LocT>
-struct Interp1<InT, LocT, AF_INTERP_LINEAR>
+struct Interp1<InT, LocT, 2>
 {
-    InT operator()(const Array<InT> &in, int ioff, LocT x)
+    InT operator()(const Array<InT> &in, int ioff, LocT x, af_interp_type  method)
     {
         const int grid_x = floor(x);    // nearest grid
         const LocT off_x = x - grid_x;    // fractional offset
@@ -85,14 +100,21 @@ struct Interp1<InT, LocT, AF_INTERP_LINEAR>
         const InT *inptr = in.get();
         const dim4 idims = in.dims();
         InT val[2] = {inptr[idx], x + 1 < idims[0] ? inptr[idx + 1] : scalar<InT>(0)};
-        return linearInterpFunc(val, off_x);
+
+        LocT ratio = off_x;
+        if (method == AF_INTERP_LINEAR_COSINE) {
+            // Smooth the factional part with cosine
+            ratio = (1 - std::cos(ratio * M_PI))/2;
+        }
+
+        return linearInterpFunc(val, ratio);
     }
 };
 
 template<typename InT, typename LocT>
-struct Interp1<InT, LocT, AF_INTERP_CUBIC>
+struct Interp1<InT, LocT, 3>
 {
-    InT operator()(const Array<InT> &in, int ioff, LocT x)
+    InT operator()(const Array<InT> &in, int ioff, LocT x, af_interp_type method)
     {
         const int grid_x = floor(x);    // nearest grid
         const LocT off_x = x - grid_x;    // fractional offset
@@ -107,26 +129,36 @@ struct Interp1<InT, LocT, AF_INTERP_CUBIC>
         for (int i = 0; i < 4; i++) {
             val[i] = inptr[idx + off[i]];
         }
-        return cubicInterpFunc(val, off_x);
+        return cubicInterpFunc(val, off_x, method == AF_INTERP_CUBIC_SPLINE);
     }
 };
 
-template<typename InT, typename LocT, af_interp_type>
+template<typename InT, typename LocT, int order>
 struct Interp2
 {
-    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y)
+};
+
+template<typename InT, typename LocT>
+struct Interp2<InT, LocT, 1>
+{
+    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y, af_interp_type method)
     {
         const InT *inptr = in.get();
         const dim4 istrides = in.strides();
-        const int idx = ioff + round(y) * istrides[1] + round(x);
-        return inptr[idx];
+        if (method == AF_INTERP_LOWER) {
+            const int idx = ioff + floor(y) * istrides[1] + floor(x);
+            return inptr[idx];
+        } else {
+            const int idx = ioff + round(y) * istrides[1] + round(x);
+            return inptr[idx];
+        }
     }
 };
 
 template<typename InT, typename LocT>
-struct Interp2<InT, LocT, AF_INTERP_BILINEAR>
+struct Interp2<InT, LocT, 2>
 {
-    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y)
+    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y, af_interp_type method)
     {
         const InT *inptr = in.get();
         const dim4 idims = in.dims();
@@ -151,23 +183,22 @@ struct Interp2<InT, LocT, AF_INTERP_BILINEAR>
             }
         }
 
+        LocT xratio = off_x, yratio = off_y;
+        if (method == AF_INTERP_LINEAR_COSINE ||
+            method == AF_INTERP_BILINEAR_COSINE) {
+            // Smooth the factional part with cosine
+            xratio = (1 - std::cos(xratio * M_PI))/2;
+            yratio = (1 - std::cos(yratio * M_PI))/2;
+        }
+
         return bilinearInterpFunc(val, off_x, off_y);
     }
 };
 
 template<typename InT, typename LocT>
-struct Interp2<InT, LocT, AF_INTERP_LINEAR>
+struct Interp2<InT, LocT, 3>
 {
-    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y)
-    {
-        return Interp2<InT, LocT, AF_INTERP_BILINEAR>()(in, ioff, x, y);
-    }
-};
-
-template<typename InT, typename LocT>
-struct Interp2<InT, LocT, AF_INTERP_BICUBIC>
-{
-    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y)
+    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y, af_interp_type method)
     {
         const InT *inptr = in.get();
         const dim4 idims = in.dims();
@@ -197,16 +228,8 @@ struct Interp2<InT, LocT, AF_INTERP_BICUBIC>
             }
         }
 
-        return bicubicInterpFunc(val, off_x, off_y);
-    }
-};
-
-template<typename InT, typename LocT>
-struct Interp2<InT, LocT, AF_INTERP_CUBIC>
-{
-    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y)
-    {
-        return Interp2<InT, LocT, AF_INTERP_BICUBIC>()(in, ioff, x, y);
+        bool spline = (method == AF_INTERP_CUBIC_SPLINE || method == AF_INTERP_BICUBIC_SPLINE);
+        return bicubicInterpFunc(val, off_x, off_y, spline);
     }
 };
 

@@ -8,23 +8,27 @@
  ********************************************************/
 
 #include <af/defines.h>
+#include <string>
+
+#define ADD_ENUM_OPTION(options, name) do {      \
+        options << " -D " #name "=" << name;     \
+    } while(0)
 
 namespace opencl {
     namespace kernel {
 
-        template<af_interp_type method>
-        const char *getInterpName()
+        void addInterpEnumOptions(std::ostringstream &options)
         {
-            switch(method) {
-            case AF_INTERP_NEAREST:   return "NEAREST";
-            case AF_INTERP_LINEAR:    return "LINEAR";
-            case AF_INTERP_BILINEAR:  return "BILINEAR";
-            case AF_INTERP_CUBIC:     return "CUBIC";
-            case AF_INTERP_BICUBIC:   return "BICUBIC";
-            case AF_INTERP_LOWER:     return "LOWER";
-            default:                  return "NONE";
-            }
+            ADD_ENUM_OPTION(options, AF_INTERP_NEAREST);
+            ADD_ENUM_OPTION(options, AF_INTERP_LINEAR);
+            ADD_ENUM_OPTION(options, AF_INTERP_BILINEAR);
+            ADD_ENUM_OPTION(options, AF_INTERP_CUBIC);
+            ADD_ENUM_OPTION(options, AF_INTERP_LOWER);
+            ADD_ENUM_OPTION(options, AF_INTERP_LINEAR_COSINE);
+            ADD_ENUM_OPTION(options, AF_INTERP_BILINEAR_COSINE);
+            ADD_ENUM_OPTION(options, AF_INTERP_BICUBIC);
+            ADD_ENUM_OPTION(options, AF_INTERP_CUBIC_SPLINE);
+            ADD_ENUM_OPTION(options, AF_INTERP_BICUBIC_SPLINE);
         }
-
     }
 }

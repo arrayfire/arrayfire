@@ -17,9 +17,9 @@ namespace cpu
 namespace kernel
 {
 
-template<typename InT, typename LocT, af_interp_type Method>
+template<typename InT, typename LocT, int order>
 void approx1(Array<InT> output, const Array<InT> input,
-             const Array<LocT> xposition, const float offGrid)
+             const Array<LocT> xposition, const float offGrid, af_interp_type method)
 {
     InT * out = output.get();
     const LocT *xpos = xposition.get();
@@ -32,7 +32,7 @@ void approx1(Array<InT> output, const Array<InT> input,
     const af::dim4 istrides  = input.strides();
     const af::dim4 xstrides  = xposition.strides();
 
-    Interp1<InT, LocT, Method> interp;
+    Interp1<InT, LocT, order> interp;
     bool batch = !(xdims[1] == 1 && xdims[2] == 1 && xdims[3] == 1);
 
     for(dim_t idw = 0; idw < odims[3]; idw++) {
@@ -54,7 +54,7 @@ void approx1(Array<InT> output, const Array<InT> input,
                     if (x < 0 || idims[0] < x + 1) {
                         out[ooff + idx] = scalar<InT>(offGrid);
                     } else {
-                        out[ooff + idx] = interp(input, ioff, x);
+                        out[ooff + idx] = interp(input, ioff, x, method);
                     }
                 }
             }
@@ -62,10 +62,10 @@ void approx1(Array<InT> output, const Array<InT> input,
     }
 }
 
-template<typename InT, typename LocT, af_interp_type Method>
+template<typename InT, typename LocT, int order>
 void approx2(Array<InT> output, const Array<InT> input,
              const Array<LocT> xposition, const Array<LocT> yposition,
-             float const offGrid)
+             float const offGrid, af_interp_type method)
 {
     InT * out = output.get();
     const LocT *xpos = xposition.get();
@@ -79,7 +79,7 @@ void approx2(Array<InT> output, const Array<InT> input,
     af::dim4 const xstrides  = xposition.strides();
     af::dim4 const ystrides  = yposition.strides();
 
-    Interp2<InT, LocT, Method> interp;
+    Interp2<InT, LocT, order> interp;
     bool batch = !(xdims[2] == 1 && xdims[3] == 1);
 
     for(dim_t idw = 0; idw < odims[3]; idw++) {
@@ -104,7 +104,7 @@ void approx2(Array<InT> output, const Array<InT> input,
                         y < 0 || idims[1] < y + 1 ) {
                         out[ooff + idx] = scalar<InT>(offGrid);
                     } else {
-                        out[ooff + idx] = interp(input, ioffzw, x, y);
+                        out[ooff + idx] = interp(input, ioffzw, x, y, method);
                     }
                 }
             }

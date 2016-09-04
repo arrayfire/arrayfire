@@ -222,14 +222,27 @@ typedef enum {
 typedef void * af_array;
 
 typedef enum {
-    AF_INTERP_NEAREST,  ///< Nearest Interpolation
-    AF_INTERP_LINEAR,   ///< Linear Interpolation
-    AF_INTERP_BILINEAR, ///< Bilinear Interpolation
-    AF_INTERP_CUBIC,    ///< Cubic Interpolation
+    AF_INTERP_NEAREST,         ///< Nearest Interpolation
+    AF_INTERP_LINEAR,          ///< Linear Interpolation
+    AF_INTERP_BILINEAR,        ///< Bilinear Interpolation
+    AF_INTERP_CUBIC,           ///< Cubic Interpolation
+    AF_INTERP_LOWER,           ///< Floor Indexed
 #if AF_API_VERSION >= 34
-    AF_INTERP_BICUBIC,  ///< Bicubic Interpolation
+    AF_INTERP_LINEAR_COSINE,   ///< Linear Interpolation with cosine smoothing
 #endif
-    AF_INTERP_LOWER     ///< Floor Indexed
+#if AF_API_VERSION >= 34
+    AF_INTERP_BILINEAR_COSINE, ///< Bilinear Interpolation with cosine smoothing
+#endif
+#if AF_API_VERSION >= 34
+    AF_INTERP_BICUBIC,         ///< Bicubic Interpolation
+#endif
+#if AF_API_VERSION >= 34
+    AF_INTERP_CUBIC_SPLINE,    ///< Cubic Interpolation with Catmull-Rom splines
+#endif
+#if AF_API_VERSION >= 34
+    AF_INTERP_BICUBIC_SPLINE,  ///< Bicubic Interpolation with Catmull-Rom splines
+#endif
+
 } af_interp_type;
 
 typedef enum {

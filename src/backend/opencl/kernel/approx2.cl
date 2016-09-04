@@ -13,7 +13,7 @@ void approx2_kernel(__global       Ty *d_out, const KParam out,
                     __global const Tp *d_xpos, const KParam xpos,
                     __global const Tp *d_ypos, const KParam ypos,
                     const Ty offGrid, const int blocksMatX, const int blocksMatY,
-                    const int batch)
+                    const int batch, int method)
 {
     const int idz = get_group_id(0) / blocksMatX;
     const int idw = get_group_id(1) / blocksMatY;
@@ -47,5 +47,5 @@ void approx2_kernel(__global       Ty *d_out, const KParam out,
 
     int ioff = idw * in.strides[3] + idz * in.strides[2] + in.offset;
 
-    d_out[omId] = interp2(d_in, in, ioff, x, y);
+    d_out[omId] = interp2(d_in, in, ioff, x, y, method);
 }

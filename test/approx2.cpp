@@ -268,7 +268,7 @@ TEST(Approx2Cubic, CPP)
     af::array pos1(qdims,&(in[2].front()));
     pos0 = tile(pos0, 1, pos0.dims(0));
     pos1 = tile(pos1.T(), pos1.dims(0));
-    af::array output = af::approx2(input, pos0, pos1, AF_INTERP_CUBIC, 0).T();
+    af::array output = af::approx2(input, pos0, pos1, AF_INTERP_BICUBIC_SPLINE, 0).T();
 
     // Get result
     float* outData = new float[tests[resultIdx].size()];

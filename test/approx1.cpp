@@ -178,13 +178,13 @@ void approx1CubicTest(string pTestFile, const unsigned resultIdx, const af_inter
     if(tempArray != 0) af_release_array(tempArray);
 }
 
-#define APPROX1_INIT_CUBIC(desc, file, resultIdx, method)                                       \
+#define APPROX1_INIT_CUBIC_SPLINE(desc, file, resultIdx, method)                                       \
     TYPED_TEST(Approx1, desc)                                                                   \
     {                                                                                           \
         approx1CubicTest<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method); \
     }
 
-APPROX1_INIT_CUBIC(Approx1Cubic, approx1_cubic, 0, AF_INTERP_CUBIC);
+APPROX1_INIT_CUBIC_SPLINE(Approx1Cubic, approx1_cubic, 0, AF_INTERP_CUBIC_SPLINE);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Test Argument Failure Cases
@@ -271,7 +271,7 @@ void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
 
     APPROX1_ARGSP(Approx1NearestArgsPrecision, approx1, 0, AF_INTERP_NEAREST);
     APPROX1_ARGSP(Approx1LinearArgsPrecision, approx1, 1, AF_INTERP_LINEAR);
-    APPROX1_ARGSP(Approx1CubicArgsPrecision, approx1_cubic, 2, AF_INTERP_CUBIC);
+    APPROX1_ARGSP(Approx1CubicArgsPrecision, approx1_cubic, 2, AF_INTERP_CUBIC_SPLINE);
 
 //////////////////////////////////////// CPP //////////////////////////////////
 //
@@ -365,16 +365,16 @@ TEST(Approx1, CPPCubicBatch)
     af::array input = af::iota(af::dim4(10000, 20), c32);
     af::array pos   = input.dims(0) * af::randu(50000, 20);
 
-    af::array outBatch = af::approx1(input, pos, AF_INTERP_CUBIC);
+    af::array outBatch = af::approx1(input, pos, AF_INTERP_CUBIC_SPLINE);
 
     af::array outSerial(pos.dims());
     for(int i = 0; i < pos.dims(1); i++) {
-        outSerial(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_CUBIC);
+        outSerial(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_CUBIC_SPLINE);
     }
 
     af::array outGFOR(pos.dims());
     gfor(af::seq i, pos.dims(1)) {
-        outGFOR(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_CUBIC);
+        outGFOR(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_CUBIC_SPLINE);
     }
 
     ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outSerial)), 1e-3);
