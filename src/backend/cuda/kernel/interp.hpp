@@ -111,15 +111,17 @@ struct Interp1<Ty, Tp, 1>
 {
     __device__ void operator()(Param<Ty> out, int ooff,
                                CParam<Ty> in, int ioff, Tp x,
-                               af_interp_type method, int batch)
+                               af_interp_type method, int batch, bool clamp)
     {
         int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
         Ty zero = scalar<Ty>(0);
         bool cond = xid >= 0 && xid < in.dims[0];
+        if (clamp) xid = max(0, min(xid, in.dims[0]));
+
         const int idx = ioff + xid;
 
         for (int n = 0; n < batch; n++) {
-            Ty outval = cond ? in.ptr[idx + n * in.strides[1]] : zero;
+            Ty outval = (cond || clamp) ? in.ptr[idx + n * in.strides[1]] : zero;
             out.ptr[ooff + n * out.strides[1]] = outval;
         }
     }
@@ -130,7 +132,7 @@ struct Interp1<Ty, Tp, 2>
 {
     __device__ void operator()(Param<Ty> out, int ooff,
                                CParam<Ty> in, int ioff, Tp x,
-                               af_interp_type method, int batch)
+                               af_interp_type method, int batch, bool clamp)
     {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
@@ -139,7 +141,8 @@ struct Interp1<Ty, Tp, 2>
         const WT off_x = x - grid_x;    // fractional offset
         const int idx = ioff + grid_x;
 
-        bool cond[2] = {grid_x >= 0, grid_x + 1 < in.dims[0]};
+        bool cond[2] = {true, grid_x + 1 < in.dims[0]};
+        int  offx[2]  = {0, cond[1] ? 1 : 0};
         WT ratio = off_x;
         if (method == AF_INTERP_LINEAR_COSINE) {
             // Smooth the factional part with cosine
@@ -150,8 +153,8 @@ struct Interp1<Ty, Tp, 2>
 
         for (int n = 0; n < batch; n++) {
             int idx_n = idx + n * in.strides[1];
-            VT val[2] = {cond[0] ? in.ptr[idx_n] : zero,
-                         cond[1] ? in.ptr[idx_n + 1] : zero};
+            VT val[2] = {(clamp || cond[0]) ? in.ptr[idx_n + offx[0]] : zero,
+                         (clamp || cond[1]) ? in.ptr[idx_n + offx[1]] : zero};
             out.ptr[ooff + n * out.strides[1]] = linearInterpFunc(val, ratio);
         }
     }
@@ -162,7 +165,7 @@ struct Interp1<Ty, Tp, 3>
 {
     __device__ void operator()(Param<Ty> out, int ooff,
                                CParam<Ty> in, int ioff, Tp x,
-                               af_interp_type method, int batch)
+                               af_interp_type method, int batch, bool clamp)
     {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
@@ -175,11 +178,12 @@ struct Interp1<Ty, Tp, 3>
         int  offx[4]  = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0, cond[3] ? 2 : (cond[2] ? 1 : 0)};
 
         bool spline = method == AF_INTERP_CUBIC_SPLINE;
+        Ty zero = scalar<Ty>(0);
         for (int n = 0; n < batch; n++) {
             int idx_n = idx + n * in.strides[1];
             VT val[4];
             for (int i = 0; i < 4; i++) {
-                val[i] = in.ptr[idx_n + offx[i]];
+                val[i] = (clamp || cond[i]) ? in.ptr[idx_n + offx[i]] : zero;
             }
             out.ptr[ooff + n * out.strides[1]] = cubicInterpFunc(val, off_x, spline);
         }
@@ -197,10 +201,15 @@ struct Interp2<Ty, Tp, 1>
     __device__ void operator()(Param<Ty> out, int ooff,
                                CParam<Ty> in, int ioff, Tp x, Tp y,
                                af_interp_type method,
-                               int nimages)
+                               int nimages, bool clamp)
     {
         int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
         int yid = (method == AF_INTERP_LOWER ? floor(y) : round(y));
+
+        if (clamp) {
+            xid = max(0, min(xid, in.dims[0]));
+            yid = max(0, min(yid, in.dims[1]));
+        }
         int idx = ioff + yid * in.strides[1] + xid;
 
         bool condX = xid >= 0 && xid < in.dims[0];
@@ -211,7 +220,7 @@ struct Interp2<Ty, Tp, 1>
 
         for (int n = 0; n < nimages; n++) {
             int idx_n = idx + n * in.strides[2];
-            Ty val = cond ? in.ptr[idx_n] : zero;
+            Ty val = (clamp || cond) ? in.ptr[idx_n] : zero;
             out.ptr[ooff + n * out.strides[2]] = val;
         }
     }
@@ -223,7 +232,7 @@ struct Interp2<Ty, Tp, 2>
     __device__ void operator()(Param<Ty> out, int ooff,
                                CParam<Ty> in, int ioff, Tp x, Tp y,
                                af_interp_type method,
-                               int nimages)
+                               int nimages, bool clamp)
     {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
@@ -238,6 +247,8 @@ struct Interp2<Ty, Tp, 2>
 
         bool condX[2] = {true, x + 1 < in.dims[0]};
         bool condY[2] = {true, y + 1 < in.dims[1]};
+        int  offx[2]  = {0, condX[1] ? 1 : 0};
+        int  offy[2]  = {0, condY[1] ? 1 : 0};
 
         WT xratio = off_x, yratio = off_y;
         if (method == AF_INTERP_LINEAR_COSINE ||
@@ -247,13 +258,16 @@ struct Interp2<Ty, Tp, 2>
             yratio = (1 - cos(yratio * CUDART_PI))/2;
         }
 
+        Ty zero = scalar<Ty>(0);
+
         for (int n = 0; n < nimages; n++) {
             int idx_n = idx + n * in.strides[2];
             VT val[2][2];
             for (int j = 0; j < 2; j++) {
-                int off_y = idx_n + j * in.strides[1];
+                int ioff_j = idx_n + offy[j] * in.strides[1];
                 for (int i = 0; i < 2; i++) {
-                    val[j][i] = condX[i] && condY[j] ? in.ptr[off_y + i] : scalar<Ty>(0);
+                    bool cond = clamp || (condX[i] && condY[j]);
+                    val[j][i] = (cond) ? in.ptr[ioff_j + offx[i]] : zero;
                 }
             }
             out.ptr[ooff + n * out.strides[2]] = bilinearInterpFunc(val, xratio, yratio);
@@ -267,7 +281,7 @@ struct Interp2<Ty, Tp, 3>
     __device__ void operator()(Param<Ty> out, int ooff,
                                CParam<Ty> in, int ioff, Tp x, Tp y,
                                af_interp_type method,
-                               int nimages)
+                               int nimages, bool clamp)
     {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
@@ -287,6 +301,7 @@ struct Interp2<Ty, Tp, 3>
         int  offY[4]  = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0 , condY[3] ? 2 : (condY[2] ? 1 : 0)};
 
         //for bicubic interpolation, work with 4x4 val at a time
+        Ty zero = scalar<Ty>(0);
         bool spline = (method == AF_INTERP_CUBIC_SPLINE || method == AF_INTERP_BICUBIC_SPLINE);
         for (int n = 0; n < nimages; n++) {
             int idx_n = idx + n * out.strides[2];
@@ -296,7 +311,8 @@ struct Interp2<Ty, Tp, 3>
                 int ioff_j = idx_n + offY[j] * in.strides[1];
 #pragma unroll
                 for (int i = 0; i < 4; i++) {
-                    val[j][i] = in.ptr[ioff_j + offX[i]];
+                    bool cond = clamp || (condX[i] && condY[j]);
+                    val[j][i] = (cond) ? in.ptr[ioff_j + offX[i]] : zero;
                 }
             }
 

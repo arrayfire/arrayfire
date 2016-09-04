@@ -174,7 +174,10 @@ namespace cuda
             }
 
             Interp2<T, WT, order> interp;
-            interp(out, loco, in, inoff, xidi, yidi, method, limages);
+            // FIXME: Nearest and lower do not do clamping, but other methods do
+            // Make it consistent
+            bool clamp = order != 1;
+            interp(out, loco, in, inoff, xidi, yidi, method, limages, clamp);
         }
 
         ///////////////////////////////////////////////////////////////////////////

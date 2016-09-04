@@ -56,8 +56,13 @@ namespace cuda
 
             int ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1];
 
+            // FIXME: Only cubic interpolation is doing clamping
+            // We need to make it consistent across all methods
+            // Not changing the behavior because tests will fail
+            bool clamp = order == 3;
+
             Interp1<Ty, Tp, order> interp;
-            interp(out, omId, in, ioff, x, method, 1);
+            interp(out, omId, in, ioff, x, method, 1, clamp);
         }
 
         template<typename Ty, typename Tp, int order>
@@ -97,8 +102,13 @@ namespace cuda
 
             int ioff = idw * in.strides[3] + idz * in.strides[2];
 
+            // FIXME: Only cubic interpolation is doing clamping
+            // We need to make it consistent across all methods
+            // Not changing the behavior because tests will fail
+            bool clamp = order == 3;
+
             Interp2<Ty, Tp, order> interp;
-            interp(out, omId, in, ioff, x, y, method, 1);
+            interp(out, omId, in, ioff, x, y, method, 1, clamp);
         }
 
         ///////////////////////////////////////////////////////////////////////////

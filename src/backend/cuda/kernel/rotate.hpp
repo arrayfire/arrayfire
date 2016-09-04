@@ -65,8 +65,23 @@ namespace cuda
             int inoff  =  setId * nimages * in.strides[2]  + batch * in.strides[3];
             const int loco = outoff + (yido * out.strides[1] + xido);
 
+            if (order > 1) {
+                // Special conditions to deal with boundaries for bilinear and bicubic
+                // FIXME: Ideally this condition should be removed or be present for all methods
+                // But tests are expecting a different behavior for bilinear and nearest
+                if (xidi < -0.0001 || yidi < -0.0001 || in.dims[0] < xidi || in.dims[1] < yidi) {
+                    for(int i = 0; i < nimages; i++) {
+                        out.ptr[loco + i * out.strides[2]] = scalar<T>(0.0f);
+                    }
+                    return;
+                }
+            }
+
             Interp2<T, WT, order> interp;
-            interp(out, loco, in, inoff, xidi, yidi, method, limages);
+            // FIXME: Nearest and lower do not do clamping, but other methods do
+            // Make it consistent
+            bool clamp = order != 1;
+            interp(out, loco, in, inoff, xidi, yidi, method, limages, clamp);
         }
 
         ///////////////////////////////////////////////////////////////////////////
