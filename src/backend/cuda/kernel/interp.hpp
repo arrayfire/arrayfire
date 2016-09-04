@@ -14,6 +14,34 @@ namespace cuda
 namespace kernel
 {
 
+template<typename T>
+struct itype_t
+{
+    typedef float wtype;
+    typedef float vtype;
+};
+
+template<>
+struct itype_t<double>
+{
+    typedef double wtype;
+    typedef double vtype;
+};
+
+template<>
+struct itype_t<cfloat>
+{
+    typedef float  wtype;
+    typedef cfloat vtype;
+};
+
+template<>
+struct itype_t<cdouble>
+{
+    typedef double  wtype;
+    typedef cdouble vtype;
+};
+
 template<typename Ty, typename Tp>
 __device__
 Ty linearInterpFunc(Ty val[2], Tp ratio)
@@ -83,8 +111,10 @@ struct Interp1<Ty, Tp, 1>
 {
     __device__ Ty operator()(CParam<Ty> in, int ioff, Tp x, af_interp_type method)
     {
-        const int idx = ioff + (method == AF_INTERP_LOWER ? floor(x) : round(x));
-        return in.ptr[idx];
+        int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
+        const int idx = ioff + xid;
+        Ty zero = scalar<Ty>(0);
+        return xid >= 0 && xid < in.dims[0] ? in.ptr[idx] : zero;
     }
 };
 
@@ -93,12 +123,15 @@ struct Interp1<Ty, Tp, 2>
 {
     __device__ Ty operator()(CParam<Ty> in, int ioff, Tp x, af_interp_type method)
     {
-        const int grid_x = floor(x);    // nearest grid
-        const Tp off_x = x - grid_x;    // fractional offset
-        const int idx = ioff + grid_x;
-        Ty val[2] = {in.ptr[idx], x + 1 < in.dims[0] ? in.ptr[idx + 1] : scalar<Ty>(0)};
+        typedef typename itype_t<Tp>::wtype WT;
+        typedef typename itype_t<Ty>::vtype VT;
 
-        Tp ratio = off_x;
+        const int grid_x = floor(x);    // nearest grid
+        const WT off_x = x - grid_x;    // fractional offset
+        const int idx = ioff + grid_x;
+        VT val[2] = {in.ptr[idx], x + 1 < in.dims[0] ? in.ptr[idx + 1] : scalar<VT>(0)};
+
+        WT ratio = off_x;
         if (method == AF_INTERP_LINEAR_COSINE) {
             // Smooth the factional part with cosine
             ratio = (1 - cos(ratio * CUDART_PI))/2;
@@ -113,14 +146,17 @@ struct Interp1<Ty, Tp, 3>
 {
     __device__ Ty operator()(CParam<Ty> in, int ioff, Tp x, af_interp_type method)
     {
+        typedef typename itype_t<Tp>::wtype WT;
+        typedef typename itype_t<Ty>::vtype VT;
+
         const int grid_x = floor(x);    // nearest grid
-        const Tp off_x = x - grid_x;    // fractional offset
+        const WT off_x = x - grid_x;    // fractional offset
         const int idx = ioff + grid_x;
 
         bool cond[4] = {grid_x - 1 >= 0, true, grid_x + 1 < in.dims[0], grid_x + 2 < in.dims[0]};
         int  off[4]  = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0, cond[3] ? 2 : (cond[2] ? 1 : 0)};
 
-        Ty val[4];
+        VT val[4];
         for (int i = 0; i < 4; i++) {
             val[i] = in.ptr[idx + off[i]];
         }
@@ -138,13 +174,15 @@ struct Interp2<Ty, Tp, 1>
 {
     __device__ Ty operator()(CParam<Ty> in, int ioff, Tp x, Tp y, af_interp_type method)
     {
-        if (method == AF_INTERP_LOWER) {
-            const int idx = ioff + floor(y) * in.strides[1] + floor(x);
-            return in.ptr[idx];
-        } else {
-            const int idx = ioff + round(y) * in.strides[1] + round(x);
-            return in.ptr[idx];
-        }
+        int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
+        int yid = (method == AF_INTERP_LOWER ? floor(y) : round(y));
+
+        bool condX = xid >= 0 && xid < in.dims[0];
+        bool condY = yid >= 0 && yid < in.dims[1];
+
+        int idx = ioff + yid * in.strides[1] + xid;
+        Ty zero = scalar<Ty>(0);
+        return condX && condY ? in.ptr[idx] : zero;
     }
 };
 
@@ -153,18 +191,21 @@ struct Interp2<Ty, Tp, 2>
 {
     __device__ Ty operator()(CParam<Ty> in, int ioff, Tp x, Tp y, af_interp_type method)
     {
+        typedef typename itype_t<Tp>::wtype WT;
+        typedef typename itype_t<Ty>::vtype VT;
+
         const int grid_x = floor(x);
-        const Tp off_x = x - grid_x;
+        const WT off_x = x - grid_x;
 
         const int grid_y = floor(y);
-        const Tp off_y = y - grid_y;
+        const WT off_y = y - grid_y;
 
         const int idx = ioff + grid_y * in.strides[1] + grid_x;
 
         bool condX[2] = {true, x + 1 < in.dims[0]};
         bool condY[2] = {true, y + 1 < in.dims[1]};
 
-        Ty val[2][2];
+        VT val[2][2];
         for (int j = 0; j < 2; j++) {
             int off_y = idx + j * in.strides[1];
             for (int i = 0; i < 2; i++) {
@@ -172,7 +213,7 @@ struct Interp2<Ty, Tp, 2>
             }
         }
 
-        Tp xratio = off_x, yratio = off_y;
+        WT xratio = off_x, yratio = off_y;
         if (method == AF_INTERP_LINEAR_COSINE ||
             method == AF_INTERP_BILINEAR_COSINE) {
             // Smooth the factional part with cosine
@@ -188,16 +229,19 @@ struct Interp2<Ty, Tp, 3>
 {
     __device__ Ty operator()(CParam<Ty> in, int ioff, Tp x, Tp y, af_interp_type method)
     {
+        typedef typename itype_t<Tp>::wtype WT;
+        typedef typename itype_t<Ty>::vtype VT;
+
         const int grid_x = floor(x);
-        const Tp off_x = x - grid_x;
+        const WT off_x = x - grid_x;
 
         const int grid_y = floor(y);
-        const Tp off_y = y - grid_y;
+        const WT off_y = y - grid_y;
 
         const int idx = ioff + grid_y * in.strides[1] + grid_x;
 
         //for bicubic interpolation, work with 4x4 val at a time
-        Ty val[4][4];
+        VT val[4][4];
 
         // used for setting values at boundaries
         bool condX[4] = {grid_x - 1 >= 0, true, grid_x + 1 < in.dims[0], grid_x + 2 < in.dims[0]};
