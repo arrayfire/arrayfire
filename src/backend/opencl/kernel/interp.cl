@@ -71,7 +71,8 @@ InterpInTy bicubicInterpFunc(InterpInTy val[4][4], InterpPosTy xratio, InterpPos
 
 
 #if INTERP_ORDER == 1
-InterpInTy interp1(const InterpInTy *d_in, KParam in, int ioff, InterpPosTy x, int method)
+InterpInTy interp1(__global const InterpInTy *d_in,
+                   KParam in, int ioff, InterpPosTy x, int method)
 {
     if (method == AF_INTERP_LOWER) {
         const int idx = floor(x) + ioff;
@@ -82,7 +83,8 @@ InterpInTy interp1(const InterpInTy *d_in, KParam in, int ioff, InterpPosTy x, i
     }
 }
 #elif INTERP_ORDER == 2
-InterpInTy interp1(const InterpInTy *d_in, KParam in, int ioff, InterpPosTy x, int method)
+InterpInTy interp1(__global const InterpInTy *d_in,
+                   KParam in, int ioff, InterpPosTy x, int method)
 {
     const int grid_x = floor(x);    // nearest grid
     const InterpPosTy off_x = x - grid_x;    // fractional offset
@@ -96,7 +98,8 @@ InterpInTy interp1(const InterpInTy *d_in, KParam in, int ioff, InterpPosTy x, i
     return linearInterpFunc(val, ratio);
 }
 #elif INTERP_ORDER == 3
-InterpInTy interp1(const InterpInTy *d_in, KParam in, int ioff, InterpPosTy x, int method)
+InterpInTy interp1(__global const InterpInTy *d_in,
+                   KParam in, int ioff, InterpPosTy x, int method)
 {
     const int grid_x = floor(x);    // nearest grid
     const InterpPosTy off_x = x - grid_x;    // fractional offset
@@ -114,7 +117,8 @@ InterpInTy interp1(const InterpInTy *d_in, KParam in, int ioff, InterpPosTy x, i
 #endif
 
 #if INTERP_ORDER == 1
-InterpInTy interp2(const InterpInTy *d_in, KParam in, int ioff, InterpPosTy x, InterpPosTy y, int method)
+InterpInTy interp2(__global const InterpInTy *d_in,
+                   KParam in, int ioff, InterpPosTy x, InterpPosTy y, int method)
 {
     if (method == AF_INTERP_LOWER) {
         const int idx = ioff + floor(y) * in.strides[1] + floor(x);
@@ -125,7 +129,8 @@ InterpInTy interp2(const InterpInTy *d_in, KParam in, int ioff, InterpPosTy x, I
     }
 }
 #elif INTERP_ORDER == 2
-InterpInTy interp2(const InterpInTy *d_in, KParam in, int ioff, InterpPosTy x, InterpPosTy y, int method)
+InterpInTy interp2(__global const InterpInTy *d_in,
+                   KParam in, int ioff, InterpPosTy x, InterpPosTy y, int method)
 {
     const int grid_x = floor(x);
     const InterpPosTy off_x = x - grid_x;
@@ -156,7 +161,8 @@ InterpInTy interp2(const InterpInTy *d_in, KParam in, int ioff, InterpPosTy x, I
     return bilinearInterpFunc(val, xratio, yratio);
 }
 #elif INTERP_ORDER == 3
-InterpInTy interp2(const InterpInTy *d_in, KParam in, int ioff, InterpPosTy x, InterpPosTy y, int method)
+InterpInTy interp2(__global const InterpInTy *d_in,
+                   KParam in, int ioff, InterpPosTy x, InterpPosTy y, int method)
 {
     const int grid_x = floor(x);
     const InterpPosTy off_x = x - grid_x;

@@ -137,9 +137,9 @@ namespace opencl
 
                     if((af_dtype) dtype_traits<Ty>::af_type == c32 ||
                        (af_dtype) dtype_traits<Ty>::af_type == c64) {
-                        options << " -D CPLX=1";
+                        options << " -D IS_CPLX=1";
                     } else {
-                        options << " -D CPLX=0";
+                        options << " -D IS_CPLX=0";
                     }
                     if (std::is_same<Ty, double>::value ||
                         std::is_same<Ty, cdouble>::value) {
