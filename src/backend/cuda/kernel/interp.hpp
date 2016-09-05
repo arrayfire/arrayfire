@@ -304,7 +304,7 @@ struct Interp2<Ty, Tp, 3>
         Ty zero = scalar<Ty>(0);
         bool spline = (method == AF_INTERP_CUBIC_SPLINE || method == AF_INTERP_BICUBIC_SPLINE);
         for (int n = 0; n < nimages; n++) {
-            int idx_n = idx + n * out.strides[2];
+            int idx_n = idx + n * in.strides[2];
             VT val[4][4];
 #pragma unroll
             for (int j = 0; j < 4; j++) {
