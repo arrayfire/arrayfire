@@ -44,8 +44,8 @@ void bilateral(__global outType *        d_dst,
     const int padding     = 2 * radius;
     const int window_size = padding + 1;
     const int shrdLen     = get_local_size(0) + padding;
-    const float variance_range = sigma_color * sigma_color;
-    const float variance_space = sigma_space * sigma_space;
+    const float variance_range = -2.f * sigma_color * sigma_color;
+    const float variance_space = -2.f * sigma_space * sigma_space;
 
     // gfor batch offsets
     unsigned b2 = get_group_id(0) / nBBS0;
@@ -63,7 +63,7 @@ void bilateral(__global outType *        d_dst,
     if (lx<window_size && ly<window_size) {
         int x = lx - radius;
         int y = ly - radius;
-        gauss2d[ly*window_size+lx] = exp( ((x*x) + (y*y)) / (-2.f * variance_space));
+        gauss2d[ly*window_size+lx] = exp( ((x*x) + (y*y)) / variance_space);
     }
 
     int s0 = iInfo.strides[0];

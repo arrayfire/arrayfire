@@ -38,7 +38,7 @@ int clamp(int f, int a, int b)
 inline __device__
 float gaussian1d(float x, float variance)
 {
-    return exp((x * x) / (-2.f * variance));
+    return __expf((x * x) / variance);
 }
 
 template<typename inType, typename outType>
@@ -66,8 +66,8 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
     const int padding     = 2 * radius;
     const int window_size = padding + 1;
     const int shrdLen     = THREADS_X + padding;
-    const float variance_range = sigma_color * sigma_color;
-    const float variance_space = sigma_space * sigma_space;
+    const float variance_range = -2.f * sigma_color * sigma_color;
+    const float variance_space = -2.f * sigma_space * sigma_space;
 
     // gfor batch offsets
     unsigned b2 = blockIdx.x / nBBS0;
@@ -85,7 +85,7 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
     if (lx<window_size && ly<window_size) {
         int x = lx - radius;
         int y = ly - radius;
-        gauss2d[ly*window_size+lx] = exp( ((x*x) + (y*y)) / (-2.f * variance_space));
+        gauss2d[ly*window_size+lx] = __expf(((x*x) + (y*y)) / variance_space);
     }
 
     // pull image to local memory
