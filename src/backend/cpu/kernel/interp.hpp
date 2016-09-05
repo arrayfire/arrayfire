@@ -186,8 +186,8 @@ struct Interp2<InT, LocT, 2>
         if (method == AF_INTERP_LINEAR_COSINE ||
             method == AF_INTERP_BILINEAR_COSINE) {
             // Smooth the factional part with cosine
-            xratio = (1 - std::cos(xratio * M_PI))/2;
-            yratio = (1 - std::cos(yratio * M_PI))/2;
+            xratio = (1 - std::cos(xratio * af::Pi))/2;
+            yratio = (1 - std::cos(yratio * af::Pi))/2;
         }
 
         return bilinearInterpFunc(val, off_x, off_y);
