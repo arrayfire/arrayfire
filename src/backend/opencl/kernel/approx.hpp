@@ -61,6 +61,7 @@ namespace opencl
                     options << " -D Ty="          << dtype_traits<Ty>::getName()
                             << " -D Tp="          << dtype_traits<Tp>::getName()
                             << " -D InterpInTy="  << dtype_traits<Ty>::getName()
+                            << " -D InterpValTy=" << dtype_traits<Ty>::getName()
                             << " -D InterpPosTy=" << dtype_traits<Tp>::getName()
                             << " -D ZERO="        << toNum(scalar<Ty>(0));
 
@@ -129,11 +130,12 @@ namespace opencl
                 std::call_once( compileFlags[device], [device] () {
                     ToNum<Ty> toNum;
                     std::ostringstream options;
-                    options << " -D Ty="        << dtype_traits<Ty>::getName()
-                            << " -D Tp="        << dtype_traits<Tp>::getName()
+                    options << " -D Ty="          << dtype_traits<Ty>::getName()
+                            << " -D Tp="          << dtype_traits<Tp>::getName()
                             << " -D InterpInTy="  << dtype_traits<Ty>::getName()
+                            << " -D InterpValTy=" << dtype_traits<Ty>::getName()
                             << " -D InterpPosTy=" << dtype_traits<Tp>::getName()
-                            << " -D ZERO="      << toNum(scalar<Ty>(0));
+                            << " -D ZERO="        << toNum(scalar<Ty>(0));
 
                     if((af_dtype) dtype_traits<Ty>::af_type == c32 ||
                        (af_dtype) dtype_traits<Ty>::af_type == c64) {

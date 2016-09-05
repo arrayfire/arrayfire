@@ -25,22 +25,22 @@ InterpInTy __mulrc(ScalarTy s, InterpInTy v)
 #define MULCR(a, b) (a) * (b)
 #endif
 
-InterpInTy linearInterpFunc(InterpInTy val[2], InterpPosTy ratio)
+InterpValTy linearInterpFunc(InterpValTy val[2], InterpPosTy ratio)
 {
     return MULRC((1 - ratio), val[0]) + MULRC(ratio, val[1]);
 }
 
-InterpInTy bilinearInterpFunc(InterpInTy val[2][2], InterpPosTy xratio, InterpPosTy yratio)
+InterpValTy bilinearInterpFunc(InterpValTy val[2][2], InterpPosTy xratio, InterpPosTy yratio)
 {
-    InterpInTy res[2];
+    InterpValTy res[2];
     res[0] = linearInterpFunc(val[0], xratio);
     res[1] = linearInterpFunc(val[1], xratio);
     return linearInterpFunc(res, yratio);
 }
 
-InterpInTy cubicInterpFunc(InterpInTy val[4], InterpPosTy xratio, bool spline)
+InterpValTy cubicInterpFunc(InterpValTy val[4], InterpPosTy xratio, bool spline)
 {
-    InterpInTy a0, a1, a2, a3;
+    InterpValTy a0, a1, a2, a3;
     if (spline) {
         a0 = MULRC(-0.5, val[0]) + MULRC( 1.5, val[1]) + MULRC(-1.5, val[2]) + MULRC( 0.5, val[3]);
         a1 = MULRC( 1.0, val[0]) + MULRC(-2.5, val[1]) + MULRC( 2.0, val[2]) + MULRC(-0.5, val[3]);
@@ -59,9 +59,9 @@ InterpInTy cubicInterpFunc(InterpInTy val[4], InterpPosTy xratio, bool spline)
     return MULCR(a0, xratio3) + MULCR(a1, xratio2) + MULCR(a2, xratio) + a3;
 }
 
-InterpInTy bicubicInterpFunc(InterpInTy val[4][4], InterpPosTy xratio, InterpPosTy yratio, bool spline)
+InterpValTy bicubicInterpFunc(InterpValTy val[4][4], InterpPosTy xratio, InterpPosTy yratio, bool spline)
 {
-    InterpInTy res[4];
+    InterpValTy res[4];
     res[0] = cubicInterpFunc(val[0], xratio, spline);
     res[1] = cubicInterpFunc(val[1], xratio, spline);
     res[2] = cubicInterpFunc(val[2], xratio, spline);
@@ -69,37 +69,59 @@ InterpInTy bicubicInterpFunc(InterpInTy val[4][4], InterpPosTy xratio, InterpPos
     return cubicInterpFunc(res, yratio, spline);
 }
 
-
 #if INTERP_ORDER == 1
-InterpInTy interp1(__global const InterpInTy *d_in,
-                   KParam in, int ioff, InterpPosTy x, int method)
+void interp1(
+    __global InterpInTy *d_out,
+    KParam out, int ooff,
+    __global const InterpInTy *d_in,
+    KParam in, int ioff, InterpPosTy x,
+    int method, int batch, bool clamp)
 {
-    if (method == AF_INTERP_LOWER) {
-        const int idx = floor(x) + ioff;
-        return d_in[idx];
-    } else {
-        const int idx = round(x) + ioff;
-        return d_in[idx];
+    int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
+    InterpInTy zero = ZERO;
+    bool cond = xid >= 0 && xid < in.dims[0];
+    if (clamp) xid = max(0, min(xid, (int)in.dims[0]));
+    const int idx = ioff + xid;
+    for (int n = 0; n < batch; n++) {
+        int idx_n = idx + n * in.strides[1];
+        d_out[ooff + n * out.strides[1]] = (clamp || cond) ? d_in[idx_n] : zero;
     }
 }
 #elif INTERP_ORDER == 2
-InterpInTy interp1(__global const InterpInTy *d_in,
-                   KParam in, int ioff, InterpPosTy x, int method)
+void interp1(
+    __global InterpInTy *d_out,
+    KParam out, int ooff,
+    __global const InterpInTy *d_in,
+    KParam in, int ioff, InterpPosTy x,
+    int method, int batch, bool clamp)
 {
     const int grid_x = floor(x);    // nearest grid
     const InterpPosTy off_x = x - grid_x;    // fractional offset
     const int idx = ioff + grid_x;
-    InterpInTy zero = ZERO;
-    InterpInTy val[2] = {d_in[idx], x + 1 < in.dims[0] ? d_in[idx + 1] : zero};
+    InterpValTy zero = ZERO;
+    bool cond[2] = {true, grid_x + 1 < in.dims[0]};
+    int  offx[2]  = {0, cond[1] ? 1 : 0};
+
     InterpPosTy ratio = off_x;
     if (method == AF_INTERP_LINEAR_COSINE) {
         ratio = (1 - cos(ratio * M_PI))/2;
     }
-    return linearInterpFunc(val, ratio);
+
+    for (int n = 0; n < batch; n++) {
+        int idx_n = idx + n * in.strides[1];
+        InterpValTy val[2] = {(clamp || cond[0]) ? d_in[idx_n + offx[0]] : zero,
+                              (clamp || cond[1]) ? d_in[idx_n + offx[1]] : zero};
+
+        d_out[ooff + n * out.strides[1]] = linearInterpFunc(val, ratio);
+    }
 }
 #elif INTERP_ORDER == 3
-InterpInTy interp1(__global const InterpInTy *d_in,
-                   KParam in, int ioff, InterpPosTy x, int method)
+void interp1(
+    __global InterpInTy *d_out,
+    KParam out, int ooff,
+    __global const InterpInTy *d_in,
+    KParam in, int ioff, InterpPosTy x,
+    int method, int batch, bool clamp)
 {
     const int grid_x = floor(x);    // nearest grid
     const InterpPosTy off_x = x - grid_x;    // fractional offset
@@ -108,29 +130,54 @@ InterpInTy interp1(__global const InterpInTy *d_in,
     bool cond[4] = {grid_x - 1 >= 0, true, grid_x + 1 < in.dims[0], grid_x + 2 < in.dims[0]};
     int  off[4]  = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0, cond[3] ? 2 : (cond[2] ? 1 : 0)};
 
-    InterpInTy val[4];
-    for (int i = 0; i < 4; i++) {
-        val[i] = d_in[idx + off[i]];
+    InterpValTy zero = ZERO;
+
+    for (int n = 0; n < batch; n++) {
+        InterpValTy val[4];
+        int idx_n = idx + n * in.strides[1];
+        for (int i = 0; i < 4; i++) {
+            val[i] = (clamp || cond[i]) ? d_in[idx_n + off[i]] : zero;
+        }
+        bool spline = method == AF_INTERP_CUBIC_SPLINE;
+        d_out[ooff + n * out.strides[1]] = cubicInterpFunc(val, off_x, spline);;
     }
-    return cubicInterpFunc(val, off_x, method == AF_INTERP_CUBIC_SPLINE);
 }
 #endif
 
 #if INTERP_ORDER == 1
-InterpInTy interp2(__global const InterpInTy *d_in,
-                   KParam in, int ioff, InterpPosTy x, InterpPosTy y, int method)
+void interp2(
+    __global InterpInTy *d_out,
+    KParam out, int ooff,
+    __global const InterpInTy *d_in,
+    KParam in, int ioff, InterpPosTy x, InterpPosTy y,
+    int method, int nimages, bool clamp)
 {
-    if (method == AF_INTERP_LOWER) {
-        const int idx = ioff + floor(y) * in.strides[1] + floor(x);
-        return d_in[idx];
-    } else {
-        const int idx = ioff + round(y) * in.strides[1] + round(x);
-        return d_in[idx];
+    int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
+    int yid = (method == AF_INTERP_LOWER ? floor(y) : round(y));
+
+    if (clamp) {
+        xid = max(0, min(xid, (int)in.dims[0]));
+        yid = max(0, min(yid, (int)in.dims[1]));
+    }
+    int idx = ioff + yid * in.strides[1] + xid;
+
+    bool condX = xid >= 0 && xid < in.dims[0];
+    bool condY = yid >= 0 && yid < in.dims[1];
+
+    InterpInTy zero = ZERO;
+    bool cond = condX && condY;
+    for (int n = 0; n < nimages; n++) {
+        int idx_n = idx + n * in.strides[2];
+        d_out[ooff + n * out.strides[2]] =  (clamp || cond) ? d_in[idx_n] : zero;
     }
 }
 #elif INTERP_ORDER == 2
-InterpInTy interp2(__global const InterpInTy *d_in,
-                   KParam in, int ioff, InterpPosTy x, InterpPosTy y, int method)
+void interp2(
+    __global InterpInTy *d_out,
+    KParam out, int ooff,
+    __global const InterpInTy *d_in,
+    KParam in, int ioff, InterpPosTy x, InterpPosTy y,
+    int method, int nimages, bool clamp)
 {
     const int grid_x = floor(x);
     const InterpPosTy off_x = x - grid_x;
@@ -142,15 +189,8 @@ InterpInTy interp2(__global const InterpInTy *d_in,
 
     bool condX[2] = {true, x + 1 < in.dims[0]};
     bool condY[2] = {true, y + 1 < in.dims[1]};
-
-    InterpInTy zero = ZERO;
-    InterpInTy val[2][2];
-    for (int j = 0; j < 2; j++) {
-        int off_y = idx + j * in.strides[1];
-        for (int i = 0; i < 2; i++) {
-            val[j][i] = condX[i] && condY[j] ? d_in[off_y + i] : zero;
-        }
-    }
+    int  offx[2]  = {0, condX[1] ? 1 : 0};
+    int  offy[2]  = {0, condY[1] ? 1 : 0};
 
     InterpPosTy xratio = off_x, yratio = off_y;
     if (method == AF_INTERP_LINEAR_COSINE) {
@@ -158,11 +198,27 @@ InterpInTy interp2(__global const InterpInTy *d_in,
         yratio = (1 - cos(yratio * M_PI))/2;
     }
 
-    return bilinearInterpFunc(val, xratio, yratio);
+    InterpValTy zero = ZERO;
+    for (int n = 0; n < nimages; n++) {
+        int idx_n = idx + n * in.strides[2];
+        InterpValTy val[2][2];
+        for (int j = 0; j < 2; j++) {
+            int off_y = idx_n + offy[j] * in.strides[1];
+            for (int i = 0; i < 2; i++) {
+                bool cond = (clamp || (condX[i] && condY[j]));
+                val[j][i] = cond ? d_in[off_y + offx[i]] : zero;
+            }
+        }
+        d_out[ooff + n * out.strides[2]] =  bilinearInterpFunc(val, xratio, yratio);
+    }
 }
 #elif INTERP_ORDER == 3
-InterpInTy interp2(__global const InterpInTy *d_in,
-                   KParam in, int ioff, InterpPosTy x, InterpPosTy y, int method)
+void interp2(
+    __global InterpInTy *d_out,
+    KParam out, int ooff,
+    __global const InterpInTy *d_in,
+    KParam in, int ioff, InterpPosTy x, InterpPosTy y,
+    int method, int nimages, bool clamp)
 {
     const int grid_x = floor(x);
     const InterpPosTy off_x = x - grid_x;
@@ -172,8 +228,6 @@ InterpInTy interp2(__global const InterpInTy *d_in,
 
     const int idx = ioff + grid_y * in.strides[1] + grid_x;
 
-    //for bicubic interpolation, work with 4x4 val at a time
-    InterpInTy val[4][4];
 
     // used for setting values at boundaries
     bool condX[4] = {grid_x - 1 >= 0, true, grid_x + 1 < in.dims[0], grid_x + 2 < in.dims[0]};
@@ -181,16 +235,22 @@ InterpInTy interp2(__global const InterpInTy *d_in,
     int  offX[4]  = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0 , condX[3] ? 2 : (condX[2] ? 1 : 0)};
     int  offY[4]  = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0 , condY[3] ? 2 : (condY[2] ? 1 : 0)};
 
+    InterpValTy zero = ZERO;
+    for (int n = 0; n < nimages; n++) {
+        int idx_n = idx + n * in.strides[2];
+        //for bicubic interpolation, work with 4x4 val at a time
+        InterpValTy val[4][4];
 #pragma unroll
-    for (int j = 0; j < 4; j++) {
-        int ioff_j = idx + offY[j] * in.strides[1];
+        for (int j = 0; j < 4; j++) {
+            int ioff_j = idx_n + offY[j] * in.strides[1];
 #pragma unroll
-        for (int i = 0; i < 4; i++) {
-            val[j][i] = d_in[ioff_j + offX[i]];
+            for (int i = 0; i < 4; i++) {
+                bool cond = (clamp || (condX[i] && condY[j]));
+                val[j][i] = cond ? d_in[ioff_j + offX[i]] : zero;
+            }
         }
+        bool spline  = method == AF_INTERP_CUBIC_SPLINE || method == AF_INTERP_BICUBIC_SPLINE;
+        d_out[ooff +  n * out.strides[2]] = bicubicInterpFunc(val, off_x, off_y, spline);
     }
-
-    bool spline  = method == AF_INTERP_CUBIC_SPLINE || method == AF_INTERP_BICUBIC_SPLINE;
-    return bicubicInterpFunc(val, off_x, off_y, spline);
 }
 #endif

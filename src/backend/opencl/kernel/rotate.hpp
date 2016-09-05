@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <kernel_headers/transform_interp.hpp>
+#include <kernel_headers/interp.hpp>
 #include <kernel_headers/rotate.hpp>
 #include <program.hpp>
 #include <traits.hpp>
@@ -21,6 +21,7 @@
 #include <type_util.hpp>
 #include <math.hpp>
 #include "config.hpp"
+#include "interp.hpp"
 
 using cl::Buffer;
 using cl::Program;
@@ -53,8 +54,8 @@ namespace opencl
                                              T, wtype_t<T>
                                             >::type;
 
-        template<typename T, af_interp_type method>
-        void rotate(Param out, const Param in, const float theta)
+        template<typename T, int order>
+        void rotate(Param out, const Param in, const float theta, af_interp_type method)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -68,44 +69,40 @@ namespace opencl
                     ToNum<T> toNum;
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName();
-                    options << " -D VT="       << dtype_traits<vtype_t<T>>::getName();
-                    options << " -D WT="       << dtype_traits<wtype_t<BT>>::getName();
                     options << " -D ZERO="      << toNum(scalar<T>(0));
+                    options << " -D InterpInTy=" << dtype_traits<T>::getName();
+                    options << " -D InterpValTy="  << dtype_traits<vtype_t<T>>::getName();
+                    options << " -D InterpPosTy=" << dtype_traits<wtype_t<BT>>::getName();
 
                     if((af_dtype) dtype_traits<T>::af_type == c32 ||
                        (af_dtype) dtype_traits<T>::af_type == c64) {
-                        options << " -D CPLX=1";
+                        options << " -D IS_CPLX=1";
                         options << " -D TB=" << dtype_traits<BT>::getName();
                     } else {
-                        options << " -D CPLX=0";
+                        options << " -D IS_CPLX=0";
                     }
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
                     }
 
-                    switch(method) {
-                        case AF_INTERP_NEAREST : options << " -D INTERP=NEAREST";
-                            break;
-                        case AF_INTERP_BILINEAR: options << " -D INTERP=BILINEAR";
-                            break;
-                        case AF_INTERP_LOWER   : options << " -D INTERP=LOWER";
-                            break;
-                        default:
-                            break;
-                    }
+                    options << " -D INTERP_ORDER=" << order;
+                    addInterpEnumOptions(options);
 
-                    const char *ker_strs[] = {transform_interp_cl, rotate_cl};
-                    const int   ker_lens[] = {transform_interp_cl_len, rotate_cl_len};
+                    const char *ker_strs[] = {interp_cl, rotate_cl};
+                    const int   ker_lens[] = {interp_cl_len, rotate_cl_len};
                     Program prog;
                     buildProgram(prog, 2, ker_strs, ker_lens, options.str());
                     rotateProgs[device] = new Program(prog);
                     rotateKernels[device] = new Kernel(*rotateProgs[device], "rotate_kernel");
                 });
 
-                auto rotateOp = KernelFunctor<Buffer, const KParam, const Buffer, const KParam, const tmat_t,
-                                            const int, const int, const int, const int>
-                                           (*rotateKernels[device]);
+                auto rotateOp = KernelFunctor<Buffer, const KParam,
+                                              const Buffer, const KParam,
+                                              const tmat_t,
+                                              const int, const int,
+                                              const int, const int,
+                                              const int>(*rotateKernels[device]);
 
                 const float c = cos(-theta), s = sin(-theta);
                 float tx, ty;
@@ -150,7 +147,7 @@ namespace opencl
 
                 rotateOp(EnqueueArgs(getQueue(), global, local),
                          *out.data, out.info, *in.data, in.info, t, nimages, nbatches,
-                         blocksXPerImage, blocksYPerImage);
+                         blocksXPerImage, blocksYPerImage, (int)method);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

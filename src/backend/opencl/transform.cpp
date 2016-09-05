@@ -22,84 +22,22 @@ namespace opencl
     {
         Array<T> out = createEmptyArray<T>(odims);
 
-        if(inverse) {
-            if (perspective) {
-                switch(method) {
-                    case AF_INTERP_NEAREST:
-                        kernel::transform<T, true, true, AF_INTERP_NEAREST>
-                                         (out, in, tf);
-                        break;
-                    case AF_INTERP_BILINEAR:
-                        kernel::transform<T, true, true, AF_INTERP_BILINEAR>
-                                         (out, in, tf);
-                        break;
-                    case AF_INTERP_LOWER:
-                        kernel::transform<T, true, true, AF_INTERP_LOWER>
-                                         (out, in, tf);
-                        break;
-                    default:
-                        AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
-                        break;
-                }
-            } else {
-                switch(method) {
-                    case AF_INTERP_NEAREST:
-                        kernel::transform<T, true, false, AF_INTERP_NEAREST>
-                                         (out, in, tf);
-                        break;
-                    case AF_INTERP_BILINEAR:
-                        kernel::transform<T, true, false, AF_INTERP_BILINEAR>
-                                         (out, in, tf);
-                        break;
-                    case AF_INTERP_LOWER:
-                        kernel::transform<T, true, false, AF_INTERP_LOWER>
-                                         (out, in, tf);
-                        break;
-                    default:
-                        AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
-                        break;
-                }
-            }
-        } else {
-            if (perspective) {
-                switch(method) {
-                    case AF_INTERP_NEAREST:
-                        kernel::transform<T, false, true, AF_INTERP_NEAREST>
-                                         (out, in, tf);
-                        break;
-                    case AF_INTERP_BILINEAR:
-                        kernel::transform<T, false, true, AF_INTERP_BILINEAR>
-                                         (out, in, tf);
-                        break;
-                    case AF_INTERP_LOWER:
-                        kernel::transform<T, false, true, AF_INTERP_LOWER>
-                                         (out, in, tf);
-                        break;
-                    default:
-                        AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
-                        break;
-                }
-            } else {
-                switch(method) {
-                    case AF_INTERP_NEAREST:
-                        kernel::transform<T, false, false, AF_INTERP_NEAREST>
-                                         (out, in, tf);
-                        break;
-                    case AF_INTERP_BILINEAR:
-                        kernel::transform<T, false, false, AF_INTERP_BILINEAR>
-                                         (out, in, tf);
-                        break;
-                    case AF_INTERP_LOWER:
-                        kernel::transform<T, false, false, AF_INTERP_LOWER>
-                                         (out, in, tf);
-                        break;
-                    default:
-                        AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
-                        break;
-                }
-            }
+        switch(method) {
+        case AF_INTERP_NEAREST:
+        case AF_INTERP_LOWER:
+            kernel::transform<T, 1>(out, in, tf, inverse, perspective, method);
+            break;
+        case AF_INTERP_BILINEAR:
+        case AF_INTERP_BILINEAR_COSINE:
+            kernel::transform<T, 2>(out, in, tf, inverse, perspective, method);
+            break;
+        case AF_INTERP_BICUBIC:
+        case AF_INTERP_BICUBIC_SPLINE:
+            kernel::transform<T, 3>(out, in, tf, inverse, perspective, method);
+            break;
+        default:
+            AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
         }
-
         return out;
     }
 

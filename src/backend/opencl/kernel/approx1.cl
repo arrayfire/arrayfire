@@ -38,5 +38,13 @@ void approx1_kernel(__global       Ty *d_out, const KParam out,
     }
 
     int ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1] + in.offset;
-    d_out[omId] = interp1(d_in, in, ioff, x, method);
+
+    // FIXME: Only cubic interpolation is doing clamping
+    // We need to make it consistent across all methods
+    // Not changing the behavior because tests will fail
+    bool clamp = INTERP_ORDER == 3;
+
+    interp1(d_out, out, omId,
+             d_in,  in, ioff,
+            x, method, 1, clamp);
 }

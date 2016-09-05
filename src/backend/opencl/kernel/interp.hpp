@@ -6,6 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma once
 
 #include <af/defines.h>
 #include <string>
@@ -17,7 +18,7 @@
 namespace opencl {
     namespace kernel {
 
-        void addInterpEnumOptions(std::ostringstream &options)
+        static void addInterpEnumOptions(std::ostringstream &options)
         {
             ADD_ENUM_OPTION(options, AF_INTERP_NEAREST);
             ADD_ENUM_OPTION(options, AF_INTERP_LINEAR);
