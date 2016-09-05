@@ -61,9 +61,9 @@ forge::Chart* setup_plot3(const forge::Window* const window, const af_array P,
     // Get the chart for the current grid position (if any)
     forge::Chart* chart = NULL;
     if (props->col>-1 && props->row>-1)
-        chart = fgMngr.getChart(window, props->row, props->col, FG_CHART_2D);
+        chart = fgMngr.getChart(window, props->row, props->col, FG_CHART_3D);
     else
-        chart = fgMngr.getChart(window, 0, 0, FG_CHART_2D);
+        chart = fgMngr.getChart(window, 0, 0, FG_CHART_3D);
 
     forge::Plot* plot3 = fgMngr.getPlot(chart, P_dims.elements()/3, getGLType<T>(), ptype, mtype);
 
