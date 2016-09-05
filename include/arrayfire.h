@@ -100,7 +100,7 @@
    @defgroup linalg_mat Linear Algebra
    @{
 
-     Matrix multiply, solve, decompositions
+     Matrix multiply, solve, decompositions, sparse matrix
 
      @defgroup blas_mat BLAS operations
      Matrix multiply, dot product, etc.
@@ -115,6 +115,47 @@
      inverse, det, rank, norm etc.
 
      @defgroup lapack_helper LAPACK Helper functions
+
+     @defgroup sparse_func Sparse functions
+        \brief Functions to create and handle sparse arrays and matrix operations
+
+        Sparse array in ArrayFire use the same \ref af::array (or \ref af_array)
+        handle as normal. Internally, this handle is used to maintain a structure
+        of the sparse array (components listed below).
+
+        Description     | Data Type
+        ----------------|-------------------
+        Values          | T (one of \ref f32, \ref f64, \ref c32, \ref c64)
+        Row Indices     | Int (\ref s32)
+        Column Indices  | Int (\ref s32)
+        Storage         | \ref af::storage
+
+        The value array contains the non-zero elements of the matrix. The
+        \ref af::dtype of the value array is the same as that of the matrix.
+        The size of this array is the same as the number of non-zero elements
+        of the matrix.
+
+        The row indices and column indices contain the indices based on
+        \ref af::storage type. These \ref af::array are always of type \ref s32.
+
+        The \ref af::storage is used to determin the type of storage to use.
+        Currently \ref AF_STORAGE_CSR and \ref AF_STORAGE_COO are available.
+
+        A sparse array can be identied using the \ref af::array::issparse()
+        function.  This function will return true for a sparse array and false
+        for a regular \ref af::array.
+
+        The valid operations on sparse arrays are \ref af::matmul (sparse-dense).
+        When calling matmul for sparse matrices, the sparse array is required to
+        be the left hand side matrix and can be used with transposing options.
+        The dense matrix on the right hand side cannot be used with any transpose
+        options.
+
+        Most functions cannot use sparse arrays and will throw an error with
+        \ref AF_ERR_ARG if a sparse array is given as input.
+
+        \note Sparse functionality support was added to ArrayFire in v3.4.0.
+
    @}
 
    @defgroup image_mat Image Processing
