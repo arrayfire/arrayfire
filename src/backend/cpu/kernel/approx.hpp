@@ -51,10 +51,15 @@ void approx1(Array<InT> output, const Array<InT> input,
 
                     const LocT x = xpos[batch * xoff + idx];
 
+                    // FIXME: Only cubic interpolation is doing clamping
+                    // We need to make it consistent across all methods
+                    // Not changing the behavior because tests will fail
+                    bool clamp = order == 3;
+
                     if (x < 0 || idims[0] < x + 1) {
                         out[ooff + idx] = scalar<InT>(offGrid);
                     } else {
-                        out[ooff + idx] = interp(input, ioff, x, method);
+                        out[ooff + idx] = interp(input, ioff, x, method, clamp);
                     }
                 }
             }
@@ -100,11 +105,16 @@ void approx2(Array<InT> output, const Array<InT> input,
                     const LocT x = xpos[xoff + idx];
                     const LocT y = ypos[yoff + idx];
 
+                    // FIXME: Only cubic interpolation is doing clamping
+                    // We need to make it consistent across all methods
+                    // Not changing the behavior because tests will fail
+                    bool clamp = order == 3;
+
                     if (x < 0 || idims[0] < x + 1 ||
                         y < 0 || idims[1] < y + 1 ) {
                         out[ooff + idx] = scalar<InT>(offGrid);
                     } else {
-                        out[ooff + idx] = interp(input, ioffzw, x, y, method);
+                        out[ooff + idx] = interp(input, ioffzw, x, y, method, clamp);
                     }
                 }
             }

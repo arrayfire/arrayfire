@@ -10,12 +10,23 @@
 #include <Array.hpp>
 #include <math.hpp>
 #include <af/constants.h>
+#include <type_traits>
 
 namespace cpu
 {
 namespace kernel
 {
 
+using std::conditional;
+using std::is_same;
+
+template<typename T>
+using wtype_t = typename conditional<is_same<T, double>::value, double, float>::type;
+
+template<typename T>
+using vtype_t = typename conditional<is_complex<T>::value,
+                                     T, wtype_t<T>
+                                     >::type;
 
 template<typename InT, typename LocT>
 InT linearInterpFunc(InT val[2], LocT ratio)
@@ -80,30 +91,45 @@ struct Interp1
 template<typename InT, typename LocT>
 struct Interp1<InT, LocT, 1>
 {
-    InT operator()(const Array<InT> &in, int ioff, LocT x, af_interp_type method)
+    InT operator()(const Array<InT> &in, int ioff, LocT x, af_interp_type method, bool clamp)
     {
+        const dim4 idims = in.dims();
+        int xid = (method == AF_INTERP_LOWER ? std::floor(x) : std::round(x));
+        bool cond = xid >= 0 && xid < idims[0];
+        if (clamp) xid = std::max(0, std::min(xid, (int)idims[0]));
+
         const InT *inptr = in.get();
-        int idx = ioff + (method == AF_INTERP_LOWER ? floor(x) : round(x));
-        return inptr[idx];
+        int idx = ioff + xid;
+        return (cond || clamp) ? inptr[idx] : scalar<InT>(0);
     }
 };
 
 template<typename InT, typename LocT>
 struct Interp1<InT, LocT, 2>
 {
-    InT operator()(const Array<InT> &in, int ioff, LocT x, af_interp_type  method)
+    InT operator()(const Array<InT> &in, int ioff, LocT x, af_interp_type  method, bool clamp)
     {
+        typedef vtype_t<InT> VT;
+
         const int grid_x = floor(x);    // nearest grid
         const LocT off_x = x - grid_x;    // fractional offset
         const int idx = ioff + grid_x;
         const InT *inptr = in.get();
         const dim4 idims = in.dims();
-        InT val[2] = {inptr[idx], x + 1 < idims[0] ? inptr[idx + 1] : scalar<InT>(0)};
+
+        bool cond[2] = {true, grid_x + 1 < idims[0]};
+        int  offx[2] = {0 , cond[1] ? 1 : 0};
 
         LocT ratio = off_x;
         if (method == AF_INTERP_LINEAR_COSINE) {
             // Smooth the factional part with cosine
             ratio = (1 - std::cos(ratio * af::Pi))/2;
+        }
+
+        const VT zero = scalar<VT>(0);
+        VT val[2] = {zero, zero};
+        for (int i = 0; i < 2; i++) {
+            if (clamp || cond[i]) val[i] = inptr[idx + offx[i]];
         }
 
         return linearInterpFunc(val, ratio);
@@ -113,8 +139,10 @@ struct Interp1<InT, LocT, 2>
 template<typename InT, typename LocT>
 struct Interp1<InT, LocT, 3>
 {
-    InT operator()(const Array<InT> &in, int ioff, LocT x, af_interp_type method)
+    InT operator()(const Array<InT> &in, int ioff, LocT x, af_interp_type method, bool clamp)
     {
+        typedef vtype_t<InT> VT;
+
         const int grid_x = floor(x);    // nearest grid
         const LocT off_x = x - grid_x;    // fractional offset
         const int idx = ioff + grid_x;
@@ -124,9 +152,10 @@ struct Interp1<InT, LocT, 3>
         bool cond[4] = {grid_x - 1 >= 0, true, grid_x + 1 < idims[0], grid_x + 2 < idims[0]};
         int  off[4]  = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0, cond[3] ? 2 : (cond[2] ? 1 : 0)};
 
-        InT val[4];
+        const VT zero = scalar<VT>(0);
+        VT val[4] = {zero, zero, zero, zero};
         for (int i = 0; i < 4; i++) {
-            val[i] = inptr[idx + off[i]];
+            if (clamp || cond[i]) val[i] = inptr[idx + off[i]];
         }
         return cubicInterpFunc(val, off_x, method == AF_INTERP_CUBIC_SPLINE);
     }
@@ -140,25 +169,36 @@ struct Interp2
 template<typename InT, typename LocT>
 struct Interp2<InT, LocT, 1>
 {
-    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y, af_interp_type method)
+    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y, af_interp_type method, bool clamp)
     {
         const InT *inptr = in.get();
         const dim4 istrides = in.strides();
-        if (method == AF_INTERP_LOWER) {
-            const int idx = ioff + floor(y) * istrides[1] + floor(x);
-            return inptr[idx];
-        } else {
-            const int idx = ioff + round(y) * istrides[1] + round(x);
-            return inptr[idx];
+        const dim4 idims = in.dims();
+
+        int xid = (method == AF_INTERP_LOWER ? std::floor(x) : std::round(x));
+        int yid = (method == AF_INTERP_LOWER ? std::floor(y) : std::round(y));
+
+        bool condX = xid >= 0 && xid < idims[0];
+        bool condY = yid >= 0 && yid < idims[1];
+
+        if (clamp) {
+            xid = std::max(0, std::min(xid, (int)idims[0]));
+            yid = std::max(0, std::min(yid, (int)idims[1]));
         }
+
+        bool cond = condX && condY;
+        int idx = ioff + yid * istrides[1] + xid;
+        return (clamp || cond) ? inptr[idx] : scalar<InT>(0);
     }
 };
 
 template<typename InT, typename LocT>
 struct Interp2<InT, LocT, 2>
 {
-    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y, af_interp_type method)
+    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y, af_interp_type method, bool clamp)
     {
+        typedef vtype_t<InT> VT;
+
         const InT *inptr = in.get();
         const dim4 idims = in.dims();
         const dim4 istrides = in.strides();
@@ -174,11 +214,16 @@ struct Interp2<InT, LocT, 2>
         bool condX[2] = {true, x + 1 < idims[0]};
         bool condY[2] = {true, y + 1 < idims[1]};
 
-        InT val[2][2];
+        bool offX[2] = {0, condX[1] ? 1 : 0};
+        bool offY[2] = {0, condY[1] ? 1 : 0};
+
+        VT zero = scalar<VT>(0);
+        VT val[2][2];
         for (int j = 0; j < 2; j++) {
-            int off_y = idx + j * istrides[1];
+            int off_y = idx + offY[j] * istrides[1];
             for (int i = 0; i < 2; i++) {
-                val[j][i] = condX[i] && condY[j] ? inptr[off_y + i] : scalar<InT>(0);
+                bool cond = clamp || (condX[i] && condY[j]);
+                val[j][i] = cond ? inptr[off_y + offX[i]] : zero;
             }
         }
 
@@ -197,8 +242,10 @@ struct Interp2<InT, LocT, 2>
 template<typename InT, typename LocT>
 struct Interp2<InT, LocT, 3>
 {
-    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y, af_interp_type method)
+    InT operator()(const Array<InT> &in, int ioff, LocT x, LocT y, af_interp_type method, bool clamp)
     {
+        typedef vtype_t<InT> VT;
+
         const InT *inptr = in.get();
         const dim4 idims = in.dims();
         const dim4 istrides = in.strides();
@@ -212,7 +259,7 @@ struct Interp2<InT, LocT, 3>
         const int idx = ioff + grid_y * istrides[1] + grid_x;
 
         //for bicubic interpolation, work with 4x4 val at a time
-        InT val[4][4];
+        VT val[4][4];
 
         // used for setting values at boundaries
         bool condX[4] = {grid_x - 1 >= 0, true, grid_x + 1 < idims[0], grid_x + 2 < idims[0]};
@@ -220,10 +267,12 @@ struct Interp2<InT, LocT, 3>
         int  offX[4]  = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0 , condX[3] ? 2 : (condX[2] ? 1 : 0)};
         int  offY[4]  = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0 , condY[3] ? 2 : (condY[2] ? 1 : 0)};
 
+        VT zero = scalar<VT>(0);
         for (int j = 0; j < 4; j++) {
             int ioff_j = idx + offY[j] * istrides[1];
             for (int i = 0; i < 4; i++) {
-                val[j][i] = inptr[ioff_j + offX[i]];
+                bool cond = clamp || (condX[i] && condY[j]);
+                val[j][i] = cond ? inptr[ioff_j + offX[i]] : zero;
             }
         }
 
