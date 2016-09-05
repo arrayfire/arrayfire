@@ -35,7 +35,7 @@ using namespace detail;         // detail is an alias to appropriate backend
                                 // change this
 
 template<typename T>
-af_array example(const af_array& in, const af_someenum_t& param)
+af_array example(const af_array& a, const af_array& b, const af_someenum_t& param)
 {
     // getArray<T> function is defined in handle.hpp
     // and it returns backend specific Array, namely one of the following
@@ -45,24 +45,22 @@ af_array example(const af_array& in, const af_someenum_t& param)
     // getHandle<T> function is defined in handle.hpp takes one of the
     // above backend specific detail::Array<T> and returns the
     // universal array handle af_array
-    return getHandle<T>( exampleFunction(getArray<T>(in), param) );
+    return getHandle<T>( exampleFunction(getArray<T>(a), getArray<T>(b), param) );
 }
 
-af_err af_example_function(af_array* out,
-                            const af_array in,
-                            const af_someenum_t param)
+af_err af_example_function(af_array* out, const af_array a, const af_array b, const af_someenum_t param)
 {
     try {
         af_array output = 0;
-        ArrayInfo info = getInfo(in);       // ArrayInfo is the base class which
+        ArrayInfo info = getInfo(a);        // ArrayInfo is the base class which
                                             // each backend specific Array inherits
                                             // This class stores the basic array meta-data
                                             // such as type of data, dimensions,
                                             // offsets and strides. This class is declared
                                             // in src/backend/ArrayInfo.hpp
+        ArrayInfo info2 = getInfo(b);
 
         af::dim4 dims = info.dims();
-
 
         ARG_ASSERT(2, (dims.ndims()>=0 && dims.ndims()<=3));
                                             // defined in err_common.hpp
@@ -72,16 +70,18 @@ af_err af_example_function(af_array* out,
 
         af_dtype type = info.getType();
 
+        ARG_ASSERT(2, (info2.getType() == type));
+
         switch(type) {                      // Based on the data type, call backend specific
                                             // implementation
-            case f64: output = example<double >(in, param); break;
-            case f32: output = example<float  >(in, param); break;
-            case s32: output = example<int    >(in, param); break;
-            case u32: output = example<uint   >(in, param); break;
-            case  u8: output = example<uchar  >(in, param); break;
-            case  b8: output = example<char   >(in, param); break;
-            case c32: output = example<cfloat >(in, param); break;
-            case c64: output = example<cdouble>(in, param); break;
+            case f64: output = example<double >(a, b, param); break;
+            case f32: output = example<float  >(a, b, param); break;
+            case s32: output = example<int    >(a, b, param); break;
+            case u32: output = example<uint   >(a, b, param); break;
+            case  u8: output = example<uchar  >(a, b, param); break;
+            case  b8: output = example<char   >(a, b, param); break;
+            case c32: output = example<cfloat >(a, b, param); break;
+            case c64: output = example<cdouble>(a, b, param); break;
             default : TYPE_ERROR(1, type);  // Another helpful macro from err_common.hpp
                                             // that helps throw type based error messages
         }

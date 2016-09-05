@@ -18,13 +18,13 @@
 namespace af
 {
 
-array exampleFunction(const array& in, const af_someenum_t p)
+array exampleFunction(const array& a, const array& b, const af_someenum_t p)
 {
     // create a temporary af_array handle
     af_array temp = 0;
 
     // call C-API function
-    AF_THROW( af_example_function(&temp, in.get(), p) );
+    AF_THROW( af_example_function(&temp, a.get(), b.get(), p) );
 
     // array::get() returns af_array handle for the corresponding cpp af::array
     return array(temp);

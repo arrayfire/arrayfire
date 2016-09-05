@@ -51,8 +51,8 @@ af_err af_array_to_string(char **output, const char *exp, const af_array arr,
     return CALL(output, exp, arr, precision, transpose);
 }
 
-af_err af_example_function(af_array* out, const af_array in, const af_someenum_t param)
+af_err af_example_function(af_array* out, const af_array a, const af_array b, const af_someenum_t param)
 {
-    CHECK_ARRAYS(in);
-    return CALL(out, in, param);
+    CHECK_ARRAYS(a, b);
+    return CALL(out, a, b, param);
 }

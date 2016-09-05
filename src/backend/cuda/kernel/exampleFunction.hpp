@@ -35,20 +35,41 @@ static const unsigned TY = 16;          // Kernel Launch Config Values
 
 template<typename T>
 __global__
-void exampleFuncKernel(Param<T> out, CParam<T> in, const af_someenum_t p)
+void exampleFuncKernel(Param<T> c, CParam<T> a, CParam<T> b, const af_someenum_t p)
 {
-    // kernel implementation goes here
+    // get current thread global identifiers along required dimensions
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    int j = blockDim.y * blockIdx.y + threadIdx.y;
+
+    if ( i<a.dims[0] && j<a.dims[1] ) {
+        // if needed use strides array to compute linear index of arrays
+        int src1Idx = i*a.strides[0] + j*a.strides[1];
+        int src2Idx = i*b.strides[0] + j*b.strides[1];
+        int dstIdx  = i*c.strides[0] + j*c.strides[1];
+
+        T* dst = c.ptr;
+        const T* src1 = a.ptr;
+        const T* src2 = b.ptr;
+
+        // kernel algorithm goes here
+        switch(p) {
+            case 1: dst[dstIdx] = src1[src1Idx] + src2[src2Idx]; break;
+            case 2: dst[dstIdx] = src1[src1Idx] - src2[src2Idx]; break;
+            case 3: dst[dstIdx] = src1[src1Idx] * src2[src2Idx]; break;
+            case 4: dst[dstIdx] = src1[src1Idx] / src2[src2Idx]; break;
+        }
+    }
 }
 
 
 template <typename T>                   // CUDA kernel wrapper function
-void exampleFunc(Param<T> out, CParam<T> in, const af_someenum_t p)
+void exampleFunc(Param<T> c, CParam<T> a, CParam<T> b, const af_someenum_t p)
 {
 
     dim3 threads(TX, TY, 1);            // set your cuda launch config for blocks
 
-    int blk_x = divup(out.dims[0], threads.x);
-    int blk_y = divup(out.dims[1], threads.y);
+    int blk_x = divup(c.dims[0], threads.x);
+    int blk_y = divup(c.dims[1], threads.y);
     dim3 blocks(blk_x, blk_y);          // set your opencl launch config for grid
 
     // launch your kernel
@@ -61,7 +82,7 @@ void exampleFunc(Param<T> out, CParam<T> in, const af_someenum_t p)
     //
     // CUDA_LAUNCH_SMEM takes in an additional parameter, size of shared memory, after
     // threads paramters, which are then followed by kernel parameters
-    CUDA_LAUNCH((exampleFuncKernel<T>), blocks, threads, out, in, p);
+    CUDA_LAUNCH((exampleFuncKernel<T>), blocks, threads, c, a, b, p);
 
     POST_LAUNCH_CHECK();                // Macro for post kernel launch checks
                                         // these checks are carried  ONLY IN DEBUG mode
