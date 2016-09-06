@@ -1,14 +1,11 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.7)
-PROJECT(ARRAYFIRE)
-
 FIND_PACKAGE(OpenCL REQUIRED)
 
 ADD_DEFINITIONS(-DCL_USE_DEPRECATED_OPENCL_1_2_APIS)
 
 IF(NOT USE_SYSTEM_CL2HPP)
-    INCLUDE("${CMAKE_MODULE_PATH}/build_cl2hpp.cmake")
+    INCLUDE(build_cl2hpp)
 ENDIF(NOT USE_SYSTEM_CL2HPP)
-INCLUDE("${CMAKE_MODULE_PATH}/CLKernelToH.cmake")
+INCLUDE(CLKernelToH)
 
 IF(USE_OPENCL_F77_BLAS)
     ADD_DEFINITIONS(-DUSE_F77_BLAS)
@@ -67,7 +64,7 @@ OPTION(USE_SYSTEM_CLBLAS "Use system clBLAS" OFF)
 IF(USE_SYSTEM_CLBLAS)
     FIND_PACKAGE(clBLAS REQUIRED)
 ELSE()
-    INCLUDE("${CMAKE_MODULE_PATH}/build_clBLAS.cmake")
+    INCLUDE(build_clBLAS)
 ENDIF()
 INCLUDE_DIRECTORIES(${CLBLAS_INCLUDE_DIRS})
 LINK_DIRECTORIES(${CLBLAS_LIBRARY_DIR})
@@ -76,7 +73,7 @@ OPTION(USE_SYSTEM_CLFFT "Use system clFFT" OFF)
 IF(USE_SYSTEM_CLFFT)
     FIND_PACKAGE(clFFT REQUIRED)
 ELSE()
-    INCLUDE("${CMAKE_MODULE_PATH}/build_clFFT.cmake")
+    INCLUDE(build_clFFT)
 ENDIF()
 INCLUDE_DIRECTORIES(${CLFFT_INCLUDE_DIRS})
 LINK_DIRECTORIES(${CLFFT_LIBRARY_DIR})
@@ -91,7 +88,7 @@ IF(USE_SYSTEM_BOOST_COMPUTE)
         FIND_PACKAGE(BoostCompute REQUIRED)
     ENDIF()
 ELSE()
-    INCLUDE("${CMAKE_MODULE_PATH}/build_boost_compute.cmake")
+    INCLUDE(build_boost_compute)
 ENDIF()
 
 SET( cl_kernel_headers
@@ -99,7 +96,7 @@ SET( cl_kernel_headers
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
-    "${CMAKE_SOURCE_DIR}/src/backend/opencl"
+    ${CMAKE_CURRENT_SOURCE_DIR}
     ${OpenCL_INCLUDE_DIRS}
     ${CL2HPP_INCLUDE_DIRECTORY}
     "${CMAKE_CURRENT_BINARY_DIR}"
@@ -282,10 +279,10 @@ IF(DEFINED BLAS_SYM_FILE)
         PROPERTIES LINK_FLAGS -Wl,-exported_symbols_list,${BLAS_SYM_FILE})
     TARGET_LINK_LIBRARIES(afopencl PUBLIC $<TARGET_FILE:afopencl_static>)
     ELSE(APPLE)
-    add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/afopencl_static.renamed
-      COMMAND objcopy --redefine-syms ${BLAS_SYM_FILE} $<TARGET_FILE:afopencl_static> ${CMAKE_BINARY_DIR}/afopencl_static.renamed
+    add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/afopencl_static.renamed
+      COMMAND objcopy --redefine-syms ${BLAS_SYM_FILE} $<TARGET_FILE:afopencl_static> ${PROJECT_BINARY_DIR}/afopencl_static.renamed
       DEPENDS $<TARGET_FILE:afopencl_static>)
-      TARGET_LINK_LIBRARIES(afopencl PUBLIC ${CMAKE_BINARY_DIR}/afopencl_static.renamed)
+      TARGET_LINK_LIBRARIES(afopencl PUBLIC ${PROJECT_BINARY_DIR}/afopencl_static.renamed)
     ENDIF(APPLE)
 
 
@@ -317,6 +314,7 @@ ENDIF()
 IF(NOT USE_SYSTEM_CL2HPP)
     ADD_DEPENDENCIES(afopencl cl2hpp)
 ENDIF(NOT USE_SYSTEM_CL2HPP)
+
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
 TARGET_LINK_LIBRARIES(afopencl
@@ -324,33 +322,34 @@ TARGET_LINK_LIBRARIES(afopencl
                                 PRIVATE ${CLBLAS_LIBRARIES}
                                 PRIVATE ${CLFFT_LIBRARIES}
                                 PRIVATE ${CMAKE_DL_LIBS}
+                                PRIVATE ${FreeImage_LIBS}
                      )
 
-IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
-    ADD_DEPENDENCIES(afopencl forge)
-ENDIF()
-
 IF(LAPACK_FOUND)
-  TARGET_LINK_LIBRARIES(afopencl
-    PRIVATE ${LAPACK_LIBRARIES}
-    PRIVATE ${CBLAS_LIBRARIES})
-ENDIF()
+    TARGET_LINK_LIBRARIES(afopencl
+                                PRIVATE ${LAPACK_LIBRARIES}
+                                PRIVATE ${CBLAS_LIBRARIES})
+ENDIF(LAPACK_FOUND)
 
-TARGET_LINK_LIBRARIES(afopencl PRIVATE ${FreeImage_LIBS})
+LIST(LENGTH GRAPHICS_DEPENDENCIES GRAPHICS_DEPENDENCIES_LEN)
+IF(${GRAPHICS_DEPENDENCIES_LEN} GREATER 0)
+    ADD_DEPENDENCIES(afopencl ${GRAPHICS_DEPENDENCIES})
+ENDIF(${GRAPHICS_DEPENDENCIES_LEN} GREATER 0)
+
+IF(FORGE_FOUND)
+    TARGET_LINK_LIBRARIES(afopencl
+                                PRIVATE ${GRAPHICS_LIBRARIES})
+ENDIF(FORGE_FOUND)
 
 SET_TARGET_PROPERTIES(afopencl PROPERTIES
     VERSION "${AF_VERSION}"
     SOVERSION "${AF_VERSION_MAJOR}")
 
-IF(FORGE_FOUND)
-    TARGET_LINK_LIBRARIES(afopencl  PRIVATE ${FORGE_LIBRARIES})
-ENDIF()
-
 INSTALL(TARGETS afopencl EXPORT OpenCL DESTINATION "${AF_INSTALL_LIB_DIR}"
         COMPONENT libraries)
 
 IF(APPLE)
-    INSTALL(SCRIPT "${CMAKE_MODULE_PATH}/osx_install/InstallTool.cmake")
+    INSTALL(SCRIPT "${PROJECT_SOURCE_DIR}/CMakeModules/osx_install/InstallTool.cmake")
 ENDIF(APPLE)
 
 export(TARGETS afopencl FILE ArrayFireOpenCL.cmake)

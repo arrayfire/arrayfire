@@ -165,7 +165,7 @@ namespace af
                 dims[3]);                                               \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_t d0, const T *ptr, af::source src) \
+    array::array(dim_t d0, const T *ptr, af::source src)                \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0);                           \
@@ -294,6 +294,7 @@ namespace af
     INSTANTIATE(floating)
     INSTANTIATE(integer)
     INSTANTIATE(bool)
+    INSTANTIATE(sparse)
 
 #undef INSTANTIATE
 
@@ -609,6 +610,7 @@ namespace af
     MEM_FUNC(bool                   , isfloating)
     MEM_FUNC(bool                   , isinteger)
     MEM_FUNC(bool                   , isbool)
+    MEM_FUNC(bool                   , issparse)
     MEM_FUNC(void                   , eval)
     //MEM_FUNC(void                   , unlock)
 #undef MEM_FUNC

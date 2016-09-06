@@ -15,7 +15,7 @@
 namespace cpu
 {
     template<typename T>
-    void copy_surface(const Array<T> &P, fg::Surface* surface);
+    void copy_surface(const Array<T> &P, forge::Surface* surface);
 }
 
 #endif

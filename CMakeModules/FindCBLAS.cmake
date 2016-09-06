@@ -151,7 +151,7 @@ MACRO(CHECK_ALL_LIBRARIES
           )
       ELSE(APPLE)
         FIND_LIBRARY(${_prefix}_${_library}_LIBRARY
-          NAMES ${_library}
+          NAMES ${_library} lib${_library}
           PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64
           ENV LD_LIBRARY_PATH
           "${CBLAS_LIB_DIR}" "${CBLAS_LIB32_DIR}" "${CBLAS_LIB64_DIR}"
@@ -319,7 +319,7 @@ IF(NOT CBLAS_LIBRARIES)
   CHECK_ALL_LIBRARIES(
     CBLAS_LIBRARIES
     CBLAS
-    cblas_dgemm
+    dgemm_
     ""
     "blas"
     "cblas.h"

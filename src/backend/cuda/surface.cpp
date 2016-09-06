@@ -11,7 +11,7 @@
 
 #include <interopManager.hpp>
 #include <Array.hpp>
-#include <plot3.hpp>
+#include <surface.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include <join.hpp>
@@ -22,18 +22,19 @@ using af::dim4;
 
 namespace cuda
 {
+using namespace gl;
 
 template<typename T>
-void copy_plot3(const Array<T> &P, fg::Plot3* plot3)
+void copy_surface(const Array<T> &P, forge::Surface* surface)
 {
     if(InteropManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
 
         InteropManager& intrpMngr = InteropManager::getInstance();
 
-        cudaGraphicsResource *cudaVBOResource = intrpMngr.getBufferResource(plot3);
+        cudaGraphicsResource *cudaVBOResource = intrpMngr.getBufferResource(surface);
         // Map resource. Copy data to VBO. Unmap resource.
-        size_t num_bytes = plot3->size();
+        size_t num_bytes = surface->verticesSize();
         T* d_vbo = NULL;
         cudaGraphicsMapResources(1, &cudaVBOResource, 0);
         cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, cudaVBOResource);
@@ -46,19 +47,19 @@ void copy_plot3(const Array<T> &P, fg::Plot3* plot3)
         POST_LAUNCH_CHECK();
     } else {
         CheckGL("Begin CUDA fallback-resource copy");
-        glBindBuffer(GL_ARRAY_BUFFER, plot3->vbo());
-        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, surface->vertices());
+        gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
         if (ptr) {
-            CUDA_CHECK(cudaMemcpy(ptr, P.get(), plot3->size(), cudaMemcpyDeviceToHost));
-            glUnmapBuffer(GL_ARRAY_BUFFER);
+            CUDA_CHECK(cudaMemcpy(ptr, P.get(), surface->verticesSize(), cudaMemcpyDeviceToHost));
+            glUnmapBuffer((gl::GLenum)GL_ARRAY_BUFFER);
         }
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, 0);
         CheckGL("End CUDA fallback-resource copy");
     }
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_plot3<T>(const Array<T> &P, fg::Plot3* plot3);
+    template void copy_surface<T>(const Array<T> &P, forge::Surface* surface);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

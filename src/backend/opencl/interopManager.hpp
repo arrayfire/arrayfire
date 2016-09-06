@@ -9,7 +9,9 @@
 
 #if defined(WITH_GRAPHICS)
 
-#include <GL/glew.h>
+#include <glbinding/gl/gl.h>
+#include <glbinding/Binding.h>
+
 #include <graphics_common.hpp>
 #include <platform.hpp>
 #include <map>
@@ -28,11 +30,10 @@ class InteropManager
     public:
         static InteropManager& getInstance();
         ~InteropManager();
-        cl::Buffer* getBufferResource(const fg::Image* image);
-        cl::Buffer* getBufferResource(const fg::Plot* plot);
-        cl::Buffer* getBufferResource(const fg::Plot3* plot3);
-        cl::Buffer* getBufferResource(const fg::Histogram* hist);
-        cl::Buffer* getBufferResource(const fg::Surface* surface);
+        cl::Buffer* getBufferResource(const forge::Image* image);
+        cl::Buffer* getBufferResource(const forge::Plot* plot);
+        cl::Buffer* getBufferResource(const forge::Histogram* hist);
+        cl::Buffer* getBufferResource(const forge::Surface* surface);
 
     protected:
         InteropManager() {}

@@ -167,6 +167,11 @@ bool ArrayInfo::isLinear() const
     return true;
 }
 
+bool ArrayInfo::isSparse() const
+{
+    return is_sparse;
+}
+
 dim4 getOutDims(const dim4 &ldims, const dim4 &rdims, bool batchMode)
 {
     if (!batchMode) {

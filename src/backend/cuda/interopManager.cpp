@@ -51,7 +51,7 @@ InteropManager& InteropManager::getInstance()
     return my_instance;
 }
 
-cudaGraphicsResource* InteropManager::getBufferResource(const fg::Image* key)
+cudaGraphicsResource* InteropManager::getBufferResource(const forge::Image* key)
 {
     int device = getActiveDeviceId();
     void* key_value = (void*)key;
@@ -66,68 +66,51 @@ cudaGraphicsResource* InteropManager::getBufferResource(const fg::Image* key)
     return interop_maps[device][key_value];
 }
 
-cudaGraphicsResource* InteropManager::getBufferResource(const fg::Plot* key)
+cudaGraphicsResource* InteropManager::getBufferResource(const forge::Plot* key)
 {
     int device = getActiveDeviceId();
     void* key_value = (void*)key;
 
     iter_t iter = interop_maps[device].find(key_value);
 
-    if(interop_maps[device].find(key_value) == interop_maps[device].end()) {
+    if(iter == interop_maps[device].end()) {
         cudaGraphicsResource *cudaVBOResource;
         // Register VBO with CUDA
-        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vbo(), cudaGraphicsMapFlagsWriteDiscard));
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vertices(), cudaGraphicsMapFlagsWriteDiscard));
         interop_maps[device][key_value] = cudaVBOResource;
     }
 
     return interop_maps[device][key_value];
 }
 
-cudaGraphicsResource* InteropManager::getBufferResource(const fg::Plot3* key)
+cudaGraphicsResource* InteropManager::getBufferResource(const forge::Histogram* key)
 {
     int device = getActiveDeviceId();
     void* key_value = (void*)key;
 
     iter_t iter = interop_maps[device].find(key_value);
 
-    if(interop_maps[device].find(key_value) == interop_maps[device].end()) {
+    if(iter == interop_maps[device].end()) {
         cudaGraphicsResource *cudaVBOResource;
         // Register VBO with CUDA
-        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vbo(), cudaGraphicsMapFlagsWriteDiscard));
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vertices(), cudaGraphicsMapFlagsWriteDiscard));
         interop_maps[device][key_value] = cudaVBOResource;
     }
 
     return interop_maps[device][key_value];
 }
 
-cudaGraphicsResource* InteropManager::getBufferResource(const fg::Histogram* key)
+cudaGraphicsResource* InteropManager::getBufferResource(const forge::Surface* key)
 {
     int device = getActiveDeviceId();
     void* key_value = (void*)key;
 
     iter_t iter = interop_maps[device].find(key_value);
 
-    if(interop_maps[device].find(key_value) == interop_maps[device].end()) {
+    if(iter == interop_maps[device].end()) {
         cudaGraphicsResource *cudaVBOResource;
         // Register VBO with CUDA
-        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vbo(), cudaGraphicsMapFlagsWriteDiscard));
-        interop_maps[device][key_value] = cudaVBOResource;
-    }
-
-    return interop_maps[device][key_value];
-}
-
-cudaGraphicsResource* InteropManager::getBufferResource(const fg::Surface* key)
-{
-    int device = getActiveDeviceId();
-    void* key_value = (void*)key;
-
-    iter_t iter = interop_maps[device].find(key_value);
-
-    if(interop_maps[device].find(key_value) == interop_maps[device].end()) {
-        cudaGraphicsResource *cudaVBOResource;
-        // Register VBO with CUDA
-        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vbo(), cudaGraphicsMapFlagsWriteDiscard));
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vertices(), cudaGraphicsMapFlagsWriteDiscard));
         interop_maps[device][key_value] = cudaVBOResource;
     }
 

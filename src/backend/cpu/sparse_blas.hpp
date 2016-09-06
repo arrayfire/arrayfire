@@ -7,16 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
-
 #include <Array.hpp>
-#include <graphics_common.hpp>
+#include <SparseArray.hpp>
+#include <sparse.hpp>
 
 namespace cpu
 {
-    template<typename T>
-    void copy_plot3(const Array<T> &P, fg::Plot3* plot3);
-}
 
-#endif
+template<typename T>
+Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
+                af_mat_prop optLhs, af_mat_prop optRhs);
+
+}
 

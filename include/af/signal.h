@@ -603,6 +603,57 @@ AFAPI array fir(const array &b, const array &x);
 */
 AFAPI array iir(const array &b, const array &a, const array &x);
 
+/**
+    C++ Interface for median filter
+
+    \snippet test/medfilt.cpp ex_image_medfilt
+
+    \param[in]  in array is the input image
+    \param[in]  wind_length is the kernel height
+    \param[in]  wind_width is the kernel width
+    \param[in]  edge_pad value will decide what happens to border when running
+                filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
+    \return     the processed image
+
+    \ingroup image_func_medfilt
+*/
+AFAPI array medfilt(const array& in, const dim_t wind_length = 3, const dim_t wind_width = 3, const borderType edge_pad = AF_PAD_ZERO);
+
+#if AF_API_VERSION >= 34
+/**
+    C++ Interface for median filter
+
+    \snippet test/medfilt.cpp ex_image_medfilt
+
+    \param[in]  in array is the input signal
+    \param[in]  wind_width is the kernel width
+    \param[in]  edge_pad value will decide what happens to border when running
+                filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
+    \return     the processed signal
+
+    \ingroup image_func_medfilt
+*/
+AFAPI array medfilt1(const array& in, const dim_t wind_width = 3, const borderType edge_pad = AF_PAD_ZERO);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+    C++ Interface for median filter
+
+    \snippet test/medfilt.cpp ex_image_medfilt
+
+    \param[in]  in array is the input image
+    \param[in]  wind_length is the kernel height
+    \param[in]  wind_width is the kernel width
+    \param[in]  edge_pad value will decide what happens to border when running
+                filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
+    \return     the processed image
+
+    \ingroup image_func_medfilt
+*/
+AFAPI array medfilt2(const array& in, const dim_t wind_length = 3, const dim_t wind_width = 3, const borderType edge_pad = AF_PAD_ZERO);
+#endif
+
 }
 #endif
 
@@ -1078,6 +1129,58 @@ AFAPI af_err af_fir(af_array *y, const af_array b, const af_array x);
    \ingroup signal_func_iir
 */
 AFAPI af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x);
+
+    /**
+        C Interface for median filter
+
+        \param[out] out array is the processed image
+        \param[in]  in array is the input image
+        \param[in]  wind_length is the kernel height
+        \param[in]  wind_width is the kernel width
+        \param[in]  edge_pad value will decide what happens to border when running
+                    filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
+        \return     \ref AF_SUCCESS if the median filter is applied successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_medfilt
+    */
+    AFAPI af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad);
+
+#if AF_API_VERSION >= 34
+    /**
+        C Interface for 1D median filter
+
+        \param[out] out array is the processed signal
+        \param[in]  in array is the input signal
+        \param[in]  wind_width is the kernel width
+        \param[in]  edge_pad value will decide what happens to border when running
+                    filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
+        \return     \ref AF_SUCCESS if the median filter is applied successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_medfilt
+    */
+    AFAPI af_err af_medfilt1(af_array *out, const af_array in, const dim_t wind_width, const af_border_type edge_pad);
+#endif
+
+#if AF_API_VERSION >= 34
+    /**
+        C Interface for median filter
+
+        \param[out] out array is the processed image
+        \param[in]  in array is the input image
+        \param[in]  wind_length is the kernel height
+        \param[in]  wind_width is the kernel width
+        \param[in]  edge_pad value will decide what happens to border when running
+                    filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
+        \return     \ref AF_SUCCESS if the median filter is applied successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_medfilt
+    */
+    AFAPI af_err af_medfilt2(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad);
+#endif
+
 
 #if AF_API_VERSION >= 34
 /**

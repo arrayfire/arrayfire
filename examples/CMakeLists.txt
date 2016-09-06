@@ -18,7 +18,7 @@ IF(TARGET afcpu OR TARGET afcuda OR TARGET afopencl OR TARGET af)
         MESSAGE(STATUS "Assests submodule unavailable. Updating submodules.")
         EXECUTE_PROCESS(
             COMMAND git submodule update --init --recursive
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
             OUTPUT_QUIET
         )
     ENDIF()
@@ -130,7 +130,7 @@ IF (${CUDA_FOUND})
         ENDIF(NOT CUDA_CUDA_LIBRARY)
 
         OPTION(BUILD_CUDA "Build ArrayFire Examples for CUDA backend" ON)
-        BUILD_ALL("${FILES}" cuda ${ArrayFire_CUDA_LIBRARIES} "${CUDA_CUBLAS_LIBRARIES};${CUDA_LIBRARIES};${CUDA_cusolver_LIBRARY};${CUDA_CUFFT_LIBRARIES};${CUDA_nvvm_LIBRARY};${CUDA_CUDA_LIBRARY}")
+        BUILD_ALL("${FILES}" cuda ${ArrayFire_CUDA_LIBRARIES} "${CUDA_CUBLAS_LIBRARIES};${CUDA_LIBRARIES};${CUDA_cusolver_LIBRARY};${CUDA_cusparse_LIBRARY};${CUDA_CUFFT_LIBRARIES};${CUDA_nvvm_LIBRARY};${CUDA_CUDA_LIBRARY}")
     ELSEIF(TARGET afcuda)        # variable defined by the ArrayFire build tree
         BUILD_ALL("${FILES}" cuda afcuda "")
     ELSE()
