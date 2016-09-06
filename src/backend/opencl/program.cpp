@@ -25,7 +25,11 @@ namespace opencl
     const static std::string USE_DBL_SRC_STR("\n\
                                            #ifdef USE_DOUBLE\n\
                                            #pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
-                                           #endif\n");
+                                           #endif\n                     \
+                                           #ifndef M_PI\n               \
+                                           #define M_PI 3.1415926535897932384626433832795028841971693993751058209749445923078164\n \
+                                           #endif\n                     \
+                                           ");
     void buildProgram(cl::Program &prog,
                       const char *ker_str, const int ker_len, std::string options)
     {

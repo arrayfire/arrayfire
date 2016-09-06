@@ -19,7 +19,7 @@ __kernel
 void rotate_kernel(__global T *d_out, const KParam out,
                    __global const T *d_in, const KParam in,
                    const tmat_t t, const int nimages, const int batches,
-                   const int blocksXPerImage, const int blocksYPerImage)
+                   const int blocksXPerImage, const int blocksYPerImage, int method)
 {
     // Compute which image set
     const int setId = get_group_id(0) / blocksXPerImage;
@@ -29,15 +29,39 @@ void rotate_kernel(__global T *d_out, const KParam out,
     const int blockIdx_y = get_group_id(1) - batch * blocksYPerImage;
 
     // Get thread indices
-    const int xx = get_local_id(0) + blockIdx_x * get_local_size(0);
-    const int yy = get_local_id(1) + blockIdx_y * get_local_size(1);
+    const int xido = get_local_id(0) + blockIdx_x * get_local_size(0);
+    const int yido = get_local_id(1) + blockIdx_y * get_local_size(1);
 
     const int limages = min((int)out.dims[2] - setId * nimages, nimages);
 
-    if(xx >= out.dims[0] || yy >= out.dims[1])
+    if(xido >= out.dims[0] || yido >= out.dims[1])
         return;
 
-    __global T *optr = d_out + setId * nimages * out.strides[2] + batch * out.strides[3];
-    __global const T *iptr = d_in + in.offset + setId * nimages * in.strides[2] + batch * in.strides[3];
-    INTERP(optr, out, iptr, in, t.tmat, xx, yy, limages);
+    InterpPosTy xidi = xido * t.tmat[0] + yido * t.tmat[1] + t.tmat[2];
+    InterpPosTy yidi = xido * t.tmat[3] + yido * t.tmat[4] + t.tmat[5];
+
+    int outoff = out.offset + setId * nimages * out.strides[2] + batch * out.strides[3];
+    int inoff = in.offset + setId * nimages * in.strides[2] + batch * in.strides[3];
+
+    const int loco = outoff + (yido * out.strides[1] + xido);
+
+    InterpInTy zero = ZERO;
+    if (INTERP_ORDER > 1) {
+        // Special conditions to deal with boundaries for bilinear and bicubic
+        // FIXME: Ideally this condition should be removed or be present for all methods
+        // But tests are expecting a different behavior for bilinear and nearest
+        if (xidi < -0.0001 || yidi < -0.0001 || in.dims[0] < xidi || in.dims[1] < yidi) {
+            for(int i = 0; i < nimages; i++) {
+                d_out[loco + i * out.strides[2]] = zero;
+            }
+            return;
+        }
+    }
+
+    // FIXME: Nearest and lower do not do clamping, but other methods do
+    // Make it consistent
+    bool clamp = INTERP_ORDER != 1;
+    interp2(d_out, out, loco,
+            d_in,  in, inoff,
+            xidi, yidi, method, limages, clamp);
 }

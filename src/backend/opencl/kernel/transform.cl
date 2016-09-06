@@ -51,7 +51,9 @@ void transform_kernel(__global T *d_out, const KParam out,
                       const int nImg2, const int nImg3,
                       const int nTfs2, const int nTfs3,
                       const int batchImg2,
-                      const int blocksXPerImage, const int blocksYPerImage)
+                      const int blocksXPerImage,
+                      const int blocksYPerImage,
+                      const int method)
 {
     // Image Ids
     const int imgId2 = get_group_id(0) / blocksXPerImage;
@@ -62,13 +64,13 @@ void transform_kernel(__global T *d_out, const KParam out,
     const int blockIdx_y = get_group_id(1) - imgId3 * blocksYPerImage;
 
     // Get thread indices in local image
-    const int xx = blockIdx_x * get_local_size(0) + get_local_id(0);
-    const int yy = blockIdx_y * get_local_size(1) + get_local_id(1);
+    const int xido = blockIdx_x * get_local_size(0) + get_local_id(0);
+    const int yido = blockIdx_y * get_local_size(1) + get_local_id(1);
 
     // Image iteration loop count for image batching
     int limages = min(max((int)(out.dims[2] - imgId2 * nImg2), 1), batchImg2);
 
-    if(xx >= out.dims[0] || yy >= out.dims[1])
+    if(xido >= out.dims[0] || yido >= out.dims[1])
         return;
 
     // Index of transform
@@ -105,24 +107,23 @@ void transform_kernel(__global T *d_out, const KParam out,
     // Linear transform index
     const int t_idx = t_idx2 + t_idx3 * nTfs2;
 
-    // Global offset
-    int offset = 0;
-    d_in += imgId2 * batchImg2 * in.strides[2] + imgId3 * in.strides[3] + in.offset;
+    // Global outoff
+    int outoff = out.offset;
+    int inoff = imgId2 * batchImg2 * in.strides[2] + imgId3 * in.strides[3] + in.offset;
     if(nImg2 == nTfs2 || nImg2 > 1) {   // One-to-One or Image on dim2
-          offset += imgId2 * batchImg2 * out.strides[2];
+          outoff += imgId2 * batchImg2 * out.strides[2];
     } else {                            // Transform batched on dim2
-          offset += t_idx2 * out.strides[2];
+          outoff += t_idx2 * out.strides[2];
     }
 
     if(nImg3 == nTfs3 || nImg3 > 1) {   // One-to-One or Image on dim3
-          offset += imgId3 * out.strides[3];
+          outoff += imgId3 * out.strides[3];
     } else {                            // Transform batched on dim2
-          offset += t_idx3 * out.strides[3];
+          outoff += t_idx3 * out.strides[3];
     }
-    d_out += offset;
 
     // Transform is in global memory.
-    // Needs offset to correct transform being processed.
+    // Needs outoff to correct transform being processed.
 #if PERSPECTIVE
     const int transf_len = 9;
     float tmat[9];
@@ -142,5 +143,28 @@ void transform_kernel(__global T *d_out, const KParam out,
         calc_transf_inverse(tmat, tmat_ptr);
     }
 
-    INTERP(d_out, out, d_in, in, tmat, xx, yy, limages);
+    InterpPosTy xidi = xido * tmat[0] + yido * tmat[1] + tmat[2];
+    InterpPosTy yidi = xido * tmat[3] + yido * tmat[4] + tmat[5];
+
+#if PERSPECTIVE
+        const InterpPosTy W = xido * tmat[6] + yido * tmat[7] + tmat[8];
+        xidi /= W;
+        yidi /= W;
+#endif
+    const int loco = outoff + (yido * out.strides[1] + xido);
+    // FIXME: Nearest and lower do not do clamping, but other methods do
+    // Make it consistent
+    bool clamp = INTERP_ORDER != 1;
+
+    T zero = ZERO;
+    if (xidi < -0.0001 || yidi < -0.0001 || in.dims[0] <= xidi || in.dims[1] <= yidi) {
+        for(int n = 0; n < limages; n++) {
+            d_out[loco + n * out.strides[2]] = zero;
+        }
+        return;
+    }
+
+    interp2(d_out, out, loco,
+             d_in,  in, inoff,
+            xidi, yidi, method, limages, clamp);
 }

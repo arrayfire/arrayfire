@@ -24,16 +24,18 @@ namespace opencl
 
         // Create output placeholder
         Array<Ty> out = createEmptyArray<Ty>(odims);
-
         switch(method) {
         case AF_INTERP_NEAREST:
-            kernel::approx1<Ty, Tp, AF_INTERP_NEAREST>(out, in, pos, offGrid);
+        case AF_INTERP_LOWER:
+            kernel::approx1<Ty, Tp, 1> (out, in, pos, offGrid, method);
             break;
         case AF_INTERP_LINEAR:
-            kernel::approx1<Ty, Tp, AF_INTERP_LINEAR> (out, in, pos, offGrid);
+        case AF_INTERP_LINEAR_COSINE:
+            kernel::approx1<Ty, Tp, 2> (out, in, pos, offGrid, method);
             break;
         case AF_INTERP_CUBIC:
-            kernel::approx1<Ty, Tp, AF_INTERP_CUBIC> (out, in, pos, offGrid);
+        case AF_INTERP_CUBIC_SPLINE:
+            kernel::approx1<Ty, Tp, 3> (out, in, pos, offGrid, method);
             break;
         default:
             break;
@@ -54,19 +56,25 @@ namespace opencl
 
         switch(method) {
         case AF_INTERP_NEAREST:
-            kernel::approx2<Ty, Tp, AF_INTERP_NEAREST>(out, in, pos0, pos1, offGrid);
+        case AF_INTERP_LOWER:
+            kernel::approx2<Ty, Tp, 1> (out, in, pos0, pos1, offGrid, method);
             break;
         case AF_INTERP_LINEAR:
         case AF_INTERP_BILINEAR:
-            kernel::approx2<Ty, Tp, AF_INTERP_LINEAR> (out, in, pos0, pos1, offGrid);
+        case AF_INTERP_LINEAR_COSINE:
+        case AF_INTERP_BILINEAR_COSINE:
+            kernel::approx2<Ty, Tp, 2> (out, in, pos0, pos1, offGrid, method);
             break;
         case AF_INTERP_CUBIC:
         case AF_INTERP_BICUBIC:
-            kernel::approx2<Ty, Tp, AF_INTERP_CUBIC> (out, in, pos0, pos1, offGrid);
+        case AF_INTERP_CUBIC_SPLINE:
+        case AF_INTERP_BICUBIC_SPLINE:
+            kernel::approx2<Ty, Tp, 3> (out, in, pos0, pos1, offGrid, method);
             break;
         default:
             break;
         }
+
         return out;
     }
 

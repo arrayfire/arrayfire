@@ -12,7 +12,7 @@
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
-#include "transform_interp.hpp"
+#include "interp.hpp"
 
 namespace cuda
 {
@@ -65,12 +65,13 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         // Transform Kernel
         ///////////////////////////////////////////////////////////////////////////
-        template<typename T, bool inverse, af_interp_type method>
+        template<typename T, bool inverse, int order>
         __global__ static void
         transform_kernel(Param<T> out, CParam<T> in,
-                const int nImg2, const int nImg3, const int nTfs2, const int nTfs3, const int batchImg2,
-                const int blocksXPerImage, const int blocksYPerImage,
-                const bool perspective)
+                         const int nImg2, const int nImg3, const int nTfs2, const int nTfs3,
+                         const int batchImg2,
+                         const int blocksXPerImage, const int blocksYPerImage,
+                         const bool perspective, af_interp_type method)
         {
             // Image Ids
             const int imgId2 = blockIdx.x / blocksXPerImage;
@@ -81,13 +82,13 @@ namespace cuda
             const int blockIdx_y = blockIdx.y - imgId3 * blocksYPerImage;
 
             // Get thread indices in local image
-            const int xx = blockIdx_x * blockDim.x + threadIdx.x;
-            const int yy = blockIdx_y * blockDim.y + threadIdx.y;
+            const int xido = blockIdx_x * blockDim.x + threadIdx.x;
+            const int yido = blockIdx_y * blockDim.y + threadIdx.y;
 
             // Image iteration loop count for image batching
             int limages = min(max(out.dims[2] - imgId2 * nImg2, 1), batchImg2);
 
-            if(xx >= out.dims[0] || yy >= out.dims[1])
+            if(xido >= out.dims[0] || yido >= out.dims[1])
                 return;
 
             // Index of transform
@@ -121,24 +122,21 @@ namespace cuda
 
             // Linear transform index
             const int t_idx = t_idx2 + t_idx3 * nTfs2;
-            int offset = 0;
+            int outoff = 0;
 
             // Global offsets
-            const T *iptr = in.ptr + imgId2 * batchImg2 * in.strides[2] + imgId3 * in.strides[3];
+            const int inoff= imgId2 * batchImg2 * in.strides[2] + imgId3 * in.strides[3];
             if(nImg2 == nTfs2 || nImg2 > 1) {   // One-to-One or Image on dim2
-                offset += imgId2 * batchImg2 * out.strides[2];
+                outoff += imgId2 * batchImg2 * out.strides[2];
             } else {                            // Transform batched on dim2
-                offset += t_idx2 * out.strides[2];
+                outoff += t_idx2 * out.strides[2];
             }
 
             if(nImg3 == nTfs3 || nImg3 > 1) {   // One-to-One or Image on dim3
-                offset += imgId3 * out.strides[3];
+                outoff += imgId3 * out.strides[3];
             } else {                            // Transform batched on dim2
-                offset += t_idx3 * out.strides[3];
+                outoff += t_idx3 * out.strides[3];
             }
-
-            T *optr = out.ptr + offset;
-
 
             // Transform is in constant memory.
             const int transf_len = (perspective ? 9 : 6);
@@ -155,23 +153,40 @@ namespace cuda
                 calc_transf_inverse(tmat, tmat_ptr, perspective);
             }
 
-            switch(method) {
-                case AF_INTERP_NEAREST:
-                    transform_n(optr, out, iptr, in, tmat, xx, yy, limages, perspective); break;
-                case AF_INTERP_BILINEAR:
-                    transform_b(optr, out, iptr, in, tmat, xx, yy, limages, perspective); break;
-                case AF_INTERP_LOWER:
-                    transform_l(optr, out, iptr, in, tmat, xx, yy, limages, perspective); break;
-                default: break;
+            const int loco = outoff + (yido * out.strides[1] + xido);
+
+            // Compute input index
+            typedef typename itype_t<T>::wtype WT;
+            WT xidi = xido * tmat[0] + yido * tmat[1] + tmat[2];
+            WT yidi = xido * tmat[3] + yido * tmat[4] + tmat[5];
+
+            if (perspective) {
+                const WT W = xido * tmat[6] + yido * tmat[7] + tmat[8];
+                xidi /= W;
+                yidi /= W;
             }
+
+            if (xidi < -0.0001 || yidi < -0.0001 || in.dims[0] <= xidi || in.dims[1] <= yidi) {
+                for(int i = 0; i < limages; i++) {
+                    out.ptr[loco + i * out.strides[2]] = scalar<T>(0.0f);
+                }
+                return;
+            }
+
+            Interp2<T, WT, order> interp;
+            // FIXME: Nearest and lower do not do clamping, but other methods do
+            // Make it consistent
+            bool clamp = order != 1;
+            interp(out, loco, in, inoff, xidi, yidi, method, limages, clamp);
         }
 
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
-        template <typename T, af_interp_type method>
+        template <typename T, int order>
         void transform(Param<T> out, CParam<T> in, CParam<float> tf,
-                              const bool inverse, const bool perspective)
+                       const bool inverse, const bool perspective,
+                       af_interp_type method)
         {
             const int nImg2 = in.dims[2];
             const int nImg3 = in.dims[3];
@@ -207,15 +222,15 @@ namespace cuda
                      *  max((nTfs3 / nImg3), 1);
 
             if(inverse) {
-                CUDA_LAUNCH((transform_kernel<T, true, method>), blocks, threads, out, in,
-                                nImg2, nImg3, nTfs2, nTfs3, batchImg2,
-                                blocksXPerImage, blocksYPerImage,
-                                perspective);
+                CUDA_LAUNCH((transform_kernel<T, true, order>), blocks, threads, out, in,
+                            nImg2, nImg3, nTfs2, nTfs3, batchImg2,
+                            blocksXPerImage, blocksYPerImage,
+                            perspective, method);
             } else {
-                CUDA_LAUNCH((transform_kernel<T, false, method>), blocks, threads, out, in,
-                                nImg2, nImg3, nTfs2, nTfs3, batchImg2,
-                                blocksXPerImage, blocksYPerImage,
-                                perspective);
+                CUDA_LAUNCH((transform_kernel<T, false, order>), blocks, threads, out, in,
+                            nImg2, nImg3, nTfs2, nTfs3, batchImg2,
+                            blocksXPerImage, blocksYPerImage,
+                            perspective, method);
             }
             POST_LAUNCH_CHECK();
         }

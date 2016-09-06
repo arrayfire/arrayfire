@@ -21,17 +21,20 @@ namespace cuda
         Array<T> out = createEmptyArray<T>(odims);
 
         switch(method) {
-            case AF_INTERP_NEAREST:
-                kernel::transform<T, AF_INTERP_NEAREST> (out, in, tf, inverse, perspective);
-                break;
-            case AF_INTERP_BILINEAR:
-                kernel::transform<T, AF_INTERP_BILINEAR>(out, in, tf, inverse, perspective);
-                break;
-            case AF_INTERP_LOWER:
-                kernel::transform<T, AF_INTERP_LOWER>   (out, in, tf, inverse, perspective);
-                break;
-            default:
-                AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
+        case AF_INTERP_NEAREST:
+        case AF_INTERP_LOWER:
+            kernel::transform<T, 1>(out, in, tf, inverse, perspective, method);
+            break;
+        case AF_INTERP_BILINEAR:
+        case AF_INTERP_BILINEAR_COSINE:
+            kernel::transform<T, 2>(out, in, tf, inverse, perspective, method);
+            break;
+        case AF_INTERP_BICUBIC:
+        case AF_INTERP_BICUBIC_SPLINE:
+            kernel::transform<T, 3>(out, in, tf, inverse, perspective, method);
+            break;
+        default:
+            AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
         }
 
         return out;

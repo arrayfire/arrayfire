@@ -68,6 +68,9 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         ARG_ASSERT(2, t_info.getType() == f32);
         ARG_ASSERT(5, method == AF_INTERP_NEAREST  ||
                       method == AF_INTERP_BILINEAR ||
+                      method == AF_INTERP_BILINEAR_COSINE ||
+                      method == AF_INTERP_BICUBIC ||
+                      method == AF_INTERP_BICUBIC_SPLINE ||
                       method == AF_INTERP_LOWER);
 
         // Assert dimesions
