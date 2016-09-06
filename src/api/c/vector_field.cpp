@@ -27,7 +27,7 @@ using namespace graphics;
 template<typename T>
 forge::Chart* setup_vector_field(const forge::Window* const window,
                                  const af_array points, const af_array directions,
-                                 const af_cell* const props, const bool transpose_ = false)
+                                 const af_cell* const props, const bool transpose_ = true)
 {
     Array<T> pIn = getArray<T>(points);
     Array<T> dIn = getArray<T>(directions);
@@ -55,7 +55,7 @@ forge::Chart* setup_vector_field(const forge::Window* const window,
             chart = fgMngr.getChart(window, 0, 0, FG_CHART_3D);
     }
 
-    forge::VectorField* vectorfield = fgMngr.getVectorField(chart, pIn.elements(), getGLType<T>());
+    forge::VectorField* vectorfield = fgMngr.getVectorField(chart, pIn.dims()[1], getGLType<T>());
 
     vectorfield->setColor(1.0, 0.0, 0.0, 1.0);
 
@@ -84,7 +84,7 @@ af_err vectorFieldWrapper(const af_window wind, const af_array points, const af_
 
         DIM_ASSERT(0, pDims == dDims);
         DIM_ASSERT(0, pDims.ndims() == 2);
-        DIM_ASSERT(0, pDims[1] == 2 || pDims[2] == 3); // Columns:P 2 means 2D and 3 means 3D
+        DIM_ASSERT(0, pDims[1] == 2 || pDims[1] == 3); // Columns:P 2 means 2D and 3 means 3D
 
         TYPE_ASSERT(pType == dType);
 
@@ -94,12 +94,12 @@ af_err vectorFieldWrapper(const af_window wind, const af_array points, const af_
         forge::Chart* chart = NULL;
 
         switch(pType) {
-            case f32: chart = setup_vector_field<float  >(window, points, directions, props, true); break;
-            case s32: chart = setup_vector_field<int    >(window, points, directions, props, true); break;
-            case u32: chart = setup_vector_field<uint   >(window, points, directions, props, true); break;
-            case s16: chart = setup_vector_field<short  >(window, points, directions, props, true); break;
-            case u16: chart = setup_vector_field<ushort >(window, points, directions, props, true); break;
-            case u8 : chart = setup_vector_field<uchar  >(window, points, directions, props, true); break;
+            case f32: chart = setup_vector_field<float  >(window, points, directions, props); break;
+            case s32: chart = setup_vector_field<int    >(window, points, directions, props); break;
+            case u32: chart = setup_vector_field<uint   >(window, points, directions, props); break;
+            case s16: chart = setup_vector_field<short  >(window, points, directions, props); break;
+            case u16: chart = setup_vector_field<ushort >(window, points, directions, props); break;
+            case u8 : chart = setup_vector_field<uchar  >(window, points, directions, props); break;
             default:  TYPE_ERROR(1, pType);
         }
 
@@ -175,8 +175,8 @@ af_err vectorFieldWrapper(const af_window wind,
         af_array points = 0, directions = 0;
         af_array pIn[] = {xPoints, yPoints, zPoints};
         af_array dIn[] = {xDirs, yDirs, zDirs};
-        AF_CHECK(af_join_many(&points, 0, 3, pIn));
-        AF_CHECK(af_join_many(&directions, 0, 3, dIn));
+        AF_CHECK(af_join_many(&points, 1, 3, pIn));
+        AF_CHECK(af_join_many(&directions, 1, 3, dIn));
 
         switch(xpType) {
             case f32: chart = setup_vector_field<float  >(window, points, directions, props); break;
@@ -251,8 +251,8 @@ af_err vectorFieldWrapper(const af_window wind,
 
         // Join for set up vector
         af_array points = 0, directions = 0;
-        AF_CHECK(af_join(&points, 0, xPoints, yPoints));
-        AF_CHECK(af_join(&directions, 0, xDirs, yDirs));
+        AF_CHECK(af_join(&points, 1, xPoints, yPoints));
+        AF_CHECK(af_join(&directions, 1, xDirs, yDirs));
 
         switch(xpType) {
             case f32: chart = setup_vector_field<float  >(window, points, directions, props); break;
