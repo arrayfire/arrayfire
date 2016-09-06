@@ -39,14 +39,6 @@ namespace af
             explicit
             randomEngine(randomEngineType typeIn = AF_RANDOM_ENGINE_DEFAULT, uintl seedIn = 0);
             /**
-                Create the default random number generator object
-
-                \code
-                randomEngine r;   // creates random engine of default type with default seed
-                \endcode
-            */
-            randomEngine(void);
-            /**
                 Creates a copy of the random engine object
                 \param in The input random engine object
             */
