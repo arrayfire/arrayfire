@@ -34,8 +34,7 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
 
         InteropManager& intrpMngr = InteropManager::getInstance();
 
-        cl::Buffer *resources[2] = { NULL };
-        intrpMngr.getBufferResource(resources[0], resources[1], vector_field);
+        cl::Buffer **resources = intrpMngr.getBufferResource(vector_field);
 
         std::vector<cl::Memory> shared_objects;
         shared_objects.push_back(*resources[0]);

@@ -45,10 +45,10 @@ interop_t& InteropManager::getDeviceMap(int device)
     return (device == -1) ? interop_maps[getActiveDeviceId()] : interop_maps[device];
 }
 
-cl::Buffer* InteropManager::getBufferResource(const forge::Image* image)
+cl::Buffer** InteropManager::getBufferResource(const forge::Image* image)
 {
     void * key = (void*)image;
-    interop_t i_map = getDeviceMap();
+    interop_t& i_map = getDeviceMap();
     iter_t iter = i_map.find(key);
 
     if (iter == i_map.end()) {
@@ -57,13 +57,13 @@ cl::Buffer* InteropManager::getBufferResource(const forge::Image* image)
         i_map[key] = vec;
     }
 
-    return i_map[key][0];
+    return &i_map[key].front();
 }
 
-cl::Buffer* InteropManager::getBufferResource(const forge::Plot* plot)
+cl::Buffer** InteropManager::getBufferResource(const forge::Plot* plot)
 {
     void * key = (void*)plot;
-    interop_t i_map = getDeviceMap();
+    interop_t& i_map = getDeviceMap();
     iter_t iter = i_map.find(key);
 
     if (iter == i_map.end()) {
@@ -72,13 +72,13 @@ cl::Buffer* InteropManager::getBufferResource(const forge::Plot* plot)
         i_map[key] = vec;
     }
 
-    return i_map[key][0];
+    return &i_map[key].front();
 }
 
-cl::Buffer* InteropManager::getBufferResource(const forge::Histogram* hist)
+cl::Buffer** InteropManager::getBufferResource(const forge::Histogram* hist)
 {
     void * key = (void*)hist;
-    interop_t i_map = getDeviceMap();
+    interop_t& i_map = getDeviceMap();
     iter_t iter = i_map.find(key);
 
     if (iter == i_map.end()) {
@@ -87,13 +87,13 @@ cl::Buffer* InteropManager::getBufferResource(const forge::Histogram* hist)
         i_map[key] = vec;
     }
 
-    return i_map[key][0];
+    return &i_map[key].front();
 }
 
-cl::Buffer* InteropManager::getBufferResource(const forge::Surface* surface)
+cl::Buffer** InteropManager::getBufferResource(const forge::Surface* surface)
 {
     void * key = (void*)surface;
-    interop_t i_map = getDeviceMap();
+    interop_t& i_map = getDeviceMap();
     iter_t iter = i_map.find(key);
 
     if (iter == i_map.end()) {
@@ -102,14 +102,13 @@ cl::Buffer* InteropManager::getBufferResource(const forge::Surface* surface)
         i_map[key] = vec;
     }
 
-    return i_map[key][0];
+    return &i_map[key].front();
 }
 
-void InteropManager::getBufferResource(cl::Buffer *points, cl::Buffer *directions,
-                                       const forge::VectorField* vector_field)
+cl::Buffer** InteropManager::getBufferResource(const forge::VectorField* vector_field)
 {
     void * key = (void*)vector_field;
-    interop_t i_map = getDeviceMap();
+    interop_t& i_map = getDeviceMap();
     iter_t iter = i_map.find(key);
 
     if (iter == i_map.end()) {
@@ -118,8 +117,8 @@ void InteropManager::getBufferResource(cl::Buffer *points, cl::Buffer *direction
         vec[1] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, vector_field->directions(), NULL);
         i_map[key] = vec;
     }
-    points     = i_map[key][0];
-    directions = i_map[key][1];
+
+    return &i_map[key].front();
 }
 
 }

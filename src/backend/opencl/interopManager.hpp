@@ -31,12 +31,11 @@ class InteropManager
     public:
         static InteropManager& getInstance();
         ~InteropManager();
-        cl::Buffer* getBufferResource(const forge::Image        *handle);
-        cl::Buffer* getBufferResource(const forge::Plot         *handle);
-        cl::Buffer* getBufferResource(const forge::Histogram    *handle);
-        cl::Buffer* getBufferResource(const forge::Surface      *handle);
-        void        getBufferResource(cl::Buffer *points, cl::Buffer *directions,
-                                      const forge::VectorField  *handle);
+        cl::Buffer** getBufferResource(const forge::Image        *handle);
+        cl::Buffer** getBufferResource(const forge::Plot         *handle);
+        cl::Buffer** getBufferResource(const forge::Histogram    *handle);
+        cl::Buffer** getBufferResource(const forge::Surface      *handle);
+        cl::Buffer** getBufferResource(const forge::VectorField  *handle);
 
     protected:
         InteropManager() {}
