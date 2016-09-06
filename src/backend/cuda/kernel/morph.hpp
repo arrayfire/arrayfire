@@ -43,21 +43,18 @@ __forceinline__ __device__ int lIdx(int x, int y,
     return (y*stride1 + x*stride0);
 }
 
-__forceinline__ __device__ int clamp(int f, int a, int b)
-{
-    return max(a, min(f, b));
-}
-
-template<typename T>
+template<typename T, bool isDilation>
 inline __device__ void load2ShrdMem(T * shrd, const T * const in,
         int lx, int ly, int shrdStride,
         int dim0, int dim1,
         int gx, int gy,
         int inStride1, int inStride0)
 {
-    int gx_  = clamp(gx, 0, dim0-1);
-    int gy_  = clamp(gy, 0, dim1-1);
-    shrd[ lIdx(lx, ly, shrdStride, 1) ] = in[ lIdx(gx_, gy_, inStride1, inStride0) ];
+    T val = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
+    if (gx>=0 && gx<dim0 && gy>=0 && gy<dim1) {
+        val = in[ lIdx(gx, gy, inStride1, inStride0) ];
+    }
+    shrd[ lIdx(lx, ly, shrdStride, 1) ] = val;
 }
 
 // kernel assumes mask/filter is square and hence does the
@@ -93,8 +90,9 @@ static __global__ void morphKernel(Param<T> out, CParam<T> in,
     for (int b=ly, gy2=gy; b<shrdLen1; b+=blockDim.y, gy2+=blockDim.y) {
         // move row_set get_local_size(1) along coloumns
         for (int a=lx, gx2=gx; a<shrdLen; a+=blockDim.x, gx2+=blockDim.x) {
-            load2ShrdMem(shrdMem, iptr, a, b, shrdLen, in.dims[0], in.dims[1],
-                         gx2-halo, gy2-halo, in.strides[1], in.strides[0]);
+            load2ShrdMem<T, isDilation>(shrdMem, iptr, a, b, shrdLen,
+                                        in.dims[0], in.dims[1],
+                                        gx2-halo, gy2-halo, in.strides[1], in.strides[0]);
         }
     }
 
@@ -111,8 +109,8 @@ static __global__ void morphKernel(Param<T> out, CParam<T> in,
         int w_joff = (j+wj-halo)*shrdLen;
 #pragma unroll
         for(int wi=0; wi<windLen; ++wi) {
-            T cur  = shrdMem[w_joff + (i+wi-halo)];
-            if (d_filt[joff+wi]) {
+            if (d_filt[joff+wi] > (T)0) {
+                T cur  = shrdMem[w_joff + (i+wi-halo)];
                 if (isDilation)
                     acc = max(acc, cur);
                 else
@@ -133,7 +131,7 @@ __forceinline__ __device__ int lIdx3D(int x, int y, int z,
     return (z*stride2 + y*stride1 + x*stride0);
 }
 
-template<typename T>
+template<typename T, bool isDilation>
 inline __device__ void load2ShrdVolume(T * shrd, const T * const in,
         int lx, int ly, int lz,
         int shrdStride1, int shrdStride2,
@@ -141,12 +139,13 @@ inline __device__ void load2ShrdVolume(T * shrd, const T * const in,
         int gx, int gy, int gz,
         int inStride2, int inStride1, int inStride0)
 {
-    int gx_  = clamp(gx,0,dim0-1);
-    int gy_  = clamp(gy,0,dim1-1);
-    int gz_  = clamp(gz,0,dim2-1);
-    int shrdIdx = lx + ly*shrdStride1 + lz*shrdStride2;
-    int inIdx   = gx_*inStride0 + gy_*inStride1 + gz_*inStride2;
-    shrd[ shrdIdx ] = in[ inIdx ];
+    T val = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
+    if (gx>=0 && gx<dim0 &&
+        gy>=0 && gy<dim1 &&
+        gz>=0 && gz<dim2) {
+        val = in[gx*inStride0 + gy*inStride1 + gz*inStride2];
+    }
+    shrd[lx + ly*shrdStride1 + lz*shrdStride2] = val;
 }
 
 // kernel assumes mask/filter is square and hence does the
@@ -184,9 +183,10 @@ static __global__ void morph3DKernel(Param<T> out, CParam<T> in, int nBBS)
     for (int c=lz, gz2=gz; c<shrdLen2; c+=blockDim.z, gz2+=blockDim.z) {
         for (int b=ly, gy2=gy; b<shrdLen1; b+=blockDim.y, gy2+=blockDim.y) {
             for (int a=lx, gx2=gx; a<shrdLen; a+=blockDim.x, gx2+=blockDim.x) {
-                load2ShrdVolume(shrdMem, iptr, a, b, c, shrdLen, shrdArea,
-                        in.dims[0], in.dims[1], in.dims[2], gx2-halo, gy2-halo, gz2-halo,
-                        in.strides[2], in.strides[1], in.strides[0]);
+                load2ShrdVolume<T, isDilation>(shrdMem, iptr, a, b, c, shrdLen, shrdArea,
+                                               in.dims[0], in.dims[1], in.dims[2],
+                                               gx2-halo, gy2-halo, gz2-halo,
+                                               in.strides[2], in.strides[1], in.strides[0]);
             }
         }
     }
@@ -209,8 +209,8 @@ static __global__ void morph3DKernel(Param<T> out, CParam<T> in, int nBBS)
         int w_joff = (j+wj-halo)*shrdLen;
 #pragma unroll
             for(int wi=0; wi<windLen; ++wi) {
-                T cur  = shrdMem[w_koff+w_joff + i+wi-halo];
                 if (d_filt[koff+joff+wi]) {
+                    T cur  = shrdMem[w_koff+w_joff + i+wi-halo];
                     if (isDilation)
                         acc = max(acc, cur);
                     else
