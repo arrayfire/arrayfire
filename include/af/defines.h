@@ -423,10 +423,10 @@ typedef enum {
 
 #if AF_API_VERSION >= 34
 typedef enum {
-    AF_STORAGE_DENSE     = 0,
-    AF_STORAGE_CSR       = 1,
-    AF_STORAGE_CSC       = 2,
-    AF_STORAGE_COO       = 3,
+    AF_STORAGE_DENSE     = 0,   ///< Storage type is dense
+    AF_STORAGE_CSR       = 1,   ///< Storage type is CSR
+    AF_STORAGE_CSC       = 2,   ///< Storage type is CSC
+    AF_STORAGE_COO       = 3,   ///< Storage type is COO
 } af_storage;
 #endif
 

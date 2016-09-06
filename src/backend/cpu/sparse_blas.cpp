@@ -58,6 +58,13 @@ template<typename T>
 using scale_type   =    typename conditional<   is_complex<T>::value,
                                                 const typename blas_base<T>::type,
                                                 const T>::type;
+
+template<typename To, typename Ti>
+To getScaleValue(Ti val)
+{
+    return (To)(val);
+}
+
 #ifdef USE_MKL
 
 // MKL
@@ -145,6 +152,24 @@ SPARSE_FUNC(mm , double  , d)
 SPARSE_FUNC(mm , cfloat  , c)
 SPARSE_FUNC(mm , cdouble , z)
 
+template<>
+const sp_cfloat getScaleValue<const sp_cfloat, cfloat>(cfloat val)
+{
+    sp_cfloat ret;
+    ret.real = val.real();
+    ret.imag = val.imag();
+    return ret;
+}
+
+template<>
+const sp_cdouble getScaleValue<const sp_cdouble, cdouble>(cdouble val)
+{
+    sp_cdouble ret;
+    ret.real = val.real();
+    ret.imag = val.imag();
+    return ret;
+}
+
 #else   // USE_MKL
 
 // From mkl_spblas.h
@@ -174,8 +199,7 @@ template<typename T, int value>
 scale_type<T> getScale()
 {
     static T val(value);
-    //return (const typename blas_base<T>::type *)&val;
-    return *(const scale_type<T>*)&val;
+    return getScaleValue<scale_type<T>, T>(val);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

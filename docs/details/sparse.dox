@@ -1,0 +1,119 @@
+/**
+\addtogroup arrayfire_func
+@{
+
+\defgroup sparse_func_create sparse
+
+\brief Create a sparse array
+
+The sparse creation function has 3 different types of inputs it can accept.
+1. Independent \ref af::array for values, row indices and column indices.
+2. Independent host or device native arrays for values, row indices and column
+   indices.
+3. A dense \ref af::array.
+
+\ingroup sparse_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup sparse_func_convert_to sparseConvertTo
+
+\brief Convert an existing sparse array into a different storage format
+
+Converting storage formats is allowed between \ref AF_STORAGE_CSR, \ref
+AF_STORAGE_COO and \ref AF_STORAGE_DENSE.
+
+When converting to \ref AF_STORAGE_DENSE, a dense array is returned.
+
+\note \ref AF_STORAGE_CSC is currently not supported.
+
+\ingroup sparse_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup sparse_func_dense dense
+
+\brief Returns a dense array from a sparse input
+
+Converts the sparse matrix into a dense matrix and returns it
+
+\ingroup sparse_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup sparse_func_info sparseGetInfo
+
+\brief Returns reference to components of the input sparse array
+
+Returns reference to values, row indices, column indices and storage
+format of an input sparse array
+
+\ingroup sparse_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup sparse_func_values sparseGetValues
+
+\brief Returns reference to the values component of the sparse array
+
+Values is the \ref af::array containing the non-zero elements of the dense
+matrix.
+
+\ingroup sparse_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup sparse_func_row_idx sparseGetRowIdx
+
+\brief Returns reference to the row indices component of the sparse array
+
+Row indices is the \ref af::array containing the row indices of the sparse
+array.
+
+\ingroup sparse_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup sparse_func_col_idx sparseGetColdx
+
+\brief Returns reference to the column indices component of the sparse array
+
+Column indices is the \ref af::array containing the column indices of the sparse
+array.
+
+\ingroup sparse_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup sparse_func_nnz sparseGetNNZ
+
+\brief Returns the number of non zero elements in the sparse array
+
+This is always equal to the size of the values array.
+
+\ingroup sparse_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup sparse_func_storage sparseGetStorage
+
+\brief Returns the storage type of a sparse array
+
+The \ref af::storage type of the format of data storage in the sparse array.
+
+\ingroup sparse_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+@}
+*/
+
