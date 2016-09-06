@@ -74,6 +74,34 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
     return CALL(wind, xVals, yVals, S, props);
 }
 
+af_err af_draw_vector_field(const af_window wind,
+                const af_array points, const af_array directions,
+                const af_cell* const props)
+{
+    CHECK_ARRAYS(points, directions);
+    return CALL(wind, points, directions, props);
+}
+
+af_err af_draw_vector_field_3d(
+                const af_window wind,
+                const af_array xPoints, const af_array yPoints, const af_array zPoints,
+                const af_array xDirs, const af_array yDirs, const af_array zDirs,
+                const af_cell* const props)
+{
+    CHECK_ARRAYS(xPoints, yPoints, zPoints, xDirs, yDirs, zDirs);
+    return CALL(wind, xPoints, yPoints, zPoints, xDirs, yDirs, zDirs, props);
+}
+
+af_err af_draw_vector_field_2d(
+                const af_window wind,
+                const af_array xPoints, const af_array yPoints,
+                const af_array xDirs, const af_array yDirs,
+                const af_cell* const props)
+{
+    CHECK_ARRAYS(xPoints, yPoints, xDirs, yDirs);
+    return CALL(wind, xPoints, yPoints, xDirs, yDirs, props);
+}
+
 af_err af_grid(const af_window wind, const int rows, const int cols)
 {
     return CALL(wind, rows, cols);

@@ -33,14 +33,17 @@ using namespace gl;
 #include <cuda_gl_interop.h>
 
 #include <map>
+#include <vector>
 
 using af::dim4;
 
 namespace cuda
 {
 
-typedef std::map<void *, cudaGraphicsResource *> interop_t;
+typedef std::map<void *, std::vector<cudaGraphicsResource_t> > interop_t;
 typedef interop_t::iterator iter_t;
+typedef cudaGraphicsResource_t CGR_t;
+
 
 // Manager Class for cudaPBOResource: calls garbage collection at the end of the program
 class InteropManager
@@ -53,15 +56,18 @@ class InteropManager
         static bool checkGraphicsInteropCapability();
 
         ~InteropManager();
-        cudaGraphicsResource* getBufferResource(const forge::Image* handle);
-        cudaGraphicsResource* getBufferResource(const forge::Plot* handle);
-        cudaGraphicsResource* getBufferResource(const forge::Histogram* handle);
-        cudaGraphicsResource* getBufferResource(const forge::Surface* handle);
+        CGR_t getBufferResource(const forge::Image      *handle);
+        CGR_t getBufferResource(const forge::Plot       *handle);
+        CGR_t getBufferResource(const forge::Histogram  *handle);
+        CGR_t getBufferResource(const forge::Surface    *handle);
+        void  getBufferResource(CGR_t points, CGR_t directions,
+                                const forge::VectorField *handle);
 
     protected:
         InteropManager() {}
         InteropManager(InteropManager const&);
         void operator=(InteropManager const&);
+        interop_t& getDeviceMap(int device = -1); // default will return current device
         void destroyResources();
 };
 

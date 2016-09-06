@@ -340,6 +340,26 @@ forge::Surface* ForgeManager::getSurface(forge::Chart* chart, int nX, int nY, fo
     return mSfcMap[key];
 }
 
+forge::VectorField* ForgeManager::getVectorField(forge::Chart* chart, int nPoints, forge::dtype type)
+{
+    /* nPoints needs to fall in the range of [0, 2^48]
+     * for the ForgeManager to correctly retrieve
+     * the necessary Forge Vector Field object. So, this implementation
+     * is a limitation on how big of an plot graph can be rendered
+     * using arrayfire graphics funtionality */
+    assert(nPoints <= 2ll<<48);
+    long long key = (((nPoints) & _48BIT) << 48) | (type & _16BIT);
+
+    VcfMapIter iter = mVcfMap.find(key);
+    if (iter==mVcfMap.end()) {
+        forge::VectorField* temp = new forge::VectorField(nPoints, type, chart->getChartType());
+        mVcfMap[key] = temp;
+        chart->add(*mVcfMap[key]);
+    }
+
+    return mVcfMap[key];
+}
+
 void ForgeManager::destroyResources()
 {
     /* clear all OpenGL resource objects (images, plots, histograms etc) first

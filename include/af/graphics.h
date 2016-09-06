@@ -260,6 +260,66 @@ class AFAPI Window {
         void surface(const array& xVals, const array& yVals, const array& S, const char* const title = NULL);
 #endif
 
+#if AF_API_VERSION >= 34
+        /**
+           Renders the input arrays as a 2D or 3D vector field plot to the window
+
+           \param[in] points is an \ref array with the points
+           \param[in] directions is an \ref array with the directions at the points
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p points and \p directions should have the same size and must
+           be 2D.
+           The number of rows (dim 0) determines are number of points and the
+           number columns determines the type of plot. If the number of columns
+           are 2, then the plot is 2D and if there are 3 columns, then the plot
+           is 3D.
+
+           \ingroup gfx_func_draw
+         */
+        void vectorField(const array& points, const array& directions, const char* const title = NULL);
+#endif
+
+#if AF_API_VERSION >= 34
+        /**
+           Renders the input arrays as a 3D vector field plot to the window
+
+           \param[in] xPoints is an \ref array with the x-coordinate points
+           \param[in] yPoints is an \ref array with the y-coordinate points
+           \param[in] zPoints is an \ref array with the z-coordinate points
+           \param[in] xDirs is an \ref array with the x-coordinate directions at the points
+           \param[in] yDirs is an \ref array with the y-coordinate directions at the points
+           \param[in] zDirs is an \ref array with the z-coordinate directions at the points
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note All the array inputs must be vectors and must have the size sizes.
+
+           \ingroup gfx_func_draw
+         */
+        void vectorField(const array& xPoints, const array& yPoints, const array& zPoints,
+                         const array& xDirs  , const array& yDirs  , const array& zDirs  ,
+                         const char* const title = NULL);
+#endif
+
+#if AF_API_VERSION >= 34
+        /**
+           Renders the input arrays as a 2D vector field plot to the window
+
+           \param[in] xPoints is an \ref array with the x-coordinate points
+           \param[in] yPoints is an \ref array with the y-coordinate points
+           \param[in] xDirs is an \ref array with the x-coordinate directions at the points
+           \param[in] yDirs is an \ref array with the y-coordinate directions at the points
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note All the array inputs must be vectors and must have the size sizes.
+
+           \ingroup gfx_func_draw
+         */
+        void vectorField(const array& xPoints, const array& yPoints,
+                         const array& xDirs  , const array& yDirs  ,
+                         const char* const title = NULL);
+#endif
+
         /**
            Setup grid layout for multiview mode in a window
 
@@ -499,7 +559,7 @@ AFAPI af_err af_draw_hist(const af_window wind, const af_array X, const double m
 
 #if AF_API_VERSION >= 32
 /**
-   C Interface wrapper for drawing arrayis as a surface
+   C Interface wrapper for drawing array's as a surface
 
    \param[in]   wind is the window handle
    \param[in]   xVals is an \ref af_array with the x-axis data points
@@ -516,6 +576,89 @@ AFAPI af_err af_draw_hist(const af_window wind, const af_array X, const double m
    \ingroup gfx_func_draw
 */
 AFAPI af_err af_draw_surface(const af_window wind, const af_array xVals, const af_array yVals, const af_array S, const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface wrapper for drawing array's as a 2D or 3D vector field
+
+   \param[in]   wind is the window handle
+   \param[in]   points is an \ref af_array with the points
+   \param[in]   directions is an \ref af_array with the directions
+   \param[in]   props is structure \ref af_cell that has the properties that
+                are used for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p points and \p directions should have the same size and must
+   be 2D.
+   The number of rows (dim 0) determines are number of points and the
+   number columns determines the type of plot. If the number of columns
+   are 2, then the plot is 2D and if there are 3 columns, then the plot
+   is 3D.
+
+   \note all the \ref af_array inputs should be vectors and the same size
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_vector_field(const af_window wind,
+                const af_array points, const af_array directions,
+                const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface wrapper for drawing array's as a 3D vector field
+
+   \param[in]   wind is the window handle
+   \param[in]   xPoints is an \ref af_array with the x-axis points
+   \param[in]   yPoints is an \ref af_array with the y-axis points
+   \param[in]   zPoints is an \ref af_array with the z-axis points
+   \param[in]   xDirs is an \ref af_array with the x-axis directions
+   \param[in]   yDirs is an \ref af_array with the y-axis directions
+   \param[in]   zDirs is an \ref af_array with the z-axis directions
+   \param[in]   props is structure \ref af_cell that has the properties that
+                are used for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note all the \ref af_array inputs should be vectors and the same size
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_vector_field_3d(
+                const af_window wind,
+                const af_array xPoints, const af_array yPoints, const af_array zPoints,
+                const af_array xDirs, const af_array yDirs, const af_array zDirs,
+                const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface wrapper for drawing array's as a 2D vector field
+
+   \param[in]   wind is the window handle
+   \param[in]   xPoints is an \ref af_array with the x-axis points
+   \param[in]   yPoints is an \ref af_array with the y-axis points
+   \param[in]   xDirs is an \ref af_array with the x-axis directions
+   \param[in]   yDirs is an \ref af_array with the y-axis directions
+   \param[in]   props is structure \ref af_cell that has the properties that
+                are used for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note all the \ref af_array inputs should be vectors and the same size
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_vector_field_2d(
+                const af_window wind,
+                const af_array xPoints, const af_array yPoints,
+                const af_array xDirs, const af_array yDirs,
+                const af_cell* const props);
 #endif
 
 /**

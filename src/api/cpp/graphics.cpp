@@ -120,6 +120,33 @@ void Window::surface(const array& xVals, const array& yVals, const array& S, con
     AF_THROW(af_draw_surface(get(), xVals.get(), yVals.get(), S.get(), &temp));
 }
 
+void Window::vectorField(const array& points, const array& directions, const char* const title)
+{
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_draw_vector_field(get(), points.get(), directions.get(), &temp));
+}
+
+void Window::vectorField(const array& xPoints, const array& yPoints, const array& zPoints,
+                         const array& xDirs  , const array& yDirs  , const array& zDirs  ,
+                         const char* const title)
+{
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_draw_vector_field_3d(get(),
+                xPoints.get(), yPoints.get(), zPoints.get(),
+                xDirs.get()  , yDirs.get()  , zDirs.get()  ,
+                &temp));
+}
+
+void Window::vectorField(const array& xPoints, const array& yPoints,
+                         const array& xDirs  , const array& yDirs  ,
+                         const char* const title)
+{
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_draw_vector_field_2d(get(),
+                xPoints.get(), yPoints.get(), xDirs.get(), yDirs.get(),
+                &temp));
+}
+
 void Window::grid(const int rows, const int cols)
 {
     AF_THROW(af_grid(get(), rows, cols));

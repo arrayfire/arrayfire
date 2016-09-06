@@ -52,11 +52,13 @@ typedef std::map<long long, forge::Image*> ImageMap_t;
 typedef std::map<long long, forge::Plot*> PlotMap_t;
 typedef std::map<long long, forge::Histogram*> HistogramMap_t;
 typedef std::map<long long, forge::Surface*> SurfaceMap_t;
+typedef std::map<long long, forge::VectorField*> VectorFieldMap_t;
 
 typedef ImageMap_t::iterator ImgMapIter;
 typedef PlotMap_t::iterator PltMapIter;
 typedef HistogramMap_t::iterator HstMapIter;
 typedef SurfaceMap_t::iterator SfcMapIter;
+typedef VectorFieldMap_t::iterator VcfMapIter;
 
 typedef std::vector<forge::Chart*> ChartVec_t;
 typedef std::map<const forge::Window*, ChartVec_t> ChartMap_t;
@@ -74,14 +76,16 @@ typedef ChartMap_t::iterator ChartMapIter;
  *             forge::Plot
  *             forge::Histogram
  *             forge::Surface
+ *             forge::VectorField
  * */
 class ForgeManager
 {
     private:
-        ImageMap_t      mImgMap;
-        PlotMap_t       mPltMap;
-        HistogramMap_t  mHstMap;
-        SurfaceMap_t    mSfcMap;
+        ImageMap_t          mImgMap;
+        PlotMap_t           mPltMap;
+        HistogramMap_t      mHstMap;
+        SurfaceMap_t        mSfcMap;
+        VectorFieldMap_t    mVcfMap;
 
         ChartMap_t      mChartMap;
 
@@ -98,14 +102,15 @@ class ForgeManager
         forge::Chart*   getChart(const forge::Window* window, const int r, const int c,
                                  const forge::ChartType ctype);
 
-        forge::Image* getImage          (int w, int h, forge::ChannelFormat mode,
-                                         forge::dtype type);
-        forge::Image* getImage          (forge::Chart* chart, int w, int h,
-                                         forge::ChannelFormat mode, forge::dtype type);
-        forge::Plot * getPlot           (forge::Chart* chart, int nPoints, forge::dtype dtype,
-                                         forge::PlotType ptype, forge::MarkerType mtype);
-        forge::Histogram* getHistogram  (forge::Chart* chart, int nBins, forge::dtype type);
-        forge::Surface* getSurface      (forge::Chart* chart, int nX, int nY, forge::dtype type);
+        forge::Image*       getImage        (int w, int h, forge::ChannelFormat mode,
+                                             forge::dtype type);
+        forge::Image*       getImage        (forge::Chart* chart, int w, int h,
+                                             forge::ChannelFormat mode, forge::dtype type);
+        forge::Plot *       getPlot         (forge::Chart* chart, int nPoints, forge::dtype dtype,
+                                             forge::PlotType ptype, forge::MarkerType mtype);
+        forge::Histogram*   getHistogram    (forge::Chart* chart, int nBins, forge::dtype type);
+        forge::Surface*     getSurface      (forge::Chart* chart, int nX, int nY, forge::dtype type);
+        forge::VectorField* getVectorField  (forge::Chart* chart, int nPoints, forge::dtype type);
 
     protected:
         ForgeManager() {}

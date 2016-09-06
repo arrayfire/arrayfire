@@ -15,11 +15,12 @@
 #include <graphics_common.hpp>
 #include <platform.hpp>
 #include <map>
+#include <vector>
 
 namespace opencl
 {
 
-typedef std::map<void *, cl::Buffer*> interop_t;
+typedef std::map<void *, std::vector<cl::Buffer*> > interop_t;
 typedef interop_t::iterator iter_t;
 
 class InteropManager
@@ -30,15 +31,18 @@ class InteropManager
     public:
         static InteropManager& getInstance();
         ~InteropManager();
-        cl::Buffer* getBufferResource(const forge::Image* image);
-        cl::Buffer* getBufferResource(const forge::Plot* plot);
-        cl::Buffer* getBufferResource(const forge::Histogram* hist);
-        cl::Buffer* getBufferResource(const forge::Surface* surface);
+        cl::Buffer* getBufferResource(const forge::Image        *handle);
+        cl::Buffer* getBufferResource(const forge::Plot         *handle);
+        cl::Buffer* getBufferResource(const forge::Histogram    *handle);
+        cl::Buffer* getBufferResource(const forge::Surface      *handle);
+        void        getBufferResource(cl::Buffer *points, cl::Buffer *directions,
+                                      const forge::VectorField  *handle);
 
     protected:
         InteropManager() {}
         InteropManager(InteropManager const&);
         void operator=(InteropManager const&);
+        interop_t& getDeviceMap(int device = -1); // default will return current device
         void destroyResources();
 };
 
