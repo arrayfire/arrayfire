@@ -88,7 +88,7 @@ static void swe(bool console)
             array hist_out = histogram(normalize(eta, m_eta), 15);
             (*win)(0,1).hist(hist_out, 0, 1, "Normalized Pressure Distribution");
             (*win)(1,0).plot(seq(up.dims(1)), vp.col(0), "Pressure at left boundary");
-            (*win)(1,1).plot3(join(1, flat(eta.col(0)), flat(up.col(0)), flat(vp.col(0))), "Gradients versus Magnitude at left boundary"); // viz
+            (*win)(1,1).plot(flat(eta.col(0)), flat(up.col(0)), flat(vp.col(0)), "Gradients versus Magnitude at left boundary"); // viz
             win->show();
         } else eval(eta, up, vp);
         iter++;
