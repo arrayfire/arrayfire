@@ -49,26 +49,6 @@ af_err af_iota(af_array *out, const unsigned ndims, const dim_t * const dims,
     return CALL(out, ndims, dims, t_ndims, tdims, type);
 }
 
-af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
-{
-    return CALL(out, ndims, dims, type);
-}
-
-af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
-{
-    return CALL(out, ndims, dims, type);
-}
-
-af_err af_set_seed(const uintl seed)
-{
-    return CALL(seed);
-}
-
-af_err af_get_seed(uintl *seed)
-{
-    return CALL(seed);
-}
-
 af_err af_identity(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
 {
     return CALL(out, ndims, dims, type);
