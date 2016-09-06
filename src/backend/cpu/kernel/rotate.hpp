@@ -52,32 +52,35 @@ void rotate(Array<T> output, const Array<T> input,
                            std::round(ty * 1000) / 1000.0f,
                           };
 
+    int nimages = odims[2];
+    T *out = output.get();
+
     for (int idw = 0; idw < (int)odims[3]; idw++) {
-        for (int idz = 0; idz < (int)odims[2]; idz++) {
 
-            int out_off = idz * ostrides[2] + idw * ostrides[3];
-            int in_off  = idz * istrides[2] + idw * istrides[3];
-            T *out = output.get() + out_off;
+        int out_offw = idw * ostrides[3];
+        int in_offw  = idw * istrides[3];
 
-            // Do transform for image
-            for(int idy = 0; idy < (int)odims[1]; idy++) {
-                for(int idx = 0; idx < (int)odims[0]; idx++) {
-                    WT xidi = idx * tmat[0] + idy * tmat[1] + tmat[2];
-                    WT yidi = idx * tmat[3] + idy * tmat[4] + tmat[5];
+        // Do transform for image
+        for(int idy = 0; idy < (int)odims[1]; idy++) {
+            for(int idx = 0; idx < (int)odims[0]; idx++) {
+                WT xidi = idx * tmat[0] + idy * tmat[1] + tmat[2];
+                WT yidi = idx * tmat[3] + idy * tmat[4] + tmat[5];
 
-                    // Special conditions to deal with boundaries for bilinear and bicubic
-                    // FIXME: Ideally this condition should be removed or be present for all methods
-                    // But tests are expecting a different behavior for bilinear and nearest
-                    bool condX = xidi >= -0.0001 && xidi < idims[0];
-                    bool condY = yidi >= -0.0001 && yidi < idims[1];
-                    T val = scalar<T>(0);
-                    if (order == 1 || (condX && condY)) {
-                        // FIXME: Nearest and lower do not do clamping, but other methods do
-                        // Make it consistent
-                        bool clamp = order != 1;
-                        val = interp(input, in_off, xidi, yidi, method, clamp);
+                // Special conditions to deal with boundaries for bilinear and bicubic
+                // FIXME: Ideally this condition should be removed or be present for all methods
+                // But tests are expecting a different behavior for bilinear and nearest
+                bool condX = xidi >= -0.0001 && xidi < idims[0];
+                bool condY = yidi >= -0.0001 && yidi < idims[1];
+                int ooff = out_offw + idy * ostrides[1] + idx;
+                if (order == 1 || (condX && condY)) {
+                    // FIXME: Nearest and lower do not do clamping, but other methods do
+                    // Make it consistent
+                    bool clamp = order != 1;
+                    interp(output, ooff, input, in_offw, xidi, yidi, method, nimages, clamp);
+                } else {
+                    for (int n = 0; n < nimages; n++) {
+                        out[ooff + n * ostrides[2]] = scalar<T>(0);
                     }
-                    out[idy * ostrides[1] + idx] = val;
                 }
             }
         }

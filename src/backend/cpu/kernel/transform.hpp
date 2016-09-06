@@ -87,13 +87,16 @@ void transform(Array<T> output, const Array<T> input,
     T * out = output.get();
     const float* tf = transform.get();
 
+    int batch_size = 1;
+    if (idims[2] != tdims[2]) batch_size = idims[2];
+
     Interp2<T, WT, order> interp;
     for (int idw = 0; idw < (int)odims[3]; idw++) {
         dim_t out_offw = idw * ostrides[3];
         dim_t in_offw = (idims[3] > 1) * idw * istrides[3];
         dim_t tf_offw = (tdims[3] > 1) * idw * tstrides[3];
 
-        for (int idz = 0; idz < (int)odims[2]; idz++) {
+        for (int idz = 0; idz < (int)odims[2]; idz += batch_size) {
             dim_t out_offzw = out_offw + idz * ostrides[2];
             dim_t in_offzw = in_offw + (idims[2] > 1) * idz * istrides[2];
             dim_t tf_offzw = tf_offw + (tdims[2] > 1) * idz * tstrides[2];
@@ -102,8 +105,6 @@ void transform(Array<T> output, const Array<T> input,
 
             float tmat[9];
             calc_transform_inverse(tmat, tptr, inverse, perspective, perspective ? 9 : 6);
-
-            T *optr = out + out_offzw;
 
             for (int idy = 0; idy < (int)odims[1]; idy++) {
                 for (int idx = 0; idx < (int)odims[0]; idx++) {
@@ -122,11 +123,14 @@ void transform(Array<T> output, const Array<T> input,
                     bool condX = xidi >= -0.0001 && xidi < idims[0];
                     bool condY = yidi >= -0.0001 && yidi < idims[1];
 
-                    T val = scalar<T>(0);
+                    int ooff = out_offzw + idy * ostrides[1] + idx;
                     if (condX && condY) {
-                        val = interp(input, in_offzw, xidi, yidi, method, clamp);
+                        interp(output, ooff, input, in_offzw, xidi, yidi, method, batch_size, clamp);
+                    } else {
+                        for (int n = 0; n < batch_size; n++) {
+                            out[ooff + n * ostrides[2]] =  scalar<T>(0);
+                        }
                     }
-                    optr[idy * ostrides[1] + idx] =  val;
                 }
             }
         }
