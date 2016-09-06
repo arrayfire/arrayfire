@@ -412,3 +412,50 @@ TEST(Morph, GFOR)
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }
 }
+
+TEST(Morph, EdgeIssue1564)
+{
+    int inputData[10 * 10] =
+    {
+        0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+        0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+        0, 0, 0, 0, 0, 1, 1, 1, 1, 1
+    };
+    int goldData[10 * 10] =
+    {
+        0, 0, 1, 0, 1, 0, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+        0, 0, 1, 0, 1, 0, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 0, 0, 1, 1, 1,
+        0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+        0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+        0, 0, 0, 0, 1, 1, 1, 1, 1, 1
+    };
+    array input(10, 10, inputData);
+    int maskData[3 * 3] =
+    {
+        1, 1, 1,
+        1, 0, 1,
+        1, 1, 1
+    };
+    array mask(3, 3, maskData);
+    array dilated = dilate(input.as(b8), mask.as(b8));
+
+    size_t nElems = dilated.elements();
+    char * outData = new char[nElems];
+    dilated.host((void*)outData);
+
+    for (size_t i=0; i<nElems; ++i) {
+        ASSERT_EQ((int)outData[i], goldData[i]);
+    }
+}
