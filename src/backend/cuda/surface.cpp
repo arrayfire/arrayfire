@@ -32,15 +32,15 @@ void copy_surface(const Array<T> &P, forge::Surface* surface)
 
         InteropManager& intrpMngr = InteropManager::getInstance();
 
-        cudaGraphicsResource *cudaVBOResource = intrpMngr.getBufferResource(surface);
+        cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(surface);
         // Map resource. Copy data to VBO. Unmap resource.
         size_t num_bytes = surface->verticesSize();
         T* d_vbo = NULL;
-        cudaGraphicsMapResources(1, &cudaVBOResource, cuda::getStream(cuda::getActiveDeviceId()));
-        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, cudaVBOResource);
+        cudaGraphicsMapResources(1, resources, cuda::getStream(cuda::getActiveDeviceId()));
+        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, resources[0]);
         cudaMemcpyAsync(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice,
                 cuda::getStream(cuda::getActiveDeviceId()));
-        cudaGraphicsUnmapResources(1, &cudaVBOResource, cuda::getStream(cuda::getActiveDeviceId()));
+        cudaGraphicsUnmapResources(1, resources, cuda::getStream(cuda::getActiveDeviceId()));
 
         CheckGL("After cuda resource copy");
 

@@ -28,8 +28,7 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
     if(InteropManager::checkGraphicsInteropCapability()) {
         InteropManager& intrpMngr = InteropManager::getInstance();
 
-        cudaGraphicsResource *resources[2];
-        intrpMngr.getBufferResource(resources[0], resources[1], vector_field);
+        cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(vector_field);
 
         // Map resource. Copy data to VBO. Unmap resource.
         // Map all resources at once.

@@ -30,17 +30,17 @@ void copy_image(const Array<T> &in, const forge::Image* image)
     if(InteropManager::checkGraphicsInteropCapability()) {
         InteropManager& intrpMngr = InteropManager::getInstance();
 
-        cudaGraphicsResource *cudaPBOResource = intrpMngr.getBufferResource(image);
+        cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(image);
 
         const T *d_X = in.get();
         // Map resource. Copy data to PBO. Unmap resource.
         size_t num_bytes;
         T* d_pbo = NULL;
-        cudaGraphicsMapResources(1, &cudaPBOResource, cuda::getStream(cuda::getActiveDeviceId()));
-        cudaGraphicsResourceGetMappedPointer((void **)&d_pbo, &num_bytes, cudaPBOResource);
+        cudaGraphicsMapResources(1, resources, cuda::getStream(cuda::getActiveDeviceId()));
+        cudaGraphicsResourceGetMappedPointer((void **)&d_pbo, &num_bytes, resources[0]);
         cudaMemcpyAsync(d_pbo, d_X, num_bytes, cudaMemcpyDeviceToDevice,
                         cuda::getStream(cuda::getActiveDeviceId()));
-        cudaGraphicsUnmapResources(1, &cudaPBOResource, cuda::getStream(cuda::getActiveDeviceId()));
+        cudaGraphicsUnmapResources(1, resources, cuda::getStream(cuda::getActiveDeviceId()));
 
         POST_LAUNCH_CHECK();
         CheckGL("After cuda resource copy");

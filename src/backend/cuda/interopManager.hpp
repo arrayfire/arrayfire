@@ -56,12 +56,11 @@ class InteropManager
         static bool checkGraphicsInteropCapability();
 
         ~InteropManager();
-        CGR_t getBufferResource(const forge::Image      *handle);
-        CGR_t getBufferResource(const forge::Plot       *handle);
-        CGR_t getBufferResource(const forge::Histogram  *handle);
-        CGR_t getBufferResource(const forge::Surface    *handle);
-        void  getBufferResource(CGR_t points, CGR_t directions,
-                                const forge::VectorField *handle);
+        CGR_t* getBufferResource(const forge::Image       *handle);
+        CGR_t* getBufferResource(const forge::Plot        *handle);
+        CGR_t* getBufferResource(const forge::Histogram   *handle);
+        CGR_t* getBufferResource(const forge::Surface     *handle);
+        CGR_t* getBufferResource(const forge::VectorField *handle);
 
     protected:
         InteropManager() {}

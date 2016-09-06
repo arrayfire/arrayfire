@@ -61,10 +61,10 @@ interop_t& InteropManager::getDeviceMap(int device)
     return (device == -1) ? interop_maps[getActiveDeviceId()] : interop_maps[device];
 }
 
-CGR_t InteropManager::getBufferResource(const forge::Image* key)
+CGR_t* InteropManager::getBufferResource(const forge::Image* key)
 {
     void* key_value = (void*)key;
-    interop_t i_map = getDeviceMap();
+    interop_t& i_map = getDeviceMap();
 
     if(i_map.find(key_value) == i_map.end()) {
         CGR_t pboResource;
@@ -78,13 +78,13 @@ CGR_t InteropManager::getBufferResource(const forge::Image* key)
         i_map[key_value] = vec;
     }
 
-    return i_map[key_value][0];
+    return &i_map[key_value].front();
 }
 
-CGR_t InteropManager::getBufferResource(const forge::Plot* key)
+CGR_t* InteropManager::getBufferResource(const forge::Plot* key)
 {
     void* key_value = (void*)key;
-    interop_t i_map = getDeviceMap();
+    interop_t& i_map = getDeviceMap();
 
     iter_t iter = i_map.find(key_value);
 
@@ -100,13 +100,13 @@ CGR_t InteropManager::getBufferResource(const forge::Plot* key)
         i_map[key_value] = vec;
     }
 
-    return i_map[key_value][0];
+    return &i_map[key_value].front();
 }
 
-CGR_t InteropManager::getBufferResource(const forge::Histogram* key)
+CGR_t* InteropManager::getBufferResource(const forge::Histogram* key)
 {
     void* key_value = (void*)key;
-    interop_t i_map = getDeviceMap();
+    interop_t& i_map = getDeviceMap();
 
     iter_t iter = i_map.find(key_value);
 
@@ -122,13 +122,13 @@ CGR_t InteropManager::getBufferResource(const forge::Histogram* key)
         i_map[key_value] = vec;
     }
 
-    return i_map[key_value][0];
+    return &i_map[key_value].front();
 }
 
-CGR_t InteropManager::getBufferResource(const forge::Surface* key)
+CGR_t* InteropManager::getBufferResource(const forge::Surface* key)
 {
     void* key_value = (void*)key;
-    interop_t i_map = getDeviceMap();
+    interop_t& i_map = getDeviceMap();
 
     iter_t iter = i_map.find(key_value);
 
@@ -144,14 +144,13 @@ CGR_t InteropManager::getBufferResource(const forge::Surface* key)
         i_map[key_value] = vec;
     }
 
-    return i_map[key_value][0];
+    return &i_map[key_value].front();
 }
 
-void InteropManager::getBufferResource(CGR_t points, CGR_t directions,
-                                       const forge::VectorField* key)
+CGR_t* InteropManager::getBufferResource(const forge::VectorField* key)
 {
     void* key_value = (void*)key;
-    interop_t i_map = getDeviceMap();
+    interop_t& i_map = getDeviceMap();
 
     iter_t iter = i_map.find(key_value);
 
@@ -170,8 +169,7 @@ void InteropManager::getBufferResource(CGR_t points, CGR_t directions,
         i_map[key_value] = vec;
     }
 
-    points     = i_map[key_value][0];
-    directions = i_map[key_value][0];
+    return &i_map[key_value].front();
 }
 
 bool InteropManager::checkGraphicsInteropCapability()
