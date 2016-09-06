@@ -74,7 +74,7 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
     return CALL(wind, xVals, yVals, S, props);
 }
 
-af_err af_draw_vector_field(const af_window wind,
+af_err af_draw_vector_field_nd(const af_window wind,
                 const af_array points, const af_array directions,
                 const af_cell* const props)
 {

@@ -123,7 +123,7 @@ void Window::surface(const array& xVals, const array& yVals, const array& S, con
 void Window::vectorField(const array& points, const array& directions, const char* const title)
 {
     af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
-    AF_THROW(af_draw_vector_field(get(), points.get(), directions.get(), &temp));
+    AF_THROW(af_draw_vector_field_nd(get(), points.get(), directions.get(), &temp));
 }
 
 void Window::vectorField(const array& xPoints, const array& yPoints, const array& zPoints,

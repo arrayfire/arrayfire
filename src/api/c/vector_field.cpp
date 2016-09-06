@@ -280,7 +280,7 @@ af_err vectorFieldWrapper(const af_window wind,
 #endif // WITH_GRAPHICS
 
 // ADD THIS TO UNIFIED
-af_err af_draw_vector_field(const af_window wind,
+af_err af_draw_vector_field_nd(const af_window wind,
                 const af_array points, const af_array directions,
                 const af_cell* const props)
 {

@@ -602,7 +602,7 @@ AFAPI af_err af_draw_surface(const af_window wind, const af_array xVals, const a
 
    \ingroup gfx_func_draw
 */
-AFAPI af_err af_draw_vector_field(const af_window wind,
+AFAPI af_err af_draw_vector_field_nd(const af_window wind,
                 const af_array points, const af_array directions,
                 const af_cell* const props);
 #endif
