@@ -20,6 +20,7 @@
 #include <random.hpp>
 #include <MersenneTwister.hpp>
 #include <types.hpp>
+#include <memory>
 
 using namespace detail;
 using namespace common;
@@ -28,8 +29,8 @@ class RandomEngine
 {
     public :
     af_random_engine_type type;
-    uintl seed;
-    uintl counter;
+    std::shared_ptr<uintl> seed;
+    std::shared_ptr<uintl> counter;
     af_array pos;
     af_array sh1;
     af_array sh2;
@@ -38,7 +39,10 @@ class RandomEngine
     af_array temper_table;
     af_array state;
 
-    RandomEngine(void) : type(AF_RANDOM_ENGINE_DEFAULT), seed(0), counter(0) {}
+    RandomEngine(void) : type(AF_RANDOM_ENGINE_DEFAULT), seed(new uintl), counter(new uintl) {
+        *seed = 0;
+        *counter = 0;
+    }
 };
 
 af_random_engine getRandomEngineHandle(const RandomEngine engine)
@@ -69,7 +73,7 @@ static inline af_array uniformDistribution_(const af::dim4 &dims, RandomEngine *
                     getArray<uint>(e->temper_table),
                     getArray<uint>(e->state)));
     } else {
-        return getHandle(uniformDistribution<T>(dims, e->type, e->seed, e->counter));
+        return getHandle(uniformDistribution<T>(dims, e->type, *(e->seed), *(e->counter)));
     }
 }
 
@@ -86,7 +90,7 @@ static inline af_array normalDistribution_(const af::dim4 &dims, RandomEngine *e
                     getArray<uint>(e->temper_table),
                     getArray<uint>(e->state)));
     } else {
-        return getHandle(normalDistribution<T>(dims, e->type, e->seed, e->counter));
+        return getHandle(normalDistribution<T>(dims, e->type, *(e->seed), *(e->counter)));
     }
 }
 
@@ -117,8 +121,8 @@ af_err af_create_random_engine(af_random_engine *engineHandle, af_random_engine_
         validateRandomType(rtype);
         RandomEngine e;
         e.type = rtype;
-        e.seed = seed;
-        e.counter = 0;
+        *e.seed = seed;
+        *e.counter = 0;
 
         if (rtype == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
             AF_CHECK(af_create_array(&e.pos, pos, 1, &MaxBlocks, u32));
@@ -195,7 +199,7 @@ af_err af_random_engine_set_type(af_random_engine *engine, const af_random_engin
                     AF_CHECK(af_create_array(&e.recursion_table, recursion_tbl, 1, &TableLength, u32));
                     AF_CHECK(af_create_array(&e.temper_table, temper_tbl, 1, &TableLength, u32));
                     AF_CHECK(af_create_handle(&e.state, 1, &MtStateLength, u32));
-                    initMersenneState(getWritableArray<uint>(e.state), e.seed, getArray<uint>(e.recursion_table));
+                    initMersenneState(getWritableArray<uint>(e.state), *e.seed, getArray<uint>(e.recursion_table));
                 }
             }
             e.type = rtype;
@@ -230,11 +234,11 @@ af_err af_random_engine_set_seed(af_random_engine *engine, const uintl seed)
     try {
         AF_CHECK(af_init());
         RandomEngine *e = getRandomEngine(*engine);
-        e->seed = seed;
+        *(e->seed) = seed;
         if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
             initMersenneState(getWritableArray<uint>(e->state), seed, getArray<uint>(e->recursion_table));
         } else {
-            e->counter = 0;
+            *(e->counter) = 0;
         }
     }
     CATCHALL;
@@ -246,7 +250,7 @@ af_err af_random_engine_get_seed(uintl * const seed, af_random_engine engine)
     try {
         AF_CHECK(af_init());
         RandomEngine *e = getRandomEngine(engine);
-        *seed = e->seed;
+        *seed = *(e->seed);
     }
     CATCHALL;
     return AF_SUCCESS;
