@@ -44,6 +44,31 @@ af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, co
     return CALL(wind, X, Y, props);
 }
 
+af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* const props)
+{
+    CHECK_ARRAYS(P);
+    return CALL(wind, P, props);
+}
+
+af_err af_draw_plot_nd(const af_window wind, const af_array in, const af_cell* const props)
+{
+    CHECK_ARRAYS(in);
+    return CALL(wind, in, props);
+}
+
+af_err af_draw_plot_2d(const af_window wind, const af_array X, const af_array Y, const af_cell* const props)
+{
+    CHECK_ARRAYS(X, Y);
+    return CALL(wind, X, Y, props);
+}
+
+af_err af_draw_plot_3d(const af_window wind, const af_array X, const af_array Y, const af_array Z,
+                       const af_cell* const props)
+{
+    CHECK_ARRAYS(X, Y, Z);
+    return CALL(wind, X, Y, Z, props);
+}
+
 af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y, const af_marker_type marker, const af_cell* const props)
 {
     CHECK_ARRAYS(X, Y);
@@ -56,10 +81,26 @@ af_err af_draw_scatter3(const af_window wind, const af_array P, const af_marker_
     return CALL(wind, P, marker, props);
 }
 
-af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* const props)
+af_err af_draw_scatter_nd(const af_window wind, const af_array in,
+                          const af_marker_type marker, const af_cell* const props)
 {
-    CHECK_ARRAYS(P);
-    return CALL(wind, P, props);
+    CHECK_ARRAYS(in);
+    return CALL(wind, in, marker, props);
+}
+
+af_err af_draw_scatter_2d(const af_window wind, const af_array X, const af_array Y,
+                          const af_marker_type marker, const af_cell* const props)
+{
+    CHECK_ARRAYS(X, Y);
+    return CALL(wind, X, Y, marker, props);
+}
+
+af_err af_draw_scatter_3d(const af_window wind,
+                          const af_array X, const af_array Y, const af_array Z,
+                          const af_marker_type marker, const af_cell* const props)
+{
+    CHECK_ARRAYS(X, Y, Z);
+    return CALL(wind, X, Y, Z, marker, props);
 }
 
 af_err af_draw_hist(const af_window wind, const af_array X, const double minval, const double maxval, const af_cell* const props)

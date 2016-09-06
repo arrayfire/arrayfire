@@ -76,29 +76,54 @@ void Window::image(const array& in, const char* const title)
     AF_THROW(af_draw_image(get(), in.get(), &temp));
 }
 
+void Window::plot(const array& in, const char* const title)
+{
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_draw_plot_nd(get(), in.get(), &temp));
+}
+
 void Window::plot(const array& X, const array& Y, const char* const title)
 {
     af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
-    AF_THROW(af_draw_plot(get(), X.get(), Y.get(), &temp));
+    AF_THROW(af_draw_plot_2d(get(), X.get(), Y.get(), &temp));
 }
 
-void Window::scatter(const array& X, const array& Y, af::markerType marker, const char* const title)
+void Window::plot(const array& X, const array& Y, const array& Z, const char* const title)
 {
     af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
-    AF_THROW(af_draw_scatter(get(), X.get(), Y.get(), marker, &temp));
-}
-
-void Window::scatter3(const array& P, af::markerType marker, const char* const title)
-{
-    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
-    AF_THROW(af_draw_scatter3(get(), P.get(), marker, &temp));
+    AF_THROW(af_draw_plot_3d(get(), X.get(), Y.get(), Z.get(), &temp));
 }
 
 void Window::plot3(const array& P, const char* const title)
 {
     af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
     P.eval();
-    AF_THROW(af_draw_plot3(get(), P.get(), &temp));
+    AF_THROW(af_draw_plot_nd(get(), P.get(), &temp));
+}
+
+void Window::scatter(const array& in, af::markerType marker, const char* const title)
+{
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_draw_scatter_nd(get(), in.get(), marker, &temp));
+}
+
+void Window::scatter(const array& X, const array& Y, af::markerType marker, const char* const title)
+{
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_draw_scatter_2d(get(), X.get(), Y.get(), marker, &temp));
+}
+
+void Window::scatter(const array& X, const array& Y, const array& Z,
+                     af::markerType marker, const char* const title)
+{
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_draw_scatter_3d(get(), X.get(), Y.get(), Z.get(), marker, &temp));
+}
+
+void Window::scatter3(const array& P, af::markerType marker, const char* const title)
+{
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_draw_scatter_nd(get(), P.get(), marker, &temp));
 }
 
 void Window::hist(const array& X, const double minval, const double maxval, const char* const title)

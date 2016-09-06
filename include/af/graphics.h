@@ -169,7 +169,39 @@ class AFAPI Window {
 
            \ingroup gfx_func_draw
          */
+        DEPRECATED("Use plot instead")
         void plot3(const array& in, const char* title=NULL);
+#endif
+
+#if AF_API_VERSION >= 34
+        /**
+           Renders the input arrays as a 2D or 3D plot to the window
+
+           \param[in] in is an \ref array with the data points
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p in must be 2d and of the form [n, order], where order is either 2 or 3.
+                 If order is 2, then chart is 2D and if order is 3, then chart is 3D.
+
+           \ingroup gfx_func_draw
+         */
+        void plot(const array& in, const char* const title=NULL);
+#endif
+
+#if AF_API_VERSION >= 34
+        /**
+           Renders the input arrays as a 3D plot to the window
+
+           \param[in] X is an \ref array with the x-axis data points
+           \param[in] Y is an \ref array with the y-axis data points
+           \param[in] Z is an \ref array with the z-axis data points
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p X, \p Y and \p Z should be vectors.
+
+           \ingroup gfx_func_draw
+         */
+        void plot(const array& X, const array& Y, const array& Z, const char* const title=NULL);
 #endif
 
         /**
@@ -184,6 +216,41 @@ class AFAPI Window {
            \ingroup gfx_func_draw
          */
         void plot(const array& X, const array& Y, const char* const title=NULL);
+
+#if AF_API_VERSION >= 34
+        /**
+           Renders the input arrays as a 2D or 3D scatter-plot to the window
+
+           \param[in] in is an \ref array with the data points
+           \param[in] marker is an \ref markerType enum specifying which marker to use in the scatter plot
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p in must be 2d and of the form [n, order], where order is either 2 or 3.
+                 If order is 2, then chart is 2D and if order is 3, then chart is 3D.
+
+           \ingroup gfx_func_draw
+         */
+        void scatter(const array& in, const af::markerType marker = AF_MARKER_POINT,
+                     const char* const title = NULL);
+#endif
+
+#if AF_API_VERSION >= 34
+        /**
+           Renders the input arrays as a 3D scatter-plot to the window
+
+           \param[in] X is an \ref array with the x-axis data points
+           \param[in] Y is an \ref array with the y-axis data points
+           \param[in] Z is an \ref array with the z-axis data points
+           \param[in] marker is an \ref markerType enum specifying which marker to use in the scatter plot
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p X, \p Y and \p Z should be vectors.
+
+           \ingroup gfx_func_draw
+         */
+        void scatter(const array& X, const array& Y, const array& Z,
+                     const af::markerType marker = AF_MARKER_POINT, const char* const title = NULL);
+#endif
 
 #if AF_API_VERSION >= 33
         /**
@@ -212,6 +279,7 @@ class AFAPI Window {
 
            \ingroup gfx_func_draw
          */
+        DEPRECATED("Use scatter instead")
         void scatter3(const array& P, const af::markerType marker = AF_MARKER_POINT,
                       const char* const title = NULL);
 #endif
@@ -476,7 +544,92 @@ AFAPI af_err af_draw_image(const af_window wind, const af_array in, const af_cel
 
    \ingroup gfx_func_draw
 */
+DEPRECATED("Use af_draw_plot_nd or af_draw_plot_2d instead")
 AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props);
+
+#if AF_API_VERSION >= 32
+/**
+   C Interface wrapper for drawing an array as a plot
+
+   \param[in]   wind is the window handle
+   \param[in]   P is an \ref af_array or matrix with the xyz-values of the points
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p P should be a 3n x 1 vector or one of a 3xn or nx3 matrices.
+
+   \ingroup gfx_func_draw
+*/
+DEPRECATED("Use af_draw_plot_nd or af_draw_plot_3d instead")
+AFAPI af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface wrapper for drawing an array as a 2D or 3D plot
+
+   \param[in]   wind is the window handle
+   \param[in]   P is an \ref af_array or matrix with the xyz-values of the points
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p in must be 2d and of the form [n, order], where order is either 2 or 3.
+         If order is 2, then chart is 2D and if order is 3, then chart is 3D.
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_plot_nd(const af_window wind, const af_array P, const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface wrapper for drawing an array as a 2D plot
+
+   \param[in]   wind is the window handle
+   \param[in]   X is an \ref af_array with the x-axis data points
+   \param[in]   Y is an \ref af_array with the y-axis data points
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p X and \p Y should be vectors.
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_plot_2d(const af_window wind, const af_array X, const af_array Y,
+                             const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface wrapper for drawing an array as a 3D plot
+
+   \param[in]   wind is the window handle
+   \param[in]   X is an \ref af_array with the x-axis data points
+   \param[in]   Y is an \ref af_array with the y-axis data points
+   \param[in]   Z is an \ref af_array with the z-axis data points
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p X, \p Y and \p Z should be vectors.
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_plot_3d(const af_window wind,
+                             const af_array X, const af_array Y, const af_array Z,
+                             const af_cell* const props);
+#endif
 
 #if AF_API_VERSION >= 33
 /**
@@ -496,6 +649,7 @@ AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array
 
    \ingroup gfx_func_draw
 */
+DEPRECATED("Use af_draw_scatter_nd or af_draw_scatter_2d instead")
 AFAPI af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y,
                              const af_marker_type marker, const af_cell* const props);
 #endif
@@ -515,27 +669,77 @@ AFAPI af_err af_draw_scatter(const af_window wind, const af_array X, const af_ar
 
    \ingroup gfx_func_draw
 */
+DEPRECATED("Use af_draw_scatter_nd or af_draw_scatter_3d instead")
 AFAPI af_err af_draw_scatter3(const af_window wind, const af_array P,
                               const af_marker_type marker, const af_cell* const props);
 #endif
 
-#if AF_API_VERSION >= 32
+#if AF_API_VERSION >= 34
 /**
    C Interface wrapper for drawing an array as a plot
 
    \param[in]   wind is the window handle
    \param[in]   P is an \ref af_array or matrix with the xyz-values of the points
+   \param[in]   marker is an \ref af_marker_type enum specifying which marker to use in the scatter plot
    \param[in]   props is structure \ref af_cell that has the properties that are used
    for the current rendering.
 
    \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
    is returned.
 
-   \note \p P should be a 3n x 1  vector or one of a 3xn or nx3 matrices.
+   \note \p in must be 2d and of the form [n, order], where order is either 2 or 3.
+         If order is 2, then chart is 2D and if order is 3, then chart is 3D.
 
    \ingroup gfx_func_draw
 */
-AFAPI af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* const props);
+AFAPI af_err af_draw_scatter_nd(const af_window wind, const af_array P,
+                                const af_marker_type marker, const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface wrapper for drawing an array as a 2D plot
+
+   \param[in]   wind is the window handle
+   \param[in]   X is an \ref af_array with the x-axis data points
+   \param[in]   Y is an \ref af_array with the y-axis data points
+   \param[in]   marker is an \ref af_marker_type enum specifying which marker to use in the scatter plot
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p X and \p Y should be vectors.
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_scatter_2d(const af_window wind, const af_array X, const af_array Y,
+                                const af_marker_type marker, const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface wrapper for drawing an array as a 3D plot
+
+   \param[in]   wind is the window handle
+   \param[in]   X is an \ref af_array with the x-axis data points
+   \param[in]   Y is an \ref af_array with the y-axis data points
+   \param[in]   Z is an \ref af_array with the z-axis data points
+   \param[in]   marker is an \ref af_marker_type enum specifying which marker to use in the scatter plot
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p X, \p Y and \p Z should be vectors.
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_scatter_3d(const af_window wind,
+                                const af_array X, const af_array Y, const af_array Z,
+                                const af_marker_type marker, const af_cell* const props);
 #endif
 
 /**
