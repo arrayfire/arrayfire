@@ -214,8 +214,8 @@ struct Interp2<InT, LocT, 2>
         bool condX[2] = {true, x + 1 < idims[0]};
         bool condY[2] = {true, y + 1 < idims[1]};
 
-        bool offX[2] = {0, condX[1] ? 1 : 0};
-        bool offY[2] = {0, condY[1] ? 1 : 0};
+        int offX[2] = {0, condX[1] ? 1 : 0};
+        int offY[2] = {0, condY[1] ? 1 : 0};
 
         VT zero = scalar<VT>(0);
         VT val[2][2];
