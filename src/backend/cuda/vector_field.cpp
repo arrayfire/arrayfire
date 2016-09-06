@@ -33,7 +33,7 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
 
         // Map resource. Copy data to VBO. Unmap resource.
         // Map all resources at once.
-        cudaGraphicsMapResources(2, resources, 0);
+        cudaGraphicsMapResources(2, resources, cuda::getStream(cuda::getActiveDeviceId()));
 
         // Points
         {
@@ -53,7 +53,7 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
             cudaMemcpyAsync(d_vbo, ptr, num_bytes, cudaMemcpyDeviceToDevice,
                             cuda::getStream(cuda::getActiveDeviceId()));
         }
-        cudaGraphicsUnmapResources(2, resources, 0);
+        cudaGraphicsUnmapResources(2, resources, cuda::getStream(cuda::getActiveDeviceId()));
 
         CheckGL("After cuda resource copy");
 

@@ -31,11 +31,11 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
         // Map resource. Copy data to VBO. Unmap resource.
         size_t num_bytes = hist->verticesSize();
         T* d_vbo = NULL;
-        cudaGraphicsMapResources(1, &cudaVBOResource, 0);
+        cudaGraphicsMapResources(1, &cudaVBOResource, cuda::getStream(cuda::getActiveDeviceId()));
         cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, cudaVBOResource);
         cudaMemcpyAsync(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice,
                         cuda::getStream(cuda::getActiveDeviceId()));
-        cudaGraphicsUnmapResources(1, &cudaVBOResource, 0);
+        cudaGraphicsUnmapResources(1, &cudaVBOResource, cuda::getStream(cuda::getActiveDeviceId()));
 
         CheckGL("After cuda resource copy");
 

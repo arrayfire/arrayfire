@@ -36,11 +36,11 @@ void copy_image(const Array<T> &in, const forge::Image* image)
         // Map resource. Copy data to PBO. Unmap resource.
         size_t num_bytes;
         T* d_pbo = NULL;
-        cudaGraphicsMapResources(1, &cudaPBOResource, 0);
+        cudaGraphicsMapResources(1, &cudaPBOResource, cuda::getStream(cuda::getActiveDeviceId()));
         cudaGraphicsResourceGetMappedPointer((void **)&d_pbo, &num_bytes, cudaPBOResource);
         cudaMemcpyAsync(d_pbo, d_X, num_bytes, cudaMemcpyDeviceToDevice,
                         cuda::getStream(cuda::getActiveDeviceId()));
-        cudaGraphicsUnmapResources(1, &cudaPBOResource, 0);
+        cudaGraphicsUnmapResources(1, &cudaPBOResource, cuda::getStream(cuda::getActiveDeviceId()));
 
         POST_LAUNCH_CHECK();
         CheckGL("After cuda resource copy");
