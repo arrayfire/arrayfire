@@ -51,7 +51,7 @@ static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
 template<typename T>
-void exampleFunc(Param out, const Param in, const af_someenum_t p)
+void exampleFunc(Param c, const Param a, const Param b, const af_someenum_t p)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -96,8 +96,8 @@ void exampleFunc(Param out, const Param in, const af_someenum_t p)
         // configure work group parameters
         NDRange local(THREADS_X, THREADS_Y);
 
-        int blk_x = divup(out.info.dims[0], THREADS_X);
-        int blk_y = divup(out.info.dims[1], THREADS_Y);
+        int blk_x = divup(c.info.dims[0], THREADS_X);
+        int blk_y = divup(c.info.dims[1], THREADS_Y);
 
         // configure global launch parameters
         NDRange global(blk_x * THREADS_X, blk_y * THREADS_Y);
@@ -105,12 +105,12 @@ void exampleFunc(Param out, const Param in, const af_someenum_t p)
         // create a kernel functor from the cl::Kernel object
         // corresponding to the device on which current execution
         // is happending.
-        auto exampleFuncOp = KernelFunctor<Buffer, KParam,
-                                     Buffer, KParam, int>(*egKernels[device]);
+        auto exampleFuncOp = KernelFunctor<Buffer, KParam, Buffer, KParam,
+                                           Buffer, KParam, int>(*egKernels[device]);
 
         // launch the kernel
         exampleFuncOp(EnqueueArgs(getQueue(), global, local),
-                    *out.data, out.info, *in.data, in.info, (int)p);
+                    *c.data, c.info, *a.data, a.info, *b.data, b.info, (int)p);
 
         // Below Macro activates validations ONLY in DEBUG
         // mode as its name indicates
