@@ -248,7 +248,7 @@ static af_err reduce_all_common(double *real_val, double *imag_val, const af_arr
         ARG_ASSERT(2, in_info.ndims() > 0);
         ARG_ASSERT(0, real_val != NULL);
         *real_val = 0;
-        if (!imag_val) *imag_val = 0;
+        if (imag_val != NULL) *imag_val = 0;
 
         cfloat  cfval;
         cdouble cdval;
@@ -299,7 +299,7 @@ static af_err reduce_all_promote(double *real_val, double *imag_val, const af_ar
 
         ARG_ASSERT(0, real_val != NULL);
         *real_val = 0;
-        if (!imag_val) *imag_val = 0;
+        if (imag_val) *imag_val = 0;
 
         cfloat  cfval;
         cdouble cdval;
