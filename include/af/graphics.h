@@ -388,6 +388,71 @@ class AFAPI Window {
                          const char* const title = NULL);
 #endif
 
+#if AF_API_VERSION >= 34
+        /**
+           Setup the axes limits for a 2D histogram/plot/vector field
+
+           This function computes the minimum and maximum for each dimension
+
+           \param[in] x the data to compute the limits for x-axis.
+           \param[in] y the data to compute the limits for y-axis.
+
+           \ingroup gfx_func_window
+        */
+        void setAxesLimits(const array &x, const array &y);
+#endif
+
+#if AF_API_VERSION >= 34
+        /**
+           Setup the axes limits for a histogram/plot/surface/vector field
+
+           This function computes the minimum and maximum for each dimension
+
+           \param[in] x the data to compute the limits for x-axis.
+           \param[in] y the data to compute the limits for y-axis.
+           \param[in] z the data to compute the limits for z-axis.
+
+           \ingroup gfx_func_window
+        */
+        void setAxesLimits(const array &x, const array &y, const array &z);
+#endif
+
+#if AF_API_VERSION >= 34
+        /**
+           Setup the axes limits for a histogram/plot/surface/vector field
+
+           This function sets the axes limits to the ones provided by the user.
+
+           \param[in] xmin is the minimum on x-axis
+           \param[in] xmax is the maximum on x-axis
+           \param[in] ymin is the minimum on y-axis
+           \param[in] ymax is the maximum on y-axis
+           \param[in] zmin is the minimum on z-axis
+           \param[in] zmax is the maximum on z-axis
+
+           \ingroup gfx_func_window
+        */
+        void setAxesLimits(const float xmin, const float xmax,
+                           const float ymin, const float ymax,
+                           const float zmin = -1.0, const float zmax = 1.0);
+#endif
+
+#if AF_API_VERSION >= 34
+        /**
+           Setup the axes titles for a plot/surface/vector field
+
+           This function creates the axis titles for a chart.
+
+           \param[in] xtitle is the name of the x-axis
+           \param[in] ytitle is the name of the y-axis
+           \param[in] ztitle is the name of the z-axis
+
+           \ingroup gfx_func_window
+        */
+        void setAxesTitles(const char * const xtitle = "X-Axis",
+                           const char * const ytitle = "Y-Axis",
+                           const char * const ztitle = "Z-Axis");
+#endif
         /**
            Setup grid layout for multiview mode in a window
 
@@ -878,6 +943,73 @@ AFAPI af_err af_draw_vector_field_2d(
    \ingroup gfx_func_window
 */
 AFAPI af_err af_grid(const af_window wind, const int rows, const int cols);
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface for setting axes limits for a histogram/plot/surface/vector field
+
+   This function computes the minimum and maximum for each dimension
+
+   \param[in] wind is the window handle
+   \param[in] x the data to compute the limits for x-axis.
+   \param[in] y the data to compute the limits for y-axis.
+   \param[in] z the data to compute the limits for z-axis.
+   \param[in] props is structure \ref af_cell that has the properties that
+              are used for the current rendering.
+
+   \note Set \p to NULL if the chart is 2D.
+
+   \ingroup gfx_func_window
+*/
+AFAPI af_err af_set_axes_limits_compute(const af_window wind,
+                                        const af_array x, const af_array y, const af_array z,
+                                        const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface for setting axes limits for a histogram/plot/surface/vector field
+
+   This function sets the axes limits to the ones provided by the user.
+
+   \param[in] wind is the window handle
+   \param[in] xmin is the minimum on x-axis
+   \param[in] xmax is the maximum on x-axis
+   \param[in] ymin is the minimum on y-axis
+   \param[in] ymax is the maximum on y-axis
+   \param[in] zmin is the minimum on z-axis
+   \param[in] zmax is the maximum on z-axis
+   \param[in] props is structure \ref af_cell that has the properties that
+              are used for the current rendering.
+
+   \ingroup gfx_func_window
+*/
+AFAPI af_err af_set_axes_limits(const af_window wind,
+                                const float xmin, const float xmax,
+                                const float ymin, const float ymax,
+                                const float zmin, const float zmax,
+                                const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface wrapper for setting axes titles for histogram/plot/surface/vector field
+
+   \param[in] wind is the window handle
+   \param[in] xtitle is the name of the x-axis
+   \param[in] ytitle is the name of the y-axis
+   \param[in] ztitle is the name of the z-axis
+   \param[in] props is structure \ref af_cell that has the properties that
+              are used for the current rendering.
+
+   \ingroup gfx_func_window
+*/
+AFAPI af_err af_set_axes_titles(const af_window wind,
+                                const char * const xtitles,
+                                const char * const ytitles,
+                                const char * const ztitles,
+                                const af_cell* const props);
+#endif
 
 /**
    C Interface wrapper for showing a window

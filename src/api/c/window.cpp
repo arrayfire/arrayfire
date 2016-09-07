@@ -9,6 +9,7 @@
 
 
 #include <af/graphics.h>
+#include <af/algorithm.h>
 
 #include <graphics_common.hpp>
 #include <err_common.hpp>
@@ -128,6 +129,131 @@ af_err af_grid(const af_window wind, const int rows, const int cols)
         // Recreate a chart map
         ForgeManager& fgMngr = ForgeManager::getInstance();
         fgMngr.setWindowChartGrid(wnd, rows, cols);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+#else
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
+#endif
+}
+
+af_err af_set_axes_limits_compute(const af_window wind,
+                                  const af_array x, const af_array y, const af_array z,
+                                  const af_cell* const props)
+{
+#if defined(WITH_GRAPHICS)
+    if(wind==0) {
+        std::cerr<<"Not a valid window"<<std::endl;
+        return AF_SUCCESS;
+    }
+
+    try {
+        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+
+        // Recreate a chart map
+        ForgeManager& fgMngr = ForgeManager::getInstance();
+
+        forge::Chart* chart = NULL;
+        // The ctype here below doesn't really matter as it is only fetching
+        // the chart. It will not set it.
+        // If this is actually being done, then it is extremely bad.
+        // But lets have a check anyway.
+        fg_chart_type ctype = (z == NULL || z == 0) ? FG_CHART_2D : FG_CHART_3D;
+
+        if (props->col > -1 && props->row > -1)
+            chart = fgMngr.getChart(window, props->row, props->col, ctype);
+        else
+            chart = fgMngr.getChart(window, 0, 0, ctype);
+
+        double xmin = -1, xmax = 1;
+        double ymin = -1, ymax = 1;
+        double zmin = -1, zmax = 1;
+        AF_CHECK(af_min_all(&xmin, NULL, x));
+        AF_CHECK(af_max_all(&xmax, NULL, x));
+        AF_CHECK(af_min_all(&ymin, NULL, y));
+        AF_CHECK(af_max_all(&ymax, NULL, y));
+
+        if(ctype == FG_CHART_3D) {
+            AF_CHECK(af_min_all(&zmin, NULL, z));
+            AF_CHECK(af_max_all(&zmax, NULL, z));
+        }
+        chart->setAxesLimits(xmin, xmax, ymin, ymax, zmin, zmax);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+#else
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
+#endif
+}
+
+af_err af_set_axes_limits(const af_window wind,
+                          const float xmin, const float xmax,
+                          const float ymin, const float ymax,
+                          const float zmin, const float zmax,
+                          const af_cell* const props)
+{
+#if defined(WITH_GRAPHICS)
+    if(wind==0) {
+        std::cerr<<"Not a valid window"<<std::endl;
+        return AF_SUCCESS;
+    }
+
+    try {
+        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+
+        // Recreate a chart map
+        ForgeManager& fgMngr = ForgeManager::getInstance();
+
+        forge::Chart* chart = NULL;
+        // The ctype here below doesn't really matter as it is only fetching
+        // the chart. It will not set it.
+        // If this is actually being done, then it is extremely bad.
+        fg_chart_type ctype = FG_CHART_2D;
+
+        if (props->col > -1 && props->row > -1)
+            chart = fgMngr.getChart(window, props->row, props->col, ctype);
+        else
+            chart = fgMngr.getChart(window, 0, 0, ctype);
+
+        chart->setAxesLimits(xmin, xmax, ymin, ymax, zmin, zmax);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+#else
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
+#endif
+}
+
+af_err af_set_axes_titles(const af_window wind,
+                          const char * const xtitle,
+                          const char * const ytitle,
+                          const char * const ztitle,
+                          const af_cell* const props)
+{
+#if defined(WITH_GRAPHICS)
+    if(wind==0) {
+        std::cerr<<"Not a valid window"<<std::endl;
+        return AF_SUCCESS;
+    }
+
+    try {
+        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+
+        // Recreate a chart map
+        ForgeManager& fgMngr = ForgeManager::getInstance();
+
+        forge::Chart* chart = NULL;
+        // The ctype here below doesn't really matter as it is only fetching
+        // the chart. It will not set it.
+        // If this is actually being done, then it is extremely bad.
+        fg_chart_type ctype = FG_CHART_2D;
+
+        if (props->col > -1 && props->row > -1)
+            chart = fgMngr.getChart(window, props->row, props->col, ctype);
+        else
+            chart = fgMngr.getChart(window, 0, 0, ctype);
+
+        chart->setAxesTitles(xtitle, ytitle, ztitle);
     }
     CATCHALL;
     return AF_SUCCESS;

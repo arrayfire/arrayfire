@@ -177,6 +177,34 @@ void Window::grid(const int rows, const int cols)
     AF_THROW(af_grid(get(), rows, cols));
 }
 
+void Window::setAxesLimits(const array& x, const array& y)
+{
+    af_cell temp{_r, _c, NULL, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_set_axes_limits_compute(get(), x.get(), y.get(), NULL, &temp));
+}
+
+void Window::setAxesLimits(const array& x, const array& y, const array &z)
+{
+    af_cell temp{_r, _c, NULL, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_set_axes_limits_compute(get(), x.get(), y.get(), z.get(), &temp));
+}
+
+void Window::setAxesLimits(const float xmin, const float xmax,
+                           const float ymin, const float ymax,
+                           const float zmin, const float zmax)
+{
+    af_cell temp{_r, _c, NULL, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_set_axes_limits(get(), xmin, xmax, ymin, ymax, zmin, zmax, &temp));
+}
+
+void Window::setAxesTitles(const char * const xtitle,
+                           const char * const ytitle,
+                           const char * const ztitle)
+{
+    af_cell temp{_r, _c, NULL, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_set_axes_titles(get(), xtitle, ytitle, ztitle, &temp));
+}
+
 void Window::show()
 {
     AF_THROW(af_show(get()));

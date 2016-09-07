@@ -148,6 +148,33 @@ af_err af_grid(const af_window wind, const int rows, const int cols)
     return CALL(wind, rows, cols);
 }
 
+af_err af_set_axes_limits_compute(const af_window wind,
+                                  const af_array x, const af_array y, const af_array z,
+                                  const af_cell* const props)
+{
+    CHECK_ARRAYS(x, y);
+    if(z) CHECK_ARRAYS(z);
+    return CALL(wind, x, y, z, props);
+}
+
+af_err af_set_axes_limits(const af_window wind,
+                          const float xmin, const float xmax,
+                          const float ymin, const float ymax,
+                          const float zmin, const float zmax,
+                          const af_cell* const props)
+{
+    return CALL(wind, xmin, xmax, ymin, ymax, zmin, zmax, props);
+}
+
+af_err af_set_axes_titles(const af_window wind,
+                          const char * const xtitle,
+                          const char * const ytitle,
+                          const char * const ztitle,
+                          const af_cell* const props)
+{
+    return CALL(wind, xtitle, ytitle, ztitle, props);
+}
+
 af_err af_show(const af_window wind)
 {
     return CALL(wind);
