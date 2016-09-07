@@ -35,12 +35,6 @@ int clamp(int f, int a, int b)
     return max(a, min(f, b));
 }
 
-inline __device__
-float gaussian1d(float x, float variance)
-{
-    return __expf((x * x) / variance);
-}
-
 template<typename inType, typename outType>
 inline __device__
 void load2ShrdMem(outType * shrd, const inType * const in,
@@ -66,8 +60,10 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
     const int padding     = 2 * radius;
     const int window_size = padding + 1;
     const int shrdLen     = THREADS_X + padding;
-    const float variance_range = -2.f * sigma_color * sigma_color;
-    const float variance_space = -2.f * sigma_space * sigma_space;
+    const float variance_range = sigma_color * sigma_color;
+    const float variance_space = sigma_space * sigma_space;
+    const float variance_space_neg2 = -2.0 * variance_space;
+    const float inv_variance_range_neg2 = -0.5 / variance_range;
 
     // gfor batch offsets
     unsigned b2 = blockIdx.x / nBBS0;
@@ -85,7 +81,7 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
     if (lx<window_size && ly<window_size) {
         int x = lx - radius;
         int y = ly - radius;
-        gauss2d[ly*window_size+lx] = __expf(((x*x) + (y*y)) / variance_space);
+        gauss2d[ly*window_size+lx] = __expf(((x*x) + (y*y)) / variance_space_neg2);
     }
 
     // pull image to local memory
@@ -105,18 +101,22 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
         const outType center_color = localMem[ly*shrdLen+lx];
         outType res  = 0;
         outType norm = 0;
+        int joff = (ly - radius)*shrdLen + (lx - radius);
+        int goff = 0;
+
 #pragma unroll
         for(int wj=0; wj<window_size; ++wj) {
-            int joff = (ly+wj-radius)*shrdLen + (lx-radius);
-            int goff = wj*window_size;
 #pragma unroll
             for(int wi=0; wi<window_size; ++wi) {
                 const outType tmp_color   = localMem[joff+wi];
-                const outType gauss_range = gaussian1d(center_color - tmp_color, variance_range);
+                const outType c = center_color - tmp_color;
+                const outType gauss_range = __expf(c * c * inv_variance_range_neg2);
                 const outType weight      = gauss2d[goff+wi] * gauss_range;
                 norm += weight;
                 res  += tmp_color * weight;
             }
+            joff += shrdLen;
+            goff += window_size;
         }
         optr[gy*out.strides[1]+gx] = res / norm;
     }
