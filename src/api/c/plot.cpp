@@ -63,8 +63,6 @@ forge::Chart* setup_plot(const forge::Window* const window, const af_array in_,
 
     plot->setColor(1.0, 0.0, 0.0, 1.0);
 
-    chart->setAxesTitles("X Axis", "Y Axis", "Z Axis");
-
     copy_plot<T>(in, plot);
 
     return chart;

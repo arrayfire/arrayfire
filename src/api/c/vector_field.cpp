@@ -60,8 +60,6 @@ forge::Chart* setup_vector_field(const forge::Window* const window,
 
     vectorfield->setColor(1.0, 1.0, 0.0, 1.0);
 
-    chart->setAxesTitles("X Axis", "Y Axis", "Z Axis");
-
     copy_vector_field<T>(pIn, dIn, vectorfield);
 
     return chart;

@@ -81,8 +81,6 @@ forge::Chart* setup_surface(const forge::Window* const window,
 
     surface->setColor(0.0, 1.0, 0.0, 1.0);
 
-    chart->setAxesTitles("X Axis", "Y Axis", "Z Axis");
-
     copy_surface<T>(Z, surface);
 
     return chart;
