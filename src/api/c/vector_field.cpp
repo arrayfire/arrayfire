@@ -15,6 +15,7 @@
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <vector_field.hpp>
+#include <reduce.hpp>
 #include <transpose.hpp>
 #include <handle.hpp>
 
@@ -38,6 +39,10 @@ forge::Chart* setup_vector_field(const forge::Window* const window,
         dIn = transpose<T>(dIn, false);
     }
 
+    T max[3], min[3];
+    copyData(max, reduce<af_max_t, T, T>(pIn, 1));
+    copyData(min, reduce<af_min_t, T, T>(pIn, 1));
+
     ForgeManager& fgMngr = ForgeManager::getInstance();
 
     // Get the chart for the current grid position (if any)
@@ -58,6 +63,15 @@ forge::Chart* setup_vector_field(const forge::Window* const window,
     forge::VectorField* vectorfield = fgMngr.getVectorField(chart, pIn.dims()[1], getGLType<T>());
 
     vectorfield->setColor(1.0, 0.0, 0.0, 1.0);
+
+    if(pIn.dims()[0] == 2) {
+        chart->setAxesLimits(min[0], max[0],
+                             min[1], max[1]);
+    } else if(pIn.dims()[0] == 3) {
+        chart->setAxesLimits(min[0], max[0],
+                             min[1], max[1],
+                             min[2], max[2]);
+    }
 
     chart->setAxesTitles("X Axis", "Y Axis", "Z Axis");
 
