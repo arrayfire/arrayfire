@@ -396,10 +396,13 @@ class AFAPI Window {
 
            \param[in] x the data to compute the limits for x-axis.
            \param[in] y the data to compute the limits for y-axis.
+           \param[in] exact is for using the exact min/max values from \p x and \p y.
+                      If exact is false then the most significant digit is rounded up
+                      to next power of 2 and the magnitude remains the same.
 
            \ingroup gfx_func_window
         */
-        void setAxesLimits(const array &x, const array &y);
+        void setAxesLimits(const array &x, const array &y, const bool exact = false);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -411,10 +414,35 @@ class AFAPI Window {
            \param[in] x the data to compute the limits for x-axis.
            \param[in] y the data to compute the limits for y-axis.
            \param[in] z the data to compute the limits for z-axis.
+           \param[in] exact is for using the exact min/max values from \p x and \p y.
+                      If exact is false then the most significant digit is rounded up
+                      to next power of 2 and the magnitude remains the same.
 
            \ingroup gfx_func_window
         */
-        void setAxesLimits(const array &x, const array &y, const array &z);
+        void setAxesLimits(const array &x, const array &y, const array &z,
+                           const bool exact = false);
+#endif
+
+#if AF_API_VERSION >= 34
+        /**
+           Setup the axes limits for a histogram/plot/surface/vector field
+
+           This function sets the axes limits to the ones provided by the user.
+
+           \param[in] xmin is the minimum on x-axis
+           \param[in] xmax is the maximum on x-axis
+           \param[in] ymin is the minimum on y-axis
+           \param[in] ymax is the maximum on y-axis
+           \param[in] exact is for using the exact min/max values from \p x and \p y.
+                      If exact is false then the most significant digit is rounded up
+                      to next power of 2 and the magnitude remains the same.
+
+           \ingroup gfx_func_window
+        */
+        void setAxesLimits(const float xmin, const float xmax,
+                           const float ymin, const float ymax,
+                           const bool exact = false);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -429,12 +457,16 @@ class AFAPI Window {
            \param[in] ymax is the maximum on y-axis
            \param[in] zmin is the minimum on z-axis
            \param[in] zmax is the maximum on z-axis
+           \param[in] exact is for using the exact min/max values from \p x, \p y and \p z.
+                      If exact is false then the most significant digit is rounded up
+                      to next power of 2 and the magnitude remains the same.
 
            \ingroup gfx_func_window
         */
         void setAxesLimits(const float xmin, const float xmax,
                            const float ymin, const float ymax,
-                           const float zmin = -1.0, const float zmax = 1.0);
+                           const float zmin, const float zmax,
+                           const bool exact = false);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -954,6 +986,9 @@ AFAPI af_err af_grid(const af_window wind, const int rows, const int cols);
    \param[in] x the data to compute the limits for x-axis.
    \param[in] y the data to compute the limits for y-axis.
    \param[in] z the data to compute the limits for z-axis.
+   \param[in] exact is for using the exact min/max values from \p x, \p y and \p z.
+              If exact is false then the most significant digit is rounded up
+              to next power of 2 and the magnitude remains the same.
    \param[in] props is structure \ref af_cell that has the properties that
               are used for the current rendering.
 
@@ -963,12 +998,39 @@ AFAPI af_err af_grid(const af_window wind, const int rows, const int cols);
 */
 AFAPI af_err af_set_axes_limits_compute(const af_window wind,
                                         const af_array x, const af_array y, const af_array z,
+                                        const bool exact,
                                         const af_cell* const props);
 #endif
 
 #if AF_API_VERSION >= 34
 /**
-   C Interface for setting axes limits for a histogram/plot/surface/vector field
+   C Interface for setting axes limits for a 2D histogram/plot/vector field
+
+   This function sets the axes limits to the ones provided by the user.
+
+   \param[in] wind is the window handle
+   \param[in] xmin is the minimum on x-axis
+   \param[in] xmax is the maximum on x-axis
+   \param[in] ymin is the minimum on y-axis
+   \param[in] ymax is the maximum on y-axis
+   \param[in] exact is for using the exact min/max values from \p x, and \p y.
+              If exact is false then the most significant digit is rounded up
+              to next power of 2 and the magnitude remains the same.
+   \param[in] props is structure \ref af_cell that has the properties that
+              are used for the current rendering.
+
+   \ingroup gfx_func_window
+*/
+AFAPI af_err af_set_axes_limits_2d(const af_window wind,
+                                   const float xmin, const float xmax,
+                                   const float ymin, const float ymax,
+                                   const bool exact,
+                                   const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 34
+/**
+   C Interface for setting axes limits for a 3D plot/surface/vector field
 
    This function sets the axes limits to the ones provided by the user.
 
@@ -979,16 +1041,20 @@ AFAPI af_err af_set_axes_limits_compute(const af_window wind,
    \param[in] ymax is the maximum on y-axis
    \param[in] zmin is the minimum on z-axis
    \param[in] zmax is the maximum on z-axis
+   \param[in] exact is for using the exact min/max values from \p x, \p y and \p z.
+              If exact is false then the most significant digit is rounded up
+              to next power of 2 and the magnitude remains the same.
    \param[in] props is structure \ref af_cell that has the properties that
               are used for the current rendering.
 
    \ingroup gfx_func_window
 */
-AFAPI af_err af_set_axes_limits(const af_window wind,
-                                const float xmin, const float xmax,
-                                const float ymin, const float ymax,
-                                const float zmin, const float zmax,
-                                const af_cell* const props);
+AFAPI af_err af_set_axes_limits_3d(const af_window wind,
+                                   const float xmin, const float xmax,
+                                   const float ymin, const float ymax,
+                                   const float zmin, const float zmax,
+                                   const bool exact,
+                                   const af_cell* const props);
 #endif
 
 #if AF_API_VERSION >= 34

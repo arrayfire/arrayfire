@@ -150,20 +150,28 @@ af_err af_grid(const af_window wind, const int rows, const int cols)
 
 af_err af_set_axes_limits_compute(const af_window wind,
                                   const af_array x, const af_array y, const af_array z,
-                                  const af_cell* const props)
+                                  const bool exact, const af_cell* const props)
 {
     CHECK_ARRAYS(x, y);
     if(z) CHECK_ARRAYS(z);
-    return CALL(wind, x, y, z, props);
+    return CALL(wind, x, y, z, exact, props);
 }
 
-af_err af_set_axes_limits(const af_window wind,
-                          const float xmin, const float xmax,
-                          const float ymin, const float ymax,
-                          const float zmin, const float zmax,
-                          const af_cell* const props)
+af_err af_set_axes_limits_2d(const af_window wind,
+                             const float xmin, const float xmax,
+                             const float ymin, const float ymax,
+                             const bool exact, const af_cell* const props)
 {
-    return CALL(wind, xmin, xmax, ymin, ymax, zmin, zmax, props);
+    return CALL(wind, xmin, xmax, ymin, ymax, exact, props);
+}
+
+af_err af_set_axes_limits_3d(const af_window wind,
+                             const float xmin, const float xmax,
+                             const float ymin, const float ymax,
+                             const float zmin, const float zmax,
+                             const bool exact, const af_cell* const props)
+{
+    return CALL(wind, xmin, xmax, ymin, ymax, zmin, zmax, exact, props);
 }
 
 af_err af_set_axes_titles(const af_window wind,

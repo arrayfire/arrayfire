@@ -177,24 +177,33 @@ void Window::grid(const int rows, const int cols)
     AF_THROW(af_grid(get(), rows, cols));
 }
 
-void Window::setAxesLimits(const array& x, const array& y)
+void Window::setAxesLimits(const array& x, const array& y, const bool exact)
 {
     af_cell temp{_r, _c, NULL, AF_COLORMAP_DEFAULT};
-    AF_THROW(af_set_axes_limits_compute(get(), x.get(), y.get(), NULL, &temp));
+    AF_THROW(af_set_axes_limits_compute(get(), x.get(), y.get(), NULL, exact, &temp));
 }
 
-void Window::setAxesLimits(const array& x, const array& y, const array &z)
+void Window::setAxesLimits(const array& x, const array& y, const array &z, const bool exact)
 {
     af_cell temp{_r, _c, NULL, AF_COLORMAP_DEFAULT};
-    AF_THROW(af_set_axes_limits_compute(get(), x.get(), y.get(), z.get(), &temp));
+    AF_THROW(af_set_axes_limits_compute(get(), x.get(), y.get(), z.get(), exact, &temp));
 }
 
 void Window::setAxesLimits(const float xmin, const float xmax,
                            const float ymin, const float ymax,
-                           const float zmin, const float zmax)
+                           const bool exact)
 {
     af_cell temp{_r, _c, NULL, AF_COLORMAP_DEFAULT};
-    AF_THROW(af_set_axes_limits(get(), xmin, xmax, ymin, ymax, zmin, zmax, &temp));
+    AF_THROW(af_set_axes_limits_2d(get(), xmin, xmax, ymin, ymax, exact, &temp));
+}
+
+void Window::setAxesLimits(const float xmin, const float xmax,
+                           const float ymin, const float ymax,
+                           const float zmin, const float zmax,
+                           const bool exact)
+{
+    af_cell temp{_r, _c, NULL, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_set_axes_limits_3d(get(), xmin, xmax, ymin, ymax, zmin, zmax, exact, &temp));
 }
 
 void Window::setAxesTitles(const char * const xtitle,
