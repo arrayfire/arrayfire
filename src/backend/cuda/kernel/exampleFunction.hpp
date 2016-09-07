@@ -43,21 +43,16 @@ void exampleFuncKernel(Param<T> c, CParam<T> a, CParam<T> b, const af_someenum_t
 
     if ( i<a.dims[0] && j<a.dims[1] ) {
         // if needed use strides array to compute linear index of arrays
-        int src1Idx = i*a.strides[0] + j*a.strides[1];
-        int src2Idx = i*b.strides[0] + j*b.strides[1];
-        int dstIdx  = i*c.strides[0] + j*c.strides[1];
+        int src1Idx = i + j*a.strides[1];
+        int src2Idx = i + j*b.strides[1];
+        int dstIdx  = i + j*c.strides[1];
 
         T* dst = c.ptr;
         const T* src1 = a.ptr;
         const T* src2 = b.ptr;
 
         // kernel algorithm goes here
-        switch(p) {
-            case 1: dst[dstIdx] = src1[src1Idx] + src2[src2Idx]; break;
-            case 2: dst[dstIdx] = src1[src1Idx] - src2[src2Idx]; break;
-            case 3: dst[dstIdx] = src1[src1Idx] * src2[src2Idx]; break;
-            case 4: dst[dstIdx] = src1[src1Idx] / src2[src2Idx]; break;
-        }
+        dst[dstIdx] = src1[src1Idx] + src2[src2Idx];
     }
 }
 

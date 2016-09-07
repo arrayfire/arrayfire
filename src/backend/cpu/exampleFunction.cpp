@@ -12,6 +12,7 @@
                                         // ArrayInfo base class
 
 #include <exampleFunction.hpp>          // cpu backend function header
+#include <kernel/exampleFunction.hpp>   // Function implementation header
 
 #include <err_cpu.hpp>                  // error check functions and Macros
                                         // specific to cpu backend
@@ -43,45 +44,9 @@ Array<T> exampleFunction(const Array<T> &a, const Array<T> &b, const af_someenum
                                         // file to know what are the different types you
                                         // can create.
 
-    dim4 aDims    = a.dims();           // you can retrieve dimensions
-    dim4 bDims    = b.dims();
-    dim4 oDims    = out.dims();
-
-    dim_t aOffset = a.getOffset();      // you can retrieve the offset - used when given array
-                                        // is an sub-array pointing to some other array and
-                                        // doesn't have memory of its own
-    dim_t bOffset = b.getOffset();
-
-    dim4 aStrides = a.strides();        // you can retrieve strides
-    dim4 bStrides = b.strides();
-    dim4 oStrides = out.strides();
-
-    const T* src1 = a.get();            // cpu::Array<T>::get returns the pointer to the
-                                        // memory allocated for that Array
-    const T* src2 = b.get();            // cpu::Array<T>::get returns the pointer to the
-                                        // memory allocated for that Array
-    src1 += aOffset;
-    src2 += bOffset;
-
-    T* dst = out.get();
-
-    // Implement your algorithm and write results to dst
-    for(int j=0; j<aDims[1]; ++j) {
-        for (int i=0; i<aDims[0]; ++i) {
-
-            int src1Idx = i*aStrides[0] + j*aStrides[1];
-            int src2Idx = i*bStrides[0] + j*bStrides[1];
-            int dstIdx  = i*oStrides[0] + j*oStrides[1];
-
-            // kernel algorithm goes here
-            switch(method) {
-                case 1: dst[dstIdx] = src1[src1Idx] + src2[src2Idx]; break;
-                case 2: dst[dstIdx] = src1[src1Idx] - src2[src2Idx]; break;
-                case 3: dst[dstIdx] = src1[src1Idx] * src2[src2Idx]; break;
-                case 4: dst[dstIdx] = src1[src1Idx] / src2[src2Idx]; break;
-            }
-        }
-    }
+    // Enqueue the function call on the worker thread
+    // This code will be present in src/backend/cpu/kernel/exampleFunction.hpp
+    getQueue().enqueue(kernel::exampleFunction<T>, out, a, b, method);
 
     return out;                         // return the result
 }

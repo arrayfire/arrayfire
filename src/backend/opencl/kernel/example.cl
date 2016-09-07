@@ -22,16 +22,11 @@ void example(__global T *       d_dst,
 
     if ( i<iInfo1.dims[0] && j<iInfo1.dims[1] ) {
         // if needed use strides array to compute linear index of arrays
-        int src1Idx = i*iInfo1.strides[0] + j*iInfo1.strides[1];
-        int src2Idx = i*iInfo2.strides[0] + j*iInfo2.strides[1];
-        int dstIdx  = i* oInfo.strides[0] + j* oInfo.strides[1];
+        int src1Idx = i + j*iInfo1.strides[1];
+        int src2Idx = i + j*iInfo2.strides[1];
+        int dstIdx  = i + j* oInfo.strides[1];
 
         // kernel algorithm goes here
-        switch(method) {
-            case 1: d_dst[dstIdx] = d_src1[src1Idx] + d_src2[src2Idx]; break;
-            case 2: d_dst[dstIdx] = d_src1[src1Idx] - d_src2[src2Idx]; break;
-            case 3: d_dst[dstIdx] = d_src1[src1Idx] * d_src2[src2Idx]; break;
-            case 4: d_dst[dstIdx] = d_src1[src1Idx] / d_src2[src2Idx]; break;
-        }
+        d_dst[dstIdx] = d_src1[src1Idx] + d_src2[src2Idx];
     }
 }
