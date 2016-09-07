@@ -48,10 +48,6 @@ forge::Chart* setup_plot(const forge::Window* const window, const af_array in_,
 
     af::dim4 tdims = in.dims(); //transposed dimensions
 
-    T max[order], min[order];
-    copyData(max, reduce<af_max_t, T, T>(in, 1));
-    copyData(min, reduce<af_min_t, T, T>(in, 1));
-
     ForgeManager& fgMngr = ForgeManager::getInstance();
 
     // Get the chart for the current grid position (if any)
@@ -66,15 +62,6 @@ forge::Chart* setup_plot(const forge::Window* const window, const af_array in_,
     forge::Plot* plot = fgMngr.getPlot(chart, tdims[1], getGLType<T>(), ptype, mtype);
 
     plot->setColor(1.0, 0.0, 0.0, 1.0);
-
-    if(order == 2) {
-        chart->setAxesLimits(min[0], max[0],
-                             min[1], max[1]);
-    } else if(order == 3) {
-        chart->setAxesLimits(min[0], max[0],
-                             min[1], max[1],
-                             min[2], max[2]);
-    }
 
     chart->setAxesTitles("X Axis", "Y Axis", "Z Axis");
 

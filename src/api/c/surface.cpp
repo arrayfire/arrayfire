@@ -36,13 +36,6 @@ forge::Chart* setup_surface(const forge::Window* const window,
     Array<T> yIn = getArray<T>(yVals);
     Array<T> zIn = getArray<T>(zVals);
 
-    T xmax = reduce_all<af_max_t, T, T>(xIn);
-    T xmin = reduce_all<af_min_t, T, T>(xIn);
-    T ymax = reduce_all<af_max_t, T, T>(yIn);
-    T ymin = reduce_all<af_min_t, T, T>(yIn);
-    T zmax = reduce_all<af_max_t, T, T>(zIn);
-    T zmin = reduce_all<af_min_t, T, T>(zIn);
-
     ArrayInfo Xinfo = getInfo(xVals);
     ArrayInfo Yinfo = getInfo(yVals);
     ArrayInfo Zinfo = getInfo(zVals);
@@ -87,10 +80,6 @@ forge::Chart* setup_surface(const forge::Window* const window,
     forge::Surface* surface = fgMngr.getSurface(chart, Z_dims[0], Z_dims[1], getGLType<T>());
 
     surface->setColor(0.0, 1.0, 0.0, 1.0);
-
-    chart->setAxesLimits(xmin, xmax,
-                         ymin, ymax,
-                         zmin, zmax);
 
     chart->setAxesTitles("X Axis", "Y Axis", "Z Axis");
 
