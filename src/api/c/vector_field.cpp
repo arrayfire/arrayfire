@@ -62,7 +62,7 @@ forge::Chart* setup_vector_field(const forge::Window* const window,
 
     forge::VectorField* vectorfield = fgMngr.getVectorField(chart, pIn.dims()[1], getGLType<T>());
 
-    vectorfield->setColor(1.0, 0.0, 0.0, 1.0);
+    vectorfield->setColor(1.0, 1.0, 0.0, 1.0);
 
     if(pIn.dims()[0] == 2) {
         chart->setAxesLimits(min[0], max[0],

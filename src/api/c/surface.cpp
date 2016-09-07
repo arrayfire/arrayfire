@@ -86,7 +86,7 @@ forge::Chart* setup_surface(const forge::Window* const window,
 
     forge::Surface* surface = fgMngr.getSurface(chart, Z_dims[0], Z_dims[1], getGLType<T>());
 
-    surface->setColor(1.0, 0.0, 0.0, 1.0);
+    surface->setColor(0.0, 1.0, 0.0, 1.0);
 
     chart->setAxesLimits(xmin, xmax,
                          ymin, ymax,
