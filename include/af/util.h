@@ -128,7 +128,7 @@ namespace af
 #endif
 
     // Purpose of Addition: "How to add Function" documentation
-    AFAPI array exampleFunction(const array& a, const array& b, const af_someenum_t param);
+    AFAPI array exampleFunction(const array& in, const af_someenum_t param);
 
 #if AF_API_VERSION >= 34
     ///
@@ -253,7 +253,7 @@ extern "C" {
 
     // Purpose of Addition: "How to add Function" documentation
     AFAPI af_err af_example_function(af_array* out,
-                                     const af_array a, const af_array b,
+                                     const af_array in,
                                      const af_someenum_t param);
 
     ///

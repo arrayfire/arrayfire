@@ -48,7 +48,7 @@ af_array example(const af_array& a, const af_array& b, const af_someenum_t& para
     return getHandle<T>( exampleFunction(getArray<T>(a), getArray<T>(b), param) );
 }
 
-af_err af_example_function(af_array* out, const af_array a, const af_array b, const af_someenum_t param)
+af_err af_example_function(af_array* out, const af_array a, const af_someenum_t param)
 {
     try {
         af_array output = 0;
@@ -58,8 +58,6 @@ af_err af_example_function(af_array* out, const af_array a, const af_array b, co
                                             // such as type of data, dimensions,
                                             // offsets and strides. This class is declared
                                             // in src/backend/ArrayInfo.hpp
-        ArrayInfo info2 = getInfo(b);
-
         af::dim4 dims = info.dims();
 
         ARG_ASSERT(2, (dims.ndims()>=0 && dims.ndims()<=3));
@@ -70,18 +68,16 @@ af_err af_example_function(af_array* out, const af_array a, const af_array b, co
 
         af_dtype type = info.getType();
 
-        ARG_ASSERT(2, (info2.getType() == type));
-
         switch(type) {                      // Based on the data type, call backend specific
                                             // implementation
-            case f64: output = example<double >(a, b, param); break;
-            case f32: output = example<float  >(a, b, param); break;
-            case s32: output = example<int    >(a, b, param); break;
-            case u32: output = example<uint   >(a, b, param); break;
-            case  u8: output = example<uchar  >(a, b, param); break;
-            case  b8: output = example<char   >(a, b, param); break;
-            case c32: output = example<cfloat >(a, b, param); break;
-            case c64: output = example<cdouble>(a, b, param); break;
+            case f64: output = example<double >(a, a, param); break;
+            case f32: output = example<float  >(a, a, param); break;
+            case s32: output = example<int    >(a, a, param); break;
+            case u32: output = example<uint   >(a, a, param); break;
+            case  u8: output = example<uchar  >(a, a, param); break;
+            case  b8: output = example<char   >(a, a, param); break;
+            case c32: output = example<cfloat >(a, a, param); break;
+            case c64: output = example<cdouble>(a, a, param); break;
             default : TYPE_ERROR(1, type);  // Another helpful macro from err_common.hpp
                                             // that helps throw type based error messages
         }
