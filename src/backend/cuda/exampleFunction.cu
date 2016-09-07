@@ -27,7 +27,7 @@ namespace cuda
 {
 
 template<typename T>
-Array<T> exampleFunction(const Array<T> &in, const af_someenum_t method)
+Array<T> exampleFunction(const Array<T> &a, const Array<T> &b, const af_someenum_t method)
 {
     dim4 outputDims;                    // this should be '= in.dims();' in most cases
                                         // but would definitely depend on the type of
@@ -41,14 +41,14 @@ Array<T> exampleFunction(const Array<T> &in, const af_someenum_t method)
                                         // can create.
 
     // Relay the actual computation to CUDA kernel wrapper
-    kernel::exampleFunc<T>(out, in, method);
+    kernel::exampleFunc<T>(out, a, b, method);
 
     return out;                         // return the result
 }
 
 
 #define INSTANTIATE(T)  \
-    template Array<T> exampleFunction<T>(const Array<T> &in, const af_someenum_t method);
+    template Array<T> exampleFunction<T>(const Array<T> &a, const Array<T> &b, const af_someenum_t method);
 
 // INSTANTIATIONS for all the types which
 // are present in the switch case statement
