@@ -10,6 +10,7 @@
 #include <af/array.h>
 #include <af/defines.h>
 #include <af/vision.h>
+#include <af/random_engine.h>
 #include <err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
@@ -27,10 +28,14 @@ static inline void homography(af_array &H, int &inliers,
                               const unsigned iterations)
 {
     Array<T> bestH = createEmptyArray<T>(af::dim4(3, 3));
-
+    af_array initial;
+    unsigned d = (iterations + 256 - 1) / 256;
+    dim_t rdims[] = {4, d * 256};
+    af_randu(&initial, 2, rdims, f32);
     inliers = homography<T>(bestH,
                             getArray<float>(x_src), getArray<float>(y_src),
                             getArray<float>(x_dst), getArray<float>(y_dst),
+                            getArray<float>(initial),
                             htype, inlier_thr, iterations);
 
     H = getHandle<T>(bestH);

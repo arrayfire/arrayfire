@@ -12,7 +12,6 @@
 #include <err_opencl.hpp>
 #include <handle.hpp>
 #include <arith.hpp>
-#include <random.hpp>
 #include <kernel/homography.hpp>
 #include <algorithm>
 
@@ -34,6 +33,7 @@ int homography(Array<T> &bestH,
                const Array<float> &y_src,
                const Array<float> &x_dst,
                const Array<float> &y_dst,
+               const Array<float> &initial,
                const af_homography_type htype,
                const float inlier_thr,
                const unsigned iterations)
@@ -55,9 +55,8 @@ int homography(Array<T> &bestH,
     const size_t iter_sz = divup(iter, 256) * 256;
 
     af::dim4 rdims(4, iter_sz);
-    Array<float> frnd = randu<float>(rdims);
     Array<float> fctr = createValueArray<float>(rdims, (float)nsamples);
-    Array<float> rnd = arithOp<float, af_mul_t>(frnd, fctr, rdims);
+    Array<float> rnd = arithOp<float, af_mul_t>(initial, fctr, rdims);
 
     Array<T> tmpH = createValueArray<T>(af::dim4(9, iter_sz), (T)0);
 
@@ -83,6 +82,7 @@ int homography(Array<T> &bestH,
     template int homography(Array<T> &H,                                            \
                             const Array<float> &x_src, const Array<float> &y_src,   \
                             const Array<float> &x_dst, const Array<float> &y_dst,   \
+                            const Array<float> &initial,                            \
                             const af_homography_type htype, const float inlier_thr, \
                             const unsigned iterations);
 
