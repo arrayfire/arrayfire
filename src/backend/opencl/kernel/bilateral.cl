@@ -27,7 +27,7 @@ void load2LocalMem(__local outType *  shrd,
 
 float gaussian1d(float x, float variance)
 {
-    return exp((x * x) / (-2.f * variance));
+    return native_exp((x * x) / (-2.f * variance));
 }
 
 __kernel
@@ -63,7 +63,7 @@ void bilateral(__global outType *        d_dst,
     if (lx<window_size && ly<window_size) {
         int x = lx - radius;
         int y = ly - radius;
-        gauss2d[ly*window_size+lx] = exp( ((x*x) + (y*y)) / variance_space);
+        gauss2d[ly*window_size+lx] = native_exp( ((x*x) + (y*y)) / variance_space);
     }
 
     int s0 = iInfo.strides[0];
