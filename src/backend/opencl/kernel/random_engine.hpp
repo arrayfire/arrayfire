@@ -24,6 +24,7 @@
 #include <type_util.hpp>
 #include <cache.hpp>
 #include <random_engine.hpp>
+#include "config.hpp"
 
 #include <kernel_headers/random_engine_mersenne_init.hpp>
 #include <kernel_headers/random_engine_mersenne.hpp>
@@ -223,8 +224,8 @@ namespace opencl
         void initMersenneState(cl::Buffer state, cl::Buffer table, const uintl &seed)
         {
             try{
-                NDRange local(N, 1);
-                NDRange global(N * MAX_BLOCKS, 1);
+                NDRange local(THREADS_PER_GROUP, 1);
+                NDRange global(local[0] * MAX_BLOCKS, 1);
 
                 Kernel ker = get_mersenne_init_kernel();
                 auto initOp = KernelFunctor<cl::Buffer, cl::Buffer, uintl>(ker);
