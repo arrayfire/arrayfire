@@ -12,6 +12,7 @@
                                         // ArrayInfo base class
 
 #include <exampleFunction.hpp>          // cpu backend function header
+#include <kernel/exampleFunction.hpp>   // Function implementation header
 
 #include <err_cpu.hpp>                  // error check functions and Macros
                                         // specific to cpu backend
@@ -22,14 +23,15 @@ namespace cpu
 {
 
 template<typename T>
-Array<T> exampleFunction(const Array<T> &in, const af_someenum_t method)
+Array<T> exampleFunction(const Array<T> &a, const Array<T> &b, const af_someenum_t method)
 {
-    in.eval();                          // All input Arrays should call eval mandatorily
+    a.eval();                           // All input Arrays should call eval mandatorily
                                         // in CPU backend function implementations. Since
                                         // the cpu fns are asynchronous launches, any Arrays
                                         // that are either views/JIT nodes needs to evaluated
                                         // before they are passed onto functions that are
                                         // enqueued onto the queues.
+    b.eval();
 
     dim4 outputDims;                    // this should be '= in.dims();' in most cases
                                         // but would definitely depend on the type of
@@ -42,27 +44,16 @@ Array<T> exampleFunction(const Array<T> &in, const af_someenum_t method)
                                         // file to know what are the different types you
                                         // can create.
 
-    //dim4 in_dims    = in.dims();        // you can retrieve dimensions
-
-    //dim_t in_offset = in.getOffset(); // you can retrieve the offset - used when given array
-                                        // is an sub-array pointing to some other array and
-                                        // doesn't have memory of its own
-
-    //dim4 in_strides = in.strides();     // you can retrieve strides
-
-    //const T* src = in.get();            // cpu::Array<T>::get returns the pointer to the
-                                        // memory allocated for that Array
-
-    //T* dst = out.get();
-
-    // Implement your algorithm and write results to dst
+    // Enqueue the function call on the worker thread
+    // This code will be present in src/backend/cpu/kernel/exampleFunction.hpp
+    getQueue().enqueue(kernel::exampleFunction<T>, out, a, b, method);
 
     return out;                         // return the result
 }
 
 
 #define INSTANTIATE(T)  \
-    template Array<T> exampleFunction<T>(const Array<T> &in, const af_someenum_t method);
+    template Array<T> exampleFunction<T>(const Array<T> &a, const Array<T> &b, const af_someenum_t method);
 
 // INSTANTIATIONS for all the types which
 // are present in the switch case statement

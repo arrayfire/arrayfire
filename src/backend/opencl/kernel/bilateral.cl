@@ -25,11 +25,6 @@ void load2LocalMem(__local outType *  shrd,
     shrd[ lIdx(lx, ly, shrdStride, 1) ] = (outType)in[ lIdx(gx_, gy_, inStride1, inStride0) ];
 }
 
-float gaussian1d(float x, float variance)
-{
-    return exp((x * x) / (-2.f * variance));
-}
-
 __kernel
 void bilateral(__global outType *        d_dst,
                KParam                    oInfo,
@@ -46,6 +41,8 @@ void bilateral(__global outType *        d_dst,
     const int shrdLen     = get_local_size(0) + padding;
     const float variance_range = sigma_color * sigma_color;
     const float variance_space = sigma_space * sigma_space;
+    const float variance_space_neg2 = -2.0 * variance_space;
+    const float inv_variance_range_neg2 = -0.5 / (variance_range);
 
     // gfor batch offsets
     unsigned b2 = get_group_id(0) / nBBS0;
@@ -63,7 +60,7 @@ void bilateral(__global outType *        d_dst,
     if (lx<window_size && ly<window_size) {
         int x = lx - radius;
         int y = ly - radius;
-        gauss2d[ly*window_size+lx] = exp( ((x*x) + (y*y)) / (-2.f * variance_space));
+        gauss2d[ly*window_size+lx] = native_exp(((x*x) + (y*y)) / variance_space_neg2);
     }
 
     int s0 = iInfo.strides[0];
@@ -86,18 +83,23 @@ void bilateral(__global outType *        d_dst,
         outType center_color = localMem[ly*shrdLen+lx];
         outType res  = 0;
         outType norm = 0;
+
+        int joff = (ly - radius)*shrdLen + (lx-radius);
+        int goff = 0;
+
 #pragma unroll
         for(int wj=0; wj<window_size; ++wj) {
-            int joff = (ly+wj-radius)*shrdLen + (lx-radius);
-            int goff = wj*window_size;
 #pragma unroll
             for(int wi=0; wi<window_size; ++wi) {
                 outType tmp_color   = localMem[joff+wi];
-                outType gauss_range = gaussian1d(center_color - tmp_color, variance_range);
+                const outType c = center_color - tmp_color;
+                outType gauss_range = native_exp(c * c * inv_variance_range_neg2);
                 outType weight      = gauss2d[goff+wi] * gauss_range;
                 norm += weight;
                 res  += tmp_color * weight;
             }
+            joff += shrdLen;
+            goff += window_size;
         }
         out[gy*oInfo.strides[1] + gx] = res / norm;
     }

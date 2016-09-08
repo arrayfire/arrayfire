@@ -13,6 +13,7 @@
 #include <resize.hpp>
 #include <sort_index.hpp>
 #include <convolve.hpp>
+#include <math.hpp>
 #include <memory.hpp>
 #include <cstring>
 #include <cfloat>

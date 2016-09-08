@@ -12,7 +12,6 @@
 #include <err_cpu.hpp>
 #include <homography.hpp>
 #include <arith.hpp>
-#include <random.hpp>
 #include <cstring>
 #include <cfloat>
 #include <platform.hpp>
@@ -347,6 +346,7 @@ int homography(Array<T> &bestH,
                const Array<float> &y_src,
                const Array<float> &x_dst,
                const Array<float> &y_dst,
+               const Array<float> &initial,
                const af_homography_type htype,
                const float inlier_thr,
                const unsigned iterations)
@@ -364,9 +364,8 @@ int homography(Array<T> &bestH,
         iter = std::min(iter, (unsigned)(log(1.f - LMEDSConfidence) / log(1.f - pow(1.f - LMEDSOutlierRatio, 4.f))));
 
     af::dim4 rdims(4, iter);
-    Array<float> frnd = randu<float>(rdims);
     Array<float> fctr = createValueArray<float>(rdims, (float)nsamples);
-    Array<float> rnd = arithOp<float, af_mul_t>(frnd, fctr, rdims);
+    Array<float> rnd = arithOp<float, af_mul_t>(initial, fctr, rdims);
     rnd.eval();
     getQueue().sync();
 
@@ -377,6 +376,7 @@ int homography(Array<T> &bestH,
     template int homography<T>(Array<T> &bestH,                                         \
                                const Array<float> &x_src, const Array<float> &y_src,    \
                                const Array<float> &x_dst, const Array<float> &y_dst,    \
+                               const Array<float> &initial,                             \
                                const af_homography_type htype, const float inlier_thr,  \
                                const unsigned iterations);
 
