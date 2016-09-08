@@ -25,11 +25,6 @@ using namespace detail;
 using std::vector;
 using std::swap;
 
-// From src/api/c/moddims.cpp TODO: move to header?
-template<typename T>
-Array<T> modDims(const Array<T>& in, const af::dim4 &newDims);
-
-
 template<typename Tout, typename Tin>
 static
 void assign(Array<Tout> &out, const unsigned &ndims, const af_seq *index, const Array<Tin> &in_)
