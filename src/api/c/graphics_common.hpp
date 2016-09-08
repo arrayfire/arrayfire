@@ -17,6 +17,7 @@
 #include <glbinding/Binding.h>
 #include <vector>
 #include <map>
+#include <utility>
 
 // default to f32(float) type
 template<typename T>
@@ -48,11 +49,13 @@ static const long long _16BIT = 0x000000000000FFFF;
 static const long long _32BIT = 0x00000000FFFFFFFF;
 static const long long _48BIT = 0x0000FFFFFFFFFFFF;
 
-typedef std::map<long long, forge::Image*> ImageMap_t;
-typedef std::map<long long, forge::Plot*> PlotMap_t;
-typedef std::map<long long, forge::Histogram*> HistogramMap_t;
-typedef std::map<long long, forge::Surface*> SurfaceMap_t;
-typedef std::map<long long, forge::VectorField*> VectorFieldMap_t;
+typedef std::pair<long long, forge::Chart*> ChartKey_t;
+
+typedef std::map<ChartKey_t, forge::Image*      > ImageMap_t;
+typedef std::map<ChartKey_t, forge::Plot*       > PlotMap_t;
+typedef std::map<ChartKey_t, forge::Histogram*  > HistogramMap_t;
+typedef std::map<ChartKey_t, forge::Surface*    > SurfaceMap_t;
+typedef std::map<ChartKey_t, forge::VectorField*> VectorFieldMap_t;
 
 typedef ImageMap_t::iterator ImgMapIter;
 typedef PlotMap_t::iterator PltMapIter;

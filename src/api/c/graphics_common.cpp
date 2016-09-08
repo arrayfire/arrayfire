@@ -237,13 +237,14 @@ forge::Image* ForgeManager::getImage(int w, int h, forge::ChannelFormat mode, fo
     long long key = ((w & _16BIT) << 16) | (h & _16BIT);
     key = (((key << 16) | mode) << 16) | type;
 
-    ImgMapIter iter = mImgMap.find(key);
+    ChartKey_t keypair = std::make_pair(key, nullptr);
+    ImgMapIter iter = mImgMap.find(keypair);
     if (iter==mImgMap.end()) {
         forge::Image* temp = new forge::Image(w, h, mode, type);
-        mImgMap[key] = temp;
+        mImgMap[keypair] = temp;
     }
 
-    return mImgMap[key];
+    return mImgMap[keypair];
 }
 
 forge::Image* ForgeManager::getImage(forge::Chart* chart, int w, int h,
@@ -259,17 +260,18 @@ forge::Image* ForgeManager::getImage(forge::Chart* chart, int w, int h,
     long long key = ((w & _16BIT) << 16) | (h & _16BIT);
     key = (((key << 16) | mode) << 16) | type;
 
-    ImgMapIter iter = mImgMap.find(key);
+    ChartKey_t keypair = std::make_pair(key, chart);
+    ImgMapIter iter = mImgMap.find(keypair);
     if (iter==mImgMap.end()) {
         if(chart->getChartType() != FG_CHART_2D)
             AF_ERROR("Image can only be added to chart of type FG_CHART_2D", AF_ERR_TYPE);
 
         forge::Image* temp = new forge::Image(w, h, mode, type);
-        mImgMap[key] = temp;
-        chart->add(*mImgMap[key]);
+        mImgMap[keypair] = temp;
+        chart->add(*mImgMap[keypair]);
     }
 
-    return mImgMap[key];
+    return mImgMap[keypair];
 }
 
 forge::Plot* ForgeManager::getPlot(forge::Chart* chart, int nPoints, forge::dtype dtype,
@@ -284,14 +286,15 @@ forge::Plot* ForgeManager::getPlot(forge::Chart* chart, int nPoints, forge::dtyp
     long long key = ((nPoints & _48BIT) << 48);
     key |= (((((dtype & 0x000F) << 12) | (ptype & 0x000F)) << 8) | (mtype & 0x000F));
 
-    PltMapIter iter = mPltMap.find(key);
+    ChartKey_t keypair = std::make_pair(key, chart);
+    PltMapIter iter = mPltMap.find(keypair);
     if (iter==mPltMap.end()) {
         forge::Plot* temp = new forge::Plot(nPoints, dtype, chart->getChartType(), ptype, mtype);
-        mPltMap[key] = temp;
-        chart->add(*mPltMap[key]);
+        mPltMap[keypair] = temp;
+        chart->add(*mPltMap[keypair]);
     }
 
-    return mPltMap[key];
+    return mPltMap[keypair];
 }
 
 forge::Histogram* ForgeManager::getHistogram(forge::Chart* chart, int nBins, forge::dtype type)
@@ -304,17 +307,18 @@ forge::Histogram* ForgeManager::getHistogram(forge::Chart* chart, int nBins, for
     assert(nBins <= 2ll<<48);
     long long key = ((nBins & _48BIT) << 48) | (type & _16BIT);
 
-    HstMapIter iter = mHstMap.find(key);
+    ChartKey_t keypair = std::make_pair(key, chart);
+    HstMapIter iter = mHstMap.find(keypair);
     if (iter==mHstMap.end()) {
         if(chart->getChartType() != FG_CHART_2D)
             AF_ERROR("Histogram can only be added to chart of type FG_CHART_2D", AF_ERR_TYPE);
 
         forge::Histogram* temp = new forge::Histogram(nBins, type);
-        mHstMap[key] = temp;
-        chart->add(*mHstMap[key]);
+        mHstMap[keypair] = temp;
+        chart->add(*mHstMap[keypair]);
     }
 
-    return mHstMap[key];
+    return mHstMap[keypair];
 }
 
 forge::Surface* ForgeManager::getSurface(forge::Chart* chart, int nX, int nY, forge::dtype type)
@@ -327,17 +331,18 @@ forge::Surface* ForgeManager::getSurface(forge::Chart* chart, int nX, int nY, fo
     assert(nX * nY <= 2ll<<48);
     long long key = (((nX * nY) & _48BIT) << 48) | (type & _16BIT);
 
-    SfcMapIter iter = mSfcMap.find(key);
+    ChartKey_t keypair = std::make_pair(key, chart);
+    SfcMapIter iter = mSfcMap.find(keypair);
     if (iter==mSfcMap.end()) {
         if(chart->getChartType() != FG_CHART_3D)
             AF_ERROR("Surface can only be added to chart of type FG_CHART_3D", AF_ERR_TYPE);
 
         forge::Surface* temp = new forge::Surface(nX, nY, type);
-        mSfcMap[key] = temp;
-        chart->add(*mSfcMap[key]);
+        mSfcMap[keypair] = temp;
+        chart->add(*mSfcMap[keypair]);
     }
 
-    return mSfcMap[key];
+    return mSfcMap[keypair];
 }
 
 forge::VectorField* ForgeManager::getVectorField(forge::Chart* chart, int nPoints, forge::dtype type)
@@ -350,14 +355,15 @@ forge::VectorField* ForgeManager::getVectorField(forge::Chart* chart, int nPoint
     assert(nPoints <= 2ll<<48);
     long long key = (((nPoints) & _48BIT) << 48) | (type & _16BIT);
 
-    VcfMapIter iter = mVcfMap.find(key);
+    ChartKey_t keypair = std::make_pair(key, chart);
+    VcfMapIter iter = mVcfMap.find(keypair);
     if (iter==mVcfMap.end()) {
         forge::VectorField* temp = new forge::VectorField(nPoints, type, chart->getChartType());
-        mVcfMap[key] = temp;
-        chart->add(*mVcfMap[key]);
+        mVcfMap[keypair] = temp;
+        chart->add(*mVcfMap[keypair]);
     }
 
-    return mVcfMap[key];
+    return mVcfMap[keypair];
 }
 
 void ForgeManager::destroyResources()
