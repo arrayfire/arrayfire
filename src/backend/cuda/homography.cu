@@ -10,7 +10,6 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <err_cuda.hpp>
-#include <handle.hpp>
 #include <arith.hpp>
 #include <random.hpp>
 #include <kernel/homography.hpp>

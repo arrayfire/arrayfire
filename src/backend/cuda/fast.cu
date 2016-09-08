@@ -11,7 +11,6 @@
 #include <af/features.h>
 #include <Array.hpp>
 #include <err_cuda.hpp>
-#include <handle.hpp>
 #include <kernel/fast.hpp>
 
 using af::dim4;

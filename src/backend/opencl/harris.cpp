@@ -11,7 +11,6 @@
 #include <af/features.h>
 #include <Array.hpp>
 #include <err_opencl.hpp>
-#include <handle.hpp>
 #include <kernel/harris.hpp>
 
 using af::dim4;

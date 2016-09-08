@@ -9,9 +9,10 @@
 
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <handle.hpp>
+#include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <err_cpu.hpp>
 #include <kernel/nearest_neighbour.hpp>
 
 using af::dim4;

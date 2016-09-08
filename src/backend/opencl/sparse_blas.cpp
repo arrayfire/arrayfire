@@ -20,7 +20,6 @@
 
 #include <af/dim4.hpp>
 #include <complex.hpp>
-#include <handle.hpp>
 #include <err_common.hpp>
 #include <err_opencl.hpp>
 #include <math.hpp>

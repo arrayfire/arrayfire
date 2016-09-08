@@ -10,7 +10,6 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <err_cpu.hpp>
-#include <handle.hpp>
 #include <homography.hpp>
 #include <arith.hpp>
 #include <random.hpp>

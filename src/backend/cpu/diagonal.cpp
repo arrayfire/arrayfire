@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <handle.hpp>
 #include <Array.hpp>
 #include <diagonal.hpp>
 #include <math.hpp>

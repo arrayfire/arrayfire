@@ -11,7 +11,7 @@
 #include <af/features.h>
 #include <Array.hpp>
 #include <err_opencl.hpp>
-#include <handle.hpp>
+#include <math.hpp>
 
 #ifdef AF_BUILD_NONFREE_SIFT
 #include <kernel/sift_nonfree.hpp>
