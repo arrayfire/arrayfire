@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
         while(!myWindow.close()) {
             t+=0.07;
             array z = 10*x*-abs(y) * cos(x*x*(y+t))+sin(y*(x+t))-1.5;
+            myWindow.setAxesLimits(x, y, z, true);
             myWindow.surface(x, y, z);
         }
 

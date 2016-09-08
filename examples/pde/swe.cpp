@@ -29,8 +29,8 @@ static void swe(bool console)
     unsigned io = (unsigned)floor(Lx  / 6.0f),
              jo = (unsigned)floor(Ly / 6.0f),
              k = 15;
-    array x = tile(moddims(seq(nx),nx,1), 1,ny);
-    array y = tile(moddims(seq(ny),1,ny), nx,1);
+    array x = tile(range(nx), 1, ny);
+    array y = tile(range(dim4(1, ny), 1), nx, 1);
 
     //initial condition
     array etam  = 0.01f * exp((-((x - io) * (x - io) + (y - jo) * (y - jo))) / (k * k));
@@ -84,10 +84,15 @@ static void swe(bool console)
 
         m_eta = max<float>(etam);
         if (!console) {
-            (*win)(0,0).image(normalize(eta, m_eta));
             array hist_out = histogram(normalize(eta, m_eta), 15);
+
+            (*win)(0, 1).setAxesLimits(0, hist_out.elements(), 0, max<float>(hist_out));
+            (*win)(1, 0).setAxesLimits(range(up.dims(1)), vp.col(0));
+            (*win)(1, 1).setAxesLimits(eta.col(0), up.col(0), vp.col(0));
+
+            (*win)(0,0).image(normalize(eta, m_eta));
             (*win)(0,1).hist(hist_out, 0, 1, "Normalized Pressure Distribution");
-            (*win)(1,0).plot(seq(up.dims(1)), vp.col(0), "Pressure at left boundary");
+            (*win)(1,0).plot(range(up.dims(1)), vp.col(0), "Pressure at left boundary");
             (*win)(1,1).plot(flat(eta.col(0)), flat(up.col(0)), flat(vp.col(0)), "Gradients versus Magnitude at left boundary"); // viz
             win->show();
         } else eval(eta, up, vp);

@@ -33,6 +33,9 @@ int main(int argc, char *argv[])
         array points = join(1, flat(range(dim4(10, 10), 1) * 2 + 1), flat(range(dim4(10, 10)) * 2 + 1));
         array directions = sin(2 * Pi * points / 10.0f);
 
+        myWindow.setAxesLimits(points.col(0), points.col(1));
+        myWindow.setAxesTitles();
+
         while(!myWindow.close()) {
             myWindow.scatter(divPoints, AF_MARKER_CIRCLE);
             myWindow.vectorField(points, directions);
