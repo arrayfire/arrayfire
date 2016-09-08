@@ -60,9 +60,9 @@ forge::Chart* setup_surface(const forge::Window* const window,
 
     // Flatten xIn, yIn and zIn into row vectors
     dim4 rowDims = dim4(1, zIn.elements());
-    xIn.modDims(rowDims);
-    yIn.modDims(rowDims);
-    zIn.modDims(rowDims);
+    xIn = modDims(xIn, rowDims);
+    yIn = modDims(yIn, rowDims);
+    zIn = modDims(zIn, rowDims);
 
     // Now join along first dimension, skip reorder
     std::vector<Array<T> > inputs{xIn, yIn, zIn};
