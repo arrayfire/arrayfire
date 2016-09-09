@@ -18,6 +18,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <af/opencl.h>
 
 using cl::Buffer;
 using cl::Program;
@@ -48,20 +49,23 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
         int device = getActiveDeviceId();
 
         std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D inType=" << dtype_traits<inType>::getName()
-                            << " -D outType=" << dtype_traits<outType>::getName();
-                    if (std::is_same<inType, double>::value ||
-                        std::is_same<inType, cdouble>::value) {
+                bool use_native_exp = getActivePlatform() != AFCL_PLATFORM_POCL;
+                printf("NATIVE_EXP: %d\n", use_native_exp);
+                std::ostringstream options;
+                options << " -D inType=" << dtype_traits<inType>::getName()
+                        << " -D outType=" << dtype_traits<outType>::getName();
+                if (std::is_same<inType, double>::value ||
+                    std::is_same<inType, cdouble>::value) {
                         options << " -D USE_DOUBLE";
-                    }
+                }
+                options << " -D USE_NATIVE_EXP=" << (int)use_native_exp;
 
-                    Program prog;
-                    buildProgram(prog, bilateral_cl, bilateral_cl_len, options.str());
-                    bilProgs[device] = new Program(prog);
+                Program prog;
+                buildProgram(prog, bilateral_cl, bilateral_cl_len, options.str());
+                bilProgs[device] = new Program(prog);
 
                     bilKernels[device] = new Kernel(*bilProgs[device], "bilateral");
-                });
+            });
 
         auto bilateralOp = KernelFunctor<Buffer, KParam,
                                        Buffer, KParam,

@@ -7,6 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if USE_NATIVE_EXP
+#define EXP native_exp
+#else
+#define EXP exp
+#endif
+
 int lIdx(int x, int y,
         int stride1, int stride0)
 {
@@ -60,7 +66,7 @@ void bilateral(__global outType *        d_dst,
     if (lx<window_size && ly<window_size) {
         int x = lx - radius;
         int y = ly - radius;
-        gauss2d[ly*window_size+lx] = native_exp(((x*x) + (y*y)) / variance_space_neg2);
+        gauss2d[ly*window_size+lx] = EXP(((x*x) + (y*y)) / variance_space_neg2);
     }
 
     int s0 = iInfo.strides[0];
@@ -93,7 +99,7 @@ void bilateral(__global outType *        d_dst,
             for(int wi=0; wi<window_size; ++wi) {
                 outType tmp_color   = localMem[joff+wi];
                 const outType c = center_color - tmp_color;
-                outType gauss_range = native_exp(c * c * inv_variance_range_neg2);
+                outType gauss_range = EXP(c * c * inv_variance_range_neg2);
                 outType weight      = gauss2d[goff+wi] * gauss_range;
                 norm += weight;
                 res  += tmp_color * weight;
