@@ -1056,36 +1056,6 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
         AF_THROW(af_unlock_array(get()));
     }
 
-    void eval(array &a, array &b)
-    {
-        af_array arrays[] = {a.get(), b.get()};
-        AF_THROW(af_eval_multiple(2, arrays));
-    }
-
-    void eval(array &a, array &b, array &c)
-    {
-        af_array arrays[] = {a.get(), b.get(), c.get()};
-        AF_THROW(af_eval_multiple(3, arrays));
-    }
-
-    void eval(array &a, array &b, array &c, array &d)
-    {
-        af_array arrays[] = {a.get(), b.get(), c.get(), d.get()};
-        AF_THROW(af_eval_multiple(4, arrays));
-    }
-
-    void eval(array &a, array &b, array &c, array &d, array &e)
-    {
-        af_array arrays[] = {a.get(), b.get(), c.get(), d.get(), e.get()};
-        AF_THROW(af_eval_multiple(5, arrays));
-    }
-
-    void eval(array &a, array &b, array &c, array &d, array &e, array &f)
-    {
-        af_array arrays[] = {a.get(), b.get(), c.get(), d.get(), e.get(), f.get()};
-        AF_THROW(af_eval_multiple(6, arrays));
-    }
-
     void eval(int num, array **arrays)
     {
         std::vector<af_array> outputs(num);
