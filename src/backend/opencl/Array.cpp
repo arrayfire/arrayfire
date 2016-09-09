@@ -152,6 +152,15 @@ namespace opencl
     }
 
     template<typename T>
+    cl::Buffer* Array<T>::device()
+    {
+        if (!isOwner() || getOffset() || data.use_count() > 1) {
+            *this = copyArray<T>(*this);
+        }
+        return this->get();
+    }
+
+    template<typename T>
     void evalMultiple(std::vector<Array<T>*> arrays)
     {
         std::vector<Param> outputs;
@@ -391,6 +400,7 @@ namespace opencl
     template       Node_ptr Array<T>::getNode() const;                  \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
+    template       cl::Buffer* Array<T>::device();                      \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
     template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \

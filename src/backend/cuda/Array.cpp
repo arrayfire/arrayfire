@@ -135,6 +135,15 @@ namespace cuda
     }
 
     template<typename T>
+    T* Array<T>::device()
+    {
+        if (!isOwner() || getOffset() || data.use_count() > 1) {
+            *this = copyArray<T>(*this);
+        }
+        return this->get();
+    }
+
+    template<typename T>
     void Array<T>::eval() const
     {
         if (isReady()) return;
@@ -370,9 +379,10 @@ namespace cuda
     template       Array<T>::Array(af::dim4 dims, const T * const in_data, \
                                    bool is_device, bool copy_device);   \
     template       Array<T>::~Array        ();                          \
-    template       Node_ptr Array<T>::getNode() const;             \
+    template       Node_ptr Array<T>::getNode() const;                  \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
+    template       T*   Array<T>::device();                             \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
     template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \

@@ -105,6 +105,15 @@ void Array<T>::eval() const
     const_cast<Array<T> *>(this)->eval();
 }
 
+template<typename T>
+T* Array<T>::device()
+{
+    getQueue().sync();
+    if (!isOwner() || getOffset() || data.use_count() > 1) {
+        *this = copyArray<T>(*this);
+    }
+    return this->get();
+}
 
 template<typename T>
 void evalMultiple(std::vector<Array<T>*> arrays)
@@ -285,6 +294,7 @@ writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     template       Array<T>  createNodeArray<T>       (const dim4 &size, TNJ::Node_ptr node); \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
+    template       T*   Array<T>::device();                             \
     template       Array<T>::Array(af::dim4 dims, const T * const in_data, \
                                    bool is_device, bool copy_device);   \
     template       Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset, \
