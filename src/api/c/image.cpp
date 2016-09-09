@@ -108,7 +108,7 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
 
         window->setColorMap((forge::ColorMap)props->cmap);
         if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, *image, props->title);
+            window->draw(props->row, props->col, *image, props->title);
         else
             window->draw(*image);
     }

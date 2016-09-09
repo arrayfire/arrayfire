@@ -134,7 +134,7 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
         }
 
         if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
     }

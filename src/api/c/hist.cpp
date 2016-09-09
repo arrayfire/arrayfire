@@ -85,7 +85,7 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
 
         // Window's draw function requires either image or chart
         if (props->col > -1 && props->row > -1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
     }

@@ -116,7 +116,7 @@ af_err plotWrapper(const af_window wind, const af_array in, const int order_dim,
 
         // Window's draw function requires either image or chart
         if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
     }
@@ -176,7 +176,7 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, con
 
         // Window's draw function requires either image or chart
         if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
 
@@ -230,7 +230,7 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y,
 
         // Window's draw function requires either image or chart
         if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
 
