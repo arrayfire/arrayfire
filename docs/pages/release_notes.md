@@ -2,28 +2,39 @@ Release Notes {#releasenotes}
 ==============
 v3.4.0
 ==============
-The source code with submodules can be downloaded directly from the following link:
-http://arrayfire.com/arrayfire_source/arrayfire-full-3.4.0.tar.bz2
 
 Features
 ----------
 * New [interpolation methods](https://github.com/arrayfire/arrayfire/issues/1562) for \ref af::resize(), \ref af::transform(), \ref af::approx1() and \ref af::approx2()
-* Support for complex mathematical functions
+* Support for [complex mathematical functions](\ref mathfunc_mat)
 * New Forge graphics [integration](https://github.com/arrayfire/arrayfire/pull/1555)!
     * Vector Field plotting functionality
     * API updates
+    * Removed GLEW and replaced with glbinding. (And links to both GLEW and glbinding)
+    * Multiple overlays on the same window are now possible.
+    * New API to set axes limits for graphs.
+        * Draw calls do not automatically compute the limits. This is now under user control.
+    * New API to set axes titles.
+    * New API for plot and scatter:
+        * \ref plot() and \ref scatter() now can handle 2D and 3D
+        * \ref af_draw_plot_nd
+        * \ref af_draw_plot_2d
+        * \ref af_draw_plot_3d
+        * \ref af_draw_scatter_nd
+        * \ref af_draw_scatter_2d
+        * \ref af_draw_scatter_3d
+
 * \ref af::medfilt1(): [Median filter for 1-d signals](https://github.com/arrayfire/arrayfire/pull/1479)
-* af::RandomEngine(): New [random number generators](https://github.com/arrayfire/arrayfire/issues/868)//TODO
+* af::RandomEngine(): New [random number generators](https://github.com/arrayfire/arrayfire/issues/868)
     * Philox
     * Threefry
     * Mersenne Twister
 * \ref af::sparse(): [Sparse matrix support for all backends](https://github.com/arrayfire/arrayfire/issues/821)
 * \ref af::scan(): New [generalized scan](https://github.com/arrayfire/arrayfire/issues/388) functions
-* \ref af::moments(): New [image moments](https://github.com/arrayfire/arrayfire/pull/1453) functions
+* \ref af::moments(): New [image moments](\ref moments_mat) functions
 
 Bug Fixes
 --------------
-
 * Fixes to edge-cases in [morphological operations.](https://github.com/arrayfire/arrayfire/issues/1564)
 * Makes JIT tree size [consistent between devices](https://github.com/arrayfire/arrayfire/issues/1457)
 * Delegate [higher-dimension convolutions](https://github.com/arrayfire/arrayfire/pull/1445) to correct dimension
@@ -35,11 +46,11 @@ Bug Fixes
 
 Improvements
 ------------
-* Cuda 8 and compute 6.x support, current installer still on 7.5
+* CUDA 8 and compute 6.x(Pascal) support, current installer still on 7.5
 * Improved [JIT](https://github.com/arrayfire/arrayfire/issues/1472) evaluation heuristics for CUDA and OpenCL
 * User controlled FFT plan caching
-* Cuda [speedups](https://github.com/arrayfire/arrayfire/pull/1411) for \ref wrap, \ref unwrap and \ref approx.
-* Fallback for Cuda-OpenGL [interop](https://github.com/arrayfire/arrayfire/pull/1415)
+* CUDA [speedups](https://github.com/arrayfire/arrayfire/pull/1411) for \ref wrap(), \ref unwrap() and [approx](\ref approx_mat).
+* Fallback for CUDA-OpenGL [interop](https://github.com/arrayfire/arrayfire/pull/1415)
 * Additional forms of batching with the \ref transform() function. [New behavior defined here.](https://github.com/arrayfire/arrayfire/pull/1412)
 * Update to [OpenCL2 headers](https://github.com/arrayfire/arrayfire/issues/1344) in backend
 * Support for interacting with [external OpenCL contexts](https://github.com/arrayfire/arrayfire/pull/1140)
