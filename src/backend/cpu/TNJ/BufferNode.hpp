@@ -50,6 +50,7 @@ namespace TNJ
                 m_strides[i] = strs[i];
                 m_dims[i] = dms[i];
             }
+            m_height = 0;
         }
 
         void *calc(int x, int y, int z, int w)

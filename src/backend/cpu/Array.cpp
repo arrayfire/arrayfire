@@ -177,28 +177,32 @@ createNodeArray(const dim4 &dims, Node_ptr node)
     Array<T> out =  Array<T>(dims, node);
 
     if (evalFlag()) {
-        size_t alloc_bytes, alloc_buffers;
-        size_t lock_bytes, lock_buffers;
+        if (node->getHeight() >= (int)getMaxJitSize()) {
+            out.eval();
+        } else {
+            size_t alloc_bytes, alloc_buffers;
+            size_t lock_bytes, lock_buffers;
 
-        deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
-                         &lock_bytes, &lock_buffers);
+            deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
+                             &lock_bytes, &lock_buffers);
 
-        // Check if approaching the memory limit
-        if (lock_bytes > getMaxBytes() ||
-            lock_buffers > getMaxBuffers()) {
+            // Check if approaching the memory limit
+            if (lock_bytes > getMaxBytes() ||
+                lock_buffers > getMaxBuffers()) {
 
-            // Calling sync to ensure the TNJ calls below
-            // don't overwrite the same nodes being evaluated
-            // FIXME: This should ideally be JIT specific mutex
-            getQueue().sync();
+                // Calling sync to ensure the TNJ calls below
+                // don't overwrite the same nodes being evaluated
+                // FIXME: This should ideally be JIT specific mutex
+                getQueue().sync();
 
-            unsigned length =0, buf_count = 0, bytes = 0;
-            Node *n = node.get();
-            n->getInfo(length, buf_count, bytes);
-            n->reset();
+                unsigned length =0, buf_count = 0, bytes = 0;
+                Node *n = node.get();
+                n->getInfo(length, buf_count, bytes);
+                n->reset();
 
-            if (2 * bytes > lock_bytes) {
-                out.eval();
+                if (2 * bytes > lock_bytes) {
+                    out.eval();
+                }
             }
         }
     }

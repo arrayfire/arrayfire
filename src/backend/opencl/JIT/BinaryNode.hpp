@@ -34,6 +34,7 @@ namespace JIT
               m_rhs(rhs),
               m_op(op)
         {
+            m_height = std::max(m_lhs->getHeight(), m_rhs->getHeight()) + 1;
         }
 
         bool isLinear(dim_t dims[4])

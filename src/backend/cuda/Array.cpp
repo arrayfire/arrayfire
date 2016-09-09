@@ -213,23 +213,28 @@ namespace cuda
         Array<T> out =  Array<T>(dims, node);
 
         if (evalFlag()) {
-            size_t alloc_bytes, alloc_buffers;
-            size_t lock_bytes, lock_buffers;
 
-            deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
-                             &lock_bytes, &lock_buffers);
+            if (node->getHeight() >= (int)getMaxJitSize()) {
+                out.eval();
+            } else {
+                size_t alloc_bytes, alloc_buffers;
+                size_t lock_bytes, lock_buffers;
 
-            // Check if approaching the memory limit
-            if (lock_bytes > getMaxBytes() ||
-                lock_buffers > getMaxBuffers()) {
+                deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
+                                 &lock_bytes, &lock_buffers);
 
-                unsigned length =0, buf_count = 0, bytes = 0;
-                Node *n = node.get();
-                n->getInfo(length, buf_count, bytes);
-                n->resetFlags();
+                // Check if approaching the memory limit
+                if (lock_bytes > getMaxBytes() ||
+                    lock_buffers > getMaxBuffers()) {
 
-                if (2 * bytes > lock_bytes) {
-                    out.eval();
+                    unsigned length =0, buf_count = 0, bytes = 0;
+                    Node *n = node.get();
+                    n->getInfo(length, buf_count, bytes);
+                    n->resetFlags();
+
+                    if (2 * bytes > lock_bytes) {
+                        out.eval();
+                    }
                 }
             }
         }

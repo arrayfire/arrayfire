@@ -31,6 +31,7 @@ namespace JIT
             : Node(dtype_traits<T>::getName(), shortname<T>(false)),
               m_val(val)
         {
+            m_height = 0;
         }
 
         bool isLinear(dim_t dims[4])

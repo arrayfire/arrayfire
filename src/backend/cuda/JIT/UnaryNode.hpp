@@ -35,7 +35,7 @@ namespace JIT
               m_op(op),
               m_is_check(is_check)
         {
-
+            m_height = m_child->getHeight() + 1;
         }
 
         bool isLinear(dim_t dims[4])

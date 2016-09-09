@@ -23,6 +23,7 @@ namespace TNJ
 
     protected:
 
+        int m_height;
         int x, y, z, w;
         bool m_is_eval;
         bool m_linear;
@@ -31,6 +32,7 @@ namespace TNJ
 
         void resetCommonFlags()
         {
+            m_height = 0;
             x = -1;
             y = -1;
             z = -1;
@@ -59,6 +61,7 @@ namespace TNJ
 
     public:
         Node() :
+            m_height(0),
             x(-1),
             y(-1),
             z(-1),
@@ -67,6 +70,8 @@ namespace TNJ
             m_linear(false),
             m_set_is_linear(false)
         {}
+
+        int getHeight() { return m_height; }
 
         virtual void *calc(int x, int y, int z, int w)
         {

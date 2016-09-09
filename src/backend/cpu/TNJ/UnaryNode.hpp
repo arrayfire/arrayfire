@@ -43,6 +43,7 @@ namespace TNJ
             m_child(in),
             m_val(0)
         {
+            m_height = m_child->getHeight() + 1;
         }
 
         void *calc(int x, int y, int z, int w)
