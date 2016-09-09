@@ -423,6 +423,18 @@ extern "C" {
     AFAPI af_err af_unlock_array(const af_array arr);
 #endif
 
+#if AF_API_VERSION >= 34
+    /**
+       Query if the array has been locked by the user.
+
+       An array can be locked by the user by calling `af_lock_array`
+       or `af_get_device_ptr` or `af_get_raw_ptr` function.
+
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_is_locked_array(bool *res, const af_array arr);
+#endif
+
     /**
        Get the device pointer and lock the buffer in memory manager.
 

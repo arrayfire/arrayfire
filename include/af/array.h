@@ -136,6 +136,10 @@ namespace af
             void lock() const;
 #endif
 
+#if AF_API_VERSION >= 34
+            bool isLocked() const;
+#endif
+
                   array::array_proxy row(int index);
             const array::array_proxy row(int index) const;
 
@@ -975,6 +979,17 @@ namespace af
         /// This method can be called to take control of the device pointer from the memory manager.
         /// While a buffer is locked, the memory manager doesn't free the memory until unlock() is invoked.
         void lock() const;
+
+
+#if AF_API_VERSION >= 34
+        ///
+        /// \brief Query if the array has been locked by the user.
+        ///
+        /// An array can be locked by the user by calling `arry.lock` or `arr.device`
+        /// or `getRawPtr` function.
+        bool isLocked() const;
+#endif
+
 
         ///
         /// \brief Unlocks the device buffer in the memory manager.

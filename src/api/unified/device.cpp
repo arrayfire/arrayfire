@@ -180,6 +180,12 @@ af_err af_unlock_array(const af_array arr)
     return CALL(arr);
 }
 
+af_err af_is_locked_array(bool *res, const af_array arr)
+{
+    CHECK_ARRAYS(arr);
+    return CALL(res, arr);
+}
+
 af_err af_get_device_ptr(void **ptr, const af_array arr)
 {
     CHECK_ARRAYS(arr);

@@ -240,6 +240,11 @@ void memUnlock(const void *ptr)
     getMemoryManager().userUnlock((void *)ptr);
 }
 
+bool isLocked(const void *ptr)
+{
+    return getMemoryManager().isUserLocked((void *)ptr);
+}
+
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                       size_t *lock_bytes,  size_t *lock_buffers)
 {

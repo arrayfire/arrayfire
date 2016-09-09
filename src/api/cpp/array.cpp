@@ -1041,14 +1041,23 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
 #undef INSTANTIATE
 #undef TEMPLATE_MEM_FUNC
 
-    //FIXME: This needs to be implemented at a later point
+    //FIXME: These functions need to be implemented properly at a later point
     void array::array_proxy::unlock() const {}
+    void array::array_proxy::lock() const {}
+    bool array::array_proxy::isLocked() const { return false; }
 
     int array::nonzeros() const { return count<int>(*this); }
 
     void array::lock() const
     {
         AF_THROW(af_lock_array(get()));
+    }
+
+    bool array::isLocked() const
+    {
+        bool res;
+        AF_THROW(af_is_locked_array(&res, get()));
+        return res;
     }
 
     void array::unlock() const
