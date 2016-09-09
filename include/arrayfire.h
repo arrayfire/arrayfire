@@ -169,6 +169,9 @@
      @defgroup hist_mat Histograms
      Image and data histograms
 
+     @defgroup moments_mat Image moments
+     Centroids, areas, etc.
+
      @defgroup transform_mat Image transformations
      rotate, skew, etc.
 
