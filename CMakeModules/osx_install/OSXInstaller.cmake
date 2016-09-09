@@ -53,7 +53,9 @@ OSX_INSTALL_SETUP(Unified af)
 # Headers
 ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_INCLUDE
                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                  ${CMAKE_INSTALL_PREFIX}/include "${OSX_TEMP}/include"
+                  ${CMAKE_INSTALL_PREFIX}/include/af "${OSX_TEMP}/include/af"
+                  COMMAND ${CMAKE_COMMAND} -E copy
+                  ${CMAKE_INSTALL_PREFIX}/include/arrayfire.h "${OSX_TEMP}/include/arrayfire.h"
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                   COMMENT "Copying header files to temporary OSX Install Dir"
                   )
@@ -70,6 +72,41 @@ ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_EXAMPLES
 ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_DOC
                   COMMAND ${CMAKE_COMMAND} -E copy_directory
                   "${CMAKE_INSTALL_PREFIX}/share/ArrayFire/doc" "${OSX_TEMP}/doc"
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                  COMMENT "Copying documentation files to temporary OSX Install Dir"
+                  )
+
+# Forge Headers
+ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_FORGE_INC
+                  COMMAND ${CMAKE_COMMAND} -E copy_directory
+                  "${CMAKE_INSTALL_PREFIX}/include/fg" "${OSX_TEMP}/Forge/include/fg"
+                  COMMAND ${CMAKE_COMMAND} -E copy
+                  "${CMAKE_INSTALL_PREFIX}/include/forge.h" "${OSX_TEMP}/Forge/include/forge.h"
+                  COMMAND ${CMAKE_COMMAND} -E copy
+                  "${CMAKE_INSTALL_PREFIX}/include/ComputeCopy.h" "${OSX_TEMP}/Forge/include/ComputeCopy.h"
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                  COMMENT "Copying examples files to temporary OSX Install Dir"
+                  )
+# Forge Examples
+ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_FORGE_EXAMPLES
+                  COMMAND ${CMAKE_COMMAND} -E copy_directory
+                  "${CMAKE_INSTALL_PREFIX}/share/Forge/examples" "${OSX_TEMP}/Forge/examples"
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                  COMMENT "Copying examples files to temporary OSX Install Dir"
+                  )
+
+# Documentation
+ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_FORGE_DOC
+                  COMMAND ${CMAKE_COMMAND} -E copy_directory
+                  "${CMAKE_INSTALL_PREFIX}/share/Forge/doc" "${OSX_TEMP}/Forge/doc"
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                  COMMENT "Copying documentation files to temporary OSX Install Dir"
+                  )
+
+# Forge CMake
+ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_FORGE_CMAKE
+                  COMMAND ${CMAKE_COMMAND} -E copy_directory
+                  "${CMAKE_INSTALL_PREFIX}/share/Forge/cmake" "${OSX_TEMP}/Forge/cmake"
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                   COMMENT "Copying documentation files to temporary OSX Install Dir"
                   )
@@ -202,5 +239,39 @@ PKG_BUILD(  PKG_NAME        ArrayFireDoc
             PATH_TO_FILES   ${OSX_TEMP}/doc
             FILTERS         cmake)
 
-PRODUCT_BUILD(DEPENDS ${cpu_package} ${cuda_package} ${opencl_package} ${unified_package} ${common_package} ${header_package} ${examples_package} ${doc_package})
+PKG_BUILD(  PKG_NAME        ForgeHeaders
+            DEPENDS         OSX_INSTALL_SETUP_FORGE_INCLUDE
+            TARGETS         forge_header_package
+            INSTALL_LOCATION /usr/local/include
+            IDENTIFIER      com.arrayfire.pkg.forge.inc
+            PATH_TO_FILES   ${OSX_TEMP}/Forge/include)
+
+PKG_BUILD(  PKG_NAME        ForgeExamples
+            DEPENDS         OSX_INSTALL_SETUP_FORGE_EXAMPLES
+            TARGETS         forge_examples_package
+            INSTALL_LOCATION /usr/local/share/Forge/examples
+            IDENTIFIER      com.arrayfire.pkg.forge.examples
+            PATH_TO_FILES   ${OSX_TEMP}/Forge/examples
+            FILTERS         cmake)
+
+PKG_BUILD(  PKG_NAME        ForgeDoc
+            DEPENDS         OSX_INSTALL_SETUP_FORGE_DOC
+            TARGETS         forge_doc_package
+            INSTALL_LOCATION /usr/local/share/Forge/doc
+            IDENTIFIER      com.arrayfire.pkg.forge.doc
+            PATH_TO_FILES   ${OSX_TEMP}/share/Forge/doc
+            FILTERS         cmake)
+
+PKG_BUILD(  PKG_NAME        ForgeCMake
+            DEPENDS         OSX_INSTALL_SETUP_FORGE_CMAKE
+            TARGETS         forge_cmake_package
+            INSTALL_LOCATION /usr/local/share/Forge/cmake
+            IDENTIFIER      com.arrayfire.pkg.forge.cmake
+            PATH_TO_FILES   ${OSX_TEMP}/share/Forge/cmake
+            FILTERS         cmake)
+
+PRODUCT_BUILD(DEPENDS ${cpu_package} ${cuda_package} ${opencl_package} ${unified_package}
+                      ${common_package} ${header_package} ${examples_package} ${doc_package}
+                      ${forge_header_package} ${forge_examples_package} ${forge_doc_package} ${forge_cmake_package}
+                      )
 

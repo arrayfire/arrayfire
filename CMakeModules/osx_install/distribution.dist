@@ -10,6 +10,9 @@
             choices.cuda_lib.selected ||
             choices.cpu_lib.selected;
       }
+      function CheckForgeSelected() {
+      return choices.forge_headers.selected;
+      }
     </script>
 
     <pkg-ref id="com.arrayfire.arrayfire.cpu.lib"       version="${AF_VERSION}" onConclusion="none">ArrayFireCPU.pkg</pkg-ref>
@@ -20,6 +23,10 @@
     <pkg-ref id="com.arrayfire.arrayfire.examples"      version="${AF_VERSION}" onConclusion="none">ArrayFireExamples.pkg</pkg-ref>
     <pkg-ref id="com.arrayfire.arrayfire.doc"           version="${AF_VERSION}" onConclusion="none">ArrayFireDoc.pkg</pkg-ref>
     <pkg-ref id="com.arrayfire.arrayfire.libcommon"     version="${AF_VERSION}" onConclusion="none">ArrayFireCommon.pkg</pkg-ref>
+    <pkg-ref id="com.arrayfire.forge.inc"               version="${AF_VERSION}" onConclusion="none">ForgeHeaders.pkg</pkg-ref>
+    <pkg-ref id="com.arrayfire.forge.examples"          version="${AF_VERSION}" onConclusion="none">ForgeExamples.pkg</pkg-ref>
+    <pkg-ref id="com.arrayfire.forge.doc"               version="${AF_VERSION}" onConclusion="none">ForgeDoc.pkg</pkg-ref>
+    <pkg-ref id="com.arrayfire.forge.cmake"             version="${AF_VERSION}" onConclusion="none">ForgeCMake.pkg</pkg-ref>
     <options customize="always" require-scripts="false"/>
     <choices-outline>
         <line choice="libs">
@@ -32,6 +39,11 @@
         <line choice="com.arrayfire.arrayfire.inc"/>
         <line choice="com.arrayfire.arrayfire.examples"/>
         <line choice="com.arrayfire.arrayfire.doc"/>
+        <line choice="forge">
+            <line choice="forge_include"/>
+            <line choice="forge_doc"/>
+            <line choice="com.arrayfire.forge.cmake"/>
+        </line>
     </choices-outline>
     <choice id="libs" title="ArrayFire Libraries" visible="true" />
     <choice title="CPU Libraries"
@@ -73,5 +85,24 @@
     </choice>
     <choice title="Documentation" description="ArrayFire Documentation" id="com.arrayfire.arrayfire.doc" visible="true" enabled="true">
         <pkg-ref id="com.arrayfire.arrayfire.doc"/>
+    </choice>
+
+    <choice id="forge" title="Forge Development Files" visible="true" />
+    <choice title="Forge Headers" description="Forge Headers" id="com.arrayfire.forge.inc" visible="true" enabled="true">
+        <pkg-ref id="com.arrayfire.forge.inc"/>
+    </choice>
+    <choice title="Forge Examples" description="Forge ArrayFire Examples" id="com.arrayfire.forge.examples" visible="true" enabled="true">
+        <pkg-ref id="com.arrayfire.forge.examples"/>
+    </choice>
+    <choice title="Forge Documentation" description="Forge Documentation" id="com.arrayfire.forge.doc" visible="true" enabled="true">
+        <pkg-ref id="com.arrayfire.forge.doc"/>
+    </choice>
+    <choice title="Forge CMake"
+            description="Installs ForgeConfig.cmake files"
+            id="com.arrayfire.forge.cmake"
+            selected="CheckForgeSelected()"
+            visible="false"
+            enabled="CheckForgeSelected()">
+        <pkg-ref id="com.arrayfire.forge.cmake"/>
     </choice>
 </installer-gui-script>
