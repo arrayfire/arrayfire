@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/random_engine.h>
+#include <af/random.h>
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <af/data.h>
