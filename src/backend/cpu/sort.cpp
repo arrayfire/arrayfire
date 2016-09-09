@@ -17,7 +17,6 @@
 #include <queue.hpp>
 #include <range.hpp>
 #include <iota.hpp>
-#include <handle.hpp>
 #include <sort_by_key.hpp>
 #include <reorder.hpp>
 #include <kernel/sort.hpp>

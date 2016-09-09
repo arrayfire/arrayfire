@@ -11,12 +11,9 @@
 
 #include <interopManager.hpp>
 #include <Array.hpp>
-#include <surface.hpp>
+#include <vector_field.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
-#include <join.hpp>
-#include <reduce.hpp>
-#include <reorder.hpp>
 
 using af::dim4;
 
@@ -25,19 +22,23 @@ namespace opencl
 using namespace gl;
 
 template<typename T>
-void copy_surface(const Array<T> &P, forge::Surface* surface)
+void copy_vector_field(const Array<T> &points, const Array<T> &directions,
+                       forge::VectorField* vector_field)
 {
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
-        const cl::Buffer *d_P = P.get();
-        size_t bytes = surface->verticesSize();
+        const cl::Buffer *d_points      = points.get();
+        const cl::Buffer *d_directions  = directions.get();
+        size_t pBytes = vector_field->verticesSize();
+        size_t dBytes = vector_field->directionsSize();
 
         InteropManager& intrpMngr = InteropManager::getInstance();
 
-        cl::Buffer **resources = intrpMngr.getBufferResource(surface);
+        cl::Buffer **resources = intrpMngr.getBufferResource(vector_field);
 
         std::vector<cl::Memory> shared_objects;
         shared_objects.push_back(*resources[0]);
+        shared_objects.push_back(*resources[1]);
 
         glFinish();
 
@@ -47,7 +48,8 @@ void copy_surface(const Array<T> &P, forge::Surface* surface)
 
         getQueue().enqueueAcquireGLObjects(&shared_objects, NULL, &event);
         event.wait();
-        getQueue().enqueueCopyBuffer(*d_P, *resources[0], 0, 0, bytes, NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_points    , *resources[0], 0, 0, pBytes, NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_directions, *resources[1], 0, 0, dBytes, NULL, &event);
         getQueue().enqueueReleaseGLObjects(&shared_objects, NULL, &event);
         event.wait();
 
@@ -55,10 +57,18 @@ void copy_surface(const Array<T> &P, forge::Surface* surface)
         CheckGL("End OpenCL resource copy");
     } else {
         CheckGL("Begin OpenCL fallback-resource copy");
-        glBindBuffer(GL_ARRAY_BUFFER, surface->vertices());
-        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        if (ptr) {
-            getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, surface->verticesSize(), ptr);
+        glBindBuffer(GL_ARRAY_BUFFER, vector_field->vertices());
+        GLubyte* pPtr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        if (pPtr) {
+            getQueue().enqueueReadBuffer(*points.get(), CL_TRUE, 0, vector_field->verticesSize(), pPtr);
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vector_field->directions());
+        GLubyte* dPtr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        if (dPtr) {
+            getQueue().enqueueReadBuffer(*directions.get(), CL_TRUE, 0, vector_field->directionsSize(), dPtr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -66,8 +76,9 @@ void copy_surface(const Array<T> &P, forge::Surface* surface)
     }
 }
 
-#define INSTANTIATE(T)  \
-    template void copy_surface<T>(const Array<T> &P, forge::Surface* surface);
+#define INSTANTIATE(T)                                                                      \
+    template void copy_vector_field<T>(const Array<T> &points, const Array<T> &directions,  \
+                                       forge::VectorField* vector_field);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

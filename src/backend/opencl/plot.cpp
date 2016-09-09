@@ -34,10 +34,10 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
 
         InteropManager& intrpMngr = InteropManager::getInstance();
 
-        cl::Buffer *clPBOResource = intrpMngr.getBufferResource(plot);
+        cl::Buffer **resources = intrpMngr.getBufferResource(plot);
 
         std::vector<cl::Memory> shared_objects;
-        shared_objects.push_back(*clPBOResource);
+        shared_objects.push_back(*resources[0]);
 
         glFinish();
 
@@ -47,7 +47,7 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
 
         getQueue().enqueueAcquireGLObjects(&shared_objects, NULL, &event);
         event.wait();
-        getQueue().enqueueCopyBuffer(*d_P, *clPBOResource, 0, 0, bytes, NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_P, *resources[0], 0, 0, bytes, NULL, &event);
         getQueue().enqueueReleaseGLObjects(&shared_objects, NULL, &event);
         event.wait();
 

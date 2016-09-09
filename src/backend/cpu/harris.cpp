@@ -9,7 +9,6 @@
 
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <handle.hpp>
 #include <harris.hpp>
 #include <convolve.hpp>
 #include <gradient.hpp>
@@ -17,6 +16,7 @@
 #include <cstring>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <math.hpp>
 #include <kernel/harris.hpp>
 
 using af::dim4;

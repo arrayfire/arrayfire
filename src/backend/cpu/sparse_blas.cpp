@@ -15,7 +15,6 @@
 
 #include <af/dim4.hpp>
 #include <complex.hpp>
-#include <handle.hpp>
 #include <err_common.hpp>
 #include <math.hpp>
 #include <platform.hpp>

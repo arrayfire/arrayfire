@@ -31,8 +31,6 @@ forge::Chart* setup_histogram(const forge::Window* const window,
     Array<T> histogramInput = getArray<T>(in);
     dim_t nBins = histogramInput.elements();
 
-    T freqMax = detail::reduce_all<af_max_t, T, T>(histogramInput);
-
     // Retrieve Forge Histogram with nBins and array type
     ForgeManager& fgMngr = ForgeManager::getInstance();
 
@@ -48,11 +46,6 @@ forge::Chart* setup_histogram(const forge::Window* const window,
 
     // Set histogram bar colors to orange
     hist->setColor(0.929f, 0.486f, 0.2745f, 1.0f);
-
-    // set x axis limits to maximum and minimum values of data
-    // and y axis limits to range [0, nBins]
-    chart->setAxesLimits(minval, maxval, 0.0f, double(freqMax));
-    chart->setAxesTitles("Bins", "Frequency");
 
     copy_histogram<T>(histogramInput, hist);
 
@@ -92,7 +85,7 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
 
         // Window's draw function requires either image or chart
         if (props->col > -1 && props->row > -1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
     }

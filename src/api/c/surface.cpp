@@ -36,13 +36,6 @@ forge::Chart* setup_surface(const forge::Window* const window,
     Array<T> yIn = getArray<T>(yVals);
     Array<T> zIn = getArray<T>(zVals);
 
-    T xmax = reduce_all<af_max_t, T, T>(xIn);
-    T xmin = reduce_all<af_min_t, T, T>(xIn);
-    T ymax = reduce_all<af_max_t, T, T>(yIn);
-    T ymin = reduce_all<af_min_t, T, T>(yIn);
-    T zmax = reduce_all<af_max_t, T, T>(zIn);
-    T zmin = reduce_all<af_min_t, T, T>(zIn);
-
     ArrayInfo Xinfo = getInfo(xVals);
     ArrayInfo Yinfo = getInfo(yVals);
     ArrayInfo Zinfo = getInfo(zVals);
@@ -67,9 +60,9 @@ forge::Chart* setup_surface(const forge::Window* const window,
 
     // Flatten xIn, yIn and zIn into row vectors
     dim4 rowDims = dim4(1, zIn.elements());
-    xIn.modDims(rowDims);
-    yIn.modDims(rowDims);
-    zIn.modDims(rowDims);
+    xIn = modDims(xIn, rowDims);
+    yIn = modDims(yIn, rowDims);
+    zIn = modDims(zIn, rowDims);
 
     // Now join along first dimension, skip reorder
     std::vector<Array<T> > inputs{xIn, yIn, zIn};
@@ -86,13 +79,7 @@ forge::Chart* setup_surface(const forge::Window* const window,
 
     forge::Surface* surface = fgMngr.getSurface(chart, Z_dims[0], Z_dims[1], getGLType<T>());
 
-    surface->setColor(1.0, 0.0, 0.0, 1.0);
-
-    chart->setAxesLimits(xmin, xmax,
-                         ymin, ymax,
-                         zmin, zmax);
-
-    chart->setAxesTitles("X Axis", "Y Axis", "Z Axis");
+    surface->setColor(0.0, 1.0, 0.0, 1.0);
 
     copy_surface<T>(Z, surface);
 
@@ -147,7 +134,7 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
         }
 
         if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
     }

@@ -9,7 +9,6 @@
 
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <handle.hpp>
 #include <resize.hpp>
 #include <fast.hpp>
 #include <sort_index.hpp>

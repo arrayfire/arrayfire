@@ -14,7 +14,6 @@
 
 #include <solve.hpp>
 #include <identity.hpp>
-#include <handle.hpp>
 
 namespace cuda
 {

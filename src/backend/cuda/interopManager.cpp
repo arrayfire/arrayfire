@@ -22,9 +22,14 @@ namespace cuda
 
 void InteropManager::destroyResources()
 {
+    typedef std::vector<CGR_t>::iterator CGRIter_t;
+
     int n = getActiveDeviceId();
     for(iter_t iter = interop_maps[n].begin(); iter != interop_maps[n].end(); iter++) {
-        CUDA_CHECK(cudaGraphicsUnregisterResource(iter->second));
+        for(CGRIter_t ct = (iter->second).begin(); ct != (iter->second).end(); ct++) {
+            CUDA_CHECK(cudaGraphicsUnregisterResource(*ct));
+        }
+        (iter->second).clear();
     }
 }
 
@@ -51,70 +56,120 @@ InteropManager& InteropManager::getInstance()
     return my_instance;
 }
 
-cudaGraphicsResource* InteropManager::getBufferResource(const forge::Image* key)
+interop_t& InteropManager::getDeviceMap(int device)
 {
-    int device = getActiveDeviceId();
-    void* key_value = (void*)key;
-
-    if(interop_maps[device].find(key_value) == interop_maps[device].end()) {
-        cudaGraphicsResource *cudaPBOResource;
-        // Register PBO with CUDA
-        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaPBOResource, key->pbo(), cudaGraphicsMapFlagsWriteDiscard));
-        interop_maps[device][key_value] = cudaPBOResource;
-    }
-
-    return interop_maps[device][key_value];
+    return (device == -1) ? interop_maps[getActiveDeviceId()] : interop_maps[device];
 }
 
-cudaGraphicsResource* InteropManager::getBufferResource(const forge::Plot* key)
+CGR_t* InteropManager::getBufferResource(const forge::Image* key)
 {
-    int device = getActiveDeviceId();
     void* key_value = (void*)key;
+    interop_t& i_map = getDeviceMap();
 
-    iter_t iter = interop_maps[device].find(key_value);
-
-    if(iter == interop_maps[device].end()) {
-        cudaGraphicsResource *cudaVBOResource;
-        // Register VBO with CUDA
-        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vertices(), cudaGraphicsMapFlagsWriteDiscard));
-        interop_maps[device][key_value] = cudaVBOResource;
+    if(i_map.find(key_value) == i_map.end()) {
+        CGR_t pixelsResource;
+        // Register pixels with CUDA
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&pixelsResource, key->pixels(), cudaGraphicsMapFlagsWriteDiscard));
+        // TODO:
+        // A way to store multiple buffers and take PBO/CBO etc as
+        // argument and return the appropriate buffer
+        std::vector<CGR_t> vec(1);
+        vec[0] = pixelsResource;
+        i_map[key_value] = vec;
     }
 
-    return interop_maps[device][key_value];
+    return &i_map[key_value].front();
 }
 
-cudaGraphicsResource* InteropManager::getBufferResource(const forge::Histogram* key)
+CGR_t* InteropManager::getBufferResource(const forge::Plot* key)
 {
-    int device = getActiveDeviceId();
     void* key_value = (void*)key;
+    interop_t& i_map = getDeviceMap();
 
-    iter_t iter = interop_maps[device].find(key_value);
+    iter_t iter = i_map.find(key_value);
 
-    if(iter == interop_maps[device].end()) {
-        cudaGraphicsResource *cudaVBOResource;
+    if(iter == i_map.end()) {
+        CGR_t vboResource;
         // Register VBO with CUDA
-        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vertices(), cudaGraphicsMapFlagsWriteDiscard));
-        interop_maps[device][key_value] = cudaVBOResource;
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&vboResource, key->vertices(), cudaGraphicsMapFlagsWriteDiscard));
+        // TODO:
+        // A way to store multiple buffers and take PBO/CBO etc as
+        // argument and return the appropriate buffer
+        std::vector<CGR_t> vec(1);
+        vec[0] = vboResource;
+        i_map[key_value] = vec;
     }
 
-    return interop_maps[device][key_value];
+    return &i_map[key_value].front();
 }
 
-cudaGraphicsResource* InteropManager::getBufferResource(const forge::Surface* key)
+CGR_t* InteropManager::getBufferResource(const forge::Histogram* key)
 {
-    int device = getActiveDeviceId();
     void* key_value = (void*)key;
+    interop_t& i_map = getDeviceMap();
 
-    iter_t iter = interop_maps[device].find(key_value);
+    iter_t iter = i_map.find(key_value);
 
-    if(iter == interop_maps[device].end()) {
-        cudaGraphicsResource *cudaVBOResource;
+    if(iter == i_map.end()) {
+        CGR_t vboResource;
         // Register VBO with CUDA
-        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vertices(), cudaGraphicsMapFlagsWriteDiscard));
-        interop_maps[device][key_value] = cudaVBOResource;
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&vboResource, key->vertices(), cudaGraphicsMapFlagsWriteDiscard));
+        // TODO:
+        // A way to store multiple buffers and take PBO/CBO etc as
+        // argument and return the appropriate buffer
+        std::vector<CGR_t> vec(1);
+        vec[0] = vboResource;
+        i_map[key_value] = vec;
     }
 
-    return interop_maps[device][key_value];
+    return &i_map[key_value].front();
+}
+
+CGR_t* InteropManager::getBufferResource(const forge::Surface* key)
+{
+    void* key_value = (void*)key;
+    interop_t& i_map = getDeviceMap();
+
+    iter_t iter = i_map.find(key_value);
+
+    if(iter == i_map.end()) {
+        CGR_t  vboResource;
+        // Register VBO with CUDA
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&vboResource, key->vertices(), cudaGraphicsMapFlagsWriteDiscard));
+        // TODO:
+        // A way to store multiple buffers and take PBO/CBO etc as
+        // argument and return the appropriate buffer
+        std::vector<CGR_t> vec(1);
+        vec[0] = vboResource;
+        i_map[key_value] = vec;
+    }
+
+    return &i_map[key_value].front();
+}
+
+CGR_t* InteropManager::getBufferResource(const forge::VectorField* key)
+{
+    void* key_value = (void*)key;
+    interop_t& i_map = getDeviceMap();
+
+    iter_t iter = i_map.find(key_value);
+
+    if(iter == i_map.end()) {
+        CGR_t   pResource;
+        CGR_t   dResource;
+        // Register VBO with CUDA
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&pResource, key->vertices(), cudaGraphicsMapFlagsWriteDiscard));
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&dResource, key->directions(), cudaGraphicsMapFlagsWriteDiscard));
+        // TODO:
+        // A way to store multiple buffers and take PBO/CBO etc as
+        // argument and return the appropriate buffer
+        std::vector<CGR_t> vec(2);
+        vec[0] = pResource;
+        vec[1] = dResource;
+        i_map[key_value] = vec;
+    }
+
+    return &i_map[key_value].front();
 }
 
 bool InteropManager::checkGraphicsInteropCapability()

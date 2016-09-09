@@ -10,7 +10,7 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <err_opencl.hpp>
-#include <handle.hpp>
+#include <math.hpp>
 #include <kernel/nearest_neighbour.hpp>
 #include <kernel/transpose.hpp>
 

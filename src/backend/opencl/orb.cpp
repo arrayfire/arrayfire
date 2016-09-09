@@ -11,7 +11,7 @@
 #include <af/features.h>
 #include <Array.hpp>
 #include <err_opencl.hpp>
-#include <handle.hpp>
+#include <math.hpp>
 #include <kernel/orb.hpp>
 
 using af::dim4;

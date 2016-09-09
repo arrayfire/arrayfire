@@ -19,6 +19,10 @@
 
 const ArrayInfo& getInfo(const af_array arr, bool device_check = true, bool sparse_check = true);
 
+// Implemented in src/api/c/moddims.cpp
+template<typename T>
+detail::Array<T> modDims(const detail::Array<T>& in, const af::dim4 &newDims);
+
 template<typename T>
 static const detail::Array<T> &
 getArray(const af_array &arr)

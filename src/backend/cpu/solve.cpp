@@ -16,6 +16,7 @@
 #include <cassert>
 #include <err_cpu.hpp>
 #include <lapack_helper.hpp>
+#include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 
