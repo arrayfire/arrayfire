@@ -47,6 +47,15 @@ namespace af
                 @}
             */
 
+            /**
+               Creates a copy of the random engine object
+               \param in The input random engine object
+            */
+            randomEngine(af_random_engine engine);
+            /**
+               @}
+            */
+
             ~randomEngine();
 
             /**
@@ -275,7 +284,16 @@ namespace af
 
         \ingroup random_func_set_type
     */
-    AFAPI void setDefaultRandomEngine(randomEngineType rtype);
+    AFAPI void setDefaultRandomEngineType(randomEngineType rtype);
+#endif
+
+#if AF_API_VERSION >= 34
+    /**
+        \param[in] rtype The type of the random number generator
+
+        \ingroup random_func_set_type
+    */
+    AFAPI randomEngine getDefaultRandomEngine(void);
 #endif
 
     /**
@@ -409,7 +427,7 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the execution completes properly
     */
-    AFAPI af_err af_set_default_random_engine(const af_random_engine_type rtype);
+    AFAPI af_err af_set_default_random_engine_type(const af_random_engine_type rtype);
 #endif
 
 #if AF_API_VERSION >= 34

@@ -15,16 +15,20 @@
 
 namespace af
 {
-    randomEngine::randomEngine(randomEngineType type, uintl seed)
+    randomEngine::randomEngine(randomEngineType type, uintl seed) : engine(0)
     {
         AF_THROW(af_create_random_engine(&engine, type, seed));
     }
 
-    randomEngine::randomEngine(const randomEngine& other)
+    randomEngine::randomEngine(const randomEngine& other) : engine(0)
     {
         if (this != &other) {
             AF_THROW(af_retain_random_engine(&engine, other.get()));
         }
+    }
+
+    randomEngine::randomEngine(af_random_engine handle) : engine(handle)
+    {
     }
 
     randomEngine::~randomEngine()
@@ -148,9 +152,17 @@ namespace af
         return randn(dim4(d0, d1, d2, d3), ty);
     }
 
-    void setDefaultRandomEngine(randomEngineType rtype)
+    void setDefaultRandomEngineType(randomEngineType rtype)
     {
-        AF_THROW(af_set_default_random_engine(rtype));
+        AF_THROW(af_set_default_random_engine_type(rtype));
+    }
+
+    randomEngine getDefaultRandomEngine(void)
+    {
+        af_random_engine internal_handle, handle;
+        AF_THROW(af_get_default_random_engine(&internal_handle));
+        AF_THROW(af_retain_random_engine(&handle, internal_handle));
+        return randomEngine(handle);
     }
 
     void setSeed(const uintl seed)
