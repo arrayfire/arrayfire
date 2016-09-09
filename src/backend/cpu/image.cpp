@@ -31,15 +31,15 @@ void copy_image(const Array<T> &in, const forge::Image* image)
     in.eval();
     getQueue().sync();
 
-    CheckGL("Before CopyArrayToPBO");
+    CheckGL("Before CopyArrayToImage");
     const T *d_X = in.get();
     size_t data_size = image->size();
 
-    glBindBuffer(gl::GL_PIXEL_UNPACK_BUFFER, image->pbo());
+    glBindBuffer(gl::GL_PIXEL_UNPACK_BUFFER, image->pixels());
     glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, data_size, d_X);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-    CheckGL("In CopyArrayToPBO");
+    CheckGL("In CopyArrayToImage");
 }
 
 #define INSTANTIATE(T)  \

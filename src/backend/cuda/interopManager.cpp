@@ -67,14 +67,14 @@ CGR_t* InteropManager::getBufferResource(const forge::Image* key)
     interop_t& i_map = getDeviceMap();
 
     if(i_map.find(key_value) == i_map.end()) {
-        CGR_t pboResource;
-        // Register PBO with CUDA
-        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&pboResource, key->pbo(), cudaGraphicsMapFlagsWriteDiscard));
+        CGR_t pixelsResource;
+        // Register pixels with CUDA
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&pixelsResource, key->pixels(), cudaGraphicsMapFlagsWriteDiscard));
         // TODO:
         // A way to store multiple buffers and take PBO/CBO etc as
         // argument and return the appropriate buffer
         std::vector<CGR_t> vec(1);
-        vec[0] = pboResource;
+        vec[0] = pixelsResource;
         i_map[key_value] = vec;
     }
 

@@ -53,7 +53,7 @@ cl::Buffer** InteropManager::getBufferResource(const forge::Image* image)
 
     if (iter == i_map.end()) {
         std::vector<cl::Buffer *> vec(1);
-        vec[0] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, image->pbo(), NULL);
+        vec[0] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, image->pixels(), NULL);
         i_map[key] = vec;
     }
 

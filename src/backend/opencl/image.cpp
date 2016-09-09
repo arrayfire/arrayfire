@@ -51,7 +51,7 @@ void copy_image(const Array<T> &in, const forge::Image* image)
         CheckGL("End opencl resource copy");
     } else {
         CheckGL("Begin OpenCL fallback-resource copy");
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, image->pbo());
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, image->pixels());
         glBufferData(GL_PIXEL_UNPACK_BUFFER, image->size(), 0, GL_STREAM_DRAW);
         GLubyte* ptr = (GLubyte*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
         if (ptr) {

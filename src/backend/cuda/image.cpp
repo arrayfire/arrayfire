@@ -33,12 +33,12 @@ void copy_image(const Array<T> &in, const forge::Image* image)
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(image);
 
         const T *d_X = in.get();
-        // Map resource. Copy data to PBO. Unmap resource.
+        // Map resource. Copy data to pixels. Unmap resource.
         size_t num_bytes;
-        T* d_pbo = NULL;
+        T* d_pixels = NULL;
         cudaGraphicsMapResources(1, resources, cuda::getStream(cuda::getActiveDeviceId()));
-        cudaGraphicsResourceGetMappedPointer((void **)&d_pbo, &num_bytes, resources[0]);
-        cudaMemcpyAsync(d_pbo, d_X, num_bytes, cudaMemcpyDeviceToDevice,
+        cudaGraphicsResourceGetMappedPointer((void **)&d_pixels, &num_bytes, resources[0]);
+        cudaMemcpyAsync(d_pixels, d_X, num_bytes, cudaMemcpyDeviceToDevice,
                         cuda::getStream(cuda::getActiveDeviceId()));
         cudaGraphicsUnmapResources(1, resources, cuda::getStream(cuda::getActiveDeviceId()));
 
@@ -46,7 +46,7 @@ void copy_image(const Array<T> &in, const forge::Image* image)
         CheckGL("After cuda resource copy");
     } else {
         CheckGL("Begin CUDA fallback-resource copy");
-        glBindBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, image->pbo());
+        glBindBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, image->pixels());
         glBufferData((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, image->size(), 0, (gl::GLenum)GL_STREAM_DRAW);
         gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
         if (ptr) {
