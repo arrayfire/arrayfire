@@ -226,9 +226,21 @@ INSTALL(FILES
 )
 
 IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
-    INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/third_party/forge/lib/" DESTINATION "${AF_INSTALL_LIB_DIR}"
-        COMPONENT libraries
+    OPTION(INSTALL_FORGE_DEV "Install Forge Header and Share Files with ArrayFire" OFF)
+    INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/third_party/forge/lib/"
+            DESTINATION "${AF_INSTALL_LIB_DIR}"
+            COMPONENT libraries
     )
+    IF(${INSTALL_FORGE_DEV})
+        INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/third_party/forge/include/"
+                DESTINATION "${AF_INSTALL_INC_DIR}"
+                COMPONENT headers
+        )
+        INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/third_party/forge/share/Forge/"
+                DESTINATION "${AF_INSTALL_DATA_DIR}/../Forge"
+                COMPONENT share
+        )
+    ENDIF(${INSTALL_FORGE_DEV})
 ENDIF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
 
 ## configuration to be used from the binary directory directly
