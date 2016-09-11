@@ -91,7 +91,10 @@ af_err af_get_device_ptr(void **data, const af_array arr)
 template <typename T>
 inline void lockArray(const af_array arr)
 {
-    memLock((void *)getArray<T>(arr).get());
+    // Ideally we need to use .get(false), i.e. get ptr without offset
+    // This is however not supported in opencl
+    // Use getData().get() as alternative
+    memLock((void *)getArray<T>(arr).getData().get());
 }
 
 af_err af_lock_device_ptr(const af_array arr)
@@ -125,10 +128,49 @@ af_err af_lock_array(const af_array arr)
     return AF_SUCCESS;
 }
 
+
+template<typename T>
+inline bool checkUserLock(const af_array arr)
+{
+    // Ideally we need to use .get(false), i.e. get ptr without offset
+    // This is however not supported in opencl
+    // Use getData().get() as alternative
+    return isLocked((void *)getArray<T>(arr).getData().get());
+}
+
+af_err af_is_locked_array(bool *res, const af_array arr)
+{
+    try {
+        af_dtype type = getInfo(arr).getType();
+
+        switch (type) {
+        case f32: *res = checkUserLock<float  >(arr); break;
+        case f64: *res = checkUserLock<double >(arr); break;
+        case c32: *res = checkUserLock<cfloat >(arr); break;
+        case c64: *res = checkUserLock<cdouble>(arr); break;
+        case s32: *res = checkUserLock<int    >(arr); break;
+        case u32: *res = checkUserLock<uint   >(arr); break;
+        case s64: *res = checkUserLock<intl   >(arr); break;
+        case u64: *res = checkUserLock<uintl  >(arr); break;
+        case s16: *res = checkUserLock<short  >(arr); break;
+        case u16: *res = checkUserLock<ushort >(arr); break;
+        case u8 : *res = checkUserLock<uchar  >(arr); break;
+        case b8 : *res = checkUserLock<char   >(arr); break;
+        default: TYPE_ERROR(4, type);
+        }
+
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
 template <typename T>
 inline void unlockArray(const af_array arr)
 {
-    memUnlock((void *)getArray<T>(arr).get());
+    // Ideally we need to use .get(false), i.e. get ptr without offset
+    // This is however not supported in opencl
+    // Use getData().get() as alternative
+    memUnlock((void *)getArray<T>(arr).getData().get());
 }
 
 af_err af_unlock_device_ptr(const af_array arr)

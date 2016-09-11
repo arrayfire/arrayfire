@@ -105,6 +105,15 @@ void Array<T>::eval() const
     const_cast<Array<T> *>(this)->eval();
 }
 
+template<typename T>
+T* Array<T>::device()
+{
+    getQueue().sync();
+    if (!isOwner() || getOffset() || data.use_count() > 1) {
+        *this = copyArray<T>(*this);
+    }
+    return this->get();
+}
 
 template<typename T>
 void evalMultiple(std::vector<Array<T>*> arrays)
@@ -177,28 +186,32 @@ createNodeArray(const dim4 &dims, Node_ptr node)
     Array<T> out =  Array<T>(dims, node);
 
     if (evalFlag()) {
-        size_t alloc_bytes, alloc_buffers;
-        size_t lock_bytes, lock_buffers;
+        if (node->getHeight() >= (int)getMaxJitSize()) {
+            out.eval();
+        } else {
+            size_t alloc_bytes, alloc_buffers;
+            size_t lock_bytes, lock_buffers;
 
-        deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
-                         &lock_bytes, &lock_buffers);
+            deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
+                             &lock_bytes, &lock_buffers);
 
-        // Check if approaching the memory limit
-        if (lock_bytes > getMaxBytes() ||
-            lock_buffers > getMaxBuffers()) {
+            // Check if approaching the memory limit
+            if (lock_bytes > getMaxBytes() ||
+                lock_buffers > getMaxBuffers()) {
 
-            // Calling sync to ensure the TNJ calls below
-            // don't overwrite the same nodes being evaluated
-            // FIXME: This should ideally be JIT specific mutex
-            getQueue().sync();
+                // Calling sync to ensure the TNJ calls below
+                // don't overwrite the same nodes being evaluated
+                // FIXME: This should ideally be JIT specific mutex
+                getQueue().sync();
 
-            unsigned length =0, buf_count = 0, bytes = 0;
-            Node *n = node.get();
-            n->getInfo(length, buf_count, bytes);
-            n->reset();
+                unsigned length =0, buf_count = 0, bytes = 0;
+                Node *n = node.get();
+                n->getInfo(length, buf_count, bytes);
+                n->reset();
 
-            if (2 * bytes > lock_bytes) {
-                out.eval();
+                if (2 * bytes > lock_bytes) {
+                    out.eval();
+                }
             }
         }
     }
@@ -281,6 +294,7 @@ writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     template       Array<T>  createNodeArray<T>       (const dim4 &size, TNJ::Node_ptr node); \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
+    template       T*   Array<T>::device();                             \
     template       Array<T>::Array(af::dim4 dims, const T * const in_data, \
                                    bool is_device, bool copy_device);   \
     template       Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset, \

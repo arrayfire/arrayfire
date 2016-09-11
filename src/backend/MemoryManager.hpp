@@ -89,6 +89,8 @@ public:
 
     void userUnlock(const void *ptr);
 
+    bool isUserLocked(const void *ptr);
+
     size_t getMemStepSize();
 
     size_t getMaxBytes();

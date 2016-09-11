@@ -165,14 +165,7 @@ namespace opencl
         void eval();
         void eval() const;
 
-        cl::Buffer* device()
-        {
-            if (!isOwner() || getOffset() || data.use_count() > 1) {
-                *this = Array<T>(dims(), (*get())(), (size_t)getOffset(), true);
-            }
-            return this->get();
-        }
-
+        cl::Buffer* device();
         cl::Buffer* device() const
         {
             return const_cast<Array<T>*>(this)->device();

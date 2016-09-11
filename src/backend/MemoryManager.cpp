@@ -221,6 +221,18 @@ void MemoryManager::userUnlock(const void *ptr)
     this->unlock(const_cast<void *>(ptr), true);
 }
 
+bool MemoryManager::isUserLocked(const void *ptr)
+{
+    memory_info& current = this->getCurrentMemoryInfo();
+    lock_guard_t lock(this->memory_mutex);
+    locked_iter iter = current.locked_map.find(const_cast<void *>(ptr));
+    if (iter != current.locked_map.end()) {
+        return iter->second.user_lock;
+    } else {
+        return false;
+    }
+}
+
 size_t MemoryManager::getMemStepSize()
 {
     lock_guard_t lock(this->memory_mutex);

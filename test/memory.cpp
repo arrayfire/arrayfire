@@ -15,6 +15,7 @@
 #include <iostream>
 #include <string>
 #include <testHelpers.hpp>
+#include <af/internal.h>
 
 using std::vector;
 using std::string;
@@ -660,4 +661,39 @@ TEST(Memory, unlock)
     ASSERT_EQ(lock_buffers, 0u);
     ASSERT_EQ(alloc_bytes, 0u);
     ASSERT_EQ(lock_bytes, 0u);
+}
+
+TEST(Memory, IndexedDevice)
+{
+    // This test is checking to see if calling .device() will force copy to a new buffer
+    const int nx = 8;
+    const int ny = 8;
+
+    af::array in = af::randu(nx, ny);
+
+    std::vector<float> in1(in.elements());
+    in.host(&in1[0]);
+
+    int offx = nx / 4;
+    int offy = ny / 4;
+
+    in = in(af::seq(offx, offx + nx/2 - 1),
+            af::seq(offy, offy + ny/2- 1));
+
+    int nxo = (int)in.dims(0);
+    int nyo = (int)in.dims(1);
+
+    void *rawPtr = af::getRawPtr(in);
+    void *devPtr = in.device<float>();
+    ASSERT_NE(devPtr, rawPtr);
+    in.unlock();
+
+    std::vector<float> in2(in.elements());
+    in.host(&in2[0]);
+
+    for (int y = 0; y < nyo; y++) {
+        for (int x = 0; x < nxo; x++) {
+            ASSERT_EQ(in1[(offy + y) * nx + offx + x], in2[y * nxo + x]);
+        }
+    }
 }

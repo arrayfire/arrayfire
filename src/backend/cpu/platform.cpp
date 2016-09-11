@@ -188,7 +188,7 @@ namespace cpu
 
 unsigned getMaxJitSize()
 {
-    const int MAX_JIT_LEN = 20;
+    const int MAX_JIT_LEN = 100;
 
     static int length = 0;
     if (length == 0) {

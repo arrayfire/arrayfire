@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/random_engine.h>
+#include <af/random.h>
 
 #include <af/array.h>
 #include <af/data.h>
@@ -217,7 +217,7 @@ af_err af_random_engine_get_type(af_random_engine_type *rtype, const af_random_e
     return AF_SUCCESS;
 }
 
-af_err af_set_default_random_engine(const af_random_engine_type rtype)
+af_err af_set_default_random_engine_type(const af_random_engine_type rtype)
 {
     try {
         AF_CHECK(af_init());

@@ -17,7 +17,7 @@ namespace af
 {
     class array;
     class dim4;
-
+#if AF_API_VERSION >= 34
     ///
     /// \brief A random number generator class
     ///
@@ -45,6 +45,15 @@ namespace af
             randomEngine(const randomEngine& in);
             /**
                 @}
+            */
+
+            /**
+               Creates a copy of the random engine object
+               \param in The input random engine object
+            */
+            randomEngine(af_random_engine engine);
+            /**
+               @}
             */
 
             ~randomEngine();
@@ -123,7 +132,9 @@ namespace af
                 @}
             */
     };
+#endif
 
+#if AF_API_VERSION >= 34
     /**
         \param[in] dims The dimensions of the array to be generated
         \param[in] ty The type of the array
@@ -134,7 +145,9 @@ namespace af
         \ingroup random_func_randu
     */
     AFAPI array randu(const dim4 &dims, const dtype ty, randomEngine &r);
+#endif
 
+#if AF_API_VERSION >= 34
     /**
         \param[in] dims The dimensions of the array to be generated
         \param[in] ty The type of the array
@@ -145,6 +158,7 @@ namespace af
         \ingroup random_func_randn
     */
     AFAPI array randn(const dim4 &dims, const dtype ty, randomEngine &r);
+#endif
 
     /**
         \param[in] dims The dimensions of the array to be generated
@@ -264,12 +278,23 @@ namespace af
                       const dim_t d1, const dim_t d2,
                       const dim_t d3, const dtype ty=f32);
 
+#if AF_API_VERSION >= 34
     /**
         \param[in] rtype The type of the random number generator
 
         \ingroup random_func_set_type
     */
-    AFAPI void setDefaultRandomEngine(randomEngineType rtype);
+    AFAPI void setDefaultRandomEngineType(randomEngineType rtype);
+#endif
+
+#if AF_API_VERSION >= 34
+    /**
+        \param[in] rtype The type of the random number generator
+
+        \ingroup random_func_set_type
+    */
+    AFAPI randomEngine getDefaultRandomEngine(void);
+#endif
 
     /**
         \param[in] seed A 64 bit unsigned integer
@@ -292,6 +317,7 @@ namespace af
 extern "C" {
 #endif
 
+#if AF_API_VERSION >= 34
     /**
        C Interface for creating random engine
 
@@ -302,7 +328,9 @@ extern "C" {
        \returns \ref AF_SUCCESS if the execution completes properly
     */
     AFAPI af_err af_create_random_engine(af_random_engine *engine, af_random_engine_type rtype, uintl seed);
+#endif
 
+#if AF_API_VERSION >= 34
     /**
        C Interface for retaining random engine
 
@@ -312,7 +340,9 @@ extern "C" {
        \returns \ref AF_SUCCESS if the execution completes properly
     */
     AFAPI af_err af_retain_random_engine(af_random_engine *out, const af_random_engine engine);
+#endif
 
+#if AF_API_VERSION >= 34
     /**
        C Interface for changing random engine type
 
@@ -322,7 +352,9 @@ extern "C" {
        \returns \ref AF_SUCCESS if the execution completes properly
     */
     AFAPI af_err af_random_engine_set_type(af_random_engine *engine, const af_random_engine_type rtype);
+#endif
 
+#if AF_API_VERSION >= 34
     /**
        C Interface for getting random engine type
 
@@ -332,7 +364,9 @@ extern "C" {
        \returns \ref AF_SUCCESS if the execution completes properly
     */
     AFAPI af_err af_random_engine_get_type(af_random_engine_type *rtype, const af_random_engine engine);
+#endif
 
+#if AF_API_VERSION >= 34
     /**
        C Interface for creating an array of uniform numbers using a random engine
 
@@ -345,7 +379,9 @@ extern "C" {
        \returns \ref AF_SUCCESS if the execution completes properly
     */
     AFAPI af_err af_random_uniform(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type, af_random_engine engine);
+#endif
 
+#if AF_API_VERSION >= 34
     /**
        C Interface for creating an array of normal numbers using a random engine
 
@@ -358,7 +394,9 @@ extern "C" {
        \returns \ref AF_SUCCESS if the execution completes properly
     */
     AFAPI af_err af_random_normal(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type, af_random_engine engine);
+#endif
 
+#if AF_API_VERSION >= 34
     /**
        C Interface for setting the seed of a random engine
 
@@ -368,7 +406,9 @@ extern "C" {
        \returns \ref AF_SUCCESS if the execution completes properly
     */
     AFAPI af_err af_random_engine_set_seed(af_random_engine *engine, const uintl seed);
+#endif
 
+#if AF_API_VERSION >= 34
     /**
        C Interface for getting the default random engine
 
@@ -377,7 +417,9 @@ extern "C" {
        \returns \ref AF_SUCCESS if the execution completes properly
     */
     AFAPI af_err af_get_default_random_engine(af_random_engine *engine);
+#endif
 
+#if AF_API_VERSION >= 34
     /**
        C Interface for setting the type of the default random engine
 
@@ -385,8 +427,10 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the execution completes properly
     */
-    AFAPI af_err af_set_default_random_engine(const af_random_engine_type rtype);
+    AFAPI af_err af_set_default_random_engine_type(const af_random_engine_type rtype);
+#endif
 
+#if AF_API_VERSION >= 34
     /**
        C Interface for getting the seed of a random engine
 
@@ -396,7 +440,9 @@ extern "C" {
        \returns \ref AF_SUCCESS if the execution completes properly
     */
     AFAPI af_err af_random_engine_get_seed(uintl * const seed, af_random_engine engine);
+#endif
 
+#if AF_API_VERSION >= 34
     /**
        C Interface for releasing random engine
 
@@ -404,6 +450,7 @@ extern "C" {
        \returns \ref AF_SUCCESS if the execution completes properly
     */
     AFAPI af_err af_release_random_engine(af_random_engine engine);
+#endif
 
     //General rand calls
 

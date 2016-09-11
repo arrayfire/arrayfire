@@ -392,10 +392,6 @@ std::string getDeviceInfo()
         const Platform platform(device->getInfo<CL_DEVICE_PLATFORM>());
 
         string dstr = device->getInfo<CL_DEVICE_NAME>();
-
-        // Remove null termination character from the strings
-        dstr.pop_back();
-
         bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
 
         string id =
@@ -410,8 +406,6 @@ std::string getDeviceInfo()
         info << " -- ";
         string devVersion = device->getInfo<CL_DEVICE_VERSION>();
         string driVersion = device->getInfo<CL_DRIVER_VERSION>();
-        devVersion.pop_back();
-        driVersion.pop_back();
         info << devVersion;
         info << " -- Device driver " << driVersion;
         info << " -- FP64 Support: "
@@ -431,13 +425,6 @@ std::string getPlatformName(const cl::Device &device)
 {
     const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
     std::string platStr = platform.getInfo<CL_PLATFORM_NAME>();
-
-    // BELOW NULL TERMINATION character removal was required with
-    // cl.hpp header, however with cl2.hpp this is not needed anymore.
-    //
-    // Remove null termination character from the strings
-    //platStr.pop_back();
-
     return platformMap(platStr);
 }
 
@@ -849,7 +836,7 @@ bool synchronize_calls() {
 
 unsigned getMaxJitSize()
 {
-    const int MAX_JIT_LEN = 20;
+    const int MAX_JIT_LEN = 100;
 
     static int length = 0;
     if (length == 0) {

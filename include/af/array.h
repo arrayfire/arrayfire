@@ -122,7 +122,9 @@ namespace af
             bool isfloating() const;
             bool isinteger() const;
             bool isbool() const;
+#if AF_API_VERSION >= 34
             bool issparse() const;
+#endif
             void eval() const;
             array as(dtype type) const;
             array T() const;
@@ -132,6 +134,10 @@ namespace af
             void unlock() const;
 #if AF_API_VERSION >= 31
             void lock() const;
+#endif
+
+#if AF_API_VERSION >= 34
+            bool isLocked() const;
 #endif
 
                   array::array_proxy row(int index);
@@ -650,10 +656,12 @@ namespace af
         */
         bool isbool() const;
 
+#if AF_API_VERSION >= 34
         /**
            \brief Returns true if the array is a sparse array
         */
         bool issparse() const;
+#endif
 
         /**
            \brief Evaluate any JIT expressions to generate data for the array
@@ -972,6 +980,17 @@ namespace af
         /// While a buffer is locked, the memory manager doesn't free the memory until unlock() is invoked.
         void lock() const;
 
+
+#if AF_API_VERSION >= 34
+        ///
+        /// \brief Query if the array has been locked by the user.
+        ///
+        /// An array can be locked by the user by calling `arry.lock` or `arr.device`
+        /// or `getRawPtr` function.
+        bool isLocked() const;
+#endif
+
+
         ///
         /// \brief Unlocks the device buffer in the memory manager.
         ///
@@ -1249,20 +1268,76 @@ namespace af
        @{
     */
     inline array &eval(array &a) { a.eval(); return a; }
-    AFAPI void eval(array &a, array &b);
-    AFAPI void eval(array &a, array &b, array &c);
-    AFAPI void eval(array &a, array &b, array &c, array &d);
-    AFAPI void eval(array &a, array &b, array &c, array &d, array &e);
-    AFAPI void eval(array &a, array &b, array &c, array &d, array &e, array &f);
-    AFAPI void eval(int num, array **arrays);
 
+#if AF_API_VERSION >= 34
+    ///
+    /// Evaluate multiple arrays simultaneously
+    ///
+    AFAPI void eval(int num, array **arrays);
+#endif
+
+    inline void eval(array &a, array &b)
+    {
+#if AF_API_VERSION >= 34
+        array *arrays[] = {&a, &b};
+        return eval(2, arrays);
+#else
+        eval(a); b.eval();
+#endif
+    }
+
+    inline void eval(array &a, array &b, array &c)
+    {
+#if AF_API_VERSION >= 34
+        array *arrays[] = {&a, &b, &c};
+        return eval(3, arrays);
+#else
+        eval(a, b); c.eval();
+#endif
+    }
+
+    inline void eval(array &a, array &b, array &c, array &d)
+    {
+#if AF_API_VERSION >= 34
+        array *arrays[] = {&a, &b, &c, &d};
+        return eval(4, arrays);
+#else
+        eval(a, b, c); d.eval();
+#endif
+
+    }
+
+    inline void eval(array &a, array &b, array &c, array &d, array &e)
+    {
+#if AF_API_VERSION >= 34
+        array *arrays[] = {&a, &b, &c, &d, &e};
+        return eval(5, arrays);
+#else
+        eval(a, b, c, d); e.eval();
+#endif
+    }
+
+    inline void eval(array &a, array &b, array &c, array &d, array &e, array &f)
+    {
+#if AF_API_VERSION >= 34
+        array *arrays[] = {&a, &b, &c, &d, &e, &f};
+        return eval(6, arrays);
+#else
+        eval(a, b, c, d, e); f.eval();
+#endif
+    }
+
+#if AF_API_VERSION >= 34
     ///
     /// Turn the manual eval flag on or off
     ///
     AFAPI void setManualEvalFlag(bool flag);
+#endif
 
+#if AF_API_VERSION >= 34
     /// Get the manual eval flag
     AFAPI bool getManualEvalFlag();
+#endif
 
     /**
        @}
@@ -1362,6 +1437,7 @@ extern "C" {
     */
 
 
+#if AF_API_VERSION >= 34
     /**
        Evaluate multiple arrays together
     */
@@ -1369,7 +1445,9 @@ extern "C" {
     /**
       @}
     */
+#endif
 
+#if AF_API_VERSION >= 34
     /**
        Turn the manual eval flag on or off
     */
@@ -1377,8 +1455,9 @@ extern "C" {
     /**
       @}
     */
+#endif
 
-
+#if AF_API_VERSION >= 34
     /**
        Get the manual eval flag
     */
@@ -1386,7 +1465,7 @@ extern "C" {
     /**
       @}
     */
-
+#endif
 
     /**
         \ingroup method_mat
@@ -1572,6 +1651,7 @@ extern "C" {
     */
     AFAPI af_err af_is_bool         (bool *result, const af_array arr);
 
+#if AF_API_VERSION >= 34
     /**
         \brief Check if an array is sparse
 
@@ -1584,7 +1664,7 @@ extern "C" {
     /**
         @}
     */
-
+#endif
 #ifdef __cplusplus
 }
 #endif

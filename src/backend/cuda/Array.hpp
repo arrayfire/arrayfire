@@ -184,13 +184,7 @@ namespace cuda
             data_dims = new_dims;
         }
 
-        T* device()
-        {
-            if (!isOwner() || getOffset() || data.use_count() > 1) {
-                *this = Array<T>(dims(), get(), true, true);
-            }
-            return this->get();
-        }
+        T* device();
 
         T* device() const
         {

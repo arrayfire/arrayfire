@@ -10,7 +10,7 @@
 #include <af/array.h>
 #include <af/defines.h>
 #include <af/vision.h>
-#include <af/random_engine.h>
+#include <af/random.h>
 #include <err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>

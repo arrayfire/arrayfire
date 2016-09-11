@@ -32,6 +32,7 @@ namespace JIT
                    const char *name_str)
             : Node(type_str, name_str)
         {
+            m_height = 0;
         }
 
         bool isBuffer() { return true; }

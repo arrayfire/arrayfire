@@ -27,7 +27,7 @@ namespace JIT
         std::string m_type_str;
         std::string m_name_str;
         int m_id;
-        int m_level;
+        int m_height;
         bool m_set_id;
         bool m_gen_func;
         bool m_gen_param;
@@ -40,6 +40,7 @@ namespace JIT
     protected:
         void resetCommonFlags()
         {
+            m_height = 0;
             m_set_id = false;
             m_gen_func = false;
             m_gen_param = false;
@@ -99,6 +100,7 @@ namespace JIT
         bool isGenOffset() { return m_gen_offset; }
 
         int getId()  { return m_id; }
+        int getHeight()  { return m_height; }
         std::string getNameStr() { return m_name_str; }
 
         virtual ~Node() {}

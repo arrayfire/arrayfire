@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <af/array.h>
-#include <af/random_engine.h>
+#include <af/random.h>
 #include "symbol_manager.hpp"
 
 af_err af_get_default_random_engine(af_random_engine *r)
@@ -36,7 +36,7 @@ af_err af_random_engine_set_type(af_random_engine *engine, const af_random_engin
     return CALL(engine, rtype);
 }
 
-af_err af_set_default_random_engine(const af_random_engine_type rtype)
+af_err af_set_default_random_engine_type(const af_random_engine_type rtype)
 {
     return CALL(rtype);
 }

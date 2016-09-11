@@ -29,6 +29,7 @@ namespace JIT
             : Node(irname<T>(), afShortName<T>(false)),
               m_val(val)
         {
+            m_height = 0;
         }
 
         bool isLinear(dim_t dims[4])

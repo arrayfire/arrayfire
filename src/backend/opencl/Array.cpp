@@ -152,6 +152,15 @@ namespace opencl
     }
 
     template<typename T>
+    cl::Buffer* Array<T>::device()
+    {
+        if (!isOwner() || getOffset() || data.use_count() > 1) {
+            *this = copyArray<T>(*this);
+        }
+        return this->get();
+    }
+
+    template<typename T>
     void evalMultiple(std::vector<Array<T>*> arrays)
     {
         std::vector<Param> outputs;
@@ -220,22 +229,26 @@ namespace opencl
         Array<T> out =  Array<T>(dims, node);
 
         if (evalFlag()) {
-            size_t alloc_bytes, alloc_buffers;
-            size_t lock_bytes, lock_buffers;
+            if (node->getHeight() >= (int)getMaxJitSize()) {
+                out.eval();
+            } else {
+                size_t alloc_bytes, alloc_buffers;
+                size_t lock_bytes, lock_buffers;
 
-            deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
-                             &lock_bytes, &lock_buffers);
+                deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
+                                 &lock_bytes, &lock_buffers);
 
-            if (lock_bytes > getMaxBytes() ||
-                lock_buffers > getMaxBuffers()) {
+                if (lock_bytes > getMaxBytes() ||
+                    lock_buffers > getMaxBuffers()) {
 
-                unsigned length =0, buf_count = 0, bytes = 0;
-                Node *n = node.get();
-                n->getInfo(length, buf_count, bytes);
-                n->resetFlags();
+                    unsigned length =0, buf_count = 0, bytes = 0;
+                    Node *n = node.get();
+                    n->getInfo(length, buf_count, bytes);
+                    n->resetFlags();
 
-                if (2 * bytes > lock_bytes) {
-                    out.eval();
+                    if (2 * bytes > lock_bytes) {
+                        out.eval();
+                    }
                 }
             }
         }
@@ -387,6 +400,7 @@ namespace opencl
     template       Node_ptr Array<T>::getNode() const;                  \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
+    template       cl::Buffer* Array<T>::device();                      \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
     template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \

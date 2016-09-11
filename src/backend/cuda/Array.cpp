@@ -135,6 +135,15 @@ namespace cuda
     }
 
     template<typename T>
+    T* Array<T>::device()
+    {
+        if (!isOwner() || getOffset() || data.use_count() > 1) {
+            *this = copyArray<T>(*this);
+        }
+        return this->get();
+    }
+
+    template<typename T>
     void Array<T>::eval() const
     {
         if (isReady()) return;
@@ -213,23 +222,28 @@ namespace cuda
         Array<T> out =  Array<T>(dims, node);
 
         if (evalFlag()) {
-            size_t alloc_bytes, alloc_buffers;
-            size_t lock_bytes, lock_buffers;
 
-            deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
-                             &lock_bytes, &lock_buffers);
+            if (node->getHeight() >= (int)getMaxJitSize()) {
+                out.eval();
+            } else {
+                size_t alloc_bytes, alloc_buffers;
+                size_t lock_bytes, lock_buffers;
 
-            // Check if approaching the memory limit
-            if (lock_bytes > getMaxBytes() ||
-                lock_buffers > getMaxBuffers()) {
+                deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
+                                 &lock_bytes, &lock_buffers);
 
-                unsigned length =0, buf_count = 0, bytes = 0;
-                Node *n = node.get();
-                n->getInfo(length, buf_count, bytes);
-                n->resetFlags();
+                // Check if approaching the memory limit
+                if (lock_bytes > getMaxBytes() ||
+                    lock_buffers > getMaxBuffers()) {
 
-                if (2 * bytes > lock_bytes) {
-                    out.eval();
+                    unsigned length =0, buf_count = 0, bytes = 0;
+                    Node *n = node.get();
+                    n->getInfo(length, buf_count, bytes);
+                    n->resetFlags();
+
+                    if (2 * bytes > lock_bytes) {
+                        out.eval();
+                    }
                 }
             }
         }
@@ -365,9 +379,10 @@ namespace cuda
     template       Array<T>::Array(af::dim4 dims, const T * const in_data, \
                                    bool is_device, bool copy_device);   \
     template       Array<T>::~Array        ();                          \
-    template       Node_ptr Array<T>::getNode() const;             \
+    template       Node_ptr Array<T>::getNode() const;                  \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
+    template       T*   Array<T>::device();                             \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
     template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \
