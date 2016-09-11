@@ -42,9 +42,22 @@ InterpValTy cubicInterpFunc(InterpValTy val[4], InterpPosTy xratio, bool spline)
 {
     InterpValTy a0, a1, a2, a3;
     if (spline) {
-        a0 = MULRC(-0.5, val[0]) + MULRC( 1.5, val[1]) + MULRC(-1.5, val[2]) + MULRC( 0.5, val[3]);
-        a1 = MULRC( 1.0, val[0]) + MULRC(-2.5, val[1]) + MULRC( 2.0, val[2]) + MULRC(-0.5, val[3]);
-        a2 = MULRC(-0.5, val[0]) + MULRC( 0.5, val[2]);
+        a0 =
+            MULRC((InterpPosTy)-0.5, val[0]) +
+            MULRC((InterpPosTy) 1.5, val[1]) +
+            MULRC((InterpPosTy)-1.5, val[2]) +
+            MULRC((InterpPosTy) 0.5, val[3]);
+
+        a1 =
+            MULRC((InterpPosTy) 1.0, val[0]) +
+            MULRC((InterpPosTy)-2.5, val[1]) +
+            MULRC((InterpPosTy) 2.0, val[2]) +
+            MULRC((InterpPosTy)-0.5, val[3]);
+
+        a2 =
+            MULRC((InterpPosTy)-0.5, val[0]) +
+            MULRC((InterpPosTy) 0.5, val[2]);
+
         a3 = val[1];
     } else {
         a0 = val[3] - val[2] - val[0] + val[1];
@@ -104,7 +117,7 @@ void interp1(
 
     InterpPosTy ratio = off_x;
     if (method == AF_INTERP_LINEAR_COSINE) {
-        ratio = (1 - cos(ratio * M_PI))/2;
+        ratio = (1 - cos(ratio * (InterpPosTy)M_PI))/2;
     }
 
     for (int n = 0; n < batch; n++) {
@@ -194,8 +207,8 @@ void interp2(
 
     InterpPosTy xratio = off_x, yratio = off_y;
     if (method == AF_INTERP_LINEAR_COSINE) {
-        xratio = (1 - cos(xratio * M_PI))/2;
-        yratio = (1 - cos(yratio * M_PI))/2;
+        xratio = (1 - cos(xratio * (InterpPosTy)M_PI))/2;
+        yratio = (1 - cos(yratio * (InterpPosTy)M_PI))/2;
     }
 
     InterpValTy zero = ZERO;

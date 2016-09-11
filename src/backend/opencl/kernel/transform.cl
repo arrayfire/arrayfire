@@ -157,7 +157,10 @@ void transform_kernel(__global T *d_out, const KParam out,
     bool clamp = INTERP_ORDER != 1;
 
     T zero = ZERO;
-    if (xidi < -0.0001 || yidi < -0.0001 || in.dims[0] <= xidi || in.dims[1] <= yidi) {
+    if (xidi < (InterpPosTy)-0.0001 ||
+        yidi < (InterpPosTy)-0.0001 ||
+        in.dims[0] <= xidi ||
+        in.dims[1] <= yidi) {
         for(int n = 0; n < limages; n++) {
             d_out[loco + n * out.strides[2]] = zero;
         }
