@@ -240,3 +240,31 @@ TEST(JIT, CPP_Multi_pre_eval)
         ASSERT_EQ((ha[i] - hb[i]), hy[i]);
     }
 }
+
+TEST(JIT, CPP_common_node)
+{
+    af::array r = seq(-3, 3, 0.5);
+
+    int n = r.dims(0);
+
+    af::array x = af::tile(r, 1, r.dims(0));
+    af::array y = af::tile(r.T(), r.dims(0), 1);
+    x.eval();
+    y.eval();
+
+
+    std::vector<float> hx(x.elements());
+    std::vector<float> hy(y.elements());
+    std::vector<float> hr(r.elements());
+
+    x.host(&hx[0]);
+    y.host(&hy[0]);
+    r.host(&hr[0]);
+
+    for (int j = 0; j < n; j++) {
+        for (int i = 0; i < n; i++) {
+            ASSERT_EQ(hx[j * n + i], hr[i]);
+            ASSERT_EQ(hy[j * n + i], hr[j]);
+        }
+    }
+}
