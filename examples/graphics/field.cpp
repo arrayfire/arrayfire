@@ -13,34 +13,47 @@
 
 using namespace af;
 
-const float MINIMUM = 1.0f;
-const float MAXIMUM = 20.f;
-const float STEP    = 2.0f;
-const float NELEMS  = (MAXIMUM-MINIMUM+1)/STEP;
+const static float MINIMUM = -3.0f;
+const static float MAXIMUM =  3.0f;
+const static float STEP = 0.18f;
 
 int main(int argc, char *argv[])
 {
     try {
-        // Initialize the kernel array just once
         af::info();
         af::Window myWindow(1024, 1024, "2D Vector Field example: ArrayFire");
 
-        float h_divPoints[] = {5, 5, 15, 15,
-                               5, 15, 5, 15};
-        array divPoints(4, 2, h_divPoints);
+        myWindow.grid(1, 2);
 
-        //array points = join(1, flat(range(dim4(10, 10)) * 2 + 1), flat(range(dim4(10, 10), 1) * 2 + 1));
-        array points = join(1, flat(range(dim4(10, 10), 1) * 2 + 1), flat(range(dim4(10, 10)) * 2 + 1));
-        array directions = sin(2 * Pi * points / 10.0f);
+        myWindow(0, 0).setAxesLimits(MINIMUM, MAXIMUM, MINIMUM, MAXIMUM);
+        myWindow(0, 1).setAxesLimits(MINIMUM, MAXIMUM, MINIMUM, MAXIMUM);
 
-        myWindow.setAxesLimits(points.col(0), points.col(1));
-        myWindow.setAxesTitles();
+        array dataRange = seq(MINIMUM, MAXIMUM, STEP);
 
-        while(!myWindow.close()) {
-            myWindow.scatter(divPoints, AF_MARKER_CIRCLE);
-            myWindow.vectorField(points, directions);
+        array x = tile(dataRange, 1, dataRange.dims(0));
+        array y = tile(dataRange.T(), dataRange.dims(0), 1);
+        x.eval();
+        y.eval();
+
+        float scale = 2.0f;
+        do {
+            array points = join(1, flat(x), flat(y));
+
+            array saddle = join(1, flat(x), -1.0f*flat(y));
+
+            array bvals  = sin(scale*(x*x + y*y));
+            array hbowl  = join(1, constant(1, x.elements()), flat(bvals));
+            hbowl.eval();
+
+            myWindow(0, 0).vectorField(points, saddle, "Saddle point");
+            myWindow(0, 1).vectorField(points, hbowl, "hilly bowl (in a loop with varying amplitude)");
             myWindow.show();
-        }
+
+            scale -= 0.0010f;
+            if (scale < -0.01f) {
+                scale = 2.0f;
+            }
+        } while(!myWindow.close());
 
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
@@ -48,4 +61,3 @@ int main(int argc, char *argv[])
     }
     return 0;
 }
-
