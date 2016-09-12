@@ -58,7 +58,8 @@ forge::Chart* setup_vector_field(const forge::Window* const window,
 
     forge::VectorField* vectorfield = fgMngr.getVectorField(chart, pIn.dims()[1], getGLType<T>());
 
-    vectorfield->setColor(1.0, 1.0, 0.0, 1.0);
+    // ArrayFire LOGO dark blue shade
+    vectorfield->setColor(0.130f, 0.173f, 0.263f, 1.0);
 
     copy_vector_field<T>(pIn, dIn, vectorfield);
 
