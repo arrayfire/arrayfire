@@ -49,7 +49,7 @@ namespace af
 
             /**
                Creates a copy of the random engine object
-               \param in The input random engine object
+               \param engine The input random engine object
             */
             randomEngine(af_random_engine engine);
             /**
@@ -289,9 +289,11 @@ namespace af
 
 #if AF_API_VERSION >= 34
     /**
-        \param[in] rtype The type of the random number generator
+        Returns the default random engine
 
-        \ingroup random_func_set_type
+        \returns the \ref randomEngine object for the default random engine
+
+        \ingroup random_func_get_type
     */
     AFAPI randomEngine getDefaultRandomEngine(void);
 #endif

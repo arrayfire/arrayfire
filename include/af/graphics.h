@@ -1071,9 +1071,9 @@ AFAPI af_err af_set_axes_limits_3d(const af_window wind,
    \ingroup gfx_func_window
 */
 AFAPI af_err af_set_axes_titles(const af_window wind,
-                                const char * const xtitles,
-                                const char * const ytitles,
-                                const char * const ztitles,
+                                const char * const xtitle,
+                                const char * const ytitle,
+                                const char * const ztitle,
                                 const af_cell* const props);
 #endif
 
