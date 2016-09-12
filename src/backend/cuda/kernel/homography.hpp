@@ -65,64 +65,54 @@ __device__ void JacobiSVD(int m, int n)
     int tid_y = threadIdx.y;
     //int gid_y = blockIdx.y * blockDim.y + tid_y;
 
-    __shared__ T acc1[256];
-    __shared__ T acc2[256];
+    __shared__ T s_acc1[256];
+    __shared__ T s_acc2[256];
 
-    __shared__ T d[16*9];
+    __shared__ T s_d[16*9];
 
     T* s_V = (T*)sh;
     T* s_S = (T*)sh + 16*81;
 
-    // Copy first 80 elements
-    for (int i = 0; i <= 4; i++) {
-        T t = s_S[tid_y*81 + tid_x+i*bsz_x];
-        acc1[tid_y*bsz_x + tid_x] += t*t;
-    }
-    if (tid_x < 8)
-        acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+8];
-    __syncthreads();
-    if (tid_x < 4)
-        acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+4];
-    __syncthreads();
-    if (tid_x < 2)
-        acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+2];
-    __syncthreads();
-    if (tid_x < 1) {
-        // Copy last element
-        T t = s_S[tid_y*bsz_x + tid_x+80];
-        acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+1] + t*t;
-    }
-    __syncthreads();
 
-    if (tid_x < n)
-        d[tid_y*9 + tid_x] = acc1[tid_y*bsz_x + tid_x];
+    int doff = tid_y *  n;
+    int soff = tid_y * 81;
 
-    // V is initialized as an identity matrix
-    for (int i = 0; i <= 4; i++) {
-        s_V[tid_y*81 + i*bsz_x + tid_x] = 0;
+    if (tid_x < n) {
+        T acc1 = 0;
+        for (int i = 0; i < m; i++) {
+            int stid = soff + tid_x * m + i;
+            T t = s_S[stid];
+            acc1 += t * t;
+            s_V[stid] = (tid_x == i) ? 1 : 0;
+        }
+        s_d[doff + tid_x] = acc1;
     }
-    __syncthreads();
-    if (tid_x < m)
-        s_V[tid_y*81 + tid_x*m + tid_x] = 1;
     __syncthreads();
 
     for (int it = 0; it < iterations; it++) {
-        bool converged = false;
-
         for (int i = 0; i < n-1; i++) {
             for (int j = i+1; j < n; j++) {
-                T* Si = s_S + tid_y*81 + i*m;
-                T* Sj = s_S + tid_y*81 + j*m;
+                T* Si = s_S + soff + i*m;
+                T* Sj = s_S + soff + j*m;
+
+                T* Vi = s_V + soff + i*n;
+                T* Vj = s_V + soff + j*n;
 
                 T p = (T)0;
                 for (int k = 0; k < m; k++)
                     p += Si[k]*Sj[k];
 
-                T c = 0, s = 0;
+                T di = s_d[doff + i];
+                T dj = s_d[doff + j];
+                __syncthreads();
 
-                bool cond = (abs(p) > EPS<T>::eps()*sqrt(d[tid_y*9 + i]*d[tid_y*9 + j]));
+                T c = 0, s = 0;
+                T t0 = 0, t1 = 0;
+                int cond = (fabs(p) > m*EPS<T>::eps()*sqrt(di * dj));
+                T a = 0, b = 0;
+
                 if (cond) {
-                    T y = d[tid_y*9 + i] - d[tid_y*9 + j];
+                    T y = di - dj;
                     T r = hypot(p*2, y);
                     T r2 = r*2;
                     if (y >= 0) {
@@ -133,61 +123,43 @@ __device__ void JacobiSVD(int m, int n)
                         s = sqrt((r - y) / r2);
                         c = p / (r2*s);
                     }
+
+                    for (int k = tid_x; k < m; k+=bsz_x) {
+                        t0 = c*Si[k] + s*Sj[k];
+                        t1 = c*Sj[k] - s*Si[k];
+                        Si[k] = t0;
+                        Sj[k] = t1;
+                        s_acc1[tid_y * bsz_x + k] = t0 * t0;
+                        s_acc2[tid_y * bsz_x + k] = t1 * t1;
+                    }
                 }
                 __syncthreads();
 
-                if (cond && tid_x < m) {
-                    T t0 = c*Si[tid_x] + s*Sj[tid_x];
-                    T t1 = c*Sj[tid_x] - s*Si[tid_x];
-                    Si[tid_x] = t0;
-                    Sj[tid_x] = t1;
-
-                    acc1[tid_y*16 + tid_x] = t0*t0;
-                    acc2[tid_y*16 + tid_x] = t1*t1;
+                if (cond) {
+                    a = 0;
+                    b = 0;
+                    for (int k = 0; k < m; k++) {
+                        a += s_acc1[tid_y * bsz_x + k];
+                        b += s_acc2[tid_y * bsz_x + k];
+                    }
+                    s_d[doff + i] = a;
+                    s_d[doff + j] = b;
                 }
                 __syncthreads();
 
-                if (cond && tid_x < 4) {
-                    acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+4];
-                    acc2[tid_y*16 + tid_x] += acc2[tid_y*16 + tid_x+4];
+                if (cond) {
+                    for (int l = tid_x; l < n; l += bsz_x) {
+                        T t0 = Vi[l] * c + Vj[l] * s;
+                        T t1 = Vj[l] * c - Vi[l] * s;
+
+                        Vi[l] = t0;
+                        Vj[l] = t1;
+                    }
                 }
                 __syncthreads();
-                if (cond && tid_x < 2) {
-                    acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+2];
-                    acc2[tid_y*16 + tid_x] += acc2[tid_y*16 + tid_x+2];
-                }
-                __syncthreads();
-                if (cond && tid_x < 1) {
-                    acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+1] + acc1[tid_y*16 + tid_x+8];
-                    acc2[tid_y*16 + tid_x] += acc2[tid_y*16 + tid_x+1] + acc2[tid_y*16 + tid_x+8];
-                }
-                __syncthreads();
-
-                if (cond && tid_x == 0) {
-                    d[tid_y*9 + i] = acc1[tid_y*16];
-                    d[tid_y*9 + j] = acc2[tid_y*16];
-                }
-                __syncthreads();
-
-                T* Vi = s_V + tid_y*81 + i*n;
-                T* Vj = s_V + tid_y*81 + j*n;
-
-                if (cond && tid_x < n) {
-                    T t0 = Vi[tid_x] * c + Vj[tid_x] * s;
-                    T t1 = Vj[tid_x] * c - Vi[tid_x] * s;
-
-                    Vi[tid_x] = t0;
-                    Vj[tid_x] = t1;
-                }
-                __syncthreads();
-
-                converged = true;
             }
-            if (!converged)
-                break;
         }
     }
-    __syncthreads();
 }
 
 __device__ bool computeMeanScale(
@@ -411,6 +383,7 @@ __global__ void computeEvalHomography(
             }
         }
     }
+    __syncthreads();
 
     if (htype == AF_HOMOGRAPHY_RANSAC) {
         // Find sample with most inliers
@@ -680,30 +653,14 @@ int computeH(
         memFree(totalInliers.ptr);
         memFree(median.ptr);
     } else if (htype == AF_HOMOGRAPHY_RANSAC) {
-        Param<unsigned> bestInliers, bestIdx;
-        for (int k = 0; k < 4; k++) {
-            bestInliers.dims[k] = bestIdx.dims[k] = 1;
-            bestInliers.strides[k] = bestIdx.strides[k] = 1;
-        }
-        bestInliers.ptr = memAlloc<unsigned>(1);
-        bestIdx.ptr = memAlloc<unsigned>(1);
-
-        kernel::ireduce<unsigned, af_max_t>(bestInliers, bestIdx.ptr, inliers, 0);
-
         unsigned blockIdx;
-        CUDA_CHECK(cudaMemcpyAsync(&blockIdx, bestIdx.ptr, sizeof(unsigned),
-                    cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-
+        inliersH = kernel::ireduce_all<unsigned, af_max_t>(&blockIdx, inliers);
         // Copies back index and number of inliers of best homography estimation
         CUDA_CHECK(cudaMemcpyAsync(&idxH, idx.ptr+blockIdx, sizeof(unsigned),
-                    cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaMemcpyAsync(&inliersH, bestInliers.ptr, sizeof(unsigned),
                     cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
         CUDA_CHECK(cudaMemcpyAsync(bestH.ptr, H.ptr + idxH * 9, 9*sizeof(T),
                     cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
 
-        memFree(bestInliers.ptr);
-        memFree(bestIdx.ptr);
     }
 
     memFree(inliers.ptr);
