@@ -13,7 +13,6 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
-using namespace std;
 using namespace af;
 
 const int num = 10;

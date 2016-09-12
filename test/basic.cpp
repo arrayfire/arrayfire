@@ -13,7 +13,7 @@
 #include <vector>
 #include <testHelpers.hpp>
 
-using namespace std;
+using std::vector;
 
 TEST(BasicTests, constant1000x1000)
 {

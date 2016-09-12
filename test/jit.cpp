@@ -13,7 +13,6 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
-using namespace std;
 using namespace af;
 
 TEST(JIT, CPP_JIT_HASH)

@@ -13,6 +13,7 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
+// This makes the macros cleaner
 using namespace std;
 using std::abs;
 using namespace af;

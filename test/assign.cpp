@@ -115,7 +115,6 @@ void assignTest(string pTestFile, const vector<af_seq> *seqv)
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
     vector<outType> currGoldBar = tests[0];
-    using namespace std;
     size_t nElems        = currGoldBar.size();
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
@@ -345,7 +344,6 @@ TYPED_TEST(ArrayAssign, Scalar4DCPP)
 TYPED_TEST(ArrayAssign, AssignRowCPP)
 {
     if (noDoubleTests<TypeParam>()) return;
-    using namespace std;
     using namespace af;
     int dimsize=10;
     vector<TypeParam> input(100, 1);
@@ -390,7 +388,6 @@ TYPED_TEST(ArrayAssign, AssignRowCPP)
 TYPED_TEST(ArrayAssign, AssignColumnCPP)
 {
     if (noDoubleTests<TypeParam>()) return;
-    using namespace std;
     using namespace af;
     int dimsize=10;
     vector<TypeParam> input(100, 1);
@@ -435,7 +432,6 @@ TYPED_TEST(ArrayAssign, AssignColumnCPP)
 TYPED_TEST(ArrayAssign, AssignSliceCPP)
 {
     if (noDoubleTests<TypeParam>()) return;
-    using namespace std;
     using namespace af;
     int dimsize=10;
     vector<TypeParam> input(1000, 1);

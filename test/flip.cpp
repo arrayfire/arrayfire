@@ -14,7 +14,6 @@
 #include <af/index.h>
 #include <testHelpers.hpp>
 
-using namespace std;
 using namespace af;
 
 TEST(FlipTests, Test_flip_1D)
