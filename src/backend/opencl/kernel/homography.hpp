@@ -77,6 +77,10 @@ int computeH(
                 else if (htype == AF_HOMOGRAPHY_LMEDS)
                     options << " -D LMEDS";
 
+                if (getActiveDeviceType() == CL_DEVICE_TYPE_CPU) {
+                    options << " -D IS_CPU";
+                }
+
                 cl::Program prog;
                 buildProgram(prog, homography_cl, homography_cl_len, options.str());
                 hgProgs[device] = new Program(prog);
@@ -215,30 +219,14 @@ int computeH(
             getQueue().enqueueReadBuffer(*totalInliers.data, CL_TRUE, 0, sizeof(unsigned), &inliersH);
 
             bufferFree(totalInliers.data);
-        }
-        else if (htype == AF_HOMOGRAPHY_RANSAC) {
-            Param bestInliers, bestIdx;
-            bestInliers.info.offset = bestIdx.info.offset = 0;
-            for (int k = 0; k < 4; k++) {
-                bestInliers.info.dims[k] = bestIdx.info.dims[k] = 1;
-                bestInliers.info.strides[k] = bestIdx.info.strides[k] = 1;
-            }
-            bestInliers.data = bufferAlloc(sizeof(unsigned));
-            bestIdx.data = bufferAlloc(sizeof(unsigned));
-
-            kernel::ireduce<unsigned, af_max_t>(bestInliers, bestIdx.data, inliers, 0);
-
+        } else if (htype == AF_HOMOGRAPHY_RANSAC) {
             unsigned blockIdx;
-            getQueue().enqueueReadBuffer(*bestIdx.data, CL_TRUE, 0, sizeof(unsigned), &blockIdx);
+            inliersH = kernel::ireduce_all<unsigned, af_max_t>(&blockIdx, inliers);
 
             // Copies back index and number of inliers of best homography estimation
-            getQueue().enqueueReadBuffer(*idx.data, CL_TRUE, blockIdx*sizeof(unsigned), sizeof(unsigned), &idxH);
-            getQueue().enqueueReadBuffer(*bestInliers.data, CL_TRUE, 0, sizeof(unsigned), &inliersH);
-
+            getQueue().enqueueReadBuffer(*idx.data, CL_TRUE, blockIdx*sizeof(unsigned),
+                                         sizeof(unsigned), &idxH);
             getQueue().enqueueCopyBuffer(*H.data, *bestH.data, idxH*9*sizeof(T), 0, 9*sizeof(T));
-
-            bufferFree(bestInliers.data);
-            bufferFree(bestIdx.data);
         }
 
         bufferFree(inliers.data);
