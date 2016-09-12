@@ -1,5 +1,85 @@
 Release Notes {#releasenotes}
 ==============
+v3.4.0
+==============
+
+Features
+----------
+* New [interpolation methods](https://github.com/arrayfire/arrayfire/issues/1562) for \ref af::resize(), \ref af::transform(), \ref af::approx1() and \ref af::approx2()
+* Support for [complex mathematical functions](\ref mathfunc_mat)
+* New Forge graphics [integration](https://github.com/arrayfire/arrayfire/pull/1555)!
+    * Vector Field plotting functionality
+    * API updates
+    * Removed GLEW and replaced with glbinding. (And links to both GLEW and glbinding)
+    * Multiple overlays on the same window are now possible.
+    * New API to set axes limits for graphs.
+        * Draw calls do not automatically compute the limits. This is now under user control.
+    * New API to set axes titles.
+    * New API for plot and scatter:
+        * \ref plot() and \ref scatter() now can handle 2D and 3D
+        * \ref af_draw_plot_nd
+        * \ref af_draw_plot_2d
+        * \ref af_draw_plot_3d
+        * \ref af_draw_scatter_nd
+        * \ref af_draw_scatter_2d
+        * \ref af_draw_scatter_3d
+
+* \ref af::medfilt1(): [Median filter for 1-d signals](https://github.com/arrayfire/arrayfire/pull/1479)
+* af::RandomEngine(): New [random number generators](https://github.com/arrayfire/arrayfire/issues/868)
+    * Philox
+    * Threefry
+    * Mersenne Twister
+* \ref af::sparse(): [Sparse matrix support for all backends](https://github.com/arrayfire/arrayfire/issues/821)
+* \ref af::scan(): New [generalized scan](https://github.com/arrayfire/arrayfire/issues/388) functions
+* \ref af::moments(): New [image moments](\ref moments_mat) functions
+
+Bug Fixes
+--------------
+* Fixes to edge-cases in [morphological operations.](https://github.com/arrayfire/arrayfire/issues/1564)
+* Makes JIT tree size [consistent between devices](https://github.com/arrayfire/arrayfire/issues/1457)
+* Delegate [higher-dimension convolutions](https://github.com/arrayfire/arrayfire/pull/1445) to correct dimension
+* Indexing fixes with [c++11x](https://github.com/arrayfire/arrayfire/pull/1426), [af_indexers](https://github.com/arrayfire/arrayfire/pull/1426), and [empty arrays](https://github.com/arrayfire/arrayfire/issues/799)
+* Single element [median bugfix](https://github.com/arrayfire/arrayfire/pull/1423)
+* Correct time from [timeit()](https://github.com/arrayfire/arrayfire/pull/1414) function
+* Fix floating point numbers in [af::seq and missing size_of() types](https://github.com/arrayfire/arrayfire/pull/1404)
+* Explicitly extantiate [af::device() for void * ](https://github.com/arrayfire/arrayfire/issues/1503)
+
+Improvements
+------------
+* CUDA 8 and compute 6.x(Pascal) support, current installer still on 7.5
+* Improved [JIT](https://github.com/arrayfire/arrayfire/issues/1472) evaluation heuristics for CUDA and OpenCL
+* User controlled FFT plan caching
+* CUDA [speedups](https://github.com/arrayfire/arrayfire/pull/1411) for \ref wrap(), \ref unwrap() and [approx](\ref approx_mat).
+* Fallback for CUDA-OpenGL [interop](https://github.com/arrayfire/arrayfire/pull/1415)
+* Additional forms of batching with the \ref transform() function. [New behavior defined here.](https://github.com/arrayfire/arrayfire/pull/1412)
+* Update to [OpenCL2 headers](https://github.com/arrayfire/arrayfire/issues/1344) in backend
+* Support for interacting with [external OpenCL contexts](https://github.com/arrayfire/arrayfire/pull/1140)
+
+Build
+------
+* Compilation [speedups](https://github.com/arrayfire/arrayfire/pull/1526)
+* Build [fixes](https://github.com/arrayfire/arrayfire/pull/1526) with MKL.
+* Error message when [CUDA Compute Detection fails](https://github.com/arrayfire/arrayfire/issues/1535).
+* Several CMake build issues with Xcode generator fixed
+* Fix [multiple OpenCL definitions](https://github.com/arrayfire/arrayfire/issues/1429) at link-time
+* [Boost compute version update and lapacke detection fix](https://github.com/arrayfire/arrayfire/pull/1423)
+* Fix builds [with GCC 6.1.1](https://github.com/arrayfire/arrayfire/pull/1409) 
+
+Documentation
+-------------
+* Fixed grammar in license
+
+Known Issues
+-------------
+Certain CUDA functions are known to be broken on Tegra K1. The following ArrayFire tests are currently failing:
+* assign_cuda
+* harris_cuda
+* homography_cuda
+* median_cuda
+* orb_cudasort_cuda
+* sort_by_key_cuda
+* sort_index_cuda
+
 
 v3.3.2
 ==============
