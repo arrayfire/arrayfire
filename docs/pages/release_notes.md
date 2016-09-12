@@ -69,6 +69,17 @@ Documentation
 -------------
 * Fixed grammar in license
 
+Known Issues
+-------------
+Certain CUDA functions are known to be broken on Tegra K1. The following ArrayFire tests are currently failing:
+* assign_cuda
+* harris_cuda
+* homography_cuda
+* median_cuda
+* orb_cudasort_cuda
+* sort_by_key_cuda
+* sort_index_cuda
+
 
 v3.3.2
 ==============
