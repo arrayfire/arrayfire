@@ -13,45 +13,6 @@ The array created has the same value at all locations
 
 =======================================================================
 
-\defgroup data_func_randu randu
-
-\brief Create a random array sampled from uniform distribution
-
-The data is uniformly distributed between [0, 1]
-
-\ingroup data_mat
-\ingroup arrayfire_func
-
-=======================================================================
-
-\defgroup data_func_randn randn
-
-\brief Create a random array sampled from a normal distribution
-
-The distribution is centered around 0
-
-\ingroup data_mat
-\ingroup arrayfire_func
-
-
-\defgroup data_func_setseed setSeed
-
-\brief Set the seed for random number generator
-
-
-\ingroup data_mat
-\ingroup arrayfire_func
-
-
-\defgroup data_func_getseed getSeed
-
-\brief Get the seed for random number generator
-
-
-\ingroup data_mat
-\ingroup arrayfire_func
-
-
 \defgroup data_func_identity identity
 
 \brief Create an identity array with diagonal values 1
