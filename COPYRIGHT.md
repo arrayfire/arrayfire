@@ -10,6 +10,7 @@ Copyrights
 * [Boost Compute](#boost-compute)
 * [Thrust](#thrust)
 * [Magma](#magma)
+* [glbinding](#glbinding)
 
 ### Introduction
 ArrayFire uses software written by the following parties. Each software is listed with its copyright, license and home page.
@@ -68,7 +69,7 @@ Random123 is distributed under the BSD 3-Clause License. A copy of this license 
 
 See Random123 home page https://www.deshawresearch.com/resources_random123.html for details and links to the source code.
 
-**How ArrayFire uses Random123:** ArrayFire uses a modified and stripped down version of Random123 in the OpenCL backend. Each of the source files using the modified version of Random123 contain the original copyright.
+**How ArrayFire uses Random123:** ArrayFire uses a modified and stripped down version of Random123 in all backends. Each of the source files using the modified version of Random123 contain the original copyright.
 
 ### Boost Compute
 Copyright (C) 2013-2015 Kyle Lutz
@@ -97,19 +98,6 @@ See clMagma home page http://icl.cs.utk.edu/magma/index.html for details and lin
 
 **How ArrayFire uses clMagma:** ArrayFire uses a modified and stripped down version of clMagma in the OpenCL backend. Each of the source files using the modified version of clMagma contain the original copyright.
 
-### GLEW
-The OpenGL Extension Wrangler Library
-Copyright (C) 2002-2007, Milan Ikits <milan ikits[]ieee org>
-Copyright (C) 2002-2007, Marcelo E. Magallon <mmagallo[]debian org>
-Copyright (C) 2002, Lev Povalahev
-
-GLEW is distributed under the BSD 3-Clause License, Mesa 3D License (MIT) and the Khronos License (MIT).
-A copy of these licenses is present in the LICENSES directory.
-
-See GLEW home page http://glew.sourceforge.net for details and links to the source code.
-
-**How ArrayFire uses GLEW:** The ArrayFire source code does not contain any source code from GLEW. GLEW can be optionally linked with during build time. The binary installers of ArrayFire may come packaged with GLEW.
-
 ### GLFW
 Copyright (C) 2002-2006 Marcus Geelnard
 Copyright (C) 2006-2011 Camilla Berglund
@@ -119,3 +107,15 @@ GLFW is distributed under the zlib/libpng License. A copy of this license is pre
 See GLFW home page http://www.glfw.org for details and links to the source code.
 
 **How ArrayFire uses GLFW:** The ArrayFire source code does not contain any source code from GLFW. GLFW can be optionally linked with or disabled during build time. The binary installers of ArrayFire may come packaged with GLFW.
+
+### glbinding
+
+Copyright (c) 2014-2015 Computer Graphics Systems Group at the Hasso-Plattner-Institute and CG Internals GmbH, Germany.
+
+glbinding is distributed under the MIT License. A copy of this license is present in the LICENSES directory.
+
+See glbinding home page http://www.glbinding.org for details and links to the source code.
+
+**How ArrayFire uses glbinding:** The ArrayFire source code does not contain any source code from glbinding. glbinding is statically linked during build time.
+
+
