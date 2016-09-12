@@ -104,7 +104,7 @@ af_err vectorFieldWrapper(const af_window wind, const af_array points, const af_
 
         // Window's draw function requires either image or chart
         if (props->col > -1 && props->row > -1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
     }
@@ -189,7 +189,7 @@ af_err vectorFieldWrapper(const af_window wind,
 
         // Window's draw function requires either image or chart
         if (props->col > -1 && props->row > -1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
 
@@ -265,7 +265,7 @@ af_err vectorFieldWrapper(const af_window wind,
 
         // Window's draw function requires either image or chart
         if (props->col > -1 && props->row > -1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
 
