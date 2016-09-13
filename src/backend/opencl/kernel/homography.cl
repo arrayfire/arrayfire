@@ -22,58 +22,57 @@ inline void jacobi_svd(__local T* l_V, __local T* l_S, __local T* l_d,
     int tid_y = get_local_id(1);
     int gid_y = get_global_id(1);
 
-    // Copy first 80 elements
-    T t = l_S[tid_y*81 + tid_x];
-    l_acc1[tid_y*bsz_x + tid_x] = t*t;
-    for (int i = 1; i <= 4; i++) {
-        T t = l_S[tid_y*81 + tid_x+i*bsz_x];
-        l_acc1[tid_y*bsz_x + tid_x] += t*t;
-    }
-    if (tid_x < 8)
-        l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+8];
-    barrier(CLK_LOCAL_MEM_FENCE);
-    if (tid_x < 4)
-        l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+4];
-    barrier(CLK_LOCAL_MEM_FENCE);
-    if (tid_x < 2)
-        l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+2];
-    barrier(CLK_LOCAL_MEM_FENCE);
-    if (tid_x < 1) {
-        // Copy last element
-        T t = l_S[tid_y*bsz_x + tid_x+80];
-        l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+1] + t*t;
+    int doff = tid_y *  n;
+    int soff = tid_y * 81;
+
+    if (tid_x < n) {
+        T acc1 = 0;
+        for (int i = 0; i < m; i++) {
+            int stid = soff + tid_x * m + i;
+            T t = l_S[stid];
+            acc1 += t * t;
+            l_V[stid] = (tid_x == i) ? 1 : 0;
+        }
+        l_d[doff + tid_x] = acc1;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (tid_x < n)
-        l_d[tid_y*9 + tid_x] = l_acc1[tid_y*bsz_x + tid_x];
+#if defined(IS_CPU)
+    // All threads do the same work
+    // FIXME: Figure out why code below doesnt work
+    int tst = 0, toff = 1, tcond = tid_x == 0;
+#define BARRIER //nothing
+#else
+    // Split work across subgroup
+    int tst = tid_x, toff = bsz_x, tcond = 1;
+#define BARRIER barrier(CLK_LOCAL_MEM_FENCE)
+#endif
 
-    // V is initialized as an identity matrix
-    for (int i = 0; i <= 4; i++) {
-        l_V[tid_y*81 + i*bsz_x + tid_x] = 0;
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-    if (tid_x < m)
-        l_V[tid_y*81 + tid_x*m + tid_x] = 1;
-    barrier(CLK_LOCAL_MEM_FENCE);
 
-    for (int it = 0; it < iterations; it++) {
-        int converged = 0;
-
+    for (int it = 0; tcond && it < iterations; it++) {
         for (int i = 0; i < n-1; i++) {
             for (int j = i+1; j < n; j++) {
-                __local T* Si = l_S + tid_y*81 + i*m;
-                __local T* Sj = l_S + tid_y*81 + j*m;
+                __local T* Si = l_S + soff + i*m;
+                __local T* Sj = l_S + soff + j*m;
+
+                __local T* Vi = l_V + soff + i*n;
+                __local T* Vj = l_V + soff + j*n;
 
                 T p = (T)0;
                 for (int k = 0; k < m; k++)
                     p += Si[k]*Sj[k];
 
-                T c = 0, s = 0;
+                T di = l_d[doff + i];
+                T dj = l_d[doff + j];
+                BARRIER;
 
-                int cond = (fabs(p) > EPS*sqrt(l_d[tid_y*9 + i]*l_d[tid_y*9 + j]));
+                T c = 0, s = 0;
+                T t0 = 0, t1 = 0;
+                int cond = (fabs(p) > m*EPS*sqrt(di * dj));
+                T a = 0, b = 0;
+
                 if (cond) {
-                    T y = l_d[tid_y*9 + i] - l_d[tid_y*9 + j];
+                    T y = di - dj;
                     T r = hypot(p*2, y);
                     T r2 = r*2;
                     if (y >= 0) {
@@ -85,59 +84,42 @@ inline void jacobi_svd(__local T* l_V, __local T* l_S, __local T* l_d,
                         c = p / (r2*s);
                     }
 
-                    if (tid_x < m) {
-                        T t0 = c*Si[tid_x] + s*Sj[tid_x];
-                        T t1 = c*Sj[tid_x] - s*Si[tid_x];
-                        Si[tid_x] = t0;
-                        Sj[tid_x] = t1;
-
-                        l_acc1[tid_y*16 + tid_x] = t0*t0;
-                        l_acc2[tid_y*16 + tid_x] = t1*t1;
+                    for (int k = tst; k < m; k+=toff) {
+                        t0 = c*Si[k] + s*Sj[k];
+                        t1 = c*Sj[k] - s*Si[k];
+                        Si[k] = t0;
+                        Sj[k] = t1;
+                        l_acc1[tid_y * bsz_x + k] = t0 * t0;
+                        l_acc2[tid_y * bsz_x + k] = t1 * t1;
                     }
                 }
-                barrier(CLK_LOCAL_MEM_FENCE);
+                BARRIER;
 
-                if (cond && tid_x < 4) {
-                    l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+4];
-                    l_acc2[tid_y*16 + tid_x] += l_acc2[tid_y*16 + tid_x+4];
+                if (cond) {
+                    a = 0;
+                    b = 0;
+                    for (int k = 0; k < m; k++) {
+                        a += l_acc1[tid_y * bsz_x + k];
+                        b += l_acc2[tid_y * bsz_x + k];
+                    }
+                    l_d[doff + i] = a;
+                    l_d[doff + j] = b;
                 }
-                barrier(CLK_LOCAL_MEM_FENCE);
-                if (cond && tid_x < 2) {
-                    l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+2];
-                    l_acc2[tid_y*16 + tid_x] += l_acc2[tid_y*16 + tid_x+2];
+                BARRIER;
+
+                if (cond) {
+                    for (int l = tst; l < n; l += toff) {
+                        T t0 = Vi[l] * c + Vj[l] * s;
+                        T t1 = Vj[l] * c - Vi[l] * s;
+
+                        Vi[l] = t0;
+                        Vj[l] = t1;
+                    }
                 }
-                barrier(CLK_LOCAL_MEM_FENCE);
-                if (cond && tid_x < 1) {
-                    l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+1] + l_acc1[tid_y*16 + tid_x+8];
-                    l_acc2[tid_y*16 + tid_x] += l_acc2[tid_y*16 + tid_x+1] + l_acc2[tid_y*16 + tid_x+8];
-                }
-                barrier(CLK_LOCAL_MEM_FENCE);
-
-                if (cond && tid_x == 0) {
-                    l_d[tid_y*9 + i] = l_acc1[tid_y*16];
-                    l_d[tid_y*9 + j] = l_acc2[tid_y*16];
-                }
-                barrier(CLK_LOCAL_MEM_FENCE);
-
-                __local T* Vi = l_V + tid_y*81 + i*n;
-                __local T* Vj = l_V + tid_y*81 + j*n;
-
-                if (cond && tid_x < n) {
-                    T t0 = Vi[tid_x] * c + Vj[tid_x] * s;
-                    T t1 = Vj[tid_x] * c - Vi[tid_x] * s;
-
-                    Vi[tid_x] = t0;
-                    Vj[tid_x] = t1;
-                }
-                barrier(CLK_LOCAL_MEM_FENCE);
-
-                converged = 1;
+                BARRIER;
             }
-            if (converged == 0)
-                break;
         }
     }
-    barrier(CLK_LOCAL_MEM_FENCE);
 }
 
 inline int compute_mean_scale(
@@ -194,7 +176,7 @@ inline int compute_mean_scale(
     *src_scale = sqrt(2.0f) / sqrt(src_var);
     *dst_scale = sqrt(2.0f) / sqrt(dst_var);
 
-    return !bad;
+    return bad;
 }
 
 #define LSPTR(Z, Y, X) (l_S[(Z) * 81 + (Y) * 9 + (X)])
@@ -212,19 +194,20 @@ __kernel void compute_homography(
 {
     unsigned i = get_global_id(1);
     unsigned tid_y = get_local_id(1);
+    unsigned tid_x = get_local_id(0);
 
     float x_src_mean, y_src_mean;
     float x_dst_mean, y_dst_mean;
     float src_scale, dst_scale;
     float src_pt_x[4], src_pt_y[4], dst_pt_x[4], dst_pt_y[4];
 
-    compute_mean_scale(&x_src_mean, &y_src_mean,
-                       &x_dst_mean, &y_dst_mean,
-                       &src_scale, &dst_scale,
-                       src_pt_x, src_pt_y,
-                       dst_pt_x, dst_pt_y,
-                       x_src, y_src, x_dst, y_dst,
-                       rnd, rInfo, i);
+    int bad = compute_mean_scale(&x_src_mean, &y_src_mean,
+                                 &x_dst_mean, &y_dst_mean,
+                                 &src_scale, &dst_scale,
+                                 src_pt_x, src_pt_y,
+                                 dst_pt_x, dst_pt_y,
+                                 x_src, y_src, x_dst, y_dst,
+                                 rnd, rInfo, i);
 
     __local T l_acc1[256];
     __local T l_acc2[256];
@@ -234,33 +217,33 @@ __kernel void compute_homography(
     __local T l_d[16*9];
 
     // Compute input matrix
-    for (unsigned j = get_local_id(0); j < 4; j+=get_local_size(0)) {
-        float srcx = (src_pt_x[j] - x_src_mean) * src_scale;
-        float srcy = (src_pt_y[j] - y_src_mean) * src_scale;
-        float dstx = (dst_pt_x[j] - x_dst_mean) * dst_scale;
-        float dsty = (dst_pt_y[j] - y_dst_mean) * dst_scale;
+    if (tid_x < 4) {
+        float srcx = (src_pt_x[tid_x] - x_src_mean) * src_scale;
+        float srcy = (src_pt_y[tid_x] - y_src_mean) * src_scale;
+        float dstx = (dst_pt_x[tid_x] - x_dst_mean) * dst_scale;
+        float dsty = (dst_pt_y[tid_x] - y_dst_mean) * dst_scale;
 
-        LSPTR(tid_y, 0, j*2) = 0.0f;
-        LSPTR(tid_y, 1, j*2) = 0.0f;
-        LSPTR(tid_y, 2, j*2) = 0.0f;
-        LSPTR(tid_y, 3, j*2) = -srcx;
-        LSPTR(tid_y, 4, j*2) = -srcy;
-        LSPTR(tid_y, 5, j*2) = -1.0f;
-        LSPTR(tid_y, 6, j*2) = dsty*srcx;
-        LSPTR(tid_y, 7, j*2) = dsty*srcy;
-        LSPTR(tid_y, 8, j*2) = dsty;
+        LSPTR(tid_y, 0, tid_x*2) = 0.0f;
+        LSPTR(tid_y, 1, tid_x*2) = 0.0f;
+        LSPTR(tid_y, 2, tid_x*2) = 0.0f;
+        LSPTR(tid_y, 3, tid_x*2) = -srcx;
+        LSPTR(tid_y, 4, tid_x*2) = -srcy;
+        LSPTR(tid_y, 5, tid_x*2) = -1.0f;
+        LSPTR(tid_y, 6, tid_x*2) = dsty*srcx;
+        LSPTR(tid_y, 7, tid_x*2) = dsty*srcy;
+        LSPTR(tid_y, 8, tid_x*2) = dsty;
 
-        LSPTR(tid_y, 0, j*2+1) = srcx;
-        LSPTR(tid_y, 1, j*2+1) = srcy;
-        LSPTR(tid_y, 2, j*2+1) = 1.0f;
-        LSPTR(tid_y, 3, j*2+1) = 0.0f;
-        LSPTR(tid_y, 4, j*2+1) = 0.0f;
-        LSPTR(tid_y, 5, j*2+1) = 0.0f;
-        LSPTR(tid_y, 6, j*2+1) = -dstx*srcx;
-        LSPTR(tid_y, 7, j*2+1) = -dstx*srcy;
-        LSPTR(tid_y, 8, j*2+1) = -dstx;
+        LSPTR(tid_y, 0, tid_x*2+1) = srcx;
+        LSPTR(tid_y, 1, tid_x*2+1) = srcy;
+        LSPTR(tid_y, 2, tid_x*2+1) = 1.0f;
+        LSPTR(tid_y, 3, tid_x*2+1) = 0.0f;
+        LSPTR(tid_y, 4, tid_x*2+1) = 0.0f;
+        LSPTR(tid_y, 5, tid_x*2+1) = 0.0f;
+        LSPTR(tid_y, 6, tid_x*2+1) = -dstx*srcx;
+        LSPTR(tid_y, 7, tid_x*2+1) = -dstx*srcy;
+        LSPTR(tid_y, 8, tid_x*2+1) = -dstx;
 
-        if (j == 4) {
+        if (tid_x == 4) {
             LSPTR(tid_y, 0, 8) = 0.0f;
             LSPTR(tid_y, 1, 8) = 0.0f;
             LSPTR(tid_y, 2, 8) = 0.0f;
@@ -276,28 +259,30 @@ __kernel void compute_homography(
 
     jacobi_svd(l_V, l_S, l_d, l_acc1, l_acc2, 9, 9);
 
-    T vH[9], H_tmp[9];
-    for (unsigned j = 0; j < 9; j++)
-        vH[j] = l_V[tid_y * 81 + 8 * 9 + j];
+    if (i < HInfo.dims[1] && tid_x == 0) {
+        T vH[9], H_tmp[9];
+        for (unsigned j = 0; j < 9; j++)
+            vH[j] = l_V[tid_y * 81 + 8 * 9 + j];
 
-    H_tmp[0] = src_scale*x_dst_mean*vH[6] + src_scale*vH[0]/dst_scale;
-    H_tmp[1] = src_scale*x_dst_mean*vH[7] + src_scale*vH[1]/dst_scale;
-    H_tmp[2] = x_dst_mean*(vH[8] - src_scale*y_src_mean*vH[7] - src_scale*x_src_mean*vH[6]) +
-                          (vH[2] - src_scale*y_src_mean*vH[1] - src_scale*x_src_mean*vH[0])/dst_scale;
+        H_tmp[0] = src_scale*x_dst_mean*vH[6] + src_scale*vH[0]/dst_scale;
+        H_tmp[1] = src_scale*x_dst_mean*vH[7] + src_scale*vH[1]/dst_scale;
+        H_tmp[2] = x_dst_mean*(vH[8] - src_scale*y_src_mean*vH[7] - src_scale*x_src_mean*vH[6]) +
+            (vH[2] - src_scale*y_src_mean*vH[1] - src_scale*x_src_mean*vH[0])/dst_scale;
 
-    H_tmp[3] = src_scale*y_dst_mean*vH[6] + src_scale*vH[3]/dst_scale;
-    H_tmp[4] = src_scale*y_dst_mean*vH[7] + src_scale*vH[4]/dst_scale;
-    H_tmp[5] = y_dst_mean*(vH[8] - src_scale*y_src_mean*vH[7] - src_scale*x_src_mean*vH[6]) +
-                          (vH[5] - src_scale*y_src_mean*vH[4] - src_scale*x_src_mean*vH[3])/dst_scale;
+        H_tmp[3] = src_scale*y_dst_mean*vH[6] + src_scale*vH[3]/dst_scale;
+        H_tmp[4] = src_scale*y_dst_mean*vH[7] + src_scale*vH[4]/dst_scale;
+        H_tmp[5] = y_dst_mean*(vH[8] - src_scale*y_src_mean*vH[7] - src_scale*x_src_mean*vH[6]) +
+            (vH[5] - src_scale*y_src_mean*vH[4] - src_scale*x_src_mean*vH[3])/dst_scale;
 
-    H_tmp[6] = src_scale*vH[6];
-    H_tmp[7] = src_scale*vH[7];
-    H_tmp[8] = vH[8] - src_scale*y_src_mean*vH[7] - src_scale*x_src_mean*vH[6];
+        H_tmp[6] = src_scale*vH[6];
+        H_tmp[7] = src_scale*vH[7];
+        H_tmp[8] = vH[8] - src_scale*y_src_mean*vH[7] - src_scale*x_src_mean*vH[6];
 
-    const unsigned Hidx = HInfo.dims[0] * i;
-    __global T* H_ptr = H + Hidx;
-    for (int h = 0; h < 9; h++)
-        H_ptr[h] = H_tmp[h];
+        const unsigned Hidx = HInfo.dims[0] * i;
+        __global T* H_ptr = H + Hidx;
+        for (int h = 0; h < 9; h++)
+            H_ptr[h] = bad ? 0 : H_tmp[h];
+    }
 }
 
 #undef APTR
@@ -364,6 +349,7 @@ __kernel void eval_homography(
         }
 #endif
     }
+    barrier(CLK_LOCAL_MEM_FENCE);
 
 #ifdef RANSAC
     unsigned bid_x = get_group_id(0);
@@ -379,8 +365,10 @@ __kernel void eval_homography(
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
-    inliers[bid_x] = l_inliers[0];
-    idx[bid_x]     = l_idx[0];
+    if (tid_x == 0) {
+        inliers[bid_x] = l_inliers[0];
+        idx[bid_x]     = l_idx[0];
+    }
 #endif
 }
 

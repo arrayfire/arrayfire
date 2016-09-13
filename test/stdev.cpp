@@ -18,8 +18,9 @@
 #include <algorithm>
 #include <testHelpers.hpp>
 
-using namespace std;
 using namespace af;
+using std::string;
+using std::vector;
 
 template<typename T>
 class StandardDev : public ::testing::Test
