@@ -134,6 +134,34 @@ The locations are provided by flattening the input into a linear array.
 
 
 
+\defgroup scan_func_scan scan
+
+\ingroup scan_mat
+
+Inclusive or exclusive scan of an array
+
+Perform inclusive or exclusive scan using a given binary operation along a
+given dimension.
+
+Binary operations can be [add](\ref AF_BINARY_ADD), [mul](\ref AF_BINARY_MUL),
+[min](\ref AF_BINARY_MIN), [max](\ref AF_BINARY_MAX) as defined by \ref af_binary_op.
+
+
+
+\defgroup scan_func_scanbykey scanByKey
+
+\ingroup scan_mat
+
+Inclusive or exclusive scan of an array by key
+
+Perform inclusive or exclusive scan using a given binary operation along a
+given dimension using a key.
+
+Binary operations can be [add](\ref AF_BINARY_ADD), [mul](\ref AF_BINARY_MUL),
+[min](\ref AF_BINARY_MIN), [max](\ref AF_BINARY_MAX) as defined by \ref af_binary_op.
+
+
+
 \defgroup calc_func_diff1 diff1
 
 \ingroup calc_mat

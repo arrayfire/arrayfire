@@ -1,0 +1,103 @@
+
+/**
+\addtogroup arrayfire_func
+@{
+
+\defgroup random_mat Random Number Generation
+
+\brief Random Number Generation Functions
+
+Functions to generate and manage random numbers and random number engines
+
+\ingroup data_mat
+
+===============================================================================
+
+\defgroup random_engine_class randomEngine
+
+\brief Random Number Engine Generation Class
+
+The \ref af::randomEngine class is used to set the type and seed of random
+number generation engine based on \ref af::randomEngineType.
+
+\ingroup random_mat
+
+===============================================================================
+
+\defgroup random_engine_func_constructor randomEngine Constructors
+
+\brief Create random number generator object
+
+A \ref af::randomEngine object can be used to generate psuedo random numbers
+using various types of random number generation algorithms defined by \ref
+af::randomEngineType.
+
+\ingroup random_engine_class
+
+===============================================================================
+
+\defgroup random_func_randu randu
+
+\brief Create a random array sampled from uniform distribution.
+
+The type of engine used is defined by \ref af::randomEngine.
+
+The data is uniformly distributed between [0, 1].
+
+\ingroup random_mat
+
+===============================================================================
+
+\defgroup random_func_randn randn
+
+\brief Create a random array sampled from normal distribution.
+
+The type of engine used is defined by \ref af::randomEngine.
+
+The data is centered around 0.
+
+\ingroup random_mat
+
+===============================================================================
+
+\defgroup random_func_set_type setDefaultRandomEngineType
+
+\brief Set the default random engine type.
+
+This random engine type is used when calling random number functions without
+an \ref af::randomEngine object as an argument.
+
+\ingroup random_mat
+
+===============================================================================
+
+\defgroup random_func_get_default_engine getDefaultRandomEngine
+
+\brief Returns the default random engine object.
+
+Returns the \ref af::randomEngine that is currently set as default.
+
+\ingroup random_mat
+
+===============================================================================
+
+\defgroup random_func_set_seed setSeed
+
+\brief Set the seed for random number generation
+
+Sets the seed for the current default random engine.
+
+\ingroup random_mat
+
+===============================================================================
+
+\defgroup random_func_get_seed getSeed
+
+\brief Returns the seed for random number generation
+
+Returns the seed for the current default random engine.
+
+\ingroup random_mat
+
+@}
+*/

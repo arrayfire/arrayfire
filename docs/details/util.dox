@@ -132,17 +132,6 @@ tag is unique or not.
 \ingroup dataio_mat
 \ingroup arrayfire_func
 
-=======================================================================
-
-\defgroup data_func_randn randn
-
-\brief Create a random array sampled from a normal distribution
-
-The distribution is centered around 0
-
-\ingroup data_mat
-\ingroup arrayfire_func
-
 @}
 */
 

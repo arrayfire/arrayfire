@@ -340,7 +340,7 @@ namespace af
        \param[in] inclusive_scan is flag specifying whether scan is inclusive
        \return the output containing scan of the input
 
-       \ingroup scan_func_scan
+       \ingroup scan_func_scanbykey
     */
     AFAPI array scanByKey(const array &key, const array& in, const int dim = 0, binaryOp op = AF_BINARY_ADD, bool inclusive_scan = true);
 #endif
@@ -798,7 +798,7 @@ extern "C" {
        \param[in] inclusive_scan is flag specifying whether scan is inclusive
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup scan_func_scan
+       \ingroup scan_func_scanbykey
     */
     AFAPI af_err af_scan_by_key(af_array *out, const af_array key, const af_array in, const int dim, af_binary_op op, bool inclusive_scan);
 #endif
