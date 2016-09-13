@@ -1,73 +1,189 @@
 Release Notes {#releasenotes}
 ==============
+
 v3.4.0
 ==============
 
+Major Updates
+-------------
+* [Sparse Matrix and BLAS](\ref sparse_func). <sup>[1](https://github.com/arrayfire/arrayfire/issues/821)
+  [2](https://github.com/arrayfire/arrayfire/pull/1319)</sup>
+* Faster JIT for CUDA and OpenCL. <sup>[1](https://github.com/arrayfire/arrayfire/issues/1472)
+  [2](https://github.com/arrayfire/arrayfire/pull/1462)</sup>
+* Support for [random number generator engines](\ref af::randomEngine).
+  <sup>[1](https://github.com/arrayfire/arrayfire/issues/868)
+  [2](https://github.com/arrayfire/arrayfire/pull/1551)</sup>
+* Improvements to graphics. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1555)
+  [2](https://github.com/arrayfire/arrayfire/pull/1566)</sup>
+
 Features
 ----------
-* New [interpolation methods](https://github.com/arrayfire/arrayfire/issues/1562) for \ref af::resize(), \ref af::transform(), \ref af::approx1() and \ref af::approx2()
-* Support for [complex mathematical functions](\ref mathfunc_mat)
-* New Forge graphics [integration](https://github.com/arrayfire/arrayfire/pull/1555)!
-    * Vector Field plotting functionality
-    * API updates
-    * Removed GLEW and replaced with glbinding. (And links to both GLEW and glbinding)
-    * Multiple overlays on the same window are now possible.
-    * New API to set axes limits for graphs.
-        * Draw calls do not automatically compute the limits. This is now under user control.
-    * New API to set axes titles.
-    * New API for plot and scatter:
-        * \ref plot() and \ref scatter() now can handle 2D and 3D
-        * \ref af_draw_plot_nd
-        * \ref af_draw_plot_2d
-        * \ref af_draw_plot_3d
-        * \ref af_draw_scatter_nd
-        * \ref af_draw_scatter_2d
-        * \ref af_draw_scatter_3d
-
-* \ref af::medfilt1(): [Median filter for 1-d signals](https://github.com/arrayfire/arrayfire/pull/1479)
-* af::RandomEngine(): New [random number generators](https://github.com/arrayfire/arrayfire/issues/868)
-    * Philox
-    * Threefry
-    * Mersenne Twister
-* \ref af::sparse(): [Sparse matrix support for all backends](https://github.com/arrayfire/arrayfire/issues/821)
-* \ref af::scan(): New [generalized scan](https://github.com/arrayfire/arrayfire/issues/388) functions
-* \ref af::moments(): New [image moments](\ref moments_mat) functions
+* **[Sparse Matrix and BLAS](\ref sparse_func)** <sup>[1](https://github.com/arrayfire/arrayfire/issues/821)
+[2](https://github.com/arrayfire/arrayfire/pull/1319)</sup>
+  * Support for [CSR](\ref AF_STORAGE_CSR) and [COO](\ref AF_STORAGE_COO)
+    [storage types](\ref af_storage).
+  * Sparse-Dense Matrix Multiplication and Matrix-Vector Multiplication as a
+    part of af::matmul() using \ref AF_STORAGE_CSR format for sparse.
+  * Conversion to and from [dense](\ref AF_STORAGE_DENSE) matrix to [CSR](\ref AF_STORAGE_CSR)
+    and [COO](\ref AF_STORAGE_COO) [storage types](\ref af_storage).
+* **Faster JIT** <sup>[1](https://github.com/arrayfire/arrayfire/issues/1472)
+  [2](https://github.com/arrayfire/arrayfire/pull/1462)</sup>
+  * Performance improvements for CUDA and OpenCL JIT functions.
+  * Support for evaluating multiple outputs in a single kernel. See af::array::eval() for more.
+* **[Random Number Generation](\ref af::randomEngine)**
+  <sup>[1](https://github.com/arrayfire/arrayfire/issues/868)
+  [2](https://github.com/arrayfire/arrayfire/pull/1551)</sup>
+  * af::randomEngine(): A random engine class to handle setting the [type](af_random_type) and seed
+    for random number generator engines.
+  * Supported engine types are (\ref af_random_engine_type):
+    * [Philox](http://www.thesalmons.org/john/random123/)
+    * [Threefry](http://www.thesalmons.org/john/random123/)
+    * [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MTGP/)
+* **Graphics** <sup>[1](https://github.com/arrayfire/arrayfire/pull/1555)
+  [2](https://github.com/arrayfire/arrayfire/pull/1566)</sup>
+  * Using [Forge v0.9.0](https://github.com/arrayfire/forge/releases/tag/v0.9.0)
+  * [Vector Field](\ref af::Window::vectorField) plotting functionality.
+    <sup>[1](https://github.com/arrayfire/arrayfire/pull/1566)</sup>
+  * Removed [GLEW](http://glew.sourceforge.net/) and replaced with [glbinding](https://github.com/cginternals/glbinding).
+    * Removed usage of GLEW after support for MX (multithreaded) was dropped in v2.0.
+      <sup>[1](https://github.com/arrayfire/arrayfire/issues/1540)</sup>
+  * Multiple overlays on the same window are now possible.
+    * Overlays support for same type of object (2D/3D)
+    * Supported by af::Window::plot, af::Window::hist, af::Window::surface,
+      af::Window::vectorField.
+  * New API to set axes limits for graphs.
+    * Draw calls do not automatically compute the limits. This is now under user control.
+    * af::Window::setAxesLimits can be used to set axes limits automatically or manually.
+    * af::Window::setAxesTitles can be used to set axes titles.
+  * New API for plot and scatter:
+    * af::Window::plot() and af::Window::scatter() now can handle 2D and 3D and determine appropriate order.
+    * af_draw_plot_nd()
+    * af_draw_plot_2d()
+    * af_draw_plot_3d()
+    * af_draw_scatter_nd()
+    * af_draw_scatter_2d()
+    * af_draw_scatter_3d()
+* **New [interpolation methods](\ref af_interp_type)**
+<sup>[1](https://github.com/arrayfire/arrayfire/issues/1562)</sup>
+  * Applies to
+    * \ref af::resize()
+    * \ref af::transform()
+    * \ref af::approx1()
+    * \ref af::approx2()
+* **Support for [complex mathematical functions](\ref mathfunc_mat)**
+  <sup>[1](https://github.com/arrayfire/arrayfire/issues/1507)</sup>
+  * Add complex support for \ref trig_mat, \ref af::sqrt(), \ref af::log().
+* **af::medfilt1(): Median filter for 1-d signals** <sup>[1](https://github.com/arrayfire/arrayfire/pull/1479)</sup>
+* <b>Generalized scan functions: \ref scan_func_scan and \ref scan_func_scanbykey</b>
+  * Now supports inclusive or exclusive scans
+  * Supports binary operations defined by \ref af_binary_op.
+  <sup>[1](https://github.com/arrayfire/arrayfire/issues/388)</sup>
+* **[Image Moments](\ref moments_mat) functions**
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1453)</sup>
+* <b>Add af::getSizeOf() function for \ref af_dtype</b>
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1404)</sup>
+* <b>Explicitly extantiate \ref af::array::device() for `void *</b>
+  <sup>[1](https://github.com/arrayfire/arrayfire/issues/1503)</sup>
 
 Bug Fixes
 --------------
-* Fixes to edge-cases in [morphological operations.](https://github.com/arrayfire/arrayfire/issues/1564)
-* Makes JIT tree size [consistent between devices](https://github.com/arrayfire/arrayfire/issues/1457)
-* Delegate [higher-dimension convolutions](https://github.com/arrayfire/arrayfire/pull/1445) to correct dimension
-* Indexing fixes with [c++11x](https://github.com/arrayfire/arrayfire/pull/1426), [af_indexers](https://github.com/arrayfire/arrayfire/pull/1426), and [empty arrays](https://github.com/arrayfire/arrayfire/issues/799)
-* Single element [median bugfix](https://github.com/arrayfire/arrayfire/pull/1423)
-* Correct time from [timeit()](https://github.com/arrayfire/arrayfire/pull/1414) function
-* Fix floating point numbers in [af::seq and missing size_of() types](https://github.com/arrayfire/arrayfire/pull/1404)
-* Explicitly extantiate [af::device() for void * ](https://github.com/arrayfire/arrayfire/issues/1503)
+* Fixes to edge-cases in \ref morph_mat. <sup>[1](https://github.com/arrayfire/arrayfire/issues/1564)</sup>
+* Makes JIT tree size consistent between devices. <sup>[1](https://github.com/arrayfire/arrayfire/issues/1457)</sup>
+* Delegate higher-dimension in \ref convolve_mat to correct dimensions. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1445)</sup>
+* Indexing fixes with C++11. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1426) [2](https://github.com/arrayfire/arrayfire/pull/1426)</sup>
+* Handle empty arrays as inputs in various functions. <sup>[1](https://github.com/arrayfire/arrayfire/issues/799)</sup>
+* Fix bug when single element input to af::median. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1423)</sup>
+* Fix bug in calculation of time from af::timeit(). <sup>[1](https://github.com/arrayfire/arrayfire/pull/1414)</sup>
+* Fix bug in floating point numbers in af::seq. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1404)</sup>
+* Fixes for OpenCL graphics interop on NVIDIA devices.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1408/commits/e1f16e6)</sup>
+* Fix bug when compiling large kernels for AMD devices.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1465)</sup>
+* Fix bug in af::bilateral when shared memory is over the limit.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1478)</sup>
+* Fix bug in kernel header compilation tool `bin2cpp`.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1544)</sup>
+* Fix inital values for \ref morph_mat functions.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1547)</sup>
+* Fix bugs in af::homography() CPU and OpenCL kernels.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1584)</sup>
+* Fix bug in CPU TNJ.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1587)</sup>
+
 
 Improvements
 ------------
-* CUDA 8 and compute 6.x(Pascal) support, current installer still on 7.5
-* Improved [JIT](https://github.com/arrayfire/arrayfire/issues/1472) evaluation heuristics for CUDA and OpenCL
-* User controlled FFT plan caching
-* CUDA [speedups](https://github.com/arrayfire/arrayfire/pull/1411) for \ref wrap(), \ref unwrap() and [approx](\ref approx_mat).
-* Fallback for CUDA-OpenGL [interop](https://github.com/arrayfire/arrayfire/pull/1415)
-* Additional forms of batching with the \ref transform() function. [New behavior defined here.](https://github.com/arrayfire/arrayfire/pull/1412)
-* Update to [OpenCL2 headers](https://github.com/arrayfire/arrayfire/issues/1344) in backend
-* Support for interacting with [external OpenCL contexts](https://github.com/arrayfire/arrayfire/pull/1140)
+* CUDA 8 and compute 6.x(Pascal) support, current installer ships with CUDA 7.5. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1432) [2](https://github.com/arrayfire/arrayfire/pull/1487) [3](https://github.com/arrayfire/arrayfire/pull/1539)</sup>
+* User controlled FFT plan caching. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1448)</sup>
+* CUDA performance improvements for \ref image_func_wrap, \ref image_func_unwrap and \ref approx_mat.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1411)</sup>
+* Fallback for CUDA-OpenGL interop when no devices does not support OpenGL.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1415)</sup>
+* Additional forms of batching with the \ref transform_func_transform functions.
+  [New behavior defined here](https://github.com/arrayfire/arrayfire/pull/1412).
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1412)</sup>
+* Update to OpenCL2 headers. <sup>[1](https://github.com/arrayfire/arrayfire/issues/1344)</sup>
+* Support for integration with external OpenCL contexts. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1140)</sup>
+* Performance improvements to interal copy in CPU Backend.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1440)</sup>
+* Performance improvements to af::select and af::replace CUDA kernels.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1587)</sup>
+* Enable OpenCL-CPU offload by default for devices with Unified Host Memory.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1521)</sup>
+  * To disable, use the environment variable `AF_OPENCL_CPU_OFFLOAD=0`.
 
 Build
 ------
-* Compilation [speedups](https://github.com/arrayfire/arrayfire/pull/1526)
-* Build [fixes](https://github.com/arrayfire/arrayfire/pull/1526) with MKL.
-* Error message when [CUDA Compute Detection fails](https://github.com/arrayfire/arrayfire/issues/1535).
-* Several CMake build issues with Xcode generator fixed
-* Fix [multiple OpenCL definitions](https://github.com/arrayfire/arrayfire/issues/1429) at link-time
-* [Boost compute version update and lapacke detection fix](https://github.com/arrayfire/arrayfire/pull/1423)
-* Fix builds [with GCC 6.1.1](https://github.com/arrayfire/arrayfire/pull/1409) 
+* Compilation speedups. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1526)</sup>
+* Build fixes with MKL. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1526)</sup>
+* Error message when CMake CUDA Compute Detection fails. <sup>[1](https://github.com/arrayfire/arrayfire/issues/1535)</sup>
+* Several CMake build issues with Xcode generator fixed.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1493) [2](https://github.com/arrayfire/arrayfire/pull/1499)</sup>
+* Fix multiple OpenCL definitions at link time. <sup>[1](https://github.com/arrayfire/arrayfire/issues/1429)</sup>
+* Fix lapacke detection in CMake. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1423)</sup>
+* Update build tags of
+  * [clBLAS](https://github.com/clMathLibraries/clBLAS)
+  * [clFFT](https://github.com/clMathLibraries/clFFT)
+  * [Boost.Compute](https://github.com/boostorg/compute)
+  * [Forge](https://github.com/arrayfire/forge)
+  * [glbinding](https://github.com/cginternals/glbinding)
+* Fix builds with GCC 6.1.1 and GCC 5.3.0. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1409)</sup>
 
-Documentation
+Installers
+----------
+* All installers now ship with ArrayFire libraries build with MKL 2016.
+* All installers now ship with Forge development files and examples included.
+* CUDA Compute 2.0 has been removed from the installers. Please contact us
+  directly if you have a special need.
+
+Examples
 -------------
-* Fixed grammar in license
+* Added [example simulating gravity](\ref graphics/field.cpp) for
+  demonstration of vector field.
+* Improvements to \ref financial/black_scholes_options.cpp example.
+* Improvements to \ref graphics/gravity_sim.cpp example.
+* Fix graphics examples to use af::Window::setAxesLimits and
+  af::Window::setAxesTitles functions.
+
+Documentation & Licensing
+-------------------------
+* [ArrayFire copyright and trademark policy](http://arrayfire.com/trademark-policy)
+* Fixed grammar in license.
+* Add license information for glbinding.
+* Remove license infomation for GLEW.
+* Random123 now applies to all backends.
+* Random number functions are now under \ref random_mat.
+
+Deprecations
+------------
+The following functions have been deprecated and may be modified or removed
+permanently from future versions of ArrayFire.
+* \ref af::Window::plot3(): Use \ref af::Window::plot instead.
+* \ref af_draw_plot(): Use \ref af_draw_plot_nd or \ref af_draw_plot_2d instead.
+* \ref af_draw_plot3(): Use \ref af_draw_plot_nd or \ref af_draw_plot_3d instead.
+* \ref af::Window::scatter3(): Use \ref af::Window::scatter instead.
+* \ref af_draw_scatter(): Use \ref af_draw_scatter_nd or \ref af_draw_scatter_2d instead.
+* \ref af_draw_scatter3(): Use \ref af_draw_scatter_nd or \ref af_draw_scatter_3d instead.
 
 Known Issues
 -------------
