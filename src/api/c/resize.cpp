@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/array.h>
+#include <af/image.h>
 #include <af/defines.h>
 #include <err_common.hpp>
 #include <handle.hpp>
@@ -32,12 +33,24 @@ af_err af_resize(af_array *out, const af_array in, const dim_t odim0, const dim_
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
 
-        ARG_ASSERT(4, (method == AF_INTERP_BILINEAR ||
-                       method == AF_INTERP_NEAREST  ||
-                       method == AF_INTERP_LOWER
-                       ));
+        ARG_ASSERT(4, method == AF_INTERP_NEAREST  ||
+                      method == AF_INTERP_BILINEAR ||
+                      method == AF_INTERP_BILINEAR_COSINE ||
+                      method == AF_INTERP_BICUBIC ||
+                      method == AF_INTERP_BICUBIC_SPLINE ||
+                      method == AF_INTERP_LOWER);
+
         DIM_ASSERT(2, odim0 > 0);
         DIM_ASSERT(3, odim1 > 0);
+
+        bool is_resize_supported = (method == AF_INTERP_LOWER ||
+                                    method == AF_INTERP_NEAREST ||
+                                    method == AF_INTERP_BILINEAR);
+
+        if (!is_resize_supported) {
+            // Fall back to scale for additional methods
+            return af_scale(out, in, 0, 0, odim0, odim1, method);
+        }
 
         af_array output;
 

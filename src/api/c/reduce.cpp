@@ -81,8 +81,7 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim)
         const ArrayInfo in_info = getInfo(in);
 
         if (dim >= (int)in_info.ndims()) {
-            *out = retain(in);
-            return AF_SUCCESS;
+            return af_retain_array(out, in);
         }
 
         af_dtype type = in_info.getType();
@@ -246,9 +245,10 @@ static af_err reduce_all_common(double *real_val, double *imag_val, const af_arr
         const ArrayInfo in_info = getInfo(in);
         af_dtype type = in_info.getType();
 
+        ARG_ASSERT(2, in_info.ndims() > 0);
         ARG_ASSERT(0, real_val != NULL);
         *real_val = 0;
-        if (!imag_val) *imag_val = 0;
+        if (imag_val != NULL) *imag_val = 0;
 
         cfloat  cfval;
         cdouble cdval;
@@ -299,7 +299,7 @@ static af_err reduce_all_promote(double *real_val, double *imag_val, const af_ar
 
         ARG_ASSERT(0, real_val != NULL);
         *real_val = 0;
-        if (!imag_val) *imag_val = 0;
+        if (imag_val) *imag_val = 0;
 
         cfloat  cfval;
         cdouble cdval;
@@ -399,6 +399,7 @@ static af_err ireduce_common(af_array *val, af_array *idx, const af_array in, co
         ARG_ASSERT(2, dim <  4);
 
         const ArrayInfo in_info = getInfo(in);
+        ARG_ASSERT(2, in_info.ndims() > 0);
 
         if (dim >= (int)in_info.ndims()) {
             *val = retain(in);
@@ -457,6 +458,7 @@ static af_err ireduce_all_common(double *real_val, double *imag_val,
         const ArrayInfo in_info = getInfo(in);
         af_dtype type = in_info.getType();
 
+        ARG_ASSERT(3, in_info.ndims() > 0);
         ARG_ASSERT(0, real_val != NULL);
         *real_val = 0;
         if (!imag_val) *imag_val = 0;

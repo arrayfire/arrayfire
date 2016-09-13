@@ -18,11 +18,12 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <af/opencl.h>
 
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::LocalSpaceArg;
 using cl::NDRange;
@@ -48,22 +49,25 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
         int device = getActiveDeviceId();
 
         std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D inType=" << dtype_traits<inType>::getName()
-                            << " -D outType=" << dtype_traits<outType>::getName();
-                    if (std::is_same<inType, double>::value ||
-                        std::is_same<inType, cdouble>::value) {
+                bool use_native_exp = getActivePlatform() != AFCL_PLATFORM_POCL;
+                printf("NATIVE_EXP: %d\n", use_native_exp);
+                std::ostringstream options;
+                options << " -D inType=" << dtype_traits<inType>::getName()
+                        << " -D outType=" << dtype_traits<outType>::getName();
+                if (std::is_same<inType, double>::value ||
+                    std::is_same<inType, cdouble>::value) {
                         options << " -D USE_DOUBLE";
-                    }
+                }
+                options << " -D USE_NATIVE_EXP=" << (int)use_native_exp;
 
-                    Program prog;
-                    buildProgram(prog, bilateral_cl, bilateral_cl_len, options.str());
-                    bilProgs[device] = new Program(prog);
+                Program prog;
+                buildProgram(prog, bilateral_cl, bilateral_cl_len, options.str());
+                bilProgs[device] = new Program(prog);
 
                     bilKernels[device] = new Kernel(*bilProgs[device], "bilateral");
-                });
+            });
 
-        auto bilateralOp = make_kernel<Buffer, KParam,
+        auto bilateralOp = KernelFunctor<Buffer, KParam,
                                        Buffer, KParam,
                                        LocalSpaceArg,
                                        LocalSpaceArg,
@@ -83,6 +87,11 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
         int radius = (int)std::max(s_sigma * 1.5f, 1.f);
         int num_shrd_elems    = (THREADS_X + 2 * radius) * (THREADS_Y + 2 * radius);
         int num_gauss_elems   = (2*radius+1)*(2*radius+1);
+        size_t localMemSize   = (num_shrd_elems + num_gauss_elems)*sizeof(outType);
+        size_t MaxLocalSize   = getDevice(getActiveDeviceId()).getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
+        if (localMemSize>MaxLocalSize) {
+            OPENCL_NOT_SUPPORTED();
+        }
 
         bilateralOp(EnqueueArgs(getQueue(), global, local),
                     *out.data, out.info, *in.data, in.info,

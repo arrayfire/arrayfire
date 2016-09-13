@@ -29,6 +29,7 @@ namespace JIT
             : Node(irname<T>(), afShortName<T>(false)),
               m_val(val)
         {
+            m_height = 0;
         }
 
         bool isLinear(dim_t dims[4])
@@ -70,10 +71,8 @@ namespace JIT
         int setId(int id)
         {
             if (m_set_id) return id;
-
             m_id = id;
             m_set_id = true;
-
             return m_id + 1;
         }
 
@@ -87,7 +86,7 @@ namespace JIT
 
         void resetFlags()
         {
-            resetCommonFlags();
+            if (m_set_id) resetCommonFlags();
         }
 
         void setArgs(std::vector<void *> &args, bool is_linear)

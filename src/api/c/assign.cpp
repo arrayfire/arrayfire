@@ -25,11 +25,6 @@ using namespace detail;
 using std::vector;
 using std::swap;
 
-// From src/api/c/moddims.cpp TODO: move to header?
-template<typename T>
-Array<T> modDims(const Array<T>& in, const af::dim4 &newDims);
-
-
 template<typename Tout, typename Tin>
 static
 void assign(Array<Tout> &out, const unsigned &ndims, const af_seq *index, const Array<Tin> &in_)
@@ -206,7 +201,6 @@ af_err af_assign_gen(af_array *out,
     spanner.isSeq = true;
 
     try {
-        ARG_ASSERT(2, (ndims>0));
         ARG_ASSERT(3, (indexs!=NULL));
 
         int track = 0;
@@ -233,6 +227,15 @@ af_err af_assign_gen(af_array *out,
         af_dtype lhsType= lInfo.getType();
         af_dtype rhsType= rInfo.getType();
 
+        if(rhsDims.ndims() == 0) {
+            return af_retain_array(out, lhs);
+        }
+
+        if(lhsDims.ndims() == 0) {
+            dim_t my_dims[] = { 0, 0, 0, 0 };
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, lhsType);
+        }
+
         ARG_ASSERT(2, (ndims == 1) || (ndims == (dim_t)lInfo.ndims()));
 
         if (ndims == 1 && ndims != (dim_t)lInfo.ndims()) {
@@ -246,7 +249,6 @@ af_err af_assign_gen(af_array *out,
         }
 
         ARG_ASSERT(1, (lhsType==rhsType));
-        ARG_ASSERT(3, (rhsDims.ndims()>0));
         ARG_ASSERT(1, (lhsDims.ndims()>=rhsDims.ndims()));
         ARG_ASSERT(2, (lhsDims.ndims()>=ndims));
 

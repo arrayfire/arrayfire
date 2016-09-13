@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/defines.h>
 #include <ops.hpp>
 #include <backend.hpp>
 #include <Param.hpp>
@@ -22,7 +21,7 @@ namespace cuda
 {
 namespace kernel
 {
-    template<typename Ti, typename To, af_op_t op, bool isFinalPass, uint DIMX>
+    template<typename Ti, typename To, af_op_t op, bool isFinalPass, uint DIMX, bool inclusive_scan>
     __global__
     static void scan_first_kernel(Param<To> out,
                                   Param<To> tmp,
@@ -75,7 +74,7 @@ namespace kernel
 
             if (isLast) s_tmp[tidy] = val;
 
-            bool cond = ((id < out.dims[0]));
+            bool cond = (id < out.dims[0]);
             val = cond ? transform(iptr[id]) : init;
             sptr[tidx] = val;
             __syncthreads();
@@ -93,7 +92,18 @@ namespace kernel
             }
 
             val = binop(val, s_tmp[tidy]);
-            if (cond) optr[id] = val;
+
+            if (inclusive_scan) {
+                if (cond) {
+                    optr[id] = val;
+                }
+            } else {
+                if (id == (out.dims[0] - 1)) {
+                    optr[0] = init;
+                } else if (id < (out.dims[0] - 1)) {
+                    optr[id + 1] = val;
+                }
+            }
             id += blockDim.x;
             __syncthreads();
         }
@@ -144,7 +154,7 @@ namespace kernel
 
     }
 
-    template<typename Ti, typename To, af_op_t op, bool isFinalPass>
+    template<typename Ti, typename To, af_op_t op, bool isFinalPass, bool inclusive_scan>
     static void scan_first_launcher(Param<To> out,
                              Param<To> tmp,
                              CParam<Ti> in,
@@ -161,16 +171,16 @@ namespace kernel
 
         switch (threads_x) {
         case 32:
-            CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  32>), blocks, threads,
+            CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  32, inclusive_scan>), blocks, threads,
                 out, tmp, in, blocks_x, blocks_y, lim); break;
         case 64:
-            CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  64>), blocks, threads,
+            CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  64, inclusive_scan>), blocks, threads,
                 out, tmp, in, blocks_x, blocks_y, lim); break;
         case 128:
-            CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  128>), blocks, threads,
+            CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  128, inclusive_scan>), blocks, threads,
                 out, tmp, in, blocks_x, blocks_y, lim); break;
         case 256:
-            CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  256>), blocks, threads,
+            CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  256, inclusive_scan>), blocks, threads,
                 out, tmp, in, blocks_x, blocks_y, lim); break;
         }
 
@@ -198,7 +208,7 @@ namespace kernel
         POST_LAUNCH_CHECK();
     }
 
-    template<typename Ti, typename To, af_op_t op>
+    template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
     static void scan_first(Param<To> out, CParam<Ti> in)
     {
         uint threads_x = nextpow2(std::max(32u, (uint)out.dims[0]));
@@ -210,7 +220,7 @@ namespace kernel
 
         if (blocks_x == 1) {
 
-            scan_first_launcher<Ti, To, op, true>(out, out, in,
+            scan_first_launcher<Ti, To, op, true, inclusive_scan>(out, out, in,
                                                   blocks_x, blocks_y,
                                                   threads_x);
 
@@ -225,17 +235,17 @@ namespace kernel
             int tmp_elements = tmp.strides[3] * tmp.dims[3];
             tmp.ptr = memAlloc<To>(tmp_elements);
 
-            scan_first_launcher<Ti, To, op, false>(out, tmp, in,
+            scan_first_launcher<Ti, To, op, false, inclusive_scan>(out, tmp, in,
                                                    blocks_x, blocks_y,
                                                    threads_x);
 
             //FIXME: Is there an alternative to the if condition ?
             if (op == af_notzero_t) {
-                scan_first_launcher<To, To, af_add_t, true>(tmp, tmp, tmp,
+                scan_first_launcher<To, To, af_add_t, true, true>(tmp, tmp, tmp,
                                                              1, blocks_y,
                                                              threads_x);
             } else {
-                scan_first_launcher<To, To,       op, true>(tmp, tmp, tmp,
+                scan_first_launcher<To, To,       op, true, true>(tmp, tmp, tmp,
                                                             1, blocks_y,
                                                             threads_x);
             }

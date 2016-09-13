@@ -1,6 +1,6 @@
 INCLUDE(ExternalProject)
 
-SET(prefix ${CMAKE_BINARY_DIR}/third_party/clBLAS)
+SET(prefix ${PROJECT_BINARY_DIR}/third_party/clBLAS)
 SET(clBLAS_location ${prefix}/lib/import/${CMAKE_STATIC_LIBRARY_PREFIX}clBLAS${CMAKE_STATIC_LIBRARY_SUFFIX})
 IF(CMAKE_VERSION VERSION_LESS 3.2)
     IF(CMAKE_GENERATOR MATCHES "Ninja")
@@ -14,7 +14,7 @@ ENDIF()
 ExternalProject_Add(
     clBLAS-ext
     GIT_REPOSITORY https://github.com/arrayfire/clBLAS.git
-    GIT_TAG af3.3.1
+    GIT_TAG arrayfire-release
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""

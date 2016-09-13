@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <af/array.h>
 #include <optypes.hpp>
 #include <vector>
 #include "Node.hpp"
@@ -27,7 +26,10 @@ namespace TNJ
         T m_val;
 
     public:
-        ScalarNode(T val) : Node(), m_val(val) {}
+        ScalarNode(T val) : Node(), m_val(val)
+        {
+            m_height = 0;
+        }
 
         void *calc(int x, int y, int z, int w)
         {
@@ -47,7 +49,7 @@ namespace TNJ
             return;
         }
 
-        void reset() { m_is_eval = false; }
+        void reset() { resetCommonFlags(); }
 
         bool isLinear(const dim_t *dims) { return true; }
     };

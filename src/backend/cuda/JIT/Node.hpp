@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <af/array.h>
 #include <optypes.hpp>
 #include <string>
 #include <vector>
@@ -30,23 +29,29 @@ namespace JIT
         std::string m_type_str;
         std::string m_name_str;
         int m_id;
+        int m_height;
         bool m_set_id;
         bool m_gen_func;
         bool m_gen_param;
         bool m_gen_offset;
         bool m_set_arg;
         bool m_gen_name;
+        bool m_linear;
+        bool m_set_is_linear;
 
     protected:
 
         void resetCommonFlags()
         {
+            m_height = 0;
             m_set_id = false;
             m_gen_func = false;
             m_gen_param = false;
             m_gen_offset = false;
             m_set_arg = false;
             m_gen_name = false;
+            m_linear = false;
+            m_set_is_linear = false;
         }
 
 
@@ -56,12 +61,15 @@ namespace JIT
             : m_type_str(type_str),
               m_name_str(name_str),
               m_id(-1),
+              m_height(0),
               m_set_id(false),
               m_gen_func(false),
               m_gen_param(false),
               m_gen_offset(false),
               m_set_arg(false),
-              m_gen_name(false)
+              m_gen_name(false),
+              m_linear(false),
+              m_set_is_linear(false)
         {}
 
         virtual void genKerName(std::stringstream &kerStream) {}
@@ -87,6 +95,8 @@ namespace JIT
             bytes = 0;
         }
 
+        virtual bool isBuffer() { return false; }
+
         std::string getTypeStr() { return m_type_str; }
 
         bool isGenFunc() { return m_gen_func; }
@@ -94,6 +104,7 @@ namespace JIT
         bool isGenOffset() { return m_gen_offset; }
 
         int getId()  { return m_id; }
+        int getHeight()  { return m_height; }
         std::string getNameStr() { return m_name_str; }
 
         virtual ~Node() {}

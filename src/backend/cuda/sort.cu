@@ -18,15 +18,15 @@
 
 namespace cuda
 {
-    template<typename T, bool isAscending>
-    Array<T> sort(const Array<T> &in, const unsigned dim)
+    template<typename T>
+    Array<T> sort(const Array<T> &in, const unsigned dim, bool isAscending)
     {
         Array<T> out = copyArray<T>(in);
         switch(dim) {
-            case 0: kernel::sort0<T, isAscending>(out); break;
-            case 1: kernel::sortBatched<T, isAscending, 1>(out); break;
-            case 2: kernel::sortBatched<T, isAscending, 2>(out); break;
-            case 3: kernel::sortBatched<T, isAscending, 3>(out); break;
+            case 0: kernel::sort0<T>(out, isAscending); break;
+            case 1: kernel::sortBatched<T, 1>(out, isAscending); break;
+            case 2: kernel::sortBatched<T, 2>(out, isAscending); break;
+            case 3: kernel::sortBatched<T, 3>(out, isAscending); break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
 
@@ -47,8 +47,7 @@ namespace cuda
     }
 
 #define INSTANTIATE(T)                                                  \
-    template Array<T> sort<T, true>(const Array<T> &in, const unsigned dim); \
-    template Array<T>  sort<T,false>(const Array<T> &in, const unsigned dim); \
+    template Array<T> sort<T>(const Array<T> &in, const unsigned dim, bool isAscending);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

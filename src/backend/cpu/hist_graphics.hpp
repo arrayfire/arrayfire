@@ -18,7 +18,7 @@ namespace cpu
 {
 
 template<typename T>
-void copy_histogram(const Array<T> &data, const fg::Histogram* hist);
+void copy_histogram(const Array<T> &data, const forge::Histogram* hist);
 
 }
 

@@ -8,8 +8,6 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <af/defines.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <copy.hpp>
 #include <fft.hpp>
@@ -18,6 +16,8 @@
 #include <clFFT.h>
 #include <math.hpp>
 #include <string>
+#include <deque>
+#include <utility>
 #include <cstdio>
 #include <memory.hpp>
 
@@ -27,10 +27,15 @@ using std::string;
 namespace opencl
 {
 
-// clFFTPlanner will do very basic plan caching.
-// it looks for required candidate in mHandles array and returns if found one.
-// otherwise, it will create a plan and set it at the mAvailSlotIndex and increment
-// the slot index variable in ciruclar fashion 0 to MAX_PLAN_CACHE, then back to zero and repeat.
+typedef std::pair<string, clfftPlanHandle> FFTPlanPair;
+typedef std::deque<FFTPlanPair> FFTPlanCache;
+
+// clFFTPlanner caches fft plans
+//
+// new plan |--> IF number of plans cached is at limit, pop the least used entry and push new plan.
+//          |
+//          |--> ELSE just push the plan
+// existing plan -> reuse a plan
 class clFFTPlanner
 {
     friend void find_clfft_plan(clfftPlanHandle &plan,
@@ -54,30 +59,68 @@ class clFFTPlanner
             #ifndef OS_WIN
             static bool flag = true;
             if(flag) {
-                CLFFT_CHECK(clfftTeardown());
+                // THOU SHALL NOT THROW IN DESTRUCTORS
+                clfftTeardown();
                 flag = false;
             }
             #endif
         }
 
+        inline void setMaxCacheSize(size_t size) {
+            mCache.resize(size, FFTPlanPair(std::string(""), 0));
+        }
+
+        inline size_t getMaxCacheSize() const {
+            return mMaxCacheSize;
+        }
+
+        inline clfftPlanHandle getPlan(int index) const {
+            return mCache[index].second;
+        }
+
+        // iterates through plan cache from front to back
+        // of the cache(queue)
+        int findIfPlanExists(std::string keyString) const {
+            int retVal = -1;
+            for(uint i=0; i<mCache.size(); ++i) {
+                if (keyString == mCache[i].first) {
+                    retVal = i;
+                }
+            }
+            return retVal;
+        }
+
+        // pops plan from the back of cache(queue)
+        void popPlan() {
+            if (!mCache.empty()) {
+                // destroy the clfft plan associated with the
+                // least recently used plan
+                CLFFT_CHECK(clfftDestroyPlan(&mCache.back().second));
+                // now pop the entry from cache
+                mCache.pop_back();
+            }
+        }
+
+        // pushes plan to the front of cache(queue)
+        void pushPlan(std::string keyString, clfftPlanHandle plan) {
+            if (mCache.size()>mMaxCacheSize) {
+                popPlan();
+            }
+            mCache.push_front(FFTPlanPair(keyString, plan));
+        }
+
     private:
-        clFFTPlanner() : mAvailSlotIndex(0) {
-            CLFFT_CHECK(clfftInitSetupData(&fftSetup));
-            CLFFT_CHECK(clfftSetup(&fftSetup));
-            for(int p=0; p<MAX_PLAN_CACHE; ++p)
-                mHandles[p] = 0;
+        clFFTPlanner() : mMaxCacheSize(5) {
+            CLFFT_CHECK(clfftInitSetupData(&mFFTSetup));
+            CLFFT_CHECK(clfftSetup(&mFFTSetup));
         }
         clFFTPlanner(clFFTPlanner const&);
         void operator=(clFFTPlanner const&);
 
-        static const int MAX_PLAN_CACHE = 5;
+        clfftSetupData  mFFTSetup;
 
-        int          mAvailSlotIndex;
-        string mKeys[MAX_PLAN_CACHE];
-
-        clfftPlanHandle mHandles[MAX_PLAN_CACHE];
-
-        clfftSetupData  fftSetup;
+        size_t       mMaxCacheSize;
+        FFTPlanCache mCache;
 };
 
 void find_clfft_plan(clfftPlanHandle &plan,
@@ -87,8 +130,6 @@ void find_clfft_plan(clfftPlanHandle &plan,
                      size_t *ostrides, size_t odist,
                      clfftPrecision precision, size_t batch)
 {
-    clFFTPlanner &planner = clFFTPlanner::getInstance();
-
     // create the key string
     char key_str_temp[64];
     sprintf(key_str_temp, "%d:%d:%d:", iLayout, oLayout, rank);
@@ -123,27 +164,14 @@ void find_clfft_plan(clfftPlanHandle &plan,
     key_string.append(std::string(key_str_temp));
 
     // find the matching plan_index in the array clFFTPlanner::mKeys
-    int plan_index = -1;
-    for (int i=0; i<clFFTPlanner::MAX_PLAN_CACHE; ++i) {
-        if (key_string==planner.mKeys[i]) {
-            plan_index = i;
-            break;
-        }
-    }
+    clFFTPlanner &planner = clFFTPlanner::getInstance();
 
-    // return mHandles[plan_index] if plan_index valid
-    if (plan_index!=-1) {
-        plan = planner.mHandles[plan_index];
+    int planIndex = planner.findIfPlanExists(key_string);
+
+    // if found a valid plan, return it
+    if (planIndex!=-1) {
+        plan = planner.getPlan(planIndex);
         return;
-    }
-
-    // otherwise create a new plan and set it at mAvailSlotIndex
-    // and finally set it to output plan variable
-    int slot_index = planner.mAvailSlotIndex;
-
-    if (planner.mHandles[slot_index]) {
-        CLFFT_CHECK(clfftDestroyPlan(&planner.mHandles[slot_index]));
-        planner.mHandles[slot_index] = 0;
     }
 
     clfftPlanHandle temp;
@@ -172,9 +200,14 @@ void find_clfft_plan(clfftPlanHandle &plan,
     CLFFT_CHECK(clfftBakePlan(temp, 1, &(getQueue()()), NULL, NULL));
 
     plan = temp;
-    planner.mHandles[slot_index] = temp;
-    planner.mKeys[slot_index] = key_string;
-    planner.mAvailSlotIndex = (slot_index + 1)%clFFTPlanner::MAX_PLAN_CACHE;
+
+    // push the plan into plan cache
+    planner.pushPlan(key_string, plan);
+}
+
+void setFFTPlanCacheSize(size_t numPlans)
+{
+    clFFTPlanner::getInstance().setMaxCacheSize(numPlans);
 }
 
 template<typename T> struct Precision;

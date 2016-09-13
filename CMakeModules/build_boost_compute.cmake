@@ -1,11 +1,11 @@
 # If using a commit, remove the v prefix to VER in URL.
 # If using a tag, don't use v in VER
 # This is because of how github handles it's release tar balls
-SET(VER 0.5)
-SET(URL https://github.com/boostorg/compute/archive/v${VER}.tar.gz)
-SET(MD5 69a52598ac539d3b7f6005a3dd2b6f58)
+SET(VER boost-1.61.0)
+SET(URL https://github.com/boostorg/compute/archive/${VER}.tar.gz)
+SET(MD5 7e1c433b48825d8cb2effa963823aec8)
 
-SET(thirdPartyDir "${CMAKE_BINARY_DIR}/third_party")
+SET(thirdPartyDir "${PROJECT_BINARY_DIR}/third_party")
 SET(srcDir "${thirdPartyDir}/compute-${VER}")
 SET(archive ${srcDir}.tar.gz)
 SET(inflated ${srcDir}-inflated)

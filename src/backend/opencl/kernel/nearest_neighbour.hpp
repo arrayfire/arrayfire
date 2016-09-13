@@ -18,6 +18,7 @@
 #include <dispatch.hpp>
 #include <cache.hpp>
 
+using cl::KernelFunctor;
 using cl::LocalSpaceArg;
 
 namespace opencl
@@ -120,7 +121,7 @@ void nearest_neighbour(Param idx,
         // For each query vector, find training vector with smallest Hamming
         // distance per CUDA block
         if (unroll_len > 0) {
-            auto huOp = make_kernel<Buffer, Buffer,
+            auto huOp = KernelFunctor<Buffer, Buffer,
                                     Buffer, KParam,
                                     Buffer, KParam,
                                     const To,
@@ -132,7 +133,7 @@ void nearest_neighbour(Param idx,
                  max_dist, cl::Local(lmem_sz));
         }
         else {
-            auto hmOp = make_kernel<Buffer, Buffer,
+            auto hmOp = KernelFunctor<Buffer, Buffer,
                                     Buffer, KParam,
                                     Buffer, KParam,
                                     const To, const unsigned,
@@ -150,7 +151,7 @@ void nearest_neighbour(Param idx,
 
         // Reduce all smallest Hamming distances from each block and store final
         // best match
-        auto smOp = make_kernel<Buffer, Buffer, Buffer, Buffer,
+        auto smOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer,
                                 const unsigned, const unsigned,
                                 const To> (entry.ker[2]);
 

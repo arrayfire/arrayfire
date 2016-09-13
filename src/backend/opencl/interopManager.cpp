@@ -16,9 +16,14 @@ namespace opencl
 
 void InteropManager::destroyResources()
 {
+    typedef std::vector<cl::Buffer *>::iterator buffer_t;
     int n = getActiveDeviceId();
-    for(iter_t iter = interop_maps[n].begin(); iter != interop_maps[n].end(); iter++)
-        delete iter->second;
+    for(iter_t iter = interop_maps[n].begin(); iter != interop_maps[n].end(); iter++) {
+        for(buffer_t bt = (iter->second).begin(); bt != (iter->second).end(); bt++) {
+            delete *bt;
+        }
+        (iter->second).clear();
+    }
 }
 
 InteropManager::~InteropManager()
@@ -35,64 +40,85 @@ InteropManager& InteropManager::getInstance()
     return my_instance;
 }
 
-cl::Buffer* InteropManager::getBufferResource(const fg::Image* image)
+interop_t& InteropManager::getDeviceMap(int device)
+{
+    return (device == -1) ? interop_maps[getActiveDeviceId()] : interop_maps[device];
+}
+
+cl::Buffer** InteropManager::getBufferResource(const forge::Image* image)
 {
     void * key = (void*)image;
-    int device = getActiveDeviceId();
-    iter_t iter = interop_maps[device].find(key);
+    interop_t& i_map = getDeviceMap();
+    iter_t iter = i_map.find(key);
 
-    if (iter == interop_maps[device].end())
-        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, image->pbo(), NULL);
+    if (iter == i_map.end()) {
+        std::vector<cl::Buffer *> vec(1);
+        vec[0] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, image->pixels(), NULL);
+        i_map[key] = vec;
+    }
 
-    return interop_maps[device][key];
+    return &i_map[key].front();
 }
 
-cl::Buffer* InteropManager::getBufferResource(const fg::Plot* plot)
+cl::Buffer** InteropManager::getBufferResource(const forge::Plot* plot)
 {
     void * key = (void*)plot;
-    int device = getActiveDeviceId();
-    iter_t iter = interop_maps[device].find(key);
+    interop_t& i_map = getDeviceMap();
+    iter_t iter = i_map.find(key);
 
-    if (iter == interop_maps[device].end())
-        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot->vbo(), NULL);
+    if (iter == i_map.end()) {
+        std::vector<cl::Buffer *> vec(1);
+        vec[0] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot->vertices(), NULL);
+        i_map[key] = vec;
+    }
 
-    return interop_maps[device][key];
+    return &i_map[key].front();
 }
 
-cl::Buffer* InteropManager::getBufferResource(const fg::Plot3* plot3)
-{
-    void * key = (void*)plot3;
-    int device = getActiveDeviceId();
-    iter_t iter = interop_maps[device].find(key);
-
-    if (iter == interop_maps[device].end())
-        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot3->vbo(), NULL);
-
-    return interop_maps[device][key];
-}
-
-cl::Buffer* InteropManager::getBufferResource(const fg::Histogram* hist)
+cl::Buffer** InteropManager::getBufferResource(const forge::Histogram* hist)
 {
     void * key = (void*)hist;
-    int device = getActiveDeviceId();
-    iter_t iter = interop_maps[device].find(key);
+    interop_t& i_map = getDeviceMap();
+    iter_t iter = i_map.find(key);
 
-    if (iter == interop_maps[device].end())
-        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, hist->vbo(), NULL);
+    if (iter == i_map.end()) {
+        std::vector<cl::Buffer *> vec(1);
+        vec[0] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, hist->vertices(), NULL);
+        i_map[key] = vec;
+    }
 
-    return interop_maps[device][key];
+    return &i_map[key].front();
 }
 
-cl::Buffer* InteropManager::getBufferResource(const fg::Surface* surface)
+cl::Buffer** InteropManager::getBufferResource(const forge::Surface* surface)
 {
     void * key = (void*)surface;
-    int device = getActiveDeviceId();
-    iter_t iter = interop_maps[device].find(key);
+    interop_t& i_map = getDeviceMap();
+    iter_t iter = i_map.find(key);
 
-    if (iter == interop_maps[device].end())
-        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, surface->vbo(), NULL);
+    if (iter == i_map.end()) {
+        std::vector<cl::Buffer *> vec(1);
+        vec[0] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, surface->vertices(), NULL);
+        i_map[key] = vec;
+    }
 
-    return interop_maps[device][key];
+    return &i_map[key].front();
+}
+
+cl::Buffer** InteropManager::getBufferResource(const forge::VectorField* vector_field)
+{
+    void * key = (void*)vector_field;
+    interop_t& i_map = getDeviceMap();
+    iter_t iter = i_map.find(key);
+
+    if (iter == i_map.end()) {
+        std::vector<cl::Buffer *> vec(2);
+        vec[0] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, vector_field->vertices(), NULL);
+        vec[1] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, vector_field->directions(), NULL);
+        i_map[key] = vec;
+    }
+
+    return &i_map[key].front();
 }
 
 }

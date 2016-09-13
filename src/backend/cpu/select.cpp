@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <select.hpp>
 #include <platform.hpp>

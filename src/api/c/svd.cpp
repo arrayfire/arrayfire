@@ -11,7 +11,6 @@
 #include <af/array.h>
 #include <af/lapack.h>
 
-#include <af/util.h>
 #include <af/defines.h>
 #include <err_common.hpp>
 #include <backend.hpp>
@@ -74,6 +73,14 @@ af_err af_svd(af_array *u, af_array *s, af_array *vt, const af_array in)
         ARG_ASSERT(3, (dims.ndims() >= 0 && dims.ndims() <= 3));
         af_dtype type = info.getType();
 
+        if(dims.ndims() == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            AF_CHECK(af_create_handle(u, AF_MAX_DIMS, my_dims, type));
+            AF_CHECK(af_create_handle(s, AF_MAX_DIMS, my_dims, type));
+            AF_CHECK(af_create_handle(vt, AF_MAX_DIMS, my_dims, type));
+            return AF_SUCCESS;
+        }
+
         switch (type) {
         case f64:
             svd<double>(s, u, vt, in);
@@ -103,8 +110,16 @@ af_err af_svd_inplace(af_array *u, af_array *s, af_array *vt, af_array in)
 
         DIM_ASSERT(3, dims[0] <= dims[1]);
         ARG_ASSERT(3, (dims.ndims() >= 0 && dims.ndims() <= 3));
-
         af_dtype type = info.getType();
+
+        if(dims.ndims() == 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            AF_CHECK(af_create_handle(u, AF_MAX_DIMS, my_dims, type));
+            AF_CHECK(af_create_handle(s, AF_MAX_DIMS, my_dims, type));
+            AF_CHECK(af_create_handle(vt, AF_MAX_DIMS, my_dims, type));
+            return AF_SUCCESS;
+        }
+
 
         switch (type) {
         case f64:

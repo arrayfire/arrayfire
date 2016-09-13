@@ -37,4 +37,6 @@ namespace cpu {
     queue& getQueue(int idx = 0);
 
     unsigned getMaxJitSize();
+
+    bool& evalFlag();
 }

@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/defines.h>
 #include <ops.hpp>
 #include <backend.hpp>
 #include <Param.hpp>
@@ -23,7 +22,7 @@ namespace cuda
 namespace kernel
 {
 
-    template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass, uint DIMY>
+    template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass, uint DIMY, bool inclusive_scan>
     __global__
     static void scan_dim_kernel(Param<To> out,
                                 Param<To> tmp,
@@ -104,12 +103,21 @@ namespace kernel
             }
 
             val = binop(val, s_tmp[tidx]);
-            __syncthreads();
-            if (cond) *optr = val;
-
+            if (inclusive_scan) {
+                if (cond) {
+                    *optr = val;
+                }
+            } else if (is_valid) {
+                if (id_dim == (out_dim - 1)) {
+                    *(optr - (id_dim*ostride_dim)) = init;
+                } else if (id_dim < (out_dim - 1)) {
+                    *(optr + ostride_dim) = val;
+                }
+            }
             id_dim += blockDim.y;
             iptr += blockDim.y * istride_dim;
             optr += blockDim.y * ostride_dim;
+            __syncthreads();
         }
 
         if (!isFinalPass &&
@@ -178,7 +186,7 @@ namespace kernel
         }
     }
 
-    template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass>
+    template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass, bool inclusive_scan>
     static void scan_dim_launcher(Param<To> out,
                            Param<To> tmp,
                            CParam<Ti> in,
@@ -194,16 +202,16 @@ namespace kernel
 
         switch (threads_y) {
         case 8:
-            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 8>), blocks, threads,
+            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 8, inclusive_scan>), blocks, threads,
                 out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
         case 4:
-            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 4>), blocks, threads,
+            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 4, inclusive_scan>), blocks, threads,
                 out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
         case 2:
-            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 2>), blocks, threads,
+            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 2, inclusive_scan>), blocks, threads,
                 out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
         case 1:
-            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 1>), blocks, threads,
+            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 1, inclusive_scan>), blocks, threads,
                 out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
         }
 
@@ -232,7 +240,7 @@ namespace kernel
         POST_LAUNCH_CHECK();
     }
 
-    template<typename Ti, typename To, af_op_t op, int dim>
+    template<typename Ti, typename To, af_op_t op, int dim, bool inclusive_scan>
     static void scan_dim(Param<To> out, CParam<Ti> in)
     {
         uint threads_y = std::min(THREADS_Y, nextpow2(out.dims[dim]));
@@ -245,7 +253,7 @@ namespace kernel
 
         if (blocks_all[dim] == 1) {
 
-            scan_dim_launcher<Ti, To, op, dim, true>(out, out, in,
+            scan_dim_launcher<Ti, To, op, dim, true, inclusive_scan>(out, out, in,
                                                      threads_y,
                                                      blocks_all);
 
@@ -260,7 +268,7 @@ namespace kernel
             int tmp_elements = tmp.strides[3] * tmp.dims[3];
             tmp.ptr = memAlloc<To>(tmp_elements);
 
-            scan_dim_launcher<Ti, To, op, dim, false>(out, tmp, in,
+            scan_dim_launcher<Ti, To, op, dim, false, inclusive_scan>(out, tmp, in,
                                                       threads_y,
                                                       blocks_all);
 
@@ -269,11 +277,11 @@ namespace kernel
 
             //FIXME: Is there an alternative to the if condition ?
             if (op == af_notzero_t) {
-                scan_dim_launcher<To, To, af_add_t, dim, true>(tmp, tmp, tmp,
+                scan_dim_launcher<To, To, af_add_t, dim, true, true>(tmp, tmp, tmp,
                                                                threads_y,
                                                                blocks_all);
             } else {
-                scan_dim_launcher<To, To,       op, dim, true>(tmp, tmp, tmp,
+                scan_dim_launcher<To, To,       op, dim, true, true>(tmp, tmp, tmp,
                                                                threads_y,
                                                                blocks_all);
             }

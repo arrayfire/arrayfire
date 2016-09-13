@@ -12,7 +12,6 @@
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
-#include <convolve_common.hpp>
 #include <kernel/convolve_separable.hpp>
 #include <kernel/fast.hpp>
 #include <kernel/resize.hpp>
@@ -252,7 +251,7 @@ void orb(unsigned* out_feat,
             unsigned block_size = 7;
             float k_thr = 0.04f;
 
-            auto hrOp = make_kernel<Buffer, Buffer, Buffer,
+            auto hrOp = KernelFunctor<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, const unsigned,
                                     Buffer, Buffer, KParam,
                                     const unsigned, const float, const unsigned> (*hrKernel[device]);
@@ -308,7 +307,7 @@ void orb(unsigned* out_feat,
             d_harris_idx.data = bufferAlloc((d_harris_idx.info.dims[0]) * sizeof(unsigned));
             kernel::range<uint>(d_harris_idx, 0);
 
-            kernel::sort0ByKey<float, uint, false>(d_harris_sorted, d_harris_idx);
+            kernel::sort0ByKey<float, uint>(d_harris_sorted, d_harris_idx, false);
 
             cl::Buffer* d_x_lvl = bufferAlloc(usable_feat * sizeof(float));
             cl::Buffer* d_y_lvl = bufferAlloc(usable_feat * sizeof(float));
@@ -321,7 +320,7 @@ void orb(unsigned* out_feat,
             const NDRange local_keep(ORB_THREADS, 1);
             const NDRange global_keep(keep_blk * ORB_THREADS, 1);
 
-            auto kfOp = make_kernel<Buffer, Buffer, Buffer,
+            auto kfOp = KernelFunctor<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer, Buffer,
                                     const unsigned> (*kfKernel[device]);
 
@@ -344,7 +343,7 @@ void orb(unsigned* out_feat,
             const NDRange local_centroid(ORB_THREADS_X, ORB_THREADS_Y);
             const NDRange global_centroid(centroid_blk_x * ORB_THREADS_X, ORB_THREADS_Y);
 
-            auto caOp = make_kernel<Buffer, Buffer, Buffer,
+            auto caOp = KernelFunctor<Buffer, Buffer, Buffer,
                                     const unsigned, Buffer, KParam,
                                     const unsigned> (*caKernel[device]);
 
@@ -395,7 +394,7 @@ void orb(unsigned* out_feat,
                 getQueue().enqueueWriteBuffer(*d_desc_lvl, CL_TRUE, 0, usable_feat * 8 * sizeof(unsigned), h_desc_lvl.data());
             }
 
-            auto eoOp = make_kernel<Buffer, const unsigned,
+            auto eoOp = KernelFunctor<Buffer, const unsigned,
                                     Buffer, Buffer, Buffer, Buffer,
                                     Buffer, KParam,
                                     const float, const unsigned> (*eoKernel[device]);

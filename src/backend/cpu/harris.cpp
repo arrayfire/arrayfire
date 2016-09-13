@@ -8,11 +8,7 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <af/defines.h>
-#include <af/constants.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
-#include <handle.hpp>
 #include <harris.hpp>
 #include <convolve.hpp>
 #include <gradient.hpp>
@@ -20,6 +16,7 @@
 #include <cstring>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <math.hpp>
 #include <kernel/harris.hpp>
 
 using af::dim4;
@@ -98,7 +95,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
         Array<unsigned> harris_idx = createEmptyArray<unsigned>(dim4(corners_found));
 
         // Sort Harris responses
-        sort_index<float, false>(harris_sorted, harris_idx, respCorners, 0);
+        sort_index<float>(harris_sorted, harris_idx, respCorners, 0, false);
 
         x_out = createEmptyArray<float>(dim4(corners_out));
         y_out = createEmptyArray<float>(dim4(corners_out));

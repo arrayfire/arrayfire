@@ -7,13 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/defines.h>
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include <memory.hpp>
 
-#include <convolve_common.hpp>
 #include "convolve.hpp"
 #include "orb_patch.hpp"
 #include "sort_by_key.hpp"
@@ -400,7 +398,7 @@ void orb(unsigned* out_feat,
         kernel::range<uint>(harris_idx, 0);
 
         // Sort features according to Harris responses
-        kernel::sort0ByKey<float, uint, false>(harris_sorted, harris_idx);
+        kernel::sort0ByKey<float, uint>(harris_sorted, harris_idx, false);
 
         feat_pyr[i] = std::min(feat_pyr[i], lvl_best[i]);
 

@@ -4,6 +4,12 @@ ADD_DEFINITIONS(-DAF_CPU)
 FIND_PACKAGE(CBLAS REQUIRED)
 
 IF(NOT DEFINED BUILD_CPU_ASYNC)
+    CMAKE_POLICY(PUSH)
+    # https://cmake.org/cmake/help/v3.1/policy/CMP0054.html
+    IF("${CMAKE_VERSION}" VERSION_GREATER "3.1" OR "${CMAKE_VERSION}" VERSION_EQUAL "3.1")
+        CMAKE_POLICY(SET CMP0054 OLD)
+    ENDIF()
+
     IF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.8.4")
         MESSAGE("Disabling CPU Async as GCC Version ${COMPILER_VERSION} has known issues.")
         MESSAGE("CPU Backend will use Synchronous Calls")
@@ -11,7 +17,10 @@ IF(NOT DEFINED BUILD_CPU_ASYNC)
     ELSE()
         OPTION(BUILD_CPU_ASYNC "Build CPU backend with ASYNC support" ON)
     ENDIF()
+
+    CMAKE_POLICY(POP)
 ENDIF(NOT DEFINED BUILD_CPU_ASYNC)
+SET(USE_CPUID ON CACHE BOOL "Build with CPUID integration")
 MARK_AS_ADVANCED(USE_CPUID)
 
 if (USE_CPUID)
@@ -41,8 +50,6 @@ ENDIF()
 
 IF (NOT CBLAS_LIBRARIES)
     MESSAGE(SEND_ERROR "CBLAS Library not set")
-ELSE()
-    MESSAGE(STATUS "Using CBLAS Library: ${CBLAS_LIBRARIES}")
 ENDIF()
 
 IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" AND "${APPLE}")
@@ -50,8 +57,6 @@ IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" AND "${APPLE}")
 ENDIF()
 
 FIND_PACKAGE(FFTW REQUIRED)
-MESSAGE(STATUS "FFTW Found ? ${FFTW_FOUND}")
-MESSAGE(STATUS "FFTW Library: ${FFTW_LIBRARIES}")
 
 IF(APPLE)
     FIND_PACKAGE(LAPACKE QUIET) # For finding MKL
@@ -71,7 +76,6 @@ IF(NOT LAPACK_FOUND)
     MESSAGE(WARNING "LAPACK not found. Functionality will be disabled")
 ELSE(NOT LAPACK_FOUND)
     ADD_DEFINITIONS(-DWITH_CPU_LINEAR_ALGEBRA)
-    MESSAGE(STATUS "LAPACK libraries found: ${LAPACK_LIBRARIES}")
 ENDIF()
 
 IF(NOT UNIX)
@@ -87,14 +91,14 @@ ELSE()
     MESSAGE(STATUS "threads submodule unavailable. Updating submodules.")
     EXECUTE_PROCESS(
         COMMAND git submodule update --init --recursive
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         )
 ENDIF()
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
-    "${CMAKE_SOURCE_DIR}/src/backend/cpu"
-    "${CMAKE_SOURCE_DIR}/src/backend/cpu/threads"
+    "${PROJECT_SOURCE_DIR}/src/backend/cpu"
+    "${PROJECT_SOURCE_DIR}/src/backend/cpu/threads"
     ${FFTW_INCLUDES}
     ${CBLAS_INCLUDE_DIR}
     )
@@ -108,8 +112,7 @@ FILE(GLOB cpu_headers
     "*.h")
 
 FILE(GLOB cpu_sources
-    "*.cpp"
-    "kernel/sort_by_key/*.cpp")
+    "*.cpp")
 
 LIST(SORT cpu_headers)
 LIST(SORT cpu_sources)
@@ -162,13 +165,15 @@ ELSE(${UNIX}) #Windows
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 ENDIF()
 
+INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
 IF(DEFINED BLAS_SYM_FILE)
   ADD_LIBRARY(afcpu_static STATIC
               ${cpu_headers}
               ${cpu_sources}
               ${backend_headers}
-              ${backend_sources})
+              ${backend_sources}
+              ${SORT_BY_KEY_OBJECTS})
 
   ADD_LIBRARY(afcpu SHARED
               ${c_headers}
@@ -184,22 +189,23 @@ IF(DEFINED BLAS_SYM_FILE)
         PROPERTIES LINK_FLAGS -Wl,-exported_symbols_list,${BLAS_SYM_FILE})
     TARGET_LINK_LIBRARIES(afcpu PUBLIC $<TARGET_FILE:afcpu_static>)
   ELSE(APPLE)
-    add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/afcpu_static.renamed
-      COMMAND objcopy --redefine-syms ${BLAS_SYM_FILE} $<TARGET_FILE:afcpu_static> ${CMAKE_BINARY_DIR}/afcpu_static.renamed
+    add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/afcpu_static.renamed
+      COMMAND objcopy --redefine-syms ${BLAS_SYM_FILE} $<TARGET_FILE:afcpu_static> ${PROJECT_BINARY_DIR}/afcpu_static.renamed
       DEPENDS $<TARGET_FILE:afcpu_static>)
-      TARGET_LINK_LIBRARIES(afcpu PUBLIC ${CMAKE_BINARY_DIR}/afcpu_static.renamed)
+      TARGET_LINK_LIBRARIES(afcpu PUBLIC ${PROJECT_BINARY_DIR}/afcpu_static.renamed)
   ENDIF(APPLE)
 
 ELSE(DEFINED BLAS_SYM_FILE)
 
-  ADD_LIBRARY(afcpu SHARED
-              ${cpu_headers}
-              ${cpu_sources}
-              ${backend_headers}
-              ${backend_sources}
-              ${c_headers}
-              ${c_sources}
-              ${cpp_sources})
+ADD_LIBRARY(afcpu SHARED
+            ${cpu_headers}
+            ${cpu_sources}
+            ${backend_headers}
+            ${backend_sources}
+            ${c_headers}
+            ${c_sources}
+            ${cpp_sources}
+            ${SORT_BY_KEY_OBJECTS})
 
 ENDIF(DEFINED BLAS_SYM_FILE)
 
@@ -209,16 +215,17 @@ TARGET_LINK_LIBRARIES(afcpu
                             PRIVATE ${FreeImage_LIBS}
                      )
 
-IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
-  ADD_DEPENDENCIES(afcpu forge)
-ENDIF()
-
 IF(LAPACK_FOUND)
    TARGET_LINK_LIBRARIES(afcpu  PRIVATE ${LAPACK_LIBRARIES})
 ENDIF()
 
+LIST(LENGTH GRAPHICS_DEPENDENCIES GRAPHICS_DEPENDENCIES_LEN)
+IF(${GRAPHICS_DEPENDENCIES_LEN} GREATER 0)
+    ADD_DEPENDENCIES(afcpu ${GRAPHICS_DEPENDENCIES})
+ENDIF(${GRAPHICS_DEPENDENCIES_LEN} GREATER 0)
+
 IF(FORGE_FOUND)
-    TARGET_LINK_LIBRARIES(afcpu PRIVATE ${FORGE_LIBRARIES})
+   TARGET_LINK_LIBRARIES(afcpu PRIVATE ${GRAPHICS_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afcpu PROPERTIES
@@ -229,7 +236,7 @@ INSTALL(TARGETS afcpu EXPORT CPU DESTINATION "${AF_INSTALL_LIB_DIR}"
         COMPONENT libraries)
 
 IF(APPLE)
-    INSTALL(SCRIPT "${CMAKE_MODULE_PATH}/osx_install/InstallTool.cmake")
+    INSTALL(SCRIPT "${PROJECT_SOURCE_DIR}/CMakeModules/osx_install/InstallTool.cmake")
 ENDIF(APPLE)
 
 export(TARGETS afcpu FILE ArrayFireCPU.cmake)

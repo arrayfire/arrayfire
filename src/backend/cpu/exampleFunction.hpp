@@ -7,12 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/util.h>
 #include <Array.hpp>
 
 namespace cpu
 {
     template<typename T>
-    Array<T> exampleFunction(const Array<T> &in, const af_someenum_t method);
+    Array<T> exampleFunction(const Array<T> &a, const Array<T> &b, const af_someenum_t method);
 }
 

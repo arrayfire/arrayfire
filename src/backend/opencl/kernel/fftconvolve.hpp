@@ -22,6 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::LocalSpaceArg;
 using cl::NDRange;
@@ -40,7 +41,7 @@ void calcParamSizes(Param& sig_tmp,
                     Param& sig,
                     Param& filter,
                     const int baseDim,
-                    ConvolveBatchKind kind)
+                    AF_BATCH_KIND kind)
 {
     sig_tmp.info.dims[0] = filter_tmp.info.dims[0] = packed.info.dims[0];
     sig_tmp.info.strides[0] = filter_tmp.info.strides[0] = 1;
@@ -63,7 +64,7 @@ void calcParamSizes(Param& sig_tmp,
     sig_tmp.data = packed.data;
     filter_tmp.data = packed.data;
 
-    if (kind == CONVOLVE_BATCH_KERNEL) {
+    if (kind == AF_BATCH_RHS) {
         filter_tmp.info.offset = 0;
         sig_tmp.info.offset = filter_tmp.info.strides[3] * filter_tmp.info.dims[3] * 2;
     }
@@ -78,7 +79,7 @@ void packDataHelper(Param packed,
                     Param sig,
                     Param filter,
                     const int baseDim,
-                    ConvolveBatchKind kind)
+                    AF_BATCH_KIND kind)
 {
     try {
         static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
@@ -127,7 +128,7 @@ void packDataHelper(Param packed,
 
         // Pack signal in a complex matrix where first dimension is half the input
         // (allows faster FFT computation) and pad array to a power of 2 with 0s
-        auto pdOp = make_kernel<Buffer, KParam,
+        auto pdOp = KernelFunctor<Buffer, KParam,
                                 Buffer, KParam,
                                 const int, const int> (*pdKernel[device]);
 
@@ -140,7 +141,7 @@ void packDataHelper(Param packed,
         global = NDRange(blocks * THREADS);
 
         // Pad filter array with 0s
-        auto paOp = make_kernel<Buffer, KParam,
+        auto paOp = KernelFunctor<Buffer, KParam,
                                 Buffer, KParam> (*paKernel[device]);
 
         paOp(EnqueueArgs(getQueue(), global, local),
@@ -158,7 +159,7 @@ void complexMultiplyHelper(Param packed,
                            Param sig,
                            Param filter,
                            const int baseDim,
-                           ConvolveBatchKind kind)
+                           AF_BATCH_KIND kind)
 {
     try {
         static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
@@ -171,10 +172,10 @@ void complexMultiplyHelper(Param packed,
 
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D CONVOLVE_BATCH_NONE=" << (int)CONVOLVE_BATCH_NONE
-                        << " -D CONVOLVE_BATCH_SIGNAL=" << (int)CONVOLVE_BATCH_SIGNAL
-                        << " -D CONVOLVE_BATCH_KERNEL=" << (int)CONVOLVE_BATCH_KERNEL
-                        << " -D CONVOLVE_BATCH_SAME=" << (int)CONVOLVE_BATCH_SAME;
+                        << " -D AF_BATCH_NONE=" << (int)AF_BATCH_NONE
+                        << " -D AF_BATCH_LHS="  << (int)AF_BATCH_LHS
+                        << " -D AF_BATCH_RHS="  << (int)AF_BATCH_RHS
+                        << " -D AF_BATCH_SAME=" << (int)AF_BATCH_SAME;
 
                 if ((af_dtype) dtype_traits<convT>::af_type == c32) {
                     options << " -D CONVT=float";
@@ -208,7 +209,7 @@ void complexMultiplyHelper(Param packed,
         NDRange global(blocks * THREADS);
 
         // Multiply filter and signal FFT arrays
-        auto cmOp = make_kernel<Buffer, KParam,
+        auto cmOp = KernelFunctor<Buffer, KParam,
                                 Buffer, KParam,
                                 Buffer, KParam,
                                 const int, const int> (*cmKernel[device]);
@@ -231,7 +232,7 @@ void reorderOutputHelper(Param out,
                          Param sig,
                          Param filter,
                          const int baseDim,
-                         ConvolveBatchKind kind)
+                         AF_BATCH_KIND kind)
 {
     try {
         static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
@@ -282,12 +283,12 @@ void reorderOutputHelper(Param out,
         NDRange local(THREADS);
         NDRange global(blocks * THREADS);
 
-        auto roOp = make_kernel<Buffer, KParam,
+        auto roOp = KernelFunctor<Buffer, KParam,
                                 Buffer, KParam,
                                 KParam, const int,
                                 const int, const int> (*roKernel[device]);
 
-        if (kind == CONVOLVE_BATCH_KERNEL) {
+        if (kind == AF_BATCH_RHS) {
             roOp(EnqueueArgs(getQueue(), global, local),
                  *out.data, out.info,
                  *filter_tmp.data, filter_tmp.info,

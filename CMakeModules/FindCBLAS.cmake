@@ -50,6 +50,8 @@ SET(INTEL_MKL_ROOT_DIR CACHE STRING
 SET(CBLAS_ROOT_DIR CACHE STRING
   "Root directory for custom CBLAS implementation")
 
+MARK_AS_ADVANCED(INTEL_MKL_ROOT_DIR CBLAS_ROOT_DIR)
+
 INCLUDE(CheckTypeSize)
 CHECK_TYPE_SIZE("void*" SIZE_OF_VOIDP)
 
@@ -149,7 +151,7 @@ MACRO(CHECK_ALL_LIBRARIES
           )
       ELSE(APPLE)
         FIND_LIBRARY(${_prefix}_${_library}_LIBRARY
-          NAMES ${_library}
+          NAMES ${_library} lib${_library}
           PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64
           ENV LD_LIBRARY_PATH
           "${CBLAS_LIB_DIR}" "${CBLAS_LIB32_DIR}" "${CBLAS_LIB64_DIR}"
@@ -179,6 +181,8 @@ MACRO(CHECK_ALL_LIBRARIES
 
   IF(_bug_search_include)
     FIND_PATH(${_prefix}${_combined_name}_INCLUDE ${_include}
+      PATHS
+      ${CBLAS_ROOT_DIR}/include
       /opt/intel/mkl/include
       /usr/include
       /usr/local/include
@@ -315,7 +319,7 @@ IF(NOT CBLAS_LIBRARIES)
   CHECK_ALL_LIBRARIES(
     CBLAS_LIBRARIES
     CBLAS
-    cblas_dgemm
+    dgemm_
     ""
     "blas"
     "cblas.h"
@@ -345,3 +349,8 @@ IF(NOT CBLAS_FIND_QUIETLY)
 ENDIF(NOT CBLAS_FIND_QUIETLY)
 
 ENDIF(PC_CBLAS_FOUND)
+
+MARK_AS_ADVANCED(
+    CBLAS_INCLUDE_DIR
+    CBLAS_INCLUDE_FILE
+    CBLAS_LIBRARIES)

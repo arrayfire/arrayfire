@@ -15,7 +15,6 @@
 #endif
 #endif
 
-#include <af/array.h>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
 #include "traits.hpp"
@@ -39,6 +38,12 @@ namespace cuda
 
     template<typename T>
     void evalNodes(Param<T> &out, JIT::Node *node);
+
+    template<typename T>
+    void evalNodes(std::vector<Param<T> > &out, std::vector<JIT::Node *> nodes);
+
+    template<typename T>
+    void evalMultiple(std::vector<Array<T> *> arrays);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
@@ -153,6 +158,7 @@ namespace cuda
         INFO_IS_FUNC(isInteger);
         INFO_IS_FUNC(isBool);
         INFO_IS_FUNC(isLinear);
+        INFO_IS_FUNC(isSparse);
 
 #undef INFO_IS_FUNC
 
@@ -178,13 +184,7 @@ namespace cuda
             data_dims = new_dims;
         }
 
-        T* device()
-        {
-            if (!isOwner() || getOffset() || data.use_count() > 1) {
-                *this = Array<T>(dims(), get(), true, true);
-            }
-            return this->get();
-        }
+        T* device();
 
         T* device() const
         {
@@ -227,8 +227,10 @@ namespace cuda
             return out;
         }
 
+        JIT::Node_ptr getNode();
         JIT::Node_ptr getNode() const;
 
+        friend void evalMultiple<T>(std::vector<Array<T> *> arrays);
         friend Array<T> createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T> createHostDataArray<T>(const af::dim4 &size, const T * const data);
         friend Array<T> createDeviceDataArray<T>(const af::dim4 &size, const void *data);

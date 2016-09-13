@@ -12,7 +12,16 @@
 #include <fg/window.h>
 #endif
 
-#include <cl.hpp>
+#define CL_HPP_ENABLE_EXCEPTIONS
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#include <CL/cl2.hpp>
+#pragma GCC diagnostic pop
+
 #include <vector>
 #include <string>
 
@@ -73,7 +82,7 @@ class DeviceManager
         DeviceManager(DeviceManager const&);
         void operator=(DeviceManager const&);
 #if defined(WITH_GRAPHICS)
-        void markDeviceForInterop(const int device, const fg::Window* wHandle);
+        void markDeviceForInterop(const int device, const forge::Window* wHandle);
 #endif
 
     private:
@@ -138,5 +147,7 @@ bool synchronize_calls();
 
 int getActiveDeviceType();
 int getActivePlatform();
+
+bool& evalFlag();
 
 }

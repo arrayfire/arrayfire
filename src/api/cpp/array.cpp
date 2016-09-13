@@ -71,25 +71,6 @@ namespace af
         }
     }
 
-    static unsigned size_of(af::dtype type)
-    {
-        switch(type) {
-        case f32: return sizeof(float);
-        case f64: return sizeof(double);
-        case s32: return sizeof(int);
-        case u32: return sizeof(unsigned);
-        case s64: return sizeof(intl);
-        case u64: return sizeof(uintl);
-        case u8 : return sizeof(unsigned char);
-        case b8 : return sizeof(unsigned char);
-        case c32: return sizeof(float) * 2;
-        case c64: return sizeof(double) * 2;
-        case s16: return sizeof(short);
-        case u16: return sizeof(unsigned short);
-        default: return sizeof(float);
-        }
-    }
-
     static unsigned numDims(const af_array arr)
     {
         unsigned nd;
@@ -184,7 +165,7 @@ namespace af
                 dims[3]);                                               \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_t d0, const T *ptr, af::source src) \
+    array::array(dim_t d0, const T *ptr, af::source src)                \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0);                           \
@@ -282,7 +263,7 @@ namespace af
     {
         dim_t nElements;
         AF_THROW(af_get_elements(&nElements, get()));
-        return nElements * size_of(type());
+        return nElements * getSizeOf(type());
     }
 
     array array::copy() const
@@ -313,6 +294,7 @@ namespace af
     INSTANTIATE(floating)
     INSTANTIATE(integer)
     INSTANTIATE(bool)
+    INSTANTIATE(sparse)
 
 #undef INSTANTIATE
 
@@ -558,6 +540,7 @@ namespace af
     array::array_proxy&
     af::array::array_proxy::operator=(array_proxy &&other) {
         array out = other;
+        other.impl = nullptr;
         return *this = out;
     }
 #endif
@@ -627,6 +610,7 @@ namespace af
     MEM_FUNC(bool                   , isfloating)
     MEM_FUNC(bool                   , isinteger)
     MEM_FUNC(bool                   , isbool)
+    MEM_FUNC(bool                   , issparse)
     MEM_FUNC(void                   , eval)
     //MEM_FUNC(void                   , unlock)
 #undef MEM_FUNC
@@ -1019,6 +1003,13 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
 
 #undef INSTANTIATE
 
+    template<> AFAPI void* array::device() const
+    {
+        void *ptr = NULL;
+        AF_THROW(af_get_device_ptr(&ptr, get()));
+        return (void *)ptr;
+    }
+
 
 // array_proxy instanciations
 #define TEMPLATE_MEM_FUNC(TYPE, RETURN_TYPE, FUNC)      \
@@ -1050,8 +1041,10 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
 #undef INSTANTIATE
 #undef TEMPLATE_MEM_FUNC
 
-    //FIXME: This needs to be implemented at a later point
+    //FIXME: These functions need to be implemented properly at a later point
     void array::array_proxy::unlock() const {}
+    void array::array_proxy::lock() const {}
+    bool array::array_proxy::isLocked() const { return false; }
 
     int array::nonzeros() const { return count<int>(*this); }
 
@@ -1060,8 +1053,36 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
         AF_THROW(af_lock_array(get()));
     }
 
+    bool array::isLocked() const
+    {
+        bool res;
+        AF_THROW(af_is_locked_array(&res, get()));
+        return res;
+    }
+
     void array::unlock() const
     {
         AF_THROW(af_unlock_array(get()));
+    }
+
+    void eval(int num, array **arrays)
+    {
+        std::vector<af_array> outputs(num);
+        for (int i = 0; i < num; i++) {
+            outputs[i] = arrays[i]->get();
+        }
+        AF_THROW(af_eval_multiple(num, &outputs[0]));
+    }
+
+    void setManualEvalFlag(bool flag)
+    {
+        AF_THROW(af_set_manual_eval_flag(flag));
+    }
+
+    bool getManualEvalFlag()
+    {
+        bool flag;
+        AF_THROW(af_get_manual_eval_flag(&flag));
+        return flag;
     }
 }

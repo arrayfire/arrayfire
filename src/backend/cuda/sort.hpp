@@ -7,11 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/array.h>
 #include <Array.hpp>
 
 namespace cuda
 {
-    template<typename T, bool isAscending>
-    Array<T> sort(const Array<T> &in, const unsigned dim);
+    template<typename T>
+    Array<T> sort(const Array<T> &in, const unsigned dim, bool isAscending);
 }

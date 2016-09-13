@@ -9,7 +9,6 @@
 
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <ArrayInfo.hpp>
 #include <hsv_rgb.hpp>
 #include <kernel/hsv_rgb.hpp>
 #include <err_opencl.hpp>

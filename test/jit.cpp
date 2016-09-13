@@ -13,7 +13,6 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
-using namespace std;
 using namespace af;
 
 TEST(JIT, CPP_JIT_HASH)
@@ -113,5 +112,158 @@ TEST(JIT, CPP_JIT_Reset_Unary)
 
     for (int i = 0; i < (int)f.elements(); i++) {
         ASSERT_EQ(hf[i], -hg[i]);
+    }
+}
+
+TEST(JIT, CPP_Multi_linear)
+{
+    using af::array;
+
+    const int num = 1 << 16;
+    af::array a = af::randu(num, s32);
+    af::array b = af::randu(num, s32);
+    af::array x = a + b;
+    af::array y = a - b;
+    af::eval(x, y);
+
+    std::vector<int> ha(num);
+    std::vector<int> hb(num);
+    std::vector<int> hx(num);
+    std::vector<int> hy(num);
+
+    a.host(&ha[0]);
+    b.host(&hb[0]);
+    x.host(&hx[0]);
+    y.host(&hy[0]);
+
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ((ha[i] + hb[i]), hx[i]);
+        ASSERT_EQ((ha[i] - hb[i]), hy[i]);
+    }
+}
+
+TEST(JIT, CPP_strided)
+{
+    using af::array;
+
+    const int num = 1024;
+    af::gforSet(true);
+    af::array a = af::randu(num, 1, s32);
+    af::array b = af::randu(1, num, s32);
+    af::array x = a + b;
+    af::array y = a - b;
+    af::eval(x);
+    af::eval(y);
+    af::gforSet(false);
+
+    std::vector<int> ha(num);
+    std::vector<int> hb(num);
+    std::vector<int> hx(num * num);
+    std::vector<int> hy(num * num);
+
+    a.host(&ha[0]);
+    b.host(&hb[0]);
+    x.host(&hx[0]);
+    y.host(&hy[0]);
+
+    for (int j = 0; j < num; j++) {
+        for (int i = 0; i < num; i++) {
+            ASSERT_EQ((ha[i] + hb[j]), hx[j*num + i]);
+            ASSERT_EQ((ha[i] - hb[j]), hy[j*num + i]);
+        }
+    }
+}
+
+TEST(JIT, CPP_Multi_strided)
+{
+    using af::array;
+
+    const int num = 1024;
+    af::gforSet(true);
+    af::array a = af::randu(num, 1, s32);
+    af::array b = af::randu(1, num, s32);
+    af::array x = a + b;
+    af::array y = a - b;
+    af::eval(x, y);
+    af::gforSet(false);
+
+    std::vector<int> ha(num);
+    std::vector<int> hb(num);
+    std::vector<int> hx(num * num);
+    std::vector<int> hy(num * num);
+
+    a.host(&ha[0]);
+    b.host(&hb[0]);
+    x.host(&hx[0]);
+    y.host(&hy[0]);
+
+    for (int j = 0; j < num; j++) {
+        for (int i = 0; i < num; i++) {
+            ASSERT_EQ((ha[i] + hb[j]), hx[j*num + i]);
+            ASSERT_EQ((ha[i] - hb[j]), hy[j*num + i]);
+        }
+    }
+}
+
+TEST(JIT, CPP_Multi_pre_eval)
+{
+    using af::array;
+
+    const int num = 1 << 16;
+    af::array a = af::randu(num, s32);
+    af::array b = af::randu(num, s32);
+    af::array x = a + b;
+    af::array y = a - b;
+
+    af::eval(x);
+
+    // Should evaluate only y
+    af::eval(x, y);
+
+    // Should not evaluate anything
+    // Should not error out
+    af::eval(x, y);
+
+    std::vector<int> ha(num);
+    std::vector<int> hb(num);
+    std::vector<int> hx(num);
+    std::vector<int> hy(num);
+
+    a.host(&ha[0]);
+    b.host(&hb[0]);
+    x.host(&hx[0]);
+    y.host(&hy[0]);
+
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ((ha[i] + hb[i]), hx[i]);
+        ASSERT_EQ((ha[i] - hb[i]), hy[i]);
+    }
+}
+
+TEST(JIT, CPP_common_node)
+{
+    af::array r = seq(-3, 3, 0.5);
+
+    int n = r.dims(0);
+
+    af::array x = af::tile(r, 1, r.dims(0));
+    af::array y = af::tile(r.T(), r.dims(0), 1);
+    x.eval();
+    y.eval();
+
+
+    std::vector<float> hx(x.elements());
+    std::vector<float> hy(y.elements());
+    std::vector<float> hr(r.elements());
+
+    x.host(&hx[0]);
+    y.host(&hy[0]);
+    r.host(&hr[0]);
+
+    for (int j = 0; j < n; j++) {
+        for (int i = 0; i < n; i++) {
+            ASSERT_EQ(hx[j * n + i], hr[i]);
+            ASSERT_EQ(hy[j * n + i], hr[j]);
+        }
     }
 }

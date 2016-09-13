@@ -77,6 +77,10 @@ int computeH(
                 else if (htype == AF_HOMOGRAPHY_LMEDS)
                     options << " -D LMEDS";
 
+                if (getActiveDeviceType() == CL_DEVICE_TYPE_CPU) {
+                    options << " -D IS_CPU";
+                }
+
                 cl::Program prog;
                 buildProgram(prog, homography_cl, homography_cl_len, options.str());
                 hgProgs[device] = new Program(prog);
@@ -94,7 +98,7 @@ int computeH(
         const NDRange global_ch(blk_x_ch * HG_THREADS_X, blk_y_ch * HG_THREADS_Y);
 
         // Build linear system and solve SVD
-        auto chOp = make_kernel<Buffer, KParam,
+        auto chOp = KernelFunctor<Buffer, KParam,
                                 Buffer, Buffer, Buffer, Buffer,
                                 Buffer, KParam, unsigned>(*chKernel[device]);
 
@@ -129,7 +133,7 @@ int computeH(
             median.data = bufferAlloc(sizeof(float));
 
         // Compute (and for RANSAC, evaluate) homographies
-        auto ehOp = make_kernel<Buffer, Buffer, Buffer, KParam,
+        auto ehOp = KernelFunctor<Buffer, Buffer, Buffer, KParam,
                                 Buffer, KParam,
                                 Buffer, Buffer, Buffer, Buffer,
                                 Buffer, unsigned, unsigned, float>(*ehKernel[device]);
@@ -145,13 +149,13 @@ int computeH(
         if (htype == AF_HOMOGRAPHY_LMEDS) {
             // TODO: Improve this sorting, if the number of iterations is
             // sufficiently large, this can be *very* slow
-            kernel::sort0<float, true>(err);
+            kernel::sort0<float>(err, true);
 
             unsigned minIdx;
             float minMedian;
 
             // Compute median of every iteration
-            auto cmOp = make_kernel<Buffer, Buffer, Buffer, KParam,
+            auto cmOp = KernelFunctor<Buffer, Buffer, Buffer, KParam,
                                     unsigned>(*cmKernel[device]);
 
             cmOp(EnqueueArgs(getQueue(), global_eh, local_eh),
@@ -167,7 +171,7 @@ int computeH(
                 cl::Buffer* finalMedian = bufferAlloc(sizeof(float));
                 cl::Buffer* finalIdx = bufferAlloc(sizeof(unsigned));
 
-                auto fmOp = make_kernel<Buffer, Buffer, Buffer, KParam,
+                auto fmOp = KernelFunctor<Buffer, Buffer, Buffer, KParam,
                                         Buffer>(*fmKernel[device]);
 
                 fmOp(EnqueueArgs(getQueue(), global_fm, local_fm),
@@ -193,7 +197,7 @@ int computeH(
             const NDRange local_cl(HG_THREADS);
             const NDRange global_cl(blk_x_cl * HG_THREADS);
 
-            auto clOp = make_kernel<Buffer, Buffer,
+            auto clOp = KernelFunctor<Buffer, Buffer,
                                     Buffer, Buffer, Buffer, Buffer,
                                     float, unsigned>(*clKernel[device]);
 
@@ -215,30 +219,14 @@ int computeH(
             getQueue().enqueueReadBuffer(*totalInliers.data, CL_TRUE, 0, sizeof(unsigned), &inliersH);
 
             bufferFree(totalInliers.data);
-        }
-        else if (htype == AF_HOMOGRAPHY_RANSAC) {
-            Param bestInliers, bestIdx;
-            bestInliers.info.offset = bestIdx.info.offset = 0;
-            for (int k = 0; k < 4; k++) {
-                bestInliers.info.dims[k] = bestIdx.info.dims[k] = 1;
-                bestInliers.info.strides[k] = bestIdx.info.strides[k] = 1;
-            }
-            bestInliers.data = bufferAlloc(sizeof(unsigned));
-            bestIdx.data = bufferAlloc(sizeof(unsigned));
-
-            kernel::ireduce<unsigned, af_max_t>(bestInliers, bestIdx.data, inliers, 0);
-
+        } else if (htype == AF_HOMOGRAPHY_RANSAC) {
             unsigned blockIdx;
-            getQueue().enqueueReadBuffer(*bestIdx.data, CL_TRUE, 0, sizeof(unsigned), &blockIdx);
+            inliersH = kernel::ireduce_all<unsigned, af_max_t>(&blockIdx, inliers);
 
             // Copies back index and number of inliers of best homography estimation
-            getQueue().enqueueReadBuffer(*idx.data, CL_TRUE, blockIdx*sizeof(unsigned), sizeof(unsigned), &idxH);
-            getQueue().enqueueReadBuffer(*bestInliers.data, CL_TRUE, 0, sizeof(unsigned), &inliersH);
-
+            getQueue().enqueueReadBuffer(*idx.data, CL_TRUE, blockIdx*sizeof(unsigned),
+                                         sizeof(unsigned), &idxH);
             getQueue().enqueueCopyBuffer(*H.data, *bestH.data, idxH*9*sizeof(T), 0, 9*sizeof(T));
-
-            bufferFree(bestInliers.data);
-            bufferFree(bestIdx.data);
         }
 
         bufferFree(inliers.data);

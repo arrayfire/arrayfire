@@ -29,6 +29,11 @@ T det(const af_array a)
 
     const int num = A.dims()[0];
 
+    if(num == 0) {
+        T res = scalar<T>(1.0);
+        return res;
+    }
+
     std::vector<T> hD(num);
     std::vector<int> hP(num);
 

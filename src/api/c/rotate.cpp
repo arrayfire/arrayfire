@@ -47,8 +47,14 @@ af_err af_rotate(af_array *out, const af_array in, const float theta,
 
         ARG_ASSERT(3, method == AF_INTERP_NEAREST  ||
                       method == AF_INTERP_BILINEAR ||
+                      method == AF_INTERP_BILINEAR_COSINE ||
+                      method == AF_INTERP_BICUBIC ||
+                      method == AF_INTERP_BICUBIC_SPLINE ||
                       method == AF_INTERP_LOWER);
 
+        if(idims.elements() == 0) {
+            return af_retain_array(out, in);
+        }
         DIM_ASSERT(1, idims.elements() > 0);
 
         af::dim4 odims(odims0, odims1, idims[2], idims[3]);

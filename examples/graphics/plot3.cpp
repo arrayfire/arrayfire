@@ -32,10 +32,11 @@ int main(int argc, char *argv[])
             X = max(min(X, 1.0), -1.0);
             Y = max(min(Y, 1.0), -1.0);
 
-            array Pts = join(1, X, Y, Z);
+            myWindow.setAxesLimits(X, Y, Z);
+
             //Pts can be passed in as a matrix in the form n x 3, 3 x n
             //or in the flattened xyz-triplet array with size 3n x 1
-            myWindow.plot3(Pts);
+            myWindow.plot(X, Y, Z);
 
             t+=0.01;
         } while(!myWindow.close());

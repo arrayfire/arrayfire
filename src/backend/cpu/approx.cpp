@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 #include <approx.hpp>
-#include <kernel/approx1.hpp>
-#include <kernel/approx2.hpp>
+#include <kernel/approx.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 
@@ -30,16 +29,23 @@ Array<Ty> approx1(const Array<Ty> &in, const Array<Tp> &pos,
     Array<Ty> out = createEmptyArray<Ty>(odims);
 
     switch(method) {
-        case AF_INTERP_NEAREST:
-            getQueue().enqueue(kernel::approx1<Ty, Tp, AF_INTERP_NEAREST>,
-                               out, in, pos, offGrid);
-            break;
-        case AF_INTERP_LINEAR:
-            getQueue().enqueue(kernel::approx1<Ty, Tp, AF_INTERP_LINEAR>,
-                               out, in, pos, offGrid);
-            break;
-        default:
-            break;
+    case AF_INTERP_NEAREST:
+    case AF_INTERP_LOWER:
+        getQueue().enqueue(kernel::approx1<Ty, Tp, 1>,
+                           out, in, pos, offGrid, method);
+        break;
+    case AF_INTERP_LINEAR:
+    case AF_INTERP_LINEAR_COSINE:
+        getQueue().enqueue(kernel::approx1<Ty, Tp, 2>,
+                           out, in, pos, offGrid, method);
+        break;
+    case AF_INTERP_CUBIC:
+    case AF_INTERP_CUBIC_SPLINE:
+        getQueue().enqueue(kernel::approx1<Ty, Tp, 3>,
+                           out, in, pos, offGrid, method);
+        break;
+    default:
+        break;
     }
     return out;
 }
@@ -60,16 +66,27 @@ Array<Ty> approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &p
     Array<Ty> out = createEmptyArray<Ty>(odims);
 
     switch(method) {
-        case AF_INTERP_NEAREST:
-            getQueue().enqueue(kernel::approx2<Ty, Tp, AF_INTERP_NEAREST>,
-                               out, in, pos0, pos1, offGrid);
-            break;
-        case AF_INTERP_LINEAR:
-            getQueue().enqueue(kernel::approx2<Ty, Tp, AF_INTERP_LINEAR>,
-                               out, in, pos0, pos1, offGrid);
-            break;
-        default:
-            break;
+    case AF_INTERP_NEAREST:
+    case AF_INTERP_LOWER:
+        getQueue().enqueue(kernel::approx2<Ty, Tp, 1>,
+                           out, in, pos0, pos1, offGrid, method);
+        break;
+    case AF_INTERP_LINEAR:
+    case AF_INTERP_BILINEAR:
+    case AF_INTERP_LINEAR_COSINE:
+    case AF_INTERP_BILINEAR_COSINE:
+        getQueue().enqueue(kernel::approx2<Ty, Tp, 2>,
+                           out, in, pos0, pos1, offGrid, method);
+        break;
+    case AF_INTERP_CUBIC:
+    case AF_INTERP_BICUBIC:
+    case AF_INTERP_CUBIC_SPLINE:
+    case AF_INTERP_BICUBIC_SPLINE:
+        getQueue().enqueue(kernel::approx2<Ty, Tp, 3>,
+                           out, in, pos0, pos1, offGrid, method);
+        break;
+    default:
+        break;
     }
     return out;
 }

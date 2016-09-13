@@ -15,25 +15,26 @@
 namespace cuda
 {
     template<typename T>
-    Array<T> transform(const Array<T> &in, const Array<float> &transform, const af::dim4 &odims,
+    Array<T> transform(const Array<T> &in, const Array<float> &tf, const af::dim4 &odims,
                         const af_interp_type method, const bool inverse, const bool perspective)
     {
-        const af::dim4 idims = in.dims();
-
         Array<T> out = createEmptyArray<T>(odims);
 
         switch(method) {
-            case AF_INTERP_NEAREST:
-                kernel::transform<T, AF_INTERP_NEAREST> (out, in, transform, inverse, perspective);
-                break;
-            case AF_INTERP_BILINEAR:
-                kernel::transform<T, AF_INTERP_BILINEAR>(out, in, transform, inverse, perspective);
-                break;
-            case AF_INTERP_LOWER:
-                kernel::transform<T, AF_INTERP_LOWER>   (out, in, transform, inverse, perspective);
-                break;
-            default:
-                AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
+        case AF_INTERP_NEAREST:
+        case AF_INTERP_LOWER:
+            kernel::transform<T, 1>(out, in, tf, inverse, perspective, method);
+            break;
+        case AF_INTERP_BILINEAR:
+        case AF_INTERP_BILINEAR_COSINE:
+            kernel::transform<T, 2>(out, in, tf, inverse, perspective, method);
+            break;
+        case AF_INTERP_BICUBIC:
+        case AF_INTERP_BICUBIC_SPLINE:
+            kernel::transform<T, 3>(out, in, tf, inverse, perspective, method);
+            break;
+        default:
+            AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
         }
 
         return out;
@@ -41,7 +42,7 @@ namespace cuda
 
 
 #define INSTANTIATE(T)                                                                      \
-    template Array<T> transform(const Array<T> &in, const Array<float> &transform,          \
+    template Array<T> transform(const Array<T> &in, const Array<float> &tf,                 \
                                 const af::dim4 &odims, const af_interp_type method,         \
                                 const bool inverse, const bool perspective);
 

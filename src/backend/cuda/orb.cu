@@ -8,11 +8,8 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <af/defines.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <err_cuda.hpp>
-#include <handle.hpp>
 #include <fast_pyramid.hpp>
 #include <kernel/orb.hpp>
 #include <kernel/orb_patch.hpp>

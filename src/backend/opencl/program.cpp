@@ -16,7 +16,6 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -26,7 +25,11 @@ namespace opencl
     const static std::string USE_DBL_SRC_STR("\n\
                                            #ifdef USE_DOUBLE\n\
                                            #pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
-                                           #endif\n");
+                                           #endif\n                     \
+                                           #ifndef M_PI\n               \
+                                           #define M_PI 3.1415926535897932384626433832795028841971693993751058209749445923078164\n \
+                                           #endif\n                     \
+                                           ");
     void buildProgram(cl::Program &prog,
                       const char *ker_str, const int ker_len, std::string options)
     {
@@ -50,9 +53,14 @@ namespace opencl
                 std::string(dtype_traits<dim_t>::getName());
 
             prog = cl::Program(getContext(), setSrc);
-            std::vector<cl::Device> targetDevices;
-            targetDevices.push_back(getDevice());
-            prog.build(targetDevices, (defaults + options).c_str());
+            auto device = getDevice();
+
+            std::string cl_std =
+                std::string(" -cl-std=CL") +
+                device.getInfo<CL_DEVICE_OPENCL_C_VERSION>().substr(9, 3);
+
+            // Braces needed to list initialize the vector for the first argument
+            prog.build({device}, (cl_std + defaults + options).c_str());
 
         } catch (...) {
             SHOW_BUILD_INFO(prog);

@@ -829,5 +829,34 @@ unwrap(A, 3, 3, 3, 3, 2, 2) [9 9 1 1]
 Wrap takes an unwrapped image (see \ref unwrap()) and converts it back to an image.
 
 The inputs to this function should be the same as the inputs used to generate the unwrapped image.
+
+=======================================================================
+
+\defgroup image_func_moments moments
+\ingroup moments_mat
+
+The \ref moments() function allows for finding different
+properties of image regions. Currently, ArrayFire calculates all first order moments.
+The moments are defined within the \ref af_moment_type enum.
+
+As the enum details, each moment can be returned individually or all first-order
+moments can be calculated at once. This can be done as follows:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+af::array moments = af::moments(input_image, AF_MOMENT_FIRST_ORDER);
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here is an example of how the shorthand versions might be used to find the area(or gray level sum) and
+center of mass of an image:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+double m00, m01, m10;
+af::moments(&m00, input_image, AF_MOMENT_M00);
+af::moments(&m01, input_image, AF_MOMENT_M01);
+af::moments(&m10, input_image, AF_MOMENT_M10);
+
+double area = m00;
+double x_center = m10 / m00;
+double y_center = m01 / m00;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @}
 */
+

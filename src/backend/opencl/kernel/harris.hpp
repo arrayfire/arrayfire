@@ -13,7 +13,6 @@
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
-#include <convolve_common.hpp>
 #include <kernel/convolve_separable.hpp>
 #include <kernel/gradient.hpp>
 #include <kernel/sort_by_key.hpp>
@@ -183,7 +182,7 @@ void harris(unsigned* corners_out,
         const NDRange local_so(HARRIS_THREADS_PER_GROUP, 1);
         const NDRange global_so(blk_x_so * HARRIS_THREADS_PER_GROUP, 1);
 
-        auto soOp = make_kernel<Buffer, Buffer, Buffer,
+        auto soOp = KernelFunctor<Buffer, Buffer, Buffer,
                                 unsigned, Buffer, Buffer> (*soKernel[device]);
 
         // Compute second-order derivatives
@@ -207,7 +206,7 @@ void harris(unsigned* corners_out,
         const NDRange local_hr(HARRIS_THREADS_X, HARRIS_THREADS_Y);
         const NDRange global_hr(blk_x_hr * HARRIS_THREADS_X, blk_y_hr * HARRIS_THREADS_Y);
 
-        auto hrOp = make_kernel<Buffer, unsigned, unsigned,
+        auto hrOp = KernelFunctor<Buffer, unsigned, unsigned,
                                 Buffer, Buffer, Buffer,
                                 float, unsigned> (*hrKernel[device]);
 
@@ -235,7 +234,7 @@ void harris(unsigned* corners_out,
 
         const float min_r = (max_corners > 0) ? 0.f : min_response;
 
-        auto nmOp = make_kernel<Buffer, Buffer, Buffer, Buffer,
+        auto nmOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer,
                                 Buffer, unsigned, unsigned,
                                 float, unsigned, unsigned> (*nmKernel[device]);
 
@@ -290,7 +289,7 @@ void harris(unsigned* corners_out,
             kernel::range<uint>(harris_idx, 0);
 
             // Sort Harris responses
-            kernel::sort0ByKey<float, uint, false>(harris_resp, harris_idx);
+            kernel::sort0ByKey<float, uint>(harris_resp, harris_idx, false);
 
             x_out.data = bufferAlloc(*corners_out * sizeof(float));
             y_out.data = bufferAlloc(*corners_out * sizeof(float));
@@ -301,7 +300,7 @@ void harris(unsigned* corners_out,
             const NDRange local_kc(HARRIS_THREADS_PER_GROUP, 1);
             const NDRange global_kc(blk_x_kc * HARRIS_THREADS_PER_GROUP, 1);
 
-            auto kcOp = make_kernel<Buffer, Buffer, Buffer,
+            auto kcOp = KernelFunctor<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer, Buffer,
                                     unsigned> (*kcKernel[device]);
 

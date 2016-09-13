@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <af/defines.h>
 #include <kernel/sort_by_key.hpp>
 #include <kernel/sort_helper.hpp>
 #include <Array.hpp>
@@ -24,8 +23,8 @@ namespace cpu
 namespace kernel
 {
 
-template<typename Tk, typename Tv, bool isAscending>
-void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval)
+template<typename Tk, typename Tv>
+void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval, bool isAscending)
 {
     // Get pointers and initialize original index locations
     Tk *okey_ptr = okey.get();
@@ -57,7 +56,11 @@ void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval)
                    pairKeyVal[x] = std::make_tuple(okey_col_ptr[x], oval_col_ptr[x]);
                 }
 
-                std::stable_sort(pairKeyVal, pairKeyVal + size, IPCompare<Tk, Tv, isAscending>());
+                if(isAscending) {
+                    std::stable_sort(pairKeyVal, pairKeyVal + size, IPCompare<Tk, Tv, true>());
+                } else {
+                    std::stable_sort(pairKeyVal, pairKeyVal + size, IPCompare<Tk, Tv, false>());
+                }
 
                 for(unsigned x = 0; x < size; x++) {
                     okey_ptr[okeyOffset + x] = std::get<0>(pairKeyVal[x]);
@@ -71,8 +74,8 @@ void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval)
     return;
 }
 
-template<typename Tk, typename Tv, bool isAscending, int dim>
-void sortByKeyBatched(Array<Tk> okey, Array<Tv> oval)
+template<typename Tk, typename Tv>
+void sortByKeyBatched(Array<Tk> okey, Array<Tv> oval, const int dim, bool isAscending)
 {
     af::dim4 inDims = okey.dims();
 
@@ -123,7 +126,12 @@ void sortByKeyBatched(Array<Tk> okey, Array<Tv> oval)
 
     memFree(key); // key is no longer required
 
-    std::stable_sort(tupleKeyValIdx, tupleKeyValIdx + size, KIPCompareV<Tk, Tv, isAscending>());
+    if(isAscending) {
+      std::stable_sort(tupleKeyValIdx, tupleKeyValIdx + size, KIPCompareV<Tk, Tv, true>());
+    }
+    else {
+      std::stable_sort(tupleKeyValIdx, tupleKeyValIdx + size, KIPCompareV<Tk, Tv, false>());
+    }
 
     std::stable_sort(tupleKeyValIdx, tupleKeyValIdx + size, KIPCompareK<Tk, Tv, true>());
 
@@ -136,37 +144,36 @@ void sortByKeyBatched(Array<Tk> okey, Array<Tv> oval)
     return;
 }
 
-template<typename Tk, typename Tv, bool isAscending>
-void sort0ByKey(Array<Tk> okey, Array<Tv> oval)
+template<typename Tk, typename Tv>
+void sort0ByKey(Array<Tk> okey, Array<Tv> oval, bool isAscending)
 {
     int higherDims =  okey.dims()[1] * okey.dims()[2] * okey.dims()[3];
     // TODO Make a better heurisitic
     if(higherDims > 4)
-        kernel::sortByKeyBatched<Tk, Tv, isAscending, 0>(okey, oval);
+        kernel::sortByKeyBatched<Tk, Tv>(okey, oval, 0, isAscending);
     else
-        kernel::sort0ByKeyIterative<Tk, Tv, isAscending>(okey, oval);
+        kernel::sort0ByKeyIterative<Tk, Tv>(okey, oval, isAscending);
 }
 
-#define INSTANTIATE(Tk, Tv, dr)                                                         \
-    template void sort0ByKey<Tk, Tv, dr>(Array<Tk> okey, Array<Tv> oval);               \
-    template void sort0ByKeyIterative<Tk, Tv, dr>(Array<Tk> okey, Array<Tv> oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 0>(Array<Tk> okey, Array<Tv> oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 1>(Array<Tk> okey, Array<Tv> oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 2>(Array<Tk> okey, Array<Tv> oval);      \
-    template void sortByKeyBatched<Tk, Tv, dr, 3>(Array<Tk> okey, Array<Tv> oval);      \
+#define INSTANTIATE(Tk, Tv)                                                             \
+    template void sort0ByKey<Tk, Tv>(Array<Tk> okey, Array<Tv> oval, bool isAscending); \
+    template void sort0ByKeyIterative<Tk, Tv>(Array<Tk> okey, Array<Tv> oval,           \
+                                              bool isAscending);                        \
+    template void sortByKeyBatched<Tk, Tv>(Array<Tk> okey, Array<Tv> oval,              \
+                                           const int dim, bool isAscending);
 
-#define INSTANTIATE1(Tk    , dr) \
-    INSTANTIATE(Tk, float  , dr) \
-    INSTANTIATE(Tk, double , dr) \
-    INSTANTIATE(Tk, cfloat , dr) \
-    INSTANTIATE(Tk, cdouble, dr) \
-    INSTANTIATE(Tk, int    , dr) \
-    INSTANTIATE(Tk, uint   , dr) \
-    INSTANTIATE(Tk, short  , dr) \
-    INSTANTIATE(Tk, ushort , dr) \
-    INSTANTIATE(Tk, char   , dr) \
-    INSTANTIATE(Tk, uchar  , dr) \
-    INSTANTIATE(Tk, intl   , dr) \
-    INSTANTIATE(Tk, uintl  , dr)
+#define INSTANTIATE1(Tk) \
+    INSTANTIATE(Tk, float  ) \
+    INSTANTIATE(Tk, double ) \
+    INSTANTIATE(Tk, cfloat ) \
+    INSTANTIATE(Tk, cdouble) \
+    INSTANTIATE(Tk, int    ) \
+    INSTANTIATE(Tk, uint   ) \
+    INSTANTIATE(Tk, short  ) \
+    INSTANTIATE(Tk, ushort ) \
+    INSTANTIATE(Tk, char   ) \
+    INSTANTIATE(Tk, uchar  ) \
+    INSTANTIATE(Tk, intl   ) \
+    INSTANTIATE(Tk, uintl  )
 }
 }

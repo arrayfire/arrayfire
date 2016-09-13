@@ -27,15 +27,32 @@ template<typename T>
 static double median(const af_array& in)
 {
     dim_t nElems = getInfo(in).elements();
-    double mid      = (nElems + 1) / 2;
-    af_seq mdSpan[1]= {af_make_seq(mid-1, mid, 1)};
     dim4 dims(nElems, 1, 1, 1);
+    ARG_ASSERT(0, nElems > 0);
 
     af_array temp = 0;
     AF_CHECK(af_moddims(&temp, in, 1, dims.get()));
     const Array<T> input  = getArray<T>(temp);
 
-    Array<T> sortedArr = sort<T, true>(input, 0);
+    // Shortcut cases for 1 or 2 elements
+    if(nElems == 1) {
+        T result;
+        AF_CHECK(af_get_data_ptr((void*)&result, in));
+        return result;
+    } else if(nElems == 2) {
+        T result[2];
+        AF_CHECK(af_get_data_ptr((void*)&result, in));
+        if (input.isFloating()) {
+            return division(result[0] + result[1], 2.0);
+        } else {
+            return division(result[0] + result[1], 2.0);
+        }
+    }
+
+    double mid      = (nElems + 1) / 2;
+    af_seq mdSpan[1]= {af_make_seq(mid-1, mid, 1)};
+
+    Array<T> sortedArr = sort<T>(input, 0, true);
 
     af_array sarrHandle = getHandle<T>(sortedArr);
 
@@ -66,7 +83,14 @@ template<typename T>
 static af_array median(const af_array& in, const dim_t dim)
 {
     const Array<T> input = getArray<T>(in);
-    Array<T> sortedIn   = sort<T, true>(input, dim);
+
+    // Shortcut cases for 1 element along selected dimension
+    if(input.dims()[dim] == 1) {
+        Array<T> result = copyArray<T>(input);
+        return getHandle<T>(result);
+    }
+
+    Array<T> sortedIn   = sort<T>(input, dim, true);
 
     int dimLength = input.dims()[dim];
     double mid    = (dimLength + 1) / 2;
@@ -131,6 +155,8 @@ af_err af_median_all(double *realVal, double *imagVal, const af_array in)
     try {
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
+
+        ARG_ASSERT(2, info.ndims() > 0);
         switch(type) {
             case f64: *realVal = median<double>(in); break;
             case f32: *realVal = median<float >(in); break;
@@ -153,6 +179,8 @@ af_err af_median(af_array* out, const af_array in, const dim_t dim)
 
         af_array output = 0;
         ArrayInfo info = getInfo(in);
+
+        ARG_ASSERT(1, info.ndims() > 0);
         af_dtype type = info.getType();
         switch(type) {
             case f64: output = median<double>(in, dim); break;

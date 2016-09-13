@@ -23,7 +23,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -34,6 +34,7 @@ namespace opencl
     {
         static const uint DIMX = 32;
         static const uint DIMY =  8;
+        static const int REPEAT = 64;
 
         template<typename T, bool is_same>
         void select_launcher(Param out, Param cond, Param a, Param b, int ndims)
@@ -74,13 +75,13 @@ namespace opencl
                           threads[1]);
 
 
-            int groups_0 = divup(out.info.dims[0], local[0]);
+            int groups_0 = divup(out.info.dims[0], REPEAT * local[0]);
             int groups_1 = divup(out.info.dims[1], local[1]);
 
             NDRange global(groups_0 * out.info.dims[2] * local[0],
                            groups_1 * out.info.dims[3] * local[1]);
 
-            auto selectOp = make_kernel<Buffer, KParam,
+            auto selectOp = KernelFunctor<Buffer, KParam,
                                         Buffer, KParam,
                                         Buffer, KParam,
                                         Buffer, KParam,
@@ -152,13 +153,13 @@ namespace opencl
             NDRange local(threads[0],
                           threads[1]);
 
-            int groups_0 = divup(out.info.dims[0], local[0]);
+            int groups_0 = divup(out.info.dims[0], REPEAT * local[0]);
             int groups_1 = divup(out.info.dims[1], local[1]);
 
             NDRange global(groups_0 * out.info.dims[2] * local[0],
                            groups_1 * out.info.dims[3] * local[1]);
 
-            auto selectOp = make_kernel<Buffer, KParam,
+            auto selectOp = KernelFunctor<Buffer, KParam,
                                         Buffer, KParam,
                                         Buffer, KParam,
                                         T,

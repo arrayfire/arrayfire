@@ -21,7 +21,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -77,7 +77,7 @@ void matchTemplate(Param out, const Param srch, const Param tmplt)
 
         NDRange global(blk_x * srch.info.dims[2] * THREADS_X, blk_y * srch.info.dims[3] * THREADS_Y);
 
-        auto matchImgOp = make_kernel<Buffer, KParam,
+        auto matchImgOp = KernelFunctor<Buffer, KParam,
                                        Buffer, KParam,
                                        Buffer, KParam,
                                        int, int> (*mtKernels[device]);

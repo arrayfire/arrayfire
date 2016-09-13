@@ -13,6 +13,7 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
+// This makes the macros cleaner
 using namespace std;
 using std::abs;
 using namespace af;
@@ -23,6 +24,9 @@ const int num = 10000;
 #define sub(left, right) (left) - (right)
 #define mul(left, right) (left) * (right)
 #define div(left, right) (left) / (right)
+
+typedef std::complex<float> complex_float;
+typedef std::complex<double> complex_double;
 
 template<typename T> T mod(T a, T b)
 {
@@ -289,3 +293,46 @@ BITOP(bitand, uintl, &)
 BITOP(bitxor, uintl, ^)
 BITOP(bitshiftl, uintl, <<)
 BITOP(bitshiftr, uintl, >>)
+
+TEST(BinaryTests, Test_pow_cfloat_float)
+{
+    af::array a = randgen(num, c32);
+    af::array b = randgen(num, f32);
+    af::array c = af::pow(a, b);
+    complex_float *h_a = (complex_float *)a.host<cfloat>();
+    float *h_b = b.host<float>();
+    complex_float *h_c = (complex_float *)c.host<cfloat>();
+    for (int i = 0; i < num; i++) {
+        complex_float res = std::pow(h_a[i], h_b[i]);
+        ASSERT_NEAR(real(h_c[i]), real(res), 1E-5)
+            << "for real values of: " << h_a[i]  << "," << h_b[i] << std::endl;
+        ASSERT_NEAR(imag(h_c[i]), imag(res), 1E-5)
+            << "for imag values of: " << h_a[i]  << "," << h_b[i] << std::endl;
+
+    }
+    delete[] h_a;
+    delete[] h_b;
+    delete[] h_c;
+}
+
+TEST(BinaryTests, Test_pow_cdouble_cdouble)
+{
+    if (noDoubleTests<cdouble>()) return;
+    af::array a = randgen(num, c64);
+    af::array b = randgen(num, c64);
+    af::array c = af::pow(a, b);
+    complex_double *h_a = (complex_double *)a.host<cdouble>();
+    complex_double *h_b = (complex_double *)b.host<cdouble>();
+    complex_double *h_c = (complex_double *)c.host<cdouble>();
+    for (int i = 0; i < num; i++) {
+        complex_double res = std::pow(h_a[i], h_b[i]);
+        ASSERT_NEAR(real(h_c[i]), real(res), 1E-10)
+            << "for real values of: " << h_a[i]  << "," << h_b[i] << std::endl;
+        ASSERT_NEAR(imag(h_c[i]), imag(res), 1E-10)
+            << "for imag values of: " << h_a[i]  << "," << h_b[i] << std::endl;
+
+    }
+    delete[] h_a;
+    delete[] h_b;
+    delete[] h_c;
+}

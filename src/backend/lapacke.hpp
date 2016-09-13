@@ -8,7 +8,6 @@
 ********************************************************/
 
 #if defined(__APPLE__)
-#include <af/defines.h>
 #include <types.hpp>
 #include <backend.hpp>
 

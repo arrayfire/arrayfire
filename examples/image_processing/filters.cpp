@@ -14,11 +14,6 @@
 
 using namespace af;
 
-array clamp(const array &in, float min = 0.0f, float max = 255.0f)
-{
-    return ((in<min)*0.0f + (in>max)*255.0f + (in >= min && in <= max)*in);
-}
-
 /**
 * randomization - controls % of total number of pixels in the image
 * that will be effected by random noise

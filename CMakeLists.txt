@@ -4,7 +4,7 @@ PROJECT(ARRAYFIRE)
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
-INCLUDE(${CMAKE_MODULE_PATH}/UploadCoveralls.cmake)
+INCLUDE(UploadCoveralls)
 INCLUDE(AFInstallDirs)
 
 OPTION(BUILD_TEST "Build Tests" ON)
@@ -42,48 +42,63 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 OPTION(MIN_BUILD_TIME "This flag compiles ArrayFire with O0, which is the fastest way to compile" OFF)
-INCLUDE(${CMAKE_MODULE_PATH}/MinBuildTime.cmake)
+INCLUDE(MinBuildTime)
 
 FIND_PACKAGE(FreeImage)
 IF(FREEIMAGE_FOUND)
     ADD_DEFINITIONS(-DWITH_FREEIMAGE)
     SET(FreeImage_LIBS ${FREEIMAGE_LIBRARY})
-    MESSAGE(STATUS "Using FreeImage library ${FreeImage_LIBS}")
-    INCLUDE_DIRECTORIES(${FREEIMAGE_INCLUDE_PATH})
+    INCLUDE_DIRECTORIES(BEFORE ${FREEIMAGE_INCLUDE_PATH})
 ELSE(FREEIMAGE_FOUND)
     MESSAGE(WARNING, "FreeImage not found!")
 ENDIF(FREEIMAGE_FOUND)
 
+OPTION(USE_SYSTEM_CL2HPP "Use cl2.hpp installed on system" OFF)
+
 IF(BUILD_GRAPHICS)
     OPTION(USE_SYSTEM_FORGE "Use system Forge" OFF)
+    OPTION(USE_SYSTEM_GLBINDING "Use system glbinding" OFF)
+
+    FIND_PACKAGE(OpenGL REQUIRED)
+
+    IF(USE_SYSTEM_GLBINDING)
+        # Point glbinding_DIR (case sensitive) to the location of glbinding-config.cmake
+        # This file is generally at CMAKE_INSTALL_PREFIX/glbinding-config.cmake of
+        # the glbinding project
+        FIND_PACKAGE(glbinding REQUIRED)
+        SET(GLBINDING_FOUND "ON")
+        SET(GLBINDING_LIBRARIES glbinding::glbinding CACHE INTERNAL "glbinding library target")
+    ELSE(USE_SYSTEM_GLBINDING)
+        INCLUDE(build_glbinding)
+        LIST(APPEND GRAPHICS_DEPENDENCIES glbinding)
+    ENDIF(USE_SYSTEM_GLBINDING)
+
     IF(USE_SYSTEM_FORGE)
-        FIND_PACKAGE(Forge)
-    ELSE(USE_SYSTEM_FORGE)
-        INCLUDE("${CMAKE_MODULE_PATH}/build_forge.cmake")
+      FIND_PACKAGE(Forge REQUIRED)
+    ELSE(USE_SYSTEM_FORGE)  # Build Forge as an external Project
+        INCLUDE(build_forge)
+        LIST(APPEND GRAPHICS_DEPENDENCIES forge)
     ENDIF(USE_SYSTEM_FORGE)
 
-    IF(FORGE_FOUND)
-        ADD_DEFINITIONS(-DGLEW_MX -DWITH_GRAPHICS)
-        INCLUDE("${CMAKE_MODULE_PATH}/FindGLEWmx.cmake")
+    IF(FORGE_FOUND AND GLBINDING_FOUND)
+        ADD_DEFINITIONS(-DWITH_GRAPHICS)
 
-        INCLUDE_DIRECTORIES(
-            ${FORGE_INCLUDE_DIRECTORIES}
-            ${GLEW_INCLUDE_DIR}
-            )
+        INCLUDE_DIRECTORIES(BEFORE
+            ${FORGE_INCLUDE_DIRS}
+            ${GLBINDING_INCLUDE_DIRS})
 
-        SET(FORGE_LIBRARIES ${FORGE_LIBRARIES}
-                            ${GLEWmx_LIBRARY}
-                            ${OPENGL_gl_LIBRARY}
-                            ${OPENGL_glu_LIBRARY})
+        SET(GRAPHICS_LIBRARIES  ${FORGE_LIBRARIES}
+                                ${GLBINDING_LIBRARIES}
+                                ${OPENGL_gl_LIBRARY})
 
         IF(APPLE)
             FIND_PACKAGE(X11 REQUIRED)
-            INCLUDE_DIRECTORIES(${X11_INCLUDE_DIR})
+            INCLUDE_DIRECTORIES(BEFORE ${X11_INCLUDE_DIR})
         ENDIF(APPLE)
 
-    ELSE(FORGE_FOUND)
-        MESSAGE(WARNING "Forge not found. Graphics will be disabled")
-    ENDIF(FORGE_FOUND)
+    ELSE(FORGE_FOUND AND GLBINDING_FOUND)
+        MESSAGE(WARNING "Graphics dependencies (Forge and/or glbinding) not found. Graphics will be disabled")
+    ENDIF(FORGE_FOUND AND GLBINDING_FOUND)
 
 ENDIF(BUILD_GRAPHICS)
 
@@ -109,7 +124,7 @@ IF(${BUILD_NONFREE_SIFT})
     "Columbia.")
 ENDIF(${BUILD_NONFREE_SIFT})
 
-INCLUDE_DIRECTORIES(
+INCLUDE_DIRECTORIES(BEFORE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/backend"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/api/c"
@@ -149,20 +164,16 @@ ELSE(${UNIX}) #Windows
         # MP is multiprocess compilation. Gm- disables minimal rebuilds
         # http://stackoverflow.com/questions/6172205/how-can-i-do-a-parallel-build-in-visual-studio-2010vvvvvvvv
         # http://www.kitware.com/blog/home/post/434
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /Gm-")
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /Gm- /bigobj")
         SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} /MP /Gm-")
-
-        # Builds that contain debug info require /bigobj
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /bigobj")
-        SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /bigobj")
     ENDIF(MSVC)
 ENDIF()
 
 # Architechture Definitions
-INCLUDE(${CMAKE_MODULE_PATH}/TargetArch.cmake)
+INCLUDE(TargetArch)
 target_architecture(ARCH)
 
-INCLUDE(${CMAKE_MODULE_PATH}/Version.cmake)
+INCLUDE(Version)
 
 IF(${BUILD_CPU})
     ADD_SUBDIRECTORY(src/backend/cpu)
@@ -185,7 +196,7 @@ IF(${BUILD_DOCS})
     ADD_SUBDIRECTORY(docs)
 ENDIF()
 
-ADD_EXECUTABLE(bin2cpp ${CMAKE_MODULE_PATH}/bin2cpp.cpp)
+ADD_EXECUTABLE(bin2cpp ${PROJECT_SOURCE_DIR}/CMakeModules/bin2cpp.cpp)
 
 IF(${BUILD_TEST})
     ENABLE_TESTING()
@@ -210,21 +221,34 @@ INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION "${AF_INSTA
 ## The ArrayFire version file is generated and won't be included above, install
 ## it separately.
 INSTALL(FILES
-    ${CMAKE_SOURCE_DIR}/include/af/version.h DESTINATION "${AF_INSTALL_INC_DIR}/af/"
+    ${PROJECT_SOURCE_DIR}/include/af/version.h DESTINATION "${AF_INSTALL_INC_DIR}/af/"
     COMPONENT headers
 )
 
 IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
-    INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/third_party/forge/lib/" DESTINATION "${AF_INSTALL_LIB_DIR}"
-        COMPONENT libraries
+    OPTION(INSTALL_FORGE_DEV "Install Forge Header and Share Files with ArrayFire" OFF)
+    INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/third_party/forge/lib/"
+            DESTINATION "${AF_INSTALL_LIB_DIR}"
+            COMPONENT libraries
     )
+    IF(${INSTALL_FORGE_DEV})
+        INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/third_party/forge/include/"
+                DESTINATION "${AF_INSTALL_INC_DIR}"
+                COMPONENT headers
+        )
+        INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/third_party/forge/share/Forge/"
+                DESTINATION "${AF_INSTALL_DATA_DIR}/../Forge"
+                COMPONENT share
+        )
+    ENDIF(${INSTALL_FORGE_DEV})
 ENDIF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
 
 ## configuration to be used from the binary directory directly
 SET(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 SET(BACKEND_DIR "src/backend/\${lowerbackend}")
+SET(UNIFIED_DIR "src/api/unified")
 CONFIGURE_FILE(
-    ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
+    ${PROJECT_SOURCE_DIR}/CMakeModules/ArrayFireConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfig.cmake
     @ONLY)
 
@@ -233,12 +257,13 @@ CONFIGURE_FILE(
 STRING(REGEX REPLACE "[^/]+" ".." reldir "${AF_INSTALL_CMAKE_DIR}")
 SET(INCLUDE_DIR "\${CMAKE_CURRENT_LIST_DIR}/${reldir}/include")
 set(BACKEND_DIR)
+set(UNIFIED_DIR)
 CONFIGURE_FILE(
-    ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
+    ${PROJECT_SOURCE_DIR}/CMakeModules/ArrayFireConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
     @ONLY)
 CONFIGURE_FILE(
-    ${CMAKE_MODULE_PATH}/ArrayFireConfigVersion.cmake.in
+    ${PROJECT_SOURCE_DIR}/CMakeModules/ArrayFireConfigVersion.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfigVersion.cmake
     @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
@@ -260,10 +285,10 @@ INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/assets/examples"
     COMPONENT examples)
 
 IF(APPLE)
-    INCLUDE("${CMAKE_MODULE_PATH}/osx_install/OSXInstaller.cmake")
+    INCLUDE(osx_install/OSXInstaller)
 ENDIF(APPLE)
 
 ##
 # Packaging
 ##
-include(${CMAKE_MODULE_PATH}/CPackConfig.cmake)
+include(CPackConfig)

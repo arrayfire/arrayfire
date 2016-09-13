@@ -17,6 +17,7 @@
 #include <err_cpu.hpp>
 #include <triangle.hpp>
 #include <lapack_helper.hpp>
+#include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 

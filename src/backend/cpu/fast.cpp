@@ -8,11 +8,8 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <af/defines.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <err_cpu.hpp>
-#include <handle.hpp>
 #include <fast.hpp>
 #include <platform.hpp>
 #include <queue.hpp>

@@ -141,3 +141,22 @@ af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x)
     CHECK_ARRAYS(b, a, x);
     return CALL(y, b, a, x);
 }
+
+
+af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad)
+{
+    CHECK_ARRAYS(in);
+    return CALL(out, in, wind_length, wind_width, edge_pad);
+}
+
+af_err af_medfilt1(af_array *out, const af_array in, const dim_t wind_width, const af_border_type edge_pad)
+{
+    CHECK_ARRAYS(in);
+    return CALL(out, in, wind_width, edge_pad);
+}
+
+af_err af_medfilt2(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad)
+{
+    CHECK_ARRAYS(in);
+    return CALL(out, in, wind_length, wind_width, edge_pad);
+}

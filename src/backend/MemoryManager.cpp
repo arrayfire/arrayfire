@@ -189,7 +189,7 @@ void *MemoryManager::alloc(const size_t bytes, bool user_lock)
         }
 
 
-        locked_info info = {true, user_lock, alloc_bytes};
+        locked_info info = {!user_lock, user_lock, alloc_bytes};
         current.locked_map[ptr] = info;
         current.lock_bytes += alloc_bytes;
         current.lock_buffers++;
@@ -221,6 +221,18 @@ void MemoryManager::userUnlock(const void *ptr)
     this->unlock(const_cast<void *>(ptr), true);
 }
 
+bool MemoryManager::isUserLocked(const void *ptr)
+{
+    memory_info& current = this->getCurrentMemoryInfo();
+    lock_guard_t lock(this->memory_mutex);
+    locked_iter iter = current.locked_map.find(const_cast<void *>(ptr));
+    if (iter != current.locked_map.end()) {
+        return iter->second.user_lock;
+    } else {
+        return false;
+    }
+}
+
 size_t MemoryManager::getMemStepSize()
 {
     lock_guard_t lock(this->memory_mutex);
@@ -242,7 +254,7 @@ size_t MemoryManager::getMaxBytes()
 void MemoryManager::printInfo(const char *msg, const int device)
 {
     lock_guard_t lock(this->memory_mutex);
-    memory_info& current = this->getCurrentMemoryInfo();
+    const memory_info& current = this->getCurrentMemoryInfo();
 
     std::cout << msg << std::endl;
 
@@ -298,7 +310,7 @@ void MemoryManager::bufferInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                                size_t *lock_bytes,  size_t *lock_buffers)
 {
     lock_guard_t lock(this->memory_mutex);
-    memory_info current = this->getCurrentMemoryInfo();
+    const memory_info& current = this->getCurrentMemoryInfo();
     if (alloc_bytes   ) *alloc_bytes   = current.total_bytes;
     if (alloc_buffers ) *alloc_buffers = current.total_buffers;
     if (lock_bytes    ) *lock_bytes    = current.lock_bytes;
@@ -312,7 +324,7 @@ unsigned MemoryManager::getMaxBuffers()
 
 bool MemoryManager::checkMemoryLimit()
 {
-    memory_info& current = this->getCurrentMemoryInfo();
+    const memory_info& current = this->getCurrentMemoryInfo();
     return current.lock_bytes >= current.max_bytes || current.total_buffers >= this->max_buffers;
 }
 

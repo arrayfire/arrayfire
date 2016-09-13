@@ -9,7 +9,6 @@
 
 #pragma once
 #include <platform.hpp>
-#include <af/array.h>
 #include <optypes.hpp>
 #include <string>
 #include <vector>
@@ -28,22 +27,28 @@ namespace JIT
         std::string m_type_str;
         std::string m_name_str;
         int m_id;
+        int m_height;
         bool m_set_id;
         bool m_gen_func;
         bool m_gen_param;
         bool m_gen_offset;
         bool m_set_arg;
         bool m_gen_name;
+        bool m_linear;
+        bool m_set_is_linear;
 
     protected:
         void resetCommonFlags()
         {
+            m_height = 0;
             m_set_id = false;
             m_gen_func = false;
             m_gen_param = false;
             m_gen_offset = false;
             m_set_arg = false;
             m_gen_name = false;
+            m_linear = false;
+            m_set_is_linear = false;
         }
 
     public:
@@ -57,15 +62,17 @@ namespace JIT
               m_gen_param(false),
               m_gen_offset(false),
               m_set_arg(false),
-              m_gen_name(false)
+              m_gen_name(false),
+              m_linear(false),
+              m_set_is_linear(false)
         {}
 
         virtual void genKerName(std::stringstream &kerStream) {}
-        virtual void genParams  (std::stringstream &kerStream) {}
+        virtual void genParams  (std::stringstream &kerStream, bool is_linear) {}
         virtual void genOffsets (std::stringstream &kerStream, bool is_linear) {}
         virtual void genFuncs   (std::stringstream &kerStream) { m_gen_func = true;}
 
-        virtual int setArgs (cl::Kernel &ker, int id) { return id; }
+        virtual int setArgs (cl::Kernel &ker, int id, bool is_linear) { return id; }
 
         virtual int setId(int id) { m_set_id = true; return id; }
 
@@ -75,6 +82,8 @@ namespace JIT
             buf_count = 0;
             bytes = 0;
         }
+
+        virtual bool isBuffer() { return false; }
 
 
         virtual void resetFlags()
@@ -91,6 +100,7 @@ namespace JIT
         bool isGenOffset() { return m_gen_offset; }
 
         int getId()  { return m_id; }
+        int getHeight()  { return m_height; }
         std::string getNameStr() { return m_name_str; }
 
         virtual ~Node() {}

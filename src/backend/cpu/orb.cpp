@@ -8,10 +8,7 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <af/defines.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
-#include <handle.hpp>
 #include <resize.hpp>
 #include <fast.hpp>
 #include <sort_index.hpp>
@@ -160,7 +157,7 @@ unsigned orb(Array<float> &x, Array<float> &y,
         Array<float> harris_sorted = createEmptyArray<float>(af::dim4());
         Array<unsigned> harris_idx = createEmptyArray<unsigned>(af::dim4());
 
-        sort_index<float, false>(harris_sorted, harris_idx, score_harris, 0);
+        sort_index<float>(harris_sorted, harris_idx, score_harris, 0, false);
         getQueue().sync();
 
         usable_feat = std::min(usable_feat, lvl_best[i]);

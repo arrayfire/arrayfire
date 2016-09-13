@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <af/defines.h>
 #include <Array.hpp>
 #include <platform.hpp>
 
@@ -52,6 +51,9 @@ void evalArray(Array<T> in)
             }
         }
     }
+
+    // Reset TNJ flags
+    in.node->reset();
 }
 
 }

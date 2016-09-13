@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <af/defines.h>
 #include <Array.hpp>
 
 namespace cpu
@@ -16,7 +15,7 @@ namespace cpu
 namespace kernel
 {
 
-template<af_op_t op, typename Ti, typename To, int D>
+template<af_op_t op, typename Ti, typename To, int D, bool inclusive_scan>
 struct scan_dim
 {
     void operator()(Array<To> out, dim_t outOffset,
@@ -29,7 +28,7 @@ struct scan_dim
 
         const int D1 = D - 1;
         for (dim_t i = 0; i < odims[D1]; i++) {
-            scan_dim<op, Ti, To, D1> func;
+            scan_dim<op, Ti, To, D1, inclusive_scan> func;
             getQueue().enqueue(func,
                     out, outOffset + i * ostrides[D1],
                     in, inOffset + i * istrides[D1], dim);
@@ -38,8 +37,8 @@ struct scan_dim
     }
 };
 
-template<af_op_t op, typename Ti, typename To>
-struct scan_dim<op, Ti, To, 0>
+template<af_op_t op, typename Ti, typename To, bool inclusive_scan>
+struct scan_dim<op, Ti, To, 0, inclusive_scan>
 {
     void operator()(Array<To> output, dim_t outOffset,
                     const Array<Ti> input,  dim_t inOffset,
@@ -63,7 +62,17 @@ struct scan_dim<op, Ti, To, 0>
         for (dim_t i = 0; i < idims[dim]; i++) {
             To in_val = transform(in[i * istride]);
             out_val = scan(in_val, out_val);
-            out[i * ostride] = out_val;
+            if (!inclusive_scan) {
+                //The loop shifts the output index by 1.
+                //The last index wraps around and writes the first element.
+                if (i == (idims[dim] - 1)) {
+                    out[0] = scan.init();
+                } else {
+                    out[(i + 1) * ostride] = out_val;
+                }
+            } else {
+                out[i * ostride] = out_val;
+            }
         }
     }
 };

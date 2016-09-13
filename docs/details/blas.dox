@@ -23,7 +23,15 @@ in either case.
 
 \brief Matrix multiplication using array
 
-Performs a matrix multiplication on the two input arrays after performing the operations specified in the options. The operations are done while reading the data from memory. This results in no additional memory being used for temporary buffers.
+Performs a matrix multiplication on the two input arrays after performing the
+operations specified in the options. The operations are done while reading the
+data from memory. This results in no additional memory being used for temporary
+buffers.
+
+\note Sparse support was added to ArrayFire in v3.4.0. This function can be use
+for Sparse-Dense matrix multiplication. See the notes of the function for usage
+and restrictions.
+
 
 =======================================================================
 

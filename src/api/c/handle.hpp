@@ -17,13 +17,18 @@
 #include <cast.hpp>
 #include <af/dim4.hpp>
 
-const ArrayInfo& getInfo(const af_array arr, bool check = true);
+const ArrayInfo& getInfo(const af_array arr, bool device_check = true, bool sparse_check = true);
+
+// Implemented in src/api/c/moddims.cpp
+template<typename T>
+detail::Array<T> modDims(const detail::Array<T>& in, const af::dim4 &newDims);
 
 template<typename T>
 static const detail::Array<T> &
 getArray(const af_array &arr)
 {
     detail::Array<T> *A = reinterpret_cast<detail::Array<T>*>(arr);
+    ARG_ASSERT(0, A->isSparse() == false);
     return *A;
 }
 
@@ -59,6 +64,7 @@ static detail::Array<T> &
 getWritableArray(const af_array &arr)
 {
     const detail::Array<T> &A = getArray<T>(arr);
+    ARG_ASSERT(0, A.isSparse() == false);
     return const_cast<detail::Array<T>&>(A);
 }
 

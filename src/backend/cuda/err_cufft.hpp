@@ -66,6 +66,10 @@ static const char * _cufftGetResultString(cufftResult res)
         case CUFFT_LICENSE_ERROR:
             return "cuFFT: license error";
 #endif
+#if CUDA_VERSION >= 8000
+        case CUFFT_NOT_SUPPORTED:
+            return "cuFFT: not supported";
+#endif
     }
 
     return "cuFFT: unknown error";

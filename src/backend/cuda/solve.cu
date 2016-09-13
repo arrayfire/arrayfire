@@ -27,7 +27,6 @@
 #include <lu.hpp>
 #include <qr.hpp>
 
-#include <handle.hpp>
 #include <cstdio>
 
 namespace cuda

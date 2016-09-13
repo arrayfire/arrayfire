@@ -152,6 +152,11 @@ void memLock(const void *ptr)
     getMemoryManager().userLock((void *)ptr);
 }
 
+bool isLocked(const void *ptr)
+{
+    return getMemoryManager().isUserLocked((void *)ptr);
+}
+
 void memUnlock(const void *ptr)
 {
     getMemoryManager().userUnlock((void *)ptr);

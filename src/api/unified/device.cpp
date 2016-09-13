@@ -9,6 +9,7 @@
 
 #include <af/backend.h>
 #include <af/device.h>
+#include <af/array.h>
 #include "symbol_manager.hpp"
 
 af_err af_set_backend(const af_backend bknd)
@@ -114,12 +115,14 @@ af_err af_free_pinned(void *ptr)
 
 af_err af_alloc_host(void **ptr, const dim_t bytes)
 {
-    return CALL(ptr, bytes);
+    *ptr = malloc(bytes);
+    return (*ptr == NULL) ? AF_ERR_NO_MEM : AF_SUCCESS;
 }
 
 af_err af_free_host(void *ptr)
 {
-    return CALL(ptr);
+    free(ptr);
+    return AF_SUCCESS;
 }
 
 af_err af_device_array(af_array *arr, const void *data, const unsigned ndims, const dim_t * const dims, const af_dtype type)
@@ -177,8 +180,33 @@ af_err af_unlock_array(const af_array arr)
     return CALL(arr);
 }
 
+af_err af_is_locked_array(bool *res, const af_array arr)
+{
+    CHECK_ARRAYS(arr);
+    return CALL(res, arr);
+}
+
 af_err af_get_device_ptr(void **ptr, const af_array arr)
 {
     CHECK_ARRAYS(arr);
     return CALL(ptr, arr);
+}
+
+af_err af_eval_multiple(const int num, af_array *arrays)
+{
+    for (int i = 0; i < num; i++) {
+        CHECK_ARRAYS(arrays[i]);
+    }
+    return CALL(num, arrays);
+}
+
+af_err af_set_manual_eval_flag(bool flag)
+{
+    return CALL(flag);
+}
+
+
+af_err af_get_manual_eval_flag(bool *flag)
+{
+    return CALL(flag);
 }

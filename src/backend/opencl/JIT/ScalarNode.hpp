@@ -31,6 +31,7 @@ namespace JIT
             : Node(dtype_traits<T>::getName(), shortname<T>(false)),
               m_val(val)
         {
+            m_height = 0;
         }
 
         bool isLinear(dim_t dims[4])
@@ -47,14 +48,14 @@ namespace JIT
             m_gen_name = true;
         }
 
-        void genParams(std::stringstream &kerStream)
+        void genParams(std::stringstream &kerStream, bool is_linear)
         {
             if (m_gen_param) return;
             kerStream << m_type_str << " scalar" << m_id << ", " << "\n";
             m_gen_param = true;
         }
 
-        int setArgs(cl::Kernel &ker, int id)
+        int setArgs(cl::Kernel &ker, int id, bool is_linear)
         {
             if (m_set_arg) return id;
             ker.setArg(id, m_val);
@@ -82,10 +83,8 @@ namespace JIT
         int setId(int id)
         {
             if (m_set_id) return id;
-
             m_id = id;
             m_set_id = true;
-
             return m_id + 1;
         }
 
@@ -99,7 +98,7 @@ namespace JIT
 
         void resetFlags()
         {
-            resetCommonFlags();
+            if (m_set_id) resetCommonFlags();
         }
     };
 

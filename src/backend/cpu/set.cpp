@@ -10,8 +10,6 @@
 #include <complex>
 #include <algorithm>
 #include <af/dim4.hpp>
-#include <af/defines.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <set.hpp>
 #include <copy.hpp>
@@ -35,7 +33,7 @@ Array<T> setUnique(const Array<T> &in,
 
     Array<T> out = createEmptyArray<T>(af::dim4());
     if (is_sorted) out = copyArray<T>(in);
-    else           out = sort<T, 1>(in, 0);
+    else           out = sort<T>(in, 0, true);
 
     // Need to sync old jobs since we need to
     // operator on pointers directly in std::unique

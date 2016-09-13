@@ -8,7 +8,7 @@
  ********************************************************/
 #pragma once
 
-#include <af/defines.h>
+#include <cstdlib>
 
 namespace cuda
 {
@@ -23,6 +23,7 @@ namespace cuda
 
     void memLock(const void *ptr);
     void memUnlock(const void *ptr);
+    bool isLocked(const void *ptr);
 
     template<typename T> T* pinnedAlloc(const size_t &elements);
     template<typename T> void pinnedFree(T* ptr);

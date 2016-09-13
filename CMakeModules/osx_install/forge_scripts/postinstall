@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+
+err_file=/tmp/AFInstallerForge.err
+brew=/usr/local/bin/brew
+
+echo $(date) > $err_file
+
+if [ ! -f $brew ]; then
+    osascript -e 'tell app "Installer" to display dialog "Brew not installed. Please install brew at brew.sh"'
+    echo "Brew not found" >> $err_file
+    exit 1
+fi
+
+user=$(ps aux | grep console | grep -v 'grep\|root' | cut -d' ' -f1 | head -n1)
+
+if [ -z $user ]; then
+    echo "User not found" >> $err_file
+    exit 1
+fi
+
+function deps_err
+{
+    osascript -e 'tell app "Installer" to display dialog "ArrayFire files installed but failed to install ArrayFire/Forge dependencies using Brew."'
+    osascript -e 'tell app "Installer" to display dialog "Visit https://github.com/arrayfire/arrayfire/wiki/Fixing-Common-OS-X-Installer-Failures to fix errors manually."'
+    open https://github.com/arrayfire/arrayfire/wiki/Fixing-Common-OS-X-Installer-Failures
+    echo "Dependencies failed to install" >> $err_file
+    exit 1
+}
+
+su $user -c "$brew tap homebrew/versions" >> $err_file 2>&1
+su $user -c "$brew install glfw3 fontconfig" >> $err_file 2>&1 || deps_err

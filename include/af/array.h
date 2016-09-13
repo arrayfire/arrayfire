@@ -122,6 +122,9 @@ namespace af
             bool isfloating() const;
             bool isinteger() const;
             bool isbool() const;
+#if AF_API_VERSION >= 34
+            bool issparse() const;
+#endif
             void eval() const;
             array as(dtype type) const;
             array T() const;
@@ -131,6 +134,10 @@ namespace af
             void unlock() const;
 #if AF_API_VERSION >= 31
             void lock() const;
+#endif
+
+#if AF_API_VERSION >= 34
+            bool isLocked() const;
 #endif
 
                   array::array_proxy row(int index);
@@ -330,7 +337,7 @@ namespace af
 
             \endcode
 
-            \note If \p src is \ref afHost, the first \p dim0 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer.
+            \note If \p src is \ref afHost, the first \p dim0 elements are copied. If \p src is \ref afDevice, no copy is done; the array object wraps the device pointer AND takes ownership of the underlying memory.
 
         */
         template<typename T>
@@ -354,7 +361,7 @@ namespace af
 
             \image html 2dArray.png
 
-            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 elements are copied. If \p src is \ref afDevice, no copy is done; the array object wraps the device pointer AND takes ownership of the underlying memory. The data is treated as column major format when performing linear algebra operations.
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1,
@@ -378,7 +385,7 @@ namespace af
             array A(3, 3, 2,  h_buffer);   // copy host data to 3D device array
             \endcode
 
-            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 * \p dim2 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 * \p dim2 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does not take ownership of the underlying memory. The data is treated as column major format when performing linear algebra operations.
 
             \image html 3dArray.png
         */
@@ -407,7 +414,7 @@ namespace af
             array A(2, 2, 2, 2, h_buffer);   // copy host data to 4D device array
             \endcode
 
-            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 * \p dim2 * \p dim3 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 * \p dim2 * \p dim3 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does not take ownership of the underlying memory. The data is treated as column major format when performing linear algebra operations.
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
@@ -444,7 +451,7 @@ namespace af
                                              // used in ArrayFire
             \endcode
 
-            \note If \p src is \ref afHost, the first dims.elements() elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first dims.elements() elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does not take ownership of the underlying memory. The data is treated as column major format when performing linear algebra operations.
         */
         template<typename T>
         explicit
@@ -648,6 +655,13 @@ namespace af
            \brief Returns true if the array type is \ref b8
         */
         bool isbool() const;
+
+#if AF_API_VERSION >= 34
+        /**
+           \brief Returns true if the array is a sparse array
+        */
+        bool issparse() const;
+#endif
 
         /**
            \brief Evaluate any JIT expressions to generate data for the array
@@ -966,6 +980,17 @@ namespace af
         /// While a buffer is locked, the memory manager doesn't free the memory until unlock() is invoked.
         void lock() const;
 
+
+#if AF_API_VERSION >= 34
+        ///
+        /// \brief Query if the array has been locked by the user.
+        ///
+        /// An array can be locked by the user by calling `arry.lock` or `arr.device`
+        /// or `getRawPtr` function.
+        bool isLocked() const;
+#endif
+
+
         ///
         /// \brief Unlocks the device buffer in the memory manager.
         ///
@@ -1243,11 +1268,77 @@ namespace af
        @{
     */
     inline array &eval(array &a) { a.eval(); return a; }
-    inline void eval(array &a, array &b) { eval(a); b.eval(); }
-    inline void eval(array &a, array &b, array &c) { eval(a, b); c.eval(); }
-    inline void eval(array &a, array &b, array &c, array &d) { eval(a, b, c); d.eval(); }
-    inline void eval(array &a, array &b, array &c, array &d, array &e) { eval(a, b, c, d); e.eval(); }
-    inline void eval(array &a, array &b, array &c, array &d, array &e, array &f) { eval(a, b, c, d, e); f.eval(); }
+
+#if AF_API_VERSION >= 34
+    ///
+    /// Evaluate multiple arrays simultaneously
+    ///
+    AFAPI void eval(int num, array **arrays);
+#endif
+
+    inline void eval(array &a, array &b)
+    {
+#if AF_API_VERSION >= 34
+        array *arrays[] = {&a, &b};
+        return eval(2, arrays);
+#else
+        eval(a); b.eval();
+#endif
+    }
+
+    inline void eval(array &a, array &b, array &c)
+    {
+#if AF_API_VERSION >= 34
+        array *arrays[] = {&a, &b, &c};
+        return eval(3, arrays);
+#else
+        eval(a, b); c.eval();
+#endif
+    }
+
+    inline void eval(array &a, array &b, array &c, array &d)
+    {
+#if AF_API_VERSION >= 34
+        array *arrays[] = {&a, &b, &c, &d};
+        return eval(4, arrays);
+#else
+        eval(a, b, c); d.eval();
+#endif
+
+    }
+
+    inline void eval(array &a, array &b, array &c, array &d, array &e)
+    {
+#if AF_API_VERSION >= 34
+        array *arrays[] = {&a, &b, &c, &d, &e};
+        return eval(5, arrays);
+#else
+        eval(a, b, c, d); e.eval();
+#endif
+    }
+
+    inline void eval(array &a, array &b, array &c, array &d, array &e, array &f)
+    {
+#if AF_API_VERSION >= 34
+        array *arrays[] = {&a, &b, &c, &d, &e, &f};
+        return eval(6, arrays);
+#else
+        eval(a, b, c, d, e); f.eval();
+#endif
+    }
+
+#if AF_API_VERSION >= 34
+    ///
+    /// Turn the manual eval flag on or off
+    ///
+    AFAPI void setManualEvalFlag(bool flag);
+#endif
+
+#if AF_API_VERSION >= 34
+    /// Get the manual eval flag
+    AFAPI bool getManualEvalFlag();
+#endif
+
     /**
        @}
     */
@@ -1344,6 +1435,37 @@ extern "C" {
     /**
       @}
     */
+
+
+#if AF_API_VERSION >= 34
+    /**
+       Evaluate multiple arrays together
+    */
+    AFAPI af_err af_eval_multiple(const int num, af_array *arrays);
+    /**
+      @}
+    */
+#endif
+
+#if AF_API_VERSION >= 34
+    /**
+       Turn the manual eval flag on or off
+    */
+    AFAPI af_err af_set_manual_eval_flag(bool flag);
+    /**
+      @}
+    */
+#endif
+
+#if AF_API_VERSION >= 34
+    /**
+       Get the manual eval flag
+    */
+    AFAPI af_err af_get_manual_eval_flag(bool *flag);
+    /**
+      @}
+    */
+#endif
 
     /**
         \ingroup method_mat
@@ -1528,10 +1650,21 @@ extern "C" {
         \returns error codes
     */
     AFAPI af_err af_is_bool         (bool *result, const af_array arr);
+
+#if AF_API_VERSION >= 34
+    /**
+        \brief Check if an array is sparse
+
+        \param[out] result is true if arr is sparse, otherwise false
+        \param[in] arr is the input array
+
+        \returns error codes
+    */
+    AFAPI af_err af_is_sparse       (bool *result, const af_array arr);
     /**
         @}
     */
-
+#endif
 #ifdef __cplusplus
 }
 #endif

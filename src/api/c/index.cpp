@@ -107,6 +107,10 @@ af_err af_lookup(af_array *out, const af_array in, const af_array indices, const
 
         ArrayInfo idxInfo= getInfo(indices);
 
+        if(idxInfo.ndims() == 0) {
+            return af_retain_array(out, indices);
+        }
+
         ARG_ASSERT(2, idxInfo.isVector() || idxInfo.isScalar());
 
         af_dtype idxType = idxInfo.getType();
@@ -157,6 +161,15 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
         ARG_ASSERT(3, (indexs!=NULL));
 
         ArrayInfo iInfo = getInfo(in);
+
+        dim4 iDims = iInfo.dims();
+        af_dtype inType = getInfo(in).getType();
+
+        if(iDims.ndims() <= 0) {
+            dim_t my_dims[] = {0, 0, 0, 0};
+            return af_create_handle(out, AF_MAX_DIMS, my_dims, inType);
+        }
+
         if (ndims == 1 && ndims != (dim_t)iInfo.ndims()) {
             af_array tmp_in;
             AF_CHECK(af_flat(&tmp_in, in));
@@ -203,11 +216,6 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
             }
         }
 
-        dim4 iDims = iInfo.dims();
-
-        ARG_ASSERT(1, (iDims.ndims()>0));
-
-        af_dtype inType = getInfo(in).getType();
         switch(inType) {
             case c64: output = genIndex<cdouble>(in, idxrs); break;
             case f64: output = genIndex<double >(in, idxrs); break;
@@ -241,6 +249,11 @@ af_err af_create_indexers(af_index_t** indexers)
 {
     try {
         af_index_t* out = new af_index_t[4];
+        for (int i=0; i<4; ++i) {
+            out[i].idx.seq = af_span;
+            out[i].isSeq = true;
+            out[i].isBatch = false;
+        }
         std::swap(*indexers, out);
     }
     CATCHALL;

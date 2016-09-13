@@ -9,7 +9,6 @@
 
 #include <blas.hpp>
 #include <af/dim4.hpp>
-#include <handle.hpp>
 #include <cassert>
 #include <err_common.hpp>
 #include <kernel/dot.hpp>

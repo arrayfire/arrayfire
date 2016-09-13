@@ -10,8 +10,8 @@
 #pragma once
 
 #include <vector>
-#include <map>
 #include <mutex>
+#include <unordered_map>
 
 namespace common
 {
@@ -31,10 +31,10 @@ class MemoryManager
         size_t bytes;
     } locked_info;
 
-    typedef std::map<void *, locked_info> locked_t;
+    typedef std::unordered_map<void *, locked_info> locked_t;
     typedef locked_t::iterator locked_iter;
 
-    typedef std::map<size_t, std::vector<void *> >free_t;
+    typedef std::unordered_map<size_t, std::vector<void *> >free_t;
     typedef free_t::iterator free_iter;
 
     typedef struct
@@ -88,6 +88,8 @@ public:
     void userLock(const void *ptr);
 
     void userUnlock(const void *ptr);
+
+    bool isUserLocked(const void *ptr);
 
     size_t getMemStepSize();
 

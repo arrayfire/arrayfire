@@ -13,7 +13,6 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
-using namespace std;
 using namespace af;
 
 TEST(FlatTests, Test_flat_1D)

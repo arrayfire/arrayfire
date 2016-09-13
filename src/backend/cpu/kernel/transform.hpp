@@ -8,9 +8,10 @@
  ********************************************************/
 
 #pragma once
-#include <af/defines.h>
 #include <Array.hpp>
 #include <err_cpu.hpp>
+#include <type_traits>
+#include "interp.hpp"
 
 namespace cpu
 {
@@ -67,63 +68,72 @@ void calc_transform_inverse(T *tmat, const T *tmat_ptr, const bool inverse,
     }
 }
 
-template<typename T, af_interp_type method>
+template<typename T, int order>
 void transform(Array<T> output, const Array<T> input,
                const Array<float> transform, const bool inverse,
-               const bool perspective)
+               const bool perspective,
+               af_interp_type method)
 {
+    typedef typename dtype_traits<T>::base_type BT;
+    typedef wtype_t<BT> WT;
+
     const af::dim4 idims    = input.dims();
     const af::dim4 odims    = output.dims();
+    const af::dim4 tdims    = transform.dims();
+    const af::dim4 tstrides = transform.strides();
     const af::dim4 istrides = input.strides();
     const af::dim4 ostrides = output.strides();
 
     T * out = output.get();
-    const T * in = input.get();
     const float* tf = transform.get();
 
-    dim_t nimages     = idims[2];
-    // Multiplied in src/backend/transform.cpp
-    dim_t ntransforms = odims[2] / idims[2];
+    int batch_size = 1;
+    if (idims[2] != tdims[2]) batch_size = idims[2];
 
-    void (*t_fn)(T *, const T *, const float *, const af::dim4 &,
-                 const af::dim4 &, const af::dim4 &,
-                 const dim_t, const dim_t, const dim_t, const dim_t,
-                 const bool);
+    Interp2<T, WT, order> interp;
+    for (int idw = 0; idw < (int)odims[3]; idw++) {
+        dim_t out_offw = idw * ostrides[3];
+        dim_t in_offw = (idims[3] > 1) * idw * istrides[3];
+        dim_t tf_offw = (tdims[3] > 1) * idw * tstrides[3];
 
-    switch(method) {
-        case AF_INTERP_NEAREST:
-            t_fn = &transform_n;
-            break;
-        case AF_INTERP_BILINEAR:
-            t_fn = &transform_b;
-            break;
-        case AF_INTERP_LOWER:
-            t_fn = &transform_l;
-            break;
-        default:
-            AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
-            break;
-    }
+        for (int idz = 0; idz < (int)odims[2]; idz += batch_size) {
+            dim_t out_offzw = out_offw + idz * ostrides[2];
+            dim_t in_offzw = in_offw + (idims[2] > 1) * idz * istrides[2];
+            dim_t tf_offzw = tf_offw + (tdims[2] > 1) * idz * tstrides[2];
 
-    const int transf_len = (perspective) ? 9 : 6;
+            const float *tptr = tf + tf_offzw;
 
-    // For each transform channel
-    for(int t_idx = 0; t_idx < (int)ntransforms; t_idx++) {
-        // Compute inverse if required
-        const float *tmat_ptr = tf + t_idx * transf_len;
-        float* tmat = new float[transf_len];
-        calc_transform_inverse(tmat, tmat_ptr, inverse, perspective, transf_len);
+            float tmat[9];
+            calc_transform_inverse(tmat, tptr, inverse, perspective, perspective ? 9 : 6);
 
-        // Offset for output pointer
-        dim_t o_offset = t_idx * nimages * ostrides[2];
+            for (int idy = 0; idy < (int)odims[1]; idy++) {
+                for (int idx = 0; idx < (int)odims[0]; idx++) {
+                    WT xidi = idx * tmat[0] + idy * tmat[1] + tmat[2];
+                    WT yidi = idx * tmat[3] + idy * tmat[4] + tmat[5];
 
-        // Do transform for image
-        for(int yy = 0; yy < (int)odims[1]; yy++) {
-            for(int xx = 0; xx < (int)odims[0]; xx++) {
-                t_fn(out, in, tmat, idims, ostrides, istrides, nimages, o_offset, xx, yy, perspective);
+                    if (perspective) {
+                        WT W    = idx * tmat[6] + idy * tmat[7] + tmat[8];
+                        xidi /= W;
+                        yidi /= W;
+                    }
+
+                    // FIXME: Nearest and lower do not do clamping, but other methods do
+                    // Make it consistent
+                    bool clamp = order != 1;
+                    bool condX = xidi >= -0.0001 && xidi < idims[0];
+                    bool condY = yidi >= -0.0001 && yidi < idims[1];
+
+                    int ooff = out_offzw + idy * ostrides[1] + idx;
+                    if (condX && condY) {
+                        interp(output, ooff, input, in_offzw, xidi, yidi, method, batch_size, clamp);
+                    } else {
+                        for (int n = 0; n < batch_size; n++) {
+                            out[ooff + n * ostrides[2]] =  scalar<T>(0);
+                        }
+                    }
+                }
             }
         }
-        delete[] tmat;
     }
 }
 

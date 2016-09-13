@@ -9,7 +9,6 @@
 #pragma once
 
 #include <platform.hpp>
-#include <af/defines.h>
 
 namespace opencl
 {
@@ -28,6 +27,7 @@ namespace opencl
 
     void memLock(const void *ptr);
     void memUnlock(const void *ptr);
+    bool isLocked(const void *ptr);
 
     template<typename T> T* pinnedAlloc(const size_t &elements);
     template<typename T> void pinnedFree(T* ptr);

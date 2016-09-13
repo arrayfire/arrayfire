@@ -22,7 +22,7 @@
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
-using cl::make_kernel;
+using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
@@ -77,7 +77,10 @@ void laswp(int n, cl_mem in, size_t offset, int ldda,
     NDRange global(groups * local[0]);
     zlaswp_params_t params;
 
-    auto laswpOp = make_kernel<int, cl_mem, unsigned long long,
+    //retain the cl_mem object during cl::Buffer creation
+    cl::Buffer inObj(in, true);
+
+    auto laswpOp = KernelFunctor<int, Buffer, unsigned long long,
                                int, zlaswp_params_t>(*swpKernels[device]);
 
     for( int k = k1-1; k < k2; k += MAX_PIVOTS ) {
@@ -93,7 +96,7 @@ void laswp(int n, cl_mem in, size_t offset, int ldda,
         unsigned long long k_offset = offset + k*ldda;
 
         laswpOp(EnqueueArgs(getQueue(), global, local),
-                n, in, k_offset, ldda, params);
+                n, inObj, k_offset, ldda, params);
     }
 
 }

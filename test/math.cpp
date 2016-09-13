@@ -6,12 +6,13 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
+#include <complex>
 #include <gtest/gtest.h>
 #include <af/arith.h>
 #include <af/data.h>
 #include <testHelpers.hpp>
 
+// This makes the macros cleaner
 using namespace std;
 using namespace af;
 using std::abs;
@@ -19,6 +20,11 @@ using std::abs;
 const int num = 10000;
 const float flt_err = 1e-3;
 const double dbl_err = 1e-10;
+const float cflt_err = 1e-3;
+const double cdbl_err = 1e-8;
+
+typedef std::complex<float> complex_float;
+typedef std::complex<double> complex_double;
 
 template<typename T>
 T sigmoid(T in)
@@ -26,93 +32,122 @@ T sigmoid(T in)
     return 1.0 / (1.0 + std::exp(-in));
 }
 
-#define MATH_TESTS_LIMITS(Ti, To, func, err, lo, hi)            \
-    TEST(MathTests, Test_##func##_##Ti)                         \
-    {                                                           \
-        if (noDoubleTests<Ti>()) return;                        \
-        af_dtype ty = (af_dtype)dtype_traits<Ti>::af_type;      \
-        af::array a = (hi - lo) * randu(num, ty) + lo + err;    \
-        af::eval(a);                                            \
-        af::array b = af::func(a);                              \
-        Ti *h_a = a.host<Ti>();                                 \
-        To *h_b = b.host<To>();                                 \
-                                                                \
-        for (int i = 0; i < num; i++)                           \
-            ASSERT_NEAR(h_b[i], func(h_a[i]), err) <<           \
-                "for value: " << h_a[i] << std::endl;           \
-        delete[] h_a;                                           \
-        delete[] h_b;                                           \
-    }                                                           \
+#define TEST_REAL(T, func, err, lo, hi)                             \
+    TEST(MathTests, Test_##func##_##T)                              \
+    {                                                               \
+        try {                                                       \
+            if (noDoubleTests<T>()) return;                         \
+            af_dtype ty = (af_dtype)dtype_traits<T>::af_type;       \
+            af::array a = (hi - lo) * randu(num, ty) + lo + err;    \
+            af::eval(a);                                            \
+            af::array b = af::func(a);                              \
+            std::vector<T> h_a(a.elements());                       \
+            std::vector<T> h_b(b.elements());                       \
+            a.host(&h_a[0]);                                        \
+            b.host(&h_b[0]);                                        \
+                                                                    \
+            for (int i = 0; i < num; i++) {                         \
+                ASSERT_NEAR(h_b[i], func(h_a[i]), err) <<           \
+                    "for value: " << h_a[i] << std::endl;           \
+            }                                                       \
+        } catch (af::exception &ex) {                               \
+            FAIL() << ex.what();                                    \
+        }                                                           \
+    }                                                               \
 
-#define MATH_TESTS_FLOAT(func) MATH_TESTS_LIMITS(float, float, func, flt_err, 0.05f, 0.95f)
-#define MATH_TESTS_DOUBLE(func) MATH_TESTS_LIMITS(double, double, func, dbl_err, 0.05, 0.95)
+#define TEST_CPLX(T, func, err, lo, hi)                             \
+    TEST(MathTests, Test_##func##_##T)                              \
+    {                                                               \
+        try {                                                       \
+            if (noDoubleTests<T>()) return;                         \
+            af_dtype ty = (af_dtype)dtype_traits<T>::af_type;       \
+            af::array a = (hi - lo) * randu(num, ty) + lo + err;    \
+            af::eval(a);                                            \
+            af::array b = af::func(a);                              \
+            std::vector<T> h_a(a.elements());                       \
+            std::vector<T> h_b(b.elements());                       \
+            a.host(&h_a[0]);                                        \
+            b.host(&h_b[0]);                                        \
+                                                                    \
+            for (int i = 0; i < num; i++) {                         \
+                T res = func(h_a[i]);                               \
+                ASSERT_NEAR(real(h_b[i]), real(res), err) <<        \
+                    "for real value: " << h_a[i] << std::endl;      \
+                ASSERT_NEAR(imag(h_b[i]), imag(res), err) <<        \
+                    "for imag value: " << h_a[i] << std::endl;      \
+            }                                                       \
+        } catch (af::exception &ex) {                               \
+            FAIL() << ex.what();                                    \
+        }                                                           \
+    }                                                               \
 
-MATH_TESTS_FLOAT(sin)
-MATH_TESTS_FLOAT(cos)
-MATH_TESTS_FLOAT(tan)
-MATH_TESTS_FLOAT(asin)
-MATH_TESTS_FLOAT(acos)
-MATH_TESTS_FLOAT(atan)
+#define MATH_TESTS_FLOAT(func) TEST_REAL(float, func, flt_err, 0.05f, 0.95f)
+#define MATH_TESTS_DOUBLE(func) TEST_REAL(double, func, dbl_err, 0.05, 0.95)
 
-MATH_TESTS_FLOAT(sinh)
-MATH_TESTS_FLOAT(cosh)
-MATH_TESTS_FLOAT(tanh)
+#define MATH_TESTS_CFLOAT(func) TEST_CPLX(complex_float, func, flt_err, 0.05f, 0.95f)
+#define MATH_TESTS_CDOUBLE(func) TEST_CPLX(complex_double, func, dbl_err, 0.05, 0.95)
 
+#define MATH_TESTS_REAL(func)                   \
+    MATH_TESTS_FLOAT(func)                      \
+    MATH_TESTS_DOUBLE(func)                     \
 
-MATH_TESTS_FLOAT(sqrt)
+#define MATH_TESTS_CPLX(func)                   \
+    MATH_TESTS_CFLOAT(func)                     \
+    MATH_TESTS_CDOUBLE(func)                    \
 
-MATH_TESTS_FLOAT(exp)
-MATH_TESTS_FLOAT(sigmoid)
-MATH_TESTS_FLOAT(log)
-MATH_TESTS_FLOAT(log10)
-MATH_TESTS_FLOAT(log2)
+#define MATH_TESTS_ALL(func)                    \
+    MATH_TESTS_REAL(func)                       \
+    MATH_TESTS_CPLX(func)                       \
 
-MATH_TESTS_LIMITS(float, float, abs, flt_err, -10, 10)
-MATH_TESTS_LIMITS(float, float, ceil, flt_err, -10, 10)
-MATH_TESTS_LIMITS(float, float, floor, flt_err, -10, 10)
+#define MATH_TESTS_LIMITS_REAL(func, lo, hi)    \
+    TEST_REAL(float, func, flt_err, lo, hi)     \
+    TEST_REAL(double, func, dbl_err, lo, hi)    \
 
-MATH_TESTS_DOUBLE(sin)
-MATH_TESTS_DOUBLE(cos)
-MATH_TESTS_DOUBLE(tan)
-MATH_TESTS_DOUBLE(asin)
-MATH_TESTS_DOUBLE(acos)
-MATH_TESTS_DOUBLE(atan)
+#define MATH_TESTS_LIMITS_CPLX(func, lo, hi)            \
+    TEST_CPLX(complex_float, func, flt_err, lo, hi)     \
+    TEST_CPLX(complex_double, func, dbl_err, lo, hi)    \
 
-MATH_TESTS_DOUBLE(sinh)
-MATH_TESTS_DOUBLE(cosh)
-MATH_TESTS_DOUBLE(tanh)
+MATH_TESTS_ALL(sin)
+MATH_TESTS_ALL(cos)
+MATH_TESTS_ALL(tan)
+
+MATH_TESTS_REAL(asin)
+MATH_TESTS_REAL(acos)
+MATH_TESTS_REAL(atan)
+
+MATH_TESTS_ALL(sinh)
+MATH_TESTS_ALL(cosh)
+MATH_TESTS_ALL(tanh)
+
+MATH_TESTS_ALL(sqrt)
+MATH_TESTS_ALL(exp)
+MATH_TESTS_ALL(log)
+MATH_TESTS_REAL(log10)
+MATH_TESTS_REAL(log2)
+
+MATH_TESTS_REAL(sigmoid)
+
+MATH_TESTS_LIMITS_REAL(abs, -10, 10)
+MATH_TESTS_LIMITS_REAL(ceil, -10, 10)
+MATH_TESTS_LIMITS_REAL(floor, -10, 10)
+
 #if __cplusplus > 199711L
-MATH_TESTS_FLOAT(asinh)
-MATH_TESTS_FLOAT(atanh)
-MATH_TESTS_LIMITS(float, float, acosh, flt_err, 1, 5)
-MATH_TESTS_LIMITS(float, float, round, flt_err, -10, 10)
-MATH_TESTS_FLOAT(cbrt)
-MATH_TESTS_FLOAT(expm1)
-MATH_TESTS_FLOAT(log1p)
-MATH_TESTS_FLOAT(erf)
-MATH_TESTS_FLOAT(erfc)
 
-MATH_TESTS_DOUBLE(asinh)
-MATH_TESTS_DOUBLE(atanh)
-MATH_TESTS_LIMITS(double, double, acosh, dbl_err, 1, 5)
-MATH_TESTS_LIMITS(double, double, round, dbl_err, -10, 10)
-MATH_TESTS_DOUBLE(cbrt)
-MATH_TESTS_DOUBLE(expm1)
-MATH_TESTS_DOUBLE(erf)
-MATH_TESTS_DOUBLE(log1p)
-MATH_TESTS_DOUBLE(erfc)
+MATH_TESTS_CPLX(asin)
+MATH_TESTS_CPLX(acos)
+MATH_TESTS_CPLX(atan)
+
+MATH_TESTS_ALL(asinh)
+MATH_TESTS_ALL(atanh)
+MATH_TESTS_LIMITS_REAL(acosh, 1, 5)
+MATH_TESTS_LIMITS_CPLX(acosh, 1, 5)
+MATH_TESTS_LIMITS_REAL(round, -10, 10)
+MATH_TESTS_REAL(cbrt)
+MATH_TESTS_REAL(expm1)
+MATH_TESTS_REAL(log1p)
+MATH_TESTS_REAL(erf)
+MATH_TESTS_REAL(erfc)
 #endif
-
-MATH_TESTS_DOUBLE(sqrt)
-
-MATH_TESTS_DOUBLE(exp)
-MATH_TESTS_DOUBLE(log)
-MATH_TESTS_DOUBLE(log10)
-MATH_TESTS_DOUBLE(log2)
-
-MATH_TESTS_LIMITS(double, double, abs, dbl_err, -10, 10)
-MATH_TESTS_LIMITS(double, double, ceil, dbl_err, -10, 10)
-MATH_TESTS_LIMITS(double, double, floor, dbl_err, -10, 10)
 
 TEST(MathTests, Not)
 {

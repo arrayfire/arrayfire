@@ -20,9 +20,8 @@ void load2LocalMem(__local T *  shrd,
         int gx, int gy,
         int inStride1, int inStride0)
 {
-    int gx_  = clamp(gx, 0, dim0-1);
-    int gy_  = clamp(gy, 0, dim1-1);
-    shrd[ lIdx(lx, ly, shrdStride, 1) ] = in[ lIdx(gx_, gy_, inStride1, inStride0) ];
+    T val = gx>=0 && gx<dim0 && gy>=0 && gy<dim1 ? in[ lIdx(gx, gy, inStride1, inStride0) ] : init;
+    shrd[ lIdx(lx, ly, shrdStride, 1) ] = val;
 }
 
 //kernel assumes four dimensions
@@ -69,7 +68,7 @@ void morph(__global T *              out,
     int j = ly + halo;
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    T acc = localMem[ lIdx(i, j, shrdLen, 1) ];
+    T acc = init;
 #pragma unroll
     for(int wj=0; wj<windLen; ++wj) {
         int joff   = wj*windLen;
@@ -108,12 +107,13 @@ void load2LocVolume(__local T * shrd,
         int gx, int gy, int gz,
         int inStride2, int inStride1, int inStride0)
 {
-    int gx_  = clamp(gx, 0, dim0-1);
-    int gy_  = clamp(gy, 0, dim1-1);
-    int gz_  = clamp(gz, 0, dim2-1);
-    int shrdIdx = lx + ly*shrdStride1 + lz*shrdStride2;
-    int inIdx   = gx_*inStride0 + gy_*inStride1 + gz_*inStride2;
-    shrd[ shrdIdx ] = in[ inIdx ];
+    T val = (T)0;
+    if (gx>=0 && gx<dim0 && gy>=0 && gy<dim1 && gz>=0 && gz<dim2)
+       val = in[gx*inStride0 + gy*inStride1 + gz*inStride2];
+    else
+       val = init;
+
+    shrd[ lx + ly*shrdStride1 + lz*shrdStride2 ] = val;
 }
 
 __kernel
@@ -169,7 +169,7 @@ void morph3d(__global T *         out,
     int j  = ly + halo;
     int k  = lz + halo;
 
-    T acc = localMem[ lIdx3D(i, j, k, shrdArea, shrdLen, 1) ];
+    T acc = init;
 #pragma unroll
     for(int wk=0; wk<windLen; ++wk) {
         int koff   = wk*se_area;

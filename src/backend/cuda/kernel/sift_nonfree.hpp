@@ -70,14 +70,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <af/defines.h>
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include <memory.hpp>
 #include "shared.hpp"
 
-#include <convolve_common.hpp>
 #include "convolve.hpp"
 #include "resize.hpp"
 

@@ -34,8 +34,17 @@ namespace af
         \return The result of the matrix multiplication of lhs, rhs
 
         \note optLhs and optRhs can only be one of \ref AF_MAT_NONE, \ref
-                AF_MAT_TRANS, \ref AF_MAT_CTRANS \note This function is not supported
-                in GFOR
+              AF_MAT_TRANS, \ref AF_MAT_CTRANS \note This function is not supported
+              in GFOR
+
+        \note <b> The following applies for Sparse-Dense matrix multiplication.</b>
+        \note This function can be used with one sparse input. The sparse input
+              must always be the \p lhs and the dense matrix must be \p rhs.
+        \note The sparse array can only be of \ref AF_STORAGE_CSR format.
+        \note The returned array is always dense.
+        \note \p optLhs an only be one of \ref AF_MAT_NONE, \ref AF_MAT_TRANS,
+              \ref AF_MAT_CTRANS.
+        \note \p optRhs can only be \ref AF_MAT_NONE.
 
         \ingroup blas_func_matmul
 
@@ -199,6 +208,16 @@ extern "C" {
         \param[in] optRhs Transpose right hand side before the function is performed
 
         \return AF_SUCCESS if the process is successful.
+
+        \note <b> The following applies for Sparse-Dense matrix multiplication.</b>
+        \note This function can be used with one sparse input. The sparse input
+              must always be the \p lhs and the dense matrix must be \p rhs.
+        \note The sparse array can only be of \ref AF_STORAGE_CSR format.
+        \note The returned array is always dense.
+        \note \p optLhs an only be one of \ref AF_MAT_NONE, \ref AF_MAT_TRANS,
+              \ref AF_MAT_CTRANS.
+        \note \p optRhs can only be \ref AF_MAT_NONE.
+
         \ingroup blas_func_matmul
      */
     AFAPI af_err af_matmul( af_array *out ,

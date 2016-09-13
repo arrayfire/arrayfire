@@ -12,6 +12,19 @@
 
 #if defined(WITH_GRAPHICS)
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
+// cuda_gl_interop.h does not include OpenGL headers for ARM
+#include <glbinding/gl/gl.h>
+#include <glbinding/Binding.h>
+
+#if defined(__arm__) || defined(__aarch64__)
+using namespace gl;
+#define GL_VERSION gl::GL_VERSION
+#endif
+
 #include <platform.hpp>
 #include <graphics_common.hpp>
 
@@ -20,14 +33,17 @@
 #include <cuda_gl_interop.h>
 
 #include <map>
+#include <vector>
 
 using af::dim4;
 
 namespace cuda
 {
 
-typedef std::map<void *, cudaGraphicsResource *> interop_t;
+typedef std::map<void *, std::vector<cudaGraphicsResource_t> > interop_t;
 typedef interop_t::iterator iter_t;
+typedef cudaGraphicsResource_t CGR_t;
+
 
 // Manager Class for cudaPBOResource: calls garbage collection at the end of the program
 class InteropManager
@@ -37,17 +53,20 @@ class InteropManager
 
     public:
         static InteropManager& getInstance();
+        static bool checkGraphicsInteropCapability();
+
         ~InteropManager();
-        cudaGraphicsResource* getBufferResource(const fg::Image* handle);
-        cudaGraphicsResource* getBufferResource(const fg::Plot* handle);
-        cudaGraphicsResource* getBufferResource(const fg::Plot3* handle);
-        cudaGraphicsResource* getBufferResource(const fg::Histogram* handle);
-        cudaGraphicsResource* getBufferResource(const fg::Surface* handle);
+        CGR_t* getBufferResource(const forge::Image       *handle);
+        CGR_t* getBufferResource(const forge::Plot        *handle);
+        CGR_t* getBufferResource(const forge::Histogram   *handle);
+        CGR_t* getBufferResource(const forge::Surface     *handle);
+        CGR_t* getBufferResource(const forge::VectorField *handle);
 
     protected:
         InteropManager() {}
         InteropManager(InteropManager const&);
         void operator=(InteropManager const&);
+        interop_t& getDeviceMap(int device = -1); // default will return current device
         void destroyResources();
 };
 

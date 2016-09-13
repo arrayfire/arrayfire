@@ -27,9 +27,8 @@ int main(int argc, char *argv[])
         const array x = iota(dim4(N, 1), dim4(1, N)) / M - 1;
         const array y = iota(dim4(1, N), dim4(N, 1)) / M - 1;
 
-        std::cout << x.dims()  << y.dims() << std::endl;
-
         static float t=0;
+        myWindow.setAxesLimits(-1.0, 1.0, -1.0, 1.0, -10.0, 10.0);
         while(!myWindow.close()) {
             t+=0.07;
             array z = 10*x*-abs(y) * cos(x*x*(y+t))+sin(y*(x+t))-1.5;

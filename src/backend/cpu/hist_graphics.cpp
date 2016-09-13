@@ -16,23 +16,25 @@
 
 namespace cpu
 {
+using namespace gl;
 
 template<typename T>
-void copy_histogram(const Array<T> &data, const fg::Histogram* hist)
+void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
 {
     data.eval();
     getQueue().sync();
+
     CheckGL("Begin copy_histogram");
 
-    glBindBuffer(GL_ARRAY_BUFFER, hist->vbo());
-    glBufferSubData(GL_ARRAY_BUFFER, 0, hist->size(), data.get());
+    glBindBuffer(GL_ARRAY_BUFFER, hist->vertices());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, hist->verticesSize(), data.get());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     CheckGL("End copy_histogram");
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_histogram<T>(const Array<T> &data, const fg::Histogram* hist);
+    template void copy_histogram<T>(const Array<T> &data, const forge::Histogram* hist);
 
 INSTANTIATE(float)
 INSTANTIATE(int)

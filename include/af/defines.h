@@ -222,11 +222,27 @@ typedef enum {
 typedef void * af_array;
 
 typedef enum {
-    AF_INTERP_NEAREST,  ///< Nearest Interpolation
-    AF_INTERP_LINEAR,   ///< Linear Interpolation
-    AF_INTERP_BILINEAR, ///< Bilinear Interpolation
-    AF_INTERP_CUBIC,    ///< Cubic Interpolation
-    AF_INTERP_LOWER     ///< Floor Indexed
+    AF_INTERP_NEAREST,         ///< Nearest Interpolation
+    AF_INTERP_LINEAR,          ///< Linear Interpolation
+    AF_INTERP_BILINEAR,        ///< Bilinear Interpolation
+    AF_INTERP_CUBIC,           ///< Cubic Interpolation
+    AF_INTERP_LOWER,           ///< Floor Indexed
+#if AF_API_VERSION >= 34
+    AF_INTERP_LINEAR_COSINE,   ///< Linear Interpolation with cosine smoothing
+#endif
+#if AF_API_VERSION >= 34
+    AF_INTERP_BILINEAR_COSINE, ///< Bilinear Interpolation with cosine smoothing
+#endif
+#if AF_API_VERSION >= 34
+    AF_INTERP_BICUBIC,         ///< Bicubic Interpolation
+#endif
+#if AF_API_VERSION >= 34
+    AF_INTERP_CUBIC_SPLINE,    ///< Cubic Interpolation with Catmull-Rom splines
+#endif
+#if AF_API_VERSION >= 34
+    AF_INTERP_BICUBIC_SPLINE,  ///< Bicubic Interpolation with Catmull-Rom splines
+#endif
+
 } af_interp_type;
 
 typedef enum {
@@ -329,16 +345,6 @@ typedef enum {
     AF_NORM_EUCLID = AF_NORM_VECTOR_2, ///< The default. Same as AF_NORM_VECTOR_2
 } af_norm_type;
 
-typedef enum {
-    AF_COLORMAP_DEFAULT = 0,    ///< Default grayscale map
-    AF_COLORMAP_SPECTRUM= 1,    ///< Spectrum map
-    AF_COLORMAP_COLORS  = 2,    ///< Colors
-    AF_COLORMAP_RED     = 3,    ///< Red hue map
-    AF_COLORMAP_MOOD    = 4,    ///< Mood map
-    AF_COLORMAP_HEAT    = 5,    ///< Heat map
-    AF_COLORMAP_BLUE    = 6     ///< Blue hue map
-} af_colormap;
-
 #if AF_API_VERSION >= 31
 typedef enum {
     AF_FIF_BMP          = 0,    ///< FreeImage Enum for Bitmap File
@@ -355,6 +361,16 @@ typedef enum {
     AF_FIF_JP2          = 31,   ///< FreeImage Enum for JPEG-2000 File
     AF_FIF_RAW          = 34    ///< FreeImage Enum for RAW Camera Image File
 } af_image_format;
+#endif
+
+#if AF_API_VERSION >=34
+typedef enum {
+    AF_MOMENT_M00 = 1,
+    AF_MOMENT_M01 = 2,
+    AF_MOMENT_M10 = 4,
+    AF_MOMENT_M11 = 8,
+    AF_MOMENT_FIRST_ORDER = AF_MOMENT_M00 | AF_MOMENT_M01 | AF_MOMENT_M10 | AF_MOMENT_M11
+} af_moment_type;
 #endif
 
 #if AF_API_VERSION >= 32
@@ -381,7 +397,42 @@ typedef enum {
     AF_ID = 0
 } af_someenum_t;
 
-#if AF_API_VERSION >=32
+#if AF_API_VERSION >=34
+typedef enum {
+    AF_BINARY_ADD  = 0,
+    AF_BINARY_MUL  = 1,
+    AF_BINARY_MIN  = 2,
+    AF_BINARY_MAX  = 3
+} af_binary_op;
+#endif
+
+#if AF_API_VERSION >=34
+typedef enum {
+    AF_RANDOM_ENGINE_PHILOX_4X32_10     = 100,                                  //Philox variant with N = 4, W = 32 and Rounds = 10
+    AF_RANDOM_ENGINE_THREEFRY_2X32_16   = 200,                                  //Threefry variant with N = 2, W = 32 and Rounds = 16
+    AF_RANDOM_ENGINE_MERSENNE_GP11213   = 300,                                  //Mersenne variant with MEXP = 11213
+    AF_RANDOM_ENGINE_PHILOX             = AF_RANDOM_ENGINE_PHILOX_4X32_10,      //Resolves to Philox 4x32_10
+    AF_RANDOM_ENGINE_THREEFRY           = AF_RANDOM_ENGINE_THREEFRY_2X32_16,    //Resolves to Threefry 2X32_16
+    AF_RANDOM_ENGINE_MERSENNE           = AF_RANDOM_ENGINE_MERSENNE_GP11213,    //Resolves to Mersenne GP 11213
+    AF_RANDOM_ENGINE_DEFAULT            = AF_RANDOM_ENGINE_PHILOX               //Resolves to Philox
+} af_random_engine_type;
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+// FORGE / Graphics Related Enums
+// These enums have values corresponsding to Forge enums in forge defines.h
+////////////////////////////////////////////////////////////////////////////////
+typedef enum {
+    AF_COLORMAP_DEFAULT = 0,    ///< Default grayscale map
+    AF_COLORMAP_SPECTRUM= 1,    ///< Spectrum map
+    AF_COLORMAP_COLORS  = 2,    ///< Colors
+    AF_COLORMAP_RED     = 3,    ///< Red hue map
+    AF_COLORMAP_MOOD    = 4,    ///< Mood map
+    AF_COLORMAP_HEAT    = 5,    ///< Heat map
+    AF_COLORMAP_BLUE    = 6     ///< Blue hue map
+} af_colormap;
+
+#if AF_API_VERSION >= 32
 typedef enum {
     AF_MARKER_NONE         = 0,
     AF_MARKER_POINT        = 1,
@@ -392,6 +443,16 @@ typedef enum {
     AF_MARKER_PLUS         = 6,
     AF_MARKER_STAR         = 7
 } af_marker_type;
+#endif
+////////////////////////////////////////////////////////////////////////////////
+
+#if AF_API_VERSION >= 34
+typedef enum {
+    AF_STORAGE_DENSE     = 0,   ///< Storage type is dense
+    AF_STORAGE_CSR       = 1,   ///< Storage type is CSR
+    AF_STORAGE_CSC       = 2,   ///< Storage type is CSC
+    AF_STORAGE_COO       = 3,   ///< Storage type is COO
+} af_storage;
 #endif
 
 #ifdef __cplusplus
@@ -422,6 +483,18 @@ namespace af
 #endif
 #if AF_API_VERSION >= 32
     typedef af_marker_type markerType;
+#endif
+#if AF_API_VERSION >= 34
+    typedef af_moment_type momentType;
+#endif
+#if AF_API_VERSION >= 34
+    typedef af_storage storage;
+#endif
+#if AF_API_VERSION >= 34
+    typedef af_binary_op binaryOp;
+#endif
+#if AF_API_VERSION >= 34
+    typedef af_random_engine_type randomEngineType;
 #endif
 }
 

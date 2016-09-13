@@ -9,7 +9,6 @@
 
 //This is the array implementation class.
 #pragma once
-#include <af/array.h>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
 #include <backend.hpp>
@@ -39,6 +38,9 @@ namespace cpu
 
     using std::shared_ptr;
     using af::dim4;
+
+    template<typename T>
+    void evalMultiple(std::vector<Array<T> *> arrays);
 
     template<typename T> class Array;
 
@@ -159,6 +161,7 @@ namespace cpu
         INFO_IS_FUNC(isInteger);
         INFO_IS_FUNC(isBool);
         INFO_IS_FUNC(isLinear);
+        INFO_IS_FUNC(isSparse);
 
 #undef INFO_IS_FUNC
 
@@ -185,14 +188,7 @@ namespace cpu
             data_dims = new_dims;
         }
 
-        T* device()
-        {
-            getQueue().sync();
-            if (!isOwner() || getOffset() || data.use_count() > 1) {
-                *this = Array<T>(dims(), get(), true, true);
-            }
-            return this->get();
-        }
+        T* device();
 
         T* device() const
         {
@@ -217,6 +213,8 @@ namespace cpu
         }
 
         TNJ::Node_ptr getNode() const;
+
+        friend void evalMultiple<T>(std::vector<Array<T> *> arrays);
 
         friend Array<T> createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T> createHostDataArray<T>(const af::dim4 &size, const T * const data);

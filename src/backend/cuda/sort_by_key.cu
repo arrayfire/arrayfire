@@ -18,18 +18,18 @@
 
 namespace cuda
 {
-    template<typename Tk, typename Tv, bool isAscending>
+    template<typename Tk, typename Tv>
     void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
-               const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim)
+                     const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim, bool isAscending)
     {
         okey = copyArray<Tk>(ikey);
         oval = copyArray<Tv>(ival);
 
         switch(dim) {
-            case 0: kernel::sort0ByKey<Tk, Tv, isAscending>(okey, oval); break;
-            case 1: kernel::sortByKeyBatched<Tk, Tv, isAscending, 1>(okey, oval); break;
-            case 2: kernel::sortByKeyBatched<Tk, Tv, isAscending, 2>(okey, oval); break;
-            case 3: kernel::sortByKeyBatched<Tk, Tv, isAscending, 3>(okey, oval); break;
+            case 0: kernel::sort0ByKey<Tk, Tv>(okey, oval, isAscending); break;
+            case 1:
+            case 2:
+            case 3: kernel::sortByKeyBatched<Tk, Tv>(okey, oval, dim, isAscending); break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
 
@@ -52,10 +52,8 @@ namespace cuda
     }
 
 #define INSTANTIATE(Tk, Tv)                                                         \
-    template void sort_by_key<Tk, Tv, true >(Array<Tk> &okey, Array<Tv> &oval,      \
-                const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim);      \
-    template void sort_by_key<Tk, Tv, false>(Array<Tk> &okey, Array<Tv> &oval,      \
-                const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim);      \
+    template void sort_by_key<Tk, Tv>(Array<Tk> &okey, Array<Tv> &oval,      \
+                                      const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim, bool);
 
 #define INSTANTIATE1(Tk    ) \
     INSTANTIATE(Tk, float  ) \

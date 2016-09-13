@@ -8,14 +8,12 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <af/defines.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <err_cpu.hpp>
-#include <handle.hpp>
 #include <resize.hpp>
 #include <sort_index.hpp>
 #include <convolve.hpp>
+#include <math.hpp>
 #include <memory.hpp>
 #include <cstring>
 #include <cfloat>

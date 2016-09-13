@@ -8,12 +8,9 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <af/defines.h>
 #include <af/features.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <err_cuda.hpp>
-#include <handle.hpp>
 
 #ifdef AF_BUILD_NONFREE_SIFT
 #include <kernel/sift_nonfree.hpp>

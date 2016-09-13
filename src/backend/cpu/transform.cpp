@@ -11,35 +11,37 @@
 #include <transform.hpp>
 #include <math.hpp>
 #include <platform.hpp>
-#include "transform_interp.hpp"
 #include <kernel/transform.hpp>
 
 namespace cpu
 {
 
 template<typename T>
-Array<T> transform(const Array<T> &in, const Array<float> &transform, const af::dim4 &odims,
+Array<T> transform(const Array<T> &in, const Array<float> &tf, const af::dim4 &odims,
                     const af_interp_type method, const bool inverse, const bool perspective)
 {
     in.eval();
-    transform.eval();
+    tf.eval();
 
     Array<T> out = createEmptyArray<T>(odims);
 
     switch(method) {
-        case AF_INTERP_NEAREST :
-            getQueue().enqueue(kernel::transform<T, AF_INTERP_NEAREST >, out, in, transform,
-                    inverse, perspective);
-            break;
-        case AF_INTERP_BILINEAR:
-            getQueue().enqueue(kernel::transform<T, AF_INTERP_BILINEAR>, out, in, transform,
-                    inverse, perspective);
-            break;
-        case AF_INTERP_LOWER   :
-            getQueue().enqueue(kernel::transform<T, AF_INTERP_LOWER   >, out, in, transform,
-                    inverse, perspective);
-            break;
-        default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG); break;
+    case AF_INTERP_NEAREST:
+    case AF_INTERP_LOWER:
+        getQueue().enqueue(kernel::transform<T, 1>, out, in, tf,
+                           inverse, perspective, method);
+        break;
+    case AF_INTERP_BILINEAR:
+    case AF_INTERP_BILINEAR_COSINE:
+        getQueue().enqueue(kernel::transform<T, 2>, out, in, tf,
+                           inverse, perspective, method);
+        break;
+    case AF_INTERP_BICUBIC:
+    case AF_INTERP_BICUBIC_SPLINE:
+        getQueue().enqueue(kernel::transform<T, 3>, out, in, tf,
+                           inverse, perspective, method);
+        break;
+    default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG); break;
     }
 
     return out;
@@ -47,7 +49,7 @@ Array<T> transform(const Array<T> &in, const Array<float> &transform, const af::
 
 
 #define INSTANTIATE(T)                                                              \
-template Array<T> transform(const Array<T> &in, const Array<float> &transform,      \
+template Array<T> transform(const Array<T> &in, const Array<float> &tf,             \
                             const af::dim4 &odims, const af_interp_type method,     \
                             const bool inverse, const bool perspective);
 

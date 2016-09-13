@@ -8,12 +8,10 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <af/defines.h>
 #include <af/features.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <err_opencl.hpp>
-#include <handle.hpp>
+#include <math.hpp>
 #include <kernel/orb.hpp>
 
 using af::dim4;

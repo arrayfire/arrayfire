@@ -47,7 +47,7 @@ void transformCoordinatesTest(string pTestFile)
     af_array outArray = 0;
     ASSERT_EQ(AF_SUCCESS, af_create_array(&tfArray, &(in[0].front()), inDims[0].ndims(), inDims[0].get(), (af_dtype)af::dtype_traits<T>::af_type));
 
-    size_t nTests = in.size();
+    int nTests = in.size();
 
     for (int test = 1; test < nTests; test++) {
         dim_t d0 = (dim_t)in[test][0];
@@ -63,7 +63,7 @@ void transformCoordinatesTest(string pTestFile)
 
         const float thr = 1.f;
 
-        for (size_t elIter = 0; elIter < outEl; elIter++) {
+        for (dim_t elIter = 0; elIter < outEl; elIter++) {
             ASSERT_LE(fabs(outData[elIter] - gold[test-1][elIter]), thr) << "at: " << elIter << std::endl;
         }
 

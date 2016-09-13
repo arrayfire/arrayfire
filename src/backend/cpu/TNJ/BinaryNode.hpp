@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <af/array.h>
 #include <optypes.hpp>
 #include <vector>
 #include <math.hpp>
@@ -46,19 +45,24 @@ namespace TNJ
             m_rhs(rhs),
             m_val(0)
         {
+            m_height = std::max(m_lhs->getHeight(), m_rhs->getHeight()) + 1;
         }
 
         void *calc(int x, int y, int z, int w)
         {
-            m_val = m_op.eval(*(Ti *)m_lhs->calc(x, y, z, w),
-                              *(Ti *)m_rhs->calc(x, y, z, w));
+            if (calcCurrent(x, y, z, w)) {
+                m_val = m_op.eval(*(Ti *)m_lhs->calc(x, y, z, w),
+                                  *(Ti *)m_rhs->calc(x, y, z, w));
+            }
             return  (void *)&m_val;
         }
 
         void *calc(int idx)
         {
-            m_val = m_op.eval(*(Ti *)m_lhs->calc(idx),
-                              *(Ti *)m_rhs->calc(idx));
+            if (calcCurrent(idx)) {
+                m_val = m_op.eval(*(Ti *)m_lhs->calc(idx),
+                                  *(Ti *)m_rhs->calc(idx));
+            }
             return (void *)&m_val;
         }
 
@@ -76,14 +80,18 @@ namespace TNJ
 
         void reset()
         {
+            resetCommonFlags();
             m_lhs->reset();
             m_rhs->reset();
-            m_is_eval = false;
         }
 
         bool isLinear(const dim_t *dims)
         {
-            return m_lhs->isLinear(dims) && m_rhs->isLinear(dims);
+            if (!m_set_is_linear) {
+                m_linear = m_lhs->isLinear(dims) && m_rhs->isLinear(dims);
+                m_set_is_linear = true;
+            }
+            return m_linear;
         }
     };
 

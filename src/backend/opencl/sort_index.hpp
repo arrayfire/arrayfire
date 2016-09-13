@@ -7,11 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/array.h>
 #include <Array.hpp>
 
 namespace opencl
 {
-    template<typename T, bool isAscending>
-    void sort_index(Array<T> &val, Array<unsigned> &idx, const Array<T> &in, const unsigned dim);
+    template<typename T>
+    void sort_index(Array<T> &val, Array<unsigned> &idx, const Array<T> &in, const unsigned dim, bool isAscending);
 }

@@ -28,18 +28,13 @@ using namespace detail;
 using namespace graphics;
 
 template<typename T>
-fg::Surface* setup_surface(const af_array xVals, const af_array yVals, const af_array zVals)
+forge::Chart* setup_surface(const forge::Window* const window,
+                            const af_array xVals, const af_array yVals, const af_array zVals,
+                            const af_cell* const props)
 {
     Array<T> xIn = getArray<T>(xVals);
     Array<T> yIn = getArray<T>(yVals);
     Array<T> zIn = getArray<T>(zVals);
-
-    T xmax = reduce_all<af_max_t, T, T>(xIn);
-    T xmin = reduce_all<af_min_t, T, T>(xIn);
-    T ymax = reduce_all<af_max_t, T, T>(yIn);
-    T ymin = reduce_all<af_min_t, T, T>(yIn);
-    T zmax = reduce_all<af_max_t, T, T>(zIn);
-    T zmin = reduce_all<af_min_t, T, T>(zIn);
 
     ArrayInfo Xinfo = getInfo(xVals);
     ArrayInfo Yinfo = getInfo(yVals);
@@ -65,23 +60,30 @@ fg::Surface* setup_surface(const af_array xVals, const af_array yVals, const af_
 
     // Flatten xIn, yIn and zIn into row vectors
     dim4 rowDims = dim4(1, zIn.elements());
-    xIn.modDims(rowDims);
-    yIn.modDims(rowDims);
-    zIn.modDims(rowDims);
+    xIn = modDims(xIn, rowDims);
+    yIn = modDims(yIn, rowDims);
+    zIn = modDims(zIn, rowDims);
 
     // Now join along first dimension, skip reorder
     std::vector<Array<T> > inputs{xIn, yIn, zIn};
     Array<T> Z = join(0, inputs);
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
-    fg::Surface* surface = fgMngr.getSurface(Z_dims[0], Z_dims[1], getGLType<T>());
-    surface->setColor(1.0, 0.0, 0.0);
-    surface->setAxesLimits(xmax, xmin, ymax, ymin, zmax, zmin);
-    surface->setAxesTitles("X Axis", "Y Axis", "Z Axis");
+
+    // Get the chart for the current grid position (if any)
+    forge::Chart* chart = NULL;
+    if (props->col>-1 && props->row>-1)
+        chart = fgMngr.getChart(window, props->row, props->col, FG_CHART_3D);
+    else
+        chart = fgMngr.getChart(window, 0, 0, FG_CHART_3D);
+
+    forge::Surface* surface = fgMngr.getSurface(chart, Z_dims[0], Z_dims[1], getGLType<T>());
+
+    surface->setColor(0.0, 1.0, 0.0, 1.0);
 
     copy_surface<T>(Z, surface);
 
-    return surface;
+    return chart;
 }
 #endif
 
@@ -116,24 +118,25 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
             DIM_ASSERT(3, ( X_dims[0] * Y_dims[0] == (dim_t)Sinfo.elements()));
         }
 
-        fg::Window* window = reinterpret_cast<fg::Window*>(wind);
-        window->makeCurrent();
-        fg::Surface* surface = NULL;
+        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        makeContextCurrent(window);
+
+        forge::Chart* chart = NULL;
 
         switch(Xtype) {
-            case f32: surface = setup_surface<float  >(xVals, yVals , S); break;
-            case s32: surface = setup_surface<int    >(xVals, yVals , S); break;
-            case u32: surface = setup_surface<uint   >(xVals, yVals , S); break;
-            case s16: surface = setup_surface<short  >(xVals, yVals , S); break;
-            case u16: surface = setup_surface<ushort >(xVals, yVals , S); break;
-            case u8 : surface = setup_surface<uchar  >(xVals, yVals , S); break;
+            case f32: chart = setup_surface<float  >(window, xVals, yVals , S, props); break;
+            case s32: chart = setup_surface<int    >(window, xVals, yVals , S, props); break;
+            case u32: chart = setup_surface<uint   >(window, xVals, yVals , S, props); break;
+            case s16: chart = setup_surface<short  >(window, xVals, yVals , S, props); break;
+            case u16: chart = setup_surface<ushort >(window, xVals, yVals , S, props); break;
+            case u8 : chart = setup_surface<uchar  >(window, xVals, yVals , S, props); break;
             default:  TYPE_ERROR(1, Xtype);
         }
 
         if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, *surface, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
-            window->draw(*surface);
+            window->draw(*chart);
     }
     CATCHALL;
     return AF_SUCCESS;

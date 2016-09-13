@@ -19,32 +19,39 @@
 
 namespace opencl
 {
+using namespace gl;
 
 template<typename T>
-void copy_image(const Array<T> &in, const fg::Image* image)
+void copy_image(const Array<T> &in, const forge::Image* image)
 {
     if (isGLSharingSupported()) {
         CheckGL("Begin opencl resource copy");
         InteropManager& intrpMngr = InteropManager::getInstance();
 
-        cl::Buffer *clPBOResource = intrpMngr.getBufferResource(image);
+        cl::Buffer **resources = intrpMngr.getBufferResource(image);
         const cl::Buffer *d_X = in.get();
         size_t num_bytes = image->size();
 
         std::vector<cl::Memory> shared_objects;
-        shared_objects.push_back(*clPBOResource);
+        shared_objects.push_back(*resources[0]);
 
         glFinish();
-        getQueue().enqueueAcquireGLObjects(&shared_objects);
-        getQueue().enqueueCopyBuffer(*d_X, *clPBOResource, 0, 0, num_bytes, NULL, NULL);
-        getQueue().finish();
-        getQueue().enqueueReleaseGLObjects(&shared_objects);
+
+        // Use of events:
+        // https://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clEnqueueReleaseGLObjects.html
+        cl::Event event;
+
+        getQueue().enqueueAcquireGLObjects(&shared_objects, NULL, &event);
+        event.wait();
+        getQueue().enqueueCopyBuffer(*d_X, *resources[0], 0, 0, num_bytes, NULL, &event);
+        getQueue().enqueueReleaseGLObjects(&shared_objects, NULL, &event);
+        event.wait();
 
         CL_DEBUG_FINISH(getQueue());
         CheckGL("End opencl resource copy");
     } else {
         CheckGL("Begin OpenCL fallback-resource copy");
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, image->pbo());
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, image->pixels());
         glBufferData(GL_PIXEL_UNPACK_BUFFER, image->size(), 0, GL_STREAM_DRAW);
         GLubyte* ptr = (GLubyte*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
@@ -57,7 +64,7 @@ void copy_image(const Array<T> &in, const fg::Image* image)
 }
 
 #define INSTANTIATE(T)      \
-    template void copy_image<T>(const Array<T> &in, const fg::Image* image);
+    template void copy_image<T>(const Array<T> &in, const forge::Image* image);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

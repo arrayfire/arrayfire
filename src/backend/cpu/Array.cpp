@@ -93,12 +93,9 @@ void Array<T>::eval()
     data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
 
     getQueue().enqueue(kernel::evalArray<T>, *this);
-
+    // Reset shared_ptr
+    this->node.reset();
     ready = true;
-    Node_ptr prev = node;
-    prev->reset();
-    // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
-    node.reset();
 }
 
 template<typename T>
@@ -106,6 +103,27 @@ void Array<T>::eval() const
 {
     if (isReady()) return;
     const_cast<Array<T> *>(this)->eval();
+}
+
+template<typename T>
+T* Array<T>::device()
+{
+    getQueue().sync();
+    if (!isOwner() || getOffset() || data.use_count() > 1) {
+        *this = copyArray<T>(*this);
+    }
+    return this->get();
+}
+
+template<typename T>
+void evalMultiple(std::vector<Array<T>*> arrays)
+{
+    //FIXME: implement this correctly
+    //Using fallback for now
+    for (auto array : arrays) {
+        array->eval();
+    }
+    return;
 }
 
 template<typename T>
@@ -167,16 +185,35 @@ createNodeArray(const dim4 &dims, Node_ptr node)
 {
     Array<T> out =  Array<T>(dims, node);
 
-    unsigned length =0, buf_count = 0, bytes = 0;
+    if (evalFlag()) {
+        if (node->getHeight() >= (int)getMaxJitSize()) {
+            out.eval();
+        } else {
+            size_t alloc_bytes, alloc_buffers;
+            size_t lock_bytes, lock_buffers;
 
-    Node *n = node.get();
-    n->getInfo(length, buf_count, bytes);
-    n->reset();
+            deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
+                             &lock_bytes, &lock_buffers);
 
-    if (length > getMaxJitSize() ||
-        buf_count >= getMaxBuffers() ||
-        bytes >= getMaxBytes()) {
-        out.eval();
+            // Check if approaching the memory limit
+            if (lock_bytes > getMaxBytes() ||
+                lock_buffers > getMaxBuffers()) {
+
+                // Calling sync to ensure the TNJ calls below
+                // don't overwrite the same nodes being evaluated
+                // FIXME: This should ideally be JIT specific mutex
+                getQueue().sync();
+
+                unsigned length =0, buf_count = 0, bytes = 0;
+                Node *n = node.get();
+                n->getInfo(length, buf_count, bytes);
+                n->reset();
+
+                if (2 * bytes > lock_bytes) {
+                    out.eval();
+                }
+            }
+        }
     }
 
     return out;
@@ -257,6 +294,7 @@ writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     template       Array<T>  createNodeArray<T>       (const dim4 &size, TNJ::Node_ptr node); \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
+    template       T*   Array<T>::device();                             \
     template       Array<T>::Array(af::dim4 dims, const T * const in_data, \
                                    bool is_device, bool copy_device);   \
     template       Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset, \
@@ -265,6 +303,7 @@ writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     template       TNJ::Node_ptr Array<T>::getNode() const;             \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
+    template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \
 
 INSTANTIATE(float)
 INSTANTIATE(double)

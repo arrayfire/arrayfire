@@ -129,6 +129,13 @@ namespace af
 
     // Purpose of Addition: "How to add Function" documentation
     AFAPI array exampleFunction(const array& in, const af_someenum_t param);
+
+#if AF_API_VERSION >= 34
+    ///
+    /// Get the size of the type represented by an af_dtype enum
+    ///
+    AFAPI size_t getSizeOf(af::dtype type);
+#endif
 }
 
 #if AF_API_VERSION >= 31
@@ -245,7 +252,9 @@ extern "C" {
 #endif
 
     // Purpose of Addition: "How to add Function" documentation
-    AFAPI af_err af_example_function(af_array* out, const af_array in, const af_someenum_t param);
+    AFAPI af_err af_example_function(af_array* out,
+                                     const af_array in,
+                                     const af_someenum_t param);
 
     ///
     /// Get the version information of the library
@@ -260,6 +269,13 @@ extern "C" {
     /// freed by the user.
     ///
     AFAPI const char *af_get_revision();
+#endif
+
+#if AF_API_VERSION >= 34
+    ///
+    /// Get the size of the type represented by an af_dtype enum
+    ///
+    AFAPI af_err af_get_size_of(size_t *size, af_dtype type);
 #endif
 
 #ifdef __cplusplus

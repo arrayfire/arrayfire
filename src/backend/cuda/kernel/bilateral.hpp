@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/defines.h>
 #include <backend.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
@@ -34,12 +33,6 @@ inline __device__
 int clamp(int f, int a, int b)
 {
     return max(a, min(f, b));
-}
-
-inline __device__
-float gaussian1d(float x, float variance)
-{
-    return exp((x * x) / (-2.f * variance));
 }
 
 template<typename inType, typename outType>
@@ -69,6 +62,8 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
     const int shrdLen     = THREADS_X + padding;
     const float variance_range = sigma_color * sigma_color;
     const float variance_space = sigma_space * sigma_space;
+    const float variance_space_neg2 = -2.0 * variance_space;
+    const float inv_variance_range_neg2 = -0.5 / variance_range;
 
     // gfor batch offsets
     unsigned b2 = blockIdx.x / nBBS0;
@@ -86,7 +81,7 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
     if (lx<window_size && ly<window_size) {
         int x = lx - radius;
         int y = ly - radius;
-        gauss2d[ly*window_size+lx] = exp( ((x*x) + (y*y)) / (-2.f * variance_space));
+        gauss2d[ly*window_size+lx] = __expf(((x*x) + (y*y)) / variance_space_neg2);
     }
 
     // pull image to local memory
@@ -106,18 +101,22 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
         const outType center_color = localMem[ly*shrdLen+lx];
         outType res  = 0;
         outType norm = 0;
+        int joff = (ly - radius)*shrdLen + (lx - radius);
+        int goff = 0;
+
 #pragma unroll
         for(int wj=0; wj<window_size; ++wj) {
-            int joff = (ly+wj-radius)*shrdLen + (lx-radius);
-            int goff = wj*window_size;
 #pragma unroll
             for(int wi=0; wi<window_size; ++wi) {
                 const outType tmp_color   = localMem[joff+wi];
-                const outType gauss_range = gaussian1d(center_color - tmp_color, variance_range);
+                const outType c = center_color - tmp_color;
+                const outType gauss_range = __expf(c * c * inv_variance_range_neg2);
                 const outType weight      = gauss2d[goff+wi] * gauss_range;
                 norm += weight;
                 res  += tmp_color * weight;
             }
+            joff += shrdLen;
+            goff += window_size;
         }
         optr[gy*out.strides[1]+gx] = res / norm;
     }
@@ -137,7 +136,12 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma, float c_sig
     int radius = (int)std::max(s_sigma * 1.5f, 1.f);
     int num_shrd_elems    = (THREADS_X + 2 * radius) * (THREADS_Y + 2 * radius);
     int num_gauss_elems   = (2 * radius + 1)*(2 * radius + 1);
-    int total_shrd_size   = sizeof(outType) * (num_shrd_elems + num_gauss_elems);
+    size_t total_shrd_size   = sizeof(outType) * (num_shrd_elems + num_gauss_elems);
+
+    size_t MAX_SHRD_SIZE = cuda::getDeviceProp(cuda::getActiveDeviceId()).sharedMemPerBlock;
+    if (total_shrd_size > MAX_SHRD_SIZE) {
+        CUDA_NOT_SUPPORTED();
+    }
 
     CUDA_LAUNCH_SMEM((bilateralKernel<inType, outType>), blocks, threads, total_shrd_size,
         out, in, s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y);
