@@ -61,7 +61,8 @@ forge::Chart* setup_plot(const forge::Window* const window, const af_array in_,
 
     forge::Plot* plot = fgMngr.getPlot(chart, tdims[1], getGLType<T>(), ptype, mtype);
 
-    plot->setColor(1.0, 0.0, 0.0, 1.0);
+    // ArrayFire LOGO Orange shade
+    plot->setColor(0.929f, 0.529f, 0.212f, 1.0);
 
     copy_plot<T>(in, plot);
 

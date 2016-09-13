@@ -20,15 +20,15 @@ namespace cuda
 
         static const uint DIMX = 32;
         static const uint DIMY =  8;
+        static const int REPEAT = 64;
 
         __device__ __host__
-        int getOffset(dim_t *dims, dim_t *strides, dim_t *refdims)
+        int getOffset(dim_t *dims, dim_t *strides, dim_t *refdims, int ids[4])
         {
             int off = 0;
-            off += (dims[3] == refdims[3]) * strides[3];
-            off += (dims[2] == refdims[2]) * strides[2];
-            off += (dims[1] == refdims[1]) * strides[1];
-            off += (dims[0] == refdims[0]);
+            off += ids[3] * (dims[3] == refdims[3]) * strides[3];
+            off += ids[2] * (dims[2] == refdims[2]) * strides[2];
+            off += ids[1] * (dims[1] == refdims[1]) * strides[1];
             return off;
         }
 
@@ -40,15 +40,23 @@ namespace cuda
             const int idz = blockIdx.x / blk_x;
             const int idw = blockIdx.y / blk_y;
 
+
             const int blockIdx_x = blockIdx.x - idz * blk_x;
             const int blockIdx_y = blockIdx.y - idw * blk_y;
 
-            const int idx = blockIdx_x * blockDim.x + threadIdx.x;
             const int idy = blockIdx_y * blockDim.y + threadIdx.y;
+            const int idx0 = blockIdx_x * blockDim.x + threadIdx.x;
 
-            const int off = idw * out.strides[3] + idz * out.strides[2] + idy * out.strides[1] + idx;
+            if (idw >= out.dims[3] ||
+                idz >= out.dims[2] ||
+                idy >= out.dims[1])  {
+                return;
+            }
 
+            const int off = idw * out.strides[3] + idz * out.strides[2] + idy * out.strides[1];
             T *optr = out.ptr + off;
+
+            int ids[] = {idx0, idy, idz, idw};
 
             const T *aptr = a.ptr;
             const T *bptr = b.ptr;
@@ -58,14 +66,19 @@ namespace cuda
                 aptr += off;
                 bptr += off;
                 cptr += off;
+                for (int idx = idx0; idx < out.dims[0]; idx += blockDim.x * blk_x) {
+                    optr[idx] = cptr[idx] ? aptr[idx] : bptr[idx];
+                }
             } else {
-                aptr += getOffset(a.dims, a.strides, out.dims);
-                bptr += getOffset(b.dims, b.strides, out.dims);
-                cptr += getOffset(cond.dims, cond.strides, out.dims);
-            }
-
-            if (idx < out.dims[0] && idy < out.dims[1] && idz < out.dims[2] && idw < out.dims[3]) {
-                *optr = (*cptr) ? *aptr : *bptr;
+                aptr += getOffset(a.dims, a.strides, out.dims, ids);
+                bptr += getOffset(b.dims, b.strides, out.dims, ids);
+                cptr += getOffset(cond.dims, cond.strides, out.dims, ids);
+                bool csame = cond.dims[0] == out.dims[0];
+                bool asame = a.dims[0] == out.dims[0];
+                bool bsame = b.dims[0] == out.dims[0];
+                for (int idx = idx0; idx < out.dims[0]; idx += blockDim.x * blk_x) {
+                    optr[idx] = cptr[csame * idx] ? aptr[asame * idx] : bptr[bsame * idx];
+                }
             }
         }
 
@@ -84,7 +97,7 @@ namespace cuda
                 threads.y = 1;
             }
 
-            int blk_x = divup(out.dims[0], threads.x);
+            int blk_x = divup(out.dims[0], REPEAT * threads.x);
             int blk_y = divup(out.dims[1], threads.y);
 
 
@@ -112,10 +125,10 @@ namespace cuda
             const int blockIdx_x = blockIdx.x - idz * blk_x;
             const int blockIdx_y = blockIdx.y - idw * blk_y;
 
-            const int idx = blockIdx_x * blockDim.x + threadIdx.x;
+            const int idx0 = blockIdx_x * blockDim.x + threadIdx.x;
             const int idy = blockIdx_y * blockDim.y + threadIdx.y;
 
-            const int off = idw * out.strides[3] + idz * out.strides[2] + idy * out.strides[1] + idx;
+            const int off = idw * out.strides[3] + idz * out.strides[2] + idy * out.strides[1];
 
             T *optr = out.ptr + off;
 
@@ -125,8 +138,14 @@ namespace cuda
             aptr += off;
             cptr += off;
 
-            if (idx < out.dims[0] && idy < out.dims[1] && idz < out.dims[2] && idw < out.dims[3]) {
-                *optr = ((*cptr) ^ flip) ? *aptr : b;
+            if (idw >= out.dims[3] ||
+                idz >= out.dims[2] ||
+                idy >= out.dims[1]) {
+                return;
+            }
+
+            for (int idx = idx0; idx < out.dims[0]; idx += blockDim.x * blk_x) {
+                optr[idx] = ((cptr[idx]) ^ flip) ? aptr[idx] : b;
             }
         }
 
@@ -140,12 +159,12 @@ namespace cuda
                 threads.y = 1;
             }
 
-            int blk_x = divup(out.dims[0], threads.x);
+            int blk_x = divup(out.dims[0], REPEAT * threads.x);
             int blk_y = divup(out.dims[1], threads.y);
 
 
-            dim3 blocks(blk_x * threads.x,
-                        blk_y * threads.y);
+            dim3 blocks(blk_x * out.dims[2],
+                        blk_y * out.dims[3]);
 
             CUDA_LAUNCH((select_scalar_kernel<T, flip>), blocks, threads,
                         out, cond, a, scalar<T>(b), blk_x, blk_y);

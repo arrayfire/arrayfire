@@ -58,7 +58,8 @@ forge::Chart* setup_vector_field(const forge::Window* const window,
 
     forge::VectorField* vectorfield = fgMngr.getVectorField(chart, pIn.dims()[1], getGLType<T>());
 
-    vectorfield->setColor(1.0, 1.0, 0.0, 1.0);
+    // ArrayFire LOGO dark blue shade
+    vectorfield->setColor(0.130f, 0.173f, 0.263f, 1.0);
 
     copy_vector_field<T>(pIn, dIn, vectorfield);
 
@@ -104,7 +105,7 @@ af_err vectorFieldWrapper(const af_window wind, const af_array points, const af_
 
         // Window's draw function requires either image or chart
         if (props->col > -1 && props->row > -1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
     }
@@ -189,7 +190,7 @@ af_err vectorFieldWrapper(const af_window wind,
 
         // Window's draw function requires either image or chart
         if (props->col > -1 && props->row > -1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
 
@@ -265,7 +266,7 @@ af_err vectorFieldWrapper(const af_window wind,
 
         // Window's draw function requires either image or chart
         if (props->col > -1 && props->row > -1)
-            window->draw(props->col, props->row, *chart, props->title);
+            window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
 

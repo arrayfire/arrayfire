@@ -87,9 +87,7 @@ namespace TNJ
 
         void reset()
         {
-            if (m_is_eval) {
-                resetCommonFlags();
-            }
+            resetCommonFlags();
         }
 
         bool isLinear(const dim_t *dims)
