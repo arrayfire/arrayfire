@@ -88,7 +88,7 @@ void nearest_neighbour_unroll(
 
         // Load one query feature that will be tested against all training
         // features in current block
-        if (tid < FEAT_LEN && valid_feat) {
+        if (tid < FEAT_LEN) {
             l_query[tid] = query[tid * nquery + j + qInfo.offset];
         }
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -228,7 +228,7 @@ void nearest_neighbour(
 
         // Load one query feature that will be tested against all training
         // features in current block
-        if (tid < feat_len && valid_feat) {
+        if (tid < feat_len) {
             l_query[tid] = query[tid * nquery + j + qInfo.offset];
         }
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -342,15 +342,9 @@ void select_matches(
 
     bool valid_feat = (f < nfeat);
 
-    if (valid_feat)
-        l_dist[sid] = max_dist;
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    unsigned nelem_max = (nelem / lsz1) * lsz1;
-    nelem_max = (nelem % lsz1 == 0) ? nelem_max : nelem_max + lsz1;
-
-    for (unsigned i = get_local_id(1); i < nelem_max; i += get_local_size(1)) {
-        if (valid_feat && i < nelem) {
+    l_dist[sid] = max_dist;
+    if (valid_feat) {
+        for (unsigned i = get_local_id(1); i < nelem; i += get_local_size(1)) {
             To dist = in_dist[f * nelem + i];
 
             // Copy all best matches previously found in nearest_neighbour() to
@@ -360,8 +354,8 @@ void select_matches(
                 l_idx[sid]  = in_idx[f * nelem + i];
             }
         }
-        barrier(CLK_LOCAL_MEM_FENCE);
     }
+    barrier(CLK_LOCAL_MEM_FENCE);
 
     for (unsigned i = get_local_size(1) / 2; i > 0; i >>= 1) {
         if (get_local_id(1) < i) {
