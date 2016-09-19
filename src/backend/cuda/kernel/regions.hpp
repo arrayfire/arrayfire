@@ -102,15 +102,15 @@ static void final_relabel(cuda::Param<T> equiv_map, cuda::CParam<char> bin, cons
 template<typename T>
 __device__ __inline__
 static T relabel(const T a, const T b) {
-    return min((a + (cuda::limit_max<T>() * (a == 0))),(b + (cuda::limit_max<T>() * (b == 0))));
+    return min((a + (cuda::maxval<T>() * (a == 0))),(b + (cuda::maxval<T>() * (b == 0))));
 }
 __device__ __inline__
 static double relabel(const double a, const double b) {
-    return fmin((a + (cuda::limit_max<double>() * (a == 0))),(b + (cuda::limit_max<double>() * (b == 0))));
+    return fmin((a + (cuda::maxval<double>() * (a == 0))),(b + (cuda::maxval<double>() * (b == 0))));
 }
 __device__ __inline__
 static float relabel(const float a, const float b) {
-    return fminf((a + (cuda::limit_max<float>() * (a == 0))),(b + (cuda::limit_max<float>() * (b == 0))));
+    return fminf((a + (cuda::maxval<float>() * (a == 0))),(b + (cuda::maxval<float>() * (b == 0))));
 }
 
 //Calculates the number of warps at compile time

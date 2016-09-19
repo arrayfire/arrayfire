@@ -424,7 +424,7 @@ void nearest_neighbour(Param<uint> idx,
                        const unsigned n_dist)
 {
     const unsigned feat_len = query.dims[dist_dim];
-    const To max_dist = limit_max<To>();
+    const To max_dist = maxval<To>();
 
     if (feat_len > THREADS) {
         CUDA_NOT_SUPPORTED();

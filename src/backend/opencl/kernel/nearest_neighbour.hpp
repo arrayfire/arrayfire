@@ -41,7 +41,7 @@ void nearest_neighbour(Param idx,
 {
     try {
         const unsigned feat_len = query.info.dims[dist_dim];
-        const To max_dist = limit_max<To>();
+        const To max_dist = maxval<To>();
 
         if (feat_len > THREADS) {
             OPENCL_NOT_SUPPORTED();

@@ -73,7 +73,7 @@ void regions(Param out, Param in)
                             << " -D BLOCK_DIM=" << block_dim
                             << " -D NUM_WARPS=" << num_warps
                             << " -D N_PER_THREAD=" << n_per_thread
-                            << " -D LIMIT_MAX=" << limit_max<T>()
+                            << " -D LIMIT_MAX=" << maxval<T>()
                             << " -D FULL_CONN";
                 }
                 else {
@@ -81,7 +81,7 @@ void regions(Param out, Param in)
                             << " -D BLOCK_DIM=" << block_dim
                             << " -D NUM_WARPS=" << num_warps
                             << " -D N_PER_THREAD=" << n_per_thread
-                            << " -D LIMIT_MAX=" << limit_max<T>();
+                            << " -D LIMIT_MAX=" << maxval<T>();
                 }
                 if (std::is_same<T, double>::value ||
                     std::is_same<T, cdouble>::value) {

@@ -97,8 +97,13 @@ namespace opencl
         return cval;
     }
 
-    template <typename T> T limit_max() { return std::numeric_limits<T>::max(); }
-    template <typename T> T limit_min() { return std::numeric_limits<T>::min(); }
+    template <typename T> T maxval() { return std::numeric_limits<T>::max(); }
+    template <typename T> T minval() { return std::numeric_limits<T>::min(); }
+    template <> STATIC_ float maxval() { return std::numeric_limits<float>::infinity(); }
+    template <> STATIC_ double maxval() { return std::numeric_limits<double>::infinity(); }
+    template <> STATIC_ float minval() { return -std::numeric_limits<float>::infinity(); }
+    template <> STATIC_ double minval() { return -std::numeric_limits<double>::infinity(); }
+
 
     static inline double real(cdouble in)
     {
