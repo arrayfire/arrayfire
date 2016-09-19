@@ -60,13 +60,14 @@ void final_relabel(global       T    * equiv_map,
     }
 }
 
-#define MIN(A,B) ((A < B) ? (A) : (B))
-
 // When two labels are equivalent, choose the lower label, but
 // do not choose zero, which indicates invalid.
 //#if T == double
-static inline T relabel(const T a, const T b) {
-    return MIN((a + (LIMIT_MAX * (a == 0))),(b + (LIMIT_MAX * (b == 0))));
+static inline T relabel(const T a, const T b)
+{
+    T aa = (a == 0) ? LIMIT_MAX : a;
+    T bb = (b == 0) ? LIMIT_MAX : b;
+    return min(aa, bb);
 }
 
 // The following kernel updates the equivalency map.  This kernel
