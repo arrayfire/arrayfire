@@ -36,7 +36,16 @@ struct dist_op<T, To, AF_SAD>
 {
     __device__ To operator()(T v1, T v2)
     {
-        return abs((double)v1 - (double)v2);
+        return fabsf((float)v1 - (float)v2);
+    }
+};
+
+template<typename To>
+struct dist_op<double, To, AF_SAD>
+{
+    __device__ To operator()(double v1, double v2)
+    {
+        return fabs((double)v1 - (double)v2);
     }
 };
 
@@ -130,7 +139,7 @@ __global__ void nearest_neighbour_unroll(
 
         // Load one query feature that will be tested against all training
         // features in current block
-        if (tid < feat_len && valid_feat) {
+        if (tid < feat_len) {
             s_query[tid] = query.ptr[tid * nquery + j];
         }
         __syncthreads();
@@ -269,7 +278,7 @@ __global__ void nearest_neighbour(
 
         // Load one query feature that will be tested against all training
         // features in current block
-        if (tid < feat_len && valid_feat) {
+        if (tid < feat_len) {
             s_query[tid] = query.ptr[tid * nquery + j];
         }
         __syncthreads();
@@ -379,10 +388,8 @@ __global__ void select_matches(
     __shared__ To s_dist[THREADS];
     __shared__ unsigned s_idx[THREADS];
 
+    s_dist[sid] = max_dist;
     if (f < nfeat) {
-        s_dist[sid] = max_dist;
-        __syncthreads();
-
         for (unsigned i = threadIdx.y; i < nelem; i += blockDim.y) {
             To dist = in_dist[f * nelem + i];
 
@@ -392,26 +399,26 @@ __global__ void select_matches(
                 s_dist[sid] = dist;
                 s_idx[sid]  = in_idx[f * nelem + i];
             }
+        }
+    }
+    __syncthreads();
+
+    // Reduce best matches and find the best of them all
+    for (unsigned i = blockDim.y / 2; i > 0; i >>= 1) {
+        if (threadIdx.y < i) {
+            To dist = s_dist[sid + i];
+            if (dist < s_dist[sid]) {
+                s_dist[sid] = dist;
+                s_idx[sid]  = s_idx[sid + i];
+            }
             __syncthreads();
         }
+    }
 
-        // Reduce best matches and find the best of them all
-        for (unsigned i = blockDim.y / 2; i > 0; i >>= 1) {
-            if (threadIdx.y < i) {
-                To dist = s_dist[sid + i];
-                if (dist < s_dist[sid]) {
-                    s_dist[sid] = dist;
-                    s_idx[sid]  = s_idx[sid + i];
-                }
-                __syncthreads();
-            }
-        }
-
-        // Store best matches and indexes to training dataset
-        if (threadIdx.y == 0) {
-            dist.ptr[f] = s_dist[threadIdx.x * blockDim.y];
-            idx.ptr[f]  = s_idx[threadIdx.x * blockDim.y];
-        }
+    // Store best matches and indexes to training dataset
+    if (threadIdx.y == 0 && f < nfeat) {
+        dist.ptr[f] = s_dist[threadIdx.x * blockDim.y];
+        idx.ptr[f]  = s_idx[threadIdx.x * blockDim.y];
     }
 }
 
