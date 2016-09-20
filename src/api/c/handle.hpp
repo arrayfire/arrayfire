@@ -17,7 +17,7 @@
 #include <cast.hpp>
 #include <af/dim4.hpp>
 
-const ArrayInfo& getInfo(const af_array arr, bool device_check = true, bool sparse_check = true);
+const ArrayInfo& getInfo(const af_array arr, bool sparse_check = true, bool device_check = true);
 
 // Implemented in src/api/c/moddims.cpp
 template<typename T>
