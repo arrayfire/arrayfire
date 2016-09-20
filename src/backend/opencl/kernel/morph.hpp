@@ -56,12 +56,12 @@ void morph(Param         out,
         int device = getActiveDeviceId();
 
         std::call_once( compileFlags[device], [device] () {
-                ToNum<T> toNum;
+                ToNumStr<T> toNumStr;
                 T init = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
                         << " -D isDilation="<< isDilation
-                        << " -D init=" << toNum(init)
+                        << " -D init=" << toNumStr(init)
                         << " -D windLen=" << windLen;
                 if (std::is_same<T, double>::value ||
                     std::is_same<T, cdouble>::value) {
@@ -124,12 +124,12 @@ void morph3d(Param       out,
         int device = getActiveDeviceId();
 
         std::call_once( compileFlags[device], [device] () {
-                ToNum<T> toNum;
+                ToNumStr<T> toNumStr;
                 T init = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
                         << " -D isDilation="<< isDilation
-                        << " -D init=" << toNum(init)
+                        << " -D init=" << toNumStr(init)
                         << " -D windLen=" << windLen;
                 if (std::is_same<T, double>::value ||
                     std::is_same<T, cdouble>::value) {

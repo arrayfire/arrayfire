@@ -23,9 +23,6 @@ using std::string;
 namespace opencl
 {
     const static std::string DEFAULT_MACROS_STR("\n\
-                                           #ifndef inf\n\
-                                           #define inf INFINITY\n\
-                                           #endif\n\
                                            #ifdef USE_DOUBLE\n\
                                            #pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
                                            #endif\n                     \

@@ -48,12 +48,12 @@ namespace opencl
                 int device = getActiveDeviceId();
 
                 std::call_once( compileFlags[device], [device] () {
-                    ToNum<T> toNum;
+                    ToNumStr<T> toNumStr;
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName()
                             << " -D TX=" << TX
                             << " -D TY=" << TY
-                            << " -D ZERO=" << toNum(scalar<T>(0));
+                            << " -D ZERO=" << toNumStr(scalar<T>(0));
 
                     if((af_dtype) dtype_traits<T>::af_type == c32 ||
                        (af_dtype) dtype_traits<T>::af_type == c64) {

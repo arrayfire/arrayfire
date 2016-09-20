@@ -63,7 +63,7 @@ namespace kernel
         if (idx == kernelCaches[device].end()) {
 
             Binary<To, op> scan;
-            ToNum<To> toNum;
+            ToNumStr<To> toNumStr;
 
             std::ostringstream options;
             options << " -D To=" << dtype_traits<To>::getName()
@@ -73,7 +73,7 @@ namespace kernel
                     << " -D dim=" << dim
                     << " -D DIMY=" << threads_y
                     << " -D THREADS_X=" << THREADS_X
-                    << " -D init=" << toNum(scan.init())
+                    << " -D init=" << toNumStr(scan.init())
                     << " -D " << binOpName<op>()
                     << " -D CPLX=" << af::iscplx<Ti>()
                     << " -D calculateFlags=" << calculateFlags
