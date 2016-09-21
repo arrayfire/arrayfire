@@ -7,7 +7,7 @@ INCLUDE(CLKernelToH)
 INCLUDE(FindNVVM)
 
 OPTION(USE_LIBDEVICE "Use libdevice for CUDA JIT" ON)
-SET(CUDA_LIBDEVICE_DIR "${CUDA_NVVM_HOME}/libdevice" CACHE PATH "Path where libdevice compute files are located")
+SET(CUDA_LIBDEVICE_DIR "${CUDA_NVVM_HOME}/libdevice" CACHE PATH "Path where libdevice compute files are located" FORCE)
 
 MARK_AS_ADVANCED(
     CUDA_BUILD_CUBIN
