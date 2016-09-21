@@ -76,12 +76,12 @@ namespace opencl
                 kc_entry_t entry;
 
                 if (idx == kernelCaches[device].end()) {
-                    ToNum<T> toNum;
+                    ToNumStr<T> toNumStr;
                     std::ostringstream options;
                     options << " -D T="           << dtype_traits<T>::getName()
                             << " -D INVERSE="     << (isInverse ? 1 : 0)
                             << " -D PERSPECTIVE=" << (isPerspective ? 1 : 0)
-                            << " -D ZERO="        << toNum(scalar<T>(0));
+                            << " -D ZERO="        << toNumStr(scalar<T>(0));
                     options << " -D InterpInTy=" << dtype_traits<T>::getName();
                     options << " -D InterpValTy="  << dtype_traits<vtype_t<T>>::getName();
                     options << " -D InterpPosTy=" << dtype_traits<wtype_t<BT>>::getName();

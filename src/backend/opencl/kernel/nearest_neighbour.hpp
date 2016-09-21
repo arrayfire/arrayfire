@@ -35,17 +35,18 @@ void nearest_neighbour(Param idx,
                        Param query,
                        Param train,
                        const dim_t dist_dim,
-                       const unsigned n_dist,
-                       const size_t lmem_sz,
-                       bool use_lmem)
+                       const unsigned n_dist)
 {
     try {
         const unsigned feat_len = query.info.dims[dist_dim];
-        const To max_dist = limit_max<To>();
+        const To max_dist = maxval<To>();
 
-        if (feat_len > THREADS) {
-            OPENCL_NOT_SUPPORTED();
-        }
+        // Determine maximum feat_len capable of using shared memory (faster)
+        cl_ulong avail_lmem = getDevice().getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
+        size_t lmem_predef = 2 * THREADS * sizeof(unsigned) + feat_len * sizeof(T);
+        size_t ltrain_sz = THREADS * feat_len * sizeof(T);
+        bool use_lmem = (avail_lmem >= (lmem_predef + ltrain_sz)) ? true : false;
+        size_t lmem_sz = (use_lmem) ? lmem_predef + ltrain_sz : lmem_predef;
 
         unsigned unroll_len = nextpow2(feat_len);
         if (unroll_len != feat_len) unroll_len = 0;

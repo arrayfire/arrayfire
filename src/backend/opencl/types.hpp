@@ -16,6 +16,10 @@
 #include <CL/cl.h>
 #endif
 #pragma GCC diagnostic pop
+#include <sstream>
+#include <string>
+#include <cmath>
+#include <type_util.hpp>
 
 namespace opencl
 {
@@ -31,5 +35,77 @@ namespace opencl
     template<> struct           is_complex<cdouble> { static const bool value = true;   };
 
     template<typename T > const char *shortname(bool caps=false);
+
+    template<typename T>
+    struct ToNumStr
+    {
+        inline std::string operator()(T val)
+        {
+            ToNum<T> toNum;
+            return std::to_string(toNum(val));
+        }
+    };
+
+    template<>
+    struct ToNumStr<float>
+    {
+        inline std::string operator()(float val)
+        {
+            static const std::string PINF = "+INFINITY";
+            static const std::string NINF = "-INFINITY";
+            if (std::isinf(val)) {
+                return val < 0 ? NINF : PINF;
+            }
+            return std::to_string(val);
+        }
+    };
+
+    template<>
+    struct ToNumStr<double>
+    {
+        inline std::string operator()(double val)
+        {
+            static const std::string PINF = "+INFINITY";
+            static const std::string NINF = "-INFINITY";
+            if (std::isinf(val)) {
+                return val < 0 ? NINF : PINF;
+            }
+            return std::to_string(val);
+        }
+    };
+
+    template<>
+    struct ToNumStr<cfloat>
+    {
+        inline std::string operator()(cfloat val)
+        {
+            ToNumStr<float> realStr;
+            static const std::string INF = "INFINITY";
+            std::stringstream s;
+            s << "{";
+            s << realStr(val.s[0]);
+            s << ",";
+            s << realStr(val.s[1]);
+            s << "}";
+            return s.str();
+        }
+    };
+
+    template<>
+    struct ToNumStr<cdouble>
+    {
+        inline std::string operator()(cdouble val)
+        {
+            ToNumStr<double> realStr;
+            static const std::string INF = "INFINITY";
+            std::stringstream s;
+            s << "{";
+            s << realStr(val.s[0]);
+            s << ",";
+            s << realStr(val.s[1]);
+            s << "}";
+            return s.str();
+        }
+    };
 
 }

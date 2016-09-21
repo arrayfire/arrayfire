@@ -55,10 +55,10 @@ namespace opencl
                 kc_entry_t entry;
                 if (idx == kernelCaches[device].end()) {
 
-                    ToNum<T> toNum;
+                    ToNumStr<T> toNumStr;
                     std::ostringstream options;
                     options << " -D is_column=" << is_column
-                            << " -D ZERO=" << toNum(scalar<T>(0))
+                            << " -D ZERO=" << toNumStr(scalar<T>(0))
                             << " -D T="    << dtype_traits<T>::getName();
 
                     if (std::is_same<T, double>::value ||

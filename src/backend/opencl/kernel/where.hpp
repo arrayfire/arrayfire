@@ -50,11 +50,11 @@ namespace kernel
 
         std::call_once(compileFlags[device], [device] () {
 
-                ToNum<T> toNum;
+                ToNumStr<T> toNumStr;
 
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D zero=" << toNum(scalar<T>(0))
+                        << " -D zero=" << toNumStr(scalar<T>(0))
                         << " -D CPLX=" << af::iscplx<T>();
                 if (std::is_same<T, double>::value ||
                     std::is_same<T, cdouble>::value) {
