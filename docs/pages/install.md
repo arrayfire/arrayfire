@@ -1,4 +1,4 @@
-ArrayFire binary installation instructions {#installing}
+ArrayFire Binary Installation Instructions {#installing}
 =====
 
 Installing ArrayFire couldn't be easier. We ship installers for Windows,
@@ -67,7 +67,7 @@ Finally, verify that the path addition worked correctly. You can do this by:
 First install the prerequisite packages:
 
     # Prerequisite packages:
-    apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev libglew-dev libglewmx-dev libglfw3-dev cmake
+    apt-get install libglfw3-dev cmake
 
     # Enable GPU support (OpenCL):
     apt-get install ocl-icd-libopencl1
@@ -86,7 +86,7 @@ file, run the installer.
 First install the prerequisite packages:
 
     # Install prerequiste packages
-    yum install freeimage atlas fftw libGLEW libGLEWmx glfw cmake
+    yum install glfw cmake
 
 On Centos and Redhat the `glfw` package is outdated and you will need to compile
 it from source. Please
@@ -106,7 +106,7 @@ file, run the installer.
 First install the prerequisite packages:
 
     # Prerequisite packages:
-    sudo apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev cmake
+    sudo apt-get install cmake
 
 Ubuntu 14.04 will not have the libglfw3-dev package in its repositories. You can either build the
 library from source (following the
@@ -130,6 +130,13 @@ with any drivers required for your hardware.
 
     # Enable GPU support (OpenCL):
     apt-get install ocl-icd-libopencl1
+
+### Special instructions for Tegra X1
+**The ArrayFire binary installer for Terga X1 requires JetPack 2.3 or L4T 24.2
+for Jetson TX1. This includes Ubuntu 16.04, CUDA 8.0 etc.**
+If you are using ArrayFire on the Tegra X1 also install these packages:
+
+    sudo apt-get install libopenblas-dev liblapacke-dev
 
 ### Special instructions for Tegra K1
 If you are using ArrayFire on the Tegra K1 also install these packages:
