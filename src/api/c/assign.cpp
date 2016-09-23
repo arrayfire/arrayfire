@@ -127,7 +127,10 @@ af_err af_assign_seq(af_array *out,
             AF_CHECK(af_assign_seq(&tmp_out, tmp_in, ndims, index, rhs));
             AF_CHECK(af_moddims(out, tmp_out, lInfo.ndims(), lInfo.dims().get()));
             AF_CHECK(af_release_array(tmp_in));
-            AF_CHECK(af_release_array(tmp_out));
+            // This can run into a double free issue if tmp_in == tmp_out
+            // The condition ensures release only if both are different
+            // Issue found on Tegra X1
+            if(tmp_in != tmp_out) AF_CHECK(af_release_array(tmp_out));
             return AF_SUCCESS;
         }
 
@@ -244,7 +247,10 @@ af_err af_assign_gen(af_array *out,
             AF_CHECK(af_assign_gen(&tmp_out, tmp_in, ndims, indexs, rhs_));
             AF_CHECK(af_moddims(out, tmp_out, lInfo.ndims(), lInfo.dims().get()));
             AF_CHECK(af_release_array(tmp_in));
-            AF_CHECK(af_release_array(tmp_out));
+            // This can run into a double free issue if tmp_in == tmp_out
+            // The condition ensures release only if both are different
+            // Issue found on Tegra X1
+            if(tmp_in != tmp_out) AF_CHECK(af_release_array(tmp_out));
             return AF_SUCCESS;
         }
 
