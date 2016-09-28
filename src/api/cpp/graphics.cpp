@@ -135,8 +135,8 @@ void Window::hist(const array& X, const double minval, const double maxval, cons
 
 void Window::surface(const array& S, const char* const title)
 {
-    af::array xVals = seq(0, S.dims(0)-1);
-    af::array yVals = seq(0, S.dims(1)-1);
+    af::array xVals = range(S.dims(0));
+    af::array yVals = range(S.dims(1));
     af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
     AF_THROW(af_draw_surface(get(), xVals.get(), yVals.get(), S.get(), &temp));
 }
