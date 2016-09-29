@@ -411,8 +411,8 @@ __global__ void select_matches(
                 s_dist[sid] = dist;
                 s_idx[sid]  = s_idx[sid + i];
             }
-            __syncthreads();
         }
+        __syncthreads();
     }
 
     // Store best matches and indexes to training dataset

@@ -31,6 +31,8 @@ namespace cpu
         kernel::scan_dim_by_key<op, Ti, Tk, To, 4> func4(inclusive_scan);
 
         in.eval();
+        key.eval();
+
         switch (in.ndims()) {
         case 1:
             getQueue().enqueue(func1, out, 0, key, 0, in, 0, dim);
