@@ -54,7 +54,9 @@ typedef enum {
     af_exp_t,
     af_expm1_t,
     af_erf_t,
+    af_erfinv_t,
     af_erfc_t,
+    af_erfcinv_t,
 
     af_log_t,
     af_log10_t,

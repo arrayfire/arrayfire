@@ -1259,6 +1259,17 @@ extern "C" {
     AFAPI af_err af_erf     (af_array *out, const af_array in);
 
     /**
+       C Interface for inverse error function value
+
+       \param[out] out will contain the inverse error function value of \p in
+       \param[in] in is input
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_erf
+    */
+    AFAPI af_err af_erfinv     (af_array *out, const af_array in);
+
+    /**
        C Interface for complementary error function value
 
        \param[out] out will contain the complementary error function value of \p in
@@ -1268,6 +1279,17 @@ extern "C" {
        \ingroup arith_func_erfc
     */
     AFAPI af_err af_erfc    (af_array *out, const af_array in);
+
+    /**
+       C Interface for complementary inverse error function value
+
+       \param[out] out will contain the complementary inverse error function value of \p in
+       \param[in] in is input
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_erfc
+    */
+    AFAPI af_err af_erfcinv    (af_array *out, const af_array in);
 
     /**
        C Interface for natural logarithm
