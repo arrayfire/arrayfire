@@ -294,7 +294,12 @@ LIST(LENGTH COMPUTE_VERSIONS COMPUTE_COUNT)
 IF(${COMPUTE_COUNT} EQUAL 1)
     SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${CUDA_GENERATE_CODE}")
 ELSE()
-    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch sm_20")
+    # Use -arch sm_30 if CUDA 8 or greater and compute_20 not defined
+    IF(CUDA_COMPUTE_20 OR ${CUDA_VERSION_MAJOR} LESS 8)
+        SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch sm_20")
+    ELSE()
+        SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch sm_30")
+    ENDIF()
 ENDIF()
 
 # PUSH/POP --keep-device-functions flag. Only available in CUDA 8 or newer
