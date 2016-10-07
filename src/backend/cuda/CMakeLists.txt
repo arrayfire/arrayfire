@@ -44,12 +44,12 @@ LIST(LENGTH COMPUTES_DETECTED_LIST COMPUTES_LEN)
 IF(${COMPUTES_LEN} EQUAL 0 AND ${FALLBACK})
     MESSAGE(STATUS "You can use -DCOMPUTES_DETECTED_LIST=\"AB;XY\" (semicolon separated list of CUDA Compute versions to enable the specified computes")
     MESSAGE(STATUS "Individual compute versions flags are also available under CMake Advance options")
-    LIST(APPEND COMPUTES_DETECTED_LIST "20" "30" "50")
+    LIST(APPEND COMPUTES_DETECTED_LIST "30" "50")
     IF(${CUDA_VERSION_MAJOR} GREATER 7) # Enable 60 only if CUDA 8 or greater
-        MESSAGE(STATUS "No computes detected. Fall back to 20, 30, 50, 60")
+        MESSAGE(STATUS "No computes detected. Fall back to 30, 50, 60")
         LIST(APPEND COMPUTES_DETECTED_LIST "60")
     ELSE(${CUDA_VERSION_MAJOR} GREATER 7)
-        MESSAGE(STATUS "No computes detected. Fall back to 20, 30, 50")
+        LIST(APPEND COMPUTES_DETECTED_LIST "20")
     ENDIF(${CUDA_VERSION_MAJOR} GREATER 7)
 ENDIF()
 
@@ -85,8 +85,8 @@ IF(${CUDA_VERSION_MAJOR} LESS 8)
       )
         MESSAGE(FATAL_ERROR
                 "CUDA Compute 6x was enabled.\
-                CUDA Compute 6x (Pascal) GPUs require CUDA 8 or greater.\
-                Your CUDA Version is ${CUDA_VERSION}."
+                 CUDA Compute 6x (Pascal) GPUs require CUDA 8 or greater.\
+                 Your CUDA Version is ${CUDA_VERSION}."
                 )
     ENDIF()
 ENDIF(${CUDA_VERSION_MAJOR} LESS 8)
