@@ -302,6 +302,35 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
                                                 \
     } while(0)
 
+void compute_to_libdevice_table(const char **buffer, size_t *bc_buffer_len, int compute)
+{
+    // Source: http://docs.nvidia.com/cuda/libdevice-users-guide/basic-usage.html#version-selection
+    if(compute >= 20 && compute < 30) {
+        *buffer        = compute_20_bc;
+        *bc_buffer_len = compute_20_bc_len;
+    } else if (compute == 30) {
+        *buffer        = compute_30_bc;
+        *bc_buffer_len = compute_30_bc_len;
+    } else if (compute >= 31 && compute <  35) {
+        *buffer        = compute_20_bc;
+        *bc_buffer_len = compute_20_bc_len;
+    } else if (compute >= 35 && compute <= 37) {
+        *buffer        = compute_35_bc;
+        *bc_buffer_len = compute_35_bc_len;
+    } else if (compute >  37 && compute <  50) {
+        *buffer        = compute_30_bc;
+        *bc_buffer_len = compute_30_bc_len;
+    } else if (compute >= 50 && compute <= 53) {
+        *buffer        = compute_50_bc;
+        *bc_buffer_len = compute_50_bc_len;
+    } else if (compute >  53) {
+        *buffer        = compute_30_bc;
+        *bc_buffer_len = compute_30_bc_len;
+    } else {
+        AF_ERROR("Invalid Compute for libdevice", AF_ERR_INTERNAL);
+    }
+}
+
 static char *irToPtx(string IR, size_t *ptx_size)
 {
     nvvmProgram prog;
@@ -309,8 +338,14 @@ static char *irToPtx(string IR, size_t *ptx_size)
     NVVM_CHECK(nvvmCreateProgram(&prog), "Failed to create program");
 
 #if defined(USE_LIBDEVICE)
-    //FIXME: Use proper compute
-    NVVM_CHECK(nvvmAddModuleToProgram(prog, compute_20_bc, compute_20_bc_len, "libdevice kernels"),
+    // Get compute version of device
+    cudaDeviceProp devProp = getDeviceProp(getActiveDeviceId());
+    int compute = devProp.major * 10 + devProp.minor;
+    const char *bc_buffer = NULL;
+    size_t bc_buffer_len = 0;
+    compute_to_libdevice_table(&bc_buffer, &bc_buffer_len, compute);
+
+    NVVM_CHECK(nvvmAddModuleToProgram(prog, bc_buffer, bc_buffer_len, "libdevice kernels"),
                "Failed to add libdevice");
 #endif
 
