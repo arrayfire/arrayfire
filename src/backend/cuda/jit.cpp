@@ -327,7 +327,8 @@ void compute_to_libdevice_table(const char **buffer, size_t *bc_buffer_len, int 
         *buffer        = compute_30_bc;
         *bc_buffer_len = compute_30_bc_len;
     } else {
-        AF_ERROR("Invalid Compute for libdevice", AF_ERR_INTERNAL);
+        *buffer        = compute_30_bc;
+        *bc_buffer_len = compute_30_bc_len;
     }
 }
 
