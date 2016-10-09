@@ -321,8 +321,13 @@ void compute_to_libdevice_table(const char **buffer, size_t *bc_buffer_len, int 
         *buffer        = compute_30_bc;
         *bc_buffer_len = compute_30_bc_len;
     } else if (compute >= 50 && compute <= 53) {
+#if defined(__LIBDEVICE_COMPUTE_50)
         *buffer        = compute_50_bc;
         *bc_buffer_len = compute_50_bc_len;
+#else
+        *buffer        = compute_30_bc;
+        *bc_buffer_len = compute_30_bc_len;
+#endif
     } else if (compute >  53) {
         *buffer        = compute_30_bc;
         *bc_buffer_len = compute_30_bc_len;
