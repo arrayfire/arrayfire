@@ -189,6 +189,21 @@ INSTANTIATE_TEST(fft2, C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/sig
 INSTANTIATE_TEST(fft3,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft3_c2c.test"));
 INSTANTIATE_TEST(fft3, C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft3_c2c.test"));
 
+// Factors 7, 11, 13
+INSTANTIATE_TEST(fft , R2C_Float_7_11_13 , false, float  , cfloat , string(TEST_DIR"/signal/fft_r2c_7_11_13.test") );
+INSTANTIATE_TEST(fft , R2C_Double_7_11_13, false, double , cdouble, string(TEST_DIR"/signal/fft_r2c_7_11_13.test") );
+INSTANTIATE_TEST(fft2, R2C_Float_7_11_13 , false, float  , cfloat , string(TEST_DIR"/signal/fft2_r2c_7_11_13.test") );
+INSTANTIATE_TEST(fft2, R2C_Double_7_11_13, false, double , cdouble, string(TEST_DIR"/signal/fft2_r2c_7_11_13.test") );
+INSTANTIATE_TEST(fft3, R2C_Float_7_11_13 , false, float  , cfloat , string(TEST_DIR"/signal/fft3_r2c_7_11_13.test") );
+INSTANTIATE_TEST(fft3, R2C_Double_7_11_13, false, double , cdouble, string(TEST_DIR"/signal/fft3_r2c_7_11_13.test") );
+
+INSTANTIATE_TEST(fft , C2C_Float_7_11_13 , false, cfloat  , cfloat , string(TEST_DIR"/signal/fft_c2c_7_11_13.test") );
+INSTANTIATE_TEST(fft , C2C_Double_7_11_13, false, cdouble , cdouble, string(TEST_DIR"/signal/fft_c2c_7_11_13.test") );
+INSTANTIATE_TEST(fft2, C2C_Float_7_11_13 , false, cfloat  , cfloat , string(TEST_DIR"/signal/fft2_c2c_7_11_13.test") );
+INSTANTIATE_TEST(fft2, C2C_Double_7_11_13, false, cdouble , cdouble, string(TEST_DIR"/signal/fft2_c2c_7_11_13.test") );
+INSTANTIATE_TEST(fft3, C2C_Float_7_11_13 , false, cfloat  , cfloat , string(TEST_DIR"/signal/fft3_c2c_7_11_13.test") );
+INSTANTIATE_TEST(fft3, C2C_Double_7_11_13, false, cdouble , cdouble, string(TEST_DIR"/signal/fft3_c2c_7_11_13.test") );
+
 // transforms on padded and truncated arrays
 INSTANTIATE_TEST(fft2,  R2C_Float_Trunc, false,  float,  cfloat, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
 INSTANTIATE_TEST(fft2, R2C_Double_Trunc, false, double, cdouble, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
