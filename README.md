@@ -1,35 +1,35 @@
 <a href="http://arrayfire.com/"><img src="http://arrayfire.com/logos/arrayfire_logo_whitebkgnd.png" width="300"></a>
 
-ArrayFire is a general-purpose library that simplifies the process of developing 
-software that targets parallel and massively-parallel architectures including 
+ArrayFire is a general-purpose library that simplifies the process of developing
+software that targets parallel and massively-parallel architectures including
 CPUs, GPUs, and other hardware acceleration devices.
 
-To achieve this goal, ArrayFire provides software developers with a high-level 
-abstraction of data which resides on the accelerator, the `af::array` object 
+To achieve this goal, ArrayFire provides software developers with a high-level
+abstraction of data which resides on the accelerator, the `af::array` object
 (or C-style struct).
 Developers write code which performs operations on ArrayFire arrays which, in turn,
 are automatically translated into near-optimal kernels that execute on the computational
-device. 
-ArrayFire is successfully used on devices ranging from low-power mobile phones to 
-high-power GPU-enabled supercomputers including CPUs from all major vendors (Intel, AMD, Arm), 
-GPUs from the dominant manufacturers (NVIDIA, AMD, and Qualcomm), as well as a variety 
+device.
+ArrayFire is successfully used on devices ranging from low-power mobile phones to
+high-power GPU-enabled supercomputers including CPUs from all major vendors (Intel, AMD, Arm),
+GPUs from the dominant manufacturers (NVIDIA, AMD, and Qualcomm), as well as a variety
 of other accelerator devices on Windows, Mac, and Linux.
 
 Several of ArrayFire's benefits include:
 
-* [Easy to use](http://arrayfire.org/docs/gettingstarted.htm), stable, 
+* [Easy to use](http://arrayfire.org/docs/gettingstarted.htm), stable,
   [well-documented](http://arrayfire.org/docs) API.
-* Rigorously Tested for Performance and Accuracy 
+* Rigorously Tested for Performance and Accuracy
 * Commercially Friendly Open-Source Licensing
 * Commercial support from [ArrayFire](http://arrayfire.com)
 * [Read about more benefits on Arrayfire.com](http://arrayfire.com/the-arrayfire-library/)
- 
+
 ### Build and Test Status
 
-|         | Linux x86_64 | Linux armv7l | Linux aarch64 | Windows | OSX |
-|:-------:|:------------:|:------------:|:-------------:|:-------:|:---:|
-| Build   | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/build/devel)](http://ci.arrayfire.org/job/arrayfire-linux/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrak1/build/devel)](http://ci.arrayfire.org/job/arrayfire-tegrak1/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrax1/build/devel)](http://ci.arrayfire.org/job/arrayfire-tegrax1/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/build/devel)](http://ci.arrayfire.org/job/arrayfire-windows/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/build/devel)](http://ci.arrayfire.org/job/arrayfire-osx/job/build/branch/devel/) |
-| Test    | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/test/devel)](http://ci.arrayfire.org/job/arrayfire-linux/job/test/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrak1/test/devel)](http://ci.arrayfire.org/job/arrayfire-tegrak1/job/test/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrax1/test/devel)](http://ci.arrayfire.org/job/arrayfire-tegrax1/job/test/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/test/devel)](http://ci.arrayfire.org/job/arrayfire-windows/job/test/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/test/devel)](http://ci.arrayfire.org/job/arrayfire-osx/job/test/branch/devel/) |
+|         | Linux x86_64 | Linux aarch64 | Windows | OSX |
+|:-------:|:------------:|:-------------:|:-------:|:---:|
+| Build   | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/build/devel)](http://ci.arrayfire.org/job/arrayfire-linux/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrax1/build/devel)](http://ci.arrayfire.org/job/arrayfire-tegrax1/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/build/devel)](http://ci.arrayfire.org/job/arrayfire-windows/job/build/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/build/devel)](http://ci.arrayfire.org/job/arrayfire-osx/job/build/branch/devel/) |
+| Test    | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/test/devel)](http://ci.arrayfire.org/job/arrayfire-linux/job/test/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrax1/test/devel)](http://ci.arrayfire.org/job/arrayfire-tegrax1/job/test/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/test/devel)](http://ci.arrayfire.org/job/arrayfire-windows/job/test/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/test/devel)](http://ci.arrayfire.org/job/arrayfire-osx/job/test/branch/devel/) |
 
 ### Installation
 
@@ -143,7 +143,7 @@ details.
 
 ### Trademark Policy
 
-The literal mark “ArrayFire” and ArrayFire logos are trademarks of 
+The literal mark “ArrayFire” and ArrayFire logos are trademarks of
 AccelerEyes LLC DBA ArrayFire.
 If you wish to use either of these marks in your own project, please consult
 [ArrayFire's Trademark Policy](http://arrayfire.com/trademark-policy/)

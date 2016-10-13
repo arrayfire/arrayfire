@@ -1,6 +1,90 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.4.1
+==============
+
+Installers
+----------
+* Installers for Linux, OS X and Windows
+  * CUDA backend now uses [CUDA 8.0](https://developer.nvidia.com/cuda-toolkit).
+  * Uses [Intel MKL 2017](https://software.intel.com/en-us/intel-mkl).
+  * CUDA Compute 2.x (Fermi) is no longer compiled into the library.
+* Installer for OS X
+  * The libraries shipping in the OS X Installer are now compiled with Apple
+    Clang v7.3.1 (previouly v6.1.0).
+  * The OS X version used is 10.11.6 (previously 10.10.5).
+* Installer for Jetson TX1 / Tegra X1
+  * Requires [JetPack for L4T 2.3](https://developer.nvidia.com/embedded/jetpack)
+    (containing Linux for Tegra r24.2 for TX1).
+  * CUDA backend now uses [CUDA 8.0](https://developer.nvidia.com/cuda-toolkit) 64-bit.
+  * Using CUDA's cusolver instead of CPU fallback.
+  * Uses OpenBLAS for CPU BLAS.
+  * All ArrayFire libraries are now 64-bit.
+
+Improvements
+------------
+* Add [sparse array](\ref sparse_func) support to \ref af::eval().
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1598)</sup>
+* Add OpenCL-CPU fallback support for sparse \ref af::matmul() when running on
+  a unified memory device. Uses MKL Sparse BLAS.
+* When using CUDA libdevice, pick the correct compute version based on device.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1612)</sup>
+* OpenCL FFT now also supports prime factors 7, 11 and 13.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1383)</sup>
+  <sup>[2](https://github.com/arrayfire/arrayfire/pull/1619)</sup>
+
+Bug Fixes
+---------
+* Allow CUDA libdevice to be detected from custom directory.
+* Fix `aarch64` detection on Jetson TX1 64-bit OS.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1593)</sup>
+* Add missing definition of `af_set_fft_plan_cache_size` in unified backend.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1591)</sup>
+* Fix intial values for \ref af::min() and \ref af::max() operations.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1594)</sup>
+  <sup>[2](https://github.com/arrayfire/arrayfire/pull/1595)</sup>
+* Fix distance calculation in \ref af::nearestNeighbour for CUDA and OpenCL backend.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1596)</sup>
+  <sup>[2](https://github.com/arrayfire/arrayfire/pull/1595)</sup>
+* Fix OpenCL bug where scalars where are passed incorrectly to compile options.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1595)</sup>
+* Fix bug in \ref af::Window::surface() with respect to dimensions and ranges.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1604)</sup>
+* Fix possible double free corruption in \ref af_assign_seq().
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1605)</sup>
+* Add missing eval for key in \ref af::scanByKey in CPU backend.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1605)</sup>
+* Fixed creation of sparse values array using \ref AF_STORAGE_COO.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1620)</sup>
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1621)</sup>
+
+Examples
+--------
+* Add a [Conjugate Gradient solver example](\ref benchmarks/cg.cpp)
+  to demonstrate sparse and dense matrix operations.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1599)</sup>
+
+CUDA Backend
+------------
+* When using [CUDA 8.0](https://developer.nvidia.com/cuda-toolkit),
+  compute 2.x are no longer in default compute list.
+  * This follows [CUDA 8.0](https://developer.nvidia.com/cuda-toolkit)
+    deprecating computes 2.x.
+  * Default computes for CUDA 8.0 will be 30, 50, 60.
+* When using CUDA pre-8.0, the default selection remains 20, 30, 50.
+* CUDA backend now uses `-arch=sm_30` for PTX compilation as default.
+  * Unless compute 2.0 is enabled.
+
+Known Issues
+------------
+* \ref af::lu() on CPU is known to give incorrect results when built run on
+  OS X 10.11 or 10.12 and compiled with Accelerate Framework.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1617)</sup>
+  * Since the OS X Installer libraries uses MKL rather than Accelerate
+    Framework, this issue does not affect those libraries.
+
+
 v3.4.0
 ==============
 
