@@ -196,3 +196,33 @@ SPARSE_TESTS(cfloat, 1E-3)
 SPARSE_TESTS(cdouble, 1E-5)
 
 #undef SPARSE_TESTS
+
+// This test essentially verifies that the sparse structures have the correct
+// dimensions and indices using a very basic test
+template<af_storage stype>
+void createFunction()
+{
+    af::array in = af::sparse(af::identity(3, 3), stype);
+
+    af::array values = sparseGetValues(in);
+    af::array rowIdx = sparseGetRowIdx(in);
+    af::array colIdx = sparseGetColIdx(in);
+    dim_t     nNZ    = sparseGetNNZ(in);
+
+    ASSERT_EQ(nNZ, values.elements());
+
+    ASSERT_EQ(0, af::max<double>(values - af::constant(1, nNZ)));
+    ASSERT_EQ(0, af::max<int   >(rowIdx - af::range(af::dim4(rowIdx.elements()), 0, s32)));
+    ASSERT_EQ(0, af::max<int   >(colIdx - af::range(af::dim4(colIdx.elements()), 0, s32)));
+}
+
+#define CREATE_TESTS(STYPE)                                         \
+    TEST(SPARSE_CREATE, STYPE)                                      \
+    {                                                               \
+        createFunction<STYPE>();                                    \
+    }
+
+CREATE_TESTS(AF_STORAGE_CSR)
+CREATE_TESTS(AF_STORAGE_COO)
+
+#undef CREATE_TESTS
