@@ -228,3 +228,41 @@ TEST(NearestNeighbourSAD, CPP)
     delete[] outIdx;
     delete[] outDist;
 }
+
+TEST(NearestNeighbourSSD, small)
+{
+    const int ntrain = 1;
+    const int nquery = 5;
+    const int nfeat  = 2;
+    float train[ntrain * nfeat] = {
+        5, 5,
+    };
+
+    float query[5 * nfeat] = {
+        0, 0,
+        3.5, 4,
+        5, 5,
+        6, 5,
+        8, 6.5
+    };
+    af::array t(nfeat, ntrain, train);
+    af::array q(nfeat, nquery, query);
+    af::array indices;
+    af::array distances;
+    af::nearestNeighbour(indices, distances, q, t, 0, 1, AF_SSD);
+
+    float expectedDistances[nquery] = {
+        (5 - 0) * (5 - 0) + (5 - 0) * (5 - 0),
+        (5 - 3.5) * (5 - 3.5) + (5 - 4) * (5 - 4),
+        (5 - 5) * (5 - 5) + (5 - 5) * (5 - 5),
+        (5 - 6) * (5 - 6) + (5 - 5) * (5 - 5),
+        (5 - 8) * (5 - 8) + (5 - 6.5) * (5 - 6.5)
+    };
+
+    std::vector<float> actualDistances(nquery);
+    distances.host(&actualDistances[0]);
+    for (int i = 0; i < nquery; i++)
+    {
+        EXPECT_NEAR(expectedDistances[i], actualDistances[i], 1E-8);
+    }
+}

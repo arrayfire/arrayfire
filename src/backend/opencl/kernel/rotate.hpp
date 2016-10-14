@@ -66,10 +66,10 @@ namespace opencl
                 typedef typename dtype_traits<T>::base_type BT;
 
                 std::call_once( compileFlags[device], [device] () {
-                    ToNum<T> toNum;
+                    ToNumStr<T> toNumStr;
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName();
-                    options << " -D ZERO="      << toNum(scalar<T>(0));
+                    options << " -D ZERO="      << toNumStr(scalar<T>(0));
                     options << " -D InterpInTy=" << dtype_traits<T>::getName();
                     options << " -D InterpValTy="  << dtype_traits<vtype_t<T>>::getName();
                     options << " -D InterpPosTy=" << dtype_traits<wtype_t<BT>>::getName();

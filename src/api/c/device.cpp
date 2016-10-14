@@ -15,6 +15,7 @@
 #include <platform.hpp>
 #include <Array.hpp>
 #include <handle.hpp>
+#include <sparse_handle.hpp>
 #include "err_common.hpp"
 #include <cstring>
 
@@ -165,25 +166,43 @@ static inline void eval(af_array arr)
     return;
 }
 
+template<typename T>
+static inline void sparseEval(af_array arr)
+{
+    getSparseArray<T>(arr).eval();
+    return;
+}
+
 af_err af_eval(af_array arr)
 {
     try {
-        af_dtype type = getInfo(arr).getType();
-        switch (type) {
-        case f32: eval<float  >(arr); break;
-        case f64: eval<double >(arr); break;
-        case c32: eval<cfloat >(arr); break;
-        case c64: eval<cdouble>(arr); break;
-        case s32: eval<int    >(arr); break;
-        case u32: eval<uint   >(arr); break;
-        case u8 : eval<uchar  >(arr); break;
-        case b8 : eval<char   >(arr); break;
-        case s64: eval<intl   >(arr); break;
-        case u64: eval<uintl  >(arr); break;
-        case s16: eval<short  >(arr); break;
-        case u16: eval<ushort >(arr); break;
-        default:
-            TYPE_ERROR(0, type);
+        ArrayInfo info = getInfo(arr, false);
+        af_dtype type = info.getType();
+
+        if(info.isSparse()) {
+            switch(type) {
+                case f32: sparseEval<float  >(arr); break;
+                case f64: sparseEval<double >(arr); break;
+                case c32: sparseEval<cfloat >(arr); break;
+                case c64: sparseEval<cdouble>(arr); break;
+                default : TYPE_ERROR(0, type);
+            }
+        } else {
+            switch (type) {
+                case f32: eval<float  >(arr); break;
+                case f64: eval<double >(arr); break;
+                case c32: eval<cfloat >(arr); break;
+                case c64: eval<cdouble>(arr); break;
+                case s32: eval<int    >(arr); break;
+                case u32: eval<uint   >(arr); break;
+                case u8 : eval<uchar  >(arr); break;
+                case b8 : eval<char   >(arr); break;
+                case s64: eval<intl   >(arr); break;
+                case u64: eval<uintl  >(arr); break;
+                case s16: eval<short  >(arr); break;
+                case u16: eval<ushort >(arr); break;
+                default: TYPE_ERROR(0, type);
+            }
         }
     } CATCHALL;
 

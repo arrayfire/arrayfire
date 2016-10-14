@@ -56,14 +56,14 @@ namespace opencl
                 int device = getActiveDeviceId();
 
                 std::call_once( compileFlags[device], [device] () {
-                    ToNum<Ty> toNum;
+                    ToNumStr<Ty> toNumStr;
                     std::ostringstream options;
                     options << " -D Ty="          << dtype_traits<Ty>::getName()
                             << " -D Tp="          << dtype_traits<Tp>::getName()
                             << " -D InterpInTy="  << dtype_traits<Ty>::getName()
                             << " -D InterpValTy=" << dtype_traits<Ty>::getName()
                             << " -D InterpPosTy=" << dtype_traits<Tp>::getName()
-                            << " -D ZERO="        << toNum(scalar<Ty>(0));
+                            << " -D ZERO="        << toNumStr(scalar<Ty>(0));
 
                     if((af_dtype) dtype_traits<Ty>::af_type == c32 ||
                        (af_dtype) dtype_traits<Ty>::af_type == c64) {
@@ -128,14 +128,14 @@ namespace opencl
                 int device = getActiveDeviceId();
 
                 std::call_once( compileFlags[device], [device] () {
-                    ToNum<Ty> toNum;
+                    ToNumStr<Ty> toNumStr;
                     std::ostringstream options;
                     options << " -D Ty="          << dtype_traits<Ty>::getName()
                             << " -D Tp="          << dtype_traits<Tp>::getName()
                             << " -D InterpInTy="  << dtype_traits<Ty>::getName()
                             << " -D InterpValTy=" << dtype_traits<Ty>::getName()
                             << " -D InterpPosTy=" << dtype_traits<Tp>::getName()
-                            << " -D ZERO="        << toNum(scalar<Ty>(0));
+                            << " -D ZERO="        << toNumStr(scalar<Ty>(0));
 
                     if((af_dtype) dtype_traits<Ty>::af_type == c32 ||
                        (af_dtype) dtype_traits<Ty>::af_type == c64) {

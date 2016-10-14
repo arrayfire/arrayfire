@@ -12,7 +12,7 @@
 #include <err_opencl.hpp>
 #include <math.hpp>
 #include <kernel/nearest_neighbour.hpp>
-#include <kernel/transpose.hpp>
+#include <transpose.hpp>
 
 using af::dim4;
 using cl::Device;
@@ -29,51 +29,15 @@ void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
 {
     uint sample_dim = (dist_dim == 0) ? 1 : 0;
     const dim4 qDims = query.dims();
-    const dim4 tDims = train.dims();
-
     const dim4 outDims(n_dist, qDims[sample_dim]);
 
     idx  = createEmptyArray<uint>(outDims);
     dist = createEmptyArray<To>(outDims);
 
-    const unsigned feat_len = qDims[dist_dim];
+    Array<T> queryT = dist_dim == 0 ? transpose(query, false) : query;
+    Array<T> trainT = dist_dim == 0 ? transpose(train, false) : train;
 
-    // Determine maximum feat_len capable of using shared memory (faster)
-    cl_ulong avail_lmem = getDevice().getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
-    size_t lmem_predef = 2 * THREADS * sizeof(unsigned) + feat_len * sizeof(T);
-    size_t ltrain_sz = THREADS * feat_len * sizeof(T);
-    bool use_lmem = (avail_lmem >= (lmem_predef + ltrain_sz)) ? true : false;
-    size_t lmem_sz = (use_lmem) ? lmem_predef + ltrain_sz : lmem_predef;
-
-    Array<T> queryT = query;
-    Array<T> trainT = train;
-
-    if (dist_dim == 0) {
-        const dim4 queryTDims = dim4(qDims[1], qDims[0], qDims[2], qDims[3]);
-        const dim4 trainTDims = dim4(tDims[1], tDims[0], tDims[2], tDims[3]);
-        queryT = createEmptyArray<T>(queryTDims);
-        trainT = createEmptyArray<T>(trainTDims);
-
-        bool queryIs32Multiple = false;
-        if (qDims[0] % 32 == 0 && qDims[1] % 32 == 0)
-            queryIs32Multiple = true;
-
-        bool trainIs32Multiple = false;
-        if (tDims[0] % 32 == 0 && tDims[1] % 32 == 0)
-        trainIs32Multiple = true;
-
-        if (queryIs32Multiple)
-            kernel::transpose<T, false, true >(queryT, query);
-        else
-            kernel::transpose<T, false, false>(queryT, query);
-
-        if (trainIs32Multiple)
-            kernel::transpose<T, false, true >(trainT, train);
-        else
-            kernel::transpose<T, false, false>(trainT, train);
-    }
-
-    kernel::nearest_neighbour<T, To, dist_type>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz, use_lmem);
+    kernel::nearest_neighbour<T, To, dist_type>(idx, dist, queryT, trainT, 1, n_dist);
 
 }
 

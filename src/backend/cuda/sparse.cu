@@ -17,6 +17,7 @@
 #include <arith.hpp>
 #include <cast.hpp>
 #include <complex.hpp>
+#include <copy.hpp>
 #include <err_common.hpp>
 #include <lookup.hpp>
 #include <math.hpp>
@@ -207,7 +208,10 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in)
 
     Array<int> rowIdx = arithOp<int, af_mod_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
     Array<int> colIdx = arithOp<int, af_div_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
-    Array<T>   values = lookup<T, int>(in, nonZeroIdx, 0);
+
+    Array<T> values = copyArray<T>(in);
+    values.modDims(dim4(values.elements()));
+    values = lookup<T, int>(values, nonZeroIdx, 0);
 
     return createArrayDataSparseArray<T>(in.dims(), values, rowIdx, colIdx, AF_STORAGE_COO);
 }

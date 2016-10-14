@@ -23,6 +23,11 @@ af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const a
     return CALL(out, in, pos0, pos1, method, offGrid);
 }
 
+af_err af_set_fft_plan_cache_size(size_t cache_size)
+{
+    return CALL(cache_size);
+}
+
 #define FFT_HAPI_DEF(af_func)\
 af_err af_func(af_array in, const double norm_factor)\
 {\

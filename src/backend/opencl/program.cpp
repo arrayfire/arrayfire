@@ -22,7 +22,7 @@ using std::string;
 
 namespace opencl
 {
-    const static std::string USE_DBL_SRC_STR("\n\
+    const static std::string DEFAULT_MACROS_STR("\n\
                                            #ifdef USE_DOUBLE\n\
                                            #pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
                                            #endif\n                     \
@@ -41,7 +41,7 @@ namespace opencl
     {
         try {
             Program::Sources setSrc;
-            setSrc.emplace_back(USE_DBL_SRC_STR.c_str(), USE_DBL_SRC_STR.length());
+            setSrc.emplace_back(DEFAULT_MACROS_STR.c_str(), DEFAULT_MACROS_STR.length());
             setSrc.emplace_back(KParam_hpp, KParam_hpp_len);
 
             for (int i = 0; i < num_files; i++) {

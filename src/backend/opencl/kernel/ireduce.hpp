@@ -68,14 +68,14 @@ namespace kernel
         if (idx == kernelCaches[device].end()) {
 
                 Binary<T, op> ireduce;
-                ToNum<T> toNum;
+                ToNumStr<T> toNumStr;
 
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
                         << " -D dim=" << dim
                         << " -D DIMY=" << threads_y
                         << " -D THREADS_X=" << THREADS_X
-                        << " -D init=" << toNum(ireduce.init())
+                        << " -D init=" << toNumStr(ireduce.init())
                         << " -D " << binOpName<op>()
                         << " -D CPLX=" << af::iscplx<T>()
                         << " -D IS_FIRST=" << is_first;
@@ -180,13 +180,13 @@ namespace kernel
         if (idx == kernelCaches[device].end()) {
 
             Binary<T, op> ireduce;
-            ToNum<T> toNum;
+            ToNumStr<T> toNumStr;
 
             std::ostringstream options;
             options << " -D T=" << dtype_traits<T>::getName()
                     << " -D DIMX=" << threads_x
                     << " -D THREADS_PER_GROUP=" << THREADS_PER_GROUP
-                    << " -D init=" << toNum(ireduce.init())
+                    << " -D init=" << toNumStr(ireduce.init())
                     << " -D " << binOpName<op>()
                     << " -D CPLX=" << af::iscplx<T>()
                     << " -D IS_FIRST=" << is_first;

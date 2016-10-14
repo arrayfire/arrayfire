@@ -93,26 +93,30 @@ namespace cuda
     }
 
 #ifndef __CUDA_ARCH__
-    template <typename T> T limit_max() { return std::numeric_limits<T>::max(); }
-    template <typename T> T limit_min() { return std::numeric_limits<T>::min(); }
+    template <typename T> T maxval() { return std::numeric_limits<T>::max(); }
+    template <typename T> T minval() { return std::numeric_limits<T>::min(); }
+    template <> STATIC_ float maxval() { return std::numeric_limits<float>::infinity(); }
+    template <> STATIC_ double maxval() { return std::numeric_limits<double>::infinity(); }
+    template <> STATIC_ float minval() { return -std::numeric_limits<float>::infinity(); }
+    template <> STATIC_ double minval() { return -std::numeric_limits<double>::infinity(); }
 #else
-    template <typename T> __device__ T limit_max() { return 1u << (8 * sizeof(T) - 1); }
-    template <typename T> __device__ T limit_min() { return scalar<T>(0); }
+    template <typename T> __device__ T maxval() { return 1u << (8 * sizeof(T) - 1); }
+    template <typename T> __device__ T minval() { return scalar<T>(0); }
 
-    template<> __device__  int    limit_max<int>()    { return 0x7fffffff; }
-    template<> __device__  int    limit_min<int>()    { return 0x80000000; }
-    template<> __device__  intl   limit_max<intl>()   { return 0x7fffffffffffffff; }
-    template<> __device__  intl   limit_min<intl>()   { return 0x8000000000000000; }
-    template<> __device__  uintl  limit_max<uintl>()  { return 1ULL << (8 * sizeof(uintl) - 1); }
-    template<> __device__  char   limit_max<char>()   { return 0x7f; }
-    template<> __device__  char   limit_min<char>()   { return 0x80; }
-    template<> __device__  float  limit_max<float>()  { return  CUDART_INF_F; }
-    template<> __device__  float  limit_min<float>()  { return -CUDART_INF_F; }
-    template<> __device__  double limit_max<double>() { return  CUDART_INF; }
-    template<> __device__  double limit_min<double>() { return -CUDART_INF; }
-    template<> __device__  short  limit_max<short>()  { return 0x7fff; }
-    template<> __device__  short  limit_min<short>()  { return 0x8000; }
-    template<> __device__  ushort limit_max<ushort>() { return ((ushort)1) << (8 * sizeof(ushort) - 1); }
+    template<> __device__  int    maxval<int>()    { return 0x7fffffff; }
+    template<> __device__  int    minval<int>()    { return 0x80000000; }
+    template<> __device__  intl   maxval<intl>()   { return 0x7fffffffffffffff; }
+    template<> __device__  intl   minval<intl>()   { return 0x8000000000000000; }
+    template<> __device__  uintl  maxval<uintl>()  { return 1ULL << (8 * sizeof(uintl) - 1); }
+    template<> __device__  char   maxval<char>()   { return 0x7f; }
+    template<> __device__  char   minval<char>()   { return 0x80; }
+    template<> __device__  float  maxval<float>()  { return  CUDART_INF_F; }
+    template<> __device__  float  minval<float>()  { return -CUDART_INF_F; }
+    template<> __device__  double maxval<double>() { return  CUDART_INF; }
+    template<> __device__  double minval<double>() { return -CUDART_INF; }
+    template<> __device__  short  maxval<short>()  { return 0x7fff; }
+    template<> __device__  short  minval<short>()  { return 0x8000; }
+    template<> __device__  ushort maxval<ushort>() { return ((ushort)1) << (8 * sizeof(ushort) - 1); }
 #endif
 
 #define upcast cuComplexFloatToDouble
