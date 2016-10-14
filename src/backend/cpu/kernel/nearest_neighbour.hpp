@@ -106,7 +106,7 @@ void nearest_neighbour(Array<uint> idx, Array<To> dist,
     dist_op<T, To, dist_type> op;
 
     for (unsigned i = 0; i < nQuery; i++) {
-        To best_dist = limit_max<To>();
+        To best_dist = maxval<To>();
         unsigned best_idx  = 0;
 
         for (unsigned j = 0; j < nTrain; j++) {

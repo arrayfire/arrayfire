@@ -228,10 +228,16 @@ inline bool isSupLen(dim_t length)
     {
         if( length % 2 == 0 )
             length /= 2;
-        else if( length % 3 == 0 )
+        else if( length % 3  == 0 )
             length /= 3;
-        else if( length % 5 == 0 )
+        else if( length % 5  == 0 )
             length /= 5;
+        else if( length % 7  == 0 )
+            length /= 7;
+        else if( length % 11 == 0 )
+            length /= 11;
+        else if( length % 13 == 0 )
+            length /= 13;
         else
             return false;
     }

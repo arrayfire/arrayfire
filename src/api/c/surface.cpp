@@ -46,13 +46,13 @@ forge::Chart* setup_surface(const forge::Window* const window,
 
     if(Xinfo.isVector()){
         // Convert xIn is a column vector
-        xIn.modDims(xIn.elements());
+        xIn = modDims(xIn, xIn.elements());
         // Now tile along second dimension
         dim4 x_tdims(1, Y_dims[0], 1, 1);
         xIn = tile(xIn, x_tdims);
 
         // Convert yIn to a row vector
-        yIn.modDims(af::dim4(1, yIn.elements()));
+        yIn= modDims(yIn, af::dim4(1, yIn.elements()));
         // Now tile along first dimension
         dim4 y_tdims(X_dims[0], 1, 1, 1);
         yIn = tile(yIn, y_tdims);

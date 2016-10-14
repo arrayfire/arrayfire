@@ -302,6 +302,76 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
                                                 \
     } while(0)
 
+#if defined(USE_LIBDEVICE)
+void compute_to_libdevice_table(const char **buffer, size_t *bc_buffer_len, int compute)
+{
+// These macros create a fallback compute if in case the specific libdevice
+// compute is not found
+// 50 -> 30 -> 20 -> Not Found
+// 35 -> 30 -> 20 -> Not Found
+// 30 -> 20 -> Not Found
+// 20 -> Not Found
+#if defined(__LIBDEVICE_COMPUTE_20)
+    #define COMPUTE_20_STR compute_20_bc
+    #define COMPUTE_20_LEN compute_20_bc_len
+#else
+    #define COMPUTE_20_STR NULL
+    #define COMPUTE_20_LEN 0
+#endif
+
+#if defined(__LIBDEVICE_COMPUTE_30)
+    #define COMPUTE_30_STR compute_30_bc
+    #define COMPUTE_30_LEN compute_30_bc_len
+#else   // Fallback
+    #define COMPUTE_30_STR COMPUTE_20_STR
+    #define COMPUTE_30_LEN COMPUTE_20_LEN
+#endif
+
+#if defined(__LIBDEVICE_COMPUTE_35)
+    #define COMPUTE_35_STR compute_35_bc
+    #define COMPUTE_35_LEN compute_35_bc_len
+#else   // Fallback
+    #define COMPUTE_35_STR COMPUTE_30_STR
+    #define COMPUTE_35_LEN COMPUTE_30_LEN
+#endif
+
+#if defined(__LIBDEVICE_COMPUTE_50)
+    #define COMPUTE_50_STR compute_50_bc
+    #define COMPUTE_50_LEN compute_50_bc_len
+#else   // Fallback
+    #define COMPUTE_50_STR COMPUTE_30_STR
+    #define COMPUTE_50_LEN COMPUTE_30_LEN
+#endif
+
+    // Source: http://docs.nvidia.com/cuda/libdevice-users-guide/basic-usage.html#version-selection
+    if(compute >= 20 && compute < 30) {
+        *buffer        = COMPUTE_20_STR;
+        *bc_buffer_len = COMPUTE_20_LEN;
+    } else if (compute == 30) {
+        *buffer        = COMPUTE_30_STR;
+        *bc_buffer_len = COMPUTE_30_LEN;
+    } else if (compute >= 31 && compute <  35) {
+        *buffer        = COMPUTE_20_STR;
+        *bc_buffer_len = COMPUTE_20_LEN;
+    } else if (compute >= 35 && compute <= 37) {
+        *buffer        = COMPUTE_35_STR;
+        *bc_buffer_len = COMPUTE_35_LEN;
+    } else if (compute >  37 && compute <  50) {
+        *buffer        = COMPUTE_30_STR;
+        *bc_buffer_len = COMPUTE_30_LEN;
+    } else if (compute >= 50 && compute <= 53) {
+        *buffer        = COMPUTE_50_STR;
+        *bc_buffer_len = COMPUTE_50_LEN;
+    } else if (compute >  53) {
+        *buffer        = COMPUTE_30_STR;
+        *bc_buffer_len = COMPUTE_30_LEN;
+    } else {
+        *buffer        = COMPUTE_30_STR;
+        *bc_buffer_len = COMPUTE_30_LEN;
+    }
+}
+#endif
+
 static char *irToPtx(string IR, size_t *ptx_size)
 {
     nvvmProgram prog;
@@ -309,9 +379,18 @@ static char *irToPtx(string IR, size_t *ptx_size)
     NVVM_CHECK(nvvmCreateProgram(&prog), "Failed to create program");
 
 #if defined(USE_LIBDEVICE)
-    //FIXME: Use proper compute
-    NVVM_CHECK(nvvmAddModuleToProgram(prog, compute_20_bc, compute_20_bc_len, "libdevice kernels"),
-               "Failed to add libdevice");
+    // Get compute version of device
+    cudaDeviceProp devProp = getDeviceProp(getActiveDeviceId());
+    int compute = devProp.major * 10 + devProp.minor;
+    const char *bc_buffer = NULL;
+    size_t bc_buffer_len = 0;
+    compute_to_libdevice_table(&bc_buffer, &bc_buffer_len, compute);
+    if(bc_buffer)
+        NVVM_CHECK(nvvmAddModuleToProgram(prog, bc_buffer, bc_buffer_len, "libdevice kernels"),
+                   "Failed to add libdevice");
+    else
+        NVVM_CHECK(nvvmAddModuleToProgram(prog, IR.c_str(), IR.size(), "generated kernel"),
+                   "Failed to add module");
 #endif
 
     NVVM_CHECK(nvvmAddModuleToProgram(prog, IR.c_str(), IR.size(), "generated kernel"),

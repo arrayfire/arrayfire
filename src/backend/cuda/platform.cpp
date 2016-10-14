@@ -242,7 +242,7 @@ string getDriverVersion()
     int x = nvDriverVersion(driverVersion, sizeof(driverVersion));
     if (x != 1) {
         // Windows, OSX, Tegra Need a new way to fetch driver
-        #if !defined(OS_WIN) && !defined(OS_MAC) && !defined(__arm__)
+        #if !defined(OS_WIN) && !defined(OS_MAC) && !defined(__arm__) && !defined(__aarch64__)
         throw runtime_error("Invalid driver");
         #endif
         int driver = 0;

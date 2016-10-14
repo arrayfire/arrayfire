@@ -12,7 +12,7 @@
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <kernel/nearest_neighbour.hpp>
-#include <kernel/transpose.hpp>
+#include <transpose.hpp>
 
 using af::dim4;
 
@@ -34,18 +34,8 @@ void nearest_neighbour(Array<uint>& idx, Array<To>& dist,
     idx  = createEmptyArray<uint>(outDims);
     dist = createEmptyArray<To>(outDims);
 
-    Array<T> queryT = query;
-    Array<T> trainT = train;
-
-    if (dist_dim == 0) {
-        const dim4 queryTDims = dim4(qDims[1], qDims[0], qDims[2], qDims[3]);
-        const dim4 trainTDims = dim4(tDims[1], tDims[0], tDims[2], tDims[3]);
-        queryT = createEmptyArray<T>(queryTDims);
-        trainT = createEmptyArray<T>(trainTDims);
-
-        kernel::transpose<T, false>(queryT, query, query.ndims());
-        kernel::transpose<T, false>(trainT, train, train.ndims());
-    }
+    Array<T> queryT = dist_dim == 0 ? transpose(query, false) : query;
+    Array<T> trainT = dist_dim == 0 ? transpose(train, false) : train;
 
     switch(dist_type) {
         case AF_SAD: kernel::nearest_neighbour<T, To, AF_SAD>(idx, dist, queryT, trainT, 1, n_dist);

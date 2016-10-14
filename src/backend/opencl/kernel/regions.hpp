@@ -61,19 +61,18 @@ void regions(Param out, Param in)
         static std::map<int, Kernel *>     ueKernel;
 
         int device = getActiveDeviceId();
-
         static const int block_dim = 16;
         static const int num_warps = 8;
 
         std::call_once( compileFlags[device], [device] () {
-
+                ToNumStr<T> toNumStr;
                 std::ostringstream options;
                 if (full_conn) {
                     options << " -D T=" << dtype_traits<T>::getName()
                             << " -D BLOCK_DIM=" << block_dim
                             << " -D NUM_WARPS=" << num_warps
                             << " -D N_PER_THREAD=" << n_per_thread
-                            << " -D LIMIT_MAX=" << limit_max<T>()
+                            << " -D LIMIT_MAX=" << toNumStr(maxval<T>())
                             << " -D FULL_CONN";
                 }
                 else {
@@ -81,7 +80,7 @@ void regions(Param out, Param in)
                             << " -D BLOCK_DIM=" << block_dim
                             << " -D NUM_WARPS=" << num_warps
                             << " -D N_PER_THREAD=" << n_per_thread
-                            << " -D LIMIT_MAX=" << limit_max<T>();
+                            << " -D LIMIT_MAX=" << toNumStr(maxval<T>());
                 }
                 if (std::is_same<T, double>::value ||
                     std::is_same<T, cdouble>::value) {

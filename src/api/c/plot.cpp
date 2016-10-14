@@ -265,8 +265,8 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y,
 //
 //    // Force the vectors to be row vectors
 //    // This ensures we can use join(0,..) and skip reorder
-//    xIn.modDims(rowDims);
-//    yIn.modDims(rowDims);
+//    xIn = modDims(xIn, rowDims);
+//    yIn = modDims(yIn, rowDims);
 //
 //    // join along first dimension, skip reorder
 //    Array<T> P = join(0, xIn, yIn);

@@ -65,7 +65,7 @@ namespace kernel
             const uint SHARED_MEM_SIZE = THREADS_PER_GROUP;
 
             Binary<To, op> scan;
-            ToNum<To> toNum;
+            ToNumStr<To> toNumStr;
 
             std::ostringstream options;
             options << " -D To=" << dtype_traits<To>::getName()
@@ -74,7 +74,7 @@ namespace kernel
                     << " -D DIMX=" << threads_x
                     << " -D DIMY=" << threads_y
                     << " -D SHARED_MEM_SIZE=" << SHARED_MEM_SIZE
-                    << " -D init=" << toNum(scan.init())
+                    << " -D init=" << toNumStr(scan.init())
                     << " -D " << binOpName<op>()
                     << " -D CPLX=" << af::iscplx<Ti>()
                     << " -D isFinalPass=" << (int)(isFinalPass)
