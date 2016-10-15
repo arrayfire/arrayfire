@@ -12,7 +12,7 @@ Installers
   * CUDA Compute 2.x (Fermi) is no longer compiled into the library.
 * Installer for OS X
   * The libraries shipping in the OS X Installer are now compiled with Apple
-    Clang v7.3.1 (previouly v6.1.0).
+    Clang v7.3.1 (previously v6.1.0).
   * The OS X version used is 10.11.6 (previously 10.10.5).
 * Installer for Jetson TX1 / Tegra X1
   * Requires [JetPack for L4T 2.3](https://developer.nvidia.com/embedded/jetpack)
