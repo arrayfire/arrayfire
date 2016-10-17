@@ -200,4 +200,19 @@ class DeviceManager
 #endif
         std::unique_ptr<clfftSetupData> mFFTSetup;
 };
+
+bool isDedicatedLocalMem(int device);
+
+cl_device_local_mem_type getLocalMemType(int device);
+
+size_t getDeviceLocalMemorySize(int device);
+
+cl_device_type getDeviceType(int device);
+
+template<typename T>
+size_t preferredVectorWidth(int device);
+
+size_t getDeviceWorkGroupSize(const cl::Kernel& kern, int device);
+
+size_t getDeviceHardwareSIMDWidth(const cl::Kernel& kern, int device);
 }
