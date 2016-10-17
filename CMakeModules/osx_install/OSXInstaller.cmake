@@ -261,10 +261,10 @@ IF(BUILD_GRAPHICS)
     PKG_BUILD(  PKG_NAME        ForgeLibrary
                 DEPENDS         OSX_INSTALL_SETUP_FORGE_LIB
                 TARGETS         forge_lib_package
-                INSTALL_LOCATION /usr/local/
+                INSTALL_LOCATION /usr/local/lib
                 SCRIPT_DIR      ${OSX_INSTALL_SOURCE}/forge_scripts
                 IDENTIFIER      com.arrayfire.pkg.forge.lib
-                PATH_TO_FILES   ${OSX_TEMP}/Forge)
+                PATH_TO_FILES   ${OSX_TEMP}/Forge/lib)
 
     PKG_BUILD(  PKG_NAME        ForgeHeaders
                 DEPENDS         OSX_INSTALL_SETUP_FORGE_INCLUDE
