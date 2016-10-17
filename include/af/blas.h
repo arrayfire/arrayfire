@@ -166,6 +166,39 @@ namespace af
                        const matProp optLhs = AF_MAT_NONE,
                        const matProp optRhs = AF_MAT_NONE);
 
+#if AF_API_VERSION >= 35
+    /**
+        \brief Return the dot product of two vectors as a scalar
+
+        Scalar dot product between two vectors. Also referred to as the inner
+        product.
+
+        \code
+        // compute scalar dot product
+        array x = randu(100), y = randu(100);
+        float h_dot = dot<float>(x,y);
+        \endcode
+
+        \param[in] lhs The array object on the left hand side
+        \param[in] rhs The array object on the right hand side
+        \param[in] optLhs Options for lhs. Currently only \ref AF_MAT_NONE and
+                   AF_MAT_CONJ are supported.
+        \param[in] optRhs Options for rhs. Currently only \ref AF_MAT_NONE and AF_MAT_CONJ are supported
+        \return The result of the dot product of lhs, rhs as a host scalar
+
+        \note optLhs and optRhs can only be one of \ref AF_MAT_NONE or \ref AF_MAT_CONJ
+        \note optLhs = AF_MAT_CONJ and optRhs = AF_MAT_NONE will run conjugate dot operation.
+        \note This function is not supported in GFOR
+
+        \returns out = dot(lhs, rhs)
+
+        \ingroup blas_func_dot
+    */
+    template<typename T> T dot(const array &lhs, const array &rhs,
+                               const matProp optLhs = AF_MAT_NONE,
+                               const matProp optRhs = AF_MAT_NONE);
+#endif
+
     /**
         \brief Transposes a matrix
 
@@ -235,11 +268,41 @@ extern "C" {
         print(dot<float>(x,y));
         \endcode
 
+        \param[out] out The array object with the result of the dot operation
+        \param[in] lhs The array object on the left hand side
+        \param[in] rhs The array object on the right hand side
+        \param[in] optLhs Options for lhs. Currently only \ref AF_MAT_NONE and
+                   AF_MAT_CONJ are supported.
+        \param[in] optRhs Options for rhs. Currently only \ref AF_MAT_NONE and AF_MAT_CONJ are supported
+        \return AF_SUCCESS if the process is successful.
+
         \ingroup blas_func_dot
     */
-    AFAPI af_err af_dot(    af_array *out,
+    AFAPI af_err af_dot(af_array *out,
+                        const af_array lhs, const af_array rhs,
+                        const af_mat_prop optLhs, const af_mat_prop optRhs);
+
+#if AF_API_VERSION >= 35
+    /**
+        Scalar dot product between two vectors. Also referred to as the inner
+        product. Returns the result as a host scalar.
+
+        \param[out] real is the real component of the result of dot operation
+        \param[out] imag is the imaginary component of the result of dot operation
+        \param[in] lhs The array object on the left hand side
+        \param[in] rhs The array object on the right hand side
+        \param[in] optLhs Options for lhs. Currently only \ref AF_MAT_NONE and
+                   AF_MAT_CONJ are supported.
+        \param[in] optRhs Options for rhs. Currently only \ref AF_MAT_NONE and AF_MAT_CONJ are supported
+
+        \return AF_SUCCESS if the process is successful.
+
+        \ingroup blas_func_dot
+    */
+    AFAPI af_err af_dot_all(double *real, double *imag,
                             const af_array lhs, const af_array rhs,
                             const af_mat_prop optLhs, const af_mat_prop optRhs);
+#endif
 
     /**
         \brief Transposes a matrix
