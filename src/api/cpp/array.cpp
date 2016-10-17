@@ -17,6 +17,7 @@
 #include <af/device.h>
 #include <af/gfor.h>
 #include <af/algorithm.h>
+#include <af/internal.h>
 #include "error.hpp"
 
 namespace af
@@ -264,6 +265,13 @@ namespace af
         dim_t nElements;
         AF_THROW(af_get_elements(&nElements, get()));
         return nElements * getSizeOf(type());
+    }
+
+    size_t array::allocated() const
+    {
+        size_t result = 0;
+        AF_THROW(af_get_allocated_bytes(&result, get()));
+        return result;
     }
 
     array array::copy() const
@@ -597,6 +605,7 @@ namespace af
     MEM_FUNC(dim4                   , dims)
     MEM_FUNC(unsigned               , numdims)
     MEM_FUNC(size_t                 , bytes)
+    MEM_FUNC(size_t                 , allocated)
     MEM_FUNC(array                  , copy)
     MEM_FUNC(bool                   , isempty)
     MEM_FUNC(bool                   , isscalar)
