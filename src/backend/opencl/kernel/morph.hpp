@@ -79,12 +79,12 @@ void morph(Param out, const Param in, const Param mask)
     auto morphOp = KernelFunctor< Buffer, KParam, Buffer, KParam, Buffer, cl::LocalSpaceArg,
                                   int, int >(*entry.ker);
 
-    NDRange local(THREADS_X, THREADS_Y);
+    NDRange local = getKernelLaunchCfg2D(*entry.ker);
 
-    int blk_x = divup(in.info.dims[0], THREADS_X);
-    int blk_y = divup(in.info.dims[1], THREADS_Y);
+    int blk_x = divup(in.info.dims[0], local[0]);
+    int blk_y = divup(in.info.dims[1], local[1]);
     // launch batch * blk_x blocks along x dimension
-    NDRange global(blk_x * THREADS_X * in.info.dims[2], blk_y * THREADS_Y * in.info.dims[3]);
+    NDRange global(blk_x * local[0] * in.info.dims[2], blk_y * local[1] * in.info.dims[3]);
 
     // copy mask/filter to constant memory
     cl_int se_size   = sizeof(T)*windLen*windLen;
@@ -94,8 +94,8 @@ void morph(Param out, const Param in, const Param mask)
     // calculate shared memory size
     const int halo    = windLen/2;
     const int padding = 2*halo;
-    const int locLen  = THREADS_X + padding + 1;
-    const int locSize = locLen * (THREADS_Y+padding);
+    const int locLen  = local[0] + padding + 1;
+    const int locSize = locLen * (local[1]+padding);
 
     morphOp(EnqueueArgs(getQueue(), global, local),
             *out.data, out.info, *in.data, in.info, *mBuff,
