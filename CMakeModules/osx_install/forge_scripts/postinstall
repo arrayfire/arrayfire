@@ -22,6 +22,8 @@ if [ -z $user ]; then
     exit 1
 fi
 
+echo "User: ${user}" >> $err_file
+
 function deps_err
 {
     osascript -e 'tell app "Installer" to display dialog "ArrayFire files installed but failed to install ArrayFire/Forge dependencies using Brew."'
@@ -31,26 +33,34 @@ function deps_err
     exit 1
 }
 
-BREW_VERSIONS=$(su $user -c "$brew tap" | grep "homebrew/versions")
-if [[ ${BREW_VERSIONS} != 0 ]]; then
+echo "Output of brew tap:" >> $err_file
+echo "-------------------" >> $err_file
+su $user -c "$brew tap" >> $err_file
+echo "-------------------" >> $err_file
+
+BREW_VERSIONS=$(su $user -c "$brew tap" | grep "homebrew/versions") || true
+if [[ -z "${BREW_VERSIONS}" ]]; then
     su $user -c "$brew tap homebrew/versions" >> $err_file 2>&1
 else
     echo "Homebrew/Versions already present in brew tap." >> $err_file
 fi
 
-GLFW_TEST=$(su $user -c "$brew ls --versions glfw3")
-GLFW_INSTALLED=$?
-if [[ ${GLFW_INSTALLED} != 0 ]]; then
+GLFW_INSTALLED=$(su $user -c "$brew ls --versions glfw3" | grep "glfw3") || true
+if [[ -z "${GLFW_INSTALLED}" ]]; then
+    echo "Installing GLFW3" >> $err_file
+    echo "-------------------" >> $err_file
     su $user -c "$brew install glfw3" >> $err_file 2>&1 || deps_err
+    echo "-------------------" >> $err_file
 else
-    echo "GLFW Version ${GLFW_TEST} is already installed." >> $err_file
+    echo "GLFW Version ${GLFW_INSTALLED} is already installed." >> $err_file
 fi
 
-FTCG_TEST=$(su $user -c "$brew ls --versions fontconfig")
-FTCG_INSTALLED=$?
-echo ${FTCG_TEST} ${FTCG_INSTALLED}
-if [[ ${FTCG_INSTALLED} != 0 ]]; then
+FTCG_INSTALLED=$(su $user -c "$brew ls --versions fontconfig" | grep "fontconfig") || true
+if [[ -z "${FTCG_INSTALLED}" ]]; then
+    echo "Installing FontConfig" >> $err_file
+    echo "-------------------" >> $err_file
     su $user -c "$brew install fontconfig" >> $err_file 2>&1 || deps_err
+    echo "-------------------" >> $err_file
 else
-    echo "FontConfig Version ${FTCG_TEST} is already installed." >> $err_file
+    echo "FontConfig Version ${FTCG_INSTALLED} is already installed." >> $err_file
 fi
