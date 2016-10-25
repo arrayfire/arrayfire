@@ -131,12 +131,12 @@ static inline bool compare_default(const Device *ldev, const Device *rdev)
         if (!is_l_curr_type &&  is_r_curr_type) return false;
     }
 
-    // For GPUs, this ensures discreet > integrated
-    auto is_l_integrared = ldev->getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
-    auto is_r_integrared = rdev->getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
+    // For GPUs, this ensures discrete > integrated
+    auto is_l_integrated = ldev->getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
+    auto is_r_integrated = rdev->getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
 
-    if (!is_l_integrared &&  is_r_integrared) return true;
-    if ( is_l_integrared && !is_r_integrared) return false;
+    if (!is_l_integrated &&  is_r_integrated) return true;
+    if ( is_l_integrated && !is_r_integrated) return false;
 
     // At this point, the devices are of same type.
     // Sort based on emperical evidence of preferred platforms
@@ -190,7 +190,7 @@ static inline bool compare_default(const Device *ldev, const Device *rdev)
         if (rres) return false;
     }
 
-    // Default crietria, sort based on memory
+    // Default criteria, sort based on memory
     // Sort based on memory
     auto l_mem = ldev->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
     auto r_mem = rdev->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
