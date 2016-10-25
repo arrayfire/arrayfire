@@ -93,11 +93,7 @@ ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_DOC
 IF(BUILD_GRAPHICS)
     MAKE_DIRECTORY("${OSX_TEMP}/Forge")
 
-    # Forge Library
-    FILE(GLOB FORGE_LIB "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_LIB_DIR}/libforge.*.*.*.dylib")
-
-    GET_FILENAME_COMPONENT(LIBFORGE_NAME ${FORGE_LIB} NAME_WE) # Will return libforge
-    STRING(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" FORGE_VERSION ${FORGE_LIB}) # Will return x.y.z
+    # Forge library versions for setting up symlinks
     STRING(SUBSTRING ${FORGE_VERSION} 0 1 FORGE_VERSION_MAJOR) # Will return x
 
     ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_FORGE_LIB)
