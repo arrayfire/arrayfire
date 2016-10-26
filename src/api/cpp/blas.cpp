@@ -69,11 +69,38 @@ namespace af
         }
     }
 
-    array dot   (const array &lhs, const array &rhs,
-                 const matProp optLhs, const matProp optRhs)
+    array dot(const array &lhs, const array &rhs,
+              const matProp optLhs, const matProp optRhs)
     {
         af_array out = 0;
         AF_THROW(af_dot(&out, lhs.get(), rhs.get(), optLhs, optRhs));
         return array(out);
     }
+
+#define INSTANTIATE_REAL(TYPE)                                                      \
+    template<> AFAPI                                                                \
+    TYPE dot(const array &lhs, const array &rhs,                                    \
+             const matProp optLhs, const matProp optRhs)                            \
+    {                                                                               \
+        double rval = 0, ival = 0;                                                  \
+        AF_THROW(af_dot_all(&rval, &ival, lhs.get(), rhs.get(), optLhs, optRhs));   \
+        return (TYPE)(rval);                                                        \
+    }
+
+#define INSTANTIATE_CPLX(TYPE, REAL)                                                \
+    template<> AFAPI                                                                \
+    TYPE dot(const array &lhs, const array &rhs,                                    \
+             const matProp optLhs, const matProp optRhs)                            \
+    {                                                                               \
+        double rval = 0, ival = 0;                                                  \
+        AF_THROW(af_dot_all(&rval, &ival, lhs.get(), rhs.get(), optLhs, optRhs));   \
+        TYPE out((REAL)rval, (REAL)ival);                                           \
+        return out;                                                                 \
+    }
+
+    INSTANTIATE_REAL(float)
+    INSTANTIATE_REAL(double)
+    INSTANTIATE_CPLX(cfloat, float)
+    INSTANTIATE_CPLX(cdouble, double)
+
 }
