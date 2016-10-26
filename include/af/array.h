@@ -108,6 +108,7 @@ namespace af
             dim_t dims(unsigned dim) const;
             unsigned numdims() const;
             size_t bytes() const;
+            size_t allocated() const;
             array copy() const;
             bool isempty() const;
             bool isscalar() const;
@@ -585,6 +586,12 @@ namespace af
            Get the size of the array in bytes
         */
         size_t bytes() const;
+
+        /**
+           Get the size of the array in memory. This will return the parent's
+           bytes() if the array is indexed.
+        */
+        size_t allocated() const;
 
         /**
            Perform deep copy of the array

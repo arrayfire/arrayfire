@@ -184,6 +184,11 @@ namespace cuda
             data_dims = new_dims;
         }
 
+        size_t getAllocatedBytes() const
+        {
+            return data_dims.elements() * sizeof(T);
+        }
+
         T* device();
 
         T* device() const
