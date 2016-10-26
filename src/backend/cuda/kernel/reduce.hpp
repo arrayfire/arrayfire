@@ -16,9 +16,9 @@
 #include <debug_cuda.hpp>
 #include "config.hpp"
 #include <memory.hpp>
-#include <boost/scoped_array.hpp>
+#include <boost/scoped_ptr.hpp>
 
-using boost::scoped_array;
+using boost::scoped_ptr;
 
 namespace cuda
 {
@@ -410,7 +410,7 @@ namespace kernel
             reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x,
                                               change_nan, nanval);
 
-            scoped_array<To> h_ptr(new To[tmp_elements]);
+            scoped_ptr<To> h_ptr(new To[tmp_elements]);
             To* h_ptr_raw = h_ptr.get();
 
             CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(To),
@@ -428,7 +428,7 @@ namespace kernel
 
         } else {
 
-            scoped_array<Ti> h_ptr(new Ti[in_elements]);
+            scoped_ptr<Ti> h_ptr(new Ti[in_elements]);
             Ti* h_ptr_raw = h_ptr.get();
             CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, in.ptr, in_elements * sizeof(Ti),
                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
