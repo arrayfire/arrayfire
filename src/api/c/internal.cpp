@@ -177,18 +177,18 @@ af_err af_get_allocated_bytes(size_t *bytes, const af_array arr)
         size_t res = 0;
 
         switch (ty) {
-        case f32: res = getArray<float  >(arr).getDataDims().elements() * sizeof(float);            break;
-        case f64: res = getArray<double >(arr).getDataDims().elements() * sizeof(double);           break;
-        case c32: res = getArray<cfloat >(arr).getDataDims().elements() * sizeof(cfloat);           break;
-        case c64: res = getArray<cdouble>(arr).getDataDims().elements() * sizeof(cdouble);          break;
-        case u32: res = getArray<uint   >(arr).getDataDims().elements() * sizeof(unsigned int);     break;
-        case s32: res = getArray<int    >(arr).getDataDims().elements() * sizeof(int);              break;
-        case u64: res = getArray<uintl  >(arr).getDataDims().elements() * sizeof(uintl);            break;
-        case s64: res = getArray<intl   >(arr).getDataDims().elements() * sizeof(intl);             break;
-        case u16: res = getArray<ushort >(arr).getDataDims().elements() * sizeof(short);            break;
-        case s16: res = getArray<short  >(arr).getDataDims().elements() * sizeof(unsigned short);   break;
-        case b8 : res = getArray<char   >(arr).getDataDims().elements() * sizeof(char);             break;
-        case u8 : res = getArray<uchar  >(arr).getDataDims().elements() * sizeof(unsigned char);    break;
+        case f32: res = getArray<float  >(arr).getAllocatedBytes(); break;
+        case f64: res = getArray<double >(arr).getAllocatedBytes(); break;
+        case c32: res = getArray<cfloat >(arr).getAllocatedBytes(); break;
+        case c64: res = getArray<cdouble>(arr).getAllocatedBytes(); break;
+        case u32: res = getArray<uint   >(arr).getAllocatedBytes(); break;
+        case s32: res = getArray<int    >(arr).getAllocatedBytes(); break;
+        case u64: res = getArray<uintl  >(arr).getAllocatedBytes(); break;
+        case s64: res = getArray<intl   >(arr).getAllocatedBytes(); break;
+        case u16: res = getArray<ushort >(arr).getAllocatedBytes(); break;
+        case s16: res = getArray<short  >(arr).getAllocatedBytes(); break;
+        case b8 : res = getArray<char   >(arr).getAllocatedBytes(); break;
+        case u8 : res = getArray<uchar  >(arr).getAllocatedBytes(); break;
         default: TYPE_ERROR(6, ty);
         }
 

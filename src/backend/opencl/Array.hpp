@@ -211,6 +211,11 @@ namespace opencl
             data_dims = new_dims;
         }
 
+        size_t getAllocatedBytes() const
+        {
+            return data_dims.elements() * sizeof(T);
+        }
+
         operator Param() const
         {
             KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},
