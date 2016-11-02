@@ -76,18 +76,12 @@ int main(int argc, char **argv)
         array smooth = convolve(bimodal, gaussianKernel(5, 5));
         array smoothHist = histogram(smooth, 256, 0, 255);
 
-        unsigned bimodHist_freq_max = max<unsigned>(bimodHist);
-        unsigned smoothHist_freq_max = max<unsigned>(smoothHist);
-
         af::Window wnd(1536, 1024, "Binary Thresholding Algorithms");
         std::cout << "Press ESC while the window is in focus to proceed to exit" << std::endl;
 
         wnd.grid(3, 3);
-        wnd(0, 1).setAxesLimits(0, 255, 0, bimodHist_freq_max, true);
         wnd(0, 1).setAxesTitles("Bins", "Frequency");
-        wnd(1, 1).setAxesLimits(0, 255, 0, bimodHist_freq_max, true);
         wnd(1, 1).setAxesTitles("Bins", "Frequency");
-        wnd(2, 1).setAxesLimits(0, 255, 0, smoothHist_freq_max, true);
         wnd(2, 1).setAxesTitles("Bins", "Frequency");
         while (!wnd.close()) {
             wnd(0, 0).image(bimodal / 255, "Input Image");

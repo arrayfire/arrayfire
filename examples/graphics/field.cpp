@@ -25,9 +25,6 @@ int main(int argc, char *argv[])
 
         myWindow.grid(1, 2);
 
-        myWindow(0, 0).setAxesLimits(MINIMUM, MAXIMUM, MINIMUM, MAXIMUM);
-        myWindow(0, 1).setAxesLimits(MINIMUM, MAXIMUM, MINIMUM, MAXIMUM);
-
         array dataRange = seq(MINIMUM, MAXIMUM, STEP);
 
         array x = tile(dataRange, 1, dataRange.dims(0));
