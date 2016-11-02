@@ -137,61 +137,6 @@ af_err af_grid(const af_window wind, const int rows, const int cols)
 #endif
 }
 
-// dir -> true = round up, false = round down
-double step_round(const double in, const bool dir)
-{
-    if(in == 0) return 0;
-
-    static const double __log2 = log10(2);
-    static const double __log4 = log10(4);
-    static const double __log6 = log10(6);
-    static const double __log8 = log10(8);
-
-    // log_in is of the form "s abc.xyz", where
-    // s is either + or -; + indicates abs(in) >= 1 and - indicates 0 < abs(in) < 1 (log10(1) is +0)
-    const double sign   = in < 0 ? -1 : 1;
-    const double log_in = std::log10(std::fabs(in));
-    const double mag    = std::pow(10, std::floor(log_in)) * sign;  // Number of digits either left or right of 0
-    const double dec    = std::log10(in / mag); // log of the fraction
-
-    // This means in is of the for 10^n
-    if(dec == 0) return in;
-
-    // For negative numbers, -ve round down = +ve round up and vice versa
-    bool op_dir = in > 0 ? dir : !dir;
-
-    double mult = 1;
-
-    // Round up
-    if(op_dir) {
-        if(dec <= __log2) {
-            mult = 2;
-        } else if(dec <= __log4) {
-            mult = 4;
-        } else if(dec <= __log6) {
-            mult = 6;
-        } else if(dec <= __log8) {
-            mult = 8;
-        } else {
-            mult = 10;
-        }
-    } else {    // Round down
-        if(dec < __log2) {
-            mult = 1;
-        } else if(dec < __log4) {
-            mult = 2;
-        } else if(dec < __log6) {
-            mult = 4;
-        } else if(dec < __log8) {
-            mult = 6;
-        } else {
-            mult = 8;
-        }
-    }
-
-    return mag * mult;
-}
-
 af_err af_set_axes_limits_compute(const af_window wind,
                                   const af_array x, const af_array y, const af_array z,
                                   const bool exact, const af_cell* const props)

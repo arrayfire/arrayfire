@@ -37,6 +37,8 @@ forge::MarkerType getFGMarker(const af_marker_type af_marker);
 
 void makeContextCurrent(forge::Window *window);
 
+double step_round(const double in, const bool dir);
+
 namespace graphics
 {
 
