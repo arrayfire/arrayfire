@@ -233,15 +233,15 @@ void ForgeManager::setWindowChartGrid(const forge::Window* window,
 {
     ChartMapIter iter = mChartMap.find(window);
 
-        if(iter != mChartMap.end()) {
-
-    }
-
     if(iter != mChartMap.end()) {
         // ChartVec found. Clear it.
         // TODO: Should we clear this even if r = old_r and c = old_c?
-        for(int i = 0; i < (int)(iter->second).size(); i++)
-            if((iter->second)[i] != NULL) delete (iter->second)[i];
+        for(int i = 0; i < (int)(iter->second).size(); i++) {
+            if((iter->second)[i] != NULL) {
+                delete (iter->second)[i];
+                mChartAxesOverrideMap.erase((iter->second)[i]);
+            }
+        }
         (iter->second).clear();
     }
 
@@ -271,6 +271,9 @@ forge::Chart* ForgeManager::getChart(const forge::Window* window, const int r, c
             // Chart has not been created
             chart = new forge::Chart(ctype);
             (iter->second)[c * gRows + r] = chart;
+
+            // Set Axes override to false
+            mChartAxesOverrideMap[chart] = false;
         }
     } else {
         // The chart map for this was never created
@@ -421,6 +424,24 @@ forge::VectorField* ForgeManager::getVectorField(forge::Chart* chart, int nPoint
     return mVcfMap[keypair];
 }
 
+bool ForgeManager::getChartAxesOverride(forge::Chart* chart)
+{
+    ChartAxesOverrideIter iter = mChartAxesOverrideMap.find(chart);
+    if (iter == mChartAxesOverrideMap.end()) {
+        AF_ERROR("Chart Not Found!", AF_ERR_ARG);
+    }
+    return mChartAxesOverrideMap[chart];
+}
+
+void ForgeManager::setChartAxesOverride(forge::Chart* chart, bool flag)
+{
+    ChartAxesOverrideIter iter = mChartAxesOverrideMap.find(chart);
+    if (iter == mChartAxesOverrideMap.end()) {
+        AF_ERROR("Chart Not Found!", AF_ERR_ARG);
+    }
+    mChartAxesOverrideMap[chart] = flag;
+}
+
 void ForgeManager::destroyResources()
 {
     /* clear all OpenGL resource objects (images, plots, histograms etc) first
@@ -434,9 +455,14 @@ void ForgeManager::destroyResources()
     for(HstMapIter iter = mHstMap.begin(); iter != mHstMap.end(); iter++)
         delete (iter->second);
 
-    for(ChartMapIter iter = mChartMap.begin(); iter != mChartMap.end(); iter++)
-        for(int i = 0; i < (int)(iter->second).size(); i++)
-            if((iter->second)[i] != NULL) delete (iter->second)[i];
+    for(ChartMapIter iter = mChartMap.begin(); iter != mChartMap.end(); iter++) {
+        for(int i = 0; i < (int)(iter->second).size(); i++) {
+            if((iter->second)[i] != NULL) {
+                delete (iter->second)[i];
+                mChartAxesOverrideMap.erase((iter->second)[i]);
+            }
+        }
+    }
 
     delete getFont(true);
     delete getMainWindow(true);
