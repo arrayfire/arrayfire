@@ -187,6 +187,7 @@ af_err af_set_axes_limits_compute(const af_window wind,
             zmax = step_round(zmax, true );
         }
 
+        fgMngr.setChartAxesOverride(chart);
         chart->setAxesLimits(xmin, xmax, ymin, ymax, zmin, zmax);
     }
     CATCHALL;
@@ -235,6 +236,7 @@ af_err af_set_axes_limits_2d(const af_window wind,
             _ymax = step_round(_ymax, true );
         }
 
+        fgMngr.setChartAxesOverride(chart);
         chart->setAxesLimits(_xmin, _xmax, _ymin, _ymax);
     }
     CATCHALL;
@@ -288,6 +290,7 @@ af_err af_set_axes_limits_3d(const af_window wind,
             _zmax = step_round(_zmax, true );
         }
 
+        fgMngr.setChartAxesOverride(chart);
         chart->setAxesLimits(_xmin, _xmax, _ymin, _ymax, _zmin, _zmax);
     }
     CATCHALL;
