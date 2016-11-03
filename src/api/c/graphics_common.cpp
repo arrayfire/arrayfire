@@ -428,7 +428,7 @@ bool ForgeManager::getChartAxesOverride(forge::Chart* chart)
 {
     ChartAxesOverrideIter iter = mChartAxesOverrideMap.find(chart);
     if (iter == mChartAxesOverrideMap.end()) {
-        AF_ERROR("Chart Not Found!", AF_ERR_ARG);
+        AF_ERROR("Chart Not Found!", AF_ERR_INTERNAL);
     }
     return mChartAxesOverrideMap[chart];
 }
@@ -437,7 +437,7 @@ void ForgeManager::setChartAxesOverride(forge::Chart* chart, bool flag)
 {
     ChartAxesOverrideIter iter = mChartAxesOverrideMap.find(chart);
     if (iter == mChartAxesOverrideMap.end()) {
-        AF_ERROR("Chart Not Found!", AF_ERR_ARG);
+        AF_ERROR("Chart Not Found!", AF_ERR_INTERNAL);
     }
     mChartAxesOverrideMap[chart] = flag;
 }
