@@ -72,17 +72,32 @@ namespace kernel
     {
         dim3 threads(DIMX, DIMY);
 
+        int blocksPerMatX = divup(idims[0], TILEX);
+        int blocksPerMatY = divup(idims[1], TILEY);
+
         if (ndims == 1) {
             threads.x *= threads.y;
             threads.y  = 1;
+            blocksPerMatX = divup(idims[0], threads.x * 4);
+        } else if (ndims == 2 && idims[0] == 1) {
+            threads.y *= threads.x;
+            threads.x  = 1;
+            blocksPerMatY = divup(idims[1], threads.y * 4);
         }
-
-        int blocksPerMatX = divup(idims[0], TILEX);
-        int blocksPerMatY = divup(idims[1], TILEY);
 
         dim3 blocks(blocksPerMatX * idims[2],
                     blocksPerMatY * idims[3],
                     1);
+
+        // This X case is mostly for fermi cards which have a limit of 65 * 1024 (65535)
+        // Kepler and newer have a limit of 2 * 1024 * 1024 * 1024 (2B)
+        // which is unlikely to be every hit
+        int maxBlocksX = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[0];
+        if(blocks.x > maxBlocksX) { // Max blocks.y limit on device
+            threads.x     *= 2;     // Makes threads 32 x 16
+            blocksPerMatX /= 2;     // 4 values per thread remains
+            blocks.x       = blocksPerMatX * idims[3];
+        }
 
         int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
         if(blocks.y > maxBlocksY) { // Max blocks.y limit on device
