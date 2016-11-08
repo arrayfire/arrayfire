@@ -26,34 +26,43 @@ namespace kernel
     static const uint DIMX = 32;
     static const uint DIMY =  8;
 
+    static const uint TILEX = 256;
+    static const uint TILEY = 32;
+
     template<typename T>
     __global__ static void
-    memcopy_kernel(T *out, const dims_t ostrides,
-                   const T *in, const dims_t idims,
-                   const dims_t istrides, uint blocks_x, uint blocks_y)
+    memcopy_kernel(      T *out, const dims_t ostrides,
+                   const T *in , const dims_t idims, const dims_t istrides,
+                   const int blocksPerMatX, const int blocksPerMatY)
     {
-        const int tidx = threadIdx.x;
-        const int tidy = threadIdx.y;
+        const int iz = blockIdx.x / blocksPerMatX;
+        const int iw = blockIdx.y / blocksPerMatY;
 
-        const int zid = blockIdx.x / blocks_x;
-        const int wid = blockIdx.y / blocks_y;
-        const int blockIdx_x = blockIdx.x - (blocks_x) * zid;
-        const int blockIdx_y = blockIdx.y - (blocks_y) * wid;
-        const int xid = blockIdx_x * blockDim.x + tidx;
-        const int yid = blockIdx_y * blockDim.y + tidy;
+        const int blockIdx_x = blockIdx.x - iz * blocksPerMatX;
+        const int blockIdx_y = blockIdx.y - iw * blocksPerMatY;
 
-        // FIXME: Do more work per block
-        out += wid * ostrides.dim[3] + zid * ostrides.dim[2] + yid * ostrides.dim[1];
-        in  += wid * istrides.dim[3] + zid * istrides.dim[2] + yid * istrides.dim[1];
+        const int xx = threadIdx.x + blockIdx_x * blockDim.x;
+        const int yy = threadIdx.y + blockIdx_y * blockDim.y;
 
-        int istride0 = istrides.dim[0];
-        if (xid < idims.dim[0] &&
-            yid < idims.dim[1] &&
-            zid < idims.dim[2] &&
-            wid < idims.dim[3]) {
-            out[xid] = in[xid * istride0];
+        const int incy = blocksPerMatY * blockDim.y;
+        const int incx = blocksPerMatX * blockDim.x;
+
+        T *d_out = out;
+        T const *d_in = in;
+
+        if(iz < idims.dim[2] && iw < idims.dim[3]) {
+            d_out = d_out + iz * ostrides.dim[2] + iw * ostrides.dim[3];
+            d_in  = d_in  + iz * istrides.dim[2] + iw * istrides.dim[3];
+
+            for (int iy = yy; iy < idims.dim[1]; iy += incy) {
+                T const *d_in_ = d_in + iy * istrides.dim[1];
+                T *d_out_ = d_out + iy * ostrides.dim[1];
+
+                for (int ix = xx; ix < idims.dim[0]; ix += incx) {
+                    d_out_[ix] = d_in_[ix * istrides.dim[0]];
+                }
+            }
         }
-
     }
 
     template<typename T>
@@ -66,21 +75,28 @@ namespace kernel
         if (ndims == 1) {
             threads.x *= threads.y;
             threads.y  = 1;
-       }
+        }
 
-        // FIXME: DO more work per block
-        uint blocks_x = divup(idims[0], threads.x);
-        uint blocks_y = divup(idims[1], threads.y);
+        int blocksPerMatX = divup(idims[0], TILEX);
+        int blocksPerMatY = divup(idims[1], TILEY);
 
-        dim3 blocks(blocks_x * idims[2],
-                    blocks_y * idims[3]);
+        dim3 blocks(blocksPerMatX * idims[2],
+                    blocksPerMatY * idims[3],
+                    1);
+
+        int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        if(blocks.y > maxBlocksY) { // Max blocks.y limit on device
+            threads.y     *= 2;     // Makes threads 32 x 16
+            blocksPerMatY /= 2;     // 4 values per thread remains
+            blocks.y       = blocksPerMatY * idims[3];
+        }
 
         dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
         dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
-        dims_t _idims = {{idims[0], idims[1], idims[2], idims[3]}};
+        dims_t _idims    = {{idims[0], idims[1], idims[2], idims[3]}};
 
         CUDA_LAUNCH((memcopy_kernel<T>), blocks, threads,
-                out, _ostrides, in, _idims, _istrides, blocks_x, blocks_y);
+                out, _ostrides, in, _idims, _istrides, blocksPerMatX, blocksPerMatY);
         POST_LAUNCH_CHECK();
     }
 
