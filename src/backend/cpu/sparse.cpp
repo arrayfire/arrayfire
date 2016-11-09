@@ -134,11 +134,11 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in)
 
     dim_t nNZ = nonZeroIdx.elements();
 
-    Array<int> constNNZ = createValueArray<int>(dim4(nNZ), nNZ);
-    constNNZ.eval();
+    Array<int> constDim = createValueArray<int>(dim4(nNZ), in.dims()[0]);
+    constDim.eval();
 
-    Array<int> rowIdx = arithOp<int, af_mod_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
-    Array<int> colIdx = arithOp<int, af_div_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
+    Array<int> rowIdx = arithOp<int, af_mod_t>(nonZeroIdx, constDim, nonZeroIdx.dims());
+    Array<int> colIdx = arithOp<int, af_div_t>(nonZeroIdx, constDim, nonZeroIdx.dims());
 
     Array<T> values = copyArray<T>(in);
     values.modDims(dim4(values.elements()));
