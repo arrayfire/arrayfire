@@ -145,6 +145,21 @@ struct nnz_func_def_t
                                               int *, int *);
 };
 
+//cusparseStatus_t cusparseZgthr(cusparseHandle_t handle,
+//                               int nnz,
+//                               const cuDoubleComplex *y,
+//                               cuDoubleComplex *xVal, const int *xInd,
+//                               cusparseIndexBase_t idxBase)
+template<typename T>
+struct gthr_func_def_t
+{
+    typedef cusparseStatus_t (*gthr_func_def)(cusparseHandle_t,
+                                              int,
+                                              const T *,
+                                              T*, const int *,
+                                              cusparseIndexBase_t);
+};
+
 #define SPARSE_FUNC_DEF( FUNC )                     \
 template<typename T>                                \
 typename FUNC##_func_def_t<T>::FUNC##_func_def      \
@@ -190,6 +205,12 @@ SPARSE_FUNC(nnz, float,  S)
 SPARSE_FUNC(nnz, double, D)
 SPARSE_FUNC(nnz, cfloat, C)
 SPARSE_FUNC(nnz, cdouble,Z)
+
+SPARSE_FUNC_DEF(gthr)
+SPARSE_FUNC(gthr, float,  S)
+SPARSE_FUNC(gthr, double, D)
+SPARSE_FUNC(gthr, cfloat, C)
+SPARSE_FUNC(gthr, cdouble,Z)
 
 #undef SPARSE_FUNC
 #undef SPARSE_FUNC_DEF
@@ -340,14 +361,114 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in)
     return dense;
 }
 
-template<typename T, af_storage src, af_storage dest>
+template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
-    // Dummy function
-    // TODO finish this function when support is required
-    SparseArray<T> dense = createEmptySparseArray<T>(in.dims(), in.getNNZ(), dest);
+    in.eval();
 
-    return dense;
+    int nNZ = in.getNNZ();
+    SparseArray<T> converted = createEmptySparseArray<T>(in.dims(), nNZ, dest);
+
+    if(src == AF_STORAGE_CSR && dest == AF_STORAGE_COO) {
+        // Copy colIdx as is
+        CUDA_CHECK(cudaMemcpyAsync(converted.getColIdx().get(), in.getColIdx().get(),
+                                   in.getColIdx().elements() * sizeof(int),
+                                   cudaMemcpyDeviceToDevice,
+                                   cuda::getStream(cuda::getActiveDeviceId())));
+
+        // cusparse function to expand compressed row into coordinate
+        CUSPARSE_CHECK(cusparseXcsr2coo(
+                        getHandle(),
+                        in.getRowIdx().get(),
+                        nNZ, in.dims()[0],
+                        converted.getRowIdx().get(),
+                        CUSPARSE_INDEX_BASE_ZERO));
+
+        // Call sort
+        size_t pBufferSizeInBytes = 0;
+        CUSPARSE_CHECK(cusparseXcoosort_bufferSizeExt(
+                        getHandle(),
+                        in.dims()[0], in.dims()[1], nNZ,
+                        converted.getRowIdx().get(), converted.getColIdx().get(),
+                        &pBufferSizeInBytes));
+        char *pBuffer = memAlloc<char>(pBufferSizeInBytes);
+
+        int *P = memAlloc<int>(nNZ);
+        CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getHandle(), nNZ, P));
+
+        CUSPARSE_CHECK(cusparseXcoosortByColumn(
+                        getHandle(),
+                        in.dims()[0], in.dims()[1], nNZ,
+                        converted.getRowIdx().get(), converted.getColIdx().get(),
+                        P, (void*)pBuffer));
+
+        CUSPARSE_CHECK(gthr_func<T>()(
+                        getHandle(), nNZ,
+                        in.getValues().get(),
+                        converted.getValues().get(),
+                        P, CUSPARSE_INDEX_BASE_ZERO));
+
+        memFree(P);
+        memFree(pBuffer);
+
+    } else if (src == AF_STORAGE_COO && dest == AF_STORAGE_CSR) {
+        // Copy colIdx as is
+        CUDA_CHECK(cudaMemcpyAsync(converted.getColIdx().get(), in.getColIdx().get(),
+                                   in.getColIdx().elements() * sizeof(int),
+                                   cudaMemcpyDeviceToDevice,
+                                   cuda::getStream(cuda::getActiveDeviceId())));
+
+        // cusparse function to compress row from coordinate
+        CUSPARSE_CHECK(cusparseXcoo2csr(
+                        getHandle(),
+                        in.getRowIdx().get(),
+                        nNZ, in.dims()[0],
+                        converted.getRowIdx().get(),
+                        CUSPARSE_INDEX_BASE_ZERO));
+
+        // Call sort
+        size_t pBufferSizeInBytes = 0;
+        CUSPARSE_CHECK(cusparseXcsrsort_bufferSizeExt(
+                        getHandle(),
+                        in.dims()[0], in.dims()[1], nNZ,
+                        converted.getRowIdx().get(), converted.getColIdx().get(),
+                        &pBufferSizeInBytes));
+        char *pBuffer = memAlloc<char>(pBufferSizeInBytes);
+
+        int *P = memAlloc<int>(nNZ);
+        CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getHandle(), nNZ, P));
+
+        // Create Sparse Matrix Descriptor
+        cusparseMatDescr_t descr = 0;
+        CUSPARSE_CHECK(cusparseCreateMatDescr(&descr));
+        cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
+        cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
+
+        CUSPARSE_CHECK(cusparseXcsrsort(
+                        getHandle(),
+                        in.dims()[0], in.dims()[1], nNZ,
+                        descr,
+                        converted.getRowIdx().get(), converted.getColIdx().get(),
+                        P, (void*)pBuffer));
+
+        CUSPARSE_CHECK(gthr_func<T>()(
+                        getHandle(), nNZ,
+                        in.getValues().get(),
+                        converted.getValues().get(),
+                        P, CUSPARSE_INDEX_BASE_ZERO));
+
+        // Destory Sparse Matrix Descriptor
+        CUSPARSE_CHECK(cusparseDestroyMatDescr(descr));
+
+        memFree(P);
+        memFree(pBuffer);
+
+    } else {
+        // Should never come here
+        AF_ERROR("CUDA Backend invalid conversion combination", AF_ERR_NOT_SUPPORTED);
+    }
+
+    return converted;
 }
 
 
