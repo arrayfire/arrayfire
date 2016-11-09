@@ -339,18 +339,52 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 ////////////////////////////////////////////////////////////////////////////////
 // Common to MKL and Not MKL
 ////////////////////////////////////////////////////////////////////////////////
-template<typename T, af_storage src, af_storage dest>
+template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
-    // Dummy function
-    // TODO finish this function when support is required
-    AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
-
     in.eval();
 
-    SparseArray<T> dense = createEmptySparseArray<T>(in.dims(), (int)in.getNNZ(), dest);
+    SparseArray<T> converted = createEmptySparseArray<T>(in.dims(), (int)in.getNNZ(), dest);
+    converted.eval();
 
-    return dense;
+    if(src == AF_STORAGE_CSR && dest == AF_STORAGE_COO) {
+
+        auto func = [=] (SparseArray<T> out, const SparseArray<T> in_) {
+            Array<T  > ovalues = out.getValues();
+            Array<int> orowIdx = out.getRowIdx();
+            Array<int> ocolIdx = out.getColIdx();
+
+            Array<T  > ivalues = in_.getValues();
+            Array<int> irowIdx = in_.getRowIdx();
+            Array<int> icolIdx = in_.getColIdx();
+
+            kernel::csr_coo<T>()(ovalues, orowIdx, ocolIdx, ivalues, irowIdx, icolIdx);
+        };
+
+        getQueue().enqueue(func, converted, in);
+
+    } else if (src == AF_STORAGE_COO && dest == AF_STORAGE_CSR) {
+
+        auto func = [=] (SparseArray<T> out, const SparseArray<T> in_) {
+            Array<T  > ovalues = out.getValues();
+            Array<int> orowIdx = out.getRowIdx();
+            Array<int> ocolIdx = out.getColIdx();
+
+            Array<T  > ivalues = in_.getValues();
+            Array<int> irowIdx = in_.getRowIdx();
+            Array<int> icolIdx = in_.getColIdx();
+
+            kernel::coo_csr<T>()(ovalues, orowIdx, ocolIdx, ivalues, irowIdx, icolIdx);
+        };
+
+        getQueue().enqueue(func, converted, in);
+
+    } else {
+        // Should never come here
+        AF_ERROR("CPU Backend invalid conversion combination", AF_ERR_NOT_SUPPORTED);
+    }
+
+    return converted;
 }
 
 #define INSTANTIATE_TO_STORAGE(T, S)                                                                        \

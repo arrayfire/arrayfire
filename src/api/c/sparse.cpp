@@ -307,7 +307,7 @@ af_err af_sparse_convert_to(af_array *out, const af_array in,
 
         // Right now dest_storage can only be AF_STORAGE_DENSE
         // TODO: Add support for [CSR, CSC, COO] <-> [CSR, CSC, COO] in backends
-        ARG_ASSERT(1, destStorage == AF_STORAGE_DENSE);
+        ARG_ASSERT(1, destStorage != AF_STORAGE_CSC);
 
         if(base.getStorage() == destStorage) {
             // Return a reference

@@ -11,6 +11,8 @@
 #include <Array.hpp>
 #include <utility.hpp>
 #include <math.hpp>
+#include <kernel/sort_helper.hpp>
+#include <algorithm>
 
 namespace cpu
 {
@@ -90,6 +92,109 @@ struct csr_dense
                 oPtr[j*stride + i] = v;
             }
         }
+    }
+};
+
+// Modified code from sort helper
+template <typename T>
+using SpKeyIndexPair = std::tuple<int, T, int>; // sorting index, value, other index
+
+template <typename T>
+struct SpKIPCompareK
+{
+    bool operator()(const SpKeyIndexPair<T> &lhs, const SpKeyIndexPair<T> &rhs)
+    {
+        int lhsVal = std::get<0>(lhs);
+        int rhsVal = std::get<0>(rhs);
+        // Always returns ascending
+        return (lhsVal < rhsVal);
+    }
+};
+
+template<typename T>
+struct csr_coo
+{
+    void operator()(Array<T> ovalues, Array<int> orowIdx, Array<int> ocolIdx,
+                    Array<T> const ivalues, Array<int> const irowIdx, Array<int> const icolIdx)
+    {
+        // First calculate the linear index
+        T         * const ovPtr = ovalues.get();
+        int       * const orPtr = orowIdx.get();
+        int       * const ocPtr = ocolIdx.get();
+
+        T   const * const ivPtr = ivalues.get();
+        int const * const irPtr = irowIdx.get();
+        int const * const icPtr = icolIdx.get();
+
+        // Create cordinate form of the row array
+        for(int i = 0; i < (int)irowIdx.elements() - 1; i++) {
+            std::fill_n(orPtr + irPtr[i], irPtr[i + 1] - irPtr[i], i);
+        }
+
+        // Sort the coordinate form using column index
+        // Uses code from sort_by_key kernels
+        typedef SpKeyIndexPair<T> CurrentPair;
+        int size = ovalues.dims()[0];
+        size_t bytes = size * sizeof(CurrentPair);
+        CurrentPair *pairKeyVal = (CurrentPair *)memAlloc<char>(bytes);
+
+        for(int x = 0; x < size; x++) {
+           pairKeyVal[x] = std::make_tuple(icPtr[x], ivPtr[x], orPtr[x]);
+        }
+
+        std::stable_sort(pairKeyVal, pairKeyVal + size, SpKIPCompareK<T>());
+
+        for(int x = 0; x < (int)ovalues.elements(); x++) {
+            ocPtr[x] = std::get<0>(pairKeyVal[x]);
+            ovPtr[x] = std::get<1>(pairKeyVal[x]);
+            orPtr[x] = std::get<2>(pairKeyVal[x]);
+        }
+
+        memFree((char *)pairKeyVal);
+    }
+};
+
+template<typename T>
+struct coo_csr
+{
+    void operator()(Array<T> ovalues, Array<int> orowIdx, Array<int> ocolIdx,
+                    Array<T> const ivalues, Array<int> const irowIdx, Array<int> const icolIdx)
+    {
+        T         * const ovPtr = ovalues.get();
+        int       * const orPtr = orowIdx.get();
+        int       * const ocPtr = ocolIdx.get();
+
+        T   const * const ivPtr = ivalues.get();
+        int const * const irPtr = irowIdx.get();
+        int const * const icPtr = icolIdx.get();
+
+        // Sort the colidx and values based on rowIdx
+        // Uses code from sort_by_key kernels
+        typedef SpKeyIndexPair<T> CurrentPair;
+        int size = ovalues.dims()[0];
+        size_t bytes = size * sizeof(CurrentPair);
+        CurrentPair *pairKeyVal = (CurrentPair *)memAlloc<char>(bytes);
+
+        for(int x = 0; x < size; x++) {
+           pairKeyVal[x] = std::make_tuple(irPtr[x], ivPtr[x], icPtr[x]);
+        }
+
+        std::stable_sort(pairKeyVal, pairKeyVal + size, SpKIPCompareK<T>());
+
+        ovPtr[0] = 0;
+        for(int x = 0; x < (int)ovalues.elements(); x++) {
+            int row  = std::get<0>(pairKeyVal[x]);
+            ovPtr[x] = std::get<1>(pairKeyVal[x]);
+            ocPtr[x] = std::get<2>(pairKeyVal[x]);
+            orPtr[row + 1]++;
+        }
+
+        // Compress row storage
+        for(int x = 1; x < (int)orowIdx.elements(); x++) {
+            orPtr[x] += orPtr[x - 1];
+        }
+
+        memFree((char *)pairKeyVal);
     }
 };
 
