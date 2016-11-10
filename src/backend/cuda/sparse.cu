@@ -442,7 +442,7 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 
             CUSPARSE_CHECK(gthr_func<T>()(
                             getHandle(), nNZ,
-                            cooT.getValues().get(),
+                            in.getValues().get(),
                             cooT.getValues().get(),
                             P, CUSPARSE_INDEX_BASE_ZERO));
 
