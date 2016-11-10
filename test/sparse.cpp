@@ -246,11 +246,16 @@ void sparseConvertTester(const int m, const int n, int factor)
     af::array sA = af::sparse(A, src);
     af::array dA = af::sparse(A, dest);
 
-    //// Convert src to dest format and dest to src
+    // Convert src to dest format and dest to src
     af::array s2d = sparseConvertTo(sA, dest);
     af::array d2s = sparseConvertTo(dA, src);
 
-    //// Get the individual arrays and verify equality
+    // Get the individual arrays and verify equality
+    af::array sValues = sparseGetValues(sA);
+    af::array sRowIdx = sparseGetRowIdx(sA);
+    af::array sColIdx = sparseGetColIdx(sA);
+    dim_t     sNNZ    = sparseGetNNZ   (sA);
+
     af::array dValues = sparseGetValues(dA);
     af::array dRowIdx = sparseGetRowIdx(dA);
     af::array dColIdx = sparseGetColIdx(dA);
@@ -260,11 +265,6 @@ void sparseConvertTester(const int m, const int n, int factor)
     af::array s2dRowIdx = sparseGetRowIdx(s2d);
     af::array s2dColIdx = sparseGetColIdx(s2d);
     dim_t     s2dNNZ    = sparseGetNNZ   (s2d);
-
-    af::array sValues = sparseGetValues(sA);
-    af::array sRowIdx = sparseGetRowIdx(sA);
-    af::array sColIdx = sparseGetColIdx(sA);
-    dim_t     sNNZ    = sparseGetNNZ   (sA);
 
     af::array d2sValues = sparseGetValues(d2s);
     af::array d2sRowIdx = sparseGetRowIdx(d2s);
@@ -283,9 +283,21 @@ void sparseConvertTester(const int m, const int n, int factor)
 }
 
 #define CONVERT_TESTS(T, STYPE, DTYPE)                                          \
-    TEST(SPARSE_CONVERT, T##_##STYPE##_##DTYPE)                                 \
+    TEST(SPARSE_CONVERT, T##_##STYPE##_##DTYPE##_1)                             \
     {                                                                           \
-        sparseConvertTester<T, STYPE, DTYPE>(10, 10, 5);                        \
+        sparseConvertTester<T, STYPE, DTYPE>(1000, 1000, 5);                    \
+    }                                                                           \
+    TEST(SPARSE_CONVERT, T##_##STYPE##_##DTYPE##_2)                             \
+    {                                                                           \
+        sparseConvertTester<T, STYPE, DTYPE>(512, 512, 1);                      \
+    }                                                                           \
+    TEST(SPARSE_CONVERT, T##_##STYPE##_##DTYPE##_3)                             \
+    {                                                                           \
+        sparseConvertTester<T, STYPE, DTYPE>(512, 1024, 2);                     \
+    }                                                                           \
+    TEST(SPARSE_CONVERT, T##_##STYPE##_##DTYPE##_4)                             \
+    {                                                                           \
+        sparseConvertTester<T, STYPE, DTYPE>(2048, 1024, 10);                   \
     }                                                                           \
 
 
