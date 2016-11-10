@@ -412,56 +412,63 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
         memFree(pBuffer);
 
     } else if (src == AF_STORAGE_COO && dest == AF_STORAGE_CSR) {
-        // Copy colIdx as is
-        CUDA_CHECK(cudaMemcpyAsync(converted.getColIdx().get(), in.getColIdx().get(),
-                                   in.getColIdx().elements() * sizeof(int),
+        // The cusparse csr sort function is not behaving correctly.
+        // So the work around is to convert the COO into row major and then
+        // convert it to CSR
+
+        // Deep copy input into temporary COO Row Major
+        SparseArray<T> cooT = createArrayDataSparseArray<T>(in.dims(), in.getValues(),
+                                                            in.getRowIdx(), in.getColIdx(),
+                                                            in.getStorage(), true);
+
+        // Call sort to convert column major to row major
+        {
+            size_t pBufferSizeInBytes = 0;
+            CUSPARSE_CHECK(cusparseXcoosort_bufferSizeExt(
+                            getHandle(),
+                            cooT.dims()[0], cooT.dims()[1], nNZ,
+                            cooT.getRowIdx().get(), cooT.getColIdx().get(),
+                            &pBufferSizeInBytes));
+            char *pBuffer = memAlloc<char>(pBufferSizeInBytes);
+
+            int *P = memAlloc<int>(nNZ);
+            CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getHandle(), nNZ, P));
+
+            CUSPARSE_CHECK(cusparseXcoosortByRow(
+                            getHandle(),
+                            cooT.dims()[0], cooT.dims()[1], nNZ,
+                            cooT.getRowIdx().get(), cooT.getColIdx().get(),
+                            P, (void*)pBuffer));
+
+            CUSPARSE_CHECK(gthr_func<T>()(
+                            getHandle(), nNZ,
+                            cooT.getValues().get(),
+                            cooT.getValues().get(),
+                            P, CUSPARSE_INDEX_BASE_ZERO));
+
+            memFree(P);
+            memFree(pBuffer);
+        }
+
+        // Copy values and colIdx as is
+        CUDA_CHECK(cudaMemcpyAsync(converted.getValues().get(), cooT.getValues().get(),
+                                   cooT.getValues().elements() * sizeof(T),
+                                   cudaMemcpyDeviceToDevice,
+                                   cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(converted.getColIdx().get(), cooT.getColIdx().get(),
+                                   cooT.getColIdx().elements() * sizeof(int),
                                    cudaMemcpyDeviceToDevice,
                                    cuda::getStream(cuda::getActiveDeviceId())));
 
         // cusparse function to compress row from coordinate
         CUSPARSE_CHECK(cusparseXcoo2csr(
                         getHandle(),
-                        in.getRowIdx().get(),
-                        nNZ, in.dims()[0],
+                        cooT.getRowIdx().get(),
+                        nNZ, cooT.dims()[0],
                         converted.getRowIdx().get(),
                         CUSPARSE_INDEX_BASE_ZERO));
 
-        // Call sort
-        size_t pBufferSizeInBytes = 0;
-        CUSPARSE_CHECK(cusparseXcsrsort_bufferSizeExt(
-                        getHandle(),
-                        in.dims()[0], in.dims()[1], nNZ,
-                        converted.getRowIdx().get(), converted.getColIdx().get(),
-                        &pBufferSizeInBytes));
-        char *pBuffer = memAlloc<char>(pBufferSizeInBytes);
-
-        int *P = memAlloc<int>(nNZ);
-        CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getHandle(), nNZ, P));
-
-        // Create Sparse Matrix Descriptor
-        cusparseMatDescr_t descr = 0;
-        CUSPARSE_CHECK(cusparseCreateMatDescr(&descr));
-        cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
-        cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
-
-        CUSPARSE_CHECK(cusparseXcsrsort(
-                        getHandle(),
-                        in.dims()[0], in.dims()[1], nNZ,
-                        descr,
-                        converted.getRowIdx().get(), converted.getColIdx().get(),
-                        P, (void*)pBuffer));
-
-        CUSPARSE_CHECK(gthr_func<T>()(
-                        getHandle(), nNZ,
-                        in.getValues().get(),
-                        converted.getValues().get(),
-                        P, CUSPARSE_INDEX_BASE_ZERO));
-
-        // Destory Sparse Matrix Descriptor
-        CUSPARSE_CHECK(cusparseDestroyMatDescr(descr));
-
-        memFree(P);
-        memFree(pBuffer);
+        // No need to call CSRSORT
 
     } else {
         // Should never come here
