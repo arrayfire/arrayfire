@@ -100,9 +100,11 @@ namespace kernel
         }
 
         int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-        if(blocks.y > maxBlocksY) { // Max blocks.y limit on device
-            threads.y     *= 2;     // Makes threads 32 x 16
-            blocksPerMatY /= 2;     // 4 values per thread remains
+        // Increase the work per block until the condition is satisfied
+        // Increase threads only upto 512
+        while(blocks.y > maxBlocksY) {
+            if(threads.x * threads.y < 512) threads.y *= 2;
+            blocksPerMatY /= 2;
             blocks.y       = blocksPerMatY * idims[3];
         }
 
