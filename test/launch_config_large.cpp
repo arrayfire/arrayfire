@@ -51,7 +51,7 @@ TEST(MemCopy, MemCopyLaunchConfigOptimization)
 
     cleanSlate();
     {
-        af::array in = af::randu(nx, ny);
+        af::array in = af::randu(nx, ny, u8);
 
         // Optimization by doing more work per thread/block - only fermi
         // There are enough blocks on kepler etc
@@ -63,7 +63,7 @@ TEST(MemCopy, MemCopyLaunchConfigOptimization)
     }
 
     {
-        af::array in = af::randu(ny, nx);
+        af::array in = af::randu(ny, nx, u8);
 
         // Optimization by doing more work per thread/block
         af::array cp1 = in(af::span, af::seq(2)).copy();
@@ -80,7 +80,7 @@ TEST(Join, JoinLaunchConfigOptimization)
 
     af::deviceGC();
     {
-        af::array in = af::randu(nx, ny);
+        af::array in = af::randu(nx, ny, u8);
         af::array joined = af::join(0, in, in);
     }
 }
