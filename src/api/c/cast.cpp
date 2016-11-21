@@ -10,6 +10,8 @@
 #include <af/array.h>
 #include <af/defines.h>
 #include <af/arith.h>
+#include <sparse_handle.hpp>
+#include <sparse.hpp>
 #include <ArrayInfo.hpp>
 #include <optypes.hpp>
 
@@ -45,17 +47,55 @@ static af_array cast(const af_array in, const af_dtype type)
     }
 }
 
+template<typename T>
+static af_array castSparseValues(const af_array in, const af_dtype type)
+{
+    using namespace common;
+    const SparseArray<T> sparse = getSparseArray<T>(in);
+    Array<T> values = castArray<T>(getHandle(sparse.getValues()));
+    return getHandle(createArrayDataSparseArray(sparse.dims(), values,
+                                                sparse.getRowIdx(), sparse.getColIdx(),
+                                                sparse.getStorage()
+                                               )
+                    );
+}
+
+static af_array castSparse(const af_array in, const af_dtype type)
+{
+    using namespace common;
+
+    const SparseArrayBase info = getSparseArrayBase(in);
+
+    if (info.getType() == type) {
+        return retain(in);
+    }
+
+    switch (type) {
+    case f32: return castSparseValues<float  >(in, type);
+    case f64: return castSparseValues<double >(in, type);
+    case c32: return castSparseValues<cfloat >(in, type);
+    case c64: return castSparseValues<cdouble>(in, type);
+    default: TYPE_ERROR(2, type);
+    }
+}
+
 af_err af_cast(af_array *out, const af_array in, const af_dtype type)
 {
     try {
-        const ArrayInfo info = getInfo(in);
+        const ArrayInfo info = getInfo(in, false, true);
         dim4 idims = info.dims();
         if(idims.elements() == 0) {
             dim_t my_dims[] = {0, 0, 0, 0};
             return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
         }
 
-        af_array res = cast(in, type);
+        af_array res = 0;
+        if(info.isSparse()) {
+            res = castSparse(in, type);
+        } else {
+            res = cast(in, type);
+        }
+
         std::swap(*out, res);
     }
     CATCHALL;
