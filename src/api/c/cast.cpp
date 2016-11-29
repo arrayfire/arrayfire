@@ -47,19 +47,6 @@ static af_array cast(const af_array in, const af_dtype type)
     }
 }
 
-template<typename T>
-static af_array castSparseValues(const af_array in, const af_dtype type)
-{
-    using namespace common;
-    const SparseArray<T> sparse = getSparseArray<T>(in);
-    Array<T> values = castArray<T>(getHandle(sparse.getValues()));
-    return getHandle(createArrayDataSparseArray(sparse.dims(), values,
-                                                sparse.getRowIdx(), sparse.getColIdx(),
-                                                sparse.getStorage()
-                                               )
-                    );
-}
-
 static af_array castSparse(const af_array in, const af_dtype type)
 {
     using namespace common;
@@ -71,10 +58,10 @@ static af_array castSparse(const af_array in, const af_dtype type)
     }
 
     switch (type) {
-    case f32: return castSparseValues<float  >(in, type);
-    case f64: return castSparseValues<double >(in, type);
-    case c32: return castSparseValues<cfloat >(in, type);
-    case c64: return castSparseValues<cdouble>(in, type);
+    case f32: return getHandle(castSparse<float  >(in));
+    case f64: return getHandle(castSparse<double >(in));
+    case c32: return getHandle(castSparse<cfloat >(in));
+    case c64: return getHandle(castSparse<cdouble>(in));
     default: TYPE_ERROR(2, type);
     }
 }
