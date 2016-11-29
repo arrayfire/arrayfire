@@ -83,6 +83,15 @@ af_err af_cast(af_array *out, const af_array in, const af_dtype type)
 {
     try {
         const ArrayInfo info = getInfo(in, false, true);
+
+        af_dtype inType = info.getType();
+        if((inType == c32 || inType == c64)
+            && (type == f32 || type == f64)) {
+            AF_ERROR("Casting is not allowed from complex (c32/c64) to real (f32/f64) types.\n"
+                     "Use abs, real, imag etc to convert complex to floating type.",
+                     AF_ERR_TYPE);
+        }
+
         dim4 idims = info.dims();
         if(idims.elements() == 0) {
             dim_t my_dims[] = {0, 0, 0, 0};
