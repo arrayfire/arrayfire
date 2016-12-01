@@ -76,9 +76,9 @@ af_err af_create_sparse_array(
             AF_ERROR("Storage type is out of range/unsupported", AF_ERR_ARG);
         }
 
-        ArrayInfo vInfo = getInfo(values);
-        ArrayInfo rInfo = getInfo(rowIdx);
-        ArrayInfo cInfo = getInfo(colIdx);
+        const ArrayInfo& vInfo = getInfo(values);
+        const ArrayInfo& rInfo = getInfo(rowIdx);
+        const ArrayInfo& cInfo = getInfo(colIdx);
 
         TYPE_ASSERT(vInfo.isFloating());
         DIM_ASSERT(4, vInfo.isLinear());
@@ -199,7 +199,7 @@ af_err af_create_sparse_array_from_dense(af_array *out, const af_array in,
         // stype is within acceptable range
         // values is of floating point type
 
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
 
         if(!(stype == AF_STORAGE_CSR
           || stype == AF_STORAGE_CSC

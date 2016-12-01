@@ -23,7 +23,7 @@ using namespace detail;
 template <typename T>
 static inline void svd(af_array *s, af_array *u, af_array *vt, const af_array in)
 {
-    ArrayInfo info = getInfo(in);  // ArrayInfo is the base class which
+    const ArrayInfo& info = getInfo(in);  // ArrayInfo is the base class which
     af::dim4 dims = info.dims();
     int M = dims[0];
     int N = dims[1];
@@ -45,7 +45,7 @@ static inline void svd(af_array *s, af_array *u, af_array *vt, const af_array in
 template <typename T>
 static inline void svdInPlace(af_array *s, af_array *u, af_array *vt, af_array in)
 {
-    ArrayInfo info = getInfo(in);  // ArrayInfo is the base class which
+    const ArrayInfo& info = getInfo(in);  // ArrayInfo is the base class which
     af::dim4 dims = info.dims();
     int M = dims[0];
     int N = dims[1];
@@ -67,7 +67,7 @@ static inline void svdInPlace(af_array *s, af_array *u, af_array *vt, af_array i
 af_err af_svd(af_array *u, af_array *s, af_array *vt, const af_array in)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4 dims = info.dims();
 
         ARG_ASSERT(3, (dims.ndims() >= 0 && dims.ndims() <= 3));
@@ -105,7 +105,7 @@ af_err af_svd(af_array *u, af_array *s, af_array *vt, const af_array in)
 af_err af_svd_inplace(af_array *u, af_array *s, af_array *vt, af_array in)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4 dims = info.dims();
 
         DIM_ASSERT(3, dims[0] <= dims[1]);

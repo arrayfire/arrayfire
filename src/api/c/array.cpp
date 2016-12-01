@@ -127,7 +127,7 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_t * co
 af_err af_copy_array(af_array *out, const af_array in)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         const af_dtype type = info.getType();
 
         if(info.ndims() == 0) {
@@ -161,7 +161,7 @@ af_err af_copy_array(af_array *out, const af_array in)
 af_err af_get_data_ref_count(int *use_count, const af_array in)
 {
     try {
-        ArrayInfo info = getInfo(in, false, false);
+        const ArrayInfo& info = getInfo(in, false, false);
         const af_dtype type = info.getType();
 
         int res;
@@ -191,7 +191,7 @@ af_err af_release_array(af_array arr)
     try {
         int dev = getActiveDeviceId();
 
-        ArrayInfo info = getInfo(arr, false, false);
+        const ArrayInfo& info = getInfo(arr, false, false);
         af_dtype type = info.getType();
 
         if(info.isSparse()) {
@@ -242,7 +242,7 @@ static af_array retainHandle(const af_array in)
 
 af_array retain(const af_array in)
 {
-    ArrayInfo info = getInfo(in, false, false);
+    const ArrayInfo& info = getInfo(in, false, false);
     af_dtype ty = info.getType();
 
     if(info.isSparse()) {
@@ -341,7 +341,7 @@ af_err af_get_dims(dim_t *d0, dim_t *d1, dim_t *d2, dim_t *d3,
 {
     try {
         // Do not check for device mismatch
-        ArrayInfo info = getInfo(in, false, false);
+        const ArrayInfo& info = getInfo(in, false, false);
         *d0 = info.dims()[0];
         *d1 = info.dims()[1];
         *d2 = info.dims()[2];
@@ -355,7 +355,7 @@ af_err af_get_numdims(unsigned *nd, const af_array in)
 {
     try {
         // Do not check for device mismatch
-        ArrayInfo info = getInfo(in, false, false);
+        const ArrayInfo& info = getInfo(in, false, false);
         *nd = info.ndims();
     }
     CATCHALL
@@ -368,7 +368,7 @@ af_err af_get_numdims(unsigned *nd, const af_array in)
     af_err fn1(bool *result, const af_array in)                 \
     {                                                           \
         try {                                                   \
-            ArrayInfo info = getInfo(in, false, false);         \
+            const ArrayInfo& info = getInfo(in, false, false);         \
             *result = info.fn2();                               \
         }                                                       \
         CATCHALL                                                \

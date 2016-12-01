@@ -41,7 +41,7 @@ af_err af_medfilt1(af_array *out, const af_array in, const dim_t wind_width, con
         ARG_ASSERT(2, (wind_width>0));
         ARG_ASSERT(4, (edge_pad>=AF_PAD_ZERO && edge_pad<=AF_PAD_SYM));
 
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4 dims  = info.dims();
 
         dim_t input_ndims = dims.ndims();
@@ -89,7 +89,7 @@ af_err af_medfilt2(af_array *out, const af_array in, const dim_t wind_length, co
         ARG_ASSERT(3, (wind_width>0));
         ARG_ASSERT(4, (edge_pad>=AF_PAD_ZERO && edge_pad<=AF_PAD_SYM));
 
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4 dims  = info.dims();
 
         if(info.isColumn()) {
@@ -132,7 +132,7 @@ af_err af_minfilt(af_array *out, const af_array in, const dim_t wind_length,
         ARG_ASSERT(3, (wind_width>0));
         ARG_ASSERT(4, (edge_pad==AF_PAD_ZERO));
 
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4 dims  = info.dims();
 
         dim_t input_ndims = dims.ndims();
@@ -160,7 +160,7 @@ af_err af_maxfilt(af_array *out, const af_array in, const dim_t wind_length,
         ARG_ASSERT(3, (wind_width>0));
         ARG_ASSERT(4, (edge_pad==AF_PAD_ZERO));
 
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4 dims  = info.dims();
 
         dim_t input_ndims = dims.ndims();

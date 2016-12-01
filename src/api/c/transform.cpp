@@ -57,8 +57,8 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
                     const af_interp_type method, const bool inverse)
 {
     try {
-        ArrayInfo t_info = getInfo(tf);
-        ArrayInfo i_info = getInfo(in);
+        const ArrayInfo& t_info = getInfo(tf);
+        const ArrayInfo& i_info = getInfo(in);
 
         af::dim4 idims = i_info.dims();
         af::dim4 tdims = t_info.dims();
@@ -181,7 +181,7 @@ af_err af_scale(af_array *out, const af_array in, const float scale0, const floa
                 const dim_t odim0, const dim_t odim1, const af_interp_type method)
 {
     try {
-        ArrayInfo i_info = getInfo(in);
+        const ArrayInfo& i_info = getInfo(in);
         af::dim4 idims = i_info.dims();
 
         dim_t _odim0 = odim0, _odim1 = odim1;

@@ -301,7 +301,7 @@ static inline af_array diagExtract(const af_array in, const int num)
 af_err af_diag_create(af_array *out, const af_array in, const int num)
 {
     try {
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
         DIM_ASSERT(1, in_info.ndims() <= 2);
         af_dtype type = in_info.getType();
 
@@ -338,7 +338,7 @@ af_err af_diag_extract(af_array *out, const af_array in, const int num)
 {
 
     try {
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
         af_dtype type = in_info.getType();
 
         if(in_info.ndims() == 0) {
@@ -384,7 +384,7 @@ af_array triangle(const af_array in, bool is_unit_diag)
 af_err af_lower(af_array *out, const af_array in, bool is_unit_diag)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
 
         if(info.ndims() == 0) {
@@ -416,7 +416,7 @@ af_err af_lower(af_array *out, const af_array in, bool is_unit_diag)
 af_err af_upper(af_array *out, const af_array in, bool is_unit_diag)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
 
         if(info.ndims() == 0) {

@@ -64,8 +64,8 @@ template<dim_t baseDim, bool expand>
 af_err convolve(af_array *out, const af_array signal, const af_array filter)
 {
     try {
-        ArrayInfo sInfo = getInfo(signal);
-        ArrayInfo fInfo = getInfo(filter);
+        const ArrayInfo& sInfo = getInfo(signal);
+        const ArrayInfo& fInfo = getInfo(filter);
 
         af_dtype stype  = sInfo.getType();
 
@@ -107,9 +107,9 @@ template<bool expand>
 af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, const af_array signal)
 {
     try {
-        ArrayInfo sInfo = getInfo(signal);
-        ArrayInfo cfInfo= getInfo(col_filter);
-        ArrayInfo rfInfo= getInfo(row_filter);
+        const ArrayInfo& sInfo = getInfo(signal);
+        const ArrayInfo& cfInfo= getInfo(col_filter);
+        const ArrayInfo& rfInfo= getInfo(row_filter);
 
         af_dtype signalType  = sInfo.getType();
 
@@ -149,8 +149,8 @@ bool isFreqDomain(const af_array &signal, const af_array filter, af_conv_domain 
     if (domain == AF_CONV_FREQ) return true;
     if (domain != AF_CONV_AUTO) return false;
 
-    ArrayInfo sInfo = getInfo(signal);
-    ArrayInfo fInfo = getInfo(filter);
+    const ArrayInfo& sInfo = getInfo(signal);
+    const ArrayInfo& fInfo = getInfo(filter);
 
     dim4 sdims = sInfo.dims();
     dim4 fdims = fInfo.dims();

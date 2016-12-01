@@ -124,8 +124,8 @@ template<dim_t baseDim>
 af_err fft_convolve(af_array *out, const af_array signal, const af_array filter, const bool expand)
 {
     try {
-        ArrayInfo sInfo = getInfo(signal);
-        ArrayInfo fInfo = getInfo(filter);
+        const ArrayInfo& sInfo = getInfo(signal);
+        const ArrayInfo& fInfo = getInfo(filter);
 
         af_dtype stype  = sInfo.getType();
 
