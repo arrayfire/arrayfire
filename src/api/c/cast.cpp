@@ -24,45 +24,36 @@ using namespace detail;
 
 static af_array cast(const af_array in, const af_dtype type)
 {
-    const ArrayInfo info = getInfo(in);
+    const ArrayInfo info = getInfo(in, false, true);
 
     if (info.getType() == type) {
         return retain(in);
     }
 
-    switch (type) {
-    case f32: return getHandle(castArray<float   >(in));
-    case f64: return getHandle(castArray<double  >(in));
-    case c32: return getHandle(castArray<cfloat  >(in));
-    case c64: return getHandle(castArray<cdouble >(in));
-    case s32: return getHandle(castArray<int     >(in));
-    case u32: return getHandle(castArray<uint    >(in));
-    case u8 : return getHandle(castArray<uchar   >(in));
-    case b8 : return getHandle(castArray<char    >(in));
-    case s64: return getHandle(castArray<intl    >(in));
-    case u64: return getHandle(castArray<uintl   >(in));
-    case s16: return getHandle(castArray<short   >(in));
-    case u16: return getHandle(castArray<ushort  >(in));
-    default: TYPE_ERROR(2, type);
-    }
-}
-
-static af_array castSparse(const af_array in, const af_dtype type)
-{
-    using namespace common;
-
-    const SparseArrayBase info = getSparseArrayBase(in);
-
-    if (info.getType() == type) {
-        return retain(in);
-    }
-
-    switch (type) {
-    case f32: return getHandle(castSparse<float  >(in));
-    case f64: return getHandle(castSparse<double >(in));
-    case c32: return getHandle(castSparse<cfloat >(in));
-    case c64: return getHandle(castSparse<cdouble>(in));
-    default: TYPE_ERROR(2, type);
+    if(info.isSparse()) {
+        switch (type) {
+        case f32: return getHandle(castSparse<float  >(in));
+        case f64: return getHandle(castSparse<double >(in));
+        case c32: return getHandle(castSparse<cfloat >(in));
+        case c64: return getHandle(castSparse<cdouble>(in));
+        default: TYPE_ERROR(2, type);
+        }
+    } else {
+        switch (type) {
+        case f32: return getHandle(castArray<float   >(in));
+        case f64: return getHandle(castArray<double  >(in));
+        case c32: return getHandle(castArray<cfloat  >(in));
+        case c64: return getHandle(castArray<cdouble >(in));
+        case s32: return getHandle(castArray<int     >(in));
+        case u32: return getHandle(castArray<uint    >(in));
+        case u8 : return getHandle(castArray<uchar   >(in));
+        case b8 : return getHandle(castArray<char    >(in));
+        case s64: return getHandle(castArray<intl    >(in));
+        case u64: return getHandle(castArray<uintl   >(in));
+        case s16: return getHandle(castArray<short   >(in));
+        case u16: return getHandle(castArray<ushort  >(in));
+        default: TYPE_ERROR(2, type);
+        }
     }
 }
 
@@ -85,12 +76,7 @@ af_err af_cast(af_array *out, const af_array in, const af_dtype type)
             return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
         }
 
-        af_array res = 0;
-        if(info.isSparse()) {
-            res = castSparse(in, type);
-        } else {
-            res = cast(in, type);
-        }
+        af_array res = cast(in, type);
 
         std::swap(*out, res);
     }
