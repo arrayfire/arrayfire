@@ -230,16 +230,10 @@ CREATE_TESTS(AF_STORAGE_COO)
 template<typename Ti, typename To>
 void sparseCastTester(const int m, const int n, int factor)
 {
-    af::deviceGC();
-
     if (noDoubleTests<Ti>()) return;
     if (noDoubleTests<To>()) return;
 
-#if 1
     af::array A = cpu_randu<Ti>(af::dim4(m, n));
-#else
-    af::array A = af::randu(m, n, (af::dtype)af::dtype_traits<Ti>::af_type);
-#endif
 
     A = makeSparse<Ti>(A, factor);
 
@@ -273,12 +267,13 @@ void sparseCastTester(const int m, const int n, int factor)
     ASSERT_EQ(0, af::max<int>(af::abs(iRowIdx - oRowIdx)));
     ASSERT_EQ(0, af::max<int>(af::abs(iColIdx - oColIdx)));
 
+    static const double eps = 1e-6;
     if(iValues.iscomplex() && !oValues.iscomplex()) {
-        ASSERT_NEAR(0, af::max<double>(af::abs(af::abs(iValues) - oValues)), 1e-6);
+        ASSERT_NEAR(0, af::max<double>(af::abs(af::abs(iValues) - oValues)), eps);
     } else if(!iValues.iscomplex() && oValues.iscomplex()) {
-        ASSERT_NEAR(0, af::max<double>(af::abs(iValues - af::abs(oValues))), 1e-6);
+        ASSERT_NEAR(0, af::max<double>(af::abs(iValues - af::abs(oValues))), eps);
     } else {
-        ASSERT_NEAR(0, af::max<double>(af::abs(iValues - oValues)), 1e-6);
+        ASSERT_NEAR(0, af::max<double>(af::abs(iValues - oValues)), eps);
     }
 }
 

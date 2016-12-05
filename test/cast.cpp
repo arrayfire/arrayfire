@@ -13,7 +13,6 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
-using namespace af;
 using af::cfloat;
 using af::cdouble;
 
@@ -25,8 +24,8 @@ void cast_test()
     if (noDoubleTests<Ti>()) return;
     if (noDoubleTests<To>()) return;
 
-    af_dtype ta = (af_dtype)dtype_traits<Ti>::af_type;
-    af_dtype tb = (af_dtype)dtype_traits<To>::af_type;
+    af_dtype ta = (af_dtype)af::dtype_traits<Ti>::af_type;
+    af_dtype tb = (af_dtype)af::dtype_traits<To>::af_type;
     af::dim4 dims(num, 1, 1, 1);
     af_array a, b;
     af_randu(&a, dims.ndims(), dims.get(), ta);
@@ -81,8 +80,8 @@ void cast_test_complex_real()
     if (noDoubleTests<Ti>()) return;
     if (noDoubleTests<To>()) return;
 
-    af_dtype ta = (af_dtype)dtype_traits<Ti>::af_type;
-    af_dtype tb = (af_dtype)dtype_traits<To>::af_type;
+    af_dtype ta = (af_dtype)af::dtype_traits<Ti>::af_type;
+    af_dtype tb = (af_dtype)af::dtype_traits<To>::af_type;
     af::dim4 dims(num, 1, 1, 1);
     af_array a, b;
     af_randu(&a, dims.ndims(), dims.get(), ta);
