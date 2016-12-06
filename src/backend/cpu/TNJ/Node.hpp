@@ -23,7 +23,7 @@ namespace TNJ
 
     protected:
 
-        int m_height;
+        const int m_height;
         int x, y, z, w;
         bool m_is_eval;
         bool m_linear;
@@ -32,7 +32,6 @@ namespace TNJ
 
         void resetCommonFlags()
         {
-            m_height = 0;
             x = -1;
             y = -1;
             z = -1;
@@ -60,8 +59,8 @@ namespace TNJ
         }
 
     public:
-        Node() :
-            m_height(0),
+        Node(const int height) :
+            m_height(height),
             x(-1),
             y(-1),
             z(-1),

@@ -29,14 +29,13 @@ namespace JIT
         BinaryNode(const char *out_type_str, const char *name_str,
                    const std::string &op_str,
                    Node_ptr lhs, Node_ptr rhs, int op, int call_type)
-            : Node(out_type_str, name_str),
+            : Node(out_type_str, name_str, std::max(lhs->getHeight(), rhs->getHeight()) + 1),
               m_op_str(op_str),
               m_lhs(lhs),
               m_rhs(rhs),
               m_op(op),
               m_call_type(call_type)
         {
-            m_height = std::max(m_lhs->getHeight(), m_rhs->getHeight()) + 1;
         }
 
         bool isLinear(dim_t dims[4])
