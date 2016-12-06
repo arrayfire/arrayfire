@@ -292,11 +292,9 @@ namespace opencl
                                                  const Buffer, const Buffer, const Buffer,
                                                  const int> (*swapIndexKernels[device]);
 
-                static const int threads = 256;
-                NDRange local(threads, 1);
-                NDRange global(divup(ovalues.info.dims[0], threads) * threads, 1, 1);
+                NDRange global(ovalues.info.dims[0], 1, 1);
 
-                swapIndexOp(EnqueueArgs(getQueue(), global, local),
+                swapIndexOp(EnqueueArgs(getQueue(), global),
                             *ovalues.data, *oindex.data,
                             *ivalues.data, *iindex,
                             *swapIdx.data, ovalues.info.dims[0]);
@@ -358,13 +356,13 @@ namespace opencl
                 int groups_x = std::min((int)(divup(M, local[0])), MAX_GROUPS);
                 NDRange global(local[0] * groups_x, 1);
                 auto csr2coo_kernel = *entry.ker;
-                auto csr2coo_func = KernelFunctor<Buffer, Buffer, Buffer,
-                                                  const Buffer, const Buffer, const Buffer,
+                auto csr2coo_func = KernelFunctor<Buffer, Buffer,
+                                                  const Buffer, const Buffer,
                                                   int> (csr2coo_kernel);
 
                 csr2coo_func(EnqueueArgs(getQueue(), global, local),
-                               *ovalues.data, *scratch, *ocolIdx.data,
-                               *ivalues.data, *irowIdx.data, *icolIdx.data, M);
+                               *scratch, *ocolIdx.data,
+                               *irowIdx.data, *icolIdx.data, M);
 
                 // Now we need to sort this into column major
                 kernel::sort0ByKeyIterative<int, int>(ocolIdx, index, true);
@@ -437,11 +435,9 @@ namespace opencl
                 auto csrReduceOp = KernelFunctor<Buffer, const Buffer, const int, const int>
                                    (*csrReduceKernels[device]);
 
-                static const int threads = 256;
-                NDRange local(threads, 1);
-                NDRange global(divup(irowIdx.info.dims[0], threads) * threads, 1, 1);
+                NDRange global(irowIdx.info.dims[0], 1, 1);
 
-                csrReduceOp(EnqueueArgs(getQueue(), global, local),
+                csrReduceOp(EnqueueArgs(getQueue(), global),
                             *orowIdx.data, *rowCopy, M, ovalues.info.dims[0]);
 
                 CL_DEBUG_FINISH(getQueue());

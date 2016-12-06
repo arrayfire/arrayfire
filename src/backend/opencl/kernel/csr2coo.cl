@@ -8,10 +8,8 @@
  ********************************************************/
 
 __kernel
-void csr2coo(__global       T   *ovalues,
-             __global       int *orowidx,
+void csr2coo(__global       int *orowidx,
              __global       int *ocolidx,
-             __global const T   *ivalues,
              __global const int *irowidx,
              __global const int *icolidx,
              const int M)
@@ -21,7 +19,6 @@ void csr2coo(__global       T   *ovalues,
         int colStart = irowidx[rowId];
         int colEnd   = irowidx[rowId + 1];
         for (int colId = colStart + lid;  colId < colEnd; colId += THREADS) {
-            //ovalues[colId] = ivalues[colId];
             orowidx[colId] = rowId;
             ocolidx[colId] = icolidx[colId];
         }

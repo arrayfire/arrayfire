@@ -361,6 +361,21 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in)
     return dense;
 }
 
+#define CUSPARSE_CHECK_FREE(fn) do {                    \
+        cusparseStatus_t _error = fn;                   \
+        if (_error != CUSPARSE_STATUS_SUCCESS) {        \
+            memFree(P);                                 \
+            memFree(pBuffer);                           \
+            char _err_msg[1024];                        \
+            snprintf(_err_msg, sizeof(_err_msg),        \
+                     "CUSPARSE Error (%d): %s\n",       \
+                     (int)(_error),                     \
+                     cusparse::errorString( _error));   \
+                                                        \
+            AF_ERROR(_err_msg, AF_ERR_INTERNAL);        \
+        }                                               \
+    } while(0)
+
 template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
@@ -394,19 +409,19 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
         char *pBuffer = memAlloc<char>(pBufferSizeInBytes);
 
         int *P = memAlloc<int>(nNZ);
-        CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getHandle(), nNZ, P));
+        CUSPARSE_CHECK_FREE(cusparseCreateIdentityPermutation(getHandle(), nNZ, P));
 
-        CUSPARSE_CHECK(cusparseXcoosortByColumn(
-                        getHandle(),
-                        in.dims()[0], in.dims()[1], nNZ,
-                        converted.getRowIdx().get(), converted.getColIdx().get(),
-                        P, (void*)pBuffer));
+        CUSPARSE_CHECK_FREE(cusparseXcoosortByColumn(
+                            getHandle(),
+                            in.dims()[0], in.dims()[1], nNZ,
+                            converted.getRowIdx().get(), converted.getColIdx().get(),
+                            P, (void*)pBuffer));
 
-        CUSPARSE_CHECK(gthr_func<T>()(
-                        getHandle(), nNZ,
-                        in.getValues().get(),
-                        converted.getValues().get(),
-                        P, CUSPARSE_INDEX_BASE_ZERO));
+        CUSPARSE_CHECK_FREE(gthr_func<T>()(
+                            getHandle(), nNZ,
+                            in.getValues().get(),
+                            converted.getValues().get(),
+                            P, CUSPARSE_INDEX_BASE_ZERO));
 
         memFree(P);
         memFree(pBuffer);
@@ -432,19 +447,19 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
             char *pBuffer = memAlloc<char>(pBufferSizeInBytes);
 
             int *P = memAlloc<int>(nNZ);
-            CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getHandle(), nNZ, P));
+            CUSPARSE_CHECK_FREE(cusparseCreateIdentityPermutation(getHandle(), nNZ, P));
 
-            CUSPARSE_CHECK(cusparseXcoosortByRow(
-                            getHandle(),
-                            cooT.dims()[0], cooT.dims()[1], nNZ,
-                            cooT.getRowIdx().get(), cooT.getColIdx().get(),
-                            P, (void*)pBuffer));
+            CUSPARSE_CHECK_FREE(cusparseXcoosortByRow(
+                                getHandle(),
+                                cooT.dims()[0], cooT.dims()[1], nNZ,
+                                cooT.getRowIdx().get(), cooT.getColIdx().get(),
+                                P, (void*)pBuffer));
 
-            CUSPARSE_CHECK(gthr_func<T>()(
-                            getHandle(), nNZ,
-                            in.getValues().get(),
-                            cooT.getValues().get(),
-                            P, CUSPARSE_INDEX_BASE_ZERO));
+            CUSPARSE_CHECK_FREE(gthr_func<T>()(
+                                getHandle(), nNZ,
+                                in.getValues().get(),
+                                cooT.getValues().get(),
+                                P, CUSPARSE_INDEX_BASE_ZERO));
 
             memFree(P);
             memFree(pBuffer);
@@ -477,6 +492,8 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 
     return converted;
 }
+
+#undef CUSPARSE_CHECK_FREE
 
 
 #define INSTANTIATE_TO_STORAGE(T, S)                                                                        \

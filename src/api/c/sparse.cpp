@@ -295,19 +295,18 @@ af_array sparseConvertStorage(const af_array in_, const af_storage destStorage)
 af_err af_sparse_convert_to(af_array *out, const af_array in,
                             const af_storage destStorage)
 {
-    // Right now dest_storage can only be AF_STORAGE_DENSE
     try {
         af_array output = 0;
 
         const SparseArrayBase base = getSparseArrayBase(in);
 
-        // Dense not allowed as input -> Should never happen
-        // To convert from dense to type, use the create* functions
-        ARG_ASSERT(1, base.getStorage() != AF_STORAGE_DENSE);
+        // Dense not allowed as input -> Should never happen with SparseArrayBase
+        // CSC is currently not supported
+        ARG_ASSERT(1, base.getStorage() != AF_STORAGE_DENSE
+                   && base.getStorage() != AF_STORAGE_CSC);
 
-        // Right now dest_storage can only be AF_STORAGE_DENSE
-        // TODO: Add support for [CSR, CSC, COO] <-> [CSR, CSC, COO] in backends
-        ARG_ASSERT(1, destStorage != AF_STORAGE_CSC);
+        // Conversion to and from CSC is not supported
+        ARG_ASSERT(2, destStorage != AF_STORAGE_CSC);
 
         if(base.getStorage() == destStorage) {
             // Return a reference

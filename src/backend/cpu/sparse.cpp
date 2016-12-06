@@ -119,7 +119,7 @@ SPARSE_FUNC(csrcsc, cdouble,z)
 #endif // USE_MKL
 
 ////////////////////////////////////////////////////////////////////////////////
-// Common to MKL and Not MKL
+// Common Funcs for MKL and Non-MKL Code Paths
 ////////////////////////////////////////////////////////////////////////////////
 
 // Partial template specialization of sparseConvertDenseToStorage for COO
@@ -337,7 +337,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// Common to MKL and Not MKL
+// Common Funcs for MKL and Non-MKL Code Paths
 ////////////////////////////////////////////////////////////////////////////////
 template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
@@ -347,42 +347,22 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
     SparseArray<T> converted = createEmptySparseArray<T>(in.dims(), (int)in.getNNZ(), dest);
     converted.eval();
 
+    function<void (Array<T>, Array<int>, Array<int>,
+                   Array<T> const, Array<int> const, Array<int> const)
+            > converter;
+
     if(src == AF_STORAGE_CSR && dest == AF_STORAGE_COO) {
-
-        auto func = [=] (SparseArray<T> out, const SparseArray<T> in_) {
-            Array<T  > ovalues = out.getValues();
-            Array<int> orowIdx = out.getRowIdx();
-            Array<int> ocolIdx = out.getColIdx();
-
-            Array<T  > ivalues = in_.getValues();
-            Array<int> irowIdx = in_.getRowIdx();
-            Array<int> icolIdx = in_.getColIdx();
-
-            kernel::csr_coo<T>()(ovalues, orowIdx, ocolIdx, ivalues, irowIdx, icolIdx);
-        };
-
-        getQueue().enqueue(func, converted, in);
-
+        converter = kernel::csr_coo<T>;
     } else if (src == AF_STORAGE_COO && dest == AF_STORAGE_CSR) {
-
-        auto func = [=] (SparseArray<T> out, const SparseArray<T> in_) {
-            Array<T  > ovalues = out.getValues();
-            Array<int> orowIdx = out.getRowIdx();
-            Array<int> ocolIdx = out.getColIdx();
-
-            Array<T  > ivalues = in_.getValues();
-            Array<int> irowIdx = in_.getRowIdx();
-            Array<int> icolIdx = in_.getColIdx();
-
-            kernel::coo_csr<T>()(ovalues, orowIdx, ocolIdx, ivalues, irowIdx, icolIdx);
-        };
-
-        getQueue().enqueue(func, converted, in);
-
+        converter = kernel::coo_csr<T>;
     } else {
         // Should never come here
         AF_ERROR("CPU Backend invalid conversion combination", AF_ERR_NOT_SUPPORTED);
     }
+
+    getQueue().enqueue(converter,
+                       converted.getValues(), converted.getRowIdx(), converted.getColIdx(),
+                       in.getValues(), in.getRowIdx(), in.getColIdx());
 
     return converted;
 }
