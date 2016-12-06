@@ -227,76 +227,12 @@ CREATE_TESTS(AF_STORAGE_COO)
 
 #undef CREATE_TESTS
 
-template<typename T, af_storage src, af_storage dest>
-void sparseConvertTester(const int m, const int n, int factor)
+TEST(SPARSE_CREATE, AF_STORAGE_CSC)
 {
-    af::deviceGC();
+    af::array d = af::identity(3, 3);
 
-    if (noDoubleTests<T>()) return;
+    af_array out = 0;
+    ASSERT_EQ(AF_ERR_ARG, af_create_sparse_array_from_dense(&out, d.get(), AF_STORAGE_CSC));
 
-#if 1
-    af::array A = cpu_randu<T>(af::dim4(m, n));
-#else
-    af::array A = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
-#endif
-
-    A = makeSparse<T>(A, factor);
-
-    // Create Sparse Array of type src and dest From Dense
-    af::array sA = af::sparse(A, src);
-
-    // Convert src to dest format and dest to src
-    af::array s2d = sparseConvertTo(sA, dest);
-
-    // Create the dest type from dense - gold
-    af::array dA = af::sparse(A, dest);
-
-    // Verify nnZ
-    dim_t dNNZ   = sparseGetNNZ(dA);
-    dim_t s2dNNZ = sparseGetNNZ(s2d);
-
-    ASSERT_EQ(dNNZ, s2dNNZ);
-
-    // Verify Types
-    af_storage dType   = sparseGetStorage(dA);
-    af_storage s2dType = sparseGetStorage(s2d);
-
-    ASSERT_EQ(dType, s2dType);
-
-    // Get the individual arrays and verify equality
-    af::array dValues = sparseGetValues(dA);
-    af::array dRowIdx = sparseGetRowIdx(dA);
-    af::array dColIdx = sparseGetColIdx(dA);
-
-    af::array s2dValues = sparseGetValues(s2d);
-    af::array s2dRowIdx = sparseGetRowIdx(s2d);
-    af::array s2dColIdx = sparseGetColIdx(s2d);
-
-    // Verify values
-    ASSERT_EQ(0, af::max<double>(af::abs(dValues - s2dValues)));
-
-    // Verify row and col indices
-    ASSERT_EQ(0, af::max<int   >(dRowIdx - s2dRowIdx));
-    ASSERT_EQ(0, af::max<int   >(dColIdx - s2dColIdx));
+    if(out != 0) af_release_array(out);
 }
-
-#define CONVERT_TESTS_TYPES(T, STYPE, DTYPE, SUFFIX, M, N, F)                   \
-    TEST(SPARSE_CONVERT, T##_##STYPE##_##DTYPE##_##SUFFIX)                      \
-    {                                                                           \
-        sparseConvertTester<T, STYPE, DTYPE>(M, N, F);                          \
-    }                                                                           \
-    TEST(SPARSE_CONVERT, T##_##DTYPE##_##STYPE##_##SUFFIX)                      \
-    {                                                                           \
-        sparseConvertTester<T, DTYPE, STYPE>(M, N, F);                          \
-    }                                                                           \
-
-#define CONVERT_TESTS(T, STYPE, DTYPE)                                          \
-    CONVERT_TESTS_TYPES(T, STYPE, DTYPE, 1, 1000, 1000,  5)                     \
-    CONVERT_TESTS_TYPES(T, STYPE, DTYPE, 2,  512,  512,  1)                     \
-    CONVERT_TESTS_TYPES(T, STYPE, DTYPE, 3,  512, 1024,  2)                     \
-    CONVERT_TESTS_TYPES(T, STYPE, DTYPE, 4, 2048, 1024, 10)                     \
-
-CONVERT_TESTS(float  , AF_STORAGE_CSR, AF_STORAGE_COO)
-CONVERT_TESTS(double , AF_STORAGE_CSR, AF_STORAGE_COO)
-CONVERT_TESTS(cfloat , AF_STORAGE_CSR, AF_STORAGE_COO)
-CONVERT_TESTS(cdouble, AF_STORAGE_CSR, AF_STORAGE_COO)
