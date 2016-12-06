@@ -39,8 +39,8 @@ static inline af_array join_many(const int dim, const unsigned n_arrays, const a
 af_err af_join(af_array *out, const int dim, const af_array first, const af_array second)
 {
     try {
-        ArrayInfo finfo = getInfo(first);
-        ArrayInfo sinfo = getInfo(second);
+        const ArrayInfo& finfo = getInfo(first);
+        const ArrayInfo& sinfo = getInfo(second);
         af::dim4  fdims = finfo.dims();
         af::dim4  sdims = sinfo.dims();
 

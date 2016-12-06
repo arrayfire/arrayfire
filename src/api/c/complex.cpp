@@ -62,7 +62,7 @@ af_err af_cplx(af_array *out, const af_array in)
 {
     try {
 
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
 
         if (type == c32 || type == c64) {
@@ -96,7 +96,7 @@ af_err af_real(af_array *out, const af_array in)
 {
     try {
 
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
 
         if (type != c32 && type != c64) {
@@ -122,7 +122,7 @@ af_err af_imag(af_array *out, const af_array in)
 {
     try {
 
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
 
         if (type != c32 && type != c64) {
@@ -148,7 +148,7 @@ af_err af_conjg(af_array *out, const af_array in)
 {
     try {
 
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
 
         if (type != c32 && type != c64) {
@@ -174,7 +174,7 @@ af_err af_abs(af_array *out, const af_array in)
 {
     try {
 
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
         af_dtype in_type = in_info.getType();
         af_array res;
 

@@ -78,7 +78,7 @@ af_err af_create_strided_array(af_array *arr,
 af_err af_get_strides(dim_t *s0, dim_t *s1, dim_t *s2, dim_t *s3, const af_array in)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         *s0 = info.strides()[0];
         *s1 = info.strides()[1];
         *s2 = info.strides()[2];

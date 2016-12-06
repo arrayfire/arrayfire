@@ -36,8 +36,8 @@ template<af_op_t op>
 static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {
-        ArrayInfo linfo = getInfo(lhs);
-        ArrayInfo rinfo = getInfo(rhs);
+        const ArrayInfo& linfo = getInfo(lhs);
+        const ArrayInfo& rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
@@ -70,8 +70,8 @@ static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rh
 {
     try {
 
-        ArrayInfo linfo = getInfo(lhs);
-        ArrayInfo rinfo = getInfo(rhs);
+        const ArrayInfo& linfo = getInfo(lhs);
+        const ArrayInfo& rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
@@ -140,8 +140,8 @@ af_err af_mod(af_array *out, const af_array lhs, const af_array rhs, const bool 
 af_err af_pow(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {
-        ArrayInfo linfo = getInfo(lhs);
-        ArrayInfo rinfo = getInfo(rhs);
+        const ArrayInfo& linfo = getInfo(lhs);
+        const ArrayInfo& rinfo = getInfo(rhs);
         if (linfo.isComplex() || rinfo.isComplex()) {
             af_array log_lhs, log_res;
             af_array res;
@@ -159,8 +159,8 @@ af_err af_pow(af_array *out, const af_array lhs, const af_array rhs, const bool 
 af_err af_root(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {
-        ArrayInfo linfo = getInfo(lhs);
-        ArrayInfo rinfo = getInfo(rhs);
+        const ArrayInfo& linfo = getInfo(lhs);
+        const ArrayInfo& rinfo = getInfo(rhs);
         if (linfo.isComplex() || rinfo.isComplex()) {
             af_array log_lhs, log_res;
             af_array res;
@@ -198,8 +198,8 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, const boo
                      AF_ERR_NOT_SUPPORTED);
         }
 
-        ArrayInfo linfo = getInfo(lhs);
-        ArrayInfo rinfo = getInfo(rhs);
+        const ArrayInfo& linfo = getInfo(lhs);
+        const ArrayInfo& rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
@@ -227,8 +227,8 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs, const boo
                      AF_ERR_NOT_SUPPORTED);
         }
 
-        ArrayInfo linfo = getInfo(lhs);
-        ArrayInfo rinfo = getInfo(rhs);
+        const ArrayInfo& linfo = getInfo(lhs);
+        const ArrayInfo& rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
@@ -258,8 +258,8 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs, co
     try {
         const af_dtype type = implicit(lhs, rhs);
 
-        ArrayInfo linfo = getInfo(lhs);
-        ArrayInfo rinfo = getInfo(rhs);
+        const ArrayInfo& linfo = getInfo(lhs);
+        const ArrayInfo& rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
@@ -339,8 +339,8 @@ static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs, 
     try {
         const af_dtype type = implicit(lhs, rhs);
 
-        ArrayInfo linfo = getInfo(lhs);
-        ArrayInfo rinfo = getInfo(rhs);
+        const ArrayInfo& linfo = getInfo(lhs);
+        const ArrayInfo& rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 

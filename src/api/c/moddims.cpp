@@ -61,7 +61,7 @@ af_err af_moddims(af_array *out, const af_array in,
 
         af_array output = 0;
         dim4 newDims(ndims, dims);
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         dim_t in_elements = info.elements();
         dim_t new_elements = newDims.elements();
 
@@ -96,7 +96,7 @@ af_err af_flat(af_array *out, const af_array in)
     af_array res;
     try {
 
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
 
         if (in_info.ndims() == 1) {
             AF_CHECK(af_retain_array(&res, in));
