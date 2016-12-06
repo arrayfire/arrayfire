@@ -183,10 +183,10 @@ af_array createSparseArrayFromDense(
     switch(stype) {
         case AF_STORAGE_CSR:
             return getHandle(sparseConvertDenseToStorage<T, AF_STORAGE_CSR>(in));
-        case AF_STORAGE_CSC:
-            return getHandle(sparseConvertDenseToStorage<T, AF_STORAGE_CSC>(in));
         case AF_STORAGE_COO:
             return getHandle(sparseConvertDenseToStorage<T, AF_STORAGE_COO>(in));
+        case AF_STORAGE_CSC:
+            //return getHandle(sparseConvertDenseToStorage<T, AF_STORAGE_CSC>(in));
         default: AF_ERROR("Storage type is out of range/unsupported", AF_ERR_ARG);
     }
 }
@@ -235,16 +235,11 @@ af_array sparseConvertStorage(const af_array in_, const af_storage destStorage)
 {
     const SparseArray<T> in = getSparseArray<T>(in_);
 
-    // Only destStorage == AF_STORAGE_DENSE is supported
-    // All the other calls are for future when conversions are supported in
-    // the backend
     if(destStorage == AF_STORAGE_DENSE) {
         // Returns a regular af_array, not sparse
         switch(in.getStorage()) {
             case AF_STORAGE_CSR:
                 return getHandle(detail::sparseConvertStorageToDense<T, AF_STORAGE_CSR>(in));
-            case AF_STORAGE_CSC:
-                return getHandle(detail::sparseConvertStorageToDense<T, AF_STORAGE_CSC>(in));
             case AF_STORAGE_COO:
                 return getHandle(detail::sparseConvertStorageToDense<T, AF_STORAGE_COO>(in));
             default:
@@ -255,22 +250,8 @@ af_array sparseConvertStorage(const af_array in_, const af_storage destStorage)
         switch(in.getStorage()) {
             case AF_STORAGE_CSR:
                 return retainSparseHandle<T>(in_);
-            case AF_STORAGE_CSC:
-                return getHandle(detail::sparseConvertStorageToStorage<T, AF_STORAGE_CSR, AF_STORAGE_CSC>(in));
             case AF_STORAGE_COO:
                 return getHandle(detail::sparseConvertStorageToStorage<T, AF_STORAGE_CSR, AF_STORAGE_COO>(in));
-            default:
-                AF_ERROR("Invalid storage type of input array", AF_ERR_ARG);
-        }
-    } else if(destStorage == AF_STORAGE_CSC) {
-        // Returns a sparse af_array
-        switch(in.getStorage()) {
-            case AF_STORAGE_CSR:
-                return getHandle(detail::sparseConvertStorageToStorage<T, AF_STORAGE_CSC, AF_STORAGE_CSR>(in));
-            case AF_STORAGE_CSC:
-                return retainSparseHandle<T>(in_);
-            case AF_STORAGE_COO:
-                return getHandle(detail::sparseConvertStorageToStorage<T, AF_STORAGE_CSC, AF_STORAGE_COO>(in));
             default:
                 AF_ERROR("Invalid storage type of input array", AF_ERR_ARG);
         }
@@ -279,8 +260,6 @@ af_array sparseConvertStorage(const af_array in_, const af_storage destStorage)
         switch(in.getStorage()) {
             case AF_STORAGE_CSR:
                 return getHandle(detail::sparseConvertStorageToStorage<T, AF_STORAGE_COO, AF_STORAGE_CSR>(in));
-            case AF_STORAGE_CSC:
-                return getHandle(detail::sparseConvertStorageToStorage<T, AF_STORAGE_COO, AF_STORAGE_CSC>(in));
             case AF_STORAGE_COO:
                 return retainSparseHandle<T>(in_);
             default:
