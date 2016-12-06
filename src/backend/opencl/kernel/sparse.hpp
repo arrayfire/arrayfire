@@ -303,7 +303,6 @@ namespace opencl
 
             } catch (cl::Error err) {
                 CL_TO_AF_ERROR(err);
-                throw;
             }
         }
 
