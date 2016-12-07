@@ -41,7 +41,7 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
     af_array out;
     try {
 
-        ArrayInfo iInfo = getInfo(in);
+        const ArrayInfo& iInfo = getInfo(in);
         if (ndims == 1 && ndims != iInfo.ndims()) {
             af_array tmp_in;
             AF_CHECK(af_flat(&tmp_in, in));
@@ -77,7 +77,7 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
 template<typename idx_t>
 static af_array lookup(const af_array &in, const af_array &idx, const unsigned dim)
 {
-    ArrayInfo inInfo = getInfo(in);
+    const ArrayInfo& inInfo = getInfo(in);
 
     af_dtype inType  = inInfo.getType();
 
@@ -105,7 +105,7 @@ af_err af_lookup(af_array *out, const af_array in, const af_array indices, const
     try {
         ARG_ASSERT(3, (dim>=0 && dim<=3));
 
-        ArrayInfo idxInfo= getInfo(indices);
+        const ArrayInfo& idxInfo= getInfo(indices);
 
         if(idxInfo.ndims() == 0) {
             return af_retain_array(out, indices);
@@ -160,7 +160,7 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
         ARG_ASSERT(2, (ndims>0));
         ARG_ASSERT(3, (indexs!=NULL));
 
-        ArrayInfo iInfo = getInfo(in);
+        const ArrayInfo& iInfo = getInfo(in);
 
         dim4 iDims = iInfo.dims();
         af_dtype inType = getInfo(in).getType();
@@ -200,7 +200,7 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
             if (!indexs[i].isSeq) {
                 // check if all af_arrays have atleast one value
                 // to enable indexing along that dimension
-                ArrayInfo idxInfo = getInfo(indexs[i].idx.arr);
+                const ArrayInfo& idxInfo = getInfo(indexs[i].idx.arr);
                 af_dtype idxType  = idxInfo.getType();
 
                 ARG_ASSERT(3, (idxType!=c32));

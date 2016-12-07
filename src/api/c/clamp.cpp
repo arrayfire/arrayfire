@@ -40,9 +40,9 @@ af_err af_clamp(af_array *out, const af_array in,
                 const af_array lo, const af_array hi, const bool batch)
 {
     try {
-        ArrayInfo linfo = getInfo(lo);
-        ArrayInfo hinfo = getInfo(hi);
-        ArrayInfo iinfo = getInfo(in);
+        const ArrayInfo& linfo = getInfo(lo);
+        const ArrayInfo& hinfo = getInfo(hi);
+        const ArrayInfo& iinfo = getInfo(in);
 
         DIM_ASSERT(2, linfo.dims() == hinfo.dims());
         TYPE_ASSERT(linfo.getType() == hinfo.getType());

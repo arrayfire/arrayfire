@@ -32,7 +32,7 @@ af_err mean_shift(af_array *out, const af_array in, const float s_sigma, const f
         ARG_ASSERT(3, (c_sigma>=0));
         ARG_ASSERT(4, (iter>0));
 
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type  = info.getType();
         af::dim4 dims  = info.dims();
 

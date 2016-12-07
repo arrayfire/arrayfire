@@ -43,7 +43,7 @@ static int save(const char *key, const af_array arr, const char *filename, const
     std::string k(key);
     int klen = k.size();
 
-    const ArrayInfo info = getInfo(arr);
+    const ArrayInfo& info = getInfo(arr);
     std::vector<T> data(info.elements());
 
     AF_CHECK(af_get_data_ptr(&data.front(), arr));
@@ -119,7 +119,7 @@ af_err af_save_array(int *index, const char *key, const af_array arr, const char
         ARG_ASSERT(0, key != NULL);
         ARG_ASSERT(2, filename != NULL);
 
-        ArrayInfo info = getInfo(arr);
+        const ArrayInfo& info = getInfo(arr);
         af_dtype type = info.getType();
         int id = -1;
         switch(type) {
