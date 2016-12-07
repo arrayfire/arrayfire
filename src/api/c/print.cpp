@@ -96,11 +96,11 @@ static void print(const char *exp, af_array arr, const int precision, std::ostre
     AF_CHECK(af_get_data_ptr(&data.front(), arrT));
     const ArrayInfo& infoT = getInfo(arrT);
 
+    printer(os, &data.front(), infoT, infoT.ndims() - 1, precision);
+
     if(transpose) {
         AF_CHECK(af_release_array(arrT));
     }
-
-    printer(os, &data.front(), infoT, infoT.ndims() - 1, precision);
 
     os.flags(backup);
 }
