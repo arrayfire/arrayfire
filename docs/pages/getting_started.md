@@ -20,13 +20,14 @@ ArrayFire provides one generic container object, the [array](\ref af::array)
 on which functions and mathematical operations are performed. The `array`
 can represent one of many different [basic data types](\ref af::af_dtype):
 
-* [b8](\ref b8) 8-bit boolean values (`bool`)
 * [f32](\ref f32) real single-precision (`float`)
 * [c32](\ref c32) complex single-precision (`cfloat`)
-* [s32](\ref s32) 32-bit signed integer (`int`)
-* [u32](\ref u32) 32-bit unsigned integer (`unsigned`)
 * [f64](\ref f64) real double-precision (`double`)
 * [c64](\ref c64) complex double-precision (`cdouble`)
+* [b8](\ref b8) 8-bit boolean values (`bool`)
+* [s32](\ref s32) 32-bit signed integer (`int`)
+* [u32](\ref u32) 32-bit unsigned integer (`unsigned`)
+* [u8](\ref u8) 8-bit unsigned values (`unsigned char`)
 * [s64](\ref s64) 64-bit signed integer (`intl`)
 * [u64](\ref u64) 64-bit unsigned integer (`uintl`)
 * [s16](\ref s16) 16-bit signed integer (`short`)
