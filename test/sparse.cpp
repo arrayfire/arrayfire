@@ -226,3 +226,13 @@ CREATE_TESTS(AF_STORAGE_CSR)
 CREATE_TESTS(AF_STORAGE_COO)
 
 #undef CREATE_TESTS
+
+TEST(SPARSE_CREATE, AF_STORAGE_CSC)
+{
+    af::array d = af::identity(3, 3);
+
+    af_array out = 0;
+    ASSERT_EQ(AF_ERR_ARG, af_create_sparse_array_from_dense(&out, d.get(), AF_STORAGE_CSC));
+
+    if(out != 0) af_release_array(out);
+}
