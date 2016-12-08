@@ -9,6 +9,8 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/signal.h>
+#include <af/arith.h>
+#include <af/data.h>
 #include <handle.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
@@ -113,9 +115,28 @@ af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, co
 
         af_dtype signalType  = sInfo.getType();
 
-        dim4 signalDims = sInfo.dims();
+        dim4 sdims = sInfo.dims();
 
-        ARG_ASSERT(1, (signalDims.ndims()>=2));
+        ARG_ASSERT(1, (sdims.ndims()>=2));
+
+        if (cfInfo.isScalar() && rfInfo.isScalar()) {
+            af_array colArray = 0;
+            af_array rowArray = 0;
+            af_array filter = 0;
+
+            AF_CHECK(af_tile(&colArray, col_filter, sdims[0], sdims[1], sdims[2], sdims[3]));
+            AF_CHECK(af_tile(&rowArray, row_filter, sdims[0], sdims[1], sdims[2], sdims[3]));
+            AF_CHECK(af_mul (&filter, colArray, rowArray, false));
+
+            AF_CHECK(af_mul(out, signal, filter, false));
+
+            if (colArray!=0) AF_CHECK(af_release_array(colArray));
+            if (rowArray!=0) AF_CHECK(af_release_array(rowArray));
+            if (filter!=0)   AF_CHECK(af_release_array(filter));
+
+            return AF_SUCCESS;
+        }
+
         ARG_ASSERT(2, cfInfo.isVector());
         ARG_ASSERT(3, rfInfo.isVector());
 
