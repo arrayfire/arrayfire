@@ -14,6 +14,8 @@
 #include <stdexcept>
 #include <string>
 
+#include <boost/shared_ptr.hpp>
+
 #include <arith.hpp>
 #include <cast.hpp>
 #include <complex.hpp>
@@ -361,24 +363,10 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in)
     return dense;
 }
 
-#define CUSPARSE_CHECK_FREE(fn) do {                    \
-        cusparseStatus_t _error = fn;                   \
-        if (_error != CUSPARSE_STATUS_SUCCESS) {        \
-            memFree(P);                                 \
-            memFree(pBuffer);                           \
-            char _err_msg[1024];                        \
-            snprintf(_err_msg, sizeof(_err_msg),        \
-                     "CUSPARSE Error (%d): %s\n",       \
-                     (int)(_error),                     \
-                     cusparse::errorString( _error));   \
-                                                        \
-            AF_ERROR(_err_msg, AF_ERR_INTERNAL);        \
-        }                                               \
-    } while(0)
-
 template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
+    using boost::shared_ptr;
     in.eval();
 
     int nNZ = in.getNNZ();
@@ -406,25 +394,22 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
                         in.dims()[0], in.dims()[1], nNZ,
                         converted.getRowIdx().get(), converted.getColIdx().get(),
                         &pBufferSizeInBytes));
-        char *pBuffer = memAlloc<char>(pBufferSizeInBytes);
+        shared_ptr<char> pBuffer(memAlloc<char>(pBufferSizeInBytes), memFree<char>);
 
-        int *P = memAlloc<int>(nNZ);
-        CUSPARSE_CHECK_FREE(cusparseCreateIdentityPermutation(getHandle(), nNZ, P));
+        shared_ptr<int> P(memAlloc<int>(nNZ), memFree<int>);
+        CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getHandle(), nNZ, P.get()));
 
-        CUSPARSE_CHECK_FREE(cusparseXcoosortByColumn(
-                            getHandle(),
-                            in.dims()[0], in.dims()[1], nNZ,
-                            converted.getRowIdx().get(), converted.getColIdx().get(),
-                            P, (void*)pBuffer));
+        CUSPARSE_CHECK(cusparseXcoosortByColumn(
+                       getHandle(),
+                       in.dims()[0], in.dims()[1], nNZ,
+                       converted.getRowIdx().get(), converted.getColIdx().get(),
+                       P.get(), (void*)pBuffer.get()));
 
-        CUSPARSE_CHECK_FREE(gthr_func<T>()(
-                            getHandle(), nNZ,
-                            in.getValues().get(),
-                            converted.getValues().get(),
-                            P, CUSPARSE_INDEX_BASE_ZERO));
-
-        memFree(P);
-        memFree(pBuffer);
+        CUSPARSE_CHECK(gthr_func<T>()(
+                       getHandle(), nNZ,
+                       in.getValues().get(),
+                       converted.getValues().get(),
+                       P.get(), CUSPARSE_INDEX_BASE_ZERO));
 
     } else if (src == AF_STORAGE_COO && dest == AF_STORAGE_CSR) {
         // The cusparse csr sort function is not behaving correctly.
@@ -444,25 +429,23 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
                             cooT.dims()[0], cooT.dims()[1], nNZ,
                             cooT.getRowIdx().get(), cooT.getColIdx().get(),
                             &pBufferSizeInBytes));
-            char *pBuffer = memAlloc<char>(pBufferSizeInBytes);
+            shared_ptr<char> pBuffer(memAlloc<char>(pBufferSizeInBytes), memFree<char>);
 
-            int *P = memAlloc<int>(nNZ);
-            CUSPARSE_CHECK_FREE(cusparseCreateIdentityPermutation(getHandle(), nNZ, P));
+            shared_ptr<int> P(memAlloc<int>(nNZ), memFree<int>);
+            CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getHandle(), nNZ, P.get()));
 
-            CUSPARSE_CHECK_FREE(cusparseXcoosortByRow(
-                                getHandle(),
-                                cooT.dims()[0], cooT.dims()[1], nNZ,
-                                cooT.getRowIdx().get(), cooT.getColIdx().get(),
-                                P, (void*)pBuffer));
+            CUSPARSE_CHECK(cusparseXcoosortByRow(
+                           getHandle(),
+                           cooT.dims()[0], cooT.dims()[1], nNZ,
+                           cooT.getRowIdx().get(), cooT.getColIdx().get(),
+                           P.get(), (void*)pBuffer.get()));
 
-            CUSPARSE_CHECK_FREE(gthr_func<T>()(
-                                getHandle(), nNZ,
-                                in.getValues().get(),
-                                cooT.getValues().get(),
-                                P, CUSPARSE_INDEX_BASE_ZERO));
+            CUSPARSE_CHECK(gthr_func<T>()(
+                           getHandle(), nNZ,
+                           in.getValues().get(),
+                           cooT.getValues().get(),
+                           P.get(), CUSPARSE_INDEX_BASE_ZERO));
 
-            memFree(P);
-            memFree(pBuffer);
         }
 
         // Copy values and colIdx as is
@@ -492,9 +475,6 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 
     return converted;
 }
-
-#undef CUSPARSE_CHECK_FREE
-
 
 #define INSTANTIATE_TO_STORAGE(T, S)                                                                        \
     template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_STORAGE_CSR>(const SparseArray<T> &in);  \
