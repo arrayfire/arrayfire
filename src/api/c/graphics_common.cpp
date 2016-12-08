@@ -116,6 +116,61 @@ void makeContextCurrent(forge::Window *window)
     CheckGL("End makeContextCurrent");
 }
 
+// dir -> true = round up, false = round down
+double step_round(const double in, const bool dir)
+{
+    if(in == 0) return 0;
+
+    static const double __log2 = log10(2);
+    static const double __log4 = log10(4);
+    static const double __log6 = log10(6);
+    static const double __log8 = log10(8);
+
+    // log_in is of the form "s abc.xyz", where
+    // s is either + or -; + indicates abs(in) >= 1 and - indicates 0 < abs(in) < 1 (log10(1) is +0)
+    const double sign   = in < 0 ? -1 : 1;
+    const double log_in = std::log10(std::fabs(in));
+    const double mag    = std::pow(10, std::floor(log_in)) * sign;  // Number of digits either left or right of 0
+    const double dec    = std::log10(in / mag); // log of the fraction
+
+    // This means in is of the for 10^n
+    if(dec == 0) return in;
+
+    // For negative numbers, -ve round down = +ve round up and vice versa
+    bool op_dir = in > 0 ? dir : !dir;
+
+    double mult = 1;
+
+    // Round up
+    if(op_dir) {
+        if(dec <= __log2) {
+            mult = 2;
+        } else if(dec <= __log4) {
+            mult = 4;
+        } else if(dec <= __log6) {
+            mult = 6;
+        } else if(dec <= __log8) {
+            mult = 8;
+        } else {
+            mult = 10;
+        }
+    } else {    // Round down
+        if(dec < __log2) {
+            mult = 1;
+        } else if(dec < __log4) {
+            mult = 2;
+        } else if(dec < __log6) {
+            mult = 4;
+        } else if(dec < __log8) {
+            mult = 6;
+        } else {
+            mult = 8;
+        }
+    }
+
+    return mag * mult;
+}
+
 namespace graphics
 {
 
@@ -178,15 +233,15 @@ void ForgeManager::setWindowChartGrid(const forge::Window* window,
 {
     ChartMapIter iter = mChartMap.find(window);
 
-        if(iter != mChartMap.end()) {
-
-    }
-
     if(iter != mChartMap.end()) {
         // ChartVec found. Clear it.
         // TODO: Should we clear this even if r = old_r and c = old_c?
-        for(int i = 0; i < (int)(iter->second).size(); i++)
-            if((iter->second)[i] != NULL) delete (iter->second)[i];
+        for(int i = 0; i < (int)(iter->second).size(); i++) {
+            if((iter->second)[i] != NULL) {
+                delete (iter->second)[i];
+                mChartAxesOverrideMap.erase((iter->second)[i]);
+            }
+        }
         (iter->second).clear();
     }
 
@@ -216,6 +271,9 @@ forge::Chart* ForgeManager::getChart(const forge::Window* window, const int r, c
             // Chart has not been created
             chart = new forge::Chart(ctype);
             (iter->second)[c * gRows + r] = chart;
+
+            // Set Axes override to false
+            mChartAxesOverrideMap[chart] = false;
         }
     } else {
         // The chart map for this was never created
@@ -366,6 +424,24 @@ forge::VectorField* ForgeManager::getVectorField(forge::Chart* chart, int nPoint
     return mVcfMap[keypair];
 }
 
+bool ForgeManager::getChartAxesOverride(forge::Chart* chart)
+{
+    ChartAxesOverrideIter iter = mChartAxesOverrideMap.find(chart);
+    if (iter == mChartAxesOverrideMap.end()) {
+        AF_ERROR("Chart Not Found!", AF_ERR_INTERNAL);
+    }
+    return mChartAxesOverrideMap[chart];
+}
+
+void ForgeManager::setChartAxesOverride(forge::Chart* chart, bool flag)
+{
+    ChartAxesOverrideIter iter = mChartAxesOverrideMap.find(chart);
+    if (iter == mChartAxesOverrideMap.end()) {
+        AF_ERROR("Chart Not Found!", AF_ERR_INTERNAL);
+    }
+    mChartAxesOverrideMap[chart] = flag;
+}
+
 void ForgeManager::destroyResources()
 {
     /* clear all OpenGL resource objects (images, plots, histograms etc) first
@@ -379,9 +455,14 @@ void ForgeManager::destroyResources()
     for(HstMapIter iter = mHstMap.begin(); iter != mHstMap.end(); iter++)
         delete (iter->second);
 
-    for(ChartMapIter iter = mChartMap.begin(); iter != mChartMap.end(); iter++)
-        for(int i = 0; i < (int)(iter->second).size(); i++)
-            if((iter->second)[i] != NULL) delete (iter->second)[i];
+    for(ChartMapIter iter = mChartMap.begin(); iter != mChartMap.end(); iter++) {
+        for(int i = 0; i < (int)(iter->second).size(); i++) {
+            if((iter->second)[i] != NULL) {
+                delete (iter->second)[i];
+                mChartAxesOverrideMap.erase((iter->second)[i]);
+            }
+        }
+    }
 
     delete getFont(true);
     delete getMainWindow(true);
