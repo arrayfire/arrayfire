@@ -93,12 +93,12 @@ namespace cuda
     }
 
 #ifndef __CUDA_ARCH__
-    template <typename T> T maxval() { return std::numeric_limits<T>::max(); }
-    template <typename T> T minval() { return std::numeric_limits<T>::min(); }
-    template <> STATIC_ float maxval() { return std::numeric_limits<float>::infinity(); }
-    template <> STATIC_ double maxval() { return std::numeric_limits<double>::infinity(); }
-    template <> STATIC_ float minval() { return -std::numeric_limits<float>::infinity(); }
-    template <> STATIC_ double minval() { return -std::numeric_limits<double>::infinity(); }
+    template <typename T> STATIC_ T      maxval() { return  std::numeric_limits<T     >::max();      }
+    template <typename T> STATIC_ T      minval() { return  std::numeric_limits<T     >::min();      }
+    template <>           STATIC_ float  maxval() { return  std::numeric_limits<float >::infinity(); }
+    template <>           STATIC_ double maxval() { return  std::numeric_limits<double>::infinity(); }
+    template <>           STATIC_ float  minval() { return -std::numeric_limits<float >::infinity(); }
+    template <>           STATIC_ double minval() { return -std::numeric_limits<double>::infinity(); }
 #else
     template <typename T> __device__ T maxval() { return 1u << (8 * sizeof(T) - 1); }
     template <typename T> __device__ T minval() { return scalar<T>(0); }

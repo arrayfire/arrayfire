@@ -14,6 +14,8 @@
 #include <stdexcept>
 #include <string>
 
+#include <boost/shared_ptr.hpp>
+
 #include <arith.hpp>
 #include <cast.hpp>
 #include <complex.hpp>
@@ -145,6 +147,21 @@ struct nnz_func_def_t
                                               int *, int *);
 };
 
+//cusparseStatus_t cusparseZgthr(cusparseHandle_t handle,
+//                               int nnz,
+//                               const cuDoubleComplex *y,
+//                               cuDoubleComplex *xVal, const int *xInd,
+//                               cusparseIndexBase_t idxBase)
+template<typename T>
+struct gthr_func_def_t
+{
+    typedef cusparseStatus_t (*gthr_func_def)(cusparseHandle_t,
+                                              int,
+                                              const T *,
+                                              T*, const int *,
+                                              cusparseIndexBase_t);
+};
+
 #define SPARSE_FUNC_DEF( FUNC )                     \
 template<typename T>                                \
 typename FUNC##_func_def_t<T>::FUNC##_func_def      \
@@ -191,6 +208,12 @@ SPARSE_FUNC(nnz, double, D)
 SPARSE_FUNC(nnz, cfloat, C)
 SPARSE_FUNC(nnz, cdouble,Z)
 
+SPARSE_FUNC_DEF(gthr)
+SPARSE_FUNC(gthr, float,  S)
+SPARSE_FUNC(gthr, double, D)
+SPARSE_FUNC(gthr, cfloat, C)
+SPARSE_FUNC(gthr, cdouble,Z)
+
 #undef SPARSE_FUNC
 #undef SPARSE_FUNC_DEF
 
@@ -204,10 +227,10 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in)
 
     dim_t nNZ = nonZeroIdx.elements();
 
-    Array<int> constNNZ = createValueArray<int>(dim4(nNZ), nNZ);
+    Array<int> constDim = createValueArray<int>(dim4(nNZ), in.dims()[0]);
 
-    Array<int> rowIdx = arithOp<int, af_mod_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
-    Array<int> colIdx = arithOp<int, af_div_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
+    Array<int> rowIdx = arithOp<int, af_mod_t>(nonZeroIdx, constDim, nonZeroIdx.dims());
+    Array<int> colIdx = arithOp<int, af_div_t>(nonZeroIdx, constDim, nonZeroIdx.dims());
 
     Array<T> values = copyArray<T>(in);
     values.modDims(dim4(values.elements()));
@@ -340,16 +363,118 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in)
     return dense;
 }
 
-template<typename T, af_storage src, af_storage dest>
+template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
-    // Dummy function
-    // TODO finish this function when support is required
-    SparseArray<T> dense = createEmptySparseArray<T>(in.dims(), in.getNNZ(), dest);
+    using boost::shared_ptr;
+    in.eval();
 
-    return dense;
+    int nNZ = in.getNNZ();
+    SparseArray<T> converted = createEmptySparseArray<T>(in.dims(), nNZ, dest);
+
+    if(src == AF_STORAGE_CSR && dest == AF_STORAGE_COO) {
+        // Copy colIdx as is
+        CUDA_CHECK(cudaMemcpyAsync(converted.getColIdx().get(), in.getColIdx().get(),
+                                   in.getColIdx().elements() * sizeof(int),
+                                   cudaMemcpyDeviceToDevice,
+                                   cuda::getStream(cuda::getActiveDeviceId())));
+
+        // cusparse function to expand compressed row into coordinate
+        CUSPARSE_CHECK(cusparseXcsr2coo(
+                        getHandle(),
+                        in.getRowIdx().get(),
+                        nNZ, in.dims()[0],
+                        converted.getRowIdx().get(),
+                        CUSPARSE_INDEX_BASE_ZERO));
+
+        // Call sort
+        size_t pBufferSizeInBytes = 0;
+        CUSPARSE_CHECK(cusparseXcoosort_bufferSizeExt(
+                        getHandle(),
+                        in.dims()[0], in.dims()[1], nNZ,
+                        converted.getRowIdx().get(), converted.getColIdx().get(),
+                        &pBufferSizeInBytes));
+        shared_ptr<char> pBuffer(memAlloc<char>(pBufferSizeInBytes), memFree<char>);
+
+        shared_ptr<int> P(memAlloc<int>(nNZ), memFree<int>);
+        CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getHandle(), nNZ, P.get()));
+
+        CUSPARSE_CHECK(cusparseXcoosortByColumn(
+                       getHandle(),
+                       in.dims()[0], in.dims()[1], nNZ,
+                       converted.getRowIdx().get(), converted.getColIdx().get(),
+                       P.get(), (void*)pBuffer.get()));
+
+        CUSPARSE_CHECK(gthr_func<T>()(
+                       getHandle(), nNZ,
+                       in.getValues().get(),
+                       converted.getValues().get(),
+                       P.get(), CUSPARSE_INDEX_BASE_ZERO));
+
+    } else if (src == AF_STORAGE_COO && dest == AF_STORAGE_CSR) {
+        // The cusparse csr sort function is not behaving correctly.
+        // So the work around is to convert the COO into row major and then
+        // convert it to CSR
+
+        // Deep copy input into temporary COO Row Major
+        SparseArray<T> cooT = createArrayDataSparseArray<T>(in.dims(), in.getValues(),
+                                                            in.getRowIdx(), in.getColIdx(),
+                                                            in.getStorage(), true);
+
+        // Call sort to convert column major to row major
+        {
+            size_t pBufferSizeInBytes = 0;
+            CUSPARSE_CHECK(cusparseXcoosort_bufferSizeExt(
+                            getHandle(),
+                            cooT.dims()[0], cooT.dims()[1], nNZ,
+                            cooT.getRowIdx().get(), cooT.getColIdx().get(),
+                            &pBufferSizeInBytes));
+            shared_ptr<char> pBuffer(memAlloc<char>(pBufferSizeInBytes), memFree<char>);
+
+            shared_ptr<int> P(memAlloc<int>(nNZ), memFree<int>);
+            CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getHandle(), nNZ, P.get()));
+
+            CUSPARSE_CHECK(cusparseXcoosortByRow(
+                           getHandle(),
+                           cooT.dims()[0], cooT.dims()[1], nNZ,
+                           cooT.getRowIdx().get(), cooT.getColIdx().get(),
+                           P.get(), (void*)pBuffer.get()));
+
+            CUSPARSE_CHECK(gthr_func<T>()(
+                           getHandle(), nNZ,
+                           in.getValues().get(),
+                           cooT.getValues().get(),
+                           P.get(), CUSPARSE_INDEX_BASE_ZERO));
+
+        }
+
+        // Copy values and colIdx as is
+        CUDA_CHECK(cudaMemcpyAsync(converted.getValues().get(), cooT.getValues().get(),
+                                   cooT.getValues().elements() * sizeof(T),
+                                   cudaMemcpyDeviceToDevice,
+                                   cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(converted.getColIdx().get(), cooT.getColIdx().get(),
+                                   cooT.getColIdx().elements() * sizeof(int),
+                                   cudaMemcpyDeviceToDevice,
+                                   cuda::getStream(cuda::getActiveDeviceId())));
+
+        // cusparse function to compress row from coordinate
+        CUSPARSE_CHECK(cusparseXcoo2csr(
+                        getHandle(),
+                        cooT.getRowIdx().get(),
+                        nNZ, cooT.dims()[0],
+                        converted.getRowIdx().get(),
+                        CUSPARSE_INDEX_BASE_ZERO));
+
+        // No need to call CSRSORT
+
+    } else {
+        // Should never come here
+        AF_ERROR("CUDA Backend invalid conversion combination", AF_ERR_NOT_SUPPORTED);
+    }
+
+    return converted;
 }
-
 
 #define INSTANTIATE_TO_STORAGE(T, S)                                                                        \
     template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_STORAGE_CSR>(const SparseArray<T> &in);  \
