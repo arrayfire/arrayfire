@@ -9,8 +9,18 @@
 
 #pragma once
 #include <Array.hpp>
-#include <clBLAS.h>
 #include <mutex>
+
+// TODO: Temporary choose between clBLAS and CLBlast here
+#define USE_CLBLAS // or USE_CLBLAST
+
+#if defined(USE_CLBLAS)
+#include <clBLAS.h>
+#elif defined(USE_CLBLAST)
+#include <clblast.h>
+#else
+#error "Define either USE_CLBLAS or USE_CLBLAST"
+#endif
 
 namespace opencl
 {
@@ -24,7 +34,9 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
 
 STATIC_ void
 initBlas() {
+#if defined(USE_CLBLAS)
     static std::once_flag clblasSetupFlag;
     call_once(clblasSetupFlag, clblasSetup);
+#endif // USE_CLBLAS
 }
 }

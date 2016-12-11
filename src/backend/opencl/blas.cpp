@@ -15,12 +15,20 @@
 #include <stdexcept>
 #include <mutex>
 #include <err_common.hpp>
-#include <err_clblas.hpp>
 #include <math.hpp>
 #include <transpose.hpp>
 #include <arith.hpp>
 #include <reduce.hpp>
 #include <complex.hpp>
+
+#if defined(USE_CLBLAS)
+#include <err_clblas.hpp>
+#elif defined(USE_CLBLAST)
+#include <complex>
+#include <err_clblast.hpp>
+#else
+#error "Define either USE_CLBLAS or USE_CLBLAST"
+#endif
 
 #if defined(WITH_OPENCL_LINEAR_ALGEBRA)
 #include <cpu/cpu_blas.hpp>
@@ -35,6 +43,9 @@ using std::once_flag;
 using std::call_once;
 using std::runtime_error;
 using std::to_string;
+
+// clBLAS specific helper functions and macro's
+#if defined(USE_CLBLAS)
 
 clblasTranspose
 toClblasTranspose(af_mat_prop opt)
@@ -115,6 +126,40 @@ BLAS_FUNC(dot, cdouble, false, Z, u)
 #undef BLAS_FUNC_DEF
 #undef BLAS_FUNC
 
+#endif // USE_CLBLAS
+
+// CLBlast specific helpers
+#if defined(USE_CLBLAST)
+
+clblast::Transpose
+toClblastTranspose(af_mat_prop opt)
+{
+    auto out = clblast::Transpose::kNo;
+    switch(opt) {
+        case AF_MAT_NONE    : out = clblast::Transpose::kNo; break;
+        case AF_MAT_TRANS   : out = clblast::Transpose::kYes; break;
+        case AF_MAT_CTRANS  : out = clblast::Transpose::kConjugate; break;
+        default             : AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
+    }
+    return out;
+}
+
+// Defines type conversions from ArrayFire (OpenCL) to CLBlast (C++ std)
+template <typename T> struct CLBlastConstant { using Type = T; };
+template <> struct CLBlastConstant<cfloat> { using Type = std::complex<float>; };
+template <> struct CLBlastConstant<cdouble> { using Type = std::complex<double>; };
+
+// Converts a constant from ArrayFire types (OpenCL) to CLBlast types (C++ std)
+template <typename T> typename CLBlastConstant<T>::Type toCLBlastConstant(const T val);
+
+// Specializations of the above function
+template <> float toCLBlastConstant(const float val) { return val; }
+template <> double toCLBlastConstant(const double val) { return val; }
+template <> std::complex<float> toCLBlastConstant(cfloat val) { return {val.s[0], val.s[1]}; }
+template <> std::complex<double> toCLBlastConstant(cdouble val) { return {val.s[0], val.s[1]}; }
+
+#endif // USE_CLBLAST
+
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
@@ -126,12 +171,24 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
 #endif
 
     initBlas();
+
+#if defined(USE_CLBLAS)
     clblasTranspose lOpts = toClblasTranspose(optLhs);
     clblasTranspose rOpts = toClblasTranspose(optRhs);
 
     int aRowDim = (lOpts == clblasNoTrans) ? 0 : 1;
     int aColDim = (lOpts == clblasNoTrans) ? 1 : 0;
     int bColDim = (rOpts == clblasNoTrans) ? 1 : 0;
+#endif // USE_CLBLAS
+
+#if defined(USE_CLBLAST)
+    auto lOpts = toClblastTranspose(optLhs);
+    auto rOpts = toClblastTranspose(optRhs);
+
+    int aRowDim = (lOpts == clblast::Transpose::kNo) ? 0 : 1;
+    int aColDim = (lOpts == clblast::Transpose::kNo) ? 1 : 0;
+    int bColDim = (rOpts == clblast::Transpose::kNo) ? 1 : 0;
+#endif // USE_CLBLAST
 
     dim4 lDims = lhs.dims();
     dim4 rDims = rhs.dims();
@@ -149,6 +206,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     cl::Event event;
     if(rDims[bColDim] == 1) {
         N = lDims[aColDim];
+#if defined(USE_CLBLAS)
         gemv_func<T> gemv;
         CLBLAS_CHECK(
             gemv(
@@ -161,7 +219,23 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 (*out.get())(),   out.getOffset(),             1,
                 1, &getQueue()(), 0, nullptr, &event())
             );
+#endif // USE_CLBLAS
+#if defined(USE_CLBLAST)
+        auto alpha_clblast = toCLBlastConstant(alpha);
+        auto beta_clblast = toCLBlastConstant(beta);
+        CLBLAST_CHECK(
+            clblast::Gemv(clblast::Layout::kColMajor, lOpts,
+                          lDims[0], lDims[1],
+                          alpha_clblast,
+                          (*lhs.get())(), lhs.getOffset(), lStrides[1],
+                          (*rhs.get())(), rhs.getOffset(), rStrides[0],
+                          beta_clblast,
+                          (*out.get())(), out.getOffset(), 1,
+                          &getQueue()(), &event())
+        );
+#endif // USE_CLBLAST
     } else {
+#if defined(USE_CLBLAS)
         gemm_func<T> gemm;
         CLBLAS_CHECK(
             gemm(
@@ -174,6 +248,21 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 (*out.get())(),   out.getOffset(),  out.dims()[0],
                 1, &getQueue()(), 0, nullptr, &event())
             );
+#endif // USE_CLBLAS
+#if defined(USE_CLBLAST)
+        auto alpha_clblast = toCLBlastConstant(alpha);
+        auto beta_clblast = toCLBlastConstant(beta);
+        CLBLAST_CHECK(
+            clblast::Gemm(clblast::Layout::kColMajor, lOpts, rOpts,
+                          M, N, K,
+                          alpha_clblast,
+                          (*lhs.get())(), lhs.getOffset(), lStrides[1],
+                          (*rhs.get())(), rhs.getOffset(), rStrides[1],
+                          beta_clblast,
+                          (*out.get())(), out.getOffset(), out.dims()[0],
+                          &getQueue()(), &event())
+        );
+#endif // USE_CLBLAST
 
     }
 
