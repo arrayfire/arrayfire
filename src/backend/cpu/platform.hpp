@@ -9,34 +9,134 @@
 
 #pragma once
 
+#include <array>
+#include <algorithm>
+#include <iostream>
 #include <string>
 
-namespace cpu {
-    class queue;
+#include <queue.hpp>
 
-    int getBackend();
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) || defined(_WIN64)
+#define CPUID_CAPABLE USE_CPUID
+#else
+#define CPUID_CAPABLE 0
+#endif
 
-    std::string getDeviceInfo();
+#ifdef _WIN32
+#include <limits.h>
+#include <intrin.h>
+typedef unsigned __int32  uint32_t;
+#else
+#include <stdint.h>
+#endif
 
-    bool isDoubleSupported(int device);
+#if CPUID_CAPABLE
 
-    void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+#define MAX_INTEL_TOP_LVL 4
 
-    int getDeviceCount();
+class CPUID {
+    uint32_t regs[4];
 
-    int setDevice(int device);
+    public:
+    explicit CPUID(unsigned funcId, unsigned subFuncId) {
+#ifdef _WIN32
+        __cpuidex((int *)regs, (int)funcId, (int)subFuncId);
 
-    int getActiveDeviceId();
+#else
+        asm volatile
+            ("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3])
+             : "a" (funcId), "c" (subFuncId));
+#endif
+    }
 
-    size_t getDeviceMemorySize(int device);
+    inline const uint32_t &EAX() const { return regs[0]; }
+    inline const uint32_t &EBX() const { return regs[1]; }
+    inline const uint32_t &ECX() const { return regs[2]; }
+    inline const uint32_t &EDX() const { return regs[3]; }
+};
 
-    size_t getHostMemorySize();
+#endif
 
-    void sync(int device);
+class CPUInfo {
+    public:
+        CPUInfo();
+        std::string  vendor() const { return mVendorId;   }
+        std::string  model()  const { return mModelName;  }
+        int threads() const { return mNumLogCpus; }
 
-    queue& getQueue(int idx = 0);
+    private:
+        // Bit positions for data extractions
+        static const uint32_t LVL_NUM   = 0x000000FF;
+        static const uint32_t LVL_TYPE  = 0x0000FF00;
+        static const uint32_t LVL_CORES = 0x0000FFFF;
+        static const uint32_t HTT_POS   = 0x10000000;
 
-    unsigned getMaxJitSize();
+        // Attributes
+        std::string mVendorId;
+        std::string mModelName;
+        int    mNumSMT;
+        int    mNumCores;
+        int    mNumLogCpus;
+        bool   mIsHTT;
+};
 
-    bool& evalFlag();
+namespace cpu
+{
+
+int getBackend();
+
+std::string getDeviceInfo();
+
+bool isDoubleSupported(int device);
+
+void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+
+unsigned getMaxJitSize();
+
+int getDeviceCount();
+
+int getActiveDeviceId();
+
+size_t getDeviceMemorySize(int device);
+
+size_t getHostMemorySize();
+
+int setDevice(int device);
+
+queue& getQueue(int device=0);
+
+void sync(int device);
+
+bool& evalFlag();
+
+class DeviceManager
+{
+    public:
+        static const int MAX_QUEUES = 1;
+        static const int NUM_DEVICES = 1;
+        static const int ACTIVE_DEVICE_ID = 0;
+        static const bool IS_DOUBLE_SUPPORTED = true;
+
+        static DeviceManager& getInstance();
+
+        friend queue& getQueue(int device);
+
+        CPUInfo getCPUInfo() const;
+
+    private:
+        DeviceManager() {
+        }
+
+        // Following two declarations are required to
+        // avoid copying accidental copy/assignment
+        // of instance returned by getInstance to other
+        // variables
+        DeviceManager(DeviceManager const&);
+        void operator=(DeviceManager const&);
+
+        // Attributes
+        const CPUInfo cinfo;
+        std::array<queue, MAX_QUEUES> queues;
+};
+
 }
