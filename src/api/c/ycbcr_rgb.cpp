@@ -10,7 +10,6 @@
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/image.h>
-#include <af/index.h>
 #include <handle.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
@@ -85,18 +84,18 @@ static af_array convert(const af_array& in, const af_ycc_std standard)
 
     // extract three channels as three slices
     // prepare sequence objects
-    af_seq slice1[4] = { af_span, af_span, {0, 0, 1}, af_span };
-    af_seq slice2[4] = { af_span, af_span, {1, 1, 1}, af_span };
-    af_seq slice3[4] = { af_span, af_span, {2, 2, 1}, af_span };
-    // index the array for channels
-    af_array ch1Temp=0, ch2Temp=0, ch3Temp=0;
-    AF_CHECK(af_index(&ch1Temp, in, 4, slice1));
-    AF_CHECK(af_index(&ch2Temp, in, 4, slice2));
-    AF_CHECK(af_index(&ch3Temp, in, 4, slice3));
     // get Array objects for corresponding channel views
-    Array<T> X = getArray<T>(ch1Temp);
-    Array<T> Y = getArray<T>(ch2Temp);
-    Array<T> Z = getArray<T>(ch3Temp);
+    const Array<T>& input = getArray<T>(in);
+    std::vector<af_seq> indices(4, af_span);
+
+    indices[2] = {0, 0, 1};
+    Array<T> X = createSubArray(input, indices, false);
+
+    indices[2] = {1, 1, 1};
+    Array<T> Y = createSubArray(input, indices, false);
+
+    indices[2] = {2, 2, 1};
+    Array<T> Z = createSubArray(input, indices, false);
 
     if (isYCbCr2RGB) {
         dim4 dims = X.dims();
