@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
         static float t=0.1;
         array Z = seq( 0.1f, 10.f, PRECISION);
 
-        do{
+        do {
             array Y = sin((Z*t) + t) / Z;
             array X = cos((Z*t) + t) / Z;
             X = max(min(X, 1.0), -1.0);

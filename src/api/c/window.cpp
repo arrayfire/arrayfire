@@ -209,11 +209,8 @@ af_err af_set_axes_limits_compute(const af_window wind,
         ForgeManager& fgMngr = ForgeManager::getInstance();
 
         forge::Chart* chart = NULL;
-        // The ctype here below doesn't really matter as it is only fetching
-        // the chart. It will not set it.
-        // If this is actually being done, then it is extremely bad.
-        // But lets have a check anyway.
-        fg_chart_type ctype = (z == NULL || z == 0) ? FG_CHART_2D : FG_CHART_3D;
+
+        fg_chart_type ctype = (z ? FG_CHART_3D : FG_CHART_2D);
 
         if (props->col > -1 && props->row > -1)
             chart = fgMngr.getChart(window, props->row, props->col, ctype);
@@ -372,11 +369,7 @@ af_err af_set_axes_titles(const af_window wind,
 
         forge::Chart* chart = NULL;
 
-        // The ctype here below doesn't really matter as it is only fetching
-        // the chart. It will not set it.
-        // If this is actually being done, then it is extremely bad.
-        // But lets have a check anyway.
-        fg_chart_type ctype = (ztitle == NULL || ztitle == 0) ? FG_CHART_2D : FG_CHART_3D;
+        fg_chart_type ctype = (ztitle ? FG_CHART_3D : FG_CHART_2D);
 
         if (props->col > -1 && props->row > -1)
             chart = fgMngr.getChart(window, props->row, props->col, ctype);
