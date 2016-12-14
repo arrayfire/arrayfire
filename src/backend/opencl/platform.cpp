@@ -836,7 +836,11 @@ bool synchronize_calls() {
 
 unsigned getMaxJitSize()
 {
+#if defined(OS_MAC)
+    const int MAX_JIT_LEN = 50;
+#else
     const int MAX_JIT_LEN = 100;
+#endif
 
     static int length = 0;
     if (length == 0) {
