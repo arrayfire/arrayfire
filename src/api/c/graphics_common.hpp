@@ -37,6 +37,8 @@ forge::MarkerType getFGMarker(const af_marker_type af_marker);
 
 void makeContextCurrent(forge::Window *window);
 
+double step_round(const double in, const bool dir);
+
 namespace graphics
 {
 
@@ -68,6 +70,9 @@ typedef std::map<const forge::Window*, ChartVec_t> ChartMap_t;
 typedef ChartVec_t::iterator ChartVecIter;
 typedef ChartMap_t::iterator ChartMapIter;
 
+// Keeps track of which charts have manually assigned axes limits
+typedef std::map<forge::Chart*, bool> ChartAxesOverride_t;
+typedef ChartAxesOverride_t::iterator ChartAxesOverrideIter;
 
 /**
  * ForgeManager class follows a single pattern. Any user of this class, has
@@ -90,7 +95,8 @@ class ForgeManager
         SurfaceMap_t        mSfcMap;
         VectorFieldMap_t    mVcfMap;
 
-        ChartMap_t      mChartMap;
+        ChartMap_t          mChartMap;
+        ChartAxesOverride_t mChartAxesOverrideMap;
 
     public:
         static ForgeManager& getInstance();
@@ -114,6 +120,9 @@ class ForgeManager
         forge::Histogram*   getHistogram    (forge::Chart* chart, int nBins, forge::dtype type);
         forge::Surface*     getSurface      (forge::Chart* chart, int nX, int nY, forge::dtype type);
         forge::VectorField* getVectorField  (forge::Chart* chart, int nPoints, forge::dtype type);
+
+        bool getChartAxesOverride(forge::Chart* chart);
+        void setChartAxesOverride(forge::Chart* chart, bool flag = true);
 
     protected:
         ForgeManager() {}

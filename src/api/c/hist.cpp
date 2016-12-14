@@ -47,6 +47,31 @@ forge::Chart* setup_histogram(const forge::Window* const window,
     // Set histogram bar colors to orange
     hist->setColor(0.929f, 0.486f, 0.2745f, 1.0f);
 
+    // If chart axes limits do not have a manual override
+    // then compute and set axes limits
+    if(!fgMngr.getChartAxesOverride(chart)) {
+        float xMin, xMax, yMin, yMax;
+        chart->getAxesLimits(&xMin, &xMax, &yMin, &yMax);
+        T freqMax = detail::reduce_all<af_max_t, T, T>(histogramInput);
+
+        if(xMin == 0 && xMax == 0 && yMin == 0 && yMax == 0) {
+            // No previous limits. Set without checking
+            xMin = step_round(minval, false);
+            xMax = step_round(maxval, true);
+            yMax = step_round(freqMax, true);
+            // For histogram, always set yMin to 0.
+            yMin = 0;
+        } else {
+            if(xMin > minval)  xMin = step_round(minval, false);
+            if(xMax < maxval)  xMax = step_round(maxval, true);
+            if(yMax < freqMax) yMax = step_round(freqMax, true);
+            // For histogram, always set yMin to 0.
+            yMin = 0;
+        }
+
+        chart->setAxesLimits(xMin, xMax, yMin, yMax);
+    }
+
     copy_histogram<T>(histogramInput, hist);
 
     return chart;
