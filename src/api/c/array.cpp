@@ -368,7 +368,7 @@ af_err af_get_numdims(unsigned *nd, const af_array in)
     af_err fn1(bool *result, const af_array in)                 \
     {                                                           \
         try {                                                   \
-            const ArrayInfo& info = getInfo(in, false, false);         \
+            const ArrayInfo& info = getInfo(in, false, false);  \
             *result = info.fn2();                               \
         }                                                       \
         CATCHALL                                                \
