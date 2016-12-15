@@ -150,7 +150,12 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
         const Array<int> &irowIdx = in.getRowIdx();
         const Array<int> &icolIdx = in.getColIdx();
 
-        kernel::coo2csr<T>(ovalues, orowIdx, ocolIdx, ivalues, irowIdx, icolIdx, index, in.dims()[0]);
+        Array<int> rowCopy = copyArray<int>(irowIdx);
+        rowCopy.eval();
+
+        kernel::coo2csr<T>(ovalues, orowIdx, ocolIdx,
+                           ivalues, irowIdx, icolIdx,
+                           index, rowCopy, in.dims()[0]);
 
     } else {
         // Should never come here

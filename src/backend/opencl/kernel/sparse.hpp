@@ -378,32 +378,14 @@ namespace opencl
         template<typename T>
         void coo2csr(Param ovalues, Param orowIdx, Param ocolIdx,
                      const Param ivalues, const Param irowIdx, const Param icolIdx,
-                     Param index, const int M)
+                     Param index, Param rowCopy, const int M)
         {
             try {
-                cl::Buffer *colCopy = bufferAlloc(icolIdx.info.dims[0] * sizeof(int));
-                getQueue().enqueueCopyBuffer(*icolIdx.data, *colCopy, 0, 0, icolIdx.info.dims[0] * sizeof(int));
-
-                cl::Buffer *rowCopy = bufferAlloc(irowIdx.info.dims[0] * sizeof(int));
-                getQueue().enqueueCopyBuffer(*irowIdx.data, *rowCopy, 0, 0, irowIdx.info.dims[0] * sizeof(int));
-
-                int dims[] = {(int)irowIdx.info.dims[0],
-                              (int)irowIdx.info.dims[1],
-                              (int)irowIdx.info.dims[2],
-                              (int)irowIdx.info.dims[3]
-                             };
-                int strides[] = {(int)irowIdx.info.strides[0],
-                                 (int)irowIdx.info.strides[1],
-                                 (int)irowIdx.info.strides[2],
-                                 (int)irowIdx.info.strides[3]
-                                };
-                Param scP = makeParam((*rowCopy)(), irowIdx.info.offset, dims, strides);
-
                 // Now we need to sort this into column major
-                kernel::sort0ByKeyIterative<int, int>(scP, index, true);
+                kernel::sort0ByKeyIterative<int, int>(rowCopy, index, true);
 
                 // Now use index to sort values and rows
-                kernel::swapIndex<T>(ovalues, ocolIdx, ivalues, colCopy, index);
+                kernel::swapIndex<T>(ovalues, ocolIdx, ivalues, icolIdx.data, index);
 
                 CL_DEBUG_FINISH(getQueue());
 
@@ -434,12 +416,9 @@ namespace opencl
                 NDRange global(irowIdx.info.dims[0], 1, 1);
 
                 csrReduceOp(EnqueueArgs(getQueue(), global),
-                            *orowIdx.data, *rowCopy, M, ovalues.info.dims[0]);
+                            *orowIdx.data, *rowCopy.data, M, ovalues.info.dims[0]);
 
                 CL_DEBUG_FINISH(getQueue());
-
-                bufferFree(colCopy);
-                bufferFree(rowCopy);
 
             } catch(cl::Error err) {
                 CL_TO_AF_ERROR(err);
