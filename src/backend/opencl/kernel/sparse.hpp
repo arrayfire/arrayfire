@@ -268,13 +268,15 @@ namespace opencl
                        const Param swapIdx)
         {
             try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   swapIndexProgs;
-                static std::map<int, Kernel*>  swapIndexKernels;
+                std::string ref_name =
+                    std::string("swapIndex_kernel_") +
+                    std::string(dtype_traits<T>::getName());
 
                 int device = getActiveDeviceId();
+                auto idx = kernelCaches[device].find(ref_name);
+                kc_entry_t entry;
 
-                std::call_once( compileFlags[device], [device] () {
+                if (idx == kernelCaches[device].end()) {
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName();
 
@@ -282,15 +284,18 @@ namespace opencl
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
                     }
+
                     Program prog;
                     buildProgram(prog, csr2coo_cl, csr2coo_cl_len, options.str());
-                    swapIndexProgs[device]   = new Program(prog);
-                    swapIndexKernels[device] = new Kernel(*swapIndexProgs[device], "swapIndex_kernel");
-                });
+                    entry.prog   = new Program(prog);
+                    entry.ker = new Kernel(*entry.prog, "swapIndex_kernel");
+                } else {
+                    entry = idx->second;
+                };
 
                 auto swapIndexOp = KernelFunctor<Buffer, Buffer,
                                                  const Buffer, const Buffer, const Buffer,
-                                                 const int> (*swapIndexKernels[device]);
+                                                 const int> (*entry.ker);
 
                 NDRange global(ovalues.info.dims[0], 1, 1);
 
@@ -389,14 +394,15 @@ namespace opencl
 
                 CL_DEBUG_FINISH(getQueue());
 
-                // Do row compression
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   csrReduceProgs;
-                static std::map<int, Kernel*>  csrReduceKernels;
+                std::string ref_name =
+                    std::string("csrReduce_kernel_") +
+                    std::string(dtype_traits<T>::getName());
 
                 int device = getActiveDeviceId();
+                auto idx = kernelCaches[device].find(ref_name);
+                kc_entry_t entry;
 
-                std::call_once( compileFlags[device], [device] () {
+                if (idx == kernelCaches[device].end()) {
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName();
 
@@ -404,14 +410,16 @@ namespace opencl
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
                     }
+
                     Program prog;
                     buildProgram(prog, csr2coo_cl, csr2coo_cl_len, options.str());
-                    csrReduceProgs[device]   = new Program(prog);
-                    csrReduceKernels[device] = new Kernel(*csrReduceProgs[device], "csrReduce_kernel");
-                });
+                    entry.prog   = new Program(prog);
+                    entry.ker = new Kernel(*entry.prog, "csrReduce_kernel");
+                } else {
+                    entry = idx->second;
+                };
 
-                auto csrReduceOp = KernelFunctor<Buffer, const Buffer, const int, const int>
-                                   (*csrReduceKernels[device]);
+                auto csrReduceOp = KernelFunctor<Buffer, const Buffer, const int, const int> (*entry.ker);
 
                 NDRange global(irowIdx.info.dims[0], 1, 1);
 
