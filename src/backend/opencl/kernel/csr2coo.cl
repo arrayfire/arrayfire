@@ -18,7 +18,7 @@ void csr2coo(__global       int *orowidx,
     for (int rowId = get_group_id(0); rowId < M; rowId += get_num_groups(0)) {
         int colStart = irowidx[rowId];
         int colEnd   = irowidx[rowId + 1];
-        for (int colId = colStart + lid;  colId < colEnd; colId += THREADS) {
+        for (int colId = colStart + lid;  colId < colEnd; colId += get_local_size(0)) {
             orowidx[colId] = rowId;
             ocolidx[colId] = icolidx[colId];
         }

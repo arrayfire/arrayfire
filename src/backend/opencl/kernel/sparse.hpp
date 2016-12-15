@@ -276,8 +276,8 @@ namespace opencl
 
                 std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
-                    options << " -D T="        << dtype_traits<T>::getName()
-                            << " -D THREADS=256"; // This threads is a dummy for compilation
+                    options << " -D T="        << dtype_traits<T>::getName();
+
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
@@ -319,9 +319,7 @@ namespace opencl
 
                 std::string ref_name =
                     std::string("csr2coo_") +
-                    std::string(dtype_traits<T>::getName()) +
-                    std::string("_") +
-                    std::to_string(threads);
+                    std::string(dtype_traits<T>::getName());
 
                 int device = getActiveDeviceId();
                 auto idx = kernelCaches[device].find(ref_name);
@@ -331,7 +329,6 @@ namespace opencl
 
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName();
-                    options << " -D THREADS=" << threads;
 
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
@@ -419,8 +416,8 @@ namespace opencl
 
                 std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
-                    options << " -D T="        << dtype_traits<T>::getName()
-                            << " -D THREADS=256"; // This threads is a dummy for compilation
+                    options << " -D T="        << dtype_traits<T>::getName();
+
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
