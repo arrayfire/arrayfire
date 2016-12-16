@@ -235,9 +235,10 @@ void ForgeManager::setWindowChartGrid(const forge::Window* window,
 
     if(iter != mChartMap.end()) {
         // ChartVec found. Clear it.
-        // TODO: Should we clear this even if r = old_r and c = old_c?
+        // This has to be cleared as there is no guarantee that existing
+        // chart types(2D/3D) match the future grid requirements
         for(int i = 0; i < (int)(iter->second).size(); i++) {
-            if((iter->second)[i] != NULL) {
+            if ((iter->second)[i] != NULL) {
                 delete (iter->second)[i];
                 mChartAxesOverrideMap.erase((iter->second)[i]);
             }
@@ -267,11 +268,17 @@ forge::Chart* ForgeManager::getChart(const forge::Window* window, const int r, c
 
         chart = (iter->second)[c * gRows + r];
 
-        if(chart == NULL) {
+        if (chart == NULL) {
             // Chart has not been created
             chart = new forge::Chart(ctype);
             (iter->second)[c * gRows + r] = chart;
-
+            // Set Axes override to false
+            mChartAxesOverrideMap[chart] = false;
+        } else if (chart->getChartType()!=ctype) {
+            // Existing chart is of incompatible type
+            delete (iter->second)[c * gRows + r];
+            chart = new forge::Chart(ctype);
+            (iter->second)[c * gRows + r] = chart;
             // Set Axes override to false
             mChartAxesOverrideMap[chart] = false;
         }
