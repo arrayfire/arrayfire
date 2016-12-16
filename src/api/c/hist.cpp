@@ -88,7 +88,7 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
     }
 
     try {
-        ArrayInfo Xinfo = getInfo(X);
+        const ArrayInfo& Xinfo = getInfo(X);
         af_dtype Xtype  = Xinfo.getType();
 
         ARG_ASSERT(0, Xinfo.isVector());

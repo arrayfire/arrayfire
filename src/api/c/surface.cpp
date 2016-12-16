@@ -36,9 +36,9 @@ forge::Chart* setup_surface(const forge::Window* const window,
     Array<T> yIn = getArray<T>(yVals);
     Array<T> zIn = getArray<T>(zVals);
 
-    ArrayInfo Xinfo = getInfo(xVals);
-    ArrayInfo Yinfo = getInfo(yVals);
-    ArrayInfo Zinfo = getInfo(zVals);
+    const ArrayInfo& Xinfo = getInfo(xVals);
+    const ArrayInfo& Yinfo = getInfo(yVals);
+    const ArrayInfo& Zinfo = getInfo(zVals);
 
     af::dim4 X_dims = Xinfo.dims();
     af::dim4 Y_dims = Yinfo.dims();
@@ -131,15 +131,15 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
     }
 
     try {
-        ArrayInfo Xinfo = getInfo(xVals);
+        const ArrayInfo& Xinfo = getInfo(xVals);
         af::dim4 X_dims = Xinfo.dims();
         af_dtype Xtype  = Xinfo.getType();
 
-        ArrayInfo Yinfo = getInfo(yVals);
+        const ArrayInfo& Yinfo = getInfo(yVals);
         af::dim4 Y_dims = Yinfo.dims();
         af_dtype Ytype  = Yinfo.getType();
 
-        ArrayInfo Sinfo = getInfo(S);
+        const ArrayInfo& Sinfo = getInfo(S);
         af::dim4 S_dims = Sinfo.dims();
         af_dtype Stype  = Sinfo.getType();
 

@@ -29,7 +29,7 @@ template<int rank, bool direction>
 static af_err fft(af_array *out, const af_array in, const double norm_factor, const dim_t npad, const dim_t * const pad)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type  = info.getType();
         af::dim4 dims  = info.dims();
 
@@ -104,7 +104,7 @@ template<int rank, bool direction>
 static af_err fft_inplace(af_array in, const double norm_factor)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type  = info.getType();
         af::dim4 dims  = info.dims();
 
@@ -166,7 +166,7 @@ template<int rank>
 static af_err fft_r2c(af_array *out, const af_array in, const double norm_factor, const dim_t npad, const dim_t * const pad)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type  = info.getType();
         af::dim4 dims  = info.dims();
 
@@ -221,7 +221,7 @@ template<int rank>
 static af_err fft_c2r(af_array *out, const af_array in, const double norm_factor, const bool is_odd)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type  = info.getType();
         af::dim4 idims  = info.dims();
 

@@ -111,11 +111,11 @@ af_err vectorFieldWrapper(const af_window wind, const af_array points, const af_
     }
 
     try {
-        ArrayInfo pInfo = getInfo(points);
+        const ArrayInfo& pInfo = getInfo(points);
         af::dim4 pDims  = pInfo.dims();
         af_dtype pType  = pInfo.getType();
 
-        ArrayInfo dInfo = getInfo(directions);
+        const ArrayInfo& dInfo = getInfo(directions);
         af::dim4 dDims  = dInfo.dims();
         af_dtype dType  = dInfo.getType();
 
@@ -160,9 +160,9 @@ af_err vectorFieldWrapper(const af_window wind,
     }
 
     try {
-        ArrayInfo xpInfo = getInfo(xPoints);
-        ArrayInfo ypInfo = getInfo(yPoints);
-        ArrayInfo zpInfo = getInfo(zPoints);
+        const ArrayInfo& xpInfo = getInfo(xPoints);
+        const ArrayInfo& ypInfo = getInfo(yPoints);
+        const ArrayInfo& zpInfo = getInfo(zPoints);
 
         af::dim4 xpDims  = xpInfo.dims();
         af::dim4 ypDims  = ypInfo.dims();
@@ -172,9 +172,9 @@ af_err vectorFieldWrapper(const af_window wind,
         af_dtype ypType  = ypInfo.getType();
         af_dtype zpType  = zpInfo.getType();
 
-        ArrayInfo xdInfo = getInfo(xDirs);
-        ArrayInfo ydInfo = getInfo(yDirs);
-        ArrayInfo zdInfo = getInfo(zDirs);
+        const ArrayInfo& xdInfo = getInfo(xDirs);
+        const ArrayInfo& ydInfo = getInfo(yDirs);
+        const ArrayInfo& zdInfo = getInfo(zDirs);
 
         af::dim4 xdDims  = xdInfo.dims();
         af::dim4 ydDims  = ydInfo.dims();
@@ -248,8 +248,8 @@ af_err vectorFieldWrapper(const af_window wind,
     }
 
     try {
-        ArrayInfo xpInfo = getInfo(xPoints);
-        ArrayInfo ypInfo = getInfo(yPoints);
+        const ArrayInfo& xpInfo = getInfo(xPoints);
+        const ArrayInfo& ypInfo = getInfo(yPoints);
 
         af::dim4 xpDims  = xpInfo.dims();
         af::dim4 ypDims  = ypInfo.dims();
@@ -257,8 +257,8 @@ af_err vectorFieldWrapper(const af_window wind,
         af_dtype xpType  = xpInfo.getType();
         af_dtype ypType  = ypInfo.getType();
 
-        ArrayInfo xdInfo = getInfo(xDirs);
-        ArrayInfo ydInfo = getInfo(yDirs);
+        const ArrayInfo& xdInfo = getInfo(xDirs);
+        const ArrayInfo& ydInfo = getInfo(yDirs);
 
         af::dim4 xdDims  = xdInfo.dims();
         af::dim4 ydDims  = ydInfo.dims();

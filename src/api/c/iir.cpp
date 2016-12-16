@@ -51,9 +51,9 @@ inline static af_array iir(const af_array b, const af_array a, const af_array x)
 af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x)
 {
     try {
-        ArrayInfo ainfo = getInfo(a);
-        ArrayInfo binfo = getInfo(b);
-        ArrayInfo xinfo = getInfo(x);
+        const ArrayInfo& ainfo = getInfo(a);
+        const ArrayInfo& binfo = getInfo(b);
+        const ArrayInfo& xinfo = getInfo(x);
 
         af_dtype xtype = xinfo.getType();
 

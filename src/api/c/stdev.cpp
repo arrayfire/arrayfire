@@ -68,7 +68,7 @@ static af_array stdev(const af_array& in, int dim)
 af_err af_stdev_all(double *realVal, double *imagVal, const af_array in)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
         switch(type) {
             case f64: *realVal = stdev<double, double>(in); break;
@@ -105,7 +105,7 @@ af_err af_stdev(af_array *out, const af_array in, const dim_t dim)
         ARG_ASSERT(2, (dim>=0 && dim<=3));
 
         af_array output = 0;
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
         switch(type) {
             case f64: output = stdev<double,  double>(in, dim); break;

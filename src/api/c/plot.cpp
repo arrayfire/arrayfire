@@ -130,7 +130,7 @@ af_err plotWrapper(const af_window wind, const af_array in, const int order_dim,
     }
 
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4  dims = info.dims();
         af_dtype  type = info.getType();
 
@@ -173,15 +173,15 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, con
     }
 
     try {
-        ArrayInfo xInfo = getInfo(X);
+        const ArrayInfo& xInfo = getInfo(X);
         af::dim4  xDims = xInfo.dims();
         af_dtype  xType = xInfo.getType();
 
-        ArrayInfo yInfo = getInfo(Y);
+        const ArrayInfo& yInfo = getInfo(Y);
         af::dim4  yDims = yInfo.dims();
         af_dtype  yType = yInfo.getType();
 
-        ArrayInfo zInfo = getInfo(Z);
+        const ArrayInfo& zInfo = getInfo(Z);
         af::dim4  zDims = zInfo.dims();
         af_dtype  zType = zInfo.getType();
 
@@ -234,11 +234,11 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y,
     }
 
     try {
-        ArrayInfo xInfo = getInfo(X);
+        const ArrayInfo& xInfo = getInfo(X);
         af::dim4  xDims = xInfo.dims();
         af_dtype  xType = xInfo.getType();
 
-        ArrayInfo yInfo = getInfo(Y);
+        const ArrayInfo& yInfo = getInfo(Y);
         af::dim4  yDims = yInfo.dims();
         af_dtype  yType = yInfo.getType();
 
@@ -381,7 +381,7 @@ af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* cons
 {
 #if defined(WITH_GRAPHICS)
     try {
-        ArrayInfo info = getInfo(P);
+        const ArrayInfo& info = getInfo(P);
         af::dim4  dims = info.dims();
 
         if(dims.ndims() == 2 && dims[1] == 3) {
@@ -463,7 +463,7 @@ af_err af_draw_scatter3(const af_window wind, const af_array P, const af_marker_
 #if defined(WITH_GRAPHICS)
     forge::MarkerType fg_marker = getFGMarker(af_marker);
     try {
-        ArrayInfo info = getInfo(P);
+        const ArrayInfo& info = getInfo(P);
         af::dim4  dims = info.dims();
 
         if(dims.ndims() == 2 && dims[1] == 3) {

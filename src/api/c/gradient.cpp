@@ -27,7 +27,7 @@ static inline void gradient(af_array *grad0, af_array *grad1, const af_array in)
 af_err af_gradient(af_array *grows, af_array *gcols, const af_array in)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
         af::dim4 idims = info.dims();
 

@@ -28,7 +28,7 @@ af_err af_set_unique(af_array *out, const af_array in, const bool is_sorted)
 {
     try {
 
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
         if(in_info.isEmpty()) {
             return af_retain_array(out, in);
         }
@@ -67,8 +67,8 @@ af_err af_set_union(af_array *out, const af_array first, const af_array second, 
 {
     try {
 
-        ArrayInfo first_info = getInfo(first);
-        ArrayInfo second_info = getInfo(second);
+        const ArrayInfo& first_info = getInfo(first);
+        const ArrayInfo& second_info = getInfo(second);
 
         af_array res;
         if(first_info.isEmpty()) {
@@ -117,8 +117,8 @@ af_err af_set_intersect(af_array *out, const af_array first, const af_array seco
 {
     try {
 
-        ArrayInfo first_info = getInfo(first);
-        ArrayInfo second_info = getInfo(second);
+        const ArrayInfo& first_info = getInfo(first);
+        const ArrayInfo& second_info = getInfo(second);
 
         //TODO: fix for set intersect from union
         if(first_info.isEmpty()) {

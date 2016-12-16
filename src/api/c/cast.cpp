@@ -24,7 +24,7 @@ using namespace detail;
 
 static af_array cast(const af_array in, const af_dtype type)
 {
-    const ArrayInfo info = getInfo(in, false, true);
+    const ArrayInfo& info = getInfo(in, false, true);
 
     if (info.getType() == type) {
         return retain(in);
@@ -60,7 +60,7 @@ static af_array cast(const af_array in, const af_dtype type)
 af_err af_cast(af_array *out, const af_array in, const af_dtype type)
 {
     try {
-        const ArrayInfo info = getInfo(in, false, true);
+        const ArrayInfo& info = getInfo(in, false, true);
 
         af_dtype inType = info.getType();
         if((inType == c32 || inType == c64)
@@ -89,7 +89,7 @@ af_err af_cplx(af_array *out, const af_array in, const af_dtype type)
 {
     try {
         af_array res;
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
 
         if (in_info.isDouble()) {
             res = cast(in, c64);
