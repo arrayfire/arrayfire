@@ -268,29 +268,34 @@ namespace opencl
                        const Param swapIdx)
         {
             try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   swapIndexProgs;
-                static std::map<int, Kernel*>  swapIndexKernels;
+                std::string ref_name =
+                    std::string("swapIndex_kernel_") +
+                    std::string(dtype_traits<T>::getName());
 
                 int device = getActiveDeviceId();
+                auto idx = kernelCaches[device].find(ref_name);
+                kc_entry_t entry;
 
-                std::call_once( compileFlags[device], [device] () {
+                if (idx == kernelCaches[device].end()) {
                     std::ostringstream options;
-                    options << " -D T="        << dtype_traits<T>::getName()
-                            << " -D THREADS=256"; // This threads is a dummy for compilation
+                    options << " -D T="        << dtype_traits<T>::getName();
+
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
                     }
+
                     Program prog;
                     buildProgram(prog, csr2coo_cl, csr2coo_cl_len, options.str());
-                    swapIndexProgs[device]   = new Program(prog);
-                    swapIndexKernels[device] = new Kernel(*swapIndexProgs[device], "swapIndex_kernel");
-                });
+                    entry.prog   = new Program(prog);
+                    entry.ker = new Kernel(*entry.prog, "swapIndex_kernel");
+                } else {
+                    entry = idx->second;
+                };
 
                 auto swapIndexOp = KernelFunctor<Buffer, Buffer,
                                                  const Buffer, const Buffer, const Buffer,
-                                                 const int> (*swapIndexKernels[device]);
+                                                 const int> (*entry.ker);
 
                 NDRange global(ovalues.info.dims[0], 1, 1);
 
@@ -319,9 +324,7 @@ namespace opencl
 
                 std::string ref_name =
                     std::string("csr2coo_") +
-                    std::string(dtype_traits<T>::getName()) +
-                    std::string("_") +
-                    std::to_string(threads);
+                    std::string(dtype_traits<T>::getName());
 
                 int device = getActiveDeviceId();
                 auto idx = kernelCaches[device].find(ref_name);
@@ -331,7 +334,6 @@ namespace opencl
 
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName();
-                    options << " -D THREADS=" << threads;
 
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
@@ -381,68 +383,50 @@ namespace opencl
         template<typename T>
         void coo2csr(Param ovalues, Param orowIdx, Param ocolIdx,
                      const Param ivalues, const Param irowIdx, const Param icolIdx,
-                     Param index, const int M)
+                     Param index, Param rowCopy, const int M)
         {
             try {
-                cl::Buffer *colCopy = bufferAlloc(icolIdx.info.dims[0] * sizeof(int));
-                getQueue().enqueueCopyBuffer(*icolIdx.data, *colCopy, 0, 0, icolIdx.info.dims[0] * sizeof(int));
-
-                cl::Buffer *rowCopy = bufferAlloc(irowIdx.info.dims[0] * sizeof(int));
-                getQueue().enqueueCopyBuffer(*irowIdx.data, *rowCopy, 0, 0, irowIdx.info.dims[0] * sizeof(int));
-
-                int dims[] = {(int)irowIdx.info.dims[0],
-                              (int)irowIdx.info.dims[1],
-                              (int)irowIdx.info.dims[2],
-                              (int)irowIdx.info.dims[3]
-                             };
-                int strides[] = {(int)irowIdx.info.strides[0],
-                                 (int)irowIdx.info.strides[1],
-                                 (int)irowIdx.info.strides[2],
-                                 (int)irowIdx.info.strides[3]
-                                };
-                Param scP = makeParam((*rowCopy)(), irowIdx.info.offset, dims, strides);
-
                 // Now we need to sort this into column major
-                kernel::sort0ByKeyIterative<int, int>(scP, index, true);
+                kernel::sort0ByKeyIterative<int, int>(rowCopy, index, true);
 
                 // Now use index to sort values and rows
-                kernel::swapIndex<T>(ovalues, ocolIdx, ivalues, colCopy, index);
+                kernel::swapIndex<T>(ovalues, ocolIdx, ivalues, icolIdx.data, index);
 
                 CL_DEBUG_FINISH(getQueue());
 
-                // Do row compression
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   csrReduceProgs;
-                static std::map<int, Kernel*>  csrReduceKernels;
+                std::string ref_name =
+                    std::string("csrReduce_kernel_") +
+                    std::string(dtype_traits<T>::getName());
 
                 int device = getActiveDeviceId();
+                auto idx = kernelCaches[device].find(ref_name);
+                kc_entry_t entry;
 
-                std::call_once( compileFlags[device], [device] () {
+                if (idx == kernelCaches[device].end()) {
                     std::ostringstream options;
-                    options << " -D T="        << dtype_traits<T>::getName()
-                            << " -D THREADS=256"; // This threads is a dummy for compilation
+                    options << " -D T="        << dtype_traits<T>::getName();
+
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
                     }
+
                     Program prog;
                     buildProgram(prog, csr2coo_cl, csr2coo_cl_len, options.str());
-                    csrReduceProgs[device]   = new Program(prog);
-                    csrReduceKernels[device] = new Kernel(*csrReduceProgs[device], "csrReduce_kernel");
-                });
+                    entry.prog   = new Program(prog);
+                    entry.ker = new Kernel(*entry.prog, "csrReduce_kernel");
+                } else {
+                    entry = idx->second;
+                };
 
-                auto csrReduceOp = KernelFunctor<Buffer, const Buffer, const int, const int>
-                                   (*csrReduceKernels[device]);
+                auto csrReduceOp = KernelFunctor<Buffer, const Buffer, const int, const int> (*entry.ker);
 
                 NDRange global(irowIdx.info.dims[0], 1, 1);
 
                 csrReduceOp(EnqueueArgs(getQueue(), global),
-                            *orowIdx.data, *rowCopy, M, ovalues.info.dims[0]);
+                            *orowIdx.data, *rowCopy.data, M, ovalues.info.dims[0]);
 
                 CL_DEBUG_FINISH(getQueue());
-
-                bufferFree(colCopy);
-                bufferFree(rowCopy);
 
             } catch(cl::Error err) {
                 CL_TO_AF_ERROR(err);

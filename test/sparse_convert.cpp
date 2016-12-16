@@ -66,8 +66,6 @@ af::array makeSparse<cdouble>(af::array A, int factor)
 template<typename T, af_storage src, af_storage dest>
 void sparseConvertTester(const int m, const int n, int factor)
 {
-    af::deviceGC();
-
     if (noDoubleTests<T>()) return;
 
     af::array A = cpu_randu<T>(af::dim4(m, n));
@@ -105,7 +103,8 @@ void sparseConvertTester(const int m, const int n, int factor)
     af::array s2dColIdx = sparseGetColIdx(s2d);
 
     // Verify values
-    ASSERT_EQ(0, af::max<double>(af::abs(dValues - s2dValues)));
+    ASSERT_EQ(0, af::max<double>(af::real(dValues - s2dValues)));
+    ASSERT_EQ(0, af::max<double>(af::imag(dValues - s2dValues)));
 
     // Verify row and col indices
     ASSERT_EQ(0, af::max<int   >(dRowIdx - s2dRowIdx));
