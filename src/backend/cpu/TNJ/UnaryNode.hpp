@@ -38,12 +38,11 @@ namespace TNJ
         To m_val;
 
     public:
-        UnaryNode(Node_ptr in) :
-            Node(),
-            m_child(in),
+        UnaryNode(Node_ptr child) :
+            Node(child->getHeight() + 1),
+            m_child(child),
             m_val(0)
         {
-            m_height = m_child->getHeight() + 1;
         }
 
         void *calc(int x, int y, int z, int w)

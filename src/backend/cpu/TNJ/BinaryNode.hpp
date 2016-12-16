@@ -40,12 +40,11 @@ namespace TNJ
 
     public:
         BinaryNode(Node_ptr lhs, Node_ptr rhs) :
-            Node(),
+            Node(std::max(lhs->getHeight(), rhs->getHeight()) + 1),
             m_lhs(lhs),
             m_rhs(rhs),
             m_val(0)
         {
-            m_height = std::max(m_lhs->getHeight(), m_rhs->getHeight()) + 1;
         }
 
         void *calc(int x, int y, int z, int w)

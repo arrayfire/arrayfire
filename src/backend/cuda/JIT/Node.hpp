@@ -26,10 +26,10 @@ namespace JIT
     class Node
     {
     protected:
-        std::string m_type_str;
-        std::string m_name_str;
+        const std::string m_type_str;
+        const std::string m_name_str;
         int m_id;
-        int m_height;
+        const int m_height;
         bool m_set_id;
         bool m_gen_func;
         bool m_gen_param;
@@ -43,7 +43,6 @@ namespace JIT
 
         void resetCommonFlags()
         {
-            m_height = 0;
             m_set_id = false;
             m_gen_func = false;
             m_gen_param = false;
@@ -57,11 +56,11 @@ namespace JIT
 
     public:
 
-        Node(const char *type_str, const char *name_str)
+        Node(const char *type_str, const char *name_str, const int height)
             : m_type_str(type_str),
               m_name_str(name_str),
               m_id(-1),
-              m_height(0),
+              m_height(height),
               m_set_id(false),
               m_gen_func(false),
               m_gen_param(false),
