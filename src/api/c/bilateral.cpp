@@ -28,7 +28,7 @@ template<bool isColor>
 static af_err bilateral(af_array *out, const af_array &in, const float &s_sigma, const float &c_sigma)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type  = info.getType();
         af::dim4 dims  = info.dims();
 

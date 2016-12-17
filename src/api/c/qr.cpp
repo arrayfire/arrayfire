@@ -42,7 +42,7 @@ static inline af_array qr_inplace(af_array in)
 af_err af_qr(af_array *q, af_array *r, af_array *tau, const af_array in)
 {
     try {
-        ArrayInfo i_info = getInfo(in);
+        const ArrayInfo& i_info = getInfo(in);
 
         if (i_info.ndims() > 2) {
             AF_ERROR("qr can not be used in batch mode", AF_ERR_BATCH);
@@ -76,7 +76,7 @@ af_err af_qr(af_array *q, af_array *r, af_array *tau, const af_array in)
 af_err af_qr_inplace(af_array *tau, af_array in)
 {
     try {
-        ArrayInfo i_info = getInfo(in);
+        const ArrayInfo& i_info = getInfo(in);
 
         if (i_info.ndims() > 2) {
             AF_ERROR("qr can not be used in batch mode", AF_ERR_BATCH);

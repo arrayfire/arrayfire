@@ -52,7 +52,7 @@ af_err af_harris(af_features *out, const af_array in, const unsigned max_corners
                  const unsigned block_size, const float k_thr)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4 dims  = info.dims();
         dim_t in_ndims = dims.ndims();
 

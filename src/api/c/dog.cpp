@@ -46,7 +46,7 @@ static af_array dog(const af_array& in, const int radius1, const int radius2)
 af_err af_dog(af_array *out, const af_array in, const int radius1, const int radius2)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         dim4 inDims = info.dims();
         ARG_ASSERT(1, (inDims.ndims()>=2));
         ARG_ASSERT(1, (inDims.ndims()<=3));

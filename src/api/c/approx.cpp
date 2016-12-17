@@ -38,8 +38,8 @@ af_err af_approx1(af_array *out, const af_array in, const af_array pos,
                   const af_interp_type method, const float offGrid)
 {
     try {
-        ArrayInfo i_info = getInfo(in);
-        ArrayInfo p_info = getInfo(pos);
+        const ArrayInfo& i_info = getInfo(in);
+        const ArrayInfo& p_info = getInfo(pos);
 
         dim4 idims = i_info.dims();
         dim4 pdims = p_info.dims();
@@ -85,9 +85,9 @@ af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const a
                   const af_interp_type method, const float offGrid)
 {
     try {
-        ArrayInfo i_info = getInfo(in);
-        ArrayInfo p_info = getInfo(pos0);
-        ArrayInfo q_info = getInfo(pos1);
+        const ArrayInfo& i_info = getInfo(in);
+        const ArrayInfo& p_info = getInfo(pos0);
+        const ArrayInfo& q_info = getInfo(pos1);
 
         dim4 idims = i_info.dims();
         dim4 pdims = p_info.dims();

@@ -80,7 +80,7 @@ template<typename T>
 static
 void assign_helper(Array<T> &out, const unsigned &ndims, const af_seq *index, const af_array &in_)
 {
-    ArrayInfo iInfo = getInfo(in_);
+    const ArrayInfo& iInfo = getInfo(in_);
     af_dtype iType  = iInfo.getType();
 
     if(out.getType() == c64 || out.getType() == c32)
@@ -119,7 +119,7 @@ af_err af_assign_seq(af_array *out,
         ARG_ASSERT(1, (ndims>0));
         ARG_ASSERT(3, (rhs!=0));
 
-        ArrayInfo lInfo = getInfo(lhs);
+        const ArrayInfo& lInfo = getInfo(lhs);
 
         if (ndims == 1 && ndims != lInfo.ndims()) {
             af_array tmp_in, tmp_out;
@@ -155,7 +155,7 @@ af_err af_assign_seq(af_array *out,
         try {
 
             if (lhs != rhs) {
-                ArrayInfo oInfo = getInfo(lhs);
+                const ArrayInfo& oInfo = getInfo(lhs);
                 af_dtype oType  = oInfo.getType();
                 switch(oType) {
                 case c64: assign_helper<cdouble>(getWritableArray<cdouble>(res), ndims, index, rhs);  break;
@@ -223,8 +223,8 @@ af_err af_assign_gen(af_array *out,
         ARG_ASSERT(1, (lhs!=0));
         ARG_ASSERT(4, (rhs!=0));
 
-        ArrayInfo lInfo = getInfo(lhs);
-        ArrayInfo rInfo = getInfo(rhs);
+        const ArrayInfo& lInfo = getInfo(lhs);
+        const ArrayInfo& rInfo = getInfo(rhs);
         dim4 lhsDims    = lInfo.dims();
         dim4 rhsDims    = rInfo.dims();
         af_dtype lhsType= lInfo.getType();
@@ -319,7 +319,7 @@ af_err af_assign_gen(af_array *out,
             if (!indexs[i].isSeq) {
                 // check if all af_arrays have atleast one value
                 // to enable indexing along that dimension
-                ArrayInfo idxInfo = getInfo(indexs[i].idx.arr);
+                const ArrayInfo& idxInfo = getInfo(indexs[i].idx.arr);
                 af_dtype idxType  = idxInfo.getType();
 
                 ARG_ASSERT(3, (idxType!=c32));

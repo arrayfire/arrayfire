@@ -37,14 +37,14 @@ SparseArray<T> createDeviceDataSparseArray(
         const af::dim4 &_dims, const dim_t nNZ,
         const T * const _values,
         const int * const _rowIdx, const int * const _colIdx,
-        const af::storage _storage);
+        const af::storage _storage, const bool _copy = false);
 
 template<typename T>
 SparseArray<T> createArrayDataSparseArray(
         const af::dim4 &_dims,
         const Array<T> &_values,
         const Array<int> &_rowIdx, const Array<int> &_colIdx,
-        const af::storage _storage);
+        const af::storage _storage, const bool _copy = false);
 
 template<typename T>
 SparseArray<T> *initSparseArray();

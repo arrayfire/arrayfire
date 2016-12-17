@@ -28,8 +28,8 @@ static inline af_array solve(const af_array a, const af_array b, const af_mat_pr
 af_err af_solve(af_array *out, const af_array a, const af_array b, const af_mat_prop options)
 {
     try {
-        ArrayInfo a_info = getInfo(a);
-        ArrayInfo b_info = getInfo(b);
+        const ArrayInfo& a_info = getInfo(a);
+        const ArrayInfo& b_info = getInfo(b);
 
         if (a_info.ndims() > 2 ||
             b_info.ndims() > 2) {
@@ -98,8 +98,8 @@ af_err af_solve_lu(af_array *out, const af_array a,
                    const af_mat_prop options)
 {
     try {
-        ArrayInfo a_info = getInfo(a);
-        ArrayInfo b_info = getInfo(b);
+        const ArrayInfo& a_info = getInfo(a);
+        const ArrayInfo& b_info = getInfo(b);
 
         if (a_info.ndims() > 2 ||
             b_info.ndims() > 2) {

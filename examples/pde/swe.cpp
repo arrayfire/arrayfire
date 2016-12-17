@@ -87,8 +87,6 @@ static void swe(bool console)
             array hist_out = histogram(normalize(eta, m_eta), 15);
 
             (*win)(0, 1).setAxesLimits(0, hist_out.elements(), 0, max<float>(hist_out));
-            (*win)(1, 0).setAxesLimits(range(up.dims(1)), vp.col(0));
-            (*win)(1, 1).setAxesLimits(eta.col(0), up.col(0), vp.col(0));
 
             (*win)(0,0).image(normalize(eta, m_eta));
             (*win)(0,1).hist(hist_out, 0, 1, "Normalized Pressure Distribution");

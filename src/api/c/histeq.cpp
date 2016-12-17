@@ -63,8 +63,8 @@ static af_array hist_equal(const af_array& in, const af_array& hist)
 af_err af_hist_equal(af_array *out, const af_array in, const af_array hist)
 {
     try {
-        ArrayInfo dataInfo = getInfo(in);
-        ArrayInfo histInfo = getInfo(hist);
+        const ArrayInfo& dataInfo = getInfo(in);
+        const ArrayInfo& histInfo = getInfo(hist);
 
         af_dtype dataType  = dataInfo.getType();
         af::dim4 histDims  = histInfo.dims();

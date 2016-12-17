@@ -49,7 +49,7 @@ af_err af_sparse_matmul(af_array *out,
 
     try {
         common::SparseArrayBase lhsBase = getSparseArrayBase(lhs);
-        ArrayInfo rhsInfo = getInfo(rhs);
+        const ArrayInfo& rhsInfo = getInfo(rhs);
 
         ARG_ASSERT(2, lhsBase.isSparse() == true && rhsInfo.isSparse() == false);
 
@@ -103,8 +103,8 @@ af_err af_matmul(af_array *out,
     using namespace detail;
 
     try {
-        ArrayInfo lhsInfo = getInfo(lhs, false, true);
-        ArrayInfo rhsInfo = getInfo(rhs, true, true);
+        const ArrayInfo& lhsInfo = getInfo(lhs, false, true);
+        const ArrayInfo& rhsInfo = getInfo(rhs, true, true);
 
         if(lhsInfo.isSparse())
             return af_sparse_matmul(out, lhs, rhs, optLhs, optRhs);
@@ -158,8 +158,8 @@ af_err af_dot(      af_array *out,
     using namespace detail;
 
     try {
-        ArrayInfo lhsInfo = getInfo(lhs);
-        ArrayInfo rhsInfo = getInfo(rhs);
+        const ArrayInfo& lhsInfo = getInfo(lhs);
+        const ArrayInfo& rhsInfo = getInfo(rhs);
 
         if (optLhs != AF_MAT_NONE && optLhs != AF_MAT_CONJ) {
             AF_ERROR("Using this property is not yet supported in dot", AF_ERR_NOT_SUPPORTED);

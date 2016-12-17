@@ -119,7 +119,7 @@ SPARSE_FUNC(csrcsc, cdouble,z)
 #endif // USE_MKL
 
 ////////////////////////////////////////////////////////////////////////////////
-// Common to MKL and Not MKL
+// Common Funcs for MKL and Non-MKL Code Paths
 ////////////////////////////////////////////////////////////////////////////////
 
 // Partial template specialization of sparseConvertDenseToStorage for COO
@@ -134,11 +134,11 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in)
 
     dim_t nNZ = nonZeroIdx.elements();
 
-    Array<int> constNNZ = createValueArray<int>(dim4(nNZ), nNZ);
-    constNNZ.eval();
+    Array<int> constDim = createValueArray<int>(dim4(nNZ), in.dims()[0]);
+    constDim.eval();
 
-    Array<int> rowIdx = arithOp<int, af_mod_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
-    Array<int> colIdx = arithOp<int, af_div_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
+    Array<int> rowIdx = arithOp<int, af_mod_t>(nonZeroIdx, constDim, nonZeroIdx.dims());
+    Array<int> colIdx = arithOp<int, af_div_t>(nonZeroIdx, constDim, nonZeroIdx.dims());
 
     Array<T> values = copyArray<T>(in);
     values.modDims(dim4(values.elements()));
@@ -337,20 +337,34 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// Common to MKL and Not MKL
+// Common Funcs for MKL and Non-MKL Code Paths
 ////////////////////////////////////////////////////////////////////////////////
-template<typename T, af_storage src, af_storage dest>
+template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
-    // Dummy function
-    // TODO finish this function when support is required
-    AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
-
     in.eval();
 
-    SparseArray<T> dense = createEmptySparseArray<T>(in.dims(), (int)in.getNNZ(), dest);
+    SparseArray<T> converted = createEmptySparseArray<T>(in.dims(), (int)in.getNNZ(), dest);
+    converted.eval();
 
-    return dense;
+    function<void (Array<T>, Array<int>, Array<int>,
+                   Array<T> const, Array<int> const, Array<int> const)
+            > converter;
+
+    if(src == AF_STORAGE_CSR && dest == AF_STORAGE_COO) {
+        converter = kernel::csr_coo<T>;
+    } else if (src == AF_STORAGE_COO && dest == AF_STORAGE_CSR) {
+        converter = kernel::coo_csr<T>;
+    } else {
+        // Should never come here
+        AF_ERROR("CPU Backend invalid conversion combination", AF_ERR_NOT_SUPPORTED);
+    }
+
+    getQueue().enqueue(converter,
+                       converted.getValues(), converted.getRowIdx(), converted.getColIdx(),
+                       in.getValues(), in.getRowIdx(), in.getColIdx());
+
+    return converted;
 }
 
 #define INSTANTIATE_TO_STORAGE(T, S)                                                                        \

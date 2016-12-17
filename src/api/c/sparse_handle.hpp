@@ -15,6 +15,7 @@
 #include <math.hpp>
 #include <copy.hpp>
 #include <cast.hpp>
+#include <handle.hpp>
 #include <af/dim4.hpp>
 
 #include <SparseArray.hpp>
@@ -60,4 +61,16 @@ af_array retainSparseHandle(const af_array in)
     common::SparseArray<T> *out = common::initSparseArray<T>();
     *out = *sparse;
     return reinterpret_cast<af_array>(out);
+}
+
+// based on castArray in handle.hpp
+template<typename To>
+common::SparseArray<To> castSparse(const af_array &in)
+{
+    using namespace common;
+    const SparseArray<To> sparse = getSparseArray<To>(in);
+    Array<To> values = castArray<To>(getHandle(sparse.getValues()));
+    return createArrayDataSparseArray(sparse.dims(), values,
+                                      sparse.getRowIdx(), sparse.getColIdx(),
+                                      sparse.getStorage());
 }

@@ -66,7 +66,7 @@ static void print(const char *exp, af_array arr, const int precision, std::ostre
         os << exp << std::endl;
     }
 
-    const ArrayInfo info = getInfo(arr);
+    const ArrayInfo& info = getInfo(arr);
 
     std::ios_base::fmtflags backup = os.flags();
 
@@ -94,13 +94,13 @@ static void print(const char *exp, af_array arr, const int precision, std::ostre
 
     //FIXME: Use alternative function to avoid copies if possible
     AF_CHECK(af_get_data_ptr(&data.front(), arrT));
-    const ArrayInfo infoT = getInfo(arrT);
+    const ArrayInfo& infoT = getInfo(arrT);
+
+    printer(os, &data.front(), infoT, infoT.ndims() - 1, precision);
 
     if(transpose) {
         AF_CHECK(af_release_array(arrT));
     }
-
-    printer(os, &data.front(), infoT, infoT.ndims() - 1, precision);
 
     os.flags(backup);
 }
@@ -136,7 +136,7 @@ static void printSparse(const char *exp, af_array arr, const int precision,
 af_err af_print_array(af_array arr)
 {
     try {
-        ArrayInfo info = getInfo(arr, false);   // Don't assert sparse/dense
+        const ArrayInfo& info = getInfo(arr, false);   // Don't assert sparse/dense
         af_dtype type = info.getType();
 
         if(info.isSparse()) {
@@ -174,7 +174,7 @@ af_err af_print_array_gen(const char *exp, const af_array arr, const int precisi
 {
     try {
         ARG_ASSERT(0, exp != NULL);
-        ArrayInfo info = getInfo(arr, false);   // Don't assert sparse/dense
+        const ArrayInfo& info = getInfo(arr, false);   // Don't assert sparse/dense
         af_dtype type = info.getType();
 
         if(info.isSparse()) {
@@ -213,7 +213,7 @@ af_err af_array_to_string(char **output, const char *exp, const af_array arr,
 {
     try {
         ARG_ASSERT(0, exp != NULL);
-        ArrayInfo info = getInfo(arr, false);   // Don't assert sparse/dense
+        const ArrayInfo& info = getInfo(arr, false);   // Don't assert sparse/dense
         af_dtype type = info.getType();
         std::stringstream ss;
 

@@ -52,8 +52,8 @@ static af_array cov(const af_array& X, const af_array& Y, const bool isbiased)
 af_err af_cov(af_array* out, const af_array X, const af_array Y, const bool isbiased)
 {
     try {
-        ArrayInfo xInfo = getInfo(X);
-        ArrayInfo yInfo = getInfo(Y);
+        const ArrayInfo& xInfo = getInfo(X);
+        const ArrayInfo& yInfo = getInfo(Y);
         dim4 xDims      = xInfo.dims();
         dim4 yDims      = yInfo.dims();
         af_dtype xType  = xInfo.getType();

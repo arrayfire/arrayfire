@@ -29,7 +29,7 @@ static inline af_array trs(const af_array in, const bool conjugate)
 af_err af_transpose(af_array *out, af_array in, const bool conjugate)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
         af::dim4 dims = info.dims();
 
@@ -85,7 +85,7 @@ static inline void transpose_inplace(af_array in, const bool conjugate)
 af_err af_transpose_inplace(af_array in, const bool conjugate)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
         af::dim4 dims = info.dims();
 

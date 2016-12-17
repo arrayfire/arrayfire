@@ -73,7 +73,7 @@ The af_backend enum stores the possible backends.
 To select a backend, call the af::setBackend function as shown below.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
-af::setBackend(AF_BACKEND_OPENCL);    // Sets CUDA as current backend
+af::setBackend(AF_BACKEND_CUDA);    // Sets CUDA as current backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To get the count of the number of backends available (the number of `libaf*`

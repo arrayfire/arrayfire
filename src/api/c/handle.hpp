@@ -41,7 +41,7 @@ detail::Array<To> castArray(const af_array &in)
     using detail::uchar;
     using detail::ushort;
 
-    const ArrayInfo info = getInfo(in);
+    const ArrayInfo& info = getInfo(in);
     switch (info.getType()) {
     case f32: return detail::cast<To, float  >(getArray<float  >(in));
     case f64: return detail::cast<To, double >(getArray<double >(in));

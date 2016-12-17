@@ -65,7 +65,7 @@ static af_array transform_coordinates(const af_array& tf, const float d0, const 
 af_err af_transform_coordinates(af_array *out, const af_array tf, const float d0, const float d1)
 {
     try {
-        ArrayInfo tfInfo = getInfo(tf);
+        const ArrayInfo& tfInfo = getInfo(tf);
         dim4 tfDims = tfInfo.dims();
         ARG_ASSERT(1, (tfDims[0]==3 && tfDims[1]==3 && tfDims.ndims()==2));
 
