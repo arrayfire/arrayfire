@@ -9,9 +9,11 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/signal.h>
-#include <af/arith.h>
 #include <af/data.h>
 #include <handle.hpp>
+#include <arith.hpp>
+#include <cast.hpp>
+#include <tile.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <convolve.hpp>
@@ -31,9 +33,23 @@ inline static af_array convolve(const af_array &s, const af_array &f, AF_BATCH_K
 template<typename T, typename accT, bool expand>
 inline static af_array convolve2(const af_array &s, const af_array &c_f, const af_array &r_f)
 {
-    return getHandle(convolve2<T, accT, expand>(getArray<T>(s),
-                                                castArray<accT>(c_f),
-                                                castArray<accT>(r_f)));
+    const Array<accT> colFilter = castArray<accT>(c_f);
+    const Array<accT> rowFilter = castArray<accT>(r_f);
+    const Array<accT> signal    = castArray<accT>(s);
+
+    if (colFilter.isScalar() && rowFilter.isScalar()) {
+        Array<accT> colArray = detail::tile(colFilter, signal.dims());
+        Array<accT> rowArray = detail::tile(rowFilter, signal.dims());
+
+        Array<accT> filter = arithOp<accT, af_mul_t>(colArray, rowArray, signal.dims());
+
+        return getHandle(cast<T, accT>(arithOp<accT, af_mul_t>(signal, filter, signal.dims())));
+    }
+
+    ARG_ASSERT(2, colFilter.isVector());
+    ARG_ASSERT(3, rowFilter.isVector());
+
+    return getHandle(convolve2<T, accT, expand>(getArray<T>(s), colFilter, rowFilter));
 }
 
 template<dim_t baseDim>
@@ -110,37 +126,15 @@ af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, co
 {
     try {
         const ArrayInfo& sInfo = getInfo(signal);
-        const ArrayInfo& cfInfo= getInfo(col_filter);
-        const ArrayInfo& rfInfo= getInfo(row_filter);
 
-        af_dtype signalType  = sInfo.getType();
+        const dim4& sdims = sInfo.dims();
 
-        dim4 sdims = sInfo.dims();
+        const af_dtype signalType  = sInfo.getType();
 
         ARG_ASSERT(1, (sdims.ndims()>=2));
 
-        if (cfInfo.isScalar() && rfInfo.isScalar()) {
-            af_array colArray = 0;
-            af_array rowArray = 0;
-            af_array filter = 0;
+        af_array output = 0;
 
-            AF_CHECK(af_tile(&colArray, col_filter, sdims[0], sdims[1], sdims[2], sdims[3]));
-            AF_CHECK(af_tile(&rowArray, row_filter, sdims[0], sdims[1], sdims[2], sdims[3]));
-            AF_CHECK(af_mul (&filter, colArray, rowArray, false));
-
-            AF_CHECK(af_mul(out, signal, filter, false));
-
-            if (colArray!=0) AF_CHECK(af_release_array(colArray));
-            if (rowArray!=0) AF_CHECK(af_release_array(rowArray));
-            if (filter!=0)   AF_CHECK(af_release_array(filter));
-
-            return AF_SUCCESS;
-        }
-
-        ARG_ASSERT(2, cfInfo.isVector());
-        ARG_ASSERT(3, rfInfo.isVector());
-
-        af_array output;
         switch(signalType) {
             case c32: output = convolve2<cfloat ,  cfloat, expand>(signal, col_filter, row_filter); break;
             case c64: output = convolve2<cdouble, cdouble, expand>(signal, col_filter, row_filter); break;
