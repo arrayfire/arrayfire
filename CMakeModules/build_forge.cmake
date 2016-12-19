@@ -42,13 +42,13 @@ ELSE()
     SET(byproducts BYPRODUCTS ${forge_location})
 ENDIF()
 
-SET(FORGE_VERSION 0.9.1)
+SET(FORGE_VERSION 0.9.2)
 
 # FIXME Tag forge correctly during release
 ExternalProject_Add(
     forge-ext
     GIT_REPOSITORY https://github.com/arrayfire/forge.git
-    GIT_TAG devel
+    GIT_TAG v${FORGE_VERSION}
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
