@@ -55,7 +55,7 @@ af_err af_orb(af_features* feat, af_array* desc,
               const unsigned levels, const bool blur_img)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4 dims  = info.dims();
 
         ARG_ASSERT(2, (dims[0] >= 7 && dims[1] >= 7 && dims[2] == 1 && dims[3] == 1));

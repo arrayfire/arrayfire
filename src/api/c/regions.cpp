@@ -29,7 +29,7 @@ af_err af_regions(af_array *out, const af_array in, const af_connectivity connec
     try {
         ARG_ASSERT(2, (connectivity==AF_CONNECTIVITY_4 || connectivity==AF_CONNECTIVITY_8));
 
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4 dims  = info.dims();
 
         dim_t in_ndims = dims.ndims();

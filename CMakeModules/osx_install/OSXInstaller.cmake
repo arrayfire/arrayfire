@@ -29,7 +29,7 @@ ENDFOREACH()
 
 # Backends - CPU, CUDA, OpenCL, Unified
 MACRO(OSX_INSTALL_SETUP BACKEND LIB)
-    FILE(GLOB ${BACKEND}LIB "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_LIB_DIR}/lib${LIB}*.dylib")
+    FILE(GLOB ${BACKEND}LIB "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_LIB_DIR}/lib${LIB}.${AF_VERSION}.dylib")
     FILE(GLOB ${BACKEND}CMAKE "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_CMAKE_DIR}/ArrayFire${BACKEND}*.cmake")
 
     ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_${BACKEND})
@@ -39,9 +39,24 @@ MACRO(OSX_INSTALL_SETUP BACKEND LIB)
                            COMMAND ${CMAKE_COMMAND} -E copy
                            ${SRC} "${OSX_TEMP}/${BACKEND}/${SRC_REL}"
                            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-                           COMMENT "Copying ${BACKEND} files to temporary OSX Install Dir"
+                           COMMENT "Copying ${BACKEND} files to temporary OSX Install Dir - File: ${SRC_REL}"
                            )
     ENDFOREACH()
+    # Create symlinks separately. Copying them in above command will do a deep copy
+    ADD_CUSTOM_COMMAND(TARGET OSX_INSTALL_SETUP_${BACKEND} PRE_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E create_symlink
+                       "lib${LIB}.${AF_VERSION}.dylib"
+                       "lib${LIB}.${AF_VERSION_MAJOR}.dylib"
+                       WORKING_DIRECTORY "${OSX_TEMP}/${BACKEND}/${AF_INSTALL_LIB_DIR}"
+                       COMMENT "Copying ${BACKEND} files to temporary OSX Install Dir (Symlink)"
+                       )
+    ADD_CUSTOM_COMMAND(TARGET OSX_INSTALL_SETUP_${BACKEND} PRE_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E create_symlink
+                       "lib${LIB}.${AF_VERSION_MAJOR}.dylib"
+                       "lib${LIB}.dylib"
+                       WORKING_DIRECTORY "${OSX_TEMP}/${BACKEND}/${AF_INSTALL_LIB_DIR}"
+                       COMMENT "Copying ${BACKEND} files to temporary OSX Install Dir (Symlink)"
+                       )
 ENDMACRO(OSX_INSTALL_SETUP)
 
 OSX_INSTALL_SETUP(CPU afcpu)
@@ -78,8 +93,9 @@ ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_DOC
 IF(BUILD_GRAPHICS)
     MAKE_DIRECTORY("${OSX_TEMP}/Forge")
 
-    # Forge Library
-    FILE(GLOB FORGE_LIB "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_LIB_DIR}/libforge*.dylib")
+    # Forge library versions for setting up symlinks
+    STRING(SUBSTRING ${FORGE_VERSION} 0 1 FORGE_VERSION_MAJOR) # Will return x
+
     ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_FORGE_LIB)
     FOREACH(SRC ${FORGE_LIB})
         FILE(RELATIVE_PATH SRC_REL ${CMAKE_INSTALL_PREFIX} ${SRC})
@@ -87,9 +103,24 @@ IF(BUILD_GRAPHICS)
                            COMMAND ${CMAKE_COMMAND} -E copy
                            ${SRC} "${OSX_TEMP}/Forge/${SRC_REL}"
                            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-                           COMMENT "Copying libforge files to temporary OSX Install Dir"
+                           COMMENT "Copying libforge files to temporary OSX Install Dir - File: ${SRC_REL}"
         )
     ENDFOREACH()
+    # Create symlinks separately. Copying them in above command will do a deep copy
+    ADD_CUSTOM_COMMAND(TARGET OSX_INSTALL_SETUP_FORGE_LIB PRE_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E create_symlink
+                       "${LIBFORGE_NAME}.${FORGE_VERSION}.dylib"
+                       "${LIBFORGE_NAME}.${FORGE_VERSION_MAJOR}.dylib"
+                       WORKING_DIRECTORY "${OSX_TEMP}/Forge/${AF_INSTALL_LIB_DIR}"
+                       COMMENT "Copying libforge files to temporary OSX Install Dir (Symlink)"
+                       )
+    ADD_CUSTOM_COMMAND(TARGET OSX_INSTALL_SETUP_FORGE_LIB PRE_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E create_symlink
+                       "${LIBFORGE_NAME}.${FORGE_VERSION_MAJOR}.dylib"
+                       "${LIBFORGE_NAME}.dylib"
+                       WORKING_DIRECTORY "${OSX_TEMP}/Forge/${AF_INSTALL_LIB_DIR}"
+                       COMMENT "Copying libforge files to temporary OSX Install Dir (Symlink)"
+                       )
 
     # Forge Headers
     ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_FORGE_INCLUDE
@@ -261,10 +292,10 @@ IF(BUILD_GRAPHICS)
     PKG_BUILD(  PKG_NAME        ForgeLibrary
                 DEPENDS         OSX_INSTALL_SETUP_FORGE_LIB
                 TARGETS         forge_lib_package
-                INSTALL_LOCATION /usr/local/
+                INSTALL_LOCATION /usr/local/lib
                 SCRIPT_DIR      ${OSX_INSTALL_SOURCE}/forge_scripts
                 IDENTIFIER      com.arrayfire.pkg.forge.lib
-                PATH_TO_FILES   ${OSX_TEMP}/Forge)
+                PATH_TO_FILES   ${OSX_TEMP}/Forge/lib)
 
     PKG_BUILD(  PKG_NAME        ForgeHeaders
                 DEPENDS         OSX_INSTALL_SETUP_FORGE_INCLUDE

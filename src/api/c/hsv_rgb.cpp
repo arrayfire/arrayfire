@@ -34,7 +34,7 @@ template<bool isHSV2RGB>
 af_err convert(af_array* out, const af_array& in)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype iType = info.getType();
         af::dim4 inputDims = info.dims();
 

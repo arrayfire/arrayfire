@@ -40,8 +40,8 @@ template<bool isDilation>
 static af_err morph(af_array *out, const af_array &in, const af_array &mask)
 {
     try {
-        ArrayInfo info = getInfo(in);
-        ArrayInfo mInfo= getInfo(mask);
+        const ArrayInfo& info = getInfo(in);
+        const ArrayInfo& mInfo= getInfo(mask);
         af::dim4 dims  = info.dims();
         af::dim4 mdims = mInfo.dims();
         dim_t in_ndims = dims.ndims();
@@ -74,8 +74,8 @@ template<bool isDilation>
 static af_err morph3d(af_array *out, const af_array &in, const af_array &mask)
 {
     try {
-        ArrayInfo info = getInfo(in);
-        ArrayInfo mInfo= getInfo(mask);
+        const ArrayInfo& info = getInfo(in);
+        const ArrayInfo& mInfo= getInfo(mask);
         af::dim4 dims  = info.dims();
         af::dim4 mdims = mInfo.dims();
         dim_t in_ndims = dims.ndims();

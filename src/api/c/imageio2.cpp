@@ -238,7 +238,7 @@ static void save_t(T* pDstLine, const af_array in, const dim4 dims, uint nDstPit
     if(channels >= 3) AF_CHECK(af_transpose(&bbT, bb, false));
     if(channels >= 4) AF_CHECK(af_transpose(&aaT, aa, false));
 
-    ArrayInfo cinfo = getInfo(rrT);
+    const ArrayInfo& cinfo = getInfo(rrT);
                       pSrc0 = pinnedAlloc<T>(cinfo.elements());
     if(channels >= 3) pSrc1 = pinnedAlloc<T>(cinfo.elements());
     if(channels >= 3) pSrc2 = pinnedAlloc<T>(cinfo.elements());
@@ -313,7 +313,7 @@ af_err af_save_image_native(const char* filename, const af_array in)
             AF_ERROR("FreeImage Error: Unknown Filetype", AF_ERR_NOT_SUPPORTED);
         }
 
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         // check image color type
         FI_CHANNELS channels = (FI_CHANNELS)info.dims()[2];
         DIM_ASSERT(1, channels <= 4);

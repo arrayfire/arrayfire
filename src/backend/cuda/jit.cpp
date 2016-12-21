@@ -45,10 +45,10 @@
 #include <vector>
 #include <nvvm.h>
 #include <boost/functional/hash.hpp>
-#include <boost/scoped_ptr.hpp>
+#include <boost/scoped_array.hpp>
 
 using std::vector;
-using boost::scoped_ptr;
+using boost::scoped_array;
 
 namespace cuda
 {
@@ -409,7 +409,7 @@ static char *irToPtx(string IR, size_t *ptx_size)
         size_t log_size = 0;
         nvvmGetProgramLogSize(prog, &log_size);
         printf("%ld, %zu\n", IR.size(), log_size);
-        scoped_ptr<char> log(new char[log_size]);
+        scoped_array<char> log(new char[log_size]);
         nvvmGetProgramLog(prog, log.get());
         printf("LOG:\n%s\n%s", log.get(), IR.c_str());
         NVVM_CHECK(comp_res, "Failed to compile program");
@@ -463,7 +463,7 @@ char linkError[size];
 static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 {
     size_t ptx_size;
-    scoped_ptr<const char> ptx(irToPtx(jit_ker, &ptx_size));
+    scoped_array<const char> ptx(irToPtx(jit_ker, &ptx_size));
 
     CUlinkState linkState;
 

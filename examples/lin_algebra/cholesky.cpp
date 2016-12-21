@@ -28,8 +28,14 @@ int main(int argc, char *argv[])
         af_print(in);
 
         printf("Running Cholesky InPlace\n");
-        array cin = in.copy();
-        af_print(cin);
+        array cin_upper = in.copy();
+        array cin_lower = in.copy();
+
+        choleskyInPlace(cin_upper, true);
+        choleskyInPlace(cin_lower, false);
+
+        af_print(cin_upper);
+        af_print(cin_lower);
 
         printf("Running Cholesky Out of place\n");
         array out_upper;

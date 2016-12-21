@@ -40,8 +40,8 @@ af_err af_match_template(af_array *out, const af_array search_img, const af_arra
     try {
         ARG_ASSERT(3, (m_type>=AF_SAD && m_type<=AF_LSSD));
 
-        ArrayInfo sInfo = getInfo(search_img);
-        ArrayInfo tInfo = getInfo(template_img);
+        const ArrayInfo& sInfo = getInfo(search_img);
+        const ArrayInfo& tInfo = getInfo(template_img);
 
         dim4 const sDims = sInfo.dims();
         dim4 const tDims = tInfo.dims();

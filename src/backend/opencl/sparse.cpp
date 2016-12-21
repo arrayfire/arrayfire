@@ -21,6 +21,7 @@
 #include <lookup.hpp>
 #include <math.hpp>
 #include <platform.hpp>
+#include <range.hpp>
 #include <reduce.hpp>
 #include <where.hpp>
 
@@ -41,11 +42,11 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in)
 
     dim_t nNZ = nonZeroIdx.elements();
 
-    Array<int> constNNZ = createValueArray<int>(dim4(nNZ), nNZ);
-    constNNZ.eval();
+    Array<int> constDim = createValueArray<int>(dim4(nNZ), in.dims()[0]);
+    constDim.eval();
 
-    Array<int> rowIdx = arithOp<int, af_mod_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
-    Array<int> colIdx = arithOp<int, af_div_t>(nonZeroIdx, constNNZ, nonZeroIdx.dims());
+    Array<int> rowIdx = arithOp<int, af_mod_t>(nonZeroIdx, constDim, nonZeroIdx.dims());
+    Array<int> colIdx = arithOp<int, af_div_t>(nonZeroIdx, constDim, nonZeroIdx.dims());
 
     Array<T> values = copyArray<T>(in);
     values.modDims(dim4(values.elements()));
@@ -115,25 +116,53 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
     return dense_;
 }
 
-template<typename T, af_storage src, af_storage dest>
+template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
-    // TODO
-    // Convert CSR <-> CSC <-> COO <-> CSR
-    // Currently supports CSR <-> COO
-
-    AF_ERROR("OpenCL Backend only supports CSR or COO to Dense", AF_ERR_NOT_SUPPORTED);
-
-    // If src and dest are the same, simply return.
-    if(src == dest)
-        return in;
-
     in.eval();
 
-    SparseArray<T> out = createEmptySparseArray<T>(in.dims(), (int)in.getNNZ(), dest);
-    out.eval();
+    SparseArray<T> converted = createEmptySparseArray<T>(in.dims(), (int)in.getNNZ(), dest);
+    converted.eval();
 
-    return out;
+    if(src == AF_STORAGE_CSR && dest == AF_STORAGE_COO) {
+
+        Array<int> index = range<int>(in.getNNZ(), 0);
+        index.eval();
+
+        Array<T>   &ovalues = converted.getValues();
+        Array<int> &orowIdx = converted.getRowIdx();
+        Array<int> &ocolIdx = converted.getColIdx();
+        const Array<T>   &ivalues = in.getValues();
+        const Array<int> &irowIdx = in.getRowIdx();
+        const Array<int> &icolIdx = in.getColIdx();
+
+        kernel::csr2coo<T>(ovalues, orowIdx, ocolIdx, ivalues, irowIdx, icolIdx, index);
+
+    } else if (src == AF_STORAGE_COO && dest == AF_STORAGE_CSR) {
+
+        Array<int> index = range<int>(in.getNNZ(), 0);
+        index.eval();
+
+        Array<T>   &ovalues = converted.getValues();
+        Array<int> &orowIdx = converted.getRowIdx();
+        Array<int> &ocolIdx = converted.getColIdx();
+        const Array<T>   &ivalues = in.getValues();
+        const Array<int> &irowIdx = in.getRowIdx();
+        const Array<int> &icolIdx = in.getColIdx();
+
+        Array<int> rowCopy = copyArray<int>(irowIdx);
+        rowCopy.eval();
+
+        kernel::coo2csr<T>(ovalues, orowIdx, ocolIdx,
+                           ivalues, irowIdx, icolIdx,
+                           index, rowCopy, in.dims()[0]);
+
+    } else {
+        // Should never come here
+        AF_ERROR("OpenCL Backend invalid conversion combination", AF_ERR_NOT_SUPPORTED);
+    }
+
+    return converted;
 }
 
 

@@ -114,11 +114,8 @@ void complexMultiply(Array<T> packed, const af::dim4 sig_dims, const af::dim4 si
                         T c = in2_ptr[ridx];
                         T d = in2_ptr[iidx];
 
-                        T ac = a*c;
-                        T bd = b*d;
-
-                        out_ptr[ridx] = ac - bd;
-                        out_ptr[iidx] = (a+b) * (c+d) - ac - bd;
+                        out_ptr[ridx] = a*c - b*d;
+                        out_ptr[iidx] = a*d + b*c;
                     }
                     else if (kind == AF_BATCH_LHS) {
                         // Complex multiply all signals to filter
@@ -132,11 +129,8 @@ void complexMultiply(Array<T> packed, const af::dim4 sig_dims, const af::dim4 si
                         T c = in2_ptr[ridx2];
                         T d = in2_ptr[iidx2];
 
-                        T ac = a*c;
-                        T bd = b*d;
-
-                        out_ptr[ridx1] = ac - bd;
-                        out_ptr[iidx1] = (a+b) * (c+d) - ac - bd;
+                        out_ptr[ridx1] = a*c - b*d;
+                        out_ptr[iidx1] = a*d + b*c;
                     }
                     else if (kind == AF_BATCH_RHS) {
                         // Complex multiply signal to all filters
@@ -150,11 +144,8 @@ void complexMultiply(Array<T> packed, const af::dim4 sig_dims, const af::dim4 si
                         T c = in2_ptr[ridx2];
                         T d = in2_ptr[iidx2];
 
-                        T ac = a*c;
-                        T bd = b*d;
-
-                        out_ptr[ridx2] = ac - bd;
-                        out_ptr[iidx2] = (a+b) * (c+d) - ac - bd;
+                        out_ptr[ridx2] = a*c - b*d;
+                        out_ptr[iidx2] = a*d + b*c;
                     }
                 }
             }

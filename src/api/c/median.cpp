@@ -153,7 +153,7 @@ static af_array median(const af_array& in, const dim_t dim)
 af_err af_median_all(double *realVal, double *imagVal, const af_array in)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
 
         ARG_ASSERT(2, info.ndims() > 0);
@@ -178,7 +178,7 @@ af_err af_median(af_array* out, const af_array in, const dim_t dim)
         ARG_ASSERT(2, (dim >= 0 && dim <= 4));
 
         af_array output = 0;
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
 
         ARG_ASSERT(1, info.ndims() > 0);
         af_dtype type = info.getType();

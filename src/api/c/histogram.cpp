@@ -32,7 +32,7 @@ af_err af_histogram(af_array *out, const af_array in,
                     const unsigned nbins, const double minval, const double maxval)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type  = info.getType();
 
         if(info.ndims() == 0) {
