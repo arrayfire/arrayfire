@@ -8,25 +8,23 @@
  ********************************************************/
 #pragma once
 
-// Workaround for BOOST_NOINLINE not being defined with nvcc / CUDA < 6.5
-#if CUDA_VERSION < 6050
-#ifndef BOOST_NOINLINE
-#define BOOST_NOINLINE __attribute__ ((noinline))
-#endif
-#endif
-
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
 #include "traits.hpp"
 #include <backend.hpp>
 #include <types.hpp>
 #include <traits.hpp>
+#include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <Param.hpp>
 #include <JIT/Node.hpp>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <memory.hpp>
+
+#if CUDA_VERSION < 7000
+    #error "ArrayFire CUDA requires CUDA Toolkit Version 7.0 or newer."
+#endif
 
 namespace cuda
 {
