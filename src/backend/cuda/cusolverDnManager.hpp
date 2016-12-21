@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined(WITH_CUDA_LINEAR_ALGEBRA)
 #pragma once
 
 #include <cuda_runtime.h>
@@ -38,5 +37,3 @@ namespace cusolver
                      AF_ERR_INTERNAL);              \
         }                                           \
     } while(0)
-
-#endif
