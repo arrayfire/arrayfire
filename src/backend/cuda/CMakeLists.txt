@@ -145,53 +145,9 @@ IF(CMAKE_VERSION VERSION_LESS 3.2)
     MARK_AS_ADVANCED(CUDA_cusolver_LIBRARY)
 ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
 
-IF(${CUDA_VERSION_MAJOR} LESS 7 AND CUDA_cusolver_LIBRARY)
-  UNSET(CUDA_cusolver_LIBRARY CACHE)  # Failsafe when going from higher version to lower version
-ENDIF()
-
 IF(CUDA_cusolver_LIBRARY)
     MESSAGE(STATUS "CUDA cusolver library available in CUDA Version ${CUDA_VERSION_STRING}")
     ADD_DEFINITIONS(-DWITH_CUDA_LINEAR_ALGEBRA)
-ELSE(CUDA_cusolver_LIBRARY)
-    # Use CPU Lapack as fallback?
-    OPTION(CUDA_LAPACK_CPU_FALLBACK "Use CPU LAPACK as fallback for CUDA LAPACK when cusolver is not available" OFF)
-    MARK_AS_ADVANCED(CUDA_LAPACK_CPU_FALLBACK)
-
-    IF(${CUDA_LAPACK_CPU_FALLBACK})
-        ## Try to use CPU side lapack
-        IF(APPLE)
-            FIND_PACKAGE(LAPACKE QUIET) # For finding MKL
-            IF(NOT LAPACK_FOUND)
-                # UNSET THE VARIABLES FROM LAPACKE
-                UNSET(LAPACKE_LIB CACHE)
-                UNSET(LAPACK_LIB CACHE)
-                UNSET(LAPACKE_INCLUDES CACHE)
-                UNSET(LAPACKE_ROOT_DIR CACHE)
-                FIND_PACKAGE(LAPACK)
-            ENDIF()
-        ELSE(APPLE) # Linux and Windows
-            FIND_PACKAGE(LAPACKE)
-        ENDIF(APPLE)
-
-        IF(NOT LAPACK_FOUND)
-            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. Linear Algebra will not be available.")
-        ELSE(NOT LAPACK_FOUND)
-            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. But CPU LAPACK libraries are available. Will fallback to using host side code.")
-            ADD_DEFINITIONS(-DWITH_CPU_LINEAR_ALGEBRA)
-            IF(USE_CUDA_MKL) # Manual MKL Setup
-                MESSAGE("CUDA LAPACK CPU Fallback Using MKL")
-                ADD_DEFINITIONS(-DUSE_MKL)
-            ELSE(USE_CUDA_MKL)
-                IF(${MKL_FOUND}) # Automatic MKL Setup from BLAS
-                    MESSAGE("CUDA LAPACK CPU Fallback Using MKL RT")
-                    ADD_DEFINITIONS(-DUSE_MKL)
-                ENDIF()
-            ENDIF()
-        ENDIF()
-    ELSE()
-        MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. Linear Algebra will not be available.")
-    ENDIF()
-    UNSET(CUDA_cusolver_LIBRARY CACHE)  # Failsafe when going from higher version to lower version
 ENDIF(CUDA_cusolver_LIBRARY)
 
 INCLUDE_DIRECTORIES(
