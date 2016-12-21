@@ -31,9 +31,9 @@ void replace(af_array a, const af_array cond, const af_array b)
 af_err af_replace(af_array a, const af_array cond, const af_array b)
 {
     try {
-        ArrayInfo ainfo = getInfo(a);
-        ArrayInfo binfo = getInfo(b);
-        ArrayInfo cinfo = getInfo(cond);
+        const ArrayInfo& ainfo = getInfo(a);
+        const ArrayInfo& binfo = getInfo(b);
+        const ArrayInfo& cinfo = getInfo(cond);
 
         if(cinfo.ndims() == 0) {
             return AF_SUCCESS;
@@ -83,8 +83,8 @@ void replace_scalar(af_array a, const af_array cond, const double b)
 af_err af_replace_scalar(af_array a, const af_array cond, const double b)
 {
     try {
-        ArrayInfo ainfo = getInfo(a);
-        ArrayInfo cinfo = getInfo(cond);
+        const ArrayInfo& ainfo = getInfo(a);
+        const ArrayInfo& cinfo = getInfo(cond);
 
         ARG_ASSERT(1, cinfo.getType() == b8);
         DIM_ASSERT(1, cinfo.ndims() == ainfo.ndims());

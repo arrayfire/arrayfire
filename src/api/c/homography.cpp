@@ -48,10 +48,10 @@ af_err af_homography(af_array *H, int *inliers,
                      const unsigned iterations, const af_dtype otype)
 {
     try {
-        ArrayInfo xsinfo = getInfo(x_src);
-        ArrayInfo ysinfo = getInfo(y_src);
-        ArrayInfo xdinfo = getInfo(x_dst);
-        ArrayInfo ydinfo = getInfo(y_dst);
+        const ArrayInfo& xsinfo = getInfo(x_src);
+        const ArrayInfo& ysinfo = getInfo(y_src);
+        const ArrayInfo& xdinfo = getInfo(x_dst);
+        const ArrayInfo& ydinfo = getInfo(y_dst);
 
         af::dim4 xsdims  = xsinfo.dims();
         af::dim4 ysdims  = ysinfo.dims();

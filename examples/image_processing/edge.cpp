@@ -80,8 +80,6 @@ void edge()
     array sobelFilter   = edge(in, 2);
     array hst = histogram(in, 256, 0, 255);
 
-    float freq_max = max<float>(hst);
-    myWindow2.setAxesLimits(0, 255, 0, freq_max);
     myWindow2.setAxesTitles("Bins", "Frequency");
 
     while(!myWindow.close() && !myWindow2.close()) {

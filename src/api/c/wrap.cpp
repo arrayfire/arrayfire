@@ -37,7 +37,7 @@ af_err af_wrap(af_array *out, const af_array in,
                const bool is_column)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
         af::dim4 idims = info.dims();
 

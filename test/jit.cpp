@@ -267,3 +267,17 @@ TEST(JIT, CPP_common_node)
         }
     }
 }
+
+TEST(JIT, ISSUE_1646)
+{
+    af::array test1 = af::randn(10, 10);
+    af::array test2 = af::randn(10);
+    af::array test3 = af::randn(10);
+
+    for (int i = 0; i < 1000; i++) {
+        test3 += af::sum(test1, 1);
+        test2 += test3;
+    }
+    af::eval(test2);
+    af::eval(test3);
+}

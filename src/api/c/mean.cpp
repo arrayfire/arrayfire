@@ -57,7 +57,7 @@ af_err af_mean(af_array *out, const af_array in, const dim_t dim)
         ARG_ASSERT(2, (dim>=0 && dim<=3));
 
         af_array output = 0;
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
         switch(type) {
             case f64: output = mean<double  ,  double>(in, dim); break;
@@ -86,8 +86,8 @@ af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights
         ARG_ASSERT(2, (dim>=0 && dim<=3));
 
         af_array output = 0;
-        ArrayInfo iInfo = getInfo(in);
-        ArrayInfo wInfo = getInfo(weights);
+        const ArrayInfo& iInfo = getInfo(in);
+        const ArrayInfo& wInfo = getInfo(weights);
         af_dtype iType  = iInfo.getType();
         af_dtype wType  = wInfo.getType();
 
@@ -117,7 +117,7 @@ af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights
 af_err af_mean_all(double *realVal, double *imagVal, const af_array in)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
         switch(type) {
             case f64: *realVal = mean<double  , double>(in); break;
@@ -150,8 +150,8 @@ af_err af_mean_all(double *realVal, double *imagVal, const af_array in)
 af_err af_mean_all_weighted(double *realVal, double *imagVal, const af_array in, const af_array weights)
 {
     try {
-        ArrayInfo iInfo = getInfo(in);
-        ArrayInfo wInfo = getInfo(weights);
+        const ArrayInfo& iInfo = getInfo(in);
+        const ArrayInfo& wInfo = getInfo(weights);
         af_dtype iType  = iInfo.getType();
         af_dtype wType  = wInfo.getType();
 

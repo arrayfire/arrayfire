@@ -29,7 +29,7 @@ static inline af_array where(const af_array in)
 af_err af_where(af_array *idx, const af_array in)
 {
     try {
-        ArrayInfo i_info = getInfo(in);
+        const ArrayInfo& i_info = getInfo(in);
         af_dtype type = i_info.getType();
 
         if(i_info.ndims() == 0) {

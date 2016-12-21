@@ -150,7 +150,7 @@ __global__ void complexMultiply(
         convT c2 = in2.ptr[ridx];
 
         out.ptr[ridx].x = c1.x*c2.x - c1.y*c2.y;
-        out.ptr[ridx].y = (c1.x+c1.y) * (c2.x+c2.y) - c1.x*c2.x - c1.y*c2.y;
+        out.ptr[ridx].y = c1.x*c2.y + c1.y*c2.x;
     }
     else if (kind == AF_BATCH_LHS) {
         // Complex multiply all signals to filter
@@ -161,7 +161,7 @@ __global__ void complexMultiply(
         convT c2 = in2.ptr[ridx2];
 
         out.ptr[ridx1].x = c1.x*c2.x - c1.y*c2.y;
-        out.ptr[ridx1].y = (c1.x+c1.y) * (c2.x+c2.y) - c1.x*c2.x - c1.y*c2.y;
+        out.ptr[ridx1].y = c1.x*c2.y + c1.y*c2.x;
     }
     else if (kind == AF_BATCH_RHS) {
         // Complex multiply signal to all filters
@@ -172,7 +172,7 @@ __global__ void complexMultiply(
         convT c2 = in2.ptr[ridx2];
 
         out.ptr[ridx2].x = c1.x*c2.x - c1.y*c2.y;
-        out.ptr[ridx2].y = (c1.x+c1.y) * (c2.x+c2.y) - c1.x*c2.x - c1.y*c2.y;
+        out.ptr[ridx2].y = c1.x*c2.y + c1.y*c2.x;
     }
 }
 

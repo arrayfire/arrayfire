@@ -59,7 +59,7 @@ static af_err af_unary(af_array *out, const af_array in)
 {
     try {
 
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
         ARG_ASSERT(1, in_info.isReal());
 
         af_dtype in_type = in_info.getType();
@@ -85,7 +85,7 @@ template<af_op_t op>
 static af_err af_unary_complex(af_array *out, const af_array in)
 {
     try {
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
 
         af_dtype in_type = in_info.getType();
         af_array res;
@@ -562,7 +562,7 @@ af_err af_not(af_array *out, const af_array in)
     try {
 
         af_array tmp;
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
 
         AF_CHECK(af_constant(&tmp, 0,
                              in_info.ndims(),
@@ -580,7 +580,7 @@ af_err af_arg(af_array *out, const af_array in)
 {
     try {
 
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
 
         if (!in_info.isComplex()) {
             return af_constant(out, 0,
@@ -608,7 +608,7 @@ af_err af_pow2(af_array *out, const af_array in)
     try {
 
         af_array two;
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
 
         AF_CHECK(af_constant(&two, 2,
                              in_info.ndims(),
@@ -627,7 +627,7 @@ af_err af_factorial(af_array *out, const af_array in)
     try {
 
         af_array one;
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
 
         AF_CHECK(af_constant(&one, 1,
                              in_info.ndims(),
@@ -679,7 +679,7 @@ static inline af_array checkOpCplx(const af_array in)
     Array<char> resR = checkOp<BT, op>(R);
     Array<char> resI = checkOp<BT, op>(I);
 
-    ArrayInfo in_info = getInfo(in);
+    const ArrayInfo& in_info = getInfo(in);
     dim4 dims = in_info.dims();
     cplxLogicOp<op> cplxLogic;
     af_array res = cplxLogic(resR, resI, dims);
@@ -692,7 +692,7 @@ static af_err af_check(af_array *out, const af_array in)
 {
     try {
 
-        ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
 
         af_dtype in_type = in_info.getType();
         af_array res;
