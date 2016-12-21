@@ -49,7 +49,7 @@ static inline uint rank(const af_array in, double tol)
 af_err af_rank(uint *out, const af_array in, const double tol)
 {
     try {
-        ArrayInfo i_info = getInfo(in);
+        const ArrayInfo& i_info = getInfo(in);
 
         if (i_info.ndims() > 2) {
             AF_ERROR("solve can not be used in batch mode", AF_ERR_BATCH);

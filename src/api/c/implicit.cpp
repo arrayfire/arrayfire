@@ -64,8 +64,8 @@ af_dtype implicit(const af_dtype lty, const af_dtype rty)
 
 af_dtype implicit(const af_array lhs, const af_array rhs)
 {
-    ArrayInfo lInfo = getInfo(lhs);
-    ArrayInfo rInfo = getInfo(rhs);
+    const ArrayInfo& lInfo = getInfo(lhs);
+    const ArrayInfo& rInfo = getInfo(rhs);
 
     return implicit(lInfo.getType(), rInfo.getType());
 }

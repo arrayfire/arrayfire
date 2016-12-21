@@ -39,7 +39,7 @@ namespace TNJ
                    const dim_t *dms,
                    const dim_t *strs,
                    const bool is_linear) :
-            Node(),
+            Node(0),
             ptr(data),
             m_bytes(bytes),
             m_linear_buffer(is_linear),
@@ -50,7 +50,6 @@ namespace TNJ
                 m_strides[i] = strs[i];
                 m_dims[i] = dms[i];
             }
-            m_height = 0;
         }
 
         void *calc(int x, int y, int z, int w)

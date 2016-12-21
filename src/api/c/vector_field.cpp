@@ -14,11 +14,15 @@
 #include <graphics_common.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
-#include <vector_field.hpp>
+#include <handle.hpp>
+#include <join.hpp>
 #include <reduce.hpp>
 #include <transpose.hpp>
-#include <handle.hpp>
+#include <vector_field.hpp>
 
+#include <vector>
+
+using std::vector;
 using af::dim4;
 using namespace detail;
 
@@ -27,11 +31,20 @@ using namespace graphics;
 
 template<typename T>
 forge::Chart* setup_vector_field(const forge::Window* const window,
-                                 const af_array points, const af_array directions,
+                                 const vector<af_array>& points, const vector<af_array>& directions,
                                  const af_cell* const props, const bool transpose_ = true)
 {
-    Array<T> pIn = getArray<T>(points);
-    Array<T> dIn = getArray<T>(directions);
+    vector< Array<T> > pnts;
+    vector< Array<T> > dirs;
+
+    for (unsigned i=0; i<points.size(); ++i) {
+        pnts.push_back(getArray<T>(points[i]));
+        dirs.push_back(getArray<T>(directions[i]));
+    }
+
+    // Join for set up vector
+    Array<T> pIn = detail::join(1, pnts);
+    Array<T> dIn = detail::join(1, dirs);
 
     // do transpose if required
     if(transpose_) {
@@ -61,6 +74,43 @@ forge::Chart* setup_vector_field(const forge::Window* const window,
     // ArrayFire LOGO dark blue shade
     vectorfield->setColor(0.130f, 0.173f, 0.263f, 1.0);
 
+    // If chart axes limits do not have a manual override
+    // then compute and set axes limits
+    if(!fgMngr.getChartAxesOverride(chart)) {
+        float cmin[3], cmax[3];
+        T     dmin[3], dmax[3];
+        chart->getAxesLimits(&cmin[0], &cmax[0], &cmin[1], &cmax[1], &cmin[2], &cmax[2]);
+        copyData(dmin, reduce<af_min_t, T, T>(pIn, 1));
+        copyData(dmax, reduce<af_max_t, T, T>(pIn, 1));
+
+        if(cmin[0] == 0 && cmax[0] == 0
+        && cmin[1] == 0 && cmax[1] == 0
+        && cmin[2] == 0 && cmax[2] == 0) {
+            // No previous limits. Set without checking
+            cmin[0] = step_round(dmin[0], false);
+            cmax[0] = step_round(dmax[0], true);
+            cmin[1] = step_round(dmin[1], false);
+            cmax[1] = step_round(dmax[1], true);
+            if(pIn.dims()[0] == 3) cmin[2] = step_round(dmin[2], false);
+            if(pIn.dims()[0] == 3) cmax[2] = step_round(dmax[2], true);
+        } else {
+            if(cmin[0] > dmin[0])       cmin[0] = step_round(dmin[0], false);
+            if(cmax[0] < dmax[0])       cmax[0] = step_round(dmax[0], true);
+            if(cmin[1] > dmin[1])       cmin[1] = step_round(dmin[1], false);
+            if(cmax[1] < dmax[1])       cmax[1] = step_round(dmax[1], true);
+            if(pIn.dims()[0] == 3) {
+                if(cmin[2] > dmin[2])   cmin[2] = step_round(dmin[2], false);
+                if(cmax[2] < dmax[2])   cmax[2] = step_round(dmax[2], true);
+            }
+        }
+
+        if(pIn.dims()[0] == 2) {
+            chart->setAxesLimits(cmin[0], cmax[0], cmin[1], cmax[1]);
+        } else if(pIn.dims()[0] == 3) {
+            chart->setAxesLimits(cmin[0], cmax[0], cmin[1], cmax[1], cmin[2], cmax[2]);
+        }
+    }
+
     copy_vector_field<T>(pIn, dIn, vectorfield);
 
     return chart;
@@ -74,11 +124,11 @@ af_err vectorFieldWrapper(const af_window wind, const af_array points, const af_
     }
 
     try {
-        ArrayInfo pInfo = getInfo(points);
+        const ArrayInfo& pInfo = getInfo(points);
         af::dim4 pDims  = pInfo.dims();
         af_dtype pType  = pInfo.getType();
 
-        ArrayInfo dInfo = getInfo(directions);
+        const ArrayInfo& dInfo = getInfo(directions);
         af::dim4 dDims  = dInfo.dims();
         af_dtype dType  = dInfo.getType();
 
@@ -93,13 +143,19 @@ af_err vectorFieldWrapper(const af_window wind, const af_array points, const af_
 
         forge::Chart* chart = NULL;
 
+        vector<af_array> pnts;
+        pnts.push_back(points);
+
+        vector<af_array> dirs;
+        dirs.push_back(directions);
+
         switch(pType) {
-            case f32: chart = setup_vector_field<float  >(window, points, directions, props); break;
-            case s32: chart = setup_vector_field<int    >(window, points, directions, props); break;
-            case u32: chart = setup_vector_field<uint   >(window, points, directions, props); break;
-            case s16: chart = setup_vector_field<short  >(window, points, directions, props); break;
-            case u16: chart = setup_vector_field<ushort >(window, points, directions, props); break;
-            case u8 : chart = setup_vector_field<uchar  >(window, points, directions, props); break;
+            case f32: chart = setup_vector_field<float  >(window, pnts, dirs, props); break;
+            case s32: chart = setup_vector_field<int    >(window, pnts, dirs, props); break;
+            case u32: chart = setup_vector_field<uint   >(window, pnts, dirs, props); break;
+            case s16: chart = setup_vector_field<short  >(window, pnts, dirs, props); break;
+            case u16: chart = setup_vector_field<ushort >(window, pnts, dirs, props); break;
+            case u8 : chart = setup_vector_field<uchar  >(window, pnts, dirs, props); break;
             default:  TYPE_ERROR(1, pType);
         }
 
@@ -123,9 +179,9 @@ af_err vectorFieldWrapper(const af_window wind,
     }
 
     try {
-        ArrayInfo xpInfo = getInfo(xPoints);
-        ArrayInfo ypInfo = getInfo(yPoints);
-        ArrayInfo zpInfo = getInfo(zPoints);
+        const ArrayInfo& xpInfo = getInfo(xPoints);
+        const ArrayInfo& ypInfo = getInfo(yPoints);
+        const ArrayInfo& zpInfo = getInfo(zPoints);
 
         af::dim4 xpDims  = xpInfo.dims();
         af::dim4 ypDims  = ypInfo.dims();
@@ -135,9 +191,9 @@ af_err vectorFieldWrapper(const af_window wind,
         af_dtype ypType  = ypInfo.getType();
         af_dtype zpType  = zpInfo.getType();
 
-        ArrayInfo xdInfo = getInfo(xDirs);
-        ArrayInfo ydInfo = getInfo(yDirs);
-        ArrayInfo zdInfo = getInfo(zDirs);
+        const ArrayInfo& xdInfo = getInfo(xDirs);
+        const ArrayInfo& ydInfo = getInfo(yDirs);
+        const ArrayInfo& zdInfo = getInfo(zDirs);
 
         af::dim4 xdDims  = xdInfo.dims();
         af::dim4 ydDims  = ydInfo.dims();
@@ -171,12 +227,15 @@ af_err vectorFieldWrapper(const af_window wind,
 
         forge::Chart* chart = NULL;
 
-        // Join for set up vector
-        af_array points = 0, directions = 0;
-        af_array pIn[] = {xPoints, yPoints, zPoints};
-        af_array dIn[] = {xDirs, yDirs, zDirs};
-        AF_CHECK(af_join_many(&points, 1, 3, pIn));
-        AF_CHECK(af_join_many(&directions, 1, 3, dIn));
+        vector<af_array> points;
+        points.push_back(xPoints);
+        points.push_back(yPoints);
+        points.push_back(zPoints);
+
+        vector<af_array> directions;
+        directions.push_back(xDirs);
+        directions.push_back(yDirs);
+        directions.push_back(zDirs);
 
         switch(xpType) {
             case f32: chart = setup_vector_field<float  >(window, points, directions, props); break;
@@ -193,9 +252,6 @@ af_err vectorFieldWrapper(const af_window wind,
             window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
-
-        AF_CHECK(af_release_array(points));
-        AF_CHECK(af_release_array(directions));
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -211,8 +267,8 @@ af_err vectorFieldWrapper(const af_window wind,
     }
 
     try {
-        ArrayInfo xpInfo = getInfo(xPoints);
-        ArrayInfo ypInfo = getInfo(yPoints);
+        const ArrayInfo& xpInfo = getInfo(xPoints);
+        const ArrayInfo& ypInfo = getInfo(yPoints);
 
         af::dim4 xpDims  = xpInfo.dims();
         af::dim4 ypDims  = ypInfo.dims();
@@ -220,8 +276,8 @@ af_err vectorFieldWrapper(const af_window wind,
         af_dtype xpType  = xpInfo.getType();
         af_dtype ypType  = ypInfo.getType();
 
-        ArrayInfo xdInfo = getInfo(xDirs);
-        ArrayInfo ydInfo = getInfo(yDirs);
+        const ArrayInfo& xdInfo = getInfo(xDirs);
+        const ArrayInfo& ydInfo = getInfo(yDirs);
 
         af::dim4 xdDims  = xdInfo.dims();
         af::dim4 ydDims  = ydInfo.dims();
@@ -249,10 +305,13 @@ af_err vectorFieldWrapper(const af_window wind,
 
         forge::Chart* chart = NULL;
 
-        // Join for set up vector
-        af_array points = 0, directions = 0;
-        AF_CHECK(af_join(&points, 1, xPoints, yPoints));
-        AF_CHECK(af_join(&directions, 1, xDirs, yDirs));
+        vector<af_array> points;
+        points.push_back(xPoints);
+        points.push_back(yPoints);
+
+        vector<af_array> directions;
+        directions.push_back(xDirs);
+        directions.push_back(yDirs);
 
         switch(xpType) {
             case f32: chart = setup_vector_field<float  >(window, points, directions, props); break;
@@ -269,9 +328,6 @@ af_err vectorFieldWrapper(const af_window wind,
             window->draw(props->row, props->col, *chart, props->title);
         else
             window->draw(*chart);
-
-        AF_CHECK(af_release_array(points));
-        AF_CHECK(af_release_array(directions));
     }
     CATCHALL;
     return AF_SUCCESS;

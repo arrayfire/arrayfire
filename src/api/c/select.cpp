@@ -32,9 +32,9 @@ af_array select(const af_array cond, const af_array a, const af_array b, const d
 af_err af_select(af_array *out, const af_array cond, const af_array a, const af_array b)
 {
     try {
-        ArrayInfo ainfo = getInfo(a);
-        ArrayInfo binfo = getInfo(b);
-        ArrayInfo cinfo = getInfo(cond);
+        const ArrayInfo& ainfo = getInfo(a);
+        const ArrayInfo& binfo = getInfo(b);
+        const ArrayInfo& cinfo = getInfo(cond);
 
         if(cinfo.ndims() == 0) {
             return af_retain_array(out, cond);
@@ -90,8 +90,8 @@ af_array select_scalar(const af_array cond, const af_array a, const double b, co
 af_err af_select_scalar_r(af_array *out, const af_array cond, const af_array a, const double b)
 {
     try {
-        ArrayInfo ainfo = getInfo(a);
-        ArrayInfo cinfo = getInfo(cond);
+        const ArrayInfo& ainfo = getInfo(a);
+        const ArrayInfo& cinfo = getInfo(cond);
 
         ARG_ASSERT(1, cinfo.getType() == b8);
         DIM_ASSERT(1, cinfo.ndims() == ainfo.ndims());
@@ -129,8 +129,8 @@ af_err af_select_scalar_r(af_array *out, const af_array cond, const af_array a, 
 af_err af_select_scalar_l(af_array *out, const af_array cond, const double a, const af_array b)
 {
     try {
-        ArrayInfo binfo = getInfo(b);
-        ArrayInfo cinfo = getInfo(cond);
+        const ArrayInfo& binfo = getInfo(b);
+        const ArrayInfo& cinfo = getInfo(cond);
 
         ARG_ASSERT(1, cinfo.getType() == b8);
         DIM_ASSERT(1, cinfo.ndims() == binfo.ndims());

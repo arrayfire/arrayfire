@@ -51,8 +51,8 @@ static To corrcoef(const af_array& X, const af_array& Y)
 af_err af_corrcoef(double *realVal, double *imagVal, const af_array X, const af_array Y)
 {
     try {
-        ArrayInfo xInfo = getInfo(X);
-        ArrayInfo yInfo = getInfo(Y);
+        const ArrayInfo& xInfo = getInfo(X);
+        const ArrayInfo& yInfo = getInfo(Y);
         dim4 xDims      = xInfo.dims();
         dim4 yDims      = yInfo.dims();
         af_dtype xType  = xInfo.getType();

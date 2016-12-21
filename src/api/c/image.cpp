@@ -84,7 +84,7 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
     }
 
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
 
         af::dim4 in_dims = info.dims();
         af_dtype type    = info.getType();

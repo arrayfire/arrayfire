@@ -33,11 +33,8 @@ void complex_multiply(
         CONVT c = d_in2[i2Info.offset + ridx];
         CONVT d = d_in2[i2Info.offset + iidx];
 
-        CONVT ac = a*c;
-        CONVT bd = b*d;
-
-        d_out[oInfo.offset + ridx] = ac - bd;
-        d_out[oInfo.offset + iidx] = (a+b) * (c+d) - ac - bd;
+        d_out[oInfo.offset + ridx] = a*c - b*d;
+        d_out[oInfo.offset + iidx] = a*d + b*c;
     }
     else if (kind == AF_BATCH_LHS) {
         // Complex multiply all signals to filter
@@ -54,11 +51,8 @@ void complex_multiply(
         CONVT c = d_in2[i2Info.offset + ridx2];
         CONVT d = d_in2[i2Info.offset + iidx2];
 
-        CONVT ac = a*c;
-        CONVT bd = b*d;
-
-        d_out[oInfo.offset + ridx1] = ac - bd;
-        d_out[oInfo.offset + iidx1] = (a+b) * (c+d) - ac - bd;
+        d_out[oInfo.offset + ridx1] = a*c - b*d;
+        d_out[oInfo.offset + iidx1] = a*d + b*c;
     }
     else if (kind == AF_BATCH_RHS) {
         // Complex multiply signal to all filters
@@ -75,10 +69,7 @@ void complex_multiply(
         CONVT c = d_in2[i2Info.offset + ridx2];
         CONVT d = d_in2[i2Info.offset + iidx2];
 
-        CONVT ac = a*c;
-        CONVT bd = b*d;
-
-        d_out[oInfo.offset + ridx2] = ac - bd;
-        d_out[oInfo.offset + iidx2] = (a+b) * (c+d) - ac - bd;
+        d_out[oInfo.offset + ridx2] = a*c - b*d;
+        d_out[oInfo.offset + iidx2] = a*d + b*c;
     }
 }

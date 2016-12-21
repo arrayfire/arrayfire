@@ -37,7 +37,7 @@ static af_err reduce_type(af_array *out, const af_array in, const int dim)
         ARG_ASSERT(2, dim >= 0);
         ARG_ASSERT(2, dim <  4);
 
-        const ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
 
         if (dim >= (int)in_info.ndims()) {
             *out = retain(in);
@@ -78,7 +78,7 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim)
         ARG_ASSERT(2, dim >= 0);
         ARG_ASSERT(2, dim <  4);
 
-        const ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
 
         if (dim >= (int)in_info.ndims()) {
             return af_retain_array(out, in);
@@ -119,7 +119,7 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim,
         ARG_ASSERT(2, dim >= 0);
         ARG_ASSERT(2, dim <  4);
 
-        const ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
 
         if (dim >= (int)in_info.ndims()) {
             *out = retain(in);
@@ -208,7 +208,7 @@ static af_err reduce_all_type(double *real, double *imag, const af_array in)
 {
     try {
 
-        const ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
         af_dtype type = in_info.getType();
 
         ARG_ASSERT(0, real != NULL);
@@ -242,7 +242,7 @@ static af_err reduce_all_common(double *real_val, double *imag_val, const af_arr
 {
     try {
 
-        const ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
         af_dtype type = in_info.getType();
 
         ARG_ASSERT(2, in_info.ndims() > 0);
@@ -294,7 +294,7 @@ static af_err reduce_all_promote(double *real_val, double *imag_val, const af_ar
 {
     try {
 
-        const ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
         af_dtype type = in_info.getType();
 
         ARG_ASSERT(0, real_val != NULL);
@@ -398,7 +398,7 @@ static af_err ireduce_common(af_array *val, af_array *idx, const af_array in, co
         ARG_ASSERT(2, dim >= 0);
         ARG_ASSERT(2, dim <  4);
 
-        const ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
         ARG_ASSERT(2, in_info.ndims() > 0);
 
         if (dim >= (int)in_info.ndims()) {
@@ -455,7 +455,7 @@ static af_err ireduce_all_common(double *real_val, double *imag_val,
 {
     try {
 
-        const ArrayInfo in_info = getInfo(in);
+        const ArrayInfo& in_info = getInfo(in);
         af_dtype type = in_info.getType();
 
         ARG_ASSERT(3, in_info.ndims() > 0);
