@@ -50,12 +50,6 @@ InteropManager::~InteropManager()
     }
 }
 
-InteropManager& InteropManager::getInstance()
-{
-    static InteropManager my_instance;
-    return my_instance;
-}
-
 interop_t& InteropManager::getDeviceMap(int device)
 {
     return (device == -1) ? interop_maps[getActiveDeviceId()] : interop_maps[device];
@@ -170,28 +164,6 @@ CGR_t* InteropManager::getBufferResource(const forge::VectorField* key)
     }
 
     return &i_map[key_value].front();
-}
-
-bool InteropManager::checkGraphicsInteropCapability()
-{
-    static bool run_once = true;
-    static bool capable  = true;
-
-    if(run_once) {
-        unsigned int pCudaEnabledDeviceCount = 0;
-        int pCudaGraphicsEnabledDeviceIds = 0;
-        cudaGetLastError(); // Reset Errors
-        cudaError_t err = cudaGLGetDevices(&pCudaEnabledDeviceCount, &pCudaGraphicsEnabledDeviceIds, getDeviceCount(), cudaGLDeviceListAll);
-        if(err == 63) { // OS Support Failure - Happens when devices are only Tesla
-            capable = false;
-            printf("Warning: No CUDA Device capable of CUDA-OpenGL. CUDA-OpenGL Interop will use CPU fallback.\n");
-            printf("Corresponding CUDA Error (%d): %s.\n", err, cudaGetErrorString(err));
-            printf("This may happen if all CUDA Devices are in TCC Mode and/or not connected to a display.\n");
-        }
-        cudaGetLastError(); // Reset Errors
-        run_once = false;
-    }
-    return capable;
 }
 
 }

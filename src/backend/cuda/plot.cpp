@@ -9,7 +9,6 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <interopManager.hpp>
 #include <Array.hpp>
 #include <plot.hpp>
 #include <err_cuda.hpp>
@@ -17,6 +16,7 @@
 #include <join.hpp>
 #include <reduce.hpp>
 #include <reorder.hpp>
+#include <interopManager.hpp>
 
 using af::dim4;
 
@@ -27,10 +27,10 @@ using namespace gl;
 template<typename T>
 void copy_plot(const Array<T> &P, forge::Plot* plot)
 {
-    if(InteropManager::checkGraphicsInteropCapability()) {
+    if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
 
-        InteropManager& intrpMngr = InteropManager::getInstance();
+        InteropManager& intrpMngr = DeviceManager::getInstance().getGfxInteropManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(plot);
         // Map resource. Copy data to VBO. Unmap resource.

@@ -9,11 +9,11 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <interopManager.hpp>
 #include <Array.hpp>
 #include <vector_field.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include <interopManager.hpp>
 
 using af::dim4;
 
@@ -25,8 +25,8 @@ template<typename T>
 void copy_vector_field(const Array<T> &points, const Array<T> &directions,
                        forge::VectorField* vector_field)
 {
-    if(InteropManager::checkGraphicsInteropCapability()) {
-        InteropManager& intrpMngr = InteropManager::getInstance();
+    if(DeviceManager::checkGraphicsInteropCapability()) {
+        InteropManager& intrpMngr = DeviceManager::getInstance().getGfxInteropManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(vector_field);
 

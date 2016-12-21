@@ -24,6 +24,7 @@
 #include <err_cuda.hpp>
 #include <util.hpp>
 #include <host_memory.hpp>
+#include <interopManager.hpp>
 
 using namespace std;
 
@@ -350,14 +351,47 @@ cudaDeviceProp getDeviceProp(int device)
 ///////////////////////////////////////////////////////////////////////////
 // DeviceManager Class Functions
 ///////////////////////////////////////////////////////////////////////////
+bool DeviceManager::checkGraphicsInteropCapability()
+{
+    static bool run_once = true;
+    static bool capable  = true;
+
+    if(run_once) {
+        unsigned int pCudaEnabledDeviceCount = 0;
+        int pCudaGraphicsEnabledDeviceIds = 0;
+        cudaGetLastError(); // Reset Errors
+        cudaError_t err = cudaGLGetDevices(&pCudaEnabledDeviceCount, &pCudaGraphicsEnabledDeviceIds, getDeviceCount(), cudaGLDeviceListAll);
+        if(err == 63) { // OS Support Failure - Happens when devices are only Tesla
+            capable = false;
+            printf("Warning: No CUDA Device capable of CUDA-OpenGL. CUDA-OpenGL Interop will use CPU fallback.\n");
+            printf("Corresponding CUDA Error (%d): %s.\n", err, cudaGetErrorString(err));
+            printf("This may happen if all CUDA Devices are in TCC Mode and/or not connected to a display.\n");
+        }
+        cudaGetLastError(); // Reset Errors
+        run_once = false;
+    }
+
+    return capable;
+}
+
 DeviceManager& DeviceManager::getInstance()
 {
     static DeviceManager my_instance;
     return my_instance;
 }
 
+DeviceManager::~DeviceManager()
+{
+    if (gfxManager) delete gfxManager;
+}
+
+InteropManager& DeviceManager::getGfxInteropManager()
+{
+    return *gfxManager;
+}
+
 DeviceManager::DeviceManager()
-    : cuDevices(0), activeDev(0), nDevices(0)
+    : cuDevices(0), activeDev(0), nDevices(0), gfxManager(new InteropManager())
 {
     CUDA_CHECK(cudaGetDeviceCount(&nDevices));
     if (nDevices == 0)

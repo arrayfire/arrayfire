@@ -9,11 +9,11 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <interopManager.hpp>
 #include <Array.hpp>
 #include <hist_graphics.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include <interopManager.hpp>
 
 namespace cuda
 {
@@ -22,10 +22,10 @@ using namespace gl;
 template<typename T>
 void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
 {
-    if(InteropManager::checkGraphicsInteropCapability()) {
+    if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = data.get();
 
-        InteropManager& intrpMngr = InteropManager::getInstance();
+        InteropManager& intrpMngr = DeviceManager::getInstance().getGfxInteropManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(hist);
         // Map resource. Copy data to VBO. Unmap resource.

@@ -27,8 +27,8 @@ using namespace gl;
 template<typename T>
 void copy_image(const Array<T> &in, const forge::Image* image)
 {
-    if(InteropManager::checkGraphicsInteropCapability()) {
-        InteropManager& intrpMngr = InteropManager::getInstance();
+    if(DeviceManager::checkGraphicsInteropCapability()) {
+        InteropManager& intrpMngr = DeviceManager::getInstance().getGfxInteropManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(image);
 

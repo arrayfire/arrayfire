@@ -66,12 +66,20 @@ struct cudaDevice_t {
 
 bool& evalFlag();
 
+class InteropManager;
+
 class DeviceManager
 {
     public:
         static const unsigned MAX_DEVICES = 16;
 
+        static bool checkGraphicsInteropCapability();
+
         static DeviceManager& getInstance();
+
+        ~DeviceManager();
+
+        InteropManager& getGfxInteropManager();
 
         friend std::string getDeviceInfo(int device);
 
@@ -119,6 +127,10 @@ class DeviceManager
         int activeDev;
         int nDevices;
         cudaStream_t streams[MAX_DEVICES];
+        //FIXME: Once C++11 has been enabled in CUDA backend
+        //shift to use of smart pointer. In this, unique_ptr
+        //should be good
+        InteropManager* gfxManager;
 };
 
 }

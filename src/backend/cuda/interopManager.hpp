@@ -52,9 +52,7 @@ class InteropManager
         interop_t interop_maps[DeviceManager::MAX_DEVICES];
 
     public:
-        static InteropManager& getInstance();
-        static bool checkGraphicsInteropCapability();
-
+        InteropManager() {}
         ~InteropManager();
         CGR_t* getBufferResource(const forge::Image       *handle);
         CGR_t* getBufferResource(const forge::Plot        *handle);
@@ -63,7 +61,6 @@ class InteropManager
         CGR_t* getBufferResource(const forge::VectorField *handle);
 
     protected:
-        InteropManager() {}
         InteropManager(InteropManager const&);
         void operator=(InteropManager const&);
         interop_t& getDeviceMap(int device = -1); // default will return current device
