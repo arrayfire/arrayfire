@@ -1,6 +1,115 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.4.2
+==============
+
+Deprecation Announcement
+------------------------
+
+This release supports CUDA 6.5 and higher. The next ArrayFire relase will
+support CUDA 7.0 and higher, dropping support for CUDA 6.5. Reasons for no
+longer supporting CUDA 6.5 include:
+
+* CUDA 7.0 NVCC supports the C++11 standard (whereas CUDA 6.5 does not), which
+  is used by ArrayFire's CPU and OpenCL backends.
+* Very few ArrayFire users still use CUDA 6.5.
+
+As a result, the older Jetson TK1 / Tegra K1 will no longer be supported in
+the next ArrayFire release. The newer Jetson TX1 / Tegra X1 will continue to
+have full capability with ArrayFire.
+
+Docker
+------
+* [ArrayFire has been Dockerized](https://github.com/arrayfire/arrayfire-docker).
+
+Improvements
+------------
+* Implemented sparse storage format conversions between \ref AF_STORAGE_CSR
+  and \ref AF_STORAGE_COO.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1642)</sup>
+  * Directly convert between \ref AF_STORAGE_COO <--> \ref AF_STORAGE_CSR
+    using the af::sparseConvertTo() function.
+  * af::sparseConvertTo() now also supports converting to dense.
+* Added cast support for [sparse arrays](\ref sparse_func).
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1653)</sup>
+  * Casting only changes the values array and the type. The row and column
+    index arrays are not changed.
+* Reintroduced automated computation of chart axes limits for graphics functions.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1639)</sup>
+  * The axes limits will always be the minimum/maximum of the current and new
+    limit.
+  * The user can still set limits from API calls. If the user sets a limit
+    from the API call, then the automatic limit setting will be disabled.
+* Using `boost::scoped_array` instead of `boost::scoped_ptr` when managing
+  array resources.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1637)</sup>
+* Internal performance improvements to getInfo() by using `const` references
+  to avoid unnecessary copying of `ArrayInfo` objects.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1665)</sup>
+* Added support for scalar af::array inputs for af::convolve() and
+  [set functions](\ref set_mat).
+  <sup>[1](https://github.com/arrayfire/arrayfire/issues/1660)</sup>
+  <sup>[2](https://github.com/arrayfire/arrayfire/issues/1675)</sup>
+  <sup>[3](https://github.com/arrayfire/arrayfire/pull/1668)</sup>
+* Performance fixes in af::fftConvolve() kernels.
+  <sup>[1](https://github.com/arrayfire/arrayfire/issues/1679)</sup>
+  <sup>[2](https://github.com/arrayfire/arrayfire/pull/1680)</sup>
+
+Build
+-----
+* Support for Visual Studio 2015 compilation.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1632)</sup>
+  <sup>[2](https://github.com/arrayfire/arrayfire/pull/1640)</sup>
+* Fixed `FindCBLAS.cmake` when PkgConfig is used.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1657)</sup>
+
+Bug fixes
+---------
+* Fixes to JIT when tree is large.
+  <sup>[1](https://github.com/arrayfire/arrayfire/issues/1646)</sup>
+  <sup>[2](https://github.com/arrayfire/arrayfire/pull/1638)</sup>
+* Fixed indexing bug when converting dense to sparse af::array as \ref
+  AF_STORAGE_COO.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1642)</sup>
+* Fixed af::bilateral() OpenCL kernel compilation on OS X.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1638)</sup>
+* Fixed memory leak in af::regions() (CPU) and af::rgb2ycbcr().
+  <sup>[1](https://github.com/arrayfire/arrayfire/issues/1664)</sup>
+  <sup>[2](https://github.com/arrayfire/arrayfire/issues/1664)</sup>
+  <sup>[3](https://github.com/arrayfire/arrayfire/pull/1666)</sup>
+
+Installers
+----------
+* Major OS X installer fixes.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1629)</sup>
+  * Fixed installation scripts.
+  * Fixed installation symlinks for libraries.
+* Windows installer now ships with more pre-built examples.
+
+Examples
+--------
+* Added af::choleskyInPlace() calls to `cholesky.cpp` example.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1671)</sup>
+
+Documentation
+-------------
+* Added `u8` as supported data type in `getting_started.md`.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1661)</sup>
+* Fixed typos.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1652)</sup>
+
+CUDA 8 on OSX
+-------------
+* [CUDA 8.0.55](https://developer.nvidia.com/cuda-toolkit) supports Xcode 8.
+  <sup>[1](https://github.com/arrayfire/arrayfire/issues/1664)</sup>
+
+Known Issues
+------------
+* Known failures with CUDA 6.5. These include all functions that use
+  sorting. As a result, sparse storage format conversion between \ref
+  AF_STORAGE_COO and \ref AF_STORAGE_CSR has been disabled for CUDA 6.5.
+
 v3.4.1
 ==============
 
