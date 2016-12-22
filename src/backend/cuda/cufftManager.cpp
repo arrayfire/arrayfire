@@ -1,0 +1,149 @@
+/*******************************************************
+ * Copyright (c) 2016, ArrayFire
+ * All rights reserved.
+ *
+ * This file is distributed under 3-clause BSD license.
+ * The complete license agreement can be obtained at:
+ * http://arrayfire.com/licenses/BSD-3-Clause
+ ********************************************************/
+
+#include <cuda.h> // Need this for CUDA_VERSION
+#include <platform.hpp>
+#include <memory.hpp>
+
+namespace cufft
+{
+
+const char * _cufftGetResultString(cufftResult res)
+{
+    switch (res)
+    {
+        case CUFFT_SUCCESS:
+            return "cuFFT: success";
+
+        case CUFFT_INVALID_PLAN:
+            return "cuFFT: invalid plan handle passed";
+
+        case CUFFT_ALLOC_FAILED:
+            return "cuFFT: resources allocation failed";
+
+        case CUFFT_INVALID_TYPE:
+            return "cuFFT: invalid type (deprecated)";
+
+        case CUFFT_INVALID_VALUE:
+            return "cuFFT: invalid parameters passed to cuFFT API";
+
+        case CUFFT_INTERNAL_ERROR:
+            return "cuFFT: internal error detected using cuFFT";
+
+        case CUFFT_EXEC_FAILED:
+            return "cuFFT: FFT execution failed";
+
+        case CUFFT_SETUP_FAILED:
+            return "cuFFT: library initialization failed";
+
+        case CUFFT_INVALID_SIZE:
+            return "cuFFT: invalid size parameters passed";
+
+        case CUFFT_UNALIGNED_DATA:
+            return "cuFFT: unaligned data (deprecated)";
+
+        case CUFFT_INCOMPLETE_PARAMETER_LIST:
+            return "cuFFT: call is missing parameters";
+
+        case CUFFT_INVALID_DEVICE:
+            return "cuFFT: plan execution different than plan creation";
+
+        case CUFFT_PARSE_ERROR:
+            return "cuFFT: plan parse error";
+
+        case CUFFT_NO_WORKSPACE:
+            return "cuFFT: no workspace provided";
+
+#if CUDA_VERSION >= 6050
+        case CUFFT_NOT_IMPLEMENTED:
+            return "cuFFT: not implemented";
+
+        case CUFFT_LICENSE_ERROR:
+            return "cuFFT: license error";
+#endif
+#if CUDA_VERSION >= 8000
+        case CUFFT_NOT_SUPPORTED:
+            return "cuFFT: not supported";
+#endif
+    }
+
+    return "cuFFT: unknown error";
+}
+
+void findPlan(cufftHandle &plan, int rank, int *n,
+              int *inembed, int istride, int idist,
+              int *onembed, int ostride, int odist,
+              cufftType type, int batch)
+{
+    // create the key string
+    char key_str_temp[64];
+    sprintf(key_str_temp, "%d:", rank);
+
+    std::string key_string(key_str_temp);
+
+    for(int r=0; r<rank; ++r) {
+        sprintf(key_str_temp, "%d:", n[r]);
+        key_string.append(std::string(key_str_temp));
+    }
+
+    if (inembed!=NULL) {
+        for(int r=0; r<rank; ++r) {
+            sprintf(key_str_temp, "%d:", inembed[r]);
+            key_string.append(std::string(key_str_temp));
+        }
+        sprintf(key_str_temp, "%d:%d:", istride, idist);
+        key_string.append(std::string(key_str_temp));
+    }
+
+    if (onembed!=NULL) {
+        for(int r=0; r<rank; ++r) {
+            sprintf(key_str_temp, "%d:", onembed[r]);
+            key_string.append(std::string(key_str_temp));
+        }
+        sprintf(key_str_temp, "%d:%d:", ostride, odist);
+        key_string.append(std::string(key_str_temp));
+    }
+
+    sprintf(key_str_temp, "%d:%d", (int)type, batch);
+    key_string.append(std::string(key_str_temp));
+
+    // find the matching plan_index in the array cuFFTPlanner::mKeys
+    cuFFTPlanner &planner = cuda::DeviceManager::getInstance().getcufftPlanManager();
+
+    int planIndex = planner.findIfPlanExists(key_string);
+
+    // if found a valid plan, return it
+    if (planIndex!=-1) {
+        plan = planner.getPlan(planIndex);
+        return;
+    }
+
+    cufftHandle temp;
+    cufftResult res = cufftPlanMany(&temp, rank, n,
+                                    inembed, istride, idist,
+                                    onembed, ostride, odist,
+                                    type, batch);
+
+    // If plan creation fails, clean up the memory we hold on to and try again
+    if (res != CUFFT_SUCCESS) {
+        cuda::garbageCollect();
+        CUFFT_CHECK(cufftPlanMany(&temp, rank, n,
+                                  inembed, istride, idist,
+                                  onembed, ostride, odist,
+                                  type, batch));
+    }
+
+    plan = temp;
+    cufftSetStream(plan, cuda::getStream(cuda::getActiveDeviceId()));
+
+    // push the plan into plan cache
+    planner.pushPlan(key_string, plan);
+}
+
+}

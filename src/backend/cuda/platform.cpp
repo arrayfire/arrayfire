@@ -390,6 +390,11 @@ InteropManager& DeviceManager::getGfxInteropManager()
     return *gfxManager;
 }
 
+cufft::cuFFTPlanner& DeviceManager::getcufftPlanManager()
+{
+    return cufftManagers[cuda::getActiveDeviceId()];
+}
+
 DeviceManager::DeviceManager()
     : cuDevices(0), activeDev(0), nDevices(0), gfxManager(new InteropManager())
 {

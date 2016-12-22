@@ -12,13 +12,8 @@
 #include <copy.hpp>
 #include <fft.hpp>
 #include <debug_cuda.hpp>
-#include <err_cufft.hpp>
-#include <cufft.h>
+#include <cufftManager.hpp>
 #include <math.hpp>
-#include <string>
-#include <deque>
-#include <utility>
-#include <cstdio>
 #include <memory.hpp>
 
 using af::dim4;
@@ -27,153 +22,9 @@ using std::string;
 namespace cuda
 {
 
-typedef std::pair<string, cufftHandle> FFTPlanPair;
-typedef std::deque<FFTPlanPair> FFTPlanCache;
-
-// cuFFTPlanner caches fft plans
-//
-// new plan |--> IF number of plans cached is at limit, pop the least used entry and push new plan.
-//          |
-//          |--> ELSE just push the plan
-// existing plan -> reuse a plan
-class cuFFTPlanner
-{
-    friend void find_cufft_plan(cufftHandle &plan, int rank, int *n,
-                                int *inembed, int istride, int idist,
-                                int *onembed, int ostride, int odist,
-                                cufftType type, int batch);
-
-    public:
-        static cuFFTPlanner& getInstance() {
-            static cuFFTPlanner instances[cuda::DeviceManager::MAX_DEVICES];
-            return instances[cuda::getActiveDeviceId()];
-        }
-
-        inline void setMaxCacheSize(size_t size) {
-            mCache.resize(size, FFTPlanPair(std::string(""), 0));
-        }
-
-        inline size_t getMaxCacheSize() const {
-            return mMaxCacheSize;
-        }
-
-        inline cufftHandle getPlan(int index) const {
-            return mCache[index].second;
-        }
-
-        // iterates through plan cache from front to back
-        // of the cache(queue)
-        int findIfPlanExists(std::string keyString) const {
-            int retVal = -1;
-            for(uint i=0; i<mCache.size(); ++i) {
-                if (keyString == mCache[i].first) {
-                    retVal = i;
-                }
-            }
-            return retVal;
-        }
-
-        // pops plan from the back of cache(queue)
-        void popPlan() {
-            if (!mCache.empty()) {
-                // destroy the cufft plan associated with the
-                // least recently used plan
-                cufftDestroy(mCache.back().second);
-                // now pop the entry from cache
-                mCache.pop_back();
-            }
-        }
-
-        // pushes plan to the front of cache(queue)
-        void pushPlan(std::string keyString, cufftHandle plan) {
-            if (mCache.size()>mMaxCacheSize) {
-                popPlan();
-            }
-            mCache.push_front(FFTPlanPair(keyString, plan));
-        }
-
-    private:
-        cuFFTPlanner() : mMaxCacheSize(5) {}
-        cuFFTPlanner(cuFFTPlanner const&);
-        void operator=(cuFFTPlanner const&);
-
-        size_t       mMaxCacheSize;
-        FFTPlanCache mCache;
-};
-
-void find_cufft_plan(cufftHandle &plan, int rank, int *n,
-                     int *inembed, int istride, int idist,
-                     int *onembed, int ostride, int odist,
-                     cufftType type, int batch)
-{
-    // create the key string
-    char key_str_temp[64];
-    sprintf(key_str_temp, "%d:", rank);
-
-    string key_string(key_str_temp);
-
-    for(int r=0; r<rank; ++r) {
-        sprintf(key_str_temp, "%d:", n[r]);
-        key_string.append(std::string(key_str_temp));
-    }
-
-    if (inembed!=NULL) {
-        for(int r=0; r<rank; ++r) {
-            sprintf(key_str_temp, "%d:", inembed[r]);
-            key_string.append(std::string(key_str_temp));
-        }
-        sprintf(key_str_temp, "%d:%d:", istride, idist);
-        key_string.append(std::string(key_str_temp));
-    }
-
-    if (onembed!=NULL) {
-        for(int r=0; r<rank; ++r) {
-            sprintf(key_str_temp, "%d:", onembed[r]);
-            key_string.append(std::string(key_str_temp));
-        }
-        sprintf(key_str_temp, "%d:%d:", ostride, odist);
-        key_string.append(std::string(key_str_temp));
-    }
-
-    sprintf(key_str_temp, "%d:%d", (int)type, batch);
-    key_string.append(std::string(key_str_temp));
-
-    // find the matching plan_index in the array cuFFTPlanner::mKeys
-    cuFFTPlanner &planner = cuFFTPlanner::getInstance();
-
-    int planIndex = planner.findIfPlanExists(key_string);
-
-    // if found a valid plan, return it
-    if (planIndex!=-1) {
-        plan = planner.getPlan(planIndex);
-        return;
-    }
-
-    cufftHandle temp;
-    cufftResult res = cufftPlanMany(&temp, rank, n,
-                                    inembed, istride, idist,
-                                    onembed, ostride, odist,
-                                    type, batch);
-
-    // If plan creation fails, clean up the memory we hold on to and try again
-    if (res != CUFFT_SUCCESS) {
-        garbageCollect();
-        CUFFT_CHECK(cufftPlanMany(&temp, rank, n,
-                                  inembed, istride, idist,
-                                  onembed, ostride, odist,
-                                  type, batch));
-    }
-
-    plan = temp;
-    cufftSetStream(plan, cuda::getStream(cuda::getActiveDeviceId()));
-
-    // push the plan into plan cache
-    planner.pushPlan(key_string, plan);
-}
-
 void setFFTPlanCacheSize(size_t numPlans)
 {
-    cuFFTPlanner::getInstance().setMaxCacheSize(numPlans);
+    DeviceManager::getInstance().getcufftPlanManager().setMaxCacheSize(numPlans);
 }
 
 template<typename T>
@@ -239,7 +90,7 @@ void fft_inplace(Array<T> &in)
     }
 
     cufftHandle plan;
-    find_cufft_plan(plan, rank, t_dims,
+    cufft::findPlan(plan, rank, t_dims,
                     in_embed , istrides[0], istrides[rank],
                     in_embed , istrides[0], istrides[rank],
                     (cufftType)cufft_transform<T>::type, batch);
@@ -274,7 +125,7 @@ Array<Tc> fft_r2c(const Array<Tr> &in)
     dim4 ostrides = out.strides();
 
     cufftHandle plan;
-    find_cufft_plan(plan, rank, t_dims,
+    cufft::findPlan(plan, rank, t_dims,
                     in_embed  , istrides[0], istrides[rank],
                     out_embed , ostrides[0], ostrides[rank],
                     (cufftType)cufft_real_transform<Tc, Tr>::type, batch);
@@ -307,7 +158,7 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
     cufft_real_transform<Tr, Tc> transform;
 
     cufftHandle plan;
-    find_cufft_plan(plan, rank, t_dims,
+    cufft::findPlan(plan, rank, t_dims,
                     in_embed  , istrides[0], istrides[rank],
                     out_embed , ostrides[0], ostrides[rank],
                     (cufftType)cufft_real_transform<Tr, Tc>::type, batch);

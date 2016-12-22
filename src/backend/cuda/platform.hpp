@@ -17,6 +17,8 @@
 #include <fg/window.h>
 #endif
 
+#include <cufftManager.hpp>
+
 namespace cuda
 {
 
@@ -81,6 +83,8 @@ class DeviceManager
 
         InteropManager& getGfxInteropManager();
 
+        cufft::cuFFTPlanner& getcufftPlanManager();
+
         friend std::string getDeviceInfo(int device);
 
         friend std::string getPlatformInfo();
@@ -127,10 +131,13 @@ class DeviceManager
         int activeDev;
         int nDevices;
         cudaStream_t streams[MAX_DEVICES];
+
         //FIXME: Once C++11 has been enabled in CUDA backend
         //shift to use of smart pointer. In this, unique_ptr
         //should be good
         InteropManager* gfxManager;
+
+        cufft::cuFFTPlanner cufftManagers[MAX_DEVICES];
 };
 
 }
