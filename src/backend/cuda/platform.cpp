@@ -402,6 +402,33 @@ cublasHandle_t getcublasHandle()
     return instance.cublasHandles[id]->get();
 }
 
+cusolverDnHandle_t getcusolverDnHandle()
+{
+    DeviceManager& instance = DeviceManager::getInstance();
+
+    int id = cuda::getActiveDeviceId();
+
+    if (!(instance.cusolverHandles[id]))
+        instance.resetcusolverHandle(id);
+
+    // FIXME
+    // This is not an ideal case. It's just a hack.
+    // The correct way to do is to use
+    // CUSOLVER_CHECK(cusolverDnSetStream(cuda::getStream(cuda::getActiveDeviceId())))
+    // in the class constructor.
+    // However, this is causing a lot of the cusolver functions to fail.
+    // The only way to fix them is to use cudaDeviceSynchronize() and cudaStreamSynchronize()
+    // all over the place, but even then some calls like getrs in solve_lu
+    // continue to fail on any stream other than 0.
+    //
+    // cuSolver Streams patch:
+    // https://gist.github.com/shehzan10/414c3d04a40e7c4a03ed3c2e1b9072e7
+    //
+    CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(id)));
+
+    return instance.cusolverHandles[id]->get();
+}
+
 DeviceManager::DeviceManager()
     : cuDevices(0), activeDev(0), nDevices(0), gfxManager(new InteropManager())
 {
@@ -527,6 +554,11 @@ int DeviceManager::setActiveDevice(int device, int nId)
 void DeviceManager::resetcublasHandle(int device)
 {
     cublasHandles[device].reset(new cublas::cublasHandle());
+}
+
+void DeviceManager::resetcusolverHandle(int device)
+{
+    cusolverHandles[device].reset(new cusolver::cusolverDnHandle());
 }
 
 void sync(int device)

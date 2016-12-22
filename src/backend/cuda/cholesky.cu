@@ -12,7 +12,7 @@
 
 #if defined(WITH_CUDA_LINEAR_ALGEBRA)
 
-#include <cusolverDnManager.hpp>
+#include <platform.hpp>
 #include <cublas_v2.h>
 #include <identity.hpp>
 #include <iostream>
@@ -25,8 +25,6 @@
 
 namespace cuda
 {
-
-using cusolver::getDnHandle;
 
 //cusolverStatus_t cusolverDn<>potrf_bufferSize(
 //        cusolverDnHandle_t handle,
@@ -114,7 +112,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     if(is_upper)
         uplo = CUBLAS_FILL_MODE_UPPER;
 
-    CUSOLVER_CHECK(potrf_buf_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(potrf_buf_func<T>()(getcusolverDnHandle(),
                                        uplo,
                                        N,
                                        in.get(), in.strides()[1],
@@ -123,7 +121,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     T *workspace = memAlloc<T>(lwork);
     int *d_info = memAlloc<int>(1);
 
-    CUSOLVER_CHECK(potrf_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(potrf_func<T>()(getcusolverDnHandle(),
                                    uplo,
                                    N,
                                    in.get(), in.strides()[1],

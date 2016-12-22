@@ -12,7 +12,7 @@
 
 #if defined(WITH_CUDA_LINEAR_ALGEBRA)
 
-#include <cusolverDnManager.hpp>
+#include <platform.hpp>
 #include <cublas_v2.h>
 #include <identity.hpp>
 #include <iostream>
@@ -31,8 +31,6 @@
 
 namespace cuda
 {
-
-using cusolver::getDnHandle;
 
 //cusolverStatus_t cusolverDn<>getrs(
 //    cusolverDnHandle_t handle,
@@ -178,7 +176,7 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
 
     int *info = memAlloc<int>(1);
 
-    CUSOLVER_CHECK(getrs_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(getrs_func<T>()(getcusolverDnHandle(),
                                    CUBLAS_OP_N,
                                    N, NRHS,
                                    A.get(), A.strides()[1],
@@ -203,7 +201,7 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
 
     int *info = memAlloc<int>(1);
 
-    CUSOLVER_CHECK(getrs_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(getrs_func<T>()(getcusolverDnHandle(),
                                    CUBLAS_OP_N,
                                    N, K,
                                    A.get(), A.strides()[1],
@@ -246,7 +244,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         int lwork = 0;
 
         // Get workspace needed for QR
-        CUSOLVER_CHECK(geqrf_solve_buf_func<T>()(getDnHandle(),
+        CUSOLVER_CHECK(geqrf_solve_buf_func<T>()(getcusolverDnHandle(),
                                                  A.dims()[0], A.dims()[1],
                                                  A.get(), A.strides()[1],
                                                  &lwork));
@@ -256,7 +254,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         int *info = memAlloc<int>(1);
 
         // In place Perform in place QR
-        CUSOLVER_CHECK(geqrf_solve_func<T>()(getDnHandle(),
+        CUSOLVER_CHECK(geqrf_solve_func<T>()(getcusolverDnHandle(),
                                              A.dims()[0], A.dims()[1],
                                              A.get(), A.strides()[1],
                                              t.get(),
@@ -274,7 +272,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         B.resetDims(dim4(N, K));
 
         // matmul(Q, Bpad)
-        CUSOLVER_CHECK(mqr_solve_func<T>()(getDnHandle(),
+        CUSOLVER_CHECK(mqr_solve_func<T>()(getcusolverDnHandle(),
                                            CUBLAS_SIDE_LEFT, CUBLAS_OP_N,
                                            B.dims()[0],
                                            B.dims()[1],
@@ -304,7 +302,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         int lwork = 0;
 
         // Get workspace needed for QR
-        CUSOLVER_CHECK(geqrf_solve_buf_func<T>()(getDnHandle(),
+        CUSOLVER_CHECK(geqrf_solve_buf_func<T>()(getcusolverDnHandle(),
                                                  A.dims()[0], A.dims()[1],
                                                  A.get(), A.strides()[1],
                                                  &lwork));
@@ -314,7 +312,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         int *info = memAlloc<int>(1);
 
         // In place Perform in place QR
-        CUSOLVER_CHECK(geqrf_solve_func<T>()(getDnHandle(),
+        CUSOLVER_CHECK(geqrf_solve_func<T>()(getcusolverDnHandle(),
                                              A.dims()[0], A.dims()[1],
                                              A.get(), A.strides()[1],
                                              t.get(),
@@ -322,7 +320,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
                                              info));
 
         // matmul(Q1, B)
-        CUSOLVER_CHECK(mqr_solve_func<T>()(getDnHandle(),
+        CUSOLVER_CHECK(mqr_solve_func<T>()(getcusolverDnHandle(),
                                            CUBLAS_SIDE_LEFT,
                                            trans<T>(),
                                            M, K, N,

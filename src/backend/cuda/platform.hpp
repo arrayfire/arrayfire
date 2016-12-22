@@ -21,6 +21,7 @@
 
 #include <cufftManager.hpp>
 #include <cublasManager.hpp>
+#include <cusolverDnManager.hpp>
 
 namespace cuda
 {
@@ -80,6 +81,8 @@ InteropManager& getGfxInteropManager();
 cufft::cuFFTPlanner& getcufftPlanManager();
 
 cublasHandle_t getcublasHandle();
+
+cusolverDnHandle_t getcusolverDnHandle();
 //
 ///////////////////////// END Sub-Managers /////////////////////
 
@@ -97,6 +100,8 @@ class DeviceManager
         friend cufft::cuFFTPlanner& getcufftPlanManager();
 
         friend cublasHandle_t getcublasHandle();
+
+        friend cusolverDnHandle_t getcusolverDnHandle();
 
         friend std::string getDeviceInfo(int device);
 
@@ -143,6 +148,8 @@ class DeviceManager
 
         void resetcublasHandle(int device);
 
+        void resetcusolverHandle(int device);
+
         int activeDev;
         int nDevices;
         cudaStream_t streams[MAX_DEVICES];
@@ -152,6 +159,8 @@ class DeviceManager
         cufft::cuFFTPlanner cufftManagers[MAX_DEVICES];
 
         boost::scoped_ptr<cublas::cublasHandle> cublasHandles[MAX_DEVICES];
+
+        boost::scoped_ptr<cusolver::cusolverDnHandle> cusolverHandles[MAX_DEVICES];
 };
 
 }

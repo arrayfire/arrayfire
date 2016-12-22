@@ -10,7 +10,7 @@
 #include <svd.hpp>
 #include <err_common.hpp>
 
-#include <cusolverDnManager.hpp>
+#include <platform.hpp>
 #include "transpose.hpp"
 #include <memory.hpp>
 #include <copy.hpp>
@@ -23,8 +23,6 @@
 
 namespace cuda
 {
-    using cusolver::getDnHandle;
-
     template<typename T>
     cusolverStatus_t gesvd_buf_func(cusolverDnHandle_t handle, int m, int n, int *Lwork)
     {
@@ -90,14 +88,14 @@ SVD_SPECIALIZE(cdouble, double, Z);
 
         int lwork = 0;
 
-        CUSOLVER_CHECK(gesvd_buf_func<T>(getDnHandle(), M, N, &lwork));
+        CUSOLVER_CHECK(gesvd_buf_func<T>(getcusolverDnHandle(), M, N, &lwork));
 
         T  *lWorkspace = memAlloc<T >(lwork);
         Tr *rWorkspace = memAlloc<Tr>(5 * std::min(M, N));
 
         int *info = memAlloc<int>(1);
 
-        gesvd_func<T, Tr>(getDnHandle(), 'A', 'A', M, N, in.get(),
+        gesvd_func<T, Tr>(getcusolverDnHandle(), 'A', 'A', M, N, in.get(),
                           M, s.get(), u.get(), M, vt.get(), N,
                           lWorkspace, lwork, rWorkspace, info);
 
