@@ -315,8 +315,16 @@ foreach(ptx_src_file ${ptx_sources})
 
       get_filename_component(_name "${ptx_src_file}" NAME_WE)
 
+      # CUDA_COMPILE_PTX from CMake 3.7 has new features that require this change
+      # TODO Fix this with a more complete solution
+      IF(CMAKE_VERSION VERSION_LESS 3.7) # Before 3.7
+        SET(NAME_APPEND "")
+      ELSE(CMAKE_VERSION VERSION_LESS 3.7)  # 3.7 and newer
+        SET(NAME_APPEND "_1")
+      ENDIF(CMAKE_VERSION VERSION_LESS 3.7)
+
       set(_gen_file_name
-        "${PROJECT_BINARY_DIR}/src/backend/cuda/cuda_compile_ptx_generated_${_name}.cu.ptx")
+        "${PROJECT_BINARY_DIR}/src/backend/cuda/cuda_compile_ptx${NAME_APPEND}_generated_${_name}.cu.ptx")
       set(_out_file_name
         "${PROJECT_BINARY_DIR}/src/backend/cuda/${_name}.ptx")
 
