@@ -92,8 +92,6 @@ class DeviceManager
 
         static DeviceManager& getInstance();
 
-        ~DeviceManager();
-
         friend InteropManager& getGfxInteropManager();
 
         friend cufft::cuFFTPlanner& getcufftPlanManager();
@@ -149,10 +147,7 @@ class DeviceManager
         int nDevices;
         cudaStream_t streams[MAX_DEVICES];
 
-        //FIXME: Once C++11 has been enabled in CUDA backend
-        //shift to use of smart pointer. In this, unique_ptr
-        //should be good
-        InteropManager* gfxManager;
+        boost::scoped_ptr<InteropManager> gfxManager;
 
         cufft::cuFFTPlanner cufftManagers[MAX_DEVICES];
 

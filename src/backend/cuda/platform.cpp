@@ -380,14 +380,9 @@ DeviceManager& DeviceManager::getInstance()
     return my_instance;
 }
 
-DeviceManager::~DeviceManager()
-{
-    if (gfxManager) delete gfxManager;
-}
-
 InteropManager& getGfxInteropManager()
 {
-    return *(DeviceManager::getInstance().gfxManager);
+    return *(DeviceManager::getInstance().gfxManager.get());
 }
 
 cufft::cuFFTPlanner& getcufftPlanManager()
