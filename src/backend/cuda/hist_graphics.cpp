@@ -25,7 +25,7 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
     if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = data.get();
 
-        InteropManager& intrpMngr = DeviceManager::getInstance().getGfxInteropManager();
+        InteropManager& intrpMngr = getGfxInteropManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(hist);
         // Map resource. Copy data to VBO. Unmap resource.

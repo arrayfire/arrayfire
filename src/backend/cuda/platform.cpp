@@ -385,25 +385,26 @@ DeviceManager::~DeviceManager()
     if (gfxManager) delete gfxManager;
 }
 
-InteropManager& DeviceManager::getGfxInteropManager()
+InteropManager& getGfxInteropManager()
 {
-    return *gfxManager;
+    return *(DeviceManager::getInstance().gfxManager);
 }
 
-cufft::cuFFTPlanner& DeviceManager::getcufftPlanManager()
+cufft::cuFFTPlanner& getcufftPlanManager()
 {
-    return cufftManagers[cuda::getActiveDeviceId()];
+    return DeviceManager::getInstance().cufftManagers[cuda::getActiveDeviceId()];
 }
 
-cublasHandle_t DeviceManager::getcublasHandle()
+cublasHandle_t getcublasHandle()
 {
+    DeviceManager& instance = DeviceManager::getInstance();
+
     int id = cuda::getActiveDeviceId();
 
-    if(!cublasHandles[id]) {
-        cublasHandles[id].reset(new cublas::cublasHandle());
-    }
+    if (!(instance.cublasHandles[id]))
+        instance.resetcublasHandle(id);
 
-    return cublasHandles[id]->get();
+    return instance.cublasHandles[id]->get();
 }
 
 DeviceManager::DeviceManager()
@@ -526,6 +527,11 @@ int DeviceManager::setActiveDevice(int device, int nId)
     CUDA_CHECK(err);
 
     return old;
+}
+
+void DeviceManager::resetcublasHandle(int device)
+{
+    cublasHandles[device].reset(new cublas::cublasHandle());
 }
 
 void sync(int device)

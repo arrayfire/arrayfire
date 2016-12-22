@@ -114,7 +114,7 @@ void findPlan(cufftHandle &plan, int rank, int *n,
     key_string.append(std::string(key_str_temp));
 
     // find the matching plan_index in the array cuFFTPlanner::mKeys
-    cuFFTPlanner &planner = cuda::DeviceManager::getInstance().getcufftPlanManager();
+    cuFFTPlanner &planner = cuda::getcufftPlanManager();
 
     int planIndex = planner.findIfPlanExists(key_string);
 

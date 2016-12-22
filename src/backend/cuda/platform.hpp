@@ -73,6 +73,16 @@ bool& evalFlag();
 
 class InteropManager;
 
+///////////////////////// BEGIN Sub-Managers ///////////////////
+//
+InteropManager& getGfxInteropManager();
+
+cufft::cuFFTPlanner& getcufftPlanManager();
+
+cublasHandle_t getcublasHandle();
+//
+///////////////////////// END Sub-Managers /////////////////////
+
 class DeviceManager
 {
     public:
@@ -84,11 +94,11 @@ class DeviceManager
 
         ~DeviceManager();
 
-        InteropManager& getGfxInteropManager();
+        friend InteropManager& getGfxInteropManager();
 
-        cufft::cuFFTPlanner& getcufftPlanManager();
+        friend cufft::cuFFTPlanner& getcufftPlanManager();
 
-        cublasHandle_t getcublasHandle();
+        friend cublasHandle_t getcublasHandle();
 
         friend std::string getDeviceInfo(int device);
 
@@ -132,6 +142,8 @@ class DeviceManager
         void sortDevices(sort_mode mode = flops);
 
         int setActiveDevice(int device, int native = -1);
+
+        void resetcublasHandle(int device);
 
         int activeDev;
         int nDevices;

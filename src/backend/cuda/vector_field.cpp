@@ -26,7 +26,7 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
                        forge::VectorField* vector_field)
 {
     if(DeviceManager::checkGraphicsInteropCapability()) {
-        InteropManager& intrpMngr = DeviceManager::getInstance().getGfxInteropManager();
+        InteropManager& intrpMngr = getGfxInteropManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(vector_field);
 

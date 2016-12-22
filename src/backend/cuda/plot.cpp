@@ -30,7 +30,7 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
     if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
 
-        InteropManager& intrpMngr = DeviceManager::getInstance().getGfxInteropManager();
+        InteropManager& intrpMngr = getGfxInteropManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(plot);
         // Map resource. Copy data to VBO. Unmap resource.

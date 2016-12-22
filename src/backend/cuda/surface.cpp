@@ -30,7 +30,7 @@ void copy_surface(const Array<T> &P, forge::Surface* surface)
     if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
 
-        InteropManager& intrpMngr = DeviceManager::getInstance().getGfxInteropManager();
+        InteropManager& intrpMngr = getGfxInteropManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(surface);
         // Map resource. Copy data to VBO. Unmap resource.

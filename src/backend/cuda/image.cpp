@@ -28,7 +28,7 @@ template<typename T>
 void copy_image(const Array<T> &in, const forge::Image* image)
 {
     if(DeviceManager::checkGraphicsInteropCapability()) {
-        InteropManager& intrpMngr = DeviceManager::getInstance().getGfxInteropManager();
+        InteropManager& intrpMngr = getGfxInteropManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(image);
 
