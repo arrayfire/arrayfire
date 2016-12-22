@@ -13,11 +13,35 @@
 #include <defines.hpp>
 #include <cublas_v2.h>
 
+namespace cuda
+{
 
-namespace cublas {
+class DeviceManager;
 
-    const char * errorString(cublasStatus_t err);
-    cublasHandle_t getHandle();
+}
+
+namespace cublas
+{
+
+const char * errorString(cublasStatus_t err);
+
+//RAII class around the cublas Handle
+class cublasHandle
+{
+    friend class cuda::DeviceManager;
+
+    public:
+        ~cublasHandle();
+        cublasHandle_t get() const;
+
+    private:
+        cublasHandle();
+        cublasHandle(cublasHandle const&);
+        void operator=(cublasHandle const&);
+
+        cublasHandle_t handle;
+};
+
 }
 
 

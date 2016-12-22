@@ -17,7 +17,10 @@
 #include <fg/window.h>
 #endif
 
+#include <boost/scoped_ptr.hpp>
+
 #include <cufftManager.hpp>
+#include <cublasManager.hpp>
 
 namespace cuda
 {
@@ -85,6 +88,8 @@ class DeviceManager
 
         cufft::cuFFTPlanner& getcufftPlanManager();
 
+        cublasHandle_t getcublasHandle();
+
         friend std::string getDeviceInfo(int device);
 
         friend std::string getPlatformInfo();
@@ -138,6 +143,8 @@ class DeviceManager
         InteropManager* gfxManager;
 
         cufft::cuFFTPlanner cufftManagers[MAX_DEVICES];
+
+        boost::scoped_ptr<cublas::cublasHandle> cublasHandles[MAX_DEVICES];
 };
 
 }

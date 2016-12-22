@@ -395,6 +395,17 @@ cufft::cuFFTPlanner& DeviceManager::getcufftPlanManager()
     return cufftManagers[cuda::getActiveDeviceId()];
 }
 
+cublasHandle_t DeviceManager::getcublasHandle()
+{
+    int id = cuda::getActiveDeviceId();
+
+    if(!cublasHandles[id]) {
+        cublasHandles[id].reset(new cublas::cublasHandle());
+    }
+
+    return cublasHandles[id]->get();
+}
+
 DeviceManager::DeviceManager()
     : cuDevices(0), activeDev(0), nDevices(0), gfxManager(new InteropManager())
 {
