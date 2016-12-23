@@ -14,7 +14,7 @@
 #include <functional>
 #include <stdexcept>
 #include <mutex>
-#include <err_common.hpp>
+#include <err_opencl.hpp>
 #include <err_clblas.hpp>
 #include <math.hpp>
 #include <transpose.hpp>

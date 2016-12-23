@@ -46,73 +46,68 @@ namespace opencl
         template<typename T, af_interp_type method>
         void resize(Param out, const Param in)
         {
-            try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   resizeProgs;
-                static std::map<int, Kernel *> resizeKernels;
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static std::map<int, Program*>   resizeProgs;
+            static std::map<int, Kernel *> resizeKernels;
 
-                int device = getActiveDeviceId();
+            int device = getActiveDeviceId();
 
-                typedef typename dtype_traits<T>::base_type BT;
+            typedef typename dtype_traits<T>::base_type BT;
 
-                std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D T="        << dtype_traits<T>::getName();
-                    options << " -D VT="       << dtype_traits<vtype_t<T>>::getName();
-                    options << " -D WT="       << dtype_traits<wtype_t<BT>>::getName();
+            std::call_once( compileFlags[device], [device] () {
+                std::ostringstream options;
+                options << " -D T="        << dtype_traits<T>::getName();
+                options << " -D VT="       << dtype_traits<vtype_t<T>>::getName();
+                options << " -D WT="       << dtype_traits<wtype_t<BT>>::getName();
 
-                    switch(method) {
-                        case AF_INTERP_NEAREST:  options <<" -D INTERP=NEAREST" ; break;
-                        case AF_INTERP_BILINEAR: options <<" -D INTERP=BILINEAR"; break;
-                        case AF_INTERP_LOWER:    options <<" -D INTERP=LOWER"   ; break;
-                        default: break;
-                    }
+                switch(method) {
+                    case AF_INTERP_NEAREST:  options <<" -D INTERP=NEAREST" ; break;
+                    case AF_INTERP_BILINEAR: options <<" -D INTERP=BILINEAR"; break;
+                    case AF_INTERP_LOWER:    options <<" -D INTERP=LOWER"   ; break;
+                    default: break;
+                }
 
-                    if((af_dtype) dtype_traits<T>::af_type == c32 ||
-                       (af_dtype) dtype_traits<T>::af_type == c64) {
-                        options << " -D CPLX=1";
-                        options << " -D TB=" << dtype_traits<BT>::getName();
-                    } else {
-                        options << " -D CPLX=0";
-                    }
+                if((af_dtype) dtype_traits<T>::af_type == c32 ||
+                    (af_dtype) dtype_traits<T>::af_type == c64) {
+                    options << " -D CPLX=1";
+                    options << " -D TB=" << dtype_traits<BT>::getName();
+                } else {
+                    options << " -D CPLX=0";
+                }
 
-                    if (std::is_same<T, double>::value ||
-                        std::is_same<T, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
 
-                    Program prog;
-                    buildProgram(prog, resize_cl, resize_cl_len, options.str());
-                    resizeProgs[device] = new Program(prog);
-                    resizeKernels[device] = new Kernel(*resizeProgs[device], "resize_kernel");
-                });
+                Program prog;
+                buildProgram(prog, resize_cl, resize_cl_len, options.str());
+                resizeProgs[device] = new Program(prog);
+                resizeKernels[device] = new Kernel(*resizeProgs[device], "resize_kernel");
+            });
 
-                auto resizeOp = KernelFunctor<Buffer, const KParam,
-                                      const Buffer, const KParam,
-                                      const int, const int, const float, const float>
-                                      (*resizeKernels[device]);
+            auto resizeOp = KernelFunctor<Buffer, const KParam,
+                                  const Buffer, const KParam,
+                                  const int, const int, const float, const float>
+                                  (*resizeKernels[device]);
 
-                NDRange local(RESIZE_TX, RESIZE_TY, 1);
+            NDRange local(RESIZE_TX, RESIZE_TY, 1);
 
-                int blocksPerMatX = divup(out.info.dims[0], local[0]);
-                int blocksPerMatY = divup(out.info.dims[1], local[1]);
-                NDRange global(local[0] * blocksPerMatX * in.info.dims[2],
-                               local[1] * blocksPerMatY * in.info.dims[3],
-                               1);
+            int blocksPerMatX = divup(out.info.dims[0], local[0]);
+            int blocksPerMatY = divup(out.info.dims[1], local[1]);
+            NDRange global(local[0] * blocksPerMatX * in.info.dims[2],
+                            local[1] * blocksPerMatY * in.info.dims[3],
+                            1);
 
-                double xd = (double)in.info.dims[0] / (double)out.info.dims[0];
-                double yd = (double)in.info.dims[1] / (double)out.info.dims[1];
+            double xd = (double)in.info.dims[0] / (double)out.info.dims[0];
+            double yd = (double)in.info.dims[1] / (double)out.info.dims[1];
 
-                float xf = (float)xd, yf = (float)yd;
+            float xf = (float)xd, yf = (float)yd;
 
-                resizeOp(EnqueueArgs(getQueue(), global, local),
-                         *out.data, out.info, *in.data, in.info, blocksPerMatX, blocksPerMatY, xf, yf);
+            resizeOp(EnqueueArgs(getQueue(), global, local),
+                      *out.data, out.info, *in.data, in.info, blocksPerMatX, blocksPerMatY, xf, yf);
 
-                CL_DEBUG_FINISH(getQueue());
-            } catch (cl::Error err) {
-                CL_TO_AF_ERROR(err);
-                throw;
-            }
+            CL_DEBUG_FINISH(getQueue());
         }
     }
 }

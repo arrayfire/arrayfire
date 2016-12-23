@@ -40,62 +40,57 @@ static const int THREADS_Y = 16;
 template<typename T, bool is_color>
 void meanshift(Param out, const Param in, float s_sigma, float c_sigma, uint iter)
 {
-    try {
-        static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*> msProgs;
-        static std::map<int, Kernel*> msKernels;
+    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+    static std::map<int, Program*> msProgs;
+    static std::map<int, Kernel*> msKernels;
 
-        int device = getActiveDeviceId();
+    int device = getActiveDeviceId();
 
-        std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D T=" << dtype_traits<T>::getName()
-                            << " -D MAX_CHANNELS=" << (is_color ? 3 : 1);
-                    if (std::is_same<T, double>::value ||
-                        std::is_same<T, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
-                    Program prog;
-                    buildProgram(prog, meanshift_cl, meanshift_cl_len, options.str());
-                    msProgs[device]   = new Program(prog);
-                    msKernels[device] = new Kernel(*msProgs[device], "meanshift");
-                });
+    std::call_once( compileFlags[device], [device] () {
+                std::ostringstream options;
+                options << " -D T=" << dtype_traits<T>::getName()
+                        << " -D MAX_CHANNELS=" << (is_color ? 3 : 1);
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+                Program prog;
+                buildProgram(prog, meanshift_cl, meanshift_cl_len, options.str());
+                msProgs[device]   = new Program(prog);
+                msKernels[device] = new Kernel(*msProgs[device], "meanshift");
+            });
 
-        auto meanshiftOp = KernelFunctor<Buffer, KParam,
-                                       Buffer, KParam,
-                                       LocalSpaceArg,
-                                       int, float,
-                                       int, float,
-                                       unsigned, int, int
-                                      >(*msKernels[device]);
+    auto meanshiftOp = KernelFunctor<Buffer, KParam,
+                                    Buffer, KParam,
+                                    LocalSpaceArg,
+                                    int, float,
+                                    int, float,
+                                    unsigned, int, int
+                                  >(*msKernels[device]);
 
-        NDRange local(THREADS_X, THREADS_Y);
+    NDRange local(THREADS_X, THREADS_Y);
 
-        int blk_x = divup(in.info.dims[0], THREADS_X);
-        int blk_y = divup(in.info.dims[1], THREADS_Y);
+    int blk_x = divup(in.info.dims[0], THREADS_X);
+    int blk_y = divup(in.info.dims[1], THREADS_Y);
 
-        const int bCount   = (is_color ? 1 : in.info.dims[2]);
-        const int channels = (is_color ? in.info.dims[2] : 1);
+    const int bCount   = (is_color ? 1 : in.info.dims[2]);
+    const int channels = (is_color ? in.info.dims[2] : 1);
 
-        NDRange global(bCount*blk_x*THREADS_X, in.info.dims[3]*blk_y*THREADS_Y);
+    NDRange global(bCount*blk_x*THREADS_X, in.info.dims[3]*blk_y*THREADS_Y);
 
-        // clamp spatical and chromatic sigma's
-        float space_ = std::min(11.5f, s_sigma);
-        int radius   = std::max((int)(space_ * 1.5f), 1);
-        int padding  = 2*radius+1;
-        const float cvar = c_sigma*c_sigma;
-        size_t loc_size  = channels*(local[0]+padding)*(local[1]+padding)*sizeof(T);
+    // clamp spatical and chromatic sigma's
+    float space_ = std::min(11.5f, s_sigma);
+    int radius   = std::max((int)(space_ * 1.5f), 1);
+    int padding  = 2*radius+1;
+    const float cvar = c_sigma*c_sigma;
+    size_t loc_size  = channels*(local[0]+padding)*(local[1]+padding)*sizeof(T);
 
-        meanshiftOp(EnqueueArgs(getQueue(), global, local),
-                    *out.data, out.info, *in.data, in.info,
-                    cl::Local(loc_size), channels,
-                    space_, radius, cvar, iter, blk_x, blk_y);
+    meanshiftOp(EnqueueArgs(getQueue(), global, local),
+                *out.data, out.info, *in.data, in.info,
+                cl::Local(loc_size), channels,
+                space_, radius, cvar, iter, blk_x, blk_y);
 
-        CL_DEBUG_FINISH(getQueue());
-    } catch (cl::Error err) {
-        CL_TO_AF_ERROR(err);
-        throw;
-    }
+    CL_DEBUG_FINISH(getQueue());
 }
 
 }
