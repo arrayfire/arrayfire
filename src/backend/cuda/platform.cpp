@@ -429,6 +429,18 @@ cusolverDnHandle_t getcusolverDnHandle()
     return instance.cusolverHandles[id]->get();
 }
 
+cusparseHandle_t getcusparseHandle()
+{
+    DeviceManager& instance = DeviceManager::getInstance();
+
+    int id = cuda::getActiveDeviceId();
+
+    if (!(instance.cusparseHandles[id]))
+        instance.resetcusparseHandle(id);
+
+    return instance.cusparseHandles[id]->get();
+}
+
 DeviceManager::DeviceManager()
     : cuDevices(0), activeDev(0), nDevices(0), gfxManager(new InteropManager())
 {
@@ -559,6 +571,11 @@ void DeviceManager::resetcublasHandle(int device)
 void DeviceManager::resetcusolverHandle(int device)
 {
     cusolverHandles[device].reset(new cusolver::cusolverDnHandle());
+}
+
+void DeviceManager::resetcusparseHandle(int device)
+{
+    cusparseHandles[device].reset(new cusparse::cusparseHandle());
 }
 
 void sync(int device)

@@ -13,10 +13,35 @@
 #include <defines.hpp>
 #include <cusparse_v2.h>
 
-namespace cusparse {
+namespace cuda
+{
 
-    const char * errorString(cusparseStatus_t err);
-    cusparseHandle_t getHandle();
+class DeviceManager;
+
+}
+
+namespace cusparse
+{
+
+const char * errorString(cusparseStatus_t err);
+
+//RAII class around the cusparse Handle
+class cusparseHandle
+{
+    friend class cuda::DeviceManager;
+
+    public:
+    ~cusparseHandle();
+    cusparseHandle_t get() const;
+
+    private:
+    cusparseHandle();
+    cusparseHandle(cusparseHandle const&);
+    void operator=(cusparseHandle const&);
+
+    cusparseHandle_t handle;
+};
+
 }
 
 
