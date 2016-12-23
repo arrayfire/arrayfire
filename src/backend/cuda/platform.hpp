@@ -73,10 +73,16 @@ struct cudaDevice_t {
 
 bool& evalFlag();
 
+class MemoryManager;
+class MemoryManagerPinned;
 class InteropManager;
 
 ///////////////////////// BEGIN Sub-Managers ///////////////////
 //
+MemoryManager& getMemoryManager();
+
+MemoryManagerPinned& getMemoryManagerPinned();
+
 InteropManager& getGfxInteropManager();
 
 cufft::cuFFTPlanner& getcufftPlanManager();
@@ -97,6 +103,10 @@ class DeviceManager
         static bool checkGraphicsInteropCapability();
 
         static DeviceManager& getInstance();
+
+        friend MemoryManager& getMemoryManager();
+
+        friend MemoryManagerPinned& getMemoryManagerPinned();
 
         friend InteropManager& getGfxInteropManager();
 
@@ -160,6 +170,10 @@ class DeviceManager
         int activeDev;
         int nDevices;
         cudaStream_t streams[MAX_DEVICES];
+
+        boost::scoped_ptr<MemoryManager> memManager;
+
+        boost::scoped_ptr<MemoryManagerPinned> pinnedMemManager;
 
         boost::scoped_ptr<InteropManager> gfxManager;
 

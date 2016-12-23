@@ -24,6 +24,7 @@
 #include <err_cuda.hpp>
 #include <util.hpp>
 #include <host_memory.hpp>
+#include <memoryManager.hpp>
 #include <interopManager.hpp>
 
 using namespace std;
@@ -378,6 +379,16 @@ DeviceManager& DeviceManager::getInstance()
 {
     static DeviceManager my_instance;
     return my_instance;
+}
+
+MemoryManager &getMemoryManager()
+{
+    return *(DeviceManager::getInstance().memManager.get());
+}
+
+MemoryManagerPinned &getMemoryManagerPinned()
+{
+    return *(DeviceManager::getInstance().pinnedMemManager.get());
 }
 
 InteropManager& getGfxInteropManager()
