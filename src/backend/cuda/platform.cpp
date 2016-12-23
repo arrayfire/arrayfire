@@ -383,17 +383,32 @@ DeviceManager& DeviceManager::getInstance()
 
 MemoryManager &getMemoryManager()
 {
-    return *(DeviceManager::getInstance().memManager.get());
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    if (!inst.memManager.get())
+        inst.memManager.reset(new cuda::MemoryManager());
+
+    return *(inst.memManager.get());
 }
 
 MemoryManagerPinned &getMemoryManagerPinned()
 {
-    return *(DeviceManager::getInstance().pinnedMemManager.get());
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    if (!inst.pinnedMemManager.get())
+        inst.pinnedMemManager.reset(new cuda::MemoryManagerPinned());
+
+    return *(inst.pinnedMemManager.get());
 }
 
 InteropManager& getGfxInteropManager()
 {
-    return *(DeviceManager::getInstance().gfxManager.get());
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    if (!inst.gfxManager.get())
+        inst.gfxManager.reset(new cuda::InteropManager());
+
+    return *(inst.gfxManager.get());
 }
 
 cufft::cuFFTPlanner& getcufftPlanManager()
@@ -453,7 +468,7 @@ cusparseHandle_t getcusparseHandle()
 }
 
 DeviceManager::DeviceManager()
-    : cuDevices(0), activeDev(0), nDevices(0), gfxManager(new InteropManager())
+    : cuDevices(0), activeDev(0), nDevices(0)
 {
     CUDA_CHECK(cudaGetDeviceCount(&nDevices));
     if (nDevices == 0)
