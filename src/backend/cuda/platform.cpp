@@ -385,8 +385,21 @@ MemoryManager &getMemoryManager()
 {
     DeviceManager& inst = DeviceManager::getInstance();
 
-    if (!inst.memManager.get())
-        inst.memManager.reset(new cuda::MemoryManager());
+    boost::upgrade_lock<boost::shared_mutex> lock(inst.memManagerMutex);
+
+    // multiple threads should be able to reach the
+    // conditional statement without contention
+    if (!inst.memManager.get()) {
+        // upgrade the shared ownership we acquired earlier to
+        // exclusive owner ship to initialize the memory manager
+        boost::upgrade_to_unique_lock<boost::shared_mutex> unqLock(lock);
+
+        // if multiple threads above statment, allow the
+        // initialization of memory manager to happen once
+        // by checking if pinned memory manager pointer is already set
+        if (!inst.memManager.get())
+            inst.memManager.reset(new cuda::MemoryManager());
+    }
 
     return *(inst.memManager.get());
 }
@@ -395,8 +408,21 @@ MemoryManagerPinned &getMemoryManagerPinned()
 {
     DeviceManager& inst = DeviceManager::getInstance();
 
-    if (!inst.pinnedMemManager.get())
-        inst.pinnedMemManager.reset(new cuda::MemoryManagerPinned());
+    boost::upgrade_lock<boost::shared_mutex> lock(inst.memManagerMutex);
+
+    // multiple threads should be able to reach the
+    // conditional statement without contention
+    if (!inst.pinnedMemManager.get()) {
+        // upgrade the shared ownership we acquired earlier to
+        // exclusive owner ship to initialize the memory manager
+        boost::upgrade_to_unique_lock<boost::shared_mutex> unqLock(lock);
+
+        // if multiple threads above statment, allow the
+        // initialization of memory manager to happen once
+        // by checking if pinned memory manager pointer is already set
+        if (!inst.pinnedMemManager.get())
+            inst.pinnedMemManager.reset(new cuda::MemoryManagerPinned());
+    }
 
     return *(inst.pinnedMemManager.get());
 }

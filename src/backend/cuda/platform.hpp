@@ -18,6 +18,7 @@
 #endif
 
 #include <boost/scoped_ptr.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 #include <cufftManager.hpp>
 #include <cublasManager.hpp>
@@ -171,8 +172,10 @@ class DeviceManager
         int nDevices;
         cudaStream_t streams[MAX_DEVICES];
 
+        boost::shared_mutex memManagerMutex;
         boost::scoped_ptr<MemoryManager> memManager;
 
+        boost::shared_mutex pinnedMemManagerMutex;
         boost::scoped_ptr<MemoryManagerPinned> pinnedMemManager;
 
         boost::scoped_ptr<InteropManager> gfxManager;

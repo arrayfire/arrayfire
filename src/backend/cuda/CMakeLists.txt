@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 FIND_PACKAGE(CUDA REQUIRED)
-FIND_PACKAGE(Boost REQUIRED)
+FIND_PACKAGE(Boost REQUIRED COMPONENTS "system" "thread")
 
 INCLUDE(CLKernelToH)
 INCLUDE(FindNVVM)
@@ -498,7 +498,8 @@ TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
                                 PRIVATE ${CUDA_CUFFT_LIBRARIES}
                                 PRIVATE ${CUDA_cusparse_LIBRARY}
                                 PRIVATE ${CUDA_nvvm_LIBRARY}
-                                PRIVATE ${CUDA_CUDA_LIBRARY})
+                                PRIVATE ${CUDA_CUDA_LIBRARY}
+                                PRIVATE ${Boost_LIBRARIES})
 
 LIST(LENGTH GRAPHICS_DEPENDENCIES GRAPHICS_DEPENDENCIES_LEN)
 IF(${GRAPHICS_DEPENDENCIES_LEN} GREATER 0)
