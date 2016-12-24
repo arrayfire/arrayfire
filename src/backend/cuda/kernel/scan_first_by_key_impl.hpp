@@ -411,8 +411,8 @@ namespace kernel
     static void bcast_first_launcher(Param<To> out,
                                      Param<To> tmp,
                                      Param<int> tlid,
-                                     const uint blocks_x,
-                                     const uint blocks_y,
+                                     const dim_t blocks_x,
+                                     const dim_t blocks_y,
                                      const uint threads_x)
     {
 
@@ -432,8 +432,8 @@ namespace kernel
         threads_x = std::min(threads_x, THREADS_PER_BLOCK);
         uint threads_y = THREADS_PER_BLOCK / threads_x;
 
-        uint blocks_x = divup(out.dims[0], threads_x * REPEAT);
-        uint blocks_y = divup(out.dims[1], threads_y);
+        dim_t blocks_x = divup(out.dims[0], threads_x * REPEAT);
+        dim_t blocks_y = divup(out.dims[1], threads_y);
 
         if (blocks_x == 1) {
             scan_final_launcher<Ti, Tk, To, op>(

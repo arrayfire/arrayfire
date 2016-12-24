@@ -17,10 +17,8 @@
 #include "sort_by_key.hpp"
 #include "range.hpp"
 
-#include <boost/scoped_array.hpp>
-
 using std::vector;
-using boost::scoped_array;
+using std::unique_ptr;
 
 namespace cuda
 {
@@ -344,7 +342,7 @@ void orb(unsigned* out_feat,
     Param<convAccT> gauss_filter;
     if (blur_img) {
         unsigned gauss_len = 9;
-        scoped_array<convAccT> h_gauss(new convAccT[gauss_len]);
+        unique_ptr<convAccT> h_gauss(new convAccT[gauss_len]);
         gaussian1D(h_gauss.get(), gauss_len, 2.f);
         gauss_filter.dims[0] = gauss_len;
         gauss_filter.strides[0] = 1;

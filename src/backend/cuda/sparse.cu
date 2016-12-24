@@ -14,8 +14,6 @@
 #include <stdexcept>
 #include <string>
 
-#include <boost/shared_ptr.hpp>
-
 #include <arith.hpp>
 #include <cast.hpp>
 #include <complex.hpp>
@@ -366,7 +364,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in)
 template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
-    using boost::shared_ptr;
+    using std::shared_ptr;
     in.eval();
 
     int nNZ = in.getNNZ();

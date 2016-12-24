@@ -9,8 +9,6 @@
 
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <map>
-#include <stdexcept>
 #include <copy.hpp>
 #include <JIT/Node.hpp>
 
@@ -42,22 +40,26 @@
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
-#include <vector>
 #include <nvvm.h>
-#include <boost/functional/hash.hpp>
-#include <boost/scoped_array.hpp>
 
-using std::vector;
-using boost::scoped_array;
+#include <functional>
+#include <map>
+#include <memory>
+#include <stdexcept>
+#include <vector>
 
 namespace cuda
 {
 
 using JIT::Node;
+using JIT::str_map_iter;
+using JIT::str_map_t;
+using std::hash;
+using std::map;
 using std::string;
 using std::stringstream;
-using JIT::str_map_t;
-using JIT::str_map_iter;
+using std::unique_ptr;
+using std::vector;
 
 const char *layout64 = "target datalayout = \"e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64\"\n\n\n";
 const char *layout32 = "target datalayout = \"e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64\"\n\n\n";
@@ -65,7 +67,7 @@ const char *layout32 = "target datalayout = \"e-p:32:32:32-i1:8:8-i8:8:8-i16:16:
 const char *triple64 = "target triple = \"nvptx64-unknown-cuda\"\n\n";
 const char *triple32 = "target triple = \"nvptx-unknown-cuda\"\n\n";
 
-static string getFuncName(std::vector<Node *> nodes, bool is_linear)
+static string getFuncName(vector<Node *> nodes, bool is_linear)
 {
     stringstream funcName;
     stringstream hashName;
@@ -83,14 +85,14 @@ static string getFuncName(std::vector<Node *> nodes, bool is_linear)
         funcName << "]";
     }
 
-    boost::hash<std::string> hash_fn;
+    hash<string> hash_fn;
 
     hashName << "@KER";
     hashName << hash_fn(funcName.str());
     return hashName.str();
 }
 
-static string getKernelString(string funcName, std::vector<Node *> nodes, bool is_linear)
+static string getKernelString(string funcName, vector<Node *> nodes, bool is_linear)
 {
     static const char *defineVoid = "define void ";
     static const char *generalDimParams = "\n"
@@ -217,7 +219,7 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
     str_map_t declStrs;
 
     for (int i = 0; i < (int)nodes.size(); i++) {
-        std::string outTypeStr = nodes[i]->getTypeStr();
+        string outTypeStr = nodes[i]->getTypeStr();
         int id = nodes[i]->getId();
 
         nodes[i]->genParams(inParamStream, inAnnStream, is_linear);
@@ -409,7 +411,7 @@ static char *irToPtx(string IR, size_t *ptx_size)
         size_t log_size = 0;
         nvvmGetProgramLogSize(prog, &log_size);
         printf("%ld, %zu\n", IR.size(), log_size);
-        scoped_array<char> log(new char[log_size]);
+        unique_ptr<char> log(new char[log_size]);
         nvvmGetProgramLog(prog, log.get());
         printf("LOG:\n%s\n%s", log.get(), IR.c_str());
         NVVM_CHECK(comp_res, "Failed to compile program");
@@ -463,7 +465,7 @@ char linkError[size];
 static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 {
     size_t ptx_size;
-    scoped_array<const char> ptx(irToPtx(jit_ker, &ptx_size));
+    unique_ptr<const char> ptx(irToPtx(jit_ker, &ptx_size));
 
     CUlinkState linkState;
 
@@ -526,12 +528,12 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
     return entry;
 }
 
-static CUfunction getKernel(std::vector<Node *> nodes, bool is_linear)
+static CUfunction getKernel(vector<Node *> nodes, bool is_linear)
 {
 
     string funcName = getFuncName(nodes, is_linear);
 
-    typedef std::map<string, kc_entry_t> kc_t;
+    typedef map<string, kc_entry_t> kc_t;
     static kc_t kernelCaches[DeviceManager::MAX_DEVICES];
     int device = getActiveDeviceId();
 
@@ -550,7 +552,7 @@ static CUfunction getKernel(std::vector<Node *> nodes, bool is_linear)
 }
 
 template<typename T>
-void evalNodes(std::vector<Param<T> >&outputs, std::vector<Node *> nodes)
+void evalNodes(vector<Param<T> >&outputs, vector<Node *> nodes)
 {
     int num_outputs = (int)outputs.size();
 
@@ -665,8 +667,8 @@ void evalNodes(std::vector<Param<T> >&outputs, std::vector<Node *> nodes)
 template<typename T>
 void evalNodes(Param<T> &out, Node *node)
 {
-    std::vector<Param<T> > outputs;
-    std::vector<Node *> nodes;
+    vector<Param<T>> outputs;
+    vector<Node *> nodes;
 
     outputs.push_back(out);
     nodes.push_back(node);
@@ -687,18 +689,18 @@ template void evalNodes<uintl  >(Param<uintl  > &out, Node *node);
 template void evalNodes<short  >(Param<short  > &out, Node *node);
 template void evalNodes<ushort >(Param<ushort > &out, Node *node);
 
-template void evalNodes<float  >(std::vector<Param<float  > > &out, std::vector<Node *> node);
-template void evalNodes<double >(std::vector<Param<double > > &out, std::vector<Node *> node);
-template void evalNodes<cfloat >(std::vector<Param<cfloat > > &out, std::vector<Node *> node);
-template void evalNodes<cdouble>(std::vector<Param<cdouble> > &out, std::vector<Node *> node);
-template void evalNodes<int    >(std::vector<Param<int    > > &out, std::vector<Node *> node);
-template void evalNodes<uint   >(std::vector<Param<uint   > > &out, std::vector<Node *> node);
-template void evalNodes<char   >(std::vector<Param<char   > > &out, std::vector<Node *> node);
-template void evalNodes<uchar  >(std::vector<Param<uchar  > > &out, std::vector<Node *> node);
-template void evalNodes<intl   >(std::vector<Param<intl   > > &out, std::vector<Node *> node);
-template void evalNodes<uintl  >(std::vector<Param<uintl  > > &out, std::vector<Node *> node);
-template void evalNodes<short  >(std::vector<Param<short  > > &out, std::vector<Node *> node);
-template void evalNodes<ushort >(std::vector<Param<ushort > > &out, std::vector<Node *> node);
+template void evalNodes<float  >(vector<Param<float  > > &out, vector<Node *> node);
+template void evalNodes<double >(vector<Param<double > > &out, vector<Node *> node);
+template void evalNodes<cfloat >(vector<Param<cfloat > > &out, vector<Node *> node);
+template void evalNodes<cdouble>(vector<Param<cdouble> > &out, vector<Node *> node);
+template void evalNodes<int    >(vector<Param<int    > > &out, vector<Node *> node);
+template void evalNodes<uint   >(vector<Param<uint   > > &out, vector<Node *> node);
+template void evalNodes<char   >(vector<Param<char   > > &out, vector<Node *> node);
+template void evalNodes<uchar  >(vector<Param<uchar  > > &out, vector<Node *> node);
+template void evalNodes<intl   >(vector<Param<intl   > > &out, vector<Node *> node);
+template void evalNodes<uintl  >(vector<Param<uintl  > > &out, vector<Node *> node);
+template void evalNodes<short  >(vector<Param<short  > > &out, vector<Node *> node);
+template void evalNodes<ushort >(vector<Param<ushort > > &out, vector<Node *> node);
 
 
 
