@@ -18,15 +18,12 @@
 #include <cuda_runtime_api.h>
 #include <Param.hpp>
 #include <JIT/Node.hpp>
-#include <boost/shared_ptr.hpp>
 #include <vector>
 #include <memory.hpp>
 
 namespace cuda
 {
-
     using af::dim4;
-    using boost::shared_ptr;
 
     template<typename T> class Array;
 
@@ -99,7 +96,7 @@ namespace cuda
     class Array
     {
         ArrayInfo       info; // This must be the first element of Array<T>
-        shared_ptr<T> data;
+        std::shared_ptr<T> data;
         af::dim4 data_dims;
 
         JIT::Node_ptr node;
@@ -165,7 +162,7 @@ namespace cuda
         void eval() const;
 
         dim_t getOffset() const { return info.getOffset(); }
-        shared_ptr<T> getData() const { return data; }
+        std::shared_ptr<T> getData() const { return data; }
 
         dim4 getDataDims() const
         {
