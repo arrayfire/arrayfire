@@ -22,10 +22,6 @@
 #include <vector>
 #include <memory.hpp>
 
-#if CUDA_VERSION < 7000
-    #error "ArrayFire CUDA requires CUDA Toolkit Version 7.0 or newer."
-#endif
-
 namespace cuda
 {
 
