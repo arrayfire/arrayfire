@@ -129,26 +129,26 @@ void sparseArithTester(const int m, const int n, int factor, const double eps)
 
     A = makeSparse<T>(A, factor);
 
-    af::array SA = af::sparse(A, AF_STORAGE_CSR);
+    af::array RA = af::sparse(A, AF_STORAGE_CSR);
     af::array OA = af::sparse(A, AF_STORAGE_COO);
 
     // Arith Op
-    af::array resS = arith_op<op>()(SA, B);
+    af::array resR = arith_op<op>()(RA, B);
     af::array resO = arith_op<op>()(OA, B);
     af::array resD = arith_op<op>()( A, B);
 
-    af::array revS = arith_op<op>()(B, SA);
+    af::array revR = arith_op<op>()(B, RA);
     af::array revO = arith_op<op>()(B, OA);
     af::array revD = arith_op<op>()(B,  A);
 
-    ASSERT_NEAR(0, af::sum<double>(af::abs(real(resS - resD))) / (m * n), eps);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(resS - resD))) / (m * n), eps);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(real(resR - resD))) / (m * n), eps);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(resR - resD))) / (m * n), eps);
 
     ASSERT_NEAR(0, af::sum<double>(af::abs(real(resO - resD))) / (m * n), eps);
     ASSERT_NEAR(0, af::sum<double>(af::abs(imag(resO - resD))) / (m * n), eps);
 
-    ASSERT_NEAR(0, af::sum<double>(af::abs(real(revS - revD))) / (m * n), eps);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(revS - revD))) / (m * n), eps);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(real(revR - revD))) / (m * n), eps);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(revR - revD))) / (m * n), eps);
 
     ASSERT_NEAR(0, af::sum<double>(af::abs(real(revO - revD))) / (m * n), eps);
     ASSERT_NEAR(0, af::sum<double>(af::abs(imag(revO - revD))) / (m * n), eps);
@@ -171,21 +171,21 @@ void sparseArithTesterDiv(const int m, const int n, int factor, const double eps
 
     A = makeSparse<T>(A, factor);
 
-    af::array SA = af::sparse(A, AF_STORAGE_CSR);
+    af::array RA = af::sparse(A, AF_STORAGE_CSR);
     af::array OA = af::sparse(A, AF_STORAGE_COO);
 
     // Arith Op
-    af::array resS = arith_op<af_div_t>()(SA, B);
+    af::array resR = arith_op<af_div_t>()(RA, B);
     af::array resO = arith_op<af_div_t>()(OA, B);
     af::array resD = arith_op<af_div_t>()( A, B);
 
     // Assert division by sparse is not allowed
     af_array out_temp = 0;
-    ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_div(&out_temp, B.get(), SA.get(), false));
+    ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_div(&out_temp, B.get(), RA.get(), false));
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_div(&out_temp, B.get(), OA.get(), false));
     if(out_temp != 0) af_release_array(out_temp);
 
-    T *hResS = resS.host<T>();
+    T *hResR = resR.host<T>();
     T *hResO = resO.host<T>();
     T *hResD = resD.host<T>();
 
@@ -195,17 +195,17 @@ void sparseArithTesterDiv(const int m, const int n, int factor, const double eps
     if(std::isfinite(V1) || std::isfinite(V2)) ASSERT_NEAR(V1, V2, eps) << "at : " << i;    \
 
     for(int i = 0; i < B.elements(); i++) {
-        ASSERT_FINITE_EQ(real(hResS[i]), real(hResD[i]));
+        ASSERT_FINITE_EQ(real(hResR[i]), real(hResD[i]));
         ASSERT_FINITE_EQ(real(hResO[i]), real(hResD[i]));
 
         if(A.iscomplex()) {
-            ASSERT_FINITE_EQ(imag(hResS[i]), imag(hResD[i]));
+            ASSERT_FINITE_EQ(imag(hResR[i]), imag(hResD[i]));
             ASSERT_FINITE_EQ(imag(hResO[i]), imag(hResD[i]));
         }
     }
 #undef ASSERT_FINITE_EQ
 
-    af::freeHost(hResS);
+    af::freeHost(hResR);
     af::freeHost(hResO);
     af::freeHost(hResD);
 }
