@@ -179,16 +179,15 @@ void sparseArithTesterDiv(const int m, const int n, int factor, const double eps
     af::array resO = arith_op<af_div_t>()(OA, B);
     af::array resD = arith_op<af_div_t>()( A, B);
 
-    af::array revS = arith_op<af_div_t>()(B, SA);
-    af::array revO = arith_op<af_div_t>()(B, OA);
-    af::array revD = arith_op<af_div_t>()(B,  A);
+    // Assert division by sparse is not allowed
+    af_array out_temp = 0;
+    ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_div(&out_temp, B.get(), SA.get(), false));
+    ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_div(&out_temp, B.get(), OA.get(), false));
+    if(out_temp != 0) af_release_array(out_temp);
 
     T *hResS = resS.host<T>();
     T *hResO = resO.host<T>();
     T *hResD = resD.host<T>();
-    T *hRevS = revS.host<T>();
-    T *hRevO = revO.host<T>();
-    T *hRevD = revD.host<T>();
 
 // This macro is used to check if either value is finite and then call assert
 // If neither value is finite, then they can be assumed to be equal to either inf or nan
@@ -198,14 +197,10 @@ void sparseArithTesterDiv(const int m, const int n, int factor, const double eps
     for(int i = 0; i < B.elements(); i++) {
         ASSERT_FINITE_EQ(real(hResS[i]), real(hResD[i]));
         ASSERT_FINITE_EQ(real(hResO[i]), real(hResD[i]));
-        ASSERT_FINITE_EQ(real(hRevS[i]), real(hRevD[i]));
-        ASSERT_FINITE_EQ(real(hRevO[i]), real(hRevD[i]));
 
         if(A.iscomplex()) {
             ASSERT_FINITE_EQ(imag(hResS[i]), imag(hResD[i]));
             ASSERT_FINITE_EQ(imag(hResO[i]), imag(hResD[i]));
-            ASSERT_FINITE_EQ(imag(hRevS[i]), imag(hRevD[i]));
-            ASSERT_FINITE_EQ(imag(hRevO[i]), imag(hRevD[i]));
         }
     }
 #undef ASSERT_FINITE_EQ
@@ -213,9 +208,6 @@ void sparseArithTesterDiv(const int m, const int n, int factor, const double eps
     af::freeHost(hResS);
     af::freeHost(hResO);
     af::freeHost(hResD);
-    af::freeHost(hRevS);
-    af::freeHost(hRevO);
-    af::freeHost(hRevD);
 }
 
 #define ARITH_TESTS_OPS(T, M, N, F, EPS)                                    \

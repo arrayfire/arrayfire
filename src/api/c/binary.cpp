@@ -220,7 +220,10 @@ af_err af_div(af_array *out, const af_array lhs, const af_array rhs, const bool 
     } else if(linfo.isSparse() && !rinfo.isSparse()) {
         return af_arith_sparse_dense<af_div_t>(out, lhs, rhs);
     } else if(!linfo.isSparse() && rinfo.isSparse()) {
-        return af_arith_sparse_dense<af_div_t>(out, rhs, lhs, true); // dense should be rhs
+        // Division by sparse is currently not allowed - for convinence of
+        // dealing with division by 0
+        // return af_arith_sparse_dense<af_div_t>(out, rhs, lhs, true); // dense should be rhs
+        return AF_ERR_NOT_SUPPORTED;
     } else {
         return af_arith<af_div_t>(out, lhs, rhs, batchMode);
     }
