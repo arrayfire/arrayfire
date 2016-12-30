@@ -56,13 +56,17 @@ namespace opencl
                         const Param rhs, const bool reverse)
         {
             try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   sparseArithCSRProgs;
-                static std::map<int, Kernel *> sparseArithCSRKernels;
+                std::string ref_name =
+                    std::string("sparseArithOpCSR_") +
+                    getOpString<op>() + std::string("_") +
+                    std::string(dtype_traits<T>::getName());
 
                 int device = getActiveDeviceId();
+                auto idx = kernelCaches[device].find(ref_name);
+                kc_entry_t entry;
 
-                std::call_once( compileFlags[device], [device] () {
+                if (idx == kernelCaches[device].end()) {
+
                     std::ostringstream options;
                     options << " -D T="  << dtype_traits<T>::getName();
                     options << " -D OP=" << getOpString<op>();
@@ -80,17 +84,22 @@ namespace opencl
 
                     const char *ker_strs[] = {sparse_arith_common_cl    , sparse_arith_csr_cl};
                     const int   ker_lens[] = {sparse_arith_common_cl_len, sparse_arith_csr_cl_len};
+
                     Program prog;
                     buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-                    sparseArithCSRProgs[device] = new Program(prog);
-                    sparseArithCSRKernels[device] = new Kernel(*sparseArithCSRProgs[device], "sparse_arith_csr_kernel");
-                });
+                    entry.prog = new Program(prog);
+                    entry.ker  = new Kernel(*entry.prog, "sparse_arith_csr_kernel");
+
+                    kernelCaches[device][ref_name] = entry;
+                } else {
+                    entry = idx->second;
+                }
 
                 auto sparseArithCSROp = KernelFunctor<Buffer, const KParam,
                                               const Buffer, const Buffer, const Buffer,
                                               const int,
                                               const Buffer, const KParam,
-                                              const int>(*sparseArithCSRKernels[device]);
+                                              const int>(*entry.ker);
 
                 NDRange local(TX, TY, 1);
                 NDRange global(divup(out.info.dims[0], TY) * TX, TY, 1);
@@ -111,13 +120,17 @@ namespace opencl
                         const Param rhs, const bool reverse)
         {
             try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   sparseArithCOOProgs;
-                static std::map<int, Kernel *> sparseArithCOOKernels;
+                std::string ref_name =
+                    std::string("sparseArithOpCOO_") +
+                    getOpString<op>() + std::string("_") +
+                    std::string(dtype_traits<T>::getName());
 
                 int device = getActiveDeviceId();
+                auto idx = kernelCaches[device].find(ref_name);
+                kc_entry_t entry;
 
-                std::call_once( compileFlags[device], [device] () {
+                if (idx == kernelCaches[device].end()) {
+
                     std::ostringstream options;
                     options << " -D T="  << dtype_traits<T>::getName();
                     options << " -D OP=" << getOpString<op>();
@@ -135,17 +148,22 @@ namespace opencl
 
                     const char *ker_strs[] = {sparse_arith_common_cl    , sparse_arith_coo_cl};
                     const int   ker_lens[] = {sparse_arith_common_cl_len, sparse_arith_coo_cl_len};
+
                     Program prog;
                     buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-                    sparseArithCOOProgs[device] = new Program(prog);
-                    sparseArithCOOKernels[device] = new Kernel(*sparseArithCOOProgs[device], "sparse_arith_coo_kernel");
-                });
+                    entry.prog = new Program(prog);
+                    entry.ker  = new Kernel(*entry.prog, "sparse_arith_coo_kernel");
+
+                    kernelCaches[device][ref_name] = entry;
+                } else {
+                    entry = idx->second;
+                }
 
                 auto sparseArithCOOOp = KernelFunctor<Buffer, const KParam,
                                               const Buffer, const Buffer, const Buffer,
                                               const int,
                                               const Buffer, const KParam,
-                                              const int>(*sparseArithCOOKernels[device]);
+                                              const int>(*entry.ker);
 
                 NDRange local(THREADS, 1, 1);
                 NDRange global(divup(values.info.dims[0], THREADS) * THREADS, 1, 1);
@@ -166,13 +184,17 @@ namespace opencl
                         const Param rhs, const bool reverse)
         {
             try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   sparseArithCSRProgs;
-                static std::map<int, Kernel *> sparseArithCSRKernels;
+                std::string ref_name =
+                    std::string("sparseArithOpSCSR_") +
+                    getOpString<op>() + std::string("_") +
+                    std::string(dtype_traits<T>::getName());
 
                 int device = getActiveDeviceId();
+                auto idx = kernelCaches[device].find(ref_name);
+                kc_entry_t entry;
 
-                std::call_once( compileFlags[device], [device] () {
+                if (idx == kernelCaches[device].end()) {
+
                     std::ostringstream options;
                     options << " -D T="  << dtype_traits<T>::getName();
                     options << " -D OP=" << getOpString<op>();
@@ -190,16 +212,21 @@ namespace opencl
 
                     const char *ker_strs[] = {sparse_arith_common_cl    , sparse_arith_csr_cl};
                     const int   ker_lens[] = {sparse_arith_common_cl_len, sparse_arith_csr_cl_len};
+
                     Program prog;
                     buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-                    sparseArithCSRProgs[device] = new Program(prog);
-                    sparseArithCSRKernels[device] = new Kernel(*sparseArithCSRProgs[device], "sparse_arith_csr_kernel_S");
-                });
+                    entry.prog = new Program(prog);
+                    entry.ker  = new Kernel(*entry.prog, "sparse_arith_csr_kernel_S");
 
+                    kernelCaches[device][ref_name] = entry;
+                } else {
+
+                    entry = idx->second;
+                }
                 auto sparseArithCSROp = KernelFunctor<const Buffer, const Buffer, const Buffer,
                                                       const int,
                                                       const Buffer, const KParam,
-                                                      const int>(*sparseArithCSRKernels[device]);
+                                                      const int>(*entry.ker);
 
                 NDRange local(TX, TY, 1);
                 NDRange global(divup(rhs.info.dims[0], TY) * TX, TY, 1);
@@ -219,13 +246,17 @@ namespace opencl
                         const Param rhs, const bool reverse)
         {
             try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   sparseArithCOOProgs;
-                static std::map<int, Kernel *> sparseArithCOOKernels;
+                std::string ref_name =
+                    std::string("sparseArithOpSCOO_") +
+                    getOpString<op>() + std::string("_") +
+                    std::string(dtype_traits<T>::getName());
 
                 int device = getActiveDeviceId();
+                auto idx = kernelCaches[device].find(ref_name);
+                kc_entry_t entry;
 
-                std::call_once( compileFlags[device], [device] () {
+                if (idx == kernelCaches[device].end()) {
+
                     std::ostringstream options;
                     options << " -D T="  << dtype_traits<T>::getName();
                     options << " -D OP=" << getOpString<op>();
@@ -243,16 +274,22 @@ namespace opencl
 
                     const char *ker_strs[] = {sparse_arith_common_cl    , sparse_arith_coo_cl};
                     const int   ker_lens[] = {sparse_arith_common_cl_len, sparse_arith_coo_cl_len};
+
                     Program prog;
                     buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-                    sparseArithCOOProgs[device] = new Program(prog);
-                    sparseArithCOOKernels[device] = new Kernel(*sparseArithCOOProgs[device], "sparse_arith_coo_kernel_S");
-                });
+                    entry.prog = new Program(prog);
+                    entry.ker  = new Kernel(*entry.prog, "sparse_arith_coo_kernel_S");
+
+                    kernelCaches[device][ref_name] = entry;
+                } else {
+                    entry = idx->second;
+                }
+
 
                 auto sparseArithCOOOp = KernelFunctor<Buffer, Buffer, Buffer,
                                                       const int,
                                                       const Buffer, const KParam,
-                                                      const int>(*sparseArithCOOKernels[device]);
+                                                      const int>(*entry.ker);
 
                 NDRange local(THREADS, 1, 1);
                 NDRange global(divup(values.info.dims[0], THREADS) * THREADS, 1, 1);
