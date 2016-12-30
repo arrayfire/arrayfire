@@ -15,9 +15,15 @@
 namespace opencl
 {
 
+// These two functions cannot be overloaded by return type.
+// So have to give them separate names.
 template<typename T, af_op_t op>
-Array<T> arithOp(const common::SparseArray<T> &lhs, const Array<T> &rhs,
+Array<T> arithOpD(const common::SparseArray<T> &lhs, const Array<T> &rhs,
                  const bool reverse = false);
+
+template<typename T, af_op_t op>
+common::SparseArray<T> arithOpS(const common::SparseArray<T> &lhs, const Array<T> &rhs,
+                                const bool reverse = false);
 
 }
 

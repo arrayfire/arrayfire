@@ -48,7 +48,7 @@ cdouble getInf()
 }
 
 template<typename T, af_op_t op>
-Array<T> arithOp(const SparseArray<T> &lhs, const Array<T> &rhs, const bool reverse)
+Array<T> arithOpD(const SparseArray<T> &lhs, const Array<T> &rhs, const bool reverse)
 {
     lhs.eval();
     rhs.eval();
@@ -58,8 +58,6 @@ Array<T> arithOp(const SparseArray<T> &lhs, const Array<T> &rhs, const bool reve
     switch(op) {
         case af_add_t: out = copyArray<T>(rhs); break;
         case af_sub_t: out = reverse ? copyArray<T>(rhs) : arithOp<T, af_sub_t>(zero, rhs, rhs.dims()); break;
-        case af_mul_t: out = zero; break;
-        case af_div_t: out = reverse ? createValueArray(rhs.dims(), getInf<T>()) : zero; break;
         default      : out = copyArray<T>(rhs);
     }
     out.eval();
@@ -79,15 +77,41 @@ Array<T> arithOp(const SparseArray<T> &lhs, const Array<T> &rhs, const bool reve
     return out;
 }
 
-#define INSTANTIATE(T)                                                                          \
-    template Array<T> arithOp<T, af_add_t>(const SparseArray<T> &lhs, const Array<T> &rhs,      \
-                                           const bool reverse);                                 \
-    template Array<T> arithOp<T, af_sub_t>(const SparseArray<T> &lhs, const Array<T> &rhs,      \
-                                           const bool reverse);                                 \
-    template Array<T> arithOp<T, af_mul_t>(const SparseArray<T> &lhs, const Array<T> &rhs,      \
-                                           const bool reverse);                                 \
-    template Array<T> arithOp<T, af_div_t>(const SparseArray<T> &lhs, const Array<T> &rhs,      \
-                                           const bool reverse);                                 \
+template<typename T, af_op_t op>
+SparseArray<T> arithOpS(const SparseArray<T> &lhs, const Array<T> &rhs, const bool reverse)
+{
+    lhs.eval();
+    rhs.eval();
+
+    SparseArray<T> out = createArrayDataSparseArray<T>(lhs.dims(), lhs.getValues(),
+                                                       lhs.getRowIdx(), lhs.getColIdx(),
+                                                       lhs.getStorage(), true);
+    out.eval();
+    switch(lhs.getStorage()) {
+        case AF_STORAGE_CSR:
+            kernel::sparseArithOpCSR<T, op>(out.getValues(), out.getRowIdx(), out.getColIdx(),
+                                            rhs, reverse);
+            break;
+        case AF_STORAGE_COO:
+            kernel::sparseArithOpCOO<T, op>(out.getValues(), out.getRowIdx(), out.getColIdx(),
+                                            rhs, reverse);
+            break;
+        default:
+            AF_ERROR("Sparse Arithmetic only supported for CSR or COO", AF_ERR_NOT_SUPPORTED);
+    }
+
+    return out;
+}
+
+#define INSTANTIATE(T)                                                                              \
+    template Array<T> arithOpD<T, af_add_t>(const SparseArray<T> &lhs, const Array<T> &rhs,         \
+                                            const bool reverse);                                    \
+    template Array<T> arithOpD<T, af_sub_t>(const SparseArray<T> &lhs, const Array<T> &rhs,         \
+                                            const bool reverse);                                    \
+    template SparseArray<T> arithOpS<T, af_mul_t>(const SparseArray<T> &lhs, const Array<T> &rhs,   \
+                                                  const bool reverse);                              \
+    template SparseArray<T> arithOpS<T, af_div_t>(const SparseArray<T> &lhs, const Array<T> &rhs,   \
+                                                  const bool reverse);                              \
 
 INSTANTIATE(float  )
 INSTANTIATE(double )
