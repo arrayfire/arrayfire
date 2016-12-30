@@ -62,9 +62,9 @@ struct arith_op<T, af_div_t>
 };
 
 template<typename T, af_op_t op, af_storage type>
-void sparseArithOp(Array<T> output,
-                   const Array<T> values, const Array<int> rowIdx, const Array<int> colIdx,
-                   const Array<T> rhs, const bool reverse = false)
+void sparseArithOpD(Array<T> output,
+                    const Array<T> values, const Array<int> rowIdx, const Array<int> colIdx,
+                    const Array<T> rhs, const bool reverse = false)
 {
     T * oPtr = output.get();
     const T   * hPtr = rhs.get();
@@ -100,6 +100,44 @@ void sparseArithOp(Array<T> output,
 
         if(reverse) oPtr[offset] = arith_op<T, op>()(hPtr[hoff], vPtr[i]);
         else        oPtr[offset] = arith_op<T, op>()(vPtr[i], hPtr[hoff]);
+    }
+}
+
+template<typename T, af_op_t op, af_storage type>
+void sparseArithOpS(Array<T> values, Array<int> rowIdx, Array<int> colIdx,
+                    const Array<T> rhs, const bool reverse = false)
+{
+          T   * vPtr = values.get();
+    const int * rPtr = rowIdx.get();
+    const int * cPtr = colIdx.get();
+
+    const T   * hPtr = rhs.get();
+
+    dim4 dims     = rhs.dims();
+    dim4 hstrides = rhs.strides();
+
+    std::vector<int> temp;
+    if(type == AF_STORAGE_CSR) {
+        temp.resize(values.elements());
+        for(int i = 0; i < rowIdx.dims()[0] - 1; i++) {
+            for(int ii = rPtr[i]; ii < rPtr[i + 1]; ii++) {
+                temp[ii] = i;
+            }
+        }
+    //} else if(type == AF_STORAGE_CSC) {   // For future
+    }
+
+    const int *xx = (type == AF_STORAGE_CSR) ? temp.data() : rPtr;
+    const int *yy = (type == AF_STORAGE_CSC) ? temp.data() : cPtr;
+
+    for(int i = 0; i < (int)values.elements(); i++) {
+        // Bad index data
+        if(xx[i] >= dims[0] || yy [i]>= dims[1]) continue;
+
+        int hoff = xx[i] + yy[i] * hstrides[1];
+
+        if(reverse) vPtr[i] = arith_op<T, op>()(hPtr[hoff], vPtr[i]);
+        else        vPtr[i] = arith_op<T, op>()(vPtr[i], hPtr[hoff]);
     }
 }
 

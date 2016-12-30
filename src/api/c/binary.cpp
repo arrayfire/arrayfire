@@ -39,8 +39,11 @@ template<typename T, af_op_t op>
 static inline af_array arithSparseDenseOp(const af_array lhs, const af_array rhs,
                                           const bool reverse)
 {
-    af_array res = getHandle(arithOp<T, op>(castSparse<T>(lhs), castArray<T>(rhs), reverse));
-    return res;
+    if(op == af_add_t || op == af_sub_t)
+        return getHandle(arithOpD<T, op>(castSparse<T>(lhs), castArray<T>(rhs), reverse));
+    else if(op == af_mul_t || op == af_div_t)
+        return getHandle(arithOpS<T, op>(castSparse<T>(lhs), castArray<T>(rhs), reverse));
+
 }
 
 template<af_op_t op>

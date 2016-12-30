@@ -161,5 +161,111 @@ namespace opencl
             }
         }
 
+        template<typename T, af_op_t op>
+        void sparseArithOpCSR(Param values, Param rowIdx, Param colIdx,
+                        const Param rhs, const bool reverse)
+        {
+            try {
+                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>   sparseArithCSRProgs;
+                static std::map<int, Kernel *> sparseArithCSRKernels;
+
+                int device = getActiveDeviceId();
+
+                std::call_once( compileFlags[device], [device] () {
+                    std::ostringstream options;
+                    options << " -D T="  << dtype_traits<T>::getName();
+                    options << " -D OP=" << getOpString<op>();
+
+                    if((af_dtype) dtype_traits<T>::af_type == c32 ||
+                       (af_dtype) dtype_traits<T>::af_type == c64) {
+                        options << " -D IS_CPLX=1";
+                    } else {
+                        options << " -D IS_CPLX=0";
+                    }
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+
+                    const char *ker_strs[] = {sparse_arith_common_cl    , sparse_arith_csr_cl};
+                    const int   ker_lens[] = {sparse_arith_common_cl_len, sparse_arith_csr_cl_len};
+                    Program prog;
+                    buildProgram(prog, 2, ker_strs, ker_lens, options.str());
+                    sparseArithCSRProgs[device] = new Program(prog);
+                    sparseArithCSRKernels[device] = new Kernel(*sparseArithCSRProgs[device], "sparse_arith_csr_kernel_S");
+                });
+
+                auto sparseArithCSROp = KernelFunctor<const Buffer, const Buffer, const Buffer,
+                                                      const int,
+                                                      const Buffer, const KParam,
+                                                      const int>(*sparseArithCSRKernels[device]);
+
+                NDRange local(TX, TY, 1);
+                NDRange global(divup(rhs.info.dims[0], TY) * TX, TY, 1);
+
+                sparseArithCSROp(EnqueueArgs(getQueue(), global, local),
+                         *values.data, *rowIdx.data, *colIdx.data, values.info.dims[0],
+                         *rhs.data, rhs.info, reverse);
+
+                CL_DEBUG_FINISH(getQueue());
+            } catch (cl::Error err) {
+                CL_TO_AF_ERROR(err);
+            }
+        }
+
+        template<typename T, af_op_t op>
+        void sparseArithOpCOO(Param values, Param rowIdx, Param colIdx,
+                        const Param rhs, const bool reverse)
+        {
+            try {
+                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>   sparseArithCOOProgs;
+                static std::map<int, Kernel *> sparseArithCOOKernels;
+
+                int device = getActiveDeviceId();
+
+                std::call_once( compileFlags[device], [device] () {
+                    std::ostringstream options;
+                    options << " -D T="  << dtype_traits<T>::getName();
+                    options << " -D OP=" << getOpString<op>();
+
+                    if((af_dtype) dtype_traits<T>::af_type == c32 ||
+                       (af_dtype) dtype_traits<T>::af_type == c64) {
+                        options << " -D IS_CPLX=1";
+                    } else {
+                        options << " -D IS_CPLX=0";
+                    }
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+
+                    const char *ker_strs[] = {sparse_arith_common_cl    , sparse_arith_coo_cl};
+                    const int   ker_lens[] = {sparse_arith_common_cl_len, sparse_arith_coo_cl_len};
+                    Program prog;
+                    buildProgram(prog, 2, ker_strs, ker_lens, options.str());
+                    sparseArithCOOProgs[device] = new Program(prog);
+                    sparseArithCOOKernels[device] = new Kernel(*sparseArithCOOProgs[device], "sparse_arith_coo_kernel_S");
+                });
+
+                auto sparseArithCOOOp = KernelFunctor<Buffer, Buffer, Buffer,
+                                                      const int,
+                                                      const Buffer, const KParam,
+                                                      const int>(*sparseArithCOOKernels[device]);
+
+                NDRange local(THREADS, 1, 1);
+                NDRange global(divup(values.info.dims[0], THREADS) * THREADS, 1, 1);
+
+                sparseArithCOOOp(EnqueueArgs(getQueue(), global, local),
+                         *values.data, *rowIdx.data, *colIdx.data, values.info.dims[0],
+                         *rhs.data, rhs.info, reverse);
+
+                CL_DEBUG_FINISH(getQueue());
+            } catch (cl::Error err) {
+                CL_TO_AF_ERROR(err);
+            }
+        }
+
     }
 }
