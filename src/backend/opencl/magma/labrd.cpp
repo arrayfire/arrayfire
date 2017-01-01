@@ -303,11 +303,11 @@ magma_labrd_gpu(
                                     da, da_offset + (i__-1)+(i__-1)* (ldda), 1,
                                     queue);
                 // 2. Multiply ---------------------------------------------
-                CLBLAS_CHECK(gpu_blas_gemv(clblasConjTrans, i__2, i__3, c_one,
-                                           da, da_offset + (i__-1) + ((i__-1) + 1) * (ldda), ldda,
-                                           da, da_offset + (i__-1) + (i__-1) * (ldda), c__1, c_zero,
-                                           dy, dy_offset + i__ + 1 + i__ * y_dim1, c__1,
-                                           1, &queue, 0, nullptr, &event));
+                OPENCL_BLAS_CHECK(gpu_blas_gemv(OPENCL_BLAS_CONJ_TRANS, i__2, i__3, c_one,
+                                                da, da_offset + (i__-1) + ((i__-1) + 1) * (ldda), ldda,
+                                                da, da_offset + (i__-1) + (i__-1) * (ldda), c__1, c_zero,
+                                                dy, dy_offset + i__ + 1 + i__ * y_dim1, c__1,
+                                                1, &queue, 0, nullptr, &event));
 
                 // 3. Put the result back ----------------------------------
                 magma_getmatrix_async<Ty>(i__3, 1,
@@ -395,12 +395,12 @@ magma_labrd_gpu(
                 // 2. Multiply ---------------------------------------------
                 //magma_zcopy(i__3, da+(i__-1)+((i__-1)+1)*(ldda), ldda,
                 //            dy + 1 + lddy, 1);
-                CLBLAS_CHECK(gpu_blas_gemv(clblasNoTrans, i__2, i__3, c_one,
-                                           da, da_offset + (i__-1)+1+ ((i__-1)+1) * (ldda), ldda,
-                                           da, da_offset + (i__-1) +  ((i__-1)+1) * (ldda), ldda,
-                                           //dy + 1 + lddy, 1,
-                                           c_zero, dx, dx_offset + i__ + 1 + i__ * x_dim1, c__1,
-                                           1, &queue, 0, nullptr, &event));
+                OPENCL_BLAS_CHECK(gpu_blas_gemv(OPENCL_BLAS_NO_TRANS, i__2, i__3, c_one,
+                                                da, da_offset + (i__-1)+1+ ((i__-1)+1) * (ldda), ldda,
+                                                da, da_offset + (i__-1) +  ((i__-1)+1) * (ldda), ldda,
+                                                //dy + 1 + lddy, 1,
+                                                c_zero, dx, dx_offset + i__ + 1 + i__ * x_dim1, c__1,
+                                                1, &queue, 0, nullptr, &event));
 
                 // 3. Put the result back ----------------------------------
                 magma_getmatrix_async<Ty>(i__2, 1,
@@ -500,13 +500,13 @@ magma_labrd_gpu(
                 // 2. Multiply ---------------------------------------------
                 //magma_zcopy(i__3, da+(i__-1)+(i__-1)*(ldda), ldda,
                 //            dy + 1 + lddy, 1);
-                CLBLAS_CHECK(gpu_blas_gemv(clblasNoTrans, i__2, i__3, c_one,
-                                           da, da_offset + (i__-1)+1 + (i__-1) * ldda, ldda,
-                                           da, da_offset + (i__-1)   + (i__-1) * ldda, ldda,
-                                           // dy + 1 + lddy, 1,
-                                           c_zero,
-                                           dx, dx_offset + i__ + 1 + i__ * x_dim1, c__1,
-                                           1, &queue, 0, nullptr, &event));
+                OPENCL_BLAS_CHECK(gpu_blas_gemv(OPENCL_BLAS_NO_TRANS, i__2, i__3, c_one,
+                                                da, da_offset + (i__-1)+1 + (i__-1) * ldda, ldda,
+                                                da, da_offset + (i__-1)   + (i__-1) * ldda, ldda,
+                                                // dy + 1 + lddy, 1,
+                                                c_zero,
+                                                dx, dx_offset + i__ + 1 + i__ * x_dim1, c__1,
+                                                1, &queue, 0, nullptr, &event));
 
 
                 // 3. Put the result back ----------------------------------
@@ -595,11 +595,11 @@ magma_labrd_gpu(
                                     da, da_offset + (i__-1)+1+ (i__-1)*(ldda),  1,
                                     queue);
                 // 2. Multiply ---------------------------------------------
-                CLBLAS_CHECK(gpu_blas_gemv(clblasConjTrans, i__2, i__3, c_one,
-                                           da, da_offset + (i__-1)+1+ ((i__-1)+1) * ldda, ldda,
-                                           da, da_offset + (i__-1)+1+  (i__-1)    * ldda, c__1,
-                                           c_zero, dy, dy_offset + i__ + 1 + i__ * y_dim1, c__1,
-                                           1, &queue, 0, nullptr, &event));
+                OPENCL_BLAS_CHECK(gpu_blas_gemv(OPENCL_BLAS_CONJ_TRANS, i__2, i__3, c_one,
+                                                da, da_offset + (i__-1)+1+ ((i__-1)+1) * ldda, ldda,
+                                                da, da_offset + (i__-1)+1+  (i__-1)    * ldda, c__1,
+                                                c_zero, dy, dy_offset + i__ + 1 + i__ * y_dim1, c__1,
+                                                1, &queue, 0, nullptr, &event));
 
                 // 3. Put the result back ----------------------------------
                 magma_getmatrix_async<Ty>(i__3, 1,

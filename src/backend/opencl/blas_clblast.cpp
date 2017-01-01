@@ -30,7 +30,8 @@ namespace opencl
 {
 
 void
-initBlas() {
+initBlas()
+{
   // Nothing to do here for CLBlast
 }
 

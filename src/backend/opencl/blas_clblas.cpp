@@ -40,7 +40,8 @@ using std::runtime_error;
 using std::to_string;
 
 void
-initBlas() {
+initBlas()
+{
     static std::once_flag clblasSetupFlag;
     call_once(clblasSetupFlag, clblasSetup);
 }

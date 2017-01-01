@@ -60,8 +60,6 @@ typedef int magma_index_t;
 // Define new type that the precision generator will not change (matches PLASMA)
 typedef double real_Double_t;
 
-#include <clBLAS.h>
-
 typedef cl_command_queue  magma_queue_t;
 typedef cl_event          magma_event_t;
 typedef cl_device_id      magma_device_t;
@@ -513,17 +511,6 @@ static inline char lapacke_range_const ( magma_range_t  magma_const ) { return *
 static inline char lapacke_vect_const  ( magma_vect_t   magma_const ) { return *lapack_vect_const  ( magma_const ); }
 static inline char lapacke_direct_const( magma_direct_t magma_const ) { return *lapack_direct_const( magma_const ); }
 static inline char lapacke_storev_const( magma_storev_t magma_const ) { return *lapack_storev_const( magma_const ); }
-
-
-// --------------------
-// Convert MAGMA constants to clBLAS constants.
-#if defined(HAVE_clBLAS)
-clblasOrder          clblas_order_const( magma_order_t order );
-clblasTranspose      clblas_trans_const( magma_trans_t trans );
-clblasUplo           clblas_uplo_const ( magma_uplo_t  uplo  );
-clblasDiag           clblas_diag_const ( magma_diag_t  diag  );
-clblasSide           clblas_side_const ( magma_side_t  side  );
-#endif
 
 
 // --------------------

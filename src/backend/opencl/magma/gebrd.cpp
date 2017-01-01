@@ -302,19 +302,19 @@ magma_gebrd_hybrid(
                             work  +               (ldwrkx+1)*nb, ldwrky,
                             dwork, dwork_offset + (ldwrkx+1)*nb, ldwrky, queue);
 
-        CLBLAS_CHECK(gpu_blas_gemm(clblasNoTrans, clblasConjTrans,
-                                   nrow, ncol, nb,
-                                   c_neg_one, dA(i+nb, i  ),      ldda,
-                                   dwork, dwork_offset+(ldwrkx+1)*nb, ldwrky,
-                                   c_one,     dA(i+nb, i+nb), ldda,
-                                   1, &queue, 0, nullptr, &event));
+        OPENCL_BLAS_CHECK(gpu_blas_gemm(OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_CONJ_TRANS,
+                                        nrow, ncol, nb,
+                                        c_neg_one, dA(i+nb, i  ),      ldda,
+                                        dwork, dwork_offset+(ldwrkx+1)*nb, ldwrky,
+                                        c_one,     dA(i+nb, i+nb), ldda,
+                                        1, &queue, 0, nullptr, &event));
 
-        CLBLAS_CHECK(gpu_blas_gemm(clblasNoTrans, clblasNoTrans,
-                                   nrow, ncol, nb,
-                                   c_neg_one, dwork, dwork_offset+nb, ldwrkx,
-                                   dA(i,    i+nb), ldda,
-                                   c_one,     dA(i+nb, i+nb), ldda,
-                                   1, &queue, 0, nullptr, &event));
+        OPENCL_BLAS_CHECK(gpu_blas_gemm(OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_NO_TRANS,
+                                        nrow, ncol, nb,
+                                        c_neg_one, dwork, dwork_offset+nb, ldwrkx,
+                                        dA(i,    i+nb), ldda,
+                                        c_one,     dA(i+nb, i+nb), ldda,
+                                        1, &queue, 0, nullptr, &event));
 
         /* Copy diagonal and off-diagonal elements of B back into A */
         if (m >= n) {
