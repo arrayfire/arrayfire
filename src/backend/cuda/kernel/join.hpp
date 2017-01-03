@@ -73,6 +73,15 @@ namespace cuda
                         blocksPerMatY * X.dims[3],
                         1);
 
+            int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+            // Increase the work per block until the condition is satisfied
+            // Increase threads only upto 512
+            while(blocks.y > maxBlocksY) {
+                if(threads.x * threads.y < 512) threads.y *= 2;
+                blocksPerMatY /= 2;
+                blocks.y       = blocksPerMatY * X.dims[3];
+            }
+
             CUDA_LAUNCH((join_kernel<To, Tx, dim>), blocks, threads,
                        out, X, offset[0], offset[1], offset[2], offset[3],
                        blocksPerMatX, blocksPerMatY);
