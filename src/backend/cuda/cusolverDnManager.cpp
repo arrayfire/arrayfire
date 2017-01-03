@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined(WITH_CUDA_LINEAR_ALGEBRA)
-
 #include <cusolverDnManager.hpp>
 #include <platform.hpp>
 #include <debug_cuda.hpp>
@@ -93,5 +91,3 @@ namespace cusolver {
     }
 
 }
-
-#endif

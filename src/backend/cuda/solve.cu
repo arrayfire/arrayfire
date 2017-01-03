@@ -10,8 +10,6 @@
 #include <err_common.hpp>
 #include <solve.hpp>
 
-#if defined(WITH_CUDA_LINEAR_ALGEBRA)
-
 #include <cusolverDnManager.hpp>
 #include <cublas_v2.h>
 #include <identity.hpp>
@@ -382,67 +380,3 @@ INSTANTIATE_SOLVE(double)
 INSTANTIATE_SOLVE(cdouble)
 
 }
-
-#elif defined(WITH_CPU_LINEAR_ALGEBRA)
-#include<cpu_lapack/cpu_solve.hpp>
-
-namespace cuda
-{
-
-template<typename T>
-Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
-                 const Array<T> &b, const af_mat_prop options)
-{
-    return cpu::solveLU(A, pivot, b, options);
-}
-
-template<typename T>
-Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
-{
-    return cpu::solve(a, b, options);
-}
-
-#define INSTANTIATE_SOLVE(T)                                            \
-    template Array<T> solve<T>(const Array<T> &a, const Array<T> &b,    \
-                               const af_mat_prop options);              \
-    template Array<T> solveLU<T>(const Array<T> &A, const Array<int> &pivot, \
-                                 const Array<T> &b, const af_mat_prop options); \
-
-INSTANTIATE_SOLVE(float)
-INSTANTIATE_SOLVE(cfloat)
-INSTANTIATE_SOLVE(double)
-INSTANTIATE_SOLVE(cdouble)
-}
-
-#else
-namespace cuda
-{
-
-template<typename T>
-Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
-                 const Array<T> &b, const af_mat_prop options)
-{
-    AF_ERROR("Linear Algebra is diabled on CUDA",
-             AF_ERR_NOT_CONFIGURED);
-}
-
-template<typename T>
-Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
-{
-    AF_ERROR("Linear Algebra is diabled on CUDA",
-              AF_ERR_NOT_CONFIGURED);
-}
-
-#define INSTANTIATE_SOLVE(T)                                            \
-    template Array<T> solve<T>(const Array<T> &a, const Array<T> &b,    \
-                               const af_mat_prop options);              \
-    template Array<T> solveLU<T>(const Array<T> &A, const Array<int> &pivot, \
-                                 const Array<T> &b, const af_mat_prop options); \
-
-INSTANTIATE_SOLVE(float)
-INSTANTIATE_SOLVE(cfloat)
-INSTANTIATE_SOLVE(double)
-INSTANTIATE_SOLVE(cdouble)
-}
-
-#endif

@@ -10,8 +10,6 @@
 #include <lu.hpp>
 #include <err_common.hpp>
 
-#if defined(WITH_CUDA_LINEAR_ALGEBRA)
-
 #include <cusolverDnManager.hpp>
 #include <memory.hpp>
 #include <copy.hpp>
@@ -170,71 +168,3 @@ INSTANTIATE_LU(cfloat)
 INSTANTIATE_LU(double)
 INSTANTIATE_LU(cdouble)
 }
-
-#elif defined(WITH_CPU_LINEAR_ALGEBRA)
-////////////////////////////////////////////////////////////////////////////////
-// For versions earlier than CUDA 7, use CPU fallback
-////////////////////////////////////////////////////////////////////////////////
-#include <cpu_lapack/cpu_lu.hpp>
-
-namespace cuda
-{
-template<typename T>
-void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
-{
-    return cpu::lu(lower, upper, pivot, in);
-}
-
-template<typename T>
-Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
-{
-    return cpu::lu_inplace(in, convert_pivot);
-}
-
-bool isLAPACKAvailable()
-{
-    return true;
-}
-
-#define INSTANTIATE_LU(T)                                                                           \
-    template Array<int> lu_inplace<T>(Array<T> &in, const bool convert_pivot);                      \
-    template void lu<T>(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in);
-
-INSTANTIATE_LU(float)
-INSTANTIATE_LU(cfloat)
-INSTANTIATE_LU(double)
-INSTANTIATE_LU(cdouble)
-}
-
-#else
-namespace cuda
-{
-template<typename T>
-void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
-{
-    AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
-             AF_ERR_NOT_CONFIGURED);
-}
-
-template<typename T>
-Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
-{
-    AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
-             AF_ERR_NOT_CONFIGURED);
-}
-
-bool isLAPACKAvailable()
-{
-    return false;
-}
-
-#define INSTANTIATE_LU(T)                                                                           \
-    template Array<int> lu_inplace<T>(Array<T> &in, const bool convert_pivot);                      \
-    template void lu<T>(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in);
-
-INSTANTIATE_LU(float)
-INSTANTIATE_LU(cfloat)
-INSTANTIATE_LU(double)
-INSTANTIATE_LU(cdouble)
-}
-#endif

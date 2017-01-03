@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-FIND_PACKAGE(CUDA REQUIRED)
+FIND_PACKAGE(CUDA 7.0 REQUIRED) # Assert Minimum CUDA Version 7.0
 FIND_PACKAGE(Boost REQUIRED)
 
 INCLUDE(CLKernelToH)
@@ -143,56 +143,8 @@ IF(CMAKE_VERSION VERSION_LESS 3.2)
         SET(CUDA_cusolver_DIR "${CUDA_TOOLKIT_ROOT_DIR}" CACHE INTERNAL "CUDA cusolver Root Directory")
     ENDIF()
     MARK_AS_ADVANCED(CUDA_cusolver_LIBRARY)
-ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
-
-IF(${CUDA_VERSION_MAJOR} LESS 7 AND CUDA_cusolver_LIBRARY)
-  UNSET(CUDA_cusolver_LIBRARY CACHE)  # Failsafe when going from higher version to lower version
-ENDIF()
-
-IF(CUDA_cusolver_LIBRARY)
     MESSAGE(STATUS "CUDA cusolver library available in CUDA Version ${CUDA_VERSION_STRING}")
-    ADD_DEFINITIONS(-DWITH_CUDA_LINEAR_ALGEBRA)
-ELSE(CUDA_cusolver_LIBRARY)
-    # Use CPU Lapack as fallback?
-    OPTION(CUDA_LAPACK_CPU_FALLBACK "Use CPU LAPACK as fallback for CUDA LAPACK when cusolver is not available" OFF)
-    MARK_AS_ADVANCED(CUDA_LAPACK_CPU_FALLBACK)
-
-    IF(${CUDA_LAPACK_CPU_FALLBACK})
-        ## Try to use CPU side lapack
-        IF(APPLE)
-            FIND_PACKAGE(LAPACKE QUIET) # For finding MKL
-            IF(NOT LAPACK_FOUND)
-                # UNSET THE VARIABLES FROM LAPACKE
-                UNSET(LAPACKE_LIB CACHE)
-                UNSET(LAPACK_LIB CACHE)
-                UNSET(LAPACKE_INCLUDES CACHE)
-                UNSET(LAPACKE_ROOT_DIR CACHE)
-                FIND_PACKAGE(LAPACK)
-            ENDIF()
-        ELSE(APPLE) # Linux and Windows
-            FIND_PACKAGE(LAPACKE)
-        ENDIF(APPLE)
-
-        IF(NOT LAPACK_FOUND)
-            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. Linear Algebra will not be available.")
-        ELSE(NOT LAPACK_FOUND)
-            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. But CPU LAPACK libraries are available. Will fallback to using host side code.")
-            ADD_DEFINITIONS(-DWITH_CPU_LINEAR_ALGEBRA)
-            IF(USE_CUDA_MKL) # Manual MKL Setup
-                MESSAGE("CUDA LAPACK CPU Fallback Using MKL")
-                ADD_DEFINITIONS(-DUSE_MKL)
-            ELSE(USE_CUDA_MKL)
-                IF(${MKL_FOUND}) # Automatic MKL Setup from BLAS
-                    MESSAGE("CUDA LAPACK CPU Fallback Using MKL RT")
-                    ADD_DEFINITIONS(-DUSE_MKL)
-                ENDIF()
-            ENDIF()
-        ENDIF()
-    ELSE()
-        MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. Linear Algebra will not be available.")
-    ENDIF()
-    UNSET(CUDA_cusolver_LIBRARY CACHE)  # Failsafe when going from higher version to lower version
-ENDIF(CUDA_cusolver_LIBRARY)
+ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
@@ -202,10 +154,6 @@ INCLUDE_DIRECTORIES(
     "${CMAKE_CURRENT_BINARY_DIR}"
     ${CUDA_nvvm_INCLUDE_DIR}
     )
-
-IF(CUDA_LAPACK_CPU_FALLBACK)
-  INCLUDE_DIRECTORIES(${LAPACK_INCLUDE_DIR})
-ENDIF()
 
 FILE(GLOB cuda_headers
      "*.hpp"
@@ -235,18 +183,6 @@ SOURCE_GROUP(backend\\cuda\\Headers FILES ${cuda_headers})
 SOURCE_GROUP(backend\\cuda\\Sources FILES ${cuda_sources})
 SOURCE_GROUP(backend\\cuda\\JIT FILES ${jit_sources})
 SOURCE_GROUP(backend\\cuda\\kernel\\Headers FILES ${kernel_headers})
-
-IF(CUDA_LAPACK_CPU_FALLBACK)
-    FILE(GLOB cpu_lapack_sources
-        "cpu_lapack/*.cpp")
-    FILE(GLOB cpu_lapack_headers
-        "cpu_lapack/*.hpp")
-
-    SOURCE_GROUP(backend\\cuda\\cpu_lapack\\Headers FILES ${cpu_lapack_headers})
-    SOURCE_GROUP(backend\\cuda\\cpu_lapack\\Sources FILES ${cpu_lapack_sources})
-    LIST(SORT cpu_lapack_headers)
-    LIST(SORT cpu_lapack_sources)
-ENDIF()
 
 FILE(GLOB backend_headers
     "../*.hpp"
@@ -483,8 +419,6 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cuda_sources}
                 ${jit_sources}
                 ${kernel_headers}
-                ${cpu_lapack_headers}
-                ${cpu_lapack_sources}
                 ${backend_headers}
                 ${backend_sources}
                 ${c_headers}
@@ -505,6 +439,7 @@ TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
                                 PRIVATE ${FreeImage_LIBS}
                                 PRIVATE ${CUDA_CUFFT_LIBRARIES}
                                 PRIVATE ${CUDA_cusparse_LIBRARY}
+                                PRIVATE ${CUDA_cusolver_LIBRARY}
                                 PRIVATE ${CUDA_nvvm_LIBRARY}
                                 PRIVATE ${CUDA_CUDA_LIBRARY})
 
@@ -515,12 +450,6 @@ ENDIF(${GRAPHICS_DEPENDENCIES_LEN} GREATER 0)
 
 IF(FORGE_FOUND)
     TARGET_LINK_LIBRARIES(afcuda PRIVATE ${GRAPHICS_LIBRARIES})
-ENDIF()
-
-IF(CUDA_cusolver_LIBRARY)
-    TARGET_LINK_LIBRARIES(afcuda PRIVATE ${CUDA_cusolver_LIBRARY})
-ELSEIF(CUDA_LAPACK_CPU_FALLBACK)
-    TARGET_LINK_LIBRARIES(afcuda PRIVATE ${LAPACK_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afcuda PROPERTIES

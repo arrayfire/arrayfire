@@ -17,8 +17,6 @@
 #include <math.hpp>
 #include <err_common.hpp>
 
-#if defined(WITH_CUDA_LINEAR_ALGEBRA)
-
 #include <cusolverDnManager.hpp>
 
 namespace cuda
@@ -123,53 +121,6 @@ SVD_SPECIALIZE(cdouble, double, Z);
             transpose_inplace(u, true);
         }
     }
-}
-#elif defined(WITH_CPU_LINEAR_ALGEBRA)
-
-#include <cpu_lapack/cpu_svd.hpp>
-
-namespace cuda
-{
-
-template<typename T, typename Tr>
-void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
-{
-    return cpu::svd<T, Tr>(s, u, vt, in);
-}
-
-template<typename T, typename Tr>
-void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
-{
-    return cpu::svdInPlace<T, Tr>(s, u, vt, in);
-}
-
-}
-
-#else
-
-namespace cuda
-{
-
-template<typename T, typename Tr>
-void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
-{
-    AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
-             AF_ERR_NOT_CONFIGURED);
-}
-
-template<typename T, typename Tr>
-void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
-{
-    AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
-             AF_ERR_NOT_CONFIGURED);
-}
-
-}
-
-#endif
-
-namespace cuda
-{
 
 #define INSTANTIATE(T, Tr)                                              \
     template void svd<T, Tr>(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in); \
