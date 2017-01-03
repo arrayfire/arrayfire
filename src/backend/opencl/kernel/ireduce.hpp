@@ -271,14 +271,10 @@ namespace kernel
     template<typename T, af_op_t op>
     void ireduce(Param out, cl::Buffer *oidx, Param in, int dim)
     {
-        try {
-            if (dim == 0)
-                return ireduce_first<T, op>(out, oidx, in);
-            else
-                return ireduce_dim  <T, op>(out, oidx, in, dim);
-        } catch(cl::Error ex) {
-            CL_TO_AF_ERROR(ex);
-        }
+        if (dim == 0)
+            return ireduce_first<T, op>(out, oidx, in);
+        else
+            return ireduce_dim  <T, op>(out, oidx, in, dim);
     }
 
 #if defined(__GNUC__) || defined(__GNUG__)
@@ -345,102 +341,96 @@ namespace kernel
     template<typename T, af_op_t op>
     T ireduce_all(uint *loc, Param in)
     {
-        try {
-            int in_elements = in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
+        int in_elements = in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
 
-            // FIXME: Use better heuristics to get to the optimum number
-            if (in_elements > 4096) {
+        // FIXME: Use better heuristics to get to the optimum number
+        if (in_elements > 4096) {
 
-                bool is_linear = (in.info.strides[0] == 1);
-                for (int k = 1; k < 4; k++) {
-                    is_linear &= (in.info.strides[k] == (in.info.strides[k - 1] * in.info.dims[k - 1]));
-                }
-
-                if (is_linear) {
-                    in.info.dims[0] = in_elements;
-                    for (int k = 1; k < 4; k++) {
-                        in.info.dims[k] = 1;
-                        in.info.strides[k] = in_elements;
-                    }
-                }
-
-                uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
-                threads_x = std::min(threads_x, THREADS_PER_GROUP);
-                uint threads_y = THREADS_PER_GROUP / threads_x;
-
-                Param tmp;
-                uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
-                uint groups_y = divup(in.info.dims[1], threads_y);
-
-                tmp.info.offset = 0;
-                tmp.info.dims[0] = groups_x;
-                tmp.info.strides[0] = 1;
-
-                for (int k = 1; k < 4; k++) {
-                    tmp.info.dims[k] = in.info.dims[k];
-                    tmp.info.strides[k] = tmp.info.dims[k - 1] * tmp.info.strides[k - 1];
-                }
-
-                int tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
-                tmp.data = bufferAlloc(tmp_elements * sizeof(T));
-                cl::Buffer *tidx = bufferAlloc(tmp_elements * sizeof(uint));
-
-                ireduce_first_launcher<T, op>(tmp, tidx, in, tidx, threads_x, true, groups_x, groups_y);
-
-                unique_ptr<T> h_ptr(new T[tmp_elements]);
-                unique_ptr<uint> h_iptr(new uint[tmp_elements]);
-
-                getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(T) * tmp_elements, h_ptr.get());
-                getQueue().enqueueReadBuffer(*tidx, CL_TRUE, 0, sizeof(uint) * tmp_elements, h_iptr.get());
-
-                T* h_ptr_raw = h_ptr.get();
-                uint* h_iptr_raw = h_iptr.get();
-
-                if (!is_linear) {
-                    // Converting n-d index into a linear index
-                    // in is of size   [   dims0, dims1, dims2, dims3]
-                    // tidx is of size [groups_x, dims1, dims2, dims3]
-                    // i / groups_x gives you the batch number "N"
-                    // "N * dims0 + i" gives the linear index
-                    for (int i = 0; i < tmp_elements; i++) {
-                        h_iptr_raw[i] += (i / groups_x) * in.info.dims[0];
-                    }
-                }
-
-                MinMaxOp<op, T> Op(h_ptr_raw[0], h_iptr_raw[0]);
-                for (int i = 1; i < (int)tmp_elements; i++) {
-                    Op(h_ptr_raw[i], h_iptr_raw[i]);
-                }
-
-                bufferFree(tmp.data);
-                bufferFree(tidx);
-
-                *loc = Op.m_idx;
-                return Op.m_val;
-
-            } else {
-
-                unique_ptr<T> h_ptr(new T[in_elements]);
-                T* h_ptr_raw = h_ptr.get();
-
-                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, sizeof(T) * in.info.offset,
-                                             sizeof(T) * in_elements, h_ptr_raw);
-
-
-                MinMaxOp<op, T> Op(h_ptr_raw[0], 0);
-                for (int i = 1; i < (int)in_elements; i++) {
-                    Op(h_ptr_raw[i], i);
-                }
-
-                *loc = Op.m_idx;
-                return Op.m_val;
+            bool is_linear = (in.info.strides[0] == 1);
+            for (int k = 1; k < 4; k++) {
+                is_linear &= (in.info.strides[k] == (in.info.strides[k - 1] * in.info.dims[k - 1]));
             }
-        } catch(cl::Error ex) {
-            CL_TO_AF_ERROR(ex);
+
+            if (is_linear) {
+                in.info.dims[0] = in_elements;
+                for (int k = 1; k < 4; k++) {
+                    in.info.dims[k] = 1;
+                    in.info.strides[k] = in_elements;
+                }
+            }
+
+            uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
+            threads_x = std::min(threads_x, THREADS_PER_GROUP);
+            uint threads_y = THREADS_PER_GROUP / threads_x;
+
+            Param tmp;
+            uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
+            uint groups_y = divup(in.info.dims[1], threads_y);
+
+            tmp.info.offset = 0;
+            tmp.info.dims[0] = groups_x;
+            tmp.info.strides[0] = 1;
+
+            for (int k = 1; k < 4; k++) {
+                tmp.info.dims[k] = in.info.dims[k];
+                tmp.info.strides[k] = tmp.info.dims[k - 1] * tmp.info.strides[k - 1];
+            }
+
+            int tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
+            tmp.data = bufferAlloc(tmp_elements * sizeof(T));
+            cl::Buffer *tidx = bufferAlloc(tmp_elements * sizeof(uint));
+
+            ireduce_first_launcher<T, op>(tmp, tidx, in, tidx, threads_x, true, groups_x, groups_y);
+
+            unique_ptr<T> h_ptr(new T[tmp_elements]);
+            unique_ptr<uint> h_iptr(new uint[tmp_elements]);
+
+            getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(T) * tmp_elements, h_ptr.get());
+            getQueue().enqueueReadBuffer(*tidx, CL_TRUE, 0, sizeof(uint) * tmp_elements, h_iptr.get());
+
+            T* h_ptr_raw = h_ptr.get();
+            uint* h_iptr_raw = h_iptr.get();
+
+            if (!is_linear) {
+                // Converting n-d index into a linear index
+                // in is of size   [   dims0, dims1, dims2, dims3]
+                // tidx is of size [groups_x, dims1, dims2, dims3]
+                // i / groups_x gives you the batch number "N"
+                // "N * dims0 + i" gives the linear index
+                for (int i = 0; i < tmp_elements; i++) {
+                    h_iptr_raw[i] += (i / groups_x) * in.info.dims[0];
+                }
+            }
+
+            MinMaxOp<op, T> Op(h_ptr_raw[0], h_iptr_raw[0]);
+            for (int i = 1; i < (int)tmp_elements; i++) {
+                Op(h_ptr_raw[i], h_iptr_raw[i]);
+            }
+
+            bufferFree(tmp.data);
+            bufferFree(tidx);
+
+            *loc = Op.m_idx;
+            return Op.m_val;
+
+        } else {
+
+            unique_ptr<T> h_ptr(new T[in_elements]);
+            T* h_ptr_raw = h_ptr.get();
+
+            getQueue().enqueueReadBuffer(*in.data, CL_TRUE, sizeof(T) * in.info.offset,
+                                          sizeof(T) * in_elements, h_ptr_raw);
+
+
+            MinMaxOp<op, T> Op(h_ptr_raw[0], 0);
+            for (int i = 1; i < (int)in_elements; i++) {
+                Op(h_ptr_raw[i], i);
+            }
+
+            *loc = Op.m_idx;
+            return Op.m_val;
         }
     }
-
-
 }
 
 }

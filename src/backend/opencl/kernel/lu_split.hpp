@@ -44,58 +44,53 @@ static const unsigned TILEY = 32;
 template<typename T, bool same_dims>
 void lu_split_launcher(Param lower, Param upper, const Param in)
 {
-    try {
-        static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*>  splitProgs;
-        static std::map<int, Kernel*> splitKernels;
+    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+    static std::map<int, Program*>  splitProgs;
+    static std::map<int, Kernel*> splitKernels;
 
-        int device = getActiveDeviceId();
+    int device = getActiveDeviceId();
 
-        std::call_once(compileFlags[device], [device] () {
+    std::call_once(compileFlags[device], [device] () {
 
-                std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D same_dims=" << same_dims
-                        << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")"
-                        << " -D ONE=(T)(" << scalar_to_option(scalar<T>(1)) << ")";
+            std::ostringstream options;
+            options << " -D T=" << dtype_traits<T>::getName()
+                    << " -D same_dims=" << same_dims
+                    << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")"
+                    << " -D ONE=(T)(" << scalar_to_option(scalar<T>(1)) << ")";
 
-                if (std::is_same<T, double>::value ||
-                    std::is_same<T, cdouble>::value) {
-                    options << " -D USE_DOUBLE";
-                }
+            if (std::is_same<T, double>::value ||
+                std::is_same<T, cdouble>::value) {
+                options << " -D USE_DOUBLE";
+            }
 
-                cl::Program prog;
-                buildProgram(prog, lu_split_cl, lu_split_cl_len, options.str());
-                splitProgs[device] = new Program(prog);
+            cl::Program prog;
+            buildProgram(prog, lu_split_cl, lu_split_cl_len, options.str());
+            splitProgs[device] = new Program(prog);
 
-                splitKernels[device] = new Kernel(*splitProgs[device], "lu_split_kernel");
-            });
+            splitKernels[device] = new Kernel(*splitProgs[device], "lu_split_kernel");
+        });
 
 
-        NDRange local(TX, TY);
+    NDRange local(TX, TY);
 
-        int groups_x = divup(in.info.dims[0], TILEX);
-        int groups_y = divup(in.info.dims[1], TILEY);
+    int groups_x = divup(in.info.dims[0], TILEX);
+    int groups_y = divup(in.info.dims[1], TILEY);
 
-        NDRange global(groups_x * local[0] * in.info.dims[2],
-                       groups_y * local[1] * in.info.dims[3]);
+    NDRange global(groups_x * local[0] * in.info.dims[2],
+                    groups_y * local[1] * in.info.dims[3]);
 
-        auto lu_split_op = KernelFunctor<Buffer, const KParam,
-                                       Buffer, const KParam,
-                                       const Buffer, const KParam,
-                                       const int, const int> (*splitKernels[device]);
+    auto lu_split_op = KernelFunctor<Buffer, const KParam,
+                                    Buffer, const KParam,
+                                    const Buffer, const KParam,
+                                    const int, const int> (*splitKernels[device]);
 
-        lu_split_op(EnqueueArgs(getQueue(), global, local),
-                    *lower.data, lower.info,
-                    *upper.data, upper.info,
-                    *in.data, in.info,
-                    groups_x, groups_y);
+    lu_split_op(EnqueueArgs(getQueue(), global, local),
+                *lower.data, lower.info,
+                *upper.data, upper.info,
+                *in.data, in.info,
+                groups_x, groups_y);
 
-        CL_DEBUG_FINISH(getQueue());
-    } catch (cl::Error err) {
-        CL_TO_AF_ERROR(err);
-        throw;
-    }
+    CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename T>

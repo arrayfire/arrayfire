@@ -53,72 +53,67 @@ static const int THREADS_Y = 16;
 template<typename T>
 void exampleFunc(Param c, const Param a, const Param b, const af_someenum_t p)
 {
-    try {
-        static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*>  egProgs;
-        static std::map<int, Kernel*> egKernels;
+    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+    static std::map<int, Program*>  egProgs;
+    static std::map<int, Kernel*> egKernels;
 
-        int device = getActiveDeviceId();
+    int device = getActiveDeviceId();
 
-        // std::call_once is used to ensure OpenCL kernels
-        // are compiled only once for any given device and combination
-        // of template parameters to this kernel wrapper function 'exampleFunc<T>'
-        std::call_once( compileFlags[device], [device] () {
+    // std::call_once is used to ensure OpenCL kernels
+    // are compiled only once for any given device and combination
+    // of template parameters to this kernel wrapper function 'exampleFunc<T>'
+    std::call_once( compileFlags[device], [device] () {
 
-                std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName();
-                // You can pass any template parameters as compile options
-                // to kernel the compilation step. This is equivalent of
-                // having templated kernels in CUDA
+            std::ostringstream options;
+            options << " -D T=" << dtype_traits<T>::getName();
+            // You can pass any template parameters as compile options
+            // to kernel the compilation step. This is equivalent of
+            // having templated kernels in CUDA
 
-                // The following option is passed to kernel compilation
-                // if template parameter T is double or complex double
-                // to enable FP64 extension
-                if (std::is_same<T, double>::value ||
-                    std::is_same<T, cdouble>::value) {
-                    options << " -D USE_DOUBLE";
-                }
+            // The following option is passed to kernel compilation
+            // if template parameter T is double or complex double
+            // to enable FP64 extension
+            if (std::is_same<T, double>::value ||
+                std::is_same<T, cdouble>::value) {
+                options << " -D USE_DOUBLE";
+            }
 
-                Program prog;
-                // below helper function 'buildProgram' uses the option string
-                // we just created and compiles the kernel string
-                // 'example_cl' which was created by our opencl kernel code obfuscation
-                // stage
-                buildProgram(prog, example_cl, example_cl_len, options.str());
+            Program prog;
+            // below helper function 'buildProgram' uses the option string
+            // we just created and compiles the kernel string
+            // 'example_cl' which was created by our opencl kernel code obfuscation
+            // stage
+            buildProgram(prog, example_cl, example_cl_len, options.str());
 
-                // create a cl::Program object on heap
-                egProgs[device]   = new Program(prog);
+            // create a cl::Program object on heap
+            egProgs[device]   = new Program(prog);
 
-                // create a cl::Kernel object on heap
-                egKernels[device] = new Kernel(*egProgs[device], "example");
-            });
+            // create a cl::Kernel object on heap
+            egKernels[device] = new Kernel(*egProgs[device], "example");
+        });
 
-        // configure work group parameters
-        NDRange local(THREADS_X, THREADS_Y);
+    // configure work group parameters
+    NDRange local(THREADS_X, THREADS_Y);
 
-        int blk_x = divup(c.info.dims[0], THREADS_X);
-        int blk_y = divup(c.info.dims[1], THREADS_Y);
+    int blk_x = divup(c.info.dims[0], THREADS_X);
+    int blk_y = divup(c.info.dims[1], THREADS_Y);
 
-        // configure global launch parameters
-        NDRange global(blk_x * THREADS_X, blk_y * THREADS_Y);
+    // configure global launch parameters
+    NDRange global(blk_x * THREADS_X, blk_y * THREADS_Y);
 
-        // create a kernel functor from the cl::Kernel object
-        // corresponding to the device on which current execution
-        // is happending.
-        auto exampleFuncOp = KernelFunctor<Buffer, KParam, Buffer, KParam,
-                                           Buffer, KParam, int>(*egKernels[device]);
+    // create a kernel functor from the cl::Kernel object
+    // corresponding to the device on which current execution
+    // is happending.
+    auto exampleFuncOp = KernelFunctor<Buffer, KParam, Buffer, KParam,
+                                        Buffer, KParam, int>(*egKernels[device]);
 
-        // launch the kernel
-        exampleFuncOp(EnqueueArgs(getQueue(), global, local),
-                    *c.data, c.info, *a.data, a.info, *b.data, b.info, (int)p);
+    // launch the kernel
+    exampleFuncOp(EnqueueArgs(getQueue(), global, local),
+                *c.data, c.info, *a.data, a.info, *b.data, b.info, (int)p);
 
-        // Below Macro activates validations ONLY in DEBUG
-        // mode as its name indicates
-        CL_DEBUG_FINISH(getQueue());
-    } catch (cl::Error err) { // Catch all cl::Errors and convert them
-                              // to appropriate ArrayFire error codes
-        CL_TO_AF_ERROR(err);
-    }
+    // Below Macro activates validations ONLY in DEBUG
+    // mode as its name indicates
+    CL_DEBUG_FINISH(getQueue());
 }
 
 }
