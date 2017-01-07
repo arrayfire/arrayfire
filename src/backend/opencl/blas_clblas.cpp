@@ -23,6 +23,7 @@
 #include <reduce.hpp>
 #include <complex.hpp>
 
+#include <clBLAS.h>
 #include <err_clblas.hpp>
 
 #if defined(WITH_OPENCL_LINEAR_ALGEBRA)

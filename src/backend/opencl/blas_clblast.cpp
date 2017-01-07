@@ -20,6 +20,7 @@
 #include <reduce.hpp>
 #include <complex.hpp>
 
+#include <clblast.h>
 #include <err_clblast.hpp>
 
 #if defined(WITH_OPENCL_LINEAR_ALGEBRA)
@@ -47,12 +48,12 @@ toClblastTranspose(af_mat_prop opt)
 }
 
 // Defines type conversions from ArrayFire (OpenCL) to CLBlast (C++ std)
-template <typename T> struct CLBlastConstant { using Type = T; };
-template <> struct CLBlastConstant<cfloat> { using Type = std::complex<float>; };
-template <> struct CLBlastConstant<cdouble> { using Type = std::complex<double>; };
+template <typename T> struct CLBlastType { using Type = T; };
+template <> struct CLBlastType<cfloat> { using Type = std::complex<float>; };
+template <> struct CLBlastType<cdouble> { using Type = std::complex<double>; };
 
 // Converts a constant from ArrayFire types (OpenCL) to CLBlast types (C++ std)
-template <typename T> typename CLBlastConstant<T>::Type toCLBlastConstant(const T val);
+template <typename T> typename CLBlastType<T>::Type toCLBlastConstant(const T val);
 
 // Specializations of the above function
 template <> float toCLBlastConstant(const float val) { return val; }

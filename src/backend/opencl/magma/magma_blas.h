@@ -27,6 +27,12 @@ template<typename T> struct gpu_blas_trsm_func;
 template<typename T> struct gpu_blas_trsv_func;
 template<typename T> struct gpu_blas_herk_func;
 
-#include "magma_blas_clblas.h"
-
+#if defined(USE_CLBLAST)
+#include "magma_blas_clblast.h"
 #endif
+
+#if defined(USE_CLBLAS)
+#include "magma_blas_clblas.h"
+#endif
+
+#endif // __MAGMA_BLAS_H
