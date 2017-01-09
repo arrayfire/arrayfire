@@ -1,7 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-FIND_PACKAGE(CUDA 7.0 REQUIRED) # Assert Minimum CUDA Version 7.0
-FIND_PACKAGE(Boost REQUIRED)
+FIND_PACKAGE(CUDA 7.0 REQUIRED)
 
 INCLUDE(CLKernelToH)
 INCLUDE(FindNVVM)
@@ -104,7 +103,7 @@ IF(UNIX)
         # Enabling c++11 with nvcc 7.5 + gcc 6.x doesn't seem to work
         # Only solution for now is to force use c++03 for gcc 6.x
         IF(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "6.0.0")
-          SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -std=c++98")
+          message( FATAL_ERROR "NVCC does not support GCC version 6.0 or greater." )
         ENDIF()
     ENDIF()
 
@@ -148,7 +147,6 @@ ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
-    ${Boost_INCLUDE_DIR}
     ${CUDA_INCLUDE_DIRS}
     "${PROJECT_SOURCE_DIR}/src/backend/cuda"
     "${CMAKE_CURRENT_BINARY_DIR}"
@@ -328,18 +326,6 @@ ENDIF()
 
 IF("${APPLE}")
     ADD_DEFINITIONS(-D__STRICT_ANSI__)
-    IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-        IF(${CUDA_VERSION_MAJOR} VERSION_LESS 7)
-            SET(STD_LIB_BINDING "-stdlib=libstdc++")
-        ELSE(${CUDA_VERSION_MAJOR} VERSION_LESS 7)
-            SET(STD_LIB_BINDING "-stdlib=libc++")
-        ENDIF()
-
-        ADD_DEFINITIONS("${STD_LIB_BINDING}")
-        SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${STD_LIB_BINDING}")
-        SET(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${STD_LIB_BINDING}")
-        SET(CUDA_HOST_COMPILER "/usr/bin/clang++")
-    ENDIF()
 ELSE()
   IF(UNIX)
     IF(${CUDA_VERSION_MAJOR} GREATER 7)
@@ -426,7 +412,9 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cpp_sources}
                 ${thrust_sort_by_key_sources}
                 ${scan_by_key_sources}
-                OPTIONS ${CUDA_GENERATE_CODE})
+                OPTIONS ${CUDA_GENERATE_CODE}
+                #These flags enable C++11 and disable invalid offsetof warning
+                -std=c++11 -Xcudafe "--diag_suppress=1427")
 
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
