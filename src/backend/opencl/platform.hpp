@@ -22,14 +22,25 @@
 #include <CL/cl2.hpp>
 #pragma GCC diagnostic pop
 
+#include <memory>
 #include <vector>
 #include <string>
+
+#include <clfftManager.hpp>
 
 namespace opencl
 {
 
+///////////////////////// BEGIN Sub-Managers ///////////////////
+//
+clfft::clFFTPlanner& getclfftPlanManager();
+//
+///////////////////////// END Sub-Managers /////////////////////
+
 class DeviceManager
 {
+    friend clfft::clFFTPlanner& getclfftPlanManager();
+
     friend std::string getDeviceInfo();
 
     friend int getDeviceCount();
@@ -97,6 +108,8 @@ class DeviceManager
 
         unsigned mActiveCtxId;
         unsigned mActiveQId;
+
+        clfft::clFFTPlanner clfftManagers[MAX_DEVICES];
 };
 
 int getBackend();

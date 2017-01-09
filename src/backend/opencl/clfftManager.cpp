@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2016, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -7,12 +7,20 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma once
-#include <stdio.h>
-#include <err_opencl.hpp>
-#include <clFFT.h>
+#include <af/defines.h>
 
-static const char * _clfftGetResultString(clfftStatus st)
+#include <err_common.hpp>
+#include <clfftManager.hpp>
+#include <platform.hpp>
+
+#include <string>
+
+using std::string;
+
+namespace clfft
+{
+
+const char * _clfftGetResultString(clfftStatus st)
 {
     switch (st)
     {
@@ -78,23 +86,119 @@ static const char * _clfftGetResultString(clfftStatus st)
     return "Unknown error";
 }
 
-#define CLFFT_CHECK(fn) do {                    \
-        clfftStatus _clfft_st = fn;             \
-        if (_clfft_st != CLFFT_SUCCESS) {       \
-            garbageCollect();                   \
-            _clfft_st = (fn);                   \
-        }                                       \
-        if (_clfft_st != CLFFT_SUCCESS) {       \
-            char clfft_st_msg[1024];            \
-            snprintf(clfft_st_msg,              \
-                     sizeof(clfft_st_msg),      \
-                     "clFFT Error (%d): %s\n",  \
-                     (int)(_clfft_st),          \
-                     _clfftGetResultString(     \
-                         _clfft_st));           \
-                                                \
-            AF_ERROR(clfft_st_msg,              \
-                     AF_ERR_INTERNAL);          \
-        }                                       \
-    } while(0)
+void findPlan(clfftPlanHandle &plan,
+              clfftLayout iLayout, clfftLayout oLayout,
+              clfftDim rank, size_t *clLengths,
+              size_t *istrides, size_t idist,
+              size_t *ostrides, size_t odist,
+              clfftPrecision precision, size_t batch)
+{
+    // create the key string
+    char key_str_temp[64];
+    sprintf(key_str_temp, "%d:%d:%d:", iLayout, oLayout, rank);
 
+    string key_string(key_str_temp);
+
+    /* WARNING: DO NOT CHANGE sprintf format specifier */
+    for(int r=0; r<rank; ++r) {
+        sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", clLengths[r]);
+        key_string.append(std::string(key_str_temp));
+    }
+
+    if(istrides!=NULL) {
+        for(int r=0; r<rank; ++r) {
+            sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", istrides[r]);
+            key_string.append(std::string(key_str_temp));
+        }
+        sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", idist);
+        key_string.append(std::string(key_str_temp));
+    }
+
+    if (ostrides!=NULL) {
+        for(int r=0; r<rank; ++r) {
+            sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", ostrides[r]);
+            key_string.append(std::string(key_str_temp));
+        }
+        sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", odist);
+        key_string.append(std::string(key_str_temp));
+    }
+
+    sprintf(key_str_temp, "%d:" SIZE_T_FRMT_SPECIFIER, (int)precision, batch);
+    key_string.append(std::string(key_str_temp));
+
+    // find the matching plan_index in the array clFFTPlanner::mKeys
+    clFFTPlanner &planner = opencl::getclfftPlanManager();
+
+    int planIndex = planner.findIfPlanExists(key_string);
+
+    // if found a valid plan, return it
+    if (planIndex!=-1) {
+        plan = planner.getPlan(planIndex);
+        return;
+    }
+
+    clfftPlanHandle temp;
+
+    // getContext() returns object of type Context
+    // Context() returns the actual cl_context handle
+    CLFFT_CHECK(clfftCreateDefaultPlan(&temp, opencl::getContext()(), rank, clLengths));
+
+    // complex to complex
+    if (iLayout == oLayout) {
+        CLFFT_CHECK(clfftSetResultLocation(temp, CLFFT_INPLACE));
+    } else {
+        CLFFT_CHECK(clfftSetResultLocation(temp, CLFFT_OUTOFPLACE));
+    }
+
+    CLFFT_CHECK(clfftSetLayout(temp, iLayout, oLayout));
+    CLFFT_CHECK(clfftSetPlanBatchSize(temp, batch));
+    CLFFT_CHECK(clfftSetPlanDistance(temp, idist, odist));
+    CLFFT_CHECK(clfftSetPlanInStride(temp, rank, istrides));
+    CLFFT_CHECK(clfftSetPlanOutStride(temp, rank, ostrides));
+    CLFFT_CHECK(clfftSetPlanPrecision(temp, precision));
+    CLFFT_CHECK(clfftSetPlanScale(temp, CLFFT_BACKWARD, 1.0));
+
+    // getQueue() returns object of type CommandQueue
+    // CommandQueue() returns the actual cl_command_queue handle
+    CLFFT_CHECK(clfftBakePlan(temp, 1, &(opencl::getQueue()()), NULL, NULL));
+
+    plan = temp;
+
+    // push the plan into plan cache
+    planner.pushPlan(key_string, plan);
+}
+
+clFFTPlanner::clFFTPlanner()
+    : mMaxCacheSize(5)
+{
+    CLFFT_CHECK(clfftInitSetupData(&mFFTSetup));
+    CLFFT_CHECK(clfftSetup(&mFFTSetup));
+}
+
+clFFTPlanner::~clFFTPlanner()
+{
+    //TODO: FIXME:
+    // clfftTeardown() causes a "Pure Virtual Function Called" crash on
+    // Windows for Intel devices. This causes tests to fail.
+    #ifndef OS_WIN
+    static bool flag = true;
+    if(flag) {
+        // THOU SHALL NOT THROW IN DESTRUCTORS
+        clfftTeardown();
+        flag = false;
+    }
+    #endif
+}
+
+void clFFTPlanner::popPlan()
+{
+    if (!mCache.empty()) {
+        // destroy the clfft plan associated with the
+        // least recently used plan
+        CLFFT_CHECK(clfftDestroyPlan(&mCache.back().second));
+        // now pop the entry from cache
+        mCache.pop_back();
+    }
+}
+
+}

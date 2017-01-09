@@ -8,7 +8,12 @@
  ********************************************************/
 #pragma once
 
-#include <platform.hpp>
+#include <cstdlib>
+
+namespace cl
+{
+class Buffer;
+}
 
 namespace opencl
 {

@@ -837,6 +837,11 @@ bool& evalFlag()
     return flag;
 }
 
+clfft::clFFTPlanner& getclfftPlanManager()
+{
+    return DeviceManager::getInstance().clfftManagers[getActiveDeviceId()];
+}
+
 }
 
 using namespace opencl;
