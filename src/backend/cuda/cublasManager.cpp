@@ -7,12 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <stdio.h>
 #include <platform.hpp>
 #include <err_common.hpp>
 #include <cublasManager.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <platform.hpp>
 
 namespace cublas
 {

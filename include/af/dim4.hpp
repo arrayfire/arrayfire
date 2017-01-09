@@ -14,9 +14,6 @@
 #include <ostream>
 #include <istream>
 #include <vector>
-#if __cplusplus > 199711L // Necessary for NVCC
-//#include <initializer_list>
-#endif
 #include <af/defines.h>
 #include <af/seq.h>
 
@@ -29,9 +26,6 @@ class AFAPI dim4
     dim_t dims[4]; //FIXME: Make this C compatiable
     dim4(); //deleted
 public:
-#if __cplusplus > 199711L
-    //dim4(std::initializer_list<dim_t> dim_vals);
-#endif
     dim4(   dim_t first,
             dim_t second = 1,
             dim_t third = 1,

@@ -9,10 +9,11 @@
 
 #pragma once
 #include <optypes.hpp>
+
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
-#include <map>
-#include <boost/shared_ptr.hpp>
 
 namespace cuda
 {
@@ -21,7 +22,6 @@ namespace JIT
 {
     typedef std::map<std::string, bool> str_map_t;
     typedef str_map_t::iterator str_map_iter;
-    using boost::shared_ptr;
 
     class Node
     {
@@ -109,7 +109,7 @@ namespace JIT
         virtual ~Node() {}
     };
 
-    typedef shared_ptr<Node> Node_ptr;
+    typedef std::shared_ptr<Node> Node_ptr;
 
 }
 

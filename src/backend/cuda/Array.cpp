@@ -15,10 +15,13 @@
 #include <scalar.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
-#include <cstddef>
 #include <MemoryManager.hpp>
 
+#include <cstddef>
+#include <memory>
+
 using af::dim4;
+using std::shared_ptr;
 
 namespace cuda
 {

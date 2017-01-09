@@ -383,46 +383,26 @@ DeviceManager& DeviceManager::getInstance()
 
 MemoryManager &getMemoryManager()
 {
+    static std::once_flag myFlag;
+
     DeviceManager& inst = DeviceManager::getInstance();
 
-    boost::upgrade_lock<boost::shared_mutex> lock(inst.memManagerMutex);
-
-    // multiple threads should be able to reach the
-    // conditional statement without contention
-    if (!inst.memManager.get()) {
-        // upgrade the shared ownership we acquired earlier to
-        // exclusive owner ship to initialize the memory manager
-        boost::upgrade_to_unique_lock<boost::shared_mutex> unqLock(lock);
-
-        // if multiple threads above statment, allow the
-        // initialization of memory manager to happen once
-        // by checking if pinned memory manager pointer is already set
-        if (!inst.memManager.get())
-            inst.memManager.reset(new cuda::MemoryManager());
-    }
+    std::call_once(myFlag, [&]() {
+                inst.memManager.reset(new cuda::MemoryManager());
+            });
 
     return *(inst.memManager.get());
 }
 
 MemoryManagerPinned &getMemoryManagerPinned()
 {
+    static std::once_flag myFlag;
+
     DeviceManager& inst = DeviceManager::getInstance();
 
-    boost::upgrade_lock<boost::shared_mutex> lock(inst.memManagerMutex);
-
-    // multiple threads should be able to reach the
-    // conditional statement without contention
-    if (!inst.pinnedMemManager.get()) {
-        // upgrade the shared ownership we acquired earlier to
-        // exclusive owner ship to initialize the memory manager
-        boost::upgrade_to_unique_lock<boost::shared_mutex> unqLock(lock);
-
-        // if multiple threads above statment, allow the
-        // initialization of memory manager to happen once
-        // by checking if pinned memory manager pointer is already set
-        if (!inst.pinnedMemManager.get())
-            inst.pinnedMemManager.reset(new cuda::MemoryManagerPinned());
-    }
+    std::call_once(myFlag, [&]() {
+                inst.pinnedMemManager.reset(new cuda::MemoryManagerPinned());
+            });
 
     return *(inst.pinnedMemManager.get());
 }
@@ -431,7 +411,7 @@ InteropManager& getGfxInteropManager()
 {
     DeviceManager& inst = DeviceManager::getInstance();
 
-    if (!inst.gfxManager.get())
+    if (!inst.gfxManager)
         inst.gfxManager.reset(new cuda::InteropManager());
 
     return *(inst.gfxManager.get());
@@ -448,7 +428,7 @@ cublasHandle_t getcublasHandle()
 
     int id = cuda::getActiveDeviceId();
 
-    if (!(instance.cublasHandles[id]))
+    if (! instance.cublasHandles[id] )
         instance.resetcublasHandle(id);
 
     return instance.cublasHandles[id]->get();
@@ -460,7 +440,7 @@ cusolverDnHandle_t getcusolverDnHandle()
 
     int id = cuda::getActiveDeviceId();
 
-    if (!(instance.cusolverHandles[id]))
+    if (! instance.cusolverHandles[id] )
         instance.resetcusolverHandle(id);
 
     // FIXME
@@ -487,7 +467,7 @@ cusparseHandle_t getcusparseHandle()
 
     int id = cuda::getActiveDeviceId();
 
-    if (!(instance.cusparseHandles[id]))
+    if (! instance.cusparseHandles[id] )
         instance.resetcusparseHandle(id);
 
     return instance.cusparseHandles[id]->get();

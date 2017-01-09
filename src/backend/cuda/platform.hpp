@@ -11,14 +11,12 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <memory>
 #include <vector>
 #include <string>
 #if defined(WITH_GRAPHICS)
 #include <fg/window.h>
 #endif
-
-#include <boost/scoped_ptr.hpp>
-#include <boost/thread/shared_mutex.hpp>
 
 #include <cufftManager.hpp>
 #include <cublasManager.hpp>
@@ -77,7 +75,6 @@ bool& evalFlag();
 class MemoryManager;
 class MemoryManagerPinned;
 class InteropManager;
-
 ///////////////////////// BEGIN Sub-Managers ///////////////////
 //
 MemoryManager& getMemoryManager();
@@ -172,21 +169,19 @@ class DeviceManager
         int nDevices;
         cudaStream_t streams[MAX_DEVICES];
 
-        boost::shared_mutex memManagerMutex;
-        boost::scoped_ptr<MemoryManager> memManager;
+        std::unique_ptr<MemoryManager> memManager;
 
-        boost::shared_mutex pinnedMemManagerMutex;
-        boost::scoped_ptr<MemoryManagerPinned> pinnedMemManager;
+        std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
 
-        boost::scoped_ptr<InteropManager> gfxManager;
+        std::unique_ptr<InteropManager> gfxManager;
 
         cufft::cuFFTPlanner cufftManagers[MAX_DEVICES];
 
-        boost::scoped_ptr<cublas::cublasHandle> cublasHandles[MAX_DEVICES];
+        std::unique_ptr<cublas::cublasHandle> cublasHandles[MAX_DEVICES];
 
-        boost::scoped_ptr<cusolver::cusolverDnHandle> cusolverHandles[MAX_DEVICES];
+        std::unique_ptr<cusolver::cusolverDnHandle> cusolverHandles[MAX_DEVICES];
 
-        boost::scoped_ptr<cusparse::cusparseHandle> cusparseHandles[MAX_DEVICES];
+        std::unique_ptr<cusparse::cusparseHandle> cusparseHandles[MAX_DEVICES];
 };
 
 }

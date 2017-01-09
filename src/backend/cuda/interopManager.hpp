@@ -44,7 +44,6 @@ typedef std::map<void *, std::vector<cudaGraphicsResource_t> > interop_t;
 typedef interop_t::iterator iter_t;
 typedef cudaGraphicsResource_t CGR_t;
 
-
 // Manager Class for cudaPBOResource: calls garbage collection at the end of the program
 class InteropManager
 {
