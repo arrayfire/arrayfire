@@ -338,6 +338,10 @@ ELSE()
   ENDIF()
 ENDIF()
 
+IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_MWAITXINTRIN_H_INCLUDED -D_FORCE_INLINES")
+ENDIF()
+
 ## Copied from FindCUDA.cmake
 ## The target_link_library needs to link with the cuda libraries using
 ## PRIVATE
