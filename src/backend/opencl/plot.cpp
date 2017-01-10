@@ -9,12 +9,12 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <interopManager.hpp>
 #include <Array.hpp>
-#include <plot.hpp>
-#include <err_opencl.hpp>
 #include <debug_opencl.hpp>
+#include <err_opencl.hpp>
+#include <interopManager.hpp>
 #include <join.hpp>
+#include <plot.hpp>
 #include <reduce.hpp>
 #include <reorder.hpp>
 
@@ -32,7 +32,7 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
         const cl::Buffer *d_P = P.get();
         size_t bytes = plot->verticesSize();
 
-        InteropManager& intrpMngr = InteropManager::getInstance();
+        InteropManager& intrpMngr = getGfxInteropManager();
 
         cl::Buffer **resources = intrpMngr.getBufferResource(plot);
 

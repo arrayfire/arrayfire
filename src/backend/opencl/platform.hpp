@@ -34,12 +34,15 @@ namespace opencl
 // Forward Declarations
 class MemoryManager;
 class MemoryManagerPinned;
+class InteropManager;
 
 ///////////////////////// BEGIN Sub-Managers ///////////////////
 //
 MemoryManager &getMemoryManager();
 
 MemoryManagerPinned& getMemoryManagerPinned();
+
+InteropManager& getGfxInteropManager();
 
 clfft::clFFTPlanner& getclfftPlanManager();
 //
@@ -50,6 +53,8 @@ class DeviceManager
     friend MemoryManager &getMemoryManager();
 
     friend MemoryManagerPinned& getMemoryManagerPinned();
+
+    friend InteropManager& getGfxInteropManager();
 
     friend clfft::clFFTPlanner& getclfftPlanManager();
 
@@ -123,6 +128,7 @@ class DeviceManager
 
         std::unique_ptr<MemoryManager> memManager;
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
+        std::unique_ptr<InteropManager> gfxManager;
 
         clfft::clFFTPlanner clfftManagers[MAX_DEVICES];
 };

@@ -14,8 +14,14 @@
 
 #include <graphics_common.hpp>
 #include <platform.hpp>
+
 #include <map>
 #include <vector>
+
+namespace cl
+{
+class Buffer;
+}
 
 namespace opencl
 {
@@ -29,7 +35,7 @@ class InteropManager
         interop_t interop_maps[DeviceManager::MAX_DEVICES];
 
     public:
-        static InteropManager& getInstance();
+        InteropManager() {}
         ~InteropManager();
         cl::Buffer** getBufferResource(const forge::Image        *handle);
         cl::Buffer** getBufferResource(const forge::Plot         *handle);
@@ -38,7 +44,6 @@ class InteropManager
         cl::Buffer** getBufferResource(const forge::VectorField  *handle);
 
     protected:
-        InteropManager() {}
         InteropManager(InteropManager const&);
         void operator=(InteropManager const&);
         interop_t& getDeviceMap(int device = -1); // default will return current device

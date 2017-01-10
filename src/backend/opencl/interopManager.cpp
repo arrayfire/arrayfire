@@ -11,6 +11,8 @@
 
 #include <interopManager.hpp>
 
+#include <platform.hpp>
+
 namespace opencl
 {
 
@@ -32,12 +34,6 @@ InteropManager::~InteropManager()
         setDevice(i);
         destroyResources();
     }
-}
-
-InteropManager& InteropManager::getInstance()
-{
-    static InteropManager my_instance;
-    return my_instance;
 }
 
 interop_t& InteropManager::getDeviceMap(int device)

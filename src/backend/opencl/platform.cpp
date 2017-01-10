@@ -28,6 +28,7 @@
 #include <errorcodes.hpp>
 #include <err_opencl.hpp>
 #include <host_memory.hpp>
+#include <interopManager.hpp>
 #include <memoryManager.hpp>
 #include <platform.hpp>
 #include <util.hpp>
@@ -840,11 +841,11 @@ bool& evalFlag()
 
 MemoryManager& getMemoryManager()
 {
-    static std::once_flag myFlag;
+    static std::once_flag flag;
 
     DeviceManager& inst = DeviceManager::getInstance();
 
-    std::call_once(myFlag, [&]() {
+    std::call_once(flag, [&]() {
                 inst.memManager.reset(new MemoryManager());
             });
 
@@ -853,15 +854,28 @@ MemoryManager& getMemoryManager()
 
 MemoryManagerPinned& getMemoryManagerPinned()
 {
-    static std::once_flag myFlag;
+    static std::once_flag flag;
 
     DeviceManager& inst = DeviceManager::getInstance();
 
-    std::call_once(myFlag, [&]() {
+    std::call_once(flag, [&]() {
                 inst.pinnedMemManager.reset(new MemoryManagerPinned());
             });
 
     return *(inst.pinnedMemManager.get());
+}
+
+InteropManager& getGfxInteropManager()
+{
+    static std::once_flag flag;
+
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    std::call_once(flag, [&]() {
+                inst.gfxManager.reset(new InteropManager());
+            });
+
+    return *(inst.gfxManager.get());
 }
 
 clfft::clFFTPlanner& getclfftPlanManager()

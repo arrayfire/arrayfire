@@ -9,11 +9,11 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <interopManager.hpp>
 #include <Array.hpp>
-#include <vector_field.hpp>
-#include <err_opencl.hpp>
 #include <debug_opencl.hpp>
+#include <err_opencl.hpp>
+#include <interopManager.hpp>
+#include <vector_field.hpp>
 
 using af::dim4;
 
@@ -32,7 +32,7 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
         size_t pBytes = vector_field->verticesSize();
         size_t dBytes = vector_field->directionsSize();
 
-        InteropManager& intrpMngr = InteropManager::getInstance();
+        InteropManager& intrpMngr = getGfxInteropManager();
 
         cl::Buffer **resources = intrpMngr.getBufferResource(vector_field);
 

@@ -9,11 +9,11 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <interopManager.hpp>
 #include <Array.hpp>
-#include <hist_graphics.hpp>
-#include <err_opencl.hpp>
 #include <debug_opencl.hpp>
+#include <err_opencl.hpp>
+#include <hist_graphics.hpp>
+#include <interopManager.hpp>
 
 namespace opencl
 {
@@ -27,7 +27,7 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
         const cl::Buffer *d_P = data.get();
         size_t bytes = hist->verticesSize();
 
-        InteropManager& intrpMngr = InteropManager::getInstance();
+        InteropManager& intrpMngr = getGfxInteropManager();
 
         cl::Buffer **resources = intrpMngr.getBufferResource(hist);
 

@@ -9,14 +9,14 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <interopManager.hpp>
 #include <Array.hpp>
-#include <surface.hpp>
-#include <err_opencl.hpp>
 #include <debug_opencl.hpp>
+#include <err_opencl.hpp>
+#include <interopManager.hpp>
 #include <join.hpp>
 #include <reduce.hpp>
 #include <reorder.hpp>
+#include <surface.hpp>
 
 using af::dim4;
 
@@ -32,7 +32,7 @@ void copy_surface(const Array<T> &P, forge::Surface* surface)
         const cl::Buffer *d_P = P.get();
         size_t bytes = surface->verticesSize();
 
-        InteropManager& intrpMngr = InteropManager::getInstance();
+        InteropManager& intrpMngr = getGfxInteropManager();
 
         cl::Buffer **resources = intrpMngr.getBufferResource(surface);
 
