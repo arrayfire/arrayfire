@@ -25,23 +25,24 @@
 #include <af/version.h>
 #include <af/opencl.h>
 #include <defines.hpp>
-#include <version.hpp>
+#include <errorcodes.hpp>
+#include <err_opencl.hpp>
+#include <host_memory.hpp>
+#include <memoryManager.hpp>
 #include <platform.hpp>
 #include <util.hpp>
-#include <functional>
+#include <version.hpp>
+
 #include <algorithm>
 #include <cctype>
-#include <vector>
+#include <functional>
+#include <map>
+#include <mutex>
 #include <string>
 #include <sstream>
 #include <stdexcept>
 #include <cstring>
-#include <algorithm>
-#include <map>
-#include <errorcodes.hpp>
-#include <err_opencl.hpp>
-#include <util.hpp>
-#include <host_memory.hpp>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -835,6 +836,32 @@ bool& evalFlag()
 {
     static bool flag = true;
     return flag;
+}
+
+MemoryManager& getMemoryManager()
+{
+    static std::once_flag myFlag;
+
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    std::call_once(myFlag, [&]() {
+                inst.memManager.reset(new MemoryManager());
+            });
+
+    return *(inst.memManager.get());
+}
+
+MemoryManagerPinned& getMemoryManagerPinned()
+{
+    static std::once_flag myFlag;
+
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    std::call_once(myFlag, [&]() {
+                inst.pinnedMemManager.reset(new MemoryManagerPinned());
+            });
+
+    return *(inst.pinnedMemManager.get());
 }
 
 clfft::clFFTPlanner& getclfftPlanManager()

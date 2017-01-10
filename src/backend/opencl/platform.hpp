@@ -31,14 +31,26 @@
 namespace opencl
 {
 
+// Forward Declarations
+class MemoryManager;
+class MemoryManagerPinned;
+
 ///////////////////////// BEGIN Sub-Managers ///////////////////
 //
+MemoryManager &getMemoryManager();
+
+MemoryManagerPinned& getMemoryManagerPinned();
+
 clfft::clFFTPlanner& getclfftPlanManager();
 //
 ///////////////////////// END Sub-Managers /////////////////////
 
 class DeviceManager
 {
+    friend MemoryManager &getMemoryManager();
+
+    friend MemoryManagerPinned& getMemoryManagerPinned();
+
     friend clfft::clFFTPlanner& getclfftPlanManager();
 
     friend std::string getDeviceInfo();
@@ -108,6 +120,9 @@ class DeviceManager
 
         unsigned mActiveCtxId;
         unsigned mActiveQId;
+
+        std::unique_ptr<MemoryManager> memManager;
+        std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
 
         clfft::clFFTPlanner clfftManagers[MAX_DEVICES];
 };
