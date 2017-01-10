@@ -383,11 +383,11 @@ DeviceManager& DeviceManager::getInstance()
 
 MemoryManager &getMemoryManager()
 {
-    static std::once_flag myFlag;
+    static std::once_flag flag;
 
     DeviceManager& inst = DeviceManager::getInstance();
 
-    std::call_once(myFlag, [&]() {
+    std::call_once(flag, [&]() {
                 inst.memManager.reset(new cuda::MemoryManager());
             });
 
@@ -396,11 +396,11 @@ MemoryManager &getMemoryManager()
 
 MemoryManagerPinned &getMemoryManagerPinned()
 {
-    static std::once_flag myFlag;
+    static std::once_flag flag;
 
     DeviceManager& inst = DeviceManager::getInstance();
 
-    std::call_once(myFlag, [&]() {
+    std::call_once(flag, [&]() {
                 inst.pinnedMemManager.reset(new cuda::MemoryManagerPinned());
             });
 
@@ -409,10 +409,13 @@ MemoryManagerPinned &getMemoryManagerPinned()
 
 InteropManager& getGfxInteropManager()
 {
+    static std::once_flag flag;
+
     DeviceManager& inst = DeviceManager::getInstance();
 
-    if (!inst.gfxManager)
-        inst.gfxManager.reset(new cuda::InteropManager());
+    std::call_once(flag, [&]() {
+                inst.gfxManager.reset(new cuda::InteropManager());
+            });
 
     return *(inst.gfxManager.get());
 }
