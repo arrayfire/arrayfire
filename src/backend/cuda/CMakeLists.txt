@@ -433,8 +433,7 @@ TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
                                 PRIVATE ${CUDA_cusparse_LIBRARY}
                                 PRIVATE ${CUDA_cusolver_LIBRARY}
                                 PRIVATE ${CUDA_nvvm_LIBRARY}
-                                PRIVATE ${CUDA_CUDA_LIBRARY}
-                                PRIVATE ${Boost_LIBRARIES})
+                                PRIVATE ${CUDA_CUDA_LIBRARY})
 
 LIST(LENGTH GRAPHICS_DEPENDENCIES GRAPHICS_DEPENDENCIES_LEN)
 IF(${GRAPHICS_DEPENDENCIES_LEN} GREATER 0)
