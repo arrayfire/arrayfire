@@ -110,15 +110,15 @@ IF(BUILD_GRAPHICS)
     # Create symlinks separately. Copying them in above command will do a deep copy
     ADD_CUSTOM_COMMAND(TARGET OSX_INSTALL_SETUP_FORGE_LIB PRE_BUILD
                        COMMAND ${CMAKE_COMMAND} -E create_symlink
-                       "${LIBFORGE_NAME}.${FORGE_VERSION}.dylib"
-                       "${LIBFORGE_NAME}.${FORGE_VERSION_MAJOR}.dylib"
+                       "libforge.${FORGE_VERSION}.dylib"
+                       "libforge.${FORGE_VERSION_MAJOR}.dylib"
                        WORKING_DIRECTORY "${OSX_TEMP}/Forge/${AF_INSTALL_LIB_DIR}"
                        COMMENT "Copying libforge files to temporary OSX Install Dir (Symlink)"
                        )
     ADD_CUSTOM_COMMAND(TARGET OSX_INSTALL_SETUP_FORGE_LIB PRE_BUILD
                        COMMAND ${CMAKE_COMMAND} -E create_symlink
-                       "${LIBFORGE_NAME}.${FORGE_VERSION_MAJOR}.dylib"
-                       "${LIBFORGE_NAME}.dylib"
+                       "libforge.${FORGE_VERSION_MAJOR}.dylib"
+                       "libforge.dylib"
                        WORKING_DIRECTORY "${OSX_TEMP}/Forge/${AF_INSTALL_LIB_DIR}"
                        COMMENT "Copying libforge files to temporary OSX Install Dir (Symlink)"
                        )
