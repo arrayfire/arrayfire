@@ -13,7 +13,7 @@
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
 #include <hist_graphics.hpp>
-#include <interopManager.hpp>
+#include <common/InteropManager.hpp>
 
 namespace opencl
 {
@@ -27,7 +27,7 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
         const cl::Buffer *d_P = data.get();
         size_t bytes = hist->verticesSize();
 
-        InteropManager& intrpMngr = getGfxInteropManager();
+        GraphicsManager& intrpMngr = interopManager();
 
         cl::Buffer **resources = intrpMngr.getBufferResource(hist);
 

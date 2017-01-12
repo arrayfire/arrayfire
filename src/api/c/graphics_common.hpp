@@ -12,9 +12,11 @@
 #if defined(WITH_GRAPHICS)
 
 #include <af/graphics.h>
+
 #include <forge.h>
 #include <glbinding/gl/gl.h>
 #include <glbinding/Binding.h>
+
 #include <vector>
 #include <map>
 #include <utility>

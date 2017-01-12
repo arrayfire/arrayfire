@@ -16,7 +16,7 @@
 #include <join.hpp>
 #include <reduce.hpp>
 #include <reorder.hpp>
-#include <interopManager.hpp>
+#include <common/InteropManager.hpp>
 
 using af::dim4;
 
@@ -30,7 +30,7 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
     if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
 
-        InteropManager& intrpMngr = getGfxInteropManager();
+        GraphicsManager& intrpMngr = interopManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(plot);
         // Map resource. Copy data to VBO. Unmap resource.

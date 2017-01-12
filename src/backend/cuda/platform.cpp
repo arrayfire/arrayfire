@@ -25,7 +25,7 @@
 #include <util.hpp>
 #include <host_memory.hpp>
 #include <memoryManager.hpp>
-#include <interopManager.hpp>
+#include <common/InteropManager.hpp>
 
 using namespace std;
 
@@ -407,17 +407,16 @@ MemoryManagerPinned &getMemoryManagerPinned()
     return *(inst.pinnedMemManager.get());
 }
 
-InteropManager& getGfxInteropManager()
+GraphicsManager& interopManager()
 {
-    static std::once_flag flag;
-
     DeviceManager& inst = DeviceManager::getInstance();
 
-    std::call_once(flag, [&]() {
-                inst.gfxManager.reset(new cuda::InteropManager());
-            });
+    int id = cuda::getActiveDeviceId();
 
-    return *(inst.gfxManager.get());
+    if (! inst.gfxManagers[id] )
+        inst.gfxManagers[id].reset(new GraphicsManager());
+
+    return *(inst.gfxManagers[id].get());
 }
 
 cufft::cuFFTPlanner& getcufftPlanManager()

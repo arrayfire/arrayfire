@@ -10,13 +10,11 @@
 #if defined(WITH_GRAPHICS)
 
 #include <graphics_common.hpp>
+#include <glbinding/Meta.h>
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <platform.hpp>
 #include <util.hpp>
-
-#include <glbinding/gl/gl.h>
-#include <glbinding/Meta.h>
 
 using namespace std;
 using namespace gl;
@@ -54,7 +52,7 @@ INSTANTIATE_GET_FG_TYPE(short           , forge::s16);
 gl::GLenum glErrorSkip(const char *msg, const char* file, int line)
 {
 #ifndef NDEBUG
-    gl::GLenum x = glGetError();
+    gl::GLenum x = gl::glGetError();
     if (x != GL_NO_ERROR) {
         char buf[1024];
         sprintf(buf, "GL Error Skipped at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, (int)x, glbinding::Meta::getString(x).c_str());
@@ -70,7 +68,7 @@ gl::GLenum glErrorCheck(const char *msg, const char* file, int line)
 {
 // Skipped in release mode
 #ifndef NDEBUG
-    gl::GLenum x = glGetError();
+    gl::GLenum x = gl::glGetError();
 
     if (x != GL_NO_ERROR) {
         char buf[1024];
@@ -85,7 +83,7 @@ gl::GLenum glErrorCheck(const char *msg, const char* file, int line)
 
 gl::GLenum glForceErrorCheck(const char *msg, const char* file, int line)
 {
-    gl::GLenum x = glGetError();
+    gl::GLenum x = gl::glGetError();
 
     if (x != GL_NO_ERROR) {
         char buf[1024];

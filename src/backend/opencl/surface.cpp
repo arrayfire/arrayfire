@@ -12,7 +12,7 @@
 #include <Array.hpp>
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
-#include <interopManager.hpp>
+#include <common/InteropManager.hpp>
 #include <join.hpp>
 #include <reduce.hpp>
 #include <reorder.hpp>
@@ -32,7 +32,7 @@ void copy_surface(const Array<T> &P, forge::Surface* surface)
         const cl::Buffer *d_P = P.get();
         size_t bytes = surface->verticesSize();
 
-        InteropManager& intrpMngr = getGfxInteropManager();
+        GraphicsManager& intrpMngr = interopManager();
 
         cl::Buffer **resources = intrpMngr.getBufferResource(surface);
 

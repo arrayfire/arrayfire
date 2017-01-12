@@ -13,7 +13,7 @@
 #include <hist_graphics.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
-#include <interopManager.hpp>
+#include <common/InteropManager.hpp>
 
 namespace cuda
 {
@@ -25,7 +25,7 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
     if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = data.get();
 
-        InteropManager& intrpMngr = getGfxInteropManager();
+        GraphicsManager& intrpMngr = interopManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(hist);
         // Map resource. Copy data to VBO. Unmap resource.

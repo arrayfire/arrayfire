@@ -13,7 +13,7 @@
 #include <vector_field.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
-#include <interopManager.hpp>
+#include <common/InteropManager.hpp>
 
 using af::dim4;
 
@@ -26,7 +26,7 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
                        forge::VectorField* vector_field)
 {
     if(DeviceManager::checkGraphicsInteropCapability()) {
-        InteropManager& intrpMngr = getGfxInteropManager();
+        GraphicsManager& intrpMngr = interopManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(vector_field);
 

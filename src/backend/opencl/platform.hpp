@@ -26,15 +26,65 @@
 #include <vector>
 #include <string>
 
+#include <GraphicsResourceManager.hpp>
 #include <clfftManager.hpp>
 
 namespace opencl
 {
+int getBackend();
+
+std::string getDeviceInfo();
+
+int getDeviceCount();
+
+int getActiveDeviceId();
+
+unsigned getMaxJitSize();
+
+const cl::Context& getContext();
+
+cl::CommandQueue& getQueue();
+
+const cl::Device& getDevice(int id = -1);
+
+size_t getDeviceMemorySize(int device);
+
+size_t getHostMemorySize();
+
+cl_device_type getDeviceType();
+
+bool isHostUnifiedMemory(const cl::Device &device);
+
+bool OpenCLCPUOffload(bool forceOffloadOSX = true);
+
+bool isGLSharingSupported();
+
+bool isDoubleSupported(int device);
+
+void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+
+std::string getPlatformName(const cl::Device &device);
+
+int setDevice(int device);
+
+void addDeviceContext(cl_device_id dev, cl_context cxt, cl_command_queue que);
+
+void setDeviceContext(cl_device_id dev, cl_context cxt);
+
+void removeDeviceContext(cl_device_id dev, cl_context ctx);
+
+void sync(int device);
+
+bool synchronize_calls();
+
+int getActiveDeviceType();
+int getActivePlatform();
+
+bool& evalFlag();
 
 // Forward Declarations
 class MemoryManager;
 class MemoryManagerPinned;
-class InteropManager;
 
 ///////////////////////// BEGIN Sub-Managers ///////////////////
 //
@@ -42,7 +92,8 @@ MemoryManager &getMemoryManager();
 
 MemoryManagerPinned& getMemoryManagerPinned();
 
-InteropManager& getGfxInteropManager();
+typedef common::InteropManager<GraphicsResourceManager, CGR_t> GraphicsManager;
+GraphicsManager& interopManager();
 
 clfft::clFFTPlanner& getclfftPlanManager();
 //
@@ -54,7 +105,7 @@ class DeviceManager
 
     friend MemoryManagerPinned& getMemoryManagerPinned();
 
-    friend InteropManager& getGfxInteropManager();
+    friend GraphicsManager& interopManager();
 
     friend clfft::clFFTPlanner& getclfftPlanManager();
 
@@ -128,60 +179,8 @@ class DeviceManager
 
         std::unique_ptr<MemoryManager> memManager;
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
-        std::unique_ptr<InteropManager> gfxManager;
 
+        std::unique_ptr<GraphicsManager> gfxManagers[MAX_DEVICES];
         clfft::clFFTPlanner clfftManagers[MAX_DEVICES];
 };
-
-int getBackend();
-
-std::string getDeviceInfo();
-
-int getDeviceCount();
-
-int getActiveDeviceId();
-
-unsigned getMaxJitSize();
-
-const cl::Context& getContext();
-
-cl::CommandQueue& getQueue();
-
-const cl::Device& getDevice(int id = -1);
-
-size_t getDeviceMemorySize(int device);
-
-size_t getHostMemorySize();
-
-cl_device_type getDeviceType();
-
-bool isHostUnifiedMemory(const cl::Device &device);
-
-bool OpenCLCPUOffload(bool forceOffloadOSX = true);
-
-bool isGLSharingSupported();
-
-bool isDoubleSupported(int device);
-
-void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
-
-std::string getPlatformName(const cl::Device &device);
-
-int setDevice(int device);
-
-void addDeviceContext(cl_device_id dev, cl_context cxt, cl_command_queue que);
-
-void setDeviceContext(cl_device_id dev, cl_context cxt);
-
-void removeDeviceContext(cl_device_id dev, cl_context ctx);
-
-void sync(int device);
-
-bool synchronize_calls();
-
-int getActiveDeviceType();
-int getActivePlatform();
-
-bool& evalFlag();
-
 }

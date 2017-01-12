@@ -28,7 +28,7 @@
 #include <errorcodes.hpp>
 #include <err_opencl.hpp>
 #include <host_memory.hpp>
-#include <interopManager.hpp>
+#include <common/InteropManager.hpp>
 #include <memoryManager.hpp>
 #include <platform.hpp>
 #include <util.hpp>
@@ -865,17 +865,16 @@ MemoryManagerPinned& getMemoryManagerPinned()
     return *(inst.pinnedMemManager.get());
 }
 
-InteropManager& getGfxInteropManager()
+GraphicsManager& interopManager()
 {
-    static std::once_flag flag;
-
     DeviceManager& inst = DeviceManager::getInstance();
 
-    std::call_once(flag, [&]() {
-                inst.gfxManager.reset(new InteropManager());
-            });
+    int id = getActiveDeviceId();
 
-    return *(inst.gfxManager.get());
+    if (! inst.gfxManagers[id] )
+        inst.gfxManagers[id].reset(new GraphicsManager());
+
+    return *(inst.gfxManagers[id].get());
 }
 
 clfft::clFFTPlanner& getclfftPlanManager()

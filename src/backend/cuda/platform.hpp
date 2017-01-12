@@ -14,10 +14,8 @@
 #include <memory>
 #include <vector>
 #include <string>
-#if defined(WITH_GRAPHICS)
-#include <fg/window.h>
-#endif
 
+#include <GraphicsResourceManager.hpp>
 #include <cufftManager.hpp>
 #include <cublasManager.hpp>
 #include <cusolverDnManager.hpp>
@@ -74,14 +72,14 @@ bool& evalFlag();
 
 class MemoryManager;
 class MemoryManagerPinned;
-class InteropManager;
 ///////////////////////// BEGIN Sub-Managers ///////////////////
 //
 MemoryManager& getMemoryManager();
 
 MemoryManagerPinned& getMemoryManagerPinned();
 
-InteropManager& getGfxInteropManager();
+typedef common::InteropManager<GraphicsResourceManager, CGR_t> GraphicsManager;
+GraphicsManager& interopManager();
 
 cufft::cuFFTPlanner& getcufftPlanManager();
 
@@ -106,7 +104,7 @@ class DeviceManager
 
         friend MemoryManagerPinned& getMemoryManagerPinned();
 
-        friend InteropManager& getGfxInteropManager();
+        friend GraphicsManager& interopManager();
 
         friend cufft::cuFFTPlanner& getcufftPlanManager();
 
@@ -173,7 +171,7 @@ class DeviceManager
 
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
 
-        std::unique_ptr<InteropManager> gfxManager;
+        std::unique_ptr<GraphicsManager> gfxManagers[MAX_DEVICES];
 
         cufft::cuFFTPlanner cufftManagers[MAX_DEVICES];
 

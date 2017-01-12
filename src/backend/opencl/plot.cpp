@@ -12,7 +12,7 @@
 #include <Array.hpp>
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
-#include <interopManager.hpp>
+#include <common/InteropManager.hpp>
 #include <join.hpp>
 #include <plot.hpp>
 #include <reduce.hpp>
@@ -32,7 +32,7 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
         const cl::Buffer *d_P = P.get();
         size_t bytes = plot->verticesSize();
 
-        InteropManager& intrpMngr = getGfxInteropManager();
+        GraphicsManager& intrpMngr = interopManager();
 
         cl::Buffer **resources = intrpMngr.getBufferResource(plot);
 
