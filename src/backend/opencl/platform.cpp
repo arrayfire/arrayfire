@@ -877,7 +877,7 @@ GraphicsManager& interopManager()
     return *(inst.gfxManagers[id].get());
 }
 
-clfft::clFFTPlanner& getclfftPlanManager()
+FFTManager& clfftManager()
 {
     return DeviceManager::getInstance().clfftManagers[getActiveDeviceId()];
 }

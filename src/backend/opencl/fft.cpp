@@ -14,7 +14,7 @@
 #include <err_opencl.hpp>
 #include <math.hpp>
 #include <memory.hpp>
-#include <clfftManager.hpp>
+#include <clfft.hpp>
 
 using af::dim4;
 using std::string;
@@ -24,7 +24,7 @@ namespace opencl
 
 void setFFTPlanCacheSize(size_t numPlans)
 {
-    getclfftPlanManager().setMaxCacheSize(numPlans);
+    clfftManager().maxCacheSize(numPlans);
 }
 
 template<typename T> struct Precision;
@@ -78,21 +78,15 @@ void fft_inplace(Array<T> &in)
     computeDims(tdims   , in.dims());
     computeDims(istrides, in.strides());
 
-    clfftPlanHandle plan;
-
     int batch = 1;
     for (int i = rank; i < 4; i++) {
         batch *= tdims[i];
     }
 
-    clfft::findPlan(plan,
-                    CLFFT_COMPLEX_INTERLEAVED,
-                    CLFFT_COMPLEX_INTERLEAVED,
-                    (clfftDim)rank, tdims,
-                    istrides, istrides[rank],
-                    istrides, istrides[rank],
-                    (clfftPrecision)Precision<T>::type,
-                    batch);
+    PlanType plan = findPlan(CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED,
+                             (clfftDim)rank, tdims,
+                             istrides, istrides[rank], istrides, istrides[rank],
+                             (clfftPrecision)Precision<T>::type, batch);
 
     cl_mem imem = (*in.get())();
     cl_command_queue queue = getQueue()();
@@ -119,21 +113,15 @@ Array<Tc> fft_r2c(const Array<Tr> &in)
     computeDims(istrides,  in.strides());
     computeDims(ostrides, out.strides());
 
-    clfftPlanHandle plan;
-
     int batch = 1;
     for (int i = rank; i < 4; i++) {
         batch *= tdims[i];
     }
 
-    clfft::findPlan(plan,
-                    CLFFT_REAL,
-                    CLFFT_HERMITIAN_INTERLEAVED,
-                    (clfftDim)rank, tdims,
-                    istrides, istrides[rank],
-                    ostrides, ostrides[rank],
-                    (clfftPrecision)Precision<Tc>::type,
-                    batch);
+    PlanType plan = findPlan(CLFFT_REAL, CLFFT_HERMITIAN_INTERLEAVED,
+                             (clfftDim)rank, tdims,
+                             istrides, istrides[rank], ostrides, ostrides[rank],
+                             (clfftPrecision)Precision<Tc>::type, batch);
 
     cl_mem imem = (*in.get())();
     cl_mem omem = (*out.get())();
@@ -159,21 +147,15 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
     computeDims(istrides,  in.strides());
     computeDims(ostrides, out.strides());
 
-    clfftPlanHandle plan;
-
     int batch = 1;
     for (int i = rank; i < 4; i++) {
         batch *= tdims[i];
     }
 
-    clfft::findPlan(plan,
-                    CLFFT_HERMITIAN_INTERLEAVED,
-                    CLFFT_REAL,
-                    (clfftDim)rank, tdims,
-                    istrides, istrides[rank],
-                    ostrides, ostrides[rank],
-                    (clfftPrecision)Precision<Tc>::type,
-                    batch);
+    PlanType plan = findPlan(CLFFT_HERMITIAN_INTERLEAVED, CLFFT_REAL,
+                             (clfftDim)rank, tdims,
+                             istrides, istrides[rank], ostrides, ostrides[rank],
+                             (clfftPrecision)Precision<Tc>::type, batch);
 
     cl_mem imem = (*in.get())();
     cl_mem omem = (*out.get())();

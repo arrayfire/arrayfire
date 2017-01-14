@@ -27,7 +27,7 @@
 #include <string>
 
 #include <GraphicsResourceManager.hpp>
-#include <clfftManager.hpp>
+#include <clfft.hpp>
 
 namespace opencl
 {
@@ -95,7 +95,8 @@ MemoryManagerPinned& getMemoryManagerPinned();
 typedef common::InteropManager<GraphicsResourceManager, CGR_t> GraphicsManager;
 GraphicsManager& interopManager();
 
-clfft::clFFTPlanner& getclfftPlanManager();
+typedef common::FFTPlanCache<PlanCache, PlanType> FFTManager;
+FFTManager& clfftManager();
 //
 ///////////////////////// END Sub-Managers /////////////////////
 
@@ -107,7 +108,7 @@ class DeviceManager
 
     friend GraphicsManager& interopManager();
 
-    friend clfft::clFFTPlanner& getclfftPlanManager();
+    friend FFTManager& clfftManager();
 
     friend std::string getDeviceInfo();
 
@@ -181,6 +182,6 @@ class DeviceManager
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
 
         std::unique_ptr<GraphicsManager> gfxManagers[MAX_DEVICES];
-        clfft::clFFTPlanner clfftManagers[MAX_DEVICES];
+        FFTManager clfftManagers[MAX_DEVICES];
 };
 }

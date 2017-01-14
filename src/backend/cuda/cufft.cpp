@@ -7,11 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <cuda.h> // Need this for CUDA_VERSION
 #include <platform.hpp>
+#include <cufft.hpp>
 #include <memory.hpp>
 
-namespace cufft
+namespace cuda
 {
 
 const char * _cufftGetResultString(cufftResult res)
@@ -76,10 +76,10 @@ const char * _cufftGetResultString(cufftResult res)
     return "cuFFT: unknown error";
 }
 
-void findPlan(cufftHandle &plan, int rank, int *n,
-              int *inembed, int istride, int idist,
-              int *onembed, int ostride, int odist,
-              cufftType type, int batch)
+PlanType findPlan(int rank, int *n,
+                  int *inembed, int istride, int idist,
+                  int *onembed, int ostride, int odist,
+                  cufftType type, int batch)
 {
     // create the key string
     char key_str_temp[64];
@@ -113,37 +113,34 @@ void findPlan(cufftHandle &plan, int rank, int *n,
     sprintf(key_str_temp, "%d:%d", (int)type, batch);
     key_string.append(std::string(key_str_temp));
 
-    // find the matching plan_index in the array cuFFTPlanner::mKeys
-    cuFFTPlanner &planner = cuda::getcufftPlanManager();
+    FFTManager &planner = cuda::cufftManager();
 
-    int planIndex = planner.findIfPlanExists(key_string);
+    int planIndex = planner.find(key_string);
 
     // if found a valid plan, return it
     if (planIndex!=-1) {
-        plan = planner.getPlan(planIndex);
-        return;
+        return planner.get(planIndex);
     }
 
-    cufftHandle temp;
-    cufftResult res = cufftPlanMany(&temp, rank, n,
-                                    inembed, istride, idist,
-                                    onembed, ostride, odist,
+    PlanType retVal;
+    cufftResult res = cufftPlanMany(&retVal, rank, n,
+                                    inembed, istride, idist, onembed, ostride, odist,
                                     type, batch);
 
     // If plan creation fails, clean up the memory we hold on to and try again
     if (res != CUFFT_SUCCESS) {
         cuda::garbageCollect();
-        CUFFT_CHECK(cufftPlanMany(&temp, rank, n,
-                                  inembed, istride, idist,
-                                  onembed, ostride, odist,
+        CUFFT_CHECK(cufftPlanMany(&retVal, rank, n,
+                                  inembed, istride, idist, onembed, ostride, odist,
                                   type, batch));
     }
 
-    plan = temp;
-    cufftSetStream(plan, cuda::getStream(cuda::getActiveDeviceId()));
+    cufftSetStream(retVal, cuda::getStream(cuda::getActiveDeviceId()));
 
     // push the plan into plan cache
-    planner.pushPlan(key_string, plan);
+    planner.push(key_string, retVal);
+
+    return retVal;
 }
 
 }

@@ -12,7 +12,7 @@
 #include <copy.hpp>
 #include <fft.hpp>
 #include <debug_cuda.hpp>
-#include <cufftManager.hpp>
+#include <cufft.hpp>
 #include <math.hpp>
 #include <memory.hpp>
 
@@ -21,10 +21,9 @@ using std::string;
 
 namespace cuda
 {
-
 void setFFTPlanCacheSize(size_t numPlans)
 {
-    cuda::getcufftPlanManager().setMaxCacheSize(numPlans);
+    cufftManager().maxCacheSize(numPlans);
 }
 
 template<typename T>
@@ -89,11 +88,10 @@ void fft_inplace(Array<T> &in)
         batch *= idims[i];
     }
 
-    cufftHandle plan;
-    cufft::findPlan(plan, rank, t_dims,
-                    in_embed , istrides[0], istrides[rank],
-                    in_embed , istrides[0], istrides[rank],
-                    (cufftType)cufft_transform<T>::type, batch);
+    cufftHandle plan = findPlan(rank, t_dims,
+                                in_embed , istrides[0], istrides[rank],
+                                in_embed , istrides[0], istrides[rank],
+                                (cufftType)cufft_transform<T>::type, batch);
 
     cufft_transform<T> transform;
     CUFFT_CHECK(transform(plan, (T *)in.get(), in.get(), direction ? CUFFT_FORWARD : CUFFT_INVERSE));
@@ -124,11 +122,10 @@ Array<Tc> fft_r2c(const Array<Tr> &in)
     dim4 istrides = in.strides();
     dim4 ostrides = out.strides();
 
-    cufftHandle plan;
-    cufft::findPlan(plan, rank, t_dims,
-                    in_embed  , istrides[0], istrides[rank],
-                    out_embed , ostrides[0], ostrides[rank],
-                    (cufftType)cufft_real_transform<Tc, Tr>::type, batch);
+    cufftHandle plan = findPlan(rank, t_dims,
+                                in_embed  , istrides[0], istrides[rank],
+                                out_embed , ostrides[0], ostrides[rank],
+                                (cufftType)cufft_real_transform<Tc, Tr>::type, batch);
 
     cufft_real_transform<Tc, Tr> transform;
     CUFFT_CHECK(transform(plan, (Tr *)in.get(), out.get()));
@@ -157,11 +154,10 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
 
     cufft_real_transform<Tr, Tc> transform;
 
-    cufftHandle plan;
-    cufft::findPlan(plan, rank, t_dims,
-                    in_embed  , istrides[0], istrides[rank],
-                    out_embed , ostrides[0], ostrides[rank],
-                    (cufftType)cufft_real_transform<Tr, Tc>::type, batch);
+    cufftHandle plan = findPlan(rank, t_dims,
+                                in_embed  , istrides[0], istrides[rank],
+                                out_embed , ostrides[0], ostrides[rank],
+                                (cufftType)cufft_real_transform<Tr, Tc>::type, batch);
 
     CUFFT_CHECK(transform(plan, (Tc *)in.get(), out.get()));
     return out;

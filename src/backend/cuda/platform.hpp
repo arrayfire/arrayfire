@@ -16,7 +16,7 @@
 #include <string>
 
 #include <GraphicsResourceManager.hpp>
-#include <cufftManager.hpp>
+#include <cufft.hpp>
 #include <cublasManager.hpp>
 #include <cusolverDnManager.hpp>
 #include <cusparseManager.hpp>
@@ -81,7 +81,8 @@ MemoryManagerPinned& getMemoryManagerPinned();
 typedef common::InteropManager<GraphicsResourceManager, CGR_t> GraphicsManager;
 GraphicsManager& interopManager();
 
-cufft::cuFFTPlanner& getcufftPlanManager();
+typedef common::FFTPlanCache<PlanCache, PlanType> FFTManager;
+FFTManager& cufftManager();
 
 cublasHandle_t getcublasHandle();
 
@@ -106,7 +107,7 @@ class DeviceManager
 
         friend GraphicsManager& interopManager();
 
-        friend cufft::cuFFTPlanner& getcufftPlanManager();
+        friend FFTManager& cufftManager();
 
         friend cublasHandle_t getcublasHandle();
 
@@ -173,7 +174,7 @@ class DeviceManager
 
         std::unique_ptr<GraphicsManager> gfxManagers[MAX_DEVICES];
 
-        cufft::cuFFTPlanner cufftManagers[MAX_DEVICES];
+        FFTManager cufftManagers[MAX_DEVICES];
 
         std::unique_ptr<cublas::cublasHandle> cublasHandles[MAX_DEVICES];
 

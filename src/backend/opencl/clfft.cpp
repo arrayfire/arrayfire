@@ -8,18 +8,15 @@
  ********************************************************/
 
 #include <af/defines.h>
-
 #include <err_common.hpp>
-#include <clfftManager.hpp>
+#include <clfft.hpp>
 #include <platform.hpp>
-
 #include <string>
 
 using std::string;
 
-namespace clfft
+namespace opencl
 {
-
 const char * _clfftGetResultString(clfftStatus st)
 {
     switch (st)
@@ -86,12 +83,11 @@ const char * _clfftGetResultString(clfftStatus st)
     return "Unknown error";
 }
 
-void findPlan(clfftPlanHandle &plan,
-              clfftLayout iLayout, clfftLayout oLayout,
-              clfftDim rank, size_t *clLengths,
-              size_t *istrides, size_t idist,
-              size_t *ostrides, size_t odist,
-              clfftPrecision precision, size_t batch)
+PlanType findPlan(clfftLayout iLayout, clfftLayout oLayout,
+                  clfftDim rank, size_t *clLengths,
+                  size_t *istrides, size_t idist,
+                  size_t *ostrides, size_t odist,
+                  clfftPrecision precision, size_t batch)
 {
     // create the key string
     char key_str_temp[64];
@@ -126,56 +122,53 @@ void findPlan(clfftPlanHandle &plan,
     sprintf(key_str_temp, "%d:" SIZE_T_FRMT_SPECIFIER, (int)precision, batch);
     key_string.append(std::string(key_str_temp));
 
-    // find the matching plan_index in the array clFFTPlanner::mKeys
-    clFFTPlanner &planner = opencl::getclfftPlanManager();
+    FFTManager &planner = opencl::clfftManager();
 
-    int planIndex = planner.findIfPlanExists(key_string);
+    int planIndex = planner.find(key_string);
 
     // if found a valid plan, return it
     if (planIndex!=-1) {
-        plan = planner.getPlan(planIndex);
-        return;
+        return planner.get(planIndex);
     }
 
-    clfftPlanHandle temp;
+    PlanType retVal;
 
     // getContext() returns object of type Context
     // Context() returns the actual cl_context handle
-    CLFFT_CHECK(clfftCreateDefaultPlan(&temp, opencl::getContext()(), rank, clLengths));
+    CLFFT_CHECK(clfftCreateDefaultPlan(&retVal, opencl::getContext()(), rank, clLengths));
 
     // complex to complex
     if (iLayout == oLayout) {
-        CLFFT_CHECK(clfftSetResultLocation(temp, CLFFT_INPLACE));
+        CLFFT_CHECK(clfftSetResultLocation(retVal, CLFFT_INPLACE));
     } else {
-        CLFFT_CHECK(clfftSetResultLocation(temp, CLFFT_OUTOFPLACE));
+        CLFFT_CHECK(clfftSetResultLocation(retVal, CLFFT_OUTOFPLACE));
     }
 
-    CLFFT_CHECK(clfftSetLayout(temp, iLayout, oLayout));
-    CLFFT_CHECK(clfftSetPlanBatchSize(temp, batch));
-    CLFFT_CHECK(clfftSetPlanDistance(temp, idist, odist));
-    CLFFT_CHECK(clfftSetPlanInStride(temp, rank, istrides));
-    CLFFT_CHECK(clfftSetPlanOutStride(temp, rank, ostrides));
-    CLFFT_CHECK(clfftSetPlanPrecision(temp, precision));
-    CLFFT_CHECK(clfftSetPlanScale(temp, CLFFT_BACKWARD, 1.0));
+    CLFFT_CHECK(clfftSetLayout(retVal, iLayout, oLayout));
+    CLFFT_CHECK(clfftSetPlanBatchSize(retVal, batch));
+    CLFFT_CHECK(clfftSetPlanDistance(retVal, idist, odist));
+    CLFFT_CHECK(clfftSetPlanInStride(retVal, rank, istrides));
+    CLFFT_CHECK(clfftSetPlanOutStride(retVal, rank, ostrides));
+    CLFFT_CHECK(clfftSetPlanPrecision(retVal, precision));
+    CLFFT_CHECK(clfftSetPlanScale(retVal, CLFFT_BACKWARD, 1.0));
 
     // getQueue() returns object of type CommandQueue
     // CommandQueue() returns the actual cl_command_queue handle
-    CLFFT_CHECK(clfftBakePlan(temp, 1, &(opencl::getQueue()()), NULL, NULL));
-
-    plan = temp;
+    CLFFT_CHECK(clfftBakePlan(retVal, 1, &(opencl::getQueue()()), NULL, NULL));
 
     // push the plan into plan cache
-    planner.pushPlan(key_string, plan);
+    planner.push(key_string, retVal);
+
+    return retVal;
 }
 
-clFFTPlanner::clFFTPlanner()
-    : mMaxCacheSize(5)
+void PlanCache::initLibrary()
 {
     CLFFT_CHECK(clfftInitSetupData(&mFFTSetup));
     CLFFT_CHECK(clfftSetup(&mFFTSetup));
 }
 
-clFFTPlanner::~clFFTPlanner()
+void PlanCache::deInitLibrary()
 {
     //TODO: FIXME:
     // clfftTeardown() causes a "Pure Virtual Function Called" crash on
@@ -190,15 +183,8 @@ clFFTPlanner::~clFFTPlanner()
     #endif
 }
 
-void clFFTPlanner::popPlan()
+void PlanCache::removePlan(PlanType plan)
 {
-    if (!mCache.empty()) {
-        // destroy the clfft plan associated with the
-        // least recently used plan
-        CLFFT_CHECK(clfftDestroyPlan(&mCache.back().second));
-        // now pop the entry from cache
-        mCache.pop_back();
-    }
+     CLFFT_CHECK(clfftDestroyPlan(&plan));
 }
-
 }

@@ -419,9 +419,9 @@ GraphicsManager& interopManager()
     return *(inst.gfxManagers[id].get());
 }
 
-cufft::cuFFTPlanner& getcufftPlanManager()
+FFTManager& cufftManager()
 {
-    return DeviceManager::getInstance().cufftManagers[cuda::getActiveDeviceId()];
+    return DeviceManager::getInstance().cufftManagers[getActiveDeviceId()];
 }
 
 cublasHandle_t getcublasHandle()
