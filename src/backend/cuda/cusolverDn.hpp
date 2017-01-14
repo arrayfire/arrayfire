@@ -11,40 +11,14 @@
 
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
-#include <stdio.h>
 #include <defines.hpp>
-#include <err_common.hpp>
+#include <common/MatrixAlgebraHandle.hpp>
 
 namespace cuda
 {
-
-class DeviceManager;
-
-}
-
-namespace cusolver
-{
+typedef cusolverDnHandle_t SolveHandle;
 
 const char * errorString(cusolverStatus_t err);
-
-//RAII class around the cusolver Handle
-class cusolverDnHandle
-{
-    friend class cuda::DeviceManager;
-
-    public:
-        ~cusolverDnHandle();
-        cusolverDnHandle_t get() const;
-
-    private:
-        cusolverDnHandle();
-        cusolverDnHandle(cusolverDnHandle const&);
-        void operator=(cusolverDnHandle const&);
-
-        cusolverDnHandle_t handle;
-};
-
-}
 
 #define CUSOLVER_CHECK(fn) do {                     \
         cusolverStatus_t _error = fn;               \
@@ -54,10 +28,24 @@ class cusolverDnHandle
                      sizeof(_err_msg),              \
                      "CUBLAS Error (%d): %s\n",     \
                      (int)(_error),                 \
-                     cusolver::errorString(         \
-                         _error));                  \
+                     errorString(_error));          \
                                                     \
             AF_ERROR(_err_msg,                      \
                      AF_ERR_INTERNAL);              \
         }                                           \
     } while(0)
+
+class cusolverDnHandle : public common::MatrixAlgebraHandle<cusolverDnHandle, SolveHandle>
+{
+    public:
+        void createHandle(SolveHandle* handle) {
+            CUSOLVER_CHECK(cusolverDnCreate(handle));
+        }
+
+        void destroyHandle(SolveHandle handle) {
+            cusolverDnDestroy(handle);
+        }
+};
+
+typedef common::MatrixAlgebraHandle<cusolverDnHandle, SolveHandle> SolveHandleWrapper;
+}

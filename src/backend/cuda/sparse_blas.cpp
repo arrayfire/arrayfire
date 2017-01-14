@@ -155,7 +155,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     // and not OP(A) (gemm wants row/col of OP(A)).
     if(rDims[rColDim] == 1) {
         CUSPARSE_CHECK(csrmv_func<T>()(
-                       getcusparseHandle(),
+                       cusparseHandle(),
                        lOpts,
                        lDims[0], lDims[1], lhs.getNNZ(),
                        &alpha,
@@ -166,7 +166,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                        out.get()));
     } else {
         CUSPARSE_CHECK(csrmm_func<T>()(
-                       getcusparseHandle(),
+                       cusparseHandle(),
                        lOpts,
                        lDims[0], rDims[rColDim], lDims[1], lhs.getNNZ(),
                        &alpha,

@@ -110,7 +110,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     if(is_upper)
         uplo = CUBLAS_FILL_MODE_UPPER;
 
-    CUSOLVER_CHECK(potrf_buf_func<T>()(getcusolverDnHandle(),
+    CUSOLVER_CHECK(potrf_buf_func<T>()(cusolverDnHandle(),
                                        uplo,
                                        N,
                                        in.get(), in.strides()[1],
@@ -119,7 +119,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     T *workspace = memAlloc<T>(lwork);
     int *d_info = memAlloc<int>(1);
 
-    CUSOLVER_CHECK(potrf_func<T>()(getcusolverDnHandle(),
+    CUSOLVER_CHECK(potrf_func<T>()(cusolverDnHandle(),
                                    uplo,
                                    N,
                                    in.get(), in.strides()[1],

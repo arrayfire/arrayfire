@@ -8,42 +8,15 @@
  ********************************************************/
 
 #pragma once
-#include <stdio.h>
-#include <err_common.hpp>
-#include <defines.hpp>
 #include <cublas_v2.h>
+#include <defines.hpp>
+#include <common/MatrixAlgebraHandle.hpp>
 
 namespace cuda
 {
-
-class DeviceManager;
-
-}
-
-namespace cublas
-{
+typedef cublasHandle_t BlasHandle;
 
 const char * errorString(cublasStatus_t err);
-
-//RAII class around the cublas Handle
-class cublasHandle
-{
-    friend class cuda::DeviceManager;
-
-    public:
-        ~cublasHandle();
-        cublasHandle_t get() const;
-
-    private:
-        cublasHandle();
-        cublasHandle(cublasHandle const&);
-        void operator=(cublasHandle const&);
-
-        cublasHandle_t handle;
-};
-
-}
-
 
 #define CUBLAS_CHECK(fn) do {                   \
         cublasStatus_t _error = fn;             \
@@ -53,10 +26,21 @@ class cublasHandle
                      sizeof(_err_msg),          \
                      "CUBLAS Error (%d): %s\n", \
                      (int)(_error),             \
-                     cublas::errorString(       \
-                         _error));              \
+                     errorString(_error));      \
                                                 \
             AF_ERROR(_err_msg,                  \
                      AF_ERR_INTERNAL);          \
         }                                       \
     } while(0)
+
+class cublasHandle : public common::MatrixAlgebraHandle<cublasHandle, BlasHandle>
+{
+    public:
+        void createHandle(BlasHandle* handle);
+        void destroyHandle(BlasHandle handle) {
+            cublasDestroy(handle);
+        }
+};
+
+typedef common::MatrixAlgebraHandle<cublasHandle, BlasHandle> BlasHandleWrapper;
+}

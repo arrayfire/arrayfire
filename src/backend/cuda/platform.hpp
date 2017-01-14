@@ -17,9 +17,9 @@
 
 #include <GraphicsResourceManager.hpp>
 #include <cufft.hpp>
-#include <cublasManager.hpp>
-#include <cusolverDnManager.hpp>
-#include <cusparseManager.hpp>
+#include <cublas.hpp>
+#include <cusolverDn.hpp>
+#include <cusparse.hpp>
 
 namespace cuda
 {
@@ -84,11 +84,11 @@ GraphicsManager& interopManager();
 typedef common::FFTPlanCache<PlanCache, PlanType> FFTManager;
 FFTManager& cufftManager();
 
-cublasHandle_t getcublasHandle();
+BlasHandle cublasHandle();
 
-cusolverDnHandle_t getcusolverDnHandle();
+SolveHandle cusolverDnHandle();
 
-cusparseHandle_t getcusparseHandle();
+SparseHandle cusparseHandle();
 //
 ///////////////////////// END Sub-Managers /////////////////////
 
@@ -109,11 +109,11 @@ class DeviceManager
 
         friend FFTManager& cufftManager();
 
-        friend cublasHandle_t getcublasHandle();
+        friend BlasHandle cublasHandle();
 
-        friend cusolverDnHandle_t getcusolverDnHandle();
+        friend SolveHandle cusolverDnHandle();
 
-        friend cusparseHandle_t getcusparseHandle();
+        friend SparseHandle cusparseHandle();
 
         friend std::string getDeviceInfo(int device);
 
@@ -158,12 +158,6 @@ class DeviceManager
 
         int setActiveDevice(int device, int native = -1);
 
-        void resetcublasHandle(int device);
-
-        void resetcusolverHandle(int device);
-
-        void resetcusparseHandle(int device);
-
         int activeDev;
         int nDevices;
         cudaStream_t streams[MAX_DEVICES];
@@ -176,11 +170,11 @@ class DeviceManager
 
         FFTManager cufftManagers[MAX_DEVICES];
 
-        std::unique_ptr<cublas::cublasHandle> cublasHandles[MAX_DEVICES];
+        std::unique_ptr<BlasHandleWrapper> cublasHandles[MAX_DEVICES];
 
-        std::unique_ptr<cusolver::cusolverDnHandle> cusolverHandles[MAX_DEVICES];
+        std::unique_ptr<SolveHandleWrapper> cusolverHandles[MAX_DEVICES];
 
-        std::unique_ptr<cusparse::cusparseHandle> cusparseHandles[MAX_DEVICES];
+        std::unique_ptr<SparseHandleWrapper> cusparseHandles[MAX_DEVICES];
 };
 
 }

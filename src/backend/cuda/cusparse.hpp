@@ -8,42 +8,15 @@
  ********************************************************/
 
 #pragma once
-#include <stdio.h>
-#include <err_common.hpp>
-#include <defines.hpp>
 #include <cusparse_v2.h>
+#include <defines.hpp>
+#include <common/MatrixAlgebraHandle.hpp>
 
 namespace cuda
 {
-
-class DeviceManager;
-
-}
-
-namespace cusparse
-{
+typedef cusparseHandle_t SparseHandle;
 
 const char * errorString(cusparseStatus_t err);
-
-//RAII class around the cusparse Handle
-class cusparseHandle
-{
-    friend class cuda::DeviceManager;
-
-    public:
-    ~cusparseHandle();
-    cusparseHandle_t get() const;
-
-    private:
-    cusparseHandle();
-    cusparseHandle(cusparseHandle const&);
-    void operator=(cusparseHandle const&);
-
-    cusparseHandle_t handle;
-};
-
-}
-
 
 #define CUSPARSE_CHECK(fn) do {                         \
         cusparseStatus_t _error = fn;                   \
@@ -52,8 +25,21 @@ class cusparseHandle
             snprintf(_err_msg, sizeof(_err_msg),        \
                      "CUSPARSE Error (%d): %s\n",       \
                      (int)(_error),                     \
-                     cusparse::errorString( _error));   \
+                     errorString( _error));             \
                                                         \
             AF_ERROR(_err_msg, AF_ERR_INTERNAL);        \
         }                                               \
     } while(0)
+
+class cusparseHandle : public common::MatrixAlgebraHandle<cusparseHandle, SparseHandle>
+{
+    public:
+        void createHandle(SparseHandle* handle);
+        void destroyHandle(SparseHandle handle) {
+            cusparseDestroy(handle);
+        }
+};
+
+typedef common::MatrixAlgebraHandle<cusparseHandle, SparseHandle> SparseHandleWrapper;
+
+}

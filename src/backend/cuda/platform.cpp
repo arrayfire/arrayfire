@@ -424,26 +424,26 @@ FFTManager& cufftManager()
     return DeviceManager::getInstance().cufftManagers[getActiveDeviceId()];
 }
 
-cublasHandle_t getcublasHandle()
+BlasHandle cublasHandle()
 {
     DeviceManager& instance = DeviceManager::getInstance();
 
     int id = cuda::getActiveDeviceId();
 
     if (! instance.cublasHandles[id] )
-        instance.resetcublasHandle(id);
+        instance.cublasHandles[id].reset(new BlasHandleWrapper());
 
-    return instance.cublasHandles[id]->get();
+    return instance.cublasHandles[id].get()->get();
 }
 
-cusolverDnHandle_t getcusolverDnHandle()
+SolveHandle cusolverDnHandle()
 {
     DeviceManager& instance = DeviceManager::getInstance();
 
     int id = cuda::getActiveDeviceId();
 
     if (! instance.cusolverHandles[id] )
-        instance.resetcusolverHandle(id);
+        instance.cusolverHandles[id].reset(new SolveHandleWrapper());
 
     // FIXME
     // This is not an ideal case. It's just a hack.
@@ -460,19 +460,19 @@ cusolverDnHandle_t getcusolverDnHandle()
     //
     CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(id)));
 
-    return instance.cusolverHandles[id]->get();
+    return instance.cusolverHandles[id].get()->get();
 }
 
-cusparseHandle_t getcusparseHandle()
+SparseHandle cusparseHandle()
 {
     DeviceManager& instance = DeviceManager::getInstance();
 
     int id = cuda::getActiveDeviceId();
 
     if (! instance.cusparseHandles[id] )
-        instance.resetcusparseHandle(id);
+        instance.cusparseHandles[id].reset(new SparseHandleWrapper());
 
-    return instance.cusparseHandles[id]->get();
+    return instance.cusparseHandles[id].get()->get();
 }
 
 DeviceManager::DeviceManager()
@@ -595,21 +595,6 @@ int DeviceManager::setActiveDevice(int device, int nId)
     CUDA_CHECK(err);
 
     return old;
-}
-
-void DeviceManager::resetcublasHandle(int device)
-{
-    cublasHandles[device].reset(new cublas::cublasHandle());
-}
-
-void DeviceManager::resetcusolverHandle(int device)
-{
-    cusolverHandles[device].reset(new cusolver::cusolverDnHandle());
-}
-
-void DeviceManager::resetcusparseHandle(int device)
-{
-    cusparseHandles[device].reset(new cusparse::cusparseHandle());
 }
 
 void sync(int device)

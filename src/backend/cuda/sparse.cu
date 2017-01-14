@@ -261,7 +261,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in)
 
     int nNZ = -1;
     CUSPARSE_CHECK(nnz_func<T>()(
-                        getcusparseHandle(),
+                        cusparseHandle(),
                         dir,
                         M, N,
                         descr,
@@ -282,7 +282,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in)
 
     if(stype == AF_STORAGE_CSR)
         CUSPARSE_CHECK(dense2csr_func<T>()(
-                        getcusparseHandle(),
+                        cusparseHandle(),
                         M, N,
                         descr,
                         in.get(), in.strides()[1],
@@ -290,7 +290,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in)
                         values.get(), rowIdx.get(), colIdx.get()));
     else
         CUSPARSE_CHECK(dense2csc_func<T>()(
-                        getcusparseHandle(),
+                        cusparseHandle(),
                         M, N,
                         descr,
                         in.get(), in.strides()[1],
@@ -336,7 +336,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in)
 
     if(stype == AF_STORAGE_CSR)
         CUSPARSE_CHECK(csr2dense_func<T>()(
-                        getcusparseHandle(),
+                        cusparseHandle(),
                         M, N,
                         descr,
                         in.getValues().get(),
@@ -345,7 +345,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in)
                         dense.get(), d_strides1));
     else
         CUSPARSE_CHECK(csc2dense_func<T>()(
-                        getcusparseHandle(),
+                        cusparseHandle(),
                         M, N,
                         descr,
                         in.getValues().get(),
@@ -377,7 +377,7 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 
         // cusparse function to expand compressed row into coordinate
         CUSPARSE_CHECK(cusparseXcsr2coo(
-                        getcusparseHandle(),
+                        cusparseHandle(),
                         in.getRowIdx().get(),
                         nNZ, in.dims()[0],
                         converted.getRowIdx().get(),
@@ -386,23 +386,23 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
         // Call sort
         size_t pBufferSizeInBytes = 0;
         CUSPARSE_CHECK(cusparseXcoosort_bufferSizeExt(
-                        getcusparseHandle(),
+                        cusparseHandle(),
                         in.dims()[0], in.dims()[1], nNZ,
                         converted.getRowIdx().get(), converted.getColIdx().get(),
                         &pBufferSizeInBytes));
         shared_ptr<char> pBuffer(memAlloc<char>(pBufferSizeInBytes), memFree<char>);
 
         shared_ptr<int> P(memAlloc<int>(nNZ), memFree<int>);
-        CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getcusparseHandle(), nNZ, P.get()));
+        CUSPARSE_CHECK(cusparseCreateIdentityPermutation(cusparseHandle(), nNZ, P.get()));
 
         CUSPARSE_CHECK(cusparseXcoosortByColumn(
-                       getcusparseHandle(),
+                       cusparseHandle(),
                        in.dims()[0], in.dims()[1], nNZ,
                        converted.getRowIdx().get(), converted.getColIdx().get(),
                        P.get(), (void*)pBuffer.get()));
 
         CUSPARSE_CHECK(gthr_func<T>()(
-                       getcusparseHandle(), nNZ,
+                       cusparseHandle(), nNZ,
                        in.getValues().get(),
                        converted.getValues().get(),
                        P.get(), CUSPARSE_INDEX_BASE_ZERO));
@@ -421,23 +421,23 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
         {
             size_t pBufferSizeInBytes = 0;
             CUSPARSE_CHECK(cusparseXcoosort_bufferSizeExt(
-                            getcusparseHandle(),
+                            cusparseHandle(),
                             cooT.dims()[0], cooT.dims()[1], nNZ,
                             cooT.getRowIdx().get(), cooT.getColIdx().get(),
                             &pBufferSizeInBytes));
             shared_ptr<char> pBuffer(memAlloc<char>(pBufferSizeInBytes), memFree<char>);
 
             shared_ptr<int> P(memAlloc<int>(nNZ), memFree<int>);
-            CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getcusparseHandle(), nNZ, P.get()));
+            CUSPARSE_CHECK(cusparseCreateIdentityPermutation(cusparseHandle(), nNZ, P.get()));
 
             CUSPARSE_CHECK(cusparseXcoosortByRow(
-                           getcusparseHandle(),
+                           cusparseHandle(),
                            cooT.dims()[0], cooT.dims()[1], nNZ,
                            cooT.getRowIdx().get(), cooT.getColIdx().get(),
                            P.get(), (void*)pBuffer.get()));
 
             CUSPARSE_CHECK(gthr_func<T>()(
-                           getcusparseHandle(), nNZ,
+                           cusparseHandle(), nNZ,
                            in.getValues().get(),
                            cooT.getValues().get(),
                            P.get(), CUSPARSE_INDEX_BASE_ZERO));
@@ -456,7 +456,7 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 
         // cusparse function to compress row from coordinate
         CUSPARSE_CHECK(cusparseXcoo2csr(
-                        getcusparseHandle(),
+                        cusparseHandle(),
                         cooT.getRowIdx().get(),
                         nNZ, cooT.dims()[0],
                         converted.getRowIdx().get(),
