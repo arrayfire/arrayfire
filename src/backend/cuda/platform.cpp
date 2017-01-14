@@ -327,6 +327,11 @@ cudaStream_t getStream(int device)
     return str;
 }
 
+cudaStream_t getActiveStream()
+{
+    return getStream(getActiveDeviceId());
+}
+
 size_t getDeviceMemorySize(int device)
 {
     return getDeviceProp(device).totalGlobalMem;
@@ -601,7 +606,7 @@ void sync(int device)
 {
     int currDevice = getActiveDeviceId();
     setDevice(device);
-    CUDA_CHECK(cudaStreamSynchronize(getStream(getActiveDeviceId())));
+    CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
     setDevice(currDevice);
 }
 

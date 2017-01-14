@@ -163,7 +163,7 @@ void nonMaximal(float* x_out, float* y_out, float* resp_out,
 
     unsigned* d_corners_found = memAlloc<unsigned>(1);
     CUDA_CHECK(cudaMemsetAsync(d_corners_found, 0, sizeof(unsigned),
-                cuda::getStream(cuda::getActiveDeviceId())));
+                cuda::getActiveStream()));
 
     CUDA_LAUNCH((nonMaxKernel<T>), blocks, threads,
             x_out, y_out, resp_out, d_corners_found, idim0, idim1, resp_in, edge, max_corners);
@@ -171,8 +171,8 @@ void nonMaximal(float* x_out, float* y_out, float* resp_out,
     POST_LAUNCH_CHECK();
 
     CUDA_CHECK(cudaMemcpyAsync(count, d_corners_found, sizeof(unsigned),
-                cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-    CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                cudaMemcpyDeviceToHost, cuda::getActiveStream()));
+    CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
     memFree(d_corners_found);
 }
 

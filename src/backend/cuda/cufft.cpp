@@ -134,7 +134,7 @@ PlanType findPlan(int rank, int *n,
                                   type, batch));
     }
 
-    cufftSetStream(retVal, cuda::getStream(cuda::getActiveDeviceId()));
+    cufftSetStream(retVal, cuda::getActiveStream());
 
     // push the plan into plan cache
     planner.push(key_string, retVal);

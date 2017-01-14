@@ -413,8 +413,8 @@ namespace kernel
             To* h_ptr_raw = h_ptr.get();
 
             CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(To),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                       cudaMemcpyDeviceToHost, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
             memFree(tmp.ptr);
 
             Binary<To, op> reduce;
@@ -430,8 +430,8 @@ namespace kernel
             unique_ptr<Ti> h_ptr(new Ti[in_elements]);
             Ti* h_ptr_raw = h_ptr.get();
             CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, in.ptr, in_elements * sizeof(Ti),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                       cudaMemcpyDeviceToHost, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
             Transform<Ti, To, op> transform;
             Binary<To, op> reduce;

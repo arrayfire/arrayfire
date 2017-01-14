@@ -33,6 +33,6 @@ const char *errorString(cublasStatus_t err)
 void cublasHandle::createHandle(BlasHandle* handle)
 {
     CUBLAS_CHECK(cublasCreate(handle));
-    CUBLAS_CHECK(cublasSetStream(*handle, cuda::getStream(cuda::getActiveDeviceId())));
+    CUBLAS_CHECK(cublasSetStream(*handle, cuda::getActiveStream()));
 }
 }

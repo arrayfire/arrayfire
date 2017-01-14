@@ -13,7 +13,7 @@
 #include <thrust/version.h>
 #include <thrust/system/cuda/detail/par.h>
 
-#define THRUST_STREAM thrust::cuda::par.on(cuda::getStream(cuda::getActiveDeviceId()))
+#define THRUST_STREAM thrust::cuda::par.on(cuda::getActiveStream())
 
 #if THRUST_MAJOR_VERSION>=1 && THRUST_MINOR_VERSION>=8
 
@@ -24,20 +24,20 @@
 
 #define THRUST_SELECT(fn, ...) \
     do {                          \
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId()))); \
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream())); \
         fn(__VA_ARGS__);       \
     } while(0)
 
 #define THRUST_SELECT_OUT(res, fn, ...) \
     do {                          \
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId()))); \
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream())); \
         res = fn(__VA_ARGS__);       \
     } while(0)
 
 #endif
 
 #define CUDA_LAUNCH_SMEM(fn, blks, thrds, smem_size, ...) \
-	fn<<<blks, thrds, smem_size, cuda::getStream(cuda::getActiveDeviceId())>>>(__VA_ARGS__)
+	fn<<<blks, thrds, smem_size, cuda::getActiveStream()>>>(__VA_ARGS__)
 
 #define CUDA_LAUNCH(fn, blks, thrds, ...) \
 	CUDA_LAUNCH_SMEM(fn, blks, thrds, 0, __VA_ARGS__)
@@ -46,14 +46,14 @@
 #ifndef NDEBUG
 
 #define POST_LAUNCH_CHECK() do {                        \
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId()))); \
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream())); \
     } while(0)                                          \
 
 #else
 
 #define POST_LAUNCH_CHECK() do {                                        \
     if(cuda::synchronize_calls()) {                                     \
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId()))); \
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream())); \
     } else {                                                            \
         CUDA_CHECK(cudaPeekAtLastError());                              \
     }                                                                   \

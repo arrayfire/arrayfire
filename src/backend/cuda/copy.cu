@@ -54,7 +54,7 @@ namespace cuda
             CUDA_CHECK(cudaMemcpyAsync(out.get(), A.get(),
                                        A.elements() * sizeof(T),
                                        cudaMemcpyDeviceToDevice,
-                                       cuda::getStream(cuda::getActiveDeviceId())));
+                                       cuda::getActiveStream()));
         } else {
             // FIXME: Seems to fail when using Param<T>
             kernel::memcopy(out.get(), out.strides().get(), A.get(), A.dims().get(),
@@ -97,7 +97,7 @@ namespace cuda
                 CUDA_CHECK(cudaMemcpyAsync(out.get(), in.get(),
                                            in.elements() * sizeof(T),
                                            cudaMemcpyDeviceToDevice,
-                                           cuda::getStream(cuda::getActiveDeviceId())));
+                                           cuda::getActiveStream()));
             } else {
                 kernel::copy<T, T>(out, in, in.ndims(), scalar<T>(0), 1);
             }

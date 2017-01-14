@@ -58,12 +58,12 @@ namespace cuda
 #endif
         if (!is_device) {
             CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, dims.elements() * sizeof(T),
-                                       cudaMemcpyHostToDevice, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                                       cudaMemcpyHostToDevice, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         } else if (copy_device) {
             CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, dims.elements() * sizeof(T),
-                                       cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                                       cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         }
     }
 
@@ -107,7 +107,7 @@ namespace cuda
         owner(true)
     {
         if (!is_device) {
-            cudaStream_t stream = getStream(getActiveDeviceId());
+            cudaStream_t stream = getActiveStream();
             CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, info.total() * sizeof(T),
                                        cudaMemcpyHostToDevice, stream));
             CUDA_CHECK(cudaStreamSynchronize(stream));
@@ -340,9 +340,8 @@ namespace cuda
 
         T *ptr = arr.get();
 
-        CUDA_CHECK(cudaMemcpyAsync(ptr, data, bytes, cudaMemcpyHostToDevice,
-                    cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(ptr, data, bytes, cudaMemcpyHostToDevice, cuda::getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
         return;
     }
@@ -357,9 +356,7 @@ namespace cuda
 
         T *ptr = arr.get();
 
-        CUDA_CHECK(cudaMemcpyAsync(ptr, data,
-                                   bytes, cudaMemcpyDeviceToDevice,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(ptr, data, bytes, cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
 
         return;
     }

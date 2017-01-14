@@ -199,7 +199,7 @@ namespace cuda
             CUDA_CHECK(cudaMemcpyToSymbolAsync(c_tmat, tf.ptr,
                                                nTfs2 * nTfs3 * tf_len * sizeof(float),
                                                0, cudaMemcpyDeviceToDevice,
-                                               cuda::getStream(cuda::getActiveDeviceId())));
+                                               cuda::getActiveStream()));
 
             dim3 threads(TX, TY, 1);
             dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));

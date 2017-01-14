@@ -49,6 +49,8 @@ int getDeviceNativeId(int device);
 
 cudaStream_t getStream(int device);
 
+cudaStream_t getActiveStream();
+
 size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();

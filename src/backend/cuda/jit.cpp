@@ -655,7 +655,7 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> nodes)
                             threads_y,
                             1,
                             0,
-                            getStream(getActiveDeviceId()),
+                            getActiveStream(),
                             &args.front(),
                             NULL));
 

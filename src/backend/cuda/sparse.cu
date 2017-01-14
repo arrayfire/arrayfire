@@ -373,7 +373,7 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
         CUDA_CHECK(cudaMemcpyAsync(converted.getColIdx().get(), in.getColIdx().get(),
                                    in.getColIdx().elements() * sizeof(int),
                                    cudaMemcpyDeviceToDevice,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
+                                   cuda::getActiveStream()));
 
         // cusparse function to expand compressed row into coordinate
         CUSPARSE_CHECK(cusparseXcsr2coo(
@@ -448,11 +448,11 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
         CUDA_CHECK(cudaMemcpyAsync(converted.getValues().get(), cooT.getValues().get(),
                                    cooT.getValues().elements() * sizeof(T),
                                    cudaMemcpyDeviceToDevice,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
+                                   cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(converted.getColIdx().get(), cooT.getColIdx().get(),
                                    cooT.getColIdx().elements() * sizeof(int),
                                    cudaMemcpyDeviceToDevice,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
+                                   cuda::getActiveStream()));
 
         // cusparse function to compress row from coordinate
         CUSPARSE_CHECK(cusparseXcoo2csr(

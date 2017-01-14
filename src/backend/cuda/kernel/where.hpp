@@ -118,8 +118,8 @@ namespace kernel
         uint total;
         CUDA_CHECK(cudaMemcpyAsync(&total, rtmp.ptr + rtmp_elements - 1,
                               sizeof(uint), cudaMemcpyDeviceToHost,
-                              cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                              cuda::getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
         out.ptr = memAlloc<uint>(total);
 

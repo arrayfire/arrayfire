@@ -33,7 +33,7 @@ Array<T>  morph(const Array<T> &in, const Array<T> &mask)
     CUDA_CHECK(cudaMemcpyToSymbolAsync(kernel::cFilter, mask.get(),
                                   mdims[0] * mdims[1] * sizeof(T),
                                   0, cudaMemcpyDeviceToDevice,
-                                  cuda::getStream(cuda::getActiveDeviceId())));
+                                  cuda::getActiveStream()));
 
     if (isDilation)
         kernel::morph<T, true >(out, in, mdims[0]);

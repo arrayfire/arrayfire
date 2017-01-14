@@ -612,27 +612,27 @@ int computeH(
             POST_LAUNCH_CHECK();
 
             CUDA_CHECK(cudaMemcpyAsync(&minMedian, finalMedian, sizeof(float),
-                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+                        cudaMemcpyDeviceToHost, cuda::getActiveStream()));
             CUDA_CHECK(cudaMemcpyAsync(&minIdx, finalIdx, sizeof(unsigned),
-                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+                        cudaMemcpyDeviceToHost, cuda::getActiveStream()));
 
             memFree(finalMedian);
             memFree(finalIdx);
         } else {
             CUDA_CHECK(cudaMemcpyAsync(&minMedian, median.ptr, sizeof(float),
-                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+                        cudaMemcpyDeviceToHost, cuda::getActiveStream()));
             CUDA_CHECK(cudaMemcpyAsync(&minIdx, idx.ptr, sizeof(unsigned),
-                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+                        cudaMemcpyDeviceToHost, cuda::getActiveStream()));
         }
 
         // Copy best homography to output
         CUDA_CHECK(cudaMemcpyAsync(bestH.ptr, H.ptr + minIdx * 9, 9*sizeof(T),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
 
         blocks = dim3(divup(nsamples, threads.x));
         // sync stream for the device to host copies to be visible for
         // the subsequent kernel launch
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
         CUDA_LAUNCH((computeLMedSInliers<T>), blocks, threads,
                     inliers, bestH, x_src, y_src, x_dst, y_dst,
@@ -648,7 +648,7 @@ int computeH(
         kernel::reduce<unsigned, unsigned, af_add_t>(totalInliers, inliers, 0, false, 0.0);
 
         CUDA_CHECK(cudaMemcpyAsync(&inliersH, totalInliers.ptr, sizeof(unsigned),
-                    cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToHost, cuda::getActiveStream()));
 
         memFree(totalInliers.ptr);
         memFree(median.ptr);
@@ -657,9 +657,9 @@ int computeH(
         inliersH = kernel::ireduce_all<unsigned, af_max_t>(&blockIdx, inliers);
         // Copies back index and number of inliers of best homography estimation
         CUDA_CHECK(cudaMemcpyAsync(&idxH, idx.ptr+blockIdx, sizeof(unsigned),
-                    cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToHost, cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(bestH.ptr, H.ptr + idxH * 9, 9*sizeof(T),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
 
     }
 
@@ -667,7 +667,7 @@ int computeH(
     memFree(idx.ptr);
     // sync stream for the device to host copies to be visible for
     // the subsequent kernel launch
-    CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+    CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
     return (int)inliersH;
 }

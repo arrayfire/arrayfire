@@ -104,7 +104,7 @@ namespace cuda
             //val.modDims(inDims);
 
             // Not really necessary
-            // CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+            // CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
             memFree(key);
         }
 

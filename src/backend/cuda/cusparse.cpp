@@ -34,6 +34,6 @@ const char *errorString(cusparseStatus_t err)
 void cusparseHandle::createHandle(SparseHandle* handle)
 {
     CUSPARSE_CHECK(cusparseCreate(handle));
-    CUSPARSE_CHECK(cusparseSetStream(*handle, cuda::getStream(cuda::getActiveDeviceId())));
+    CUSPARSE_CHECK(cusparseSetStream(*handle, cuda::getActiveStream()));
 }
 }

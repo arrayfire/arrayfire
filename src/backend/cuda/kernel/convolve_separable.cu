@@ -133,7 +133,7 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<accType> filter)
    // FIX ME: if the filter array is strided, direct copy of symbols
    // might cause issues
    CUDA_CHECK(cudaMemcpyToSymbolAsync(kernel::sFilter, filter.ptr, fLen*sizeof(accType), 0,
-               cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+               cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
 
     switch(fLen) {
         case  2: conv2Helper<T, accType, conv_dim, expand,  2>(blocks, threads, out, signal, blk_x, blk_y); break;

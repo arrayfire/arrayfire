@@ -415,7 +415,7 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
         h_continue = 0;
         CUDA_CHECK(cudaMemcpyToSymbolAsync(continue_flag, &h_continue, sizeof(int),
                     0, cudaMemcpyHostToDevice,
-                    cuda::getStream(cuda::getActiveDeviceId())));
+                    cuda::getActiveStream()));
 
         CUDA_LAUNCH((update_equiv<T, 16, n_per_thread, full_conn>), blocks, threads, out, tex);
 
@@ -423,8 +423,8 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
 
         CUDA_CHECK(cudaMemcpyFromSymbolAsync(&h_continue, continue_flag, sizeof(int),
                     0, cudaMemcpyDeviceToHost,
-                    cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                    cuda::getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
     }
 
     // Now, perform the final relabeling.  This converts the equivalency
@@ -435,7 +435,7 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
     T* tmp = cuda::memAlloc<T>(size);
     CUDA_CHECK(cudaMemcpyAsync(tmp, out.ptr, size * sizeof(T),
                           cudaMemcpyDeviceToDevice,
-                          cuda::getStream(cuda::getActiveDeviceId())));
+                          cuda::getActiveStream()));
 
     // Wrap raw device ptr
     thrust::device_ptr<T> wrapped_tmp = thrust::device_pointer_cast(tmp);

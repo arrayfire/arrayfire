@@ -491,10 +491,10 @@ namespace kernel
             uint*   h_lptr_raw = h_lptr.get();
 
             CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(T),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+                       cudaMemcpyDeviceToHost, cuda::getActiveStream()));
             CUDA_CHECK(cudaMemcpyAsync(h_lptr_raw, tlptr, tmp_elements * sizeof(uint),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                       cudaMemcpyDeviceToHost, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
             memFree(tmp.ptr);
             memFree(tlptr);
 
@@ -522,8 +522,8 @@ namespace kernel
             unique_ptr<T> h_ptr(new T[in_elements]);
             T* h_ptr_raw = h_ptr.get();
             CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, in.ptr, in_elements * sizeof(T),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                       cudaMemcpyDeviceToHost, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
             MinMaxOp<op, T> Op(h_ptr_raw[0], 0);
             for (int i = 1; i < in_elements; i++) {
