@@ -99,7 +99,6 @@ CPUInfo::CPUInfo()
         }
     } else {
         mVendorId = "Unkown";
-        std::cout<< "Unexpected vendor id" << std::endl;
     }
     // Get processor brand string
     // This seems to be working for both Intel & AMD vendors
