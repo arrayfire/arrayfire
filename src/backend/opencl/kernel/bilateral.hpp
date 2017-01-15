@@ -49,7 +49,8 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
 
     std::call_once( compileFlags[device], [device] () {
             bool use_native_exp = (getActivePlatform() != AFCL_PLATFORM_POCL
-                                && getActivePlatform() != AFCL_PLATFORM_APPLE);
+                                && getActivePlatform() != AFCL_PLATFORM_APPLE
+                                && getActivePlatform() != AFCL_PLATFORM_AMD);
             std::ostringstream options;
             options << " -D inType=" << dtype_traits<inType>::getName()
                     << " -D outType=" << dtype_traits<outType>::getName();
