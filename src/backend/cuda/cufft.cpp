@@ -13,7 +13,6 @@
 
 namespace cuda
 {
-
 const char * _cufftGetResultString(cufftResult res)
 {
     switch (res)
@@ -112,7 +111,7 @@ PlanType findPlan(int rank, int *n,
     sprintf(key_str_temp, "%d:%d", (int)type, batch);
     key_string.append(std::string(key_str_temp));
 
-    FFTManager &planner = cuda::cufftManager();
+    PlanCache &planner = cuda::fftManager();
 
     int planIndex = planner.find(key_string);
 
@@ -141,5 +140,4 @@ PlanType findPlan(int rank, int *n,
 
     return retVal;
 }
-
 }

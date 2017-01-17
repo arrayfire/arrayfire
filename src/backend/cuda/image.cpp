@@ -16,7 +16,7 @@
 #include <image.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
-#include <common/InteropManager.hpp>
+#include <GraphicsResourceManager.hpp>
 
 using af::dim4;
 
@@ -28,7 +28,7 @@ template<typename T>
 void copy_image(const Array<T> &in, const forge::Image* image)
 {
     if(DeviceManager::checkGraphicsInteropCapability()) {
-        GraphicsManager& intrpMngr = interopManager();
+        GraphicsResourceManager& intrpMngr = interopManager();
 
         cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(image);
 

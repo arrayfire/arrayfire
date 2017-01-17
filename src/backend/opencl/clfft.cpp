@@ -122,7 +122,7 @@ PlanType findPlan(clfftLayout iLayout, clfftLayout oLayout,
     sprintf(key_str_temp, "%d:" SIZE_T_FRMT_SPECIFIER, (int)precision, batch);
     key_string.append(std::string(key_str_temp));
 
-    FFTManager &planner = opencl::clfftManager();
+    PlanCache &planner = opencl::fftManager();
 
     int planIndex = planner.find(key_string);
 

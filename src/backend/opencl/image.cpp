@@ -13,7 +13,7 @@
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
 #include <image.hpp>
-#include <common/InteropManager.hpp>
+#include <GraphicsResourceManager.hpp>
 
 #include <stdexcept>
 #include <vector>
@@ -27,7 +27,7 @@ void copy_image(const Array<T> &in, const forge::Image* image)
 {
     if (isGLSharingSupported()) {
         CheckGL("Begin opencl resource copy");
-        GraphicsManager& intrpMngr = interopManager();
+        GraphicsResourceManager& intrpMngr = interopManager();
 
         cl::Buffer **resources = intrpMngr.getBufferResource(image);
         const cl::Buffer *d_X = in.get();

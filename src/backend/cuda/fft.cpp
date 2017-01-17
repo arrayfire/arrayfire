@@ -23,7 +23,7 @@ namespace cuda
 {
 void setFFTPlanCacheSize(size_t numPlans)
 {
-    cufftManager().maxCacheSize(numPlans);
+    fftManager().maxCacheSize(numPlans);
 }
 
 template<typename T>

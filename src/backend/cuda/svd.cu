@@ -86,14 +86,14 @@ SVD_SPECIALIZE(cdouble, double, Z);
 
         int lwork = 0;
 
-        CUSOLVER_CHECK(gesvd_buf_func<T>(cusolverDnHandle(), M, N, &lwork));
+        CUSOLVER_CHECK(gesvd_buf_func<T>(solverDnHandle(), M, N, &lwork));
 
         T  *lWorkspace = memAlloc<T >(lwork);
         Tr *rWorkspace = memAlloc<Tr>(5 * std::min(M, N));
 
         int *info = memAlloc<int>(1);
 
-        gesvd_func<T, Tr>(cusolverDnHandle(), 'A', 'A', M, N, in.get(),
+        gesvd_func<T, Tr>(solverDnHandle(), 'A', 'A', M, N, in.get(),
                           M, s.get(), u.get(), M, vt.get(), N,
                           lWorkspace, lwork, rWorkspace, info);
 

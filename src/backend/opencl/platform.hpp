@@ -89,11 +89,9 @@ MemoryManager& memoryManager();
 
 MemoryManagerPinned& pinnedMemoryManager();
 
-typedef common::InteropManager<GraphicsResourceManager, CGR_t> GraphicsManager;
-GraphicsManager& interopManager();
+GraphicsResourceManager& interopManager();
 
-typedef common::FFTPlanCache<PlanCache, PlanType> FFTManager;
-FFTManager& clfftManager();
+PlanCache& fftManager();
 //
 ///////////////////////// END Sub-Managers /////////////////////
 
@@ -103,9 +101,9 @@ class DeviceManager
 
     friend MemoryManagerPinned& pinnedMemoryManager();
 
-    friend GraphicsManager& interopManager();
+    friend GraphicsResourceManager& interopManager();
 
-    friend FFTManager& clfftManager();
+    friend PlanCache& fftManager();
 
     friend std::string getDeviceInfo();
 
@@ -178,7 +176,7 @@ class DeviceManager
         std::unique_ptr<MemoryManager> memManager;
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
 
-        std::unique_ptr<GraphicsManager> gfxManagers[MAX_DEVICES];
-        FFTManager clfftManagers[MAX_DEVICES];
+        std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
+        PlanCache clfftManagers[MAX_DEVICES];
 };
 }

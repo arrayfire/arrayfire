@@ -24,7 +24,7 @@ namespace opencl
 
 void setFFTPlanCacheSize(size_t numPlans)
 {
-    clfftManager().maxCacheSize(numPlans);
+    fftManager().maxCacheSize(numPlans);
 }
 
 template<typename T> struct Precision;

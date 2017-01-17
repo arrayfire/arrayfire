@@ -860,19 +860,19 @@ MemoryManagerPinned& pinnedMemoryManager()
     return *(inst.pinnedMemManager.get());
 }
 
-GraphicsManager& interopManager()
+GraphicsResourceManager& interopManager()
 {
     DeviceManager& inst = DeviceManager::getInstance();
 
     int id = getActiveDeviceId();
 
     if (! inst.gfxManagers[id] )
-        inst.gfxManagers[id].reset(new GraphicsManager());
+        inst.gfxManagers[id].reset(new GraphicsResourceManager());
 
     return *(inst.gfxManagers[id].get());
 }
 
-FFTManager& clfftManager()
+PlanCache& fftManager()
 {
     return DeviceManager::getInstance().clfftManagers[getActiveDeviceId()];
 }

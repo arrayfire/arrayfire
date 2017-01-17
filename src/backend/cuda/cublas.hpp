@@ -41,6 +41,4 @@ class cublasHandle : public common::MatrixAlgebraHandle<cublasHandle, BlasHandle
             cublasDestroy(handle);
         }
 };
-
-typedef common::MatrixAlgebraHandle<cublasHandle, BlasHandle> BlasHandleWrapper;
 }

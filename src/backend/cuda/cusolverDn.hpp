@@ -46,6 +46,4 @@ class cusolverDnHandle : public common::MatrixAlgebraHandle<cusolverDnHandle, So
             cusolverDnDestroy(handle);
         }
 };
-
-typedef common::MatrixAlgebraHandle<cusolverDnHandle, SolveHandle> SolveHandleWrapper;
 }

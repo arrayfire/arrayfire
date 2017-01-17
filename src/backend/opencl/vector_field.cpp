@@ -12,7 +12,7 @@
 #include <Array.hpp>
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
-#include <common/InteropManager.hpp>
+#include <GraphicsResourceManager.hpp>
 #include <vector_field.hpp>
 
 using af::dim4;
@@ -32,7 +32,7 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
         size_t pBytes = vector_field->verticesSize();
         size_t dBytes = vector_field->directionsSize();
 
-        GraphicsManager& intrpMngr = interopManager();
+        GraphicsResourceManager& intrpMngr = interopManager();
 
         cl::Buffer **resources = intrpMngr.getBufferResource(vector_field);
 

@@ -78,17 +78,15 @@ MemoryManager& memoryManager();
 
 MemoryManagerPinned& pinnedMemoryManager();
 
-typedef common::InteropManager<GraphicsResourceManager, CGR_t> GraphicsManager;
-GraphicsManager& interopManager();
+GraphicsResourceManager& interopManager();
 
-typedef common::FFTPlanCache<PlanCache, PlanType> FFTManager;
-FFTManager& cufftManager();
+PlanCache& fftManager();
 
-BlasHandle cublasHandle();
+BlasHandle blasHandle();
 
-SolveHandle cusolverDnHandle();
+SolveHandle solverDnHandle();
 
-SparseHandle cusparseHandle();
+SparseHandle sparseHandle();
 //
 ///////////////////////// END Sub-Managers /////////////////////
 
@@ -105,15 +103,15 @@ class DeviceManager
 
         friend MemoryManagerPinned& pinnedMemoryManager();
 
-        friend GraphicsManager& interopManager();
+        friend GraphicsResourceManager& interopManager();
 
-        friend FFTManager& cufftManager();
+        friend PlanCache& fftManager();
 
-        friend BlasHandle cublasHandle();
+        friend BlasHandle blasHandle();
 
-        friend SolveHandle cusolverDnHandle();
+        friend SolveHandle solverDnHandle();
 
-        friend SparseHandle cusparseHandle();
+        friend SparseHandle sparseHandle();
 
         friend std::string getDeviceInfo(int device);
 
@@ -166,15 +164,15 @@ class DeviceManager
 
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
 
-        std::unique_ptr<GraphicsManager> gfxManagers[MAX_DEVICES];
+        std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
 
-        FFTManager cufftManagers[MAX_DEVICES];
+        PlanCache cufftManagers[MAX_DEVICES];
 
-        std::unique_ptr<BlasHandleWrapper> cublasHandles[MAX_DEVICES];
+        std::unique_ptr<cublasHandle> cublasHandles[MAX_DEVICES];
 
-        std::unique_ptr<SolveHandleWrapper> cusolverHandles[MAX_DEVICES];
+        std::unique_ptr<cusolverDnHandle> cusolverHandles[MAX_DEVICES];
 
-        std::unique_ptr<SparseHandleWrapper> cusparseHandles[MAX_DEVICES];
+        std::unique_ptr<cusparseHandle> cusparseHandles[MAX_DEVICES];
 };
 
 }

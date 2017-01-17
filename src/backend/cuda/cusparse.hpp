@@ -39,7 +39,4 @@ class cusparseHandle : public common::MatrixAlgebraHandle<cusparseHandle, Sparse
             cusparseDestroy(handle);
         }
 };
-
-typedef common::MatrixAlgebraHandle<cusparseHandle, SparseHandle> SparseHandleWrapper;
-
 }

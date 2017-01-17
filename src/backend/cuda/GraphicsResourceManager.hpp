@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #if defined(WITH_GRAPHICS)
 #if defined(OS_WIN)
 #include <windows.h>

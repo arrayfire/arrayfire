@@ -129,7 +129,7 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 
     int lwork = 0;
 
-    CUSOLVER_CHECK(getrf_buf_func<T>()(cusolverDnHandle(),
+    CUSOLVER_CHECK(getrf_buf_func<T>()(solverDnHandle(),
                                        M, N,
                                        in.get(), in.strides()[1],
                                        &lwork));
@@ -137,7 +137,7 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
     T *workspace = memAlloc<T>(lwork);
     int *info = memAlloc<int>(1);
 
-    CUSOLVER_CHECK(getrf_func<T>()(cusolverDnHandle(),
+    CUSOLVER_CHECK(getrf_func<T>()(solverDnHandle(),
                                    M, N,
                                    in.get(), in.strides()[1],
                                    workspace,

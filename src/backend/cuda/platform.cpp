@@ -24,7 +24,6 @@
 #include <err_cuda.hpp>
 #include <util.hpp>
 #include <host_memory.hpp>
-#include <common/InteropManager.hpp>
 
 using namespace std;
 
@@ -407,43 +406,43 @@ MemoryManagerPinned& pinnedMemoryManager()
     return *(inst.pinnedMemManager.get());
 }
 
-GraphicsManager& interopManager()
+GraphicsResourceManager& interopManager()
 {
     DeviceManager& inst = DeviceManager::getInstance();
 
     int id = cuda::getActiveDeviceId();
 
     if (! inst.gfxManagers[id] )
-        inst.gfxManagers[id].reset(new GraphicsManager());
+        inst.gfxManagers[id].reset(new GraphicsResourceManager());
 
     return *(inst.gfxManagers[id].get());
 }
 
-FFTManager& cufftManager()
+PlanCache& fftManager()
 {
     return DeviceManager::getInstance().cufftManagers[getActiveDeviceId()];
 }
 
-BlasHandle cublasHandle()
+BlasHandle blasHandle()
 {
     DeviceManager& instance = DeviceManager::getInstance();
 
     int id = cuda::getActiveDeviceId();
 
     if (! instance.cublasHandles[id] )
-        instance.cublasHandles[id].reset(new BlasHandleWrapper());
+        instance.cublasHandles[id].reset(new cublasHandle());
 
     return instance.cublasHandles[id].get()->get();
 }
 
-SolveHandle cusolverDnHandle()
+SolveHandle solverDnHandle()
 {
     DeviceManager& instance = DeviceManager::getInstance();
 
     int id = cuda::getActiveDeviceId();
 
     if (! instance.cusolverHandles[id] )
-        instance.cusolverHandles[id].reset(new SolveHandleWrapper());
+        instance.cusolverHandles[id].reset(new cusolverDnHandle());
 
     // FIXME
     // This is not an ideal case. It's just a hack.
@@ -463,14 +462,14 @@ SolveHandle cusolverDnHandle()
     return instance.cusolverHandles[id].get()->get();
 }
 
-SparseHandle cusparseHandle()
+SparseHandle sparseHandle()
 {
     DeviceManager& instance = DeviceManager::getInstance();
 
     int id = cuda::getActiveDeviceId();
 
     if (! instance.cusparseHandles[id] )
-        instance.cusparseHandles[id].reset(new SparseHandleWrapper());
+        instance.cusparseHandles[id].reset(new cusparseHandle());
 
     return instance.cusparseHandles[id].get()->get();
 }
