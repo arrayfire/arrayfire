@@ -18,7 +18,6 @@
 #include <cstddef>
 #include <af/opencl.h>
 #include <util.hpp>
-#include <MemoryManager.hpp>
 
 using af::dim4;
 

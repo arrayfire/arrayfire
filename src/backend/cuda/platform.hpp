@@ -14,7 +14,7 @@
 #include <memory>
 #include <vector>
 #include <string>
-
+#include <memory.hpp>
 #include <GraphicsResourceManager.hpp>
 #include <cufft.hpp>
 #include <cublas.hpp>
@@ -72,13 +72,11 @@ struct cudaDevice_t {
 
 bool& evalFlag();
 
-class MemoryManager;
-class MemoryManagerPinned;
 ///////////////////////// BEGIN Sub-Managers ///////////////////
 //
-MemoryManager& getMemoryManager();
+MemoryManager& memoryManager();
 
-MemoryManagerPinned& getMemoryManagerPinned();
+MemoryManagerPinned& pinnedMemoryManager();
 
 typedef common::InteropManager<GraphicsResourceManager, CGR_t> GraphicsManager;
 GraphicsManager& interopManager();
@@ -103,9 +101,9 @@ class DeviceManager
 
         static DeviceManager& getInstance();
 
-        friend MemoryManager& getMemoryManager();
+        friend MemoryManager& memoryManager();
 
-        friend MemoryManagerPinned& getMemoryManagerPinned();
+        friend MemoryManagerPinned& pinnedMemoryManager();
 
         friend GraphicsManager& interopManager();
 

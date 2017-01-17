@@ -257,6 +257,17 @@ bool& evalFlag()
     return flag;
 }
 
+MemoryManager& memoryManager()
+{
+    static std::once_flag flag;
+
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    std::call_once(flag, [&]() { inst.memManager.reset(new MemoryManager()); });
+
+    return *(inst.memManager.get());
+}
+
 DeviceManager& DeviceManager::getInstance()
 {
     static DeviceManager my_instance;

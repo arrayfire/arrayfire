@@ -29,7 +29,6 @@
 #include <err_opencl.hpp>
 #include <host_memory.hpp>
 #include <common/InteropManager.hpp>
-#include <memoryManager.hpp>
 #include <platform.hpp>
 #include <util.hpp>
 #include <version.hpp>
@@ -839,28 +838,24 @@ bool& evalFlag()
     return flag;
 }
 
-MemoryManager& getMemoryManager()
+MemoryManager& memoryManager()
 {
     static std::once_flag flag;
 
     DeviceManager& inst = DeviceManager::getInstance();
 
-    std::call_once(flag, [&]() {
-                inst.memManager.reset(new MemoryManager());
-            });
+    std::call_once(flag, [&]() { inst.memManager.reset(new MemoryManager()); });
 
     return *(inst.memManager.get());
 }
 
-MemoryManagerPinned& getMemoryManagerPinned()
+MemoryManagerPinned& pinnedMemoryManager()
 {
     static std::once_flag flag;
 
     DeviceManager& inst = DeviceManager::getInstance();
 
-    std::call_once(flag, [&]() {
-                inst.pinnedMemManager.reset(new MemoryManagerPinned());
-            });
+    std::call_once(flag, [&]() { inst.pinnedMemManager.reset(new MemoryManagerPinned()); });
 
     return *(inst.pinnedMemManager.get());
 }

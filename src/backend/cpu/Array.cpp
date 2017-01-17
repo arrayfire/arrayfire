@@ -19,7 +19,6 @@
 #include <queue.hpp>
 #include <cstring>
 #include <cstddef>
-#include <MemoryManager.hpp>
 
 namespace cpu
 {

@@ -26,6 +26,7 @@
 #include <vector>
 #include <string>
 
+#include <memory.hpp>
 #include <GraphicsResourceManager.hpp>
 #include <clfft.hpp>
 
@@ -82,15 +83,11 @@ int getActivePlatform();
 
 bool& evalFlag();
 
-// Forward Declarations
-class MemoryManager;
-class MemoryManagerPinned;
-
 ///////////////////////// BEGIN Sub-Managers ///////////////////
 //
-MemoryManager &getMemoryManager();
+MemoryManager& memoryManager();
 
-MemoryManagerPinned& getMemoryManagerPinned();
+MemoryManagerPinned& pinnedMemoryManager();
 
 typedef common::InteropManager<GraphicsResourceManager, CGR_t> GraphicsManager;
 GraphicsManager& interopManager();
@@ -102,9 +99,9 @@ FFTManager& clfftManager();
 
 class DeviceManager
 {
-    friend MemoryManager &getMemoryManager();
+    friend MemoryManager& memoryManager();
 
-    friend MemoryManagerPinned& getMemoryManagerPinned();
+    friend MemoryManagerPinned& pinnedMemoryManager();
 
     friend GraphicsManager& interopManager();
 

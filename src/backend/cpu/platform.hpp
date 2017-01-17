@@ -12,8 +12,9 @@
 #include <array>
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <string>
-
+#include <memory.hpp>
 #include <queue.hpp>
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) || defined(_WIN64)
@@ -82,7 +83,6 @@ class CPUInfo {
 
 namespace cpu
 {
-
 int getBackend();
 
 std::string getDeviceInfo();
@@ -109,6 +109,8 @@ void sync(int device);
 
 bool& evalFlag();
 
+MemoryManager& memoryManager();
+
 class DeviceManager
 {
     public:
@@ -120,6 +122,8 @@ class DeviceManager
         static DeviceManager& getInstance();
 
         friend queue& getQueue(int device);
+
+        friend MemoryManager& memoryManager();
 
         CPUInfo getCPUInfo() const;
 
@@ -137,6 +141,7 @@ class DeviceManager
         // Attributes
         const CPUInfo cinfo;
         std::array<queue, MAX_QUEUES> queues;
-};
 
+        std::unique_ptr<MemoryManager> memManager;
+};
 }

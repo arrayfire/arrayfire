@@ -15,7 +15,6 @@
 #include <scalar.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
-#include <MemoryManager.hpp>
 
 #include <cstddef>
 #include <memory>

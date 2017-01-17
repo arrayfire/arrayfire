@@ -24,7 +24,6 @@
 #include <err_cuda.hpp>
 #include <util.hpp>
 #include <host_memory.hpp>
-#include <memoryManager.hpp>
 #include <common/InteropManager.hpp>
 
 using namespace std;
@@ -386,28 +385,24 @@ DeviceManager& DeviceManager::getInstance()
     return my_instance;
 }
 
-MemoryManager &getMemoryManager()
+MemoryManager& memoryManager()
 {
     static std::once_flag flag;
 
     DeviceManager& inst = DeviceManager::getInstance();
 
-    std::call_once(flag, [&]() {
-                inst.memManager.reset(new cuda::MemoryManager());
-            });
+    std::call_once(flag, [&]() { inst.memManager.reset(new MemoryManager()); });
 
     return *(inst.memManager.get());
 }
 
-MemoryManagerPinned &getMemoryManagerPinned()
+MemoryManagerPinned& pinnedMemoryManager()
 {
     static std::once_flag flag;
 
     DeviceManager& inst = DeviceManager::getInstance();
 
-    std::call_once(flag, [&]() {
-                inst.pinnedMemManager.reset(new cuda::MemoryManagerPinned());
-            });
+    std::call_once(flag, [&]() { inst.pinnedMemManager.reset(new MemoryManagerPinned()); });
 
     return *(inst.pinnedMemManager.get());
 }
