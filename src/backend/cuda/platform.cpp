@@ -408,12 +408,13 @@ MemoryManagerPinned& pinnedMemoryManager()
 
 GraphicsResourceManager& interopManager()
 {
+    static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
+
+    int id = getActiveDeviceId();
+
     DeviceManager& inst = DeviceManager::getInstance();
 
-    int id = cuda::getActiveDeviceId();
-
-    if (! inst.gfxManagers[id] )
-        inst.gfxManagers[id].reset(new GraphicsResourceManager());
+    std::call_once(initFlags[id], [&]{ inst.gfxManagers[id].reset(new GraphicsResourceManager()); });
 
     return *(inst.gfxManagers[id].get());
 }
@@ -425,24 +426,26 @@ PlanCache& fftManager()
 
 BlasHandle blasHandle()
 {
-    DeviceManager& instance = DeviceManager::getInstance();
+    static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     int id = cuda::getActiveDeviceId();
 
-    if (! instance.cublasHandles[id] )
-        instance.cublasHandles[id].reset(new cublasHandle());
+    DeviceManager& inst = DeviceManager::getInstance();
 
-    return instance.cublasHandles[id].get()->get();
+    std::call_once(initFlags[id], [&]{ inst.cublasHandles[id].reset(new cublasHandle()); });
+
+    return inst.cublasHandles[id].get()->get();
 }
 
 SolveHandle solverDnHandle()
 {
-    DeviceManager& instance = DeviceManager::getInstance();
+    static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     int id = cuda::getActiveDeviceId();
 
-    if (! instance.cusolverHandles[id] )
-        instance.cusolverHandles[id].reset(new cusolverDnHandle());
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    std::call_once(initFlags[id], [&]{ inst.cusolverHandles[id].reset(new cusolverDnHandle()); });
 
     // FIXME
     // This is not an ideal case. It's just a hack.
@@ -459,17 +462,18 @@ SolveHandle solverDnHandle()
     //
     CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(id)));
 
-    return instance.cusolverHandles[id].get()->get();
+    return inst.cusolverHandles[id].get()->get();
 }
 
 SparseHandle sparseHandle()
 {
-    DeviceManager& instance = DeviceManager::getInstance();
+    static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     int id = cuda::getActiveDeviceId();
 
-    if (! instance.cusparseHandles[id] )
-        instance.cusparseHandles[id].reset(new cusparseHandle());
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    std::call_once(initFlags[id], [&]{ inst.cusparseHandles[id].reset(new cusparseHandle()); });
 
     return instance.cusparseHandles[id].get()->get();
 }
@@ -517,6 +521,7 @@ DeviceManager::DeviceManager()
 
 void DeviceManager::sortDevices(sort_mode mode)
 {
+    lock_guard_t lock(deviceMutex);
     switch(mode) {
         case memory :
             std::stable_sort(cuDevices.begin(), cuDevices.end(), card_compare_mem);
@@ -536,6 +541,8 @@ void DeviceManager::sortDevices(sort_mode mode)
 int DeviceManager::setActiveDevice(int device, int nId)
 {
     static bool first = true;
+
+    lock_guard_t lock(deviceMutex);
 
     int numDevices = cuDevices.size();
 

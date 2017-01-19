@@ -12,6 +12,7 @@
 #include <deque>
 #include <string>
 #include <utility>
+#include <common/types.hpp>
 
 namespace common
 {
@@ -34,6 +35,7 @@ class FFTPlanCache
         }
 
         inline void maxCacheSize(size_t size) {
+            lock_guard_t lock(mutex);
             mCache.resize(size, std::make_pair<std::string, P>(std::string(""), 0));
         }
 
@@ -63,6 +65,7 @@ class FFTPlanCache
         // pops plan from the back of cache(queue)
         void pop() {
             if (!mCache.empty()) {
+                lock_guard_t lock(mutex);
                 // destroy the cufft plan associated with the
                 // least recently used plan
                 static_cast<T*>(this)->removePlan(mCache.back().second);
@@ -73,6 +76,7 @@ class FFTPlanCache
 
         // pushes plan to the front of cache(queue)
         void push(std::string key, P plan) {
+            lock_guard_t lock(mutex);
             if (mCache.size()>mMaxCacheSize) {
                 pop();
             }
@@ -86,6 +90,6 @@ class FFTPlanCache
         size_t       mMaxCacheSize;
 
         std::deque< std::pair<std::string, P> > mCache;
-
+        mutex_t mutex;
 };
 }

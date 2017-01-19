@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <map>
 #include <vector>
+#include <common/types.hpp>
 
 namespace common
 {
@@ -38,6 +39,7 @@ class InteropManager
         }
 
         R* getBufferResource(const forge::Image* image) {
+            lock_guard_t lock(mutex);
             void * key = (void*)image;
 
             if (interopMap.find(key) == interopMap.end()) {
@@ -51,6 +53,7 @@ class InteropManager
         }
 
         R* getBufferResource(const forge::Plot* plot) {
+            lock_guard_t lock(mutex);
             void * key = (void*)plot;
 
             if (interopMap.find(key) == interopMap.end()) {
@@ -64,6 +67,7 @@ class InteropManager
         }
 
         R* getBufferResource(const forge::Histogram* histogram) {
+            lock_guard_t lock(mutex);
             void * key = (void*)histogram;
 
             if (interopMap.find(key) == interopMap.end()) {
@@ -77,6 +81,7 @@ class InteropManager
         }
 
         R* getBufferResource(const forge::Surface* surface) {
+            lock_guard_t lock(mutex);
             void * key = (void*)surface;
 
             if (interopMap.find(key) == interopMap.end()) {
@@ -90,6 +95,7 @@ class InteropManager
         }
 
         R* getBufferResource(const forge::VectorField* field) {
+            lock_guard_t lock(mutex);
             void * key = (void*)field;
 
             if (interopMap.find(key) == interopMap.end()) {
@@ -116,8 +122,9 @@ class InteropManager
             }
         }
 
-    private:
+        //Attributes
         std::map<void *, std::vector<R> > interopMap;
+        mutex_t mutex;
 };
 }
 #endif

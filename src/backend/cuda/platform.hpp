@@ -20,10 +20,10 @@
 #include <cublas.hpp>
 #include <cusolverDn.hpp>
 #include <cusparse.hpp>
+#include <common/types.hpp>
 
 namespace cuda
 {
-
 int getBackend();
 
 std::string getDeviceInfo();
@@ -148,6 +148,7 @@ class DeviceManager
         void operator=(DeviceManager const&);
 
         // Attributes
+        common::mutex_t deviceMutex;
         std::vector<cudaDevice_t> cuDevices;
 
         enum sort_mode {flops = 0, memory = 1, compute = 2, none = 3};
@@ -174,5 +175,4 @@ class DeviceManager
 
         std::unique_ptr<cusparseHandle> cusparseHandles[MAX_DEVICES];
 };
-
 }

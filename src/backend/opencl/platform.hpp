@@ -29,6 +29,7 @@
 #include <memory.hpp>
 #include <GraphicsResourceManager.hpp>
 #include <clfft.hpp>
+#include <common/types.hpp>
 
 namespace opencl
 {
@@ -136,6 +137,7 @@ class DeviceManager
     friend void removeDeviceContext(cl_device_id dev, cl_context ctx);
 
     friend int getActiveDeviceType();
+
     friend int getActivePlatform();
 
     public:
@@ -162,6 +164,7 @@ class DeviceManager
 
     private:
         // Attributes
+        common::mutex_t deviceMutex;
         std::vector<cl::Device*>       mDevices;
         std::vector<cl::Context*>     mContexts;
         std::vector<cl::CommandQueue*>  mQueues;
