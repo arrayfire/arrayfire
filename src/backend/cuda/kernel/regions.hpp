@@ -13,7 +13,6 @@
 #include <debug_cuda.hpp>
 #include <stdio.h>
 #include <memory.hpp>
-
 #include <thrust/system/cuda/detail/par.h>
 #include <thrust/adjacent_difference.h>
 #include <thrust/binary_search.h>
@@ -447,7 +446,7 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
     // compute.
     int num_bins = wrapped_tmp[size - 1] + 1;
 
-    thrust::device_vector<T> labels(num_bins);
+    cuda::ThrustVector<T> labels(num_bins);
 
     // Find the end of each section of values
     thrust::counting_iterator<T> search_begin(0);

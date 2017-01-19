@@ -1283,10 +1283,10 @@ std::vector< Param<T> > buildDoGPyr(
 }
 
 template <typename T>
-void update_permutation(thrust::device_ptr<T>& keys, thrust::device_vector<int>& permutation)
+void update_permutation(thrust::device_ptr<T>& keys, cuda::ThrustVector<int>& permutation)
 {
     // temporary storage for keys
-    thrust::device_vector<T> temp(permutation.size());
+    cuda::ThrustVector<T> temp(permutation.size());
 
     // permute the keys with the current reordering
     THRUST_SELECT((thrust::gather), permutation.begin(), permutation.end(), keys, temp.begin());
@@ -1296,10 +1296,10 @@ void update_permutation(thrust::device_ptr<T>& keys, thrust::device_vector<int>&
 }
 
 template <typename T>
-void apply_permutation(thrust::device_ptr<T>& keys, thrust::device_vector<int>& permutation)
+void apply_permutation(thrust::device_ptr<T>& keys, cuda::ThrustVector<int>& permutation)
 {
     // copy keys to temporary vector
-    thrust::device_vector<T> temp(keys, keys+permutation.size());
+    cuda::ThrustVector<T> temp(keys, keys+permutation.size());
 
     // permute the keys
     THRUST_SELECT((thrust::gather), permutation.begin(), permutation.end(), temp.begin(), keys);
@@ -1443,7 +1443,7 @@ void sift(unsigned* out_feat,
         thrust::device_ptr<float> interp_response_ptr = thrust::device_pointer_cast(d_interp_response);
         thrust::device_ptr<float> interp_size_ptr = thrust::device_pointer_cast(d_interp_size);
 
-        thrust::device_vector<int> permutation(interp_feat);
+        cuda::ThrustVector<int> permutation(interp_feat);
         thrust::sequence(permutation.begin(), permutation.end());
 
         update_permutation<float>(interp_size_ptr, permutation);

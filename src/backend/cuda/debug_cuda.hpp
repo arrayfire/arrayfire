@@ -12,6 +12,13 @@
 #include <err_cuda.hpp>
 #include <thrust/version.h>
 #include <thrust/system/cuda/detail/par.h>
+#include <ThrustAllocator.cuh>
+
+namespace cuda
+{
+template<typename T>
+using ThrustVector = thrust::device_vector<T, cuda::ThrustAllocator<T> >;
+}
 
 #define THRUST_STREAM thrust::cuda::par.on(cuda::getActiveStream())
 
