@@ -194,11 +194,10 @@ MemoryManagerPinned::~MemoryManagerPinned()
     common::lock_guard_t lock(this->memory_mutex);
     for (int n = 0; n < getDeviceCount(); n++) {
         opencl::setDevice(n);
-        garbageCollect();
+        this->garbageCollect();
         auto currIterator = pinnedMaps[n].begin();
         auto endIterator  = pinnedMaps[n].end();
         while (currIterator != endIterator) {
-            delete currIterator->second;
             pinnedMaps[n].erase(currIterator++);
         }
     }

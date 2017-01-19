@@ -90,6 +90,11 @@ DeviceManager& DeviceManager::getInstance()
 
 DeviceManager::~DeviceManager()
 {
+    for (int i=0; i<getDeviceCount(); ++i)
+        delete gfxManagers[i].release();
+    delete memManager.release();
+    delete pinnedMemManager.release();
+
     //TODO: FIXME:
     // OpenCL libs on Windows platforms
     // are crashing the application at program exit
