@@ -475,7 +475,7 @@ SparseHandle sparseHandle()
 
     std::call_once(initFlags[id], [&]{ inst.cusparseHandles[id].reset(new cusparseHandle()); });
 
-    return instance.cusparseHandles[id].get()->get();
+    return inst.cusparseHandles[id].get()->get();
 }
 
 DeviceManager::DeviceManager()
@@ -521,7 +521,7 @@ DeviceManager::DeviceManager()
 
 void DeviceManager::sortDevices(sort_mode mode)
 {
-    lock_guard_t lock(deviceMutex);
+    common::lock_guard_t lock(deviceMutex);
     switch(mode) {
         case memory :
             std::stable_sort(cuDevices.begin(), cuDevices.end(), card_compare_mem);
@@ -542,7 +542,7 @@ int DeviceManager::setActiveDevice(int device, int nId)
 {
     static bool first = true;
 
-    lock_guard_t lock(deviceMutex);
+    common::lock_guard_t lock(deviceMutex);
 
     int numDevices = cuDevices.size();
 

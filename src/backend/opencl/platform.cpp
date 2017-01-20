@@ -624,7 +624,15 @@ GraphicsResourceManager& interopManager()
 
 PlanCache& fftManager()
 {
-    return DeviceManager::getInstance().clfftManagers[getActiveDeviceId()];
+    static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
+
+    int id = getActiveDeviceId();
+
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    std::call_once(initFlags[id], [&]{ inst.clfftManagers[id].reset(new PlanCache()); });
+
+    return *(inst.clfftManagers[id].get());
 }
 
 DeviceManager& DeviceManager::getInstance()
@@ -635,8 +643,16 @@ DeviceManager& DeviceManager::getInstance()
 
 DeviceManager::~DeviceManager()
 {
-    for (int i=0; i<getDeviceCount(); ++i)
+    for (int i=0; i<getDeviceCount(); ++i) {
         delete gfxManagers[i].release();
+        delete clfftManagers[i].release();
+    }
+#ifndef OS_WIN
+    //TODO: FIXME:
+    // clfftTeardown() causes a "Pure Virtual Function Called" crash on
+    // Windows for Intel devices. This causes tests to fail.
+    clfftTeardown();
+#endif
     delete memManager.release();
     delete pinnedMemManager.release();
 
@@ -649,8 +665,8 @@ DeviceManager::~DeviceManager()
     // So, clean up OpenCL resources on non-Windows platforms
 #ifndef OS_WIN
     for (auto q: mQueues) delete q;
-    for (auto d : mDevices) delete d;
-    for (auto c : mContexts) delete c;
+    for (auto c: mContexts) delete c;
+    for (auto d: mDevices) delete d;
 #endif
 }
 
@@ -784,6 +800,9 @@ DeviceManager::DeviceManager()
     }
 #endif
     mUserDeviceOffset = mDevices.size();
+    //Initialize FFT setup data structure
+    CLFFT_CHECK(clfftInitSetupData(&mFFTSetup));
+    CLFFT_CHECK(clfftSetup(&mFFTSetup));
 }
 
 #if defined(WITH_GRAPHICS)

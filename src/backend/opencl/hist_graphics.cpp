@@ -27,12 +27,10 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
         const cl::Buffer *d_P = data.get();
         size_t bytes = hist->verticesSize();
 
-        GraphicsResourceManager& intrpMngr = interopManager();
-
-        cl::Buffer **resources = intrpMngr.getBufferResource(hist);
+        ShrdResVector res = interopManager().getBufferResource(hist);
 
         std::vector<cl::Memory> shared_objects;
-        shared_objects.push_back(*resources[0]);
+        shared_objects.push_back(*(res[0].get()));
 
         glFinish();
 
@@ -42,7 +40,7 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
 
         getQueue().enqueueAcquireGLObjects(&shared_objects, NULL, &event);
         event.wait();
-        getQueue().enqueueCopyBuffer(*d_P, *resources[0], 0, 0, bytes, NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_P, *(res[0].get()), 0, 0, bytes, NULL, &event);
         getQueue().enqueueReleaseGLObjects(&shared_objects, NULL, &event);
         event.wait();
 

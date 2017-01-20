@@ -25,17 +25,15 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
     if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = data.get();
 
-        GraphicsResourceManager& intrpMngr = interopManager();
+        ShrdResVector res = interopManager().getBufferResource(hist);
 
-        cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(hist);
         // Map resource. Copy data to VBO. Unmap resource.
         size_t num_bytes = hist->verticesSize();
         T* d_vbo = NULL;
-        cudaGraphicsMapResources(1, resources, cuda::getActiveStream());
-        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, resources[0]);
-        cudaMemcpyAsync(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice,
-                        cuda::getActiveStream());
-        cudaGraphicsUnmapResources(1, resources, cuda::getActiveStream());
+        cudaGraphicsMapResources(1, res[0].get(), cuda::getActiveStream());
+        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, *(res[0].get()));
+        cudaMemcpyAsync(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice, cuda::getActiveStream());
+        cudaGraphicsUnmapResources(1, res[0].get(), cuda::getActiveStream());
 
         CheckGL("After cuda resource copy");
 

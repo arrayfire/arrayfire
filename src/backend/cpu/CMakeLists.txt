@@ -126,6 +126,7 @@ FILE(GLOB backend_headers
     )
 
 FILE(GLOB backend_sources
+    "../common/*.cpp"
     "../*.cpp"
     )
 
@@ -213,6 +214,7 @@ TARGET_LINK_LIBRARIES(afcpu
                             PRIVATE ${CBLAS_LIBRARIES}
                             PRIVATE ${FFTW_LIBRARIES}
                             PRIVATE ${FreeImage_LIBS}
+                            PRIVATE ${Boost_LIBRARIES}
                      )
 
 IF(LAPACK_FOUND)

@@ -180,6 +180,7 @@ class DeviceManager
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
 
         std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
-        PlanCache clfftManagers[MAX_DEVICES];
+        clfftSetupData mFFTSetup;
+        std::unique_ptr<PlanCache> clfftManagers[MAX_DEVICES];
 };
 }

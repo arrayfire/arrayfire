@@ -78,10 +78,6 @@ ENDIF()
 INCLUDE_DIRECTORIES(${CLFFT_INCLUDE_DIRS})
 LINK_DIRECTORIES(${CLFFT_LIBRARY_DIR})
 
-ADD_DEFINITIONS( -DBOOST_ALL_NO_LIB )
-SET(Boost_USE_STATIC_LIBS OFF)
-FIND_PACKAGE(Boost 1.48 REQUIRED)
-
 OPTION(USE_SYSTEM_BOOST_COMPUTE "Use system BoostCompute" OFF)
 IF(USE_SYSTEM_BOOST_COMPUTE)
     IF(Boost_VERSION VERSION_LESS "1.61")
@@ -102,7 +98,6 @@ INCLUDE_DIRECTORIES(
     "${CMAKE_CURRENT_BINARY_DIR}"
     ${CLBLAS_INCLUDE_DIRS}
     ${CLFFT_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIR}
     ${BoostCompute_INCLUDE_DIRS}
     ${CBLAS_INCLUDE_DIR}
     )
@@ -186,6 +181,7 @@ FILE(GLOB backend_headers
     )
 
 FILE(GLOB backend_sources
+    "../common/*.cpp"
     "../*.cpp"
     )
 
@@ -323,6 +319,7 @@ TARGET_LINK_LIBRARIES(afopencl
                                 PRIVATE ${CLFFT_LIBRARIES}
                                 PRIVATE ${CMAKE_DL_LIBS}
                                 PRIVATE ${FreeImage_LIBS}
+                                PRIVATE ${Boost_LIBRARIES}
                      )
 
 IF(LAPACK_FOUND)

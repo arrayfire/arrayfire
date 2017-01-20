@@ -15,30 +15,22 @@
 
 namespace cuda
 {
-typedef cufftHandle PlanType; //used in platform.hpp
+typedef cufftHandle PlanType;
+typedef std::shared_ptr<PlanType> SharedPlan;
 
 const char * _cufftGetResultString(cufftResult res);
 
-PlanType findPlan(int rank, int *n,
-                  int *inembed, int istride, int idist,
-                  int *onembed, int ostride, int odist,
-                  cufftType type, int batch);
+SharedPlan findPlan(int rank, int *n,
+                    int *inembed, int istride, int idist,
+                    int *onembed, int ostride, int odist,
+                    cufftType type, int batch);
 
 class PlanCache : public common::FFTPlanCache<PlanCache, PlanType>
 {
-    friend PlanType findPlan(int rank, int *n,
-                             int *inembed, int istride, int idist,
-                             int *onembed, int ostride, int odist,
-                             cufftType type, int batch);
-
-    public:
-        PlanCache() {}
-        void initLibrary() {}
-        void deInitLibrary() {}
-
-        void removePlan(PlanType plan) {
-            cufftDestroy(plan);
-        }
+    friend SharedPlan findPlan(int rank, int *n,
+                               int *inembed, int istride, int idist,
+                               int *onembed, int ostride, int odist,
+                               cufftType type, int batch);
 };
 }
 

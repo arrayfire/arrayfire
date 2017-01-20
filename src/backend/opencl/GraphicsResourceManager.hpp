@@ -10,22 +10,26 @@
 #pragma once
 
 #if defined(WITH_GRAPHICS)
-#include <platform.hpp>
 #include <common/InteropManager.hpp>
 #include <map>
 #include <vector>
 
+namespace cl
+{
+class Buffer;
+}
+
 namespace opencl
 {
-typedef cl::Buffer* CGR_t;
+typedef cl::Buffer CGR_t;
+typedef std::shared_ptr<CGR_t> SharedResource;
+typedef std::vector<SharedResource> ShrdResVector;
 
-class GraphicsResourceManager : public common::InteropManager<GraphicsResourceManager, CGR_t>
+class GraphicsResourceManager : public common::InteropManager<GraphicsResourceManager, cl::Buffer>
 {
     public:
         GraphicsResourceManager() {}
-
-        std::vector<CGR_t> registerResources(std::vector<uint32_t> resources);
-        void unregisterResource(CGR_t handle);
+        ShrdResVector registerResources(std::vector<uint32_t> resources);
 
     protected:
         GraphicsResourceManager(GraphicsResourceManager const&);

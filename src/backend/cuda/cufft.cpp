@@ -74,10 +74,10 @@ const char * _cufftGetResultString(cufftResult res)
     return "cuFFT: unknown error";
 }
 
-PlanType findPlan(int rank, int *n,
-                  int *inembed, int istride, int idist,
-                  int *onembed, int ostride, int odist,
-                  cufftType type, int batch)
+SharedPlan findPlan(int rank, int *n,
+                    int *inembed, int istride, int idist,
+                    int *onembed, int ostride, int odist,
+                    cufftType type, int batch)
 {
     // create the key string
     char key_str_temp[64];
@@ -112,29 +112,30 @@ PlanType findPlan(int rank, int *n,
     key_string.append(std::string(key_str_temp));
 
     PlanCache &planner = cuda::fftManager();
+    SharedPlan retVal  = planner.find(key_string);
 
-    int planIndex = planner.find(key_string);
+    if (retVal)
+        return retVal;
 
-    // if found a valid plan, return it
-    if (planIndex!=-1) {
-        return planner.get(planIndex);
-    }
-
-    PlanType retVal;
-    cufftResult res = cufftPlanMany(&retVal, rank, n,
+    PlanType* temp = (PlanType*)malloc(sizeof(PlanType));
+    cufftResult res = cufftPlanMany(temp, rank, n,
                                     inembed, istride, idist, onembed, ostride, odist,
                                     type, batch);
 
     // If plan creation fails, clean up the memory we hold on to and try again
     if (res != CUFFT_SUCCESS) {
         cuda::garbageCollect();
-        CUFFT_CHECK(cufftPlanMany(&retVal, rank, n,
+        CUFFT_CHECK(cufftPlanMany(temp, rank, n,
                                   inembed, istride, idist, onembed, ostride, odist,
                                   type, batch));
     }
 
-    cufftSetStream(retVal, cuda::getActiveStream());
+    cufftSetStream(*temp, cuda::getActiveStream());
 
+    retVal.reset(temp, [](PlanType* p) {
+        cufftDestroy(*p);
+        delete p;
+    });
     // push the plan into plan cache
     planner.push(key_string, retVal);
 

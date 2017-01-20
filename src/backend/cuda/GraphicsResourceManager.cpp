@@ -8,17 +8,25 @@
  ********************************************************/
 
 #if defined(WITH_GRAPHICS)
-#include <platform.hpp>
+#include <err_cuda.hpp>
 #include <GraphicsResourceManager.hpp>
 
-namespace opencl
+namespace cuda
 {
 ShrdResVector GraphicsResourceManager::registerResources(std::vector<uint32_t> resources)
 {
     ShrdResVector output;
 
-    for (auto id: resources)
-        output.emplace_back(new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, id, NULL));
+    auto deleter = [](CGR_t* handle) {
+        CUDA_CHECK(cudaGraphicsUnregisterResource(*handle));
+        delete handle;
+    };
+
+    for (auto id: resources) {
+        CGR_t r;
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&r, id, cudaGraphicsMapFlagsWriteDiscard));
+        output.emplace_back(new CGR_t(r), deleter);
+    }
 
     return output;
 }

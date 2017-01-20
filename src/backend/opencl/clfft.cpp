@@ -83,11 +83,11 @@ const char * _clfftGetResultString(clfftStatus st)
     return "Unknown error";
 }
 
-PlanType findPlan(clfftLayout iLayout, clfftLayout oLayout,
-                  clfftDim rank, size_t *clLengths,
-                  size_t *istrides, size_t idist,
-                  size_t *ostrides, size_t odist,
-                  clfftPrecision precision, size_t batch)
+SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout,
+                    clfftDim rank, size_t *clLengths,
+                    size_t *istrides, size_t idist,
+                    size_t *ostrides, size_t odist,
+                    clfftPrecision precision, size_t batch)
 {
     // create the key string
     char key_str_temp[64];
@@ -123,68 +123,43 @@ PlanType findPlan(clfftLayout iLayout, clfftLayout oLayout,
     key_string.append(std::string(key_str_temp));
 
     PlanCache &planner = opencl::fftManager();
+    SharedPlan retVal = planner.find(key_string);
 
-    int planIndex = planner.find(key_string);
+    if (retVal)
+        return retVal;
 
-    // if found a valid plan, return it
-    if (planIndex!=-1) {
-        return planner.get(planIndex);
-    }
-
-    PlanType retVal;
+    PlanType* temp = (PlanType*)malloc(sizeof(PlanType));
 
     // getContext() returns object of type Context
     // Context() returns the actual cl_context handle
-    CLFFT_CHECK(clfftCreateDefaultPlan(&retVal, opencl::getContext()(), rank, clLengths));
+    CLFFT_CHECK(clfftCreateDefaultPlan(temp, opencl::getContext()(), rank, clLengths));
 
     // complex to complex
     if (iLayout == oLayout) {
-        CLFFT_CHECK(clfftSetResultLocation(retVal, CLFFT_INPLACE));
+        CLFFT_CHECK(clfftSetResultLocation(*temp, CLFFT_INPLACE));
     } else {
-        CLFFT_CHECK(clfftSetResultLocation(retVal, CLFFT_OUTOFPLACE));
+        CLFFT_CHECK(clfftSetResultLocation(*temp, CLFFT_OUTOFPLACE));
     }
 
-    CLFFT_CHECK(clfftSetLayout(retVal, iLayout, oLayout));
-    CLFFT_CHECK(clfftSetPlanBatchSize(retVal, batch));
-    CLFFT_CHECK(clfftSetPlanDistance(retVal, idist, odist));
-    CLFFT_CHECK(clfftSetPlanInStride(retVal, rank, istrides));
-    CLFFT_CHECK(clfftSetPlanOutStride(retVal, rank, ostrides));
-    CLFFT_CHECK(clfftSetPlanPrecision(retVal, precision));
-    CLFFT_CHECK(clfftSetPlanScale(retVal, CLFFT_BACKWARD, 1.0));
+    CLFFT_CHECK(clfftSetLayout(*temp, iLayout, oLayout));
+    CLFFT_CHECK(clfftSetPlanBatchSize(*temp, batch));
+    CLFFT_CHECK(clfftSetPlanDistance(*temp, idist, odist));
+    CLFFT_CHECK(clfftSetPlanInStride(*temp, rank, istrides));
+    CLFFT_CHECK(clfftSetPlanOutStride(*temp, rank, ostrides));
+    CLFFT_CHECK(clfftSetPlanPrecision(*temp, precision));
+    CLFFT_CHECK(clfftSetPlanScale(*temp, CLFFT_BACKWARD, 1.0));
 
     // getQueue() returns object of type CommandQueue
     // CommandQueue() returns the actual cl_command_queue handle
-    CLFFT_CHECK(clfftBakePlan(retVal, 1, &(opencl::getQueue()()), NULL, NULL));
+    CLFFT_CHECK(clfftBakePlan(*temp, 1, &(opencl::getQueue()()), NULL, NULL));
 
+    retVal.reset(temp, [](PlanType* p) {
+        CLFFT_CHECK(clfftDestroyPlan(p));
+        free(p);
+    });
     // push the plan into plan cache
     planner.push(key_string, retVal);
 
     return retVal;
-}
-
-void PlanCache::initLibrary()
-{
-    CLFFT_CHECK(clfftInitSetupData(&mFFTSetup));
-    CLFFT_CHECK(clfftSetup(&mFFTSetup));
-}
-
-void PlanCache::deInitLibrary()
-{
-    //TODO: FIXME:
-    // clfftTeardown() causes a "Pure Virtual Function Called" crash on
-    // Windows for Intel devices. This causes tests to fail.
-    #ifndef OS_WIN
-    static bool flag = true;
-    if(flag) {
-        // THOU SHALL NOT THROW IN DESTRUCTORS
-        clfftTeardown();
-        flag = false;
-    }
-    #endif
-}
-
-void PlanCache::removePlan(PlanType plan)
-{
-     CLFFT_CHECK(clfftDestroyPlan(&plan));
 }
 }

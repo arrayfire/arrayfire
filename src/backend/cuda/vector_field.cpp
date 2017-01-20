@@ -26,9 +26,8 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
                        forge::VectorField* vector_field)
 {
     if(DeviceManager::checkGraphicsInteropCapability()) {
-        GraphicsResourceManager& intrpMngr = interopManager();
-
-        cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(vector_field);
+        ShrdResVector res = interopManager().getBufferResource(vector_field);
+        CGR_t resources[2] = {*res[0].get(), *res[1].get()};
 
         // Map resource. Copy data to VBO. Unmap resource.
         // Map all resources at once.
@@ -40,8 +39,7 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
             size_t num_bytes = vector_field->verticesSize();
             T* d_vbo = NULL;
             cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, resources[0]);
-            cudaMemcpyAsync(d_vbo, ptr, num_bytes, cudaMemcpyDeviceToDevice,
-                            cuda::getActiveStream());
+            cudaMemcpyAsync(d_vbo, ptr, num_bytes, cudaMemcpyDeviceToDevice, cuda::getActiveStream());
         }
         // Directions
         {
@@ -49,8 +47,7 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
             size_t num_bytes = vector_field->directionsSize();
             T* d_vbo = NULL;
             cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, resources[1]);
-            cudaMemcpyAsync(d_vbo, ptr, num_bytes, cudaMemcpyDeviceToDevice,
-                            cuda::getActiveStream());
+            cudaMemcpyAsync(d_vbo, ptr, num_bytes, cudaMemcpyDeviceToDevice, cuda::getActiveStream());
         }
         cudaGraphicsUnmapResources(2, resources, cuda::getActiveStream());
 

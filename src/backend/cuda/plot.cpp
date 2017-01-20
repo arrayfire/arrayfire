@@ -30,17 +30,15 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
     if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
 
-        GraphicsResourceManager& intrpMngr = interopManager();
+        ShrdResVector res = interopManager().getBufferResource(plot);
 
-        cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(plot);
         // Map resource. Copy data to VBO. Unmap resource.
         size_t num_bytes = plot->verticesSize();
         T* d_vbo = NULL;
-        cudaGraphicsMapResources(1, resources, cuda::getActiveStream());
-        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, resources[0]);
-        cudaMemcpyAsync(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice,
-                cuda::getActiveStream());
-        cudaGraphicsUnmapResources(1, resources, cuda::getActiveStream());
+        cudaGraphicsMapResources(1, res[0].get(), cuda::getActiveStream());
+        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, *(res[0].get()));
+        cudaMemcpyAsync(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice, cuda::getActiveStream());
+        cudaGraphicsUnmapResources(1, res[0].get(), cuda::getActiveStream());
 
         CheckGL("After cuda resource copy");
 

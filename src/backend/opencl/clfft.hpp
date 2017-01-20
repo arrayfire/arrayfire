@@ -17,32 +17,23 @@
 namespace opencl
 {
 typedef clfftPlanHandle PlanType;
+typedef std::shared_ptr<PlanType> SharedPlan;
 
 const char * _clfftGetResultString(clfftStatus st);
 
-PlanType findPlan(clfftLayout iLayout, clfftLayout oLayout,
-                  clfftDim rank, size_t *clLengths,
-                  size_t *istrides, size_t idist,
-                  size_t *ostrides, size_t odist,
-                  clfftPrecision precision, size_t batch);
+SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout,
+                    clfftDim rank, size_t *clLengths,
+                    size_t *istrides, size_t idist,
+                    size_t *ostrides, size_t odist,
+                    clfftPrecision precision, size_t batch);
 
 class PlanCache : public common::FFTPlanCache<PlanCache, PlanType>
 {
-    friend PlanType findPlan(clfftLayout iLayout, clfftLayout oLayout,
-                             clfftDim rank, size_t *clLengths,
-                             size_t *istrides, size_t idist,
-                             size_t *ostrides, size_t odist,
-                             clfftPrecision precision, size_t batch);
-
-    public:
-        PlanCache() {}
-        void initLibrary();
-        void deInitLibrary();
-
-        void removePlan(PlanType plan);
-
-    private:
-        clfftSetupData  mFFTSetup;
+    friend SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout,
+                               clfftDim rank, size_t *clLengths,
+                               size_t *istrides, size_t idist,
+                               size_t *ostrides, size_t odist,
+                               clfftPrecision precision, size_t batch);
 };
 }
 

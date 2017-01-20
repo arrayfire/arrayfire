@@ -11,120 +11,34 @@
 
 #if defined(WITH_GRAPHICS)
 #include <forge.h>
-#include <err_common.hpp>
-#include <util.hpp>
-#include <cstdio>
 #include <map>
 #include <vector>
-#include <common/types.hpp>
 
 namespace common
 {
-template<typename T, typename R>
+template<class T, typename R>
 class InteropManager
 {
+    using resource_t = typename std::shared_ptr<R>;
+    using res_vec_t = typename std::vector<resource_t>;
+    using res_map_t = typename std::map<void*, res_vec_t>;
+
     public:
         InteropManager() {}
+        ~InteropManager();
 
-        ~InteropManager() {
-            try {
-                destroyResources();
-            } catch (AfError &ex) {
-
-                std::string perr = getEnvVar("AF_PRINT_ERRORS");
-                if(!perr.empty()) {
-                    if(perr != "0") fprintf(stderr, "%s\n", ex.what());
-                }
-            }
-        }
-
-        R* getBufferResource(const forge::Image* image) {
-            lock_guard_t lock(mutex);
-            void * key = (void*)image;
-
-            if (interopMap.find(key) == interopMap.end()) {
-                std::vector<uint32_t> handles;
-                handles.push_back(image->pixels());
-                std::vector<R> output = static_cast<T*>(this)->registerResources(handles);
-                interopMap[key] = output;
-            }
-
-            return &interopMap[key].front();
-        }
-
-        R* getBufferResource(const forge::Plot* plot) {
-            lock_guard_t lock(mutex);
-            void * key = (void*)plot;
-
-            if (interopMap.find(key) == interopMap.end()) {
-                std::vector<uint32_t> handles;
-                handles.push_back(plot->vertices());
-                std::vector<R> output = static_cast<T*>(this)->registerResources(handles);
-                interopMap[key] = output;
-            }
-
-            return &interopMap[key].front();
-        }
-
-        R* getBufferResource(const forge::Histogram* histogram) {
-            lock_guard_t lock(mutex);
-            void * key = (void*)histogram;
-
-            if (interopMap.find(key) == interopMap.end()) {
-                std::vector<uint32_t> handles;
-                handles.push_back(histogram->vertices());
-                std::vector<R> output = static_cast<T*>(this)->registerResources(handles);
-                interopMap[key] = output;
-            }
-
-            return &interopMap[key].front();
-        }
-
-        R* getBufferResource(const forge::Surface* surface) {
-            lock_guard_t lock(mutex);
-            void * key = (void*)surface;
-
-            if (interopMap.find(key) == interopMap.end()) {
-                std::vector<uint32_t> handles;
-                handles.push_back(surface->vertices());
-                std::vector<R> output = static_cast<T*>(this)->registerResources(handles);
-                interopMap[key] = output;
-            }
-
-            return &interopMap[key].front();
-        }
-
-        R* getBufferResource(const forge::VectorField* field) {
-            lock_guard_t lock(mutex);
-            void * key = (void*)field;
-
-            if (interopMap.find(key) == interopMap.end()) {
-                std::vector<uint32_t> handles;
-                handles.push_back(field->vertices());
-                handles.push_back(field->directions());
-                std::vector<R> output = static_cast<T*>(this)->registerResources(handles);
-                interopMap[key] = output;
-            }
-
-            return &interopMap[key].front();
-        }
+        res_vec_t getBufferResource(const forge::Image* image);
+        res_vec_t getBufferResource(const forge::Plot* plot);
+        res_vec_t getBufferResource(const forge::Histogram* histogram);
+        res_vec_t getBufferResource(const forge::Surface* surface);
+        res_vec_t getBufferResource(const forge::VectorField* field);
 
     protected:
         InteropManager(InteropManager const&);
         void operator=(InteropManager const&);
+        void destroyResources();
 
-        void destroyResources() {
-            for(auto iter : interopMap) {
-                for(auto ct : iter.second) {
-                    static_cast<T*>(this)->unregisterResource(ct);
-                }
-                iter.second.clear();
-            }
-        }
-
-        //Attributes
-        std::map<void *, std::vector<R> > interopMap;
-        mutex_t mutex;
+        res_map_t mInteropMap;
 };
 }
 #endif

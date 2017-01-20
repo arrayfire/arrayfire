@@ -10,86 +10,46 @@
 #pragma once
 
 #include <deque>
+#include <memory>
 #include <string>
 #include <utility>
-#include <common/types.hpp>
 
 namespace common
 {
-// FFTPlanCache caches backend specific fft plans
+// FFTPlanCache caches backend specific fft plans in FIFO order
 //
-// new plan |--> IF number of plans cached is at limit, pop the least used entry and push new plan.
+// new plan |--> IF number of plans cached is at limit, pop the oldest entry and push new plan.
 //          |
 //          |--> ELSE just push the plan
 // existing plan -> reuse a plan
 template<typename T, typename P>
 class FFTPlanCache
 {
+    using plan_t = typename std::shared_ptr<P>;
+    using plan_pair_t = typename std::pair<std::string, plan_t>;
+    using plan_cache_t = typename std::deque<plan_pair_t>;
+
     public:
-        FFTPlanCache() : mMaxCacheSize(5) {
-            static_cast<T*>(this)->initLibrary();
-        }
+        FFTPlanCache() : mMaxCacheSize(5) {}
 
-        ~FFTPlanCache() {
-            static_cast<T*>(this)->deInitLibrary();
-        }
-
-        inline void maxCacheSize(size_t size) {
-            lock_guard_t lock(mutex);
-            mCache.resize(size, std::make_pair<std::string, P>(std::string(""), 0));
-        }
-
-        inline size_t maxCacheSize() const {
-            return mMaxCacheSize;
-        }
-
-        inline P get(int index) const {
-            return mCache[index].second;
-        }
+        void setMaxCacheSize(size_t size);
+        size_t getMaxCacheSize() const;
 
         // iterates through plan cache from front to back
         // of the cache(queue)
-        //
-        // A valid index of the plan in the cache is returned
-        // otherwise -1 is returned
-        int find(std::string key) const {
-            int retVal = -1;
-            for(uint i=0; i<mCache.size(); ++i) {
-                if (key == mCache[i].first) {
-                    retVal = i;
-                }
-            }
-            return retVal;
-        }
-
-        // pops plan from the back of cache(queue)
-        void pop() {
-            if (!mCache.empty()) {
-                lock_guard_t lock(mutex);
-                // destroy the cufft plan associated with the
-                // least recently used plan
-                static_cast<T*>(this)->removePlan(mCache.back().second);
-                // now pop the entry from cache
-                mCache.pop_back();
-            }
-        }
+        // A valid shared_ptr of the plan in the cache is returned
+        // if found, and empty share_ptr otherwise.
+        plan_t find(const std::string& key) const;
 
         // pushes plan to the front of cache(queue)
-        void push(std::string key, P plan) {
-            lock_guard_t lock(mutex);
-            if (mCache.size()>mMaxCacheSize) {
-                pop();
-            }
-            mCache.push_front(std::pair<std::string, P>(key, plan));
-        }
+        void push(const std::string key, plan_t plan);
 
-    private:
+    protected:
         FFTPlanCache(FFTPlanCache const&);
         void operator=(FFTPlanCache const&);
 
         size_t       mMaxCacheSize;
 
-        std::deque< std::pair<std::string, P> > mCache;
-        mutex_t mutex;
+        plan_cache_t mCache;
 };
 }

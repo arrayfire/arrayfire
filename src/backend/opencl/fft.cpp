@@ -24,7 +24,7 @@ namespace opencl
 
 void setFFTPlanCacheSize(size_t numPlans)
 {
-    fftManager().maxCacheSize(numPlans);
+    fftManager().setMaxCacheSize(numPlans);
 }
 
 template<typename T> struct Precision;
@@ -83,15 +83,15 @@ void fft_inplace(Array<T> &in)
         batch *= tdims[i];
     }
 
-    PlanType plan = findPlan(CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED,
-                             (clfftDim)rank, tdims,
-                             istrides, istrides[rank], istrides, istrides[rank],
-                             (clfftPrecision)Precision<T>::type, batch);
+    SharedPlan plan = findPlan(CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED,
+                               (clfftDim)rank, tdims,
+                               istrides, istrides[rank], istrides, istrides[rank],
+                               (clfftPrecision)Precision<T>::type, batch);
 
     cl_mem imem = (*in.get())();
     cl_command_queue queue = getQueue()();
 
-    CLFFT_CHECK(clfftEnqueueTransform(plan,
+    CLFFT_CHECK(clfftEnqueueTransform(*plan.get(),
                                       direction ? CLFFT_FORWARD : CLFFT_BACKWARD,
                                       1, &queue, 0, NULL, NULL,
                                       &imem, &imem, NULL));
@@ -118,16 +118,16 @@ Array<Tc> fft_r2c(const Array<Tr> &in)
         batch *= tdims[i];
     }
 
-    PlanType plan = findPlan(CLFFT_REAL, CLFFT_HERMITIAN_INTERLEAVED,
-                             (clfftDim)rank, tdims,
-                             istrides, istrides[rank], ostrides, ostrides[rank],
-                             (clfftPrecision)Precision<Tc>::type, batch);
+    SharedPlan plan = findPlan(CLFFT_REAL, CLFFT_HERMITIAN_INTERLEAVED,
+                               (clfftDim)rank, tdims,
+                               istrides, istrides[rank], ostrides, ostrides[rank],
+                               (clfftPrecision)Precision<Tc>::type, batch);
 
     cl_mem imem = (*in.get())();
     cl_mem omem = (*out.get())();
     cl_command_queue queue = getQueue()();
 
-    CLFFT_CHECK(clfftEnqueueTransform(plan,
+    CLFFT_CHECK(clfftEnqueueTransform(*plan.get(),
                                       CLFFT_FORWARD,
                                       1, &queue, 0, NULL, NULL,
                                       &imem, &omem, NULL));
@@ -152,16 +152,16 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
         batch *= tdims[i];
     }
 
-    PlanType plan = findPlan(CLFFT_HERMITIAN_INTERLEAVED, CLFFT_REAL,
-                             (clfftDim)rank, tdims,
-                             istrides, istrides[rank], ostrides, ostrides[rank],
-                             (clfftPrecision)Precision<Tc>::type, batch);
+    SharedPlan plan = findPlan(CLFFT_HERMITIAN_INTERLEAVED, CLFFT_REAL,
+                               (clfftDim)rank, tdims,
+                               istrides, istrides[rank], ostrides, ostrides[rank],
+                               (clfftPrecision)Precision<Tc>::type, batch);
 
     cl_mem imem = (*in.get())();
     cl_mem omem = (*out.get())();
     cl_command_queue queue = getQueue()();
 
-    CLFFT_CHECK(clfftEnqueueTransform(plan,
+    CLFFT_CHECK(clfftEnqueueTransform(*plan.get(),
                                       CLFFT_BACKWARD,
                                       1, &queue, 0, NULL, NULL,
                                       &imem, &omem, NULL));
