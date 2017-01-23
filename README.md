@@ -111,14 +111,30 @@ Quick links:
 
 ### Language wrappers
 
+ArrayFire has several official and third-party language wrappers.
+
+__Official wrappers__
+
 We currently support the following language wrappers for ArrayFire:
 
 * [`arrayfire-python`](https://github.com/arrayfire/arrayfire-python)
 * [`arrayfire-rust`](https://github.com/arrayfire/arrayfire-rust)
 
-Wrappers for other languages are a work in progress:
+Wrappers for other languages are a work-in-progress:
+  [.NET](https://github.com/arrayfire/arrayfire-dotnet),
+  [Fortran](https://github.com/arrayfire/arrayfire-fortran),
+  [Go](https://github.com/arrayfire/arrayfire-go),
+  [Java](https://github.com/arrayfire/arrayfire-java),
+  [Lua](https://github.com/arrayfire/arrayfire-lua),
+  [NodeJS](https://github.com/arrayfire/arrayfire-js),
+  [R](https://github.com/arrayfire/arrayfire-r)
 
-[`arrayfire-dotnet`](https://github.com/arrayfire/arrayfire-dotnet), [`arrayfire-fortran`](https://github.com/arrayfire/arrayfire-fortran), [`arrayfire-go`](https://github.com/arrayfire/arrayfire-go), [`arrayfire-java`](https://github.com/arrayfire/arrayfire-java), [`arrayfire-lua`](https://github.com/arrayfire/arrayfire-lua), [`arrayfire-nodejs`](https://github.com/arrayfire/arrayfire-js), [`arrayfire-r`](https://github.com/arrayfire/arrayfire-r)
+__Third-party wrappers__
+
+The following wrappers are being maintained and supported by third parties:
+
+* [`ArrayFire.jl`](https://github.com/JuliaComputing/ArrayFire.jl)
+* [`ArrayFire-Nim`](https://github.com/bitstormGER/ArrayFire-Nim)
 
 ### Contributing
 
@@ -135,6 +151,12 @@ publication, please use the following [citation document](.github/CITATION.md).
 ArrayFire development is funded by ArrayFire LLC and several third parties,
 please see the list of [acknowledgements](ACKNOWLEDGEMENTS.md) for further
 details.
+
+We would like to thank the [JuliaComputing](https://github.com/JuliaComputing)
+guys as well as [Gabor Mezo](https://github.com/unbornchikken) for their
+diligent work on the [Julia](https://github.com/JuliaComputing/ArrayFire.jl)
+and [NodeJS](https://github.com/arrayfire/arrayfire-js) wrappers,
+respectively.
 
 ### Support and Contact Info [![Join the chat at https://gitter.im/arrayfire/arrayfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arrayfire/arrayfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
