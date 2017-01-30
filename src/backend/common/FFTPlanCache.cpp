@@ -43,7 +43,7 @@ std::shared_ptr<P> FFTPlanCache<T, P>::find(const std::string& key) const
     std::shared_ptr<P> res;
 
     rlock_t lock(gFFTMutexes[detail::getActiveDeviceId()]);
-    for(uint i=0; i<mCache.size(); ++i) {
+    for(unsigned i=0; i<mCache.size(); ++i) {
         if (key == mCache[i].first) {
             res = mCache[i].second;
             break;
