@@ -624,15 +624,9 @@ GraphicsResourceManager& interopManager()
 
 PlanCache& fftManager()
 {
-    static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
+    thread_local static PlanCache clfftManagers[DeviceManager::MAX_DEVICES];
 
-    int id = getActiveDeviceId();
-
-    DeviceManager& inst = DeviceManager::getInstance();
-
-    std::call_once(initFlags[id], [&]{ inst.clfftManagers[id].reset(new PlanCache()); });
-
-    return *(inst.clfftManagers[id].get());
+    return clfftManagers[getActiveDeviceId()];
 }
 
 DeviceManager& DeviceManager::getInstance()
@@ -645,7 +639,6 @@ DeviceManager::~DeviceManager()
 {
     for (int i=0; i<getDeviceCount(); ++i) {
         delete gfxManagers[i].release();
-        delete clfftManagers[i].release();
     }
 #ifndef OS_WIN
     //TODO: FIXME:

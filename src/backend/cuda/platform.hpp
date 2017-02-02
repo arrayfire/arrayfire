@@ -167,8 +167,6 @@ class DeviceManager
 
         std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
 
-        PlanCache cufftManagers[MAX_DEVICES];
-
         std::unique_ptr<cublasHandle> cublasHandles[MAX_DEVICES];
 
         std::unique_ptr<cusolverDnHandle> cusolverHandles[MAX_DEVICES];

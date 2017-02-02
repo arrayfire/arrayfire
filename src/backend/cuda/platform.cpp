@@ -421,7 +421,9 @@ GraphicsResourceManager& interopManager()
 
 PlanCache& fftManager()
 {
-    return DeviceManager::getInstance().cufftManagers[getActiveDeviceId()];
+    thread_local static PlanCache cufftManagers[DeviceManager::MAX_DEVICES];
+
+    return cufftManagers[getActiveDeviceId()];
 }
 
 BlasHandle blasHandle()
