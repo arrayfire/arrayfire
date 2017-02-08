@@ -13,6 +13,8 @@
 #include <Param.hpp>
 #include <debug_cuda.hpp>
 
+#include <algorithm>
+
 namespace cuda
 {
 namespace kernel
