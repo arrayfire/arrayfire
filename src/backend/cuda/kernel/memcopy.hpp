@@ -13,6 +13,8 @@
 #include <Param.hpp>
 #include <debug_cuda.hpp>
 
+#include <algorithm>
+
 namespace cuda
 {
 namespace kernel
@@ -75,9 +77,9 @@ namespace kernel
         dim3 blocks(blocks_x * idims[2],
                     blocks_y * idims[3]);
 
-        dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
-        dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
-        dims_t _idims = {{idims[0], idims[1], idims[2], idims[3]}};
+        dims_t _ostrides = {{(int)ostrides[0], (int)ostrides[1], (int)ostrides[2], (int)ostrides[3]}};
+        dims_t _istrides = {{(int)istrides[0], (int)istrides[1], (int)istrides[2], (int)istrides[3]}};
+        dims_t _idims = {{(int)idims[0], (int)idims[1], (int)idims[2], (int)idims[3]}};
 
         CUDA_LAUNCH((memcopy_kernel<T>), blocks, threads,
                 out, _ostrides, in, _idims, _istrides, blocks_x, blocks_y);

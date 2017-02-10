@@ -29,8 +29,6 @@ int main(int argc, char *argv[])
         array noise = randn(X.dims(0))/5.f;
 
         myWindow.grid(2, 1);
-        myWindow(0, 0).setAxesLimits(-2 * af::Pi, 2 * af::Pi, -1, 1, true);
-        myWindow(1, 0).setAxesLimits(-2 * af::Pi, 2 * af::Pi, -1.25, 1.25, true);
 
         for (double val=0; !myWindow.close(); ) {
 

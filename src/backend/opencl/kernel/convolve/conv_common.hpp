@@ -97,45 +97,39 @@ void prepareKernelArgs(conv_kparam_t& param, dim_t *oDims,
 template<typename T, typename aT, int bDim, bool expand>
 void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal, const Param& filter)
 {
-    try {
-        static std::once_flag  compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*> convProgs;
-        static std::map<int, Kernel*>  convKernels;
+    static std::once_flag  compileFlags[DeviceManager::MAX_DEVICES];
+    static std::map<int, Program*> convProgs;
+    static std::map<int, Kernel*>  convKernels;
 
-        int device = getActiveDeviceId();
+    int device = getActiveDeviceId();
 
-        std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D T=" << dtype_traits<T>::getName()
-                            << " -D accType="<< dtype_traits<aT>::getName()
-                            << " -D BASE_DIM="<< bDim
-                            << " -D EXPAND=" << expand;
-                    if (std::is_same<T, double>::value ||
-                        std::is_same<T, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
-                    Program prog;
-                    buildProgram(prog, convolve_cl, convolve_cl_len, options.str());
-                    convProgs[device]   = new Program(prog);
-                    convKernels[device] = new Kernel(*convProgs[device], "convolve");
-                });
+    std::call_once( compileFlags[device], [device] () {
+                std::ostringstream options;
+                options << " -D T=" << dtype_traits<T>::getName()
+                        << " -D accType="<< dtype_traits<aT>::getName()
+                        << " -D BASE_DIM="<< bDim
+                        << " -D EXPAND=" << expand;
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+                Program prog;
+                buildProgram(prog, convolve_cl, convolve_cl_len, options.str());
+                convProgs[device]   = new Program(prog);
+                convKernels[device] = new Kernel(*convProgs[device], "convolve");
+            });
 
-        auto convOp = cl::KernelFunctor<Buffer, KParam, Buffer, KParam,
-                                        cl::LocalSpaceArg, Buffer, KParam,
-                                        int, int,
-                                        int, int, int,
-                                        int, int, int
-                                       >(*convKernels[device]);
+    auto convOp = cl::KernelFunctor<Buffer, KParam, Buffer, KParam,
+                                    cl::LocalSpaceArg, Buffer, KParam,
+                                    int, int,
+                                    int, int, int,
+                                    int, int, int
+                                    >(*convKernels[device]);
 
-        convOp(EnqueueArgs(getQueue(), param.global, param.local),
-                *out.data, out.info, *signal.data, signal.info, cl::Local(param.loc_size),
-                *param.impulse, filter.info, param.nBBS0, param.nBBS1,
-                param.o[0], param.o[1], param.o[2], param.s[0], param.s[1], param.s[2]);
-
-    } catch (cl::Error err) {
-        CL_TO_AF_ERROR(err);
-        throw;
-    }
+    convOp(EnqueueArgs(getQueue(), param.global, param.local),
+            *out.data, out.info, *signal.data, signal.info, cl::Local(param.loc_size),
+            *param.impulse, filter.info, param.nBBS0, param.nBBS1,
+            param.o[0], param.o[1], param.o[2], param.s[0], param.s[1], param.s[2]);
 }
 
 template<typename T, typename aT, bool expand>

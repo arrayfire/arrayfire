@@ -297,7 +297,7 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_ERROR("FreeImage Error: Unknown Filetype", AF_ERR_NOT_SUPPORTED);
         }
 
-        ArrayInfo info = getInfo(in_);
+        const ArrayInfo& info = getInfo(in_);
         // check image color type
         uint channels = info.dims()[2];
         DIM_ASSERT(1, channels <= 4);
@@ -359,7 +359,7 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_CHECK(af_transpose(&bbT, bb, false));
             AF_CHECK(af_transpose(&aaT, aa, false));
 
-            ArrayInfo cinfo = getInfo(rrT);
+            const ArrayInfo& cinfo = getInfo(rrT);
             float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
             float* pSrc1 = pinnedAlloc<float>(cinfo.elements());
             float* pSrc2 = pinnedAlloc<float>(cinfo.elements());
@@ -390,7 +390,7 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_CHECK(af_transpose(&ggT, gg, false));
             AF_CHECK(af_transpose(&bbT, bb, false));
 
-            ArrayInfo cinfo = getInfo(rrT);
+            const ArrayInfo& cinfo = getInfo(rrT);
             float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
             float* pSrc1 = pinnedAlloc<float>(cinfo.elements());
             float* pSrc2 = pinnedAlloc<float>(cinfo.elements());
@@ -414,7 +414,7 @@ af_err af_save_image(const char* filename, const af_array in_)
             pinnedFree(pSrc2);
         } else {
             AF_CHECK(af_transpose(&rrT, rr, false));
-            ArrayInfo cinfo = getInfo(rrT);
+            const ArrayInfo& cinfo = getInfo(rrT);
             float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
 
@@ -574,7 +574,7 @@ af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_forma
             AF_ERROR("FreeImage Error: Unknown Filetype", AF_ERR_NOT_SUPPORTED);
         }
 
-        ArrayInfo info = getInfo(in_);
+        const ArrayInfo& info = getInfo(in_);
         // check image color type
         uint channels = info.dims()[2];
         DIM_ASSERT(1, channels <= 4);
@@ -628,7 +628,7 @@ af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_forma
             AF_CHECK(af_transpose(&bbT, bb, false));
             AF_CHECK(af_transpose(&aaT, aa, false));
 
-            ArrayInfo cinfo = getInfo(rrT);
+            const ArrayInfo& cinfo = getInfo(rrT);
             float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
             float* pSrc1 = pinnedAlloc<float>(cinfo.elements());
             float* pSrc2 = pinnedAlloc<float>(cinfo.elements());
@@ -659,7 +659,7 @@ af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_forma
             AF_CHECK(af_transpose(&ggT, gg, false));
             AF_CHECK(af_transpose(&bbT, bb, false));
 
-            ArrayInfo cinfo = getInfo(rrT);
+            const ArrayInfo& cinfo = getInfo(rrT);
             float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
             float* pSrc1 = pinnedAlloc<float>(cinfo.elements());
             float* pSrc2 = pinnedAlloc<float>(cinfo.elements());
@@ -683,7 +683,7 @@ af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_forma
             pinnedFree(pSrc2);
         } else {
             AF_CHECK(af_transpose(&rrT, rr, false));
-            ArrayInfo cinfo = getInfo(rrT);
+            const ArrayInfo& cinfo = getInfo(rrT);
             float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
 

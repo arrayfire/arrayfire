@@ -26,13 +26,11 @@ int main(int argc, char *argv[])
         static float t=0.1;
         array Z = seq( 0.1f, 10.f, PRECISION);
 
-        do{
+        do {
             array Y = sin((Z*t) + t) / Z;
             array X = cos((Z*t) + t) / Z;
             X = max(min(X, 1.0), -1.0);
             Y = max(min(Y, 1.0), -1.0);
-
-            myWindow.setAxesLimits(X, Y, Z);
 
             //Pts can be passed in as a matrix in the form n x 3, 3 x n
             //or in the flattened xyz-triplet array with size 3n x 1

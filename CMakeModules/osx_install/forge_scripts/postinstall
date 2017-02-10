@@ -14,12 +14,15 @@ if [ ! -f $brew ]; then
     exit 1
 fi
 
-user=$(ps aux | grep console | grep -v 'grep\|root' | cut -d' ' -f1 | head -n1)
+#user=$(ps aux | grep console | grep -v 'grep\|root' | cut -d' ' -f1 | head -n1)
+user=$(stat -f '%Su' $HOME)
 
 if [ -z $user ]; then
     echo "User not found" >> $err_file
     exit 1
 fi
+
+echo "User: ${user}" >> $err_file
 
 function deps_err
 {
@@ -30,5 +33,34 @@ function deps_err
     exit 1
 }
 
-su $user -c "$brew tap homebrew/versions" >> $err_file 2>&1
-su $user -c "$brew install glfw3 fontconfig" >> $err_file 2>&1 || deps_err
+echo "Output of brew tap:" >> $err_file
+echo "-------------------" >> $err_file
+su $user -c "$brew tap" >> $err_file
+echo "-------------------" >> $err_file
+
+BREW_VERSIONS=$(su $user -c "$brew tap" | grep "homebrew/versions") || true
+if [[ -z "${BREW_VERSIONS}" ]]; then
+    su $user -c "$brew tap homebrew/versions" >> $err_file 2>&1
+else
+    echo "Homebrew/Versions already present in brew tap." >> $err_file
+fi
+
+GLFW_INSTALLED=$(su $user -c "$brew ls --versions glfw3" | grep "glfw3") || true
+if [[ -z "${GLFW_INSTALLED}" ]]; then
+    echo "Installing GLFW3" >> $err_file
+    echo "-------------------" >> $err_file
+    su $user -c "$brew install glfw" >> $err_file 2>&1 || deps_err
+    echo "-------------------" >> $err_file
+else
+    echo "GLFW Version ${GLFW_INSTALLED} is already installed." >> $err_file
+fi
+
+FTCG_INSTALLED=$(su $user -c "$brew ls --versions fontconfig" | grep "fontconfig") || true
+if [[ -z "${FTCG_INSTALLED}" ]]; then
+    echo "Installing FontConfig" >> $err_file
+    echo "-------------------" >> $err_file
+    su $user -c "$brew install fontconfig" >> $err_file 2>&1 || deps_err
+    echo "-------------------" >> $err_file
+else
+    echo "FontConfig Version ${FTCG_INSTALLED} is already installed." >> $err_file
+fi

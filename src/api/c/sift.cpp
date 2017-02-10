@@ -55,7 +55,7 @@ af_err af_sift(af_features* feat, af_array* desc, const af_array in, const unsig
 {
     try {
 #ifdef AF_BUILD_NONFREE_SIFT
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4 dims  = info.dims();
 
         ARG_ASSERT(2, (dims[0] >= 15 && dims[1] >= 15 && dims[2] == 1 && dims[3] == 1));
@@ -96,7 +96,7 @@ af_err af_gloh(af_features* feat, af_array* desc, const af_array in, const unsig
 {
     try {
 #ifdef AF_BUILD_NONFREE_SIFT
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4 dims  = info.dims();
 
         ARG_ASSERT(2, (dims[0] >= 15 && dims[1] >= 15 && dims[2] == 1 && dims[3] == 1));

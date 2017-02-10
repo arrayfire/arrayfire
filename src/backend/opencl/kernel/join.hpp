@@ -39,53 +39,48 @@ namespace opencl
         template<typename To, typename Ti, int dim>
         void join(Param out, const Param in, const af::dim4 offset)
         {
-            try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   joinProgs;
-                static std::map<int, Kernel *> joinKernels;
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static std::map<int, Program*>   joinProgs;
+            static std::map<int, Kernel *> joinKernels;
 
-                int device = getActiveDeviceId();
+            int device = getActiveDeviceId();
 
-                std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D To=" << dtype_traits<To>::getName()
-                            << " -D Ti=" << dtype_traits<Ti>::getName()
-                            << " -D dim=" << dim;
+            std::call_once( compileFlags[device], [device] () {
+                std::ostringstream options;
+                options << " -D To=" << dtype_traits<To>::getName()
+                        << " -D Ti=" << dtype_traits<Ti>::getName()
+                        << " -D dim=" << dim;
 
-                    if (std::is_same<To, double>::value ||
-                        std::is_same<To, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    } else if (std::is_same<Ti, double>::value ||
-                               std::is_same<Ti, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
+                if (std::is_same<To, double>::value ||
+                    std::is_same<To, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                } else if (std::is_same<Ti, double>::value ||
+                            std::is_same<Ti, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
 
-                    Program prog;
-                    buildProgram(prog, join_cl, join_cl_len, options.str());
-                    joinProgs[device] = new Program(prog);
-                    joinKernels[device] = new Kernel(*joinProgs[device], "join_kernel");
-                });
+                Program prog;
+                buildProgram(prog, join_cl, join_cl_len, options.str());
+                joinProgs[device] = new Program(prog);
+                joinKernels[device] = new Kernel(*joinProgs[device], "join_kernel");
+            });
 
-                auto joinOp = KernelFunctor<Buffer, const KParam, const Buffer, const KParam,
-                              const int, const int, const int, const int,
-                              const int, const int> (*joinKernels[device]);
+            auto joinOp = KernelFunctor<Buffer, const KParam, const Buffer, const KParam,
+                          const int, const int, const int, const int,
+                          const int, const int> (*joinKernels[device]);
 
-                NDRange local(TX, TY, 1);
+            NDRange local(TX, TY, 1);
 
-                int blocksPerMatX = divup(in.info.dims[0], TILEX);
-                int blocksPerMatY = divup(in.info.dims[1], TILEY);
-                NDRange global(local[0] * blocksPerMatX * in.info.dims[2],
-                               local[1] * blocksPerMatY * in.info.dims[3],
-                               1);
+            int blocksPerMatX = divup(in.info.dims[0], TILEX);
+            int blocksPerMatY = divup(in.info.dims[1], TILEY);
+            NDRange global(local[0] * blocksPerMatX * in.info.dims[2],
+                            local[1] * blocksPerMatY * in.info.dims[3],
+                            1);
 
-                joinOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info, *in.data, in.info,
-                        offset[0], offset[1], offset[2], offset[3], blocksPerMatX, blocksPerMatY);
+            joinOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info, *in.data, in.info,
+                    offset[0], offset[1], offset[2], offset[3], blocksPerMatX, blocksPerMatY);
 
-                CL_DEBUG_FINISH(getQueue());
-            } catch (cl::Error err) {
-                CL_TO_AF_ERROR(err);
-                throw;
-            }
+            CL_DEBUG_FINISH(getQueue());
         }
     }
 }

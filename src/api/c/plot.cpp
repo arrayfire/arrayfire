@@ -64,6 +64,43 @@ forge::Chart* setup_plot(const forge::Window* const window, const af_array in_,
     // ArrayFire LOGO Orange shade
     plot->setColor(0.929f, 0.529f, 0.212f, 1.0);
 
+    // If chart axes limits do not have a manual override
+    // then compute and set axes limits
+    if(!fgMngr.getChartAxesOverride(chart)) {
+        float cmin[3], cmax[3];
+        T     dmin[3], dmax[3];
+        chart->getAxesLimits(&cmin[0], &cmax[0], &cmin[1], &cmax[1], &cmin[2], &cmax[2]);
+        copyData(dmin, reduce<af_min_t, T, T>(in, 1));
+        copyData(dmax, reduce<af_max_t, T, T>(in, 1));
+
+        if(cmin[0] == 0 && cmax[0] == 0
+        && cmin[1] == 0 && cmax[1] == 0
+        && cmin[2] == 0 && cmax[2] == 0) {
+            // No previous limits. Set without checking
+            cmin[0] = step_round(dmin[0], false);
+            cmax[0] = step_round(dmax[0], true);
+            cmin[1] = step_round(dmin[1], false);
+            cmax[1] = step_round(dmax[1], true);
+            if(order == 3) cmin[2] = step_round(dmin[2], false);
+            if(order == 3) cmax[2] = step_round(dmax[2], true);
+        } else {
+            if(cmin[0] > dmin[0])       cmin[0] = step_round(dmin[0], false);
+            if(cmax[0] < dmax[0])       cmax[0] = step_round(dmax[0], true);
+            if(cmin[1] > dmin[1])       cmin[1] = step_round(dmin[1], false);
+            if(cmax[1] < dmax[1])       cmax[1] = step_round(dmax[1], true);
+            if(order == 3) {
+                if(cmin[2] > dmin[2])   cmin[2] = step_round(dmin[2], false);
+                if(cmax[2] < dmax[2])   cmax[2] = step_round(dmax[2], true);
+            }
+        }
+
+        if(order == 2) {
+            chart->setAxesLimits(cmin[0], cmax[0], cmin[1], cmax[1]);
+        } else if(order == 3) {
+            chart->setAxesLimits(cmin[0], cmax[0], cmin[1], cmax[1], cmin[2], cmax[2]);
+        }
+    }
+
     copy_plot<T>(in, plot);
 
     return chart;
@@ -93,7 +130,7 @@ af_err plotWrapper(const af_window wind, const af_array in, const int order_dim,
     }
 
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af::dim4  dims = info.dims();
         af_dtype  type = info.getType();
 
@@ -136,15 +173,15 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, con
     }
 
     try {
-        ArrayInfo xInfo = getInfo(X);
+        const ArrayInfo& xInfo = getInfo(X);
         af::dim4  xDims = xInfo.dims();
         af_dtype  xType = xInfo.getType();
 
-        ArrayInfo yInfo = getInfo(Y);
+        const ArrayInfo& yInfo = getInfo(Y);
         af::dim4  yDims = yInfo.dims();
         af_dtype  yType = yInfo.getType();
 
-        ArrayInfo zInfo = getInfo(Z);
+        const ArrayInfo& zInfo = getInfo(Z);
         af::dim4  zDims = zInfo.dims();
         af_dtype  zType = zInfo.getType();
 
@@ -197,11 +234,11 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y,
     }
 
     try {
-        ArrayInfo xInfo = getInfo(X);
+        const ArrayInfo& xInfo = getInfo(X);
         af::dim4  xDims = xInfo.dims();
         af_dtype  xType = xInfo.getType();
 
-        ArrayInfo yInfo = getInfo(Y);
+        const ArrayInfo& yInfo = getInfo(Y);
         af::dim4  yDims = yInfo.dims();
         af_dtype  yType = yInfo.getType();
 
@@ -344,7 +381,7 @@ af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* cons
 {
 #if defined(WITH_GRAPHICS)
     try {
-        ArrayInfo info = getInfo(P);
+        const ArrayInfo& info = getInfo(P);
         af::dim4  dims = info.dims();
 
         if(dims.ndims() == 2 && dims[1] == 3) {
@@ -426,7 +463,7 @@ af_err af_draw_scatter3(const af_window wind, const af_array P, const af_marker_
 #if defined(WITH_GRAPHICS)
     forge::MarkerType fg_marker = getFGMarker(af_marker);
     try {
-        ArrayInfo info = getInfo(P);
+        const ArrayInfo& info = getInfo(P);
         af::dim4  dims = info.dims();
 
         if(dims.ndims() == 2 && dims[1] == 3) {

@@ -31,6 +31,8 @@ ExternalProject_Add(
     -DBUILD_TEST:BOOL=OFF
     -DSUFFIX_LIB:STRING=
     -DUSE_SYSTEM_GTEST:BOOL=ON
+    -DOpenCL_INCLUDE_DIR:FILEPATH=${OpenCL_INCLUDE_DIR}
+    -DOpenCL_LIBRARY:FILEPATH=${OpenCL_LIBRARY}
     ${byproducts}
     )
 

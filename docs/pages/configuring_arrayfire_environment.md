@@ -167,14 +167,20 @@ When not set, the default value is 1000.
 AF_OPENCL_MAX_JIT_LEN {#af_opencl_max_jit_len}
 -------------------------------------------------------------------------------
 
-When set, this environment variable specifies the maximum height of the OpenCL JIT tree after which evaluation is forced. The default value for this is 100 as of v3.4 (20 for older versions).
+When set, this environment variable specifies the maximum height of the OpenCL JIT tree after which evaluation is forced.
+
+The default value, as of v3.4, is 50 on OSX, 100 everywhere else. This value was 20 for older versions.
 
 AF_CUDA_MAX_JIT_LEN {#af_cuda_max_jit_len}
 -------------------------------------------------------------------------------
 
-When set, this environment variable specifies the maximum height of the CUDA JIT tree after which evaluation is forced. The default value for this is 100 as of v3.4 (20 for older versions).
+When set, this environment variable specifies the maximum height of the CUDA JIT tree after which evaluation is forced.
+
+The default value, as of v3.4, 100. This value was 20 for older versions.
 
 AF_CPU_MAX_JIT_LEN {#af_cpu_max_jit_len}
 -------------------------------------------------------------------------------
 
-When set, this environment variable specifies the maximum length of the CPU JIT tree after which evaluation is forced. The default value for this is 100 as of v3.4 (20 for older versions).
+When set, this environment variable specifies the maximum length of the CPU JIT tree after which evaluation is forced.
+
+The default value, as of v3.4, 100. This value was 20 for older versions.

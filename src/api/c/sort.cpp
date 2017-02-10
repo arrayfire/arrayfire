@@ -34,7 +34,7 @@ static inline af_array sort(const af_array in, const unsigned dim, const bool is
 af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool isAscending)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
 
         if(info.elements() == 0) {
@@ -82,7 +82,7 @@ static inline void sort_index(af_array *val, af_array *idx, const af_array in,
 af_err af_sort_index(af_array *out, af_array *indices, const af_array in, const unsigned dim, const bool isAscending)
 {
     try {
-        ArrayInfo info = getInfo(in);
+        const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
 
         if(info.elements() <= 0) {
@@ -136,7 +136,7 @@ template<typename Tk>
 void sort_by_key_tmplt(af_array *okey, af_array *oval, const af_array ikey, const af_array ival,
                        const unsigned dim, const bool isAscending)
 {
-    ArrayInfo info = getInfo(ival);
+    const ArrayInfo& info = getInfo(ival);
     af_dtype vtype = info.getType();
 
     switch(vtype) {
@@ -163,10 +163,10 @@ af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
                       const unsigned dim, const bool isAscending)
 {
     try {
-        ArrayInfo kinfo = getInfo(keys);
+        const ArrayInfo& kinfo = getInfo(keys);
         af_dtype ktype = kinfo.getType();
 
-        ArrayInfo vinfo = getInfo(values);
+        const ArrayInfo& vinfo = getInfo(values);
 
         DIM_ASSERT(4, kinfo.dims() == vinfo.dims());
         if(kinfo.elements() == 0) {

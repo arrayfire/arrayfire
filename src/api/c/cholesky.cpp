@@ -34,7 +34,7 @@ static inline int cholesky_inplace(af_array in, const bool is_upper)
 af_err af_cholesky(af_array *out, int *info, const af_array in, const bool is_upper)
 {
     try {
-        ArrayInfo i_info = getInfo(in);
+        const ArrayInfo& i_info = getInfo(in);
 
         if (i_info.ndims() > 2) {
             AF_ERROR("cholesky can not be used in batch mode", AF_ERR_BATCH);
@@ -68,7 +68,7 @@ af_err af_cholesky(af_array *out, int *info, const af_array in, const bool is_up
 af_err af_cholesky_inplace(int *info, af_array in, const bool is_upper)
 {
     try {
-        ArrayInfo i_info = getInfo(in);
+        const ArrayInfo& i_info = getInfo(in);
 
         if (i_info.ndims() > 2) {
             AF_ERROR("cholesky can not be used in batch mode", AF_ERR_BATCH);

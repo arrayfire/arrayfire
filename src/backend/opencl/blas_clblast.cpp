@@ -13,7 +13,7 @@
 
 #include <blas.hpp>
 #include <Array.hpp>
-#include <err_common.hpp>
+#include <err_opencl.hpp>
 #include <math.hpp>
 #include <transpose.hpp>
 #include <arith.hpp>

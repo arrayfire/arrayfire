@@ -9,7 +9,7 @@
 
 #pragma once
 #include <stdio.h>
-#include <err_common.hpp>
+#include <err_opencl.hpp>
 #include <clBLAS.h>
 
 static const char * _clblasGetResultString(clblasStatus st)

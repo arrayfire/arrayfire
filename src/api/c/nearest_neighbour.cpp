@@ -40,8 +40,8 @@ af_err af_nearest_neighbour(af_array* idx, af_array* dist,
         const af_match_type dist_type)
 {
     try {
-        ArrayInfo qInfo = getInfo(query);
-        ArrayInfo tInfo = getInfo(train);
+        const ArrayInfo& qInfo = getInfo(query);
+        const ArrayInfo& tInfo = getInfo(train);
         af_dtype qType  = qInfo.getType();
         af_dtype tType  = tInfo.getType();
         af::dim4 qDims  = qInfo.dims();

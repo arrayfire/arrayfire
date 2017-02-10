@@ -39,48 +39,43 @@ namespace opencl
         template<typename T>
         void reorder(Param out, const Param in, const dim_t *rdims)
         {
-            try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   reorderProgs;
-                static std::map<int, Kernel *> reorderKernels;
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static std::map<int, Program*>   reorderProgs;
+            static std::map<int, Kernel *> reorderKernels;
 
-                int device = getActiveDeviceId();
+            int device = getActiveDeviceId();
 
-                std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D T=" << dtype_traits<T>::getName();
-                    if (std::is_same<T, double>::value ||
-                        std::is_same<T, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
-                    Program prog;
-                    buildProgram(prog, reorder_cl, reorder_cl_len, options.str());
-                    reorderProgs[device] = new Program(prog);
-                    reorderKernels[device] = new Kernel(*reorderProgs[device], "reorder_kernel");
-                });
+            std::call_once( compileFlags[device], [device] () {
+                std::ostringstream options;
+                options << " -D T=" << dtype_traits<T>::getName();
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+                Program prog;
+                buildProgram(prog, reorder_cl, reorder_cl_len, options.str());
+                reorderProgs[device] = new Program(prog);
+                reorderKernels[device] = new Kernel(*reorderProgs[device], "reorder_kernel");
+            });
 
-                auto reorderOp = KernelFunctor<Buffer, const Buffer, const KParam, const KParam,
-                                          const int, const int, const int, const int,
-                                          const int, const int> (*reorderKernels[device]);
+            auto reorderOp = KernelFunctor<Buffer, const Buffer, const KParam, const KParam,
+                                      const int, const int, const int, const int,
+                                      const int, const int> (*reorderKernels[device]);
 
-                NDRange local(TX, TY, 1);
+            NDRange local(TX, TY, 1);
 
-                int blocksPerMatX = divup(out.info.dims[0], TILEX);
-                int blocksPerMatY = divup(out.info.dims[1], TILEY);
-                NDRange global(local[0] * blocksPerMatX * out.info.dims[2],
-                               local[1] * blocksPerMatY * out.info.dims[3],
-                               1);
+            int blocksPerMatX = divup(out.info.dims[0], TILEX);
+            int blocksPerMatY = divup(out.info.dims[1], TILEY);
+            NDRange global(local[0] * blocksPerMatX * out.info.dims[2],
+                            local[1] * blocksPerMatY * out.info.dims[3],
+                            1);
 
-                reorderOp(EnqueueArgs(getQueue(), global, local),
-                          *out.data, *in.data, out.info, in.info,
-                          rdims[0], rdims[1], rdims[2], rdims[3],
-                          blocksPerMatX, blocksPerMatY);
+            reorderOp(EnqueueArgs(getQueue(), global, local),
+                      *out.data, *in.data, out.info, in.info,
+                      rdims[0], rdims[1], rdims[2], rdims[3],
+                      blocksPerMatX, blocksPerMatY);
 
-                CL_DEBUG_FINISH(getQueue());
-            } catch (cl::Error err) {
-                CL_TO_AF_ERROR(err);
-                throw;
-            }
+            CL_DEBUG_FINISH(getQueue());
         }
     }
 }

@@ -29,13 +29,12 @@ namespace JIT
         UnaryNode(const char *out_type_str, const char *name_str,
                   const std::string &op_str,
                   Node_ptr child, int op, bool is_check=false)
-            : Node(out_type_str, name_str),
+            : Node(out_type_str, name_str, child->getHeight() + 1),
               m_op_str(op_str),
               m_child(child),
               m_op(op),
               m_is_check(is_check)
         {
-            m_height = m_child->getHeight() + 1;
         }
 
         bool isLinear(dim_t dims[4])

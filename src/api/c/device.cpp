@@ -49,7 +49,7 @@ af_err af_get_backend_id(af_backend *result, const af_array in)
 {
     try {
         ARG_ASSERT(1, in != 0);
-        ArrayInfo info = getInfo(in, false, false);
+        const ArrayInfo& info = getInfo(in, false, false);
         *result = info.getBackendId();
     } CATCHALL;
     return AF_SUCCESS;
@@ -59,7 +59,7 @@ af_err af_get_device_id(int *device, const af_array in)
 {
     try {
         ARG_ASSERT(1, in != 0);
-        ArrayInfo info = getInfo(in, false, false);
+        const ArrayInfo& info = getInfo(in, false, false);
         *device = info.getDevId();
     } CATCHALL;
     return AF_SUCCESS;
@@ -176,7 +176,7 @@ static inline void sparseEval(af_array arr)
 af_err af_eval(af_array arr)
 {
     try {
-        ArrayInfo info = getInfo(arr, false);
+        const ArrayInfo& info = getInfo(arr, false);
         af_dtype type = info.getType();
 
         if(info.isSparse()) {
@@ -226,12 +226,12 @@ static inline void evalMultiple(int num, af_array *arrayPtrs)
 af_err af_eval_multiple(int num, af_array *arrays)
 {
     try {
-        ArrayInfo info = getInfo(arrays[0]);
+        const ArrayInfo& info = getInfo(arrays[0]);
         af_dtype type = info.getType();
         dim4 dims = info.dims();
 
         for (int i = 1; i < num; i++) {
-            ArrayInfo currInfo = getInfo(arrays[i]);
+            const ArrayInfo& currInfo = getInfo(arrays[i]);
 
             // FIXME: This needs to be removed when new functionality is added
             if (type != currInfo.getType()) {

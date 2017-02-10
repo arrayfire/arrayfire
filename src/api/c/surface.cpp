@@ -36,9 +36,9 @@ forge::Chart* setup_surface(const forge::Window* const window,
     Array<T> yIn = getArray<T>(yVals);
     Array<T> zIn = getArray<T>(zVals);
 
-    ArrayInfo Xinfo = getInfo(xVals);
-    ArrayInfo Yinfo = getInfo(yVals);
-    ArrayInfo Zinfo = getInfo(zVals);
+    const ArrayInfo& Xinfo = getInfo(xVals);
+    const ArrayInfo& Yinfo = getInfo(yVals);
+    const ArrayInfo& Zinfo = getInfo(zVals);
 
     af::dim4 X_dims = Xinfo.dims();
     af::dim4 Y_dims = Yinfo.dims();
@@ -81,6 +81,41 @@ forge::Chart* setup_surface(const forge::Window* const window,
 
     surface->setColor(0.0, 1.0, 0.0, 1.0);
 
+    // If chart axes limits do not have a manual override
+    // then compute and set axes limits
+    if(!fgMngr.getChartAxesOverride(chart)) {
+        float cmin[3], cmax[3];
+        T     dmin[3], dmax[3];
+        chart->getAxesLimits(&cmin[0], &cmax[0], &cmin[1], &cmax[1], &cmin[2], &cmax[2]);
+        dmin[0] = reduce_all<af_min_t, T, T>(xIn);
+        dmax[0] = reduce_all<af_max_t, T, T>(xIn);
+        dmin[1] = reduce_all<af_min_t, T, T>(yIn);
+        dmax[1] = reduce_all<af_max_t, T, T>(yIn);
+        dmin[2] = reduce_all<af_min_t, T, T>(zIn);
+        dmax[2] = reduce_all<af_max_t, T, T>(zIn);
+
+        if(cmin[0] == 0 && cmax[0] == 0
+        && cmin[1] == 0 && cmax[1] == 0
+        && cmin[2] == 0 && cmax[2] == 0) {
+            // No previous limits. Set without checking
+            cmin[0] = step_round(dmin[0], false);
+            cmax[0] = step_round(dmax[0], true);
+            cmin[1] = step_round(dmin[1], false);
+            cmax[1] = step_round(dmax[1], true);
+            cmin[2] = step_round(dmin[2], false);
+            cmax[2] = step_round(dmax[2], true);
+        } else {
+            if(cmin[0] > dmin[0]) cmin[0] = step_round(dmin[0], false);
+            if(cmax[0] < dmax[0]) cmax[0] = step_round(dmax[0], true);
+            if(cmin[1] > dmin[1]) cmin[1] = step_round(dmin[1], false);
+            if(cmax[1] < dmax[1]) cmax[1] = step_round(dmax[1], true);
+            if(cmin[2] > dmin[2]) cmin[2] = step_round(dmin[2], false);
+            if(cmax[2] < dmax[2]) cmax[2] = step_round(dmax[2], true);
+        }
+
+        chart->setAxesLimits(cmin[0], cmax[0], cmin[1], cmax[1], cmin[2], cmax[2]);
+    }
+
     copy_surface<T>(Z, surface);
 
     return chart;
@@ -96,15 +131,15 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
     }
 
     try {
-        ArrayInfo Xinfo = getInfo(xVals);
+        const ArrayInfo& Xinfo = getInfo(xVals);
         af::dim4 X_dims = Xinfo.dims();
         af_dtype Xtype  = Xinfo.getType();
 
-        ArrayInfo Yinfo = getInfo(yVals);
+        const ArrayInfo& Yinfo = getInfo(yVals);
         af::dim4 Y_dims = Yinfo.dims();
         af_dtype Ytype  = Yinfo.getType();
 
-        ArrayInfo Sinfo = getInfo(S);
+        const ArrayInfo& Sinfo = getInfo(S);
         af::dim4 S_dims = Sinfo.dims();
         af_dtype Stype  = Sinfo.getType();
 

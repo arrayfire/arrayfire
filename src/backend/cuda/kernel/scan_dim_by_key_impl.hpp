@@ -401,7 +401,7 @@ namespace kernel
                                         CParam<Tk> key,
                                         const int dim,
                                         const uint threads_y,
-                                        const uint blocks_all[4],
+                                        const dim_t blocks_all[4],
                                         bool calculateFlags,
                                         bool inclusive_scan)
     {
@@ -439,7 +439,7 @@ namespace kernel
                                            CParam<Tk> key,
                                            const int dim,
                                            const uint threads_y,
-                                           const uint blocks_all[4],
+                                           const dim_t blocks_all[4],
                                            bool inclusive_scan)
     {
         dim3 threads(THREADS_X, threads_y);
@@ -473,7 +473,7 @@ namespace kernel
                                    Param<int> tlid,
                                    const int dim,
                                    const uint threads_y,
-                                   const uint blocks_all[4])
+                                   const dim_t blocks_all[4])
     {
 
         dim3 threads(THREADS_X, threads_y);
@@ -495,7 +495,7 @@ namespace kernel
         uint threads_y = std::min(THREADS_Y, nextpow2(out.dims[dim]));
         uint threads_x = THREADS_X;
 
-        uint blocks_all[] = {divup(out.dims[0], threads_x),
+        dim_t blocks_all[] = {divup(out.dims[0], threads_x),
                              out.dims[1], out.dims[2], out.dims[3]};
 
         blocks_all[dim] = divup(out.dims[dim], threads_y * REPEAT);
