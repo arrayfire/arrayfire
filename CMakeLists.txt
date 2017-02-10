@@ -24,7 +24,7 @@ IF(${OpenCL_FOUND})
 ENDIF(${OpenCL_FOUND})
 OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 OPTION(USE_CLBLAST "Build ArrayFire with the CLBlast BLAS library for the OpenCL backend" OFF)
-OPTION(USE_CLBLAS "Build ArrayFire with the clBLAS BLAS library for the OpenCL backend" OFF)
+OPTION(USE_CLBLAS "Build ArrayFire with the clBLAS BLAS library for the OpenCL backend" ON)
 
 OPTION(BUILD_GRAPHICS "Build ArrayFire with Forge Graphics" ON)
 
