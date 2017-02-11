@@ -518,7 +518,7 @@ bool OpenCLCPUOffload(bool forceOffloadOSX)
     // Force condition
     offload = osx_offload && (offload || forceOffloadOSX);
 #endif
-    return false;//offload;
+    return offload;
 }
 
 bool isGLSharingSupported()
