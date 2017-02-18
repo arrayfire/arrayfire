@@ -219,7 +219,8 @@ magma_int_t magma_getrf_gpu(
             magma_getmatrix<Ty>(m-j*nb, nb, dAP(0,0), maxm, work(0), ldwork, queue);
 
             if (j > 0 && n > (j + 1) * nb) {
-                OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER, OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
+                OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER,
+                                                OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
                                                 n - (j+1)*nb, nb,
                                                 c_one,
                                                 dAT(j-1,j-1), lddat,
@@ -256,7 +257,8 @@ magma_int_t magma_getrf_gpu(
 
             // do the small non-parallel computations (next panel update)
             if (s > (j+1)) {
-                OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER, OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
+                OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER,
+                                                OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
                                                 nb, nb,
                                                 c_one,
                                                 dAT(j, j  ), lddat,
@@ -275,7 +277,8 @@ magma_int_t magma_getrf_gpu(
             }
             else {
                 if (n > s * nb) {
-                    OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER, OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
+                    OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER,
+                                                    OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
                                                     n-s*nb, nb,
                                                     c_one,
                                                     dAT(j, j  ), lddat,
@@ -319,7 +322,8 @@ magma_int_t magma_getrf_gpu(
             magmablas_transpose<Ty>(rows, nb0, dAP(0,0), maxm, dAT(s,s), lddat, queue);
 
             if (n > s * nb + nb0) {
-                OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER, OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
+                OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER,
+                                                OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
                                                 n-s*nb-nb0, nb0,
                                                 c_one, dAT(s,s),     lddat,
                                                 dAT(s,s)+nb0, lddat, 1, &queue, 0, nullptr, &event));
