@@ -29,7 +29,7 @@ namespace opencl
 {
 
 // Converts an af_mat_prop options to a transpose type for one of the OpenCL BLAS back-ends
-OPENCL_BLAS_TRANS_TYPE
+OPENCL_BLAS_TRANS_T
 toBlasTranspose(af_mat_prop opt)
 {
     switch(opt) {

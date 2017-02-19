@@ -27,13 +27,13 @@ clblast::Side           clblast_side_const ( magma_side_t  side  );
 #define OPENCL_BLAS_CHECK CLBLAST_CHECK
 
 // Transposing
-#define OPENCL_BLAS_TRANS_TYPE clblast::Transpose // the type
+#define OPENCL_BLAS_TRANS_T clblast::Transpose // the type
 #define OPENCL_BLAS_NO_TRANS clblast::Transpose::kNo
 #define OPENCL_BLAS_TRANS clblast::Transpose::kYes
 #define OPENCL_BLAS_CONJ_TRANS clblast::Transpose::kConjugate
 
 // Triangles
-#define OPENCL_BLAS_TRIANGLE_TYPE clblast::Triangle // the type
+#define OPENCL_BLAS_TRIANGLE_T clblast::Triangle // the type
 #define OPENCL_BLAS_TRIANGLE_UPPER clblast::Triangle::kUpper
 #define OPENCL_BLAS_TRIANGLE_LOWER clblast::Triangle::kLower
 

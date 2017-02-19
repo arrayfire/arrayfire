@@ -166,7 +166,7 @@ magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
 
     cl_event event = NULL;
 
-    OPENCL_BLAS_TRANS_TYPE cltrans =(trans == MagmaNoTrans) ? OPENCL_BLAS_NO_TRANS :
+    OPENCL_BLAS_TRANS_T cltrans =(trans == MagmaNoTrans) ? OPENCL_BLAS_NO_TRANS :
         (trans == MagmaTrans ? OPENCL_BLAS_TRANS : OPENCL_BLAS_CONJ_TRANS);
 
     bool cond = opencl::getActivePlatform() == AFCL_PLATFORM_NVIDIA;

@@ -131,7 +131,7 @@ magma_int_t magma_potrf_gpu(
     static const double    one =  1.0;
     static const double  m_one = -1.0;
 
-    static const OPENCL_BLAS_TRANS_TYPE transType = magma_is_real<Ty>() ? OPENCL_BLAS_TRANS : OPENCL_BLAS_CONJ_TRANS;
+    static const OPENCL_BLAS_TRANS_T transType = magma_is_real<Ty>() ? OPENCL_BLAS_TRANS : OPENCL_BLAS_CONJ_TRANS;
 
     Ty* work;
     magma_int_t err;

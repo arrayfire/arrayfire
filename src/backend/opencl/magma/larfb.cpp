@@ -192,7 +192,7 @@ magma_larfb_gpu(
     static const Ty c_zero    = magma_zero<Ty>();
     static const Ty c_one     = magma_one<Ty>();
     static const Ty c_neg_one = magma_neg_one<Ty>();
-    static const OPENCL_BLAS_TRANS_TYPE transType = magma_is_real<Ty>() ? OPENCL_BLAS_TRANS : OPENCL_BLAS_CONJ_TRANS;
+    static const OPENCL_BLAS_TRANS_T transType = magma_is_real<Ty>() ? OPENCL_BLAS_TRANS : OPENCL_BLAS_CONJ_TRANS;
 
     /* Check input arguments */
     magma_int_t info = 0;
@@ -225,8 +225,8 @@ magma_larfb_gpu(
     }
 
     // opposite of trans
-    OPENCL_BLAS_TRANS_TYPE transt;
-    OPENCL_BLAS_TRANS_TYPE cltrans;
+    OPENCL_BLAS_TRANS_T transt;
+    OPENCL_BLAS_TRANS_T cltrans;
     if (trans == MagmaNoTrans) {
         transt = transType;
         cltrans = OPENCL_BLAS_NO_TRANS;
@@ -237,14 +237,14 @@ magma_larfb_gpu(
     }
 
     // whether T is upper or lower triangular
-    OPENCL_BLAS_TRIANGLE_TYPE uplo;
+    OPENCL_BLAS_TRIANGLE_T uplo;
     if (direct == MagmaForward)
         uplo = OPENCL_BLAS_TRIANGLE_UPPER;
     else
         uplo = OPENCL_BLAS_TRIANGLE_LOWER;
 
     // whether V is stored transposed or not
-    OPENCL_BLAS_TRANS_TYPE notransV, transV;
+    OPENCL_BLAS_TRANS_T notransV, transV;
     if (storev == MagmaColumnwise) {
         notransV = OPENCL_BLAS_NO_TRANS;
         transV   = transType;
