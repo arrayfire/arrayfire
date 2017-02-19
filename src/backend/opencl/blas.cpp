@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined(USE_CLBLAST)
-
 #include <complex>
 
 #include <blas.hpp>
@@ -20,8 +18,8 @@
 #include <reduce.hpp>
 #include <complex.hpp>
 
-#include <clblast.h>
-#include <err_clblast.hpp>
+// Includes one of the supported OpenCL BLAS back-ends (e.g. clBLAS, CLBlast)
+#include <magma/magma_blas.h>
 
 #if defined(WITH_OPENCL_LINEAR_ALGEBRA)
 #include <cpu/cpu_blas.hpp>
@@ -30,36 +28,24 @@
 namespace opencl
 {
 
-void
-initBlas()
-{
-  // Nothing to do here for CLBlast
-}
-
-clblast::Transpose
-toClblastTranspose(af_mat_prop opt)
+// Converts an af_mat_prop options to a transpose type for one of the OpenCL BLAS back-ends
+OPENCL_BLAS_TRANS_TYPE
+toBlasTranspose(af_mat_prop opt)
 {
     switch(opt) {
-        case AF_MAT_NONE    : return clblast::Transpose::kNo;
-        case AF_MAT_TRANS   : return clblast::Transpose::kYes;
-        case AF_MAT_CTRANS  : return clblast::Transpose::kConjugate;
+        case AF_MAT_NONE    : return OPENCL_BLAS_NO_TRANS;
+        case AF_MAT_TRANS   : return OPENCL_BLAS_TRANS;
+        case AF_MAT_CTRANS  : return OPENCL_BLAS_CONJ_TRANS;
         default             : AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
 }
 
-// Defines type conversions from ArrayFire (OpenCL) to CLBlast (C++ std)
-template <typename T> struct CLBlastType { using Type = T; };
-template <> struct CLBlastType<cfloat> { using Type = std::complex<float>; };
-template <> struct CLBlastType<cdouble> { using Type = std::complex<double>; };
-
-// Converts a constant from ArrayFire types (OpenCL) to CLBlast types (C++ std)
-template <typename T> typename CLBlastType<T>::Type toCLBlastConstant(const T val);
-
-// Specializations of the above function
-template <> float toCLBlastConstant(const float val) { return val; }
-template <> double toCLBlastConstant(const double val) { return val; }
-template <> std::complex<float> toCLBlastConstant(cfloat val) { return {val.s[0], val.s[1]}; }
-template <> std::complex<double> toCLBlastConstant(cdouble val) { return {val.s[0], val.s[1]}; }
+// Initialization of the OpenCL BLAS library
+void
+initBlas()
+{
+    gpu_blas_init();
+}
 
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
@@ -71,12 +57,12 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     }
 #endif
 
-    const auto lOpts = toClblastTranspose(optLhs);
-    const auto rOpts = toClblastTranspose(optRhs);
+    const auto lOpts = toBlasTranspose(optLhs);
+    const auto rOpts = toBlasTranspose(optRhs);
 
-    const auto aRowDim = (lOpts == clblast::Transpose::kNo) ? 0 : 1;
-    const auto aColDim = (lOpts == clblast::Transpose::kNo) ? 1 : 0;
-    const auto bColDim = (rOpts == clblast::Transpose::kNo) ? 1 : 0;
+    const auto aRowDim = (lOpts == OPENCL_BLAS_NO_TRANS) ? 0 : 1;
+    const auto aColDim = (lOpts == OPENCL_BLAS_NO_TRANS) ? 1 : 0;
+    const auto bColDim = (rOpts == OPENCL_BLAS_NO_TRANS) ? 1 : 0;
 
     const dim4 lDims = lhs.dims();
     const dim4 rDims = rhs.dims();
@@ -87,32 +73,31 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     Array<T> out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
     const auto alpha = scalar<T>(1);
     const auto beta  = scalar<T>(0);
-    const auto alpha_clblast = toCLBlastConstant(alpha);
-    const auto beta_clblast = toCLBlastConstant(beta);
 
     const dim4 lStrides = lhs.strides();
     const dim4 rStrides = rhs.strides();
+    cl::Event event;
     if(rDims[bColDim] == 1) {
-        CLBLAST_CHECK(
-            clblast::Gemv(clblast::Layout::kColMajor, lOpts,
-                          lDims[0], lDims[1],
-                          alpha_clblast,
-                          (*lhs.get())(), lhs.getOffset(), lStrides[1],
-                          (*rhs.get())(), rhs.getOffset(), rStrides[0],
-                          beta_clblast,
-                          (*out.get())(), out.getOffset(), 1,
-                          &getQueue()())
+        gpu_blas_gemv_func<T> gemv;
+        OPENCL_BLAS_CHECK(
+            gemv(lOpts, lDims[0], lDims[1],
+                 alpha,
+                 (*lhs.get())(), lhs.getOffset(), lStrides[1],
+                 (*rhs.get())(), rhs.getOffset(), rStrides[0],
+                 beta,
+                 (*out.get())(), out.getOffset(), 1,
+                 1, &getQueue()(), 0, nullptr, &event())
         );
     } else {
-        CLBLAST_CHECK(
-            clblast::Gemm(clblast::Layout::kColMajor, lOpts, rOpts,
-                          M, N, K,
-                          alpha_clblast,
-                          (*lhs.get())(), lhs.getOffset(), lStrides[1],
-                          (*rhs.get())(), rhs.getOffset(), rStrides[1],
-                          beta_clblast,
-                          (*out.get())(), out.getOffset(), out.dims()[0],
-                          &getQueue()())
+        gpu_blas_gemm_func<T> gemm;
+        OPENCL_BLAS_CHECK(
+            gemm(lOpts, rOpts, M, N, K,
+                 alpha,
+                 (*lhs.get())(), lhs.getOffset(), lStrides[1],
+                 (*rhs.get())(), rhs.getOffset(), rStrides[1],
+                 beta,
+                 (*out.get())(), out.getOffset(), out.dims()[0],
+                 1, &getQueue()(), 0, nullptr, &event())
         );
     }
 
@@ -149,5 +134,3 @@ INSTANTIATE_DOT(cfloat)
 INSTANTIATE_DOT(cdouble)
 
 }
-
-#endif // USE_CLBLAST

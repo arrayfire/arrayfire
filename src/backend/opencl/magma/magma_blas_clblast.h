@@ -59,6 +59,12 @@ template <> double inline toCLBlastConstant(const double val) { return val; }
 template <> std::complex<float> inline toCLBlastConstant(cfloat val) { return {val.s[0], val.s[1]}; }
 template <> std::complex<double> inline toCLBlastConstant(cdouble val) { return {val.s[0], val.s[1]}; }
 
+// Initialization of the OpenCL BLAS library
+inline void gpu_blas_init()
+{
+  // Nothing to do here for CLBlast
+}
+
 template <typename T>
 struct gpu_blas_gemm_func
 {

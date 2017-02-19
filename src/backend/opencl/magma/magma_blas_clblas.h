@@ -13,6 +13,7 @@
 
 #include <clBLAS.h>
 #include <err_clblas.hpp>
+#include <mutex>  // for std::once_flag
 
 // Convert MAGMA constants to clBLAS constants
 clblasOrder          clblas_order_const( magma_order_t order );
@@ -43,6 +44,12 @@ clblasSide           clblas_side_const ( magma_side_t  side  );
 #define OPENCL_BLAS_UNIT_DIAGONAL clblasUnit
 #define OPENCL_BLAS_NON_UNIT_DIAGONAL clblasNonUnit
 
+// Initialization of the OpenCL BLAS library
+inline void gpu_blas_init()
+{
+    static std::once_flag clblasSetupFlag;
+    call_once(clblasSetupFlag, clblasSetup);
+}
 
 #define clblasSherk(...) clblasSsyrk(__VA_ARGS__)
 #define clblasDherk(...) clblasDsyrk(__VA_ARGS__)
