@@ -26,6 +26,7 @@
 #include <vector>
 #include <string>
 
+#include <cache.hpp>
 #include <memory.hpp>
 #include <GraphicsResourceManager.hpp>
 #include <clfft.hpp>
@@ -93,6 +94,12 @@ MemoryManagerPinned& pinnedMemoryManager();
 GraphicsResourceManager& interopManager();
 
 PlanCache& fftManager();
+
+void addKernelToCache(int device, const std::string& key, const kc_entry_t entry);
+
+void removeKernelFromCache(int device, const std::string& key);
+
+kc_entry_t kernelCache(int device, const std::string& key);
 //
 ///////////////////////// END Sub-Managers /////////////////////
 
@@ -105,6 +112,12 @@ class DeviceManager
     friend GraphicsResourceManager& interopManager();
 
     friend PlanCache& fftManager();
+
+    friend void addKernelToCache(int device, const std::string& key, const kc_entry_t entry);
+
+    friend void removeKernelFromCache(int device, const std::string& key);
+
+    friend kc_entry_t kernelCache(int device, const std::string& key);
 
     friend std::string getDeviceInfo();
 
@@ -181,5 +194,7 @@ class DeviceManager
 
         std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
         clfftSetupData mFFTSetup;
+
+        kc_t kernelCaches[MAX_DEVICES];
 };
 }

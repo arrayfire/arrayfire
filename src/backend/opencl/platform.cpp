@@ -34,6 +34,7 @@
 #include <version.hpp>
 
 #include <algorithm>
+#include <boost/thread.hpp>
 #include <cctype>
 #include <functional>
 #include <map>
@@ -54,8 +55,16 @@ using cl::Context;
 using cl::CommandQueue;
 using cl::Device;
 
+typedef boost::shared_mutex smutex_t;
+typedef boost::shared_lock<smutex_t> rlock_t;
+typedef boost::unique_lock<smutex_t> wlock_t;
+typedef boost::upgrade_lock<smutex_t> ulock_t;
+typedef boost::upgrade_to_unique_lock<smutex_t> u2ulock_t;
+
 namespace opencl
 {
+static smutex_t kernelCacheMutexes[DeviceManager::MAX_DEVICES];
+
 #if defined (OS_MAC)
 static const std::string CL_GL_SHARING_EXT = "cl_APPLE_gl_sharing";
 #else
@@ -627,6 +636,33 @@ PlanCache& fftManager()
     thread_local static PlanCache clfftManagers[DeviceManager::MAX_DEVICES];
 
     return clfftManagers[getActiveDeviceId()];
+}
+
+void addKernelToCache(int device, const std::string& key, const kc_entry_t entry)
+{
+    wlock_t lock(kernelCacheMutexes[device]);
+
+    DeviceManager::getInstance().kernelCaches[device].emplace(key, entry);
+}
+
+void removeKernelFromCache(int device, const std::string& key)
+{
+    wlock_t lock(kernelCacheMutexes[device]);
+
+    DeviceManager::getInstance().kernelCaches[device].erase(key);
+}
+
+kc_entry_t kernelCache(int device, const std::string& key)
+{
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    rlock_t lock(kernelCacheMutexes[device]);
+
+    kc_t::iterator iter = inst.kernelCaches[device].find(key);
+    if (iter == inst.kernelCaches[device].end()) {
+        return kc_entry_t{0, 0};
+    } else
+        return iter->second;
 }
 
 DeviceManager& DeviceManager::getInstance()

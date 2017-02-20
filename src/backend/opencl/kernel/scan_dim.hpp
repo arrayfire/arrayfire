@@ -55,11 +55,10 @@ namespace kernel
             std::to_string(int(inclusive_scan));
 
         int device = getActiveDeviceId();
-        kc_t::iterator idx = kernelCaches[device].find(ref_name);
 
-        kc_entry_t entry;
-        if (idx == kernelCaches[device].end()) {
+        kc_entry_t entry = kernelCache(device, ref_name);
 
+        if (entry.prog==0 && entry.ker==0) {
             Binary<To, op> scan;
             ToNumStr<To> toNumStr;
 
@@ -91,10 +90,8 @@ namespace kernel
             entry.ker[0] = Kernel(*entry.prog, "scan_dim_kernel");
             entry.ker[1] = Kernel(*entry.prog, "bcast_dim_kernel");
 
-            kernelCaches[device][ref_name] = entry;
 
-        } else {
-            entry = idx->second;
+            addKernelToCache(device, ref_name, entry);
         }
 
         return entry.ker[kerIdx];

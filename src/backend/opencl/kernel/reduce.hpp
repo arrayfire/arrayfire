@@ -61,10 +61,9 @@ namespace kernel
             std::to_string(threads_y);
 
         int device = getActiveDeviceId();
-        kc_t::iterator idx = kernelCaches[device].find(ref_name);
+        kc_entry_t entry = kernelCache(device, ref_name);
 
-        kc_entry_t entry;
-        if (idx == kernelCaches[device].end()) {
+        if (entry.prog==0 && entry.ker==0) {
             Binary<To, op> reduce;
             ToNumStr<To> toNumStr;
 
@@ -92,9 +91,7 @@ namespace kernel
             entry.prog = new Program(prog);
             entry.ker = new Kernel(*entry.prog, "reduce_dim_kernel");
 
-            kernelCaches[device][ref_name] = entry;
-        } else {
-            entry = idx->second;
+            addKernelToCache(device, ref_name, entry);
         }
 
         NDRange local(THREADS_X, threads_y);
@@ -179,10 +176,10 @@ namespace kernel
             std::to_string(threads_x);
 
         int device = getActiveDeviceId();
-        kc_t::iterator idx = kernelCaches[device].find(ref_name);
 
-        kc_entry_t entry;
-        if (idx == kernelCaches[device].end()) {
+        kc_entry_t entry = kernelCache(device, ref_name);
+
+        if (entry.prog==0 && entry.ker==0) {
 
             Binary<To, op> reduce;
             ToNumStr<To> toNumStr;
@@ -209,9 +206,7 @@ namespace kernel
             entry.prog = new Program(prog);
             entry.ker = new Kernel(*entry.prog, "reduce_first_kernel");
 
-            kernelCaches[device][ref_name] = entry;
-        } else {
-            entry = idx->second;
+            addKernelToCache(device, ref_name, entry);
         }
 
         NDRange local(threads_x, THREADS_PER_GROUP / threads_x);

@@ -67,10 +67,10 @@ namespace opencl
                 std::to_string(threads);
 
             int device = getActiveDeviceId();
-            auto idx = kernelCaches[device].find(ref_name);
-            kc_entry_t entry;
 
-            if (idx == kernelCaches[device].end()) {
+            kc_entry_t entry = kernelCache(device, ref_name);
+
+            if (entry.prog==0 && entry.ker==0) {
 
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName();
@@ -99,8 +99,8 @@ namespace opencl
                 entry.ker  = new Kernel[2];
                 entry.ker[0] = Kernel(*entry.prog, "csrmv_thread");
                 entry.ker[1] = Kernel(*entry.prog, "csrmv_block");
-            } else {
-                entry = idx->second;
+
+                addKernelToCache(device, ref_name, entry);
             }
 
             int count = 0;

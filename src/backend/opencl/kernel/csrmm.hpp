@@ -61,10 +61,10 @@ namespace opencl
                 std::to_string(use_greedy);
 
             int device = getActiveDeviceId();
-            auto idx = kernelCaches[device].find(ref_name);
-            kc_entry_t entry;
 
-            if (idx == kernelCaches[device].end()) {
+            kc_entry_t entry = kernelCache(device, ref_name);
+
+            if (entry.prog==0 && entry.ker==0) {
 
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName();
@@ -94,8 +94,8 @@ namespace opencl
                 entry.ker[0] = Kernel(*entry.prog, "csrmm_nt");
                 // FIXME: Change this after adding another kernel
                 entry.ker[1] = Kernel(*entry.prog, "csrmm_nt");
-            } else {
-                entry = idx->second;
+
+                addKernelToCache(device, ref_name, entry);
             }
 
             auto csrmm_nt_kernel = entry.ker[0];

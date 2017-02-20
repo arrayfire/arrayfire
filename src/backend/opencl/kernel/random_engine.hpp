@@ -83,9 +83,10 @@ namespace opencl
                 "_" + string(dtype_traits<T>::getName()) +
                 "_" + to_string(kerIdx);
             int device = getActiveDeviceId();
-            kc_t::iterator idx = kernelCaches[device].find(ref_name);
-            kc_entry_t entry;
-            if (idx == kernelCaches[device].end()) {
+
+            kc_entry_t entry = kernelCache(device, ref_name);
+
+            if (entry.prog==0 && entry.ker==0) {
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
                         << " -D THREADS=" << THREADS
@@ -104,9 +105,8 @@ namespace opencl
                 buildProgram(prog, 2, ker_strs, ker_lens, options.str());
                 entry.prog = new Program(prog);
                 entry.ker = new Kernel(*entry.prog, "generate");
-                kernelCaches[device][ref_name] = entry;
-            } else {
-                entry = idx->second;
+
+                addKernelToCache(device, ref_name, entry);
             }
 
             return *entry.ker;
@@ -121,17 +121,17 @@ namespace opencl
             int ker_len = random_engine_mersenne_init_cl_len;
             string ref_name = "mersenne_init";
             int device = getActiveDeviceId();
-            kc_t::iterator idx = kernelCaches[device].find(ref_name);
-            kc_entry_t entry;
-            if (idx == kernelCaches[device].end()) {
+
+            kc_entry_t entry = kernelCache(device, ref_name);
+
+            if (entry.prog==0 && entry.ker==0) {
                 std::string emptyOptionString;
                 cl::Program prog;
                 buildProgram(prog, 1, &ker_str, &ker_len, emptyOptionString);
                 entry.prog = new Program(prog);
                 entry.ker = new Kernel(*entry.prog, "initState");
-                kernelCaches[device][ref_name] = entry;
-            } else {
-                entry = idx->second;
+
+                addKernelToCache(device, ref_name, entry);
             }
 
             return *entry.ker;

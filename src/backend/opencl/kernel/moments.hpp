@@ -49,10 +49,9 @@ namespace opencl
             std::to_string(out.info.dims[0]);
 
             int device = getActiveDeviceId();
-            kc_t::iterator idx = kernelCaches[device].find(ref_name);
+            kc_entry_t entry = kernelCache(device, ref_name);
 
-            kc_entry_t entry;
-            if (idx == kernelCaches[device].end()) {
+            if (entry.prog==0 && entry.ker==0) {
                 std::ostringstream options;
                 options << " -D T="        << dtype_traits<T>::getName();
                 options << " -D MOMENTS_SZ=" << out.info.dims[0];
@@ -69,9 +68,7 @@ namespace opencl
                 entry.prog = new Program(prog);
                 entry.ker = new Kernel(*entry.prog, "moments_kernel");
 
-                kernelCaches[device][ref_name] = entry;
-            } else {
-                entry = idx->second;
+                addKernelToCache(device, ref_name, entry);
             }
 
 

@@ -62,39 +62,37 @@ namespace kernel
             std::to_string(threads_y);
 
         int device = getActiveDeviceId();
-        kc_t::iterator idx = kernelCaches[device].find(ref_name);
 
-        kc_entry_t entry;
-        if (idx == kernelCaches[device].end()) {
+        kc_entry_t entry = kernelCache(device, ref_name);
 
-                Binary<T, op> ireduce;
-                ToNumStr<T> toNumStr;
+        if (entry.prog==0 && entry.ker==0) {
 
-                std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D dim=" << dim
-                        << " -D DIMY=" << threads_y
-                        << " -D THREADS_X=" << THREADS_X
-                        << " -D init=" << toNumStr(ireduce.init())
-                        << " -D " << binOpName<op>()
-                        << " -D CPLX=" << af::iscplx<T>()
-                        << " -D IS_FIRST=" << is_first;
+            Binary<T, op> ireduce;
+            ToNumStr<T> toNumStr;
 
-                if (std::is_same<T, double>::value ||
+            std::ostringstream options;
+            options << " -D T=" << dtype_traits<T>::getName()
+                << " -D dim=" << dim
+                << " -D DIMY=" << threads_y
+                << " -D THREADS_X=" << THREADS_X
+                << " -D init=" << toNumStr(ireduce.init())
+                << " -D " << binOpName<op>()
+                << " -D CPLX=" << af::iscplx<T>()
+                << " -D IS_FIRST=" << is_first;
+
+            if (std::is_same<T, double>::value ||
                     std::is_same<T, cdouble>::value) {
-                    options << " -D USE_DOUBLE";
-                }
+                options << " -D USE_DOUBLE";
+            }
 
-                const char *ker_strs[] = {iops_cl, ireduce_dim_cl};
-                const int   ker_lens[] = {iops_cl_len, ireduce_dim_cl_len};
-                Program prog;
-                buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-                entry.prog = new Program(prog);
-                entry.ker = new Kernel(*entry.prog, "ireduce_dim_kernel");
+            const char *ker_strs[] = {iops_cl, ireduce_dim_cl};
+            const int   ker_lens[] = {iops_cl_len, ireduce_dim_cl_len};
+            Program prog;
+            buildProgram(prog, 2, ker_strs, ker_lens, options.str());
+            entry.prog = new Program(prog);
+            entry.ker = new Kernel(*entry.prog, "ireduce_dim_kernel");
 
-                kernelCaches[device][ref_name] = entry;
-        } else {
-            entry = idx->second;
+            addKernelToCache(device, ref_name, entry);
         }
 
         NDRange local(THREADS_X, threads_y);
@@ -174,10 +172,10 @@ namespace kernel
             std::to_string(threads_x);
 
         int device = getActiveDeviceId();
-        kc_t::iterator idx = kernelCaches[device].find(ref_name);
 
-        kc_entry_t entry;
-        if (idx == kernelCaches[device].end()) {
+        kc_entry_t entry = kernelCache(device, ref_name);
+
+        if (entry.prog==0 && entry.ker==0) {
 
             Binary<T, op> ireduce;
             ToNumStr<T> toNumStr;
@@ -203,9 +201,7 @@ namespace kernel
             entry.prog = new Program(prog);
             entry.ker = new Kernel(*entry.prog, "ireduce_first_kernel");
 
-            kernelCaches[device][ref_name] = entry;
-        } else {
-            entry = idx->second;
+            addKernelToCache(device, ref_name, entry);
         }
 
         NDRange local(threads_x, THREADS_PER_GROUP / threads_x);

@@ -71,10 +71,9 @@ namespace opencl
                 std::to_string(order);
 
             int device = getActiveDeviceId();
-            auto idx = kernelCaches[device].find(ref_name);
-            kc_entry_t entry;
+            kc_entry_t entry = kernelCache(device, ref_name);
 
-            if (idx == kernelCaches[device].end()) {
+            if (entry.prog==0 && entry.ker==0) {
                 ToNumStr<T> toNumStr;
                 std::ostringstream options;
                 options << " -D T="           << dtype_traits<T>::getName()
@@ -106,8 +105,8 @@ namespace opencl
                 buildProgram(prog, 2, ker_strs, ker_lens, options.str());
                 entry.prog = new Program(prog);
                 entry.ker = new Kernel(*entry.prog, "transform_kernel");
-            } else {
-                entry = idx->second;
+
+                addKernelToCache(device, ref_name, entry);
             }
 
             auto transformOp = KernelFunctor<Buffer, const KParam,

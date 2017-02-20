@@ -16,7 +16,6 @@
 #include <JIT/Node.hpp>
 #include <kernel_headers/jit.hpp>
 #include <program.hpp>
-#include <cache.hpp>
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
 #include <functional>
@@ -156,27 +155,25 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
 
 static Kernel getKernel(std::vector<Node *> nodes, bool is_linear)
 {
-
     bool is_dbl = false;
     string funcName = getFuncName(nodes, is_linear, &is_dbl);
     int device = getActiveDeviceId();
 
-    kc_t::iterator idx = kernelCaches[device].find(funcName);
-    kc_entry_t entry;
+    kc_entry_t entry = kernelCache(device, funcName);
 
-    if (idx == kernelCaches[device].end()) {
+    if (entry.prog==0 && entry.ker==0) {
         string jit_ker = getKernelString(funcName, nodes, is_linear);
 
         const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
         const int ker_lens[] = {jit_cl_len, (int)jit_ker.size()};
+
         cl::Program prog;
         buildProgram(prog, 2, ker_strs, ker_lens, is_dbl ? string(" -D USE_DOUBLE") :  string(""));
+
         entry.prog = new cl::Program(prog);
         entry.ker = new Kernel(*entry.prog, funcName.c_str());
 
-        kernelCaches[device][funcName] = entry;
-    } else {
-        entry = idx->second;
+        addKernelToCache(device, funcName, entry);
     }
 
     return *entry.ker;

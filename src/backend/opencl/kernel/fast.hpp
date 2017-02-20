@@ -56,33 +56,31 @@ void fast(const unsigned arc_length,
         std::string(dtype_traits<T>::getName());
 
     int device = getActiveDeviceId();
-    kc_t::iterator cache_idx = kernelCaches[device].find(ref_name);
 
-    kc_entry_t entry;
-    if (cache_idx == kernelCaches[device].end()) {
+    kc_entry_t entry = kernelCache(device, ref_name);
 
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName()
-                    << " -D ARC_LENGTH=" << arc_length
-                    << " -D NONMAX=" << static_cast<unsigned>(nonmax);
+    if (entry.prog==0 && entry.ker==0) {
 
-            if (std::is_same<T, double>::value ||
+        std::ostringstream options;
+        options << " -D T=" << dtype_traits<T>::getName()
+            << " -D ARC_LENGTH=" << arc_length
+            << " -D NONMAX=" << static_cast<unsigned>(nonmax);
+
+        if (std::is_same<T, double>::value ||
                 std::is_same<T, cdouble>::value) {
-                options << " -D USE_DOUBLE";
-            }
+            options << " -D USE_DOUBLE";
+        }
 
-            cl::Program prog;
-            buildProgram(prog, fast_cl, fast_cl_len, options.str());
-            entry.prog = new Program(prog);
-            entry.ker = new Kernel[3];
+        cl::Program prog;
+        buildProgram(prog, fast_cl, fast_cl_len, options.str());
+        entry.prog = new Program(prog);
+        entry.ker = new Kernel[3];
 
-            entry.ker[0] = Kernel(*entry.prog, "locate_features");
-            entry.ker[1] = Kernel(*entry.prog, "non_max_counts");
-            entry.ker[2] = Kernel(*entry.prog, "get_features");
+        entry.ker[0] = Kernel(*entry.prog, "locate_features");
+        entry.ker[1] = Kernel(*entry.prog, "non_max_counts");
+        entry.ker[2] = Kernel(*entry.prog, "get_features");
 
-            kernelCaches[device][ref_name] = entry;
-    } else {
-        entry = cache_idx -> second;
+        addKernelToCache(device, ref_name, entry);
     }
 
     const unsigned max_feat = ceil(in.info.dims[0] * in.info.dims[1] * feature_ratio);

@@ -61,49 +61,47 @@ void nearest_neighbour(Param idx,
         std::to_string(unroll_len);
 
     int device = getActiveDeviceId();
-    kc_t::iterator cache_idx = kernelCaches[device].find(ref_name);
 
-    kc_entry_t entry;
-    if (cache_idx == kernelCaches[device].end()) {
+    kc_entry_t entry = kernelCache(device, ref_name);
 
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName()
-                    << " -D To=" << dtype_traits<To>::getName()
-                    << " -D THREADS=" << THREADS
-                    << " -D FEAT_LEN=" << unroll_len;
+    if (entry.prog==0 && entry.ker==0) {
 
-            switch(dist_type) {
-                case AF_SAD: options <<" -D DISTOP=_sad_"; break;
-                case AF_SSD: options <<" -D DISTOP=_ssd_"; break;
-                case AF_SHD: options <<" -D DISTOP=_shd_ -D __SHD__";
-                              break;
-                default: break;
-            }
+        std::ostringstream options;
+        options << " -D T=" << dtype_traits<T>::getName()
+            << " -D To=" << dtype_traits<To>::getName()
+            << " -D THREADS=" << THREADS
+            << " -D FEAT_LEN=" << unroll_len;
 
-            if (std::is_same<T, double>::value ||
+        switch(dist_type) {
+            case AF_SAD: options <<" -D DISTOP=_sad_"; break;
+            case AF_SSD: options <<" -D DISTOP=_ssd_"; break;
+            case AF_SHD: options <<" -D DISTOP=_shd_ -D __SHD__";
+                         break;
+            default: break;
+        }
+
+        if (std::is_same<T, double>::value ||
                 std::is_same<T, cdouble>::value) {
-                options << " -D USE_DOUBLE";
-            }
+            options << " -D USE_DOUBLE";
+        }
 
-            if (use_lmem)
-                options << " -D USE_LOCAL_MEM";
+        if (use_lmem)
+            options << " -D USE_LOCAL_MEM";
 
-            cl::Program prog;
-            buildProgram(prog,
-                          nearest_neighbour_cl,
-                          nearest_neighbour_cl_len,
-                          options.str());
+        cl::Program prog;
+        buildProgram(prog,
+                nearest_neighbour_cl,
+                nearest_neighbour_cl_len,
+                options.str());
 
-            entry.prog = new Program(prog);
-            entry.ker = new Kernel[3];
+        entry.prog = new Program(prog);
+        entry.ker = new Kernel[3];
 
-            entry.ker[0] = Kernel(*entry.prog, "nearest_neighbour_unroll");
-            entry.ker[1] = Kernel(*entry.prog, "nearest_neighbour");
-            entry.ker[2] = Kernel(*entry.prog, "select_matches");
+        entry.ker[0] = Kernel(*entry.prog, "nearest_neighbour_unroll");
+        entry.ker[1] = Kernel(*entry.prog, "nearest_neighbour");
+        entry.ker[2] = Kernel(*entry.prog, "select_matches");
 
-            kernelCaches[device][ref_name] = entry;
-    } else {
-        entry = cache_idx->second;
+        addKernelToCache(device, ref_name, entry);
     }
 
     const dim_t sample_dim = (dist_dim == 0) ? 1 : 0;
