@@ -42,11 +42,16 @@
 #include <math.hpp>
 #include <nvvm.h>
 
+#include <boost/thread.hpp>
 #include <functional>
 #include <map>
 #include <memory>
 #include <stdexcept>
 #include <vector>
+
+typedef boost::shared_mutex smutex_t;
+typedef boost::upgrade_lock<smutex_t> ulock_t;
+typedef boost::upgrade_to_unique_lock<smutex_t> u2ulock_t;
 
 namespace cuda
 {
@@ -530,17 +535,21 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 
 static CUfunction getKernel(vector<Node *> nodes, bool is_linear)
 {
+    typedef std::map<std::string, kc_entry_t> kc_t;
+
+    static smutex_t mutexes[DeviceManager::MAX_DEVICES];
+    static kc_t kernelCaches[DeviceManager::MAX_DEVICES];
 
     string funcName = getFuncName(nodes, is_linear);
+    int device      = getActiveDeviceId();
 
-    typedef map<string, kc_entry_t> kc_t;
-    static kc_t kernelCaches[DeviceManager::MAX_DEVICES];
-    int device = getActiveDeviceId();
+    ulock_t lock(mutexes[device]);
 
     kc_t::iterator idx = kernelCaches[device].find(funcName);
     kc_entry_t entry = {NULL, NULL};
 
     if (idx == kernelCaches[device].end()) {
+        u2ulock_t unqLock(lock);
         string jit_ker = getKernelString(funcName, nodes, is_linear);
         entry = compileKernel(funcName.c_str(), jit_ker);
         kernelCaches[device][funcName] = entry;
