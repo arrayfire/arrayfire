@@ -43,7 +43,6 @@ double step_round(const double in, const bool dir);
 
 namespace graphics
 {
-
 enum Defaults {
     WIDTH = 1280,
     HEIGHT= 720
@@ -104,8 +103,8 @@ class ForgeManager
         static ForgeManager& getInstance();
         ~ForgeManager();
 
-        forge::Font*    getFont(const bool dontCreate=false);
-        forge::Window*  getMainWindow(const bool dontCreate=false);
+        forge::Font*    getFont();
+        forge::Window*  getMainWindow();
 
         void            setWindowChartGrid(const forge::Window* window,
                                            const int r, const int c);
@@ -130,11 +129,9 @@ class ForgeManager
         ForgeManager() {}
         ForgeManager(ForgeManager const&);
         void operator=(ForgeManager const&);
-        void destroyResources();
 };
-
 }
 
-#define MAIN_WINDOW graphics::ForgeManager::getInstance().getMainWindow(true)
+#define MAIN_WINDOW graphics::ForgeManager::getInstance().getMainWindow()
 
 #endif
