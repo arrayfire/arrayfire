@@ -495,6 +495,9 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que)
     devMngr.mPlatforms.push_back(getPlatformEnum(*tDevice));
     // FIXME: add OpenGL Interop for user provided contexts later
     devMngr.mIsGLSharingOn.push_back(false);
+
+    // Last/newly added device needs memory management
+    memoryManager().addMemoryManagement(devMngr.mDevices.size()-1);
 }
 
 void setDeviceContext(cl_device_id dev, cl_context ctx)
@@ -539,6 +542,8 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx)
     } else if (deleteIdx == -1) {
         AF_ERROR("No matching device found", AF_ERR_ARG);
     } else {
+        //remove memory management for device added by user
+        memoryManager().removeMemoryManagement(deleteIdx);
 
         clReleaseDevice((*devMngr.mDevices[deleteIdx])());
         clReleaseContext((*devMngr.mContexts[deleteIdx])());

@@ -42,7 +42,7 @@ class MemoryManager
     typedef std::unordered_map<size_t, std::vector<void *> >free_t;
     typedef free_t::iterator free_iter;
 
-    typedef struct
+    typedef struct memory_info
     {
         locked_t locked_map;
         free_t   free_map;
@@ -52,6 +52,17 @@ class MemoryManager
         size_t total_bytes;
         size_t total_buffers;
         size_t max_bytes;
+
+        memory_info()
+        {
+            // Calling getMaxMemorySize() here calls the virtual function that returns 0
+            // Call it from outside the constructor.
+            max_bytes     = ONE_GB;
+            total_bytes   = 0;
+            total_buffers = 0;
+            lock_bytes    = 0;
+            lock_buffers  = 0;
+        }
     } memory_info;
 
     size_t mem_step_size;
@@ -74,38 +85,75 @@ class MemoryManager
         return static_cast<T*>(this)->getMaxMemorySize(id);
     }
 
+    void cleanDeviceMemoryManager(int device)
+    {
+        if (this->debug_mode) return;
+
+        lock_guard_t lock(this->memory_mutex);
+        memory_info& current = memory[device];
+
+        // Return if all buffers are locked
+        if (current.total_buffers == current.lock_buffers) return;
+
+        for (auto &kv : current.free_map) {
+            size_t num_ptrs = kv.second.size();
+            //Free memory by popping the last element
+            for (int n = num_ptrs-1; n >= 0; n--) {
+                this->nativeFree(kv.second[n]);
+                current.total_bytes -= kv.first;
+                current.total_buffers--;
+                kv.second.pop_back();
+            }
+        }
+        current.free_map.clear();
+    }
+
     public:
     MemoryManager(int num_devices, unsigned MAX_BUFFERS, bool debug)
         : mem_step_size(1024), max_buffers(MAX_BUFFERS), memory(num_devices), debug_mode(debug)
     {
         lock_guard_t lock(this->memory_mutex);
 
-        for (int n = 0; n < num_devices; n++) {
-            // Calling getMaxMemorySize() here calls the virtual function that returns 0
-            // Call it from outside the constructor.
-            memory[n].max_bytes     = ONE_GB;
-            memory[n].total_bytes   = 0;
-            memory[n].total_buffers = 0;
-            memory[n].lock_bytes    = 0;
-            memory[n].lock_buffers  = 0;
-        }
-
         // Check for environment variables
 
-        std::string env_var;
-
         // Debug mode
-        env_var = getEnvVar("AF_MEM_DEBUG");
-        if (!env_var.empty()) {
-            this->debug_mode = env_var[0] != '0';
-        }
+        std::string env_var = getEnvVar("AF_MEM_DEBUG");
+        if (!env_var.empty()) this->debug_mode = env_var[0] != '0';
         if (this->debug_mode) mem_step_size = 1;
 
         // Max Buffer count
         env_var = getEnvVar("AF_MAX_BUFFERS");
-        if (!env_var.empty()) {
-            this->max_buffers = std::max(1, std::stoi(env_var));
-        }
+        if (!env_var.empty()) this->max_buffers = std::max(1, std::stoi(env_var));
+    }
+
+    // Intended to be used with OpenCL backend, where
+    // users are allowed to add external devices(context, device pair)
+    // to the list of devices automatically detected by the library
+    void addMemoryManagement(int device)
+    {
+        // If there is a memory manager allocated for
+        // this device id, we might as well use it and the
+        // buffers allocated for it
+        if ((size_t)device < memory.size())
+            return;
+
+        // Assuming, device need not be always the next device
+        // Lets resize to current_size + device + 1
+        // +1 is to account for device being 0-based index of devices
+        memory.resize(memory.size()+device+1);
+    }
+
+    // Intended to be used with OpenCL backend, where
+    // users are allowed to add external devices(context, device pair)
+    // to the list of devices automatically detected by the library
+    void removeMemoryManagement(int device)
+    {
+        if ((size_t)device>=memory.size())
+            AF_ERROR("No matching device found", AF_ERR_ARG);
+
+        // Do garbage collection for the device and leave
+        // the memory_info struct from the memory vector intact
+        cleanDeviceMemoryManager(device);
     }
 
     void setMaxMemorySize()
@@ -230,25 +278,7 @@ class MemoryManager
 
     void garbageCollect()
     {
-        if (this->debug_mode) return;
-
-        lock_guard_t lock(this->memory_mutex);
-        memory_info& current = this->getCurrentMemoryInfo();
-
-        // Return if all buffers are locked
-        if (current.total_buffers == current.lock_buffers) return;
-
-        for (auto &kv : current.free_map) {
-            size_t num_ptrs = kv.second.size();
-            //Free memory by popping the last element
-            for (int n = num_ptrs-1; n >= 0; n--) {
-                this->nativeFree(kv.second[n]);
-                current.total_bytes -= kv.first;
-                current.total_buffers--;
-                kv.second.pop_back();
-            }
-        }
-        current.free_map.clear();
+        cleanDeviceMemoryManager(this->getActiveDeviceId());
     }
 
 

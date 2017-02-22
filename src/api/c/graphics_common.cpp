@@ -240,7 +240,6 @@ forge::Window* ForgeManager::getMainWindow()
     static std::once_flag flag;
     static std::unique_ptr<forge::Window> wnd;
 
-    CheckGL("Begin ForgeManager::getMainWindow");
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
 
@@ -253,7 +252,6 @@ forge::Window* ForgeManager::getMainWindow()
                     ForgeManager::getInstance().setWindowChartGrid(wnd.get(), 1, 1);
                 });
     }
-    CheckGL("End ForgeManager::getMainWindow");
 
     return wnd.get();
 }
