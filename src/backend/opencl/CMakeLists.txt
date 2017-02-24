@@ -319,7 +319,6 @@ TARGET_LINK_LIBRARIES(afopencl
                                 PRIVATE ${CLFFT_LIBRARIES}
                                 PRIVATE ${CMAKE_DL_LIBS}
                                 PRIVATE ${FreeImage_LIBS}
-                                PRIVATE ${Boost_LIBRARIES}
                      )
 
 IF(LAPACK_FOUND)

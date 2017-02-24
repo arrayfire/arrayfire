@@ -13,6 +13,7 @@
 #include <forge.h>
 #include <map>
 #include <vector>
+#include <memory>
 
 namespace common
 {

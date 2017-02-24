@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-
 #include <deque>
 #include <memory>
 #include <string>
@@ -32,17 +31,35 @@ class FFTPlanCache
     public:
         FFTPlanCache() : mMaxCacheSize(5) {}
 
-        void setMaxCacheSize(size_t size);
-        size_t getMaxCacheSize() const;
+        void setMaxCacheSize(size_t size) { mMaxCacheSize = size; }
+        size_t getMaxCacheSize() const    { return mMaxCacheSize; }
 
         // iterates through plan cache from front to back
         // of the cache(queue)
         // A valid shared_ptr of the plan in the cache is returned
         // if found, and empty share_ptr otherwise.
-        plan_t find(const std::string& key) const;
+        plan_t find(const std::string& key) const
+        {
+            std::shared_ptr<P> res;
+
+            for(unsigned i=0; i<mCache.size(); ++i) {
+                if (key == mCache[i].first) {
+                    res = mCache[i].second;
+                    break;
+                }
+            }
+
+            return res;
+        }
 
         // pushes plan to the front of cache(queue)
-        void push(const std::string key, plan_t plan);
+        void push(const std::string key, plan_t plan)
+        {
+            if (mCache.size()>=mMaxCacheSize)
+                mCache.pop_back();
+
+            mCache.push_front(plan_pair_t(key, plan));
+        }
 
     protected:
         FFTPlanCache(FFTPlanCache const&);

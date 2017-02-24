@@ -214,7 +214,6 @@ TARGET_LINK_LIBRARIES(afcpu
                             PRIVATE ${CBLAS_LIBRARIES}
                             PRIVATE ${FFTW_LIBRARIES}
                             PRIVATE ${FreeImage_LIBS}
-                            PRIVATE ${Boost_LIBRARIES}
                      )
 
 IF(LAPACK_FOUND)

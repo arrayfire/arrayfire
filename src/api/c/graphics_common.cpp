@@ -16,16 +16,9 @@
 #include <platform.hpp>
 #include <util.hpp>
 #include <mutex>
-#include <boost/thread.hpp>
 
 using namespace std;
 using namespace gl;
-
-typedef boost::shared_mutex smutex_t;
-typedef boost::shared_lock<smutex_t> rlock_t;
-typedef boost::unique_lock<smutex_t> wlock_t;
-typedef boost::upgrade_lock<smutex_t> ulock_t;
-typedef boost::upgrade_to_unique_lock<smutex_t> u2ulock_t;
 
 template<typename T>
 gl::GLenum getGLType() { return GL_FLOAT; }
@@ -179,13 +172,6 @@ double step_round(const double in, const bool dir)
 
 namespace graphics
 {
-static smutex_t  gImgMapMutex;
-static smutex_t  gPltMapMutex;
-static smutex_t  gHstMapMutex;
-static smutex_t  gSfcMapMutex;
-static smutex_t  gVcfMapMutex;
-static smutex_t  gChartMutex;
-
 ForgeManager& ForgeManager::getInstance()
 {
     static ForgeManager my_instance;
@@ -259,8 +245,6 @@ forge::Window* ForgeManager::getMainWindow()
 void ForgeManager::setWindowChartGrid(const forge::Window* window,
                                       const int r, const int c)
 {
-    wlock_t lock(gChartMutex);
-
     ChartMapIter iter = mChartMap.find(window);
 
     if(iter != mChartMap.end()) {
@@ -286,8 +270,6 @@ void ForgeManager::setWindowChartGrid(const forge::Window* window,
 forge::Chart* ForgeManager::getChart(const forge::Window* window, const int r, const int c,
                                      const forge::ChartType ctype)
 {
-    ulock_t lock(gChartMutex);
-
     forge::Chart* chart = NULL;
     ChartMapIter iter = mChartMap.find(window);
 
@@ -300,8 +282,6 @@ forge::Chart* ForgeManager::getChart(const forge::Window* window, const int r, c
             AF_ERROR("Grid points are out of bounds", AF_ERR_TYPE);
 
         // upgrade to exclusive access to make changes
-        u2ulock_t unqLock(lock);
-
         chart = (iter->second)[c * gRows + r];
 
         if (chart == NULL) {
@@ -340,14 +320,10 @@ forge::Image* ForgeManager::getImage(int w, int h, forge::ChannelFormat mode, fo
 
     ChartKey_t keypair = std::make_pair(key, nullptr);
 
-    ulock_t lock(gImgMapMutex);
-
     ImgMapIter iter = mImgMap.find(keypair);
 
     if (iter==mImgMap.end()) {
         forge::Image* temp = new forge::Image(w, h, mode, type);
-
-        u2ulock_t unqLock(lock);
 
         mImgMap[keypair] = temp;
     }
@@ -370,8 +346,6 @@ forge::Image* ForgeManager::getImage(forge::Chart* chart, int w, int h,
 
     ChartKey_t keypair = std::make_pair(key, chart);
 
-    ulock_t lock(gImgMapMutex);
-
     ImgMapIter iter = mImgMap.find(keypair);
 
     if (iter==mImgMap.end()) {
@@ -379,8 +353,6 @@ forge::Image* ForgeManager::getImage(forge::Chart* chart, int w, int h,
             AF_ERROR("Image can only be added to chart of type FG_CHART_2D", AF_ERR_TYPE);
 
         forge::Image* temp = new forge::Image(w, h, mode, type);
-
-        u2ulock_t unqLock(lock);
 
         mImgMap[keypair] = temp;
 
@@ -404,14 +376,10 @@ forge::Plot* ForgeManager::getPlot(forge::Chart* chart, int nPoints, forge::dtyp
 
     ChartKey_t keypair = std::make_pair(key, chart);
 
-    ulock_t lock(gPltMapMutex);
-
     PltMapIter iter = mPltMap.find(keypair);
 
     if (iter==mPltMap.end()) {
         forge::Plot* temp = new forge::Plot(nPoints, dtype, chart->getChartType(), ptype, mtype);
-
-        u2ulock_t unqLock(lock);
 
         mPltMap[keypair] = temp;
 
@@ -433,8 +401,6 @@ forge::Histogram* ForgeManager::getHistogram(forge::Chart* chart, int nBins, for
 
     ChartKey_t keypair = std::make_pair(key, chart);
 
-    ulock_t lock(gHstMapMutex);
-
     HstMapIter iter = mHstMap.find(keypair);
 
     if (iter==mHstMap.end()) {
@@ -442,8 +408,6 @@ forge::Histogram* ForgeManager::getHistogram(forge::Chart* chart, int nBins, for
             AF_ERROR("Histogram can only be added to chart of type FG_CHART_2D", AF_ERR_TYPE);
 
         forge::Histogram* temp = new forge::Histogram(nBins, type);
-
-        u2ulock_t unqLock(lock);
 
         mHstMap[keypair] = temp;
 
@@ -465,8 +429,6 @@ forge::Surface* ForgeManager::getSurface(forge::Chart* chart, int nX, int nY, fo
 
     ChartKey_t keypair = std::make_pair(key, chart);
 
-    ulock_t lock(gSfcMapMutex);
-
     SfcMapIter iter = mSfcMap.find(keypair);
 
     if (iter==mSfcMap.end()) {
@@ -474,8 +436,6 @@ forge::Surface* ForgeManager::getSurface(forge::Chart* chart, int nX, int nY, fo
             AF_ERROR("Surface can only be added to chart of type FG_CHART_3D", AF_ERR_TYPE);
 
         forge::Surface* temp = new forge::Surface(nX, nY, type);
-
-        u2ulock_t unqLock(lock);
 
         mSfcMap[keypair] = temp;
 
@@ -497,14 +457,10 @@ forge::VectorField* ForgeManager::getVectorField(forge::Chart* chart, int nPoint
 
     ChartKey_t keypair = std::make_pair(key, chart);
 
-    ulock_t lock(gVcfMapMutex);
-
     VcfMapIter iter = mVcfMap.find(keypair);
 
     if (iter==mVcfMap.end()) {
         forge::VectorField* temp = new forge::VectorField(nPoints, type, chart->getChartType());
-
-        u2ulock_t unqLock(lock);
 
         mVcfMap[keypair] = temp;
 
@@ -516,8 +472,6 @@ forge::VectorField* ForgeManager::getVectorField(forge::Chart* chart, int nPoint
 
 bool ForgeManager::getChartAxesOverride(forge::Chart* chart)
 {
-    rlock_t lock(gChartMutex);
-
     ChartAxesOverrideIter iter = mChartAxesOverrideMap.find(chart);
     if (iter == mChartAxesOverrideMap.end()) {
         AF_ERROR("Chart Not Found!", AF_ERR_INTERNAL);
@@ -527,8 +481,6 @@ bool ForgeManager::getChartAxesOverride(forge::Chart* chart)
 
 void ForgeManager::setChartAxesOverride(forge::Chart* chart, bool flag)
 {
-    rlock_t lock(gChartMutex);
-
     ChartAxesOverrideIter iter = mChartAxesOverrideMap.find(chart);
     if (iter == mChartAxesOverrideMap.end()) {
         AF_ERROR("Chart Not Found!", AF_ERR_INTERNAL);
