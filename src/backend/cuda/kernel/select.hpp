@@ -56,23 +56,20 @@ namespace cuda
             const int off = idw * out.strides[3] + idz * out.strides[2] + idy * out.strides[1];
             T *optr = out.ptr + off;
 
-            int ids[] = {idx0, idy, idz, idw};
-
             const T *aptr = a.ptr;
             const T *bptr = b.ptr;
             const char *cptr = cond.ptr;
 
+            int ids[] = {idx0, idy, idz, idw};
+            aptr += getOffset(a.dims, a.strides, out.dims, ids);
+            bptr += getOffset(b.dims, b.strides, out.dims, ids);
+            cptr += getOffset(cond.dims, cond.strides, out.dims, ids);
+
             if (is_same) {
-                aptr += off;
-                bptr += off;
-                cptr += off;
                 for (int idx = idx0; idx < out.dims[0]; idx += blockDim.x * blk_x) {
                     optr[idx] = cptr[idx] ? aptr[idx] : bptr[idx];
                 }
             } else {
-                aptr += getOffset(a.dims, a.strides, out.dims, ids);
-                bptr += getOffset(b.dims, b.strides, out.dims, ids);
-                cptr += getOffset(cond.dims, cond.strides, out.dims, ids);
                 bool csame = cond.dims[0] == out.dims[0];
                 bool asame = a.dims[0] == out.dims[0];
                 bool bsame = b.dims[0] == out.dims[0];
@@ -135,8 +132,9 @@ namespace cuda
             const T *aptr = a.ptr;
             const char *cptr = cond.ptr;
 
-            aptr += off;
-            cptr += off;
+            int ids[] = {idx0, idy, idz, idw};
+            aptr += getOffset(a.dims, a.strides, out.dims, ids);
+            cptr += getOffset(cond.dims, cond.strides, out.dims, ids);
 
             if (idw >= out.dims[3] ||
                 idz >= out.dims[2] ||
