@@ -194,7 +194,5 @@ class DeviceManager
 
         std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
         clfftSetupData mFFTSetup;
-
-        kc_t kernelCaches[MAX_DEVICES];
 };
 }

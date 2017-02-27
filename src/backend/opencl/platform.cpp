@@ -629,38 +629,35 @@ GraphicsResourceManager& interopManager()
 
 PlanCache& fftManager()
 {
-    //FIXME Change to better check later, may be Clang version based check
-#if defined(OS_MAC)
-    // XCode Clang doesn't support thread_local qualifier
-    // Hence, making the cache manager per device
-    static PlanCache clfftManagers[DeviceManager::MAX_DEVICES];
-#else
-    //Otherwise, cache manager is per thread per devicea, less congestion
     thread_local static PlanCache clfftManagers[DeviceManager::MAX_DEVICES];
-#endif
 
     return clfftManagers[getActiveDeviceId()];
 }
 
+kc_t& getKernelCache(int device)
+{
+    thread_local static kc_t kernelCaches[DeviceManager::MAX_DEVICES];
+
+    return kernelCaches[device];
+}
+
 void addKernelToCache(int device, const std::string& key, const kc_entry_t entry)
 {
-    DeviceManager::getInstance().kernelCaches[device].emplace(key, entry);
+    getKernelCache(device).emplace(key, entry);
 }
 
 void removeKernelFromCache(int device, const std::string& key)
 {
-    DeviceManager::getInstance().kernelCaches[device].erase(key);
+    getKernelCache(device).erase(key);
 }
 
 kc_entry_t kernelCache(int device, const std::string& key)
 {
-    DeviceManager& inst = DeviceManager::getInstance();
+    kc_t& cache = getKernelCache(device);
 
-    kc_t::iterator iter = inst.kernelCaches[device].find(key);
-    if (iter == inst.kernelCaches[device].end()) {
-        return kc_entry_t{0, 0};
-    } else
-        return iter->second;
+    kc_t::iterator iter = cache.find(key);
+
+    return (iter==cache.end() ? kc_entry_t{0, 0} : iter->second);
 }
 
 DeviceManager& DeviceManager::getInstance()

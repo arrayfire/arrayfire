@@ -421,15 +421,7 @@ GraphicsResourceManager& interopManager()
 
 PlanCache& fftManager()
 {
-    //FIXME Change to better check later, may be Clang version based check
-#if defined(OS_MAC)
-    // XCode Clang doesn't support thread_local qualifier
-    // Hence, making the cache manager per device
-    static PlanCache cufftManagers[DeviceManager::MAX_DEVICES];
-#else
-    //Otherwise, cache manager is per thread per devicea, less congestion
     thread_local static PlanCache cufftManagers[DeviceManager::MAX_DEVICES];
-#endif
 
     return cufftManagers[getActiveDeviceId()];
 }
