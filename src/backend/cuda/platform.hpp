@@ -78,7 +78,9 @@ MemoryManager& memoryManager();
 
 MemoryManagerPinned& pinnedMemoryManager();
 
+#if defined(WITH_GRAPHICS)
 GraphicsResourceManager& interopManager();
+#endif
 
 PlanCache& fftManager();
 
@@ -95,7 +97,9 @@ class DeviceManager
     public:
         static const unsigned MAX_DEVICES = 16;
 
+#if defined(WITH_GRAPHICS)
         static bool checkGraphicsInteropCapability();
+#endif
 
         static DeviceManager& getInstance();
 
@@ -103,7 +107,9 @@ class DeviceManager
 
         friend MemoryManagerPinned& pinnedMemoryManager();
 
+#if defined(WITH_GRAPHICS)
         friend GraphicsResourceManager& interopManager();
+#endif
 
         friend PlanCache& fftManager();
 
@@ -165,7 +171,9 @@ class DeviceManager
 
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
 
+#if defined(WITH_GRAPHICS)
         std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
+#endif
 
         std::unique_ptr<cublasHandle> cublasHandles[MAX_DEVICES];
 

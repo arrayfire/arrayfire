@@ -614,6 +614,7 @@ MemoryManagerPinned& pinnedMemoryManager()
     return *(inst.pinnedMemManager.get());
 }
 
+#if defined(WITH_GRAPHICS)
 GraphicsResourceManager& interopManager()
 {
     static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
@@ -626,6 +627,7 @@ GraphicsResourceManager& interopManager()
 
     return *(inst.gfxManagers[id].get());
 }
+#endif
 
 PlanCache& fftManager()
 {
@@ -668,9 +670,11 @@ DeviceManager& DeviceManager::getInstance()
 
 DeviceManager::~DeviceManager()
 {
+#if defined(WITH_GRAPHICS)
     for (int i=0; i<getDeviceCount(); ++i) {
         delete gfxManagers[i].release();
     }
+#endif
 #ifndef OS_WIN
     //TODO: FIXME:
     // clfftTeardown() causes a "Pure Virtual Function Called" crash on
