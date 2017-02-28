@@ -42,6 +42,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <cstring>
+#include <utility>
 #include <vector>
 
 using std::string;
@@ -222,12 +223,16 @@ static std::string platformMap(std::string &platStr)
 
 std::string getDeviceInfo()
 {
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
     ostringstream info;
     info << "ArrayFire v" << AF_VERSION
          << " (OpenCL, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
 
     unsigned nDevices = 0;
-    for(auto &device: DeviceManager::getInstance().mDevices) {
+    for(auto &device: devMngr.mDevices) {
         const Platform platform(device->getInfo<CL_DEVICE_PLATFORM>());
 
         string dstr = device->getInfo<CL_DEVICE_NAME>();
@@ -267,60 +272,117 @@ std::string getPlatformName(const cl::Device &device)
     return platformMap(platStr);
 }
 
+typedef std::pair<unsigned, unsigned> device_id_t;
+
+std::pair<unsigned, unsigned>& tlocalActiveDeviceId()
+{
+    // First element is active context id
+    // Second element is active queue id
+    thread_local static device_id_t activeDeviceId(0, 0);
+
+    return activeDeviceId;
+}
+
+void setActiveContext(int device)
+{
+    tlocalActiveDeviceId() = std::make_pair(device, device);
+}
+
 int getDeviceCount()
 {
-    return DeviceManager::getInstance().mQueues.size();
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return devMngr.mQueues.size();
 }
 
 int getActiveDeviceId()
 {
-    return DeviceManager::getInstance().mActiveQId;
+    // Second element is the queue id, which is
+    // what we mean by active device id in opencl backend
+    return std::get<1>(tlocalActiveDeviceId());
 }
 
 int getDeviceIdFromNativeId(cl_device_id id)
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
     int nDevices = devMngr.mDevices.size();
     int devId = 0;
     for (devId=0; devId<nDevices; ++devId) {
         if (id == devMngr.mDevices[devId]->operator()())
             break;
     }
+
     return devId;
 }
 
 int getActiveDeviceType()
 {
-    DeviceManager &instance = DeviceManager::getInstance();
-    return instance.mDeviceTypes[instance.mActiveQId];
+    device_id_t& devId = tlocalActiveDeviceId();
+
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return devMngr.mDeviceTypes[std::get<1>(devId)];
 }
 
 int getActivePlatform()
 {
-    DeviceManager &instance = DeviceManager::getInstance();
-    return instance.mPlatforms[instance.mActiveQId];
+    device_id_t& devId = tlocalActiveDeviceId();
+
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return devMngr.mPlatforms[std::get<1>(devId)];
 }
 const Context& getContext()
 {
+    device_id_t& devId = tlocalActiveDeviceId();
+
     DeviceManager& devMngr = DeviceManager::getInstance();
-    return *(devMngr.mContexts[devMngr.mActiveCtxId]);
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return *(devMngr.mContexts[std::get<0>(devId)]);
 }
 
 CommandQueue& getQueue()
 {
+    device_id_t& devId = tlocalActiveDeviceId();
+
     DeviceManager& devMngr = DeviceManager::getInstance();
-    return *(devMngr.mQueues[devMngr.mActiveQId]);
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return *(devMngr.mQueues[std::get<1>(devId)]);
 }
 
 const cl::Device& getDevice(int id)
 {
+    device_id_t& devId = tlocalActiveDeviceId();
+
+    if (id == -1)
+        id = std::get<1>(devId);
+
     DeviceManager& devMngr = DeviceManager::getInstance();
-    if(id == -1) id = devMngr.mActiveQId;
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
     return *(devMngr.mDevices[id]);
 }
 
 size_t getDeviceMemorySize(int device)
 {
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
     const cl::Device& dev = getDevice(device);
     size_t msize = dev.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
     return msize;
@@ -368,13 +430,21 @@ bool OpenCLCPUOffload(bool forceOffloadOSX)
 
 bool isGLSharingSupported()
 {
+    device_id_t& devId = tlocalActiveDeviceId();
+
     DeviceManager& devMngr = DeviceManager::getInstance();
-    return devMngr.mIsGLSharingOn[devMngr.mActiveQId];
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return devMngr.mIsGLSharingOn[std::get<1>(devId)];
 }
 
 bool isDoubleSupported(int device)
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
     return (devMngr.mDevices[device]->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0);
 }
 
@@ -384,7 +454,11 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     unsigned currActiveDevId = (unsigned)getActiveDeviceId();
     bool devset = false;
 
-    for (auto context : DeviceManager::getInstance().mContexts) {
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    for (auto context : devMngr.mContexts) {
         vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
 
         for (auto &device : devices) {
@@ -430,14 +504,15 @@ int setDevice(int device)
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
     if (device >= (int)devMngr.mQueues.size() ||
             device>= (int)DeviceManager::MAX_DEVICES) {
         //throw runtime_error("@setDevice: invalid device index");
         return -1;
-    }
-    else {
-        int old = devMngr.mActiveQId;
-        devMngr.setContext(device);
+    } else {
+        int old = getActiveDeviceId();
+        setActiveContext(device);
         return old;
     }
 }
@@ -551,17 +626,22 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx)
         devMngr.mContexts.erase(devMngr.mContexts.begin()+deleteIdx);
         devMngr.mQueues.erase(devMngr.mQueues.begin()+deleteIdx);
         devMngr.mPlatforms.erase(devMngr.mPlatforms.begin()+deleteIdx);
+
         // FIXME: add OpenGL Interop for user provided contexts later
         devMngr.mIsGLSharingOn.erase(devMngr.mIsGLSharingOn.begin()+deleteIdx);
-        // OTHERWISE, update(decrement) the `mActive*Id` variables
-        if (deleteIdx < (int)devMngr.mActiveCtxId) {
-            --devMngr.mActiveCtxId;
-            --devMngr.mActiveQId;
+
+        // OTHERWISE, update(decrement) the thread local active device ids
+        device_id_t& devId = tlocalActiveDeviceId();
+
+        if (deleteIdx < (int)devId.first) {
+            device_id_t newVals = std::make_pair(devId.first-1, devId.second-1);
+            devId = newVals;
         }
     }
 }
 
-bool synchronize_calls() {
+bool synchronize_calls()
+{
     static bool sync = getEnvVar("AF_SYNCHRONOUS_CALLS") == "1";
     return sync;
 }
@@ -698,16 +778,8 @@ DeviceManager::~DeviceManager()
 #endif
 }
 
-void DeviceManager::setContext(int device)
-{
-    common::lock_guard_t lock(deviceMutex);
-
-    mActiveQId = device;
-    mActiveCtxId = device;
-}
-
 DeviceManager::DeviceManager()
-    : mUserDeviceOffset(0), mActiveCtxId(0), mActiveQId(0)
+    : mUserDeviceOffset(0)
 {
     std::vector<cl::Platform>   platforms;
     Platform::get(&platforms);
@@ -781,7 +853,7 @@ DeviceManager::DeviceManager()
             printf("WARNING: AF_OPENCL_DEFAULT_DEVICE is out of range\n");
             printf("Setting default device as 0\n");
         } else {
-            setContext(def_device);
+            setActiveContext(def_device);
             default_device_set = true;
         }
     }
@@ -800,7 +872,7 @@ DeviceManager::DeviceManager()
         for (int i = 0; i < nDevices; i++) {
             if (mDevices[i]->getInfo<CL_DEVICE_TYPE>() == default_device_type) {
                 default_device_set = true;
-                setContext(i);
+                setActiveContext(i);
                 break;
             }
         }
@@ -836,7 +908,6 @@ DeviceManager::DeviceManager()
 #if defined(WITH_GRAPHICS)
 void DeviceManager::markDeviceForInterop(const int device, const forge::Window* wHandle)
 {
-    common::lock_guard_t lock(deviceMutex);
     try {
         if (device >= (int)mQueues.size() ||
                 device>= (int)DeviceManager::MAX_DEVICES) {

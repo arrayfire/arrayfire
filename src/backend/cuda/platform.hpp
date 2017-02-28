@@ -131,8 +131,6 @@ class DeviceManager
 
         friend int getDeviceCount();
 
-        friend int getActiveDeviceId();
-
         friend int getDeviceNativeId(int device);
 
         friend int getDeviceIdFromNativeId(int nativeId);
@@ -154,7 +152,6 @@ class DeviceManager
         void operator=(DeviceManager const&);
 
         // Attributes
-        common::mutex_t deviceMutex;
         std::vector<cudaDevice_t> cuDevices;
 
         enum sort_mode {flops = 0, memory = 1, compute = 2, none = 3};
@@ -163,7 +160,6 @@ class DeviceManager
 
         int setActiveDevice(int device, int native = -1);
 
-        int activeDev;
         int nDevices;
         cudaStream_t streams[MAX_DEVICES];
 

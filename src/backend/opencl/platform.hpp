@@ -127,8 +127,6 @@ class DeviceManager
 
     friend int getDeviceCount();
 
-    friend int getActiveDeviceId();
-
     friend int getDeviceIdFromNativeId(cl_device_id id);
 
     friend const cl::Context& getContext();
@@ -165,8 +163,6 @@ class DeviceManager
         ~DeviceManager();
 
     protected:
-        void setContext(int device);
-
         DeviceManager();
 
         // Following two declarations are required to
@@ -189,9 +185,6 @@ class DeviceManager
         std::vector<int>         mDeviceTypes;
         std::vector<int>         mPlatforms;
         unsigned mUserDeviceOffset;
-
-        unsigned mActiveCtxId;
-        unsigned mActiveQId;
 
         std::unique_ptr<MemoryManager> memManager;
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;

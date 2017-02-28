@@ -29,7 +29,6 @@ using namespace std;
 
 namespace cuda
 {
-
 ///////////////////////////////////////////////////////////////////////////
 // HELPERS
 ///////////////////////////////////////////////////////////////////////////
@@ -281,6 +280,13 @@ unsigned getMaxJitSize()
     return length;
 }
 
+int& tlocalActiveDeviceId()
+{
+    thread_local static int activeDeviceId = 0;
+
+    return activeDeviceId;
+}
+
 int getDeviceCount()
 {
     return DeviceManager::getInstance().nDevices;
@@ -288,7 +294,7 @@ int getDeviceCount()
 
 int getActiveDeviceId()
 {
-    return DeviceManager::getInstance().activeDev;
+    return tlocalActiveDeviceId();
 }
 
 int getDeviceNativeId(int device)
@@ -312,17 +318,15 @@ int getDeviceIdFromNativeId(int nativeId)
 
 cudaStream_t getStream(int device)
 {
-    cudaStream_t str = DeviceManager::getInstance().streams[device];
-    // if the stream has not yet been initialized, ie. the device has not been
-    // set to active at least once (cuz that's where the stream is created)
-    // then set the device, get the stream, reset the device to current
-    if(!str) {
-        int active_dev = DeviceManager::getInstance().activeDev;
-        setDevice(device);
-        str = DeviceManager::getInstance().streams[device];
-        setDevice(active_dev);
-    }
-    return str;
+    static std::once_flag streamInitFlags[DeviceManager::MAX_DEVICES];
+
+    std::call_once(streamInitFlags[device],
+            [device]() {
+                DeviceManager& inst = DeviceManager::getInstance();
+                CUDA_CHECK(cudaStreamCreate( & (inst.streams[device]) ));
+            });
+
+    return DeviceManager::getInstance().streams[device];
 }
 
 cudaStream_t getActiveStream()
@@ -485,7 +489,7 @@ SparseHandle sparseHandle()
 }
 
 DeviceManager::DeviceManager()
-    : cuDevices(0), activeDev(0), nDevices(0)
+    : cuDevices(0), nDevices(0)
 {
     CUDA_CHECK(cudaGetDeviceCount(&nDevices));
     if (nDevices == 0)
@@ -527,7 +531,6 @@ DeviceManager::DeviceManager()
 
 void DeviceManager::sortDevices(sort_mode mode)
 {
-    common::lock_guard_t lock(deviceMutex);
     switch(mode) {
         case memory :
             std::stable_sort(cuDevices.begin(), cuDevices.end(), card_compare_mem);
@@ -546,50 +549,49 @@ void DeviceManager::sortDevices(sort_mode mode)
 
 int DeviceManager::setActiveDevice(int device, int nId)
 {
-    static bool first = true;
-
-    common::lock_guard_t lock(deviceMutex);
+    thread_local static bool retryFlag = true;
 
     int numDevices = cuDevices.size();
 
-    if(device > numDevices) return -1;
+    if (device > numDevices)
+        return -1;
 
-    int old = activeDev;
-    if(nId == -1) nId = getDeviceNativeId(device);
-    CUDA_CHECK(cudaSetDevice(nId));
+    int old = getActiveDeviceId();
 
-    cudaError_t err = cudaSuccess;
-    if(!streams[device])
-        err = cudaStreamCreate(&streams[device]);
+    if(nId == -1)
+        nId = getDeviceNativeId(device);
 
-    activeDev = device;
+    cudaError_t err = cudaSetDevice(nId);
 
-    if (err == cudaSuccess) return old;
+    if (err == cudaSuccess) {
+        tlocalActiveDeviceId() = device;
+        return old;
+    }
 
-    // Comes when user sets device
-    // If success, return. Else throw error
-    if (!first) {
+    // For the first time a thread calls setDevice,
+    // if the requested device is unavailable, try checking
+    // for other available devices - while loop below
+    if (!retryFlag) {
         CUDA_CHECK(err);
         return old;
     }
 
-    // Comes only when first is true. Set it to false
-    first = false;
+    // Comes only when retryFlag is true. Set it to false
+    retryFlag = false;
 
     while(true) {
         // Check for errors other than DevicesUnavailable
         // If success, return. Else throw error
         // If DevicesUnavailable, try other devices (while loop below)
-        if (err != cudaErrorDevicesUnavailable) {
+        if (err != cudaErrorDeviceAlreadyInUse) {
             CUDA_CHECK(err);
-            activeDev = device;
+            tlocalActiveDeviceId() = device;
             return old;
         }
         cudaGetLastError(); // Reset error stack
 #ifndef NDEBUG
         printf("Warning: Device %d is unavailable. Incrementing to next device \n", device);
 #endif
-
         // Comes here is the device is in exclusive mode or
         // otherwise fails streamCreate with this error.
         // All other errors will error out
@@ -599,11 +601,10 @@ int DeviceManager::setActiveDevice(int device, int nId)
         // Can't call getNativeId here as it will cause an infinite loop with the constructor
         nId = cuDevices[device].nativeId;
 
-        CUDA_CHECK(cudaSetDevice(nId));
-        err = cudaStreamCreate(&streams[device]);
+        err = cudaSetDevice(nId);
     }
 
-    // If all devices fail with DevicesUnavailable, then throw this error
+    // If all devices fail with DeviceAlreadyInUse, then throw this error
     CUDA_CHECK(err);
 
     return old;
@@ -617,7 +618,8 @@ void sync(int device)
     setDevice(currDevice);
 }
 
-bool synchronize_calls() {
+bool synchronize_calls()
+{
     static bool sync = getEnvVar("AF_SYNCHRONOUS_CALLS") == "1";
     return sync;
 }
@@ -627,7 +629,6 @@ bool& evalFlag()
     static bool flag = true;
     return flag;
 }
-
 }
 
 af_err afcu_get_stream(cudaStream_t* stream, int id)
