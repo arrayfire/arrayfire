@@ -57,85 +57,139 @@ void morphTest(const array input, const array mask, const bool isDilation,
               << diff.count() << " s\n";
 }
 
+//TEST(Threading, SetPerThreadActiveDevice)
+//{
+//    if (noImageIOTests()) return;
+//
+//    vector<bool> isDilationFlags;
+//    vector<bool> isColorFlags;
+//    vector<string> files;
+//
+//    files.push_back( string(TEST_DIR "/morph/gray.test") );
+//    isDilationFlags.push_back(true);
+//    isColorFlags.push_back(false);
+//
+//    files.push_back( string(TEST_DIR "/morph/color.test") );
+//    isDilationFlags.push_back(false);
+//    isColorFlags.push_back(true);
+//
+//    vector<std::thread> tests;
+//    unsigned totalTestCount = 0;
+//
+//    auto start = std::chrono::high_resolution_clock::now();
+//
+//    for(size_t pos = 0; pos<files.size(); ++pos)
+//    {
+//        const bool isDilation = isDilationFlags[pos];
+//        const bool isColor    = isColorFlags[pos];
+//
+//        vector<dim4>    inDims;
+//        vector<string>  inFiles;
+//        vector<dim_t>   outSizes;
+//        vector<string>  outFiles;
+//
+//        readImageTests(files[pos], inDims, inFiles, outSizes, outFiles);
+//
+//        const unsigned testCount = inDims.size();
+//
+//        const dim4 maskdims(3,3,1,1);
+//
+//        for (size_t testId=0; testId<testCount; ++testId)
+//        {
+//            int trgtDeviceId = totalTestCount % af::getDeviceCount();
+//
+//            //prefix full path to image file names
+//            inFiles[testId].insert(0,string(TEST_DIR "/morph/"));
+//            outFiles[testId].insert(0,string(TEST_DIR "/morph/"));
+//
+//            af::setDevice(trgtDeviceId);
+//
+//            const array mask = constant(1.0, maskdims);
+//
+//            array input= loadImage(inFiles[testId].c_str(), isColor);
+//            array gold = loadImage(outFiles[testId].c_str(), isColor);
+//
+//            //Push the new test as a new thread of execution
+//            tests.emplace_back(morphTest, input, mask, isDilation, gold, trgtDeviceId);
+//
+//            std::cout<<"morph test launched with the following params on device ("
+//                     <<trgtDeviceId<<"):"<<std::endl;
+//            std::cout<<"\t Input image dims: "<<input.dims()<<std::endl;
+//            std::cout<<"\t Mask dims: "<<mask.dims()<<std::endl;
+//            std::cout<<"\t IsDilation : "<< (isDilation ? "True" : "False") <<std::endl;
+//
+//            totalTestCount++;
+//        }
+//    }
+//    std::cout<< std::endl << "Waiting for results ..." << std::endl << std::endl;
+//
+//    for (size_t testId=0; testId<tests.size(); ++testId)
+//    {
+//        if (tests[testId].joinable()) {
+//            std::cout<<"Attempting join for test ..."<<testId<<std::endl;
+//            tests[testId].join();
+//            std::cout<<"test "<< testId <<" completed." << std::endl;
+//        }
+//        std::cout<<std::endl;
+//    }
+//
+//    auto end = std::chrono::high_resolution_clock::now();
+//
+//    std::chrono::duration<double> diff = end - start;
+//
+//    std::cout << "Total time taken for test : " << diff.count() << " s\n";
+//}
+
+enum ArithOp
+{
+    ADD, SUB, DIV, MUL
+};
+
+void calc(ArithOp opcode, array op1, array op2, float outValue)
+{
+    af::setDevice(0);
+    array res;
+    for (unsigned i=0; i<ITERATION_COUNT; ++i)
+    {
+        switch(opcode) {
+            case ADD: res = op1 + op2; break;
+            case SUB: res = op1 - op2; break;
+            case DIV: res = op1 / op2; break;
+            case MUL: res = op1 * op2; break;
+        }
+    }
+
+    std::vector<float> out(res.elements());
+    res.host((void*)out.data());
+
+    for (unsigned i=0; i <out.size(); ++i)
+        ASSERT_EQ(out[i], outValue);
+}
+
 TEST(Threading, SimultaneousRead)
 {
-    if (noImageIOTests()) return;
-
-    vector<bool> isDilationFlags;
-    vector<bool> isColorFlags;
-    vector<string> files;
-
-    files.push_back( string(TEST_DIR "/morph/gray.test") );
-    isDilationFlags.push_back(true);
-    isColorFlags.push_back(false);
-
-    files.push_back( string(TEST_DIR "/morph/color.test") );
-    isDilationFlags.push_back(false);
-    isColorFlags.push_back(true);
+    af::setDevice(0);
+    af::array A = af::constant(1.0, 100, 100);
+    af::array B = af::constant(1.0, 100, 100);
 
     vector<std::thread> tests;
-    unsigned totalTestCount = 0;
 
-    auto start = std::chrono::high_resolution_clock::now();
-
-    for(size_t pos = 0; pos<files.size(); ++pos)
+    for (int t=0; t<32; ++t)
     {
-        const bool isDilation = isDilationFlags[pos];
-        const bool isColor    = isColorFlags[pos];
+        ArithOp op;
+        float outValue;
 
-        vector<dim4>    inDims;
-        vector<string>  inFiles;
-        vector<dim_t>   outSizes;
-        vector<string>  outFiles;
-
-        readImageTests(files[pos], inDims, inFiles, outSizes, outFiles);
-
-        const unsigned testCount = inDims.size();
-
-        const dim4 maskdims(3,3,1,1);
-
-        for (size_t testId=0; testId<testCount; ++testId)
-        {
-            int trgtDeviceId = totalTestCount % af::getDeviceCount();
-
-            //prefix full path to image file names
-            inFiles[testId].insert(0,string(TEST_DIR "/morph/"));
-            outFiles[testId].insert(0,string(TEST_DIR "/morph/"));
-
-            af::setDevice(trgtDeviceId);
-
-            const array mask = constant(1.0, maskdims);
-
-            array input= loadImage(inFiles[testId].c_str(), isColor);
-            array gold = loadImage(outFiles[testId].c_str(), isColor);
-
-            //Push the new test as a new thread of execution
-            tests.emplace_back(morphTest, input, mask, isDilation, gold, trgtDeviceId);
-
-            std::cout<<"morph test launched with the following params on device ("
-                     <<trgtDeviceId<<"):"<<std::endl;
-            std::cout<<"\t Input image dims: "<<input.dims()<<std::endl;
-            std::cout<<"\t Mask dims: "<<mask.dims()<<std::endl;
-            std::cout<<"\t IsDilation : "<< (isDilation ? "True" : "False") <<std::endl;
-
-            totalTestCount++;
+        switch(t%4) {
+            case 0: op = ADD; outValue = 2.0f; break;
+            case 1: op = SUB; outValue = 0.0f; break;
+            case 2: op = DIV; outValue = 1.0f; break;
+            case 3: op = MUL; outValue = 1.0f; break;
         }
-    }
-    std::cout<< std::endl << "Waiting for results ..." << std::endl << std::endl;
 
-    for (size_t testId=0; testId<tests.size(); ++testId)
-    {
-        if (tests[testId].joinable()) {
-            std::cout<<"Attempting join for test ..."<<testId<<std::endl;
-            tests[testId].join();
-            std::cout<<"test "<< testId <<" completed." << std::endl;
-        }
-        std::cout<<std::endl;
+        tests.emplace_back(calc, op, A, B, outValue);
     }
 
-    auto end = std::chrono::high_resolution_clock::now();
-
-    std::chrono::duration<double> diff = end - start;
-
-    std::cout << "Total time taken for test : " << diff.count() << " s\n";
+    for (int t=0; t<32; ++t)
+        if (tests[t].joinable())
+            tests[t].join();
 }
