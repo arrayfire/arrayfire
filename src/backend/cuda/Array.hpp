@@ -169,11 +169,7 @@ namespace cuda
             return data_dims;
         }
 
-        void setDataDims(const dim4 &new_dims)
-        {
-            modDims(new_dims);
-            data_dims = new_dims;
-        }
+        void setDataDims(const dim4 &new_dims);
 
         size_t getAllocatedBytes() const
         {
@@ -208,19 +204,12 @@ namespace cuda
 
         operator Param<T>()
         {
-            Param<T> out;
-            out.ptr = this->get();
-            for (int  i = 0; i < 4; i++) {
-                out.dims[i] = dims()[i];
-                out.strides[i] = strides()[i];
-            }
-            return out;
+            return Param<T>(this->get(), this->dims().get(), this->strides().get());
         }
 
         operator CParam<T>() const
         {
-            CParam<T> out(this->get(), this->dims().get(), this->strides().get());
-            return out;
+            return CParam<T>(this->get(), this->dims().get(), this->strides().get());
         }
 
         JIT::Node_ptr getNode();
