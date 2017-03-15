@@ -28,76 +28,33 @@ namespace JIT
     public:
 
         ScalarNode(T val)
-            : Node(dtype_traits<T>::getName(), shortname<T>(false), 0),
+            : Node(dtype_traits<T>::getName(), shortname<T>(false), 0, {}),
               m_val(val)
         {
         }
 
-        bool isLinear(dim_t dims[4])
+        void genKerName(std::stringstream &kerStream, Node_ids ids)
         {
-            return true;
-        }
-
-        void genKerName(std::stringstream &kerStream)
-        {
-            if (m_gen_name) return;
-
             kerStream << "_" << m_name_str;
-            kerStream << std::setw(3) << std::setfill('0') << std::dec << m_id << std::dec;
-            m_gen_name = true;
+            kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id << std::dec;
         }
 
-        void genParams(std::stringstream &kerStream, bool is_linear)
+        void genParams(std::stringstream &kerStream, int id, bool is_linear)
         {
-            if (m_gen_param) return;
-            kerStream << m_type_str << " scalar" << m_id << ", " << "\n";
-            m_gen_param = true;
+            kerStream << m_type_str << " scalar" << id << ", " << "\n";
         }
 
         int setArgs(cl::Kernel &ker, int id, bool is_linear)
         {
-            if (m_set_arg) return id;
             ker.setArg(id, m_val);
-            m_set_arg = true;
             return id + 1;
         }
 
-        void genOffsets(std::stringstream &kerStream, bool is_linear)
+        void genFuncs(std::stringstream &kerStream, Node_ids ids)
         {
-            if (m_gen_offset) return;
-            m_gen_offset = true;
-        }
-
-        void genFuncs(std::stringstream &kerStream)
-        {
-            if (m_gen_func) return;
-
-            kerStream << m_type_str << " val" << m_id << " = "
-                      << "scalar" << m_id << ";"
+            kerStream << m_type_str << " val" << ids.id << " = "
+                      << "scalar" << ids.id << ";"
                       << "\n";
-
-            m_gen_func = true;
-        }
-
-        int setId(int id)
-        {
-            if (m_set_id) return id;
-            m_id = id;
-            m_set_id = true;
-            return m_id + 1;
-        }
-
-        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
-        {
-            if (m_set_id) return;
-            len++;
-            m_set_id = true;
-            return;
-        }
-
-        void resetFlags()
-        {
-            if (m_set_id) resetCommonFlags();
         }
     };
 
