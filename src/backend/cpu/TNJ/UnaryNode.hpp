@@ -29,63 +29,31 @@ namespace TNJ
 {
 
     template<typename To, typename Ti, af_op_t op>
-    class UnaryNode  : public Node
+    class UnaryNode  : public TNode<To>
     {
 
     protected:
-        Node_ptr m_child;
         UnOp <To, Ti, op> m_op;
-        To m_val;
+        TNode<Ti> *m_child;
 
     public:
         UnaryNode(Node_ptr child) :
-            Node(child->getHeight() + 1),
-            m_child(child),
-            m_val(0)
+            TNode<To>(0, child->getHeight() + 1, {child}),
+            m_child(reinterpret_cast<TNode<Ti> *>(child.get()))
         {
         }
 
-        void *calc(int x, int y, int z, int w)
+
+        void calc(int x, int y, int z, int w)
         {
-            if (calcCurrent(x, y, z, w)) {
-                m_val = m_op.eval(*(Ti *)m_child->calc(x, y, z, w));
-            }
-            return (void *)(&m_val);
+            this->m_val = m_op.eval(m_child->m_val);
         }
 
-        void *calc(int idx)
+        void calc(int idx)
         {
-            if (calcCurrent(idx)) {
-                m_val = m_op.eval(*(Ti *)m_child->calc(idx));
-            }
-            return (void *)&m_val;
+            this->m_val = m_op.eval(m_child->m_val);
         }
 
-        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
-        {
-            if (m_is_eval) return;
-
-            m_child->getInfo(len, buf_count, bytes);
-            len++;
-
-            m_is_eval = true;
-            return;
-        }
-
-        void reset()
-        {
-            resetCommonFlags();
-            m_child->reset();
-        }
-
-        bool isLinear(const dim_t *dims)
-        {
-            if (!m_set_is_linear) {
-                m_linear = m_child->isLinear(dims);
-                m_set_is_linear = true;
-            }
-            return m_linear;
-        }
     };
 
 }

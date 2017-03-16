@@ -19,38 +19,13 @@ namespace TNJ
 {
 
     template<typename T>
-    class ScalarNode : public Node
+    class ScalarNode : public TNode<T>
     {
 
-    protected:
-        T m_val;
-
     public:
-        ScalarNode(T val) : Node(0), m_val(val)
+        ScalarNode(T val) : TNode<T>(val, 0, {})
         {
         }
-
-        void *calc(int x, int y, int z, int w)
-        {
-            return (void *)(&m_val);
-        }
-
-        void *calc(int idx)
-        {
-            return (void *)&m_val;
-        }
-
-        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
-        {
-            if (m_is_eval) return;
-            len++;
-            m_is_eval = true;
-            return;
-        }
-
-        void reset() { resetCommonFlags(); }
-
-        bool isLinear(const dim_t *dims) { return true; }
     };
 }
 
