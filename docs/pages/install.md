@@ -21,10 +21,10 @@ In general, the installation process for ArrayFire looks like this:
 4. Test the installation
 5. [Where to go for help?](#GettingHelp)
 
-Below you will find instructions for
+Below you will find instructions for:
 
 * [Windows](#Windows)
-* Linux including
+* Linux
     * [Debian 8](#Debian)
     * [Ubuntu 14.04 and later](#Ubuntu)
     * [RedHat, Fedora, and CentOS](#RPM-distros)
@@ -35,8 +35,9 @@ Below you will find instructions for
 If you wish to use CUDA or OpenCL please ensure that you have also installed
 support for these technologies from your video card vendor's website.
 
-Next [download](http://arrayfire.com/download/) and run the ArrayFire installer.
-After it has completed, you need to add ArrayFire to the path for all users.
+Next, [download](http://arrayfire.com/download/) and run the ArrayFire
+installer. After installation, you'll need to add ArrayFire to the path for
+all users:
 
 1. Open Advanced System Settings:
     * Windows 8: Move the Mouse pointer to the bottom right corner of the
@@ -46,83 +47,94 @@ After it has completed, you need to add ArrayFire to the path for all users.
 2. In Advanced System Settings window, click on Advanced tab
 3. Click on Environment Variables, then under System Variables, find PATH, and
    click on it.
-4. In edit mode, append %AF_PATH%/lib. NOTE: Ensure that there is a semi-colon
-   separating %AF_PATH%/lib from any existing content (e.g.
-   EXISTING_PATHS;%AF_PATH%/lib;) otherwise other software may not function
-   correctly.
+4. In edit mode, append `%AF_PATH%/lib`. Make sure to separate `%AF_PATH%/lib`
+   from any existing content using a semicolon (e.g.
+   `EXISTING_PATHS;%AF_PATH%/lib;`). Other software may function incorrectly
+   if this is not the case.
 
 Finally, verify that the path addition worked correctly. You can do this by:
 
-1. Open Visual Studio 2013. Open the HelloWorld solution which is located at
+1. Open Visual Studio 2013. Open the `HelloWorld` solution which is located at
    `%AF_PATH%/examples/helloworld/helloworld.exe`.
-2. Build and run the helloworld example. Be sure to, select the
-   platform/configuration of your choice using the platform drop-down (the
-   options are CPU, CUDA, and OpenCL) and Solution Configuration drop down
-   (options of Release and Debug) menus. Run the helloworld example
+2. Build and run the `helloworld` example. Use the "Solution Platform"
+   drop-down to select from the CPU, CUDA, or OpenCL backends ArrayFire
+   provides.
 
 # Linux
 
 ## <a name="Debian"></a> Debian 8
 
-First install the prerequisite packages:
+First, install the prerequisite packages:
 
-    # Prerequisite packages:
+    # Install prerequisite packages:
     apt-get install libglfw3-dev cmake
 
     # Enable GPU support (OpenCL):
     apt-get install ocl-icd-libopencl1
 
-If you wish to use CUDA, please
-[download the latest version of CUDA](https://developer.nvidia.com/cuda-zone)
-and install it on your system.
+If you wish to use CUDA,
+[download](https://developer.nvidia.com/cuda-downloads) and install the latest
+version.
 
-Next [download](http://arrayfire.com/download/) ArrayFire. After you have the
-file, run the installer.
+Next, [download](http://arrayfire.com/download/) the ArrayFire installer for
+your system. After you have the file, run the installer:
 
     ./arrayfire_*_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
 ## <a name="RPM-distros"></a> RedHat, Fedora, and CentOS
 
-First install the prerequisite packages:
+First, install the prerequisite packages:
 
     # Install prerequiste packages
     yum install glfw cmake
 
-On Centos and Redhat the `glfw` package is outdated and you will need to compile
-it from source. Please
-[these instructions](https://github.com/arrayfire/arrayfire/wiki/GLFW-for-ArrayFire).
+NOTE: On CentOS and Redhat, the `glfw` package is outdated and you will need
+to compile it from source. Follow these
+[instructions](https://github.com/arrayfire/arrayfire/wiki/GLFW-for-ArrayFire)
+for more information on how to build and install GFLW.
 
-If you wish to use CUDA, please
-[download the latest version of CUDA](https://developer.nvidia.com/cuda-downloads)
-and install it on your system.
+If you wish to use CUDA,
+[download](https://developer.nvidia.com/cuda-downloads) and install the latest
+version.
 
-Next [download](http://arrayfire.com/download/) ArrayFire. After you have the
-file, run the installer.
+Next, [download](http://arrayfire.com/download/) the ArrayFire installer for
+your system. After you have the file, run the installer:
 
     ./arrayfire_*_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
 ## <a name="Ubuntu"></a> Ubuntu 14.04 and later
 
-First install the prerequisite packages:
+First, install the prerequisite packages:
 
-    # Prerequisite packages:
+### Ubuntu 16.04
+
+    # Install prerequisite packages:
+    sudo apt-get install libglfw3-dev cmake
+
+### Ubuntu 14.04
+
+    # Install prerequisite packages:
     sudo apt-get install cmake
 
-Ubuntu 14.04 will not have the libglfw3-dev package in its repositories. You can either build the
-library from source (following the
-[instructions listed here](https://github.com/arrayfire/arrayfire/wiki/GLFW-for-ArrayFire)) or
-install the library from a PPA as follows:
+Ubuntu 14.04 does not include the `libglfw3-dev` package in its
+repositories. In order to install, you can either:
+
+1. Build the library from source by following these
+   [instructions](https://github.com/arrayfire/arrayfire/wiki/GLFW-for-ArrayFire),
+   or
+2. Install the library from a PPA as follows:
 
     sudo apt-add-repository ppa:keithw/glfw3
     sudo apt-get update
     sudo apt-get install glfw3
 
-After this point, the installation should proceed identically to Ubuntu 14.10 or newer.
+At this point, the installation should proceed identically for Ubuntu 14.04
+and newer.
 
 If your system has a CUDA GPU, we suggest downloading the latest drivers
 from NVIDIA in the form of a Debian package and installing using the
 package manager. At present, CUDA downloads can be found on the
-[NVIDIA CUDA download page](https://developer.nvidia.com/cuda-downloads)
+[NVIDIA CUDA download page](https://developer.nvidia.com/cuda-downloads).
 Follow NVIDIA's instructions for getting CUDA set up.
 
 If you wish to use OpenCL, simply install the OpenCL ICD loader along
@@ -132,22 +144,24 @@ with any drivers required for your hardware.
     apt-get install ocl-icd-libopencl1
 
 ### Special instructions for Tegra X1
-**The ArrayFire binary installer for Terga X1 requires JetPack 2.3 or L4T 24.2
-for Jetson TX1. This includes Ubuntu 16.04, CUDA 8.0 etc.**
-If you are using ArrayFire on the Tegra X1 also install these packages:
+
+**The ArrayFire binary installer for Tegra X1 requires at least JetPack 2.3 or
+L4T 24.2 for Jetson TX1. This includes Ubuntu 16.04, CUDA 8.0 etc.**
+
+You will also want to install the following packages when using ArrayFire on
+the Tegra X1:
 
     sudo apt-get install libopenblas-dev liblapacke-dev
 
 ### Special instructions for Tegra K1
-If you are using ArrayFire on the Tegra K1 also install these packages:
+
+You will also want to install the following packages when using ArrayFire on
+the Tegra K1:
 
     sudo apt-get install libatlas3gf-base libatlas-dev libfftw3-dev liblapacke-dev
 
-In addition to these packages, you will need to compile GLFW3 from source
-using the instructions above.
-
-Finally, [download](http://arrayfire.com/download/) ArrayFire. After you have
-the file, run the installer using:
+Finally, [download](http://arrayfire.com/download/) ArrayFire for your
+system. After you have the file, run the installer using:
 
     ./arrayfire_*_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
@@ -168,7 +182,8 @@ not include MKL acceleration of linear algebra functions.
 
 ## Testing installation
 
-After ArrayFire is installed, you can build the example programs as follows:
+Test ArrayFire after the installation process by building the example programs
+as follows:
 
     cp -r /usr/local/share/ArrayFire/examples .
     cd examples
