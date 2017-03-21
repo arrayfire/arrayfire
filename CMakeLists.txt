@@ -136,8 +136,7 @@ INCLUDE_DIRECTORIES(BEFORE
     )
 
 IF(${UNIX})
-    ADD_DEFINITIONS(-Wall -fvisibility=hidden)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    ADD_DEFINITIONS(-std=c++11 -Wall -fvisibility=hidden)
 
     IF(${WITH_COVERAGE})
         SET(CMAKE_CXX_FLAGS             "-fprofile-arcs -ftest-coverage")

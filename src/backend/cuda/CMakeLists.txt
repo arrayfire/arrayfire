@@ -418,7 +418,7 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${thrust_sort_by_key_sources}
                 ${scan_by_key_sources}
                 OPTIONS ${CUDA_GENERATE_CODE}
-                #These flags enable C++11 and disable invalid offsetof warning
+                #disable invalid offsetof warning
                 -std=c++11 -Xcudafe "--diag_suppress=1427")
 
 ADD_DEPENDENCIES(afcuda ${ptx_targets})

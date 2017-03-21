@@ -8,6 +8,8 @@ FIND_PACKAGE(OpenCL QUIET)
 
 OPTION(BUILD_SINGLE_TEST_FILE "Build tests in a single file" OFF)
 
+REMOVE_DEFINITIONS(-std=c++11)
+
 # If the tests are not being built at the same time as ArrayFire,
 # we need to first find the ArrayFire library
 IF(TARGET afcpu OR TARGET afcuda OR TARGET afopencl OR TARGET af)
@@ -117,6 +119,10 @@ MACRO(CREATE_TESTS BACKEND AFLIBNAME GTEST_LIBS OTHER_LIBS)
           PROPERTIES
           COMPILE_FLAGS -DAF_${DEF_NAME}
           FOLDER "Tests/${BACKEND}")
+
+        IF (${FNAME} STREQUAL "threading")
+            SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES COMPILE_OPTIONS -std=c++11)
+        ENDIF()
 
         IF(TEST_LINK_FLAGS)
           SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES LINK_FLAGS ${TEST_LINK_FLAGS})
