@@ -857,6 +857,17 @@ double area = m00;
 double x_center = m10 / m00;
 double y_center = m01 / m00;
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=======================================================================
+
+\defgroup image_func_canny canny
+\ingroup imageflt_mat
+
+\brief Canny Edge Detector
+
+The Canny edge detector is an edge detection operator that uses a multi-stage algorithm to detect a
+wide range of edges in images. A more in depth discussion on it can be found [here](https://en.wikipedia.org/wiki/Canny_edge_detector).
+
 @}
 */
 

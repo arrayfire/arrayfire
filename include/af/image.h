@@ -688,6 +688,22 @@ AFAPI void moments(double* out, const array& in, const momentType moment=AF_MOME
 AFAPI array moments(const array& in, const momentType moment=AF_MOMENT_FIRST_ORDER);
 #endif
 
+#if AF_API_VERSION >= 35
+/**
+   C++ Interface for canny edge detector
+
+   \param[in] in is the input image
+   \param[in] threshold1 is the lower threshold used in hysteresis procedure.
+   \param[in] threshold2 is the higher threshold used in hysteresis procedure.
+   \param[in] sobel_window is the window size of sobel kernel for computing gradient direction and magnitude
+   \param[in] isfast indicates if L<SUB>1</SUB> norm(faster but less accurate) is used to compute image gradient magnitude instead of L<SUB>2</SUB> norm.
+   \return binary array containing edges
+
+   \ingroup image_func_canny
+*/
+AFAPI array canny(const array& in, const float threshold1, const float threshold2,
+                  const unsigned sobel_window = 3, const bool isfast = false);
+#endif
 }
 #endif
 
@@ -1373,6 +1389,26 @@ extern "C" {
        \ingroup image_func_moments
     */
     AFAPI af_err af_moments_all(double* out, const af_array in, const af_moment_type moment);
+#endif
+
+#if AF_API_VERSION >= 35
+    /**
+       C Interface for canny edge detector
+
+       \param[out] out is an binary array containing edges
+       \param[in] in is the input image
+       \param[in] threshold1 is the lower threshold used in hysteresis procedure.
+       \param[in] threshold2 is the higher threshold used in hysteresis procedure.
+       \param[in] sobel_window is the window size of sobel kernel for computing gradient direction and magnitude
+       \param[in] isfast indicates if L<SUB>1</SUB> norm(faster but less accurate) is used to compute image gradient magnitude instead of L<SUB>2</SUB> norm.
+       \return     ref AF_SUCCESS if the moment calculation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_canny
+    */
+    AFAPI af_err af_canny(af_array* out, const af_array in,
+                          const float threshold1, const float threshold2,
+                          const unsigned sobel_window, const bool isfast);
 #endif
 
 #ifdef __cplusplus
