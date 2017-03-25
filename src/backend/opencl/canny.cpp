@@ -16,10 +16,10 @@ using af::dim4;
 
 namespace opencl
 {
-Array<uchar> nonMaximumSuppression(const Array<float>& mag,
+Array<float> nonMaximumSuppression(const Array<float>& mag,
                                    const Array<float>& gx, const Array<float>& gy)
 {
-    Array<uchar> out = createValueArray<uchar>(mag.dims(), 0);
+    Array<float> out = createValueArray<float>(mag.dims(), 0);
 
     kernel::nonMaxSuppression<float>(out, mag, gx, gy);
 

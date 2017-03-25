@@ -62,7 +62,7 @@ af_array cannyHelper(const Array<T> in, const float t1, const float t2,
 
     Array<float> gmag = gradientMagnitude(gx, gy, isf);
 
-    Array<uchar> supEdges = detail::nonMaximumSuppression(gmag, gx, gy);
+    Array<float> supEdges = detail::nonMaximumSuppression(gmag, gx, gy);
 
     const af::dim4 dims = in.dims();
 
@@ -71,15 +71,13 @@ af_array cannyHelper(const Array<T> in, const float t1, const float t2,
     int channels = dims[2];
 
     std::vector<uint> hostHist(256*channels);
-    std::vector<uchar> lowValue(channels);
-    std::vector<uchar> highValue(channels);
 
-    Array<uint> hist = detail::histogram<uchar, uint, false>(supEdges, 256, 0, 255);
+    Array<uint> hist = detail::histogram<float, uint, false>(supEdges, 256, 0, 255);
 
     detail::copyData(hostHist.data(), hist);
 
-    Array<uchar> T2 = detail::createEmptyArray<uchar>(gmag.dims());
-    Array<uchar> T1 = detail::createEmptyArray<uchar>(gmag.dims());
+    Array<float> T2 = detail::createEmptyArray<float>(gmag.dims());
+    Array<float> T1 = detail::createEmptyArray<float>(gmag.dims());
 
     for (dim_t c=0; c<channels; ++c)
     {
@@ -97,20 +95,20 @@ af_array cannyHelper(const Array<T> in, const float t1, const float t2,
         int i = 255;
         for (int sum=width*height-hostHist[offset]; sum>highCount; sum-=hostHist[i--]);
 
-        uchar highValue = (unsigned char)++i;
-        uchar lowValue  = (unsigned char)(highValue * t1 + 0.5f);
+        float highValue = (float)++i;
+        float lowValue  = (float)(highValue * t1 + 0.5f);
 
-        Array<uchar> highTslice = createSubArray<uchar>(T2, sliceIndex, false);
-        Array<uchar> lowTslice  = createSubArray<uchar>(T1, sliceIndex, false);
+        Array<float> highTslice = createSubArray<float>(T2, sliceIndex, false);
+        Array<float> lowTslice  = createSubArray<float>(T1, sliceIndex, false);
 
-        copyArray<uchar>(highTslice, createValueArray<uchar>(af::dim4(width, height), highValue));
-        copyArray<uchar>( lowTslice, createValueArray<uchar>(af::dim4(width, height),  lowValue));
+        copyArray<float>(highTslice, createValueArray<float>(af::dim4(width, height), highValue));
+        copyArray<float>( lowTslice, createValueArray<float>(af::dim4(width, height),  lowValue));
     }
 
-    Array<char> weak1  = detail::logicOp<uchar, af_ge_t >(supEdges,    T1, supEdges.dims());
-    Array<char> weak2  = detail::logicOp<uchar, af_lt_t >(supEdges,    T2, supEdges.dims());
+    Array<char> weak1  = detail::logicOp<float, af_ge_t >(supEdges,    T1, supEdges.dims());
+    Array<char> weak2  = detail::logicOp<float, af_lt_t >(supEdges,    T2, supEdges.dims());
     Array<char> weak   = detail::logicOp<char , af_and_t>(   weak1, weak2,    weak1.dims());
-    Array<char> strong = detail::logicOp<uchar, af_ge_t >(supEdges,    T2, supEdges.dims());
+    Array<char> strong = detail::logicOp<float, af_ge_t >(supEdges,    T2, supEdges.dims());
 
     return getHandle(detail::edgeTrackingByHysteresis(strong, weak));
 }

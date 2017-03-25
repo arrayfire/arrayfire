@@ -17,14 +17,14 @@ using af::dim4;
 
 namespace cpu
 {
-Array<uchar> nonMaximumSuppression(const Array<float>& mag,
+Array<float> nonMaximumSuppression(const Array<float>& mag,
                                    const Array<float>& gx, const Array<float>& gy)
 {
     mag.eval();
     gx.eval();
     gy.eval();
 
-    Array<uchar> out = createValueArray<uchar>(mag.dims(), 0);
+    Array<float> out = createValueArray<float>(mag.dims(), 0);
     out.eval();
 
     getQueue().enqueue(kernel::nonMaxSuppression<float>, out, mag, gx, gy);

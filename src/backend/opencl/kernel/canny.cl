@@ -19,15 +19,12 @@ int lIdx(int x, int y, int stride0, int stride1)
 
 #if defined(NON_MAX_SUPPRESSION)
 __kernel
-void nonMaxSuppressionKernel(__global uchar* output, KParam   oInfo,
+void nonMaxSuppressionKernel(__global     T* output, KParam   oInfo,
                              __global const T*   in, KParam  inInfo,
                              __global const T*   dx, KParam  dxInfo,
                              __global const T*   dy, KParam  dyInfo,
                              unsigned nBBS0, unsigned nBBS1)
 {
-    const uchar SUPPRESS = NOEDGE;
-    const uchar EDGE     = 255;
-
     // local thread indices
     const int lx = get_local_id(0);
     const int ly = get_local_id(1);
@@ -53,7 +50,7 @@ void nonMaxSuppressionKernel(__global uchar* output, KParam   oInfo,
     __global const T* dY  = dy  +
                               (b2 * dyInfo.strides[2]  + b3 * dyInfo.strides[3] + dyInfo.offset) +
                               dyInfo.strides[1] + 1;
-    __global uchar*   out = output +
+    __global     T*   out = output +
                               (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]) + oInfo.strides[1] + 1;
 
     // pull image to local memory
@@ -75,7 +72,7 @@ void nonMaxSuppressionKernel(__global uchar* output, KParam   oInfo,
         const float cmag = localMem[j][i];
 
         if (cmag == 0.0f)
-            out[idx] = SUPPRESS;
+            out[idx] = (T)0;
         else {
             const float dx = dX[idx];
             const float dy = dY[idx];
@@ -132,9 +129,9 @@ void nonMaxSuppressionKernel(__global uchar* output, KParam   oInfo,
             float mag2 = (1-alpha)*a2 + alpha*b2;
 
             if (cmag>mag1 && cmag>mag2) {
-                out[idx] = cmag > 255 ? EDGE : (unsigned char)cmag;
+                out[idx] = cmag;
             } else {
-                out[idx] = SUPPRESS;
+                out[idx] = (T)0;
             }
         }
     }

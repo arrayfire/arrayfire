@@ -11,29 +11,28 @@
 #include <Array.hpp>
 #include <cassert>
 #include <list>
+#include <array>
 
 namespace cpu
 {
 namespace kernel
 {
 template<typename T>
-void nonMaxSuppression(Array<uchar> output, const Array<T> magnitude,
+void nonMaxSuppression(Array<T> output, const Array<T> magnitude,
                        const Array<T> dxArray, const Array<T> dyArray)
 {
     const af::dim4 dims    = magnitude.dims();
     const af::dim4 strides = magnitude.strides();
 
-      uchar* out = output.get();
+          T* out = output.get();
     const T* mag = magnitude.get();
-    const T* dX   = dxArray.get();
-    const T* dY   = dyArray.get();
+    const T* dX  = dxArray.get();
+    const T* dY  = dyArray.get();
 
     for(dim_t b3=0; b3<dims[3]; ++b3) {
         for(dim_t b2=0; b2<dims[2]; ++b2) {
 
             dim_t offset;
-            const uchar SUPPRESS = 0;
-            const uchar EDGE     = 255;
 
             offset = dims[0]+1;
 
@@ -41,7 +40,7 @@ void nonMaxSuppression(Array<uchar> output, const Array<T> magnitude,
 
                 for(dim_t i=1; i<dims[0]-1; ++i, ++offset) {
                     if (mag[offset]==0)
-                        out[offset] = SUPPRESS;
+                        out[offset] = (T)0;
                     else {
                         const float se = mag[offset+dims[0]+1];
                         const float nw = mag[offset-dims[0]-1];
@@ -98,9 +97,9 @@ void nonMaxSuppression(Array<uchar> output, const Array<T> magnitude,
                         float mag2 = (1-alpha)*a2 + alpha*b2;
 
                         if (mag[offset]>mag1 && mag[offset]>mag2) {
-                            out[offset] = mag[offset] > EDGE ? EDGE : (unsigned char)mag[offset];
+                            out[offset] = mag[offset];
                         } else {
-                            out[offset] = SUPPRESS;
+                            out[offset] = (T)0;
                         }
                     }
                 }
@@ -172,9 +171,9 @@ void edgeTrackingHysteresis(Array<T> out, const Array<T> strong, const Array<T> 
     const T* sptr = strong.get();
     const T* wptr = weak.get();
 
-    for (dim_t j = 1; j < jMax; ++j)
+    for (dim_t j = 1; j <= jMax; ++j)
     {
-        for (dim_t i = 1; i < iMax; ++i, ++t)
+        for (dim_t i = 1; i <= iMax; ++i, ++t)
         {
             // if current pixel(sptr) is part of a edge
             // and output doesn't have it marked already,

@@ -33,12 +33,9 @@ int lIdx(int x, int y, int stride0, int stride1)
 
 template<typename T>
 static __global__
-void nonMaxSuppressionKernel(Param<uchar> output, CParam<T> in, CParam<T> dx, CParam<T> dy,
+void nonMaxSuppressionKernel(Param<float> output, CParam<T> in, CParam<T> dx, CParam<T> dy,
                              unsigned nBBS0, unsigned nBBS1)
 {
-    const uchar SUPPRESS = NOEDGE;
-    const uchar EDGE     = 255;
-
     const unsigned SHRD_MEM_WIDTH  = THREADS_X + 2; //Coloumns
     const unsigned SHRD_MEM_HEIGHT = THREADS_Y + 2; //Rows
 
@@ -65,7 +62,7 @@ void nonMaxSuppressionKernel(Param<uchar> output, CParam<T> in, CParam<T> dx, CP
                       (b2 * dx.strides[2]  + b3 * dx.strides[3] ) + dx.strides[1] + 1;
     const T* dY  = (const T *)dy.ptr  +
                       (b2 * dy.strides[2]  + b3 * dy.strides[3] ) + dy.strides[1] + 1;
-    uchar*   out = (uchar *  )output.ptr +
+          T* out = (float *  )output.ptr +
                       (b2 * output.strides[2] + b3 * output.strides[3]) + output.strides[1] + 1;
 
     // pull image to shared memory
@@ -87,7 +84,7 @@ void nonMaxSuppressionKernel(Param<uchar> output, CParam<T> in, CParam<T> dx, CP
         const float cmag = shrdMem[j][i];
 
         if (cmag == 0.0f)
-            out[idx] = SUPPRESS;
+            out[idx] = (T)0;
         else {
             const float dx = dX[idx];
             const float dy = dY[idx];
@@ -144,16 +141,16 @@ void nonMaxSuppressionKernel(Param<uchar> output, CParam<T> in, CParam<T> dx, CP
             float mag2 = (1-alpha)*a2 + alpha*b2;
 
             if (cmag>mag1 && cmag>mag2) {
-                out[idx] = cmag > 255 ? EDGE : (unsigned char)cmag;
+                out[idx] = cmag;
             } else {
-                out[idx] = SUPPRESS;
+                out[idx] = (T)0;
             }
         }
     }
 }
 
 template<typename T>
-void nonMaxSuppression(Param<uchar> output, CParam<T> magnitude, CParam<T> dx, CParam<T> dy)
+void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dx, CParam<T> dy)
 {
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

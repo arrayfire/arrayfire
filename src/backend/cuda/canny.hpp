@@ -11,7 +11,7 @@
 
 namespace cuda
 {
-Array<uchar> nonMaximumSuppression(const Array<float>& mag,
+Array<float> nonMaximumSuppression(const Array<float>& mag,
                                    const Array<float>& gx, const Array<float>& gy);
 
 Array<char> edgeTrackingByHysteresis(const Array<char>& strong, const Array<char>& weak);
