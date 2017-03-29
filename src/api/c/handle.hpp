@@ -28,6 +28,8 @@ static const detail::Array<T> &
 getArray(const af_array &arr)
 {
     detail::Array<T> *A = reinterpret_cast<detail::Array<T>*>(arr);
+    if ((af_dtype)af::dtype_traits<T>::af_type != A->getType())
+        AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
     ARG_ASSERT(0, A->isSparse() == false);
     return *A;
 }
