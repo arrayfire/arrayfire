@@ -19,6 +19,8 @@ using namespace af;
 using std::vector;
 using std::string;
 
+static const int THREAD_COUNT = 32;
+
 #if defined(AF_CPU)
 static const unsigned ITERATION_COUNT = 10;
 #else
@@ -174,7 +176,7 @@ TEST(Threading, SimultaneousRead)
 
     vector<std::thread> tests;
 
-    for (int t=0; t<32; ++t)
+    for (int t=0; t<THREAD_COUNT; ++t)
     {
         ArithOp op;
         float outValue;
@@ -189,7 +191,146 @@ TEST(Threading, SimultaneousRead)
         tests.emplace_back(calc, op, A, B, outValue);
     }
 
-    for (int t=0; t<32; ++t)
+    for (int t=0; t<THREAD_COUNT; ++t)
         if (tests[t].joinable())
             tests[t].join();
+}
+
+int nextTargetDeviceId()
+{
+    static int nextId = 0;
+    return nextId++;
+}
+
+static void cleanSlate()
+{
+    const size_t step_bytes = 1024;
+
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    af::deviceGC();
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 0u);
+    ASSERT_EQ(lock_buffers, 0u);
+    ASSERT_EQ(alloc_bytes, 0u);
+    ASSERT_EQ(lock_bytes, 0u);
+
+    af::setMemStepSize(step_bytes);
+
+    ASSERT_EQ(af::getMemStepSize(), step_bytes);
+}
+
+void doubleAllocationTest()
+{
+    af::setDevice(0);
+
+    af::array a = randu(5, 5);
+
+    for (int i = 0; i < 100; ++i)
+    {
+        a = randu(5, 5);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
+TEST(Threading, MemoryManagement_Double_Alloc)
+{
+    cleanSlate(); // Clean up everything done so far
+
+    vector<std::thread> tests;
+
+    for (int t=0; t<THREAD_COUNT; ++t)
+        tests.emplace_back(doubleAllocationTest);
+
+    for (int t=0; t<THREAD_COUNT; ++t)
+        if (tests[t].joinable())
+            tests[t].join();
+
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+            &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ( lock_buffers,     0u);
+    ASSERT_EQ(  lock_bytes,      0u);
+    ASSERT_LE(alloc_buffers,    64u);
+    ASSERT_GT(alloc_buffers,    32u);
+    ASSERT_LE(  alloc_bytes, 65536u);
+    ASSERT_GT(  alloc_bytes, 32768u);
+}
+
+void singleAllocationTest()
+{
+    af::setDevice(0);
+
+    for (int i = 0; i < 100; ++i)
+    {
+        af::array a = af::randu(5, 5);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
+TEST(Threading, MemoryManagement_Single_Alloc)
+{
+    cleanSlate(); // Clean up everything done so far
+
+    vector<std::thread> tests;
+
+    for (int t=0; t<THREAD_COUNT; ++t)
+        tests.emplace_back(singleAllocationTest);
+
+    for (int t=0; t<THREAD_COUNT; ++t)
+        if (tests[t].joinable())
+            tests[t].join();
+
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+            &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ( lock_buffers,     0u);
+    ASSERT_EQ(  lock_bytes,      0u);
+    ASSERT_LE(alloc_buffers,    32u);
+    ASSERT_GT(alloc_buffers,     0u);
+    ASSERT_LE(  alloc_bytes, 32768u);
+    ASSERT_GT(  alloc_bytes,     0u);
+}
+
+void jitAllocationTest()
+{
+    af::setDevice(0);
+
+    for (int i = 0; i < 100; ++i)
+        af::array a = af::constant(1, 5, 5);
+}
+
+TEST(Threading, MemoryManagement_JIT_Node)
+{
+    cleanSlate(); // Clean up everything done so far
+
+    vector<std::thread> tests;
+
+    for (int t=0; t<THREAD_COUNT; ++t)
+        tests.emplace_back(jitAllocationTest);
+
+    for (int t=0; t<THREAD_COUNT; ++t)
+        if (tests[t].joinable())
+            tests[t].join();
+
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+            &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers,     0u);
+    ASSERT_EQ( lock_buffers,     0u);
+    ASSERT_EQ(  alloc_bytes,     0u);
+    ASSERT_EQ(  lock_bytes,      0u);
 }
