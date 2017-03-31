@@ -334,3 +334,148 @@ TEST(Threading, MemoryManagement_JIT_Node)
     ASSERT_EQ(  alloc_bytes,     0u);
     ASSERT_EQ(  lock_bytes,      0u);
 }
+
+template<typename inType, typename outType, bool isInverse>
+void fftTest(int targetDevice, string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
+{
+    if (noDoubleTests<inType>()) return;
+    if (noDoubleTests<outType>()) return;
+
+    vector<af::dim4>        numDims;
+    vector<vector<inType> >       in;
+    vector<vector<outType> >   tests;
+
+    readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
+
+    af::dim4 dims       = numDims[0];
+    af_array outArray   = 0;
+    af_array inArray    = 0;
+
+    ASSERT_EQ(AF_SUCCESS, af_set_device(targetDevice));
+
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+                dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
+
+    if (isInverse){
+        switch (dims.ndims()) {
+            case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, 1.0, pad0));              break;
+            case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, 1.0, pad0, pad1));        break;
+            case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, 1.0, pad0, pad1, pad2));  break;
+            default: throw std::runtime_error("This error shouldn't happen, pls check");
+        }
+    } else {
+        switch(dims.ndims()) {
+            case 1 : ASSERT_EQ(AF_SUCCESS, af_fft (&outArray, inArray, 1.0, pad0));               break;
+            case 2 : ASSERT_EQ(AF_SUCCESS, af_fft2(&outArray, inArray, 1.0, pad0, pad1));         break;
+            case 3 : ASSERT_EQ(AF_SUCCESS, af_fft3(&outArray, inArray, 1.0, pad0, pad1, pad2));   break;
+            default: throw std::runtime_error("This error shouldn't happen, pls check");
+        }
+    }
+
+    size_t out_size = tests[0].size();
+    outType *outData= new outType[out_size];
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+
+    vector<outType> goldBar(tests[0].begin(), tests[0].end());
+
+    size_t test_size = 0;
+    switch(dims.ndims()) {
+        case 1  : test_size = dims[0]/2+1;                       break;
+        case 2  : test_size = dims[1] * (dims[0]/2+1);           break;
+        case 3  : test_size = dims[2] * dims[1] * (dims[0]/2+1); break;
+        default : test_size = dims[0]/2+1;                       break;
+    }
+    outType output_scale = (outType)(isInverse ? test_size : 1);
+    for (size_t elIter=0; elIter<test_size; ++elIter) {
+        bool isUnderTolerance = abs(goldBar[elIter]-outData[elIter])<0.001;
+        ASSERT_EQ(true, isUnderTolerance)<<
+            "Expected value="<<goldBar[elIter] <<"\t Actual Value="<<
+            (output_scale*outData[elIter]) << " at: " << elIter <<
+            " from thread: "<< std::this_thread::get_id() << std::endl;
+    }
+
+    // cleanup
+    delete[] outData;
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+}
+
+#define INSTANTIATE_TEST(func, name, is_inverse, in_t, out_t, file)                         \
+    {                                                                                       \
+        int targetDevice = nextTargetDeviceId() % numDevices;                               \
+        tests.emplace_back(fftTest<in_t, out_t, is_inverse>, targetDevice, file, 0, 0, 0);  \
+    }
+
+#define INSTANTIATE_TEST_TP(func, name, is_inverse, in_t, out_t, file, p0, p1)              \
+    {                                                                                       \
+        int targetDevice = nextTargetDeviceId() % numDevices;                               \
+        tests.emplace_back(fftTest<in_t, out_t, is_inverse>, targetDevice, file, p0, p1, 0);\
+    }
+
+#if !defined(AF_OPENCL)
+/// OpenCL backend tests seem to be failing even when
+/// each thead has it's own plan cache(thread_local).
+/// The issue seems to present itself randomly in the form of crashes,
+/// garbage values.
+TEST(Threading, FFT)
+{
+    vector<std::thread> tests;
+
+    int numDevices = 1;
+    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+
+    // Real to complex transforms
+    INSTANTIATE_TEST(fft ,  R2C_Float, false,  float,  cfloat, string(TEST_DIR"/signal/fft_r2c.test") );
+    INSTANTIATE_TEST(fft , R2C_Double, false, double, cdouble, string(TEST_DIR"/signal/fft_r2c.test") );
+    INSTANTIATE_TEST(fft2,  R2C_Float, false,  float,  cfloat, string(TEST_DIR"/signal/fft2_r2c.test"));
+    INSTANTIATE_TEST(fft2, R2C_Double, false, double, cdouble, string(TEST_DIR"/signal/fft2_r2c.test"));
+    INSTANTIATE_TEST(fft3,  R2C_Float, false,  float,  cfloat, string(TEST_DIR"/signal/fft3_r2c.test"));
+    INSTANTIATE_TEST(fft3, R2C_Double, false, double, cdouble, string(TEST_DIR"/signal/fft3_r2c.test"));
+
+    // complex to complex transforms
+    INSTANTIATE_TEST(fft ,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft_c2c.test") );
+    INSTANTIATE_TEST(fft , C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft_c2c.test") );
+    INSTANTIATE_TEST(fft2,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft2_c2c.test"));
+    INSTANTIATE_TEST(fft2, C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft2_c2c.test"));
+    INSTANTIATE_TEST(fft3,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft3_c2c.test"));
+    INSTANTIATE_TEST(fft3, C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft3_c2c.test"));
+
+    // Factors 7, 11, 13
+    INSTANTIATE_TEST(fft , R2C_Float_7_11_13 , false, float  , cfloat , string(TEST_DIR"/signal/fft_r2c_7_11_13.test") );
+    INSTANTIATE_TEST(fft , R2C_Double_7_11_13, false, double , cdouble, string(TEST_DIR"/signal/fft_r2c_7_11_13.test") );
+    INSTANTIATE_TEST(fft2, R2C_Float_7_11_13 , false, float  , cfloat , string(TEST_DIR"/signal/fft2_r2c_7_11_13.test") );
+    INSTANTIATE_TEST(fft2, R2C_Double_7_11_13, false, double , cdouble, string(TEST_DIR"/signal/fft2_r2c_7_11_13.test") );
+    INSTANTIATE_TEST(fft3, R2C_Float_7_11_13 , false, float  , cfloat , string(TEST_DIR"/signal/fft3_r2c_7_11_13.test") );
+    INSTANTIATE_TEST(fft3, R2C_Double_7_11_13, false, double , cdouble, string(TEST_DIR"/signal/fft3_r2c_7_11_13.test") );
+
+    INSTANTIATE_TEST(fft , C2C_Float_7_11_13 , false, cfloat  , cfloat , string(TEST_DIR"/signal/fft_c2c_7_11_13.test") );
+    INSTANTIATE_TEST(fft , C2C_Double_7_11_13, false, cdouble , cdouble, string(TEST_DIR"/signal/fft_c2c_7_11_13.test") );
+    INSTANTIATE_TEST(fft2, C2C_Float_7_11_13 , false, cfloat  , cfloat , string(TEST_DIR"/signal/fft2_c2c_7_11_13.test") );
+    INSTANTIATE_TEST(fft2, C2C_Double_7_11_13, false, cdouble , cdouble, string(TEST_DIR"/signal/fft2_c2c_7_11_13.test") );
+    INSTANTIATE_TEST(fft3, C2C_Float_7_11_13 , false, cfloat  , cfloat , string(TEST_DIR"/signal/fft3_c2c_7_11_13.test") );
+    INSTANTIATE_TEST(fft3, C2C_Double_7_11_13, false, cdouble , cdouble, string(TEST_DIR"/signal/fft3_c2c_7_11_13.test") );
+
+    // transforms on padded and truncated arrays
+    INSTANTIATE_TEST_TP(fft2,  R2C_Float_Trunc, false,  float,  cfloat, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
+    INSTANTIATE_TEST_TP(fft2, R2C_Double_Trunc, false, double, cdouble, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
+
+    INSTANTIATE_TEST_TP(fft2,  C2C_Float_Pad, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft2_c2c_pad.test"), 16, 16);
+    INSTANTIATE_TEST_TP(fft2, C2C_Double_Pad, false, cdouble, cdouble, string(TEST_DIR"/signal/fft2_c2c_pad.test"), 16, 16);
+
+    // inverse transforms
+    // complex to complex transforms
+    INSTANTIATE_TEST(ifft ,  C2C_Float, true,  cfloat,  cfloat, string(TEST_DIR"/signal/ifft_c2c.test") );
+    INSTANTIATE_TEST(ifft , C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft_c2c.test") );
+    INSTANTIATE_TEST(ifft2,  C2C_Float, true,  cfloat,  cfloat, string(TEST_DIR"/signal/ifft2_c2c.test"));
+    INSTANTIATE_TEST(ifft2, C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft2_c2c.test"));
+    INSTANTIATE_TEST(ifft3,  C2C_Float, true,  cfloat,  cfloat, string(TEST_DIR"/signal/ifft3_c2c.test"));
+    INSTANTIATE_TEST(ifft3, C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft3_c2c.test"));
+
+    for (size_t testId=0; testId<tests.size(); ++testId)
+    {
+        if (tests[testId].joinable()) {
+            tests[testId].join();
+        }
+    }
+}
+#endif
