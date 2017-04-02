@@ -13,6 +13,7 @@
 #include <testHelpers.hpp>
 #include <thread>
 #include <chrono>
+#include <iterator>
 
 using namespace af;
 
@@ -479,3 +480,97 @@ TEST(Threading, FFT)
     }
 }
 #endif
+
+template<typename T, bool isBVector>
+void cppMatMulCheck(int targetDevice, string TestFile)
+{
+    if (noDoubleTests<T>()) return;
+
+    using std::vector;
+    vector<af::dim4> numDims;
+
+    vector<vector<T> > hData;
+    vector<vector<T> > tests;
+    readTests<T,T,int>(TestFile, numDims, hData, tests);
+
+    af::setDevice(targetDevice);
+
+    af::array a(numDims[0], &hData[0].front());
+    af::array b(numDims[1], &hData[1].front());
+
+    af::dim4 atdims = numDims[0];
+    {
+        dim_t f  =    atdims[0];
+        atdims[0]   =    atdims[1];
+        atdims[1]   =    f;
+    }
+    af::dim4 btdims = numDims[1];
+    {
+        dim_t f = btdims[0];
+        btdims[0] = btdims[1];
+        btdims[1] = f;
+    }
+
+    af::array aT = moddims(a, atdims.ndims(), atdims.get());
+    af::array bT = moddims(b, btdims.ndims(), btdims.get());
+
+    vector<af::array> out(tests.size());
+    if(isBVector) {
+        out[0] = af::matmul(aT, b,    AF_MAT_NONE,    AF_MAT_NONE);
+        out[1] = af::matmul(bT, a,   AF_MAT_NONE,    AF_MAT_NONE);
+        out[2] = af::matmul(b, a,    AF_MAT_TRANS,       AF_MAT_NONE);
+        out[3] = af::matmul(bT, aT,   AF_MAT_NONE,    AF_MAT_TRANS);
+        out[4] = af::matmul(b, aT,    AF_MAT_TRANS,       AF_MAT_TRANS);
+    }
+    else {
+        out[0] = af::matmul(a, b, AF_MAT_NONE,   AF_MAT_NONE);
+        out[1] = af::matmul(a, bT, AF_MAT_NONE,   AF_MAT_TRANS);
+        out[2] = af::matmul(a, bT, AF_MAT_TRANS,      AF_MAT_NONE);
+        out[3] = af::matmul(aT, bT, AF_MAT_TRANS,      AF_MAT_TRANS);
+    }
+
+    for(size_t i = 0; i < tests.size(); i++) {
+        dim_t elems = out[i].elements();
+        vector<T> h_out(elems);
+        out[i].host((void*)&h_out.front());
+
+        if (false == equal(h_out.begin(), h_out.end(), tests[i].begin())) {
+
+            std::cout << "Failed test " << i << "\nCalculated: " << std::endl;
+            std::copy(h_out.begin(), h_out.end(), std::ostream_iterator<T>(std::cout, ", "));
+            std::cout << "Expected: " << std::endl;
+            std::copy(tests[i].begin(), tests[i].end(), std::ostream_iterator<T>(std::cout, ", "));
+            FAIL();
+        }
+    }
+}
+
+#define TEST_FOR_TYPE(TypeName)                                   \
+    tests.emplace_back(cppMatMulCheck<TypeName, false>,                             \
+            nextTargetDeviceId()%numDevices, TEST_DIR "/blas/Basic.test");          \
+    tests.emplace_back(cppMatMulCheck<TypeName, false>,                             \
+            nextTargetDeviceId()%numDevices, TEST_DIR "/blas/NonSquare.test");      \
+    tests.emplace_back(cppMatMulCheck<TypeName, true>,                              \
+            nextTargetDeviceId()%numDevices, TEST_DIR "/blas/SquareVector.test");   \
+    tests.emplace_back(cppMatMulCheck<TypeName, true>,                              \
+            nextTargetDeviceId()%numDevices, TEST_DIR "/blas/RectangleVector.test");
+
+TEST(Threading, BLAS)
+{
+    vector<std::thread> tests;
+
+    int numDevices = 1;
+    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+
+    TEST_FOR_TYPE(      float);
+    TEST_FOR_TYPE( af::cfloat);
+    TEST_FOR_TYPE(     double);
+    TEST_FOR_TYPE(af::cdouble);
+
+    for (size_t testId=0; testId<tests.size(); ++testId)
+    {
+        if (tests[testId].joinable()) {
+            tests[testId].join();
+        }
+    }
+}
