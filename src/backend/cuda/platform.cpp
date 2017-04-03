@@ -436,56 +436,44 @@ PlanCache& fftManager()
 
 BlasHandle blasHandle()
 {
-    static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
+    thread_local static std::unique_ptr<cublasHandle> cublasHandles[DeviceManager::MAX_DEVICES];
+    thread_local static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     int id = cuda::getActiveDeviceId();
 
-    DeviceManager& inst = DeviceManager::getInstance();
+    std::call_once(initFlags[id], [&]{ cublasHandles[id].reset(new cublasHandle()); });
 
-    std::call_once(initFlags[id], [&]{ inst.cublasHandles[id].reset(new cublasHandle()); });
+    CUBLAS_CHECK(cublasSetStream(cublasHandles[id].get()->get(), cuda::getStream(id)));
 
-    return inst.cublasHandles[id].get()->get();
+    return cublasHandles[id].get()->get();
 }
 
 SolveHandle solverDnHandle()
 {
-    static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
+    thread_local static std::unique_ptr<cusolverDnHandle> cusolverHandles[DeviceManager::MAX_DEVICES];
+    thread_local static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     int id = cuda::getActiveDeviceId();
 
-    DeviceManager& inst = DeviceManager::getInstance();
+    std::call_once(initFlags[id], [&]{ cusolverHandles[id].reset(new cusolverDnHandle()); });
 
-    std::call_once(initFlags[id], [&]{ inst.cusolverHandles[id].reset(new cusolverDnHandle()); });
+    CUSOLVER_CHECK(cusolverDnSetStream(cusolverHandles[id].get()->get(), cuda::getStream(id)));
 
-    // FIXME
-    // This is not an ideal case. It's just a hack.
-    // The correct way to do is to use
-    // CUSOLVER_CHECK(cusolverDnSetStream(cuda::getStream(cuda::getActiveDeviceId())))
-    // in the class constructor.
-    // However, this is causing a lot of the cusolver functions to fail.
-    // The only way to fix them is to use cudaDeviceSynchronize() and cudaStreamSynchronize()
-    // all over the place, but even then some calls like getrs in solve_lu
-    // continue to fail on any stream other than 0.
-    //
-    // cuSolver Streams patch:
-    // https://gist.github.com/shehzan10/414c3d04a40e7c4a03ed3c2e1b9072e7
-    //
-    CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(id)));
-
-    return inst.cusolverHandles[id].get()->get();
+    return cusolverHandles[id].get()->get();
 }
 
 SparseHandle sparseHandle()
 {
-    static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
+    thread_local static std::unique_ptr<cusparseHandle> cusparseHandles[DeviceManager::MAX_DEVICES];
+    thread_local static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     int id = cuda::getActiveDeviceId();
 
-    DeviceManager& inst = DeviceManager::getInstance();
+    std::call_once(initFlags[id], [&]{ cusparseHandles[id].reset(new cusparseHandle()); });
 
-    std::call_once(initFlags[id], [&]{ inst.cusparseHandles[id].reset(new cusparseHandle()); });
+    CUSPARSE_CHECK(cusparseSetStream(cusparseHandles[id].get()->get(), cuda::getStream(id)));
 
-    return inst.cusparseHandles[id].get()->get();
+    return cusparseHandles[id].get()->get();
 }
 
 DeviceManager::DeviceManager()

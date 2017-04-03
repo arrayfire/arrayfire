@@ -111,14 +111,6 @@ class DeviceManager
         friend GraphicsResourceManager& interopManager();
 #endif
 
-        friend PlanCache& fftManager();
-
-        friend BlasHandle blasHandle();
-
-        friend SolveHandle solverDnHandle();
-
-        friend SparseHandle sparseHandle();
-
         friend std::string getDeviceInfo(int device);
 
         friend std::string getPlatformInfo();
@@ -170,11 +162,5 @@ class DeviceManager
 #if defined(WITH_GRAPHICS)
         std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
 #endif
-
-        std::unique_ptr<cublasHandle> cublasHandles[MAX_DEVICES];
-
-        std::unique_ptr<cusolverDnHandle> cusolverHandles[MAX_DEVICES];
-
-        std::unique_ptr<cusparseHandle> cusparseHandles[MAX_DEVICES];
 };
 }
