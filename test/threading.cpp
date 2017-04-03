@@ -10,10 +10,13 @@
 #include <cstddef>
 #include <gtest/gtest.h>
 #include <arrayfire.h>
-#include <testHelpers.hpp>
+#include <af/traits.hpp>
 #include <thread>
+#include <complex>
 #include <chrono>
+#include <thread>
 #include <iterator>
+#include <solve_common.hpp>
 
 using namespace af;
 
@@ -27,6 +30,12 @@ static const unsigned ITERATION_COUNT = 10;
 #else
 static const unsigned ITERATION_COUNT = 1000;
 #endif
+
+int nextTargetDeviceId()
+{
+    static int nextId = 0;
+    return nextId++;
+}
 
 void morphTest(const array input, const array mask, const bool isDilation,
                const array gold, int targetDevice)
@@ -197,12 +206,6 @@ TEST(Threading, SimultaneousRead)
             tests[t].join();
 }
 
-int nextTargetDeviceId()
-{
-    static int nextId = 0;
-    return nextId++;
-}
-
 static void cleanSlate()
 {
     const size_t step_bytes = 1024;
@@ -336,6 +339,7 @@ TEST(Threading, MemoryManagement_JIT_Node)
     ASSERT_EQ(  lock_bytes,      0u);
 }
 
+#if !defined(AF_OPENCL)
 template<typename inType, typename outType, bool isInverse>
 void fftTest(int targetDevice, string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
 {
@@ -413,7 +417,6 @@ void fftTest(int targetDevice, string pTestFile, dim_t pad0=0, dim_t pad1=0, dim
         tests.emplace_back(fftTest<in_t, out_t, is_inverse>, targetDevice, file, p0, p1, 0);\
     }
 
-#if !defined(AF_OPENCL)
 /// OpenCL backend tests seem to be failing even when
 /// each thead has it's own plan cache(thread_local).
 /// The issue seems to present itself randomly in the form of crashes,
@@ -479,7 +482,6 @@ TEST(Threading, FFT)
         }
     }
 }
-#endif
 
 template<typename T, bool isBVector>
 void cppMatMulCheck(int targetDevice, string TestFile)
@@ -574,3 +576,48 @@ TEST(Threading, BLAS)
         }
     }
 }
+
+#define SOLVE_LU_TESTS(T, eps)                                                                          \
+    tests.emplace_back(solveLUTester<T>, 1000, 100, eps, nextTargetDeviceId()%numDevices);              \
+    tests.emplace_back(solveLUTester<T>, 2048, 512, eps, nextTargetDeviceId()%numDevices);              \
+    std::this_thread::sleep_for(std::chrono::seconds(2));   \
+    tests.emplace_back(solveTriangleTester<T>, 1000, 100, true, eps, nextTargetDeviceId()%numDevices);  \
+    tests.emplace_back(solveTriangleTester<T>, 2048, 512, true, eps, nextTargetDeviceId()%numDevices);  \
+    std::this_thread::sleep_for(std::chrono::seconds(2));   \
+    tests.emplace_back(solveTriangleTester<T>, 1000, 100, false, eps, nextTargetDeviceId()%numDevices); \
+    tests.emplace_back(solveTriangleTester<T>, 2048, 512, false, eps, nextTargetDeviceId()%numDevices); \
+    std::this_thread::sleep_for(std::chrono::seconds(2));   \
+    tests.emplace_back(solveTester<T>, 1000, 1000, 100, eps, nextTargetDeviceId()%numDevices);          \
+    tests.emplace_back(solveTester<T>, 2048, 2048, 512, eps, nextTargetDeviceId()%numDevices);          \
+    std::this_thread::sleep_for(std::chrono::seconds(2));   \
+    tests.emplace_back(solveTester<T>, 800, 1000, 200, eps, nextTargetDeviceId()%numDevices);           \
+    tests.emplace_back(solveTester<T>, 1536, 2048, 400, eps, nextTargetDeviceId()%numDevices);          \
+    std::this_thread::sleep_for(std::chrono::seconds(2));   \
+    tests.emplace_back(solveTester<T>, 800, 600, 64, eps, nextTargetDeviceId()%numDevices);             \
+    tests.emplace_back(solveTester<T>, 1536, 1024, 1, eps, nextTargetDeviceId()%numDevices);
+
+// Added 2s sleep for every two test threads to make sure
+// we are not running out of memory.
+TEST(Threading, SolveDense)
+{
+    vector<std::thread> tests;
+
+    int numDevices = 1;
+    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+
+    SOLVE_LU_TESTS(float, 0.01);
+    SOLVE_LU_TESTS(double, 1E-5);
+    SOLVE_LU_TESTS(cfloat, 0.01);
+    SOLVE_LU_TESTS(cdouble, 1E-5);
+
+    for (size_t testId=0; testId<tests.size(); ++testId)
+    {
+        if (tests[testId].joinable()) {
+            tests[testId].join();
+        }
+    }
+}
+
+#undef SOLVE_LU_TESTS
+
+#endif

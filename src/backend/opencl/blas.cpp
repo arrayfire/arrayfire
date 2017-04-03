@@ -174,7 +174,6 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 (*out.get())(),   out.getOffset(),  out.dims()[0],
                 1, &getQueue()(), 0, nullptr, &event())
             );
-
     }
 
     return out;
