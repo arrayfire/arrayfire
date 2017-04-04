@@ -49,9 +49,9 @@ af_array cannyHelper(const Array<T> in, const float t1, const float t2,
 {
     typedef typename std::pair< Array<float>, Array<float> > GradientPair;
 
-    static const float v[5] = {-0.11021, -0.23691, -0.30576, -0.23691, -0.11021};
-    static const Array<float> cFilter= detail::createHostDataArray<float>(dim4(5, 1), v);
-    static const Array<float> rFilter= detail::createHostDataArray<float>(dim4(1, 5), v);
+    static const std::vector<float> v = {-0.11021, -0.23691, -0.30576, -0.23691, -0.11021};
+    Array<float> cFilter= detail::createHostDataArray<float>(dim4(5, 1), v.data());
+    Array<float> rFilter= detail::createHostDataArray<float>(dim4(1, 5), v.data());
 
     // Run separable convolution to smooth the input image
     Array<float> smt = detail::convolve2<float, float, false>(cast<float, T>(in), cFilter, rFilter);

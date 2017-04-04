@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2017, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -7,136 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-constant int STRONG = 1;
-constant int WEAK   = 2;
-constant int NOEDGE = 0;
-
-int lIdx(int x, int y, int stride0, int stride1)
-{
-    return (x*stride0 + y*stride1);
-}
-
-
-#if defined(NON_MAX_SUPPRESSION)
-__kernel
-void nonMaxSuppressionKernel(__global     T* output, KParam   oInfo,
-                             __global const T*   in, KParam  inInfo,
-                             __global const T*   dx, KParam  dxInfo,
-                             __global const T*   dy, KParam  dyInfo,
-                             unsigned nBBS0, unsigned nBBS1)
-{
-    // local thread indices
-    const int lx = get_local_id(0);
-    const int ly = get_local_id(1);
-
-    // batch offsets for 3rd and 4th dimension
-    const unsigned b2 = get_group_id(0) / nBBS0;
-    const unsigned b3 = get_group_id(1) / nBBS1;
-
-    // global indices
-    const int gx = get_local_size(0) * (get_group_id(0)-b2*nBBS0) + lx;
-    const int gy = get_local_size(1) * (get_group_id(1)-b3*nBBS1) + ly;
-
-    __local T localMem[SHRD_MEM_HEIGHT][SHRD_MEM_WIDTH];
-
-    // Offset input and output pointers to second pixel of second coloumn/row
-    // to skip the border
-    __global const T* mag = in +
-                              (b2 * inInfo.strides[2] + b3 * inInfo.strides[3] + inInfo.offset) +
-                              inInfo.strides[1] + 1;
-    __global const T* dX  = dx  +
-                              (b2 * dxInfo.strides[2]  + b3 * dxInfo.strides[3] + dxInfo.offset) +
-                              dxInfo.strides[1] + 1;
-    __global const T* dY  = dy  +
-                              (b2 * dyInfo.strides[2]  + b3 * dyInfo.strides[3] + dyInfo.offset) +
-                              dyInfo.strides[1] + 1;
-    __global     T*   out = output +
-                              (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]) + oInfo.strides[1] + 1;
-
-    // pull image to local memory
-#pragma unroll
-    for (int b=ly, gy2=gy; b<SHRD_MEM_HEIGHT; b+=get_local_size(1), gy2+=get_local_size(1))
-#pragma unroll
-        for (int a=lx, gx2=gx; a<SHRD_MEM_WIDTH; a+=get_local_size(0), gx2+=get_local_size(0))
-            localMem[b][a] = mag[ lIdx(gx2-1, gy2-1, inInfo.strides[0], inInfo.strides[1]) ];
-
-    int i = lx + 1;
-    int j = ly + 1;
-
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    if (gx<inInfo.dims[0]-2 && gy<inInfo.dims[1]-2)
-    {
-        int idx = lIdx(gx, gy, inInfo.strides[0], inInfo.strides[1]);
-
-        const float cmag = localMem[j][i];
-
-        if (cmag == 0.0f)
-            out[idx] = (T)0;
-        else {
-            const float dx = dX[idx];
-            const float dy = dY[idx];
-            const float se = localMem[j+1][i+1];
-            const float nw = localMem[j-1][i-1];
-            const float ea = localMem[j  ][i+1];
-            const float we = localMem[j  ][i-1];
-            const float ne = localMem[j-1][i+1];
-            const float sw = localMem[j+1][i-1];
-            const float no = localMem[j-1][i  ];
-            const float so = localMem[j+1][i  ];
-
-            float a1, a2, b1, b2, alpha;
-
-            if (dx>=0) {
-                if (dy>=0) {
-                    const bool isTrue = (dx-dy)>=0;
-
-                    a1    = isTrue ? ea : so;
-                    a2    = isTrue ? we : no;
-                    b1    = se;
-                    b2    = nw;
-                    alpha = isTrue ? dy/dx : dx/dy;
-                } else {
-                    const bool isTrue = (dx+dy)>=0;
-
-                    a1    = isTrue ? ea : no;
-                    a2    = isTrue ? we : so;
-                    b1    = ne;
-                    b2    = sw;
-                    alpha = isTrue ? -dy/dx : dx/-dy;
-                }
-            } else {
-                if (dy>=0) {
-                    const bool isTrue = (dx+dy)>=0;
-
-                    a1    = isTrue ? so : we;
-                    a2    = isTrue ? no : ea;
-                    b1    = sw;
-                    b2    = ne;
-                    alpha = isTrue ? -dx/dy : dy/-dx;
-                } else {
-                    const bool isTrue = (-dx+dy)>=0;
-
-                    a1    = isTrue ? we : no;
-                    a2    = isTrue ? ea : so;
-                    b1    = nw;
-                    b2    = se;
-                    alpha = isTrue ? -dy/dx : dx/-dy;
-                }
-            }
-
-            float mag1 = (1-alpha)*a1 + alpha*b1;
-            float mag2 = (1-alpha)*a2 + alpha*b2;
-
-            if (cmag>mag1 && cmag>mag2) {
-                out[idx] = cmag;
-            } else {
-                out[idx] = (T)0;
-            }
-        }
-    }
-}
-#endif
+__constant int STRONG = 1;
+__constant int WEAK   = 2;
+__constant int NOEDGE = 0;
 
 #if defined(INIT_EDGE_OUT)
 __kernel
@@ -166,7 +39,7 @@ void initEdgeOutKernel(__global T*       output, KParam oInfo,
 
     if (gx<(oInfo.dims[0]-2) && gy<(oInfo.dims[1]-2))
     {
-        int idx   = lIdx(gx, gy, oInfo.strides[0], oInfo.strides[1]);
+        int idx   = gx*oInfo.strides[0] + gy*oInfo.strides[1];
         oPtr[idx] = (sPtr[idx] > 0 ? STRONG : (wPtr[idx] > 0 ? WEAK : NOEDGE));
     }
 }
@@ -211,7 +84,7 @@ void edgeTrackKernel(__global T* output, KParam oInfo, unsigned nBBS0, unsigned 
             int x = gx2-1;
             int y = gy2-1;
             if (x>=0 && x<oInfo.dims[0] && y>=0 && y<oInfo.dims[1])
-                outMem[b][a] = oPtr[ lIdx(x, y, oInfo.strides[0], oInfo.strides[1]) ];
+                outMem[b][a] = oPtr[ x*oInfo.strides[0] + y*oInfo.strides[1] ];
             else
                 outMem[b][a] = NOEDGE;
         }
@@ -309,7 +182,7 @@ void edgeTrackKernel(__global T* output, KParam oInfo, unsigned nBBS0, unsigned 
 
     // Update output with shared memory result
     if (gx<(oInfo.dims[0]-2) && gy<(oInfo.dims[1]-2))
-        oPtr[ lIdx(gx, gy, oInfo.strides[0], oInfo.strides[1]) ] = outMem[j][i];
+        oPtr[ gx*oInfo.strides[0] + gy*oInfo.strides[1] ] = outMem[j][i];
 }
 #endif
 
@@ -331,7 +204,7 @@ void suppressLeftOverKernel(__global T* output, KParam oInfo, unsigned nBBS0, un
 
     if (gx<(oInfo.dims[0]-2) && gy<(oInfo.dims[1]-2))
     {
-        int idx = lIdx(gx, gy, oInfo.strides[0], oInfo.strides[1]);
+        int idx = gx*oInfo.strides[0]+gy*oInfo.strides[1];
         T val   = oPtr[idx];
         if (val==WEAK)
             oPtr[idx] = NOEDGE;

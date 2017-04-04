@@ -8,7 +8,8 @@
  ********************************************************/
 
 #pragma once
-#include <kernel_headers/canny.hpp>
+#include <kernel_headers/trace_edge.hpp>
+#include <kernel_headers/nonmax_suppression.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <dispatch.hpp>
@@ -53,8 +54,8 @@ void nonMaxSuppression(Param output, const Param magnitude, const Param dx, cons
         if (std::is_same<T, double>::value)
             options << " -D USE_DOUBLE";
 
-        const char *ker_strs[] = {canny_cl};
-        const int   ker_lens[] = {canny_cl_len};
+        const char *ker_strs[] = {nonmax_suppression_cl};
+        const int   ker_lens[] = {nonmax_suppression_cl_len};
 
         Program prog;
         buildProgram(prog, 1, ker_strs, ker_lens, options.str());
@@ -105,8 +106,8 @@ void initEdgeOut(Param output, const Param strong, const Param weak)
         if (std::is_same<T, double>::value)
             options << " -D USE_DOUBLE";
 
-        const char *ker_strs[] = {canny_cl};
-        const int   ker_lens[] = {canny_cl_len};
+        const char *ker_strs[] = {trace_edge_cl};
+        const int   ker_lens[] = {trace_edge_cl_len};
 
         Program prog;
         buildProgram(prog, 1, ker_strs, ker_lens, options.str());
@@ -155,8 +156,8 @@ void suppressLeftOver(Param output)
         if (std::is_same<T, double>::value)
             options << " -D USE_DOUBLE";
 
-        const char *ker_strs[] = {canny_cl};
-        const int   ker_lens[] = {canny_cl_len};
+        const char *ker_strs[] = {trace_edge_cl};
+        const int   ker_lens[] = {trace_edge_cl_len};
 
         Program prog;
         buildProgram(prog, 1, ker_strs, ker_lens, options.str());
@@ -204,8 +205,8 @@ void edgeTrackingHysteresis(Param output, const Param strong, const Param weak)
         if (std::is_same<T, double>::value)
             options << " -D USE_DOUBLE";
 
-        const char *ker_strs[] = {canny_cl};
-        const int   ker_lens[] = {canny_cl_len};
+        const char *ker_strs[] = {trace_edge_cl};
+        const int   ker_lens[] = {trace_edge_cl_len};
 
         Program prog;
         buildProgram(prog, 1, ker_strs, ker_lens, options.str());
