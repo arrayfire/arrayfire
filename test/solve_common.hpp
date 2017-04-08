@@ -8,8 +8,6 @@
  ********************************************************/
 
 #pragma once
-
-#include <gtest/gtest.h>
 #include <arrayfire.h>
 #include <af/dim4.hpp>
 #include <af/defines.h>
@@ -18,7 +16,6 @@
 #include <iostream>
 #include <complex>
 #include <string>
-#include <testHelpers.hpp>
 
 using std::vector;
 using std::string;

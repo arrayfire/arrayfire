@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <gtest/gtest.h>
+#include <testHelpers.hpp>
 #include "solve_common.hpp"
 
 #define SOLVE_LU_TESTS(T, eps)                          \

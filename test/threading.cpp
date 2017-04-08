@@ -16,7 +16,9 @@
 #include <chrono>
 #include <thread>
 #include <iterator>
+#include <testHelpers.hpp>
 #include <solve_common.hpp>
+#include <sparse_common.hpp>
 
 using namespace af;
 
@@ -619,5 +621,39 @@ TEST(Threading, SolveDense)
 }
 
 #undef SOLVE_LU_TESTS
+
+#define SPARSE_TESTS(T, eps)                                                    \
+        tests.emplace_back(sparseTester<T>, 1000, 1000, 100, 5, eps);           \
+        tests.emplace_back(sparseTester<T>, 2048, 1024, 512, 3, eps);           \
+        tests.emplace_back(sparseTester<T>, 500, 1000, 250, 1, eps);            \
+        tests.emplace_back(sparseTester<T>, 625, 1331, 1, 2, eps);              \
+        tests.emplace_back(sparseTransposeTester<T>, 625, 1331, 1, 2, eps);     \
+        tests.emplace_back(sparseTransposeTester<T>, 1000, 1000, 100, 5, eps);  \
+        tests.emplace_back(sparseTransposeTester<T>, 2048, 1024, 512, 3, eps);  \
+        tests.emplace_back(sparseTransposeTester<T>, 453, 751, 397, 1, eps);    \
+        tests.emplace_back(convertCSR<T>, 2345, 5678, 0.5);                     \
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+
+// Added 2s sleep for every two test threads to make sure
+// we are not running out of memory.
+TEST(Threading, Sparse)
+{
+    vector<std::thread> tests;
+
+    int numDevices = 1;
+    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+
+    SPARSE_TESTS(  float, 1E-3);
+    SPARSE_TESTS( double, 1E-5);
+    SPARSE_TESTS( cfloat, 1E-3);
+    SPARSE_TESTS(cdouble, 1E-5);
+
+    for (size_t testId=0; testId<tests.size(); ++testId)
+    {
+        if (tests[testId].joinable()) {
+            tests[testId].join();
+        }
+    }
+}
 
 #endif
