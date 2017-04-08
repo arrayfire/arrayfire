@@ -13,11 +13,12 @@
 
 namespace af
 {
-array canny(const array& in, const float threshold1, const float threshold2,
-            const unsigned sobel_window, const bool isfast)
+array canny(const array& in, const float ltr,
+            const CannyThreshold ctType, const float htr,
+            const unsigned sW, const bool isFast)
 {
     af_array temp = 0;
-    AF_THROW(af_canny(&temp, in.get(), threshold1, threshold2, sobel_window, isfast));
+    AF_THROW(af_canny(&temp, in.get(), ltr, ctType, htr, sW, isFast));
     return array(temp);
 }
 }

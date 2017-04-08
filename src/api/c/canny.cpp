@@ -10,6 +10,7 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/image.h>
+#include <af/seq.h>
 #include <handle.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
@@ -24,7 +25,13 @@
 #include <sobel.hpp>
 #include <transpose.hpp>
 #include <unary.hpp>
+#include <reduce.hpp>
+#include <ireduce.hpp>
+#include <index.hpp>
+#include <tile.hpp>
+#include <iota.hpp>
 #include <utility>
+#include <iostream>
 
 using af::dim4;
 using namespace detail;
@@ -43,9 +50,147 @@ Array<float> gradientMagnitude(const Array<float>& gx, const Array<float>& gy, c
     }
 }
 
+Array<float> otsuThreshold(const Array<float>& supEdges,
+                           const unsigned NUM_BINS, const float maxVal)
+{
+    Array<uint> hist = detail::histogram<float, uint, false>(supEdges, NUM_BINS, 0, maxVal);
+
+    const af::dim4 hDims = hist.dims();
+
+    // reduce along histogram dimension i.e. 0th dimension
+    auto totals  = reduce<af_add_t, uint, float>(hist, 0);
+
+    // tile histogram total along 0th dimension
+    auto ttotals = tile(totals, af::dim4(hDims[0]));
+
+    // pixel frequency probabilities
+    auto probability = arithOp<float, af_div_t>(cast<float, uint>(hist), ttotals, hDims);
+
+    af_index_t seqBegin[4];
+    af_index_t seqRest[4];
+
+    seqBegin[0].idx.seq = af_make_seq(0, hDims[0]-1, 1);
+    seqBegin[0].isSeq   = true;
+    seqBegin[0].isBatch = false;
+    seqRest[0].idx.seq = af_make_seq(0, hDims[0]-1, 1);
+    seqRest[0].isSeq   = true;
+    seqRest[0].isBatch = false;
+
+    for (int s=1; s<4; ++s)
+    {
+        seqBegin[s].idx.seq = af_span;
+        seqBegin[s].isSeq   = true;
+        seqBegin[s].isBatch = false;
+
+        seqRest[s].idx.seq = af_span;
+        seqRest[s].isSeq   = true;
+        seqRest[s].isBatch = false;
+    }
+
+    const af::dim4& iDims = supEdges.dims();
+
+    Array<float> sigmas = detail::createEmptyArray<float>(hDims);
+
+    for (unsigned b=0; b<(NUM_BINS-1); ++b)
+    {
+        seqBegin[0].idx.seq.end = (double)b;
+        seqRest[0].idx.seq.begin = (double)(b+1);
+
+        auto frontPartition = index(probability, seqBegin);
+        auto endPartition   = index(probability, seqRest);
+
+        auto qL = reduce<af_add_t, float, float>(frontPartition, 0);
+        auto qH = reduce<af_add_t, float, float>(endPartition, 0);
+
+        const dim4 fdims(b+1, hDims[1], hDims[2], hDims[3]);
+        const dim4 edims(NUM_BINS-1-b, hDims[1], hDims[2], hDims[3]);
+
+        const dim4 tdims(1, hDims[1], hDims[2], hDims[3]);
+        auto frontWeights   = iota<float>(dim4(b+1), tdims);
+        auto endWeights     = iota<float>(dim4(NUM_BINS-1-b), tdims);
+        auto offsetValues   = createValueArray<float>(edims, b+1);
+
+        endWeights = arithOp<float, af_add_t>(endWeights, offsetValues, edims);
+        auto __muL = arithOp<float, af_mul_t>(frontPartition, frontWeights, fdims);
+        auto __muH = arithOp<float, af_mul_t>(endPartition, endWeights, edims);
+        auto _muL  = reduce<af_add_t, float, float>(__muL, 0);
+        auto _muH  = reduce<af_add_t, float, float>(__muH, 0);
+        auto muL   = arithOp<float, af_div_t>(_muL, qL, tdims);
+        auto muH   = arithOp<float, af_div_t>(_muH, qH, tdims);
+        auto TWOS  = createValueArray<float>(tdims, 2.0f);
+        auto diff  = arithOp<float, af_sub_t>(muL, muH, tdims);
+        auto sqrd  = arithOp<float, af_pow_t>(diff, TWOS, tdims);
+        auto op2   = arithOp<float, af_mul_t>(qL, qH, tdims);
+        auto sigma = arithOp<float, af_mul_t>(sqrd, op2, tdims);
+
+        std::vector<af_seq> sliceIndex(4, af_span);
+        sliceIndex[0] = {double(b), double(b), 1};
+
+        auto binRes = createSubArray<float>(sigmas, sliceIndex, false);
+
+        copyArray<float>(binRes, sigma);
+    }
+
+    dim4 odims = sigmas.dims();
+    odims[0] = 1;
+    Array<float> thresh = createEmptyArray<float>(odims);
+    Array<uint> locs    = createEmptyArray<uint>(odims);
+
+    ireduce<af_max_t, float>(thresh, locs, sigmas, 0);
+
+    //FIXME: REMOVE PRINT ARRAY BEFORE COMMIT
+    af_print_array(getHandle(locs));
+
+    return cast<float, uint>(tile(locs, dim4(iDims[0], iDims[1], 1, 1)));
+}
+
+Array<float> normalize(const Array<float>& supEdges, const float minVal, const float maxVal)
+{
+    auto minArray = createValueArray<float>(supEdges.dims(), minVal);
+    auto diff     = arithOp<float, af_sub_t>(supEdges, minArray, supEdges.dims());
+    auto denom    = createValueArray<float>(supEdges.dims(), (maxVal-minVal));
+    return arithOp<float, af_div_t>(diff, denom, supEdges.dims());
+}
+
+std::pair< Array<char>, Array<char> >
+computeCandidates(const Array<float>& supEdges, const float t1,
+                  const af_canny_threshold ct, const float t2)
+{
+    float maxVal = detail::reduce_all<af_max_t, float, float>(supEdges);
+    const unsigned NUM_BINS = static_cast<unsigned>(maxVal);
+
+    auto lowRatio = createValueArray<float>(supEdges.dims(), t1);
+
+    switch(ct)
+    {
+        case AF_AUTO_OTSU_THRESHOLD:
+            {
+                auto T2            = otsuThreshold(supEdges, NUM_BINS, maxVal);
+                auto T1            = arithOp<float, af_mul_t>(T2, lowRatio, T2.dims());
+                Array<char> weak1  = logicOp<float, af_ge_t >(supEdges,    T1, supEdges.dims());
+                Array<char> weak2  = logicOp<float, af_lt_t >(supEdges,    T2, supEdges.dims());
+                Array<char> weak   = logicOp<char , af_and_t>(   weak1, weak2,    weak1.dims());
+                Array<char> strong = logicOp<float, af_ge_t >(supEdges,    T2, supEdges.dims());
+                return std::make_pair(strong, weak);
+            };
+        default:
+            {
+                float minVal       = detail::reduce_all<af_min_t, float, float>(supEdges);
+                auto normG         = normalize(supEdges, minVal, maxVal);
+                auto T2            = createValueArray<float>(supEdges.dims(), t2);
+                auto T1            = createValueArray<float>(supEdges.dims(), t1);
+                Array<char> weak1  = logicOp<float, af_ge_t >(normG,    T1, normG.dims());
+                Array<char> weak2  = logicOp<float, af_lt_t >(normG,    T2, normG.dims());
+                Array<char> weak   = logicOp<char , af_and_t>(weak1, weak2, weak1.dims());
+                Array<char> strong = logicOp<float, af_ge_t >(normG,    T2, normG.dims());
+                return std::make_pair(strong, weak);
+            };
+    }
+}
+
 template<typename T>
-af_array cannyHelper(const Array<T> in, const float t1, const float t2,
-                     const unsigned sw, const bool isf)
+af_array cannyHelper(const Array<T> in, const float t1, const af_canny_threshold ct,
+                     const float t2, const unsigned sw, const bool isf)
 {
     typedef typename std::pair< Array<float>, Array<float> > GradientPair;
 
@@ -64,57 +209,13 @@ af_array cannyHelper(const Array<T> in, const float t1, const float t2,
 
     Array<float> supEdges = detail::nonMaximumSuppression(gmag, gx, gy);
 
-    const af::dim4 dims = in.dims();
+    auto swpair = computeCandidates(supEdges, t1, ct, t2);
 
-    int width    = dims[0];
-    int height   = dims[1];
-    int channels = dims[2];
-
-    std::vector<uint> hostHist(256*channels);
-
-    Array<uint> hist = detail::histogram<float, uint, false>(supEdges, 256, 0, 255);
-
-    detail::copyData(hostHist.data(), hist);
-
-    Array<float> T2 = detail::createEmptyArray<float>(gmag.dims());
-    Array<float> T1 = detail::createEmptyArray<float>(gmag.dims());
-
-    for (dim_t c=0; c<channels; ++c)
-    {
-        std::vector<af_seq> sliceIndex(4, af_span);
-
-        sliceIndex[2] = {double(c), double(c), 1};
-
-        dim_t offset = c*256;
-
-        // find the number of pixels where tHigh(percentage) of total pixels except zeros
-        int highCount = (int)((width*height - hostHist[offset]) * t2 + 0.5f);
-
-        // compute high level trigger value using histogram distribution
-        // i is set to max value in unsigned char
-        int i = 255;
-        for (int sum=width*height-hostHist[offset]; sum>highCount; sum-=hostHist[i--]);
-
-        float highValue = (float)++i;
-        float lowValue  = (float)(highValue * t1 + 0.5f);
-
-        Array<float> highTslice = createSubArray<float>(T2, sliceIndex, false);
-        Array<float> lowTslice  = createSubArray<float>(T1, sliceIndex, false);
-
-        copyArray<float>(highTslice, createValueArray<float>(af::dim4(width, height), highValue));
-        copyArray<float>( lowTslice, createValueArray<float>(af::dim4(width, height),  lowValue));
-    }
-
-    Array<char> weak1  = detail::logicOp<float, af_ge_t >(supEdges,    T1, supEdges.dims());
-    Array<char> weak2  = detail::logicOp<float, af_lt_t >(supEdges,    T2, supEdges.dims());
-    Array<char> weak   = detail::logicOp<char , af_and_t>(   weak1, weak2,    weak1.dims());
-    Array<char> strong = detail::logicOp<float, af_ge_t >(supEdges,    T2, supEdges.dims());
-
-    return getHandle(detail::edgeTrackingByHysteresis(strong, weak));
+    return getHandle(detail::edgeTrackingByHysteresis(swpair.first, swpair.second));
 }
 
-af_err af_canny(af_array* out, const af_array in, const float t1, const float t2,
-                const unsigned sw, const bool isf)
+af_err af_canny(af_array* out, const af_array in, const float t1, const af_canny_threshold ct,
+                const float t2, const unsigned sw, const bool isf)
 {
     try {
         const ArrayInfo& info = getInfo(in);
@@ -124,7 +225,7 @@ af_err af_canny(af_array* out, const af_array in, const float t1, const float t2
         // Input should be a minimum of 5x5 image
         // since the gaussian filter used for smoothing
         // the input is of 5x5 size. It's not mandatory but
-        // it is essentially no use if image is less than 5x5
+        // it is essentially of no use if image is less than 5x5
         DIM_ASSERT(2, (dims[0]>=5 && dims[1]>=5));
         ARG_ASSERT(5, (sw==3));
 
@@ -132,13 +233,13 @@ af_err af_canny(af_array* out, const af_array in, const float t1, const float t2
 
         af_dtype type  = info.getType();
         switch(type) {
-            case f32: output = cannyHelper<float >(getArray<float >(in), t1, t2, sw, isf); break;
-            case f64: output = cannyHelper<double>(getArray<double>(in), t1, t2, sw, isf); break;
-            case s32: output = cannyHelper<int   >(getArray<int   >(in), t1, t2, sw, isf); break;
-            case u32: output = cannyHelper<uint  >(getArray<uint  >(in), t1, t2, sw, isf); break;
-            case s16: output = cannyHelper<short >(getArray<short >(in), t1, t2, sw, isf); break;
-            case u16: output = cannyHelper<ushort>(getArray<ushort>(in), t1, t2, sw, isf); break;
-            case u8:  output = cannyHelper<uchar >(getArray<uchar >(in), t1, t2, sw, isf); break;
+            case f32: output = cannyHelper<float >(getArray<float >(in), t1, ct, t2, sw, isf); break;
+            case f64: output = cannyHelper<double>(getArray<double>(in), t1, ct, t2, sw, isf); break;
+            case s32: output = cannyHelper<int   >(getArray<int   >(in), t1, ct, t2, sw, isf); break;
+            case u32: output = cannyHelper<uint  >(getArray<uint  >(in), t1, ct, t2, sw, isf); break;
+            case s16: output = cannyHelper<short >(getArray<short >(in), t1, ct, t2, sw, isf); break;
+            case u16: output = cannyHelper<ushort>(getArray<ushort>(in), t1, ct, t2, sw, isf); break;
+            case u8:  output = cannyHelper<uchar >(getArray<uchar >(in), t1, ct, t2, sw, isf); break;
             default : TYPE_ERROR(1, type);
         }
         // output array is binary array
