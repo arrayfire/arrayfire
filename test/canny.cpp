@@ -69,12 +69,64 @@ void cannyTest(string pTestFile)
 
 TYPED_TEST(CannyEdgeDetector, ArraySizeLessThanBlockSize10x10)
 {
-    cannyTest<TypeParam>(string(TEST_DIR"/CannyEdgeDetector/fast10x10.test"));
+    cannyTest<TypeParam>(string(TEST_DIR "/CannyEdgeDetector/fast10x10.test"));
 }
 
 TYPED_TEST(CannyEdgeDetector, ArraySizeEqualBlockSize16x16)
 {
-    cannyTest<TypeParam>(string(TEST_DIR"/CannyEdgeDetector/fast16x16.test"));
+    cannyTest<TypeParam>(string(TEST_DIR "/CannyEdgeDetector/fast16x16.test"));
+}
+
+template<typename T>
+void cannyImageOtsuTest(string pTestFile, bool isColor)
+{
+    if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
+
+    using af::dim4;
+
+    vector<dim4>       inDims;
+    vector<string>    inFiles;
+    vector<dim_t>    outSizes;
+    vector<string>   outFiles;
+
+    readImageTests(pTestFile, inDims, inFiles, outSizes, outFiles);
+
+    size_t testCount = inDims.size();
+
+    for (size_t testId=0; testId<testCount; ++testId) {
+
+        af_array inArray  = 0;
+        af_array outArray = 0;
+        af_array goldArray= 0;
+        dim_t nElems   = 0;
+
+        inFiles[testId].insert(0,string(TEST_DIR "/CannyEdgeDetector/"));
+        outFiles[testId].insert(0,string(TEST_DIR "/CannyEdgeDetector/"));
+
+        ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray, inFiles[testId].c_str(), isColor));
+        ASSERT_EQ(AF_SUCCESS, af_load_image_native(&goldArray, outFiles[testId].c_str()));
+        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
+
+        ASSERT_EQ(AF_SUCCESS, af_canny(&outArray, inArray, 0.08, AF_AUTO_OTSU_THRESHOLD, 0.32, 3, false));
+
+        char * outData = new char[nElems];
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+
+        char * goldData= new char[nElems];
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData, goldArray));
+
+        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData, outData, 1.0e-3));
+
+        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray));
+    }
+}
+
+TEST(CannyEdgeDetector, OtsuThreshold)
+{
+    cannyImageOtsuTest<float>(string(TEST_DIR "/CannyEdgeDetector/gray.test"), false);
 }
 
 TEST(CannyEdgeDetector, InvalidSizeArray)
