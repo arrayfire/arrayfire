@@ -11,10 +11,10 @@
 #include <af/defines.h>
 #include <af/image.h>
 #include <af/seq.h>
-#include <handle.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <Array.hpp>
+#include <handle.hpp>
 #include <arith.hpp>
 #include <canny.hpp>
 #include <complex.hpp>
@@ -137,9 +137,6 @@ Array<float> otsuThreshold(const Array<float>& supEdges,
     Array<uint> locs    = createEmptyArray<uint>(odims);
 
     ireduce<af_max_t, float>(thresh, locs, sigmas, 0);
-
-    //FIXME: REMOVE PRINT ARRAY BEFORE COMMIT
-    af_print_array(getHandle(locs));
 
     return cast<float, uint>(tile(locs, dim4(iDims[0], iDims[1], 1, 1)));
 }
