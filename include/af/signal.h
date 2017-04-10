@@ -654,6 +654,18 @@ AFAPI array medfilt1(const array& in, const dim_t wind_width = 3, const borderTy
 AFAPI array medfilt2(const array& in, const dim_t wind_length = 3, const dim_t wind_width = 3, const borderType edge_pad = AF_PAD_ZERO);
 #endif
 
+#if AF_API_VERSION >= 35
+/**
+   C++ Interface for setting plan cache size
+
+   This function doesn't do anything if called when CPU backend is active. The plans associated with
+   the most recently used array sizes are cached.
+
+   \param[in] cacheSize is the number of plans that shall be cached
+*/
+AFAPI void setFFTPlanCacheSize(size_t cacheSize);
+#endif
+
 }
 #endif
 
@@ -1190,6 +1202,8 @@ AFAPI af_err af_iir(af_array *y, const af_array b, const af_array a, const af_ar
    the most recently used array sizes are cached.
 
    \param[in] cache_size is the number of plans that shall be cached
+
+   \ingroup signal_func_fft
 */
 AFAPI af_err af_set_fft_plan_cache_size(size_t cache_size);
 #endif

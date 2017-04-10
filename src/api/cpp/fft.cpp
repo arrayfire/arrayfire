@@ -14,8 +14,6 @@
 
 namespace af
 {
-
-
 array fftNorm(const array& in, const double norm_factor, const dim_t odim0)
 {
     af_array out = 0;
@@ -281,4 +279,8 @@ FFT_REAL(1)
 FFT_REAL(2)
 FFT_REAL(3)
 
+void setFFTPlanCacheSize(size_t cacheSize)
+{
+    AF_THROW(af_set_fft_plan_cache_size(cacheSize));
+}
 }
