@@ -31,7 +31,13 @@ class FFTPlanCache
     public:
         FFTPlanCache() : mMaxCacheSize(5) {}
 
-        void setMaxCacheSize(size_t size) { mMaxCacheSize = size; }
+        void setMaxCacheSize(size_t size)
+        {
+            mMaxCacheSize = size;
+            while (mCache.size()>mMaxCacheSize)
+                mCache.pop_back();
+        }
+
         size_t getMaxCacheSize() const    { return mMaxCacheSize; }
 
         // iterates through plan cache from front to back
