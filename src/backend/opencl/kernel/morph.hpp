@@ -12,8 +12,7 @@
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
-#include <mutex>
-#include <map>
+#include <cache.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -32,10 +31,8 @@ using std::string;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
@@ -44,47 +41,50 @@ static const int CUBE_Y    =  8;
 static const int CUBE_Z    =  4;
 
 template<typename T, bool isDilation, int windLen>
-void morph(Param         out,
-        const Param      in,
-        const Param      mask)
+std::string generateOptionsString()
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*> morProgs;
-    static std::map<int, Kernel*> morKernels;
+    ToNumStr<T> toNumStr;
+    T init = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
+    std::ostringstream options;
+    options << " -D T=" << dtype_traits<T>::getName()
+        << " -D isDilation="<< isDilation
+        << " -D init=" << toNumStr(init)
+        << " -D windLen=" << windLen;
+    if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
+        options << " -D USE_DOUBLE";
+    return options.str();
+}
+
+template<typename T, bool isDilation, int windLen>
+void morph(Param out, const Param in, const Param mask)
+{
+    std::string refName = std::string("morph_") +
+        std::string(dtype_traits<T>::getName()) +
+        std::to_string(isDilation) + std::to_string(windLen);
 
     int device = getActiveDeviceId();
+    kc_entry_t entry = kernelCache(device, refName);
 
-    std::call_once( compileFlags[device], [device] () {
-            ToNumStr<T> toNumStr;
-            T init = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName()
-                    << " -D isDilation="<< isDilation
-                    << " -D init=" << toNumStr(init)
-                    << " -D windLen=" << windLen;
-            if (std::is_same<T, double>::value ||
-                std::is_same<T, cdouble>::value) {
-                options << " -D USE_DOUBLE";
-            }
-            Program prog;
-            buildProgram(prog, morph_cl, morph_cl_len, options.str());
-            morProgs[device]   = new Program(prog);
-            morKernels[device] = new Kernel(*morProgs[device], "morph");
-        });
+    if (entry.prog==0 && entry.ker==0) {
+        std::string options = generateOptionsString<T, isDilation, windLen>();
+        const char* ker_strs[] = {morph_cl};
+        const int   ker_lens[] = {morph_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options);
+        entry.prog = new Program(prog);
+        entry.ker  = new Kernel(*entry.prog, "morph");
+        addKernelToCache(device, refName, entry);
+    }
 
-    auto morphOp = KernelFunctor<Buffer, KParam,
-                                Buffer, KParam,
-                                Buffer, cl::LocalSpaceArg,
-                                int, int
-                              >(*morKernels[device]);
+    auto morphOp = KernelFunctor< Buffer, KParam, Buffer, KParam, Buffer, cl::LocalSpaceArg,
+                                  int, int >(*entry.ker);
 
     NDRange local(THREADS_X, THREADS_Y);
 
     int blk_x = divup(in.info.dims[0], THREADS_X);
     int blk_y = divup(in.info.dims[1], THREADS_Y);
     // launch batch * blk_x blocks along x dimension
-    NDRange global(blk_x * THREADS_X * in.info.dims[2],
-                    blk_y * THREADS_Y * in.info.dims[3]);
+    NDRange global(blk_x * THREADS_X * in.info.dims[2], blk_y * THREADS_Y * in.info.dims[3]);
 
     // copy mask/filter to constant memory
     cl_int se_size   = sizeof(T)*windLen*windLen;
@@ -111,34 +111,26 @@ void morph3d(Param       out,
         const Param      in,
         const Param      mask)
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*>  morProgs;
-    static std::map<int, Kernel*> morKernels;
+    std::string refName = std::string("morph3d_") +
+        std::string(dtype_traits<T>::getName()) +
+        std::to_string(isDilation) + std::to_string(windLen);
 
     int device = getActiveDeviceId();
+    kc_entry_t entry = kernelCache(device, refName);
 
-    std::call_once( compileFlags[device], [device] () {
-            ToNumStr<T> toNumStr;
-            T init = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName()
-                    << " -D isDilation="<< isDilation
-                    << " -D init=" << toNumStr(init)
-                    << " -D windLen=" << windLen;
-            if (std::is_same<T, double>::value ||
-                std::is_same<T, cdouble>::value) {
-                options << " -D USE_DOUBLE";
-            }
-            Program prog;
-            buildProgram(prog, morph_cl, morph_cl_len, options.str());
-            morProgs[device]   = new Program(prog);
-            morKernels[device] = new Kernel(*morProgs[device], "morph3d");
-        });
+    if (entry.prog==0 && entry.ker==0) {
+        std::string options = generateOptionsString<T, isDilation, windLen>();
+        const char* ker_strs[] = {morph_cl};
+        const int   ker_lens[] = {morph_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options);
+        entry.prog = new Program(prog);
+        entry.ker  = new Kernel(*entry.prog, "morph3d");
+        addKernelToCache(device, refName, entry);
+    }
 
-    auto morphOp = KernelFunctor<Buffer, KParam,
-                                Buffer, KParam,
-                                Buffer, cl::LocalSpaceArg, int
-                              >(*morKernels[device]);
+    auto morphOp = KernelFunctor< Buffer, KParam, Buffer, KParam, Buffer,
+                                  cl::LocalSpaceArg, int >(*entry.ker);
 
     NDRange local(CUBE_X, CUBE_Y, CUBE_Z);
 
@@ -146,9 +138,7 @@ void morph3d(Param       out,
     int blk_y = divup(in.info.dims[1], CUBE_Y);
     int blk_z = divup(in.info.dims[2], CUBE_Z);
     // launch batch * blk_x blocks along x dimension
-    NDRange global(blk_x * CUBE_X * in.info.dims[3],
-                    blk_y * CUBE_Y,
-                    blk_z * CUBE_Z);
+    NDRange global(blk_x * CUBE_X * in.info.dims[3], blk_y * CUBE_Y, blk_z * CUBE_Z);
 
     // copy mask/filter to constant memory
     cl_int se_size   = sizeof(T)*windLen*windLen*windLen;
@@ -169,7 +159,5 @@ void morph3d(Param       out,
     bufferFree(mBuff);
     CL_DEBUG_FINISH(getQueue());
 }
-
 }
-
 }

@@ -12,8 +12,7 @@
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
-#include <mutex>
-#include <map>
+#include <cache.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -28,10 +27,8 @@ using std::string;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
 static const int THREADS_X = 32;
 static const int THREADS_Y =  8;
 
@@ -44,46 +41,42 @@ typedef struct {
 template<typename T>
 void assign(Param out, const Param in, const AssignKernelParam_t& p, Buffer *bPtr[4])
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*>  agnProgs;
-    static std::map<int, Kernel*> agnKernels;
+    std::string refName = std::string("assignKernel_") + std::string(dtype_traits<T>::getName());
 
     int device = getActiveDeviceId();
+    kc_entry_t entry = kernelCache(device, refName);
 
-    std::call_once( compileFlags[device], [device] () {
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName();
-
-            if (std::is_same<T, double>::value ||
-                std::is_same<T, cdouble>::value) {
+    if (entry.prog==0 && entry.ker==0) {
+        std::ostringstream options;
+        options << " -D T=" << dtype_traits<T>::getName();
+        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
             options << " -D USE_DOUBLE";
-            }
 
-            Program prog;
-            buildProgram(prog, assign_cl, assign_cl_len, options.str());
-            agnProgs[device]   = new Program(prog);
-            agnKernels[device] = new Kernel(*agnProgs[device], "assignKernel");
-            });
+        const char* ker_strs[] = {assign_cl};
+        const int   ker_lens[] = {assign_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
+        entry.prog = new Program(prog);
+        entry.ker  = new Kernel(*entry.prog, "assignKernel");
+
+        addKernelToCache(device, refName, entry);
+    }
 
     NDRange local(THREADS_X, THREADS_Y);
 
     int blk_x = divup(in.info.dims[0], THREADS_X);
     int blk_y = divup(in.info.dims[1], THREADS_Y);
 
-    NDRange global(blk_x * in.info.dims[2] * THREADS_X,
-            blk_y * in.info.dims[3] * THREADS_Y);
+    NDRange global(blk_x * in.info.dims[2] * THREADS_X, blk_y * in.info.dims[3] * THREADS_Y);
 
-    auto assignOp = KernelFunctor<Buffer, KParam, Buffer, KParam, AssignKernelParam_t,
-          Buffer, Buffer, Buffer, Buffer, int, int>(*agnKernels[device]);
+    auto assignOp = KernelFunctor< Buffer, KParam, Buffer, KParam, AssignKernelParam_t,
+                                   Buffer, Buffer, Buffer, Buffer, int, int>(*entry.ker);
 
     assignOp(EnqueueArgs(getQueue(), global, local),
-            *out.data, out.info, *in.data, in.info, p,
-            *bPtr[0], *bPtr[1], *bPtr[2], *bPtr[3], blk_x, blk_y);
+             *out.data, out.info, *in.data, in.info, p,
+             *bPtr[0], *bPtr[1], *bPtr[2], *bPtr[3], blk_x, blk_y);
 
     CL_DEBUG_FINISH(getQueue());
 }
-
 }
-
 }
-

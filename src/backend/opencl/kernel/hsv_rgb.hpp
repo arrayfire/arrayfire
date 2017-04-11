@@ -12,8 +12,7 @@
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
-#include <mutex>
-#include <map>
+#include <cache.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -28,37 +27,36 @@ using std::string;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
 template<typename T, bool isHSV2RGB>
 void hsv2rgb_convert(Param out, const Param in)
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*>  hrProgs;
-    static std::map<int, Kernel*> hrKernels;
+    std::string refName = std::string("hsvrgb_convert_") +
+        std::string(dtype_traits<T>::getName()) + std::to_string(isHSV2RGB);
 
     int device = getActiveDeviceId();
+    kc_entry_t entry = kernelCache(device, refName);
 
-    std::call_once( compileFlags[device], [device] () {
+    if (entry.prog==0 && entry.ker==0) {
+        std::ostringstream options;
+        options << " -D T=" << dtype_traits<T>::getName();
 
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName();
+        if(isHSV2RGB) options << " -D isHSV2RGB";
+        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
 
-            if(isHSV2RGB) options << " -D isHSV2RGB";
+        const char* ker_strs[] = {hsv_rgb_cl};
+        const int   ker_lens[] = {hsv_rgb_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
+        entry.prog = new Program(prog);
+        entry.ker  = new Kernel(*entry.prog, "convert");
 
-            if (std::is_same<T, double>::value) {
-                options << " -D USE_DOUBLE";
-            }
-            Program prog;
-            buildProgram(prog, hsv_rgb_cl, hsv_rgb_cl_len, options.str());
-            hrProgs[device]   = new Program(prog);
-            hrKernels[device] = new Kernel(*hrProgs[device], "convert");
-        });
+        addKernelToCache(device, refName, entry);
+    }
 
     NDRange local(THREADS_X, THREADS_Y);
 
@@ -69,14 +67,11 @@ void hsv2rgb_convert(Param out, const Param in)
     // parameter would be along 4th dimension
     NDRange global(blk_x * in.info.dims[3] * THREADS_X, blk_y * THREADS_Y);
 
-    auto hsvrgbOp = KernelFunctor<Buffer, KParam, Buffer, KParam, int> (*hrKernels[device]);
+    auto hsvrgbOp = KernelFunctor<Buffer, KParam, Buffer, KParam, int> (*entry.ker);
 
-    hsvrgbOp(EnqueueArgs(getQueue(), global, local),
-                *out.data, out.info, *in.data, in.info, blk_x);
+    hsvrgbOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info, *in.data, in.info, blk_x);
 
     CL_DEBUG_FINISH(getQueue());
 }
-
 }
-
 }

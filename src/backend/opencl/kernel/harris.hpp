@@ -19,7 +19,8 @@
 #include <kernel/range.hpp>
 #include <kernel_headers/harris.hpp>
 #include <memory.hpp>
-#include <map>
+#include <cache.hpp>
+#include <tuple>
 
 using cl::Buffer;
 using cl::Program;
@@ -30,10 +31,8 @@ using cl::NDRange;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
 static const unsigned HARRIS_THREADS_PER_GROUP = 256;
 static const unsigned HARRIS_THREADS_X = 16;
 static const unsigned HARRIS_THREADS_Y = HARRIS_THREADS_PER_GROUP / HARRIS_THREADS_X;
@@ -85,6 +84,55 @@ void conv_helper(Param &ixx, Param &ixy, Param &iyy, Param &filter)
     bufferFree(iyy_tmp.data);
 }
 
+template<typename T>
+std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*, cl::Kernel*>
+getHarrisKernels()
+{
+    static const std::string kernelNames[4] =
+        {"second_order_deriv", "keep_corners", "harris_responses", "non_maximal"};
+
+    kc_entry_t entries[4];
+
+    int device = getActiveDeviceId();
+
+    std::string checkName = kernelNames[0] + std::string("_") + std::string(dtype_traits<T>::getName());
+
+    entries[0] = kernelCache(device, checkName);
+
+    if (entries[0].prog==0 && entries[0].ker==0)
+    {
+        std::ostringstream options;
+        options << " -D T=" << dtype_traits<T>::getName();
+        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
+            options << " -D USE_DOUBLE";
+
+        const char* ker_strs[] = {harris_cl};
+        const int   ker_lens[] = {harris_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
+
+        for (int i=0; i<4; ++i)
+        {
+            entries[i].prog = new Program(prog);
+            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i].c_str());
+
+            std::string name = kernelNames[i] +
+                std::string("_") + std::string(dtype_traits<T>::getName());
+
+            addKernelToCache(device, name, entries[i]);
+        }
+    } else {
+        for (int i=1; i<4; ++i) {
+            std::string name = kernelNames[i] +
+                std::string("_") + std::string(dtype_traits<T>::getName());
+
+            entries[i] = kernelCache(device, name);
+        }
+    }
+
+    return std::make_tuple(entries[0].ker, entries[1].ker, entries[2].ker, entries[3].ker);
+}
+
 template<typename T, typename convAccT>
 void harris(unsigned* corners_out,
             Param &x_out,
@@ -97,34 +145,7 @@ void harris(unsigned* corners_out,
             const unsigned filter_len,
             const float k_thr)
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*> harrisProgs;
-    static std::map<int, Kernel*>  soKernel;
-    static std::map<int, Kernel*>  kcKernel;
-    static std::map<int, Kernel*>  hrKernel;
-    static std::map<int, Kernel*>  nmKernel;
-
-    int device = getActiveDeviceId();
-
-    std::call_once( compileFlags[device], [device] () {
-
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName();
-
-            if (std::is_same<T, double>::value ||
-                std::is_same<T, cdouble>::value) {
-                options << " -D USE_DOUBLE";
-            }
-
-            cl::Program prog;
-            buildProgram(prog, harris_cl, harris_cl_len, options.str());
-            harrisProgs[device] = new Program(prog);
-
-            soKernel[device] = new Kernel(*harrisProgs[device], "second_order_deriv");
-            kcKernel[device] = new Kernel(*harrisProgs[device], "keep_corners");
-            hrKernel[device] = new Kernel(*harrisProgs[device], "harris_responses");
-            nmKernel[device] = new Kernel(*harrisProgs[device], "non_maximal");
-        });
+    auto kernels = getHarrisKernels<T>();
 
     // Window filter
     convAccT* h_filter = new convAccT[filter_len];
@@ -132,8 +153,7 @@ void harris(unsigned* corners_out,
     if (sigma < 0.5f) {
         for (unsigned i = 0; i < filter_len; i++)
             h_filter[i] = (T)1.f / (filter_len);
-    }
-    else {
+    } else {
         gaussian1D<convAccT>(h_filter, (int)filter_len, sigma);
     }
 
@@ -181,13 +201,13 @@ void harris(unsigned* corners_out,
     const NDRange local_so(HARRIS_THREADS_PER_GROUP, 1);
     const NDRange global_so(blk_x_so * HARRIS_THREADS_PER_GROUP, 1);
 
-    auto soOp = KernelFunctor<Buffer, Buffer, Buffer,
-                            unsigned, Buffer, Buffer> (*soKernel[device]);
+    auto soOp = KernelFunctor< Buffer, Buffer, Buffer,
+                               unsigned, Buffer, Buffer > (*std::get<0>(kernels));
 
     // Compute second-order derivatives
     soOp(EnqueueArgs(getQueue(), global_so, local_so),
-          *ixx.data, *ixy.data, *iyy.data,
-          in.info.dims[3] * in.info.strides[3], *ix.data, *iy.data);
+         *ixx.data, *ixy.data, *iyy.data,
+         in.info.dims[3] * in.info.strides[3], *ix.data, *iy.data);
     CL_DEBUG_FINISH(getQueue());
 
     bufferFree(ix.data);
@@ -205,14 +225,13 @@ void harris(unsigned* corners_out,
     const NDRange local_hr(HARRIS_THREADS_X, HARRIS_THREADS_Y);
     const NDRange global_hr(blk_x_hr * HARRIS_THREADS_X, blk_y_hr * HARRIS_THREADS_Y);
 
-    auto hrOp = KernelFunctor<Buffer, unsigned, unsigned,
-                            Buffer, Buffer, Buffer,
-                            float, unsigned> (*hrKernel[device]);
+    auto hrOp = KernelFunctor< Buffer, unsigned, unsigned, Buffer, Buffer, Buffer,
+                               float, unsigned> (*std::get<2>(kernels));
 
     // Calculate Harris responses for all pixels
     hrOp(EnqueueArgs(getQueue(), global_hr, local_hr),
-          *d_responses, in.info.dims[0], in.info.dims[1],
-          *ixx.data, *ixy.data, *iyy.data, k_thr, border_len);
+         *d_responses, in.info.dims[0], in.info.dims[1],
+         *ixx.data, *ixy.data, *iyy.data, k_thr, border_len);
     CL_DEBUG_FINISH(getQueue());
 
     bufferFree(ixx.data);
@@ -233,15 +252,14 @@ void harris(unsigned* corners_out,
 
     const float min_r = (max_corners > 0) ? 0.f : min_response;
 
-    auto nmOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer,
-                            Buffer, unsigned, unsigned,
-                            float, unsigned, unsigned> (*nmKernel[device]);
+    auto nmOp = KernelFunctor< Buffer, Buffer, Buffer, Buffer, Buffer, unsigned, unsigned,
+                            float, unsigned, unsigned> (*std::get<3>(kernels));
 
     // Perform non-maximal suppression
     nmOp(EnqueueArgs(getQueue(), global_hr, local_hr),
-          *d_x_corners, *d_y_corners, *d_resp_corners, *d_corners_found,
-          *d_responses, in.info.dims[0], in.info.dims[1],
-          min_r, border_len, corner_lim);
+         *d_x_corners, *d_y_corners, *d_resp_corners, *d_corners_found,
+         *d_responses, in.info.dims[0], in.info.dims[1],
+         min_r, border_len, corner_lim);
     CL_DEBUG_FINISH(getQueue());
 
     getQueue().enqueueReadBuffer(*d_corners_found, CL_TRUE, 0, sizeof(unsigned), &corners_found);
@@ -299,16 +317,15 @@ void harris(unsigned* corners_out,
         const NDRange local_kc(HARRIS_THREADS_PER_GROUP, 1);
         const NDRange global_kc(blk_x_kc * HARRIS_THREADS_PER_GROUP, 1);
 
-        auto kcOp = KernelFunctor<Buffer, Buffer, Buffer,
-                                Buffer, Buffer, Buffer, Buffer,
-                                unsigned> (*kcKernel[device]);
+        auto kcOp = KernelFunctor< Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
+                                   unsigned> (*std::get<1>(kernels));
 
         // Keep only the first corners_to_keep corners with higher Harris
         // responses
         kcOp(EnqueueArgs(getQueue(), global_kc, local_kc),
-              *x_out.data, *y_out.data, *resp_out.data,
-              *d_x_corners, *d_y_corners, *harris_resp.data, *harris_idx.data,
-              *corners_out);
+             *x_out.data, *y_out.data, *resp_out.data,
+             *d_x_corners, *d_y_corners, *harris_resp.data, *harris_idx.data,
+             *corners_out);
         CL_DEBUG_FINISH(getQueue());
 
         bufferFree(d_x_corners);
@@ -334,7 +351,5 @@ void harris(unsigned* corners_out,
         resp_out.data = d_resp_corners;
     }
 }
-
 } //namespace kernel
-
 } //namespace opencl

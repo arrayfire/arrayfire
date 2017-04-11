@@ -12,8 +12,6 @@
 
 #include <kernel_headers/convolve.hpp>
 
-#include <map>
-#include <mutex>
 #include <string>
 #include <Param.hpp>
 #include <types.hpp>
@@ -23,6 +21,7 @@
 #include <dispatch.hpp>
 #include <platform.hpp>
 #include <debug_opencl.hpp>
+#include <cache.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -33,10 +32,8 @@ using std::string;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
 static const int THREADS   = 256;
 
 static const int THREADS_X = 16;
@@ -97,39 +94,37 @@ void prepareKernelArgs(conv_kparam_t& param, dim_t *oDims,
 template<typename T, typename aT, int bDim, bool expand>
 void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal, const Param& filter)
 {
-    static std::once_flag  compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*> convProgs;
-    static std::map<int, Kernel*>  convKernels;
+    std::string ref_name = std::string("convolveND_") +
+        std::string(dtype_traits<T>::getName()) + std::string(dtype_traits<aT>::getName()) +
+        std::to_string(bDim) + std::to_string(expand);
 
     int device = getActiveDeviceId();
 
-    std::call_once( compileFlags[device], [device] () {
-                std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D accType="<< dtype_traits<aT>::getName()
-                        << " -D BASE_DIM="<< bDim
-                        << " -D EXPAND=" << expand;
-                if (std::is_same<T, double>::value ||
-                    std::is_same<T, cdouble>::value) {
-                    options << " -D USE_DOUBLE";
-                }
-                Program prog;
-                buildProgram(prog, convolve_cl, convolve_cl_len, options.str());
-                convProgs[device]   = new Program(prog);
-                convKernels[device] = new Kernel(*convProgs[device], "convolve");
-            });
+    kc_entry_t entry = kernelCache(device, ref_name);
 
-    auto convOp = cl::KernelFunctor<Buffer, KParam, Buffer, KParam,
-                                    cl::LocalSpaceArg, Buffer, KParam,
-                                    int, int,
-                                    int, int, int,
-                                    int, int, int
-                                    >(*convKernels[device]);
+    if (entry.prog==0 && entry.ker==0) {
+        std::ostringstream options;
+        options << " -D T="         << dtype_traits<T>::getName()
+                << " -D accType="   << dtype_traits<aT>::getName()
+                << " -D BASE_DIM="  << bDim
+                << " -D EXPAND="    << expand;
+        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
+            options << " -D USE_DOUBLE";
+        Program prog;
+        buildProgram(prog, convolve_cl, convolve_cl_len, options.str());
+        entry.prog   = new Program(prog);
+        entry.ker = new Kernel(*entry.prog, "convolve");
+
+        addKernelToCache(device, ref_name, entry);
+    }
+
+    auto convOp = cl::KernelFunctor<Buffer, KParam, Buffer, KParam, cl::LocalSpaceArg, Buffer, KParam,
+                                    int, int, int, int, int, int, int, int >(*entry.ker);
 
     convOp(EnqueueArgs(getQueue(), param.global, param.local),
-            *out.data, out.info, *signal.data, signal.info, cl::Local(param.loc_size),
-            *param.impulse, filter.info, param.nBBS0, param.nBBS1,
-            param.o[0], param.o[1], param.o[2], param.s[0], param.s[1], param.s[2]);
+           *out.data, out.info, *signal.data, signal.info, cl::Local(param.loc_size),
+           *param.impulse, filter.info, param.nBBS0, param.nBBS1,
+           param.o[0], param.o[1], param.o[2], param.s[0], param.s[1], param.s[2]);
 }
 
 template<typename T, typename aT, bool expand>
@@ -140,7 +135,5 @@ void conv2(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt);
 
 template<typename T, typename aT, bool expand>
 void conv3(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt);
-
 }
-
 }

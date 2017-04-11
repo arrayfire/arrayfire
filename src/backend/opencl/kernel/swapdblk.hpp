@@ -12,8 +12,7 @@
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
-#include <mutex>
-#include <map>
+#include <cache.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -27,41 +26,36 @@ using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
 
-
 namespace opencl
 {
-
 namespace kernel
 {
-
 template<typename T>
 void swapdblk(int n, int nb,
               cl_mem dA, size_t dA_offset, int ldda, int inca,
               cl_mem dB, size_t dB_offset, int lddb, int incb)
 {
-
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*>  swpProgs;
-    static std::map<int, Kernel*> swpKernels;
+    std::string refName = std::string("swapdblk_") + std::string(dtype_traits<T>::getName());
 
     int device = getActiveDeviceId();
+    kc_entry_t entry = kernelCache(device, refName);
 
-    std::call_once(compileFlags[device], [device] () {
+    if (entry.prog==0 && entry.ker==0) {
+        std::ostringstream options;
 
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName();
+        options << " -D T=" << dtype_traits<T>::getName();
+        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
+            options << " -D USE_DOUBLE";
 
-            if (std::is_same<T, double>::value ||
-                std::is_same<T, cdouble>::value) {
-                options << " -D USE_DOUBLE";
-            }
+        const char* ker_strs[] = {swapdblk_cl};
+        const int   ker_lens[] = {swapdblk_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
+        entry.prog = new Program(prog);
+        entry.ker  = new Kernel(*entry.prog, "swapdblk");
 
-            cl::Program prog;
-            buildProgram(prog, swapdblk_cl, swapdblk_cl_len, options.str());
-            swpProgs[device] = new Program(prog);
-
-            swpKernels[device] = new Kernel(*swpProgs[device], "swapdblk");
-        });
+        addKernelToCache(device, refName, entry);
+    }
 
     int nblocks = n / nb;
 
@@ -94,16 +88,11 @@ void swapdblk(int n, int nb,
     cl::Buffer dAObj(dA, true);
     cl::Buffer dBObj(dB, true);
 
-    auto swapdOp = KernelFunctor<int,
-                               Buffer, unsigned long long, int, int,
-                               Buffer, unsigned long long, int, int>(*swpKernels[device]);
+    auto swapdOp = KernelFunctor<int, Buffer, unsigned long long, int, int,
+                               Buffer, unsigned long long, int, int>(*entry.ker);
 
     swapdOp(EnqueueArgs(getQueue(), global, local),
-            nb,
-            dAObj, dA_offset, ldda, inca,
-            dBObj, dB_offset, lddb, incb);
-
+            nb, dAObj, dA_offset, ldda, inca, dBObj, dB_offset, lddb, incb);
 }
-
 }
 }

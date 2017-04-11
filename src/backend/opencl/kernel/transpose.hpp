@@ -12,8 +12,7 @@
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
-#include <mutex>
-#include <map>
+#include <cache.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -29,10 +28,8 @@ using std::string;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
 static const int TILE_DIM  = 32;
 static const int THREADS_X = TILE_DIM;
 static const int THREADS_Y = 256 / TILE_DIM;
@@ -40,33 +37,32 @@ static const int THREADS_Y = 256 / TILE_DIM;
 template<typename T, bool conjugate, bool IS32MULTIPLE>
 void transpose(Param out, const Param in)
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*>  trsProgs;
-    static std::map<int, Kernel*> trsKernels;
+    std::string refName = std::string("transpose_") + std::string(dtype_traits<T>::getName()) +
+        std::to_string(conjugate) + std::to_string(IS32MULTIPLE);
 
     int device = getActiveDeviceId();
+    kc_entry_t entry = kernelCache(device, refName);
 
-    std::call_once(compileFlags[device], [device] () {
+    if (entry.prog==0 && entry.ker==0) {
+        std::ostringstream options;
+        options << " -D TILE_DIM=" << TILE_DIM
+                << " -D THREADS_Y=" << THREADS_Y
+                << " -D IS32MULTIPLE=" << IS32MULTIPLE
+                << " -D DOCONJUGATE=" << (conjugate && af::iscplx<T>())
+                << " -D T=" << dtype_traits<T>::getName();
 
-            std::ostringstream options;
-            options << " -D TILE_DIM=" << TILE_DIM
-                    << " -D THREADS_Y=" << THREADS_Y
-                    << " -D IS32MULTIPLE=" << IS32MULTIPLE
-                    << " -D DOCONJUGATE=" << (conjugate && af::iscplx<T>())
-                    << " -D T=" << dtype_traits<T>::getName();
+        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
+            options << " -D USE_DOUBLE";
 
-            if (std::is_same<T, double>::value ||
-                std::is_same<T, cdouble>::value) {
-                options << " -D USE_DOUBLE";
-            }
+        const char* ker_strs[] = {transpose_cl};
+        const int   ker_lens[] = {transpose_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
+        entry.prog = new Program(prog);
+        entry.ker  = new Kernel(*entry.prog, "transpose");
 
-            cl::Program prog;
-            buildProgram(prog, transpose_cl, transpose_cl_len, options.str());
-            trsProgs[device] = new Program(prog);
-
-            trsKernels[device] = new Kernel(*trsProgs[device], "transpose");
-        });
-
+        addKernelToCache(device, refName, entry);
+    }
 
     NDRange local(THREADS_X, THREADS_Y);
 
@@ -77,16 +73,13 @@ void transpose(Param out, const Param in)
     NDRange global(blk_x * local[0] * in.info.dims[2],
                     blk_y * local[1] * in.info.dims[3]);
 
-    auto transposeOp = KernelFunctor<Buffer, const KParam,
-                                    const Buffer, const KParam,
-                                    const int, const int> (*trsKernels[device]);
+    auto transposeOp = KernelFunctor< Buffer, const KParam, const Buffer, const KParam,
+                                      const int, const int> (*entry.ker);
 
     transposeOp(EnqueueArgs(getQueue(), global, local),
                 *out.data, out.info, *in.data, in.info, blk_x, blk_y);
 
     CL_DEBUG_FINISH(getQueue());
 }
-
 }
-
 }
