@@ -27,7 +27,6 @@
 #include <unary.hpp>
 #include <reduce.hpp>
 #include <ireduce.hpp>
-#include <index.hpp>
 #include <tile.hpp>
 #include <iota.hpp>
 #include <utility>
@@ -66,26 +65,11 @@ Array<float> otsuThreshold(const Array<float>& supEdges,
     // pixel frequency probabilities
     auto probability = arithOp<float, af_div_t>(cast<float, uint>(hist), ttotals, hDims);
 
-    af_index_t seqBegin[4];
-    af_index_t seqRest[4];
+    std::vector<af_seq> seqBegin(4, af_span);
+    std::vector<af_seq> seqRest(4, af_span);
 
-    seqBegin[0].idx.seq = af_make_seq(0, hDims[0]-1, 1);
-    seqBegin[0].isSeq   = true;
-    seqBegin[0].isBatch = false;
-    seqRest[0].idx.seq = af_make_seq(0, hDims[0]-1, 1);
-    seqRest[0].isSeq   = true;
-    seqRest[0].isBatch = false;
-
-    for (int s=1; s<4; ++s)
-    {
-        seqBegin[s].idx.seq = af_span;
-        seqBegin[s].isSeq   = true;
-        seqBegin[s].isBatch = false;
-
-        seqRest[s].idx.seq = af_span;
-        seqRest[s].isSeq   = true;
-        seqRest[s].isBatch = false;
-    }
+    seqBegin[0] = af_make_seq(0, hDims[0]-1, 1);
+    seqRest[0] = af_make_seq(0, hDims[0]-1, 1);
 
     const af::dim4& iDims = supEdges.dims();
 
@@ -93,11 +77,11 @@ Array<float> otsuThreshold(const Array<float>& supEdges,
 
     for (unsigned b=0; b<(NUM_BINS-1); ++b)
     {
-        seqBegin[0].idx.seq.end = (double)b;
-        seqRest[0].idx.seq.begin = (double)(b+1);
+        seqBegin[0].end  = (double)b;
+        seqRest[0].begin = (double)(b+1);
 
-        auto frontPartition = index(probability, seqBegin);
-        auto endPartition   = index(probability, seqRest);
+        auto frontPartition = createSubArray(probability, seqBegin, false);
+        auto endPartition   = createSubArray(probability, seqRest, false);
 
         auto qL = reduce<af_add_t, float, float>(frontPartition, 0);
         auto qH = reduce<af_add_t, float, float>(endPartition, 0);
@@ -189,8 +173,6 @@ template<typename T>
 af_array cannyHelper(const Array<T> in, const float t1, const af_canny_threshold ct,
                      const float t2, const unsigned sw, const bool isf)
 {
-    typedef typename std::pair< Array<float>, Array<float> > GradientPair;
-
     static const std::vector<float> v = {-0.11021, -0.23691, -0.30576, -0.23691, -0.11021};
     Array<float> cFilter= detail::createHostDataArray<float>(dim4(5, 1), v.data());
     Array<float> rFilter= detail::createHostDataArray<float>(dim4(1, 5), v.data());
@@ -198,7 +180,7 @@ af_array cannyHelper(const Array<T> in, const float t1, const af_canny_threshold
     // Run separable convolution to smooth the input image
     Array<float> smt = detail::convolve2<float, float, false>(cast<float, T>(in), cFilter, rFilter);
 
-    GradientPair g  = detail::sobelDerivatives<float, float>(smt, sw);
+    auto g  = detail::sobelDerivatives<float, float>(smt, sw);
     Array<float> gx = g.first;
     Array<float> gy = g.second;
 
