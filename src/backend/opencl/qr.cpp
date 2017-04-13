@@ -32,7 +32,6 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig)
         return cpu::qr(q, r, t, orig);
     }
 
-    initBlas();
     dim4 iDims = orig.dims();
     int M = iDims[0];
     int N = iDims[1];
@@ -86,7 +85,6 @@ Array<T> qr_inplace(Array<T> &in)
         return cpu::qr_inplace(in);
     }
 
-    initBlas();
     dim4 iDims = in.dims();
     int M = iDims[0];
     int N = iDims[1];

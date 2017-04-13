@@ -42,8 +42,6 @@ int nextTargetDeviceId()
 void morphTest(const array input, const array mask, const bool isDilation,
                const array gold, int targetDevice)
 {
-    auto start = std::chrono::high_resolution_clock::now();
-
     af::setDevice(targetDevice);
 
     vector<float> goldData(gold.elements());
@@ -59,16 +57,6 @@ void morphTest(const array input, const array mask, const bool isDilation,
     out.host((void*)outData.data());
 
     ASSERT_EQ(true, compareArraysRMSD(gold.elements(), goldData.data(), outData.data(), 0.018f));
-
-    auto end = std::chrono::high_resolution_clock::now();
-
-    std::chrono::duration<double> diff = end - start;
-
-    std::cout << "Thread(" << std::this_thread::get_id()
-              << "): time taken for "
-              << ITERATION_COUNT
-              <<" is "
-              << diff.count() << " s\n";
 }
 
 TEST(Threading, SetPerThreadActiveDevice)
@@ -89,8 +77,6 @@ TEST(Threading, SetPerThreadActiveDevice)
 
     vector<std::thread> tests;
     unsigned totalTestCount = 0;
-
-    auto start = std::chrono::high_resolution_clock::now();
 
     for(size_t pos = 0; pos<files.size(); ++pos)
     {
@@ -126,32 +112,13 @@ TEST(Threading, SetPerThreadActiveDevice)
             //Push the new test as a new thread of execution
             tests.emplace_back(morphTest, input, mask, isDilation, gold, trgtDeviceId);
 
-            std::cout<<"morph test launched with the following params on device ("
-                     <<trgtDeviceId<<"):"<<std::endl;
-            std::cout<<"\t Input image dims: "<<input.dims()<<std::endl;
-            std::cout<<"\t Mask dims: "<<mask.dims()<<std::endl;
-            std::cout<<"\t IsDilation : "<< (isDilation ? "True" : "False") <<std::endl;
-
             totalTestCount++;
         }
     }
-    std::cout<< std::endl << "Waiting for results ..." << std::endl << std::endl;
 
     for (size_t testId=0; testId<tests.size(); ++testId)
-    {
-        if (tests[testId].joinable()) {
-            std::cout<<"Attempting join for test ..."<<testId<<std::endl;
+        if (tests[testId].joinable())
             tests[testId].join();
-            std::cout<<"test "<< testId <<" completed." << std::endl;
-        }
-        std::cout<<std::endl;
-    }
-
-    auto end = std::chrono::high_resolution_clock::now();
-
-    std::chrono::duration<double> diff = end - start;
-
-    std::cout << "Total time taken for test : " << diff.count() << " s\n";
 }
 
 enum ArithOp
@@ -341,7 +308,6 @@ TEST(Threading, MemoryManagement_JIT_Node)
     ASSERT_EQ(  lock_bytes,      0u);
 }
 
-#if !defined(AF_OPENCL)
 template<typename inType, typename outType, bool isInverse>
 void fftTest(int targetDevice, string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
 {
@@ -419,12 +385,10 @@ void fftTest(int targetDevice, string pTestFile, dim_t pad0=0, dim_t pad1=0, dim
         tests.emplace_back(fftTest<in_t, out_t, is_inverse>, targetDevice, file, p0, p1, 0);\
     }
 
-/// OpenCL backend tests seem to be failing even when
-/// each thead has it's own plan cache(thread_local).
-/// The issue seems to present itself randomly in the form of crashes,
-/// garbage values.
-TEST(Threading, FFT)
+TEST(Threading, FFT_R2C)
 {
+    cleanSlate(); // Clean up everything done so far
+
     vector<std::thread> tests;
 
     int numDevices = 1;
@@ -438,14 +402,6 @@ TEST(Threading, FFT)
     INSTANTIATE_TEST(fft3,  R2C_Float, false,  float,  cfloat, string(TEST_DIR"/signal/fft3_r2c.test"));
     INSTANTIATE_TEST(fft3, R2C_Double, false, double, cdouble, string(TEST_DIR"/signal/fft3_r2c.test"));
 
-    // complex to complex transforms
-    INSTANTIATE_TEST(fft ,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft_c2c.test") );
-    INSTANTIATE_TEST(fft , C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft_c2c.test") );
-    INSTANTIATE_TEST(fft2,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft2_c2c.test"));
-    INSTANTIATE_TEST(fft2, C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft2_c2c.test"));
-    INSTANTIATE_TEST(fft3,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft3_c2c.test"));
-    INSTANTIATE_TEST(fft3, C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft3_c2c.test"));
-
     // Factors 7, 11, 13
     INSTANTIATE_TEST(fft , R2C_Float_7_11_13 , false, float  , cfloat , string(TEST_DIR"/signal/fft_r2c_7_11_13.test") );
     INSTANTIATE_TEST(fft , R2C_Double_7_11_13, false, double , cdouble, string(TEST_DIR"/signal/fft_r2c_7_11_13.test") );
@@ -453,6 +409,32 @@ TEST(Threading, FFT)
     INSTANTIATE_TEST(fft2, R2C_Double_7_11_13, false, double , cdouble, string(TEST_DIR"/signal/fft2_r2c_7_11_13.test") );
     INSTANTIATE_TEST(fft3, R2C_Float_7_11_13 , false, float  , cfloat , string(TEST_DIR"/signal/fft3_r2c_7_11_13.test") );
     INSTANTIATE_TEST(fft3, R2C_Double_7_11_13, false, double , cdouble, string(TEST_DIR"/signal/fft3_r2c_7_11_13.test") );
+
+    // transforms on padded and truncated arrays
+    INSTANTIATE_TEST_TP(fft2,  R2C_Float_Trunc, false,  float,  cfloat, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
+    INSTANTIATE_TEST_TP(fft2, R2C_Double_Trunc, false, double, cdouble, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
+
+    for (size_t testId=0; testId<tests.size(); ++testId)
+        if (tests[testId].joinable())
+            tests[testId].join();
+}
+
+TEST(Threading, FFT_C2C)
+{
+    cleanSlate(); // Clean up everything done so far
+
+    vector<std::thread> tests;
+
+    int numDevices = 1;
+    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+
+    // complex to complex transforms
+    INSTANTIATE_TEST(fft ,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft_c2c.test") );
+    INSTANTIATE_TEST(fft , C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft_c2c.test") );
+    INSTANTIATE_TEST(fft2,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft2_c2c.test"));
+    INSTANTIATE_TEST(fft2, C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft2_c2c.test"));
+    INSTANTIATE_TEST(fft3,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft3_c2c.test"));
+    INSTANTIATE_TEST(fft3, C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft3_c2c.test"));
 
     INSTANTIATE_TEST(fft , C2C_Float_7_11_13 , false, cfloat  , cfloat , string(TEST_DIR"/signal/fft_c2c_7_11_13.test") );
     INSTANTIATE_TEST(fft , C2C_Double_7_11_13, false, cdouble , cdouble, string(TEST_DIR"/signal/fft_c2c_7_11_13.test") );
@@ -462,9 +444,6 @@ TEST(Threading, FFT)
     INSTANTIATE_TEST(fft3, C2C_Double_7_11_13, false, cdouble , cdouble, string(TEST_DIR"/signal/fft3_c2c_7_11_13.test") );
 
     // transforms on padded and truncated arrays
-    INSTANTIATE_TEST_TP(fft2,  R2C_Float_Trunc, false,  float,  cfloat, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
-    INSTANTIATE_TEST_TP(fft2, R2C_Double_Trunc, false, double, cdouble, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
-
     INSTANTIATE_TEST_TP(fft2,  C2C_Float_Pad, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft2_c2c_pad.test"), 16, 16);
     INSTANTIATE_TEST_TP(fft2, C2C_Double_Pad, false, cdouble, cdouble, string(TEST_DIR"/signal/fft2_c2c_pad.test"), 16, 16);
 
@@ -478,11 +457,8 @@ TEST(Threading, FFT)
     INSTANTIATE_TEST(ifft3, C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft3_c2c.test"));
 
     for (size_t testId=0; testId<tests.size(); ++testId)
-    {
-        if (tests[testId].joinable()) {
+        if (tests[testId].joinable())
             tests[testId].join();
-        }
-    }
 }
 
 template<typename T, bool isBVector>
@@ -561,6 +537,8 @@ void cppMatMulCheck(int targetDevice, string TestFile)
 
 TEST(Threading, BLAS)
 {
+    cleanSlate(); // Clean up everything done so far
+
     vector<std::thread> tests;
 
     int numDevices = 1;
@@ -572,12 +550,11 @@ TEST(Threading, BLAS)
     TEST_FOR_TYPE(af::cdouble);
 
     for (size_t testId=0; testId<tests.size(); ++testId)
-    {
-        if (tests[testId].joinable()) {
+        if (tests[testId].joinable())
             tests[testId].join();
-        }
-    }
 }
+
+#if !defined(AF_OPENCL)
 
 #define SOLVE_LU_TESTS(T, eps)                                                                          \
     tests.emplace_back(solveLUTester<T>, 1000, 100, eps, nextTargetDeviceId()%numDevices);              \
@@ -602,6 +579,8 @@ TEST(Threading, BLAS)
 // we are not running out of memory.
 TEST(Threading, SolveDense)
 {
+    cleanSlate(); // Clean up everything done so far
+
     vector<std::thread> tests;
 
     int numDevices = 1;
@@ -613,11 +592,8 @@ TEST(Threading, SolveDense)
     SOLVE_LU_TESTS(cdouble, 1E-5);
 
     for (size_t testId=0; testId<tests.size(); ++testId)
-    {
-        if (tests[testId].joinable()) {
+        if (tests[testId].joinable())
             tests[testId].join();
-        }
-    }
 }
 
 #undef SOLVE_LU_TESTS
@@ -638,6 +614,8 @@ TEST(Threading, SolveDense)
 // we are not running out of memory.
 TEST(Threading, Sparse)
 {
+    cleanSlate(); // Clean up everything done so far
+
     vector<std::thread> tests;
 
     int numDevices = 1;
@@ -649,11 +627,8 @@ TEST(Threading, Sparse)
     SPARSE_TESTS(cdouble, 1E-5);
 
     for (size_t testId=0; testId<tests.size(); ++testId)
-    {
-        if (tests[testId].joinable()) {
+        if (tests[testId].joinable())
             tests[testId].join();
-        }
-    }
 }
 
 #endif

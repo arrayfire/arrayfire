@@ -13,7 +13,6 @@
 #include <string>
 #include <functional>
 #include <stdexcept>
-#include <mutex>
 #include <err_opencl.hpp>
 #include <err_clblas.hpp>
 #include <math.hpp>
@@ -31,8 +30,6 @@ namespace opencl
 
 using std::is_floating_point;
 using std::enable_if;
-using std::once_flag;
-using std::call_once;
 using std::runtime_error;
 using std::to_string;
 
@@ -124,8 +121,6 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
         return cpu::matmul(lhs, rhs, optLhs, optRhs);
     }
 #endif
-
-    initBlas();
     clblasTranspose lOpts = toClblasTranspose(optLhs);
     clblasTranspose rOpts = toClblasTranspose(optRhs);
 

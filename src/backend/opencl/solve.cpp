@@ -304,8 +304,6 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
         return cpu::solve(a, b, options);
     }
 
-    initBlas();
-
     if (options & AF_MAT_UPPER ||
         options & AF_MAT_LOWER) {
         return triangleSolve<T>(a, b, options);

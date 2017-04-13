@@ -27,6 +27,7 @@
 #include <defines.hpp>
 #include <errorcodes.hpp>
 #include <err_opencl.hpp>
+#include <err_clblas.hpp>
 #include <host_memory.hpp>
 #include <common/InteropManager.hpp>
 #include <platform.hpp>
@@ -903,6 +904,11 @@ DeviceManager::DeviceManager()
     //Initialize FFT setup data structure
     CLFFT_CHECK(clfftInitSetupData(&mFFTSetup));
     CLFFT_CHECK(clfftSetup(&mFFTSetup));
+
+    //Initialize clBlas library, clblasSetup is not thread safe
+    //Since DeviceManager class is singleton, it is okay to call
+    //without any synchronization mechanisms
+    CLBLAS_CHECK(clblasSetup());
 }
 
 #if defined(WITH_GRAPHICS)
