@@ -10,6 +10,7 @@
 #include <arrayfire.h>
 #include <climits>
 #include <cstring>
+#include <ctime>
 #include <cstdio>
 
 using namespace af;
