@@ -141,28 +141,24 @@ namespace opencl
         static void randomDistribution(cl::Buffer out, const size_t elements,
                 const af_random_engine_type type, const uintl &seed, uintl &counter, int kerIdx)
         {
-            try {
-                uint elementsPerBlock = THREADS*4*sizeof(uint)/sizeof(T);
-                uint groups = divup(elements, elementsPerBlock);
+            uint elementsPerBlock = THREADS*4*sizeof(uint)/sizeof(T);
+            uint groups = divup(elements, elementsPerBlock);
 
-                uint hi = seed>>32;
-                uint lo = seed;
+            uint hi = seed>>32;
+            uint lo = seed;
 
-                NDRange local(THREADS, 1);
-                NDRange global(THREADS * groups, 1);
+            NDRange local(THREADS, 1);
+            NDRange global(THREADS * groups, 1);
 
-                if ((type == AF_RANDOM_ENGINE_PHILOX_4X32_10) || (type == AF_RANDOM_ENGINE_THREEFRY_2X32_16)) {
-                    Kernel ker = get_random_engine_kernel<T>(type, kerIdx, elementsPerBlock);
-                    auto randomEngineOp = KernelFunctor<cl::Buffer, uint, uint, uint, uint>(ker);
-                    randomEngineOp(EnqueueArgs(getQueue(), global, local),
-                            out, elements, counter, hi, lo);
-                }
-
-                counter += elements;
-                CL_DEBUG_FINISH(getQueue());
-            } catch (cl::Error err) {
-                CL_TO_AF_ERROR(err);
+            if ((type == AF_RANDOM_ENGINE_PHILOX_4X32_10) || (type == AF_RANDOM_ENGINE_THREEFRY_2X32_16)) {
+                Kernel ker = get_random_engine_kernel<T>(type, kerIdx, elementsPerBlock);
+                auto randomEngineOp = KernelFunctor<cl::Buffer, uint, uint, uint, uint>(ker);
+                randomEngineOp(EnqueueArgs(getQueue(), global, local),
+                        out, elements, counter, hi, lo);
             }
+
+            counter += elements;
+            CL_DEBUG_FINISH(getQueue());
         }
 
         template <typename T>
@@ -171,24 +167,20 @@ namespace opencl
                 const uint mask, cl::Buffer recursion_table, cl::Buffer temper_table,
                 int kerIdx)
         {
-            try {
-                int threads = THREADS;
-                int min_elements_per_block = 32*THREADS*4*sizeof(uint)/sizeof(T);
-                int blocks = divup(elements, min_elements_per_block);
-                blocks = (blocks > MAX_BLOCKS)? MAX_BLOCKS : blocks;
-                int elementsPerBlock = divup(elements, blocks);
+            int threads = THREADS;
+            int min_elements_per_block = 32*THREADS*4*sizeof(uint)/sizeof(T);
+            int blocks = divup(elements, min_elements_per_block);
+            blocks = (blocks > MAX_BLOCKS)? MAX_BLOCKS : blocks;
+            int elementsPerBlock = divup(elements, blocks);
 
-                NDRange local(threads, 1);
-                NDRange global(threads * blocks, 1);
-                Kernel ker = get_random_engine_kernel<T>(AF_RANDOM_ENGINE_MERSENNE_GP11213, kerIdx, elementsPerBlock);
-                auto randomEngineOp = KernelFunctor<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer,
-                     uint, cl::Buffer, cl::Buffer, uint, uint>(ker);
-                randomEngineOp(EnqueueArgs(getQueue(), global, local),
-                        out, state, pos, sh1, sh2, mask, recursion_table, temper_table, elementsPerBlock, elements);
-                CL_DEBUG_FINISH(getQueue());
-            } catch (cl::Error err) {
-                CL_TO_AF_ERROR(err);
-            }
+            NDRange local(threads, 1);
+            NDRange global(threads * blocks, 1);
+            Kernel ker = get_random_engine_kernel<T>(AF_RANDOM_ENGINE_MERSENNE_GP11213, kerIdx, elementsPerBlock);
+            auto randomEngineOp = KernelFunctor<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer,
+                  uint, cl::Buffer, cl::Buffer, uint, uint>(ker);
+            randomEngineOp(EnqueueArgs(getQueue(), global, local),
+                    out, state, pos, sh1, sh2, mask, recursion_table, temper_table, elementsPerBlock, elements);
+            CL_DEBUG_FINISH(getQueue());
         }
 
         template <typename T>
@@ -223,17 +215,13 @@ namespace opencl
 
         void initMersenneState(cl::Buffer state, cl::Buffer table, const uintl &seed)
         {
-            try{
-                NDRange local(THREADS_PER_GROUP, 1);
-                NDRange global(local[0] * MAX_BLOCKS, 1);
+            NDRange local(THREADS_PER_GROUP, 1);
+            NDRange global(local[0] * MAX_BLOCKS, 1);
 
-                Kernel ker = get_mersenne_init_kernel();
-                auto initOp = KernelFunctor<cl::Buffer, cl::Buffer, uintl>(ker);
-                initOp(EnqueueArgs(getQueue(), global, local), state, table, seed);
-                CL_DEBUG_FINISH(getQueue());
-            } catch (cl::Error err) {
-                CL_TO_AF_ERROR(err);
-            }
+            Kernel ker = get_mersenne_init_kernel();
+            auto initOp = KernelFunctor<cl::Buffer, cl::Buffer, uintl>(ker);
+            initOp(EnqueueArgs(getQueue(), global, local), state, table, seed);
+            CL_DEBUG_FINISH(getQueue());
         }
     }
 }

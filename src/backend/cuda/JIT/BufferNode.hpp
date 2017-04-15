@@ -10,6 +10,7 @@
 #pragma once
 #include "Node.hpp"
 #include <iomanip>
+#include <memory>
 
 namespace cuda
 {
@@ -30,7 +31,7 @@ namespace JIT
     {
     private:
         // Keep the shared pointer for reference counting
-        shared_ptr<T> m_data;
+        std::shared_ptr<T> m_data;
         Param<T> m_param;
         unsigned m_bytes;
 
@@ -43,7 +44,7 @@ namespace JIT
         {
         }
 
-        void setData(Param<T> param, shared_ptr<T> data, const unsigned bytes, bool is_linear)
+        void setData(Param<T> param, std::shared_ptr<T> data, const unsigned bytes, bool is_linear)
         {
             m_param = param;
             m_data = data;

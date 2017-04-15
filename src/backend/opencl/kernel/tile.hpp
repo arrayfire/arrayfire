@@ -39,46 +39,41 @@ namespace opencl
         template<typename T>
         void tile(Param out, const Param in)
         {
-            try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   tileProgs;
-                static std::map<int, Kernel *> tileKernels;
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static std::map<int, Program*>   tileProgs;
+            static std::map<int, Kernel *> tileKernels;
 
-                int device = getActiveDeviceId();
+            int device = getActiveDeviceId();
 
-                std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D T=" << dtype_traits<T>::getName();
-                    if (std::is_same<T, double>::value ||
-                        std::is_same<T, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
-                    Program prog;
-                    buildProgram(prog, tile_cl, tile_cl_len, options.str());
-                    tileProgs[device] = new Program(prog);
-                    tileKernels[device] = new Kernel(*tileProgs[device], "tile_kernel");
-                });
+            std::call_once( compileFlags[device], [device] () {
+                std::ostringstream options;
+                options << " -D T=" << dtype_traits<T>::getName();
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+                Program prog;
+                buildProgram(prog, tile_cl, tile_cl_len, options.str());
+                tileProgs[device] = new Program(prog);
+                tileKernels[device] = new Kernel(*tileProgs[device], "tile_kernel");
+            });
 
-                auto tileOp = KernelFunctor<Buffer, const Buffer, const KParam, const KParam,
-                                          const int, const int> (*tileKernels[device]);
+            auto tileOp = KernelFunctor<Buffer, const Buffer, const KParam, const KParam,
+                                      const int, const int> (*tileKernels[device]);
 
-                NDRange local(TX, TY, 1);
+            NDRange local(TX, TY, 1);
 
-                int blocksPerMatX = divup(out.info.dims[0], TILEX);
-                int blocksPerMatY = divup(out.info.dims[1], TILEY);
-                NDRange global(local[0] * blocksPerMatX * out.info.dims[2],
-                               local[1] * blocksPerMatY * out.info.dims[3],
-                               1);
+            int blocksPerMatX = divup(out.info.dims[0], TILEX);
+            int blocksPerMatY = divup(out.info.dims[1], TILEY);
+            NDRange global(local[0] * blocksPerMatX * out.info.dims[2],
+                            local[1] * blocksPerMatY * out.info.dims[3],
+                            1);
 
-                tileOp(EnqueueArgs(getQueue(), global, local),
-                       *out.data, *in.data, out.info, in.info,
-                       blocksPerMatX, blocksPerMatY);
+            tileOp(EnqueueArgs(getQueue(), global, local),
+                    *out.data, *in.data, out.info, in.info,
+                    blocksPerMatX, blocksPerMatY);
 
-                CL_DEBUG_FINISH(getQueue());
-            } catch (cl::Error err) {
-                CL_TO_AF_ERROR(err);
-                throw;
-            }
+            CL_DEBUG_FINISH(getQueue());
         }
     }
 }

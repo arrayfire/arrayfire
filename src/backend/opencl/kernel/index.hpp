@@ -44,48 +44,43 @@ typedef struct {
 template<typename T>
 void index(Param out, const Param in, const IndexKernelParam_t& p, Buffer *bPtr[4])
 {
-    try {
-        static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*>  idxProgs;
-        static std::map<int, Kernel*> idxKernels;
+    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+    static std::map<int, Program*>  idxProgs;
+    static std::map<int, Kernel*> idxKernels;
 
-        int device = getActiveDeviceId();
+    int device = getActiveDeviceId();
 
-        std::call_once( compileFlags[device], [device] () {
-                std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName();
+    std::call_once( compileFlags[device], [device] () {
+            std::ostringstream options;
+            options << " -D T=" << dtype_traits<T>::getName();
 
-                if (std::is_same<T, double>::value ||
-                    std::is_same<T, cdouble>::value) {
-                options << " -D USE_DOUBLE";
-                }
+            if (std::is_same<T, double>::value ||
+                std::is_same<T, cdouble>::value) {
+            options << " -D USE_DOUBLE";
+            }
 
-                Program prog;
-                buildProgram(prog, index_cl, index_cl_len, options.str());
-                idxProgs[device]   = new Program(prog);
-                idxKernels[device] = new Kernel(*idxProgs[device], "indexKernel");
-                });
+            Program prog;
+            buildProgram(prog, index_cl, index_cl_len, options.str());
+            idxProgs[device]   = new Program(prog);
+            idxKernels[device] = new Kernel(*idxProgs[device], "indexKernel");
+            });
 
-        NDRange local(THREADS_X, THREADS_Y);
+    NDRange local(THREADS_X, THREADS_Y);
 
-        int blk_x = divup(out.info.dims[0], THREADS_X);
-        int blk_y = divup(out.info.dims[1], THREADS_Y);
+    int blk_x = divup(out.info.dims[0], THREADS_X);
+    int blk_y = divup(out.info.dims[1], THREADS_Y);
 
-        NDRange global(blk_x * out.info.dims[2] * THREADS_X,
-                blk_y * out.info.dims[3] * THREADS_Y);
+    NDRange global(blk_x * out.info.dims[2] * THREADS_X,
+            blk_y * out.info.dims[3] * THREADS_Y);
 
-        auto indexOp = KernelFunctor<Buffer, KParam, Buffer, KParam, IndexKernelParam_t,
-             Buffer, Buffer, Buffer, Buffer, int, int>(*idxKernels[device]);
+    auto indexOp = KernelFunctor<Buffer, KParam, Buffer, KParam, IndexKernelParam_t,
+          Buffer, Buffer, Buffer, Buffer, int, int>(*idxKernels[device]);
 
-        indexOp(EnqueueArgs(getQueue(), global, local),
-                *out.data, out.info, *in.data, in.info, p,
-                *bPtr[0], *bPtr[1], *bPtr[2], *bPtr[3], blk_x, blk_y);
+    indexOp(EnqueueArgs(getQueue(), global, local),
+            *out.data, out.info, *in.data, in.info, p,
+            *bPtr[0], *bPtr[1], *bPtr[2], *bPtr[3], blk_x, blk_y);
 
-        CL_DEBUG_FINISH(getQueue());
-    } catch (cl::Error err) {
-        CL_TO_AF_ERROR(err);
-        throw;
-    }
+    CL_DEBUG_FINISH(getQueue());
 }
 
 }

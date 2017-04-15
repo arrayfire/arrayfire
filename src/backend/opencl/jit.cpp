@@ -184,89 +184,82 @@ static Kernel getKernel(std::vector<Node *> nodes, bool is_linear)
 
 void evalNodes(std::vector<Param> &outputs, std::vector<Node *> nodes)
 {
-    try {
+    if (outputs.size() == 0) return;
 
-        if (outputs.size() == 0) return;
+    // Assume all ouputs are of same size
+    //FIXME: Add assert to check if all outputs are same size?
+    KParam out_info = outputs[0].info;
 
-        // Assume all ouputs are of same size
-        //FIXME: Add assert to check if all outputs are same size?
-        KParam out_info = outputs[0].info;
-
-        // Verify if all ASTs hold Linear Arrays
-        bool is_linear = true;
-        for (auto node : nodes) {
-            is_linear &= node->isLinear(out_info.dims);
-        }
-
-        Kernel ker = getKernel(nodes, is_linear);
-
-        uint local_0 = 1;
-        uint local_1 = 1;
-        uint global_0 = 1;
-        uint global_1 = 1;
-        uint groups_0 = 1;
-        uint groups_1 = 1;
-        uint num_odims = 4;
-
-        // CPUs seem to perform better with work group size 1024
-        const int work_group_size = (getActiveDeviceType() == AFCL_DEVICE_TYPE_CPU) ? 1024 : 256;
-
-        while (num_odims >= 1) {
-            if (out_info.dims[num_odims - 1] == 1) num_odims--;
-            else break;
-        }
-
-        if (is_linear) {
-            local_0 = work_group_size;
-            uint out_elements = out_info.dims[3] * out_info.strides[3];
-            uint groups = divup(out_elements, local_0);
-
-            global_1 = divup(groups,     1000) * local_1;
-            global_0 = divup(groups, global_1) * local_0;
-
-        } else {
-            local_1 =  4;
-            local_0 = work_group_size / local_1;
-
-            groups_0 = divup(out_info.dims[0], local_0);
-            groups_1 = divup(out_info.dims[1], local_1);
-
-            global_0 = groups_0 * local_0 * out_info.dims[2];
-            global_1 = groups_1 * local_1 * out_info.dims[3];
-        }
-
-        NDRange local(local_0, local_1);
-        NDRange global(global_0, global_1);
-
-        int args = 0;
-        for (auto node : nodes) {
-            args = node->setArgs(ker, args, is_linear);
-        }
-
-        // Set output parameters
-        for (auto output : outputs) {
-            ker.setArg(args, *(output.data));
-            ++args;
-        }
-
-        // Set dimensions
-        // All outputs are asserted to be of same size
-        // Just use the size from the first output
-        ker.setArg(args + 0,  out_info);
-        ker.setArg(args + 1,  groups_0);
-        ker.setArg(args + 2,  groups_1);
-        ker.setArg(args + 3,  num_odims);
-
-        getQueue().enqueueNDRangeKernel(ker, cl::NullRange, global, local);
-
-        for (auto node : nodes) {
-            node->resetFlags();
-        }
-
-    } catch (const cl::Error &ex) {
-        CL_TO_AF_ERROR(ex);
+    // Verify if all ASTs hold Linear Arrays
+    bool is_linear = true;
+    for (auto node : nodes) {
+        is_linear &= node->isLinear(out_info.dims);
     }
 
+    Kernel ker = getKernel(nodes, is_linear);
+
+    uint local_0 = 1;
+    uint local_1 = 1;
+    uint global_0 = 1;
+    uint global_1 = 1;
+    uint groups_0 = 1;
+    uint groups_1 = 1;
+    uint num_odims = 4;
+
+    // CPUs seem to perform better with work group size 1024
+    const int work_group_size = (getActiveDeviceType() == AFCL_DEVICE_TYPE_CPU) ? 1024 : 256;
+
+    while (num_odims >= 1) {
+        if (out_info.dims[num_odims - 1] == 1) num_odims--;
+        else break;
+    }
+
+    if (is_linear) {
+        local_0 = work_group_size;
+        uint out_elements = out_info.dims[3] * out_info.strides[3];
+        uint groups = divup(out_elements, local_0);
+
+        global_1 = divup(groups,     1000) * local_1;
+        global_0 = divup(groups, global_1) * local_0;
+
+    } else {
+        local_1 =  4;
+        local_0 = work_group_size / local_1;
+
+        groups_0 = divup(out_info.dims[0], local_0);
+        groups_1 = divup(out_info.dims[1], local_1);
+
+        global_0 = groups_0 * local_0 * out_info.dims[2];
+        global_1 = groups_1 * local_1 * out_info.dims[3];
+    }
+
+    NDRange local(local_0, local_1);
+    NDRange global(global_0, global_1);
+
+    int args = 0;
+    for (auto node : nodes) {
+        args = node->setArgs(ker, args, is_linear);
+    }
+
+    // Set output parameters
+    for (auto output : outputs) {
+        ker.setArg(args, *(output.data));
+        ++args;
+    }
+
+    // Set dimensions
+    // All outputs are asserted to be of same size
+    // Just use the size from the first output
+    ker.setArg(args + 0,  out_info);
+    ker.setArg(args + 1,  groups_0);
+    ker.setArg(args + 2,  groups_1);
+    ker.setArg(args + 3,  num_odims);
+
+    getQueue().enqueueNDRangeKernel(ker, cl::NullRange, global, local);
+
+    for (auto node : nodes) {
+        node->resetFlags();
+    }
 }
 
 void evalNodes(Param &out, Node *node)

@@ -19,7 +19,6 @@
 #include <JIT/Node.hpp>
 #include <memory.hpp>
 #include <memory>
-#include <err_common.hpp>
 #include <err_opencl.hpp>
 
 namespace opencl
@@ -242,27 +241,19 @@ namespace opencl
         std::shared_ptr<T> getMappedPtr() const
         {
             auto func = [=] (void* ptr) {
-                try {
-                    if(ptr != nullptr) {
-                        getQueue().enqueueUnmapMemObject(*data, ptr);
-                        ptr = nullptr;
-                    }
-                } catch(cl::Error err) {
-                    CL_TO_AF_ERROR(err);
+                if(ptr != nullptr) {
+                    getQueue().enqueueUnmapMemObject(*data, ptr);
+                    ptr = nullptr;
                 }
             };
 
             T *ptr = nullptr;
-            try {
-                if(ptr == nullptr) {
-                    ptr = (T*)getQueue().enqueueMapBuffer(*const_cast<cl::Buffer*>(get()),
-                                                          true, CL_MAP_READ|CL_MAP_WRITE,
-                                                          getOffset() * sizeof(T),
-                                                          (getDataDims().elements() - getOffset())
-                                                          * sizeof(T));
-                }
-            } catch(cl::Error err) {
-                CL_TO_AF_ERROR(err);
+            if(ptr == nullptr) {
+                ptr = (T*)getQueue().enqueueMapBuffer(*const_cast<cl::Buffer*>(get()),
+                                                      true, CL_MAP_READ|CL_MAP_WRITE,
+                                                      getOffset() * sizeof(T),
+                                                      (getDataDims().elements() - getOffset())
+                                                      * sizeof(T));
             }
 
             return std::shared_ptr<T>(ptr, func);

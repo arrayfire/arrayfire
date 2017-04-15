@@ -95,20 +95,12 @@ MemoryManager::MemoryManager() :
 
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
-    try {
-        return (void *)(new cl::Buffer(getContext(), CL_MEM_READ_WRITE, bytes));
-    } catch(cl::Error err) {
-        CL_TO_AF_ERROR(err);
-    }
+    return (void *)(new cl::Buffer(getContext(), CL_MEM_READ_WRITE, bytes));
 }
 
 void MemoryManager::nativeFree(void *ptr)
 {
-    try {
-        delete (cl::Buffer *)ptr;
-    } catch(cl::Error err) {
-        CL_TO_AF_ERROR(err);
-    }
+    delete (cl::Buffer *)ptr;
 }
 
 static MemoryManager &getMemoryManager()
@@ -137,29 +129,20 @@ MemoryManagerPinned::MemoryManagerPinned() :
 void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
 {
     void *ptr = NULL;
-    try {
-        cl::Buffer buf= cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, bytes);
-        ptr = getQueue().enqueueMapBuffer(buf, true, CL_MAP_READ | CL_MAP_WRITE, 0, bytes);
-        pinned_maps[opencl::getActiveDeviceId()][ptr] = buf;
-    } catch(cl::Error err) {
-        CL_TO_AF_ERROR(err);
-    }
+    cl::Buffer buf= cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, bytes);
+    ptr = getQueue().enqueueMapBuffer(buf, true, CL_MAP_READ | CL_MAP_WRITE, 0, bytes);
+    pinned_maps[opencl::getActiveDeviceId()][ptr] = buf;
     return ptr;
 }
 
 void MemoryManagerPinned::nativeFree(void *ptr)
 {
-    try {
-        int n = opencl::getActiveDeviceId();
-        auto iter = pinned_maps[n].find(ptr);
+    int n = opencl::getActiveDeviceId();
+    auto iter = pinned_maps[n].find(ptr);
 
-        if (iter != pinned_maps[n].end()) {
-            getQueue().enqueueUnmapMemObject(pinned_maps[n][ptr], ptr);
-            pinned_maps[n].erase(iter);
-        }
-
-    } catch(cl::Error err) {
-        CL_TO_AF_ERROR(err);
+    if (iter != pinned_maps[n].end()) {
+        getQueue().enqueueUnmapMemObject(pinned_maps[n][ptr], ptr);
+        pinned_maps[n].erase(iter);
     }
 }
 

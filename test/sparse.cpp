@@ -312,3 +312,19 @@ CAST_TESTS(cfloat , cdouble )
 
 CAST_TESTS(cdouble, cfloat  )
 CAST_TESTS(cdouble, cdouble )
+
+
+TEST(Sparse, ISSUE_1745)
+{
+  af::array A = af::randu(4, 4);
+  A(1, af::span) = 0;
+  A(2, af::span) = 0;
+
+  af::array idx = where(A);
+  af::array data = A(idx);
+  af::array row_idx = (idx / A.dims()[0]).as(s64);
+  af::array col_idx = (idx % A.dims()[0]).as(s64);
+
+  af_array A_sparse;
+  ASSERT_EQ(AF_ERR_ARG, af_create_sparse_array(&A_sparse, A.dims(0), A.dims(1), data.get(), row_idx.get(), col_idx.get(), AF_STORAGE_CSR));
+}

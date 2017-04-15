@@ -709,7 +709,7 @@ namespace af
         /**
             \brief This operator returns a reference of the original array at a given coordinate.
 
-            You can pass \ref af::seq, \ref af::array, or an int as it's parameters.
+            You can pass \ref af::seq, \ref af::array, or an int as its parameters.
             These references can be used for assignment or returning references
             to \ref af::array objects.
 
@@ -1499,7 +1499,7 @@ extern "C" {
     AFAPI af_err af_get_type(af_dtype *type, const af_array arr);
 
     /**
-        \brief Gets the dimseions of an array.
+        \brief Gets the dimensions of an array.
 
         \param[out] d0 is the output that contains the size of first dimension of \p arr
         \param[out] d1 is the output that contains the size of second dimension of \p arr

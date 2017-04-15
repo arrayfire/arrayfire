@@ -81,77 +81,72 @@ void packDataHelper(Param packed,
                     const int baseDim,
                     AF_BATCH_KIND kind)
 {
-    try {
-        static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*>  fftconvolveProgs;
-        static std::map<int, Kernel*>   pdKernel;
-        static std::map<int, Kernel*>   paKernel;
+    static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
+    static std::map<int, Program*>  fftconvolveProgs;
+    static std::map<int, Kernel*>   pdKernel;
+    static std::map<int, Kernel*>   paKernel;
 
-        int device = getActiveDeviceId();
+    int device = getActiveDeviceId();
 
-        std::call_once( compileFlags[device], [device] () {
+    std::call_once( compileFlags[device], [device] () {
 
-                std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName();
+            std::ostringstream options;
+            options << " -D T=" << dtype_traits<T>::getName();
 
-                if ((af_dtype) dtype_traits<convT>::af_type == c32) {
-                    options << " -D CONVT=float";
-                }
-                else if ((af_dtype) dtype_traits<convT>::af_type == c64 && isDouble) {
-                    options << " -D CONVT=double"
-                            << " -D USE_DOUBLE";
-                }
+            if ((af_dtype) dtype_traits<convT>::af_type == c32) {
+                options << " -D CONVT=float";
+            }
+            else if ((af_dtype) dtype_traits<convT>::af_type == c64 && isDouble) {
+                options << " -D CONVT=double"
+                        << " -D USE_DOUBLE";
+            }
 
-                cl::Program prog;
-                buildProgram(prog, fftconvolve_pack_cl, fftconvolve_pack_cl_len, options.str());
-                fftconvolveProgs[device] = new Program(prog);
+            cl::Program prog;
+            buildProgram(prog, fftconvolve_pack_cl, fftconvolve_pack_cl_len, options.str());
+            fftconvolveProgs[device] = new Program(prog);
 
-                pdKernel[device] = new Kernel(*fftconvolveProgs[device], "pack_data");
-                paKernel[device] = new Kernel(*fftconvolveProgs[device], "pad_array");
-            });
+            pdKernel[device] = new Kernel(*fftconvolveProgs[device], "pack_data");
+            paKernel[device] = new Kernel(*fftconvolveProgs[device], "pad_array");
+        });
 
-        Param sig_tmp, filter_tmp;
-        calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
+    Param sig_tmp, filter_tmp;
+    calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
 
-        int sig_packed_elem = sig_tmp.info.strides[3] * sig_tmp.info.dims[3];
-        int filter_packed_elem = filter_tmp.info.strides[3] * filter_tmp.info.dims[3];
+    int sig_packed_elem = sig_tmp.info.strides[3] * sig_tmp.info.dims[3];
+    int filter_packed_elem = filter_tmp.info.strides[3] * filter_tmp.info.dims[3];
 
-        // Number of packed complex elements in dimension 0
-        int sig_half_d0 = divup(sig.info.dims[0], 2);
-        int sig_half_d0_odd = sig.info.dims[0] % 2;
+    // Number of packed complex elements in dimension 0
+    int sig_half_d0 = divup(sig.info.dims[0], 2);
+    int sig_half_d0_odd = sig.info.dims[0] % 2;
 
-        int blocks = divup(sig_packed_elem, THREADS);
+    int blocks = divup(sig_packed_elem, THREADS);
 
-        // Locate features kernel sizes
-        NDRange local(THREADS);
-        NDRange global(blocks * THREADS);
+    // Locate features kernel sizes
+    NDRange local(THREADS);
+    NDRange global(blocks * THREADS);
 
-        // Pack signal in a complex matrix where first dimension is half the input
-        // (allows faster FFT computation) and pad array to a power of 2 with 0s
-        auto pdOp = KernelFunctor<Buffer, KParam,
-                                Buffer, KParam,
-                                const int, const int> (*pdKernel[device]);
+    // Pack signal in a complex matrix where first dimension is half the input
+    // (allows faster FFT computation) and pad array to a power of 2 with 0s
+    auto pdOp = KernelFunctor<Buffer, KParam,
+                            Buffer, KParam,
+                            const int, const int> (*pdKernel[device]);
 
-        pdOp(EnqueueArgs(getQueue(), global, local),
-             *sig_tmp.data, sig_tmp.info, *sig.data, sig.info,
-             sig_half_d0, sig_half_d0_odd);
-        CL_DEBUG_FINISH(getQueue());
+    pdOp(EnqueueArgs(getQueue(), global, local),
+          *sig_tmp.data, sig_tmp.info, *sig.data, sig.info,
+          sig_half_d0, sig_half_d0_odd);
+    CL_DEBUG_FINISH(getQueue());
 
-        blocks = divup(filter_packed_elem, THREADS);
-        global = NDRange(blocks * THREADS);
+    blocks = divup(filter_packed_elem, THREADS);
+    global = NDRange(blocks * THREADS);
 
-        // Pad filter array with 0s
-        auto paOp = KernelFunctor<Buffer, KParam,
-                                Buffer, KParam> (*paKernel[device]);
+    // Pad filter array with 0s
+    auto paOp = KernelFunctor<Buffer, KParam,
+                            Buffer, KParam> (*paKernel[device]);
 
-        paOp(EnqueueArgs(getQueue(), global, local),
-             *filter_tmp.data, filter_tmp.info,
-             *filter.data, filter.info);
-        CL_DEBUG_FINISH(getQueue());
-    } catch (cl::Error err) {
-        CL_TO_AF_ERROR(err);
-        throw;
-    }
+    paOp(EnqueueArgs(getQueue(), global, local),
+          *filter_tmp.data, filter_tmp.info,
+          *filter.data, filter.info);
+    CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename convT, typename T, bool isDouble, typename printT>
@@ -161,69 +156,64 @@ void complexMultiplyHelper(Param packed,
                            const int baseDim,
                            AF_BATCH_KIND kind)
 {
-    try {
-        static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*> fftconvolveProgs;
-        static std::map<int, Kernel*>  cmKernel;
+    static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
+    static std::map<int, Program*> fftconvolveProgs;
+    static std::map<int, Kernel*>  cmKernel;
 
-        int device = getActiveDeviceId();
+    int device = getActiveDeviceId();
 
-        std::call_once( compileFlags[device], [device] () {
+    std::call_once( compileFlags[device], [device] () {
 
-                std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D AF_BATCH_NONE=" << (int)AF_BATCH_NONE
-                        << " -D AF_BATCH_LHS="  << (int)AF_BATCH_LHS
-                        << " -D AF_BATCH_RHS="  << (int)AF_BATCH_RHS
-                        << " -D AF_BATCH_SAME=" << (int)AF_BATCH_SAME;
+            std::ostringstream options;
+            options << " -D T=" << dtype_traits<T>::getName()
+                    << " -D AF_BATCH_NONE=" << (int)AF_BATCH_NONE
+                    << " -D AF_BATCH_LHS="  << (int)AF_BATCH_LHS
+                    << " -D AF_BATCH_RHS="  << (int)AF_BATCH_RHS
+                    << " -D AF_BATCH_SAME=" << (int)AF_BATCH_SAME;
 
-                if ((af_dtype) dtype_traits<convT>::af_type == c32) {
-                    options << " -D CONVT=float";
-                }
-                else if ((af_dtype) dtype_traits<convT>::af_type == c64 && isDouble) {
-                    options << " -D CONVT=double"
-                            << " -D USE_DOUBLE";
-                }
+            if ((af_dtype) dtype_traits<convT>::af_type == c32) {
+                options << " -D CONVT=float";
+            }
+            else if ((af_dtype) dtype_traits<convT>::af_type == c64 && isDouble) {
+                options << " -D CONVT=double"
+                        << " -D USE_DOUBLE";
+            }
 
-                cl::Program prog;
-                buildProgram(prog,
-                             fftconvolve_multiply_cl,
-                             fftconvolve_multiply_cl_len,
-                             options.str());
-                fftconvolveProgs[device] = new Program(prog);
+            cl::Program prog;
+            buildProgram(prog,
+                          fftconvolve_multiply_cl,
+                          fftconvolve_multiply_cl_len,
+                          options.str());
+            fftconvolveProgs[device] = new Program(prog);
 
-                cmKernel[device] = new Kernel(*fftconvolveProgs[device], "complex_multiply");
-            });
+            cmKernel[device] = new Kernel(*fftconvolveProgs[device], "complex_multiply");
+        });
 
-        Param sig_tmp, filter_tmp;
-        calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
+    Param sig_tmp, filter_tmp;
+    calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
 
-        int sig_packed_elem = sig_tmp.info.strides[3] * sig_tmp.info.dims[3];
-        int filter_packed_elem = filter_tmp.info.strides[3] * filter_tmp.info.dims[3];
-        int mul_elem = (sig_packed_elem < filter_packed_elem) ?
-                            filter_packed_elem : sig_packed_elem;
+    int sig_packed_elem = sig_tmp.info.strides[3] * sig_tmp.info.dims[3];
+    int filter_packed_elem = filter_tmp.info.strides[3] * filter_tmp.info.dims[3];
+    int mul_elem = (sig_packed_elem < filter_packed_elem) ?
+                        filter_packed_elem : sig_packed_elem;
 
-        int blocks = divup(mul_elem, THREADS);
+    int blocks = divup(mul_elem, THREADS);
 
-        NDRange local(THREADS);
-        NDRange global(blocks * THREADS);
+    NDRange local(THREADS);
+    NDRange global(blocks * THREADS);
 
-        // Multiply filter and signal FFT arrays
-        auto cmOp = KernelFunctor<Buffer, KParam,
-                                Buffer, KParam,
-                                Buffer, KParam,
-                                const int, const int> (*cmKernel[device]);
+    // Multiply filter and signal FFT arrays
+    auto cmOp = KernelFunctor<Buffer, KParam,
+                            Buffer, KParam,
+                            Buffer, KParam,
+                            const int, const int> (*cmKernel[device]);
 
-        cmOp(EnqueueArgs(getQueue(), global, local),
-             *packed.data, packed.info,
-             *sig_tmp.data, sig_tmp.info,
-             *filter_tmp.data, filter_tmp.info,
-             mul_elem, (int)kind);
-        CL_DEBUG_FINISH(getQueue());
-    } catch (cl::Error err) {
-        CL_TO_AF_ERROR(err);
-        throw;
-    }
+    cmOp(EnqueueArgs(getQueue(), global, local),
+          *packed.data, packed.info,
+          *sig_tmp.data, sig_tmp.info,
+          *filter_tmp.data, filter_tmp.info,
+          mul_elem, (int)kind);
+    CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename T, typename convT, bool isDouble, bool roundOut, bool expand, typename printT>
@@ -234,77 +224,72 @@ void reorderOutputHelper(Param out,
                          const int baseDim,
                          AF_BATCH_KIND kind)
 {
-    try {
-        static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*> fftconvolveProgs;
-        static std::map<int, Kernel*>  roKernel;
+    static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
+    static std::map<int, Program*> fftconvolveProgs;
+    static std::map<int, Kernel*>  roKernel;
 
-        int fftScale = 1;
+    int fftScale = 1;
 
-        // Calculate the scale by which to divide clFFT results
-        for (int k = 0; k < baseDim; k++)
-            fftScale *= packed.info.dims[k];
+    // Calculate the scale by which to divide clFFT results
+    for (int k = 0; k < baseDim; k++)
+        fftScale *= packed.info.dims[k];
 
-        int device = getActiveDeviceId();
+    int device = getActiveDeviceId();
 
-        std::call_once( compileFlags[device], [device] () {
+    std::call_once( compileFlags[device], [device] () {
 
-                std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D ROUND_OUT=" << (int)roundOut
-                        << " -D EXPAND=" << (int)expand;
+            std::ostringstream options;
+            options << " -D T=" << dtype_traits<T>::getName()
+                    << " -D ROUND_OUT=" << (int)roundOut
+                    << " -D EXPAND=" << (int)expand;
 
-                if ((af_dtype) dtype_traits<convT>::af_type == c32) {
-                    options << " -D CONVT=float";
-                }
-                else if ((af_dtype) dtype_traits<convT>::af_type == c64 && isDouble) {
-                    options << " -D CONVT=double"
-                            << " -D USE_DOUBLE";
-                }
+            if ((af_dtype) dtype_traits<convT>::af_type == c32) {
+                options << " -D CONVT=float";
+            }
+            else if ((af_dtype) dtype_traits<convT>::af_type == c64 && isDouble) {
+                options << " -D CONVT=double"
+                        << " -D USE_DOUBLE";
+            }
 
-                cl::Program prog;
-                buildProgram(prog,
-                             fftconvolve_reorder_cl,
-                             fftconvolve_reorder_cl_len,
-                             options.str());
-                fftconvolveProgs[device] = new Program(prog);
+            cl::Program prog;
+            buildProgram(prog,
+                          fftconvolve_reorder_cl,
+                          fftconvolve_reorder_cl_len,
+                          options.str());
+            fftconvolveProgs[device] = new Program(prog);
 
-                roKernel[device] = new Kernel(*fftconvolveProgs[device], "reorder_output");
-            });
+            roKernel[device] = new Kernel(*fftconvolveProgs[device], "reorder_output");
+        });
 
-        Param sig_tmp, filter_tmp;
-        calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
+    Param sig_tmp, filter_tmp;
+    calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
 
-        // Number of packed complex elements in dimension 0
-        int sig_half_d0 = divup(sig.info.dims[0], 2);
+    // Number of packed complex elements in dimension 0
+    int sig_half_d0 = divup(sig.info.dims[0], 2);
 
-        int blocks = divup(out.info.strides[3] * out.info.dims[3], THREADS);
+    int blocks = divup(out.info.strides[3] * out.info.dims[3], THREADS);
 
-        NDRange local(THREADS);
-        NDRange global(blocks * THREADS);
+    NDRange local(THREADS);
+    NDRange global(blocks * THREADS);
 
-        auto roOp = KernelFunctor<Buffer, KParam,
-                                Buffer, KParam,
-                                KParam, const int,
-                                const int, const int> (*roKernel[device]);
+    auto roOp = KernelFunctor<Buffer, KParam,
+                            Buffer, KParam,
+                            KParam, const int,
+                            const int, const int> (*roKernel[device]);
 
-        if (kind == AF_BATCH_RHS) {
-            roOp(EnqueueArgs(getQueue(), global, local),
-                 *out.data, out.info,
-                 *filter_tmp.data, filter_tmp.info,
-                 filter.info, sig_half_d0, baseDim, fftScale);
-        }
-        else {
-            roOp(EnqueueArgs(getQueue(), global, local),
-                 *out.data, out.info,
-                 *sig_tmp.data, sig_tmp.info,
-                 filter.info, sig_half_d0, baseDim, fftScale);
-        }
-        CL_DEBUG_FINISH(getQueue());
-    } catch (cl::Error err) {
-        CL_TO_AF_ERROR(err);
-        throw;
+    if (kind == AF_BATCH_RHS) {
+        roOp(EnqueueArgs(getQueue(), global, local),
+              *out.data, out.info,
+              *filter_tmp.data, filter_tmp.info,
+              filter.info, sig_half_d0, baseDim, fftScale);
     }
+    else {
+        roOp(EnqueueArgs(getQueue(), global, local),
+              *out.data, out.info,
+              *sig_tmp.data, sig_tmp.info,
+              filter.info, sig_half_d0, baseDim, fftScale);
+    }
+    CL_DEBUG_FINISH(getQueue());
 }
 
 } // namespace kernel

@@ -99,19 +99,15 @@ namespace opencl
         template<typename T>
         void select(Param out, Param cond, Param a, Param b, int ndims)
         {
-            try {
-                bool is_same = true;
-                for (int i = 0; i < 4; i++) {
-                    is_same &= (a.info.dims[i] == b.info.dims[i]);
-                }
+            bool is_same = true;
+            for (int i = 0; i < 4; i++) {
+                is_same &= (a.info.dims[i] == b.info.dims[i]);
+            }
 
-                if (is_same) {
-                    select_launcher<T, true >(out, cond, a, b, ndims);
-                } else {
-                    select_launcher<T, false>(out, cond, a, b, ndims);
-                }
-            } catch (cl::Error err) {
-                CL_TO_AF_ERROR(err);
+            if (is_same) {
+                select_launcher<T, true >(out, cond, a, b, ndims);
+            } else {
+                select_launcher<T, false>(out, cond, a, b, ndims);
             }
         }
 

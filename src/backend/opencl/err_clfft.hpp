@@ -9,7 +9,7 @@
 
 #pragma once
 #include <stdio.h>
-#include <err_common.hpp>
+#include <err_opencl.hpp>
 #include <clFFT.h>
 
 static const char * _clfftGetResultString(clfftStatus st)

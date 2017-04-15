@@ -10,10 +10,10 @@
 #include <cusparseManager.hpp>
 #include <platform.hpp>
 
+#include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <string>
-#include <iostream>
-#include <boost/scoped_ptr.hpp>
 
 namespace cusparse {
 
@@ -61,8 +61,7 @@ namespace cusparse {
 
     cusparseHandle_t getHandle()
     {
-        using boost::scoped_ptr;
-        static scoped_ptr<cusparseHandle> handle[cuda::DeviceManager::MAX_DEVICES];
+        static std::unique_ptr<cusparseHandle> handle[cuda::DeviceManager::MAX_DEVICES];
 
         int id = cuda::getActiveDeviceId();
 

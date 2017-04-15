@@ -14,6 +14,8 @@
 #include <sort.hpp>
 #include <debug_cuda.hpp>
 
+#include <algorithm>
+
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
 #include <thrust/unique.h>

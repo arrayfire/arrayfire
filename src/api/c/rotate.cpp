@@ -21,7 +21,7 @@ template<typename T>
 static inline af_array rotate(const af_array in, const float theta, const af::dim4 &odims,
                               const af_interp_type method)
 {
-    return getHandle(rotate<T>(getArray<T>(in), theta, odims, method));
+    return getHandle(rotate<T>(castArray<T>(in), theta, odims, method));
 }
 
 
@@ -45,7 +45,7 @@ af_err af_rotate(af_array *out, const af_array in, const float theta,
 
         af_dtype itype = info.getType();
 
-        ARG_ASSERT(3, method == AF_INTERP_NEAREST  ||
+        ARG_ASSERT(4, method == AF_INTERP_NEAREST  ||
                       method == AF_INTERP_BILINEAR ||
                       method == AF_INTERP_BILINEAR_COSINE ||
                       method == AF_INTERP_BICUBIC ||

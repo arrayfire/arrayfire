@@ -14,8 +14,6 @@
 #include <stdexcept>
 #include <string>
 
-#include <boost/shared_ptr.hpp>
-
 #include <arith.hpp>
 #include <cast.hpp>
 #include <complex.hpp>
@@ -363,12 +361,10 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in)
     return dense;
 }
 
-// Some of the API used here is available only in CUDA 7 or newer
-#if CUDA_VERSION >= 7000
 template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
-    using boost::shared_ptr;
+    using std::shared_ptr;
     in.eval();
 
     int nNZ = in.getNNZ();
@@ -477,14 +473,6 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 
     return converted;
 }
-#else // CUDA 6.5 and older (older than 7)
-template<typename T, af_storage dest, af_storage src>
-SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
-{
-    AF_ERROR("Sparse storage format conversions are not supported for CUDA 6.5 or older",
-             AF_ERR_NOT_SUPPORTED);
-}
-#endif // CUDA_VERSION >= 7000
 
 #define INSTANTIATE_TO_STORAGE(T, S)                                                                        \
     template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_STORAGE_CSR>(const SparseArray<T> &in);  \

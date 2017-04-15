@@ -40,58 +40,53 @@ namespace opencl
         template<typename T>
         void gradient(Param grad0, Param grad1, const Param in)
         {
-            try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>  gradProgs;
-                static std::map<int, Kernel*> gradKernels;
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static std::map<int, Program*>  gradProgs;
+            static std::map<int, Kernel*> gradKernels;
 
-                int device = getActiveDeviceId();
+            int device = getActiveDeviceId();
 
-                std::call_once( compileFlags[device], [device] () {
-                    ToNumStr<T> toNumStr;
-                    std::ostringstream options;
-                    options << " -D T=" << dtype_traits<T>::getName()
-                            << " -D TX=" << TX
-                            << " -D TY=" << TY
-                            << " -D ZERO=" << toNumStr(scalar<T>(0));
+            std::call_once( compileFlags[device], [device] () {
+                ToNumStr<T> toNumStr;
+                std::ostringstream options;
+                options << " -D T=" << dtype_traits<T>::getName()
+                        << " -D TX=" << TX
+                        << " -D TY=" << TY
+                        << " -D ZERO=" << toNumStr(scalar<T>(0));
 
-                    if((af_dtype) dtype_traits<T>::af_type == c32 ||
-                       (af_dtype) dtype_traits<T>::af_type == c64) {
-                        options << " -D CPLX=1";
-                    } else {
-                        options << " -D CPLX=0";
-                    }
-                    if (std::is_same<T, double>::value ||
-                        std::is_same<T, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
-                    Program prog;
-                    buildProgram(prog, gradient_cl, gradient_cl_len, options.str());
-                    gradProgs[device]   = new Program(prog);
-                    gradKernels[device] = new Kernel(*gradProgs[device], "gradient_kernel");
-                });
+                if((af_dtype) dtype_traits<T>::af_type == c32 ||
+                    (af_dtype) dtype_traits<T>::af_type == c64) {
+                    options << " -D CPLX=1";
+                } else {
+                    options << " -D CPLX=0";
+                }
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+                Program prog;
+                buildProgram(prog, gradient_cl, gradient_cl_len, options.str());
+                gradProgs[device]   = new Program(prog);
+                gradKernels[device] = new Kernel(*gradProgs[device], "gradient_kernel");
+            });
 
-                auto gradOp = KernelFunctor<Buffer, const KParam, Buffer, const KParam,
-                                    const Buffer, const KParam, const int, const int>
-                                        (*gradKernels[device]);
+            auto gradOp = KernelFunctor<Buffer, const KParam, Buffer, const KParam,
+                                const Buffer, const KParam, const int, const int>
+                                    (*gradKernels[device]);
 
-                NDRange local(TX, TY, 1);
+            NDRange local(TX, TY, 1);
 
-                int blocksPerMatX = divup(in.info.dims[0], TX);
-                int blocksPerMatY = divup(in.info.dims[1], TY);
-                NDRange global(local[0] * blocksPerMatX * in.info.dims[2],
-                               local[1] * blocksPerMatY * in.info.dims[3],
-                               1);
+            int blocksPerMatX = divup(in.info.dims[0], TX);
+            int blocksPerMatY = divup(in.info.dims[1], TY);
+            NDRange global(local[0] * blocksPerMatX * in.info.dims[2],
+                            local[1] * blocksPerMatY * in.info.dims[3],
+                            1);
 
-                gradOp(EnqueueArgs(getQueue(), global, local),
-                        *grad0.data, grad0.info, *grad1.data, grad1.info,
-                        *in.data, in.info, blocksPerMatX, blocksPerMatY);
+            gradOp(EnqueueArgs(getQueue(), global, local),
+                    *grad0.data, grad0.info, *grad1.data, grad1.info,
+                    *in.data, in.info, blocksPerMatX, blocksPerMatY);
 
-                CL_DEBUG_FINISH(getQueue());
-            } catch (cl::Error err) {
-                CL_TO_AF_ERROR(err);
-                throw;
-            }
+            CL_DEBUG_FINISH(getQueue());
         }
     }
 }

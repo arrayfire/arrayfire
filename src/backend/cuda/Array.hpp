@@ -8,31 +8,22 @@
  ********************************************************/
 #pragma once
 
-// Workaround for BOOST_NOINLINE not being defined with nvcc / CUDA < 6.5
-#if CUDA_VERSION < 6050
-#ifndef BOOST_NOINLINE
-#define BOOST_NOINLINE __attribute__ ((noinline))
-#endif
-#endif
-
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
 #include "traits.hpp"
 #include <backend.hpp>
 #include <types.hpp>
 #include <traits.hpp>
+#include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <Param.hpp>
 #include <JIT/Node.hpp>
-#include <boost/shared_ptr.hpp>
 #include <vector>
 #include <memory.hpp>
 
 namespace cuda
 {
-
     using af::dim4;
-    using boost::shared_ptr;
 
     template<typename T> class Array;
 
@@ -105,7 +96,7 @@ namespace cuda
     class Array
     {
         ArrayInfo       info; // This must be the first element of Array<T>
-        shared_ptr<T> data;
+        std::shared_ptr<T> data;
         af::dim4 data_dims;
 
         JIT::Node_ptr node;
@@ -171,7 +162,7 @@ namespace cuda
         void eval() const;
 
         dim_t getOffset() const { return info.getOffset(); }
-        shared_ptr<T> getData() const { return data; }
+        std::shared_ptr<T> getData() const { return data; }
 
         dim4 getDataDims() const
         {

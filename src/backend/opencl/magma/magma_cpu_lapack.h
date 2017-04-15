@@ -10,7 +10,7 @@
 #ifndef MAGMA_CPU_LAPACK
 #define MAGMA_CPU_LAPACK
 
-#include <err_common.hpp>
+#include <err_opencl.hpp>
 #include <defines.hpp>
 #include "magma_types.h"
 

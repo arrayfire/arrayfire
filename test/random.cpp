@@ -188,6 +188,15 @@ TEST(Random, CPP)
     af::dim4 dims(1, 2, 3, 1);
     af::array out1 = af::randu(dims);
     af::array out2 = af::randn(dims);
+    af::setDefaultRandomEngineType(AF_RANDOM_ENGINE_PHILOX);
+    af::array out3 = af::randu(dims);
+    af::array out4 = af::randn(dims);
+    af::setDefaultRandomEngineType(AF_RANDOM_ENGINE_THREEFRY);
+    af::array out5 = af::randu(dims);
+    af::array out6 = af::randn(dims);
+    af::setDefaultRandomEngineType(AF_RANDOM_ENGINE_MERSENNE);
+    af::array out7 = af::randu(dims);
+    af::array out8 = af::randn(dims);
     af::sync();
 }
 

@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <err_common.hpp>
+#include <err_opencl.hpp>
 #include <solve.hpp>
 #include <identity.hpp>
 

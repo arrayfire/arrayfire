@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <err_common.hpp>
+#include <err_opencl.hpp>
 #include <solve.hpp>
 
 #if defined(WITH_OPENCL_LINEAR_ALGEBRA)
@@ -300,25 +300,21 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop o
 template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
-    try {
-        if(OpenCLCPUOffload()) {
-            return cpu::solve(a, b, options);
-        }
+    if(OpenCLCPUOffload()) {
+        return cpu::solve(a, b, options);
+    }
 
-        initBlas();
+    initBlas();
 
-        if (options & AF_MAT_UPPER ||
-            options & AF_MAT_LOWER) {
-            return triangleSolve<T>(a, b, options);
-        }
+    if (options & AF_MAT_UPPER ||
+        options & AF_MAT_LOWER) {
+        return triangleSolve<T>(a, b, options);
+    }
 
-        if(a.dims()[0] == a.dims()[1]) {
-            return generalSolve<T>(a, b);
-        } else {
-            return leastSquares<T>(a, b);
-        }
-    } catch(cl::Error &err) {
-        CL_TO_AF_ERROR(err);
+    if(a.dims()[0] == a.dims()[1]) {
+        return generalSolve<T>(a, b);
+    } else {
+        return leastSquares<T>(a, b);
     }
 }
 

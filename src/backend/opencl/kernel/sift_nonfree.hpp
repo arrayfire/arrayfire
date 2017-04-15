@@ -415,411 +415,406 @@ void sift(unsigned* out_feat,
           const float feature_ratio,
           const bool compute_GLOH)
 {
-    try {
-        static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*> siftProgs;
-        static std::map<int, Kernel*>  suKernel;
-        static std::map<int, Kernel*>  deKernel;
-        static std::map<int, Kernel*>  ieKernel;
-        static std::map<int, Kernel*>  coKernel;
-        static std::map<int, Kernel*>  rdKernel;
-        static std::map<int, Kernel*>  cdKernel;
-        static std::map<int, Kernel*>  cgKernel;
+    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+    static std::map<int, Program*> siftProgs;
+    static std::map<int, Kernel*>  suKernel;
+    static std::map<int, Kernel*>  deKernel;
+    static std::map<int, Kernel*>  ieKernel;
+    static std::map<int, Kernel*>  coKernel;
+    static std::map<int, Kernel*>  rdKernel;
+    static std::map<int, Kernel*>  cdKernel;
+    static std::map<int, Kernel*>  cgKernel;
 
-        int device = getActiveDeviceId();
+    int device = getActiveDeviceId();
 
-        std::call_once( compileFlags[device], [device] () {
+    std::call_once( compileFlags[device], [device] () {
 
-                std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName();
+            std::ostringstream options;
+            options << " -D T=" << dtype_traits<T>::getName();
 
-                if (std::is_same<T, double>::value ||
-                    std::is_same<T, cdouble>::value) {
-                    options << " -D USE_DOUBLE";
-                }
-
-                cl::Program prog;
-                buildProgram(prog, sift_nonfree_cl, sift_nonfree_cl_len, options.str());
-                siftProgs[device] = new Program(prog);
-
-                suKernel[device] = new Kernel(*siftProgs[device], "sub");
-                deKernel[device] = new Kernel(*siftProgs[device], "detectExtrema");
-                ieKernel[device] = new Kernel(*siftProgs[device], "interpolateExtrema");
-                coKernel[device] = new Kernel(*siftProgs[device], "calcOrientation");
-                rdKernel[device] = new Kernel(*siftProgs[device], "removeDuplicates");
-                cdKernel[device] = new Kernel(*siftProgs[device], "computeDescriptor");
-                cgKernel[device] = new Kernel(*siftProgs[device], "computeGLOHDescriptor");
-            });
-
-        const unsigned min_dim = (double_input) ? min(img.info.dims[0]*2, img.info.dims[1]*2)
-                                                : min(img.info.dims[0], img.info.dims[1]);
-        const unsigned n_octaves = floor(log(min_dim) / log(2)) - 2;
-
-        Param init_img = createInitialImage<T, convAccT>(img, init_sigma, double_input);
-
-        std::vector<Param> gauss_pyr = buildGaussPyr<T, convAccT>(init_img, n_octaves, n_layers, init_sigma);
-
-        std::vector<Param> dog_pyr = buildDoGPyr<T>(gauss_pyr, n_octaves, n_layers, suKernel[device]);
-
-        std::vector<cl::Buffer*> d_x_pyr(n_octaves, NULL);
-        std::vector<cl::Buffer*> d_y_pyr(n_octaves, NULL);
-        std::vector<cl::Buffer*> d_response_pyr(n_octaves, NULL);
-        std::vector<cl::Buffer*> d_size_pyr(n_octaves, NULL);
-        std::vector<cl::Buffer*> d_ori_pyr(n_octaves, NULL);
-        std::vector<cl::Buffer*> d_desc_pyr(n_octaves, NULL);
-        std::vector<unsigned> feat_pyr(n_octaves, 0);
-        unsigned total_feat = 0;
-
-        const unsigned d = DescrWidth;
-        const unsigned n = DescrHistBins;
-        const unsigned rb = GLOHRadialBins;
-        const unsigned ab = GLOHAngularBins;
-        const unsigned hb = GLOHHistBins;
-        const unsigned desc_len = (compute_GLOH) ? (1 + (rb-1) * ab) * hb : d*d*n;
-
-        cl::Buffer* d_count = bufferAlloc(sizeof(unsigned));
-
-        for (unsigned o = 0; o < n_octaves; o++) {
-            if (dog_pyr[o].info.dims[0]-2*ImgBorder < 1 ||
-                dog_pyr[o].info.dims[1]-2*ImgBorder < 1)
-                continue;
-
-            const unsigned imel = dog_pyr[o].info.dims[0] * dog_pyr[o].info.dims[1];
-            const unsigned max_feat = ceil(imel * feature_ratio);
-
-            cl::Buffer* d_extrema_x     = bufferAlloc(max_feat * sizeof(float));
-            cl::Buffer* d_extrema_y     = bufferAlloc(max_feat * sizeof(float));
-            cl::Buffer* d_extrema_layer = bufferAlloc(max_feat * sizeof(unsigned));
-
-            unsigned extrema_feat = 0;
-            getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &extrema_feat);
-
-            int dim0 = dog_pyr[o].info.dims[0];
-            int dim1 = dog_pyr[o].info.dims[1];
-
-            const int blk_x = divup(dim0-2*ImgBorder, SIFT_THREADS_X);
-            const int blk_y = divup(dim1-2*ImgBorder, SIFT_THREADS_Y);
-            const NDRange local(SIFT_THREADS_X, SIFT_THREADS_Y);
-            const NDRange global(blk_x * SIFT_THREADS_X, blk_y * SIFT_THREADS_Y);
-
-            float extrema_thr = 0.5f * contrast_thr / n_layers;
-
-            auto deOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer,
-                                    Buffer, KParam, unsigned, float,
-                                    LocalSpaceArg> (*deKernel[device]);
-
-            deOp(EnqueueArgs(getQueue(), global, local),
-                 *d_extrema_x, *d_extrema_y, *d_extrema_layer, *d_count,
-                 *dog_pyr[o].data, dog_pyr[o].info, max_feat, extrema_thr,
-                 cl::Local((SIFT_THREADS_X+2) * (SIFT_THREADS_Y+2) * 3 * sizeof(float)));
-            CL_DEBUG_FINISH(getQueue());
-
-            getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &extrema_feat);
-            extrema_feat = min(extrema_feat, max_feat);
-
-            if (extrema_feat == 0) {
-                bufferFree(d_extrema_x);
-                bufferFree(d_extrema_y);
-                bufferFree(d_extrema_layer);
-
-                continue;
+            if (std::is_same<T, double>::value ||
+                std::is_same<T, cdouble>::value) {
+                options << " -D USE_DOUBLE";
             }
 
-            unsigned interp_feat = 0;
-            getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &interp_feat);
+            cl::Program prog;
+            buildProgram(prog, sift_nonfree_cl, sift_nonfree_cl_len, options.str());
+            siftProgs[device] = new Program(prog);
 
-            cl::Buffer* d_interp_x = bufferAlloc(extrema_feat * sizeof(float));
-            cl::Buffer* d_interp_y = bufferAlloc(extrema_feat * sizeof(float));
-            cl::Buffer* d_interp_layer = bufferAlloc(extrema_feat * sizeof(unsigned));
-            cl::Buffer* d_interp_response = bufferAlloc(extrema_feat * sizeof(float));
-            cl::Buffer* d_interp_size = bufferAlloc(extrema_feat * sizeof(float));
+            suKernel[device] = new Kernel(*siftProgs[device], "sub");
+            deKernel[device] = new Kernel(*siftProgs[device], "detectExtrema");
+            ieKernel[device] = new Kernel(*siftProgs[device], "interpolateExtrema");
+            coKernel[device] = new Kernel(*siftProgs[device], "calcOrientation");
+            rdKernel[device] = new Kernel(*siftProgs[device], "removeDuplicates");
+            cdKernel[device] = new Kernel(*siftProgs[device], "computeDescriptor");
+            cgKernel[device] = new Kernel(*siftProgs[device], "computeGLOHDescriptor");
+        });
 
-            const int blk_x_interp = divup(extrema_feat, SIFT_THREADS);
-            const NDRange local_interp(SIFT_THREADS, 1);
-            const NDRange global_interp(blk_x_interp * SIFT_THREADS, 1);
+    const unsigned min_dim = (double_input) ? min(img.info.dims[0]*2, img.info.dims[1]*2)
+                                            : min(img.info.dims[0], img.info.dims[1]);
+    const unsigned n_octaves = floor(log(min_dim) / log(2)) - 2;
 
-            auto ieOp = KernelFunctor<Buffer, Buffer, Buffer,
-                                    Buffer, Buffer, Buffer,
-                                    Buffer, Buffer, Buffer, unsigned,
-                                    Buffer, KParam, unsigned, unsigned, unsigned,
-                                    float, float, float, float> (*ieKernel[device]);
+    Param init_img = createInitialImage<T, convAccT>(img, init_sigma, double_input);
 
-            ieOp(EnqueueArgs(getQueue(), global_interp, local_interp),
-                 *d_interp_x, *d_interp_y, *d_interp_layer,
-                 *d_interp_response, *d_interp_size, *d_count,
-                 *d_extrema_x, *d_extrema_y, *d_extrema_layer, extrema_feat,
-                 *dog_pyr[o].data, dog_pyr[o].info, extrema_feat, o, n_layers,
-                 contrast_thr, edge_thr, init_sigma, img_scale);
-            CL_DEBUG_FINISH(getQueue());
+    std::vector<Param> gauss_pyr = buildGaussPyr<T, convAccT>(init_img, n_octaves, n_layers, init_sigma);
 
+    std::vector<Param> dog_pyr = buildDoGPyr<T>(gauss_pyr, n_octaves, n_layers, suKernel[device]);
+
+    std::vector<cl::Buffer*> d_x_pyr(n_octaves, NULL);
+    std::vector<cl::Buffer*> d_y_pyr(n_octaves, NULL);
+    std::vector<cl::Buffer*> d_response_pyr(n_octaves, NULL);
+    std::vector<cl::Buffer*> d_size_pyr(n_octaves, NULL);
+    std::vector<cl::Buffer*> d_ori_pyr(n_octaves, NULL);
+    std::vector<cl::Buffer*> d_desc_pyr(n_octaves, NULL);
+    std::vector<unsigned> feat_pyr(n_octaves, 0);
+    unsigned total_feat = 0;
+
+    const unsigned d = DescrWidth;
+    const unsigned n = DescrHistBins;
+    const unsigned rb = GLOHRadialBins;
+    const unsigned ab = GLOHAngularBins;
+    const unsigned hb = GLOHHistBins;
+    const unsigned desc_len = (compute_GLOH) ? (1 + (rb-1) * ab) * hb : d*d*n;
+
+    cl::Buffer* d_count = bufferAlloc(sizeof(unsigned));
+
+    for (unsigned o = 0; o < n_octaves; o++) {
+        if (dog_pyr[o].info.dims[0]-2*ImgBorder < 1 ||
+            dog_pyr[o].info.dims[1]-2*ImgBorder < 1)
+            continue;
+
+        const unsigned imel = dog_pyr[o].info.dims[0] * dog_pyr[o].info.dims[1];
+        const unsigned max_feat = ceil(imel * feature_ratio);
+
+        cl::Buffer* d_extrema_x     = bufferAlloc(max_feat * sizeof(float));
+        cl::Buffer* d_extrema_y     = bufferAlloc(max_feat * sizeof(float));
+        cl::Buffer* d_extrema_layer = bufferAlloc(max_feat * sizeof(unsigned));
+
+        unsigned extrema_feat = 0;
+        getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &extrema_feat);
+
+        int dim0 = dog_pyr[o].info.dims[0];
+        int dim1 = dog_pyr[o].info.dims[1];
+
+        const int blk_x = divup(dim0-2*ImgBorder, SIFT_THREADS_X);
+        const int blk_y = divup(dim1-2*ImgBorder, SIFT_THREADS_Y);
+        const NDRange local(SIFT_THREADS_X, SIFT_THREADS_Y);
+        const NDRange global(blk_x * SIFT_THREADS_X, blk_y * SIFT_THREADS_Y);
+
+        float extrema_thr = 0.5f * contrast_thr / n_layers;
+
+        auto deOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer,
+                                Buffer, KParam, unsigned, float,
+                                LocalSpaceArg> (*deKernel[device]);
+
+        deOp(EnqueueArgs(getQueue(), global, local),
+              *d_extrema_x, *d_extrema_y, *d_extrema_layer, *d_count,
+              *dog_pyr[o].data, dog_pyr[o].info, max_feat, extrema_thr,
+              cl::Local((SIFT_THREADS_X+2) * (SIFT_THREADS_Y+2) * 3 * sizeof(float)));
+        CL_DEBUG_FINISH(getQueue());
+
+        getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &extrema_feat);
+        extrema_feat = min(extrema_feat, max_feat);
+
+        if (extrema_feat == 0) {
             bufferFree(d_extrema_x);
             bufferFree(d_extrema_y);
             bufferFree(d_extrema_layer);
 
-            getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &interp_feat);
-            interp_feat = min(interp_feat, extrema_feat);
+            continue;
+        }
 
-            if (interp_feat == 0) {
-                bufferFree(d_interp_x);
-                bufferFree(d_interp_y);
-                bufferFree(d_interp_layer);
-                bufferFree(d_interp_response);
-                bufferFree(d_interp_size);
+        unsigned interp_feat = 0;
+        getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &interp_feat);
 
-                continue;
-            }
+        cl::Buffer* d_interp_x = bufferAlloc(extrema_feat * sizeof(float));
+        cl::Buffer* d_interp_y = bufferAlloc(extrema_feat * sizeof(float));
+        cl::Buffer* d_interp_layer = bufferAlloc(extrema_feat * sizeof(unsigned));
+        cl::Buffer* d_interp_response = bufferAlloc(extrema_feat * sizeof(float));
+        cl::Buffer* d_interp_size = bufferAlloc(extrema_feat * sizeof(float));
 
-            compute::command_queue queue(getQueue()());
-            compute::context context(getContext()());
+        const int blk_x_interp = divup(extrema_feat, SIFT_THREADS);
+        const NDRange local_interp(SIFT_THREADS, 1);
+        const NDRange global_interp(blk_x_interp * SIFT_THREADS, 1);
 
-            compute::buffer buf_interp_x((*d_interp_x)(), true);
-            compute::buffer buf_interp_y((*d_interp_y)(), true);
-            compute::buffer buf_interp_layer((*d_interp_layer)(), true);
-            compute::buffer buf_interp_response((*d_interp_response)(), true);
-            compute::buffer buf_interp_size((*d_interp_size)(), true);
+        auto ieOp = KernelFunctor<Buffer, Buffer, Buffer,
+                                Buffer, Buffer, Buffer,
+                                Buffer, Buffer, Buffer, unsigned,
+                                Buffer, KParam, unsigned, unsigned, unsigned,
+                                float, float, float, float> (*ieKernel[device]);
 
-            compute::buffer_iterator<float> interp_x_begin = compute::make_buffer_iterator<float>(buf_interp_x, 0);
-            compute::buffer_iterator<float> interp_y_begin = compute::make_buffer_iterator<float>(buf_interp_y, 0);
-            compute::buffer_iterator<unsigned> interp_layer_begin = compute::make_buffer_iterator<unsigned>(buf_interp_layer, 0);
-            compute::buffer_iterator<float> interp_response_begin = compute::make_buffer_iterator<float>(buf_interp_response, 0);
-            compute::buffer_iterator<float> interp_size_begin = compute::make_buffer_iterator<float>(buf_interp_size, 0);
+        ieOp(EnqueueArgs(getQueue(), global_interp, local_interp),
+              *d_interp_x, *d_interp_y, *d_interp_layer,
+              *d_interp_response, *d_interp_size, *d_count,
+              *d_extrema_x, *d_extrema_y, *d_extrema_layer, extrema_feat,
+              *dog_pyr[o].data, dog_pyr[o].info, extrema_feat, o, n_layers,
+              contrast_thr, edge_thr, init_sigma, img_scale);
+        CL_DEBUG_FINISH(getQueue());
 
-            compute::vector<int> permutation(interp_feat, context);
-            compute::iota(permutation.begin(), permutation.end(), 0, queue);
+        bufferFree(d_extrema_x);
+        bufferFree(d_extrema_y);
+        bufferFree(d_extrema_layer);
 
-            update_permutation<float>(interp_x_begin, permutation, queue);
-            update_permutation<float>(interp_y_begin, permutation, queue);
-            update_permutation<unsigned>(interp_layer_begin, permutation, queue);
-            update_permutation<float>(interp_response_begin, permutation, queue);
-            update_permutation<float>(interp_size_begin, permutation, queue);
+        getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &interp_feat);
+        interp_feat = min(interp_feat, extrema_feat);
 
-            apply_permutation<float>(interp_x_begin, permutation, queue);
-            apply_permutation<float>(interp_y_begin, permutation, queue);
-            apply_permutation<unsigned>(interp_layer_begin, permutation, queue);
-            apply_permutation<float>(interp_response_begin, permutation, queue);
-            apply_permutation<float>(interp_size_begin, permutation, queue);
-
-            unsigned nodup_feat = 0;
-            getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &nodup_feat);
-
-            cl::Buffer* d_nodup_x = bufferAlloc(interp_feat * sizeof(float));
-            cl::Buffer* d_nodup_y = bufferAlloc(interp_feat * sizeof(float));
-            cl::Buffer* d_nodup_layer = bufferAlloc(interp_feat * sizeof(unsigned));
-            cl::Buffer* d_nodup_response = bufferAlloc(interp_feat * sizeof(float));
-            cl::Buffer* d_nodup_size = bufferAlloc(interp_feat * sizeof(float));
-
-            const int blk_x_nodup = divup(extrema_feat, SIFT_THREADS);
-            const NDRange local_nodup(SIFT_THREADS, 1);
-            const NDRange global_nodup(blk_x_nodup * SIFT_THREADS, 1);
-
-            auto rdOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
-                                    Buffer, Buffer, Buffer, Buffer, Buffer,
-                                    unsigned> (*rdKernel[device]);
-
-            rdOp(EnqueueArgs(getQueue(), global_nodup, local_nodup),
-                 *d_nodup_x, *d_nodup_y, *d_nodup_layer,
-                 *d_nodup_response, *d_nodup_size, *d_count,
-                 *d_interp_x, *d_interp_y, *d_interp_layer,
-                 *d_interp_response, *d_interp_size, interp_feat);
-            CL_DEBUG_FINISH(getQueue());
-
-            getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &nodup_feat);
-            nodup_feat = min(nodup_feat, interp_feat);
-
+        if (interp_feat == 0) {
             bufferFree(d_interp_x);
             bufferFree(d_interp_y);
             bufferFree(d_interp_layer);
             bufferFree(d_interp_response);
             bufferFree(d_interp_size);
 
-            unsigned oriented_feat = 0;
-            getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &oriented_feat);
-            const unsigned max_oriented_feat = nodup_feat * 3;
-
-            cl::Buffer* d_oriented_x        = bufferAlloc(max_oriented_feat * sizeof(float));
-            cl::Buffer* d_oriented_y        = bufferAlloc(max_oriented_feat * sizeof(float));
-            cl::Buffer* d_oriented_layer    = bufferAlloc(max_oriented_feat * sizeof(unsigned));
-            cl::Buffer* d_oriented_response = bufferAlloc(max_oriented_feat * sizeof(float));
-            cl::Buffer* d_oriented_size     = bufferAlloc(max_oriented_feat * sizeof(float));
-            cl::Buffer* d_oriented_ori      = bufferAlloc(max_oriented_feat * sizeof(float));
-
-            const int blk_x_ori = divup(nodup_feat, SIFT_THREADS_Y);
-            const NDRange local_ori(SIFT_THREADS_X, SIFT_THREADS_Y);
-            const NDRange global_ori(SIFT_THREADS_X, blk_x_ori * SIFT_THREADS_Y);
-
-            auto coOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
-                                    Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
-                                    Buffer, KParam, unsigned, unsigned, int,
-                                    LocalSpaceArg> (*coKernel[device]);
-
-            coOp(EnqueueArgs(getQueue(), global_ori, local_ori),
-                 *d_oriented_x, *d_oriented_y, *d_oriented_layer,
-                 *d_oriented_response, *d_oriented_size, *d_oriented_ori, *d_count,
-                 *d_nodup_x, *d_nodup_y, *d_nodup_layer,
-                 *d_nodup_response, *d_nodup_size, nodup_feat,
-                 *gauss_pyr[o].data, gauss_pyr[o].info, max_oriented_feat, o, (int)double_input,
-                 cl::Local(OriHistBins * SIFT_THREADS_Y * 2 * sizeof(float)));
-            CL_DEBUG_FINISH(getQueue());
-
-            bufferFree(d_nodup_x);
-            bufferFree(d_nodup_y);
-            bufferFree(d_nodup_layer);
-            bufferFree(d_nodup_response);
-            bufferFree(d_nodup_size);
-
-            getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &oriented_feat);
-            oriented_feat = min(oriented_feat, max_oriented_feat);
-
-            if (oriented_feat == 0) {
-                bufferFree(d_oriented_x);
-                bufferFree(d_oriented_y);
-                bufferFree(d_oriented_layer);
-                bufferFree(d_oriented_response);
-                bufferFree(d_oriented_size);
-
-                continue;
-            }
-
-            cl::Buffer* d_desc = bufferAlloc(oriented_feat * desc_len * sizeof(float));
-
-            float scale = 1.f/(1 << o);
-            if (double_input) scale *= 2.f;
-
-            const int blk_x_desc = divup(oriented_feat, 1);
-            const NDRange local_desc(SIFT_THREADS, 1);
-            const NDRange global_desc(SIFT_THREADS, blk_x_desc);
-
-            const unsigned histsz = 8;
-
-            if (compute_GLOH) {
-                auto cgOp = KernelFunctor<Buffer, unsigned, unsigned,
-                                        Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
-                                        Buffer, KParam, int, unsigned, unsigned, unsigned, float, int,
-                                        LocalSpaceArg> (*cgKernel[device]);
-
-                cgOp(EnqueueArgs(getQueue(), global_desc, local_desc),
-                     *d_desc, desc_len, histsz,
-                     *d_oriented_x, *d_oriented_y, *d_oriented_layer,
-                     *d_oriented_response, *d_oriented_size, *d_oriented_ori, oriented_feat,
-                     *gauss_pyr[o].data, gauss_pyr[o].info, d, rb, ab, hb, scale, n_layers,
-                     cl::Local(desc_len * (histsz+1) * sizeof(float)));
-            }
-            else {
-                auto cdOp = KernelFunctor<Buffer, unsigned, unsigned,
-                                        Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
-                                        Buffer, KParam, int, int, float, int,
-                                        LocalSpaceArg> (*cdKernel[device]);
-
-                cdOp(EnqueueArgs(getQueue(), global_desc, local_desc),
-                     *d_desc, desc_len, histsz,
-                     *d_oriented_x, *d_oriented_y, *d_oriented_layer,
-                     *d_oriented_response, *d_oriented_size, *d_oriented_ori, oriented_feat,
-                     *gauss_pyr[o].data, gauss_pyr[o].info, d, n, scale, n_layers,
-                     cl::Local(desc_len * (histsz+1) * sizeof(float)));
-            }
-            CL_DEBUG_FINISH(getQueue());
-
-            total_feat += oriented_feat;
-            feat_pyr[o] = oriented_feat;
-
-            if (oriented_feat > 0) {
-                d_x_pyr[o] = d_oriented_x;
-                d_y_pyr[o] = d_oriented_y;
-                d_response_pyr[o] = d_oriented_response;
-                d_ori_pyr[o] = d_oriented_ori;
-                d_size_pyr[o] = d_oriented_size;
-                d_desc_pyr[o] = d_desc;
-            }
+            continue;
         }
 
-        bufferFree(d_count);
+        compute::command_queue queue(getQueue()());
+        compute::context context(getContext()());
 
-        for (size_t i = 0; i < gauss_pyr.size(); i++)
-            bufferFree(gauss_pyr[i].data);
-        for (size_t i = 0; i < dog_pyr.size(); i++)
-            bufferFree(dog_pyr[i].data);
+        compute::buffer buf_interp_x((*d_interp_x)(), true);
+        compute::buffer buf_interp_y((*d_interp_y)(), true);
+        compute::buffer buf_interp_layer((*d_interp_layer)(), true);
+        compute::buffer buf_interp_response((*d_interp_response)(), true);
+        compute::buffer buf_interp_size((*d_interp_size)(), true);
 
-        // If no features are found, set found features to 0 and return
-        if (total_feat == 0) {
-            *out_feat = 0;
-            return;
+        compute::buffer_iterator<float> interp_x_begin = compute::make_buffer_iterator<float>(buf_interp_x, 0);
+        compute::buffer_iterator<float> interp_y_begin = compute::make_buffer_iterator<float>(buf_interp_y, 0);
+        compute::buffer_iterator<unsigned> interp_layer_begin = compute::make_buffer_iterator<unsigned>(buf_interp_layer, 0);
+        compute::buffer_iterator<float> interp_response_begin = compute::make_buffer_iterator<float>(buf_interp_response, 0);
+        compute::buffer_iterator<float> interp_size_begin = compute::make_buffer_iterator<float>(buf_interp_size, 0);
+
+        compute::vector<int> permutation(interp_feat, context);
+        compute::iota(permutation.begin(), permutation.end(), 0, queue);
+
+        update_permutation<float>(interp_x_begin, permutation, queue);
+        update_permutation<float>(interp_y_begin, permutation, queue);
+        update_permutation<unsigned>(interp_layer_begin, permutation, queue);
+        update_permutation<float>(interp_response_begin, permutation, queue);
+        update_permutation<float>(interp_size_begin, permutation, queue);
+
+        apply_permutation<float>(interp_x_begin, permutation, queue);
+        apply_permutation<float>(interp_y_begin, permutation, queue);
+        apply_permutation<unsigned>(interp_layer_begin, permutation, queue);
+        apply_permutation<float>(interp_response_begin, permutation, queue);
+        apply_permutation<float>(interp_size_begin, permutation, queue);
+
+        unsigned nodup_feat = 0;
+        getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &nodup_feat);
+
+        cl::Buffer* d_nodup_x = bufferAlloc(interp_feat * sizeof(float));
+        cl::Buffer* d_nodup_y = bufferAlloc(interp_feat * sizeof(float));
+        cl::Buffer* d_nodup_layer = bufferAlloc(interp_feat * sizeof(unsigned));
+        cl::Buffer* d_nodup_response = bufferAlloc(interp_feat * sizeof(float));
+        cl::Buffer* d_nodup_size = bufferAlloc(interp_feat * sizeof(float));
+
+        const int blk_x_nodup = divup(extrema_feat, SIFT_THREADS);
+        const NDRange local_nodup(SIFT_THREADS, 1);
+        const NDRange global_nodup(blk_x_nodup * SIFT_THREADS, 1);
+
+        auto rdOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
+                                Buffer, Buffer, Buffer, Buffer, Buffer,
+                                unsigned> (*rdKernel[device]);
+
+        rdOp(EnqueueArgs(getQueue(), global_nodup, local_nodup),
+              *d_nodup_x, *d_nodup_y, *d_nodup_layer,
+              *d_nodup_response, *d_nodup_size, *d_count,
+              *d_interp_x, *d_interp_y, *d_interp_layer,
+              *d_interp_response, *d_interp_size, interp_feat);
+        CL_DEBUG_FINISH(getQueue());
+
+        getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &nodup_feat);
+        nodup_feat = min(nodup_feat, interp_feat);
+
+        bufferFree(d_interp_x);
+        bufferFree(d_interp_y);
+        bufferFree(d_interp_layer);
+        bufferFree(d_interp_response);
+        bufferFree(d_interp_size);
+
+        unsigned oriented_feat = 0;
+        getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &oriented_feat);
+        const unsigned max_oriented_feat = nodup_feat * 3;
+
+        cl::Buffer* d_oriented_x        = bufferAlloc(max_oriented_feat * sizeof(float));
+        cl::Buffer* d_oriented_y        = bufferAlloc(max_oriented_feat * sizeof(float));
+        cl::Buffer* d_oriented_layer    = bufferAlloc(max_oriented_feat * sizeof(unsigned));
+        cl::Buffer* d_oriented_response = bufferAlloc(max_oriented_feat * sizeof(float));
+        cl::Buffer* d_oriented_size     = bufferAlloc(max_oriented_feat * sizeof(float));
+        cl::Buffer* d_oriented_ori      = bufferAlloc(max_oriented_feat * sizeof(float));
+
+        const int blk_x_ori = divup(nodup_feat, SIFT_THREADS_Y);
+        const NDRange local_ori(SIFT_THREADS_X, SIFT_THREADS_Y);
+        const NDRange global_ori(SIFT_THREADS_X, blk_x_ori * SIFT_THREADS_Y);
+
+        auto coOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
+                                Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
+                                Buffer, KParam, unsigned, unsigned, int,
+                                LocalSpaceArg> (*coKernel[device]);
+
+        coOp(EnqueueArgs(getQueue(), global_ori, local_ori),
+              *d_oriented_x, *d_oriented_y, *d_oriented_layer,
+              *d_oriented_response, *d_oriented_size, *d_oriented_ori, *d_count,
+              *d_nodup_x, *d_nodup_y, *d_nodup_layer,
+              *d_nodup_response, *d_nodup_size, nodup_feat,
+              *gauss_pyr[o].data, gauss_pyr[o].info, max_oriented_feat, o, (int)double_input,
+              cl::Local(OriHistBins * SIFT_THREADS_Y * 2 * sizeof(float)));
+        CL_DEBUG_FINISH(getQueue());
+
+        bufferFree(d_nodup_x);
+        bufferFree(d_nodup_y);
+        bufferFree(d_nodup_layer);
+        bufferFree(d_nodup_response);
+        bufferFree(d_nodup_size);
+
+        getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &oriented_feat);
+        oriented_feat = min(oriented_feat, max_oriented_feat);
+
+        if (oriented_feat == 0) {
+            bufferFree(d_oriented_x);
+            bufferFree(d_oriented_y);
+            bufferFree(d_oriented_layer);
+            bufferFree(d_oriented_response);
+            bufferFree(d_oriented_size);
+
+            continue;
         }
 
-        // Allocate output memory
-        x_out.info.dims[0] = total_feat;
-        x_out.info.strides[0] = 1;
-        y_out.info.dims[0] = total_feat;
-        y_out.info.strides[0] = 1;
-        score_out.info.dims[0] = total_feat;
-        score_out.info.strides[0] = 1;
-        ori_out.info.dims[0] = total_feat;
-        ori_out.info.strides[0] = 1;
-        size_out.info.dims[0] = total_feat;
-        size_out.info.strides[0] = 1;
+        cl::Buffer* d_desc = bufferAlloc(oriented_feat * desc_len * sizeof(float));
 
-        desc_out.info.dims[0] = desc_len;
-        desc_out.info.strides[0] = 1;
-        desc_out.info.dims[1] = total_feat;
-        desc_out.info.strides[1] = desc_out.info.dims[0];
+        float scale = 1.f/(1 << o);
+        if (double_input) scale *= 2.f;
 
-        for (int k = 1; k < 4; k++) {
-            x_out.info.dims[k] = 1;
-            x_out.info.strides[k] = x_out.info.dims[k - 1] * x_out.info.strides[k - 1];
-            y_out.info.dims[k] = 1;
-            y_out.info.strides[k] = y_out.info.dims[k - 1] * y_out.info.strides[k - 1];
-            score_out.info.dims[k] = 1;
-            score_out.info.strides[k] = score_out.info.dims[k - 1] * score_out.info.strides[k - 1];
-            ori_out.info.dims[k] = 1;
-            ori_out.info.strides[k] = ori_out.info.dims[k - 1] * ori_out.info.strides[k - 1];
-            size_out.info.dims[k] = 1;
-            size_out.info.strides[k] = size_out.info.dims[k - 1] * size_out.info.strides[k - 1];
-            if (k > 1) {
-                desc_out.info.dims[k] = 1;
-                desc_out.info.strides[k] = desc_out.info.dims[k - 1] * desc_out.info.strides[k - 1];
-            }
+        const int blk_x_desc = divup(oriented_feat, 1);
+        const NDRange local_desc(SIFT_THREADS, 1);
+        const NDRange global_desc(SIFT_THREADS, blk_x_desc);
+
+        const unsigned histsz = 8;
+
+        if (compute_GLOH) {
+            auto cgOp = KernelFunctor<Buffer, unsigned, unsigned,
+                                    Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
+                                    Buffer, KParam, int, unsigned, unsigned, unsigned, float, int,
+                                    LocalSpaceArg> (*cgKernel[device]);
+
+            cgOp(EnqueueArgs(getQueue(), global_desc, local_desc),
+                  *d_desc, desc_len, histsz,
+                  *d_oriented_x, *d_oriented_y, *d_oriented_layer,
+                  *d_oriented_response, *d_oriented_size, *d_oriented_ori, oriented_feat,
+                  *gauss_pyr[o].data, gauss_pyr[o].info, d, rb, ab, hb, scale, n_layers,
+                  cl::Local(desc_len * (histsz+1) * sizeof(float)));
         }
+        else {
+            auto cdOp = KernelFunctor<Buffer, unsigned, unsigned,
+                                    Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
+                                    Buffer, KParam, int, int, float, int,
+                                    LocalSpaceArg> (*cdKernel[device]);
 
-        if (total_feat > 0) {
-            size_t out_sz  = total_feat * sizeof(float);
-            x_out.data     = bufferAlloc(out_sz);
-            y_out.data     = bufferAlloc(out_sz);
-            score_out.data = bufferAlloc(out_sz);
-            ori_out.data   = bufferAlloc(out_sz);
-            size_out.data  = bufferAlloc(out_sz);
-
-            size_t desc_sz = total_feat * desc_len * sizeof(unsigned);
-            desc_out.data  = bufferAlloc(desc_sz);
+            cdOp(EnqueueArgs(getQueue(), global_desc, local_desc),
+                  *d_desc, desc_len, histsz,
+                  *d_oriented_x, *d_oriented_y, *d_oriented_layer,
+                  *d_oriented_response, *d_oriented_size, *d_oriented_ori, oriented_feat,
+                  *gauss_pyr[o].data, gauss_pyr[o].info, d, n, scale, n_layers,
+                  cl::Local(desc_len * (histsz+1) * sizeof(float)));
         }
+        CL_DEBUG_FINISH(getQueue());
 
-        unsigned offset = 0;
-        for (unsigned i = 0; i < n_octaves; i++) {
-            if (feat_pyr[i] == 0)
-                continue;
+        total_feat += oriented_feat;
+        feat_pyr[o] = oriented_feat;
 
-            getQueue().enqueueCopyBuffer(*d_x_pyr[i], *x_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
-            getQueue().enqueueCopyBuffer(*d_y_pyr[i], *y_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
-            getQueue().enqueueCopyBuffer(*d_response_pyr[i], *score_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
-            getQueue().enqueueCopyBuffer(*d_ori_pyr[i], *ori_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
-            getQueue().enqueueCopyBuffer(*d_size_pyr[i], *size_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
-            getQueue().enqueueCopyBuffer(*d_desc_pyr[i], *desc_out.data, 0, offset*desc_len*sizeof(unsigned), feat_pyr[i] * desc_len * sizeof(unsigned));
-
-            bufferFree(d_x_pyr[i]);
-            bufferFree(d_y_pyr[i]);
-            bufferFree(d_response_pyr[i]);
-            bufferFree(d_ori_pyr[i]);
-            bufferFree(d_size_pyr[i]);
-            bufferFree(d_desc_pyr[i]);
-
-            offset += feat_pyr[i];
+        if (oriented_feat > 0) {
+            d_x_pyr[o] = d_oriented_x;
+            d_y_pyr[o] = d_oriented_y;
+            d_response_pyr[o] = d_oriented_response;
+            d_ori_pyr[o] = d_oriented_ori;
+            d_size_pyr[o] = d_oriented_size;
+            d_desc_pyr[o] = d_desc;
         }
-
-        // Sets number of output features and descriptor length
-        *out_feat = total_feat;
-        *out_dlen = desc_len;
-    } catch (cl::Error err) {
-        CL_TO_AF_ERROR(err);
-        throw;
     }
+
+    bufferFree(d_count);
+
+    for (size_t i = 0; i < gauss_pyr.size(); i++)
+        bufferFree(gauss_pyr[i].data);
+    for (size_t i = 0; i < dog_pyr.size(); i++)
+        bufferFree(dog_pyr[i].data);
+
+    // If no features are found, set found features to 0 and return
+    if (total_feat == 0) {
+        *out_feat = 0;
+        return;
+    }
+
+    // Allocate output memory
+    x_out.info.dims[0] = total_feat;
+    x_out.info.strides[0] = 1;
+    y_out.info.dims[0] = total_feat;
+    y_out.info.strides[0] = 1;
+    score_out.info.dims[0] = total_feat;
+    score_out.info.strides[0] = 1;
+    ori_out.info.dims[0] = total_feat;
+    ori_out.info.strides[0] = 1;
+    size_out.info.dims[0] = total_feat;
+    size_out.info.strides[0] = 1;
+
+    desc_out.info.dims[0] = desc_len;
+    desc_out.info.strides[0] = 1;
+    desc_out.info.dims[1] = total_feat;
+    desc_out.info.strides[1] = desc_out.info.dims[0];
+
+    for (int k = 1; k < 4; k++) {
+        x_out.info.dims[k] = 1;
+        x_out.info.strides[k] = x_out.info.dims[k - 1] * x_out.info.strides[k - 1];
+        y_out.info.dims[k] = 1;
+        y_out.info.strides[k] = y_out.info.dims[k - 1] * y_out.info.strides[k - 1];
+        score_out.info.dims[k] = 1;
+        score_out.info.strides[k] = score_out.info.dims[k - 1] * score_out.info.strides[k - 1];
+        ori_out.info.dims[k] = 1;
+        ori_out.info.strides[k] = ori_out.info.dims[k - 1] * ori_out.info.strides[k - 1];
+        size_out.info.dims[k] = 1;
+        size_out.info.strides[k] = size_out.info.dims[k - 1] * size_out.info.strides[k - 1];
+        if (k > 1) {
+            desc_out.info.dims[k] = 1;
+            desc_out.info.strides[k] = desc_out.info.dims[k - 1] * desc_out.info.strides[k - 1];
+        }
+    }
+
+    if (total_feat > 0) {
+        size_t out_sz  = total_feat * sizeof(float);
+        x_out.data     = bufferAlloc(out_sz);
+        y_out.data     = bufferAlloc(out_sz);
+        score_out.data = bufferAlloc(out_sz);
+        ori_out.data   = bufferAlloc(out_sz);
+        size_out.data  = bufferAlloc(out_sz);
+
+        size_t desc_sz = total_feat * desc_len * sizeof(unsigned);
+        desc_out.data  = bufferAlloc(desc_sz);
+    }
+
+    unsigned offset = 0;
+    for (unsigned i = 0; i < n_octaves; i++) {
+        if (feat_pyr[i] == 0)
+            continue;
+
+        getQueue().enqueueCopyBuffer(*d_x_pyr[i], *x_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
+        getQueue().enqueueCopyBuffer(*d_y_pyr[i], *y_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
+        getQueue().enqueueCopyBuffer(*d_response_pyr[i], *score_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
+        getQueue().enqueueCopyBuffer(*d_ori_pyr[i], *ori_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
+        getQueue().enqueueCopyBuffer(*d_size_pyr[i], *size_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
+        getQueue().enqueueCopyBuffer(*d_desc_pyr[i], *desc_out.data, 0, offset*desc_len*sizeof(unsigned), feat_pyr[i] * desc_len * sizeof(unsigned));
+
+        bufferFree(d_x_pyr[i]);
+        bufferFree(d_y_pyr[i]);
+        bufferFree(d_response_pyr[i]);
+        bufferFree(d_ori_pyr[i]);
+        bufferFree(d_size_pyr[i]);
+        bufferFree(d_desc_pyr[i]);
+
+        offset += feat_pyr[i];
+    }
+
+    // Sets number of output features and descriptor length
+    *out_feat = total_feat;
+    *out_dlen = desc_len;
 }
 
 } //namespace kernel

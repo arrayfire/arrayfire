@@ -7,16 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined(WITH_CUDA_LINEAR_ALGEBRA)
-
 #include <cusolverDnManager.hpp>
 #include <platform.hpp>
 #include <debug_cuda.hpp>
 
+#include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <string>
-#include <iostream>
-#include <boost/scoped_ptr.hpp>
 
 namespace cusolver {
 
@@ -65,8 +63,7 @@ namespace cusolver {
 
     cusolverDnHandle_t getDnHandle()
     {
-        using boost::scoped_ptr;
-        static scoped_ptr<cusolverDnHandle> handle[cuda::DeviceManager::MAX_DEVICES];
+        static std::unique_ptr<cusolverDnHandle> handle[cuda::DeviceManager::MAX_DEVICES];
 
         int id = cuda::getActiveDeviceId();
 
@@ -93,5 +90,3 @@ namespace cusolver {
     }
 
 }
-
-#endif

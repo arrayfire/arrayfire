@@ -11,8 +11,8 @@
 #include <platform.hpp>
 #include <err_common.hpp>
 #include <cublasManager.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <platform.hpp>
+#include <memory>
 
 namespace cublas {
 
@@ -61,8 +61,7 @@ namespace cublas {
 
     cublasHandle_t getHandle()
     {
-        using boost::scoped_ptr;
-        static scoped_ptr<cublasHandle> handle[cuda::DeviceManager::MAX_DEVICES];
+        static std::unique_ptr<cublasHandle> handle[cuda::DeviceManager::MAX_DEVICES];
 
         int id = cuda::getActiveDeviceId();
 

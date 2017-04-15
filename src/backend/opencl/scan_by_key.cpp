@@ -23,28 +23,21 @@ namespace opencl
     {
         Array<To> out = createEmptyArray<To>(in.dims());
 
-        try {
-            Param Out = out;
-            Param Key = key;
-            Param In  =   in;
+        Param Out = out;
+        Param Key = key;
+        Param In  =   in;
 
-            if (inclusive_scan) {
-                if (dim == 0)
-                    kernel::scan_first<Ti, Tk, To, op, true>(Out, In, Key);
-                else
-                    kernel::scan_dim  <Ti, Tk, To, op, true>(Out, In, Key, dim);
-            } else {
-                if (dim == 0)
-                    kernel::scan_first<Ti, Tk, To, op, false>(Out, In, Key);
-                else
-                    kernel::scan_dim  <Ti, Tk, To, op, false>(Out, In, Key, dim);
-            }
-
-        } catch (cl::Error &ex) {
-
-            CL_TO_AF_ERROR(ex);
+        if (inclusive_scan) {
+            if (dim == 0)
+                kernel::scan_first<Ti, Tk, To, op, true>(Out, In, Key);
+            else
+                kernel::scan_dim  <Ti, Tk, To, op, true>(Out, In, Key, dim);
+        } else {
+            if (dim == 0)
+                kernel::scan_first<Ti, Tk, To, op, false>(Out, In, Key);
+            else
+                kernel::scan_dim  <Ti, Tk, To, op, false>(Out, In, Key, dim);
         }
-
         return out;
     }
 
