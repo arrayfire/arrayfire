@@ -176,3 +176,68 @@ TEST(Select, 4D)
         ASSERT_EQ(hc[i], hb[i]) << "at " << i;
     }
 }
+
+TEST(Select, Issue_1730)
+{
+    const int n = 1000;
+    const int m = 200;
+    af::array a = af::randu(n, m) - 0.5;
+    af::eval(a);
+
+    std::vector<float> ha1(a.elements());
+    a.host(&ha1[0]);
+
+    const int n1 = n / 2;
+    const int n2 = n1 + n / 4;
+
+    a(af::seq(n1, n2), af::span) =
+        af::select(a(af::seq(n1, n2), af::span) >= 0,
+                   a(af::seq(n1, n2), af::span),
+                   a(af::seq(n1, n2), af::span) * -1);
+
+    std::vector<float> ha2(a.elements());
+    a.host(&ha2[0]);
+
+    for (int j = 0; j < m; j++) {
+        for (int i = 0; i < n; i++) {
+            if (i < n1 || i > n2) {
+                ASSERT_EQ(ha1[i], ha2[i]) << "at (" << i << ", " << j << ")";
+            } else {
+                ASSERT_EQ(ha2[i], (ha1[i] >= 0 ? ha1[i] : -ha1[i]))  << "at (" << i << ", " << j << ")";
+            }
+        }
+    }
+}
+
+TEST(Select, Issue_1730_scalar)
+{
+    const int n = 1000;
+    const int m = 200;
+    af::array a = af::randu(n, m) - 0.5;
+    af::eval(a);
+
+    std::vector<float> ha1(a.elements());
+    a.host(&ha1[0]);
+
+    const int n1 = n / 2;
+    const int n2 = n1 + n / 4;
+
+    float val = 0;
+    a(af::seq(n1, n2), af::span) =
+        af::select(a(af::seq(n1, n2), af::span) >= 0,
+                   a(af::seq(n1, n2), af::span),
+                   val);
+
+    std::vector<float> ha2(a.elements());
+    a.host(&ha2[0]);
+
+    for (int j = 0; j < m; j++) {
+        for (int i = 0; i < n; i++) {
+            if (i < n1 || i > n2) {
+                ASSERT_EQ(ha1[i], ha2[i]) << "at (" << i << ", " << j << ")";
+            } else {
+                ASSERT_EQ(ha2[i], (ha1[i] >= 0 ? ha1[i] : val))  << "at (" << i << ", " << j << ")";
+            }
+        }
+    }
+}

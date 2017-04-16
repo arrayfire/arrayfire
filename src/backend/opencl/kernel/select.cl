@@ -56,18 +56,15 @@ void select_kernel(__global T *optr, KParam oinfo,
     int ids[] = {idx0, idy, idz, idw};
 
     optr += off;
+    aptr += getOffset(ainfo.dims, ainfo.strides, oinfo.dims, ids);
+    bptr += getOffset(binfo.dims, binfo.strides, oinfo.dims, ids);
+    cptr += getOffset(cinfo.dims, cinfo.strides, oinfo.dims, ids);
 
     if (is_same) {
-        aptr += off;
-        bptr += off;
-        cptr += off;
         for (int idx = idx0; idx < oinfo.dims[0]; idx += get_local_size(0) * groups_0) {
             optr[idx] = (cptr[idx]) ? aptr[idx] : bptr[idx];
         }
     } else {
-        aptr += getOffset(ainfo.dims, ainfo.strides, oinfo.dims, ids);
-        bptr += getOffset(binfo.dims, binfo.strides, oinfo.dims, ids);
-        cptr += getOffset(cinfo.dims, cinfo.strides, oinfo.dims, ids);
         bool csame = cinfo.dims[0] == oinfo.dims[0];
         bool asame = ainfo.dims[0] == oinfo.dims[0];
         bool bsame = binfo.dims[0] == oinfo.dims[0];
@@ -99,9 +96,10 @@ void select_scalar_kernel(__global T *optr, KParam oinfo,
 
     const int off = idw * oinfo.strides[3] + idz * oinfo.strides[2] + idy * oinfo.strides[1];
 
+    int ids[] = {idx0, idy, idz, idw};
     optr += off;
-    aptr += off;
-    cptr += off;
+    aptr += getOffset(ainfo.dims, ainfo.strides, oinfo.dims, ids);
+    cptr += getOffset(cinfo.dims, cinfo.strides, oinfo.dims, ids);
 
     if (idw >= oinfo.dims[3] ||
         idz >= oinfo.dims[2] ||

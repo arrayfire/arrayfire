@@ -49,7 +49,7 @@ GLFW_INSTALLED=$(su $user -c "$brew ls --versions glfw3" | grep "glfw3") || true
 if [[ -z "${GLFW_INSTALLED}" ]]; then
     echo "Installing GLFW3" >> $err_file
     echo "-------------------" >> $err_file
-    su $user -c "$brew install glfw3" >> $err_file 2>&1 || deps_err
+    su $user -c "$brew install glfw" >> $err_file 2>&1 || deps_err
     echo "-------------------" >> $err_file
 else
     echo "GLFW Version ${GLFW_INSTALLED} is already installed." >> $err_file

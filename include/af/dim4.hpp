@@ -23,7 +23,7 @@ namespace af
 class AFAPI dim4
 {
     public:
-    dim_t dims[4]; //FIXME: Make this C compatiable
+    dim_t dims[4]; //FIXME: Make this C compatible
     dim4(); //deleted
 public:
     dim4(   dim_t first,

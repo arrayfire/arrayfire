@@ -54,19 +54,19 @@
 #define w32_0 0x9E3779B9
 #define w32_1 0xBB67AE85
 
-inline void mulhilo(const uint a, const uint b, uint * const hi, uint * const lo)
+void mulhilo(const uint a, const uint b, uint * const hi, uint * const lo)
 {
     *hi = mul_hi(a, b);
     *lo = a*b;
 }
 
-inline void philoxBump(uint k[2])
+void philoxBump(uint k[2])
 {
     k[0] += w32_0;
     k[1] += w32_1;
 }
 
-inline void philoxRound(const uint k[2], uint c[4])
+void philoxRound(const uint k[2], uint c[4])
 {
     uint hi0, lo0, hi1, lo1;
     mulhilo(m4x32_0, c[0], &hi0, &lo0);
@@ -77,7 +77,7 @@ inline void philoxRound(const uint k[2], uint c[4])
     c[3] = lo0;
 }
 
-inline void philox(uint key[2], uint ctr[4])
+void philox(uint key[2], uint ctr[4])
 {
     //10 Rounds
                        philoxRound(key, ctr);

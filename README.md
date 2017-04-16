@@ -4,34 +4,35 @@ ArrayFire is a general-purpose library that simplifies the process of developing
 software that targets parallel and massively-parallel architectures including
 CPUs, GPUs, and other hardware acceleration devices.
 
-To achieve this goal, ArrayFire provides software developers with a high-level
-abstraction of data which resides on the accelerator, the `af::array` object
-(or C-style struct).
-Developers write code which performs operations on ArrayFire arrays which, in turn,
-are automatically translated into near-optimal kernels that execute on the computational
-device.
-ArrayFire is successfully used on devices ranging from low-power mobile phones to
-high-power GPU-enabled supercomputers including CPUs from all major vendors (Intel, AMD, Arm),
-GPUs from the dominant manufacturers (NVIDIA, AMD, and Qualcomm), as well as a variety
-of other accelerator devices on Windows, Mac, and Linux.
-
 Several of ArrayFire's benefits include:
 
 * [Easy to use](http://arrayfire.org/docs/gettingstarted.htm), stable,
-  [well-documented](http://arrayfire.org/docs) API.
-* Rigorously Tested for Performance and Accuracy
-* Commercially Friendly Open-Source Licensing
+  [well-documented](http://arrayfire.org/docs) API
+* Rigorously tested for performance and accuracy
+* Commercially friendly open-source licensing
 * Commercial support from [ArrayFire](http://arrayfire.com)
-* [Read about more benefits on Arrayfire.com](http://arrayfire.com/the-arrayfire-library/)
+* [Read about more benefits on arrayfire.com](http://arrayfire.com/the-arrayfire-library/)
 
-### Build and Test Status
+ArrayFire provides software developers with a high-level
+abstraction of data which resides on the accelerator, the `af::array` object.
+Developers write code which performs operations on ArrayFire arrays which, in turn,
+are automatically translated into near-optimal kernels that execute on the computational
+device.
+
+ArrayFire is successfully used on devices ranging from low-power mobile phones
+to high-power GPU-enabled supercomputers. ArrayFire runs on CPUs from all
+major vendors (Intel, AMD, ARM), GPUs from the prominent manufacturers
+(NVIDIA, AMD, and Qualcomm), as well as a variety of other accelerator devices
+on Windows, Mac, and Linux.
+
+## Build and Test Status
 
 |         | Linux x86_64 | Linux aarch64 | OSX | Windows |
 |:-------:|:------------:|:-------------:|:---:|:-------:|
 | Build   | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/build/devel)](http://ci.arrayfire.org/job/arrayfire-linux/job/build/job/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrax1/build/devel)](http://ci.arrayfire.org/job/arrayfire-tegrax1/job/build/job/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/build-mkl/devel)](http://ci.arrayfire.org/job/arrayfire-osx/job/build-mkl/job/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/build/devel)](http://ci.arrayfire.org/job/arrayfire-windows/job/build/job/devel/) |
 | Test    | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/test/devel)](http://ci.arrayfire.org/job/arrayfire-linux/job/test/job/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrax1/test/devel)](http://ci.arrayfire.org/job/arrayfire-tegrax1/job/test/job/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/test-mkl/devel)](http://ci.arrayfire.org/job/arrayfire-osx/job/test-mkl/job/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/test/devel)](http://ci.arrayfire.org/job/arrayfire-windows/job/test/job/devel/) |
 
-### Installation
+## Installation
 
 You can install the ArrayFire library from one of the following ways:
 
@@ -45,7 +46,7 @@ for Linux, OSX, and Windows platforms.
 Build from source by following instructions on our
 [wiki](https://github.com/arrayfire/arrayfire/wiki).
 
-### Examples
+## Examples
 
 The following examples are simplified versions of
 [`helloworld.cpp`](https://github.com/arrayfire/arrayfire/tree/devel/examples/helloworld/helloworld.cpp)
@@ -98,7 +99,7 @@ while(!myWindow.close()) {
 <img src="https://github.com/arrayfire/assets/blob/master/gifs/conway.gif" alt="Conway's Game of Life" height="256" width="256">
 </p>
 
-### Documentation
+## Documentation
 
 You can find our complete documentation [here](http://www.arrayfire.com/docs/index.htm).
 
@@ -109,24 +110,40 @@ Quick links:
 * [Examples](http://www.arrayfire.org/docs/examples.htm)
 * [Blog](http://arrayfire.com/blog/)
 
-### Language wrappers
+## Language wrappers
+
+ArrayFire has several official and third-party language wrappers.
+
+__Official wrappers__
 
 We currently support the following language wrappers for ArrayFire:
 
 * [`arrayfire-python`](https://github.com/arrayfire/arrayfire-python)
 * [`arrayfire-rust`](https://github.com/arrayfire/arrayfire-rust)
 
-Wrappers for other languages are a work in progress:
+Wrappers for other languages are a work-in-progress:
+  [.NET](https://github.com/arrayfire/arrayfire-dotnet),
+  [Fortran](https://github.com/arrayfire/arrayfire-fortran),
+  [Go](https://github.com/arrayfire/arrayfire-go),
+  [Java](https://github.com/arrayfire/arrayfire-java),
+  [Lua](https://github.com/arrayfire/arrayfire-lua),
+  [NodeJS](https://github.com/arrayfire/arrayfire-js),
+  [R](https://github.com/arrayfire/arrayfire-r)
 
-[`arrayfire-dotnet`](https://github.com/arrayfire/arrayfire-dotnet), [`arrayfire-fortran`](https://github.com/arrayfire/arrayfire-fortran), [`arrayfire-go`](https://github.com/arrayfire/arrayfire-go), [`arrayfire-java`](https://github.com/arrayfire/arrayfire-java), [`arrayfire-lua`](https://github.com/arrayfire/arrayfire-lua), [`arrayfire-nodejs`](https://github.com/arrayfire/arrayfire-js), [`arrayfire-r`](https://github.com/arrayfire/arrayfire-r)
+__Third-party wrappers__
 
-### Contributing
+The following wrappers are being maintained and supported by third parties:
+
+* [`ArrayFire.jl`](https://github.com/JuliaComputing/ArrayFire.jl)
+* [`ArrayFire-Nim`](https://github.com/bitstormGER/ArrayFire-Nim)
+
+## Contributing
 
 Contributions of any kind are welcome! Please refer to
 [CONTRIBUTING.md](https://github.com/arrayfire/arrayfire/blob/master/CONTRIBUTING.md)
 to learn more about how you can get involved with ArrayFire.
 
-### Citations and Acknowledgements
+## Citations and Acknowledgements
 
 If you redistribute ArrayFire, please follow the terms established in
 [the license](LICENSE). If you wish to cite ArrayFire in an academic
@@ -136,12 +153,18 @@ ArrayFire development is funded by ArrayFire LLC and several third parties,
 please see the list of [acknowledgements](ACKNOWLEDGEMENTS.md) for further
 details.
 
-### Support and Contact Info [![Join the chat at https://gitter.im/arrayfire/arrayfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arrayfire/arrayfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+We would like to thank the [JuliaComputing](https://github.com/JuliaComputing)
+guys as well as [Gabor Mezo](https://github.com/unbornchikken) for their
+diligent work on the [Julia](https://github.com/JuliaComputing/ArrayFire.jl)
+and [NodeJS](https://github.com/arrayfire/arrayfire-js) wrappers,
+respectively.
+
+## Support and Contact Info [![Join the chat at https://gitter.im/arrayfire/arrayfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arrayfire/arrayfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 * [Google Groups](https://groups.google.com/forum/#!forum/arrayfire-users)
 * ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/)
 
-### Trademark Policy
+## Trademark Policy
 
 The literal mark “ArrayFire” and ArrayFire logos are trademarks of
 AccelerEyes LLC DBA ArrayFire.

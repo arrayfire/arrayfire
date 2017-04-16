@@ -81,9 +81,11 @@ af_err af_create_sparse_array(
         const ArrayInfo& cInfo = getInfo(colIdx);
 
         TYPE_ASSERT(vInfo.isFloating());
-        DIM_ASSERT(4, vInfo.isLinear());
-        DIM_ASSERT(5, rInfo.isLinear());
-        DIM_ASSERT(6, cInfo.isLinear());
+        DIM_ASSERT(3, vInfo.isLinear());
+        ARG_ASSERT(4, rInfo.getType() == s32);
+        DIM_ASSERT(4, rInfo.isLinear());
+        ARG_ASSERT(5, cInfo.getType() == s32);
+        DIM_ASSERT(5, cInfo.isLinear());
 
         af_array output = 0;
 

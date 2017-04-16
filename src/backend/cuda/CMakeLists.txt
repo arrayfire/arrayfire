@@ -405,6 +405,12 @@ IF(NOT CUDA_CUDA_LIBRARY)
     MESSAGE(FATAL_ERROR "Ending CMake configuration because of missing CUDA_CUDA_LIBRARY")
 ENDIF(NOT CUDA_CUDA_LIBRARY)
 
+SET(CUDA_ADD_LIBRARY_OPTIONS "")
+IF(UNIX)
+    # These flags enable C++11 and disable invalid offsetof warning
+    SET(CUDA_ADD_LIBRARY_OPTIONS "-std=c++11 -Xcudafe \"--diag_suppress=1427\"")
+ENDIF(UNIX)
+
 MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cuda_headers}
                 ${cuda_sources}
@@ -417,9 +423,7 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cpp_sources}
                 ${thrust_sort_by_key_sources}
                 ${scan_by_key_sources}
-                OPTIONS ${CUDA_GENERATE_CODE}
-                #disable invalid offsetof warning
-                -std=c++11 -Xcudafe "--diag_suppress=1427")
+                OPTIONS ${CUDA_GENERATE_CODE} ${CUDA_ADD_LIBRARY_OPTIONS})
 
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
