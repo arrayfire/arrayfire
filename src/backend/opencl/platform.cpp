@@ -762,6 +762,12 @@ DeviceManager::~DeviceManager()
     // Windows for Intel devices. This causes tests to fail.
     clfftTeardown();
 #endif
+#ifndef OS_WIN
+    //TODO: FIXME:
+    // clblasTeardown() causes a "Pure Virtual Function Called" crash on
+    // Windows for Intel devices. This causes tests to fail.
+    clblasTeardown();
+#endif
     delete memManager.release();
     delete pinnedMemManager.release();
 

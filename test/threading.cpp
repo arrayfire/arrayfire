@@ -616,8 +616,6 @@ TEST(Threading, BLAS)
             tests[testId].join();
 }
 
-#if !defined(AF_OPENCL)
-
 #define SOLVE_LU_TESTS(T, eps)                                                                          \
     tests.emplace_back(solveLUTester<T>, 1000, 100, eps, nextTargetDeviceId()%numDevices);              \
     tests.emplace_back(solveLUTester<T>, 2048, 512, eps, nextTargetDeviceId()%numDevices);              \
@@ -692,5 +690,3 @@ TEST(Threading, Sparse)
         if (tests[testId].joinable())
             tests[testId].join();
 }
-
-#endif
