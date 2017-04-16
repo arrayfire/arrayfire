@@ -14,6 +14,9 @@
 #include "types.hpp"
 #include <af/defines.h>
 
+using std::is_integral;
+using std::enable_if;
+
 namespace cpu
 {
     template<typename T> static inline T abs(T val) { return std::abs(val); }
@@ -21,11 +24,25 @@ namespace cpu
     uchar abs(uchar val);
     uintl abs(uintl val);
 
-    template<typename T> static inline T min(T lhs, T rhs) { return std::min(lhs, rhs); }
+    template<typename T>
+    static inline typename enable_if<is_integral<T>::value, T>::type
+    min(T lhs, T rhs) { return lhs ^ ((lhs ^ rhs) & -(rhs < lhs)); }
+
+    template<typename T>
+    static inline typename enable_if<!is_integral<T>::value, T>::type
+    min(T lhs, T rhs) { return std::min(lhs, rhs); }
+
     cfloat min(cfloat lhs, cfloat rhs);
     cdouble min(cdouble lhs, cdouble rhs);
 
-    template<typename T> static inline T max(T lhs, T rhs) { return std::max(lhs, rhs); }
+    template<typename T>
+    static inline typename enable_if<is_integral<T>::value, T>::type
+    max(T lhs, T rhs) { return lhs ^ ((lhs ^ rhs) & -(rhs > lhs)); }
+
+    template<typename T>
+    static inline typename enable_if<!is_integral<T>::value, T>::type
+    max(T lhs, T rhs) { return std::max(lhs, rhs); }
+
     cfloat max(cfloat lhs, cfloat rhs);
     cdouble max(cdouble lhs, cdouble rhs);
 
