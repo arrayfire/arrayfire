@@ -703,7 +703,7 @@ AFAPI array moments(const array& in, const momentType moment=AF_MOMENT_FIRST_ORD
    \ingroup image_func_canny
 */
 AFAPI array canny(const array& in, const float lowThresholdRatio,
-                  const CannyThreshold thresholdType, const float highThresholdRatio,
+                  const cannyThreshold thresholdType, const float highThresholdRatio,
                   const unsigned sobelWindow = 3, const bool isFast = false);
 #endif
 }

@@ -14,7 +14,7 @@
 namespace af
 {
 array canny(const array& in, const float ltr,
-            const CannyThreshold ctType, const float htr,
+            const cannyThreshold ctType, const float htr,
             const unsigned sW, const bool isFast)
 {
     af_array temp = 0;

@@ -504,7 +504,7 @@ namespace af
     typedef af_random_engine_type randomEngineType;
 #endif
 #if AF_API_VERSION >= 35
-    typedef af_canny_threshold CannyThreshold;
+    typedef af_canny_threshold cannyThreshold;
 #endif
 }
 

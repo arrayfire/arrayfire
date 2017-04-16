@@ -28,10 +28,18 @@ void nonMaxSuppressionKernel(__global     T* output, KParam   oInfo,
 
     __local T localMem[SHRD_MEM_HEIGHT][SHRD_MEM_WIDTH];
 
-    __global const T* mag = in + (b2 * inInfo.strides[2] + b3 * inInfo.strides[3] + inInfo.offset) + inInfo.strides[1] + 1;
-    __global const T* dX  = dx + (b2 * dxInfo.strides[2] + b3 * dxInfo.strides[3] + dxInfo.offset) + dxInfo.strides[1] + 1;
-    __global const T* dY  = dy + (b2 * dyInfo.strides[2] + b3 * dyInfo.strides[3] + dyInfo.offset) + dyInfo.strides[1] + 1;
-    __global     T*   out = output + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]) + oInfo.strides[1] + 1;
+    __global const T* mag = in +
+        (b2 * inInfo.strides[2] + b3 * inInfo.strides[3] + inInfo.offset) +
+        inInfo.strides[1] + 1;
+    __global const T* dX  = dx +
+        (b2 * dxInfo.strides[2] + b3 * dxInfo.strides[3] + dxInfo.offset) +
+        dxInfo.strides[1] + 1;
+    __global const T* dY  = dy +
+        (b2 * dyInfo.strides[2] + b3 * dyInfo.strides[3] + dyInfo.offset) +
+        dyInfo.strides[1] + 1;
+    __global     T*   out = output +
+        (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]) +
+        oInfo.strides[1] + 1;
 
 #pragma unroll
     for (int b=ly, gy2=gy; b<SHRD_MEM_HEIGHT; b+=get_local_size(1), gy2+=get_local_size(1))
