@@ -56,6 +56,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
         return cpu::matmul(lhs, rhs, optLhs, optRhs);
     }
 #endif
+    initBlas();
 
     const auto lOpts = toBlasTranspose(optLhs);
     const auto rOpts = toBlasTranspose(optRhs);
