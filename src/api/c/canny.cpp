@@ -193,8 +193,8 @@ af_array cannyHelper(const Array<T> in, const float t1, const af_canny_threshold
     return getHandle(detail::edgeTrackingByHysteresis(swpair.first, swpair.second));
 }
 
-af_err af_canny(af_array* out, const af_array in, const float t1, const af_canny_threshold ct,
-                const float t2, const unsigned sw, const bool isf)
+af_err af_canny(af_array* out, const af_array in, const af_canny_threshold ct,
+                const float t1, const float t2, const unsigned sw, const bool isf)
 {
     try {
         const ArrayInfo& info = getInfo(in);
