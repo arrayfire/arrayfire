@@ -446,6 +446,13 @@ typedef enum {
 #endif
 ////////////////////////////////////////////////////////////////////////////////
 
+#if AF_API_VERSION >= 35
+typedef enum {
+    AF_MANUAL_THRESHOLD    = 0, ///< User has to define canny thresholds manually
+    AF_AUTO_OTSU_THRESHOLD = 1, ///< Determine canny algorithm thresholds using Otsu algorithm
+} af_canny_threshold;
+#endif
+
 #if AF_API_VERSION >= 34
 typedef enum {
     AF_STORAGE_DENSE     = 0,   ///< Storage type is dense
@@ -495,6 +502,9 @@ namespace af
 #endif
 #if AF_API_VERSION >= 34
     typedef af_random_engine_type randomEngineType;
+#endif
+#if AF_API_VERSION >= 35
+    typedef af_canny_threshold cannyThreshold;
 #endif
 }
 
