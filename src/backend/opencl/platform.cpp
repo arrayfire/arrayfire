@@ -27,7 +27,7 @@
 #include <defines.hpp>
 #include <errorcodes.hpp>
 #include <err_opencl.hpp>
-#include <err_clblas.hpp>
+#include <blas.hpp>
 #include <host_memory.hpp>
 #include <common/InteropManager.hpp>
 #include <platform.hpp>
@@ -762,12 +762,9 @@ DeviceManager::~DeviceManager()
     // Windows for Intel devices. This causes tests to fail.
     clfftTeardown();
 #endif
-#ifndef OS_WIN
-    //TODO: FIXME:
-    // clblasTeardown() causes a "Pure Virtual Function Called" crash on
-    // Windows for Intel devices. This causes tests to fail.
-    clblasTeardown();
-#endif
+
+    deInitBlas();
+
     delete memManager.release();
     delete pinnedMemManager.release();
 
@@ -911,10 +908,8 @@ DeviceManager::DeviceManager()
     CLFFT_CHECK(clfftInitSetupData(&mFFTSetup));
     CLFFT_CHECK(clfftSetup(&mFFTSetup));
 
-    //Initialize clBlas library, clblasSetup is not thread safe
-    //Since DeviceManager class is singleton, it is okay to call
-    //without any synchronization mechanisms
-    CLBLAS_CHECK(clblasSetup());
+    //Initialize clBlas library
+    initBlas();
 }
 
 #if defined(WITH_GRAPHICS)

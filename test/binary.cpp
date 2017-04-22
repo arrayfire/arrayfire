@@ -336,3 +336,15 @@ TEST(BinaryTests, Test_pow_cdouble_cdouble)
     delete[] h_b;
     delete[] h_c;
 }
+
+TEST(BinaryTests, ISSUE_1762)
+{
+    af::array zero = af::constant(0, 5, f32);
+    af::array result = af::pow(zero, 2);
+    std::vector<complex_float> hres(result.elements());
+    result.host(&hres[0]);
+    for (int i = 0; i < 5; i++) {
+        ASSERT_EQ(real(hres[i]), 0);
+        ASSERT_EQ(imag(hres[i]), 0);
+    }
+}

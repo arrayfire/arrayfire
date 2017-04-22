@@ -74,7 +74,7 @@ magma_malloc( magma_ptr* ptrPtr, int num)
         size = sizeof(T);
     cl_int err;
     *ptrPtr = clCreateBuffer(opencl::getContext()(), CL_MEM_READ_WRITE, size, NULL, &err );
-    if ( err != clblasSuccess ) {
+    if ( err != CL_SUCCESS ) {
         return MAGMA_ERR_DEVICE_ALLOC;
     }
     return MAGMA_SUCCESS;
@@ -86,7 +86,7 @@ static inline magma_int_t
 magma_free(cl_mem ptr)
 {
     cl_int err = clReleaseMemObject( ptr );
-    if ( err != clblasSuccess ) {
+    if ( err != CL_SUCCESS ) {
         return MAGMA_ERR_INVALID_PTR;
     }
     return MAGMA_SUCCESS;
