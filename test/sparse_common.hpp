@@ -68,8 +68,12 @@ double calc_norm(af::array lhs, af::array rhs)
 }
 
 template<typename T>
-void sparseTester(const int m, const int n, const int k, int factor, double eps)
+void sparseTester(const int m, const int n, const int k, int factor, double eps,
+                  int targetDevice=-1)
 {
+    if (targetDevice>=0)
+        af::setDevice(targetDevice);
+
     af::deviceGC();
 
     if (noDoubleTests<T>()) return;
@@ -99,8 +103,12 @@ void sparseTester(const int m, const int n, const int k, int factor, double eps)
 }
 
 template<typename T>
-void sparseTransposeTester(const int m, const int n, const int k, int factor, double eps)
+void sparseTransposeTester(const int m, const int n, const int k, int factor, double eps,
+                           int targetDevice=-1)
 {
+    if (targetDevice>=0)
+        af::setDevice(targetDevice);
+
     af::deviceGC();
 
     if (noDoubleTests<T>()) return;
@@ -135,8 +143,11 @@ void sparseTransposeTester(const int m, const int n, const int k, int factor, do
 }
 
 template<typename T>
-void convertCSR(const int M, const int N, const float ratio)
+void convertCSR(const int M, const int N, const float ratio, int targetDevice=-1)
 {
+    if (targetDevice>=0)
+        af::setDevice(targetDevice);
+
     if (noDoubleTests<T>()) return;
 #if 1
     af::array a = cpu_randu<T>(af::dim4(M, N));

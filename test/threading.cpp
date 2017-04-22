@@ -618,25 +618,12 @@ TEST(Threading, BLAS)
 
 #define SOLVE_LU_TESTS(T, eps)                                                                          \
     tests.emplace_back(solveLUTester<T>, 1000, 100, eps, nextTargetDeviceId()%numDevices);              \
-    tests.emplace_back(solveLUTester<T>, 2048, 512, eps, nextTargetDeviceId()%numDevices);              \
-    std::this_thread::sleep_for(std::chrono::seconds(2));   \
     tests.emplace_back(solveTriangleTester<T>, 1000, 100, true, eps, nextTargetDeviceId()%numDevices);  \
-    tests.emplace_back(solveTriangleTester<T>, 2048, 512, true, eps, nextTargetDeviceId()%numDevices);  \
-    std::this_thread::sleep_for(std::chrono::seconds(2));   \
     tests.emplace_back(solveTriangleTester<T>, 1000, 100, false, eps, nextTargetDeviceId()%numDevices); \
-    tests.emplace_back(solveTriangleTester<T>, 2048, 512, false, eps, nextTargetDeviceId()%numDevices); \
-    std::this_thread::sleep_for(std::chrono::seconds(2));   \
     tests.emplace_back(solveTester<T>, 1000, 1000, 100, eps, nextTargetDeviceId()%numDevices);          \
-    tests.emplace_back(solveTester<T>, 2048, 2048, 512, eps, nextTargetDeviceId()%numDevices);          \
-    std::this_thread::sleep_for(std::chrono::seconds(2));   \
     tests.emplace_back(solveTester<T>, 800, 1000, 200, eps, nextTargetDeviceId()%numDevices);           \
-    tests.emplace_back(solveTester<T>, 1536, 2048, 400, eps, nextTargetDeviceId()%numDevices);          \
-    std::this_thread::sleep_for(std::chrono::seconds(2));   \
     tests.emplace_back(solveTester<T>, 800, 600, 64, eps, nextTargetDeviceId()%numDevices);             \
-    tests.emplace_back(solveTester<T>, 1536, 1024, 1, eps, nextTargetDeviceId()%numDevices);
 
-// Added 2s sleep for every two test threads to make sure
-// we are not running out of memory.
 TEST(Threading, SolveDense)
 {
     cleanSlate(); // Clean up everything done so far
@@ -659,19 +646,13 @@ TEST(Threading, SolveDense)
 #undef SOLVE_LU_TESTS
 
 #define SPARSE_TESTS(T, eps)                                                    \
-        tests.emplace_back(sparseTester<T>, 1000, 1000, 100, 5, eps);           \
-        tests.emplace_back(sparseTester<T>, 2048, 1024, 512, 3, eps);           \
-        tests.emplace_back(sparseTester<T>, 500, 1000, 250, 1, eps);            \
-        tests.emplace_back(sparseTester<T>, 625, 1331, 1, 2, eps);              \
-        tests.emplace_back(sparseTransposeTester<T>, 625, 1331, 1, 2, eps);     \
-        tests.emplace_back(sparseTransposeTester<T>, 1000, 1000, 100, 5, eps);  \
-        tests.emplace_back(sparseTransposeTester<T>, 2048, 1024, 512, 3, eps);  \
-        tests.emplace_back(sparseTransposeTester<T>, 453, 751, 397, 1, eps);    \
-        tests.emplace_back(convertCSR<T>, 2345, 5678, 0.5);                     \
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+  tests.emplace_back(sparseTester<T>, 1000, 1000, 100, 5, eps, nextTargetDeviceId()%numDevices);  \
+  tests.emplace_back(sparseTester<T>, 500, 1000, 250, 1, eps, nextTargetDeviceId()%numDevices);   \
+  tests.emplace_back(sparseTester<T>, 625, 1331, 1, 2, eps, nextTargetDeviceId()%numDevices);     \
+  tests.emplace_back(sparseTransposeTester<T>, 625, 1331, 1, 2, eps, nextTargetDeviceId()%numDevices); \
+  tests.emplace_back(sparseTransposeTester<T>, 453, 751, 397, 1, eps, nextTargetDeviceId()%numDevices);\
+  tests.emplace_back(convertCSR<T>, 2345, 5678, 0.5, nextTargetDeviceId()%numDevices);
 
-// Added 2s sleep for every two test threads to make sure
-// we are not running out of memory.
 TEST(Threading, Sparse)
 {
     cleanSlate(); // Clean up everything done so far
