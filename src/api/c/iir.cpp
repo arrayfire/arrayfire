@@ -34,6 +34,7 @@ af_err af_fir(af_array *y, const af_array b, const af_array x)
         seqs[0].step = 1;
         af_array res;
         AF_CHECK(af_index(&res, out, 4, seqs));
+        AF_CHECK(af_release_array(out));
         std::swap(*y, res);
 
     } CATCHALL;

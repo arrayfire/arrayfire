@@ -981,3 +981,24 @@ TEST(Asssign, LinearAssignGenArr)
             ASSERT_EQ(hout[i], val) << "at " << i;
     }
 }
+
+TEST(Assign, ISSUE_1764)
+{
+    using af::array;
+    int x = 2;
+    int y = 2;
+    int z = 2;
+    af::array a = af::randu(x,y,z);
+    std::vector<float> ha0(a.elements());
+    a.host(&ha0[0]);
+    a(0, af::span, af::span) = a(1, af::span, af::span);
+    std::vector<float> ha1(a.elements());
+    a.host(&ha1[0]);
+    for (int k = 0; k < z; k++) {
+        for (int j = 0; j < y; j++) {
+            int offset = (j + k * y) * x;
+            ASSERT_EQ(ha0[offset + 1], ha1[offset + 0]);
+            ASSERT_EQ(ha0[offset + 1], ha1[offset + 1]);
+        }
+    }
+}

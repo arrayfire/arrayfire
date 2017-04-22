@@ -142,12 +142,36 @@ af_err af_pow(af_array *out, const af_array lhs, const af_array rhs, const bool 
     try {
         const ArrayInfo& linfo = getInfo(lhs);
         const ArrayInfo& rinfo = getInfo(rhs);
-        if (linfo.isComplex() || rinfo.isComplex()) {
+        if (rinfo.isComplex()) {
             af_array log_lhs, log_res;
             af_array res;
             AF_CHECK(af_log(&log_lhs, lhs));
             AF_CHECK(af_mul(&log_res, log_lhs, rhs, batchMode));
             AF_CHECK(af_exp(&res, log_res));
+            AF_CHECK(af_release_array(log_lhs));
+            AF_CHECK(af_release_array(log_res));
+            std::swap(*out, res);
+            return AF_SUCCESS;
+        } else if (linfo.isComplex()) {
+            af_array mag, angle;
+            af_array mag_res, angle_res;
+            af_array real_res, imag_res, cplx_res;
+            af_array res;
+            AF_CHECK(af_abs(&mag, lhs));
+            AF_CHECK(af_arg(&angle, lhs));
+            AF_CHECK(af_pow(&mag_res, mag, rhs, batchMode));
+            AF_CHECK(af_mul(&angle_res, angle, rhs, batchMode));
+            AF_CHECK(af_cos(&real_res, angle_res));
+            AF_CHECK(af_sin(&imag_res, angle_res));
+            AF_CHECK(af_cplx2(&cplx_res, real_res, imag_res, batchMode));
+            AF_CHECK(af_mul(&res, mag_res, cplx_res, batchMode));
+            AF_CHECK(af_release_array(mag));
+            AF_CHECK(af_release_array(angle));
+            AF_CHECK(af_release_array(mag_res));
+            AF_CHECK(af_release_array(angle_res));
+            AF_CHECK(af_release_array(real_res));
+            AF_CHECK(af_release_array(imag_res));
+            AF_CHECK(af_release_array(cplx_res));
             std::swap(*out, res);
             return AF_SUCCESS;
         }
