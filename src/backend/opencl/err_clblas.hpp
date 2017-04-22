@@ -57,6 +57,7 @@ static std::recursive_mutex gCLBlasMutex;
 #define CLBLAS_CHECK(fn) do {                   \
         gCLBlasMutex.lock();                    \
         clblasStatus _clblas_st = fn;           \
+        gCLBlasMutex.unlock();                  \
         if (_clblas_st != clblasSuccess) {      \
             char clblas_st_msg[1024];           \
             snprintf(clblas_st_msg,             \
@@ -69,5 +70,4 @@ static std::recursive_mutex gCLBlasMutex;
             AF_ERROR(clblas_st_msg,             \
                      AF_ERR_INTERNAL);          \
         }                                       \
-        gCLBlasMutex.unlock();                  \
     } while(0)

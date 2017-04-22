@@ -80,8 +80,12 @@ static const char * _clblastGetResultString(clblast::StatusCode st)
     return "Unknown error";
 }
 
+static std::recursive_mutex gCLBlastMutex;
+
 #define CLBLAST_CHECK(fn) do {                              \
+        gCLBlastMutex.lock();                               \
         clblast::StatusCode _clblast_st = fn;               \
+        gCLBlastMutex.unlock();                             \
         if (_clblast_st != clblast::StatusCode::kSuccess) { \
             char clblast_st_msg[1024];                      \
             snprintf(clblast_st_msg,                        \
