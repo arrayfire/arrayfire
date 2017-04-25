@@ -16,6 +16,7 @@
 #include <chrono>
 #include <thread>
 #include <iterator>
+#include <vector>
 #include <testHelpers.hpp>
 #include <solve_common.hpp>
 #include <sparse_common.hpp>
@@ -697,7 +698,39 @@ TEST(Threading, Sparse)
         SPARSE_TESTS(cdouble, 1E-5);
     }
 
-    for (size_t testId=0; testId<tests.size(); ++testId)
+    for (size_t testId=0; testId < tests.size(); ++testId)
         if (tests[testId].joinable())
             tests[testId].join();
+}
+
+TEST(Threading, MemoryManagerStressTest) {
+  vector<std::thread> threads;
+  for (int i = 0; i < THREAD_COUNT; i++) {
+    threads.emplace_back([] {
+        vector<af::array> arrg;
+        int size = 100;
+        int ex_count = 0;
+
+        // Continue until the memory runs out multiple times
+        while (true) {
+          try {
+            // constantly change size of the array allocated
+            size+=10;
+            arrg.push_back(af::randu(size));
+
+            // delete some values intermittently
+            if (!(size%200)) {
+              arrg.erase(std::begin(arrg), std::begin(arrg)+5);
+            }
+          } catch( const af::exception &ex ) {
+            if (ex_count++ > 3) {
+              break;
+            }
+          }
+        }
+      });
+  }
+  for (auto& t : threads) {
+    t.join();
+  }
 }
