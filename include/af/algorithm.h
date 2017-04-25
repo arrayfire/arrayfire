@@ -306,7 +306,7 @@ namespace af
     template<typename T> void max(T *val, unsigned *idx, const array &in);
 
     /**
-       C++ Interface exclusive sum (cumulative sum) of an array
+       C++ Interface inclusive sum (cumulative sum) of an array
 
        \param[in] in is the input array
        \param[in] dim The dimension along which exclusive sum is performed
@@ -761,7 +761,7 @@ extern "C" {
     AFAPI af_err af_imax_all(double *real, double *imag, unsigned *idx, const af_array in);
 
     /**
-       C Interface exclusive sum (cumulative sum) of an array
+       C Interface inclusive sum (cumulative sum) of an array
 
        \param[out] out will contain exclusive sums of the input
        \param[in] in is the input array
