@@ -45,17 +45,14 @@ TEST(ycbcr2rgb, CPP)
     af::array input(dims, &(in[0].front()));
     af::array output = af::ycbcr2rgb(input);
 
-    float *outData = new float[dims.elements()];
-    output.host((void*)outData);
+    std::vector<float> outData(dims.elements());
+    output.host(outData.data());
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< std::endl;
     }
-
-    // cleanup
-    delete[] outData;
 }
 
 TEST(rgb2ycbcr, CPP)
@@ -70,15 +67,12 @@ TEST(rgb2ycbcr, CPP)
     af::array input(dims, &(in[0].front()));
     af::array output = af::rgb2ycbcr(input);
 
-    float *outData = new float[dims.elements()];
-    output.host((void*)outData);
+    std::vector<float> outData(dims.elements());
+    output.host(outData.data());
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< std::endl;
     }
-
-    // cleanup
-    delete[] outData;
 }

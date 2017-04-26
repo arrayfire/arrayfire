@@ -57,9 +57,9 @@ void matchTemplateTest(string pTestFile, af_match_type pMatchType)
 
     ASSERT_EQ(AF_SUCCESS, af_match_template(&outArray, sArray, tArray, pMatchType));
 
-    outType *outData = new outType[sDims.elements()];
+    std::vector<outType> outData(sDims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     vector<outType> currGoldBar = tests[0];
     size_t nElems        = currGoldBar.size();
@@ -68,7 +68,6 @@ void matchTemplateTest(string pTestFile, af_match_type pMatchType)
     }
 
     // cleanup
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(sArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(tArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));

@@ -49,7 +49,6 @@ void morphTest(string pTestFile)
     af_array outArray  = 0;
     af_array inArray   = 0;
     af_array maskArray = 0;
-    inType *outData;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
                 dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
@@ -69,9 +68,9 @@ void morphTest(string pTestFile)
             ASSERT_EQ(AF_SUCCESS, af_erode(&outArray, inArray, maskArray));
     }
 
-    outData = new inType[dims.elements()];
+    std::vector<inType> outData(dims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t testIter=0; testIter<tests.size(); ++testIter) {
         vector<inType> currGoldBar = tests[testIter];
@@ -82,7 +81,6 @@ void morphTest(string pTestFile)
     }
 
     // cleanup
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
@@ -159,13 +157,13 @@ void morphImageTest(string pTestFile)
         else
             ASSERT_EQ(AF_SUCCESS, af_erode(&outArray, inArray, maskArray));
 
-        T * outData = new T[nElems];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+        std::vector<T> outData(nElems);
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
-        T * goldData= new T[nElems];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData, goldArray));
+        std::vector<T> goldData(nElems);
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
 
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData, outData, 0.018f));
+        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.018f));
 
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
@@ -371,16 +369,13 @@ void cppMorphImageTest(string pTestFile)
         else
             output = erode(img, mask);
 
-        T * outData = new T[nElems];
-        output.host((void*)outData);
+        std::vector<T> outData(nElems);
+        output.host((void*)outData.data());
 
-        T * goldData= new T[nElems];
-        gold.host((void*)goldData);
+        std::vector<T> goldData(nElems);
+        gold.host((void*)goldData.data());
 
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData, outData, 0.018f));
-        //cleanup
-        delete[] outData;
-        delete[] goldData;
+        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.018f));
     }
 }
 
@@ -452,8 +447,8 @@ TEST(Morph, EdgeIssue1564)
     array dilated = dilate(input.as(b8), mask.as(b8));
 
     size_t nElems = dilated.elements();
-    char * outData = new char[nElems];
-    dilated.host((void*)outData);
+    std::vector<char> outData(nElems);
+    dilated.host((void*)outData.data());
 
     for (size_t i=0; i<nElems; ++i) {
         ASSERT_EQ((int)outData[i], goldData[i]);

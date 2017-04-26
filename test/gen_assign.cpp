@@ -59,15 +59,14 @@ void testGeneralAssignOneArray(string pTestFile, const dim_t ndims, af_index_t* 
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
-    float *outData = new float[nElems];
+    std::vector<float> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
     }
 
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray));
@@ -124,15 +123,14 @@ TEST(GeneralAssign, SSSS)
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
-    float *outData = new float[nElems];
+    std::vector<float> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
     }
 
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
@@ -192,18 +190,21 @@ TEST(GeneralAssign, AAAA)
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
-    float *outData = new float[nElems];
+    std::vector<float> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
     }
 
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray0));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray1));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray2));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray3));
 }
 
 

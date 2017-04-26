@@ -48,14 +48,14 @@ void histTest(string pTestFile, unsigned nbins, double minval, double maxval)
 
     af_array outArray   = 0;
     af_array inArray    = 0;
-    outType *outData;
+
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<inType>::af_type));
 
     ASSERT_EQ(AF_SUCCESS,af_histogram(&outArray,inArray,nbins,minval,maxval));
 
-    outData = new outType[dims.elements()];
+    std::vector<outType> outData(dims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t testIter=0; testIter<tests.size(); ++testIter) {
         vector<outType> currGoldBar = tests[testIter];
@@ -66,7 +66,6 @@ void histTest(string pTestFile, unsigned nbins, double minval, double maxval)
     }
 
     // cleanup
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
@@ -118,8 +117,8 @@ TEST(Histogram, CPP)
     af::array output = histogram(input, nbins, minval, maxval);
 //! [hist_nominmax]
 
-    uint *outData = new uint[output.elements()];
-    output.host((void*)outData);
+    std::vector<uint> outData(output.elements());
+    output.host((void*)outData.data());
 
     for (size_t testIter=0; testIter<tests.size(); ++testIter) {
         vector<uint> currGoldBar = tests[testIter];
@@ -128,9 +127,6 @@ TEST(Histogram, CPP)
             ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< std::endl;
         }
     }
-
-    // cleanup
-    delete[] outData;
 }
 
 /////////////////////////////////// Documentation Snippets //////////////////////////////////
