@@ -316,23 +316,17 @@ int getDeviceIdFromNativeId(int nativeId)
     return devId;
 }
 
-cudaStream_t DeviceManager::nextAvailableStream(int device)
-{
-    common::lock_guard_t lock(poolCounterMutexes[device]);
-
-    unsigned oldPoolId = nextPoolCounter[device];
-
-    nextPoolCounter[device] = (oldPoolId+1) % streamPoolCluster[device].size();
-
-    return streamPoolCluster[device][oldPoolId];
-}
-
 cudaStream_t getStream(int device)
 {
-    static thread_local cudaStream_t myDefaultStream =
-        DeviceManager::getInstance().nextAvailableStream(device);
+    static std::once_flag streamInitFlags[DeviceManager::MAX_DEVICES];
 
-    return myDefaultStream;
+    std::call_once(streamInitFlags[device],
+            [device]() {
+                DeviceManager& inst = DeviceManager::getInstance();
+                CUDA_CHECK(cudaStreamCreate( & (inst.streams[device]) ));
+            });
+
+    return DeviceManager::getInstance().streams[device];
 }
 
 cudaStream_t getActiveStream()
@@ -514,16 +508,10 @@ DeviceManager::DeviceManager()
 
     sortDevices();
 
-    // Initialize stream pools for all devices.
-    for (unsigned c=0; c < streamPoolCluster.size(); ++c) {
-        streamPoolCluster[c].resize(MAX_SIZE_STREAM_POOL, static_cast<cudaStream_t>(0));
-        for (unsigned p=0; p<MAX_SIZE_STREAM_POOL; ++p) {
-            cudaStream_t temp = 0;
-            CUDA_CHECK(cudaStreamCreate(&temp));
-            streamPoolCluster[c][p] = temp;
-        }
-    }
-    nextPoolCounter.fill(0);
+    // Initialize all streams to 0.
+    // Streams will be created in setActiveDevice()
+    for(int i = 0; i < (int)MAX_DEVICES; i++)
+        streams[i] = (cudaStream_t)0;
 
     std::string deviceENV = getEnvVar("AF_CUDA_DEFAULT_DEVICE");
     if(deviceENV.empty()) {

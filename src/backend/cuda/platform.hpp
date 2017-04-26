@@ -96,8 +96,6 @@ class DeviceManager
 {
     public:
         static const unsigned MAX_DEVICES = 16;
-        static const unsigned MAX_SIZE_STREAM_POOL = 16;
-        typedef std::vector<cudaStream_t> StreamPool;
 
 #if defined(WITH_GRAPHICS)
         static bool checkGraphicsInteropCapability();
@@ -154,13 +152,8 @@ class DeviceManager
 
         int setActiveDevice(int device, int native = -1);
 
-        cudaStream_t nextAvailableStream(int device);
-
         int nDevices;
-
-        std::array<     StreamPool, MAX_DEVICES> streamPoolCluster;
-        std::array<       unsigned, MAX_DEVICES> nextPoolCounter;
-        std::array<common::mutex_t, MAX_DEVICES> poolCounterMutexes;
+        cudaStream_t streams[MAX_DEVICES];
 
         std::unique_ptr<MemoryManager> memManager;
 
