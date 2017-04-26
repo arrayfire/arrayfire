@@ -213,7 +213,7 @@ static af_err reduce_all_type(double *real, double *imag, const af_array in)
 
         ARG_ASSERT(0, real != NULL);
         *real = 0;
-        if (!imag) *imag = 0;
+        if (imag) *imag = 0;
 
         switch(type) {
         case f32:  *real = (double)reduce_all<op, float  , To>(in); break;
@@ -461,7 +461,7 @@ static af_err ireduce_all_common(double *real_val, double *imag_val,
         ARG_ASSERT(3, in_info.ndims() > 0);
         ARG_ASSERT(0, real_val != NULL);
         *real_val = 0;
-        if (!imag_val) *imag_val = 0;
+        if (imag_val) *imag_val = 0;
 
         cfloat  cfval;
         cdouble cdval;
