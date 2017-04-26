@@ -14,6 +14,7 @@
 #include <thread>
 #include <complex>
 #include <chrono>
+#include <condition_variable>
 #include <thread>
 #include <iterator>
 #include <vector>
@@ -198,20 +199,34 @@ static void cleanSlate()
     ASSERT_EQ(af::getMemStepSize(), step_bytes);
 }
 
+std::condition_variable cv;
+std::mutex cvMutex;
+size_t counter = THREAD_COUNT;
+
 void doubleAllocationTest()
 {
     af::setDevice(0);
 
+    //Block until all threads are launched and the
+    //counter variable hits zero
+    std::unique_lock<std::mutex> lock(cvMutex);
+    //Check for current thread launch counter value
+    //if reached zero, notify others to continue
+    //otherwise block current thread
+    if (--counter==0)
+        cv.notify_all();
+    else
+        cv.wait(lock, [] {return counter==0;});
+    lock.unlock();
+
     af::array a = randu(5, 5);
 
-    for (int i = 0; i < 100; ++i)
-    {
-        a = randu(5, 5);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
+    // Wait for for other threads to hit randu call
+    // while this thread's variable a is still in scope.
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
-TEST(Threading, MemoryManagement_Double_Alloc)
+TEST(Threading, MemoryManagementScope)
 {
     cleanSlate(); // Clean up everything done so far
 
@@ -232,48 +247,8 @@ TEST(Threading, MemoryManagement_Double_Alloc)
 
     ASSERT_EQ( lock_buffers,     0u);
     ASSERT_EQ(  lock_bytes,      0u);
-    ASSERT_LE(alloc_buffers,    64u);
-    ASSERT_GT(alloc_buffers,    32u);
-    ASSERT_LE(  alloc_bytes, 65536u);
-    ASSERT_GT(  alloc_bytes, 32768u);
-}
-
-void singleAllocationTest()
-{
-    af::setDevice(0);
-
-    for (int i = 0; i < 100; ++i)
-    {
-        af::array a = af::randu(5, 5);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-}
-
-TEST(Threading, MemoryManagement_Single_Alloc)
-{
-    cleanSlate(); // Clean up everything done so far
-
-    vector<std::thread> tests;
-
-    for (int t=0; t<THREAD_COUNT; ++t)
-        tests.emplace_back(singleAllocationTest);
-
-    for (int t=0; t<THREAD_COUNT; ++t)
-        if (tests[t].joinable())
-            tests[t].join();
-
-    size_t alloc_bytes, alloc_buffers;
-    size_t lock_bytes, lock_buffers;
-
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
-            &lock_bytes, &lock_buffers);
-
-    ASSERT_EQ( lock_buffers,     0u);
-    ASSERT_EQ(  lock_bytes,      0u);
-    ASSERT_LE(alloc_buffers,    32u);
-    ASSERT_GT(alloc_buffers,     0u);
-    ASSERT_LE(  alloc_bytes, 32768u);
-    ASSERT_GT(  alloc_bytes,     0u);
+    ASSERT_EQ(alloc_buffers,    32u);
+    ASSERT_EQ(  alloc_bytes, 32768u);
 }
 
 void jitAllocationTest()
@@ -703,7 +678,10 @@ TEST(Threading, Sparse)
             tests[testId].join();
 }
 
-TEST(Threading, MemoryManagerStressTest) {
+//FIXME Disable for CPU backend
+#if !defined(AF_CPU)
+TEST(Threading, MemoryManagerStressTest)
+{
   vector<std::thread> threads;
   for (int i = 0; i < THREAD_COUNT; i++) {
     threads.emplace_back([] {
@@ -734,3 +712,4 @@ TEST(Threading, MemoryManagerStressTest) {
     t.join();
   }
 }
+#endif
