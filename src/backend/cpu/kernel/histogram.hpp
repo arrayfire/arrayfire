@@ -26,10 +26,10 @@ void histogram(Array<OutT> out, Array<InT> const in,
     dim4 const oStrides  = out.strides();
     dim_t const nElems   = inDims[0]*inDims[1];
 
-    OutT *outData    = out.get();
-    const InT* inData= in.get();
 
     for(dim_t b3 = 0; b3 < outDims[3]; b3++) {
+        OutT *outData    = out.get() + b3 * oStrides[3];
+        const InT* inData= in.get() + b3 * iStrides[3];
         for(dim_t b2 = 0; b2 < outDims[2]; b2++) {
             for(dim_t i=0; i<nElems; i++) {
                 int idx = IsLinear ? i : ((i % inDims[0]) + (i / inDims[0])*iStrides[1]);
