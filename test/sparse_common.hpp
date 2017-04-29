@@ -28,7 +28,7 @@ using af::cdouble;
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 
-template<typename T>
+template<typename T> static
 af::array makeSparse(af::array A, int factor)
 {
     A = floor(A * 1000);
@@ -62,12 +62,12 @@ af::array makeSparse<cdouble>(af::array A, int factor)
     return A;
 }
 
-double calc_norm(af::array lhs, af::array rhs)
+static double calc_norm(af::array lhs, af::array rhs)
 {
     return af::max<double>(af::abs(lhs - rhs) / (af::abs(lhs) + af::abs(rhs) + 1E-5));
 }
 
-template<typename T>
+template<typename T> static
 void sparseTester(const int m, const int n, const int k, int factor, double eps,
                   int targetDevice=-1)
 {
@@ -102,7 +102,7 @@ void sparseTester(const int m, const int n, const int k, int factor, double eps,
     ASSERT_NEAR(0, calc_norm(imag(dRes1), imag(sRes1)), eps);
 }
 
-template<typename T>
+template<typename T> static
 void sparseTransposeTester(const int m, const int n, const int k, int factor, double eps,
                            int targetDevice=-1)
 {
@@ -142,7 +142,7 @@ void sparseTransposeTester(const int m, const int n, const int k, int factor, do
     ASSERT_NEAR(0, calc_norm(imag(dRes3), imag(sRes3)), eps);
 }
 
-template<typename T>
+template<typename T> static
 void convertCSR(const int M, const int N, const float ratio, int targetDevice=-1)
 {
     if (targetDevice>=0)
@@ -164,7 +164,7 @@ void convertCSR(const int M, const int N, const float ratio, int targetDevice=-1
 
 // This test essentially verifies that the sparse structures have the correct
 // dimensions and indices using a very basic test
-template<af_storage stype>
+template<af_storage stype> static
 void createFunction()
 {
     af::array in = af::sparse(af::identity(3, 3), stype);
@@ -181,7 +181,7 @@ void createFunction()
     ASSERT_EQ(0, af::max<int   >(colIdx - af::range(af::dim4(colIdx.elements()), 0, s32)));
 }
 
-template<typename Ti, typename To>
+template<typename Ti, typename To> static
 void sparseCastTester(const int m, const int n, int factor)
 {
     if (noDoubleTests<Ti>()) return;
