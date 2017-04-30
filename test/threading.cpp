@@ -678,9 +678,7 @@ TEST(Threading, Sparse)
             tests[testId].join();
 }
 
-//FIXME Disable for CPU backend
-#if !defined(AF_CPU)
-TEST(Threading, MemoryManagerStressTest)
+TEST(Threading, DISABLED_MemoryManagerStressTest)
 {
   vector<std::thread> threads;
   for (int i = 0; i < THREAD_COUNT; i++) {
@@ -712,4 +710,3 @@ TEST(Threading, MemoryManagerStressTest)
     t.join();
   }
 }
-#endif
