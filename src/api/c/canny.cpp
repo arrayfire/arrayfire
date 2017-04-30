@@ -173,7 +173,7 @@ template<typename T>
 af_array cannyHelper(const Array<T> in, const float t1, const af_canny_threshold ct,
                      const float t2, const unsigned sw, const bool isf)
 {
-    static const std::vector<float> v = {-0.11021, -0.23691, -0.30576, -0.23691, -0.11021};
+    static const std::vector<float> v = {-0.11021f, -0.23691f, -0.30576f, -0.23691f, -0.11021f};
     Array<float> cFilter= detail::createHostDataArray<float>(dim4(5, 1), v.data());
     Array<float> rFilter= detail::createHostDataArray<float>(dim4(1, 5), v.data());
 
