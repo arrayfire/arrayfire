@@ -9,14 +9,16 @@
 
 #pragma once
 
-#include <vector>
-#include <mutex>
-#include <unordered_map>
-#include <iostream>
-#include <iomanip>
 #include <err_common.hpp>
 #include <dispatch.hpp>
 #include <util.hpp>
+
+#include <algorithm>
+#include <iomanip>
+#include <iostream>
+#include <mutex>
+#include <unordered_map>
+#include <vector>
 
 namespace common
 {

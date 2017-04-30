@@ -36,13 +36,14 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstring>
 #include <functional>
 #include <map>
 #include <mutex>
-#include <string>
 #include <sstream>
 #include <stdexcept>
-#include <cstring>
+#include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
