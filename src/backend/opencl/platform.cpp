@@ -280,7 +280,7 @@ std::pair<unsigned, unsigned>& tlocalActiveDeviceId()
 {
     // First element is active context id
     // Second element is active queue id
-    thread_local static device_id_t activeDeviceId(0, 0);
+    thread_local device_id_t activeDeviceId(0, 0);
 
     return activeDeviceId;
 }
@@ -713,14 +713,14 @@ GraphicsResourceManager& interopManager()
 
 PlanCache& fftManager()
 {
-    thread_local static PlanCache clfftManagers[DeviceManager::MAX_DEVICES];
+    thread_local PlanCache clfftManagers[DeviceManager::MAX_DEVICES];
 
     return clfftManagers[getActiveDeviceId()];
 }
 
 kc_t& getKernelCache(int device)
 {
-    thread_local static kc_t kernelCaches[DeviceManager::MAX_DEVICES];
+    thread_local kc_t kernelCaches[DeviceManager::MAX_DEVICES];
 
     return kernelCaches[device];
 }

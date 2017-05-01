@@ -285,7 +285,7 @@ unsigned getMaxJitSize()
 
 int& tlocalActiveDeviceId()
 {
-    thread_local static int activeDeviceId = 0;
+    thread_local int activeDeviceId = 0;
 
     return activeDeviceId;
 }
@@ -432,15 +432,15 @@ GraphicsResourceManager& interopManager()
 
 PlanCache& fftManager()
 {
-    thread_local static PlanCache cufftManagers[DeviceManager::MAX_DEVICES];
+    thread_local PlanCache cufftManagers[DeviceManager::MAX_DEVICES];
 
     return cufftManagers[getActiveDeviceId()];
 }
 
 BlasHandle blasHandle()
 {
-    thread_local static std::unique_ptr<cublasHandle> cublasHandles[DeviceManager::MAX_DEVICES];
-    thread_local static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
+    thread_local std::unique_ptr<cublasHandle> cublasHandles[DeviceManager::MAX_DEVICES];
+    thread_local std::once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     int id = cuda::getActiveDeviceId();
 
@@ -453,8 +453,8 @@ BlasHandle blasHandle()
 
 SolveHandle solverDnHandle()
 {
-    thread_local static std::unique_ptr<cusolverDnHandle> cusolverHandles[DeviceManager::MAX_DEVICES];
-    thread_local static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
+    thread_local std::unique_ptr<cusolverDnHandle> cusolverHandles[DeviceManager::MAX_DEVICES];
+    thread_local std::once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     int id = cuda::getActiveDeviceId();
 
@@ -480,8 +480,8 @@ SolveHandle solverDnHandle()
 
 SparseHandle sparseHandle()
 {
-    thread_local static std::unique_ptr<cusparseHandle> cusparseHandles[DeviceManager::MAX_DEVICES];
-    thread_local static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
+    thread_local std::unique_ptr<cusparseHandle> cusparseHandles[DeviceManager::MAX_DEVICES];
+    thread_local std::once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     int id = cuda::getActiveDeviceId();
 
@@ -553,7 +553,7 @@ void DeviceManager::sortDevices(sort_mode mode)
 
 int DeviceManager::setActiveDevice(int device, int nId)
 {
-    thread_local static bool retryFlag = true;
+    thread_local bool retryFlag = true;
 
     int numDevices = cuDevices.size();
 

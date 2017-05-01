@@ -562,7 +562,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
 {
     typedef std::map<std::string, kc_entry_t> kc_t;
 
-    thread_local static kc_t kernelCaches[DeviceManager::MAX_DEVICES];
+    thread_local kc_t kernelCaches[DeviceManager::MAX_DEVICES];
 
     string funcName = getFuncName(output_nodes, full_nodes, full_ids, is_linear);
     int device      = getActiveDeviceId();
