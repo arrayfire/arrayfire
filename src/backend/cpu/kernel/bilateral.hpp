@@ -24,9 +24,6 @@ void bilateral(Array<OutT> out, Array<InT> const in, float const s_sigma, float 
     af::dim4 const istrides = in.strides();
     af::dim4 const ostrides = out.strides();
 
-          OutT *outData = out.get();
-    InT const * inData  = in.get();
-
     // clamp spatical and chromatic sigma's
     float space_       = std::min(11.5f, std::max(s_sigma, 0.f));
     float color_       = std::max(c_sigma, 0.f);
@@ -35,6 +32,10 @@ void bilateral(Array<OutT> out, Array<InT> const in, float const s_sigma, float 
     float const cvar   = color_*color_;
 
     for(dim_t b3=0; b3<dims[3]; ++b3) {
+
+        OutT *outData = out.get() + b3 * ostrides[3];
+        InT const * inData  = in.get() + b3 * istrides[3];
+
         // b3 for loop handles following batch configurations
         //  - gfor
         //  - input based batch

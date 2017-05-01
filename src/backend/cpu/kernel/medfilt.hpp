@@ -27,10 +27,10 @@ void medfilt1(Array<T> out, const Array<T> in, dim_t w_wid)
     std::vector<T> wind_vals;
     wind_vals.reserve(w_wid);
 
-    T const * in_ptr = in.get();
-    T * out_ptr = out.get();
-
     for(int b3=0; b3<(int)dims[3]; b3++) {
+
+        T const * in_ptr = in.get() + b3 * istrides[3];
+        T * out_ptr = out.get() + b3 * ostrides[3];
 
         for(int b2=0; b2<(int)dims[2]; b2++) {
 
@@ -100,6 +100,8 @@ void medfilt2(Array<T> out, const Array<T> in, dim_t w_len, dim_t w_wid)
     T * out_ptr = out.get();
 
     for(int b3=0; b3<(int)dims[3]; b3++) {
+        T const * in_ptr = in.get() + b3 * istrides[3];
+        T * out_ptr = out.get() + b3 * ostrides[3];
 
         for(int b2=0; b2<(int)dims[2]; b2++) {
 

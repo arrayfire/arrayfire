@@ -37,10 +37,11 @@ void meanShift(Array<T> out, const Array<T> in, const float s_sigma,
     std::vector<float> centers(channels);
     std::vector<float> tmpclrs(channels);
 
-    T *outData       = out.get();
-    const T * inData = in.get();
 
     for(dim_t b3=0; b3<dims[3]; ++b3) {
+        T *outData       = out.get() + b3 * ostrides[3];
+        const T * inData = in.get() + b3 * istrides[3];
+
         for(dim_t b2=0; b2<bCount; ++b2) {
 
             for(dim_t j=0; j<dims[1]; ++j) {
