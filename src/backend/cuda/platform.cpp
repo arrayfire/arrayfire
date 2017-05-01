@@ -14,16 +14,19 @@
 #include <util.hpp>
 #include <version.hpp>
 #include <driver.h>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <sstream>
-#include <stdexcept>
-#include <cstdio>
-#include <cstring>
 #include <err_cuda.hpp>
 #include <util.hpp>
 #include <host_memory.hpp>
+
+#include <algorithm>
+#include <cstdio>
+#include <cstring>
+#include <mutex>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
 
 using namespace std;
 

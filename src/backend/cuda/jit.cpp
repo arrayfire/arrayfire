@@ -46,6 +46,7 @@
 #include <map>
 #include <memory>
 #include <stdexcept>
+#include <thread>
 #include <vector>
 
 namespace cuda
