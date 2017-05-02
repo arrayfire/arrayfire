@@ -22,6 +22,9 @@ typedef HMODULE LibHandle;
 typedef void* LibHandle;
 #endif
 
+#include <array>
+#include <unordered_map>
+
 namespace unified
 {
 
@@ -34,6 +37,14 @@ const int NUM_ENV_VARS = 2;
                     "for instructions to set up environment for Unified backend.", \
                     AF_ERR_LOAD_LIB)
 
+static int backend_index(af::Backend be) {
+    switch (be) {
+        case AF_BACKEND_CPU: return 0;
+        case AF_BACKEND_CUDA: return 1;
+        case AF_BACKEND_OPENCL: return 2;
+        default: return -1;
+    }
+}
 
 class AFSymbolManager {
     public:
@@ -51,16 +62,22 @@ class AFSymbolManager {
 
         template<typename... CalleeArgs>
         af_err call(const char* symbolName, CalleeArgs... args) {
+            typedef af_err(*af_func)(CalleeArgs...);
             if (!activeHandle) {
                 UNIFIED_ERROR_LOAD_LIB();
             }
-            typedef af_err(*af_func)(CalleeArgs...);
-            af_func funcHandle;
+            static std::array<std::unordered_map<const char*, af_func>, NUM_BACKENDS> funcHandles;
+
+            int index = backend_index(getActiveBackend());
+            af_func& funcHandle = funcHandles[index][symbolName];
+
+            if (!funcHandle) {
 #if defined(OS_WIN)
-            funcHandle = (af_func)GetProcAddress(activeHandle, symbolName);
+                funcHandle = (af_func)GetProcAddress(activeHandle, symbolName);
 #else
-            funcHandle = (af_func)dlsym(activeHandle, symbolName);
+                funcHandle = (af_func)dlsym(activeHandle, symbolName);
 #endif
+            }
             if (!funcHandle) {
                 std::string str = "Failed to load symbol: ";
                 str += symbolName;
