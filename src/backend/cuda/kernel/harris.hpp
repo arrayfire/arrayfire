@@ -312,9 +312,8 @@ void harris(unsigned* corners_out,
     memFree(d_responses);
     memFree(d_corners_found);
 
-    *corners_out = (max_corners > 0) ?
-                   min(corners_found, max_corners) :
-                   min(corners_found, corner_lim);
+    if (max_corners > 0) { *corners_out = min(corners_found, max_corners); }
+    else                 { *corners_out = min(corners_found, corner_lim);  }
 
     if (*corners_out == 0)
         return;
