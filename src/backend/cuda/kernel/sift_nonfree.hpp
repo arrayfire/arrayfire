@@ -1324,8 +1324,9 @@ void sift(unsigned* out_feat,
           const float feature_ratio,
           const bool compute_GLOH)
 {
-    const unsigned min_dim = (double_input) ? min(img.dims[0]*2, img.dims[1]*2)
-                                            : min(img.dims[0], img.dims[1]);
+    unsigned min_dim = min(img.dims[0], img.dims[1]);
+    if (double_input) min_dim *= 2;
+
     const unsigned n_octaves = floor(log(min_dim) / log(2)) - 2;
 
     Param<T> init_img = createInitialImage<T, convAccT>(img, init_sigma, double_input);
