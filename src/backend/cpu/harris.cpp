@@ -83,9 +83,8 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
     kernel::non_maximal<T>(xCorners, yCorners, respCorners, &corners_found,
                    idims[0], idims[1], responses, min_r, border_len, corner_lim);
 
-    const unsigned corners_out = (max_corners > 0) ?
-                                 min(corners_found, max_corners) :
-                                 min(corners_found, corner_lim);
+    const unsigned corners_out = min(corners_found,
+                                    (max_corners > 0) ? max_corners : corner_lim);
     if (corners_out == 0)
         return 0;
 
