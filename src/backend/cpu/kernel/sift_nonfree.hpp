@@ -972,8 +972,9 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
     getQueue().sync();
     af::dim4 idims = in.dims();
 
-    const unsigned min_dim = (double_input) ? min(idims[0]*2, idims[1]*2)
-        : min(idims[0], idims[1]);
+    unsigned min_dim = min(idims[0], idims[1]);
+    if (double_input) min_dim *= 2;
+
     const unsigned n_octaves = floor(log(min_dim) / log(2)) - 2;
 
     Array<T> init_img = createInitialImage<T, convAccT>(in, init_sigma, double_input);
