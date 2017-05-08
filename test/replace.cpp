@@ -93,7 +93,7 @@ void replaceScalarTest(const dim4 &dims)
     cond.host(&hcond[0]);
 
     for (int i = 0; i < num; i++) {
-        ASSERT_EQ(hc[i], hcond[i] ? T(b) : ha[i]);
+        ASSERT_EQ(hc[i], hcond[i] ? ha[i] : T(b));
     }
 }
 
@@ -116,7 +116,7 @@ TEST(Replace, NaN)
     a(seq(a.dims(0) / 2), span, span, span) = af::NaN;
     array c = a.copy();
     float b = 0;
-    replace(c, isNaN(c), b);
+    replace(c, !isNaN(c), b);
 
     int num = (int)a.elements();
 
@@ -127,7 +127,7 @@ TEST(Replace, NaN)
     c.host(&hc[0]);
 
     for (int i = 0; i < num; i++) {
-        ASSERT_EQ(hc[i], std::isnan(ha[i]) ? b : ha[i]);
+        ASSERT_EQ(hc[i], ( std::isnan(ha[i]) ? b : ha[i]) );
     }
 }
 
