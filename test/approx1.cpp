@@ -7,26 +7,38 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <af/array.h>
 #include <af/complex.h>
-#include <af/signal.h>
-#include <af/index.h>
-#include <af/traits.hpp>
 #include <af/dim4.hpp>
-#include <vector>
-#include <iostream>
-#include <complex>
-#include <string>
+#include <af/index.h>
+#include <af/signal.h>
+#include <af/traits.hpp>
+
+#include <gtest/gtest.h>
 #include <testHelpers.hpp>
 
-using std::vector;
-using std::string;
+#include <complex>
+#include <iostream>
+#include <string>
+#include <vector>
+
+using af::abs;
+using af::approx1;
+using af::array;
+using af::cdouble;
+using af::cfloat;
+using af::dim4;
+using af::dtype_traits;
+using af::randu;
+using af::span;
+using af::seq;
+using af::sum;
+
+using std::abs;
 using std::cout;
 using std::endl;
-using std::abs;
-using af::cfloat;
-using af::cdouble;
+using std::string;
+using std::vector;
 
 template<typename T>
 class Approx1 : public ::testing::Test
@@ -277,22 +289,21 @@ void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
 //
 TEST(Approx1, CPP)
 {
-    if (noDoubleTests<float>()) return;
     const unsigned resultIdx = 1;
     const af_interp_type method = AF_INTERP_LINEAR;
-#define BT af::dtype_traits<float>::base_type
-    vector<af::dim4> numDims;
+#define BT dtype_traits<float>::base_type
+    vector<dim4> numDims;
     vector<vector<BT> > in;
     vector<vector<float> > tests;
     readTests<BT, float, float>(string(TEST_DIR"/approx/approx1.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::dim4 pdims = numDims[1];
+    dim4 idims = numDims[0];
+    dim4 pdims = numDims[1];
 
-    af::array input(idims, &(in[0].front()));
-    af::array pos(pdims, &(in[1].front()));
+    array input(idims, &(in[0].front()));
+    array pos(pdims, &(in[1].front()));
 
-    af::array output = approx1(input, pos, method, 0);
+    array output = approx1(input, pos, method, 0);
 
     // Get result
     float* outData = new float[tests[resultIdx].size()];
@@ -314,69 +325,75 @@ TEST(Approx1, CPP)
 
 TEST(Approx1, CPPNearestBatch)
 {
-    if (noDoubleTests<float>()) return;
+    array input = randu(600, 10);
+    array pos   = input.dims(0) * randu(100, 10);
 
-    af::array input = af::randu(600, 10);
-    af::array pos   = input.dims(0) * af::randu(100, 10);
+    array outBatch = approx1(input, pos, AF_INTERP_NEAREST);
 
-    af::array outBatch = af::approx1(input, pos, AF_INTERP_NEAREST);
-
-    af::array outSerial(pos.dims());
-    for(int i = 0; i < pos.dims(1); i++) {
-        outSerial(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_NEAREST);
+    array outSerial(pos.dims());
+    for (int i = 0; i < pos.dims(1); i++) {
+        outSerial(span, i) = approx1(input(span, i),
+                                         pos(span, i),
+                                         AF_INTERP_NEAREST);
     }
 
-    af::array outGFOR(pos.dims());
-    gfor(af::seq i, pos.dims(1)) {
-        outGFOR(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_NEAREST);
+    array outGFOR(pos.dims());
+    gfor(seq i, pos.dims(1)) {
+        outGFOR(span, i) = approx1(input(span, i),
+                                       pos(span, i),
+                                       AF_INTERP_NEAREST);
     }
 
-    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outSerial)), 1e-3);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outGFOR)), 1e-3);
+    ASSERT_NEAR(0, sum<float>(abs(outBatch - outSerial)), 1e-3);
+    ASSERT_NEAR(0, sum<float>(abs(outBatch - outGFOR)), 1e-3);
 }
 
 TEST(Approx1, CPPLinearBatch)
 {
-    if (noDoubleTests<float>()) return;
+    array input = iota(dim4(10000, 20), c32);
+    array pos   = input.dims(0) * randu(10000, 20);
 
-    af::array input = af::iota(af::dim4(10000, 20), c32);
-    af::array pos   = input.dims(0) * af::randu(50000, 20);
+    array outBatch = approx1(input, pos, AF_INTERP_LINEAR);
 
-    af::array outBatch = af::approx1(input, pos, AF_INTERP_LINEAR);
-
-    af::array outSerial(pos.dims());
-    for(int i = 0; i < pos.dims(1); i++) {
-        outSerial(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_LINEAR);
+    array outSerial(pos.dims());
+    for (int i = 0; i < pos.dims(1); i++) {
+        outSerial(span, i) = approx1(input(span, i),
+                                     pos(span, i),
+                                     AF_INTERP_LINEAR);
     }
 
-    af::array outGFOR(pos.dims());
-    gfor(af::seq i, pos.dims(1)) {
-        outGFOR(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_LINEAR);
+    array outGFOR(pos.dims());
+    gfor(seq i, pos.dims(1)) {
+        outGFOR(span, i) = approx1(input(span, i),
+                                   pos(span, i),
+                                   AF_INTERP_LINEAR);
     }
 
-    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outSerial)), 1e-3);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outGFOR)), 1e-3);
+    ASSERT_NEAR(0, sum<float>(abs(outBatch - outSerial)), 1e-3);
+    ASSERT_NEAR(0, sum<float>(abs(outBatch - outGFOR)), 1e-3);
 }
 
 TEST(Approx1, CPPCubicBatch)
 {
-    if (noDoubleTests<float>()) return;
+    array input = iota(dim4(10000, 20), c32);
+    array pos   = input.dims(0) * randu(10000, 20);
 
-    af::array input = af::iota(af::dim4(10000, 20), c32);
-    af::array pos   = input.dims(0) * af::randu(50000, 20);
+    array outBatch = approx1(input, pos, AF_INTERP_CUBIC_SPLINE);
 
-    af::array outBatch = af::approx1(input, pos, AF_INTERP_CUBIC_SPLINE);
-
-    af::array outSerial(pos.dims());
-    for(int i = 0; i < pos.dims(1); i++) {
-        outSerial(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_CUBIC_SPLINE);
+    array outSerial(pos.dims());
+    for (int i = 0; i < pos.dims(1); i++) {
+        outSerial(span, i) = approx1(input(span, i),
+                                     pos(span, i),
+                                     AF_INTERP_CUBIC_SPLINE);
     }
 
-    af::array outGFOR(pos.dims());
-    gfor(af::seq i, pos.dims(1)) {
-        outGFOR(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_CUBIC_SPLINE);
+    array outGFOR(pos.dims());
+    gfor(seq i, pos.dims(1)) {
+        outGFOR(span, i) = approx1(input(span, i),
+                                           pos(span, i),
+                                           AF_INTERP_CUBIC_SPLINE);
     }
 
-    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outSerial)), 1e-3);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outGFOR)), 1e-3);
+    ASSERT_NEAR(0, sum<float>(abs(outBatch - outSerial)), 1e-3);
+    ASSERT_NEAR(0, sum<float>(abs(outBatch - outGFOR)), 1e-3);
 }
