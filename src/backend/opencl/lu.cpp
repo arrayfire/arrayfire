@@ -71,7 +71,6 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
         return cpu::lu_inplace(in, convert_pivot);
     }
 
-    initBlas();
     dim4 iDims = in.dims();
     int M = iDims[0];
     int N = iDims[1];

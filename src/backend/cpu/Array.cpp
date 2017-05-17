@@ -19,7 +19,6 @@
 #include <queue.hpp>
 #include <cstring>
 #include <cstddef>
-#include <MemoryManager.hpp>
 
 namespace cpu
 {
@@ -31,18 +30,25 @@ using TNJ::Node_ptr;
 
 using af::dim4;
 
+
+template<typename T>
+Node_ptr bufferNodePtr()
+{
+    return Node_ptr(reinterpret_cast<Node *>(new BufferNode<T>()));
+}
+
 template<typename T>
 Array<T>::Array(dim4 dims):
     info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
     data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
-    node(), ready(true), owner(true)
+    node(bufferNodePtr<T>()), ready(true), owner(true)
 { }
 
 template<typename T>
 Array<T>::Array(dim4 dims, const T * const in_data, bool is_device, bool copy_device):
     info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
     data((is_device & !copy_device) ? (T*)in_data : memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
-    node(), ready(true), owner(true)
+    node(bufferNodePtr<T>()), ready(true), owner(true)
 {
     static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
     static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
@@ -63,7 +69,7 @@ template<typename T>
 Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim_t &offset_, const dim4 &strides) :
     info(parent.getDevId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
     data(parent.getData()), data_dims(parent.getDataDims()),
-    node(),
+    node(bufferNodePtr<T>()),
     ready(true), owner(false)
 { }
 
@@ -73,7 +79,7 @@ Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
     info(getActiveDeviceId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
     data(is_device ? (T*)in_data : memAlloc<T>(info.total()), memFree<T>),
     data_dims(dims),
-    node(),
+    node(bufferNodePtr<T>()),
     ready(true),
     owner(true)
 {
@@ -94,7 +100,7 @@ void Array<T>::eval()
 
     getQueue().enqueue(kernel::evalArray<T>, *this);
     // Reset shared_ptr
-    this->node.reset();
+    this->node = bufferNodePtr<T>();
     ready = true;
 }
 
@@ -116,12 +122,25 @@ T* Array<T>::device()
 }
 
 template<typename T>
-void evalMultiple(std::vector<Array<T>*> arrays)
+void evalMultiple(std::vector<Array<T>*> array_ptrs)
 {
-    //FIXME: implement this correctly
-    //Using fallback for now
-    for (auto array : arrays) {
-        array->eval();
+    std::vector<Array<T>> arrays;
+    bool isWorker = getQueue().is_worker();
+    for (auto &array : array_ptrs) {
+        if (array->ready) continue;
+        if (isWorker) AF_ERROR("Array not evaluated", AF_ERR_INTERNAL);
+        array->setId(getActiveDeviceId());
+        array->data = std::shared_ptr<T>(memAlloc<T>(array->elements()), memFree<T>);
+        arrays.push_back(*array);
+    }
+
+    if (arrays.size() > 0) {
+        getQueue().enqueue(kernel::evalMultiple<T>, arrays);
+        for (auto &array : array_ptrs) {
+            if (array->ready) continue;
+            array->ready = true;
+            array->node = bufferNodePtr<T>();
+        }
     }
     return;
 }
@@ -129,20 +148,16 @@ void evalMultiple(std::vector<Array<T>*> arrays)
 template<typename T>
 Node_ptr Array<T>::getNode() const
 {
-    if (!node) {
-
+    if (node->isBuffer()) {
+        BufferNode<T> *bufNode = reinterpret_cast<BufferNode<T> *>(node.get());
         unsigned bytes = this->getDataDims().elements() * sizeof(T);
-
-        BufferNode<T> *buf_node = new BufferNode<T>(data,
-                                                    bytes,
-                                                    getOffset(),
-                                                    dims().get(),
-                                                    strides().get(),
-                                                    isLinear());
-
-        const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
+        bufNode->setData(data,
+                         bytes,
+                         getOffset(),
+                         dims().get(),
+                         strides().get(),
+                         isLinear());
     }
-
     return node;
 }
 
@@ -199,15 +214,15 @@ createNodeArray(const dim4 &dims, Node_ptr node)
             if (lock_bytes > getMaxBytes() ||
                 lock_buffers > getMaxBuffers()) {
 
-                // Calling sync to ensure the TNJ calls below
-                // don't overwrite the same nodes being evaluated
-                // FIXME: This should ideally be JIT specific mutex
-                getQueue().sync();
-
-                unsigned length =0, buf_count = 0, bytes = 0;
                 Node *n = node.get();
-                n->getInfo(length, buf_count, bytes);
-                n->reset();
+
+                TNJ::Node_map_t nodes_map;
+                n->getNodesMap(nodes_map);
+                unsigned length =0, buf_count = 0, bytes = 0;
+                for(auto &entry : nodes_map) {
+                    Node *node = entry.first;
+                    node->getInfo(length, buf_count, bytes);
+                }
 
                 if (2 * bytes > lock_bytes) {
                     out.eval();

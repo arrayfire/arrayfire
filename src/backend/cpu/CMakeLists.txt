@@ -126,6 +126,7 @@ FILE(GLOB backend_headers
     )
 
 FILE(GLOB backend_sources
+    "../common/*.cpp"
     "../*.cpp"
     )
 

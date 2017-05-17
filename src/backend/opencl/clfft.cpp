@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2016, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -7,12 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma once
-#include <stdio.h>
-#include <err_opencl.hpp>
-#include <clFFT.h>
+#include <af/defines.h>
+#include <err_common.hpp>
+#include <clfft.hpp>
+#include <platform.hpp>
+#include <string>
 
-static const char * _clfftGetResultString(clfftStatus st)
+using std::string;
+
+namespace opencl
+{
+const char * _clfftGetResultString(clfftStatus st)
 {
     switch (st)
     {
@@ -78,23 +83,83 @@ static const char * _clfftGetResultString(clfftStatus st)
     return "Unknown error";
 }
 
-#define CLFFT_CHECK(fn) do {                    \
-        clfftStatus _clfft_st = fn;             \
-        if (_clfft_st != CLFFT_SUCCESS) {       \
-            garbageCollect();                   \
-            _clfft_st = (fn);                   \
-        }                                       \
-        if (_clfft_st != CLFFT_SUCCESS) {       \
-            char clfft_st_msg[1024];            \
-            snprintf(clfft_st_msg,              \
-                     sizeof(clfft_st_msg),      \
-                     "clFFT Error (%d): %s\n",  \
-                     (int)(_clfft_st),          \
-                     _clfftGetResultString(     \
-                         _clfft_st));           \
-                                                \
-            AF_ERROR(clfft_st_msg,              \
-                     AF_ERR_INTERNAL);          \
-        }                                       \
-    } while(0)
+SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout,
+                    clfftDim rank, size_t *clLengths,
+                    size_t *istrides, size_t idist,
+                    size_t *ostrides, size_t odist,
+                    clfftPrecision precision, size_t batch)
+{
+    // create the key string
+    char key_str_temp[64];
+    sprintf(key_str_temp, "%d:%d:%d:", iLayout, oLayout, rank);
 
+    string key_string(key_str_temp);
+
+    /* WARNING: DO NOT CHANGE sprintf format specifier */
+    for(int r=0; r<rank; ++r) {
+        sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", clLengths[r]);
+        key_string.append(std::string(key_str_temp));
+    }
+
+    if(istrides!=NULL) {
+        for(int r=0; r<rank; ++r) {
+            sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", istrides[r]);
+            key_string.append(std::string(key_str_temp));
+        }
+        sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", idist);
+        key_string.append(std::string(key_str_temp));
+    }
+
+    if (ostrides!=NULL) {
+        for(int r=0; r<rank; ++r) {
+            sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", ostrides[r]);
+            key_string.append(std::string(key_str_temp));
+        }
+        sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", odist);
+        key_string.append(std::string(key_str_temp));
+    }
+
+    sprintf(key_str_temp, "%d:" SIZE_T_FRMT_SPECIFIER, (int)precision, batch);
+    key_string.append(std::string(key_str_temp));
+
+    PlanCache &planner = opencl::fftManager();
+    SharedPlan retVal = planner.find(key_string);
+
+    if (retVal)
+        return retVal;
+
+    PlanType* temp = (PlanType*)malloc(sizeof(PlanType));
+
+    // getContext() returns object of type Context
+    // Context() returns the actual cl_context handle
+    CLFFT_CHECK(clfftCreateDefaultPlan(temp, opencl::getContext()(), rank, clLengths));
+
+    // complex to complex
+    if (iLayout == oLayout) {
+        CLFFT_CHECK(clfftSetResultLocation(*temp, CLFFT_INPLACE));
+    } else {
+        CLFFT_CHECK(clfftSetResultLocation(*temp, CLFFT_OUTOFPLACE));
+    }
+
+    CLFFT_CHECK(clfftSetLayout(*temp, iLayout, oLayout));
+    CLFFT_CHECK(clfftSetPlanBatchSize(*temp, batch));
+    CLFFT_CHECK(clfftSetPlanDistance(*temp, idist, odist));
+    CLFFT_CHECK(clfftSetPlanInStride(*temp, rank, istrides));
+    CLFFT_CHECK(clfftSetPlanOutStride(*temp, rank, ostrides));
+    CLFFT_CHECK(clfftSetPlanPrecision(*temp, precision));
+    CLFFT_CHECK(clfftSetPlanScale(*temp, CLFFT_BACKWARD, 1.0));
+
+    // getQueue() returns object of type CommandQueue
+    // CommandQueue() returns the actual cl_command_queue handle
+    CLFFT_CHECK(clfftBakePlan(*temp, 1, &(opencl::getQueue()()), NULL, NULL));
+
+    retVal.reset(temp, [](PlanType* p) {
+        CLFFT_CHECK(clfftDestroyPlan(p));
+        free(p);
+    });
+    // push the plan into plan cache
+    planner.push(key_string, retVal);
+
+    return retVal;
+}
+}

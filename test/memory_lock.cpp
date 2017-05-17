@@ -23,26 +23,6 @@ using std::endl;
 
 const size_t step_bytes = 1024;
 
-static void cleanSlate()
-{
-    size_t alloc_bytes, alloc_buffers;
-    size_t lock_bytes, lock_buffers;
-
-    af::deviceGC();
-
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
-
-    ASSERT_EQ(alloc_buffers, 0u);
-    ASSERT_EQ(lock_buffers, 0u);
-    ASSERT_EQ(alloc_bytes, 0u);
-    ASSERT_EQ(lock_bytes, 0u);
-
-    af::setMemStepSize(step_bytes);
-
-    ASSERT_EQ(af::getMemStepSize(), step_bytes);
-}
-
 // This test should be by itself as it leaks memory intentionally
 TEST(Memory, lock)
 {

@@ -9,84 +9,14 @@
 
 #include <af/version.h>
 #include <platform.hpp>
-#include <sstream>
-#include <queue.hpp>
-#include <array>
-#include <algorithm>
-#include <iostream>
-#include <string>
 #include <defines.hpp>
 #include <version.hpp>
-#include <queue.hpp>
 #include <host_memory.hpp>
+
 #include <cctype>
-
-
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) || defined(_WIN64)
-#define CPUID_CAPABLE USE_CPUID
-#else
-#define CPUID_CAPABLE 0
-#endif
-
-#ifdef _WIN32
-#include <limits.h>
-#include <intrin.h>
-typedef unsigned __int32  uint32_t;
-#else
-#include <stdint.h>
-#endif
+#include <sstream>
 
 using namespace std;
-
-#if CPUID_CAPABLE
-
-#define MAX_INTEL_TOP_LVL 4
-
-class CPUID {
-    uint32_t regs[4];
-
-    public:
-    explicit CPUID(unsigned funcId, unsigned subFuncId) {
-#ifdef _WIN32
-        __cpuidex((int *)regs, (int)funcId, (int)subFuncId);
-
-#else
-        asm volatile
-            ("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3])
-             : "a" (funcId), "c" (subFuncId));
-#endif
-    }
-
-    inline const uint32_t &EAX() const { return regs[0]; }
-    inline const uint32_t &EBX() const { return regs[1]; }
-    inline const uint32_t &ECX() const { return regs[2]; }
-    inline const uint32_t &EDX() const { return regs[3]; }
-};
-
-#endif
-
-class CPUInfo {
-    public:
-        CPUInfo();
-        string  vendor()   const { return mVendorId;   }
-        string  model()    const { return mModelName;  }
-        int     threads()  const { return mNumLogCpus; }
-
-    private:
-        // Bit positions for data extractions
-        static const uint32_t LVL_NUM   = 0x000000FF;
-        static const uint32_t LVL_TYPE  = 0x0000FF00;
-        static const uint32_t LVL_CORES = 0x0000FFFF;
-        static const uint32_t HTT_POS   = 0x10000000;
-
-        // Attributes
-        string mVendorId;
-        string mModelName;
-        int    mNumSMT;
-        int    mNumCores;
-        int    mNumLogCpus;
-        bool   mIsHTT;
-};
 
 #if !CPUID_CAPABLE
 
@@ -116,7 +46,9 @@ CPUInfo::CPUInfo()
     mVendorId += string((const char *)&cpuID0.ECX(), 4);
 
     string upVId = mVendorId;
+
     for_each(upVId.begin(), upVId.end(), [](char& in) { in = ::toupper(in); });
+
     // Get num of cores
     if (upVId.find("INTEL") != std::string::npos) {
         mVendorId = "Intel";
@@ -166,8 +98,7 @@ CPUInfo::CPUInfo()
             mNumCores = mNumLogCpus = 1;
         }
     } else {
-        mVendorId = "Unkown, probably ARM";
-        cout<< "Unexpected vendor id" <<endl;
+        mVendorId = "Unkown";
     }
     // Get processor brand string
     // This seems to be working for both Intel & AMD vendors
@@ -185,27 +116,6 @@ CPUInfo::CPUInfo()
 
 namespace cpu
 {
-
-unsigned getMaxJitSize()
-{
-    const int MAX_JIT_LEN = 100;
-
-    static int length = 0;
-    if (length == 0) {
-        std::string env_var = getEnvVar("AF_CPU_MAX_JIT_LEN");
-        if (!env_var.empty()) {
-            length = std::stoi(env_var);
-        } else {
-            length = MAX_JIT_LEN;
-        }
-    }
-    return length;
-}
-
-int getBackend()
-{
-    return AF_BACKEND_CPU;
-}
 
 static const std::string get_system(void)
 {
@@ -230,15 +140,24 @@ static inline std::string &ltrim(std::string &s)
     return s;
 }
 
+int getBackend()
+{
+    return AF_BACKEND_CPU;
+}
+
 std::string getDeviceInfo()
 {
+    const CPUInfo cinfo = DeviceManager::getInstance().getCPUInfo();
+
     std::ostringstream info;
-    static CPUInfo cinfo;
 
     info << "ArrayFire v" << AF_VERSION
          << " (CPU, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
+
     std::string model = cinfo.model();
+
     size_t memMB = getDeviceMemorySize(getActiveDeviceId()) / 1048576;
+
     info << string("[0] ") << cinfo.vendor() <<": " << ltrim(model);
 
     if(memMB) info << ", " << memMB << " MB, ";
@@ -249,17 +168,19 @@ std::string getDeviceInfo()
     info << AF_COMPILER_STR;
 #endif
     info << std::endl;
+
     return info.str();
 }
 
 bool isDoubleSupported(int device)
 {
-    return true;
+    return DeviceManager::IS_DOUBLE_SUPPORTED;
 }
 
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
 {
-    static CPUInfo cinfo;
+    const CPUInfo cinfo = DeviceManager::getInstance().getCPUInfo();
+
     snprintf(d_name, 64, "%s", cinfo.vendor().c_str());
     snprintf(d_platform, 10, "CPU");
     // report the compiler for toolkit
@@ -267,25 +188,30 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     snprintf(d_compute, 10, "%s", "0.0");
 }
 
-int getDeviceCount()
+unsigned getMaxJitSize()
 {
-    return 1;
+    const int MAX_JIT_LEN = 100;
+
+    static int length = 0;
+    if (length == 0) {
+        std::string env_var = getEnvVar("AF_CPU_MAX_JIT_LEN");
+        if (!env_var.empty()) {
+            length = std::stoi(env_var);
+        } else {
+            length = MAX_JIT_LEN;
+        }
+    }
+    return length;
 }
 
-
-int setDevice(int device)
+int getDeviceCount()
 {
-    static bool flag;
-    if(!flag && device != 0) {
-        printf("WARNING af_set_device(device): device can only be 0 for CPU\n");
-        flag = 1;
-    }
-    return 0;
+    return DeviceManager::NUM_DEVICES;
 }
 
 int getActiveDeviceId()
 {
-    return 0;
+    return DeviceManager::ACTIVE_DEVICE_ID;
 }
 
 size_t getDeviceMemorySize(int device)
@@ -298,17 +224,31 @@ size_t getHostMemorySize()
     return common::getHostMemorySize();
 }
 
-static const int MAX_QUEUES = 1;
+int setDevice(int device)
+{
+    static bool flag = false;
+    if (!flag && device != 0) {
+#ifndef NDEBUG
+        std::cerr << "WARNING af_set_device(device): device can only be 0 for CPU\n";
+#endif
+        flag = true;
+    }
+    return 0;
+}
 
+queue& getQueue(int device)
+{
+    return DeviceManager::getInstance().queues[device];
+}
 
-queue& getQueue(int idx) {
-    static std::array<queue, MAX_QUEUES> queues;
-    return queues[idx];
+CPUInfo DeviceManager::getCPUInfo() const
+{
+    return cinfo;
 }
 
 void sync(int device)
 {
-    getQueue().sync();
+    getQueue(device).sync();
 }
 
 bool& evalFlag()
@@ -317,5 +257,21 @@ bool& evalFlag()
     return flag;
 }
 
+MemoryManager& memoryManager()
+{
+    static std::once_flag flag;
+
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    std::call_once(flag, [&]() { inst.memManager.reset(new MemoryManager()); });
+
+    return *(inst.memManager.get());
+}
+
+DeviceManager& DeviceManager::getInstance()
+{
+    static DeviceManager my_instance;
+    return my_instance;
+}
 
 }

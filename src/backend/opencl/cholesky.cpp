@@ -28,8 +28,6 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
         return cpu::cholesky_inplace(in, is_upper);
     }
 
-    initBlas();
-
     dim4 iDims = in.dims();
     int N = iDims[0];
 

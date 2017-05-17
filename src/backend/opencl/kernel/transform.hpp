@@ -13,8 +13,6 @@
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
-#include <mutex>
-#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <cache.hpp>
@@ -71,18 +69,17 @@ namespace opencl
                 std::to_string(order);
 
             int device = getActiveDeviceId();
-            auto idx = kernelCaches[device].find(ref_name);
-            kc_entry_t entry;
+            kc_entry_t entry = kernelCache(device, ref_name);
 
-            if (idx == kernelCaches[device].end()) {
+            if (entry.prog==0 && entry.ker==0) {
                 ToNumStr<T> toNumStr;
                 std::ostringstream options;
                 options << " -D T="           << dtype_traits<T>::getName()
                         << " -D INVERSE="     << (isInverse ? 1 : 0)
                         << " -D PERSPECTIVE=" << (isPerspective ? 1 : 0)
                         << " -D ZERO="        << toNumStr(scalar<T>(0));
-                options << " -D InterpInTy=" << dtype_traits<T>::getName();
-                options << " -D InterpValTy="  << dtype_traits<vtype_t<T>>::getName();
+                options << " -D InterpInTy="  << dtype_traits<T>::getName();
+                options << " -D InterpValTy=" << dtype_traits<vtype_t<T>>::getName();
                 options << " -D InterpPosTy=" << dtype_traits<wtype_t<BT>>::getName();
 
                 if((af_dtype) dtype_traits<T>::af_type == c32 ||
@@ -106,8 +103,8 @@ namespace opencl
                 buildProgram(prog, 2, ker_strs, ker_lens, options.str());
                 entry.prog = new Program(prog);
                 entry.ker = new Kernel(*entry.prog, "transform_kernel");
-            } else {
-                entry = idx->second;
+
+                addKernelToCache(device, ref_name, entry);
             }
 
             auto transformOp = KernelFunctor<Buffer, const KParam,

@@ -8,127 +8,9 @@
  ********************************************************/
 
 #include <gtest/gtest.h>
-#include <arrayfire.h>
-#include <af/dim4.hpp>
-#include <af/defines.h>
-#include <af/traits.hpp>
-#include <vector>
-#include <iostream>
-#include <complex>
-#include <string>
 #include <testHelpers.hpp>
-
-using std::vector;
-using std::string;
-using std::cout;
-using std::endl;
-using std::abs;
-using af::cfloat;
-using af::cdouble;
-
-///////////////////////////////// CPP ////////////////////////////////////
-//
-
-template<typename T>
-void solveTester(const int m, const int n, const int k, double eps)
-{
-    af::deviceGC();
-
-    if (noDoubleTests<T>()) return;
-    if (noLAPACKTests()) return;
-
-#if 1
-    af::array A  = cpu_randu<T>(af::dim4(m, n));
-    af::array X0 = cpu_randu<T>(af::dim4(n, k));
-#else
-    af::array A  = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
-    af::array X0 = af::randu(n, k, (af::dtype)af::dtype_traits<T>::af_type);
-#endif
-    af::array B0 = af::matmul(A, X0);
-
-    //! [ex_solve]
-    af::array X1 = af::solve(A, B0);
-    //! [ex_solve]
-
-    //! [ex_solve_recon]
-    af::array B1 = af::matmul(A, X1);
-    //! [ex_solve_recon]
-
-    ASSERT_NEAR(0, af::sum<double>(af::abs(real(B0 - B1))) / (m * k), eps);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (m * k), eps);
-}
-
-template<typename T>
-void solveLUTester(const int n, const int k, double eps)
-{
-    af::deviceGC();
-
-    if (noDoubleTests<T>()) return;
-    if (noLAPACKTests()) return;
-
-#if 1
-    af::array A  = cpu_randu<T>(af::dim4(n, n));
-    af::array X0 = cpu_randu<T>(af::dim4(n, k));
-#else
-    af::array A  = af::randu(n, n, (af::dtype)af::dtype_traits<T>::af_type);
-    af::array X0 = af::randu(n, k, (af::dtype)af::dtype_traits<T>::af_type);
-#endif
-    af::array B0 = af::matmul(A, X0);
-
-    //! [ex_solve_lu]
-    af::array A_lu, pivot;
-    af::lu(A_lu, pivot, A);
-    af::array X1 = af::solveLU(A_lu, pivot, B0);
-    //! [ex_solve_lu]
-
-    af::array B1 = af::matmul(A, X1);
-
-    ASSERT_NEAR(0, af::sum<double>(af::abs(real(B0 - B1))) / (n * k), eps);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (n * k), eps);
-}
-
-template<typename T>
-void solveTriangleTester(const int n, const int k, bool is_upper, double eps)
-{
-    af::deviceGC();
-
-    if (noDoubleTests<T>()) return;
-    if (noLAPACKTests()) return;
-
-#if 1
-    af::array A  = cpu_randu<T>(af::dim4(n, n));
-    af::array X0 = cpu_randu<T>(af::dim4(n, k));
-#else
-    af::array A  = af::randu(n, n, (af::dtype)af::dtype_traits<T>::af_type);
-    af::array X0 = af::randu(n, k, (af::dtype)af::dtype_traits<T>::af_type);
-#endif
-
-    af::array L, U, pivot;
-    af::lu(L, U, pivot, A);
-
-    af::array AT = is_upper ? U : L;
-    af::array B0 = af::matmul(AT, X0);
-    af::array X1;
-
-    if (is_upper) {
-        //! [ex_solve_upper]
-        af::array X = af::solve(AT, B0, AF_MAT_UPPER);
-        //! [ex_solve_upper]
-
-        X1 = X;
-    } else {
-        //! [ex_solve_lower]
-        af::array X = af::solve(AT, B0, AF_MAT_LOWER);
-        //! [ex_solve_lower]
-
-        X1 = X;
-    }
-
-    af::array B1 = af::matmul(AT, X1);
-
-    ASSERT_NEAR(0, af::sum<double>(af::abs(real(B0 - B1))) / (n * k), eps);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (n * k), eps);
-}
+#include "solve_common.hpp"
+#include <thread>
 
 #define SOLVE_LU_TESTS(T, eps)                          \
     TEST(SOLVE_LU, T##Reg)                              \
@@ -199,4 +81,43 @@ SOLVE_TESTS(double, 1E-5)
 SOLVE_TESTS(cfloat, 0.01)
 SOLVE_TESTS(cdouble, 1E-5)
 
+
+#if !defined(AF_OPENCL)
+int nextTargetDeviceId()
+{
+  static int nextId = 0;
+  return nextId++;
+}
+
+#define SOLVE_LU_TESTS_THREADING(T, eps)                                                                          \
+    tests.emplace_back(solveLUTester<T>, 1000, 100, eps, nextTargetDeviceId()%numDevices);              \
+    tests.emplace_back(solveTriangleTester<T>, 1000, 100, true, eps, nextTargetDeviceId()%numDevices);  \
+    tests.emplace_back(solveTriangleTester<T>, 1000, 100, false, eps, nextTargetDeviceId()%numDevices); \
+    tests.emplace_back(solveTester<T>, 1000, 1000, 100, eps, nextTargetDeviceId()%numDevices);          \
+    tests.emplace_back(solveTester<T>, 800, 1000, 200, eps, nextTargetDeviceId()%numDevices);           \
+    tests.emplace_back(solveTester<T>, 800, 600, 64, eps, nextTargetDeviceId()%numDevices);             \
+
+TEST(SOLVE, Threading)
+{
+    cleanSlate(); // Clean up everything done so far
+
+    vector<std::thread> tests;
+
+    int numDevices = 1;
+    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+
+    SOLVE_LU_TESTS_THREADING(float, 0.01);
+    SOLVE_LU_TESTS_THREADING(cfloat, 0.01);
+    if (noDoubleTests<double>()) {
+        SOLVE_LU_TESTS_THREADING(double, 1E-5);
+        SOLVE_LU_TESTS_THREADING(cdouble, 1E-5);
+    }
+
+    for (size_t testId=0; testId<tests.size(); ++testId)
+        if (tests[testId].joinable())
+            tests[testId].join();
+}
+
+#undef SOLVE_LU_TESTS_THREADING
+#endif
 #undef SOLVE_TESTS

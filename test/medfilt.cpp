@@ -60,9 +60,9 @@ void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid, af_border_type pad)
 
     ASSERT_EQ(AF_SUCCESS, af_medfilt2(&outArray, inArray, w_len, w_wid, pad));
 
-    T *outData = new T[dims.elements()];
+    std::vector<T> outData(dims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     vector<T> currGoldBar = tests[0];
     size_t nElems        = currGoldBar.size();
@@ -71,7 +71,6 @@ void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid, af_border_type pad)
     }
 
     // cleanup
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
@@ -117,9 +116,9 @@ void medfilt1_Test(string pTestFile, dim_t w_wid, af_border_type pad)
 
     ASSERT_EQ(AF_SUCCESS, af_medfilt1(&outArray, inArray, w_wid, pad));
 
-    T *outData = new T[dims.elements()];
+    std::vector<T> outData(dims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     vector<T> currGoldBar = tests[0];
     size_t nElems        = currGoldBar.size();
@@ -128,7 +127,6 @@ void medfilt1_Test(string pTestFile, dim_t w_wid, af_border_type pad)
     }
 
     // cleanup
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
@@ -186,13 +184,13 @@ void medfiltImageTest(string pTestFile, dim_t w_len, dim_t w_wid)
 
         ASSERT_EQ(AF_SUCCESS, af_medfilt2(&outArray, inArray, w_len, w_wid, AF_PAD_ZERO));
 
-        T * outData = new T[nElems];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+        std::vector<T> outData(nElems);
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
-        T * goldData= new T[nElems];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData, goldArray));
+        std::vector<T> goldData(nElems);
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
 
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData, outData, 0.018f));
+        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.018f));
 
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
@@ -224,6 +222,7 @@ void medfiltInputTest(void)
     ASSERT_EQ(true, medfilt1);
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TYPED_TEST(MedianFilter, InvalidArray)
@@ -360,17 +359,14 @@ TEST(MedianFilter, CPP)
     af::array input(dims, &(in[0].front()));
     af::array output = af::medfilt(input, w_len, w_wid, AF_PAD_SYM);
 
-    float *outData = new float[dims.elements()];
-    output.host((void*)outData);
+    std::vector<float> outData(dims.elements());
+    output.host((void*)outData.data());
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
     }
-
-    // cleanup
-    delete[] outData;
 }
 
 TEST(MedianFilter1d, CPP)
@@ -390,17 +386,14 @@ TEST(MedianFilter1d, CPP)
     af::array input(dims, &(in[0].front()));
     af::array output = af::medfilt1(input, w_wid, AF_PAD_SYM);
 
-    float *outData = new float[dims.elements()];
-    output.host((void*)outData);
+    std::vector<float> outData(dims.elements());
+    output.host((void*)outData.data());
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
     }
-
-    // cleanup
-    delete[] outData;
 }
 
 

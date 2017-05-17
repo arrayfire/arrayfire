@@ -11,15 +11,19 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <memory>
 #include <vector>
 #include <string>
-#if defined(WITH_GRAPHICS)
-#include <fg/window.h>
-#endif
+#include <memory.hpp>
+#include <GraphicsResourceManager.hpp>
+#include <cufft.hpp>
+#include <cublas.hpp>
+#include <cusolverDn.hpp>
+#include <cusparse.hpp>
+#include <common/types.hpp>
 
 namespace cuda
 {
-
 int getBackend();
 
 std::string getDeviceInfo();
@@ -45,6 +49,8 @@ int getDeviceNativeId(int device);
 
 cudaStream_t getStream(int device);
 
+cudaStream_t getActiveStream();
+
 size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();
@@ -66,12 +72,44 @@ struct cudaDevice_t {
 
 bool& evalFlag();
 
+///////////////////////// BEGIN Sub-Managers ///////////////////
+//
+MemoryManager& memoryManager();
+
+MemoryManagerPinned& pinnedMemoryManager();
+
+#if defined(WITH_GRAPHICS)
+GraphicsResourceManager& interopManager();
+#endif
+
+PlanCache& fftManager();
+
+BlasHandle blasHandle();
+
+SolveHandle solverDnHandle();
+
+SparseHandle sparseHandle();
+//
+///////////////////////// END Sub-Managers /////////////////////
+
 class DeviceManager
 {
     public:
         static const unsigned MAX_DEVICES = 16;
 
+#if defined(WITH_GRAPHICS)
+        static bool checkGraphicsInteropCapability();
+#endif
+
         static DeviceManager& getInstance();
+
+        friend MemoryManager& memoryManager();
+
+        friend MemoryManagerPinned& pinnedMemoryManager();
+
+#if defined(WITH_GRAPHICS)
+        friend GraphicsResourceManager& interopManager();
+#endif
 
         friend std::string getDeviceInfo(int device);
 
@@ -84,8 +122,6 @@ class DeviceManager
         friend std::string getDeviceInfo();
 
         friend int getDeviceCount();
-
-        friend int getActiveDeviceId();
 
         friend int getDeviceNativeId(int device);
 
@@ -116,9 +152,15 @@ class DeviceManager
 
         int setActiveDevice(int device, int native = -1);
 
-        int activeDev;
         int nDevices;
         cudaStream_t streams[MAX_DEVICES];
-};
 
+        std::unique_ptr<MemoryManager> memManager;
+
+        std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
+
+#if defined(WITH_GRAPHICS)
+        std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
+#endif
+};
 }

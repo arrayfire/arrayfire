@@ -190,8 +190,8 @@ Param<T> gauss_filter(float sigma)
     dim_t gauss_elem = gauss_filter.strides[3] * gauss_filter.dims[3];
     gauss_filter.ptr = memAlloc<T>(gauss_elem);
     CUDA_CHECK(cudaMemcpyAsync(gauss_filter.ptr, h_gauss, gauss_elem * sizeof(T),
-                cudaMemcpyHostToDevice, cuda::getStream(cuda::getActiveDeviceId())));
-    CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                cudaMemcpyHostToDevice, cuda::getActiveStream()));
+    CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
     delete[] h_gauss;
 
@@ -1239,7 +1239,7 @@ std::vector< Param<T> > buildGaussPyr(
 
             CUDA_CHECK(cudaMemcpyAsync(gauss_pyr[o].ptr + offset, tmp_pyr[idx].ptr,
                         imel * sizeof(T), cudaMemcpyDeviceToDevice,
-                        cuda::getStream(cuda::getActiveDeviceId())));
+                        cuda::getActiveStream()));
         }
     }
 
@@ -1283,10 +1283,10 @@ std::vector< Param<T> > buildDoGPyr(
 }
 
 template <typename T>
-void update_permutation(thrust::device_ptr<T>& keys, thrust::device_vector<int>& permutation)
+void update_permutation(thrust::device_ptr<T>& keys, cuda::ThrustVector<int>& permutation)
 {
     // temporary storage for keys
-    thrust::device_vector<T> temp(permutation.size());
+    cuda::ThrustVector<T> temp(permutation.size());
 
     // permute the keys with the current reordering
     THRUST_SELECT((thrust::gather), permutation.begin(), permutation.end(), keys, temp.begin());
@@ -1296,10 +1296,10 @@ void update_permutation(thrust::device_ptr<T>& keys, thrust::device_vector<int>&
 }
 
 template <typename T>
-void apply_permutation(thrust::device_ptr<T>& keys, thrust::device_vector<int>& permutation)
+void apply_permutation(thrust::device_ptr<T>& keys, cuda::ThrustVector<int>& permutation)
 {
     // copy keys to temporary vector
-    thrust::device_vector<T> temp(keys, keys+permutation.size());
+    cuda::ThrustVector<T> temp(keys, keys+permutation.size());
 
     // permute the keys
     THRUST_SELECT((thrust::gather), permutation.begin(), permutation.end(), temp.begin(), keys);
@@ -1361,7 +1361,7 @@ void sift(unsigned* out_feat,
         const unsigned max_feat = ceil(imel * feature_ratio);
 
         CUDA_CHECK(cudaMemsetAsync(d_count, 0, sizeof(unsigned),
-                                   cuda::getStream(cuda::getActiveDeviceId())));
+                                   cuda::getActiveStream()));
 
         float* d_extrema_x = memAlloc<float>(max_feat);
         float* d_extrema_y = memAlloc<float>(max_feat);
@@ -1382,8 +1382,8 @@ void sift(unsigned* out_feat,
 
         unsigned extrema_feat = 0;
         CUDA_CHECK(cudaMemcpyAsync(&extrema_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost,
-                    cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                    cuda::getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         extrema_feat = min(extrema_feat, max_feat);
 
         if (extrema_feat == 0) {
@@ -1395,7 +1395,7 @@ void sift(unsigned* out_feat,
         }
 
         CUDA_CHECK(cudaMemsetAsync(d_count, 0, sizeof(unsigned),
-                                   cuda::getStream(cuda::getActiveDeviceId())));
+                                   cuda::getActiveStream()));
 
         unsigned interp_feat = 0;
 
@@ -1421,12 +1421,12 @@ void sift(unsigned* out_feat,
         memFree(d_extrema_layer);
 
         CUDA_CHECK(cudaMemcpyAsync(&interp_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost,
-                    cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                    cuda::getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         interp_feat = min(interp_feat, max_feat);
 
         CUDA_CHECK(cudaMemsetAsync(d_count, 0, sizeof(unsigned),
-                                   cuda::getStream(cuda::getActiveDeviceId())));
+                                   cuda::getActiveStream()));
 
         if (interp_feat == 0) {
             memFree(d_interp_x);
@@ -1444,7 +1444,7 @@ void sift(unsigned* out_feat,
         thrust::device_ptr<float> interp_response_ptr = thrust::device_pointer_cast(d_interp_response);
         thrust::device_ptr<float> interp_size_ptr = thrust::device_pointer_cast(d_interp_size);
 
-        thrust::device_vector<int> permutation(interp_feat);
+        cuda::ThrustVector<int> permutation(interp_feat);
         thrust::sequence(permutation.begin(), permutation.end());
 
         update_permutation<float>(interp_size_ptr, permutation);
@@ -1483,10 +1483,10 @@ void sift(unsigned* out_feat,
 
         unsigned nodup_feat = 0;
         CUDA_CHECK(cudaMemcpyAsync(&nodup_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost,
-                    cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                    cuda::getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         CUDA_CHECK(cudaMemsetAsync(d_count, 0, sizeof(unsigned),
-                                   cuda::getStream(cuda::getActiveDeviceId())));
+                                   cuda::getActiveStream()));
 
         const unsigned max_oriented_feat = nodup_feat * 3;
 
@@ -1517,8 +1517,8 @@ void sift(unsigned* out_feat,
 
         unsigned oriented_feat = 0;
         CUDA_CHECK(cudaMemcpyAsync(&oriented_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost,
-                    cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                    cuda::getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         oriented_feat = min(oriented_feat, max_oriented_feat);
 
         if (oriented_feat == 0) {
@@ -1592,19 +1592,19 @@ void sift(unsigned* out_feat,
             continue;
 
         CUDA_CHECK(cudaMemcpyAsync(*d_x+offset, d_x_pyr[i], feat_pyr[i] * sizeof(float),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(*d_y+offset, d_y_pyr[i], feat_pyr[i] * sizeof(float),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(*d_score+offset, d_response_pyr[i], feat_pyr[i] * sizeof(float),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(*d_ori+offset, d_ori_pyr[i], feat_pyr[i] * sizeof(float),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(*d_size+offset, d_size_pyr[i], feat_pyr[i] * sizeof(float),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
 
         CUDA_CHECK(cudaMemcpyAsync(*d_desc+(offset*desc_len), d_desc_pyr[i],
                     feat_pyr[i] * desc_len * sizeof(float),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
 
         memFree(d_x_pyr[i]);
         memFree(d_y_pyr[i]);

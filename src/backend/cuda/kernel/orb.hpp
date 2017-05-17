@@ -328,7 +328,7 @@ void orb(unsigned* out_feat,
     // In future implementations, the user will be capable of passing his
     // distribution instead of using the reference one
     //CUDA_CHECK(cudaMemcpyToSymbolAsync(d_ref_pat, h_ref_pat, 256 * 4 * sizeof(int), 0,
-    // cudaMemcpyHostToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+    // cudaMemcpyHostToDevice, cuda::getActiveStream()));
 
     vector<float*> d_score_pyr(max_levels);
     vector<float*> d_ori_pyr(max_levels);
@@ -355,8 +355,8 @@ void orb(unsigned* out_feat,
         int gauss_elem = gauss_filter.strides[3] * gauss_filter.dims[3];
         gauss_filter.ptr = memAlloc<convAccT>(gauss_elem);
         CUDA_CHECK(cudaMemcpyAsync(gauss_filter.ptr, h_gauss.get(), gauss_elem * sizeof(convAccT),
-                    cudaMemcpyHostToDevice, cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyHostToDevice, cuda::getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
     }
 
     for (int i = 0; i < (int)max_levels; i++) {
@@ -460,7 +460,7 @@ void orb(unsigned* out_feat,
 
         unsigned* d_desc_lvl = memAlloc<unsigned>(feat_pyr[i] * 8);
         CUDA_CHECK(cudaMemsetAsync(d_desc_lvl, 0, feat_pyr[i] * 8 * sizeof(unsigned),
-                    cuda::getStream(cuda::getActiveDeviceId())));
+                    cuda::getActiveStream()));
 
         // Compute ORB descriptors
         threads = dim3(THREADS_X, THREADS_Y);
@@ -508,17 +508,17 @@ void orb(unsigned* out_feat,
             offset += feat_pyr[i-1];
 
         CUDA_CHECK(cudaMemcpyAsync(*d_x+offset, d_x_pyr[i], feat_pyr[i] * sizeof(float),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(*d_y+offset, d_y_pyr[i], feat_pyr[i] * sizeof(float),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(*d_score+offset, d_score_pyr[i], feat_pyr[i] * sizeof(float),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(*d_ori+offset, d_ori_pyr[i], feat_pyr[i] * sizeof(float),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(*d_size+offset, d_size_pyr[i], feat_pyr[i] * sizeof(float),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(*d_desc+(offset*8), d_desc_pyr[i], feat_pyr[i] * 8 * sizeof(unsigned),
-                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
 
         memFree(d_x_pyr[i]);
         memFree(d_y_pyr[i]);

@@ -17,15 +17,13 @@
 #include <cassert>
 #include <math.hpp>
 #include <err_common.hpp>
-#include <cublasManager.hpp>
+#include <cublas.hpp>
 #include <arith.hpp>
 #include <reduce.hpp>
 #include <complex.hpp>
 
 namespace cuda
 {
-
-using cublas::getHandle;
 
 cublasOperation_t
 toCblasTranspose(af_mat_prop opt)
@@ -173,7 +171,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     if(rDims[bColDim] == 1) {
         N = lDims[aColDim];
         CUBLAS_CHECK(gemv_func<T>()(
-                         getHandle(),
+                         blasHandle(),
                          lOpts,
                          lDims[0],
                          lDims[1],
@@ -184,7 +182,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                          out.get(), 1));
     } else {
         CUBLAS_CHECK(gemm_func<T>()(
-                         getHandle(),
+                         blasHandle(),
                          lOpts,
                          rOpts,
                          M, N, K,
@@ -226,7 +224,7 @@ void trsm(const Array<T> &lhs, Array<T> &rhs, af_mat_prop trans,
     dim4 rStrides = rhs.strides();
 
     CUBLAS_CHECK(trsm_func<T>()(
-                     getHandle(),
+                     blasHandle(),
                      is_left  ? CUBLAS_SIDE_LEFT : CUBLAS_SIDE_RIGHT,
                      is_upper ? CUBLAS_FILL_MODE_UPPER : CUBLAS_FILL_MODE_LOWER,
                      toCblasTranspose(trans),

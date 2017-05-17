@@ -46,6 +46,7 @@
 #include <map>
 #include <memory>
 #include <stdexcept>
+#include <thread>
 #include <vector>
 
 namespace cuda
@@ -54,6 +55,8 @@ namespace cuda
 using JIT::Node;
 using JIT::str_map_iter;
 using JIT::str_map_t;
+using JIT::Node_ids;
+using JIT::Node_map_t;
 using std::hash;
 using std::map;
 using std::string;
@@ -67,7 +70,10 @@ const char *layout32 = "target datalayout = \"e-p:32:32:32-i1:8:8-i8:8:8-i16:16:
 const char *triple64 = "target triple = \"nvptx64-unknown-cuda\"\n\n";
 const char *triple32 = "target triple = \"nvptx-unknown-cuda\"\n\n";
 
-static string getFuncName(vector<Node *> nodes, bool is_linear)
+static string getFuncName(const vector<Node *> &output_nodes,
+                          const vector<Node *> &full_nodes,
+                          const vector<Node_ids> &full_ids,
+                          bool is_linear)
 {
     stringstream funcName;
     stringstream hashName;
@@ -75,14 +81,12 @@ static string getFuncName(vector<Node *> nodes, bool is_linear)
     if (is_linear) funcName << "L_"; //Kernel Linear
     else           funcName << "G_"; //Kernel General
 
-    int id = 0;
+    for (const auto &node : output_nodes) {
+        funcName << node->getNameStr() << "_";
+    }
 
-    for (int i = 0; i < (int)nodes.size(); i++) {
-        funcName << "[";
-        id = nodes[i]->setId(id);
-        funcName << nodes[i]->getNameStr();
-        nodes[i]->genKerName(funcName);
-        funcName << "]";
+    for (int i = 0; i < (int)full_nodes.size(); i++) {
+        full_nodes[i]->genKerName(funcName, full_ids[i]);
     }
 
     hash<string> hash_fn;
@@ -92,7 +96,11 @@ static string getFuncName(vector<Node *> nodes, bool is_linear)
     return hashName.str();
 }
 
-static string getKernelString(string funcName, vector<Node *> nodes, bool is_linear)
+static string getKernelString(const string funcName,
+                              const vector<Node *> &full_nodes,
+                              const vector<Node_ids> &full_ids,
+                              const vector<int> &output_ids,
+                              bool is_linear)
 {
     static const char *defineVoid = "define void ";
     static const char *generalDimParams = "\n"
@@ -218,15 +226,30 @@ static string getKernelString(string funcName, vector<Node *> nodes, bool is_lin
     stringstream outWriteStream;
     str_map_t declStrs;
 
-    for (int i = 0; i < (int)nodes.size(); i++) {
-        string outTypeStr = nodes[i]->getTypeStr();
-        int id = nodes[i]->getId();
+    vector<string> types_output(output_ids.size());
+    for (int i = 0; i < (int)output_ids.size(); i++) {
+        types_output[i] = full_nodes[output_ids[i]]->getTypeStr();
+    }
 
-        nodes[i]->genParams(inParamStream, inAnnStream, is_linear);
+    for (int i = 0; i < (int)full_nodes.size(); i++) {
+        const auto &node = full_nodes[i];
+        const auto &ids_curr = full_ids[i];
+        // Generate input parameters, needs only current id
+        node->genParams(inParamStream, inAnnStream, ids_curr.id, is_linear);
+        // Generate input offsets, needs only current id
+        node->genOffsets(offsetsStream, ids_curr.id, is_linear);
+        // Generate the core function body, needs children id as well
+        node->genFuncs(funcBodyStream, declStrs, ids_curr, is_linear);
+    }
+
+    for (int i = 0; i < (int)output_ids.size(); i++) {
+        int id = output_ids[i];
+        string outTypeStr = types_output[i];
+
+        // Generate output parameters
         outParamStream << outTypeStr << "* %out" << id << ",\n";
-        nodes[i]->genOffsets(offsetsStream, is_linear);
-        nodes[i]->genFuncs(funcBodyStream, declStrs, is_linear);
 
+        // Generate instruction to write output
         outWriteStream << "%outIdx" << id
                        << "= getelementptr inbounds "
                        << outTypeStr
@@ -237,6 +260,8 @@ static string getKernelString(string funcName, vector<Node *> nodes, bool is_lin
                        << " %val" << id << ", "
                        << outTypeStr
                        << "* %outIdx" << id << "\n";
+
+        // Generate output annotation string
         outAnnStream << outTypeStr << "*,\n";
     }
 
@@ -267,7 +292,8 @@ static string getKernelString(string funcName, vector<Node *> nodes, bool is_lin
               << outWriteStream.str()
               << blockEnd;
 
-    for(str_map_iter iterator = declStrs.begin(); iterator != declStrs.end(); iterator++) {
+    for(str_map_iter iterator = declStrs.begin();
+        iterator != declStrs.end(); iterator++) {
         kerStream << iterator->first << "\n";
     }
     kerStream << functionLoad;
@@ -528,20 +554,24 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
     return entry;
 }
 
-static CUfunction getKernel(vector<Node *> nodes, bool is_linear)
+static CUfunction getKernel(const vector<Node *> &output_nodes,
+                            const vector<int> &output_ids,
+                            const vector<Node *> &full_nodes,
+                            const vector<Node_ids> &full_ids,
+                            const bool is_linear)
 {
+    typedef std::map<std::string, kc_entry_t> kc_t;
 
-    string funcName = getFuncName(nodes, is_linear);
+    thread_local kc_t kernelCaches[DeviceManager::MAX_DEVICES];
 
-    typedef map<string, kc_entry_t> kc_t;
-    static kc_t kernelCaches[DeviceManager::MAX_DEVICES];
-    int device = getActiveDeviceId();
+    string funcName = getFuncName(output_nodes, full_nodes, full_ids, is_linear);
+    int device      = getActiveDeviceId();
 
     kc_t::iterator idx = kernelCaches[device].find(funcName);
     kc_entry_t entry = {NULL, NULL};
 
     if (idx == kernelCaches[device].end()) {
-        string jit_ker = getKernelString(funcName, nodes, is_linear);
+        string jit_ker = getKernelString(funcName, full_nodes, full_ids, output_ids, is_linear);
         entry = compileKernel(funcName.c_str(), jit_ker);
         kernelCaches[device][funcName] = entry;
     } else {
@@ -552,19 +582,31 @@ static CUfunction getKernel(vector<Node *> nodes, bool is_linear)
 }
 
 template<typename T>
-void evalNodes(vector<Param<T> >&outputs, vector<Node *> nodes)
+void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
 {
     int num_outputs = (int)outputs.size();
 
     if (num_outputs == 0) return;
 
-    bool is_linear = true;
-
-    for (int i = 0; i < num_outputs; i++) {
-        is_linear &= nodes[i]->isLinear(outputs[0].dims);
+    Node_map_t nodes;
+    vector<int> output_ids;
+    for (auto &node : output_nodes) {
+        node->getNodesMap(nodes);
+        output_ids.push_back(nodes[node].id);
     }
 
-    CUfunction ker = getKernel(nodes, is_linear);
+    vector<Node *> full_nodes(nodes.size());
+    vector<Node_ids> full_ids(nodes.size());
+    bool is_linear = true;
+    for (auto &map_entry : nodes) {
+        full_nodes[map_entry.second.id] = map_entry.first;
+        full_ids[map_entry.second.id] = map_entry.second;
+        is_linear &= map_entry.first->isLinear(outputs[0].dims);
+    }
+
+    CUfunction ker = getKernel(output_nodes, output_ids,
+                               full_nodes, full_ids,
+                               is_linear);
 
     int threads_x = 1, threads_y = 1;
     int blocks_x_ = 1, blocks_y_ = 1;
@@ -607,8 +649,8 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> nodes)
 
     vector<void *> args;
 
-    for (int i = 0; i < num_outputs; i++) {
-        nodes[i]->setArgs(args, is_linear);
+    for (const auto &node : full_nodes) {
+        node->setArgs(args, is_linear);
     }
 
     for (int i = 0; i < num_outputs; i++) {
@@ -655,24 +697,20 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> nodes)
                             threads_y,
                             1,
                             0,
-                            getStream(getActiveDeviceId()),
+                            getActiveStream(),
                             &args.front(),
                             NULL));
-
-    for (int i = 0; i < num_outputs; i++) {
-        nodes[i]->resetFlags();
-    }
 }
 
 template<typename T>
 void evalNodes(Param<T> &out, Node *node)
 {
     vector<Param<T>> outputs;
-    vector<Node *> nodes;
+    vector<Node *> output_nodes;
 
     outputs.push_back(out);
-    nodes.push_back(node);
-    evalNodes(outputs, nodes);
+    output_nodes.push_back(node);
+    evalNodes(outputs, output_nodes);
     return;
 }
 

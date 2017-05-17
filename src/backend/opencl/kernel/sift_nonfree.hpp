@@ -93,6 +93,7 @@
 #include <kernel/resize.hpp>
 #include <kernel_headers/sift_nonfree.hpp>
 #include <memory.hpp>
+#include <cache.hpp>
 #include <vector>
 
 namespace compute = boost::compute;
@@ -107,10 +108,8 @@ using std::vector;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
 static const int SIFT_THREADS   = 256;
 static const int SIFT_THREADS_X = 32;
 static const int SIFT_THREADS_Y = 8;
@@ -396,59 +395,66 @@ void apply_permutation(compute::buffer_iterator<T>& keys, compute::vector<int>& 
     compute::gather(permutation.begin(), permutation.end(), temp.begin(), keys, queue);
 }
 
-template<typename T, typename convAccT>
-void sift(unsigned* out_feat,
-          unsigned* out_dlen,
-          Param& x_out,
-          Param& y_out,
-          Param& score_out,
-          Param& ori_out,
-          Param& size_out,
-          Param& desc_out,
-          Param img,
-          const unsigned n_layers,
-          const float contrast_thr,
-          const float edge_thr,
-          const float init_sigma,
-          const bool double_input,
-          const float img_scale,
-          const float feature_ratio,
-          const bool compute_GLOH)
+template<typename T>
+std::array<cl::Kernel*, 7> getSiftKernels()
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*> siftProgs;
-    static std::map<int, Kernel*>  suKernel;
-    static std::map<int, Kernel*>  deKernel;
-    static std::map<int, Kernel*>  ieKernel;
-    static std::map<int, Kernel*>  coKernel;
-    static std::map<int, Kernel*>  rdKernel;
-    static std::map<int, Kernel*>  cdKernel;
-    static std::map<int, Kernel*>  cgKernel;
+    static const unsigned NUM_KERNELS = 7;
+    static const std::string kernelNames[NUM_KERNELS] =
+        {"sub", "detectExtrema", "interpolateExtrema", "calcOrientation", "removeDuplicates",
+         "computeDescriptor", "computeGLOHDescriptor"};
+
+    kc_entry_t entries[NUM_KERNELS];
 
     int device = getActiveDeviceId();
 
-    std::call_once( compileFlags[device], [device] () {
+    std::string checkName = kernelNames[0] + std::string("_") + std::string(dtype_traits<T>::getName());
 
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName();
+    entries[0] = kernelCache(device, checkName);
 
-            if (std::is_same<T, double>::value ||
-                std::is_same<T, cdouble>::value) {
-                options << " -D USE_DOUBLE";
-            }
+    if (entries[0].prog==0 && entries[0].ker==0)
+    {
+        std::ostringstream options;
+        options << " -D T=" << dtype_traits<T>::getName();
+        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
+            options << " -D USE_DOUBLE";
 
-            cl::Program prog;
-            buildProgram(prog, sift_nonfree_cl, sift_nonfree_cl_len, options.str());
-            siftProgs[device] = new Program(prog);
+        cl::Program prog;
+        buildProgram(prog, sift_nonfree_cl, sift_nonfree_cl_len, options.str());
 
-            suKernel[device] = new Kernel(*siftProgs[device], "sub");
-            deKernel[device] = new Kernel(*siftProgs[device], "detectExtrema");
-            ieKernel[device] = new Kernel(*siftProgs[device], "interpolateExtrema");
-            coKernel[device] = new Kernel(*siftProgs[device], "calcOrientation");
-            rdKernel[device] = new Kernel(*siftProgs[device], "removeDuplicates");
-            cdKernel[device] = new Kernel(*siftProgs[device], "computeDescriptor");
-            cgKernel[device] = new Kernel(*siftProgs[device], "computeGLOHDescriptor");
-        });
+        for (unsigned i=0; i<NUM_KERNELS; ++i)
+        {
+            entries[i].prog = new Program(prog);
+            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i].c_str());
+
+            std::string name = kernelNames[i] + std::string("_") +
+                std::string(dtype_traits<T>::getName());
+
+            addKernelToCache(device, name, entries[i]);
+        }
+    } else {
+        for (unsigned i=1; i<NUM_KERNELS; ++i) {
+            std::string name = kernelNames[i] + std::string("_") +
+                std::string(dtype_traits<T>::getName());
+
+            entries[i] = kernelCache(device, name);
+        }
+    }
+
+    std::array<cl::Kernel*, NUM_KERNELS> retVal;
+    for (unsigned i=0; i<NUM_KERNELS; ++i)
+        retVal[i] = entries[i].ker;
+
+    return retVal;
+}
+
+template<typename T, typename convAccT>
+void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
+          Param& score_out, Param& ori_out, Param& size_out, Param& desc_out,
+          Param img, const unsigned n_layers, const float contrast_thr, const float edge_thr,
+          const float init_sigma, const bool double_input, const float img_scale,
+          const float feature_ratio, const bool compute_GLOH)
+{
+    auto kernels = getSiftKernels<T>();
 
     unsigned min_dim = min(img.info.dims[0], img.info.dims[1]);
     if (double_input) min_dim *= 2;
@@ -459,7 +465,7 @@ void sift(unsigned* out_feat,
 
     std::vector<Param> gauss_pyr = buildGaussPyr<T, convAccT>(init_img, n_octaves, n_layers, init_sigma);
 
-    std::vector<Param> dog_pyr = buildDoGPyr<T>(gauss_pyr, n_octaves, n_layers, suKernel[device]);
+    std::vector<Param> dog_pyr = buildDoGPyr<T>(gauss_pyr, n_octaves, n_layers, kernels[0]);
 
     std::vector<cl::Buffer*> d_x_pyr(n_octaves, NULL);
     std::vector<cl::Buffer*> d_y_pyr(n_octaves, NULL);
@@ -506,7 +512,7 @@ void sift(unsigned* out_feat,
 
         auto deOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer,
                                 Buffer, KParam, unsigned, float,
-                                LocalSpaceArg> (*deKernel[device]);
+                                LocalSpaceArg> (*kernels[1]);
 
         deOp(EnqueueArgs(getQueue(), global, local),
               *d_extrema_x, *d_extrema_y, *d_extrema_layer, *d_count,
@@ -542,7 +548,7 @@ void sift(unsigned* out_feat,
                                 Buffer, Buffer, Buffer,
                                 Buffer, Buffer, Buffer, unsigned,
                                 Buffer, KParam, unsigned, unsigned, unsigned,
-                                float, float, float, float> (*ieKernel[device]);
+                                float, float, float, float> (*kernels[2]);
 
         ieOp(EnqueueArgs(getQueue(), global_interp, local_interp),
               *d_interp_x, *d_interp_y, *d_interp_layer,
@@ -614,7 +620,7 @@ void sift(unsigned* out_feat,
 
         auto rdOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
                                 Buffer, Buffer, Buffer, Buffer, Buffer,
-                                unsigned> (*rdKernel[device]);
+                                unsigned> (*kernels[4]);
 
         rdOp(EnqueueArgs(getQueue(), global_nodup, local_nodup),
               *d_nodup_x, *d_nodup_y, *d_nodup_layer,
@@ -650,7 +656,7 @@ void sift(unsigned* out_feat,
         auto coOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
                                 Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
                                 Buffer, KParam, unsigned, unsigned, int,
-                                LocalSpaceArg> (*coKernel[device]);
+                                LocalSpaceArg> (*kernels[3]);
 
         coOp(EnqueueArgs(getQueue(), global_ori, local_ori),
               *d_oriented_x, *d_oriented_y, *d_oriented_layer,
@@ -695,20 +701,20 @@ void sift(unsigned* out_feat,
             auto cgOp = KernelFunctor<Buffer, unsigned, unsigned,
                                     Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
                                     Buffer, KParam, int, unsigned, unsigned, unsigned, float, int,
-                                    LocalSpaceArg> (*cgKernel[device]);
+                                    LocalSpaceArg> (*kernels[6]);
 
             cgOp(EnqueueArgs(getQueue(), global_desc, local_desc),
-                  *d_desc, desc_len, histsz,
-                  *d_oriented_x, *d_oriented_y, *d_oriented_layer,
-                  *d_oriented_response, *d_oriented_size, *d_oriented_ori, oriented_feat,
-                  *gauss_pyr[o].data, gauss_pyr[o].info, d, rb, ab, hb, scale, n_layers,
-                  cl::Local(desc_len * (histsz+1) * sizeof(float)));
+                 *d_desc, desc_len, histsz,
+                 *d_oriented_x, *d_oriented_y, *d_oriented_layer,
+                 *d_oriented_response, *d_oriented_size, *d_oriented_ori, oriented_feat,
+                 *gauss_pyr[o].data, gauss_pyr[o].info, d, rb, ab, hb, scale, n_layers,
+                 cl::Local(desc_len * (histsz+1) * sizeof(float)));
         }
         else {
             auto cdOp = KernelFunctor<Buffer, unsigned, unsigned,
                                     Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
                                     Buffer, KParam, int, int, float, int,
-                                    LocalSpaceArg> (*cdKernel[device]);
+                                    LocalSpaceArg> (*kernels[5]);
 
             cdOp(EnqueueArgs(getQueue(), global_desc, local_desc),
                   *d_desc, desc_len, histsz,
@@ -817,7 +823,5 @@ void sift(unsigned* out_feat,
     *out_feat = total_feat;
     *out_dlen = desc_len;
 }
-
 } //namespace kernel
-
 } //namespace opencl

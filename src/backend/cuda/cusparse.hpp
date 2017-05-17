@@ -8,17 +8,15 @@
  ********************************************************/
 
 #pragma once
-#include <stdio.h>
-#include <err_common.hpp>
-#include <defines.hpp>
 #include <cusparse_v2.h>
+#include <defines.hpp>
+#include <common/MatrixAlgebraHandle.hpp>
 
-namespace cusparse {
+namespace cuda
+{
+typedef cusparseHandle_t SparseHandle;
 
-    const char * errorString(cusparseStatus_t err);
-    cusparseHandle_t getHandle();
-}
-
+const char * errorString(cusparseStatus_t err);
 
 #define CUSPARSE_CHECK(fn) do {                         \
         cusparseStatus_t _error = fn;                   \
@@ -27,8 +25,18 @@ namespace cusparse {
             snprintf(_err_msg, sizeof(_err_msg),        \
                      "CUSPARSE Error (%d): %s\n",       \
                      (int)(_error),                     \
-                     cusparse::errorString( _error));   \
+                     errorString( _error));             \
                                                         \
             AF_ERROR(_err_msg, AF_ERR_INTERNAL);        \
         }                                               \
     } while(0)
+
+class cusparseHandle : public common::MatrixAlgebraHandle<cusparseHandle, SparseHandle>
+{
+    public:
+        void createHandle(SparseHandle* handle);
+        void destroyHandle(SparseHandle handle) {
+            cusparseDestroy(handle);
+        }
+};
+}

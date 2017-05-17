@@ -107,7 +107,7 @@ Return type is u32 for all input types
 
 \ingroup scan_mat
 
-Perform exclusive sum along specified dimension
+Perform inclusive sum along specified dimension
 
 This table defines the return value types for the corresponding input types
 

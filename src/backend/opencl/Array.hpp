@@ -204,11 +204,7 @@ namespace opencl
             return data_dims;
         }
 
-        void setDataDims(const dim4 &new_dims)
-        {
-            modDims(new_dims);
-            data_dims = new_dims;
-        }
+        void setDataDims(const dim4 &new_dims);
 
         size_t getAllocatedBytes() const
         {

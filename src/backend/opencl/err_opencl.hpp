@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <stdio.h>
+#include <cstdio>
 #include <errorcodes.hpp>
 #include <err_common.hpp>
 #include <platform.hpp>

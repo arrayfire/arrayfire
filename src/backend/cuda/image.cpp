@@ -16,7 +16,7 @@
 #include <image.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
-#include <interopManager.hpp>
+#include <GraphicsResourceManager.hpp>
 
 using af::dim4;
 
@@ -27,20 +27,17 @@ using namespace gl;
 template<typename T>
 void copy_image(const Array<T> &in, const forge::Image* image)
 {
-    if(InteropManager::checkGraphicsInteropCapability()) {
-        InteropManager& intrpMngr = InteropManager::getInstance();
-
-        cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(image);
+    if(DeviceManager::checkGraphicsInteropCapability()) {
+        ShrdResVector res = interopManager().getBufferResource(image);
 
         const T *d_X = in.get();
         // Map resource. Copy data to pixels. Unmap resource.
         size_t num_bytes;
         T* d_pixels = NULL;
-        cudaGraphicsMapResources(1, resources, cuda::getStream(cuda::getActiveDeviceId()));
-        cudaGraphicsResourceGetMappedPointer((void **)&d_pixels, &num_bytes, resources[0]);
-        cudaMemcpyAsync(d_pixels, d_X, num_bytes, cudaMemcpyDeviceToDevice,
-                        cuda::getStream(cuda::getActiveDeviceId()));
-        cudaGraphicsUnmapResources(1, resources, cuda::getStream(cuda::getActiveDeviceId()));
+        cudaGraphicsMapResources(1, res[0].get(), cuda::getActiveStream());
+        cudaGraphicsResourceGetMappedPointer((void **)&d_pixels, &num_bytes, *(res[0].get()));
+        cudaMemcpyAsync(d_pixels, d_X, num_bytes, cudaMemcpyDeviceToDevice, cuda::getActiveStream());
+        cudaGraphicsUnmapResources(1, res[0].get(), cuda::getActiveStream());
 
         POST_LAUNCH_CHECK();
         CheckGL("After cuda resource copy");

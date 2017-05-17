@@ -202,7 +202,6 @@ void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
         return cpu::svdInPlace(s, u, vt, in);
     }
 
-    initBlas();
     svd<T, Tr>(u, s, vt, in, true);
 }
 

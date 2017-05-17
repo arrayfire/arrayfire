@@ -53,6 +53,10 @@ ELSE(FREEIMAGE_FOUND)
     MESSAGE(WARNING, "FreeImage not found!")
 ENDIF(FREEIMAGE_FOUND)
 
+ADD_DEFINITIONS(-DBOOST_ALL_NO_LIB)
+SET(Boost_USE_STATIC_LIBS OFF)
+FIND_PACKAGE(Boost REQUIRED)
+
 OPTION(USE_SYSTEM_CL2HPP "Use cl2.hpp installed on system" OFF)
 
 IF(BUILD_GRAPHICS)
@@ -128,10 +132,12 @@ INCLUDE_DIRECTORIES(BEFORE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/backend"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/api/c"
+    "${Boost_INCLUDE_DIR}"
     )
 
 IF(${UNIX})
-    ADD_DEFINITIONS(-Wall -std=c++11 -fvisibility=hidden)
+    ADD_DEFINITIONS(-std=c++11 -Wall -fvisibility=hidden)
+
     IF(${WITH_COVERAGE})
         SET(CMAKE_CXX_FLAGS             "-fprofile-arcs -ftest-coverage")
         SET(CMAKE_EXE_LINKER_FLAGS      "-fprofile-arcs -ftest-coverage")

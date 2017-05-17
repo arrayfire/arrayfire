@@ -12,8 +12,7 @@
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
-#include <mutex>
-#include <map>
+#include <cache.hpp>
 #include <algorithm>
 #include <dispatch.hpp>
 #include <Param.hpp>
@@ -30,43 +29,39 @@ using std::string;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
 template<typename T, bool is_color>
 void meanshift(Param out, const Param in, float s_sigma, float c_sigma, uint iter)
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*> msProgs;
-    static std::map<int, Kernel*> msKernels;
+    std::string refName = std::string("meanshift_") +
+        std::string(dtype_traits<T>::getName()) + std::to_string(is_color);
 
     int device = getActiveDeviceId();
+    kc_entry_t entry = kernelCache(device, refName);
 
-    std::call_once( compileFlags[device], [device] () {
-                std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D MAX_CHANNELS=" << (is_color ? 3 : 1);
-                if (std::is_same<T, double>::value ||
-                    std::is_same<T, cdouble>::value) {
-                    options << " -D USE_DOUBLE";
-                }
-                Program prog;
-                buildProgram(prog, meanshift_cl, meanshift_cl_len, options.str());
-                msProgs[device]   = new Program(prog);
-                msKernels[device] = new Kernel(*msProgs[device], "meanshift");
-            });
+    if (entry.prog==0 && entry.ker==0) {
+        std::ostringstream options;
+        options << " -D T=" << dtype_traits<T>::getName()
+                << " -D MAX_CHANNELS=" << (is_color ? 3 : 1);
+        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
+            options << " -D USE_DOUBLE";
 
-    auto meanshiftOp = KernelFunctor<Buffer, KParam,
-                                    Buffer, KParam,
-                                    LocalSpaceArg,
-                                    int, float,
-                                    int, float,
-                                    unsigned, int, int
-                                  >(*msKernels[device]);
+        const char* ker_strs[] = {meanshift_cl};
+        const int   ker_lens[] = {meanshift_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
+        entry.prog = new Program(prog);
+        entry.ker  = new Kernel(*entry.prog, "meanshift");
+
+        addKernelToCache(device, refName, entry);
+    }
+
+    auto meanshiftOp = KernelFunctor<Buffer, KParam, Buffer, KParam, LocalSpaceArg,
+                                    int, float, int, float, unsigned, int, int >(*entry.ker);
 
     NDRange local(THREADS_X, THREADS_Y);
 
@@ -92,7 +87,5 @@ void meanshift(Param out, const Param in, float s_sigma, float c_sigma, uint ite
 
     CL_DEBUG_FINISH(getQueue());
 }
-
 }
-
 }

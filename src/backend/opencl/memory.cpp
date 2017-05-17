@@ -8,15 +8,9 @@
  ********************************************************/
 
 #include <memory.hpp>
-#include <dispatch.hpp>
-#include <map>
-#include <iostream>
-#include <iomanip>
-#include <string>
+#include <platform.hpp>
 #include <types.hpp>
 #include <err_opencl.hpp>
-
-#include <MemoryManager.hpp>
 
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
@@ -28,228 +22,104 @@
 
 namespace opencl
 {
-
-class MemoryManager  : public common::MemoryManager
-{
-    int getActiveDeviceId();
-    size_t getMaxMemorySize(int id);
-public:
-    MemoryManager();
-    void *nativeAlloc(const size_t bytes);
-    void nativeFree(void *ptr);
-    ~MemoryManager()
-    {
-        common::lock_guard_t lock(this->memory_mutex);
-        for (int n = 0; n < getDeviceCount(); n++) {
-            opencl::setDevice(n);
-            this->garbageCollect();
-        }
-    }
-};
-
-class MemoryManagerPinned  : public common::MemoryManager
-{
-    std::vector<
-        std::map<void *, cl::Buffer>
-        > pinned_maps;
-    int getActiveDeviceId();
-    size_t getMaxMemorySize(int id);
-
-public:
-
-    MemoryManagerPinned();
-
-    void *nativeAlloc(const size_t bytes);
-    void nativeFree(void *ptr);
-
-    ~MemoryManagerPinned()
-    {
-        common::lock_guard_t lock(this->memory_mutex);
-        for (int n = 0; n < getDeviceCount(); n++) {
-            opencl::setDevice(n);
-            this->garbageCollect();
-            auto pinned_curr_iter = pinned_maps[n].begin();
-            auto pinned_end_iter  = pinned_maps[n].end();
-            while (pinned_curr_iter != pinned_end_iter) {
-                pinned_maps[n].erase(pinned_curr_iter++);
-            }
-        }
-    }
-};
-
-int MemoryManager::getActiveDeviceId()
-{
-    return opencl::getActiveDeviceId();
-}
-
-size_t MemoryManager::getMaxMemorySize(int id)
-{
-    return opencl::getDeviceMemorySize(id);
-}
-
-MemoryManager::MemoryManager() :
-    common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS, AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG)
-{
-    this->setMaxMemorySize();
-}
-
-void *MemoryManager::nativeAlloc(const size_t bytes)
-{
-    return (void *)(new cl::Buffer(getContext(), CL_MEM_READ_WRITE, bytes));
-}
-
-void MemoryManager::nativeFree(void *ptr)
-{
-    delete (cl::Buffer *)ptr;
-}
-
-static MemoryManager &getMemoryManager()
-{
-    static MemoryManager instance;
-    return instance;
-}
-
-int MemoryManagerPinned::getActiveDeviceId()
-{
-    return opencl::getActiveDeviceId();
-}
-
-size_t MemoryManagerPinned::getMaxMemorySize(int id)
-{
-    return opencl::getDeviceMemorySize(id);
-}
-
-MemoryManagerPinned::MemoryManagerPinned() :
-    common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS, AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG),
-    pinned_maps(getDeviceCount())
-{
-    this->setMaxMemorySize();
-}
-
-void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
-{
-    void *ptr = NULL;
-    cl::Buffer buf= cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, bytes);
-    ptr = getQueue().enqueueMapBuffer(buf, true, CL_MAP_READ | CL_MAP_WRITE, 0, bytes);
-    pinned_maps[opencl::getActiveDeviceId()][ptr] = buf;
-    return ptr;
-}
-
-void MemoryManagerPinned::nativeFree(void *ptr)
-{
-    int n = opencl::getActiveDeviceId();
-    auto iter = pinned_maps[n].find(ptr);
-
-    if (iter != pinned_maps[n].end()) {
-        getQueue().enqueueUnmapMemObject(pinned_maps[n][ptr], ptr);
-        pinned_maps[n].erase(iter);
-    }
-}
-
-static MemoryManagerPinned &getMemoryManagerPinned()
-{
-    static MemoryManagerPinned instance;
-    return instance;
-}
-
 void setMemStepSize(size_t step_bytes)
 {
-    getMemoryManager().setMemStepSize(step_bytes);
+    memoryManager().setMemStepSize(step_bytes);
 }
 
 size_t getMemStepSize(void)
 {
-    return getMemoryManager().getMemStepSize();
+    return memoryManager().getMemStepSize();
 }
 
 size_t getMaxBytes()
 {
-    return getMemoryManager().getMaxBytes();
+    return memoryManager().getMaxBytes();
 }
 
 unsigned getMaxBuffers()
 {
-    return getMemoryManager().getMaxBuffers();
+    return memoryManager().getMaxBuffers();
 }
 
 void garbageCollect()
 {
-    getMemoryManager().garbageCollect();
+    memoryManager().garbageCollect();
 }
 
 void printMemInfo(const char *msg, const int device)
 {
-    getMemoryManager().printInfo(msg, device);
+    memoryManager().printInfo(msg, device);
 }
 
 template<typename T>
 T* memAlloc(const size_t &elements)
 {
-    return (T *)getMemoryManager().alloc(elements * sizeof(T), false);
+    return (T *)memoryManager().alloc(elements * sizeof(T), false);
 }
 
 void* memAllocUser(const size_t &bytes)
 {
-    return getMemoryManager().alloc(bytes, true);
+    return memoryManager().alloc(bytes, true);
 }
 template<typename T>
 void memFree(T *ptr)
 {
-    return getMemoryManager().unlock((void *)ptr, false);
+    return memoryManager().unlock((void *)ptr, false);
 }
 
 void memFreeUser(void *ptr)
 {
-    getMemoryManager().unlock((void *)ptr, true);
+    memoryManager().unlock((void *)ptr, true);
 }
 
 cl::Buffer *bufferAlloc(const size_t &bytes)
 {
-    return (cl::Buffer *)getMemoryManager().alloc(bytes, false);
+    return (cl::Buffer *)memoryManager().alloc(bytes, false);
 }
 
 void bufferFree(cl::Buffer *buf)
 {
-    return getMemoryManager().unlock((void *)buf, false);
+    return memoryManager().unlock((void *)buf, false);
 }
 
 void memLock(const void *ptr)
 {
-    getMemoryManager().userLock((void *)ptr);
+    memoryManager().userLock((void *)ptr);
 }
 
 void memUnlock(const void *ptr)
 {
-    getMemoryManager().userUnlock((void *)ptr);
+    memoryManager().userUnlock((void *)ptr);
 }
 
 bool isLocked(const void *ptr)
 {
-    return getMemoryManager().isUserLocked((void *)ptr);
+    return memoryManager().isUserLocked((void *)ptr);
 }
 
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                       size_t *lock_bytes,  size_t *lock_buffers)
 {
-    getMemoryManager().bufferInfo(alloc_bytes, alloc_buffers,
+    memoryManager().bufferInfo(alloc_bytes, alloc_buffers,
                                   lock_bytes,  lock_buffers);
 }
 
 template<typename T>
 T* pinnedAlloc(const size_t &elements)
 {
-    return (T *)getMemoryManagerPinned().alloc(elements * sizeof(T), false);
+    return (T *)pinnedMemoryManager().alloc(elements * sizeof(T), false);
 }
 
 template<typename T>
 void pinnedFree(T* ptr)
 {
-    return getMemoryManagerPinned().unlock((void *)ptr, false);
+    return pinnedMemoryManager().unlock((void *)ptr, false);
 }
 
 bool checkMemoryLimit()
 {
-    return getMemoryManager().checkMemoryLimit();
+    return memoryManager().checkMemoryLimit();
 }
 
 #define INSTANTIATE(T)                                      \
@@ -270,4 +140,99 @@ bool checkMemoryLimit()
     INSTANTIATE(uintl)
     INSTANTIATE(short)
     INSTANTIATE(ushort)
+
+MemoryManager::MemoryManager()
+    : common::MemoryManager<opencl::MemoryManager>(getDeviceCount(), common::MAX_BUFFERS,
+                                                   AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG)
+{
+    this->setMaxMemorySize();
+}
+
+MemoryManager::~MemoryManager()
+{
+    common::lock_guard_t lock(this->memory_mutex);
+    for (int n = 0; n < opencl::getDeviceCount(); n++) {
+        try {
+            opencl::setDevice(n);
+            garbageCollect();
+        } catch(AfError err) {
+            continue; // Do not throw any errors while shutting down
+        }
+    }
+}
+
+int MemoryManager::getActiveDeviceId()
+{
+    return opencl::getActiveDeviceId();
+}
+
+size_t MemoryManager::getMaxMemorySize(int id)
+{
+    return opencl::getDeviceMemorySize(id);
+}
+
+void *MemoryManager::nativeAlloc(const size_t bytes)
+{
+    return (void *)(new cl::Buffer(getContext(), CL_MEM_READ_WRITE, bytes));
+}
+
+void MemoryManager::nativeFree(void *ptr)
+{
+    delete (cl::Buffer *)ptr;
+}
+
+MemoryManagerPinned::MemoryManagerPinned()
+    : common::MemoryManager<MemoryManagerPinned>(getDeviceCount(), common::MAX_BUFFERS,
+                                                 AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG),
+    pinnedMaps(getDeviceCount())
+{
+    this->setMaxMemorySize();
+}
+
+MemoryManagerPinned::~MemoryManagerPinned()
+{
+    common::lock_guard_t lock(this->memory_mutex);
+    for (int n = 0; n < getDeviceCount(); n++) {
+        opencl::setDevice(n);
+        this->garbageCollect();
+        auto currIterator = pinnedMaps[n].begin();
+        auto endIterator  = pinnedMaps[n].end();
+        while (currIterator != endIterator) {
+            pinnedMaps[n].erase(currIterator++);
+        }
+    }
+}
+
+int MemoryManagerPinned::getActiveDeviceId()
+{
+    return opencl::getActiveDeviceId();
+}
+
+size_t MemoryManagerPinned::getMaxMemorySize(int id)
+{
+    return opencl::getDeviceMemorySize(id);
+}
+
+void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
+{
+    void *ptr = NULL;
+    cl::Buffer* buf = new cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, bytes);
+    ptr = getQueue().enqueueMapBuffer(*buf, true, CL_MAP_READ | CL_MAP_WRITE, 0, bytes);
+    pinnedMaps[opencl::getActiveDeviceId()].emplace(ptr, buf);
+    return ptr;
+}
+
+void MemoryManagerPinned::nativeFree(void *ptr)
+{
+    int n = opencl::getActiveDeviceId();
+    auto map = pinnedMaps[n];
+    auto iter = map.find(ptr);
+
+    if (iter != map.end()) {
+        cl::Buffer* buf = map[ptr];
+        getQueue().enqueueUnmapMemObject(*buf, ptr);
+        delete buf;
+        map.erase(iter);
+    }
+}
 }

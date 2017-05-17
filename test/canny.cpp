@@ -51,9 +51,9 @@ void cannyTest(string pTestFile)
 
     ASSERT_EQ(AF_SUCCESS, af_canny(&outArray, sArray, AF_MANUAL_THRESHOLD, 0.4147f, 0.8454f, 3, true));
 
-    char *outData = new char[sDims.elements()];
+    std::vector<char> outData(sDims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     vector<char> currGoldBar = tests[0];
     size_t nElems        = currGoldBar.size();
@@ -62,7 +62,6 @@ void cannyTest(string pTestFile)
     }
 
     // cleanup
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(sArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
@@ -110,13 +109,13 @@ void cannyImageOtsuTest(string pTestFile, bool isColor)
 
         ASSERT_EQ(AF_SUCCESS, af_canny(&outArray, inArray, AF_AUTO_OTSU_THRESHOLD, 0.08, 0.32, 3, false));
 
-        char * outData = new char[nElems];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+        std::vector<char> outData(nElems);
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
-        char * goldData= new char[nElems];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData, goldArray));
+        std::vector<char> goldData(nElems);
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
 
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData, outData, 1.0e-3));
+        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 1.0e-3));
 
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));

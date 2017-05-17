@@ -28,6 +28,16 @@
 namespace opencl
 {
 
+void initBlas()
+{
+    gpu_blas_init();
+}
+
+void deInitBlas()
+{
+    gpu_blas_deinit();
+}
+
 // Converts an af_mat_prop options to a transpose type for one of the OpenCL BLAS back-ends
 OPENCL_BLAS_TRANS_T
 toBlasTranspose(af_mat_prop opt)
@@ -40,13 +50,6 @@ toBlasTranspose(af_mat_prop opt)
     }
 }
 
-// Initialization of the OpenCL BLAS library
-void
-initBlas()
-{
-    gpu_blas_init();
-}
-
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
@@ -56,8 +59,6 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
         return cpu::matmul(lhs, rhs, optLhs, optRhs);
     }
 #endif
-    initBlas();
-
     const auto lOpts = toBlasTranspose(optLhs);
     const auto rOpts = toBlasTranspose(optRhs);
 

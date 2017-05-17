@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <err_opencl.hpp>
 #include <clBLAS.h>
+#include <mutex>
 
 static const char * _clblasGetResultString(clblasStatus st)
 {
@@ -51,9 +52,13 @@ static const char * _clblasGetResultString(clblasStatus st)
     return "Unknown error";
 }
 
+static std::recursive_mutex gCLBlasMutex;
+
 #define CLBLAS_CHECK(fn) do {                   \
+        gCLBlasMutex.lock();                    \
         clblasStatus _clblas_st = fn;           \
-        if (_clblas_st != clblasSuccess) {     \
+        gCLBlasMutex.unlock();                  \
+        if (_clblas_st != clblasSuccess) {      \
             char clblas_st_msg[1024];           \
             snprintf(clblas_st_msg,             \
                      sizeof(clblas_st_msg),     \

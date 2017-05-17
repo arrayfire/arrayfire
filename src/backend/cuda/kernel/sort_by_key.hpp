@@ -82,7 +82,7 @@ namespace cuda
             Tk *cKey = memAlloc<Tk>(elements);
             CUDA_CHECK(cudaMemcpyAsync(cKey, Key, elements * sizeof(Tk),
                                        cudaMemcpyDeviceToDevice,
-                                       getStream(cuda::getActiveDeviceId())));
+                                       getActiveStream()));
 
             Tv *Val = pVal.ptr;
             thrustSortByKey(Key, Val, elements, isAscending);
@@ -91,7 +91,7 @@ namespace cuda
             uint *cSeq = memAlloc<uint>(elements);
             CUDA_CHECK(cudaMemcpyAsync(cSeq, Seq, elements * sizeof(uint),
                                        cudaMemcpyDeviceToDevice,
-                                       getStream(cuda::getActiveDeviceId())));
+                                       getActiveStream()));
 
             // This always needs to be ascending
             thrustSortByKey(Seq, Val, elements, true);

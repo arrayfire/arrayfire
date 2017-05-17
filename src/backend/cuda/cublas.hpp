@@ -8,18 +8,15 @@
  ********************************************************/
 
 #pragma once
-#include <stdio.h>
-#include <err_common.hpp>
-#include <defines.hpp>
 #include <cublas_v2.h>
+#include <defines.hpp>
+#include <common/MatrixAlgebraHandle.hpp>
 
+namespace cuda
+{
+typedef cublasHandle_t BlasHandle;
 
-namespace cublas {
-
-    const char * errorString(cublasStatus_t err);
-    cublasHandle_t getHandle();
-}
-
+const char * errorString(cublasStatus_t err);
 
 #define CUBLAS_CHECK(fn) do {                   \
         cublasStatus_t _error = fn;             \
@@ -29,10 +26,19 @@ namespace cublas {
                      sizeof(_err_msg),          \
                      "CUBLAS Error (%d): %s\n", \
                      (int)(_error),             \
-                     cublas::errorString(       \
-                         _error));              \
+                     errorString(_error));      \
                                                 \
             AF_ERROR(_err_msg,                  \
                      AF_ERR_INTERNAL);          \
         }                                       \
     } while(0)
+
+class cublasHandle : public common::MatrixAlgebraHandle<cublasHandle, BlasHandle>
+{
+    public:
+        void createHandle(BlasHandle* handle);
+        void destroyHandle(BlasHandle handle) {
+            cublasDestroy(handle);
+        }
+};
+}

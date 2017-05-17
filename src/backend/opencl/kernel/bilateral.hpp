@@ -12,9 +12,8 @@
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
-#include <mutex>
-#include <map>
 #include <algorithm>
+#include <cache.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -31,57 +30,53 @@ using std::string;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
 template<typename inType, typename outType, bool isColor>
 void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*>  bilProgs;
-    static std::map<int, Kernel*> bilKernels;
+    std::string refName = std::string("bilateral_") +
+        std::string(dtype_traits<inType>::getName()) +
+        std::string(dtype_traits<outType>::getName()) +
+        std::to_string(isColor);
 
     int device = getActiveDeviceId();
+    kc_entry_t entry = kernelCache(device, refName);
 
-    std::call_once( compileFlags[device], [device] () {
-            bool use_native_exp = (getActivePlatform() != AFCL_PLATFORM_POCL
-                                && getActivePlatform() != AFCL_PLATFORM_APPLE
-                                && getActivePlatform() != AFCL_PLATFORM_AMD);
-            std::ostringstream options;
-            options << " -D inType=" << dtype_traits<inType>::getName()
-                    << " -D outType=" << dtype_traits<outType>::getName();
-            if (std::is_same<inType, double>::value ||
+    if (entry.prog==0 && entry.ker==0) {
+        bool use_native_exp = (getActivePlatform() != AFCL_PLATFORM_POCL
+                && getActivePlatform() != AFCL_PLATFORM_APPLE);
+        std::ostringstream options;
+        options << " -D inType=" << dtype_traits<inType>::getName()
+            << " -D outType=" << dtype_traits<outType>::getName();
+        if (std::is_same<inType, double>::value ||
                 std::is_same<inType, cdouble>::value) {
-                    options << " -D USE_DOUBLE";
-            }
-            options << " -D USE_NATIVE_EXP=" << (int)use_native_exp;
+            options << " -D USE_DOUBLE";
+        }
+        options << " -D USE_NATIVE_EXP=" << (int)use_native_exp;
 
-            Program prog;
-            buildProgram(prog, bilateral_cl, bilateral_cl_len, options.str());
-            bilProgs[device] = new Program(prog);
+        const char* ker_strs[] = {bilateral_cl};
+        const int   ker_lens[] = {bilateral_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
+        entry.prog = new Program(prog);
+        entry.ker  = new Kernel(*entry.prog, "bilateral");
 
-                bilKernels[device] = new Kernel(*bilProgs[device], "bilateral");
-        });
+        addKernelToCache(device, refName, entry);
+    }
 
-    auto bilateralOp = KernelFunctor<Buffer, KParam,
-                                    Buffer, KParam,
-                                    LocalSpaceArg,
-                                    LocalSpaceArg,
-                                    float, float,
-                                    int, int, int
-                                  >(*bilKernels[device]);
+    auto bilateralOp = KernelFunctor< Buffer, KParam, Buffer, KParam, LocalSpaceArg, LocalSpaceArg,
+                                      float, float, int, int, int >(*entry.ker);
 
     NDRange local(THREADS_X, THREADS_Y);
 
     int blk_x = divup(in.info.dims[0], THREADS_X);
     int blk_y = divup(in.info.dims[1], THREADS_Y);
 
-    NDRange global(blk_x*in.info.dims[2]*THREADS_X,
-                    blk_y*in.info.dims[3]*THREADS_Y);
+    NDRange global(blk_x*in.info.dims[2]*THREADS_X, blk_y*in.info.dims[3]*THREADS_Y);
 
     // calculate local memory size
     int radius = (int)std::max(s_sigma * 1.5f, 1.f);
@@ -101,7 +96,5 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
 
     CL_DEBUG_FINISH(getQueue());
 }
-
 }
-
 }

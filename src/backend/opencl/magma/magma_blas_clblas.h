@@ -45,10 +45,26 @@ clblasSide           clblas_side_const ( magma_side_t  side  );
 #define OPENCL_BLAS_NON_UNIT_DIAGONAL clblasNonUnit
 
 // Initialization of the OpenCL BLAS library
+// Only meant to be once and from constructor
+// of DeviceManager singleton
+// DONT'T CALL FROM ANY OTHER LOCATION
 inline void gpu_blas_init()
 {
-    static std::once_flag clblasSetupFlag;
-    call_once(clblasSetupFlag, clblasSetup);
+    clblasSetup();
+}
+
+// tear down of the OpenCL BLAS library
+// Only meant to be called from destructor
+// of DeviceManager singleton
+// DONT'T CALL FROM ANY OTHER LOCATION
+inline void gpu_blas_deinit()
+{
+#ifndef OS_WIN
+    // FIXME:
+    // clblasTeardown() causes a "Pure Virtual Function Called" crash on
+    // Windows for Intel devices. This causes tests to fail.
+    clblasTeardown();
+#endif
 }
 
 #define clblasSherk(...) clblasSsyrk(__VA_ARGS__)

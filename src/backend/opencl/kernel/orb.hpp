@@ -20,6 +20,7 @@
 #include <kernel_headers/orb.hpp>
 #include <memory.hpp>
 #include <vector>
+#include <cache.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -50,10 +51,8 @@ using std::vector;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
 static const int ORB_THREADS   = 256;
 static const int ORB_THREADS_X = 16;
 static const int ORB_THREADS_Y = 16;
@@ -86,50 +85,64 @@ void gaussian1D(T* out, const int dim, double sigma=0.0)
         out[k] /= sum;
 }
 
-template<typename T, typename convAccT>
-void orb(unsigned* out_feat,
-         Param& x_out,
-         Param& y_out,
-         Param& score_out,
-         Param& ori_out,
-         Param& size_out,
-         Param& desc_out,
-         Param image,
-         const float fast_thr,
-         const unsigned max_feat,
-         const float scl_fctr,
-         const unsigned levels,
-         const bool blur_img)
+template<typename T>
+std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*, cl::Kernel*>
+getOrbKernels()
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*> orbProgs;
-    static std::map<int, Kernel*>  hrKernel;
-    static std::map<int, Kernel*>  kfKernel;
-    static std::map<int, Kernel*>  caKernel;
-    static std::map<int, Kernel*>  eoKernel;
+    static const std::string kernelNames[4] =
+        {"harris_response", "keep_features", "centroid_angle", "extract_orb"};
+
+    kc_entry_t entries[4];
 
     int device = getActiveDeviceId();
 
-    std::call_once( compileFlags[device], [device] () {
+    std::string checkName = kernelNames[0] + std::string("_") + std::string(dtype_traits<T>::getName());
 
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName()
-                    << " -D BLOCK_SIZE=" << ORB_THREADS_X;
+    entries[0] = kernelCache(device, checkName);
 
-            if (std::is_same<T, double>::value ||
-                std::is_same<T, cdouble>::value) {
-                options << " -D USE_DOUBLE";
-            }
+    if (entries[0].prog==0 && entries[0].ker==0)
+    {
+        std::ostringstream options;
+        options << " -D T=" << dtype_traits<T>::getName()
+                << " -D BLOCK_SIZE=" << ORB_THREADS_X;
 
-            cl::Program prog;
-            buildProgram(prog, orb_cl, orb_cl_len, options.str());
-            orbProgs[device] = new Program(prog);
+        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
+            options << " -D USE_DOUBLE";
 
-            hrKernel[device] = new Kernel(*orbProgs[device], "harris_response");
-            kfKernel[device] = new Kernel(*orbProgs[device], "keep_features");
-            caKernel[device] = new Kernel(*orbProgs[device], "centroid_angle");
-            eoKernel[device] = new Kernel(*orbProgs[device], "extract_orb");
-        });
+        const char* ker_strs[] = {orb_cl};
+        const int   ker_lens[] = {orb_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
+
+        for (int i=0; i<4; ++i)
+        {
+            entries[i].prog = new Program(prog);
+            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i].c_str());
+
+            std::string name = kernelNames[i] +
+                std::string("_") + std::string(dtype_traits<T>::getName());
+
+            addKernelToCache(device, name, entries[i]);
+        }
+    } else {
+        for (int i=1; i<4; ++i) {
+            std::string name = kernelNames[i] +
+                std::string("_") + std::string(dtype_traits<T>::getName());
+
+            entries[i] = kernelCache(device, name);
+        }
+    }
+
+    return std::make_tuple(entries[0].ker, entries[1].ker, entries[2].ker, entries[3].ker);
+}
+
+template<typename T, typename convAccT>
+void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
+         Param& ori_out, Param& size_out, Param& desc_out, Param image,
+         const float fast_thr, const unsigned max_feat, const float scl_fctr,
+         const unsigned levels, const bool blur_img)
+{
+    auto kernels = getOrbKernels<T>();
 
     unsigned patch_size = REF_PAT_SIZE;
 
@@ -253,7 +266,7 @@ void orb(unsigned* out_feat,
         auto hrOp = KernelFunctor<Buffer, Buffer, Buffer,
                                 Buffer, Buffer, const unsigned,
                                 Buffer, Buffer, KParam,
-                                const unsigned, const float, const unsigned> (*hrKernel[device]);
+                                const unsigned, const float, const unsigned> (*std::get<0>(kernels));
 
         hrOp(EnqueueArgs(getQueue(), global, local),
               *d_x_harris, *d_y_harris, *d_score_harris,
@@ -321,7 +334,7 @@ void orb(unsigned* out_feat,
 
         auto kfOp = KernelFunctor<Buffer, Buffer, Buffer,
                                 Buffer, Buffer, Buffer, Buffer,
-                                const unsigned> (*kfKernel[device]);
+                                const unsigned> (*std::get<1>(kernels));
 
         kfOp(EnqueueArgs(getQueue(), global_keep, local_keep),
               *d_x_lvl, *d_y_lvl, *d_score_lvl,
@@ -344,7 +357,7 @@ void orb(unsigned* out_feat,
 
         auto caOp = KernelFunctor<Buffer, Buffer, Buffer,
                                 const unsigned, Buffer, KParam,
-                                const unsigned> (*caKernel[device]);
+                                const unsigned> (*std::get<2>(kernels));
 
         caOp(EnqueueArgs(getQueue(), global_centroid, local_centroid),
               *d_x_lvl, *d_y_lvl, *d_ori_lvl,
@@ -396,7 +409,7 @@ void orb(unsigned* out_feat,
         auto eoOp = KernelFunctor<Buffer, const unsigned,
                                 Buffer, Buffer, Buffer, Buffer,
                                 Buffer, KParam,
-                                const float, const unsigned> (*eoKernel[device]);
+                                const float, const unsigned> (*std::get<3>(kernels));
 
         if (blur_img) {
             eoOp(EnqueueArgs(getQueue(), global_centroid, local_centroid),
@@ -514,9 +527,7 @@ void orb(unsigned* out_feat,
     // Sets number of output features
     *out_feat = total_feat;
 }
-
 } //namespace kernel
-
 } //namespace opencl
 
 #if defined(__clang__)

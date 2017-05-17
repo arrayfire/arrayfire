@@ -10,7 +10,7 @@
 #include <qr.hpp>
 #include <err_common.hpp>
 
-#include <cusolverDnManager.hpp>
+#include <platform.hpp>
 #include <cublas_v2.h>
 #include <identity.hpp>
 #include <memory.hpp>
@@ -23,8 +23,6 @@
 
 namespace cuda
 {
-
-using cusolver::getDnHandle;
 
 //cusolverStatus_t cusolverDn<>geqrf_bufferSize(
 //        cusolverDnHandle_t handle,
@@ -132,7 +130,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
 
     int lwork = 0;
 
-    CUSOLVER_CHECK(geqrf_buf_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(geqrf_buf_func<T>()(solverDnHandle(),
                                        M, N,
                                        in_copy.get(), in_copy.strides()[1],
                                        &lwork));
@@ -142,7 +140,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
     t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
     int *info = memAlloc<int>(1);
 
-    CUSOLVER_CHECK(geqrf_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(geqrf_func<T>()(solverDnHandle(),
                                    M, N,
                                    in_copy.get(), in_copy.strides()[1],
                                    t.get(),
@@ -159,7 +157,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
     dim4 qdims(M, mn);
     q = identity<T>(qdims);
 
-    CUSOLVER_CHECK(mqr_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(mqr_func<T>()(solverDnHandle(),
                                  CUBLAS_SIDE_LEFT, CUBLAS_OP_N,
                                  q.dims()[0],
                                  q.dims()[1],
@@ -187,7 +185,7 @@ Array<T> qr_inplace(Array<T> &in)
 
     int lwork = 0;
 
-    CUSOLVER_CHECK(geqrf_buf_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(geqrf_buf_func<T>()(solverDnHandle(),
                                        M, N,
                                        in.get(), in.strides()[1],
                                        &lwork));
@@ -195,7 +193,7 @@ Array<T> qr_inplace(Array<T> &in)
     T *workspace = memAlloc<T>(lwork);
     int *info = memAlloc<int>(1);
 
-    CUSOLVER_CHECK(geqrf_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(geqrf_func<T>()(solverDnHandle(),
                                    M, N,
                                    in.get(), in.strides()[1],
                                    t.get(),

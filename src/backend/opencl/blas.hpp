@@ -16,6 +16,8 @@
 
 namespace opencl
 {
+void initBlas();
+void deInitBlas();
 
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
@@ -24,7 +26,4 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
              af_mat_prop optLhs, af_mat_prop optRhs);
-
-void initBlas();
-
 }

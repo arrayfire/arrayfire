@@ -16,7 +16,6 @@
 #include <JIT/Node.hpp>
 #include <kernel_headers/jit.hpp>
 #include <program.hpp>
-#include <cache.hpp>
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
 #include <functional>
@@ -26,6 +25,8 @@ namespace opencl
 {
 
 using JIT::Node;
+using JIT::Node_ids;
+using JIT::Node_map_t;
 
 using cl::Buffer;
 using cl::Program;
@@ -35,8 +36,12 @@ using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
 using std::stringstream;
+using std::vector;
 
-static string getFuncName(std::vector<Node *> nodes, bool is_linear, bool *is_double)
+static string getFuncName(const vector<Node *> &output_nodes,
+                          const vector<Node *> &full_nodes,
+                          const vector<Node_ids> &full_ids,
+                          bool is_linear, bool *is_double)
 {
     stringstream hashName;
     stringstream funcName;
@@ -47,13 +52,12 @@ static string getFuncName(std::vector<Node *> nodes, bool is_linear, bool *is_do
         funcName << "G_";
     }
 
-    int id = 0;
-    for (auto node :  nodes) {
-        funcName << "[";
-        id = node->setId(id);
-        funcName << node->getNameStr();
-        node->genKerName(funcName);
-        funcName << "]";
+    for (auto node :  output_nodes) {
+        funcName << node->getNameStr() << "_";
+    }
+
+    for (int i = 0; i < (int)full_nodes.size(); i++) {
+        full_nodes[i]->genKerName(funcName, full_ids[i]);
     }
 
     string nameStr = funcName.str();
@@ -66,7 +70,11 @@ static string getFuncName(std::vector<Node *> nodes, bool is_linear, bool *is_do
     return hashName.str();
 }
 
-static string getKernelString(string funcName, std::vector<Node *> nodes, bool is_linear)
+static string getKernelString(const string funcName,
+                              const vector<Node *> &full_nodes,
+                              const vector<Node_ids> &full_ids,
+                              const vector<int> &output_ids,
+                              bool is_linear)
 {
 
     // Common OpenCL code
@@ -119,16 +127,23 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
     stringstream offsetsStream;
     stringstream opsStream;
 
-    int count  = 0;
+    for (int i = 0; i < (int)full_nodes.size(); i++) {
+        const auto &node = full_nodes[i];
+        const auto &ids_curr = full_ids[i];
+        // Generate input parameters, only needs current id
+        node->genParams(inParamStream, ids_curr.id, is_linear);
+        // Generate input offsets, only needs current id
+        node->genOffsets(offsetsStream, ids_curr.id, is_linear);
+        // Generate the core function body, needs children ids as well
+        node->genFuncs(opsStream, ids_curr);
+    }
 
-    for (auto node : nodes) {
-        int id = node->getId();
-        node->genParams(inParamStream, is_linear);
-        outParamStream << "__global " << node->getTypeStr() << " *out" << id << ", \n";
+    for (int i = 0; i < (int)output_ids.size(); i++) {
+        int id = output_ids[i];
+        // Generate output parameters
+        outParamStream << "__global " << full_nodes[id]->getTypeStr() << " *out" << id << ", \n";
+        // Generate code to write the output
         outWriteStream << "out" << id << "[idx] = " << "val" << id << ";\n";
-        node->genOffsets(offsetsStream, is_linear);
-        node->genFuncs(opsStream);
-        opsStream << "//" << ++count << std::endl << std::endl;
     }
 
     // Put various blocks into a single stream
@@ -154,35 +169,37 @@ static string getKernelString(string funcName, std::vector<Node *> nodes, bool i
     return kerStream.str();
 }
 
-static Kernel getKernel(std::vector<Node *> nodes, bool is_linear)
+static Kernel getKernel(const vector<Node *> &output_nodes,
+                        const vector<int> &output_ids,
+                        const vector<Node *> &full_nodes,
+                        const vector<Node_ids> &full_ids,
+                        const bool is_linear)
 {
-
     bool is_dbl = false;
-    string funcName = getFuncName(nodes, is_linear, &is_dbl);
+    string funcName = getFuncName(output_nodes, full_nodes, full_ids, is_linear, &is_dbl);
     int device = getActiveDeviceId();
 
-    kc_t::iterator idx = kernelCaches[device].find(funcName);
-    kc_entry_t entry;
+    kc_entry_t entry = kernelCache(device, funcName);
 
-    if (idx == kernelCaches[device].end()) {
-        string jit_ker = getKernelString(funcName, nodes, is_linear);
+    if (entry.prog==0 && entry.ker==0) {
+        string jit_ker = getKernelString(funcName, full_nodes, full_ids, output_ids, is_linear);
 
         const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
         const int ker_lens[] = {jit_cl_len, (int)jit_ker.size()};
+
         cl::Program prog;
         buildProgram(prog, 2, ker_strs, ker_lens, is_dbl ? string(" -D USE_DOUBLE") :  string(""));
+
         entry.prog = new cl::Program(prog);
         entry.ker = new Kernel(*entry.prog, funcName.c_str());
 
-        kernelCaches[device][funcName] = entry;
-    } else {
-        entry = idx->second;
+        addKernelToCache(device, funcName, entry);
     }
 
     return *entry.ker;
 }
 
-void evalNodes(std::vector<Param> &outputs, std::vector<Node *> nodes)
+void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes)
 {
     if (outputs.size() == 0) return;
 
@@ -190,13 +207,25 @@ void evalNodes(std::vector<Param> &outputs, std::vector<Node *> nodes)
     //FIXME: Add assert to check if all outputs are same size?
     KParam out_info = outputs[0].info;
 
-    // Verify if all ASTs hold Linear Arrays
-    bool is_linear = true;
-    for (auto node : nodes) {
-        is_linear &= node->isLinear(out_info.dims);
+    Node_map_t nodes;
+    vector<int> output_ids;
+    for (auto &node : output_nodes) {
+        node->getNodesMap(nodes);
+        output_ids.push_back(nodes[node].id);
     }
 
-    Kernel ker = getKernel(nodes, is_linear);
+    vector<Node *> full_nodes(nodes.size());
+    vector<Node_ids> full_ids(nodes.size());
+    bool is_linear = true;
+    for (auto &map_entry : nodes) {
+        full_nodes[map_entry.second.id] = map_entry.first;
+        full_ids[map_entry.second.id] = map_entry.second;
+        is_linear &= map_entry.first->isLinear(out_info.dims);
+    }
+
+    Kernel ker = getKernel(output_nodes, output_ids,
+                           full_nodes, full_ids,
+                           is_linear);
 
     uint local_0 = 1;
     uint local_1 = 1;
@@ -236,36 +265,32 @@ void evalNodes(std::vector<Param> &outputs, std::vector<Node *> nodes)
     NDRange local(local_0, local_1);
     NDRange global(global_0, global_1);
 
-    int args = 0;
-    for (auto node : nodes) {
-        args = node->setArgs(ker, args, is_linear);
+    int nargs = 0;
+    for (const auto &node : full_nodes) {
+        nargs = node->setArgs(ker, nargs, is_linear);
     }
 
     // Set output parameters
     for (auto output : outputs) {
-        ker.setArg(args, *(output.data));
-        ++args;
+        ker.setArg(nargs, *(output.data));
+        ++nargs;
     }
 
     // Set dimensions
     // All outputs are asserted to be of same size
     // Just use the size from the first output
-    ker.setArg(args + 0,  out_info);
-    ker.setArg(args + 1,  groups_0);
-    ker.setArg(args + 2,  groups_1);
-    ker.setArg(args + 3,  num_odims);
+    ker.setArg(nargs + 0,  out_info);
+    ker.setArg(nargs + 1,  groups_0);
+    ker.setArg(nargs + 2,  groups_1);
+    ker.setArg(nargs + 3,  num_odims);
 
     getQueue().enqueueNDRangeKernel(ker, cl::NullRange, global, local);
-
-    for (auto node : nodes) {
-        node->resetFlags();
-    }
 }
 
 void evalNodes(Param &out, Node *node)
 {
-    std::vector<Param>  outputs{out};
-    std::vector<Node *> nodes{node};
+    vector<Param>  outputs{out};
+    vector<Node *> nodes{node};
     return evalNodes(outputs, nodes);
 }
 

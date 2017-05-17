@@ -10,7 +10,7 @@
 #include <lu.hpp>
 #include <err_common.hpp>
 
-#include <cusolverDnManager.hpp>
+#include <platform.hpp>
 #include <memory.hpp>
 #include <copy.hpp>
 #include <math.hpp>
@@ -20,8 +20,6 @@
 
 namespace cuda
 {
-
-using cusolver::getDnHandle;
 
 //cusolverStatus_t CUDENSEAPI cusolverDn<>getrf_bufferSize(
 //        cusolverDnHandle_t handle,
@@ -131,7 +129,7 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 
     int lwork = 0;
 
-    CUSOLVER_CHECK(getrf_buf_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(getrf_buf_func<T>()(solverDnHandle(),
                                        M, N,
                                        in.get(), in.strides()[1],
                                        &lwork));
@@ -139,7 +137,7 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
     T *workspace = memAlloc<T>(lwork);
     int *info = memAlloc<int>(1);
 
-    CUSOLVER_CHECK(getrf_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(getrf_func<T>()(solverDnHandle(),
                                    M, N,
                                    in.get(), in.strides()[1],
                                    workspace,

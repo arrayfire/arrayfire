@@ -37,15 +37,12 @@ static const int THREADS_Y = 16;
 template<typename T>
 void nonMaxSuppression(Param output, const Param magnitude, const Param dx, const Param dy)
 {
-    std::string ref_name =
-        std::string("non_max_suppression_") +
-        std::string(dtype_traits<T>::getName());
+    std::string refName = std::string("non_max_suppression_") + std::string(dtype_traits<T>::getName());
 
     int device = getActiveDeviceId();
-    auto idx = kernelCaches[device].find(ref_name);
-    kc_entry_t entry;
+    kc_entry_t entry = kernelCache(device, refName);
 
-    if (idx == kernelCaches[device].find(ref_name)) {
+    if (entry.prog==0 && entry.ker==0) {
         std::ostringstream options;
         options << " -D T="           << dtype_traits<T>::getName()
                 << " -D SHRD_MEM_HEIGHT="       << (THREADS_X+2)
@@ -56,13 +53,11 @@ void nonMaxSuppression(Param output, const Param magnitude, const Param dx, cons
 
         const char *ker_strs[] = {nonmax_suppression_cl};
         const int   ker_lens[] = {nonmax_suppression_cl_len};
-
         Program prog;
         buildProgram(prog, 1, ker_strs, ker_lens, options.str());
         entry.prog = new Program(prog);
         entry.ker = new Kernel(*entry.prog, "nonMaxSuppressionKernel");
-    } else {
-        entry = idx->second;
+        addKernelToCache(device, refName, entry);
     }
 
     auto nonMaxOp = KernelFunctor<Buffer, const KParam,
@@ -91,15 +86,12 @@ void nonMaxSuppression(Param output, const Param magnitude, const Param dx, cons
 template<typename T>
 void initEdgeOut(Param output, const Param strong, const Param weak)
 {
-    std::string ref_name =
-        std::string("init_edge_out_") +
-        std::string(dtype_traits<T>::getName());
+    std::string refName = std::string("init_edge_out_") + std::string(dtype_traits<T>::getName());
 
     int device = getActiveDeviceId();
-    auto idx = kernelCaches[device].find(ref_name);
-    kc_entry_t entry;
+    kc_entry_t entry = kernelCache(device, refName);
 
-    if (idx == kernelCaches[device].find(ref_name)) {
+    if (entry.prog==0 && entry.ker==0) {
         std::ostringstream options;
         options << " -D T="           << dtype_traits<T>::getName()
                 << " -D INIT_EDGE_OUT";
@@ -108,13 +100,11 @@ void initEdgeOut(Param output, const Param strong, const Param weak)
 
         const char *ker_strs[] = {trace_edge_cl};
         const int   ker_lens[] = {trace_edge_cl_len};
-
         Program prog;
         buildProgram(prog, 1, ker_strs, ker_lens, options.str());
         entry.prog = new Program(prog);
         entry.ker = new Kernel(*entry.prog, "initEdgeOutKernel");
-    } else {
-        entry = idx->second;
+        addKernelToCache(device, refName, entry);
     }
 
     auto initOp = KernelFunctor<Buffer, const KParam,
@@ -141,15 +131,12 @@ void initEdgeOut(Param output, const Param strong, const Param weak)
 template<typename T>
 void suppressLeftOver(Param output)
 {
-    std::string ref_name =
-        std::string("suppress_left_over_") +
-        std::string(dtype_traits<T>::getName());
+    std::string refName = std::string("suppress_left_over_") + std::string(dtype_traits<T>::getName());
 
     int device = getActiveDeviceId();
-    auto idx = kernelCaches[device].find(ref_name);
-    kc_entry_t entry;
+    kc_entry_t entry = kernelCache(device, refName);
 
-    if (idx == kernelCaches[device].find(ref_name)) {
+    if (entry.prog==0 && entry.ker==0) {
         std::ostringstream options;
         options << " -D T="           << dtype_traits<T>::getName()
                 << " -D SUPPRESS_LEFT_OVER";
@@ -163,8 +150,7 @@ void suppressLeftOver(Param output)
         buildProgram(prog, 1, ker_strs, ker_lens, options.str());
         entry.prog = new Program(prog);
         entry.ker = new Kernel(*entry.prog, "suppressLeftOverKernel");
-    } else {
-        entry = idx->second;
+        addKernelToCache(device, refName, entry);
     }
 
     auto finalOp = KernelFunctor<Buffer, const KParam, const unsigned, const unsigned>(*entry.ker);
@@ -187,15 +173,12 @@ void suppressLeftOver(Param output)
 template<typename T>
 void edgeTrackingHysteresis(Param output, const Param strong, const Param weak)
 {
-    std::string ref_name =
-        std::string("edge_track_") +
-        std::string(dtype_traits<T>::getName());
+    std::string refName = std::string("edge_track_") + std::string(dtype_traits<T>::getName());
 
     int device = getActiveDeviceId();
-    auto idx = kernelCaches[device].find(ref_name);
-    kc_entry_t entry;
+    kc_entry_t entry = kernelCache(device, refName);
 
-    if (idx == kernelCaches[device].find(ref_name)) {
+    if (entry.prog==0 && entry.ker==0) {
         std::ostringstream options;
         options << " -D T="           << dtype_traits<T>::getName()
                 << " -D SHRD_MEM_HEIGHT="       << (THREADS_X+2)
@@ -212,8 +195,7 @@ void edgeTrackingHysteresis(Param output, const Param strong, const Param weak)
         buildProgram(prog, 1, ker_strs, ker_lens, options.str());
         entry.prog = new Program(prog);
         entry.ker = new Kernel(*entry.prog, "edgeTrackKernel");
-    } else {
-        entry = idx->second;
+        addKernelToCache(device, refName, entry);
     }
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y);

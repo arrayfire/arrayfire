@@ -18,7 +18,6 @@
 #include <cstddef>
 #include <af/opencl.h>
 #include <util.hpp>
-#include <MemoryManager.hpp>
 
 using af::dim4;
 
@@ -243,8 +242,13 @@ namespace opencl
 
                     unsigned length =0, buf_count = 0, bytes = 0;
                     Node *n = node.get();
-                    n->getInfo(length, buf_count, bytes);
-                    n->resetFlags();
+                    JIT::Node_map_t nodes_map;
+                    n->getNodesMap(nodes_map);
+
+                    for(auto &entry : nodes_map) {
+                        Node *node = entry.first;
+                        node->getInfo(length, buf_count, bytes);
+                    }
 
                     if (2 * bytes > lock_bytes) {
                         out.eval();
@@ -380,6 +384,17 @@ namespace opencl
         return;
     }
 
+    template<typename T>
+    void
+    Array<T>::setDataDims(const dim4 &new_dims)
+    {
+        modDims(new_dims);
+        data_dims = new_dims;
+        if (node->isBuffer()) {
+            node = bufferNodePtr<T>();
+        }
+    }
+
 #define INSTANTIATE(T)                                                  \
     template       Array<T>  createHostDataArray<T>   (const dim4 &size, const T * const data); \
     template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data); \
@@ -401,9 +416,12 @@ namespace opencl
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
     template       cl::Buffer* Array<T>::device();                      \
-    template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
-    template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
+    template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, \
+                                                       const size_t bytes); \
+    template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, \
+                                                       const size_t bytes); \
     template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \
+    template       void Array<T>::setDataDims(const dim4 &new_dims);    \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

@@ -17,6 +17,7 @@
 #include <kernel/reduce.hpp>
 #include <kernel/sort.hpp>
 #include <cfloat>
+#include <cache.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -28,68 +29,88 @@ using std::vector;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
 const int HG_THREADS_X = 16;
 const int HG_THREADS_Y = 16;
 const int HG_THREADS   = 256;
 
 template<typename T, af_homography_type htype>
-int computeH(
-    Param bestH,
-    Param H,
-    Param err,
-    Param x_src,
-    Param y_src,
-    Param x_dst,
-    Param y_dst,
-    Param rnd,
-    const unsigned iterations,
-    const unsigned nsamples,
-    const float inlier_thr)
+std::array<cl::Kernel*, 5> getHomographyKernels()
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*> hgProgs;
-    static std::map<int, Kernel*>  chKernel;
-    static std::map<int, Kernel*>  ehKernel;
-    static std::map<int, Kernel*>  cmKernel;
-    static std::map<int, Kernel*>  fmKernel;
-    static std::map<int, Kernel*>  clKernel;
+    static const unsigned NUM_KERNELS = 5;
+    static const std::string kernelNames[NUM_KERNELS] =
+        {"compute_homography", "eval_homography", "compute_median",
+         "find_min_median", "compute_lmeds_inliers"};
+
+    kc_entry_t entries[NUM_KERNELS];
 
     int device = getActiveDeviceId();
 
-    std::call_once( compileFlags[device], [device] () {
+    std::string checkName = kernelNames[0] + std::string("_") +
+        std::string(dtype_traits<T>::getName()) +
+        std::to_string(htype);
 
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName();
+    entries[0] = kernelCache(device, checkName);
 
-            if (std::is_same<T, double>::value) {
-                options << " -D USE_DOUBLE";
-                options << " -D EPS=" << DBL_EPSILON;
-            } else
-                options << " -D EPS=" << FLT_EPSILON;
+    if (entries[0].prog==0 && entries[0].ker==0)
+    {
+        std::ostringstream options;
+        options << " -D T=" << dtype_traits<T>::getName();
 
-            if (htype == AF_HOMOGRAPHY_RANSAC)
-                options << " -D RANSAC";
-            else if (htype == AF_HOMOGRAPHY_LMEDS)
-                options << " -D LMEDS";
+        if (std::is_same<T, double>::value) {
+            options << " -D USE_DOUBLE";
+            options << " -D EPS=" << DBL_EPSILON;
+        } else
+            options << " -D EPS=" << FLT_EPSILON;
 
-            if (getActiveDeviceType() == CL_DEVICE_TYPE_CPU) {
-                options << " -D IS_CPU";
-            }
+        if (htype == AF_HOMOGRAPHY_RANSAC)
+            options << " -D RANSAC";
+        else if (htype == AF_HOMOGRAPHY_LMEDS)
+            options << " -D LMEDS";
 
-            cl::Program prog;
-            buildProgram(prog, homography_cl, homography_cl_len, options.str());
-            hgProgs[device] = new Program(prog);
+        if (getActiveDeviceType() == CL_DEVICE_TYPE_CPU) {
+            options << " -D IS_CPU";
+        }
 
-            chKernel[device] = new Kernel(*hgProgs[device], "compute_homography");
-            ehKernel[device] = new Kernel(*hgProgs[device], "eval_homography");
-            cmKernel[device] = new Kernel(*hgProgs[device], "compute_median");
-            fmKernel[device] = new Kernel(*hgProgs[device], "find_min_median");
-            clKernel[device] = new Kernel(*hgProgs[device], "compute_lmeds_inliers");
-        });
+        cl::Program prog;
+        buildProgram(prog, homography_cl, homography_cl_len, options.str());
+
+        for (unsigned i=0; i<NUM_KERNELS; ++i)
+        {
+            entries[i].prog = new Program(prog);
+            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i].c_str());
+
+            std::string name = kernelNames[i] + std::string("_") +
+                std::string(dtype_traits<T>::getName()) +
+                std::to_string(htype);
+
+            addKernelToCache(device, name, entries[i]);
+        }
+    } else {
+        for (unsigned i=1; i<NUM_KERNELS; ++i) {
+            std::string name = kernelNames[i] + std::string("_") +
+                std::string(dtype_traits<T>::getName()) +
+                std::to_string(htype);
+
+            entries[i] = kernelCache(device, name);
+        }
+    }
+
+    std::array<cl::Kernel*, NUM_KERNELS> retVal;
+    for (unsigned i=0; i<NUM_KERNELS; ++i)
+        retVal[i] = entries[i].ker;
+
+    return retVal;
+}
+
+template<typename T, af_homography_type htype>
+int computeH(Param bestH, Param H, Param err, Param x_src, Param y_src,
+             Param x_dst, Param y_dst, Param rnd, const unsigned iterations,
+             const unsigned nsamples,
+             const float inlier_thr)
+{
+    auto kernels = getHomographyKernels<T, htype>();
 
     const int blk_x_ch = 1;
     const int blk_y_ch = divup(iterations, HG_THREADS_Y);
@@ -97,14 +118,12 @@ int computeH(
     const NDRange global_ch(blk_x_ch * HG_THREADS_X, blk_y_ch * HG_THREADS_Y);
 
     // Build linear system and solve SVD
-    auto chOp = KernelFunctor<Buffer, KParam,
-                            Buffer, Buffer, Buffer, Buffer,
-                            Buffer, KParam, unsigned>(*chKernel[device]);
+    auto chOp = KernelFunctor< Buffer, KParam, Buffer, Buffer, Buffer, Buffer,
+                               Buffer, KParam, unsigned>(*kernels[0]);
 
-    chOp(EnqueueArgs(getQueue(), global_ch, local_ch),
-          *H.data, H.info,
-          *x_src.data, *y_src.data, *x_dst.data, *y_dst.data,
-          *rnd.data, rnd.info, iterations);
+    chOp(EnqueueArgs(getQueue(), global_ch, local_ch), *H.data, H.info,
+         *x_src.data, *y_src.data, *x_dst.data, *y_dst.data, *rnd.data, rnd.info, iterations);
+
     CL_DEBUG_FINISH(getQueue());
 
     const int blk_x_eh = divup(iterations, HG_THREADS);
@@ -132,16 +151,14 @@ int computeH(
         median.data = bufferAlloc(sizeof(float));
 
     // Compute (and for RANSAC, evaluate) homographies
-    auto ehOp = KernelFunctor<Buffer, Buffer, Buffer, KParam,
-                            Buffer, KParam,
-                            Buffer, Buffer, Buffer, Buffer,
-                            Buffer, unsigned, unsigned, float>(*ehKernel[device]);
+    auto ehOp = KernelFunctor< Buffer, Buffer, Buffer, KParam, Buffer, KParam,
+                               Buffer, Buffer, Buffer, Buffer,
+                               Buffer, unsigned, unsigned, float>(*kernels[1]);
 
-    ehOp(EnqueueArgs(getQueue(), global_eh, local_eh),
-          *inliers.data, *idx.data, *H.data, H.info,
-          *err.data, err.info,
-          *x_src.data, *y_src.data, *x_dst.data, *y_dst.data,
-          *rnd.data, iterations, nsamples, inlier_thr);
+    ehOp(EnqueueArgs(getQueue(), global_eh, local_eh), *inliers.data, *idx.data, *H.data, H.info,
+         *err.data, err.info, *x_src.data, *y_src.data, *x_dst.data, *y_dst.data,
+         *rnd.data, iterations, nsamples, inlier_thr);
+
     CL_DEBUG_FINISH(getQueue());
 
     unsigned inliersH, idxH;
@@ -154,12 +171,11 @@ int computeH(
         float minMedian;
 
         // Compute median of every iteration
-        auto cmOp = KernelFunctor<Buffer, Buffer, Buffer, KParam,
-                                unsigned>(*cmKernel[device]);
+        auto cmOp = KernelFunctor<Buffer, Buffer, Buffer, KParam, unsigned>(*kernels[2]);
 
         cmOp(EnqueueArgs(getQueue(), global_eh, local_eh),
-              *median.data, *idx.data, *err.data, err.info,
-              iterations);
+             *median.data, *idx.data, *err.data, err.info, iterations);
+
         CL_DEBUG_FINISH(getQueue());
 
         // Reduce medians, only in case iterations > 256
@@ -170,12 +186,11 @@ int computeH(
             cl::Buffer* finalMedian = bufferAlloc(sizeof(float));
             cl::Buffer* finalIdx = bufferAlloc(sizeof(unsigned));
 
-            auto fmOp = KernelFunctor<Buffer, Buffer, Buffer, KParam,
-                                    Buffer>(*fmKernel[device]);
+            auto fmOp = KernelFunctor<Buffer, Buffer, Buffer, KParam, Buffer>(*kernels[3]);
 
             fmOp(EnqueueArgs(getQueue(), global_fm, local_fm),
-                  *finalMedian, *finalIdx, *median.data, median.info,
-                  *idx.data);
+                 *finalMedian, *finalIdx, *median.data, median.info, *idx.data);
+
             CL_DEBUG_FINISH(getQueue());
 
             getQueue().enqueueReadBuffer(*finalMedian, CL_TRUE, 0, sizeof(float), &minMedian);
@@ -196,14 +211,12 @@ int computeH(
         const NDRange local_cl(HG_THREADS);
         const NDRange global_cl(blk_x_cl * HG_THREADS);
 
-        auto clOp = KernelFunctor<Buffer, Buffer,
-                                Buffer, Buffer, Buffer, Buffer,
-                                float, unsigned>(*clKernel[device]);
+        auto clOp = KernelFunctor< Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
+                                   float, unsigned >(*kernels[4]);
 
-        clOp(EnqueueArgs(getQueue(), global_cl, local_cl),
-              *inliers.data, *bestH.data,
-              *x_src.data, *y_src.data, *x_dst.data, *y_dst.data,
-              minMedian, nsamples);
+        clOp(EnqueueArgs(getQueue(), global_cl, local_cl), *inliers.data, *bestH.data,
+             *x_src.data, *y_src.data, *x_dst.data, *y_dst.data, minMedian, nsamples);
+
         CL_DEBUG_FINISH(getQueue());
 
         // Adds up the total number of inliers
@@ -234,7 +247,5 @@ int computeH(
 
     return (int)inliersH;
 }
-
 } // namespace kernel
-
 } // namespace cuda

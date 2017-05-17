@@ -16,7 +16,7 @@
 #include <debug_opencl.hpp>
 #include <math.hpp>
 #include <stdio.h>
-#include <map>
+#include <cache.hpp>
 #include <memory.hpp>
 
 #pragma GCC diagnostic push
@@ -43,57 +43,86 @@ namespace compute = boost::compute;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
 template<typename T, bool full_conn, int n_per_thread>
-void regions(Param out, Param in)
+std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*>
+getRegionsKernels()
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*> regionsProgs;
-    static std::map<int, Kernel *>     ilKernel;
-    static std::map<int, Kernel *>     frKernel;
-    static std::map<int, Kernel *>     ueKernel;
-
-    int device = getActiveDeviceId();
     static const int block_dim = 16;
     static const int num_warps = 8;
+    static const unsigned NUM_KERNELS = 3;
+    static const std::string kernelNames[NUM_KERNELS] =
+        {"initial_label", "final_relabel", "update_equiv"};
 
-    std::call_once( compileFlags[device], [device] () {
-            ToNumStr<T> toNumStr;
-            std::ostringstream options;
-            if (full_conn) {
-                options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D BLOCK_DIM=" << block_dim
-                        << " -D NUM_WARPS=" << num_warps
-                        << " -D N_PER_THREAD=" << n_per_thread
-                        << " -D LIMIT_MAX=" << toNumStr(maxval<T>())
-                        << " -D FULL_CONN";
-            }
-            else {
-                options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D BLOCK_DIM=" << block_dim
-                        << " -D NUM_WARPS=" << num_warps
-                        << " -D N_PER_THREAD=" << n_per_thread
-                        << " -D LIMIT_MAX=" << toNumStr(maxval<T>());
-            }
-            if (std::is_same<T, double>::value ||
-                std::is_same<T, cdouble>::value) {
-                options << " -D USE_DOUBLE";
-            }
+    kc_entry_t entries[NUM_KERNELS];
 
-            Program prog;
-            buildProgram(prog, regions_cl, regions_cl_len, options.str());
-            regionsProgs[device] = new Program(prog);
+    int device = getActiveDeviceId();
 
-            ilKernel[device] = new Kernel(*regionsProgs[device], "initial_label");
-            frKernel[device] = new Kernel(*regionsProgs[device], "final_relabel");
-            ueKernel[device] = new Kernel(*regionsProgs[device], "update_equiv");
-        });
+    std::string checkName = kernelNames[0] + std::string("_") +
+        std::string(dtype_traits<T>::getName()) +
+        std::to_string(full_conn) + std::to_string(n_per_thread);
+
+    entries[0] = kernelCache(device, checkName);
+
+    if (entries[0].prog==0 && entries[0].ker==0)
+    {
+        ToNumStr<T> toNumStr;
+        std::ostringstream options;
+        if (full_conn) {
+            options << " -D T=" << dtype_traits<T>::getName()
+                    << " -D BLOCK_DIM=" << block_dim
+                    << " -D NUM_WARPS=" << num_warps
+                    << " -D N_PER_THREAD=" << n_per_thread
+                    << " -D LIMIT_MAX=" << toNumStr(maxval<T>())
+                    << " -D FULL_CONN";
+        }
+        else {
+            options << " -D T=" << dtype_traits<T>::getName()
+                    << " -D BLOCK_DIM=" << block_dim
+                    << " -D NUM_WARPS=" << num_warps
+                    << " -D N_PER_THREAD=" << n_per_thread
+                    << " -D LIMIT_MAX=" << toNumStr(maxval<T>());
+        }
+        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
+            options << " -D USE_DOUBLE";
+
+        const char* ker_strs[] = {regions_cl};
+        const int   ker_lens[] = {regions_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
+
+        for (unsigned i=0; i<NUM_KERNELS; ++i)
+        {
+            entries[i].prog = new Program(prog);
+            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i].c_str());
+
+            std::string name = kernelNames[i] + std::string("_") +
+                std::string(dtype_traits<T>::getName()) +
+                std::to_string(full_conn) + std::to_string(n_per_thread);
+
+            addKernelToCache(device, name, entries[i]);
+        }
+    } else {
+        for (unsigned i=1; i<NUM_KERNELS; ++i) {
+            std::string name = kernelNames[i] + std::string("_") +
+                std::string(dtype_traits<T>::getName()) +
+                std::to_string(full_conn) + std::to_string(n_per_thread);
+
+            entries[i] = kernelCache(device, name);
+        }
+    }
+
+    return std::make_tuple(entries[0].ker, entries[1].ker, entries[2].ker);
+}
+
+template<typename T, bool full_conn, int n_per_thread>
+void regions(Param out, Param in)
+{
+    auto kernels = getRegionsKernels<T, full_conn, n_per_thread>();
 
     const NDRange local(THREADS_X, THREADS_Y);
 
@@ -102,11 +131,9 @@ void regions(Param out, Param in)
 
     const NDRange global(blk_x * THREADS_X, blk_y * THREADS_Y);
 
-    auto ilOp = KernelFunctor<Buffer, KParam,
-                            Buffer, KParam> (*ilKernel[device]);
+    auto ilOp = KernelFunctor<Buffer, KParam, Buffer, KParam> (*std::get<0>(kernels));
 
-    ilOp(EnqueueArgs(getQueue(), global, local),
-          *out.data, out.info, *in.data, in.info);
+    ilOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info, *in.data, in.info);
 
     CL_DEBUG_FINISH(getQueue());
 
@@ -117,8 +144,7 @@ void regions(Param out, Param in)
         h_continue = 0;
         getQueue().enqueueWriteBuffer(*d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
 
-        auto ueOp = KernelFunctor<Buffer, KParam,
-                                Buffer> (*ueKernel[device]);
+        auto ueOp = KernelFunctor<Buffer, KParam, Buffer> (*std::get<2>(kernels));
 
         ueOp(EnqueueArgs(getQueue(), global, local),
               *out.data, out.info, *d_continue);
@@ -149,7 +175,8 @@ void regions(Param out, Param in)
     // compute.
     //int num_bins = tmp[size - 1] + 1;
     T last_label;
-    clEnqueueReadBuffer(getQueue()(), tmp.get_buffer().get(), CL_TRUE, (size - 1) * sizeof(T), sizeof(T), &last_label, 0, NULL, NULL);
+    clEnqueueReadBuffer(getQueue()(), tmp.get_buffer().get(), CL_TRUE,
+                        (size - 1) * sizeof(T), sizeof(T), &last_label, 0, NULL, NULL);
     int num_bins = (int)last_label + 1;
 
     Buffer labels(getContext(), CL_MEM_READ_WRITE, num_bins * sizeof(T));
@@ -176,7 +203,6 @@ void regions(Param out, Param in)
                 start = i + 1;
             }
         }
-
         return start;
     });
 
@@ -186,33 +212,22 @@ void regions(Param out, Param in)
     });
 
     compute::transform(search_begin, search_begin + num_bins,
-                        labels_begin,
-                        upper_bound_closure,
-                        c_queue);
+                       labels_begin, upper_bound_closure, c_queue);
     compute::adjacent_difference(labels_begin, labels_end, labels_begin, c_queue);
 
     // Perform the scan -- this can computes the correct labels for each
     // component
-    compute::transform(labels_begin, labels_end,
-                        labels_begin,
-                        clamp_to_one,
-                        c_queue);
-    compute::exclusive_scan(labels_begin,
-                            labels_end,
-                            labels_begin,
-                            c_queue);
+    compute::transform(labels_begin, labels_end, labels_begin, clamp_to_one, c_queue);
+
+    compute::exclusive_scan(labels_begin, labels_end, labels_begin, c_queue);
 
     // Apply the correct labels to the equivalency map
-    auto frOp = KernelFunctor<Buffer, KParam,
-                            Buffer, KParam,
-                            Buffer> (*frKernel[device]);
+    auto frOp = KernelFunctor<Buffer, KParam, Buffer, KParam, Buffer> (*std::get<1>(kernels));
 
     //Buffer labels_buf(tmp.get_buffer().get());
-    frOp(EnqueueArgs(getQueue(), global, local),
-          *out.data, out.info, *in.data, in.info, labels);
+    frOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info, *in.data, in.info, labels);
+
     CL_DEBUG_FINISH(getQueue());
 }
-
 } //namespace kernel
-
 } //namespace opencl

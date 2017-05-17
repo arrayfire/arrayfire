@@ -54,10 +54,10 @@ void convSep(Param out, const Param signal, const Param filter)
         std::to_string(fLen);
 
     int device = getActiveDeviceId();
-    kc_t::iterator idx = kernelCaches[device].find(ref_name);
 
-    kc_entry_t entry;
-    if (idx == kernelCaches[device].end()) {
+    kc_entry_t entry = kernelCache(device, ref_name);
+
+    if (entry.prog==0 && entry.ker==0) {
         const size_t C0_SIZE  = (THREADS_X+2*(fLen-1))* THREADS_Y;
         const size_t C1_SIZE  = (THREADS_Y+2*(fLen-1))* THREADS_X;
 
@@ -79,9 +79,8 @@ void convSep(Param out, const Param signal, const Param filter)
 
         entry.prog   = new Program(prog);
         entry.ker  = new Kernel(*entry.prog, "convolve");
-        kernelCaches[device][ref_name] = entry;
-    } else {
-        entry = idx->second;
+
+        addKernelToCache(device, ref_name, entry);
     }
 
     auto convOp = KernelFunctor<Buffer, KParam, Buffer, KParam, Buffer,

@@ -10,11 +10,9 @@
 #include <backend.hpp>
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
-#include <err_cufft.hpp>
 #include <debug_cuda.hpp>
 #include <Param.hpp>
 #include <memory.hpp>
-#include <cufft.h>
 
 namespace cuda
 {

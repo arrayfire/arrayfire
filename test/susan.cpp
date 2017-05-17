@@ -81,19 +81,20 @@ void susanTest(string pTestFile, float t, float g)
 
         af::features out = af::susan(in, 3, t, g, 0.05f, 3);
 
-        float * outX           = new float[gold[0].size()];
-        float * outY           = new float[gold[1].size()];
-        float * outScore       = new float[gold[2].size()];
-        float * outOrientation = new float[gold[3].size()];
-        float * outSize        = new float[gold[4].size()];
-        out.getX().host(outX);
-        out.getY().host(outY);
-        out.getScore().host(outScore);
-        out.getOrientation().host(outOrientation);
-        out.getSize().host(outSize);
+        std::vector<float> outX          (gold[0].size());
+        std::vector<float> outY          (gold[1].size());
+        std::vector<float> outScore      (gold[2].size());
+        std::vector<float> outOrientation(gold[3].size());
+        std::vector<float> outSize       (gold[4].size());
+        out.getX().host(outX.data());
+        out.getY().host(outY.data());
+        out.getScore().host(outScore.data());
+        out.getOrientation().host(outOrientation.data());
+        out.getSize().host(outSize.data());
 
         vector<feat_t> out_feat;
-        array_to_feat(out_feat, outX, outY, outScore, outOrientation, outSize, out.getNumFeatures());
+        array_to_feat(out_feat, outX.data(), outY.data(), outScore.data(),
+                      outOrientation.data(), outSize.data(), out.getNumFeatures());
 
         vector<feat_t> gold_feat;
         array_to_feat(gold_feat, &gold[0].front(), &gold[1].front(), &gold[2].front(), &gold[3].front(), &gold[4].front(), gold[0].size());
@@ -108,12 +109,6 @@ void susanTest(string pTestFile, float t, float g)
             ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << std::endl;
             ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << std::endl;
         }
-
-        delete [] outX;
-        delete [] outY;
-        delete [] outScore;
-        delete [] outOrientation;
-        delete [] outSize;
     }
 }
 

@@ -14,8 +14,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
-#include <map>
-#include <mutex>
+#include <cache.hpp>
 #include <math.hpp>
 #include "config.hpp"
 
@@ -30,89 +29,87 @@ using af::scalar_to_option;
 
 namespace opencl
 {
-
 namespace kernel
 {
-
-    template<typename T>
-    static void diagCreate(Param out, Param in, int num)
-    {
-        static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*>   diagCreateProgs;
-        static std::map<int, Kernel*>  diagCreateKernels;
-
-        int device = getActiveDeviceId();
-
-        std::call_once( compileFlags[device], [device] () {
-                std::ostringstream options;
-                options << " -D T="    << dtype_traits<T>::getName()
-                        << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")";
-                if (std::is_same<T, double>::value ||
-                    std::is_same<T, cdouble>::value) {
-                    options << " -D USE_DOUBLE";
-                }
-                Program prog;
-                buildProgram(prog, diag_create_cl, diag_create_cl_len, options.str());
-                diagCreateProgs[device]   = new Program(prog);
-                diagCreateKernels[device] = new Kernel(*diagCreateProgs[device],
-                                                        "diagCreateKernel");
-            });
-
-        NDRange local(32, 8);
-        int groups_x = divup(out.info.dims[0], local[0]);
-        int groups_y = divup(out.info.dims[1], local[1]);
-        NDRange global(groups_x * local[0] * out.info.dims[2],
-                        groups_y * local[1]);
-
-        auto diagCreateOp = KernelFunctor<Buffer, const KParam,
-                                        Buffer, const KParam,
-                                        int, int> (*diagCreateKernels[device]);
-
-        diagCreateOp(EnqueueArgs(getQueue(), global, local),
-                      *(out.data), out.info, *(in.data), in.info, num, groups_x);
-        CL_DEBUG_FINISH(getQueue());
+template<typename T>
+std::string generateOptionsString()
+{
+    std::ostringstream options;
+    options << " -D T="    << dtype_traits<T>::getName()
+            << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")";
+    if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
+        options << " -D USE_DOUBLE";
     }
-
-    template<typename T>
-    static void diagExtract(Param out, Param in, int num)
-    {
-        static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*>   diagExtractProgs;
-        static std::map<int, Kernel*>  diagExtractKernels;
-
-        int device = getActiveDeviceId();
-
-        std::call_once( compileFlags[device], [device] () {
-                std::ostringstream options;
-                options << " -D T="    << dtype_traits<T>::getName()
-                        << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")";
-                if (std::is_same<T, double>::value ||
-                    std::is_same<T, cdouble>::value) {
-                    options << " -D USE_DOUBLE";
-                }
-                Program prog;
-                buildProgram(prog, diag_extract_cl, diag_extract_cl_len, options.str());
-                diagExtractProgs[device]   = new Program(prog);
-                diagExtractKernels[device] = new Kernel(*diagExtractProgs[device],
-                                                        "diagExtractKernel");
-            });
-
-        NDRange local(256, 1);
-        int groups_x = divup(out.info.dims[0], local[0]);
-        int groups_z = out.info.dims[2];
-        NDRange global(groups_x * local[0],
-                        groups_z * local[1] * out.info.dims[3]);
-
-        auto diagExtractOp = KernelFunctor<Buffer, const KParam,
-                                          Buffer, const KParam,
-                                          int, int> (*diagExtractKernels[device]);
-
-        diagExtractOp(EnqueueArgs(getQueue(), global, local),
-                      *(out.data), out.info, *(in.data), in.info, num, groups_z);
-        CL_DEBUG_FINISH(getQueue());
-
-    }
-
+    return options.str();
 }
 
+template<typename T>
+static void diagCreate(Param out, Param in, int num)
+{
+    std::string refName = std::string("diagCreateKernel_") + std::string(dtype_traits<T>::getName());
+
+    int device = getActiveDeviceId();
+    kc_entry_t entry = kernelCache(device, refName);
+
+    if (entry.prog==0 && entry.ker==0) {
+        std::string options = generateOptionsString<T>();
+        const char* ker_strs[] = {diag_create_cl};
+        const int   ker_lens[] = {diag_create_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options);
+        entry.prog = new Program(prog);
+        entry.ker  = new Kernel(*entry.prog, "diagCreateKernel");
+
+        addKernelToCache(device, refName, entry);
+    }
+
+    NDRange local(32, 8);
+    int groups_x = divup(out.info.dims[0], local[0]);
+    int groups_y = divup(out.info.dims[1], local[1]);
+    NDRange global(groups_x * local[0] * out.info.dims[2], groups_y * local[1]);
+
+    auto diagCreateOp = KernelFunctor< Buffer, const KParam, Buffer, const KParam,
+                                       int, int > (*entry.ker);
+
+    diagCreateOp(EnqueueArgs(getQueue(), global, local),
+                 *(out.data), out.info, *(in.data), in.info, num, groups_x);
+
+    CL_DEBUG_FINISH(getQueue());
+}
+
+template<typename T>
+static void diagExtract(Param out, Param in, int num)
+{
+    std::string refName = std::string("diagExtractKernel_") + std::string(dtype_traits<T>::getName());
+
+    int device = getActiveDeviceId();
+    kc_entry_t entry = kernelCache(device, refName);
+
+    if (entry.prog==0 && entry.ker==0) {
+        std::string options = generateOptionsString<T>();
+        const char* ker_strs[] = {diag_extract_cl};
+        const int   ker_lens[] = {diag_extract_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options);
+        entry.prog = new Program(prog);
+        entry.ker  = new Kernel(*entry.prog, "diagExtractKernel");
+
+        addKernelToCache(device, refName, entry);
+    }
+
+    NDRange local(256, 1);
+    int groups_x = divup(out.info.dims[0], local[0]);
+    int groups_z = out.info.dims[2];
+    NDRange global(groups_x * local[0], groups_z * local[1] * out.info.dims[3]);
+
+    auto diagExtractOp = KernelFunctor< Buffer, const KParam, Buffer, const KParam,
+                                        int, int > (*entry.ker);
+
+    diagExtractOp(EnqueueArgs(getQueue(), global, local),
+                  *(out.data), out.info, *(in.data), in.info, num, groups_z);
+
+    CL_DEBUG_FINISH(getQueue());
+
+}
+}
 }
