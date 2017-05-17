@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 #include "solve_common.hpp"
+#include <thread>
 
 #define SOLVE_LU_TESTS(T, eps)                          \
     TEST(SOLVE_LU, T##Reg)                              \
@@ -80,4 +81,43 @@ SOLVE_TESTS(double, 1E-5)
 SOLVE_TESTS(cfloat, 0.01)
 SOLVE_TESTS(cdouble, 1E-5)
 
+
+#if !defined(AF_OPENCL)
+int nextTargetDeviceId()
+{
+  static int nextId = 0;
+  return nextId++;
+}
+
+#define SOLVE_LU_TESTS_THREADING(T, eps)                                                                          \
+    tests.emplace_back(solveLUTester<T>, 1000, 100, eps, nextTargetDeviceId()%numDevices);              \
+    tests.emplace_back(solveTriangleTester<T>, 1000, 100, true, eps, nextTargetDeviceId()%numDevices);  \
+    tests.emplace_back(solveTriangleTester<T>, 1000, 100, false, eps, nextTargetDeviceId()%numDevices); \
+    tests.emplace_back(solveTester<T>, 1000, 1000, 100, eps, nextTargetDeviceId()%numDevices);          \
+    tests.emplace_back(solveTester<T>, 800, 1000, 200, eps, nextTargetDeviceId()%numDevices);           \
+    tests.emplace_back(solveTester<T>, 800, 600, 64, eps, nextTargetDeviceId()%numDevices);             \
+
+TEST(SOLVE, Threading)
+{
+    cleanSlate(); // Clean up everything done so far
+
+    vector<std::thread> tests;
+
+    int numDevices = 1;
+    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+
+    SOLVE_LU_TESTS_THREADING(float, 0.01);
+    SOLVE_LU_TESTS_THREADING(cfloat, 0.01);
+    if (noDoubleTests<double>()) {
+        SOLVE_LU_TESTS_THREADING(double, 1E-5);
+        SOLVE_LU_TESTS_THREADING(cdouble, 1E-5);
+    }
+
+    for (size_t testId=0; testId<tests.size(); ++testId)
+        if (tests[testId].joinable())
+            tests[testId].join();
+}
+
+#undef SOLVE_LU_TESTS_THREADING
+#endif
 #undef SOLVE_TESTS

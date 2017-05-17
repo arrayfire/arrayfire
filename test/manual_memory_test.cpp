@@ -21,22 +21,6 @@ using std::string;
 using std::cout;
 using std::endl;
 
-static void cleanSlate()
-{
-    size_t alloc_bytes, alloc_buffers;
-    size_t lock_bytes, lock_buffers;
-
-    af::deviceGC();
-
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
-
-    ASSERT_EQ(alloc_buffers, 0u);
-    ASSERT_EQ(lock_buffers, 0u);
-    ASSERT_EQ(alloc_bytes, 0u);
-    ASSERT_EQ(lock_bytes, 0u);
-}
-
 TEST(Memory, recover)
 {
     cleanSlate(); // Clean up everything done so far

@@ -19,7 +19,6 @@
 #include <iterator>
 #include <vector>
 #include <testHelpers.hpp>
-#include <solve_common.hpp>
 #include <sparse_common.hpp>
 
 using namespace af;
@@ -175,28 +174,6 @@ TEST(Threading, SimultaneousRead)
     for (int t=0; t<THREAD_COUNT; ++t)
         if (tests[t].joinable())
             tests[t].join();
-}
-
-static void cleanSlate()
-{
-    const size_t step_bytes = 1024;
-
-    size_t alloc_bytes, alloc_buffers;
-    size_t lock_bytes, lock_buffers;
-
-    af::deviceGC();
-
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
-
-    ASSERT_EQ(alloc_buffers, 0u);
-    ASSERT_EQ(lock_buffers, 0u);
-    ASSERT_EQ(alloc_bytes, 0u);
-    ASSERT_EQ(lock_bytes, 0u);
-
-    af::setMemStepSize(step_bytes);
-
-    ASSERT_EQ(af::getMemStepSize(), step_bytes);
 }
 
 std::condition_variable cv;
@@ -614,40 +591,6 @@ TEST(Threading, BLAS)
         if (tests[testId].joinable())
             tests[testId].join();
 }
-
-#if !defined(AF_OPENCL)
-
-#define SOLVE_LU_TESTS(T, eps)                                                                          \
-    tests.emplace_back(solveLUTester<T>, 1000, 100, eps, nextTargetDeviceId()%numDevices);              \
-    tests.emplace_back(solveTriangleTester<T>, 1000, 100, true, eps, nextTargetDeviceId()%numDevices);  \
-    tests.emplace_back(solveTriangleTester<T>, 1000, 100, false, eps, nextTargetDeviceId()%numDevices); \
-    tests.emplace_back(solveTester<T>, 1000, 1000, 100, eps, nextTargetDeviceId()%numDevices);          \
-    tests.emplace_back(solveTester<T>, 800, 1000, 200, eps, nextTargetDeviceId()%numDevices);           \
-    tests.emplace_back(solveTester<T>, 800, 600, 64, eps, nextTargetDeviceId()%numDevices);             \
-
-TEST(Threading, SolveDense)
-{
-    cleanSlate(); // Clean up everything done so far
-
-    vector<std::thread> tests;
-
-    int numDevices = 1;
-    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
-
-    SOLVE_LU_TESTS(float, 0.01);
-    SOLVE_LU_TESTS(cfloat, 0.01);
-    if (noDoubleTests<double>()) {
-        SOLVE_LU_TESTS(double, 1E-5);
-        SOLVE_LU_TESTS(cdouble, 1E-5);
-    }
-
-    for (size_t testId=0; testId<tests.size(); ++testId)
-        if (tests[testId].joinable())
-            tests[testId].join();
-}
-
-#undef SOLVE_LU_TESTS
-#endif
 
 #define SPARSE_TESTS(T, eps)                                                    \
   tests.emplace_back(sparseTester<T>, 1000, 1000, 100, 5, eps, nextTargetDeviceId()%numDevices);  \
