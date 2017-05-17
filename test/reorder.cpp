@@ -134,8 +134,6 @@ void reorderTest(string pTestFile, const unsigned resultIdx,
 //
 TEST(Reorder, CPP)
 {
-    if (noDoubleTests<float>()) return;
-
     const unsigned resultIdx = 0;
     const unsigned x = 0;
     const unsigned y = 1;
@@ -166,3 +164,28 @@ TEST(Reorder, CPP)
     delete[] outData;
 }
 
+TEST(Reorder, ISSUE_1777)
+{
+    const int m = 5;
+    const int n = 4;
+    const int k = 3;
+    vector<float> h_input(m * n);
+
+    for (int i = 0; i < m * n; i++) {
+        h_input[i] = (float)(i);
+    }
+
+    af::array a(m, n, &h_input[0]);
+    af::array a_t = af::tile(a, 1, 1, 3);
+    af::array a_r = af::reorder(a_t, 0, 2, 1);
+
+    vector<float> h_output(m * n * k);
+    a_r.host((void *)&h_output[0]);
+    for (int z = 0; z < n; z++) {
+        for (int y = 0; y < k; y++) {
+            for (int x = 0; x < m; x++) {
+                ASSERT_EQ(h_output[z * k * m + y * m + x], h_input[z * m + x]);
+            }
+        }
+    }
+}
