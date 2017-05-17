@@ -267,12 +267,8 @@ void harris(unsigned* corners_out,
     bufferFree(d_responses);
     bufferFree(d_corners_found);
 
-    *corners_out = (max_corners > 0) ?
-                    min(corners_found, max_corners) :
-                    min(corners_found, corner_lim);
-
-    if (*corners_out == 0)
-        return;
+    *corners_out = min(corners_found, (max_corners > 0) ? max_corners : corner_lim);
+    if (*corners_out == 0) return;
 
     // Set output Param info
     x_out.info.dims[0] = y_out.info.dims[0] = resp_out.info.dims[0] = *corners_out;

@@ -456,8 +456,9 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
 {
     auto kernels = getSiftKernels<T>();
 
-    const unsigned min_dim = (double_input) ? min(img.info.dims[0]*2, img.info.dims[1]*2)
-                                            : min(img.info.dims[0], img.info.dims[1]);
+    unsigned min_dim = min(img.info.dims[0], img.info.dims[1]);
+    if (double_input) min_dim *= 2;
+
     const unsigned n_octaves = floor(log(min_dim) / log(2)) - 2;
 
     Param init_img = createInitialImage<T, convAccT>(img, init_sigma, double_input);
