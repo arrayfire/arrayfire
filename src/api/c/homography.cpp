@@ -71,7 +71,7 @@ af_err af_homography(af_array *H, int *inliers,
         ARG_ASSERT(1, (xsdims[0] > 0));
         ARG_ASSERT(2, (ysdims[0] == xsdims[0]));
         ARG_ASSERT(3, (xddims[0] > 0));
-        ARG_ASSERT(4, (yddims[0] == yddims[0]));
+        ARG_ASSERT(4, (yddims[0] == xddims[0]));
 
         ARG_ASSERT(5, (inlier_thr >= 0.1f));
         ARG_ASSERT(6, (iterations > 0));
