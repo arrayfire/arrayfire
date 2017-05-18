@@ -17,6 +17,13 @@
 #include <af/dim4.hpp>
 #include <err_common.hpp>
 
+// Error handler for FreeImage library.
+// In case this handler is invoked, it throws an af exception.
+static void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage)
+{
+    printf("FreeImage Error Handler: %s\n", zMessage);
+}
+
 class FI_Manager
 {
     public:
@@ -27,6 +34,8 @@ class FI_Manager
         FreeImage_Initialise();
 #endif
         initialized = true;
+        // set your own FreeImage error handler
+        FreeImage_SetOutputMessage(FreeImageErrorHandler);
     }
 
     ~FI_Manager()
@@ -44,32 +53,57 @@ static void FI_Init()
 
 class FI_BitmapResource
 {
-public:
-    explicit FI_BitmapResource(FIBITMAP * p) :
-        pBitmap(p)
-    {
+    private:
+        FIBITMAP * mBitmap;
+
+    public:
+        FI_BitmapResource(FREE_IMAGE_FORMAT fif, const char* filename, int flags)
+        {
+            // check that the plugin has reading capabilities ...
+            if (FreeImage_FIFSupportsReading(fif)) {
+                mBitmap = FreeImage_Load(fif, filename, flags);
+            }
+        }
+
+        FI_BitmapResource(FREE_IMAGE_FORMAT fif, FIMEMORY* stream, int flags)
+        {
+            if (FreeImage_FIFSupportsReading(fif)) {
+                mBitmap = FreeImage_LoadFromMemory(fif, stream, flags);
+            }
+        }
+
+        FI_BitmapResource(unsigned w, unsigned h, unsigned bpp, FREE_IMAGE_TYPE fitType=FIT_BITMAP)
+            : mBitmap(FreeImage_AllocateT(fitType, w, h, bpp))
+        {
+        }
+
+        ~FI_BitmapResource()
+        {
+            FreeImage_Unload(mBitmap);
+        }
+
+        bool isNotValid() const { return mBitmap==NULL; }
+
+        operator FIBITMAP* () { return mBitmap; }
+};
+
+static inline
+FREE_IMAGE_FORMAT identifyFIF(const char* filename)
+{
+    FREE_IMAGE_FORMAT retVal = FreeImage_GetFileType(filename);
+
+    if (retVal == FIF_UNKNOWN) {
+        retVal = FreeImage_GetFIFFromFilename(filename);
     }
 
-    ~FI_BitmapResource()
-    {
-        FreeImage_Unload(pBitmap);
-    }
-private:
-    FIBITMAP * pBitmap;
-};
+    return retVal;
+}
 
 typedef enum {
     AFFI_GRAY = 1,
     AFFI_RGB  = 3,
     AFFI_RGBA = 4
 } FI_CHANNELS;
-
-// Error handler for FreeImage library.
-// In case this handler is invoked, it throws an af exception.
-static void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage)
-{
-    printf("FreeImage Error Handler: %s\n", zMessage);
-}
 
 //  Split a MxNx3 image into 3 separate channel matrices.
 //  Produce 3 channels if needed
