@@ -128,8 +128,7 @@ class DeviceManager
         CPUInfo getCPUInfo() const;
 
     private:
-        DeviceManager() {
-        }
+        DeviceManager() {}
 
         // Following two declarations are required to
         // avoid copying accidental copy/assignment
@@ -140,8 +139,7 @@ class DeviceManager
 
         // Attributes
         const CPUInfo cinfo;
-        std::array<queue, MAX_QUEUES> queues;
-
         std::unique_ptr<MemoryManager> memManager;
+        std::array<queue, MAX_QUEUES> queues;
 };
 }
