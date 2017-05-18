@@ -668,3 +668,25 @@ TEST(GFOR, convolve2_MM)
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }
 }
+
+TEST(Convolve, UnitLengthLastDimension)
+{
+    try {
+        af::array x = af::constant(1, 3, 3, 1, 1);
+        af::array y = af::constant(2, 2, 2, 1, 1);
+        af::array z = af::convolve2(x, y, AF_CONV_EXPAND);
+        af::array w = af::convolve3(x, y, AF_CONV_EXPAND);
+        ASSERT_EQ(z.elements(), w.elements());
+
+        std::vector<float> zHost(z.elements());
+        std::vector<float> wHost(w.elements());
+        z.host((void*)zHost.data());
+        w.host((void*)wHost.data());
+
+        for (uint i=0; i<zHost.size(); ++i) {
+            ASSERT_EQ(std::fabs(zHost[i]-wHost[i]) < 1E-5, true);
+        }
+    } catch (af::exception &e) {
+        std::cout << "What is : " << e.what() << ", Code is "<< e.err() << std::endl;
+    }
+}

@@ -58,7 +58,7 @@ AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
     dim_t sn = sDims.ndims();
     dim_t fn = fDims.ndims();
 
-    if (sn==baseDim && fn==baseDim)
+    if ((sn==baseDim && fn==baseDim) || (sn==baseDim-1 && fn==baseDim-1))
         return AF_BATCH_NONE;
     else if (sn==baseDim && (fn>baseDim && fn<=4))
         return AF_BATCH_RHS;
@@ -96,6 +96,8 @@ af_err convolve(af_array *out, const af_array signal, const af_array filter)
 
         AF_BATCH_KIND convBT = identifyBatchKind<baseDim>(sdims, fdims);
 
+        ARG_ASSERT(1, (sdims.ndims()>=1));
+        ARG_ASSERT(2, (fdims.ndims()>=1));
         ARG_ASSERT(1, (convBT != AF_BATCH_UNSUPPORTED && convBT != AF_BATCH_DIFF));
 
         af_array output;
