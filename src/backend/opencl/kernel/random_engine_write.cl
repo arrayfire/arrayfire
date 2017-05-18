@@ -7,13 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#define UINTMAXFLOAT 4294967296.0f
-#define UINTLMAXDOUBLE (4294967296.0*4294967296.0)
 #define PI_VAL 3.1415926535897932384626433832795028841971693993751058209749445923078164
 
+//Conversion to floats adapted from Random123
+#define UINTMAX 0xffffffff
+#define FLT_FACTOR ((1.0f)/(UINTMAX + (1.0f)))
+#define HALF_FLT_FACTOR ((0.5f)*FLT_FACTOR)
+
+//Generates rationals in (0, 1]
 float getFloat(const uint * const num)
 {
-    return ((float)(*num))/UINTMAXFLOAT;
+    return ((*num)*FLT_FACTOR + HALF_FLT_FACTOR);
 }
 
 //Writes without boundary checking
@@ -129,10 +133,10 @@ void writeOut128Bytes_ulong(__global ulong *out, const uint * const index,
 void writeOut128Bytes_float(__global float *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
-    out[*index]             = getFloat(r1);
-    out[*index +   THREADS] = getFloat(r2);
-    out[*index + 2*THREADS] = getFloat(r3);
-    out[*index + 3*THREADS] = getFloat(r4);
+    out[*index]             = 1.f - getFloat(r1);
+    out[*index +   THREADS] = 1.f - getFloat(r2);
+    out[*index + 2*THREADS] = 1.f - getFloat(r3);
+    out[*index + 3*THREADS] = 1.f - getFloat(r4);
 }
 
 
@@ -252,10 +256,10 @@ void partialWriteOut128Bytes_ulong(__global ulong *out, const uint * const index
 void partialWriteOut128Bytes_float(__global float *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
-    if (*index             < *elements) {out[*index]             = getFloat(r1);}
-    if (*index +   THREADS < *elements) {out[*index +   THREADS] = getFloat(r2);}
-    if (*index + 2*THREADS < *elements) {out[*index + 2*THREADS] = getFloat(r3);}
-    if (*index + 3*THREADS < *elements) {out[*index + 3*THREADS] = getFloat(r4);}
+    if (*index             < *elements) {out[*index]             = 1.f - getFloat(r1);}
+    if (*index +   THREADS < *elements) {out[*index +   THREADS] = 1.f - getFloat(r2);}
+    if (*index + 2*THREADS < *elements) {out[*index + 2*THREADS] = 1.f - getFloat(r3);}
+    if (*index + 3*THREADS < *elements) {out[*index + 3*THREADS] = 1.f - getFloat(r4);}
 }
 
 #if RAND_DIST == 1
@@ -302,24 +306,31 @@ void partialBoxMullerWriteOut128Bytes_float(__global float *out, const uint * co
 #endif
 
 #ifdef USE_DOUBLE
+
+//Conversion to floats adapted from Random123
+#define UINTLMAX 0xffffffffffffffff
+#define DBL_FACTOR ((1.0)/(UINTLMAX + (1.0)))
+#define HALF_DBL_FACTOR ((0.5)*DBL_FACTOR)
+
+//Generates rationals in (0, 1]
 double getDouble(const uint * const num1, const uint * const num2)
 {
     ulong num = (((ulong)*num1)<<32) | ((ulong)*num2);
-    return ((double)num)/UINTLMAXDOUBLE;
+    return (num*DBL_FACTOR + HALF_DBL_FACTOR);
 }
 
 void writeOut128Bytes_double(__global double *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4)
 {
-    out[*index]           = getDouble(r1, r2);
-    out[*index + THREADS] = getDouble(r3, r4);
+    out[*index]           = 1.0 - getDouble(r1, r2);
+    out[*index + THREADS] = 1.0 - getDouble(r3, r4);
 }
 
 void partialWriteOut128Bytes_double(__global double *out, const uint * const index,
         const uint * const r1, const uint * const r2, const uint * const r3, const uint * const r4, const uint * const elements)
 {
-    if (*index           < *elements) {out[*index]           = getDouble(r1, r2);}
-    if (*index + THREADS < *elements) {out[*index + THREADS] = getDouble(r3, r4);}
+    if (*index           < *elements) {out[*index]           = 1.0 - getDouble(r1, r2);}
+    if (*index + THREADS < *elements) {out[*index + THREADS] = 1.0 - getDouble(r3, r4);}
 }
 
 #if RAND_DIST == 1
