@@ -6,7 +6,7 @@ ELSE(USE_SYSTEM_GLBINDING)
     SET(GLBINDING_TARGET glbinding)
 ENDIF(USE_SYSTEM_GLBINDING)
 
-SET(prefix ${PROJECT_BINARY_DIR}/third_party/forge)
+SET(prefix ${CMAKE_BINARY_DIR}/third_party/forge)
 
 # FIXME: Cannot use $<CONFIG> generator expression here because add_custom_command
 #        does not yet support it for the OUTPUT argument, see also:
@@ -39,7 +39,11 @@ IF(CMAKE_VERSION VERSION_LESS 3.2)
     endif()
     SET(byproducts)
 ELSE()
-    SET(byproducts BYPRODUCTS ${forge_location})
+    IF   (WIN32)
+        SET(byproducts BUILD_BYPRODUCTS third_party/forge/lib/forge${CMAKE_STATIC_LIBRARY_SUFFIX})
+    ELSE (WIN32)
+        SET(byproducts BUILD_BYPRODUCTS ${forge_location})
+    ENDIF(WIN32)
 ENDIF()
 
 SET(FORGE_VERSION 0.9.2)
@@ -49,6 +53,7 @@ ExternalProject_Add(
     forge-ext
     GIT_REPOSITORY https://github.com/arrayfire/forge.git
     GIT_TAG v${FORGE_VERSION}
+    ${byproducts}
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
@@ -69,7 +74,6 @@ ExternalProject_Add(
     -DFREEIMAGE_STATIC_LIBRARY:PATH=${FREEIMAGE_STATIC_LIBRARY}
     -DUSE_FREEIMAGE_STATIC:BOOL=${USE_FREEIMAGE_STATIC}
     BUILD_COMMAND ${CMAKE_COMMAND} --build . --config ${forge_lib_config}
-    ${byproducts}
     )
 
 ExternalProject_Get_Property(forge-ext binary_dir)

@@ -15,7 +15,7 @@ IF(CMAKE_VERSION VERSION_LESS 3.2)
     endif()
     SET(byproducts)
 ELSE()
-    SET(byproducts BYPRODUCTS ${glbinding_location})
+    SET(byproducts BUILD_BYPRODUCTS ${glbinding_location})
 ENDIF()
 
 IF(UNIX)
