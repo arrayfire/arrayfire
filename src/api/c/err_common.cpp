@@ -239,7 +239,7 @@ af_err processException()
 
 std::string& get_global_error_string()
 {
-    static std::string global_error_string = std::string("");
+    thread_local std::string global_error_string = std::string("");
     return global_error_string;
 }
 

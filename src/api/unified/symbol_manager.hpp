@@ -66,7 +66,7 @@ class AFSymbolManager {
             if (!activeHandle) {
                 UNIFIED_ERROR_LOAD_LIB();
             }
-            static std::array<std::unordered_map<const char*, af_func>, NUM_BACKENDS> funcHandles;
+            thread_local std::array<std::unordered_map<const char*, af_func>, NUM_BACKENDS> funcHandles;
 
             int index = backend_index(getActiveBackend());
             af_func& funcHandle = funcHandles[index][symbolName];

@@ -34,8 +34,6 @@
 using af::dim4;
 using namespace detail;
 
-bool FI_Manager::initialized = false;
-
 template<typename T, FI_CHANNELS fi_color, FI_CHANNELS fo_color>
 static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcPitch,
                         const uint fi_w, const uint fi_h)

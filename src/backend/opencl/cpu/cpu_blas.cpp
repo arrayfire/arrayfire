@@ -124,7 +124,7 @@ template<typename T, int value>
 typename enable_if<is_complex<T>::value, scale_type<T>>::type
 getScale()
 {
-    static T val = scalar<T>(value);
+    thread_local T val = scalar<T>(value);
     return (const typename blas_base<T>::type *)&val;
 }
 

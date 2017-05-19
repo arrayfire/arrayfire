@@ -192,7 +192,7 @@ unsigned getMaxJitSize()
 {
     const int MAX_JIT_LEN = 100;
 
-    static int length = 0;
+    thread_local int length = 0;
     if (length == 0) {
         std::string env_var = getEnvVar("AF_CPU_MAX_JIT_LEN");
         if (!env_var.empty()) {
@@ -226,7 +226,7 @@ size_t getHostMemorySize()
 
 int setDevice(int device)
 {
-    static bool flag = false;
+    thread_local bool flag = false;
     if (!flag && device != 0) {
 #ifndef NDEBUG
         std::cerr << "WARNING af_set_device(device): device can only be 0 for CPU\n";
@@ -253,7 +253,7 @@ void sync(int device)
 
 bool& evalFlag()
 {
-    static bool flag = true;
+    thread_local bool flag = true;
     return flag;
 }
 

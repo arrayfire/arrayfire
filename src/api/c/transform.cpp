@@ -160,12 +160,12 @@ af_err af_translate(af_array *out, const af_array in, const float trans0, const 
 {
 
     try {
-        static float trans_mat[6] = {1, 0, 0,
-                                     0, 1, 0};
+        float trans_mat[6] = {1, 0, 0,
+                              0, 1, 0};
         trans_mat[2] = trans0;
         trans_mat[5] = trans1;
 
-        static af::dim4 tdims(3, 2, 1, 1);
+        const af::dim4 tdims(3, 2, 1, 1);
         af_array t = 0;
 
         AF_CHECK(af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32));
@@ -209,12 +209,12 @@ af_err af_scale(af_array *out, const af_array in, const float scale0, const floa
             sx = 1.f / scale0, sy = 1.f / scale1;
         }
 
-        static float trans_mat[6] = {1, 0, 0,
-                                     0, 1, 0};
+        float trans_mat[6] = {1, 0, 0,
+                              0, 1, 0};
         trans_mat[0] = sx;
         trans_mat[4] = sy;
 
-        static af::dim4 tdims(3, 2, 1, 1);
+        const af::dim4 tdims(3, 2, 1, 1);
         af_array t = 0;
         AF_CHECK(af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32));
         AF_CHECK(af_transform(out, in, t, _odim0, _odim1, method, true));
@@ -232,8 +232,8 @@ af_err af_skew(af_array *out, const af_array in, const float skew0, const float 
         float tx = std::tan(skew0);
         float ty = std::tan(skew1);
 
-        static float trans_mat[6] = {1, 0, 0,
-                                     0, 1, 0};
+        float trans_mat[6] = {1, 0, 0,
+                              0, 1, 0};
         trans_mat[1] = ty;
         trans_mat[3] = tx;
 
@@ -251,7 +251,7 @@ af_err af_skew(af_array *out, const af_array in, const float skew0, const float 
                 trans_mat[4] = d;
             }
         }
-        static af::dim4 tdims(3, 2, 1, 1);
+        const af::dim4 tdims(3, 2, 1, 1);
         af_array t = 0;
         AF_CHECK(af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32));
         AF_CHECK(af_transform(out, in, t, odim0, odim1, method, true));

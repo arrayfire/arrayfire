@@ -202,7 +202,7 @@ toSparseTranspose(af_mat_prop opt)
 template<typename T, int value>
 scale_type<T> getScale()
 {
-    static T val = scalar<T>(value);
+    thread_local T val = scalar<T>(value);
     return getScaleValue<scale_type<T>, T>(val);
 }
 

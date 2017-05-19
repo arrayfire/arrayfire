@@ -74,11 +74,10 @@ af_err af_get_active_backend(af_backend *result)
 af_err af_init()
 {
     try {
-        static bool first = true;
-        if(first) {
-            getDeviceInfo();
-            first = false;
-        }
+        static std::once_flag flag;
+        std::call_once(flag, []() {
+                getDeviceInfo();
+            });
     } CATCHALL;
     return AF_SUCCESS;
 }
