@@ -8,7 +8,7 @@ IF(CMAKE_VERSION VERSION_LESS 3.2)
     endif()
     SET(byproducts)
 ELSE()
-    SET(byproducts BYPRODUCTS ${clFFT_location})
+    SET(byproducts BUILD_BYPRODUCTS ${clFFT_location})
 ENDIF()
 
 ExternalProject_Add(

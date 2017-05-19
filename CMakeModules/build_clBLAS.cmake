@@ -8,13 +8,14 @@ IF(CMAKE_VERSION VERSION_LESS 3.2)
     endif()
     SET(byproducts)
 ELSE()
-    SET(byproducts BYPRODUCTS ${clBLAS_location})
+    SET(byproducts BUILD_BYPRODUCTS ${clBLAS_location})
 ENDIF()
 
 ExternalProject_Add(
     clBLAS-ext
     GIT_REPOSITORY https://github.com/arrayfire/clBLAS.git
     GIT_TAG arrayfire-release
+    ${byproducts}
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
@@ -30,7 +31,6 @@ ExternalProject_Add(
     -DBUILD_TEST:BOOL=OFF
     -DBUILD_KTEST:BOOL=OFF
     -DSUFFIX_LIB:STRING=
-    ${byproducts}
     )
 
 ExternalProject_Get_Property(clBLAS-ext install_dir)
