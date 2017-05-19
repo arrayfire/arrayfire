@@ -57,11 +57,11 @@ void solveTester(const int m, const int n, const int k, double eps, int targetDe
     //! [ex_solve_recon]
 
     if(noDoubleTests<T>()) {
-        ASSERT_NEAR(0, af::sum<double>(af::abs(real(B0 - B1))) / (m * k), eps);
-        ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (m * k), eps);
-    } else {
         ASSERT_NEAR(0, af::sum<float>(af::abs(real(B0 - B1))) / (m * k), eps);
         ASSERT_NEAR(0, af::sum<float>(af::abs(imag(B0 - B1))) / (m * k), eps);
+    } else {
+        ASSERT_NEAR(0, af::sum<double>(af::abs(real(B0 - B1))) / (m * k), eps);
+        ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (m * k), eps);
     }
 }
 
@@ -94,11 +94,11 @@ void solveLUTester(const int n, const int k, double eps, int targetDevice=-1)
     af::array B1 = af::matmul(A, X1);
 
     if(noDoubleTests<T>()) {
-        ASSERT_NEAR(0, af::sum<double>(af::abs(real(B0 - B1))) / (n * k), eps);
-        ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (n * k), eps);
-    } else {
         ASSERT_NEAR(0, af::sum<float>(af::abs(real(B0 - B1))) / (n * k), eps);
         ASSERT_NEAR(0, af::sum<float>(af::abs(imag(B0 - B1))) / (n * k), eps);
+    } else {
+        ASSERT_NEAR(0, af::sum<double>(af::abs(real(B0 - B1))) / (n * k), eps);
+        ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (n * k), eps);
     }
 }
 
@@ -145,10 +145,10 @@ void solveTriangleTester(const int n, const int k, bool is_upper, double eps, in
     af::array B1 = af::matmul(AT, X1);
 
     if(noDoubleTests<T>()) {
-        ASSERT_NEAR(0, af::sum<double>(af::abs(real(B0 - B1))) / (n * k), eps);
-        ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (n * k), eps);
-    } else {
         ASSERT_NEAR(0, af::sum<float>(af::abs(real(B0 - B1))) / (n * k), eps);
         ASSERT_NEAR(0, af::sum<float>(af::abs(imag(B0 - B1))) / (n * k), eps);
+    } else {
+        ASSERT_NEAR(0, af::sum<double>(af::abs(real(B0 - B1))) / (n * k), eps);
+        ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (n * k), eps);
     }
 }
