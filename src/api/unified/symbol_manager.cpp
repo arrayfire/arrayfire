@@ -113,7 +113,7 @@ LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
          * /usr/local/arrayfire-3/lib
         */
         if (retVal == NULL) {
-            static
+            static const
             std::vector<std::string> extraLibPaths {"/opt/arrayfire-3/lib/",
                                                     "/opt/arrayfire/lib/",
                                                     "/usr/local/lib/",
@@ -151,7 +151,7 @@ void closeDynLibrary(LibHandle handle)
 
 AFSymbolManager& AFSymbolManager::getInstance()
 {
-    static AFSymbolManager symbolManager;
+    thread_local AFSymbolManager symbolManager;
     return symbolManager;
 }
 

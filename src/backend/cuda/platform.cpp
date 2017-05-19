@@ -270,7 +270,7 @@ unsigned getMaxJitSize()
 {
     const int MAX_JIT_LEN = 100;
 
-    static int length = 0;
+    thread_local int length = 0;
     if (length == 0) {
         std::string env_var = getEnvVar("AF_CUDA_MAX_JIT_LEN");
         if (!env_var.empty()) {
@@ -365,23 +365,22 @@ cudaDeviceProp getDeviceProp(int device)
 #if defined(WITH_GRAPHICS)
 bool DeviceManager::checkGraphicsInteropCapability()
 {
-    static bool run_once = true;
-    static bool capable  = true;
+    static std::once_flag checkInteropFlag;
+    thread_local bool capable  = true;
 
-    if(run_once) {
-        unsigned int pCudaEnabledDeviceCount = 0;
-        int pCudaGraphicsEnabledDeviceIds = 0;
-        cudaGetLastError(); // Reset Errors
-        cudaError_t err = cudaGLGetDevices(&pCudaEnabledDeviceCount, &pCudaGraphicsEnabledDeviceIds, getDeviceCount(), cudaGLDeviceListAll);
-        if(err == 63) { // OS Support Failure - Happens when devices are only Tesla
-            capable = false;
-            printf("Warning: No CUDA Device capable of CUDA-OpenGL. CUDA-OpenGL Interop will use CPU fallback.\n");
-            printf("Corresponding CUDA Error (%d): %s.\n", err, cudaGetErrorString(err));
-            printf("This may happen if all CUDA Devices are in TCC Mode and/or not connected to a display.\n");
-        }
-        cudaGetLastError(); // Reset Errors
-        run_once = false;
-    }
+    std::call_once(checkInteropFlag, [](){
+            unsigned int pCudaEnabledDeviceCount = 0;
+            int pCudaGraphicsEnabledDeviceIds = 0;
+            cudaGetLastError(); // Reset Errors
+            cudaError_t err = cudaGLGetDevices(&pCudaEnabledDeviceCount, &pCudaGraphicsEnabledDeviceIds, getDeviceCount(), cudaGLDeviceListAll);
+            if(err == 63) { // OS Support Failure - Happens when devices are only Tesla
+                capable = false;
+                printf("Warning: No CUDA Device capable of CUDA-OpenGL. CUDA-OpenGL Interop will use CPU fallback.\n");
+                printf("Corresponding CUDA Error (%d): %s.\n", err, cudaGetErrorString(err));
+                printf("This may happen if all CUDA Devices are in TCC Mode and/or not connected to a display.\n");
+            }
+            cudaGetLastError(); // Reset Errors
+        });
 
     return capable;
 }
@@ -624,13 +623,13 @@ void sync(int device)
 
 bool synchronize_calls()
 {
-    static bool sync = getEnvVar("AF_SYNCHRONOUS_CALLS") == "1";
+    static const bool sync = getEnvVar("AF_SYNCHRONOUS_CALLS") == "1";
     return sync;
 }
 
 bool& evalFlag()
 {
-    static bool flag = true;
+    thread_local bool flag = true;
     return flag;
 }
 }

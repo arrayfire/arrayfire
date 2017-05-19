@@ -200,21 +200,18 @@ static inline std::string &ltrim(std::string &s)
 
 static std::string platformMap(std::string &platStr)
 {
-    static bool isFirst = true;
 
     typedef std::map<std::string, std::string> strmap_t;
-    static strmap_t platMap;
-    if (isFirst) {
-        platMap["NVIDIA CUDA"]                         = "NVIDIA  ";
-        platMap["Intel(R) OpenCL"]                     = "INTEL   ";
-        platMap["AMD Accelerated Parallel Processing"] = "AMD     ";
-        platMap["Intel Gen OCL Driver"]                = "BEIGNET ";
-        platMap["Apple"]                               = "APPLE   ";
-        platMap["Portable Computing Language"]         = "POCL    ";
-        isFirst = false;
-    }
+    static const strmap_t platMap = {
+        std::make_pair("NVIDIA CUDA", "NVIDIA"),
+        std::make_pair("Intel(R) OpenCL", "INTEL"),
+        std::make_pair("AMD Accelerated Parallel Processing", "AMD"),
+        std::make_pair("Intel Gen OCL Driver", "BEIGNET"),
+        std::make_pair("Apple", "APPLE"),
+        std::make_pair("Portable Computing Language", "POCL"),
+    };
 
-    strmap_t::iterator idx = platMap.find(platStr);
+    auto idx = platMap.find(platStr);
 
     if (idx == platMap.end()) {
         return platStr;
@@ -644,7 +641,7 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx)
 
 bool synchronize_calls()
 {
-    static bool sync = getEnvVar("AF_SYNCHRONOUS_CALLS") == "1";
+    static const bool sync = getEnvVar("AF_SYNCHRONOUS_CALLS") == "1";
     return sync;
 }
 
@@ -656,7 +653,7 @@ unsigned getMaxJitSize()
     const int MAX_JIT_LEN = 100;
 #endif
 
-    static int length = 0;
+    thread_local int length = 0;
     if (length == 0) {
         std::string env_var = getEnvVar("AF_OPENCL_MAX_JIT_LEN");
         if (!env_var.empty()) {
@@ -670,7 +667,7 @@ unsigned getMaxJitSize()
 
 bool& evalFlag()
 {
-    static bool flag = true;
+    thread_local bool flag = true;
     return flag;
 }
 

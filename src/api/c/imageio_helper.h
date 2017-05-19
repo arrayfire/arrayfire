@@ -20,13 +20,11 @@
 class FI_Manager
 {
     public:
-    static bool initialized;
     FI_Manager()
     {
 #ifdef FREEIMAGE_LIB
         FreeImage_Initialise();
 #endif
-        initialized = true;
     }
 
     ~FI_Manager()

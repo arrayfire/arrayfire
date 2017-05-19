@@ -49,7 +49,7 @@ static inline double time_seconds(timer start, timer end)
         end   = temp;
     }
     // calculate platform timing epoch
-    static mach_timebase_info_data_t info;
+    thread_local mach_timebase_info_data_t info;
     mach_timebase_info(&info);
     double nano = (double)info.numer / (double)info.denom;
     return (end.val - start.val) * nano * 1e-9;
@@ -66,7 +66,7 @@ static inline double time_seconds(timer start, timer end)
 
 namespace af {
 
-static timer _timer_;
+thread_local timer _timer_;
 
 timer timer::start()
 {
