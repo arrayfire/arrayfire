@@ -61,10 +61,9 @@ namespace opencl
                 std::string(dtype_traits<T>::getName());
 
             int device = getActiveDeviceId();
-            auto idx = kernelCaches[device].find(ref_name);
-            kc_entry_t entry;
+            kc_entry_t entry = kernelCache(device, ref_name);
 
-            if (idx == kernelCaches[device].end()) {
+            if (entry.prog==0 && entry.ker==0) {
 
                 std::ostringstream options;
                 options << " -D T="  << dtype_traits<T>::getName();
@@ -89,9 +88,7 @@ namespace opencl
                 entry.prog = new Program(prog);
                 entry.ker  = new Kernel(*entry.prog, "sparse_arith_csr_kernel");
 
-                kernelCaches[device][ref_name] = entry;
-            } else {
-                entry = idx->second;
+                addKernelToCache(device, ref_name, entry);
             }
 
             auto sparseArithCSROp = KernelFunctor<Buffer, const KParam,
@@ -121,11 +118,9 @@ namespace opencl
                 std::string(dtype_traits<T>::getName());
 
             int device = getActiveDeviceId();
-            auto idx = kernelCaches[device].find(ref_name);
-            kc_entry_t entry;
+            kc_entry_t entry = kernelCache(device, ref_name);
 
-            if (idx == kernelCaches[device].end()) {
-
+            if (entry.prog==0 && entry.ker==0) {
                 std::ostringstream options;
                 options << " -D T="  << dtype_traits<T>::getName();
                 options << " -D OP=" << getOpString<op>();
@@ -149,9 +144,7 @@ namespace opencl
                 entry.prog = new Program(prog);
                 entry.ker  = new Kernel(*entry.prog, "sparse_arith_coo_kernel");
 
-                kernelCaches[device][ref_name] = entry;
-            } else {
-                entry = idx->second;
+                addKernelToCache(device, ref_name, entry);
             }
 
             auto sparseArithCOOOp = KernelFunctor<Buffer, const KParam,
@@ -181,10 +174,9 @@ namespace opencl
                 std::string(dtype_traits<T>::getName());
 
             int device = getActiveDeviceId();
-            auto idx = kernelCaches[device].find(ref_name);
-            kc_entry_t entry;
+            kc_entry_t entry = kernelCache(device, ref_name);
 
-            if (idx == kernelCaches[device].end()) {
+            if (entry.prog==0 && entry.ker==0) {
 
                 std::ostringstream options;
                 options << " -D T="  << dtype_traits<T>::getName();
@@ -209,11 +201,9 @@ namespace opencl
                 entry.prog = new Program(prog);
                 entry.ker  = new Kernel(*entry.prog, "sparse_arith_csr_kernel_S");
 
-                kernelCaches[device][ref_name] = entry;
-            } else {
-
-                entry = idx->second;
+                addKernelToCache(device, ref_name, entry);
             }
+
             auto sparseArithCSROp = KernelFunctor<const Buffer, const Buffer, const Buffer,
                  const int,
                  const Buffer, const KParam,
@@ -239,11 +229,9 @@ namespace opencl
                 std::string(dtype_traits<T>::getName());
 
             int device = getActiveDeviceId();
-            auto idx = kernelCaches[device].find(ref_name);
-            kc_entry_t entry;
+            kc_entry_t entry = kernelCache(device, ref_name);
 
-            if (idx == kernelCaches[device].end()) {
-
+            if (entry.prog==0 && entry.ker==0) {
                 std::ostringstream options;
                 options << " -D T="  << dtype_traits<T>::getName();
                 options << " -D OP=" << getOpString<op>();
@@ -267,11 +255,8 @@ namespace opencl
                 entry.prog = new Program(prog);
                 entry.ker  = new Kernel(*entry.prog, "sparse_arith_coo_kernel_S");
 
-                kernelCaches[device][ref_name] = entry;
-            } else {
-                entry = idx->second;
+                addKernelToCache(device, ref_name, entry);
             }
-
 
             auto sparseArithCOOOp = KernelFunctor<Buffer, Buffer, Buffer,
                  const int,

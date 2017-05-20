@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <sparse.hpp>
-#include <cusparseManager.hpp>
 #include <kernel/sparse_arith.hpp>
 
 #include <stdexcept>
@@ -27,7 +26,6 @@
 namespace cuda
 {
 
-using cusparse::getHandle;
 using namespace common;
 using namespace std;
 

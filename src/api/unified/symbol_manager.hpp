@@ -37,7 +37,7 @@ const int NUM_ENV_VARS = 2;
                     "for instructions to set up environment for Unified backend.", \
                     AF_ERR_LOAD_LIB)
 
-static int backend_index(af::Backend be) {
+static inline int backend_index(af::Backend be) {
     switch (be) {
         case AF_BACKEND_CPU: return 0;
         case AF_BACKEND_CUDA: return 1;
