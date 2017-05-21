@@ -7,13 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#define UINTMAXFLOAT 4294967296.0f
-#define UINTLMAXDOUBLE (4294967296.0*4294967296.0)
 #define PI_VAL 3.1415926535897932384626433832795028841971693993751058209749445923078164
+
+//Conversion to floats adapted from Random123
+#define UINTMAX 0xffffffff
+#define FLT_FACTOR ((1.0f)/(UINTMAX + (1.0f)))
+#define HALF_FLT_FACTOR ((0.5f)*FLT_FACTOR)
 
 float getFloat(const uint * const num)
 {
-    return ((float)(*num))/UINTMAXFLOAT;
+    return ((*num)*FLT_FACTOR + HALF_FLT_FACTOR);
 }
 
 //Writes without boundary checking
@@ -302,10 +305,16 @@ void partialBoxMullerWriteOut128Bytes_float(__global float *out, const uint * co
 #endif
 
 #ifdef USE_DOUBLE
+
+//Conversion to floats adapted from Random123
+#define UINTLMAX 0xffffffffffffffff
+#define DBL_FACTOR ((1.0)/(UINTLMAX + (1.0)))
+#define HALF_DBL_FACTOR ((0.5)*DBL_FACTOR)
+
 double getDouble(const uint * const num1, const uint * const num2)
 {
     ulong num = (((ulong)*num1)<<32) | ((ulong)*num2);
-    return ((double)num)/UINTLMAXDOUBLE;
+    return (num*DBL_FACTOR + HALF_DBL_FACTOR);
 }
 
 void writeOut128Bytes_double(__global double *out, const uint * const index,

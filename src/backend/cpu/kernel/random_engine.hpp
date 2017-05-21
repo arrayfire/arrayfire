@@ -20,9 +20,16 @@ namespace cpu
 namespace kernel
 {
     //Utils
-    static const float UINTMAXFLOAT = 4294967296.0f;
-    static const float UINTLMAXDOUBLE = (4294967296.0*4294967296.0);
     static const double PI_VAL = 3.1415926535897932384626433832795028841971693993751058209749445923078164;
+
+    //Conversion to floats adapted from Random123
+    #define UINTMAX 0xffffffff
+    #define FLT_FACTOR ((1.0f)/(UINTMAX + (1.0f)))
+    #define HALF_FLT_FACTOR ((0.5f)*FLT_FACTOR)
+
+    #define UINTLMAX 0xffffffffffffffff
+    #define DBL_FACTOR ((1.0)/(UINTLMAX + (1.0)))
+    #define HALF_DBL_FACTOR ((0.5)*DBL_FACTOR)
 
     template <typename T>
     T transform(uint *val, int index)
@@ -78,13 +85,13 @@ namespace kernel
 
     template <> float transform<float>(uint *val, int index)
     {
-        return (float)val[index]/UINTMAXFLOAT;
+        return (val[index]*FLT_FACTOR + HALF_FLT_FACTOR);
     }
 
     template <> double transform<double>(uint *val, int index)
     {
         uintl v = transform<uintl>(val, index);
-        return (double)v/UINTLMAXDOUBLE;
+        return (v*DBL_FACTOR + HALF_DBL_FACTOR);
     }
 
     template <typename T>

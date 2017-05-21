@@ -25,19 +25,26 @@ namespace kernel
     //Utils
 
     static const int THREADS = 256;
-    #define UINTMAXFLOAT 4294967296.0f
-    #define UINTLMAXDOUBLE (4294967296.0*4294967296.0)
     #define PI_VAL 3.1415926535897932384626433832795028841971693993751058209749445923078164
+
+    //Conversion to floats adapted from Random123
+    #define UINTMAX 0xffffffff
+    #define FLT_FACTOR ((1.0f)/(UINTMAX + (1.0f)))
+    #define HALF_FLT_FACTOR ((0.5f)*FLT_FACTOR)
+
+    #define UINTLMAX 0xffffffffffffffff
+    #define DBL_FACTOR ((1.0)/(UINTLMAX + (1.0)))
+    #define HALF_DBL_FACTOR ((0.5)*DBL_FACTOR)
 
     __device__ static float getFloat(const uint &num)
     {
-        return float(num)/UINTMAXFLOAT;
+        return (num*FLT_FACTOR + HALF_FLT_FACTOR);
     }
 
     __device__ static double getDouble(const uint &num1, const uint &num2)
     {
         uintl num = (((uintl)num1)<<32) | ((uintl)num2);
-        return double(num)/UINTLMAXDOUBLE;
+        return (num*DBL_FACTOR + HALF_DBL_FACTOR);
     }
 
     template <typename T>
