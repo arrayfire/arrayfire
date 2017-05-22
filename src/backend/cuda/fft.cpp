@@ -94,6 +94,7 @@ void fft_inplace(Array<T> &in)
                                (cufftType)cufft_transform<T>::type, batch);
 
     cufft_transform<T> transform;
+    CUFFT_CHECK(cufftSetStream(*plan.get(), cuda::getActiveStream()));
     CUFFT_CHECK(transform(*plan.get(), (T *)in.get(), in.get(), direction ? CUFFT_FORWARD : CUFFT_INVERSE));
 }
 
@@ -128,6 +129,7 @@ Array<Tc> fft_r2c(const Array<Tr> &in)
                                (cufftType)cufft_real_transform<Tc, Tr>::type, batch);
 
     cufft_real_transform<Tc, Tr> transform;
+    CUFFT_CHECK(cufftSetStream(*plan.get(), cuda::getActiveStream()));
     CUFFT_CHECK(transform(*plan.get(), (Tr *)in.get(), out.get()));
     return out;
 }
@@ -159,6 +161,7 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
                                out_embed , ostrides[0], ostrides[rank],
                                (cufftType)cufft_real_transform<Tr, Tc>::type, batch);
 
+    CUFFT_CHECK(cufftSetStream(*plan.get(), cuda::getActiveStream()));
     CUFFT_CHECK(transform(*plan.get(), (Tc *)in.get(), out.get()));
     return out;
 }
