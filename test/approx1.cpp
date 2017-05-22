@@ -112,14 +112,16 @@ void approx1Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
     if(tempArray != 0) af_release_array(tempArray);
 }
 
-#define APPROX1_INIT(desc, file, resultIdx, method)                                         \
-    TYPED_TEST(Approx1, desc)                                                               \
-    {                                                                                       \
-        approx1Test<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method);  \
-    }
+TYPED_TEST(Approx1, Approx1Nearest)
+{
+    approx1Test<TypeParam>(string(TEST_DIR"/approx/approx1.test"), 0, AF_INTERP_NEAREST);
+}
 
-    APPROX1_INIT(Approx1Nearest, approx1, 0, AF_INTERP_NEAREST);
-    APPROX1_INIT(Approx1Linear,  approx1, 1, AF_INTERP_LINEAR);
+TYPED_TEST(Approx1, Approx1Linear)
+{
+    approx1Test<TypeParam>(string(TEST_DIR"/approx/approx1.test"), 1, AF_INTERP_LINEAR);
+}
+
 
 template<typename T>
 void approx1CubicTest(string pTestFile, const unsigned resultIdx, const af_interp_type method, bool isSubRef = false, const vector<af_seq> * seqv = NULL)
@@ -190,13 +192,10 @@ void approx1CubicTest(string pTestFile, const unsigned resultIdx, const af_inter
     if(tempArray != 0) af_release_array(tempArray);
 }
 
-#define APPROX1_INIT_CUBIC_SPLINE(desc, file, resultIdx, method)                                       \
-    TYPED_TEST(Approx1, desc)                                                                   \
-    {                                                                                           \
-        approx1CubicTest<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method); \
-    }
-
-APPROX1_INIT_CUBIC_SPLINE(Approx1Cubic, approx1_cubic, 0, AF_INTERP_CUBIC_SPLINE);
+TYPED_TEST(Approx1, Approx1Cubic)
+{
+    approx1CubicTest<TypeParam>(string(TEST_DIR"/approx/approx1_cubic.test"), 0, AF_INTERP_CUBIC_SPLINE);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Test Argument Failure Cases
@@ -231,15 +230,18 @@ void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
     if(outArray  != 0) af_release_array(outArray);
 }
 
-#define APPROX1_ARGS(desc, file, resultIdx, method, err)                                            \
-    TYPED_TEST(Approx1, desc)                                                                       \
-    {                                                                                               \
-        approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method, err); \
-    }
-
-    APPROX1_ARGS(Approx1NearestArgsPos2D, approx1_pos2d, 0, AF_INTERP_NEAREST, AF_ERR_SIZE);
-    APPROX1_ARGS(Approx1LinearArgsPos2D, approx1_pos2d, 1, AF_INTERP_LINEAR, AF_ERR_SIZE);
-    APPROX1_ARGS(Approx1ArgsInterpBilinear, approx1, 0, AF_INTERP_BILINEAR, AF_ERR_ARG);
+TYPED_TEST(Approx1, Approx1NearestArgsPos2D)
+{
+    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1_pos2d.test"), 0, AF_INTERP_NEAREST, AF_ERR_SIZE);
+}
+TYPED_TEST(Approx1, Approx1LinearArgsPos2D)
+{
+    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1_pos2d.test"), 1, AF_INTERP_LINEAR, AF_ERR_SIZE);
+}
+TYPED_TEST(Approx1, Approx1ArgsInterpBilinear)
+{
+    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1.test"), 0, AF_INTERP_BILINEAR, AF_ERR_ARG);
+}
 
 template<typename T>
 void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const af_interp_type method)
@@ -275,15 +277,21 @@ void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
     if(outArray  != 0) af_release_array(outArray);
 }
 
-#define APPROX1_ARGSP(desc, file, resultIdx, method)                                                    \
-    TYPED_TEST(Approx1, desc)                                                                           \
-    {                                                                                                   \
-        approx1ArgsTestPrecision<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method); \
-    }
+TYPED_TEST(Approx1, Approx1NearestArgsPrecision)
+{
+    approx1ArgsTestPrecision<TypeParam>(string(TEST_DIR"/approx/approx1.test"), 0, AF_INTERP_NEAREST);
+}
 
-    APPROX1_ARGSP(Approx1NearestArgsPrecision, approx1, 0, AF_INTERP_NEAREST);
-    APPROX1_ARGSP(Approx1LinearArgsPrecision, approx1, 1, AF_INTERP_LINEAR);
-    APPROX1_ARGSP(Approx1CubicArgsPrecision, approx1_cubic, 2, AF_INTERP_CUBIC_SPLINE);
+TYPED_TEST(Approx1, Approx1LinearArgsPrecision)
+{
+    approx1ArgsTestPrecision<TypeParam>(string(TEST_DIR"/approx/approx1.test"), 1, AF_INTERP_LINEAR);
+}
+
+TYPED_TEST(Approx1, Approx1CubicArgsPrecision)
+{
+    approx1ArgsTestPrecision<TypeParam>(string(TEST_DIR"/approx/approx1_cubic.test"), 2, AF_INTERP_CUBIC_SPLINE);
+}
+
 
 //////////////////////////////////////// CPP //////////////////////////////////
 //
