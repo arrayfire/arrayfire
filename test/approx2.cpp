@@ -110,16 +110,23 @@ void approx2Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
     if(tempArray != 0) af_release_array(tempArray);
 }
 
-#define APPROX2_INIT(desc, file, resultIdx, method)                               \
-    TYPED_TEST(Approx2, desc)                                                                    \
-    {                                                                                           \
-        approx2Test<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method);\
-    }
+TYPED_TEST(Approx2, Approx2Nearest)
+{
+    approx2Test<TypeParam>(string(TEST_DIR"/approx/approx2.test"), 0, AF_INTERP_NEAREST);
+}
 
-    APPROX2_INIT(Approx2Nearest, approx2, 0, AF_INTERP_NEAREST);
-    APPROX2_INIT(Approx2Linear, approx2, 1, AF_INTERP_LINEAR);
-    APPROX2_INIT(Approx2NearestBatch, approx2_batch, 0, AF_INTERP_NEAREST);
-    APPROX2_INIT(Approx2LinearBatch, approx2_batch, 1, AF_INTERP_LINEAR);
+TYPED_TEST(Approx2, Approx2Linear)
+{
+    approx2Test<TypeParam>(string(TEST_DIR"/approx/approx2.test"), 1, AF_INTERP_LINEAR);
+}
+TYPED_TEST(Approx2, NearestBatch)
+{
+    approx2Test<TypeParam>(string(TEST_DIR"/approx/approx2_batch.test"), 0, AF_INTERP_NEAREST);
+}
+TYPED_TEST(Approx2, LinearBatch)
+{
+    approx2Test<TypeParam>(string(TEST_DIR"/approx/approx2_batch.test"), 1, AF_INTERP_LINEAR);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Test Argument Failure Cases
@@ -158,15 +165,20 @@ void approx2ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
     if(outArray  != 0) af_release_array(outArray);
 }
 
-#define APPROX2_ARGS(desc, file, resultIdx, method, err)                                            \
-    TYPED_TEST(Approx2, desc)                                                                       \
-    {                                                                                               \
-        approx2ArgsTest<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method, err); \
+    TYPED_TEST(Approx2, Approx2NearestArgsPos3D)
+    {
+        approx2ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx2_pos3d.test"), 0, AF_INTERP_NEAREST, AF_ERR_SIZE);
     }
 
-    APPROX2_ARGS(Approx2NearestArgsPos3D,      approx2_pos3d,   0, AF_INTERP_NEAREST,  AF_ERR_SIZE);
-    APPROX2_ARGS(Approx2LinearArgsPos3D,       approx2_pos3d,   1, AF_INTERP_LINEAR,   AF_ERR_SIZE);
-    APPROX2_ARGS(Approx2NearestArgsPosUnequal, approx2_unequal, 0, AF_INTERP_NEAREST,  AF_ERR_SIZE);
+    TYPED_TEST(Approx2, Approx2LinearArgsPos3D)
+    {
+        approx2ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx2_pos3d.test"), 1, AF_INTERP_LINEAR, AF_ERR_SIZE);
+    }
+
+    TYPED_TEST(Approx2, Approx2NearestArgsPosUnequal)
+    {
+        approx2ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx2_unequal.test"), 0, AF_INTERP_NEAREST, AF_ERR_SIZE);
+    }
 
 template<typename T>
 void approx2ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const af_interp_type method)
