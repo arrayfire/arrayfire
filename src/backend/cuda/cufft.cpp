@@ -134,7 +134,7 @@ SharedPlan findPlan(int rank, int *n,
 
     retVal.reset(temp, [](PlanType* p) {
         cufftDestroy(*p);
-        delete p;
+        free(p);
     });
     // push the plan into plan cache
     planner.push(key_string, retVal);
