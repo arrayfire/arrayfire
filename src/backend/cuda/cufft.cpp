@@ -130,8 +130,6 @@ SharedPlan findPlan(int rank, int *n,
                                   type, batch));
     }
 
-    cufftSetStream(*temp, cuda::getActiveStream());
-
     retVal.reset(temp, [](PlanType* p) {
         cufftDestroy(*p);
         free(p);
