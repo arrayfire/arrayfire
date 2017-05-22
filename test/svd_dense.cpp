@@ -82,7 +82,7 @@ void svdTest(const int M, const int N)
 
     for (int i = 0; i < M * N; i++) {
 #if defined(OS_MAC)
-        ASSERT_NEAR(get_val(hA[i]), get_val(hAA[i]), 2E-3);
+        ASSERT_NEAR(get_val(hA[i]), get_val(hAA[i]), 3E-3);
 #else
         ASSERT_NEAR(get_val(hA[i]), get_val(hAA[i]), 1E-3);
 #endif
