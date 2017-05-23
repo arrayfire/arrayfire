@@ -106,9 +106,11 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
             default:  TYPE_ERROR(1, type);
         }
 
+        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
         window->setColorMap((forge::ColorMap)props->cmap);
         if (props->col>-1 && props->row>-1)
-            window->draw(props->row, props->col, *image, props->title);
+            window->draw(gridDims.first, gridDims.second, props->col * gridDims.first + props->row,
+                         *image, props->title);
         else
             window->draw(*image);
     }
