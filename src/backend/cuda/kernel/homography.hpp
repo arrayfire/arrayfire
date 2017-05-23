@@ -573,10 +573,15 @@ int computeH(
         idx.dims[k] = median.dims[k] = 1;
         idx.strides[k] = median.strides[k] = idx.dims[k-1] * idx.strides[k-1];
     }
-    idx.ptr = memAlloc<unsigned>(idx.dims[3] * idx.strides[3]);
-    inliers.ptr = memAlloc<unsigned>(inliers.dims[3] * inliers.strides[3]);
-    if (htype == AF_HOMOGRAPHY_LMEDS)
-        median.ptr = memAlloc<float>(median.dims[3] * median.strides[3]);
+    auto idx_alloc = memAlloc<unsigned>(idx.dims[3] * idx.strides[3]);
+    auto inliers_alloc = memAlloc<unsigned>(inliers.dims[3] * inliers.strides[3]);
+    idx.ptr = idx_alloc.get();
+    inliers.ptr = inliers_alloc.get();
+    uptr<float> median_alloc;
+    if (htype == AF_HOMOGRAPHY_LMEDS){
+        median_alloc = memAlloc<float>(median.dims[3] * median.strides[3]);
+        median.ptr = median_alloc.get();
+    }
 
     // Compute (and for RANSAC, evaluate) homographies
     CUDA_LAUNCH((computeEvalHomography<T>), blocks, threads,
@@ -602,20 +607,17 @@ int computeH(
         if (blocks.x > 1) {
             blocks = dim3(1);
 
-            float* finalMedian = memAlloc<float>(1);
-            unsigned* finalIdx = memAlloc<unsigned>(1);
+            auto finalMedian = memAlloc<float>(1);
+            auto finalIdx = memAlloc<unsigned>(1);
 
             CUDA_LAUNCH((findMinMedian), blocks, threads,
-                        finalMedian, finalIdx, median, idx);
+                        finalMedian.get(), finalIdx.get(), median, idx);
             POST_LAUNCH_CHECK();
 
-            CUDA_CHECK(cudaMemcpyAsync(&minMedian, finalMedian, sizeof(float),
+            CUDA_CHECK(cudaMemcpyAsync(&minMedian, finalMedian.get(), sizeof(float),
                         cudaMemcpyDeviceToHost, cuda::getActiveStream()));
-            CUDA_CHECK(cudaMemcpyAsync(&minIdx, finalIdx, sizeof(unsigned),
+            CUDA_CHECK(cudaMemcpyAsync(&minIdx, finalIdx.get(), sizeof(unsigned),
                         cudaMemcpyDeviceToHost, cuda::getActiveStream()));
-
-            memFree(finalMedian);
-            memFree(finalIdx);
         } else {
             CUDA_CHECK(cudaMemcpyAsync(&minMedian, median.ptr, sizeof(float),
                         cudaMemcpyDeviceToHost, cuda::getActiveStream()));
@@ -641,15 +643,14 @@ int computeH(
         Param<unsigned> totalInliers;
         for (int k = 0; k < 4; k++)
             totalInliers.dims[k] = totalInliers.strides[k] = 1;
-        totalInliers.ptr = memAlloc<unsigned>(1);
+        auto totalInliers_alloc = memAlloc<unsigned>(1);
+        totalInliers.ptr = totalInliers_alloc.get();
 
         kernel::reduce<unsigned, unsigned, af_add_t>(totalInliers, inliers, 0, false, 0.0);
 
         CUDA_CHECK(cudaMemcpyAsync(&inliersH, totalInliers.ptr, sizeof(unsigned),
                     cudaMemcpyDeviceToHost, cuda::getActiveStream()));
 
-        memFree(totalInliers.ptr);
-        memFree(median.ptr);
     } else if (htype == AF_HOMOGRAPHY_RANSAC) {
         unsigned blockIdx;
         inliersH = kernel::ireduce_all<unsigned, af_max_t>(&blockIdx, inliers);
@@ -658,11 +659,9 @@ int computeH(
                     cudaMemcpyDeviceToHost, cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(bestH.ptr, H.ptr + idxH * 9, 9*sizeof(T),
                     cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
-
+        median_alloc.release();
     }
 
-    memFree(inliers.ptr);
-    memFree(idx.ptr);
     // sync stream for the device to host copies to be visible for
     // the subsequent kernel launch
     CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));

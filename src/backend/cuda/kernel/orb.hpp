@@ -353,7 +353,7 @@ void orb(unsigned* out_feat,
         }
 
         int gauss_elem = gauss_filter.strides[3] * gauss_filter.dims[3];
-        gauss_filter.ptr = memAlloc<convAccT>(gauss_elem);
+        gauss_filter.ptr = memAlloc<convAccT>(gauss_elem).release();
         CUDA_CHECK(cudaMemcpyAsync(gauss_filter.ptr, h_gauss.get(), gauss_elem * sizeof(convAccT),
                     cudaMemcpyHostToDevice, cuda::getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
@@ -366,14 +366,15 @@ void orb(unsigned* out_feat,
             continue;
         }
 
-        float* d_score_harris = memAlloc<float>(feat_pyr[i]);
+        auto d_score_harris = memAlloc<float>(feat_pyr[i]);
 
         // Calculate Harris responses
         // Good block_size >= 7 (must be an odd number)
         dim3 threads(THREADS_X, THREADS_Y);
         dim3 blocks(divup(feat_pyr[i], threads.x), 1);
         CUDA_LAUNCH((harris_response<T,false>), blocks, threads,
-               d_score_harris, NULL, d_x_pyr[i], d_y_pyr[i], NULL, feat_pyr[i], img_pyr[i], 7, 0.04f, patch_size);
+                    d_score_harris.get(), NULL, d_x_pyr[i], d_y_pyr[i],
+                    NULL, feat_pyr[i], img_pyr[i], 7, 0.04f, patch_size);
         POST_LAUNCH_CHECK();
 
         Param<float> harris_sorted;
@@ -390,9 +391,9 @@ void orb(unsigned* out_feat,
         }
 
         int sort_elem = harris_sorted.strides[3] * harris_sorted.dims[3];
-        harris_sorted.ptr = d_score_harris;
+        harris_sorted.ptr = d_score_harris.get();
         // Create indices using range
-        harris_idx.ptr = memAlloc<unsigned>(sort_elem);
+        harris_idx.ptr = memAlloc<unsigned>(sort_elem).release();
         kernel::range<uint>(harris_idx, 0);
 
         // Sort features according to Harris responses
@@ -400,9 +401,9 @@ void orb(unsigned* out_feat,
 
         feat_pyr[i] = std::min(feat_pyr[i], lvl_best[i]);
 
-        float* d_x_lvl = memAlloc<float>(feat_pyr[i]);
-        float* d_y_lvl = memAlloc<float>(feat_pyr[i]);
-        float* d_score_lvl = memAlloc<float>(feat_pyr[i]);
+        float* d_x_lvl = memAlloc<float>(feat_pyr[i]).release();
+        float* d_y_lvl = memAlloc<float>(feat_pyr[i]).release();
+        float* d_score_lvl = memAlloc<float>(feat_pyr[i]).release();
 
         // Keep only features with higher Harris responses
         threads = dim3(THREADS, 1);
@@ -414,10 +415,9 @@ void orb(unsigned* out_feat,
 
         memFree(d_x_pyr[i]);
         memFree(d_y_pyr[i]);
-        memFree(harris_sorted.ptr);
         memFree(harris_idx.ptr);
 
-        float* d_ori_lvl = memAlloc<float>(feat_pyr[i]);
+        float* d_ori_lvl = memAlloc<float>(feat_pyr[i]).release();
 
         // Compute orientation of features
         threads = dim3(THREADS_X, THREADS_Y);
@@ -438,8 +438,8 @@ void orb(unsigned* out_feat,
             }
 
             int lvl_elem = img_pyr[i].strides[3] * img_pyr[i].dims[3];
-            lvl_tmp.ptr = memAlloc<T>(lvl_elem);
-            lvl_filt.ptr = memAlloc<T>(lvl_elem);
+            lvl_tmp.ptr = memAlloc<T>(lvl_elem).release();
+            lvl_filt.ptr = memAlloc<T>(lvl_elem).release();
 
             // Separable Gaussian filtering to reduce noise sensitivity
             convolve2<T, convAccT, 0, false>(lvl_tmp, img_pyr[i], gauss_filter);
@@ -456,9 +456,9 @@ void orb(unsigned* out_feat,
             }
         }
 
-        float* d_size_lvl = memAlloc<float>(feat_pyr[i]);
+        float* d_size_lvl = memAlloc<float>(feat_pyr[i]).release();
 
-        unsigned* d_desc_lvl = memAlloc<unsigned>(feat_pyr[i] * 8);
+        unsigned* d_desc_lvl = memAlloc<unsigned>(feat_pyr[i] * 8).release();
         CUDA_CHECK(cudaMemsetAsync(d_desc_lvl, 0, feat_pyr[i] * 8 * sizeof(unsigned),
                     cuda::getActiveStream()));
 
@@ -493,12 +493,12 @@ void orb(unsigned* out_feat,
     }
 
     // Allocate output memory
-    *d_x     = memAlloc<float>(total_feat);
-    *d_y     = memAlloc<float>(total_feat);
-    *d_score = memAlloc<float>(total_feat);
-    *d_ori   = memAlloc<float>(total_feat);
-    *d_size  = memAlloc<float>(total_feat);
-    *d_desc  = memAlloc<unsigned>(total_feat * 8);
+    *d_x     = memAlloc<float>(total_feat).release();
+    *d_y     = memAlloc<float>(total_feat).release();
+    *d_score = memAlloc<float>(total_feat).release();
+    *d_ori   = memAlloc<float>(total_feat).release();
+    *d_size  = memAlloc<float>(total_feat).release();
+    *d_desc  = memAlloc<unsigned>(total_feat * 8).release();
     unsigned offset = 0;
     for (unsigned i = 0; i < max_levels; i++) {
         if (feat_pyr[i] == 0)

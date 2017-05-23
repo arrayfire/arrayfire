@@ -21,6 +21,10 @@
 
 using af::dim4;
 
+using std::vector;
+using std::function;
+using std::unique_ptr;
+
 namespace cpu
 {
 
@@ -53,12 +57,12 @@ unsigned orb(Array<float> &x, Array<float> &y,
         scl_sum += 1.f / (float)std::pow(scl_fctr,(float)i);
     }
 
-    std::vector<float*> h_x_pyr(max_levels);
-    std::vector<float*> h_y_pyr(max_levels);
-    std::vector<float*> h_score_pyr(max_levels);
-    std::vector<float*> h_ori_pyr(max_levels);
-    std::vector<float*> h_size_pyr(max_levels);
-    std::vector<unsigned*> h_desc_pyr(max_levels);
+    vector<unique_ptr<float[], function<void(float*)>>> h_x_pyr(max_levels);
+    vector<unique_ptr<float[], function<void(float*)>>> h_y_pyr(max_levels);
+    vector<unique_ptr<float[], function<void(float*)>>> h_score_pyr(max_levels);
+    vector<unique_ptr<float[], function<void(float*)>>> h_ori_pyr(max_levels);
+    vector<unique_ptr<float[], function<void(float*)>>> h_size_pyr(max_levels);
+    vector<unique_ptr<unsigned[], function<void(unsigned*)>>> h_desc_pyr(max_levels);
 
     std::vector<unsigned> feat_pyr(max_levels);
     unsigned total_feat = 0;
@@ -78,7 +82,7 @@ unsigned orb(Array<float> &x, Array<float> &y,
     af::dim4 prev_ldims;
 
     af::dim4 gauss_dims(9);
-    T* h_gauss = nullptr;
+    std::unique_ptr<T[], std::function<void(T *)>> h_gauss;
     Array<T> gauss_filter = createEmptyArray<T>(af::dim4());
 
     for (unsigned i = 0; i < max_levels; i++) {
@@ -131,29 +135,26 @@ unsigned orb(Array<float> &x, Array<float> &y,
         float* h_x_feat = x_feat.get();
         float* h_y_feat = y_feat.get();
 
-        float* h_x_harris = memAlloc<float>(lvl_feat);
-        float* h_y_harris = memAlloc<float>(lvl_feat);
-        float* h_score_harris = memAlloc<float>(lvl_feat);
+        auto h_x_harris = memAlloc<float>(lvl_feat);
+        auto h_y_harris = memAlloc<float>(lvl_feat);
+        auto h_score_harris = memAlloc<float>(lvl_feat);
 
         // Calculate Harris responses
         // Good block_size >= 7 (must be an odd number)
         unsigned usable_feat = 0;
-        kernel::harris_response<T, false>(h_x_harris, h_y_harris, h_score_harris, nullptr,
+        kernel::harris_response<T, false>(h_x_harris.get(), h_y_harris.get(), h_score_harris.get(), nullptr,
                                   h_x_feat, h_y_feat, nullptr,
                                   lvl_feat, &usable_feat,
                                   lvl_img,
                                   7, 0.04f, patch_size);
 
         if (usable_feat == 0) {
-            memFree(h_x_harris);
-            memFree(h_y_harris);
-            memFree(h_score_harris);
             continue;
         }
 
         // Sort features according to Harris responses
         af::dim4 usable_feat_dims(usable_feat);
-        Array<float> score_harris = createDeviceDataArray<float>(usable_feat_dims, h_score_harris);
+        Array<float> score_harris = createDeviceDataArray<float>(usable_feat_dims, h_score_harris.get());
         Array<float> harris_sorted = createEmptyArray<float>(af::dim4());
         Array<unsigned> harris_idx = createEmptyArray<unsigned>(af::dim4());
 
@@ -162,29 +163,25 @@ unsigned orb(Array<float> &x, Array<float> &y,
 
         usable_feat = std::min(usable_feat, lvl_best[i]);
 
-        if (usable_feat == 0) {
-            memFree(h_x_harris);
-            memFree(h_y_harris);
-            continue;
+        if(usable_feat == 0) {
+          h_score_harris.release();
+          continue;
         }
 
-        float* h_x_lvl = memAlloc<float>(usable_feat);
-        float* h_y_lvl = memAlloc<float>(usable_feat);
-        float* h_score_lvl = memAlloc<float>(usable_feat);
+        auto h_x_lvl = memAlloc<float>(usable_feat);
+        auto h_y_lvl = memAlloc<float>(usable_feat);
+        auto h_score_lvl = memAlloc<float>(usable_feat);
 
         // Keep only features with higher Harris responses
-        kernel::keep_features<T>(h_x_lvl, h_y_lvl, h_score_lvl, nullptr,
-                         h_x_harris, h_y_harris, harris_sorted.get(), harris_idx.get(),
+        kernel::keep_features<T>(h_x_lvl.get(), h_y_lvl.get(), h_score_lvl.get(), nullptr,
+                                 h_x_harris.get(), h_y_harris.get(), harris_sorted.get(), harris_idx.get(),
                          nullptr, usable_feat);
 
-        memFree(h_x_harris);
-        memFree(h_y_harris);
-
-        float* h_ori_lvl = memAlloc<float>(usable_feat);
-        float* h_size_lvl = memAlloc<float>(usable_feat);
+        auto h_ori_lvl = memAlloc<float>(usable_feat);
+        auto h_size_lvl = memAlloc<float>(usable_feat);
 
         // Compute orientation of features
-        kernel::centroid_angle<T>(h_x_lvl, h_y_lvl, h_ori_lvl, usable_feat,
+        kernel::centroid_angle<T>(h_x_lvl.get(), h_y_lvl.get(), h_ori_lvl.get(), usable_feat,
                           lvl_img, patch_size);
 
         Array<T> lvl_filt = createEmptyArray<T>(dim4());
@@ -193,8 +190,8 @@ unsigned orb(Array<float> &x, Array<float> &y,
             // Calculate a separable Gaussian kernel, if one is not already stored
             if (!h_gauss) {
                 h_gauss = memAlloc<T>(gauss_dims[0]);
-                gaussian1D(h_gauss, gauss_dims[0], 2.f);
-                gauss_filter = createDeviceDataArray<T>(gauss_dims, h_gauss);
+                gaussian1D(h_gauss.get(), gauss_dims[0], 2.f);
+                gauss_filter = createDeviceDataArray<T>(gauss_dims, h_gauss.get());
                 gauss_filter.eval();
             }
 
@@ -205,27 +202,28 @@ unsigned orb(Array<float> &x, Array<float> &y,
         getQueue().sync();
 
         // Compute ORB descriptors
-        unsigned* h_desc_lvl = memAlloc<unsigned>(usable_feat * 8);
-        memset(h_desc_lvl, 0, usable_feat * 8 * sizeof(unsigned));
+        auto h_desc_lvl = memAlloc<unsigned>(usable_feat * 8);
+        memset(h_desc_lvl.get(), 0, usable_feat * 8 * sizeof(unsigned));
         if (blur_img)
-            kernel::extract_orb<T>(h_desc_lvl, usable_feat,
-                           h_x_lvl, h_y_lvl, h_ori_lvl, h_size_lvl,
+          kernel::extract_orb<T>(h_desc_lvl.get(), usable_feat,
+                                   h_x_lvl.get(), h_y_lvl.get(), h_ori_lvl.get(), h_size_lvl.get(),
                            lvl_filt, lvl_scl, patch_size);
         else
-            kernel::extract_orb<T>(h_desc_lvl, usable_feat,
-                           h_x_lvl, h_y_lvl, h_ori_lvl, h_size_lvl,
+          kernel::extract_orb<T>(h_desc_lvl.get(), usable_feat,
+                                   h_x_lvl.get(), h_y_lvl.get(), h_ori_lvl.get(), h_size_lvl.get(),
                            lvl_img, lvl_scl, patch_size);
 
         // Store results to pyramids
         total_feat += usable_feat;
         feat_pyr[i] = usable_feat;
-        h_x_pyr[i] = h_x_lvl;
-        h_y_pyr[i] = h_y_lvl;
-        h_score_pyr[i] = h_score_lvl;
-        h_ori_pyr[i] = h_ori_lvl;
-        h_size_pyr[i] = h_size_lvl;
-        h_desc_pyr[i] = h_desc_lvl;
-
+        h_x_pyr[i] = std::move(h_x_lvl);
+        h_y_pyr[i] = std::move(h_y_lvl);
+        h_score_pyr[i] = std::move(h_score_lvl);
+        h_ori_pyr[i] = std::move(h_ori_lvl);
+        h_size_pyr[i] = std::move(h_size_lvl);
+        h_desc_pyr[i] = std::move(h_desc_lvl);
+        h_score_harris.release();
+        h_gauss.release();
     }
 
     if (total_feat > 0 ) {
@@ -257,20 +255,14 @@ unsigned orb(Array<float> &x, Array<float> &y,
             if (i > 0)
                 offset += feat_pyr[i-1];
 
-            memcpy(h_x+offset, h_x_pyr[i], feat_pyr[i] * sizeof(float));
-            memcpy(h_y+offset, h_y_pyr[i], feat_pyr[i] * sizeof(float));
-            memcpy(h_score+offset, h_score_pyr[i], feat_pyr[i] * sizeof(float));
-            memcpy(h_ori+offset, h_ori_pyr[i], feat_pyr[i] * sizeof(float));
-            memcpy(h_size+offset, h_size_pyr[i], feat_pyr[i] * sizeof(float));
+            memcpy(h_x+offset, h_x_pyr[i].get(), feat_pyr[i] * sizeof(float));
+            memcpy(h_y+offset, h_y_pyr[i].get(), feat_pyr[i] * sizeof(float));
+            memcpy(h_score+offset, h_score_pyr[i].get(), feat_pyr[i] * sizeof(float));
+            memcpy(h_ori+offset, h_ori_pyr[i].get(), feat_pyr[i] * sizeof(float));
+            memcpy(h_size+offset, h_size_pyr[i].get(), feat_pyr[i] * sizeof(float));
 
-            memcpy(h_desc+(offset*8), h_desc_pyr[i], feat_pyr[i] * 8 * sizeof(unsigned));
+            memcpy(h_desc+(offset*8), h_desc_pyr[i].get(), feat_pyr[i] * 8 * sizeof(unsigned));
 
-            memFree(h_x_pyr[i]);
-            memFree(h_y_pyr[i]);
-            memFree(h_score_pyr[i]);
-            memFree(h_ori_pyr[i]);
-            memFree(h_size_pyr[i]);
-            memFree(h_desc_pyr[i]);
         }
     }
 

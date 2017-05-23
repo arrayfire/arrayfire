@@ -64,7 +64,7 @@ namespace opencl
 
     // Create an Array object from Param
     template<typename T>
-    Array<T> createParamArray(Param &tmp);
+    Array<T> createParamArray(Param &tmp, bool owner);
 
     template<typename T>
     Array<T> createSubArray(const Array<T>& parent,
@@ -108,7 +108,7 @@ namespace opencl
         Array(af::dim4 dims);
 
         Array(const Array<T>& parnt, const dim4 &dims, const dim_t &offset, const dim4 &stride);
-        Array(Param &tmp);
+        Array(Param &tmp, bool owner);
         explicit Array(af::dim4 dims, JIT::Node_ptr n);
         explicit Array(af::dim4 dims, const T * const in_data);
         explicit Array(af::dim4 dims, cl_mem mem, size_t offset, bool copy);
@@ -270,7 +270,7 @@ namespace opencl
 
         friend Array<T> *initArray<T>();
         friend Array<T> createEmptyArray<T>(const af::dim4 &size);
-        friend Array<T> createParamArray<T>(Param &tmp);
+        friend Array<T> createParamArray<T>(Param &tmp, bool owner);
         friend Array<T> createNodeArray<T>(const af::dim4 &dims, JIT::Node_ptr node);
 
         friend Array<T> createSubArray<T>(const Array<T>& parent,

@@ -115,18 +115,16 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
                                        in.get(), in.strides()[1],
                                        &lwork));
 
-    T *workspace = memAlloc<T>(lwork);
-    int *d_info = memAlloc<int>(1);
+    auto workspace = memAlloc<T>(lwork);
+    auto d_info = memAlloc<int>(1);
 
     CUSOLVER_CHECK(potrf_func<T>()(solverDnHandle(),
                                    uplo,
                                    N,
                                    in.get(), in.strides()[1],
-                                   workspace, lwork,
-                                   d_info));
+                                   workspace.get(), lwork,
+                                   d_info.get()));
 
-    memFree(workspace);
-    memFree(d_info);
 
     //FIXME: should return h_info
     return 0;

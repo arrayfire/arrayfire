@@ -95,10 +95,11 @@ namespace kernel
         }
 
         int rtmp_elements = rtmp.strides[3] * rtmp.dims[3];
-        rtmp.ptr = memAlloc<uint>(rtmp_elements);
-
         int otmp_elements = otmp.strides[3] * otmp.dims[3];
-        otmp.ptr = memAlloc<uint>(otmp_elements);
+        auto rtmp_alloc = memAlloc<uint>(rtmp_elements);
+        auto otmp_alloc = memAlloc<uint>(otmp_elements);
+        rtmp.ptr = rtmp_alloc.get();
+        otmp.ptr = otmp_alloc.get();
 
         scan_first_launcher<T, uint, af_notzero_t, false, true>(otmp, rtmp, in,
                                                           blocks_x, blocks_y,
@@ -121,7 +122,8 @@ namespace kernel
                               cuda::getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
-        out.ptr = memAlloc<uint>(total);
+        auto out_alloc = memAlloc<uint>(total);
+        out.ptr = out_alloc.get();
 
         out.dims[0] = total;
         out.strides[0] = 1;
@@ -144,8 +146,7 @@ namespace kernel
                 out.ptr, otmp, rtmp, in, blocks_x, blocks_y, lim);
         POST_LAUNCH_CHECK();
 
-        memFree(rtmp.ptr);
-        memFree(otmp.ptr);
+        out_alloc.release();
     }
 }
 }

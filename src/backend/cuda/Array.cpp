@@ -39,14 +39,14 @@ namespace cuda
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
+        data((dims.elements() ? memAlloc<T>(dims.elements()).release() : nullptr), memFree<T>), data_dims(dims),
         node(bufferNodePtr<T>()), ready(true), owner(true)
     {}
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data, bool is_device, bool copy_device) :
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(((is_device & !copy_device) ? (T *)in_data : memAlloc<T>(dims.elements())), memFree<T>),
+        data(((is_device & !copy_device) ? (T *)in_data : memAlloc<T>(dims.elements()).release()), memFree<T>),
         data_dims(dims),
         node(bufferNodePtr<T>()), ready(true), owner(true)
     {
@@ -74,15 +74,15 @@ namespace cuda
     { }
 
     template<typename T>
-    Array<T>::Array(Param<T> &tmp) :
+    Array<T>::Array(Param<T> &tmp, bool owner_) :
         info(getActiveDeviceId(),
              af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]),
              0,
              af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
              (af_dtype)dtype_traits<T>::af_type),
-        data(tmp.ptr, memFree<T>),
+        data(tmp.ptr, owner_ ? memFree<T> : [](T*){}),
         data_dims(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3])),
-        node(bufferNodePtr<T>()), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(owner_)
     {
     }
 
@@ -98,7 +98,7 @@ namespace cuda
     Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
                     const T * const in_data, bool is_device) :
         info(getActiveDeviceId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
-        data(is_device ? (T*)in_data : memAlloc<T>(info.total()), memFree<T>),
+        data(is_device ? (T*)in_data : memAlloc<T>(info.total()).release(), memFree<T>),
         data_dims(dims),
         node(bufferNodePtr<T>()),
         ready(true),
@@ -118,7 +118,7 @@ namespace cuda
         if (isReady()) return;
 
         this->setId(getActiveDeviceId());
-        data = shared_ptr<T>(memAlloc<T>(elements()),
+        data = shared_ptr<T>(memAlloc<T>(elements()).release(),
                              memFree<T>);
 
         Param<T> res;
@@ -165,7 +165,7 @@ namespace cuda
             }
 
             array->setId(getActiveDeviceId());
-            array->data = shared_ptr<T>(memAlloc<T>(array->elements()),
+            array->data = shared_ptr<T>(memAlloc<T>(array->elements()).release(),
                                         memFree<T>);
 
             Param<T> res;
@@ -329,9 +329,9 @@ namespace cuda
     }
 
     template<typename T>
-    Array<T> createParamArray(Param<T> &tmp)
+    Array<T> createParamArray(Param<T> &tmp, bool owner)
     {
-        return Array<T>(tmp);
+        return Array<T>(tmp, owner);
     }
 
     template<typename T>
@@ -389,7 +389,7 @@ namespace cuda
     template       Array<T>  createValueArray<T>      (const dim4 &size, const T &value); \
     template       Array<T>  createEmptyArray<T>      (const dim4 &size); \
     template       Array<T>  *initArray<T      >      ();               \
-    template       Array<T>  createParamArray<T>      (Param<T> &tmp);  \
+    template       Array<T>  createParamArray<T>      (Param<T> &tmp, bool owner); \
     template       Array<T>  createSubArray<T>        (const Array<T> &parent, \
                                                        const std::vector<af_seq> &index, \
                                                        bool copy);      \

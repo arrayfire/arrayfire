@@ -462,9 +462,12 @@ namespace kernel
             }
 
             int tmp_elements = tmp.strides[3] * tmp.dims[3];
-            tmp.ptr = memAlloc<To>(tmp_elements);
-            tmpflg.ptr = memAlloc<char>(tmp_elements);
-            tmpid.ptr = memAlloc<int>(tmp_elements);
+            auto tmp_alloc = memAlloc<To>(tmp_elements);
+            auto tmpflg_alloc = memAlloc<char>(tmp_elements);
+            auto tmpid_alloc = memAlloc<int>(tmp_elements);
+            tmp.ptr = tmp_alloc.get();
+            tmpflg.ptr = tmpflg_alloc.get();
+            tmpid.ptr = tmpid_alloc.get();
 
             scan_nonfinal_launcher<Ti, Tk, To, op>(
                 out, tmp, tmpflg, tmpid, in, key,
@@ -478,9 +481,6 @@ namespace kernel
 
             bcast_first_launcher<To, op>(out, tmp, tmpid, blocks_x, blocks_y, threads_x);
 
-            memFree(tmp.ptr);
-            memFree(tmpflg.ptr);
-            memFree(tmpid.ptr);
         }
     }
 }

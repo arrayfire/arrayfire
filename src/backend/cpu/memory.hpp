@@ -10,10 +10,11 @@
 
 #include <af/defines.h>
 #include <common/MemoryManager.hpp>
+#include <memory>
 
 namespace cpu
 {
-template<typename T> T* memAlloc(const size_t &elements);
+template<typename T> std::unique_ptr<T[], std::function<void(T *)>> memAlloc(const size_t &elements);
 void *memAllocUser(const size_t &bytes);
 
 // Need these as 2 separate function and not a default argument

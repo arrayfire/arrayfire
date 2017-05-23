@@ -456,8 +456,8 @@ void nearest_neighbour(Param<uint> idx,
 
     unsigned nblk = blocks.x;
 
-    unsigned* d_blk_idx  = memAlloc<unsigned>(nblk * nquery);
-    To* d_blk_dist = memAlloc<To>(nblk * nquery);
+    auto d_blk_idx  = memAlloc<unsigned>(nblk * nquery);
+    auto d_blk_dist = memAlloc<To>(nblk * nquery);
 
     // For each query vector, find training vector with smallest Hamming
     // distance per CUDA block
@@ -466,35 +466,35 @@ void nearest_neighbour(Param<uint> idx,
         // Optimized lengths (faster due to loop unrolling)
         case 1:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,1,true>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         case 2:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,2,true>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         case 4:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,4,true>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         case 8:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,8,true>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         case 16:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,16,true>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         case 32:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,32,true>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         case 64:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,64,true>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         default:
             CUDA_LAUNCH_SMEM((nearest_neighbour<T,To,dist_type,true>), blocks, threads, smem_sz,
-                           d_blk_idx, d_blk_dist, query, train, max_dist, feat_len);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist, feat_len);
         }
     }
     else {
@@ -502,35 +502,35 @@ void nearest_neighbour(Param<uint> idx,
         // Optimized lengths (faster due to loop unrolling)
         case 1:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,1,false>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         case 2:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,2,false>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         case 4:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,4,false>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         case 8:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,8,false>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         case 16:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,16,false>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         case 32:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,32,false>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         case 64:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,64,false>), blocks, threads, smem_sz,
-                                  d_blk_idx, d_blk_dist, query, train, max_dist);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
             break;
         default:
             CUDA_LAUNCH_SMEM((nearest_neighbour<T,To,dist_type,false>), blocks, threads, smem_sz,
-                           d_blk_idx, d_blk_dist, query, train, max_dist, feat_len);
+                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist, feat_len);
         }
     }
     POST_LAUNCH_CHECK();
@@ -541,11 +541,9 @@ void nearest_neighbour(Param<uint> idx,
     // Reduce all smallest Hamming distances from each block and store final
     // best match
     CUDA_LAUNCH(select_matches, blocks, threads,
-            idx, dist, d_blk_idx, d_blk_dist, nquery, nblk, max_dist);
+                idx, dist, d_blk_idx.get(), d_blk_dist.get(), nquery, nblk, max_dist);
     POST_LAUNCH_CHECK();
 
-    memFree(d_blk_idx);
-    memFree(d_blk_dist);
 }
 
 } // namespace kernel

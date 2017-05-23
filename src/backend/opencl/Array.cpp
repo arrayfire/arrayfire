@@ -93,16 +93,16 @@ namespace opencl
 
 
     template<typename T>
-    Array<T>::Array(Param &tmp) :
+    Array<T>::Array(Param &tmp, bool owner_) :
         info(getActiveDeviceId(),
              af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3]),
              0,
              af::dim4(tmp.info.strides[0], tmp.info.strides[1],
                       tmp.info.strides[2], tmp.info.strides[3]),
              (af_dtype)dtype_traits<T>::af_type),
-        data(tmp.data, bufferFree),
+        data(tmp.data, owner_ ? bufferFree : [] (cl::Buffer* ptr) {}),
         data_dims(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3])),
-        node(bufferNodePtr<T>()), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(owner_)
     {
     }
 
@@ -343,10 +343,10 @@ namespace opencl
 
     template<typename T>
     Array<T>
-    createParamArray(Param &tmp)
+    createParamArray(Param &tmp, bool owner)
     {
         verifyDoubleSupport<T>();
-        return Array<T>(tmp);
+        return Array<T>(tmp, owner);
     }
 
     template<typename T>
@@ -409,7 +409,7 @@ namespace opencl
     template       Array<T>  createValueArray<T>      (const dim4 &size, const T &value); \
     template       Array<T>  createEmptyArray<T>      (const dim4 &size); \
     template       Array<T>  *initArray<T      >      ();               \
-    template       Array<T>  createParamArray<T>      (Param &tmp);     \
+    template       Array<T>  createParamArray<T>      (Param &tmp, bool owner);    \
     template       Array<T>  createSubArray<T>        (const Array<T> &parent, \
                                                        const std::vector<af_seq> &index, \
                                                        bool copy);      \

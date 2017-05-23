@@ -23,7 +23,7 @@ namespace cuda
     {
         Param<uint> out;
         kernel::where<T>(out, in);
-        return createParamArray<uint>(out);
+        return createParamArray<uint>(out, true);
     }
 
 

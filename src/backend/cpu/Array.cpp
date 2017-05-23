@@ -40,14 +40,14 @@ Node_ptr bufferNodePtr()
 template<typename T>
 Array<T>::Array(dim4 dims):
     info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-    data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
+    data(memAlloc<T>(dims.elements()).release(), memFree<T>), data_dims(dims),
     node(bufferNodePtr<T>()), ready(true), owner(true)
 { }
 
 template<typename T>
 Array<T>::Array(dim4 dims, const T * const in_data, bool is_device, bool copy_device):
     info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-    data((is_device & !copy_device) ? (T*)in_data : memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
+    data((is_device & !copy_device) ? (T*)in_data : memAlloc<T>(dims.elements()).release(), memFree<T>), data_dims(dims),
     node(bufferNodePtr<T>()), ready(true), owner(true)
 {
     static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
@@ -79,7 +79,7 @@ template<typename T>
 Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
                 const T * const in_data, bool is_device) :
     info(getActiveDeviceId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
-    data(is_device ? (T*)in_data : memAlloc<T>(info.total()), memFree<T>),
+    data(is_device ? (T*)in_data : memAlloc<T>(info.total()).release(), memFree<T>),
     data_dims(dims),
     node(bufferNodePtr<T>()),
     ready(true),
@@ -100,7 +100,7 @@ void Array<T>::eval()
 
     this->setId(getActiveDeviceId());
 
-    data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
+    data = std::shared_ptr<T>(memAlloc<T>(elements()).release(), memFree<T>);
 
     getQueue().enqueue(kernel::evalArray<T>, *this, this->node);
     // Reset shared_ptr
@@ -135,7 +135,7 @@ void evalMultiple(std::vector<Array<T>*> array_ptrs)
         if (array->ready) continue;
         if (isWorker) AF_ERROR("Array not evaluated", AF_ERR_INTERNAL);
         array->setId(getActiveDeviceId());
-        array->data = std::shared_ptr<T>(memAlloc<T>(array->elements()), memFree<T>);
+        array->data = std::shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree<T>);
         arrays.push_back(*array);
         nodes.push_back(array->node);
     }

@@ -33,7 +33,7 @@ struct ThrustAllocator : thrust::device_malloc_allocator<T>
 
     pointer allocate(size_type elements)
     {
-        return thrust::device_ptr<T>(memAlloc<T>(elements));// delegate to ArrayFire allocator
+        return thrust::device_ptr<T>(memAlloc<T>(elements).release());// delegate to ArrayFire allocator
     }
 
     void deallocate(pointer p, size_type n)

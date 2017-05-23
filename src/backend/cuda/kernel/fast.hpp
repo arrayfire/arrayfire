@@ -399,13 +399,16 @@ void fast(unsigned* out_feat,
 
     // Matrix containing scores for detected features, scores are stored in the
     // same coordinates as features, dimensions should be equal to in.
-    float *d_score = NULL;
+
     size_t score_bytes = in.dims[0] * in.dims[1] * sizeof(float) + sizeof(unsigned);
-    d_score = (float *)memAlloc<char>(score_bytes);
+    auto d_score_tmp = memAlloc<char>(score_bytes);
+    float *d_score = (float *)d_score_tmp.get();
 
     float *d_flags = d_score;
+    uptr<float> d_flags_alloc;
     if (nonmax) {
-        d_flags = memAlloc<float>(in.dims[0] * in.dims[1]);
+        d_flags_alloc = memAlloc<float>(in.dims[0] * in.dims[1]);
+        auto d_flags = d_flags_alloc.get();
     }
 
     // Shared memory size
@@ -448,16 +451,16 @@ void fast(unsigned* out_feat,
 
     unsigned *d_total = (unsigned *)(d_score + in.dims[0] * in.dims[1]);
     CUDA_CHECK(cudaMemsetAsync(d_total, 0, sizeof(unsigned), cuda::getActiveStream()));
-    unsigned *d_counts  = memAlloc<unsigned>(blocks.x * blocks.y);
-    unsigned *d_offsets = memAlloc<unsigned>(blocks.x * blocks.y);
+    auto d_counts  = memAlloc<unsigned>(blocks.x * blocks.y);
+    auto d_offsets = memAlloc<unsigned>(blocks.x * blocks.y);
 
     if (nonmax)
         CUDA_LAUNCH((non_max_counts<true >), blocks, threads,
-                d_counts, d_offsets, d_total, d_flags,
+                d_counts.get(), d_offsets.get(), d_total, d_flags,
                 d_score, in.dims[0], in.dims[1], edge);
     else
         CUDA_LAUNCH((non_max_counts<false>), blocks, threads,
-                d_counts, d_offsets, d_total, d_flags,
+                d_counts.get(), d_offsets.get(), d_total, d_flags,
                 d_score, in.dims[0], in.dims[1], edge);
 
     POST_LAUNCH_CHECK();
@@ -470,25 +473,27 @@ void fast(unsigned* out_feat,
     total = total < max_feat ? total : max_feat;
 
     if (total > 0) {
-        *x_out     = memAlloc<float>(total);
-        *y_out     = memAlloc<float>(total);
-        *score_out = memAlloc<float>(total);
+        auto x_out_alloc = memAlloc<float>(total);
+        auto y_out_alloc = memAlloc<float>(total);
+        auto score_out_alloc = memAlloc<float>(total);
+        *x_out     = x_out_alloc.get();
+        *y_out     = y_out_alloc.get();
+        *score_out = score_out_alloc.get();
 
         CUDA_LAUNCH((get_features<float>), blocks, threads,
-                *x_out, *y_out, *score_out, d_flags, d_counts,
-                d_offsets, total, in.dims[0], in.dims[1], edge);
+                *x_out, *y_out, *score_out, d_flags, d_counts.get(),
+                d_offsets.get(), total, in.dims[0], in.dims[1], edge);
 
         POST_LAUNCH_CHECK();
+
+        x_out_alloc.release();
+        y_out_alloc.release();
+        score_out_alloc.release();
     }
 
     *out_feat = total;
 
-    memFree<uchar>((uchar *)d_score);
-    memFree(d_counts);
-    memFree(d_offsets);
-    if (nonmax) {
-        memFree(d_flags);
-    }
+    d_flags_alloc.release();
 }
 
 } // namespace kernel

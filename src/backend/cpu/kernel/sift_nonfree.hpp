@@ -968,6 +968,9 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
                    const float img_scale, const float feature_ratio,
                    const bool compute_GLOH)
 {
+    using std::vector;
+    using std::unique_ptr;
+    using std::function;
     in.eval();
     getQueue().sync();
     af::dim4 idims = in.dims();
@@ -983,13 +986,13 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
 
     std::vector< Array<T> > dog_pyr = buildDoGPyr<T>(gauss_pyr, n_octaves, n_layers);
 
-    std::vector<float*> x_pyr(n_octaves, NULL);
-    std::vector<float*> y_pyr(n_octaves, NULL);
-    std::vector<float*> response_pyr(n_octaves, NULL);
-    std::vector<float*> size_pyr(n_octaves, NULL);
-    std::vector<float*> ori_pyr(n_octaves, NULL);
-    std::vector<float*> desc_pyr(n_octaves, NULL);
-    std::vector<unsigned> feat_pyr(n_octaves, 0);
+    vector<unique_ptr<float[]>> x_pyr(n_octaves);
+    vector<unique_ptr<float[]>> y_pyr(n_octaves);
+    vector<unique_ptr<float[]>> response_pyr(n_octaves);
+    vector<unique_ptr<float[]>> size_pyr(n_octaves);
+    vector<unique_ptr<float[]>> ori_pyr(n_octaves);
+    vector<unique_ptr<float[]>> desc_pyr(n_octaves);
+    vector<unsigned> feat_pyr(n_octaves, 0);
     unsigned total_feat = 0;
 
     const unsigned d = DescrWidth;
@@ -1008,9 +1011,9 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
         const unsigned imel = ddims[0] * ddims[1];
         const unsigned max_feat = ceil(imel * feature_ratio);
 
-        float* extrema_x = memAlloc<float>(max_feat);
-        float* extrema_y = memAlloc<float>(max_feat);
-        unsigned* extrema_layer = memAlloc<unsigned>(max_feat);
+        auto extrema_x = memAlloc<float>(max_feat);
+        auto extrema_y = memAlloc<float>(max_feat);
+        auto extrema_layer = memAlloc<unsigned>(max_feat);
         unsigned extrema_feat = 0;
 
         for (unsigned j = 1; j <= n_layers; j++) {
@@ -1021,7 +1024,7 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
             unsigned layer = j;
 
             float extrema_thr = 0.5f * contrast_thr / n_layers;
-            detectExtrema<T>(extrema_x, extrema_y, extrema_layer, &extrema_feat,
+            detectExtrema<T>(extrema_x.get(), extrema_y.get(), extrema_layer.get(), &extrema_feat,
                              dog_pyr[prev], dog_pyr[center], dog_pyr[next],
                              layer, max_feat, extrema_thr);
         }
@@ -1029,122 +1032,95 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
         extrema_feat = min(extrema_feat, max_feat);
 
         if (extrema_feat == 0) {
-            memFree(extrema_x);
-            memFree(extrema_y);
-            memFree(extrema_layer);
-
             continue;
         }
 
         unsigned interp_feat = 0;
 
-        float* interp_x = memAlloc<float>(extrema_feat);
-        float* interp_y = memAlloc<float>(extrema_feat);
-        unsigned* interp_layer = memAlloc<unsigned>(extrema_feat);
-        float* interp_response = memAlloc<float>(extrema_feat);
-        float* interp_size = memAlloc<float>(extrema_feat);
+        auto interp_x = memAlloc<float>(extrema_feat);
+        auto interp_y = memAlloc<float>(extrema_feat);
+        auto interp_layer = memAlloc<unsigned>(extrema_feat);
+        auto interp_response = memAlloc<float>(extrema_feat);
+        auto interp_size = memAlloc<float>(extrema_feat);
 
-        interpolateExtrema<T>(interp_x, interp_y, interp_layer,
-                              interp_response, interp_size, &interp_feat,
-                              extrema_x, extrema_y, extrema_layer, extrema_feat,
+        interpolateExtrema<T>(interp_x.get(), interp_y.get(), interp_layer.get(),
+                              interp_response.get(), interp_size.get(), &interp_feat,
+                              extrema_x.get(), extrema_y.get(), extrema_layer.get(), extrema_feat,
                               dog_pyr, max_feat, i, n_layers,
                               contrast_thr, edge_thr, init_sigma, img_scale);
 
         interp_feat = min(interp_feat, max_feat);
 
         if (interp_feat == 0) {
-            memFree(interp_x);
-            memFree(interp_y);
-            memFree(interp_layer);
-            memFree(interp_response);
-            memFree(interp_size);
-
             continue;
         }
 
         std::vector<feat_t> sorted_feat;
-        array_to_feat(sorted_feat, interp_x, interp_y, interp_layer, interp_response, interp_size, interp_feat);
+        array_to_feat(sorted_feat, interp_x.get(), interp_y.get(), interp_layer.get(),
+                      interp_response.get(), interp_size.get(), interp_feat);
         std::stable_sort(sorted_feat.begin(), sorted_feat.end(), feat_cmp);
-
-        memFree(interp_x);
-        memFree(interp_y);
-        memFree(interp_layer);
-        memFree(interp_response);
-        memFree(interp_size);
 
         unsigned nodup_feat = 0;
 
-        float* nodup_x = memAlloc<float>(interp_feat);
-        float* nodup_y = memAlloc<float>(interp_feat);
-        unsigned* nodup_layer = memAlloc<unsigned>(interp_feat);
-        float* nodup_response = memAlloc<float>(interp_feat);
-        float* nodup_size = memAlloc<float>(interp_feat);
+        auto nodup_x = memAlloc<float>(interp_feat);
+        auto nodup_y = memAlloc<float>(interp_feat);
+        auto nodup_layer = memAlloc<unsigned>(interp_feat);
+        auto nodup_response = memAlloc<float>(interp_feat);
+        auto nodup_size = memAlloc<float>(interp_feat);
 
-        removeDuplicates(nodup_x, nodup_y, nodup_layer,
-                         nodup_response, nodup_size, &nodup_feat,
+        removeDuplicates(nodup_x.get(), nodup_y.get(), nodup_layer.get(),
+                         nodup_response.get(), nodup_size.get(), &nodup_feat,
                          sorted_feat);
 
         const unsigned max_oriented_feat = nodup_feat * 3;
 
-        float* oriented_x = memAlloc<float>(max_oriented_feat);
-        float* oriented_y = memAlloc<float>(max_oriented_feat);
-        unsigned* oriented_layer = memAlloc<unsigned>(max_oriented_feat);
-        float* oriented_response = memAlloc<float>(max_oriented_feat);
-        float* oriented_size = memAlloc<float>(max_oriented_feat);
-        float* oriented_ori = memAlloc<float>(max_oriented_feat);
+        auto oriented_x = memAlloc<float>(max_oriented_feat);
+        auto oriented_y = memAlloc<float>(max_oriented_feat);
+        auto oriented_layer = memAlloc<unsigned>(max_oriented_feat);
+        auto oriented_response = memAlloc<float>(max_oriented_feat);
+        auto oriented_size = memAlloc<float>(max_oriented_feat);
+        auto oriented_ori = memAlloc<float>(max_oriented_feat);
 
         unsigned oriented_feat = 0;
 
-        calcOrientation<T>(oriented_x, oriented_y, oriented_layer,
-                           oriented_response, oriented_size, oriented_ori, &oriented_feat,
-                           nodup_x, nodup_y, nodup_layer,
-                           nodup_response, nodup_size, nodup_feat,
+        calcOrientation<T>(oriented_x.get(), oriented_y.get(), oriented_layer.get(),
+                           oriented_response.get(), oriented_size.get(), oriented_ori.get(), &oriented_feat,
+                           nodup_x.get(), nodup_y.get(), nodup_layer.get(),
+                           nodup_response.get(), nodup_size.get(), nodup_feat,
                            gauss_pyr, max_oriented_feat, i, n_layers, double_input);
 
-        memFree(nodup_x);
-        memFree(nodup_y);
-        memFree(nodup_layer);
-        memFree(nodup_response);
-        memFree(nodup_size);
 
         if (oriented_feat == 0) {
-            memFree(oriented_x);
-            memFree(oriented_y);
-            memFree(oriented_layer);
-            memFree(oriented_response);
-            memFree(oriented_size);
-            memFree(oriented_ori);
-
             continue;
         }
 
-        float* desc = memAlloc<float>(oriented_feat * desc_len);
+        auto desc = memAlloc<float>(oriented_feat * desc_len);
 
         float scale = 1.f/(1 << i);
         if (double_input) scale *= 2.f;
 
         if (compute_GLOH)
             computeGLOHDescriptor<T>(desc, desc_len,
-                                     oriented_x, oriented_y, oriented_layer,
-                                     oriented_response, oriented_size, oriented_ori,
+                                     oriented_x.get(), oriented_y.get(), oriented_layer.get(),
+                                     oriented_response.get(), oriented_size.get(), oriented_ori.get(),
                                      oriented_feat, gauss_pyr, d, rb, ab, hb,
                                      scale, i, n_layers);
         else
             computeDescriptor<T>(desc, desc_len,
-                                 oriented_x, oriented_y, oriented_layer,
-                                 oriented_response, oriented_size, oriented_ori,
+                                 oriented_x.get(), oriented_y.get(), oriented_layer.get(),
+                                 oriented_response.get(), oriented_size.get(), oriented_ori.get(),
                                  oriented_feat, gauss_pyr, d, n, scale, i, n_layers);
 
         total_feat += oriented_feat;
         feat_pyr[i] = oriented_feat;
 
         if (oriented_feat > 0) {
-            x_pyr[i] = oriented_x;
-            y_pyr[i] = oriented_y;
-            response_pyr[i] = oriented_response;
-            ori_pyr[i] = oriented_ori;
-            size_pyr[i] = oriented_size;
-            desc_pyr[i] = desc;
+          x_pyr[i] = std::move(oriented_x);
+          y_pyr[i] = std::move(oriented_y);
+          response_pyr[i] = std::move(oriented_response);
+          ori_pyr[i] = std::move(oriented_ori);
+          size_pyr[i] = std::move(oriented_size);
+          desc_pyr[i] = std::move(desc);
         }
     }
 
@@ -1172,21 +1148,13 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
             if (feat_pyr[i] == 0)
                 continue;
 
-            memcpy(x_ptr+offset,     x_pyr[i],        feat_pyr[i] * sizeof(float));
-            memcpy(y_ptr+offset,     y_pyr[i],        feat_pyr[i] * sizeof(float));
-            memcpy(score_ptr+offset, response_pyr[i], feat_pyr[i] * sizeof(float));
-            memcpy(ori_ptr+offset,   ori_pyr[i],      feat_pyr[i] * sizeof(float));
-            memcpy(size_ptr+offset,  size_pyr[i],     feat_pyr[i] * sizeof(float));
+            memcpy(x_ptr+offset,     x_pyr[i].get(),        feat_pyr[i] * sizeof(float));
+            memcpy(y_ptr+offset,     y_pyr[i].get(),        feat_pyr[i] * sizeof(float));
+            memcpy(score_ptr+offset, response_pyr[i].get(), feat_pyr[i] * sizeof(float));
+            memcpy(ori_ptr+offset,   ori_pyr[i].get(),      feat_pyr[i] * sizeof(float));
+            memcpy(size_ptr+offset,  size_pyr[i].get(),     feat_pyr[i] * sizeof(float));
 
-            memcpy(desc_ptr+(offset*desc_len), desc_pyr[i], feat_pyr[i] * desc_len * sizeof(float));
-
-            memFree(x_pyr[i]);
-            memFree(y_pyr[i]);
-            memFree(response_pyr[i]);
-            memFree(ori_pyr[i]);
-            memFree(size_pyr[i]);
-            memFree(desc_pyr[i]);
-
+            memcpy(desc_ptr+(offset*desc_len), desc_pyr[i].get(), feat_pyr[i] * desc_len * sizeof(float));
             offset += feat_pyr[i];
         }
     }
