@@ -32,19 +32,26 @@ public:
             dim_t fourth = 1);
     dim4(const dim4& other);
     dim4(const unsigned ndims, const dim_t * const dims);
-    dim_t elements();
-    dim_t elements() const;
-    dim_t ndims();
-    dim_t ndims() const;
+    inline dim_t elements() const { return dims[0] * dims[1] * dims[2] * dims[3]; }
+    inline dim_t ndims() const {
+        if (dims[0] == 0 || dims[1] == 0 || dims[2] == 0 || dims[3] == 0) {
+            return 0;
+        }
+        if (dims[3] != 1) return 4;
+        if (dims[2] != 1) return 3;
+        if (dims[1] != 1) return 2;
+
+        return 1;
+    }
     bool operator==(const dim4& other) const;
     bool operator!=(const dim4& other) const;
     dim4& operator*=(const dim4& other);
     dim4& operator+=(const dim4& other);
     dim4& operator-=(const dim4& other);
-    dim_t& operator[](const unsigned dim);
-    const dim_t& operator[](const unsigned dim) const;
-            dim_t* get()         { return dims; }
-    const   dim_t* get() const   { return dims; }
+    inline dim_t& operator[](const unsigned dim) { return dims[dim]; }
+    inline const dim_t& operator[](const unsigned dim) const { return dims[dim]; }
+    inline dim_t* get() { return dims; }
+    inline const dim_t* get() const { return dims; }
 };
 
 AFAPI dim4 operator+(const dim4& first, const dim4& second);

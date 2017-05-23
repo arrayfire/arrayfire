@@ -59,51 +59,6 @@ dim4::dim4(const unsigned ndims_, const dim_t * const dims_)
     }
 }
 
-
-dim_t
-dim4::elements() const
-{
-    return dims[0] * dims[1] * dims[2] * dims[3];
-}
-
-dim_t
-dim4::elements()
-{
-    return static_cast<const dim4&>(*this).elements();
-}
-
-dim_t
-dim4::ndims() const
-{
-    int num = elements();
-    if (num == 0) return 0;
-    if (num == 1) return 1;
-
-    if (dims[3] != 1) return 4;
-    if (dims[2] != 1) return 3;
-    if (dims[1] != 1) return 2;
-
-    return 1;
-}
-
-dim_t
-dim4::ndims()
-{
-    return static_cast<const dim4&>(*this).ndims();
-}
-
-const dim_t&
-dim4::operator[](const unsigned dim) const
-{
-    return dims[dim];
-}
-
-dim_t &
-dim4::operator[](const unsigned dim)
-{
-    return const_cast<dim_t&>(static_cast<const dim4&>((*this))[dim]);
-}
-
 bool
 dim4::operator==(const dim4 &other) const
 {
