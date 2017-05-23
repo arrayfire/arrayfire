@@ -29,6 +29,8 @@
 
 using std::lock_guard;
 using std::recursive_mutex;
+using std::function;
+using std::unique_ptr;
 
 namespace cuda
 {
@@ -63,9 +65,11 @@ void printMemInfo(const char *msg, const int device)
 }
 
 template<typename T>
-T* memAlloc(const size_t &elements)
+uptr<T>
+memAlloc(const size_t &elements)
 {
-    return (T *)memoryManager().alloc(elements * sizeof(T), false);
+    T *ptr = (T *)memoryManager().alloc(elements * sizeof(T), false);
+    return uptr<T>(ptr, memFree<T>);
 }
 
 void* memAllocUser(const size_t &bytes)
@@ -122,11 +126,11 @@ bool checkMemoryLimit()
     return memoryManager().checkMemoryLimit();
 }
 
-#define INSTANTIATE(T)                                      \
-    template T* memAlloc(const size_t &elements);           \
-    template void memFree(T* ptr);                          \
-    template T* pinnedAlloc(const size_t &elements);        \
-    template void pinnedFree(T* ptr);                       \
+#define INSTANTIATE(T)                                                                        \
+    template std::unique_ptr<T[], std::function<void(T *)>> memAlloc(const size_t &elements); \
+    template void memFree(T* ptr);                                                            \
+    template T* pinnedAlloc(const size_t &elements);                                          \
+    template void pinnedFree(T* ptr);                                                         \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)

@@ -67,7 +67,7 @@ namespace cuda
 
     // Create an Array object from Param<T>
     template<typename T>
-    Array<T> createParamArray(Param<T> &tmp);
+    Array<T> createParamArray(Param<T> &tmp, bool owner);
 
     template<typename T>
     Array<T> createSubArray(const Array<T>& parent,
@@ -107,7 +107,7 @@ namespace cuda
 
         explicit Array(af::dim4 dims, const T * const in_data, bool is_device = false, bool copy_device = false);
         Array(const Array<T>& parnt, const dim4 &dims, const dim_t &offset, const dim4 &stride);
-        Array(Param<T> &tmp);
+        Array(Param<T> &tmp, bool owner);
         Array(af::dim4 dims, JIT::Node_ptr n);
     public:
 
@@ -228,7 +228,7 @@ namespace cuda
 
         friend Array<T> *initArray<T>();
         friend Array<T> createEmptyArray<T>(const af::dim4 &size);
-        friend Array<T> createParamArray<T>(Param<T> &tmp);
+        friend Array<T> createParamArray<T>(Param<T> &tmp, bool owner);
         friend Array<T> createNodeArray<T>(const af::dim4 &dims, JIT::Node_ptr node);
 
         friend Array<T> createSubArray<T>(const Array<T>& parent,

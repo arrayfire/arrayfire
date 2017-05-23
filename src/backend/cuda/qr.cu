@@ -135,17 +135,17 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
                                        in_copy.get(), in_copy.strides()[1],
                                        &lwork));
 
-    T *workspace = memAlloc<T>(lwork);
+    auto workspace = memAlloc<T>(lwork);
 
     t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
-    int *info = memAlloc<int>(1);
+    auto info = memAlloc<int>(1);
 
     CUSOLVER_CHECK(geqrf_func<T>()(solverDnHandle(),
                                    M, N,
                                    in_copy.get(), in_copy.strides()[1],
                                    t.get(),
-                                   workspace,
-                                   lwork, info));
+                                   workspace.get(),
+                                   lwork, info.get()));
 
     // SPLIT into q and r
     dim4 rdims(M, N);
@@ -165,13 +165,11 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
                                  in_copy.get(), in_copy.strides()[1],
                                  t.get(),
                                  q.get(), q.strides()[1],
-                                 workspace, lwork,
-                                 info));
+                                 workspace.get(), lwork,
+                                 info.get()));
 
     q.resetDims(dim4(M, M));
 
-    memFree(workspace);
-    memFree(info);
 }
 
 template<typename T>
@@ -190,18 +188,16 @@ Array<T> qr_inplace(Array<T> &in)
                                        in.get(), in.strides()[1],
                                        &lwork));
 
-    T *workspace = memAlloc<T>(lwork);
-    int *info = memAlloc<int>(1);
+    auto workspace = memAlloc<T>(lwork);
+    auto info = memAlloc<int>(1);
 
     CUSOLVER_CHECK(geqrf_func<T>()(solverDnHandle(),
                                    M, N,
                                    in.get(), in.strides()[1],
                                    t.get(),
-                                   workspace, lwork,
-                                   info));
+                                   workspace.get(), lwork,
+                                   info.get()));
 
-    memFree(workspace);
-    memFree(info);
     return t;
 }
 

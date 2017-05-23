@@ -69,7 +69,7 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr,
     // Need to do this as CParam does not have a default constructor
     // And resize needs a default constructor or default value prior to C++11
     img_pyr.resize(max_levels, emptyCParam);
-
+    std::vector<uptr<T>> lvl_img_alloc;
     // Create multi-scale image pyramid
     for (unsigned i = 0; i < max_levels; i++) {
         if (i == 0) {
@@ -82,6 +82,7 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr,
         }
         else {
             // Resize previous level image to current level dimensions
+          //TODO: Param<T> should use array assignment, not iteration
             Param<T> lvl_img;
             lvl_img.dims[0] = round(in.dims[0] / lvl_scl[i]);
             lvl_img.dims[1] = round(in.dims[1] / lvl_scl[i]);
@@ -94,7 +95,8 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr,
             }
 
             int lvl_elem = lvl_img.strides[3] * lvl_img.dims[3];
-            lvl_img.ptr = memAlloc<T>(lvl_elem);
+            lvl_img_alloc.push_back(memAlloc<T>(lvl_elem));
+            lvl_img.ptr = lvl_img_alloc.back().get();
 
             resize<T, AF_INTERP_BILINEAR>(lvl_img, img_pyr[i-1]);
 
@@ -129,6 +131,7 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr,
              img_pyr[i], fast_thr, 9, 1, 0.15f, edge);
 
         // FAST score is not used
+        // TODO: should be handled by fast() 
         memFree(d_score_feat);
 
         if (lvl_feat == 0) {
@@ -141,6 +144,10 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr,
             d_x_pyr[i] = d_x_feat;
             d_y_pyr[i] = d_y_feat;
         }
+    }
+
+    for(auto& l : lvl_img_alloc){
+      l.release();
     }
 }
 

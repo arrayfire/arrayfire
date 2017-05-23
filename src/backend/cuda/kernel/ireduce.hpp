@@ -229,14 +229,18 @@ namespace kernel
 
         Param<T> tmp = out;
         uint *tlptr = olptr;
+        uptr<T> tmp_alloc;
+        uptr<uint> tlptr_alloc;
 
         if (blocks_dim[dim] > 1) {
             int tmp_elements = 1;
             tmp.dims[dim] = blocks_dim[dim];
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
-            tmp.ptr = memAlloc<T>(tmp_elements);
-            tlptr = memAlloc<uint>(tmp_elements);
+            tmp_alloc = memAlloc<T>(tmp_elements);
+            tlptr_alloc = memAlloc<uint>(tmp_elements);
+            tmp.ptr = tmp_alloc.get();
+            tlptr = tlptr_alloc.get();
 
             for (int k = dim + 1; k < 4; k++) tmp.strides[k] *= blocks_dim[dim];
         }
@@ -248,9 +252,6 @@ namespace kernel
 
             ireduce_dim_launcher<T, op, dim, false>(out, olptr, tmp, tlptr,
                                                     threads_y, blocks_dim);
-
-            memFree(tmp.ptr);
-            memFree(tlptr);
         }
 
     }
@@ -409,16 +410,14 @@ namespace kernel
 
         Param<T> tmp = out;
         uint *tlptr = olptr;
+        uptr<T> tmp_alloc;
+        uptr<uint> tlptr_alloc;
         if (blocks_x > 1) {
-            tmp.ptr = memAlloc<T>(blocks_x *
-                                  in.dims[1] *
-                                  in.dims[2] *
-                                  in.dims[3]);
-
-            tlptr = memAlloc<uint>(blocks_x *
-                                   in.dims[1] *
-                                   in.dims[2] *
-                                   in.dims[3]);
+            auto elements = blocks_x * in.dims[1] * in.dims[2] * in.dims[3];
+            tmp_alloc = memAlloc<T>(elements);
+            tlptr_alloc = memAlloc<uint>(elements);
+            tmp.ptr = tmp_alloc.get();
+            tlptr = tlptr_alloc.get();
 
             tmp.dims[0] = blocks_x;
             for (int k = 1; k < 4; k++) tmp.strides[k] *= blocks_x;
@@ -428,9 +427,6 @@ namespace kernel
 
         if (blocks_x > 1) {
             ireduce_first_launcher<T, op, false>(out, olptr, tmp, tlptr, 1, blocks_y, threads_x);
-
-            memFree(tmp.ptr);
-            memFree(tlptr);
         }
     }
 
@@ -488,8 +484,10 @@ namespace kernel
             int tmp_elements = tmp.strides[3] * tmp.dims[3];
 
             //TODO: Use scoped_ptr
-            tmp.ptr = memAlloc<T>(tmp_elements);
-            tlptr = memAlloc<uint>(tmp_elements);
+            auto tmp_alloc = memAlloc<T>(tmp_elements);
+            auto tlptr_alloc = memAlloc<uint>(tmp_elements);
+            tmp.ptr = tmp_alloc.get();
+            tlptr = tlptr_alloc.get();
             ireduce_first_launcher<T, op, true>(tmp, tlptr, in, NULL, blocks_x, blocks_y, threads_x);
 
             unique_ptr<T[]>       h_ptr(new T[tmp_elements]);
@@ -502,8 +500,6 @@ namespace kernel
             CUDA_CHECK(cudaMemcpyAsync(h_lptr_raw, tlptr, tmp_elements * sizeof(uint),
                        cudaMemcpyDeviceToHost, cuda::getActiveStream()));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
-            memFree(tmp.ptr);
-            memFree(tlptr);
 
             if (!is_linear) {
                 // Converting n-d index into a linear index

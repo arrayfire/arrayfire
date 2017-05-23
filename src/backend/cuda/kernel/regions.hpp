@@ -379,13 +379,13 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
     // component to being sequentially numbered components starting at
     // 1.
     int size = in.dims[0] * in.dims[1];
-    T* tmp = cuda::memAlloc<T>(size);
-    CUDA_CHECK(cudaMemcpyAsync(tmp, out.ptr, size * sizeof(T),
+    auto tmp = cuda::memAlloc<T>(size);
+    CUDA_CHECK(cudaMemcpyAsync(tmp.get(), out.ptr, size * sizeof(T),
                           cudaMemcpyDeviceToDevice,
                           cuda::getActiveStream()));
 
     // Wrap raw device ptr
-    thrust::device_ptr<T> wrapped_tmp = thrust::device_pointer_cast(tmp);
+    thrust::device_ptr<T> wrapped_tmp = thrust::device_pointer_cast(tmp.get());
 
     // Sort the copy
     THRUST_SELECT(thrust::sort, wrapped_tmp, wrapped_tmp + size);
@@ -423,5 +423,4 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
 
     POST_LAUNCH_CHECK();
 
-    cuda::memFree(tmp);
 }
