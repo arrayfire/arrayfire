@@ -16,6 +16,7 @@
 #include <platform.hpp>
 #include <util.hpp>
 #include <mutex>
+#include <utility>
 
 using namespace std;
 using namespace gl;
@@ -246,6 +247,7 @@ void ForgeManager::setWindowChartGrid(const forge::Window* window,
                                       const int r, const int c)
 {
     ChartMapIter iter = mChartMap.find(window);
+    GridMapIter gIter = mWndGridMap.find(window);
 
     if(iter != mChartMap.end()) {
         // ChartVec found. Clear it.
@@ -258,13 +260,27 @@ void ForgeManager::setWindowChartGrid(const forge::Window* window,
             }
         }
         (iter->second).clear();
+        gIter->second = std::make_pair<int, int>(1, 1);
     }
 
     if(r == 0 || c == 0) {
         mChartMap.erase(window);
+        mWndGridMap.erase(window);
     } else {
         mChartMap[window] = std::vector<forge::Chart*>(r * c);
+        mWndGridMap[window] = std::make_pair(r, c);
     }
+}
+
+WindGridDims_t ForgeManager::getWindowGrid(const forge::Window* window)
+{
+    GridMapIter gIter = mWndGridMap.find(window);
+
+    if (gIter == mWndGridMap.end()) {
+        mWndGridMap[window] = std::make_pair(1, 1);
+    }
+
+    return mWndGridMap[window];
 }
 
 forge::Chart* ForgeManager::getChart(const forge::Window* window, const int r, const int c,
@@ -272,11 +288,12 @@ forge::Chart* ForgeManager::getChart(const forge::Window* window, const int r, c
 {
     forge::Chart* chart = NULL;
     ChartMapIter iter = mChartMap.find(window);
+    GridMapIter gIter = mWndGridMap.find(window);
 
     if (iter != mChartMap.end()) {
 
-        int gRows = window->gridRows();
-        int gCols = window->gridCols();
+        int gRows = std::get<0>(gIter->second);
+        int gCols = std::get<1>(gIter->second);
 
         if(c >= gCols || r >= gRows)
             AF_ERROR("Grid points are out of bounds", AF_ERR_TYPE);

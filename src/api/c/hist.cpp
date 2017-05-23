@@ -108,9 +108,11 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
             default:  TYPE_ERROR(1, Xtype);
         }
 
+        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
         // Window's draw function requires either image or chart
         if (props->col > -1 && props->row > -1)
-            window->draw(props->row, props->col, *chart, props->title);
+            window->draw(gridDims.first, gridDims.second, props->col * gridDims.first + props->row,
+                         *chart, props->title);
         else
             window->draw(*chart);
     }

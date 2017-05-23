@@ -68,8 +68,11 @@ typedef VectorFieldMap_t::iterator VcfMapIter;
 
 typedef std::vector<forge::Chart*> ChartVec_t;
 typedef std::map<const forge::Window*, ChartVec_t> ChartMap_t;
+typedef std::pair<int, int> WindGridDims_t;
+typedef std::map<const forge::Window*, WindGridDims_t> WindGridMap_t;
 typedef ChartVec_t::iterator ChartVecIter;
 typedef ChartMap_t::iterator ChartMapIter;
+typedef WindGridMap_t::iterator GridMapIter;
 
 // Keeps track of which charts have manually assigned axes limits
 typedef std::map<forge::Chart*, bool> ChartAxesOverride_t;
@@ -97,6 +100,7 @@ class ForgeManager
         VectorFieldMap_t    mVcfMap;
 
         ChartMap_t          mChartMap;
+        WindGridMap_t       mWndGridMap;
         ChartAxesOverride_t mChartAxesOverrideMap;
 
     public:
@@ -109,6 +113,7 @@ class ForgeManager
         void            setWindowChartGrid(const forge::Window* window,
                                            const int r, const int c);
 
+        WindGridDims_t getWindowGrid(const forge::Window* window);
         forge::Chart*   getChart(const forge::Window* window, const int r, const int c,
                                  const forge::ChartType ctype);
 

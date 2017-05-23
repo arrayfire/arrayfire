@@ -124,7 +124,6 @@ af_err af_grid(const af_window wind, const int rows, const int cols)
 
     try {
         forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
-        wnd->grid(rows, cols);
 
         // Recreate a chart map
         ForgeManager& fgMngr = ForgeManager::getInstance();

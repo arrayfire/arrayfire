@@ -46,7 +46,7 @@ ELSE()
     ENDIF(WIN32)
 ENDIF()
 
-SET(FORGE_VERSION 0.9.2)
+SET(FORGE_VERSION 1.0.1)
 
 # FIXME Tag forge correctly during release
 ExternalProject_Add(
