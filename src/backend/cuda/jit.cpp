@@ -491,7 +491,7 @@ char linkError[size];
 static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 {
     size_t ptx_size;
-    unique_ptr<const char> ptx(irToPtx(jit_ker, &ptx_size));
+    unique_ptr<char[]> ptx(irToPtx(jit_ker, &ptx_size));
 
     CUlinkState linkState;
 
