@@ -317,7 +317,7 @@ namespace kernel
 
             reduce_first_launcher<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x, change_nan, nanval);
 
-            unique_ptr<To> h_ptr(new To[tmp_elements]);
+            unique_ptr<To[]> h_ptr(new To[tmp_elements]);
             getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr.get());
 
             Binary<To, op> reduce;
