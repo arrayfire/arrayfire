@@ -18,7 +18,13 @@ ShrdResVector GraphicsResourceManager::registerResources(std::vector<uint32_t> r
     ShrdResVector output;
 
     auto deleter = [](CGR_t* handle) {
-        CUDA_CHECK(cudaGraphicsUnregisterResource(*handle));
+        //FIXME Having a CUDA_CHECK around unregister
+        //call is causing invalid GL context.
+        //Moving ForgeManager class singleton as data
+        //member of DeviceManager with proper ordering
+        //of member destruction doesn't help either.
+        //Calling makeContextCurrent also doesn't help.
+        cudaGraphicsUnregisterResource(*handle);
         delete handle;
     };
 
