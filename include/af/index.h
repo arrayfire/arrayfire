@@ -197,6 +197,45 @@ extern "C" {
 #endif
 
     ///
+    /// Helper to generate an af_index_t from an af_array
+    ///
+    /// \param[out] result  a non initialized array that will be populated
+    /// \param[in]  arr     the array that will be used to generate the af_index_t
+    ///
+    /// \ingroup index_func_index
+    AFAPI af_err af_create_array_index(af_index_t** result, const af_array in);
+
+    ///
+    /// Helper to generate an af_index_t from an af_seq
+    ///
+    /// \param[out] result  a non initialized array that will be populated
+    /// \param[in]  seq     the seq that will be used to generate the af_index_t
+    ///
+    /// \ingroup index_func_index
+    AFAPI af_err af_create_seq_index(af_index_t** result, const af_seq* in, bool is_batch);
+
+    ///
+    /// Helper to release an initialized indexer
+    ///
+    /// \param[in] indexer  is the array of sequences
+    ///
+    /// \ingroup index_func_index
+    AFAPI af_err af_release_index(af_index_t* indexer);
+
+    ///
+    /// Helper to generate an af_index_t from an internal af_seq
+    ///
+    /// \param[out] result    a non initialized array that will be populated
+    /// \param[in]  begin     the begin index to use for the seq
+    /// \param[in]  end       the end index to use for the seq
+    /// \param[in]  step      the step size to use for the seq
+    /// \param[in]  is_batch  determine batching mode
+    ///
+    /// \ingroup index_func_index
+    AFAPI af_err af_create_seq_param_index(af_index_t** result, double begin
+                                            , double end, double step, bool is_batch);
+
+    ///
     /// Lookup the values of input array based on sequences
     ///
     /// \param[out] out  output array containing values indexed by the

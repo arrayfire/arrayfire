@@ -36,6 +36,55 @@ static void indexArray(af_array &dest, const af_array &src, const unsigned ndims
     dest = getHandle(dst);
 }
 
+af_err af_create_array_index(af_index_t** result, const af_array in)
+{
+    try {
+        if(*result) {
+            // avoid a dangling pointer
+            return AF_ERR_NOT_SUPPORTED;
+        }
+        *result = new af_index_t;
+        (*result)->idx.arr = in;
+        (*result)->isBatch = false;
+        (*result)->isSeq = false;
+    }
+    CATCHALL
+        return AF_SUCCESS;    
+}
+
+af_err af_create_seq_index(af_index_t** result, const af_seq* in, bool is_batch)
+{
+    try {
+        if(*result) {
+            // avoid a dangling pointer
+            return AF_ERR_NOT_SUPPORTED;
+        }
+        *result = new af_index_t;
+        (*result)->idx.seq = *in;
+        (*result)->isBatch = is_batch;
+        (*result)->isSeq = true;
+    }
+    CATCHALL
+        return AF_SUCCESS;
+}
+
+af_err af_release_index(af_index_t* indexer)
+{
+    try{
+        if(indexer) {
+            delete indexer;
+        }
+    }
+    CATCHALL
+        return AF_SUCCESS;
+}
+
+af_err af_create_seq_param_index(af_index_t** result, double begin, double end, double step, bool is_batch)
+{
+    af_seq in = af_make_seq(begin, end, step);
+    return af_create_seq_index(result, &in, is_batch);
+}
+
 af_err af_index(af_array *result, const af_array in, const unsigned ndims, const af_seq* index)
 {
     af_array out;
