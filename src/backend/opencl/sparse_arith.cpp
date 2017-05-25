@@ -108,6 +108,14 @@ SparseArray<T> arithOpS(const SparseArray<T> &lhs, const Array<T> &rhs, const bo
                                             const bool reverse);                                    \
     template Array<T> arithOpD<T, af_sub_t>(const SparseArray<T> &lhs, const Array<T> &rhs,         \
                                             const bool reverse);                                    \
+    template Array<T> arithOpD<T, af_mul_t>(const SparseArray<T> &lhs, const Array<T> &rhs,         \
+                                            const bool reverse);                                    \
+    template Array<T> arithOpD<T, af_div_t>(const SparseArray<T> &lhs, const Array<T> &rhs,         \
+                                            const bool reverse);                                    \
+    template SparseArray<T> arithOpS<T, af_add_t>(const SparseArray<T> &lhs, const Array<T> &rhs,   \
+                                                  const bool reverse);                              \
+    template SparseArray<T> arithOpS<T, af_sub_t>(const SparseArray<T> &lhs, const Array<T> &rhs,   \
+                                                  const bool reverse);                              \
     template SparseArray<T> arithOpS<T, af_mul_t>(const SparseArray<T> &lhs, const Array<T> &rhs,   \
                                                   const bool reverse);                              \
     template SparseArray<T> arithOpS<T, af_div_t>(const SparseArray<T> &lhs, const Array<T> &rhs,   \
