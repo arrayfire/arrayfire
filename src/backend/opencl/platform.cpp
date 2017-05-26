@@ -46,6 +46,7 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <clfft.hpp>
 
 using std::string;
 using std::vector;
@@ -781,7 +782,8 @@ DeviceManager::~DeviceManager()
 }
 
 DeviceManager::DeviceManager()
-    : mUserDeviceOffset(0)
+    : mUserDeviceOffset(0),
+      mFFTSetup(new clfftSetupData)
 {
     std::vector<cl::Platform>   platforms;
     Platform::get(&platforms);
@@ -903,8 +905,8 @@ DeviceManager::DeviceManager()
 #endif
     mUserDeviceOffset = mDevices.size();
     //Initialize FFT setup data structure
-    CLFFT_CHECK(clfftInitSetupData(&mFFTSetup));
-    CLFFT_CHECK(clfftSetup(&mFFTSetup));
+    CLFFT_CHECK(clfftInitSetupData(mFFTSetup.get()));
+    CLFFT_CHECK(clfftSetup(mFFTSetup.get()));
 
     //Initialize clBlas library
     initBlas();
