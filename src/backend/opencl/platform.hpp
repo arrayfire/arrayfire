@@ -29,11 +29,17 @@
 #include <cache.hpp>
 #include <memory.hpp>
 #include <GraphicsResourceManager.hpp>
-#include <clfft.hpp>
 #include <common/types.hpp>
+
+// Forward declaration from clFFT.h
+struct clfftSetupData_;
+typedef clfftSetupData_ clfftSetupData;
 
 namespace opencl
 {
+// Forward declaration from clfft.hpp
+class PlanCache;
+
 int getBackend();
 
 std::string getDeviceInfo();
@@ -192,6 +198,6 @@ class DeviceManager
 #if defined(WITH_GRAPHICS)
         std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
 #endif
-        clfftSetupData mFFTSetup;
+        std::unique_ptr<clfftSetupData> mFFTSetup;
 };
 }
