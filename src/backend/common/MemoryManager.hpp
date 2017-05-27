@@ -114,8 +114,6 @@ class MemoryManager
     MemoryManager(int num_devices, unsigned MAX_BUFFERS, bool debug)
         : mem_step_size(1024), max_buffers(MAX_BUFFERS), memory(num_devices), debug_mode(debug)
     {
-        lock_guard_t lock(this->memory_mutex);
-
         // Check for environment variables
 
         // Debug mode

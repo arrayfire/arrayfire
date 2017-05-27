@@ -150,11 +150,10 @@ MemoryManager::MemoryManager()
 
 MemoryManager::~MemoryManager()
 {
-    common::lock_guard_t lock(this->memory_mutex);
     for (int n = 0; n < opencl::getDeviceCount(); n++) {
         try {
             opencl::setDevice(n);
-            garbageCollect();
+            this->garbageCollect();
         } catch(AfError err) {
             continue; // Do not throw any errors while shutting down
         }
@@ -191,8 +190,7 @@ MemoryManagerPinned::MemoryManagerPinned()
 
 MemoryManagerPinned::~MemoryManagerPinned()
 {
-    common::lock_guard_t lock(this->memory_mutex);
-    for (int n = 0; n < getDeviceCount(); n++) {
+    for (int n = 0; n < opencl::getDeviceCount(); n++) {
         opencl::setDevice(n);
         this->garbageCollect();
         auto currIterator = pinnedMaps[n].begin();
