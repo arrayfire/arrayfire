@@ -363,3 +363,75 @@ TEST(Approx2, CPPLinearBatch)
     ASSERT_NEAR(0, sum<float>(abs(outBatch - outSerial)), 1e-3);
     ASSERT_NEAR(0, sum<float>(abs(outBatch - outGFOR)), 1e-3);
 }
+
+TEST(Approx2, CPPNearestMaxDims)
+{
+    if (noDoubleTests<float>()) return;
+
+    const size_t largeDim = 65535 * 32 + 1;
+
+    af::array input = af::randu(1, largeDim);
+    af::array pos   = input.dims(0) * af::randu(1, 10);
+    af::array qos   = input.dims(1) * af::randu(1, 10);
+    af::array out   = af::approx2(input, pos, qos, AF_INTERP_NEAREST);
+
+    input = af::randu(1, 1, largeDim);
+    pos   = input.dims(0) * af::randu(1, 1, largeDim);
+    qos   = input.dims(1) * af::randu(1, 1, largeDim);
+    out   = af::approx2(input, pos, qos, AF_INTERP_NEAREST);
+
+    input = af::randu(1, 1, 1, largeDim);
+    pos   = input.dims(0) * af::randu(1, 1, 1, largeDim);
+    qos   = input.dims(1) * af::randu(1, 1, 1, largeDim);
+    out   = af::approx2(input, pos, qos, AF_INTERP_NEAREST);
+
+    SUCCEED();
+}
+
+TEST(Approx2, CPPLinearMaxDims)
+{
+    if (noDoubleTests<float>()) return;
+
+    const size_t largeDim = 65535 * 32 + 1;
+
+    af::array input = af::randu(1, largeDim);
+    af::array pos   = input.dims(0) * af::randu(1, 10);
+    af::array qos   = input.dims(1) * af::randu(1, 10);
+    af::array out   = af::approx2(input, pos, qos, AF_INTERP_LINEAR);
+
+    input = af::randu(1, 1, largeDim);
+    pos   = input.dims(0) * af::randu(1, 1, largeDim);
+    qos   = input.dims(1) * af::randu(1, 1, largeDim);
+    out   = af::approx2(input, pos, qos, AF_INTERP_LINEAR);
+
+    input = af::randu(1, 1, 1, largeDim);
+    pos   = input.dims(0) * af::randu(1, 1, 1, largeDim);
+    qos   = input.dims(1) * af::randu(1, 1, 1, largeDim);
+    out   = af::approx2(input, pos, qos, AF_INTERP_LINEAR);
+
+    SUCCEED();
+}
+
+TEST(Approx2, CPPCubicMaxDims)
+{
+    if (noDoubleTests<float>()) return;
+
+    const size_t largeDim = 65535 * 32 + 1;
+
+    af::array input = af::randu(1, largeDim);
+    af::array pos   = input.dims(0) * af::randu(1, 10);
+    af::array qos   = input.dims(1) * af::randu(1, 10);
+    af::array out   = af::approx2(input, pos, qos, AF_INTERP_BICUBIC);
+
+    input = af::randu(1, 1, largeDim);
+    pos   = input.dims(0) * af::randu(1, 1, largeDim);
+    qos   = input.dims(1) * af::randu(1, 1, largeDim);
+    out   = af::approx2(input, pos, qos, AF_INTERP_BICUBIC);
+
+    input = af::randu(1, 1, 1, largeDim);
+    pos   = input.dims(0) * af::randu(1, 1, 1, largeDim);
+    qos   = input.dims(1) * af::randu(1, 1, 1, largeDim);
+    out   = af::approx2(input, pos, qos, AF_INTERP_BICUBIC);
+
+    SUCCEED();
+}
