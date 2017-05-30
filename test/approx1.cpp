@@ -405,3 +405,63 @@ TEST(Approx1, CPPCubicBatch)
     ASSERT_NEAR(0, sum<float>(abs(outBatch - outSerial)), 1e-3);
     ASSERT_NEAR(0, sum<float>(abs(outBatch - outGFOR)), 1e-3);
 }
+
+TEST(Approx1, CPPNearestMaxDims)
+{
+    if (noDoubleTests<float>()) return;
+
+    const size_t largeDim = 65535 * 32 + 1;
+    af::array input = af::randu(1, largeDim);
+    af::array pos   = input.dims(0) * af::randu(1, largeDim);
+    af::array out   = af::approx1(input, pos, AF_INTERP_NEAREST);
+
+    input = af::randu(1, 1, largeDim);
+    pos   = input.dims(0) * af::randu(1, 1, largeDim);
+    out   = af::approx1(input, pos, AF_INTERP_NEAREST);
+
+    input = af::randu(1, 1, 1, largeDim);
+    pos   = input.dims(0) * af::randu(1, 1, 1, largeDim);
+    out   = af::approx1(input, pos, AF_INTERP_NEAREST);
+
+    SUCCEED();
+}
+
+TEST(Approx1, CPPLinearMaxDims)
+{
+    if (noDoubleTests<float>()) return;
+
+    const size_t largeDim = 65535 * 32 + 1;
+    af::array input = af::iota(af::dim4(1, largeDim), c32);
+    af::array pos   = input.dims(0) * af::randu(1, largeDim);
+    af::array outBatch = af::approx1(input, pos, AF_INTERP_LINEAR);
+
+    input = af::iota(af::dim4(1, 1, largeDim), c32);
+    pos   = input.dims(0) * af::randu(1, 1, largeDim);
+    outBatch = af::approx1(input, pos, AF_INTERP_LINEAR);
+
+    input = af::iota(af::dim4(1, 1, 1, largeDim), c32);
+    pos   = input.dims(0) * af::randu(1, 1, 1, largeDim);
+    outBatch = af::approx1(input, pos, AF_INTERP_LINEAR);
+
+    SUCCEED();
+}
+
+TEST(Approx1, CPPCubicMaxDims)
+{
+    if (noDoubleTests<float>()) return;
+
+    const size_t largeDim = 65535 * 32 + 1;
+    af::array input = af::iota(af::dim4(1, largeDim), c32);
+    af::array pos   = input.dims(0) * af::randu(1, largeDim);
+    af::array outBatch = af::approx1(input, pos, AF_INTERP_CUBIC);
+
+    input = af::iota(af::dim4(1, 1, largeDim), c32);
+    pos   = input.dims(0) * af::randu(1, 1, largeDim);
+    outBatch = af::approx1(input, pos, AF_INTERP_CUBIC);
+
+    input = af::iota(af::dim4(1, 1, 1, largeDim), c32);
+    pos   = input.dims(0) * af::randu(1, 1, 1, largeDim);
+    outBatch = af::approx1(input, pos, AF_INTERP_CUBIC);
+
+    SUCCEED();
+}
