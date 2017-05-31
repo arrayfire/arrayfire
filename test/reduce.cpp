@@ -161,6 +161,7 @@ TEST(Reduce,Test_Reduce_Big0)
         );
 }
 
+/*
 TEST(Reduce,Test_Reduce_Big1)
 {
     if (noDoubleTests<int>()) return;
@@ -170,11 +171,15 @@ TEST(Reduce,Test_Reduce_Big1)
         1
         );
 }
+*/
 
 /////////////////////////////////// CPP //////////////////////////////////
 //
 typedef af::array (*ReductionOp)(const af::array&, const int);
 
+using af::dim4;
+using af::iota;
+using af::constant;
 using af::sum;
 using af::min;
 using af::max;
@@ -222,12 +227,78 @@ void cppReduceTest(string pTestFile)
     }
 }
 
-#define CPP_REDUCE_TESTS(FN, FNAME, Ti, To)        \
-    TEST(Reduce, Test_##FN##_CPP)                  \
-    {                                              \
-        cppReduceTest<Ti, To, FN>(                 \
-            string(TEST_DIR"/reduce/"#FNAME".test")\
-            );                                     \
+TEST(Reduce, Test_Sum_Scalar_MaxDim)
+{
+    const size_t largeDim = 65535 * 32 * 8 + 1;
+    array A = constant(1, dim4(1, largeDim, 1, 1));
+    ASSERT_EQ(sum<float>(A, 1), largeDim);
+    A = constant(1, dim4(1, 1, largeDim, 1));
+    ASSERT_EQ(sum<float>(A, 2), largeDim);
+    A = constant(1, dim4(1, 1, 1, largeDim));
+    ASSERT_EQ(sum<float>(A, 3), largeDim);
+}
+
+TEST(Reduce, Test_Min_Scalar_MaxDim)
+{
+    const size_t largeDim = 65535 * 32 * 8 + 1;
+    array A = iota(dim4(1, largeDim, 1, 1));
+    ASSERT_EQ(min(A, 1).scalar<float>(), 0.f);
+    A = iota(dim4(1, 1, largeDim, 1));
+    ASSERT_EQ(min(A, 2).scalar<float>(), 0.f);
+    A = iota(dim4(1, 1, 1, largeDim));
+    ASSERT_EQ(min(A, 3).scalar<float>(), 0.f);
+}
+
+TEST(Reduce, Test_Max_Scalar_MaxDim)
+{
+    const size_t largeDim = 65535 * 32 * 8 + 1;
+    array A = iota(dim4(1, largeDim, 1, 1));
+    ASSERT_EQ(max(A, 1).scalar<float>(), largeDim - 1);
+    A = iota(dim4(1, 1, largeDim, 1));
+    ASSERT_EQ(max(A, 2).scalar<float>(), largeDim - 1);
+    A = iota(dim4(1, 1, 1, largeDim));
+    ASSERT_EQ(max(A, 3).scalar<float>(), largeDim - 1);
+}
+
+TEST(Reduce, Test_anyTrue_Scalar_MaxDim)
+{
+    const size_t largeDim = 65535 * 32 * 8 + 1;
+    array A = constant(1, dim4(1, largeDim, 1, 1));
+    ASSERT_EQ(anyTrue(A, 1).scalar<char>(), 1);
+    A = constant(1, dim4(1, 1, largeDim, 1));
+    ASSERT_EQ(anyTrue(A, 2).scalar<char>(), 1);
+    A = constant(1, dim4(1, 1, 1, largeDim));
+    ASSERT_EQ(anyTrue(A, 3).scalar<char>(), 1);
+}
+
+TEST(Reduce, Test_allTrue_Scalar_MaxDim)
+{
+    const size_t largeDim = 65535 * 32 * 8 + 1;
+    array A = constant(1, dim4(1, largeDim, 1, 1));
+    ASSERT_EQ(allTrue(A, 1).scalar<char>(), 1);
+    A = constant(1, dim4(1, 1, largeDim, 1));
+    ASSERT_EQ(allTrue(A, 2).scalar<char>(), 1);
+    A = constant(1, dim4(1, 1, 1, largeDim));
+    ASSERT_EQ(allTrue(A, 3).scalar<char>(), 1);
+}
+
+TEST(Reduce, Test_count_Scalar_MaxDim)
+{
+    const size_t largeDim = 65535 * 32 * 8 + 1;
+    array A = constant(1, dim4(1, largeDim, 1, 1));
+    ASSERT_EQ(count(A, 1).scalar<unsigned int>(), largeDim);
+    A = constant(1, dim4(1, 1, largeDim, 1));
+    ASSERT_EQ(count(A, 2).scalar<unsigned int>(), largeDim);
+    A = constant(1, dim4(1, 1, 1, largeDim));
+    ASSERT_EQ(count(A, 3).scalar<unsigned int>(), largeDim);
+}
+
+#define CPP_REDUCE_TESTS(FN, FNAME, Ti, To)         \
+    TEST(Reduce, Test_##FN##_CPP)                   \
+    {                                               \
+        cppReduceTest<Ti, To, FN>(                  \
+            string(TEST_DIR"/reduce/"#FNAME".test") \
+            );                                      \
     }
 
 CPP_REDUCE_TESTS(sum, sum, float, float);
