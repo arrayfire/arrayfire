@@ -13,7 +13,7 @@
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <handle.hpp>
-#include <reduce.hpp>
+#include <mean.hpp>
 #include <arith.hpp>
 #include <math.hpp>
 #include <cast.hpp>
@@ -25,30 +25,29 @@ using namespace detail;
 template<typename Ti, typename To>
 static To mean(const af_array &in)
 {
-    /* following function is defined in stats.h */
-    return mean<Ti, To>(getArray<Ti>(in)); /* defined in stats.h */
+    typedef typename baseOutType<To>::type Tw;
+    return mean<Ti, Tw, To>(getArray<Ti>(in));
 }
 
 template<typename T>
 static T mean(const af_array &in, const af_array &weights)
 {
     typedef typename baseOutType<T>::type Tw;
-    /* following function is defined in stats.h */
     return mean<T, Tw>(castArray<T>(in), castArray<Tw>(weights));
 }
 
 template<typename Ti, typename To>
 static af_array mean(const af_array &in, const dim_t dim)
 {
-    /* following function is defined in stats.h */
-    return getHandle<To>(mean<Ti, To>(getArray<Ti>(in), dim));
+    typedef typename baseOutType<To>::type Tw;
+    return getHandle<To>(mean<Ti, Tw, To>(getArray<Ti>(in), dim));
 }
 
 template<typename T>
 static af_array mean(const af_array &in, const af_array &weights, const dim_t dim)
 {
-    /* following function is defined in stats.h */
-    return getHandle<T>(mean<T>(castArray<T>(in), castArray<T>(weights), dim));
+    typedef typename baseOutType<T>::type Tw;
+    return getHandle<T>(mean<T, Tw>(castArray<T>(in), castArray<Tw>(weights), dim));
 }
 
 af_err af_mean(af_array *out, const af_array in, const dim_t dim)
@@ -83,7 +82,7 @@ af_err af_mean(af_array *out, const af_array in, const dim_t dim)
 af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights, const dim_t dim)
 {
     try {
-        ARG_ASSERT(2, (dim>=0 && dim<=3));
+        ARG_ASSERT(3, (dim>=0 && dim<=3));
 
         af_array output = 0;
         const ArrayInfo& iInfo = getInfo(in);
@@ -92,6 +91,7 @@ af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights
         af_dtype wType  = wInfo.getType();
 
         ARG_ASSERT(2, (wType==f32 || wType==f64)); /* verify that weights are non-complex real numbers */
+        ARG_ASSERT(2, iInfo.dims() == wInfo.dims());
 
         switch(iType) {
             case f64: output = mean< double>(in, weights, dim); break;
