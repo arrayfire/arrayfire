@@ -13,6 +13,7 @@
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <handle.hpp>
+#include <mean.hpp>
 #include <reduce.hpp>
 #include <arith.hpp>
 #include <math.hpp>
@@ -26,10 +27,11 @@ using namespace detail;
 template<typename inType, typename outType>
 static outType varAll(const af_array& in, const bool isbiased)
 {
+    typedef typename baseOutType<outType>::type weightType;
     Array<inType> inArr = getArray<inType>(in);
     Array<outType> input = cast<outType>(inArr);
 
-    Array<outType> meanCnst= createValueArray<outType>(input.dims(), mean<inType, outType>(inArr));
+    Array<outType> meanCnst= createValueArray<outType>(input.dims(), mean<inType, weightType, outType>(inArr));
 
     Array<outType> diff    = arithOp<outType, af_sub_t>(input, meanCnst, input.dims());
 
@@ -66,11 +68,12 @@ static outType varAll(const af_array& in, const af_array weights)
 template<typename inType, typename outType>
 static af_array var(const af_array& in, const bool isbiased, int dim)
 {
+    typedef typename baseOutType<outType>::type weightType;
     Array<inType> _in    = getArray<inType>(in);
     Array<outType> input = cast<outType>(_in);
     dim4 iDims = input.dims();
 
-    Array<outType> meanArr = mean<inType, outType>(_in, dim);
+    Array<outType> meanArr = mean<inType, weightType, outType>(_in, dim);
 
     /* now tile meanArr along dim and use it for variance computation */
     dim4 tileDims(1);
@@ -95,10 +98,9 @@ static af_array var(const af_array& in, const af_array& weights, int dim)
     typedef typename baseOutType<outType>::type bType;
 
     Array<outType> input = cast<outType>(getArray<inType>(in));
-    Array<outType> wts   = cast<outType>(getArray<bType>(weights));
     dim4 iDims = input.dims();
 
-    Array<outType> meanArr = mean<outType>(input, wts, dim);
+    Array<outType> meanArr = mean<outType, bType>(input, getArray<bType>(weights), dim);
 
     /* now tile meanArr along dim and use it for variance computation */
     dim4 tileDims(1);
@@ -106,6 +108,7 @@ static af_array var(const af_array& in, const af_array& weights, int dim)
     Array<outType> tMeanArr = tile<outType>(meanArr, tileDims);
     /* now mean array is ready */
 
+    Array<outType> wts     = cast<outType>(getArray<bType>(weights));
     Array<outType> diff    = arithOp<outType, af_sub_t>(input, tMeanArr, tMeanArr.dims());
     Array<outType> diffSq  = arithOp<outType, af_mul_t>(diff, diff, diff.dims());
     Array<outType> wDiffSq = arithOp<outType, af_mul_t>(diffSq, wts, diffSq.dims());
