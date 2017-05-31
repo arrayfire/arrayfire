@@ -13,6 +13,7 @@
 #include <backend.hpp>
 #include <reduce.hpp>
 #include <handle.hpp>
+#include <mean.hpp>
 #include <arith.hpp>
 #include <unary.hpp>
 #include <math.hpp>
@@ -27,6 +28,7 @@ using namespace detail;
 template<typename T, typename cType>
 static af_array cov(const af_array& X, const af_array& Y, const bool isbiased)
 {
+    typedef typename baseOutType<cType>::type weightType;
     Array<T> _x = getArray<T>(X);
     Array<T> _y = getArray<T>(Y);
     Array<cType> xArr = cast<cType>(_x);
@@ -35,8 +37,8 @@ static af_array cov(const af_array& X, const af_array& Y, const bool isbiased)
     dim4 xDims = xArr.dims();
     dim_t N = isbiased ? xDims[0] : xDims[0]-1;
 
-    Array<cType> xmArr = createValueArray<cType>(xDims, mean<T, cType>(_x));
-    Array<cType> ymArr = createValueArray<cType>(xDims, mean<T, cType>(_y));
+    Array<cType> xmArr = createValueArray<cType>(xDims, mean<T, weightType, cType>(_x));
+    Array<cType> ymArr = createValueArray<cType>(xDims, mean<T, weightType, cType>(_y));
     Array<cType> nArr  = createValueArray<cType>(xDims, scalar<cType>(N));
 
     Array<cType> diffX = detail::arithOp<cType, af_sub_t>(xArr, xmArr, xDims);
