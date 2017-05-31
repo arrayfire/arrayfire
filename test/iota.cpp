@@ -100,6 +100,10 @@ void iotaTest(const af::dim4 idims, const af::dim4 tdims)
     IOTA_INIT(Iota4D2,  25, 30, 2, 2, 3, 2, 1, 1);
     IOTA_INIT(Iota4D3,  25, 30, 2, 2, 4, 2, 4, 2);
 
+    IOTA_INIT(IotaMaxDimY,  1, 65535 * 32 + 1, 1, 1, 1, 1, 1, 1);
+    IOTA_INIT(IotaMaxDimZ,  1, 1, 65535 * 32 + 1, 1, 1, 1, 1, 1);
+    IOTA_INIT(IotaMaxDimW,  1, 1, 1, 65535 * 32 + 1, 1, 1, 1, 1);
+
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 TEST(Iota, CPP)
