@@ -11,9 +11,6 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <memory>
-#include <vector>
-#include <string>
 #include <memory.hpp>
 #include <GraphicsResourceManager.hpp>
 #include <cufft.hpp>
@@ -21,6 +18,11 @@
 #include <cusolverDn.hpp>
 #include <cusparse.hpp>
 #include <common/types.hpp>
+
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
 
 namespace cuda
 {
@@ -40,6 +42,8 @@ bool isDoubleSupported(int device);
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
 unsigned getMaxJitSize();
+
+std::mutex& getDriverApiMutex(int device);
 
 int getDeviceCount();
 
@@ -111,6 +115,8 @@ class DeviceManager
         friend GraphicsResourceManager& interopManager();
 #endif
 
+        friend std::mutex& getDriverApiMutex(int device);
+
         friend std::string getDeviceInfo(int device);
 
         friend std::string getPlatformInfo();
@@ -159,6 +165,7 @@ class DeviceManager
 
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
 
+        std::mutex driver_api_mutex[MAX_DEVICES];
 #if defined(WITH_GRAPHICS)
         std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
 #endif

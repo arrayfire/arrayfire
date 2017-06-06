@@ -514,6 +514,7 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
         reinterpret_cast<void*>(1)
     };
 
+    std::lock_guard<std::mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     CU_CHECK(cuLinkCreate(5, linkOptions, linkOptionValues, &linkState));
     CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)ptx.get(),
                            ptx_size, ker_name, 0, NULL, NULL));
@@ -689,6 +690,7 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
         args.push_back((void *)&num_odims);
     }
 
+    std::lock_guard<std::mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     CU_CHECK(cuLaunchKernel(ker,
                             blocks_x,
                             blocks_y,
@@ -739,7 +741,4 @@ template void evalNodes<intl   >(vector<Param<intl   > > &out, vector<Node *> no
 template void evalNodes<uintl  >(vector<Param<uintl  > > &out, vector<Node *> node);
 template void evalNodes<short  >(vector<Param<short  > > &out, vector<Node *> node);
 template void evalNodes<ushort >(vector<Param<ushort > > &out, vector<Node *> node);
-
-
-
 }
