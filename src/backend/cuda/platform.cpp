@@ -283,6 +283,10 @@ unsigned getMaxJitSize()
     return length;
 }
 
+std::mutex& getDriverApiMutex(int device) {
+  return DeviceManager::getInstance().driver_api_mutex[device];
+}
+
 int& tlocalActiveDeviceId()
 {
     thread_local int activeDeviceId = 0;

@@ -74,7 +74,7 @@ af_err af_get_active_backend(af_backend *result)
 af_err af_init()
 {
     try {
-        static std::once_flag flag;
+        thread_local std::once_flag flag;
         std::call_once(flag, []() {
                 getDeviceInfo();
             });
