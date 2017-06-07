@@ -13,6 +13,7 @@
 #include <af/traits.hpp>
 #include <string>
 #include <vector>
+#include <cmath>
 #include <testHelpers.hpp>
 
 using std::vector;
@@ -667,4 +668,94 @@ TEST(GFOR, convolve2_MM)
         array b_ii = B(span, span, ii);
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }
+}
+
+TEST(Convolve, 1D_C32)
+{
+    array A = randu(10, c32);
+    array B = randu( 3, c32);
+
+    array out = convolve1(A, B);
+    array gld = fftConvolve1(A, B);
+
+    cfloat acc = sum<cfloat>(out-gld);
+
+    EXPECT_EQ(std::abs(real(acc))< 1E-3, true);
+    EXPECT_EQ(std::abs(imag(acc))< 1E-3, true);
+}
+
+TEST(Convolve, 2D_C32)
+{
+    array A = randu(10, 10, c32);
+    array B = randu( 3,  3, c32);
+
+    array out = convolve2(A, B);
+    array gld = fftConvolve2(A, B);
+
+    cfloat acc = sum<cfloat>(out-gld);
+
+    EXPECT_EQ(std::abs(real(acc))< 1E-3, true);
+    EXPECT_EQ(std::abs(imag(acc))< 1E-3, true);
+}
+
+TEST(Convolve, 3D_C32)
+{
+    array A = randu(10, 10, 3, c32);
+    array B = randu( 3,  3, 3, c32);
+
+    array out = convolve3(A, B);
+    array gld = fftConvolve3(A, B);
+
+    cfloat acc = sum<cfloat>(out-gld);
+
+    EXPECT_EQ(std::abs(real(acc))< 1E-3, true);
+    EXPECT_EQ(std::abs(imag(acc))< 1E-3, true);
+}
+
+TEST(Convolve, 1D_C64)
+{
+    if (noDoubleTests<double>()) return;
+
+    array A = randu(10, c64);
+    array B = randu( 3, c64);
+
+    array out = convolve1(A, B);
+    array gld = fftConvolve1(A, B);
+
+    cdouble acc = sum<cdouble>(out-gld);
+
+    EXPECT_EQ(std::abs(real(acc))< 1E-3, true);
+    EXPECT_EQ(std::abs(imag(acc))< 1E-3, true);
+}
+
+TEST(Convolve, 2D_C64)
+{
+    if (noDoubleTests<double>()) return;
+
+    array A = randu(10, 10, c64);
+    array B = randu( 3,  3, c64);
+
+    array out = convolve2(A, B);
+    array gld = fftConvolve2(A, B);
+
+    cdouble acc = sum<cdouble>(out-gld);
+
+    EXPECT_EQ(std::abs(real(acc))< 1E-3, true);
+    EXPECT_EQ(std::abs(imag(acc))< 1E-3, true);
+}
+
+TEST(Convolve, 3D_C64)
+{
+    if (noDoubleTests<double>()) return;
+
+    array A = randu(10, 10, 3, c64);
+    array B = randu( 3,  3, 3, c64);
+
+    array out = convolve3(A, B);
+    array gld = fftConvolve3(A, B);
+
+    cdouble acc = sum<cdouble>(out-gld);
+
+    EXPECT_EQ(std::abs(real(acc))< 1E-3, true);
+    EXPECT_EQ(std::abs(imag(acc))< 1E-3, true);
 }
