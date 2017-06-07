@@ -42,19 +42,31 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, cons
         size_t LOC_SIZE = (THREADS_X+2*(f0-1))*(THREADS_Y+2*(f1-1));
 
         std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName()
-                << " -D accType="<< dtype_traits<aT>::getName()
-                << " -D BASE_DIM="<< 2 /* hard constant specific to this convolution type */
-                << " -D FLEN0=" << f0
-                << " -D FLEN1=" << f1
-                << " -D EXPAND="<< expand
-                << " -D C_SIZE="<< LOC_SIZE;
-        if (std::is_same<T, double>::value ||
-            std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
+        options << " -D T="         << dtype_traits<T>::getName()
+                << " -D Ti="        << dtype_traits<T>::getName()
+                << " -D To="        << dtype_traits<aT>::getName()
+                << " -D accType="   << dtype_traits<aT>::getName()
+                << " -D BASE_DIM="  << 2 /* hard constant specific to this convolution type */
+                << " -D FLEN0="     << f0
+                << " -D FLEN1="     << f1
+                << " -D EXPAND="    << expand
+                << " -D C_SIZE="    << LOC_SIZE
+                << " -D "           << binOpName<af_mul_t>();
+
+        if((af_dtype) dtype_traits<T>::af_type == c32 ||
+            (af_dtype) dtype_traits<T>::af_type == c64) {
+            options << " -D CPLX=1";
+        } else {
+            options << " -D CPLX=0";
         }
+        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
+            options << " -D USE_DOUBLE";
+
+        const char *ker_strs[] = {ops_cl, convolve_cl};
+        const int   ker_lens[] = {ops_cl_len, convolve_cl_len};
         Program prog;
-        buildProgram(prog, convolve_cl, convolve_cl_len, options.str());
+        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
+
         entry.prog   = new Program(prog);
         entry.ker = new Kernel(*entry.prog, "convolve");
 
