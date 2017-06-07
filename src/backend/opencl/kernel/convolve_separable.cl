@@ -71,7 +71,9 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
             // below conditional statement is based on MACRO value passed while kernel compilation
             int s_idx = (CONV_DIM==0 ? (ly*shrdLen+(i-f)) : ((i-f)*shrdLen+lx));
             T s_val = localMem[s_idx];
-            accum   = accum + ((accType)s_val*(accType)f_val);
+
+            //binOp will do MUL_OP for convolution operation
+            accum = accum + binOp((accType)s_val, (accType)f_val);
         }
         dst[oy*oInfo.strides[1]+ox] = (T)accum;
     }

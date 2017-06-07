@@ -10,6 +10,7 @@
 #pragma once
 #include <af/defines.h>
 
+#include <kernel_headers/ops.hpp>
 #include <kernel_headers/convolve.hpp>
 
 #include <string>
@@ -22,6 +23,7 @@
 #include <platform.hpp>
 #include <debug_opencl.hpp>
 #include <cache.hpp>
+#include <kernel/names.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -105,13 +107,27 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal, co
     if (entry.prog==0 && entry.ker==0) {
         std::ostringstream options;
         options << " -D T="         << dtype_traits<T>::getName()
+                << " -D Ti="        << dtype_traits<T>::getName()
+                << " -D To="        << dtype_traits<aT>::getName()
                 << " -D accType="   << dtype_traits<aT>::getName()
                 << " -D BASE_DIM="  << bDim
-                << " -D EXPAND="    << expand;
+                << " -D EXPAND="    << expand
+                << " -D "           << binOpName<af_mul_t>();
+
+        if((af_dtype) dtype_traits<T>::af_type == c32 ||
+            (af_dtype) dtype_traits<T>::af_type == c64) {
+            options << " -D CPLX=1";
+        } else {
+            options << " -D CPLX=0";
+        }
         if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
             options << " -D USE_DOUBLE";
+
+        const char *ker_strs[] = {ops_cl, convolve_cl};
+        const int   ker_lens[] = {ops_cl_len, convolve_cl_len};
         Program prog;
-        buildProgram(prog, convolve_cl, convolve_cl_len, options.str());
+        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
+
         entry.prog   = new Program(prog);
         entry.ker = new Kernel(*entry.prog, "convolve");
 
