@@ -490,6 +490,8 @@ char linkError[size];
 
 static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 {
+    std::lock_guard<std::mutex> lock(getDriverApiMutex(getActiveDeviceId()));
+
     size_t ptx_size;
     unique_ptr<char[]> ptx(irToPtx(jit_ker, &ptx_size));
 
@@ -514,7 +516,6 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
         reinterpret_cast<void*>(1)
     };
 
-    std::lock_guard<std::mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     CU_CHECK(cuLinkCreate(5, linkOptions, linkOptionValues, &linkState));
     CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)ptx.get(),
                            ptx_size, ker_name, 0, NULL, NULL));
