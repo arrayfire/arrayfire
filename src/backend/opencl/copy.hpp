@@ -28,4 +28,7 @@ namespace opencl
 
     template<typename T>
     void multiply_inplace(Array<T> &in, double val);
+
+    template<typename T>
+    T getScalar(const Array<T> &in);
 }
