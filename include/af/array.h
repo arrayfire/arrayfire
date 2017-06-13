@@ -1668,10 +1668,23 @@ extern "C" {
         \returns error codes
     */
     AFAPI af_err af_is_sparse       (bool *result, const af_array arr);
+#endif
+
+#if AF_API_VERSION >= 35
+    /**
+        \brief Get first element from an array
+
+        \param[out] output_value is the element requested
+        \param[in] arr is the input array
+        \return \ref AF_SUCCESS if the execution completes properly
+    */
+    AFAPI af_err af_get_scalar(void* output_value, const af_array arr);
+#endif
+
     /**
         @}
     */
-#endif
+
 #ifdef __cplusplus
 }
 #endif

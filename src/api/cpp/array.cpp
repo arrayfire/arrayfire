@@ -972,10 +972,9 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     }                                                               \
     template<> AFAPI T array::scalar() const                        \
     {                                                               \
-        T *h_ptr = host<T>();                                       \
-        T scalar = h_ptr[0];                                        \
-        delete[] h_ptr;                                             \
-        return scalar;                                              \
+        T val;                                                      \
+        AF_THROW(af_get_scalar(&val, get()));                       \
+        return val;                                                 \
     }                                                               \
     template<> AFAPI T* array::device() const                       \
     {                                                               \

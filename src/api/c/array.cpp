@@ -11,6 +11,7 @@
 #include <platform.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
+#include <copy.hpp>
 #include <sparse_handle.hpp>
 
 using namespace detail;
@@ -404,3 +405,38 @@ INSTANTIATE(af_is_bool        , isBool        )
 INSTANTIATE(af_is_sparse      , isSparse      )
 
 #undef INSTANTIATE
+
+template<typename T>
+inline void getScalar(T* out, const af_array& arr)
+{
+    out[0] = getScalar<T>(getArray<T>(arr));
+}
+
+af_err af_get_scalar(void* output_value, const af_array arr)
+{
+    try {
+        ARG_ASSERT(0, (output_value!=NULL));
+
+        const ArrayInfo& info   = getInfo(arr);
+        const af_dtype type     = info.getType();
+
+        switch(type) {
+        case f32: getScalar<float  >(reinterpret_cast<float*  >(output_value), arr); break;
+        case f64: getScalar<double >(reinterpret_cast<double* >(output_value), arr); break;
+        case  b8: getScalar<char   >(reinterpret_cast<char*   >(output_value), arr); break;
+        case s32: getScalar<int    >(reinterpret_cast<int*    >(output_value), arr); break;
+        case u32: getScalar<uint   >(reinterpret_cast<uint*   >(output_value), arr); break;
+        case  u8: getScalar<uchar  >(reinterpret_cast<uchar*  >(output_value), arr); break;
+        case s64: getScalar<intl   >(reinterpret_cast<intl*   >(output_value), arr); break;
+        case u64: getScalar<uintl  >(reinterpret_cast<uintl*  >(output_value), arr); break;
+        case s16: getScalar<short  >(reinterpret_cast<short*  >(output_value), arr); break;
+        case u16: getScalar<ushort >(reinterpret_cast<ushort* >(output_value), arr); break;
+        case c32: getScalar<cfloat >(reinterpret_cast<cfloat* >(output_value), arr); break;
+        case c64: getScalar<cdouble>(reinterpret_cast<cdouble*>(output_value), arr); break;
+        default:    TYPE_ERROR(4, type);
+        }
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}

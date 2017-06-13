@@ -131,4 +131,27 @@ SPECILIAZE_UNUSED_COPYARRAY(cdouble, uintl)
 SPECILIAZE_UNUSED_COPYARRAY(cdouble, short)
 SPECILIAZE_UNUSED_COPYARRAY(cdouble, ushort)
 
+template<typename T>
+T getScalar(const Array<T> &in)
+{
+    in.eval();
+    getQueue().sync();
+    return in.get()[0];
+}
+
+#define INSTANTIATE_GETSCALAR(T) \
+    template T getScalar(const Array<T> &in);
+
+INSTANTIATE_GETSCALAR(float  )
+INSTANTIATE_GETSCALAR(double )
+INSTANTIATE_GETSCALAR(cfloat )
+INSTANTIATE_GETSCALAR(cdouble)
+INSTANTIATE_GETSCALAR(int    )
+INSTANTIATE_GETSCALAR(uint   )
+INSTANTIATE_GETSCALAR(uchar  )
+INSTANTIATE_GETSCALAR(char   )
+INSTANTIATE_GETSCALAR(intl   )
+INSTANTIATE_GETSCALAR(uintl  )
+INSTANTIATE_GETSCALAR(short  )
+INSTANTIATE_GETSCALAR(ushort )
 }
