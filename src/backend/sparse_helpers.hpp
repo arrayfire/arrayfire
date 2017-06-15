@@ -52,4 +52,7 @@ SparseArray<T> *initSparseArray();
 template<typename T>
 void destroySparseArray(SparseArray<T> *sparse);
 
+template<typename T>
+SparseArray<T> copySparseArray(const SparseArray<T>& input);
+
 } // namespace common

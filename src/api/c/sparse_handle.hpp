@@ -87,3 +87,10 @@ common::SparseArray<To> castSparse(const af_array &in)
     default: TYPE_ERROR(1, info.getType());
     }
 }
+
+template<typename T>
+static af_array copySparseArray(const af_array in)
+{
+  const common::SparseArray<T> &inArray = getSparseArray<T>(in);
+  return getHandle<T>(common::copySparseArray<T>(inArray));
+}

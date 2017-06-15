@@ -127,7 +127,7 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_t * co
 af_err af_copy_array(af_array *out, const af_array in)
 {
     try {
-        const ArrayInfo& info = getInfo(in);
+        const ArrayInfo& info = getInfo(in, false);
         const af_dtype type = info.getType();
 
         if(info.ndims() == 0) {
@@ -136,20 +136,31 @@ af_err af_copy_array(af_array *out, const af_array in)
         }
 
         af_array res;
-        switch(type) {
-        case f32:   res = copyArray<float   >(in); break;
-        case c32:   res = copyArray<cfloat  >(in); break;
-        case f64:   res = copyArray<double  >(in); break;
-        case c64:   res = copyArray<cdouble >(in); break;
-        case b8:    res = copyArray<char    >(in); break;
-        case s32:   res = copyArray<int     >(in); break;
-        case u32:   res = copyArray<uint    >(in); break;
-        case u8:    res = copyArray<uchar   >(in); break;
-        case s64:   res = copyArray<intl    >(in); break;
-        case u64:   res = copyArray<uintl   >(in); break;
-        case s16:   res = copyArray<short   >(in); break;
-        case u16:   res = copyArray<ushort  >(in); break;
-        default:    TYPE_ERROR(1, type);
+
+        if(info.isSparse()) {
+            switch(type) {
+            case f32: res = copySparseArray<float  >(in); break;
+            case f64: res = copySparseArray<double >(in); break;
+            case c32: res = copySparseArray<cfloat >(in); break;
+            case c64: res = copySparseArray<cdouble>(in); break;
+            default : TYPE_ERROR(0, type);
+            }
+        } else {
+            switch(type) {
+            case f32:   res = copyArray<float   >(in); break;
+            case c32:   res = copyArray<cfloat  >(in); break;
+            case f64:   res = copyArray<double  >(in); break;
+            case c64:   res = copyArray<cdouble >(in); break;
+            case b8:    res = copyArray<char    >(in); break;
+            case s32:   res = copyArray<int     >(in); break;
+            case u32:   res = copyArray<uint    >(in); break;
+            case u8:    res = copyArray<uchar   >(in); break;
+            case s64:   res = copyArray<intl    >(in); break;
+            case u64:   res = copyArray<uintl   >(in); break;
+            case s16:   res = copyArray<short   >(in); break;
+            case u16:   res = copyArray<ushort  >(in); break;
+            default:    TYPE_ERROR(1, type);
+          }
         }
         std::swap(*out, res);
     }
