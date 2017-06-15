@@ -81,6 +81,12 @@ SparseArrayBase::SparseArrayBase(af::dim4 _dims,
 #endif
 }
 
+SparseArrayBase::SparseArrayBase(const SparseArrayBase &base, bool copy):
+    info(base.info),
+    stype(base.stype),
+    rowIdx(copy ? copyArray<int>(base.rowIdx): base.rowIdx),
+    colIdx(copy ? copyArray<int>(base.colIdx): base.colIdx) {}
+
 SparseArrayBase::~SparseArrayBase()
 {
 }
@@ -140,6 +146,11 @@ SparseArray<T> createArrayDataSparseArray(
 }
 
 template<typename T>
+SparseArray<T> copySparseArray(const SparseArray<T>& other) {
+    return SparseArray<T>(other, true);
+}
+
+template<typename T>
 SparseArray<T> *initSparseArray()
 {
     return new SparseArray<T>(dim4(), 0,  (af::storage)0);
@@ -179,12 +190,6 @@ SparseArray<T>::SparseArray(af::dim4 _dims, dim_t _nNZ,
                          : createValueArray<T>(dim4(_nNZ), scalar<T>(0)))
         : createHostDataArray<T>(dim4(_nNZ), _values))
 {
-#if __cplusplus > 199711L
-        static_assert(std::is_standard_layout<SparseArray<T>>::value,
-                      "SparseArray<T> must be a standard layout type");
-        static_assert(offsetof(SparseArray<T>, base) == 0,
-                      "SparseArray<T>::base must be the first member variable of SparseArray<T>");
-#endif
     if(_is_device && _copy_device) {
         writeDeviceDataArray<T>(values, _values, _nNZ * sizeof(T));
     }
@@ -196,20 +201,15 @@ SparseArray<T>::SparseArray(af::dim4 _dims,
             const Array<int> &_rowIdx, const Array<int> &_colIdx,
             const af::storage _storage, bool _copy):
     base(_dims, _rowIdx, _colIdx, _storage, (af_dtype)dtype_traits<T>::af_type, _copy),
-    values(_copy ? copyArray<T>(_values): _values)
-{
-#if __cplusplus > 199711L
-        static_assert(std::is_standard_layout<SparseArray<T>>::value,
-                      "SparseArray<T> must be a standard layout type");
-        static_assert(offsetof(SparseArray<T>, base) == 0,
-                      "SparseArray<T>::base must be the first member variable of SparseArray<T>");
-#endif
-}
+    values(_copy ? copyArray<T>(_values): _values) {}
 
 template<typename T>
-SparseArray<T>::~SparseArray()
-{
-}
+SparseArray<T>::SparseArray(const SparseArray<T> &other, bool copy):
+    base(other.base, copy),
+    values(copy ? copyArray<T>(other.values): other.values) {}
+
+template<typename T>
+SparseArray<T>::~SparseArray() {}
 
 #define INSTANTIATE(T)                                                                              \
     template SparseArray<T> createEmptySparseArray<T>(                                              \
@@ -230,6 +230,7 @@ SparseArray<T>::~SparseArray()
             const Array<int> &_rowIdx, const Array<int> &_colIdx,                                   \
             const af::storage _storage, const bool _copy);                                          \
     template SparseArray<T> *initSparseArray<T>();                                                  \
+    template SparseArray<T> copySparseArray<T>(const SparseArray<T>& other);                        \
     template void destroySparseArray<T>(SparseArray<T> *sparse);                                    \
                                                                                                     \
     template SparseArray<T>::SparseArray(af::dim4 _dims, dim_t _nNZ, af::storage _storage);         \

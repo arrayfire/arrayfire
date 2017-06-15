@@ -55,6 +55,8 @@ public:
                     const af::storage _storage, af_dtype _type,
                     bool _copy = false);
 
+    SparseArrayBase(const SparseArrayBase &in, bool deep_copy = false);
+
     ~SparseArrayBase();
 
     ////////////////////////////////////////////////////////////////////////////
@@ -138,6 +140,8 @@ private:
                 const Array<T> &_values,
                 const Array<int> &_rowIdx, const Array<int> &_colIdx,
                 const af::storage _storage, bool _copy = false);
+
+    SparseArray(const SparseArray<T> &in, bool deep_copy = false);
 
 public:
 
@@ -227,6 +231,8 @@ public:
             const af::storage _storage, const bool _copy);
 
     friend SparseArray<T> *initSparseArray<T>();
+
+    friend SparseArray<T> copySparseArray<T>(const SparseArray<T>& in);
 
     friend void destroySparseArray<T>(SparseArray<T> *sparse);
 

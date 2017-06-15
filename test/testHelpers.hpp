@@ -466,10 +466,10 @@ void cleanSlate()
   af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
                     &lock_bytes, &lock_buffers);
 
-  ASSERT_EQ(alloc_buffers, 0u);
-  ASSERT_EQ(lock_buffers, 0u);
-  ASSERT_EQ(alloc_bytes, 0u);
-  ASSERT_EQ(lock_bytes, 0u);
+  ASSERT_EQ(0u, alloc_buffers);
+  ASSERT_EQ(0u, lock_buffers);
+  ASSERT_EQ(0u, alloc_bytes);
+  ASSERT_EQ(0u, lock_bytes);
 
   af::setMemStepSize(step_bytes);
 

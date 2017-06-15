@@ -118,3 +118,56 @@ TEST(Sparse, ISSUE_1745)
   af_array A_sparse;
   ASSERT_EQ(AF_ERR_ARG, af_create_sparse_array(&A_sparse, A.dims(0), A.dims(1), data.get(), row_idx.get(), col_idx.get(), AF_STORAGE_CSR));
 }
+
+template<typename T>
+class Sparse : public ::testing::Test {};
+
+typedef ::testing::Types<float, af::cfloat, double, af::cdouble> SparseTypes;
+TYPED_TEST_CASE(Sparse, SparseTypes);
+
+TYPED_TEST(Sparse, DeepCopy) {
+    if (noDoubleTests<TypeParam>()) return;
+    using namespace af;
+    cleanSlate();
+
+    array s;
+    {
+        // Create a sparse array from a dense array. Make sure that the dense arrays
+        // are removed
+        array dense = randu(10, 10);
+        array d = makeSparse<TypeParam>(dense, 5);
+        s = sparse(d);
+    }
+
+    // At this point only the sparse array will be allocated in memory. Determine
+    // how much memory is allocated by one sparse array
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+    size_t size_of_alloc = lock_bytes;
+    size_t buffers_per_sparse = lock_buffers;
+
+    {
+        array s2 = s.copy();
+        s2.eval();
+
+        // Make sure that the deep copy allocated additional memory
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        EXPECT_NE(s.get(), s2.get()) << "The sparse arrays point to the same "
+                                        "af_array object.";
+        EXPECT_EQ(size_of_alloc * 2,
+                  lock_bytes) << "The number of bytes allocated by the deep copy do "
+                                "not match the original array";
+
+        EXPECT_EQ(buffers_per_sparse * 2,
+                  lock_buffers) << "The number of buffers allocated by the deep "
+                                  "copy do not match the original array";
+        array d = dense(s);
+        array d2 = dense(s2);
+        ASSERT_TRUE(allTrue<bool>(d == d2));
+    }
+}
