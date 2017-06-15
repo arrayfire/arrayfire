@@ -52,6 +52,10 @@ SparseArray<T> *initSparseArray();
 template<typename T>
 void destroySparseArray(SparseArray<T> *sparse);
 
+/// Performs a deep copy of the \p input array.
+///
+/// \param[in] input    The sparse array that is to be copied
+/// \returns A deep copy of the input sparse array
 template<typename T>
 SparseArray<T> copySparseArray(const SparseArray<T>& input);
 

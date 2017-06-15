@@ -18,29 +18,25 @@
 namespace common
 {
 
-// SparseArray Arrayementation Info class
-// This class is the base class to all SparseArray objects. The purpose of this class
-// was to have a way to retrieve basic information of an Array object without
-// specifying what type the object is at compile time.
-//
-// Early declaration
-
 using namespace detail;
 
 template<typename T> class SparseArray;
 
-////////////////////////////////////////////////////////////////////////////
-// Sparse Array Base Class
-// No templates
-// Contains all data except values array
-////////////////////////////////////////////////////////////////////////////
+/// SparseArray Array Info class
+///
+/// This class is the base class to all SparseArray objects. The purpose of this
+/// class was to have a way to retrieve basic information of an Array object
+/// without specifying what type the object is at compile time.
+///
+/// NOTE: This is not a template class to allow the frontend to determine the
+/// af_array type at runtime
 class SparseArrayBase
 {
 private:
-    ArrayInfo  info;        // This must be the first element of SparseArray<T>.
-    af::storage stype;      // Storage format: CSR, CSC, COO
-    Array<int> rowIdx;      // Linear array containing row indices
-    Array<int> colIdx;      // Linear array containing col indices
+    ArrayInfo  info;        ///< NOTE: This must be the first element of SparseArray<T>.
+    af::storage stype;      ///< Storage format: CSR, CSC, COO
+    Array<int> rowIdx;      ///< Linear array containing row indices
+    Array<int> colIdx;      ///< Linear array containing col indices
 
 public:
     SparseArrayBase(af::dim4 _dims, dim_t _nNZ, af::storage _storage, af_dtype _type);
@@ -55,6 +51,13 @@ public:
                     const af::storage _storage, af_dtype _type,
                     bool _copy = false);
 
+    /// A copy constructor for SparseArray
+    ///
+    /// This constructor copies the \p in SparseArray and creates a new object
+    /// from it. It can also perform a deep copy if the second argument is true.
+    ///
+    /// \param[in] in         The array that will be copied
+    /// \param[in] deep_copy  If true a deep copy is performed
     SparseArrayBase(const SparseArrayBase &in, bool deep_copy = false);
 
     ~SparseArrayBase();
@@ -98,18 +101,19 @@ public:
         colIdx.setId(id);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Specialized functions for SparseArray
-    ////////////////////////////////////////////////////////////////////////////
-    // Get the internal arrays
-    Array<int>& getRowIdx()                 { return rowIdx;            }
-    Array<int>& getColIdx()                 { return colIdx;            }
-
+    /// Returns the row indices for the corresponding values in the SparseArray
+          Array<int>& getRowIdx()           { return rowIdx;            }
     const Array<int>& getRowIdx()     const { return rowIdx;            }
+
+    /// Returns the column indices for the corresponding values in the
+    /// SparseArray
+          Array<int>& getColIdx()           { return colIdx;            }
     const Array<int>& getColIdx()     const { return colIdx;            }
 
-    // Dims, types etc
+    /// Returns the number of non-zero elements in the array.
     dim_t getNNZ()                    const;
+
+    /// Returns the storage format of the SparseArray
     af::storage getStorage()          const { return stype;             }
 };
 #if __cplusplus > 199711L
@@ -124,8 +128,8 @@ template<typename T>
 class SparseArray
 {
 private:
-    SparseArrayBase  base;    // This must be the first element of SparseArray<T>.
-    Array<T>         values;  // Linear array containing actual values
+    SparseArrayBase  base;    ///< This must be the first element of SparseArray<T>.
+    Array<T>         values;  ///< Linear array containing actual values
 
     SparseArray(af::dim4 _dims, dim_t _nNZ, af::storage stype);
 
@@ -141,16 +145,20 @@ private:
                 const Array<int> &_rowIdx, const Array<int> &_colIdx,
                 const af::storage _storage, bool _copy = false);
 
-    SparseArray(const SparseArray<T> &in, bool deep_copy = false);
+    /// A copy constructor for SparseArray
+    ///
+    /// This constructor copies the \p in SparseArray and creates a new object
+    /// from it. It can also perform a deep copy if the second argument is true.
+    ///
+    /// \param[in] in         The array that will be copied
+    /// \param[in] deep_copy  If true a deep copy is performed
+    SparseArray(const SparseArray<T> &in, bool deep_copy);
 
 public:
 
     ~SparseArray();
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Functions that call ArrayInfo object's functions
-    ////////////////////////////////////////////////////////////////////////////
-
+// Functions that call ArrayInfo object's functions
 #define INSTANTIATE_INFO(return_type, func)         \
     return_type func() const { return base.func();  }
 
@@ -205,10 +213,7 @@ public:
         getColIdx().eval();
     }
 
-    ////////////////////////////////////////////////////////////////////////////
     // Friend functions for Sparse Array Creation
-    ////////////////////////////////////////////////////////////////////////////
-
     friend SparseArray<T> createEmptySparseArray<T>(
             const af::dim4 &_dims, dim_t _nNZ, const af::storage _storage);
 
@@ -232,10 +237,9 @@ public:
 
     friend SparseArray<T> *initSparseArray<T>();
 
-    friend SparseArray<T> copySparseArray<T>(const SparseArray<T>& in);
+    friend SparseArray<T> copySparseArray<T>(const SparseArray<T>& input);
 
     friend void destroySparseArray<T>(SparseArray<T> *sparse);
-
 };
 
 } // namespace common
