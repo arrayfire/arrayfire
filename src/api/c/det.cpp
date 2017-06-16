@@ -75,7 +75,8 @@ af_err af_det(double *real_val, double *imag_val, const af_array in)
 
         af_dtype type = i_info.getType();
 
-        DIM_ASSERT(1, i_info.dims()[0] == i_info.dims()[1]);      // Only square matrices
+        if(i_info.dims()[0])
+          DIM_ASSERT(1, i_info.dims()[0] == i_info.dims()[1]);      // Only square matrices
         ARG_ASSERT(1, i_info.isFloating());                       // Only floating and complex types
 
         *real_val = 0;

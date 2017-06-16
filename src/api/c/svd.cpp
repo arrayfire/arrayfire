@@ -74,10 +74,9 @@ af_err af_svd(af_array *u, af_array *s, af_array *vt, const af_array in)
         af_dtype type = info.getType();
 
         if(dims.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            AF_CHECK(af_create_handle(u, AF_MAX_DIMS, my_dims, type));
-            AF_CHECK(af_create_handle(s, AF_MAX_DIMS, my_dims, type));
-            AF_CHECK(af_create_handle(vt, AF_MAX_DIMS, my_dims, type));
+            AF_CHECK(af_create_handle(u, 0, nullptr, type));
+            AF_CHECK(af_create_handle(s, 0, nullptr, type));
+            AF_CHECK(af_create_handle(vt, 0, nullptr, type));
             return AF_SUCCESS;
         }
 
@@ -113,10 +112,9 @@ af_err af_svd_inplace(af_array *u, af_array *s, af_array *vt, af_array in)
         af_dtype type = info.getType();
 
         if(dims.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            AF_CHECK(af_create_handle(u, AF_MAX_DIMS, my_dims, type));
-            AF_CHECK(af_create_handle(s, AF_MAX_DIMS, my_dims, type));
-            AF_CHECK(af_create_handle(vt, AF_MAX_DIMS, my_dims, type));
+            AF_CHECK(af_create_handle(u, 0, nullptr, type));
+            AF_CHECK(af_create_handle(s, 0, nullptr, type));
+            AF_CHECK(af_create_handle(vt, 0, nullptr, type));
             return AF_SUCCESS;
         }
 

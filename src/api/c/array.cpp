@@ -94,11 +94,11 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_t * co
                         const af_dtype type)
 {
     try {
-        af_array out;
+        af_array out = 0;
         AF_CHECK(af_init());
 
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
+        dim4 d(0, 0, 0, 0);
+        for(unsigned i = 0; i < ndims; i++) {
             d[i] = dims[i];
         }
 
@@ -131,8 +131,7 @@ af_err af_copy_array(af_array *out, const af_array in)
         const af_dtype type = info.getType();
 
         if(info.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+            return af_create_handle(out, 0, nullptr, type);
         }
 
         af_array res;

@@ -166,8 +166,7 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
         af_dtype inType = getInfo(in).getType();
 
         if(iDims.ndims() <= 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(out, AF_MAX_DIMS, my_dims, inType);
+            return af_create_handle(out, 0, nullptr, inType);
         }
 
         if (ndims == 1 && ndims != (dim_t)iInfo.ndims()) {

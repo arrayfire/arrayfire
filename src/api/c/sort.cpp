@@ -86,9 +86,8 @@ af_err af_sort_index(af_array *out, af_array *indices, const af_array in, const 
         af_dtype type = info.getType();
 
         if(info.elements() <= 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            AF_CHECK(af_create_handle(out,     AF_MAX_DIMS, my_dims, type));
-            AF_CHECK(af_create_handle(indices, AF_MAX_DIMS, my_dims, type));
+            AF_CHECK(af_create_handle(out,     0, nullptr, type));
+            AF_CHECK(af_create_handle(indices, 0, nullptr, type));
             return AF_SUCCESS;
         }
 
@@ -170,9 +169,8 @@ af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
 
         DIM_ASSERT(4, kinfo.dims() == vinfo.dims());
         if(kinfo.elements() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            AF_CHECK(af_create_handle(out_keys,   AF_MAX_DIMS, my_dims, ktype));
-            AF_CHECK(af_create_handle(out_values, AF_MAX_DIMS, my_dims, ktype));
+            AF_CHECK(af_create_handle(out_keys,   0, nullptr, ktype));
+            AF_CHECK(af_create_handle(out_values, 0, nullptr, ktype));
             return AF_SUCCESS;
         }
 
