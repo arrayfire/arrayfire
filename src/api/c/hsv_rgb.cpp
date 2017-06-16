@@ -39,8 +39,7 @@ af_err convert(af_array* out, const af_array& in)
         af::dim4 inputDims = info.dims();
 
         if(info.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(out, AF_MAX_DIMS, my_dims, iType);
+            return af_create_handle(out, 0, nullptr, iType);
         }
 
         ARG_ASSERT(1, (inputDims.ndims() >= 3));

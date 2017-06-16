@@ -51,10 +51,9 @@ af_err af_qr(af_array *q, af_array *r, af_array *tau, const af_array in)
         af_dtype type = i_info.getType();
 
         if(i_info.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            AF_CHECK(af_create_handle(q,   AF_MAX_DIMS, my_dims, type));
-            AF_CHECK(af_create_handle(r,   AF_MAX_DIMS, my_dims, type));
-            AF_CHECK(af_create_handle(tau, AF_MAX_DIMS, my_dims, type));
+            AF_CHECK(af_create_handle(q,   0, nullptr, type));
+            AF_CHECK(af_create_handle(r,   0, nullptr, type));
+            AF_CHECK(af_create_handle(tau, 0, nullptr, type));
             return AF_SUCCESS;
         }
 
@@ -87,8 +86,7 @@ af_err af_qr_inplace(af_array *tau, af_array in)
         ARG_ASSERT(1, i_info.isFloating()); // Only floating and complex types
 
         if(i_info.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(tau, AF_MAX_DIMS, my_dims, type);
+            return af_create_handle(tau, 0, nullptr, type);
         }
 
         af_array out;

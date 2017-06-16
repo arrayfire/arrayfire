@@ -484,8 +484,7 @@ static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs, 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
         if(odims.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+            return af_create_handle(out, 0, nullptr, type);
         }
 
         af_array res;

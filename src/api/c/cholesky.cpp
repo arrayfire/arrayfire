@@ -42,13 +42,11 @@ af_err af_cholesky(af_array *out, int *info, const af_array in, const bool is_up
 
         af_dtype type = i_info.getType();
 
-        ARG_ASSERT(2, i_info.isFloating());                  // Only floating and complex types
-        DIM_ASSERT(1, i_info.dims()[0] == i_info.dims()[1]); // Only square matrices
-
         if(i_info.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+            return af_create_handle(out, 0, nullptr, type);
         }
+        DIM_ASSERT(1, i_info.dims()[0] == i_info.dims()[1]); // Only square matrices
+        ARG_ASSERT(2, i_info.isFloating());                  // Only floating and complex types
 
         af_array output;
         switch(type) {
@@ -75,13 +73,12 @@ af_err af_cholesky_inplace(int *info, af_array in, const bool is_upper)
         }
 
         af_dtype type = i_info.getType();
-
-        ARG_ASSERT(1, i_info.isFloating()); // Only floating and complex types
-        DIM_ASSERT(1, i_info.dims()[0] == i_info.dims()[1]); // Only square matrices
-
         if(i_info.ndims() == 0) {
             return AF_SUCCESS;
         }
+        ARG_ASSERT(1, i_info.isFloating()); // Only floating and complex types
+        DIM_ASSERT(1, i_info.dims()[0] == i_info.dims()[1]); // Only square matrices
+
 
         int out;
 
