@@ -964,11 +964,11 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
             AF_THROW_ERR("Requested type doesn't match with array", \
                          AF_ERR_TYPE);                              \
         }                                                           \
+        void *res;                                                  \
+        AF_THROW(af_alloc_host(&res, bytes()));                     \
+        AF_THROW(af_get_data_ptr(res, get()));                      \
                                                                     \
-        T *res = new T[elements()];                                 \
-        AF_THROW(af_get_data_ptr((void *)res, get()));              \
-                                                                    \
-        return res;                                                 \
+        return (T*)res;                                             \
     }                                                               \
     template<> AFAPI T array::scalar() const                        \
     {                                                               \

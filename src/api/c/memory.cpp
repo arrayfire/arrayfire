@@ -241,17 +241,15 @@ af_err af_free_pinned(void *ptr)
 
 af_err af_alloc_host(void **ptr, const dim_t bytes)
 {
-    try {
-        *ptr = malloc(bytes);
-    } CATCHALL;
-    return AF_SUCCESS;
+    if((*ptr = malloc(bytes))) {
+      return AF_SUCCESS;
+    }
+    return AF_ERR_NO_MEM;
 }
 
 af_err af_free_host(void *ptr)
 {
-    try {
-        free(ptr);
-    } CATCHALL;
+    free(ptr);
     return AF_SUCCESS;
 }
 

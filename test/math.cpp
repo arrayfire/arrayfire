@@ -158,6 +158,6 @@ TEST(MathTests, Not)
         ASSERT_EQ(ha[i] ^ hb[i], true);
     }
 
-    delete[] ha;
-    delete[] hb;
+    af_free_host(ha);
+    af_free_host(hb);
 }

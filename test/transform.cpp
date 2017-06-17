@@ -90,14 +90,14 @@ void transformTest(string pTestFile, string pHomographyFile, const af_interp_typ
     // Get gold data
     dim_t goldEl = 0;
     ASSERT_EQ(AF_SUCCESS, af_get_elements(&goldEl, goldArray));
-    T* goldData = new T[goldEl];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData, goldArray));
+    vector<T> goldData(goldEl);
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&goldData.front(), goldArray));
 
     // Get result
     dim_t outEl = 0;
     ASSERT_EQ(AF_SUCCESS, af_get_elements(&outEl, outArray));
-    T* outData = new T[outEl];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    vector<T> outData(outEl);
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
 
     const float thr = 1.1f;
 
@@ -112,9 +112,6 @@ void transformTest(string pTestFile, string pHomographyFile, const af_interp_typ
         if (err > maxErr)
             ASSERT_LE(err, maxErr) << "at: " << elIter << std::endl;
     }
-
-    delete[] goldData;
-    delete[] outData;
 
     if(sceneArray_f32 != 0) af_release_array(sceneArray_f32);
     if(goldArray_f32  != 0) af_release_array(goldArray_f32);
@@ -245,13 +242,12 @@ TEST(Transform, CPP)
     af::dim4 outDims = out_img.dims();
     af::dim4 goldDims = gold_img.dims();
 
-    float* h_out_img = new float[outDims[0] * outDims[1]];
-    out_img.host(h_out_img);
-    float* h_gold_img = new float[goldDims[0] * goldDims[1]];
-    gold_img.host(h_gold_img);
+    vector<float> h_out_img(outDims[0] * outDims[1]);
+    out_img.host(&h_out_img.front());
+    vector<float> h_gold_img(goldDims[0] * goldDims[1]);
+    gold_img.host(&h_gold_img.front());
 
     const dim_t n = gold_img.elements();
-
     const float thr = 1.0f;
 
     // Maximum number of wrong pixels must be <= 0.01% of number of elements,
@@ -265,9 +261,6 @@ TEST(Transform, CPP)
         if (err > maxErr)
             ASSERT_LE(err, maxErr) << "at: " << elIter << std::endl;
     }
-
-    delete[] h_gold_img;
-    delete[] h_out_img;
 }
 
 // This tests batching of different forms
@@ -334,14 +327,12 @@ TEST(TransformBatching, CPP)
 
     for(int i = 0; i < (int)gold.size(); i++) {
         // Get result
-        float *outData = new float[out[i].elements()];
-        out[i].host((void*)outData);
+        vector<float> outData(out[i].elements());
+        out[i].host((void*)&outData.front());
 
         for(int iter = 0; iter < (int)gold[i].size(); iter++) {
             ASSERT_EQ(gold[i][iter], outData[iter]) << "at: " << iter << std::endl
                     << "for " << i << "-th operation"<< std::endl;
         }
-
-        delete[] outData;
     }
 }

@@ -48,11 +48,11 @@ void transposeip_test(af::dim4 dims)
     ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray, inArray, false));
     ASSERT_EQ(AF_SUCCESS, af_transpose_inplace(inArray, false));
 
-    T *outData = new T[dims.elements()];
-    T *trsData = new T[dims.elements()];
+    vector<T> outData(dims.elements());
+    vector<T> trsData(dims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)trsData, inArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&trsData.front(), inArray));
 
     dim_t nElems = dims.elements();
     for (int elIter = 0; elIter < (int)nElems; ++elIter) {
@@ -60,8 +60,6 @@ void transposeip_test(af::dim4 dims)
     }
 
     // cleanup
-    delete[] outData;
-    delete[] trsData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
@@ -91,17 +89,14 @@ void transposeInPlaceCPPTest()
     af::array output = af::transpose(input);
     transposeInPlace(input);
 
-    float *outData = new float[dims.elements()];
-    float *trsData = new float[dims.elements()];
+    vector<float> outData(dims.elements());
+    vector<float> trsData(dims.elements());
 
-    output.host((void*)outData);
-    input.host((void*)trsData);
+    output.host((void*)&outData.front());
+    input.host((void*)&trsData.front());
 
     dim_t nElems = dims.elements();
     for (int elIter = 0; elIter < (int)nElems; ++elIter) {
         ASSERT_EQ(trsData[elIter], outData[elIter])<< "at: " << elIter << std::endl;
     }
-
-    // cleanup
-    delete[] outData;
 }
