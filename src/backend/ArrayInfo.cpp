@@ -99,10 +99,12 @@ bool ArrayInfo::isColumn() const
 bool ArrayInfo::isVector() const
 {
     int singular_dims = 0;
+    int non_singular_dims = 0;
     for(int i = 0; i < AF_MAX_DIMS; i++) {
+        non_singular_dims += (dims()[i] != 0 && dims()[i] != 1);
         singular_dims += (dims()[i] == 1);
     }
-    return singular_dims == AF_MAX_DIMS - 1;
+    return singular_dims == AF_MAX_DIMS - 1 && non_singular_dims == 1;
 }
 
 bool ArrayInfo::isComplex() const

@@ -97,7 +97,10 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_t * co
         af_array out = 0;
         AF_CHECK(af_init());
 
-        dim4 d(0, 0, 0, 0);
+        if (ndims > 0) {
+            ARG_ASSERT(2, ndims > 0 && dims != NULL);
+        }
+        dim4 d(0);
         for(unsigned i = 0; i < ndims; i++) {
             d[i] = dims[i];
         }

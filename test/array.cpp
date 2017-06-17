@@ -29,9 +29,6 @@ TEST(Array, ConstructorDefault)
     array a;
     EXPECT_EQ(0u,    a.numdims());
     EXPECT_EQ(dim_t(0),    a.dims(0));
-    EXPECT_EQ(dim_t(0),    a.dims(1));
-    EXPECT_EQ(dim_t(0),    a.dims(2));
-    EXPECT_EQ(dim_t(0),    a.dims(3));
     EXPECT_EQ(dim_t(0),    a.elements());
     EXPECT_EQ(f32,  a.type());
     EXPECT_EQ(0u,    a.bytes());
@@ -409,6 +406,11 @@ TEST(Array, ISSUE_951)
 // This fails with linking error
     const af::array a = randu(100, 100);
     af::array b = a.cols(0, 20).rows(10, 20);
+}
+
+TEST(Array, CreateHandleInvalidNullDimsPointer) {
+    af_array out = 0;
+    EXPECT_EQ(AF_ERR_ARG, af_create_handle(&out, 1, NULL, f32));
 }
 
 
