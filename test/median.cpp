@@ -61,7 +61,7 @@ void median_flat(int nx, int ny=1, int nz=1, int nw=1)
 
     ASSERT_EQ(verify, val);
 
-    delete[] h_sa;
+    af_free_host(h_sa);
 }
 
 template<typename To, typename Ti, int dim>

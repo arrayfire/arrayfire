@@ -34,8 +34,8 @@ TEST(fft2, CPP_4D)
         ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
     }
 
-    delete[] h_b;
-    delete[] h_B;
+    af_free_host(h_b);
+    af_free_host(h_B);
 }
 
 TEST(ifft2, CPP_4D)
@@ -53,6 +53,6 @@ TEST(ifft2, CPP_4D)
         ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
     }
 
-    delete[] h_b;
-    delete[] h_B;
+    af_free_host(h_b);
+    af_free_host(h_B);
 }

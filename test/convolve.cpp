@@ -68,15 +68,14 @@ void convolveTest(string pTestFile, int baseDim, bool expand)
 
     vector<T> currGoldBar = tests[0];
     size_t nElems         = currGoldBar.size();
-    T *outData            = new T[nElems];
+    vector<T> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
     }
 
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(signal));
     ASSERT_EQ(AF_SUCCESS, af_release_array(filter));
@@ -235,15 +234,14 @@ void sepConvolveTest(string pTestFile, bool expand)
 
     vector<T> currGoldBar = tests[0];
     size_t nElems         = currGoldBar.size();
-    T *outData            = new T[nElems];
+    vector<T> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
     }
 
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(signal));
     ASSERT_EQ(AF_SUCCESS, af_release_array(c_filter));
@@ -380,14 +378,13 @@ TEST(Convolve1, CPP)
 
     vector<float> currGoldBar = tests[0];
     size_t nElems  = output.elements();
-    float *outData = new float[nElems];
-    output.host(outData);
+    vector<float> outData(nElems);
+    output.host(&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
     }
 
-    delete[] outData;
 }
 
 TEST(Convolve2, CPP)
@@ -420,14 +417,13 @@ TEST(Convolve2, CPP)
 
     vector<float> currGoldBar = tests[0];
     size_t nElems  = output.elements();
-    float *outData = new float[nElems];
-    output.host(outData);
+    vector<float> outData(nElems);
+    output.host(&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
     }
 
-    delete[] outData;
 }
 
 TEST(Convolve3, CPP)
@@ -459,14 +455,12 @@ TEST(Convolve3, CPP)
 
     vector<float> currGoldBar = tests[0];
     size_t nElems  = output.elements();
-    float *outData = new float[nElems];
-    output.host(outData);
+    vector<float> outData(nElems);
+    output.host(&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
     }
-
-    delete[] outData;
 }
 
 TEST(Convolve, separable_CPP)
@@ -502,15 +496,13 @@ TEST(Convolve, separable_CPP)
 
     vector<float> currGoldBar = tests[0];
     size_t nElems  = output.elements();
-    float *outData = new float[nElems];
+    vector<float> outData(nElems);
 
-    output.host((void*)outData);
+    output.host((void*)&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
     }
-
-    delete[] outData;
 }
 
 TEST(Convolve, Docs_Unified_Wrapper)

@@ -82,9 +82,9 @@ void fftconvolveTest(string pTestFile, bool expand)
     ASSERT_EQ(AF_SUCCESS, af_get_elements(&out_elems, outArray));
     ASSERT_EQ(nElems, (size_t)out_elems);
 
-    T *outData            = new T[nElems];
+    vector<T> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(
@@ -93,7 +93,6 @@ void fftconvolveTest(string pTestFile, bool expand)
             , 1e-2)<< "at: " << elIter<< std::endl;
     }
 
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(signal));
     ASSERT_EQ(AF_SUCCESS, af_release_array(filter));
@@ -177,18 +176,15 @@ void fftconvolveTestLarge(int sDim, int fDim, int sBatch, int fBatch, bool expan
 
     ASSERT_EQ(goldElems, outElems);
 
-    T *goldData = new T[goldElems];
-    gold.host(goldData);
+    vector<T> goldData(goldElems);
+    gold.host(&goldData.front());
 
-    T *outData = new T[outElems];
-    out.host(outData);
+    vector<T> outData(outElems);
+    out.host(&outData.front());
 
     for (size_t elIter=0; elIter<outElems; ++elIter) {
         ASSERT_NEAR(goldData[elIter], outData[elIter], 5e-2) << "at: " << elIter << std::endl;
     }
-
-    delete[] goldData;
-    delete[] outData;
 }
 
 TYPED_TEST(FFTConvolveLarge, VectorLargeSignalSmallFilter)
@@ -397,14 +393,12 @@ TEST(FFTConvolve1, CPP)
 
     vector<float> currGoldBar = tests[0];
     size_t nElems  = output.elements();
-    float *outData = new float[nElems];
-    output.host(outData);
+    vector<float> outData(nElems);
+    output.host(&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1e-2)<< "at: " << elIter<< std::endl;
     }
-
-    delete[] outData;
 }
 
 TEST(FFTConvolve2, CPP)
@@ -437,14 +431,12 @@ TEST(FFTConvolve2, CPP)
 
     vector<float> currGoldBar = tests[0];
     size_t nElems  = output.elements();
-    float *outData = new float[nElems];
-    output.host(outData);
+    vector<float> outData(nElems);
+    output.host(&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1e-2)<< "at: " << elIter<< std::endl;
     }
-
-    delete[] outData;
 }
 
 TEST(FFTConvolve3, CPP)
@@ -476,14 +468,12 @@ TEST(FFTConvolve3, CPP)
 
     vector<float> currGoldBar = tests[0];
     size_t nElems  = output.elements();
-    float *outData = new float[nElems];
-    output.host(outData);
+    vector<float> outData(nElems);
+    output.host(&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1e-2)<< "at: " << elIter<< std::endl;
     }
-
-    delete[] outData;
 }
 
 TEST(FFTConvolve, Docs_Unified_Wrapper)

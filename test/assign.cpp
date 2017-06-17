@@ -547,8 +547,8 @@ TEST(ArrayAssign, CPP_END)
     }
 
 
-    delete[] hA;
-    delete[] hB;
+    af_free_host(hA);
+    af_free_host(hB);
 }
 
 TEST(ArrayAssign, CPP_END_SEQ)
@@ -571,8 +571,8 @@ TEST(ArrayAssign, CPP_END_SEQ)
         ASSERT_EQ(hA[i + end_begin - 1], hB[i]);
     }
 
-    delete[] hA;
-    delete[] hB;
+    af_free_host(hA);
+    af_free_host(hB);
 }
 
 TEST(ArrayAssign, CPP_COPY_ON_WRITE)
@@ -608,10 +608,10 @@ TEST(ArrayAssign, CPP_COPY_ON_WRITE)
         ASSERT_EQ(hAO[i], hAC[i]);
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hAC;
-    delete[] hAO;
+    af_free_host(hA);
+    af_free_host(hB);
+    af_free_host(hAC);
+    af_free_host(hAO);
 }
 
 TEST(ArrayAssign, CPP_ASSIGN_BINOP)
@@ -647,10 +647,10 @@ TEST(ArrayAssign, CPP_ASSIGN_BINOP)
         ASSERT_EQ(hAO[i], hAC[i]);
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hAC;
-    delete[] hAO;
+    af_free_host(hA);
+    af_free_host(hB);
+    af_free_host(hAC);
+    af_free_host(hAO);
 }
 
 TEST(ArrayAssign, CPP_ASSIGN_VECTOR)
@@ -678,8 +678,8 @@ TEST(ArrayAssign, CPP_ASSIGN_VECTOR)
         ASSERT_EQ(h_a[i], h_b[i]) << "at " << i;
     }
 
-    delete[] h_a;
-    delete[] h_b;
+    af_free_host(h_a);
+    af_free_host(h_b);
 }
 
 TEST(ArrayAssign, CPP_ASSIGN_VECTOR_SEQ)
@@ -716,9 +716,9 @@ TEST(ArrayAssign, CPP_ASSIGN_VECTOR_SEQ)
         }
     }
 
-    delete[] h_a0;
-    delete[] h_a;
-    delete[] h_b;
+    af_free_host(h_a0);
+    af_free_host(h_a);
+    af_free_host(h_b);
 }
 
 TEST(ArrayAssign, CPP_ASSIGN_VECTOR_2D)
@@ -748,8 +748,8 @@ TEST(ArrayAssign, CPP_ASSIGN_VECTOR_2D)
         ASSERT_EQ(h_a[i], h_b[i]) << "at " << i;
     }
 
-    delete[] h_a;
-    delete[] h_b;
+    af_free_host(h_a);
+    af_free_host(h_b);
 }
 
 TEST(ArrayAssign, CPP_ASSIGN_VECTOR_SEQ_2D)
@@ -786,9 +786,9 @@ TEST(ArrayAssign, CPP_ASSIGN_VECTOR_SEQ_2D)
         }
     }
 
-    delete[] h_a0;
-    delete[] h_a;
-    delete[] h_b;
+    af_free_host(h_a0);
+    af_free_host(h_a);
+    af_free_host(h_b);
 }
 
 TEST(Assign, Copy)
@@ -822,9 +822,9 @@ TEST(Assign, Copy)
         }
     }
 
-    delete[] h_a0;
-    delete[] h_a;
-    delete[] h_b;
+    af_free_host(h_a0);
+    af_free_host(h_a);
+    af_free_host(h_b);
 }
 
 TEST(Asssign, LinearCPP)

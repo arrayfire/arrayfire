@@ -56,18 +56,14 @@ void uniqueTest(string pTestFile)
         ASSERT_EQ(AF_SUCCESS, af_set_unique(&outArray, inArray, d == 0 ? false : true));
 
         // Get result
-        T *outData;
-        outData = new T[currGoldBar.size()];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+        vector<T >outData (currGoldBar.size());
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
 
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
             ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
                                                             << " for test: " << d << std::endl;
         }
-
-        // Delete
-        delete[] outData;
 
         if(inArray   != 0) af_release_array(inArray);
         if(outArray  != 0) af_release_array(outArray);
@@ -123,26 +119,20 @@ void setTest(string pTestFile)
 
         ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray1, &in1.front(), dims1.ndims(),
                                               dims1.get(), (af_dtype) af::dtype_traits<T>::af_type));
-
-
         vector<T> currGoldBar(tests[d].begin(), tests[d].end());
 
         // Run sum
         ASSERT_EQ(AF_SUCCESS, af_set_func(&outArray, inArray0, inArray1, d == 0 ? false : true));
 
         // Get result
-        T *outData;
-        outData = new T[currGoldBar.size()];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+        vector<T> outData(currGoldBar.size());
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
 
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
             ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
                                                             << " for test: " << d << std::endl;
         }
-
-        // Delete
-        delete[] outData;
 
         if(inArray0   != 0) af_release_array(inArray0);
         if(inArray1   != 0) af_release_array(inArray1);

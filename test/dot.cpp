@@ -74,15 +74,14 @@ void dotTest(string pTestFile, const int resultIdx,
 
     vector<T> goldData = tests[resultIdx];
     size_t nElems      = goldData.size();
-    T *outData      = new T[nElems];
+    vector<T> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, out));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), out));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(abs(goldData[elIter]), abs(outData[elIter]), 0.03)<< "at: " << elIter<< std::endl;
     }
 
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(a));
     ASSERT_EQ(AF_SUCCESS, af_release_array(b));
     ASSERT_EQ(AF_SUCCESS, af_release_array(out));
@@ -205,16 +204,14 @@ TEST(DotF, CPP)
     array out = dot(a, b, AF_MAT_CONJ, AF_MAT_NONE);
 
     vector<float> goldData = tests[0];
-    size_t nElems         = goldData.size();
-    float *outData       = new float[nElems];
+    size_t nElems = goldData.size();
+    vector<float> outData(nElems);
 
-    out.host(outData);
+    out.host(&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(goldData[elIter], outData[elIter]) << "at: " << elIter<< std::endl;
     }
-
-    delete[] outData;
 }
 
 TEST(DotCCU, CPP)
@@ -238,15 +235,13 @@ TEST(DotCCU, CPP)
 
     vector<cfloat> goldData = tests[2];
     size_t nElems         = goldData.size();
-    cfloat *outData       = new cfloat[nElems];
+    vector<cfloat> outData(nElems);
 
-    out.host(outData);
+    out.host(&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(goldData[elIter], outData[elIter]) << "at: " << elIter<< std::endl;
     }
-
-    delete[] outData;
 }
 
 TEST(DotAllF, CPP)
