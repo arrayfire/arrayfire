@@ -127,7 +127,7 @@ namespace af
 
     array::array() : arr(0)
     {
-        initEmptyArray(&arr, f32, 0, 0, 0, 0);
+        initEmptyArray(&arr, f32, 0, 1, 1, 1);
     }
 
     array::array(const dim4 &dims, af::dtype ty) : arr(0)
