@@ -157,11 +157,11 @@ This function takes a co-efficient matrix **A** and an output matrix **B**  as i
 
 This operation can be done in ArrayFire using the following code snippet.
 
-\snippet test/solve_dense.cpp ex_solve
+\snippet test/solve_common.hpp ex_solve
 
 The results can be verified by reconstructing the output matrix using \ref af::matmul in the following manner.
 
-\snippet test/solve_dense.cpp ex_solve_recon
+\snippet test/solve_common.hpp ex_solve_recon
 
 The sample output can be seen below
 
@@ -191,11 +191,11 @@ If the coefficient matrix is known to be a triangular matrix, \ref AF_MAT_LOWER 
 
 The sample code snippets for solving a lower triangular matrix can be seen below.
 
-\snippet test/solve_dense.cpp ex_solve_lower
+\snippet test/solve_common.hpp ex_solve_lower
 
 Similarily, the code snippet for solving an upper triangular matrix can be seen below.
 
-\snippet test/solve_dense.cpp ex_solve_upper
+\snippet test/solve_common.hpp ex_solve_upper
 
 See also: \ref af::solveLU
 
@@ -213,7 +213,7 @@ This function takes a co-efficient matrix **A** and an output matrix **B**  as i
 
 This operation can be done in ArrayFire using the following code snippet.
 
-\snippet test/solve_dense.cpp ex_solve_lu
+\snippet test/solve_common.hpp ex_solve_lu
 
 This function along with \ref af::lu split up the task af::solve performs for square matrices.
 
