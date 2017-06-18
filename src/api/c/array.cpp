@@ -12,9 +12,12 @@
 #include <handle.hpp>
 #include <backend.hpp>
 #include <copy.hpp>
+#include <sparse.hpp>
 #include <sparse_handle.hpp>
+#include <af/sparse.h>
 
 using namespace detail;
+using common::SparseArrayBase;
 
 const ArrayInfo&
 getInfo(const af_array arr, bool sparse_check, bool device_check)
@@ -134,36 +137,43 @@ af_err af_copy_array(af_array *out, const af_array in)
         const ArrayInfo& info = getInfo(in, false);
         const af_dtype type = info.getType();
 
-        if(info.ndims() == 0) {
-            return af_create_handle(out, 0, nullptr, type);
-        }
-
-        af_array res;
-
+        af_array res = 0;
         if(info.isSparse()) {
-            switch(type) {
-            case f32: res = copySparseArray<float  >(in); break;
-            case f64: res = copySparseArray<double >(in); break;
-            case c32: res = copySparseArray<cfloat >(in); break;
-            case c64: res = copySparseArray<cdouble>(in); break;
-            default : TYPE_ERROR(0, type);
+            SparseArrayBase sbase = getSparseArrayBase(in);
+            if(info.ndims() == 0) {
+                return af_create_sparse_array_from_ptr(out,
+                                               info.dims()[0], info.dims()[1],
+                                                0, nullptr, nullptr, nullptr,
+                                                type, sbase.getStorage(), afDevice);
+            } else {
+                switch(type) {
+                case f32: res = copySparseArray<float  >(in); break;
+                case f64: res = copySparseArray<double >(in); break;
+                case c32: res = copySparseArray<cfloat >(in); break;
+                case c64: res = copySparseArray<cdouble>(in); break;
+                default : TYPE_ERROR(0, type);
+                }
             }
         } else {
-            switch(type) {
-            case f32:   res = copyArray<float   >(in); break;
-            case c32:   res = copyArray<cfloat  >(in); break;
-            case f64:   res = copyArray<double  >(in); break;
-            case c64:   res = copyArray<cdouble >(in); break;
-            case b8:    res = copyArray<char    >(in); break;
-            case s32:   res = copyArray<int     >(in); break;
-            case u32:   res = copyArray<uint    >(in); break;
-            case u8:    res = copyArray<uchar   >(in); break;
-            case s64:   res = copyArray<intl    >(in); break;
-            case u64:   res = copyArray<uintl   >(in); break;
-            case s16:   res = copyArray<short   >(in); break;
-            case u16:   res = copyArray<ushort  >(in); break;
-            default:    TYPE_ERROR(1, type);
-          }
+            if(info.ndims() == 0) {
+                return af_create_handle(out, 0, nullptr, type);
+            } else {
+                  switch(type) {
+                  case f32:   res = copyArray<float   >(in); break;
+                  case c32:   res = copyArray<cfloat  >(in); break;
+                  case f64:   res = copyArray<double  >(in); break;
+                  case c64:   res = copyArray<cdouble >(in); break;
+                  case b8:    res = copyArray<char    >(in); break;
+                  case s32:   res = copyArray<int     >(in); break;
+                  case u32:   res = copyArray<uint    >(in); break;
+                  case u8:    res = copyArray<uchar   >(in); break;
+                  case s64:   res = copyArray<intl    >(in); break;
+                  case u64:   res = copyArray<uintl   >(in); break;
+                  case s16:   res = copyArray<short   >(in); break;
+                  case u16:   res = copyArray<ushort  >(in); break;
+                  default:    TYPE_ERROR(1, type);
+                }
+            }
         }
         std::swap(*out, res);
     }

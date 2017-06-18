@@ -12,39 +12,39 @@
 #include <sparse_common.hpp>
 
 #define SPARSE_TESTS(T, eps)                                \
-    TEST(SPARSE, T##Square)                                 \
+    TEST(Sparse, T##Square)                                 \
     {                                                       \
         sparseTester<T>(1000, 1000, 100, 5, eps);           \
     }                                                       \
-    TEST(SPARSE, T##RectMultiple)                           \
+    TEST(Sparse, T##RectMultiple)                           \
     {                                                       \
         sparseTester<T>(2048, 1024, 512, 3, eps);           \
     }                                                       \
-    TEST(SPARSE, T##RectDense)                              \
+    TEST(Sparse, T##RectDense)                              \
     {                                                       \
         sparseTester<T>(500, 1000, 250, 1, eps);            \
     }                                                       \
-    TEST(SPARSE, T##MatVec)                                 \
+    TEST(Sparse, T##MatVec)                                 \
     {                                                       \
         sparseTester<T>(625, 1331, 1, 2, eps);              \
     }                                                       \
-    TEST(SPARSE_TRANSPOSE, T##MatVec)                       \
+    TEST(Sparse, Transpose_##T##MatVec)                     \
     {                                                       \
         sparseTransposeTester<T>(625, 1331, 1, 2, eps);     \
     }                                                       \
-    TEST(SPARSE_TRANSPOSE, T##Square)                       \
+    TEST(Sparse, Transpose_##T##Square)                     \
     {                                                       \
         sparseTransposeTester<T>(1000, 1000, 100, 5, eps);  \
     }                                                       \
-    TEST(SPARSE_TRANSPOSE, T##RectMultiple)                 \
+    TEST(Sparse, Transpose_##T##RectMultiple)               \
     {                                                       \
         sparseTransposeTester<T>(2048, 1024, 512, 3, eps);  \
     }                                                       \
-    TEST(SPARSE_TRANSPOSE, T##RectDense)                    \
+    TEST(Sparse, Transpose_##T##RectDense)                  \
     {                                                       \
         sparseTransposeTester<T>(453, 751, 397, 1, eps);    \
     }                                                       \
-    TEST(SPARSE, T##ConvertCSR)                             \
+    TEST(Sparse, T##ConvertCSR)                             \
     {                                                       \
         convertCSR<T>(2345, 5678, 0.5);                     \
     }                                                       \
@@ -57,7 +57,7 @@ SPARSE_TESTS(cdouble, 1E-5)
 #undef SPARSE_TESTS
 
 #define CREATE_TESTS(STYPE)                                         \
-    TEST(SPARSE_CREATE, STYPE)                                      \
+    TEST(Sparse, Create_##STYPE)                                    \
     {                                                               \
         createFunction<STYPE>();                                    \
     }
@@ -67,7 +67,7 @@ CREATE_TESTS(AF_STORAGE_COO)
 
 #undef CREATE_TESTS
 
-TEST(SPARSE_CREATE, AF_STORAGE_CSC)
+TEST(Sparse, Create_AF_STORAGE_CSC)
 {
     af::array d = af::identity(3, 3);
 
@@ -78,7 +78,7 @@ TEST(SPARSE_CREATE, AF_STORAGE_CSC)
 }
 
 #define CAST_TESTS_TYPES(Ti, To, SUFFIX, M, N, F)                               \
-    TEST(SPARSE_CAST, Ti##_##To##_##SUFFIX)                                     \
+    TEST(Sparse, Cast_##Ti##_##To##_##SUFFIX)                                   \
     {                                                                           \
         sparseCastTester<Ti, To>(M, N, F);                                      \
     }                                                                           \
@@ -170,4 +170,35 @@ TYPED_TEST(Sparse, DeepCopy) {
         array d2 = dense(s2);
         ASSERT_TRUE(allTrue<bool>(d == d2));
     }
+}
+
+TYPED_TEST(Sparse, Empty) {
+    if (noDoubleTests<TypeParam>()) return;
+    using namespace af;
+    af_array ret = 0;
+    dim_t rows = 0, cols = 0, nnz = 0;
+    EXPECT_EQ(AF_SUCCESS,
+              af_create_sparse_array_from_ptr(
+                  &ret,
+                  rows, cols,
+                  nnz, NULL, NULL, NULL,
+                  (af_dtype)dtype_traits<TypeParam>::af_type,
+                  AF_STORAGE_CSR, afHost));
+    bool sparse = false;
+    EXPECT_EQ(AF_SUCCESS, af_is_sparse(&sparse, ret));
+    EXPECT_EQ(true, sparse);
+}
+
+TYPED_TEST(Sparse, EmptyDeepCopy) {
+    if (noDoubleTests<TypeParam>()) return;
+    using namespace af;
+    array a = sparse(0, 0,
+                     array(0, (af_dtype)af::dtype_traits<TypeParam>::af_type),
+                     array(0, s32), array(0, s32));
+    EXPECT_TRUE(a.issparse());
+    EXPECT_EQ(0, sparseGetNNZ(a));
+
+    array b = a.copy();
+    EXPECT_TRUE(b.issparse());
+    EXPECT_EQ(0, sparseGetNNZ(b));
 }
