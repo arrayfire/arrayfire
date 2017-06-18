@@ -144,7 +144,7 @@ computeCandidates(const Array<float>& supEdges, const float t1,
 
     switch(ct)
     {
-        case AF_AUTO_OTSU_THRESHOLD:
+        case AF_CANNY_THRESHOLD_AUTO_OTSU:
             {
                 auto T2            = otsuThreshold(supEdges, NUM_BINS, maxVal);
                 auto T1            = arithOp<float, af_mul_t>(T2, lowRatio, T2.dims());

@@ -448,8 +448,8 @@ typedef enum {
 
 #if AF_API_VERSION >= 35
 typedef enum {
-    AF_MANUAL_THRESHOLD    = 0, ///< User has to define canny thresholds manually
-    AF_AUTO_OTSU_THRESHOLD = 1, ///< Determine canny algorithm thresholds using Otsu algorithm
+    AF_CANNY_THRESHOLD_MANUAL    = 0, ///< User has to define canny thresholds manually
+    AF_CANNY_THRESHOLD_AUTO_OTSU = 1, ///< Determine canny algorithm thresholds using Otsu algorithm
 } af_canny_threshold;
 #endif
 

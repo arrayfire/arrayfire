@@ -63,7 +63,7 @@ array edge(const array &in, int method = 0)
     switch(method) {
         case  1: prewitt(mag, dir, smooth);     break;
         case  2: sobelFilter(mag, dir, smooth); break;
-        case  3: mag = canny(in, AF_AUTO_OTSU_THRESHOLD, 0.18, 0.54).as(f32);   break;
+        case  3: mag = canny(in, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.18, 0.54).as(f32);   break;
         default: throw af::exception("Unsupported type");
     }
 

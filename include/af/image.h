@@ -692,12 +692,18 @@ AFAPI array moments(const array& in, const momentType moment=AF_MOMENT_FIRST_ORD
 /**
    C++ Interface for canny edge detector
 
-   \param[in] in is the input image
-   \param[in] thresholdType determines if user set high threshold is to be used or not. It can take values defined by the enum \ref af_canny_threshold
-   \param[in] lowThresholdRatio is the lower threshold % of maximum or auto-derived high threshold
-   \param[in] highThresholdRatio is the higher threshold % of maximum value in gradient image used in hysteresis procedure. This value is ignored if \ref AF_AUTO_OTSU_THRESHOLD is chosen as \ref af_canny_threshold
-   \param[in] sobelWindow is the window size of sobel kernel for computing gradient direction and magnitude
-   \param[in] isFast indicates if L<SUB>1</SUB> norm(faster but less accurate) is used to compute image gradient magnitude instead of L<SUB>2</SUB> norm.
+   \param[in] in                  is the input image
+   \param[in] thresholdType       determines if user set high threshold is to be used or not. It
+                                  can take values defined by the enum \ref af_canny_threshold
+   \param[in] lowThresholdRatio   is the lower threshold % of maximum or auto-derived high threshold
+   \param[in] highThresholdRatio  is the higher threshold % of maximum value in gradient image used
+                                  in hysteresis procedure. This value is ignored if
+                                  \ref AF_CANNY_THRESHOLD_AUTO_OTSU is chosen as
+                                  \ref af_canny_threshold
+   \param[in] sobelWindow     is the window size of sobel kernel for computing gradient direction and
+                              magnitude
+   \param[in] isFast     indicates if L<SUB>1</SUB> norm(faster but less accurate) is used to compute
+                         image gradient magnitude instead of L<SUB>2</SUB> norm.
    \return binary array containing edges
 
    \ingroup image_func_canny
@@ -1399,11 +1405,18 @@ extern "C" {
 
        \param[out] out is an binary array containing edges
        \param[in] in is the input image
-       \param[in] threshold_type determines if user set high threshold is to be used or not. It can take values defined by the enum \ref af_canny_threshold
-       \param[in] low_threshold_ratio is the lower threshold % of the maximum or auto-derived high threshold
-       \param[in] high_threshold_ratio is the higher threshold % of maximum value in gradient image used in hysteresis procedure. This value is ignored if \ref AF_AUTO_OTSU_THRESHOLD is chosen as \ref af_canny_threshold
-       \param[in] sobel_window is the window size of sobel kernel for computing gradient direction and magnitude
-       \param[in] is_fast indicates if L<SUB>1</SUB> norm(faster but less accurate) is used to compute image gradient magnitude instead of L<SUB>2</SUB> norm.
+       \param[in] threshold_type     determines if user set high threshold is to be used or not. It
+                                     can take values defined by the enum \ref af_canny_threshold
+       \param[in] low_threshold_ratio   is the lower threshold % of the maximum or auto-derived high
+                                        threshold
+       \param[in] high_threshold_ratio  is the higher threshold % of maximum value in gradient image
+                                        used in hysteresis procedure. This value is ignored if
+                                        \ref AF_CANNY_THRESHOLD_AUTO_OTSU is chosen as
+                                        \ref af_canny_threshold
+       \param[in] sobel_window      is the window size of sobel kernel for computing gradient direction
+                                    and magnitude
+       \param[in] is_fast indicates   if L<SUB>1</SUB> norm(faster but less accurate) is used to
+                                      compute image gradient magnitude instead of L<SUB>2</SUB> norm.
        \return    \ref AF_SUCCESS if the moment calculation is successful,
        otherwise an appropriate error code is returned.
 

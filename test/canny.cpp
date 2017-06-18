@@ -49,7 +49,7 @@ void cannyTest(string pTestFile)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&sArray, &(in[0].front()),
                 sDims.ndims(), sDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_canny(&outArray, sArray, AF_MANUAL_THRESHOLD, 0.4147f, 0.8454f, 3, true));
+    ASSERT_EQ(AF_SUCCESS, af_canny(&outArray, sArray, AF_CANNY_THRESHOLD_MANUAL, 0.4147f, 0.8454f, 3, true));
 
     std::vector<char> outData(sDims.elements());
 
@@ -107,7 +107,7 @@ void cannyImageOtsuTest(string pTestFile, bool isColor)
         ASSERT_EQ(AF_SUCCESS, af_load_image_native(&goldArray, outFiles[testId].c_str()));
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_canny(&outArray, inArray, AF_AUTO_OTSU_THRESHOLD, 0.08, 0.32, 3, false));
+        ASSERT_EQ(AF_SUCCESS, af_canny(&outArray, inArray, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false));
 
         std::vector<char> outData(nElems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
@@ -140,7 +140,7 @@ TEST(CannyEdgeDetector, InvalidSizeArray)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 sDims.ndims(), sDims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_ERR_SIZE, af_canny(&outArray, inArray, AF_MANUAL_THRESHOLD, 0.24, 0.72, 3, true));
+    ASSERT_EQ(AF_ERR_SIZE, af_canny(&outArray, inArray, AF_CANNY_THRESHOLD_MANUAL, 0.24, 0.72, 3, true));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
@@ -157,7 +157,7 @@ TEST(CannyEdgeDetector, Array4x4_Invalid)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 sDims.ndims(), sDims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_ERR_SIZE, af_canny(&outArray, inArray, AF_MANUAL_THRESHOLD, 0.24, 0.72, 3, true));
+    ASSERT_EQ(AF_ERR_SIZE, af_canny(&outArray, inArray, AF_CANNY_THRESHOLD_MANUAL, 0.24, 0.72, 3, true));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
@@ -174,7 +174,7 @@ TEST(CannyEdgeDetector, Sobel5x5_Invalid)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 sDims.ndims(), sDims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_canny(&outArray, inArray, AF_MANUAL_THRESHOLD, 0.24, 0.72, 5, true));
+    ASSERT_EQ(AF_ERR_ARG, af_canny(&outArray, inArray, AF_CANNY_THRESHOLD_MANUAL, 0.24, 0.72, 5, true));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
