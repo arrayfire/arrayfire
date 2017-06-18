@@ -849,6 +849,7 @@ EXAMPLE_PATH           = ${EXAMPLES_DIR}/ \
 # files are included.
 
 EXAMPLE_PATTERNS       = *.cpp \
+                         *.hpp \
                          *.cu
 
 # If the EXAMPLE_RECURSIVE tag is set to YES then subdirectories will be
