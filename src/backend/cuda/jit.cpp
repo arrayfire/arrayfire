@@ -13,12 +13,12 @@
 #include <JIT/Node.hpp>
 
 #include <ptx_headers/arith.hpp>
-#include <ptx_headers/logic.hpp>
+#include <ptx_headers/cast.hpp>
 #include <ptx_headers/exp.hpp>
+#include <ptx_headers/hyper.hpp>
+#include <ptx_headers/logic.hpp>
 #include <ptx_headers/numeric.hpp>
 #include <ptx_headers/trig.hpp>
-#include <ptx_headers/hyper.hpp>
-#include <ptx_headers/cast.hpp>
 
 #if defined(__LIBDEVICE_COMPUTE_20)
 #include <libdevice_headers/compute_20.hpp>
@@ -53,12 +53,15 @@ namespace cuda
 {
 
 using JIT::Node;
-using JIT::str_map_iter;
-using JIT::str_map_t;
 using JIT::Node_ids;
 using JIT::Node_map_t;
+using JIT::str_map_iter;
+using JIT::str_map_t;
+
 using std::hash;
+using std::lock_guard;
 using std::map;
+using std::mutex;
 using std::string;
 using std::stringstream;
 using std::unique_ptr;
@@ -299,7 +302,7 @@ static string getKernelString(const string funcName,
     kerStream << functionLoad;
 
     kerStream << "!nvvm.annotations = !{!1}\n"
-              << "!1 = metadata !{void (\n"
+                 "!1 = metadata !{void (\n"
               << inAnnStream.str()
               << outAnnStream.str();
 
@@ -307,8 +310,8 @@ static string getKernelString(const string funcName,
         kerStream << "i32, i32, i32\n";
     } else {
         kerStream  << "i32, i32, i32, i32,\n"
-                   << "i32, i32, i32, i32,\n"
-                   << "i32, i32, i32\n";
+                      "i32, i32, i32, i32,\n"
+                      "i32, i32, i32\n";
     }
 
     kerStream << ")* " << funcName << ",\n "
@@ -400,7 +403,7 @@ void compute_to_libdevice_table(const char **buffer, size_t *bc_buffer_len, int 
 }
 #endif
 
-static char *irToPtx(string IR, size_t *ptx_size)
+static unique_ptr<char[]> irToPtx(string IR, size_t *ptx_size)
 {
     nvvmProgram prog;
 
@@ -437,7 +440,7 @@ static char *irToPtx(string IR, size_t *ptx_size)
         size_t log_size = 0;
         nvvmGetProgramLogSize(prog, &log_size);
         printf("%ld, %zu\n", IR.size(), log_size);
-        unique_ptr<char> log(new char[log_size]);
+        unique_ptr<char[]> log(new char[log_size]);
         nvvmGetProgramLog(prog, log.get());
         printf("LOG:\n%s\n%s", log.get(), IR.c_str());
         NVVM_CHECK(comp_res, "Failed to compile program");
@@ -446,8 +449,8 @@ static char *irToPtx(string IR, size_t *ptx_size)
 
     NVVM_CHECK(nvvmGetCompiledResultSize(prog, ptx_size), "Can not get ptx size");
 
-    char *ptx = new char[*ptx_size];
-    NVVM_CHECK(nvvmGetCompiledResult(prog, ptx), "Can not get ptx from NVVM IR");
+    unique_ptr<char[]> ptx{new char[*ptx_size]};
+    NVVM_CHECK(nvvmGetCompiledResult(prog, ptx.get()), "Can not get ptx from NVVM IR");
     NVVM_CHECK(nvvmDestroyProgram(&prog), "Failed to destroy program");
     return ptx;
 }
@@ -490,7 +493,7 @@ char linkError[size];
 
 static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 {
-    std::lock_guard<std::mutex> lock(getDriverApiMutex(getActiveDeviceId()));
+    lock_guard<mutex> lock(getDriverApiMutex(getActiveDeviceId()));
 
     size_t ptx_size;
     unique_ptr<char[]> ptx(irToPtx(jit_ker, &ptx_size));
@@ -562,7 +565,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
                             const vector<Node_ids> &full_ids,
                             const bool is_linear)
 {
-    typedef std::map<std::string, kc_entry_t> kc_t;
+    typedef map<string, kc_entry_t> kc_t;
 
     thread_local kc_t kernelCaches[DeviceManager::MAX_DEVICES];
 
@@ -691,7 +694,7 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
         args.push_back((void *)&num_odims);
     }
 
-    std::lock_guard<std::mutex> lock(getDriverApiMutex(getActiveDeviceId()));
+    lock_guard<mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     CU_CHECK(cuLaunchKernel(ker,
                             blocks_x,
                             blocks_y,

@@ -485,8 +485,8 @@ namespace kernel
             tlptr = memAlloc<uint>(tmp_elements);
             ireduce_first_launcher<T, op, true>(tmp, tlptr, in, NULL, blocks_x, blocks_y, threads_x);
 
-            unique_ptr<T>       h_ptr(new T[tmp_elements]);
-            unique_ptr<uint>    h_lptr(new uint[tmp_elements]);
+            unique_ptr<T[]>       h_ptr(new T[tmp_elements]);
+            unique_ptr<uint[]>    h_lptr(new uint[tmp_elements]);
             T*      h_ptr_raw = h_ptr.get();
             uint*   h_lptr_raw = h_lptr.get();
 
@@ -519,7 +519,7 @@ namespace kernel
             return Op.m_val;
         } else {
 
-            unique_ptr<T> h_ptr(new T[in_elements]);
+            unique_ptr<T[]> h_ptr(new T[in_elements]);
             T* h_ptr_raw = h_ptr.get();
             CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, in.ptr, in_elements * sizeof(T),
                        cudaMemcpyDeviceToHost, cuda::getActiveStream()));
