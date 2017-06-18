@@ -331,7 +331,7 @@ namespace kernel
 
         } else {
 
-            unique_ptr<Ti> h_ptr(new Ti[in_elements]);
+            unique_ptr<Ti[]> h_ptr(new Ti[in_elements]);
             getQueue().enqueueReadBuffer(*in.data, CL_TRUE, sizeof(Ti) * in.info.offset,
                                           sizeof(Ti) * in_elements, h_ptr.get());
 

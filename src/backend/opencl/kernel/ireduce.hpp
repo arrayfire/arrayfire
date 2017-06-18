@@ -378,8 +378,8 @@ namespace kernel
 
             ireduce_first_launcher<T, op>(tmp, tidx, in, tidx, threads_x, true, groups_x, groups_y);
 
-            unique_ptr<T> h_ptr(new T[tmp_elements]);
-            unique_ptr<uint> h_iptr(new uint[tmp_elements]);
+            unique_ptr<T[]> h_ptr(new T[tmp_elements]);
+            unique_ptr<uint[]> h_iptr(new uint[tmp_elements]);
 
             getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(T) * tmp_elements, h_ptr.get());
             getQueue().enqueueReadBuffer(*tidx, CL_TRUE, 0, sizeof(uint) * tmp_elements, h_iptr.get());
@@ -411,7 +411,7 @@ namespace kernel
 
         } else {
 
-            unique_ptr<T> h_ptr(new T[in_elements]);
+            unique_ptr<T[]> h_ptr(new T[in_elements]);
             T* h_ptr_raw = h_ptr.get();
 
             getQueue().enqueueReadBuffer(*in.data, CL_TRUE, sizeof(T) * in.info.offset,
