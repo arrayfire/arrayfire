@@ -113,12 +113,14 @@ af_array createSparseArrayFromPtr(
 {
     SparseArray<T> sparse = createEmptySparseArray<T>(dims, nNZ, stype);
 
-    if(source == afHost)
-        sparse = common::createHostDataSparseArray(
-                         dims, nNZ, values, rowIdx, colIdx, stype);
-    else if (source == afDevice)
-        sparse = common::createDeviceDataSparseArray(
-                         dims, nNZ, values, rowIdx, colIdx, stype);
+    if(nNZ) {
+        if(source == afHost)
+            sparse = common::createHostDataSparseArray(
+                            dims, nNZ, values, rowIdx, colIdx, stype);
+        else if (source == afDevice)
+            sparse = common::createDeviceDataSparseArray(
+                            dims, nNZ, values, rowIdx, colIdx, stype);
+    }
 
     return getHandle(sparse);
 }
