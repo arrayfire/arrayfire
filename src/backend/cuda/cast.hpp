@@ -13,8 +13,8 @@
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <optypes.hpp>
-#include <types.hpp>
 #include <JIT/UnaryNode.hpp>
+#include <types.hpp>
 #include <Array.hpp>
 
 namespace cuda
@@ -23,18 +23,86 @@ namespace cuda
 template<typename To, typename Ti>
 struct CastOp
 {
-    std::string func;
-    CastOp() {
-        std::string tmp = std::string("___mk") + afShortName<To>();
-        func = cuMangledName<Ti, false>(tmp.c_str());
-    }
-
-    const std::string name()
+    const char *name()
     {
-        return func;
+        return "";
     }
 };
 
+#define CAST_FN(TYPE)                           \
+    template<typename Ti>                       \
+        struct CastOp<TYPE, Ti>                 \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "("#TYPE")";                 \
+        }                                       \
+    };
+
+CAST_FN(int)
+CAST_FN(unsigned int)
+CAST_FN(unsigned char)
+CAST_FN(unsigned short)
+CAST_FN(short)
+CAST_FN(float)
+CAST_FN(double)
+
+#define CAST_CFN(TYPE)                          \
+    template<typename Ti>                       \
+    struct CastOp<TYPE, Ti>                     \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "__convert_"#TYPE;           \
+        }                                       \
+    };
+
+
+CAST_CFN(cfloat)
+CAST_CFN(cdouble)
+CAST_CFN(char)
+
+
+template<>
+struct CastOp<cfloat, cdouble>
+{
+    const char *name()
+    {
+        return "__convert_z2c";
+    }
+};
+
+
+template<>
+struct CastOp<cdouble, cfloat>
+{
+    const char *name()
+    {
+        return "__convert_c2z";
+    }
+};
+
+template<>
+struct CastOp<cfloat, cfloat>
+{
+    const char *name()
+    {
+        return "__convert_c2c";
+    }
+};
+
+
+template<>
+struct CastOp<cdouble, cdouble>
+{
+    const char *name()
+    {
+        return "__convert_z2z";
+    }
+};
+
+#undef CAST_FN
+#undef CAST_CFN
 
 template<typename To, typename Ti>
 struct CastWrapper
@@ -43,8 +111,8 @@ struct CastWrapper
     {
         CastOp<To, Ti> cop;
         JIT::Node_ptr in_node = in.getNode();
-        JIT::UnaryNode *node = new JIT::UnaryNode(irname<To>(),
-                                                  afShortName<To>(),
+        JIT::UnaryNode *node = new JIT::UnaryNode(getFullName<To>(),
+                                                  shortname<To>(true),
                                                   cop.name(),
                                                   in_node, af_cast_t);
         return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));

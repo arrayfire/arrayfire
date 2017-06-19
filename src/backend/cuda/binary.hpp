@@ -17,220 +17,158 @@
 namespace cuda
 {
 
-
-template<typename To, typename Ti, af_op_t op>
-struct BinOp
-{
-    std::string name;
-    int call_type;
-    BinOp() :
-        name("noop"),
-        call_type(0)
-    {}
-};
-
-#define BINARY(fn)                                      \
-    template<typename To, typename Ti>                  \
-    struct BinOp<To, Ti, af_##fn##_t>                   \
-    {                                                   \
-        std::string name;                               \
-        int call_type;                                  \
-        BinOp() :                                       \
-            name(cuMangledName<Ti, true>("___"#fn)),    \
-            call_type(0)                                \
-            {}                                          \
+    template<typename To, typename Ti, af_op_t op>
+    struct BinOp
+    {
+        const char *name()
+        {
+            return "__invalid";
+        }
     };
 
-#if defined(USE_LIBDEVICE)
-#define NVVM_ARITH_OP(T, fn, fname)             \
-    template<>                                  \
-    struct BinOp<T, T, af_##fn##_t>             \
+#define BINARY_TYPE_1(fn)                      \
+    template<typename To, typename Ti>          \
+    struct BinOp<To, Ti, af_##fn##_t>           \
     {                                           \
-        std::string name;                       \
-        int call_type;                          \
-        BinOp() :                               \
-            name(fname),                        \
-            call_type(1)                        \
-            {}                                  \
+        const char *name()                      \
+        {                                       \
+            return "__"#fn;                     \
+        }                                       \
+    };                                          \
+                                                \
+    template<typename To>                       \
+    struct BinOp<To, cfloat, af_##fn##_t>       \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "__c"#fn"f";                 \
+        }                                       \
+    };                                          \
+                                                \
+    template<typename To>                       \
+    struct BinOp<To, cdouble, af_##fn##_t>      \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "__c"#fn;                    \
+        }                                       \
     };                                          \
 
-#define NVVM_COMPARE_OP(T, fn, fname)           \
-    template<>                                  \
-    struct BinOp<char, T, af_##fn##_t>          \
+
+BINARY_TYPE_1(eq)
+BINARY_TYPE_1(neq)
+BINARY_TYPE_1(lt)
+BINARY_TYPE_1(le)
+BINARY_TYPE_1(gt)
+BINARY_TYPE_1(ge)
+BINARY_TYPE_1(add)
+BINARY_TYPE_1(sub)
+BINARY_TYPE_1(mul)
+BINARY_TYPE_1(div)
+BINARY_TYPE_1(and)
+BINARY_TYPE_1(or)
+BINARY_TYPE_1(bitand)
+BINARY_TYPE_1(bitor)
+BINARY_TYPE_1(bitxor)
+BINARY_TYPE_1(bitshiftl)
+BINARY_TYPE_1(bitshiftr)
+
+#undef BINARY_TYPE_1
+
+#define BINARY_TYPE_2(fn)                       \
+    template<typename To, typename Ti>          \
+    struct BinOp<To, Ti, af_##fn##_t>           \
     {                                           \
-        std::string name;                       \
-        int call_type;                          \
-        BinOp() :                               \
-            name(fname),                        \
-            call_type(2)                        \
-            {}                                  \
+        const char *name()                      \
+        {                                       \
+            return "__"#fn;                     \
+        }                                       \
+    };                                          \
+    template<typename To>                       \
+    struct BinOp<To, float, af_##fn##_t>        \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "f"#fn;                      \
+        }                                       \
+    };                                          \
+    template<typename To>                       \
+    struct BinOp<To, double, af_##fn##_t>       \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "f"#fn;                      \
+        }                                       \
+    };                                          \
+    template<typename To>                       \
+    struct BinOp<To, cfloat, af_##fn##_t>       \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "__c"#fn"f";                 \
+        }                                       \
+    };                                          \
+                                                \
+    template<typename To>                       \
+    struct BinOp<To, cdouble, af_##fn##_t>      \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "__c"#fn;                    \
+        }                                       \
     };                                          \
 
-#define NVVM_BINARY_FUNC(T, fn, fname)          \
-    template<>                                  \
-    struct BinOp<T, T, af_##fn##_t>             \
-    {                                           \
-        std::string name;                       \
-        int call_type;                          \
-        BinOp() :                               \
-            name("@__nv_"#fname),               \
-            call_type(0)                        \
-            {}                                  \
-    };                                          \
 
-#else
+BINARY_TYPE_2(min)
+BINARY_TYPE_2(max)
+BINARY_TYPE_2(pow)
+BINARY_TYPE_2(rem)
+BINARY_TYPE_2(mod)
 
-#define NVVM_ARITH_OP(T, fn, fname)    // No specialization
-#define NVVM_COMPARE_OP(T, fn, fname)  // No specialization
-#define NVVM_BINARY_FUNC(T, fn, fname) // No specialization
+template<typename Ti>
+struct BinOp<cfloat, Ti, af_cplx2_t>
+{
+    const char *name()
+    {
+        return "__cplx2f";
+    }
+};
 
-#endif
+template<typename Ti>
+struct BinOp<cdouble, Ti, af_cplx2_t>
+{
+    const char *name()
+    {
+        return "__cplx2";
+    }
+};
 
-#define NVVM_ARITH_OP_INT(fn, fname)         \
-    NVVM_ARITH_OP(int, fn, fname)            \
-    NVVM_ARITH_OP(short, fn, fname)          \
-    NVVM_ARITH_OP(intl, fn, fname)           \
+template<typename To, typename Ti>
+struct BinOp<To, Ti, af_cplx2_t>
+{
+    const char *name()
+    {
+        return "noop";
+    }
+};
 
-#define NVVM_ARITH_OP_UINT(fn, fname)        \
-    NVVM_ARITH_OP(uint, fn, fname)           \
-    NVVM_ARITH_OP(ushort, fn, fname)         \
-    NVVM_ARITH_OP(uintl, fn, fname)          \
+template<typename To, typename Ti>
+struct BinOp<To, Ti, af_atan2_t>
+{
+    const char *name()
+    {
+        return "atan2";
+    }
+};
 
-#define NVVM_ARITH_OP_FLOAT(fn, fname)       \
-    NVVM_ARITH_OP(float, fn, fname)          \
-    NVVM_ARITH_OP(double, fn, fname)         \
-
-#define NVVM_ARITH_OP_CPLX(fn, fname)        \
-    NVVM_ARITH_OP(cfloat, fn, fname)         \
-    NVVM_ARITH_OP(cdouble, fn, fname)        \
-
-#define NVVM_COMPARE_OP_INT(fn, fname)       \
-    NVVM_COMPARE_OP(int, fn, fname)          \
-    NVVM_COMPARE_OP(short, fn, fname)        \
-    NVVM_COMPARE_OP(intl, fn, fname)         \
-
-#define NVVM_COMPARE_OP_UINT(fn, fname)      \
-    NVVM_COMPARE_OP(uint, fn, fname)         \
-    NVVM_COMPARE_OP(ushort, fn, fname)       \
-    NVVM_COMPARE_OP(uintl, fn, fname)        \
-
-#define NVVM_COMPARE_OP_FLOAT(fn, fname)     \
-    NVVM_COMPARE_OP(float, fn, fname)        \
-    NVVM_COMPARE_OP(double, fn, fname)       \
-
-BINARY(add)
-NVVM_ARITH_OP_INT(add, "add")
-NVVM_ARITH_OP_UINT(add, "add")
-NVVM_ARITH_OP_FLOAT(add, "fadd")
-NVVM_ARITH_OP_CPLX(add, "fadd")
-
-BINARY(sub)
-NVVM_ARITH_OP_INT(sub, "sub")
-NVVM_ARITH_OP_UINT(sub, "sub")
-NVVM_ARITH_OP_FLOAT(sub, "fsub")
-NVVM_ARITH_OP_CPLX(sub, "fsub")
-
-BINARY(mul)
-NVVM_ARITH_OP_INT(mul, "mul")
-NVVM_ARITH_OP_UINT(mul, "mul")
-NVVM_ARITH_OP_FLOAT(mul, "fmul")
-
-BINARY(div)
-NVVM_ARITH_OP_INT(div, "sdiv")
-NVVM_ARITH_OP_UINT(div, "udiv")
-NVVM_ARITH_OP_FLOAT(div, "fdiv")
-
-BINARY(bitand)
-NVVM_ARITH_OP_INT(bitand, "and")
-NVVM_ARITH_OP_UINT(bitand, "and")
-
-BINARY(bitor)
-NVVM_ARITH_OP_INT(bitor, "or")
-NVVM_ARITH_OP_UINT(bitor, "or")
-
-BINARY(bitxor)
-NVVM_ARITH_OP_INT(bitxor, "xor")
-NVVM_ARITH_OP_UINT(bitxor, "xor")
-
-BINARY(bitshiftl)
-NVVM_ARITH_OP_INT(bitshiftl, "shl")
-NVVM_ARITH_OP_UINT(bitshiftl, "shl")
-
-BINARY(bitshiftr)
-NVVM_ARITH_OP_INT(bitshiftr, "lshr")
-NVVM_ARITH_OP_UINT(bitshiftr, "lshr")
-
-
-BINARY(and)
-BINARY(or)
-
-BINARY(lt)
-NVVM_COMPARE_OP_INT(lt, "icmp slt")
-NVVM_COMPARE_OP_UINT(lt, "icmp ult")
-NVVM_COMPARE_OP_FLOAT(lt, "fcmp olt")
-
-BINARY(gt)
-NVVM_COMPARE_OP_INT(gt, "icmp sgt")
-NVVM_COMPARE_OP_UINT(gt, "icmp ugt")
-NVVM_COMPARE_OP_FLOAT(gt, "fcmp ogt")
-
-BINARY(le)
-NVVM_COMPARE_OP_INT(le, "icmp sle")
-NVVM_COMPARE_OP_UINT(le, "icmp ule")
-NVVM_COMPARE_OP_FLOAT(le, "fcmp ole")
-
-BINARY(ge)
-NVVM_COMPARE_OP_INT(ge, "icmp sge")
-NVVM_COMPARE_OP_UINT(ge, "icmp uge")
-NVVM_COMPARE_OP_FLOAT(ge, "fcmp oge")
-
-BINARY(eq)
-NVVM_COMPARE_OP_INT(eq, "icmp eq")
-NVVM_COMPARE_OP_UINT(eq, "icmp eq")
-NVVM_COMPARE_OP_FLOAT(eq, "fcmp oeq")
-
-BINARY(neq)
-NVVM_COMPARE_OP_INT(neq, "icmp ne")
-NVVM_COMPARE_OP_UINT(neq, "icmp ne")
-NVVM_COMPARE_OP_FLOAT(neq, "fcmp one")
-
-BINARY(max)
-NVVM_BINARY_FUNC(float, max, fmaxf)
-NVVM_BINARY_FUNC(double, max, fmax)
-NVVM_BINARY_FUNC(int, max, max)
-NVVM_BINARY_FUNC(uint, max, umax)
-NVVM_BINARY_FUNC(intl, max, llmax)
-NVVM_BINARY_FUNC(uintl, max, ullmax)
-
-BINARY(min)
-NVVM_BINARY_FUNC(float, min, fminf)
-NVVM_BINARY_FUNC(double, min, fmin)
-NVVM_BINARY_FUNC(int, min, min)
-NVVM_BINARY_FUNC(uint, min, umin)
-NVVM_BINARY_FUNC(intl, min, llmin)
-NVVM_BINARY_FUNC(uintl, min, ullmin)
-
-BINARY(pow)
-NVVM_BINARY_FUNC(float, pow, powf)
-NVVM_BINARY_FUNC(double, pow, pow)
-
-BINARY(mod)
-NVVM_BINARY_FUNC(float, mod, fmodf)
-NVVM_BINARY_FUNC(double, mod, fmod)
-
-BINARY(rem)
-NVVM_BINARY_FUNC(float, rem, remainderf)
-NVVM_BINARY_FUNC(double, rem, remainder)
-
-BINARY(atan2)
-NVVM_BINARY_FUNC(float, atan2, atan2f)
-NVVM_BINARY_FUNC(double, atan2, atan2)
-
-BINARY(hypot)
-NVVM_BINARY_FUNC(float, hypot, hypotf)
-NVVM_BINARY_FUNC(double, hypot, hypot)
-
-#undef BINARY
+template<typename To, typename Ti>
+struct BinOp<To, Ti, af_hypot_t>
+{
+    const char *name()
+    {
+        return "hypot";
+    }
+};
 
 template<typename To, typename Ti, af_op_t op>
 Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
@@ -239,16 +177,14 @@ Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs, const af:
 
     JIT::Node_ptr lhs_node = lhs.getNode();
     JIT::Node_ptr rhs_node = rhs.getNode();
-
-    JIT::BinaryNode *node = new JIT::BinaryNode(irname<To>(),
-                                                afShortName<To>(),
-                                                bop.name,
+    JIT::BinaryNode *node = new JIT::BinaryNode(getFullName<To>(),
+                                                shortname<To>(true),
+                                                bop.name(),
                                                 lhs_node,
-                                                rhs_node,
-                                                (int)(op),
-                                                bop.call_type);
+                                                rhs_node, (int)(op));
 
-    return createNodeArray<To>(odims, JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    return createNodeArray<To>(odims, JIT::Node_ptr(
+                                   reinterpret_cast<JIT::Node *>(node)));
 }
 
 }

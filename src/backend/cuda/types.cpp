@@ -10,91 +10,38 @@
 #include <af/defines.h>
 #include "types.hpp"
 #include <sstream>
+#include <af/traits.hpp>
 
 namespace cuda
 {
-    template<typename T > const char *cuShortName() { return "q"; }
-    template<> const char *cuShortName<float   >() { return "f"; }
-    template<> const char *cuShortName<double  >() { return "d"; }
-    template<> const char *cuShortName<cfloat  >() { return "6float2"; }
-    template<> const char *cuShortName<cdouble >() { return "7double2"; }
-    template<> const char *cuShortName<int     >() { return "i"; }
-    template<> const char *cuShortName<uint    >() { return "j"; }
-    template<> const char *cuShortName<char    >() { return "c"; }
-    template<> const char *cuShortName<uchar   >() { return "h"; }
-    template<> const char *cuShortName<intl    >() { return "x"; }
-    template<> const char *cuShortName<uintl   >() { return "y"; }
-    template<> const char *cuShortName<short   >() { return "s"; }
-    template<> const char *cuShortName<ushort  >() { return "t"; }
 
-    template<typename T > const char *afShortName(bool caps) { return caps ?  "Q" : "q"; }
-    template<> const char *afShortName<float   >(bool caps) { return caps ?  "S" : "s"; }
-    template<> const char *afShortName<double  >(bool caps) { return caps ?  "D" : "d"; }
-    template<> const char *afShortName<cfloat  >(bool caps) { return caps ?  "C" : "c"; }
-    template<> const char *afShortName<cdouble >(bool caps) { return caps ?  "Z" : "z"; }
-    template<> const char *afShortName<int     >(bool caps) { return caps ?  "I" : "i"; }
-    template<> const char *afShortName<uint    >(bool caps) { return caps ?  "U" : "u"; }
-    template<> const char *afShortName<char    >(bool caps) { return caps ?  "J" : "j"; }
-    template<> const char *afShortName<uchar   >(bool caps) { return caps ?  "V" : "v"; }
-    template<> const char *afShortName<intl    >(bool caps) { return caps ?  "X" : "x"; }
-    template<> const char *afShortName<uintl   >(bool caps) { return caps ?  "Y" : "y"; }
-    template<> const char *afShortName<short   >(bool caps) { return caps ?  "P" : "P"; }
-    template<> const char *afShortName<ushort  >(bool caps) { return caps ?  "Q" : "Q"; }
+    template<typename T > const char *shortname(bool caps) { return caps ?  "Q" : "q"; }
+    template<> const char *shortname<float   >(bool caps) { return caps ?  "S" : "s"; }
+    template<> const char *shortname<double  >(bool caps) { return caps ?  "D" : "d"; }
+    template<> const char *shortname<cfloat  >(bool caps) { return caps ?  "C" : "c"; }
+    template<> const char *shortname<cdouble >(bool caps) { return caps ?  "Z" : "z"; }
+    template<> const char *shortname<int     >(bool caps) { return caps ?  "I" : "i"; }
+    template<> const char *shortname<uint    >(bool caps) { return caps ?  "U" : "u"; }
+    template<> const char *shortname<char    >(bool caps) { return caps ?  "J" : "j"; }
+    template<> const char *shortname<uchar   >(bool caps) { return caps ?  "V" : "v"; }
+    template<> const char *shortname<intl    >(bool caps) { return caps ?  "X" : "x"; }
+    template<> const char *shortname<uintl   >(bool caps) { return caps ?  "Y" : "y"; }
+    template<> const char *shortname<short   >(bool caps) { return caps ?  "P" : "P"; }
+    template<> const char *shortname<ushort  >(bool caps) { return caps ?  "Q" : "Q"; }
 
-    template<typename T > const char *irname() { return  "i32"; }
-    template<> const char *irname<float   >() { return  "float"; }
-    template<> const char *irname<double  >() { return  "double"; }
-    template<> const char *irname<cfloat  >() { return  "<2 x float>"; }
-    template<> const char *irname<cdouble >() { return  "<2 x double>"; }
-    template<> const char *irname<int     >() { return  "i32"; }
-    template<> const char *irname<uint    >() { return  "i32"; }
-    template<> const char *irname<intl    >() { return  "i64"; }
-    template<> const char *irname<uintl   >() { return  "i64"; }
-    template<> const char *irname<char    >() { return  "i8"; }
-    template<> const char *irname<uchar   >() { return  "i8"; }
-    template<> const char *irname<short   >() { return  "i16"; }
-    template<> const char *irname<ushort  >() { return  "i16"; }
-
-    template <typename T>
-    static inline std::string toString(T val)
-    {
-        std::stringstream s;
-        s << val;
-        return s.str();
-    }
-
-    template<typename T, bool binary>
-    const std::string cuMangledName(const char *fn)
-    {
-        std::string cname(cuShortName<T>());
-        std::string fname(fn);
-        size_t flen = fname.size();
-
-        std::string res = std::string("@_Z") + toString(flen) + fname + cname;
-        if (binary) {
-            if (cname.size() > 1) {
-                res = res + "S_";
-            } else {
-                res = res + cname;
-            }
-        }
-        return res;
-    }
-
-#define INSTANTIATE(T)                                                  \
-    template const std::string cuMangledName<T, false>(const char *fn); \
-    template const std::string cuMangledName<T, true>(const char *fn);  \
+#define INSTANTIATE(T)                                      \
+    template<> const char *getFullName<T>() { return #T; }  \
 
     INSTANTIATE(float)
     INSTANTIATE(double)
     INSTANTIATE(cfloat)
     INSTANTIATE(cdouble)
     INSTANTIATE(char)
-    INSTANTIATE(uchar)
-    INSTANTIATE(int)
-    INSTANTIATE(uint)
-    INSTANTIATE(intl)
-    INSTANTIATE(uintl)
+    INSTANTIATE(unsigned char)
     INSTANTIATE(short)
-    INSTANTIATE(ushort)
+    INSTANTIATE(unsigned short)
+    INSTANTIATE(int)
+    INSTANTIATE(unsigned int)
+    INSTANTIATE(unsigned long long)
+    INSTANTIATE(long long)
 }

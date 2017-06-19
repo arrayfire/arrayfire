@@ -8,19 +8,22 @@
  ********************************************************/
 
 #pragma once
+#include <platform.hpp>
 #include <optypes.hpp>
-
-#include <unordered_map>
-#include <memory>
 #include <string>
 #include <vector>
+#include <memory>
+#include <unordered_map>
 
 namespace cuda
 {
 
 namespace JIT
 {
+
     class Node;
+    using std::shared_ptr;
+    typedef shared_ptr<Node> Node_ptr;
 
     typedef struct
     {
@@ -28,9 +31,6 @@ namespace JIT
         std::vector<int> child_ids;
     } Node_ids;
 
-    typedef std::unordered_map<std::string, bool> str_map_t;
-    typedef str_map_t::iterator str_map_iter;
-    typedef std::shared_ptr<Node> Node_ptr;
     typedef std::unordered_map<Node *, Node_ids> Node_map_t;
     typedef Node_map_t::iterator Node_map_iter;
 
@@ -66,16 +66,11 @@ namespace JIT
         }
 
         virtual void genKerName(std::stringstream &kerStream, Node_ids ids) {}
-        virtual void genParams  (std::stringstream &kerStream,
-                                 std::stringstream &annStream,
-                                 int id, bool is_linear) {}
+        virtual void genParams  (std::stringstream &kerStream, int id, bool is_linear) {}
         virtual void genOffsets (std::stringstream &kerStream, int id, bool is_linear) {}
-        virtual void genFuncs   (std::stringstream &kerStream, str_map_t &declStrs,
-                                 Node_ids id, bool is_linear)
-        {}
+        virtual void genFuncs   (std::stringstream &kerStream, Node_ids) {}
 
-        virtual void setArgs(std::vector<void *> &args, bool is_linear) {}
-        virtual bool isLinear(dim_t dims[4]) { return true; }
+        virtual void setArgs (std::vector<void *> &args, bool is_linear) { }
 
         virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
         {
@@ -83,9 +78,8 @@ namespace JIT
         }
 
         virtual bool isBuffer() { return false; }
-
+        virtual bool isLinear(dim_t dims[4]) { return true; }
         std::string getTypeStr() { return m_type_str; }
-
         int getHeight()  { return m_height; }
         std::string getNameStr() { return m_name_str; }
 
