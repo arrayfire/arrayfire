@@ -149,6 +149,8 @@ class DeviceManager
         DeviceManager(DeviceManager const&);
         void operator=(DeviceManager const&);
 
+        std::mutex driver_api_mutex[MAX_DEVICES];
+
         // Attributes
         std::vector<cudaDevice_t> cuDevices;
 
@@ -164,8 +166,6 @@ class DeviceManager
         std::unique_ptr<MemoryManager> memManager;
 
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
-
-        std::mutex driver_api_mutex[MAX_DEVICES];
 #if defined(WITH_GRAPHICS)
         std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
 #endif

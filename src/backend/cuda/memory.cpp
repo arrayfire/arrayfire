@@ -17,6 +17,8 @@
 #include <types.hpp>
 #include <dispatch.hpp>
 
+#include <mutex>
+
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
 #endif
@@ -24,6 +26,9 @@
 #ifndef AF_CUDA_MEM_DEBUG
 #define AF_CUDA_MEM_DEBUG 0
 #endif
+
+using std::lock_guard;
+using std::mutex;
 
 namespace cuda
 {
@@ -168,6 +173,7 @@ size_t MemoryManager::getMaxMemorySize(int id)
 
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
+    lock_guard<mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     void *ptr = NULL;
     CUDA_CHECK(cudaMalloc(&ptr, bytes));
     return ptr;
@@ -175,6 +181,7 @@ void *MemoryManager::nativeAlloc(const size_t bytes)
 
 void MemoryManager::nativeFree(void *ptr)
 {
+    lock_guard<mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     cudaError_t err = cudaFree(ptr);
     if (err != cudaErrorCudartUnloading) {
         CUDA_CHECK(err);
@@ -205,6 +212,7 @@ size_t MemoryManagerPinned::getMaxMemorySize(int id)
 
 void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
 {
+    lock_guard<mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     void *ptr;
     CUDA_CHECK(cudaMallocHost(&ptr, bytes));
     return ptr;
@@ -212,6 +220,7 @@ void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
 
 void MemoryManagerPinned::nativeFree(void *ptr)
 {
+    lock_guard<mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     cudaError_t err = cudaFreeHost(ptr);
     if (err != cudaErrorCudartUnloading) {
         CUDA_CHECK(err);
