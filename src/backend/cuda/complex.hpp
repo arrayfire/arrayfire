@@ -30,7 +30,7 @@ namespace cuda
                                                   "__creal",
                                                   in_node, af_real_t);
 
-        return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+        return createNodeArray<To>(in.dims(), JIT::Node_ptr(node));
     }
 
     template<typename To, typename Ti>
@@ -42,7 +42,7 @@ namespace cuda
                                                   "__cimag",
                                                   in_node, af_imag_t);
 
-        return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+        return createNodeArray<To>(in.dims(), JIT::Node_ptr(node));
     }
 
     template<typename T> static const char *abs_name() { return "fabs"; }
@@ -58,7 +58,7 @@ namespace cuda
                                                   abs_name<Ti>(),
                                                   in_node, af_abs_t);
 
-        return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+        return createNodeArray<To>(in.dims(), JIT::Node_ptr(node));
     }
 
     template<typename T> static const char *conj_name() { return "__noop"; }
@@ -74,6 +74,6 @@ namespace cuda
                                                   conj_name<T>(),
                                                   in_node, af_conj_t);
 
-        return createNodeArray<T>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+        return createNodeArray<T>(in.dims(), JIT::Node_ptr(node));
     }
 }

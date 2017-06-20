@@ -180,7 +180,7 @@ double2 __cdiv(double2 lhs, double2 rhs)
     double rhs_x = inv_rhs_abs * rhs.x;
     double rhs_y = inv_rhs_abs * rhs.y;
     double2 out = {lhs.x * rhs_x + lhs.y * rhs_y,
-                  lhs.y * rhs_x - lhs.x * rhs_y};
+                   lhs.y * rhs_x - lhs.x * rhs_y};
     out.x *= inv_rhs_abs;
     out.y *= inv_rhs_abs;
     return out;

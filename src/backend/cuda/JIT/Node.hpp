@@ -65,7 +65,7 @@ namespace JIT
             }
         }
 
-        virtual void genKerName(std::stringstream &kerStream, Node_ids ids) {}
+        virtual void genKerName (std::stringstream &kerStream, Node_ids ids) {}
         virtual void genParams  (std::stringstream &kerStream, int id, bool is_linear) {}
         virtual void genOffsets (std::stringstream &kerStream, int id, bool is_linear) {}
         virtual void genFuncs   (std::stringstream &kerStream, Node_ids) {}

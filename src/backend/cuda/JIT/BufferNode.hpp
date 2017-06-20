@@ -26,8 +26,8 @@ namespace JIT
         std::shared_ptr<T> m_data;
         Param<T> m_param;
         unsigned m_bytes;
-        bool m_linear_buffer;
         std::once_flag m_set_data_flag;
+        bool m_linear_buffer;
 
     public:
 
@@ -38,10 +38,6 @@ namespace JIT
         }
 
         bool isBuffer() { return true; }
-
-        ~BufferNode()
-        {
-        }
 
         void setData(Param<T> param, std::shared_ptr<T> data, const unsigned bytes, bool is_linear)
         {
@@ -94,7 +90,7 @@ namespace JIT
             if (is_linear) {
                 kerStream << idx_str << " = idx;\n";
             } else {
-                std::string info_str = std::string("in") + std::to_string(id);;
+                std::string info_str = std::string("in") + std::to_string(id);
                 kerStream << idx_str << " = "
                           << "(id3 < " << info_str << ".dims[3]) * "
                           << info_str << ".strides[3] * id3 + "

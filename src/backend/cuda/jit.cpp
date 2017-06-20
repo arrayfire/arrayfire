@@ -7,15 +7,18 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
+#include <kernel_headers/jit.hpp>
+#include <dispatch.hpp>
+#include <err_cuda.hpp>
+
 #include <Array.hpp>
 #include <copy.hpp>
 #include <JIT/Node.hpp>
-
 #include <platform.hpp>
-#include <dispatch.hpp>
-#include <err_cuda.hpp>
 #include <math.hpp>
+
+#include <af/dim4.hpp>
+#include <nvrtc.h>
 
 #include <functional>
 #include <map>
@@ -23,8 +26,6 @@
 #include <stdexcept>
 #include <thread>
 #include <vector>
-#include <kernel_headers/jit.hpp>
-#include <nvrtc.h>
 
 namespace cuda
 {
@@ -77,14 +78,14 @@ static string getKernelString(const string funcName,
 
     const char *includeFileStr = jit_cuh;
 
-    const char paramTStr[] =""
-        "template<typename T>\n"
-        "struct Param\n"
-        "{\n"
-        "  T *ptr;\n"
-        "  dim_t dims[4];\n"
-        "  dim_t strides[4];\n"
-        "};\n";
+    const char paramTStr[] =R"JIT(
+        template<typename T>
+        struct Param
+        {
+          T *ptr;
+          dim_t dims[4];
+          dim_t strides[4];
+        };)JIT";
 
     std::string typedefStr = "typedef unsigned int uint;\n";
     typedefStr += "typedef ";
@@ -94,46 +95,48 @@ static string getKernelString(const string funcName,
     // Common CUDA code
     // This part of the code does not change with the kernel.
 
-    static const char *kernelVoid =  "extern \"C\" __global__ void\n";
+    static const char *kernelVoid = "extern \"C\" __global__ void\n";
     static const char *dimParams = "uint blocks_x, uint blocks_y, uint num_odims";
     static const char *blockStart = "{\n\n";
     static const char *blockEnd = "\n\n}";
 
-    static const char *linearIndex = "\n"
-        "uint blockId  = blockIdx.y * gridDim.x + blockIdx.x;\n"
-        "uint threadId = threadIdx.x;\n"
-        "int idx = blockId * blockDim.x * blockDim.y + threadId;\n"
-        "if (idx >= outref.dims[3] * outref.strides[3]) return;\n";
+    static const char *linearIndex = R"JIT(
+        uint blockId  = blockIdx.y * gridDim.x + blockIdx.x;
+        uint threadId = threadIdx.x;
+        int idx = blockId * blockDim.x * blockDim.y + threadId;
+        if (idx >= outref.dims[3] * outref.strides[3]) return;
+        )JIT";
 
-    static const char *generalIndex = "\n"
-        "uint id0 = 0, id1 = 0, id2 = 0, id3 = 0;\n"
-        "if (num_odims > 2) {\n"
-        "id2 = blockIdx.x / blocks_x;\n"
-        "id0 = blockIdx.x - id2 * blocks_x;\n"
-        "id0 = threadIdx.x + id0 * blockDim.x;\n"
-        "if (num_odims > 3) {\n"
-        "id3 = blockIdx.y / blocks_y;\n"
-        "id1 = blockIdx.y - id3 * blocks_y;\n"
-        "id1 = threadIdx.y + id1 * blockDim.y;\n"
-        "} else {\n"
-        "id1 = threadIdx.y + blockDim.y * blockIdx.y;\n"
-        "}\n"
-        " } else {\n"
-        "id3 = 0;\n"
-        "id2 = 0;\n"
-        "id1 = threadIdx.y + blockDim.y * blockIdx.y;\n"
-        "id0 = threadIdx.x + blockDim.x * blockIdx.x;\n"
-        "}\n"
-        "bool cond = \n"
-        "id0 < outref.dims[0] && \n"
-        "id1 < outref.dims[1] && \n"
-        "id2 < outref.dims[2] && \n"
-        "id3 < outref.dims[3];\n\n"
-        "if (!cond) return;\n\n"
-        "int idx = "
-        "outref.strides[3] * id3 + outref.strides[2] * id2 + "
-        "outref.strides[1] * id1 + id0;\n\n";
+    static const char *generalIndex = R"JIT(
+        uint id0 = 0, id1 = 0, id2 = 0, id3 = 0;
+        if (num_odims > 2) {
+            id2 = blockIdx.x / blocks_x;
+            id0 = blockIdx.x - id2 * blocks_x;
+            id0 = threadIdx.x + id0 * blockDim.x;
+            if (num_odims > 3) {
+                id3 = blockIdx.y / blocks_y;
+                id1 = blockIdx.y - id3 * blocks_y;
+                id1 = threadIdx.y + id1 * blockDim.y;
+            } else {
+                id1 = threadIdx.y + blockDim.y * blockIdx.y;
+            }
+        } else {
+            id3 = 0;
+            id2 = 0;
+            id1 = threadIdx.y + blockDim.y * blockIdx.y;
+            id0 = threadIdx.x + blockDim.x * blockIdx.x;
+        }
 
+        bool cond = id0 < outref.dims[0] &&
+                    id1 < outref.dims[1] &&
+                    id2 < outref.dims[2] &&
+                    id3 < outref.dims[3];
+        if (!cond) return;
+
+        int idx = outref.strides[3] * id3 +
+                  outref.strides[2] * id2 +
+                  outref.strides[1] * id1 + id0;
+        )JIT";
 
     stringstream inParamStream;
     stringstream outParamStream;
@@ -161,7 +164,7 @@ static string getKernelString(const string funcName,
         // Generate output parameters
         outParamStream << "Param<" << full_nodes[id]->getTypeStr() << "> out" << id << ", \n";
         // Generate code to write the output
-        outWriteStream << "out" << id << ".ptr[idx] = " << "val" << id << ";\n";
+        outWriteStream << "out" << id << ".ptr[idx] = val" << id << ";\n";
     }
 
     // Put various blocks into a single stream
@@ -225,18 +228,18 @@ typedef struct {
 #endif
 
 #ifndef NDEBUG
-#define NVRTC_CHECK(fn) do {                        \
-        nvrtcResult res = fn;                       \
-        if (res == NVRTC_SUCCESS) break;            \
-        size_t logSize;                             \
-        nvrtcGetProgramLogSize(prog, &logSize);     \
-        unique_ptr<char []> log(new char[logSize]); \
-        char *logptr = log.get();                   \
-        nvrtcGetProgramLog(prog, logptr);           \
-        logptr[logSize] = '\x0';                    \
-        printf("%s\n", logptr);                     \
-        AF_ERROR("NVRTC ERROR",                     \
-                 AF_ERR_INTERNAL);                  \
+#define NVRTC_CHECK(fn) do {                            \
+        nvrtcResult res = fn;                           \
+        if (res == NVRTC_SUCCESS) break;                \
+        size_t logSize;                                 \
+        nvrtcGetProgramLogSize(prog, &logSize);         \
+        unique_ptr<char []> log(new char[logSize +1]);  \
+        char *logptr = log.get();                       \
+        nvrtcGetProgramLog(prog, logptr);               \
+        logptr[logSize] = '\x0';                        \
+        printf("%s\n", logptr);                         \
+        AF_ERROR("NVRTC ERROR",                         \
+                 AF_ERR_INTERNAL);                      \
     } while(0)
 #else
 #define NVRTC_CHECK(fn) do {                        \
@@ -252,14 +255,16 @@ typedef struct {
     } while(0)
 #endif
 
-unique_ptr<char []> compileToPTX(const char *ker_name, string jit_ker, size_t *ptx_size)
+std::vector<char> compileToPTX(const char *ker_name, string jit_ker)
 {
     nvrtcProgram prog;
+    size_t ptx_size;
+    std::vector<char> ptx;
     NVRTC_CHECK(nvrtcCreateProgram(&prog, jit_ker.c_str(), ker_name, 0, NULL, NULL));
     NVRTC_CHECK(nvrtcCompileProgram(prog, 0, NULL));
-    NVRTC_CHECK(nvrtcGetPTXSize(prog, ptx_size));
-    unique_ptr<char []> ptx(new char[*ptx_size]);
-    NVRTC_CHECK(nvrtcGetPTX(prog, ptx.get()));
+    NVRTC_CHECK(nvrtcGetPTXSize(prog, &ptx_size));
+    ptx.resize(ptx_size);
+    NVRTC_CHECK(nvrtcGetPTX(prog, ptx.data()));
     return ptx;
 }
 
@@ -271,8 +276,7 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
     char linkInfo[linkLogSize] = {0};
     char linkError[linkLogSize] = {0};
 
-    size_t ptx_size;
-    auto ptx = compileToPTX(ker_name, jit_ker, &ptx_size);
+    auto ptx = compileToPTX(ker_name, jit_ker);
 
     CUlinkState linkState;
     CUjit_option linkOptions[] = {
@@ -292,8 +296,8 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
     };
 
     CU_LINK_CHECK(cuLinkCreate(5, linkOptions, linkOptionValues, &linkState));
-    CU_LINK_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)ptx.get(),
-                                ptx_size, ker_name, 0, NULL, NULL));
+    CU_LINK_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)ptx.data(),
+                                ptx.size(), ker_name, 0, NULL, NULL));
 
     void *cubin;
     size_t cubinSize;

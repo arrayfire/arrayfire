@@ -183,8 +183,7 @@ Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs, const af:
                                                 lhs_node,
                                                 rhs_node, (int)(op));
 
-    return createNodeArray<To>(odims, JIT::Node_ptr(
-                                   reinterpret_cast<JIT::Node *>(node)));
+    return createNodeArray<To>(odims, JIT::Node_ptr(node));
 }
 
 }

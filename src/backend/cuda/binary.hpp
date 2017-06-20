@@ -108,7 +108,6 @@ BINARY_TYPE_1(bitshiftr)
             return "__c"#fn"f";                 \
         }                                       \
     };                                          \
-                                                \
     template<typename To>                       \
     struct BinOp<To, cdouble, af_##fn##_t>      \
     {                                           \
@@ -117,7 +116,6 @@ BINARY_TYPE_1(bitshiftr)
             return "__c"#fn;                    \
         }                                       \
     };                                          \
-
 
 BINARY_TYPE_2(min)
 BINARY_TYPE_2(max)
@@ -183,8 +181,7 @@ Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs, const af:
                                                 lhs_node,
                                                 rhs_node, (int)(op));
 
-    return createNodeArray<To>(odims, JIT::Node_ptr(
-                                   reinterpret_cast<JIT::Node *>(node)));
+    return createNodeArray<To>(odims, JIT::Node_ptr(node));
 }
 
 }

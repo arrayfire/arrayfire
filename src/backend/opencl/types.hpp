@@ -33,7 +33,7 @@ template<typename T> struct is_complex          { static const bool value = fals
 template<> struct           is_complex<cfloat>  { static const bool value = true;   };
 template<> struct           is_complex<cdouble> { static const bool value = true;   };
 
-template<typename T > const char *shortname(bool caps=false);
+template<typename T> const char *shortname(bool caps=false);
 
 template<typename T>
 struct ToNumStr

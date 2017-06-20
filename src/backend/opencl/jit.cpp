@@ -80,46 +80,47 @@ static string getKernelString(const string funcName,
     // Common OpenCL code
     // This part of the code does not change with the kernel.
 
-    static const char *kernelVoid =  "__kernel void\n";
+    static const char *kernelVoid = "__kernel void\n";
     static const char *dimParams = "KParam oInfo, uint groups_0, uint groups_1, uint num_odims";
     static const char *blockStart = "{\n\n";
     static const char *blockEnd = "\n\n}";
 
-    static const char *linearIndex = "\n"
-        "uint groupId  = get_group_id(1) * get_num_groups(0) + get_group_id(0);\n"
-        "uint threadId = get_local_id(0);\n"
-        "int idx = groupId * get_local_size(0) * get_local_size(1) + threadId;\n"
-        "if (idx >= oInfo.dims[3] * oInfo.strides[3]) return;\n";
+    static const char *linearIndex = R"JIT(
+        uint groupId  = get_group_id(1) * get_num_groups(0) + get_group_id(0);
+        uint threadId = get_local_id(0);
+        int idx = groupId * get_local_size(0) * get_local_size(1) + threadId;
+        if (idx >= oInfo.dims[3] * oInfo.strides[3]) return;
+        )JIT";
 
-    static const char *generalIndex = "\n"
-        "uint id0 = 0, id1 = 0, id2 = 0, id3 = 0;\n"
-        "if (num_odims > 2) {\n"
-        "id2 = get_group_id(0) / groups_0;\n"
-        "id0 = get_group_id(0) - id2 * groups_0;\n"
-        "id0 = get_local_id(0) + id0 * get_local_size(0);\n"
-        "if (num_odims > 3) {\n"
-        "id3 = get_group_id(1) / groups_1;\n"
-        "id1 = get_group_id(1) - id3 * groups_1;\n"
-        "id1 = get_local_id(1) + id1 * get_local_size(1);\n"
-        "} else {\n"
-        "id1 = get_global_id(1);\n"
-        "}\n"
-        " } else {\n"
-        "id3 = 0;\n"
-        "id2 = 0;\n"
-        "id1 = get_global_id(1);\n"
-        "id0 = get_global_id(0);\n"
-        "}\n"
-        "bool cond = \n"
-        "id0 < oInfo.dims[0] && \n"
-        "id1 < oInfo.dims[1] && \n"
-        "id2 < oInfo.dims[2] && \n"
-        "id3 < oInfo.dims[3];\n\n"
-        "if (!cond) return;\n\n"
-        "int idx = "
-        "oInfo.strides[3] * id3 + oInfo.strides[2] * id2 + "
-        "oInfo.strides[1] * id1 + id0 + oInfo.offset;\n\n";
-
+    static const char *generalIndex = R"JIT(
+        uint id0 = 0, id1 = 0, id2 = 0, id3 = 0;
+        if (num_odims > 2) {
+            id2 = get_group_id(0) / groups_0;
+            id0 = get_group_id(0) - id2 * groups_0;
+            id0 = get_local_id(0) + id0 * get_local_size(0);
+            if (num_odims > 3) {
+                id3 = get_group_id(1) / groups_1;
+                id1 = get_group_id(1) - id3 * groups_1;
+                id1 = get_local_id(1) + id1 * get_local_size(1);
+            } else {
+                id1 = get_global_id(1);
+            }
+        } else {
+            id3 = 0;
+            id2 = 0;
+            id1 = get_global_id(1);
+            id0 = get_global_id(0);
+        }
+        bool cond = id0 < oInfo.dims[0] &&
+                    id1 < oInfo.dims[1] &&
+                    id2 < oInfo.dims[2] &&
+                    id3 < oInfo.dims[3];
+        if (!cond) return;
+        int idx = oInfo.strides[3] * id3 +
+                  oInfo.strides[2] * id2 +
+                  oInfo.strides[1] * id1 +
+                  id0 + oInfo.offset;
+        )JIT";
 
     stringstream inParamStream;
     stringstream outParamStream;
@@ -143,7 +144,7 @@ static string getKernelString(const string funcName,
         // Generate output parameters
         outParamStream << "__global " << full_nodes[id]->getTypeStr() << " *out" << id << ", \n";
         // Generate code to write the output
-        outWriteStream << "out" << id << "[idx] = " << "val" << id << ";\n";
+        outWriteStream << "out" << id << "[idx] = val" << id << ";\n";
     }
 
     // Put various blocks into a single stream

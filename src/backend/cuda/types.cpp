@@ -15,7 +15,7 @@
 namespace cuda
 {
 
-    template<typename T > const char *shortname(bool caps) { return caps ?  "Q" : "q"; }
+    template<typename T> const char *shortname(bool caps) { return caps ?  "Q" : "q"; }
     template<> const char *shortname<float   >(bool caps) { return caps ?  "S" : "s"; }
     template<> const char *shortname<double  >(bool caps) { return caps ?  "D" : "d"; }
     template<> const char *shortname<cfloat  >(bool caps) { return caps ?  "C" : "c"; }

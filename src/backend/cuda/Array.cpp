@@ -33,8 +33,8 @@ namespace cuda
     template<typename T>
     Node_ptr bufferNodePtr()
     {
-        return Node_ptr(reinterpret_cast<Node *>(new BufferNode<T>(getFullName<T>(),
-                                                                   shortname<T>(true))));
+        return Node_ptr(new BufferNode<T>(getFullName<T>(),
+                                          shortname<T>(true)));
     }
 
     template<typename T>
