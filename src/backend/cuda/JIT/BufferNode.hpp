@@ -10,7 +10,6 @@
 #pragma once
 #include "Node.hpp"
 #include <iomanip>
-#include <memory>
 #include <mutex>
 
 namespace cuda
@@ -19,25 +18,17 @@ namespace cuda
 namespace JIT
 {
 
-    template <typename T>
-    static inline std::string toString(T val)
-    {
-        std::stringstream s;
-        s << val;
-        return s.str();
-    }
 
     template<typename T>
     class BufferNode : public Node
     {
     private:
-        // Keep the shared pointer for reference counting
         std::shared_ptr<T> m_data;
         Param<T> m_param;
         unsigned m_bytes;
         std::once_flag m_set_data_flag;
-
         bool m_linear_buffer;
+
     public:
 
         BufferNode(const char *type_str,
@@ -45,6 +36,8 @@ namespace JIT
             : Node(type_str, name_str, 0, {})
         {
         }
+
+        bool isBuffer() { return true; }
 
         void setData(Param<T> param, std::shared_ptr<T> data, const unsigned bytes, bool is_linear)
         {
@@ -65,90 +58,58 @@ namespace JIT
             return m_linear_buffer && same_dims;
         }
 
-        bool isBuffer() { return true; }
-
         void genKerName(std::stringstream &kerStream, Node_ids ids)
         {
             kerStream << "_" << m_name_str;
-            kerStream << std::setw(2) << std::setfill('0') << std::hex << ids.id << std::dec;
+            kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id << std::dec;
         }
 
-        void genParams(std::stringstream &kerStream,
-                       std::stringstream &annStream,
-                       int id,
-                       bool is_linear)
+        void genParams(std::stringstream &kerStream, int id, bool is_linear)
         {
-            kerStream << m_type_str << "* %in" << id << ",\n";
-            annStream << m_type_str << "*,\n";
+            if (is_linear) {
+                kerStream << m_type_str << " *in" << id << "_ptr,\n";
+            } else {
+                kerStream << "Param<" << m_type_str << "> in" << id
+                          << ",\n";
+            }
+        }
 
-            if (!is_linear) {
-                kerStream << "i32 %dim0"     << id << ","
-                          << "i32 %dim1"     << id << ","
-                          << "i32 %dim2"     << id << ","
-                          << "i32 %dim3"     << id << ","
-                          << "\n"
-                          << "i32 %str1"     << id << ","
-                          << "i32 %str2"     << id << ","
-                          << "i32 %str3"     << id << ","
-                          << "\n";
-
-                annStream << "i32, i32, i32, i32,\n"
-                          << "i32, i32, i32,\n";
+        void setArgs(std::vector<void *> &args, bool is_linear)
+        {
+            if (is_linear) {
+                args.push_back((void *)&m_param.ptr);
+            } else {
+                args.push_back((void *)&m_param);
             }
         }
 
         void genOffsets(std::stringstream &kerStream, int id, bool is_linear)
         {
-            if (!is_linear) {
-                kerStream << "%b3" << id << " = icmp slt i32 %id3, %dim3" << id << "\n";
-                kerStream << "%b2" << id << " = icmp slt i32 %id2, %dim2" << id << "\n";
-                kerStream << "%b1" << id << " = icmp slt i32 %id1, %dim1" << id << "\n";
-                kerStream << "%b0" << id << " = icmp slt i32 %id0, %dim0" << id << "\n";
+            std::string idx_str = std::string("int idx") + std::to_string(id);
 
-                kerStream << "%c3" << id << " = zext i1 %b3" << id << " to i32\n";
-                kerStream << "%c2" << id << " = zext i1 %b2" << id << " to i32\n";
-                kerStream << "%c1" << id << " = zext i1 %b1" << id << " to i32\n";
-                kerStream << "%c0" << id << " = zext i1 %b0" << id << " to i32\n";
-
-                kerStream << "%d3" << id << " = mul i32 %c3" << id << ", %id3\n";
-                kerStream << "%d2" << id << " = mul i32 %c2" << id << ", %id2\n";
-                kerStream << "%d1" << id << " = mul i32 %c1" << id << ", %id1\n";
-                kerStream << "%d0" << id << " = mul i32 %c0" << id << ", %id0\n";
-
-                kerStream << "%off3i" << id << " = mul i32 %d3" << id
-                          << ", %str3" << id << "\n";
-
-                kerStream << "%off2i" << id << " = mul i32 %d2" << id
-                          << ", %str2" << id << "\n";
-
-                kerStream << "%off1i" << id << " = mul i32 %d1" << id
-                          << ", %str1" << id << "\n";
-
-                kerStream << "%off23i" << id << " = add i32 %off2i"
-                          << id << ", %off3i" << id << "\n";
-
-                kerStream << "%off123i" << id << " = add i32 %off23i"
-                          << id << ", %off1i" << id << "\n";
-
-                kerStream << "%idxa" << id << " = add i32 %off123i"
-                          << id << ", %d0" << id << "\n";
-
-                kerStream << "%idx" << id << " = sext i32 %idxa" << id <<" to i64\n\n";
+            if (is_linear) {
+                kerStream << idx_str << " = idx;\n";
+            } else {
+                std::string info_str = std::string("in") + std::to_string(id);
+                kerStream << idx_str << " = "
+                          << "(id3 < " << info_str << ".dims[3]) * "
+                          << info_str << ".strides[3] * id3 + "
+                          << "(id2 < " << info_str << ".dims[2]) * "
+                          << info_str << ".strides[2] * id2 + "
+                          << "(id1 < " << info_str << ".dims[1]) * "
+                          << info_str << ".strides[1] * id1 + "
+                          << "(id0 < " << info_str << ".dims[0]) * "
+                          << "id0;"
+                          << "\n";
+                kerStream << m_type_str << " *in" << id << "_ptr = in" << id << ".ptr;\n";
             }
         }
 
-        void genFuncs(std::stringstream &kerStream, str_map_t &declStrs, Node_ids ids, bool is_linear)
+        void genFuncs(std::stringstream &kerStream, Node_ids ids)
         {
-            kerStream << "%inIdx" << ids.id << " = "
-                      << "getelementptr inbounds " << m_type_str << "* %in" << ids.id
-                      << ", i64 %idx";
-
-            if (!is_linear) kerStream << ids.id;
-            kerStream << "\n";
-
-            kerStream << "%val" << ids.id << " = " << "load "
-                      << m_type_str << "* %inIdx" << ids.id << "\n\n";
-
+            kerStream << m_type_str << " val" << ids.id << " = "
+                      << "in" << ids.id << "_ptr[idx" << ids.id << "];"
+                      << "\n";
         }
 
         void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
@@ -157,21 +118,6 @@ namespace JIT
             buf_count++;
             bytes += m_bytes;
             return;
-        }
-
-        void setArgs(std::vector<void *> &args, bool is_linear)
-        {
-            args.push_back((void *)&(m_param.ptr));
-
-            if (!is_linear) {
-                args.push_back((void *)&m_param.dims[0]);
-                args.push_back((void *)&m_param.dims[1]);
-                args.push_back((void *)&m_param.dims[2]);
-                args.push_back((void *)&m_param.dims[3]);
-                args.push_back((void *)&m_param.strides[1]);
-                args.push_back((void *)&m_param.strides[2]);
-                args.push_back((void *)&m_param.strides[3]);
-            }
         }
     };
 

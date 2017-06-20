@@ -80,7 +80,7 @@ Array<T> unaryOp(const Array<T> &in)
                                               unaryName<op>(),
                                               in_node, op);
 
-    return createNodeArray<T>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    return createNodeArray<T>(in.dims(), JIT::Node_ptr(node));
 }
 
 template<typename T, af_op_t op>
@@ -93,7 +93,7 @@ Array<char> checkOp(const Array<T> &in)
                                               unaryName<op>(),
                                               in_node, op);
 
-    return createNodeArray<char>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    return createNodeArray<char>(in.dims(), JIT::Node_ptr(node));
 }
 
 }

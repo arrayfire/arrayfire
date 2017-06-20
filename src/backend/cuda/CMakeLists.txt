@@ -3,10 +3,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 FIND_PACKAGE(CUDA 7.0 REQUIRED)
 
 INCLUDE(CLKernelToH)
-INCLUDE(FindNVVM)
-
-OPTION(USE_LIBDEVICE "Use libdevice for CUDA JIT" ON)
-SET(CUDA_LIBDEVICE_DIR "${CUDA_NVVM_HOME}/libdevice" CACHE PATH "Path where libdevice compute files are located" FORCE)
 
 MARK_AS_ADVANCED(
     CUDA_BUILD_CUBIN
@@ -168,14 +164,10 @@ FILE(GLOB jit_sources
 FILE(GLOB kernel_headers
     "kernel/*.hpp")
 
-FILE(GLOB ptx_sources
-    "JIT/*.cu")
-
 LIST(SORT cuda_headers)
 LIST(SORT cuda_sources)
 LIST(SORT jit_sources)
 LIST(SORT kernel_headers)
-LIST(SORT ptx_sources)
 
 SOURCE_GROUP(backend\\cuda\\Headers FILES ${cuda_headers})
 SOURCE_GROUP(backend\\cuda\\Sources FILES ${cuda_sources})
@@ -219,10 +211,23 @@ FILE(GLOB cpp_sources
 
 LIST(SORT cpp_sources)
 
+SET(jit_kernel_headers
+    "kernel_headers")
+
+FILE(GLOB jit_src "kernel/jit.cuh")
+CL_KERNEL_TO_H(
+    SOURCES ${jit_src}
+    VARNAME jit_files
+    EXTENSION "hpp"
+    OUTPUT_DIR ${jit_kernel_headers}
+    TARGETS jit_kernel_targets
+    NAMESPACE "cuda"
+    )
+
+
 SOURCE_GROUP(api\\cpp\\Sources FILES ${cpp_sources})
 
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/thrust_sort_by_key/CMakeLists.txt")
-
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_by_key/CMakeLists.txt")
 
 LIST(LENGTH COMPUTE_VERSIONS COMPUTE_COUNT)
@@ -242,88 +247,7 @@ SET(OLD_CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS})
 IF(${CUDA_VERSION_MAJOR} GREATER 7) # CUDA 8 or newer
     SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --keep-device-functions")
 ENDIF()
-CUDA_COMPILE_PTX(ptx_files ${ptx_sources})
 SET(CUDA_NVCC_FLAGS ${OLD_CUDA_NVCC_FLAGS})
-
-set(cuda_ptx "")
-foreach(ptx_src_file ${ptx_sources})
-
-      get_filename_component(_name "${ptx_src_file}" NAME_WE)
-
-      # CUDA_COMPILE_PTX from CMake 3.7 has new features that require this change
-      # TODO Fix this with a more complete solution
-      IF(CMAKE_VERSION VERSION_LESS 3.7) # Before 3.7
-        SET(NAME_APPEND "")
-      ELSE(CMAKE_VERSION VERSION_LESS 3.7)  # 3.7 and newer
-        SET(NAME_APPEND "_1")
-      ENDIF(CMAKE_VERSION VERSION_LESS 3.7)
-
-      set(_gen_file_name
-        "${PROJECT_BINARY_DIR}/src/backend/cuda/cuda_compile_ptx${NAME_APPEND}_generated_${_name}.cu.ptx")
-      set(_out_file_name
-        "${PROJECT_BINARY_DIR}/src/backend/cuda/${_name}.ptx")
-
-      ADD_CUSTOM_COMMAND(
-        OUTPUT "${_out_file_name}"
-        DEPENDS "${_gen_file_name}"
-        COMMAND ${CMAKE_COMMAND} -E copy "${_gen_file_name}" "${_out_file_name}")
-
-      list(APPEND cuda_ptx "${_out_file_name}")
-endforeach()
-
-SET( ptx_headers
-    "ptx_headers")
-
-CL_KERNEL_TO_H(
-    SOURCES ${cuda_ptx}
-    VARNAME kernel_files
-    EXTENSION "hpp"
-    OUTPUT_DIR ${ptx_headers}
-    TARGETS ptx_targets
-    NAMESPACE "cuda"
-    NULLTERM TRUE
-    )
-
-SET(libdevice_bc "")
-IF (USE_LIBDEVICE)
-    SET(libdevice_computes "")
-    LIST(APPEND libdevice_computes "20" "30" "35" "50")
-    FOREACH(libdevice_compute ${libdevice_computes})
-        SET(_libdevice_bc_file "${CUDA_LIBDEVICE_DIR}/libdevice.compute_${libdevice_compute}.10.bc")
-        SET(_libdevice_bc_copy "${PROJECT_BINARY_DIR}/src/backend/cuda/compute_${libdevice_compute}.bc")
-        IF (EXISTS ${_libdevice_bc_file})
-            ADD_CUSTOM_COMMAND(
-                OUTPUT "${_libdevice_bc_copy}"
-                DEPENDS "${_libdevice_bc_file}"
-                COMMAND ${CMAKE_COMMAND} -E copy "${_libdevice_bc_file}" "${_libdevice_bc_copy}")
-            LIST(APPEND libdevice_bc ${_libdevice_bc_copy})
-            ADD_DEFINITIONS(-D"__LIBDEVICE_COMPUTE_${libdevice_compute}")
-        ENDIF()
-    ENDFOREACH()
-ENDIF()
-
-LIST(LENGTH libdevice_bc libdevice_bc_len)
-
-IF (${libdevice_bc_len} GREATER 0)
-
-  SET(libdevice_headers
-    "libdevice_headers")
-
-  CL_KERNEL_TO_H(
-    SOURCES ${libdevice_bc}
-    VARNAME libdevice_files
-    EXTENSION "hpp"
-    OUTPUT_DIR ${libdevice_headers}
-    TARGETS libdevice_targets
-    NAMESPACE "cuda"
-    BINARY TRUE
-    )
-
-  MESSAGE(STATUS "LIBDEVICE found.")
-  ADD_DEFINITIONS(-DUSE_LIBDEVICE)
-ELSE()
-  MESSAGE(STATUS "LIBDEVICE not found on system. CUDA JIT may be slower")
-ENDIF()
 
 IF("${APPLE}")
     ADD_DEFINITIONS(-D__STRICT_ANSI__)
@@ -407,9 +331,10 @@ ENDIF(NOT CUDA_CUDA_LIBRARY)
 
 SET(CUDA_ADD_LIBRARY_OPTIONS "")
 IF(UNIX)
-    # These flags enable C++11 and disable invalid offsetof warning
-    SET(CUDA_ADD_LIBRARY_OPTIONS "-std=c++11 -Xcudafe \"--diag_suppress=1427\"")
+  # These flags enable C++11 and disable invalid offsetof warning
+  SET(CUDA_ADD_LIBRARY_OPTIONS "-std=c++11 -Xcudafe \"--diag_suppress=1427\"")
 ENDIF(UNIX)
+
 
 MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cuda_headers}
@@ -425,23 +350,26 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${scan_by_key_sources}
                 OPTIONS ${CUDA_GENERATE_CODE} ${CUDA_ADD_LIBRARY_OPTIONS})
 
-ADD_DEPENDENCIES(afcuda ${ptx_targets})
+FIND_LIBRARY (
+  CUDA_nvrtc_LIBRARY
+  NAMES "nvrtc"
+  PATHS ${CUDA_TOOLKIT_ROOT_DIR}
+  PATH_SUFFIXES "lib64" "lib/x64" "lib"
+  DOC "CUDA NVRTC Library"
+  NO_DEFAULT_PATH
+  )
 
-IF (${libdevice_bc_len} GREATER 0)
-  ADD_DEPENDENCIES(afcuda ${libdevice_targets})
-ENDIF()
-
-TARGET_LINK_LIBRARIES(afcuda
-                                PRIVATE ${CUDA_CUBLAS_LIBRARIES}
+TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
                                 PRIVATE ${CUDA_LIBRARIES}
                                 PRIVATE ${FreeImage_LIBS}
                                 PRIVATE ${CUDA_CUFFT_LIBRARIES}
                                 PRIVATE ${CUDA_cusparse_LIBRARY}
                                 PRIVATE ${CUDA_cusolver_LIBRARY}
-                                PRIVATE ${CUDA_nvvm_LIBRARY}
+                                PRIVATE ${CUDA_nvrtc_LIBRARY}
                                 PRIVATE ${CUDA_CUDA_LIBRARY}
                      )
 
+ADD_DEPENDENCIES(afcuda ${jit_kernel_targets})
 LIST(LENGTH GRAPHICS_DEPENDENCIES GRAPHICS_DEPENDENCIES_LEN)
 IF(${GRAPHICS_DEPENDENCIES_LEN} GREATER 0)
     ADD_DEPENDENCIES(afcuda ${GRAPHICS_DEPENDENCIES})

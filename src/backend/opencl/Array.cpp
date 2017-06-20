@@ -30,8 +30,8 @@ namespace opencl
     template<typename T>
     Node_ptr bufferNodePtr()
     {
-        return Node_ptr(reinterpret_cast<Node *>(new BufferNode(dtype_traits<T>::getName(),
-                                                                shortname<T>(true))));
+        return Node_ptr(new BufferNode(dtype_traits<T>::getName(),
+                                       shortname<T>(true)));
     }
 
     template<typename T>

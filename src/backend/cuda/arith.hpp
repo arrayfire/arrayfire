@@ -10,7 +10,6 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <optypes.hpp>
-#include <err_cuda.hpp>
 #include <binary.hpp>
 
 namespace cuda

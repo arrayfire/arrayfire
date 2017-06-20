@@ -25,8 +25,8 @@ namespace JIT
         std::shared_ptr<cl::Buffer> m_data;
         KParam m_info;
         unsigned m_bytes;
-        bool m_linear_buffer;
         std::once_flag m_set_data_flag;
+        bool m_linear_buffer;
 
     public:
 
@@ -37,10 +37,6 @@ namespace JIT
         }
 
         bool isBuffer() { return true; }
-
-        ~BufferNode()
-        {
-        }
 
         void setData(KParam info, std::shared_ptr<cl::Buffer> data, const unsigned bytes, bool is_linear)
         {
@@ -92,7 +88,7 @@ namespace JIT
         void genOffsets(std::stringstream &kerStream, int id, bool is_linear)
         {
             std::string idx_str = std::string("int idx") + std::to_string(id);
-            std::string info_str = std::string("iInfo") + std::to_string(id);;
+            std::string info_str = std::string("iInfo") + std::to_string(id);
 
             if (!is_linear) {
                 kerStream << idx_str << " = "
@@ -122,7 +118,6 @@ namespace JIT
             len++;
             buf_count++;
             bytes += m_bytes;
-            return;
         }
     };
 
