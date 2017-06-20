@@ -76,9 +76,9 @@ static string getKernelString(const string funcName,
                               bool is_linear)
 {
 
-    const char *includeFileStr = jit_cuh;
+    const std::string includeFileStr(jit_cuh, jit_cuh_len);
 
-    const char paramTStr[] =R"JIT(
+    const std::string paramTStr = R"JIT(
         template<typename T>
         struct Param
         {
