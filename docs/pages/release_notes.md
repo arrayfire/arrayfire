@@ -76,6 +76,7 @@ Bug Fixes
   `cuda::findPlan()`. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1793)</sup>
 * Argument checks in \ref af_create_sparse_array avoids inputs of type
   int64. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1747)</sup>
+* Fixed issue with indexing an array with a step size != 1. <sup>[1](https://github.com/arrayfire/arrayfire/issues/1846)</sup>
 
 Build fixes
 -----------
