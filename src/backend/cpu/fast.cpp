@@ -70,8 +70,8 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
 
         count = 0;
         kernel::non_maximal(V, x, y,
-                    x_total, y_total, score_total,
-                    &count, feat_found, edge);
+                            x_total, y_total, score_total,
+                            &count, feat_found, edge);
 
         feat_found = std::min(max_feat, count);
     } else {

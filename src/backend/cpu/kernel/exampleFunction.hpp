@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <utility.hpp>
 
 namespace cpu
@@ -17,18 +17,18 @@ namespace kernel
 {
 
 template<typename T>
-void exampleFunction(Array<T> out, Array<T> const a, Array<T> const b, const af_someenum_t method)
+void exampleFunction(Param<T> out, CParam<T> a, CParam<T> b, const af_someenum_t method)
 {
-    dim4 oDims    = out.dims();
+    dim4 oDims    = out.dims;
 
-    dim4 aStrides = a.strides();        // you can retrieve strides
-    dim4 bStrides = b.strides();
-    dim4 oStrides = out.strides();
+    dim4 aStrides = a.strides;        // you can retrieve strides
+    dim4 bStrides = b.strides;
+    dim4 oStrides = out.strides;
 
-    const T* src1 = a.get();            // cpu::Array<T>::get returns the pointer to the
-                                        // memory allocated for that Array (with proper offsets)
-    const T* src2 = b.get();            // cpu::Array<T>::get returns the pointer to the
-                                        // memory allocated for that Array (with proper offsets)
+    const T* src1 = a.get();            // cpu::Param<T>::get returns the pointer to the
+                                        // memory allocated for that Param (with proper offsets)
+    const T* src2 = b.get();            // cpu::Param<T>::get returns the pointer to the
+                                        // memory allocated for that Param (with proper offsets)
     T* dst = out.get();
 
     // Implement your algorithm and write results to dst

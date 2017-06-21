@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <math.hpp>
 #include <err_cpu.hpp>
 #include "interp.hpp"
@@ -19,17 +19,17 @@ namespace kernel
 {
 
 template<typename T, int order>
-void rotate(Array<T> output, const Array<T> input,
+void rotate(Param<T> output, CParam<T> input,
             const float theta, af_interp_type method)
 {
     typedef typename dtype_traits<T>::base_type BT;
     typedef wtype_t<BT> WT;
     Interp2<T, WT, order> interp;
 
-    const af::dim4 odims    = output.dims();
-    const af::dim4 idims    = input.dims();
-    const af::dim4 ostrides = output.strides();
-    const af::dim4 istrides = input.strides();
+    const af::dim4 odims    = output.dims;
+    const af::dim4 idims    = input.dims;
+    const af::dim4 ostrides = output.strides;
+    const af::dim4 istrides = input.strides;
 
     const float c = cos(-theta), s = sin(-theta);
     float tx, ty;

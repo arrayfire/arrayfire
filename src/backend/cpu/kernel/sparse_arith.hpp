@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <math.hpp>
 
 namespace cpu
@@ -62,9 +62,9 @@ struct arith_op<T, af_div_t>
 };
 
 template<typename T, af_op_t op, af_storage type>
-void sparseArithOpD(Array<T> output,
-                    const Array<T> values, const Array<int> rowIdx, const Array<int> colIdx,
-                    const Array<T> rhs, const bool reverse = false)
+void sparseArithOpD(Param<T> output,
+                    CParam<T> values, CParam<int> rowIdx, CParam<int> colIdx,
+                    CParam<T> rhs, const bool reverse = false)
 {
     T * oPtr = output.get();
     const T   * hPtr = rhs.get();
@@ -73,14 +73,14 @@ void sparseArithOpD(Array<T> output,
     const int * rPtr = rowIdx.get();
     const int * cPtr = colIdx.get();
 
-    dim4 odims    = output.dims();
-    dim4 ostrides = output.strides();
-    dim4 hstrides = rhs.strides();
+    dim4 odims    = output.dims;
+    dim4 ostrides = output.strides;
+    dim4 hstrides = rhs.strides;
 
     std::vector<int> temp;
     if(type == AF_STORAGE_CSR) {
-        temp.resize(values.elements());
-        for(int i = 0; i < rowIdx.dims()[0] - 1; i++) {
+        temp.resize(values.dims.elements());
+        for(int i = 0; i < rowIdx.dims[0] - 1; i++) {
             for(int ii = rPtr[i]; ii < rPtr[i + 1]; ii++) {
                 temp[ii] = i;
             }
@@ -91,7 +91,7 @@ void sparseArithOpD(Array<T> output,
     const int *xx = (type == AF_STORAGE_CSR) ? temp.data() : rPtr;
     const int *yy = (type == AF_STORAGE_CSC) ? temp.data() : cPtr;
 
-    for(int i = 0; i < (int)values.elements(); i++) {
+    for(int i = 0; i < (int)values.dims.elements(); i++) {
         // Bad index data
         if(xx[i] >= odims[0] || yy [i]>= odims[1]) continue;
 
@@ -104,8 +104,8 @@ void sparseArithOpD(Array<T> output,
 }
 
 template<typename T, af_op_t op, af_storage type>
-void sparseArithOpS(Array<T> values, Array<int> rowIdx, Array<int> colIdx,
-                    const Array<T> rhs, const bool reverse = false)
+void sparseArithOpS(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
+                    CParam<T> rhs, const bool reverse = false)
 {
           T   * vPtr = values.get();
     const int * rPtr = rowIdx.get();
@@ -113,13 +113,13 @@ void sparseArithOpS(Array<T> values, Array<int> rowIdx, Array<int> colIdx,
 
     const T   * hPtr = rhs.get();
 
-    dim4 dims     = rhs.dims();
-    dim4 hstrides = rhs.strides();
+    dim4 dims     = rhs.dims;
+    dim4 hstrides = rhs.strides;
 
     std::vector<int> temp;
     if(type == AF_STORAGE_CSR) {
-        temp.resize(values.elements());
-        for(int i = 0; i < rowIdx.dims()[0] - 1; i++) {
+        temp.resize(values.dims.elements());
+        for(int i = 0; i < rowIdx.dims[0] - 1; i++) {
             for(int ii = rPtr[i]; ii < rPtr[i + 1]; ii++) {
                 temp[ii] = i;
             }
@@ -130,7 +130,7 @@ void sparseArithOpS(Array<T> values, Array<int> rowIdx, Array<int> colIdx,
     const int *xx = (type == AF_STORAGE_CSR) ? temp.data() : rPtr;
     const int *yy = (type == AF_STORAGE_CSC) ? temp.data() : cPtr;
 
-    for(int i = 0; i < (int)values.elements(); i++) {
+    for(int i = 0; i < (int)values.dims.elements(); i++) {
         // Bad index data
         if(xx[i] >= dims[0] || yy [i]>= dims[1]) continue;
 
@@ -143,4 +143,3 @@ void sparseArithOpS(Array<T> values, Array<int> rowIdx, Array<int> colIdx,
 
 }
 }
-

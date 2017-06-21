@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -155,14 +155,14 @@ struct resize_op<T, AF_INTERP_LOWER>
 };
 
 template<typename T, af_interp_type method>
-void resize(Array<T> out, const Array<T> in)
+void resize(Param<T> out, CParam<T> in)
 {
-    af::dim4 idims    = in.dims();
-    af::dim4 odims    = out.dims();
+    af::dim4 idims    = in.dims;
+    af::dim4 odims    = out.dims;
     const T *inPtr    = in.get();
           T *outPtr   = out.get();
-    af::dim4 ostrides = out.strides();
-    af::dim4 istrides = in.strides();
+    af::dim4 ostrides = out.strides;
+    af::dim4 istrides = in.strides;
 
     resize_op<T, method> op;
     for(dim_t y = 0; y < odims[1]; y++) {

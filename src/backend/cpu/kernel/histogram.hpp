@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,14 +16,14 @@ namespace kernel
 {
 
 template<typename OutT, typename InT, bool IsLinear>
-void histogram(Array<OutT> out, Array<InT> const in,
+void histogram(Param<OutT> out, CParam<InT> in,
                unsigned const nbins, double const minval, double const maxval)
 {
-    dim4 const outDims   = out.dims();
+    dim4 const outDims   = out.dims;
     float const step     = (maxval - minval)/(float)nbins;
-    dim4 const inDims    = in.dims();
-    dim4 const iStrides  = in.strides();
-    dim4 const oStrides  = out.strides();
+    dim4 const inDims    = in.dims;
+    dim4 const iStrides  = in.strides;
+    dim4 const oStrides  = out.strides;
     dim_t const nElems   = inDims[0]*inDims[1];
 
 

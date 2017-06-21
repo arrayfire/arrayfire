@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -65,15 +65,15 @@ struct MinMaxOp<af_max_t, T>
 template<af_op_t op, typename T, int D>
 struct ireduce_dim
 {
-    void operator()(Array<T> output, Array<uint> locArray, const dim_t outOffset,
-                    const Array<T> input, const dim_t inOffset, const int dim)
+    void operator()(Param<T> output, Param<uint> locParam, const dim_t outOffset,
+                    CParam<T> input, const dim_t inOffset, const int dim)
     {
-        const af::dim4 odims    = output.dims();
-        const af::dim4 ostrides = output.strides();
-        const af::dim4 istrides = input.strides();
+        const af::dim4 odims    = output.dims;
+        const af::dim4 ostrides = output.strides;
+        const af::dim4 istrides = input.strides;
         const int D1 = D - 1;
         for (dim_t i = 0; i < odims[D1]; i++) {
-            ireduce_dim<op, T, D1>()(output, locArray, outOffset + i * ostrides[D1],
+            ireduce_dim<op, T, D1>()(output, locParam, outOffset + i * ostrides[D1],
                                      input, inOffset + i * istrides[D1], dim);
         }
     }
@@ -82,15 +82,15 @@ struct ireduce_dim
 template<af_op_t op, typename T>
 struct ireduce_dim<op, T, 0>
 {
-    void operator()(Array<T> output, Array<uint> locArray, const dim_t outOffset,
-                    const Array<T> input, const dim_t inOffset, const int dim)
+    void operator()(Param<T> output, Param<uint> locParam, const dim_t outOffset,
+                    CParam<T> input, const dim_t inOffset, const int dim)
     {
-        const af::dim4 idims = input.dims();
-        const af::dim4 istrides = input.strides();
+        const af::dim4 idims = input.dims;
+        const af::dim4 istrides = input.strides;
 
         T const * const in = input.get();
         T * out = output.get();
-        uint * loc = locArray.get();
+        uint * loc = locParam.get();
 
         dim_t stride = istrides[dim];
         MinMaxOp<op, T> Op(in[inOffset], 0);

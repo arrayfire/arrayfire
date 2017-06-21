@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <platform.hpp>
 #include <TNJ/Node.hpp>
 #include <vector>
@@ -19,21 +19,19 @@ namespace kernel
 {
 
 template<typename T>
-void evalMultiple(std::vector<Array<T>> arrays)
+void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> output_nodes_)
 {
-    af::dim4 odims = arrays[0].dims();
-    af::dim4 ostrs = arrays[0].strides();
+    af::dim4 odims = arrays[0].dims;
+    af::dim4 ostrs = arrays[0].strides;
 
-    int devId = cpu::getActiveDeviceId();
     TNJ::Node_map_t nodes;
     std::vector<T *> ptrs;
     std::vector<TNJ::TNode<T> *> output_nodes;
 
-    for (auto &arr : arrays) {
-        arr.setId(devId);
-        ptrs.push_back(arr.data.get());
-        output_nodes.push_back(reinterpret_cast<TNJ::TNode<T> *>(arr.node.get()));
-        arr.node->getNodesMap(nodes);
+    for (int i = 0; i < (int)arrays.size(); i++) {
+        ptrs.push_back(arrays[i].get());
+        output_nodes.push_back(reinterpret_cast<TNJ::TNode<T> *>(output_nodes_[i].get()));
+        output_nodes_[i]->getNodesMap(nodes);
     }
 
     bool is_linear = true;
@@ -44,7 +42,7 @@ void evalMultiple(std::vector<Array<T>> arrays)
     }
 
     if (is_linear) {
-        int num = arrays[0].elements();
+        int num = arrays[0].dims.elements();
         for (int i = 0; i < num; i++) {
             for (int n = 0; n < (int)full_nodes.size(); n++) {
                 full_nodes[n]->calc(i);
@@ -80,16 +78,15 @@ void evalMultiple(std::vector<Array<T>> arrays)
 }
 
 template<typename T>
-void evalArray(Array<T> arr)
+void evalArray(Param<T> arr, TNJ::Node_ptr node)
 {
-    arr.setId(cpu::getActiveDeviceId());
-    T *ptr = arr.data.get();
+    T *ptr = arr.get();
 
-    af::dim4 odims = arr.dims();
-    af::dim4 ostrs = arr.strides();
+    af::dim4 odims = arr.dims;
+    af::dim4 ostrs = arr.strides;
 
     TNJ::Node_map_t nodes;
-    arr.node->getNodesMap(nodes);
+    node->getNodesMap(nodes);
 
     bool is_linear = true;
     std::vector<TNJ::Node *> full_nodes(nodes.size());
@@ -101,7 +98,7 @@ void evalArray(Array<T> arr)
 
     TNJ::TNode<T> *output_node = reinterpret_cast<TNJ::TNode<T> *>(full_nodes.back());
     if (is_linear) {
-        int num = arr.elements();
+        int num = arr.dims.elements();
         for (int i = 0; i < num; i++) {
             for (int n = 0; n < (int)full_nodes.size(); n++) {
                 full_nodes[n]->calc(i);

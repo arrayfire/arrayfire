@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <utility.hpp>
 
 namespace cpu
@@ -319,12 +319,12 @@ void harris_response(
     const float* scl_in,
     const unsigned total_feat,
     unsigned* usable_feat,
-    const Array<T>& image,
+    CParam<T> image,
     const unsigned block_size,
     const float k_thr,
     const unsigned patch_size)
 {
-    const af::dim4 idims = image.dims();
+    const af::dim4 idims = image.dims;
     const T* image_ptr = image.get();
     for (unsigned f = 0; f < total_feat; f++) {
         unsigned x, y;
@@ -395,10 +395,10 @@ void centroid_angle(
     const float* y_in,
     float* orientation_out,
     const unsigned total_feat,
-    const Array<T>& image,
+    CParam<T> image,
     const unsigned patch_size)
 {
-    const af::dim4 idims = image.dims();
+    const af::dim4 idims = image.dims;
     const T* image_ptr = image.get();
     for (unsigned f = 0; f < total_feat; f++) {
         unsigned x = (unsigned)round(x_in[f]);
@@ -433,10 +433,10 @@ inline T get_pixel(
     const unsigned size,
     const int dist_x,
     const int dist_y,
-    const Array<T>& image,
+    CParam<T> image,
     const unsigned patch_size)
 {
-    const af::dim4 idims = image.dims();
+    const af::dim4 idims = image.dims;
     const T* image_ptr = image.get();
     float ori_sin = sin(ori);
     float ori_cos = cos(ori);
@@ -457,11 +457,11 @@ void extract_orb(
     float* y_in_out,
     const float* ori_in,
     float* size_out,
-    const Array<T>& image,
+    CParam<T> image,
     const float scl,
     const unsigned patch_size)
 {
-    const af::dim4 idims = image.dims();
+    const af::dim4 idims = image.dims;
     for (unsigned f = 0; f < n_feat; f++) {
         unsigned x = (unsigned)round(x_in_out[f]);
         unsigned y = (unsigned)round(y_in_out[f]);

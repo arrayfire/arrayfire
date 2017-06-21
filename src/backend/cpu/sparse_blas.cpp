@@ -231,22 +231,24 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     Array<T> out = createValueArray<T>(af::dim4(M, N, 1, 1), scalar<T>(0));
     out.eval();
 
-    auto func = [=] (Array<T> output, const SparseArray<T> left, const Array<T> right) {
+    auto func = [=] (Param<T> output,
+                     CParam<T> values,
+                     CParam<int> rowIdx,
+                     CParam<int> colIdx,
+                     const dim_t sdim0,
+                     const dim_t sdim1,
+                     CParam<T> right) {
         auto alpha = getScale<T, 1>();
         auto beta  = getScale<T, 0>();
 
-        int ldb = right.strides()[1];
-        int ldc = output.strides()[1];
-
-        Array<T  > values = left.getValues();
-        Array<int> rowIdx = left.getRowIdx();
-        Array<int> colIdx = left.getColIdx();
+        int ldb = right.strides[1];
+        int ldc = output.strides[1];
 
         int *pB = rowIdx.get();
         int *pE = rowIdx.get() + 1;
 
         sparse_matrix_t csrLhs;
-        create_csr_func<T>()(&csrLhs, SPARSE_INDEX_BASE_ZERO, left.dims()[0], left.dims()[1],
+        create_csr_func<T>()(&csrLhs, SPARSE_INDEX_BASE_ZERO, sdim0, sdim1,
                              pB, pE, colIdx.get(),
                              reinterpret_cast<ptr_type<T>>(values.get()));
 
@@ -275,7 +277,13 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
         mkl_sparse_destroy(csrLhs);
     };
 
-    getQueue().enqueue(func, out, lhs, rhs);
+
+    const Array<T  > values = lhs.getValues();
+    const Array<int> rowIdx = lhs.getRowIdx();
+    const Array<int> colIdx = lhs.getColIdx();
+    af::dim4 ldims = lhs.dims();
+
+    getQueue().enqueue(func, out, values, rowIdx, colIdx, ldims[0], ldims[1], rhs);
 
     return out;
 }
@@ -304,20 +312,21 @@ cdouble getConjugate(const cdouble &in)
 }
 
 template<typename T, bool conjugate>
-void mv(Array<T> output,
-        const Array<T> values,
-        const Array<int> rowIdx,
-        const Array<int> colIdx,
-        const Array<T> right,
+void mv(Param<T> output,
+        CParam<T> values,
+        CParam<int> rowIdx,
+        CParam<int> colIdx,
+        CParam<T> right,
         int M)
 {
-    T   const * const   valPtr = values.get();
-    int const * const   rowPtr = rowIdx.get();
-    int const * const   colPtr = colIdx.get();
-    T   const * const rightPtr = right.get();
-    T         * const   outPtr = output.get();
+    const T   *valPtr = values.get();
+    const int *rowPtr = rowIdx.get();
+    const int *colPtr = colIdx.get();
+    const T   *rightPtr = right.get();
 
-    for (int i = 0; i < rowIdx.dims()[0]-1; ++i) {
+    T* outPtr = output.get();
+
+    for (int i = 0; i < rowIdx.dims[0]-1; ++i) {
         outPtr[i] = scalar<T>(0);
         for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
             //If stride[0] of right is not 1 then rightPtr[colPtr[j]*stride]
@@ -331,24 +340,24 @@ void mv(Array<T> output,
 }
 
 template<typename T, bool conjugate>
-void mtv(Array<T> output,
-        const Array<T> values,
-        const Array<int> rowIdx,
-        const Array<int> colIdx,
-        const Array<T> right,
-        int M)
+void mtv(Param<T> output,
+         CParam<T> values,
+         CParam<int> rowIdx,
+         CParam<int> colIdx,
+         CParam<T> right,
+         int M)
 {
-    T   const * const   valPtr = values.get();
-    int const * const   rowPtr = rowIdx.get();
-    int const * const   colPtr = colIdx.get();
-    T   const * const rightPtr = right.get();
-    T         * const   outPtr = output.get();
+    const T *valPtr = values.get();
+    const int *rowPtr = rowIdx.get();
+    const int *colPtr = colIdx.get();
+    const T *rightPtr = right.get();
+    T* outPtr = output.get();
 
     for (int i = 0; i < M; ++i) {
         outPtr[i] = scalar<T>(0);
     }
 
-    for (int i = 0; i < rowIdx.dims()[0]-1; ++i) {
+    for (int i = 0; i < rowIdx.dims[0]-1; ++i) {
         for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
             //If stride[0] of right is not 1 then rightPtr[i*stride]
             if (conjugate) {
@@ -361,22 +370,22 @@ void mtv(Array<T> output,
 }
 
 template<typename T, bool conjugate>
-void mm(Array<T> output,
-        const Array<T> values,
-        const Array<int> rowIdx,
-        const Array<int> colIdx,
-        const Array<T> right,
+void mm(Param<T> output,
+        CParam<T> values,
+        CParam<int> rowIdx,
+        CParam<int> colIdx,
+        CParam<T> right,
         int M, int N,
         int ldb, int ldc)
 {
-    T   const * const   valPtr = values.get();
-    int const * const   rowPtr = rowIdx.get();
-    int const * const   colPtr = colIdx.get();
-    T   const *       rightPtr = right.get();
-    T         *         outPtr = output.get();
+    const T *valPtr = values.get();
+    const int *rowPtr = rowIdx.get();
+    const int *colPtr = colIdx.get();
+    const T *rightPtr = right.get();
+    T *outPtr = output.get();
 
     for (int o = 0; o < N; ++o) {
-        for (int i = 0; i < rowIdx.dims()[0]-1; ++i) {
+        for (int i = 0; i < rowIdx.dims[0]-1; ++i) {
             outPtr[i] = scalar<T>(0);
             for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
                 //If stride[0] of right is not 1 then rightPtr[colPtr[j]*stride]
@@ -393,26 +402,26 @@ void mm(Array<T> output,
 }
 
 template<typename T, bool conjugate>
-void mtm(Array<T> output,
-        const Array<T> values,
-        const Array<int> rowIdx,
-        const Array<int> colIdx,
-        const Array<T> right,
-        int M, int N,
-        int ldb, int ldc)
+void mtm(Param<T> output,
+         CParam<T> values,
+         CParam<int> rowIdx,
+         CParam<int> colIdx,
+         CParam<T> right,
+         int M, int N,
+         int ldb, int ldc)
 {
-    T   const * const   valPtr = values.get();
-    int const * const   rowPtr = rowIdx.get();
-    int const * const   colPtr = colIdx.get();
-    T   const *       rightPtr = right.get();
-    T         *         outPtr = output.get();
+    const T *valPtr = values.get();
+    const int *rowPtr = rowIdx.get();
+    const int *colPtr = colIdx.get();
+    const T *rightPtr = right.get();
+    T *outPtr = output.get();
 
     for (int o = 0; o < N; ++o) {
         for (int i = 0; i < M; ++i) {
             outPtr[i] = scalar<T>(0);
         }
 
-        for (int i = 0; i < rowIdx.dims()[0]-1; ++i) {
+        for (int i = 0; i < rowIdx.dims[0]-1; ++i) {
             for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
                 //If stride[0] of right is not 1 then rightPtr[i*stride]
                 if (conjugate) {
@@ -426,6 +435,7 @@ void mtm(Array<T> output,
         outPtr += ldc;
     }
 }
+
 template<typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
@@ -448,13 +458,13 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     Array<T> out = createValueArray<T>(af::dim4(M, N, 1, 1), scalar<T>(0));
     out.eval();
 
-    auto func = [=] (Array<T> output, const SparseArray<T> left, const Array<T> right) {
-        int ldb = right.strides()[1];
-        int ldc = output.strides()[1];
-
-        Array<T  > values = left.getValues();
-        Array<int> rowIdx = left.getRowIdx();
-        Array<int> colIdx = left.getColIdx();
+    auto func = [=] (Param<T> output,
+                     CParam<T> values,
+                     CParam<int> rowIdx,
+                     CParam<int> colIdx,
+                     CParam<T> right) {
+        int ldb = right.strides[1];
+        int ldc = output.strides[1];
 
         if(rDims[rColDim] == 1) {
             if (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) {
@@ -475,7 +485,11 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
         }
     };
 
-    getQueue().enqueue(func, out, lhs, rhs);
+    const Array<T  > values = lhs.getValues();
+    const Array<int> rowIdx = lhs.getRowIdx();
+    const Array<int> colIdx = lhs.getColIdx();
+
+    getQueue().enqueue(func, out, values, rowIdx, colIdx, rhs);
 
     return out;
 }

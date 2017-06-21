@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -18,16 +18,16 @@ namespace kernel
 template<af_op_t op, typename Ti, typename To, int D>
 struct reduce_dim
 {
-    void operator()(Array<To> out, const dim_t outOffset,
-                    const Array<Ti> in, const dim_t inOffset,
+    void operator()(Param<To> out, const dim_t outOffset,
+                    CParam<Ti> in, const dim_t inOffset,
                     const int dim, bool change_nan, double nanval)
     {
         static const int D1 = D - 1;
         static reduce_dim<op, Ti, To, D1> reduce_dim_next;
 
-        const af::dim4 ostrides = out.strides();
-        const af::dim4 istrides = in.strides();
-        const af::dim4 odims    = out.dims();
+        const af::dim4 ostrides = out.strides;
+        const af::dim4 istrides = in.strides;
+        const af::dim4 odims    = out.dims;
 
         for (dim_t i = 0; i < odims[D1]; i++) {
             reduce_dim_next(out, outOffset + i * ostrides[D1],
@@ -43,12 +43,12 @@ struct reduce_dim<op, Ti, To, 0>
 
     Transform<Ti, To, op> transform;
     Binary<To, op> reduce;
-    void operator()(Array<To> out, const dim_t outOffset,
-                    const Array<Ti> in, const dim_t inOffset,
+    void operator()(Param<To> out, const dim_t outOffset,
+                    CParam<Ti> in, const dim_t inOffset,
                     const int dim, bool change_nan, double nanval)
     {
-        const af::dim4 istrides = in.strides();
-        const af::dim4 idims    = in.dims();
+        const af::dim4 istrides = in.strides;
+        const af::dim4 idims    = in.dims;
 
         To * const outPtr = out.get() + outOffset;
         Ti const * const inPtr = in.get() + inOffset;

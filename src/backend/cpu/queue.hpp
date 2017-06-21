@@ -48,6 +48,30 @@ typedef async_queue queue_impl;
 
 namespace cpu {
 
+template<typename T> class Array;
+template<typename T> class Param;
+template<typename T> class CParam;
+
+template<typename T>
+T toParam(const T &val)
+{
+    return val;
+}
+
+
+template<typename T>
+Param<T> toParam(Array<T> &val)
+{
+    return (Param<T>)(val);
+}
+
+
+template<typename T>
+CParam<T> toParam(const Array<T> &val)
+{
+    return (CParam<T>)(val);
+}
+
 /// Wraps the async_queue class
 class queue
 {
@@ -62,8 +86,8 @@ public:
     void enqueue(const F func, Args... args)
     {
         count++;
-        if(sync_calls) { func( args... ); }
-        else           { aQueue.enqueue( func, args... ); }
+        if(sync_calls) { func(toParam(args)... ); }
+        else           { aQueue.enqueue(func, toParam(args)... ); }
 #ifndef NDEBUG
         sync();
 #else

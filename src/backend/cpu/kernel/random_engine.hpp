@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <Array.hpp>
+#include <Param.hpp>
 #include <err_cpu.hpp>
 #include <kernel/random_engine_philox.hpp>
 #include <kernel/random_engine_threefry.hpp>

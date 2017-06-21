@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,22 +16,22 @@ namespace kernel
 {
 
 template<typename OutT, typename InT, af_match_type MatchT>
-void matchTemplate(Array<OutT> out, const Array<InT> sImg, const Array<InT> tImg)
+void matchTemplate(Param<OutT> out, CParam<InT> sImg, CParam<InT> tImg)
 {
-    const af::dim4 sDims = sImg.dims();
-    const af::dim4 tDims = tImg.dims();
-    const af::dim4 sStrides = sImg.strides();
-    const af::dim4 tStrides = tImg.strides();
+    const af::dim4 sDims = sImg.dims;
+    const af::dim4 tDims = tImg.dims;
+    const af::dim4 sStrides = sImg.strides;
+    const af::dim4 tStrides = tImg.strides;
 
     const dim_t tDim0  = tDims[0];
     const dim_t tDim1  = tDims[1];
     const dim_t sDim0  = sDims[0];
     const dim_t sDim1  = sDims[1];
 
-    const af::dim4 oStrides = out.strides();
+    const af::dim4 oStrides = out.strides;
 
     OutT tImgMean = OutT(0);
-    dim_t winNumElements = tImg.elements();
+    dim_t winNumElements = tImg.dims.elements();
     bool needMean = MatchT==AF_ZSAD || MatchT==AF_LSAD ||
         MatchT==AF_ZSSD || MatchT==AF_LSSD ||
         MatchT==AF_ZNCC;

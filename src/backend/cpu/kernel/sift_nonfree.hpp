@@ -177,12 +177,12 @@ void gaussian1D(T* out, const int dim, double sigma=0.0)
 }
 
 template<typename T>
-Array<T> gauss_filter(float sigma)
+Param<T> gauss_filter(float sigma)
 {
     // Using 6-sigma rule
     unsigned gauss_len = std::min((unsigned)round(sigma * 6 + 1) | 1, 31u);
 
-    Array<T> filter = createEmptyArray<T>(gauss_len);
+    Param<T> filter = createEmptyArray<T>(gauss_len);
     gaussian1D((T*)getDevicePtr(filter), gauss_len, sigma);
 
     return filter;
@@ -218,9 +218,9 @@ void gaussianElimination(float* A, float* b, float* x)
 
 template<typename T>
 void sub(
-    Array<T>& out,
-    const Array<T>& in1,
-    const Array<T>& in2)
+    Param<T>& out,
+    CParam<T>& in1,
+    CParam<T>& in2)
 {
     size_t nel = in1.elements();
     T* out_ptr = out.get();
@@ -244,14 +244,14 @@ void detectExtrema(
     float* y_out,
     unsigned* layer_out,
     unsigned* counter,
-    const Array<T>& prev,
-    const Array<T>& center,
-    const Array<T>& next,
+    CParam<T>& prev,
+    CParam<T>& center,
+    CParam<T>& next,
     const unsigned layer,
     const unsigned max_feat,
     const float threshold)
 {
-    const af::dim4 idims = center.dims();
+    const af::dim4 idims = center.dims;
     const T* prev_ptr    = prev.get();
     const T* center_ptr  = center.get();
     const T* next_ptr    = next.get();
@@ -308,7 +308,7 @@ void interpolateExtrema(
     const float* y_in,
     const unsigned* layer_in,
     const unsigned extrema_feat,
-    std::vector< Array<T> >& dog_pyr,
+    std::vector< Param<T> >& dog_pyr,
     const unsigned max_feat,
     const unsigned octave,
     const unsigned n_layers,
@@ -333,7 +333,7 @@ void interpolateExtrema(
         const T* center_ptr = dog_pyr[octave*(n_layers+2) + layer].get();
         const T* next_ptr   = dog_pyr[octave*(n_layers+2) + layer+1].get();
 
-        af::dim4 idims = dog_pyr[octave*(n_layers+2)].dims();
+        af::dim4 idims = dog_pyr[octave*(n_layers+2)].dims;
 
         bool converges = true;
 
@@ -477,7 +477,7 @@ void calcOrientation(
     const float* response_in,
     const float* size_in,
     const unsigned total_feat,
-    const std::vector< Array<T> >& gauss_pyr,
+    const std::vector< Param<T> >& gauss_pyr,
     const unsigned max_feat,
     const unsigned octave,
     const unsigned n_layers,
@@ -507,13 +507,13 @@ void calcOrientation(
         const float exp_denom = 2.f * sigma * sigma;
 
         // Points img to correct Gaussian pyramid layer
-        const Array<T> img = gauss_pyr[octave*(n_layers+3) + layer];
+        CParam<T> img = gauss_pyr[octave*(n_layers+3) + layer];
         const T* img_ptr = img.get();
 
         for (int i = 0; i < OriHistBins; i++)
             hist[i] = 0.f;
 
-        af::dim4 idims = img.dims();
+        af::dim4 idims = img.dims;
 
         // Calculate orientation histogram
         for (int l = 0; l < len*len; l++) {
@@ -621,7 +621,7 @@ void computeDescriptor(
     const float* size_in,
     const float* ori_in,
     const unsigned total_feat,
-    const std::vector< Array<T> >& gauss_pyr,
+    const std::vector< Param<T> >& gauss_pyr,
     const int d,
     const int n,
     const float scale,
@@ -639,9 +639,9 @@ void computeDescriptor(
         const int fy = round(y_in[f] * scale);
 
         // Points img to correct Gaussian pyramid layer
-        Array<T> img = gauss_pyr[octave*(n_layers+3) + layer];
+        Param<T> img = gauss_pyr[octave*(n_layers+3) + layer];
         const T* img_ptr = img.get();
-        af::dim4 idims = img.dims();
+        af::dim4 idims = img.dims;
 
         float cos_t = cos(ori);
         float sin_t = sin(ori);
@@ -738,7 +738,7 @@ void computeGLOHDescriptor(
     const float* size_in,
     const float* ori_in,
     const unsigned total_feat,
-    const std::vector< Array<T> >& gauss_pyr,
+    const std::vector< Param<T> >& gauss_pyr,
     const int d,
     const unsigned rb,
     const unsigned ab,
@@ -758,9 +758,9 @@ void computeGLOHDescriptor(
         const int fy = round(y_in[f] * scale);
 
         // Points img to correct Gaussian pyramid layer
-        Array<T> img = gauss_pyr[octave*(n_layers+3) + layer];
+        Param<T> img = gauss_pyr[octave*(n_layers+3) + layer];
         const T* img_ptr = img.get();
-        af::dim4 idims = img.dims();
+        af::dim4 idims = img.dims;
 
         float cos_t = cos(ori);
         float sin_t = sin(ori);
@@ -867,22 +867,22 @@ void computeGLOHDescriptor(
 #undef IPTR
 
 template<typename T, typename convAccT>
-Array<T> createInitialImage(
-    const Array<T>& img,
+Param<T> createInitialImage(
+    CParam<T>& img,
     const float init_sigma,
     const bool double_input)
 {
-    af::dim4 idims = img.dims();
+    af::dim4 idims = img.dims;
 
-    Array<T> init_img = createEmptyArray<T>(af::dim4());
+    Param<T> init_img = createEmptyArray<T>(af::dim4());
 
     float s = (double_input) ? std::max((float)sqrt(init_sigma * init_sigma - InitSigma * InitSigma * 4), 0.1f)
                              : std::max((float)sqrt(init_sigma * init_sigma - InitSigma * InitSigma), 0.1f);
 
-    Array<T> filter = gauss_filter<T>(s);
+    Param<T> filter = gauss_filter<T>(s);
 
     if (double_input) {
-        Array<T> double_img = resize<T>(img, idims[0] * 2, idims[1] * 2, AF_INTERP_BILINEAR);
+        Param<T> double_img = resize<T>(img, idims[0] * 2, idims[1] * 2, AF_INTERP_BILINEAR);
         init_img = convolve2<T, convAccT, false>(double_img, filter, filter);
     }
     else {
@@ -893,8 +893,8 @@ Array<T> createInitialImage(
 }
 
 template<typename T, typename convAccT>
-std::vector< Array<T> > buildGaussPyr(
-    const Array<T>& init_img,
+std::vector< Param<T> > buildGaussPyr(
+    CParam<T>& init_img,
     const unsigned n_octaves,
     const unsigned n_layers,
     const float init_sigma)
@@ -911,7 +911,7 @@ std::vector< Array<T> > buildGaussPyr(
     }
 
     // Gaussian Pyramid
-    std::vector< Array<T> > gauss_pyr(n_octaves * (n_layers+3), createEmptyArray<T>(af::dim4()));
+    std::vector< Param<T> > gauss_pyr(n_octaves * (n_layers+3), createEmptyArray<T>(af::dim4()));
     for (unsigned o = 0; o < n_octaves; o++) {
         for (unsigned l = 0; l < n_layers+3; l++) {
             unsigned src_idx = (l == 0) ? (o-1)*(n_layers+3) + n_layers : o*(n_layers+3) + l-1;
@@ -921,11 +921,11 @@ std::vector< Array<T> > buildGaussPyr(
                 gauss_pyr[idx] = init_img;
             }
             else if (l == 0) {
-                af::dim4 sdims = gauss_pyr[src_idx].dims();
+                af::dim4 sdims = gauss_pyr[src_idx].dims;
                 gauss_pyr[idx] = resize<T>(gauss_pyr[src_idx], sdims[0] / 2, sdims[1] / 2, AF_INTERP_BILINEAR);
             }
             else {
-                Array<T> filter = gauss_filter<T>(sig_layers[l]);
+                Param<T> filter = gauss_filter<T>(sig_layers[l]);
 
                 gauss_pyr[idx] = convolve2<T, convAccT, false>(gauss_pyr[src_idx], filter, filter);
             }
@@ -936,20 +936,20 @@ std::vector< Array<T> > buildGaussPyr(
 }
 
 template<typename T>
-std::vector< Array<T> > buildDoGPyr(
-    std::vector< Array<T> >& gauss_pyr,
+std::vector< Param<T> > buildDoGPyr(
+    std::vector< Param<T> >& gauss_pyr,
     const unsigned n_octaves,
     const unsigned n_layers)
 {
     // DoG Pyramid
-    std::vector< Array<T> > dog_pyr(n_octaves * (n_layers+2), createEmptyArray<T>(af::dim4()));
+    std::vector< Param<T> > dog_pyr(n_octaves * (n_layers+2), createEmptyArray<T>(af::dim4()));
     for (unsigned o = 0; o < n_octaves; o++) {
         for (unsigned l = 0; l < n_layers+2; l++) {
             unsigned idx    = o*(n_layers+2) + l;
             unsigned bottom = o*(n_layers+3) + l;
             unsigned top    = o*(n_layers+3) + l+1;
 
-            dog_pyr[idx] = createEmptyArray<T>(gauss_pyr[bottom].dims());
+            dog_pyr[idx] = createEmptyArray<T>(gauss_pyr[bottom].dims);
 
             sub<T>(dog_pyr[idx], gauss_pyr[top], gauss_pyr[bottom]);
         }
@@ -960,9 +960,9 @@ std::vector< Array<T> > buildDoGPyr(
 
 
 template<typename T, typename convAccT>
-unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
-                   Array<float>& ori, Array<float>& size, Array<float>& desc,
-                   const Array<T>& in, const unsigned n_layers,
+unsigned sift_impl(Param<float>& x, Param<float>& y, Param<float>& score,
+                   Param<float>& ori, Param<float>& size, Param<float>& desc,
+                   CParam<T>& in, const unsigned n_layers,
                    const float contrast_thr, const float edge_thr,
                    const float init_sigma, const bool double_input,
                    const float img_scale, const float feature_ratio,
@@ -970,18 +970,18 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
 {
     in.eval();
     getQueue().sync();
-    af::dim4 idims = in.dims();
+    af::dim4 idims = in.dims;
 
     unsigned min_dim = min(idims[0], idims[1]);
     if (double_input) min_dim *= 2;
 
     const unsigned n_octaves = floor(log(min_dim) / log(2)) - 2;
 
-    Array<T> init_img = createInitialImage<T, convAccT>(in, init_sigma, double_input);
+    Param<T> init_img = createInitialImage<T, convAccT>(in, init_sigma, double_input);
 
-    std::vector< Array<T> > gauss_pyr = buildGaussPyr<T, convAccT>(init_img, n_octaves, n_layers, init_sigma);
+    std::vector< Param<T> > gauss_pyr = buildGaussPyr<T, convAccT>(init_img, n_octaves, n_layers, init_sigma);
 
-    std::vector< Array<T> > dog_pyr = buildDoGPyr<T>(gauss_pyr, n_octaves, n_layers);
+    std::vector< Param<T> > dog_pyr = buildDoGPyr<T>(gauss_pyr, n_octaves, n_layers);
 
     std::vector<float*> x_pyr(n_octaves, NULL);
     std::vector<float*> y_pyr(n_octaves, NULL);
@@ -1000,7 +1000,7 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
     const unsigned desc_len = (compute_GLOH) ? (1 + (rb-1) * ab) * hb : d*d*n;
 
     for (unsigned i = 0; i < n_octaves; i++) {
-        af::dim4 ddims = dog_pyr[i*(n_layers+2)].dims();
+        af::dim4 ddims = dog_pyr[i*(n_layers+2)].dims;
         if (ddims[0]-2*ImgBorder < 1 ||
             ddims[1]-2*ImgBorder < 1)
             continue;

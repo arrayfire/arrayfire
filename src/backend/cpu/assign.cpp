@@ -46,8 +46,9 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs)
         }
     }
 
-    getQueue().enqueue(kernel::assign<T>, out, rhs, std::move(isSeq),
-            std::move(seqs), std::move(idxArrs));
+    vector<CParam<uint>> idxParams(idxArrs.begin(), idxArrs.end());
+    getQueue().enqueue(kernel::assign<T>, out, out.getDataDims(), rhs, std::move(isSeq),
+            std::move(seqs), std::move(idxParams));
 }
 
 #define INSTANTIATE(T) \

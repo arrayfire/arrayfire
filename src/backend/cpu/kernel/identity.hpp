@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <math.hpp>
 
 namespace cpu
@@ -17,10 +17,10 @@ namespace kernel
 {
 
 template<typename T>
-void identity(Array<T> out)
+void identity(Param<T> out)
 {
     T *ptr = out.get();
-    const af::dim4 out_dims  = out.dims();
+    const af::dim4 out_dims  = out.dims;
 
     for (dim_t k = 0; k < out_dims[2] * out_dims[3]; k++) {
         for (dim_t j = 0; j < out_dims[1]; j++) {

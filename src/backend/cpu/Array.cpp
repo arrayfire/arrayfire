@@ -53,6 +53,7 @@ Array<T>::Array(dim4 dims, const T * const in_data, bool is_device, bool copy_de
     static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
     static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
     if (!is_device || copy_device) {
+        getQueue().sync();
         std::copy(in_data, in_data + dims.elements(), data.get());
     }
 }
@@ -84,6 +85,7 @@ Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
     owner(true)
 {
     if (!is_device) {
+        getQueue().sync();
         std::copy(in_data, in_data + info.total(), data.get());
     }
 }
@@ -98,7 +100,7 @@ void Array<T>::eval()
 
     data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
 
-    getQueue().enqueue(kernel::evalArray<T>, *this);
+    getQueue().enqueue(kernel::evalArray<T>, *this, this->node);
     // Reset shared_ptr
     this->node = bufferNodePtr<T>();
     ready = true;
@@ -125,6 +127,7 @@ template<typename T>
 void evalMultiple(std::vector<Array<T>*> array_ptrs)
 {
     std::vector<Array<T>> arrays;
+    std::vector<TNJ::Node_ptr> nodes;
     bool isWorker = getQueue().is_worker();
     for (auto &array : array_ptrs) {
         if (array->ready) continue;
@@ -132,10 +135,12 @@ void evalMultiple(std::vector<Array<T>*> array_ptrs)
         array->setId(getActiveDeviceId());
         array->data = std::shared_ptr<T>(memAlloc<T>(array->elements()), memFree<T>);
         arrays.push_back(*array);
+        nodes.push_back(array->node);
     }
 
+    std::vector<Param<T>> params(arrays.begin(), arrays.end());
     if (arrays.size() > 0) {
-        getQueue().enqueue(kernel::evalMultiple<T>, arrays);
+        getQueue().enqueue(kernel::evalMultiple<T>, params, nodes);
         for (auto &array : array_ptrs) {
             if (array->ready) continue;
             array->ready = true;
@@ -289,6 +294,7 @@ writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
         arr = copyArray<T>(arr);
     }
     arr.eval();
+    getQueue().sync();
     memcpy(arr.get(), data, bytes);
 }
 

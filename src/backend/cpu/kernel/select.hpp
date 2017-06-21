@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,18 +16,18 @@ namespace kernel
 {
 
 template<typename T>
-void select(Array<T> out, const Array<char> cond, const Array<T> a, const Array<T> b)
+void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b)
 {
-    af::dim4 adims = a.dims();
-    af::dim4 astrides = a.strides();
-    af::dim4 bdims = b.dims();
-    af::dim4 bstrides = b.strides();
+    af::dim4 adims = a.dims;
+    af::dim4 astrides = a.strides;
+    af::dim4 bdims = b.dims;
+    af::dim4 bstrides = b.strides;
 
-    af::dim4 cdims = cond.dims();
-    af::dim4 cstrides = cond.strides();
+    af::dim4 cdims = cond.dims;
+    af::dim4 cstrides = cond.strides;
 
-    af::dim4 odims = out.dims();
-    af::dim4 ostrides = out.strides();
+    af::dim4 odims = out.dims;
+    af::dim4 ostrides = out.strides;
 
     bool is_a_same[] = {adims[0] == odims[0], adims[1] == odims[1],
         adims[2] == odims[2], adims[3] == odims[3]};
@@ -78,13 +78,13 @@ void select(Array<T> out, const Array<char> cond, const Array<T> a, const Array<
 }
 
 template<typename T, bool flip>
-void select_scalar(Array<T> out, const Array<char> cond, const Array<T> a, const double b)
+void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const double b)
 {
-    af::dim4 astrides = a.strides();
-    af::dim4 cstrides = cond.strides();
+    af::dim4 astrides = a.strides;
+    af::dim4 cstrides = cond.strides;
 
-    af::dim4 odims = out.dims();
-    af::dim4 ostrides = out.strides();
+    af::dim4 odims = out.dims;
+    af::dim4 ostrides = out.strides;
 
     const T *aptr = a.get();
     T *optr = out.get();

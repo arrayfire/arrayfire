@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <err_cpu.hpp>
+#include <tuple>
 
 namespace cpu
 {

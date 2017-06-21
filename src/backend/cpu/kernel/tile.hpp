@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,16 +16,16 @@ namespace kernel
 {
 
 template<typename T>
-void tile(Array<T> out, const Array<T> in)
+void tile(Param<T> out, CParam<T> in)
 {
 
     T* outPtr = out.get();
     const T* inPtr = in.get();
 
-    const af::dim4 iDims = in.dims();
-    const af::dim4 oDims = out.dims();
-    const af::dim4 ist = in.strides();
-    const af::dim4 ost = out.strides();
+    const af::dim4 iDims = in.dims;
+    const af::dim4 oDims = out.dims;
+    const af::dim4 ist = in.strides;
+    const af::dim4 ost = out.strides;
 
     for(dim_t ow = 0; ow < oDims[3]; ow++) {
         const dim_t iw = ow % iDims[3];

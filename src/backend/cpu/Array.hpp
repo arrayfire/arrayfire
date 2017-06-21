@@ -15,6 +15,7 @@
 #include <types.hpp>
 #include <traits.hpp>
 #include <TNJ/Node.hpp>
+#include <Param.hpp>
 #include <memory.hpp>
 #include <memory>
 #include <algorithm>
@@ -29,10 +30,10 @@ template<typename T> class Array;
 // kernel::evalArray fn forward declaration
 namespace kernel
 {
-template<typename T> void evalArray(cpu::Array<T> in);
+    template<typename T> void evalArray(Param<T> in, TNJ::Node_ptr node);
 
-template<typename T>
-void evalMultiple(std::vector<Array<T>> arrays);
+    template<typename T>
+    void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> nodes);
 
 }
 }
@@ -211,14 +212,24 @@ namespace cpu
 
         const T* get(bool withOffset = true) const
         {
-            if (!isReady()) eval();
+            if (!data.get()) eval();
             return data.get() + (withOffset ? getOffset() : 0);
         }
 
         int useCount() const
         {
-            if (!isReady()) eval();
+            if (!data.get()) eval();
             return data.use_count();
+        }
+
+        operator Param<T>()
+        {
+            return Param<T>(this->get(), this->dims(), this->strides());
+        }
+
+        operator CParam<T>() const
+        {
+            return CParam<T>(this->get(), this->dims(), this->strides());
         }
 
         TNJ::Node_ptr getNode() const;
@@ -237,8 +248,9 @@ namespace cpu
                                           const std::vector<af_seq> &index,
                                           bool copy);
 
-        friend void kernel::evalArray<T>(Array<T> in);
-        friend void kernel::evalMultiple<T>(std::vector<Array<T>> arrays);
+        friend void kernel::evalArray<T>(Param<T> in, TNJ::Node_ptr node);
+        friend void kernel::evalMultiple<T>(std::vector<Param<T>> arrays,
+                                            std::vector<TNJ::Node_ptr> nodes);
 
         friend void destroyArray<T>(Array<T> *arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);

@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <err_cpu.hpp>
 
 namespace cpu
@@ -17,16 +17,16 @@ namespace kernel
 {
 
 template<typename T, int d>
-void unwrap_dim(Array<T> out, const Array<T> in, const dim_t wx, const dim_t wy,
+void unwrap_dim(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
                 const dim_t sx, const dim_t sy, const dim_t px, const dim_t py)
 {
     const T *inPtr = in.get();
     T *outPtr      = out.get();
 
-    af::dim4 idims    = in.dims();
-    af::dim4 odims    = out.dims();
-    af::dim4 istrides = in.strides();
-    af::dim4 ostrides = out.strides();
+    af::dim4 idims    = in.dims;
+    af::dim4 odims    = out.dims;
+    af::dim4 istrides = in.strides;
+    af::dim4 ostrides = out.strides;
 
     dim_t nx = (idims[0] + 2 * px - wx) / sx + 1;
 

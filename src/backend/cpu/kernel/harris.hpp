@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <utility.hpp>
 
 namespace cpu
@@ -17,8 +17,8 @@ namespace kernel
 {
 
 template<typename T>
-void second_order_deriv(Array<T> ixx, Array<T> ixy, Array<T> iyy,
-                        const unsigned in_len, const Array<T> ix, const Array<T> iy)
+void second_order_deriv(Param<T> ixx, Param<T> ixy, Param<T> iyy,
+                        const unsigned in_len, CParam<T> ix, CParam<T> iy)
 {
     T* ixx_out     = ixx.get();
     T* ixy_out     = ixy.get();
@@ -33,8 +33,8 @@ void second_order_deriv(Array<T> ixx, Array<T> ixy, Array<T> iyy,
 }
 
 template<typename T>
-void harris_responses(Array<T> resp, const unsigned idim0, const unsigned idim1,
-                      const Array<T> ixx, const Array<T> ixy, const Array<T> iyy,
+void harris_responses(Param<T> resp, const unsigned idim0, const unsigned idim1,
+                      CParam<T> ixx, CParam<T> ixy, CParam<T> iyy,
                       const float k_thr, const unsigned border_len)
 {
     T* resp_out      = resp.get();
@@ -58,8 +58,8 @@ void harris_responses(Array<T> resp, const unsigned idim0, const unsigned idim1,
 }
 
 template<typename T>
-void non_maximal(Array<float> xOut, Array<float> yOut, Array<float> respOut, unsigned* count,
-                 const unsigned idim0, const unsigned idim1, const Array<T> respIn,
+void non_maximal(Param<float> xOut, Param<float> yOut, Param<float> respOut, unsigned* count,
+                 const unsigned idim0, const unsigned idim1, CParam<T> respIn,
                  const float min_resp, const unsigned border_len, const unsigned max_corners)
 {
     float* x_out = xOut.get();
@@ -98,9 +98,9 @@ void non_maximal(Array<float> xOut, Array<float> yOut, Array<float> respOut, uns
     }
 }
 
-static void keep_corners(Array<float> xOut, Array<float> yOut, Array<float> respOut,
-                         const Array<float> xIn, const Array<float> yIn,
-                         const Array<float> respIn, const Array<unsigned> respIdx,
+static void keep_corners(Param<float> xOut, Param<float> yOut, Param<float> respOut,
+                         CParam<float> xIn, CParam<float> yIn,
+                         CParam<float> respIn, CParam<unsigned> respIdx,
                          const unsigned n_corners)
 {
     float* x_out = xOut.get();

@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <fftw3.h>
 
 namespace cpu
@@ -70,17 +70,17 @@ TRANSFORM_REAL(fftw , double, cdouble, c2r)
 
 
 template<typename T, int rank, bool direction>
-void fft_inplace(Array<T> in)
+void fft_inplace(Param<T> in, const af::dim4 iDataDims)
 {
     int t_dims[rank];
     int in_embed[rank];
 
-    const af::dim4 idims = in.dims();
+    const af::dim4 idims = in.dims;
 
     computeDims<rank>(t_dims  , idims);
-    computeDims<rank>(in_embed , in.getDataDims());
+    computeDims<rank>(in_embed , iDataDims);
 
-    const af::dim4 istrides = in.strides();
+    const af::dim4 istrides = in.strides;
 
     typedef typename fftw_transform<T>::ctype_t ctype_t;
     typename fftw_transform<T>::plan_t plan;
@@ -109,20 +109,20 @@ void fft_inplace(Array<T> in)
 }
 
 template<typename Tc, typename Tr, int rank>
-void fft_r2c(Array<Tc> out, const Array<Tr> in)
+void fft_r2c(Param<Tc> out, const af::dim4 oDataDims, CParam<Tr> in, const af::dim4 iDataDims)
 {
-    af::dim4 idims = in.dims();
+    af::dim4 idims = in.dims;
 
     int t_dims[rank];
     int in_embed[rank];
     int out_embed[rank];
 
     computeDims<rank>(t_dims  , idims);
-    computeDims<rank>(in_embed , in.getDataDims());
-    computeDims<rank>(out_embed , out.getDataDims());
+    computeDims<rank>(in_embed , iDataDims);
+    computeDims<rank>(out_embed , oDataDims);
 
-    const af::dim4 istrides = in.strides();
-    const af::dim4 ostrides = out.strides();
+    const af::dim4 istrides = in.strides;
+    const af::dim4 ostrides = out.strides;
 
     typedef typename fftw_real_transform<Tc, Tr>::ctype_t ctype_t;
     typename fftw_real_transform<Tc, Tr>::plan_t plan;
@@ -150,18 +150,20 @@ void fft_r2c(Array<Tc> out, const Array<Tr> in)
 }
 
 template<typename Tr, typename Tc, int rank>
-void fft_c2r(Array<Tr> out, const Array<Tc> in, const af::dim4 odims)
+void fft_c2r(Param<Tr> out, const af::dim4 oDataDims,
+             CParam<Tc> in, const af::dim4 iDataDims,
+             const af::dim4 odims)
 {
     int t_dims[rank];
     int in_embed[rank];
     int out_embed[rank];
 
     computeDims<rank>(t_dims  , odims);
-    computeDims<rank>(in_embed , in.getDataDims());
-    computeDims<rank>(out_embed , out.getDataDims());
+    computeDims<rank>(in_embed , iDataDims);
+    computeDims<rank>(out_embed , oDataDims);
 
-    const af::dim4 istrides = in.strides();
-    const af::dim4 ostrides = out.strides();
+    const af::dim4 istrides = in.strides;
+    const af::dim4 ostrides = out.strides;
 
     typedef typename fftw_real_transform<Tr, Tc>::ctype_t ctype_t;
     typename fftw_real_transform<Tr, Tc>::plan_t plan;

@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <err_cpu.hpp>
 #include <type_traits>
 #include "interp.hpp"
@@ -69,20 +69,20 @@ void calc_transform_inverse(T *tmat, const T *tmat_ptr, const bool inverse,
 }
 
 template<typename T, int order>
-void transform(Array<T> output, const Array<T> input,
-               const Array<float> transform, const bool inverse,
+void transform(Param<T> output, CParam<T> input,
+               CParam<float> transform, const bool inverse,
                const bool perspective,
                af_interp_type method)
 {
     typedef typename dtype_traits<T>::base_type BT;
     typedef wtype_t<BT> WT;
 
-    const af::dim4 idims    = input.dims();
-    const af::dim4 odims    = output.dims();
-    const af::dim4 tdims    = transform.dims();
-    const af::dim4 tstrides = transform.strides();
-    const af::dim4 istrides = input.strides();
-    const af::dim4 ostrides = output.strides();
+    const af::dim4 idims    = input.dims;
+    const af::dim4 odims    = output.dims;
+    const af::dim4 tdims    = transform.dims;
+    const af::dim4 tstrides = transform.strides;
+    const af::dim4 istrides = input.strides;
+    const af::dim4 ostrides = output.strides;
 
     T * out = output.get();
     const float* tf = transform.get();

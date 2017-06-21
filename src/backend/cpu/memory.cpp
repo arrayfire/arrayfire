@@ -57,26 +57,14 @@ template<typename T>
 T* memAlloc(const size_t &elements)
 {
     T *ptr = nullptr;
-
-    try {
-        ptr = (T *)memoryManager().alloc(elements * sizeof(T), false);
-    } catch(...) {
-        getQueue().sync();
-        ptr = (T *)memoryManager().alloc(elements * sizeof(T), false);
-    }
+    ptr = (T *)memoryManager().alloc(elements * sizeof(T), false);
     return ptr;
 }
 
 void* memAllocUser(const size_t &bytes)
 {
     void *ptr = nullptr;
-
-    try {
-        ptr = memoryManager().alloc(bytes, true);
-    } catch(...) {
-        getQueue().sync();
-        ptr = memoryManager().alloc(bytes, true);
-    }
+    ptr = memoryManager().alloc(bytes, true);
     return ptr;
 }
 
@@ -109,7 +97,6 @@ void memUnlock(const void *ptr)
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                       size_t *lock_bytes,  size_t *lock_buffers)
 {
-    getQueue().sync();
     memoryManager().bufferInfo(alloc_bytes, alloc_buffers,
                                   lock_bytes,  lock_buffers);
 }
@@ -189,6 +176,7 @@ void *MemoryManager::nativeAlloc(const size_t bytes)
 
 void MemoryManager::nativeFree(void *ptr)
 {
+    getQueue().sync();
     return free((void *)ptr);
 }
 }

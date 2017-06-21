@@ -166,12 +166,12 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     using CBT = const typename blas_base<T>::type;
 
     Array<T> out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
-    auto func = [=] (Array<T> output, const Array<T> left, const Array<T> right) {
+    auto func = [=] (Param<T> output, CParam<T> left, CParam<T> right) {
         auto alpha = getScale<T, 1>();
         auto beta  = getScale<T, 0>();
 
-        dim4 lStrides = left.strides();
-        dim4 rStrides = right.strides();
+        dim4 lStrides = left.strides;
+        dim4 rStrides = right.strides;
 
         if(rDims[bColDim] == 1) {
             gemv_func<T>()(
@@ -190,7 +190,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 reinterpret_cast<CBT*>(left.get()), lStrides[1],
                 reinterpret_cast<CBT*>(right.get()), rStrides[1],
                 beta,
-                reinterpret_cast<BT*>(output.get()), output.dims()[0]);
+                reinterpret_cast<BT*>(output.get()), output.dims[0]);
         }
     };
     getQueue().enqueue(func, out, lhs, rhs);

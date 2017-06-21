@@ -54,9 +54,10 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     }
 
     Array<T> out = createEmptyArray<T>(oDims);
+    std::vector<CParam<uint>> idxParams(idxArrs.begin(), idxArrs.end());
 
-
-    getQueue().enqueue(kernel::index<T>, out, in, std::move(isSeq), std::move(seqs), std::move(idxArrs));
+    getQueue().enqueue(kernel::index<T>, out, in, in.getDataDims(),
+                       std::move(isSeq), std::move(seqs), std::move(idxParams));
 
     return out;
 }

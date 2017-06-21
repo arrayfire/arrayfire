@@ -29,7 +29,7 @@ template<typename T, int rank, bool direction>
 void fft_inplace(Array<T> &in)
 {
     in.eval();
-    getQueue().enqueue(kernel::fft_inplace<T, rank, direction>, in);
+    getQueue().enqueue(kernel::fft_inplace<T, rank, direction>, in, in.getDataDims());
 }
 
 template<typename Tc, typename Tr, int rank>
@@ -41,7 +41,7 @@ Array<Tc> fft_r2c(const Array<Tr> &in)
     odims[0] = odims[0] / 2 + 1;
     Array<Tc> out = createEmptyArray<Tc>(odims);
 
-    getQueue().enqueue(kernel::fft_r2c<Tc, Tr, rank>, out, in);
+    getQueue().enqueue(kernel::fft_r2c<Tc, Tr, rank>, out, out.getDataDims(), in, in.getDataDims());
 
     return out;
 }
@@ -52,7 +52,10 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
     in.eval();
 
     Array<Tr> out = createEmptyArray<Tr>(odims);
-    getQueue().enqueue(kernel::fft_c2r<Tr, Tc, rank>, out, in, odims);
+    getQueue().enqueue(kernel::fft_c2r<Tr, Tc, rank>,
+                       out, out.getDataDims(),
+                       in, in.getDataDims(),
+                       odims);
 
     return out;
 }

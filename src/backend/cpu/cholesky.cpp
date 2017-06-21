@@ -62,6 +62,7 @@ template<typename T>
 int cholesky_inplace(Array<T> &in, const bool is_upper)
 {
     in.eval();
+    getQueue().sync();
 
     dim4 iDims = in.dims();
     int N = iDims[0];
@@ -70,13 +71,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     if(is_upper)
         uplo = 'U';
 
-    int info = 0;
-    auto func = [&] (int& info, Array<T>& in) {
-        info = potrf_func<T>()(AF_LAPACK_COL_MAJOR, uplo, N, in.get(), in.strides()[1]);
-    };
-
-    getQueue().enqueue(func, info, in);
-    getQueue().sync();
+    int info = potrf_func<T>()(AF_LAPACK_COL_MAJOR, uplo, N, in.get(), in.strides()[1]);
 
     return info;
 }

@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <cassert>
 #include <list>
 #include <array>
@@ -18,16 +18,16 @@ namespace cpu
 namespace kernel
 {
 template<typename T>
-void nonMaxSuppression(Array<T> output, const Array<T> magnitude,
-                       const Array<T> dxArray, const Array<T> dyArray)
+void nonMaxSuppression(Param<T> output, CParam<T> magnitude,
+                       CParam<T> dxParam, CParam<T> dyParam)
 {
-    const af::dim4 dims    = magnitude.dims();
-    const af::dim4 strides = magnitude.strides();
+    const af::dim4 dims    = magnitude.dims;
+    const af::dim4 strides = magnitude.strides;
 
           T* out = output.get();
     const T* mag = magnitude.get();
-    const T* dX  = dxArray.get();
-    const T* dY  = dyArray.get();
+    const T* dX  = dxParam.get();
+    const T* dY  = dyParam.get();
 
     for(dim_t b3=0; b3<dims[3]; ++b3) {
         for(dim_t b2=0; b2<dims[2]; ++b2) {
@@ -159,9 +159,9 @@ void traceEdge(T* out, const T* strong, const T* weak, int t, int width)
 
 
 template<typename T>
-void edgeTrackingHysteresis(Array<T> out, const Array<T> strong, const Array<T> weak)
+void edgeTrackingHysteresis(Param<T> out, CParam<T> strong, CParam<T> weak)
 {
-    const af::dim4 dims = strong.dims();
+    const af::dim4 dims = strong.dims;
 
     dim_t t    = dims[0] + 1;   // skip the first coloumn and first element of second coloumn
     dim_t jMax = dims[1] - 1;   // max Y value to traverse, ignore right coloumn

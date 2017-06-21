@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <cassert>
 
 namespace cpu
@@ -22,14 +22,14 @@ static inline dim_t simple_mod(const dim_t i, const dim_t dim)
 }
 
 template<typename T>
-void shift(Array<T> out, const Array<T> in, const af::dim4 sdims)
+void shift(Param<T> out, CParam<T> in, const af::dim4 sdims)
 {
     T* outPtr = out.get();
     const T* inPtr = in.get();
 
-    const af::dim4 oDims = out.dims();
-    const af::dim4 ist   = in.strides();
-    const af::dim4 ost   = out.strides();
+    const af::dim4 oDims = out.dims;
+    const af::dim4 ist   = in.strides;
+    const af::dim4 ost   = out.strides;
 
     int sdims_[4];
     // Need to do this because we are mapping output to input in the kernel
