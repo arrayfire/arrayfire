@@ -296,14 +296,20 @@ namespace cuda
         parent.eval();
 
         dim4 dDims = parent.getDataDims();
-        dim4 pDims = parent.dims();
+        dim4 dStrides = calcStrides(dDims);
+        dim4 parent_strides = parent.strides();
 
+        if (dStrides != parent_strides) {
+            const Array<T> parentCopy = copyArray(parent);
+            return createSubArray(parentCopy, index, copy);
+        }
+
+        dim4 pDims = parent.dims();
         dim4 dims    = toDims  (index, pDims);
         dim4 strides = toStride (index, dDims);
 
         // Find total offsets after indexing
         dim4 offsets = toOffset(index, pDims);
-        dim4 parent_strides = parent.strides();
         dim_t offset = parent.getOffset();
         for (int i = 0; i < 4; i++) offset += offsets[i] * parent_strides[i];
 
