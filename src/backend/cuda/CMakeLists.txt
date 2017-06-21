@@ -3,6 +3,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 FIND_PACKAGE(CUDA 7.0 REQUIRED)
 
 INCLUDE(CLKernelToH)
+INCLUDE(FindNVRTC)
 
 MARK_AS_ADVANCED(
     CUDA_BUILD_CUBIN
@@ -146,7 +147,7 @@ INCLUDE_DIRECTORIES(
     ${CUDA_INCLUDE_DIRS}
     "${PROJECT_SOURCE_DIR}/src/backend/cuda"
     "${CMAKE_CURRENT_BINARY_DIR}"
-    ${CUDA_nvvm_INCLUDE_DIR}
+    ${CUDA_nvrtc_INCLUDE_DIR}
     )
 
 FILE(GLOB cuda_headers
@@ -349,15 +350,6 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${thrust_sort_by_key_sources}
                 ${scan_by_key_sources}
                 OPTIONS ${CUDA_GENERATE_CODE} ${CUDA_ADD_LIBRARY_OPTIONS})
-
-FIND_LIBRARY (
-  CUDA_nvrtc_LIBRARY
-  NAMES "nvrtc"
-  PATHS ${CUDA_TOOLKIT_ROOT_DIR}
-  PATH_SUFFIXES "lib64" "lib/x64" "lib"
-  DOC "CUDA NVRTC Library"
-  NO_DEFAULT_PATH
-  )
 
 TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
                                 PRIVATE ${CUDA_LIBRARIES}
