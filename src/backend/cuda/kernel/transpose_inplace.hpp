@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <backend.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <Param.hpp>
 #include <debug_cuda.hpp>
 #include <math.hpp>

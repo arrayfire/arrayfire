@@ -14,7 +14,7 @@
 #include <string>
 #include <cache.hpp>
 #include <algorithm>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
 

@@ -17,10 +17,8 @@
 #include <memory.hpp>
 #include <queue.hpp>
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) || defined(_WIN64)
-#define CPUID_CAPABLE USE_CPUID
-#else
-#define CPUID_CAPABLE 0
+#if defined(USE_CPUID) && (defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) || defined(_WIN64))
+#define CPUID_CAPABLE
 #endif
 
 #ifdef _WIN32
@@ -31,7 +29,7 @@ typedef unsigned __int32  uint32_t;
 #include <stdint.h>
 #endif
 
-#if CPUID_CAPABLE
+#ifdef CPUID_CAPABLE
 
 #define MAX_INTEL_TOP_LVL 4
 

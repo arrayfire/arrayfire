@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <util.hpp>
+#include <common/util.hpp>
 #include <memory.hpp>
 #include <Param.hpp>
 

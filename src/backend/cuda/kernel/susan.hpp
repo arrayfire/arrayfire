@@ -9,7 +9,7 @@
 
 #include <backend.hpp>
 #include <Param.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
 #include <math.hpp>
 #include "config.hpp"

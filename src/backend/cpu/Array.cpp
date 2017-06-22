@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <Array.hpp>
 #include <copy.hpp>
 #include <kernel/Array.hpp>
@@ -17,6 +17,7 @@
 #include <memory.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+
 #include <cstring>
 #include <cstddef>
 

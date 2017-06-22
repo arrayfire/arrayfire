@@ -29,7 +29,6 @@
 #include <cache.hpp>
 #include <memory.hpp>
 #include <GraphicsResourceManager.hpp>
-#include <common/types.hpp>
 
 // Forward declaration from clFFT.h
 struct clfftSetupData_;

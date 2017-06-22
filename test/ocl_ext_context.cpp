@@ -13,8 +13,6 @@
 #include <af/opencl.h>
 #include <iostream>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 using std::vector;
 
 inline void checkErr(cl_int err, const char * name) {
@@ -129,10 +127,8 @@ TEST(OCLCheck, DevicePlatform)
     afcl::platform platform = afcl::getPlatform();
     ASSERT_NE(platform, AFCL_PLATFORM_UNKNOWN);
 }
-#pragma GCC diagnostic pop
 #else
 TEST(OCLExtContext, NoopCPU)
 {
 }
 #endif
-

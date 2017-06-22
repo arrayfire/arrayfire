@@ -11,10 +11,10 @@
 #include <af/defines.h>
 #include <af/vision.h>
 #include <af/random.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <homography.hpp>
 
 using af::dim4;

@@ -9,7 +9,7 @@
 
 #include <af/exception.h>
 #include <af/device.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <string>
 #include <algorithm>
 

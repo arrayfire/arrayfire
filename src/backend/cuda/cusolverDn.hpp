@@ -11,7 +11,7 @@
 
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
-#include <defines.hpp>
+#include <common/defines.hpp>
 #include <common/MatrixAlgebraHandle.hpp>
 
 namespace cuda

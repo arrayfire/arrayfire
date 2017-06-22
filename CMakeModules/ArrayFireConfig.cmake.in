@@ -48,29 +48,29 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-get_filename_component(ArrayFire_INCLUDE_DIRS "@INCLUDE_DIR@" ABSOLUTE)
+@PACKAGE_INIT@
 
-macro(find_backend backend libname)
-  if (${backend} STREQUAL "Unified")
-    set(targetFile ${CMAKE_CURRENT_LIST_DIR}/@UNIFIED_DIR@/ArrayFire${backend}.cmake)
-  else ()
-    set(targetFile ${CMAKE_CURRENT_LIST_DIR}/@BACKEND_DIR@/ArrayFire${backend}.cmake)
-  endif ()
-  if(EXISTS ${targetFile})
-    include(${targetFile})
-    set(ArrayFire_${backend}_FOUND ON)
-    set(ArrayFire_${backend}_LIBRARIES af${libname})
-    # set the default backend
-    set(ArrayFire_LIBRARIES af${libname})
+set_and_check(ArrayFire_INCLUDE_DIRS @PACKAGE_INCLUDE_DIR@)
+
+foreach(backend Unified CPU OpenCL CUDA)
+  if(backend STREQUAL "Unified")
+    set(lowerbackend "")
   else()
-    set(ArrayFire_${backend}_FOUND OFF)
+    string(TOLOWER "${backend}" lowerbackend)
   endif()
-endmacro()
+  if(NOT TARGET ArrayFire::af${lowerbackend})
+    if(EXISTS @PACKAGE_AF_INSTALL_CMAKE_DIR@/ArrayFire${backend}Targets.cmake)
+      include(@PACKAGE_AF_INSTALL_CMAKE_DIR@/ArrayFire${backend}Targets.cmake)
+    endif()
+  endif()
 
-# keep in the backends in the slowest to fastest order
-foreach(backend CPU OpenCL CUDA)
-  string(TOLOWER "${backend}" lowerbackend)
-  find_backend("${backend}" "${lowerbackend}")
+  if(TARGET ArrayFire::af${lowerbackend})
+      set(ArrayFire_${backend}_FOUND ON)
+      set(ArrayFire_${backend}_LIBRARIES ArrayFire::af${lowerbackend})
+      set(ArrayFire_LIBRARIES ArrayFire::af${lowerbackend})
+  else()
+      set(ArrayFire_${backend}_FOUND OFF)
+  endif()
 endforeach()
 
-find_backend("Unified" "")
+check_required_components(CPU OpenCL CUDA Unified)

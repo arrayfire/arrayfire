@@ -1,3 +1,10 @@
+# Copyright (c) 2017, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
+
 INCLUDE(ExternalProject)
 
 SET(prefix "${PROJECT_BINARY_DIR}/third_party/clFFT")
@@ -18,28 +25,32 @@ ExternalProject_Add(
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} -Wno-dev "-G${CMAKE_GENERATOR}" <SOURCE_DIR>/src
-    -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-    "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} -w -fPIC"
-    -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} -w -fPIC"
-    -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-    -DBUILD_SHARED_LIBS:BOOL=OFF
-    -DBUILD_EXAMPLES:BOOL=OFF
-    -DBUILD_CLIENT:BOOL=OFF
-    -DBUILD_TEST:BOOL=OFF
-    -DSUFFIX_LIB:STRING=
-    -DUSE_SYSTEM_GTEST:BOOL=ON
-    -DOpenCL_INCLUDE_DIR:FILEPATH=${OpenCL_INCLUDE_DIR}
-    -DOpenCL_LIBRARY:FILEPATH=${OpenCL_LIBRARY}
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} "-G${CMAKE_GENERATOR}" -Wno-dev <SOURCE_DIR>/src
+      -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+      "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} -w -fPIC"
+      -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+      "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} -w -fPIC"
+      -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+      -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+      -DBUILD_SHARED_LIBS:BOOL=OFF
+      -DBUILD_EXAMPLES:BOOL=OFF
+      -DBUILD_CLIENT:BOOL=OFF
+      -DBUILD_TEST:BOOL=OFF
+      -DSUFFIX_LIB:STRING=
     ${byproducts}
     )
 
 ExternalProject_Get_Property(clFFT-ext install_dir)
-ADD_LIBRARY(clFFT IMPORTED STATIC)
-SET_TARGET_PROPERTIES(clFFT PROPERTIES IMPORTED_LOCATION ${clFFT_location})
-ADD_DEPENDENCIES(clFFT clFFT-ext)
-SET(CLFFT_INCLUDE_DIRS ${install_dir}/include)
-SET(CLFFT_LIBRARIES clFFT)
-SET(CLFFT_FOUND ON)
+
+set(CLFFT_INCLUDE_DIRS ${install_dir}/include)
+make_directory(${install_dir}/include)
+
+add_library(clFFT::clFFT IMPORTED STATIC)
+set_target_properties(clFFT::clFFT PROPERTIES
+  IMPORTED_LOCATION ${clFFT_location}
+  INTERFACE_INCLUDE_DIRECTORIES ${install_dir}/include
+  )
+add_dependencies(clFFT::clFFT clFFT-ext)
+
+set(CLFFT_LIBRARIES clFFT)
+set(CLFFT_FOUND ON)

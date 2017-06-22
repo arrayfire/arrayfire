@@ -9,9 +9,7 @@
 
 #pragma once
 #include <af/defines.h>
-#include <defines.hpp>
-#include <limits>
-#include <algorithm>
+#include <common/defines.hpp>
 #include "backend.hpp"
 #include "types.hpp"
 
@@ -19,6 +17,9 @@
 #include <math_functions.h>
 #include <math_constants.h>
 #endif
+
+#include <limits>
+#include <algorithm>
 
 namespace cuda
 {

@@ -8,9 +8,9 @@
  ********************************************************/
 
 #include <af/image.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <backend.hpp>
 #include <rotate.hpp>
 

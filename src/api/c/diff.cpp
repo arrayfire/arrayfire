@@ -9,10 +9,10 @@
 
 #include <af/algorithm.h>
 #include <af/defines.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <diff.hpp>
 
 using af::dim4;

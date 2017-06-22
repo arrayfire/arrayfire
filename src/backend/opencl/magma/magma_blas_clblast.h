@@ -11,7 +11,7 @@
 
 #include <complex>
 
-#include <defines.hpp>
+#include <common/defines.hpp>
 
 #include <clblast.h>
 #include <err_clblast.hpp>

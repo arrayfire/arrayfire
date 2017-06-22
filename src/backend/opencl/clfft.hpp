@@ -12,6 +12,7 @@
 #include <clFFT.h>
 #include <common/FFTPlanCache.hpp>
 #include <memory.hpp>
+
 #include <cstdio>
 
 namespace opencl

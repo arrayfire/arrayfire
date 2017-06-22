@@ -11,7 +11,7 @@
 // Causes conflict between system cl.hpp and opencl/cl.hpp
 #if defined(WITH_GRAPHICS)
 
-#include <graphics_common.hpp>
+#include <common/graphics_common.hpp>
 
 #if defined(OS_MAC)
 #include <OpenGL/OpenGL.h>
@@ -24,14 +24,14 @@
 
 #include <af/version.h>
 #include <af/opencl.h>
-#include <defines.hpp>
+#include <common/defines.hpp>
 #include <errorcodes.hpp>
 #include <err_opencl.hpp>
 #include <blas.hpp>
-#include <host_memory.hpp>
+#include <common/host_memory.hpp>
 #include <common/InteropManager.hpp>
 #include <platform.hpp>
-#include <util.hpp>
+#include <common/util.hpp>
 #include <version.hpp>
 
 #include <algorithm>

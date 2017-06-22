@@ -11,7 +11,7 @@
 #include <kernel_headers/regions.hpp>
 #include <program.hpp>
 #include <af/defines.h>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
 #include <math.hpp>

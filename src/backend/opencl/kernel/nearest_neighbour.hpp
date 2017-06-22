@@ -9,13 +9,13 @@
 
 #include <af/defines.h>
 #include <program.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/nearest_neighbour.hpp>
 #include <memory.hpp>
 #include <math.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <cache.hpp>
 
 using cl::KernelFunctor;

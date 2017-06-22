@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <sparse_arith.hpp>
-#include <SparseArray.hpp>
+#include <common/SparseArray.hpp>
 #include <optypes.hpp>
 #include <sparse.hpp>
 
@@ -21,7 +21,7 @@
 #include <arith.hpp>
 #include <complex.hpp>
 #include <copy.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>

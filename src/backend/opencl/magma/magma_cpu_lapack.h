@@ -11,7 +11,7 @@
 #define MAGMA_CPU_LAPACK
 
 #include <err_opencl.hpp>
-#include <defines.hpp>
+#include <common/defines.hpp>
 #include "magma_types.h"
 
 #define LAPACKE_sunmqr_work(...) LAPACKE_sormqr_work(__VA_ARGS__)
@@ -44,7 +44,7 @@ int LAPACKE_dlacgv_work(Args... args) { return 0; }
 #else
     #ifdef __APPLE__
         #include <Accelerate/Accelerate.h>
-        #include <lapacke.hpp>
+        #include <common/lapacke.hpp>
         #undef LAPACK_COL_MAJOR
         #define LAPACK_COL_MAJOR 102
         #undef AF_LAPACK_COL_MAJOR

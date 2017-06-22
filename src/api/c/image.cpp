@@ -13,9 +13,9 @@
 #include <af/index.h>
 #include <af/data.h>
 
-#include <ArrayInfo.hpp>
-#include <graphics_common.hpp>
-#include <err_common.hpp>
+#include <common/ArrayInfo.hpp>
+#include <common/graphics_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <image.hpp>
 #include <handle.hpp>

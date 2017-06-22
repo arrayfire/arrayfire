@@ -12,11 +12,11 @@
 #include <af/arith.h>
 #include <sparse_handle.hpp>
 #include <sparse.hpp>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <optypes.hpp>
 
 #include <cast.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 

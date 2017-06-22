@@ -10,10 +10,10 @@
 #include <af/array.h>
 #include <af/algorithm.h>
 #include <af/defines.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <sort.hpp>
 #include <sort_index.hpp>
 #include <sort_by_key.hpp>

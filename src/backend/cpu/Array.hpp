@@ -10,7 +10,7 @@
 //This is the array implementation class.
 #pragma once
 #include <af/dim4.hpp>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <backend.hpp>
 #include <types.hpp>
 #include <traits.hpp>

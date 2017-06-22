@@ -8,9 +8,9 @@
  ********************************************************/
 
 #include <af/graphics.h>
-#include <graphics_common.hpp>
-#include <ArrayInfo.hpp>
-#include <err_common.hpp>
+#include <common/graphics_common.hpp>
+#include <common/ArrayInfo.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <reduce.hpp>
 #include <cast.hpp>

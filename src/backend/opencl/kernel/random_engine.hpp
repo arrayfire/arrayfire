@@ -17,7 +17,7 @@
 #include <traits.hpp>
 #include <sstream>
 #include <string>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
 #include <program.hpp>

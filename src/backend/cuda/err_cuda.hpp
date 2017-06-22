@@ -9,8 +9,8 @@
 
 #pragma once
 #include <stdio.h>
-#include <defines.hpp>
-#include <err_common.hpp>
+#include <common/defines.hpp>
+#include <common/err_common.hpp>
 
 #define CUDA_NOT_SUPPORTED() do {                       \
         throw SupportError(__PRETTY_FUNCTION__,         \

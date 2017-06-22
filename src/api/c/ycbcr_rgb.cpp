@@ -11,7 +11,7 @@
 #include <af/dim4.hpp>
 #include <af/image.h>
 #include <handle.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <arith.hpp>
 #include <join.hpp>

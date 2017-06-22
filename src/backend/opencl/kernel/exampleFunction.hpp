@@ -25,7 +25,7 @@
                                         // if any
                                         // * addKernelToCache - push new kernels into cache
 
-#include <dispatch.hpp>                 // common utility header for CUDA & OpenCL backends
+#include <common/dispatch.hpp>          // common utility header for CUDA & OpenCL backends
                                         // has the divup macro
 
 #include <Param.hpp>                    // This header has the declaration of structures

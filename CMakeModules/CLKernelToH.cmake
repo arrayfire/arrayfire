@@ -51,7 +51,7 @@ function(CL_KERNEL_TO_H)
         set(_output_path "${CMAKE_CURRENT_BINARY_DIR}/${RTCS_OUTPUT_DIR}")
         set(_output_file "${_output_path}/${_name_we}.${RTCS_EXTENSION}")
 
-        ADD_CUSTOM_COMMAND(
+        add_custom_command(
             OUTPUT ${_output_file}
             DEPENDS ${_input_file} ${BIN2CPP_PROGRAM}
             COMMAND ${CMAKE_COMMAND} -E make_directory "${_output_path}"
@@ -64,7 +64,8 @@ function(CL_KERNEL_TO_H)
 
         list(APPEND _output_files ${_output_file})
     endforeach()
-    ADD_CUSTOM_TARGET(${RTCS_NAMESPACE}_${RTCS_OUTPUT_DIR}_bin_target DEPENDS ${_output_files})
+    add_custom_target(${RTCS_NAMESPACE}_${RTCS_OUTPUT_DIR}_bin_target DEPENDS ${_output_files})
+    set_target_properties(${RTCS_NAMESPACE}_${RTCS_OUTPUT_DIR}_bin_target PROPERTIES FOLDER "Generated Targets")
 
     set("${RTCS_VARNAME}" ${_output_files} PARENT_SCOPE)
     set("${RTCS_TARGETS}" ${RTCS_NAMESPACE}_${RTCS_OUTPUT_DIR}_bin_target PARENT_SCOPE)

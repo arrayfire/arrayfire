@@ -14,8 +14,8 @@
 #include <af/index.h>
 #include <af/arith.h>
 #include <af/data.h>
-#include <ArrayInfo.hpp>
-#include <err_common.hpp>
+#include <common/ArrayInfo.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 #include <Array.hpp>

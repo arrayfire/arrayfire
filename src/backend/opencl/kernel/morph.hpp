@@ -13,7 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <cache.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
 #include <memory.hpp>

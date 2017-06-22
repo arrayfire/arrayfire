@@ -10,7 +10,7 @@
 #pragma once
 #include <af/array.h>
 #include <af/defines.h>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <optypes.hpp>
 #include <handle.hpp>
 #include <backend.hpp>

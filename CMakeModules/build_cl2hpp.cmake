@@ -1,38 +1,35 @@
-INCLUDE(ExternalProject)
+# Copyright (c) 2017, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
 
-SET(prefix ${PROJECT_BINARY_DIR}/third_party/cl2hpp)
+# Check if cl2.hpp exsists and if not download it from khronos GitHub repo
+#
+# NOTE: This file does not use ExternalProject_Add because that command was
+#       was not able to download files that are not archives before CMake
+#       version 3.6
 
-IF(CMAKE_VERSION VERSION_LESS 3.2)
-    IF(CMAKE_GENERATOR MATCHES "Ninja")
-        MESSAGE(WARNING "Building forge with Ninja has known issues with CMake older than 3.2")
-    endif()
-    SET(byproducts)
-ELSE()
-    SET(byproducts BUILD_BYPRODUCTS "${prefix}/package/CL/cl2.hpp")
-ENDIF()
+find_package(OpenCL)
 
-ExternalProject_Add(
-    cl2hpp-ext
-    GIT_REPOSITORY https://github.com/KhronosGroup/OpenCL-CLHPP.git
-    ${byproducts}
-    GIT_TAG 75bb7d0d8b2ffc6aac0a3dcaa22f6622cab81f7c
-    PREFIX "${prefix}"
-    INSTALL_DIR "${prefix}/package"
-    UPDATE_COMMAND ""
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} -Wno-dev "-G${CMAKE_GENERATOR}" <SOURCE_DIR>
-    -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-    -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-    -DBUILD_DOCS:BOOL=OFF
-    -DBUILD_EXAMPLES:BOOL=OFF
-    -DBUILD_TESTS:BOOL=OFF
-    )
+set(cl2hpp_file_url "https://github.com/KhronosGroup/OpenCL-CLHPP/releases/download/v2.0.10/cl2.hpp")
+set(cl2hpp_file "${ArrayFire_BINARY_DIR}/include/CL/cl2.hpp")
 
-ExternalProject_Get_Property(cl2hpp-ext install_dir)
+if(OpenCL_FOUND)
+  if (NOT EXISTS ${cl2hpp_file})
+      message(STATUS "Downloading ${cl2hpp_file_url}")
+      file(DOWNLOAD ${cl2hpp_file_url} ${cl2hpp_file}
+        EXPECTED_HASH MD5=c38d1b78cd98cc809fa2a49dbd1734a5)
+  endif()
+  get_filename_component(download_dir ${cl2hpp_file} DIRECTORY)
 
-ADD_CUSTOM_TARGET(cl2hpp DEPENDS "${prefix}/package/CL/cl2.hpp")
+  if (NOT TARGET OpenCL::cl2hpp OR
+      NOT TARGET cl2hpp)
+    add_library(cl2hpp IMPORTED INTERFACE GLOBAL)
+    add_library(OpenCL::cl2hpp IMPORTED INTERFACE GLOBAL)
 
-ADD_DEPENDENCIES(cl2hpp cl2hpp-ext)
-
-SET(CL2HPP_INCLUDE_DIRECTORY ${install_dir})
+    set_target_properties(cl2hpp OpenCL::cl2hpp PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES ${download_dir}/..)
+  endif()
+endif()

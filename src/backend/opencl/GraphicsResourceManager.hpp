@@ -11,6 +11,7 @@
 
 #if defined(WITH_GRAPHICS)
 #include <common/InteropManager.hpp>
+
 #include <map>
 #include <vector>
 

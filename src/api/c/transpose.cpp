@@ -12,7 +12,7 @@
 #include <af/blas.h>
 #include <af/data.h>
 #include <af/arith.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 #include <transpose.hpp>

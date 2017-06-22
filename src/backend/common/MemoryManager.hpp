@@ -9,9 +9,9 @@
 
 #pragma once
 
-#include <err_common.hpp>
-#include <dispatch.hpp>
-#include <util.hpp>
+#include <common/err_common.hpp>
+#include <common/dispatch.hpp>
+#include <common/util.hpp>
 
 #include <algorithm>
 

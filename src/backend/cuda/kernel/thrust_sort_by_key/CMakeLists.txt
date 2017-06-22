@@ -1,28 +1,52 @@
-FILE(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/kernel/thrust_sort_by_key/thrust_sort_by_key_impl.cu.in" FILESTRINGS)
+# Copyright (c) 2017, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
 
-FOREACH(STR ${FILESTRINGS})
-    IF(${STR} MATCHES "// SBK_TYPES")
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/kernel/thrust_sort_by_key/thrust_sort_by_key_impl.cu" FILESTRINGS)
+
+foreach(STR ${FILESTRINGS})
+    if(${STR} MATCHES "// SBK_TYPES")
         STRING(REPLACE "// SBK_TYPES:" "" TEMP ${STR})
         STRING(REPLACE " " ";" SBK_TYPES ${TEMP})
-    ELSEIF(${STR} MATCHES "// SBK_INSTS:")
+    elseif(${STR} MATCHES "// SBK_INSTS:")
         STRING(REPLACE "// SBK_INSTS:" "" TEMP ${STR})
         STRING(REPLACE " " ";" SBK_INSTS ${TEMP})
-    ENDIF()
-ENDFOREACH()
+    endif()
+endforeach()
 
-FOREACH(SBK_TYPE ${SBK_TYPES})
-    FOREACH(SBK_INST ${SBK_INSTS})
-        CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/thrust_sort_by_key/thrust_sort_by_key_impl.cu.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/thrust_sort_by_key/thrust_sort_by_key_impl_${SBK_TYPE}_${SBK_INST}.cu")
-        ADD_CUSTOM_COMMAND(
-          OUTPUT  "${CMAKE_CURRENT_BINARY_DIR}/thrust_sort_by_key/thrust_sort_by_key_impl_${SBK_TYPE}_${SBK_INST}.cu"
-          COMMAND  ${CMAKE_COMMAND} -E touch "${CMAKE_CURRENT_BINARY_DIR}/thrust_sort_by_key/thrust_sort_by_key_impl_${SBK_TYPE}_${SBK_INST}.cu"
-          DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/kernel/thrust_sort_by_key_impl.hpp")
-    ENDFOREACH(SBK_INST ${SBK_INSTS})
-ENDFOREACH(SBK_TYPE ${SBK_TYPES})
+foreach(SBK_TYPE ${SBK_TYPES})
+    foreach(SBK_INST ${SBK_INSTS})
 
-FILE(GLOB thrust_sort_by_key_sources
-  "${CMAKE_CURRENT_BINARY_DIR}/thrust_sort_by_key/*.cu"
-)
+      # When using cuda_compile with older versions of FindCUDA. The generated targets
+      # have the same names as the source file. Since we are using the same file for
+      # the compilation of these targets we need to rename them before sending them
+      # to the cuda_compile command so that it doesn't generate multiple targets with
+      # the same name
+      file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/kernel/thrust_sort_by_key/thrust_sort_by_key_impl.cu"
+        DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/kernel/thrust_sort_by_key")
+      file(RENAME "${CMAKE_CURRENT_BINARY_DIR}/kernel/thrust_sort_by_key/thrust_sort_by_key_impl.cu"
+          "${CMAKE_CURRENT_BINARY_DIR}/kernel/thrust_sort_by_key/thrust_sort_by_key_impl_${SBK_TYPE}_${SBK_INST}.cu")
 
-LIST(SORT thrust_sort_by_key_sources)
+      cuda_compile(scan_by_key_gen_files
+          ${CMAKE_CURRENT_BINARY_DIR}/kernel/thrust_sort_by_key/thrust_sort_by_key_impl_${SBK_TYPE}_${SBK_INST}.cu
+          ${CMAKE_CURRENT_SOURCE_DIR}/kernel/thrust_sort_by_key_impl.hpp
+          OPTIONS
+            -DSBK_TYPE=${SBK_TYPE}
+            -DINSTANTIATESBK_INST=INSTANTIATE${SBK_INST}
+            "-std=c++11 -Xcompiler -fPIC -DAFDLL"
+      )
+
+      list(APPEND SORT_OBJ ${scan_by_key_gen_files})
+    endforeach(SBK_INST ${SBK_INSTS})
+endforeach(SBK_TYPE ${SBK_TYPES})
+
+cuda_add_library(cuda_thrust_sort_by_key STATIC ${SORT_OBJ})
+
+set_target_properties(cuda_thrust_sort_by_key
+  PROPERTIES
+    LINKER_LANGUAGE CXX
+    FOLDER "Generated Targets"
+  )

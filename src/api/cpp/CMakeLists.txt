@@ -1,0 +1,89 @@
+
+add_library(cpp_api_interface INTERFACE)
+
+target_sources(cpp_api_interface
+  INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/common.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/error.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/approx.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/array.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/bilateral.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/binary.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/blas.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/canny.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clamp.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/colorspace.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/complex.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/convolve.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/corrcoef.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/covariance.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/data.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/device.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/diff.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/dog.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/exampleFunction.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/exception.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/fast.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/features.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/fft.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/fftconvolve.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/filters.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gaussian_kernel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gfor.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gradient.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/graphics.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/hamming.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/harris.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/histogram.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/homography.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/hsv_rgb.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/iir.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/imageio.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/index.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/internal.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lapack.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/matchTemplate.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/mean.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/meanshift.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/median.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/moments.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/morph.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nearest_neighbour.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/orb.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/random.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/reduce.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/regions.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/resize.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/rgb_gray.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/rotate.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/sat.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/scale.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/scan.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/seq.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/set.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/sift.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/skew.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/sobel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/sort.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/sparse.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/stdev.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/susan.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/timing.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/transform.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/transform_coordinates.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/translate.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/transpose.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/unary.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/unwrap.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/var.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/where.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/wrap.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ycbcr_rgb.cpp
+)
+
+
+target_include_directories(cpp_api_interface
+  INTERFACE
+    ${CMAKE_SOURCE_DIR}/src/api/c
+)

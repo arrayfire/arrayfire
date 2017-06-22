@@ -9,10 +9,8 @@
 #pragma once
 
 #include <af/defines.h>
-#include <string>
-#include <stdlib.h>
-#include <util.hpp>
-#include <err_common.hpp>
+#include <common/util.hpp>
+#include <common/err_common.hpp>
 
 #if defined(OS_WIN)
 #include <Windows.h>
@@ -23,6 +21,8 @@ typedef void* LibHandle;
 #endif
 
 #include <array>
+#include <cstdlib>
+#include <string>
 #include <unordered_map>
 
 namespace unified

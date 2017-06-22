@@ -10,7 +10,7 @@
 #include <af/dim4.hpp>
 #include <af/statistics.h>
 #include <af/defines.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <handle.hpp>
 #include <reduce.hpp>

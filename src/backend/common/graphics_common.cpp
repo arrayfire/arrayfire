@@ -9,12 +9,12 @@
 
 #if defined(WITH_GRAPHICS)
 
-#include <graphics_common.hpp>
+#include <common/graphics_common.hpp>
 #include <glbinding/Meta.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <platform.hpp>
-#include <util.hpp>
+#include <common/util.hpp>
 #include <mutex>
 #include <utility>
 
@@ -382,12 +382,6 @@ forge::Image* ForgeManager::getImage(forge::Chart* chart, int w, int h,
 forge::Plot* ForgeManager::getPlot(forge::Chart* chart, int nPoints, forge::dtype dtype,
                                    forge::PlotType ptype, forge::MarkerType mtype)
 {
-    /* nPoints needs to fall in the range of [0, 2^48]
-     * for the ForgeManager to correctly retrieve
-     * the necessary Forge Plot object. So, this implementation
-     * is a limitation on how big of an plot graph can be rendered
-     * using arrayfire graphics funtionality */
-    assert(nPoints <= 2ll<<48);
     long long key = ((nPoints & _48BIT) << 48);
     key |= (((((dtype & 0x000F) << 12) | (ptype & 0x000F)) << 8) | (mtype & 0x000F));
 
@@ -408,12 +402,6 @@ forge::Plot* ForgeManager::getPlot(forge::Chart* chart, int nPoints, forge::dtyp
 
 forge::Histogram* ForgeManager::getHistogram(forge::Chart* chart, int nBins, forge::dtype type)
 {
-    /* nBins needs to fall in the range of [0, 2^48]
-     * for the ForgeManager to correctly retrieve
-     * the necessary Forge Histogram object. So, this implementation
-     * is a limitation on how big of an histogram data can be rendered
-     * using arrayfire graphics funtionality */
-    assert(nBins <= 2ll<<48);
     long long key = ((nBins & _48BIT) << 48) | (type & _16BIT);
 
     ChartKey_t keypair = std::make_pair(key, chart);
@@ -441,7 +429,7 @@ forge::Surface* ForgeManager::getSurface(forge::Chart* chart, int nX, int nY, fo
      * the necessary Forge Plot object. So, this implementation
      * is a limitation on how big of an plot graph can be rendered
      * using arrayfire graphics funtionality */
-    assert(nX * nY <= 2ll<<48);
+    assert((long long)nX * nY <= 2ll<<48);
     long long key = (((nX * nY) & _48BIT) << 48) | (type & _16BIT);
 
     ChartKey_t keypair = std::make_pair(key, chart);
@@ -464,12 +452,6 @@ forge::Surface* ForgeManager::getSurface(forge::Chart* chart, int nX, int nY, fo
 
 forge::VectorField* ForgeManager::getVectorField(forge::Chart* chart, int nPoints, forge::dtype type)
 {
-    /* nPoints needs to fall in the range of [0, 2^48]
-     * for the ForgeManager to correctly retrieve
-     * the necessary Forge Vector Field object. So, this implementation
-     * is a limitation on how big of an plot graph can be rendered
-     * using arrayfire graphics funtionality */
-    assert(nPoints <= 2ll<<48);
     long long key = (((nPoints) & _48BIT) << 48) | (type & _16BIT);
 
     ChartKey_t keypair = std::make_pair(key, chart);
