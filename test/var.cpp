@@ -149,7 +149,15 @@ TYPED_TEST(Var, DimCPPSmall)
 
         for(size_t j = 0; j < tests.size(); j++) {
             for(size_t jj = 0; jj < tests[j].size(); jj++) {
-                ASSERT_EQ(h_out[j][jj], tests[j][jj]);
+                // NOTE: will work for all types
+                if (is_same_type<float, outType>::value ||
+                    is_same_type<cfloat, outType>::value) {
+                    ASSERT_FLOAT_EQ(real(h_out[j][jj]), real(tests[j][jj]));
+                    ASSERT_FLOAT_EQ(imag(h_out[j][jj]), imag(tests[j][jj]));
+                } else {
+                    ASSERT_DOUBLE_EQ(real(h_out[j][jj]), real(tests[j][jj]));
+                    ASSERT_DOUBLE_EQ(imag(h_out[j][jj]), imag(tests[j][jj]));
+                }
             }
         }
     }
