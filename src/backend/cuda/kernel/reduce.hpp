@@ -23,14 +23,12 @@ namespace cuda
 {
 namespace kernel
 {
-    // \param largeYWDim true denotes 2nd & 4th dimensions greater than device limits
-    // \param iterPerBlockY number of iterations along grid.Y per block
-    template<typename Ti, typename To, af_op_t op, uint dim, uint DIMY, bool largeYWDim>
+    template<typename Ti, typename To, af_op_t op, uint dim, uint DIMY>
     __global__
     static void reduce_dim_kernel(Param<To> out,
                                   CParam <Ti> in,
                                   uint blocks_x, uint blocks_y, uint offset_dim,
-                                  bool change_nan, To nanval, int iterPerBlockY)
+                                  bool change_nan, To nanval)
     {
         const uint tidx = threadIdx.x;
         const uint tidy = threadIdx.y;
@@ -42,74 +40,68 @@ namespace kernel
 
         __shared__ To s_val[THREADS_X * DIMY];
 
-        // For smaller kernels statically set iterPerPlockY
-        // to 1 (register count optimization)
-        if(!largeYWDim) { iterPerBlockY = 1; }
+        const uint wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
+        const uint blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y) * wid;
+        const uint yid = blockIdx_y; // yid  of output. updated for input later.
 
-        for(int ib=0; ib < iterPerBlockY; ++ib) {
-            const uint wid = (blockIdx.y + ib * gridDim.y) / blocks_y;
-            const uint blockIdx_y = (blockIdx.y + ib * gridDim.y) - (blocks_y) * wid;
-            const uint yid = blockIdx_y; // yid  of output. updated for input later.
+        uint ids[4] = {xid, yid, zid, wid};
 
-            uint ids[4] = {xid, yid, zid, wid};
+        // There is only one element per block for out
+        // There are blockDim.y elements per block for in
+        // Hence increment ids[dim] just after offseting out and before offsetting in
+        To * const optr = out.ptr + ids[3] * out.strides[3] +
+                                    ids[2] * out.strides[2] +
+                                    ids[1] * out.strides[1] + ids[0];
 
-            // There is only one element per block for out
-            // There are blockDim.y elements per block for in
-            // Hence increment ids[dim] just after offseting out and before offsetting in
-            To * const optr = out.ptr + ids[3] * out.strides[3] +
-                                        ids[2] * out.strides[2] +
-                                        ids[1] * out.strides[1] + ids[0];
+        const uint blockIdx_dim = ids[dim];
+        ids[dim] = ids[dim] * blockDim.y + tidy;
 
-            const uint blockIdx_dim = ids[dim];
-            ids[dim] = ids[dim] * blockDim.y + tidy;
+        const Ti * iptr = in.ptr + ids[3] * in.strides[3] +
+                                   ids[2] * in.strides[2] +
+                                   ids[1] * in.strides[1] + ids[0];
 
-            const Ti * iptr = in.ptr + ids[3] * in.strides[3] +
-                                       ids[2] * in.strides[2] +
-                                       ids[1] * in.strides[1] + ids[0];
+        const uint id_dim_in = ids[dim];
+        const uint istride_dim = in.strides[dim];
 
-            const uint id_dim_in = ids[dim];
-            const uint istride_dim = in.strides[dim];
+        bool is_valid =
+            (ids[0] < in.dims[0]) &&
+            (ids[1] < in.dims[1]) &&
+            (ids[2] < in.dims[2]) &&
+            (ids[3] < in.dims[3]);
 
-            bool is_valid =
-                (ids[0] < in.dims[0]) &&
-                (ids[1] < in.dims[1]) &&
-                (ids[2] < in.dims[2]) &&
-                (ids[3] < in.dims[3]);
+        Transform<Ti, To, op> transform;
+        Binary<To, op> reduce;
+        To out_val = reduce.init();
+        for (int id = id_dim_in; is_valid && (id < in.dims[dim]); id += offset_dim * blockDim.y) {
+            To in_val = transform(*iptr);
+            if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
+            out_val = reduce(in_val, out_val);
+            iptr = iptr + offset_dim * blockDim.y * istride_dim;
+        }
 
-            Transform<Ti, To, op> transform;
-            Binary<To, op> reduce;
-            To out_val = reduce.init();
-            for (int id = id_dim_in; is_valid && (id < in.dims[dim]); id += offset_dim * blockDim.y) {
-                To in_val = transform(*iptr);
-                if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
-                out_val = reduce(in_val, out_val);
-                iptr = iptr + offset_dim * blockDim.y * istride_dim;
-            }
+        s_val[tid] = out_val;
 
-            s_val[tid] = out_val;
+        To *s_ptr = s_val + tid;
+        __syncthreads();
 
-            To *s_ptr = s_val + tid;
+        if (DIMY == 8) {
+            if (tidy < 4) *s_ptr = reduce(*s_ptr, s_ptr[THREADS_X * 4]);
             __syncthreads();
+        }
 
-            if (DIMY == 8) {
-                if (tidy < 4) *s_ptr = reduce(*s_ptr, s_ptr[THREADS_X * 4]);
-                __syncthreads();
-            }
+        if (DIMY >= 4) {
+            if (tidy < 2) *s_ptr = reduce(*s_ptr, s_ptr[THREADS_X * 2]);
+            __syncthreads();
+        }
 
-            if (DIMY >= 4) {
-                if (tidy < 2) *s_ptr = reduce(*s_ptr, s_ptr[THREADS_X * 2]);
-                __syncthreads();
-            }
+        if (DIMY >= 2) {
+            if (tidy < 1) *s_ptr = reduce(*s_ptr, s_ptr[THREADS_X * 1]);
+            __syncthreads();
+        }
 
-            if (DIMY >= 2) {
-                if (tidy < 1) *s_ptr = reduce(*s_ptr, s_ptr[THREADS_X * 1]);
-                __syncthreads();
-            }
-
-            if (tidy == 0 && is_valid &&
-                (blockIdx_dim < out.dims[dim])) {
-                *optr = *s_ptr;
-            }
+        if (tidy == 0 && is_valid &&
+            (blockIdx_dim < out.dims[dim])) {
+            *optr = *s_ptr;
         }
     }
 
@@ -124,47 +116,28 @@ namespace kernel
                     blocks_dim[1] * blocks_dim[3]);
 
         const int maxBlocksY   = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-        const int iterPerBlockY = divup(blocks.y, maxBlocksY);
-        if(iterPerBlockY > 1) {
+        const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+        if(blocksPerMatZ > 1) {
             blocks.y = maxBlocksY;
-            switch (threads_y) {
-            case 8:
-                CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 8, true>), blocks, threads,
-                    out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
-                    change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            case 4:
-                CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 4, true>), blocks, threads,
-                    out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
-                    change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            case 2:
-                CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 2, true>), blocks, threads,
-                    out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
-                    change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            case 1:
-                CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 1, true>), blocks, threads,
-                    out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
-                    change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            }
-        } else {
-            switch (threads_y) {
-            case 8:
-                CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 8, false>), blocks, threads,
-                    out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
-                    change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            case 4:
-                CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 4, false>), blocks, threads,
-                    out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
-                    change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            case 2:
-                CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 2, false>), blocks, threads,
-                    out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
-                    change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            case 1:
-                CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 1, false>), blocks, threads,
-                    out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
-                    change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            }
-
+            blocks.z = blocksPerMatZ;
+        }
+        switch (threads_y) {
+        case 8:
+            CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 8>), blocks, threads,
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
+                change_nan, scalar<To>(nanval)); break;
+        case 4:
+            CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 4>), blocks, threads,
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
+                change_nan, scalar<To>(nanval)); break;
+        case 2:
+            CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 2>), blocks, threads,
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
+                change_nan, scalar<To>(nanval)); break;
+        case 1:
+            CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 1>), blocks, threads,
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
+                change_nan, scalar<To>(nanval)); break;
         }
 
         POST_LAUNCH_CHECK();
@@ -252,14 +225,12 @@ namespace kernel
     WARP_REDUCE(char)  // upcasted to int
 #endif
 
-    // \param largeYWDim true denotes 2nd & 4th dimensions greater than device limits
-    // \param iterPerBlockY number of iterations along grid.Y per block
-    template<typename Ti, typename To, af_op_t op, uint DIMX, bool largeYWDim>
+    template<typename Ti, typename To, af_op_t op, uint DIMX>
     __global__
     static void reduce_first_kernel(Param<To> out,
                                     CParam<Ti>  in,
                                     uint blocks_x, uint blocks_y, uint repeat,
-                                    bool change_nan, To nanval, int iterPerBlockY) {
+                                    bool change_nan, To nanval) {
 
         const uint tidx = threadIdx.x;
         const uint tidy = threadIdx.y;
@@ -274,59 +245,53 @@ namespace kernel
 
         __shared__ To s_val[THREADS_PER_BLOCK];
 
-        // For smaller kernels statically set iterPerPlockY
-        // to 1 (register count optimization)
-        if(!largeYWDim) { iterPerBlockY = 1; }
+        const uint wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
+        const uint blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y) * wid;
+        const uint yid = blockIdx_y * blockDim.y + tidy;
 
-        for(int ib=0; ib < iterPerBlockY; ++ib) {
-            const uint wid = (blockIdx.y + ib * gridDim.y) / blocks_y;
-            const uint blockIdx_y = (blockIdx.y + ib * gridDim.y) - (blocks_y) * wid;
-            const uint yid = blockIdx_y * blockDim.y + tidy;
+        const Ti * const iptr = in.ptr + (wid *  in.strides[3] + zid *  in.strides[2] + yid *  in.strides[1]);
 
-            const Ti * const iptr = in.ptr + (wid *  in.strides[3] + zid *  in.strides[2] + yid *  in.strides[1]);
-
-            if (yid >= in.dims[1] ||
-                zid >= in.dims[2] ||
-                wid >= in.dims[3]) return;
+        if (yid >= in.dims[1] ||
+            zid >= in.dims[2] ||
+            wid >= in.dims[3]) return;
 
 
-            int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
+        int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
 
-            To out_val = reduce.init();
-            for (int id = xid; id < lim; id += DIMX) {
-                To in_val = transform(iptr[id]);
-                if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
-                out_val = reduce(in_val, out_val);
-            }
-
-            s_val[tid] = out_val;
-
-            __syncthreads();
-            To *s_ptr = s_val + tidy * DIMX;
-
-            if (DIMX == 256) {
-                if (tidx < 128)
-                    s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx + 128]);
-                __syncthreads();
-            }
-
-            if (DIMX >= 128) {
-                if (tidx <  64) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  64]);
-                __syncthreads();
-            }
-
-            if (DIMX >=  64) {
-                if (tidx <  32) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  32]);
-                __syncthreads();
-            }
-
-
-            out_val = WarpReduce<To, op>()(s_ptr, tidx);
-
-            To * const optr = out.ptr + (wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1]);
-            if (tidx == 0)
-                optr[blockIdx_x] = out_val;
+        To out_val = reduce.init();
+        for (int id = xid; id < lim; id += DIMX) {
+            To in_val = transform(iptr[id]);
+            if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
+            out_val = reduce(in_val, out_val);
         }
+
+        s_val[tid] = out_val;
+
+        __syncthreads();
+        To *s_ptr = s_val + tidy * DIMX;
+
+        if (DIMX == 256) {
+            if (tidx < 128)
+                s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx + 128]);
+            __syncthreads();
+        }
+
+        if (DIMX >= 128) {
+            if (tidx <  64) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  64]);
+            __syncthreads();
+        }
+
+        if (DIMX >=  64) {
+            if (tidx <  32) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  32]);
+            __syncthreads();
+        }
+
+
+        out_val = WarpReduce<To, op>()(s_ptr, tidx);
+
+        To * const optr = out.ptr + (wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1]);
+        if (tidx == 0)
+            optr[blockIdx_x] = out_val;
     }
 
     template<typename Ti, typename To, af_op_t op>
@@ -341,38 +306,24 @@ namespace kernel
         uint repeat = divup(in.dims[0], (blocks_x * threads_x));
 
         const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-        const int iterPerBlockY = divup(blocks.y, maxBlocksY);
-        if(iterPerBlockY > 1) {
+        const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+        if(blocksPerMatZ > 1) {
             blocks.y = maxBlocksY;
-            switch (threads_x) {
-            case 32:
-                CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  32, true>), blocks, threads,
-                    out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            case 64:
-                CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  64, true>), blocks, threads,
-                    out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            case 128:
-                CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  128, true>), blocks, threads,
-                    out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            case 256:
-                CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  256, true>), blocks, threads,
-                    out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            }
-        } else {
-            switch (threads_x) {
-            case 32:
-                CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  32, false>), blocks, threads,
-                    out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            case 64:
-                CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  64, false>), blocks, threads,
-                    out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            case 128:
-                CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  128, false>), blocks, threads,
-                    out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            case 256:
-                CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  256, false>), blocks, threads,
-                    out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval), iterPerBlockY); break;
-            }
+            blocks.z = blocksPerMatZ;
+        }
+        switch (threads_x) {
+        case 32:
+            CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  32>), blocks, threads,
+                out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval)); break;
+        case 64:
+            CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  64>), blocks, threads,
+                out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval)); break;
+        case 128:
+            CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  128>), blocks, threads,
+                out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval)); break;
+        case 256:
+            CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  256>), blocks, threads,
+                out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval)); break;
         }
 
         POST_LAUNCH_CHECK();
