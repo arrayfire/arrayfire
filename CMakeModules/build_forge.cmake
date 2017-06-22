@@ -46,13 +46,14 @@ ELSE()
     ENDIF(WIN32)
 ENDIF()
 
-SET(FORGE_VERSION 1.0.2-ft)
+SET(FORGE_VERSION 1.0.2)
+SET(FORGE_TAG ${FORGE_VERSION}-ft)
 
 # FIXME Tag forge correctly during release
 ExternalProject_Add(
     forge-ext
     GIT_REPOSITORY https://github.com/arrayfire/forge.git
-    GIT_TAG v${FORGE_VERSION}
+    GIT_TAG v${FORGE_TAG}
     ${byproducts}
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
