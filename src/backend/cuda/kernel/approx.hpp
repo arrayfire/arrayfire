@@ -23,104 +23,88 @@ namespace cuda
         static const int TY = 16;
         static const int THREADS = 256;
 
-        // \param largeYWDim true denotes 2nd & 4th dimensions greater than device limits
-        // \param iterPerBlockY number of iterations along grid.Y per block
-        template<typename Ty, typename Tp, int order, bool largeYWDim>
+        template<typename Ty, typename Tp, int order>
         __global__
         void approx1_kernel(Param<Ty> out, CParam<Ty> in, CParam<Tp> xpos,
                             const float offGrid, const int blocksMatX, const bool batch,
-                            af_interp_type method, int iterPerBlockY)
+                            af_interp_type method)
         {
             const int idy = blockIdx.x / blocksMatX;
             const int blockIdx_x = blockIdx.x - idy * blocksMatX;
             const int idx = blockIdx_x * blockDim.x + threadIdx.x;
 
-            // For smaller kernels statically set iterPerPlockY
-            // to 1 (register count optimization)
-            if(!largeYWDim) { iterPerBlockY = 1; }
+            const int idw = (blockIdx.y + blockIdx.z * gridDim.y) / out.dims[2];
+            const int idz = (blockIdx.y + blockIdx.z * gridDim.y) - idw * out.dims[2];
 
-            for(int ib = 0; ib < iterPerBlockY; ++ib) {
-                const int idw = (blockIdx.y + ib * gridDim.y) / out.dims[2];
-                const int idz = (blockIdx.y + ib * gridDim.y) - idw * out.dims[2];
+            if (idx >= out.dims[0] || idy >= out.dims[1] ||
+                idz >= out.dims[2] || idw >= out.dims[3])
+                return;
 
-                if (idx >= out.dims[0] || idy >= out.dims[1] ||
-                    idz >= out.dims[2] || idw >= out.dims[3])
-                    return;
+            const int omId = idw * out.strides[3] + idz * out.strides[2]
+                                               + idy * out.strides[1] + idx;
+            int xmid = idx;
+            if(batch) xmid += idw * xpos.strides[3] + idz * xpos.strides[2] + idy * xpos.strides[1];
 
-                const int omId = idw * out.strides[3] + idz * out.strides[2]
-                                                   + idy * out.strides[1] + idx;
-                int xmid = idx;
-                if(batch) xmid += idw * xpos.strides[3] + idz * xpos.strides[2] + idy * xpos.strides[1];
-
-                const Tp x = xpos.ptr[xmid];
-                if (x < 0 || in.dims[0] < x+1) {
-                    out.ptr[omId] = scalar<Ty>(offGrid);
-                    return;
-                }
-
-                int ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1];
-
-                // FIXME: Only cubic interpolation is doing clamping
-                // We need to make it consistent across all methods
-                // Not changing the behavior because tests will fail
-                bool clamp = order == 3;
-
-                Interp1<Ty, Tp, order> interp;
-                interp(out, omId, in, ioff, x, method, 1, clamp);
+            const Tp x = xpos.ptr[xmid];
+            if (x < 0 || in.dims[0] < x+1) {
+                out.ptr[omId] = scalar<Ty>(offGrid);
+                return;
             }
+
+            int ioff = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1];
+
+            // FIXME: Only cubic interpolation is doing clamping
+            // We need to make it consistent across all methods
+            // Not changing the behavior because tests will fail
+            bool clamp = order == 3;
+
+            Interp1<Ty, Tp, order> interp;
+            interp(out, omId, in, ioff, x, method, 1, clamp);
         }
 
-        // \param largeYWDim true denotes 2nd & 4th dimensions greater than device limits
-        // \param iterPerBlockY number of iterations along grid.Y per block
-        template<typename Ty, typename Tp, int order, bool largeYWDim>
+        template<typename Ty, typename Tp, int order>
         __global__
         void approx2_kernel(Param<Ty> out, CParam<Ty> in,
                             CParam<Tp> xpos, CParam<Tp> ypos, const float offGrid,
                             const int blocksMatX, const int blocksMatY, const bool batch,
-                            af_interp_type method, int iterPerBlockY)
+                            af_interp_type method)
         {
             const int idz = blockIdx.x / blocksMatX;
             const int blockIdx_x = blockIdx.x - idz * blocksMatX;
             const int idx = threadIdx.x + blockIdx_x * blockDim.x;
 
-            // For smaller kernels statically set iterPerPlockY
-            // to 1 (register count optimization)
-            if(!largeYWDim) { iterPerBlockY = 1; }
+            const int idw = (blockIdx.y + blockIdx.z * gridDim.y) / blocksMatY;
+            const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - idw * blocksMatY;
+            const int idy = threadIdx.y + blockIdx_y * blockDim.y;
 
-            for(int ib = 0; ib < iterPerBlockY; ++ib) {
-                const int idw = (blockIdx.y + ib * gridDim.y) / blocksMatY;
-                const int blockIdx_y = (blockIdx.y + ib * gridDim.y) - idw * blocksMatY;
-                const int idy = threadIdx.y + blockIdx_y * blockDim.y;
+            if (idx >= out.dims[0] || idy >= out.dims[1] ||
+                idz >= out.dims[2] || idw >= out.dims[3])
+                return;
 
-                if (idx >= out.dims[0] || idy >= out.dims[1] ||
-                    idz >= out.dims[2] || idw >= out.dims[3])
-                    return;
-
-                const int omId = idw * out.strides[3] + idz * out.strides[2]
-                    + idy * out.strides[1] + idx;
-                int xmid = idy * xpos.strides[1] + idx;
-                int ymid = idy * ypos.strides[1] + idx;
-                if(batch) {
-                    xmid += idw * xpos.strides[3] + idz * xpos.strides[2];
-                    ymid += idw * ypos.strides[3] + idz * ypos.strides[2];
-                }
-
-                const Tp x = xpos.ptr[xmid], y = ypos.ptr[ymid];
-                if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
-                    out.ptr[omId] = scalar<Ty>(offGrid);
-                    return;
-                }
-
-                int ioff = idw * in.strides[3] + idz * in.strides[2];
-
-                // FIXME: Only cubic interpolation is doing clamping
-                // We need to make it consistent across all methods
-                // Not changing the behavior because tests will fail
-                bool clamp = order == 3;
-
-                Interp2<Ty, Tp, order> interp;
-                interp(out, omId, in, ioff, x, y, method, 1, clamp);
+            const int omId = idw * out.strides[3] + idz * out.strides[2]
+                + idy * out.strides[1] + idx;
+            int xmid = idy * xpos.strides[1] + idx;
+            int ymid = idy * ypos.strides[1] + idx;
+            if(batch) {
+                xmid += idw * xpos.strides[3] + idz * xpos.strides[2];
+                ymid += idw * ypos.strides[3] + idz * ypos.strides[2];
             }
+
+            const Tp x = xpos.ptr[xmid], y = ypos.ptr[ymid];
+            if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
+                out.ptr[omId] = scalar<Ty>(offGrid);
+                return;
+            }
+
+            int ioff = idw * in.strides[3] + idz * in.strides[2];
+
+            // FIXME: Only cubic interpolation is doing clamping
+            // We need to make it consistent across all methods
+            // Not changing the behavior because tests will fail
+            bool clamp = order == 3;
+
+            Interp2<Ty, Tp, order> interp;
+            interp(out, omId, in, ioff, x, y, method, 1, clamp);
         }
 
         ///////////////////////////////////////////////////////////////////////////
@@ -138,15 +122,13 @@ namespace cuda
             bool batch = !(xpos.dims[1] == 1 && xpos.dims[2] == 1 && xpos.dims[3] == 1);
 
             const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-            const int iterPerBlockY = divup(blocks.y, maxBlocksY);
-            if(iterPerBlockY > 1) {
+            const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+            if(blocksPerMatZ > 1) {
                 blocks.y = maxBlocksY;
-                CUDA_LAUNCH((approx1_kernel<Ty, Tp, order, true>), blocks, threads,
-                            out, in, xpos, offGrid, blocksPerMat, batch, method, iterPerBlockY);
-            } else {
-                CUDA_LAUNCH((approx1_kernel<Ty, Tp, order, false>), blocks, threads,
-                            out, in, xpos, offGrid, blocksPerMat, batch, method, iterPerBlockY);
+                blocks.z = blocksPerMatZ;
             }
+            CUDA_LAUNCH((approx1_kernel<Ty, Tp, order>), blocks, threads,
+                            out, in, xpos, offGrid, blocksPerMat, batch, method);
             POST_LAUNCH_CHECK();
         }
 
@@ -163,15 +145,13 @@ namespace cuda
             bool batch = !(xpos.dims[2] == 1 && xpos.dims[3] == 1);
 
             const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-            const int iterPerBlockY = divup(blocks.y, maxBlocksY);
-            if(iterPerBlockY > 1) {
+            const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+            if(blocksPerMatZ > 1) {
                 blocks.y = maxBlocksY;
-                CUDA_LAUNCH((approx2_kernel<Ty, Tp, order, true>), blocks, threads,
-                        out, in, xpos, ypos, offGrid, blocksPerMatX, blocksPerMatY, batch, method, iterPerBlockY);
-            } else {
-                CUDA_LAUNCH((approx2_kernel<Ty, Tp, order, false>), blocks, threads,
-                        out, in, xpos, ypos, offGrid, blocksPerMatX, blocksPerMatY, batch, method, iterPerBlockY);
+                blocks.z = blocksPerMatZ;
             }
+            CUDA_LAUNCH((approx2_kernel<Ty, Tp, order>), blocks, threads,
+                        out, in, xpos, ypos, offGrid, blocksPerMatX, blocksPerMatY, batch, method);
             POST_LAUNCH_CHECK();
         }
     }
