@@ -20,10 +20,10 @@
 #include <af/data.h>
 #include <af/image.h>
 #include <backend.hpp>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <traits.hpp>
 #include <memory.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 
 #include <string>
@@ -752,7 +752,7 @@ af_err af_delete_image_memory(void *ptr)
 #else   // WITH_FREEIMAGE
 #include <af/image.h>
 #include <stdio.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 af_err af_load_image(af_array *out, const char* filename, const bool isColor)
 {
     AF_RETURN_ERROR("ArrayFire compiled without Image IO (FreeImage) support", AF_ERR_NOT_CONFIGURED);

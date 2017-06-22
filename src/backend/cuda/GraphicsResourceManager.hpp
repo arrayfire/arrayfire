@@ -15,7 +15,7 @@
 #endif
 
 // cuda_gl_interop.h does not include OpenGL headers for ARM
-#include <graphics_common.hpp>
+#include <common/graphics_common.hpp>
 using namespace gl;
 #define GL_VERSION gl::GL_VERSION
 #define __gl_h_ //FIXME Hack to avoid gl.h inclusion by cuda_gl_interop.h

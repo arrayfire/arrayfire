@@ -14,7 +14,7 @@
 #include <af/defines.h>         // Include this header to access any enums,
                                 // #defines or constants declared
 
-#include <err_common.hpp>       // Header with error checking functions & macros
+#include <common/err_common.hpp>       // Header with error checking functions & macros
 
 #include <backend.hpp>          // This header make sures appropriate backend
                                 // related namespace is being used
@@ -57,7 +57,7 @@ af_err af_example_function(af_array* out, const af_array a, const af_someenum_t 
                                             // This class stores the basic array meta-data
                                             // such as type of data, dimensions,
                                             // offsets and strides. This class is declared
-                                            // in src/backend/ArrayInfo.hpp
+                                            // in src/backend/common/ArrayInfo.hpp
         af::dim4 dims = info.dims();
 
         ARG_ASSERT(2, (dims.ndims()>=0 && dims.ndims()<=3));

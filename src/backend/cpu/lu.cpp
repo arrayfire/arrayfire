@@ -8,19 +8,20 @@
  ********************************************************/
 
 #include <lu.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 #if defined(WITH_CPU_LINEAR_ALGEBRA)
 #include <af/dim4.hpp>
 #include <handle.hpp>
-#include <iostream>
-#include <cassert>
-#include <range.hpp>
+#include <kernel/lu.hpp>
 #include <lapack_helper.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/lu.hpp>
+#include <range.hpp>
+
+#include <cassert>
+#include <iostream>
 
 namespace cpu
 {

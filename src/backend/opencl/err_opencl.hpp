@@ -10,7 +10,7 @@
 #pragma once
 #include <cstdio>
 #include <errorcodes.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <platform.hpp>
 #include <types.hpp>
 

@@ -10,7 +10,7 @@
 #if defined (WITH_GRAPHICS)
 
 #include <Array.hpp>
-#include <graphics_common.hpp>
+#include <common/graphics_common.hpp>
 
 namespace opencl
 {

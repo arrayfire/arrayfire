@@ -13,10 +13,10 @@
 #include <vector>
 
 #include <af/array.h>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <type_util.hpp>
 
 #include <af/index.h>

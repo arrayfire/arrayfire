@@ -9,7 +9,7 @@
 
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <fft.hpp>
 #include <err_cpu.hpp>
 #include <fftw3.h>

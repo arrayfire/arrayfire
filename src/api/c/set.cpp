@@ -10,7 +10,7 @@
 #include <complex>
 #include <af/defines.h>
 #include <af/algorithm.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 #include <set.hpp>

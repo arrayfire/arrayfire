@@ -1,73 +1,36 @@
-# If using a commit, remove the v prefix to VER in URL.
-# If using a tag, don't use v in VER
-# This is because of how github handles it's release tar balls
-SET(VER boost-1.61.0)
-SET(URL https://github.com/boostorg/compute/archive/${VER}.tar.gz)
-SET(MD5 7e1c433b48825d8cb2effa963823aec8)
+# Copyright (c) 2017, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
 
-SET(thirdPartyDir "${PROJECT_BINARY_DIR}/third_party")
-SET(srcDir "${thirdPartyDir}/compute-${VER}")
-SET(archive ${srcDir}.tar.gz)
-SET(inflated ${srcDir}-inflated)
+set(VER boost-1.61.0)
+set(MD5 7e1c433b48825d8cb2effa963823aec8)
+include(ExternalProject)
 
-# the config to be used in the code
-SET(BoostCompute_INCLUDE_DIRS "${srcDir}/include")
+ExternalProject_Add(
+  boost_compute
+  URL       https://github.com/boostorg/compute/archive/${VER}.tar.gz
+  URL_MD5   ${MD5}
+  INSTALL_COMMAND ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  )
 
-# do we have to do it again?
-SET(doExtraction ON)
-IF(EXISTS "${inflated}")
-    FILE(READ "${inflated}" extractedMD5)
-    IF("${extractedMD5}" STREQUAL "${MD5}")
-        # nope, everything looks fine
-        return()
-    ENDIF()
-ENDIF()
+ExternalProject_Get_Property(boost_compute source_dir)
+message(STATUS "BOOST_COMPUTE: ${source_dir}")
+make_directory(${source_dir}/include)
 
-# lets get and extract boost compute
+if(NOT TARGET Boost::boost)
+  add_library(Boost::boost IMPORTED INTERFACE GLOBAL)
+endif()
 
-MESSAGE(STATUS "BoostCompute...")
-IF(EXISTS "${archive}")
-    FILE(MD5 "${archive}" md5)
-    IF(NOT "${md5}" STREQUAL "${MD5}")
-        MESSAGE("  wrong check sum ${md5}, redownloading")
-        FILE(REMOVE "${archive}")
-    ENDIF()
-ENDIF()
+add_dependencies(Boost::boost boost_compute)
 
-IF(NOT EXISTS "${archive}")
-    MESSAGE(STATUS "  getting ${URL}")
-    FILE(DOWNLOAD "${URL}" ${archive}
-        STATUS rv
-        SHOW_PROGRESS)
-ENDIF()
+set_target_properties(Boost::boost PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR};${source_dir}/include"
 
-MESSAGE(STATUS "  validating ${archive}")
-FILE(MD5 "${archive}" md5)
-IF(NOT "${md5}" STREQUAL "${MD5}")
-    MESSAGE(WARNING "${archive}: Invalid check sum ${md5}. Expected was ${MD5}")
-    IF("${md5}" STREQUAL "d41d8cd98f00b204e9800998ecf8427e")
-        MESSAGE(STATUS "Trying wget ${URL}")
-        EXECUTE_PROCESS(COMMAND wget -O ${archive} ${URL})
-        FILE(MD5 "${archive}" md5_)
-        IF(NOT "${md5_}" STREQUAL "${MD5}")
-            MESSAGE(FATAL_ERROR "${archive}: Invalid check sum ${md5_}. Expected was ${MD5}")
-        ENDIF(NOT "${md5_}" STREQUAL "${MD5}")
-        MESSAGE(STATUS "wget successful")
-    ENDIF("${md5}" STREQUAL "d41d8cd98f00b204e9800998ecf8427e")
-ENDIF()
-
-IF(IS_DIRECTORY ${srcDir})
-    MESSAGE(STATUS "  cleaning ${cleaning}")
-    FILE(REMOVE_RECURSE ${srcDir})
-ENDIF()
-
-MESSAGE(STATUS "  extracting ${archive}")
-FILE(MAKE_DIRECTORY ${srcDir})
-EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E tar xfz ${archive}
-    WORKING_DIRECTORY ${thirdPartyDir}
-    RESULT_VARIABLE rv)
-IF(NOT rv EQUAL 0)
-    MESSAGE(FATAL_ERROR "'${archive}' extraction failed")
-ENDIF()
-
-FILE(WRITE ${inflated} "${MD5}")
+  # NOTE: BOOST_CHRONO_HEADER_ONLY is required for Windows because otherwise it
+  # will try to link with libboost-chrono.
+  INTERFACE_COMPILE_DEFINITIONS BOOST_CHRONO_HEADER_ONLY)

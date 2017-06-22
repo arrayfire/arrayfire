@@ -15,7 +15,7 @@
 #include <platform.hpp>
 #include <Array.hpp>
 #include <handle.hpp>
-#include "err_common.hpp"
+#include <common/err_common.hpp>
 #include <cstring>
 
 using namespace detail;

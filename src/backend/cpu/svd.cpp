@@ -9,7 +9,7 @@
 
 #include <Array.hpp>
 #include <svd.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <err_cpu.hpp>
 
 #if defined(WITH_CPU_LINEAR_ALGEBRA)

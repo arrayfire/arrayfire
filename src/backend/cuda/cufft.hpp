@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <cufft.h>
 #include <common/FFTPlanCache.hpp>
 #include <cstdio>

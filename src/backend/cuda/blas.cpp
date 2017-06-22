@@ -16,7 +16,7 @@
 #include <string>
 #include <cassert>
 #include <math.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <cublas.hpp>
 #include <arith.hpp>
 #include <reduce.hpp>

@@ -6,7 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-#include <defines.hpp>
+#include <common/defines.hpp>
 #include <math.hpp>
 
 namespace cpu

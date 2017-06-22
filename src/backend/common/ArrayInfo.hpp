@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <defines.hpp>
+#include <common/defines.hpp>
 #include <af/dim4.hpp>
 #include <af/device.h>
 #include <vector>
@@ -56,7 +56,6 @@ public:
         dim_strides(stride),
         is_sparse(false)
     {
-        af_init();
         setId(id);
 #if __cplusplus > 199711l
     static_assert(offsetof(ArrayInfo, devId) == 0,
@@ -74,7 +73,6 @@ public:
         dim_strides(stride),
         is_sparse(sparse)
     {
-        af_init();
         setId(id);
 #if __cplusplus > 199711l
     static_assert(offsetof(ArrayInfo, devId) == 0,

@@ -8,14 +8,14 @@
  ********************************************************/
 
 #include <svd.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 #include <platform.hpp>
 #include "transpose.hpp"
 #include <memory.hpp>
 #include <copy.hpp>
 #include <math.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 #include <cusolverDn.hpp>
 

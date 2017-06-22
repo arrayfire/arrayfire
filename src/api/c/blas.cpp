@@ -13,10 +13,10 @@
 #include <Array.hpp>
 #include <af/array.h>
 #include <af/defines.h>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <sparse_handle.hpp>
 #include <sparse_blas.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 
 template<typename T>

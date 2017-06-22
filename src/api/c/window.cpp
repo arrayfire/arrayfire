@@ -11,8 +11,8 @@
 #include <af/graphics.h>
 #include <af/algorithm.h>
 
-#include <graphics_common.hpp>
-#include <err_common.hpp>
+#include <common/graphics_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 
 using af::dim4;

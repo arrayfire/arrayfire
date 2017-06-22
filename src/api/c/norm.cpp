@@ -12,10 +12,10 @@
 #include <af/defines.h>
 #include <af/traits.hpp>
 #include <af/constants.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <math.hpp>
 #include <arith.hpp>
 #include <lu.hpp>

@@ -11,10 +11,10 @@
 #include <af/defines.h>
 #include <af/arith.h>
 #include <af/data.h>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <optypes.hpp>
 #include <implicit.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 #include <sparse_handle.hpp>

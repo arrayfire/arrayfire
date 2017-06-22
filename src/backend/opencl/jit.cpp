@@ -16,7 +16,7 @@
 #include <JIT/Node.hpp>
 #include <kernel_headers/jit.hpp>
 #include <program.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <err_opencl.hpp>
 #include <functional>
 #include <af/opencl.h>

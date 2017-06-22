@@ -11,7 +11,7 @@
 #include <af/data.h>
 #include <af/statistics.h>
 #include <af/defines.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <handle.hpp>
 #include <mean.hpp>

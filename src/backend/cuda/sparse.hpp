@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <SparseArray.hpp>
+#include <common/SparseArray.hpp>
 
 namespace cuda
 {

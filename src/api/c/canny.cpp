@@ -11,7 +11,7 @@
 #include <af/defines.h>
 #include <af/image.h>
 #include <af/seq.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <Array.hpp>
 #include <handle.hpp>

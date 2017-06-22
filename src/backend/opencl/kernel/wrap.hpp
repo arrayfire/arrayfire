@@ -14,7 +14,7 @@
 #include <string>
 #include <map>
 #include <mutex>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
 #include <type_util.hpp>

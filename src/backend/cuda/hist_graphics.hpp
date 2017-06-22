@@ -11,7 +11,7 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <graphics_common.hpp>
+#include <common/graphics_common.hpp>
 #include <Array.hpp>
 
 namespace cuda

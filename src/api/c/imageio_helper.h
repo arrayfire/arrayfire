@@ -15,7 +15,7 @@
 #include <af/array.h>
 #include <af/index.h>
 #include <af/dim4.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 class FI_Manager
 {

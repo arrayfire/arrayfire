@@ -14,7 +14,7 @@
 #include <af/device.h>
 #include <af/util.h>
 #include <copy.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <handle.hpp>
 #include <math.hpp>

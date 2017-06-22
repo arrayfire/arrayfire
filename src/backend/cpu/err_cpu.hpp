@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 #define CPU_NOT_SUPPORTED() do {                        \
         throw SupportError(__PRETTY_FUNCTION__,         \

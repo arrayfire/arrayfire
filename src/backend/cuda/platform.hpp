@@ -17,7 +17,6 @@
 #include <cublas.hpp>
 #include <cusolverDn.hpp>
 #include <cusparse.hpp>
-#include <common/types.hpp>
 
 #include <memory>
 #include <mutex>

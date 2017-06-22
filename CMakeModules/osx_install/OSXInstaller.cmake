@@ -45,8 +45,8 @@ MACRO(OSX_INSTALL_SETUP BACKEND LIB)
     # Create symlinks separately. Copying them in above command will do a deep copy
     ADD_CUSTOM_COMMAND(TARGET OSX_INSTALL_SETUP_${BACKEND} PRE_BUILD
                        COMMAND ${CMAKE_COMMAND} -E create_symlink
-                       "lib${LIB}.${AF_VERSION}.dylib"
-                       "lib${LIB}.${AF_VERSION_MAJOR}.dylib"
+                       "lib${LIB}.${ArrayFire_VERSION}.dylib"
+                       "lib${LIB}.${ArrayFire_VERSION_MAJOR}.dylib"
                        WORKING_DIRECTORY "${OSX_TEMP}/${BACKEND}/${AF_INSTALL_LIB_DIR}"
                        COMMENT "Copying ${BACKEND} files to temporary OSX Install Dir (Symlink)"
                        )

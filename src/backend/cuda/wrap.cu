@@ -11,7 +11,7 @@
 #include <wrap.hpp>
 #include <stdexcept>
 #include <err_cuda.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <math.hpp>
 #include <kernel/wrap.hpp>
 

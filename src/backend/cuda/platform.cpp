@@ -10,17 +10,16 @@
 #include <af/version.h>
 #include <af/cuda.h>
 #include <platform.hpp>
-#include <defines.hpp>
-#include <util.hpp>
+#include <common/defines.hpp>
+#include <common/util.hpp>
 #include <version.hpp>
 #include <driver.h>
 #include <err_cuda.hpp>
-#include <util.hpp>
-#include <host_memory.hpp>
+#include <common/util.hpp>
+#include <common/host_memory.hpp>
 
 #include <algorithm>
 #include <cstdio>
-#include <cstring>
 #include <mutex>
 #include <sstream>
 #include <stdexcept>

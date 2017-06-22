@@ -9,7 +9,7 @@
 
 #include <af/defines.h>
 #include <program.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
 #include <kernel/convolve_separable.hpp>

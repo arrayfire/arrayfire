@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <af/defines.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <clfft.hpp>
 #include <platform.hpp>
 #include <string>

@@ -11,14 +11,14 @@
 #include <af/array.h>
 #include <Array.hpp>
 #include <backend.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <math.hpp>
 #include <copy.hpp>
 #include <cast.hpp>
 #include <handle.hpp>
 #include <af/dim4.hpp>
 
-#include <SparseArray.hpp>
+#include <common/SparseArray.hpp>
 
 const common::SparseArrayBase& getSparseArrayBase(const af_array arr, bool device_check = true);
 

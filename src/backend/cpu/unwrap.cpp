@@ -9,7 +9,7 @@
 
 #include <Array.hpp>
 #include <unwrap.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <kernel/unwrap.hpp>

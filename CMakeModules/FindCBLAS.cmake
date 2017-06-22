@@ -101,9 +101,11 @@ IF(NOT CBLAS_ROOT_DIR)
         ENDIF()
     ENDIF(APPLE)
   ENDIF()
-
-  SET(CBLAS_INCLUDE_DIR "${CBLAS_ROOT_DIR}/include")
 ENDIF()
+
+if(CBLAS_ROOT_DIR)
+  set(CBLAS_INCLUDE_DIR "${CBLAS_ROOT_DIR}/include")
+endif()
 
 # Old CBLAS search
 SET(_verbose TRUE)

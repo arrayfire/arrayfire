@@ -10,9 +10,9 @@
 #include <af/graphics.h>
 #include <af/image.h>
 
-#include <ArrayInfo.hpp>
-#include <graphics_common.hpp>
-#include <err_common.hpp>
+#include <common/ArrayInfo.hpp>
+#include <common/graphics_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <surface.hpp>
 #include <reduce.hpp>

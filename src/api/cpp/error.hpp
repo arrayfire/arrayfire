@@ -9,7 +9,7 @@
 
 #include <af/exception.h>
 #include <af/device.h>
-#include <defines.hpp>
+#include <common/defines.hpp>
 
 #define AF_THROW(fn) do {                               \
         af_err __err = fn;                              \

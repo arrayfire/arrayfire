@@ -8,13 +8,13 @@
  ********************************************************/
 
 #include <lu.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 #include <platform.hpp>
 #include <memory.hpp>
 #include <copy.hpp>
 #include <math.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 #include <kernel/lu_split.hpp>
 

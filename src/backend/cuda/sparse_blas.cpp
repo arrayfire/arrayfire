@@ -13,7 +13,7 @@
 
 #include <stdexcept>
 #include <string>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <math.hpp>
 #include <complex.hpp>
 

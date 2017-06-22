@@ -9,7 +9,7 @@
 
 #pragma once
 #include <stdio.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <clblast.h>
 
 static const char * _clblastGetResultString(clblast::StatusCode st)

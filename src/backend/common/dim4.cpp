@@ -12,7 +12,7 @@
 #include <cmath>
 #include <cfloat>
 #include <af/dim4.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 namespace af
 {

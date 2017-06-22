@@ -10,32 +10,10 @@
 #ifndef MAGMA_CPU_BLAS
 #define MAGMA_CPU_BLAS
 #include <err_opencl.hpp>
-#include <defines.hpp>
+#include <common/defines.hpp>
 #include "magma_types.h"
+#include <common/blas_headers.hpp>
 
-#ifdef USE_MKL
-    #include <mkl_cblas.h>
-#else
-    #ifdef __APPLE__
-        #include <Accelerate/Accelerate.h>
-    #else
-        extern "C" {
-            #include <cblas.h>
-        }
-    #endif
-#endif
-
-// Todo: Ask upstream for a more official way to detect it
-#ifdef OPENBLAS_CONST
-#define IS_OPENBLAS
-#endif
-
-// Make sure we get the correct type signature for OpenBLAS
-// OpenBLAS defines blasint as it's index type. Emulate this
-// if we're not dealing with openblas and use it where applicable
-#ifndef IS_OPENBLAS
-typedef int blasint;
-#endif
 
 #define CPU_BLAS_FUNC_DEF(NAME)                 \
     template<typename T>                        \

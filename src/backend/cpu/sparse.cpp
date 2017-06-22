@@ -17,7 +17,7 @@
 #include <cast.hpp>
 #include <complex.hpp>
 #include <copy.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <lookup.hpp>
 #include <math.hpp>
 #include <platform.hpp>

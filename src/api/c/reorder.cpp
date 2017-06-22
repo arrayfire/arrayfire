@@ -9,10 +9,10 @@
 
 #include <af/data.h>
 #include <af/blas.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <reorder.hpp>
 #include <transpose.hpp>
 

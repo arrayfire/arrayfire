@@ -9,17 +9,18 @@
 
 #include <af/exception.h>
 #include <af/device.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <type_util.hpp>
-#include <util.hpp>
-#include <string>
-#include <sstream>
-#include <cstring>
-#include <cstdio>
+#include <common/util.hpp>
+
 #include <algorithm>
+#include <cstdio>
+#include <cstring>
+#include <sstream>
+#include <string>
 
 #if defined(WITH_GRAPHICS) && !defined(AF_UNIFIED)
-#include <graphics_common.hpp>
+#include <common/graphics_common.hpp>
 #endif
 
 #ifdef AF_OPENCL

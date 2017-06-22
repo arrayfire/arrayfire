@@ -22,7 +22,7 @@
 #else
     #ifdef __APPLE__
         #include <Accelerate/Accelerate.h>
-        #include <lapacke.hpp>
+        #include <common/lapacke.hpp>
         #undef AF_LAPACK_COL_MAJOR
         #define AF_LAPACK_COL_MAJOR 0
     #else // NETLIB LAPACKE

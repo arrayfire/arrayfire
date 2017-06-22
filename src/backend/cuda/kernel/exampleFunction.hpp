@@ -17,7 +17,7 @@
                                         // Param and CParam(constant version of Param) instead
                                         // of cuda::Array<T>
 
-#include <dispatch.hpp>                 // common utility header for CUDA & OpenCL backends
+#include <common/dispatch.hpp>                 // common utility header for CUDA & OpenCL backends
                                         // has the divup macro
 
 #include <err_cuda.hpp>                 // CUDA specific error check functions and macros
