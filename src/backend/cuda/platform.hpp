@@ -11,15 +11,21 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <vector>
+#include <memory.hpp>
+#include <GraphicsResourceManager.hpp>
+#include <cufft.hpp>
+#include <cublas.hpp>
+#include <cusolverDn.hpp>
+#include <cusparse.hpp>
+#include <common/types.hpp>
+
+#include <memory>
+#include <mutex>
 #include <string>
-#if defined(WITH_GRAPHICS)
-#include <fg/window.h>
-#endif
+#include <vector>
 
 namespace cuda
 {
-
 int getBackend();
 
 std::string getDeviceInfo();
@@ -37,6 +43,8 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
 unsigned getMaxJitSize();
 
+std::mutex& getDriverApiMutex(int device);
+
 int getDeviceCount();
 
 int getActiveDeviceId();
@@ -44,6 +52,8 @@ int getActiveDeviceId();
 int getDeviceNativeId(int device);
 
 cudaStream_t getStream(int device);
+
+cudaStream_t getActiveStream();
 
 size_t getDeviceMemorySize(int device);
 
@@ -66,12 +76,46 @@ struct cudaDevice_t {
 
 bool& evalFlag();
 
+///////////////////////// BEGIN Sub-Managers ///////////////////
+//
+MemoryManager& memoryManager();
+
+MemoryManagerPinned& pinnedMemoryManager();
+
+#if defined(WITH_GRAPHICS)
+GraphicsResourceManager& interopManager();
+#endif
+
+PlanCache& fftManager();
+
+BlasHandle blasHandle();
+
+SolveHandle solverDnHandle();
+
+SparseHandle sparseHandle();
+//
+///////////////////////// END Sub-Managers /////////////////////
+
 class DeviceManager
 {
     public:
         static const unsigned MAX_DEVICES = 16;
 
+#if defined(WITH_GRAPHICS)
+        static bool checkGraphicsInteropCapability();
+#endif
+
         static DeviceManager& getInstance();
+
+        friend MemoryManager& memoryManager();
+
+        friend MemoryManagerPinned& pinnedMemoryManager();
+
+#if defined(WITH_GRAPHICS)
+        friend GraphicsResourceManager& interopManager();
+#endif
+
+        friend std::mutex& getDriverApiMutex(int device);
 
         friend std::string getDeviceInfo(int device);
 
@@ -84,8 +128,6 @@ class DeviceManager
         friend std::string getDeviceInfo();
 
         friend int getDeviceCount();
-
-        friend int getActiveDeviceId();
 
         friend int getDeviceNativeId(int device);
 
@@ -107,6 +149,8 @@ class DeviceManager
         DeviceManager(DeviceManager const&);
         void operator=(DeviceManager const&);
 
+        std::mutex driver_api_mutex[MAX_DEVICES];
+
         // Attributes
         std::vector<cudaDevice_t> cuDevices;
 
@@ -116,9 +160,14 @@ class DeviceManager
 
         int setActiveDevice(int device, int native = -1);
 
-        int activeDev;
         int nDevices;
         cudaStream_t streams[MAX_DEVICES];
-};
 
+        std::unique_ptr<MemoryManager> memManager;
+
+        std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
+#if defined(WITH_GRAPHICS)
+        std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
+#endif
+};
 }

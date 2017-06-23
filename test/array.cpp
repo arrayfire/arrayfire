@@ -22,6 +22,7 @@ class Array : public ::testing::Test
 };
 
 typedef ::testing::Types<float, double, af::cfloat, af::cdouble, char, unsigned char, int, uint, intl, uintl, short, ushort> TestTypes;
+
 TYPED_TEST_CASE(Array, TestTypes);
 
 TEST(Array, ConstructorDefault)
@@ -29,9 +30,6 @@ TEST(Array, ConstructorDefault)
     array a;
     EXPECT_EQ(0u,    a.numdims());
     EXPECT_EQ(dim_t(0),    a.dims(0));
-    EXPECT_EQ(dim_t(0),    a.dims(1));
-    EXPECT_EQ(dim_t(0),    a.dims(2));
-    EXPECT_EQ(dim_t(0),    a.dims(3));
     EXPECT_EQ(dim_t(0),    a.elements());
     EXPECT_EQ(f32,  a.type());
     EXPECT_EQ(0u,    a.bytes());
@@ -411,6 +409,11 @@ TEST(Array, ISSUE_951)
     af::array b = a.cols(0, 20).rows(10, 20);
 }
 
+TEST(Array, CreateHandleInvalidNullDimsPointer) {
+    af_array out = 0;
+    EXPECT_EQ(AF_ERR_ARG, af_create_handle(&out, 1, NULL, f32));
+}
+
 
 TEST(Device, simple)
 {
@@ -502,4 +505,18 @@ TEST(Device, JIT)
 {
     array a = constant(1, 5, 5);
     ASSERT_EQ(a.device<float>() != NULL, 1);
+}
+
+TYPED_TEST(Array, Scalar)
+{
+    if (noDoubleTests<TypeParam>()) return;
+
+    dtype type = (dtype)af::dtype_traits<TypeParam>::af_type;
+    array a = randu(dim4(1), type);
+
+    std::vector<TypeParam> gold(a.elements());
+
+    a.host((void*)gold.data());
+
+    EXPECT_EQ(true, gold[0]==a.scalar<TypeParam>());
 }

@@ -92,9 +92,9 @@ void meanDimTest(string pFileName, dim_t dim, bool isWeighted=false)
 
         af::array outArray = af::mean(inArray, dim);
 
-        outType *outData = new outType[dims.elements()];
+        std::vector<outType> outData(dims.elements());
 
-        outArray.host((void*)outData);
+        outArray.host((void*)outData.data());
 
         vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
         size_t nElems = currGoldBar.size();
@@ -102,9 +102,6 @@ void meanDimTest(string pFileName, dim_t dim, bool isWeighted=false)
             ASSERT_NEAR(::real(currGoldBar[elIter]), ::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
             ASSERT_NEAR(::imag(currGoldBar[elIter]), ::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
         }
-
-        // cleanup
-        delete[] outData;
     } else {
         af::dim4 dims  = numDims[0];
         af::dim4 wdims = numDims[1];
@@ -116,9 +113,9 @@ void meanDimTest(string pFileName, dim_t dim, bool isWeighted=false)
 
         af::array outArray = af::mean(inArray, wtsArray, dim);
 
-        outType *outData = new outType[dims.elements()];
+        std::vector<outType> outData(dims.elements());
 
-        outArray.host((void*)outData);
+        outArray.host((void*)outData.data());
 
         vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
         size_t nElems = currGoldBar.size();
@@ -126,9 +123,6 @@ void meanDimTest(string pFileName, dim_t dim, bool isWeighted=false)
             ASSERT_NEAR(::real(currGoldBar[elIter]), ::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
             ASSERT_NEAR(::imag(currGoldBar[elIter]), ::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
         }
-
-        // cleanup
-        delete[] outData;
     }
 }
 

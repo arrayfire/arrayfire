@@ -13,7 +13,6 @@
 #include <Array.hpp>
 #include <memory.hpp>
 #include <types.hpp>
-#include <err_common.hpp>
 #include <platform.hpp>
 
 //********************************************************/

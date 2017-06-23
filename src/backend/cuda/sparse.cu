@@ -8,13 +8,10 @@
  ********************************************************/
 
 #include <sparse.hpp>
-#include <cusparseManager.hpp>
 #include <kernel/sparse.hpp>
 
 #include <stdexcept>
 #include <string>
-
-#include <boost/shared_ptr.hpp>
 
 #include <arith.hpp>
 #include <cast.hpp>
@@ -29,7 +26,6 @@
 namespace cuda
 {
 
-using cusparse::getHandle;
 using namespace common;
 using namespace std;
 
@@ -265,7 +261,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in)
 
     int nNZ = -1;
     CUSPARSE_CHECK(nnz_func<T>()(
-                        getHandle(),
+                        sparseHandle(),
                         dir,
                         M, N,
                         descr,
@@ -286,7 +282,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in)
 
     if(stype == AF_STORAGE_CSR)
         CUSPARSE_CHECK(dense2csr_func<T>()(
-                        getHandle(),
+                        sparseHandle(),
                         M, N,
                         descr,
                         in.get(), in.strides()[1],
@@ -294,7 +290,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in)
                         values.get(), rowIdx.get(), colIdx.get()));
     else
         CUSPARSE_CHECK(dense2csc_func<T>()(
-                        getHandle(),
+                        sparseHandle(),
                         M, N,
                         descr,
                         in.get(), in.strides()[1],
@@ -340,7 +336,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in)
 
     if(stype == AF_STORAGE_CSR)
         CUSPARSE_CHECK(csr2dense_func<T>()(
-                        getHandle(),
+                        sparseHandle(),
                         M, N,
                         descr,
                         in.getValues().get(),
@@ -349,7 +345,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in)
                         dense.get(), d_strides1));
     else
         CUSPARSE_CHECK(csc2dense_func<T>()(
-                        getHandle(),
+                        sparseHandle(),
                         M, N,
                         descr,
                         in.getValues().get(),
@@ -363,12 +359,10 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in)
     return dense;
 }
 
-// Some of the API used here is available only in CUDA 7 or newer
-#if CUDA_VERSION >= 7000
 template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 {
-    using boost::shared_ptr;
+    using std::shared_ptr;
     in.eval();
 
     int nNZ = in.getNNZ();
@@ -379,11 +373,11 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
         CUDA_CHECK(cudaMemcpyAsync(converted.getColIdx().get(), in.getColIdx().get(),
                                    in.getColIdx().elements() * sizeof(int),
                                    cudaMemcpyDeviceToDevice,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
+                                   cuda::getActiveStream()));
 
         // cusparse function to expand compressed row into coordinate
         CUSPARSE_CHECK(cusparseXcsr2coo(
-                        getHandle(),
+                        sparseHandle(),
                         in.getRowIdx().get(),
                         nNZ, in.dims()[0],
                         converted.getRowIdx().get(),
@@ -392,23 +386,23 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
         // Call sort
         size_t pBufferSizeInBytes = 0;
         CUSPARSE_CHECK(cusparseXcoosort_bufferSizeExt(
-                        getHandle(),
+                        sparseHandle(),
                         in.dims()[0], in.dims()[1], nNZ,
                         converted.getRowIdx().get(), converted.getColIdx().get(),
                         &pBufferSizeInBytes));
         shared_ptr<char> pBuffer(memAlloc<char>(pBufferSizeInBytes), memFree<char>);
 
         shared_ptr<int> P(memAlloc<int>(nNZ), memFree<int>);
-        CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getHandle(), nNZ, P.get()));
+        CUSPARSE_CHECK(cusparseCreateIdentityPermutation(sparseHandle(), nNZ, P.get()));
 
         CUSPARSE_CHECK(cusparseXcoosortByColumn(
-                       getHandle(),
+                       sparseHandle(),
                        in.dims()[0], in.dims()[1], nNZ,
                        converted.getRowIdx().get(), converted.getColIdx().get(),
                        P.get(), (void*)pBuffer.get()));
 
         CUSPARSE_CHECK(gthr_func<T>()(
-                       getHandle(), nNZ,
+                       sparseHandle(), nNZ,
                        in.getValues().get(),
                        converted.getValues().get(),
                        P.get(), CUSPARSE_INDEX_BASE_ZERO));
@@ -427,23 +421,23 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
         {
             size_t pBufferSizeInBytes = 0;
             CUSPARSE_CHECK(cusparseXcoosort_bufferSizeExt(
-                            getHandle(),
+                            sparseHandle(),
                             cooT.dims()[0], cooT.dims()[1], nNZ,
                             cooT.getRowIdx().get(), cooT.getColIdx().get(),
                             &pBufferSizeInBytes));
             shared_ptr<char> pBuffer(memAlloc<char>(pBufferSizeInBytes), memFree<char>);
 
             shared_ptr<int> P(memAlloc<int>(nNZ), memFree<int>);
-            CUSPARSE_CHECK(cusparseCreateIdentityPermutation(getHandle(), nNZ, P.get()));
+            CUSPARSE_CHECK(cusparseCreateIdentityPermutation(sparseHandle(), nNZ, P.get()));
 
             CUSPARSE_CHECK(cusparseXcoosortByRow(
-                           getHandle(),
+                           sparseHandle(),
                            cooT.dims()[0], cooT.dims()[1], nNZ,
                            cooT.getRowIdx().get(), cooT.getColIdx().get(),
                            P.get(), (void*)pBuffer.get()));
 
             CUSPARSE_CHECK(gthr_func<T>()(
-                           getHandle(), nNZ,
+                           sparseHandle(), nNZ,
                            in.getValues().get(),
                            cooT.getValues().get(),
                            P.get(), CUSPARSE_INDEX_BASE_ZERO));
@@ -454,15 +448,15 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
         CUDA_CHECK(cudaMemcpyAsync(converted.getValues().get(), cooT.getValues().get(),
                                    cooT.getValues().elements() * sizeof(T),
                                    cudaMemcpyDeviceToDevice,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
+                                   cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(converted.getColIdx().get(), cooT.getColIdx().get(),
                                    cooT.getColIdx().elements() * sizeof(int),
                                    cudaMemcpyDeviceToDevice,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
+                                   cuda::getActiveStream()));
 
         // cusparse function to compress row from coordinate
         CUSPARSE_CHECK(cusparseXcoo2csr(
-                        getHandle(),
+                        sparseHandle(),
                         cooT.getRowIdx().get(),
                         nNZ, cooT.dims()[0],
                         converted.getRowIdx().get(),
@@ -477,14 +471,6 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
 
     return converted;
 }
-#else // CUDA 6.5 and older (older than 7)
-template<typename T, af_storage dest, af_storage src>
-SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
-{
-    AF_ERROR("Sparse storage format conversions are not supported for CUDA 6.5 or older",
-             AF_ERR_NOT_SUPPORTED);
-}
-#endif // CUDA_VERSION >= 7000
 
 #define INSTANTIATE_TO_STORAGE(T, S)                                                                        \
     template SparseArray<T> sparseConvertStorageToStorage<T, S, AF_STORAGE_CSR>(const SparseArray<T> &in);  \

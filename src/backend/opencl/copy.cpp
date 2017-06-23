@@ -215,4 +215,27 @@ namespace opencl
     SPECILIAZE_UNUSED_COPYARRAY(cdouble, short)
     SPECILIAZE_UNUSED_COPYARRAY(cdouble, ushort)
 
+    template<typename T>
+    T getScalar(const Array<T> &in)
+    {
+        T retVal;
+        getQueue().enqueueReadBuffer(*in.get(), CL_TRUE, sizeof(T) * in.getOffset(), sizeof(T), &retVal);
+        return retVal;
+    }
+
+#define INSTANTIATE_GETSCALAR(T) \
+    template T getScalar(const Array<T> &in);
+
+    INSTANTIATE_GETSCALAR(float  )
+    INSTANTIATE_GETSCALAR(double )
+    INSTANTIATE_GETSCALAR(cfloat )
+    INSTANTIATE_GETSCALAR(cdouble)
+    INSTANTIATE_GETSCALAR(int    )
+    INSTANTIATE_GETSCALAR(uint   )
+    INSTANTIATE_GETSCALAR(uchar  )
+    INSTANTIATE_GETSCALAR(char   )
+    INSTANTIATE_GETSCALAR(intl   )
+    INSTANTIATE_GETSCALAR(uintl  )
+    INSTANTIATE_GETSCALAR(short  )
+    INSTANTIATE_GETSCALAR(ushort )
 }

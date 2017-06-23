@@ -40,9 +40,9 @@ using namespace af;
                 << "for index" << i;                    \
             h_in += nx;                                 \
         }                                               \
-        delete[] h_in_st;                               \
-        delete[] h_val;                                 \
-        delete[] h_idx;                                 \
+        af_free_host(h_in_st);                          \
+        af_free_host(h_val);                            \
+        af_free_host(h_idx);                            \
     }                                                   \
     TEST(IndexedMinMaxTests, Test_##fn##_##ty##_1)      \
     {                                                   \
@@ -65,9 +65,9 @@ using namespace af;
             }                                           \
             ASSERT_EQ(val, h_in[h_idx[i] * nx + i]);    \
         }                                               \
-        delete[] h_in;                                  \
-        delete[] h_val;                                 \
-        delete[] h_idx;                                 \
+        af_free_host(h_in);                             \
+        af_free_host(h_val);                            \
+        af_free_host(h_idx);                            \
     }                                                   \
     TEST(IndexedMinMaxTests, Test_##fn##_##ty##_all)    \
     {                                                   \
@@ -82,7 +82,7 @@ using namespace af;
         ty tmp = *std::fn##_element(h_in, h_in + num);  \
         ASSERT_EQ(tmp, val);                            \
         ASSERT_EQ(tmp, h_in[idx]);                      \
-        delete[] h_in;                                  \
+        af_free_host(h_in);                             \
     }                                                   \
 
 MINMAXOP(min, float)

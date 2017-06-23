@@ -27,17 +27,14 @@
 #define __real(in) (in)
 #define __imag(in) (0)
 #define __abs(in) abs(in)
-#define __abs2(in) (in) * (in)
 
 #define __crealf(in) ((in).x)
 #define __cimagf(in) ((in).y)
-#define __cabsf2(in) ((in).x * (in).x + (in).y * (in).y)
-#define __cabsf(in) sqrt(__cabsf2(in))
+#define __cabsf(in) hypot((in).x, (in).y)
 
 #define __creal(in) ((in).x)
 #define __cimag(in) ((in).y)
-#define __cabs2(in) ((in).x * (in).x + (in).y * (in).y)
-#define __cabs(in) sqrt(__cabs2(in))
+#define __cabs(in) hypot((in).x, (in).y)
 #define __sigmoid(in) (1.0/(1 + exp(-(in))))
 
 float2 __cconjf(float2 in)
@@ -69,35 +66,37 @@ float2 __cmulf(float2 lhs, float2 rhs)
 // FIXME: overflow / underflow issues
 float2 __cdivf(float2 lhs, float2 rhs)
 {
-    float2 out;
-    float den = (rhs.x * rhs.x + rhs.y * rhs.y);
-    float2 num = __cmulf(lhs, __cconjf(rhs));
-
-    out.x = num.x / den;
-    out.y = num.y / den;
-
+    // Normalize by absolute value and multiply
+    float rhs_abs = __cabsf(rhs);
+    float inv_rhs_abs = 1.0f / rhs_abs;
+    float rhs_x = inv_rhs_abs * rhs.x;
+    float rhs_y = inv_rhs_abs * rhs.y;
+    float2 out = {lhs.x * rhs_x + lhs.y * rhs_y,
+                  lhs.y * rhs_x - lhs.x * rhs_y};
+    out.x *= inv_rhs_abs;
+    out.y *= inv_rhs_abs;
     return out;
 }
 
-#define __candf(lhs, rhs) __cabsf2(lhs) && __cabsf2(rhs)
-#define __cand(lhs, rhs) __cabs2(lhs) && __cabs2(rhs)
+#define __candf(lhs, rhs) __cabsf(lhs) && __cabsf(rhs)
+#define __cand(lhs, rhs) __cabs(lhs) && __cabs(rhs)
 
-#define __corf(lhs, rhs) __cabsf2(lhs) || __cabsf2(rhs)
-#define __cor(lhs, rhs) __cabs2(lhs) || __cabs2(rhs)
+#define __corf(lhs, rhs) __cabsf(lhs) || __cabsf(rhs)
+#define __cor(lhs, rhs) __cabs(lhs) || __cabs(rhs)
 
 #define __ceqf(lhs, rhs) (((lhs).x == (rhs).x) && ((lhs).y == (rhs).y))
 #define __cneqf(lhs, rhs) !__ceqf((lhs), (rhs))
-#define __cltf(lhs, rhs) (__cabsf2(lhs) < __cabsf2(rhs))
-#define __clef(lhs, rhs) (__cabsf2(lhs) <= __cabsf2(rhs))
-#define __cgtf(lhs, rhs) (__cabsf2(lhs) > __cabsf2(rhs))
-#define __cgef(lhs, rhs) (__cabsf2(lhs) >= __cabsf2(rhs))
+#define __cltf(lhs, rhs) (__cabsf(lhs) < __cabsf(rhs))
+#define __clef(lhs, rhs) (__cabsf(lhs) <= __cabsf(rhs))
+#define __cgtf(lhs, rhs) (__cabsf(lhs) > __cabsf(rhs))
+#define __cgef(lhs, rhs) (__cabsf(lhs) >= __cabsf(rhs))
 
 #define __ceq(lhs, rhs) (((lhs).x == (rhs).x) && ((lhs).y == (rhs).y))
 #define __cneq(lhs, rhs) !__ceq((lhs), (rhs))
-#define __clt(lhs, rhs) (__cabs2(lhs) < __cabs2(rhs))
-#define __cle(lhs, rhs) (__cabs2(lhs) <= __cabs2(rhs))
-#define __cgt(lhs, rhs) (__cabs2(lhs) > __cabs2(rhs))
-#define __cge(lhs, rhs) (__cabs2(lhs) >= __cabs2(rhs))
+#define __clt(lhs, rhs) (__cabs(lhs) < __cabs(rhs))
+#define __cle(lhs, rhs) (__cabs(lhs) <= __cabs(rhs))
+#define __cgt(lhs, rhs) (__cabs(lhs) > __cabs(rhs))
+#define __cge(lhs, rhs) (__cabs(lhs) >= __cabs(rhs))
 
 #define __bitor(lhs, rhs) ((lhs) | (rhs))
 #define __bitand(lhs, rhs) ((lhs) & (rhs))
@@ -113,12 +112,12 @@ float2 __cdivf(float2 lhs, float2 rhs)
 
 float2 __cminf(float2 lhs, float2 rhs)
 {
-    return __abs2(lhs) < __abs2(rhs) ? lhs : rhs;
+    return __cabsf(lhs) < __cabsf(rhs) ? lhs : rhs;
 }
 
 float2 __cmaxf(float2 lhs, float2 rhs)
 {
-    return __abs2(lhs) > __abs2(rhs) ? lhs : rhs;
+    return __cabsf(lhs) > __cabsf(rhs) ? lhs : rhs;
 }
 
 float2 __cplx2f(float lhs, float rhs)
@@ -175,23 +174,26 @@ double2 __cmul(double2 lhs, double2 rhs)
 
 double2 __cdiv(double2 lhs, double2 rhs)
 {
-    double2 out;
-    double den = (rhs.x * rhs.x + rhs.y * rhs.y);
-    double2 num = __cmul(lhs, __cconj(rhs));
-
-    out.x = num.x / den;
-    out.y = num.y / den;
+    // Normalize by absolute value and multiply
+    double rhs_abs = __cabs(rhs);
+    double inv_rhs_abs = 1.0 / rhs_abs;
+    double rhs_x = inv_rhs_abs * rhs.x;
+    double rhs_y = inv_rhs_abs * rhs.y;
+    double2 out = {lhs.x * rhs_x + lhs.y * rhs_y,
+                   lhs.y * rhs_x - lhs.x * rhs_y};
+    out.x *= inv_rhs_abs;
+    out.y *= inv_rhs_abs;
     return out;
 }
 
 double2 __cmin(double2 lhs, double2 rhs)
 {
-    return __abs2(lhs) < __abs2(rhs) ? lhs : rhs;
+    return __cabs(lhs) < __cabs(rhs) ? lhs : rhs;
 }
 
 double2 __cmax(double2 lhs, double2 rhs)
 {
-    return __abs2(lhs) > __abs2(rhs) ? lhs : rhs;
+    return __cabs(lhs) > __cabs(rhs) ? lhs : rhs;
 }
 
 double2 __cplx2(double lhs, double rhs)

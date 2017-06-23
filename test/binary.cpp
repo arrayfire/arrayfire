@@ -59,10 +59,10 @@ af::array randgen(const int num, af::dtype ty)
         Tc *h_c = c.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], func(h_a[i], h_b[i])) <<                  \
-                "for values: " << h_a[i]  << "," << h_b[i] << std::endl; \
-        delete[] h_a;                                                   \
-        delete[] h_b;                                                   \
-        delete[] h_c;                                                   \
+              "for values: " << h_a[i]  << "," << h_b[i] << std::endl;  \
+        af_free_host(h_a);                                              \
+        af_free_host(h_b);                                              \
+        af_free_host(h_c);                                              \
     }                                                                   \
                                                                         \
     TEST(BinaryTests, Test_##func##_##Ta##_##Tb##_left)                 \
@@ -79,8 +79,8 @@ af::array randgen(const int num, af::dtype ty)
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], func(h_a[i], h_b)) <<                     \
                 "for values: " << h_a[i]  << "," << h_b << std::endl;   \
-        delete[] h_a;                                                   \
-        delete[] h_c;                                                   \
+        af_free_host(h_a);                                              \
+        af_free_host(h_c);                                              \
     }                                                                   \
                                                                         \
     TEST(BinaryTests, Test_##func##_##Ta##_##Tb##_right)                \
@@ -96,9 +96,9 @@ af::array randgen(const int num, af::dtype ty)
         Tb *h_c = c.host<Tb>();                                         \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], func(h_a, h_b[i])) <<                     \
-                "for values: " << h_a  << "," << h_b[i] << std::endl;   \
-        delete[] h_b;                                                   \
-        delete[] h_c;                                                   \
+              "for values: " << h_a  << "," << h_b[i] << std::endl;     \
+        af_free_host(h_b);                                              \
+        af_free_host(h_c);                                              \
     }                                                                   \
 
 
@@ -120,9 +120,9 @@ af::array randgen(const int num, af::dtype ty)
         for (int i = 0; i < num; i++)                                   \
             MY_ASSERT_NEAR(h_c[i], func(h_a[i], h_b[i]), (err)) <<      \
                 "for values: " << h_a[i]  << "," << h_b[i] << std::endl; \
-        delete[] h_a;                                                   \
-        delete[] h_b;                                                   \
-        delete[] h_c;                                                   \
+        af_free_host(h_a);                                              \
+        af_free_host(h_b);                                              \
+        af_free_host(h_c);                                              \
     }                                                                   \
                                                                         \
     TEST(BinaryTestsFloating, Test_##func##_##Ta##_##Tb##_left)         \
@@ -139,8 +139,8 @@ af::array randgen(const int num, af::dtype ty)
         for (int i = 0; i < num; i++)                                   \
             MY_ASSERT_NEAR(h_d[i], func(h_a[i], h_b), err) <<           \
                 "for values: " << h_a[i]  << "," << h_b << std::endl;   \
-        delete[] h_a;                                                   \
-        delete[] h_d;                                                   \
+        af_free_host(h_a);                                              \
+        af_free_host(h_d);                                              \
     }                                                                   \
                                                                         \
     TEST(BinaryTestsFloating, Test_##func##_##Ta##_##Tb##_right)        \
@@ -157,9 +157,9 @@ af::array randgen(const int num, af::dtype ty)
         Te *h_e = c.host<Te>();                                         \
         for (int i = 0; i < num; i++)                                   \
             MY_ASSERT_NEAR(h_e[i], func(h_a, h_b[i]), err) <<           \
-                "for values: " << h_a  << "," << h_b[i] << std::endl;   \
-        delete[] h_b;                                                   \
-        delete[] h_e;                                                   \
+              "for values: " << h_a  << "," << h_b[i] << std::endl;     \
+        af_free_host(h_b);                                              \
+        af_free_host(h_e);                                              \
     }                                                                   \
 
 #define BINARY_TESTS_NEAR(Ta, Tb, Tc, func, err) BINARY_TESTS_NEAR_GENERAL(Ta, Tb, Tc, Ta, Tc, func, err)
@@ -267,9 +267,9 @@ BINARY_TESTS_NEAR_GENERAL(cfloat, double, cdouble, cfloat, cdouble, div, 1e-5)
             ASSERT_EQ(h_c[i], valc) <<                      \
                 "for values: " << h_a[i]  <<                \
                 "," << h_b[i] << std::endl;                 \
-        delete[] h_a;                                       \
-        delete[] h_b;                                       \
-        delete[] h_c;                                       \
+        af_free_host(h_a);                                  \
+        af_free_host(h_b);                                  \
+        af_free_host(h_c);                                  \
     }                                                       \
 
 BITOP(bitor, int, |)
@@ -310,9 +310,9 @@ TEST(BinaryTests, Test_pow_cfloat_float)
             << "for imag values of: " << h_a[i]  << "," << h_b[i] << std::endl;
 
     }
-    delete[] h_a;
-    delete[] h_b;
-    delete[] h_c;
+    af_free_host(h_a);
+    af_free_host(h_b);
+    af_free_host(h_c);
 }
 
 TEST(BinaryTests, Test_pow_cdouble_cdouble)
@@ -332,7 +332,19 @@ TEST(BinaryTests, Test_pow_cdouble_cdouble)
             << "for imag values of: " << h_a[i]  << "," << h_b[i] << std::endl;
 
     }
-    delete[] h_a;
-    delete[] h_b;
-    delete[] h_c;
+    af_free_host(h_a);
+    af_free_host(h_b);
+    af_free_host(h_c);
+}
+
+TEST(BinaryTests, ISSUE_1762)
+{
+    af::array zero = af::constant(0, 5, f32);
+    af::array result = af::pow(zero, 2);
+    std::vector<complex_float> hres(result.elements());
+    result.host(&hres[0]);
+    for (int i = 0; i < 5; i++) {
+        ASSERT_EQ(real(hres[i]), 0);
+        ASSERT_EQ(imag(hres[i]), 0);
+    }
 }

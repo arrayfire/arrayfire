@@ -111,8 +111,7 @@ af_err convert(af_array* out, const af_array in, const float r, const float g, c
 
         // 2D is not required.
         if(info.elements() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(out, AF_MAX_DIMS, my_dims, iType);
+            return af_create_handle(out, 0, nullptr, iType);
         }
 
         // If RGB is input, then assert 3 channels

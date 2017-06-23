@@ -54,7 +54,8 @@ void convolve(global T *out, KParam oInfo, global T const *signal, KParam sInfo,
         int lx   = get_local_id(0) + padding + (EXPAND ? 0 : fLen>>1);
         accType accum = (accType)(0);
         for(int f=0; f<fLen; ++f) {
-            accum = accum + ((accType)localMem[lx-f] * (accType)impulse[f]);
+            //binOp will do MUL_OP for convolution operation
+            accum = accum + binOp((accType)localMem[lx-f], (accType)impulse[f]);
         }
         dst[gx] = (T)accum;
     }
@@ -122,7 +123,9 @@ void convolve(global T *out, KParam oInfo, global T const *signal, KParam sInfo,
             for(int fi=0; fi<FLEN0; ++fi) {
                 accType f_val = impulse[fj*FLEN0+fi];
                 T s_val = localMem[(cj-fj)*shrdLen0+(ci-fi)];
-                accum   = accum + ((accType)s_val*(accType)f_val);
+
+                //binOp will do MUL_OP for convolution operation
+                accum = accum + binOp((accType)s_val, (accType)f_val);
             }
         }
         dst[gy*oInfo.strides[1]+gx] = (T)accum;
@@ -202,7 +205,9 @@ void convolve(global T *out, KParam oInfo, global T const *signal, KParam sInfo,
                 for(int fi=0; fi<fLen0; ++fi) {
                     accType f_val = impulse[index(fi, fj, fk, fLen0, fStride)];
                     T s_val = localMem[index(ci-fi, cj-fj, ck-fk, shrdLen0, skStride)];
-                    accum   = accum + ((accType)s_val*(accType)f_val);
+
+                    //binOp will do MUL_OP for convolution operation
+                    accum = accum + binOp((accType)s_val, (accType)f_val);
                 }
             }
         }

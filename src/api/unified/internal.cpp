@@ -52,3 +52,9 @@ af_err af_is_owner(bool *result, const af_array arr)
     CHECK_ARRAYS(arr);
     return CALL(result, arr);
 }
+
+af_err af_get_allocated_bytes(size_t *bytes, const af_array arr)
+{
+    CHECK_ARRAYS(arr);
+    return CALL(bytes, arr);
+}

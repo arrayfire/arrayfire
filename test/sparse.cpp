@@ -8,184 +8,43 @@
  ********************************************************/
 
 #include <gtest/gtest.h>
-#include <arrayfire.h>
-#include <af/dim4.hpp>
-#include <af/defines.h>
-#include <af/traits.hpp>
-#include <vector>
-#include <iostream>
-#include <complex>
-#include <string>
 #include <testHelpers.hpp>
-
-using std::vector;
-using std::string;
-using std::cout;
-using std::endl;
-using std::abs;
-using af::cfloat;
-using af::cdouble;
-
-///////////////////////////////// CPP ////////////////////////////////////
-//
-
-template<typename T>
-af::array makeSparse(af::array A, int factor)
-{
-    A = floor(A * 1000);
-    A = A * ((A % factor) == 0) / 1000;
-    return A;
-}
-
-template<>
-af::array makeSparse<cfloat>(af::array A, int factor)
-{
-    af::array r = real(A);
-    r = floor(r * 1000);
-    r = r * ((r % factor) == 0) / 1000;
-
-    af::array i = r / 2;
-
-    A = af::complex(r, i);
-    return A;
-}
-
-template<>
-af::array makeSparse<cdouble>(af::array A, int factor)
-{
-    af::array r = real(A);
-    r = floor(r * 1000);
-    r = r * ((r % factor) == 0) / 1000;
-
-    af::array i = r / 2;
-
-    A = af::complex(r, i);
-    return A;
-}
-
-double calc_norm(af::array lhs, af::array rhs)
-{
-    return af::max<double>(af::abs(lhs - rhs) / (af::abs(lhs) + af::abs(rhs) + 1E-5));
-}
-
-template<typename T>
-void sparseTester(const int m, const int n, const int k, int factor, double eps)
-{
-    af::deviceGC();
-
-    if (noDoubleTests<T>()) return;
-
-#if 1
-    af::array A = cpu_randu<T>(af::dim4(m, n));
-    af::array B = cpu_randu<T>(af::dim4(n, k));
-#else
-    af::array A = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
-    af::array B = af::randu(n, k, (af::dtype)af::dtype_traits<T>::af_type);
-#endif
-
-    A = makeSparse<T>(A, factor);
-
-    // Result of GEMM
-    af::array dRes1 = matmul(A, B);
-
-    // Create Sparse Array From Dense
-    af::array sA = af::sparse(A, AF_STORAGE_CSR);
-
-    // Sparse Matmul
-    af::array sRes1 = matmul(sA, B);
-
-    // Verify Results
-    ASSERT_NEAR(0, calc_norm(real(dRes1), real(sRes1)), eps);
-    ASSERT_NEAR(0, calc_norm(imag(dRes1), imag(sRes1)), eps);
-}
-
-template<typename T>
-void sparseTransposeTester(const int m, const int n, const int k, int factor, double eps)
-{
-    af::deviceGC();
-
-    if (noDoubleTests<T>()) return;
-
-#if 1
-    af::array A = cpu_randu<T>(af::dim4(m, n));
-    af::array B = cpu_randu<T>(af::dim4(m, k));
-#else
-    af::array A = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
-    af::array B = af::randu(m, k, (af::dtype)af::dtype_traits<T>::af_type);
-#endif
-
-    A = makeSparse<T>(A, factor);
-
-    // Result of GEMM
-    af::array dRes2 = matmul(A, B, AF_MAT_TRANS, AF_MAT_NONE);
-    af::array dRes3 = matmul(A, B, AF_MAT_CTRANS, AF_MAT_NONE);
-
-    // Create Sparse Array From Dense
-    af::array sA = af::sparse(A, AF_STORAGE_CSR);
-
-    // Sparse Matmul
-    af::array sRes2 = matmul(sA, B, AF_MAT_TRANS, AF_MAT_NONE);
-    af::array sRes3 = matmul(sA, B, AF_MAT_CTRANS, AF_MAT_NONE);
-
-    // Verify Results
-    ASSERT_NEAR(0, calc_norm(real(dRes2), real(sRes2)), eps);
-    ASSERT_NEAR(0, calc_norm(imag(dRes2), imag(sRes2)), eps);
-
-    ASSERT_NEAR(0, calc_norm(real(dRes3), real(sRes3)), eps);
-    ASSERT_NEAR(0, calc_norm(imag(dRes3), imag(sRes3)), eps);
-}
-
-template<typename T>
-void convertCSR(const int M, const int N, const float ratio)
-{
-    if (noDoubleTests<T>()) return;
-#if 1
-    af::array a = cpu_randu<T>(af::dim4(M, N));
-#else
-    af::array a = af::randu(M, N);
-#endif
-    a = a * (a > ratio);
-
-    af::array s = af::sparse(a, AF_STORAGE_CSR);
-    af::array aa = af::dense(s);
-
-    ASSERT_EQ(0, af::max<double>(af::abs(a - aa)));
-}
+#include <sparse_common.hpp>
 
 #define SPARSE_TESTS(T, eps)                                \
-    TEST(SPARSE, T##Square)                                 \
+    TEST(Sparse, T##Square)                                 \
     {                                                       \
         sparseTester<T>(1000, 1000, 100, 5, eps);           \
     }                                                       \
-    TEST(SPARSE, T##RectMultiple)                           \
+    TEST(Sparse, T##RectMultiple)                           \
     {                                                       \
         sparseTester<T>(2048, 1024, 512, 3, eps);           \
     }                                                       \
-    TEST(SPARSE, T##RectDense)                              \
+    TEST(Sparse, T##RectDense)                              \
     {                                                       \
         sparseTester<T>(500, 1000, 250, 1, eps);            \
     }                                                       \
-    TEST(SPARSE, T##MatVec)                                 \
+    TEST(Sparse, T##MatVec)                                 \
     {                                                       \
         sparseTester<T>(625, 1331, 1, 2, eps);              \
     }                                                       \
-    TEST(SPARSE_TRANSPOSE, T##MatVec)                       \
+    TEST(Sparse, Transpose_##T##MatVec)                     \
     {                                                       \
         sparseTransposeTester<T>(625, 1331, 1, 2, eps);     \
     }                                                       \
-    TEST(SPARSE_TRANSPOSE, T##Square)                       \
+    TEST(Sparse, Transpose_##T##Square)                     \
     {                                                       \
         sparseTransposeTester<T>(1000, 1000, 100, 5, eps);  \
     }                                                       \
-    TEST(SPARSE_TRANSPOSE, T##RectMultiple)                 \
+    TEST(Sparse, Transpose_##T##RectMultiple)               \
     {                                                       \
         sparseTransposeTester<T>(2048, 1024, 512, 3, eps);  \
     }                                                       \
-    TEST(SPARSE_TRANSPOSE, T##RectDense)                    \
+    TEST(Sparse, Transpose_##T##RectDense)                  \
     {                                                       \
         sparseTransposeTester<T>(453, 751, 397, 1, eps);    \
     }                                                       \
-    TEST(SPARSE, T##ConvertCSR)                             \
+    TEST(Sparse, T##ConvertCSR)                             \
     {                                                       \
         convertCSR<T>(2345, 5678, 0.5);                     \
     }                                                       \
@@ -197,27 +56,8 @@ SPARSE_TESTS(cdouble, 1E-5)
 
 #undef SPARSE_TESTS
 
-// This test essentially verifies that the sparse structures have the correct
-// dimensions and indices using a very basic test
-template<af_storage stype>
-void createFunction()
-{
-    af::array in = af::sparse(af::identity(3, 3), stype);
-
-    af::array values = sparseGetValues(in);
-    af::array rowIdx = sparseGetRowIdx(in);
-    af::array colIdx = sparseGetColIdx(in);
-    dim_t     nNZ    = sparseGetNNZ(in);
-
-    ASSERT_EQ(nNZ, values.elements());
-
-    ASSERT_EQ(0, af::max<double>(values - af::constant(1, nNZ)));
-    ASSERT_EQ(0, af::max<int   >(rowIdx - af::range(af::dim4(rowIdx.elements()), 0, s32)));
-    ASSERT_EQ(0, af::max<int   >(colIdx - af::range(af::dim4(colIdx.elements()), 0, s32)));
-}
-
 #define CREATE_TESTS(STYPE)                                         \
-    TEST(SPARSE_CREATE, STYPE)                                      \
+    TEST(Sparse, Create_##STYPE)                                    \
     {                                                               \
         createFunction<STYPE>();                                    \
     }
@@ -227,7 +67,7 @@ CREATE_TESTS(AF_STORAGE_COO)
 
 #undef CREATE_TESTS
 
-TEST(SPARSE_CREATE, AF_STORAGE_CSC)
+TEST(Sparse, Create_AF_STORAGE_CSC)
 {
     af::array d = af::identity(3, 3);
 
@@ -237,58 +77,8 @@ TEST(SPARSE_CREATE, AF_STORAGE_CSC)
     if(out != 0) af_release_array(out);
 }
 
-template<typename Ti, typename To>
-void sparseCastTester(const int m, const int n, int factor)
-{
-    if (noDoubleTests<Ti>()) return;
-    if (noDoubleTests<To>()) return;
-
-    af::array A = cpu_randu<Ti>(af::dim4(m, n));
-
-    A = makeSparse<Ti>(A, factor);
-
-    af::array sTi = af::sparse(A, AF_STORAGE_CSR);
-
-    // Cast
-    af::array sTo = sTi.as((af::dtype)af::dtype_traits<To>::af_type);
-
-    // Verify nnZ
-    dim_t iNNZ = sparseGetNNZ(sTi);
-    dim_t oNNZ = sparseGetNNZ(sTo);
-
-    ASSERT_EQ(iNNZ, oNNZ);
-
-    // Verify Types
-    dim_t iSType = sparseGetStorage(sTi);
-    dim_t oSType = sparseGetStorage(sTo);
-
-    ASSERT_EQ(iSType, oSType);
-
-    // Get the individual arrays and verify equality
-    af::array iValues = sparseGetValues(sTi);
-    af::array iRowIdx = sparseGetRowIdx(sTi);
-    af::array iColIdx = sparseGetColIdx(sTi);
-
-    af::array oValues = sparseGetValues(sTo);
-    af::array oRowIdx = sparseGetRowIdx(sTo);
-    af::array oColIdx = sparseGetColIdx(sTo);
-
-    // Verify values
-    ASSERT_EQ(0, af::max<int>(af::abs(iRowIdx - oRowIdx)));
-    ASSERT_EQ(0, af::max<int>(af::abs(iColIdx - oColIdx)));
-
-    static const double eps = 1e-6;
-    if(iValues.iscomplex() && !oValues.iscomplex()) {
-        ASSERT_NEAR(0, af::max<double>(af::abs(af::abs(iValues) - oValues)), eps);
-    } else if(!iValues.iscomplex() && oValues.iscomplex()) {
-        ASSERT_NEAR(0, af::max<double>(af::abs(iValues - af::abs(oValues))), eps);
-    } else {
-        ASSERT_NEAR(0, af::max<double>(af::abs(iValues - oValues)), eps);
-    }
-}
-
 #define CAST_TESTS_TYPES(Ti, To, SUFFIX, M, N, F)                               \
-    TEST(SPARSE_CAST, Ti##_##To##_##SUFFIX)                                     \
+    TEST(Sparse, Cast_##Ti##_##To##_##SUFFIX)                                   \
     {                                                                           \
         sparseCastTester<Ti, To>(M, N, F);                                      \
     }                                                                           \
@@ -312,3 +102,103 @@ CAST_TESTS(cfloat , cdouble )
 
 CAST_TESTS(cdouble, cfloat  )
 CAST_TESTS(cdouble, cdouble )
+
+
+TEST(Sparse, ISSUE_1745)
+{
+  af::array A = af::randu(4, 4);
+  A(1, af::span) = 0;
+  A(2, af::span) = 0;
+
+  af::array idx = where(A);
+  af::array data = A(idx);
+  af::array row_idx = (idx / A.dims()[0]).as(s64);
+  af::array col_idx = (idx % A.dims()[0]).as(s64);
+
+  af_array A_sparse;
+  ASSERT_EQ(AF_ERR_ARG, af_create_sparse_array(&A_sparse, A.dims(0), A.dims(1), data.get(), row_idx.get(), col_idx.get(), AF_STORAGE_CSR));
+}
+
+template<typename T>
+class Sparse : public ::testing::Test {};
+
+typedef ::testing::Types<float, af::cfloat, double, af::cdouble> SparseTypes;
+TYPED_TEST_CASE(Sparse, SparseTypes);
+
+TYPED_TEST(Sparse, DeepCopy) {
+    if (noDoubleTests<TypeParam>()) return;
+    using namespace af;
+    cleanSlate();
+
+    array s;
+    {
+        // Create a sparse array from a dense array. Make sure that the dense arrays
+        // are removed
+        array dense = randu(10, 10);
+        array d = makeSparse<TypeParam>(dense, 5);
+        s = sparse(d);
+    }
+
+    // At this point only the sparse array will be allocated in memory. Determine
+    // how much memory is allocated by one sparse array
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+    size_t size_of_alloc = lock_bytes;
+    size_t buffers_per_sparse = lock_buffers;
+
+    {
+        array s2 = s.copy();
+        s2.eval();
+
+        // Make sure that the deep copy allocated additional memory
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        EXPECT_NE(s.get(), s2.get()) << "The sparse arrays point to the same "
+                                        "af_array object.";
+        EXPECT_EQ(size_of_alloc * 2,
+                  lock_bytes) << "The number of bytes allocated by the deep copy do "
+                                "not match the original array";
+
+        EXPECT_EQ(buffers_per_sparse * 2,
+                  lock_buffers) << "The number of buffers allocated by the deep "
+                                  "copy do not match the original array";
+        array d = dense(s);
+        array d2 = dense(s2);
+        ASSERT_TRUE(allTrue<bool>(d == d2));
+    }
+}
+
+TYPED_TEST(Sparse, Empty) {
+    if (noDoubleTests<TypeParam>()) return;
+    using namespace af;
+    af_array ret = 0;
+    dim_t rows = 0, cols = 0, nnz = 0;
+    EXPECT_EQ(AF_SUCCESS,
+              af_create_sparse_array_from_ptr(
+                  &ret,
+                  rows, cols,
+                  nnz, NULL, NULL, NULL,
+                  (af_dtype)dtype_traits<TypeParam>::af_type,
+                  AF_STORAGE_CSR, afHost));
+    bool sparse = false;
+    EXPECT_EQ(AF_SUCCESS, af_is_sparse(&sparse, ret));
+    EXPECT_EQ(true, sparse);
+}
+
+TYPED_TEST(Sparse, EmptyDeepCopy) {
+    if (noDoubleTests<TypeParam>()) return;
+    using namespace af;
+    array a = sparse(0, 0,
+                     array(0, (af_dtype)af::dtype_traits<TypeParam>::af_type),
+                     array(0, s32), array(0, s32));
+    EXPECT_TRUE(a.issparse());
+    EXPECT_EQ(0, sparseGetNNZ(a));
+
+    array b = a.copy();
+    EXPECT_TRUE(b.issparse());
+    EXPECT_EQ(0, sparseGetNNZ(b));
+}

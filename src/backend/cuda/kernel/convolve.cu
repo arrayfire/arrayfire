@@ -372,7 +372,7 @@ void convolve_1d(conv_kparam_t &p, Param<T> out, CParam<T> sig, CParam<aT> filt)
                                               filt.ptr+(f1Off+f2Off+f3Off),
                                               filterLen*sizeof(aT),
                                               0, cudaMemcpyDeviceToDevice,
-                                              cuda::getStream(cuda::getActiveDeviceId())));
+                                              cuda::getActiveStream()));
 
                 p.o[0] = (p.outHasNoOffset ? 0 : b1);
                 p.o[1] = (p.outHasNoOffset ? 0 : b2);
@@ -410,7 +410,7 @@ void convolve_2d(conv_kparam_t &p, Param<T> out, CParam<T> sig, CParam<aT> filt)
                                           filt.ptr+(f2Off+f3Off),
                                           filterLen*sizeof(aT),
                                           0, cudaMemcpyDeviceToDevice,
-                                          cuda::getStream(cuda::getActiveDeviceId())));
+                                          cuda::getActiveStream()));
 
             p.o[1] = (p.outHasNoOffset ? 0 : b2);
             p.o[2] = (p.outHasNoOffset ? 0 : b3);
@@ -438,7 +438,7 @@ void convolve_3d(conv_kparam_t &p, Param<T> out, CParam<T> sig, CParam<aT> filt)
                     filt.ptr+f3Off,
                     filterLen*sizeof(aT),
                     0, cudaMemcpyDeviceToDevice,
-                    cuda::getStream(cuda::getActiveDeviceId())));
+                    cuda::getActiveStream()));
 
         p.o[2] = (p.outHasNoOffset ? 0 : b3);
         p.s[2] = (p.inHasNoOffset ? 0 : b3);

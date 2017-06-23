@@ -61,10 +61,9 @@ namespace kernel
             std::to_string(threads_y);
 
         int device = getActiveDeviceId();
-        kc_t::iterator idx = kernelCaches[device].find(ref_name);
+        kc_entry_t entry = kernelCache(device, ref_name);
 
-        kc_entry_t entry;
-        if (idx == kernelCaches[device].end()) {
+        if (entry.prog==0 && entry.ker==0) {
             Binary<To, op> reduce;
             ToNumStr<To> toNumStr;
 
@@ -92,9 +91,7 @@ namespace kernel
             entry.prog = new Program(prog);
             entry.ker = new Kernel(*entry.prog, "reduce_dim_kernel");
 
-            kernelCaches[device][ref_name] = entry;
-        } else {
-            entry = idx->second;
+            addKernelToCache(device, ref_name, entry);
         }
 
         NDRange local(THREADS_X, threads_y);
@@ -179,10 +176,10 @@ namespace kernel
             std::to_string(threads_x);
 
         int device = getActiveDeviceId();
-        kc_t::iterator idx = kernelCaches[device].find(ref_name);
 
-        kc_entry_t entry;
-        if (idx == kernelCaches[device].end()) {
+        kc_entry_t entry = kernelCache(device, ref_name);
+
+        if (entry.prog==0 && entry.ker==0) {
 
             Binary<To, op> reduce;
             ToNumStr<To> toNumStr;
@@ -209,9 +206,7 @@ namespace kernel
             entry.prog = new Program(prog);
             entry.ker = new Kernel(*entry.prog, "reduce_first_kernel");
 
-            kernelCaches[device][ref_name] = entry;
-        } else {
-            entry = idx->second;
+            addKernelToCache(device, ref_name, entry);
         }
 
         NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
@@ -273,93 +268,85 @@ namespace kernel
     template<typename Ti, typename To, af_op_t op>
     void reduce(Param out, Param in, int dim, int change_nan, double nanval)
     {
-        try {
-            if (dim == 0)
-                return reduce_first<Ti, To, op>(out, in, change_nan, nanval);
-            else
-                return reduce_dim  <Ti, To, op>(out, in, change_nan, nanval, dim);
-        } catch(cl::Error ex) {
-            CL_TO_AF_ERROR(ex);
-        }
+        if (dim == 0)
+            return reduce_first<Ti, To, op>(out, in, change_nan, nanval);
+        else
+            return reduce_dim  <Ti, To, op>(out, in, change_nan, nanval, dim);
     }
 
     template<typename Ti, typename To, af_op_t op>
     To reduce_all(Param in, int change_nan, double nanval)
     {
-        try {
-            int in_elements = in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
+        int in_elements = in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
 
-            bool is_linear = (in.info.strides[0] == 1);
-            for (int k = 1; k < 4; k++) {
-                is_linear &= (in.info.strides[k] == (in.info.strides[k - 1] * in.info.dims[k - 1]));
-            }
+        bool is_linear = (in.info.strides[0] == 1);
+        for (int k = 1; k < 4; k++) {
+            is_linear &= (in.info.strides[k] == (in.info.strides[k - 1] * in.info.dims[k - 1]));
+        }
 
-            // FIXME: Use better heuristics to get to the optimum number
-            if (in_elements > 4096 || !is_linear) {
+        // FIXME: Use better heuristics to get to the optimum number
+        if (in_elements > 4096 || !is_linear) {
 
-                if (is_linear) {
-                    in.info.dims[0] = in_elements;
-                    for (int k = 1; k < 4; k++) {
-                        in.info.dims[k] = 1;
-                        in.info.strides[k] = in_elements;
-                    }
-                }
-
-                uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
-                threads_x = std::min(threads_x, THREADS_PER_GROUP);
-                uint threads_y = THREADS_PER_GROUP / threads_x;
-
-                Param tmp;
-                uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
-                uint groups_y = divup(in.info.dims[1], threads_y);
-
-                tmp.info.offset = 0;
-                tmp.info.dims[0] = groups_x;
-                tmp.info.strides[0] = 1;
-
+            if (is_linear) {
+                in.info.dims[0] = in_elements;
                 for (int k = 1; k < 4; k++) {
-                    tmp.info.dims[k] = in.info.dims[k];
-                    tmp.info.strides[k] = tmp.info.dims[k - 1] * tmp.info.strides[k - 1];
+                    in.info.dims[k] = 1;
+                    in.info.strides[k] = in_elements;
                 }
-
-                int tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
-                tmp.data = bufferAlloc(tmp_elements * sizeof(To));
-
-                reduce_first_launcher<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x, change_nan, nanval);
-
-                unique_ptr<To> h_ptr(new To[tmp_elements]);
-                getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr.get());
-
-                Binary<To, op> reduce;
-                To out = reduce.init();
-                for (int i = 0; i < (int)tmp_elements; i++) {
-                    out = reduce(out, h_ptr.get()[i]);
-                }
-
-                bufferFree(tmp.data);
-                return out;
-
-            } else {
-
-                unique_ptr<Ti> h_ptr(new Ti[in_elements]);
-                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, sizeof(Ti) * in.info.offset,
-                                             sizeof(Ti) * in_elements, h_ptr.get());
-
-                Transform<Ti, To, op> transform;
-                Binary<To, op> reduce;
-                To out = reduce.init();
-                To nanval_to = scalar<To>(nanval);
-
-                for (int i = 0; i < (int)in_elements; i++) {
-                    To in_val = transform(h_ptr.get()[i]);
-                    if (change_nan) in_val = IS_NAN(in_val) ? nanval_to : in_val;
-                    out = reduce(out, in_val);
-                }
-
-                return out;
             }
-        } catch(cl::Error ex) {
-            CL_TO_AF_ERROR(ex);
+
+            uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
+            threads_x = std::min(threads_x, THREADS_PER_GROUP);
+            uint threads_y = THREADS_PER_GROUP / threads_x;
+
+            Param tmp;
+            uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
+            uint groups_y = divup(in.info.dims[1], threads_y);
+
+            tmp.info.offset = 0;
+            tmp.info.dims[0] = groups_x;
+            tmp.info.strides[0] = 1;
+
+            for (int k = 1; k < 4; k++) {
+                tmp.info.dims[k] = in.info.dims[k];
+                tmp.info.strides[k] = tmp.info.dims[k - 1] * tmp.info.strides[k - 1];
+            }
+
+            int tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
+            tmp.data = bufferAlloc(tmp_elements * sizeof(To));
+
+            reduce_first_launcher<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x, change_nan, nanval);
+
+            unique_ptr<To[]> h_ptr(new To[tmp_elements]);
+            getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr.get());
+
+            Binary<To, op> reduce;
+            To out = reduce.init();
+            for (int i = 0; i < (int)tmp_elements; i++) {
+                out = reduce(out, h_ptr.get()[i]);
+            }
+
+            bufferFree(tmp.data);
+            return out;
+
+        } else {
+
+            unique_ptr<Ti[]> h_ptr(new Ti[in_elements]);
+            getQueue().enqueueReadBuffer(*in.data, CL_TRUE, sizeof(Ti) * in.info.offset,
+                                          sizeof(Ti) * in_elements, h_ptr.get());
+
+            Transform<Ti, To, op> transform;
+            Binary<To, op> reduce;
+            To out = reduce.init();
+            To nanval_to = scalar<To>(nanval);
+
+            for (int i = 0; i < (int)in_elements; i++) {
+                To in_val = transform(h_ptr.get()[i]);
+                if (change_nan) in_val = IS_NAN(in_val) ? nanval_to : in_val;
+                out = reduce(out, in_val);
+            }
+
+            return out;
         }
     }
 

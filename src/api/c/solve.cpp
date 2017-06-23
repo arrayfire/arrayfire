@@ -40,7 +40,7 @@ af_err af_solve(af_array *out, const af_array a, const af_array b, const af_mat_
         af_dtype b_type = b_info.getType();
 
         dim4 adims = a_info.dims();
-        dim4 bdims = a_info.dims();
+        dim4 bdims = b_info.dims();
 
         ARG_ASSERT(1, a_info.isFloating());                       // Only floating and complex types
         ARG_ASSERT(2, b_info.isFloating());                       // Only floating and complex types
@@ -52,8 +52,7 @@ af_err af_solve(af_array *out, const af_array a, const af_array b, const af_mat_
         DIM_ASSERT(1, bdims[3] == adims[3]);
 
         if(a_info.ndims() == 0 || b_info.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(out, AF_MAX_DIMS, my_dims, a_type);
+            return af_create_handle(out, 0, nullptr, a_type);
         }
 
         bool is_triangle_solve = (options & AF_MAT_LOWER) || (options & AF_MAT_UPPER);
@@ -110,7 +109,10 @@ af_err af_solve_lu(af_array *out, const af_array a,
         af_dtype b_type = b_info.getType();
 
         dim4 adims = a_info.dims();
-        dim4 bdims = a_info.dims();
+        dim4 bdims = b_info.dims();
+        if(a_info.ndims() == 0 || b_info.ndims() == 0) {
+          return af_create_handle(out, 0, nullptr, a_type);
+        }
 
         ARG_ASSERT(1, a_info.isFloating());                       // Only floating and complex types
         ARG_ASSERT(2, b_info.isFloating());                       // Only floating and complex types
@@ -121,11 +123,6 @@ af_err af_solve_lu(af_array *out, const af_array a,
         DIM_ASSERT(1, bdims[0] == adims[0]);
         DIM_ASSERT(1, bdims[2] == adims[2]);
         DIM_ASSERT(1, bdims[3] == adims[3]);
-
-        if(a_info.ndims() == 0 || b_info.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(out, AF_MAX_DIMS, my_dims, a_type);
-        }
 
         if (options != AF_MAT_NONE) {
             AF_ERROR("Using this property is not yet supported in solveLU", AF_ERR_NOT_SUPPORTED);

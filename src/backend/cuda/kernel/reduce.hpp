@@ -16,9 +16,8 @@
 #include <debug_cuda.hpp>
 #include "config.hpp"
 #include <memory.hpp>
-#include <boost/scoped_array.hpp>
 
-using boost::scoped_array;
+using std::unique_ptr;
 
 namespace cuda
 {
@@ -107,7 +106,7 @@ namespace kernel
 
     template<typename Ti, typename To, af_op_t op, int dim>
     void reduce_dim_launcher(Param<To> out, CParam<Ti> in,
-                             const uint threads_y, const uint blocks_dim[4],
+                             const uint threads_y, const dim_t blocks_dim[4],
                              bool change_nan, double nanval)
     {
         dim3 threads(THREADS_X, threads_y);
@@ -143,7 +142,7 @@ namespace kernel
         uint threads_y = std::min(THREADS_Y, nextpow2(in.dims[dim]));
         uint threads_x = THREADS_X;
 
-        uint blocks_dim[] = {divup(in.dims[0], threads_x),
+        dim_t blocks_dim[] = {divup(in.dims[0], threads_x),
                              in.dims[1], in.dims[2], in.dims[3]};
 
         blocks_dim[dim] = divup(in.dims[dim], threads_y * REPEAT);
@@ -410,12 +409,12 @@ namespace kernel
             reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x,
                                               change_nan, nanval);
 
-            scoped_array<To> h_ptr(new To[tmp_elements]);
+            unique_ptr<To[]> h_ptr(new To[tmp_elements]);
             To* h_ptr_raw = h_ptr.get();
 
             CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(To),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                       cudaMemcpyDeviceToHost, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
             memFree(tmp.ptr);
 
             Binary<To, op> reduce;
@@ -428,11 +427,11 @@ namespace kernel
 
         } else {
 
-            scoped_array<Ti> h_ptr(new Ti[in_elements]);
+            unique_ptr<Ti[]> h_ptr(new Ti[in_elements]);
             Ti* h_ptr_raw = h_ptr.get();
             CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, in.ptr, in_elements * sizeof(Ti),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                       cudaMemcpyDeviceToHost, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
             Transform<Ti, To, op> transform;
             Binary<To, op> reduce;

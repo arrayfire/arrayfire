@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <cholesky.hpp>
-#include <err_common.hpp>
 #include <err_opencl.hpp>
 #include <blas.hpp>
 #include <copy.hpp>
@@ -25,48 +24,37 @@ namespace opencl
 template<typename T>
 int cholesky_inplace(Array<T> &in, const bool is_upper)
 {
-    try {
-        if(OpenCLCPUOffload()) {
-            return cpu::cholesky_inplace(in, is_upper);
-        }
-
-        initBlas();
-
-        dim4 iDims = in.dims();
-        int N = iDims[0];
-
-        magma_uplo_t uplo = is_upper ? MagmaUpper : MagmaLower;
-
-        int info = 0;
-        cl::Buffer *in_buf = in.get();
-        magma_potrf_gpu<T>(uplo, N,
-                           (*in_buf)(), in.getOffset(),  in.strides()[1],
-                           getQueue()(), &info);
-        return info;
-    } catch (cl::Error &err) {
-        CL_TO_AF_ERROR(err);
+    if(OpenCLCPUOffload()) {
+        return cpu::cholesky_inplace(in, is_upper);
     }
+
+    dim4 iDims = in.dims();
+    int N = iDims[0];
+
+    magma_uplo_t uplo = is_upper ? MagmaUpper : MagmaLower;
+
+    int info = 0;
+    cl::Buffer *in_buf = in.get();
+    magma_potrf_gpu<T>(uplo, N,
+                        (*in_buf)(), in.getOffset(),  in.strides()[1],
+                        getQueue()(), &info);
+    return info;
 }
 
 template<typename T>
 Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
 {
-    try {
-        if(OpenCLCPUOffload()) {
-            return cpu::cholesky(info, in, is_upper);
-        }
-
-        Array<T> out = copyArray<T>(in);
-        *info = cholesky_inplace(out, is_upper);
-
-        if (is_upper) triangle<T, true , false>(out, out);
-        else          triangle<T, false, false>(out, out);
-
-        return out;
-
-    } catch (cl::Error &err) {
-        CL_TO_AF_ERROR(err);
+    if(OpenCLCPUOffload()) {
+        return cpu::cholesky(info, in, is_upper);
     }
+
+    Array<T> out = copyArray<T>(in);
+    *info = cholesky_inplace(out, is_upper);
+
+    if (is_upper) triangle<T, true , false>(out, out);
+    else          triangle<T, false, false>(out, out);
+
+    return out;
 }
 
 #define INSTANTIATE_CH(T)                                                                   \

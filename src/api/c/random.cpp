@@ -108,7 +108,7 @@ static void validateRandomType(const af_random_engine_type type)
 
 af_err af_get_default_random_engine(af_random_engine *r)
 {
-    static RandomEngine re;
+    thread_local RandomEngine re;
     *r = static_cast<af_random_engine> (&re);
     return AF_SUCCESS;
 }
@@ -179,29 +179,26 @@ af_err af_random_engine_set_type(af_random_engine *engine, const af_random_engin
     try {
         AF_CHECK(af_init());
         validateRandomType(rtype);
-        RandomEngine e = *(getRandomEngine(engine));
-        if (rtype != e.type) {
+        RandomEngine *e = getRandomEngine(*engine);
+        if (rtype != e->type) {
             if (rtype == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
-                bool empty;
-                AF_CHECK(af_is_empty(&empty, e.state));
-                if (empty) {
-                    AF_CHECK(af_release_array(e.pos));
-                    AF_CHECK(af_release_array(e.sh1));
-                    AF_CHECK(af_release_array(e.sh2));
-                    AF_CHECK(af_release_array(e.recursion_table));
-                    AF_CHECK(af_release_array(e.temper_table));
-                    AF_CHECK(af_release_array(e.state));
-                    AF_CHECK(af_create_array(&e.pos, pos, 1, &MaxBlocks, u32));
-                    AF_CHECK(af_create_array(&e.sh1, sh1, 1, &MaxBlocks, u32));
-                    AF_CHECK(af_create_array(&e.sh2, sh2, 1, &MaxBlocks, u32));
-                    e.mask = mask;
-                    AF_CHECK(af_create_array(&e.recursion_table, recursion_tbl, 1, &TableLength, u32));
-                    AF_CHECK(af_create_array(&e.temper_table, temper_tbl, 1, &TableLength, u32));
-                    AF_CHECK(af_create_handle(&e.state, 1, &MtStateLength, u32));
-                    initMersenneState(getWritableArray<uint>(e.state), *e.seed, getArray<uint>(e.recursion_table));
-                }
+                AF_CHECK(af_create_array(&e->pos, pos, 1, &MaxBlocks, u32));
+                AF_CHECK(af_create_array(&e->sh1, sh1, 1, &MaxBlocks, u32));
+                AF_CHECK(af_create_array(&e->sh2, sh2, 1, &MaxBlocks, u32));
+                e->mask = mask;
+                AF_CHECK(af_create_array(&e->recursion_table, recursion_tbl, 1, &TableLength, u32));
+                AF_CHECK(af_create_array(&e->temper_table, temper_tbl, 1, &TableLength, u32));
+                AF_CHECK(af_create_handle(&e->state, 1, &MtStateLength, u32));
+                initMersenneState(getWritableArray<uint>(e->state), *(e->seed), getArray<uint>(e->recursion_table));
+            } else if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
+                AF_CHECK(af_release_array(e->pos));
+                AF_CHECK(af_release_array(e->sh1));
+                AF_CHECK(af_release_array(e->sh2));
+                AF_CHECK(af_release_array(e->recursion_table));
+                AF_CHECK(af_release_array(e->temper_table));
+                AF_CHECK(af_release_array(e->state));
             }
-            e.type = rtype;
+            e->type = rtype;
         }
     } CATCHALL;
     return AF_SUCCESS;

@@ -54,10 +54,9 @@ af_err af_lu(af_array *lower, af_array *upper, af_array *pivot, const af_array i
         ARG_ASSERT(3, i_info.isFloating());                       // Only floating and complex types
 
         if(i_info.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            AF_CHECK(af_create_handle(lower, AF_MAX_DIMS, my_dims, type));
-            AF_CHECK(af_create_handle(upper, AF_MAX_DIMS, my_dims, type));
-            AF_CHECK(af_create_handle(pivot, AF_MAX_DIMS, my_dims, type));
+            AF_CHECK(af_create_handle(lower, 0, nullptr, type));
+            AF_CHECK(af_create_handle(upper, 0, nullptr, type));
+            AF_CHECK(af_create_handle(pivot, 0, nullptr, type));
             return AF_SUCCESS;
         }
 
@@ -88,8 +87,7 @@ af_err af_lu_inplace(af_array *pivot, af_array in, const bool is_lapack_piv)
         ARG_ASSERT(1, i_info.isFloating()); // Only floating and complex types
 
         if(i_info.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(pivot, AF_MAX_DIMS, my_dims, type);
+            return af_create_handle(pivot, 0, nullptr, type);
         }
 
         af_array out;

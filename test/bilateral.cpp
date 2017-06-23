@@ -52,13 +52,13 @@ void bilateralTest(string pTestFile)
 
         ASSERT_EQ(AF_SUCCESS, af_bilateral(&outArray, inArray, 2.25f, 25.56f, isColor));
 
-        T * outData = new T[nElems];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+        std::vector<T> outData(nElems);
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
-        T * goldData= new T[nElems];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData, goldArray));
+        std::vector<T> goldData(nElems);
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
 
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData, outData, 0.02f));
+        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.02f));
 
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
@@ -103,25 +103,23 @@ void bilateralDataTest(string pTestFile)
     af::dim4 dims      = numDims[0];
     af_array outArray  = 0;
     af_array inArray   = 0;
-    outType *outData;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
                 dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_bilateral(&outArray, inArray, 2.25f, 25.56f, false));
 
-    outData = new outType[dims.elements()];
+    std::vector<outType> outData(dims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t testIter=0; testIter<tests.size(); ++testIter) {
         vector<outType> currGoldBar = tests[testIter];
         size_t nElems = currGoldBar.size();
-        ASSERT_EQ(true, compareArraysRMSD(nElems, &currGoldBar.front(), outData, 0.02f));
+        ASSERT_EQ(true, compareArraysRMSD(nElems, &currGoldBar.front(), outData.data(), 0.02f));
     }
 
     // cleanup
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
@@ -171,17 +169,14 @@ TEST(Bilateral, CPP)
     array a(dims, &(in[0].front()));
     array b = af::bilateral(a, 2.25f, 25.56f, false);
 
-    float *outData = new float[dims.elements()];
-    b.host(outData);
+    std::vector<float> outData(dims.elements());
+    b.host(outData.data());
 
     for (size_t testIter=0; testIter<tests.size(); ++testIter) {
         vector<float> currGoldBar = tests[testIter];
         size_t nElems = currGoldBar.size();
-        ASSERT_EQ(true, compareArraysRMSD(nElems, &currGoldBar.front(), outData, 0.02f));
+        ASSERT_EQ(true, compareArraysRMSD(nElems, currGoldBar.data(), outData.data(), 0.02f));
     }
-
-    // cleanup
-    delete[] outData;
 }
 
 

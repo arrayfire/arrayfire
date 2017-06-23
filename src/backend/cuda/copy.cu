@@ -54,7 +54,7 @@ namespace cuda
             CUDA_CHECK(cudaMemcpyAsync(out.get(), A.get(),
                                        A.elements() * sizeof(T),
                                        cudaMemcpyDeviceToDevice,
-                                       cuda::getStream(cuda::getActiveDeviceId())));
+                                       cuda::getActiveStream()));
         } else {
             // FIXME: Seems to fail when using Param<T>
             kernel::memcopy(out.get(), out.strides().get(), A.get(), A.dims().get(),
@@ -97,7 +97,7 @@ namespace cuda
                 CUDA_CHECK(cudaMemcpyAsync(out.get(), in.get(),
                                            in.elements() * sizeof(T),
                                            cudaMemcpyDeviceToDevice,
-                                           cuda::getStream(cuda::getActiveDeviceId())));
+                                           cuda::getActiveStream()));
             } else {
                 kernel::copy<T, T>(out, in, in.ndims(), scalar<T>(0), 1);
             }
@@ -202,4 +202,30 @@ namespace cuda
     SPECILIAZE_UNUSED_COPYARRAY(cdouble, uintl)
     SPECILIAZE_UNUSED_COPYARRAY(cdouble, short)
     SPECILIAZE_UNUSED_COPYARRAY(cdouble, ushort)
+
+    template<typename T>
+    T getScalar(const Array<T> &in)
+    {
+        T retVal;
+        CUDA_CHECK(cudaMemcpyAsync(&retVal, in.get(), sizeof(T),
+                                   cudaMemcpyDeviceToHost, cuda::getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
+        return retVal;
+    }
+
+#define INSTANTIATE_GETSCALAR(T) \
+    template T getScalar(const Array<T> &in);
+
+    INSTANTIATE_GETSCALAR(float  )
+    INSTANTIATE_GETSCALAR(double )
+    INSTANTIATE_GETSCALAR(cfloat )
+    INSTANTIATE_GETSCALAR(cdouble)
+    INSTANTIATE_GETSCALAR(int    )
+    INSTANTIATE_GETSCALAR(uint   )
+    INSTANTIATE_GETSCALAR(uchar  )
+    INSTANTIATE_GETSCALAR(char   )
+    INSTANTIATE_GETSCALAR(intl   )
+    INSTANTIATE_GETSCALAR(uintl  )
+    INSTANTIATE_GETSCALAR(short  )
+    INSTANTIATE_GETSCALAR(ushort )
 }

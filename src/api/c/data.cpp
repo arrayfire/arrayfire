@@ -54,8 +54,7 @@ af_err af_constant(af_array *result, const double value,
 
         dim4 d(1, 1, 1, 1);
         if(ndims <= 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(result, AF_MAX_DIMS, my_dims, type);
+            return af_create_handle(result, 0, nullptr, type);
         } else {
             d = verifyDims(ndims, dims);
         }
@@ -99,8 +98,7 @@ af_err af_constant_complex(af_array *result, const double real, const double ima
 
         dim4 d(1, 1, 1, 1);
         if(ndims <= 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(result, AF_MAX_DIMS, my_dims, type);
+            return af_create_handle(result, 0, nullptr, type);
         } else {
             d = verifyDims(ndims, dims);
         }
@@ -126,8 +124,7 @@ af_err af_constant_long(af_array *result, const intl val,
 
         dim4 d(1, 1, 1, 1);
         if(ndims <= 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(result, AF_MAX_DIMS, my_dims, s64);
+            return af_create_handle(result, 0, nullptr, s64);
         } else {
             d = verifyDims(ndims, dims);
         }
@@ -149,8 +146,7 @@ af_err af_constant_ulong(af_array *result, const uintl val,
 
         dim4 d(1, 1, 1, 1);
         if(ndims <= 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(result, AF_MAX_DIMS, my_dims, u64);
+            return af_create_handle(result, 0, nullptr, u64);
         } else {
             d = verifyDims(ndims, dims);
         }
@@ -175,8 +171,7 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_t * const dims
         AF_CHECK(af_init());
 
         if(ndims == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+            return af_create_handle(out, 0, nullptr, type);
         }
 
         dim4 d = verifyDims(ndims, dims);
@@ -217,10 +212,9 @@ af_err af_range(af_array *result, const unsigned ndims, const dim_t * const dims
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d(1, 1, 1, 1);
+        dim4 d(0);
         if(ndims <= 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(result, AF_MAX_DIMS, my_dims, type);
+            return af_create_handle(result, 0, nullptr, type);
         } else {
             d = verifyDims(ndims, dims);
         }
@@ -258,8 +252,7 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_t * const dims,
         AF_CHECK(af_init());
 
         if(ndims == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(result, AF_MAX_DIMS, my_dims, type);
+            return af_create_handle(result, 0, nullptr, type);
         }
 
         DIM_ASSERT(1, ndims > 0 && ndims <= 4);
@@ -308,8 +301,7 @@ af_err af_diag_create(af_array *out, const af_array in, const int num)
         af_array result;
 
         if(in_info.dims()[0] == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+            return af_create_handle(out, 0, nullptr, type);
         }
 
         switch(type) {
@@ -342,8 +334,7 @@ af_err af_diag_extract(af_array *out, const af_array in, const int num)
         af_dtype type = in_info.getType();
 
         if(in_info.ndims() == 0) {
-            dim_t my_dims[] = {0, 0, 0, 0};
-            return af_create_handle(out, AF_MAX_DIMS, my_dims, type);
+            return af_create_handle(out, 0, nullptr, type);
         }
 
         DIM_ASSERT(1, in_info.ndims() >= 2);

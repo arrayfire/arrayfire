@@ -12,9 +12,11 @@
 #if defined(WITH_GRAPHICS)
 
 #include <af/graphics.h>
+
 #include <forge.h>
 #include <glbinding/gl/gl.h>
 #include <glbinding/Binding.h>
+
 #include <vector>
 #include <map>
 #include <utility>
@@ -41,7 +43,6 @@ double step_round(const double in, const bool dir);
 
 namespace graphics
 {
-
 enum Defaults {
     WIDTH = 1280,
     HEIGHT= 720
@@ -67,8 +68,11 @@ typedef VectorFieldMap_t::iterator VcfMapIter;
 
 typedef std::vector<forge::Chart*> ChartVec_t;
 typedef std::map<const forge::Window*, ChartVec_t> ChartMap_t;
+typedef std::pair<int, int> WindGridDims_t;
+typedef std::map<const forge::Window*, WindGridDims_t> WindGridMap_t;
 typedef ChartVec_t::iterator ChartVecIter;
 typedef ChartMap_t::iterator ChartMapIter;
+typedef WindGridMap_t::iterator GridMapIter;
 
 // Keeps track of which charts have manually assigned axes limits
 typedef std::map<forge::Chart*, bool> ChartAxesOverride_t;
@@ -96,18 +100,20 @@ class ForgeManager
         VectorFieldMap_t    mVcfMap;
 
         ChartMap_t          mChartMap;
+        WindGridMap_t       mWndGridMap;
         ChartAxesOverride_t mChartAxesOverrideMap;
 
     public:
         static ForgeManager& getInstance();
         ~ForgeManager();
 
-        forge::Font*    getFont(const bool dontCreate=false);
-        forge::Window*  getMainWindow(const bool dontCreate=false);
+        forge::Font*    getFont();
+        forge::Window*  getMainWindow();
 
         void            setWindowChartGrid(const forge::Window* window,
                                            const int r, const int c);
 
+        WindGridDims_t getWindowGrid(const forge::Window* window);
         forge::Chart*   getChart(const forge::Window* window, const int r, const int c,
                                  const forge::ChartType ctype);
 
@@ -128,11 +134,9 @@ class ForgeManager
         ForgeManager() {}
         ForgeManager(ForgeManager const&);
         void operator=(ForgeManager const&);
-        void destroyResources();
 };
-
 }
 
-#define MAIN_WINDOW graphics::ForgeManager::getInstance().getMainWindow(true)
+#define MAIN_WINDOW graphics::ForgeManager::getInstance().getMainWindow()
 
 #endif

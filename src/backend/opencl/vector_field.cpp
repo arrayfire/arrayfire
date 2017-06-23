@@ -9,11 +9,11 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <interopManager.hpp>
 #include <Array.hpp>
-#include <vector_field.hpp>
-#include <err_opencl.hpp>
 #include <debug_opencl.hpp>
+#include <err_opencl.hpp>
+#include <GraphicsResourceManager.hpp>
+#include <vector_field.hpp>
 
 using af::dim4;
 
@@ -32,13 +32,11 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
         size_t pBytes = vector_field->verticesSize();
         size_t dBytes = vector_field->directionsSize();
 
-        InteropManager& intrpMngr = InteropManager::getInstance();
-
-        cl::Buffer **resources = intrpMngr.getBufferResource(vector_field);
+        ShrdResVector res = interopManager().getBufferResource(vector_field);
 
         std::vector<cl::Memory> shared_objects;
-        shared_objects.push_back(*resources[0]);
-        shared_objects.push_back(*resources[1]);
+        shared_objects.push_back(*(res[0].get()));
+        shared_objects.push_back(*(res[1].get()));
 
         glFinish();
 
@@ -48,8 +46,8 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
 
         getQueue().enqueueAcquireGLObjects(&shared_objects, NULL, &event);
         event.wait();
-        getQueue().enqueueCopyBuffer(*d_points    , *resources[0], 0, 0, pBytes, NULL, &event);
-        getQueue().enqueueCopyBuffer(*d_directions, *resources[1], 0, 0, dBytes, NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_points    , *(res[0].get()), 0, 0, pBytes, NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_directions, *(res[1].get()), 0, 0, dBytes, NULL, &event);
         getQueue().enqueueReleaseGLObjects(&shared_objects, NULL, &event);
         event.wait();
 

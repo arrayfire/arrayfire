@@ -15,10 +15,12 @@
 #include <scalar.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
+
 #include <cstddef>
-#include <MemoryManager.hpp>
+#include <memory>
 
 using af::dim4;
+using std::shared_ptr;
 
 namespace cuda
 {
@@ -31,8 +33,8 @@ namespace cuda
     template<typename T>
     Node_ptr bufferNodePtr()
     {
-        Node_ptr node(reinterpret_cast<Node *>(new BufferNode<T>(irname<T>(), afShortName<T>())));
-        return node;
+        return Node_ptr(new BufferNode<T>(getFullName<T>(),
+                                          shortname<T>(true)));
     }
 
     template<typename T>
@@ -55,12 +57,12 @@ namespace cuda
 #endif
         if (!is_device) {
             CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, dims.elements() * sizeof(T),
-                                       cudaMemcpyHostToDevice, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                                       cudaMemcpyHostToDevice, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         } else if (copy_device) {
             CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, dims.elements() * sizeof(T),
-                                       cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                                       cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         }
     }
 
@@ -104,7 +106,7 @@ namespace cuda
         owner(true)
     {
         if (!is_device) {
-            cudaStream_t stream = getStream(getActiveDeviceId());
+            cudaStream_t stream = getActiveStream();
             CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, info.total() * sizeof(T),
                                        cudaMemcpyHostToDevice, stream));
             CUDA_CHECK(cudaStreamSynchronize(stream));
@@ -238,8 +240,13 @@ namespace cuda
 
                     unsigned length =0, buf_count = 0, bytes = 0;
                     Node *n = node.get();
-                    n->getInfo(length, buf_count, bytes);
-                    n->resetFlags();
+                    JIT::Node_map_t nodes_map;
+                    n->getNodesMap(nodes_map);
+
+                    for(auto &entry : nodes_map) {
+                        Node *node = entry.first;
+                        node->getInfo(length, buf_count, bytes);
+                    }
 
                     if (2 * bytes > lock_bytes) {
                         out.eval();
@@ -289,14 +296,20 @@ namespace cuda
         parent.eval();
 
         dim4 dDims = parent.getDataDims();
-        dim4 pDims = parent.dims();
+        dim4 dStrides = calcStrides(dDims);
+        dim4 parent_strides = parent.strides();
 
+        if (dStrides != parent_strides) {
+            const Array<T> parentCopy = copyArray(parent);
+            return createSubArray(parentCopy, index, copy);
+        }
+
+        dim4 pDims = parent.dims();
         dim4 dims    = toDims  (index, pDims);
         dim4 strides = toStride (index, dDims);
 
         // Find total offsets after indexing
         dim4 offsets = toOffset(index, pDims);
-        dim4 parent_strides = parent.strides();
         dim_t offset = parent.getOffset();
         for (int i = 0; i < 4; i++) offset += offsets[i] * parent_strides[i];
 
@@ -337,9 +350,8 @@ namespace cuda
 
         T *ptr = arr.get();
 
-        CUDA_CHECK(cudaMemcpyAsync(ptr, data, bytes, cudaMemcpyHostToDevice,
-                    cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(ptr, data, bytes, cudaMemcpyHostToDevice, cuda::getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
         return;
     }
@@ -354,12 +366,22 @@ namespace cuda
 
         T *ptr = arr.get();
 
-        CUDA_CHECK(cudaMemcpyAsync(ptr, data,
-                                   bytes, cudaMemcpyDeviceToDevice,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(ptr, data, bytes, cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
 
         return;
     }
+
+    template<typename T>
+    void
+    Array<T>::setDataDims(const dim4 &new_dims)
+    {
+        modDims(new_dims);
+        data_dims = new_dims;
+        if (node->isBuffer()) {
+            node = bufferNodePtr<T>();
+        }
+    }
+
 
 #define INSTANTIATE(T)                                                  \
     template       Array<T>  createHostDataArray<T>   (const dim4 &size, const T * const data); \
@@ -383,9 +405,12 @@ namespace cuda
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
     template       T*   Array<T>::device();                             \
-    template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
-    template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
+    template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, \
+                                                       const size_t bytes); \
+    template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, \
+                                                       const size_t bytes); \
     template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \
+    template       void Array<T>::setDataDims(const dim4 &new_dims);    \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

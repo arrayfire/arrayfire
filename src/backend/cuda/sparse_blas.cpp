@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <sparse_blas.hpp>
-#include <cusparseManager.hpp>
 #include <cuda_runtime.h>
 #include <platform.hpp>
 
@@ -21,7 +20,6 @@
 namespace cuda
 {
 
-using cusparse::getHandle;
 using namespace std;
 
 cusparseOperation_t
@@ -144,6 +142,11 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
 
     dim4 rStrides = rhs.strides();
 
+    // NOTE: The cuSparse library seems to be using the driver API in the
+    // implementation. This is causing issues with our JIT kernel generation.
+    // This may be a bug in the cuSparse library.
+    std::lock_guard<std::mutex> lock(getDriverApiMutex(getActiveDeviceId()));
+
     // Create Sparse Matrix Descriptor
     cusparseMatDescr_t descr = 0;
     CUSPARSE_CHECK(cusparseCreateMatDescr(&descr));
@@ -157,7 +160,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     // and not OP(A) (gemm wants row/col of OP(A)).
     if(rDims[rColDim] == 1) {
         CUSPARSE_CHECK(csrmv_func<T>()(
-                       getHandle(),
+                       sparseHandle(),
                        lOpts,
                        lDims[0], lDims[1], lhs.getNNZ(),
                        &alpha,
@@ -168,7 +171,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                        out.get()));
     } else {
         CUSPARSE_CHECK(csrmm_func<T>()(
-                       getHandle(),
+                       sparseHandle(),
                        lOpts,
                        lDims[0], rDims[rColDim], lDims[1], lhs.getNNZ(),
                        &alpha,

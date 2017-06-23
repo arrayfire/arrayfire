@@ -10,9 +10,7 @@
 #include <err_common.hpp>
 #include <cholesky.hpp>
 
-#if defined(WITH_CUDA_LINEAR_ALGEBRA)
-
-#include <cusolverDnManager.hpp>
+#include <platform.hpp>
 #include <cublas_v2.h>
 #include <identity.hpp>
 #include <iostream>
@@ -25,8 +23,6 @@
 
 namespace cuda
 {
-
-using cusolver::getDnHandle;
 
 //cusolverStatus_t cusolverDn<>potrf_bufferSize(
 //        cusolverDnHandle_t handle,
@@ -114,7 +110,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     if(is_upper)
         uplo = CUBLAS_FILL_MODE_UPPER;
 
-    CUSOLVER_CHECK(potrf_buf_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(potrf_buf_func<T>()(solverDnHandle(),
                                        uplo,
                                        N,
                                        in.get(), in.strides()[1],
@@ -123,7 +119,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     T *workspace = memAlloc<T>(lwork);
     int *d_info = memAlloc<int>(1);
 
-    CUSOLVER_CHECK(potrf_func<T>()(getDnHandle(),
+    CUSOLVER_CHECK(potrf_func<T>()(solverDnHandle(),
                                    uplo,
                                    N,
                                    in.get(), in.strides()[1],
@@ -147,62 +143,3 @@ INSTANTIATE_CH(cfloat)
 INSTANTIATE_CH(double)
 INSTANTIATE_CH(cdouble)
 }
-
-#elif defined(WITH_CPU_LINEAR_ALGEBRA)
-#include <cpu_lapack/cpu_cholesky.hpp>
-namespace cuda
-{
-
-template<typename T>
-Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
-{
-    return cpu::cholesky(info, in, is_upper);
-}
-
-template<typename T>
-int cholesky_inplace(Array<T> &in, const bool is_upper)
-{
-    return cpu::cholesky_inplace(in, is_upper);
-}
-
-#define INSTANTIATE_CH(T)                                                                   \
-    template int cholesky_inplace<T>(Array<T> &in, const bool is_upper);                    \
-    template Array<T> cholesky<T>   (int *info, const Array<T> &in, const bool is_upper);
-
-INSTANTIATE_CH(float)
-INSTANTIATE_CH(cfloat)
-INSTANTIATE_CH(double)
-INSTANTIATE_CH(cdouble)
-
-}
-
-#else
-namespace cuda
-{
-
-template<typename T>
-Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
-{
-    AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
-             AF_ERR_NOT_CONFIGURED);
-}
-
-template<typename T>
-int cholesky_inplace(Array<T> &in, const bool is_upper)
-{
-    AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
-             AF_ERR_NOT_CONFIGURED);
-}
-
-#define INSTANTIATE_CH(T)                                                                   \
-    template int cholesky_inplace<T>(Array<T> &in, const bool is_upper);                    \
-    template Array<T> cholesky<T>   (int *info, const Array<T> &in, const bool is_upper);
-
-INSTANTIATE_CH(float)
-INSTANTIATE_CH(cfloat)
-INSTANTIATE_CH(double)
-INSTANTIATE_CH(cdouble)
-
-}
-
-#endif

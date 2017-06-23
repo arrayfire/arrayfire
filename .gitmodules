@@ -6,7 +6,7 @@
 	url = https://github.com/arrayfire/assets
 [submodule "test/gtest"]
 	path = test/gtest
-	url = https://chromium.googlesource.com/external/googletest
+	url = https://github.com/google/googletest.git
 [submodule "src/backend/cpu/threads"]
 	path = src/backend/cpu/threads
 	url = https://github.com/alltheflops/threads.git

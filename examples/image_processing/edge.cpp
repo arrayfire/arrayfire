@@ -61,8 +61,9 @@ array edge(const array &in, int method = 0)
     array mag, dir;
 
     switch(method) {
-        case  1: prewitt(mag, dir, smooth); break;
-        case  2: sobelFilter(mag, dir, smooth);   break;
+        case  1: prewitt(mag, dir, smooth);     break;
+        case  2: sobelFilter(mag, dir, smooth); break;
+        case  3: mag = canny(in, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.18, 0.54).as(f32);   break;
         default: throw af::exception("Unsupported type");
     }
 
@@ -79,6 +80,7 @@ void edge()
     array prewitt = edge(in, 1);
     array sobelFilter   = edge(in, 2);
     array hst = histogram(in, 256, 0, 255);
+    array cny = edge(in, 3);
 
     myWindow2.setAxesTitles("Bins", "Frequency");
 
@@ -90,6 +92,7 @@ void edge()
         myWindow(0,0).image(in/255     , "Input Image");
         myWindow(0,1).image(prewitt    , "Prewitt"    );
         myWindow(1,0).image(sobelFilter, "Sobel"      );
+        myWindow(1,1).image(cny        , "Canny"      );
 
         myWindow.show();
 

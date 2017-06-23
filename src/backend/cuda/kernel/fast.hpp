@@ -447,7 +447,7 @@ void fast(unsigned* out_feat,
     blocks.y = divup(in.dims[1], 64);
 
     unsigned *d_total = (unsigned *)(d_score + in.dims[0] * in.dims[1]);
-    CUDA_CHECK(cudaMemsetAsync(d_total, 0, sizeof(unsigned), cuda::getStream(cuda::getActiveDeviceId())));
+    CUDA_CHECK(cudaMemsetAsync(d_total, 0, sizeof(unsigned), cuda::getActiveStream()));
     unsigned *d_counts  = memAlloc<unsigned>(blocks.x * blocks.y);
     unsigned *d_offsets = memAlloc<unsigned>(blocks.x * blocks.y);
 
@@ -465,8 +465,8 @@ void fast(unsigned* out_feat,
     // Dimensions of output array
     unsigned total;
     CUDA_CHECK(cudaMemcpyAsync(&total, d_total, sizeof(unsigned), cudaMemcpyDeviceToHost,
-                cuda::getStream(cuda::getActiveDeviceId())));
-    CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                cuda::getActiveStream()));
+    CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
     total = total < max_feat ? total : max_feat;
 
     if (total > 0) {

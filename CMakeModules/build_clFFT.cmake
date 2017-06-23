@@ -8,7 +8,7 @@ IF(CMAKE_VERSION VERSION_LESS 3.2)
     endif()
     SET(byproducts)
 ELSE()
-    SET(byproducts BYPRODUCTS ${clFFT_location})
+    SET(byproducts BUILD_BYPRODUCTS ${clFFT_location})
 ENDIF()
 
 ExternalProject_Add(
@@ -31,6 +31,8 @@ ExternalProject_Add(
     -DBUILD_TEST:BOOL=OFF
     -DSUFFIX_LIB:STRING=
     -DUSE_SYSTEM_GTEST:BOOL=ON
+    -DOpenCL_INCLUDE_DIR:FILEPATH=${OpenCL_INCLUDE_DIR}
+    -DOpenCL_LIBRARY:FILEPATH=${OpenCL_LIBRARY}
     ${byproducts}
     )
 

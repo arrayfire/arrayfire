@@ -14,14 +14,10 @@
 
 namespace opencl
 {
-    using cl::Kernel;
-    using cl::Program;
-
     typedef struct {
-        Program* prog;
-        Kernel* ker;
+        cl::Program* prog;
+        cl::Kernel* ker;
     } kc_entry_t;
 
-    typedef std::map<string, kc_entry_t> kc_t;
-    static kc_t kernelCaches[DeviceManager::MAX_DEVICES];
+    typedef std::map<std::string, kc_entry_t> kc_t;
 }

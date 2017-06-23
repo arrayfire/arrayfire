@@ -30,6 +30,10 @@ template<typename T> class Array;
 namespace kernel
 {
 template<typename T> void evalArray(cpu::Array<T> in);
+
+template<typename T>
+void evalMultiple(std::vector<Array<T>> arrays);
+
 }
 }
 
@@ -188,6 +192,11 @@ namespace cpu
             data_dims = new_dims;
         }
 
+        size_t getAllocatedBytes() const
+        {
+            return data_dims.elements() * sizeof(T);
+        }
+
         T* device();
 
         T* device() const
@@ -229,6 +238,7 @@ namespace cpu
                                           bool copy);
 
         friend void kernel::evalArray<T>(Array<T> in);
+        friend void kernel::evalMultiple<T>(std::vector<Array<T>> arrays);
 
         friend void destroyArray<T>(Array<T> *arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);

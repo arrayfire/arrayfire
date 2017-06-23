@@ -64,19 +64,15 @@ void iotaTest(const af::dim4 idims, const af::dim4 tdims)
     ASSERT_EQ(AF_SUCCESS, af_tile(&temp0, temp1, tdims[0], tdims[1], tdims[2], tdims[3]));
 
     // Get result
-    T* outData = new T[fulldims.elements()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    vector<T> outData(fulldims.elements());
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
 
-    T* tileData = new T[fulldims.elements()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)tileData, temp0));
+    vector<T> tileData(fulldims.elements());
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&tileData.front(), temp0));
 
     // Compare result
     for(int i = 0; i < (int) fulldims.elements(); i++)
         ASSERT_EQ(tileData[i], outData[i]) << "at: " << i << std::endl;
-
-    // Delete
-    delete[] outData;
-    delete[] tileData;
 
     if(outArray  != 0) af_release_array(outArray);
     if(temp0     != 0) af_release_array(temp0);
@@ -121,19 +117,13 @@ TEST(Iota, CPP)
     af::array tileArray = af::tile(af::moddims(af::range(af::dim4(idims.elements()), 0), idims), tdims);
 
     // Get result
-    float* outData = new float[fulldims.elements()];
-    output.host((void*)outData);
+    vector<float> outData (fulldims.elements());
+    output.host((void*)&outData.front());
 
-    float* tileData = new float[fulldims.elements()];
-    tileArray.host((void*)tileData);
-
-    // Compare result
+    vector<float> tileData (fulldims.elements());
+    tileArray.host((void*)&tileData.front());
 
     // Compare result
     for(int i = 0; i < (int)fulldims.elements(); i++)
         ASSERT_EQ(tileData[i], outData[i]) << "at: " << i << std::endl;
-
-    // Delete
-    delete[] outData;
-    delete[] tileData;
 }

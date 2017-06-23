@@ -8,9 +8,9 @@
  ********************************************************/
 
 #pragma once
-#include <types.hpp>
 #include "Node.hpp"
 #include <math.hpp>
+#include <types.hpp>
 #include <iomanip>
 
 namespace cuda
@@ -18,83 +18,45 @@ namespace cuda
 
 namespace JIT
 {
-    template<typename T>
+
+    template <typename T>
     class ScalarNode : public Node
     {
     private:
-        T m_val;
+        const T m_val;
+
     public:
 
         ScalarNode(T val)
-            : Node(irname<T>(), afShortName<T>(false), 0),
+            : Node(getFullName<T>(), shortname<T>(false), 0, {}),
               m_val(val)
         {
         }
 
-        bool isLinear(dim_t dims[4])
+        void genKerName(std::stringstream &kerStream, Node_ids ids)
         {
-            return true;
-        }
-
-        void genKerName(std::stringstream &kerStream)
-        {
-            if (m_gen_name) return;
-
             kerStream << "_" << m_name_str;
-            kerStream << std::setw(2) << std::setfill('0') << std::hex << m_id << std::dec;
-            m_gen_name = true;
+            kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id << std::dec;
         }
 
-        void genParams(std::stringstream &kerStream,
-                       std::stringstream &annStream,
-                       bool is_linear)
+        void genParams(std::stringstream &kerStream, int id, bool is_linear)
         {
-            if (m_gen_param) return;
-            kerStream << m_type_str << " %val" << m_id << ", " << std::endl;
-            annStream << m_type_str << ",\n";
-            m_gen_param = true;
-        }
-
-        void genOffsets(std::stringstream &kerStream, bool is_linear)
-        {
-            if (m_gen_offset) return;
-            m_gen_offset = true;
-        }
-
-        void genFuncs(std::stringstream &kerStream, str_map_t &declStrs, bool is_linear)
-        {
-            if (m_gen_func) return;
-            m_gen_func = true;
-        }
-
-        int setId(int id)
-        {
-            if (m_set_id) return id;
-            m_id = id;
-            m_set_id = true;
-            return m_id + 1;
-        }
-
-        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
-        {
-            if (m_set_id) return;
-            len++;
-            m_set_id = true;
-            return;
-        }
-
-        void resetFlags()
-        {
-            if (m_set_id) resetCommonFlags();
+            kerStream << m_type_str << " scalar" << id << ", " << "\n";
         }
 
         void setArgs(std::vector<void *> &args, bool is_linear)
         {
-            if (m_set_arg) return;
             args.push_back((void *)&m_val);
-            m_set_arg = true;
+        }
+
+        void genFuncs(std::stringstream &kerStream, Node_ids ids)
+        {
+            kerStream << m_type_str << " val" << ids.id << " = "
+                      << "scalar" << ids.id << ";"
+                      << "\n";
         }
     };
+
 }
 
 }

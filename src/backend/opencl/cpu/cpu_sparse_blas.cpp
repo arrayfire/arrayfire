@@ -16,7 +16,7 @@
 
 #include <af/dim4.hpp>
 #include <complex.hpp>
-#include <err_common.hpp>
+#include <err_opencl.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 
@@ -202,7 +202,7 @@ toSparseTranspose(af_mat_prop opt)
 template<typename T, int value>
 scale_type<T> getScale()
 {
-    static T val = scalar<T>(value);
+    thread_local T val = scalar<T>(value);
     return getScaleValue<scale_type<T>, T>(val);
 }
 

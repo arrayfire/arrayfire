@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <err_common.hpp>
+#include <err_opencl.hpp>
 #include <solve.hpp>
 
 #if defined(WITH_OPENCL_LINEAR_ALGEBRA)
@@ -145,9 +145,9 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
                               (*dA)(), A.getOffset(), A.strides()[1], 1,
                               (*dT)(), tmp.getOffset() + MN * NB, NB, 0, queue);
 
-        CLBLAS_CHECK(gpu_blas_trsm(
-                         clblasLeft, clblasUpper,
-                         clblasConjTrans, clblasNonUnit,
+        OPENCL_BLAS_CHECK(gpu_blas_trsm(
+                         OPENCL_BLAS_SIDE_LEFT, OPENCL_BLAS_TRIANGLE_UPPER,
+                         OPENCL_BLAS_CONJ_TRANS, OPENCL_BLAS_NON_UNIT_DIAGONAL,
                          B.dims()[0], B.dims()[1],
                          scalar<T>(1),
                          (*dA)(), A.getOffset(), A.strides()[1],
@@ -231,15 +231,17 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         {
             Array<T> AT = transpose<T>(A, true);
             cl::Buffer* AT_buf = AT.get();
-            CLBLAS_CHECK(gpu_blas_trsm(
-                             clblasLeft, clblasLower, clblasConjTrans, clblasNonUnit,
+            OPENCL_BLAS_CHECK(gpu_blas_trsm(
+                             OPENCL_BLAS_SIDE_LEFT, OPENCL_BLAS_TRIANGLE_LOWER,
+                             OPENCL_BLAS_CONJ_TRANS, OPENCL_BLAS_NON_UNIT_DIAGONAL,
                              N, NRHS, scalar<T>(1),
                              (*AT_buf)(), AT.getOffset(), AT.strides()[1],
                              (*B_buf)(), B.getOffset(), B.strides()[1],
                              1, &queue, 0, nullptr, &event));
         } else {
-            CLBLAS_CHECK(gpu_blas_trsm(
-                             clblasLeft, clblasUpper, clblasNoTrans, clblasNonUnit,
+            OPENCL_BLAS_CHECK(gpu_blas_trsm(
+                             OPENCL_BLAS_SIDE_LEFT, OPENCL_BLAS_TRIANGLE_UPPER,
+                             OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_NON_UNIT_DIAGONAL,
                              N, NRHS, scalar<T>(1),
                              (*A_buf)(), A.getOffset(), A.strides()[1],
                              (*B_buf)(), B.getOffset(), B.strides()[1],
@@ -272,21 +274,21 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop o
         Array<T> AT = transpose<T>(A, true);
 
         cl::Buffer* AT_buf = AT.get();
-        CLBLAS_CHECK(gpu_blas_trsm(
-                         clblasLeft,
-                         clblasLower,
-                         clblasConjTrans,
-                         options & AF_MAT_DIAG_UNIT ? clblasUnit : clblasNonUnit,
+        OPENCL_BLAS_CHECK(gpu_blas_trsm(
+                         OPENCL_BLAS_SIDE_LEFT,
+                         OPENCL_BLAS_TRIANGLE_LOWER,
+                         OPENCL_BLAS_CONJ_TRANS,
+                         options & AF_MAT_DIAG_UNIT ? OPENCL_BLAS_UNIT_DIAGONAL : OPENCL_BLAS_NON_UNIT_DIAGONAL,
                          N, NRHS, scalar<T>(1),
                          (*AT_buf)(), AT.getOffset(), AT.strides()[1],
                          (*B_buf)(), B.getOffset(), B.strides()[1],
                          1, &queue, 0, nullptr, &event));
     } else {
-        CLBLAS_CHECK(gpu_blas_trsm(
-                         clblasLeft,
-                         options & AF_MAT_LOWER ? clblasLower : clblasUpper,
-                         clblasNoTrans,
-                         options & AF_MAT_DIAG_UNIT ? clblasUnit : clblasNonUnit,
+        OPENCL_BLAS_CHECK(gpu_blas_trsm(
+                         OPENCL_BLAS_SIDE_LEFT,
+                         options & AF_MAT_LOWER ? OPENCL_BLAS_TRIANGLE_LOWER : OPENCL_BLAS_TRIANGLE_UPPER,
+                         OPENCL_BLAS_NO_TRANS,
+                         options & AF_MAT_DIAG_UNIT ? OPENCL_BLAS_UNIT_DIAGONAL : OPENCL_BLAS_NON_UNIT_DIAGONAL,
                          N, NRHS, scalar<T>(1),
                          (*A_buf)(), A.getOffset(), A.strides()[1],
                          (*B_buf)(), B.getOffset(), B.strides()[1],
@@ -300,25 +302,19 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop o
 template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
-    try {
-        if(OpenCLCPUOffload()) {
-            return cpu::solve(a, b, options);
-        }
+    if(OpenCLCPUOffload()) {
+        return cpu::solve(a, b, options);
+    }
 
-        initBlas();
+    if (options & AF_MAT_UPPER ||
+        options & AF_MAT_LOWER) {
+        return triangleSolve<T>(a, b, options);
+    }
 
-        if (options & AF_MAT_UPPER ||
-            options & AF_MAT_LOWER) {
-            return triangleSolve<T>(a, b, options);
-        }
-
-        if(a.dims()[0] == a.dims()[1]) {
-            return generalSolve<T>(a, b);
-        } else {
-            return leastSquares<T>(a, b);
-        }
-    } catch(cl::Error &err) {
-        CL_TO_AF_ERROR(err);
+    if(a.dims()[0] == a.dims()[1]) {
+        return generalSolve<T>(a, b);
+    } else {
+        return leastSquares<T>(a, b);
     }
 }
 

@@ -114,8 +114,8 @@ struct CopyImpl<T, T>
         while (linear_end < 4
                 && count == src_strides[linear_end]
                 && count == dst_strides[linear_end]) {
-            ++linear_end;
             count *= src_dims[linear_end];
+            ++linear_end;
         }
 
         // traverse through the array using strides only until neccessary

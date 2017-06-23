@@ -67,10 +67,30 @@ af_array retainSparseHandle(const af_array in)
 template<typename To>
 common::SparseArray<To> castSparse(const af_array &in)
 {
+    const ArrayInfo& info = getInfo(in, false, true);
     using namespace common;
-    const SparseArray<To> sparse = getSparseArray<To>(in);
-    Array<To> values = castArray<To>(getHandle(sparse.getValues()));
-    return createArrayDataSparseArray(sparse.dims(), values,
-                                      sparse.getRowIdx(), sparse.getColIdx(),
-                                      sparse.getStorage());
+
+#define CAST_SPARSE(Ti) do {                                            \
+        const SparseArray<Ti> sparse = getSparseArray<Ti>(in);          \
+        Array<To> values = detail::cast<To, Ti>(sparse.getValues());    \
+        return createArrayDataSparseArray(sparse.dims(), values,        \
+                                          sparse.getRowIdx(),           \
+                                          sparse.getColIdx(),           \
+                                          sparse.getStorage());         \
+    } while(0)
+
+    switch(info.getType()) {
+    case f32: CAST_SPARSE(float);
+    case f64: CAST_SPARSE(double);
+    case c32: CAST_SPARSE(cfloat);
+    case c64: CAST_SPARSE(cdouble);
+    default: TYPE_ERROR(1, info.getType());
+    }
+}
+
+template<typename T>
+static af_array copySparseArray(const af_array in)
+{
+  const common::SparseArray<T> &inArray = getSparseArray<T>(in);
+  return getHandle<T>(common::copySparseArray<T>(inArray));
 }

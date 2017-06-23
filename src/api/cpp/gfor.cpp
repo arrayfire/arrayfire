@@ -17,7 +17,7 @@
 namespace af
 {
 
-    static bool gforStatus;
+    thread_local bool gforStatus;
 
     bool gforGet() { return gforStatus; }
     void gforSet(bool val) { gforStatus = val; }

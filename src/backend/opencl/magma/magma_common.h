@@ -16,9 +16,6 @@
 #include <CL/cl.h>
 #endif
 
-#define HAVE_clBLAS
-#include <clBLAS.h>
-
 #include "magma_types.h"
 
 #define magma_s magmaFloat_ptr

@@ -10,13 +10,13 @@
 #if defined(WITH_GRAPHICS)
 
 #include <graphics_common.hpp>
+#include <glbinding/Meta.h>
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <platform.hpp>
 #include <util.hpp>
-
-#include <glbinding/gl/gl.h>
-#include <glbinding/Meta.h>
+#include <mutex>
+#include <utility>
 
 using namespace std;
 using namespace gl;
@@ -54,7 +54,7 @@ INSTANTIATE_GET_FG_TYPE(short           , forge::s16);
 gl::GLenum glErrorSkip(const char *msg, const char* file, int line)
 {
 #ifndef NDEBUG
-    gl::GLenum x = glGetError();
+    gl::GLenum x = gl::glGetError();
     if (x != GL_NO_ERROR) {
         char buf[1024];
         sprintf(buf, "GL Error Skipped at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, (int)x, glbinding::Meta::getString(x).c_str());
@@ -70,7 +70,7 @@ gl::GLenum glErrorCheck(const char *msg, const char* file, int line)
 {
 // Skipped in release mode
 #ifndef NDEBUG
-    gl::GLenum x = glGetError();
+    gl::GLenum x = gl::glGetError();
 
     if (x != GL_NO_ERROR) {
         char buf[1024];
@@ -85,7 +85,7 @@ gl::GLenum glErrorCheck(const char *msg, const char* file, int line)
 
 gl::GLenum glForceErrorCheck(const char *msg, const char* file, int line)
 {
-    gl::GLenum x = glGetError();
+    gl::GLenum x = gl::glGetError();
 
     if (x != GL_NO_ERROR) {
         char buf[1024];
@@ -173,7 +173,6 @@ double step_round(const double in, const bool dir)
 
 namespace graphics
 {
-
 ForgeManager& ForgeManager::getInstance()
 {
     static ForgeManager my_instance;
@@ -182,56 +181,73 @@ ForgeManager& ForgeManager::getInstance()
 
 ForgeManager::~ForgeManager()
 {
-    destroyResources();
+    /* clear all OpenGL resource objects (images, plots, histograms etc) first
+     * and then delete the windows */
+    for(ImgMapIter iter = mImgMap.begin(); iter != mImgMap.end(); iter++)
+        delete (iter->second);
+
+    for(PltMapIter iter = mPltMap.begin(); iter != mPltMap.end(); iter++)
+        delete (iter->second);
+
+    for(HstMapIter iter = mHstMap.begin(); iter != mHstMap.end(); iter++)
+        delete (iter->second);
+
+    for(ChartMapIter iter = mChartMap.begin(); iter != mChartMap.end(); iter++) {
+        for(int i = 0; i < (int)(iter->second).size(); i++) {
+            if((iter->second)[i] != NULL) {
+                delete (iter->second)[i];
+                mChartAxesOverrideMap.erase((iter->second)[i]);
+            }
+        }
+    }
 }
 
-forge::Font* ForgeManager::getFont(const bool dontCreate)
+forge::Font* ForgeManager::getFont()
 {
-    static bool flag = true;
-    static forge::Font* fnt = NULL;
+    static std::once_flag flag;
+    static std::unique_ptr<forge::Font> fnt;
 
     CheckGL("Begin ForgeManager::getFont");
-
-    if (flag && !dontCreate) {
-        fnt = new forge::Font();
+    std::call_once(flag,
+            [] {
+                fnt.reset(new forge::Font());
 #if defined(_WIN32) || defined(_MSC_VER)
-        fnt->loadSystemFont("Arial");
+                fnt->loadSystemFont("Arial");
 #else
-        fnt->loadSystemFont("Vera");
+                fnt->loadSystemFont("Vera");
 #endif
-        CheckGL("End ForgeManager::getFont");
-        flag = false;
-    };
+            });
+    CheckGL("End ForgeManager::getFont");
 
-    return fnt;
+    return fnt.get();
 }
 
-forge::Window* ForgeManager::getMainWindow(const bool dontCreate)
+forge::Window* ForgeManager::getMainWindow()
 {
-    static bool flag = true;
-    static forge::Window* wnd = NULL;
+    static std::once_flag flag;
+    static std::unique_ptr<forge::Window> wnd;
 
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
-    if(noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
-        if (flag && !dontCreate) {
-            wnd = new forge::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
-            makeContextCurrent(wnd);
 
-            ForgeManager& fgMngr = ForgeManager::getInstance();
-            fgMngr.setWindowChartGrid(wnd, 1, 1);
+    if (noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
+        std::call_once(flag,
+                [] {
+                    wnd.reset(new forge::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true));
+                    makeContextCurrent(wnd.get());
 
-            CheckGL("End ForgeManager::getMainWindow");
-            flag = false;
-        };
+                    ForgeManager::getInstance().setWindowChartGrid(wnd.get(), 1, 1);
+                });
     }
-    return wnd;
+
+    return wnd.get();
 }
 
 void ForgeManager::setWindowChartGrid(const forge::Window* window,
                                       const int r, const int c)
 {
     ChartMapIter iter = mChartMap.find(window);
+    GridMapIter gIter = mWndGridMap.find(window);
 
     if(iter != mChartMap.end()) {
         // ChartVec found. Clear it.
@@ -244,13 +260,27 @@ void ForgeManager::setWindowChartGrid(const forge::Window* window,
             }
         }
         (iter->second).clear();
+        gIter->second = std::make_pair<int, int>(1, 1);
     }
 
     if(r == 0 || c == 0) {
         mChartMap.erase(window);
+        mWndGridMap.erase(window);
     } else {
         mChartMap[window] = std::vector<forge::Chart*>(r * c);
+        mWndGridMap[window] = std::make_pair(r, c);
     }
+}
+
+WindGridDims_t ForgeManager::getWindowGrid(const forge::Window* window)
+{
+    GridMapIter gIter = mWndGridMap.find(window);
+
+    if (gIter == mWndGridMap.end()) {
+        mWndGridMap[window] = std::make_pair(1, 1);
+    }
+
+    return mWndGridMap[window];
 }
 
 forge::Chart* ForgeManager::getChart(const forge::Window* window, const int r, const int c,
@@ -258,14 +288,17 @@ forge::Chart* ForgeManager::getChart(const forge::Window* window, const int r, c
 {
     forge::Chart* chart = NULL;
     ChartMapIter iter = mChartMap.find(window);
+    GridMapIter gIter = mWndGridMap.find(window);
 
-    if(iter != mChartMap.end()) {
-        int gRows = window->gridRows();
-        int gCols = window->gridCols();
+    if (iter != mChartMap.end()) {
+
+        int gRows = std::get<0>(gIter->second);
+        int gCols = std::get<1>(gIter->second);
 
         if(c >= gCols || r >= gRows)
             AF_ERROR("Grid points are out of bounds", AF_ERR_TYPE);
 
+        // upgrade to exclusive access to make changes
         chart = (iter->second)[c * gRows + r];
 
         if (chart == NULL) {
@@ -303,9 +336,12 @@ forge::Image* ForgeManager::getImage(int w, int h, forge::ChannelFormat mode, fo
     key = (((key << 16) | mode) << 16) | type;
 
     ChartKey_t keypair = std::make_pair(key, nullptr);
+
     ImgMapIter iter = mImgMap.find(keypair);
+
     if (iter==mImgMap.end()) {
         forge::Image* temp = new forge::Image(w, h, mode, type);
+
         mImgMap[keypair] = temp;
     }
 
@@ -326,13 +362,17 @@ forge::Image* ForgeManager::getImage(forge::Chart* chart, int w, int h,
     key = (((key << 16) | mode) << 16) | type;
 
     ChartKey_t keypair = std::make_pair(key, chart);
+
     ImgMapIter iter = mImgMap.find(keypair);
+
     if (iter==mImgMap.end()) {
         if(chart->getChartType() != FG_CHART_2D)
             AF_ERROR("Image can only be added to chart of type FG_CHART_2D", AF_ERR_TYPE);
 
         forge::Image* temp = new forge::Image(w, h, mode, type);
+
         mImgMap[keypair] = temp;
+
         chart->add(*mImgMap[keypair]);
     }
 
@@ -352,10 +392,14 @@ forge::Plot* ForgeManager::getPlot(forge::Chart* chart, int nPoints, forge::dtyp
     key |= (((((dtype & 0x000F) << 12) | (ptype & 0x000F)) << 8) | (mtype & 0x000F));
 
     ChartKey_t keypair = std::make_pair(key, chart);
+
     PltMapIter iter = mPltMap.find(keypair);
+
     if (iter==mPltMap.end()) {
         forge::Plot* temp = new forge::Plot(nPoints, dtype, chart->getChartType(), ptype, mtype);
+
         mPltMap[keypair] = temp;
+
         chart->add(*mPltMap[keypair]);
     }
 
@@ -373,13 +417,17 @@ forge::Histogram* ForgeManager::getHistogram(forge::Chart* chart, int nBins, for
     long long key = ((nBins & _48BIT) << 48) | (type & _16BIT);
 
     ChartKey_t keypair = std::make_pair(key, chart);
+
     HstMapIter iter = mHstMap.find(keypair);
+
     if (iter==mHstMap.end()) {
         if(chart->getChartType() != FG_CHART_2D)
             AF_ERROR("Histogram can only be added to chart of type FG_CHART_2D", AF_ERR_TYPE);
 
         forge::Histogram* temp = new forge::Histogram(nBins, type);
+
         mHstMap[keypair] = temp;
+
         chart->add(*mHstMap[keypair]);
     }
 
@@ -397,13 +445,17 @@ forge::Surface* ForgeManager::getSurface(forge::Chart* chart, int nX, int nY, fo
     long long key = (((nX * nY) & _48BIT) << 48) | (type & _16BIT);
 
     ChartKey_t keypair = std::make_pair(key, chart);
+
     SfcMapIter iter = mSfcMap.find(keypair);
+
     if (iter==mSfcMap.end()) {
         if(chart->getChartType() != FG_CHART_3D)
             AF_ERROR("Surface can only be added to chart of type FG_CHART_3D", AF_ERR_TYPE);
 
         forge::Surface* temp = new forge::Surface(nX, nY, type);
+
         mSfcMap[keypair] = temp;
+
         chart->add(*mSfcMap[keypair]);
     }
 
@@ -421,10 +473,14 @@ forge::VectorField* ForgeManager::getVectorField(forge::Chart* chart, int nPoint
     long long key = (((nPoints) & _48BIT) << 48) | (type & _16BIT);
 
     ChartKey_t keypair = std::make_pair(key, chart);
+
     VcfMapIter iter = mVcfMap.find(keypair);
+
     if (iter==mVcfMap.end()) {
         forge::VectorField* temp = new forge::VectorField(nPoints, type, chart->getChartType());
+
         mVcfMap[keypair] = temp;
+
         chart->add(*mVcfMap[keypair]);
     }
 
@@ -448,33 +504,6 @@ void ForgeManager::setChartAxesOverride(forge::Chart* chart, bool flag)
     }
     mChartAxesOverrideMap[chart] = flag;
 }
-
-void ForgeManager::destroyResources()
-{
-    /* clear all OpenGL resource objects (images, plots, histograms etc) first
-     * and then delete the windows */
-    for(ImgMapIter iter = mImgMap.begin(); iter != mImgMap.end(); iter++)
-        delete (iter->second);
-
-    for(PltMapIter iter = mPltMap.begin(); iter != mPltMap.end(); iter++)
-        delete (iter->second);
-
-    for(HstMapIter iter = mHstMap.begin(); iter != mHstMap.end(); iter++)
-        delete (iter->second);
-
-    for(ChartMapIter iter = mChartMap.begin(); iter != mChartMap.end(); iter++) {
-        for(int i = 0; i < (int)(iter->second).size(); i++) {
-            if((iter->second)[i] != NULL) {
-                delete (iter->second)[i];
-                mChartAxesOverrideMap.erase((iter->second)[i]);
-            }
-        }
-    }
-
-    delete getFont(true);
-    delete getMainWindow(true);
-}
-
 }
 
 #endif

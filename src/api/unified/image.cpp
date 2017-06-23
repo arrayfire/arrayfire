@@ -256,3 +256,10 @@ af_err af_rgb2ycbcr(af_array* out, const af_array in, const af_ycc_std standard)
     CHECK_ARRAYS(in);
     return CALL(out, in, standard);
 }
+
+af_err af_canny(af_array* out, const af_array in, const af_canny_threshold ct,
+                const float t1, const float t2, const unsigned sw, const bool isf)
+{
+    CHECK_ARRAYS(in);
+    return CALL(out, in, ct, t1, t2, sw, isf);
+}

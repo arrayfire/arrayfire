@@ -126,6 +126,7 @@ FILE(GLOB backend_headers
     )
 
 FILE(GLOB backend_sources
+    "../common/*.cpp"
     "../*.cpp"
     )
 
@@ -190,6 +191,7 @@ IF(DEFINED BLAS_SYM_FILE)
     TARGET_LINK_LIBRARIES(afcpu PUBLIC $<TARGET_FILE:afcpu_static>)
   ELSE(APPLE)
     add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/afcpu_static.renamed
+      BYPRODUCTS ${PROJECT_BINARY_DIR}/afcpu_static.renamed
       COMMAND objcopy --redefine-syms ${BLAS_SYM_FILE} $<TARGET_FILE:afcpu_static> ${PROJECT_BINARY_DIR}/afcpu_static.renamed
       DEPENDS $<TARGET_FILE:afcpu_static>)
       TARGET_LINK_LIBRARIES(afcpu PUBLIC ${PROJECT_BINARY_DIR}/afcpu_static.renamed)

@@ -12,8 +12,7 @@
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
-#include <mutex>
-#include <map>
+#include <cache.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -27,13 +26,10 @@ using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
 
-
 namespace opencl
 {
-
 namespace kernel
 {
-
 static const int NTHREADS = 256;
 static const int MAX_PIVOTS =  32;
 
@@ -42,35 +38,31 @@ typedef struct {
     int ipiv[MAX_PIVOTS];
 } zlaswp_params_t;
 
-
 template<typename T>
-void laswp(int n, cl_mem in, size_t offset, int ldda,
-           int k1, int k2, const int *ipiv, int inci)
+void laswp(int n, cl_mem in, size_t offset, int ldda, int k1, int k2, const int *ipiv, int inci)
 {
-
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*>  swpProgs;
-    static std::map<int, Kernel*> swpKernels;
+    std::string refName = std::string("laswp_") + std::string(dtype_traits<T>::getName());
 
     int device = getActiveDeviceId();
+    kc_entry_t entry = kernelCache(device, refName);
 
-    std::call_once(compileFlags[device], [device] () {
+    if (entry.prog==0 && entry.ker==0) {
+        std::ostringstream options;
+        options << " -D T=" << dtype_traits<T>::getName()
+                << " -D MAX_PIVOTS=" << MAX_PIVOTS;
 
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName()
-                    << " -D MAX_PIVOTS=" << MAX_PIVOTS;
+        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
+            options << " -D USE_DOUBLE";
 
-            if (std::is_same<T, double>::value ||
-                std::is_same<T, cdouble>::value) {
-                options << " -D USE_DOUBLE";
-            }
+        const char* ker_strs[] = {laswp_cl};
+        const int   ker_lens[] = {laswp_cl_len};
+        Program prog;
+        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
+        entry.prog = new Program(prog);
+        entry.ker  = new Kernel(*entry.prog, "laswp");
 
-            cl::Program prog;
-            buildProgram(prog, laswp_cl, laswp_cl_len, options.str());
-            swpProgs[device] = new Program(prog);
-
-            swpKernels[device] = new Kernel(*swpProgs[device], "laswp");
-        });
+        addKernelToCache(device, refName, entry);
+    }
 
     int groups = divup(n, NTHREADS);
     NDRange local(NTHREADS);
@@ -80,26 +72,20 @@ void laswp(int n, cl_mem in, size_t offset, int ldda,
     //retain the cl_mem object during cl::Buffer creation
     cl::Buffer inObj(in, true);
 
-    auto laswpOp = KernelFunctor<int, Buffer, unsigned long long,
-                               int, zlaswp_params_t>(*swpKernels[device]);
+    auto laswpOp = KernelFunctor<int, Buffer, unsigned long long, int, zlaswp_params_t>(*entry.ker);
 
     for( int k = k1-1; k < k2; k += MAX_PIVOTS ) {
-
         int pivots_left = k2-k;
 
         params.npivots = pivots_left > MAX_PIVOTS ? MAX_PIVOTS : pivots_left;
 
-        for( int j = 0; j < params.npivots; ++j ) {
+        for( int j = 0; j < params.npivots; ++j )
             params.ipiv[j] = ipiv[(k+j)*inci] - k - 1;
-        }
 
         unsigned long long k_offset = offset + k*ldda;
 
-        laswpOp(EnqueueArgs(getQueue(), global, local),
-                n, inObj, k_offset, ldda, params);
+        laswpOp(EnqueueArgs(getQueue(), global, local), n, inObj, k_offset, ldda, params);
     }
-
 }
-
 }
 }

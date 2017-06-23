@@ -1,13 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-FIND_PACKAGE(CUDA REQUIRED)
-FIND_PACKAGE(Boost REQUIRED)
+FIND_PACKAGE(CUDA 7.0 REQUIRED)
 
 INCLUDE(CLKernelToH)
-INCLUDE(FindNVVM)
-
-OPTION(USE_LIBDEVICE "Use libdevice for CUDA JIT" ON)
-SET(CUDA_LIBDEVICE_DIR "${CUDA_NVVM_HOME}/libdevice" CACHE PATH "Path where libdevice compute files are located" FORCE)
+INCLUDE(FindNVRTC)
 
 MARK_AS_ADVANCED(
     CUDA_BUILD_CUBIN
@@ -104,7 +100,7 @@ IF(UNIX)
         # Enabling c++11 with nvcc 7.5 + gcc 6.x doesn't seem to work
         # Only solution for now is to force use c++03 for gcc 6.x
         IF(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "6.0.0")
-          SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -std=c++98")
+          message( FATAL_ERROR "NVCC does not support GCC version 6.0 or greater." )
         ENDIF()
     ENDIF()
 
@@ -143,69 +139,16 @@ IF(CMAKE_VERSION VERSION_LESS 3.2)
         SET(CUDA_cusolver_DIR "${CUDA_TOOLKIT_ROOT_DIR}" CACHE INTERNAL "CUDA cusolver Root Directory")
     ENDIF()
     MARK_AS_ADVANCED(CUDA_cusolver_LIBRARY)
-ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
-
-IF(${CUDA_VERSION_MAJOR} LESS 7 AND CUDA_cusolver_LIBRARY)
-  UNSET(CUDA_cusolver_LIBRARY CACHE)  # Failsafe when going from higher version to lower version
-ENDIF()
-
-IF(CUDA_cusolver_LIBRARY)
     MESSAGE(STATUS "CUDA cusolver library available in CUDA Version ${CUDA_VERSION_STRING}")
-    ADD_DEFINITIONS(-DWITH_CUDA_LINEAR_ALGEBRA)
-ELSE(CUDA_cusolver_LIBRARY)
-    # Use CPU Lapack as fallback?
-    OPTION(CUDA_LAPACK_CPU_FALLBACK "Use CPU LAPACK as fallback for CUDA LAPACK when cusolver is not available" OFF)
-    MARK_AS_ADVANCED(CUDA_LAPACK_CPU_FALLBACK)
-
-    IF(${CUDA_LAPACK_CPU_FALLBACK})
-        ## Try to use CPU side lapack
-        IF(APPLE)
-            FIND_PACKAGE(LAPACKE QUIET) # For finding MKL
-            IF(NOT LAPACK_FOUND)
-                # UNSET THE VARIABLES FROM LAPACKE
-                UNSET(LAPACKE_LIB CACHE)
-                UNSET(LAPACK_LIB CACHE)
-                UNSET(LAPACKE_INCLUDES CACHE)
-                UNSET(LAPACKE_ROOT_DIR CACHE)
-                FIND_PACKAGE(LAPACK)
-            ENDIF()
-        ELSE(APPLE) # Linux and Windows
-            FIND_PACKAGE(LAPACKE)
-        ENDIF(APPLE)
-
-        IF(NOT LAPACK_FOUND)
-            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. Linear Algebra will not be available.")
-        ELSE(NOT LAPACK_FOUND)
-            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. But CPU LAPACK libraries are available. Will fallback to using host side code.")
-            ADD_DEFINITIONS(-DWITH_CPU_LINEAR_ALGEBRA)
-            IF(USE_CUDA_MKL) # Manual MKL Setup
-                MESSAGE("CUDA LAPACK CPU Fallback Using MKL")
-                ADD_DEFINITIONS(-DUSE_MKL)
-            ELSE(USE_CUDA_MKL)
-                IF(${MKL_FOUND}) # Automatic MKL Setup from BLAS
-                    MESSAGE("CUDA LAPACK CPU Fallback Using MKL RT")
-                    ADD_DEFINITIONS(-DUSE_MKL)
-                ENDIF()
-            ENDIF()
-        ENDIF()
-    ELSE()
-        MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cusolver library. Linear Algebra will not be available.")
-    ENDIF()
-    UNSET(CUDA_cusolver_LIBRARY CACHE)  # Failsafe when going from higher version to lower version
-ENDIF(CUDA_cusolver_LIBRARY)
+ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
-    ${Boost_INCLUDE_DIR}
     ${CUDA_INCLUDE_DIRS}
     "${PROJECT_SOURCE_DIR}/src/backend/cuda"
     "${CMAKE_CURRENT_BINARY_DIR}"
-    ${CUDA_nvvm_INCLUDE_DIR}
+    ${CUDA_nvrtc_INCLUDE_DIR}
     )
-
-IF(CUDA_LAPACK_CPU_FALLBACK)
-  INCLUDE_DIRECTORIES(${LAPACK_INCLUDE_DIR})
-ENDIF()
 
 FILE(GLOB cuda_headers
      "*.hpp"
@@ -222,31 +165,15 @@ FILE(GLOB jit_sources
 FILE(GLOB kernel_headers
     "kernel/*.hpp")
 
-FILE(GLOB ptx_sources
-    "JIT/*.cu")
-
 LIST(SORT cuda_headers)
 LIST(SORT cuda_sources)
 LIST(SORT jit_sources)
 LIST(SORT kernel_headers)
-LIST(SORT ptx_sources)
 
 SOURCE_GROUP(backend\\cuda\\Headers FILES ${cuda_headers})
 SOURCE_GROUP(backend\\cuda\\Sources FILES ${cuda_sources})
 SOURCE_GROUP(backend\\cuda\\JIT FILES ${jit_sources})
 SOURCE_GROUP(backend\\cuda\\kernel\\Headers FILES ${kernel_headers})
-
-IF(CUDA_LAPACK_CPU_FALLBACK)
-    FILE(GLOB cpu_lapack_sources
-        "cpu_lapack/*.cpp")
-    FILE(GLOB cpu_lapack_headers
-        "cpu_lapack/*.hpp")
-
-    SOURCE_GROUP(backend\\cuda\\cpu_lapack\\Headers FILES ${cpu_lapack_headers})
-    SOURCE_GROUP(backend\\cuda\\cpu_lapack\\Sources FILES ${cpu_lapack_sources})
-    LIST(SORT cpu_lapack_headers)
-    LIST(SORT cpu_lapack_sources)
-ENDIF()
 
 FILE(GLOB backend_headers
     "../*.hpp"
@@ -254,6 +181,7 @@ FILE(GLOB backend_headers
     )
 
 FILE(GLOB backend_sources
+    "../common/*.cpp"
     "../*.cpp"
     )
 
@@ -284,10 +212,23 @@ FILE(GLOB cpp_sources
 
 LIST(SORT cpp_sources)
 
+SET(jit_kernel_headers
+    "kernel_headers")
+
+FILE(GLOB jit_src "kernel/jit.cuh")
+CL_KERNEL_TO_H(
+    SOURCES ${jit_src}
+    VARNAME jit_files
+    EXTENSION "hpp"
+    OUTPUT_DIR ${jit_kernel_headers}
+    TARGETS jit_kernel_targets
+    NAMESPACE "cuda"
+    )
+
+
 SOURCE_GROUP(api\\cpp\\Sources FILES ${cpp_sources})
 
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/thrust_sort_by_key/CMakeLists.txt")
-
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_by_key/CMakeLists.txt")
 
 LIST(LENGTH COMPUTE_VERSIONS COMPUTE_COUNT)
@@ -307,95 +248,10 @@ SET(OLD_CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS})
 IF(${CUDA_VERSION_MAJOR} GREATER 7) # CUDA 8 or newer
     SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --keep-device-functions")
 ENDIF()
-CUDA_COMPILE_PTX(ptx_files ${ptx_sources})
 SET(CUDA_NVCC_FLAGS ${OLD_CUDA_NVCC_FLAGS})
-
-set(cuda_ptx "")
-foreach(ptx_src_file ${ptx_sources})
-
-      get_filename_component(_name "${ptx_src_file}" NAME_WE)
-
-      set(_gen_file_name
-        "${PROJECT_BINARY_DIR}/src/backend/cuda/cuda_compile_ptx_generated_${_name}.cu.ptx")
-      set(_out_file_name
-        "${PROJECT_BINARY_DIR}/src/backend/cuda/${_name}.ptx")
-
-      ADD_CUSTOM_COMMAND(
-        OUTPUT "${_out_file_name}"
-        DEPENDS "${_gen_file_name}"
-        COMMAND ${CMAKE_COMMAND} -E copy "${_gen_file_name}" "${_out_file_name}")
-
-      list(APPEND cuda_ptx "${_out_file_name}")
-endforeach()
-
-SET( ptx_headers
-    "ptx_headers")
-
-CL_KERNEL_TO_H(
-    SOURCES ${cuda_ptx}
-    VARNAME kernel_files
-    EXTENSION "hpp"
-    OUTPUT_DIR ${ptx_headers}
-    TARGETS ptx_targets
-    NAMESPACE "cuda"
-    NULLTERM TRUE
-    )
-
-SET(libdevice_bc "")
-IF (USE_LIBDEVICE)
-    SET(libdevice_computes "")
-    LIST(APPEND libdevice_computes "20" "30" "35" "50")
-    FOREACH(libdevice_compute ${libdevice_computes})
-        SET(_libdevice_bc_file "${CUDA_LIBDEVICE_DIR}/libdevice.compute_${libdevice_compute}.10.bc")
-        SET(_libdevice_bc_copy "${PROJECT_BINARY_DIR}/src/backend/cuda/compute_${libdevice_compute}.bc")
-        IF (EXISTS ${_libdevice_bc_file})
-            ADD_CUSTOM_COMMAND(
-                OUTPUT "${_libdevice_bc_copy}"
-                DEPENDS "${_libdevice_bc_file}"
-                COMMAND ${CMAKE_COMMAND} -E copy "${_libdevice_bc_file}" "${_libdevice_bc_copy}")
-            LIST(APPEND libdevice_bc ${_libdevice_bc_copy})
-            ADD_DEFINITIONS(-D"__LIBDEVICE_COMPUTE_${libdevice_compute}")
-        ENDIF()
-    ENDFOREACH()
-ENDIF()
-
-LIST(LENGTH libdevice_bc libdevice_bc_len)
-
-IF (${libdevice_bc_len} GREATER 0)
-
-  SET(libdevice_headers
-    "libdevice_headers")
-
-  CL_KERNEL_TO_H(
-    SOURCES ${libdevice_bc}
-    VARNAME libdevice_files
-    EXTENSION "hpp"
-    OUTPUT_DIR ${libdevice_headers}
-    TARGETS libdevice_targets
-    NAMESPACE "cuda"
-    BINARY TRUE
-    )
-
-  MESSAGE(STATUS "LIBDEVICE found.")
-  ADD_DEFINITIONS(-DUSE_LIBDEVICE)
-ELSE()
-  MESSAGE(STATUS "LIBDEVICE not found on system. CUDA JIT may be slower")
-ENDIF()
 
 IF("${APPLE}")
     ADD_DEFINITIONS(-D__STRICT_ANSI__)
-    IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-        IF(${CUDA_VERSION_MAJOR} VERSION_LESS 7)
-            SET(STD_LIB_BINDING "-stdlib=libstdc++")
-        ELSE(${CUDA_VERSION_MAJOR} VERSION_LESS 7)
-            SET(STD_LIB_BINDING "-stdlib=libc++")
-        ENDIF()
-
-        ADD_DEFINITIONS("${STD_LIB_BINDING}")
-        SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${STD_LIB_BINDING}")
-        SET(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${STD_LIB_BINDING}")
-        SET(CUDA_HOST_COMPILER "/usr/bin/clang++")
-    ENDIF()
 ELSE()
   IF(UNIX)
     IF(${CUDA_VERSION_MAJOR} GREATER 7)
@@ -406,6 +262,10 @@ ELSE()
       ENDIF()
     ENDIF()
   ENDIF()
+ENDIF()
+
+IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_MWAITXINTRIN_H_INCLUDED -D_FORCE_INLINES")
 ENDIF()
 
 ## Copied from FindCUDA.cmake
@@ -470,13 +330,18 @@ IF(NOT CUDA_CUDA_LIBRARY)
     MESSAGE(FATAL_ERROR "Ending CMake configuration because of missing CUDA_CUDA_LIBRARY")
 ENDIF(NOT CUDA_CUDA_LIBRARY)
 
+SET(CUDA_ADD_LIBRARY_OPTIONS "")
+IF(UNIX)
+  # These flags enable C++11 and disable invalid offsetof warning
+  SET(CUDA_ADD_LIBRARY_OPTIONS "-std=c++11 -Xcudafe \"--diag_suppress=1427\"")
+ENDIF(UNIX)
+
+
 MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cuda_headers}
                 ${cuda_sources}
                 ${jit_sources}
                 ${kernel_headers}
-                ${cpu_lapack_headers}
-                ${cpu_lapack_sources}
                 ${backend_headers}
                 ${backend_sources}
                 ${c_headers}
@@ -484,22 +349,19 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cpp_sources}
                 ${thrust_sort_by_key_sources}
                 ${scan_by_key_sources}
-                OPTIONS ${CUDA_GENERATE_CODE})
-
-ADD_DEPENDENCIES(afcuda ${ptx_targets})
-
-IF (${libdevice_bc_len} GREATER 0)
-  ADD_DEPENDENCIES(afcuda ${libdevice_targets})
-ENDIF()
+                OPTIONS ${CUDA_GENERATE_CODE} ${CUDA_ADD_LIBRARY_OPTIONS})
 
 TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
                                 PRIVATE ${CUDA_LIBRARIES}
                                 PRIVATE ${FreeImage_LIBS}
                                 PRIVATE ${CUDA_CUFFT_LIBRARIES}
                                 PRIVATE ${CUDA_cusparse_LIBRARY}
-                                PRIVATE ${CUDA_nvvm_LIBRARY}
-                                PRIVATE ${CUDA_CUDA_LIBRARY})
+                                PRIVATE ${CUDA_cusolver_LIBRARY}
+                                PRIVATE ${CUDA_nvrtc_LIBRARY}
+                                PRIVATE ${CUDA_CUDA_LIBRARY}
+                     )
 
+ADD_DEPENDENCIES(afcuda ${jit_kernel_targets})
 LIST(LENGTH GRAPHICS_DEPENDENCIES GRAPHICS_DEPENDENCIES_LEN)
 IF(${GRAPHICS_DEPENDENCIES_LEN} GREATER 0)
     ADD_DEPENDENCIES(afcuda ${GRAPHICS_DEPENDENCIES})
@@ -507,12 +369,6 @@ ENDIF(${GRAPHICS_DEPENDENCIES_LEN} GREATER 0)
 
 IF(FORGE_FOUND)
     TARGET_LINK_LIBRARIES(afcuda PRIVATE ${GRAPHICS_LIBRARIES})
-ENDIF()
-
-IF(CUDA_cusolver_LIBRARY)
-    TARGET_LINK_LIBRARIES(afcuda PRIVATE ${CUDA_cusolver_LIBRARY})
-ELSEIF(CUDA_LAPACK_CPU_FALLBACK)
-    TARGET_LINK_LIBRARIES(afcuda PRIVATE ${LAPACK_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afcuda PROPERTIES

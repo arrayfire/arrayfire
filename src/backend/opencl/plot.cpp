@@ -9,12 +9,12 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <interopManager.hpp>
 #include <Array.hpp>
-#include <plot.hpp>
-#include <err_opencl.hpp>
 #include <debug_opencl.hpp>
+#include <err_opencl.hpp>
+#include <GraphicsResourceManager.hpp>
 #include <join.hpp>
+#include <plot.hpp>
 #include <reduce.hpp>
 #include <reorder.hpp>
 
@@ -32,12 +32,10 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
         const cl::Buffer *d_P = P.get();
         size_t bytes = plot->verticesSize();
 
-        InteropManager& intrpMngr = InteropManager::getInstance();
-
-        cl::Buffer **resources = intrpMngr.getBufferResource(plot);
+        ShrdResVector res = interopManager().getBufferResource(plot);
 
         std::vector<cl::Memory> shared_objects;
-        shared_objects.push_back(*resources[0]);
+        shared_objects.push_back(*(res[0].get()));
 
         glFinish();
 
@@ -47,7 +45,7 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
 
         getQueue().enqueueAcquireGLObjects(&shared_objects, NULL, &event);
         event.wait();
-        getQueue().enqueueCopyBuffer(*d_P, *resources[0], 0, 0, bytes, NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_P, *(res[0].get()), 0, 0, bytes, NULL, &event);
         getQueue().enqueueReleaseGLObjects(&shared_objects, NULL, &event);
         event.wait();
 

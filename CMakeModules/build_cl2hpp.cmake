@@ -2,9 +2,19 @@ INCLUDE(ExternalProject)
 
 SET(prefix ${PROJECT_BINARY_DIR}/third_party/cl2hpp)
 
+IF(CMAKE_VERSION VERSION_LESS 3.2)
+    IF(CMAKE_GENERATOR MATCHES "Ninja")
+        MESSAGE(WARNING "Building forge with Ninja has known issues with CMake older than 3.2")
+    endif()
+    SET(byproducts)
+ELSE()
+    SET(byproducts BUILD_BYPRODUCTS "${prefix}/package/CL/cl2.hpp")
+ENDIF()
+
 ExternalProject_Add(
     cl2hpp-ext
     GIT_REPOSITORY https://github.com/KhronosGroup/OpenCL-CLHPP.git
+    ${byproducts}
     GIT_TAG 75bb7d0d8b2ffc6aac0a3dcaa22f6622cab81f7c
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}/package"

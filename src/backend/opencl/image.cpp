@@ -9,11 +9,12 @@
 
 #if defined(WITH_GRAPHICS)
 
-#include <interopManager.hpp>
 #include <Array.hpp>
-#include <image.hpp>
-#include <err_opencl.hpp>
 #include <debug_opencl.hpp>
+#include <err_opencl.hpp>
+#include <image.hpp>
+#include <GraphicsResourceManager.hpp>
+
 #include <stdexcept>
 #include <vector>
 
@@ -26,14 +27,14 @@ void copy_image(const Array<T> &in, const forge::Image* image)
 {
     if (isGLSharingSupported()) {
         CheckGL("Begin opencl resource copy");
-        InteropManager& intrpMngr = InteropManager::getInstance();
 
-        cl::Buffer **resources = intrpMngr.getBufferResource(image);
+        ShrdResVector res = interopManager().getBufferResource(image);
+
         const cl::Buffer *d_X = in.get();
         size_t num_bytes = image->size();
 
         std::vector<cl::Memory> shared_objects;
-        shared_objects.push_back(*resources[0]);
+        shared_objects.push_back(*(res[0].get()));
 
         glFinish();
 
@@ -43,7 +44,7 @@ void copy_image(const Array<T> &in, const forge::Image* image)
 
         getQueue().enqueueAcquireGLObjects(&shared_objects, NULL, &event);
         event.wait();
-        getQueue().enqueueCopyBuffer(*d_X, *resources[0], 0, 0, num_bytes, NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_X, *(res[0].get()), 0, 0, num_bytes, NULL, &event);
         getQueue().enqueueReleaseGLObjects(&shared_objects, NULL, &event);
         event.wait();
 

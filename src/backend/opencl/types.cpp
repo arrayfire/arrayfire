@@ -13,7 +13,7 @@
 namespace opencl
 {
 
-    template<typename T > const char *shortname(bool caps) { return caps ? "X" : "x"; }
+    template<typename T> const char *shortname(bool caps) { return caps ? "X" : "x"; }
 
     template<> const char *shortname<float   >(bool caps) { return caps ? "S" : "s"; }
     template<> const char *shortname<double  >(bool caps) { return caps ? "D" : "d"; }

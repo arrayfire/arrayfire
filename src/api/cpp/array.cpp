@@ -17,6 +17,7 @@
 #include <af/device.h>
 #include <af/gfor.h>
 #include <af/algorithm.h>
+#include <af/internal.h>
 #include "error.hpp"
 
 namespace af
@@ -126,7 +127,7 @@ namespace af
 
     array::array() : arr(0)
     {
-        initEmptyArray(&arr, f32, 0, 0, 0, 0);
+        initEmptyArray(&arr, f32, 0, 1, 1, 1);
     }
 
     array::array(const dim4 &dims, af::dtype ty) : arr(0)
@@ -264,6 +265,13 @@ namespace af
         dim_t nElements;
         AF_THROW(af_get_elements(&nElements, get()));
         return nElements * getSizeOf(type());
+    }
+
+    size_t array::allocated() const
+    {
+        size_t result = 0;
+        AF_THROW(af_get_allocated_bytes(&result, get()));
+        return result;
     }
 
     array array::copy() const
@@ -597,6 +605,7 @@ namespace af
     MEM_FUNC(dim4                   , dims)
     MEM_FUNC(unsigned               , numdims)
     MEM_FUNC(size_t                 , bytes)
+    MEM_FUNC(size_t                 , allocated)
     MEM_FUNC(array                  , copy)
     MEM_FUNC(bool                   , isempty)
     MEM_FUNC(bool                   , isscalar)
@@ -955,18 +964,17 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
             AF_THROW_ERR("Requested type doesn't match with array", \
                          AF_ERR_TYPE);                              \
         }                                                           \
+        void *res;                                                  \
+        AF_THROW(af_alloc_host(&res, bytes()));                     \
+        AF_THROW(af_get_data_ptr(res, get()));                      \
                                                                     \
-        T *res = new T[elements()];                                 \
-        AF_THROW(af_get_data_ptr((void *)res, get()));              \
-                                                                    \
-        return res;                                                 \
+        return (T*)res;                                             \
     }                                                               \
     template<> AFAPI T array::scalar() const                        \
     {                                                               \
-        T *h_ptr = host<T>();                                       \
-        T scalar = h_ptr[0];                                        \
-        delete[] h_ptr;                                             \
-        return scalar;                                              \
+        T val;                                                      \
+        AF_THROW(af_get_scalar(&val, get()));                       \
+        return val;                                                 \
     }                                                               \
     template<> AFAPI T* array::device() const                       \
     {                                                               \

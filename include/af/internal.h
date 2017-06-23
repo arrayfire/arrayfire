@@ -176,6 +176,17 @@ extern "C"
     AFAPI af_err af_is_owner(bool *result, const af_array arr);
 #endif
 
+#if AF_API_VERSION >= 35
+    /**
+       \param[out] bytes the size of the physical allocated bytes. This will return the size
+       of the parent/owner if the \p arr is an indexed array.
+       \param[in] arr the input array.
+
+       \ingroup internal_func_allocatedbytes
+    */
+    AFAPI af_err af_get_allocated_bytes(size_t *bytes, const af_array arr);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

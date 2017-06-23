@@ -20,8 +20,6 @@ using std::abs;
 const int num = 10000;
 const float flt_err = 1e-3;
 const double dbl_err = 1e-10;
-const float cflt_err = 1e-3;
-const double cdbl_err = 1e-8;
 
 typedef std::complex<float> complex_float;
 typedef std::complex<double> complex_double;
@@ -160,6 +158,6 @@ TEST(MathTests, Not)
         ASSERT_EQ(ha[i] ^ hb[i], true);
     }
 
-    delete[] ha;
-    delete[] hb;
+    af_free_host(ha);
+    af_free_host(hb);
 }

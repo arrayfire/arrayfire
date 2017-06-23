@@ -8,31 +8,22 @@
  ********************************************************/
 #pragma once
 
-// Workaround for BOOST_NOINLINE not being defined with nvcc / CUDA < 6.5
-#if CUDA_VERSION < 6050
-#ifndef BOOST_NOINLINE
-#define BOOST_NOINLINE __attribute__ ((noinline))
-#endif
-#endif
-
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
 #include "traits.hpp"
 #include <backend.hpp>
 #include <types.hpp>
 #include <traits.hpp>
+#include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <Param.hpp>
 #include <JIT/Node.hpp>
-#include <boost/shared_ptr.hpp>
 #include <vector>
 #include <memory.hpp>
 
 namespace cuda
 {
-
     using af::dim4;
-    using boost::shared_ptr;
 
     template<typename T> class Array;
 
@@ -105,7 +96,7 @@ namespace cuda
     class Array
     {
         ArrayInfo       info; // This must be the first element of Array<T>
-        shared_ptr<T> data;
+        std::shared_ptr<T> data;
         af::dim4 data_dims;
 
         JIT::Node_ptr node;
@@ -171,17 +162,18 @@ namespace cuda
         void eval() const;
 
         dim_t getOffset() const { return info.getOffset(); }
-        shared_ptr<T> getData() const { return data; }
+        std::shared_ptr<T> getData() const { return data; }
 
         dim4 getDataDims() const
         {
             return data_dims;
         }
 
-        void setDataDims(const dim4 &new_dims)
+        void setDataDims(const dim4 &new_dims);
+
+        size_t getAllocatedBytes() const
         {
-            modDims(new_dims);
-            data_dims = new_dims;
+            return data_dims.elements() * sizeof(T);
         }
 
         T* device();
@@ -212,19 +204,12 @@ namespace cuda
 
         operator Param<T>()
         {
-            Param<T> out;
-            out.ptr = this->get();
-            for (int  i = 0; i < 4; i++) {
-                out.dims[i] = dims()[i];
-                out.strides[i] = strides()[i];
-            }
-            return out;
+            return Param<T>(this->get(), this->dims().get(), this->strides().get());
         }
 
         operator CParam<T>() const
         {
-            CParam<T> out(this->get(), this->dims().get(), this->strides().get());
-            return out;
+            return CParam<T>(this->get(), this->dims().get(), this->strides().get());
         }
 
         JIT::Node_ptr getNode();

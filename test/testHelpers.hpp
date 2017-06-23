@@ -6,6 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma once
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 
@@ -451,6 +452,28 @@ af::array cpu_randu(const af::dim4 dims)
     }
 
     return af::array(dims, (T *)&out[0]);
+}
+
+void cleanSlate()
+{
+  const size_t step_bytes = 1024;
+
+  size_t alloc_bytes, alloc_buffers;
+  size_t lock_bytes, lock_buffers;
+
+  af::deviceGC();
+
+  af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                    &lock_bytes, &lock_buffers);
+
+  ASSERT_EQ(0u, alloc_buffers);
+  ASSERT_EQ(0u, lock_buffers);
+  ASSERT_EQ(0u, alloc_bytes);
+  ASSERT_EQ(0u, lock_bytes);
+
+  af::setMemStepSize(step_bytes);
+
+  ASSERT_EQ(af::getMemStepSize(), step_bytes);
 }
 
 #pragma GCC diagnostic pop

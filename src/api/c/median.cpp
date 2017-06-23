@@ -45,7 +45,7 @@ static double median(const af_array& in)
         if (input.isFloating()) {
             return division(result[0] + result[1], 2.0);
         } else {
-            return division(result[0] + result[1], 2.0);
+            return division((float)result[0] + (float)result[1], 2.0);
         }
     }
 

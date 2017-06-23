@@ -77,7 +77,7 @@ af_err af_replace(af_array a, const af_array cond, const af_array b)
 template<typename T>
 void replace_scalar(af_array a, const af_array cond, const double b)
 {
-    select_scalar<T, true>(getWritableArray<T>(a), getArray<char>(cond), getArray<T>(a), b);
+    select_scalar<T, false>(getWritableArray<T>(a), getArray<char>(cond), getArray<T>(a), b);
 }
 
 af_err af_replace_scalar(af_array a, const af_array cond, const double b)

@@ -58,16 +58,14 @@ void transformCoordinatesTest(string pTestFile)
         // Get result
         dim_t outEl = 0;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&outEl, outArray));
-        T* outData = new T[outEl];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+        vector<T> outData(outEl);
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
 
         const float thr = 1.f;
 
         for (dim_t elIter = 0; elIter < outEl; elIter++) {
             ASSERT_LE(fabs(outData[elIter] - gold[test-1][elIter]), thr) << "at: " << elIter << std::endl;
         }
-
-        delete[] outData;
     }
 
     if(tfArray  != 0) af_release_array(tfArray);
@@ -100,19 +98,15 @@ TEST(TransformCoordinates, CPP)
     float d1 = in[1][1];
 
     af::array out = af::transformCoordinates(tf, d0, d1);
-
     af::dim4 outDims = out.dims();
 
-    float* h_out = new float[outDims[0] * outDims[1]];
-    out.host(h_out);
+    vector<float> h_out(outDims[0] * outDims[1]);
+    out.host(&h_out.front());
 
     const size_t n = gold[0].size();
-
     const float thr = 1.f;
 
     for (size_t elIter = 0; elIter < n; elIter++) {
         ASSERT_LE(fabs(h_out[elIter] - gold[0][elIter]), thr) << "at: " << elIter << std::endl;
     }
-
-    delete[] h_out;
 }

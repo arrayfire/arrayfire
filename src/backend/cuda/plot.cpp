@@ -9,7 +9,6 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <interopManager.hpp>
 #include <Array.hpp>
 #include <plot.hpp>
 #include <err_cuda.hpp>
@@ -17,6 +16,7 @@
 #include <join.hpp>
 #include <reduce.hpp>
 #include <reorder.hpp>
+#include <GraphicsResourceManager.hpp>
 
 using af::dim4;
 
@@ -27,20 +27,18 @@ using namespace gl;
 template<typename T>
 void copy_plot(const Array<T> &P, forge::Plot* plot)
 {
-    if(InteropManager::checkGraphicsInteropCapability()) {
+    if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
 
-        InteropManager& intrpMngr = InteropManager::getInstance();
+        ShrdResVector res = interopManager().getBufferResource(plot);
 
-        cudaGraphicsResource_t *resources = intrpMngr.getBufferResource(plot);
         // Map resource. Copy data to VBO. Unmap resource.
         size_t num_bytes = plot->verticesSize();
         T* d_vbo = NULL;
-        cudaGraphicsMapResources(1, resources, cuda::getStream(cuda::getActiveDeviceId()));
-        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, resources[0]);
-        cudaMemcpyAsync(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice,
-                cuda::getStream(cuda::getActiveDeviceId()));
-        cudaGraphicsUnmapResources(1, resources, cuda::getStream(cuda::getActiveDeviceId()));
+        cudaGraphicsMapResources(1, res[0].get(), cuda::getActiveStream());
+        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, *(res[0].get()));
+        cudaMemcpyAsync(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice, cuda::getActiveStream());
+        cudaGraphicsUnmapResources(1, res[0].get(), cuda::getActiveStream());
 
         CheckGL("After cuda resource copy");
 

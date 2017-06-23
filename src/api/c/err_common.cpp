@@ -22,6 +22,11 @@
 #include <graphics_common.hpp>
 #endif
 
+#ifdef AF_OPENCL
+#include <platform.hpp>
+#include <errorcodes.hpp>
+#endif
+
 using std::string;
 using std::stringstream;
 
@@ -211,6 +216,19 @@ af_err processException()
         print_error(ss.str());
         err = AF_ERR_INTERNAL;
 #endif
+#ifdef AF_OPENCL
+    } catch(const cl::Error &ex) {
+      char opencl_err_msg[1024];
+      snprintf(opencl_err_msg, sizeof(opencl_err_msg),
+               "OpenCL Error (%d): %s when calling %s", ex.err(),
+               getErrorMessage(ex.err()).c_str(), ex.what());
+      print_error(opencl_err_msg);
+      if (ex.err() == CL_MEM_OBJECT_ALLOCATION_FAILURE) {
+        err = AF_ERR_NO_MEM;
+      } else {
+        err = AF_ERR_INTERNAL;
+      }
+#endif
     } catch (...) {
         print_error(ss.str());
         err = AF_ERR_UNKNOWN;
@@ -221,7 +239,7 @@ af_err processException()
 
 std::string& get_global_error_string()
 {
-    static std::string global_error_string = std::string("");
+    thread_local std::string global_error_string = std::string("");
     return global_error_string;
 }
 

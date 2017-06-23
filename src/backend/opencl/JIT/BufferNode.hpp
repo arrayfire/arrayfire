@@ -10,6 +10,7 @@
 #pragma once
 #include "Node.hpp"
 #include <iomanip>
+#include <mutex>
 
 namespace opencl
 {
@@ -24,88 +25,70 @@ namespace JIT
         std::shared_ptr<cl::Buffer> m_data;
         KParam m_info;
         unsigned m_bytes;
+        std::once_flag m_set_data_flag;
         bool m_linear_buffer;
 
     public:
 
         BufferNode(const char *type_str,
                    const char *name_str)
-            : Node(type_str, name_str, 0)
+            : Node(type_str, name_str, 0, {})
         {
         }
 
         bool isBuffer() { return true; }
 
-        ~BufferNode()
-        {
-        }
-
         void setData(KParam info, std::shared_ptr<cl::Buffer> data, const unsigned bytes, bool is_linear)
         {
-            m_info = info;
-            m_data = data;
-            m_bytes = bytes;
-            m_linear_buffer = is_linear;
+            std::call_once(m_set_data_flag, [this, info, data, bytes, is_linear]() {
+                    m_info = info;
+                    m_data = data;
+                    m_bytes = bytes;
+                    m_linear_buffer = is_linear;
+                });
         }
 
         bool isLinear(dim_t dims[4])
         {
-            if (!m_set_is_linear) {
-                bool same_dims = true;
-                for (int i = 0; same_dims && i < 4; i++) {
-                    same_dims &= (dims[i] == m_info.dims[i]);
-                }
-                m_set_is_linear = true;
-                m_linear = m_linear_buffer && same_dims;
+            bool same_dims = true;
+            for (int i = 0; same_dims && i < 4; i++) {
+                same_dims &= (dims[i] == m_info.dims[i]);
             }
-            return m_linear;
+            return m_linear_buffer && same_dims;
         }
 
-        void genKerName(std::stringstream &kerStream)
+        void genKerName(std::stringstream &kerStream, Node_ids ids)
         {
-            if (m_gen_name) return;
-
             kerStream << "_" << m_name_str;
-            kerStream << std::setw(3) << std::setfill('0') << std::dec << m_id << std::dec;
-            m_gen_name = true;
+            kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id << std::dec;
         }
 
-        void genParams(std::stringstream &kerStream, bool is_linear)
+        void genParams(std::stringstream &kerStream, int id, bool is_linear)
         {
-            if (m_gen_param) return;
-
             if (!is_linear) {
-                kerStream << "__global " << m_type_str << " *in" << m_id
-                          << ", KParam iInfo" << m_id << ", " << "\n";
+                kerStream << "__global " << m_type_str << " *in" << id
+                          << ", KParam iInfo" << id << ", " << "\n";
             } else {
-                kerStream << "__global " << m_type_str << " *in" << m_id
-                          << ", dim_t iInfo" << m_id << "_offset, " << "\n";
+                kerStream << "__global " << m_type_str << " *in" << id
+                          << ", dim_t iInfo" << id << "_offset, " << "\n";
             }
-            m_gen_param = true;
         }
 
         int setArgs(cl::Kernel &ker, int id, bool is_linear)
         {
-            if (m_set_arg) return id;
-
             ker.setArg(id + 0, *m_data);
-
             if (!is_linear) {
                 ker.setArg(id + 1,  m_info);
             } else {
                 ker.setArg(id + 1, m_info.offset);
             }
-
-            m_set_arg = true;
             return id + 2;
         }
 
-        void genOffsets(std::stringstream &kerStream, bool is_linear)
+        void genOffsets(std::stringstream &kerStream, int id, bool is_linear)
         {
-            if (m_gen_offset) return;
-
-            std::string idx_str = std::string("int idx") + std::to_string(m_id);
-            std::string info_str = std::string("iInfo") + std::to_string(m_id);;
+            std::string idx_str = std::string("int idx") + std::to_string(id);
+            std::string info_str = std::string("iInfo") + std::to_string(id);
 
             if (!is_linear) {
                 kerStream << idx_str << " = "
@@ -121,46 +104,20 @@ namespace JIT
             } else {
                 kerStream << idx_str << " = idx + " << info_str << "_offset;" << "\n";
             }
-
-            m_gen_offset = true;
         }
 
-        void genFuncs(std::stringstream &kerStream)
+        void genFuncs(std::stringstream &kerStream, Node_ids ids)
         {
-            if (m_gen_func) return;
-
-            kerStream << m_type_str << " val" << m_id << " = "
-                      << "in" << m_id << "[idx" << m_id << "];"
+            kerStream << m_type_str << " val" << ids.id << " = "
+                      << "in" << ids.id << "[idx" << ids.id << "];"
                       << "\n";
-
-            m_gen_func = true;
-        }
-
-        int setId(int id)
-        {
-            if (m_set_id) return id;
-
-            m_id = id;
-            m_set_id = true;
-
-            return m_id + 1;
         }
 
         void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
         {
-            if (m_set_id) return;
-
             len++;
             buf_count++;
             bytes += m_bytes;
-            m_set_id = true;
-            return;
-        }
-
-
-        void resetFlags()
-        {
-            if (m_set_id) resetCommonFlags();
         }
     };
 

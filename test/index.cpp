@@ -1536,3 +1536,22 @@ TEST(Index, ISSUE_1101_MODDIMS)
         ASSERT_EQ(ha[i + st], hc[i]);
     }
 }
+
+TEST(Index, ISSUE_1846_Index_Step_Cascade)
+{
+    using namespace af;
+    array a = randu(3, 12);
+    array b = a(span, seq(0, af::end, 2));
+    array c = b(span, seq(0, af::end, 3));
+    array d = a(span, seq(0, af::end, 6));
+    EXPECT_EQ(allTrue<bool>(c == d), true);
+}
+
+TEST(Index, ISSUE_1845_Index_Step_reorder)
+{
+    using namespace af;
+    array a = randu(1,8,1);
+    array b = reorder(a,0,2,1);
+    array d = reorder(b(0,0,span),2,1,0);
+    EXPECT_EQ(allTrue<bool>(a.T() == d), true);
+}

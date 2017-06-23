@@ -55,7 +55,7 @@ void getExternals(cl_device_id &deviceId, cl_context &context, cl_command_queue 
     queue    = qId;
 }
 
-TEST(OCLExtContext, push)
+TEST(OCLExtContext, PushAndPop)
 {
     cl_device_id deviceId = NULL;
     cl_context context = NULL;
@@ -63,11 +63,16 @@ TEST(OCLExtContext, push)
 
     getExternals(deviceId, context, queue);
     int dCount = af::getDeviceCount();
-    printf("%d devices before afcl::addDevice\n", dCount);
+    printf("\n%d devices before afcl::addDevice\n\n", dCount);
     af::info();
+
     afcl::addDevice(deviceId, context, queue);
     ASSERT_EQ(true, dCount+1==af::getDeviceCount());
-    printf("%d devices after afcl::addDevice\n", af::getDeviceCount());
+    printf("\n%d devices after afcl::addDevice\n", af::getDeviceCount());
+
+    afcl::deleteDevice(deviceId, context);
+    ASSERT_EQ(true, dCount==af::getDeviceCount());
+    printf("\n%d devices after afcl::deleteDevice\n\n", af::getDeviceCount());
     af::info();
 }
 
@@ -77,8 +82,19 @@ TEST(OCLExtContext, set)
     cl_context context = NULL;
     cl_command_queue queue = NULL;
 
+    int dCount = af::getDeviceCount(); //Before user device addition
+    af::setDevice(0);
+    af::info();
+    af::array t = af::randu(5,5);
+    af_print(t);
+
     getExternals(deviceId, context, queue);
-    afcl::setDevice(deviceId, context);
+    afcl::addDevice(deviceId, context, queue);
+    printf("\nBefore setting device to newly added one\n\n");
+    af::info();
+
+    printf("\n\nBefore setting device to newly added one\n\n");
+    af::setDevice(dCount); //In 0-based index, dCount is index of newly added device
     af::info();
 
     const int x = 5;
@@ -89,23 +105,11 @@ TEST(OCLExtContext, set)
     a.host((void*)host.data());
     for (int i=0; i<s; ++i)
         ASSERT_EQ(host[i], 1.0f);
-}
 
-TEST(OCLExtContext, pop)
-{
-    cl_device_id deviceId = NULL;
-    cl_context context = NULL;
-    cl_command_queue queue = NULL;
-
-    getExternals(deviceId, context, queue);
-    int dCount = af::getDeviceCount();
-    printf("%d devices before afcl::deleteDevice\n", dCount);
+    printf("\n\nAfter reset to default set of devices\n\n");
     af::setDevice(0);
     af::info();
-    afcl::deleteDevice(deviceId, context);
-    ASSERT_EQ(true, dCount-1==af::getDeviceCount());
-    printf("%d devices after afcl::deleteDevice\n", af::getDeviceCount());
-    af::info();
+    af_print(t);
 }
 
 TEST(OCLCheck, DeviceType)

@@ -116,3 +116,9 @@ ARRAY_HAPI_DEF(af_is_floating)
 ARRAY_HAPI_DEF(af_is_integer)
 ARRAY_HAPI_DEF(af_is_bool)
 ARRAY_HAPI_DEF(af_is_sparse)
+
+af_err af_get_scalar(void* output_value, const af_array arr)
+{
+    CHECK_ARRAYS(arr);
+    return CALL(output_value, arr);
+}

@@ -61,11 +61,11 @@ void testSobelDerivatives(string pTestFile)
 
     ASSERT_EQ(AF_SUCCESS, af_sobel_operator(&dxArray, &dyArray, inArray, 3));
 
-    To *dxData = new To[dims.elements()];
-    To *dyData = new To[dims.elements()];
+    std::vector<To> dxData(dims.elements());
+    std::vector<To> dyData(dims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)dxData, dxArray));
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)dyData, dyArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)dxData.data(), dxArray));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)dyData.data(), dyArray));
 
     vector<To> currDXGoldBar = tests[0];
     vector<To> currDYGoldBar = tests[1];
@@ -79,8 +79,6 @@ void testSobelDerivatives(string pTestFile)
     }
 
     // cleanup
-    delete[] dxData;
-    delete[] dyData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(dxArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(dyArray));

@@ -35,14 +35,22 @@ namespace af
     INSTANTIATE(atan2, af_atan2)
     INSTANTIATE(hypot, af_hypot)
 
-#define WRAPPER(func)                                                   \
-    array func(const array &lhs, const double rhs)                      \
-    {                                                                   \
-        return func(lhs, constant(rhs, lhs.dims(), lhs.type()));        \
-    }                                                                   \
-    array func(const double lhs, const array &rhs)                      \
-    {                                                                   \
-        return func(constant(lhs, rhs.dims(), rhs.type()), rhs);        \
+#define WRAPPER(func)                                       \
+    array func(const array &lhs, const double rhs)          \
+    {                                                       \
+        af::dtype ty = lhs.type();                          \
+        if (lhs.iscomplex()) {                              \
+            ty = lhs.issingle() ? f32 : f64;                \
+        }                                                   \
+        return func(lhs, constant(rhs, lhs.dims(), ty));    \
+    }                                                       \
+    array func(const double lhs, const array &rhs)          \
+    {                                                       \
+        af::dtype ty = rhs.type();                          \
+        if (rhs.iscomplex()) {                              \
+            ty = rhs.issingle() ? f32 : f64;                \
+        }                                                   \
+        return func(constant(lhs, rhs.dims(), ty), rhs);    \
     }
 
     WRAPPER(min)

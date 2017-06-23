@@ -93,17 +93,14 @@ void stdevDimTest(string pFileName, dim_t dim=-1)
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
 
     size_t nElems    = currGoldBar.size();
-    outType *outData = new outType[nElems];
+    std::vector<outType> outData(nElems);
 
-    b.host((void*)outData);
+    b.host((void*)outData.data());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(::real(currGoldBar[elIter]), ::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
         ASSERT_NEAR(::imag(currGoldBar[elIter]), ::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
     }
-
-    // cleanup
-    delete[] outData;
 }
 
 TYPED_TEST(StandardDev, Dim0)
@@ -160,17 +157,14 @@ void stdevDimIndexTest(string pFileName, dim_t dim=-1)
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
 
     size_t nElems    = currGoldBar.size();
-    outType *outData = new outType[nElems];
+    std::vector<outType> outData(nElems);
 
-    c.host((void*)outData);
+    c.host((void*)outData.data());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(::real(currGoldBar[elIter]), ::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
         ASSERT_NEAR(::imag(currGoldBar[elIter]), ::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
     }
-
-    // cleanup
-    delete[] outData;
 }
 
 TYPED_TEST(StandardDev, IndexedArrayDim0)

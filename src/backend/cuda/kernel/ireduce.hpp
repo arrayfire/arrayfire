@@ -16,9 +16,7 @@
 #include <debug_cuda.hpp>
 #include "config.hpp"
 #include <memory.hpp>
-#include <boost/scoped_array.hpp>
-
-using boost::scoped_array;
+#include <memory>
 
 namespace cuda
 {
@@ -189,7 +187,7 @@ namespace kernel
     template<typename T, af_op_t op, int dim, bool is_first>
     void ireduce_dim_launcher(Param<T> out, uint *olptr,
                              CParam<T> in, const uint *ilptr,
-                             const uint threads_y, const uint blocks_dim[4])
+                             const uint threads_y, const dim_t blocks_dim[4])
     {
         dim3 threads(THREADS_X, threads_y);
 
@@ -220,7 +218,7 @@ namespace kernel
         uint threads_y = std::min(THREADS_Y, nextpow2(in.dims[dim]));
         uint threads_x = THREADS_X;
 
-        uint blocks_dim[] = {divup(in.dims[0], threads_x),
+        dim_t blocks_dim[] = {divup(in.dims[0], threads_x),
                              in.dims[1], in.dims[2], in.dims[3]};
 
         blocks_dim[dim] = divup(in.dims[dim], threads_y * REPEAT);
@@ -443,6 +441,7 @@ namespace kernel
     template<typename T, af_op_t op>
     T ireduce_all(uint *idx, CParam<T> in)
     {
+        using std::unique_ptr;
         int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
 
         // FIXME: Use better heuristics to get to the optimum number
@@ -486,16 +485,16 @@ namespace kernel
             tlptr = memAlloc<uint>(tmp_elements);
             ireduce_first_launcher<T, op, true>(tmp, tlptr, in, NULL, blocks_x, blocks_y, threads_x);
 
-            scoped_array<T>       h_ptr(new T[tmp_elements]);
-            scoped_array<uint>    h_lptr(new uint[tmp_elements]);
+            unique_ptr<T[]>       h_ptr(new T[tmp_elements]);
+            unique_ptr<uint[]>    h_lptr(new uint[tmp_elements]);
             T*      h_ptr_raw = h_ptr.get();
             uint*   h_lptr_raw = h_lptr.get();
 
             CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(T),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+                       cudaMemcpyDeviceToHost, cuda::getActiveStream()));
             CUDA_CHECK(cudaMemcpyAsync(h_lptr_raw, tlptr, tmp_elements * sizeof(uint),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                       cudaMemcpyDeviceToHost, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
             memFree(tmp.ptr);
             memFree(tlptr);
 
@@ -520,11 +519,11 @@ namespace kernel
             return Op.m_val;
         } else {
 
-            scoped_array<T> h_ptr(new T[in_elements]);
+            unique_ptr<T[]> h_ptr(new T[in_elements]);
             T* h_ptr_raw = h_ptr.get();
             CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, in.ptr, in_elements * sizeof(T),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+                       cudaMemcpyDeviceToHost, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
             MinMaxOp<op, T> Op(h_ptr_raw[0], 0);
             for (int i = 1; i < in_elements; i++) {

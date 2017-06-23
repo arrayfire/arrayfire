@@ -74,44 +74,105 @@ void dotTest(string pTestFile, const int resultIdx,
 
     vector<T> goldData = tests[resultIdx];
     size_t nElems      = goldData.size();
-    T *outData      = new T[nElems];
+    vector<T> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, out));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), out));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(abs(goldData[elIter]), abs(outData[elIter]), 0.03)<< "at: " << elIter<< std::endl;
     }
 
-    delete[] outData;
     ASSERT_EQ(AF_SUCCESS, af_release_array(a));
     ASSERT_EQ(AF_SUCCESS, af_release_array(b));
     ASSERT_EQ(AF_SUCCESS, af_release_array(out));
 }
 
+template<typename T>
+void compare(double rval, double ival, T gold)
+{
+    ASSERT_NEAR(gold, rval, 0.03);
+}
+
+template<>
+void compare<cfloat>(double rval, double ival, cfloat gold)
+{
+    ASSERT_NEAR(gold.real, rval, 0.03);
+    ASSERT_NEAR(gold.imag, ival, 0.03);
+}
+
+template<>
+void compare<cdouble>(double rval, double ival, cdouble gold)
+{
+    ASSERT_NEAR(gold.real, rval, 0.03);
+    ASSERT_NEAR(gold.imag, ival, 0.03);
+}
+
+template<typename T>
+void dotAllTest(string pTestFile, const int resultIdx,
+          const af_mat_prop optLhs = AF_MAT_NONE, const af_mat_prop optRhs = AF_MAT_NONE)
+{
+    if (noDoubleTests<T>()) return;
+
+    using af::dim4;
+
+    vector<dim4>        numDims;
+    vector<vector<T> >  in;
+    vector<vector<T> >  tests;
+
+    readTests<T, T, T>(pTestFile, numDims, in, tests);
+
+    dim4 aDims     = numDims[0];
+    dim4 bDims     = numDims[1];
+
+    af_array a = 0;
+    af_array b = 0;
+
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &(in[0].front()),
+                aDims.ndims(), aDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&b, &(in[1].front()),
+                bDims.ndims(), bDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+
+    double rval = 0, ival = 0;
+    ASSERT_EQ(AF_SUCCESS, af_dot_all(&rval, &ival, a, b, optLhs, optRhs));
+
+    vector<T> goldData = tests[resultIdx];
+
+    compare<T>(rval, ival, goldData[0]);
+
+    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(b));
+}
+
+
 #define INSTANTIATEF(SIZE, FILENAME)                                                            \
 TYPED_TEST(DotF, DotF_##SIZE)                                                                   \
 {                                                                                               \
     dotTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 0);                            \
+    dotAllTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 0);                         \
 }                                                                                               \
 
 
-#define INSTANTIATEC(SIZE, FILENAME)                                                            \
-TYPED_TEST(DotC, DotC_CC_##SIZE)                                                                \
-{                                                                                               \
-    dotTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 0, AF_MAT_CONJ, AF_MAT_CONJ);  \
-}                                                                                               \
-TYPED_TEST(DotC, DotC_UU_##SIZE)                                                                \
-{                                                                                               \
-    dotTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 1, AF_MAT_NONE, AF_MAT_NONE);  \
-}                                                                                               \
-TYPED_TEST(DotC, DotC_CU_##SIZE)                                                                \
-{                                                                                               \
-    dotTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 2, AF_MAT_CONJ, AF_MAT_NONE);  \
-}                                                                                               \
-TYPED_TEST(DotC, DotC_UC_##SIZE)                                                                \
-{                                                                                               \
-    dotTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 3, AF_MAT_NONE, AF_MAT_CONJ);  \
-}                                                                                               \
+#define INSTANTIATEC(SIZE, FILENAME)                                                                \
+TYPED_TEST(DotC, DotC_CC_##SIZE)                                                                    \
+{                                                                                                   \
+    dotTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 0, AF_MAT_CONJ, AF_MAT_CONJ);      \
+    dotAllTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 0, AF_MAT_CONJ, AF_MAT_CONJ);   \
+}                                                                                                   \
+TYPED_TEST(DotC, DotC_UU_##SIZE)                                                                    \
+{                                                                                                   \
+    dotTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 1, AF_MAT_NONE, AF_MAT_NONE);      \
+    dotAllTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 1, AF_MAT_NONE, AF_MAT_NONE);   \
+}                                                                                                   \
+TYPED_TEST(DotC, DotC_CU_##SIZE)                                                                    \
+{                                                                                                   \
+    dotTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 2, AF_MAT_CONJ, AF_MAT_NONE);      \
+    dotAllTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 2, AF_MAT_CONJ, AF_MAT_NONE);   \
+}                                                                                                   \
+TYPED_TEST(DotC, DotC_UC_##SIZE)                                                                    \
+{                                                                                                   \
+    dotTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 3, AF_MAT_NONE, AF_MAT_CONJ);      \
+    dotAllTest<TypeParam>(string(TEST_DIR"/blas/"#FILENAME".test"), 3, AF_MAT_NONE, AF_MAT_CONJ);   \
+}                                                                                                   \
 
 
 INSTANTIATEF(1000   , dot_f_1000);
@@ -143,16 +204,14 @@ TEST(DotF, CPP)
     array out = dot(a, b, AF_MAT_CONJ, AF_MAT_NONE);
 
     vector<float> goldData = tests[0];
-    size_t nElems         = goldData.size();
-    float *outData       = new float[nElems];
+    size_t nElems = goldData.size();
+    vector<float> outData(nElems);
 
-    out.host(outData);
+    out.host(&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(goldData[elIter], outData[elIter]) << "at: " << elIter<< std::endl;
     }
-
-    delete[] outData;
 }
 
 TEST(DotCCU, CPP)
@@ -176,13 +235,59 @@ TEST(DotCCU, CPP)
 
     vector<cfloat> goldData = tests[2];
     size_t nElems         = goldData.size();
-    cfloat *outData       = new cfloat[nElems];
+    vector<cfloat> outData(nElems);
 
-    out.host(outData);
+    out.host(&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(goldData[elIter], outData[elIter]) << "at: " << elIter<< std::endl;
     }
+}
 
-    delete[] outData;
+TEST(DotAllF, CPP)
+{
+    using af::array;
+    using af::dim4;
+
+    vector<dim4>         numDims;
+    vector<vector<float> >  in;
+    vector<vector<float> >  tests;
+
+    readTests<float, float, float>(TEST_DIR"/blas/dot_f_1000.test", numDims, in, tests);
+
+    dim4 aDims     = numDims[0];
+    dim4 bDims     = numDims[1];
+
+    array a(aDims, &(in[0].front()));
+    array b(bDims, &(in[1].front()));
+
+    float out = af::dot<float>(a, b, AF_MAT_CONJ, AF_MAT_NONE);
+
+    vector<float> goldData = tests[0];
+
+    ASSERT_EQ(goldData[0], out);
+}
+
+TEST(DotAllCCU, CPP)
+{
+    using af::array;
+    using af::dim4;
+
+    vector<dim4>         numDims;
+    vector<vector<cfloat> >  in;
+    vector<vector<cfloat> >  tests;
+
+    readTests<cfloat, cfloat, cfloat>(TEST_DIR"/blas/dot_c_1000.test", numDims, in, tests);
+
+    dim4 aDims     = numDims[0];
+    dim4 bDims     = numDims[1];
+
+    array a(aDims, &(in[0].front()));
+    array b(bDims, &(in[1].front()));
+
+    cfloat out = af::dot<cfloat>(a, b, AF_MAT_CONJ, AF_MAT_NONE);
+
+    vector<cfloat> goldData = tests[2];
+
+    ASSERT_EQ(goldData[0], out);
 }

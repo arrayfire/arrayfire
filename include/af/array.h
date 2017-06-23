@@ -108,6 +108,7 @@ namespace af
             dim_t dims(unsigned dim) const;
             unsigned numdims() const;
             size_t bytes() const;
+            size_t allocated() const;
             array copy() const;
             bool isempty() const;
             bool isscalar() const;
@@ -587,6 +588,12 @@ namespace af
         size_t bytes() const;
 
         /**
+           Get the size of the array in memory. This will return the parent's
+           bytes() if the array is indexed.
+        */
+        size_t allocated() const;
+
+        /**
            Perform deep copy of the array
         */
         array copy() const;
@@ -702,7 +709,7 @@ namespace af
         /**
             \brief This operator returns a reference of the original array at a given coordinate.
 
-            You can pass \ref af::seq, \ref af::array, or an int as it's parameters.
+            You can pass \ref af::seq, \ref af::array, or an int as its parameters.
             These references can be used for assignment or returning references
             to \ref af::array objects.
 
@@ -1492,7 +1499,7 @@ extern "C" {
     AFAPI af_err af_get_type(af_dtype *type, const af_array arr);
 
     /**
-        \brief Gets the dimseions of an array.
+        \brief Gets the dimensions of an array.
 
         \param[out] d0 is the output that contains the size of first dimension of \p arr
         \param[out] d1 is the output that contains the size of second dimension of \p arr
@@ -1661,10 +1668,23 @@ extern "C" {
         \returns error codes
     */
     AFAPI af_err af_is_sparse       (bool *result, const af_array arr);
+#endif
+
+#if AF_API_VERSION >= 35
+    /**
+        \brief Get first element from an array
+
+        \param[out] output_value is the element requested
+        \param[in] arr is the input array
+        \return \ref AF_SUCCESS if the execution completes properly
+    */
+    AFAPI af_err af_get_scalar(void* output_value, const af_array arr);
+#endif
+
     /**
         @}
     */
-#endif
+
 #ifdef __cplusplus
 }
 #endif

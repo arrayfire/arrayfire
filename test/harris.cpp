@@ -101,22 +101,24 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size)
 
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, x));
 
-        float * outX           = new float[gold[0].size()];
-        float * outY           = new float[gold[1].size()];
-        float * outScore       = new float[gold[2].size()];
-        float * outOrientation = new float[gold[3].size()];
-        float * outSize        = new float[gold[4].size()];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outX, x));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outY, y));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outScore, score));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outOrientation, orientation));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outSize, size));
+        vector<float> outX           (gold[0].size());
+        vector<float> outY           (gold[1].size());
+        vector<float> outScore       (gold[2].size());
+        vector<float> outOrientation (gold[3].size());
+        vector<float> outSize        (gold[4].size());
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outX.front(), x));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outY.front(), y));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outScore.front(), score));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outOrientation.front(), orientation));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outSize.front(), size));
 
         vector<feat_t> out_feat;
-        array_to_feat(out_feat, outX, outY, outScore, outOrientation, outSize, n);
+        array_to_feat(out_feat, &outX.front(), &outY.front(),
+                      &outScore.front(), &outOrientation.front(), &outSize.front(), n);
 
         vector<feat_t> gold_feat;
-        array_to_feat(gold_feat, &gold[0].front(), &gold[1].front(), &gold[2].front(), &gold[3].front(), &gold[4].front(), gold[0].size());
+        array_to_feat(gold_feat, &gold[0].front(), &gold[1].front(),
+                      &gold[2].front(), &gold[3].front(), &gold[4].front(), gold[0].size());
 
         std::sort(out_feat.begin(), out_feat.end(), feat_cmp);
         std::sort(gold_feat.begin(), gold_feat.end(), feat_cmp);
@@ -137,12 +139,6 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size)
         ASSERT_EQ(AF_SUCCESS, af_release_array(score));
         ASSERT_EQ(AF_SUCCESS, af_release_array(orientation));
         ASSERT_EQ(AF_SUCCESS, af_release_array(size));
-
-        delete [] outX;
-        delete [] outY;
-        delete [] outScore;
-        delete [] outOrientation;
-        delete [] outSize;
     }
 }
 
@@ -179,22 +175,26 @@ TEST(FloatHarris, CPP)
 
     af::features out = harris(in, 500, 1e5f, 0.0f, 3, 0.04f);
 
-    float * outX           = new float[gold[0].size()];
-    float * outY           = new float[gold[1].size()];
-    float * outScore       = new float[gold[2].size()];
-    float * outOrientation = new float[gold[3].size()];
-    float * outSize        = new float[gold[4].size()];
-    out.getX().host(outX);
-    out.getY().host(outY);
-    out.getScore().host(outScore);
-    out.getOrientation().host(outOrientation);
-    out.getSize().host(outSize);
+    vector<float> outX           (gold[0].size());
+    vector<float> outY           (gold[1].size());
+    vector<float> outScore       (gold[2].size());
+    vector<float> outOrientation (gold[3].size());
+    vector<float> outSize        (gold[4].size());
+    out.getX().host(&outX.front());
+    out.getY().host(&outY.front());
+    out.getScore().host(&outScore.front());
+    out.getOrientation().host(&outOrientation.front());
+    out.getSize().host(&outSize.front());
 
     vector<feat_t> out_feat;
-    array_to_feat(out_feat, outX, outY, outScore, outOrientation, outSize, out.getNumFeatures());
+    array_to_feat(out_feat, &outX.front(), &outY.front(),
+                  &outScore.front(), &outOrientation.front(), &outSize.front(),
+                  out.getNumFeatures());
 
     vector<feat_t> gold_feat;
-    array_to_feat(gold_feat, &gold[0].front(), &gold[1].front(), &gold[2].front(), &gold[3].front(), &gold[4].front(), gold[0].size());
+    array_to_feat(gold_feat, &gold[0].front(), &gold[1].front(),
+                  &gold[2].front(), &gold[3].front(), &gold[4].front(),
+                  gold[0].size());
 
     std::sort(out_feat.begin(), out_feat.end(), feat_cmp);
     std::sort(gold_feat.begin(), gold_feat.end(), feat_cmp);
@@ -206,10 +206,4 @@ TEST(FloatHarris, CPP)
         ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << std::endl;
         ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << std::endl;
     }
-
-    delete[] outX;
-    delete[] outY;
-    delete[] outScore;
-    delete[] outOrientation;
-    delete[] outSize;
 }
