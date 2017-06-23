@@ -153,12 +153,6 @@ ArrayFire development is funded by ArrayFire LLC and several third parties,
 please see the list of [acknowledgements](ACKNOWLEDGEMENTS.md) for further
 details.
 
-We would like to thank the [JuliaComputing](https://github.com/JuliaComputing)
-guys as well as [Gabor Mezo](https://github.com/unbornchikken) for their
-diligent work on the [Julia](https://github.com/JuliaComputing/ArrayFire.jl)
-and [NodeJS](https://github.com/arrayfire/arrayfire-js) wrappers,
-respectively.
-
 ## Support and Contact Info [![Join the chat at https://gitter.im/arrayfire/arrayfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arrayfire/arrayfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 * [Google Groups](https://groups.google.com/forum/#!forum/arrayfire-users)
