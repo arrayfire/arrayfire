@@ -108,12 +108,22 @@ INCLUDE_DIRECTORIES(${CLFFT_INCLUDE_DIRS})
 LINK_DIRECTORIES(${CLFFT_LIBRARY_DIR})
 
 OPTION(USE_SYSTEM_BOOST_COMPUTE "Use system BoostCompute" OFF)
-IF(USE_SYSTEM_BOOST_COMPUTE)
-    IF(Boost_VERSION VERSION_LESS "1.61")
+
+ADD_DEFINITIONS(-DBOOST_ALL_NO_LIB)
+SET(Boost_USE_STATIC_LIBS OFF)
+FIND_PACKAGE(Boost REQUIRED)
+
+# If Boost version is 1.61.00, skip finding boost compute explicitly
+# as BoostCompute is merged into Boost starting that version.
+IF(Boost_VERSION VERSION_LESS 106100)
+    MESSAGE(STATUS "Boost version is less than 1.61.00")
+    IF(USE_SYSTEM_BOOST_COMPUTE)
+        MESSAGE(STATUS "Using system boost compute")
         FIND_PACKAGE(BoostCompute REQUIRED)
+    ELSE()
+        MESSAGE(STATUS "Building boost compute")
+        INCLUDE(build_boost_compute)
     ENDIF()
-ELSE()
-    INCLUDE(build_boost_compute)
 ENDIF()
 
 SET( cl_kernel_headers
@@ -128,6 +138,7 @@ INCLUDE_DIRECTORIES(
     ${CLBLAST_INCLUDE_DIRS}
     ${CLBLAS_INCLUDE_DIRS}
     ${CLFFT_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
     ${BoostCompute_INCLUDE_DIRS}
     ${CBLAS_INCLUDE_DIR}
     )
