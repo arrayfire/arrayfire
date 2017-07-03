@@ -126,32 +126,31 @@ TEST(Internal, Linear)
 TEST(Internal, Allocated)
 {
     af::array a = af::randu(10, 8);
-    const size_t aBytes = a.bytes();
+    size_t a_allocated = a.allocated();
+    size_t a_bytes = a.bytes();
 
     // b is just pointing to same underlying data
     // b is an owner;
     af::array b = a;
-    ASSERT_EQ(b.allocated(), aBytes);
-    ASSERT_EQ(b.bytes(), aBytes);
+    ASSERT_EQ(b.allocated(), a_allocated);
+    ASSERT_EQ(b.bytes(), a_bytes);
 
     // C is considered sub array
     // C will not be an owner
     af::array c = a(af::span);
-    ASSERT_EQ(c.allocated(), aBytes);
-    ASSERT_EQ(c.bytes(), aBytes);
+    ASSERT_EQ(c.allocated(), a_allocated);
+    ASSERT_EQ(c.bytes(), a_bytes);
 
     af::array d = a.col(1);
-    ASSERT_EQ(d.allocated(), aBytes);
-    ASSERT_EQ(d.bytes(), (size_t)10 * 4);
+    ASSERT_EQ(d.allocated(), a_allocated);
 
     a = af::randu(20);
     b = af::randu(20);
 
     // Even though a, b are reallocated and c, d are not owners
     // the allocated and bytes should remain the same
-    ASSERT_EQ(c.allocated(), aBytes);
-    ASSERT_EQ(c.bytes(), aBytes);
+    ASSERT_EQ(c.allocated(), a_allocated);
+    ASSERT_EQ(c.bytes(), a_bytes);
 
-    ASSERT_EQ(d.allocated(), aBytes);
-    ASSERT_EQ(d.bytes(), (size_t)10 * 4);
+    ASSERT_EQ(d.allocated(), a_allocated);
 }
