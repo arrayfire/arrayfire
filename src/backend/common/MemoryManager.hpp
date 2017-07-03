@@ -222,6 +222,15 @@ class MemoryManager
         return ptr;
     }
 
+    size_t allocated(void *ptr)
+    {
+        if (!ptr) return 0;
+        memory_info& current = this->getCurrentMemoryInfo();
+        locked_iter iter = current.locked_map.find((void *)ptr);
+        if (iter == current.locked_map.end()) return 0;
+        return (iter->second).bytes;
+    }
+
     void unlock(void *ptr, bool user_unlock)
     {
         // Shortcut for empty arrays
