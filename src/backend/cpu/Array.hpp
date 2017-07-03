@@ -194,7 +194,13 @@ namespace cpu
 
         size_t getAllocatedBytes() const
         {
-            return data_dims.elements() * sizeof(T);
+            if (!isReady()) return 0;
+            size_t bytes = memoryManager().allocated(data.get());
+            // External device poitner
+            if (bytes == 0 && data.get()) {
+                return data_dims.elements() * sizeof(T);
+            }
+            return  bytes;
         }
 
         T* device();
