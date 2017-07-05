@@ -23,6 +23,7 @@ namespace JIT
 
     class Node;
     using std::shared_ptr;
+    using std::vector;
     typedef shared_ptr<Node> Node_ptr;
 
     typedef struct
@@ -31,7 +32,7 @@ namespace JIT
         std::vector<int> child_ids;
     } Node_ids;
 
-    typedef std::unordered_map<Node *, Node_ids> Node_map_t;
+    typedef std::unordered_map<Node *, int> Node_map_t;
     typedef Node_map_t::iterator Node_map_iter;
 
     class Node
@@ -52,17 +53,24 @@ namespace JIT
               m_children(children)
         {}
 
-        void getNodesMap(Node_map_t &node_map)
+        int getNodesMap(Node_map_t &node_map,
+                        vector<Node *> &full_nodes,
+                        vector<Node_ids> &full_ids)
         {
-            if (node_map.find(this) == node_map.end()) {
+            auto iter = node_map.find(this);
+            if (iter == node_map.end()) {
                 Node_ids ids;
                 for (const auto &child : m_children) {
-                    child->getNodesMap(node_map);
-                    ids.child_ids.push_back(node_map[child.get()].id);
+                    int id = child->getNodesMap(node_map, full_nodes, full_ids);
+                    ids.child_ids.push_back(id);
                 }
                 ids.id = node_map.size();
-                node_map[this] = ids;
+                node_map[this] = ids.id;
+                full_nodes.push_back(this);
+                full_ids.push_back(ids);
+                return ids.id;
             }
+            return iter->second;
         }
 
         virtual void genKerName(std::stringstream &kerStream, Node_ids ids) {}

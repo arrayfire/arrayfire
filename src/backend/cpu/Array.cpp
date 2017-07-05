@@ -217,7 +217,8 @@ createNodeArray(const dim4 &dims, Node_ptr node)
                 Node *n = node.get();
 
                 TNJ::Node_map_t nodes_map;
-                n->getNodesMap(nodes_map);
+                std::vector<TNJ::Node *> full_nodes;
+                n->getNodesMap(nodes_map, full_nodes);
                 unsigned length =0, buf_count = 0, bytes = 0;
                 for(auto &entry : nodes_map) {
                     Node *node = entry.first;

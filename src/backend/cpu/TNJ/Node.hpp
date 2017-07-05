@@ -21,6 +21,7 @@ namespace TNJ
 
     class Node;
     using std::shared_ptr;
+    using std::vector;
     typedef shared_ptr<Node> Node_ptr;
 
     typedef std::unordered_map<Node *, int> Node_map_t;
@@ -40,15 +41,19 @@ namespace TNJ
             m_children(children)
         {}
 
-        void getNodesMap(Node_map_t &node_map)
+        int getNodesMap(Node_map_t &node_map, vector<Node *> &full_nodes)
         {
-            if (node_map.find(this) == node_map.end()) {
+            auto iter = node_map.find(this);
+            if (iter == node_map.end()) {
                 for (const auto &child : m_children) {
-                    child->getNodesMap(node_map);
+                    child->getNodesMap(node_map, full_nodes);
                 }
                 int id = node_map.size();
                 node_map[this] = id;
+                full_nodes.push_back(this);
+                return id;
             }
+            return iter->second;
         }
 
         int getHeight() { return m_height; }
