@@ -179,6 +179,34 @@ TYPED_TEST(Diff2,InvalidArgs)
     diff2ArgsTest<TypeParam>(string(TEST_DIR"/diff2/basic0.test"));
 }
 
+TEST(Diff2, DiffLargeDim)
+{
+    const size_t largeDim = 65535 * 32 + 1;
+
+    af::deviceGC();
+    {
+        af::array in = af::constant(1, largeDim);
+        af::array diff = af::diff2(in, 0);
+        float s = af::sum<float>(diff, 1);
+        ASSERT_EQ(s, 0.f);
+
+        in = af::constant(1, 1, largeDim);
+        diff = af::diff2(in, 1);
+        s = af::sum<float>(diff, 1);
+        ASSERT_EQ(s, 0.f);
+
+        in = af::constant(1, 1, 1, largeDim);
+        diff = af::diff2(in, 2);
+        s = af::sum<float>(diff, 1);
+        ASSERT_EQ(s, 0.f);
+
+        in = af::constant(1, 1, 1, 1, largeDim);
+        diff = af::diff2(in, 3);
+        s = af::sum<float>(diff, 1);
+        ASSERT_EQ(s, 0.f);
+    }
+}
+
 ////////////////////////////////// CPP ////////////////////////////////////////
 //
 TEST(Diff2, CPP)

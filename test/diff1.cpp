@@ -182,6 +182,34 @@ TYPED_TEST(Diff1,InvalidArgs)
     diff1ArgsTest<TypeParam>(string(TEST_DIR"/diff1/basic0.test"));
 }
 
+TEST(Diff1, DiffLargeDim)
+{
+    const size_t largeDim = 65535 * 32 + 1;
+
+    af::deviceGC();
+    {
+        af::array in = af::constant(1, largeDim);
+        af::array diff = af::diff1(in, 0);
+        float s = af::sum<float>(diff, 1);
+        ASSERT_EQ(s, 0.f);
+
+        in = af::constant(1, 1, largeDim);
+        diff = af::diff1(in, 1);
+        s = af::sum<float>(diff, 1);
+        ASSERT_EQ(s, 0.f);
+
+        in = af::constant(1, 1, 1, largeDim);
+        diff = af::diff1(in, 2);
+        s = af::sum<float>(diff, 1);
+        ASSERT_EQ(s, 0.f);
+
+        in = af::constant(1, 1, 1, 1, largeDim);
+        diff = af::diff1(in, 3);
+        s = af::sum<float>(diff, 1);
+        ASSERT_EQ(s, 0.f);
+    }
+}
+
 ////////////////////////////////////// CPP ////////////////////////////////////
 //
 TEST(Diff1, CPP)
@@ -195,7 +223,6 @@ TEST(Diff1, CPP)
     vector<vector<float> >   tests;
     readTests<float,float,int>(string(TEST_DIR"/diff1/matrix0.test"),numDims,in,tests);
     af::dim4 dims       = numDims[0];
-
 
     af::array input(dims, &(in[0].front()));
     af::array output = af::diff1(input, dim);
