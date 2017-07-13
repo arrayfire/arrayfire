@@ -241,3 +241,44 @@ TEST(Select, Issue_1730_scalar)
         }
     }
 }
+
+TEST(Select, LargeDim)
+{
+    const size_t largeDim = 65535 * 32 + 1;
+
+    af::array a    = af::constant(1, largeDim);
+    af::array b    = af::constant(0, largeDim);
+    af::array cond = af::constant(0, largeDim, b8);
+
+    af::array sel  = af::select(cond, a, b);
+    float sum = af::sum<float>(sel);
+
+    ASSERT_EQ(sum, 0.f);
+
+    a    = af::constant(1, 1, largeDim);
+    b    = af::constant(0, 1, largeDim);
+    cond = af::constant(0, 1, largeDim, b8);
+
+    sel  = af::select(cond, a, b);
+    sum = af::sum<float>(sel);
+
+    ASSERT_EQ(sum, 0.f);
+
+    a    = af::constant(1, 1, 1, largeDim);
+    b    = af::constant(0, 1, 1, largeDim);
+    cond = af::constant(0, 1, 1, largeDim, b8);
+
+    sel  = af::select(cond, a, b);
+    sum = af::sum<float>(sel);
+
+    ASSERT_EQ(sum, 0.f);
+
+    a    = af::constant(1, 1, 1, 1, largeDim);
+    b    = af::constant(0, 1, 1, 1, largeDim);
+    cond = af::constant(0, 1, 1, 1, largeDim, b8);
+
+    sel  = af::select(cond, a, b);
+    sum = af::sum<float>(sel);
+
+    ASSERT_EQ(sum, 0.f);
+}
