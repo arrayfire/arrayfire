@@ -9,6 +9,7 @@
 
 #include <util.hpp>
 #include <memory.hpp>
+#include <Param.hpp>
 
 //FIXME: Is there a better way to check for std::future not being supported ?
 #if defined(AF_DISABLE_CPU_ASYNC) || (defined(__GNUC__) && (__GCC_ATOMIC_INT_LOCK_FREE < 2 || __GCC_ATOMIC_POINTER_LOCK_FREE < 2))
@@ -47,30 +48,6 @@ typedef async_queue queue_impl;
 #pragma once
 
 namespace cpu {
-
-template<typename T> class Array;
-template<typename T> class Param;
-template<typename T> class CParam;
-
-template<typename T>
-T toParam(const T &val)
-{
-    return val;
-}
-
-
-template<typename T>
-Param<T> toParam(Array<T> &val)
-{
-    return (Param<T>)(val);
-}
-
-
-template<typename T>
-CParam<T> toParam(const Array<T> &val)
-{
-    return (CParam<T>)(val);
-}
 
 /// Wraps the async_queue class
 class queue

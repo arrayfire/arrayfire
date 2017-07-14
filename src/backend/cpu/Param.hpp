@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2017, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -74,5 +74,27 @@ public:
         return CParam<T>(const_cast<T *>(ptr), dims, strides);
     }
 };
+
+template<typename T> class Array;
+
+template<typename T>
+T toParam(const T &val)
+{
+    return val;
+}
+
+
+template<typename T>
+Param<T> toParam(Array<T> &val)
+{
+    return (Param<T>)(val);
+}
+
+
+template<typename T>
+CParam<T> toParam(const Array<T> &val)
+{
+    return (CParam<T>)(val);
+}
 
 }
