@@ -244,13 +244,15 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
         int ldb = right.strides[1];
         int ldc = output.strides[1];
 
-        int *pB = rowIdx.get();
-        int *pE = rowIdx.get() + 1;
+        int *pB = const_cast<int *>(rowIdx.get());
+        int *pE = pB + 1;
+        T *vptr = const_cast<T *>(values.get());
 
         sparse_matrix_t csrLhs;
         create_csr_func<T>()(&csrLhs, SPARSE_INDEX_BASE_ZERO, sdim0, sdim1,
-                             pB, pE, colIdx.get(),
-                             reinterpret_cast<ptr_type<T>>(values.get()));
+                             pB, pE,
+                             const_cast<int *>(colIdx.get()),
+                             reinterpret_cast<ptr_type<T>>(vptr));
 
         struct matrix_descr descrLhs;
         descrLhs.type = SPARSE_MATRIX_TYPE_GENERAL;
