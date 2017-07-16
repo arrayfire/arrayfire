@@ -77,12 +77,12 @@ void transform(Param<T> output, CParam<T> input,
     typedef typename dtype_traits<T>::base_type BT;
     typedef wtype_t<BT> WT;
 
-    const af::dim4 idims    = input.dims;
-    const af::dim4 odims    = output.dims;
-    const af::dim4 tdims    = transform.dims;
-    const af::dim4 tstrides = transform.strides;
-    const af::dim4 istrides = input.strides;
-    const af::dim4 ostrides = output.strides;
+    const af::dim4 idims    = input.dims();
+    const af::dim4 odims    = output.dims();
+    const af::dim4 tdims    = transform.dims();
+    const af::dim4 tstrides = transform.strides();
+    const af::dim4 istrides = input.strides();
+    const af::dim4 ostrides = output.strides();
 
     T * out = output.get();
     const float* tf = transform.get();

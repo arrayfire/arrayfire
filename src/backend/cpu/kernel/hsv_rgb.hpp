@@ -19,9 +19,9 @@ namespace kernel
 template<typename T>
 void hsv2rgb(Param<T> out, CParam<T> in)
 {
-    const af::dim4 dims    = in.dims;
-    const af::dim4 strides = in.strides;
-    dim_t obStride  = out.strides[3];
+    const af::dim4 dims    = in.dims();
+    const af::dim4 strides = in.strides();
+    dim_t obStride  = out.strides(3);
     dim_t coff      = strides[2];
     dim_t bCount    = dims[3];
 
@@ -71,9 +71,9 @@ void hsv2rgb(Param<T> out, CParam<T> in)
 template<typename T>
 void rgb2hsv(Param<T> out, CParam<T> in)
 {
-    const af::dim4 dims    = in.dims;
-    const af::dim4 strides = in.strides;
-    af::dim4 oStrides      = out.strides;
+    const af::dim4 dims    = in.dims();
+    const af::dim4 strides = in.strides();
+    af::dim4 oStrides      = out.strides();
     dim_t bCount    = dims[3];
 
     for(dim_t b=0; b<bCount; ++b) {

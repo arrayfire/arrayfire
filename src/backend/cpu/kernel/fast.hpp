@@ -87,7 +87,7 @@ void locate_features(CParam<T> in, Param<float> score,
                      unsigned const arc_length, unsigned const nonmax,
                      unsigned const max_feat, unsigned const edge)
 {
-    af::dim4 in_dims = in.dims;
+    af::dim4 in_dims = in.dims();
     T const * in_ptr = in.get();
 
     for (int y = edge; y < (int)(in_dims[0] - edge); y++) {
@@ -182,7 +182,7 @@ void non_maximal(CParam<float> score, CParam<float> x_in, CParam<float> y_in,
     float const * x_in_ptr = x_in.get();
     float const * y_in_ptr = y_in.get();
 
-    af::dim4 score_dims = score.dims;
+    af::dim4 score_dims = score.dims();
 
     for (unsigned k = 0; k < total_feat; k++) {
         unsigned x = static_cast<unsigned>(round(x_in_ptr[k]));

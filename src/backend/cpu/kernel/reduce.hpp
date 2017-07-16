@@ -25,9 +25,9 @@ struct reduce_dim
         static const int D1 = D - 1;
         static reduce_dim<op, Ti, To, D1> reduce_dim_next;
 
-        const af::dim4 ostrides = out.strides;
-        const af::dim4 istrides = in.strides;
-        const af::dim4 odims    = out.dims;
+        const af::dim4 ostrides = out.strides();
+        const af::dim4 istrides = in.strides();
+        const af::dim4 odims    = out.dims();
 
         for (dim_t i = 0; i < odims[D1]; i++) {
             reduce_dim_next(out, outOffset + i * ostrides[D1],
@@ -47,8 +47,8 @@ struct reduce_dim<op, Ti, To, 0>
                     CParam<Ti> in, const dim_t inOffset,
                     const int dim, bool change_nan, double nanval)
     {
-        const af::dim4 istrides = in.strides;
-        const af::dim4 idims    = in.dims;
+        const af::dim4 istrides = in.strides();
+        const af::dim4 idims    = in.dims();
 
         To * const outPtr = out.get() + outOffset;
         Ti const * const inPtr = in.get() + inOffset;

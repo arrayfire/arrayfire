@@ -20,9 +20,9 @@ namespace kernel
 template<typename OutT, typename InT, bool IsColor>
 void bilateral(Param<OutT> out, CParam<InT> in, float const s_sigma, float const c_sigma)
 {
-    af::dim4 const dims     = in.dims;
-    af::dim4 const istrides = in.strides;
-    af::dim4 const ostrides = out.strides;
+    af::dim4 const dims     = in.dims();
+    af::dim4 const istrides = in.strides();
+    af::dim4 const ostrides = out.strides();
 
     // clamp spatical and chromatic sigma's
     float space_       = std::min(11.5f, std::max(s_sigma, 0.f));

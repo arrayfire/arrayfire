@@ -75,12 +75,12 @@ void fft_inplace(Param<T> in, const af::dim4 iDataDims)
     int t_dims[rank];
     int in_embed[rank];
 
-    const af::dim4 idims = in.dims;
+    const af::dim4 idims = in.dims();
 
     computeDims<rank>(t_dims  , idims);
     computeDims<rank>(in_embed , iDataDims);
 
-    const af::dim4 istrides = in.strides;
+    const af::dim4 istrides = in.strides();
 
     typedef typename fftw_transform<T>::ctype_t ctype_t;
     typename fftw_transform<T>::plan_t plan;
@@ -111,7 +111,7 @@ void fft_inplace(Param<T> in, const af::dim4 iDataDims)
 template<typename Tc, typename Tr, int rank>
 void fft_r2c(Param<Tc> out, const af::dim4 oDataDims, CParam<Tr> in, const af::dim4 iDataDims)
 {
-    af::dim4 idims = in.dims;
+    af::dim4 idims = in.dims();
 
     int t_dims[rank];
     int in_embed[rank];
@@ -121,8 +121,8 @@ void fft_r2c(Param<Tc> out, const af::dim4 oDataDims, CParam<Tr> in, const af::d
     computeDims<rank>(in_embed , iDataDims);
     computeDims<rank>(out_embed , oDataDims);
 
-    const af::dim4 istrides = in.strides;
-    const af::dim4 ostrides = out.strides;
+    const af::dim4 istrides = in.strides();
+    const af::dim4 ostrides = out.strides();
 
     typedef typename fftw_real_transform<Tc, Tr>::ctype_t ctype_t;
     typename fftw_real_transform<Tc, Tr>::plan_t plan;
@@ -162,8 +162,8 @@ void fft_c2r(Param<Tr> out, const af::dim4 oDataDims,
     computeDims<rank>(in_embed , iDataDims);
     computeDims<rank>(out_embed , oDataDims);
 
-    const af::dim4 istrides = in.strides;
-    const af::dim4 ostrides = out.strides;
+    const af::dim4 istrides = in.strides();
+    const af::dim4 ostrides = out.strides();
 
     typedef typename fftw_real_transform<Tr, Tc>::ctype_t ctype_t;
     typename fftw_real_transform<Tr, Tc>::plan_t plan;

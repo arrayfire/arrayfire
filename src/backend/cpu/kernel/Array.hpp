@@ -21,8 +21,8 @@ namespace kernel
 template<typename T>
 void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> output_nodes_)
 {
-    af::dim4 odims = arrays[0].dims;
-    af::dim4 ostrs = arrays[0].strides;
+    af::dim4 odims = arrays[0].dims();
+    af::dim4 ostrs = arrays[0].strides();
 
     TNJ::Node_map_t nodes;
     std::vector<T *> ptrs;
@@ -42,7 +42,7 @@ void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> outpu
     }
 
     if (is_linear) {
-        int num = arrays[0].dims.elements();
+        int num = arrays[0].dims().elements();
         for (int i = 0; i < num; i++) {
             for (int n = 0; n < (int)full_nodes.size(); n++) {
                 full_nodes[n]->calc(i);
@@ -82,8 +82,8 @@ void evalArray(Param<T> arr, TNJ::Node_ptr node)
 {
     T *ptr = arr.get();
 
-    af::dim4 odims = arr.dims;
-    af::dim4 ostrs = arr.strides;
+    af::dim4 odims = arr.dims();
+    af::dim4 ostrs = arr.strides();
 
     TNJ::Node_map_t nodes;
     node->getNodesMap(nodes);
@@ -98,7 +98,7 @@ void evalArray(Param<T> arr, TNJ::Node_ptr node)
 
     TNJ::TNode<T> *output_node = reinterpret_cast<TNJ::TNode<T> *>(full_nodes.back());
     if (is_linear) {
-        int num = arr.dims.elements();
+        int num = arr.dims().elements();
         for (int i = 0; i < num; i++) {
             for (int n = 0; n < (int)full_nodes.size(); n++) {
                 full_nodes[n]->calc(i);

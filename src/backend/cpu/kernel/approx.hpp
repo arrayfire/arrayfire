@@ -24,13 +24,13 @@ void approx1(Param<InT> output, CParam<InT> input,
     InT * out = output.get();
     const LocT *xpos = xposition.get();
 
-    const af::dim4 odims     = output.dims;
-    const af::dim4 idims     = input.dims;
-    const af::dim4 xdims     = xposition.dims;
+    const af::dim4 odims     = output.dims();
+    const af::dim4 idims     = input.dims();
+    const af::dim4 xdims     = xposition.dims();
 
-    const af::dim4 ostrides  = output.strides;
-    const af::dim4 istrides  = input.strides;
-    const af::dim4 xstrides  = xposition.strides;
+    const af::dim4 ostrides  = output.strides();
+    const af::dim4 istrides  = input.strides();
+    const af::dim4 xstrides  = xposition.strides();
 
     Interp1<InT, LocT, order> interp;
     bool batch = !(xdims[1] == 1 && xdims[2] == 1 && xdims[3] == 1);
@@ -76,13 +76,13 @@ void approx2(Param<InT> output, CParam<InT> input,
     const LocT *xpos = xposition.get();
     const LocT *ypos = yposition.get();
 
-    af::dim4 const odims     = output.dims;
-    af::dim4 const idims     = input.dims;
-    af::dim4 const xdims     = xposition.dims;
-    af::dim4 const ostrides  = output.strides;
-    af::dim4 const istrides  = input.strides;
-    af::dim4 const xstrides  = xposition.strides;
-    af::dim4 const ystrides  = yposition.strides;
+    af::dim4 const odims     = output.dims();
+    af::dim4 const idims     = input.dims();
+    af::dim4 const xdims     = xposition.dims();
+    af::dim4 const ostrides  = output.strides();
+    af::dim4 const istrides  = input.strides();
+    af::dim4 const xstrides  = xposition.strides();
+    af::dim4 const ystrides  = yposition.strides();
 
     Interp2<InT, LocT, order> interp;
     bool batch = !(xdims[2] == 1 && xdims[3] == 1);

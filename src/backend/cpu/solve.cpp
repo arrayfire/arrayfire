@@ -86,8 +86,8 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
 
     auto func = [=] (Param<T> A, Param<T> B, Param<int> pivot, int N, int NRHS) {
         getrs_func<T>()(AF_LAPACK_COL_MAJOR, 'N',
-                        N, NRHS, A.get(), A.strides[1],
-                        pivot.get(), B.get(), B.strides[1]);
+                        N, NRHS, A.get(), A.strides(1),
+                        pivot.get(), B.get(), B.strides(1));
     };
     getQueue().enqueue(func, A, B, pivot, N, NRHS);
 
@@ -110,8 +110,8 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop o
                         'N', // transpose flag
                         options & AF_MAT_DIAG_UNIT ? 'U' : 'N',
                         N, NRHS,
-                        A.get(), A.strides[1],
-                        B.get(), B.strides[1]);
+                        A.get(), A.strides(1),
+                        B.get(), B.strides(1));
     };
     getQueue().enqueue(func, A, B, N, NRHS, options);
 
@@ -140,18 +140,18 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
         Array<int> pivot = createEmptyArray<int>(dim4(N, 1, 1));
 
         auto func = [=] (Param<T> A, Param<T> B, Param<int> pivot, int N, int K) {
-            gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K, A.get(), A.strides[1],
-                           pivot.get(), B.get(), B.strides[1]);
+            gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K, A.get(), A.strides(1),
+                           pivot.get(), B.get(), B.strides(1));
         };
         getQueue().enqueue(func, A, B, pivot, N, K);
     } else {
         auto func = [=] (Param<T> A, Param<T> B, int M, int N, int K) {
-            int sM = A.strides[1];
-            int sN = A.strides[2] / sM;
+            int sM = A.strides(1);
+            int sN = A.strides(2) / sM;
 
             gels_func<T>()(AF_LAPACK_COL_MAJOR, 'N',
                     M, N, K,
-                    A.get(), A.strides[1],
+                    A.get(), A.strides(1),
                     B.get(), max(sM, sN));
         };
         B.resetDims(dim4(N, K));

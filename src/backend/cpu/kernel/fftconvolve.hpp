@@ -20,8 +20,8 @@ void packData(Param<To> out, const af::dim4 od, const af::dim4 os, CParam<Ti> in
 {
     To* out_ptr = out.get();
 
-    const af::dim4 id = in.dims;
-    const af::dim4 is = in.strides;
+    const af::dim4 id = in.dims();
+    const af::dim4 is = in.strides();
     const Ti* in_ptr = in.get();
 
     int id0_half = divup(id[0], 2);
@@ -57,8 +57,8 @@ void padArray(Param<To> out, const af::dim4 od, const af::dim4 os,
               CParam<Ti> in, const dim_t offset)
 {
     To* out_ptr = out.get() + offset;
-    const af::dim4 id = in.dims;
-    const af::dim4 is = in.strides;
+    const af::dim4 id = in.dims();
+    const af::dim4 is = in.strides();
     const Ti* in_ptr = in.get();
 
     for (int d3 = 0; d3 < (int)od[3]; d3++) {
@@ -220,10 +220,10 @@ void reorder(Param<T> out, Param<convT> packed,
              bool expand, AF_BATCH_KIND kind)
 {
     T* out_ptr = out.get();
-    const af::dim4 out_dims = out.dims;
-    const af::dim4 out_strides = out.strides;
+    const af::dim4 out_dims = out.dims();
+    const af::dim4 out_strides = out.strides();
 
-    const af::dim4 filter_dims = filter.dims;
+    const af::dim4 filter_dims = filter.dims();
 
     convT* packed_ptr = packed.get();
     convT* sig_tmp_ptr    = packed_ptr;

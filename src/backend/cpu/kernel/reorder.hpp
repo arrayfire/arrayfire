@@ -21,8 +21,8 @@ void reorder(Param<T> out, CParam<T> in, const af::dim4 oDims, const af::dim4 rd
     T* outPtr = out.get();
     const T* inPtr = in.get();
 
-    const af::dim4 ist = in.strides;
-    const af::dim4 ost = out.strides;
+    const af::dim4 ist = in.strides();
+    const af::dim4 ost = out.strides();
 
 
     dim_t ids[4]  = {0};

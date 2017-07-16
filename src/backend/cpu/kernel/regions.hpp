@@ -99,7 +99,7 @@ static void setUnion(LabelNode<T>* x, LabelNode<T>* y)
 template<typename T>
 void regions(Param<T> out, CParam<char> in, af_connectivity connectivity)
 {
-    const af::dim4 inDims = in.dims;
+    const af::dim4 inDims = in.dims();
     const char *inPtr  = in.get();
     T *outPtr = out.get();
 

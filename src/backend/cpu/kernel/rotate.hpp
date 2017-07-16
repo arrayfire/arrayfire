@@ -26,10 +26,10 @@ void rotate(Param<T> output, CParam<T> input,
     typedef wtype_t<BT> WT;
     Interp2<T, WT, order> interp;
 
-    const af::dim4 odims    = output.dims;
-    const af::dim4 idims    = input.dims;
-    const af::dim4 ostrides = output.strides;
-    const af::dim4 istrides = input.strides;
+    const af::dim4 odims    = output.dims();
+    const af::dim4 idims    = input.dims();
+    const af::dim4 ostrides = output.strides();
+    const af::dim4 istrides = input.strides();
 
     const float c = cos(-theta), s = sin(-theta);
     float tx, ty;

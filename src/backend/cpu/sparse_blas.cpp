@@ -241,8 +241,8 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
         auto alpha = getScale<T, 1>();
         auto beta  = getScale<T, 0>();
 
-        int ldb = right.strides[1];
-        int ldc = output.strides[1];
+        int ldb = right.strides(1);
+        int ldc = output.strides(1);
 
         int *pB = const_cast<int *>(rowIdx.get());
         int *pE = pB + 1;
@@ -328,7 +328,7 @@ void mv(Param<T> output,
 
     T* outPtr = output.get();
 
-    for (int i = 0; i < rowIdx.dims[0]-1; ++i) {
+    for (int i = 0; i < rowIdx.dims(0)-1; ++i) {
         outPtr[i] = scalar<T>(0);
         for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
             //If stride[0] of right is not 1 then rightPtr[colPtr[j]*stride]
@@ -359,7 +359,7 @@ void mtv(Param<T> output,
         outPtr[i] = scalar<T>(0);
     }
 
-    for (int i = 0; i < rowIdx.dims[0]-1; ++i) {
+    for (int i = 0; i < rowIdx.dims(0)-1; ++i) {
         for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
             //If stride[0] of right is not 1 then rightPtr[i*stride]
             if (conjugate) {
@@ -387,7 +387,7 @@ void mm(Param<T> output,
     T *outPtr = output.get();
 
     for (int o = 0; o < N; ++o) {
-        for (int i = 0; i < rowIdx.dims[0]-1; ++i) {
+        for (int i = 0; i < rowIdx.dims(0)-1; ++i) {
             outPtr[i] = scalar<T>(0);
             for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
                 //If stride[0] of right is not 1 then rightPtr[colPtr[j]*stride]
@@ -423,7 +423,7 @@ void mtm(Param<T> output,
             outPtr[i] = scalar<T>(0);
         }
 
-        for (int i = 0; i < rowIdx.dims[0]-1; ++i) {
+        for (int i = 0; i < rowIdx.dims(0)-1; ++i) {
             for (int j = rowPtr[i]; j < rowPtr[i+1]; ++j) {
                 //If stride[0] of right is not 1 then rightPtr[i*stride]
                 if (conjugate) {
@@ -465,8 +465,8 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                      CParam<int> rowIdx,
                      CParam<int> colIdx,
                      CParam<T> right) {
-        int ldb = right.strides[1];
-        int ldc = output.strides[1];
+        int ldb = right.strides(1);
+        int ldc = output.strides(1);
 
         if(rDims[rColDim] == 1) {
             if (lOpts == SPARSE_OPERATION_NON_TRANSPOSE) {

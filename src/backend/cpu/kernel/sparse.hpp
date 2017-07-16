@@ -30,9 +30,9 @@ void coo2dense(Param<T> output,
 
     T * outPtr = output.get();
 
-    af::dim4 ostrides = output.strides;
+    af::dim4 ostrides = output.strides();
 
-    int nNZ = values.dims[0];
+    int nNZ = values.dims(0);
     for(int i = 0; i < nNZ; i++) {
         T   v = vPtr[i];
         int r = rPtr[i];
@@ -53,8 +53,8 @@ void dense_csr(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
     int     * rPtr = rowIdx.get();
     int     * cPtr = colIdx.get();
 
-    int stride = in.strides[1];
-    af::dim4 dims = in.dims;
+    int stride = in.strides(1);
+    af::dim4 dims = in.dims();
 
     int offset = 0;
     for (int i = 0; i < dims[0]; ++i) {
@@ -78,9 +78,9 @@ void csr_dense(Param<T> out,
     const int *rPtr = rowIdx.get();
     const int *cPtr = colIdx.get();
 
-    int stride = out.strides[1];
+    int stride = out.strides(1);
 
-    int r = rowIdx.dims[0];
+    int r = rowIdx.dims(0);
     for (int i = 0; i < r - 1; i++) {
         for (int ii = rPtr[i]; ii < rPtr[i+1]; ++ii) {
             int j = cPtr[ii];
@@ -120,14 +120,14 @@ void csr_coo(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
     const int *icPtr = icolIdx.get();
 
     // Create cordinate form of the row array
-    for(int i = 0; i < (int)irowIdx.dims.elements() - 1; i++) {
+    for(int i = 0; i < (int)irowIdx.dims().elements() - 1; i++) {
         std::fill_n(orPtr + irPtr[i], irPtr[i + 1] - irPtr[i], i);
     }
 
     // Sort the coordinate form using column index
     // Uses code from sort_by_key kernels
     typedef SpKeyIndexPair<T> CurrentPair;
-    int size = ovalues.dims[0];
+    int size = ovalues.dims(0);
     std::vector<CurrentPair> pairKeyVal(size);
 
     for(int x = 0; x < size; x++) {
@@ -136,7 +136,7 @@ void csr_coo(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
 
     std::stable_sort(pairKeyVal.begin(), pairKeyVal.end(), SpKIPCompareK<T>());
 
-    for(int x = 0; x < (int)ovalues.dims.elements(); x++) {
+    for(int x = 0; x < (int)ovalues.dims().elements(); x++) {
         std::tie(ocPtr[x], ovPtr[x], orPtr[x]) = pairKeyVal[x];
     }
 
@@ -157,7 +157,7 @@ void coo_csr(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
     // Sort the colidx and values based on rowIdx
     // Uses code from sort_by_key kernels
     typedef SpKeyIndexPair<T> CurrentPair;
-    int size = ovalues.dims[0];
+    int size = ovalues.dims(0);
     std::vector<CurrentPair>pairKeyVal(size);
 
     for(int x = 0; x < size; x++) {
@@ -167,14 +167,14 @@ void coo_csr(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
     std::stable_sort(pairKeyVal.begin(), pairKeyVal.end(), SpKIPCompareK<T>());
 
     ovPtr[0] = 0;
-    for(int x = 0; x < (int)ovalues.dims.elements(); x++) {
+    for(int x = 0; x < (int)ovalues.dims().elements(); x++) {
         int row = -2; // Some value that will make orPtr[row + 1] error out
         std::tie(row, ovPtr[x], ocPtr[x]) = pairKeyVal[x];
         orPtr[row + 1]++;
     }
 
     // Compress row storage
-    for(int x = 1; x < (int)orowIdx.dims.elements(); x++) {
+    for(int x = 1; x < (int)orowIdx.dims().elements(); x++) {
         orPtr[x] += orPtr[x - 1];
     }
 }

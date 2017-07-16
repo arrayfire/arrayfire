@@ -91,8 +91,8 @@ void nearest_neighbour(Param<uint> idx, Param<To> dist,
                        const uint dist_dim, const uint n_dist)
 {
     uint sample_dim = (dist_dim == 0) ? 1 : 0;
-    const dim4 qDims = query.dims;
-    const dim4 tDims = train.dims;
+    const dim4 qDims = query.dims();
+    const dim4 tDims = train.dims();
 
     const unsigned distLength = qDims[dist_dim];
     const unsigned nQuery = qDims[sample_dim];

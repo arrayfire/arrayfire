@@ -96,14 +96,14 @@ struct Interp1<InT, LocT, 1>
                     af_interp_type  method, int batch, bool clamp)
     {
         const InT *inptr = in.get();
-        const dim4 idims = in.dims;
-        const dim4 istrides = in.strides;
+        const dim4 idims = in.dims();
+        const dim4 istrides = in.strides();
         int xid = (method == AF_INTERP_LOWER ? std::floor(x) : std::round(x));
         bool cond = xid >= 0 && xid < idims[0];
         if (clamp) xid = std::max(0, std::min(xid, (int)idims[0]));
 
         InT *outptr = out.get();
-        const dim4 ostrides = out.strides;
+        const dim4 ostrides = out.strides();
         int idx = ioff + xid;
 
         for (int n = 0; n < batch; n++) {
@@ -126,10 +126,10 @@ struct Interp1<InT, LocT, 2>
         const LocT off_x = x - grid_x;    // fractional offset
         const int idx = ioff + grid_x;
         const InT *inptr = in.get();
-        const dim4 idims = in.dims;
-        const dim4 istrides = in.strides;
+        const dim4 idims = in.dims();
+        const dim4 istrides = in.strides();
         InT *outptr = out.get();
-        const dim4 ostrides = out.strides;
+        const dim4 ostrides = out.strides();
 
         bool cond[2] = {true, grid_x + 1 < idims[0]};
         int  offx[2] = {0 , cond[1] ? 1 : 0};
@@ -165,10 +165,10 @@ struct Interp1<InT, LocT, 3>
         const LocT off_x = x - grid_x;    // fractional offset
         const int idx = ioff + grid_x;
         const InT *inptr = in.get();
-        const dim4 idims = in.dims;
-        const dim4 istrides = in.strides;
+        const dim4 idims = in.dims();
+        const dim4 istrides = in.strides();
         InT *outptr = out.get();
-        const dim4 ostrides = out.strides;
+        const dim4 ostrides = out.strides();
 
         bool cond[4] = {grid_x - 1 >= 0, true, grid_x + 1 < idims[0], grid_x + 2 < idims[0]};
         int  off[4]  = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0, cond[3] ? 2 : (cond[2] ? 1 : 0)};
@@ -199,11 +199,11 @@ struct Interp2<InT, LocT, 1>
                     af_interp_type  method, int nimages, bool clamp)
     {
         const InT *inptr = in.get();
-        const dim4 istrides = in.strides;
-        const dim4 idims = in.dims;
+        const dim4 istrides = in.strides();
+        const dim4 idims = in.dims();
 
         InT *outptr = out.get();
-        const dim4 ostrides = out.strides;
+        const dim4 ostrides = out.strides();
 
         int xid = (method == AF_INTERP_LOWER ? std::floor(x) : std::round(x));
         int yid = (method == AF_INTERP_LOWER ? std::floor(y) : std::round(y));
@@ -235,11 +235,11 @@ struct Interp2<InT, LocT, 2>
         typedef vtype_t<InT> VT;
 
         const InT *inptr = in.get();
-        const dim4 idims = in.dims;
-        const dim4 istrides = in.strides;
+        const dim4 idims = in.dims();
+        const dim4 istrides = in.strides();
 
         InT *outptr = out.get();
-        const dim4 ostrides = out.strides;
+        const dim4 ostrides = out.strides();
 
         const int grid_x = floor(x);
         const LocT off_x = x - grid_x;
@@ -290,11 +290,11 @@ struct Interp2<InT, LocT, 3>
         typedef vtype_t<InT> VT;
 
         const InT *inptr = in.get();
-        const dim4 idims = in.dims;
-        const dim4 istrides = in.strides;
+        const dim4 idims = in.dims();
+        const dim4 istrides = in.strides();
 
         InT *outptr = out.get();
-        const dim4 ostrides = out.strides;
+        const dim4 ostrides = out.strides();
 
         const int grid_x = floor(x);
         const LocT off_x = x - grid_x;

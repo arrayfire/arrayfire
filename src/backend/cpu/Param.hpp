@@ -21,23 +21,43 @@ template<typename T>
 class CParam
 {
 private:
-    const T *ptr;
+    const T *m_ptr;
+    dim4 m_dims;
+    dim4 m_strides;
 
 public:
-    dim4 dims;
-    dim4 strides;
-
     CParam(const T *iptr, const dim4 &idims, const dim4 &istrides) :
-        ptr(iptr)
+        m_ptr(iptr)
     {
         for (int i = 0; i < 4; i++) {
-            dims[i] = idims[i];
-            strides[i] = istrides[i];
+            m_dims[i] = idims[i];
+            m_strides[i] = istrides[i];
         }
     }
+
     const T *get() const
     {
-        return ptr;
+        return m_ptr;
+    }
+
+    dim4 dims() const
+    {
+        return m_dims;
+    }
+
+    dim4 strides() const
+    {
+        return m_strides;
+    }
+
+    int dims(int i) const
+    {
+        return m_dims[i];
+    }
+
+    int strides(int i) const
+    {
+        return m_strides[i];
     }
 };
 
@@ -45,33 +65,52 @@ template<typename T>
 class Param
 {
 private:
-    T *ptr;
-public:
-    dim4 dims;
-    dim4 strides;
+    T *m_ptr;
+    dim4 m_dims;
+    dim4 m_strides;
 
 public:
-    Param() : ptr(nullptr)
+    Param() : m_ptr(nullptr)
     {
     }
 
     Param(T *iptr, const dim4 &idims, const dim4 &istrides) :
-        ptr(iptr)
+        m_ptr(iptr)
     {
         for (int i = 0; i < 4; i++) {
-            dims[i] = idims[i];
-            strides[i] = istrides[i];
+            m_dims[i] = idims[i];
+            m_strides[i] = istrides[i];
         }
     }
 
     T *get()
     {
-        return ptr;
+        return m_ptr;
     }
 
     operator CParam<T>() const
     {
-        return CParam<T>(const_cast<T *>(ptr), dims, strides);
+        return CParam<T>(const_cast<T *>(m_ptr), m_dims, m_strides);
+    }
+
+    dim4 dims() const
+    {
+        return m_dims;
+    }
+
+    dim4 strides() const
+    {
+        return m_strides;
+    }
+
+    int dims(int i) const
+    {
+        return m_dims[i];
+    }
+
+    int strides(int i) const
+    {
+        return m_strides[i];
     }
 };
 

@@ -26,10 +26,10 @@ struct scan_dim_by_key
                     CParam<Ti> in, dim_t inOffset,
                     const int dim) const
     {
-        const dim4 odims    = out.dims;
-        const dim4 ostrides = out.strides;
-        const dim4 kstrides = key.strides;
-        const dim4 istrides = in.strides;
+        const dim4 odims    = out.dims();
+        const dim4 ostrides = out.strides();
+        const dim4 kstrides = key.strides();
+        const dim4 istrides = in.strides();
 
         const int D1 = D - 1;
         for (dim_t i = 0; i < odims[D1]; i++) {
@@ -58,10 +58,10 @@ struct scan_dim_by_key<op, Ti, Tk, To, 0>
         const Tk* key = keyinput.get() + keyOffset;
               To* out = output.get()   + outOffset;
 
-        const dim4 ostrides = output.strides;
-        const dim4 kstrides = keyinput.strides;
-        const dim4 istrides = input.strides;
-        const dim4 idims    = input.dims;
+        const dim4 ostrides = output.strides();
+        const dim4 kstrides = keyinput.strides();
+        const dim4 istrides = input.strides();
+        const dim4 idims    = input.dims();
 
         dim_t istride = istrides[dim];
         dim_t kstride = kstrides[dim];

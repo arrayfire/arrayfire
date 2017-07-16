@@ -19,11 +19,11 @@ namespace kernel
 template<typename T>
 void exampleFunction(Param<T> out, CParam<T> a, CParam<T> b, const af_someenum_t method)
 {
-    dim4 oDims    = out.dims;
+    dim4 oDims    = out.dims();
 
-    dim4 aStrides = a.strides;        // you can retrieve strides
-    dim4 bStrides = b.strides;
-    dim4 oStrides = out.strides;
+    dim4 aStrides = a.strides();        // you can retrieve strides
+    dim4 bStrides = b.strides();
+    dim4 oStrides = out.strides();
 
     const T* src1 = a.get();            // cpu::Param<T>::get returns the pointer to the
                                         // memory allocated for that Param (with proper offsets)

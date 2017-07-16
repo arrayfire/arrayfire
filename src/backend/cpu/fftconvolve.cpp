@@ -96,8 +96,8 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
         int fft_dims[baseDim];
         for (int i=0; i<baseDim; ++i)
             fft_dims[i] = fftDims[i];
-        const dim4 packed_dims = packed.dims;
-        const af::dim4 packed_strides = packed.strides;
+        const dim4 packed_dims = packed.dims();
+        const af::dim4 packed_strides = packed.strides();
         // Compute forward FFT
         if (isDouble) {
             fftw_plan plan = fftw_plan_many_dft(baseDim,
@@ -147,8 +147,8 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
         int fft_dims[baseDim];
         for (int i=0; i<baseDim; ++i)
             fft_dims[i] = fftDims[i];
-        const dim4 packed_dims = packed.dims;
-        const af::dim4 packed_strides = packed.strides;
+        const dim4 packed_dims = packed.dims();
+        const af::dim4 packed_strides = packed.strides();
         // Compute inverse FFT
         if (isDouble) {
             fftw_plan plan = fftw_plan_many_dft(baseDim,

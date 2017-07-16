@@ -21,11 +21,11 @@ namespace kernel
 template<typename T, bool IsDilation>
 void morph(Param<T> out, CParam<T> in, CParam<T> mask)
 {
-    const af::dim4 ostrides = out.strides;
-    const af::dim4 istrides = in.strides;
-    const af::dim4 fstrides = mask.strides;
-    const af::dim4 dims     = in.dims;
-    const af::dim4 window   = mask.dims;
+    const af::dim4 ostrides = out.strides();
+    const af::dim4 istrides = in.strides();
+    const af::dim4 fstrides = mask.strides();
+    const af::dim4 dims     = in.dims();
+    const af::dim4 window   = mask.dims();
     const T*   filter   = mask.get();
     const dim_t R0      = window[0]/2;
     const dim_t R1      = window[1]/2;
@@ -81,15 +81,15 @@ void morph(Param<T> out, CParam<T> in, CParam<T> mask)
 template<typename T, bool IsDilation>
 void morph3d(Param<T> out, CParam<T> in, CParam<T> mask)
 {
-    const af::dim4 dims     = in.dims;
-    const af::dim4 window   = mask.dims;
+    const af::dim4 dims     = in.dims();
+    const af::dim4 window   = mask.dims();
     const dim_t R0      = window[0]/2;
     const dim_t R1      = window[1]/2;
     const dim_t R2      = window[2]/2;
-    const af::dim4 istrides = in.strides;
-    const af::dim4 fstrides = mask.strides;
+    const af::dim4 istrides = in.strides();
+    const af::dim4 fstrides = mask.strides();
     const dim_t bCount  = dims[3];
-    const af::dim4 ostrides = out.strides;
+    const af::dim4 ostrides = out.strides();
     T* outData          = out.get();
     const T*   inData   = in.get();
     const T*   filter   = mask.get();

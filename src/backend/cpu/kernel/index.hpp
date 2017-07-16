@@ -22,11 +22,11 @@ void index(Param<T> out, CParam<T> in, const af::dim4 dDims,
            std::vector<bool> const isSeq, std::vector<af_seq> const seqs,
            std::vector<CParam<uint>> idxArrs)
 {
-    const af::dim4 iDims    = in.dims;
+    const af::dim4 iDims    = in.dims();
     const af::dim4 iOffs    = toOffset(seqs, dDims);
     const af::dim4 iStrds   = toStride(seqs, dDims);
-    const af::dim4 oDims    = out.dims;
-    const af::dim4 oStrides = out.strides;
+    const af::dim4 oDims    = out.dims();
+    const af::dim4 oStrides = out.strides();
     const T *src        = in.get();
     T *dst        = out.get();
     const uint* ptr0    = idxArrs[0].get();

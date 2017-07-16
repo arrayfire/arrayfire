@@ -21,10 +21,10 @@ template<typename InT, typename IndexT>
 void lookup(Param<InT> out, CParam<InT> input,
             CParam<IndexT> indices, unsigned const dim)
 {
-    const af::dim4 iDims    = input.dims;
-    const af::dim4 oDims    = out.dims;
-    const af::dim4 iStrides = input.strides;
-    const af::dim4 oStrides = out.strides;
+    const af::dim4 iDims    = input.dims();
+    const af::dim4 oDims    = out.dims();
+    const af::dim4 iStrides = input.strides();
+    const af::dim4 oStrides = out.strides();
     const InT *inPtr   = input.get();
     const IndexT *idxPtr = indices.get();
 

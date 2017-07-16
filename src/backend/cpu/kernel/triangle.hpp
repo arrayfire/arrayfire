@@ -21,10 +21,10 @@ void triangle(Param<T> out, CParam<T> in)
     T *o = out.get();
     const T *i = in.get();
 
-    af::dim4 odm = out.dims;
+    af::dim4 odm = out.dims();
 
-    af::dim4 ost = out.strides;
-    af::dim4 ist = in.strides;
+    af::dim4 ost = out.strides();
+    af::dim4 ist = in.strides();
 
     for(dim_t ow = 0; ow < odm[3]; ow++) {
         const dim_t oW = ow * ost[3];

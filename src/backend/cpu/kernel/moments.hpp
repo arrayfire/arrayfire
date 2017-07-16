@@ -23,9 +23,9 @@ template<typename T>
 void moments(Param<float> output, CParam<T> input, af_moment_type moment)
 {
     T const * const in       = input.get();
-    af::dim4  const idims    = input.dims;
-    af::dim4  const istrides = input.strides;
-    af::dim4  const ostrides = output.strides;
+    af::dim4  const idims    = input.dims();
+    af::dim4  const istrides = input.strides();
+    af::dim4  const ostrides = output.strides();
 
     float *out = output.get();
 

@@ -75,8 +75,8 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
     Array<int> pivot = createEmptyArray<int>(af::dim4(min(iDims[0], iDims[1]), 1, 1, 1));
 
     auto func = [=] (Param<T> in, Param<int> pivot) {
-        dim4 iDims = in.dims;
-        getrf_func<T>()(AF_LAPACK_COL_MAJOR, iDims[0], iDims[1], in.get(), in.strides[1], pivot.get());
+        dim4 iDims = in.dims();
+        getrf_func<T>()(AF_LAPACK_COL_MAJOR, iDims[0], iDims[1], in.get(), in.strides(1), pivot.get());
     };
     getQueue().enqueue(func, in, pivot);
 

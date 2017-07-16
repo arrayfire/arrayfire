@@ -18,15 +18,15 @@ namespace kernel
 template<typename T>
 void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in)
 {
-    const af::dim4 dims = in.dims;
+    const af::dim4 dims = in.dims();
 
     T *d_grad0    = grad0.get();
     T *d_grad1    = grad1.get();
     const T *d_in = in.get();
 
-    const af::dim4 inst = in.strides;
-    const af::dim4 g0st = grad0.strides;
-    const af::dim4 g1st = grad1.strides;
+    const af::dim4 inst = in.strides();
+    const af::dim4 g0st = grad0.strides();
+    const af::dim4 g1st = grad1.strides();
 
     T v5 = scalar<T>(0.5);
     T v1 = scalar<T>(1.0);

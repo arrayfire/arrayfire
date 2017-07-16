@@ -20,8 +20,8 @@ void range(Param<T> output)
 {
     T* out = output.get();
 
-    const dim4 dims = output.dims;
-    const dim4 strides = output.strides;
+    const dim4 dims = output.dims();
+    const dim4 strides = output.strides();
 
     for(dim_t w = 0; w < dims[3]; w++) {
         dim_t offW = w * strides[3];

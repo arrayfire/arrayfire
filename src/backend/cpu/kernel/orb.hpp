@@ -324,7 +324,7 @@ void harris_response(
     const float k_thr,
     const unsigned patch_size)
 {
-    const af::dim4 idims = image.dims;
+    const af::dim4 idims = image.dims();
     const T* image_ptr = image.get();
     for (unsigned f = 0; f < total_feat; f++) {
         unsigned x, y;
@@ -398,7 +398,7 @@ void centroid_angle(
     CParam<T> image,
     const unsigned patch_size)
 {
-    const af::dim4 idims = image.dims;
+    const af::dim4 idims = image.dims();
     const T* image_ptr = image.get();
     for (unsigned f = 0; f < total_feat; f++) {
         unsigned x = (unsigned)round(x_in[f]);
@@ -436,7 +436,7 @@ inline T get_pixel(
     CParam<T> image,
     const unsigned patch_size)
 {
-    const af::dim4 idims = image.dims;
+    const af::dim4 idims = image.dims();
     const T* image_ptr = image.get();
     float ori_sin = sin(ori);
     float ori_cos = cos(ori);
@@ -461,7 +461,7 @@ void extract_orb(
     const float scl,
     const unsigned patch_size)
 {
-    const af::dim4 idims = image.dims;
+    const af::dim4 idims = image.dims();
     for (unsigned f = 0; f < n_feat; f++) {
         unsigned x = (unsigned)round(x_in_out[f]);
         unsigned y = (unsigned)round(y_in_out[f]);

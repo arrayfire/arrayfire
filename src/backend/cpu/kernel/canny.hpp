@@ -21,8 +21,8 @@ template<typename T>
 void nonMaxSuppression(Param<T> output, CParam<T> magnitude,
                        CParam<T> dxParam, CParam<T> dyParam)
 {
-    const af::dim4 dims    = magnitude.dims;
-    const af::dim4 strides = magnitude.strides;
+    const af::dim4 dims    = magnitude.dims();
+    const af::dim4 strides = magnitude.strides();
 
           T* out = output.get();
     const T* mag = magnitude.get();
@@ -161,7 +161,7 @@ void traceEdge(T* out, const T* strong, const T* weak, int t, int width)
 template<typename T>
 void edgeTrackingHysteresis(Param<T> out, CParam<T> strong, CParam<T> weak)
 {
-    const af::dim4 dims = strong.dims;
+    const af::dim4 dims = strong.dims();
 
     dim_t t    = dims[0] + 1;   // skip the first coloumn and first element of second coloumn
     dim_t jMax = dims[1] - 1;   // max Y value to traverse, ignore right coloumn

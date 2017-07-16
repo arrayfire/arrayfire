@@ -22,9 +22,9 @@ struct scan_dim
                     CParam<Ti> in, dim_t inOffset,
                     const int dim) const
     {
-        const dim4 odims    = out.dims;
-        const dim4 ostrides = out.strides;
-        const dim4 istrides = in.strides;
+        const dim4 odims    = out.dims();
+        const dim4 ostrides = out.strides();
+        const dim4 istrides = in.strides();
 
         const int D1 = D - 1;
         for (dim_t i = 0; i < odims[D1]; i++) {
@@ -47,9 +47,9 @@ struct scan_dim<op, Ti, To, 0, inclusive_scan>
         const Ti* in = input.get() + inOffset;
               To* out= output.get()+ outOffset;
 
-        const dim4 ostrides = output.strides;
-        const dim4 istrides = input.strides;
-        const dim4 idims    = input.dims;
+        const dim4 ostrides = output.strides();
+        const dim4 istrides = input.strides();
+        const dim4 idims    = input.dims();
 
         dim_t istride = istrides[dim];
         dim_t ostride = ostrides[dim];

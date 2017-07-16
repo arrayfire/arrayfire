@@ -949,7 +949,7 @@ std::vector< Array<T> > buildDoGPyr(
             unsigned bottom = o*(n_layers+3) + l;
             unsigned top    = o*(n_layers+3) + l+1;
 
-            dog_pyr[idx] = createEmptyArray<T>(gauss_pyr[bottom].dims());
+            dog_pyr[idx] = createEmptyArray<T>(gauss_pyr[bottom].dims(););
 
             sub<T>(dog_pyr[idx], gauss_pyr[top], gauss_pyr[bottom]);
         }

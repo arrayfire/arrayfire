@@ -189,10 +189,10 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
         int j1 = 1, j2 = 0;
         const int job[] = {0, j1, j2, 2, num, 1};
 
-        const int M = in.dims[0];
-        const int N = in.dims[1];
+        const int M = in.dims(0);
+        const int N = in.dims(1);
 
-        int ldd = in.strides[1];
+        int ldd = in.strides(1);
 
         int info = 0;
 
@@ -245,10 +245,10 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
         int j1 = 1, j2 = 0;
         const int job[] = {1, j1, j2, 2, num, 1};
 
-        const int M = dense.dims[0];
-        const int N = dense.dims[1];
+        const int M = dense.dims(0);
+        const int N = dense.dims(1);
 
-        int ldd = dense.strides[1];
+        int ldd = dense.strides(1);
 
         int info = 0;
 

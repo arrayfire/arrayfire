@@ -41,10 +41,10 @@ void stridedCopy(T* dst, af::dim4 const & ostrides, T const * src,
 template<typename OutT, typename InT>
 void copyElemwise(Param<OutT> dst, CParam<InT> src, OutT default_value, double factor)
 {
-    af::dim4 src_dims       = src.dims;
-    af::dim4 dst_dims       = dst.dims;
-    af::dim4 src_strides    = src.strides;
-    af::dim4 dst_strides    = dst.strides;
+    af::dim4 src_dims       = src.dims();
+    af::dim4 dst_dims       = dst.dims();
+    af::dim4 src_strides    = src.strides();
+    af::dim4 dst_strides    = dst.strides();
 
     InT const * const src_ptr = src.get();
     OutT * dst_ptr      = dst.get();
@@ -100,10 +100,10 @@ struct CopyImpl<T, T>
 {
     static void copy(Param<T> dst, CParam<T> src)
     {
-        af::dim4 src_dims       = src.dims;
-        af::dim4 dst_dims       = dst.dims;
-        af::dim4 src_strides    = src.strides;
-        af::dim4 dst_strides    = dst.strides;
+        af::dim4 src_dims       = src.dims();
+        af::dim4 dst_dims       = dst.dims();
+        af::dim4 src_strides    = src.strides();
+        af::dim4 dst_strides    = dst.strides();
 
         T const * src_ptr = src.get();
         T * dst_ptr       = dst.get();

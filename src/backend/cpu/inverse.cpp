@@ -65,8 +65,8 @@ Array<T> inverse(const Array<T> &in)
 
     auto func = [=] (Param<T> A, Param<int> pivot, int M) {
         getri_func<T>()(AF_LAPACK_COL_MAJOR, M,
-                A.get(), A.strides[1],
-                pivot.get());
+                        A.get(), A.strides(1),
+                        pivot.get());
     };
     getQueue().enqueue(func, A, pivot, M);
 
