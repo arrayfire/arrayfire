@@ -116,19 +116,20 @@ public:
 
 template<typename T> class Array;
 
+// These functions are needed to convert Array<T> to Param<T> when queueing up functions.
+// This is necessary because the memory used by Array<T> can be put back into the queue faster.
+// This is fine becacuse we only have 1 compute queue. This ensures there's no race conditions.
 template<typename T>
 T toParam(const T &val)
 {
     return val;
 }
 
-
 template<typename T>
 Param<T> toParam(Array<T> &val)
 {
     return (Param<T>)(val);
 }
-
 
 template<typename T>
 CParam<T> toParam(const Array<T> &val)

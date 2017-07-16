@@ -53,6 +53,7 @@ Array<T>::Array(dim4 dims, const T * const in_data, bool is_device, bool copy_de
     static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
     static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
     if (!is_device || copy_device) {
+        // Ensure the memory being written to isnt used anywhere else.
         getQueue().sync();
         std::copy(in_data, in_data + dims.elements(), data.get());
     }
@@ -85,6 +86,7 @@ Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
     owner(true)
 {
     if (!is_device) {
+        // Ensure the memory being written to isnt used anywhere else.
         getQueue().sync();
         std::copy(in_data, in_data + info.total(), data.get());
     }
@@ -294,6 +296,7 @@ writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
         arr = copyArray<T>(arr);
     }
     arr.eval();
+    // Ensure the memory being written to isnt used anywhere else.
     getQueue().sync();
     memcpy(arr.get(), data, bytes);
 }

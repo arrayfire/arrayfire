@@ -28,6 +28,7 @@ template<typename T>
 void copyData(T *to, const Array<T> &from)
 {
     from.eval();
+    // Ensure all operations on 'from' are complete before copying data to host.
     getQueue().sync();
     if(from.isLinear()) {
         // FIXME: Check for errors / exceptions

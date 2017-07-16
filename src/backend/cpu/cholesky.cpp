@@ -76,6 +76,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     };
 
     getQueue().enqueue(func, &info, in);
+    // Ensure the value of info has been written into info.
     getQueue().sync();
 
     return info;

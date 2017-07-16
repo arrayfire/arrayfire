@@ -176,6 +176,7 @@ void *MemoryManager::nativeAlloc(const size_t bytes)
 
 void MemoryManager::nativeFree(void *ptr)
 {
+    // Make sure this pointer is not being used on the queue before freeing the memory.
     getQueue().sync();
     return free((void *)ptr);
 }
