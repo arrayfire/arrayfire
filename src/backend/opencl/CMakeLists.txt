@@ -31,9 +31,7 @@ ELSE(APPLE) # Linux and Windows
     FIND_PACKAGE(LAPACKE)
 ENDIF(APPLE)
 
-IF(NOT LAPACK_FOUND)
-    MESSAGE(WARNING "LAPACK not found. Functionality will be disabled")
-ELSE(NOT LAPACK_FOUND)
+IF(LAPACK_FOUND)
   ADD_DEFINITIONS(-DWITH_OPENCL_LINEAR_ALGEBRA)
 
   IF(NOT USE_OPENCL_MKL)
@@ -47,6 +45,8 @@ ELSE(NOT LAPACK_FOUND)
       MESSAGE(SEND_ERROR "CBLAS Library not set")
     ENDIF()
   ENDIF()
+ELSE(LAPACK_FOUND)
+    MESSAGE(WARNING "LAPACK not found. Functionality will be disabled")
 ENDIF()
 
 IF(USE_OPENCL_MKL) # Manual MKL Setup
@@ -337,18 +337,22 @@ ELSE(DEFINED BLAS_SYM_FILE)
 ENDIF()
 
 TARGET_LINK_LIBRARIES(afopencl
-                                PRIVATE ${OpenCL_LIBRARIES}
-                                PRIVATE ${CLBLAST_LIBRARIES}
-                                PRIVATE ${CLBLAS_LIBRARIES}
-                                PRIVATE ${CLFFT_LIBRARIES}
-                                PRIVATE ${CMAKE_DL_LIBS}
-                                PRIVATE ${FreeImage_LIBS}
-                     )
+  PRIVATE
+    ${OpenCL_LIBRARIES}
+    ${CLBLAST_LIBRARIES}
+    ${CLBLAS_LIBRARIES}
+    ${CLFFT_LIBRARIES}
+    ${CMAKE_DL_LIBS}
+    ${FreeImage_LIBS}
+)
 
 IF(LAPACK_FOUND)
     TARGET_LINK_LIBRARIES(afopencl
-                                PRIVATE ${LAPACK_LIBRARIES}
-                                PRIVATE ${CBLAS_LIBRARIES})
+      PRIVATE
+        ${LAPACK_LIBRARIES}
+        ${CBLAS_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
+    )
 ENDIF(LAPACK_FOUND)
 
 LIST(LENGTH GRAPHICS_DEPENDENCIES GRAPHICS_DEPENDENCIES_LEN)
