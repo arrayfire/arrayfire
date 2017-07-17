@@ -117,8 +117,10 @@ void sparseCompare(af::array A, af::array B, const double eps)
 {
 // This macro is used to check if either value is finite and then call assert
 // If neither value is finite, then they can be assumed to be equal to either inf or nan
-#define ASSERT_FINITE_EQ(V1, V2)                                                            \
-    if(std::isfinite(V1) || std::isfinite(V2)) ASSERT_NEAR(V1, V2, eps) << "at : " << i;    \
+#define ASSERT_FINITE_EQ(V1, V2)                    \
+    if(std::isfinite(V1) || std::isfinite(V2)) {    \
+        ASSERT_NEAR(V1, V2, eps) << "at : " << i;   \
+    }                                               \
 
     af::array AValues = sparseGetValues(A);
     af::array ARowIdx = sparseGetRowIdx(A);
