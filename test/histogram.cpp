@@ -227,7 +227,7 @@ TEST(Histogram, SNIPPET_histequal)
 
     if( false == equal(h_out.begin(), h_out.end(), output) ) {
         cout << "Expected: ";
-        copy(output, output + nbins, ostream_iterator<float>(cout, ", "));
+        copy(output, output + nElems, ostream_iterator<float>(cout, ", "));
         cout << endl << "Actual: ";
         copy(h_out.begin(), h_out.end(), ostream_iterator<float>(cout, ", "));
         FAIL() << "Output did not match";

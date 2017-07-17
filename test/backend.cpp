@@ -51,7 +51,9 @@ void testFunction()
     ASSERT_EQ(arrayBackend, activeBackend);
 
     // cleanup
-    if(outArray != 0) ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    if(outArray != 0) {
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    }
 }
 
 void backendTest()
