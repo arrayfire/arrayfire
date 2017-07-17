@@ -109,8 +109,9 @@ void transformTest(string pTestFile, string pHomographyFile, const af_interp_typ
 
     for (dim_t elIter = 0; elIter < goldEl; elIter++) {
         err += fabs((float)floor(outData[elIter]) - (float)floor(goldData[elIter])) > thr;
-        if (err > maxErr)
+        if (err > maxErr) {
             ASSERT_LE(err, maxErr) << "at: " << elIter << std::endl;
+        }
     }
 
     if(sceneArray_f32 != 0) af_release_array(sceneArray_f32);
@@ -258,8 +259,9 @@ TEST(Transform, CPP)
 
     for (dim_t elIter = 0; elIter < n; elIter++) {
         err += fabs((int)h_out_img[elIter] - h_gold_img[elIter]) > thr;
-        if (err > maxErr)
+        if (err > maxErr) {
             ASSERT_LE(err, maxErr) << "at: " << elIter << std::endl;
+        }
     }
 }
 

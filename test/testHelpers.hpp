@@ -26,6 +26,21 @@ typedef unsigned char  uchar;
 typedef unsigned int   uint;
 typedef unsigned short ushort;
 
+std::string readNextNonEmptyLine(std::ifstream &file)
+{
+    std::string result = "";
+    // Using a for loop to read the next non empty line
+    for (std::string line; std::getline(file, line);) {
+        result += line;
+        if (result != "") break;
+    }
+    // If no file has been found, throw an exception
+    if (result == "") {
+        throw std::runtime_error("Non empty lines not found in the file");
+    }
+    return result;
+}
+
 template<typename inType, typename outType, typename FileElementType>
 void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
                 std::vector<std::vector<inType> >   &testInputs,
@@ -159,26 +174,12 @@ inline void readImageTests(const std::string        &pFileName,
 
         pTestInputs.resize(inputCount, "");
         for(unsigned k=0; k<inputCount; k++) {
-            std::string temp = "";
-            while(std::getline(testFile, temp)) {
-                if (temp!="")
-                    break;
-            }
-            if (temp=="")
-                throw std::runtime_error("Test file might not be per format, please check.");
-            pTestInputs[k] = temp;
+            pTestInputs[k] = readNextNonEmptyLine(testFile);
         }
 
         pTestOutputs.resize(testCount, "");
         for(unsigned i = 0; i < testCount; i++) {
-            std::string temp = "";
-            while(std::getline(testFile, temp)) {
-                if (temp!="")
-                    break;
-            }
-            if (temp=="")
-                throw std::runtime_error("Test file might not be per format, please check.");
-            pTestOutputs[i] = temp;
+            pTestOutputs[i] = readNextNonEmptyLine(testFile);
         }
     }
     else {
@@ -215,14 +216,7 @@ void readImageTests(const std::string                 &pFileName,
 
         pTestInputs.resize(inputCount, "");
         for(unsigned k=0; k<inputCount; k++) {
-            std::string temp = "";
-            while(std::getline(testFile, temp)) {
-                if (temp!="")
-                    break;
-            }
-            if (temp=="")
-                throw std::runtime_error("Test file might not be per format, please check.");
-            pTestInputs[k] = temp;
+            pTestInputs[k] = readNextNonEmptyLine(testFile);
         }
 
         pTestOutputs.resize(testCount, vector<outType>(0));
@@ -267,14 +261,7 @@ void readImageFeaturesDescriptors(const std::string                  &pFileName,
 
         pTestInputs.resize(inputCount, "");
         for(unsigned k=0; k<inputCount; k++) {
-            std::string temp = "";
-            while(std::getline(testFile, temp)) {
-                if (temp!="")
-                    break;
-            }
-            if (temp=="")
-                throw std::runtime_error("Test file might not be per format, please check.");
-            pTestInputs[k] = temp;
+            pTestInputs[k] = readNextNonEmptyLine(testFile);
         }
 
         pTestFeats.resize(attrCount, vector<float>(0));

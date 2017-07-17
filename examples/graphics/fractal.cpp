@@ -81,7 +81,9 @@ int main(int argc, char **argv)
         // Keep zomming out for each frame
         for (int i = 10; i < 400; i++) {
             int zoom = i * i;
-            if(!(i % 10)) printf("iteration: %d zoom: %d\n", i, zoom); fflush(stdout);
+            if(!(i % 10)) {
+                printf("iteration: %d zoom: %d\n", i, zoom); fflush(stdout);
+            }
 
             // Generate the grid at the current zoom factor
             array c = complex_grid(WIDTH, HEIGHT, zoom, center);
