@@ -9,6 +9,7 @@
 
 #pragma once
 #include <optypes.hpp>
+#include <array>
 #include <vector>
 #include <memory>
 #include <unordered_map>
@@ -19,6 +20,7 @@ namespace cpu
 namespace TNJ
 {
 
+    static const int MAX_CHILDREN = 2;
     class Node;
     using std::shared_ptr;
     using std::vector;
@@ -33,10 +35,10 @@ namespace TNJ
     protected:
 
         const int m_height;
-        const std::vector<Node_ptr> m_children;
+        const std::array<Node_ptr, MAX_CHILDREN> m_children;
 
     public:
-        Node(const int height, const std::vector<Node_ptr> children) :
+        Node(const int height, const std::array<Node_ptr, MAX_CHILDREN> children) :
             m_height(height),
             m_children(children)
         {}
@@ -46,6 +48,7 @@ namespace TNJ
             auto iter = node_map.find(this);
             if (iter == node_map.end()) {
                 for (const auto &child : m_children) {
+                    if (child == nullptr) break;
                     child->getNodesMap(node_map, full_nodes);
                 }
                 int id = node_map.size();
@@ -83,7 +86,7 @@ namespace TNJ
     public:
         T m_val;
     public:
-        TNode(T val, const int height, const std::vector<Node_ptr> children) :
+        TNode(T val, const int height, const std::array<Node_ptr, MAX_CHILDREN> children) :
             Node(height, children),
             m_val(val)
             {

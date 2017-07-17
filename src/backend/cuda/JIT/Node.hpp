@@ -10,6 +10,7 @@
 #pragma once
 #include <platform.hpp>
 #include <optypes.hpp>
+#include <array>
 #include <string>
 #include <vector>
 #include <memory>
@@ -21,6 +22,7 @@ namespace cuda
 namespace JIT
 {
 
+    static const int MAX_CHILDREN = 2;
     class Node;
     using std::shared_ptr;
     using std::vector;
@@ -29,7 +31,7 @@ namespace JIT
     typedef struct
     {
         int id;
-        std::vector<int> child_ids;
+        std::array<int, MAX_CHILDREN> child_ids;
     } Node_ids;
 
     typedef std::unordered_map<Node *, int> Node_map_t;
@@ -41,12 +43,12 @@ namespace JIT
         const std::string m_type_str;
         const std::string m_name_str;
         const int m_height;
-        const std::vector<Node_ptr> m_children;
+        const std::array<Node_ptr, MAX_CHILDREN> m_children;
 
     public:
 
         Node(const char *type_str, const char *name_str, const int height,
-             const std::vector<Node_ptr> children)
+             const std::array<Node_ptr, MAX_CHILDREN> children)
             : m_type_str(type_str),
               m_name_str(name_str),
               m_height(height),
@@ -60,9 +62,8 @@ namespace JIT
             auto iter = node_map.find(this);
             if (iter == node_map.end()) {
                 Node_ids ids;
-                for (const auto &child : m_children) {
-                    int id = child->getNodesMap(node_map, full_nodes, full_ids);
-                    ids.child_ids.push_back(id);
+                for (int i = 0; i < MAX_CHILDREN && m_children[i] != nullptr; i++) {
+                    ids.child_ids[i] = m_children[i]->getNodesMap(node_map, full_nodes, full_ids);
                 }
                 ids.id = node_map.size();
                 node_map[this] = ids.id;
