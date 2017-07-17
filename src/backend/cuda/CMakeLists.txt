@@ -351,15 +351,18 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${scan_by_key_sources}
                 OPTIONS ${CUDA_GENERATE_CODE} ${CUDA_ADD_LIBRARY_OPTIONS})
 
-TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
-                                PRIVATE ${CUDA_LIBRARIES}
-                                PRIVATE ${FreeImage_LIBS}
-                                PRIVATE ${CUDA_CUFFT_LIBRARIES}
-                                PRIVATE ${CUDA_cusparse_LIBRARY}
-                                PRIVATE ${CUDA_cusolver_LIBRARY}
-                                PRIVATE ${CUDA_nvrtc_LIBRARY}
-                                PRIVATE ${CUDA_CUDA_LIBRARY}
-                     )
+TARGET_LINK_LIBRARIES(afcuda
+    PRIVATE
+      ${CUDA_CUBLAS_LIBRARIES}
+      ${CUDA_LIBRARIES}
+      ${FreeImage_LIBS}
+      ${CUDA_CUFFT_LIBRARIES}
+      ${CUDA_cusparse_LIBRARY}
+      ${CUDA_cusolver_LIBRARY}
+      ${CUDA_nvrtc_LIBRARY}
+      ${CUDA_CUDA_LIBRARY}
+      ${CMAKE_THREAD_LIBS_INIT}
+)
 
 ADD_DEPENDENCIES(afcuda ${jit_kernel_targets})
 LIST(LENGTH GRAPHICS_DEPENDENCIES GRAPHICS_DEPENDENCIES_LEN)
