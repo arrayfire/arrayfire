@@ -237,11 +237,15 @@ void testSetSeed(const uintl seed0, const uintl seed1)
 
         // Verify different arrays created with different seeds differ
         // b8 and u9 can clash because they generate a small set of values
-        if (ty != b8 && ty != u8) ASSERT_NE(h_in0[i], h_in1[i]) << "at : " << i;
+        if (ty != b8 && ty != u8) {
+            ASSERT_NE(h_in0[i], h_in1[i]) << "at : " << i;
+        }
 
         // Verify different arrays created one after the other with same seed differ
         // b8 and u9 can clash because they generate a small set of values
-        if (ty != b8 && ty != u8) ASSERT_NE(h_in2[i], h_in3[i]) << "at : " << i;
+        if (ty != b8 && ty != u8) {
+            ASSERT_NE(h_in2[i], h_in3[i]) << "at : " << i;
+        }
     }
 
     af::setSeed(orig_seed); // Reset the seed
