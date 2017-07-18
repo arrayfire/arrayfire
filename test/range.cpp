@@ -109,6 +109,11 @@ void rangeTest(const uint x, const uint y, const uint z, const uint w, const uin
     RANGE_INIT(Range4D2,  25, 30, 2, 2, 2);
     RANGE_INIT(Range4D3,  25, 30, 2, 2, 3);
 
+    RANGE_INIT(Range1DMaxDim0, 65535 * 32 + 1, 1, 1, 1, 0);
+    RANGE_INIT(Range1DMaxDim1, 1, 65535 * 32 + 1, 1, 1, 0);
+    RANGE_INIT(Range1DMaxDim2, 1, 1, 65535 * 32 + 1, 1, 0);
+    RANGE_INIT(Range1DMaxDim3, 1, 1, 1, 65535 * 32 + 1, 0);
+
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 TEST(Range, CPP)
