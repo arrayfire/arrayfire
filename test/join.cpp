@@ -114,6 +114,32 @@ void joinTest(string pTestFile, const unsigned dim, const unsigned in0, const un
     JOIN_INIT(JoinSmall1, join_small, 1, 0, 2, 1);
     JOIN_INIT(JoinSmall2, join_small, 2, 0, 3, 2);
 
+TEST(Join, JoinLargeDim)
+{
+    //const int nx = 32;
+    const int nx = 1;
+    const int ny = 4 * 1024 * 1024;
+    const int nw = 4 * 1024 * 1024;
+
+    af::deviceGC();
+    {
+        af::array in = af::randu(nx, ny, u8);
+        af::array joined = af::join(0, in, in);
+        af::dim4 in_dims = in.dims();
+        af::dim4 joined_dims = joined.dims();
+
+        ASSERT_EQ(2*in_dims[0], joined_dims[0]);
+        //todo: uncomment as assert
+        //printf("%f\n", af::sum<float>((joined(0, af::span) - joined(1, af::span)).as(f32)));
+
+        af::array in2 = af::constant(1, (dim_t)nx, (dim_t)ny, (dim_t)2, (dim_t)nw, u8);
+        joined = af::join(3, in, in);
+        in_dims = in.dims();
+        joined_dims = joined.dims();
+        ASSERT_EQ(2*in_dims[3], joined_dims[3]);
+    }
+}
+
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 TEST(Join, CPP)
@@ -161,7 +187,6 @@ TEST(JoinMany0, CPP)
     af::array output = af::join(0, a0, a1, a2);
     af::array gold = af::join(0, a0, af::join(0, a1, a2));
 
-
     ASSERT_EQ(af::sum<float>(output - gold), 0);
 }
 
@@ -177,6 +202,5 @@ TEST(JoinMany1, CPP)
     int dim = 1;
     af::array output = af::join(dim, a0, a1, a2, a3);
     af::array gold = af::join(dim, a0, af::join(dim, a1, af::join(dim, a2, a3)));
-
     ASSERT_EQ(af::sum<float>(output - gold), 0);
 }
