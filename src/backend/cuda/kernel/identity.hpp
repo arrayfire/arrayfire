@@ -24,10 +24,10 @@ namespace kernel
     static void identity_kernel(Param<T> out, int blocks_x, int blocks_y)
     {
         const dim_t idz = blockIdx.x / blocks_x;
-        const dim_t idw = blockIdx.y / blocks_y;
+        const dim_t idw = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
 
         const dim_t blockIdx_x = blockIdx.x - idz * blocks_x;
-        const dim_t blockIdx_y = blockIdx.y - idw * blocks_y;
+        const dim_t blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - idw * blocks_y;
 
         const dim_t idx = threadIdx.x + blockIdx_x * blockDim.x;
         const dim_t idy = threadIdx.y + blockIdx_y * blockDim.y;
@@ -54,6 +54,12 @@ namespace kernel
         int blocks_y = divup(out.dims[1], threads.y);
         dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
 
+        const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+        if(blocksPerMatZ > 1) {
+            blocks.y = maxBlocksY;
+            blocks.z = blocksPerMatZ;
+        }
         CUDA_LAUNCH((identity_kernel<T>), blocks, threads, out, blocks_x, blocks_y);
         POST_LAUNCH_CHECK();
     }

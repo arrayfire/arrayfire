@@ -98,6 +98,26 @@ void IdentityCPPCheck() {
 }
 
 template<typename T>
+void IdentityLargeDimCheck() {
+    if (noDoubleTests<T>()) return;
+
+    const size_t largeDim = 65535 * 8 + 1;
+
+    dtype dty = (dtype) dtype_traits<T>::af_type;
+    array out = af::identity(largeDim, dty);
+    ASSERT_EQ(1.f, af::sum<float>(out));
+
+    out = af::identity(1, largeDim, dty);
+    ASSERT_EQ(1.f, af::sum<float>(out));
+
+    out = af::identity(1, 1, largeDim, dty);
+    ASSERT_EQ(largeDim, af::sum<float>(out));
+
+    out = af::identity(1, 1, 1, largeDim, dty);
+    ASSERT_EQ(largeDim, af::sum<float>(out));
+}
+
+template<typename T>
 void IdentityCCheck() {
     if (noDoubleTests<T>()) return;
 
@@ -154,6 +174,11 @@ TYPED_TEST(Constant, IdentityC)
 TYPED_TEST(Constant, IdentityCPP)
 {
     IdentityCPPCheck<TypeParam>();
+}
+
+TYPED_TEST(Constant, IdentityLargeDim)
+{
+    IdentityLargeDimCheck<TypeParam>();
 }
 
 TYPED_TEST(Constant, IdentityCPPError)
