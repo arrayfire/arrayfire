@@ -34,10 +34,10 @@ namespace cuda
             const int mul3 = (dim == 3);
 
             const int oz = blockIdx.x / blocksPerMatX;
-            const int ow = blockIdx.y / blocksPerMatY;
+            const int ow = (blockIdx.y + blockIdx.z * gridDim.y) / blocksPerMatY;
 
             const int blockIdx_x = blockIdx.x - oz * blocksPerMatX;
-            const int blockIdx_y = blockIdx.y - ow * blocksPerMatY;
+            const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - ow * blocksPerMatY;
 
             const int xx = threadIdx.x + blockIdx_x * blockDim.x;
             const int yy = threadIdx.y + blockIdx_y * blockDim.y;
@@ -81,6 +81,13 @@ namespace cuda
             dim3 blocks(blocksPerMatX * out.dims[2],
                         blocksPerMatY * out.dims[3],
                         1);
+
+            const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+            const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+            if(blocksPerMatZ > 1) {
+                blocks.y = maxBlocksY;
+                blocks.z = blocksPerMatZ;
+            }
 
             CUDA_LAUNCH((range_kernel<T>), blocks, threads, out, dim, blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
