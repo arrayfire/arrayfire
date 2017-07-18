@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include <iostream>
 
 namespace cuda
 {
@@ -29,20 +30,19 @@ namespace cuda
                          const int o0, const int o1, const int o2, const int o3,
                          const int blocksPerMatX, const int blocksPerMatY)
         {
-            const int iz = blockIdx.x / blocksPerMatX;
-            const int iw = blockIdx.y / blocksPerMatY;
-
-            const int blockIdx_x = blockIdx.x - iz * blocksPerMatX;
-            const int blockIdx_y = blockIdx.y - iw * blocksPerMatY;
-
-            const int xx = threadIdx.x + blockIdx_x * blockDim.x;
-            const int yy = threadIdx.y + blockIdx_y * blockDim.y;
-
             const int incy = blocksPerMatY * blockDim.y;
             const int incx = blocksPerMatX * blockDim.x;
 
-            To *d_out = out.ptr;
+            const int iz = blockIdx.x / blocksPerMatX;
+            const int blockIdx_x = blockIdx.x - iz * blocksPerMatX;
+            const int xx = threadIdx.x + blockIdx_x * blockDim.x;
+
+            To *d_out      = out.ptr;
             Ti const *d_in = in.ptr;
+
+            const int iw = (blockIdx.y + (blockIdx.z * gridDim.y)) / blocksPerMatY;
+            const int blockIdx_y = (blockIdx.y + (blockIdx.z * gridDim.y)) - iw * blocksPerMatY;
+            const int yy = threadIdx.y + blockIdx_y * blockDim.y;
 
             if(iz < in.dims[2] && iw < in.dims[3]) {
                 d_out = d_out + (iz + o2) * out.strides[2] + (iw + o3) * out.strides[3];
@@ -69,10 +69,17 @@ namespace cuda
 
             int blocksPerMatX = divup(X.dims[0], TILEX);
             int blocksPerMatY = divup(X.dims[1], TILEY);
+
             dim3 blocks(blocksPerMatX * X.dims[2],
                         blocksPerMatY * X.dims[3],
                         1);
 
+            const int maxBlocksY   = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+            const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+            if(blocksPerMatZ > 1) {
+                blocks.y = maxBlocksY;
+                blocks.z = blocksPerMatZ;
+            }
             CUDA_LAUNCH((join_kernel<To, Tx, dim>), blocks, threads,
                        out, X, offset[0], offset[1], offset[2], offset[3],
                        blocksPerMatX, blocksPerMatY);
