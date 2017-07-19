@@ -243,11 +243,12 @@ namespace opencl
                     unsigned length =0, buf_count = 0, bytes = 0;
                     Node *n = node.get();
                     JIT::Node_map_t nodes_map;
-                    n->getNodesMap(nodes_map);
+                    std::vector<JIT::Node *> full_nodes;
+                    std::vector<JIT::Node_ids> full_ids;
+                    n->getNodesMap(nodes_map, full_nodes, full_ids);
 
-                    for(auto &entry : nodes_map) {
-                        Node *node = entry.first;
-                        node->getInfo(length, buf_count, bytes);
+                    for(auto &jit_node : full_nodes) {
+                        jit_node->getInfo(length, buf_count, bytes);
                     }
 
                     if (2 * bytes > lock_bytes) {
