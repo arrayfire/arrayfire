@@ -26,7 +26,7 @@ namespace kernel
         unsigned blockIdx_x = blockIdx.x - idz * blocks_x;
 
         unsigned idx = threadIdx.x + blockIdx_x * blockDim.x;
-        unsigned idy = threadIdx.y + blockIdx.y * blockDim.y;
+        unsigned idy = threadIdx.y + (blockIdx.y + blockIdx.z * gridDim.y) * blockDim.y;
 
         if (idx >= out.dims[0] ||
             idy >= out.dims[1] ||
@@ -48,6 +48,13 @@ namespace kernel
         int blocks_y = divup(out.dims[1], threads.y);
         dim3 blocks(blocks_x * out.dims[2], blocks_y);
 
+        const int maxBlocksY   = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+        if(blocksPerMatZ > 1) {
+            blocks.y = maxBlocksY;
+            blocks.z = blocksPerMatZ;
+        }
+
         CUDA_LAUNCH((diagCreateKernel<T>), blocks, threads, out, in, num, blocks_x);
         POST_LAUNCH_CHECK();
     }
@@ -56,8 +63,8 @@ namespace kernel
     __global__ static void
     diagExtractKernel(Param<T> out, CParam<T> in, int num, int blocks_z)
     {
-        unsigned idw = blockIdx.y / blocks_z;
-        unsigned idz = blockIdx.y  - idw * blocks_z;
+        unsigned idw = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_z;
+        unsigned idz = (blockIdx.y + blockIdx.z * gridDim.y)  - idw * blocks_z;
 
         unsigned idx = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -81,6 +88,13 @@ namespace kernel
         int blocks_x = divup(out.dims[0], threads.x);
         int blocks_z = out.dims[2];
         dim3 blocks(blocks_x, out.dims[3] * blocks_z);
+
+        const int maxBlocksY   = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+        if(blocksPerMatZ > 1) {
+            blocks.y = maxBlocksY;
+            blocks.z = blocksPerMatZ;
+        }
 
         CUDA_LAUNCH((diagExtractKernel<T>), blocks, threads, out, in, num, blocks_z);
         POST_LAUNCH_CHECK();
