@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,7 +16,7 @@ namespace kernel
 {
 
 template<typename T>
-void select(Array<T> out, const Array<char> cond, const Array<T> a, const Array<T> b)
+void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b)
 {
     af::dim4 adims = a.dims();
     af::dim4 astrides = a.strides();
@@ -78,7 +78,7 @@ void select(Array<T> out, const Array<char> cond, const Array<T> a, const Array<
 }
 
 template<typename T, bool flip>
-void select_scalar(Array<T> out, const Array<char> cond, const Array<T> a, const double b)
+void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const double b)
 {
     af::dim4 astrides = a.strides();
     af::dim4 cstrides = cond.strides();

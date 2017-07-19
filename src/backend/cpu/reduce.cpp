@@ -37,8 +37,8 @@ namespace cpu
 {
 
 template<af_op_t op, typename Ti, typename To>
-using reduce_dim_func = std::function<void(Array<To>, const dim_t,
-                                           const Array<Ti>, const dim_t,
+using reduce_dim_func = std::function<void(Param<To>, const dim_t,
+                                           CParam<Ti>, const dim_t,
                                            const int, bool, double)>;
 
 template<af_op_t op, typename Ti, typename To>

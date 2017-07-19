@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <utility.hpp>
 #include <cmath>
 
@@ -18,7 +18,7 @@ namespace kernel
 {
 
 template<typename OutT, typename InT, bool IsColor>
-void bilateral(Array<OutT> out, Array<InT> const in, float const s_sigma, float const c_sigma)
+void bilateral(Param<OutT> out, CParam<InT> in, float const s_sigma, float const c_sigma)
 {
     af::dim4 const dims     = in.dims();
     af::dim4 const istrides = in.strides();

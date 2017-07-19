@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,7 +16,7 @@ namespace kernel
 {
 
 template<typename T>
-void iota(Array<T> output, const af::dim4 &sdims, const af::dim4 &tdims)
+void iota(Param<T> output, const af::dim4 &sdims, const af::dim4 &tdims)
 {
     const af::dim4 dims    = output.dims();
     T* out             = output.get();

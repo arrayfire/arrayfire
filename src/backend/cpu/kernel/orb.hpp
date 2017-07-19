@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <utility.hpp>
 
 namespace cpu
@@ -319,7 +319,7 @@ void harris_response(
     const float* scl_in,
     const unsigned total_feat,
     unsigned* usable_feat,
-    const Array<T>& image,
+    CParam<T> image,
     const unsigned block_size,
     const float k_thr,
     const unsigned patch_size)
@@ -395,7 +395,7 @@ void centroid_angle(
     const float* y_in,
     float* orientation_out,
     const unsigned total_feat,
-    const Array<T>& image,
+    CParam<T> image,
     const unsigned patch_size)
 {
     const af::dim4 idims = image.dims();
@@ -433,7 +433,7 @@ inline T get_pixel(
     const unsigned size,
     const int dist_x,
     const int dist_y,
-    const Array<T>& image,
+    CParam<T> image,
     const unsigned patch_size)
 {
     const af::dim4 idims = image.dims();
@@ -457,7 +457,7 @@ void extract_orb(
     float* y_in_out,
     const float* ori_in,
     float* size_out,
-    const Array<T>& image,
+    CParam<T> image,
     const float scl,
     const unsigned patch_size)
 {

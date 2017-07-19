@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -18,8 +18,8 @@ namespace kernel
 template<af_op_t op, typename Ti, typename To, int D>
 struct reduce_dim
 {
-    void operator()(Array<To> out, const dim_t outOffset,
-                    const Array<Ti> in, const dim_t inOffset,
+    void operator()(Param<To> out, const dim_t outOffset,
+                    CParam<Ti> in, const dim_t inOffset,
                     const int dim, bool change_nan, double nanval)
     {
         static const int D1 = D - 1;
@@ -43,8 +43,8 @@ struct reduce_dim<op, Ti, To, 0>
 
     Transform<Ti, To, op> transform;
     Binary<To, op> reduce;
-    void operator()(Array<To> out, const dim_t outOffset,
-                    const Array<Ti> in, const dim_t inOffset,
+    void operator()(Param<To> out, const dim_t outOffset,
+                    CParam<Ti> in, const dim_t inOffset,
                     const int dim, bool change_nan, double nanval)
     {
         const af::dim4 istrides = in.strides();

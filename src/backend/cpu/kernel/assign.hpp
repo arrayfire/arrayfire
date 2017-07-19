@@ -9,7 +9,7 @@
 
 #pragma once
 #include <vector>
-#include <Array.hpp>
+#include <Param.hpp>
 #include <utility.hpp>
 
 namespace cpu
@@ -18,10 +18,10 @@ namespace kernel
 {
 
 template<typename T>
-void assign(Array<T> out, Array<T> const rhs, std::vector<bool> const isSeq,
-            std::vector<af_seq> const seqs, std::vector< Array<uint> > const idxArrs)
+void assign(Param<T> out, af::dim4 dDims,
+            CParam<T> rhs, std::vector<bool> const isSeq,
+            std::vector<af_seq> const seqs, std::vector< CParam<uint> > idxArrs)
 {
-    af::dim4 dDims = out.getDataDims();
     af::dim4 pDims = out.dims();
     // retrieve dimensions & strides for array to which rhs is being copied to
     af::dim4 dst_offsets = toOffset(seqs, dDims);

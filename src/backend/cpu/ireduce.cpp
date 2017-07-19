@@ -21,8 +21,8 @@ namespace cpu
 {
 
 template<af_op_t op, typename T>
-using ireduce_dim_func = std::function<void(Array<T>, Array<uint>, const dim_t,
-                                            const Array<T>, const dim_t, const int)>;
+using ireduce_dim_func = std::function<void(Param<T>, Param<uint>, const dim_t,
+                                            CParam<T>, const dim_t, const int)>;
 
 template<af_op_t op, typename T>
 void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim)

@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,7 +16,7 @@ namespace kernel
 {
 
 template<typename T>
-void reorder(Array<T> out, const Array<T> in, const af::dim4 oDims, const af::dim4 rdims)
+void reorder(Param<T> out, CParam<T> in, const af::dim4 oDims, const af::dim4 rdims)
 {
     T* outPtr = out.get();
     const T* inPtr = in.get();

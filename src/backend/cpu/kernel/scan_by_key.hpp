@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -21,9 +21,9 @@ struct scan_dim_by_key
     bool inclusive_scan;
     scan_dim_by_key(bool inclusiveSanKey) : inclusive_scan(inclusiveSanKey) {}
 
-    void operator()(Array<To> out, dim_t outOffset,
-                    const Array<Tk> key, dim_t keyOffset,
-                    const Array<Ti> in, dim_t inOffset,
+    void operator()(Param<To> out, dim_t outOffset,
+                    CParam<Tk> key, dim_t keyOffset,
+                    CParam<Ti> in, dim_t inOffset,
                     const int dim) const
     {
         const dim4 odims    = out.dims();
@@ -49,9 +49,9 @@ struct scan_dim_by_key<op, Ti, Tk, To, 0>
     bool inclusive_scan;
     scan_dim_by_key(bool inclusiveSanKey) : inclusive_scan(inclusiveSanKey) {}
 
-    void operator()(Array<To> output, dim_t outOffset,
-                    const Array<Tk> keyinput, dim_t keyOffset,
-                    const Array<Ti> input, dim_t inOffset,
+    void operator()(Param<To> output, dim_t outOffset,
+                    CParam<Tk> keyinput, dim_t keyOffset,
+                    CParam<Ti> input, dim_t inOffset,
                     const int dim) const
     {
         const Ti* in  = input.get()    + inOffset;

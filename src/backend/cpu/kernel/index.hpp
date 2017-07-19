@@ -9,7 +9,7 @@
 
 #pragma once
 #include <vector>
-#include <Array.hpp>
+#include <Param.hpp>
 #include <utility.hpp>
 
 namespace cpu
@@ -18,12 +18,11 @@ namespace kernel
 {
 
 template<typename T>
-void index(Array<T> out, Array<T> const in,
+void index(Param<T> out, CParam<T> in, const af::dim4 dDims,
            std::vector<bool> const isSeq, std::vector<af_seq> const seqs,
-           std::vector< Array<uint> > const idxArrs)
+           std::vector<CParam<uint>> idxArrs)
 {
     const af::dim4 iDims    = in.dims();
-    const af::dim4 dDims    = in.getDataDims();
     const af::dim4 iOffs    = toOffset(seqs, dDims);
     const af::dim4 iStrds   = toStride(seqs, dDims);
     const af::dim4 oDims    = out.dims();

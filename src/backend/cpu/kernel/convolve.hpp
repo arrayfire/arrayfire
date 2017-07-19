@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -122,7 +122,7 @@ void one2one_3d(InT *optr, InT const * const iptr, AccT const * const fptr, af::
 }
 
 template<typename InT, typename AccT, dim_t baseDim, bool Expand>
-void convolve_nd(Array<InT> out, Array<InT> const signal, Array<AccT> const filter, AF_BATCH_KIND kind)
+void convolve_nd(Param<InT> out, CParam<InT> signal, CParam<AccT> filter, AF_BATCH_KIND kind)
 {
     InT * optr = out.get();
     InT const * const iptr = signal.get();
@@ -223,14 +223,12 @@ void convolve2_separable(InT *optr, InT const * const iptr, AccT const * const f
 }
 
 template<typename InT, typename AccT, bool Expand>
-void convolve2(Array<InT> out, Array<InT> const signal,
-               Array<AccT> const c_filter, Array<AccT> const r_filter,
-               af::dim4 const tDims)
+void convolve2(Param<InT> out, CParam<InT> signal,
+               CParam<AccT> c_filter, CParam<AccT> r_filter,
+               Param<InT> temp)
 {
-    Array<InT> temp = createEmptyArray<InT>(tDims);
-
-    dim_t cflen = (dim_t)c_filter.elements();
-    dim_t rflen = (dim_t)r_filter.elements();
+    dim_t cflen = (dim_t)c_filter.dims().elements();
+    dim_t rflen = (dim_t)r_filter.dims().elements();
 
     auto oDims = out.dims();
     auto sDims = signal.dims();
@@ -252,12 +250,12 @@ void convolve2(Array<InT> out, Array<InT> const signal,
             InT *optr = out.get()  + b2*oStrides[2] + o_b3Off;
 
             convolve2_separable<InT, AccT, 0, Expand>(tptr, iptr, c_filter.get(),
-                    tDims, sDims, sDims, cflen,
-                    tStrides, sStrides, c_filter.strides()[0]);
+                                                      temp.dims(), sDims, sDims, cflen,
+                                                      tStrides, sStrides, c_filter.strides(0));
 
             convolve2_separable<InT, AccT, 1, Expand>(optr, tptr, r_filter.get(),
-                    oDims, tDims, sDims, rflen,
-                    oStrides, tStrides, r_filter.strides()[0]);
+                                                      oDims, temp.dims(), sDims, rflen,
+                                                      oStrides, tStrides, r_filter.strides(0));
         }
     }
 }

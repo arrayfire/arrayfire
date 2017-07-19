@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <utility.hpp>
 #include <err_cpu.hpp>
 
@@ -37,7 +37,7 @@ cdouble getConjugate(const cdouble &in)
 }
 
 template<typename T, bool conjugate>
-void transpose(Array<T> output, const Array<T> input)
+void transpose(Param<T> output, CParam<T> input)
 {
     const dim4 odims    = output.dims();
     const dim4 ostrides = output.strides();
@@ -71,13 +71,13 @@ void transpose(Array<T> output, const Array<T> input)
 }
 
 template<typename T>
-void transpose(Array<T> out, const Array<T> in, const bool conjugate)
+void transpose(Param<T> out, CParam<T> in, const bool conjugate)
 {
     return (conjugate ? transpose<T, true>(out, in) : transpose<T, false>(out, in));
 }
 
 template<typename T, bool conjugate>
-void transpose_inplace(Array<T> input)
+void transpose_inplace(Param<T> input)
 {
     const dim4 idims    = input.dims();
     const dim4 istrides = input.strides();
@@ -112,7 +112,7 @@ void transpose_inplace(Array<T> input)
 }
 
 template<typename T>
-void transpose_inplace(Array<T> in, const bool conjugate)
+void transpose_inplace(Param<T> in, const bool conjugate)
 {
     return (conjugate ? transpose_inplace<T, true >(in) : transpose_inplace<T, false>(in));
 }

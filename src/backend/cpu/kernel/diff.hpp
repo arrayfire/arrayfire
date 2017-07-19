@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <utility.hpp>
 
 namespace cpu
@@ -17,7 +17,7 @@ namespace kernel
 {
 
 template<typename T>
-void diff1(Array<T> out, Array<T> const in, int const dim)
+void diff1(Param<T> out, CParam<T> in, int const dim)
 {
     af::dim4 dims = out.dims();
     // Bool for dimension
@@ -48,7 +48,7 @@ void diff1(Array<T> out, Array<T> const in, int const dim)
 }
 
 template<typename T>
-void diff2(Array<T> out, Array<T> const in, int const dim)
+void diff2(Param<T> out, CParam<T> in, int const dim)
 {
     af::dim4 dims = out.dims();
     // Bool for dimension

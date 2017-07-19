@@ -9,7 +9,7 @@
 
 #pragma once
 #include <limits>
-#include <Array.hpp>
+#include <Param.hpp>
 #include <utility.hpp>
 #include <ops.hpp>
 
@@ -19,7 +19,7 @@ namespace kernel
 {
 
 template<typename T, bool IsDilation>
-void morph(Array<T> out, Array<T> const in, Array<T> const mask)
+void morph(Param<T> out, CParam<T> in, CParam<T> mask)
 {
     const af::dim4 ostrides = out.strides();
     const af::dim4 istrides = in.strides();
@@ -79,7 +79,7 @@ void morph(Array<T> out, Array<T> const in, Array<T> const mask)
 }
 
 template<typename T, bool IsDilation>
-void morph3d(Array<T> out, Array<T> const in, Array<T> const mask)
+void morph3d(Param<T> out, CParam<T> in, CParam<T> mask)
 {
     const af::dim4 dims     = in.dims();
     const af::dim4 window   = mask.dims();

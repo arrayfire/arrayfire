@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,7 +16,7 @@ namespace kernel
 {
 
 template<typename T>
-void lu_split(Array<T> lower, Array<T> upper, const Array<T> in)
+void lu_split(Param<T> lower, Param<T> upper, CParam<T> in)
 {
     T *l = lower.get();
     T *u = upper.get();
@@ -64,11 +64,11 @@ void lu_split(Array<T> lower, Array<T> upper, const Array<T> in)
     }
 }
 
-void convertPivot(Array<int> p, Array<int> pivot)
+void convertPivot(Param<int> p, Param<int> pivot)
 {
     int *d_pi = pivot.get();
     int *d_po = p.get();
-    dim_t d0  = pivot.dims()[0];
+    dim_t d0  = pivot.dims(0);
     for(int j = 0; j < (int)d0; j++) {
         // 1 indexed in pivot
         std::swap(d_po[j], d_po[d_pi[j] - 1]);

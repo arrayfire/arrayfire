@@ -10,13 +10,15 @@
 #pragma once
 #include <kernel/sort_by_key.hpp>
 #include <kernel/sort_helper.hpp>
-#include <Array.hpp>
+#include <Param.hpp>
 #include <math.hpp>
 #include <algorithm>
 #include <numeric>
 #include <queue>
 #include <err_cpu.hpp>
 #include <functional>
+#include <tuple>
+#include <utility>
 
 namespace cpu
 {
@@ -24,7 +26,7 @@ namespace kernel
 {
 
 template<typename Tk, typename Tv>
-void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval, bool isAscending)
+void sort0ByKeyIterative(Param<Tk> okey, Param<Tv> oval, bool isAscending)
 {
     // Get pointers and initialize original index locations
     Tk *okey_ptr = okey.get();
@@ -32,22 +34,21 @@ void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval, bool isAscending)
 
     typedef IndexPair<Tk, Tv> CurrentPair;
 
-    dim_t size = okey.dims()[0];
-    size_t bytes = size * sizeof(CurrentPair);
-    CurrentPair *pairKeyVal = (CurrentPair *)memAlloc<char>(bytes);
+    dim_t size = okey.dims(0);
+    std::vector<CurrentPair> pairKeyVal(size);
 
-    for(dim_t w = 0; w < okey.dims()[3]; w++) {
-        dim_t okeyW = w * okey.strides()[3];
-        dim_t ovalW = w * oval.strides()[3];
+    for(dim_t w = 0; w < okey.dims(3); w++) {
+        dim_t okeyW = w * okey.strides(3);
+        dim_t ovalW = w * oval.strides(3);
 
-        for(dim_t z = 0; z < okey.dims()[2]; z++) {
-            dim_t okeyWZ = okeyW + z * okey.strides()[2];
-            dim_t ovalWZ = ovalW + z * oval.strides()[2];
+        for(dim_t z = 0; z < okey.dims(2); z++) {
+            dim_t okeyWZ = okeyW + z * okey.strides(2);
+            dim_t ovalWZ = ovalW + z * oval.strides(2);
 
-            for(dim_t y = 0; y < okey.dims()[1]; y++) {
+            for(dim_t y = 0; y < okey.dims(1); y++) {
 
-                dim_t okeyOffset = okeyWZ + y * okey.strides()[1];
-                dim_t ovalOffset = ovalWZ + y * oval.strides()[1];
+                dim_t okeyOffset = okeyWZ + y * okey.strides(1);
+                dim_t ovalOffset = ovalWZ + y * oval.strides(1);
 
                 Tk *okey_col_ptr = okey_ptr + okeyOffset;
                 Tv *oval_col_ptr = oval_ptr + ovalOffset;
@@ -57,9 +58,9 @@ void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval, bool isAscending)
                 }
 
                 if(isAscending) {
-                    std::stable_sort(pairKeyVal, pairKeyVal + size, IPCompare<Tk, Tv, true>());
+                    std::stable_sort(pairKeyVal.begin(), pairKeyVal.end(), IPCompare<Tk, Tv, true>());
                 } else {
-                    std::stable_sort(pairKeyVal, pairKeyVal + size, IPCompare<Tk, Tv, false>());
+                    std::stable_sort(pairKeyVal.begin(), pairKeyVal.end(), IPCompare<Tk, Tv, false>());
                 }
 
                 for(unsigned x = 0; x < size; x++) {
@@ -70,12 +71,11 @@ void sort0ByKeyIterative(Array<Tk> okey, Array<Tv> oval, bool isAscending)
         }
     }
 
-    memFree((char *)pairKeyVal);
     return;
 }
 
 template<typename Tk, typename Tv>
-void sortByKeyBatched(Array<Tk> okey, Array<Tv> oval, const int dim, bool isAscending)
+void sortByKeyBatched(Param<Tk> okey, Param<Tv> oval, const int dim, bool isAscending)
 {
     af::dim4 inDims = okey.dims();
 
@@ -84,11 +84,11 @@ void sortByKeyBatched(Array<Tk> okey, Array<Tv> oval, const int dim, bool isAsce
     tileDims[dim] = inDims[dim];
     seqDims[dim] = 1;
 
-    uint* key = memAlloc<uint>(inDims.elements());
+    std::vector<uint> key(inDims.elements());
     // IOTA
     {
         af::dim4 dims    = inDims;
-        uint* out        = key;
+        uint* out        = key.data();
         af::dim4 strides(1);
         for(int i = 1; i < 4; i++)
             strides[i] = strides[i-1] * dims[i-1];
@@ -116,38 +116,34 @@ void sortByKeyBatched(Array<Tk> okey, Array<Tv> oval, const int dim, bool isAsce
     Tv *oval_ptr = oval.get();
 
     typedef KeyIndexPair<Tk, Tv> CurrentTuple;
-    size_t size = okey.elements();
-    size_t bytes = okey.elements() * sizeof(CurrentTuple);
-    CurrentTuple *tupleKeyValIdx = (CurrentTuple *)memAlloc<char>(bytes);
+    size_t size = okey.dims().elements();
+    std::vector<CurrentTuple> tupleKeyValIdx(size);
 
     for(unsigned i = 0; i < size; i++) {
         tupleKeyValIdx[i] = std::make_tuple(okey_ptr[i], oval_ptr[i], key[i]);
     }
 
-    memFree(key); // key is no longer required
 
     if(isAscending) {
-      std::stable_sort(tupleKeyValIdx, tupleKeyValIdx + size, KIPCompareV<Tk, Tv, true>());
+        std::stable_sort(tupleKeyValIdx.begin(), tupleKeyValIdx.end(), KIPCompareV<Tk, Tv, true>());
     }
     else {
-      std::stable_sort(tupleKeyValIdx, tupleKeyValIdx + size, KIPCompareV<Tk, Tv, false>());
+        std::stable_sort(tupleKeyValIdx.begin(), tupleKeyValIdx.end(), KIPCompareV<Tk, Tv, false>());
     }
 
-    std::stable_sort(tupleKeyValIdx, tupleKeyValIdx + size, KIPCompareK<Tk, Tv, true>());
+    std::stable_sort(tupleKeyValIdx.begin(), tupleKeyValIdx.end(), KIPCompareK<Tk, Tv, true>());
 
-    for(unsigned x = 0; x < okey.elements(); x++) {
+    for(unsigned x = 0; x < okey.dims().elements(); x++) {
         okey_ptr[x] = std::get<0>(tupleKeyValIdx[x]);
         oval_ptr[x] = std::get<1>(tupleKeyValIdx[x]);
     }
 
-    memFree((char *)tupleKeyValIdx);
-    return;
 }
 
 template<typename Tk, typename Tv>
-void sort0ByKey(Array<Tk> okey, Array<Tv> oval, bool isAscending)
+void sort0ByKey(Param<Tk> okey, Param<Tv> oval, bool isAscending)
 {
-    int higherDims =  okey.dims()[1] * okey.dims()[2] * okey.dims()[3];
+    int higherDims =  okey.dims(1) * okey.dims(2) * okey.dims(3);
     // TODO Make a better heurisitic
     if(higherDims > 4)
         kernel::sortByKeyBatched<Tk, Tv>(okey, oval, 0, isAscending);
@@ -156,10 +152,10 @@ void sort0ByKey(Array<Tk> okey, Array<Tv> oval, bool isAscending)
 }
 
 #define INSTANTIATE(Tk, Tv)                                                             \
-    template void sort0ByKey<Tk, Tv>(Array<Tk> okey, Array<Tv> oval, bool isAscending); \
-    template void sort0ByKeyIterative<Tk, Tv>(Array<Tk> okey, Array<Tv> oval,           \
+    template void sort0ByKey<Tk, Tv>(Param<Tk> okey, Param<Tv> oval, bool isAscending); \
+    template void sort0ByKeyIterative<Tk, Tv>(Param<Tk> okey, Param<Tv> oval,           \
                                               bool isAscending);                        \
-    template void sortByKeyBatched<Tk, Tv>(Array<Tk> okey, Array<Tv> oval,              \
+    template void sortByKeyBatched<Tk, Tv>(Param<Tk> okey, Param<Tv> oval,              \
                                            const int dim, bool isAscending);
 
 #define INSTANTIATE1(Tk) \

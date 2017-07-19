@@ -9,7 +9,7 @@
 
 #pragma once
 #include <af/defines.h>
-#include <Array.hpp>
+#include <Param.hpp>
 #include <utility.hpp>
 #include <math.hpp>
 
@@ -20,7 +20,7 @@ namespace kernel
 
 
 template<typename T>
-void moments(Array<float> &output, Array<T> const &input, af_moment_type moment)
+void moments(Param<float> output, CParam<T> input, af_moment_type moment)
 {
     T const * const in       = input.get();
     af::dim4  const idims    = input.dims();

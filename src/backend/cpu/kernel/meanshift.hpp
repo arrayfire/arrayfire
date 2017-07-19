@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <vector>
 #include <utility.hpp>
 
@@ -18,7 +18,7 @@ namespace kernel
 {
 
 template<typename T, bool IsColor>
-void meanShift(Array<T> out, const Array<T> in, const float s_sigma,
+void meanShift(Param<T> out, CParam<T> in, const float s_sigma,
                const float c_sigma, const unsigned iter)
 {
     const af::dim4 dims     = in.dims();

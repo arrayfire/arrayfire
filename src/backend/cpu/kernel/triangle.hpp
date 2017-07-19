@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,7 +16,7 @@ namespace kernel
 {
 
 template<typename T, bool is_upper, bool is_unit_diag>
-void triangle(Array<T> out, const Array<T> in)
+void triangle(Param<T> out, CParam<T> in)
 {
     T *o = out.get();
     const T *i = in.get();

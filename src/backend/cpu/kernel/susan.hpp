@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,7 +16,7 @@ namespace kernel
 {
 
 template<typename T>
-void susan_responses(Array<T> output, const Array<T> input,
+void susan_responses(Param<T> output, CParam<T> input,
                      const unsigned idim0, const unsigned idim1,
                      const int radius, const float t, const float g,
                      const unsigned border_len)
@@ -52,9 +52,9 @@ void susan_responses(Array<T> output, const Array<T> input,
 }
 
 template<typename T>
-void non_maximal(Array<float> xcoords, Array<float> ycoords, Array<float> response,
+void non_maximal(Param<float> xcoords, Param<float> ycoords, Param<float> response,
                  shared_ptr<unsigned> counter, const unsigned idim0, const unsigned idim1,
-                 const Array<T> input, const unsigned border_len, const unsigned max_corners)
+                 CParam<T> input, const unsigned border_len, const unsigned max_corners)
 {
     float* x_out    = xcoords.get();
     float* y_out    = ycoords.get();

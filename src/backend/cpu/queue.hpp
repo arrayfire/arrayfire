@@ -9,6 +9,7 @@
 
 #include <util.hpp>
 #include <memory.hpp>
+#include <Param.hpp>
 
 //FIXME: Is there a better way to check for std::future not being supported ?
 #if defined(AF_DISABLE_CPU_ASYNC) || (defined(__GNUC__) && (__GCC_ATOMIC_INT_LOCK_FREE < 2 || __GCC_ATOMIC_POINTER_LOCK_FREE < 2))
@@ -62,8 +63,8 @@ public:
     void enqueue(const F func, Args... args)
     {
         count++;
-        if(sync_calls) { func( args... ); }
-        else           { aQueue.enqueue( func, args... ); }
+        if(sync_calls) { func(toParam(args)... ); }
+        else           { aQueue.enqueue(func, toParam(args)... ); }
 #ifndef NDEBUG
         sync();
 #else

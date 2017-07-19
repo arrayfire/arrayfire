@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <err_cpu.hpp>
 
 namespace cpu
@@ -17,7 +17,7 @@ namespace kernel
 {
 
 template<typename T, int d>
-void unwrap_dim(Array<T> out, const Array<T> in, const dim_t wx, const dim_t wy,
+void unwrap_dim(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
                 const dim_t sx, const dim_t sy, const dim_t px, const dim_t py)
 {
     const T *inPtr = in.get();

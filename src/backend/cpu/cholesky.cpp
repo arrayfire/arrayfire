@@ -71,11 +71,12 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
         uplo = 'U';
 
     int info = 0;
-    auto func = [&] (int& info, Array<T>& in) {
-        info = potrf_func<T>()(AF_LAPACK_COL_MAJOR, uplo, N, in.get(), in.strides()[1]);
+    auto func = [&] (int *info, Param<T> in) {
+        *info = potrf_func<T>()(AF_LAPACK_COL_MAJOR, uplo, N, in.get(), in.strides(1));
     };
 
-    getQueue().enqueue(func, info, in);
+    getQueue().enqueue(func, &info, in);
+    // Ensure the value of info has been written into info.
     getQueue().sync();
 
     return info;

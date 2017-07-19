@@ -92,7 +92,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     for (int i=0; i<baseDim; ++i)
         fftDims[i] = fft_dims[i];
 
-    auto upstream_dft = [=] (Array<convT> packed, const dim4 fftDims) {
+    auto upstream_dft = [=] (Param<convT> packed, const dim4 fftDims) {
         int fft_dims[baseDim];
         for (int i=0; i<baseDim; ++i)
             fft_dims[i] = fftDims[i];
@@ -143,7 +143,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                        filter_tmp_dims, filter_tmp_strides,
                        kind, offset);
 
-    auto upstream_idft = [=] (Array<convT> packed, const dim4 fftDims) {
+    auto upstream_idft = [=] (Param<convT> packed, const dim4 fftDims) {
         int fft_dims[baseDim];
         for (int i=0; i<baseDim; ++i)
             fft_dims[i] = fftDims[i];

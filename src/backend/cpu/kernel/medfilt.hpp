@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <vector>
 #include <algorithm>
 
@@ -18,7 +18,7 @@ namespace kernel
 {
 
 template<typename T, af_border_type Pad>
-void medfilt1(Array<T> out, const Array<T> in, dim_t w_wid)
+void medfilt1(Param<T> out, CParam<T> in, dim_t w_wid)
 {
     const af::dim4 dims     = in.dims();
     const af::dim4 istrides = in.strides();
@@ -86,7 +86,7 @@ void medfilt1(Array<T> out, const Array<T> in, dim_t w_wid)
 
 
 template<typename T, af_border_type Pad>
-void medfilt2(Array<T> out, const Array<T> in, dim_t w_len, dim_t w_wid)
+void medfilt2(Param<T> out, CParam<T> in, dim_t w_len, dim_t w_wid)
 {
     const af::dim4 dims     = in.dims();
     const af::dim4 istrides = in.strides();

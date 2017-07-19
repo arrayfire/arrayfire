@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -54,7 +54,7 @@ void join_append(To *out, const Tx *X, const af::dim4 &offset,
 }
 
 template<typename Tx, typename Ty>
-void join(Array<Tx> out, const int dim, const Array<Tx> first, const Array<Ty> second)
+void join(Param<Tx> out, const int dim, CParam<Tx> first, CParam<Ty> second)
 {
     Tx* outPtr = out.get();
     const Tx* fptr = first.get();
@@ -68,33 +68,33 @@ void join(Array<Tx> out, const int dim, const Array<Tx> first, const Array<Ty> s
     switch(dim) {
         case 0:
             join_append<Tx, Tx, 0>(outPtr, fptr, zero,
-                    odims, fdims, out.strides(), first.strides());
+                                   odims, fdims, out.strides(), first.strides());
             join_append<Tx, Ty, 0>(outPtr, sptr, calcOffset<0>(fdims),
-                    odims, sdims, out.strides(), second.strides());
+                                   odims, sdims, out.strides(), second.strides());
             break;
         case 1:
             join_append<Tx, Tx, 1>(outPtr, fptr, zero,
-                    odims, fdims, out.strides(), first.strides());
+                                   odims, fdims, out.strides(), first.strides());
             join_append<Tx, Ty, 1>(outPtr, sptr, calcOffset<1>(fdims),
-                    odims, sdims, out.strides(), second.strides());
+                                   odims, sdims, out.strides(), second.strides());
             break;
         case 2:
             join_append<Tx, Tx, 2>(outPtr, fptr, zero,
-                    odims, fdims, out.strides(), first.strides());
+                                   odims, fdims, out.strides(), first.strides());
             join_append<Tx, Ty, 2>(outPtr, sptr, calcOffset<2>(fdims),
-                    odims, sdims, out.strides(), second.strides());
+                                   odims, sdims, out.strides(), second.strides());
             break;
         case 3:
             join_append<Tx, Tx, 3>(outPtr, fptr, zero,
-                    odims, fdims, out.strides(), first.strides());
+                                   odims, fdims, out.strides(), first.strides());
             join_append<Tx, Ty, 3>(outPtr, sptr, calcOffset<3>(fdims),
-                    odims, sdims, out.strides(), second.strides());
+                                   odims, sdims, out.strides(), second.strides());
             break;
     }
 }
 
 template<typename T, int n_arrays>
-void join(const int dim, Array<T> out, const std::vector<Array<T>> inputs)
+void join(const int dim, Param<T> out, const std::vector<CParam<T>> inputs)
 {
     af::dim4 zero(0,0,0,0);
     af::dim4 d = zero;
@@ -140,4 +140,3 @@ void join(const int dim, Array<T> out, const std::vector<Array<T>> inputs)
 
 }
 }
-

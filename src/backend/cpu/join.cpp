@@ -68,38 +68,39 @@ Array<T> join(const int dim, const std::vector<Array<T>> &inputs)
         }
     }
 
+    std::vector<CParam<T>> inputParams(inputs.begin(), inputs.end());
     Array<T> out = createEmptyArray<T>(odims);
 
     switch(n_arrays) {
         case 1:
-            getQueue().enqueue(kernel::join<T, 1>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 1>, dim, out, inputParams);
             break;
         case 2:
-            getQueue().enqueue(kernel::join<T, 2>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 2>, dim, out, inputParams);
             break;
         case 3:
-            getQueue().enqueue(kernel::join<T, 3>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 3>, dim, out, inputParams);
             break;
         case 4:
-            getQueue().enqueue(kernel::join<T, 4>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 4>, dim, out, inputParams);
             break;
         case 5:
-            getQueue().enqueue(kernel::join<T, 5>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 5>, dim, out, inputParams);
             break;
         case 6:
-            getQueue().enqueue(kernel::join<T, 6>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 6>, dim, out, inputParams);
             break;
         case 7:
-            getQueue().enqueue(kernel::join<T, 7>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 7>, dim, out, inputParams);
             break;
         case 8:
-            getQueue().enqueue(kernel::join<T, 8>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 8>, dim, out, inputParams);
             break;
         case 9:
-            getQueue().enqueue(kernel::join<T, 9>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 9>, dim, out, inputParams);
             break;
         case 10:
-            getQueue().enqueue(kernel::join<T,10>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T,10>, dim, out, inputParams);
             break;
     }
 

@@ -182,26 +182,22 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
     SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, AF_STORAGE_CSR);
     sparse_.eval();
 
-    auto func = [=] (SparseArray<T> sparse, const Array<T> in) {
+    auto func = [=] (Param<T> values, Param<int> rowIdx, Param<int> colIdx, int num, CParam<T> in) {
         // Read: https://software.intel.com/en-us/node/520848
         // But job description is incorrect with regards to job[1]
         // 0 implies row major and 1 implies column major
         int j1 = 1, j2 = 0;
-        const int job[] = {0, j1, j2, 2, (int)sparse.elements(), 1};
+        const int job[] = {0, j1, j2, 2, num, 1};
 
-        const int M = in.dims()[0];
-        const int N = in.dims()[1];
+        const int M = in.dims(0);
+        const int N = in.dims(1);
 
-        int ldd = in.strides()[1];
+        int ldd = in.strides(1);
 
         int info = 0;
 
         // Have to mess up all const correctness because MKL dnscsr function
         // is bidirectional and has input/output on all pointers
-        Array<T  > &values = sparse.getValues();
-        Array<int> &rowIdx = sparse.getRowIdx();
-        Array<int> &colIdx = sparse.getColIdx();
-
         dnscsr_func<T>()(
                 job, &M, &N,
                 reinterpret_cast<ptr_type<T>>(const_cast<T*>(in.get())), &ldd,
@@ -211,7 +207,12 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
                 &info);
     };
 
-    getQueue().enqueue(func, sparse_, in_);
+
+    Array<T  > &values = sparse_.getValues();
+    Array<int> &rowIdx = sparse_.getRowIdx();
+    Array<int> &colIdx = sparse_.getColIdx();
+
+    getQueue().enqueue(func, values, rowIdx, colIdx, (int)sparse_.elements(), in_);
 
     if(stype == AF_STORAGE_CSR)
         return sparse_;
@@ -235,23 +236,21 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
     Array<T> dense_ = createValueArray<T>(in_.dims(), scalar<T>(0));
     dense_.eval();
 
-    auto func = [=] (Array<T> dense, const SparseArray<T> in) {
+    auto func = [=] (Param<T> dense,
+                     CParam<T> values, CParam<int> rowIdx,
+                     CParam<int> colIdx, int num) {
         // Read: https://software.intel.com/en-us/node/520848
         // But job description is incorrect with regards to job[1]
         // 0 implies row major and 1 implies column major
         int j1 = 1, j2 = 0;
-        const int job[] = {1, j1, j2, 2, (int)dense.elements(), 1};
+        const int job[] = {1, j1, j2, 2, num, 1};
 
-        const int M = dense.dims()[0];
-        const int N = dense.dims()[1];
+        const int M = dense.dims(0);
+        const int N = dense.dims(1);
 
-        int ldd = dense.strides()[1];
+        int ldd = dense.strides(1);
 
         int info = 0;
-
-        Array<T  > values = in.getValues();
-        Array<int> rowIdx = in.getRowIdx();
-        Array<int> colIdx = in.getColIdx();
 
         // Have to mess up all const correctness because MKL dnscsr function
         // is bidirectional and has input/output on all pointers
@@ -264,7 +263,11 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
                 &info);
     };
 
-    getQueue().enqueue(func, dense_, in_);
+    Array<T  > values = in_.getValues();
+    Array<int> rowIdx = in_.getRowIdx();
+    Array<int> colIdx = in_.getColIdx();
+
+    getQueue().enqueue(func, dense_, values, rowIdx, colIdx, (int)in_.elements());
 
     if(stype == AF_STORAGE_CSR)
         return dense_;
@@ -288,20 +291,15 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
     SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, AF_STORAGE_CSR);
     sparse_.eval();
 
-    auto func = [=] (SparseArray<T> sparse, const Array<T> in) {
-        Array<T  > values = sparse.getValues();
-        Array<int> rowIdx = sparse.getRowIdx();
-        Array<int> colIdx = sparse.getColIdx();
-
-        kernel::dense_csr<T>()(values, rowIdx, colIdx, in);
-    };
-
-    getQueue().enqueue(func, sparse_, in_);
+    Array<T  > values = sparse_.getValues();
+    Array<int> rowIdx = sparse_.getRowIdx();
+    Array<int> colIdx = sparse_.getColIdx();
 
     if(stype == AF_STORAGE_CSR)
-        return sparse_;
+        getQueue().enqueue(kernel::dense_csr<T>, values, rowIdx, colIdx, in_);
     else
         AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
+
 
     return sparse_;
 }
@@ -314,20 +312,14 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
     Array<T> dense_ = createValueArray<T>(in_.dims(), scalar<T>(0));
     dense_.eval();
 
-    auto func = [=] (Array<T> dense, const SparseArray<T> in) {
-        Array<T  > values = in.getValues();
-        Array<int> rowIdx = in.getRowIdx();
-        Array<int> colIdx = in.getColIdx();
-
-        kernel::csr_dense<T>()(dense, values, rowIdx, colIdx);
-    };
-
-    getQueue().enqueue(func, dense_, in_);
+    Array<T  > values = in_.getValues();
+    Array<int> rowIdx = in_.getRowIdx();
+    Array<int> colIdx = in_.getColIdx();
 
     if(stype == AF_STORAGE_CSR)
-        return dense_;
+        getQueue().enqueue(kernel::csr_dense<T>, dense_, values, rowIdx, colIdx);
     else
-        AF_ERROR("CPU Backend only supports Dense to CSR or COO", AF_ERR_NOT_SUPPORTED);
+        AF_ERROR("CPU Backend only supports CSR or COO to Dense", AF_ERR_NOT_SUPPORTED);
 
     return dense_;
 }
@@ -347,8 +339,8 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in)
     SparseArray<T> converted = createEmptySparseArray<T>(in.dims(), (int)in.getNNZ(), dest);
     converted.eval();
 
-    function<void (Array<T>, Array<int>, Array<int>,
-                   Array<T> const, Array<int> const, Array<int> const)
+    function<void (Param<T>, Param<int>, Param<int>,
+                   CParam<T>, CParam<int>, CParam<int>)
             > converter;
 
     if(src == AF_STORAGE_CSR && dest == AF_STORAGE_COO) {

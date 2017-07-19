@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,7 +16,7 @@ namespace kernel
 {
 
 template<typename T>
-void gradient(Array<T> grad0, Array<T> grad1, Array<T> const in)
+void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in)
 {
     const af::dim4 dims = in.dims();
 

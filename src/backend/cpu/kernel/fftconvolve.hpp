@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,7 +16,7 @@ namespace kernel
 {
 
 template<typename To, typename Ti>
-void packData(Array<To> out, const af::dim4 od, const af::dim4 os, Array<Ti> const in)
+void packData(Param<To> out, const af::dim4 od, const af::dim4 os, CParam<Ti> in)
 {
     To* out_ptr = out.get();
 
@@ -53,8 +53,8 @@ void packData(Array<To> out, const af::dim4 od, const af::dim4 os, Array<Ti> con
 }
 
 template<typename To, typename Ti>
-void padArray(Array<To> out, const af::dim4 od, const af::dim4 os,
-              Array<Ti> const in, const dim_t offset)
+void padArray(Param<To> out, const af::dim4 od, const af::dim4 os,
+              CParam<Ti> in, const dim_t offset)
 {
     To* out_ptr = out.get() + offset;
     const af::dim4 id = in.dims();
@@ -85,7 +85,7 @@ void padArray(Array<To> out, const af::dim4 od, const af::dim4 os,
 }
 
 template<typename T>
-void complexMultiply(Array<T> packed, const af::dim4 sig_dims, const af::dim4 sig_strides,
+void complexMultiply(Param<T> packed, const af::dim4 sig_dims, const af::dim4 sig_strides,
                      const af::dim4 fit_dims, const af::dim4 fit_strides,
                      AF_BATCH_KIND kind, const dim_t offset)
 {
@@ -213,8 +213,8 @@ void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
 }
 
 template<typename T, typename convT, bool roundOut, int baseDim>
-void reorder(Array<T> out, Array<convT> packed,
-             const Array<T> filter, const dim_t sig_half_d0, const dim_t fftScale,
+void reorder(Param<T> out, Param<convT> packed,
+             CParam<T> filter, const dim_t sig_half_d0, const dim_t fftScale,
              const dim4 sig_tmp_dims, const dim4 sig_tmp_strides,
              const dim4 filter_tmp_dims, const dim4 filter_tmp_strides,
              bool expand, AF_BATCH_KIND kind)

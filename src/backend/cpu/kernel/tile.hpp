@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,7 +16,7 @@ namespace kernel
 {
 
 template<typename T>
-void tile(Array<T> out, const Array<T> in)
+void tile(Param<T> out, CParam<T> in)
 {
 
     T* outPtr = out.get();

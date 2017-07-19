@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 
 namespace cpu
 {
@@ -16,7 +16,7 @@ namespace kernel
 {
 
 template<typename OutT, typename InT, af_match_type MatchT>
-void matchTemplate(Array<OutT> out, const Array<InT> sImg, const Array<InT> tImg)
+void matchTemplate(Param<OutT> out, CParam<InT> sImg, CParam<InT> tImg)
 {
     const af::dim4 sDims = sImg.dims();
     const af::dim4 tDims = tImg.dims();
@@ -31,7 +31,7 @@ void matchTemplate(Array<OutT> out, const Array<InT> sImg, const Array<InT> tImg
     const af::dim4 oStrides = out.strides();
 
     OutT tImgMean = OutT(0);
-    dim_t winNumElements = tImg.elements();
+    dim_t winNumElements = tImg.dims().elements();
     bool needMean = MatchT==AF_ZSAD || MatchT==AF_LSAD ||
         MatchT==AF_ZSSD || MatchT==AF_LSSD ||
         MatchT==AF_ZNCC;

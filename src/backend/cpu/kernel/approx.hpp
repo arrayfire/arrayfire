@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <math.hpp>
 #include "interp.hpp"
 
@@ -18,8 +18,8 @@ namespace kernel
 {
 
 template<typename InT, typename LocT, int order>
-void approx1(Array<InT> output, const Array<InT> input,
-             const Array<LocT> xposition, const float offGrid, af_interp_type method)
+void approx1(Param<InT> output, CParam<InT> input,
+             CParam<LocT> xposition, const float offGrid, af_interp_type method)
 {
     InT * out = output.get();
     const LocT *xpos = xposition.get();
@@ -68,8 +68,8 @@ void approx1(Array<InT> output, const Array<InT> input,
 }
 
 template<typename InT, typename LocT, int order>
-void approx2(Array<InT> output, const Array<InT> input,
-             const Array<LocT> xposition, const Array<LocT> yposition,
+void approx2(Param<InT> output, CParam<InT> input,
+             CParam<LocT> xposition, CParam<LocT> yposition,
              float const offGrid, af_interp_type method)
 {
     InT * out = output.get();

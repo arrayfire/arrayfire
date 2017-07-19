@@ -9,7 +9,7 @@
 
 #pragma once
 #include <vector>
-#include <Array.hpp>
+#include <Param.hpp>
 #include <utility.hpp>
 
 namespace cpu
@@ -18,8 +18,8 @@ namespace kernel
 {
 
 template<typename InT, typename IndexT>
-void lookup(Array<InT> out, Array<InT> const input,
-            Array<IndexT> const indices, unsigned const dim)
+void lookup(Param<InT> out, CParam<InT> input,
+            CParam<IndexT> indices, unsigned const dim)
 {
     const af::dim4 iDims    = input.dims();
     const af::dim4 oDims    = out.dims();

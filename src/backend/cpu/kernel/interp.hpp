@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <math.hpp>
 #include <af/constants.h>
 #include <type_traits>
@@ -91,8 +91,8 @@ struct Interp1
 template<typename InT, typename LocT>
 struct Interp1<InT, LocT, 1>
 {
-    void operator()(Array<InT> &out, int ooff,
-                    const Array<InT> &in, int ioff, LocT x,
+    void operator()(Param<InT> &out, int ooff,
+                    CParam<InT> &in, int ioff, LocT x,
                     af_interp_type  method, int batch, bool clamp)
     {
         const InT *inptr = in.get();
@@ -116,8 +116,8 @@ struct Interp1<InT, LocT, 1>
 template<typename InT, typename LocT>
 struct Interp1<InT, LocT, 2>
 {
-    void operator()(Array<InT> &out, int ooff,
-                    const Array<InT> &in, int ioff, LocT x,
+    void operator()(Param<InT> &out, int ooff,
+                    CParam<InT> &in, int ioff, LocT x,
                     af_interp_type  method, int batch, bool clamp)
     {
         typedef vtype_t<InT> VT;
@@ -155,8 +155,8 @@ struct Interp1<InT, LocT, 2>
 template<typename InT, typename LocT>
 struct Interp1<InT, LocT, 3>
 {
-    void operator()(Array<InT> &out, int ooff,
-                    const Array<InT> &in, int ioff, LocT x,
+    void operator()(Param<InT> &out, int ooff,
+                    CParam<InT> &in, int ioff, LocT x,
                     af_interp_type  method, int batch, bool clamp)
     {
         typedef vtype_t<InT> VT;
@@ -194,8 +194,8 @@ struct Interp2
 template<typename InT, typename LocT>
 struct Interp2<InT, LocT, 1>
 {
-    void operator()(Array<InT> &out, int ooff,
-                    const Array<InT> &in, int ioff, LocT x, LocT y,
+    void operator()(Param<InT> &out, int ooff,
+                    CParam<InT> &in, int ioff, LocT x, LocT y,
                     af_interp_type  method, int nimages, bool clamp)
     {
         const InT *inptr = in.get();
@@ -228,8 +228,8 @@ struct Interp2<InT, LocT, 1>
 template<typename InT, typename LocT>
 struct Interp2<InT, LocT, 2>
 {
-    void operator()(Array<InT> &out, int ooff,
-                    const Array<InT> &in, int ioff, LocT x, LocT y,
+    void operator()(Param<InT> &out, int ooff,
+                    CParam<InT> &in, int ioff, LocT x, LocT y,
                     af_interp_type  method, int nimages, bool clamp)
     {
         typedef vtype_t<InT> VT;
@@ -283,8 +283,8 @@ struct Interp2<InT, LocT, 2>
 template<typename InT, typename LocT>
 struct Interp2<InT, LocT, 3>
 {
-    void operator()(Array<InT> &out, int ooff,
-                    const Array<InT> &in, int ioff, LocT x, LocT y,
+    void operator()(Param<InT> &out, int ooff,
+                    CParam<InT> &in, int ioff, LocT x, LocT y,
                     af_interp_type  method, int nimages, bool clamp)
     {
         typedef vtype_t<InT> VT;

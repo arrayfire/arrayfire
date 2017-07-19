@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
+#include <Param.hpp>
 #include <cassert>
 
 namespace cpu
@@ -17,7 +17,7 @@ namespace kernel
 {
 
 template<typename Ti, typename To, bool isDX>
-void derivative(Array<To> output, const Array<Ti> input)
+void derivative(Param<To> output, CParam<Ti> input)
 {
     const af::dim4 dims    = input.dims();
     const af::dim4 istrides = input.strides();

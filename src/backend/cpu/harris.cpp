@@ -50,7 +50,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
     Array<T> iy = createEmptyArray<T>(idims);
 
     // Compute first order derivatives
-    getQueue().enqueue(gradient<T>, iy, ix, in);
+    gradient<T>(iy, ix, in);
 
     Array<T> ixx = createEmptyArray<T>(idims);
     Array<T> ixy = createEmptyArray<T>(idims);
@@ -108,9 +108,9 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
         y_out = createEmptyArray<float>(dim4(corners_out));
         resp_out = createEmptyArray<float>(dim4(corners_out));
 
-        auto copyFunc = [=](Array<float> x_out, Array<float> y_out,
-                            Array<float> outResponses, const Array<float> x_crnrs,
-                            const Array<float> y_crnrs, const Array<float> inResponses,
+        auto copyFunc = [=](Param<float> x_out, Param<float> y_out,
+                            Param<float> outResponses, CParam<float> x_crnrs,
+                            CParam<float> y_crnrs, CParam<float> inResponses,
                             const unsigned corners_out) {
             memcpy(x_out.get(), x_crnrs.get(), corners_out * sizeof(float));
             memcpy(y_out.get(), y_crnrs.get(), corners_out * sizeof(float));
