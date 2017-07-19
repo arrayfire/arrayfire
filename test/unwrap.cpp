@@ -138,7 +138,8 @@ void unwrapTest(string pTestFile, const unsigned resultIdx,
 
    // FIXME: This test is faulty after fixing the copy paste errors in unwrap
    // UNWRAP_INIT(UnwrapSmall44, unwrap_small, 44, 15, 10, 15, 10, 14,  9);
-
+    UNWRAP_INIT(UnwrapSmall45, unwrap_small, 45, 18, 16, 18, 16,  1,  0);
+    UNWRAP_INIT(UnwrapSmall46, unwrap_small, 46, 16, 18, 16, 18,  0,  1);
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 TEST(Unwrap, CPP)
