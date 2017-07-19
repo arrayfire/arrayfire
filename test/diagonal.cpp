@@ -54,6 +54,23 @@ TYPED_TEST(Diagonal, Create)
     }
 }
 
+TYPED_TEST(Diagonal, DISABLED_CreateLargeDim)
+{
+    if (noDoubleTests<TypeParam>()) return;
+    try {
+        af::deviceGC();
+        {
+            static const size_t largeDim = 65535 + 1;
+            array diagvals = constant(1, largeDim);
+            array out = diag(diagvals,  0, false);
+
+            ASSERT_EQ(largeDim, sum<float>(out));
+        }
+    } catch (const af::exception& ex) {
+        FAIL() << ex.what() << std::endl;
+    }
+}
+
 TYPED_TEST(Diagonal, Extract)
 {
     if (noDoubleTests<TypeParam>()) return;
@@ -75,6 +92,29 @@ TYPED_TEST(Diagonal, Extract)
                 ASSERT_EQ(input[i * data.dims(0) + i], h_out[i]);
             }
         }
+    } catch (const af::exception& ex) {
+        FAIL() << ex.what() << std::endl;
+    }
+}
+
+TYPED_TEST(Diagonal, ExtractLargeDim)
+{
+    if (noDoubleTests<TypeParam>()) return;
+
+    try {
+        static const size_t n = 10;
+        static const size_t largeDim = 65535 + 1;
+
+        array largedata = constant(1, n, n, largeDim);
+        array out = diag(largedata, 0);
+
+        ASSERT_EQ(n * largeDim, sum<float>(out));
+
+        largedata  = constant(1, n, n, 1, largeDim);
+        array out1 = diag(largedata, 0);
+
+        ASSERT_EQ(n * largeDim, sum<float>(out1));
+
     } catch (const af::exception& ex) {
         FAIL() << ex.what() << std::endl;
     }
