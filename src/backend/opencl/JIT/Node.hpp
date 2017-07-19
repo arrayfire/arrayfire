@@ -10,6 +10,7 @@
 #pragma once
 #include <platform.hpp>
 #include <optypes.hpp>
+#include <array>
 #include <string>
 #include <vector>
 #include <memory>
@@ -21,17 +22,19 @@ namespace opencl
 namespace JIT
 {
 
+    static const int MAX_CHILDREN = 2;
     class Node;
     using std::shared_ptr;
+    using std::vector;
     typedef shared_ptr<Node> Node_ptr;
 
     typedef struct
     {
         int id;
-        std::vector<int> child_ids;
+        std::array<int, MAX_CHILDREN> child_ids;
     } Node_ids;
 
-    typedef std::unordered_map<Node *, Node_ids> Node_map_t;
+    typedef std::unordered_map<Node *, int> Node_map_t;
     typedef Node_map_t::iterator Node_map_iter;
 
     class Node
@@ -40,29 +43,35 @@ namespace JIT
         const std::string m_type_str;
         const std::string m_name_str;
         const int m_height;
-        const std::vector<Node_ptr> m_children;
+        const std::array<Node_ptr, MAX_CHILDREN> m_children;
 
     public:
 
         Node(const char *type_str, const char *name_str, const int height,
-             const std::vector<Node_ptr> children)
+             const std::array<Node_ptr, MAX_CHILDREN> children)
             : m_type_str(type_str),
               m_name_str(name_str),
               m_height(height),
               m_children(children)
         {}
 
-        void getNodesMap(Node_map_t &node_map)
+        int getNodesMap(Node_map_t &node_map,
+                        vector<Node *> &full_nodes,
+                        vector<Node_ids> &full_ids)
         {
-            if (node_map.find(this) == node_map.end()) {
+            auto iter = node_map.find(this);
+            if (iter == node_map.end()) {
                 Node_ids ids;
-                for (const auto &child : m_children) {
-                    child->getNodesMap(node_map);
-                    ids.child_ids.push_back(node_map[child.get()].id);
+                for (int i = 0; i < MAX_CHILDREN && m_children[i] != nullptr; i++) {
+                    ids.child_ids[i] = m_children[i]->getNodesMap(node_map, full_nodes, full_ids);
                 }
                 ids.id = node_map.size();
-                node_map[this] = ids;
+                node_map[this] = ids.id;
+                full_nodes.push_back(this);
+                full_ids.push_back(ids);
+                return ids.id;
             }
+            return iter->second;
         }
 
         virtual void genKerName(std::stringstream &kerStream, Node_ids ids) {}
