@@ -27,18 +27,17 @@ void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> outpu
     TNJ::Node_map_t nodes;
     std::vector<T *> ptrs;
     std::vector<TNJ::TNode<T> *> output_nodes;
+    std::vector<TNJ::Node *> full_nodes;
 
     for (int i = 0; i < (int)arrays.size(); i++) {
         ptrs.push_back(arrays[i].get());
         output_nodes.push_back(reinterpret_cast<TNJ::TNode<T> *>(output_nodes_[i].get()));
-        output_nodes_[i]->getNodesMap(nodes);
+        output_nodes_[i]->getNodesMap(nodes, full_nodes);
     }
 
     bool is_linear = true;
-    std::vector<TNJ::Node *> full_nodes(nodes.size());
-    for(const auto &map_entry : nodes) {
-        full_nodes[map_entry.second] = map_entry.first;
-        is_linear &= map_entry.first->isLinear(odims.get());
+    for(auto node : full_nodes) {
+        is_linear &= node->isLinear(odims.get());
     }
 
     if (is_linear) {
@@ -86,14 +85,13 @@ void evalArray(Param<T> arr, TNJ::Node_ptr node)
     af::dim4 ostrs = arr.strides();
 
     TNJ::Node_map_t nodes;
-    node->getNodesMap(nodes);
+    std::vector<TNJ::Node *> full_nodes;
+    full_nodes.reserve(1024);
+    node->getNodesMap(nodes, full_nodes);
 
     bool is_linear = true;
-    std::vector<TNJ::Node *> full_nodes(nodes.size());
-
-    for(const auto &map_entry : nodes) {
-        full_nodes[map_entry.second] = map_entry.first;
-        is_linear &= map_entry.first->isLinear(odims.get());
+    for(auto node : full_nodes) {
+        is_linear &= node->isLinear(odims.get());
     }
 
     TNJ::TNode<T> *output_node = reinterpret_cast<TNJ::TNode<T> *>(full_nodes.back());

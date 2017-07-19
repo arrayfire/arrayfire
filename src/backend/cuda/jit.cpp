@@ -346,19 +346,23 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
     if (num_outputs == 0) return;
 
     Node_map_t nodes;
+    vector<Node *> full_nodes;
+    vector<Node_ids> full_ids;
     vector<int> output_ids;
+
+    // Reserve some space to improve performance at smaller sizes
+    output_ids.reserve(output_nodes.size());
+    full_nodes.reserve(1024);
+    full_ids.reserve(1024);
+
     for (auto &node : output_nodes) {
-        node->getNodesMap(nodes);
-        output_ids.push_back(nodes[node].id);
+        int id = node->getNodesMap(nodes, full_nodes, full_ids);
+        output_ids.push_back(id);
     }
 
-    vector<Node *> full_nodes(nodes.size());
-    vector<Node_ids> full_ids(nodes.size());
     bool is_linear = true;
-    for (auto &map_entry : nodes) {
-        full_nodes[map_entry.second.id] = map_entry.first;
-        full_ids[map_entry.second.id] = map_entry.second;
-        is_linear &= map_entry.first->isLinear(outputs[0].dims);
+    for (auto node : full_nodes) {
+        is_linear &= node->isLinear(outputs[0].dims);
     }
 
     CUfunction ker = getKernel(output_nodes, output_ids,
