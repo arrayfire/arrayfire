@@ -1537,7 +1537,7 @@ TEST(Index, ISSUE_1101_MODDIMS)
     }
 }
 
-TEST(Index, ISSUE_1846_Index_Step_Cascade)
+TEST(Index, Issue1846IndexStepCascade)
 {
     using namespace af;
     array a = randu(3, 12);
@@ -1547,11 +1547,26 @@ TEST(Index, ISSUE_1846_Index_Step_Cascade)
     EXPECT_EQ(allTrue<bool>(c == d), true);
 }
 
-TEST(Index, ISSUE_1845_Index_Step_reorder)
+TEST(Index, Issue1845IndexStepReorder)
 {
     using namespace af;
     array a = randu(1,8,1);
     array b = reorder(a,0,2,1);
     array d = reorder(b(0,0,span),2,1,0);
     EXPECT_EQ(allTrue<bool>(a.T() == d), true);
+}
+
+TEST(Index, Issue1867ChainedIndexingLeak)
+{
+    using namespace af;
+    {
+        array lInput = randn(100, 100, f32);
+        array Q3 = lInput.rows(0, 3).cols(0, 3);
+        Q3.eval();
+        af::sync();
+    }
+    size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+    ASSERT_EQ(0u, lock_buffers);
 }
