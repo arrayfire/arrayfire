@@ -245,3 +245,27 @@ TYPED_TEST(MatrixMultiply, MultiGPURectangleVector_CPP)
 }
 
 #undef DEVICE_ITERATE
+
+TEST(MatrixMultiply, ISSUE_1882)
+{
+    const int m = 2;
+    const int n = 3;
+    af::array A = af::randu(m, n);
+    af::array BB = af::randu(n, m);
+    af::array B = BB(0, af::span);
+
+    af::array res1 = af::matmul(A.T(), B.T());
+    af::array res2 = af::matmulTT(A, B);
+
+    std::vector<float> hres1(res1.elements());
+    std::vector<float> hres2(res2.elements());
+
+    res1.host(&hres1.front());
+    res2.host(&hres2.front());
+
+    ASSERT_EQ(hres1.size(), hres2.size());
+
+    for (size_t i = 0; i < hres1.size(); i++) {
+        ASSERT_NEAR(hres1[i], hres2[i], 1E-5);
+    }
+}

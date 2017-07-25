@@ -174,12 +174,13 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
         dim4 rStrides = right.strides();
 
         if(rDims[bColDim] == 1) {
+            dim_t incr = (rOpts == CblasNoTrans) ? rStrides[0] : rStrides[1];
             gemv_func<T>()(
                 CblasColMajor, lOpts,
                 lDims[0], lDims[1],
                 alpha,
                 reinterpret_cast<CBT*>(left.get()), lStrides[1],
-                reinterpret_cast<CBT*>(right.get()), rStrides[0],
+                reinterpret_cast<CBT*>(right.get()), incr,
                 beta,
                 reinterpret_cast<BT*>(output.get()), 1);
         } else {

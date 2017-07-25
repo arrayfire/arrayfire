@@ -80,12 +80,13 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     const dim4 rStrides = rhs.strides();
     cl::Event event;
     if(rDims[bColDim] == 1) {
+        dim_t incr = (rOpts == OPENCL_BLAS_NO_TRANS) ? rStrides[0] : rStrides[1];
         gpu_blas_gemv_func<T> gemv;
         OPENCL_BLAS_CHECK(
             gemv(lOpts, lDims[0], lDims[1],
                  alpha,
                  (*lhs.get())(), lhs.getOffset(), lStrides[1],
-                 (*rhs.get())(), rhs.getOffset(), rStrides[0],
+                 (*rhs.get())(), rhs.getOffset(), incr,
                  beta,
                  (*out.get())(), out.getOffset(), 1,
                  1, &getQueue()(), 0, nullptr, &event())

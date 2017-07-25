@@ -170,6 +170,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     dim4 rStrides = rhs.strides();
     if(rDims[bColDim] == 1) {
         N = lDims[aColDim];
+        dim_t incr = (rOpts == CUBLAS_OP_N) ? rStrides[0] : rStrides[1];
         CUBLAS_CHECK(gemv_func<T>()(
                          blasHandle(),
                          lOpts,
@@ -177,7 +178,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                          lDims[1],
                          &alpha,
                          lhs.get(), lStrides[1],
-                         rhs.get(), rStrides[0],
+                         rhs.get(), incr,
                          &beta,
                          out.get(), 1));
     } else {
