@@ -254,7 +254,12 @@ typedef enum {
     ///
     /// Out of bound values are symmetric over the edge
     ///
-    AF_PAD_SYM
+    AF_PAD_SYM,
+
+    ///
+    /// Out of bound values are clamped to the edge
+    ///
+    AF_PAD_CLAMP_TO_EDGE,
 } af_border_type;
 
 typedef enum {
@@ -484,6 +489,17 @@ typedef enum {
     AF_TOPK_MAX     = 2,  ///< Top k max values
     AF_TOPK_DEFAULT = 0   ///< Default option (max)
 } af_topk_function;
+
+typedef enum {
+    AF_ITERATIVE_DECONV_LANDWEBER       = 1,        ///< Landweber Deconvolution
+    AF_ITERATIVE_DECONV_RICHARDSONLUCY  = 2,        ///< Richardson-Lucy Deconvolution
+    AF_ITERATIVE_DECONV_DEFAULT         = 0,        ///< Default is Landweber deconvolution
+} af_iterative_deconv_algo;
+
+typedef enum {
+    AF_INVERSE_DECONV_TIKHONOV       = 1,        ///< Tikhonov Inverse deconvolution
+    AF_INVERSE_DECONV_DEFAULT        = 0,        ///< Default is Tikhonov deconvolution
+} af_inverse_deconv_algo;
 #endif
 
 #ifdef __cplusplus
@@ -534,6 +550,8 @@ namespace af
     typedef af_flux_function fluxFunction;
     typedef af_diffusion_eq diffusionEq;
     typedef af_topk_function topkFunction;
+    typedef af_iterative_deconv_algo iterativeDeconvAlgo;
+    typedef af_inverse_deconv_algo inverseDeconvAlgo;
 #endif
 }
 

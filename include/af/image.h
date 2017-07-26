@@ -732,6 +732,45 @@ AFAPI array anisotropicDiffusion(const af::array& in, const float timestep,
                                  const float conductance, const unsigned iterations,
                                  const fluxFunction fftype=AF_FLUX_EXPONENTIAL,
                                  const diffusionEq diffusionKind=AF_DIFFUSION_GRAD);
+
+/**
+  C++ Interface for Iterative deconvolution algorithm
+
+  \param[in] in is the blurred input image
+  \param[in] ker is the kernel(point spread function) known to have caused
+             the blur in the system
+  \param[in] iterations is the number of iterations the algorithm will run
+  \param[in] relaxFactor is the relaxation factor multiplied with distance
+             of estimate from observed image.
+  \param[in] algo takes value of type enum \ref af_iterative_deconv_algo
+             indicating the iterative deconvolution algorithm to be used
+  \return sharp image estimate generated from the blurred input
+
+  \note \p relax_factor argument is ignore when it
+  \ref AF_ITERATIVE_DECONV_RICHARDSONLUCY algorithm is used.
+
+  \ingroup image_func_iterative_deconv
+ */
+AFAPI array iterativeDeconv(const array& in, const array& ker,
+                            const unsigned iterations, const float relaxFactor,
+                            const iterativeDeconvAlgo algo);
+
+/**
+   C++ Interface for Tikhonov deconvolution algorithm
+
+   \param[in] in is the blurred input image
+   \param[in] psf is the kernel(point spread function) known to have caused
+              the blur in the system
+   \param[in] gamma is a user defined regularization constant
+   \param[in] algo takes different meaning depending on the algorithm chosen.
+              If \p algo is AF_INVERSE_DECONV_TIKHONOV, then \p gamma is
+              a user defined regularization constant.
+   \return sharp image estimate generated from the blurred input
+
+   \ingroup image_func_inverse_deconv
+ */
+AFAPI array inverseDeconv(const array& in, const array& psf,
+                          const float gamma, const inverseDeconvAlgo algo);
 #endif
 }
 #endif
@@ -1475,6 +1514,55 @@ extern "C" {
                                           const unsigned iterations,
                                           const af_flux_function fftype,
                                           const af_diffusion_eq diffusion_kind);
+#endif
+
+#if AF_API_VERSION >= 36
+    /**
+       C Interface for Iterative deconvolution algorithm
+
+       \param[out] out is the sharp estimate generated from the blurred input
+       \param[in] in is the blurred input image
+       \param[in] ker is the kernel(point spread function) known to have caused
+                  the blur in the system
+       \param[in] iterations is the number of iterations the algorithm will run
+       \param[in] relax_factor is the relaxation factor multiplied with
+                  distance of estimate from observed image.
+       \param[in] algo takes value of type enum \ref af_iterative_deconv_algo
+                  indicating the iterative deconvolution algorithm to be used
+       \return \ref AF_SUCCESS if the deconvolution is successful,
+       otherwise an appropriate error code is returned.
+
+       \note \p relax_factor argument is ignore when it
+       \ref AF_ITERATIVE_DECONV_RICHARDSONLUCY algorithm is used.
+
+       \ingroup image_func_iterative_deconv
+     */
+    AFAPI af_err af_iterative_deconv(af_array* out,
+                                     const af_array in, const af_array ker,
+                                     const unsigned iterations,
+                                     const float relax_factor,
+                                     const af_iterative_deconv_algo algo);
+
+    /**
+       C Interface for Tikhonov deconvolution algorithm
+
+       \param[out] out is the sharp estimate generated from the blurred input
+       \param[in] in is the blurred input image
+       \param[in] psf is the kernel(point spread function) known to have caused
+                  the blur in the system
+       \param[in] gamma takes different meaning depending on the algorithm
+                  chosen. If \p algo is AF_INVERSE_DECONV_TIKHONOV, then
+                  \p gamma is a user defined regularization constant.
+       \param[in] algo takes value of type enum \ref af_inverse_deconv_algo
+                  indicating the inverse deconvolution algorithm to be used
+       \return \ref AF_SUCCESS if the deconvolution is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_inverse_deconv
+     */
+    AFAPI af_err af_inverse_deconv(af_array* out, const af_array in,
+                                   const af_array psf, const float gamma,
+                                   const af_inverse_deconv_algo algo);
 #endif
 
 #ifdef __cplusplus

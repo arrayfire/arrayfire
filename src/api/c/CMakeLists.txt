@@ -64,6 +64,7 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/corrcoef.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/covariance.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/data.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/deconvolution.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/det.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/diff.cpp

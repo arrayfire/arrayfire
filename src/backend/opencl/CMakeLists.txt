@@ -284,6 +284,7 @@ target_sources(afopencl
     kernel/names.hpp
     kernel/nearest_neighbour.hpp
     kernel/orb.hpp
+    kernel/pad_array_borders.hpp
     kernel/random_engine.hpp
     kernel/range.hpp
     kernel/reduce.hpp

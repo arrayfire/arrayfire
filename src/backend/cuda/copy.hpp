@@ -12,7 +12,6 @@
 
 namespace cuda
 {
-
     template<typename T>
     void copyData(T *data, const Array<T> &A);
 
@@ -25,6 +24,12 @@ namespace cuda
     template<typename inType, typename outType>
     Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
                             outType default_value, double factor=1.0);
+
+    template<typename T>
+    Array<T> padArrayBorders(Array<T> const& in,
+                             dim4 const& lowerBoundPadding,
+                             dim4 const& upperBoundPadding,
+                             const af::borderType btype);
 
     template<typename T>
     void multiply_inplace(Array<T> &in, double val);

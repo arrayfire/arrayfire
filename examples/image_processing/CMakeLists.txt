@@ -58,6 +58,10 @@ if(ArrayFire_CPU_FOUND)
   # Gradient anisotropic diffusion example
   add_executable(gradient_diffusion_cpu gradient_diffusion.cpp)
   target_link_libraries(gradient_diffusion_cpu ArrayFire::afcpu)
+
+  #Image Deconvolution Example
+  add_executable(deconvolution_cpu deconvolution.cpp)
+  target_link_libraries(deconvolution_cpu ArrayFire::afcpu)
 endif()
 
 if(ArrayFire_CUDA_FOUND)
@@ -94,6 +98,10 @@ if(ArrayFire_CUDA_FOUND)
   # Gradient anisotropic diffusion example
   add_executable(gradient_diffusion_cuda gradient_diffusion.cpp)
   target_link_libraries(gradient_diffusion_cuda ArrayFire::afcuda)
+
+  #Image Deconvolution Example
+  add_executable(deconvolution_cuda deconvolution.cpp)
+  target_link_libraries(deconvolution_cuda ArrayFire::afcuda)
 endif()
 
 if(ArrayFire_OpenCL_FOUND)
@@ -130,4 +138,8 @@ if(ArrayFire_OpenCL_FOUND)
   # Gradient anisotropic diffusion example
   add_executable(gradient_diffusion_opencl gradient_diffusion.cpp)
   target_link_libraries(gradient_diffusion_opencl ArrayFire::afopencl)
+
+  #Image Deconvolution Example
+  add_executable(deconvolution_opencl deconvolution.cpp)
+  target_link_libraries(deconvolution_opencl ArrayFire::afopencl)
 endif()
