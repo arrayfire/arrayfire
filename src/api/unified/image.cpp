@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2015, ArrayFire
+ * Copyright (c) 2018, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -272,4 +272,19 @@ af_err af_anisotropic_diffusion(af_array* out, const af_array in, const float dt
 {
     CHECK_ARRAYS(in);
     return CALL(out, in, dt, K, iterations, fftype, eq);
+}
+
+af_err af_iterative_deconv(af_array* out, const af_array in, const af_array ker,
+                           const unsigned iterations, const float relax_factor,
+                           const af_iterative_deconv_algo algo)
+{
+    CHECK_ARRAYS(in, ker);
+    return CALL(out, in, ker, iterations, relax_factor, algo);
+}
+
+af_err af_inverse_deconv(af_array* out, const af_array in, const af_array psf,
+                         const float gamma,const af_inverse_deconv_algo algo)
+{
+    CHECK_ARRAYS(in, psf);
+    return CALL(out, in, psf, gamma, algo);
 }
