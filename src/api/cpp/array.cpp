@@ -22,9 +22,6 @@
 #include <stdexcept>
 #include <memory>
 
-
-using std::unique_ptr;
-
 namespace af
 {
     static int gforDim(af_index_t *indices)
@@ -96,6 +93,9 @@ namespace af
         array *       parent_;        //< The original array
         af_index_t    indices_[4];    //< Indexing array or seq objects
         bool          is_linear_;
+
+        // if true the parent_ object will be deleted on distruction. This is
+        // necessary only when calling indexing functions in array_proxy objects.
         bool          delete_on_destruction_;
         array_proxy_impl(array &parent, af_index_t *idx, bool linear)
             : parent_(&parent)
