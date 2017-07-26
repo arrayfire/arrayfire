@@ -6,7 +6,6 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-#include <stdexcept>
 #include <af/array.h>
 #include <af/arith.h>
 #include <af/blas.h>
@@ -19,6 +18,9 @@
 #include <af/algorithm.h>
 #include <af/internal.h>
 #include "error.hpp"
+
+#include <stdexcept>
+#include <memory>
 
 namespace af
 {
@@ -88,16 +90,34 @@ namespace af
 
     struct array::array_proxy::array_proxy_impl
     {
-        array       *parent;        // The original array
-        af_index_t  indices[4];     // Indexing array or seq objects
-        bool        lin;
+        array *       parent_;        //< The original array
+        af_index_t    indices_[4];    //< Indexing array or seq objects
+        bool          is_linear_;
+
+        // if true the parent_ object will be deleted on distruction. This is
+        // necessary only when calling indexing functions in array_proxy objects.
+        bool          delete_on_destruction_;
         array_proxy_impl(array &parent, af_index_t *idx, bool linear)
-            : parent(&parent)
-            , indices()
-            , lin(linear)
+            : parent_(&parent)
+            , indices_()
+            , is_linear_(linear)
+            , delete_on_destruction_(false)
         {
-            std::copy(idx, idx + AF_MAX_DIMS, indices);
+            std::copy(idx, idx + AF_MAX_DIMS, indices_);
         }
+
+        void delete_on_destruction(bool val) {
+            delete_on_destruction_ = val;
+        }
+
+        ~array_proxy_impl() {
+            if (delete_on_destruction_) delete parent_;
+        }
+      private:
+        array_proxy_impl(const array_proxy_impl&);
+        array_proxy_impl(const array_proxy_impl&&);
+        array_proxy_impl operator=(const array_proxy_impl&);
+        array_proxy_impl operator=(const array_proxy_impl&&);
     };
 
     array::array(const af_array handle): arr(handle)
@@ -458,21 +478,21 @@ namespace af
     array::array_proxy&
     af::array::array_proxy::operator=(const array &other)
     {
-        unsigned nd = numDims(impl->parent->get());
-        const dim4 this_dims = getDims(impl->parent->get());
+        unsigned nd = numDims(impl->parent_->get());
+        const dim4 this_dims = getDims(impl->parent_->get());
         const dim4 other_dims = other.dims();
-        int dim = gforDim(impl->indices);
+        int dim = gforDim(impl->indices_);
         af_array other_arr = other.get();
 
         bool batch_assign = false;
         bool is_reordered = false;
         if (dim >= 0) {
             //FIXME: Figure out a faster, cleaner way to do this
-            dim4 out_dims = seqToDims(impl->indices, this_dims, false);
+            dim4 out_dims = seqToDims(impl->indices_, this_dims, false);
 
             batch_assign = true;
             for (int i = 0; i < AF_MAX_DIMS; i++) {
-                if (this->impl->indices[i].isBatch) batch_assign &= (other_dims[i] == 1);
+                if (this->impl->indices_[i].isBatch) batch_assign &= (other_dims[i] == 1);
                 else                          batch_assign &= (other_dims[i] == out_dims[i]);
             }
 
@@ -495,18 +515,18 @@ namespace af
 
         af_array par_arr = 0;
 
-        if (impl->lin) {
-            AF_THROW(af_flat(&par_arr, impl->parent->get()));
+        if (impl->is_linear_) {
+            AF_THROW(af_flat(&par_arr, impl->parent_->get()));
             nd = 1;
         } else {
-            par_arr = impl->parent->get();
+            par_arr = impl->parent_->get();
         }
 
         af_array tmp = 0;
-        AF_THROW(af_assign_gen(&tmp, par_arr, nd, impl->indices, other_arr));
+        AF_THROW(af_assign_gen(&tmp, par_arr, nd, impl->indices_, other_arr));
 
         af_array res = 0;
-        if (impl->lin) {
+        if (impl->is_linear_) {
             AF_THROW(af_moddims(&res, tmp, this_dims.ndims(), this_dims.get()));
             AF_THROW(af_release_array(par_arr));
             AF_THROW(af_release_array(tmp));
@@ -514,7 +534,7 @@ namespace af
             res = tmp;
         }
 
-        impl->parent->set(res);
+        impl->parent_->set(res);
 
         if (dim >= 0 && (is_reordered || batch_assign)) {
             if (other_arr) AF_THROW(af_release_array(other_arr));
@@ -535,7 +555,7 @@ namespace af
     }
 
     af::array::array_proxy::array_proxy(const array_proxy &other)
-        : impl(new array_proxy_impl(*other.impl->parent, other.impl->indices, other.impl->lin))
+        : impl(new array_proxy_impl(*other.impl->parent_, other.impl->indices_, other.impl->is_linear_))
     {
     }
 
@@ -575,22 +595,6 @@ namespace af
         return out.host(ptr);
     }
 
-    af_array array::array_proxy::get()
-    {
-        array tmp = *this;
-        af_array out = 0;
-        AF_THROW(af_retain_array(&out, tmp.get()));
-        return out;
-    }
-
-    af_array array::array_proxy::get() const
-    {
-        array tmp = *this;
-        af_array out = 0;
-        AF_THROW(af_retain_array(&out, tmp.get()));
-        return out;
-    }
-
 #define MEM_FUNC(PREFIX, FUNC)                  \
     PREFIX array::array_proxy::FUNC() const     \
     {                                           \
@@ -621,21 +625,22 @@ namespace af
     MEM_FUNC(bool                   , isbool)
     MEM_FUNC(bool                   , issparse)
     MEM_FUNC(void                   , eval)
+    MEM_FUNC(af_array               , get)
     //MEM_FUNC(void                   , unlock)
 #undef MEM_FUNC
 
 
-#define ASSIGN_TYPE(TY, OP)                             \
-    array::array_proxy&                                 \
-    array::array_proxy::operator OP(const TY &value)    \
-    {                                                   \
-        dim4 pdims = getDims(impl->parent->get());      \
-        if (impl->lin) pdims = dim4(pdims.elements());  \
-        dim4 dims = seqToDims(impl->indices, pdims );   \
-        af::dtype ty = impl->parent->type();            \
-        array cst = constant(value, dims, ty);          \
-        return this->operator OP(cst);                  \
-    }                                                   \
+#define ASSIGN_TYPE(TY, OP)                                   \
+    array::array_proxy&                                       \
+    array::array_proxy::operator OP(const TY &value)          \
+    {                                                         \
+        dim4 pdims = getDims(impl->parent_->get());           \
+        if (impl->is_linear_) pdims = dim4(pdims.elements()); \
+        dim4 dims = seqToDims(impl->indices_, pdims );        \
+        af::dtype ty = impl->parent_->type();                 \
+        array cst = constant(value, dims, ty);                \
+        return this->operator OP(cst);                        \
+    }                                                         \
 
 #define ASSIGN_OP(OP, op1)                      \
     ASSIGN_TYPE(double             , OP)        \
@@ -686,14 +691,14 @@ namespace af
         af_array tmp = 0;
         af_array arr = 0;
 
-        if(impl->lin)  {
-            AF_THROW(af_flat(&arr, impl->parent->get()));
+        if(impl->is_linear_)  {
+            AF_THROW(af_flat(&arr, impl->parent_->get()));
         } else {
-            arr = impl->parent->get();
+            arr = impl->parent_->get();
         }
 
-        AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices));
-        if(impl->lin)  {
+        AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices_));
+        if (impl->is_linear_)  {
             AF_THROW(af_release_array(arr));
         }
 
@@ -705,18 +710,18 @@ namespace af
         af_array tmp = 0;
         af_array arr = 0;
 
-        if(impl->lin)  {
-            AF_THROW(af_flat(&arr, impl->parent->get()));
+        if(impl->is_linear_)  {
+            AF_THROW(af_flat(&arr, impl->parent_->get()));
         } else {
-            arr = impl->parent->get();
+            arr = impl->parent_->get();
         }
 
-        AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices));
-        if(impl->lin)  {
+        AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices_));
+        if(impl->is_linear_)  {
             AF_THROW(af_release_array(arr));
         }
 
-        int dim = gforDim(impl->indices);
+        int dim = gforDim(impl->indices_);
         if (tmp && dim >= 0) {
             arr = gforReorder(tmp, dim);
             if (tmp) AF_THROW(af_release_array(tmp));
@@ -727,20 +732,23 @@ namespace af
         return array(arr);
     }
 
-    //FIXME: Check if this leaks
-#define MEM_INDEX(FUNC_SIG, USAGE)                  \
-    array::array_proxy                              \
-    array::array_proxy::FUNC_SIG                    \
-    {                                               \
-        array *out = new array(this->get());        \
-        return out->USAGE;                          \
-    }                                               \
-                                                    \
-    const array::array_proxy                        \
-    array::array_proxy::FUNC_SIG const              \
-    {                                               \
-        const array *out = new array(this->get());  \
-        return out->USAGE;                          \
+#define MEM_INDEX(FUNC_SIG, USAGE)                    \
+    array::array_proxy                                \
+    array::array_proxy::FUNC_SIG                      \
+    {                                                 \
+        array* out = new array(*this);                \
+        array::array_proxy proxy = out->USAGE;        \
+        proxy.impl->delete_on_destruction(true);      \
+        return proxy;                                 \
+    }                                                 \
+                                                      \
+    const array::array_proxy                          \
+    array::array_proxy::FUNC_SIG const                \
+    {                                                 \
+        const array* out = new array(*this);          \
+        array::array_proxy proxy = out->USAGE;        \
+        proxy.impl->delete_on_destruction(true);      \
+        return proxy;                                 \
     }
 
     MEM_INDEX(row(int index)                , row(index));
