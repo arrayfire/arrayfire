@@ -39,6 +39,9 @@ namespace opencl
             offset = 0;
         }
 
+#ifdef OS_MAC
+        getQueue().finish();
+#endif
         //FIXME: Add checks
         getQueue().enqueueReadBuffer(buf, CL_TRUE,
                                      sizeof(T) * offset,
@@ -219,6 +222,9 @@ namespace opencl
     T getScalar(const Array<T> &in)
     {
         T retVal;
+#ifdef OS_MAC
+        getQueue().finish();
+#endif
         getQueue().enqueueReadBuffer(*in.get(), CL_TRUE, sizeof(T) * in.getOffset(), sizeof(T), &retVal);
         return retVal;
     }

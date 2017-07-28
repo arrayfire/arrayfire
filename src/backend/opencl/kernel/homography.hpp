@@ -193,6 +193,9 @@ int computeH(Param bestH, Param H, Param err, Param x_src, Param y_src,
 
             CL_DEBUG_FINISH(getQueue());
 
+#ifdef OS_MAC
+            getQueue().finish();
+#endif
             getQueue().enqueueReadBuffer(*finalMedian, CL_TRUE, 0, sizeof(float), &minMedian);
             getQueue().enqueueReadBuffer(*finalIdx, CL_TRUE, 0, sizeof(unsigned), &minIdx);
 
@@ -200,6 +203,9 @@ int computeH(Param bestH, Param H, Param err, Param x_src, Param y_src,
             bufferFree(finalIdx);
         }
         else {
+#ifdef OS_MAC
+          getQueue().finish();
+#endif
             getQueue().enqueueReadBuffer(*median.data, CL_TRUE, 0, sizeof(float), &minMedian);
             getQueue().enqueueReadBuffer(*idx.data, CL_TRUE, 0, sizeof(unsigned), &minIdx);
         }
@@ -228,6 +234,9 @@ int computeH(Param bestH, Param H, Param err, Param x_src, Param y_src,
 
         kernel::reduce<unsigned, unsigned, af_add_t>(totalInliers, inliers, 0, false, 0.0);
 
+#ifdef OS_MAC
+        getQueue().finish();
+#endif
         getQueue().enqueueReadBuffer(*totalInliers.data, CL_TRUE, 0, sizeof(unsigned), &inliersH);
 
         bufferFree(totalInliers.data);

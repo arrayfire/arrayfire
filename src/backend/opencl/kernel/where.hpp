@@ -128,10 +128,13 @@ static void where(Param &out, Param &in)
     }
 
     scan_first<uint, uint, af_add_t>(ltmp, ltmp);
+    #ifdef OS_MAC
+    getQueue().finish();
+    #endif
 
     // Get output size and allocate output
     uint total;
-    getQueue().enqueueReadBuffer(*rtmp.data, CL_TRUE,
+    getQueue().enqueueReadBuffer(*ltmp.data, CL_TRUE,
                                   sizeof(uint) * (rtmp_elements - 1),
                                   sizeof(uint),
                                   &total);

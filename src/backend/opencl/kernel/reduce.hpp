@@ -317,6 +317,9 @@ namespace kernel
 
             reduce_first_launcher<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x, change_nan, nanval);
 
+#ifdef OS_MAC
+            getQueue().finish();
+#endif
             unique_ptr<To[]> h_ptr(new To[tmp_elements]);
             getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr.get());
 
@@ -331,6 +334,9 @@ namespace kernel
 
         } else {
 
+#ifdef OS_MAC
+            getQueue().finish();
+#endif
             unique_ptr<Ti[]> h_ptr(new Ti[in_elements]);
             getQueue().enqueueReadBuffer(*in.data, CL_TRUE, sizeof(Ti) * in.info.offset,
                                           sizeof(Ti) * in_elements, h_ptr.get());

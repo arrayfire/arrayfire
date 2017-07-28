@@ -117,6 +117,9 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
                  *x_out, *y_out, *resp_out, *d_corners_found,
                  idim0, idim1, *resp_in, edge, max_corners);
 
+#ifdef OS_MAC
+    getQueue().finish();
+#endif
     getQueue().enqueueReadBuffer(*d_corners_found, CL_TRUE, 0, sizeof(unsigned), &corners_found);
     bufferFree(d_corners_found);
 

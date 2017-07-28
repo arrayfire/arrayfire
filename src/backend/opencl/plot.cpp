@@ -56,6 +56,9 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
         glBindBuffer(GL_ARRAY_BUFFER, plot->vertices());
         GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
+#ifdef OS_MAC
+            getQueue().finish();
+#endif
             getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, plot->verticesSize(), ptr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }

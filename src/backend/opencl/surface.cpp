@@ -56,6 +56,9 @@ void copy_surface(const Array<T> &P, forge::Surface* surface)
         glBindBuffer(GL_ARRAY_BUFFER, surface->vertices());
         GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
+#ifdef OS_MAC
+            getQueue().finish();
+#endif
             getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, surface->verticesSize(), ptr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }

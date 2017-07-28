@@ -262,6 +262,9 @@ void harris(unsigned* corners_out,
          min_r, border_len, corner_lim);
     CL_DEBUG_FINISH(getQueue());
 
+#ifdef OS_MAC
+    getQueue().finish();
+#endif
     getQueue().enqueueReadBuffer(*d_corners_found, CL_TRUE, 0, sizeof(unsigned), &corners_found);
 
     bufferFree(d_responses);

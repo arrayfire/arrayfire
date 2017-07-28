@@ -150,6 +150,9 @@ void regions(Param out, Param in)
               *out.data, out.info, *d_continue);
         CL_DEBUG_FINISH(getQueue());
 
+#ifdef OS_MAC
+        getQueue().finish();
+#endif
         getQueue().enqueueReadBuffer(*d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
     }
 

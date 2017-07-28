@@ -224,6 +224,9 @@ void edgeTrackingHysteresis(Param output, const Param strong, const Param weak)
                     *output.data, output.info, blk_x, blk_y, *d_continue);
         CL_DEBUG_FINISH(getQueue());
 
+#ifdef OS_MAC
+        getQueue().finish();
+#endif
         getQueue().enqueueReadBuffer(*d_continue, CL_TRUE, 0, sizeof(int), &notFinished);
     }
 

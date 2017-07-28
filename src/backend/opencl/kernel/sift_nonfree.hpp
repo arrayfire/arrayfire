@@ -520,6 +520,9 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
               cl::Local((SIFT_THREADS_X+2) * (SIFT_THREADS_Y+2) * 3 * sizeof(float)));
         CL_DEBUG_FINISH(getQueue());
 
+#ifdef OS_MAC
+        getQueue().finish();
+#endif
         getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &extrema_feat);
         extrema_feat = min(extrema_feat, max_feat);
 
@@ -562,6 +565,9 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         bufferFree(d_extrema_y);
         bufferFree(d_extrema_layer);
 
+#ifdef OS_MAC
+        getQueue().finish();
+#endif
         getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &interp_feat);
         interp_feat = min(interp_feat, extrema_feat);
 
@@ -629,6 +635,9 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
               *d_interp_response, *d_interp_size, interp_feat);
         CL_DEBUG_FINISH(getQueue());
 
+#ifdef OS_MAC
+        getQueue().finish();
+#endif
         getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &nodup_feat);
         nodup_feat = min(nodup_feat, interp_feat);
 
@@ -673,6 +682,9 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         bufferFree(d_nodup_response);
         bufferFree(d_nodup_size);
 
+#ifdef OS_MAC
+        getQueue().finish();
+#endif
         getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &oriented_feat);
         oriented_feat = min(oriented_feat, max_oriented_feat);
 

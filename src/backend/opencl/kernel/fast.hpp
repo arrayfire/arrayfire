@@ -136,6 +136,9 @@ void fast(const unsigned arc_length,
     CL_DEBUG_FINISH(getQueue());
 
     unsigned total;
+#ifdef OS_MAC
+    getQueue().finish();
+#endif
     getQueue().enqueueReadBuffer(*d_total, CL_TRUE, 0, sizeof(unsigned), &total);
     total = total < max_feat ? total : max_feat;
 

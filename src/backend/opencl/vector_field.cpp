@@ -58,6 +58,9 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
         glBindBuffer(GL_ARRAY_BUFFER, vector_field->vertices());
         GLubyte* pPtr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (pPtr) {
+#ifdef OS_MAC
+            getQueue().finish();
+#endif
             getQueue().enqueueReadBuffer(*points.get(), CL_TRUE, 0, vector_field->verticesSize(), pPtr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
@@ -66,6 +69,9 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
         glBindBuffer(GL_ARRAY_BUFFER, vector_field->directions());
         GLubyte* dPtr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (dPtr) {
+#ifdef OS_MAC
+          getQueue().finish();
+#endif
             getQueue().enqueueReadBuffer(*directions.get(), CL_TRUE, 0, vector_field->directionsSize(), dPtr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }

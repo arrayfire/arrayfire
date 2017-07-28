@@ -275,6 +275,9 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
               block_size, k_thr, patch_size);
         CL_DEBUG_FINISH(getQueue());
 
+#ifdef OS_MAC
+        getQueue().finish();
+#endif
         getQueue().enqueueReadBuffer(*d_usable_feat, CL_TRUE, 0, sizeof(unsigned), &usable_feat);
 
         if (lvl_feat > 0) { //This is just to supress warnings
