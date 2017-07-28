@@ -28,11 +28,11 @@ namespace cuda
         void gradient_kernel(Param<T> grad0, Param<T> grad1, CParam<T> in,
                              const int blocksPerMatX, const int blocksPerMatY)
         {
-            const int idz = blockIdx.x / blocksPerMatX;
-            const int idw = blockIdx.y / blocksPerMatY;
+            const int idz =  blockIdx.x / blocksPerMatX;
+            const int idw = (blockIdx.y + blockIdx.z * gridDim.y) / blocksPerMatY;
 
-            const int blockIdx_x = blockIdx.x - idz * blocksPerMatX;
-            const int blockIdx_y = blockIdx.y - idw * blocksPerMatY;
+            const int blockIdx_x =  blockIdx.x - idz * blocksPerMatX;
+            const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - idw * blocksPerMatY;
 
             const int xB = blockIdx_x * blockDim.x;
             const int yB = blockIdx_y * blockDim.y;
@@ -107,6 +107,12 @@ namespace cuda
                         blocksPerMatY * in.dims[3],
                         1);
 
+            const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+            const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+            if(blocksPerMatZ > 1) {
+                blocks.y = maxBlocksY;
+                blocks.z = blocksPerMatZ;
+            }
             CUDA_LAUNCH((gradient_kernel<T>), blocks, threads,
                     grad0, grad1, in, blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
