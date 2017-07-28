@@ -31,7 +31,7 @@ void convert(Param<T> out, CParam<T> in, int nBBS)
     T*       dst    = (T *      )out.ptr + (batchId * out.strides[3]);
     // global indices
     int gx = blockDim.x * (blockIdx.x-batchId*nBBS) + threadIdx.x;
-    int gy = blockDim.y * blockIdx.y + threadIdx.y;
+    int gy = blockDim.y * (blockIdx.y + blockIdx.z * gridDim.y) + threadIdx.y;
 
     if (gx < out.dims[0] && gy < out.dims[1]) {
 
@@ -104,6 +104,13 @@ void hsv2rgb_convert(Param<T> out, CParam<T> in)
     // all images are three channels, so batch
     // parameter would be along 4th dimension
     dim3 blocks(blk_x*in.dims[3], blk_y);
+
+    const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+    const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+    if(blocksPerMatZ > 1) {
+        blocks.y = maxBlocksY;
+        blocks.z = blocksPerMatZ;
+    }
 
     CUDA_LAUNCH((convert<T, isHSV2RGB>), blocks, threads, out, in, blk_x);
 
