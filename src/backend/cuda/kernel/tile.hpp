@@ -28,11 +28,11 @@ namespace cuda
         void tile_kernel(Param<T> out, CParam<T> in,
                          const int blocksPerMatX, const int blocksPerMatY)
         {
-            const int oz = blockIdx.x / blocksPerMatX;
-            const int ow = blockIdx.y / blocksPerMatY;
+            const int oz =  blockIdx.x / blocksPerMatX;
+            const int ow = (blockIdx.y + blockIdx.z * gridDim.y) / blocksPerMatY;
 
-            const int blockIdx_x = blockIdx.x - oz * blocksPerMatX;
-            const int blockIdx_y = blockIdx.y - ow * blocksPerMatY;
+            const int blockIdx_x =  blockIdx.x - oz * blocksPerMatX;
+            const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - ow * blocksPerMatY;
 
             const int xx = threadIdx.x + blockIdx_x * blockDim.x;
             const int yy = threadIdx.y + blockIdx_y * blockDim.y;
@@ -78,6 +78,12 @@ namespace cuda
                         blocksPerMatY * out.dims[3],
                         1);
 
+            const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+            const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+            if(blocksPerMatZ > 1) {
+                blocks.y = maxBlocksY;
+                blocks.z = blocksPerMatZ;
+            }
             CUDA_LAUNCH((tile_kernel<T>), blocks, threads, out, in, blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
         }
