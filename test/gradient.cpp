@@ -154,3 +154,17 @@ TEST(Grad, CPP)
     delete[] grad0Data;
     delete[] grad1Data;
 }
+
+TEST(Grad, MaxDim)
+{
+    if (noDoubleTests<float>()) return;
+
+    const size_t largeDim = 65535 * 8 + 1;
+
+    af::array input = af::constant(1, 2, largeDim);
+    af::array g0, g1;
+    af::grad(g0, g1, input);
+
+    ASSERT_EQ(0.f, af::sum<float>(g0));
+    ASSERT_EQ(0.f, af::sum<float>(g1));
+}
