@@ -103,3 +103,34 @@ TEST(gray_rgb, 32bit)
         ASSERT_FLOAT_EQ(b, h_rgb[i + boff]);
     }
 }
+
+TEST(rgb_gray, MaxDim)
+{
+    size_t largeDim = 65535 * 32 + 1;
+    af::array rgb = af::randu(1, largeDim, 3, u8);
+    af::array gray = af::rgb2gray(rgb);
+
+    std::vector<uchar> h_rgb(rgb.elements());
+    std::vector<float> h_gray(gray.elements());
+
+    rgb.host(&h_rgb[0]);
+    gray.host(&h_gray[0]);
+
+    int num = gray.elements();
+    int roff = 0;
+    int goff = num;
+    int boff = 2 * num;
+
+    const float rPercent=0.2126f;
+    const float gPercent=0.7152f;
+    const float bPercent=0.0722f;
+
+    for (int i = 0; i < num; i++) {
+        float res =
+            rPercent * h_rgb[i + roff] +
+            gPercent * h_rgb[i + goff] +
+            bPercent * h_rgb[i + boff];
+
+        ASSERT_FLOAT_EQ(res, h_gray[i]);
+    }
+}
