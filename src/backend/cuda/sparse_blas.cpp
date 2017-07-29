@@ -145,7 +145,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     // NOTE: The cuSparse library seems to be using the driver API in the
     // implementation. This is causing issues with our JIT kernel generation.
     // This may be a bug in the cuSparse library.
-    std::lock_guard<std::mutex> lock(getDriverApiMutex(getActiveDeviceId()));
+    std::lock_guard<std::recursive_mutex> lock(getDriverApiMutex(getActiveDeviceId()));
 
     // Create Sparse Matrix Descriptor
     cusparseMatDescr_t descr = 0;
