@@ -43,7 +43,7 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
 unsigned getMaxJitSize();
 
-std::mutex& getDriverApiMutex(int device);
+std::recursive_mutex& getDriverApiMutex(int device);
 
 int getDeviceCount();
 
@@ -115,7 +115,7 @@ class DeviceManager
         friend GraphicsResourceManager& interopManager();
 #endif
 
-        friend std::mutex& getDriverApiMutex(int device);
+        friend std::recursive_mutex& getDriverApiMutex(int device);
 
         friend std::string getDeviceInfo(int device);
 
@@ -149,7 +149,7 @@ class DeviceManager
         DeviceManager(DeviceManager const&);
         void operator=(DeviceManager const&);
 
-        std::mutex driver_api_mutex[MAX_DEVICES];
+        std::recursive_mutex driver_api_mutex[MAX_DEVICES];
 
         // Attributes
         std::vector<cudaDevice_t> cuDevices;
