@@ -283,7 +283,7 @@ unsigned getMaxJitSize()
     return length;
 }
 
-std::mutex& getDriverApiMutex(int device) {
+std::recursive_mutex& getDriverApiMutex(int device) {
   return DeviceManager::getInstance().driver_api_mutex[device];
 }
 
