@@ -18,6 +18,8 @@ target_sources(afcpu
   PRIVATE
     Array.cpp
     Array.hpp
+    anisotropic_diffusion.cpp
+    anisotropic_diffusion.hpp
     approx.cpp
     approx.hpp
     arith.hpp
@@ -178,6 +180,7 @@ target_sources(afcpu
 target_sources(afcpu
   PRIVATE
     kernel/Array.hpp
+    kernel/anisotropic_diffusion.hpp
     kernel/approx.hpp
     kernel/assign.hpp
     kernel/bilateral.hpp

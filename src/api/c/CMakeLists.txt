@@ -41,6 +41,7 @@ target_sources(c_api_interface
 
 target_sources(c_api_interface
   INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/anisotropic_diffusion.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/approx.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/array.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/assign.cpp

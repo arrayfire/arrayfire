@@ -462,6 +462,20 @@ typedef enum {
 } af_storage;
 #endif
 
+#if AF_API_VERSION >= 36
+typedef enum {
+    AF_FLUX_QUADRATIC   = 1,    ///< Quadratic flux function
+    AF_FLUX_EXPONENTIAL = 2,    ///< Exponential flux function
+    AF_FLUX_DEFAULT     = 0     ///< Default flux function is exponential
+} af_flux_function;
+
+typedef enum {
+    AF_DIFFUSION_GRAD = 1,      ///< Gradient diffusion equation
+    AF_DIFFUSION_MCDE = 2,      ///< Modified curvature diffusion equation
+    AF_DIFFUSION_DEFAULT = 0    ///< Default option is same as AF_DIFFUSION_GRAD
+} af_diffusion_eq;
+#endif
+
 #ifdef __cplusplus
 namespace af
 {
@@ -505,6 +519,10 @@ namespace af
 #endif
 #if AF_API_VERSION >= 35
     typedef af_canny_threshold cannyThreshold;
+#endif
+#if AF_API_VERSION >= 36
+    typedef af_flux_function fluxFunction;
+    typedef af_diffusion_eq diffusionEq;
 #endif
 }
 

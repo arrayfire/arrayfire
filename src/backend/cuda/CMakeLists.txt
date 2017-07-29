@@ -129,6 +129,7 @@ include(kernel/thrust_sort_by_key/CMakeLists.txt)
 cuda_add_library(afcuda
     scan.cu
     all.cu
+    anisotropic_diffusion.cu
     any.cu
     approx.cu
     assign.cu
@@ -205,6 +206,7 @@ cuda_add_library(afcuda
     kernel/convolve.cu
     kernel/convolve_separable.cu
 
+    kernel/anisotropic_diffusion.hpp
     kernel/approx.hpp
     kernel/assign.hpp
     kernel/atomics.hpp
@@ -283,6 +285,7 @@ cuda_add_library(afcuda
     Array.cpp
     Array.hpp
     Param.hpp
+    anisotropic_diffusion.hpp
     approx.hpp
     arith.hpp
     assign.hpp

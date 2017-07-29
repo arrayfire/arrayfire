@@ -712,6 +712,27 @@ AFAPI array canny(const array& in, const cannyThreshold thresholdType,
                   const float lowThresholdRatio, const float highThresholdRatio,
                   const unsigned sobelWindow = 3, const bool isFast = false);
 #endif
+
+#if AF_API_VERSION >= 36
+/**
+   C++ Interface for gradient anisotropic(non-linear diffusion) smoothing
+
+   \param[in] in is the input image, expects non-integral (float/double) typed af::array
+   \param[in] timestep is the time step used in solving the diffusion equation.
+   \param[in] conductance parameter controls the sensitivity of conductance in diffusion equation.
+   \param[in] iterations is the number of times the diffusion step is performed.
+   \param[in] fftype indicates whether quadratic or exponential flux function is used by algorithm.
+    \param[in] diffusionKind will let the user choose what kind of diffusion method to perform. It will take
+               any value of enum \ref diffusionEq
+   \return A filtered image that is of same size as the input.
+
+   \ingroup image_func_anisotropic_diffusion
+*/
+AFAPI array anisotropicDiffusion(const af::array& in, const float timestep,
+                                 const float conductance, const unsigned iterations,
+                                 const fluxFunction fftype=AF_FLUX_EXPONENTIAL,
+                                 const diffusionEq diffusionKind=AF_DIFFUSION_GRAD);
+#endif
 }
 #endif
 
@@ -1427,6 +1448,33 @@ extern "C" {
                           const float low_threshold_ratio,
                           const float high_threshold_ratio,
                           const unsigned sobel_window, const bool is_fast);
+#endif
+
+#if AF_API_VERSION >= 36
+    /**
+       C Interface for anisotropic diffusion
+
+       It can do both gradient and curvature based anisotropic smoothing.
+
+       \param[out] out is an af_array containing anisotropically smoothed image pixel values
+       \param[in] in is the input image, expects non-integral (float/double) typed af_array
+       \param[in] timestep is the time step used in solving the diffusion equation.
+       \param[in] conductance parameter controls the sensitivity of conductance in diffusion equation.
+       \param[in] iterations is the number of times the diffusion step is performed.
+       \param[in] fftype indicates whether quadratic or exponential flux function is used by algorithm.
+       \param[in] diffusion_kind will let the user choose what kind of diffusion method to perform. It will take
+                  any value of enum \ref af_diffusion_eq
+       \return \ref AF_SUCCESS if the moment calculation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_anisotropic_diffusion
+    */
+    AFAPI af_err af_anisotropic_diffusion(af_array* out, const af_array in,
+                                          const float timestep,
+                                          const float conductance,
+                                          const unsigned iterations,
+                                          const af_flux_function fftype,
+                                          const af_diffusion_eq diffusion_kind);
 #endif
 
 #ifdef __cplusplus

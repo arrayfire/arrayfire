@@ -5,6 +5,7 @@ target_sources(cpp_api_interface
   INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/common.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/error.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/anisotropic_diffusion.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/approx.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/array.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bilateral.cpp
