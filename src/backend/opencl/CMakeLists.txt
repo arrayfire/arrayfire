@@ -43,6 +43,8 @@ target_sources(afopencl
     Param.cpp
     Param.hpp
     all.cpp
+    anisotropic_diffusion.cpp
+    anisotropic_diffusion.hpp
     any.cpp
     api.cpp
     approx.cpp
@@ -227,6 +229,7 @@ target_sources(afopencl
 target_sources(afopencl
   PRIVATE
     kernel/KParam.hpp
+    kernel/anisotropic_diffusion.hpp
     kernel/approx.hpp
     kernel/assign.hpp
     kernel/bilateral.hpp

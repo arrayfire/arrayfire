@@ -263,3 +263,12 @@ af_err af_canny(af_array* out, const af_array in, const af_canny_threshold ct,
     CHECK_ARRAYS(in);
     return CALL(out, in, ct, t1, t2, sw, isf);
 }
+
+af_err af_anisotropic_diffusion(af_array* out, const af_array in, const float dt,
+                                const float K, const unsigned iterations,
+                                const af_flux_function fftype,
+                                const af_diffusion_eq eq)
+{
+    CHECK_ARRAYS(in);
+    return CALL(out, in, dt, K, iterations, fftype, eq);
+}

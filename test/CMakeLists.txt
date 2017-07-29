@@ -143,6 +143,7 @@ function(make_test)
   endforeach()
 endfunction(make_test)
 
+make_test(SRC anisotropic_diffusion.cpp)
 make_test(SRC approx1.cpp)
 make_test(SRC approx2.cpp)
 make_test(SRC array.cpp)

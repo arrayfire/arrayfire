@@ -262,6 +262,46 @@ discussion on it can be found [here](http://en.wikipedia.org/wiki/Sobel_operator
 
 =======================================================================
 
+\defgroup image_func_anisotropic_diffusion AnisotropicDiffusion
+\ingroup imageflt_mat
+
+\brief Anisotropic Smoothing Filter
+
+Anisotropic diffusion algorithm aims at removing noise in the images while preserving important
+features such as edges. The algorithm essentially creates a scale space representation of the
+original image, where image from previous step is used to create a new version of blurred image
+using the diffusion process. Standard isotropic diffusion methods such as gaussian blur, doesn't
+take into account the local content(smaller neighborhood of current processing pixel) while removing
+noise. Anisotropic diffusion uses the flux equations given below to achieve that. Flux equation is the
+formula used by the diffusion process to determine how much a pixel in neighborhood should contribute to
+the blurring operation being done at the current pixel at a given iteration.
+
+The flux function can be either exponential or quadratic.
+
+<table>
+<caption id="multi row">Available Flux Functions</caption>
+<tr>
+    <td> AF_FLUX_QUADRATIC </td>
+    <td>  \f$ \frac{1}{1 + (\frac{\| \nabla I\|}{K})^2} \f$  </td>
+</tr>
+<tr>
+    <td> AF_FLUX_EXPONENTIAL </td>
+    <td>  \f$ \exp{-(\frac{\| \nabla I\|}{K})^2} \f$  </td>
+</tr>
+</table>
+
+Please be cautious using the time step parameter to the function. Appropriate time steps for solving this type of p.d.e. depend on the dimensionality of the image and the order of the equation. Stable values for most 2D and 3D functions are 0.125 and 0.0625, respectively. The time step values are automatically constrained to the stable value.
+
+Another input parameter to be cautious about is the conductance parameter, lower values strongly preserve image features and vice-versa. For human vision, this value ranges from 0.5 to 2.0.
+
+#### Reference
+Pietro Perona and Jitendra Malik, `Scale-space and edge detection using anisotropic diffusion,` IEEE Transactions on Pattern Analysis Machine Intelligence, vol. 12, pp. 629-639, 1990.
+
+#### Reference
+R. Whitaker and X. Xue. `Variable-Conductance, Level-Set Curvature for Image Denoising`, International Conference on Image Processing, 2001 pp. 142-145, Vol.3.
+
+=======================================================================
+
 \defgroup cv_func_match_template matchTemplate
 \ingroup match_mat
 
