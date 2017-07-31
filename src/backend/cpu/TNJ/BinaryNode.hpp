@@ -12,6 +12,7 @@
 #include <vector>
 #include <math.hpp>
 #include "Node.hpp"
+#include <array>
 
 namespace cpu
 {
@@ -19,9 +20,14 @@ namespace cpu
     template<typename To, typename Ti, af_op_t op>
     struct BinOp
     {
-        To eval(Ti lhs, Ti rhs)
+        void eval(TNJ::array<To> &out,
+                  const TNJ::array<Ti> &lhs,
+                  const TNJ::array<Ti> &rhs,
+                  int lim)
         {
-            return scalar<To>(0);
+            for (int i = 0; i < lim; i++) {
+                out[i] = scalar<To>(0);
+            }
         }
     };
 
@@ -44,14 +50,14 @@ namespace TNJ
         {
         }
 
-        void calc(int x, int y, int z, int w)
+        void calc(int x, int y, int z, int w, int lim)
         {
-            this->m_val = m_op.eval(m_lhs->m_val, m_rhs->m_val);
+            m_op.eval(this->m_val, m_lhs->m_val, m_rhs->m_val, lim);
         }
 
-        void calc(int idx)
+        void calc(int idx, int lim)
         {
-            this->m_val = m_op.eval(m_lhs->m_val, m_rhs->m_val);
+            m_op.eval(this->m_val, m_lhs->m_val, m_rhs->m_val, lim);
         }
     };
 

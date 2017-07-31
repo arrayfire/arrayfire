@@ -21,9 +21,14 @@ namespace cpu
     template<typename To, typename Ti>
     struct BinOp<To, Ti, af_cplx2_t>
     {
-        To eval(Ti lhs, Ti rhs)
+        void eval(TNJ::array<To> &out,
+                  const TNJ::array<Ti> &lhs,
+                  const TNJ::array<Ti> &rhs,
+                  int lim)
         {
-            return To(lhs, rhs);
+            for (int i = 0; i < lim; i++) {
+                out[i] = To(lhs[i], rhs[i]);
+            }
         }
     };
 
@@ -40,15 +45,18 @@ namespace cpu
                                        reinterpret_cast<TNJ::Node *>(node)));
     }
 
-#define CPLX_UNARY_FN(op)                       \
-    template<typename To, typename Ti>          \
-    struct UnOp<To, Ti, af_##op##_t>            \
-    {                                           \
-        To eval(Ti in)                          \
-        {                                       \
-            return std::op(in);                 \
-        }                                       \
-    };                                          \
+#define CPLX_UNARY_FN(op)                               \
+    template<typename To, typename Ti>                  \
+    struct UnOp<To, Ti, af_##op##_t>                    \
+    {                                                   \
+        void eval(TNJ::array<To> &out,                  \
+                  const TNJ::array<Ti> &in, int lim)    \
+        {                                               \
+            for (int i = 0; i < lim; i++) {             \
+                out[i] = std::op(in[i]);                \
+            }                                           \
+        }                                               \
+    };                                                  \
 
     CPLX_UNARY_FN(real)
     CPLX_UNARY_FN(imag)
