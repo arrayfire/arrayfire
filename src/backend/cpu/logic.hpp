@@ -21,9 +21,14 @@ namespace cpu
     template<typename T>                        \
     struct BinOp<char, T, OP>                   \
     {                                           \
-        char eval(T lhs, T rhs)                 \
+        void eval(TNJ::array<char> &out,        \
+                  const TNJ::array<T> &lhs,     \
+                  const TNJ::array<T> &rhs,     \
+                  int lim)                      \
         {                                       \
-            return lhs op rhs;                  \
+            for (int i = 0; i < lim; i++) {     \
+                out[i] = lhs[i] op rhs[i];      \
+            }                                   \
         }                                       \
     };                                          \
 
@@ -39,16 +44,23 @@ namespace cpu
 
 #undef LOGIC_FN
 
-#define LOGIC_CPLX_FN(T, OP, op)                    \
-    template<>                                      \
-    struct BinOp<char, std::complex<T>, OP>         \
-    {                                               \
-        char eval(std::complex<T> lhs,              \
-                  std::complex<T> rhs)              \
-        {                                           \
-            return std::abs(lhs) op std::abs(rhs);  \
-        }                                           \
-    };                                              \
+#define LOGIC_CPLX_FN(T, OP, op)                \
+    template<>                                  \
+    struct BinOp<char, std::complex<T>, OP>     \
+    {                                           \
+        typedef std::complex<T> Ti;             \
+        void eval(TNJ::array<char> &out,        \
+                  const TNJ::array<Ti> &lhs,    \
+                  const TNJ::array<Ti> &rhs,    \
+                  int lim)                      \
+        {                                       \
+            for (int i = 0; i < lim; i++) {     \
+                T lhs_mag = std::abs(lhs[i]);   \
+                T rhs_mag = std::abs(rhs[i]);   \
+                out[i] = lhs_mag op rhs_mag;    \
+            }                                   \
+        }                                       \
+    };                                          \
 
 LOGIC_CPLX_FN(float, af_lt_t, <)
 LOGIC_CPLX_FN(float, af_le_t, <=)
@@ -85,9 +97,14 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
     template<typename T>                        \
     struct BinOp<T, T, OP>                      \
     {                                           \
-        T eval(T lhs, T rhs)                    \
+        void eval(TNJ::array<T> &out,           \
+                  const TNJ::array<T> &lhs,     \
+                  const TNJ::array<T> &rhs,     \
+                  int lim)                      \
         {                                       \
-            return lhs op rhs;                  \
+            for (int i = 0; i < lim; i++) {     \
+                out[i] = lhs[i] op rhs[i];      \
+            }                                   \
         }                                       \
     };                                          \
 
