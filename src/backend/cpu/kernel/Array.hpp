@@ -43,16 +43,21 @@ void evalMultiple(std::vector<Array<T>> arrays)
     }
 
     if (is_linear) {
-        int num = arrays[0].elements();
-        for (int i = 0; i < num; i++) {
+        int num = arrays[0].dims().elements();
+        int cnum = TNJ::VECTOR_LENGTH * std::ceil(double(num) / TNJ::VECTOR_LENGTH);
+        for (int i = 0; i < cnum; i += TNJ::VECTOR_LENGTH) {
+            int lim = std::min(TNJ::VECTOR_LENGTH, num - i);
             for (int n = 0; n < (int)full_nodes.size(); n++) {
-                full_nodes[n]->calc(i);
+                full_nodes[n]->calc(i, lim);
             }
             for (int n = 0; n < (int)output_nodes.size(); n++) {
-                ptrs[n][i] = output_nodes[n]->m_val;
+                std::copy(output_nodes[n]->m_val.begin(),
+                          output_nodes[n]->m_val.begin() + lim,
+                          ptrs[n] + i);
             }
         }
     } else {
+
         for (int w = 0; w < (int)odims[3]; w++) {
             dim_t offw = w * ostrs[3];
 
@@ -62,14 +67,19 @@ void evalMultiple(std::vector<Array<T>> arrays)
                 for (int y = 0; y < (int)odims[1]; y++) {
                     dim_t offy = y * ostrs[1] + offz;
 
-                    for (int x = 0; x < (int)odims[0]; x++) {
+                    int dim0 = odims[0];
+                    int cdim0 = TNJ::VECTOR_LENGTH * std::ceil(double(dim0) / TNJ::VECTOR_LENGTH);
+                    for (int x = 0; x < (int)cdim0; x += TNJ::VECTOR_LENGTH) {
+                        int lim = std::min(TNJ::VECTOR_LENGTH, dim0 - x);
                         dim_t id = x + offy;
 
                         for (int n = 0; n < (int)full_nodes.size(); n++) {
-                            full_nodes[n]->calc(x, y, z, w);
+                            full_nodes[n]->calc(x, y, z, w, lim);
                         }
                         for (int n = 0; n < (int)output_nodes.size(); n++) {
-                            ptrs[n][id] = output_nodes[n]->m_val;
+                            std::copy(output_nodes[n]->m_val.begin(),
+                                      output_nodes[n]->m_val.begin() + lim,
+                                      ptrs[n] + id);
                         }
                     }
                 }
@@ -81,53 +91,7 @@ void evalMultiple(std::vector<Array<T>> arrays)
 template<typename T>
 void evalArray(Array<T> arr)
 {
-    arr.setId(cpu::getActiveDeviceId());
-    T *ptr = arr.data.get();
-
-    af::dim4 odims = arr.dims();
-    af::dim4 ostrs = arr.strides();
-
-    TNJ::Node_map_t nodes;
-    std::vector<TNJ::Node *> full_nodes;
-    full_nodes.reserve(1024);
-    arr.node->getNodesMap(nodes, full_nodes);
-
-    bool is_linear = true;
-    for(auto node : full_nodes) {
-        is_linear &= node->isLinear(odims.get());
-    }
-
-    TNJ::TNode<T> *output_node = reinterpret_cast<TNJ::TNode<T> *>(full_nodes.back());
-    if (is_linear) {
-        int num = arr.elements();
-        for (int i = 0; i < num; i++) {
-            for (int n = 0; n < (int)full_nodes.size(); n++) {
-                full_nodes[n]->calc(i);
-            }
-            ptr[i] = output_node->m_val;
-        }
-    } else {
-        for (int w = 0; w < (int)odims[3]; w++) {
-            dim_t offw = w * ostrs[3];
-
-            for (int z = 0; z < (int)odims[2]; z++) {
-                dim_t offz = z * ostrs[2] + offw;
-
-                for (int y = 0; y < (int)odims[1]; y++) {
-                    dim_t offy = y * ostrs[1] + offz;
-
-                    for (int x = 0; x < (int)odims[0]; x++) {
-                        dim_t id = x + offy;
-
-                        for (int n = 0; n < (int)full_nodes.size(); n++) {
-                            full_nodes[n]->calc(x, y, z, w);
-                        }
-                        ptr[id] = output_node->m_val;
-                    }
-                }
-            }
-        }
-    }
+    evalMultiple<T>({arr});
 }
 
 }

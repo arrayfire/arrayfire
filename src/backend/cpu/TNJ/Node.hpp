@@ -20,7 +20,9 @@ namespace cpu
 namespace TNJ
 {
 
+    static const int VECTOR_LENGTH = 256;
     static const int MAX_CHILDREN = 2;
+
     class Node;
     using std::shared_ptr;
     using std::vector;
@@ -28,6 +30,10 @@ namespace TNJ
 
     typedef std::unordered_map<Node *, int> Node_map_t;
     typedef Node_map_t::iterator Node_map_iter;
+
+    template<typename T>
+    using array = std::array<T, VECTOR_LENGTH>;
+
 
     class Node
     {
@@ -61,11 +67,11 @@ namespace TNJ
 
         int getHeight() { return m_height; }
 
-        virtual void calc(int x, int y, int z, int w)
+        virtual void calc(int x, int y, int z, int w, int lim)
         {
         }
 
-        virtual void calc(int idx)
+        virtual void calc(int idx, int lim)
         {
         }
 
@@ -84,12 +90,12 @@ namespace TNJ
     class TNode : public Node
     {
     public:
-        T m_val;
+        alignas(16) TNJ::array<T> m_val;
     public:
         TNode(T val, const int height, const std::array<Node_ptr, MAX_CHILDREN> children) :
-            Node(height, children),
-            m_val(val)
+            Node(height, children)
             {
+                m_val.fill(val);
             }
     };
 

@@ -23,57 +23,86 @@ namespace cpu
 template<typename To, typename Ti>
 struct UnOp<To, Ti, af_cast_t>
 {
-    To eval(Ti in)
+    void eval(TNJ::array<To> &out,
+              const TNJ::array<Ti> &in, int lim)
     {
-        return To(in);
+        for (int i = 0; i < lim; i++) {
+            out[i] = To(in[i]);
+        }
     }
 };
 
 template<typename To>
 struct UnOp<To, std::complex<float>, af_cast_t>
 {
-    To eval(std::complex<float> in)
+    typedef std::complex<float> Ti;
+    void eval(TNJ::array<To> &out,
+              const TNJ::array<Ti> &in, int lim)
     {
-        return To(std::abs(in));
+        for (int i = 0; i < lim; i++) {
+            out[i] = To(std::abs(in[i]));
+        }
     }
 };
 
 template<typename To>
 struct UnOp<To, std::complex<double>, af_cast_t>
 {
-    To eval(std::complex<double> in)
+    typedef std::complex<double> Ti;
+    void eval(TNJ::array<To> &out,
+              const TNJ::array<Ti> &in, int lim)
     {
-        return To(std::abs(in));
+        for (int i = 0; i < lim; i++) {
+            out[i] = To(std::abs(in[i]));
+        }
     }
 };
+
+// DO NOT REMOVE THE TWO SPECIALIZATIONS BELOW
+// These specializations are required because we partially specialize when Ti = std::complex<T>
+// The partial specializations above expect output to be real.
+// so they To(std::abs(v)) instead of To(v) which results in incorrect values when To is complex.
 
 template<>
 struct UnOp<std::complex<float>, std::complex<double>, af_cast_t>
 {
-    std::complex<float> eval(std::complex<double> in)
+    typedef std::complex<double> Ti;
+    typedef std::complex<float> To;
+    void eval(TNJ::array<To> &out,
+              const TNJ::array<Ti> &in, int lim)
     {
-        return std::complex<float>(in);
+        for (int i = 0; i < lim; i++) {
+            out[i] = To(in[i]);
+        }
     }
 };
 
 template<>
 struct UnOp<std::complex<double>, std::complex<float>, af_cast_t>
 {
-    std::complex<double> eval(std::complex<float> in)
+    typedef std::complex<float> Ti;
+    typedef std::complex<double> To;
+    void eval(TNJ::array<To> &out,
+              const TNJ::array<Ti> &in, int lim)
     {
-        return std::complex<double>(in);
+        for (int i = 0; i < lim; i++) {
+            out[i] = To(in[i]);
+        }
     }
 };
 
-#define CAST_B8(T)                              \
-    template<>                                  \
-    struct UnOp<char, T, af_cast_t>             \
-    {                                           \
-        char eval(T in)                         \
-        {                                       \
-            return char(in != 0);               \
-        }                                       \
-    };                                          \
+#define CAST_B8(T)                                      \
+    template<>                                          \
+    struct UnOp<char, T, af_cast_t>                     \
+    {                                                   \
+        void eval(TNJ::array<char> &out,                \
+                  const TNJ::array<T> &in, int lim)     \
+        {                                               \
+            for (int i = 0; i < lim; i++) {             \
+                out[i] = char(in[i] != 0);              \
+            }                                           \
+        }                                               \
+    };                                                  \
 
 CAST_B8(float)
 CAST_B8(double)
