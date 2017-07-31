@@ -15,13 +15,15 @@
 
 namespace cpu
 {
-
     template<typename To, typename Ti, af_op_t op>
     struct UnOp
     {
-        To eval(Ti in)
+        void eval(TNJ::array<To> &out,
+                  const TNJ::array<Ti> &in, int lim)
         {
-            return scalar<To>(0);
+            for (int i = 0; i < lim; i++) {
+                out[i] = To(in[i]);
+            }
         }
     };
 
@@ -33,7 +35,7 @@ namespace TNJ
     {
 
     protected:
-        UnOp <To, Ti, op> m_op;
+        UnOp<To, Ti, op> m_op;
         TNode<Ti> *m_child;
 
     public:
@@ -43,15 +45,14 @@ namespace TNJ
         {
         }
 
-
-        void calc(int x, int y, int z, int w)
+        void calc(int x, int y, int z, int w, int lim)
         {
-            this->m_val = m_op.eval(m_child->m_val);
+            m_op.eval(this->m_val, m_child->m_val, lim);
         }
 
-        void calc(int idx)
+        void calc(int idx, int lim)
         {
-            this->m_val = m_op.eval(m_child->m_val);
+            m_op.eval(this->m_val, m_child->m_val, lim);
         }
 
     };
