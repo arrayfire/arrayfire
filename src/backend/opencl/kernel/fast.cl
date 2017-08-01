@@ -30,14 +30,14 @@ inline int idx(const int x, const int y)
 // Tests if a pixel x > p + thr
 inline int test_greater(const float x, const float p, const float thr)
 {
-    return (x >= p + thr);
+    return (x > p + thr);
 }
 
 // test_smaller()
 // Tests if a pixel x < p - thr
 inline int test_smaller(const float x, const float p, const float thr)
 {
-    return (x <= p - thr);
+    return (x < p - thr);
 }
 
 // test_pixel()
@@ -46,7 +46,7 @@ inline int test_smaller(const float x, const float p, const float thr)
 // Returns  1 when x > p + thr
 inline int test_pixel(__local T* local_image, const float p, const float thr, const int x, const int y)
 {
-    return -test_smaller((float)local_image[idx(x,y)], p, thr) | test_greater((float)local_image[idx(x,y)], p, thr);
+    return -test_smaller((float)local_image[idx(x,y)], p, thr) + test_greater((float)local_image[idx(x,y)], p, thr);
 }
 
 void locate_features_core(
