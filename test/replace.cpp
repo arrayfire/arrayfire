@@ -173,3 +173,31 @@ TEST(Replace, 4D)
         ASSERT_EQ(hc[i], hb[i]) << "at " << i;
     }
 }
+
+TEST(Replace, ISSUE_1683)
+{
+    array A = randu(10, 20, f32);
+    std::vector<float> ha1(A.elements());
+    A.host(ha1.data());
+
+    array B = A(0, span);
+    replace(B, A(0, span) > 0.5, 0);
+
+    std::vector<float> ha2(A.elements());
+    A.host(ha2.data());
+
+    std::vector<float> hb(B.elements());
+    B.host(hb.data());
+
+    // Ensures A is not modified by replace
+    for (int i = 0; i < (int)A.elements(); i++) {
+        ASSERT_EQ(ha1[i], ha2[i]);
+    }
+
+    // Ensures replace on B works as expected
+    for (int i = 0; i < (int)B.elements(); i++) {
+        float val = ha1[i * A.dims(0)];
+        val = val < 0.5 ? 0 : val;
+        ASSERT_EQ(val, hb[i]);
+    }
+}
