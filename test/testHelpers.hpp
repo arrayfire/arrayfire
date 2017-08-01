@@ -330,6 +330,14 @@ bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance)
     return true;
 }
 
+template<typename T>
+af::array normalize(const af::array &p_in)
+{
+    T mx = af::max<T>(p_in);
+    T mn = af::min<T>(p_in);
+    return (p_in-mn)/(mx-mn);
+}
+
 template<typename T, typename Other>
 struct is_same_type{
     static const bool value = false;
