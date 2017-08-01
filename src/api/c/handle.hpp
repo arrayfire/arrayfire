@@ -120,3 +120,22 @@ static void releaseHandle(const af_array arr)
 af_array retain(const af_array in);
 
 af::dim4 verifyDims(const unsigned ndims, const dim_t * const dims);
+
+
+template<typename T>
+static detail::Array<T> &
+getCopyOnWriteArray(const af_array &arr)
+{
+    detail::Array<T> *A = reinterpret_cast<detail::Array<T>*>(arr);
+
+    if ((af_dtype)af::dtype_traits<T>::af_type != A->getType())
+        AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
+
+    ARG_ASSERT(0, A->isSparse() == false);
+
+    if (A->useCount() > 1) {
+        *A = copyArray(*A);
+    }
+
+    return *A;
+}
