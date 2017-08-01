@@ -47,19 +47,19 @@ int idx(const int x, const int y)
 }
 
 // test_greater()
-// Tests if a pixel x >= p + thr
+// Tests if a pixel x > p + thr
 inline __device__
 int test_greater(const float x, const float p, const float thr)
 {
-    return (x >= p + thr);
+    return (x > p + thr);
 }
 
 // test_smaller()
-// Tests if a pixel x <= p - thr
+// Tests if a pixel x < p - thr
 inline __device__
 int test_smaller(const float x, const float p, const float thr)
 {
-    return (x <= p - thr);
+    return (x < p - thr);
 }
 
 // test_pixel()
@@ -70,7 +70,7 @@ template<typename T>
 inline __device__
 int test_pixel(const T* local_image, const float p, const float thr, const int x, const int y)
 {
-    return -test_smaller((float)local_image[idx(x,y)], p, thr) | test_greater((float)local_image[idx(x,y)], p, thr);
+    return -test_smaller((float)local_image[idx(x,y)], p, thr) + test_greater((float)local_image[idx(x,y)], p, thr);
 }
 
 // max_val()
