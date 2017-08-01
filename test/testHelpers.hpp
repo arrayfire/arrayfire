@@ -307,7 +307,7 @@ template<typename T>
 bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance)
 {
     double accum  = 0.0;
-    double maxion = FLT_MAX;//(double)std::numeric_limits<T>::lowest();
+    double maxion = FLT_MIN;//(double)std::numeric_limits<T>::lowest();
     double minion = FLT_MAX;//(double)std::numeric_limits<T>::max();
 
     for(dim_t i=0;i<data_size;i++)
