@@ -95,29 +95,54 @@ void cannyImageOtsuTest(string pTestFile, bool isColor)
 
     for (size_t testId=0; testId<testCount; ++testId) {
 
-        af_array inArray  = 0;
-        af_array outArray = 0;
-        af_array goldArray= 0;
-        dim_t nElems   = 0;
+        af_array _inArray   = 0;
+        af_array inArray    = 0;
+        af_array _outArray  = 0;
+        af_array cstArray   = 0;
+        af_array mulArray   = 0;
+        af_array outArray   = 0;
+        af_array goldArray  = 0;
+        dim_t nElems        = 0;
 
         inFiles[testId].insert(0,string(TEST_DIR "/CannyEdgeDetector/"));
         outFiles[testId].insert(0,string(TEST_DIR "/CannyEdgeDetector/"));
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray, inFiles[testId].c_str(), isColor));
+        af_dtype type = (af_dtype)af::dtype_traits<T>::af_type;
+
+        ASSERT_EQ(AF_SUCCESS, af_load_image(&_inArray, inFiles[testId].c_str(), isColor));
+
+        ASSERT_EQ(AF_SUCCESS, af_cast(&inArray, _inArray, type));
+
         ASSERT_EQ(AF_SUCCESS, af_load_image_native(&goldArray, outFiles[testId].c_str()));
+
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_canny(&outArray, inArray, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false));
+        ASSERT_EQ(AF_SUCCESS, af_canny(&_outArray, inArray, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false));
 
-        std::vector<char> outData(nElems);
+        unsigned ndims = 0;
+        dim_t dims[4];
+
+        ASSERT_EQ(AF_SUCCESS, af_get_numdims(&ndims, _outArray));
+        ASSERT_EQ(AF_SUCCESS, af_get_dims(dims, dims+1, dims+2, dims+3, _outArray));
+
+        ASSERT_EQ(AF_SUCCESS, af_constant(&cstArray, 255.0, ndims, dims, f32));
+
+        ASSERT_EQ(AF_SUCCESS, af_mul(&mulArray, cstArray, _outArray, false));
+        ASSERT_EQ(AF_SUCCESS, af_cast(&outArray, mulArray, u8));
+
+        std::vector<unsigned char> outData(nElems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
-        std::vector<char> goldData(nElems);
+        std::vector<unsigned char> goldData(nElems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
 
         ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 1.0e-3));
 
+        ASSERT_EQ(AF_SUCCESS, af_release_array(_inArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(cstArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(mulArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(_outArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray));
     }

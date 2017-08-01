@@ -307,7 +307,7 @@ template<typename T>
 bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance)
 {
     double accum  = 0.0;
-    double maxion = FLT_MAX;//(double)std::numeric_limits<T>::lowest();
+    double maxion = -FLT_MAX;//(double)std::numeric_limits<T>::lowest();
     double minion = FLT_MAX;//(double)std::numeric_limits<T>::max();
 
     for(dim_t i=0;i<data_size;i++)
@@ -315,16 +315,16 @@ bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance)
         double dTemp = (double)data[i];
         double gTemp = (double)gold[i];
         double diff  = gTemp-dTemp;
-        double err   = std::abs(diff) > 1.0e-4 ? diff : 0.0f;
-        accum  += std::pow(err,2.0);
+        double err   = (std::isfinite(diff) && (std::abs(diff) > 1.0e-4)) ? diff : 0.0f;
+        accum  += std::pow(err, 2.0);
         maxion  = std::max(maxion, dTemp);
         minion  = std::min(minion, dTemp);
     }
-    accum      /= data_size;
+    accum /= data_size;
     double NRMSD = std::sqrt(accum)/(maxion-minion);
 
     std::cout<<"NRMSD = "<<NRMSD<<std::endl;
-    if (NRMSD > tolerance)
+    if (std::isnan(NRMSD) || NRMSD > tolerance)
         return false;
 
     return true;
