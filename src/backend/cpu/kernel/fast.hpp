@@ -41,14 +41,14 @@ inline int idx(int y, int x, unsigned idim0)
 // Tests if a pixel x > p + thr
 inline int test_greater(float x, float p, float thr)
 {
-    return (x >= p + thr);
+    return (x > p + thr);
 }
 
 // test_smaller()
 // Tests if a pixel x < p - thr
 inline int test_smaller(float x, float p, float thr)
 {
-    return (x <= p - thr);
+    return (x < p - thr);
 }
 
 // test_pixel()
@@ -58,7 +58,7 @@ inline int test_smaller(float x, float p, float thr)
 template<typename T>
 inline int test_pixel(const T* image, const float p, float thr, int y, int x, unsigned idim0)
 {
-    return -test_smaller((float)image[idx(y,x,idim0)], p, thr) | test_greater((float)image[idx(y,x,idim0)], p, thr);
+    return -test_smaller((float)image[idx(y,x,idim0)], p, thr) + test_greater((float)image[idx(y,x,idim0)], p, thr);
 }
 
 // abs_diff()
