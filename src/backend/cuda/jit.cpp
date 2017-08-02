@@ -80,13 +80,14 @@ static string getKernelString(const string funcName,
     const std::string includeFileStr(jit_cuh, jit_cuh_len);
 
     const std::string paramTStr = R"JIT(
-        template<typename T>
-        struct Param
-        {
-          T *ptr;
-          dim_t dims[4];
-          dim_t strides[4];
-        };)JIT";
+template<typename T>
+struct Param
+{
+  T *ptr;
+  dim_t dims[4];
+  dim_t strides[4];
+};
+)JIT";
 
     std::string typedefStr = "typedef unsigned int uint;\n";
     typedefStr += "typedef ";
@@ -97,35 +98,41 @@ static string getKernelString(const string funcName,
     // This part of the code does not change with the kernel.
 
     static const char *kernelVoid = "extern \"C\" __global__ void\n";
-    static const char *dimParams = "uint blocks_x, uint blocks_y, uint num_odims";
+    static const char *dimParams = "uint blocks_x, uint blocks_y, uint blocks_x_total, uint num_odims";
+
+    static const char * loopStart = R"JIT(
+    for (int blockIdx_x = blockIdx.x; blockIdx_x < blocks_x_total; blockIdx_x += gridDim.x) {
+    )JIT";
+    static const char *loopEnd = "}\n\n";
+
     static const char *blockStart = "{\n\n";
     static const char *blockEnd = "\n\n}";
 
     static const char *linearIndex = R"JIT(
-        uint blockId  = blockIdx.y * gridDim.x + blockIdx.x;
         uint threadId = threadIdx.x;
-        int idx = blockId * blockDim.x * blockDim.y + threadId;
+        int idx = blockIdx_x * blockDim.x * blockDim.y + threadId;
         if (idx >= outref.dims[3] * outref.strides[3]) return;
         )JIT";
 
     static const char *generalIndex = R"JIT(
         uint id0 = 0, id1 = 0, id2 = 0, id3 = 0;
+        long blockIdx_y = blockIdx.z * gridDim.y + blockIdx.y;
         if (num_odims > 2) {
-            id2 = blockIdx.x / blocks_x;
-            id0 = blockIdx.x - id2 * blocks_x;
+            id2 = blockIdx_x / blocks_x;
+            id0 = blockIdx_x - id2 * blocks_x;
             id0 = threadIdx.x + id0 * blockDim.x;
             if (num_odims > 3) {
-                id3 = blockIdx.y / blocks_y;
-                id1 = blockIdx.y - id3 * blocks_y;
+                id3 = blockIdx_y / blocks_y;
+                id1 = blockIdx_y - id3 * blocks_y;
                 id1 = threadIdx.y + id1 * blockDim.y;
             } else {
-                id1 = threadIdx.y + blockDim.y * blockIdx.y;
+                id1 = threadIdx.y + blockDim.y * blockIdx_y;
             }
         } else {
             id3 = 0;
             id2 = 0;
-            id1 = threadIdx.y + blockDim.y * blockIdx.y;
-            id0 = threadIdx.x + blockDim.x * blockIdx.x;
+            id1 = threadIdx.y + blockDim.y * blockIdx_y;
+            id0 = threadIdx.x + blockDim.x * blockIdx_x;
         }
 
         bool cond = id0 < outref.dims[0] &&
@@ -171,8 +178,8 @@ static string getKernelString(const string funcName,
     // Put various blocks into a single stream
     stringstream kerStream;
     kerStream << typedefStr;
-    kerStream << paramTStr;
     kerStream << includeFileStr << "\n\n";
+    kerStream << paramTStr << "\n";
     kerStream << kernelVoid;
     kerStream << funcName;
     kerStream << "(\n";
@@ -182,6 +189,7 @@ static string getKernelString(const string funcName,
     kerStream << ")\n";
     kerStream << blockStart;
     kerStream << outrefstream.str();
+    kerStream << loopStart;
     if (is_linear) {
         kerStream << linearIndex;
     } else {
@@ -190,6 +198,7 @@ static string getKernelString(const string funcName,
     kerStream << offsetsStream.str();
     kerStream << opsStream.str();
     kerStream << outWriteStream.str();
+    kerStream << loopEnd;
     kerStream << blockEnd;
 
     return kerStream.str();
@@ -372,7 +381,8 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
 
     int threads_x = 1, threads_y = 1;
     int blocks_x_ = 1, blocks_y_ = 1;
-    int blocks_x  = 1, blocks_y = 1;
+    int blocks_x  = 1, blocks_y = 1, blocks_z = 1, blocks_x_total;
+    const int max_blocks = 65535;
 
     int num_odims = 4;
 
@@ -386,17 +396,13 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
         threads_x = 256;
         threads_y =  1;
 
-        int blocks = divup((outputs[0].dims[0] *
-                            outputs[0].dims[1] *
-                            outputs[0].dims[2] *
-                            outputs[0].dims[3]), threads_x);
+        blocks_x_total = divup((outputs[0].dims[0] *
+                                outputs[0].dims[1] *
+                                outputs[0].dims[2] *
+                                outputs[0].dims[3]), threads_x);
 
-        blocks_y_ = divup(blocks, 65535);
-        blocks_x_ = divup(blocks, blocks_y_);
-
-        blocks_x = blocks_x_;
-        blocks_y = blocks_y_;
-
+        int repeat_x = divup(blocks_x_total, max_blocks);
+        blocks_x = divup(blocks_x_total, repeat_x);
     } else {
 
         threads_x = 32;
@@ -407,6 +413,13 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
 
         blocks_x = blocks_x_ * outputs[0].dims[2];
         blocks_y = blocks_y_ * outputs[0].dims[3];
+
+        blocks_z = divup(blocks_y, max_blocks);
+        blocks_y = divup(blocks_y, blocks_z);
+
+        blocks_x_total = blocks_x;
+        int repeat_x = divup(blocks_x_total, max_blocks);
+        blocks_x = divup(blocks_x_total, repeat_x);
     }
 
     vector<void *> args;
@@ -421,13 +434,14 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
 
     args.push_back((void *)&blocks_x_);
     args.push_back((void *)&blocks_y_);
+    args.push_back((void *)&blocks_x_total);
     args.push_back((void *)&num_odims);
 
     lock_guard<recursive_mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     CU_CHECK(cuLaunchKernel(ker,
                             blocks_x,
                             blocks_y,
-                            1,
+                            blocks_z,
                             threads_x,
                             threads_y,
                             1,

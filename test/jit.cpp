@@ -281,3 +281,125 @@ TEST(JIT, ISSUE_1646)
     af::eval(test2);
     af::eval(test3);
 }
+
+TEST(JIT, NonLinearLargeY)
+{
+    const int d0 = 2;
+    // This needs to be > 2 * (1 << 20) to properly check this.
+    const int d1 = 3 * (1 << 20);
+    af::array a = af::randn(d0);
+    af::array b = af::randn(1, d1);
+
+    // tile is jit-ted for both the operations
+    af::array c = af::tile(a, 1, d1) + af::tile(b, d0, 1);
+    af::eval(c);
+
+    std::vector<float> ha(d0);
+    std::vector<float> hb(d1);
+    std::vector<float> hc(d0 * d1);
+
+    a.host(ha.data());
+    b.host(hb.data());
+    c.host(hc.data());
+
+    for (int j = 0; j < d1; j++) {
+        for (int i = 0; i < d0; i++) {
+            ASSERT_EQ(hc[i + j * d0], ha[i] + hb[j]) << " at " << i << " , " << j;
+        }
+    }
+}
+
+TEST(JIT, NonLinearLargeX)
+{
+    af_array r, c, s;
+    dim_t rdims[] = {1024000, 1, 3};
+    dim_t cdims[] = {1, 1, 3};
+    dim_t sdims[] = {1, 1, 1};
+    dim_t ndims = 3;
+
+    ASSERT_EQ(AF_SUCCESS, af_randu(&r, ndims, rdims, f32));
+    ASSERT_EQ(AF_SUCCESS, af_constant(&c, 1, ndims, cdims, f32));
+    ASSERT_EQ(AF_SUCCESS, af_eval(c));
+    ASSERT_EQ(AF_SUCCESS, af_sub(&s, r, c, true));
+    ASSERT_EQ(AF_SUCCESS, af_eval(s));
+
+    dim_t relem = 1;
+    dim_t celem = 1;
+    dim_t selem = 1;
+    for (int i = 0; i < ndims; i++) {
+        relem *= rdims[i];
+        celem *= cdims[i];
+        sdims[i] = std::max(rdims[i], cdims[i]);
+        selem *= sdims[i];
+    }
+
+    std::vector<float> hr(relem);
+    std::vector<float> hc(celem);
+    std::vector<float> hs(selem);
+
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr(hr.data(), r));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr(hc.data(), c));
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr(hs.data(), s));
+
+    for (int k = 0; k < sdims[2]; k++) {
+        for (int j = 0; j < sdims[1]; j++) {
+            for (int i = 0; i < sdims[0]; i++) {
+
+                int sidx = i +
+                    j * sdims[0] +
+                    k * (sdims[0] * sdims[1]);
+
+                int ridx = (i % rdims[0]) +
+                    (j % rdims[1]) * rdims[0] +
+                    (k % rdims[2]) * rdims[0] * rdims[1];
+
+                int cidx = (i % cdims[0]) +
+                    (j % cdims[1]) * cdims[0] +
+                    (k % cdims[2]) * cdims[0] * cdims[1];
+
+                ASSERT_EQ(hs[sidx], hr[ridx] - hc[cidx]) << " at " << i << "," << k;
+            }
+        }
+    }
+
+    ASSERT_EQ(AF_SUCCESS, af_release_array(r));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(c));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(s));
+}
+
+TEST(JIT, ISSUE_1894)
+{
+    af::array a = af::randu(1);
+    af::array b = af::tile(a, 2 * (1 << 20));
+    af::eval(b);
+    float ha = -100;
+    std::vector<float> hb(b.elements(), -200);
+
+    a.host(&ha);
+    b.host(hb.data());
+
+    for (size_t i = 0; i < hb.size(); i++) {
+        ASSERT_EQ(ha, hb[i]);
+    }
+}
+
+TEST(JIT, LinearLarge)
+{
+    // Needs to be larger than 65535 * 256 (or 1 << 24)
+    float v1 = std::rand() % 100;
+    float v2 = std::rand() % 100;
+
+    af::array a = af::constant(v1, 1 << 25);
+    af::array b = af::constant(v2, 1 << 25);
+    af::array c = (a + b) * (a - b);
+    af::eval(c);
+
+    float v3 = (v1 + v2) * (v1 - v2);
+
+    std::vector<float> hc(c.elements());
+    c.host(hc.data());
+
+    for (size_t i = 0; i < hc.size(); i++) {
+        ASSERT_EQ(hc[i], v3);
+    }
+}
