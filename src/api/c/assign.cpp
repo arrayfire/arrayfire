@@ -32,6 +32,9 @@ void assign(Array<Tout> &out, const unsigned &ndims, const af_seq *index, const 
     dim4 const outDs = out.dims();
     dim4 const iDims = in_.dims();
 
+    // Nothing to do for empty arrays
+    if (iDims.elements() == 0) return;
+
     DIM_ASSERT(0, (outDs.ndims()>=iDims.ndims()));
     DIM_ASSERT(0, (outDs.ndims()>=(dim_t)ndims));
 
