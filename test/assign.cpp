@@ -1002,3 +1002,18 @@ TEST(Assign, ISSUE_1764)
         }
     }
 }
+
+TEST(Assign, ISSUE_1677)
+{
+    try {
+        dim_t sz = 1;
+        af::array a = af::constant(1.0f, 3, sz, f32);
+        af::array b = af::constant(2.0f, 3, sz, f32);
+        af::array cond = af::constant(0, sz, b8); // all false
+        a(af::span, cond) = b(af::span, cond);
+    } catch(af::exception &ex) {
+        FAIL() << "ArrayFire exception: " << ex.what();
+    } catch(...) {
+        FAIL() << "Unknown exception thrown";
+    }
+}
