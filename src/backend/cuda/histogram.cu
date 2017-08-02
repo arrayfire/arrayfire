@@ -24,8 +24,6 @@ template<typename inType, typename outType, bool isLinear>
 Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const double &minval, const double &maxval)
 {
 
-    ARG_ASSERT(1, (nbins<=kernel::MAX_BINS));
-
     const dim4 dims     = in.dims();
     dim4 outDims        = dim4(nbins, 1, dims[2], dims[3]);
     Array<outType> out  = createValueArray<outType>(outDims, outType(0));
