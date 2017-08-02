@@ -271,3 +271,31 @@ TEST(histogram, IndexedArray)
     ASSERT_EQ(true, out[2] ==  8);
     ASSERT_EQ(true, out[3] ==  8);
 }
+
+TEST(histogram, LargeBins)
+{
+    const int max_val = 20000;
+    const int min_val = 0;
+    const int nbins = max_val / 2;
+    const int num = 1 << 20;
+    af::array A = af::round(max_val * af::randu(num) + min_val).as(u32);
+    af::eval(A);
+    af::array H = histogram(A, nbins, min_val, max_val);
+
+    std::vector<unsigned> hA(num);
+    A.host(hA.data());
+
+    std::vector<unsigned> hH(nbins);
+    H.host(hH.data());
+
+    int dx = (max_val - min_val) / nbins;
+    for (int i = 0; i < num; i++) {
+        int bin = (hA[i] - min_val) / dx;
+        bin = std::min(bin, nbins - 1);
+        hH[bin] -= 1;
+    }
+
+    for (int i = 0; i < nbins; i++) {
+        ASSERT_EQ(hH[i], 0u);
+    }
+}

@@ -44,21 +44,35 @@ void histogramKernel(Param<outType> out, CParam<inType> in,
     int end    = minimum((start + THRD_LOAD * blockDim.x), len);
     float step = (maxval-minval) / (float)nbins;
 
-    for (int i = threadIdx.x; i < nbins; i += blockDim.x)
-        shrdMem[i] = 0;
-    __syncthreads();
+    // If nbins > max shared memory allocated, then just use atomicAdd on global memory
+    bool use_global = nbins > MAX_BINS;
+
+    // Skip initializing shared memory
+    if (!use_global) {
+        for (int i = threadIdx.x; i < nbins; i += blockDim.x)
+            shrdMem[i] = 0;
+        __syncthreads();
+    }
 
     for (int row = start; row < end; row += blockDim.x) {
         int idx = isLinear ? row : ((row % in.dims[0]) + (row / in.dims[0])*in.strides[1]);
         int bin = (int)((iptr[idx] - minval) / step);
         bin     = (bin < 0)      ? 0         : bin;
         bin     = (bin >= nbins) ? (nbins-1) : bin;
-        atomicAdd((shrdMem + bin), 1);
-    }
-    __syncthreads();
 
-    for (int i = threadIdx.x; i < nbins; i += blockDim.x) {
-        atomicAdd((optr + i), shrdMem[i]);
+        if (use_global) {
+            atomicAdd((optr + bin), 1);
+        } else {
+            atomicAdd((shrdMem + bin), 1);
+        }
+    }
+
+    // No need to write to global if use_global is true
+    if (!use_global) {
+        __syncthreads();
+        for (int i = threadIdx.x; i < nbins; i += blockDim.x) {
+            atomicAdd((optr + i), shrdMem[i]);
+        }
     }
 }
 
@@ -72,7 +86,8 @@ void histogram(Param<outType> out, CParam<inType> in, int nbins, float minval, f
 
     dim3 blocks(blk_x * in.dims[2], in.dims[3]);
 
-    int smem_size = nbins * sizeof(outType);
+    // If nbins > MAX_BINS, we are using global memory so smem_size can be 0;
+    int smem_size = nbins <= MAX_BINS ? (nbins * sizeof(outType)) : 0;
 
     CUDA_LAUNCH_SMEM((histogramKernel<inType, outType, isLinear>), blocks, threads, smem_size,
             out, in, nElems, nbins, minval, maxval, blk_x);

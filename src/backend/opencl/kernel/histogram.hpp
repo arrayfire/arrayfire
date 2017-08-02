@@ -43,7 +43,8 @@ void histogram(Param out, const Param in, int nbins, float minval, float maxval)
         std::ostringstream options;
         options << " -D inType=" << dtype_traits<inType>::getName()
             << " -D outType=" << dtype_traits<outType>::getName()
-            << " -D THRD_LOAD=" << THRD_LOAD;
+            << " -D THRD_LOAD=" << THRD_LOAD
+            << " -D MAX_BINS=" << MAX_BINS;
         if (isLinear)
             options << " -D IS_LINEAR";
         if (std::is_same<inType, double>::value ||
@@ -66,7 +67,7 @@ void histogram(Param out, const Param in, int nbins, float minval, float maxval)
 
     int nElems = in.info.dims[0]*in.info.dims[1];
     int blk_x  = divup(nElems, THRD_LOAD*THREADS_X);
-    int locSize = nbins * sizeof(outType);
+    int locSize = nbins <= MAX_BINS ? (nbins * sizeof(outType)) : 1;
 
     NDRange local(THREADS_X, 1);
     NDRange global(blk_x*in.info.dims[2]*THREADS_X, in.info.dims[3]);
