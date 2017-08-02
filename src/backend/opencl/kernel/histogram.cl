@@ -25,9 +25,13 @@ void histogram(__global outType *         d_dst,
 
     float dx = (maxval-minval)/(float)nbins;
 
-    for (int i = get_local_id(0); i < nbins; i += get_local_size(0))
-        localMem[i] = 0;
-    barrier(CLK_LOCAL_MEM_FENCE);
+    bool use_global = nbins > MAX_BINS;
+
+    if (!use_global) {
+        for (int i = get_local_id(0); i < nbins; i += get_local_size(0))
+            localMem[i] = 0;
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
 
     for (int row = start; row < end; row += get_local_size(0)) {
 #if defined(IS_LINEAR)
@@ -40,11 +44,19 @@ void histogram(__global outType *         d_dst,
         int bin = (int)(((float)in[idx] - minval) / dx);
         bin     = max(bin, 0);
         bin     = min(bin, (int)nbins-1);
-        atomic_inc((localMem + bin));
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
 
-    for (int i = get_local_id(0); i < nbins; i += get_local_size(0)) {
-        atomic_add((out + i), localMem[i]);
+        if (use_global) {
+            atomic_inc((out + bin));
+        } else {
+            atomic_inc((localMem + bin));
+        }
+
+    }
+
+    if (!use_global) {
+        barrier(CLK_LOCAL_MEM_FENCE);
+        for (int i = get_local_id(0); i < nbins; i += get_local_size(0)) {
+            atomic_add((out + i), localMem[i]);
+        }
     }
 }
