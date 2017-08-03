@@ -55,7 +55,7 @@ getRegionsKernels()
     static const int block_dim = 16;
     static const int num_warps = 8;
     static const unsigned NUM_KERNELS = 3;
-    static const std::string kernelNames[NUM_KERNELS] =
+    static const char* kernelNames[NUM_KERNELS] =
         {"initial_label", "final_relabel", "update_equiv"};
 
     kc_entry_t entries[NUM_KERNELS];
@@ -98,7 +98,7 @@ getRegionsKernels()
         for (unsigned i=0; i<NUM_KERNELS; ++i)
         {
             entries[i].prog = new Program(prog);
-            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i].c_str());
+            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i]);
 
             std::string name = kernelNames[i] + std::string("_") +
                 std::string(dtype_traits<T>::getName()) +

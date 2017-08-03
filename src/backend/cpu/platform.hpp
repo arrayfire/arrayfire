@@ -128,24 +128,15 @@ class DeviceManager
         CPUInfo getCPUInfo() const;
 
     private:
-        DeviceManager() : queues(MAX_QUEUES){}
-
+        DeviceManager();
         // Following two declarations are required to
         // avoid copying accidental copy/assignment
         // of instance returned by getInstance to other
         // variables
-        DeviceManager(DeviceManager const&);
-        void operator=(DeviceManager const&);
-        // And the destructor is needed because rule of three:
-        // http://en.cppreference.com/w/cpp/language/rule_of_three
-        ~DeviceManager() {
-            for(auto &q : queues) q.sync();
-            memManager.release();
-            queues.clear();
-        }
+        DeviceManager(DeviceManager const&) = delete;
+        void operator=(DeviceManager const&) = delete;
 
         // Attributes
-        // DO NOT MOVE QUEUES! This has to be destroyed last, meaning it needs to be defined first.
         std::vector<queue> queues;
         const CPUInfo cinfo;
         std::unique_ptr<MemoryManager> memManager;

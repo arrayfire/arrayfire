@@ -399,7 +399,7 @@ template<typename T>
 std::array<cl::Kernel*, 7> getSiftKernels()
 {
     static const unsigned NUM_KERNELS = 7;
-    static const std::string kernelNames[NUM_KERNELS] =
+    static const char* kernelNames[NUM_KERNELS] =
         {"sub", "detectExtrema", "interpolateExtrema", "calcOrientation", "removeDuplicates",
          "computeDescriptor", "computeGLOHDescriptor"};
 
@@ -424,7 +424,7 @@ std::array<cl::Kernel*, 7> getSiftKernels()
         for (unsigned i=0; i<NUM_KERNELS; ++i)
         {
             entries[i].prog = new Program(prog);
-            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i].c_str());
+            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i]);
 
             std::string name = kernelNames[i] + std::string("_") +
                 std::string(dtype_traits<T>::getName());

@@ -23,7 +23,6 @@
 namespace cpu
 {
 
-const int MAX_TNJ_LEN = 20;
 using TNJ::BufferNode;
 using TNJ::Node;
 using TNJ::Node_ptr;
