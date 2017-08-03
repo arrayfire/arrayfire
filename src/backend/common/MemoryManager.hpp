@@ -14,6 +14,8 @@
 #include <util.hpp>
 
 #include <algorithm>
+
+// TODO(umar): Remove iostream
 #include <iomanip>
 #include <iostream>
 #include <mutex>
@@ -298,9 +300,9 @@ class MemoryManager
 
         std::cout << msg << std::endl;
 
-        static const std::string head("|     POINTER      |    SIZE    |  AF LOCK  | USER LOCK |");
-        static const std::string line(head.size(), '-');
-        std::cout << line << std::endl << head << std::endl << line << std::endl;
+        printf("---------------------------------------------------------\n"
+               "|     POINTER      |    SIZE    |  AF LOCK  | USER LOCK |\n"
+               "---------------------------------------------------------\n");
 
         for(auto& kv : current.locked_map) {
             std::string status_mngr("Yes");
@@ -343,7 +345,7 @@ class MemoryManager
             }
         }
 
-        std::cout << line << std::endl;
+        printf("---------------------------------------------------------\n");
     }
 
     void bufferInfo(size_t *alloc_bytes, size_t *alloc_buffers,

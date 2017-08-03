@@ -39,7 +39,7 @@ template<typename T, af_homography_type htype>
 std::array<cl::Kernel*, 5> getHomographyKernels()
 {
     static const unsigned NUM_KERNELS = 5;
-    static const std::string kernelNames[NUM_KERNELS] =
+    static const char* kernelNames[NUM_KERNELS] =
         {"compute_homography", "eval_homography", "compute_median",
          "find_min_median", "compute_lmeds_inliers"};
 
@@ -79,7 +79,7 @@ std::array<cl::Kernel*, 5> getHomographyKernels()
         for (unsigned i=0; i<NUM_KERNELS; ++i)
         {
             entries[i].prog = new Program(prog);
-            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i].c_str());
+            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i]);
 
             std::string name = kernelNames[i] + std::string("_") +
                 std::string(dtype_traits<T>::getName()) +

@@ -257,21 +257,21 @@ bool& evalFlag()
     return flag;
 }
 
+DeviceManager::DeviceManager()
+    : queues(MAX_QUEUES)
+    , memManager(new MemoryManager()) {}
+
+
 MemoryManager& memoryManager()
 {
-    static std::once_flag flag;
-
     DeviceManager& inst = DeviceManager::getInstance();
-
-    std::call_once(flag, [&]() { inst.memManager.reset(new MemoryManager()); });
-
-    return *(inst.memManager.get());
+    return *(inst.memManager);
 }
 
 DeviceManager& DeviceManager::getInstance()
 {
-    static DeviceManager my_instance;
-    return my_instance;
+    static DeviceManager* my_instance = new DeviceManager();
+    return *my_instance;
 }
 
 }
