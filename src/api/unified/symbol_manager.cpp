@@ -20,10 +20,10 @@ using std::replace;
 namespace unified
 {
 
-static const string LIB_AF_BKND_NAME[NUM_BACKENDS] = {"cpu", "cuda", "opencl"};
+static const char* LIB_AF_BKND_NAME[NUM_BACKENDS] = {"cpu", "cuda", "opencl"};
 #if defined(OS_WIN)
-static const string LIB_AF_BKND_PREFIX = "af";
-static const string LIB_AF_BKND_SUFFIX = ".dll";
+static const char* LIB_AF_BKND_PREFIX = "af";
+static const char* LIB_AF_BKND_SUFFIX = ".dll";
 #define RTLD_LAZY 0
 #else
 #if defined(__APPLE__)
@@ -31,20 +31,20 @@ static const string LIB_AF_BKND_SUFFIX = ".dll";
 #else
 #define SO_SUFFIX_HELPER(VER) ".so." #VER
 #endif // APPLE
-static const string LIB_AF_BKND_PREFIX = "libaf";
+static const char* LIB_AF_BKND_PREFIX = "libaf";
 
 #define GET_SO_SUFFIX(VER) SO_SUFFIX_HELPER(VER)
-static const string LIB_AF_BKND_SUFFIX = GET_SO_SUFFIX(AF_VERSION_MAJOR);
+static const char* LIB_AF_BKND_SUFFIX = GET_SO_SUFFIX(AF_VERSION_MAJOR);
 #endif
 
-static const string LIB_AF_ENVARS[NUM_ENV_VARS] = {"AF_PATH", "AF_BUILD_PATH"};
-static const string LIB_AF_RPATHS[NUM_ENV_VARS] = {"/lib/", "/src/backend/"};
+static const char* LIB_AF_ENVARS[NUM_ENV_VARS] = {"AF_PATH", "AF_BUILD_PATH"};
+static const char* LIB_AF_RPATHS[NUM_ENV_VARS] = {"/lib/", "/src/backend/"};
 static const bool LIB_AF_RPATH_SUFFIX[NUM_ENV_VARS] = {false, true};
 
 inline string getBkndLibName(const int backend_index)
 {
     int i = backend_index >=0 && backend_index<NUM_BACKENDS ? backend_index : 0;
-    return LIB_AF_BKND_PREFIX + LIB_AF_BKND_NAME[i] + LIB_AF_BKND_SUFFIX;
+    return string(LIB_AF_BKND_PREFIX) + LIB_AF_BKND_NAME[i] + LIB_AF_BKND_SUFFIX;
 }
 
 /*flag parameter is not used on windows platform */
@@ -84,7 +84,7 @@ LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
         for (int i=0; i<NUM_ENV_VARS; ++i) {
             string abs_path = getEnvVar(LIB_AF_ENVARS[i])
                                  + LIB_AF_RPATHS[i]
-                                 + (LIB_AF_RPATH_SUFFIX[i] ? LIB_AF_BKND_NAME[bknd_idx]+"/" : "")
+                                 + (LIB_AF_RPATH_SUFFIX[i] ? LIB_AF_BKND_NAME[bknd_idx]+ string("/") : "")
                                  + bkndLibName;
 #if defined(OS_WIN)
             replace(abs_path.begin(), abs_path.end(), '/', '\\');

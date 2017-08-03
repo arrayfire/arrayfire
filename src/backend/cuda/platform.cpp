@@ -392,8 +392,8 @@ bool DeviceManager::checkGraphicsInteropCapability()
 
 DeviceManager& DeviceManager::getInstance()
 {
-    static DeviceManager my_instance;
-    return my_instance;
+    static DeviceManager *my_instance = new DeviceManager();
+    return *my_instance;
 }
 
 MemoryManager& memoryManager()

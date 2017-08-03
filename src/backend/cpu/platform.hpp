@@ -128,18 +128,17 @@ class DeviceManager
         CPUInfo getCPUInfo() const;
 
     private:
-        DeviceManager() {}
-
+        DeviceManager();
         // Following two declarations are required to
         // avoid copying accidental copy/assignment
         // of instance returned by getInstance to other
         // variables
-        DeviceManager(DeviceManager const&);
-        void operator=(DeviceManager const&);
+        DeviceManager(DeviceManager const&) = delete;
+        void operator=(DeviceManager const&) = delete;
 
         // Attributes
+        std::vector<queue> queues;
         const CPUInfo cinfo;
         std::unique_ptr<MemoryManager> memManager;
-        std::array<queue, MAX_QUEUES> queues;
 };
 }
