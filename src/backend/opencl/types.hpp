@@ -21,6 +21,8 @@
 #include <cmath>
 #include <type_util.hpp>
 
+using std::string;
+
 namespace opencl
 {
 typedef cl_float2   cfloat;
@@ -50,8 +52,8 @@ struct ToNumStr<float>
 {
     inline std::string operator()(float val)
     {
-        static const std::string PINF = "+INFINITY";
-        static const std::string NINF = "-INFINITY";
+        static const char* PINF = "+INFINITY";
+        static const char* NINF = "-INFINITY";
         if (std::isinf(val)) {
             return val < 0 ? NINF : PINF;
         }
@@ -64,10 +66,10 @@ struct ToNumStr<double>
 {
     inline std::string operator()(double val)
     {
-        static const std::string PINF = "+INFINITY";
-        static const std::string NINF = "-INFINITY";
+        static const char* PINF = "+INFINITY";
+        static const char* NINF = "-INFINITY";
         if (std::isinf(val)) {
-            return val < 0 ? NINF : PINF;
+            return string(val < 0 ? NINF : PINF);
         }
         return std::to_string(val);
     }
@@ -79,7 +81,6 @@ struct ToNumStr<cfloat>
     inline std::string operator()(cfloat val)
     {
         ToNumStr<float> realStr;
-        static const std::string INF = "INFINITY";
         std::stringstream s;
         s << "{";
         s << realStr(val.s[0]);
@@ -96,7 +97,6 @@ struct ToNumStr<cdouble>
     inline std::string operator()(cdouble val)
     {
         ToNumStr<double> realStr;
-        static const std::string INF = "INFINITY";
         std::stringstream s;
         s << "{";
         s << realStr(val.s[0]);

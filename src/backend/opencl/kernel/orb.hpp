@@ -89,7 +89,7 @@ template<typename T>
 std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*, cl::Kernel*>
 getOrbKernels()
 {
-    static const std::string kernelNames[4] =
+    static const char* kernelNames[4] =
         {"harris_response", "keep_features", "centroid_angle", "extract_orb"};
 
     kc_entry_t entries[4];
@@ -117,7 +117,7 @@ getOrbKernels()
         for (int i=0; i<4; ++i)
         {
             entries[i].prog = new Program(prog);
-            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i].c_str());
+            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i]);
 
             std::string name = kernelNames[i] +
                 std::string("_") + std::string(dtype_traits<T>::getName());

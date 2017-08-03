@@ -23,7 +23,7 @@ struct reduce_dim
                     const int dim, bool change_nan, double nanval)
     {
         static const int D1 = D - 1;
-        static reduce_dim<op, Ti, To, D1> reduce_dim_next;
+        reduce_dim<op, Ti, To, D1> reduce_dim_next;
 
         const af::dim4 ostrides = out.strides();
         const af::dim4 istrides = in.strides();

@@ -61,9 +61,9 @@ using cl::Device;
 namespace opencl
 {
 #if defined (OS_MAC)
-static const std::string CL_GL_SHARING_EXT = "cl_APPLE_gl_sharing";
+static const char* CL_GL_SHARING_EXT = "cl_APPLE_gl_sharing";
 #else
-static const std::string CL_GL_SHARING_EXT = "cl_khr_gl_sharing";
+static const char* CL_GL_SHARING_EXT = "cl_khr_gl_sharing";
 #endif
 
 static const std::string get_system(void)
@@ -744,8 +744,8 @@ kc_entry_t kernelCache(int device, const std::string& key)
 
 DeviceManager& DeviceManager::getInstance()
 {
-    static DeviceManager my_instance;
-    return my_instance;
+    static DeviceManager* my_instance = new DeviceManager();
+    return *my_instance;
 }
 
 DeviceManager::~DeviceManager()
