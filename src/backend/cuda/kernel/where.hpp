@@ -37,9 +37,9 @@ namespace kernel
         const uint tidy = threadIdx.y;
 
         const uint zid = blockIdx.x / blocks_x;
-        const uint wid = blockIdx.y / blocks_y;
+        const uint wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
         const uint blockIdx_x = blockIdx.x - (blocks_x) * zid;
-        const uint blockIdx_y = blockIdx.y - (blocks_y) * wid;
+        const uint blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y) * wid;
         const uint xid = blockIdx_x * blockDim.x * lim + tidx;
         const uint yid = blockIdx_y * blockDim.y + tidy;
 
@@ -135,6 +135,10 @@ namespace kernel
                     blocks_y * in.dims[3]);
 
         uint lim = divup(otmp.dims[0], (threads_x * blocks_x));
+
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
 
         CUDA_LAUNCH((get_out_idx<T>), blocks, threads,
                 out.ptr, otmp, rtmp, in, blocks_x, blocks_y, lim);
