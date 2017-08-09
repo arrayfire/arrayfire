@@ -145,3 +145,23 @@ TEST(Shift, CPP)
     // Delete
     delete[] outData;
 }
+
+TEST(Shift, MaxDim)
+{
+    if (noDoubleTests<float>()) return;
+
+    const size_t largeDim = 65535 * 32 + 1 ;
+    const unsigned shift_x = 1;
+
+    af::array input = af::range(af::dim4(2, largeDim));
+    af::array output = af::shift(input, shift_x);
+
+    output = af::abs(input - output);
+    ASSERT_EQ(1.f, af::product<float>(output));
+
+    input = af::range(af::dim4(2, 1, 1, largeDim));
+    output = af::shift(input, shift_x);
+
+    output = af::abs(input - output);
+    ASSERT_EQ(1.f, af::product<float>(output));
+}
