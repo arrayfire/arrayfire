@@ -178,3 +178,21 @@ void wrapTest(const dim_t ix, const dim_t iy,
     WRAP_INIT(40, 300, 100,  8, 12,  8, 12,  7, 11);
     WRAP_INIT(43, 300, 100, 15, 10, 15, 10,  0,  0);
     WRAP_INIT(44, 300, 100, 15, 10, 15, 10, 14,  9);
+
+TEST(Wrap, MaxDim)
+{
+    const size_t largeDim = 65535 + 1;
+    af::array input = af::range(5, 5, 1, largeDim);
+
+    const unsigned wx = 5;
+    const unsigned wy = 5;
+    const unsigned sx = 5;
+    const unsigned sy = 5;
+    const unsigned px = 0;
+    const unsigned py = 0;
+
+    af::array unwrapped = af::unwrap(input, wx, wy, sx, sy, px, py);
+    af::array output = af::wrap(unwrapped, 5, 5, wx, wy, sx, sy, px, py);
+
+    ASSERT_TRUE(af::allTrue<bool>(output == input));
+}
