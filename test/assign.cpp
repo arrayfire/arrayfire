@@ -859,6 +859,35 @@ TEST(Asssign, LinearCPP)
     }
 }
 
+TEST(Asssign, LinearCPPMaxDim)
+{
+    using af::array;
+
+    const size_t largeDim = 65535 * 32 + 2;
+    const float val = 3;
+
+    array a = af::randu(1, 2 * largeDim);
+    array a_copy = a.copy();
+    af::index idx = af::array(af::seq(10, largeDim+10));
+    a(af::span, idx) = val;
+
+    ASSERT_EQ(a.dims(0), a_copy.dims(0));
+
+    std::vector<float> ha(2 * largeDim);
+    std::vector<float> ha_copy(2 * largeDim);
+
+    a.host(&ha[0]);
+    a_copy.host(&ha_copy[0]);
+
+    for (unsigned int i = 0; i < 2 * largeDim; i++) {
+        if(i >= 10 && i <= largeDim + 10) {
+            ASSERT_EQ(ha[i], val) << "at " << i;
+        } else {
+            ASSERT_EQ(ha[i], ha_copy[i]) << "at " << i;
+        }
+    }
+}
+
 TEST(Asssign, LinearAssignSeq)
 {
     using af::array;

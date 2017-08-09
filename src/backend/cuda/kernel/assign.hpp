@@ -47,10 +47,10 @@ void AssignKernel(Param<T> out, CParam<T> in, const AssignKernelParam_t p,
     const bool s2 = p.isSeq[2];
     const bool s3 = p.isSeq[3];
 
-    const int gz = blockIdx.x/nBBS0;
-    const int gw = blockIdx.y/nBBS1;
+    const int gz =  blockIdx.x / nBBS0;
+    const int gw = (blockIdx.y + blockIdx.z * gridDim.y) / nBBS1;
     const int gx = blockDim.x * (blockIdx.x - gz*nBBS0) + threadIdx.x;
-    const int gy = blockDim.y * (blockIdx.y - gw*nBBS1) + threadIdx.y;
+    const int gy = blockDim.y * ((blockIdx.y + blockIdx.z * gridDim.y)  - gw*nBBS1) + threadIdx.y;
 
     if (gx<in.dims[0] && gy<in.dims[1] && gz<in.dims[2] && gw<in.dims[3]) {
         // calculate pointer offsets for input
@@ -75,6 +75,10 @@ void assign(Param<T> out, CParam<T> in, const AssignKernelParam_t& p)
     int blks_y = divup(in.dims[1], threads.y);
 
     dim3 blocks(blks_x*in.dims[2], blks_y*in.dims[3]);
+
+    const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+    blocks.z = divup(blocks.y, maxBlocksY);
+    blocks.y = divup(blocks.y, blocks.z);
 
     CUDA_LAUNCH((AssignKernel<T>), blocks, threads, out, in, p, blks_x, blks_y);
 
