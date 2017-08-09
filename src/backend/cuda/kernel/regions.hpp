@@ -23,8 +23,6 @@
 #include <thrust/sort.h>
 #include <thrust/transform_scan.h>
 
-#if __CUDACC__
-
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
@@ -35,19 +33,18 @@ __device__ static int continue_flag = 1;
 
 // Wrapper function for texture fetch
 template<typename T>
-__device__ __inline__
-static T fetch(const int n,
-               cuda::Param<T> equiv_map,
-               cudaTextureObject_t tex)
+static inline __device__
+T fetch(const int n, cuda::Param<T> equiv_map, cudaTextureObject_t tex)
 {
-// FIXME: Enable capability >= 3.0
-//#if (__CUDA_ARCH__ >= 300)
-#if 0
-    // Kepler bindless texture objects
     return tex1Dfetch<T>(tex, n);
-#else
+}
+
+template<> __device__
+STATIC_ double fetch<double>(const int n,
+                             cuda::Param<double> equiv_map,
+                             cudaTextureObject_t tex)
+{
     return equiv_map.ptr[n];
-#endif
 }
 
 // The initial label kernel distinguishes between valid (nonzero)
@@ -128,7 +125,7 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
 {
 
     typedef warp_count<block_dim*block_dim> num_warps;
-#if (__CUDA_ARCH__ >= 120) // This function uses warp ballot instructions
+
     // Basic coordinates
     const int base_x = (blockIdx.x * blockDim.x * n_per_thread) + threadIdx.x;
     const int base_y = (blockIdx.y * blockDim.y * n_per_thread) + threadIdx.y;
@@ -160,13 +157,9 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
     s_changed[warpIdx] = (T)0;
     __syncthreads();
 
-#if (__CUDA_ARCH__ >= 130)
     #pragma unroll
-#endif
     for (int xb = 0; xb < n_per_thread; ++xb) {
-#if (__CUDA_ARCH__ >= 130)
         #pragma unroll
-#endif
         for (int yb = 0; yb < n_per_thread; ++yb) {
 
             // Indexing variables
@@ -251,9 +244,7 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
     s_changed[warpIdx] = __any((int)tid_changed);
     __syncthreads();
 
-#if (__CUDA_ARCH__ >= 130)
     #pragma unroll
-#endif
     for (int i = 0; i < num_warps::value; i++)
         continue_iter = continue_iter || (s_changed[i] != 0);
 
@@ -263,13 +254,9 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
         // Reset whether or not this thread's pixels have changed.
         tid_changed = false;
 
-#if (__CUDA_ARCH__ >= 130)
         #pragma unroll
-#endif
         for (int xb = 0; xb < n_per_thread; ++xb) {
-#if (__CUDA_ARCH__ >= 130)
             #pragma unroll
-#endif
             for (int yb = 0; yb < n_per_thread; ++yb) {
 
                 // Indexing
@@ -335,22 +322,16 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
         s_changed[warpIdx] = __any((int)tid_changed);
         __syncthreads();
         continue_iter = false;
-#if (__CUDA_ARCH__ >= 130)
         #pragma unroll
-#endif
         for (int i = 0; i < num_warps::value; i++)
             continue_iter = continue_iter | (s_changed[i] != 0);
 
         // If we have to continue iterating, update the tile of the
         // equiv map in shared memory
         if (continue_iter) {
-#if (__CUDA_ARCH__ >= 130)
             #pragma unroll
-#endif
             for (int xb = 0; xb < n_per_thread; ++xb) {
-#if (__CUDA_ARCH__ >= 130)
                 #pragma unroll
-#endif
                 for (int yb = 0; yb < n_per_thread; ++yb) {
                     const int tx = threadIdx.x + (xb * blockDim.x);
                     const int ty = threadIdx.y + (yb * blockDim.y);
@@ -364,13 +345,9 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
     } // while (continue_iter)
 
     // Write out equiv_map
-#if (__CUDA_ARCH__ >= 130)
     #pragma unroll
-#endif
     for (int xb = 0; xb < n_per_thread; ++xb) {
-#if (__CUDA_ARCH__ >= 130)
         #pragma unroll
-#endif
         for (int yb = 0; yb < n_per_thread; ++yb) {
             const int x = base_x + (xb * blockDim.x);
             const int y = base_y + (yb * blockDim.y);
@@ -382,7 +359,6 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
             }
         }
     }
-#endif // __CUDA_ARCH__ >= 120
 }
 
 template<typename T>
@@ -477,5 +453,3 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
 
     cuda::memFree(tmp);
 }
-
-#endif // __CUDACC__
