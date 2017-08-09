@@ -48,9 +48,10 @@ void indexKernel(Param<T> out, CParam<T> in, const IndexKernelParam_t p,
     const bool s3 = p.isSeq[3];
 
     const int gz = blockIdx.x/nBBS0;
-    const int gw = blockIdx.y/nBBS1;
     const int gx = blockDim.x * (blockIdx.x - gz*nBBS0) + threadIdx.x;
-    const int gy = blockDim.y * (blockIdx.y - gw*nBBS1) + threadIdx.y;
+
+    const int gw = (blockIdx.y + blockIdx.z * gridDim.y) /nBBS1;
+    const int gy = blockDim.y * ((blockIdx.y + blockIdx.z * gridDim.y) - gw*nBBS1) + threadIdx.y;
 
     if (gx<out.dims[0] && gy<out.dims[1] && gz<out.dims[2] && gw<out.dims[3]) {
         // calculate pointer offsets for input
@@ -75,7 +76,12 @@ void index(Param<T> out, CParam<T> in, const IndexKernelParam_t& p)
     int blks_y = divup(out.dims[1], threads.y);
 
     dim3 blocks(blks_x*out.dims[2], blks_y*out.dims[3]);
-
+    const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+    const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+    if(blocksPerMatZ > 1) {
+        blocks.y = maxBlocksY;
+        blocks.z = blocksPerMatZ;
+    }
     CUDA_LAUNCH((indexKernel<T>), blocks, threads, out, in, p, blks_x, blks_y);
 
     POST_LAUNCH_CHECK();
