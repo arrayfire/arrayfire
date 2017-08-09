@@ -153,6 +153,12 @@ TYPED_TEST(Triangle, Upper2DSquareUnit)
     triangleTester<TypeParam>(dim4(2048, 2048), true, true);
 }
 
+TYPED_TEST(Triangle, MaxDim)
+{
+    const size_t largeDim = 65535 * 32 + 1;
+    triangleTester<TypeParam>(dim4(2, largeDim), true, true);
+}
+
 TEST(Lower, ExtractGFOR)
 {
     using namespace af;
