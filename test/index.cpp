@@ -29,6 +29,21 @@ using std::endl;
 using std::ostream_iterator;
 using af::dtype_traits;
 
+static void cleanSlate()
+{
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    af::deviceGC();
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 0u);
+    ASSERT_EQ(lock_buffers, 0u);
+    ASSERT_EQ(alloc_bytes, 0u);
+    ASSERT_EQ(lock_bytes, 0u);
+}
 
 template<typename T, typename OP>
 void
@@ -696,6 +711,18 @@ TEST(lookup, CPP)
     }
 
     delete[] outData;
+}
+
+TEST(lookup, largeDim)
+{
+    using af::array;
+    const size_t largeDim = 65535 * 8 + 1;
+
+    cleanSlate();
+    af::array input   = af::range(af::dim4(2, largeDim));
+    af::array indices = af::constant(1, 100);
+
+    af::array output = af::lookup(input, indices);
 }
 
 TEST(SeqIndex, CPP_END)
