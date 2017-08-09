@@ -158,3 +158,50 @@ TEST(Accum, CPP)
         delete[] outData;
     }
 }
+
+TEST(Accum, MaxDim)
+{
+    const size_t largeDim = 65535 * 32 + 1;
+
+    //first dimension kernel tests
+    af::array input = af::constant(0, 2, largeDim, 2, 2);
+    input(af::span, af::seq(0, 9999), af::span, af::span) = 1;
+
+    af::array gold_first = af::constant(0, 2, largeDim, 2, 2);
+    gold_first(af::span, af::seq(0, 9999), af::span, af::span) = af::range(2, 10000, 2, 2) + 1;
+
+    af::array output_first = af::accum(input, 0);
+    ASSERT_TRUE(af::allTrue<bool>(output_first == gold_first));
+
+
+    input = af::constant(0, 2, 2, 2, largeDim);
+    input(af::span, af::span, af::span, af::seq(0, 9999)) = 1;
+
+    gold_first = af::constant(0, 2, 2, 2, largeDim);
+    gold_first(af::span, af::span, af::span, af::seq(0, 9999)) = af::range(2, 2, 2, 10000) + 1;
+
+    output_first = af::accum(input, 0);
+    ASSERT_TRUE(af::allTrue<bool>(output_first == gold_first));
+
+
+    //other dimension kernel tests
+    input = af::constant(0, 2, largeDim, 2, 2);
+    input(af::span, af::seq(0, 9999), af::span, af::span) = 1;
+
+    af::array gold_dim = af::constant(10000, 2, largeDim, 2, 2);
+    gold_dim(af::span, af::seq(0, 9999), af::span, af::span) = af::range(af::dim4(2, 10000, 2, 2), 1) + 1;
+
+    af::array output_dim = af::accum(input, 1);
+    ASSERT_TRUE(af::allTrue<bool>(output_dim == gold_dim));
+
+
+    input = af::constant(0, 2, 2, 2, largeDim);
+    input(af::span, af::span, af::span, af::seq(0, 9999)) = 1;
+
+    gold_dim = af::constant(0, 2, 2, 2, largeDim);
+    gold_dim(af::span, af::span, af::span, af::seq(0, 9999)) = af::range(af::dim4(2, 2, 2, 10000), 1) + 1;
+
+    output_dim = af::accum(input, 1);
+    ASSERT_TRUE(af::allTrue<bool>(output_dim == gold_dim));
+
+}

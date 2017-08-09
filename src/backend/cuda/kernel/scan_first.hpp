@@ -34,9 +34,9 @@ namespace kernel
         const int tidy = threadIdx.y;
 
         const int zid = blockIdx.x / blocks_x;
-        const int wid = blockIdx.y / blocks_y;
+        const int wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
         const int blockIdx_x = blockIdx.x - (blocks_x) * zid;
-        const int blockIdx_y = blockIdx.y - (blocks_y) * wid;
+        const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y) * wid;
         const int xid = blockIdx_x * blockDim.x * lim + tidx;
         const int yid = blockIdx_y * blockDim.y + tidy;
 
@@ -125,9 +125,9 @@ namespace kernel
         const int tidy = threadIdx.y;
 
         const int zid = blockIdx.x / blocks_x;
-        const int wid = blockIdx.y / blocks_y;
+        const int wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
         const int blockIdx_x = blockIdx.x - (blocks_x) * zid;
-        const int blockIdx_y = blockIdx.y - (blocks_y) * wid;
+        const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y) * wid;
         const int xid = blockIdx_x * blockDim.x * lim + tidx;
         const int yid = blockIdx_y * blockDim.y + tidy;
 
@@ -167,6 +167,10 @@ namespace kernel
         dim3 blocks(blocks_x * out.dims[2],
                     blocks_y * out.dims[3]);
 
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
+
         uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
         switch (threads_x) {
@@ -200,6 +204,10 @@ namespace kernel
         dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
         dim3 blocks(blocks_x * out.dims[2],
                     blocks_y * out.dims[3]);
+
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
 
         uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
