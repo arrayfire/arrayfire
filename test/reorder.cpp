@@ -189,3 +189,17 @@ TEST(Reorder, ISSUE_1777)
         }
     }
 }
+
+TEST(Reorder, MaxDim)
+{
+    if (noDoubleTests<float>()) return;
+
+    const size_t largeDim = 65535 * 32 + 1 ;
+
+    af::array input  = af::range(af::dim4(2, largeDim, 2), 2);
+    af::array output = af::reorder(input, 2, 1, 0);
+
+    af::array gold = af::range(af::dim4(2, largeDim, 2));
+
+    ASSERT_TRUE(af::allTrue<bool>(output == gold));
+}
