@@ -29,20 +29,28 @@ Array<T>  regions(const Array<char> &in, af_connectivity connectivity)
 
     // Create bindless texture object for the equiv map.
     cudaTextureObject_t tex = 0;
-    // FIXME: Currently disabled, only supported on capaibility >= 3.0
-    //if (compute >= 3.0) {
-    //    cudaResourceDesc resDesc;
-    //    memset(&resDesc, 0, sizeof(resDesc));
-    //    resDesc.resType = cudaResourceTypeLinear;
-    //    resDesc.res.linear.devPtr = out->get();
-    //    resDesc.res.linear.desc.f = cudaChannelFormatKindFloat;
-    //    resDesc.res.linear.desc.x = 32; // bits per channel
-    //    resDesc.res.linear.sizeInBytes = dims[0] * dims[1] * sizeof(float);
-    //    cudaTextureDesc texDesc;
-    //    memset(&texDesc, 0, sizeof(texDesc));
-    //    texDesc.readMode = cudaReadModeElementType;
-    //    CUDA_CHECK(cudaCreateTextureObject(&tex, &resDesc, &texDesc, NULL));
-    //}
+
+    //Use texture objects with compute 3.0 or higher
+    if (!std::is_same<T,double>::value) {
+        cudaResourceDesc resDesc;
+        memset(&resDesc, 0, sizeof(resDesc));
+        resDesc.resType = cudaResourceTypeLinear;
+        resDesc.res.linear.devPtr = out.get();
+
+        if (std::is_signed<T>::value)
+            resDesc.res.linear.desc.f = cudaChannelFormatKindSigned;
+        else if (std::is_unsigned<T>::value)
+            resDesc.res.linear.desc.f = cudaChannelFormatKindUnsigned;
+        else
+            resDesc.res.linear.desc.f = cudaChannelFormatKindFloat;
+
+        resDesc.res.linear.desc.x = sizeof(T)*8; // bits per channel
+        resDesc.res.linear.sizeInBytes = dims[0] * dims[1] * sizeof(T);
+        cudaTextureDesc texDesc;
+        memset(&texDesc, 0, sizeof(texDesc));
+        texDesc.readMode = cudaReadModeElementType;
+        CUDA_CHECK(cudaCreateTextureObject(&tex, &resDesc, &texDesc, NULL));
+    }
 
     switch(connectivity) {
         case AF_CONNECTIVITY_4:
@@ -52,6 +60,11 @@ Array<T>  regions(const Array<char> &in, af_connectivity connectivity)
             ::regions<T, true,  2>(out, in, tex);
             break;
     }
+
+    //Iterative procedure(while loop) in kernel::regions
+    //does stream synchronization towards loop end. So, it is
+    //safe to destroy the texture object
+    CUDA_CHECK(cudaDestroyTextureObject(tex));
 
     return out;
 }
