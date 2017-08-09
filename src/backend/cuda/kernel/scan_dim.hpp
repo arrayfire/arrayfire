@@ -37,9 +37,9 @@ namespace kernel
         const int tid  = tidy * THREADS_X + tidx;
 
         const int zid = blockIdx.x / blocks_x;
-        const int wid = blockIdx.y / blocks_y;
+        const int wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
         const int blockIdx_x = blockIdx.x - (blocks_x) * zid;
-        const int blockIdx_y = blockIdx.y - (blocks_y) * wid;
+        const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y) * wid;
         const int xid = blockIdx_x * blockDim.x + tidx;
         const int yid = blockIdx_y; // yid  of output. updated for input later.
 
@@ -141,9 +141,9 @@ namespace kernel
         const int tidy = threadIdx.y;
 
         const int zid = blockIdx.x / blocks_x;
-        const int wid = blockIdx.y / blocks_y;
+        const int wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
         const int blockIdx_x = blockIdx.x - (blocks_x) * zid;
-        const int blockIdx_y = blockIdx.y - (blocks_y) * wid;
+        const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y) * wid;
         const int xid = blockIdx_x * blockDim.x + tidx;
         const int yid = blockIdx_y; // yid  of output. updated for input later.
 
@@ -198,6 +198,10 @@ namespace kernel
         dim3 blocks(blocks_all[0] * blocks_all[2],
                     blocks_all[1] * blocks_all[3]);
 
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
+
         uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
         switch (threads_y) {
@@ -231,6 +235,10 @@ namespace kernel
 
         dim3 blocks(blocks_all[0] * blocks_all[2],
                     blocks_all[1] * blocks_all[3]);
+
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
 
         uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
