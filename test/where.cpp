@@ -122,6 +122,20 @@ TYPED_TEST(Where, CPP)
     }
 }
 
+TEST(Where, MaxDim)
+{
+    const size_t largeDim = 65535 * 32 + 2;
+
+    af::array input = af::range(af::dim4(1, largeDim), 1);
+    af::array output = where(input % 2 == 0);
+    af::array gold = 2 * af::range(largeDim/2);
+    ASSERT_TRUE(af::allTrue<bool>(output == gold));
+
+    input = af::range(af::dim4(1, 1, 1, largeDim), 3);
+    output = where(input % 2 == 0);
+    ASSERT_TRUE(af::allTrue<bool>(output == gold));
+}
+
 TEST(Where, ISSUE_1259)
 {
     af::array a = af::randu(10, 10, 10);
