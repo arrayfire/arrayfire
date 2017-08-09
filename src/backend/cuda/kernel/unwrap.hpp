@@ -28,8 +28,8 @@ namespace cuda
                            const int px, const int py, const int nx, int reps)
         {
             // Compute channel and volume
-            const int w = blockIdx.y / in.dims[2];
-            const int z = blockIdx.y % in.dims[2];
+            const int w = (blockIdx.y + blockIdx.z * gridDim.y) / in.dims[2];
+            const int z = (blockIdx.y + blockIdx.z * gridDim.y) % in.dims[2];
 
             if(w >= in.dims[3] || z >= in.dims[2])
                 return;
@@ -105,6 +105,10 @@ namespace cuda
 
             int reps = divup((wx * wy), threads.x); // is > 1 only when TX == 256 && wx * wy > 256
 
+            const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+            blocks.z = divup(blocks.y, maxBlocksY);
+            blocks.y = divup(blocks.y, blocks.z);
+
             CUDA_LAUNCH((unwrap_kernel<T, true>), blocks, threads,
                         out, in, wx, wy, sx, sy, px, py, nx, reps);
 
@@ -120,6 +124,10 @@ namespace cuda
             dim3 blocks(divup(out.dims[0], threads.x), out.dims[2] * out.dims[3]);
 
             int reps = divup((wx * wy), threads.y);
+
+            const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+            blocks.z = divup(blocks.y, maxBlocksY);
+            blocks.y = divup(blocks.y, blocks.z);
 
             CUDA_LAUNCH((unwrap_kernel<T, false>), blocks, threads,
                         out, in, wx, wy, sx, sy, px, py, nx, reps);
