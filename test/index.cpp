@@ -29,22 +29,6 @@ using std::endl;
 using std::ostream_iterator;
 using af::dtype_traits;
 
-static void cleanSlate()
-{
-    size_t alloc_bytes, alloc_buffers;
-    size_t lock_bytes, lock_buffers;
-
-    af::deviceGC();
-
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
-
-    ASSERT_EQ(alloc_buffers, 0u);
-    ASSERT_EQ(lock_buffers, 0u);
-    ASSERT_EQ(alloc_bytes, 0u);
-    ASSERT_EQ(lock_bytes, 0u);
-}
-
 template<typename T, typename OP>
 void
 checkValues(const af_seq &seq, const T* data, const T* indexed_data, OP compair_op) {
