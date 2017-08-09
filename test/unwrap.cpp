@@ -176,3 +176,23 @@ TEST(Unwrap, CPP)
     // Delete
     delete[] outData;
 }
+
+TEST(Unwrap, MaxDim)
+{
+    const size_t largeDim = 65535 + 1;
+    af::array input = af::range(5, 5, largeDim);
+
+    const unsigned wx = 5;
+    const unsigned wy = 5;
+    const unsigned sx = 5;
+    const unsigned sy = 5;
+    const unsigned px = 0;
+    const unsigned py = 0;
+
+    af::array output = af::unwrap(input, wx, wy, sx, sy, px, py);
+
+    af::array gold = af::range(af::dim4(5, 5, 1, largeDim));
+    gold = af::moddims(gold, af::dim4(25, 1, largeDim));
+
+    ASSERT_TRUE(af::allTrue<bool>(output == gold));
+}
