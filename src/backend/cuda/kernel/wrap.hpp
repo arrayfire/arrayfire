@@ -34,10 +34,10 @@ namespace cuda
                          int blocks_y)
         {
             int idx2 = blockIdx.x / blocks_x;
-            int idx3 = blockIdx.y / blocks_y;
+            int idx3 = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
 
             int blockIdx_x = blockIdx.x - idx2 * blocks_x;
-            int blockIdx_y = blockIdx.y - idx3 * blocks_y;
+            int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - idx3 * blocks_y;
 
             int oidx0 = threadIdx.x + blockDim.x * blockIdx_x;
             int oidx1 = threadIdx.y + blockDim.y * blockIdx_y;
@@ -100,6 +100,10 @@ namespace cuda
             int blocks_y = divup(out.dims[1], threads.y);
 
             dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
+
+            const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+            blocks.z = divup(blocks.y, maxBlocksY);
+            blocks.y = divup(blocks.y, blocks.z);
 
             if (is_column) {
                 CUDA_LAUNCH((wrap_kernel<T, true >), blocks, threads,
