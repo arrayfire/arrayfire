@@ -115,12 +115,10 @@ namespace kernel
         dim3 blocks(blocks_dim[0] * blocks_dim[2],
                     blocks_dim[1] * blocks_dim[3]);
 
-        const int maxBlocksY   = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-        const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
-        if(blocksPerMatZ > 1) {
-            blocks.y = maxBlocksY;
-            blocks.z = blocksPerMatZ;
-        }
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
+
         switch (threads_y) {
         case 8:
             CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 8>), blocks, threads,
@@ -305,12 +303,10 @@ namespace kernel
 
         uint repeat = divup(in.dims[0], (blocks_x * threads_x));
 
-        const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-        const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
-        if(blocksPerMatZ > 1) {
-            blocks.y = maxBlocksY;
-            blocks.z = blocksPerMatZ;
-        }
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
+
         switch (threads_x) {
         case 32:
             CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  32>), blocks, threads,

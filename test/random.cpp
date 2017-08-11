@@ -177,6 +177,29 @@ TYPED_TEST(Random,InvalidArgs)
     randuArgsTest<TypeParam>();
 }
 
+template<typename T>
+void randuDimsTest()
+{
+    if (noDoubleTests<T>()) return;
+
+    af::dim4 dims(1, 65535*32, 1, 1);
+    af::array large_rand = af::randu(dims, (af_dtype) af::dtype_traits<T>::af_type);
+    ASSERT_EQ(large_rand.dims()[1], 65535*32);
+
+    dims = af::dim4(1, 1, 65535*32, 1);
+    large_rand = af::randu(dims, (af_dtype) af::dtype_traits<T>::af_type);
+    ASSERT_EQ(large_rand.dims()[2], 65535*32);
+
+    dims = af::dim4(1, 1, 1, 65535*32);
+    large_rand = af::randu(dims, (af_dtype) af::dtype_traits<T>::af_type);
+    ASSERT_EQ(large_rand.dims()[3], 65535*32);
+}
+
+TYPED_TEST(Random,InvalidDims)
+{
+    randuDimsTest<TypeParam>();
+}
+
 ////////////////////////////////////// CPP /////////////////////////////////////
 //
 TEST(Random, CPP)

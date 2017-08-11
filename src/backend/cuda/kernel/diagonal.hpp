@@ -89,12 +89,9 @@ namespace kernel
         int blocks_z = out.dims[2];
         dim3 blocks(blocks_x, out.dims[3] * blocks_z);
 
-        const int maxBlocksY   = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-        const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
-        if(blocksPerMatZ > 1) {
-            blocks.y = maxBlocksY;
-            blocks.z = blocksPerMatZ;
-        }
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
 
         CUDA_LAUNCH((diagExtractKernel<T>), blocks, threads, out, in, num, blocks_z);
         POST_LAUNCH_CHECK();
