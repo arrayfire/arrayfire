@@ -76,12 +76,11 @@ void index(Param<T> out, CParam<T> in, const IndexKernelParam_t& p)
     int blks_y = divup(out.dims[1], threads.y);
 
     dim3 blocks(blks_x*out.dims[2], blks_y*out.dims[3]);
-    const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
-    if(blocksPerMatZ > 1) {
-        blocks.y = maxBlocksY;
-        blocks.z = blocksPerMatZ;
-    }
+
+    const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+    blocks.z = divup(blocks.y, maxBlocksY);
+    blocks.y = divup(blocks.y, blocks.z);
+
     CUDA_LAUNCH((indexKernel<T>), blocks, threads, out, in, p, blks_x, blks_y);
 
     POST_LAUNCH_CHECK();

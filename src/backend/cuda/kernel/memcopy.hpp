@@ -28,6 +28,8 @@ namespace kernel
     static const uint DIMX = 32;
     static const uint DIMY =  8;
 
+    // \param largeYWDim true denotes 2nd & 4th dimensions greater than device limits
+    // \param iterPerBlockY number of iterations along grid.Y per block
     template<typename T>
     __global__ static void
     memcopy_kernel(T *out, const dims_t ostrides,
@@ -38,24 +40,23 @@ namespace kernel
         const int tidy = threadIdx.y;
 
         const int zid = blockIdx.x / blocks_x;
-        const int wid = blockIdx.y / blocks_y;
         const int blockIdx_x = blockIdx.x - (blocks_x) * zid;
-        const int blockIdx_y = blockIdx.y - (blocks_y) * wid;
         const int xid = blockIdx_x * blockDim.x + tidx;
-        const int yid = blockIdx_y * blockDim.y + tidy;
 
+        const int wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
+        const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y) * wid;
+        const int yid = blockIdx_y * blockDim.y + tidy;
         // FIXME: Do more work per block
-        out += wid * ostrides.dim[3] + zid * ostrides.dim[2] + yid * ostrides.dim[1];
-        in  += wid * istrides.dim[3] + zid * istrides.dim[2] + yid * istrides.dim[1];
+        T * const optr = out + wid * ostrides.dim[3] + zid * ostrides.dim[2] + yid * ostrides.dim[1];
+        const T * iptr = in + wid * istrides.dim[3] + zid * istrides.dim[2] + yid * istrides.dim[1];
 
         int istride0 = istrides.dim[0];
         if (xid < idims.dim[0] &&
             yid < idims.dim[1] &&
             zid < idims.dim[2] &&
             wid < idims.dim[3]) {
-            out[xid] = in[xid * istride0];
+            optr[xid] = iptr[xid * istride0];
         }
-
     }
 
     template<typename T>
@@ -81,8 +82,12 @@ namespace kernel
         dims_t _istrides = {{(int)istrides[0], (int)istrides[1], (int)istrides[2], (int)istrides[3]}};
         dims_t _idims = {{(int)idims[0], (int)idims[1], (int)idims[2], (int)idims[3]}};
 
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
+
         CUDA_LAUNCH((memcopy_kernel<T>), blocks, threads,
-                out, _ostrides, in, _idims, _istrides, blocks_x, blocks_y);
+            out, _ostrides, in, _idims, _istrides, blocks_x, blocks_y);
         POST_LAUNCH_CHECK();
     }
 
@@ -159,9 +164,9 @@ namespace kernel
         const uint ly = threadIdx.y;
 
         const uint gz = blockIdx.x / blk_x;
-        const uint gw = blockIdx.y / blk_y;
+        const uint gw = (blockIdx.y + (blockIdx.z * gridDim.y)) / blk_y;
         const uint blockIdx_x = blockIdx.x - (blk_x) * gz;
-        const uint blockIdx_y = blockIdx.y - (blk_y) * gw;
+        const uint blockIdx_y = (blockIdx.y + (blockIdx.z * gridDim.y)) - (blk_y) * gw;
         const uint gx = blockIdx_x * blockDim.x + lx;
         const uint gy = blockIdx_y * blockDim.y + ly;
 
@@ -201,6 +206,10 @@ namespace kernel
 
         dim3 blocks(blk_x * dst.dims[2],
                     blk_y * dst.dims[3]);
+
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
 
         int trgt_l  = std::min(dst.dims[3], src.dims[3]);
         int trgt_k  = std::min(dst.dims[2], src.dims[2]);

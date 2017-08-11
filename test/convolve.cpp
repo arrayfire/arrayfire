@@ -751,3 +751,78 @@ TEST(Convolve, 3D_C64)
     EXPECT_EQ(std::abs(real(acc))< 1E-3, true);
     EXPECT_EQ(std::abs(imag(acc))< 1E-3, true);
 }
+
+TEST(ConvolveLargeDim1D, CPP)
+{
+    if (noDoubleTests<float>()) return;
+
+    const size_t n = 10;
+    const size_t largeDim = 65535 + 1;
+
+    float h_filter[] = {0.f, 1.f, 0.f};
+    af::array identity_filter(3, h_filter);
+    af::array signal = af::constant(1, n, 1, largeDim);
+
+    af::array output = convolve1(signal, identity_filter, AF_CONV_DEFAULT);
+    af::array output2 = output;
+    ASSERT_EQ(largeDim * n, sum<float>(output2));
+
+    signal = af::constant(1, n, 1, 1, largeDim);
+
+    output = convolve1(signal, identity_filter, AF_CONV_DEFAULT);
+    ASSERT_EQ(largeDim * n, sum<float>(output));
+}
+
+TEST(ConvolveLargeDim2D, CPP)
+{
+    if (noDoubleTests<float>()) return;
+
+    const size_t n = 10;
+    const size_t largeDim = 65535 + 1;
+
+    float h_filter[] = {0.f, 0.f, 0.f,
+                        0.f, 1.f, 0.f,
+                        0.f, 0.f, 0.f};
+    af::array identity_filter(3, 3, h_filter);
+    af::array signal = af::constant(1, n, n, largeDim);
+
+    af::array output = convolve2(signal, identity_filter, AF_CONV_DEFAULT);
+    ASSERT_EQ(largeDim * n * n, sum<float>(output));
+
+    signal = af::constant(1, n, n, 1, largeDim);
+
+    output = convolve2(signal, identity_filter, AF_CONV_DEFAULT);
+    ASSERT_EQ(largeDim * n * n, sum<float>(output));
+}
+
+TEST(DISABLED_ConvolveLargeDim3D, CPP)
+{
+    if (noDoubleTests<float>()) return;
+
+    const size_t n = 3;
+    const size_t largeDim = 65535 * 16 + 1;
+
+    float h_filter[] = {0.f, 0.f, 0.f,
+                        0.f, 0.f, 0.f,
+                        0.f, 0.f, 0.f,
+
+                        0.f, 0.f, 0.f,
+                        0.f, 1.f, 0.f,
+                        0.f, 0.f, 0.f,
+
+                        0.f, 0.f, 0.f,
+                        0.f, 0.f, 0.f,
+                        0.f, 0.f, 0.f};
+
+    af::array identity_filter(3, 3, 3, h_filter);
+    af::array signal = af::constant(1, n, largeDim, n);
+
+    af::array output = convolve3(signal, identity_filter, AF_CONV_DEFAULT);
+    ASSERT_EQ(1.f, product<float>(output));
+
+    signal = af::constant(1, n, n, largeDim);
+
+    output = convolve3(signal, identity_filter, AF_CONV_EXPAND);
+    //TODO: fix product by indexing
+    //ASSERT_EQ(1.f, product<float>(output));
+}

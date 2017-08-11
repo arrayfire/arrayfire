@@ -74,12 +74,10 @@ namespace cuda
                         blocksPerMatY * X.dims[3],
                         1);
 
-            const int maxBlocksY   = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-            const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
-            if(blocksPerMatZ > 1) {
-                blocks.y = maxBlocksY;
-                blocks.z = blocksPerMatZ;
-            }
+            const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+            blocks.z = divup(blocks.y, maxBlocksY);
+            blocks.y = divup(blocks.y, blocks.z);
+
             CUDA_LAUNCH((join_kernel<To, Tx, dim>), blocks, threads,
                        out, X, offset[0], offset[1], offset[2], offset[3],
                        blocksPerMatX, blocksPerMatY);
