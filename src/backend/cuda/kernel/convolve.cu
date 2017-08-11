@@ -54,8 +54,8 @@ void convolve1(Param<T> out, CParam<T> signal, int fLen,
     const int padding = fLen-1;
     const int shrdLen = blockDim.x + 2*padding;
     const unsigned b1 = blockIdx.x/nBBS0;   /* [0 {1} 2 3] */
-    const unsigned b3 = blockIdx.y/nBBS1;   /* [0 1 2 {3}] */
-    const unsigned b2 = blockIdx.y-nBBS1*b3;/* [0 1 {2} 3] */
+    const unsigned b3 = (blockIdx.y + blockIdx.z * gridDim.y) / nBBS1;   /* [0 1 2 {3}] */
+    const unsigned b2 = (blockIdx.y + blockIdx.z * gridDim.y) - nBBS1*b3;/* [0 1 {2} 3] */
 
     T *dst = (T *)out.ptr + (b1 * out.strides[1] +  /* activated with batched input signal */
                              o1 * out.strides[1] +  /* activated with batched input filter */
@@ -109,8 +109,8 @@ void convolve2(Param<T> out, CParam<T> signal, int nBBS0,
     const int shrdLen0 = THREADS_X + padding0;
     const int shrdLen1 = THREADS_Y + padding1;
 
-    unsigned b0  = blockIdx.x/nBBS0;
-    unsigned b1  = blockIdx.y/nBBS1;
+    unsigned b0  = blockIdx.x / nBBS0;
+    unsigned b1  = (blockIdx.y + blockIdx.z * gridDim.y) / nBBS1;
     T *dst = (T *)out.ptr + (b0 * out.strides[2] + /* activated with batched input signal */
                              o2 * out.strides[2] + /* activated with batched input filter */
                              b1 * out.strides[3] + /* activated with batched input signal */
@@ -126,7 +126,7 @@ void convolve2(Param<T> out, CParam<T> signal, int nBBS0,
     int lx  = threadIdx.x;
     int ly  = threadIdx.y;
     int gx  = THREADS_X * (blockIdx.x-b0*nBBS0) + lx;
-    int gy  = THREADS_Y * (blockIdx.y-b1*nBBS1) + ly;
+    int gy  = THREADS_Y * ((blockIdx.y + blockIdx.z * gridDim.y) -b1*nBBS1) + ly;
 
     int s0 = signal.strides[0];
     int s1 = signal.strides[1];
@@ -273,17 +273,22 @@ void prepareKernelArgs(conv_kparam_t &params, dim_t oDims[], dim_t fDims[], int 
         batchDims[i] = (params.launchMoreBlocks ? 1 : oDims[i]);
     }
 
+    const int maxBlocksY   = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
     if (baseDim==1) {
         params.mThreads    = dim3(THREADS, 1);
         params.mBlk_x      = divup(oDims[0], params.mThreads.x);
         params.mBlk_y      = batchDims[2];
         params.mBlocks     = dim3(params.mBlk_x * batchDims[1], params.mBlk_y * batchDims[3]);
         params.mSharedSize = (params.mThreads.x+2*(fDims[0]-1)) * sizeof(T);
+        params.mBlocks.z = divup(params.mBlocks.y, maxBlocksY);
+        params.mBlocks.y = divup(params.mBlocks.y, params.mBlocks.z);
     } else if (baseDim==2) {
         params.mThreads    = dim3(THREADS_X, THREADS_Y);
         params.mBlk_x      = divup(oDims[0], params.mThreads.x);
         params.mBlk_y      = divup(oDims[1], params.mThreads.y);
         params.mBlocks     = dim3(params.mBlk_x * batchDims[2], params.mBlk_y * batchDims[3]);
+        params.mBlocks.z = divup(params.mBlocks.y, maxBlocksY);
+        params.mBlocks.y = divup(params.mBlocks.y, params.mBlocks.z);
     } else if (baseDim==3) {
         params.mThreads    = dim3(CUBE_X, CUBE_Y, CUBE_Z);
         params.mBlk_x      = divup(oDims[0], params.mThreads.x);
@@ -293,6 +298,9 @@ void prepareKernelArgs(conv_kparam_t &params, dim_t oDims[], dim_t fDims[], int 
         params.mSharedSize = (params.mThreads.x+2*(fDims[0]-1)) *
                              (params.mThreads.y+2*(fDims[1]-1)) *
                              (params.mThreads.z+2*(fDims[2]-1)) * sizeof(T);
+        //todo: fold into x dimension according to old style
+        params.mBlocks.z = divup(params.mBlocks.y, maxBlocksY);
+        params.mBlocks.y = divup(params.mBlocks.y, params.mBlocks.z);
     }
 }
 
