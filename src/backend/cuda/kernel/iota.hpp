@@ -80,13 +80,10 @@ namespace cuda
                         blocksPerMatY * out.dims[3],
                         1);
 
-            const int maxBlocksY   = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-            const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
+            const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+            blocks.z = divup(blocks.y, maxBlocksY);
+            blocks.y = divup(blocks.y, blocks.z);
 
-            if(blocksPerMatZ > 1) {
-                blocks.y = maxBlocksY;
-                blocks.z = blocksPerMatZ;
-            }
             CUDA_LAUNCH((iota_kernel<T>), blocks, threads,
                     out, sdims[0], sdims[1], sdims[2], sdims[3],
                     tdims[0], tdims[1], tdims[2], tdims[3], blocksPerMatX, blocksPerMatY);

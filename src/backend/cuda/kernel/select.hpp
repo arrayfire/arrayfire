@@ -101,12 +101,10 @@ namespace cuda
             dim3 blocks(blk_x * out.dims[2],
                         blk_y * out.dims[3]);
 
-            const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-            const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
-            if(blocksPerMatZ > 1) {
-                blocks.y = maxBlocksY;
-                blocks.z = blocksPerMatZ;
-            }
+            const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+            blocks.z = divup(blocks.y, maxBlocksY);
+            blocks.y = divup(blocks.y, blocks.z);
+
             if (is_same) {
                 CUDA_LAUNCH((select_kernel<T, true>), blocks, threads,
                             out, cond, a, b, blk_x, blk_y);

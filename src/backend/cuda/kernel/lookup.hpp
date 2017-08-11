@@ -55,10 +55,10 @@ void lookupND(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices,
     int ly = threadIdx.y;
 
     int gz = blockIdx.x/nBBS0;
-    int gw = blockIdx.y/nBBS1;
+    int gw = (blockIdx.y + blockIdx.z * gridDim.y)/nBBS1;
 
     int gx = blockDim.x * (blockIdx.x - gz*nBBS0) + lx;
-    int gy = blockDim.y * (blockIdx.y - gw*nBBS1) + ly;
+    int gy = blockDim.y * ((blockIdx.y + blockIdx.z * gridDim.y) - gw*nBBS1) + ly;
 
     const idx_t *idxPtr = (const idx_t*)indices.ptr;
 
@@ -102,6 +102,10 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims)
         int blks_y = divup(out.dims[1], threads.y);
 
         dim3 blocks(blks_x*out.dims[2], blks_y*out.dims[3]);
+
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
 
         CUDA_LAUNCH((lookupND<in_t, idx_t, dim>), blocks, threads, out, in, indices, blks_x, blks_y);
     }

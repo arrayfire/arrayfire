@@ -30,7 +30,7 @@ namespace kernel
         else return in;
     }
 
-    // Kernel is going access original data in colleased format
+    // Kernel is going access original data in coaleasced format
     template<typename T, bool conjugate, bool is32Multiple>
     __global__
     void transpose(Param<T> out, CParam<T> in,
@@ -54,24 +54,24 @@ namespace kernel
         const int batchId_x = blockIdx.x / blocksPerMatX;
         const int blockIdx_x = (blockIdx.x - batchId_x * blocksPerMatX);
 
-        const int batchId_y = blockIdx.y / blocksPerMatY;
-        const int blockIdx_y = (blockIdx.y - batchId_y * blocksPerMatY);
+        const int batchId_y = (blockIdx.y + blockIdx.z * gridDim.y) / blocksPerMatY;
+        const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (batchId_y * blocksPerMatY);
 
         const int x0 = TILE_DIM * blockIdx_x;
         const int y0 = TILE_DIM * blockIdx_y;
 
         // calculate global indices
-        int gx      = lx + x0;
-        int gy      = ly + y0;
+        int gx = lx + x0;
+        int gy = ly + y0;
 
-        // offset in and out based on batch id
+        //offset in and out based on batch id
         in.ptr  += batchId_x *  in.strides[2] + batchId_y *  in.strides[3];
         out.ptr += batchId_x * out.strides[2] + batchId_y * out.strides[3];
 
 #pragma unroll
         for (int repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
             int gy_ = gy+repeat;
-            if (is32Multiple || (gx<iDim0 && gy_<iDim1))
+            if ((gx<iDim0 && gy_<iDim1))
                 shrdMem[ly + repeat][lx] = in.ptr[gy_ * iStride1 + gx];
         }
         __syncthreads();
@@ -100,11 +100,15 @@ namespace kernel
         int blk_y = divup(in.dims[1],TILE_DIM);
         // launch batch * blk_x blocks along x dimension
         dim3 blocks(blk_x * in.dims[2], blk_y * in.dims[3]);
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
 
-        if (in.dims[0] % TILE_DIM == 0 && in.dims[1] % TILE_DIM == 0)
+        if (in.dims[0] % TILE_DIM == 0 && in.dims[1] % TILE_DIM == 0) {
             CUDA_LAUNCH((transpose<T, conjugate, true >), blocks, threads, out, in, blk_x, blk_y);
-        else
+        } else {
             CUDA_LAUNCH((transpose<T, conjugate, false>), blocks, threads, out, in, blk_x, blk_y);
+        }
 
         POST_LAUNCH_CHECK();
     }

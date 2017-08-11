@@ -122,11 +122,9 @@ namespace cuda
             bool batch = !(xpos.dims[1] == 1 && xpos.dims[2] == 1 && xpos.dims[3] == 1);
 
             const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-            const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
-            if(blocksPerMatZ > 1) {
-                blocks.y = maxBlocksY;
-                blocks.z = blocksPerMatZ;
-            }
+            blocks.z = divup(blocks.y, maxBlocksY);
+            blocks.y = divup(blocks.y, blocks.z);
+
             CUDA_LAUNCH((approx1_kernel<Ty, Tp, order>), blocks, threads,
                             out, in, xpos, offGrid, blocksPerMat, batch, method);
             POST_LAUNCH_CHECK();
@@ -145,11 +143,9 @@ namespace cuda
             bool batch = !(xpos.dims[2] == 1 && xpos.dims[3] == 1);
 
             const int maxBlocksY    = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-            const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
-            if(blocksPerMatZ > 1) {
-                blocks.y = maxBlocksY;
-                blocks.z = blocksPerMatZ;
-            }
+            blocks.z = divup(blocks.y, maxBlocksY);
+            blocks.y = divup(blocks.y, blocks.z);
+
             CUDA_LAUNCH((approx2_kernel<Ty, Tp, order>), blocks, threads,
                         out, in, xpos, ypos, offGrid, blocksPerMatX, blocksPerMatY, batch, method);
             POST_LAUNCH_CHECK();

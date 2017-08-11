@@ -81,9 +81,9 @@ namespace kernel
         const uint tid  = tidy * THREADS_X + tidx;
 
         const uint zid = blockIdx.x / blocks_x;
-        const uint wid = blockIdx.y / blocks_y;
+        const uint wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
         const uint blockIdx_x = blockIdx.x - (blocks_x) * zid;
-        const uint blockIdx_y = blockIdx.y - (blocks_y) * wid;
+        const uint blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y) * wid;
         const uint xid = blockIdx_x * blockDim.x + tidx;
         const uint yid = blockIdx_y; // yid  of output. updated for input later.
 
@@ -194,6 +194,11 @@ namespace kernel
         dim3 blocks(blocks_dim[0] * blocks_dim[2],
                     blocks_dim[1] * blocks_dim[3]);
 
+        printf("dim [%d %d %d]\n", blocks.x, blocks.y, blocks.z);
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
+
         switch (threads_y) {
         case 8:
             CUDA_LAUNCH((ireduce_dim_kernel<T, op, dim, is_first, 8>), blocks, threads,
@@ -278,9 +283,9 @@ namespace kernel
         const uint tid  = tidy * blockDim.x + tidx;
 
         const uint zid = blockIdx.x / blocks_x;
-        const uint wid = blockIdx.y / blocks_y;
+        const uint wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
         const uint blockIdx_x = blockIdx.x - (blocks_x) * zid;
-        const uint blockIdx_y = blockIdx.y - (blocks_y) * wid;
+        const uint blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y) * wid;
         const uint xid = blockIdx_x * blockDim.x * repeat + tidx;
         const uint yid = blockIdx_y * blockDim.y + tidy;
 
@@ -369,6 +374,10 @@ namespace kernel
         dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
         dim3 blocks(blocks_x * in.dims[2],
                     blocks_y * in.dims[3]);
+        printf("[%d %d %d]\n", blocks.x, blocks.y, blocks.z);
+        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        blocks.z = divup(blocks.y, maxBlocksY);
+        blocks.y = divup(blocks.y, blocks.z);
 
         uint repeat = divup(in.dims[0], (blocks_x * threads_x));
 
@@ -430,6 +439,7 @@ namespace kernel
     template<typename T, af_op_t op>
     void ireduce(Param<T> out, uint *olptr, CParam<T> in, int dim)
     {
+        printf("AMNIHRERERE");
         switch (dim) {
         case 0: return ireduce_first<T, op   >(out, olptr, in);
         case 1: return ireduce_dim  <T, op, 1>(out, olptr, in);
