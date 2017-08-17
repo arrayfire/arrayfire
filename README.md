@@ -153,8 +153,9 @@ ArrayFire development is funded by ArrayFire LLC and several third parties,
 please see the list of [acknowledgements](ACKNOWLEDGEMENTS.md) for further
 details.
 
-## Support and Contact Info [![Join the chat at https://gitter.im/arrayfire/arrayfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arrayfire/arrayfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+## Support and Contact Info
 
+* [Slack Chat](https://join.slack.com/t/arrayfire-org/shared_invite/MjI1ODQ4NjI1MTM4LTE1MDI1NTgzOTctNzdjZmYyYWIwNA)
 * [Google Groups](https://groups.google.com/forum/#!forum/arrayfire-users)
 * ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/)
 
