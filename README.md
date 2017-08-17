@@ -155,7 +155,7 @@ details.
 
 ## Support and Contact Info
 
-* [Slack Chat](https://join.slack.com/t/arrayfire-org/shared_invite/MjI1ODQ4NjI1MTM4LTE1MDI1NTgzOTctNzdjZmYyYWIwNA)
+* [Slack Chat](https://join.slack.com/t/arrayfire-org/shared_invite/MjI4MjIzMDMzMTczLTE1MDI5ODg4NzYtN2QwNGE3ODA5OQ)
 * [Google Groups](https://groups.google.com/forum/#!forum/arrayfire-users)
 * ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/)
 
