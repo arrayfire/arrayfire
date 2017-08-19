@@ -42,6 +42,7 @@ namespace kernel
         const int oDim1 = out.dims[1];
         const int iDim0 = in.dims[0];
         const int iDim1 = in.dims[1];
+        const int iDim3 = in.dims[3];
 
         // calculate strides
         const int oStride1 = out.strides[1];
@@ -57,6 +58,8 @@ namespace kernel
         const int batchId_y = (blockIdx.y + blockIdx.z * gridDim.y) / blocksPerMatY;
         const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (batchId_y * blocksPerMatY);
 
+        if(batchId_y >= iDim3) return;
+
         const int x0 = TILE_DIM * blockIdx_x;
         const int y0 = TILE_DIM * blockIdx_y;
 
@@ -71,7 +74,7 @@ namespace kernel
 #pragma unroll
         for (int repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
             int gy_ = gy+repeat;
-            if ((gx<iDim0 && gy_<iDim1))
+            if (is32Multiple || (gx<iDim0 && gy_<iDim1))
                 shrdMem[ly + repeat][lx] = in.ptr[gy_ * iStride1 + gx];
         }
         __syncthreads();
