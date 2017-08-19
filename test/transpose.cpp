@@ -236,6 +236,26 @@ TEST(Transpose, CPP_c32_CONJ20x20x5)
     trsCPPConjTest<cfloat>(20, 20, 5);
 }
 
+TEST(Transpose, MaxDim)
+{
+    const size_t largeDim = 65535 * 33 + 1;
+
+    af::array input  = af::range(af::dim4(2, largeDim, 1, 1));
+    af::array gold   = af::range(af::dim4(largeDim, 2, 1, 1), 1);
+    af::array output = af::transpose(input);
+
+    ASSERT_EQ(output.dims(0), (int)largeDim);
+    ASSERT_EQ(output.dims(1), 2);
+    ASSERT_TRUE(af::allTrue<bool>(output == gold));
+
+    input  = af::range(af::dim4(2, 5, 1, largeDim));
+    gold   = af::range(af::dim4(5, 2, 1, largeDim), 1);
+    output = af::transpose(input);
+
+    ASSERT_TRUE(af::allTrue<bool>(output == gold));
+}
+
+
 TEST(Transpose, GFOR)
 {
     using namespace af;
