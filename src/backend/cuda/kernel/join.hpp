@@ -12,7 +12,6 @@
 #include <Param.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
-#include <iostream>
 
 namespace cuda
 {
