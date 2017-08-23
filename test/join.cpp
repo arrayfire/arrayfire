@@ -129,8 +129,7 @@ TEST(Join, JoinLargeDim)
         af::dim4 joined_dims = joined.dims();
 
         ASSERT_EQ(2*in_dims[0], joined_dims[0]);
-        //todo: uncomment as assert
-        //printf("%f\n", af::sum<float>((joined(0, af::span) - joined(1, af::span)).as(f32)));
+        ASSERT_EQ(0.f, af::sum<float>((joined(0, af::span) - joined(1, af::span)).as(f32)));
 
         af::array in2 = af::constant(1, (dim_t)nx, (dim_t)ny, (dim_t)2, (dim_t)nw, u8);
         joined = af::join(3, in, in);
