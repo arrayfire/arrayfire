@@ -42,7 +42,6 @@ namespace kernel
         const int oDim1 = out.dims[1];
         const int iDim0 = in.dims[0];
         const int iDim1 = in.dims[1];
-        const int iDim3 = in.dims[3];
 
         // calculate strides
         const int oStride1 = out.strides[1];
@@ -58,7 +57,8 @@ namespace kernel
         const int batchId_y = (blockIdx.y + blockIdx.z * gridDim.y) / blocksPerMatY;
         const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (batchId_y * blocksPerMatY);
 
-        if(batchId_y >= iDim3) return;
+        if(batchId_x >= in.dims[2] || batchId_y >= in.dims[3])
+            return;
 
         const int x0 = TILE_DIM * blockIdx_x;
         const int y0 = TILE_DIM * blockIdx_y;

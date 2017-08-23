@@ -28,8 +28,6 @@ namespace kernel
     static const uint DIMX = 32;
     static const uint DIMY =  8;
 
-    // \param largeYWDim true denotes 2nd & 4th dimensions greater than device limits
-    // \param iterPerBlockY number of iterations along grid.Y per block
     template<typename T>
     __global__ static void
     memcopy_kernel(T *out, const dims_t ostrides,
