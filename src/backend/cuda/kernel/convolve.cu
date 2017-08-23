@@ -56,6 +56,8 @@ void convolve1(Param<T> out, CParam<T> signal, int fLen,
     const unsigned b1 = blockIdx.x/nBBS0;   /* [0 {1} 2 3] */
     const unsigned b3 = (blockIdx.y + blockIdx.z * gridDim.y) / nBBS1;   /* [0 1 2 {3}] */
     const unsigned b2 = (blockIdx.y + blockIdx.z * gridDim.y) - nBBS1*b3;/* [0 1 {2} 3] */
+    if(b2 >= out.dims[2] || b3 >= out.dims[3])
+        return;
 
     T *dst = (T *)out.ptr + (b1 * out.strides[1] +  /* activated with batched input signal */
                              o1 * out.strides[1] +  /* activated with batched input filter */
@@ -127,6 +129,9 @@ void convolve2(Param<T> out, CParam<T> signal, int nBBS0,
     int ly  = threadIdx.y;
     int gx  = THREADS_X * (blockIdx.x-b0*nBBS0) + lx;
     int gy  = THREADS_Y * ((blockIdx.y + blockIdx.z * gridDim.y) -b1*nBBS1) + ly;
+
+    if(b1 >= out.dims[3])
+        return;
 
     int s0 = signal.strides[0];
     int s1 = signal.strides[1];

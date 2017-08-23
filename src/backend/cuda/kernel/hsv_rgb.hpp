@@ -33,7 +33,7 @@ void convert(Param<T> out, CParam<T> in, int nBBS)
     int gx = blockDim.x * (blockIdx.x-batchId*nBBS) + threadIdx.x;
     int gy = blockDim.y * (blockIdx.y + blockIdx.z * gridDim.y) + threadIdx.y;
 
-    if (gx < out.dims[0] && gy < out.dims[1]) {
+    if (gx < out.dims[0] && gy < out.dims[1] && batchId < out.dims[3]) {
 
         int oIdx0 = gx + gy * out.strides[1];
         int oIdx1 = oIdx0 + out.strides[2];

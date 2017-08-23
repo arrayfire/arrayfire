@@ -374,7 +374,6 @@ namespace kernel
         dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
         dim3 blocks(blocks_x * in.dims[2],
                     blocks_y * in.dims[3]);
-        printf("[%d %d %d]\n", blocks.x, blocks.y, blocks.z);
         const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
         blocks.z = divup(blocks.y, maxBlocksY);
         blocks.y = divup(blocks.y, blocks.z);
