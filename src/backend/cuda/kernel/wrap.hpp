@@ -46,7 +46,7 @@ namespace cuda
             const T *iptr =  in.ptr + idx2 *  in.strides[2] + idx3 *  in.strides[3];
 
 
-            if (oidx0 >= out.dims[0] || oidx1 >= out.dims[1]) return;
+            if (oidx0 >= out.dims[0] || oidx1 >= out.dims[1] || idx2 >= out.dims[2] || idx3 >= out.dims[3]) return;
 
             int pidx0 = oidx0 + px;
             int pidx1 = oidx1 + py;
