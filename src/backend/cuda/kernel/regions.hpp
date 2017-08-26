@@ -123,9 +123,6 @@ template <typename T, int block_dim, int n_per_thread, bool full_conn>
 __global__
 static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex)
 {
-
-    typedef warp_count<block_dim*block_dim> num_warps;
-
     // Basic coordinates
     const int base_x = (blockIdx.x * blockDim.x * n_per_thread) + threadIdx.x;
     const int base_y = (blockIdx.y * blockDim.y * n_per_thread) + threadIdx.y;
@@ -147,15 +144,6 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
 
     // Cached tile of the equivalency map
     __shared__ T s_tile[n_per_thread*block_dim][(n_per_thread*block_dim)];
-
-    // Space to track ballot funcs to track convergence
-    __shared__ T s_changed[num_warps::value];
-
-    const int tn = (threadIdx.y * blockDim.x) + threadIdx.x;
-
-    const int warpIdx = tn / warpSize;
-    s_changed[warpIdx] = (T)0;
-    __syncthreads();
 
     #pragma unroll
     for (int xb = 0; xb < n_per_thread; ++xb) {
@@ -237,16 +225,8 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
             best_label[tid_i] = new_label;
         }
     }
-    __syncthreads();
 
-    // Determine if any pixel changed
-    bool continue_iter = false;
-    s_changed[warpIdx] = __any((int)tid_changed);
-    __syncthreads();
-
-    #pragma unroll
-    for (int i = 0; i < num_warps::value; i++)
-        continue_iter = continue_iter || (s_changed[i] != 0);
+    bool continue_iter = __syncthreads_or((int)tid_changed);
 
     // Iterate until no pixel in the tile changes
     while (continue_iter) {
@@ -316,15 +296,7 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
             }
         }
         // Done looking at neighbors for this iteration
-        __syncthreads();
-
-        // Decide if we need to continue iterating
-        s_changed[warpIdx] = __any((int)tid_changed);
-        __syncthreads();
-        continue_iter = false;
-        #pragma unroll
-        for (int i = 0; i < num_warps::value; i++)
-            continue_iter = continue_iter | (s_changed[i] != 0);
+        continue_iter = __syncthreads_or((int)tid_changed);
 
         // If we have to continue iterating, update the tile of the
         // equiv map in shared memory
