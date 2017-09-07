@@ -72,7 +72,6 @@ void meanShift(Param<T> out, CParam<T> in, const float s_sigma,
 
                             int hit_count = 0;
                             dim_t tj = cj + wj;
-
                             if (tj<0 || tj>dims[1]-1) break;
 
                             dim_t tjstride = tj*istrides[1];
@@ -80,7 +79,6 @@ void meanShift(Param<T> out, CParam<T> in, const float s_sigma,
                             for (dim_t wi=-radius; wi<=radius; ++wi) {
 
                                 dim_t ti = ci + wi;
-
                                 if (ti<0 || ti>dims[0]-1) break;
 
                                 dim_t tistride = ti*istrides[0];
