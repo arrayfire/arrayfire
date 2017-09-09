@@ -16,7 +16,11 @@
 #include <debug_cuda.hpp>
 #include "config.hpp"
 #include <memory.hpp>
+
 #include <memory>
+#include <vector>
+
+using std::vector;
 
 namespace cuda
 {
@@ -70,18 +74,26 @@ namespace kernel
         To *optr = out.ptr;
         Tw *owptr = owt.ptr;
 
+        int ooffset = ids[3] * out.strides[3] +
+                      ids[2] * out.strides[2] +
+                      ids[1] * out.strides[1] + ids[0];
         // There is only one element per block for out
         // There are blockDim.y elements per block for in
         // Hence increment ids[dim] just after offseting out and before offsetting in
-        optr += ids[3] * out.strides[3] + ids[2] * out.strides[2] + ids[1] * out.strides[1] + ids[0];
-        if (owptr != NULL) owptr += ids[3] * out.strides[3] + ids[2] * out.strides[2] + ids[1] * out.strides[1] + ids[0];
+        optr += ooffset;
+        if (owptr != NULL) owptr += ooffset;
+
         const uint blockIdx_dim = ids[dim];
 
         ids[dim] = ids[dim] * blockDim.y + tidy;
-        iptr  += ids[3] * in.strides[3] + ids[2] * in.strides[2] + ids[1] * in.strides[1] + ids[0];
-        if (iwptr != NULL) iwptr  += ids[3] * in.strides[3] + ids[2] * in.strides[2] + ids[1] * in.strides[1] + ids[0];
-        const uint id_dim_in = ids[dim];
 
+        int ioffset = ids[3] * in.strides[3] +
+                      ids[2] * in.strides[2] +
+                      ids[1] * in.strides[1] + ids[0];
+        iptr  += ioffset;
+        if (iwptr != NULL) iwptr  += ioffset;
+
+        const uint id_dim_in = ids[dim];
         const uint istride_dim = in.strides[dim];
 
         bool is_valid =
@@ -173,7 +185,6 @@ namespace kernel
                              CParam<Ti> in, CParam<Tw> iwt,
                              const uint threads_y, const dim_t blocks_dim[4])
     {
-        printf("mean_dim_launcher\n");
         dim3 threads(THREADS_X, threads_y);
 
         dim3 blocks(blocks_dim[0] * blocks_dim[2],
@@ -458,7 +469,6 @@ namespace kernel
     template<typename T, typename Tw>
     T mean_all_weighted(CParam<T> in, CParam<Tw> iwt)
     {
-        using std::unique_ptr;
         int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
 
         // FIXME: Use better heuristics to get to the optimum number
@@ -509,42 +519,38 @@ namespace kernel
             tmpWt.ptr = memAlloc<Tw>(tmp_elements);
             mean_first_launcher<T, Tw, T>(tmpOut, tmpWt, in, iwt, blocks_x, blocks_y, threads_x);
 
-            unique_ptr<T>       h_ptr(new T[tmp_elements]);
-            unique_ptr<Tw>    h_wptr(new Tw[tmp_elements]);
-            T*     h_ptr_raw = h_ptr.get();
-            Tw*   h_wptr_raw = h_wptr.get();
+            vector<T>  h_ptr(tmp_elements);
+            vector<Tw> h_wptr(tmp_elements);
 
-            CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, tmpOut.ptr, tmp_elements * sizeof(T),
+            CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), tmpOut.ptr, tmp_elements * sizeof(T),
                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaMemcpyAsync(h_wptr_raw, tmpWt.ptr, tmp_elements * sizeof(Tw),
+            CUDA_CHECK(cudaMemcpyAsync(h_wptr.data(), tmpWt.ptr, tmp_elements * sizeof(Tw),
                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
             memFree(tmpOut.ptr);
             memFree(tmpWt.ptr);
 
-            MeanOp<T, Tw> Op(h_ptr_raw[0], h_wptr_raw[0]);
+            MeanOp<T, Tw> Op(h_ptr[0], h_wptr[0]);
 
             for (int i = 1; i < tmp_elements; i++) {
-                Op(h_ptr_raw[i], h_wptr_raw[i]);
+                Op(h_ptr[i], h_wptr[i]);
             }
 
             return Op.runningMean;
         } else {
 
-            unique_ptr<T> h_ptr(new T[in_elements]);
-            unique_ptr<Tw>    h_wptr(new Tw[in_elements]);
-            T*      h_ptr_raw = h_ptr.get();
-            Tw*   h_wptr_raw = h_wptr.get();
+            vector<T>  h_ptr(in_elements);
+            vector<Tw> h_wptr(in_elements);
 
-            CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, in.ptr, in_elements * sizeof(T),
+            CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), in.ptr, in_elements * sizeof(T),
                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaMemcpyAsync(h_wptr_raw, iwt.ptr, in_elements * sizeof(Tw),
+            CUDA_CHECK(cudaMemcpyAsync(h_wptr.data(), iwt.ptr, in_elements * sizeof(Tw),
                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
-            MeanOp<T, Tw> Op(h_ptr_raw[0], h_wptr_raw[0]);
+            MeanOp<T, Tw> Op(h_ptr[0], h_wptr[0]);
             for (int i = 1; i < in_elements; i++) {
-                Op(h_ptr_raw[i], h_wptr_raw[i]);
+                Op(h_ptr[i], h_wptr[i]);
             }
 
             return Op.runningMean;
@@ -594,46 +600,42 @@ namespace kernel
 
             int tmp_elements = tmpOut.strides[3] * tmpOut.dims[3];
 
-            //TODO: Use scoped_ptr
             tmpOut.ptr = memAlloc<To>(tmp_elements);
             tmpCt.ptr = memAlloc<Tw>(tmp_elements);
             iwt.ptr = NULL;
             mean_first_launcher<Ti, Tw, To>(tmpOut, tmpCt, in, iwt, blocks_x, blocks_y, threads_x);
 
-            unique_ptr<To>       h_ptr(new To[tmp_elements]);
-            unique_ptr<Tw>    h_cptr(new Tw[tmp_elements]);
-            To*    h_ptr_raw = h_ptr.get();
-            Tw*   h_cptr_raw = h_cptr.get();
+            vector<To> h_ptr(tmp_elements);
+            vector<Tw> h_cptr(tmp_elements);
 
-            CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, tmpOut.ptr, tmp_elements * sizeof(To),
+            CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), tmpOut.ptr, tmp_elements * sizeof(To),
                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaMemcpyAsync(h_cptr_raw, tmpCt.ptr, tmp_elements * sizeof(Tw),
+            CUDA_CHECK(cudaMemcpyAsync(h_cptr.data(), tmpCt.ptr, tmp_elements * sizeof(Tw),
                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
             memFree(tmpOut.ptr);
             memFree(tmpCt.ptr);
 
-            MeanOp<To, Tw> Op(h_ptr_raw[0], h_cptr_raw[0]);
+            MeanOp<To, Tw> Op(h_ptr[0], h_cptr[0]);
 
             for (int i = 1; i < tmp_elements; i++) {
-                Op(h_ptr_raw[i], h_cptr_raw[i]);
+                Op(h_ptr[i], h_cptr[i]);
             }
 
             return Op.runningMean;
         } else {
 
-            unique_ptr<Ti> h_ptr(new Ti[in_elements]);
-            Ti* h_ptr_raw = h_ptr.get();
-            CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, in.ptr, in_elements * sizeof(Ti),
+            vector<Ti> h_ptr(in_elements);
+            CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), in.ptr, in_elements * sizeof(Ti),
                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
             Transform<Ti, To, af_add_t> transform;
             Tw count = (Tw)1;
 
-            MeanOp<To, Tw> Op(transform(h_ptr_raw[0]), count);
+            MeanOp<To, Tw> Op(transform(h_ptr[0]), count);
             for (int i = 1; i < in_elements; i++) {
-                Op(transform(h_ptr_raw[i]), count);
+                Op(transform(h_ptr[i]), count);
             }
 
             return Op.runningMean;
