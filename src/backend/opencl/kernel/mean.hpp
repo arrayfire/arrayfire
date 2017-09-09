@@ -8,13 +8,9 @@
  ********************************************************/
 
 #pragma once
-#include <string>
-#include <mutex>
-#include <map>
-#include <memory>
 #include <kernel_headers/mean_first.hpp>
 #include <kernel_headers/mean_dim.hpp>
-#include <kernel_headers/mops.hpp>
+#include <kernel_headers/mean_ops.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <dispatch.hpp>
@@ -26,6 +22,11 @@
 #include "config.hpp"
 #include <memory.hpp>
 
+#include <string>
+#include <mutex>
+#include <map>
+#include <vector>
+
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
@@ -33,7 +34,7 @@ using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
-using std::unique_ptr;
+using std::vector;
 
 namespace opencl
 {
@@ -177,8 +178,8 @@ void mean_dim_launcher(Param out, Param owt,
             options << " -D USE_DOUBLE";
         }
 
-        const char *ker_strs[] = {mops_cl, mean_dim_cl};
-        const int   ker_lens[] = {mops_cl_len, mean_dim_cl_len};
+        const char *ker_strs[] = {mean_ops_cl, mean_dim_cl};
+        const int   ker_lens[] = {mean_ops_cl_len, mean_dim_cl_len};
         Program prog;
         buildProgram(prog, 2, ker_strs, ker_lens, options.str());
         entry.prog = new Program(prog);
@@ -265,35 +266,19 @@ void mean_dim(Param out, Param in, Param iwt, int dim)
 
     groups_all[dim] = divup(in.info.dims[dim], threads_y * REPEAT);
 
-    Param tmpOut = out;
-    Param tmpWt;
-    tmpWt.info.offset = 0;
-    for (int k = 0; k < 4; ++k) {
-        tmpWt.info.dims[k] = 0;
-        tmpWt.info.strides[k] = 0;
-    }
-
-    int tmp_elements = 1;
     if (groups_all[dim] > 1) {
-        tmpOut.info.dims[dim] = groups_all[dim];
-
-        for (int k = 0; k < 4; k++) tmp_elements *= tmpOut.info.dims[k];
-
-        tmpOut.data = bufferAlloc(tmp_elements * sizeof(To));
-        tmpWt.data = bufferAlloc(tmp_elements * sizeof(Tw));
-
-        for (int k = dim + 1; k < 4; k++) tmpOut.info.strides[k] *= groups_all[dim];
-    }
-
-    mean_dim_launcher<Ti, Tw, To>(tmpOut, tmpWt, in, iwt, dim, threads_y, groups_all);
-
-    if (groups_all[dim] > 1) {
-        groups_all[dim] = 1;
+        dim4 d(4, out.info.dims);
+        d[dim] = groups_all[dim];
+        Array<To> tmpOut = createEmptyArray<To>(d);
+        Array<Tw> tmpWt = createEmptyArray<Tw>(d);
+        mean_dim_launcher<Ti, Tw, To>(tmpOut, tmpWt, in, iwt, dim, threads_y, groups_all);
 
         Param owt;
+        groups_all[dim] = 1;
         mean_dim_launcher<Ti, Tw, To>(out, owt, tmpOut, tmpWt, dim, threads_y, groups_all);
-        bufferFree(tmpOut.data);
-        bufferFree(tmpWt.data);
+    } else {
+        Array<Tw> tmpWt = createEmptyArray<Tw>(0);
+        mean_dim_launcher<Ti, Tw, To>(out, tmpWt, in, iwt, dim, threads_y, groups_all);
     }
 
 }
@@ -306,17 +291,15 @@ void mean_first_launcher(Param out, Param owt,
         const uint groups_y)
 {
 
-    bool input_weight = ((
-            iwt.info.dims[0] *
-            iwt.info.dims[1] *
-            iwt.info.dims[2] *
-            iwt.info.dims[3]) != 0);
+    bool input_weight = ((iwt.info.dims[0] *
+                          iwt.info.dims[1] *
+                          iwt.info.dims[2] *
+                          iwt.info.dims[3]) != 0);
 
-    bool output_weight = ((
-            owt.info.dims[0] *
-            owt.info.dims[1] *
-            owt.info.dims[2] *
-            owt.info.dims[3]) != 0);
+    bool output_weight = (( owt.info.dims[0] *
+                            owt.info.dims[1] *
+                            owt.info.dims[2] *
+                            owt.info.dims[3]) != 0);
 
     std::string ref_name =
         std::string("mean_0_") +
@@ -361,8 +344,8 @@ void mean_first_launcher(Param out, Param owt,
             options << " -D USE_DOUBLE";
         }
 
-        const char *ker_strs[] = {mops_cl, mean_first_cl};
-        const int   ker_lens[] = {mops_cl_len, mean_first_cl_len};
+        const char *ker_strs[] = {mean_ops_cl, mean_first_cl};
+        const int   ker_lens[] = {mean_ops_cl_len, mean_first_cl_len};
         Program prog;
         buildProgram(prog, 2, ker_strs, ker_lens, options.str());
         entry.prog = new Program(prog);
@@ -496,21 +479,6 @@ void mean(Param out, Param in, int dim)
     mean_weighted<Ti, Tw, To>(out, in, dummy_weight, dim);
 }
 
-#if defined(__GNUC__) || defined(__GNUG__)
-/* GCC/G++, Clang/LLVM, Intel ICC */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-#else
-/* Other */
-#endif
-
-#if defined(__GNUC__) || defined(__GNUG__)
-/* GCC/G++, Clang/LLVM, Intel ICC */
-#pragma GCC diagnostic pop
-#else
-/* Other */
-#endif
-
 template<typename T, typename Tw>
 T mean_all_weighted(Param in, Param iwt)
 {
@@ -539,62 +507,40 @@ T mean_all_weighted(Param in, Param iwt)
         threads_x = std::min(threads_x, THREADS_PER_GROUP);
         uint threads_y = THREADS_PER_GROUP / threads_x;
 
-        Param tmpOut;
         uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
         uint groups_y = divup(in.info.dims[1], threads_y);
 
-        tmpOut.info.offset = 0;
-        tmpOut.info.dims[0] = groups_x;
-        tmpOut.info.strides[0] = 1;
-
-        for (int k = 1; k < 4; k++) {
-            tmpOut.info.dims[k] = in.info.dims[k];
-            tmpOut.info.strides[k] = tmpOut.info.dims[k - 1] * tmpOut.info.strides[k - 1];
-        }
-
-        Param tmpWt;
-        tmpWt.info = tmpOut.info;
-
-        int tmp_elements = tmpOut.info.strides[3] * tmpOut.info.dims[3];
-        tmpOut.data = bufferAlloc(tmp_elements * sizeof(T));
-        tmpWt.data = bufferAlloc(tmp_elements * sizeof(Tw));
+        Array<T> tmpOut = createEmptyArray<T>(groups_x);
+        Array<Tw> tmpWt = createEmptyArray<Tw>(groups_x);
 
         mean_first_launcher<T, Tw, T>(tmpOut, tmpWt, in, iwt, threads_x, groups_x, groups_y);
 
-        unique_ptr<T> h_ptr(new T[tmp_elements]);
-        unique_ptr<Tw> h_wptr(new Tw[tmp_elements]);
+        vector<T> h_ptr(tmpOut.elements());
+        vector<Tw> h_wptr(tmpWt.elements());
 
-        getQueue().enqueueReadBuffer(*tmpOut.data, CL_TRUE, 0, sizeof(T) * tmp_elements, h_ptr.get());
-        getQueue().enqueueReadBuffer( *tmpWt.data, CL_TRUE, 0, sizeof(Tw) * tmp_elements, h_wptr.get());
+        getQueue().enqueueReadBuffer(*tmpOut.get(), CL_TRUE, 0, sizeof(T) * tmpOut.elements(), h_ptr.data());
+        getQueue().enqueueReadBuffer(*tmpWt.get(),  CL_TRUE, 0, sizeof(Tw) * tmpWt.elements(), h_wptr.data());
 
-        T* h_ptr_raw = h_ptr.get();
-        Tw* h_wptr_raw = h_wptr.get();
-
-        MeanOp<T, Tw> Op(h_ptr_raw[0], h_wptr_raw[0]);
-        for (int i = 1; i < (int)tmp_elements; i++) {
-            Op(h_ptr_raw[i], h_wptr_raw[i]);
+        MeanOp<T, Tw> Op(h_ptr[0], h_wptr[0]);
+        for (int i = 1; i < (int)tmpOut.elements(); i++) {
+            Op(h_ptr[i], h_wptr[i]);
         }
-
-        bufferFree(tmpOut.data);
-        bufferFree(tmpWt.data);
 
         return Op.runningMean;
 
     } else {
 
-        unique_ptr<T> h_ptr(new T[in_elements]);
-        unique_ptr<Tw> h_wptr(new Tw[in_elements]);
-        T* h_ptr_raw = h_ptr.get();
-        Tw* h_wptr_raw = h_wptr.get();
+        vector<T> h_ptr(in_elements);
+        vector<Tw> h_wptr(in_elements);
 
         getQueue().enqueueReadBuffer(*in.data, CL_TRUE, sizeof(T) * in.info.offset,
-                sizeof(T) * in_elements, h_ptr_raw);
+                                     sizeof(T) * in_elements, h_ptr.data());
         getQueue().enqueueReadBuffer(*iwt.data, CL_TRUE, sizeof(Tw) * iwt.info.offset,
-                sizeof(Tw) * in_elements, h_wptr_raw);
+                                     sizeof(Tw) * in_elements, h_wptr.data());
 
-        MeanOp<T, Tw> Op(h_ptr_raw[0], h_wptr_raw[0]);
+        MeanOp<T, Tw> Op(h_ptr[0], h_wptr[0]);
         for (int i = 1; i < (int)in_elements; i++) {
-            Op(h_ptr_raw[i], h_wptr_raw[i]);
+            Op(h_ptr[i], h_wptr[i]);
         }
 
         return Op.runningMean;
@@ -608,7 +554,6 @@ To mean_all(Param in)
 
     // FIXME: Use better heuristics to get to the optimum number
     if (in_elements > 4096) {
-
         bool is_linear = (in.info.strides[0] == 1);
         for (int k = 1; k < 4; k++) {
             is_linear &= (in.info.strides[k] == (in.info.strides[k - 1] * in.info.dims[k - 1]));
@@ -626,68 +571,39 @@ To mean_all(Param in)
         threads_x = std::min(threads_x, THREADS_PER_GROUP);
         uint threads_y = THREADS_PER_GROUP / threads_x;
 
-        Param tmpOut;
         uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
         uint groups_y = divup(in.info.dims[1], threads_y);
 
-        tmpOut.info.offset = 0;
-        tmpOut.info.dims[0] = groups_x;
-        tmpOut.info.strides[0] = 1;
-
-        for (int k = 1; k < 4; k++) {
-            tmpOut.info.dims[k] = in.info.dims[k];
-            tmpOut.info.strides[k] = tmpOut.info.dims[k - 1] * tmpOut.info.strides[k - 1];
-        }
-
-        Param iWt; //dummy input weights
-        iWt.info.offset = 0;
-        for (int k = 0; k < 4; ++k) {
-            iWt.info.dims[k] = 0;
-            iWt.info.strides[k] = 0;
-        }
-        Param tmpCt;
-        tmpCt.info = tmpOut.info;
-
-        int tmp_elements = tmpOut.info.strides[3] * tmpOut.info.dims[3];
-        tmpOut.data = bufferAlloc(tmp_elements * sizeof(To));
-        tmpCt.data = bufferAlloc(tmp_elements * sizeof(Tw));
+        Array<To> tmpOut = createEmptyArray<To>(groups_x);
+        Array<To> iWt = createEmptyArray<To>(0);
+        Array<Tw> tmpCt = createEmptyArray<Tw>(groups_x);
 
         mean_first_launcher<Ti, Tw, To>(tmpOut, tmpCt, in, iWt, threads_x, groups_x, groups_y);
 
-        unique_ptr<To> h_ptr(new To[tmp_elements]);
-        unique_ptr<Tw> h_cptr(new Tw[tmp_elements]);
+        vector<To> h_ptr(tmpOut.elements());
+        vector<Tw> h_cptr(tmpOut.elements());
 
-        getQueue().enqueueReadBuffer(*tmpOut.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr.get());
-        getQueue().enqueueReadBuffer( *tmpCt.data, CL_TRUE, 0, sizeof(Tw) * tmp_elements, h_cptr.get());
+        getQueue().enqueueReadBuffer(*tmpOut.get(), CL_TRUE, 0, sizeof(To) * tmpOut.elements(), h_ptr.data());
+        getQueue().enqueueReadBuffer(*tmpCt.get(),  CL_TRUE, 0, sizeof(Tw) * tmpCt.elements(), h_cptr.data());
 
-        To* h_ptr_raw = h_ptr.get();
-        Tw* h_cptr_raw = h_cptr.get();
-
-        MeanOp<To, Tw> Op(h_ptr_raw[0], h_cptr_raw[0]);
-        for (int i = 1; i < (int)tmp_elements; i++) {
-            Op(h_ptr_raw[i], h_cptr_raw[i]);
+        MeanOp<To, Tw> Op(h_ptr[0], h_cptr[0]);
+        for (int i = 1; i < (int)h_ptr.size(); i++) {
+            Op(h_ptr[i], h_cptr[i]);
         }
 
-        bufferFree(tmpOut.data);
-        bufferFree(tmpCt.data);
-
         return Op.runningMean;
-
     } else {
-
-        unique_ptr<Ti> h_ptr(new Ti[in_elements]);
-        Ti* h_ptr_raw = h_ptr.get();
+        vector<Ti> h_ptr(in_elements);
 
         getQueue().enqueueReadBuffer(*in.data, CL_TRUE, sizeof(Ti) * in.info.offset,
-                sizeof(Ti) * in_elements, h_ptr_raw);
-
+                                     sizeof(Ti) * in_elements, h_ptr.data());
 
         //TODO : MeanOp with (Tw)1
         Transform<Ti, To, af_add_t> transform;
         Transform<uint, Tw, af_add_t> transform_weight;
-        MeanOp<To, Tw> Op(transform(h_ptr_raw[0]), transform_weight(1));
+        MeanOp<To, Tw> Op(transform(h_ptr[0]), transform_weight(1));
         for (int i = 1; i < (int)in_elements; i++) {
-            Op(transform(h_ptr_raw[i]), transform_weight(1));
+            Op(transform(h_ptr[i]), transform_weight(1));
         }
 
         return Op.runningMean;
