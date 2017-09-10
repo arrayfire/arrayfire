@@ -242,7 +242,7 @@ TEST(Select, Issue_1730_scalar)
     }
 }
 
-TEST(Select, LargeDim)
+TEST(Select, MaxDim)
 {
     const size_t largeDim = 65535 * 32 + 1;
 

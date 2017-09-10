@@ -131,40 +131,49 @@ void qrTester(const int m, const int n, double eps)
     }
 }
 
+template<typename T>
+double eps();
 
-#define QR_BIG_TESTS(T, eps)                    \
-    TEST(QR, T##BigRect0)                       \
-    {                                           \
-        qrTester<T>(500, 1000, eps);            \
-    }                                           \
-    TEST(QR, T##BigRect0Multiple)               \
-    {                                           \
-        qrTester<T>(512, 1024, eps);            \
-    }                                           \
-    TEST(QR, T##BigRect1Multiple)               \
-    {                                           \
-        qrTester<T>(1024, 512, eps);            \
-    }                                           \
+template<>
+double eps<float>() {
+    return 1e-3;
+}
 
-QR_BIG_TESTS(float, 1E-3)
-QR_BIG_TESTS(double, 1E-5)
-QR_BIG_TESTS(cfloat, 1E-3)
-QR_BIG_TESTS(cdouble, 1E-5)
+template<>
+double eps<double>() {
+    return 1e-5;
+}
 
-#undef QR_BIG_TESTS
+template<>
+double eps<cfloat>() {
+    return 1e-3;
+}
 
-#define QR_BIG_TESTS(T, eps)                    \
-    TEST(QR, T##BigRect1)                       \
-    {                                           \
-        qrTester<T>(1000, 500, eps);            \
-    }                                           \
+template<>
+double eps<cdouble>() {
+    return 1e-5;
+}
+template<typename T>
+class QR : public ::testing::Test
+{
 
-QR_BIG_TESTS(float, 1E-3)
-QR_BIG_TESTS(double, 1E-5)
-// Fails on Windows on some devices
-#if !(defined(OS_WIN) && defined(AF_OPENCL))
-QR_BIG_TESTS(cfloat, 1E-3)
-QR_BIG_TESTS(cdouble, 1E-5)
-#endif
+};
 
-#undef QR_BIG_TESTS
+typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
+TYPED_TEST_CASE(QR, TestTypes);
+
+TYPED_TEST(QR, RectangularLarge0) {
+    qrTester<TypeParam>(1000, 500, eps<TypeParam>());
+}
+
+TYPED_TEST(QR, RectangularMultipleOfTwoLarge0) {
+    qrTester<TypeParam>(1024, 512, eps<TypeParam>());
+}
+
+TYPED_TEST(QR, RectangularLarge1) {
+    qrTester<TypeParam>(500, 1000, eps<TypeParam>());
+}
+
+TYPED_TEST(QR, RectangularMultipleOfTwoLarge1) {
+    qrTester<TypeParam>(512, 1024, eps<TypeParam>());
+}

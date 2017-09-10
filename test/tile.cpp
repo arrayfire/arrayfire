@@ -153,7 +153,6 @@ TEST(Tile, MaxDim)
     if (noDoubleTests<float>()) return;
 
     const size_t largeDim = 65535 * 32 + 1;
-    const unsigned resultIdx = 0;
     const unsigned x = 1;
     const unsigned z = 1;
     unsigned y = 2;
