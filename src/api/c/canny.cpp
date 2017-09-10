@@ -30,9 +30,10 @@
 #include <tile.hpp>
 #include <iota.hpp>
 #include <utility>
-#include <iostream>
+#include <vector>
 
 using af::dim4;
+using std::vector;
 using namespace detail;
 
 Array<float> gradientMagnitude(const Array<float>& gx, const Array<float>& gy, const bool& isf)
@@ -173,9 +174,9 @@ template<typename T>
 af_array cannyHelper(const Array<T> in, const float t1, const af_canny_threshold ct,
                      const float t2, const unsigned sw, const bool isf)
 {
-    static const float v[] = {-0.11021f, -0.23691f, -0.30576f, -0.23691f, -0.11021f};
-    Array<float> cFilter= detail::createHostDataArray<float>(dim4(5, 1), v);
-    Array<float> rFilter= detail::createHostDataArray<float>(dim4(1, 5), v);
+    static const vector<float> v{-0.11021f, -0.23691f, -0.30576f, -0.23691f, -0.11021f};
+    Array<float> cFilter= detail::createHostDataArray<float>(dim4(5, 1), v.data());
+    Array<float> rFilter= detail::createHostDataArray<float>(dim4(1, 5), v.data());
 
     // Run separable convolution to smooth the input image
     Array<float> smt = detail::convolve2<float, float, false>(cast<float, T>(in), cFilter, rFilter);
