@@ -20,7 +20,6 @@ static const bool is3D = true; const static int total_particles = 4000;
 static const int reset = 3000;
 static const float min_dist = 3;
 static const int width = 768, height = 768, depth = 768;
-static const float eps = 10.f;
 static const int gravity_constant = 20000;
 
 float mass_range = 0;

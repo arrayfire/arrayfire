@@ -25,7 +25,6 @@ using std::shared_ptr;
 namespace cuda
 {
 
-    const int MAX_JIT_LEN = 20;
     using JIT::BufferNode;
     using JIT::Node;
     using JIT::Node_ptr;

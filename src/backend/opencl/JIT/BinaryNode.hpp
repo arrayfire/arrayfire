@@ -27,7 +27,7 @@ namespace JIT
         BinaryNode(const char *out_type_str, const char *name_str,
                    const char *op_str,
                    Node_ptr lhs, Node_ptr rhs, int op)
-            : Node(out_type_str, name_str, std::max(lhs->getHeight(), rhs->getHeight()) + 1, {lhs, rhs}),
+            : Node(out_type_str, name_str, std::max(lhs->getHeight(), rhs->getHeight()) + 1, {{lhs, rhs}}),
               m_op_str(op_str),
               m_op(op)
         {

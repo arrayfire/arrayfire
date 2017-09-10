@@ -20,8 +20,6 @@ using cl::Device;
 namespace opencl
 {
 
-static const unsigned THREADS = 256;
-
 template<typename T, typename To, af_match_type dist_type>
 void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
                         const Array<T>& query, const Array<T>& train,
