@@ -1,6 +1,50 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.5.1
+==============
+
+Improvements
+------------
+- Relaxed `af::unwrap()` function's arguments. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1853)</sup>
+- Changed behavior of af::array::allocated() to specify memory allocated. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1877)</sup>
+- Removed restriction on the nubmer of bins for `af::histogram()` on CUDA and
+  OpenCL kernels. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1895)</sup>
+
+
+Performance
+-----------
+- Improved JIT performance. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1864)</sup>
+- Improved CPU element-wise operation performance. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1890)</sup>
+- Improved regions performance using texture objects. <sup> [1](https://github.com/arrayfire/arrayfire/pull/1903)</sup>
+
+
+Bug fixes
+---------
+- Fixed overflow issues in mean. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1849)</sup>
+- Fixed memory leak when chaining indexing operations. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1879)</sup>
+- Fixed bug in array assignment when using an empty array to index. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1897)</sup>
+- Fixed bug with `af::matmul()` which occured when its RHS argument was an
+  indexed vector. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1883)</sup>
+- Fixed bug deadlock bug when sparse array was used with a JIT Array. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1889)</sup>
+- Fixed pixel tests for FAST kernels. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1891)</sup>
+- Fixed `af::replace` so that it is now copy-on-write. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1892)</sup>
+- Fixed launch configuration issues in CUDA JIT. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1893)</sup>
+- Fixed segfaults and "Pure Virtual Call" error warnings when exiting on
+  Windows. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1899) [2](https://github.com/arrayfire/arrayfire/pull/1924)</sup>
+- Workaround for `clEnqueueReadBuffer` bug on OSX.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1888)</sup>
+
+Build
+-----
+- Fixed issues when compiling with GCC 7.1. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1872)</sup> <sup>[2](https://github.com/arrayfire/arrayfire/pull/1876)</sup>
+- Eliminated unnecessary Boost dependency from CPU and CUDA backends. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1857)</sup>
+
+Misc
+----
+- Updated support links to point to Slack instead of Gitter. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1905)</sup>
+
+
 v3.5.0
 ==============
 
