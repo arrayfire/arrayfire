@@ -129,11 +129,10 @@ TEST(OCLCheck, DevicePlatform)
     afcl::platform platform = afcl::getPlatform();
     ASSERT_NE(platform, AFCL_PLATFORM_UNKNOWN);
 }
-
+#pragma GCC diagnostic pop
 #else
 TEST(OCLExtContext, NoopCPU)
 {
 }
 #endif
 
-#pragma GCC diagnostic pop

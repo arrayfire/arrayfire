@@ -7,6 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+// NOTE: Tests are known to fail on OSX when utilizing the CPU and OpenCL
+// backends for sizes larger than 128x128 or more. You can read more about it on
+// issue https://github.com/arrayfire/arrayfire/issues/1617
+
 #include <gtest/gtest.h>
 #include <arrayfire.h>
 #include <af/dim4.hpp>
@@ -25,9 +29,8 @@ using std::endl;
 using std::abs;
 using af::cfloat;
 using af::cdouble;
+using af::dtype_traits;
 
-///////////////////////////////// CPP ////////////////////////////////////
-//
 TEST(LU, InPlaceSmall)
 {
     if (noDoubleTests<float>()) return;
@@ -139,8 +142,8 @@ void luTester(const int m, const int n, double eps)
     af::array a_perm = a_orig(pivot, af::span);
     //! [ex_lu_recon]
 
-    ASSERT_NEAR(0, af::max<double>(af::abs(real(a_recon - a_perm))), eps);
-    ASSERT_NEAR(0, af::max<double>(af::abs(imag(a_recon - a_perm))), eps);
+    ASSERT_NEAR(0, af::max<typename dtype_traits<T>::base_type>(af::abs(real(a_recon - a_perm))), eps);
+    ASSERT_NEAR(0, af::max<typename dtype_traits<T>::base_type>(af::abs(imag(a_recon - a_perm))), eps);
 
     //! [ex_lu_packed]
     af::array out = a_orig.copy();
@@ -162,38 +165,63 @@ void luTester(const int m, const int n, double eps)
     af::array a_recon2 = af::matmul(l2, u2);
     af::array a_perm2 = a_orig(pivot2, af::span);
 
-    ASSERT_NEAR(0, af::max<double>(af::abs(real(a_recon2 - a_perm2))), eps);
-    ASSERT_NEAR(0, af::max<double>(af::abs(imag(a_recon2 - a_perm2))), eps);
+    ASSERT_NEAR(0, af::max<typename dtype_traits<T>::base_type>(af::abs(real(a_recon2 - a_perm2))), eps);
+    ASSERT_NEAR(0, af::max<typename dtype_traits<T>::base_type>(af::abs(imag(a_recon2 - a_perm2))), eps);
 
 }
 
-#define LU_BIG_TESTS(T, eps)                    \
-    TEST(LU, T##BigSquare)                      \
-    {                                           \
-        luTester<T>(500, 500, eps);             \
-    }                                           \
-    TEST(LU, T##BigRect0)                       \
-    {                                           \
-        luTester<T>(500, 1000, eps);            \
-    }                                           \
-    TEST(LU, T##BigRect1)                       \
-    {                                           \
-        luTester<T>(1000, 500, eps);            \
-    }                                           \
-    TEST(LU, T##BigSquareMultiple)              \
-    {                                           \
-        luTester<T>(512, 512, eps);             \
-    }                                           \
-    TEST(LU, T##BigRect0Multiple)               \
-    {                                           \
-        luTester<T>(512, 1024, eps);            \
-    }                                           \
-    TEST(LU, T##BigRect1Multiple)               \
-    {                                           \
-        luTester<T>(1024, 512, eps);            \
-    }                                           \
+template<typename T>
+double eps();
 
-LU_BIG_TESTS(float, 1E-3)
-LU_BIG_TESTS(double, 1E-8)
-LU_BIG_TESTS(cfloat, 1E-3)
-LU_BIG_TESTS(cdouble, 1E-8)
+template<>
+double eps<float>() {
+    return 1E-3;
+}
+
+template<>
+double eps<double>() {
+    return 1e-8;
+}
+
+template<>
+double eps<cfloat>() {
+    return 1E-3;
+}
+
+template<>
+double eps<cdouble>() {
+    return 1e-8;
+}
+
+template<typename T>
+class LU : public ::testing::Test
+{
+
+};
+
+typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
+TYPED_TEST_CASE(LU, TestTypes);
+
+TYPED_TEST(LU, SquareLarge) {
+    luTester<TypeParam>(500, 500, eps<TypeParam>());
+}
+
+TYPED_TEST(LU, SquareMultipleOfTwoLarge) {
+    luTester<TypeParam>(512, 512, eps<TypeParam>());
+}
+
+TYPED_TEST(LU, RectangularLarge0) {
+    luTester<TypeParam>(1000, 500, eps<TypeParam>());
+}
+
+TYPED_TEST(LU, RectangularMultipleOfTwoLarge0) {
+    luTester<TypeParam>(1024, 512, eps<TypeParam>());
+}
+
+TYPED_TEST(LU, RectangularLarge1) {
+    luTester<TypeParam>(500, 1000, eps<TypeParam>());
+}
+
+TYPED_TEST(LU, RectangularMultipleOfTwoLarge1) {
+    luTester<TypeParam>(512, 1024, eps<TypeParam>());
+}

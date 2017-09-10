@@ -7,6 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+// NOTE: Tests are known to fail on OSX when utilizing the CPU and OpenCL
+// backends for sizes larger than 128x128 or more. You can read more about it on
+// issue https://github.com/arrayfire/arrayfire/issues/1617
+
 #include <gtest/gtest.h>
 #include <arrayfire.h>
 #include <af/dim4.hpp>
@@ -25,9 +29,7 @@ using std::endl;
 using std::abs;
 using af::cfloat;
 using af::cdouble;
-
-///////////////////////////////// CPP ////////////////////////////////////
-//
+using af::dtype_traits;
 
 template<typename T>
 void inverseTester(const int m, const int n, const int k, double eps)
@@ -47,21 +49,47 @@ void inverseTester(const int m, const int n, const int k, double eps)
 
     af::array I2 = af::identity(m, n, (af::dtype)af::dtype_traits<T>::af_type);
 
-    ASSERT_NEAR(0, af::max<double>(af::abs(real(I - I2))), eps);
-    ASSERT_NEAR(0, af::max<double>(af::abs(imag(I - I2))), eps);
+    ASSERT_NEAR(0, af::max<typename dtype_traits<T>::base_type>(af::abs(real(I - I2))), eps);
+    ASSERT_NEAR(0, af::max<typename dtype_traits<T>::base_type>(af::abs(imag(I - I2))), eps);
 }
 
-#define INVERSE_TESTS(T, eps)                   \
-    TEST(INVERSE, T##Square)                    \
-    {                                           \
-        inverseTester<T>(1000, 1000, 100, eps); \
-    }                                           \
-    TEST(INVERSE, T##SquareMultiple)            \
-    {                                           \
-        inverseTester<T>(2048, 2048, 512, eps); \
-    }                                           \
 
-INVERSE_TESTS(float, 0.01)
-INVERSE_TESTS(double, 1E-5)
-INVERSE_TESTS(cfloat, 0.01)
-INVERSE_TESTS(cdouble, 1E-5)
+template<typename T>
+class Inverse : public ::testing::Test
+{
+
+};
+
+template<typename T>
+double eps();
+
+template<>
+double eps<float>() {
+  return 0.01f;
+}
+
+template<>
+double eps<double>() {
+  return 1e-5;
+}
+
+template<>
+double eps<cfloat>() {
+  return 0.01f;
+}
+
+template<>
+double eps<cdouble>() {
+  return 1e-5;
+}
+
+typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
+TYPED_TEST_CASE(Inverse, TestTypes);
+
+TYPED_TEST(Inverse, Square) {
+    inverseTester<TypeParam>(1000, 1000, 100, eps<TypeParam>());
+}
+
+TYPED_TEST(Inverse, SquareMultiplePowerOfTwo) {
+    inverseTester<TypeParam>(2048, 2048, 512, eps<TypeParam>());
+}
