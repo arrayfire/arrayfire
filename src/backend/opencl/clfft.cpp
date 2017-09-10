@@ -154,8 +154,16 @@ SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout,
     CLFFT_CHECK(clfftBakePlan(*temp, 1, &(opencl::getQueue()()), NULL, NULL));
 
     retVal.reset(temp, [](PlanType* p) {
+#ifndef OS_WIN
+        // On Windows the resources that are released after the main function
+        // have exited cause "Pure Virtual Function Called" errors. It seems
+        // that Windows releases all resources when exiting main without calling
+        // their destructors. When the destructors are called this error is
+        // thrown. This is related to
+        // https://github.com/arrayfire/arrayfire/pull/1899
         CLFFT_CHECK(clfftDestroyPlan(p));
         free(p);
+#endif
     });
     // push the plan into plan cache
     planner.push(key_string, retVal);
