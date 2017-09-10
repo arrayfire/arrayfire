@@ -40,7 +40,7 @@ namespace TNJ
 
     public:
         UnaryNode(Node_ptr child) :
-            TNode<To>(0, child->getHeight() + 1, {child}),
+            TNode<To>(0, child->getHeight() + 1, {{child}}),
             m_child(reinterpret_cast<TNode<Ti> *>(child.get()))
         {
         }
