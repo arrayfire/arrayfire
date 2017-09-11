@@ -115,16 +115,16 @@ struct MeanOp<cdouble, double>
 
 template<typename Ti, typename Tw, typename To>
 void mean_dim_launcher(Param out, Param owt,
-        Param in, Param iwt,
+        Param in, Param inWeight,
         const int dim,
         const int threads_y,
         const uint groups_all[4])
 {
     bool input_weight = ((
-            iwt.info.dims[0] *
-            iwt.info.dims[1] *
-            iwt.info.dims[2] *
-            iwt.info.dims[3]) != 0);
+            inWeight.info.dims[0] *
+            inWeight.info.dims[1] *
+            inWeight.info.dims[2] *
+            inWeight.info.dims[3]) != 0);
 
     bool output_weight = ((
             owt.info.dims[0] *
@@ -204,7 +204,7 @@ void mean_dim_launcher(Param out, Param owt,
                 *out.data, out.info,
                 *owt.data, owt.info,
                 *in.data, in.info,
-                *iwt.data, iwt.info,
+                *inWeight.data, inWeight.info,
                 groups_all[0],
                 groups_all[1],
                 groups_all[dim]);
@@ -230,7 +230,7 @@ void mean_dim_launcher(Param out, Param owt,
         meanOp(EnqueueArgs(getQueue(), global, local),
                 *out.data, out.info,
                 *in.data, in.info,
-                *iwt.data, iwt.info,
+                *inWeight.data, inWeight.info,
                 groups_all[0],
                 groups_all[1],
                 groups_all[dim]);
@@ -254,7 +254,7 @@ void mean_dim_launcher(Param out, Param owt,
 }
 
 template<typename Ti, typename Tw, typename To>
-void mean_dim(Param out, Param in, Param iwt, int dim)
+void mean_dim(Param out, Param in, Param inWeight, int dim)
 {
     uint threads_y = std::min(THREADS_Y, nextpow2(in.info.dims[dim]));
     uint threads_x = THREADS_X;
@@ -270,31 +270,31 @@ void mean_dim(Param out, Param in, Param iwt, int dim)
         dim4 d(4, out.info.dims);
         d[dim] = groups_all[dim];
         Array<To> tmpOut = createEmptyArray<To>(d);
-        Array<Tw> tmpWt = createEmptyArray<Tw>(d);
-        mean_dim_launcher<Ti, Tw, To>(tmpOut, tmpWt, in, iwt, dim, threads_y, groups_all);
+        Array<Tw> tmpWeight = createEmptyArray<Tw>(d);
+        mean_dim_launcher<Ti, Tw, To>(tmpOut, tmpWeight, in, inWeight, dim, threads_y, groups_all);
 
         Param owt;
         groups_all[dim] = 1;
-        mean_dim_launcher<Ti, Tw, To>(out, owt, tmpOut, tmpWt, dim, threads_y, groups_all);
+        mean_dim_launcher<Ti, Tw, To>(out, owt, tmpOut, tmpWeight, dim, threads_y, groups_all);
     } else {
-        Array<Tw> tmpWt = createEmptyArray<Tw>(0);
-        mean_dim_launcher<Ti, Tw, To>(out, tmpWt, in, iwt, dim, threads_y, groups_all);
+        Array<Tw> tmpWeight = createEmptyArray<Tw>(0);
+        mean_dim_launcher<Ti, Tw, To>(out, tmpWeight, in, inWeight, dim, threads_y, groups_all);
     }
 
 }
 
 template<typename Ti, typename Tw, typename To>
 void mean_first_launcher(Param out, Param owt,
-        Param in, Param iwt,
+        Param in, Param inWeight,
         const int threads_x,
         const uint groups_x,
         const uint groups_y)
 {
 
-    bool input_weight = ((iwt.info.dims[0] *
-                          iwt.info.dims[1] *
-                          iwt.info.dims[2] *
-                          iwt.info.dims[3]) != 0);
+    bool input_weight = ((inWeight.info.dims[0] *
+                          inWeight.info.dims[1] *
+                          inWeight.info.dims[2] *
+                          inWeight.info.dims[3]) != 0);
 
     bool output_weight = (( owt.info.dims[0] *
                             owt.info.dims[1] *
@@ -371,7 +371,7 @@ void mean_first_launcher(Param out, Param owt,
                 *out.data, out.info,
                 *owt.data, owt.info,
                 *in.data, in.info,
-                *iwt.data, iwt.info,
+                *inWeight.data, inWeight.info,
                 groups_x, groups_y, repeat);
     } else if (!input_weight && !output_weight) {
         auto meanOp = KernelFunctor<
@@ -391,7 +391,7 @@ void mean_first_launcher(Param out, Param owt,
         meanOp(EnqueueArgs(getQueue(), global, local),
                 *out.data, out.info,
                 *in.data, in.info,
-                *iwt.data, iwt.info,
+                *inWeight.data, inWeight.info,
                 groups_x, groups_y, repeat);
     } else if (!input_weight &&  output_weight) {
         auto meanOp = KernelFunctor<
@@ -410,7 +410,7 @@ void mean_first_launcher(Param out, Param owt,
 }
 
 template<typename Ti, typename Tw, typename To>
-void mean_first(Param out, Param in, Param iwt)
+void mean_first(Param out, Param in, Param inWeight)
 {
     uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
     threads_x = std::min(threads_x, THREADS_PER_GROUP);
@@ -420,12 +420,16 @@ void mean_first(Param out, Param in, Param iwt)
     uint groups_y = divup(in.info.dims[1], threads_y);
 
     Param tmpOut = out;
-    Param tmpWt;
-    tmpWt.info.offset = 0;
+    Param noWeight;
+    noWeight.info.offset = 0;
     for (int k = 0; k < 4; ++k) {
-        tmpWt.info.dims[k] = 0;
-        tmpWt.info.strides[k] = 0;
+        noWeight.info.dims[k] = 0;
+        noWeight.info.strides[k] = 0;
     }
+    // Does not matter what the value is it will not be used. Just needs to be valid.
+    noWeight.data = inWeight.data;
+
+    Param tmpWeight = noWeight;
 
     if (groups_x > 1) {
 
@@ -435,7 +439,7 @@ void mean_first(Param out, Param in, Param iwt)
                 in.info.dims[3] *
                 sizeof(To));
 
-        tmpWt.data = bufferAlloc(groups_x *
+        tmpWeight.data = bufferAlloc(groups_x *
                 in.info.dims[1] *
                 in.info.dims[2] *
                 in.info.dims[3] *
@@ -444,43 +448,38 @@ void mean_first(Param out, Param in, Param iwt)
 
         tmpOut.info.dims[0] = groups_x;
         for (int k = 1; k < 4; k++) tmpOut.info.strides[k] *= groups_x;
-        tmpWt.info = tmpOut.info;
+        tmpWeight.info = tmpOut.info;
     }
 
-    mean_first_launcher<Ti, Tw, To>(tmpOut, tmpWt, in, iwt, threads_x, groups_x, groups_y);
+    mean_first_launcher<Ti, Tw, To>(tmpOut, tmpWeight, in, inWeight, threads_x, groups_x, groups_y);
 
     if (groups_x > 1) {
-        Param owt;
-        mean_first_launcher<Ti, Tw, To>(out, owt, tmpOut, tmpWt, threads_x, 1, groups_y);
+        // No Weight is needed when writing out the output.
+        mean_first_launcher<Ti, Tw, To>(out, noWeight, tmpOut, tmpWeight, threads_x, 1, groups_y);
 
         bufferFree(tmpOut.data);
-        bufferFree(tmpWt.data);
+        bufferFree(tmpWeight.data);
     }
 }
 
 template<typename Ti, typename Tw, typename To>
-void mean_weighted(Param out, Param in, Param iwt, int dim)
+void mean_weighted(Param out, Param in, Param inWeight, int dim)
 {
     if (dim == 0)
-        return mean_first<Ti, Tw, To>(out, in, iwt);
+        return mean_first<Ti, Tw, To>(out, in, inWeight);
     else
-        return mean_dim  <Ti, Tw, To>(out, in, iwt, dim);
+        return mean_dim  <Ti, Tw, To>(out, in, inWeight, dim);
 }
 
 template<typename Ti, typename Tw, typename To>
 void mean(Param out, Param in, int dim)
 {
-    Param dummy_weight;
-    dummy_weight.info.offset = 0;
-    for (int k = 0; k < 4; ++k) {
-        dummy_weight.info.dims[k] = 0;
-        dummy_weight.info.strides[k] = 0;
-    }
-    mean_weighted<Ti, Tw, To>(out, in, dummy_weight, dim);
+    Array<Tw> noWeight = createEmptyArray<Tw>(dim4(0, 0, 0, 0));
+    mean_weighted<Ti, Tw, To>(out, in, noWeight, dim);
 }
 
 template<typename T, typename Tw>
-T mean_all_weighted(Param in, Param iwt)
+T mean_all_weighted(Param in, Param inWeight)
 {
     int in_elements = in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
 
@@ -491,7 +490,7 @@ T mean_all_weighted(Param in, Param iwt)
         bool wt_is_linear = (in.info.strides[0] == 1);
         for (int k = 1; k < 4; k++) {
             in_is_linear &= ( in.info.strides[k] == ( in.info.strides[k - 1] *  in.info.dims[k - 1]));
-            wt_is_linear &= (iwt.info.strides[k] == (iwt.info.strides[k - 1] * iwt.info.dims[k - 1]));
+            wt_is_linear &= (inWeight.info.strides[k] == (inWeight.info.strides[k - 1] * inWeight.info.dims[k - 1]));
         }
 
         if (in_is_linear && wt_is_linear) {
@@ -500,7 +499,7 @@ T mean_all_weighted(Param in, Param iwt)
                 in.info.dims[k] = 1;
                 in.info.strides[k] = in_elements;
             }
-            iwt.info = in.info;
+            inWeight.info = in.info;
         }
 
         uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
@@ -511,15 +510,15 @@ T mean_all_weighted(Param in, Param iwt)
         uint groups_y = divup(in.info.dims[1], threads_y);
 
         Array<T> tmpOut = createEmptyArray<T>(groups_x);
-        Array<Tw> tmpWt = createEmptyArray<Tw>(groups_x);
+        Array<Tw> tmpWeight = createEmptyArray<Tw>(groups_x);
 
-        mean_first_launcher<T, Tw, T>(tmpOut, tmpWt, in, iwt, threads_x, groups_x, groups_y);
+        mean_first_launcher<T, Tw, T>(tmpOut, tmpWeight, in, inWeight, threads_x, groups_x, groups_y);
 
         vector<T> h_ptr(tmpOut.elements());
-        vector<Tw> h_wptr(tmpWt.elements());
+        vector<Tw> h_wptr(tmpWeight.elements());
 
         getQueue().enqueueReadBuffer(*tmpOut.get(), CL_TRUE, 0, sizeof(T) * tmpOut.elements(), h_ptr.data());
-        getQueue().enqueueReadBuffer(*tmpWt.get(),  CL_TRUE, 0, sizeof(Tw) * tmpWt.elements(), h_wptr.data());
+        getQueue().enqueueReadBuffer(*tmpWeight.get(),  CL_TRUE, 0, sizeof(Tw) * tmpWeight.elements(), h_wptr.data());
 
         MeanOp<T, Tw> Op(h_ptr[0], h_wptr[0]);
         for (int i = 1; i < (int)tmpOut.elements(); i++) {
@@ -535,7 +534,7 @@ T mean_all_weighted(Param in, Param iwt)
 
         getQueue().enqueueReadBuffer(*in.data, CL_TRUE, sizeof(T) * in.info.offset,
                                      sizeof(T) * in_elements, h_ptr.data());
-        getQueue().enqueueReadBuffer(*iwt.data, CL_TRUE, sizeof(Tw) * iwt.info.offset,
+        getQueue().enqueueReadBuffer(*inWeight.data, CL_TRUE, sizeof(Tw) * inWeight.info.offset,
                                      sizeof(Tw) * in_elements, h_wptr.data());
 
         MeanOp<T, Tw> Op(h_ptr[0], h_wptr[0]);
