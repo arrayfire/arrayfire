@@ -27,34 +27,25 @@ namespace cuda
 namespace kernel
 {
 
-    template<typename T, typename Tw>
-    struct MeanOp
+    template<typename To, typename Tw>
+    __device__ __host__
+    void stable_mean(To *lhs, Tw *l_wt, To rhs, Tw r_wt)
     {
-        T runningMean;
-        Tw runningCount;
-        __host__ __device__ MeanOp(T mean, Tw count) :
-            runningMean(mean), runningCount(count)
-        {
-        }
+        if (((*l_wt) != 0) || (r_wt != 0)) {
+            Tw l_scale = (*l_wt);
+            (*l_wt) += r_wt;
+            l_scale = l_scale/(*l_wt);
 
-        __host__ __device__ void operator()(T newMean, Tw newCount)
-        {
-            if ((newCount != 0) || (runningCount != 0)) {
-                Tw runningScale = runningCount;
-                Tw newScale = newCount;
-                runningCount += newCount;
-                runningScale = runningScale/runningCount;
-                newScale = newScale/(Tw)runningCount;
-                runningMean = (runningScale*runningMean) + (newScale*newMean);
-            }
+            Tw r_scale = r_wt/(*l_wt);
+            (*lhs) = (l_scale * (*lhs)) + (r_scale * rhs);
         }
-    };
+    }
 
     template<typename Ti, typename Tw, typename To, uint dim, uint DIMY>
     __global__
     static void mean_dim_kernel(Param<To> out, Param<Tw> owt,
-                                  CParam <Ti> in, CParam<Tw> iwt,
-                                  uint blocks_x, uint blocks_y, uint offset_dim)
+                                CParam <Ti> in, CParam<Tw> iwt,
+                                uint blocks_x, uint blocks_y, uint offset_dim)
     {
         const uint tidx = threadIdx.x;
         const uint tidy = threadIdx.y;
@@ -118,8 +109,6 @@ namespace kernel
             }
         }
 
-        MeanOp<To, Tw> Op(val, weight);
-
         const uint id_dim_in_start = id_dim_in + offset_dim * blockDim.y;
 
         __shared__ To s_val[THREADS_X * DIMY];
@@ -132,14 +121,16 @@ namespace kernel
             iptr = iptr + offset_dim * blockDim.y * istride_dim;
             if (iwptr != NULL) {
                 iwptr = iwptr + offset_dim * blockDim.y * istride_dim;
-                Op(transform(*iptr), *iwptr);
+                stable_mean(&val, &weight, transform(*iptr), *iwptr);
             } else {
-                Op(transform(*iptr), (Tw)1);
+                // Faster version of stable_mean when iwptr is NULL
+                val = val + (transform(*iptr) - val) / (weight + 1);
+                weight = weight + 1;
             }
         }
 
-        s_val[tid] = Op.runningMean;
-        s_idx[tid] = Op.runningCount;
+        s_val[tid] = val;
+        s_idx[tid] = weight;
 
         To *s_vptr = s_val + tid;
         Tw *s_iptr = s_idx + tid;
@@ -147,27 +138,21 @@ namespace kernel
 
         if (DIMY == 8) {
             if (tidy < 4) {
-                Op(s_vptr[THREADS_X * 4], s_iptr[THREADS_X * 4]);
-                *s_vptr = Op.runningMean;
-                *s_iptr = Op.runningCount;
+                stable_mean(s_vptr, s_iptr, s_vptr[THREADS_X * 4], s_iptr[THREADS_X * 4]);
             }
             __syncthreads();
         }
 
         if (DIMY >= 4) {
             if (tidy < 2) {
-                Op(s_vptr[THREADS_X * 2], s_iptr[THREADS_X * 2]);
-                *s_vptr = Op.runningMean;
-                *s_iptr = Op.runningCount;
+                stable_mean(s_vptr, s_iptr, s_vptr[THREADS_X * 2], s_iptr[THREADS_X * 2]);
             }
             __syncthreads();
         }
 
         if (DIMY >= 2) {
             if (tidy < 1) {
-                Op(s_vptr[THREADS_X * 1], s_iptr[THREADS_X * 1]);
-                *s_vptr = Op.runningMean;
-                *s_iptr = Op.runningCount;
+                stable_mean(s_vptr, s_iptr, s_vptr[THREADS_X * 1], s_iptr[THREADS_X * 1]);
             }
             __syncthreads();
         }
@@ -182,8 +167,8 @@ namespace kernel
 
     template<typename Ti, typename Tw, typename To, int dim>
     void mean_dim_launcher(Param<To> out, Param<Tw> owt,
-                             CParam<Ti> in, CParam<Tw> iwt,
-                             const uint threads_y, const dim_t blocks_dim[4])
+                           CParam<Ti> in, CParam<Tw> iwt,
+                           const uint threads_y, const dim_t blocks_dim[4])
     {
         dim3 threads(THREADS_X, threads_y);
 
@@ -256,13 +241,10 @@ namespace kernel
     template<typename T, typename Tw>
     __device__ void warp_reduce(T *s_ptr, Tw *s_idx, uint tidx)
     {
-        MeanOp<T, Tw> Op(s_ptr[tidx], s_idx[tidx]);
 #pragma unroll
         for (int n = 16; n >= 1; n >>= 1) {
             if (tidx < n) {
-                Op(s_ptr[tidx + n], s_idx[tidx + n]);
-                s_ptr[tidx] = Op.runningMean;
-                s_idx[tidx] = Op.runningCount;
+                stable_mean(s_ptr + tidx, s_idx + tidx, s_ptr[tidx + n], s_idx[tidx + n]);
             }
             __syncthreads();
         }
@@ -274,8 +256,8 @@ namespace kernel
     template<typename Ti, typename Tw, typename To, uint DIMX>
     __global__
     static void mean_first_kernel(Param<To> out, Param<Tw> owt,
-                                    CParam<Ti> in, CParam<Tw> iwt,
-                                    uint blocks_x, uint blocks_y, uint repeat)
+                                  CParam<Ti> in, CParam<Tw> iwt,
+                                  uint blocks_x, uint blocks_y, uint repeat)
     {
         const uint tidx = threadIdx.x;
         const uint tidy = threadIdx.y;
@@ -318,26 +300,25 @@ namespace kernel
             } else {
                 weight = (Tw)1;
             }
-
         }
-
-        MeanOp<To, Tw> Op(val, weight);
 
         __shared__ To s_val[THREADS_PER_BLOCK];
         __shared__ Tw s_idx[THREADS_PER_BLOCK];
 
         if (iwptr != NULL) {
             for (int id = xid + DIMX; id < lim; id += DIMX) {
-                Op(transform(iptr[id]), iwptr[id]);
+                stable_mean(&val, &weight, transform(iptr[id]), iwptr[id]);
             }
         } else {
             for (int id = xid + DIMX; id < lim; id += DIMX) {
-                Op(transform(iptr[id]), weight);
+                // Faster version of stable_mean when iwptr is NULL
+                val = val + (transform(iptr[id]) - val) / (weight + 1);
+                weight = weight + 1;
             }
         }
 
-        s_val[tid] = Op.runningMean;
-        s_idx[tid] = Op.runningCount;
+        s_val[tid] = val;
+        s_idx[tid] = weight;
         __syncthreads();
 
         To *s_vptr = s_val + tidy * DIMX;
@@ -345,27 +326,21 @@ namespace kernel
 
         if (DIMX == 256) {
             if (tidx < 128) {
-                Op(s_vptr[tidx + 128], s_iptr[tidx + 128]);
-                s_vptr[tidx] = Op.runningMean;
-                s_iptr[tidx] = Op.runningCount;
+                stable_mean(s_vptr + tidx, s_iptr + tidx, s_vptr[tidx + 128], s_iptr[tidx + 128]);
             }
             __syncthreads();
         }
 
         if (DIMX >= 128) {
             if (tidx <  64) {
-                Op(s_vptr[tidx +  64], s_iptr[tidx +  64]);
-                s_vptr[tidx] = Op.runningMean;
-                s_iptr[tidx] = Op.runningCount;
+                stable_mean(s_vptr + tidx, s_iptr + tidx, s_vptr[tidx +  64], s_iptr[tidx +  64]);
             }
             __syncthreads();
         }
 
         if (DIMX >=  64) {
             if (tidx <  32) {
-                Op(s_vptr[tidx +  32], s_iptr[tidx +  32]);
-                s_vptr[tidx] = Op.runningMean;
-                s_iptr[tidx] = Op.runningCount;
+                stable_mean(s_vptr + tidx, s_iptr + tidx, s_vptr[tidx +  32], s_iptr[tidx +  32]);
             }
             __syncthreads();
         }
@@ -381,7 +356,7 @@ namespace kernel
 
     template<typename Ti, typename Tw, typename To>
     void mean_first_launcher(Param<To> out, Param<Tw> owt, CParam<Ti> in, CParam<Tw> iwt,
-                               const uint blocks_x, const uint blocks_y, const uint threads_x)
+                             const uint blocks_x, const uint blocks_y, const uint threads_x)
     {
 
         dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
@@ -530,13 +505,15 @@ namespace kernel
             memFree(tmpOut.ptr);
             memFree(tmpWt.ptr);
 
-            MeanOp<T, Tw> Op(h_ptr[0], h_wptr[0]);
+
+            T val = h_ptr[0];
+            Tw weight = h_wptr[0];
 
             for (int i = 1; i < tmp_elements; i++) {
-                Op(h_ptr[i], h_wptr[i]);
+                stable_mean(&val, &weight, h_ptr[i], h_wptr[i]);
             }
 
-            return Op.runningMean;
+            return val;
         } else {
 
             vector<T>  h_ptr(in_elements);
@@ -548,12 +525,13 @@ namespace kernel
                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
-            MeanOp<T, Tw> Op(h_ptr[0], h_wptr[0]);
+            T val = h_ptr[0];
+            Tw weight = h_wptr[0];
             for (int i = 1; i < in_elements; i++) {
-                Op(h_ptr[i], h_wptr[i]);
+                stable_mean(&val, &weight, h_ptr[i], h_wptr[i]);
             }
 
-            return Op.runningMean;
+            return val;
         }
     }
 
@@ -616,13 +594,14 @@ namespace kernel
             memFree(tmpOut.ptr);
             memFree(tmpCt.ptr);
 
-            MeanOp<To, Tw> Op(h_ptr[0], h_cptr[0]);
+            To val = h_ptr[0];
+            Tw weight = h_cptr[0];
 
             for (int i = 1; i < tmp_elements; i++) {
-                Op(h_ptr[i], h_cptr[i]);
+                stable_mean(&val, &weight, h_ptr[i], h_cptr[i]);
             }
 
-            return Op.runningMean;
+            return val;
         } else {
 
             vector<Ti> h_ptr(in_elements);
@@ -633,12 +612,13 @@ namespace kernel
             Transform<Ti, To, af_add_t> transform;
             Tw count = (Tw)1;
 
-            MeanOp<To, Tw> Op(transform(h_ptr[0]), count);
+            To val = transform(h_ptr[0]);
+            Tw weight = count;
             for (int i = 1; i < in_elements; i++) {
-                Op(transform(h_ptr[i]), count);
+                stable_mean(&val, &weight, transform(h_ptr[i]), count);
             }
 
-            return Op.runningMean;
+            return val;
         }
     }
 
