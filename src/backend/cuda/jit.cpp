@@ -20,6 +20,8 @@
 #include <af/dim4.hpp>
 #include <nvrtc.h>
 
+#include <array>
+#include <cstdio>
 #include <functional>
 #include <map>
 #include <memory>
@@ -34,6 +36,7 @@ using JIT::Node;
 using JIT::Node_ids;
 using JIT::Node_map_t;
 
+using std::array;
 using std::hash;
 using std::lock_guard;
 using std::map;
@@ -270,8 +273,23 @@ std::vector<char> compileToPTX(const char *ker_name, string jit_ker)
     nvrtcProgram prog;
     size_t ptx_size;
     std::vector<char> ptx;
-    NVRTC_CHECK(nvrtcCreateProgram(&prog, jit_ker.c_str(), ker_name, 0, NULL, NULL));
-    NVRTC_CHECK(nvrtcCompileProgram(prog, 0, NULL));
+    NVRTC_CHECK(nvrtcCreateProgram(&prog, jit_ker.c_str(),
+                                   ker_name, 0, NULL, NULL));
+
+    auto dev = getDeviceProp(getActiveDeviceId());
+    array<char, 32> arch;
+    snprintf(arch.data(), arch.size(), "--gpu-architecture=compute_%d%d",
+             dev.major, dev.minor);
+    const char* compiler_options[] = {
+      arch.data(),
+#ifndef NDEBUG
+      "--device-debug",
+      "--generate-line-info"
+#endif
+    };
+    int num_options = std::extent<decltype(compiler_options)>::value;
+    NVRTC_CHECK(nvrtcCompileProgram(prog, num_options, compiler_options));
+
     NVRTC_CHECK(nvrtcGetPTXSize(prog, &ptx_size));
     ptx.resize(ptx_size);
     NVRTC_CHECK(nvrtcGetPTX(prog, ptx.data()));
