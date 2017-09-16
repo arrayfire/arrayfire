@@ -239,8 +239,8 @@ af_err processException()
 
 std::string& get_global_error_string()
 {
-    thread_local std::string global_error_string = std::string("");
-    return global_error_string;
+    thread_local std::string *global_error_string = new std::string("");
+    return *global_error_string;
 }
 
 const char *af_err_to_string(const af_err err)
