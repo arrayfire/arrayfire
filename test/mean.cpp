@@ -301,3 +301,23 @@ TYPED_TEST(WeightedMean, Basic)
 {
     weightedMeanAllTest<TypeParam, float>(af::dim4(32, 30, 33, 17));
 }
+
+TEST(WeightedMean, Broadacst)
+{
+    float val = 0.5f;
+    af::array a = af::randu(4096, 32);
+    af::array w = af::constant(val, a.dims());
+    af::array c = af::mean(a);
+    af::array d = af::mean(a, w);
+
+    std::vector<float> hc(c.elements());
+    std::vector<float> hd(d.elements());
+
+    c.host(hc.data());
+    d.host(hd.data());
+
+    for(size_t i = 0; i < hc.size(); i++) {
+        //C and D are the same because they are normalized by the sum of the weights.
+        ASSERT_NEAR(hc[i], hd[i], 1E-5);
+    }
+}
