@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
+#include <af/data.h>
 #include <af/statistics.h>
 #include <af/defines.h>
 #include <err_common.hpp>
@@ -91,22 +92,38 @@ af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights
         af_dtype wType  = wInfo.getType();
 
         ARG_ASSERT(2, (wType==f32 || wType==f64)); /* verify that weights are non-complex real numbers */
-        ARG_ASSERT(2, iInfo.dims() == wInfo.dims());
+
+        //FIXME: We should avoid additional copies
+        af_array w = weights;
+        if (iInfo.dims() != wInfo.dims()) {
+            dim4 iDims = iInfo.dims();
+            dim4 wDims = wInfo.dims();
+            dim4 tDims(1,1,1,1);
+            for (int i = 0; i < 4; i++) {
+                ARG_ASSERT(2, wDims[i] == 1 || wDims[i] == iDims[i]);
+                tDims[i] = iDims[i] / wDims[i];
+            }
+            AF_CHECK(af_tile(&w, weights, tDims[0], tDims[1], tDims[2], tDims[3]));
+        }
 
         switch(iType) {
-            case f64: output = mean< double>(in, weights, dim); break;
-            case f32: output = mean< float >(in, weights, dim); break;
-            case s32: output = mean< float >(in, weights, dim); break;
-            case u32: output = mean< float >(in, weights, dim); break;
-            case s64: output = mean< double>(in, weights, dim); break;
-            case u64: output = mean< double>(in, weights, dim); break;
-            case s16: output = mean< float >(in, weights, dim); break;
-            case u16: output = mean< float >(in, weights, dim); break;
-            case  u8: output = mean< float >(in, weights, dim); break;
-            case  b8: output = mean< float >(in, weights, dim); break;
-            case c32: output = mean< cfloat>(in, weights, dim); break;
-            case c64: output = mean<cdouble>(in, weights, dim); break;
+            case f64: output = mean< double>(in, w, dim); break;
+            case f32: output = mean< float >(in, w, dim); break;
+            case s32: output = mean< float >(in, w, dim); break;
+            case u32: output = mean< float >(in, w, dim); break;
+            case s64: output = mean< double>(in, w, dim); break;
+            case u64: output = mean< double>(in, w, dim); break;
+            case s16: output = mean< float >(in, w, dim); break;
+            case u16: output = mean< float >(in, w, dim); break;
+            case  u8: output = mean< float >(in, w, dim); break;
+            case  b8: output = mean< float >(in, w, dim); break;
+            case c32: output = mean< cfloat>(in, w, dim); break;
+            case c64: output = mean<cdouble>(in, w, dim); break;
             default : TYPE_ERROR(1, iType);
+        }
+
+        if (w != weights) {
+            AF_CHECK(af_release_array(w));
         }
         std::swap(*out, output);
     }
