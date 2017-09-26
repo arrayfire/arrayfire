@@ -76,7 +76,7 @@ void meanshift(Param out, const Param in, float s_sigma, float c_sigma, uint ite
     NDRange global(bCount*blk_x*THREADS_X, in.info.dims[3]*blk_y*THREADS_Y);
 
     // clamp spatical and chromatic sigma's
-    int radius   = std::max( (int)(std::min(11.5f, s_sigma) * 1.5f), 1 );
+    int radius   = std::max( (int)(s_sigma * 1.5f), 1 );
 
     const float cvar = c_sigma*c_sigma;
 

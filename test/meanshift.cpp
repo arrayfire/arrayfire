@@ -76,7 +76,7 @@ void meanshiftTest(string pTestFile)
 
             dim_t nElems = gold.elements();
 
-            array output = meanShift(input, 15.f, 30.f, 5, isColor);
+            array output = meanShift(input, 11.5f, 30.f, 5, isColor);
 
             std::vector<T> outData(nElems);
             output.host((void*)outData.data());

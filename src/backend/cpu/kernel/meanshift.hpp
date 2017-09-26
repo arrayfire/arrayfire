@@ -28,8 +28,7 @@ void meanShift(Param<T> out, CParam<T> in, const float s_sigma,
     const af::dim4 ostrides = out.strides();
     const unsigned bCount   = (IsColor ? 1 : dims[2]);
     const unsigned channels = (IsColor ? dims[2] : 1);
-    float space_            = std::min(11.5f, s_sigma);
-    const dim_t radius      = std::max((int)(space_ * 1.5f), 1);
+    const dim_t radius      = std::max((int)(s_sigma * 1.5f), 1);
     const AccType cvar      = c_sigma*c_sigma;
 
     for (dim_t b3=0; b3<dims[3]; ++b3) {
