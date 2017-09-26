@@ -57,13 +57,13 @@ void meanshift(__global T *       d_dst,
                 int hit_count = 0;
                 int tj = j + wj;
 
-                if (tj<0 || tj>dim1LenLmt) break;
+                if (tj<0 || tj>dim1LenLmt) continue;
 
                 for(int wi=-radius; wi<=radius; ++wi) {
 
                     int ti = i + wi;
 
-                    if (ti<0 || ti>dim0LenLmt) break;
+                    if (ti<0 || ti>dim0LenLmt) continue;
 
                     AccType norm = 0;
 #pragma unroll

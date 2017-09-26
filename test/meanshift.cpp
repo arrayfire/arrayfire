@@ -78,8 +78,6 @@ void meanshiftTest(string pTestFile)
 
             array output = meanShift(input, 15.f, 30.f, 5, isColor);
 
-            output = (255.0*normalize<T>(output)).as(type);
-
             std::vector<T> outData(nElems);
             output.host((void*)outData.data());
 
@@ -100,7 +98,7 @@ void meanshiftTest(string pTestFile)
 //       with two different type of types
 //
 #define IMAGE_TESTS(T)                                                      \
-    TEST(Meanshift, DISABLED_Grayscale_##T)                                          \
+    TEST(Meanshift, Grayscale_##T)                                          \
     {                                                                       \
         meanshiftTest<T, false>(string(TEST_DIR"/meanshift/gray.test"));    \
     }                                                                       \
