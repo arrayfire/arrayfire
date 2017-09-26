@@ -35,7 +35,7 @@ static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
 template<typename T, bool is_color>
-void meanshift(Param out, const Param in, float s_sigma, float c_sigma, uint iter)
+void meanshift(Param out, const Param in, float spatialSigma, float chromaticSigma, uint numIters)
 {
     typedef typename std::conditional< std::is_same<T, double>::value, double, float >::type AccType;
 
@@ -76,13 +76,13 @@ void meanshift(Param out, const Param in, float s_sigma, float c_sigma, uint ite
     NDRange global(bCount*blk_x*THREADS_X, in.info.dims[3]*blk_y*THREADS_Y);
 
     // clamp spatical and chromatic sigma's
-    int radius   = std::max( (int)(s_sigma * 1.5f), 1 );
+    int radius   = std::max( (int)(spatialSigma * 1.5f), 1 );
 
-    const float cvar = c_sigma*c_sigma;
+    const float cvar = chromaticSigma*chromaticSigma;
 
     meanshiftOp(EnqueueArgs(getQueue(), global, local),
                 *out.data, out.info, *in.data, in.info,
-                radius, cvar, iter, blk_x, blk_y);
+                radius, cvar, numIters, blk_x, blk_y);
 
     CL_DEBUG_FINISH(getQueue());
 }

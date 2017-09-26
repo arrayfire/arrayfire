@@ -11,8 +11,8 @@
 
 namespace opencl
 {
-
-template<typename T, bool is_color>
-Array<T> meanshift(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter);
-
+template<typename T, bool IsColor>
+Array<T>  meanshift(const Array<T> &in,
+        const float &spatialSigma, const float &chromaticSigma,
+        const unsigned numIterations);
 }

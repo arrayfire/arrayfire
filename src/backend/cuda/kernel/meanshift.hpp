@@ -24,7 +24,7 @@ static const int THREADS_Y = 8;
 
 template<typename AccType, typename T, int channels>
 static __global__
-void meanshiftKernel(Param<T> out, CParam<T> in, int radius, float cvar, uint iter,
+void meanshiftKernel(Param<T> out, CParam<T> in, int radius, float cvar, uint numIters,
                      int nBBS0, int nBBS1)
 {
     unsigned b2   = blockIdx.x / nBBS0;
@@ -37,26 +37,26 @@ void meanshiftKernel(Param<T> out, CParam<T> in, int radius, float cvar, uint it
     if (gx>=in.dims[0] || gy>=in.dims[1])
         return;
 
-    int i = gx;
-    int j = gy;
+    int meanPosI = gx;
+    int meanPosJ = gy;
 
-    T centers[channels];
-    T tmpclrs[channels];
+    T currentCenterColors[channels];
+    T tempColors[channels];
 
-    AccType means[channels];
+    AccType currentMeanColors[channels];
 
 #pragma unroll
     for (int ch=0; ch<channels; ++ch)
-        centers[ch] = iptr[ (gx*in.strides[0] + gy*in.strides[1] + ch*in.strides[2]) ];
+        currentCenterColors[ch] = iptr[ (gx*in.strides[0] + gy*in.strides[1] + ch*in.strides[2]) ];
 
     const int dim0LenLmt = in.dims[0]-1;
     const int dim1LenLmt = in.dims[1]-1;
 
     // scope of meanshift iterations begin
-    for (uint it=0; it<iter; ++it) {
+    for (uint it=0; it<numIters; ++it) {
 
-        int ocj = j;
-        int oci = i;
+        int oldMeanPosJ = meanPosJ;
+        int oldMeanPosI = meanPosI;
         unsigned count  = 0;
 
         int shift_x = 0;
@@ -64,32 +64,32 @@ void meanshiftKernel(Param<T> out, CParam<T> in, int radius, float cvar, uint it
 
 #pragma unroll
         for (int ch=0; ch<channels; ++ch)
-            means[ch] = 0;
+            currentMeanColors[ch] = 0;
 
         for (int wj=-radius; wj<=radius; ++wj) {
             int hit_count = 0;
-            int tj = j + wj;
+            int tj = meanPosJ + wj;
 
             if (tj<0 || tj>dim1LenLmt) continue;
 
             for(int wi=-radius; wi<=radius; ++wi) {
 
-                int ti = i + wi;
+                int ti = meanPosI + wi;
 
                 if (ti<0 || ti>dim0LenLmt) continue;
 
                 AccType norm = 0;
 #pragma unroll
                 for (int ch=0; ch<channels; ++ch) {
-                    tmpclrs[ch] = iptr[ (ti*in.strides[0] + tj*in.strides[1] + ch*in.strides[2]) ];
-                    AccType diff = (AccType)centers[ch] - (AccType)tmpclrs[ch];
+                    tempColors[ch] = iptr[ (ti*in.strides[0] + tj*in.strides[1] + ch*in.strides[2]) ];
+                    AccType diff = (AccType)currentCenterColors[ch] - (AccType)tempColors[ch];
                     norm += (diff * diff);
                 }
 
                 if (norm <= cvar) {
 #pragma unroll
                     for (int ch=0; ch<channels; ++ch)
-                        means[ch] += (AccType)tmpclrs[ch];
+                        currentMeanColors[ch] += (AccType)tempColors[ch];
 
                     shift_x += ti;
                     ++hit_count;
@@ -103,36 +103,37 @@ void meanshiftKernel(Param<T> out, CParam<T> in, int radius, float cvar, uint it
 
         const AccType fcount = 1/(AccType)count;
 
-        i = __float2int_rz(shift_x*fcount);
-        j = __float2int_rz(shift_y*fcount);
+        meanPosI = __float2int_rz(shift_x*fcount);
+        meanPosJ = __float2int_rz(shift_y*fcount);
 
 #pragma unroll
         for (int ch=0; ch<channels; ++ch)
-            means[ch] = __float2int_rz(means[ch]*fcount);
+            currentMeanColors[ch] = __float2int_rz(currentMeanColors[ch]*fcount);
 
         AccType norm = 0;
 #pragma unroll
         for (int ch=0; ch<channels; ++ch) {
-            AccType diff = (AccType)centers[ch] - means[ch];
+            AccType diff = (AccType)currentCenterColors[ch] - currentMeanColors[ch];
             norm += (diff * diff);
         }
 
-        bool stop = (j==ocj && i==oci) || ((abs(ocj-j) + abs(oci-i) + norm) <= 1);
+        bool stop = (meanPosJ==oldMeanPosJ && meanPosI==oldMeanPosI) ||
+                    ((abs(oldMeanPosJ-meanPosJ) + abs(oldMeanPosI-meanPosI) + norm) <= 1);
 
 #pragma unroll
         for (int ch=0; ch<channels; ++ch)
-            centers[ch] = (T)(means[ch]);
+            currentCenterColors[ch] = (T)(currentMeanColors[ch]);
 
         if (stop) break;
     } // scope of meanshift iterations end
 
 #pragma unroll
     for (int ch=0; ch<channels; ++ch)
-        optr[ (gx*out.strides[0] + gy*out.strides[1] + ch*out.strides[2]) ] = centers[ch];
+        optr[ (gx*out.strides[0] + gy*out.strides[1] + ch*out.strides[2]) ] = currentCenterColors[ch];
 }
 
-template<typename T, bool is_color>
-void meanshift(Param<T> out, CParam<T> in, float s_sigma, float c_sigma, uint iter)
+template<typename T, bool IsColor>
+void meanshift(Param<T> out, CParam<T> in, float spatialSigma, float chromaticSigma, uint numIters)
 {
     typedef typename std::conditional< std::is_same<T, double>::value, double, float >::type AccType;
 
@@ -141,21 +142,21 @@ void meanshift(Param<T> out, CParam<T> in, float s_sigma, float c_sigma, uint it
     int blk_x = divup(in.dims[0], THREADS_X);
     int blk_y = divup(in.dims[1], THREADS_Y);
 
-    const int bCount   = (is_color ? 1 : in.dims[2]);
+    const int bCount   = (IsColor ? 1 : in.dims[2]);
 
     dim3 blocks(blk_x * bCount, blk_y * in.dims[3]);
 
     // clamp spatical and chromatic sigma's
-    int radius   = std::max( (int)(s_sigma * 1.5f), 1 );
+    int radius   = std::max( (int)(spatialSigma * 1.5f), 1 );
 
-    const float cvar = c_sigma*c_sigma;
+    const float cvar = chromaticSigma*chromaticSigma;
 
-    if (is_color)
+    if (IsColor)
         CUDA_LAUNCH((meanshiftKernel<AccType, T, 3>), blocks, threads,
-                out, in, radius, cvar, iter, blk_x, blk_y);
+                out, in, radius, cvar, numIters, blk_x, blk_y);
     else
         CUDA_LAUNCH((meanshiftKernel<AccType, T, 1>), blocks, threads,
-                out, in, radius, cvar, iter, blk_x, blk_y);
+                out, in, radius, cvar, numIters, blk_x, blk_y);
 
     POST_LAUNCH_CHECK();
 }

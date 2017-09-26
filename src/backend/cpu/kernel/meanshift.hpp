@@ -18,8 +18,8 @@ namespace cpu
 namespace kernel
 {
 template<typename T, bool IsColor>
-void meanShift(Param<T> out, CParam<T> in, const float s_sigma,
-               const float c_sigma, const unsigned iter)
+void meanShift(Param<T> out, CParam<T> in, const float spatialSigma,
+               const float chromaticSigma, const unsigned numIterations)
 {
     typedef typename std::conditional< std::is_same<T, double>::value, double, float >::type AccType;
 
@@ -28,8 +28,8 @@ void meanShift(Param<T> out, CParam<T> in, const float s_sigma,
     const af::dim4 ostrides = out.strides();
     const unsigned bCount   = (IsColor ? 1 : dims[2]);
     const unsigned channels = (IsColor ? dims[2] : 1);
-    const dim_t radius      = std::max((int)(s_sigma * 1.5f), 1);
-    const AccType cvar      = c_sigma*c_sigma;
+    const dim_t radius      = std::max((int)(spatialSigma * 1.5f), 1);
+    const AccType cvar      = chromaticSigma * chromaticSigma;
 
     for (dim_t b3=0; b3<dims[3]; ++b3) {
         for (unsigned b2=0; b2<bCount; ++b2) {
@@ -47,54 +47,54 @@ void meanShift(Param<T> out, CParam<T> in, const float s_sigma,
                     dim_t i_in_off  = i*istrides[0];
                     dim_t i_out_off = i*ostrides[0];
 
-                    std::vector<T> centers(channels, 0);
+                    std::vector<T> currentCenterColors(channels, 0);
 
                     for (unsigned ch=0; ch<channels; ++ch)
-                        centers[ch] = inData[j_in_off + i_in_off + ch*istrides[2]];
+                        currentCenterColors[ch] = inData[j_in_off + i_in_off + ch*istrides[2]];
 
-                    int cj = j;
-                    int ci = i;
+                    int meanPosJ = j;
+                    int meanPosI = i;
 
                     // scope of meanshift iterations begin
-                    for (unsigned it=0; it<iter; ++it) {
+                    for (unsigned it=0; it<numIterations; ++it) {
 
-                        int ocj   = cj;
-                        int oci   = ci;
+                        int oldMeanPosJ   = meanPosJ;
+                        int oldMeanPosI   = meanPosI;
                         unsigned count = 0;
                         int shift_y = 0;
                         int shift_x = 0;
 
-                        std::vector<AccType> means(channels, 0);
+                        std::vector<AccType> currentMeanColors(channels, 0);
 
                         // Windowing operation
                         for (dim_t wj=-radius; wj<=radius; ++wj) {
 
                             int hit_count = 0;
-                            dim_t tj = cj + wj;
+                            dim_t tj = meanPosJ + wj;
                             if (tj<0 || tj>dims[1]-1) continue;
 
                             dim_t tjstride = tj*istrides[1];
 
                             for (dim_t wi=-radius; wi<=radius; ++wi) {
 
-                                dim_t ti = ci + wi;
+                                dim_t ti = meanPosI + wi;
                                 if (ti<0 || ti>dims[0]-1) continue;
 
                                 dim_t tistride = ti*istrides[0];
 
-                                std::vector<T> tmpclrs(channels, 0);
+                                std::vector<T> tempColors(channels, 0);
 
                                 AccType norm = 0;
                                 for (unsigned ch=0; ch<channels; ++ch) {
-                                    tmpclrs[ch] = inData[ tistride + tjstride + ch*istrides[2] ];
-                                    AccType diff = static_cast<AccType>(centers[ch]) -
-                                                   static_cast<AccType>(tmpclrs[ch]);
+                                    tempColors[ch] = inData[ tistride + tjstride + ch*istrides[2] ];
+                                    AccType diff = static_cast<AccType>(currentCenterColors[ch]) -
+                                                   static_cast<AccType>(tempColors[ch]);
                                     norm += (diff * diff);
                                 }
 
                                 if (norm <= cvar) {
                                     for(unsigned ch=0; ch<channels; ++ch)
-                                        means[ch] += static_cast<AccType>(tmpclrs[ch]);
+                                        currentMeanColors[ch] += static_cast<AccType>(tempColors[ch]);
 
                                     shift_x += ti;
                                     ++hit_count;
@@ -108,29 +108,30 @@ void meanShift(Param<T> out, CParam<T> in, const float s_sigma,
 
                         const AccType fcount = 1/static_cast<AccType>(count);
 
-                        cj = static_cast<int>(std::trunc(shift_y*fcount));
-                        ci = static_cast<int>(std::trunc(shift_x*fcount));
+                        meanPosJ = static_cast<int>(std::trunc(shift_y*fcount));
+                        meanPosI = static_cast<int>(std::trunc(shift_x*fcount));
 
                         for (unsigned ch=0; ch<channels; ++ch)
-                            means[ch] = std::trunc(means[ch]*fcount);
+                            currentMeanColors[ch] = std::trunc(currentMeanColors[ch]*fcount);
 
                         AccType norm = 0;
                         for (unsigned ch=0; ch<channels; ++ch) {
-                            AccType diff = means[ch] - static_cast<AccType>(centers[ch]);
+                            AccType diff = currentMeanColors[ch] - static_cast<AccType>(currentCenterColors[ch]);
                             norm += (diff*diff);
                         }
 
                         //stop the process if mean converged or within given tolerance range
-                        bool stop = (cj==ocj && oci==ci) || ((abs(ocj-cj) + abs(oci-ci) + norm) <= 1);
+                        bool stop = (meanPosJ==oldMeanPosJ && oldMeanPosI==meanPosI) ||
+                                    ((abs(oldMeanPosJ-meanPosJ) + abs(oldMeanPosI-meanPosI) + norm) <= 1);
 
                         for (unsigned ch=0; ch<channels; ++ch)
-                            centers[ch] = static_cast<T>(means[ch]);
+                            currentCenterColors[ch] = static_cast<T>(currentMeanColors[ch]);
 
                         if (stop) break;
                     } // scope of meanshift iterations end
 
                     for (dim_t ch=0; ch<channels; ++ch)
-                        outData[j_out_off + i_out_off + ch*ostrides[2]] = centers[ch];
+                        outData[j_out_off + i_out_off + ch*ostrides[2]] = currentCenterColors[ch];
                 }
             }
         }
