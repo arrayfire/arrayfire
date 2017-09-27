@@ -19,8 +19,8 @@ namespace cuda
 {
 namespace kernel
 {
-static const int THREADS_X = 32;
-static const int THREADS_Y = 8;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 template<typename AccType, typename T, int channels>
 static __global__
