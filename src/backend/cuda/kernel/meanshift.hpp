@@ -133,7 +133,8 @@ void meanshiftKernel(Param<T> out, CParam<T> in, int radius, float cvar, uint nu
 }
 
 template<typename T, bool IsColor>
-void meanshift(Param<T> out, CParam<T> in, float spatialSigma, float chromaticSigma, uint numIters)
+void meanshift(Param<T> out, CParam<T> in,
+       const float spatialSigma, const float chromaticSigma, const uint numIters)
 {
     typedef typename std::conditional< std::is_same<T, double>::value, double, float >::type AccType;
 
