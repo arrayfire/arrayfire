@@ -17,6 +17,7 @@
 
 using std::string;
 using std::vector;
+using namespace af;
 
 template<typename T>
 class CannyEdgeDetector : public ::testing::Test
@@ -95,31 +96,31 @@ void cannyImageOtsuTest(string pTestFile, bool isColor)
 
     for (size_t testId=0; testId<testCount; ++testId) {
 
-        af_array inArray  = 0;
-        af_array outArray = 0;
-        af_array goldArray= 0;
-        dim_t nElems   = 0;
-
         inFiles[testId].insert(0,string(TEST_DIR "/CannyEdgeDetector/"));
         outFiles[testId].insert(0,string(TEST_DIR "/CannyEdgeDetector/"));
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray, inFiles[testId].c_str(), isColor));
-        ASSERT_EQ(AF_SUCCESS, af_load_image_native(&goldArray, outFiles[testId].c_str()));
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
+        try {
+            af_dtype type = (af_dtype)af::dtype_traits<T>::af_type;
 
-        ASSERT_EQ(AF_SUCCESS, af_canny(&outArray, inArray, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false));
+            array input = loadImage(inFiles[testId].c_str(), isColor).as(type);
+            array gold  = loadImage(outFiles[testId].c_str(), isColor).as(type);
 
-        std::vector<char> outData(nElems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+            dim_t nElems = gold.elements();
 
-        std::vector<char> goldData(nElems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
+            array output = canny(input, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false);
 
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 1.0e-3));
+            output = (255.0*normalize<T>(output)).as(type);
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray));
+            std::vector<T> outData(nElems);
+            output.host((void*)outData.data());
+
+            std::vector<T> goldData(nElems);
+            gold.host((void*)goldData.data());
+
+            ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.02));
+        } catch (af::exception& e) {
+            ASSERT_EQ(AF_SUCCESS, e.err());
+        }
     }
 }
 

@@ -19,7 +19,7 @@
 using std::string;
 using std::vector;
 using std::abs;
-using af::dim4;
+using namespace af;
 
 template<typename T>
 class Meanshift : public ::testing::Test
@@ -65,38 +65,29 @@ void meanshiftTest(string pTestFile)
 
     for (size_t testId=0; testId<testCount; ++testId) {
 
-        af_array inArray        = 0;
-        af_array inArray_f32    = 0;
-        af_array outArray       = 0;
-        af_array goldArray      = 0;
-        af_array goldArray_f32  = 0;
-        dim_t nElems            = 0;
+        inFiles[testId].insert(0,string(TEST_DIR "/meanshift/"));
+        outFiles[testId].insert(0,string(TEST_DIR "/meanshift/"));
 
-        inFiles[testId].insert(0,string(TEST_DIR"/meanshift/"));
-        outFiles[testId].insert(0,string(TEST_DIR"/meanshift/"));
+        try {
+            af_dtype type = (af_dtype)af::dtype_traits<T>::af_type;
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray_f32, inFiles[testId].c_str(), isColor));
-        ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
+            array input = loadImage(inFiles[testId].c_str(), isColor).as(type);
+            array gold  = loadImage(outFiles[testId].c_str(), isColor).as(type);
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&goldArray_f32, outFiles[testId].c_str(), isColor));
-        ASSERT_EQ(AF_SUCCESS, conv_image<T>(&goldArray, goldArray_f32)); // af_load_image always returns float array
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
+            dim_t nElems = gold.elements();
 
-        ASSERT_EQ(AF_SUCCESS, af_mean_shift(&outArray, inArray, 2.25f, 25.56f, 5, isColor));
+            array output = meanShift(input, 11.5f, 30.f, 5, isColor);
 
-        std::vector<T> outData(nElems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+            std::vector<T> outData(nElems);
+            output.host((void*)outData.data());
 
-        std::vector<T> goldData(nElems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
+            std::vector<T> goldData(nElems);
+            gold.host((void*)goldData.data());
 
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.07f));
-
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray_f32));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray_f32));
+            ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.02));
+        } catch (af::exception& e) {
+            ASSERT_EQ(AF_SUCCESS, e.err());
+        }
     }
 }
 
@@ -137,13 +128,15 @@ TEST(Meanshift, Color_CPP)
     size_t testCount = inDims.size();
 
     for (size_t testId=0; testId<testCount; ++testId) {
-        inFiles[testId].insert(0,string(TEST_DIR"/meanshift/"));
-        outFiles[testId].insert(0,string(TEST_DIR"/meanshift/"));
+        inFiles[testId].insert(0,string(TEST_DIR "/meanshift/"));
+        outFiles[testId].insert(0,string(TEST_DIR "/meanshift/"));
 
         af::array img   = af::loadImage(inFiles[testId].c_str(), true);
         af::array gold  = af::loadImage(outFiles[testId].c_str(), true);
         dim_t nElems = gold.elements();
-        af::array output= af::meanShift(img, 2.25f, 25.56f, 5, true);
+        af::array output= af::meanShift(img, 15.f, 30.f, 5, true);
+
+        output = (255.0*normalize<float>(output)).as(f32);
 
         std::vector<float> outData(nElems);
         output.host((void*)outData.data());

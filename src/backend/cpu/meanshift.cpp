@@ -23,22 +23,24 @@ using std::vector;
 
 namespace cpu
 {
-
-template<typename T, bool is_color>
-Array<T>  meanshift(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter)
+template<typename T, bool IsColor>
+Array<T>  meanshift(const Array<T> &in,
+        const float &spatialSigma, const float &chromaticSigma,
+        const unsigned numInterations)
 {
     in.eval();
 
     Array<T> out = createEmptyArray<T>(in.dims());
 
-    getQueue().enqueue(kernel::meanShift<T, is_color>, out, in, s_sigma, c_sigma, iter);
+    getQueue().enqueue(kernel::meanShift<T, IsColor>, out, in,
+            spatialSigma, chromaticSigma, numInterations);
 
     return out;
 }
 
 #define INSTANTIATE(T) \
-    template Array<T>  meanshift<T, true >(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter); \
-    template Array<T>  meanshift<T, false>(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter);
+    template Array<T>  meanshift<T, true >(const Array<T>&, const float&, const float&, const unsigned); \
+    template Array<T>  meanshift<T, false>(const Array<T>&, const float&, const float&, const unsigned);
 
 INSTANTIATE(float )
 INSTANTIATE(double)
@@ -50,5 +52,4 @@ INSTANTIATE(short )
 INSTANTIATE(ushort)
 INSTANTIATE(intl  )
 INSTANTIATE(uintl )
-
 }
