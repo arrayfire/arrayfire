@@ -59,6 +59,11 @@ template <> double inline toCLBlastConstant(const double val) { return val; }
 template <> std::complex<float> inline toCLBlastConstant(cfloat val) { return {val.s[0], val.s[1]}; }
 template <> std::complex<double> inline toCLBlastConstant(cdouble val) { return {val.s[0], val.s[1]}; }
 
+// Conversions to CLBlast basic types
+template <typename T> struct CLBlastBasicType { using Type = T; };
+template <> struct CLBlastBasicType<cfloat> { using Type = float; };
+template <> struct CLBlastBasicType<cdouble> { using Type = double; };
+
 // Initialization of the OpenCL BLAS library
 // Only meant to be once and from constructor
 // of DeviceManager singleton
@@ -179,11 +184,12 @@ struct gpu_blas_trsv_func
 template <typename T>
 struct gpu_blas_herk_func
 {
-    template <typename U>
+    using BasicType = typename CLBlastBasicType<T>::Type;
+
     clblast::StatusCode operator() (
         const clblast::Triangle triangle, const clblast::Transpose a_transpose,
-        const size_t n, const size_t k, const U alpha,
-        const cl_mem a_buffer, const size_t a_offset, const size_t a_ld, const U beta,
+        const size_t n, const size_t k, const BasicType alpha,
+        const cl_mem a_buffer, const size_t a_offset, const size_t a_ld, const BasicType beta,
         cl_mem c_buffer, const size_t c_offset, const size_t c_ld,
         cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event *wait_events, cl_event *events)
     {
@@ -192,6 +198,48 @@ struct gpu_blas_herk_func
         const auto alpha_clblast = toCLBlastConstant(alpha);
         const auto beta_clblast = toCLBlastConstant(beta);
         return clblast::Herk(clblast::Layout::kColMajor, triangle, a_transpose, n, k, alpha_clblast,
+                             a_buffer, a_offset, a_ld, beta_clblast, c_buffer, c_offset, c_ld,
+                             queues, events);
+    }
+};
+
+// Run syrk when calling non-complex herk function (specialisation of the above for 'float')
+template <>
+struct gpu_blas_herk_func<float>
+{
+    clblast::StatusCode operator() (
+        const clblast::Triangle triangle, const clblast::Transpose a_transpose,
+        const size_t n, const size_t k, const float alpha,
+        const cl_mem a_buffer, const size_t a_offset, const size_t a_ld, const float beta,
+        cl_mem c_buffer, const size_t c_offset, const size_t c_ld,
+        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event *wait_events, cl_event *events)
+    {
+        assert(num_queues == 1);
+        assert(num_wait_events == 0);
+        const auto alpha_clblast = toCLBlastConstant(alpha);
+        const auto beta_clblast = toCLBlastConstant(beta);
+        return clblast::Syrk(clblast::Layout::kColMajor, triangle, a_transpose, n, k, alpha_clblast,
+                             a_buffer, a_offset, a_ld, beta_clblast, c_buffer, c_offset, c_ld,
+                             queues, events);
+    }
+};
+
+// Run syrk when calling non-complex herk function (specialisation of the above for 'double')
+template <>
+struct gpu_blas_herk_func<double>
+{
+    clblast::StatusCode operator() (
+        const clblast::Triangle triangle, const clblast::Transpose a_transpose,
+        const size_t n, const size_t k, const double alpha,
+        const cl_mem a_buffer, const size_t a_offset, const size_t a_ld, const double beta,
+        cl_mem c_buffer, const size_t c_offset, const size_t c_ld,
+        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event *wait_events, cl_event *events)
+    {
+        assert(num_queues == 1);
+        assert(num_wait_events == 0);
+        const auto alpha_clblast = toCLBlastConstant(alpha);
+        const auto beta_clblast = toCLBlastConstant(beta);
+        return clblast::Syrk(clblast::Layout::kColMajor, triangle, a_transpose, n, k, alpha_clblast,
                              a_buffer, a_offset, a_ld, beta_clblast, c_buffer, c_offset, c_ld,
                              queues, events);
     }

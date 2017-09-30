@@ -7,7 +7,7 @@ SET(byproducts ${clBLAS_location})
 ExternalProject_Add(
     CLBlast-ext
     GIT_REPOSITORY https://github.com/cnugteren/CLBlast.git
-    GIT_TAG 48133a0cd1a7b61b87906ec1f4608e766e20a973
+    GIT_TAG 1.1.0
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""

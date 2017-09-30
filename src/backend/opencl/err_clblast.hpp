@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+#include <mutex>
 #include <stdio.h>
 #include <err_common.hpp>
 #include <clblast.h>
@@ -68,6 +69,9 @@ static const char * _clblastGetResultString(clblast::StatusCode st)
     case clblast::StatusCode::kInsufficientMemoryY:        return "Vector Y's OpenCL buffer is too small";
 
     // Custom additional status codes for CLBlast
+    case clblast::StatusCode::kInvalidBatchCount:          return "The batch count needs to be positive";
+    case clblast::StatusCode::kInvalidOverrideKernel:      return "Trying to override parameters for an invalid kernel";
+    case clblast::StatusCode::kMissingOverrideParameter:   return "Missing override parameter(s) for the target kernel";
     case clblast::StatusCode::kInvalidLocalMemUsage:       return "Not enough local memory available on this device";
     case clblast::StatusCode::kNoHalfPrecision:            return "Half precision (16-bits) not supported by the device";
     case clblast::StatusCode::kNoDoublePrecision:          return "Double precision (64-bits) not supported by the device";
