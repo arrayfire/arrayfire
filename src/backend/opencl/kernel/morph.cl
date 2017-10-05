@@ -35,10 +35,10 @@ void morph(__global T *              out,
            __local T *          localMem,
            int nBBS0, int nBBS1)
 {
-    const int halo   = windLen/2;
-    const int padding= 2*halo;
-    const int shrdLen = get_local_size(0) + padding + 1;
-    const int shrdLen1= get_local_size(1) + padding;
+    const int halo     = windLen/2;
+    const int padding  = (windLen%2==0 ? (windLen-1) : (2*(windLen/2)));
+    const int shrdLen  = get_local_size(0) + padding + 1;
+    const int shrdLen1 = get_local_size(1) + padding;
 
     // gfor batch offsets
     int b2 = get_group_id(0) / nBBS0;
@@ -125,14 +125,13 @@ void morph3d(__global T *         out,
              __local T *          localMem,
              int             nBBS)
 {
-    const int halo   = windLen/2;
-    const int padding= 2*halo;
-
+    const int halo      = windLen/2;
+    const int padding   = (windLen%2==0 ? (windLen-1) : (2*(windLen/2)));
     const int se_area   = windLen*windLen;
     const int shrdLen   = get_local_size(0) + padding + 1;
     const int shrdLen1  = get_local_size(1) + padding;
     const int shrdLen2  = get_local_size(2) + padding;
-    const int shrdArea  = shrdLen * (get_local_size(1)+padding);
+    const int shrdArea  = shrdLen * shrdLen1;
 
     // gfor batch offsets
     int batchId    = get_group_id(0) / nBBS;

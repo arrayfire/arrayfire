@@ -18,7 +18,6 @@ using af::dim4;
 
 namespace opencl
 {
-
 template<typename T, bool isDilation>
 Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
 {
@@ -34,16 +33,18 @@ Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
     Array<T> out   = createEmptyArray<T>(dims);
 
     switch(mdims[0]) {
+        case  2: kernel::morph3d<T, isDilation,  2>(out, in, mask); break;
         case  3: kernel::morph3d<T, isDilation,  3>(out, in, mask); break;
+        case  4: kernel::morph3d<T, isDilation,  4>(out, in, mask); break;
         case  5: kernel::morph3d<T, isDilation,  5>(out, in, mask); break;
+        case  6: kernel::morph3d<T, isDilation,  6>(out, in, mask); break;
         case  7: kernel::morph3d<T, isDilation,  7>(out, in, mask); break;
-        default: kernel::morph3d<T, isDilation,  3>(out, in, mask); break;
+        default: OPENCL_NOT_SUPPORTED("Morph 3D does not support kernels larger than 7."); break;
     }
 
     return out;
 }
 
-}
-
 #define INSTANTIATE(T, ISDILATE)                                                 \
     template Array<T> morph3d<T, ISDILATE>(const Array<T> &in, const Array<T> &mask);
+}

@@ -17,7 +17,6 @@ namespace cpu
 {
 namespace kernel
 {
-
 template<typename T, bool IsDilation>
 void morph(Array<T> out, Array<T> const in, Array<T> const mask)
 {
@@ -141,7 +140,5 @@ void morph3d(Array<T> out, Array<T> const in, Array<T> const mask)
         inData  += istrides[3];
     }
 }
-
-
 }
 }

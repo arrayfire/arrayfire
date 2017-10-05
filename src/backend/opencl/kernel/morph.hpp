@@ -92,8 +92,7 @@ void morph(Param out, const Param in, const Param mask)
     getQueue().enqueueCopyBuffer(*mask.data, *mBuff, 0, 0, se_size);
 
     // calculate shared memory size
-    const int halo    = windLen/2;
-    const int padding = 2*halo;
+    const int padding = (windLen%2==0 ? (windLen-1) : (2*(windLen/2)));
     const int locLen  = THREADS_X + padding + 1;
     const int locSize = locLen * (THREADS_Y+padding);
 
@@ -146,8 +145,7 @@ void morph3d(Param       out,
     getQueue().enqueueCopyBuffer(*mask.data, *mBuff, 0, 0, se_size);
 
     // calculate shared memory size
-    const int halo    = windLen/2;
-    const int padding = 2*halo;
+    const int padding = (windLen%2==0 ? (windLen-1) : (2*(windLen/2)));
     const int locLen  = CUBE_X+padding+1;
     const int locArea = locLen *(CUBE_Y+padding);
     const int locSize = locArea*(CUBE_Z+padding);
