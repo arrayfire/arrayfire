@@ -96,6 +96,15 @@ TYPED_TEST(Morph, Erode3x3)
     morphTest<TypeParam, false, false>(string(TEST_DIR"/morph/erode3x3.test"));
 }
 
+TYPED_TEST(Morph, Dilate4x4)
+{
+    morphTest<TypeParam, true, false>(string(TEST_DIR"/morph/dilate4x4.test"));
+}
+TYPED_TEST(Morph, Erode4x4)
+{
+    morphTest<TypeParam, false, false>(string(TEST_DIR"/morph/erode4x4.test"));
+}
+
 TYPED_TEST(Morph, Dilate3x3_Batch)
 {
     morphTest<TypeParam, true, false>(string(TEST_DIR"/morph/dilate3x3_batch.test"));
@@ -114,6 +123,15 @@ TYPED_TEST(Morph, Dilate3x3x3)
 TYPED_TEST(Morph, Erode3x3x3)
 {
     morphTest<TypeParam, false, true>(string(TEST_DIR"/morph/erode3x3x3.test"));
+}
+
+TYPED_TEST(Morph, Dilate4x4x4)
+{
+    morphTest<TypeParam, true, true>(string(TEST_DIR"/morph/dilate4x4x4.test"));
+}
+TYPED_TEST(Morph, Erode4x4x4)
+{
+    morphTest<TypeParam, false, true>(string(TEST_DIR"/morph/erode4x4x4.test"));
 }
 
 template<typename T, bool isDilation, bool isColor>
