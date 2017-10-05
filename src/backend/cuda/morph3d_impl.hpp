@@ -17,7 +17,6 @@ using af::dim4;
 
 namespace cuda
 {
-
 template<typename T, bool isDilation>
 Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
 {
@@ -44,7 +43,6 @@ Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
     return out;
 }
 
-}
-
 #define INSTANTIATE(T, ISDILATE)                                        \
     template Array<T> morph3d<T, ISDILATE>(const Array<T> &in, const Array<T> &mask);
+}
