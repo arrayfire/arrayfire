@@ -17,22 +17,25 @@ using af::dim4;
 
 namespace cuda
 {
-
-template<typename T, bool is_color>
-Array<T> meanshift(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter)
+template<typename T>
+Array<T>  meanshift(const Array<T> &in,
+        const float &spatialSigma, const float &chromaticSigma,
+        const unsigned& numIterations, const bool& isColor)
 {
     const dim4 dims = in.dims();
 
     Array<T> out   = createEmptyArray<T>(dims);
 
-    kernel::meanshift<T, is_color>(out, in, s_sigma, c_sigma, iter);
+    if (isColor)
+        kernel::meanshift<T, true>(out, in, spatialSigma, chromaticSigma, numIterations);
+    else
+        kernel::meanshift<T, false>(out, in, spatialSigma, chromaticSigma, numIterations);
 
     return out;
 }
 
 #define INSTANTIATE(T) \
-    template Array<T> meanshift<T, true >(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter); \
-    template Array<T> meanshift<T, false>(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter);
+    template Array<T> meanshift<T>(const Array<T>&, const float&, const float&, const unsigned&, const bool&);
 
 INSTANTIATE(float )
 INSTANTIATE(double)
@@ -44,5 +47,4 @@ INSTANTIATE(short )
 INSTANTIATE(ushort)
 INSTANTIATE(intl  )
 INSTANTIATE(uintl )
-
 }
