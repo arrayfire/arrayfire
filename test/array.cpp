@@ -520,3 +520,10 @@ TYPED_TEST(Array, Scalar)
 
     EXPECT_EQ(true, gold[0]==a.scalar<TypeParam>());
 }
+
+TEST(Array, ScalarTypeMismatch)
+{
+    array a = constant(1.0, dim4(1), f32);
+
+    EXPECT_THROW(a.scalar<int>(), af::exception);
+}
