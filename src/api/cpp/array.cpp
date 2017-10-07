@@ -980,6 +980,10 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     }                                                               \
     template<> AFAPI T array::scalar() const                        \
     {                                                               \
+        af_dtype type = (af_dtype)af::dtype_traits<T>::af_type;     \
+        if (type != this->type())                                   \
+            AF_THROW_ERR("Requested type doesn't match array type", \
+                         AF_ERR_TYPE);                              \
         T val;                                                      \
         AF_THROW(af_get_scalar(&val, get()));                       \
         return val;                                                 \
