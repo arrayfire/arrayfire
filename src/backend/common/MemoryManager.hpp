@@ -113,8 +113,8 @@ class MemoryManager
     }
 
     public:
-    MemoryManager(int num_devices, unsigned MAX_BUFFERS, bool debug)
-        : mem_step_size(1024), max_buffers(MAX_BUFFERS), memory(num_devices), debug_mode(debug)
+    MemoryManager(int num_devices, unsigned max_buffers, bool debug)
+        : mem_step_size(1024), max_buffers(max_buffers), memory(num_devices), debug_mode(debug)
     {
         // Check for environment variables
 
@@ -136,7 +136,7 @@ class MemoryManager
         // If there is a memory manager allocated for
         // this device id, we might as well use it and the
         // buffers allocated for it
-        if ((size_t)device < memory.size())
+        if (static_cast<size_t>(device) < memory.size())
             return;
 
         // Assuming, device need not be always the next device

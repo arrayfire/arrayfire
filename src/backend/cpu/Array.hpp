@@ -152,21 +152,21 @@ namespace cpu
 #define INFO_IS_FUNC(NAME)\
     bool NAME () const { return info.NAME(); }
 
-        INFO_IS_FUNC(isEmpty);
-        INFO_IS_FUNC(isScalar);
-        INFO_IS_FUNC(isRow);
-        INFO_IS_FUNC(isColumn);
-        INFO_IS_FUNC(isVector);
-        INFO_IS_FUNC(isComplex);
-        INFO_IS_FUNC(isReal);
-        INFO_IS_FUNC(isDouble);
-        INFO_IS_FUNC(isSingle);
-        INFO_IS_FUNC(isRealFloating);
-        INFO_IS_FUNC(isFloating);
-        INFO_IS_FUNC(isInteger);
-        INFO_IS_FUNC(isBool);
-        INFO_IS_FUNC(isLinear);
-        INFO_IS_FUNC(isSparse);
+        INFO_IS_FUNC(isEmpty)
+        INFO_IS_FUNC(isScalar)
+        INFO_IS_FUNC(isRow)
+        INFO_IS_FUNC(isColumn)
+        INFO_IS_FUNC(isVector)
+        INFO_IS_FUNC(isComplex)
+        INFO_IS_FUNC(isReal)
+        INFO_IS_FUNC(isDouble)
+        INFO_IS_FUNC(isSingle)
+        INFO_IS_FUNC(isRealFloating)
+        INFO_IS_FUNC(isFloating)
+        INFO_IS_FUNC(isInteger)
+        INFO_IS_FUNC(isBool)
+        INFO_IS_FUNC(isLinear)
+        INFO_IS_FUNC(isSparse)
 
 #undef INFO_IS_FUNC
 

@@ -25,7 +25,7 @@ typedef struct af_cfloat {
     float real;
     float imag;
 #ifdef __cplusplus
-    af_cfloat(const float real = 0, const float imag = 0) :real(real), imag(imag) {};
+    af_cfloat(const float _real = 0, const float _imag = 0) :real(_real), imag(_imag) {}
 #endif
 } af_cfloat;
 
@@ -33,7 +33,7 @@ typedef struct af_cdouble {
     double real;
     double imag;
 #ifdef __cplusplus
-    af_cdouble(const double real = 0, const double imag = 0) :real(real), imag(imag) {}
+    af_cdouble(const double _real = 0, const double _imag = 0) :real(_real), imag(_imag) {}
 #endif
 } af_cdouble;
 #ifdef __cplusplus

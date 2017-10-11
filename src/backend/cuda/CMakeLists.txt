@@ -109,6 +109,8 @@ function(cuda_add_library cuda_target)
 
 endfunction()
 
+arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
+
 include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/thrust_sort_by_key/CMakeLists.txt)
 
@@ -383,7 +385,7 @@ cuda_add_library(afcuda
     JIT/UnaryNode.hpp
     JIT/types.h
 
-    OPTIONS "-std=c++11 -Xcompiler -fPIC -Xcudafe \"--diag_suppress=1427\""
+    OPTIONS "${cuda_cxx_flags} -Xcompiler -fPIC -Xcudafe \"--diag_suppress=1427\""
   )
 
 add_library(ArrayFire::afcuda ALIAS afcuda)

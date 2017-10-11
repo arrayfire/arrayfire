@@ -74,7 +74,7 @@ void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
             FileElementType tmp;
             for(unsigned i = 0; i < nElems; i++) {
                 testFile >> tmp;
-                testInputs[k][i] = tmp;
+                testInputs[k][i] = static_cast<inType>(tmp);
             }
         }
 
@@ -84,7 +84,7 @@ void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
             FileElementType tmp;
             for(unsigned j = 0; j < testSizes[i]; j++) {
                 testFile >> tmp;
-                testOutputs[i][j] = tmp;
+                testOutputs[i][j] = static_cast<outType>(tmp);
             }
         }
     }
