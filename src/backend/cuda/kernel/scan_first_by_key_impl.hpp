@@ -432,8 +432,8 @@ namespace kernel
         threads_x = std::min(threads_x, THREADS_PER_BLOCK);
         uint threads_y = THREADS_PER_BLOCK / threads_x;
 
-        dim_t blocks_x = divup(out.dims[0], threads_x * REPEAT);
-        dim_t blocks_y = divup(out.dims[1], threads_y);
+        uint blocks_x = static_cast<uint>(divup(out.dims[0], threads_x * REPEAT));
+        uint blocks_y = static_cast<uint>(divup(out.dims[1], threads_y));
 
         if (blocks_x == 1) {
             scan_final_launcher<Ti, Tk, To, op>(

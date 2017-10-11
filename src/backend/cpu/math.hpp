@@ -33,7 +33,7 @@ namespace cpu
 
     template<> STATIC_ cfloat division<cfloat>(cfloat lhs, double rhs)
     {
-        cfloat retVal(real(lhs) / rhs, imag(lhs) / rhs);
+        cfloat retVal(real(lhs) / static_cast<float>(rhs), imag(lhs) / static_cast<float>(rhs));
         return retVal;
     }
 

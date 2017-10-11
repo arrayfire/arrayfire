@@ -28,6 +28,12 @@ elseif(UNIX)
 endif()
 endfunction()
 
+function(arrayfire_get_cuda_cxx_flags cuda_flags)
+  if(NOT MSVC)
+    set(${cuda_flags} "-std=c++11"  PARENT_SCOPE)
+  endif()
+endfunction()
+
 macro(arrayfire_set_cmake_default_variables)
   set(CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}prefix;${CMAKE_PREFIX_PATH}")
   set(BUILD_SHARED_LIBS ON)
