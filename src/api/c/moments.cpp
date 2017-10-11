@@ -29,14 +29,14 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template<typename T, typename To>
 static inline void moments(af_array *out, const af_array in, af_moment_type moment)
 {
     Array<float> temp = moments<T>(getArray<T>(in), moment);
     af_array tarr = getHandle<float>(temp);
-    Array<T> output = castArray<T>(tarr);
+    Array<To> output = castArray<To>(tarr);
 
-    *out = getHandle<T>(output);
+    *out = getHandle<To>(output);
 }
 
 af_err af_moments(af_array *out, const af_array in, const af_moment_type moment)
@@ -46,13 +46,13 @@ af_err af_moments(af_array *out, const af_array in, const af_moment_type moment)
         af_dtype type = in_info.getType();
 
         switch(type) {
-            case f32: moments<float>          (out, in, moment); break;
-            case f64: moments<double>         (out, in, moment); break;
-            case u32: moments<unsigned>       (out, in, moment); break;
-            case s32: moments<int>            (out, in, moment); break;
-            case u16: moments<unsigned short> (out, in, moment); break;
-            case s16: moments<short>          (out, in, moment); break;
-            case b8:  moments<char>           (out, in, moment); break;
+            case f32: moments<float, float>                 (out, in, moment); break;
+            case f64: moments<double, double>               (out, in, moment); break;
+            case u32: moments<unsigned, unsigned>           (out, in, moment); break;
+            case s32: moments<int, int>                     (out, in, moment); break;
+            case u16: moments<unsigned short, unsigned int> (out, in, moment); break;
+            case s16: moments<short, int>                   (out, in, moment); break;
+            case b8:  moments<char,  int>                   (out, in, moment); break;
             default:  TYPE_ERROR(1, type);
         }
     }

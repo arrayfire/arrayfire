@@ -160,4 +160,11 @@ TYPED_TEST(Image, MomentsSynthTypes)
     momentsTest<TypeParam>(string(TEST_DIR"/moments/simple_mat_moments.test"));
 }
 
+TEST(Image, Moment_Issue1957)
+{
+    af::array A = af::identity(3, 3, b8);
 
+    double m00;
+    af::moments(&m00, A, AF_MOMENT_M00);
+    ASSERT_EQ(m00, 3);
+}
