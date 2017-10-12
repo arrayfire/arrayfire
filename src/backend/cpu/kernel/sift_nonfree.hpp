@@ -986,12 +986,12 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
 
     std::vector< Array<T> > dog_pyr = buildDoGPyr<T>(gauss_pyr, n_octaves, n_layers);
 
-    vector<unique_ptr<float[]>> x_pyr(n_octaves);
-    vector<unique_ptr<float[]>> y_pyr(n_octaves);
-    vector<unique_ptr<float[]>> response_pyr(n_octaves);
-    vector<unique_ptr<float[]>> size_pyr(n_octaves);
-    vector<unique_ptr<float[]>> ori_pyr(n_octaves);
-    vector<unique_ptr<float[]>> desc_pyr(n_octaves);
+    vector<uptr<float>> x_pyr(n_octaves);
+    vector<uptr<float>> y_pyr(n_octaves);
+    vector<uptr<float>> response_pyr(n_octaves);
+    vector<uptr<float>> size_pyr(n_octaves);
+    vector<uptr<float>> ori_pyr(n_octaves);
+    vector<uptr<float>> desc_pyr(n_octaves);
     vector<unsigned> feat_pyr(n_octaves, 0);
     unsigned total_feat = 0;
 
@@ -1100,13 +1100,13 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
         if (double_input) scale *= 2.f;
 
         if (compute_GLOH)
-            computeGLOHDescriptor<T>(desc, desc_len,
+            computeGLOHDescriptor<T>(desc.get(), desc_len,
                                      oriented_x.get(), oriented_y.get(), oriented_layer.get(),
                                      oriented_response.get(), oriented_size.get(), oriented_ori.get(),
                                      oriented_feat, gauss_pyr, d, rb, ab, hb,
                                      scale, i, n_layers);
         else
-            computeDescriptor<T>(desc, desc_len,
+            computeDescriptor<T>(desc.get(), desc_len,
                                  oriented_x.get(), oriented_y.get(), oriented_layer.get(),
                                  oriented_response.get(), oriented_size.get(), oriented_ori.get(),
                                  oriented_feat, gauss_pyr, d, n, scale, i, n_layers);

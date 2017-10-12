@@ -385,30 +385,28 @@ void fast(unsigned* out_feat,
           float** x_out,
           float** y_out,
           float** score_out,
-          CParam<T> in,
+          const Array<T>& in,
           const float thr,
           const unsigned arc_length,
           const unsigned nonmax,
           const float feature_ratio,
           const unsigned edge)
 {
-    const unsigned max_feat = ceil(in.dims[0] * in.dims[1] * feature_ratio);
+    dim4 indims = in.dims();
+    const unsigned max_feat = ceil(indims[0] * indims[1] * feature_ratio);
 
     dim3 threads(16, 16);
-    dim3 blocks(divup(in.dims[0]-edge*2, threads.x), divup(in.dims[1]-edge*2, threads.y));
+    dim3 blocks(divup(indims[0]-edge*2, threads.x), divup(indims[1]-edge*2, threads.y));
 
     // Matrix containing scores for detected features, scores are stored in the
     // same coordinates as features, dimensions should be equal to in.
+    auto d_score = memAlloc<float>(indims[0] * indims[1] + 1);
 
-    size_t score_bytes = in.dims[0] * in.dims[1] * sizeof(float) + sizeof(unsigned);
-    auto d_score_tmp = memAlloc<char>(score_bytes);
-    float *d_score = (float *)d_score_tmp.get();
-
-    float *d_flags = d_score;
+    float *d_flags = d_score.get();
     uptr<float> d_flags_alloc;
     if (nonmax) {
-        d_flags_alloc = memAlloc<float>(in.dims[0] * in.dims[1]);
-        auto d_flags = d_flags_alloc.get();
+        d_flags_alloc = memAlloc<float>(indims[0] * indims[1]);
+        d_flags = d_flags_alloc.get();
     }
 
     // Shared memory size
@@ -416,28 +414,28 @@ void fast(unsigned* out_feat,
 
     switch(arc_length) {
     case 9:
-        CUDA_LAUNCH_SMEM((locate_features<T, 9>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T, 9>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 10:
-        CUDA_LAUNCH_SMEM((locate_features<T,10>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,10>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 11:
-        CUDA_LAUNCH_SMEM((locate_features<T,11>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,11>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 12:
-        CUDA_LAUNCH_SMEM((locate_features<T,12>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,12>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 13:
-        CUDA_LAUNCH_SMEM((locate_features<T,13>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,13>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 14:
-        CUDA_LAUNCH_SMEM((locate_features<T,14>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,14>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 15:
-        CUDA_LAUNCH_SMEM((locate_features<T,15>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,15>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 16:
-        CUDA_LAUNCH_SMEM((locate_features<T,16>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,16>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     }
 
@@ -446,22 +444,22 @@ void fast(unsigned* out_feat,
     threads.x = 32;
     threads.y =  8;
 
-    blocks.x = divup(in.dims[0], 64);
-    blocks.y = divup(in.dims[1], 64);
+    blocks.x = divup(indims[0], 64);
+    blocks.y = divup(indims[1], 64);
 
-    unsigned *d_total = (unsigned *)(d_score + in.dims[0] * in.dims[1]);
+    unsigned *d_total = (unsigned *)(d_score.get() + (indims[0] * indims[1]));
     CUDA_CHECK(cudaMemsetAsync(d_total, 0, sizeof(unsigned), cuda::getActiveStream()));
     auto d_counts  = memAlloc<unsigned>(blocks.x * blocks.y);
     auto d_offsets = memAlloc<unsigned>(blocks.x * blocks.y);
 
     if (nonmax)
         CUDA_LAUNCH((non_max_counts<true >), blocks, threads,
-                d_counts.get(), d_offsets.get(), d_total, d_flags,
-                d_score, in.dims[0], in.dims[1], edge);
+                    d_counts.get(), d_offsets.get(), d_total, d_flags,
+                    d_score.get(), indims[0], indims[1], edge);
     else
         CUDA_LAUNCH((non_max_counts<false>), blocks, threads,
-                d_counts.get(), d_offsets.get(), d_total, d_flags,
-                d_score, in.dims[0], in.dims[1], edge);
+                    d_counts.get(), d_offsets.get(), d_total, d_flags,
+                    d_score.get(), indims[0], indims[1], edge);
 
     POST_LAUNCH_CHECK();
 
@@ -482,7 +480,7 @@ void fast(unsigned* out_feat,
 
         CUDA_LAUNCH((get_features<float>), blocks, threads,
                 *x_out, *y_out, *score_out, d_flags, d_counts.get(),
-                d_offsets.get(), total, in.dims[0], in.dims[1], edge);
+                d_offsets.get(), total, indims[0], indims[1], edge);
 
         POST_LAUNCH_CHECK();
 
@@ -492,10 +490,8 @@ void fast(unsigned* out_feat,
     }
 
     *out_feat = total;
-
-    d_flags_alloc.release();
 }
 
-} // namespace kernel
+}  // namespace kernel
 
-} // namespace cuda
+}  // namespace cuda

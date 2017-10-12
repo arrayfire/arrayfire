@@ -46,7 +46,7 @@ namespace cuda
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data, bool is_device, bool copy_device) :
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(((is_device & !copy_device) ? (T *)in_data : memAlloc<T>(dims.elements()).release()), memFree<T>),
+        data(((is_device & !copy_device) ? const_cast<T*>(in_data) : memAlloc<T>(dims.elements()).release()), memFree<T>),
         data_dims(dims),
         node(bufferNodePtr<T>()), ready(true), owner(true)
     {
@@ -80,7 +80,7 @@ namespace cuda
              0,
              af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
              (af_dtype)dtype_traits<T>::af_type),
-        data(tmp.ptr, owner_ ? memFree<T> : [](T*){}),
+        data(tmp.ptr, owner_ ? std::function<void(T*)>(memFree<T>) : std::function<void(T*)>([](T*){})),
         data_dims(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3])),
         node(bufferNodePtr<T>()), ready(true), owner(owner_)
     {
@@ -116,21 +116,12 @@ namespace cuda
     void Array<T>::eval()
     {
         if (isReady()) return;
-
+ 
         this->setId(getActiveDeviceId());
-        data = shared_ptr<T>(memAlloc<T>(elements()).release(),
-                             memFree<T>);
+        this->data = shared_ptr<T>(memAlloc<T>(elements()).release(), memFree<T>);
 
-        Param<T> res;
-        res.ptr = data.get();
-
-        for (int  i = 0; i < 4; i++) {
-            res.dims[i] = dims()[i];
-            res.strides[i] = strides()[i];
-        }
-
-        evalNodes(res, this->getNode().get());
         ready = true;
+        evalNodes<T>(*this, this->getNode().get());
         // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
         node = bufferNodePtr<T>();
     }
@@ -164,19 +155,11 @@ namespace cuda
                 continue;
             }
 
+            array->ready = true;
             array->setId(getActiveDeviceId());
-            array->data = shared_ptr<T>(memAlloc<T>(array->elements()).release(),
-                                        memFree<T>);
+            array->data = shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree<T>);
 
-            Param<T> res;
-            res.ptr = array->data.get();
-
-            for (int  i = 0; i < 4; i++) {
-                res.dims[i] = array->dims()[i];
-                res.strides[i] = array->strides()[i];
-            }
-
-            outputs.push_back(res);
+            outputs.push_back(*array);
             nodes.push_back(array->node.get());
         }
 
@@ -186,7 +169,6 @@ namespace cuda
             Array<T> *array = arrays[i];
 
             if (array->isReady()) continue;
-            array->ready = true;
             // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
             array->node = bufferNodePtr<T>();
         }

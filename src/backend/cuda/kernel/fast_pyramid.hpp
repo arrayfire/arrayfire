@@ -27,15 +27,16 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr,
                   std::vector<float*>& d_y_pyr,
                   std::vector<unsigned>& lvl_best,
                   std::vector<float>& lvl_scl,
-                  std::vector<CParam<T> >& img_pyr,
-                  CParam<T> in,
+                  std::vector<Array<T>>& img_pyr,
+                  const Array<T>& in,
                   const float fast_thr,
                   const unsigned max_feat,
                   const float scl_fctr,
                   const unsigned levels,
                   const unsigned patch_size)
 {
-    unsigned min_side = std::min(in.dims[0], in.dims[1]);
+    dim4 indims = in.dims();
+    unsigned min_side = std::min(indims[0], indims[1]);
     unsigned max_levels = 0;
     float scl_sum = 0.f;
 
@@ -66,45 +67,22 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr,
     // Hold multi-scale image pyramids
     static const dim4 dims0;
     static const CParam<T> emptyCParam(NULL, dims0.get(), dims0.get());
-    // Need to do this as CParam does not have a default constructor
-    // And resize needs a default constructor or default value prior to C++11
-    img_pyr.resize(max_levels, emptyCParam);
-    std::vector<uptr<T>> lvl_img_alloc;
+
+    img_pyr.reserve(max_levels);
+
     // Create multi-scale image pyramid
     for (unsigned i = 0; i < max_levels; i++) {
         if (i == 0) {
             // First level is used in its original size
-            img_pyr[i].ptr = in.ptr;
-            for (int k = 0; k < 4; k++) {
-                img_pyr[i].dims[k] = in.dims[k];
-                img_pyr[i].strides[k] = in.strides[k];
-            }
+            img_pyr.push_back(in);
         }
         else {
             // Resize previous level image to current level dimensions
-          //TODO: Param<T> should use array assignment, not iteration
-            Param<T> lvl_img;
-            lvl_img.dims[0] = round(in.dims[0] / lvl_scl[i]);
-            lvl_img.dims[1] = round(in.dims[1] / lvl_scl[i]);
-            lvl_img.strides[0] = 1;
-            lvl_img.strides[1] = lvl_img.dims[0] * lvl_img.strides[0];
+            dim4 dims(round(indims[0] / lvl_scl[i]),
+                      round(indims[1] / lvl_scl[i]));
 
-            for (int k = 2; k < 4; k++) {
-                lvl_img.dims[k] = 1;
-                lvl_img.strides[k] = lvl_img.dims[k - 1] * lvl_img.strides[k - 1];
-            }
-
-            int lvl_elem = lvl_img.strides[3] * lvl_img.dims[3];
-            lvl_img_alloc.push_back(memAlloc<T>(lvl_elem));
-            lvl_img.ptr = lvl_img_alloc.back().get();
-
-            resize<T, AF_INTERP_BILINEAR>(lvl_img, img_pyr[i-1]);
-
-            img_pyr[i].ptr = lvl_img.ptr;
-            for (int k = 0; k < 4; k++) {
-                img_pyr[i].dims[k] = lvl_img.dims[k];
-                img_pyr[i].strides[k] = lvl_img.strides[k];
-            }
+            img_pyr.push_back(createEmptyArray<T>(dims));
+            resize<T, AF_INTERP_BILINEAR>(img_pyr[i], img_pyr[i-1]);
         }
     }
 
@@ -131,7 +109,7 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr,
              img_pyr[i], fast_thr, 9, 1, 0.15f, edge);
 
         // FAST score is not used
-        // TODO: should be handled by fast() 
+        // TODO: should be handled by fast()
         memFree(d_score_feat);
 
         if (lvl_feat == 0) {
@@ -144,10 +122,6 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr,
             d_x_pyr[i] = d_x_feat;
             d_y_pyr[i] = d_y_feat;
         }
-    }
-
-    for(auto& l : lvl_img_alloc){
-      l.release();
     }
 }
 

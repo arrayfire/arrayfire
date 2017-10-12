@@ -68,8 +68,9 @@ template<typename T>
 uptr<T>
 memAlloc(const size_t &elements)
 {
-    T *ptr = (T *)memoryManager().alloc(elements * sizeof(T), false);
-    return uptr<T>(ptr, memFree<T>);
+    size_t size = elements * sizeof(T);
+    return uptr<T>(static_cast<T*>(memoryManager().alloc(size, false)),
+                   memFree<T>);
 }
 
 void* memAllocUser(const size_t &bytes)
@@ -79,7 +80,7 @@ void* memAllocUser(const size_t &bytes)
 template<typename T>
 void memFree(T *ptr)
 {
-    return memoryManager().unlock((void *)ptr, false);
+    memoryManager().unlock((void *)ptr, false);
 }
 
 void memFreeUser(void *ptr)
@@ -126,11 +127,11 @@ bool checkMemoryLimit()
     return memoryManager().checkMemoryLimit();
 }
 
-#define INSTANTIATE(T)                                                                        \
-    template std::unique_ptr<T[], std::function<void(T *)>> memAlloc(const size_t &elements); \
-    template void memFree(T* ptr);                                                            \
-    template T* pinnedAlloc(const size_t &elements);                                          \
-    template void pinnedFree(T* ptr);                                                         \
+#define INSTANTIATE(T)                                 \
+    template uptr<T> memAlloc(const size_t &elements); \
+    template void memFree(T* ptr);                     \
+    template T* pinnedAlloc(const size_t &elements);   \
+    template void pinnedFree(T* ptr);
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)

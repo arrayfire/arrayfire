@@ -14,6 +14,10 @@
 
 namespace cpu
 {
+
+template<typename T>
+using uptr = std::unique_ptr<T[], std::function<void(T[])>>;
+
 template<typename T> std::unique_ptr<T[], std::function<void(T *)>> memAlloc(const size_t &elements);
 void *memAllocUser(const size_t &bytes);
 
