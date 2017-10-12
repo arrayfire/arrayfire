@@ -367,7 +367,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
 }
 
 template<typename T>
-void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
+void evalNodes(vector<Param<T>>& outputs, vector<Node *> output_nodes)
 {
     int num_outputs = (int)outputs.size();
 
@@ -470,7 +470,7 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
 }
 
 template<typename T>
-void evalNodes(Param<T> &out, Node *node)
+void evalNodes(Param<T> out, Node *node)
 {
     vector<Param<T>> outputs;
     vector<Node *> output_nodes;
@@ -481,18 +481,18 @@ void evalNodes(Param<T> &out, Node *node)
     return;
 }
 
-template void evalNodes<float  >(Param<float  > &out, Node *node);
-template void evalNodes<double >(Param<double > &out, Node *node);
-template void evalNodes<cfloat >(Param<cfloat > &out, Node *node);
-template void evalNodes<cdouble>(Param<cdouble> &out, Node *node);
-template void evalNodes<int    >(Param<int    > &out, Node *node);
-template void evalNodes<uint   >(Param<uint   > &out, Node *node);
-template void evalNodes<char   >(Param<char   > &out, Node *node);
-template void evalNodes<uchar  >(Param<uchar  > &out, Node *node);
-template void evalNodes<intl   >(Param<intl   > &out, Node *node);
-template void evalNodes<uintl  >(Param<uintl  > &out, Node *node);
-template void evalNodes<short  >(Param<short  > &out, Node *node);
-template void evalNodes<ushort >(Param<ushort > &out, Node *node);
+template void evalNodes<float  >(Param<float  > out, Node *node);
+template void evalNodes<double >(Param<double > out, Node *node);
+template void evalNodes<cfloat >(Param<cfloat > out, Node *node);
+template void evalNodes<cdouble>(Param<cdouble> out, Node *node);
+template void evalNodes<int    >(Param<int    > out, Node *node);
+template void evalNodes<uint   >(Param<uint   > out, Node *node);
+template void evalNodes<char   >(Param<char   > out, Node *node);
+template void evalNodes<uchar  >(Param<uchar  > out, Node *node);
+template void evalNodes<intl   >(Param<intl   > out, Node *node);
+template void evalNodes<uintl  >(Param<uintl  > out, Node *node);
+template void evalNodes<short  >(Param<short  > out, Node *node);
+template void evalNodes<ushort >(Param<ushort > out, Node *node);
 
 template void evalNodes<float  >(vector<Param<float  > > &out, vector<Node *> node);
 template void evalNodes<double >(vector<Param<double > > &out, vector<Node *> node);

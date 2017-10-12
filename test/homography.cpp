@@ -160,7 +160,7 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     t.host(out_t);
 
     for (int elIter = 0; elIter < 8; elIter++) {
-        ASSERT_LE(fabs(out_t[elIter] - gold_t[elIter]) / tDims[elIter & 1], 0.1f)
+        ASSERT_LE(fabs(out_t[elIter] - gold_t[elIter]) / tDims[elIter & 1], 0.25f)
             << "at: " << elIter << std::endl;
     }
 

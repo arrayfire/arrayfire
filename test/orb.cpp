@@ -229,14 +229,15 @@ void orbTest(string pTestFile)
     }
 }
 
-#define ORB_INIT(desc, image) \
-    TYPED_TEST(ORB, desc) \
-    {   \
-        orbTest<TypeParam>(string(TEST_DIR"/orb/"#image".test"));   \
-    }
+TYPED_TEST(ORB, Square)
+{
+  orbTest<TypeParam>(string(TEST_DIR"/orb/square.test"));
+}
 
-    ORB_INIT(square, square);
-    ORB_INIT(lena, lena);
+TYPED_TEST(ORB, Lena)
+{
+  orbTest<TypeParam>(string(TEST_DIR"/orb/lena.test"));
+}
 
 ///////////////////////////////////// CPP ////////////////////////////////
 //

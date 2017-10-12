@@ -171,30 +171,15 @@ void gaussian1D(T* out, const int dim, double sigma=0.0)
 }
 
 template<typename T>
-Param<T> gauss_filter(float sigma)
+Array<T> gauss_filter(float sigma)
 {
     // Using 6-sigma rule
     unsigned gauss_len = std::min((unsigned)round(sigma * 6 + 1) | 1, 31u);
 
-    T* h_gauss = new T[gauss_len];
-    gaussian1D(h_gauss, gauss_len, sigma);
-    Param<T> gauss_filter;
-    gauss_filter.dims[0] = gauss_len;
-    gauss_filter.strides[0] = 1;
+    std::vector<T> h_gauss(gauss_len);
+    gaussian1D(h_gauss.data(), gauss_len, sigma);
 
-    for (int k = 1; k < 4; k++) {
-        gauss_filter.dims[k] = 1;
-        gauss_filter.strides[k] = gauss_filter.dims[k-1] * gauss_filter.strides[k-1];
-    }
-
-    dim_t gauss_elem = gauss_filter.strides[3] * gauss_filter.dims[3];
-    gauss_filter.ptr = memAlloc<T>(gauss_elem);
-    CUDA_CHECK(cudaMemcpyAsync(gauss_filter.ptr, h_gauss, gauss_elem * sizeof(T),
-                cudaMemcpyHostToDevice, cuda::getActiveStream()));
-    CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
-
-    delete[] h_gauss;
-
+    Array<T> gauss_filter = createHostDataArray(dim4(gauss_len), h_gauss.data());
     return gauss_filter;
 }
 
@@ -1104,32 +1089,20 @@ __global__ void computeGLOHDescriptor(
 #undef IPTR
 
 template<typename T, typename convAccT>
-Param<T> createInitialImage(
+Array<T> createInitialImage(
     CParam<T> img,
     const float init_sigma,
     const bool double_input)
 {
-    Param<T> init_img, init_tmp;
-    init_img.dims[0] = init_tmp.dims[0] = (double_input) ? img.dims[0] * 2 : img.dims[0];
-    init_img.dims[1] = init_tmp.dims[1] = (double_input) ? img.dims[1] * 2 : img.dims[1];
-    init_img.strides[0] = init_tmp.strides[0] = 1;
-    init_img.strides[1] = init_tmp.strides[1] = init_img.dims[0];
-
-    for (int k = 2; k < 4; k++) {
-        init_img.dims[k] = 1;
-        init_img.strides[k] = init_img.dims[k-1] * init_img.strides[k-1];
-        init_tmp.dims[k] = 1;
-        init_tmp.strides[k] = init_tmp.dims[k-1] * init_tmp.strides[k-1];
-    }
-
-    dim_t init_img_el = init_img.strides[3] * init_img.dims[3];
-    init_img.ptr = memAlloc<T>(init_img_el);
-    init_tmp.ptr = memAlloc<T>(init_img_el);
+    dim4 dims((double_input) ? img.dims[0] * 2 : img.dims[0],
+              (double_input) ? img.dims[1] * 2 : img.dims[1]);
+    Array<T> init_img = createEmptyArray<T>(dims);
+    Array<T> init_tmp = createEmptyArray<T>(dims);
 
     float s = (double_input) ? std::max((float)sqrt(init_sigma * init_sigma - INIT_SIGMA * INIT_SIGMA * 4), 0.1f)
                              : std::max((float)sqrt(init_sigma * init_sigma - INIT_SIGMA * INIT_SIGMA), 0.1f);
 
-    Param<convAccT> filter = gauss_filter<convAccT>(s);
+    Array<convAccT> filter = gauss_filter<convAccT>(s);
 
     if (double_input) {
         resize<T, AF_INTERP_BILINEAR>(init_img, img);
@@ -1140,14 +1113,11 @@ Param<T> createInitialImage(
 
     convolve2<T, convAccT, 1, false>(init_img, CParam<T>(init_tmp), filter);
 
-    memFree(init_tmp.ptr);
-    memFree(filter.ptr);
-
     return init_img;
 }
 
 template<typename T, typename convAccT>
-std::vector< Param<T> > buildGaussPyr(
+std::vector< Array<T> > buildGaussPyr(
     Param<T> init_img,
     const unsigned n_octaves,
     const unsigned n_layers,
@@ -1165,111 +1135,66 @@ std::vector< Param<T> > buildGaussPyr(
     }
 
     // Gaussian Pyramid
-    std::vector<Param<T> > gauss_pyr(n_octaves);
-    std::vector<Param<T> > tmp_pyr(n_octaves * (n_layers+3));
+    std::vector<Array<T>> gauss_pyr;
+    std::vector<Array<T>> tmp_pyr;
+    gauss_pyr.reserve(n_octaves);
+    tmp_pyr.reserve(n_octaves * (n_layers+3));
     for (unsigned o = 0; o < n_octaves; o++) {
-        gauss_pyr[o].dims[0] = (o == 0) ? init_img.dims[0] : gauss_pyr[o-1].dims[0] / 2;
-        gauss_pyr[o].dims[1] = (o == 0) ? init_img.dims[1] : gauss_pyr[o-1].dims[1] / 2;
-        gauss_pyr[o].dims[2] = n_layers+3;
-        gauss_pyr[o].dims[3] = 1;
-
-        gauss_pyr[o].strides[0] = 1;
-        gauss_pyr[o].strides[1] = gauss_pyr[o].dims[0] * gauss_pyr[o].strides[0];
-        gauss_pyr[o].strides[2] = gauss_pyr[o].dims[1] * gauss_pyr[o].strides[1];
-        gauss_pyr[o].strides[3] = gauss_pyr[o].dims[2] * gauss_pyr[o].strides[2];
-
-        const unsigned nel = gauss_pyr[o].dims[3] * gauss_pyr[o].strides[3];
-        gauss_pyr[o].ptr = memAlloc<T>(nel);
+        gauss_pyr.push_back(createEmptyArray<T>({(o == 0) ? init_img.dims[0] : gauss_pyr[o-1].dims()[0] / 2,
+                                                (o == 0) ? init_img.dims[1] : gauss_pyr[o-1].dims()[1] / 2,
+                                                n_layers+3}));
 
         for (unsigned l = 0; l < n_layers+3; l++) {
             unsigned src_idx = (l == 0) ? (o-1)*(n_layers+3) + n_layers : o*(n_layers+3) + l-1;
             unsigned idx = o*(n_layers+3) + l;
 
             if (o == 0 && l == 0) {
-                for (int k = 0; k < 4; k++) {
-                    tmp_pyr[idx].dims[k] = init_img.dims[k];
-                    tmp_pyr[idx].strides[k] = init_img.strides[k];
-                }
-                tmp_pyr[idx].ptr = init_img.ptr;
+                tmp_pyr.push_back(createParamArray(init_img, false));
             }
             else if (l == 0) {
-                tmp_pyr[idx].dims[0] = tmp_pyr[src_idx].dims[0] / 2;
-                tmp_pyr[idx].dims[1] = tmp_pyr[src_idx].dims[1] / 2;
-                tmp_pyr[idx].strides[0] = 1;
-                tmp_pyr[idx].strides[1] = tmp_pyr[idx].dims[0];
-
-                for (int k = 2; k < 4; k++) {
-                    tmp_pyr[idx].dims[k] = 1;
-                    tmp_pyr[idx].strides[k] = tmp_pyr[idx].dims[k-1] * tmp_pyr[idx].strides[k-1];
-                }
-
-                dim_t lvl_el = tmp_pyr[idx].strides[3] * tmp_pyr[idx].dims[3];
-                tmp_pyr[idx].ptr = memAlloc<T>(lvl_el);
-
+                tmp_pyr.push_back(createEmptyArray<T>({ tmp_pyr[src_idx].dims()[0] / 2,
+                                                        tmp_pyr[src_idx].dims()[1] / 2}));
                 resize<T, AF_INTERP_BILINEAR>(tmp_pyr[idx], tmp_pyr[src_idx]);
             }
             else {
-                for (int k = 0; k < 4; k++) {
-                    tmp_pyr[idx].dims[k] = tmp_pyr[src_idx].dims[k];
-                    tmp_pyr[idx].strides[k] = tmp_pyr[src_idx].strides[k];
-                }
-                dim_t lvl_el = tmp_pyr[idx].strides[3] * tmp_pyr[idx].dims[3];
-                tmp_pyr[idx].ptr = memAlloc<T>(lvl_el);
-
-                Param<T> tmp;
-                for (int k = 0; k < 4; k++) {
-                    tmp.dims[k] = tmp_pyr[idx].dims[k];
-                    tmp.strides[k] = tmp_pyr[idx].strides[k];
-                }
-                tmp.ptr = memAlloc<T>(lvl_el);
-
-                Param<convAccT> filter = gauss_filter<convAccT>(sig_layers[l]);
-
-
+                tmp_pyr.push_back(createEmptyArray<T>(tmp_pyr[src_idx].dims()));
+                Array<T> tmp = createEmptyArray<T>(tmp_pyr[src_idx].dims());
+                Array<convAccT> filter = gauss_filter<convAccT>(sig_layers[l]);
 
                 convolve2<T, convAccT, 0, false>(tmp, tmp_pyr[src_idx], filter);
                 convolve2<T, convAccT, 1, false>(tmp_pyr[idx], CParam<T>(tmp), filter);
 
-                memFree(tmp.ptr);
-                memFree(filter.ptr);
+                //memFree(tmp.ptr);
             }
 
-            const unsigned imel = tmp_pyr[idx].dims[3] * tmp_pyr[idx].strides[3];
+            const unsigned imel = tmp_pyr[idx].elements();
             const unsigned offset = imel * l;
 
-            CUDA_CHECK(cudaMemcpyAsync(gauss_pyr[o].ptr + offset, tmp_pyr[idx].ptr,
+            CUDA_CHECK(cudaMemcpyAsync(gauss_pyr[o].get() + offset, tmp_pyr[idx].get(),
                         imel * sizeof(T), cudaMemcpyDeviceToDevice,
                         cuda::getActiveStream()));
         }
     }
-
-    for (unsigned o = 0; o < n_octaves; o++) {
-        for (unsigned l = 0; l < n_layers+3; l++) {
-            unsigned idx = o*(n_layers+3) + l;
-            memFree(tmp_pyr[idx].ptr);
-        }
-    }
-
     return gauss_pyr;
 }
 
 template<typename T>
-std::vector< Param<T> > buildDoGPyr(
-    std::vector< Param<T> >& gauss_pyr,
+std::vector< Array<T> > buildDoGPyr(
+    std::vector< Array<T> >& gauss_pyr,
     const unsigned n_octaves,
     const unsigned n_layers)
 {
     // DoG Pyramid
-    std::vector< Param<T> > dog_pyr(n_octaves);
+    std::vector< Array<T> > dog_pyr;
+    dog_pyr.reserve(n_octaves);
+
     for (unsigned o = 0; o < n_octaves; o++) {
-        for (int k = 0; k < 4; k++) {
-            dog_pyr[o].dims[k] = (k == 2) ? gauss_pyr[o].dims[k]-1 : gauss_pyr[o].dims[k];
-            dog_pyr[o].strides[k] = (k == 0) ? 1 : dog_pyr[o].dims[k-1] * dog_pyr[o].strides[k-1];
-        }
+        dog_pyr.push_back(createEmptyArray<T>({  gauss_pyr[o].dims()[0],
+                gauss_pyr[o].dims()[1],
+                gauss_pyr[o].dims()[2]-1,
+                gauss_pyr[o].dims()[3]}));
 
-        dog_pyr[o].ptr = memAlloc<T>(dog_pyr[o].dims[3] * dog_pyr[o].strides[3]);
-
-        const unsigned nel = dog_pyr[o].dims[1] * dog_pyr[o].strides[1];
+        const unsigned nel = dog_pyr[o].dims()[1] * dog_pyr[o].strides()[1];
         const unsigned dog_layers = n_layers+2;
 
         dim3 threads(SIFT_THREADS);
@@ -1329,19 +1254,19 @@ void sift(unsigned* out_feat,
 
     const unsigned n_octaves = floor(log(min_dim) / log(2)) - 2;
 
-    Param<T> init_img = createInitialImage<T, convAccT>(img, init_sigma, double_input);
+    Array<T> init_img = createInitialImage<T, convAccT>(img, init_sigma, double_input);
 
-    std::vector< Param<T> > gauss_pyr = buildGaussPyr<T, convAccT>(init_img, n_octaves, n_layers, init_sigma);
+    std::vector< Array<T> > gauss_pyr = buildGaussPyr<T, convAccT>(init_img, n_octaves, n_layers, init_sigma);
 
-    std::vector< Param<T> > dog_pyr = buildDoGPyr<T>(gauss_pyr, n_octaves, n_layers);
+    std::vector< Array<T> > dog_pyr = buildDoGPyr<T>(gauss_pyr, n_octaves, n_layers);
 
-    std::vector<float*> d_x_pyr(n_octaves, NULL);
-    std::vector<float*> d_y_pyr(n_octaves, NULL);
-    std::vector<float*> d_response_pyr(n_octaves, NULL);
-    std::vector<float*> d_size_pyr(n_octaves, NULL);
-    std::vector<float*> d_ori_pyr(n_octaves, NULL);
-    std::vector<float*> d_desc_pyr(n_octaves, NULL);
-    std::vector<unsigned> feat_pyr(n_octaves, 0);
+    std::vector<uptr<float>> d_x_pyr(n_octaves);
+    std::vector<uptr<float>> d_y_pyr(n_octaves);
+    std::vector<uptr<float>> d_response_pyr(n_octaves);
+    std::vector<uptr<float>> d_size_pyr(n_octaves);
+    std::vector<uptr<float>> d_ori_pyr(n_octaves);
+    std::vector<uptr<float>> d_desc_pyr(n_octaves);
+    std::vector<unsigned> feat_pyr(n_octaves);
     unsigned total_feat = 0;
 
     const unsigned d = DESCR_WIDTH;
@@ -1351,24 +1276,24 @@ void sift(unsigned* out_feat,
     const unsigned hb = GLOHHistBins;
     const unsigned desc_len = (compute_GLOH) ? (1 + (rb-1) * ab) * hb : d*d*n;
 
-    unsigned* d_count = memAlloc<unsigned>(1);
+    uptr<unsigned> d_count = memAlloc<unsigned>(1);
     for (unsigned i = 0; i < n_octaves; i++) {
-        if (dog_pyr[i].dims[0]-2*IMG_BORDER < 1 ||
-            dog_pyr[i].dims[1]-2*IMG_BORDER < 1)
+        if (dog_pyr[i].dims()[0]-2*IMG_BORDER < 1 ||
+            dog_pyr[i].dims()[1]-2*IMG_BORDER < 1)
             continue;
 
-        const unsigned imel = dog_pyr[i].dims[0] * dog_pyr[i].dims[1];
+        const unsigned imel = dog_pyr[i].dims()[0] * dog_pyr[i].dims()[1];
         const unsigned max_feat = ceil(imel * feature_ratio);
 
-        CUDA_CHECK(cudaMemsetAsync(d_count, 0, sizeof(unsigned),
+        CUDA_CHECK(cudaMemsetAsync(d_count.get(), 0, sizeof(unsigned),
                                    cuda::getActiveStream()));
 
-        float* d_extrema_x = memAlloc<float>(max_feat);
-        float* d_extrema_y = memAlloc<float>(max_feat);
-        unsigned* d_extrema_layer = memAlloc<unsigned>(max_feat);
+        uptr<float>    d_extrema_x = memAlloc<float>(max_feat);
+        uptr<float>    d_extrema_y = memAlloc<float>(max_feat);
+        uptr<unsigned> d_extrema_layer = memAlloc<unsigned>(max_feat);
 
-        int dim0 = dog_pyr[i].dims[0];
-        int dim1 = dog_pyr[i].dims[1];
+        int dim0 = dog_pyr[i].dims()[0];
+        int dim1 = dog_pyr[i].dims()[1];
 
         dim3 threads(SIFT_THREADS_X, SIFT_THREADS_Y);
         dim3 blocks(divup(dim0-2*IMG_BORDER, threads.x), divup(dim1-2*IMG_BORDER, threads.y));
@@ -1376,73 +1301,54 @@ void sift(unsigned* out_feat,
         float extrema_thr = 0.5f * contrast_thr / n_layers;
         const size_t extrema_shared_size = (threads.x+2) * (threads.y+2) * 3 * sizeof(float);
         CUDA_LAUNCH_SMEM((detectExtrema<T>), blocks, threads, extrema_shared_size,
-                         d_extrema_x, d_extrema_y, d_extrema_layer, d_count,
-                         CParam<T>(dog_pyr[i]), max_feat, extrema_thr);
+                          d_extrema_x.get(), d_extrema_y.get(), d_extrema_layer.get(), d_count.get(),
+                          dog_pyr[i], max_feat, extrema_thr);
         POST_LAUNCH_CHECK();
 
         unsigned extrema_feat = 0;
-        CUDA_CHECK(cudaMemcpyAsync(&extrema_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost,
+        CUDA_CHECK(cudaMemcpyAsync(&extrema_feat, d_count.get(), sizeof(unsigned), cudaMemcpyDeviceToHost,
                     cuda::getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         extrema_feat = min(extrema_feat, max_feat);
 
-        if (extrema_feat == 0) {
-            memFree(d_extrema_x);
-            memFree(d_extrema_y);
-            memFree(d_extrema_layer);
+        if (extrema_feat == 0) { continue; }
 
-            continue;
-        }
+        CUDA_CHECK(cudaMemsetAsync(d_count.get(), 0, sizeof(unsigned),
+                                  cuda::getActiveStream()));
 
-        CUDA_CHECK(cudaMemsetAsync(d_count, 0, sizeof(unsigned),
-                                   cuda::getActiveStream()));
-
-        unsigned interp_feat = 0;
-
-        float* d_interp_x = memAlloc<float>(extrema_feat);
-        float* d_interp_y = memAlloc<float>(extrema_feat);
-        unsigned* d_interp_layer = memAlloc<unsigned>(extrema_feat);
-        float* d_interp_response = memAlloc<float>(extrema_feat);
-        float* d_interp_size = memAlloc<float>(extrema_feat);
+        auto d_interp_x = memAlloc<float>(extrema_feat);
+        auto d_interp_y = memAlloc<float>(extrema_feat);
+        auto d_interp_layer = memAlloc<unsigned>(extrema_feat);
+        auto d_interp_response = memAlloc<float>(extrema_feat);
+        auto d_interp_size = memAlloc<float>(extrema_feat);
 
         threads = dim3(SIFT_THREADS, 1);
         blocks = dim3(divup(extrema_feat, threads.x), 1);
 
         CUDA_LAUNCH((interpolateExtrema<T>), blocks, threads,
-                    d_interp_x, d_interp_y, d_interp_layer,
-                    d_interp_response, d_interp_size, d_count,
-                    d_extrema_x, d_extrema_y, d_extrema_layer, extrema_feat,
+                    d_interp_x.get(), d_interp_y.get(), d_interp_layer.get(),
+                    d_interp_response.get(), d_interp_size.get(), d_count.get(),
+                    d_extrema_x.get(), d_extrema_y.get(), d_extrema_layer.get(), extrema_feat,
                     dog_pyr[i], max_feat, i, n_layers,
                     contrast_thr, edge_thr, init_sigma, img_scale);
         POST_LAUNCH_CHECK();
 
-        memFree(d_extrema_x);
-        memFree(d_extrema_y);
-        memFree(d_extrema_layer);
-
-        CUDA_CHECK(cudaMemcpyAsync(&interp_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost,
+        unsigned interp_feat = 0;
+        CUDA_CHECK(cudaMemcpyAsync(&interp_feat, d_count.get(), sizeof(unsigned), cudaMemcpyDeviceToHost,
                     cuda::getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         interp_feat = min(interp_feat, max_feat);
 
-        CUDA_CHECK(cudaMemsetAsync(d_count, 0, sizeof(unsigned),
+        CUDA_CHECK(cudaMemsetAsync(d_count.get(), 0, sizeof(unsigned),
                                    cuda::getActiveStream()));
 
-        if (interp_feat == 0) {
-            memFree(d_interp_x);
-            memFree(d_interp_y);
-            memFree(d_interp_layer);
-            memFree(d_interp_response);
-            memFree(d_interp_size);
+        if (interp_feat == 0) {continue;}
 
-            continue;
-        }
-
-        thrust::device_ptr<float> interp_x_ptr = thrust::device_pointer_cast(d_interp_x);
-        thrust::device_ptr<float> interp_y_ptr = thrust::device_pointer_cast(d_interp_y);
-        thrust::device_ptr<unsigned> interp_layer_ptr = thrust::device_pointer_cast(d_interp_layer);
-        thrust::device_ptr<float> interp_response_ptr = thrust::device_pointer_cast(d_interp_response);
-        thrust::device_ptr<float> interp_size_ptr = thrust::device_pointer_cast(d_interp_size);
+        thrust::device_ptr<float> interp_x_ptr = thrust::device_pointer_cast(d_interp_x.get());
+        thrust::device_ptr<float> interp_y_ptr = thrust::device_pointer_cast(d_interp_y.get());
+        thrust::device_ptr<unsigned> interp_layer_ptr = thrust::device_pointer_cast(d_interp_layer.get());
+        thrust::device_ptr<float> interp_response_ptr = thrust::device_pointer_cast(d_interp_response.get());
+        thrust::device_ptr<float> interp_size_ptr = thrust::device_pointer_cast(d_interp_size.get());
 
         cuda::ThrustVector<int> permutation(interp_feat);
         thrust::sequence(permutation.begin(), permutation.end());
@@ -1459,80 +1365,59 @@ void sift(unsigned* out_feat,
         apply_permutation<float>(interp_y_ptr, permutation);
         apply_permutation<float>(interp_x_ptr, permutation);
 
-        float* d_nodup_x = memAlloc<float>(interp_feat);
-        float* d_nodup_y = memAlloc<float>(interp_feat);
-        unsigned* d_nodup_layer = memAlloc<unsigned>(interp_feat);
-        float* d_nodup_response = memAlloc<float>(interp_feat);
-        float* d_nodup_size = memAlloc<float>(interp_feat);
+        auto d_nodup_x = memAlloc<float>(interp_feat);
+        auto d_nodup_y = memAlloc<float>(interp_feat);
+        auto d_nodup_layer = memAlloc<unsigned>(interp_feat);
+        auto d_nodup_response = memAlloc<float>(interp_feat);
+        auto d_nodup_size = memAlloc<float>(interp_feat);
 
         threads = dim3(SIFT_THREADS, 1);
         blocks = dim3(divup(interp_feat, threads.x), 1);
 
         CUDA_LAUNCH((removeDuplicates), blocks, threads,
-                    d_nodup_x, d_nodup_y, d_nodup_layer,
-                    d_nodup_response, d_nodup_size, d_count,
-                    d_interp_x, d_interp_y, d_interp_layer,
-                    d_interp_response, d_interp_size, interp_feat);
+                    d_nodup_x.get(), d_nodup_y.get(), d_nodup_layer.get(),
+                    d_nodup_response.get(), d_nodup_size.get(), d_count.get(),
+                    d_interp_x.get(), d_interp_y.get(), d_interp_layer.get(),
+                    d_interp_response.get(), d_interp_size.get(), interp_feat);
         POST_LAUNCH_CHECK();
 
-        memFree(d_interp_x);
-        memFree(d_interp_y);
-        memFree(d_interp_layer);
-        memFree(d_interp_response);
-        memFree(d_interp_size);
-
         unsigned nodup_feat = 0;
-        CUDA_CHECK(cudaMemcpyAsync(&nodup_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost,
+        CUDA_CHECK(cudaMemcpyAsync(&nodup_feat, d_count.get(), sizeof(unsigned), cudaMemcpyDeviceToHost,
                     cuda::getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
-        CUDA_CHECK(cudaMemsetAsync(d_count, 0, sizeof(unsigned),
+        CUDA_CHECK(cudaMemsetAsync(d_count.get(), 0, sizeof(unsigned),
                                    cuda::getActiveStream()));
 
         const unsigned max_oriented_feat = nodup_feat * 3;
 
-        float* d_oriented_x = memAlloc<float>(max_oriented_feat);
-        float* d_oriented_y = memAlloc<float>(max_oriented_feat);
-        unsigned* d_oriented_layer = memAlloc<unsigned>(max_oriented_feat);
-        float* d_oriented_response = memAlloc<float>(max_oriented_feat);
-        float* d_oriented_size = memAlloc<float>(max_oriented_feat);
-        float* d_oriented_ori = memAlloc<float>(max_oriented_feat);
+        auto d_oriented_x = memAlloc<float>(max_oriented_feat);
+        auto d_oriented_y = memAlloc<float>(max_oriented_feat);
+        auto d_oriented_layer = memAlloc<unsigned>(max_oriented_feat);
+        auto d_oriented_response = memAlloc<float>(max_oriented_feat);
+        auto d_oriented_size = memAlloc<float>(max_oriented_feat);
+        auto d_oriented_ori = memAlloc<float>(max_oriented_feat);
 
         threads = dim3(SIFT_THREADS_X, SIFT_THREADS_Y);
         blocks = dim3(1, divup(nodup_feat, threads.y));
 
         const size_t ori_shared_size = ORI_HIST_BINS * threads.y * 2 * sizeof(float);
         CUDA_LAUNCH_SMEM((calcOrientation<T>), blocks, threads, ori_shared_size,
-                         d_oriented_x, d_oriented_y, d_oriented_layer,
-                         d_oriented_response, d_oriented_size, d_oriented_ori, d_count,
-                         d_nodup_x, d_nodup_y, d_nodup_layer,
-                         d_nodup_response, d_nodup_size, nodup_feat,
-                         gauss_pyr[i], max_oriented_feat, i, double_input);
+                         d_oriented_x.get(), d_oriented_y.get(), d_oriented_layer.get(),
+                         d_oriented_response.get(), d_oriented_size.get(), d_oriented_ori.get(), d_count.get(),
+                         d_nodup_x.get(), d_nodup_y.get(), d_nodup_layer.get(),
+                         d_nodup_response.get(), d_nodup_size.get(), nodup_feat,
+                         CParam<T>(gauss_pyr[i]), max_oriented_feat, i, double_input);
         POST_LAUNCH_CHECK();
 
-        memFree(d_nodup_x);
-        memFree(d_nodup_y);
-        memFree(d_nodup_layer);
-        memFree(d_nodup_response);
-        memFree(d_nodup_size);
-
         unsigned oriented_feat = 0;
-        CUDA_CHECK(cudaMemcpyAsync(&oriented_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost,
+        CUDA_CHECK(cudaMemcpyAsync(&oriented_feat, d_count.get(), sizeof(unsigned), cudaMemcpyDeviceToHost,
                     cuda::getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         oriented_feat = min(oriented_feat, max_oriented_feat);
 
-        if (oriented_feat == 0) {
-            memFree(d_oriented_x);
-            memFree(d_oriented_y);
-            memFree(d_oriented_layer);
-            memFree(d_oriented_response);
-            memFree(d_oriented_size);
-            memFree(d_oriented_ori);
+        if (oriented_feat == 0) { continue; }
 
-            continue;
-        }
-
-        float* d_desc = memAlloc<float>(oriented_feat * desc_len);
+        auto d_desc = memAlloc<float>(oriented_feat * desc_len);
 
         float scale = 1.f/(1 << i);
         if (double_input) scale *= 2.f;
@@ -1545,73 +1430,59 @@ void sift(unsigned* out_feat,
 
         if (compute_GLOH)
             CUDA_LAUNCH_SMEM((computeGLOHDescriptor<T>), blocks, threads, shared_size,
-                             d_desc, desc_len, histsz,
-                             d_oriented_x, d_oriented_y, d_oriented_layer,
-                             d_oriented_response, d_oriented_size, d_oriented_ori,
+                             d_desc.get(), desc_len, histsz,
+                             d_oriented_x.get(), d_oriented_y.get(), d_oriented_layer.get(),
+                             d_oriented_response.get(), d_oriented_size.get(), d_oriented_ori.get(),
                              oriented_feat, gauss_pyr[i], d, rb, ab, hb,
                              scale, n_layers);
         else
             CUDA_LAUNCH_SMEM((computeDescriptor<T>), blocks, threads, shared_size,
-                             d_desc, desc_len, histsz,
-                             d_oriented_x, d_oriented_y, d_oriented_layer,
-                             d_oriented_response, d_oriented_size, d_oriented_ori,
-                             oriented_feat, gauss_pyr[i], d, n, scale, n_layers);
+                             d_desc.get(), desc_len, histsz,
+                             d_oriented_x.get(), d_oriented_y.get(), d_oriented_layer.get(),
+                             d_oriented_response.get(), d_oriented_size.get(), d_oriented_ori.get(),
+                             oriented_feat, CParam<T>(gauss_pyr[i]), d, n, scale, n_layers);
         POST_LAUNCH_CHECK();
 
         total_feat += oriented_feat;
         feat_pyr[i] = oriented_feat;
 
         if (oriented_feat > 0) {
-            d_x_pyr[i] = d_oriented_x;
-            d_y_pyr[i] = d_oriented_y;
-            d_response_pyr[i] = d_oriented_response;
-            d_ori_pyr[i] = d_oriented_ori;
-            d_size_pyr[i] = d_oriented_size;
-            d_desc_pyr[i] = d_desc;
+            d_x_pyr[i] = std::move(d_oriented_x);
+            d_y_pyr[i] = std::move(d_oriented_y);
+            d_response_pyr[i] = std::move(d_oriented_response);
+            d_ori_pyr[i] = std::move(d_oriented_ori);
+            d_size_pyr[i] = std::move(d_oriented_size);
+            d_desc_pyr[i] = std::move(d_desc);
         }
     }
 
-    memFree(d_count);
-
-    for (size_t i = 0; i < gauss_pyr.size(); i++)
-        memFree(gauss_pyr[i].ptr);
-    for (size_t i = 0; i < dog_pyr.size(); i++)
-        memFree(dog_pyr[i].ptr);
-
     // Allocate output memory
-    *d_x     = memAlloc<float>(total_feat);
-    *d_y     = memAlloc<float>(total_feat);
-    *d_score = memAlloc<float>(total_feat);
-    *d_ori   = memAlloc<float>(total_feat);
-    *d_size  = memAlloc<float>(total_feat);
-    *d_desc  = memAlloc<float>(total_feat * desc_len);
+    *d_x     = memAlloc<float>(total_feat).release();
+    *d_y     = memAlloc<float>(total_feat).release();
+    *d_score = memAlloc<float>(total_feat).release();
+    *d_ori   = memAlloc<float>(total_feat).release();
+    *d_size  = memAlloc<float>(total_feat).release();
+    *d_desc  = memAlloc<float>(total_feat * desc_len).release();
 
     unsigned offset = 0;
     for (unsigned i = 0; i < n_octaves; i++) {
         if (feat_pyr[i] == 0)
             continue;
 
-        CUDA_CHECK(cudaMemcpyAsync(*d_x+offset, d_x_pyr[i], feat_pyr[i] * sizeof(float),
+        CUDA_CHECK(cudaMemcpyAsync(*d_x+offset, d_x_pyr[i].get(), feat_pyr[i] * sizeof(float),
                     cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
-        CUDA_CHECK(cudaMemcpyAsync(*d_y+offset, d_y_pyr[i], feat_pyr[i] * sizeof(float),
+        CUDA_CHECK(cudaMemcpyAsync(*d_y+offset, d_y_pyr[i].get(), feat_pyr[i] * sizeof(float),
                     cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
-        CUDA_CHECK(cudaMemcpyAsync(*d_score+offset, d_response_pyr[i], feat_pyr[i] * sizeof(float),
+        CUDA_CHECK(cudaMemcpyAsync(*d_score+offset, d_response_pyr[i].get(), feat_pyr[i] * sizeof(float),
                     cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
-        CUDA_CHECK(cudaMemcpyAsync(*d_ori+offset, d_ori_pyr[i], feat_pyr[i] * sizeof(float),
+        CUDA_CHECK(cudaMemcpyAsync(*d_ori+offset, d_ori_pyr[i].get(), feat_pyr[i] * sizeof(float),
                     cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
-        CUDA_CHECK(cudaMemcpyAsync(*d_size+offset, d_size_pyr[i], feat_pyr[i] * sizeof(float),
+        CUDA_CHECK(cudaMemcpyAsync(*d_size+offset, d_size_pyr[i].get(), feat_pyr[i] * sizeof(float),
                     cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
 
-        CUDA_CHECK(cudaMemcpyAsync(*d_desc+(offset*desc_len), d_desc_pyr[i],
+        CUDA_CHECK(cudaMemcpyAsync(*d_desc+(offset*desc_len), d_desc_pyr[i].get(),
                     feat_pyr[i] * desc_len * sizeof(float),
                     cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
-
-        memFree(d_x_pyr[i]);
-        memFree(d_y_pyr[i]);
-        memFree(d_response_pyr[i]);
-        memFree(d_ori_pyr[i]);
-        memFree(d_size_pyr[i]);
-        memFree(d_desc_pyr[i]);
 
         offset += feat_pyr[i];
     }

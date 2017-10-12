@@ -28,7 +28,7 @@ namespace cuda
     template<typename T> class Array;
 
     template<typename T>
-    void evalNodes(Param<T> &out, JIT::Node *node);
+    void evalNodes(Param<T> out, JIT::Node *node);
 
     template<typename T>
     void evalNodes(std::vector<Param<T> > &out, std::vector<JIT::Node *> nodes);
@@ -36,15 +36,12 @@ namespace cuda
     template<typename T>
     void evalMultiple(std::vector<Array<T> *> arrays);
 
-    // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T> createNodeArray(const af::dim4 &size, JIT::Node_ptr node);
 
-    // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T> createValueArray(const af::dim4 &size, const T& value);
 
-    // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T> createHostDataArray(const af::dim4 &size, const T * const data);
 
