@@ -111,6 +111,14 @@ endfunction()
 
 arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
 
+if(BUILD_NONFREE AND CMAKE_VERSION VERSION_LESS "3.7")
+  # This definition is required in addition to the definition below because in
+  # an older verion of cmake definitions added using target_compile_definitions
+  # were not added to the nvcc flags. This manually adds these definitions and
+  # pass them to the options parameter in cuda_add_library
+  string(APPEND cuda_cxx_flags " -DAF_BUILD_NONFREE_SIFT")
+endif()
+
 include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/thrust_sort_by_key/CMakeLists.txt)
 
@@ -393,7 +401,6 @@ add_library(ArrayFire::afcuda ALIAS afcuda)
 if(BUILD_NONFREE)
   target_compile_definitions(afcuda PRIVATE AF_BUILD_NONFREE_SIFT)
 endif()
-
 
 if(BUILD_GRAPHICS)
   target_sources(afcuda
