@@ -207,42 +207,47 @@ foreach(backend CPU CUDA OpenCL Unified)
     install(EXPORT ArrayFire${backend}Targets
             NAMESPACE ArrayFire::
             DESTINATION ${AF_INSTALL_CMAKE_DIR}
-            COMPONENT cmake
-        )
+            COMPONENT cmake)
 
     export( EXPORT ArrayFire${backend}Targets
             NAMESPACE ArrayFire::
-            FILE ArrayFire${backend}Targets.cmake
-            )
+            FILE cmake/ArrayFire${backend}Targets.cmake)
   endif()
 endforeach()
 
-set(INCLUDE_DIR include)
-
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfigVersion.cmake"
+  "${ArrayFire_BINARY_DIR}/cmake/ArrayFireConfigVersion.cmake"
   COMPATIBILITY SameMajorVersion
 )
 
+# This config file will be installed so we need to set the install_destination
+# path relitive to the install path
+set(INCLUDE_DIRS include)
+set(CMAKE_DIR ${AF_INSTALL_CMAKE_DIR})
 configure_package_config_file(
   ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
-  ArrayFireInstallConfig/ArrayFireConfig.cmake
+  cmake/install/ArrayFireConfig.cmake
   INSTALL_DESTINATION "${AF_INSTALL_CMAKE_DIR}"
-  PATH_VARS INCLUDE_DIR AF_INSTALL_CMAKE_DIR
+  PATH_VARS INCLUDE_DIRS CMAKE_DIR
   )
 
-install(FILES ${ArrayFire_BINARY_DIR}/ArrayFireInstallConfig/ArrayFireConfig.cmake
-              ${ArrayFire_BINARY_DIR}/ArrayFireConfigVersion.cmake
+install(FILES ${ArrayFire_BINARY_DIR}/cmake/install/ArrayFireConfig.cmake
+              ${ArrayFire_BINARY_DIR}/cmake/ArrayFireConfigVersion.cmake
               DESTINATION ${AF_INSTALL_CMAKE_DIR}
               COMPONENT cmake)
 
-set(AF_INSTALL_CMAKE_DIR "${ArrayFire_BINARY_DIR}")
+
+# This file will be used to create the config file for the build directory.
+# These config files will be used by the examples to find the ArrayFire
+# libraries
+set(INCLUDE_DIRS "${ArrayFire_SOURCE_DIR}/include" "${ArrayFire_BINARY_DIR}/include")
+set(CMAKE_DIR "${ArrayFire_BINARY_DIR}/cmake")
 configure_package_config_file(
   ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
-  ${ArrayFire_BINARY_DIR}/ArrayFireConfig.cmake
-  INSTALL_DESTINATION "${ArrayFire_BINARY_DIR}"
-  PATH_VARS INCLUDE_DIR AF_INSTALL_CMAKE_DIR
+  cmake/ArrayFireConfig.cmake
+  INSTALL_DESTINATION "${ArrayFire_BINARY_DIR}/cmake"
+  PATH_VARS INCLUDE_DIRS CMAKE_DIR
   INSTALL_PREFIX "${ArrayFire_BINARY_DIR}"
   )
 

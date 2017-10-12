@@ -29,7 +29,7 @@ endif()
 endfunction()
 
 macro(arrayfire_set_cmake_default_variables)
-  set(CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}prefix;${CMAKE_PREFIX_PATH}")
+  set(CMAKE_PREFIX_PATH "${ArrayFire_BINARY_DIR}/cmake;${CMAKE_PREFIX_PATH}")
   set(BUILD_SHARED_LIBS ON)
 
   set(CMAKE_CXX_STANDARD 11)
@@ -97,10 +97,7 @@ macro(arrayfire_set_cmake_default_variables)
   endif()
 
   if(APPLE)
-    # Brew does not put the glbinding cmake config files where it can be found
-    # TODO(umar) check if other systems have a similar problem
-    set(CMAKE_PREFIX_PATH "/usr/local/opt/glbinding;${CMAKE_PREFIX_PATH}")
-    # TODO(umar) Remove rpath to third_part lib
+    # TODO(umar) Remove rpath to third_party lib
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_LIB_DIR};${ArrayFire_BINARY_DIR}/third_party/forge/lib")
   endif()
 endmacro()

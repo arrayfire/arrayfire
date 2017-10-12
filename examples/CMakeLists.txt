@@ -46,12 +46,6 @@ function(target_compile_definitions target access definitions)
   _target_compile_definitions(example_${target} ${access} ${definitions})
 endfunction()
 
-function(find_package args)
-  if(NOT (TARGET ArrayFire::afcpu OR TARGET ArrayFire::afcuda OR TARGET ArrayFire::afopencl OR TARGET ArrayFire::af))
-    _find_package(args)
-  endif()
-endfunction()
-
 add_subdirectory(benchmarks)
 add_subdirectory(computer_vision)
 add_subdirectory(financial)
