@@ -50,7 +50,7 @@
 
 @PACKAGE_INIT@
 
-set_and_check(ArrayFire_INCLUDE_DIRS @PACKAGE_INCLUDE_DIR@)
+set_and_check(ArrayFire_INCLUDE_DIRS @PACKAGE_INCLUDE_DIRS@)
 
 foreach(backend Unified CPU OpenCL CUDA)
   if(backend STREQUAL "Unified")
@@ -59,8 +59,8 @@ foreach(backend Unified CPU OpenCL CUDA)
     string(TOLOWER "${backend}" lowerbackend)
   endif()
   if(NOT TARGET ArrayFire::af${lowerbackend})
-    if(EXISTS @PACKAGE_AF_INSTALL_CMAKE_DIR@/ArrayFire${backend}Targets.cmake)
-      include(@PACKAGE_AF_INSTALL_CMAKE_DIR@/ArrayFire${backend}Targets.cmake)
+    if(EXISTS @PACKAGE_CMAKE_DIR@/ArrayFire${backend}Targets.cmake)
+      include(@PACKAGE_CMAKE_DIR@/ArrayFire${backend}Targets.cmake)
     endif()
   endif()
 
