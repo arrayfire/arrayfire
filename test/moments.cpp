@@ -52,7 +52,7 @@ void momentsTest(string pTestFile)
     af::array imgArray(numDims.front(), &in.front()[0]);
 
     af::array momentsArray = af::moments(imgArray, AF_MOMENT_M00);
-    vector<T> mData(momentsArray.elements());
+    vector<float> mData(momentsArray.elements());
     momentsArray.host(&mData[0]);
     for(int i=0; i<momentsArray.elements();++i) {
         ASSERT_NEAR(tests[0][i], mData[i], 4e-3 * tests[0][i] ) << "at: " << i << std::endl;
