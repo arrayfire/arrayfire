@@ -62,7 +62,7 @@ include(CMakeParseArguments)
 function(make_test)
   set(options CXX11)
   set(single_args SRC)
-  set(multi_args LIBRARIES)
+  set(multi_args LIBRARIES DEFINITIONS)
   cmake_parse_arguments(mt_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
 
   get_filename_component(src_name ${mt_args_SRC} NAME_WE)
@@ -108,6 +108,7 @@ function(make_test)
       PRIVATE
         TEST_DIR="${TESTDATA_SOURCE_DIR}"
         AF_$<UPPER_CASE:${backend}>
+        ${mt_args_DEFINITIONS}
       )
     if(WIN32)
       target_compile_definitions(${target}
@@ -162,7 +163,6 @@ make_test(SRC gen_assign.cpp)
 make_test(SRC gen_index.cpp)
 make_test(SRC getting_started.cpp)
 make_test(SRC gfor.cpp)
-make_test(SRC gloh_nonfree.cpp)
 make_test(SRC gradient.cpp)
 make_test(SRC gray_rgb.cpp)
 make_test(SRC hamming.cpp)
@@ -201,7 +201,7 @@ make_test(SRC nearest_neighbour.cpp)
 if(OpenCL_FOUND)
   make_test(SRC ocl_ext_context.cpp
             LIBRARIES OpenCL::OpenCL)
-endif(OpenCL_FOUND)
+endif()
 
 make_test(SRC orb.cpp)
 make_test(SRC qr_dense.cpp)
@@ -221,7 +221,12 @@ make_test(SRC scan_by_key.cpp)
 make_test(SRC select.cpp)
 make_test(SRC set.cpp)
 make_test(SRC shift.cpp)
-make_test(SRC sift_nonfree.cpp)
+
+if(BUILD_NONFREE)
+  make_test(SRC gloh_nonfree.cpp DEFINITIONS AF_BUILD_NONFREE_SIFT)
+  make_test(SRC sift_nonfree.cpp DEFINITIONS AF_BUILD_NONFREE_SIFT)
+endif()
+
 make_test(SRC sobel.cpp)
 make_test(SRC solve_dense.cpp        CXX11)
 make_test(SRC sort.cpp)
