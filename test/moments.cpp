@@ -52,7 +52,7 @@ void momentsTest(string pTestFile)
     af::array imgArray(numDims.front(), &in.front()[0]);
 
     af::array momentsArray = af::moments(imgArray, AF_MOMENT_M00);
-    vector<T> mData(momentsArray.elements());
+    vector<float> mData(momentsArray.elements());
     momentsArray.host(&mData[0]);
     for(int i=0; i<momentsArray.elements();++i) {
         ASSERT_NEAR(tests[0][i], mData[i], 4e-3 * tests[0][i] ) << "at: " << i << std::endl;
@@ -160,4 +160,11 @@ TYPED_TEST(Image, MomentsSynthTypes)
     momentsTest<TypeParam>(string(TEST_DIR"/moments/simple_mat_moments.test"));
 }
 
+TEST(Image, Moment_Issue1957)
+{
+    af::array A = af::identity(3, 3, b8);
 
+    double m00;
+    af::moments(&m00, A, AF_MOMENT_M00);
+    ASSERT_EQ(m00, 3);
+}
