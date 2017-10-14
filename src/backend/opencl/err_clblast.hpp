@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <err_common.hpp>
 #include <clblast.h>
+#include <mutex>
 
 static const char * _clblastGetResultString(clblast::StatusCode st)
 {
