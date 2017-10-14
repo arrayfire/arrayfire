@@ -8,12 +8,12 @@
 include(ExternalProject)
 
 set(prefix ${PROJECT_BINARY_DIR}/third_party/CLBlast)
-set(CLBlast_location ${prefix}/${CMAKE_STATIC_LIBRARY_PREFIX}/libclblast${CMAKE_STATIC_LIBRARY_SUFFIX})
+set(CLBlast_location ${prefix}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}clblast${CMAKE_STATIC_LIBRARY_SUFFIX})
 
 ExternalProject_Add(
     CLBlast-ext
     GIT_REPOSITORY https://github.com/cnugteren/CLBlast.git
-    GIT_TAG 1.1.0
+    GIT_TAG 48133a0cd1a7b61b87906ec1f4608e766e20a973
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
@@ -21,6 +21,7 @@ ExternalProject_Add(
     CONFIGURE_COMMAND ${CMAKE_COMMAND} "-G${CMAKE_GENERATOR}" -Wno-dev <SOURCE_DIR>/
       -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
       "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} -w -fPIC"
+      -DOVERRIDE_MSVC_FLAGS_TO_MT:BOOL=OFF
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} -w -fPIC"
       -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
