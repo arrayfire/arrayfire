@@ -17,6 +17,7 @@
 #include <cassert>
 #include <math.hpp>
 #include <common/err_common.hpp>
+#include <err_cuda.hpp>
 #include <cublas.hpp>
 #include <arith.hpp>
 #include <reduce.hpp>
@@ -47,6 +48,18 @@ struct gemm_func_def_t
                                                 const T *,  const T *, int,
                                                             const T *, int,
                                                 const T *,        T *, int);
+};
+
+template<typename T>
+struct gemmBatched_func_def_t
+{
+    typedef cublasStatus_t (*gemmBatched_func_def)(    cublasHandle_t,
+                                                       cublasOperation_t, cublasOperation_t,
+                                                       int, int, int,
+                                                       const T *,  const T **, int,
+                                                       const T **, int,
+                                                       const T *,        T **, int,
+                                                       int);
 };
 
 template<typename T>
@@ -87,6 +100,12 @@ BLAS_FUNC(gemm, float,  S)
 BLAS_FUNC(gemm, cfloat, C)
 BLAS_FUNC(gemm, double, D)
 BLAS_FUNC(gemm, cdouble,Z)
+
+BLAS_FUNC_DEF(gemmBatched)
+BLAS_FUNC(gemmBatched, float,  S)
+BLAS_FUNC(gemmBatched, cfloat, C)
+BLAS_FUNC(gemmBatched, double, D)
+BLAS_FUNC(gemmBatched, cdouble,Z)
 
 BLAS_FUNC_DEF(gemv)
 BLAS_FUNC(gemv, float,  S)
@@ -162,37 +181,101 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     int N = rDims[bColDim];
     int K = lDims[aColDim];
 
-    Array<T> out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
+    dim_t d2 = std::max(lDims[2], rDims[2]);
+    dim_t d3 = std::max(lDims[3], rDims[3]);
+    dim4 oDims = dim4(M, N, d2, d3);
+    Array<T> out = createEmptyArray<T>(oDims);
+
     T alpha = scalar<T>(1);
     T beta  = scalar<T>(0);
 
     dim4 lStrides = lhs.strides();
     dim4 rStrides = rhs.strides();
-    if(rDims[bColDim] == 1) {
-        N = lDims[aColDim];
-        dim_t incr = (rOpts == CUBLAS_OP_N) ? rStrides[0] : rStrides[1];
-        CUBLAS_CHECK(gemv_func<T>()(
-                         blasHandle(),
-                         lOpts,
-                         lDims[0],
-                         lDims[1],
-                         &alpha,
-                         lhs.get(), lStrides[1],
-                         rhs.get(), incr,
-                         &beta,
-                         out.get(), 1));
+    dim4 oStrides = out.strides();
+
+    if (oDims.ndims() <= 2) {
+        if(rDims[bColDim] == 1) {
+            dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
+            N = lDims[aColDim];
+            CUBLAS_CHECK(gemv_func<T>()(
+                             blasHandle(),
+                             lOpts,
+                             lDims[0],
+                             lDims[1],
+                             &alpha,
+                             lhs.get(), lStrides[1],
+                             rhs.get(), incr,
+                             &beta,
+                             out.get(), 1));
+        } else {
+            CUBLAS_CHECK(gemm_func<T>()(
+                             blasHandle(),
+                             lOpts,
+                             rOpts,
+                             M, N, K,
+                             &alpha,
+                             lhs.get(), lStrides[1],
+                             rhs.get(), rStrides[1],
+                             &beta,
+                             out.get(),
+                             oDims[0]));
+        }
     } else {
-        CUBLAS_CHECK(gemm_func<T>()(
+        int batchSize = oDims[2] * oDims[3];
+        std::vector<const T *> lptrs(batchSize);
+        std::vector<const T *> rptrs(batchSize);
+        std::vector<T *> optrs(batchSize);
+
+        bool is_l_d2_batched = oDims[2] == lDims[2];
+        bool is_l_d3_batched = oDims[3] == lDims[3];
+
+        bool is_r_d2_batched = oDims[2] == rDims[2];
+        bool is_r_d3_batched = oDims[3] == rDims[3];
+
+        const T *lptr = lhs.get();
+        const T *rptr = rhs.get();
+        T *optr = out.get();
+
+        for (int n = 0; n < batchSize; n++) {
+            int w = n / oDims[2];
+            int z = n - w * oDims[2];
+            int loff = z * (is_l_d2_batched * lStrides[2]) + w * (is_l_d3_batched * lStrides[3]);
+            int roff = z * (is_r_d2_batched * rStrides[2]) + w * (is_r_d3_batched * rStrides[3]);
+            lptrs[n] = lptr + loff;
+            rptrs[n] = rptr + roff;
+            optrs[n] = optr + z * oStrides[2] + w * oStrides[3];
+        }
+
+        auto d_lptrs = memAlloc<void *>(batchSize);
+        auto d_rptrs = memAlloc<void *>(batchSize);
+        auto d_optrs = memAlloc<void *>(batchSize);
+
+        size_t bytes = batchSize * sizeof(T **);
+        CUDA_CHECK(cudaMemcpyAsync(d_lptrs.get(), lptrs.data(), bytes,
+                                   cudaMemcpyHostToDevice,
+                                   getActiveStream()));
+        CUDA_CHECK(cudaMemcpyAsync(d_rptrs.get(), rptrs.data(), bytes,
+                                   cudaMemcpyHostToDevice,
+                                   getActiveStream()));
+        CUDA_CHECK(cudaMemcpyAsync(d_optrs.get(), optrs.data(), bytes,
+                                   cudaMemcpyHostToDevice,
+                                   getActiveStream()));
+
+        CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
+
+        CUBLAS_CHECK(gemmBatched_func<T>()(
                          blasHandle(),
                          lOpts,
                          rOpts,
                          M, N, K,
                          &alpha,
-                         lhs.get(), lStrides[1],
-                         rhs.get(), rStrides[1],
+                         (const T **)d_lptrs.get(), lStrides[1],
+                         (const T **)d_rptrs.get(), rStrides[1],
                          &beta,
-                         out.get(),
-                         out.dims()[0]));
+                         (T **)d_optrs.get(),
+                         oStrides[1],
+                         batchSize));
+
     }
 
     return out;
