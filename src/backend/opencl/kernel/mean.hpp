@@ -174,7 +174,8 @@ void mean_dim_launcher(Param out, Param owt,
         if (output_weight) { options << " -D OUTPUT_WEIGHT"; }
 
         if (std::is_same<Ti, double>::value ||
-                std::is_same<Ti, cdouble>::value) {
+                std::is_same<Ti, cdouble>::value ||
+                std::is_same<To, double>::value) {
             options << " -D USE_DOUBLE";
         }
 
@@ -340,7 +341,8 @@ void mean_first_launcher(Param out, Param owt,
         if (output_weight) { options << " -D OUTPUT_WEIGHT"; }
 
         if (std::is_same<Ti, double>::value ||
-                std::is_same<Ti, cdouble>::value) {
+                std::is_same<Ti, cdouble>::value ||
+                std::is_same<To, double>::value) {
             options << " -D USE_DOUBLE";
         }
 
