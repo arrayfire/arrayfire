@@ -8,12 +8,13 @@
  ********************************************************/
 
 #pragma once
-#include <sparse_helpers.hpp>
-#include <ArrayInfo.hpp>
+#include <common/sparse_helpers.hpp>
+#include <common/ArrayInfo.hpp>
 #include <Array.hpp>
 #include <backend.hpp>
-#include <vector>
+
 #include <cstddef>
+#include <vector>
 
 namespace common
 {

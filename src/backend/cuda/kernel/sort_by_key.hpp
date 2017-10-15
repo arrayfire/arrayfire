@@ -10,7 +10,7 @@
 #include <af/dim4.hpp>
 #include <memory.hpp>
 #include <math.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <Param.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>

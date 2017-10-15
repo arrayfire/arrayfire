@@ -95,13 +95,13 @@ void sortByKeyBatched(Param<Tk> okey, Param<Tv> oval, const int dim, bool isAsce
 
         for(dim_t w = 0; w < dims[3]; w++) {
             dim_t offW = w * strides[3];
-            uint okeyW = (w % seqDims[3]) * seqDims[0] * seqDims[1] * seqDims[2];
+            dim_t okeyW = (w % seqDims[3]) * seqDims[0] * seqDims[1] * seqDims[2];
             for(dim_t z = 0; z < dims[2]; z++) {
                 dim_t offWZ = offW + z * strides[2];
-                uint okeyZ = okeyW + (z % seqDims[2]) * seqDims[0] * seqDims[1];
+                dim_t okeyZ = okeyW + (z % seqDims[2]) * seqDims[0] * seqDims[1];
                 for(dim_t y = 0; y < dims[1]; y++) {
                     dim_t offWZY = offWZ + y * strides[1];
-                    uint okeyY = okeyZ + (y % seqDims[1]) * seqDims[0];
+                    dim_t okeyY = okeyZ + (y % seqDims[1]) * seqDims[0];
                     for(dim_t x = 0; x < dims[0]; x++) {
                         dim_t id = offWZY + x;
                         out[id] = okeyY + (x % seqDims[0]);

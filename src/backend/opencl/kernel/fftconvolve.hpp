@@ -10,7 +10,7 @@
 #include <af/defines.h>
 #include <backend.hpp>
 #include <program.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <cache.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>

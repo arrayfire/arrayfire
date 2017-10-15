@@ -10,10 +10,12 @@
 #include <blas.hpp>
 #include <af/dim4.hpp>
 #include <cassert>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <kernel/dot.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+
+#include <common/blas_headers.hpp>
 
 namespace cpu
 {
@@ -54,22 +56,13 @@ using std::conditional;
 //                  const void *alpha, const void *A, const int lda,
 //                  const void *B, const int ldb, const void *beta,
 //                  void *C, const int ldc);
-#if defined(IS_OPENBLAS)
-    static const bool cplx_void_ptr = false;
-#else
-    static const bool cplx_void_ptr = true;
-#endif
-
-template<typename T, class Enable = void>
-struct blas_base {
-    using type = typename dtype_traits<T>::base_type;
-};
 
 template<typename T>
-struct blas_base <T, typename enable_if<is_complex<T>::value && cplx_void_ptr>::type> {
-    using type = void;
+struct blas_base {
+    using type = typename conditional<is_complex<T>::value && cplx_void_ptr,
+                                      void,
+                                      typename dtype_traits<T>::base_type>::type;
 };
-
 
 template<typename T>
 using cptr_type     =   typename conditional<   is_complex<T>::value,

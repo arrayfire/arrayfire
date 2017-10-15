@@ -12,7 +12,7 @@
 #include <af/lapack.h>
 
 #include <af/defines.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <Array.hpp>
 #include <handle.hpp>

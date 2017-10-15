@@ -10,13 +10,14 @@
 #pragma once
 
 #include <af/defines.h>
-#include "defines.hpp"
+#include <common/defines.hpp>
+
+#include <backend.hpp>
+#include <types.hpp>
 
 #include <complex>
 #include <limits>
 #include <algorithm>
-#include "backend.hpp"
-#include "types.hpp"
 
 #if defined(__GNUC__) || defined(__GNUG__)
     /* GCC/G++, Clang/LLVM, Intel ICC */

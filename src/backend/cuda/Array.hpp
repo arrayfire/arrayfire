@@ -9,7 +9,7 @@
 #pragma once
 
 #include <af/dim4.hpp>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include "traits.hpp"
 #include <backend.hpp>
 #include <types.hpp>

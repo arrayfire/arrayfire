@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <backend.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include <Param.hpp>

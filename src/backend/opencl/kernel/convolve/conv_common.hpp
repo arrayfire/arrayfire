@@ -19,7 +19,7 @@
 #include <traits.hpp>
 #include <memory.hpp>
 #include <program.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <platform.hpp>
 #include <debug_opencl.hpp>
 #include <cache.hpp>

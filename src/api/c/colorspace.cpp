@@ -10,7 +10,7 @@
 #include <af/defines.h>
 #include <af/array.h>
 #include <af/image.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 template<af_cspace_t FROM, af_cspace_t TO>
 void color_space(af_array *out, const af_array image)

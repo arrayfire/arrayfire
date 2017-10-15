@@ -57,7 +57,7 @@ namespace TNJ
                     if (child == nullptr) break;
                     child->getNodesMap(node_map, full_nodes);
                 }
-                int id = node_map.size();
+                int id = static_cast<int>(node_map.size());
                 node_map[this] = id;
                 full_nodes.push_back(this);
                 return id;

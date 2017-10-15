@@ -7,11 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <numeric>
 #include <algorithm>
 #include <functional>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 #include <backend.hpp>
 #include <platform.hpp>
@@ -231,4 +231,22 @@ toStride(const vector<af_seq>& seqs, const af::dim4 &parentDims)
         if  (seqs[i].step != 0) {   out[i] *= seqs[i].step; }
     }
     return out;
+}
+
+const ArrayInfo&
+getInfo(const af_array arr, bool sparse_check, bool device_check)
+{
+  const ArrayInfo *info = static_cast<ArrayInfo*>(reinterpret_cast<void *>(arr));
+
+  // Check Sparse -> If false, then both standard Array<T> and SparseArray<T> are accepted
+  // Otherwise only regular Array<T> is accepted
+  if(sparse_check) {
+    ARG_ASSERT(0, info->isSparse() == false);
+  }
+
+  if (device_check && info->getDevId() != detail::getActiveDeviceId()) {
+    AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
+  }
+
+  return *info;
 }

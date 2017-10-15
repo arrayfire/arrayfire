@@ -8,11 +8,12 @@
 ********************************************************/
 
 #if defined(__APPLE__) && !defined(AF_CUDA)
+#include <common/lapacke.hpp>
 #include <Accelerate/Accelerate.h>
-#include "lapacke.hpp"
-#include <cstdint>
-#include <algorithm>
 #include <traits.hpp>
+
+#include <algorithm>
+#include <cstdint>
 #include <vector>
 
 #if INTPTR_MAX == INT16MAX

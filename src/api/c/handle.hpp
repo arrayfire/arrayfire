@@ -11,7 +11,7 @@
 #include <af/array.h>
 #include <Array.hpp>
 #include <backend.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <math.hpp>
 #include <copy.hpp>
 #include <cast.hpp>

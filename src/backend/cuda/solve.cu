@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <solve.hpp>
 
 #include <platform.hpp>
@@ -19,7 +19,7 @@
 #include <transpose.hpp>
 
 #include <math.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 #include <blas.hpp>
 #include <lu.hpp>

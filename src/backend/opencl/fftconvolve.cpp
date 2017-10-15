@@ -85,11 +85,11 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
         std::vector<af_seq> seqs;
         for (dim_t k = 0; k < 4; k++) {
             if (k < baseDim)
-                seqs.push_back(af_make_seq(0, pDims[k]-1, 1));
+                seqs.push_back({0., static_cast<double>(pDims[k]-1), 1.});
             else if (k == baseDim)
-                seqs.push_back(af_make_seq(1, pDims[k]-1, 1));
+                seqs.push_back({1., static_cast<double>(pDims[k]-1), 1.});
             else
-                seqs.push_back(af_make_seq(0, 0, 1));
+                seqs.push_back({0., 0., 1.});
         }
 
         Array<cT> subPacked = createSubArray<cT>(packed, seqs);
@@ -99,11 +99,11 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
         std::vector<af_seq> seqs;
         for (dim_t k = 0; k < 4; k++) {
             if (k < baseDim)
-                seqs.push_back(af_make_seq(0, pDims[k]-1, 1));
+                seqs.push_back({0., (double)pDims[k]-1, 1.});
             else if (k == baseDim)
-                seqs.push_back(af_make_seq(0, pDims[k]-2, 1));
+                seqs.push_back({0., static_cast<double>(pDims[k]-2), 1.});
             else
-                seqs.push_back(af_make_seq(0, 0, 1));
+                seqs.push_back({0., 0., 1.});
         }
 
         Array<cT> subPacked = createSubArray<cT>(packed, seqs);

@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <math.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <Param.hpp>
 #include <kernel/iota.hpp>
 #include <err_cuda.hpp>

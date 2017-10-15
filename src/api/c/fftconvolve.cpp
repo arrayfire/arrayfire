@@ -10,11 +10,11 @@
 #include <af/defines.h>
 #include <af/signal.h>
 #include <handle.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <arith.hpp>
 #include <fftconvolve.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <complex.hpp>
 #include <fft_common.hpp>
 

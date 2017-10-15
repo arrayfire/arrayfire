@@ -14,10 +14,10 @@
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <backend.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <random_engine.hpp>
-#include <MersenneTwister.hpp>
+#include <common/MersenneTwister.hpp>
 #include <types.hpp>
 #include <memory>
 

@@ -12,10 +12,9 @@
 //InteropManager.hpp is not used while building CPU backend.
 #ifndef AF_CPU
 #include <common/InteropManager.hpp>
-#include <common/types.hpp>
 #include <cstdio>
-#include <err_common.hpp>
-#include <util.hpp>
+#include <common/err_common.hpp>
+#include <common/util.hpp>
 #include <backend.hpp>
 #include <GraphicsResourceManager.hpp>
 #include <platform.hpp>

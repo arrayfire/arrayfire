@@ -10,10 +10,10 @@
 #include <iostream>
 #include <af/data.h>
 #include <af/arith.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <tile.hpp>
 #include <arith.hpp>
 

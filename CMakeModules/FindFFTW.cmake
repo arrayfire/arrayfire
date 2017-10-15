@@ -20,100 +20,52 @@
 ######## This FindFFTW.cmake file is a copy of the file from the eigen library
 ######## http://code.metager.de/source/xref/lib/eigen/cmake/FindFFTW.cmake
 
-IF(NOT FFTW_ROOT)
-    SET(FFTW_ROOT $ENV{FFTWDIR})
-ENDIF()
+find_package(PkgConfig)
+pkg_check_modules(PKG_FFTW "fftw3")
 
-IF (NOT INTEL_MKL_ROOT_DIR)
-  SET(INTEL_MKL_ROOT_DIR $ENV{INTEL_MKL_ROOT})
-ENDIF()
+find_path( FFTW_INCLUDE_DIR
+  NAMES "fftw3.h"
+  PATHS ${FFTW_ROOT}
+        ${CMAKE_SYSTEM_INCLUDE_PATH}
+        ${CMAKE_SYSTEM_PREFIX_PATH}
+        ${PKG_FFTW_INCLUDE_DIRS}
+  PATH_SUFFIXES "include" "include/fftw"
+  )
 
-IF(NOT FFTW_ROOT)
+find_library( FFTW_LIBRARY
+  NAMES "fftw3" "libfftw3-3" "fftw3-3" "mkl_core" "mkl_rt"
+  PATHS ${FFTW_ROOT}
+        ${CMAKE_SYSTEM_PREFIX_PATH}
+        ${PKG_FFTW_LIBRARY_DIRS}
+  PATH_SUFFIXES "lib" "lib64" "lib/intel64" "lib/ia32"
+)
 
-  IF (ENV{FFTWDIR})
-    SET(FFTW_ROOT $ENV{FFTWDIR})
-  ENDIF()
+find_library( FFTWF_LIBRARY
+  NAMES "fftw3f" "libfftw3f-3" "fftw3f-3" "mkl_core" "mkl_rt"
+  PATHS ${FFTW_ROOT}
+        ${CMAKE_SYSTEM_PREFIX_PATH}
+        ${CMAKE_SYSTEM_LIBRARY_PATH}
+        ${PKG_FFTW_LIBRARY_DIRS}
+  PATH_SUFFIXES "lib" "lib64" "lib/intel64" "lib/ia32"
+)
 
-  IF (ENV{FFTW_ROOT_DIR})
-    SET(FFTW_ROOT $ENV{FFTW_ROOT_DIR})
-  ENDIF()
+mark_as_advanced(FFTW_INCLUDE_DIR FFTW_LIBRARY FFTWF_LIBRARY)
 
-  IF (INTEL_MKL_ROOT_DIR)
-    SET(FFTW_ROOT ${INTEL_MKL_ROOT_DIR})
-  ENDIF()
-ENDIF()
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(FFTW DEFAULT_MSG
+    FFTW_INCLUDE_DIR FFTW_LIBRARY FFTWF_LIBRARY)
 
-# Check if we can use PkgConfig
-FIND_PACKAGE(PkgConfig)
+if (FFTW_FOUND)
+  add_library(FFTW::FFTW UNKNOWN IMPORTED)
+  set_target_properties(FFTW::FFTW PROPERTIES
+    IMPORTED_LINK_INTERFACE_LANGUAGE "C"
+    IMPORTED_LOCATION "${FFTW_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${FFTW_INCLUDE_DIR}")
 
-#Determine from PKG
-IF(PKG_CONFIG_FOUND AND NOT FFTW_ROOT)
-    PKG_CHECK_MODULES( PKG_FFTW QUIET "fftw3")
-ENDIF()
+  add_library(FFTW::FFTWF UNKNOWN IMPORTED)
+  set_target_properties(FFTW::FFTWF PROPERTIES
+    IMPORTED_LINK_INTERFACE_LANGUAGE "C"
+    IMPORTED_LOCATION "${FFTWF_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${FFTW_INCLUDE_DIR}")
+endif (FFTW_FOUND)
 
-#Check whether to search static or dynamic libs
-SET(CMAKE_FIND_LIBRARY_SUFFIXES_SAV ${CMAKE_FIND_LIBRARY_SUFFIXES})
-IF(${FFTW_USE_STATIC_LIBS} )
-    SET(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
-ELSE()
-    SET(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX})
-ENDIF()
-
-IF ("${SIZE_OF_VOIDP}" EQUAL 8)
-  SET(MKL_LIB_DIR_SUFFIX "intel64")
-ELSE()
-  SET(MKL_LIB_DIR_SUFFIX "ia32")
-ENDIF()
-
-IF(FFTW_ROOT)
-    #find libs
-    FIND_LIBRARY(
-        FFTW_LIB
-        NAMES "fftw3" "libfftw3-3" "fftw3-3" "mkl_rt"
-        PATHS ${FFTW_ROOT}
-        PATH_SUFFIXES "lib" "lib64" "lib/${MKL_LIB_DIR_SUFFIX}"
-        NO_DEFAULT_PATH
-        )
-    FIND_LIBRARY(
-        FFTWF_LIB
-        NAMES "fftw3f" "libfftw3f-3" "fftw3f-3" "mkl_rt"
-        PATHS ${FFTW_ROOT}
-        PATH_SUFFIXES "lib" "lib64" "lib/${MKL_LIB_DIR_SUFFIX}"
-        NO_DEFAULT_PATH
-        )
-
-    #find includes
-    FIND_PATH(
-        FFTW_INCLUDES
-        NAMES "fftw3.h"
-        PATHS ${FFTW_ROOT}
-        PATH_SUFFIXES "include" "include/fftw"
-        NO_DEFAULT_PATH
-        )
-ELSE()
-    FIND_LIBRARY(
-        FFTW_LIB
-        NAMES "fftw3" "mkl_rt"
-        PATHS ${PKG_FFTW_LIBRARY_DIRS} ${LIB_INSTALL_DIR}
-        )
-    FIND_LIBRARY(
-        FFTWF_LIB
-        NAMES "fftw3f" "mkl_rt"
-        PATHS ${PKG_FFTW_LIBRARY_DIRS} ${LIB_INSTALL_DIR}
-        )
-    FIND_PATH(
-        FFTW_INCLUDES
-        NAMES "fftw3.h"
-        PATHS ${PKG_FFTW_INCLUDE_DIRS} ${INCLUDE_INSTALL_DIR}
-        )
-ENDIF(FFTW_ROOT)
-
-SET(FFTW_LIBRARIES ${FFTW_LIB} ${FFTWF_LIB})
-
-SET(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SAV})
-
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(FFTW DEFAULT_MSG
-    FFTW_INCLUDES FFTW_LIBRARIES)
-
-MARK_AS_ADVANCED(FFTW_INCLUDES FFTW_LIBRARIES FFTW_LIB FFTWF_LIB)

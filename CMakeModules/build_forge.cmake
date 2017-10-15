@@ -1,101 +1,62 @@
-INCLUDE(ExternalProject)
+# Copyright (c) 2017, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
 
-IF(USE_SYSTEM_GLBINDING)
-    SET(GLBINDING_TARGET "")
-ELSE(USE_SYSTEM_GLBINDING)
-    SET(GLBINDING_TARGET glbinding)
-ENDIF(USE_SYSTEM_GLBINDING)
+include(ExternalProject)
 
-SET(prefix ${CMAKE_BINARY_DIR}/third_party/forge)
+set(FORGE_VERSION 1.0.2-ft)
+set(prefix "${ArrayFire_BINARY_DIR}/third_party/forge")
 
-# FIXME: Cannot use $<CONFIG> generator expression here because add_custom_command
-#        does not yet support it for the OUTPUT argument, see also:
-#        - Old "duplicate":   https://cmake.org/Bug/view.php?id=12877
-#        - Old issue tracker: https://cmake.org/Bug/view.php?id=13840
-#        - New issue tracker: https://gitlab.kitware.com/cmake/cmake/issues/13840
-#        In the meantime, use CMAKE_BUILD_TYPE if set by user, assuming that it
-#        is the primary build configuration used. Otherwise, default to Release.
-IF(CMAKE_BUILD_TYPE)
-    SET(forge_lib_config ${CMAKE_BUILD_TYPE})
-ELSE()
-    SET(forge_lib_config Release)
-ENDIF()
-
-IF(CMAKE_GENERATOR MATCHES "Xcode")
-    SET(forge_lib_infix "${forge_lib_config}/")
-ELSE()
-    SET(forge_lib_infix "")
-ENDIF()
-IF(WIN32)
-    SET(forge_lib_prefix "${prefix}/lib")
-ELSE(WIN32)
-    SET(forge_lib_prefix "${prefix}/src/forge-ext-build/src/backend/opengl")
-ENDIF(WIN32)
-
-SET(forge_location "${forge_lib_prefix}/${forge_lib_infix}${CMAKE_SHARED_LIBRARY_PREFIX}forge${CMAKE_SHARED_LIBRARY_SUFFIX}")
-IF(CMAKE_VERSION VERSION_LESS 3.2)
-    IF(CMAKE_GENERATOR MATCHES "Ninja")
-        MESSAGE(WARNING "Building forge with Ninja has known issues with CMake older than 3.2")
-    endif()
-    SET(byproducts)
-ELSE()
-    IF   (WIN32)
-        SET(byproducts BUILD_BYPRODUCTS third_party/forge/lib/forge${CMAKE_STATIC_LIBRARY_SUFFIX})
-    ELSE (WIN32)
-        SET(byproducts BUILD_BYPRODUCTS ${forge_location})
-    ENDIF(WIN32)
-ENDIF()
-
-SET(FORGE_VERSION 1.0.2)
-SET(FORGE_TAG ${FORGE_VERSION}-ft)
+if(MSVC)
+  set(disable_warning_flags "/wd4251")
+  set(forge_shared_lib "${ArrayFire_BINARY_DIR}/third_party/forge/lib/${CMAKE_SHARED_LIBRARY_PREFIX}forge${CMAKE_LINK_LIBRARY_SUFFIX}")
+else()
+  set(forge_shared_lib "${ArrayFire_BINARY_DIR}/third_party/forge/lib/${CMAKE_SHARED_LIBRARY_PREFIX}forge${CMAKE_SHARED_LIBRARY_SUFFIX}")
+endif()
 
 # FIXME Tag forge correctly during release
 ExternalProject_Add(
     forge-ext
     GIT_REPOSITORY https://github.com/arrayfire/forge.git
-    GIT_TAG v${FORGE_TAG}
-    ${byproducts}
+    GIT_TAG v${FORGE_VERSION}
     PREFIX "${prefix}"
-    INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
-    DEPENDS ${GLBINDING_TARGET}
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} -Wno-dev "-G${CMAKE_GENERATOR}" <SOURCE_DIR>
-    -DCMAKE_SOURCE_DIR:PATH=<SOURCE_DIR>
-    -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-    -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-    -DBUILD_EXAMPLES:BOOL=OFF
-    -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCS}
-    -DUSE_SYSTEM_GLBINDING:BOOL=TRUE
-    -Dglbinding_DIR:STRING=${glbinding_DIR}
-    -DGLFW_ROOT_DIR:STRING=${GLFW_ROOT_DIR}
-    -DBOOST_ROOT:PATH=${BOOST_ROOT}
-    -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}
-    -DFREEIMAGE_INCLUDE_PATH:PATH=${FREEIMAGE_INCLUDE_PATH}
-    -DFREEIMAGE_DYNAMIC_LIBRARY:PATH=${FREEIMAGE_DYNAMIC_LIBRARY}
-    -DFREEIMAGE_STATIC_LIBRARY:PATH=${FREEIMAGE_STATIC_LIBRARY}
-    -DUSE_FREEIMAGE_STATIC:BOOL=${USE_FREEIMAGE_STATIC}
-    BUILD_COMMAND ${CMAKE_COMMAND} --build . --config ${forge_lib_config}
+    BUILD_BYPRODUCTS ${forge_shared_lib}
+    CMAKE_GENERATOR "${CMAKE_GENERATOR}"
+    CMAKE_ARGS
+      -DBUILD_EXAMPLES:BOOL=OFF
+      -DBUILD_DOCUMENTATION:BOOL=OFF
+      -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+      -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+      -DCMAKE_CXX_FLAGS:STRING=${disable_warning_flags}
+      -Dglbinding_DIR:STRING=${glbinding_DIR}
+      -DGLFW_ROOT_DIR:STRING=${GLFW_ROOT_DIR}
+      -DBOOST_INCLUDEDIR:PATH=${Boost_INCLUDE_DIRS}
+      -Dglbinding_DIR:PATH=${glbinding_DIR}
+      -DUSE_SYSTEM_GLBINDING:BOOL=TRUE
+      -DUSE_FREEIMAGE:BOOL=OFF
     )
 
-ExternalProject_Get_Property(forge-ext binary_dir)
-ExternalProject_Get_Property(forge-ext install_dir)
+# NOTE: This approach doesn't work because the ExternalProject_Add outputs are
+# created at build time. The targets are created at configuration time.
+#
+# make_directory("${prefix}/include")
+# make_directory("${ArrayFire_BINARY_DIR}/third_party/forge/lib")
+# execute_process(COMMAND ${CMAKE_COMMAND} -E touch "${forge_shared_lib}")
 
-ADD_LIBRARY(forge SHARED IMPORTED)
-SET_TARGET_PROPERTIES(forge PROPERTIES IMPORTED_LOCATION ${forge_location})
+# add_library(Forge::Forge SHARED IMPORTED GLOBAL)
+# set_target_properties(Forge::Forge PROPERTIES
+#   INTERFACE_LINK_LIBRARIES "${forge_shared_lib}"
+#   INTERFACE_INCLUDE_DIRECTORIES "${prefix}/include"
+#   )
+#
+# add_dependencies(Forge::Forge forge-ext)
 
-IF(WIN32)
-    SET_TARGET_PROPERTIES(forge PROPERTIES IMPORTED_IMPLIB ${forge_lib_prefix}/forge.lib)
-ELSE(WIN32)
-    SET(forge_bindir_location ${binary_dir}/src/backend/opengl/${forge_lib_infix}${CMAKE_SHARED_LIBRARY_PREFIX}forge${CMAKE_SHARED_LIBRARY_SUFFIX})
-    IF(NOT (${forge_bindir_location} STREQUAL ${forge_location}))
-        MESSAGE(WARNING "Did the forge binary location move? (Have ${forge_bindir_location} vs ${forge_location})")
-    ENDIF()
-ENDIF(WIN32)
+set(Forge_INCLUDE_DIR "${prefix}/include")
+set(Forge_LIBRARIES "${forge_shared_lib}")
 
-ADD_DEPENDENCIES(forge forge-ext ${GLBINDING_TARGET})
-
-SET(FORGE_INCLUDE_DIRS ${install_dir}/include)
-SET(FORGE_LIBRARIES forge)
-SET(FORGE_FOUND ON)
+find_package_handle_standard_args(Forge DEFAULT_MSG
+    Forge_INCLUDE_DIR Forge_LIBRARIES)

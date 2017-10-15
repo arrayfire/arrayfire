@@ -17,8 +17,8 @@
 #include <af/internal.h>
 #include <copy.hpp>
 #include <print.hpp>
-#include <ArrayInfo.hpp>
-#include <err_common.hpp>
+#include <common/ArrayInfo.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <type_util.hpp>
 #include <handle.hpp>

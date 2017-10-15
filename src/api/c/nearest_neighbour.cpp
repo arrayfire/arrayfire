@@ -11,7 +11,7 @@
 #include <af/defines.h>
 #include <af/vision.h>
 #include <handle.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <backend.hpp>
 #include <nearest_neighbour.hpp>
 

@@ -50,12 +50,12 @@ public:
         return m_strides;
     }
 
-    int dims(int i) const
+    dim_t dims(int i) const
     {
         return m_dims[i];
     }
 
-    int strides(int i) const
+    dim_t strides(int i) const
     {
         return m_strides[i];
     }
@@ -103,12 +103,12 @@ public:
         return m_strides;
     }
 
-    int dims(int i) const
+    dim_t dims(int i) const
     {
         return m_dims[i];
     }
 
-    int strides(int i) const
+    dim_t strides(int i) const
     {
         return m_strides[i];
     }

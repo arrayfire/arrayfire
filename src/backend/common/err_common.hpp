@@ -9,12 +9,13 @@
 
 #pragma once
 
+#include <af/defines.h>
+#include <common/defines.hpp>
+
+#include <cassert>
+#include <sstream>
 #include <stdexcept>
 #include <string>
-#include <sstream>
-#include <cassert>
-#include <af/defines.h>
-#include <defines.hpp>
 #include <vector>
 
 class AfError   : public std::logic_error

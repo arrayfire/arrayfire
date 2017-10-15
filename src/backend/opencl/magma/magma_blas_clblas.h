@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <defines.hpp>
+#include <common/defines.hpp>
 
 #include <clBLAS.h>
 #include <err_clblas.hpp>

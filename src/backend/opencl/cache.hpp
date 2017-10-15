@@ -12,6 +12,11 @@
 #include <map>
 #include <string>
 
+namespace cl {
+  class Program;
+  class Kernel;
+}
+
 namespace opencl
 {
     typedef struct {

@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <kernel_headers/jit.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <err_cuda.hpp>
 
 #include <Array.hpp>

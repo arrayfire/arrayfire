@@ -9,7 +9,7 @@
 
 #include <af/dim4.hpp>
 #include <af/image.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 #include <histogram.hpp>

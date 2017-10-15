@@ -1,61 +1,54 @@
+# Copyright (c) 2017, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
 #
 # Make a version file that includes the ArrayFire version and git revision
 #
-CMAKE_POLICY(PUSH)
+set(AF_VERSION_MAJOR ${ArrayFire_VERSION_MAJOR})
+set(AF_VERSION_MINOR ${ArrayFire_VERSION_MINOR})
+set(AF_VERSION_PATCH ${ArrayFire_VERSION_PATCH})
 
-# https://cmake.org/cmake/help/v3.1/policy/CMP0054.html
-IF("${CMAKE_VERSION}" VERSION_GREATER "3.1" OR "${CMAKE_VERSION}" VERSION_EQUAL "3.1")
-    CMAKE_POLICY(SET CMP0054 OLD)
-ENDIF()
-
-SET(AF_VERSION_MAJOR "3")
-SET(AF_VERSION_MINOR "6")
-SET(AF_VERSION_PATCH "0")
-
-SET(AF_VERSION "${AF_VERSION_MAJOR}.${AF_VERSION_MINOR}.${AF_VERSION_PATCH}")
-SET(AF_API_VERSION_CURRENT ${AF_VERSION_MAJOR}${AF_VERSION_MINOR})
-
-IF (${CMAKE_MAJOR_VERSION} GREATER 2 AND ${CMAKE_MINOR_VERSION} GREATER 1)
-    CMAKE_POLICY(SET CMP0054 OLD)
-ENDIF()
+set(AF_VERSION ${ArrayFire_VERSION})
+set(ArrayFire_API_VERSION_CURRENT ${ArrayFire_VERSION_MAJOR}${ArrayFire_VERSION_MINOR})
 
 # From CMake 3.0.0 CMAKE_<LANG>_COMPILER_ID is AppleClang for OSX machines
 # that use clang for compilations
-IF("${CMAKE_C_COMPILER_ID}" STREQUAL "AppleClang")
-    SET(COMPILER_NAME "AppleClang")
-ELSEIF("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-    SET(COMPILER_NAME "LLVM Clang")
-ELSEIF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-    SET(COMPILER_NAME "GNU Compiler Collection(GCC/G++)")
-ELSEIF("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
-    SET(COMPILER_NAME "Intel Compiler")
-ELSEIF("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
-    SET(COMPILER_NAME "Microsoft Visual Studio")
-ENDIF()
+if("${CMAKE_C_COMPILER_ID}" STREQUAL "AppleClang")
+    set(COMPILER_NAME "AppleClang")
+elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+    set(COMPILER_NAME "LLVM Clang")
+elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+    set(COMPILER_NAME "GNU Compiler Collection(GCC/G++)")
+elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
+    set(COMPILER_NAME "Intel Compiler")
+elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
+    set(COMPILER_NAME "Microsoft Visual Studio")
+endif()
 
-SET(COMPILER_VERSION "${CMAKE_C_COMPILER_VERSION}")
-SET(AF_COMPILER_STRING "${COMPILER_NAME} ${COMPILER_VERSION}")
+set(COMPILER_VERSION "${CMAKE_C_COMPILER_VERSION}")
+set(AF_COMPILER_STRING "${COMPILER_NAME} ${COMPILER_VERSION}")
 
-EXECUTE_PROCESS(
+execute_process(
     COMMAND git log -1 --format=%h
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     OUTPUT_VARIABLE GIT_COMMIT_HASH
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-IF(NOT GIT_COMMIT_HASH)
-    MESSAGE(STATUS "No git. Setting hash to default")
-    SET(GIT_COMMIT_HASH "default")
-ENDIF()
+if(NOT GIT_COMMIT_HASH)
+    message(STATUS "No git. Setting hash to default")
+    set(GIT_COMMIT_HASH "default")
+endif()
 
-CONFIGURE_FILE(
-    ${PROJECT_SOURCE_DIR}/CMakeModules/version.h.in
-    ${PROJECT_SOURCE_DIR}/include/af/version.h
+configure_file(
+    ${ArrayFire_SOURCE_DIR}/CMakeModules/version.h.in
+    ${ArrayFire_BINARY_DIR}/include/af/version.h
 )
 
-CONFIGURE_FILE(
-    ${PROJECT_SOURCE_DIR}/CMakeModules/version.hpp.in
-    ${PROJECT_SOURCE_DIR}/src/backend/version.hpp
+configure_file(
+    ${ArrayFire_SOURCE_DIR}/CMakeModules/version.hpp.in
+    ${ArrayFire_BINARY_DIR}/src/backend/version.hpp
 )
-
-CMAKE_POLICY(POP)

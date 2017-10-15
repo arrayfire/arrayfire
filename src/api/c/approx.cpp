@@ -10,10 +10,10 @@
 #include <af/array.h>
 #include <af/signal.h>
 #include <af/defines.h>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <approx.hpp>
 
 using af::dim4;

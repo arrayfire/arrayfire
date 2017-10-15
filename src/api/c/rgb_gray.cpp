@@ -13,7 +13,7 @@
 #include <af/index.h>
 #include <af/data.h>
 
-#include <ArrayInfo.hpp>
+#include <common/ArrayInfo.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 #include <arith.hpp>

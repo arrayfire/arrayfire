@@ -1,312 +1,249 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(ArrayFire-Tests)
+# Copyright (c) 2017, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
 
-# Find CUDA and OpenCL
-SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
-FIND_PACKAGE(CUDA QUIET)
-FIND_PACKAGE(OpenCL QUIET)
+if(NOT TARGET gtest)
+  # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
+  # newer cmakes. This sets the default global setting for that policy.
+  set(CMAKE_POLICY_DEFAULT_CMP0042 NEW)
+  if(WIN32)
+    set(gtest_force_shared_crt ON
+        CACHE INTERNAL "Required so that the libs Runtime is not set to MT DLL")
+  endif()
 
-OPTION(BUILD_SINGLE_TEST_FILE "Build tests in a single file" OFF)
+  add_subdirectory(gtest/googletest EXCLUDE_FROM_ALL)
+  set_target_properties(gtest gtest_main
+    PROPERTIES
+      FOLDER "ExternalProjectTargets/gtest")
 
-REMOVE_DEFINITIONS(-std=c++11)
+  # Hide gtest project variables
+  mark_as_advanced(
+    BUILD_SHARED_LIBS
+    gtest_build_samples
+    gtest_build_tests
+    gtest_disable_pthreads
+    gtest_force_shared_crt
+    gtest_hide_internal_symbols)
+endif()
 
-# If the tests are not being built at the same time as ArrayFire,
-# we need to first find the ArrayFire library
-IF(TARGET afcpu OR TARGET afcuda OR TARGET afopencl OR TARGET af)
-    SET(ArrayFire_CPU_FOUND False)
-    SET(ArrayFire_CUDA_FOUND False)
-    SET(ArrayFire_OpenCL_FOUND False)
-    SET(ArrayFire_Unified_FOUND False)
-ELSE()
-    SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
-    FIND_PACKAGE(ArrayFire REQUIRED)
-    INCLUDE_DIRECTORIES(${ArrayFire_INCLUDE_DIRS})
-    OPTION(BUILD_NONFREE "Build Tests for nonfree algorithms" OFF)
+# Reset the CXX flags for tests
+unset(CMAKE_CXX_STANDARD)
+set(TESTDATA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
 
-    IF(WIN32)
-        ADD_DEFINITIONS(-DOS_WIN -DNOMINMAX)
-    ENDIF(WIN32)
-
-    IF(${BUILD_NONFREE})
-        MESSAGE(WARNING "Building With NONFREE ON requires the following patents")
-        SET(BUILD_NONFREE_SIFT ON CACHE BOOL "Build ArrayFire with SIFT")
-    ELSE(${BUILD_NONFREE})
-        UNSET(BUILD_NONFREE_SIFT CACHE) # BUILD_NONFREE_SIFT cannot be built without BUILD_NONFREE
-    ENDIF(${BUILD_NONFREE})
-
-    IF(${BUILD_NONFREE_SIFT})
-      ADD_DEFINITIONS(-DAF_BUILD_NONFREE_SIFT)
-
-      MESSAGE(WARNING "Building with SIFT requires the following patents")
-
-      MESSAGE("Method and apparatus for identifying scale invariant features"
-        "in an image and use of same for locating an object in an image,\" David"
-        "G. Lowe, US Patent 6,711,293 (March 23, 2004). Provisional application"
-        "filed March 8, 1999. Asignee: The University of British Columbia. For"
-        "further details, contact David Lowe (lowe@cs.ubc.ca) or the"
-        "University-Industry Liaison Office of the University of British"
-        "Columbia.")
-    ENDIF(${BUILD_NONFREE_SIFT})
-
-    # ENABLE_TESTING is required when building only tests
-    # When building from source, enable_testing is picked from from the main
-    # CMakeLists.txt
-    ENABLE_TESTING()
-ENDIF()
-
-MACRO(CREATE_TESTS BACKEND AFLIBNAME GTEST_LIBS OTHER_LIBS)
-    STRING(TOUPPER ${BACKEND} DEF_NAME)
-
-    # For some reason passing FILES/UNIFIED_FILES to macro doesn't work
-    IF(${BACKEND} STREQUAL "unified")
-      SET(TEST_FILES ${UNIFIED_FILES})
-    ELSE(${BACKEND} STREQUAL "unified")
-      SET(TEST_FILES ${FILES})
-    ENDIF(${BACKEND} STREQUAL "unified")
-
-    # libcuda.dylib depends on @rpath/CUDA.framework/Versions/A/CUDA in /Library/Frameworks
-    SET(TEST_LINK_FLAGS)
-    IF(${DEF_NAME} STREQUAL "CUDA" AND "${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-        SET(TEST_LINK_FLAGS -F/Library/Frameworks -Xlinker -framework -Xlinker CUDA)
-    ENDIF(${DEF_NAME} STREQUAL "CUDA" AND "${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-
-    IF (${BUILD_SINGLE_TEST_FILE})
-      SET(TEST_NAME test_${BACKEND})
-      SET(TEST_NAME_BASIC test_basic_${BACKEND})
-      ADD_EXECUTABLE(${TEST_NAME} ${CPP_FILES})
-      ADD_EXECUTABLE(${TEST_NAME_BASIC} basic_c.c)
-      SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES COMPILE_OPTIONS -std=c++11)
-
-      TARGET_LINK_LIBRARIES(${TEST_NAME}  PRIVATE ${AFLIBNAME}
-        PRIVATE ${THREAD_LIB_FLAG}
-        PRIVATE ${GTEST_LIBS}
-        PRIVATE ${OTHER_LIBS})
-
-      TARGET_LINK_LIBRARIES(${TEST_NAME_BASIC}  PRIVATE ${AFLIBNAME}
-        PRIVATE ${THREAD_LIB_FLAG}
-        PRIVATE ${GTEST_LIBS}
-        PRIVATE ${OTHER_LIBS})
-
-      SET_TARGET_PROPERTIES(${TEST_NAME_BASIC}
-        PROPERTIES
-        COMPILE_FLAGS -DAF_${DEF_NAME}
-        FOLDER "Tests/${BACKEND}")
-
-      IF(TEST_LINK_FLAGS)
-        SET_TARGET_PROPERTIES(${TEST_NAME_BASIC} PROPERTIES LINK_FLAGS ${TEST_LINK_FLAGS})
-      ENDIF(TEST_LINK_FLAGS)
-
-    ELSE()
-      FOREACH(FILE ${TEST_FILES})
-        GET_FILENAME_COMPONENT(FNAME ${FILE} NAME_WE)
-        SET(TEST_NAME ${FNAME}_${BACKEND})
-
-        IF(NOT ${BUILD_NONFREE} AND "${FILE}" MATCHES ".nonfree.")
-          MESSAGE(STATUS "Removing ${FILE} from ctest")
-        ELSEIF("${FILE}" MATCHES ".manual.")
-          MESSAGE(STATUS "Removing ${FILE} from ctest")
-        ELSE()
-          ADD_TEST(Test_${TEST_NAME} ${TEST_NAME})
-        ENDIF()
-
-        FILE(GLOB TEST_FILE "${FNAME}.cpp" "${FNAME}.c")
-        ADD_EXECUTABLE(${TEST_NAME} ${TEST_FILE})
-        TARGET_LINK_LIBRARIES(${TEST_NAME}  PRIVATE ${AFLIBNAME}
-          PRIVATE ${THREAD_LIB_FLAG}
-          PRIVATE ${GTEST_LIBS}
-          PRIVATE ${OTHER_LIBS})
-
-        SET_TARGET_PROPERTIES(${TEST_NAME}
-          PROPERTIES
-          COMPILE_FLAGS -DAF_${DEF_NAME}
-          FOLDER "Tests/${BACKEND}")
-
-        IF (${FNAME} MATCHES "threading|solve")
-            SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES COMPILE_OPTIONS -std=c++11)
-        ENDIF()
-
-        IF(TEST_LINK_FLAGS)
-          SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES LINK_FLAGS ${TEST_LINK_FLAGS})
-        ENDIF(TEST_LINK_FLAGS)
-      ENDFOREACH()
-    ENDIF()
-
-ENDMACRO(CREATE_TESTS)
-
-MACRO(CHECK_AND_CREATE_TESTS BACKEND AFLIBNAME GTEST_LIBS OTHER_LIBS)
-    STRING(TOUPPER ${BACKEND} BACKEND_NAME_UPPER)
-    MESSAGE(STATUS "TESTS: ${BACKEND_NAME_UPPER} backend is ${BUILD_${BACKEND_NAME_UPPER}}.")
-    IF(${BUILD_${BACKEND_NAME_UPPER}})
-        CREATE_TESTS(${BACKEND} ${AFLIBNAME} "${GTEST_LIBS}" "${OTHER_LIBS}")
-    ENDIF()
-ENDMACRO(CHECK_AND_CREATE_TESTS)
-
-FIND_PACKAGE(Threads REQUIRED)
-IF(CMAKE_USE_PTHREADS_INIT AND NOT "${APPLE}")
-    SET(THREAD_LIB_FLAG "-pthread")
-ELSE()
-    SET(THREAD_LIB_FLAG ${CMAKE_THREAD_LIBS_INIT})
-ENDIF()
-
-OPTION(USE_RELATIVE_TEST_DIR "Use relative paths for the test data directory(For continious integration(CI) purposes only)" OFF)
-
-IF(${USE_RELATIVE_TEST_DIR})
+if(${USE_RELATIVE_TEST_DIR})
     # RELATIVE_TEST_DATA_DIR is a User-visible option with default value of test/data directory
-    SET(RELATIVE_TEST_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data" CACHE STRING "Relative Test Data Directory")
-    SET(TESTDATA_SOURCE_DIR ${RELATIVE_TEST_DATA_DIR})
-ELSE(${USE_RELATIVE_TEST_DIR})  # Not using relative test data directory
-    SET(TESTDATA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
-ENDIF(${USE_RELATIVE_TEST_DIR})
+    set(RELATIVE_TEST_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data" CACHE STRING "Relative Test Data Directory")
+    set(TESTDATA_SOURCE_DIR ${RELATIVE_TEST_DATA_DIR})
+else(${USE_RELATIVE_TEST_DIR})  # Not using relative test data directory
+    set(TESTDATA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
+endif(${USE_RELATIVE_TEST_DIR})
 
-# Workaround for Xcode generator escaping issue, see
-# - https://cmake.org/cmake/help/v3.5/release/3.5.html#deprecated-and-removed-features
-IF (CMAKE_VERSION VERSION_LESS 3.5 AND ${CMAKE_GENERATOR} STREQUAL "Xcode")
-    ADD_DEFINITIONS("-D TEST_DIR=\"\\\\\"${TESTDATA_SOURCE_DIR}\\\\\"\"")
-ELSE (CMAKE_VERSION VERSION_LESS 3.5 AND ${CMAKE_GENERATOR} STREQUAL "Xcode")
-    ADD_DEFINITIONS("-D TEST_DIR=\"\\\"${TESTDATA_SOURCE_DIR}\\\"\"")
-ENDIF (CMAKE_VERSION VERSION_LESS 3.5 AND ${CMAKE_GENERATOR} STREQUAL "Xcode")
+if(BUILD_CPU)
+  list(APPEND enabled_backends "cpu")
+endif(BUILD_CPU)
 
-IF(NOT ${USE_RELATIVE_TEST_DIR})
-    # Check if data exists
-    IF (EXISTS "${TESTDATA_SOURCE_DIR}" AND IS_DIRECTORY "${TESTDATA_SOURCE_DIR}"
-        AND EXISTS "${TESTDATA_SOURCE_DIR}/README.md")
-        # Test data is available
-        # Do Nothing
-    ELSE (EXISTS "${TESTDATA_SOURCE_DIR}" AND IS_DIRECTORY "${TESTDATA_SOURCE_DIR}"
-        AND EXISTS "${TESTDATA_SOURCE_DIR}/README.md")
-        MESSAGE(STATUS "Test submodules unavailable. Updating submodules.")
-        EXECUTE_PROCESS(
-            COMMAND git submodule update --init --recursive
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-            OUTPUT_QUIET
-        )
-    ENDIF()
-ENDIF(NOT ${USE_RELATIVE_TEST_DIR})
+if(BUILD_CUDA)
+  list(APPEND enabled_backends "cuda")
+endif(BUILD_CUDA)
 
-OPTION(USE_SYSTEM_GTEST "Use GTEST from system libraries" OFF)
-IF(USE_SYSTEM_GTEST)
-    FIND_PACKAGE(GTest REQUIRED)
-ELSE(USE_SYSTEM_GTEST)
-    INCLUDE("${PROJECT_SOURCE_DIR}/CMakeModules/build_gtest.cmake")
-ENDIF(USE_SYSTEM_GTEST)
+if(BUILD_OPENCL)
+  list(APPEND enabled_backends "opencl")
+endif(BUILD_OPENCL)
 
-INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
+if(BUILD_UNIFIED)
+  list(APPEND enabled_backends "unified")
+endif(BUILD_UNIFIED)
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-FILE(GLOB FILES "*.cpp" "*.c")
-FILE(GLOB CPP_FILES "*.cpp")
-LIST(SORT FILES)  # Tests execute in alphabetical order
+include(CMakeParseArguments)
 
-# We only build backend.cpp for Unified backend
-SET(UNIFIED_FILES "backend.cpp;main.cpp")
-LIST(SORT UNIFIED_FILES)  # Tests execute in alphabetical order
+function(make_test)
+  set(options CXX11)
+  set(single_args SRC)
+  set(multi_args LIBRARIES)
+  cmake_parse_arguments(mt_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
 
-# Next we build each example using every backend.
-IF(${ArrayFire_CPU_FOUND})  # variable defined by FIND(ArrayFire ...)
-    OPTION(BUILD_CPU "Build ArrayFire Tests for CPU backend" ON)
-    CHECK_AND_CREATE_TESTS(cpu ${ArrayFire_CPU_LIBRARIES} "${GTEST_LIBRARIES}" "")
-ELSEIF(TARGET afcpu)        # variable defined by the ArrayFire build tree
-    CHECK_AND_CREATE_TESTS(cpu afcpu "${GTEST_LIBRARIES}" "")
-ELSE()
-    MESSAGE(STATUS "TESTS: CPU backend is OFF. afcpu was not found.")
-ENDIF()
+  get_filename_component(src_name ${mt_args_SRC} NAME_WE)
+  foreach(backend ${enabled_backends})
+    set(target "${src_name}_${backend}")
+    add_executable(${target} ${mt_args_SRC})
+    target_include_directories(${target}
+      PRIVATE
+        ${CMAKE_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+      )
+    target_link_libraries(${target}
+      PRIVATE
+        gtest
+        gtest_main
+        ${mt_args_LIBRARIES}
+      )
 
-# CUDA Backend
-IF (${CUDA_FOUND})
-    IF(${ArrayFire_CUDA_FOUND})  # variable defined by FIND(ArrayFire ...)
-        # Find NVVM
-        FIND_LIBRARY(CUDA_nvvm_LIBRARY
-          NAMES "nvvm"
-          PATH_SUFFIXES "nvvm/lib64" "nvvm/lib" "nmmv/lib/x64"
-          PATHS ${CUDA_TOOLKIT_ROOT_DIR}
-          DOC "CUDA NVVM Library"
+    if(${backend} STREQUAL "unified")
+      target_link_libraries(${target}
+        PRIVATE
+          af
+          ${CMAKE_DL_LIBS}
           )
-        MARK_AS_ADVANCED(CUDA_nvvm_LIBRARY)
+    else()
+      target_link_libraries(${target}
+        PRIVATE
+          af${backend}
+          )
+    endif()
 
-        # If CUDA_CUDA_LIBRARY is not found, check for Stub in CUDA Toolkit
-        IF(NOT CUDA_CUDA_LIBRARY)
-            MESSAGE(SEND_ERROR "CMake CUDA Variable CUDA_CUDA_LIBRARY Not found.")
-            MESSAGE("CUDA Driver Library (libcuda.so/libcuda.dylib/cuda.lib) cannot be found.")
-            FIND_FILE(CUDA_CUDA_LIBRARY_STUB
-                      NAMES "libcuda.so" "libcuda.dylib" "cuda.lib"
-                      PATHS ${CUDA_TOOLKIT_ROOT_DIR}
-                      PATH_SUFFIXES "lib64" "lib64/stubs" "lib" "lib/stubs" "lib/x64" "lib/Win32"
-                      DOC "CUDA Library STUB"
-                     )
-            IF(CUDA_CUDA_LIBRARY_STUB)
-                MESSAGE("You can use the library stub available in the CUDA Toolkit: ${CUDA_CUDA_LIBRARY_STUB}")
-                MESSAGE("Run the following commands (Linux) to set it up:")
-                MESSAGE("ln -s ${CUDA_CUDA_LIBRARY_STUB} /usr/lib/libcuda.so.1")
-                MESSAGE("ln -s /usr/lib/libcuda.so.1 /usr/lib/libcuda.so")
-            ENDIF()
-            MESSAGE(FATAL_ERROR "Ending CMake configuration because of missing CUDA_CUDA_LIBRARY")
-        ENDIF(NOT CUDA_CUDA_LIBRARY)
+    if(${mt_args_CXX11})
+      set_target_properties(${target}
+        PROPERTIES
+          CXX_STANDARD 11)
+    endif(${mt_args_CXX11})
 
-        # If OSX && CLANG && CUDA < 7
-        IF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${CUDA_VERSION_MAJOR} VERSION_LESS 7)
-            OPTION(BUILD_CUDA "Build ArrayFire Tests for CUDA backend" ON)
-            CHECK_AND_CREATE_TESTS(cuda ${ArrayFire_CUDA_LIBRARIES} "${GTEST_LIBRARIES_STDLIB}" "${CUDA_CUBLAS_LIBRARIES};${CUDA_LIBRARIES};${CUDA_cusolver_LIBRARY};${CUDA_cusparse_LIBRARY};${CUDA_CUFFT_LIBRARIES};${CUDA_nvvm_LIBRARY};${CUDA_CUDA_LIBRARY}")
+	  set_target_properties(${target}
+      PROPERTIES
+        FOLDER "Tests")
 
-            FOREACH(FILE ${FILES})
-                GET_FILENAME_COMPONENT(FNAME ${FILE} NAME_WE)
-                SET(TEST_NAME ${FNAME}_cuda)
-                SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES COMPILE_FLAGS -stdlib=libstdc++)
-                SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES LINK_FLAGS -stdlib=libstdc++)
-            ENDFOREACH()
+    target_compile_definitions(${target}
+      PRIVATE
+        TEST_DIR="${TESTDATA_SOURCE_DIR}"
+        AF_$<UPPER_CASE:${backend}>
+      )
+    if(WIN32)
+      target_compile_definitions(${target}
+        PRIVATE
+          WIN32_LEAN_AND_MEAN
+          NOMINMAX
+        )
+    endif()
 
-        # ELSE OSX && CLANG && CUDA < 7
-        ELSE("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${CUDA_VERSION_MAJOR} VERSION_LESS 7)
-            OPTION(BUILD_CUDA "Build ArrayFire Tests for CUDA backend" ON)
-            CHECK_AND_CREATE_TESTS(cuda ${ArrayFire_CUDA_LIBRARIES} "${GTEST_LIBRARIES}" "${CUDA_CUBLAS_LIBRARIES};${CUDA_LIBRARIES};${CUDA_cusolver_LIBRARY};${CUDA_cusparse_LIBRARY};${CUDA_CUFFT_LIBRARIES};${CUDA_nvvm_LIBRARY};${CUDA_CUDA_LIBRARY}")
+    # TODO(umar): Create this executable separately
+    if(NOT ${backend} STREQUAL "unified" OR ${target} STREQUAL "backend_unified")
+      add_test(NAME ${target} COMMAND ${target})
+    endif()
+  endforeach()
+endfunction(make_test)
 
-        ENDIF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${CUDA_VERSION_MAJOR} VERSION_LESS 7)
+make_test(SRC approx1.cpp)
+make_test(SRC approx2.cpp)
+make_test(SRC array.cpp)
+make_test(SRC assign.cpp)
+make_test(SRC backend.cpp)
+make_test(SRC basic.cpp)
+make_test(SRC basic_c.c)
+make_test(SRC bilateral.cpp)
+make_test(SRC binary.cpp)
+make_test(SRC blas.cpp)
+make_test(SRC canny.cpp)
+make_test(SRC cast.cpp)
+make_test(SRC cholesky_dense.cpp)
+make_test(SRC clamp.cpp)
+make_test(SRC compare.cpp)
+make_test(SRC complex.cpp)
+make_test(SRC constant.cpp)
+make_test(SRC convolve.cpp)
+make_test(SRC corrcoef.cpp)
+make_test(SRC covariance.cpp)
+make_test(SRC diagonal.cpp)
+make_test(SRC diff1.cpp)
+make_test(SRC diff2.cpp)
+make_test(SRC dog.cpp)
+make_test(SRC dot.cpp)
+make_test(SRC empty.cpp)
+make_test(SRC fast.cpp)
+make_test(SRC fft.cpp)
+make_test(SRC fft_large.cpp)
+make_test(SRC fft_real.cpp)
+make_test(SRC fftconvolve.cpp)
+make_test(SRC flat.cpp)
+make_test(SRC flip.cpp)
+make_test(SRC gaussiankernel.cpp)
+make_test(SRC gen_assign.cpp)
+make_test(SRC gen_index.cpp)
+make_test(SRC getting_started.cpp)
+make_test(SRC gfor.cpp)
+make_test(SRC gloh_nonfree.cpp)
+make_test(SRC gradient.cpp)
+make_test(SRC gray_rgb.cpp)
+make_test(SRC hamming.cpp)
+make_test(SRC harris.cpp)
+make_test(SRC histogram.cpp)
+make_test(SRC homography.cpp)
+make_test(SRC hsv_rgb.cpp)
+make_test(SRC iir.cpp)
+make_test(SRC imageio.cpp)
+make_test(SRC index.cpp)
+make_test(SRC info.cpp)
+make_test(SRC internal.cpp)
+make_test(SRC inverse_dense.cpp)
+make_test(SRC iota.cpp)
+make_test(SRC ireduce.cpp)
+make_test(SRC jit.cpp)
+make_test(SRC join.cpp)
+make_test(SRC lu_dense.cpp)
+make_test(SRC main.cpp)
+#make_test(manual_memory_test.cpp)
+make_test(SRC match_template.cpp)
+make_test(SRC math.cpp)
+make_test(SRC matrix_manipulation.cpp)
+make_test(SRC mean.cpp)
+make_test(SRC meanshift.cpp)
+make_test(SRC medfilt.cpp)
+make_test(SRC median.cpp)
+make_test(SRC memory.cpp)
+make_test(SRC memory_lock.cpp)
+make_test(SRC missing.cpp)
+make_test(SRC moddims.cpp)
+make_test(SRC moments.cpp)
+make_test(SRC morph.cpp)
+make_test(SRC nearest_neighbour.cpp)
 
-    ELSEIF(TARGET afcuda)        # variable defined by the ArrayFire build tree
-        # If OSX && CLANG && CUDA < 7
-        IF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${CUDA_VERSION_MAJOR} VERSION_LESS 7)
-            CHECK_AND_CREATE_TESTS(cuda afcuda "${GTEST_LIBRARIES_STDLIB}" "${CUDA_CUBLAS_LIBRARIES};${CUDA_LIBRARIES};${CUDA_cusolver_LIBRARY};${CUDA_cusparse_LIBRARY};${CUDA_CUFFT_LIBRARIES};${CUDA_nvvm_LIBRARY};${CUDA_CUDA_LIBRARY}")
+if(OpenCL_FOUND)
+  make_test(SRC ocl_ext_context.cpp
+            LIBRARIES OpenCL::OpenCL)
+endif(OpenCL_FOUND)
 
-            FOREACH(FILE ${FILES})
-                GET_FILENAME_COMPONENT(FNAME ${FILE} NAME_WE)
-                SET(TEST_NAME ${FNAME}_cuda)
-                SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES COMPILE_FLAGS -stdlib=libstdc++)
-                SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES LINK_FLAGS -stdlib=libstdc++)
-            ENDFOREACH()
-
-        # ELSE OSX && CLANG && CUDA < 7
-        ELSE("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${CUDA_VERSION_MAJOR} VERSION_LESS 7)
-            CHECK_AND_CREATE_TESTS(cuda afcuda "${GTEST_LIBRARIES}" "${CUDA_CUBLAS_LIBRARIES};${CUDA_LIBRARIES};${CUDA_cusolver_LIBRARY};${CUDA_cusparse_LIBRARY};${CUDA_CUFFT_LIBRARIES};${CUDA_nvvm_LIBRARY};${CUDA_CUDA_LIBRARY}")
-
-        ENDIF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${CUDA_VERSION_MAJOR} VERSION_LESS 7)
-    ELSE()
-        MESSAGE(STATUS "TESTS: CUDA backend is OFF. afcuda was not found")
-    ENDIF()
-ELSE()
-    MESSAGE(STATUS "TESTS: CUDA backend is OFF. CUDA was not found")
-ENDIF()
-
-# OpenCL Backend
-IF (${OpenCL_FOUND})
-    INCLUDE_DIRECTORIES(${OpenCL_INCLUDE_DIRS})
-    IF(${ArrayFire_OpenCL_FOUND})  # variable defined by FIND(ArrayFire ...)
-        OPTION(BUILD_OPENCL "Build ArrayFire Tests for OpenCL backend" ON)
-        MESSAGE(${OpenCL_LIBRARIES})
-        CHECK_AND_CREATE_TESTS(opencl ${ArrayFire_OpenCL_LIBRARIES} "${GTEST_LIBRARIES}" "${OpenCL_LIBRARIES}")
-    ELSEIF(TARGET afopencl)        # variable defined by the ArrayFire build tree
-        CHECK_AND_CREATE_TESTS(opencl afopencl "${GTEST_LIBRARIES}" "${OpenCL_LIBRARIES}")
-    ELSE()
-        MESSAGE(STATUS "TESTS: OpenCL backend is OFF. afopencl was not found")
-    ENDIF()
-ELSE()
-    MESSAGE(STATUS "TESTS: OpenCL backend is OFF. OpenCL was not found")
-ENDIF()
-
-# Unified Backend
-IF(${ArrayFire_Unified_FOUND})  # variable defined by FIND(ArrayFire ...)
-  OPTION(BUILD_UNIFIED "Build ArrayFire Tests for Unified backend" ON)
-    CHECK_AND_CREATE_TESTS(unified ${ArrayFire_Unified_LIBRARIES} "${GTEST_LIBRARIES}" "${CMAKE_DL_LIBS}")
-ELSEIF(TARGET af)        # variable defined by the ArrayFire build tree
-    CHECK_AND_CREATE_TESTS(unified af "${GTEST_LIBRARIES}" "${CMAKE_DL_LIBS}")
-ELSE()
-    MESSAGE(STATUS "TESTS: UNIFIED backend is OFF. af was not found.")
-ENDIF()
+make_test(SRC orb.cpp)
+make_test(SRC qr_dense.cpp)
+make_test(SRC random.cpp)
+make_test(SRC range.cpp)
+make_test(SRC rank_dense.cpp)
+make_test(SRC reduce.cpp)
+make_test(SRC regions.cpp)
+make_test(SRC reorder.cpp)
+make_test(SRC replace.cpp)
+make_test(SRC resize.cpp)
+make_test(SRC rotate.cpp)
+make_test(SRC rotate_linear.cpp)
+make_test(SRC sat.cpp)
+make_test(SRC scan.cpp)
+make_test(SRC scan_by_key.cpp)
+make_test(SRC select.cpp)
+make_test(SRC set.cpp)
+make_test(SRC shift.cpp)
+make_test(SRC sift_nonfree.cpp)
+make_test(SRC sobel.cpp)
+make_test(SRC solve_dense.cpp        CXX11)
+make_test(SRC sort.cpp)
+make_test(SRC sort_by_key.cpp)
+make_test(SRC sort_index.cpp)
+make_test(SRC sparse.cpp)
+make_test(SRC sparse_arith.cpp)
+make_test(SRC sparse_convert.cpp)
+make_test(SRC stdev.cpp)
+make_test(SRC susan.cpp)
+make_test(SRC svd_dense.cpp)
+make_test(SRC threading.cpp          CXX11)
+make_test(SRC tile.cpp)
+make_test(SRC transform.cpp)
+make_test(SRC transform_coordinates.cpp)
+make_test(SRC translate.cpp)
+make_test(SRC transpose.cpp)
+make_test(SRC transpose_inplace.cpp)
+make_test(SRC triangle.cpp)
+make_test(SRC unwrap.cpp)
+make_test(SRC var.cpp)
+make_test(SRC where.cpp)
+make_test(SRC wrap.cpp)
+make_test(SRC write.cpp)
+make_test(SRC ycbcr_rgb.cpp)

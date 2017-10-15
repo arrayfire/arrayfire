@@ -70,7 +70,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include <memory.hpp>

@@ -29,7 +29,8 @@ void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> outpu
     std::vector<TNJ::TNode<T> *> output_nodes;
     std::vector<TNJ::Node *> full_nodes;
 
-    for (int i = 0; i < (int)arrays.size(); i++) {
+    int narrays = static_cast<int>(arrays.size());
+    for (int i = 0; i < narrays; i++) {
         ptrs.push_back(arrays[i].get());
         output_nodes.push_back(reinterpret_cast<TNJ::TNode<T> *>(output_nodes_[i].get()));
         output_nodes_[i]->getNodesMap(nodes, full_nodes);

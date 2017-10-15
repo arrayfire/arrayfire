@@ -11,6 +11,7 @@
 #include <cpu/cpu_helper.hpp>
 #include <cpu/cpu_blas.hpp>
 #include <math.hpp>
+#include <common/blas_headers.hpp>
 
 namespace opencl
 {

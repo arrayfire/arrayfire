@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <cholesky.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 #if defined(WITH_CPU_LINEAR_ALGEBRA)
 

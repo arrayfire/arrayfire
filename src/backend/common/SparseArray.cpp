@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <SparseArray.hpp>
+#include <common/SparseArray.hpp>
 #include <backend.hpp>
 #include <copy.hpp>
 #include <math.hpp>

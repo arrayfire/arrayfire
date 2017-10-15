@@ -8,31 +8,7 @@
 ********************************************************/
 
 #ifdef USE_F77_BLAS
-
-#ifdef AF_CPU
-    #include <blas.hpp>
-#else
-    #ifdef USE_MKL
-        #include <mkl_cblas.h>
-    #else
-        #ifdef __APPLE__
-            #include <Accelerate/Accelerate.h>
-        #else
-            extern "C" {
-                #include <cblas.h>
-            }
-        #endif
-    #endif
-
-    // TODO: Ask upstream for a more official way to detect it
-    #ifdef OPENBLAS_CONST
-        #define IS_OPENBLAS
-    #endif
-
-    #ifndef IS_OPENBLAS
-        typedef int blasint;
-    #endif
-#endif
+#include <common/blas_headers.hpp>
 
 #define ADD_
 #include <cblas.h>

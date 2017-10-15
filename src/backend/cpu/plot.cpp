@@ -12,7 +12,7 @@
 #include <Array.hpp>
 #include <plot.hpp>
 #include <err_cpu.hpp>
-#include <graphics_common.hpp>
+#include <common/graphics_common.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 

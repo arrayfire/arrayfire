@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <platform.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <cublas.hpp>
 
 namespace cuda

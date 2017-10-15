@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <inverse.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 #include <solve.hpp>
 #include <identity.hpp>

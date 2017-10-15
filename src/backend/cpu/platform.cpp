@@ -9,28 +9,16 @@
 
 #include <af/version.h>
 #include <platform.hpp>
-#include <defines.hpp>
+#include <common/defines.hpp>
 #include <version.hpp>
-#include <host_memory.hpp>
+#include <common/host_memory.hpp>
 
 #include <cctype>
 #include <sstream>
 
 using namespace std;
 
-#if !CPUID_CAPABLE
-
-CPUInfo::CPUInfo()
-    : mVendorId(""), mModelName(""), mNumSMT(0), mNumCores(0), mNumLogCpus(0), mIsHTT(false)
-{
-    mVendorId = "Unknown";
-    mModelName= "Unknown";
-    mNumSMT   = 1;
-    mNumCores = 1;
-    mNumLogCpus = 1;
-}
-
-#else
+#ifdef CPUID_CAPABLE
 
 CPUInfo::CPUInfo()
     : mVendorId(""), mModelName(""), mNumSMT(0), mNumCores(0), mNumLogCpus(0), mIsHTT(false)
@@ -110,6 +98,18 @@ CPUInfo::CPUInfo()
         mModelName += string((const char*)&cpuID.EDX(), 4);
     }
     mModelName = string(mModelName.c_str());
+}
+
+#else
+
+CPUInfo::CPUInfo()
+  : mVendorId(""), mModelName(""), mNumSMT(0), mNumCores(0), mNumLogCpus(0), mIsHTT(false)
+{
+  mVendorId = "Unknown";
+  mModelName= "Unknown";
+  mNumSMT   = 1;
+  mNumCores = 1;
+  mNumLogCpus = 1;
 }
 
 #endif

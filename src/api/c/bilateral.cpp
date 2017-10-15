@@ -13,7 +13,7 @@
 #include <handle.hpp>
 #include <backend.hpp>
 #include <bilateral.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 using af::dim4;
 using namespace detail;

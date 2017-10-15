@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <qr.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 #include <platform.hpp>
 #include <cublas_v2.h>
@@ -17,7 +17,7 @@
 #include <copy.hpp>
 
 #include <math.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 
 #include <kernel/triangle.hpp>
 

@@ -9,9 +9,7 @@
 
 #pragma once
 #include <af/defines.h>
-#include <defines.hpp>
-#include <limits>
-#include <algorithm>
+#include <common/defines.hpp>
 #include "backend.hpp"
 #include "types.hpp"
 
@@ -19,6 +17,9 @@
 #include <math_functions.h>
 #include <math_constants.h>
 #endif
+
+#include <limits>
+#include <algorithm>
 
 namespace cuda
 {
@@ -140,25 +141,25 @@ __SDH__  conj(T  x) { return x; }
 __SDH__ cfloat  conj(cfloat  c) { return cuConjf(c);}
 __SDH__ cdouble conj(cdouble c) { return cuConj(c); }
 
-__SDH__ cfloat make_cfloat(bool     x) { return make_cuComplex(x,0);     }
-__SDH__ cfloat make_cfloat(int      x) { return make_cuComplex(x,0);     }
-__SDH__ cfloat make_cfloat(unsigned x) { return make_cuComplex(x,0);     }
-__SDH__ cfloat make_cfloat(short    x) { return make_cuComplex(x,0);     }
-__SDH__ cfloat make_cfloat(ushort   x) { return make_cuComplex(x,0);     }
-__SDH__ cfloat make_cfloat(float    x) { return make_cuComplex(x,0);     }
-__SDH__ cfloat make_cfloat(double   x) { return make_cuComplex(x,0);     }
-__SDH__ cfloat make_cfloat(cfloat   x) { return x;                    }
-__SDH__ cfloat make_cfloat(cdouble  c) { return make_cuComplex(c.x,c.y); }
+__SDH__ cfloat make_cfloat(bool     x) { return make_cuComplex(static_cast<float>(x),0);     }
+__SDH__ cfloat make_cfloat(int      x) { return make_cuComplex(static_cast<float>(x),0);     }
+__SDH__ cfloat make_cfloat(unsigned x) { return make_cuComplex(static_cast<float>(x),0);     }
+__SDH__ cfloat make_cfloat(short    x) { return make_cuComplex(static_cast<float>(x),0);     }
+__SDH__ cfloat make_cfloat(ushort   x) { return make_cuComplex(static_cast<float>(x),0);     }
+__SDH__ cfloat make_cfloat(float    x) { return make_cuComplex(static_cast<float>(x),0);     }
+  __SDH__ cfloat make_cfloat(double   x) { return make_cuComplex(static_cast<float>(x),0);     }
+  __SDH__ cfloat make_cfloat(cfloat   x) { return x;                    }
+  __SDH__ cfloat make_cfloat(cdouble  c) { return make_cuComplex(c.x,c.y); }
 
-__SDH__ cdouble make_cdouble(bool      x) { return make_cuDoubleComplex(x,0);       }
-__SDH__ cdouble make_cdouble(int       x) { return make_cuDoubleComplex(x,0);       }
-__SDH__ cdouble make_cdouble(unsigned  x) { return make_cuDoubleComplex(x,0);       }
-__SDH__ cdouble make_cdouble(short     x) { return make_cuDoubleComplex(x,0);       }
-__SDH__ cdouble make_cdouble(ushort    x) { return make_cuDoubleComplex(x,0);       }
-__SDH__ cdouble make_cdouble(float     x) { return make_cuDoubleComplex(x,0);       }
-__SDH__ cdouble make_cdouble(double    x) { return make_cuDoubleComplex(x,0);       }
+__SDH__ cdouble make_cdouble(bool      x) { return make_cuDoubleComplex(static_cast<double>(x),0);       }
+__SDH__ cdouble make_cdouble(int       x) { return make_cuDoubleComplex(static_cast<double>(x),0);       }
+__SDH__ cdouble make_cdouble(unsigned  x) { return make_cuDoubleComplex(static_cast<double>(x),0);       }
+__SDH__ cdouble make_cdouble(short     x) { return make_cuDoubleComplex(static_cast<double>(x),0);       }
+__SDH__ cdouble make_cdouble(ushort    x) { return make_cuDoubleComplex(static_cast<double>(x),0);       }
+__SDH__ cdouble make_cdouble(float     x) { return make_cuDoubleComplex(static_cast<double>(x),0);       }
+__SDH__ cdouble make_cdouble(double    x) { return make_cuDoubleComplex(static_cast<double>(x),0);       }
 __SDH__ cdouble make_cdouble(cdouble   x) { return x;                       }
-__SDH__ cdouble make_cdouble(cfloat    c) { return make_cuDoubleComplex(c.x,c.y);   }
+__SDH__ cdouble make_cdouble(cfloat    c) { return make_cuDoubleComplex(static_cast<double>(c.x),c.y);   }
 
 __SDH__ cfloat make_cfloat(float x, float y) { return make_cuComplex(x, y); }
 __SDH__ cdouble make_cdouble(double x, double y) { return make_cuDoubleComplex(x, y); }

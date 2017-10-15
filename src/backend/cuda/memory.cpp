@@ -13,9 +13,9 @@
 #include <platform.hpp>
 #include <err_cuda.hpp>
 #include <memory.hpp>
-#include <util.hpp>
+#include <common/util.hpp>
 #include <types.hpp>
-#include <dispatch.hpp>
+#include <common/dispatch.hpp>
 
 #include <mutex>
 

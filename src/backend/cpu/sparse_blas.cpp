@@ -9,16 +9,16 @@
 
 #include <sparse_blas.hpp>
 
-#include <stdexcept>
-#include <string>
-#include <cassert>
-
 #include <af/dim4.hpp>
 #include <complex.hpp>
-#include <err_common.hpp>
+#include <common/err_common.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+
+#include <stdexcept>
+#include <string>
+#include <cassert>
 
 namespace cpu
 {

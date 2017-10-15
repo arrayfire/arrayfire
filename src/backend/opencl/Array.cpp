@@ -17,7 +17,7 @@
 #include <platform.hpp>
 #include <cstddef>
 #include <af/opencl.h>
-#include <util.hpp>
+#include <common/util.hpp>
 
 using af::dim4;
 
