@@ -72,36 +72,61 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     const int N = rDims[bColDim];
     const int K = lDims[aColDim];
 
-    Array<T> out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
+    dim_t d2 = std::max(lDims[2], rDims[2]);
+    dim_t d3 = std::max(lDims[3], rDims[3]);
+    dim4 oDims = af::dim4(M, N, d2, d3);
+    Array<T> out = createEmptyArray<T>(oDims);
+
     const auto alpha = scalar<T>(1);
     const auto beta  = scalar<T>(0);
 
     const dim4 lStrides = lhs.strides();
     const dim4 rStrides = rhs.strides();
-    cl::Event event;
-    if(rDims[bColDim] == 1) {
-        dim_t incr = (rOpts == OPENCL_BLAS_NO_TRANS) ? rStrides[0] : rStrides[1];
-        gpu_blas_gemv_func<T> gemv;
-        OPENCL_BLAS_CHECK(
-            gemv(lOpts, lDims[0], lDims[1],
-                 alpha,
-                 (*lhs.get())(), lhs.getOffset(), lStrides[1],
-                 (*rhs.get())(), rhs.getOffset(), incr,
-                 beta,
-                 (*out.get())(), out.getOffset(), 1,
-                 1, &getQueue()(), 0, nullptr, &event())
-        );
-    } else {
-        gpu_blas_gemm_func<T> gemm;
-        OPENCL_BLAS_CHECK(
-            gemm(lOpts, rOpts, M, N, K,
-                 alpha,
-                 (*lhs.get())(), lhs.getOffset(), lStrides[1],
-                 (*rhs.get())(), rhs.getOffset(), rStrides[1],
-                 beta,
-                 (*out.get())(), out.getOffset(), out.dims()[0],
-                 1, &getQueue()(), 0, nullptr, &event())
-        );
+    const dim4 oStrides = out.strides();
+
+    int batchSize = oDims[2] * oDims[3];
+
+    bool is_l_d2_batched = oDims[2] == lDims[2];
+    bool is_l_d3_batched = oDims[3] == lDims[3];
+    bool is_r_d2_batched = oDims[2] == rDims[2];
+    bool is_r_d3_batched = oDims[3] == rDims[3];
+
+    for (int n = 0; n < batchSize; n++) {
+        int w = n / rDims[2];
+        int z = n - w * rDims[2];
+
+        int loff = z * (is_l_d2_batched * lStrides[2]) + w * (is_l_d3_batched * lStrides[3]);
+        int roff = z * (is_r_d2_batched * rStrides[2]) + w * (is_r_d3_batched * rStrides[3]);
+
+        dim_t lOffset = lhs.getOffset() + loff;
+        dim_t rOffset = rhs.getOffset() + roff;
+        dim_t oOffset = out.getOffset() + z * oStrides[2] + w * oStrides[3];
+
+        cl::Event event;
+        if(rDims[bColDim] == 1) {
+            dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
+            gpu_blas_gemv_func<T> gemv;
+            OPENCL_BLAS_CHECK(
+                gemv(lOpts, lDims[0], lDims[1],
+                     alpha,
+                     (*lhs.get())(), lOffset, lStrides[1],
+                     (*rhs.get())(), rOffset, incr,
+                     beta,
+                     (*out.get())(), oOffset, 1,
+                     1, &getQueue()(), 0, nullptr, &event())
+                );
+        } else {
+            gpu_blas_gemm_func<T> gemm;
+            OPENCL_BLAS_CHECK(
+                gemm(lOpts, rOpts, M, N, K,
+                     alpha,
+                     (*lhs.get())(), lOffset, lStrides[1],
+                     (*rhs.get())(), rOffset, rStrides[1],
+                     beta,
+                     (*out.get())(), oOffset, out.dims()[0],
+                     1, &getQueue()(), 0, nullptr, &event())
+                );
+        }
     }
 
     return out;
