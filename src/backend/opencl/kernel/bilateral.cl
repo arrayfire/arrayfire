@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if USE_NATIVE_EXP
+#ifdef USE_NATIVE_EXP
 #define EXP native_exp
 #else
 #define EXP exp
