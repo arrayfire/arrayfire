@@ -36,7 +36,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
           OPTIONS
             -DSBK_TYPE=${SBK_TYPE}
             -DINSTANTIATESBK_INST=INSTANTIATE${SBK_INST}
-            "${cuda_cxx_flags} -Xcompiler -fPIC -DAFDLL"
+            "${cuda_cxx_flags} -DAFDLL"
       )
 
       list(APPEND SORT_OBJ ${scan_by_key_gen_files})

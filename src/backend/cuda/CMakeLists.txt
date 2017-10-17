@@ -110,6 +110,9 @@ function(cuda_add_library cuda_target)
 endfunction()
 
 arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
+if(NOT MSVC)
+  set(cuda_cxx_flags "${cuda_cxx_flags} -Xcompiler -fPIC")
+endif()
 
 include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/thrust_sort_by_key/CMakeLists.txt)
@@ -385,7 +388,7 @@ cuda_add_library(afcuda
     JIT/UnaryNode.hpp
     JIT/types.h
 
-    OPTIONS "${cuda_cxx_flags} -Xcompiler -fPIC -Xcudafe \"--diag_suppress=1427\""
+    OPTIONS "${cuda_cxx_flags} -Xcudafe \"--diag_suppress=1427\""
   )
 
 add_library(ArrayFire::afcuda ALIAS afcuda)
@@ -393,7 +396,6 @@ add_library(ArrayFire::afcuda ALIAS afcuda)
 if(BUILD_NONFREE)
   target_compile_definitions(afcuda PRIVATE AF_BUILD_NONFREE_SIFT)
 endif()
-
 
 if(BUILD_GRAPHICS)
   target_sources(afcuda
