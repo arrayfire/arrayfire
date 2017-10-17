@@ -12,7 +12,6 @@
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
 #include <vector>
-#include <iostream>
 #include <string>
 #include <testHelpers.hpp>
 

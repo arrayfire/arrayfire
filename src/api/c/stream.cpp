@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <vector>

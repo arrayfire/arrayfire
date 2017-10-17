@@ -9,7 +9,7 @@
 
 /// This file contains platform independent utility functions
 
-#include <string>
+#include <iosfwd>
 
 #pragma once
 
