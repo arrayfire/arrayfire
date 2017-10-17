@@ -25,13 +25,6 @@ major vendors (Intel, AMD, ARM), GPUs from the prominent manufacturers
 (NVIDIA, AMD, and Qualcomm), as well as a variety of other accelerator devices
 on Windows, Mac, and Linux.
 
-## Build and Test Status
-
-|         | Linux x86_64 | Linux aarch64 | OSX | Windows |
-|:-------:|:------------:|:-------------:|:---:|:-------:|
-| Build   | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/build/devel)](http://ci.arrayfire.org/job/arrayfire-linux/job/build/job/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrax1/build/devel)](http://ci.arrayfire.org/job/arrayfire-tegrax1/job/build/job/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/build-mkl/devel)](http://ci.arrayfire.org/job/arrayfire-osx/job/build-mkl/job/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/build/devel)](http://ci.arrayfire.org/job/arrayfire-windows/job/build/job/devel/) |
-| Test    | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/test/devel)](http://ci.arrayfire.org/job/arrayfire-linux/job/test/job/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegrax1/test/devel)](http://ci.arrayfire.org/job/arrayfire-tegrax1/job/test/job/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/test-mkl/devel)](http://ci.arrayfire.org/job/arrayfire-osx/job/test-mkl/job/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/test/devel)](http://ci.arrayfire.org/job/arrayfire-windows/job/test/job/devel/) |
-
 ## Installation
 
 You can install the ArrayFire library from one of the following ways:
