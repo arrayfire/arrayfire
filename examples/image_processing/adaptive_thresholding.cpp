@@ -91,7 +91,7 @@ int main(int argc, char **argv)
         array itt = 255.0f - iterativeThreshold(sudoku);
 
         af::Window wnd("Adaptive Thresholding Algorithms");
-        std::cout << "Press ESC while the window is in focus to exit" << std::endl;
+        printf("Press ESC while the window is in focus to exit\n");
         while (!wnd.close()) {
             wnd.grid(2, 3);
             wnd(0, 0).image(sudoku / 255, "Input");

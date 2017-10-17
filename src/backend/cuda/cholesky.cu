@@ -13,7 +13,6 @@
 #include <platform.hpp>
 #include <cublas_v2.h>
 #include <identity.hpp>
-#include <iostream>
 #include <memory.hpp>
 #include <copy.hpp>
 #include <triangle.hpp>

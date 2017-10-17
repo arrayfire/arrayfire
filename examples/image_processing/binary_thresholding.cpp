@@ -77,7 +77,7 @@ int main(int argc, char **argv)
         array smoothHist = histogram(smooth, 256, 0, 255);
 
         af::Window wnd(1536, 1024, "Binary Thresholding Algorithms");
-        std::cout << "Press ESC while the window is in focus to proceed to exit" << std::endl;
+        printf("Press ESC while the window is in focus to proceed to exit\n");
 
         wnd.grid(3, 3);
         wnd(0, 1).setAxesTitles("Bins", "Frequency");

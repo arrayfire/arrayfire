@@ -69,11 +69,11 @@ int main(int argc, char** argv)
     try {
         af::setDevice(device);
         af::info();
-        std::cout << "** ArrayFire FAST Feature Detector Demo **" << std::endl << std::endl;
+        printf("** ArrayFire FAST Feature Detector Demo **\n\n");
         fast_demo(console);
 
     } catch (af::exception& ae) {
-        std::cerr << ae.what() << std::endl;
+        fprintf(stderr, "%s\n", ae.what());
         throw;
     }
 

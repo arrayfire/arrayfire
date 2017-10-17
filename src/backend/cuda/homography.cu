@@ -14,7 +14,6 @@
 #include <kernel/homography.hpp>
 #include <algorithm>
 
-#include <iostream>
 #include <cfloat>
 
 using af::dim4;

@@ -18,7 +18,6 @@
 #include <testHelpers.hpp>
 
 #include <complex>
-#include <iostream>
 #include <string>
 #include <vector>
 
