@@ -115,7 +115,7 @@ int main(int argc, char **argv)
         array bdry = boundary(man, morph_mask);
 
         af::Window wnd("Image Editing Operations");
-        std::cout << "Press ESC while the window is in focus to exit" << std::endl;
+        printf("Press ESC while the window is in focus to exit\n");
         while (!wnd.close()) {
             wnd.grid(2, 5);
             wnd(0, 0).image(man / 255, "Input");

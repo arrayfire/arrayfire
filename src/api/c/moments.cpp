@@ -23,7 +23,6 @@
 #include <cast.hpp>
 #include <arith.hpp>
 
-#include <iostream>
 #include <limits>
 
 using af::dim4;

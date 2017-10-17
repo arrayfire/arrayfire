@@ -15,7 +15,6 @@
 #include <af/dim4.hpp>
 #include <handle.hpp>
 #include <range.hpp>
-#include <iostream>
 #include <cassert>
 #include <err_cpu.hpp>
 

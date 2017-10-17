@@ -55,7 +55,6 @@
 
 #ifndef MAGMA_DATA_H
 #define MAGMA_DATA_H
-#include <iostream>
 
 #include <platform.hpp>
 #include "magma_types.h"

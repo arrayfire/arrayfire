@@ -10,7 +10,6 @@
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 #include <arrayfire.h>
-#include <iostream>
 
 using namespace af;
 using std::vector;

@@ -11,7 +11,6 @@
 
 #include <array>
 #include <algorithm>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <memory.hpp>

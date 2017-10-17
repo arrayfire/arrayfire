@@ -14,7 +14,6 @@
 
 #include <af/dim4.hpp>
 #include <handle.hpp>
-#include <iostream>
 #include <cassert>
 #include <err_cpu.hpp>
 #include <triangle.hpp>
