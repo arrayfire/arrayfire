@@ -6,6 +6,7 @@ project(ArrayFire-Examples
 
 if(WIN32)
   add_definitions(-DWIN32_LEAN_AND_MEAN)
+  unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 endif()
 
 # Some examples take too long to execute. This list is used to exclude these
