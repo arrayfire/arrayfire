@@ -1014,6 +1014,57 @@ void DeviceManager::markDeviceForInterop(const int device, const forge::Window* 
     }
 }
 #endif
+
+bool isDedicatedLocalMem(int device)
+{
+    return getDevice(device).getInfo<CL_DEVICE_LOCAL_MEM_TYPE>() == CL_LOCAL;
+}
+
+cl_device_local_mem_type getLocalMemType(int device)
+{
+    return getDevice(device).getInfo<CL_DEVICE_LOCAL_MEM_TYPE>();
+}
+
+size_t getDeviceLocalMemorySize(int device)
+{
+    return getDevice(device).getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
+}
+
+cl_device_type getDeviceType(int device)
+{
+    return getDevice(device).getInfo<CL_DEVICE_TYPE>();
+}
+
+#define VECTORIZE_DEFINES(type, prefix)         \
+template<>                                      \
+size_t preferredVectorWidth<type>(int device)   \
+{                                               \
+    return getDevice(device).getInfo< CL_DEVICE_PREFERRED_VECTOR_WIDTH_##prefix >();\
+}
+
+VECTORIZE_DEFINES(char   , CHAR  )
+VECTORIZE_DEFINES(short  , SHORT )
+VECTORIZE_DEFINES(int    , INT   )
+VECTORIZE_DEFINES(long   , LONG  )
+VECTORIZE_DEFINES(float  , FLOAT )
+VECTORIZE_DEFINES(double , DOUBLE)
+
+size_t getDeviceWorkGroupSize(const cl::Kernel& kern, int device)
+{
+    const Device& dev = getDevice(device);
+    // The OpenCL implementation uses the resource requirements of the
+    // kernel (register usage etc.) to determine what this work-group size should be.
+    return kern.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(dev);
+}
+
+size_t getDeviceHardwareSIMDWidth(const cl::Kernel& kern, int device)
+{
+    const Device& dev = getDevice(device);
+    // CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE is usually
+    // the warp in NVIDIA CUDA terminology
+    // and wavefront(64) in AMD terminology
+    return kern.getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(dev);
+}
 }
 
 using namespace opencl;

@@ -12,6 +12,8 @@
 #include <kernel_headers/KParam.hpp>
 #include <debug_opencl.hpp>
 #include <iostream>
+#include <algorithm>
+#include <dispatch.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -66,5 +68,33 @@ namespace opencl
             SHOW_BUILD_INFO(prog);
             throw;
         }
+    }
+
+    NDRange getKernelLaunchCfg1D(const Kernel& kernel)
+    {
+        int device = getActiveDeviceId();
+
+        size_t dim0ThreadCount = getDeviceWorkGroupSize(kernel, device);
+
+        // make sure you are not launching what the device can't handle
+        dim0ThreadCount = std::min(getDevice(device).getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>(), dim0ThreadCount);
+
+        return cl::NDRange(dim0ThreadCount, 1, 1);
+    }
+
+    NDRange getKernelLaunchCfg2D(const Kernel& kernel)
+    {
+        int device = getActiveDeviceId();
+
+        size_t dim0ThreadCount = kernel.getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(getDevice(device));
+
+        size_t recomWorkGroupSize = getDeviceWorkGroupSize(kernel, device);
+
+        size_t dim1ThreadCount = divup(recomWorkGroupSize, dim0ThreadCount);
+
+        // make sure you are not launching what the device can't handle
+        dim1ThreadCount = std::min(getDevice(device).getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>(), dim1ThreadCount);
+
+        return cl::NDRange(dim0ThreadCount, dim1ThreadCount, 1);
     }
 }
