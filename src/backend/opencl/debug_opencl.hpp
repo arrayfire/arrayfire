@@ -13,7 +13,6 @@
 #include <errorcodes.hpp>
 
 #ifndef NDEBUG
-#include <iostream>
 #define CL_DEBUG_FINISH(Q) Q.finish()
 #else
 #define CL_DEBUG_FINISH(Q)                      \
@@ -21,5 +20,5 @@
         if(synchronize_calls()) {               \
             Q.finish();                         \
         }                                       \
-    } while (false); 
+    } while (false);
 #endif

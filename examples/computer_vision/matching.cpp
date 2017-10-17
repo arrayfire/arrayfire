@@ -7,9 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <cstdio>
 #include <arrayfire.h>
 #include <cstdlib>
+#include <cstdio>
+#include <iostream>
 
 using namespace af;
 

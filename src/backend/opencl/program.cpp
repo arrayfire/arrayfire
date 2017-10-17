@@ -11,7 +11,6 @@
 #include <traits.hpp>
 #include <kernel_headers/KParam.hpp>
 #include <debug_opencl.hpp>
-#include <iostream>
 
 using cl::Buffer;
 using cl::Program;

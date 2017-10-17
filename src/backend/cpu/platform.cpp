@@ -229,7 +229,7 @@ int setDevice(int device)
     thread_local bool flag = false;
     if (!flag && device != 0) {
 #ifndef NDEBUG
-        std::cerr << "WARNING af_set_device(device): device can only be 0 for CPU\n";
+        fprintf(stderr, "WARNING af_set_device(device): device can only be 0 for CPU\n");
 #endif
         flag = true;
     }

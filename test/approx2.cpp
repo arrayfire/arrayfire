@@ -15,7 +15,6 @@
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 
-#include <iostream>
 #include <string>
 #include <vector>
 
