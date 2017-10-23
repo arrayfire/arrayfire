@@ -12,7 +12,7 @@
 #include <common/err_common.hpp>
 #include <err_cpu.hpp>
 
-#if defined(WITH_CPU_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 #include <lapack_helper.hpp>
 #include <copy.hpp>
 #include <platform.hpp>
@@ -99,7 +99,7 @@ void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
 
 }
 
-#else
+#else  // WITH_LINEAR_ALGEBRA
 
 namespace cpu
 {
@@ -118,7 +118,7 @@ void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
 
 }
 
-#endif
+#endif  // WITH_LINEAR_ALGEBRA
 
 namespace cpu
 {

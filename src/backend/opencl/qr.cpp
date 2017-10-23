@@ -12,7 +12,7 @@
 #include <blas.hpp>
 #include <copy.hpp>
 
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 
 #include <magma/magma.h>
 #include <magma/magma_helper.h>
@@ -118,7 +118,7 @@ INSTANTIATE_QR(cdouble)
 
 }
 
-#else
+#else  // WITH_LINEAR_ALGEBRA
 
 namespace opencl
 {
@@ -146,4 +146,4 @@ INSTANTIATE_QR(cdouble)
 
 }
 
-#endif
+#endif  // WITH_LINEAR_ALGEBRA

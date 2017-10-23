@@ -10,7 +10,7 @@
 #include <cholesky.hpp>
 #include <common/err_common.hpp>
 
-#if defined(WITH_CPU_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 
 #include <af/dim4.hpp>
 #include <handle.hpp>
@@ -93,7 +93,7 @@ INSTANTIATE_CH(cdouble)
 
 }
 
-#else
+#else  // WITH_LINEAR_ALGEBRA
 
 namespace cpu
 {
@@ -122,4 +122,4 @@ INSTANTIATE_CH(cdouble)
 
 }
 
-#endif
+#endif  // WITH_LINEAR_ALGEBRA

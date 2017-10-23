@@ -18,7 +18,7 @@
 //********************************************************/
 // LAPACK
 //********************************************************/
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 
 #define lapack_complex_float opencl::cfloat
 #define lapack_complex_double opencl::cdouble
@@ -40,6 +40,6 @@
     #endif
 #endif
 
-#endif // WITH_OPENCL_LINEAR_ALGEBRA
+#endif  // WITH_LINEAR_ALGEBRA
 
-#endif
+#endif  // AF_OPENCL_CPU

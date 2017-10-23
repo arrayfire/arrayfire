@@ -10,7 +10,7 @@
 #include <err_opencl.hpp>
 #include <solve.hpp>
 
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 #include <magma/magma.h>
 #include <magma/magma_blas.h>
 #include <magma/magma_data.h>
@@ -330,7 +330,7 @@ INSTANTIATE_SOLVE(double)
 INSTANTIATE_SOLVE(cdouble)
 }
 
-#else
+#else  // WITH_LINEAR_ALGEBRA
 
 namespace opencl
 {
@@ -363,4 +363,4 @@ INSTANTIATE_SOLVE(cdouble)
 
 }
 
-#endif
+#endif  // WITH_LINEAR_ALGEBRA

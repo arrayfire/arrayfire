@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 #ifndef CPU_LAPACK_TRIANGLE
 #define CPU_LAPACK_TRIANGLE
 
@@ -54,4 +54,4 @@ void triangle(T *o, const T *i, const dim4 odm, const dim4 ost, const dim4 ist)
 }
 
 #endif
-#endif
+#endif  // WITH_LINEAR_ALGEBRA

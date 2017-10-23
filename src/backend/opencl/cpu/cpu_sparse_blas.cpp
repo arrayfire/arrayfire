@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 #include <cpu/cpu_sparse_blas.hpp>
 
 #include <stdexcept>
@@ -532,4 +532,4 @@ INSTANTIATE_SPARSE(cdouble)
 
 }
 }
-#endif
+#endif  // WITH_LINEAR_ALGEBRA
