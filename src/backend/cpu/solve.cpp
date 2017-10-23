@@ -10,7 +10,7 @@
 #include <solve.hpp>
 #include <common/err_common.hpp>
 
-#if defined(WITH_CPU_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 #include <af/dim4.hpp>
 #include <handle.hpp>
 #include <cassert>
@@ -163,7 +163,7 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 
 }
 
-#else
+#else  // WITH_LINEAR_ALGEBRA
 
 namespace cpu
 {
@@ -183,7 +183,7 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 
 }
 
-#endif
+#endif  // WITH_LINEAR_ALGEBRA
 
 namespace cpu
 {

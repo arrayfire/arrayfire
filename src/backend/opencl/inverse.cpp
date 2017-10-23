@@ -11,7 +11,7 @@
 #include <solve.hpp>
 #include <identity.hpp>
 
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 #include <platform.hpp>
 #include <cpu/cpu_inverse.hpp>
 
@@ -39,7 +39,7 @@ INSTANTIATE(cdouble)
 
 }
 
-#else
+#else  // WITH_LINEAR_ALGEBRA
 
 namespace opencl
 {

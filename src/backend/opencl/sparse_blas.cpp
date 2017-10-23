@@ -26,9 +26,9 @@
 #include <platform.hpp>
 #include <transpose.hpp>
 
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 #include <cpu/cpu_sparse_blas.hpp>
-#endif
+#endif  // WITH_LINEAR_ALGEBRA
 
 namespace opencl
 {
@@ -39,7 +39,7 @@ template<typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhsIn,
                 af_mat_prop optLhs, af_mat_prop optRhs)
 {
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
     if(OpenCLCPUOffload(false)) {   // Do not force offload gemm on OSX Intel devices
         return cpu::matmul(lhs, rhsIn, optLhs, optRhs);
     }

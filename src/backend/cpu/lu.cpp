@@ -10,7 +10,7 @@
 #include <lu.hpp>
 #include <common/err_common.hpp>
 
-#if defined(WITH_CPU_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 #include <af/dim4.hpp>
 #include <handle.hpp>
 #include <kernel/lu.hpp>
@@ -97,7 +97,7 @@ bool isLAPACKAvailable()
 
 }
 
-#else
+#else  // WITH_LINEAR_ALGEBRA
 
 namespace cpu
 {
@@ -121,7 +121,7 @@ bool isLAPACKAvailable()
 
 }
 
-#endif
+#endif  // WITH_LINEAR_ALGEBRA
 
 namespace cpu
 {
