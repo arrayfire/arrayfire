@@ -18,48 +18,50 @@ namespace kernel
 {
 
 template<typename InT, typename LocT, int order>
-void approx1(Param<InT> output, CParam<InT> input,
-             CParam<LocT> xposition, const float offGrid, af_interp_type method)
+void approx1(Param<InT> yo, CParam<InT> yi,
+             CParam<LocT> xo, const int xdim,
+             const LocT &xi_beg, const LocT &xi_step,
+             const float offGrid, af_interp_type method)
 {
-    InT * out = output.get();
-    const LocT *xpos = xposition.get();
+    InT *yo_ptr = yo.get();
+    const LocT *xo_ptr = xo.get();
 
-    const af::dim4 odims     = output.dims();
-    const af::dim4 idims     = input.dims();
-    const af::dim4 xdims     = xposition.dims();
+    const af::dim4 yo_dims     = yo.dims();
+    const af::dim4 yi_dims     = yi.dims();
+    const af::dim4 xo_dims     = xo.dims();
 
-    const af::dim4 ostrides  = output.strides();
-    const af::dim4 istrides  = input.strides();
-    const af::dim4 xstrides  = xposition.strides();
+    const af::dim4 yo_strides  = yo.strides();
+    const af::dim4 yi_strides  = yi.strides();
+    const af::dim4 xo_strides  = xo.strides();
 
     Interp1<InT, LocT, order> interp;
-    bool batch = !(xdims[1] == 1 && xdims[2] == 1 && xdims[3] == 1);
+    bool batch[] = {xo_dims[0] > 1, xo_dims[1] > 1, xo_dims[2] > 1, xo_dims[3] > 1};
 
-    for(dim_t idw = 0; idw < odims[3]; idw++) {
-        for(dim_t idz = 0; idz < odims[2]; idz++) {
-            dim_t ooffzw = idw * ostrides[3] + idz * ostrides[2];
-            dim_t ioffzw = idw * istrides[3] + idz * istrides[2];
-            dim_t xoffzw = idw * xstrides[3] + idz * xstrides[2];
+    for(dim_t idw = 0; idw < yo_dims[3]; idw++) {
+        for(dim_t idz = 0; idz < yo_dims[2]; idz++) {
+            dim_t ooffzw = idw * yo_strides[3] + idz * yo_strides[2];
+            dim_t ioffzw = idw * yi_strides[3] + idz * yi_strides[2];
+            dim_t xoffzw = idw * xo_strides[3] * batch[3] + idz * xo_strides[2] * batch[2];
 
-            for(dim_t idy = 0; idy < odims[1]; idy++) {
+            for(dim_t idy = 0; idy < yo_dims[1]; idy++) {
 
-                dim_t ooff = ooffzw + idy * ostrides[1];
-                dim_t ioff = ioffzw + idy * istrides[1];
-                dim_t xoff = xoffzw + idy * xstrides[1];
+                dim_t ooff = ooffzw + idy * yo_strides[1];
+                dim_t ioff = ioffzw + idy * yi_strides[1];
+                dim_t xoff = xoffzw + idy * xo_strides[1] * batch[1];
 
-                for(dim_t idx = 0; idx < odims[0]; idx++) {
+                for(dim_t idx = 0; idx < yo_dims[0]; idx++) {
 
-                    const LocT x = xpos[batch * xoff + idx];
+                    const LocT x = (xo_ptr[xoff + idx * batch[0]] - xi_beg) / xi_step;
 
                     // FIXME: Only cubic interpolation is doing clamping
                     // We need to make it consistent across all methods
                     // Not changing the behavior because tests will fail
                     bool clamp = order == 3;
 
-                    if (x < 0 || idims[0] < x + 1) {
-                        out[ooff + idx] = scalar<InT>(offGrid);
+                    if (x < 0 || yi_dims[xdim] < x + 1) {
+                        yo_ptr[ooff + idx] = scalar<InT>(offGrid);
                     } else {
-                        interp(output, ooff + idx, input, ioff, x, method, 1, clamp);
+                        interp(yo, ooff + idx, yi, ioff, x, method, 1, clamp);
                     }
                 }
             }
@@ -68,53 +70,56 @@ void approx1(Param<InT> output, CParam<InT> input,
 }
 
 template<typename InT, typename LocT, int order>
-void approx2(Param<InT> output, CParam<InT> input,
-             CParam<LocT> xposition, CParam<LocT> yposition,
+void approx2(Param<InT> zo, CParam<InT> zi,
+             CParam<LocT> xo, const int xdim,
+             CParam<LocT> yo, const int ydim,
+             const LocT &xi_beg, const LocT &xi_step,
+             const LocT &yi_beg, const LocT &yi_step,
              float const offGrid, af_interp_type method)
 {
-    InT * out = output.get();
-    const LocT *xpos = xposition.get();
-    const LocT *ypos = yposition.get();
+    InT *zo_ptr = zo.get();
+    const LocT *xo_ptr = xo.get();
+    const LocT *yo_ptr = yo.get();
 
-    af::dim4 const odims     = output.dims();
-    af::dim4 const idims     = input.dims();
-    af::dim4 const xdims     = xposition.dims();
-    af::dim4 const ostrides  = output.strides();
-    af::dim4 const istrides  = input.strides();
-    af::dim4 const xstrides  = xposition.strides();
-    af::dim4 const ystrides  = yposition.strides();
+    af::dim4 const zo_dims     = zo.dims();
+    af::dim4 const zi_dims     = zi.dims();
+    af::dim4 const xo_dims     = xo.dims();
+    af::dim4 const zo_strides  = zo.strides();
+    af::dim4 const zi_strides  = zi.strides();
+    af::dim4 const xo_strides  = xo.strides();
+    af::dim4 const yo_strides  = yo.strides();
 
     Interp2<InT, LocT, order> interp;
-    bool batch = !(xdims[2] == 1 && xdims[3] == 1);
+    bool batch[] = {xo_dims[0] > 1, xo_dims[1] > 1, xo_dims[2] > 1, xo_dims[3] > 1};
 
-    for(dim_t idw = 0; idw < odims[3]; idw++) {
-        for(dim_t idz = 0; idz < odims[2]; idz++) {
+    for(dim_t idw = 0; idw < zo_dims[3]; idw++) {
+        for(dim_t idz = 0; idz < zo_dims[2]; idz++) {
 
-            dim_t xoffzw = idw * xstrides[3] + idz * xstrides[2];
-            dim_t yoffzw = idw * ystrides[3] + idz * ystrides[2];
-            dim_t ooffzw = idw * ostrides[3] + idz * ostrides[2];
-            dim_t ioffzw = idw * istrides[3] + idz * istrides[2];
+            dim_t xoffzw = idw * xo_strides[3] * batch[3] + idz * xo_strides[2] * batch[2];
+            dim_t yoffzw = idw * yo_strides[3] * batch[3] + idz * yo_strides[2] * batch[2];
+            dim_t ooffzw = idw * zo_strides[3] + idz * zo_strides[2];
+            dim_t ioffzw = idw * zi_strides[3] + idz * zi_strides[2];
 
-            for(dim_t idy = 0; idy < odims[1]; idy++) {
-                dim_t xoff = xoffzw * batch + idy * xstrides[1];
-                dim_t yoff = yoffzw * batch + idy * ystrides[1];
-                dim_t ooff = ooffzw         + idy * ostrides[1];
+            for(dim_t idy = 0; idy < zo_dims[1]; idy++) {
+                dim_t xoff = xoffzw + idy * xo_strides[1] * batch[1];
+                dim_t yoff = yoffzw + idy * yo_strides[1] * batch[1];
+                dim_t ooff = ooffzw + idy * zo_strides[1];
 
-                for(dim_t idx = 0; idx < odims[0]; idx++) {
+                for(dim_t idx = 0; idx < zo_dims[0]; idx++) {
 
-                    const LocT x = xpos[xoff + idx];
-                    const LocT y = ypos[yoff + idx];
+                    const LocT x = (xo_ptr[xoff + idx] - xi_beg) / xi_step;
+                    const LocT y = (yo_ptr[yoff + idx] - yi_beg) / yi_step;
 
                     // FIXME: Only cubic interpolation is doing clamping
                     // We need to make it consistent across all methods
                     // Not changing the behavior because tests will fail
                     bool clamp = order == 3;
 
-                    if (x < 0 || idims[0] < x + 1 ||
-                        y < 0 || idims[1] < y + 1 ) {
-                        out[ooff + idx] = scalar<InT>(offGrid);
+                    if (x < 0 || zi_dims[0] < x + 1 ||
+                        y < 0 || zi_dims[1] < y + 1 ) {
+                        zo_ptr[ooff + idx] = scalar<InT>(offGrid);
                     } else {
-                        interp(output, ooff + idx, input, ioffzw, x, y, method, 1, clamp);
+                        interp(zo, ooff + idx, zi, ioffzw, x, y, method, 1, clamp);
                     }
                 }
             }
