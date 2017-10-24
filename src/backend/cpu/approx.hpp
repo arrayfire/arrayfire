@@ -12,10 +12,16 @@
 namespace cpu
 {
     template<typename Ty, typename Tp>
-    Array<Ty> approx1(const Array<Ty> &in, const Array<Tp> &pos,
+    Array<Ty> approx1(const Array<Ty> &yi,
+                      const Array<Tp> &xo, const int xdim,
+                      const Tp &xi_beg, const Tp &xi_step,
                       const af_interp_type method, const float offGrid);
 
     template<typename Ty, typename Tp>
-    Array<Ty> approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &pos1,
+    Array<Ty> approx2(const Array<Ty> &zi,
+                      const Array<Tp> &xo, const int xdim,
+                      const Array<Tp> &yo, const int ydim,
+                      const Tp &xi_beg, const Tp &xi_step,
+                      const Tp &yi_beg, const Tp &yi_step,
                       const af_interp_type method, const float offGrid);
 }
