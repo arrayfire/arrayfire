@@ -172,13 +172,13 @@ template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
                  const Array<T> &b, const af_mat_prop options)
 {
-    AF_ERROR("Linear Algebra is diabled on CPU", AF_ERR_NOT_CONFIGURED);
+    AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }
 
 template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
-    AF_ERROR("Linear Algebra is diabled on CPU", AF_ERR_NOT_CONFIGURED);
+    AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }
 
 }
