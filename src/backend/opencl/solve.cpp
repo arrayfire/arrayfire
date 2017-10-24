@@ -339,14 +339,14 @@ template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
                  const Array<T> &b, const af_mat_prop options)
 {
-    AF_ERROR("Linear Algebra is diabled on OpenCL",
+    AF_ERROR("Linear Algebra is disabled on OpenCL",
              AF_ERR_NOT_CONFIGURED);
 }
 
 template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
-    AF_ERROR("Linear Algebra is diabled on OpenCL",
+    AF_ERROR("Linear Algebra is disabled on OpenCL",
               AF_ERR_NOT_CONFIGURED);
 }
 

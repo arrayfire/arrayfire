@@ -90,7 +90,7 @@ namespace cpu
 template<typename T>
 Array<T> inverse(const Array<T> &in)
 {
-    AF_ERROR("Linear Algebra is diabled on CPU",
+    AF_ERROR("Linear Algebra is disabled on CPU",
               AF_ERR_NOT_CONFIGURED);
 }
 
