@@ -26,7 +26,7 @@ find_package(OpenMP)
 find_package(FreeImage)
 find_package(Threads)
 find_package(FFTW)
-find_package(CBLAS)
+find_package(BLAS)
 find_package(LAPACKE)
 find_package(Doxygen)
 
@@ -74,6 +74,10 @@ if(WIN32)
   # C4275: Warnings about using non-exported classes as base class of an
   #        exported class
   add_compile_options(/wd4251 /wd4068 /wd4275)
+endif()
+
+if(BLAS_mkl_core_LIBRARY)
+  SET(MKL_FOUND TRUE)
 endif()
 
 if(BUILD_GRAPHICS)
