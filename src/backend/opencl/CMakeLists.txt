@@ -484,19 +484,19 @@ if(LAPACK_FOUND)
       (CMAKE_CXX_COMPILER_ID STREQUAL "Intel" AND (UNIX AND NOT APPLE)))
       # MKL requires multiple passes when linking with the static libs. This can be
       # done in CMake using LINK_INTERFACE_MULTIPLICITY but that will require
-      # changine the way FindCBLAS works. This can also be done using the
+      # changine the way FindBLAS works. This can also be done using the
       # --start-group and --end-group linker around the libraries in the linking
       # step.
       #
-      # TODO(umar): Change the way CBLAS libraries are found and linked
-      set(CBLAS_LIBRARIES -Wl,--start-group ${CBLAS_LIBRARIES} -Wl,--end-group)
+      # TODO(umar): Change the way BLAS libraries are found and linked
+      set(BLAS_LIBRARIES -Wl,--start-group ${BLAS_LIBRARIES} -Wl,--end-group)
     endif()
   else()
     if(USE_CPU_F77_BLAS)
       target_compile_definitions(afopencl PRIVATE USE_F77_BLAS)
     endif()
 
-    dependency_check(CBLAS_LIBRARIES "CBLAS not found.")
+    dependency_check(BLAS_LIBRARIES "BLAS not found.")
   endif()
 
   target_compile_definitions(
@@ -508,11 +508,8 @@ if(LAPACK_FOUND)
   target_link_libraries(afopencl
     PRIVATE
       afcommon_lapack_interface
-      ${CBLAS_LIBRARIES}
+      ${BLAS_LIBRARIES}
     )
-  target_include_directories(afopencl
-    PRIVATE
-      ${CBLAS_INCLUDE_DIR})
 endif(LAPACK_FOUND)
 
 install(TARGETS afopencl

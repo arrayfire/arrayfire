@@ -8,7 +8,7 @@
 include(InternalUtils)
 
 dependency_check(FFTW_FOUND "FFTW not found")
-dependency_check(CBLAS_FOUND "CBLAS not found")
+dependency_check(BLAS_FOUND "BLAS not found")
 
 add_library(afcpu "")
 add_library(ArrayFire::afcpu ALIAS afcpu)
@@ -286,7 +286,6 @@ target_include_directories(afcpu
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     threads
-    ${CBLAS_INCLUDE_DIR}
   )
 
 # TODO(umar) Find a better way to determine BLAS selection
@@ -298,12 +297,12 @@ if(USE_CPU_MKL)
     (CMAKE_CXX_COMPILER_ID STREQUAL "Intel" AND (UNIX AND NOT APPLE)))
     # MKL requires multiple passes when linking with the static libs. This can be
     # done in CMake using LINK_INTERFACE_MULTIPLICITY but that will require
-    # changine the way FindCBLAS works. This can also be done using the
+    # changine the way FindBLAS works. This can also be done using the
     # --start-group and --end-group linker around the libraries in the linking
     # step.
     #
-    # TODO(umar): Change the way CBLAS libraries are found and linked
-    set(CBLAS_LIBRARIES -Wl,--start-group ${CBLAS_LIBRARIES} -Wl,--end-group)
+    # TODO(umar): Change the way BLAS libraries are found and linked
+    set(BLAS_LIBRARIES -Wl,--start-group ${BLAS_LIBRARIES} -Wl,--end-group)
   endif()
 endif()
 
@@ -319,7 +318,7 @@ target_link_libraries(afcpu
     afcommon_interface
     afcommon_lapack_interface
     cpu_sort_by_key
-    ${CBLAS_LIBRARIES}
+    ${BLAS_LIBRARIES}
     FFTW::FFTW
     FFTW::FFTWF
   )

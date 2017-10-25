@@ -26,7 +26,7 @@ find_package(OpenMP)
 find_package(FreeImage)
 find_package(Threads)
 find_package(FFTW)
-find_package(CBLAS)
+find_package(BLAS)
 find_package(LAPACKE)
 find_package(Doxygen)
 
