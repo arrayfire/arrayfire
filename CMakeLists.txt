@@ -76,6 +76,10 @@ if(WIN32)
   add_compile_options(/wd4251 /wd4068 /wd4275)
 endif()
 
+if(BLAS_mkl_core_LIBRARY)
+  SET(MKL_FOUND TRUE)
+endif()
+
 if(BUILD_GRAPHICS)
   include(build_forge)
 endif()
