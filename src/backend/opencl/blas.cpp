@@ -21,7 +21,7 @@
 // Includes one of the supported OpenCL BLAS back-ends (e.g. clBLAS, CLBlast)
 #include <magma/magma_blas.h>
 
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 #include <cpu/cpu_blas.hpp>
 #endif
 
@@ -54,7 +54,7 @@ template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
 {
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
     if(OpenCLCPUOffload(false)) {   // Do not force offload gemm on OSX Intel devices
         return cpu::matmul(lhs, rhs, optLhs, optRhs);
     }

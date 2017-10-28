@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 #include <ctime>
-#include <iostream>
 #include <algorithm>
 #include <testHelpers.hpp>
 

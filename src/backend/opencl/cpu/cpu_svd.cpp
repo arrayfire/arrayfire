@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 #include <cpu/cpu_helper.hpp>
 #include <cpu/cpu_svd.hpp>
 #include <copy.hpp>
@@ -109,4 +109,4 @@ namespace cpu
     INSTANTIATE_SVD(cdouble, double)
 }
 }
-#endif
+#endif  // WITH_LINEAR_ALGEBRA

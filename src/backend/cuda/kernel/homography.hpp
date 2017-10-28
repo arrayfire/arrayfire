@@ -17,8 +17,6 @@
 
 #include <cfloat>
 
-#include <iostream>
-
 namespace cuda
 {
 

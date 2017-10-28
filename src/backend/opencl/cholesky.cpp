@@ -12,7 +12,7 @@
 #include <blas.hpp>
 #include <copy.hpp>
 
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 #include <magma/magma.h>
 #include <triangle.hpp>
 #include <platform.hpp>
@@ -69,7 +69,7 @@ INSTANTIATE_CH(cdouble)
 
 }
 
-#else
+#else  // WITH_LINEAR_ALGEBRA
 
 namespace opencl
 {
@@ -98,4 +98,4 @@ INSTANTIATE_CH(cdouble)
 
 }
 
-#endif
+#endif  // WITH_LINEAR_ALGEBRA

@@ -14,11 +14,9 @@
 #include <common/util.hpp>
 
 #include <algorithm>
-
-// TODO(umar): Remove iostream
 #include <iomanip>
-#include <iostream>
 #include <mutex>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -263,8 +261,6 @@ class MemoryManager
         current.lock_bytes -= iter->second.bytes;
         current.lock_buffers--;
 
-        current.locked_map.erase(iter);
-
         if (this->debug_mode) {
             // Just free memory in debug mode
             if ((iter->second).bytes > 0) {
@@ -285,6 +281,8 @@ class MemoryManager
                 current.free_map[bytes] = ptrs;
             }
         }
+
+        current.locked_map.erase(iter);
     }
 
     void garbageCollect()
@@ -298,38 +296,34 @@ class MemoryManager
         lock_guard_t lock(this->memory_mutex);
         const memory_info& current = this->getCurrentMemoryInfo();
 
-        std::cout << msg << std::endl;
-
+        printf("%s\n", msg);
         printf("---------------------------------------------------------\n"
                "|     POINTER      |    SIZE    |  AF LOCK  | USER LOCK |\n"
                "---------------------------------------------------------\n");
 
         for(auto& kv : current.locked_map) {
-            std::string status_mngr("Yes");
-            std::string status_user("Unknown");
+            const char* status_mngr = "Yes";
+            const char* status_user = "Unknown";
             if(kv.second.user_lock)     status_user = "Yes";
             else                        status_user = " No";
 
-            std::string unit = "KB";
+            const char* unit = "KB";
             double size = (double)(kv.second.bytes) / 1024;
             if(size >= 1024) {
                 size = size / 1024;
                 unit = "MB";
             }
 
-            std::cout << "|  " << std::right << std::setw(14) << kv.first << " "
-                << " | " << std::setw(7) << std::setprecision(4) << size << " " << unit
-                << " | " << std::setw(9) << status_mngr
-                << " | " << std::setw(9) << status_user
-                << " |"  << std::endl;
+            printf("|  %14p  |  %6.f %s | %9s | %9s |\n",
+                   kv.first, size, unit, status_mngr, status_user);
         }
 
         for(auto &kv : current.free_map) {
 
-            std::string status_mngr("No");
-            std::string status_user("No");
+            const char* status_mngr = "No";
+            const char* status_user = "No";
 
-            std::string unit = "KB";
+            const char* unit = "KB";
             double size = (double)(kv.first) / 1024;
             if(size >= 1024) {
                 size = size / 1024;
@@ -337,11 +331,8 @@ class MemoryManager
             }
 
             for (auto &ptr : kv.second) {
-                std::cout << "|  " << std::right << std::setw(14) << ptr << " "
-                    << " | " << std::setw(7) << std::setprecision(4) << size << " " << unit
-                    << " | " << std::setw(9) << status_mngr
-                    << " | " << std::setw(9) << status_user
-                    << " |"  << std::endl;
+              printf("|  %14p  |  %6.f %s | %9s | %9s |\n",
+                     ptr, size, unit, status_mngr, status_user);
             }
         }
 

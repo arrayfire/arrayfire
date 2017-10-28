@@ -10,12 +10,11 @@
 #include <inverse.hpp>
 #include <common/err_common.hpp>
 
-#if defined(WITH_CPU_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 
 #include <af/dim4.hpp>
 #include <handle.hpp>
 #include <range.hpp>
-#include <iostream>
 #include <cassert>
 #include <err_cpu.hpp>
 
@@ -83,7 +82,7 @@ INSTANTIATE(cdouble)
 
 }
 
-#else
+#else  // WITH_LINEAR_ALGEBRA
 
 namespace cpu
 {
@@ -91,7 +90,7 @@ namespace cpu
 template<typename T>
 Array<T> inverse(const Array<T> &in)
 {
-    AF_ERROR("Linear Algebra is diabled on CPU",
+    AF_ERROR("Linear Algebra is disabled on CPU",
               AF_ERR_NOT_CONFIGURED);
 }
 
@@ -105,4 +104,4 @@ INSTANTIATE(cdouble)
 
 }
 
-#endif
+#endif  // WITH_LINEAR_ALGEBRA

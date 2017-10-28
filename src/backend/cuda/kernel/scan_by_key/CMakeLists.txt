@@ -30,7 +30,7 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
     cuda_compile(scan_by_key_gen_files "${CMAKE_CURRENT_BINARY_DIR}/kernel/scan_by_key/scan_by_key_impl_${SBK_BINARY_OP}.cu"
           "${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim_by_key_impl.hpp"
           "${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first_by_key_impl.hpp"
-          OPTIONS -DSBK_BINARY_OP=${SBK_BINARY_OP} "${cuda_cxx_flags} -Xcompiler -fPIC -DAFDLL"
+          OPTIONS -DSBK_BINARY_OP=${SBK_BINARY_OP} "${cuda_cxx_flags} -DAFDLL"
       )
 
     list(APPEND SCAN_OBJ ${scan_by_key_gen_files})

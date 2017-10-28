@@ -15,7 +15,7 @@
 #include <blas.hpp>
 #include <transpose.hpp>
 
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 
 #include <magma/magma.h>
 #include <magma/magma_cpu_lapack.h>
@@ -238,7 +238,7 @@ INSTANTIATE(cdouble, double)
 
 }
 
-#else
+#else  // WITH_LINEAR_ALGEBRA
 
 namespace opencl
 {
@@ -266,4 +266,4 @@ INSTANTIATE(cdouble, double)
 
 }
 
-#endif
+#endif  // WITH_LINEAR_ALGEBRA

@@ -11,7 +11,7 @@
 
 #ifdef __cplusplus
 
-#include <iostream>
+#include <ostream>
 #include <af/defines.h>
 
 namespace af {

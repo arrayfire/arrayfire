@@ -25,7 +25,6 @@
 #include <cast.hpp>
 #include <arith.hpp>
 
-#include <iostream>
 #include <limits>
 
 using af::dim4;
@@ -79,7 +78,7 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
 {
 #if defined(WITH_GRAPHICS)
     if(wind==0) {
-        std::cerr<<"Not a valid window"<<std::endl;
+        fprintf(stderr, "Not a valid window\n");
         return AF_SUCCESS;
     }
 

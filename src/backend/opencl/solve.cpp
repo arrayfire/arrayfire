@@ -10,7 +10,7 @@
 #include <err_opencl.hpp>
 #include <solve.hpp>
 
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#if defined(WITH_LINEAR_ALGEBRA)
 #include <magma/magma.h>
 #include <magma/magma_blas.h>
 #include <magma/magma_data.h>
@@ -330,7 +330,7 @@ INSTANTIATE_SOLVE(double)
 INSTANTIATE_SOLVE(cdouble)
 }
 
-#else
+#else  // WITH_LINEAR_ALGEBRA
 
 namespace opencl
 {
@@ -339,14 +339,14 @@ template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
                  const Array<T> &b, const af_mat_prop options)
 {
-    AF_ERROR("Linear Algebra is diabled on OpenCL",
+    AF_ERROR("Linear Algebra is disabled on OpenCL",
              AF_ERR_NOT_CONFIGURED);
 }
 
 template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
-    AF_ERROR("Linear Algebra is diabled on OpenCL",
+    AF_ERROR("Linear Algebra is disabled on OpenCL",
               AF_ERR_NOT_CONFIGURED);
 }
 
@@ -363,4 +363,4 @@ INSTANTIATE_SOLVE(cdouble)
 
 }
 
-#endif
+#endif  // WITH_LINEAR_ALGEBRA

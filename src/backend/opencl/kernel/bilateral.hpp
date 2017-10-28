@@ -47,16 +47,15 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
     kc_entry_t entry = kernelCache(device, refName);
 
     if (entry.prog==0 && entry.ker==0) {
-        bool use_native_exp = (getActivePlatform() != AFCL_PLATFORM_POCL
-                && getActivePlatform() != AFCL_PLATFORM_APPLE);
         std::ostringstream options;
         options << " -D inType=" << dtype_traits<inType>::getName()
             << " -D outType=" << dtype_traits<outType>::getName();
         if (std::is_same<inType, double>::value ||
                 std::is_same<inType, cdouble>::value) {
             options << " -D USE_DOUBLE";
+        } else {
+            options << " -D USE_NATIVE_EXP";
         }
-        options << " -D USE_NATIVE_EXP=" << (int)use_native_exp;
 
         const char* ker_strs[] = {bilateral_cl};
         const int   ker_lens[] = {bilateral_cl_len};

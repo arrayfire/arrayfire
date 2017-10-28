@@ -44,9 +44,9 @@ array border(const array& img, const int left, const int right,
         const float value = 0.0)
 {
     if((int)img.dims(0) < (top + bottom))
-        std::cerr << "input does not have enough rows" << std::endl;
+        printf("input does not have enough rows\n");
     if((int)img.dims(1) < (left + right))
-        std::cerr << "input does not have enough columns" << std::endl;
+        fprintf(stderr, "input does not have enough columns\n");
 
     dim4 imgDims = img.dims();
     array ret = constant(value, imgDims);

@@ -110,7 +110,7 @@ static void harris_demo(bool console)
         array corners_y = idx % corners.dims()[0];
 
         const int good_corners = corners_x.dims()[0];
-        std::cout << "Corners found: " << good_corners << std::endl << std::endl;
+        printf("Corners found: %d\n\n", good_corners);
 
         af_print(corners_x);
         af_print(corners_y);
@@ -125,11 +125,11 @@ int main(int argc, char** argv)
     try {
         af::setDevice(device);
         af::info();
-        std::cout << "** ArrayFire Harris Corner Detector Demo **" << std::endl << std::endl;
+        printf("** ArrayFire Harris Corner Detector Demo **\n\n");
         harris_demo(console);
 
     } catch (af::exception& ae) {
-        std::cerr << ae.what() << std::endl;
+        fprintf(stderr, "%s\n", ae.what());
         throw;
     }
 

@@ -13,7 +13,6 @@
 #include <af/defines.h>
 #include <af/traits.hpp>
 #include <vector>
-#include <iostream>
 #include <complex>
 #include <string>
 #include <testHelpers.hpp>
