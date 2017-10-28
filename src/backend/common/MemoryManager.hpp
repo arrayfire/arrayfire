@@ -261,8 +261,6 @@ class MemoryManager
         current.lock_bytes -= iter->second.bytes;
         current.lock_buffers--;
 
-        current.locked_map.erase(iter);
-
         if (this->debug_mode) {
             // Just free memory in debug mode
             if ((iter->second).bytes > 0) {
@@ -283,6 +281,8 @@ class MemoryManager
                 current.free_map[bytes] = ptrs;
             }
         }
+
+        current.locked_map.erase(iter);
     }
 
     void garbageCollect()
