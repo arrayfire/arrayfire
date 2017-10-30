@@ -109,7 +109,6 @@ if(NOT LAPACK_FOUND)
     endif()
 endif()
 
-# TODO(umar): Enable other backends
 add_subdirectory(src/backend/common)
 add_subdirectory(src/api/c)
 add_subdirectory(src/api/cpp)

@@ -18,7 +18,12 @@
 #include <common/dispatch.hpp>
 #include <cache.hpp>
 
+using cl::Buffer;
+using cl::EnqueueArgs;
 using cl::KernelFunctor;
+using cl::Kernel;
+using cl::NDRange;
+using cl::Program;
 using cl::LocalSpaceArg;
 
 namespace opencl
