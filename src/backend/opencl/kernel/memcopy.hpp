@@ -21,10 +21,12 @@
 #include <debug_opencl.hpp>
 
 using cl::Buffer;
-using cl::Program;
-using cl::KernelFunctor;
 using cl::EnqueueArgs;
+using cl::Kernel;
+using cl::KernelFunctor;
 using cl::NDRange;
+using cl::Program;
+
 using std::string;
 
 namespace opencl
