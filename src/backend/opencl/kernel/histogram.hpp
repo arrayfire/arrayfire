@@ -17,8 +17,12 @@
 #include <Param.hpp>
 #include <debug_opencl.hpp>
 
+using cl::Buffer;
+using cl::EnqueueArgs;
 using cl::Kernel;
 using cl::KernelFunctor;
+using cl::NDRange;
+using cl::Program;
 
 namespace opencl
 {
