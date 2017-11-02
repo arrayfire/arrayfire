@@ -480,7 +480,10 @@ else()
     message(STATUS "CUDA driver stub FOUND: ${CUDA_CUDA_STUB}")
   endif()
 
-  target_link_libraries(afcuda ${CUDA_CUDA_STUB})
+  #NOTE: Only link against the stub library when building
+  target_link_libraries(afcuda
+    PUBLIC
+      $<BUILD_INTERFACE:${CUDA_CUDA_STUB}>)
 endif()
 
 # TODO(umar): This is required for NVRTC to work correctly on OSX. It may not
