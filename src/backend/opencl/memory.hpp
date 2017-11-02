@@ -8,11 +8,13 @@
  ********************************************************/
 #pragma once
 
-#include <cstdlib>
-#include <map>
-#include <vector>
 #include <common/MemoryManager.hpp>
+
+#include <cstdlib>
+#include <functional>
+#include <map>
 #include <memory>
+#include <vector>
 
 namespace cl
 {

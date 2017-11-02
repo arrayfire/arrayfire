@@ -10,6 +10,8 @@
 
 #include <af/defines.h>
 #include <common/MemoryManager.hpp>
+
+#include <functional>
 #include <memory>
 
 namespace cpu

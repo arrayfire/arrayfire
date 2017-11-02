@@ -10,6 +10,8 @@
 
 #include <cstdlib>
 #include <common/MemoryManager.hpp>
+
+#include <functional>
 #include <memory>
 namespace cuda
 {
