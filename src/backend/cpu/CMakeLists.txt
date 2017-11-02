@@ -322,6 +322,7 @@ target_link_libraries(afcpu
     ${CBLAS_LIBRARIES}
     FFTW::FFTW
     FFTW::FFTWF
+    Threads::Threads
   )
 
 install(TARGETS afcpu
