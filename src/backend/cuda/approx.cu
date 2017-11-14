@@ -54,7 +54,7 @@ namespace cuda
                       const Tp &yi_beg, const Tp &yi_step,
                       const af_interp_type method, const float offGrid)
     {
-        af::dim4 odims = zi.dims()
+        af::dim4 odims = zi.dims();
         odims[xdim] = xo.dims()[xdim];
         odims[ydim] = xo.dims()[ydim];
 
