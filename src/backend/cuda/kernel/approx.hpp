@@ -42,17 +42,26 @@ namespace cuda
                 idz >= yo.dims[2] || idw >= yo.dims[3])
                 return;
 
-            const int omId = idw * yo.strides[3] + idz * yo.strides[2] + idy * yo.strides[1] + idx;
-            int xmid = idx;
-            if(batch) xmid += idw * xo.strides[3] + idz * xo.strides[2] + idy * xo.strides[1];
+            bool is_xo_off[] = {xo.dims[0] > 1, xo.dims[1] > 1, xo.dims[2] > 1, xo.dims[3] > 1};
+            bool is_yi_off[] = {true, true, true, true};
+            is_yi_off[xdim] = false;
 
-            const Tp x = (xo.ptr[xmid] - xi_beg) / xi_step;
-            if (x < 0 || yi.dims[0] < x+1) {
-                yo.ptr[omId] = scalar<Ty>(offGrid);
+            const int yo_idx = idw * yo.strides[3] + idz * yo.strides[2] + idy * yo.strides[1] + idx;
+            int xo_idx = idx * is_xo_off[0];
+            xo_idx += idw * xo.strides[3] * is_xo_off[3];
+            xo_idx += idz * xo.strides[2] * is_xo_off[2];
+            xo_idx += idy * xo.strides[1] * is_xo_off[1];
+
+            const Tp x = (xo.ptr[xo_idx] - xi_beg) / xi_step;
+            if (x < 0 || yi.dims[xdim] < x+1) {
+                yo.ptr[yo_idx] = scalar<Ty>(offGrid);
                 return;
             }
 
-            int ioff = idw * yi.strides[3] + idz * yi.strides[2] + idy * yi.strides[1];
+            int yi_idx = idx * is_yi_off[0];
+            yi_idx += idw * yi.strides[3] * is_yi_off[3];
+            yi_idx += idz * yi.strides[2] * is_yi_off[2];
+            yi_idx += idy * yi.strides[1] * is_yi_off[1];
 
             // FIXME: Only cubic interpolation is doing clamping
             // We need to make it consistent across all methods
@@ -60,7 +69,7 @@ namespace cuda
             bool clamp = order == 3;
 
             Interp1<Ty, Tp, order> interp;
-            interp(yo, omId, yi, ioff, x, method, 1, clamp);
+            interp(yo, yo_idx, yi, yi_idx, x, method, 1, clamp, xdim);
         }
 
         template<typename Ty, typename Tp, int order>
@@ -86,22 +95,26 @@ namespace cuda
                 idz >= zo.dims[2] || idw >= zo.dims[3])
                 return;
 
-            const int omId = idw * zo.strides[3] + idz * zo.strides[2] + idy * zo.strides[1] + idx;
-            int xmid = idy * xo.strides[1] + idx;
-            int ymid = idy * yo.strides[1] + idx;
-            if(batch) {
-                xmid += idw * xo.strides[3] + idz * xo.strides[2];
-                ymid += idw * yo.strides[3] + idz * yo.strides[2];
-            }
+            bool is_xo_off[] = {xo.dims[0] > 1, xo.dims[1] > 1, xo.dims[2] > 1, xo.dims[3] > 1};
+            bool is_zi_off[] = {true, true, true, true};
+            is_zi_off[xdim] = false;
+            is_zi_off[ydim] = false;
 
-            const Tp x = (xo.ptr[xmid] - xi_beg) / xi_step;
-            const Tp y = (yo.ptr[ymid] - yi_beg) / yi_step;
-            if (x < 0 || y < 0 || zi.dims[0] < x+1 || zi.dims[1] < y+1) {
-                zo.ptr[omId] = scalar<Ty>(offGrid);
+            const int zo_idx = idw * zo.strides[3] + idz * zo.strides[2] + idy * zo.strides[1] + idx;
+            int xo_idx = idy * xo.strides[1] * is_xo_off[1] + idx * is_xo_off[0];
+            int yo_idx = idy * yo.strides[1] * is_xo_off[1] + idx * is_xo_off[0];
+            xo_idx += idw * xo.strides[3] * is_xo_off[3] + idz * xo.strides[2]  * is_xo_off[2];
+            yo_idx += idw * yo.strides[3] * is_xo_off[3] + idz * yo.strides[2]  * is_xo_off[2];
+
+            const Tp x = (xo.ptr[xo_idx] - xi_beg) / xi_step;
+            const Tp y = (yo.ptr[yo_idx] - yi_beg) / yi_step;
+            if (x < 0 || y < 0 || zi.dims[xdim] < x+1 || zi.dims[ydim] < y+1) {
+                zo.ptr[zo_idx] = scalar<Ty>(offGrid);
                 return;
             }
 
-            int ioff = idw * zi.strides[3] + idz * zi.strides[2];
+            int zi_idx = idy * zi.strides[1] * is_zi_off[1] + idx * is_zi_off[0];
+            zi_idx += idw * zi.strides[3] * is_zi_off[3] + idz * zi.strides[2] * is_zi_off[2];
 
             // FIXME: Only cubic interpolation is doing clamping
             // We need to make it consistent across all methods
@@ -109,7 +122,7 @@ namespace cuda
             bool clamp = order == 3;
 
             Interp2<Ty, Tp, order> interp;
-            interp(zo, omId, zi, ioff, x, y, method, 1, clamp);
+            interp(zo, zo_idx, zi, zi_idx, x, y, method, 1, clamp, xdim, ydim);
         }
 
         ///////////////////////////////////////////////////////////////////////////
