@@ -27,25 +27,34 @@ void approx1_kernel(__global       Ty *d_yo, const KParam yo,
        idw >= yo.dims[3])
         return;
 
-    const int omId = idw * yo.strides[3] + idz * yo.strides[2]
-        + idy * yo.strides[1] + idx + yo.offset;
-    int xmid = idx + xo.offset;
-    if(batch) xmid += idw * xo.strides[3] + idz * xo.strides[2] + idy * xo.strides[1];
+    bool is_xo_off[] = {xo.dims[0] > 1, xo.dims[1] > 1, xo.dims[2] > 1, xo.dims[3] > 1};
+    bool is_yi_off[] = {true, true, true, true};
+    is_yi_off[xdim] = false;
 
-    const Tp x = (d_xo[xmid] - xi_beg) / xi_step;
-    if (x < 0 || yi.dims[0] < x+1) {
-        d_yo[omId] = offGrid;
+    const int yo_idx = idw * yo.strides[3] + idz * yo.strides[2] + idy * yo.strides[1] + idx + yo.offset;
+
+    int xo_idx = idx * is_xo_off[0] + xo.offset;
+    xo_idx += idw * xo.strides[3] * is_xo_off[3];
+    xo_idx += idz * xo.strides[2] * is_xo_off[2];
+    xo_idx += idy * xo.strides[1] * is_xo_off[1];
+
+    const Tp x = (d_xo[xo_idx] - xi_beg) / xi_step;
+    if (x < 0 || yi.dims[xdim] < x+1) {
+        d_yo[yo_idx] = offGrid;
         return;
     }
 
-    int ioff = idw * yi.strides[3] + idz * yi.strides[2] + idy * yi.strides[1] + yi.offset;
+    int yi_idx = idx * is_yi_off[0] + yi.offset;
+    yi_idx += idw * yi.strides[3] * is_yi_off[3];
+    yi_idx += idz * yi.strides[2] * is_yi_off[2];
+    yi_idx += idy * yi.strides[1] * is_yi_off[1];
 
     // FIXME: Only cubic interpolation is doing clamping
     // We need to make it consistent across all methods
     // Not changing the behavior because tests will fail
     bool clamp = INTERP_ORDER == 3;
 
-    interp1(d_yo, yo, omId,
-            d_yi,  yi, ioff,
-            x, method, 1, clamp);
+    interp1_dim(d_yo, yo, yo_idx,
+                d_yi, yi, yi_idx,
+                x, method, 1, clamp, xdim);
 }
