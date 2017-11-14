@@ -106,7 +106,7 @@ void approx1(Param yo, const Param yi, const Param xo, const int xdim,
     NDRange local(THREADS, 1, 1);
     dim_t blocksPerMat = divup(yo.info.dims[0], local[0]);
     NDRange global(blocksPerMat * local[0] * yo.info.dims[1],
-                   yo.info.dims[2] * yo.info.dims[3] * local[0], 1);
+                   yo.info.dims[2] * yo.info.dims[3] * local[1]);
 
     // Passing bools to opencl kernels is not allowed
     bool batch = !(xo.info.dims[1] == 1 && xo.info.dims[2] == 1 && xo.info.dims[3] == 1);
