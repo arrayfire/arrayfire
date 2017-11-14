@@ -227,7 +227,7 @@ struct Interp2<Ty, Tp, 1>
 };
 
 template<typename Ty, typename Tp>
-struct Interp2<Ty, Tp, 2>
+struct Interp2<Ty, Tpxo, 2>
 {
     __device__ void operator()(Param<Ty> out, int ooff,
                                CParam<Ty> in, int ioff, Tp x, Tp y,
