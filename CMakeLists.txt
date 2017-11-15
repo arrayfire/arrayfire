@@ -164,6 +164,9 @@ IF(UNIX)
     ENDIF()
 ELSE(${UNIX}) #Windows
     ADD_DEFINITIONS(-DOS_WIN -DNOMINMAX)
+    IF(CMAKE_GENERATOR MATCHES "Ninja")
+        ADD_COMPILE_OPTIONS(/FS)
+    ENDIF()
     IF(MSVC)
         # MP is multiprocess compilation. Gm- disables minimal rebuilds
         # http://stackoverflow.com/questions/6172205/how-can-i-do-a-parallel-build-in-visual-studio-2010vvvvvvvv
@@ -203,6 +206,7 @@ ENDIF()
 ADD_EXECUTABLE(bin2cpp ${PROJECT_SOURCE_DIR}/CMakeModules/bin2cpp.cpp)
 
 IF(${BUILD_TEST})
+    INCLUDE(CTest)
     ENABLE_TESTING()
     ADD_SUBDIRECTORY(test)
 ENDIF()
