@@ -9,7 +9,7 @@
 #   LAPACK_INCLUDES            ... LAPACKE include directory
 #
 
-SET(LAPACKE_ROOT_DIR CACHE STRING
+SET(LAPACKE_ROOT_DIR "" CACHE STRING
   "Root directory for custom LAPACK implementation")
 
 IF (NOT INTEL_MKL_ROOT_DIR)
@@ -66,7 +66,7 @@ IF(PC_LAPACKE_FOUND)
 
 ELSE(PC_LAPACKE_FOUND)
 
-    IF ("${SIZE_OF_VOIDP}" EQUAL 8)
+    IF ("${CMAKE_SIZEOF_VOID_P}" EQUAL 8)
         SET(MKL_LIB_DIR_SUFFIX "intel64")
     ELSE()
         SET(MKL_LIB_DIR_SUFFIX "ia32")
@@ -101,7 +101,7 @@ ELSE(PC_LAPACKE_FOUND)
     ELSE()
         FIND_LIBRARY(
             LAPACKE_LIB
-            NAMES "lapacke" "liblapacke" "openblas" "mkl_rt"
+            NAMES "mkl_rt" "lapacke" "liblapacke" "openblas"
             PATHS
             ${PC_LAPACKE_LIBRARY_DIRS}
             ${LIB_INSTALL_DIR}
@@ -116,7 +116,7 @@ ELSE(PC_LAPACKE_FOUND)
             )
         FIND_LIBRARY(
            LAPACK_LIB
-            NAMES "lapack" "liblapack" "openblas" "mkl_rt"
+            NAMES "mkl_rt" "lapack" "liblapack" "openblas"
             PATHS
             ${PC_LAPACKE_LIBRARY_DIRS}
             ${LIB_INSTALL_DIR}
@@ -131,7 +131,7 @@ ELSE(PC_LAPACKE_FOUND)
             )
         FIND_PATH(
             LAPACKE_INCLUDES
-            NAMES "lapacke.h" "mkl_lapacke.h"
+            NAMES "mkl_lapacke.h" "lapacke.h"
             PATHS
             ${PC_LAPACKE_INCLUDE_DIRS}
             ${INCLUDE_INSTALL_DIR}
