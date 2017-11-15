@@ -56,7 +56,9 @@ SET(CMAKE_FIND_LIBRARY_SUFFIXES_SAV ${CMAKE_FIND_LIBRARY_SUFFIXES})
 IF(${FFTW_USE_STATIC_LIBS} )
     SET(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
 ELSE()
-    SET(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX})
+    IF(NOT WIN32)
+      SET(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX})
+    ENDIF()
 ENDIF()
 
 IF ("${SIZE_OF_VOIDP}" EQUAL 8)
@@ -72,14 +74,12 @@ IF(FFTW_ROOT)
         NAMES "fftw3" "libfftw3-3" "fftw3-3" "mkl_rt"
         PATHS ${FFTW_ROOT}
         PATH_SUFFIXES "lib" "lib64" "lib/${MKL_LIB_DIR_SUFFIX}"
-        NO_DEFAULT_PATH
         )
     FIND_LIBRARY(
         FFTWF_LIB
         NAMES "fftw3f" "libfftw3f-3" "fftw3f-3" "mkl_rt"
         PATHS ${FFTW_ROOT}
         PATH_SUFFIXES "lib" "lib64" "lib/${MKL_LIB_DIR_SUFFIX}"
-        NO_DEFAULT_PATH
         )
 
     #find includes
@@ -88,7 +88,6 @@ IF(FFTW_ROOT)
         NAMES "fftw3.h"
         PATHS ${FFTW_ROOT}
         PATH_SUFFIXES "include" "include/fftw"
-        NO_DEFAULT_PATH
         )
 ELSE()
     FIND_LIBRARY(
