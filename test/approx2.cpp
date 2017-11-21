@@ -434,3 +434,67 @@ TEST(Approx2, CPPCubicMaxDims)
 
     SUCCEED();
 }
+
+TEST(Approx2, OtherDimLinear)
+{
+    int start = 0;
+    int stop = 10000;
+    int step = 100;
+    int num = 1000;
+    af::array xi = af::tile(af::seq(start, stop, step), 1, 2, 2, 2);
+    af::array yi = af::tile(af::seq(start, stop, step), 1, 2, 2, 2);
+    af::array zi = 4 * xi * yi - 3 * xi;
+    af::array xo = af::round(step * af::randu(num, 2, 2, 2));
+    af::array yo = af::round(step * af::randu(num, 2, 2, 2));
+    af::array zo = 4 * xo * yo - 3 * xo;
+    for (int d = 1; d < 3; d++) {
+        af::dim4 rdims(0,1,2,3);
+        rdims[0] = d;
+        rdims[d] = 0;
+
+        af::array zi_reordered = af::reorder(zi, rdims[0], rdims[1], rdims[2], rdims[3]);
+        af::array xo_reordered = af::reorder(xo, rdims[0], rdims[1], rdims[2], rdims[3]);
+        af::array yo_reordered = af::reorder(yo, rdims[0], rdims[1], rdims[2], rdims[3]);
+        af::array zo_reordered = af::approx2(zi_reordered,
+                                             xo_reordered, d,
+                                             yo_reordered, d + 1,
+                                             start, step, start, step,
+                                             AF_INTERP_LINEAR);
+        rdims[d] = 0;
+        rdims[0] = d;
+        af::array res = af::reorder(yo_reordered, rdims[0], rdims[1], rdims[2], rdims[3]);
+        ASSERT_NEAR(0, af::max<float>(af::abs(res - yo)), 1E-3);
+    }
+}
+
+TEST(Approx2, OtherDimCubic)
+{
+    float start = 0;
+    float stop = 100;
+    float step = 0.01;
+    int num = 1000;
+    af::array xi = af::tile(af::seq(start, stop, step), 1, 2, 2, 2);
+    af::array yi = af::tile(af::seq(start, stop, step), 1, 2, 2, 2);
+    af::array zi = 4 * sin(xi) * cos(yi);
+    af::array xo = af::round(step * af::randu(num, 2, 2, 2));
+    af::array yo = af::round(step * af::randu(num, 2, 2, 2));
+    af::array zo = 4 * sin(xo) * cos(yo);
+    for (int d = 1; d < 3; d++) {
+        af::dim4 rdims(0,1,2,3);
+        rdims[0] = d;
+        rdims[d] = 0;
+
+        af::array zi_reordered = af::reorder(zi, rdims[0], rdims[1], rdims[2], rdims[3]);
+        af::array xo_reordered = af::reorder(xo, rdims[0], rdims[1], rdims[2], rdims[3]);
+        af::array yo_reordered = af::reorder(yo, rdims[0], rdims[1], rdims[2], rdims[3]);
+        af::array zo_reordered = af::approx2(zi_reordered,
+                                             xo_reordered, d,
+                                             yo_reordered, d + 1,
+                                             start, step, start, step,
+                                             AF_INTERP_CUBIC);
+        rdims[d] = 0;
+        rdims[0] = d;
+        af::array res = af::reorder(yo_reordered, rdims[0], rdims[1], rdims[2], rdims[3]);
+        ASSERT_NEAR(0, af::max<float>(af::abs(res - yo)), 1E-3);
+    }
+}
