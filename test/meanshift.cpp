@@ -119,7 +119,6 @@ void meanshiftTest(string pTestFile)
 IMAGE_TESTS(float )
 IMAGE_TESTS(double)
 
-
 //////////////////////////////////////// CPP ///////////////////////////////
 //
 TEST(Meanshift, Color_CPP)
@@ -155,7 +154,7 @@ TEST(Meanshift, Color_CPP)
     }
 }
 
-TEST(meanshift, GFOR)
+TEST(Meanshift, GFOR)
 {
     using namespace af;
 
@@ -170,6 +169,7 @@ TEST(meanshift, GFOR)
     for(int ii = 0; ii < 3; ii++) {
         array c_ii = meanShift(A(span, span, ii), 3, 5, 3);
         array b_ii = B(span, span, ii);
-        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+
+        ASSERT_LT(max<double>(abs(c_ii - b_ii)), 1E-5);
     }
 }
