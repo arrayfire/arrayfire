@@ -16,9 +16,8 @@
 
 using namespace af;
 
-
 #define MINMAXOP(fn, ty)                                \
-    TEST(IndexedMinMaxTests, Test_##fn##_##ty##_0)      \
+    TEST(IndexedReduce, fn##_##ty##_0)                  \
     {                                                   \
         if (noDoubleTests<ty>()) return;                \
         dtype dty = (dtype)dtype_traits<ty>::af_type;   \
@@ -44,7 +43,7 @@ using namespace af;
         af_free_host(h_val);                            \
         af_free_host(h_idx);                            \
     }                                                   \
-    TEST(IndexedMinMaxTests, Test_##fn##_##ty##_1)      \
+    TEST(IndexedReduce, fn##_##ty##_1)                  \
     {                                                   \
         if (noDoubleTests<ty>()) return;                \
         dtype dty = (dtype)dtype_traits<ty>::af_type;   \
@@ -69,7 +68,7 @@ using namespace af;
         af_free_host(h_val);                            \
         af_free_host(h_idx);                            \
     }                                                   \
-    TEST(IndexedMinMaxTests, Test_##fn##_##ty##_all)    \
+    TEST(IndexedReduce, fn##_##ty##_all)                \
     {                                                   \
         if (noDoubleTests<ty>()) return;                \
         dtype dty = (dtype)dtype_traits<ty>::af_type;   \
@@ -99,7 +98,7 @@ MINMAXOP(max, uint)
 MINMAXOP(max, char)
 MINMAXOP(max, uchar)
 
-TEST(ImaxAll, IndexedSmall)
+TEST(IndexedReduce, MaxIndexedSmall)
 {
     const int num = 1000;
     const int st = 10;
@@ -121,7 +120,7 @@ TEST(ImaxAll, IndexedSmall)
     ASSERT_EQ(b, res);
 }
 
-TEST(ImaxAll, IndexedBig)
+TEST(IndexedReduce, MaxIndexedBig)
 {
     const int num = 100000;
     const int st = 1000;
@@ -143,7 +142,7 @@ TEST(ImaxAll, IndexedBig)
     ASSERT_EQ(b, res);
 }
 
-TEST(IReduce, BUG_FIX_1005)
+TEST(IndexedReduce, BUG_FIX_1005)
 {
     const int m = 64;
     const int n = 100;
@@ -163,4 +162,26 @@ TEST(IReduce, BUG_FIX_1005)
         ASSERT_EQ(val0, val1);
         ASSERT_EQ(idx0, idx1);
     }
+}
+
+TEST(IndexedReduce, MinReduceDimensionHasSingleValue)
+{
+    array data = randu(10, 10, 1);
+
+    array mm, indx;
+    min(mm, indx, data, 2);
+
+    ASSERT_TRUE(allTrue<bool>(mm == data));
+    ASSERT_TRUE(allTrue<bool>(indx == 0));
+}
+
+TEST(IndexedReduce, MaxReduceDimensionHasSingleValue)
+{
+    array data = randu(10, 10, 1);
+
+    array mm, indx;
+    max(mm, indx, data, 2);
+
+    ASSERT_TRUE(allTrue<bool>(mm == data));
+    ASSERT_TRUE(allTrue<bool>(indx == 0));
 }
