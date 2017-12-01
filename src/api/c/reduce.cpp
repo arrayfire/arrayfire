@@ -395,14 +395,15 @@ static af_err ireduce_common(af_array *val, af_array *idx, const af_array in, co
 {
     try {
 
-        ARG_ASSERT(2, dim >= 0);
-        ARG_ASSERT(2, dim <  4);
+        ARG_ASSERT(3, dim >= 0);
+        ARG_ASSERT(3, dim <  4);
 
         const ArrayInfo& in_info = getInfo(in);
         ARG_ASSERT(2, in_info.ndims() > 0);
 
         if (dim >= (int)in_info.ndims()) {
             *val = retain(in);
+            *idx = createHandleFromValue<uint>(in_info.dims(), 0);
             return AF_SUCCESS;
         }
 
