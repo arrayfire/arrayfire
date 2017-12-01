@@ -159,7 +159,8 @@ namespace af
 
     randomEngine getDefaultRandomEngine(void)
     {
-        af_random_engine internal_handle, handle;
+        af_random_engine internal_handle = 0;
+        af_random_engine handle = 0;
         AF_THROW(af_get_default_random_engine(&internal_handle));
         AF_THROW(af_retain_random_engine(&handle, internal_handle));
         return randomEngine(handle);

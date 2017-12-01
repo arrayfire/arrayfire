@@ -202,6 +202,15 @@ TYPED_TEST(Random,InvalidDims)
 
 ////////////////////////////////////// CPP /////////////////////////////////////
 //
+TEST(RandomEngine, Default)
+{
+    // Using default Random engine will cause segfaults
+    // without setting one. This test should be before
+    // setting it to test if default engine setup is working
+    // as expected, otherwise the test will fail.
+    af::randomEngine engine = af::getDefaultRandomEngine();
+}
+
 TEST(Random, CPP)
 {
     if (noDoubleTests<float>()) return;

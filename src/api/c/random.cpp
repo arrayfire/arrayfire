@@ -24,21 +24,33 @@
 using namespace detail;
 using namespace common;
 
-class RandomEngine
+using af::dim4;
+
+Array<uint> emptyArray()
 {
-    public :
+    static const Array<uint> EMPTY_ARRAY = createEmptyArray<uint>(af::dim4(0));
+
+    return EMPTY_ARRAY;
+}
+
+struct RandomEngine
+{
     af_random_engine_type type;
     std::shared_ptr<uintl> seed;
     std::shared_ptr<uintl> counter;
-    af_array pos;
-    af_array sh1;
-    af_array sh2;
+    Array<uint> pos;
+    Array<uint> sh1;
+    Array<uint> sh2;
     uint mask;
-    af_array recursion_table;
-    af_array temper_table;
-    af_array state;
+    Array<uint> recursion_table;
+    Array<uint> temper_table;
+    Array<uint> state;
 
-    RandomEngine(void) : type(AF_RANDOM_ENGINE_DEFAULT), seed(new uintl), counter(new uintl) {
+    RandomEngine(void)
+        : type(AF_RANDOM_ENGINE_DEFAULT), seed(new uintl), counter(new uintl),
+        pos(emptyArray()), sh1(emptyArray()), sh2(emptyArray()), mask(0),
+        recursion_table(emptyArray()), temper_table(emptyArray()), state(emptyArray())
+    {
         *seed = 0;
         *counter = 0;
     }
@@ -63,14 +75,8 @@ template<typename T>
 static inline af_array uniformDistribution_(const af::dim4 &dims, RandomEngine *e)
 {
     if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
-        return getHandle(uniformDistribution<T>(dims,
-                    getArray<uint>(e->pos),
-                    getArray<uint>(e->sh1),
-                    getArray<uint>(e->sh2),
-                    e->mask,
-                    getArray<uint>(e->recursion_table),
-                    getArray<uint>(e->temper_table),
-                    getArray<uint>(e->state)));
+        return getHandle(uniformDistribution<T>(dims, e->pos, e->sh1, e->sh2, e->mask,
+                    e->recursion_table, e->temper_table, e->state));
     } else {
         return getHandle(uniformDistribution<T>(dims, e->type, *(e->seed), *(e->counter)));
     }
@@ -80,14 +86,8 @@ template<typename T>
 static inline af_array normalDistribution_(const af::dim4 &dims, RandomEngine *e)
 {
     if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
-        return getHandle(normalDistribution<T>(dims,
-                    getArray<uint>(e->pos),
-                    getArray<uint>(e->sh1),
-                    getArray<uint>(e->sh2),
-                    e->mask,
-                    getArray<uint>(e->recursion_table),
-                    getArray<uint>(e->temper_table),
-                    getArray<uint>(e->state)));
+        return getHandle(normalDistribution<T>(dims, e->pos, e->sh1, e->sh2, e->mask,
+                    e->recursion_table, e->temper_table, e->state));
     } else {
         return getHandle(normalDistribution<T>(dims, e->type, *(e->seed), *(e->counter)));
     }
@@ -108,6 +108,8 @@ static void validateRandomType(const af_random_engine_type type)
 
 af_err af_get_default_random_engine(af_random_engine *r)
 {
+    AF_CHECK(af_init());
+
     thread_local RandomEngine re;
     *r = static_cast<af_random_engine> (&re);
     return AF_SUCCESS;
@@ -118,29 +120,23 @@ af_err af_create_random_engine(af_random_engine *engineHandle, af_random_engine_
     try {
         AF_CHECK(af_init());
         validateRandomType(rtype);
+
         RandomEngine e;
         e.type = rtype;
         *e.seed = seed;
         *e.counter = 0;
 
         if (rtype == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
-            AF_CHECK(af_create_array(&e.pos, pos, 1, &MaxBlocks, u32));
-            AF_CHECK(af_create_array(&e.sh1, sh1, 1, &MaxBlocks, u32));
-            AF_CHECK(af_create_array(&e.sh2, sh2, 1, &MaxBlocks, u32));
+            e.pos  = createHostDataArray<uint>(af::dim4(MaxBlocks), pos);
+            e.sh1  = createHostDataArray<uint>(af::dim4(MaxBlocks), sh1);
+            e.sh2  = createHostDataArray<uint>(af::dim4(MaxBlocks), sh2);
             e.mask = mask;
-            AF_CHECK(af_create_array(&e.recursion_table, recursion_tbl, 1, &TableLength, u32));
-            AF_CHECK(af_create_array(&e.temper_table, temper_tbl, 1, &TableLength, u32));
-            AF_CHECK(af_create_handle(&e.state, 1, &MtStateLength, u32));
-            initMersenneState(getWritableArray<uint>(e.state), seed, getArray<uint>(e.recursion_table));
-        } else {
-            dim_t empty = 0;
-            AF_CHECK(af_create_handle(&e.pos, 1, &empty, u32));
-            AF_CHECK(af_create_handle(&e.sh1, 1, &empty, u32));
-            AF_CHECK(af_create_handle(&e.sh2, 1, &empty, u32));
-            e.mask = 0;
-            AF_CHECK(af_create_handle(&e.recursion_table, 1, &empty, u32));
-            AF_CHECK(af_create_handle(&e.temper_table, 1, &empty, u32));
-            AF_CHECK(af_create_handle(&e.state, 1, &empty, u32));
+
+            e.recursion_table = createHostDataArray<uint>(af::dim4(TableLength), recursion_tbl);
+            e.temper_table    = createHostDataArray<uint>(af::dim4(TableLength), temper_tbl);
+            e.state           = createEmptyArray<uint>(af::dim4(MtStateLength));
+
+            initMersenneState(e.state, seed, e.recursion_table);
         }
 
         *engineHandle = getRandomEngineHandle(e);
@@ -153,23 +149,7 @@ af_err af_retain_random_engine(af_random_engine *outHandle, const af_random_engi
 {
     try {
         AF_CHECK(af_init());
-        RandomEngine engine = *(getRandomEngine(engineHandle));
-        RandomEngine out;
-
-        out.type = engine.type;
-        out.seed = engine.seed;
-        out.counter = engine.counter;
-
-        AF_CHECK(af_retain_array(&out.pos, engine.pos));
-        AF_CHECK(af_retain_array(&out.sh1, engine.sh1));
-        AF_CHECK(af_retain_array(&out.sh2, engine.sh2));
-        out.mask = engine.mask;
-        AF_CHECK(af_retain_array(&out.recursion_table, engine.recursion_table));
-        AF_CHECK(af_retain_array(&out.temper_table, engine.temper_table));
-        AF_CHECK(af_retain_array(&out.state, engine.state));
-
-        *outHandle = getRandomEngineHandle(out);
-
+        *outHandle = getRandomEngineHandle(*(getRandomEngine(engineHandle)));
     } CATCHALL;
     return AF_SUCCESS;
 }
@@ -182,21 +162,24 @@ af_err af_random_engine_set_type(af_random_engine *engine, const af_random_engin
         RandomEngine *e = getRandomEngine(*engine);
         if (rtype != e->type) {
             if (rtype == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
-                AF_CHECK(af_create_array(&e->pos, pos, 1, &MaxBlocks, u32));
-                AF_CHECK(af_create_array(&e->sh1, sh1, 1, &MaxBlocks, u32));
-                AF_CHECK(af_create_array(&e->sh2, sh2, 1, &MaxBlocks, u32));
+                e->pos  = createHostDataArray<uint>(af::dim4(MaxBlocks), pos);
+                e->sh1  = createHostDataArray<uint>(af::dim4(MaxBlocks), sh1);
+                e->sh2  = createHostDataArray<uint>(af::dim4(MaxBlocks), sh2);
                 e->mask = mask;
-                AF_CHECK(af_create_array(&e->recursion_table, recursion_tbl, 1, &TableLength, u32));
-                AF_CHECK(af_create_array(&e->temper_table, temper_tbl, 1, &TableLength, u32));
-                AF_CHECK(af_create_handle(&e->state, 1, &MtStateLength, u32));
-                initMersenneState(getWritableArray<uint>(e->state), *(e->seed), getArray<uint>(e->recursion_table));
+
+                e->recursion_table = createHostDataArray<uint>(af::dim4(TableLength), recursion_tbl);
+                e->temper_table    = createHostDataArray<uint>(af::dim4(TableLength), temper_tbl);
+                e->state           = createEmptyArray<uint>(af::dim4(MtStateLength));
+
+                initMersenneState(e->state, *(e->seed), e->recursion_table);
             } else if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
-                AF_CHECK(af_release_array(e->pos));
-                AF_CHECK(af_release_array(e->sh1));
-                AF_CHECK(af_release_array(e->sh2));
-                AF_CHECK(af_release_array(e->recursion_table));
-                AF_CHECK(af_release_array(e->temper_table));
-                AF_CHECK(af_release_array(e->state));
+                e->pos  = emptyArray();
+                e->sh1  = emptyArray();
+                e->sh2  = emptyArray();
+                e->mask = 0;
+                e->recursion_table = emptyArray();
+                e->temper_table    = emptyArray();
+                e->state           = emptyArray();
             }
             e->type = rtype;
         }
@@ -232,7 +215,7 @@ af_err af_random_engine_set_seed(af_random_engine *engine, const uintl seed)
         RandomEngine *e = getRandomEngine(*engine);
         *(e->seed) = seed;
         if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
-            initMersenneState(getWritableArray<uint>(e->state), seed, getArray<uint>(e->recursion_table));
+            initMersenneState(e->state, seed, e->recursion_table);
         } else {
             *(e->counter) = 0;
         }
@@ -308,16 +291,7 @@ af_err af_release_random_engine(af_random_engine engineHandle)
 {
     try {
         AF_CHECK(af_init());
-        RandomEngine *e = getRandomEngine(engineHandle);
-        if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
-            AF_CHECK(af_release_array(e->pos));
-            AF_CHECK(af_release_array(e->sh1));
-            AF_CHECK(af_release_array(e->sh2));
-            AF_CHECK(af_release_array(e->recursion_table));
-            AF_CHECK(af_release_array(e->temper_table));
-            AF_CHECK(af_release_array(e->state));
-        }
-        delete e;
+        delete getRandomEngine(engineHandle);
     }
     CATCHALL;
     return AF_SUCCESS;
