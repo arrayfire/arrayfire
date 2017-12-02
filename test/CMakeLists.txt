@@ -59,14 +59,32 @@ endif(BUILD_UNIFIED)
 
 include(CMakeParseArguments)
 
+# Creates tests for all backends
+#
+# Creates a standard test for all backends. Most of the time you only need to
+# specify the name of the source file to create a test.
+#
+# Parameters
+# ----------
+# 'CXX11'       If set the tests will be compiled using c++11. Tests should strive
+#               to be C++98 compilient
+# 'SRC'         The source files for the test
+# 'LIBRARIES'   Libraries other than ArrayFire that need to be linked
+# 'DEFINITIONS' Definitions that need to be defined
+# 'BACKENDS'    Backends to target for this test. If not set then the test will
+#               compiled againat all backends
 function(make_test)
   set(options CXX11)
   set(single_args SRC)
-  set(multi_args LIBRARIES DEFINITIONS)
+  set(multi_args LIBRARIES DEFINITIONS BACKENDS)
   cmake_parse_arguments(mt_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
 
   get_filename_component(src_name ${mt_args_SRC} NAME_WE)
   foreach(backend ${enabled_backends})
+    if(NOT "${mt_args_BACKENDS}" STREQUAL "" AND
+       NOT ${backend} IN_LIST mt_args_BACKENDS)
+      continue()
+    endif()
     set(target "${src_name}_${backend}")
     add_executable(${target} ${mt_args_SRC})
     target_include_directories(${target}
@@ -200,7 +218,8 @@ make_test(SRC nearest_neighbour.cpp)
 
 if(OpenCL_FOUND)
   make_test(SRC ocl_ext_context.cpp
-            LIBRARIES OpenCL::OpenCL)
+            LIBRARIES OpenCL::OpenCL
+            BACKENDS "opencl")
 endif()
 
 make_test(SRC orb.cpp)
