@@ -31,6 +31,9 @@ find_package(LAPACKE)
 find_package(Doxygen)
 
 # Graphics dependencies
+if (APPLE)
+  set(glbinding_DIR /usr/local/opt/glbinding)
+endif ()
 find_package(glbinding QUIET)
 find_package(Boost)
 
