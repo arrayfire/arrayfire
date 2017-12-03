@@ -32,7 +32,7 @@ find_package(Doxygen)
 
 # Graphics dependencies
 if (APPLE)
-  set(glbinding_DIR /usr/local/opt/glbinding)
+  set(glbinding_DIR dirname $(brew list glbinding | grep config))
 endif ()
 find_package(glbinding QUIET)
 find_package(Boost)
