@@ -266,3 +266,4 @@ endif()
 
 conditional_directory(BUILD_TESTING test)
 conditional_directory(BUILD_EXAMPLES examples)
+conditional_directory(BUILD_DOCS docs)
