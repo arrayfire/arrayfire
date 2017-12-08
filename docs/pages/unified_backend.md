@@ -42,31 +42,6 @@ treated as fallback paths in case the files are not found in the system paths.
 However, all the other upstream libraries for ArrayFire libs must be present
 in the system path variables shown above.
 
-### Special Mention: CUDA NVVM
-For the CUDA backend, ensure that the CUDA NVVM libs/dlls are in the path.
-These can be easily missed since CUDA installation does not add the paths by default.
-
-On Linux and OSX, add `/usr/local/cuda/nvvm/(lib or lib64)` to LD_LIBRARY_PATH or
-DYLD_LIBRARY_PATH.
-
-On Windows, you can set up a post build event that copys the NVVM dlls to
-the executable directory by using the following commands:
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
-echo copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
-copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
-if errorlevel 1 (
-    echo "CUDA NVVM DLLs copy failed due to missing files."
-    exit /B 0
-)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This ensures that the NVVM DLLs are copied if present, but does not fail the
-build if the copy fails. This is how ArrayFire ships it's examples.
-
-The other option is to set `%%CUDA_PATH%/nvvm/bin` in the PATH environment
-variable.
-
 # Switching Backends
 
 The af_backend enum stores the possible backends.
