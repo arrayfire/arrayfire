@@ -268,3 +268,4 @@ conditional_directory(BUILD_TESTING test)
 
 set(ASSETS_DIR "${ArrayFire_SOURCE_DIR}/assets")
 conditional_directory(BUILD_EXAMPLES examples)
+conditional_directory(BUILD_DOCS docs)
