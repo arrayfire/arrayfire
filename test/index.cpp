@@ -709,6 +709,15 @@ TEST(lookup, largeDim)
     af::array output = af::lookup(input, indices);
 }
 
+TEST(lookup, Issue2009)
+{
+    af::array a   = af::range(af::dim4(1000, 1));
+    af::array idx = af::constant(0, 1, u32);
+    af::array b   = af::lookup(a, idx, 1);
+
+    ASSERT_EQ(true, af::allTrue<bool>(a==b));
+}
+
 TEST(SeqIndex, CPP_END)
 {
     using af::array;
