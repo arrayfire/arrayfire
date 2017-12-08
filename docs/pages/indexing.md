@@ -14,7 +14,7 @@ with mixtures of:
 * [rows(first,last)](\ref af::array::rows) or [cols(first,last)](\ref af::array::cols)
  specifying a span of rows or columns
 
-See \ref indexing for the full listing.
+See \ref  index_mat for the full listing.
 
 \snippet test/index.cpp ex_indexing_first
 
