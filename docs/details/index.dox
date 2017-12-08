@@ -3,23 +3,67 @@
 @{
 
 \defgroup index_func_index index
-
-\brief lookup values on array based on sequences and/or arrays
-
 \ingroup index_mat
+
+\brief Lookup values on array based on sequences and/or arrays
+
+
+
+\defgroup index_func_lookup Lookup
+\ingroup index_mat
+
+\brief Index an array using another array.
+
+Lets look at an example of how \ref lookup function does indexing.
+\code
+array a = range(dim4(5));
+af_print(a);
+//  0
+//  1
+//  2
+//  3
+//  4
+
+array b = range(dim4(2)) + 2; // Create an array with values [0,2] range and add 2 to them
+af_print(b);
+// 2
+// 3
+
+array c = lookup(a, b, 0);
+af_print(c);
+//  2
+//  3
+
+
+array d = lookup(a, b, 1);
+af_print(d);
+//  0   0
+//  1   1
+//  2   2
+//  3   3
+//  4   4
+
+// Since the second(1) dimension has only single element, all indices map to first & single element
+// along that dimension. Thus, the output array has two columns with elements repeatd twice because
+// the index array b has 2 elements.
+
+\endcode
 
 
 
 \defgroup index_func_assign assign
+\ingroup index_mat
 
 \brief Copy and write values in the locations specified by the sequences
 
-\ingroup index_mat
+
+
 
 \defgroup index_func_util util
+\ingroup index_mat
 
 \brief Utility functions to create objects of type \ref af_index_t
 
-\ingroup index_mat
+
 @}
 */
