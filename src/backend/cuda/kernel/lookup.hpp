@@ -16,15 +16,11 @@
 
 namespace cuda
 {
-
 namespace kernel
 {
-
-static const int THREADS = 256;
-
+static const int THREADS   = 256;
 static const int THREADS_X = 32;
 static const int THREADS_Y = 8;
-
 static const int THRD_LOAD = THREADS_X/THREADS_Y;
 
 template<typename in_t, typename idx_t>
@@ -79,16 +75,17 @@ void lookupND(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices,
 template<typename in_t, typename idx_t, unsigned dim>
 void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims)
 {
-    if (nDims==1) {
+    /* find which dimension has non-zero # of elements */
+    int vDim = 0;
+    for (int i=0; i<4; i++) {
+        if (in.dims[i]==1)
+            vDim++;
+        else
+            break;
+    }
+
+    if (dim==0 && nDims==1 && dim==vDim) {
         const dim3 threads(THREADS, 1);
-        /* find which dimension has non-zero # of elements */
-        int vDim = 0;
-        for (int i=0; i<4; i++) {
-            if (in.dims[i]==1)
-                vDim++;
-            else
-                break;
-        }
 
         int blks = divup(out.dims[vDim], THREADS*THRD_LOAD);
 
@@ -112,7 +109,5 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims)
 
     POST_LAUNCH_CHECK();
 }
-
 }
-
 }
