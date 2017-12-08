@@ -164,7 +164,7 @@ class AFAPI index {
 /// \param[in] dim specifies the dimension for indexing
 /// \returns an array containing values at locations specified by \p index
 ///
-/// \ingroup index_func_index
+/// \ingroup index_func_lookup
 ///
 
 AFAPI array lookup(const array &in, const array &idx, const int dim = -1);
@@ -221,7 +221,7 @@ extern "C" {
     /// \param[in] indices   is lookup indices
     /// \param[in] dim       specifies the dimension for indexing
     ///
-    /// \ingroup index_func_index
+    /// \ingroup index_func_lookup
     ///
 
     AFAPI af_err af_lookup( af_array *out,
