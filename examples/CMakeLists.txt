@@ -4,6 +4,18 @@ project(ArrayFire-Examples
   VERSION 3.5.0
   LANGUAGES CXX)
 
+if (NOT ASSETS_DIR)
+    set(ASSETS_DIR ""
+        CACHE PATH
+        "
+        Assets are the images and data files required by the examples. ASSETS_DIR
+        should point to the path where theses files are available on the build machine.
+
+        You can download or clone the assets git repository from the following
+        url: https://github.com/arrayfire/assets
+        ")
+endif (NOT ASSETS_DIR)
+
 if(WIN32)
   add_definitions(-DWIN32_LEAN_AND_MEAN)
   unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
