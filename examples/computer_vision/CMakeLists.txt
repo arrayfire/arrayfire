@@ -6,8 +6,7 @@ project(ArrayFire-Example-Computer-Vision
 
 find_package(ArrayFire)
 
-set(ASSETS_DIR "${ArrayFire_SOURCE_DIR}/assets")
-add_definitions(-DASSETS_DIR=\"${ASSETS_DIR}\")
+add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
 if (ArrayFire_CPU_FOUND)
   # FAST examples

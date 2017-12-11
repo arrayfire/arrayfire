@@ -6,6 +6,8 @@ project(ArrayFire-Example-Graphics
 
 find_package(ArrayFire)
 
+add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
+
 if(ArrayFire_CPU_FOUND)
   # Conway Game of Life
   add_executable(conway_cpu conway.cpp)
