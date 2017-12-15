@@ -148,6 +148,7 @@ INCLUDE_DIRECTORIES(
     "${PROJECT_SOURCE_DIR}/src/backend/cuda"
     "${CMAKE_CURRENT_BINARY_DIR}"
     ${CUDA_nvrtc_INCLUDE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/cub
     )
 
 FILE(GLOB cuda_headers
