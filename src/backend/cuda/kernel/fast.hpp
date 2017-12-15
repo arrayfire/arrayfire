@@ -7,12 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include "shared.hpp"
+#include <cub/block/block_reduce.cuh>
+#include <debug_cuda.hpp>
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
-#include <debug_cuda.hpp>
 #include <kernel/fast_lut.hpp>
 #include <memory.hpp>
-#include "shared.hpp"
 
 namespace cuda
 {
@@ -269,7 +270,9 @@ void non_max_counts(
     const int yend = (blockIdx.y + 1) * blockDim.y * 8;
 
     const int bid = blockIdx.y * gridDim.x + blockIdx.x;
-    __shared__ unsigned s_counts[256];
+    using BlockReduce = cub::BlockReduce<unsigned, 32, cub::BLOCK_REDUCE_WARP_REDUCTIONS, 8>;
+
+    __shared__ typename BlockReduce::TempStorage temp_storage;
 
     unsigned count = 0;
     for (int y = yid; y < yend; y += yoff) {
@@ -302,26 +305,11 @@ void non_max_counts(
         }
     }
 
-    s_counts[tid] = count;
-    __syncthreads();
-
-    if (tid >= 128) return;
-    if (tid < 128) s_counts[tid] += s_counts[tid + 128]; __syncthreads();
-
-    if (tid >= 64) return;
-    if (tid <  64) s_counts[tid] += s_counts[tid +  64]; __syncthreads();
-
-    if (tid >= 32) return;
-    if (tid <  32) s_counts[tid] += s_counts[tid +  32];
-    if (tid <  16) s_counts[tid] += s_counts[tid +  16];
-    if (tid <   8) s_counts[tid] += s_counts[tid +   8];
-    if (tid <   4) s_counts[tid] += s_counts[tid +   4];
-    if (tid <   2) s_counts[tid] += s_counts[tid +   2];
-    if (tid <   1) s_counts[tid] += s_counts[tid +   1];
+    int sum = BlockReduce(temp_storage).Sum(count);
 
     if (tid == 0) {
-        unsigned total = s_counts[0] ? atomicAdd(d_total, s_counts[0]) : 0;
-        d_counts [bid] = s_counts[0];
+        unsigned total = sum ? atomicAdd(d_total, sum) : 0;
+        d_counts [bid] = sum;
         d_offsets[bid] = total;
     }
 }
