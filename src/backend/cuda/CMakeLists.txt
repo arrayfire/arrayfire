@@ -45,6 +45,7 @@ cuda_include_directories(
   ${ArrayFire_BINARY_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel
   ${CMAKE_CURRENT_SOURCE_DIR}/JIT
+  ${CMAKE_CURRENT_SOURCE_DIR}/cub
   ${ArrayFire_SOURCE_DIR}/src/api/c
   ${ArrayFire_SOURCE_DIR}/src/backend
 
