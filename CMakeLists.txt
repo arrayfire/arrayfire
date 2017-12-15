@@ -16,6 +16,7 @@ include(CMakeDependentOption)
 include(InternalUtils)
 include(Version)
 include(build_cl2hpp)
+include(platform)
 
 arrayfire_set_cmake_default_variables()
 
@@ -65,16 +66,6 @@ mark_as_advanced(
 # TODO(umar): Add definitions should not be used. Instead use
 arrayfire_get_platform_definitions(platform_definitions)
 add_definitions(${platform_definitions})
-
-if(WIN32)
-  #TODO(umar): create a single place for compiler specific settings
-  # C4251: Warnings about dll interfaces. Thrown by glbinding, may be fixed in
-  #        the future
-  # C4068: Warnings about unknown pragmas
-  # C4275: Warnings about using non-exported classes as base class of an
-  #        exported class
-  add_compile_options(/wd4251 /wd4068 /wd4275)
-endif()
 
 if(BUILD_GRAPHICS)
   include(build_forge)
