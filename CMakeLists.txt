@@ -33,7 +33,7 @@ find_package(Doxygen)
 
 # Graphics dependencies
 find_package(glbinding QUIET)
-find_package(Boost)
+include(boost_package)
 
 option(BUILD_CPU      "Build ArrayFire with a CPU backend"        ON)
 option(BUILD_CUDA     "Build ArrayFire with a CUDA backend"       ${CUDA_FOUND})
