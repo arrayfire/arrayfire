@@ -6,10 +6,6 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 include(InternalUtils)
-if("${Boost_VERSION}" VERSION_LESS 106100)
-  dependency_check(Boost_FOUND "Boost not found.")
-  include(build_boost_compute)
-endif()
 
 set(OPENCL_BLAS_LIBRARY clBLAS CACHE STRING "Select OpenCL BLAS back-end")
 set_property(CACHE OPENCL_BLAS_LIBRARY PROPERTY STRINGS "clBLAS" "CLBlast")
