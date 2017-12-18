@@ -34,6 +34,9 @@
 #include <common/util.hpp>
 #include <version.hpp>
 
+#include <boost/compute/context.hpp>
+#include <boost/compute/utility/program_cache.hpp>
+
 #include <algorithm>
 #include <cctype>
 #include <cstring>
@@ -564,6 +567,15 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que)
 
     // Last/newly added device needs memory management
     memoryManager().addMemoryManagement(devMngr.mDevices.size()-1);
+
+
+    //cache the boost program_cache object, clean up done on program exit
+    //not during removeDeviceContext
+    namespace compute = boost::compute;
+    using BPCache = DeviceManager::BoostProgCache;
+    compute::context c(ctx);
+    BPCache currCache = compute::program_cache::get_global_cache(c);
+    devMngr.mBoostProgCacheVector.emplace_back(new BPCache(currCache));
 }
 
 void setDeviceContext(cl_device_id dev, cl_context ctx)
@@ -764,6 +776,13 @@ DeviceManager::~DeviceManager()
 
     deInitBlas();
 
+    // deCache Boost program_cache
+#ifndef OS_WIN
+    namespace compute = boost::compute;
+    for (auto bCache : mBoostProgCacheVector)
+        delete bCache;
+#endif
+
     delete memManager.release();
     delete pinnedMemManager.release();
 
@@ -910,6 +929,14 @@ DeviceManager::DeviceManager()
 
     //Initialize clBlas library
     initBlas();
+
+    // Cache Boost program_cache
+    namespace compute = boost::compute;
+    for (auto ctx : mContexts) {
+        compute::context c(ctx->get());
+        BoostProgCache currCache = compute::program_cache::get_global_cache(c);
+        mBoostProgCacheVector.emplace_back(new BoostProgCache(currCache));
+    }
 }
 
 #if defined(WITH_GRAPHICS)
