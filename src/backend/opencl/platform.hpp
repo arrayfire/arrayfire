@@ -30,6 +30,14 @@
 #include <memory.hpp>
 #include <GraphicsResourceManager.hpp>
 
+namespace boost {
+  template<typename T> class shared_ptr;
+
+  namespace compute {
+    class program_cache;
+  }
+}
+
 // Forward declaration from clFFT.h
 struct clfftSetupData_;
 typedef clfftSetupData_ clfftSetupData;
@@ -198,5 +206,8 @@ class DeviceManager
         std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
 #endif
         std::unique_ptr<clfftSetupData> mFFTSetup;
+
+        using BoostProgCache = boost::shared_ptr<boost::compute::program_cache>;
+        std::vector<BoostProgCache*> mBoostProgCacheVector;
 };
 }

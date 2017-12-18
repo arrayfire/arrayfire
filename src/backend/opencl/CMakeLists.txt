@@ -373,8 +373,8 @@ target_include_directories(afopencl
   )
 
 add_dependencies(afopencl ${cl_kernel_targets})
-add_dependencies(opencl_scan_by_key ${cl_kernel_targets} cl2hpp)
-add_dependencies(opencl_sort_by_key ${cl_kernel_targets} cl2hpp)
+add_dependencies(opencl_scan_by_key ${cl_kernel_targets} cl2hpp Boost::boost)
+add_dependencies(opencl_sort_by_key ${cl_kernel_targets} cl2hpp Boost::boost)
 
 set_target_properties(afopencl PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
