@@ -10,6 +10,7 @@
 #pragma once
 #include <Array.hpp>
 #include <utility.hpp>
+#include <math.hpp>
 
 namespace cpu
 {

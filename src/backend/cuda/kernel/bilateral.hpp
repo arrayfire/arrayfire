@@ -29,12 +29,6 @@ int lIdx(int x, int y, int stride1, int stride0)
     return (y*stride1 + x*stride0);
 }
 
-inline __device__
-int clamp(int f, int a, int b)
-{
-    return max(a, min(f, b));
-}
-
 template<typename inType, typename outType>
 inline __device__
 void load2ShrdMem(outType * shrd, const inType * const in,
