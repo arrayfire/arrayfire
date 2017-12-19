@@ -9,6 +9,7 @@
 
 #pragma once
 #include <Param.hpp>
+#include <math.hpp>
 #include <utility.hpp>
 #include <cmath>
 
@@ -54,10 +55,10 @@ void bilateral(Param<OutT> out, CParam<InT> in, float const s_sigma, float const
                     OutT const center = (OutT)inData[getIdx(istrides, i, j)];
                     for(dim_t wj=-radius; wj<=radius; ++wj) {
                         // clamps offsets
-                        dim_t tj = clamp(j+wj, 0, dims[1]-1);
+                        dim_t tj = clamp(j+wj, dim_t(0), dims[1]-1);
                         for(dim_t wi=-radius; wi<=radius; ++wi) {
                             // clamps offsets
-                            dim_t ti = clamp(i+wi, 0, dims[0]-1);
+                            dim_t ti = clamp(i+wi, dim_t(0), dims[0]-1);
                             // proceed
                             OutT const val= (OutT)inData[getIdx(istrides, ti, tj)];
                             OutT const gauss_space = (wi*wi+wj*wj)/(-2.0*svar);

@@ -224,4 +224,11 @@ __SDH__ bool operator !=(cdouble a, cdouble b) { return !(a == b); }
     template<typename T> static inline T division(T lhs, double rhs) { return lhs / rhs; }
     cfloat division(cfloat lhs, double rhs);
     cdouble division(cdouble lhs, double rhs);
+
+    template<typename T>
+    static inline __DH__
+    T clamp(const T value, const T lo, const T hi)
+    {
+        return max(lo, min(value, hi));
+    }
 }

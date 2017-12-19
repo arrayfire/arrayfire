@@ -14,18 +14,12 @@
 #include <err_cuda.hpp>
 #include <kernel/fast_lut.hpp>
 #include <memory.hpp>
+#include <math.hpp>
 
 namespace cuda
 {
-
 namespace kernel
 {
-
-inline __device__
-int clamp(const int f, const int a, const int b)
-{
-    return max(a, min(f, b));
-}
 
 inline __device__
 int idx_y(const int i)
@@ -481,5 +475,4 @@ void fast(unsigned* out_feat,
 }
 
 }  // namespace kernel
-
 }  // namespace cuda
