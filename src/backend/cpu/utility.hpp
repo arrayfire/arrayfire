@@ -15,7 +15,6 @@
 
 namespace cpu
 {
-
 static inline
 dim_t trimIndex(int const & idx, dim_t const & len)
 {
@@ -27,12 +26,6 @@ dim_t trimIndex(int const & idx, dim_t const & len)
         ret_val = len-offset-1;
     }
     return ret_val;
-}
-
-static inline
-dim_t clamp(dim_t a, dim_t mn, dim_t mx)
-{
-    return (a<mn ? mn : (a>mx ? mx : a));
 }
 
 static inline
@@ -58,5 +51,4 @@ void gaussian1D(T* out, int const dim, double sigma=0.0)
     for(int k=0;k<dim;k++)
         out[k] /= sum;
 }
-
 }
