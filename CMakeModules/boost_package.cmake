@@ -37,5 +37,5 @@ endif()
 
 # NOTE: BOOST_CHRONO_HEADER_ONLY is required for Windows because otherwise it
 # will try to link with libboost-chrono.
-set_target_properties(Boost::boost PROPERTIES
-  INTERFACE_COMPILE_DEFINITIONS BOOST_CHRONO_HEADER_ONLY)
+set_target_properties(Boost::boost PROPERTIES INTERFACE_COMPILE_DEFINITIONS
+  "BOOST_CHRONO_HEADER_ONLY;BOOST_COMPUTE_THREAD_SAFE;BOOST_COMPUTE_HAVE_THREAD_LOCAL")
