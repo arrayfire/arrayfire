@@ -654,7 +654,7 @@ TEST(Threading, DISABLED_MemoryManagerStressTest)
   }
 }
 
-TEST(Threading, BoostCompute)
+TEST(Threading, DISABLED_Sort)
 {
     cleanSlate(); // Clean up everything done so far
 
@@ -664,11 +664,9 @@ TEST(Threading, BoostCompute)
 
     for (int i=0; i<THREAD_COUNT; ++i) {
         tests.emplace_back([] {
-            for (int k=0; k<100; ++k) {
-                array a = randu(100, 100);
+            array a = randu(100, 100);
+            for (int k=0; k<100; ++k)
                 array b = sort(a);
-                array c = sort(a, 1, false);
-            }
         });
     }
 
