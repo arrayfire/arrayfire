@@ -79,36 +79,18 @@ void lookupND(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices,
 template<typename in_t, typename idx_t, unsigned dim>
 void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims)
 {
-    if (nDims==1) {
-        const dim3 threads(THREADS, 1);
-        /* find which dimension has non-zero # of elements */
-        int vDim = 0;
-        for (int i=0; i<4; i++) {
-            if (in.dims[i]==1)
-                vDim++;
-            else
-                break;
-        }
+    const dim3 threads(THREADS_X, THREADS_Y);
 
-        int blks = divup(out.dims[vDim], THREADS*THRD_LOAD);
+    int blks_x = divup(out.dims[0], threads.x);
+    int blks_y = divup(out.dims[1], threads.y);
 
-        dim3 blocks(blks, 1);
+    dim3 blocks(blks_x*out.dims[2], blks_y*out.dims[3]);
 
-        CUDA_LAUNCH((lookup1D<in_t, idx_t>), blocks, threads, out, in, indices, vDim);
-    } else {
-        const dim3 threads(THREADS_X, THREADS_Y);
+    const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+    blocks.z = divup(blocks.y, maxBlocksY);
+    blocks.y = divup(blocks.y, blocks.z);
 
-        int blks_x = divup(out.dims[0], threads.x);
-        int blks_y = divup(out.dims[1], threads.y);
-
-        dim3 blocks(blks_x*out.dims[2], blks_y*out.dims[3]);
-
-        const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-        blocks.z = divup(blocks.y, maxBlocksY);
-        blocks.y = divup(blocks.y, blocks.z);
-
-        CUDA_LAUNCH((lookupND<in_t, idx_t, dim>), blocks, threads, out, in, indices, blks_x, blks_y);
-    }
+    CUDA_LAUNCH((lookupND<in_t, idx_t, dim>), blocks, threads, out, in, indices, blks_x, blks_y);
 
     POST_LAUNCH_CHECK();
 }
