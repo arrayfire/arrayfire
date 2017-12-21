@@ -12,9 +12,9 @@
 #include <defines.hpp>
 #include <err_common.hpp>
 
-#define CUDA_NOT_SUPPORTED() do {                       \
+#define CUDA_NOT_SUPPORTED(message) do {                \
         throw SupportError(__PRETTY_FUNCTION__,         \
-                __AF_FILENAME__, __LINE__, "CUDA");     \
+                __AF_FILENAME__, __LINE__, message);    \
     } while(0)
 
 #define CUDA_CHECK(fn) do {                                         \
