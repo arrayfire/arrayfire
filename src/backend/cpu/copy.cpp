@@ -108,7 +108,10 @@ INSTANTIATE_COPY_ARRAY_COMPLEX(cdouble)
 #define SPECILIAZE_UNUSED_COPYARRAY(SRC_T, DST_T) \
     template<> void copyArray<SRC_T, DST_T>(Array<DST_T> &out, Array<SRC_T> const &in) \
     {\
-        CPU_NOT_SUPPORTED();\
+        char errMessage[1024];                                              \
+        snprintf(errMessage, sizeof(errMessage),                            \
+                "CPU copyArray<"#SRC_T","#DST_T"> is not supported\n");    \
+        CPU_NOT_SUPPORTED(errMessage);                                      \
     }
 
 SPECILIAZE_UNUSED_COPYARRAY(cfloat , double)

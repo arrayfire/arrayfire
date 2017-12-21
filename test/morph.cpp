@@ -454,3 +454,21 @@ TEST(Morph, EdgeIssue1564)
         ASSERT_EQ((int)outData[i], goldData[i]);
     }
 }
+
+TEST(Morph, UnsupportedKernel2D)
+{
+    const unsigned ndims = 2;
+    const dim_t dims[2] = {10, 10};
+    const dim_t kdims[2] = {32, 32};
+
+    af_array in, mask, out;
+
+    ASSERT_EQ(AF_SUCCESS, af_constant(&mask, 1.0, ndims, kdims, f32));
+    ASSERT_EQ(AF_SUCCESS, af_randu(&in, ndims, dims, f32));
+
+#if defined(AF_CPU)
+    ASSERT_EQ(AF_SUCCESS, af_dilate(&out, in, mask));
+#else
+    ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_dilate(&out, in, mask));
+#endif
+}

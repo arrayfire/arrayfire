@@ -25,9 +25,10 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask)
     const dim4 mdims    = mask.dims();
 
     if (mdims[0]!=mdims[1])
-        AF_ERROR("Only square masks are supported in opencl morph currently", AF_ERR_SIZE);
+        OPENCL_NOT_SUPPORTED("Rectangular masks are not suported");
+
     if (mdims[0]>19)
-        AF_ERROR("Upto 19x19 square kernels are only supported in opencl currently", AF_ERR_SIZE);
+        OPENCL_NOT_SUPPORTED("Kernels > 19x19 are not supported");
 
     const dim4 dims = in.dims();
     Array<T> out   = createEmptyArray<T>(dims);

@@ -434,7 +434,10 @@ void nearest_neighbour(Param<uint> idx,
     const To max_dist = maxval<To>();
 
     if (feat_len > THREADS) {
-        CUDA_NOT_SUPPORTED();
+        char errMessage[256];
+        snprintf(errMessage, sizeof(errMessage),
+                 "CUDA Maximum number of features supported in nearest_neighbor is %d\n", THREADS);
+        CUDA_NOT_SUPPORTED(errMessage);
     }
 
     const dim_t sample_dim = (dist_dim == 0) ? 1 : 0;
