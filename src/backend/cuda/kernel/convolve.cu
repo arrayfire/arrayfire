@@ -327,7 +327,13 @@ void conv2Helper(const conv_kparam_t &p, Param<T> out, CParam<T> sig, int f1)
         case  3: conv2Helper<T, aT, expand, f0,  3>(p, out, sig); break;
         case  4: conv2Helper<T, aT, expand, f0,  4>(p, out, sig); break;
         case  5: conv2Helper<T, aT, expand, f0,  5>(p, out, sig); break;
-        default: CUDA_NOT_SUPPORTED();
+        default:
+            {
+                char errMessage[256];
+                snprintf(errMessage, sizeof(errMessage),
+                        "\nCUDA Convolution doesn't support %dx%d kernel\n", f0, f1);
+                CUDA_NOT_SUPPORTED(errMessage);
+            };
     }
 }
 
@@ -355,10 +361,22 @@ void conv2Helper(const conv_kparam_t &p, Param<T> out, CParam<T> sig, int f0, in
                              case 15: conv2Helper<T, aT, expand, 15, 15>(p, out, sig); break;
                              case 16: conv2Helper<T, aT, expand, 16, 16>(p, out, sig); break;
                              case 17: conv2Helper<T, aT, expand, 17, 17>(p, out, sig); break;
-                             default: CUDA_NOT_SUPPORTED();
+                             default:
+                                {
+                                    char errMessage[256];
+                                    snprintf(errMessage, sizeof(errMessage),
+                                            "\nCUDA 2D convolution doesn't support %dx%d kernel\n", f0, f1);
+                                    CUDA_NOT_SUPPORTED(errMessage);
+                                };
                          }
-                     } else
-                         CUDA_NOT_SUPPORTED();
+                     } else {
+                        {
+                            char errMessage[256];
+                            snprintf(errMessage, sizeof(errMessage),
+                                    "\nCUDA 2D convolution doesn't support rectangular kernels\n");
+                            CUDA_NOT_SUPPORTED(errMessage);
+                        };
+                     }
                  } break;
     }
 }
@@ -476,7 +494,13 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<aT> filt, AF_BATCH_KIND 
         case 3: if ((filt.dims[0]*filt.dims[1]*filt.dims[2]) > (MCFL3 * MCFL3 * MCFL3)) callKernel = false; break;
     }
 
-    if (!callKernel) { CUDA_NOT_SUPPORTED(); }
+    if (!callKernel) {
+        char errMessage[256];
+        snprintf(errMessage, sizeof(errMessage),
+                 "\nCUDA N Dimensional Convolution doesn't support %dx%dx%d kernel\n",
+                 filt.dims[0], filt.dims[1], filt.dims[2]);
+        CUDA_NOT_SUPPORTED(errMessage);
+    }
 
     conv_kparam_t param;
     for (int i=0; i<3; ++i) {

@@ -179,7 +179,10 @@ namespace cuda
 #define SPECILIAZE_UNUSED_COPYARRAY(SRC_T, DST_T) \
     template<> void copyArray<SRC_T, DST_T>(Array<DST_T> &out, Array<SRC_T> const &in) \
     {\
-        CUDA_NOT_SUPPORTED();\
+        char errMessage[1024];                                              \
+        snprintf(errMessage, sizeof(errMessage),                            \
+                "CUDA copyArray<"#SRC_T","#DST_T"> is not supported\n");    \
+        CUDA_NOT_SUPPORTED(errMessage);                                     \
     }
 
     SPECILIAZE_UNUSED_COPYARRAY(cfloat, double)

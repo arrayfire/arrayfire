@@ -24,10 +24,10 @@ Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
     const dim4 mdims = mask.dims();
 
     if (mdims[0] != mdims[1] || mdims[0] != mdims[2])
-        AF_ERROR("Only cube masks are supported in CUDA backend", AF_ERR_SIZE);
+        CUDA_NOT_SUPPORTED("Only cubic masks are supported");
 
     if (mdims[0] > 7)
-        AF_ERROR("Upto 7x7x7 kernels are only supported in CUDA backend", AF_ERR_SIZE);
+        CUDA_NOT_SUPPORTED("Kernels > 7x7x7 not supported");
 
     Array<T> out       = createEmptyArray<T>(in.dims());
 
