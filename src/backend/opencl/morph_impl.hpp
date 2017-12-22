@@ -42,16 +42,7 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask)
         case  8: kernel::morph<T, isDilation,  8>(out, in, mask); break;
         case  9: kernel::morph<T, isDilation,  9>(out, in, mask); break;
         case 10: kernel::morph<T, isDilation, 10>(out, in, mask); break;
-        case 11: kernel::morph<T, isDilation, 11>(out, in, mask); break;
-        case 12: kernel::morph<T, isDilation, 12>(out, in, mask); break;
-        case 13: kernel::morph<T, isDilation, 13>(out, in, mask); break;
-        case 14: kernel::morph<T, isDilation, 14>(out, in, mask); break;
-        case 15: kernel::morph<T, isDilation, 15>(out, in, mask); break;
-        case 16: kernel::morph<T, isDilation, 16>(out, in, mask); break;
-        case 17: kernel::morph<T, isDilation, 17>(out, in, mask); break;
-        case 18: kernel::morph<T, isDilation, 18>(out, in, mask); break;
-        case 19: kernel::morph<T, isDilation, 19>(out, in, mask); break;
-        default: OPENCL_NOT_SUPPORTED(); break;
+        default: kernel::morph<T, isDilation>(out, in, mask, mdims[0]); break;
     }
 
     return out;

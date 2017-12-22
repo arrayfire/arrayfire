@@ -100,6 +100,12 @@ TYPED_TEST(Morph, Dilate4x4)
 {
     morphTest<TypeParam, true, false>(string(TEST_DIR"/morph/dilate4x4.test"));
 }
+
+TYPED_TEST(Morph, Dilate12x12)
+{
+    morphTest<TypeParam, true, false>(string(TEST_DIR"/morph/dilate12x12.test"));
+}
+
 TYPED_TEST(Morph, Erode4x4)
 {
     morphTest<TypeParam, false, false>(string(TEST_DIR"/morph/erode4x4.test"));
@@ -129,6 +135,7 @@ TYPED_TEST(Morph, Dilate4x4x4)
 {
     morphTest<TypeParam, true, true>(string(TEST_DIR"/morph/dilate4x4x4.test"));
 }
+
 TYPED_TEST(Morph, Erode4x4x4)
 {
     morphTest<TypeParam, false, true>(string(TEST_DIR"/morph/erode4x4x4.test"));
