@@ -515,6 +515,8 @@ if(LAPACK_FOUND)
       ${CBLAS_INCLUDE_DIR})
 endif(LAPACK_FOUND)
 
+cotire(afopencl)
+
 install(TARGETS afopencl
   EXPORT ArrayFireOpenCLTargets
   COMPONENT opencl

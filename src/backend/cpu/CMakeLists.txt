@@ -327,6 +327,7 @@ target_link_libraries(afcpu
     FFTW::FFTWF
     Threads::Threads
   )
+cotire(afcpu)
 
 install(TARGETS afcpu
   EXPORT ArrayFireCPUTargets
