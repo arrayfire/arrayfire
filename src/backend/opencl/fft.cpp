@@ -179,6 +179,7 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
 
     INSTANTIATE(cfloat )
     INSTANTIATE(cdouble)
+#undef INSTANTIATE
 
 #define INSTANTIATE_REAL(Tr, Tc)                                        \
     template Array<Tc> fft_r2c<Tc, Tr, 1>(const Array<Tr> &in);         \
@@ -190,4 +191,6 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
 
     INSTANTIATE_REAL(float , cfloat )
     INSTANTIATE_REAL(double, cdouble)
+
+#undef INSTANTIATE_REAL
 }

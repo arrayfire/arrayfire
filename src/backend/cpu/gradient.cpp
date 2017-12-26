@@ -37,4 +37,6 @@ INSTANTIATE(double)
 INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 
+#undef INSTANTIATE
+
 }

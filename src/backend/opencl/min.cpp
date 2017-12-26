@@ -11,6 +11,13 @@
 
 namespace opencl
 {
+
+#define INSTANTIATE(Op, Ti, To)                                             \
+  template Array<To> reduce<Op, Ti, To>(const Array<Ti> &in, const int dim, \
+                                        bool change_nan, double nanval);    \
+  template To reduce_all<Op, Ti, To>(const Array<Ti> &in,                   \
+                                     bool change_nan, double nanval);
+
     //min
     INSTANTIATE(af_min_t, float  , float  )
     INSTANTIATE(af_min_t, double , double )
@@ -24,4 +31,6 @@ namespace opencl
     INSTANTIATE(af_min_t, uchar  , uchar  )
     INSTANTIATE(af_min_t, short  , short  )
     INSTANTIATE(af_min_t, ushort , ushort )
+
+#undef INSTANTIATE
 }

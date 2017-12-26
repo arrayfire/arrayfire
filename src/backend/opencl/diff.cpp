@@ -75,4 +75,6 @@ namespace opencl
     INSTANTIATE(short)
     INSTANTIATE(ushort)
     INSTANTIATE(char)
+
+#undef INSTANTIATE
 }

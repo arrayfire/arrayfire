@@ -102,6 +102,7 @@ INSTANTIATE(cfloat)
 INSTANTIATE(double)
 INSTANTIATE(cdouble)
 
+#undef INSTANTIATE
 }
 
 #endif  // WITH_LINEAR_ALGEBRA

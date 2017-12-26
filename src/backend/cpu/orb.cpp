@@ -281,4 +281,5 @@ unsigned orb(Array<float> &x, Array<float> &y,
 INSTANTIATE(float , float )
 INSTANTIATE(double, double)
 
+#undef INSTANTIATE
 }

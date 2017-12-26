@@ -12,6 +12,9 @@
 namespace opencl
 {
 
+#define INSTANTIATE(T, ISDILATE)                                        \
+  template Array<T> morph3d<T, ISDILATE>(const Array<T> &in, const Array<T> &mask);
+
 INSTANTIATE(float , false)
 INSTANTIATE(double, false)
 INSTANTIATE(char  , false)
@@ -21,4 +24,5 @@ INSTANTIATE(uchar , false)
 INSTANTIATE(short , false)
 INSTANTIATE(ushort, false)
 
+#undef INSTANTIATE
 }

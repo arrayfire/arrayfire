@@ -67,4 +67,5 @@ INSTANTIATE(char)
 INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 
+#undef INSTANTIATE
 }

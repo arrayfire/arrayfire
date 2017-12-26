@@ -12,6 +12,9 @@
 namespace opencl
 {
 
+#define INSTANTIATE(T, ISDILATE)                                        \
+  template Array<T> morph  <T, ISDILATE>(const Array<T> &in, const Array<T> &mask);
+
 INSTANTIATE(float , true)
 INSTANTIATE(double, true)
 INSTANTIATE(char  , true)
@@ -21,4 +24,5 @@ INSTANTIATE(uchar , true)
 INSTANTIATE(short , true)
 INSTANTIATE(ushort, true)
 
+#undef INSTANTIATE
 }

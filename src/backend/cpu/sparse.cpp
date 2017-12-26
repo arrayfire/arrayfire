@@ -30,39 +30,6 @@ namespace cpu
 
 using namespace common;
 
-using std::add_const;
-using std::add_pointer;
-using std::enable_if;
-using std::is_floating_point;
-using std::remove_const;
-using std::conditional;
-using std::is_same;
-
-template<typename T, class Enable = void>
-struct blas_base {
-    using type = T;
-};
-
-template<typename T>
-struct blas_base <T, typename enable_if<is_complex<T>::value>::type> {
-    using type = typename conditional<is_same<T, cdouble>::value,
-                                      sp_cdouble, sp_cfloat>
-                                     ::type;
-};
-
-template<typename T>
-using cptr_type     =   typename conditional<   is_complex<T>::value,
-                                                const typename blas_base<T>::type *,
-                                                const T*>::type;
-template<typename T>
-using ptr_type     =    typename conditional<   is_complex<T>::value,
-                                                typename blas_base<T>::type *,
-                                                T*>::type;
-template<typename T>
-using scale_type   =    typename conditional<   is_complex<T>::value,
-                                                const typename blas_base<T>::type *,
-                                                const T *>::type;
-
 #ifdef USE_MKL
 
 // void mkl_zdnscsr (const MKL_INT *job ,
@@ -74,8 +41,8 @@ using scale_type   =    typename conditional<   is_complex<T>::value,
 template<typename T>
 using dnscsr_func_def = void (*)(const int *,
                                  const int *, const int *,
-                                 ptr_type<T>, const int *,
-                                 ptr_type<T>,
+                                 sparse_ptr_type<T>, const int *,
+                                 sparse_ptr_type<T>,
                                  int *, int *,
                                  int *);
 
@@ -89,8 +56,8 @@ using dnscsr_func_def = void (*)(const int *,
 template<typename T>
 using csrcsc_func_def = void (*)(const int *,
                                  const int *,
-                                 ptr_type<T>, int *, int *,
-                                 ptr_type<T>,
+                                 sparse_ptr_type<T>, int *, int *,
+                                 sparse_ptr_type<T>,
                                  int *, int *,
                                  int *);
 
@@ -200,8 +167,8 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_)
         // is bidirectional and has input/output on all pointers
         dnscsr_func<T>()(
                 job, &M, &N,
-                reinterpret_cast<ptr_type<T>>(const_cast<T*>(in.get())), &ldd,
-                reinterpret_cast<ptr_type<T>>(values.get()),
+                reinterpret_cast<sparse_ptr_type<T>>(const_cast<T*>(in.get())), &ldd,
+                reinterpret_cast<sparse_ptr_type<T>>(values.get()),
                 colIdx.get(),
                 rowIdx.get(),
                 &info);
@@ -256,8 +223,8 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_)
         // is bidirectional and has input/output on all pointers
         dnscsr_func<T>()(
                 job, &M, &N,
-                reinterpret_cast<ptr_type<T>>(dense.get()), &ldd,
-                reinterpret_cast<ptr_type<T>>(const_cast<T*>(values.get())),
+                reinterpret_cast<sparse_ptr_type<T>>(dense.get()), &ldd,
+                reinterpret_cast<sparse_ptr_type<T>>(const_cast<T*>(values.get())),
                 const_cast<int*>(colIdx.get()),
                 const_cast<int*>(rowIdx.get()),
                 &info);

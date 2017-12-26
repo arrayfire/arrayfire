@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <optypes.hpp>

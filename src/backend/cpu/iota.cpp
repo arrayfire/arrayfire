@@ -44,4 +44,5 @@ INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
+#undef INSTANTIATE
 }

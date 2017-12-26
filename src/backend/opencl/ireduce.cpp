@@ -65,4 +65,6 @@ namespace opencl
     INSTANTIATE(af_max_t, uchar  )
     INSTANTIATE(af_max_t, short  )
     INSTANTIATE(af_max_t, ushort )
+
+#undef INSTANTIATE
 }

@@ -12,13 +12,17 @@
 namespace opencl
 {
 
-INSTANTIATE(float , false)
-INSTANTIATE(double, false)
-INSTANTIATE(char  , false)
-INSTANTIATE(int   , false)
-INSTANTIATE(uint  , false)
-INSTANTIATE(uchar , false)
-INSTANTIATE(short , false)
-INSTANTIATE(ushort, false)
+#define INSTANTIATE(T, ISDILATE)                                        \
+  template Array<T> morph  <T, ISDILATE>(const Array<T> &in, const Array<T> &mask);
 
+    INSTANTIATE(float , false)
+    INSTANTIATE(double, false)
+    INSTANTIATE(char  , false)
+    INSTANTIATE(int   , false)
+    INSTANTIATE(uint  , false)
+    INSTANTIATE(uchar , false)
+    INSTANTIATE(short , false)
+    INSTANTIATE(ushort, false)
+
+#undef INSTANTIATE
 }

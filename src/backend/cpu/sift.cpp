@@ -62,4 +62,5 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
 INSTANTIATE(float , float )
 INSTANTIATE(double, double)
 
+#undef INSTANTIATE
 }

@@ -50,4 +50,5 @@ Array<T> rgb2hsv(const Array<T>& in)
 INSTANTIATE(double)
 INSTANTIATE(float )
 
+#undef INSTANTIATE
 }

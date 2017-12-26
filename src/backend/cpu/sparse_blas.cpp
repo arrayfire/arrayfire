@@ -33,31 +33,6 @@ using std::remove_const;
 using std::conditional;
 using std::is_same;
 
-template<typename T, class Enable = void>
-struct blas_base {
-    using type = T;
-};
-
-template<typename T>
-struct blas_base <T, typename enable_if<is_complex<T>::value>::type> {
-    using type = typename conditional<is_same<T, cdouble>::value,
-                                      sp_cdouble, sp_cfloat>
-                                     ::type;
-};
-
-template<typename T>
-using cptr_type     =   typename conditional<   is_complex<T>::value,
-                                                const typename blas_base<T>::type *,
-                                                const T*>::type;
-template<typename T>
-using ptr_type     =    typename conditional<   is_complex<T>::value,
-                                                typename blas_base<T>::type *,
-                                                T*>::type;
-template<typename T>
-using scale_type   =    typename conditional<   is_complex<T>::value,
-                                                const typename blas_base<T>::type,
-                                                const T>::type;
-
 template<typename To, typename Ti>
 To getScaleValue(Ti val)
 {
@@ -102,29 +77,29 @@ using create_csr_func_def = sparse_status_t (*)
                             sparse_index_base_t,
                             int, int,
                             int *, int *, int*,
-                            ptr_type<T>);
+                            sparse_ptr_type<T>);
 
 template<typename T>
 using mv_func_def         = sparse_status_t (*)
                            (sparse_operation_t,
-                            scale_type<T>,
+                            sparse_scale_type<T>,
                             const sparse_matrix_t,
                             struct matrix_descr,
-                            cptr_type<T>,
-                            scale_type<T>,
-                            ptr_type<T>);
+                            csparse_ptr_type<T>,
+                            sparse_scale_type<T>,
+                            sparse_ptr_type<T>);
 
 template<typename T>
 using mm_func_def         = sparse_status_t (*)
                            (sparse_operation_t,
-                            scale_type<T>,
+                            sparse_scale_type<T>,
                             const sparse_matrix_t,
                             struct matrix_descr,
                             sparse_layout_t,
-                            cptr_type<T>,
+                            csparse_ptr_type<T>,
                             int, int,
-                            scale_type<T>,
-                            ptr_type<T>, int);
+                            sparse_scale_type<T>,
+                            sparse_ptr_type<T>, int);
 
 #define SPARSE_FUNC_DEF( FUNC )                         \
 template<typename T> FUNC##_func_def<T> FUNC##_func();
@@ -195,10 +170,10 @@ toSparseTranspose(af_mat_prop opt)
 }
 
 template<typename T, int value>
-scale_type<T> getScale()
+sparse_scale_type<T> getScale()
 {
     static T val(value);
-    return getScaleValue<scale_type<T>, T>(val);
+    return getScaleValue<sparse_scale_type<T>, T>(val);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -252,7 +227,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
         create_csr_func<T>()(&csrLhs, SPARSE_INDEX_BASE_ZERO, sdim0, sdim1,
                              pB, pE,
                              const_cast<int *>(colIdx.get()),
-                             reinterpret_cast<ptr_type<T>>(vptr));
+                             reinterpret_cast<sparse_ptr_type<T>>(vptr));
 
         struct matrix_descr descrLhs;
         descrLhs.type = SPARSE_MATRIX_TYPE_GENERAL;
@@ -264,17 +239,17 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
             mv_func<T>()(
                 lOpts, alpha,
                 csrLhs, descrLhs,
-                reinterpret_cast<cptr_type<T>>(right.get()),
+                reinterpret_cast<csparse_ptr_type<T>>(right.get()),
                 beta,
-                reinterpret_cast<ptr_type<T>>(output.get()));
+                reinterpret_cast<sparse_ptr_type<T>>(output.get()));
         } else {
             mkl_sparse_set_mm_hint(csrLhs, lOpts, descrLhs, SPARSE_LAYOUT_COLUMN_MAJOR, N, 1);
             mm_func<T>()(
                 lOpts, alpha,
                 csrLhs, descrLhs, SPARSE_LAYOUT_COLUMN_MAJOR,
-                reinterpret_cast<cptr_type<T>>(right.get()),
+                reinterpret_cast<csparse_ptr_type<T>>(right.get()),
                 N, ldb, beta,
-                reinterpret_cast<ptr_type<T>>(output.get()), ldc);
+                reinterpret_cast<sparse_ptr_type<T>>(output.get()), ldc);
         }
         mkl_sparse_destroy(csrLhs);
     };

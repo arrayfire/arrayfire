@@ -139,4 +139,5 @@ INSTANTIATE(short , float,  cfloat,  false, true)
 INSTANTIATE(uintl , float,  cfloat,  false, true)
 INSTANTIATE(intl  , float,  cfloat,  false, true)
 
+#undef INSTANTIATE
 }
