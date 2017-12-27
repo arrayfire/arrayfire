@@ -62,7 +62,7 @@ float g_coef[] = { 1, 2, 1,
                    2, 4, 2,
                    1, 2, 1 };
 
-af::array filter = 1.f/16 * af::array(3, 3, f_coef);
+af::array filter = 1.f/16 * af::array(3, 3, g_coef);
 
 af::array signal = randu(WIDTH, HEIGHT, NUM);
 af::array conv = convolve2(signal, filter);
