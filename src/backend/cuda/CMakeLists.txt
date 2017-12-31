@@ -128,6 +128,11 @@ include(kernel/thrust_sort_by_key/CMakeLists.txt)
 include(scan/CMakeLists.txt)
 
 cuda_add_library(afcuda
+    kernel/convolve.cu
+    kernel/convolve_separable.cu
+    kernel/ireduce.hpp
+    ireduce.cu
+
     all.cu
     anisotropic_diffusion.cu
     any.cu
@@ -158,7 +163,6 @@ cuda_add_library(afcuda
     index.cu
     inverse.cu
     iota.cu
-    ireduce.cu
     join.cu
     lookup.cu
     lu.cu
@@ -203,9 +207,6 @@ cuda_add_library(afcuda
     where.cu
     wrap.cu
 
-    kernel/convolve.cu
-    kernel/convolve_separable.cu
-
     kernel/anisotropic_diffusion.hpp
     kernel/approx.hpp
     kernel/assign.hpp
@@ -231,7 +232,6 @@ cuda_add_library(afcuda
     kernel/index.hpp
     kernel/interp.hpp
     kernel/iota.hpp
-    kernel/ireduce.hpp
     kernel/join.hpp
     kernel/lookup.hpp
     kernel/lu_split.hpp
@@ -497,8 +497,6 @@ endif()
 if(APPLE)
   target_link_libraries(afcuda PUBLIC -Wl,-rpath,${CUDA_LIBRARIES_PATH})
 endif()
-
-cotire(afcuda)
 
 install(TARGETS afcuda
   EXPORT ArrayFireCUDATargets
