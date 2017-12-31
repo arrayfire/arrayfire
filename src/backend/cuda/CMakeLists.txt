@@ -404,6 +404,7 @@ cuda_add_library(afcuda
   )
 
 add_library(ArrayFire::afcuda ALIAS afcuda)
+target_compile_definitions(afcuda PRIVATE AFDLL)
 
 if(BUILD_NONFREE)
   target_compile_definitions(afcuda PRIVATE AF_BUILD_NONFREE_SIFT)

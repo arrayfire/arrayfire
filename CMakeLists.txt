@@ -130,10 +130,6 @@ set_target_properties(${built_backends} PROPERTIES
                       VERSION "${ArrayFire_VERSION}"
                       SOVERSION "${ArrayFire_VERSION_MAJOR}")
 
-foreach(backend ${built_backends})
-  target_compile_definitions(${backend} PRIVATE AFDLL)
-endforeach()
-
 if(BUILD_FRAMEWORK)
   set_target_properties(${built_backends}
     PROPERTIES
