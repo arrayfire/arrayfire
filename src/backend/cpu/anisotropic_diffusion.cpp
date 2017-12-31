@@ -31,4 +31,6 @@ template void anisotropicDiffusion<T>(Array<T> &inout, const float dt, const flo
 
 INSTANTIATE(double)
 INSTANTIATE( float)
+
+#undef INSTANTIATE
 }
