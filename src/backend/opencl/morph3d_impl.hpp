@@ -39,7 +39,7 @@ Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
         case  5: kernel::morph3d<T, isDilation,  5>(out, in, mask); break;
         case  6: kernel::morph3d<T, isDilation,  6>(out, in, mask); break;
         case  7: kernel::morph3d<T, isDilation,  7>(out, in, mask); break;
-        default: assert(mdims[0] < 7 & "Kernel size should be haandled above."); break;
+        default: assert(mdims[0] < 7 && "Kernel size should be haandled above.");
     }
 
     return out;
