@@ -9,9 +9,8 @@
 
 #ifndef AFCPU_LAPACK
 #define AFCPU_LAPACK
+#include <complex>
 
-#define lapack_complex_float std::complex<float>
-#define lapack_complex_double std::complex<double>
 #define LAPACK_PREFIX LAPACKE_
 #define ORDER_TYPE int
 #define AF_LAPACK_COL_MAJOR LAPACK_COL_MAJOR

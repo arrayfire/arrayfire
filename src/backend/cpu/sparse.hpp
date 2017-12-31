@@ -18,14 +18,6 @@
 namespace cpu
 {
 
-#ifdef USE_MKL
-typedef MKL_Complex8  sp_cfloat;
-typedef MKL_Complex16 sp_cdouble;
-#else
-typedef cfloat        sp_cfloat;
-typedef cdouble       sp_cdouble;
-#endif
-
 template<typename T, af_storage stype>
 common::SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in);
 
@@ -43,7 +35,7 @@ struct sparse_blas_base {
 template<typename T>
 struct sparse_blas_base <T, typename std::enable_if<is_complex<T>::value>::type> {
   using type = typename std::conditional<std::is_same<T, cdouble>::value,
-                                      sp_cdouble, sp_cfloat>
+                                      cdouble, cfloat>
                                      ::type;
 };
 
@@ -57,6 +49,6 @@ using sparse_ptr_type     =    typename std::conditional<   is_complex<T>::value
                                                             T*>::type;
 template<typename T>
 using sparse_scale_type   =    typename std::conditional<   is_complex<T>::value,
-                                                            const typename sparse_blas_base<T>::type *,
-                                                            const T *>::type;
+                                                            const typename sparse_blas_base<T>::type,
+                                                            const T>::type;
 }
