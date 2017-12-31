@@ -33,10 +33,10 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
           OPTIONS -DSBK_BINARY_OP=${SBK_BINARY_OP} "${cuda_cxx_flags} -DAFDLL"
       )
 
-    list(APPEND SCAN_OBJ ${scan_by_key_gen_files})
+    list(APPEND SCAN_BY_KEY_OBJ ${scan_by_key_gen_files})
 endforeach(SBK_BINARY_OP ${SBK_BINARY_OPS})
 
-cuda_add_library(cuda_scan_by_key STATIC ${SCAN_OBJ})
+cuda_add_library(cuda_scan_by_key STATIC ${SCAN_BY_KEY_OBJ})
 set_target_properties(cuda_scan_by_key
   PROPERTIES
     LINKER_LANGUAGE CXX

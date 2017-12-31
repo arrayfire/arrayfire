@@ -125,9 +125,9 @@ endif()
 
 include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/thrust_sort_by_key/CMakeLists.txt)
+include(scan/CMakeLists.txt)
 
 cuda_add_library(afcuda
-    scan.cu
     all.cu
     anisotropic_diffusion.cu
     any.cu
@@ -459,6 +459,7 @@ target_link_libraries(afcuda
     c_api_interface
     cpp_api_interface
     afcommon_interface
+    cuda_scan
     cuda_scan_by_key
     cuda_thrust_sort_by_key
     ${CUDA_LIBRARIES}

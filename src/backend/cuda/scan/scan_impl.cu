@@ -7,13 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+// This file instantiates scan.cu as separate object files from CMake
+// The line below is read by CMake to determenine the instantiations
+// SCAN_BINARY_OPS:af_add_t af_mul_t af_max_t af_min_t af_notzero_t
+
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <err_cuda.hpp>
 
 #undef _GLIBCXX_USE_INT128
 #include <scan.hpp>
-#include <complex>
+#include <complex.hpp>
 #include <kernel/scan_first.hpp>
 #include <kernel/scan_dim.hpp>
 
@@ -61,9 +65,9 @@ namespace cuda
     INSTANTIATE_SCAN(ROp, short  , int    )             \
     INSTANTIATE_SCAN(ROp, ushort , uint   )
 
-    INSTANTIATE_SCAN(af_notzero_t, char, uint)
-    INSTANTIATE_SCAN_ALL(af_add_t)
-    INSTANTIATE_SCAN_ALL(af_mul_t)
-    INSTANTIATE_SCAN_ALL(af_min_t)
-    INSTANTIATE_SCAN_ALL(af_max_t)
+#if SCAN_BINARY_OP == af_notzero_t
+    INSTANTIATE_SCAN(SCAN_BINARY_OP, char, uint)
+#else
+    INSTANTIATE_SCAN_ALL(SCAN_BINARY_OP)
+#endif
 }
