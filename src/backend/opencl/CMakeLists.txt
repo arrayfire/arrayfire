@@ -517,6 +517,7 @@ if(LAPACK_FOUND)
       ${CBLAS_INCLUDE_DIR})
 endif(LAPACK_FOUND)
 
+set_target_properties(afopencl PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "pch.hpp")
 cotire(afopencl)
 
 install(TARGETS afopencl

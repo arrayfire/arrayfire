@@ -329,6 +329,8 @@ target_link_libraries(afcpu
     FFTW::FFTWF
     Threads::Threads
   )
+
+set_target_properties(afcpu PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "pch.hpp")
 cotire(afcpu)
 
 install(TARGETS afcpu
