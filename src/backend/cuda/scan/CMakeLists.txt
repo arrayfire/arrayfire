@@ -28,15 +28,25 @@ foreach(SCAN_BINARY_OP ${SCAN_BINARY_OPS})
       "${CMAKE_CURRENT_BINARY_DIR}/scan/scan_impl_${SCAN_BINARY_OP}.cu")
 
     cuda_compile(scan_gen_files "${CMAKE_CURRENT_BINARY_DIR}/scan/scan_impl_${SCAN_BINARY_OP}.cu"
+          "${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan.hpp"
           "${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim.hpp"
           "${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first.hpp"
-          OPTIONS -DSCAN_BINARY_OP=${SCAN_BINARY_OP} "${cuda_cxx_flags} -DAFDLL  -Xcudafe \"--diag_suppress=1427\""
+          OPTIONS -DSCAN_BINARY_OP=${SCAN_BINARY_OP} " ${cuda_cxx_flags} -DAFDLL -Xcudafe \"--diag_suppress=1427\""
       )
+
+    message(STATUS "${CMAKE_CURRENT_BINARY_DIR}/scan/scan_impl_${SCAN_BINARY_OP}.cu")
 
     list(APPEND SCAN_OBJ ${scan_gen_files})
 endforeach(SCAN_BINARY_OP ${SCAN_BINARY_OPS})
 
-cuda_add_library(cuda_scan STATIC ${SCAN_OBJ})
+cuda_compile(scan_nonzero_gen_files "${CMAKE_CURRENT_SOURCE_DIR}/scan/scan_nonzero_impl.cu"
+      "${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan.hpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim.hpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first.hpp"
+      OPTIONS -DSCAN_BINARY_OP=${SCAN_BINARY_OP} " ${cuda_cxx_flags} -DAFDLL -Xcudafe \"--diag_suppress=1427\""
+  )
+
+cuda_add_library(cuda_scan STATIC ${SCAN_OBJ} ${scan_nonzero_gen_files})
 set_target_properties(cuda_scan
   PROPERTIES
     LINKER_LANGUAGE CXX
