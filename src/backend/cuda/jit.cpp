@@ -282,7 +282,7 @@ std::vector<char> compileToPTX(const char *ker_name, string jit_ker)
              dev.major, dev.minor);
     const char* compiler_options[] = {
       arch.data(),
-#ifndef NDEBUG
+#if !(defined(NDEBUG) || defined(__aarch64__) || defined(__LP64__))
       "--device-debug",
       "--generate-line-info"
 #endif
