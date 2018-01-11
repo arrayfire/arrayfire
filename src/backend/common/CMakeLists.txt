@@ -57,7 +57,7 @@ if(AF_WITH_GRAPHICS)
       OpenGL::GL
       ${Forge_LIBRARIES})
 
-    target_compile_definitions(afcommon_interface INTERFACE WITH_GRAPHICS)
+  target_compile_definitions(afcommon_interface INTERFACE WITH_GRAPHICS)
 
   if(APPLE)
     # TODO: On APPLE platform linking directly against glbinding brings in flags
@@ -69,10 +69,14 @@ if(AF_WITH_GRAPHICS)
       INTERFACE
         $<TARGET_PROPERTY:glbinding::glbinding,IMPORTED_LOCATION_RELEASE>)
   else()
-    target_link_libraries(afcommon_interface
-      INTERFACE
-      glbinding::glbinding)
+    target_link_libraries(afcommon_interface INTERFACE glbinding::glbinding)
   endif()
+
+  install(FILES
+      $<TARGET_FILE:glbinding::glbinding>
+      $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
+    DESTINATION ${AF_INSTALL_BIN_DIR}
+    COMPONENT gfx_dependencies)
 
   add_dependencies(afcommon_interface forge-ext)
 endif()

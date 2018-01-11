@@ -10,3 +10,4 @@ GPATH
 .dir-locals.el
 docs/details/examples.dox
 /TAGS
+external/

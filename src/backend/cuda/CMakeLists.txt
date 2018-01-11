@@ -21,6 +21,7 @@ cuda_select_nvcc_arch_flags(cuda_architecture_flags ${CUDA_architecture_build_ta
 message(STATUS "CUDA Architectures: ${CUDA_architecture_build_targets}")
 
 find_cuda_helper_libs(nvrtc)
+find_cuda_helper_libs(nvrtc-builtins)
 
 get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
 mark_as_advanced(CUDA_LIBRARIES_PATH)
@@ -481,7 +482,6 @@ else()
   find_library(CUDA_CUDA_STUB
              NAMES cuda
              PATHS ${CUDA_LIBRARIES_PATH}/stubs
-
              NO_DEFAULT_PATH
          )
   if(CUDA_CUDA_STUB)
@@ -510,6 +510,41 @@ install(TARGETS afcuda
   FRAMEWORK DESTINATION framework
   INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
   )
+
+set(cuda_deps "")
+set (PX ${CMAKE_SHARED_LIBRARY_PREFIX})
+set (SX ${CMAKE_SHARED_LIBRARY_SUFFIX})
+set (dlib_path_prefix ${CUDA_LIBRARIES_PATH})
+if (WIN32)
+  set(dlib_path_prefix "${CUDA_TOOLKIT_ROOT_DIR}/bin")
+endif ()
+
+macro(afcu_collect_libs libname)
+  if (WIN32)
+    list(APPEND cuda_deps
+        "${dlib_path_prefix}/${PX}${libname}64_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}${SX}")
+  elseif (APPLE)
+    get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}${SX}" REALPATH)
+    list(APPEND cuda_deps "${outpath}")
+  else () #UNIX
+	list(APPEND cuda_deps
+        "${dlib_path_prefix}/${PX}${libname}${SX}.${CUDA_VERSION}") #soname file
+    #now actual shared library
+    get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}${SX}" REALPATH)
+    list(APPEND cuda_deps "${outpath}")
+  endif ()
+endmacro()
+
+afcu_collect_libs(cufft)
+afcu_collect_libs(cublas)
+afcu_collect_libs(cusolver)
+afcu_collect_libs(cusparse)
+afcu_collect_libs(nvrtc)
+afcu_collect_libs(nvrtc-builtins)
+
+install(FILES       ${cuda_deps}
+        DESTINATION ${AF_INSTALL_BIN_DIR}
+        COMPONENT   cuda_dependencies)
 
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
