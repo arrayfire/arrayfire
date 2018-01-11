@@ -17,6 +17,7 @@ include(InternalUtils)
 include(Version)
 include(build_cl2hpp)
 include(platform)
+include(GetPrerequisites)
 
 arrayfire_set_cmake_default_variables()
 

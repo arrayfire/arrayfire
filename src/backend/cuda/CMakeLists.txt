@@ -511,6 +511,12 @@ install(TARGETS afcuda
   INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
   )
 
+get_prerequisites("${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}afcuda${CMAKE_SHARED_LIBRARY_SUFFIX}" cuda_deps 1 0 0 "" "")
+
+install(FILES       ${cuda_deps}
+        DESTINATION ${AF_INSTALL_LIB_DIR}
+        COMPONENT   cuda_dependencies)
+
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
 source_group(api\\c   REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/c/*)

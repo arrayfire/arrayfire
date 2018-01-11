@@ -70,7 +70,7 @@ computing code, saving you valuable time and lowering development costs.")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A high performance library for parallel computing with an easy-to-use API.")
 
 # Set the default components installed in the package
-set(CPACK_COMPONENTS_ALL cpu cuda opencl unified headers documentation cmake examples)
+get_cmake_property(CPACK_COMPONENTS_ALL COMPONENTS)
 
 include(CPackComponent)
 cpack_add_component_group(libraries
