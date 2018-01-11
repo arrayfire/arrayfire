@@ -73,67 +73,101 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A high performance library for parallel c
 get_cmake_property(CPACK_COMPONENTS_ALL COMPONENTS)
 
 include(CPackComponent)
-cpack_add_component_group(libraries
-DISPLAY_NAME "Libraries"
-DESCRIPTION "ArrayFire libraries"
-EXPANDED BOLD_TITLE)
+
+cpack_add_install_type(Development
+  DISPLAY_NAME "Development")
+cpack_add_install_type(Extra
+  DISPLAY_NAME "Extra")
+cpack_add_install_type(Runtime
+  DISPLAY_NAME "Runtime")
+
+cpack_add_component_group(dependencies
+                          DISPLAY_NAME "Dependencies"
+                          DESCRIPTION "ArrayFire dependencies"
+                          EXPANDED BOLD_TITLE)
+
+cpack_add_component(cpu_dependencies
+DISPLAY_NAME "CPU Dependencies"
+DESCRIPTION
+"Libraries required for the CPU backend"
+GROUP dependencies
+INSTALL_TYPES Development Runtime)
+
+cpack_add_component(cuda_dependencies
+DISPLAY_NAME "CUDA Dependencies"
+DESCRIPTION
+"CUDA Runtime and libraries required for the CUDA backend"
+GROUP dependencies
+INSTALL_TYPES Development Runtime)
+
+cpack_add_component(opencl_dependencies
+DISPLAY_NAME "OpenCL Dependencies"
+DESCRIPTION
+"Libraries required for the OpenCL backend"
+GROUP dependencies
+INSTALL_TYPES Development Runtime)
 
 cpack_add_component(cpu
 DISPLAY_NAME "CPU Backend"
 DESCRIPTION
-"ArrayFire targeting CPUs. Also installs the corresponding CMake config files."
-GROUP libraries)
+"ArrayFire targeting CPUs."
+INSTALL_TYPES Development Runtime)
 
 cpack_add_component(cuda
 DISPLAY_NAME "CUDA Backend"
 DESCRIPTION
-"ArrayFire which targets the CUDA platform. This platform allows you to to take "
-"advantage of the CUDA enabled GPUs to run ArrayFire code. Also installs the "
-"corresponding CMake config files."
-GROUP libraries)
+"ArrayFire which targets the CUDA platform. This platform allows you to to take\n"
+"advantage of the CUDA enabled GPUs to run ArrayFire code."
+INSTALL_TYPES Development Runtime)
 
 cpack_add_component(opencl
 DISPLAY_NAME "OpenCL Backend"
 DESCRIPTION
-"ArrayFire which targets the OpenCL platform. This platform allows you to use the "
-"ArrayFire library which targets OpenCL devices. Also installs the corresponding "
-"CMake config files. NOTE: Currently ArrayFire does not support OpenCL for the "
-"Intel CPU on OSX."
-GROUP libraries)
+"ArrayFire which targets the OpenCL platform. This platform allows you to use\n"
+"the ArrayFire library which targets OpenCL devices. CMake config files. NOTE:\n"
+"Currently ArrayFire does not support OpenCL for the Intel CPU on OSX."
+INSTALL_TYPES Development Runtime)
 
 cpack_add_component(unified
 DISPLAY_NAME "Unified Backend"
 DESCRIPTION
-"This library will allow you to choose the platform(cpu, cuda, opencl) at "
-"runtime. Also installs the corresponding CMake config files. NOTE: This option "
+"This library will allow you to choose the platform(cpu, cuda, opencl) at\n"
+"runtime. Also installs the corresponding CMake config files. NOTE: This option\n"
 "requires the other platforms to work properly"
-#DEPENDS "cpu;cuda;opencl"
-GROUP libraries)
+INSTALL_TYPES Development Runtime)
 
 cpack_add_component(documentation
 DISPLAY_NAME "Documentation"
 DESCRIPTION "Doxygen documentation"
+INSTALL_TYPES Extra
 )
 
 cpack_add_component(headers
 DISPLAY_NAME "C/C++ Headers"
 DESCRIPTION "Headers for the ArrayFire Libraries."
+INSTALL_TYPES Development
 )
 
 cpack_add_component(cmake
 DISPLAY_NAME "CMake Support"
 DESCRIPTION "Configuration files to use ArrayFire using CMake."
+INSTALL_TYPES Development
 )
 
 cpack_add_component(examples
 DISPLAY_NAME "ArrayFire Examples"
 DESCRIPTION "Various examples using ArrayFire."
+INSTALL_TYPES Extra
 )
 
 ##
 # Debian package
 ##
-set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${PROCESSOR_ARCHITECTURE})
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+set(CPACK_DEB_COMPONENT_INSTALL ON)
+#set(CMAKE_INSTALL_RPATH /usr/lib;${ArrayFire_BUILD_DIR}/third_party/forge/lib)
+#set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE http://www.arrayfire.com)
 
 ##
 # RPM package
