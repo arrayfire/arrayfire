@@ -84,6 +84,7 @@ add_definitions(${platform_definitions})
 if(AF_WITH_GRAPHICS)
   include(build_forge)
 endif()
+set(prerequisites_search_dirs "${ArrayFire_BINARY_DIR}/third_party/forge/lib")
 
 configure_file(
     ${ArrayFire_SOURCE_DIR}/CMakeModules/version.hpp.in
@@ -279,6 +280,31 @@ configure_package_config_file(
 # build directory.
 # TODO(umar): Disable for now. Causing issues with builds on windows.
 #export(PACKAGE ArrayFire)
+
+if (USE_CPU_MKL OR USE_OPENCL_MKL)
+  set(mkl_rt_library "${CMAKE_SHARED_LIBRARY_PREFIX}mkl_rt${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  find_file(MKL_RT_LIB ${mkl_rt_library}
+    HINTS
+      ENV INTEL_MKL_ROOT_DIR
+    )
+
+  get_filename_component(MKL_RT_PATH "${MKL_RT_LIB}" REALPATH)
+  get_filename_component(MKL_RT_DIR "${MKL_RT_PATH}" DIRECTORY)
+
+  file(GLOB mkl_compiler_dlls "${MKL_RT_DIR}/../compiler/*.dll")
+  file(GLOB mkl_compiler_pdbs "${MKL_RT_DIR}/../compiler/*.pdb")
+  file(GLOB mkl_dlls "${MKL_RT_DIR}/*.dll")
+
+  install(FILES ${mkl_compiler_dlls}
+    DESTINATION ${AF_INSTALL_BIN_DIR}
+	COMPONENT mkl_dependencies)
+  install(FILES ${mkl_compiler_pdbs}
+    DESTINATION ${AF_INSTALL_BIN_DIR}
+	COMPONENT mkl_dependencies)
+  install(FILES ${mkl_dlls}
+    DESTINATION ${AF_INSTALL_BIN_DIR}
+	COMPONENT mkl_dependencies)
+endif ()
 
 include(CPackConfig)
 include(CTest)

@@ -86,11 +86,19 @@ cpack_add_component_group(dependencies
                           DESCRIPTION "ArrayFire dependencies"
                           EXPANDED BOLD_TITLE)
 
+cpack_add_component(mkl_dependencies
+DISPLAY_NAME "Intel MKL Prerequisites"
+DESCRIPTION
+"Intel MKL libraries required by CPU/OpenCL backend"
+GROUP dependencies
+INSTALL_TYPES Development Runtime)
+
 cpack_add_component(cpu_dependencies
 DISPLAY_NAME "CPU Dependencies"
 DESCRIPTION
 "Libraries required for the CPU backend"
 GROUP dependencies
+DEPENDS mkl_dependencies
 INSTALL_TYPES Development Runtime)
 
 cpack_add_component(cuda_dependencies
@@ -105,6 +113,7 @@ DISPLAY_NAME "OpenCL Dependencies"
 DESCRIPTION
 "Libraries required for the OpenCL backend"
 GROUP dependencies
+DEPENDS mkl_dependencies
 INSTALL_TYPES Development Runtime)
 
 cpack_add_component(cpu

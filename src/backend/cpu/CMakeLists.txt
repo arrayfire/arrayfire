@@ -354,11 +354,13 @@ install(TARGETS afcpu
   INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
   )
 
-list_prerequisites(${CMAKE_CURRENT_BINARY_DIR}/libafcpu.so 0 1 1)
-get_prerequisites("${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}afcpu${CMAKE_SHARED_LIBRARY_SUFFIX}" cpu_deps 1 0 0 "" "")
+get_target_library_path(binary_location afcpu)
+get_prerequisites(${binary_location} dependencies 1 1 "" "${prerequisites_search_dirs}")
+resolve_dependencies_paths(cpu_deps
+  "${dependencies}" "${binary_location}" "${prerequisites_search_dirs}")
 
 install(FILES ${cpu_deps}
-        DESTINATION ${AF_INSTALL_LIB_DIR}
+        DESTINATION ${AF_INSTALL_BIN_DIR}
         COMPONENT   cpu_dependencies)
 
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
