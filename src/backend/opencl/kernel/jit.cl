@@ -9,6 +9,7 @@
 
 #define __select(cond, a, b) (cond) ? (a) : (b)
 #define __not_select(cond, a, b) (cond) ? (b) : (a)
+#define __circular_mod(a, b) ((a) < (b)) ? (a) : (a - b)
 
 #define sign(in) signbit((in))
 #define __noop(a) (a)

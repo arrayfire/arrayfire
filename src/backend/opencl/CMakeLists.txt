@@ -289,7 +289,6 @@ target_sources(afopencl
     kernel/scan_first_by_key.hpp
     kernel/scan_first_by_key_impl.hpp
     kernel/select.hpp
-    kernel/shift.hpp
     kernel/sobel.hpp
     kernel/sort.hpp
     kernel/sort_by_key.hpp
