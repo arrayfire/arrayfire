@@ -14,6 +14,13 @@ typedef double2 cuDoubleComplex;
 typedef cuDoubleComplex cdouble;
 
 // ----------------------------------------------
+// COMMON OPERATIONS
+// ----------------------------------------------
+
+#define __select(cond, a, b) (cond) ? (a) : (b)
+#define __not_select(cond, a, b) (cond) ? (b) : (a)
+
+// ----------------------------------------------
 // REAL NUMBER OPERATIONS
 // ----------------------------------------------
 #define sign(in) signbit((in))
