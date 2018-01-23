@@ -22,7 +22,7 @@ namespace opencl
 namespace JIT
 {
 
-    static const int MAX_CHILDREN = 2;
+    static const int MAX_CHILDREN = 3;
     class Node;
     using std::shared_ptr;
     using std::vector;

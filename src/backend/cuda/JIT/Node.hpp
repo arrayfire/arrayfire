@@ -22,7 +22,7 @@ namespace cuda
 namespace JIT
 {
 
-    static const int MAX_CHILDREN = 2;
+    static const int MAX_CHILDREN = 3;
     class Node;
     using std::shared_ptr;
     using std::vector;
@@ -40,18 +40,18 @@ namespace JIT
     class Node
     {
     protected:
+        const int m_height;
         const std::string m_type_str;
         const std::string m_name_str;
-        const int m_height;
         const std::array<Node_ptr, MAX_CHILDREN> m_children;
 
     public:
 
         Node(const char *type_str, const char *name_str, const int height,
              const std::array<Node_ptr, MAX_CHILDREN> children)
-            : m_type_str(type_str),
+            : m_height(height),
+              m_type_str(type_str),
               m_name_str(name_str),
-              m_height(height),
               m_children(children)
         {}
 
