@@ -24,8 +24,7 @@ using af::dim4;
 template<typename T>
 af_array select(const af_array cond, const af_array a, const af_array b, const dim4 &odims)
 {
-    Array<T> out = createEmptyArray<T>(odims);
-    select(out, getArray<char>(cond), getArray<T>(a), getArray<T>(b));
+    Array<T> out = createSelectNode(getArray<char>(cond), getArray<T>(a), getArray<T>(b), odims);
     return getHandle<T>(out);
 }
 
@@ -82,8 +81,7 @@ af_err af_select(af_array *out, const af_array cond, const af_array a, const af_
 template<typename T, bool flip>
 af_array select_scalar(const af_array cond, const af_array a, const double b, const dim4 &odims)
 {
-    Array<T> out = createEmptyArray<T>(odims);
-    select_scalar<T, flip>(out, getArray<char>(cond), getArray<T>(a), b);
+    Array<T> out = createSelectNode<T, flip>(getArray<char>(cond), getArray<T>(a), b, odims);
     return getHandle<T>(out);
 }
 
