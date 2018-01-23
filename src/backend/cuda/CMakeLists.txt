@@ -182,7 +182,6 @@ cuda_add_library(afcuda
     scan_by_key.cu
     select.cu
     set.cu
-    shift.cu
     sift.cu
     sobel.cu
     solve.cu
@@ -263,7 +262,6 @@ cuda_add_library(afcuda
     kernel/scan_first_by_key_impl.hpp
     kernel/select.hpp
     kernel/shared.hpp
-    kernel/shift.hpp
     kernel/sift_nonfree.hpp
     kernel/sobel.hpp
     kernel/sort.hpp
@@ -367,6 +365,7 @@ cuda_add_library(afcuda
     scan_by_key.hpp
     select.hpp
     set.hpp
+    shift.cpp
     shift.hpp
     sift.hpp
     sobel.hpp
@@ -398,6 +397,8 @@ cuda_add_library(afcuda
     JIT/Node.hpp
     JIT/ScalarNode.hpp
     JIT/UnaryNode.hpp
+    JIT/NaryNode.hpp
+    JIT/ShiftNode.hpp
     JIT/types.h
 
     OPTIONS "${cuda_cxx_flags} -Xcudafe \"--diag_suppress=1427\""

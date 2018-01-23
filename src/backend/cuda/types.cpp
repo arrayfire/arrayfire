@@ -26,8 +26,8 @@ namespace cuda
     template<> const char *shortname<uchar   >(bool caps) { return caps ?  "V" : "v"; }
     template<> const char *shortname<intl    >(bool caps) { return caps ?  "X" : "x"; }
     template<> const char *shortname<uintl   >(bool caps) { return caps ?  "Y" : "y"; }
-    template<> const char *shortname<short   >(bool caps) { return caps ?  "P" : "P"; }
-    template<> const char *shortname<ushort  >(bool caps) { return caps ?  "Q" : "Q"; }
+    template<> const char *shortname<short   >(bool caps) { return caps ?  "P" : "p"; }
+    template<> const char *shortname<ushort  >(bool caps) { return caps ?  "Q" : "q"; }
 
 #define INSTANTIATE(T)                                      \
     template<> const char *getFullName<T>() { return #T; }  \

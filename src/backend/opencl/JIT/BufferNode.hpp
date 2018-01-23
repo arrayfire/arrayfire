@@ -8,6 +8,8 @@
  ********************************************************/
 
 #pragma once
+#include <af/defines.h>
+#include "../kernel/KParam.hpp"
 #include "Node.hpp"
 #include <iomanip>
 #include <mutex>
