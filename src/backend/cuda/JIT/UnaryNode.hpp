@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include "Node.hpp"
+#include "NaryNode.hpp"
 #include <iomanip>
 
 namespace cuda
@@ -17,35 +17,15 @@ namespace cuda
 namespace JIT
 {
 
-    class UnaryNode : public Node
+    class UnaryNode : public NaryNode
     {
-    private:
-        const std::string m_op_str;
-        const int m_op;
-
     public:
         UnaryNode(const char *out_type_str, const char *name_str,
                   const char *op_str,
                   Node_ptr child, int op)
-            : Node(out_type_str, name_str, child->getHeight() + 1, {{child}}),
-              m_op_str(op_str),
-              m_op(op)
+            : NaryNode(out_type_str, name_str, op_str,
+                       1, {{child}}, op, child->getHeight() + 1)
         {
-        }
-
-        void genKerName(std::stringstream &kerStream, Node_ids ids)
-        {
-            // Make the dec representation of enum part of the Kernel name
-            kerStream << "_" << std::setw(3) << std::setfill('0') << std::dec << m_op;
-            kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.child_ids[0];
-            kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id << std::dec;
-        }
-
-        void genFuncs(std::stringstream &kerStream, Node_ids ids)
-        {
-            kerStream << m_type_str << " val" << ids.id << " = "
-                      << m_op_str << "(val" << ids.child_ids[0] << ");"
-                      << "\n";
         }
     };
 
