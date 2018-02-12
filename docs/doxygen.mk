@@ -1980,7 +1980,7 @@ PREDEFINED             = __declspec(x)= \
                          __attribute__(x)= \
                          __cplusplus \
                          AF_DOC \
-						 AF_API_VERSION=${AF_API_VERSION_CURRENT}
+						 AF_API_VERSION=${ArrayFire_API_VERSION_CURRENT}
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The
