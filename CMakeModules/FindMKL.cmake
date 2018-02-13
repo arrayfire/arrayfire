@@ -63,13 +63,9 @@ else()
   find_mkl_library(VAR_NAME MKL_INTERFACE_LIBRARY LIBRARY_NAME mkl_intel_ilp64)
 endif()
 
-file(STRINGS "${MKL_INCLUDE_DIR}/../../../.version" MKL_VERSION)
-
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MKL
-  REQUIRED_VARS MKL_CORE_LIBRARY MKL_INCLUDE_DIR
-  VERSION_VAR MKL_VERSION
-  )
+  REQUIRED_VARS MKL_CORE_LIBRARY MKL_INCLUDE_DIR)
 
 if(MKL_FOUND)
   add_library(MKL::MKL SHARED IMPORTED)
