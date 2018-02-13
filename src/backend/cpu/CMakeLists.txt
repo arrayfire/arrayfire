@@ -315,18 +315,32 @@ target_compile_definitions(afcpu
     AF_CPU
   )
 
-target_link_libraries(afcpu
-  PRIVATE
-    c_api_interface
-    cpp_api_interface
-    afcommon_interface
-    afcommon_lapack_interface
-    cpu_sort_by_key
-    ${CBLAS_LIBRARIES}
-    FFTW::FFTW
-    FFTW::FFTWF
-    Threads::Threads
-  )
+if(USE_CPU_MKL)
+  target_link_libraries(afcpu
+    PRIVATE
+      c_api_interface
+      cpp_api_interface
+      afcommon_interface
+      afcommon_lapack_interface
+      cpu_sort_by_key
+      MKL::MKL
+      Threads::Threads
+    )
+else()
+  target_link_libraries(afcpu
+    PRIVATE
+      c_api_interface
+      cpp_api_interface
+      afcommon_interface
+      afcommon_lapack_interface
+      cpu_sort_by_key
+      ${CBLAS_LIBRARIES}
+      ${LAPACK_LIBRARIES}
+      FFTW::FFTW
+      FFTW::FFTWF
+      Threads::Threads
+    )
+endif()
 
 install(TARGETS afcpu
   EXPORT ArrayFireCPUTargets

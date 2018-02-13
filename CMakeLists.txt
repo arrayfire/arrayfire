@@ -30,6 +30,7 @@ find_package(FFTW)
 find_package(CBLAS)
 find_package(LAPACKE)
 find_package(Doxygen)
+find_package(MKL)
 
 # Graphics dependencies
 find_package(glbinding QUIET)
