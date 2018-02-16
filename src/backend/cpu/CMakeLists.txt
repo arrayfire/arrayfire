@@ -7,9 +7,6 @@
 
 include(InternalUtils)
 
-dependency_check(FFTW_FOUND "FFTW not found")
-dependency_check(CBLAS_FOUND "CBLAS not found")
-
 add_library(afcpu "")
 add_library(ArrayFire::afcpu ALIAS afcpu)
 
@@ -327,6 +324,9 @@ if(USE_CPU_MKL)
       Threads::Threads
     )
 else()
+  dependency_check(FFTW_FOUND "FFTW not found")
+  dependency_check(CBLAS_FOUND "CBLAS not found")
+
   target_link_libraries(afcpu
     PRIVATE
       c_api_interface

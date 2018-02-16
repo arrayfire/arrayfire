@@ -12,8 +12,6 @@ set_property(CACHE OPENCL_BLAS_LIBRARY PROPERTY STRINGS "clBLAS" "CLBlast")
 
 include(build_clFFT)
 
-dependency_check(OpenCL_FOUND "OpenCL not found.")
-
 file(GLOB kernel_src kernel/*.cl kernel/KParam.hpp)
 
 set( kernel_headers_dir
@@ -484,6 +482,8 @@ if(LAPACK_FOUND)
       )
 
   else()
+    dependency_check(OpenCL_FOUND "OpenCL not found.")
+
     if(USE_CPU_F77_BLAS)
       target_compile_definitions(afopencl PRIVATE USE_F77_BLAS)
     endif()
