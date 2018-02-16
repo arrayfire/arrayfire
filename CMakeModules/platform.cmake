@@ -31,8 +31,5 @@ if(WIN32)
   #        exported class
   add_compile_options(/wd4251 /wd4068 /wd4275)
 
-  # Default path for Intel MKL libraries
-  set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};"
-    "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/mkl;"
-    "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/mkl/lib/intel64")
+  set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 endif()
