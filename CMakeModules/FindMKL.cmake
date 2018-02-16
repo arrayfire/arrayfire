@@ -128,7 +128,9 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MKL
   REQUIRED_VARS MKL_INCLUDE_DIR)
-find_library(M_LIB m)
+if(NOT WIN32)
+  find_library(M_LIB m)
+endif()
 if(MKL_FOUND)
   add_library(MKL::MKL INTERFACE IMPORTED)
   set_target_properties(MKL::MKL
