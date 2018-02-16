@@ -53,6 +53,8 @@ function(find_mkl_library)
       ${mkl_args_LIBRARY_NAME}
     PATHS
       /opt/intel/mkl/lib
+      /opt/intel/tbb/lib
+      /opt/intel/lib
       $ENV{MKL_ROOT}/lib
     PATH_SUFFIXES
       IntelSWTools/compilers_and_libraries/windows/mkl/lib/intel64
@@ -69,6 +71,8 @@ function(find_mkl_library)
       ${CMAKE_STATIC_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX}
     PATHS
       /opt/intel/mkl/lib
+      /opt/intel/tbb/lib
+      /opt/intel/lib
       $ENV{MKL_ROOT}/lib
     PATH_SUFFIXES
       IntelSWTools/compilers_and_libraries/windows/mkl/lib/intel64
