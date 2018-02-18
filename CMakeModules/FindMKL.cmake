@@ -75,18 +75,19 @@ function(find_mkl_library)
       /opt/intel/lib
       $ENV{MKL_ROOT}/lib
     PATH_SUFFIXES
+      ""
+      intel64
+      intel64/gcc4.7
       IntelSWTools/compilers_and_libraries/windows/mkl/lib/intel64
       IntelSWTools/compilers_and_libraries/windows/compiler/lib/intel64
       IntelSWTools/compilers_and_libraries/windows/tbb/lib/intel64/${msvc_dir}
-      ""
-      intel64
-      intel64_lin)
+      )
 
-  set_target_properties(MKL::${mkl_args_NAME}
-    PROPERTIES
-      IMPORTED_LINK_INTERFACE_LANGUAGE "C"
-      INTERFACE_INCLUDE_DIRECTORIES "${MKL_INCLUDE_DIR}")
-
+    set_target_properties(MKL::${mkl_args_NAME}
+      PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${MKL_INCLUDE_DIR}"
+        IMPORTED_LOCATION "${${mkl_args_NAME}_LINK_LIBRARY}"
+        IMPORTED_NO_SONAME TRUE)
     if(WIN32)
       find_file(${mkl_args_NAME}_DLL_LIBRARY
         NAMES
@@ -101,10 +102,6 @@ function(find_mkl_library)
         PROPERTIES
           IMPORTED_LOCATION "${${mkl_args_NAME}_DLL_LIBRARY}"
           IMPORTED_IMPLIB "${${mkl_args_NAME}_LINK_LIBRARY}")
-    else()
-      set_target_properties(MKL::${mkl_args_NAME}
-        PROPERTIES
-          IMPORTED_LOCATION "${${mkl_args_NAME}_LINK_LIBRARY}")
     endif()
 endfunction()
 
@@ -132,9 +129,17 @@ if(NOT WIN32)
   find_library(M_LIB m)
 endif()
 if(MKL_FOUND)
-  add_library(MKL::MKL INTERFACE IMPORTED)
+  add_library(MKL::MKL SHARED IMPORTED)
   set_target_properties(MKL::MKL
     PROPERTIES
-      INTERFACE_LINK_LIBRARIES "MKL::Core;MKL::ThreadLayer;MKL::Interface;MKL::tbb;${CMAKE_DL_LIBS};${M_LIB}"
-      INTERFACE_INCLUDE_DIRECTORIES "${MKL_INCLUDE_DIR};${MKL_FFTW_INCLUDE_DIR}")
+       IMPORTED_LOCATION "${Core_LINK_LIBRARY}"
+       INTERFACE_LINK_LIBRARIES "MKL::ThreadLayer;MKL::Interface;MKL::tbb;${CMAKE_DL_LIBS};${M_LIB}"
+       INTERFACE_INCLUDE_DIRECTORIES "${MKL_INCLUDE_DIR};${MKL_FFTW_INCLUDE_DIR}"
+       IMPORTED_NO_SONAME TRUE)
+  if(WIN32)
+    set_target_properties(MKL::MKL
+      PROPERTIES
+        IMPORTED_LOCATION "${Core_DLL_LIBRARY}"
+        IMPORTED_IMPLIB "${Core_LINK_LIBRARY}")
+  endif()
 endif()
