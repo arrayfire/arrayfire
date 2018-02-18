@@ -62,7 +62,7 @@ function(find_mkl_library)
       IntelSWTools/compilers_and_libraries/windows/tbb/lib/intel64/${msvc_dir}
       ""
       intel64
-      intel64\gcc4.7)
+      intel64/gcc4.7)
 
   message(STATUS "NAME: ${mkl_args_NAME} LIBNAME: ${mkl_args_LIBRARY_NAME} ${${mkl_args_NAME}_LINK_LIBRARY}")
 
