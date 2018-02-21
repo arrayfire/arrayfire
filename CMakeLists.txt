@@ -30,6 +30,7 @@ find_package(FFTW)
 find_package(CBLAS)
 find_package(LAPACKE)
 find_package(Doxygen)
+find_package(MKL)
 
 # Graphics dependencies
 find_package(glbinding QUIET)
@@ -227,6 +228,25 @@ install(FILES ${ArrayFire_BINARY_DIR}/cmake/install/ArrayFireConfig.cmake
               DESTINATION ${AF_INSTALL_CMAKE_DIR}
               COMPONENT cmake)
 
+if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL)
+  install(FILES
+    $<TARGET_FILE:MKL::MKL>
+    $<TARGET_FILE:MKL::ThreadLayer>
+    ${MKL_RUNTIME_KERNEL_LIBRARIES}
+    DESTINATION ${AF_INSTALL_LIB_DIR})
+
+  if(TARGET MKL::ThreadingLibrary)
+    install(FILES
+      $<TARGET_FILE:MKL::ThreadingLibrary>
+      DESTINATION ${AF_INSTALL_LIB_DIR})
+  endif()
+
+  if(NOT WIN32)
+    install(FILES
+      $<TARGET_FILE:MKL::Interface>
+        DESTINATION ${AF_INSTALL_LIB_DIR})
+  endif()
+endif()
 
 # This file will be used to create the config file for the build directory.
 # These config files will be used by the examples to find the ArrayFire

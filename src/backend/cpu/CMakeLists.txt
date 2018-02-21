@@ -7,9 +7,6 @@
 
 include(InternalUtils)
 
-dependency_check(FFTW_FOUND "FFTW not found")
-dependency_check(CBLAS_FOUND "CBLAS not found")
-
 add_library(afcpu "")
 add_library(ArrayFire::afcpu ALIAS afcpu)
 
@@ -315,18 +312,35 @@ target_compile_definitions(afcpu
     AF_CPU
   )
 
-target_link_libraries(afcpu
-  PRIVATE
-    c_api_interface
-    cpp_api_interface
-    afcommon_interface
-    afcommon_lapack_interface
-    cpu_sort_by_key
-    ${CBLAS_LIBRARIES}
-    FFTW::FFTW
-    FFTW::FFTWF
-    Threads::Threads
-  )
+if(USE_CPU_MKL)
+  target_link_libraries(afcpu
+    PRIVATE
+      c_api_interface
+      cpp_api_interface
+      afcommon_interface
+      afcommon_lapack_interface
+      cpu_sort_by_key
+      MKL::MKL
+      Threads::Threads
+    )
+else()
+  dependency_check(FFTW_FOUND "FFTW not found")
+  dependency_check(CBLAS_FOUND "CBLAS not found")
+
+  target_link_libraries(afcpu
+    PRIVATE
+      c_api_interface
+      cpp_api_interface
+      afcommon_interface
+      afcommon_lapack_interface
+      cpu_sort_by_key
+      ${CBLAS_LIBRARIES}
+      ${LAPACK_LIBRARIES}
+      FFTW::FFTW
+      FFTW::FFTWF
+      Threads::Threads
+    )
+endif()
 
 install(TARGETS afcpu
   EXPORT ArrayFireCPUTargets

@@ -89,8 +89,4 @@ if(LAPACK_FOUND)
 
   target_compile_definitions(afcommon_lapack_interface
     INTERFACE WITH_LINEAR_ALGEBRA)
-
-  target_link_libraries(afcommon_lapack_interface
-    INTERFACE
-      ${LAPACK_LIBRARIES})
 endif()

@@ -12,8 +12,6 @@ set_property(CACHE OPENCL_BLAS_LIBRARY PROPERTY STRINGS "clBLAS" "CLBlast")
 
 include(build_clFFT)
 
-dependency_check(OpenCL_FOUND "OpenCL not found.")
-
 file(GLOB kernel_src kernel/*.cl kernel/KParam.hpp)
 
 set( kernel_headers_dir
@@ -478,24 +476,26 @@ if(LAPACK_FOUND)
     dependency_check(MKL_FOUND "MKL not found")
     target_compile_definitions(afopencl PRIVATE USE_MKL)
 
-    # TODO(umar) Find a better way to determine BLAS selection
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
-      (CMAKE_CXX_COMPILER_ID STREQUAL "Intel" AND (UNIX AND NOT APPLE)))
-      # MKL requires multiple passes when linking with the static libs. This can be
-      # done in CMake using LINK_INTERFACE_MULTIPLICITY but that will require
-      # changine the way FindCBLAS works. This can also be done using the
-      # --start-group and --end-group linker around the libraries in the linking
-      # step.
-      #
-      # TODO(umar): Change the way CBLAS libraries are found and linked
-      set(CBLAS_LIBRARIES -Wl,--start-group ${CBLAS_LIBRARIES} -Wl,--end-group)
-    endif()
+    target_link_libraries(afopencl
+      PRIVATE
+        MKL::MKL
+      )
+
   else()
+    dependency_check(OpenCL_FOUND "OpenCL not found.")
+
     if(USE_CPU_F77_BLAS)
       target_compile_definitions(afopencl PRIVATE USE_F77_BLAS)
     endif()
 
     dependency_check(CBLAS_LIBRARIES "CBLAS not found.")
+    target_include_directories(afopencl
+      PRIVATE
+        ${CBLAS_INCLUDE_DIR})
+    target_link_libraries(afopencl
+      PRIVATE
+        ${CBLAS_LIBRARIES}
+        ${LAPACK_LIBRARIES})
   endif()
 
   target_compile_definitions(
@@ -506,12 +506,7 @@ if(LAPACK_FOUND)
 
   target_link_libraries(afopencl
     PRIVATE
-      afcommon_lapack_interface
-      ${CBLAS_LIBRARIES}
-    )
-  target_include_directories(afopencl
-    PRIVATE
-      ${CBLAS_INCLUDE_DIR})
+      afcommon_lapack_interface)
 endif(LAPACK_FOUND)
 
 install(TARGETS afopencl
