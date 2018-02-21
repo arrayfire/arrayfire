@@ -23,8 +23,10 @@ if(NOT MKL_THREAD_LAYER STREQUAL MKL_THREAD_LAYER_LAST)
   unset(MKL::ThreadingLibrary CACHE)
   unset(MKL_ThreadLayer_LINK_LIBRARY CACHE)
   unset(MKL_ThreadLayer_STATIC_LINK_LIBRARY CACHE)
+  unset(MKL_ThreadLayer_DLL_LIBRARY CACHE)
   unset(MKL_ThreadingLibrary_LINK_LIBRARY CACHE)
   unset(MKL_ThreadingLibrary_STATIC_LINK_LIBRARY CACHE)
+  unset(MKL_ThreadingLibrary_DLL_LIBRARY CACHE)
   set(MKL_THREAD_LAYER_LAST ${MKL_THREAD_LAYER} CACHE INTERNAL "" FORCE)
 endif()
 
@@ -52,6 +54,7 @@ if(WIN32)
   if(${MSVC_VERSION} GREATER_EQUAL 1900)
     set(msvc_dir "vc14")
     set(shared_suffix "_dll")
+    set(md_suffix "md")
   else()
     message(WARNING "MKL: MS Version not supported for MKL")
   endif()
@@ -85,6 +88,8 @@ function(find_mkl_library)
   find_library(MKL_${mkl_args_NAME}_LINK_LIBRARY
     NAMES
       ${mkl_args_LIBRARY_NAME}${shared_suffix}
+      ${mkl_args_LIBRARY_NAME}${md_suffix}
+      lib${mkl_args_LIBRARY_NAME}${md_suffix}
       ${mkl_args_LIBRARY_NAME}
     PATHS
       /opt/intel/mkl/lib
@@ -132,6 +137,8 @@ function(find_mkl_library)
       find_file(MKL_${mkl_args_NAME}_DLL_LIBRARY
         NAMES
           ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
+          ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}${md_suffix}${CMAKE_SHARED_LIBRARY_SUFFIX}
+          lib${mkl_args_LIBRARY_NAME}${md_suffix}${CMAKE_SHARED_LIBRARY_SUFFIX}
         PATH_SUFFIXES
           IntelSWTools/compilers_and_libraries/windows/redist/intel64/mkl
           IntelSWTools/compilers_and_libraries/windows/redist/intel64/compiler
@@ -175,7 +182,7 @@ set(MKL_KernelLibraries "mkl_def;mkl_mc;mkl_mc3;mkl_avx;mkl_avx2;mkl_avx512")
 
 foreach(lib ${MKL_KernelLibraries})
   find_mkl_library(NAME ${lib} LIBRARY_NAME ${lib})
-  if(MKL_${lib}_LINK_LIBRARY)
+  if(MKL_${lib}_LINK_LIBRARY OR MKL_${lib}_DLL_LIBRARY)
     list(APPEND MKL_RUNTIME_KERNEL_LIBRARIES $<TARGET_FILE:MKL::${lib}>)
   endif()
 endforeach()
@@ -206,7 +213,7 @@ if(MKL_FOUND)
   if(WIN32)
     set_target_properties(MKL::MKL
       PROPERTIES
-        IMPORTED_LOCATION "${Core_DLL_LIBRARY}"
-        IMPORTED_IMPLIB "${Core_LINK_LIBRARY}")
+        IMPORTED_LOCATION "${MKL_Core_DLL_LIBRARY}"
+        IMPORTED_IMPLIB "${MKL_Core_LINK_LIBRARY}")
   endif()
 endif()

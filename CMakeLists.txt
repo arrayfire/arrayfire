@@ -232,7 +232,6 @@ if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL)
   install(FILES
     $<TARGET_FILE:MKL::MKL>
     $<TARGET_FILE:MKL::ThreadLayer>
-    $<TARGET_FILE:MKL::Interface>
     ${MKL_RUNTIME_KERNEL_LIBRARIES}
     DESTINATION ${AF_INSTALL_LIB_DIR})
 
@@ -240,6 +239,12 @@ if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL)
     install(FILES
       $<TARGET_FILE:MKL::ThreadingLibrary>
       DESTINATION ${AF_INSTALL_LIB_DIR})
+  endif()
+
+  if(NOT WIN32)
+    install(FILES
+      $<TARGET_FILE:MKL::Interface>
+        DESTINATION ${AF_INSTALL_LIB_DIR})
   endif()
 endif()
 
