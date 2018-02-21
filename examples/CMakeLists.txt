@@ -4,6 +4,8 @@ project(ArrayFire-Examples
   VERSION 3.5.0
   LANGUAGES CXX)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+
 if (NOT ASSETS_DIR)
     set(ASSETS_DIR ""
         CACHE PATH

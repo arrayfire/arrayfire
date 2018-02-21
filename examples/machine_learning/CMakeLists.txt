@@ -6,9 +6,12 @@ project(ArrayFire-Example-Linear-Algebra
 
 find_package(ArrayFire)
 
+#Include following file after find_package(arrayFire)
+include(BuildOptions)
+
 add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
-if(ArrayFire_CPU_FOUND)
+if(BUILD_CPU_EXAMPLES)
   # Bagging example
   add_executable(bagging_cpu bagging.cpp)
   target_link_libraries(bagging_cpu ArrayFire::afcpu)
@@ -50,7 +53,7 @@ if(ArrayFire_CPU_FOUND)
   target_link_libraries(softmax_regression_cpu ArrayFire::afcpu)
 endif()
 
-if(ArrayFire_CUDA_FOUND)
+if(BUILD_CUDA_EXAMPLES)
   add_executable(bagging_cuda bagging.cpp)
   target_link_libraries(bagging_cuda ArrayFire::afcuda)
 
@@ -82,7 +85,7 @@ if(ArrayFire_CUDA_FOUND)
   target_link_libraries(softmax_regression_cuda ArrayFire::afcuda)
 endif()
 
-if(ArrayFire_OpenCL_FOUND)
+if(BUILD_OPENCL_EXAMPLES)
   add_executable(bagging_opencl bagging.cpp)
   target_link_libraries(bagging_opencl ArrayFire::afopencl)
 

@@ -6,7 +6,10 @@ project(ArrayFire-Example-Getting-Started
 
 find_package(ArrayFire)
 
-if(ArrayFire_CPU_FOUND)
+#Include following file after find_package(arrayFire)
+include(BuildOptions)
+
+if(BUILD_CPU_EXAMPLES)
   # Convolve examples
   add_executable(convolve_cpu convolve.cpp)
   target_link_libraries(convolve_cpu ArrayFire::afcpu)
@@ -24,7 +27,7 @@ if(ArrayFire_CPU_FOUND)
   target_link_libraries(vectorize_cpu ArrayFire::afcpu)
 endif()
 
-if(ArrayFire_CUDA_FOUND)
+if(BUILD_CUDA_EXAMPLES)
   add_executable(convolve_cuda convolve.cpp)
   target_link_libraries(convolve_cuda ArrayFire::afcuda)
 
@@ -38,7 +41,7 @@ if(ArrayFire_CUDA_FOUND)
   target_link_libraries(vectorize_cuda ArrayFire::afcuda)
 endif()
 
-if(ArrayFire_OpenCL_FOUND)
+if(BUILD_OPENCL_EXAMPLES)
   add_executable(convolve_opencl convolve.cpp)
   target_link_libraries(convolve_opencl ArrayFire::afopencl)
 

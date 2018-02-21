@@ -6,9 +6,12 @@ project(ArrayFire-Example-Image-Processing
 
 find_package(ArrayFire)
 
+#Include following file after find_package(arrayFire)
+include(BuildOptions)
+
 add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
-if(ArrayFire_CPU_FOUND)
+if(BUILD_CPU_EXAMPLES)
   # Adaptive Thresholding example
   add_executable(adaptive_thresholding_cpu adaptive_thresholding.cpp)
   target_link_libraries(adaptive_thresholding_cpu ArrayFire::afcpu)
@@ -54,7 +57,7 @@ if(ArrayFire_CPU_FOUND)
   target_link_libraries(gradient_diffusion_cpu ArrayFire::afcpu)
 endif()
 
-if(ArrayFire_CUDA_FOUND)
+if(BUILD_CUDA_EXAMPLES)
   add_executable(adaptive_thresholding_cuda adaptive_thresholding.cpp)
   target_link_libraries(adaptive_thresholding_cuda ArrayFire::afcuda)
 
@@ -90,7 +93,7 @@ if(ArrayFire_CUDA_FOUND)
   target_link_libraries(gradient_diffusion_cuda ArrayFire::afcuda)
 endif()
 
-if(ArrayFire_OpenCL_FOUND)
+if(BUILD_OPENCL_EXAMPLES)
   add_executable(adaptive_thresholding_opencl adaptive_thresholding.cpp)
   target_link_libraries(adaptive_thresholding_opencl ArrayFire::afopencl)
 
