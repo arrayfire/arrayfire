@@ -52,7 +52,7 @@ find_path(MKL_FFTW_INCLUDE_DIR
 
 if(WIN32)
   if(${MSVC_VERSION} GREATER_EQUAL 1900)
-    set(msvc_dir "vc14")
+    set(msvc_dir "vc_mt")
     set(shared_suffix "_dll")
     set(md_suffix "md")
   else()
