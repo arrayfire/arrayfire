@@ -30,6 +30,10 @@ Below you will find instructions for:
     * [RedHat, Fedora, and CentOS](#RPM-distros)
 * [Mac OSX (.sh and brew)](#OSX)
 
+In case you are installing ArrayFire on a display less machine, set the environment variable
+[AF_DISABLE_GRAPHICS](http://arrayfire.org/docs/configuring_environment.htm#af_disable_graphics) to
+`0` so that window toolkit initialisation doesn't throw errors while running ArrayFire applications.
+
 # <a name="Windows"></a> Windows
 
 If you wish to use CUDA or OpenCL please ensure that you have also installed
