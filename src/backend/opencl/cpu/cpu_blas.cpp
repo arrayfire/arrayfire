@@ -198,13 +198,14 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
         BT  *optr = (BT*)(oPtr.get() + z * oStrides[2] + w * oStrides[3]);
 
         if(rDims[bColDim] == 1) {
+            dim_t incr = (rOpts == CblasNoTrans) ? rStrides[0] : rStrides[1];
             N = lDims[aColDim];
             gemv_func<T>()(
                 CblasColMajor, lOpts,
                 lDims[0], lDims[1],
                 alpha,
                 lptr, lStrides[1],
-                rptr, rStrides[0],
+                rptr, incr,
                 beta,
                 optr, 1);
         } else {
