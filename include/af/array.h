@@ -867,30 +867,30 @@ namespace af
         /// \ingroup method_mat
         array H() const;
 
-#define ASSIGN_(OP)                                                                     \
-        array& OP(const array &val);                                                    \
-        array& OP(const double &val);              /**< \copydoc OP (const array &) */  \
-        array& OP(const cdouble &val);             /**< \copydoc OP (const array &) */  \
-        array& OP(const cfloat &val);              /**< \copydoc OP (const array &) */  \
-        array& OP(const float &val);               /**< \copydoc OP (const array &) */  \
-        array& OP(const int &val);                 /**< \copydoc OP (const array &) */  \
-        array& OP(const unsigned &val);            /**< \copydoc OP (const array &) */  \
-        array& OP(const bool &val);                /**< \copydoc OP (const array &) */  \
-        array& OP(const char &val);                /**< \copydoc OP (const array &) */  \
-        array& OP(const unsigned char &val);       /**< \copydoc OP (const array &) */  \
-        array& OP(const long  &val);               /**< \copydoc OP (const array &) */  \
-        array& OP(const unsigned long &val);       /**< \copydoc OP (const array &) */  \
-        array& OP(const long long  &val);          /**< \copydoc OP (const array &) */  \
-        array& OP(const unsigned long long &val);  /**< \copydoc OP (const array &) */  \
+#define ASSIGN_(OP, DOXY_STRING)                               \
+        array& OP(const array &val);                           \
+        array& OP(const double &val);             DOXY_STRING  \
+        array& OP(const cdouble &val);            DOXY_STRING  \
+        array& OP(const cfloat &val);             DOXY_STRING  \
+        array& OP(const float &val);              DOXY_STRING  \
+        array& OP(const int &val);                DOXY_STRING  \
+        array& OP(const unsigned &val);           DOXY_STRING  \
+        array& OP(const bool &val);               DOXY_STRING  \
+        array& OP(const char &val);               DOXY_STRING  \
+        array& OP(const unsigned char &val);      DOXY_STRING  \
+        array& OP(const long  &val);              DOXY_STRING  \
+        array& OP(const unsigned long &val);      DOXY_STRING  \
+        array& OP(const long long  &val);         DOXY_STRING  \
+        array& OP(const unsigned long long &val); DOXY_STRING  \
 
 #if AF_API_VERSION >= 32
-#define ASSIGN(OP)                                                                      \
-        ASSIGN_(OP)                                                                     \
-        array& OP(const short  &val);              /**< \copydoc OP (const array &) */  \
-        array& OP(const unsigned short &val);      /**< \copydoc OP (const array &) */  \
+#define ASSIGN(OP, DOXY_STRING)                                \
+        ASSIGN_(OP, DOXY_STRING)                               \
+        array& OP(const short  &val);             DOXY_STRING  \
+        array& OP(const unsigned short &val);     DOXY_STRING  \
 
 #else
-#define ASSIGN(OP) ASSIGN_(OP)
+#define ASSIGN(OP, DOXY_STRING) ASSIGN_(OP, DOXY_STRING)
 #endif
 
 
@@ -903,7 +903,7 @@ namespace af
         ///
         /// \note   This is a copy on write operation. The copy only occurs when the
         ///          operator() is used on the left hand side.
-        ASSIGN(operator=)
+        ASSIGN(operator=, /**< \copydoc operator=(const array &) */)
         /// @}
 
         /// \ingroup array_mem_operator_plus_eq
@@ -915,7 +915,7 @@ namespace af
         ///
         /// \note   This is a copy on write operation. The copy only occurs when the
         ///          operator() is used on the left hand side.
-        ASSIGN(operator+=)
+        ASSIGN(operator+=, /**< \copydoc operator+=(const array &) */)
         /// @}
 
         /// \ingroup array_mem_operator_minus_eq
@@ -927,7 +927,7 @@ namespace af
         ///
         /// \note   This is a copy on write operation. The copy only occurs when the
         ///          operator() is used on the left hand side.
-        ASSIGN(operator-=)
+        ASSIGN(operator-=, /**< \copydoc operator-=(const array &) */)
         /// @}
 
         /// \ingroup array_mem_operator_multiply_eq
@@ -939,7 +939,7 @@ namespace af
         ///
         /// \note   This is a copy on write operation. The copy only occurs when the
         ///          operator() is used on the left hand side.
-        ASSIGN(operator*=)
+        ASSIGN(operator*=, /**< \copydoc operator*=(const array &) */)
         /// @}
 
         /// \ingroup array_mem_operator_divide_eq
@@ -952,7 +952,7 @@ namespace af
         /// \note   This is a copy on write operation. The copy only occurs when the
         ///          operator() is used on the left hand side.
         /// \ingroup array_mem_operator_divide_eq
-        ASSIGN(operator/=)
+        ASSIGN(operator/=, /**< \copydoc operator/=(const array &) */)
         /// @}
 
 
@@ -1007,45 +1007,45 @@ namespace af
     };
     // end of class array
 
-#define BIN_OP_(OP)                                                                                                      \
-    AFAPI array OP (const array& lhs, const array& rhs);                                                                 \
-    AFAPI array OP (const bool& lhs, const array& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const int& lhs, const array& rhs);                  /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const unsigned& lhs, const array& rhs);             /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const char& lhs, const array& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const unsigned char& lhs, const array& rhs);        /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const long& lhs, const array& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const unsigned long& lhs, const array& rhs);        /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const long long& lhs, const array& rhs);            /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const unsigned long long& lhs, const array& rhs);   /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const double& lhs, const array& rhs);               /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const float& lhs, const array& rhs);                /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const cfloat& lhs, const array& rhs);               /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const cdouble& lhs, const array& rhs);              /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const bool& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const int& rhs);                  /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const unsigned& rhs);             /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const char& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const unsigned char& rhs);        /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const long& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const unsigned long& rhs);        /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const long long& rhs);            /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const unsigned long long& rhs);   /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const double& rhs);               /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const float& rhs);                /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const cfloat& rhs);               /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const cdouble& rhs);              /**< \copydoc OP (const array&, const array&) */ \
+#define BIN_OP_(OP, DOXY_STRING)                                                   \
+    AFAPI array OP (const array& lhs, const array& rhs);                           \
+    AFAPI array OP (const bool& lhs, const array& rhs);                DOXY_STRING \
+    AFAPI array OP (const int& lhs, const array& rhs);                 DOXY_STRING \
+    AFAPI array OP (const unsigned& lhs, const array& rhs);            DOXY_STRING \
+    AFAPI array OP (const char& lhs, const array& rhs);                DOXY_STRING \
+    AFAPI array OP (const unsigned char& lhs, const array& rhs);       DOXY_STRING \
+    AFAPI array OP (const long& lhs, const array& rhs);                DOXY_STRING \
+    AFAPI array OP (const unsigned long& lhs, const array& rhs);       DOXY_STRING \
+    AFAPI array OP (const long long& lhs, const array& rhs);           DOXY_STRING \
+    AFAPI array OP (const unsigned long long& lhs, const array& rhs);  DOXY_STRING \
+    AFAPI array OP (const double& lhs, const array& rhs);              DOXY_STRING \
+    AFAPI array OP (const float& lhs, const array& rhs);               DOXY_STRING \
+    AFAPI array OP (const cfloat& lhs, const array& rhs);              DOXY_STRING \
+    AFAPI array OP (const cdouble& lhs, const array& rhs);             DOXY_STRING \
+    AFAPI array OP (const array& lhs, const bool& rhs);                DOXY_STRING \
+    AFAPI array OP (const array& lhs, const int& rhs);                 DOXY_STRING \
+    AFAPI array OP (const array& lhs, const unsigned& rhs);            DOXY_STRING \
+    AFAPI array OP (const array& lhs, const char& rhs);                DOXY_STRING \
+    AFAPI array OP (const array& lhs, const unsigned char& rhs);       DOXY_STRING \
+    AFAPI array OP (const array& lhs, const long& rhs);                DOXY_STRING \
+    AFAPI array OP (const array& lhs, const unsigned long& rhs);       DOXY_STRING \
+    AFAPI array OP (const array& lhs, const long long& rhs);           DOXY_STRING \
+    AFAPI array OP (const array& lhs, const unsigned long long& rhs);  DOXY_STRING \
+    AFAPI array OP (const array& lhs, const double& rhs);              DOXY_STRING \
+    AFAPI array OP (const array& lhs, const float& rhs);               DOXY_STRING \
+    AFAPI array OP (const array& lhs, const cfloat& rhs);              DOXY_STRING \
+    AFAPI array OP (const array& lhs, const cdouble& rhs);             DOXY_STRING \
 
 #if AF_API_VERSION >= 32
-#define BIN_OP(OP)                                                                                                       \
-        BIN_OP_(OP)                                                                                                      \
-        AFAPI array OP (const short& lhs, const array& rhs);            /**< \copydoc OP (const array&, const array&) */ \
-        AFAPI array OP (const unsigned short& lhs, const array& rhs);   /**< \copydoc OP (const array&, const array&) */ \
-        AFAPI array OP (const array& lhs, const short& rhs);            /**< \copydoc OP (const array&, const array&) */ \
-        AFAPI array OP (const array& lhs, const unsigned short& rhs);   /**< \copydoc OP (const array&, const array&) */ \
+#define BIN_OP(OP, DOXY_STRING)                                                    \
+        BIN_OP_(OP, DOXY_STRING)                                                   \
+        AFAPI array OP (const short& lhs, const array& rhs);           DOXY_STRING \
+        AFAPI array OP (const unsigned short& lhs, const array& rhs);  DOXY_STRING \
+        AFAPI array OP (const array& lhs, const short& rhs);           DOXY_STRING \
+        AFAPI array OP (const array& lhs, const unsigned short& rhs);  DOXY_STRING \
 
 #else
-#define BIN_OP(OP) BIN_OP_(OP)
+#define BIN_OP(OP, DOXY_STRING) BIN_OP_(OP, DOXY_STRING)
 #endif
 
     /// \ingroup arith_func_add
@@ -1056,7 +1056,7 @@ namespace af
     /// \param[in] rhs the right hand side value of the operand
     ///
     /// \returns an array which is the sum of the \p lhs and \p rhs
-    BIN_OP(operator+ )
+    BIN_OP(operator+, /**< \copydoc operator+ (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_sub
@@ -1067,7 +1067,7 @@ namespace af
     /// \param[in] rhs the right hand side value of the operand
     ///
     /// \returns an array which is the subtraction of the \p lhs and \p rhs
-    BIN_OP(operator- )
+    BIN_OP(operator-, /**< \copydoc operator- (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_mul
@@ -1078,7 +1078,7 @@ namespace af
     /// \param[in] rhs the right hand side value of the operand
     ///
     /// \returns an array which is the product of the \p lhs and \p rhs
-    BIN_OP(operator* )
+    BIN_OP(operator*, /**< \copydoc operator* (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_div
@@ -1089,7 +1089,7 @@ namespace af
     /// \param[in] rhs the right hand side value of the operand
     ///
     /// \returns an array which is the quotient of the \p lhs and \p rhs
-    BIN_OP(operator/ )
+    BIN_OP(operator/, /**< \copydoc operator/ (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_eq
@@ -1100,7 +1100,7 @@ namespace af
     /// \param[in] rhs the right hand side value of the operand
     ///
     /// \returns an array of type b8 with the equality operation performed on each element
-    BIN_OP(operator==)
+    BIN_OP(operator==, /**< \copydoc operator== (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_neq
@@ -1112,7 +1112,7 @@ namespace af
     ///
     /// \returns    an array of type b8 with the != operation performed on each element
     ///             of \p lhs and \p rhs
-    BIN_OP(operator!=)
+    BIN_OP(operator!=, /**< \copydoc operator!= (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_lt
@@ -1124,7 +1124,7 @@ namespace af
     ///
     /// \returns    an array of type b8 with the < operation performed on each element
     ///             of \p lhs and \p rhs
-    BIN_OP(operator< )
+    BIN_OP(operator<, /**< \copydoc operator< (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_le
@@ -1136,7 +1136,7 @@ namespace af
     ///
     /// \returns    an array of type b8 with the <= operation performed on each element
     ///             of \p lhs and \p rhs
-    BIN_OP(operator<=)
+    BIN_OP(operator<=, /**< \copydoc operator<= (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_gt
@@ -1148,7 +1148,7 @@ namespace af
     ///
     /// \returns    an array of type b8 with the > operation performed on each element
     ///             of \p lhs and \p rhs
-    BIN_OP(operator> )
+    BIN_OP(operator>, /**< \copydoc operator> (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_ge
@@ -1160,7 +1160,7 @@ namespace af
     ///
     /// \returns    an array of type b8 with the >= operation performed on each element
     ///             of \p lhs and \p rhs
-    BIN_OP(operator>=)
+    BIN_OP(operator>=, /**< \copydoc operator>= (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_and
@@ -1173,7 +1173,7 @@ namespace af
     ///
     /// \returns    an array of type b8 with a logical AND operation performed on each
     ///             element of \p lhs and \p rhs
-    BIN_OP(operator&&)
+    BIN_OP(operator&&, /**< \copydoc operator&& (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_or
@@ -1186,7 +1186,7 @@ namespace af
     ///
     /// \returns    an array of type b8 with a logical OR operation performed on each
     ///             element of \p lhs and \p rhs
-    BIN_OP(operator||)
+    BIN_OP(operator||, /**< \copydoc operator|| (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_mod
@@ -1198,7 +1198,7 @@ namespace af
     ///
     /// \returns    an array with a modulo operation performed on each
     ///             element of \p lhs and \p rhs
-    BIN_OP(operator% )
+    BIN_OP(operator%, /**< \copydoc operator% (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_bitand
@@ -1211,7 +1211,7 @@ namespace af
     ///
     /// \returns    an array with a bitwise AND operation performed on each
     ///             element of \p lhs and \p rhs
-    BIN_OP(operator& )
+    BIN_OP(operator&, /**< \copydoc operator& (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_bitor
@@ -1224,7 +1224,7 @@ namespace af
     ///
     /// \returns    an array with a bitwise OR operation performed on each
     ///             element of \p lhs and \p rhs
-    BIN_OP(operator| )
+    BIN_OP(operator|, /**< \copydoc operator| (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_bitxor
@@ -1237,7 +1237,7 @@ namespace af
     ///
     /// \returns    an array with a bitwise OR operation performed on each
     ///             element of \p lhs and \p rhs
-    BIN_OP(operator^ )
+    BIN_OP(operator^, /**< \copydoc operator^ (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_shiftl
@@ -1250,7 +1250,7 @@ namespace af
     ///
     /// \returns    an array with a left shift operation performed on each
     ///             element of \p lhs and \p rhs
-    BIN_OP(operator<<)
+    BIN_OP(operator<<, /**< \copydoc operator<< (const array&, const array&) */)
     /// @}
 
     /// \ingroup arith_func_shiftr
@@ -1263,7 +1263,7 @@ namespace af
     ///
     /// \returns    an array with a right shift operation performed on each
     ///             element of \p lhs and \p rhs
-    BIN_OP(operator>>)
+    BIN_OP(operator>>, /**< \copydoc operator>> (const array&, const array&) */)
     /// @}
 
 #undef BIN_OP
