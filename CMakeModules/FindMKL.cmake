@@ -39,6 +39,7 @@ find_path(MKL_INCLUDE_DIR
     /opt/intel
     /opt/intel/mkl
     $ENV{MKL_ROOT}
+    /opt/intel/compilers_and_libraries/linux/mkl
   PATH_SUFFIXES
     include
     IntelSWTools/compilers_and_libraries/windows/mkl/include
@@ -99,6 +100,7 @@ function(find_mkl_library)
       /opt/intel/tbb/lib
       /opt/intel/lib
       $ENV{MKL_ROOT}/lib
+      /opt/intel/compilers_and_libraries/linux/mkl/lib
     PATH_SUFFIXES
       IntelSWTools/compilers_and_libraries/windows/mkl/lib/intel64
       IntelSWTools/compilers_and_libraries/windows/compiler/lib/intel64
@@ -120,6 +122,7 @@ function(find_mkl_library)
         /opt/intel/tbb/lib
         /opt/intel/lib
         $ENV{MKL_ROOT}/lib
+        /opt/intel/compilers_and_libraries/linux/mkl/lib
       PATH_SUFFIXES
         ""
         intel64
