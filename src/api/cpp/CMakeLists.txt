@@ -70,6 +70,7 @@ target_sources(cpp_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/stdev.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/susan.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/timing.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/topk.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/transform.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/transform_coordinates.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/translate.cpp

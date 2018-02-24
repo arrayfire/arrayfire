@@ -55,7 +55,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, AF_BATCH_KI
     if(!callKernel) {
         char errMessage[256];
         snprintf(errMessage, sizeof(errMessage),
-                 "\nOpenCL N Dimensional Convolution doesn't support %dx%dx%d kernel\n",
+                 "\nOpenCL N Dimensional Convolution doesn't support %llux%llux%llu kernel\n",
                  fDims[0], fDims[1], fDims[2]);
         OPENCL_NOT_SUPPORTED(errMessage);
     }
