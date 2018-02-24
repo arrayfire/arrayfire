@@ -204,6 +204,8 @@ target_sources(afopencl
     svd.hpp
     tile.cpp
     tile.hpp
+    topk.cpp
+    topk.hpp
     traits.hpp
     transform.cpp
     transform.hpp

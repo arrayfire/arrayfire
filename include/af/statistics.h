@@ -192,6 +192,29 @@ AFAPI T median(const array& in);
 template<typename T>
 AFAPI T corrcoef(const array& X, const array& Y);
 
+#if AF_API_VERSION >= 36
+/**
+   C++ Interface for finding top k elements along a given dimension
+
+   \param[out] values  The values of the top k elements along the \p dim dimension
+   \param[out] indices The indices of the top k elements along the \p dim dimension
+   \param[in]  in      Input \ref af::array with at least \p k elements along
+                       \p dim
+   \param[in]  k       The number of elements to be retriefed along the \p dim dimension
+   \param[in]  dim     The dimension along which top k elements are extracted.
+                       (Must be 0)
+   \param[in]  order   If Descending the highest values are returned. Otherwise
+                       the lowest values are returned
+
+   \note{This function is optimized for small values of k.}
+   \note{The order of the returned keys may not be in the same order as the
+   appear in the input array}
+   \ingroup stat_func_topk
+*/
+AFAPI void topk(array &values, array &indices, const array& in, const int k,
+                const int dim = -1, const topkFunction order = AF_TOPK_MAX);
+#endif
+
 }
 #endif
 
@@ -395,6 +418,29 @@ AFAPI af_err af_median_all(double *realVal, double *imagVal, const af_array in);
 */
 
 AFAPI af_err af_corrcoef(double *realVal, double *imagVal, const af_array X, const af_array Y);
+
+#if AF_API_VERSION >= 36
+/**
+   C Interface for finding top k elements along a given dimension
+
+   \param[out] values  The values of the top k elements along the \p dim dimension
+   \param[out] indices The indices of the top k elements along the \p dim dimension
+   \param[in]  in      Input \ref af::array with at least \p k elements along
+                       \p dim
+   \param[in]  k       The number of elements to be retriefed along the \p dim dimension
+   \param[in]  dim     The dimension along which top k elements are extracted.
+                       (Must be 0)
+   \param[in]  order   If Descending the highest values are returned. Otherwise
+                       the lowest values are returned
+
+   \note{This function is optimized for small values of k.}
+   \note{The order of the returned keys may not be in the same order as the
+         appear in the input array}
+   \ingroup stat_func_topk
+*/
+AFAPI af_err af_topk(af_array *values, af_array *indices, const af_array in,
+                     const int k, const int dim, const af_topk_function order);
+#endif
 
 #ifdef __cplusplus
 }

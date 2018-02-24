@@ -474,6 +474,12 @@ typedef enum {
     AF_DIFFUSION_MCDE = 2,      ///< Modified curvature diffusion equation
     AF_DIFFUSION_DEFAULT = 0    ///< Default option is same as AF_DIFFUSION_GRAD
 } af_diffusion_eq;
+
+typedef enum {
+    AF_TOPK_MAX     = 1,  ///< Top k max values
+    AF_TOPK_MIN     = 2,  ///< Top k min values
+    AF_TOPK_DEFAULT = 0   ///< Default option
+} af_topk_function;
 #endif
 
 #ifdef __cplusplus
@@ -523,6 +529,7 @@ namespace af
 #if AF_API_VERSION >= 36
     typedef af_flux_function fluxFunction;
     typedef af_diffusion_eq diffusionEq;
+    typedef af_topk_function topkFunction;
 #endif
 }
 

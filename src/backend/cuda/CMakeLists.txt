@@ -194,6 +194,7 @@ cuda_add_library(afcuda
     susan.cu
     svd.cu
     tile.cu
+    topk.cu
     transform.cu
     transpose.cu
     transpose_inplace.cu
@@ -272,6 +273,7 @@ cuda_add_library(afcuda
     kernel/thrust_sort_by_key.hpp
     kernel/thrust_sort_by_key_impl.hpp
     kernel/tile.hpp
+    kernel/topk.hpp
     kernel/transform.hpp
     kernel/transpose.hpp
     kernel/transpose_inplace.hpp
@@ -380,6 +382,7 @@ cuda_add_library(afcuda
     susan.hpp
     svd.hpp
     tile.hpp
+    topk.hpp
     traits.hpp
     transform.hpp
     transpose.hpp

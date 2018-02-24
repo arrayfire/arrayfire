@@ -1,7 +1,7 @@
 /*!
 \page batch_detail_stat statistics
 
-This function performs the operation across all batches present in the input simultaneously.
+This function performs the operation across all dimensions of the input array.
 
 */
 
@@ -61,6 +61,21 @@ Find the median of values in the input
 Find the correlation coefficient of values in the input
 
 \copydoc batch_detail_stat
+
+========================================================
+\defgroup stat_func_topk topk
+
+\ingroup basicstats_mat
+
+This function returns the top k values along a given dimension of the input
+array. The indices along with their values are returned. If the input is a
+multi-dimensional array, the indices will be the index of the value in that
+dimension. Order of duplicate values are not preserved. This function is
+optimized for small values of k.
+
+\copydoc batch_detail_stat
+
+\note{Currently, topk elements can be found only along dimension 0.}
 
 ========================================================
 @}

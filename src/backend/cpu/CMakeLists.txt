@@ -155,6 +155,8 @@ target_sources(afcpu
     svd.hpp
     tile.cpp
     tile.hpp
+    topk.cpp
+    topk.hpp
     traits.hpp
     transform.cpp
     transform.hpp

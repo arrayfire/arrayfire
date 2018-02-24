@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2018, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -7,13 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
-#include <af/index.h>
-
 namespace opencl
 {
-
 template<typename T>
-Array<T> index(const Array<T>& in, const af_index_t idxrs[]);
-
+void topk(Array<T>& keys, Array<unsigned>& vals, const Array<T>& in,
+          const int k, const int dim, const af::topkFunction order);
 }

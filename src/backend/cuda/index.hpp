@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <af/index.h>
 
 namespace cuda
 {
