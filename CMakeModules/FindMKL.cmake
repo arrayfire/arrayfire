@@ -43,12 +43,15 @@ find_path(MKL_INCLUDE_DIR
     include
     IntelSWTools/compilers_and_libraries/windows/mkl/include
     )
+mark_as_advanced(MKL_INCLUDE_DIR)
 
 find_path(MKL_FFTW_INCLUDE_DIR
   NAMES
     fftw3_mkl.h
   HINTS
     ${MKL_INCLUDE_DIR}/fftw)
+mark_as_advanced(MKL_FFTW_INCLUDE_DIR)
+
 
 if(WIN32)
   if(${MSVC_VERSION} GREATER_EQUAL 1900)
@@ -186,6 +189,7 @@ foreach(lib ${MKL_KernelLibraries})
     list(APPEND MKL_RUNTIME_KERNEL_LIBRARIES $<TARGET_FILE:MKL::${lib}>)
   endif()
 endforeach()
+mark_as_advanced(MKL_RUNTIME_KERNEL_LIBRARIES)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MKL
