@@ -14,7 +14,7 @@
 
 \brief Index an array using another array.
 
-Let's look at an example of how \ref af::lookup function does indexing.
+Lets look at an example of how \ref lookup function does indexing.
 \code
 array a = range(dim4(5));
 af_print(a);

@@ -36,7 +36,7 @@ Improvements
   [NVVM](http://docs.nvidia.com/cuda/nvvm-ir-spec/index.html).
 * Performance improvements in \ref af::reorder().
   <sup>[1](https://github.com/arrayfire/arrayfire/pull/1766)</sup>
-* Performance improvements in array::scalar<T>().
+* Performance improvements in \ref array::scalar<T>().
   <sup>[1](https://github.com/arrayfire/arrayfire/pull/1809)</sup>
 * Improved unified backend performance.
   <sup>[1](https://github.com/arrayfire/arrayfire/pull/1770)</sup>
@@ -45,7 +45,7 @@ Improvements
 * Can now specify the FFT plan cache size using the
   \ref af::setFFTPlanCacheSize() function.
 * Get the number of physical bytes allocated by the memory manager
-  \ref af_get_allocated_bytes(). <sup>[1](https://github.com/arrayfire/arrayfire/pull/1630)</sup>
+  \ref `af_get_allocated_bytes()`. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1630)</sup>
 * \ref af::dot() can now return a scalar value to the
   host. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1628)</sup>
 
@@ -61,7 +61,7 @@ Bug Fixes
 * Fixed complex (`c32`,`c64`) multiplication in OpenCL convolution
   kernels. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1816)</sup>
 * Fixed inconsistent behavior with \ref af::replace() and \ref
-  af_replace_scalar() . <sup>[1](https://github.com/arrayfire/arrayfire/pull/1773)</sup>
+  replace_scalar(). <sup>[1](https://github.com/arrayfire/arrayfire/pull/1773)</sup>
 * Fixed memory leak in \ref
   af_fir(). <sup>[1](https://github.com/arrayfire/arrayfire/pull/1765)</sup>
 * Fixed memory leaks in \ref af_cast for sparse arrays.
