@@ -6,7 +6,10 @@ project(ArrayFire-Example-Linear-Algebra
 
 find_package(ArrayFire)
 
-if(ArrayFire_CPU_FOUND)
+#Include following file after find_package(arrayFire)
+include(BuildOptions)
+
+if(BUILD_CPU_EXAMPLES)
   # Cholesky example
   add_executable(cholesky_cpu cholesky.cpp)
   target_link_libraries(cholesky_cpu ArrayFire::afcpu)
@@ -24,7 +27,7 @@ if(ArrayFire_CPU_FOUND)
   target_link_libraries(svd_cpu ArrayFire::afcpu)
 endif()
 
-if(ArrayFire_CUDA_FOUND)
+if(BUILD_CUDA_EXAMPLES)
   add_executable(cholesky_cuda cholesky.cpp)
   target_link_libraries(cholesky_cuda ArrayFire::afcuda)
 
@@ -38,7 +41,7 @@ if(ArrayFire_CUDA_FOUND)
   target_link_libraries(svd_cuda ArrayFire::afcuda)
 endif()
 
-if(ArrayFire_OpenCL_FOUND)
+if(BUILD_OPENCL_EXAMPLES)
   add_executable(cholesky_opencl cholesky.cpp)
   target_link_libraries(cholesky_opencl ArrayFire::afopencl)
 

@@ -6,9 +6,12 @@ project(ArrayFire-Example-Computer-Vision
 
 find_package(ArrayFire)
 
+#Include following file after find_package(arrayFire)
+include(BuildOptions)
+
 add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
-if (ArrayFire_CPU_FOUND)
+if (BUILD_CPU_EXAMPLES)
   # FAST examples
   add_executable(fast_cpu fast.cpp)
   target_link_libraries(fast_cpu ArrayFire::afcpu)
@@ -40,7 +43,7 @@ if (ArrayFire_CUDA_FOUND)
   target_link_libraries(susan_cuda ArrayFire::afcuda)
 endif()
 
-if (ArrayFire_OpenCL_FOUND)
+if (BUILD_OPENCL_EXAMPLES)
   add_executable(fast_opencl fast.cpp)
   target_link_libraries(fast_opencl ArrayFire::afopencl)
 

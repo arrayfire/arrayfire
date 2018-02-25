@@ -6,18 +6,21 @@ project(ArrayFire-Example-PDE
 
 find_package(ArrayFire)
 
-if(ArrayFire_CPU_FOUND)
+#Include following file after find_package(arrayFire)
+include(BuildOptions)
+
+if(BUILD_CPU_EXAMPLES)
   # Shallow Water simulation example
   add_executable(swe_cpu swe.cpp)
   target_link_libraries(swe_cpu ArrayFire::afcpu)
 endif()
 
-if(ArrayFire_CUDA_FOUND)
+if(BUILD_CUDA_EXAMPLES)
   add_executable(swe_cuda swe.cpp)
   target_link_libraries(swe_cuda ArrayFire::afcuda)
 endif()
 
-if(ArrayFire_OpenCL_FOUND)
+if(BUILD_OPENCL_EXAMPLES)
   add_executable(swe_opencl swe.cpp)
   target_link_libraries(swe_opencl ArrayFire::afopencl)
 endif()

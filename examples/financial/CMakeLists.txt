@@ -6,7 +6,10 @@ project(ArrayFire-Example-Financial
 
 find_package(ArrayFire)
 
-if(ArrayFire_CPU_FOUND)
+#Include following file after find_package(arrayFire)
+include(BuildOptions)
+
+if(BUILD_CPU_EXAMPLES)
   # Black-Scholes Options
   add_executable(black_scholes_options_cpu black_scholes_options.cpp input.h)
   target_link_libraries(black_scholes_options_cpu ArrayFire::afcpu)
@@ -20,7 +23,7 @@ if(ArrayFire_CPU_FOUND)
   target_link_libraries(monte_carlo_options_cpu ArrayFire::afcpu)
 endif()
 
-if(ArrayFire_CUDA_FOUND)
+if(BUILD_CUDA_EXAMPLES)
   add_executable(black_scholes_options_cuda black_scholes_options.cpp input.h)
   target_link_libraries(black_scholes_options_cuda ArrayFire::afcuda)
 
@@ -31,7 +34,7 @@ if(ArrayFire_CUDA_FOUND)
   target_link_libraries(monte_carlo_options_cuda ArrayFire::afcuda)
 endif()
 
-if(ArrayFire_OpenCL_FOUND)
+if(BUILD_OPENCL_EXAMPLES)
   add_executable(monte_carlo_options_opencl monte_carlo_options.cpp)
   target_link_libraries(monte_carlo_options_opencl ArrayFire::afopencl)
 

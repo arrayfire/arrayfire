@@ -6,7 +6,10 @@ project(ArrayFire-Example-Unified
 
 find_package(ArrayFire)
 
-if(ArrayFire_Unified_FOUND)
+#Include following file after find_package(arrayFire)
+include(BuildOptions)
+
+if(BUILD_UNIFIED_EXAMPLES)
   # Simple unified backend example
   add_executable(basic_unified basic.cpp)
   target_link_libraries(basic_unified ArrayFire::af)

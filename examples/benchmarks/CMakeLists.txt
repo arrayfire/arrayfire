@@ -4,14 +4,12 @@ project(ArrayFire-Example-Benchmarks
   VERSION 3.5.0
   LANGUAGES CXX)
 
-find_package(ArrayFire REQUIRED)
+find_package(ArrayFire)
 
-# get_cmake_property(_variableNames VARIABLES)
-# foreach (_variableName ${_variableNames})
-#     message(STATUS "${_variableName}=${${_variableName}}")
-# endforeach()
+#Include following file after find_package(arrayFire)
+include(BuildOptions)
 
-if(ArrayFire_CPU_FOUND)
+if(BUILD_CPU_EXAMPLES)
   add_executable(blas_cpu blas.cpp)
   target_link_libraries(blas_cpu ArrayFire::afcpu)
 
@@ -26,7 +24,7 @@ if(ArrayFire_CPU_FOUND)
 endif()
 
 
-if(ArrayFire_CUDA_FOUND)
+if(BUILD_CUDA_EXAMPLES)
   add_executable(blas_cuda blas.cpp)
   target_link_libraries(blas_cuda ArrayFire::afcuda)
 
@@ -41,7 +39,7 @@ if(ArrayFire_CUDA_FOUND)
 endif()
 
 
-if(ArrayFire_OpenCL_FOUND)
+if(BUILD_OPENCL_EXAMPLES)
   add_executable(blas_opencl blas.cpp)
   target_link_libraries(blas_opencl ArrayFire::afopencl)
 

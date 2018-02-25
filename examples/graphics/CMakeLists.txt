@@ -6,9 +6,12 @@ project(ArrayFire-Example-Graphics
 
 find_package(ArrayFire)
 
+#Include following file after find_package(arrayFire)
+include(BuildOptions)
+
 add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
-if(ArrayFire_CPU_FOUND)
+if(BUILD_CPU_EXAMPLES)
   # Conway Game of Life
   add_executable(conway_cpu conway.cpp)
   target_link_libraries(conway_cpu ArrayFire::afcpu)
@@ -47,7 +50,7 @@ if(ArrayFire_CPU_FOUND)
   target_link_libraries(surface_cpu ArrayFire::afcpu)
 endif()
 
-if(ArrayFire_CUDA_FOUND)
+if(BUILD_CUDA_EXAMPLES)
   add_executable(conway_cuda conway.cpp)
   target_link_libraries(conway_cuda ArrayFire::afcuda)
 
@@ -76,7 +79,7 @@ if(ArrayFire_CUDA_FOUND)
   target_link_libraries(surface_cuda ArrayFire::afcuda)
 endif()
 
-if(ArrayFire_OpenCL_FOUND)
+if(BUILD_OPENCL_EXAMPLES)
   add_executable(conway_opencl conway.cpp)
   target_link_libraries(conway_opencl ArrayFire::afopencl)
 
