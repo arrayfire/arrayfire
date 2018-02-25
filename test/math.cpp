@@ -144,7 +144,10 @@ MATH_TESTS_REAL(cbrt)
 MATH_TESTS_REAL(expm1)
 MATH_TESTS_REAL(log1p)
 MATH_TESTS_REAL(erf)
+MATH_TESTS_REAL(erfinv)
 MATH_TESTS_REAL(erfc)
+MATH_TESTS_REAL(erfcinv)
+
 #endif
 
 TEST(MathTests, Not)
