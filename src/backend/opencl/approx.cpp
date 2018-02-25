@@ -89,4 +89,6 @@ namespace opencl
     INSTANTIATE(double , double)
     INSTANTIATE(cfloat , float )
     INSTANTIATE(cdouble, double)
+
+#undef INSTANTIATE
 }

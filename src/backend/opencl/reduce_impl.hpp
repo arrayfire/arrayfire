@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
 #include <complex>
 #include <af/dim4.hpp>
 #include <Array.hpp>
@@ -34,8 +35,3 @@ namespace opencl
         return kernel::reduce_all<Ti, To, op>(in, change_nan, nanval);
     }
 }
-
-#define INSTANTIATE(Op, Ti, To)                                         \
-    template Array<To> reduce<Op, Ti, To>(const Array<Ti> &in, const int dim, \
-                                          bool change_nan, double nanval); \
-    template To reduce_all<Op, Ti, To>(const Array<Ti> &in, bool change_nan, double nanval);

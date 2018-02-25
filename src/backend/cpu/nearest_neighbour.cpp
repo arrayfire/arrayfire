@@ -74,5 +74,5 @@ INSTANTIATE(ushort, uint)
 INSTANTIATE(short , int)
 
 INSTANTIATE(uintl , uint)    // For Hamming
-
+#undef INSTANTIATE
 }

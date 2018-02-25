@@ -125,9 +125,14 @@ endif()
 
 include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/thrust_sort_by_key/CMakeLists.txt)
+include(scan/CMakeLists.txt)
 
 cuda_add_library(afcuda
-    scan.cu
+    kernel/convolve.cu
+    kernel/convolve_separable.cu
+    kernel/ireduce.hpp
+    ireduce.cu
+
     all.cu
     anisotropic_diffusion.cu
     any.cu
@@ -158,7 +163,6 @@ cuda_add_library(afcuda
     index.cu
     inverse.cu
     iota.cu
-    ireduce.cu
     join.cu
     lookup.cu
     lu.cu
@@ -203,9 +207,6 @@ cuda_add_library(afcuda
     where.cu
     wrap.cu
 
-    kernel/convolve.cu
-    kernel/convolve_separable.cu
-
     kernel/anisotropic_diffusion.hpp
     kernel/approx.hpp
     kernel/assign.hpp
@@ -231,7 +232,6 @@ cuda_add_library(afcuda
     kernel/index.hpp
     kernel/interp.hpp
     kernel/iota.hpp
-    kernel/ireduce.hpp
     kernel/join.hpp
     kernel/lookup.hpp
     kernel/lu_split.hpp
@@ -408,6 +408,7 @@ cuda_add_library(afcuda
   )
 
 add_library(ArrayFire::afcuda ALIAS afcuda)
+target_compile_definitions(afcuda PRIVATE AFDLL)
 
 if(BUILD_NONFREE)
   target_compile_definitions(afcuda PRIVATE AF_BUILD_NONFREE_SIFT)
@@ -462,6 +463,7 @@ target_link_libraries(afcuda
     c_api_interface
     cpp_api_interface
     afcommon_interface
+    cuda_scan
     cuda_scan_by_key
     cuda_thrust_sort_by_key
     ${CUDA_LIBRARIES}

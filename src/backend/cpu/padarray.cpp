@@ -59,6 +59,7 @@ INSTANTIATE(uintl  )
 INSTANTIATE(short  )
 INSTANTIATE(ushort )
 
+#undef INSTANTIATE
 
 #define INSTANTIATE_PAD_ARRAY(SRC_T)                                    \
     template Array<float  > padArray<SRC_T, float  >(Array<SRC_T> const &src, dim4 const &dims, float   default_value, double factor); \
@@ -84,6 +85,7 @@ INSTANTIATE_PAD_ARRAY(uchar )
 INSTANTIATE_PAD_ARRAY(char  )
 INSTANTIATE_PAD_ARRAY(ushort)
 INSTANTIATE_PAD_ARRAY(short )
+#undef INSTANTIATE_PAD_ARRAY
 
 #define INSTANTIATE_PAD_ARRAY_COMPLEX(SRC_T)                            \
     template Array<cfloat > padArray<SRC_T, cfloat >(Array<SRC_T> const &src, dim4 const &dims, cfloat  default_value, double factor); \
@@ -92,5 +94,6 @@ INSTANTIATE_PAD_ARRAY(short )
 INSTANTIATE_PAD_ARRAY_COMPLEX(cfloat )
 INSTANTIATE_PAD_ARRAY_COMPLEX(cdouble)
 
+#undef INSTANTIATE_PAD_ARRAY_COMPLEX
 }
 

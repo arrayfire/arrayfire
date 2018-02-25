@@ -73,6 +73,8 @@ INSTANTIATE(uintl  )
 INSTANTIATE(short  )
 INSTANTIATE(ushort )
 
+#undef INSTANTIATE
+
 #define INSTANTIATE_COPY_ARRAY(SRC_T)                                    \
     template void copyArray<SRC_T, float  >(Array<float  > &dst, Array<SRC_T> const &src);  \
     template void copyArray<SRC_T, double >(Array<double > &dst, Array<SRC_T> const &src);  \

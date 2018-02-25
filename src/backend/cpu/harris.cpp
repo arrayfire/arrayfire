@@ -138,4 +138,5 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
 INSTANTIATE(double, double)
 INSTANTIATE(float , float)
 
+#undef INSTANTIATE
 }

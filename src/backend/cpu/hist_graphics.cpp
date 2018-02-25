@@ -43,6 +43,7 @@ INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
+#undef INSTANTIATE
 }
 
 #endif  // WITH_GRAPHICS

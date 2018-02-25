@@ -47,4 +47,5 @@ INSTANTIATE(uint  )
 INSTANTIATE(short )
 INSTANTIATE(ushort)
 
+#undef INSTANTIATE
 }

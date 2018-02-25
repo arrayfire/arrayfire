@@ -13,8 +13,6 @@
 #include <program.hpp>
 #include <memory.hpp>
 #include <traits.hpp>
-#include <string>
-#include <mutex>
 #include <common/dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -30,20 +28,10 @@
 #include <boost/compute/iterator/buffer_iterator.hpp>
 #include <boost/compute/algorithm/copy.hpp>
 #include <boost/compute/algorithm/transform.hpp>
-#include <boost/compute/container/vector.hpp>
-#include <boost/compute/functional/get.hpp>
-#include <boost/compute/functional/field.hpp>
-#include <boost/compute/types/pair.hpp>
 
 namespace compute = boost::compute;
 
 using cl::Buffer;
-using cl::Program;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::EnqueueArgs;
-using cl::NDRange;
-using std::string;
 
 template<typename Tk, typename Tv, bool isAscending>
 inline
@@ -161,7 +149,7 @@ namespace opencl
 
             // Create/call iota
             // Array<Tv> key = iota<Tv>(seqDims, tileDims);
-            cl::Buffer* Seq = bufferAlloc(inDims.elements() * sizeof(unsigned));
+            Buffer* Seq = bufferAlloc(inDims.elements() * sizeof(unsigned));
             Param pSeq;
             pSeq.data = Seq;
             pSeq.info.offset = 0;
@@ -203,7 +191,7 @@ namespace opencl
             if(!isAscending) compute::transform(key0, keyN, key0, flipFunction<Tk>(), c_queue);
 
             // Create a copy of the pKey buffer
-            cl::Buffer* cKey = bufferAlloc(elements * sizeof(Tk));
+            Buffer* cKey = bufferAlloc(elements * sizeof(Tk));
             compute::buffer cKey_buf((*cKey)());
             compute::buffer_iterator<Tk> cKey0 = compute::make_buffer_iterator<Tk>(cKey_buf, 0);
             compute::buffer_iterator<Tk> cKeyN = compute::make_buffer_iterator<Tk>(cKey_buf, elements);
@@ -214,7 +202,7 @@ namespace opencl
             compute::sort_by_key(cKey0, cKeyN, val0, c_queue);
 
             // Create a copy of the seq buffer after first sort
-            cl::Buffer* cSeq = bufferAlloc(elements * sizeof(unsigned));
+            Buffer* cSeq = bufferAlloc(elements * sizeof(unsigned));
             compute::buffer cSeq_buf((*cSeq)());
             compute::buffer_iterator<unsigned> cSeq0 = compute::make_buffer_iterator<unsigned>(cSeq_buf, 0);
             compute::buffer_iterator<unsigned> cSeqN = compute::make_buffer_iterator<unsigned>(cSeq_buf, elements);

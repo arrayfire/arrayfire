@@ -145,6 +145,7 @@ INSTANTIATE(uchar   , float ,  float );
 INSTANTIATE(char    , float ,  float );
 INSTANTIATE(cfloat  , float ,  cfloat);
 INSTANTIATE(cdouble , double, cdouble);
+#undef INSTANTIATE
 
 #define INSTANTIATE_WGT(T, Tw)                                         \
     template T mean<T, Tw>(const Array<T> &in, const Array<Tw> &wts); \
@@ -154,5 +155,6 @@ INSTANTIATE_WGT(double , double);
 INSTANTIATE_WGT(float  , float );
 INSTANTIATE_WGT(cfloat , float );
 INSTANTIATE_WGT(cdouble, double);
+#undef INSTANTIATE_WGT
 
 }

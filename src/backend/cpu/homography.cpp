@@ -383,4 +383,5 @@ int homography(Array<T> &bestH,
 INSTANTIATE(float )
 INSTANTIATE(double)
 
+#undef INSTANTIATE
 }

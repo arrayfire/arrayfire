@@ -7,17 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma once
-#include <Array.hpp>
-#include <common/SparseArray.hpp>
-#include <sparse.hpp>
+#include <kernel/scan.hpp>
 
-namespace cpu
-{
-
-template<typename T>
-Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
-                af_mat_prop optLhs, af_mat_prop optRhs);
-
+namespace cuda {
+template Array<uint> scan<af_notzero_t, char, uint>(const Array<char> &in, const int dim, bool inclusive_scan);
 }
-

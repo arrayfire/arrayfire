@@ -52,4 +52,5 @@ INSTANTIATE(uchar ,  float)
 INSTANTIATE(short ,  float)
 INSTANTIATE(ushort,  float)
 
+#undef INSTANTIATE
 }

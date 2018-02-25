@@ -36,6 +36,11 @@ add_library(ArrayFire::afopencl ALIAS afopencl)
 
 target_sources(afopencl
   PRIVATE
+    scan.cpp
+    scan.hpp
+    scan_by_key.cpp
+    scan_by_key.hpp
+
     Array.cpp
     Array.hpp
     Param.cpp
@@ -169,10 +174,6 @@ target_sources(afopencl
     rotate.cpp
     rotate.hpp
     scalar.hpp
-    scan.cpp
-    scan.hpp
-    scan_by_key.cpp
-    scan_by_key.hpp
     select.cpp
     select.hpp
     set.cpp
@@ -382,6 +383,7 @@ set_target_properties(afopencl PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_compile_definitions(afopencl
   PRIVATE
+    AFDLL
     CL_USE_DEPRECATED_OPENCL_1_2_APIS
     __CL_ENABLE_EXCEPTIONS
   )
@@ -510,6 +512,9 @@ if(LAPACK_FOUND)
     PRIVATE
       afcommon_lapack_interface)
 endif(LAPACK_FOUND)
+
+set_target_properties(afopencl PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "pch.hpp")
+cotire(afopencl)
 
 install(TARGETS afopencl
   EXPORT ArrayFireOpenCLTargets

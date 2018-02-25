@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <math.hpp>
@@ -48,6 +49,4 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask)
     return out;
 }
 
-#define INSTANTIATE(T, ISDILATE)                                                 \
-    template Array<T> morph  <T, ISDILATE>(const Array<T> &in, const Array<T> &mask);
 }

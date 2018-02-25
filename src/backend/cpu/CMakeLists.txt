@@ -13,6 +13,13 @@ add_library(ArrayFire::afcpu ALIAS afcpu)
 # CPU backend source files
 target_sources(afcpu
   PRIVATE
+    scan_by_key.cpp
+    scan_by_key.hpp
+    sort.cpp
+    sort.hpp
+    sort_by_key.cpp
+    sort_by_key.hpp
+
     Array.cpp
     Array.hpp
     anisotropic_diffusion.cpp
@@ -123,8 +130,6 @@ target_sources(afcpu
     rotate.hpp
     scan.cpp
     scan.hpp
-    scan_by_key.cpp
-    scan_by_key.hpp
     select.cpp
     select.hpp
     set.cpp
@@ -137,10 +142,6 @@ target_sources(afcpu
     sobel.hpp
     solve.cpp
     solve.hpp
-    sort.cpp
-    sort.hpp
-    sort_by_key.cpp
-    sort_by_key.hpp
     sort_index.cpp
     sort_index.hpp
     sparse.cpp
@@ -312,6 +313,7 @@ endif()
 target_compile_definitions(afcpu
   PRIVATE
     AF_CPU
+    AFDLL
   )
 
 if(USE_CPU_MKL)
@@ -343,6 +345,9 @@ else()
       Threads::Threads
     )
 endif()
+
+set_target_properties(afcpu PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "pch.hpp")
+cotire(afcpu)
 
 install(TARGETS afcpu
   EXPORT ArrayFireCPUTargets

@@ -234,4 +234,5 @@ INSTANTIATE(intl  , float,  cfloat,  false, true)
 INSTANTIATE(ushort, float,  cfloat,  false, true)
 INSTANTIATE(short , float,  cfloat,  false, true)
 
+#undef INSTANTIATE
 } // namespace cpu

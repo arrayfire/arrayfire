@@ -58,5 +58,6 @@ INSTANTIATE(char)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
 
+#undef INSTANTIATE
 }
 

@@ -50,16 +50,17 @@ Array<T> exampleFunction(const Array<T> &a, const Array<T> &b, const af_someenum
 #define INSTANTIATE(T)  \
     template Array<T> exampleFunction<T>(const Array<T> &a, const Array<T> &b, const af_someenum_t method);
 
-// INSTANTIATIONS for all the types which
-// are present in the switch case statement
-// in src/api/c/exampleFunction.cpp should be available
-INSTANTIATE(float)
-INSTANTIATE(double)
-INSTANTIATE(int)
-INSTANTIATE(uint)
-INSTANTIATE(uchar)
-INSTANTIATE(char)
-INSTANTIATE(cfloat)
-INSTANTIATE(cdouble)
+    // INSTANTIATIONS for all the types which
+    // are present in the switch case statement
+    // in src/api/c/exampleFunction.cpp should be available
+    INSTANTIATE(float)
+    INSTANTIATE(double)
+    INSTANTIATE(int)
+    INSTANTIATE(uint)
+    INSTANTIATE(uchar)
+    INSTANTIATE(char)
+    INSTANTIATE(cfloat)
+    INSTANTIATE(cdouble)
 
+#undef INSTANTIATE
 }

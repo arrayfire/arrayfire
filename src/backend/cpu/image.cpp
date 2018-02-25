@@ -54,6 +54,7 @@ INSTANTIATE(char)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
 
+#undef INSTANTIATE
 }
 
 #endif  // WITH_GRAPHICS
