@@ -1,0 +1,10 @@
+<CPackWiXPatch>
+ <CPackWiXFragment Id="CM_CP_libraries.lib.afcuda.dll">
+  <Environment Id="ARRAYFIREPATH" Action="set"
+      Name="AF_PATH" Permanent="no" System="yes" Value="[INSTALL_ROOT]"/>
+  <Environment Id="ENVPATH" Action="set"
+      Name="PATH" Permanent="no" System="yes" Part="last" Value="[INSTALL_ROOT]lib"/>
+  <Environment Id="NVPATH" Action="set"
+      Name="PATH" Permanent="no" System="yes" Part="last" Value="[%CUDA_PATH]\nvvm\bin"/>
+  </CPackWiXFragment>
+</CPackWiXPatch>
