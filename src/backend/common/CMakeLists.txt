@@ -37,7 +37,7 @@ target_include_directories(afcommon_interface
 
 add_library(afcommon_lapack_interface INTERFACE)
 
-if(BUILD_GRAPHICS)
+if(AF_WITH_GRAPHICS)
   dependency_check(glbinding_FOUND "glbinding not found.")
 
   target_include_directories(afcommon_interface

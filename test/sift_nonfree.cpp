@@ -38,7 +38,7 @@ typedef struct
 {
     float d[128];
 } desc_t;
-#ifdef AF_BUILD_NONFREE_SIFT
+#ifdef AF_WITH_NONFREE_SIFT
 static bool feat_cmp(feat_desc_t i, feat_desc_t j)
 {
     for (int k = 0; k < 5; k++)
@@ -137,7 +137,7 @@ TYPED_TEST_CASE(SIFT, TestTypes);
 template<typename T>
 void siftTest(string pTestFile, unsigned nLayers, float contrastThr, float edgeThr, float initSigma, bool doubleInput)
 {
-#ifdef AF_BUILD_NONFREE_SIFT
+#ifdef AF_WITH_NONFREE_SIFT
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
 
@@ -255,7 +255,7 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr, float edgeT
 //
 TEST(SIFT, CPP)
 {
-#ifdef AF_BUILD_NONFREE_SIFT
+#ifdef AF_WITH_NONFREE_SIFT
     if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 

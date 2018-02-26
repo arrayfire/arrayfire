@@ -36,39 +36,51 @@ find_package(MKL)
 find_package(glbinding QUIET)
 include(boost_package)
 
-option(BUILD_CPU      "Build ArrayFire with a CPU backend"        ON)
-option(BUILD_CUDA     "Build ArrayFire with a CUDA backend"       ${CUDA_FOUND})
-option(BUILD_OPENCL   "Build ArrayFire with a OpenCL backend"     ${OpenCL_FOUND})
-option(BUILD_UNIFIED  "Build Backend-Independent ArrayFire API"   ON)
+option(AF_BUILD_CPU      "Build ArrayFire with a CPU backend"        ON)
+option(AF_BUILD_CUDA     "Build ArrayFire with a CUDA backend"       ${CUDA_FOUND})
+option(AF_BUILD_OPENCL   "Build ArrayFire with a OpenCL backend"     ${OpenCL_FOUND})
+option(AF_BUILD_UNIFIED  "Build Backend-Independent ArrayFire API"   ON)
+option(AF_BUILD_DOCS     "Create ArrayFire Documentation"            ${DOXYGEN_FOUND})
+option(AF_BUILD_EXAMPLES "Build Examples"                            ON)
 
-option(BUILD_GRAPHICS "Build ArrayFire with Forge Graphics"      $<AND:${OPENGL_FOUND},${Forge_FOUND},${glbinding_FOUND}>)
-option(BUILD_DOCS     "Create ArrayFire Documentation"           ${DOXYGEN_FOUND})
-option(BUILD_NONFREE  "Build ArrayFire nonfree algorithms"       OFF)
+option(AF_WITH_GRAPHICS "Build ArrayFire with Forge Graphics"  $<AND:${OPENGL_FOUND},${Forge_FOUND},${glbinding_FOUND}>)
+option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
 
-option(BUILD_EXAMPLES "Build Examples"                           ON)
-cmake_dependent_option(USE_RELATIVE_TEST_DIR "Use relative paths for the test data directory(For continious integration(CI) purposes only)" OFF
+cmake_dependent_option(AF_WITH_RELATIVE_TEST_DIR "Use relative paths for the test data directory(For continious integration(CI) purposes only)" OFF
   "BUILD_TESTING" OFF)
 
-cmake_dependent_option(USE_SYSTEM_FORGE "Use system Forge" OFF
-                    "BUILD_GRAPHICS" OFF)
-cmake_dependent_option(WITH_IMAGEIO "Build ArrayFire with Image IO support" ${FreeImage_FOUND}
-                      "FreeImage_FOUND" OFF)
-cmake_dependent_option(BUILD_FRAMEWORK "Build an ArrayFire framework for Apple platforms.(Experimental)" OFF
-                      "APPLE" OFF)
-option(USE_FREEIMAGE_STATIC "Use Static FreeImage Lib" OFF)
+cmake_dependent_option(AF_USE_SYSTEM_FORGE "Use system Forge" OFF
+                       "AF_WITH_GRAPHICS" OFF)
+cmake_dependent_option(AF_WITH_IMAGEIO "Build ArrayFire with Image IO support" ${FreeImage_FOUND}
+                       "FreeImage_FOUND" OFF)
+cmake_dependent_option(AF_BUILD_FRAMEWORK "Build an ArrayFire framework for Apple platforms.(Experimental)" OFF
+                       "APPLE" OFF)
+option(AF_WITH_STATIC_FREEIMAGE "Use Static FreeImage Lib" OFF)
 
-set(USE_CPUID ON CACHE BOOL "Build with CPUID integration")
+set(AF_WITH_CPUID ON CACHE BOOL "Build with CPUID integration")
+
+af_deprecate(BUILD_CPU             AF_BUILD_CPU)
+af_deprecate(BUILD_CUDA            AF_BUILD_CUDA)
+af_deprecate(BUILD_OPENCL          AF_BUILD_OPENCL)
+af_deprecate(BUILD_UNIFIED         AF_BUILD_UNIFIED)
+af_deprecate(BUILD_GRAPHICS        AF_WITH_GRAPHICS)
+af_deprecate(BUILD_DOCS            AF_BUILD_DOCS)
+af_deprecate(BUILD_NONFREE         AF_WITH_NONFREE)
+af_deprecate(BUILD_EXAMPLES        AF_WITH_EXAMPLES)
+af_deprecate(USE_RELATIVE_TEST_DIR AF_WITH_RELATIVE_TEST_DIR)
+af_deprecate(USE_FREEIMAGE_STATIC  AF_WITH_STATIC_FREEIMAGE)
+af_deprecate(USE_CPUID             AF_WITH_CPUID)
 
 mark_as_advanced(
-  BUILD_FRAMEWORK
-  USE_SYSTEM_FORGE
-  USE_CPUID)
+  AF_BUILD_FRAMEWORK
+  AF_USE_SYSTEM_FORGE
+  AF_WITH_CPUID)
 
 # TODO(umar): Add definitions should not be used. Instead use
 arrayfire_get_platform_definitions(platform_definitions)
 add_definitions(${platform_definitions})
 
-if(BUILD_GRAPHICS)
+if(AF_WITH_GRAPHICS)
   include(build_forge)
 endif()
 
@@ -77,7 +89,7 @@ configure_file(
     ${ArrayFire_BINARY_DIR}/version.hpp
 )
 
-if(BUILD_NONFREE)
+if(AF_WITH_NONFREE)
   message("Building with NONFREE requires the following patents")
   message("Method and apparatus for identifying scale invariant features\n"
     "in an image and use of same for locating an object in an image, David\n"
@@ -105,10 +117,10 @@ add_subdirectory(src/backend/common)
 add_subdirectory(src/api/c)
 add_subdirectory(src/api/cpp)
 
-conditional_directory(BUILD_CPU     src/backend/cpu)
-conditional_directory(BUILD_CUDA    src/backend/cuda)
-conditional_directory(BUILD_OPENCL  src/backend/opencl)
-conditional_directory(BUILD_UNIFIED src/api/unified)
+conditional_directory(AF_BUILD_CPU     src/backend/cpu)
+conditional_directory(AF_BUILD_CUDA    src/backend/cuda)
+conditional_directory(AF_BUILD_OPENCL  src/backend/opencl)
+conditional_directory(AF_BUILD_UNIFIED src/api/unified)
 
 if(TARGET af)
   list(APPEND built_backends af)
@@ -134,7 +146,7 @@ foreach(backend ${built_backends})
   target_compile_definitions(${backend} PRIVATE AFDLL)
 endforeach()
 
-if(BUILD_FRAMEWORK)
+if(AF_BUILD_FRAMEWORK)
   set_target_properties(${built_backends}
     PROPERTIES
       FRAMEWORK TRUE
@@ -161,7 +173,7 @@ install(FILES
     COMPONENT headers
 )
 
-if(Forge_FOUND AND NOT USE_SYSTEM_FORGE)
+if(Forge_FOUND AND NOT AF_USE_SYSTEM_FORGE)
     option(INSTALL_FORGE_DEV "Install Forge Header and Share Files with ArrayFire" OFF)
     install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/lib/"
             DESTINATION "${AF_INSTALL_LIB_DIR}"
@@ -179,10 +191,10 @@ if(Forge_FOUND AND NOT USE_SYSTEM_FORGE)
     endif()
 endif()
 
-# install the examples irrespective of the BUILD_EXAMPLES value
+# install the examples irrespective of the AF_BUILD_EXAMPLES value
 # only the examples source files are installed, so the installation of these
-# source files does not depend on BUILD_EXAMPLES
-# when BUILD_EXAMPLES is OFF, the examples source is installed without
+# source files does not depend on AF_BUILD_EXAMPLES
+# when AF_BUILD_EXAMPLES is OFF, the examples source is installed without
 # building the example executables
 install(DIRECTORY examples/ #NOTE The slash at the end is important
     DESTINATION ${AF_INSTALL_EXAMPLE_DIR}
@@ -194,7 +206,7 @@ install(DIRECTORY assets/examples/ #NOTE The slash at the end is important
 
 foreach(backend CPU CUDA OpenCL Unified)
   string(TOUPPER ${backend} upper_backend)
-  if(BUILD_${upper_backend})
+  if(AF_BUILD_${upper_backend})
     install(EXPORT ArrayFire${backend}Targets
             NAMESPACE ArrayFire::
             DESTINATION ${AF_INSTALL_CMAKE_DIR}
@@ -278,5 +290,5 @@ endif()
 conditional_directory(BUILD_TESTING test)
 
 set(ASSETS_DIR "${ArrayFire_SOURCE_DIR}/assets")
-conditional_directory(BUILD_EXAMPLES examples)
-conditional_directory(BUILD_DOCS docs)
+conditional_directory(AF_BUILD_EXAMPLES examples)
+conditional_directory(AF_BUILD_DOCS docs)

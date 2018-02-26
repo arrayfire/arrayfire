@@ -152,12 +152,12 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/ycbcr_rgb.cpp
     )
 
-if(FreeImage_FOUND AND WITH_IMAGEIO)
+if(FreeImage_FOUND AND AF_WITH_IMAGEIO)
     target_compile_definitions(c_api_interface INTERFACE WITH_FREEIMAGE)
     target_link_libraries(     c_api_interface INTERFACE FreeImage::FreeImage)
 endif()
 
-if(BUILD_GRAPHICS)
+if(AF_WITH_GRAPHICS)
     add_dependencies(c_api_interface forge-ext)
     target_compile_definitions(c_api_interface INTERFACE WITH_GRAPHICS)
 endif()
