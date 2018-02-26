@@ -7,13 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
 #include <canny.hpp>
+
+#include <Array.hpp>
+#include <Param.hpp>
+#include <kernel/canny.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/canny.hpp>
-
-using af::dim4;
 
 namespace cpu
 {

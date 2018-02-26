@@ -12,6 +12,9 @@
 #include <math.hpp>
 #include <err_cpu.hpp>
 #include "interp.hpp"
+#include <af/traits.hpp>
+
+using af::dtype_traits;
 
 namespace cpu
 {

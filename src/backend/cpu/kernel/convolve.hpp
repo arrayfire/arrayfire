@@ -9,6 +9,8 @@
 
 #pragma once
 #include <Param.hpp>
+#include <af/defines.h>
+#include <math.hpp>
 
 namespace cpu
 {

@@ -8,11 +8,12 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/defines.hpp>
 
 namespace cpu
 {
 
-template<typename T, typename accT, dim_t baseDim, bool expand>
+template<typename T, typename accT, int baseDim, bool expand>
 Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, AF_BATCH_KIND kind);
 
 template<typename T, typename accT, bool expand>

@@ -16,6 +16,8 @@
 
 #include <err_cpu.hpp>                  // error check functions and Macros
                                         // specific to cpu backend
+#include <af/dim4.hpp>
+#include <platform.hpp>
 
 using af::dim4;
 

@@ -8,11 +8,14 @@
  ********************************************************/
 
 #pragma once
+
+#include <types.hpp>
+#include <af/defines.h>
+#include <common/defines.hpp>
+
 #include <limits>
 #include <algorithm>
 #include <numeric>
-#include "types.hpp"
-#include <af/defines.h>
 
 namespace cpu
 {

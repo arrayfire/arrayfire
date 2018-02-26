@@ -7,19 +7,20 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <type_traits>
 #include <Array.hpp>
+#include <common/ArrayInfo.hpp>
 #include <copy.hpp>
-#include <cstring>
-#include <algorithm>
-#include <complex>
-#include <vector>
-#include <cassert>
 #include <err_cpu.hpp>
-#include <math.hpp>
+#include <kernel/copy.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/copy.hpp>
+#include <types.hpp>
+
+#include <af/defines.h>
+#include <af/dim4.hpp>
+
+#include <cstdio>
+#include <cstring>
 
 namespace cpu
 {

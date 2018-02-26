@@ -10,6 +10,10 @@
 #pragma once
 #include <Param.hpp>
 #include <math.hpp>
+#include <af/dim4.hpp>
+#include <af/defines.h>
+
+#include <cstring> //memcpy
 
 namespace cpu
 {
@@ -23,7 +27,7 @@ void stridedCopy(T* dst, af::dim4 const & ostrides, T const * src,
     if(dim == 0) {
         if(strides[dim] == 1) {
             //FIXME: Check for errors / exceptions
-            memcpy(dst, src, dims[dim] * sizeof(T));
+            std::memcpy(dst, src, dims[dim] * sizeof(T));
         } else {
             for(dim_t i = 0; i < dims[dim]; i++) {
                 dst[i] = src[strides[dim]*i];

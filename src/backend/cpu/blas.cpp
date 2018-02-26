@@ -8,17 +8,31 @@
  ********************************************************/
 
 #include <blas.hpp>
-#include <af/dim4.hpp>
-#include <cassert>
+
+#ifdef USE_MKL
+#include <mkl_cblas.h>
+#endif
+
+#include <Array.hpp>
+#include <Param.hpp>
+#include <common/blas_headers.hpp>
 #include <common/err_common.hpp>
 #include <kernel/dot.hpp>
 #include <platform.hpp>
-#include <queue.hpp>
+#include <types.hpp>
 
-#include <common/blas_headers.hpp>
+#include <af/defines.h>
+#include <af/dim4.hpp>
+#include <af/traits.hpp>
+
+
+#include <algorithm>
+#include <type_traits>
 
 namespace cpu
 {
+
+using af::dtype_traits;
 
 using std::add_const;
 using std::add_pointer;

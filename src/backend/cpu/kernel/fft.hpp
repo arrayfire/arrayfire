@@ -8,8 +8,11 @@
  ********************************************************/
 
 #pragma once
-#include <Param.hpp>
 #include <fftw3.h>
+#include <Param.hpp>
+#include <types.hpp>
+
+#include <af/dim4.hpp>
 
 namespace cpu
 {

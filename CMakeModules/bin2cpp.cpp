@@ -1,14 +1,16 @@
 // Umar Arshad
 // Copyright 2014
 
-
+#include <cstdlib>
 #include <fstream>
-#include <sstream>
+#include <functional>
 #include <iostream>
-#include <string>
-#include <vector>
 #include <map>
 #include <memory>
+#include <sstream> // IWYU pragma: keep
+#include <string>
+#include <utility>
+#include <vector>
 
 using namespace std;
 typedef map<string, string> opt_t;
@@ -140,7 +142,7 @@ int main(int argc, const char * const * const argv)
     int ns_cnt = 0;
     int level = 0;
     if(options["--namespace"] != "") {
-        std::stringstream namespaces(options["--namespace"]);
+        stringstream namespaces(options["--namespace"]);
         string name;
         namespaces >> name;
         do {
