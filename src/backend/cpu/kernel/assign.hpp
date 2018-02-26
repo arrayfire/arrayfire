@@ -8,9 +8,16 @@
  ********************************************************/
 
 #pragma once
-#include <vector>
 #include <Param.hpp>
+#include <common/ArrayInfo.hpp>
+#include <types.hpp>
 #include <utility.hpp>
+
+#include <af/defines.h>
+#include <af/dim4.hpp>
+#include <af/seq.h>
+
+#include <vector>
 
 namespace cpu
 {

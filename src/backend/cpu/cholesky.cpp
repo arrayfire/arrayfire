@@ -8,14 +8,15 @@
  ********************************************************/
 
 #include <cholesky.hpp>
-#include <common/err_common.hpp>
 
 #if defined(WITH_LINEAR_ALGEBRA)
 
+#include <Array.hpp>
+#include <Param.hpp>
+#include <copy.hpp>
+#include <types.hpp>
+
 #include <af/dim4.hpp>
-#include <handle.hpp>
-#include <cassert>
-#include <err_cpu.hpp>
 #include <triangle.hpp>
 #include <lapack_helper.hpp>
 #include <platform.hpp>

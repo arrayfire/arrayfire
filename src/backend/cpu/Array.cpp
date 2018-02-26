@@ -7,19 +7,31 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
-#include <common/err_common.hpp>
+
 #include <Array.hpp>
-#include <copy.hpp>
 #include <kernel/Array.hpp>
+
+#include <Param.hpp>
 #include <TNJ/BufferNode.hpp>
+#include <TNJ/Node.hpp>
 #include <TNJ/ScalarNode.hpp>
+#include <common/ArrayInfo.hpp>
+#include <common/err_common.hpp>
+#include <copy.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <traits.hpp>
 
+#include <af/defines.h>
+#include <af/dim4.hpp>
+#include <af/seq.h>
+#include <af/traits.hpp>
+
+#include <algorithm> // IWYU pragma: keep
 #include <cstring>
 #include <cstddef>
+#include <type_traits>
 
 namespace cpu
 {
@@ -29,7 +41,9 @@ using TNJ::Node;
 using TNJ::Node_ptr;
 
 using af::dim4;
-
+using std::vector;
+using std::is_standard_layout;
+using std::copy;
 
 template<typename T>
 Node_ptr bufferNodePtr()
@@ -50,12 +64,12 @@ Array<T>::Array(dim4 dims, const T * const in_data, bool is_device, bool copy_de
     data((is_device & !copy_device) ? (T*)in_data : memAlloc<T>(dims.elements()).release(), memFree<T>), data_dims(dims),
     node(bufferNodePtr<T>()), ready(true), owner(true)
 {
-    static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
+    static_assert(is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
     static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
     if (!is_device || copy_device) {
         // Ensure the memory being written to isnt used anywhere else.
         getQueue().sync();
-        std::copy(in_data, in_data + dims.elements(), data.get());
+        copy(in_data, in_data + dims.elements(), data.get());
     }
 }
 
@@ -88,7 +102,7 @@ Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
     if (!is_device) {
         // Ensure the memory being written to isnt used anywhere else.
         getQueue().sync();
-        std::copy(in_data, in_data + info.total(), data.get());
+        copy(in_data, in_data + info.total(), data.get());
     }
 }
 
@@ -100,7 +114,7 @@ void Array<T>::eval()
 
     this->setId(getActiveDeviceId());
 
-    data = std::shared_ptr<T>(memAlloc<T>(elements()).release(), memFree<T>);
+    data = shared_ptr<T>(memAlloc<T>(elements()).release(), memFree<T>);
 
     getQueue().enqueue(kernel::evalArray<T>, *this, this->node);
     // Reset shared_ptr
@@ -126,21 +140,21 @@ T* Array<T>::device()
 }
 
 template<typename T>
-void evalMultiple(std::vector<Array<T>*> array_ptrs)
+void evalMultiple(vector<Array<T>*> array_ptrs)
 {
-    std::vector<Array<T>> arrays;
-    std::vector<TNJ::Node_ptr> nodes;
+    vector<Array<T>> arrays;
+    vector<TNJ::Node_ptr> nodes;
     bool isWorker = getQueue().is_worker();
     for (auto &array : array_ptrs) {
         if (array->ready) continue;
         if (isWorker) AF_ERROR("Array not evaluated", AF_ERR_INTERNAL);
         array->setId(getActiveDeviceId());
-        array->data = std::shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree<T>);
+        array->data = shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree<T>);
         arrays.push_back(*array);
         nodes.push_back(array->node);
     }
 
-    std::vector<Param<T>> params(arrays.begin(), arrays.end());
+    vector<Param<T>> params(arrays.begin(), arrays.end());
     if (arrays.size() > 0) {
         getQueue().enqueue(kernel::evalMultiple<T>, params, nodes);
         for (auto &array : array_ptrs) {
@@ -224,7 +238,7 @@ createNodeArray(const dim4 &dims, Node_ptr node)
                 Node *n = node.get();
 
                 TNJ::Node_map_t nodes_map;
-                std::vector<TNJ::Node *> full_nodes;
+                vector<TNJ::Node *> full_nodes;
                 n->getNodesMap(nodes_map, full_nodes);
                 unsigned length =0, buf_count = 0, bytes = 0;
                 for(auto &entry : nodes_map) {
@@ -244,7 +258,7 @@ createNodeArray(const dim4 &dims, Node_ptr node)
 
 template<typename T>
 Array<T> createSubArray(const Array<T>& parent,
-                        const std::vector<af_seq> &index,
+                        const vector<af_seq> &index,
                         bool copy)
 {
     parent.eval();
@@ -319,7 +333,7 @@ writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     template       Array<T>  createEmptyArray<T>      (const dim4 &size); \
     template       Array<T>  *initArray<T      >      ();               \
     template       Array<T>  createSubArray<T>        (const Array<T> &parent, \
-                                                       const std::vector<af_seq> &index, \
+                                                       const vector<af_seq> &index, \
                                                        bool copy);      \
     template       void      destroyArray<T>          (Array<T> *A);    \
     template       Array<T>  createNodeArray<T>       (const dim4 &size, TNJ::Node_ptr node); \
@@ -334,7 +348,7 @@ writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     template       TNJ::Node_ptr Array<T>::getNode() const;             \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
-    template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \
+    template       void      evalMultiple<T>     (vector<Array<T>*> arrays); \
 
 INSTANTIATE(float)
 INSTANTIATE(double)

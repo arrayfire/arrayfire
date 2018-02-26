@@ -7,10 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
+
+#include "af/defines.h"
 
 namespace cpu
 {
+template <typename T> class Array;
+
 template<typename T>
 void anisotropicDiffusion(Array<T>& inout, const float dt,
                           const float mct, const af::fluxFunction fftype,

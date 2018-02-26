@@ -7,20 +7,28 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
-#include <Array.hpp>
-#include <handle.hpp>
 #include <kernel/assign.hpp>
 #include <assign.hpp>
-#include <platform.hpp>
-#include <queue.hpp>
 
-namespace cpu
-{
+#include <Array.hpp>
+#include <Param.hpp>
+#include <handle.hpp>
+#include <platform.hpp>
+#include <types.hpp>
+
+#include <af/defines.h>
+#include <af/dim4.hpp>
+#include <af/index.h>
+#include <af/seq.h>
+
+#include <utility>
+#include <vector>
 
 using af::dim4;
 using std::vector;
 
+namespace cpu
+{
 template<typename T>
 void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs)
 {
@@ -47,8 +55,8 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs)
     }
 
     vector<CParam<uint>> idxParams(idxArrs.begin(), idxArrs.end());
-    getQueue().enqueue(kernel::assign<T>, out, out.getDataDims(), rhs, std::move(isSeq),
-            std::move(seqs), std::move(idxParams));
+    getQueue().enqueue(kernel::assign<T>, out, out.getDataDims(), rhs,
+                       move(isSeq), move(seqs), move(idxParams));
 }
 
 #define INSTANTIATE(T) \

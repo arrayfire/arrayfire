@@ -10,6 +10,8 @@
 
 #include <Array.hpp>
 
+namespace af { class dim4; }
+
 namespace cpu
 {
 

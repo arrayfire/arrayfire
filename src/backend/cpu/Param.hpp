@@ -15,18 +15,16 @@
 namespace cpu
 {
 
-using af::dim4;
-
 template<typename T>
 class CParam
 {
 private:
     const T *m_ptr;
-    dim4 m_dims;
-    dim4 m_strides;
+    af::dim4 m_dims;
+    af::dim4 m_strides;
 
 public:
-    CParam(const T *iptr, const dim4 &idims, const dim4 &istrides) :
+    CParam(const T *iptr, const af::dim4 &idims, const af::dim4 &istrides) :
         m_ptr(iptr)
     {
         for (int i = 0; i < 4; i++) {
@@ -40,12 +38,12 @@ public:
         return m_ptr;
     }
 
-    dim4 dims() const
+    af::dim4 dims() const
     {
         return m_dims;
     }
 
-    dim4 strides() const
+    af::dim4 strides() const
     {
         return m_strides;
     }
@@ -66,15 +64,15 @@ class Param
 {
 private:
     T *m_ptr;
-    dim4 m_dims;
-    dim4 m_strides;
+    af::dim4 m_dims;
+    af::dim4 m_strides;
 
 public:
     Param() : m_ptr(nullptr)
     {
     }
 
-    Param(T *iptr, const dim4 &idims, const dim4 &istrides) :
+    Param(T *iptr, const af::dim4 &idims, const af::dim4 &istrides) :
         m_ptr(iptr)
     {
         for (int i = 0; i < 4; i++) {
@@ -93,12 +91,12 @@ public:
         return CParam<T>(const_cast<T *>(m_ptr), m_dims, m_strides);
     }
 
-    dim4 dims() const
+    af::dim4 dims() const
     {
         return m_dims;
     }
 
-    dim4 strides() const
+    af::dim4 strides() const
     {
         return m_strides;
     }

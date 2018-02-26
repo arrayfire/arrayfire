@@ -7,21 +7,21 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
 #include <Array.hpp>
+#include <common/defines.hpp>
 #include <convolve.hpp>
-#include <err_cpu.hpp>
-#include <math.hpp>
-#include <platform.hpp>
-#include <queue.hpp>
 #include <kernel/convolve.hpp>
+#include <platform.hpp>
+
+#include <af/defines.h>
+#include <af/dim4.hpp>
 
 using af::dim4;
 
 namespace cpu
 {
 
-template<typename T, typename accT, dim_t baseDim, bool expand>
+template<typename T, typename accT, int baseDim, bool expand>
 Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, AF_BATCH_KIND kind)
 {
     signal.eval();

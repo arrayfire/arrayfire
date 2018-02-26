@@ -7,13 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/features.h>
-#include <Array.hpp>
-
-using af::features;
-
 namespace cpu
 {
+template <typename T> class Array;
 
 template<typename T>
 unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,

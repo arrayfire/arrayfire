@@ -7,11 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
 #include <approx.hpp>
+
+#include <Array.hpp>
 #include <kernel/approx.hpp>
 #include <platform.hpp>
-#include <queue.hpp>
+
+#include <af/defines.h>
+#include <af/dim4.hpp>
 
 namespace cpu
 {

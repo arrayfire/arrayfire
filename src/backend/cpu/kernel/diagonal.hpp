@@ -9,6 +9,9 @@
 
 #pragma once
 #include <Param.hpp>
+#include <math.hpp>
+
+#include <af/dim4.hpp>
 
 namespace cpu
 {
@@ -42,8 +45,8 @@ void diagCreate(Param<T> out, CParam<T> in, int const num)
 template<typename T>
 void diagExtract(Param<T> out, CParam<T> in, int const num)
 {
-    dim4 const odims = out.dims();
-    dim4 const idims = in.dims();
+    af::dim4 const odims = out.dims();
+    af::dim4 const idims = in.dims();
 
     int const i_off = (num > 0) ? (num * in.strides(1)) : (-num);
 

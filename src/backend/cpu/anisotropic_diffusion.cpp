@@ -7,10 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
-#include <Array.hpp>
 #include <anisotropic_diffusion.hpp>
 #include <kernel/anisotropic_diffusion.hpp>
+#include <platform.hpp>
 
 namespace cpu
 {
