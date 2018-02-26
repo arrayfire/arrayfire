@@ -33,29 +33,29 @@ endif()
 unset(CMAKE_CXX_STANDARD)
 set(TESTDATA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
 
-if(${USE_RELATIVE_TEST_DIR})
+if(${AF_USE_RELATIVE_TEST_DIR})
     # RELATIVE_TEST_DATA_DIR is a User-visible option with default value of test/data directory
     set(RELATIVE_TEST_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data" CACHE STRING "Relative Test Data Directory")
     set(TESTDATA_SOURCE_DIR ${RELATIVE_TEST_DATA_DIR})
-else(${USE_RELATIVE_TEST_DIR})  # Not using relative test data directory
+else(${AF_USE_RELATIVE_TEST_DIR})  # Not using relative test data directory
     set(TESTDATA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
-endif(${USE_RELATIVE_TEST_DIR})
+endif(${AF_USE_RELATIVE_TEST_DIR})
 
-if(BUILD_CPU)
+if(AF_BUILD_CPU)
   list(APPEND enabled_backends "cpu")
-endif(BUILD_CPU)
+endif(AF_BUILD_CPU)
 
-if(BUILD_CUDA)
+if(AF_BUILD_CUDA)
   list(APPEND enabled_backends "cuda")
-endif(BUILD_CUDA)
+endif(AF_BUILD_CUDA)
 
-if(BUILD_OPENCL)
+if(AF_BUILD_OPENCL)
   list(APPEND enabled_backends "opencl")
-endif(BUILD_OPENCL)
+endif(AF_BUILD_OPENCL)
 
-if(BUILD_UNIFIED)
+if(AF_BUILD_UNIFIED)
   list(APPEND enabled_backends "unified")
-endif(BUILD_UNIFIED)
+endif(AF_BUILD_UNIFIED)
 
 include(CMakeParseArguments)
 
@@ -242,9 +242,9 @@ make_test(SRC select.cpp)
 make_test(SRC set.cpp)
 make_test(SRC shift.cpp)
 
-if(BUILD_NONFREE)
-  make_test(SRC gloh_nonfree.cpp DEFINITIONS AF_BUILD_NONFREE_SIFT)
-  make_test(SRC sift_nonfree.cpp DEFINITIONS AF_BUILD_NONFREE_SIFT)
+if(AF_WITH_NONFREE)
+  make_test(SRC gloh_nonfree.cpp DEFINITIONS AF_WITH_NONFREE_SIFT)
+  make_test(SRC sift_nonfree.cpp DEFINITIONS AF_WITH_NONFREE_SIFT)
 endif()
 
 make_test(SRC sobel.cpp)

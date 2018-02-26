@@ -90,7 +90,7 @@ ADD_CUSTOM_TARGET(OSX_INSTALL_SETUP_DOC
                   COMMENT "Copying documentation files to temporary OSX Install Dir"
                   )
 
-IF(BUILD_GRAPHICS)
+IF(AF_WITH_GRAPHICS)
     MAKE_DIRECTORY("${OSX_TEMP}/Forge")
 
     # Forge library versions for setting up symlinks
@@ -157,7 +157,7 @@ IF(BUILD_GRAPHICS)
                       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                       COMMENT "Copying documentation files to temporary OSX Install Dir"
                       )
-ENDIF(BUILD_GRAPHICS)
+ENDIF(AF_WITH_GRAPHICS)
 ################################################################################
 
 FUNCTION(PKG_BUILD)
@@ -190,11 +190,11 @@ ENDFUNCTION(PKG_BUILD)
 
 FUNCTION(PRODUCT_BUILD)
     CMAKE_PARSE_ARGUMENTS(ARGS "" "" "DEPENDS" ${ARGN})
-    IF(BUILD_GRAPHICS)
+    IF(AF_WITH_GRAPHICS)
         SET(DISTRIBUTION_FILE       "${OSX_INSTALL_SOURCE}/distribution.dist")
-    ELSE(BUILD_GRAPHICS)
+    ELSE(AF_WITH_GRAPHICS)
         SET(DISTRIBUTION_FILE       "${OSX_INSTALL_SOURCE}/distribution-no-gl.dist")
-    ENDIF(BUILD_GRAPHICS)
+    ENDIF(AF_WITH_GRAPHICS)
 
     SET(DISTRIBUTION_FILE_OUT   "${CMAKE_CURRENT_BINARY_DIR}/distribution.dist.out")
 
@@ -209,11 +209,11 @@ FUNCTION(PRODUCT_BUILD)
     CONFIGURE_FILE(${WELCOME_FILE} ${WELCOME_FILE_OUT})
     CONFIGURE_FILE(${README_FILE} ${README_FILE_OUT})
 
-    IF(BUILD_GRAPHICS)
+    IF(AF_WITH_GRAPHICS)
         SET(PACKAGE_NAME "arrayfire-${AF_VERSION}.pkg")
-    ELSE(BUILD_GRAPHICS)
+    ELSE(AF_WITH_GRAPHICS)
         SET(PACKAGE_NAME "arrayfire-no-gl-${AF_VERSION}.pkg")
-    ENDIF(BUILD_GRAPHICS)
+    ENDIF(AF_WITH_GRAPHICS)
 
     ADD_CUSTOM_COMMAND( OUTPUT ${PACKAGE_NAME}
                         DEPENDS ${ARGS_DEPENDS}
@@ -289,7 +289,7 @@ PKG_BUILD(  PKG_NAME        ArrayFireDoc
             PATH_TO_FILES   ${OSX_TEMP}/doc
             FILTERS         cmake)
 
-IF(BUILD_GRAPHICS)
+IF(AF_WITH_GRAPHICS)
     PKG_BUILD(  PKG_NAME        ForgeLibrary
                 DEPENDS         OSX_INSTALL_SETUP_FORGE_LIB
                 TARGETS         forge_lib_package
@@ -328,16 +328,16 @@ IF(BUILD_GRAPHICS)
                 IDENTIFIER      com.arrayfire.pkg.forge.cmake
                 PATH_TO_FILES   ${OSX_TEMP}/Forge/cmake
                 )
-ENDIF(BUILD_GRAPHICS)
+ENDIF(AF_WITH_GRAPHICS)
 
-IF(BUILD_GRAPHICS)
+IF(AF_WITH_GRAPHICS)
     PRODUCT_BUILD(DEPENDS ${cpu_package} ${cuda_package} ${opencl_package} ${unified_package}
                           ${common_package} ${header_package} ${examples_package} ${doc_package}
                           ${forge_lib_package} ${forge_header_package} ${forge_examples_package} ${forge_doc_package} ${forge_cmake_package}
                           )
-ELSE(BUILD_GRAPHICS)
+ELSE(AF_WITH_GRAPHICS)
     PRODUCT_BUILD(DEPENDS ${cpu_package} ${cuda_package} ${opencl_package} ${unified_package}
                           ${common_package} ${header_package} ${examples_package} ${doc_package}
                           )
-ENDIF(BUILD_GRAPHICS)
+ENDIF(AF_WITH_GRAPHICS)
 

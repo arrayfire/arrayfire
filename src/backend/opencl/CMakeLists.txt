@@ -416,12 +416,12 @@ elseif(OPENCL_BLAS_LIBRARY STREQUAL "CLBlast")
 endif()
 
 
-if(BUILD_NONFREE)
+if(AF_WITH_NONFREE)
   target_sources(afopencl PRIVATE kernel/sift_nonfree.hpp)
-  target_compile_definitions(afopencl PRIVATE AF_BUILD_NONFREE_SIFT)
+  target_compile_definitions(afopencl PRIVATE AF_WITH_NONFREE_SIFT)
 endif()
 
-if(BUILD_GRAPHICS)
+if(AF_WITH_GRAPHICS)
   target_sources(afopencl
     PRIVATE
       GraphicsResourceManager.hpp

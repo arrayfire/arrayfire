@@ -243,9 +243,9 @@ target_sources(afcpu
     kernel/wrap.hpp
   )
 
-if (USE_CPUID)
-  target_compile_definitions(afcpu PRIVATE -DUSE_CPUID)
-endif(USE_CPUID)
+if (AF_WITH_CPUID)
+  target_compile_definitions(afcpu PRIVATE -DAF_WITH_CPUID)
+endif(AF_WITH_CPUID)
 
 target_sources(afcpu
   PRIVATE
@@ -258,12 +258,12 @@ endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
-if(BUILD_NONFREE)
+if(AF_WITH_NONFREE)
   target_sources(afcpu PRIVATE kernel/sift_nonfree.hpp)
-  target_compile_definitions(afcpu PRIVATE AF_BUILD_NONFREE_SIFT)
+  target_compile_definitions(afcpu PRIVATE AF_WITH_NONFREE_SIFT)
 endif()
 
-if(BUILD_GRAPHICS)
+if(AF_WITH_GRAPHICS)
   add_dependencies(afcpu forge-ext)
   target_sources(afcpu
     PRIVATE
