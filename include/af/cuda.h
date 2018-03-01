@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
 #include <af/defines.h>
 #include <af/exception.h>
 #include <cuda.h>
