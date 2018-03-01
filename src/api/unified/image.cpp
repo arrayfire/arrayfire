@@ -7,9 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include "symbol_manager.hpp"
 #include <af/array.h>
 #include <af/image.h>
-#include "symbol_manager.hpp"
+#include <af/defines.h>
 
 af_err af_gradient(af_array *dx, af_array *dy, const af_array in)
 {

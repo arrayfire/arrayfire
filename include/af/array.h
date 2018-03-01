@@ -15,7 +15,6 @@
 
 #ifdef __cplusplus
 #include <af/traits.hpp>
-#include <vector>
 namespace af
 {
 
