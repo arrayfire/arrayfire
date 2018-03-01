@@ -11,7 +11,7 @@ project(ArrayFire-Examples
   VERSION 3.5.0
   LANGUAGES CXX)
 
-if(EXISTS "${CMAKE_MODULE_PATH}/ArrayFireExampleOverloads.cmake")
+if(EXISTS "${ArrayFire_SOURCE_DIR}/CMakeModules/ArrayFireExampleOverloads.cmake")
   include(ArrayFireExampleOverloads)
 endif()
 
