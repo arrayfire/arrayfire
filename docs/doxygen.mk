@@ -1049,7 +1049,7 @@ VERBATIM_HEADERS       = YES
 # generated with the -Duse-libclang=ON option for CMake.
 # The default value is: NO.
 
-CLANG_ASSISTED_PARSING = NO
+#CLANG_ASSISTED_PARSING = NO
 
 # If clang assisted parsing is enabled you can provide the compiler with command
 # line options that you would normally use when invoking the compiler. Note that
@@ -1057,7 +1057,7 @@ CLANG_ASSISTED_PARSING = NO
 # specified with INPUT and INCLUDE_PATH.
 # This tag requires that the tag CLANG_ASSISTED_PARSING is set to YES.
 
-CLANG_OPTIONS          = -Wno-pragma-once-outside-header
+#CLANG_OPTIONS          = -Wno-pragma-once-outside-header
 
 # If clang assisted parsing is enabled you can provide the clang parser with the
 # path to the compilation database (see:
@@ -1068,7 +1068,7 @@ CLANG_OPTIONS          = -Wno-pragma-once-outside-header
 # generated with the -Duse-libclang=ON option for CMake.
 # The default value is: 0.
 
-CLANG_COMPILATION_DATABASE_PATH  = ${ArrayFire_BINARY_DIR}
+#CLANG_COMPILATION_DATABASE_PATH  = ${ArrayFire_BINARY_DIR}
 
 #---------------------------------------------------------------------------
 # Configuration options related to the alphabetical class index

@@ -29,7 +29,7 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
         // TODO call upon fft
         char errMessage[256];
         snprintf(errMessage, sizeof(errMessage),
-                "\nOpenCL Separable convolution doesn't support %d(coloumn) %d(row) filters\n",
+                "\nOpenCL Separable convolution doesn't support %lld(coloumn) %lld(row) filters\n",
                  cflen, rflen);
         OPENCL_NOT_SUPPORTED(errMessage);
     }
