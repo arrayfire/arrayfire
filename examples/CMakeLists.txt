@@ -24,7 +24,6 @@ if(WIN32)
   unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 endif()
 
-add_subdirectory(benchmarks)
 add_subdirectory(computer_vision)
 add_subdirectory(financial)
 add_subdirectory(getting_started)

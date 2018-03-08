@@ -13,3 +13,6 @@
 [submodule "src/backend/cuda/cub"]
 	path = src/backend/cuda/cub
 	url = https://github.com/NVlabs/cub.git
+[submodule "gbench"]
+	path = benchmarks/gbench
+	url = https://github.com/google/benchmark.git

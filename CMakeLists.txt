@@ -42,6 +42,7 @@ option(AF_BUILD_OPENCL   "Build ArrayFire with a OpenCL backend"     ${OpenCL_FO
 option(AF_BUILD_UNIFIED  "Build Backend-Independent ArrayFire API"   ON)
 option(AF_BUILD_DOCS     "Create ArrayFire Documentation"            ${DOXYGEN_FOUND})
 option(AF_BUILD_EXAMPLES "Build Examples"                            ON)
+option(AF_BUILD_BENCHMARKS "Build Benchmarks"                        OFF)
 
 option(AF_WITH_GRAPHICS "Build ArrayFire with Forge Graphics"  $<AND:${OPENGL_FOUND},${Forge_FOUND},${glbinding_FOUND}>)
 option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
@@ -292,3 +293,4 @@ conditional_directory(BUILD_TESTING test)
 set(ASSETS_DIR "${ArrayFire_SOURCE_DIR}/assets")
 conditional_directory(AF_BUILD_EXAMPLES examples)
 conditional_directory(AF_BUILD_DOCS docs)
+conditional_directory(AF_BUILD_BENCHMARKS benchmarks)
