@@ -430,10 +430,10 @@ typedef enum {
     AF_COLORMAP_MOOD    = 4,    ///< Mood map
     AF_COLORMAP_HEAT    = 5,    ///< Heat map
     AF_COLORMAP_BLUE    = 6,    ///< Blue hue map
-    AF_COLORMAP_INFERNO = 7,    ///< Perceptually uniform shades of black-red-yellow 
-    AF_COLORMAP_MAGMA   = 8,    ///< Perceptually uniform shades of black-red-white 
-    AF_COLORMAP_PLASMA  = 9,    ///< Perceptually uniform shades of blue-red-yellow 
-    AF_COLORMAP_VIRIDIS = 10    ///< Perceptually uniform shades of blue-green-yellow 
+    AF_COLORMAP_INFERNO = 7,    ///< Perceptually uniform shades of black-red-yellow
+    AF_COLORMAP_MAGMA   = 8,    ///< Perceptually uniform shades of black-red-white
+    AF_COLORMAP_PLASMA  = 9,    ///< Perceptually uniform shades of blue-red-yellow
+    AF_COLORMAP_VIRIDIS = 10    ///< Perceptually uniform shades of blue-green-yellow
 } af_colormap;
 
 #if AF_API_VERSION >= 32
