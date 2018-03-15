@@ -102,14 +102,23 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
         for(int i = 0; i < iter; i++) {
             auto idx_itr = begin(idx) + i * in.strides()[1];
             auto kiptr = iptr + k * i;
-            // Sort the top k values in each column
-            partial_sort_copy(idx_itr , idx_itr + in.strides()[1],
-                              kiptr , kiptr + k,
-                              [ptr](const uint lhs, const uint rhs) -> bool {
-                                  return ptr[lhs] < ptr[rhs];
-                              });
 
+            if(order == AF_TOPK_MIN) {
+                // Sort the top k values in each column
+                partial_sort_copy(idx_itr , idx_itr + in.strides()[1],
+                                  kiptr , kiptr + k,
+                                  [ptr](const uint lhs, const uint rhs) -> bool {
+                                      return ptr[lhs] < ptr[rhs];
+                                  });
+            } else {
+                partial_sort_copy(idx_itr , idx_itr + in.strides()[1],
+                                  kiptr , kiptr + k,
+                                  [ptr](const uint lhs, const uint rhs) -> bool {
+                                    return ptr[lhs] >= ptr[rhs];
+                                  });
+            }
             ev_val.wait();
+
             auto kvptr = vptr + k * i;
             for(int j = 0; j < k; j++) {
                 // Update the value arrays with the original values
