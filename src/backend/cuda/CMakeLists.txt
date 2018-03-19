@@ -511,10 +511,18 @@ install(TARGETS afcuda
   INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
   )
 
-get_target_library_path(binary_location afcuda)
-get_prerequisites(${binary_location} dependencies 1 1 "" "${prerequisites_search_dirs}")
-resolve_dependencies_paths(cuda_deps
-  "${dependencies}" "${binary_location}" "${prerequisites_search_dirs}")
+set(cuda_deps "")
+macro(afcu_append_libs lib_name)
+  set(name ${CMAKE_SHARED_LIBRARY_PREFIX}${lib_name}${CMAKE_SHARED_LIBRARY_SUFFIX})
+  file(GLOB deps "${CUDA_LIBRARIES_PATH}/${name}*")
+  list(APPEND cuda_deps ${deps})
+endmacro()
+
+afcu_append_libs(cufft)
+afcu_append_libs(cublas)
+afcu_append_libs(cusolver)
+afcu_append_libs(cusparse)
+afcu_append_libs(nvrtc)
 
 install(FILES       ${cuda_deps}
         DESTINATION ${AF_INSTALL_BIN_DIR}

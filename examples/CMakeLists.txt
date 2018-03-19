@@ -20,9 +20,9 @@ if (NOT ASSETS_DIR)
 endif (NOT ASSETS_DIR)
 
 file(TO_NATIVE_PATH ${ASSETS_DIR} ASSETS_DIR)
-string(REPLACE "\\" "\\\\" ASSETS_DIR  ${ASSETS_DIR})
 
 if(WIN32)
+  string(REPLACE "\\" "\\\\" ASSETS_DIR  ${ASSETS_DIR})
   add_definitions(-DWIN32_LEAN_AND_MEAN)
   unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 endif()

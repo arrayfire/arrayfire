@@ -522,15 +522,6 @@ install(TARGETS afopencl
   INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
   )
 
-get_target_library_path(binary_location afopencl)
-get_prerequisites(${binary_location} dependencies 1 1 "" "${prerequisites_search_dirs}")
-resolve_dependencies_paths(opencl_deps
-  "${dependencies}" "${binary_location}" "${prerequisites_search_dirs}")
-
-install(FILES ${opencl_deps}
-        DESTINATION ${AF_INSTALL_BIN_DIR}
-        COMPONENT   opencl_dependencies)
-
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
 source_group(api\\c   REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/c/*)

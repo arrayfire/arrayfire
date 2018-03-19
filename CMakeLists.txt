@@ -84,7 +84,6 @@ add_definitions(${platform_definitions})
 if(AF_WITH_GRAPHICS)
   include(build_forge)
 endif()
-set(prerequisites_search_dirs "${ArrayFire_BINARY_DIR}/third_party/forge/lib")
 
 configure_file(
     ${ArrayFire_SOURCE_DIR}/CMakeModules/version.hpp.in
@@ -113,6 +112,23 @@ if(NOT LAPACK_FOUND)
         unset(LAPACKE_ROOT_DIR CACHE)
         find_package(LAPACK)
     endif()
+endif()
+
+if(AF_WITH_GRAPHICS AND EXISTS "${PROJECT_SOURCE_DIR}/external/glbinding")
+  #backup cache options to revert back
+  set(BACKUP_BSHRD_LIBS ${BUILD_SHARED_LIBS})
+
+  set(BUILD_SHARED_LIBS OFF)
+  set(OPTION_BUILD_TESTS OFF)
+  set(OPTION_BUILD_GPU_TESTS OFF)
+  set(OPTION_BUILD_TOOLS OFF)
+  add_subdirectory(external/glbinding EXCLUDE_FROM_ALL)
+  set_target_properties(glbinding PROPERTIES
+      FOLDER "ExternalProjectTargets/glbinding")
+  add_library(glbinding::glbinding_STATIC ALIAS glbinding)
+
+  #revert back cache values
+  set(BUILD_SHARED_LIBS ${BACKUP_BSHRD_LIBS})
 endif()
 
 add_subdirectory(src/backend/common)
@@ -177,11 +193,7 @@ install(FILES
 
 if(Forge_FOUND AND NOT AF_USE_SYSTEM_FORGE)
     option(INSTALL_FORGE_DEV "Install Forge Header and Share Files with ArrayFire" OFF)
-    install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/lib/"
-            DESTINATION "${AF_INSTALL_LIB_DIR}"
-            COMPONENT forge
-    )
-    if(${INSTALL_FORGE_DEV})
+    if(INSTALL_FORGE_DEV)
         install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/include/"
                 DESTINATION "${AF_INSTALL_INC_DIR}"
                 COMPONENT headers
@@ -190,7 +202,21 @@ if(Forge_FOUND AND NOT AF_USE_SYSTEM_FORGE)
                 DESTINATION "${AF_INSTALL_DATA_DIR}/../Forge"
                 COMPONENT share
         )
+        install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/lib/"
+                DESTINATION "${AF_INSTALL_LIB_DIR}"
+                COMPONENT forge
+        )
     endif()
+
+    if (NOT WIN32)
+        #install forge shared library along with symlinks
+        set(fg_name ${CMAKE_SHARED_LIBRARY_PREFIX}forge${CMAKE_SHARED_LIBRARY_SUFFIX})
+        file(GLOB forge_lib_install_files
+            "${PROJECT_BINARY_DIR}/third_party/forge/lib/${fg_name}*")
+        install(FILES       ${forge_lib_install_files}
+            DESTINATION ${AF_INSTALL_BIN_DIR}
+            COMPONENT   gfx_dependencies)
+    endif ()
 endif()
 
 # install the examples irrespective of the AF_BUILD_EXAMPLES value
@@ -205,6 +231,10 @@ install(DIRECTORY examples/ #NOTE The slash at the end is important
 install(DIRECTORY assets/examples/ #NOTE The slash at the end is important
     DESTINATION ${AF_INSTALL_EXAMPLE_DIR}
     COMPONENT examples)
+
+install(DIRECTORY "${ArrayFire_SOURCE_DIR}/LICENSES/"
+    DESTINATION LICENSES
+    COMPONENT licenses)
 
 foreach(backend CPU CUDA OpenCL Unified)
   string(TOUPPER ${backend} upper_backend)
@@ -247,18 +277,21 @@ if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL)
     $<TARGET_FILE:MKL::MKL>
     $<TARGET_FILE:MKL::ThreadLayer>
     ${MKL_RUNTIME_KERNEL_LIBRARIES}
-    DESTINATION ${AF_INSTALL_LIB_DIR})
+    DESTINATION ${AF_INSTALL_BIN_DIR}
+    COMPONENT mkl_dependencies)
 
   if(TARGET MKL::ThreadingLibrary)
     install(FILES
       $<TARGET_FILE:MKL::ThreadingLibrary>
-      DESTINATION ${AF_INSTALL_LIB_DIR})
+      DESTINATION ${AF_INSTALL_BIN_DIR}
+      COMPONENT mkl_dependencies)
   endif()
 
   if(NOT WIN32)
     install(FILES
       $<TARGET_FILE:MKL::Interface>
-        DESTINATION ${AF_INSTALL_LIB_DIR})
+      DESTINATION ${AF_INSTALL_BIN_DIR}
+      COMPONENT mkl_dependencies)
   endif()
 endif()
 
@@ -280,31 +313,6 @@ configure_package_config_file(
 # build directory.
 # TODO(umar): Disable for now. Causing issues with builds on windows.
 #export(PACKAGE ArrayFire)
-
-if (USE_CPU_MKL OR USE_OPENCL_MKL)
-  set(mkl_rt_library "${CMAKE_SHARED_LIBRARY_PREFIX}mkl_rt${CMAKE_SHARED_LIBRARY_SUFFIX}")
-  find_file(MKL_RT_LIB ${mkl_rt_library}
-    HINTS
-      ENV INTEL_MKL_ROOT_DIR
-    )
-
-  get_filename_component(MKL_RT_PATH "${MKL_RT_LIB}" REALPATH)
-  get_filename_component(MKL_RT_DIR "${MKL_RT_PATH}" DIRECTORY)
-
-  file(GLOB mkl_compiler_dlls "${MKL_RT_DIR}/../compiler/*.dll")
-  file(GLOB mkl_compiler_pdbs "${MKL_RT_DIR}/../compiler/*.pdb")
-  file(GLOB mkl_dlls "${MKL_RT_DIR}/*.dll")
-
-  install(FILES ${mkl_compiler_dlls}
-    DESTINATION ${AF_INSTALL_BIN_DIR}
-	COMPONENT mkl_dependencies)
-  install(FILES ${mkl_compiler_pdbs}
-    DESTINATION ${AF_INSTALL_BIN_DIR}
-	COMPONENT mkl_dependencies)
-  install(FILES ${mkl_dlls}
-    DESTINATION ${AF_INSTALL_BIN_DIR}
-	COMPONENT mkl_dependencies)
-endif ()
 
 include(CPackConfig)
 include(CTest)

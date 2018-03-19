@@ -59,20 +59,22 @@ if(AF_WITH_GRAPHICS)
 
     target_compile_definitions(afcommon_interface INTERFACE WITH_GRAPHICS)
 
-  if(APPLE)
-    # TODO: On APPLE platform linking directly against glbinding brings in flags
-    # that causes issues when building ArrayFire with LAPACK and Graphics. This
-    # was due to the way glbinding was brining in some Framework flags which
-    # cause issues with the Accelerate Framework. This is probably a bug in
-    # glbindings cmake file
-    target_link_libraries(afcommon_interface
-      INTERFACE
-        $<TARGET_PROPERTY:glbinding::glbinding,IMPORTED_LOCATION_RELEASE>)
-  else()
-    target_link_libraries(afcommon_interface
-      INTERFACE
-      glbinding::glbinding)
-  endif()
+  if (TARGET glbinding::glbinding_STATIC)
+    target_link_libraries(afcommon_interface INTERFACE glbinding::glbinding_STATIC)
+  else ()
+    if(APPLE)
+      # TODO: On APPLE platform linking directly against glbinding brings in flags
+      # that causes issues when building ArrayFire with LAPACK and Graphics. This
+      # was due to the way glbinding was brining in some Framework flags which
+      # cause issues with the Accelerate Framework. This is probably a bug in
+      # glbindings cmake file
+      target_link_libraries(afcommon_interface
+        INTERFACE
+          $<TARGET_PROPERTY:glbinding::glbinding,IMPORTED_LOCATION_RELEASE>)
+    else()
+      target_link_libraries(afcommon_interface INTERFACE glbinding::glbinding)
+    endif()
+  endif ()
 
   add_dependencies(afcommon_interface forge-ext)
 endif()

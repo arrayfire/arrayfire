@@ -354,15 +354,6 @@ install(TARGETS afcpu
   INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
   )
 
-get_target_library_path(binary_location afcpu)
-get_prerequisites(${binary_location} dependencies 1 1 "" "${prerequisites_search_dirs}")
-resolve_dependencies_paths(cpu_deps
-  "${dependencies}" "${binary_location}" "${prerequisites_search_dirs}")
-
-install(FILES ${cpu_deps}
-        DESTINATION ${AF_INSTALL_BIN_DIR}
-        COMPONENT   cpu_dependencies)
-
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
 source_group(api\\c   REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/c/*)
