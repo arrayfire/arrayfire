@@ -74,6 +74,10 @@ if(AF_WITH_GRAPHICS)
     else()
       target_link_libraries(afcommon_interface INTERFACE glbinding::glbinding)
     endif()
+    if (WIN32)
+      install(FILES $<TARGET_FILE:glbinding::glbinding>
+        DESTINATION ${AF_INSTALL_BIN_DIR})
+    endif ()
   endif ()
 
   add_dependencies(afcommon_interface forge-ext)
