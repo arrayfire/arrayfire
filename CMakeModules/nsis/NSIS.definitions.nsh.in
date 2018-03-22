@@ -1,0 +1,35 @@
+!define MUI_WELCOMEPAGE_TITLE '${CPACK_PACKAGE_NAME} ${CPACK_PACKAGE_VERSION} Installer'
+!define MUI_WELCOMEPAGE_TITLE_3LINES
+!define MUI_WELCOMEPAGE_TEXT    \
+"ArrayFire is a high performance software library for parallel computing with an easy-to-use API.\r\n\r\n\
+Its array based function set makes parallel programming simple.\r\n\r\n\
+ArrayFire's multiple backends (CUDA, OpenCL and native CPU) make it platform independent and highly portable.\r\n\r\n\
+A few lines of code in ArrayFire can replace dozens of lines of parallel compute code,\
+saving you valuable time and lowering development costs.\r\n\r\n\
+Follow these steps to install the ArrayFire libraries."
+
+!define MUI_ICON "@CPACK_AF_ASSETS_DIR@@CPACK_PACKAGE_NAME@.ico"
+!define MUI_UNICON "@CPACK_AF_ASSETS_DIR@@CPACK_PACKAGE_NAME@.ico"
+
+!define MUI_WELCOMEFINISHPAGE_BITMAP "@CPACK_AF_ASSETS_DIR@@CPACK_PACKAGE_NAME@_sym.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "@CPACK_AF_ASSETS_DIR@@CPACK_PACKAGE_NAME@_sym.bmp"
+!define MUI_WELCOMEFINISHPAGE_UNBITMAP_NOSTRETCH
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP_NOSTRETCH
+
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_RIGHT
+!define MUI_HEADERIMAGE_BITMAP "@CPACK_AF_ASSETS_DIR@@CPACK_PACKAGE_NAME@_logo.bmp"
+!define MUI_HEADERIMAGE_UNBITMAP "@CPACK_AF_ASSETS_DIR@@CPACK_PACKAGE_NAME@_logo.bmp"
+!define MUI_HEADERIMAGE_BITMAP_NOSTRETCH
+!define MUI_HEADERIMAGE_UNBITMAP_NOSTRETCH
+!define MUI_ABORTWARNING
+
+
+; Defines for Finish Page
+!define MUI_FINISHPAGE_RUN "explorer.exe"
+!define MUI_FINISHPAGE_RUN_PARAMETERS "$INSTDIR"
+!define MUI_FINISHPAGE_RUN_TEXT "Open ArrayFire Install Directory to see Examples"
+!define MUI_FINISHPAGE_SHOWREADME "http://arrayfire.com/docs/using_on_windows.htm"
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "Open ArrayFire Documentation on the Web"
+!define MUI_FINISHPAGE_LINK "ArrayFire Support and Services"
+!define MUI_FINISHPAGE_LINK_LOCATION "http://arrayfire.com/consulting/"

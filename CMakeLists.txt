@@ -17,6 +17,7 @@ include(InternalUtils)
 include(Version)
 include(build_cl2hpp)
 include(platform)
+include(GetPrerequisites)
 
 arrayfire_set_cmake_default_variables()
 
@@ -66,7 +67,7 @@ af_deprecate(BUILD_UNIFIED         AF_BUILD_UNIFIED)
 af_deprecate(BUILD_GRAPHICS        AF_WITH_GRAPHICS)
 af_deprecate(BUILD_DOCS            AF_BUILD_DOCS)
 af_deprecate(BUILD_NONFREE         AF_WITH_NONFREE)
-af_deprecate(BUILD_EXAMPLES        AF_WITH_EXAMPLES)
+af_deprecate(BUILD_EXAMPLES        AF_BUILD_EXAMPLES)
 af_deprecate(USE_RELATIVE_TEST_DIR AF_WITH_RELATIVE_TEST_DIR)
 af_deprecate(USE_FREEIMAGE_STATIC  AF_WITH_STATIC_FREEIMAGE)
 af_deprecate(USE_CPUID             AF_WITH_CPUID)
@@ -111,6 +112,23 @@ if(NOT LAPACK_FOUND)
         unset(LAPACKE_ROOT_DIR CACHE)
         find_package(LAPACK)
     endif()
+endif()
+
+if(AF_WITH_GRAPHICS AND EXISTS "${PROJECT_SOURCE_DIR}/external/glbinding")
+  #backup cache options to revert back
+  set(BACKUP_BSHRD_LIBS ${BUILD_SHARED_LIBS})
+
+  set(BUILD_SHARED_LIBS OFF)
+  set(OPTION_BUILD_TESTS OFF)
+  set(OPTION_BUILD_GPU_TESTS OFF)
+  set(OPTION_BUILD_TOOLS OFF)
+  add_subdirectory(external/glbinding EXCLUDE_FROM_ALL)
+  set_target_properties(glbinding PROPERTIES
+      FOLDER "ExternalProjectTargets/glbinding")
+  add_library(glbinding::glbinding_STATIC ALIAS glbinding)
+
+  #revert back cache values
+  set(BUILD_SHARED_LIBS ${BACKUP_BSHRD_LIBS})
 endif()
 
 add_subdirectory(src/backend/common)
@@ -175,11 +193,7 @@ install(FILES
 
 if(Forge_FOUND AND NOT AF_USE_SYSTEM_FORGE)
     option(INSTALL_FORGE_DEV "Install Forge Header and Share Files with ArrayFire" OFF)
-    install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/lib/"
-            DESTINATION "${AF_INSTALL_LIB_DIR}"
-            COMPONENT forge
-    )
-    if(${INSTALL_FORGE_DEV})
+    if(INSTALL_FORGE_DEV)
         install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/include/"
                 DESTINATION "${AF_INSTALL_INC_DIR}"
                 COMPONENT headers
@@ -188,7 +202,21 @@ if(Forge_FOUND AND NOT AF_USE_SYSTEM_FORGE)
                 DESTINATION "${AF_INSTALL_DATA_DIR}/../Forge"
                 COMPONENT share
         )
+        install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/lib/"
+                DESTINATION "${AF_INSTALL_LIB_DIR}"
+                COMPONENT forge
+        )
     endif()
+
+    if (NOT WIN32)
+        #install forge shared library along with symlinks
+        set(fg_name ${CMAKE_SHARED_LIBRARY_PREFIX}forge${CMAKE_SHARED_LIBRARY_SUFFIX})
+        file(GLOB forge_lib_install_files
+            "${PROJECT_BINARY_DIR}/third_party/forge/lib/${fg_name}*")
+        install(FILES       ${forge_lib_install_files}
+            DESTINATION ${AF_INSTALL_BIN_DIR}
+            COMPONENT   gfx_dependencies)
+    endif ()
 endif()
 
 # install the examples irrespective of the AF_BUILD_EXAMPLES value
@@ -203,6 +231,10 @@ install(DIRECTORY examples/ #NOTE The slash at the end is important
 install(DIRECTORY assets/examples/ #NOTE The slash at the end is important
     DESTINATION ${AF_INSTALL_EXAMPLE_DIR}
     COMPONENT examples)
+
+install(DIRECTORY "${ArrayFire_SOURCE_DIR}/LICENSES/"
+    DESTINATION LICENSES
+    COMPONENT licenses)
 
 foreach(backend CPU CUDA OpenCL Unified)
   string(TOUPPER ${backend} upper_backend)
@@ -245,18 +277,21 @@ if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL)
     $<TARGET_FILE:MKL::MKL>
     $<TARGET_FILE:MKL::ThreadLayer>
     ${MKL_RUNTIME_KERNEL_LIBRARIES}
-    DESTINATION ${AF_INSTALL_LIB_DIR})
+    DESTINATION ${AF_INSTALL_BIN_DIR}
+    COMPONENT mkl_dependencies)
 
   if(TARGET MKL::ThreadingLibrary)
     install(FILES
       $<TARGET_FILE:MKL::ThreadingLibrary>
-      DESTINATION ${AF_INSTALL_LIB_DIR})
+      DESTINATION ${AF_INSTALL_BIN_DIR}
+      COMPONENT mkl_dependencies)
   endif()
 
   if(NOT WIN32)
     install(FILES
       $<TARGET_FILE:MKL::Interface>
-        DESTINATION ${AF_INSTALL_LIB_DIR})
+      DESTINATION ${AF_INSTALL_BIN_DIR}
+      COMPONENT mkl_dependencies)
   endif()
 endif()
 

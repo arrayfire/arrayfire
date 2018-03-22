@@ -511,6 +511,23 @@ install(TARGETS afcuda
   INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
   )
 
+set(cuda_deps "")
+macro(afcu_append_libs lib_name)
+  set(name ${CMAKE_SHARED_LIBRARY_PREFIX}${lib_name}${CMAKE_SHARED_LIBRARY_SUFFIX})
+  file(GLOB deps "${CUDA_LIBRARIES_PATH}/${name}*")
+  list(APPEND cuda_deps ${deps})
+endmacro()
+
+afcu_append_libs(cufft)
+afcu_append_libs(cublas)
+afcu_append_libs(cusolver)
+afcu_append_libs(cusparse)
+afcu_append_libs(nvrtc)
+
+install(FILES       ${cuda_deps}
+        DESTINATION ${AF_INSTALL_BIN_DIR}
+        COMPONENT   cuda_dependencies)
+
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
 source_group(api\\c   REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/c/*)

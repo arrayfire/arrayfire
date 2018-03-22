@@ -11,7 +11,7 @@ project(ArrayFire-Examples
   VERSION 3.5.0
   LANGUAGES CXX)
 
-if(EXISTS "${CMAKE_MODULE_PATH}/ArrayFireExampleOverloads.cmake")
+if(EXISTS "${ArrayFire_SOURCE_DIR}/CMakeModules/ArrayFireExampleOverloads.cmake")
   include(ArrayFireExampleOverloads)
 endif()
 
@@ -19,7 +19,10 @@ if (NOT ASSETS_DIR)
     set(ASSETS_DIR "" CACHE PATH "Data and images required for some examples (url: https://github.com/arrayfire/assets)")
 endif (NOT ASSETS_DIR)
 
+file(TO_NATIVE_PATH "${ASSETS_DIR}" ASSETS_DIR)
+
 if(WIN32)
+  string(REPLACE "\\" "\\\\" ASSETS_DIR "${ASSETS_DIR}")
   add_definitions(-DWIN32_LEAN_AND_MEAN)
   unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 endif()
