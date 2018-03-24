@@ -13,11 +13,11 @@ project(ArrayFire-Examples
 
 if(EXISTS "${ArrayFire_SOURCE_DIR}/CMakeModules/ArrayFireExampleOverloads.cmake")
   include(ArrayFireExampleOverloads)
+else()
+  set(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 endif()
 
-if (NOT ASSETS_DIR)
-    set(ASSETS_DIR "" CACHE PATH "Data and images required for some examples (url: https://github.com/arrayfire/assets)")
-endif (NOT ASSETS_DIR)
+file(TO_NATIVE_PATH ${ASSETS_DIR} ASSETS_DIR)
 
 file(TO_NATIVE_PATH ${ASSETS_DIR} ASSETS_DIR)
 
