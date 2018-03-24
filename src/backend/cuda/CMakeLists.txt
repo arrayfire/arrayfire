@@ -521,17 +521,21 @@ endif ()
 
 macro(afcu_collect_libs libname)
   if (WIN32)
-    list(APPEND cuda_deps
-        "${dlib_path_prefix}/${PX}${libname}64_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}${SX}")
+    install(FILES       "${dlib_path_prefix}/${PX}${libname}64_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}${SX}"
+            DESTINATION ${AF_INSTALL_BIN_DIR}
+            COMPONENT   cuda_dependencies)
   elseif (APPLE)
     get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
-    list(APPEND cuda_deps "${outpath}")
+    install(FILES       "${outpath}"
+            DESTINATION ${AF_INSTALL_BIN_DIR}
+            RENAME      "${PX}${libname}${SX}.${CUDA_VERSION}"
+            COMPONENT   cuda_dependencies)
   else () #UNIX
-	list(APPEND cuda_deps
-        "${dlib_path_prefix}/${PX}${libname}${SX}.${CUDA_VERSION}") #soname file
-    #now actual shared library
     get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}${SX}" REALPATH)
-    list(APPEND cuda_deps "${outpath}")
+    install(FILES       ${outpath}
+            DESTINATION ${AF_INSTALL_BIN_DIR}
+            RENAME      "${PX}${libname}${SX}.${CUDA_VERSION}"
+            COMPONENT   cuda_dependencies)
   endif ()
 endmacro()
 
@@ -542,20 +546,23 @@ afcu_collect_libs(cusparse)
 afcu_collect_libs(nvrtc)
 
 if(APPLE)
-    afcu_collect_libs(cudart)
+  afcu_collect_libs(cudart)
 
-    get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
-    install(FILES       ${nvrtc_outpath}
-            DESTINATION ${AF_INSTALL_BIN_DIR}
-            RENAME      "${PX}nvrtc-builtins${SX}"
-            COMPONENT   cuda_dependencies)
+  get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
+  install(FILES       ${nvrtc_outpath}
+          DESTINATION ${AF_INSTALL_BIN_DIR}
+          RENAME      "${PX}nvrtc-builtins${SX}"
+          COMPONENT   cuda_dependencies)
+elseif(UNIX)
+  get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins${SX}" REALPATH)
+  install(FILES       ${nvrtc_outpath}
+          DESTINATION ${AF_INSTALL_BIN_DIR}
+          RENAME      "${PX}nvrtc-builtins${SX}"
+          COMPONENT   cuda_dependencies)
 else()
-    afcu_collect_libs(nvrtc-builtins)
+  afcu_collect_libs(nvrtc-builtins)
 endif()
 
-install(FILES       ${cuda_deps}
-        DESTINATION ${AF_INSTALL_BIN_DIR}
-        COMPONENT   cuda_dependencies)
 
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
