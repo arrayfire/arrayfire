@@ -524,7 +524,7 @@ macro(afcu_collect_libs libname)
     list(APPEND cuda_deps
         "${dlib_path_prefix}/${PX}${libname}64_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}${SX}")
   elseif (APPLE)
-    get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}${SX}" REALPATH)
+    get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
     list(APPEND cuda_deps "${outpath}")
   else () #UNIX
 	list(APPEND cuda_deps
@@ -540,7 +540,18 @@ afcu_collect_libs(cublas)
 afcu_collect_libs(cusolver)
 afcu_collect_libs(cusparse)
 afcu_collect_libs(nvrtc)
-afcu_collect_libs(nvrtc-builtins)
+
+if(APPLE)
+    afcu_collect_libs(cudart)
+
+    get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
+    install(FILES       ${nvrtc_outpath}
+            DESTINATION ${AF_INSTALL_BIN_DIR}
+            RENAME      "${PX}nvrtc-builtins${SX}"
+            COMPONENT   cuda_dependencies)
+else()
+    afcu_collect_libs(nvrtc-builtins)
+endif()
 
 install(FILES       ${cuda_deps}
         DESTINATION ${AF_INSTALL_BIN_DIR}

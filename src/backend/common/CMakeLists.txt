@@ -75,6 +75,7 @@ if(AF_WITH_GRAPHICS)
   install(FILES
       $<TARGET_FILE:glbinding::glbinding>
       $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
+      $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
     DESTINATION ${AF_INSTALL_BIN_DIR}
     COMPONENT gfx_dependencies)
 

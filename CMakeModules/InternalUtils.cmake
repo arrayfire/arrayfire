@@ -130,7 +130,6 @@ macro(arrayfire_set_cmake_default_variables)
   endif()
 
   if(APPLE)
-    # TODO(umar) Remove rpath to third_party lib
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_LIB_DIR};${ArrayFire_BINARY_DIR}/third_party/forge/lib")
+    set(CMAKE_INSTALL_RPATH "/opt/arrayfire/lib")
   endif()
 endmacro()

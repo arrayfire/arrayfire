@@ -253,18 +253,6 @@ install(FILES ${ArrayFire_BINARY_DIR}/cmake/install/ArrayFireConfig.cmake
               COMPONENT cmake)
 
 if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL)
-  install(FILES
-    $<TARGET_FILE:MKL::MKL>
-    $<TARGET_FILE:MKL::ThreadLayer>
-    ${MKL_RUNTIME_KERNEL_LIBRARIES}
-
-    # This variable is used to add tbb.so.2 library because the main lib
-    # is a linker script and not a symlink so it cant be resolved using
-    # get_filename_component
-    ${AF_ADDITIONAL_MKL_LIBRARIES}
-    DESTINATION ${AF_INSTALL_BIN_DIR}
-    COMPONENT mkl_dependencies)
-
   if(TARGET MKL::ThreadingLibrary)
     install(FILES
       $<TARGET_FILE:MKL::ThreadingLibrary>
@@ -278,6 +266,18 @@ if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL)
       DESTINATION ${AF_INSTALL_BIN_DIR}
       COMPONENT mkl_dependencies)
   endif()
+
+  install(FILES
+    $<TARGET_FILE:MKL::MKL>
+    $<TARGET_FILE:MKL::ThreadLayer>
+    ${MKL_RUNTIME_KERNEL_LIBRARIES}
+
+    # This variable is used to add tbb.so.2 library because the main lib
+    # is a linker script and not a symlink so it cant be resolved using
+    # get_filename_component
+    ${AF_ADDITIONAL_MKL_LIBRARIES}
+    DESTINATION ${AF_INSTALL_BIN_DIR}
+    COMPONENT mkl_dependencies)
 endif()
 
 # This file will be used to create the config file for the build directory.
