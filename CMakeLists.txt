@@ -17,6 +17,7 @@ include(InternalUtils)
 include(Version)
 include(build_cl2hpp)
 include(platform)
+include(GetPrerequisites)
 
 arrayfire_set_cmake_default_variables()
 
@@ -66,7 +67,7 @@ af_deprecate(BUILD_UNIFIED         AF_BUILD_UNIFIED)
 af_deprecate(BUILD_GRAPHICS        AF_WITH_GRAPHICS)
 af_deprecate(BUILD_DOCS            AF_BUILD_DOCS)
 af_deprecate(BUILD_NONFREE         AF_WITH_NONFREE)
-af_deprecate(BUILD_EXAMPLES        AF_WITH_EXAMPLES)
+af_deprecate(BUILD_EXAMPLES        AF_BUILD_EXAMPLES)
 af_deprecate(USE_RELATIVE_TEST_DIR AF_WITH_RELATIVE_TEST_DIR)
 af_deprecate(USE_FREEIMAGE_STATIC  AF_WITH_STATIC_FREEIMAGE)
 af_deprecate(USE_CPUID             AF_WITH_CPUID)
@@ -168,18 +169,13 @@ install(DIRECTORY include/ DESTINATION ${AF_INSTALL_INC_DIR}
 
 ## The ArrayFire version file is generated and won't be included above, install
 ## it separately.
-install(FILES
-    ${ArrayFire_BINARY_DIR}/include/af/version.h DESTINATION "${AF_INSTALL_INC_DIR}/af/"
-    COMPONENT headers
-)
+install(FILES ${ArrayFire_BINARY_DIR}/include/af/version.h
+        DESTINATION "${AF_INSTALL_INC_DIR}/af/"
+        COMPONENT headers)
 
 if(Forge_FOUND AND NOT AF_USE_SYSTEM_FORGE)
     option(INSTALL_FORGE_DEV "Install Forge Header and Share Files with ArrayFire" OFF)
-    install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/lib/"
-            DESTINATION "${AF_INSTALL_LIB_DIR}"
-            COMPONENT forge
-    )
-    if(${INSTALL_FORGE_DEV})
+    if(INSTALL_FORGE_DEV)
         install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/include/"
                 DESTINATION "${AF_INSTALL_INC_DIR}"
                 COMPONENT headers
@@ -188,7 +184,19 @@ if(Forge_FOUND AND NOT AF_USE_SYSTEM_FORGE)
                 DESTINATION "${AF_INSTALL_DATA_DIR}/../Forge"
                 COMPONENT share
         )
+        install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/lib/"
+                DESTINATION "${AF_INSTALL_LIB_DIR}"
+                COMPONENT forge
+        )
     endif()
+    #install forge library & dependencies
+    set(fg_dlib_px "bin")
+    if (UNIX)
+      set(fg_dlib_px "lib")
+    endif ()
+    install(DIRECTORY "${PROJECT_BINARY_DIR}/third_party/forge/${fg_dlib_px}/"
+      DESTINATION "${AF_INSTALL_BIN_DIR}"
+      COMPONENT gfx_dependencies)
 endif()
 
 # install the examples irrespective of the AF_BUILD_EXAMPLES value
@@ -203,6 +211,10 @@ install(DIRECTORY examples/ #NOTE The slash at the end is important
 install(DIRECTORY assets/examples/ #NOTE The slash at the end is important
     DESTINATION ${AF_INSTALL_EXAMPLE_DIR}
     COMPONENT examples)
+
+install(DIRECTORY "${ArrayFire_SOURCE_DIR}/LICENSES/"
+    DESTINATION LICENSES
+    COMPONENT licenses)
 
 foreach(backend CPU CUDA OpenCL Unified)
   string(TOUPPER ${backend} upper_backend)
@@ -241,23 +253,31 @@ install(FILES ${ArrayFire_BINARY_DIR}/cmake/install/ArrayFireConfig.cmake
               COMPONENT cmake)
 
 if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL)
-  install(FILES
-    $<TARGET_FILE:MKL::MKL>
-    $<TARGET_FILE:MKL::ThreadLayer>
-    ${MKL_RUNTIME_KERNEL_LIBRARIES}
-    DESTINATION ${AF_INSTALL_LIB_DIR})
-
   if(TARGET MKL::ThreadingLibrary)
     install(FILES
       $<TARGET_FILE:MKL::ThreadingLibrary>
-      DESTINATION ${AF_INSTALL_LIB_DIR})
+      DESTINATION ${AF_INSTALL_BIN_DIR}
+      COMPONENT mkl_dependencies)
   endif()
 
   if(NOT WIN32)
     install(FILES
       $<TARGET_FILE:MKL::Interface>
-        DESTINATION ${AF_INSTALL_LIB_DIR})
+      DESTINATION ${AF_INSTALL_BIN_DIR}
+      COMPONENT mkl_dependencies)
   endif()
+
+  install(FILES
+    $<TARGET_FILE:MKL::MKL>
+    $<TARGET_FILE:MKL::ThreadLayer>
+    ${MKL_RUNTIME_KERNEL_LIBRARIES}
+
+    # This variable is used to add tbb.so.2 library because the main lib
+    # is a linker script and not a symlink so it cant be resolved using
+    # get_filename_component
+    ${AF_ADDITIONAL_MKL_LIBRARIES}
+    DESTINATION ${AF_INSTALL_BIN_DIR}
+    COMPONENT mkl_dependencies)
 endif()
 
 # This file will be used to create the config file for the build directory.

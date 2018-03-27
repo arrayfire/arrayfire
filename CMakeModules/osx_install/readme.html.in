@@ -3,9 +3,9 @@
 
     <h2>Install Directories</h2>
     <ul>
-        <li> Libraries will be installed in <code>/usr/local/lib</code> </li>
-        <li> Headers will be installed in <code>/usr/local/include</code> </li>
-        <li> Examples, documentation and CMake config files will be installed in <code>/usr/local/share</code> </li>
+        <li> Libraries will be installed in <code>/opt/arrayfire/lib</code> </li>
+        <li> Headers will be installed in <code>/opt/arrayfire/include</code> </li>
+        <li> Examples, documentation and CMake config files will be installed in <code>/opt/arrayfire/share</code> </li>
     </ul>
     <p> For complete list of updates, visit <a href="http://www.arrayfire.com/docs/releasenotes.htm">ArrayFire Release Notes</a></p>
 

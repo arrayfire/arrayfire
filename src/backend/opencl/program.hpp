@@ -38,6 +38,10 @@
 #define SHOW_BUILD_INFO(PROG) SHOW_DEBUG_BUILD_INFO(PROG)
 #endif
 
+namespace cl {
+  class Program;
+}
+
 namespace opencl
 {
     void buildProgram(cl::Program &prog,
