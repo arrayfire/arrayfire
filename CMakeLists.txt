@@ -75,7 +75,10 @@ af_deprecate(USE_CPUID             AF_WITH_CPUID)
 mark_as_advanced(
   AF_BUILD_FRAMEWORK
   AF_USE_SYSTEM_FORGE
-  AF_WITH_CPUID)
+  AF_WITH_CPUID
+  CUDA_HOST_COMPILER
+  CUDA_USE_STATIC_CUDA_RUNTIME
+  CUDA_rt_LIBRARY)
 
 # TODO(umar): Add definitions should not be used. Instead use
 arrayfire_get_platform_definitions(platform_definitions)
