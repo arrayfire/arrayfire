@@ -24,7 +24,9 @@ find_cuda_helper_libs(nvrtc)
 find_cuda_helper_libs(nvrtc-builtins)
 
 get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
-mark_as_advanced(CUDA_LIBRARIES_PATH)
+mark_as_advanced(
+    CUDA_LIBRARIES_PATH
+    CUDA_architecture_build_targets)
 
 # TODO(umar): Move these flags to a separate function/target
 if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.3.0")

@@ -199,6 +199,7 @@ find_package_handle_standard_args(MKL
   REQUIRED_VARS MKL_INCLUDE_DIR MKL_Core_LINK_LIBRARY)
 if(NOT WIN32)
   find_library(M_LIB m)
+  mark_as_advanced(M_LIB)
 endif()
 if(MKL_FOUND)
   add_library(MKL::MKL SHARED IMPORTED)

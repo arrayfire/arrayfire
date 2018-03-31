@@ -7,8 +7,10 @@
 
 include(InternalUtils)
 
-set(OPENCL_BLAS_LIBRARY clBLAS CACHE STRING "Select OpenCL BLAS back-end")
-set_property(CACHE OPENCL_BLAS_LIBRARY PROPERTY STRINGS "clBLAS" "CLBlast")
+set(AF_OPENCL_BLAS_LIBRARY clBLAS CACHE STRING "Select OpenCL BLAS back-end")
+set_property(CACHE AF_OPENCL_BLAS_LIBRARY PROPERTY STRINGS "clBLAS" "CLBlast")
+
+af_deprecate(OPENCL_BLAS_LIBRARY AF_OPENCL_BLAS_LIBRARY)
 
 include(build_clFFT)
 
@@ -400,13 +402,13 @@ target_link_libraries(afopencl
     Threads::Threads
     )
 
-if(OPENCL_BLAS_LIBRARY STREQUAL "clBLAS")
+if(AF_OPENCL_BLAS_LIBRARY STREQUAL "clBLAS")
   include(build_clBLAS)
   target_compile_definitions(afopencl PRIVATE USE_CLBLAS)
   target_link_libraries(afopencl
     PRIVATE
       clBLAS::clBLAS)
-elseif(OPENCL_BLAS_LIBRARY STREQUAL "CLBlast")
+elseif(AF_OPENCL_BLAS_LIBRARY STREQUAL "CLBlast")
   include(build_CLBlast)
   target_compile_definitions(afopencl PRIVATE USE_CLBLAST)
   target_link_libraries(afopencl
