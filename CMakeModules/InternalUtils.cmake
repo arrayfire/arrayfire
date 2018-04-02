@@ -63,7 +63,7 @@ function(get_native_path out_path path)
 endfunction()
 
 macro(arrayfire_set_cmake_default_variables)
-  set(CMAKE_PREFIX_PATH "${ArrayFire_BINARY_DIR}/cmake;${CMAKE_PREFIX_PATH}")
+  set(CMAKE_PREFIX_PATH "${ArrayFire_BINARY_DIR};${CMAKE_PREFIX_PATH}")
   set(BUILD_SHARED_LIBS ON)
 
   set(CMAKE_CXX_STANDARD 11)
