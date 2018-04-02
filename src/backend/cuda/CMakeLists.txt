@@ -503,7 +503,7 @@ if(APPLE)
 endif()
 
 install(TARGETS afcuda
-  EXPORT ArrayFireCUDATargets
+  EXPORT ArrayFireTargets
   COMPONENT cuda
   PUBLIC_HEADER DESTINATION af
   RUNTIME DESTINATION ${AF_INSTALL_BIN_DIR}
