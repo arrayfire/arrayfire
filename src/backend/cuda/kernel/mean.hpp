@@ -210,6 +210,7 @@ namespace kernel
 
         if (blocks_dim[dim] > 1) {
           dim4 dims(4, out.dims);
+          dims[dim] = blocks_dim[dim];
           tmpOut = createEmptyArray<To>(dims);
           tmpWt  = createEmptyArray<Tw>(dims);
         }
