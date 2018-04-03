@@ -47,6 +47,8 @@ option(AF_BUILD_EXAMPLES "Build Examples"                            ON)
 option(AF_WITH_GRAPHICS "Build ArrayFire with Forge Graphics"  $<AND:${OPENGL_FOUND},${Forge_FOUND},${glbinding_FOUND}>)
 option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
 
+option(AF_INSTALL_STANDALONE "Build installers that include all dependencies" OFF)
+
 cmake_dependent_option(AF_WITH_RELATIVE_TEST_DIR "Use relative paths for the test data directory(For continious integration(CI) purposes only)" OFF
   "BUILD_TESTING" OFF)
 
@@ -74,6 +76,7 @@ af_deprecate(USE_CPUID             AF_WITH_CPUID)
 
 mark_as_advanced(
   AF_BUILD_FRAMEWORK
+  AF_INSTALL_STANDALONE
   AF_USE_SYSTEM_FORGE
   AF_WITH_CPUID
   CUDA_HOST_COMPILER
@@ -264,7 +267,7 @@ install(FILES ${ArrayFire_BINARY_DIR}/cmake/install/ArrayFireConfig.cmake
               DESTINATION ${AF_INSTALL_CMAKE_DIR}
               COMPONENT cmake)
 
-if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL)
+if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL AND AF_INSTALL_STANDALONE)
   if(TARGET MKL::ThreadingLibrary)
     install(FILES
       $<TARGET_FILE:MKL::ThreadingLibrary>

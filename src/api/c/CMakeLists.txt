@@ -159,8 +159,10 @@ if(FreeImage_FOUND AND AF_WITH_IMAGEIO)
   else ()
     target_link_libraries(c_api_interface INTERFACE FreeImage::FreeImage)
     if (WIN32)
-      install(FILES $<TARGET_FILE:FreeImage::FreeImage>
-        DESTINATION ${AF_INSTALL_BIN_DIR})
+      if(AF_INSTALL_STANDALONE)
+        install(FILES $<TARGET_FILE:FreeImage::FreeImage>
+          DESTINATION ${AF_INSTALL_BIN_DIR})
+      endif()
     endif ()
   endif ()
 endif()
