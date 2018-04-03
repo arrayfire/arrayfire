@@ -6,7 +6,6 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.0)
-cmake_policy(VERSION 3.5)
 project(ArrayFire-Example-Graphics
   VERSION 3.5.0
   LANGUAGES CXX)
