@@ -155,6 +155,8 @@ function(find_mkl_library)
         PROPERTIES
           IMPORTED_LOCATION "${MKL_${mkl_args_NAME}_DLL_LIBRARY}"
           IMPORTED_IMPLIB "${MKL_${mkl_args_NAME}_LINK_LIBRARY}")
+
+      mark_as_advanced(MKL_${mkl_args_NAME}_DLL_LIBRARY)
     endif()
 endfunction()
 
