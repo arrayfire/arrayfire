@@ -7,10 +7,6 @@ OSX, and Linux. Although you could
 suggest using our pre-compiled binaries as they include the Intel Math
 Kernel Library to accelerate linear algebra functions.
 
-Downloading the pre-compiled binaries doesn't need registration. However, we
-request you to register your contact information so that we may notify you
-of software updates and occasionally collect user feedback about our library.
-
 In general, the installation process for ArrayFire looks like this:
 
 1. Install prerequisites
@@ -72,16 +68,23 @@ First, install the prerequisite packages:
 
 ### <a name="Debian"></a> Debian 8
 
-    # Install prerequisite packages:
-    apt-get install cmake
+    apt update
+    apt install build-essential libfreeimage3
+    echo /opt/arrayfire/lib > /etc/ld.so.conf.d/arrayfire.conf
+    ldconfig
 
-    # Enable GPU support (OpenCL):
-    apt-get install ocl-icd-libopencl1
+    # Additional dependencies for graphics installers
+    apt install libfontconfig1 libglu1-mesa
 
 ### <a name="RPM-distros"></a> RedHat, Fedora, and CentOS
 
     # Install prerequiste packages
-    yum install cmake
+    yum install freeimage
+    echo /opt/arrayfire/lib > /etc/ld.so.conf.d/arrayfire.conf
+    ldconfig
+
+    # Additional dependencies for graphics installers
+    yum install fontconfig mesa-libGLU
 
 ### Ubuntu 16.04, 14.04
 
