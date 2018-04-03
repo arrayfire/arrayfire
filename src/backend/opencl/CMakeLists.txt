@@ -524,6 +524,20 @@ install(TARGETS afopencl
   INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
   )
 
+if(NOT APPLE AND AF_INSTALL_STANDALONE)
+  get_filename_component(opencl_outpath "${OpenCL_LIBRARIES}" REALPATH)
+  if(UNIX)
+    set(SX ${CMAKE_SHARED_LIBRARY_SUFFIX}.1)
+  else()
+    set(SX ${CMAKE_SHARED_LIBRARY_SUFFIX})
+  endif()
+  install(FILES
+      ${opencl_outpath}
+      DESTINATION ${AF_INSTALL_BIN_DIR}
+      RENAME "${CMAKE_SHARED_LIBRARY_PREFIX}OpenCL${SX}"
+      COMPONENT opencl_dependencies)
+endif()
+
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
 source_group(api\\c   REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/c/*)
