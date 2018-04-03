@@ -72,12 +72,14 @@ if(AF_WITH_GRAPHICS)
     target_link_libraries(afcommon_interface INTERFACE glbinding::glbinding)
   endif()
 
-  install(FILES
-      $<TARGET_FILE:glbinding::glbinding>
-      $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
-      $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
-    DESTINATION ${AF_INSTALL_BIN_DIR}
-    COMPONENT gfx_dependencies)
+  if(AF_INSTALL_STANDALONE)
+    install(FILES
+        $<TARGET_FILE:glbinding::glbinding>
+        $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
+        $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
+      DESTINATION ${AF_INSTALL_BIN_DIR}
+      COMPONENT gfx_dependencies)
+  endif()
 
   add_dependencies(afcommon_interface forge-ext)
 endif()
