@@ -78,7 +78,7 @@ if(AF_WITH_GRAPHICS)
         $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
         $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
       DESTINATION ${AF_INSTALL_BIN_DIR}
-      COMPONENT gfx_dependencies)
+      COMPONENT common_backend_dependencies)
   endif()
 
   add_dependencies(afcommon_interface forge-ext)
