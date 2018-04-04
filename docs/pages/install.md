@@ -20,8 +20,7 @@ Below you will find instructions for:
 
 * [Windows](#Windows)
 * Linux
-    * [Debian 8](#Debian)
-    * [Ubuntu 14.04 and later](#Ubuntu)
+    * [Debian & it's derivatives](#Debian)
     * [RedHat, Fedora, and CentOS](#RPM-distros)
 * [Mac OSX (.sh and brew)](#OSX)
 
@@ -66,7 +65,7 @@ the drivers for the video card(s) you intend to use from the vendor's website.
 
 First, install the prerequisite packages:
 
-### <a name="Debian"></a> Debian 8
+### <a name="Debian"></a> Debian 8 & Debian derivatives such as Ubuntu(14.04 or later)
 
     apt update
     apt install build-essential libfreeimage3
@@ -85,14 +84,6 @@ First, install the prerequisite packages:
 
     # Additional dependencies for graphics installers
     yum install fontconfig mesa-libGLU
-
-### Ubuntu 16.04, 14.04
-
-    # Install prerequisite packages:
-    sudo apt-get install cmake
-
-    # Enable GPU support (OpenCL):
-    apt-get install ocl-icd-libopencl1
 
 Next, [download](http://arrayfire.com/download/) the ArrayFire installer for
 your system. After you have the file, run the installer:
