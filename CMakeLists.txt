@@ -202,7 +202,7 @@ if(Forge_FOUND AND NOT AF_USE_SYSTEM_FORGE)
     endif ()
     install(DIRECTORY "${PROJECT_BINARY_DIR}/third_party/forge/${fg_dlib_px}/"
       DESTINATION "${AF_INSTALL_BIN_DIR}"
-      COMPONENT gfx_dependencies)
+      COMPONENT common_backend_dependencies)
 endif()
 
 # install the examples irrespective of the AF_BUILD_EXAMPLES value

@@ -131,80 +131,54 @@ cpack_add_install_type(Extra DISPLAY_NAME "Extra")
 cpack_add_install_type(Runtime DISPLAY_NAME "Runtime")
 
 set(PACKAGE_MKL_DEPS OFF)
-set(PACKAGE_GFX_DEPS OFF)
 
 if ((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL)
   set(PACKAGE_MKL_DEPS ON)
-  cpack_add_component(mkl_dependencies
-    DISPLAY_NAME "Intel MKL Prerequisites"
-    DESCRIPTION "Intel MKL libraries required by CPU, OpenCL backends."
-    HIDDEN
+  cpack_add_component(mkl_dependencies HIDDEN
     INSTALL_TYPES Development Runtime)
 endif ()
 
-if (Forge_FOUND AND NOT AF_USE_SYSTEM_FORGE)
-  set(PACKAGE_GFX_DEPS ON)
-  cpack_add_component(gfx_dependencies
-    DISPLAY_NAME "Graphics prerequisites"
-    DESCRIPTION "Graphics library dependencies"
-    HIDDEN
-    INSTALL_TYPES Development Runtime)
-endif ()
+cpack_add_component(common_backend_dependencies
+  HIDDEN
+  INSTALL_TYPES Development Runtime)
 
+cpack_add_component(opencl_dependencies HIDDEN
+  INSTALL_TYPES Development Runtime)
+  
 cpack_add_component(cuda_dependencies
   DISPLAY_NAME "CUDA Dependencies"
   DESCRIPTION "CUDA Runtime and libraries required for the CUDA backend."
   INSTALL_TYPES Development Runtime)
 
-if (PACKAGE_MKL_DEPS AND PACKAGE_GFX_DEPS)
-  cpack_add_component(cpu
-    DISPLAY_NAME "CPU Backend"
-    DESCRIPTION "This Backend allows you to run ArrayFire code on native CPUs."
-    DEPENDS mkl_dependencies gfx_dependencies
-    INSTALL_TYPES Development Runtime)
-  cpack_add_component(opencl
-    DISPLAY_NAME "OpenCL Backend"
-    DESCRIPTION "This Backend allows you to take advantage of OpenCL capable GPUs to run ArrayFire code. Currently ArrayFire does not support OpenCL for the Intel CPU on OSX."
-    DEPENDS mkl_dependencies gfx_dependencies
-    INSTALL_TYPES Development Runtime)
-  cpack_add_component(cuda
-    DISPLAY_NAME "CUDA Backend"
-    DESCRIPTION "This Backend allows you to take advantage of the CUDA enabled GPUs to run ArrayFire code. Please make sure you have CUDA toolkit installed or install CUDA dependencies component."
-    DEPENDS gfx_dependencies cuda_dependencies
-    INSTALL_TYPES Development Runtime)
-elseif (PACKAGE_MKL_DEPS)
-  cpack_add_component(cpu
-    DISPLAY_NAME "CPU Backend"
-    DESCRIPTION "This Backend allows you to run ArrayFire code on native CPUs."
-    DEPENDS mkl_dependencies
-    INSTALL_TYPES Development Runtime)
-  cpack_add_component(opencl
-    DISPLAY_NAME "OpenCL Backend"
-    DESCRIPTION "This Backend allows you to take advantage of OpenCL capable GPUs to run ArrayFire code. Currently ArrayFire does not support OpenCL for the Intel CPU on OSX."
-    DEPENDS mkl_dependencies
-    INSTALL_TYPES Development Runtime)
-  cpack_add_component(cuda
-    DISPLAY_NAME "CUDA Backend"
-    DESCRIPTION "This Backend allows you to take advantage of the CUDA enabled GPUs to run ArrayFire code. Please make sure you have CUDA toolkit installed or install CUDA dependencies component."
-    DEPENDS cuda_dependencies
-    INSTALL_TYPES Development Runtime)
-elseif (PACKAGE_GFX_DEPS)
-  cpack_add_component(cpu
-    DISPLAY_NAME "CPU Backend"
-    DESCRIPTION "This Backend allows you to run ArrayFire code on native CPUs."
-    DEPENDS gfx_dependencies
-    INSTALL_TYPES Development Runtime)
-  cpack_add_component(opencl
-    DISPLAY_NAME "OpenCL Backend"
-    DESCRIPTION "This Backend allows you to take advantage of OpenCL capable GPUs to run ArrayFire code. Currently ArrayFire does not support OpenCL for the Intel CPU on OSX."
-    DEPENDS gfx_dependencies
-    INSTALL_TYPES Development Runtime)
-  cpack_add_component(cuda
-    DISPLAY_NAME "CUDA Backend"
-    DESCRIPTION "This Backend allows you to take advantage of the CUDA enabled GPUs to run ArrayFire code. Please make sure you have CUDA toolkit installed or install CUDA dependencies component."
-    DEPENDS gfx_dependencies cuda_dependencies
-    INSTALL_TYPES Development Runtime)
+cpack_add_component(cuda
+  DISPLAY_NAME "CUDA Backend"
+  DESCRIPTION "This Backend allows you to take advantage of the CUDA enabled GPUs to run ArrayFire code. Please make sure you have CUDA toolkit installed or install CUDA dependencies component."
+  DEPENDS common_backend_dependencies cuda_dependencies
+  INSTALL_TYPES Development Runtime)
+
+list(APPEND cpu_deps_comps common_backend_dependencies)
+list(APPEND ocl_deps_comps common_backend_dependencies)
+
+if (NOT APPLE)
+  list(APPEND ocl_deps_comps opencl_dependencies)
 endif ()
+
+if (PACKAGE_MKL_DEPS)
+  list(APPEND cpu_deps_comps mkl_dependencies)
+  list(APPEND ocl_deps_comps mkl_dependencies)
+endif ()
+
+cpack_add_component(cpu
+  DISPLAY_NAME "CPU Backend"
+  DESCRIPTION "This Backend allows you to run ArrayFire code on native CPUs."
+  DEPENDS ${cpu_deps_comps}
+  INSTALL_TYPES Development Runtime)
+
+cpack_add_component(opencl
+  DISPLAY_NAME "OpenCL Backend"
+  DESCRIPTION "This Backend allows you to take advantage of OpenCL capable GPUs to run ArrayFire code. Currently ArrayFire does not support OpenCL for the Intel CPU on OSX."
+  DEPENDS ${ocl_deps_comps}
+  INSTALL_TYPES Development Runtime)
 
 cpack_add_component(unified
   DISPLAY_NAME "Unified Backend"
@@ -268,9 +242,10 @@ get_native_path(issl_lic_path "${CMAKE_SOURCE_DIR}/LICENSES/ISSL License.txt")
 if (PACKAGE_MKL_DEPS)
   cpack_ifw_configure_component(mkl_dependencies)
 endif ()
-if (PACKAGE_GFX_DEPS)
-  cpack_ifw_configure_component(gfx_dependencies)
+if (NOT APPLE)
+  cpack_ifw_configure_component(opencl_dependencies)
 endif ()
+cpack_ifw_configure_component(common_backend_dependencies)
 cpack_ifw_configure_component(cuda_dependencies)
 cpack_ifw_configure_component(cpu)
 cpack_ifw_configure_component(cuda)
