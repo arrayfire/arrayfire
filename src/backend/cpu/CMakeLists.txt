@@ -263,7 +263,9 @@ if(AF_WITH_NONFREE)
 endif()
 
 if(AF_WITH_GRAPHICS)
-  add_dependencies(afcpu forge-ext)
+  if(NOT AF_USE_SYSTEM_FORGE)
+    add_dependencies(afcpu forge-ext)
+  endif()
   target_sources(afcpu
     PRIVATE
       hist_graphics.cpp

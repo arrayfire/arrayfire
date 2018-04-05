@@ -81,7 +81,9 @@ if(AF_WITH_GRAPHICS)
       COMPONENT common_backend_dependencies)
   endif()
 
-  add_dependencies(afcommon_interface forge-ext)
+  if(NOT AF_USE_SYSTEM_FORGE)
+    add_dependencies(afcommon_interface forge-ext)
+  endif()
 endif()
 
 if(LAPACK_FOUND)
