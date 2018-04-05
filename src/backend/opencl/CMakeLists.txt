@@ -424,6 +424,9 @@ if(AF_WITH_NONFREE)
 endif()
 
 if(AF_WITH_GRAPHICS)
+  if(NOT AF_USE_SYSTEM_FORGE)
+    add_dependencies(afopencl forge-ext)
+  endif()
   target_sources(afopencl
     PRIVATE
       GraphicsResourceManager.hpp
