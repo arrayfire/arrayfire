@@ -224,11 +224,12 @@ install(DIRECTORY "${ArrayFire_SOURCE_DIR}/LICENSES/"
 
 foreach(backend CPU CUDA OpenCL Unified)
   string(TOUPPER ${backend} upper_backend)
+  string(TOLOWER ${backend} lower_backend)
   if(AF_BUILD_${upper_backend})
     install(EXPORT ArrayFire${backend}Targets
             NAMESPACE ArrayFire::
             DESTINATION ${AF_INSTALL_CMAKE_DIR}
-            COMPONENT cmake)
+            COMPONENT ${lower_backend})
 
     export( EXPORT ArrayFire${backend}Targets
             NAMESPACE ArrayFire::
