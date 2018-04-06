@@ -35,6 +35,7 @@ find_package(MKL)
 
 # Graphics dependencies
 find_package(glbinding QUIET)
+find_package(Forge QUIET)
 include(boost_package)
 
 option(AF_BUILD_CPU      "Build ArrayFire with a CPU backend"        ON)
@@ -87,7 +88,7 @@ mark_as_advanced(
 arrayfire_get_platform_definitions(platform_definitions)
 add_definitions(${platform_definitions})
 
-if(AF_WITH_GRAPHICS)
+if(AF_WITH_GRAPHICS AND NOT AF_USE_SYSTEM_FORGE)
   include(build_forge)
 endif()
 
