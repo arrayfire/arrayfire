@@ -528,17 +528,37 @@ install(TARGETS afopencl
   )
 
 if(NOT APPLE AND AF_INSTALL_STANDALONE)
-  get_filename_component(opencl_outpath "${OpenCL_LIBRARIES}" REALPATH)
   if(UNIX)
-    set(SX ${CMAKE_SHARED_LIBRARY_SUFFIX}.1)
+    get_filename_component(opencl_outpath "${OpenCL_LIBRARIES}" REALPATH)
+    install(FILES ${opencl_outpath}
+        DESTINATION ${AF_INSTALL_BIN_DIR}
+        RENAME "${CMAKE_SHARED_LIBRARY_PREFIX}OpenCL${CMAKE_SHARED_LIBRARY_SUFFIX}.1"
+        COMPONENT opencl_dependencies)
   else()
-    set(SX ${CMAKE_SHARED_LIBRARY_SUFFIX})
+    find_file(OpenCL_DLL_LIBRARY
+      NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}OpenCL${CMAKE_SHARED_LIBRARY_SUFFIX}
+	  PATHS
+        ENV "PROGRAMFILES(X86)"
+        ENV "PROGRAMFILES"
+        ENV AMDAPPSDKROOT
+        ENV INTELOCLSDKROOT
+        ENV CUDA_PATH
+        ENV NVSDKCOMPUTE_ROOT
+        ENV ATISTREAMSDKROOT
+      PATH_SUFFIXES
+        "AMD APP SDK/bin/x86_64"
+        "bin/x86_64"
+        "bin/x64"
+        "bin/icd/x64"
+        "OpenCL SDK/bin/icd/x64"
+        "Intel/OpenCL SDK/bin/icd/x64"
+        "OpenCL SDK/bin/icd/x64"
+        "NVIDIA Corporation/OpenCL")
+    mark_as_advanced(OpenCL_DLL_LIBRARY)
+    install(FILES "${OpenCL_DLL_LIBRARY}"
+        DESTINATION ${AF_INSTALL_BIN_DIR}
+        COMPONENT opencl_dependencies)
   endif()
-  install(FILES
-      ${opencl_outpath}
-      DESTINATION ${AF_INSTALL_BIN_DIR}
-      RENAME "${CMAKE_SHARED_LIBRARY_PREFIX}OpenCL${SX}"
-      COMPONENT opencl_dependencies)
 endif()
 
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
