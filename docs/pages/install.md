@@ -7,70 +7,51 @@ OSX, and Linux. Although you could
 suggest using our pre-compiled binaries as they include the Intel Math
 Kernel Library to accelerate linear algebra functions.
 
-In general, the installation process for ArrayFire looks like this:
+You can download official ArrayFire installers by navigating to
+http://arrayfire.com/download/ . Select the installer for your architecture and
+operating system.
 
-1. Install prerequisites
-2. [Download](http://arrayfire.com/download/) the ArrayFire installer for your
-   operating system
-3. Install ArrayFire
-4. Test the installation
-5. [Where to go for help?](#GettingHelp)
+Make sure you have the latest drivers installed on your system before using
+ArrayFire. If you are going to be targeting the CPU using OpenCL, you will need
+to have the OpenCL **runtime*** installed on your system. You can download the
+drivers and runtimes from the device vendors website.
 
-Below you will find instructions for:
+# Install Instructions
 
 * [Windows](#Windows)
 * Linux
-    * [Debian & it's derivatives](#Debian)
+    * [Debian derivatives (Ubuntu etc.)](#Debian)
     * [RedHat, Fedora, and CentOS](#RPM-distros)
 * [Mac OSX (.sh and brew)](#OSX)
 
-# <a name="Windows"></a> Windows
+## <a name="Windows"></a> Windows
 
-If you wish to use CUDA or OpenCL, please ensure that you have installed
-the drivers for the video card(s) you intend to use from the respective
-vendor's website. Please also install the 64-bit(x64) visual studio 2015
-runtime libraries from
+Additionally you will need to install the 64-bit(x64) visual studio 2015 runtime
+ libraries from
  [here](https://www.microsoft.com/en-in/download/details.aspx?id=48145).
 
-Next, [download](http://arrayfire.com/download/) and run the ArrayFire
-installer. If you chose not to modify PATH during the installation
-procedure, you'll need to manually add ArrayFire to the path for all
-users. You can follow the below steps to modify PATH environment variable:
+If you chose not to modify PATH during the installation procedure, you'll need
+to manually add ArrayFire to the path for all users. Simply append
+`%AF_PATH%/lib `to the PATH variable so that the loader can find ArrayFire DLLs.
 
-1. Open Advanced System Settings:
-    * Windows 8: Move the Mouse pointer to the bottom right corner of the
-      screen, Right click, choose System. Then click "Advanced System Settings"
-    * Windows 7: Open the Start Menu and Right Click on "Computer". Then choose
-      Properties and click "Advanced System Settings"
-2. In Advanced System Settings window, click on Advanced tab
-3. Click on Environment Variables, then under System Variables, find PATH, and
-   click on it.
-4. In edit mode, append `%AF_PATH%/lib`. Make sure to separate `%AF_PATH%/lib`
-   from any existing content using a semicolon (e.g.
-   `EXISTING_PATHS;%AF_PATH%/lib;`). Other software may function incorrectly
-   if this is not the case.
+## Linux
 
-Finally, verify that the path addition worked correctly. You can do this by:
+Run the ArrayFire installer for your system. The prefix command determines the
+location of the installed files. You can install ArrayFire in any directory but
+it is recommended you install in /opt.
 
-1. Open Visual Studio. Open the `HelloWorld` solution which is located at
-   `%AF_PATH%/examples/helloworld/helloworld.exe`.
-2. Build and run the `helloworld` example. Use the "Solution Platform"
-   drop-down to select from the CPU, CUDA, or OpenCL backends ArrayFire
-   provides.
+    ./Arrayfire_*_Linux_x86_64.sh --include-subdir --prefix=/opt
+    echo /opt/arrayfire/lib > /etc/ld.so.conf.d/arrayfire.conf
+    ldconfig
 
-# Linux
-
-If you wish to use CUDA or OpenCL, please ensure that you have installed
-the drivers for the video card(s) you intend to use from the vendor's website.
-
-First, install the prerequisite packages:
+In addition to the drivers and runtime files, you will also need to install
+FreeImage and some additional dependencies if you are installing the graphics
+version.
 
 ### <a name="Debian"></a> Debian 8 & Debian derivatives such as Ubuntu(14.04 or later)
 
     apt update
     apt install build-essential libfreeimage3
-    echo /opt/arrayfire/lib > /etc/ld.so.conf.d/arrayfire.conf
-    ldconfig
 
     # Additional dependencies for graphics installers
     apt install libfontconfig1 libglu1-mesa
@@ -79,16 +60,9 @@ First, install the prerequisite packages:
 
     # Install prerequiste packages
     yum install freeimage
-    echo /opt/arrayfire/lib > /etc/ld.so.conf.d/arrayfire.conf
-    ldconfig
 
     # Additional dependencies for graphics installers
     yum install fontconfig mesa-libGLU
-
-Next, [download](http://arrayfire.com/download/) the ArrayFire installer for
-your system. After you have the file, run the installer:
-
-    ./Arrayfire_*_Linux_x86_64.sh --include-subdir --prefix=/opt
 
 ### Special instructions for Tegra X1
 
@@ -112,26 +86,23 @@ system. After you have the file, run the installer using:
 
     ./Arrayfire_*_Linux_x86_64.sh --include-subdir --prefix=/opt
 
-# <a name="OSX"></a> Mac OSX
+## <a name="OSX"></a> Mac OSX
 
 Simply [download](http://arrayfire.com/download/) ArrayFire for your
 system. After you have the file, run the installer from command line using:
 
     sudo installer -pkg Arrayfire-*_OSX.pkg -target /
 
-The ArrayFire installer automatically installs most of the dependencies
-which include MKL acceleration for linear algebra functions.
-
 ## Testing installation
 
 Test ArrayFire on Unix style platforms after the installation process by
 building the example programs as follows:
 
-    cp -r /opt/arrayfire/share/ArrayFire/examples .
-    cd examples
+    cp -r /opt/arrayfire/share/ArrayFire/examples /tmp/examples
+    cd /tmp/examples
     mkdir build
     cd build
-    cmake .. -DASSETS_DIR:PATH=/opt/arrayfire/share/ArrayFire
+    cmake -DASSETS_DIR:PATH=/tmp .. 
     make
 
 On Windows, open the CMakeLists.txt file from CMake-GUI and set ASSETS\_DIR
