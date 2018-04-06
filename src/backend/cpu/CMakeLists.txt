@@ -344,7 +344,7 @@ else()
 endif()
 
 install(TARGETS afcpu
-  EXPORT ArrayFireTargets
+  EXPORT ArrayFireCPUTargets
   COMPONENT cpu
   PUBLIC_HEADER DESTINATION af
   RUNTIME DESTINATION ${AF_INSTALL_BIN_DIR}

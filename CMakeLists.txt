@@ -222,15 +222,20 @@ install(DIRECTORY "${ArrayFire_SOURCE_DIR}/LICENSES/"
     DESTINATION LICENSES
     COMPONENT licenses)
 
+foreach(backend CPU CUDA OpenCL Unified)
+  string(TOUPPER ${backend} upper_backend)
+  string(TOLOWER ${backend} lower_backend)
+  if(AF_BUILD_${upper_backend})
+    install(EXPORT ArrayFire${backend}Targets
+            NAMESPACE ArrayFire::
+            DESTINATION ${AF_INSTALL_CMAKE_DIR}
+            COMPONENT ${lower_backend})
 
-install(EXPORT ArrayFireTargets
-        NAMESPACE ArrayFire::
-        DESTINATION ${AF_INSTALL_CMAKE_DIR}
-        COMPONENT cmake)
-
-export(EXPORT ArrayFireTargets
-       NAMESPACE ArrayFire::
-       FILE cmake/ArrayFireTargets.cmake)
+    export( EXPORT ArrayFire${backend}Targets
+            NAMESPACE ArrayFire::
+            FILE cmake/ArrayFire${backend}Targets.cmake)
+  endif()
+endforeach()
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
@@ -247,19 +252,6 @@ configure_package_config_file(
   cmake/install/ArrayFireConfig.cmake
   INSTALL_DESTINATION "${AF_INSTALL_CMAKE_DIR}"
   PATH_VARS INCLUDE_DIRS CMAKE_DIR
-  )
-
-# This file will be used to create the config file for the build directory.
-# These config files will be used by the examples to find the ArrayFire
-# libraries
-set(INCLUDE_DIRS "${ArrayFire_SOURCE_DIR}/include" "${ArrayFire_BINARY_DIR}/include")
-set(CMAKE_DIR "${ArrayFire_BINARY_DIR}/cmake")
-configure_package_config_file(
-  "${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in"
-  "ArrayFireConfig.cmake"
-  INSTALL_DESTINATION "${ArrayFire_BINARY_DIR}"
-  PATH_VARS INCLUDE_DIRS CMAKE_DIR
-  INSTALL_PREFIX "${ArrayFire_BINARY_DIR}"
   )
 
 install(FILES ${ArrayFire_BINARY_DIR}/cmake/install/ArrayFireConfig.cmake
@@ -294,6 +286,19 @@ if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL AND AF_INSTALL_STANDALONE
     DESTINATION ${AF_INSTALL_BIN_DIR}
     COMPONENT mkl_dependencies)
 endif()
+
+# This file will be used to create the config file for the build directory.
+# These config files will be used by the examples to find the ArrayFire
+# libraries
+set(INCLUDE_DIRS "${ArrayFire_SOURCE_DIR}/include" "${ArrayFire_BINARY_DIR}/include")
+set(CMAKE_DIR "${ArrayFire_BINARY_DIR}/cmake")
+configure_package_config_file(
+  ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
+  ArrayFireConfig.cmake
+  INSTALL_DESTINATION "${ArrayFire_BINARY_DIR}"
+  PATH_VARS INCLUDE_DIRS CMAKE_DIR
+  INSTALL_PREFIX "${ArrayFire_BINARY_DIR}"
+  )
 
 # Registers the current build directory with the user's cmake config. This will
 # create a file at $HOME/.cmake/packages/ArrayFire which will point to this source
