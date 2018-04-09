@@ -223,7 +223,7 @@ namespace opencl
                            {strides()[0], strides()[1], strides()[2], strides()[3]},
                            getOffset()};
 
-            Param out = {(cl::Buffer *)this->get(), info};
+            Param out((cl::Buffer *)this->get(), info);
             return out;
         }
 
