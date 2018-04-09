@@ -14,11 +14,13 @@
 namespace opencl
 {
 
-    typedef struct
+    struct Param
     {
         cl::Buffer *data;
         KParam info;
-    } Param;
+        Param() : data(nullptr), info{{0, 0, 0, 0}, {0, 0, 0, 0}, 0} {}
+        Param(cl::Buffer *data_, KParam info_) : data(data_), info(info_) {}
+    };
 
     Param makeParam(cl_mem mem, int off, int dims[4], int strides[4]);
 }

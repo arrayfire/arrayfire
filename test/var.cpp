@@ -162,3 +162,12 @@ TYPED_TEST(Var, DimCPPSmall)
         }
     }
 }
+
+TEST(Var, ISSUE2117) {
+  using namespace af;
+
+  array myArray = constant(1, 1000, 3000);
+  myArray = af::var(myArray, true, 1);
+
+  ASSERT_NEAR(0.0f, sum<float>(myArray), 0.000001);
+}

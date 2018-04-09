@@ -278,7 +278,7 @@ void mean_dim(Param out, Param in, Param inWeight, int dim)
         groups_all[dim] = 1;
         mean_dim_launcher<Ti, Tw, To>(out, owt, tmpOut, tmpWeight, dim, threads_y, groups_all);
     } else {
-        Array<Tw> tmpWeight = createEmptyArray<Tw>(0);
+        Param tmpWeight;
         mean_dim_launcher<Ti, Tw, To>(out, tmpWeight, in, inWeight, dim, threads_y, groups_all);
     }
 
