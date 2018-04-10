@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+#include <Array.hpp>
 #include <kernel/sort_by_key.hpp>
 #include <kernel/sort_helper.hpp>
 #include <program.hpp>
@@ -160,17 +161,7 @@ namespace opencl
             seqDims[dim] = 1;
 
             // Create/call iota
-            // Array<Tv> key = iota<Tv>(seqDims, tileDims);
-            cl::Buffer* Seq = bufferAlloc(inDims.elements() * sizeof(unsigned));
-            Param pSeq;
-            pSeq.data = Seq;
-            pSeq.info.offset = 0;
-            pSeq.info.dims[0] = inDims[0];
-            pSeq.info.strides[0] = 1;
-            for(int i = 1; i < 4; i++) {
-                pSeq.info.dims[i] = inDims[i];
-                pSeq.info.strides[i] = pSeq.info.strides[i - 1] * pSeq.info.dims[i - 1];
-            }
+            Array<unsigned> pSeq = createEmptyArray<unsigned>(inDims);
             kernel::iota<unsigned>(pSeq, seqDims, tileDims);
 
             int elements = inDims.elements();
@@ -186,7 +177,7 @@ namespace opencl
             compute::context c_context(getContext()());
 
             // Create buffer iterators for seq
-            compute::buffer pSeq_buf((*pSeq.data)());
+            compute::buffer pSeq_buf((*pSeq.get())());
             compute::buffer_iterator<unsigned> seq0 = compute::make_buffer_iterator<unsigned>(pSeq_buf, 0);
             compute::buffer_iterator<unsigned> seqN = compute::make_buffer_iterator<unsigned>(pSeq_buf, elements);
             // Create buffer iterators for key and val
@@ -230,12 +221,7 @@ namespace opencl
             // If descending, flip it back
             if(!isAscending) compute::transform(key0, keyN, key0, flipFunction<Tk>(), c_queue);
 
-            //// No need of doing moddims here because the original Array<T>
-            //// dimensions have not been changed
-            ////val.modDims(inDims);
-
             CL_DEBUG_FINISH(getQueue());
-            bufferFree(Seq);
             bufferFree(cSeq);
             bufferFree(cKey);
         }
@@ -254,9 +240,9 @@ namespace opencl
                 kernel::sort0ByKeyIterative<Tk, Tv>(pKey, pVal, isAscending);
         }
 
-#define INSTANTIATE(Tk, Tv)                                                         \
-  template void sort0ByKey<Tk, Tv>(Param okey, Param oval, bool isAscending);        \
-  template void sort0ByKeyIterative<Tk, Tv>(Param okey, Param oval, bool isAscending); \
+#define INSTANTIATE(Tk, Tv)                                                                        \
+  template void sort0ByKey<Tk, Tv>(Param okey, Param oval, bool isAscending);                      \
+  template void sort0ByKeyIterative<Tk, Tv>(Param okey, Param oval, bool isAscending);             \
   template void sortByKeyBatched<Tk, Tv>(Param okey, Param oval, const int dim, bool isAscending);
 
 #define INSTANTIATE1(Tk    ) \

@@ -46,7 +46,7 @@ namespace opencl
     Array<T> createHostDataArray(const af::dim4 &size, const T * const data);
 
     template<typename T>
-    Array<T> createDeviceDataArray(const af::dim4 &size, const void *data);
+    Array<T> createDeviceDataArray(const af::dim4 &size, const void *data, bool copy = false);
 
     // Copies data to an existing Array object from a host pointer
     template<typename T>
@@ -223,7 +223,7 @@ namespace opencl
                            {strides()[0], strides()[1], strides()[2], strides()[3]},
                            getOffset()};
 
-            Param out((cl::Buffer *)this->get(), info);
+            Param out{(cl::Buffer *)this->get(), info};
             return out;
         }
 
@@ -266,7 +266,7 @@ namespace opencl
 
         friend Array<T> createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T> createHostDataArray<T>(const af::dim4 &size, const T * const data);
-        friend Array<T> createDeviceDataArray<T>(const af::dim4 &size, const void *data);
+        friend Array<T> createDeviceDataArray<T>(const af::dim4 &size, const void *data, bool copy);
 
         friend Array<T> *initArray<T>();
         friend Array<T> createEmptyArray<T>(const af::dim4 &size);

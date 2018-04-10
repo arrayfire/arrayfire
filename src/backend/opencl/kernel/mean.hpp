@@ -476,7 +476,7 @@ void mean_weighted(Param out, Param in, Param inWeight, int dim)
 template<typename Ti, typename Tw, typename To>
 void mean(Param out, Param in, int dim)
 {
-    Array<Tw> noWeight = createEmptyArray<Tw>(dim4(0, 0, 0, 0));
+    Param noWeight;
     mean_weighted<Ti, Tw, To>(out, in, noWeight, dim);
 }
 
@@ -576,8 +576,8 @@ To mean_all(Param in)
         uint groups_y = divup(in.info.dims[1], threads_y);
 
         Array<To> tmpOut = createEmptyArray<To>(groups_x);
-        Array<To> iWt = createEmptyArray<To>(0);
         Array<Tw> tmpCt = createEmptyArray<Tw>(groups_x);
+        Param iWt;
 
         mean_first_launcher<Ti, Tw, To>(tmpOut, tmpCt, in, iWt, threads_x, groups_x, groups_y);
 

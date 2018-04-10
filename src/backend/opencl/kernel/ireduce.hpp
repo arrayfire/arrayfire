@@ -359,21 +359,11 @@ namespace kernel
             threads_x = std::min(threads_x, THREADS_PER_GROUP);
             uint threads_y = THREADS_PER_GROUP / threads_x;
 
-            Param tmp;
             uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
             uint groups_y = divup(in.info.dims[1], threads_y);
+            Array<T> tmp = createEmptyArray<T>({groups_x, in.info.dims[1], in.info.dims[2], in.info.dims[3]});
 
-            tmp.info.offset = 0;
-            tmp.info.dims[0] = groups_x;
-            tmp.info.strides[0] = 1;
-
-            for (int k = 1; k < 4; k++) {
-                tmp.info.dims[k] = in.info.dims[k];
-                tmp.info.strides[k] = tmp.info.dims[k - 1] * tmp.info.strides[k - 1];
-            }
-
-            int tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
-            tmp.data = bufferAlloc(tmp_elements * sizeof(T));
+            int tmp_elements = tmp.elements();
             cl::Buffer *tidx = bufferAlloc(tmp_elements * sizeof(uint));
 
             ireduce_first_launcher<T, op>(tmp, tidx, in, tidx, threads_x, true, groups_x, groups_y);
@@ -381,7 +371,7 @@ namespace kernel
             unique_ptr<T[]> h_ptr(new T[tmp_elements]);
             unique_ptr<uint[]> h_iptr(new uint[tmp_elements]);
 
-            getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(T) * tmp_elements, h_ptr.get());
+            getQueue().enqueueReadBuffer(*tmp.get(), CL_TRUE, 0, sizeof(T) * tmp_elements, h_ptr.get());
             getQueue().enqueueReadBuffer(*tidx, CL_TRUE, 0, sizeof(uint) * tmp_elements, h_iptr.get());
 
             T* h_ptr_raw = h_ptr.get();
@@ -403,7 +393,6 @@ namespace kernel
                 Op(h_ptr_raw[i], h_iptr_raw[i]);
             }
 
-            bufferFree(tmp.data);
             bufferFree(tidx);
 
             *loc = Op.m_idx;

@@ -22,13 +22,6 @@
 #include <cache.hpp>
 #include <tuple>
 
-using cl::Buffer;
-using cl::Program;
-using cl::Kernel;
-using cl::EnqueueArgs;
-using cl::LocalSpaceArg;
-using cl::NDRange;
-
 namespace opencl
 {
 namespace kernel
@@ -56,21 +49,11 @@ void gaussian1D(T* out, const int dim, double sigma=0.0)
 }
 
 template<typename T, typename convAccT>
-void conv_helper(Param &ixx, Param &ixy, Param &iyy, Param &filter)
+void conv_helper(Array<T> &ixx, Array<T> &ixy, Array<T> &iyy, Array<convAccT> &filter)
 {
-    Param ixx_tmp, ixy_tmp, iyy_tmp;
-    ixx_tmp.info.offset = ixy_tmp.info.offset = iyy_tmp.info.offset = 0;
-    for (dim_t i = 0; i < 4; i++) {
-        ixx_tmp.info.dims[i] = ixx.info.dims[i];
-        ixy_tmp.info.dims[i] = ixy.info.dims[i];
-        iyy_tmp.info.dims[i] = iyy.info.dims[i];
-        ixx_tmp.info.strides[i] = ixx.info.strides[i];
-        ixy_tmp.info.strides[i] = ixy.info.strides[i];
-        iyy_tmp.info.strides[i] = iyy.info.strides[i];
-    }
-    ixx_tmp.data = bufferAlloc(ixx_tmp.info.dims[3] * ixx_tmp.info.strides[3] * sizeof(convAccT));
-    ixy_tmp.data = bufferAlloc(ixy_tmp.info.dims[3] * ixy_tmp.info.strides[3] * sizeof(convAccT));
-    iyy_tmp.data = bufferAlloc(iyy_tmp.info.dims[3] * iyy_tmp.info.strides[3] * sizeof(convAccT));
+    Array<convAccT> ixx_tmp = createEmptyArray<convAccT>(ixx.dims());
+    Array<convAccT> ixy_tmp = createEmptyArray<convAccT>(ixy.dims());
+    Array<convAccT> iyy_tmp = createEmptyArray<convAccT>(iyy.dims());
 
     convSep<T, convAccT, 0, false>(ixx_tmp, ixx, filter);
     convSep<T, convAccT, 1, false>(ixx, ixx_tmp, filter);
@@ -78,16 +61,14 @@ void conv_helper(Param &ixx, Param &ixy, Param &iyy, Param &filter)
     convSep<T, convAccT, 1, false>(ixy, ixy_tmp, filter);
     convSep<T, convAccT, 0, false>(iyy_tmp, iyy, filter);
     convSep<T, convAccT, 1, false>(iyy, iyy_tmp, filter);
-
-    bufferFree(ixx_tmp.data);
-    bufferFree(ixy_tmp.data);
-    bufferFree(iyy_tmp.data);
 }
 
 template<typename T>
 std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*, cl::Kernel*>
 getHarrisKernels()
 {
+    using cl::Program;
+    using cl::Kernel;
     static const char* kernelNames[4] =
         {"second_order_deriv", "keep_corners", "harris_responses", "non_maximal"};
 
@@ -134,7 +115,8 @@ getHarrisKernels()
 }
 
 template<typename T, typename convAccT>
-void harris(unsigned* corners_out,
+void
+harris(unsigned* corners_out,
             Param &x_out,
             Param &y_out,
             Param &resp_out,
@@ -146,6 +128,10 @@ void harris(unsigned* corners_out,
             const float k_thr)
 {
     auto kernels = getHarrisKernels<T>();
+    using cl::Buffer;
+    using cl::EnqueueArgs;
+    using cl::NDRange;
+
 
     // Window filter
     convAccT* h_filter = new convAccT[filter_len];
@@ -160,41 +146,16 @@ void harris(unsigned* corners_out,
     const unsigned border_len = filter_len / 2 + 1;
 
     // Copy filter to device object
-    Param filter;
-    filter.info.dims[0] = filter_len;
-    filter.info.strides[0] = 1;
-    filter.info.offset = 0;
-
-    for (int k = 1; k < 4; k++) {
-        filter.info.dims[k] = 1;
-        filter.info.strides[k] = filter.info.dims[k - 1] * filter.info.strides[k - 1];
-    }
-
-    int filter_elem = filter.info.strides[3] * filter.info.dims[3];
-    filter.data = bufferAlloc(filter_elem * sizeof(convAccT));
-    getQueue().enqueueWriteBuffer(*filter.data, CL_TRUE, 0, filter_elem * sizeof(convAccT), h_filter);
-
-    Param ix, iy;
-    ix.info.offset = iy.info.offset = 0;
-    for (dim_t i = 0; i < 4; i++) {
-        ix.info.dims[i] = iy.info.dims[i] = in.info.dims[i];
-        ix.info.strides[i] = iy.info.strides[i] = in.info.strides[i];
-    }
-    ix.data = bufferAlloc(ix.info.dims[3] * ix.info.strides[3] * sizeof(T));
-    iy.data = bufferAlloc(iy.info.dims[3] * iy.info.strides[3] * sizeof(T));
+    Array<convAccT> filter = createHostDataArray<convAccT>(filter_len, h_filter);
+    Array<T> ix = createEmptyArray<T>(dim4(4, in.info.dims));
+    Array<T> iy = createEmptyArray<T>(dim4(4, in.info.dims));
 
     // Compute first-order derivatives as gradients
     gradient<T>(iy, ix, in);
 
-    Param ixx, ixy, iyy;
-    ixx.info.offset = ixy.info.offset = iyy.info.offset = 0;
-    for (dim_t i = 0; i < 4; i++) {
-        ixx.info.dims[i] = ixy.info.dims[i] = iyy.info.dims[i] = in.info.dims[i];
-        ixx.info.strides[i] = ixy.info.strides[i] = iyy.info.strides[i] = in.info.strides[i];
-    }
-    ixx.data = bufferAlloc(ixx.info.dims[3] * ixx.info.strides[3] * sizeof(T));
-    ixy.data = bufferAlloc(ixy.info.dims[3] * ixy.info.strides[3] * sizeof(T));
-    iyy.data = bufferAlloc(iyy.info.dims[3] * iyy.info.strides[3] * sizeof(T));
+    Array<T> ixx = createEmptyArray<T>(dim4(4, in.info.dims));
+    Array<T> ixy = createEmptyArray<T>(dim4(4, in.info.dims));
+    Array<T> iyy = createEmptyArray<T>(dim4(4, in.info.dims));
 
     // Second order-derivatives kernel sizes
     const unsigned blk_x_so = divup(in.info.dims[3] * in.info.strides[3], HARRIS_THREADS_PER_GROUP);
@@ -206,16 +167,12 @@ void harris(unsigned* corners_out,
 
     // Compute second-order derivatives
     soOp(EnqueueArgs(getQueue(), global_so, local_so),
-         *ixx.data, *ixy.data, *iyy.data,
-         in.info.dims[3] * in.info.strides[3], *ix.data, *iy.data);
+         *ixx.get(), *ixy.get(), *iyy.get(),
+         in.info.dims[3] * in.info.strides[3], *ix.get(), *iy.get());
     CL_DEBUG_FINISH(getQueue());
-
-    bufferFree(ix.data);
-    bufferFree(iy.data);
 
     // Convolve second order derivatives with proper window filter
     conv_helper<T, convAccT>(ixx, ixy, iyy, filter);
-    bufferFree(filter.data);
 
     cl::Buffer *d_responses = bufferAlloc(in.info.dims[3] * in.info.strides[3] * sizeof(T));
 
@@ -231,12 +188,8 @@ void harris(unsigned* corners_out,
     // Calculate Harris responses for all pixels
     hrOp(EnqueueArgs(getQueue(), global_hr, local_hr),
          *d_responses, in.info.dims[0], in.info.dims[1],
-         *ixx.data, *ixy.data, *iyy.data, k_thr, border_len);
+         *ixx.get(), *ixy.get(), *iyy.get(), k_thr, border_len);
     CL_DEBUG_FINISH(getQueue());
-
-    bufferFree(ixx.data);
-    bufferFree(ixy.data);
-    bufferFree(iyy.data);
 
     // Number of corners is not known a priori, limit maximum number of corners
     // according to image dimensions
