@@ -178,7 +178,7 @@ cpack_add_component(cuda_dependencies
 
 cpack_add_component(cuda
   DISPLAY_NAME "CUDA Backend"
-  DESCRIPTION "Run ArrayFire code on CUDA-enabled GPUs. Verify you have the CUDA toolkit installed or install the CUDA dependencies component."
+  DESCRIPTION "The CUDA backend allows you to run ArrayFire code on CUDA-enabled GPUs. Verify that you have the CUDA toolkit installed or install the CUDA dependencies component."
   GROUP cuda_backend
   DEPENDS common_backend_dependencies cuda_dependencies
   INSTALL_TYPES Development Runtime)
@@ -197,21 +197,21 @@ endif ()
 
 cpack_add_component(cpu
   DISPLAY_NAME "CPU Backend"
-  DESCRIPTION "Run ArrayFire code on your CPU."
+  DESCRIPTION "The CPU backend allows you to run ArrayFire code on your CPU."
   GROUP cpu_backend
   DEPENDS ${cpu_deps_comps}
   INSTALL_TYPES Development Runtime)
 
 cpack_add_component(opencl
   DISPLAY_NAME "OpenCL Backend"
-  DESCRIPTION "Run ArrayFire code on OpenCL-capable GPUs. ArrayFire does not currently support OpenCL for Intel CPUs on OSX."
+  DESCRIPTION "The OpenCL backend allows you to run ArrayFire code on OpenCL-capable GPUs. Note: ArrayFire does not currently support OpenCL for Intel CPUs on OSX."
   GROUP opencl_backend
   DEPENDS ${ocl_deps_comps}
   INSTALL_TYPES Development Runtime)
 
 cpack_add_component(unified
   DISPLAY_NAME "Unified Backend"
-  DESCRIPTION "Select any of the installed backends at runtime (CUDA, OpenCL, or CPU)."
+  DESCRIPTION "The Unified backend allows you to choose between any of the installed backends (CUDA, OpenCL, or CPU) at runtime."
   GROUP backends
   INSTALL_TYPES Development Runtime)
 cpack_add_component(headers
