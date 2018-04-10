@@ -4,7 +4,7 @@
 "ArrayFire is a high performance software library for parallel computing with an easy-to-use API.\r\n\r\n\
 Its array based function set makes parallel programming simple.\r\n\r\n\
 ArrayFire's multiple backends (CUDA, OpenCL and native CPU) make it platform independent and highly portable.\r\n\r\n\
-A few lines of code in ArrayFire can replace dozens of lines of parallel compute code,\
+A few lines of code in ArrayFire can replace dozens of lines of parallel compute code, \
 saving you valuable time and lowering development costs.\r\n\r\n\
 Follow these steps to install the ArrayFire libraries."
 
@@ -28,8 +28,8 @@ Follow these steps to install the ArrayFire libraries."
 ; Defines for Finish Page
 !define MUI_FINISHPAGE_RUN "explorer.exe"
 !define MUI_FINISHPAGE_RUN_PARAMETERS "$INSTDIR"
-!define MUI_FINISHPAGE_RUN_TEXT "Open ArrayFire Install Directory to see Examples"
-!define MUI_FINISHPAGE_SHOWREADME "http://arrayfire.com/docs/using_on_windows.htm"
-!define MUI_FINISHPAGE_SHOWREADME_TEXT "Open ArrayFire Documentation on the Web"
+!define MUI_FINISHPAGE_RUN_TEXT "Open ArrayFire install folder."
+!define MUI_FINISHPAGE_SHOWREADME "https://arrayfire.com/docs/using_on_windows.htm"
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "Open ArrayFire documentation on the web."
 !define MUI_FINISHPAGE_LINK "ArrayFire Support and Services"
-!define MUI_FINISHPAGE_LINK_LOCATION "http://arrayfire.com/consulting/"
+!define MUI_FINISHPAGE_LINK_LOCATION "https://arrayfire.com/consulting/"

@@ -132,19 +132,19 @@ cpack_add_install_type(Runtime DISPLAY_NAME "Runtime")
 
 cpack_add_component_group(backends
   DISPLAY_NAME "ArrayFire"
-  DESCRIPTION "ArrayFire Backend Libraries"
+  DESCRIPTION "ArrayFire backend libraries"
   EXPANDED)
 cpack_add_component_group(cpu_backend
-  DISPLAY_NAME "CPU Backend"
-  DESCRIPTION "Libraries and dependencies of CPU Backend"
+  DISPLAY_NAME "CPU backend"
+  DESCRIPTION "Libraries and dependencies of the CPU backend."
   PARENT_GROUP backends)
 cpack_add_component_group(cuda_backend
-  DISPLAY_NAME "CUDA Backend"
-  DESCRIPTION "Libraries and dependencies of CUDA Backend"
+  DISPLAY_NAME "CUDA backend"
+  DESCRIPTION "Libraries and dependencies of the CUDA backend."
   PARENT_GROUP backends)
 cpack_add_component_group(opencl_backend
-  DISPLAY_NAME "OpenCL Backend"
-  DESCRIPTION "Libraries and dependencies of OpenCL Backend"
+  DISPLAY_NAME "OpenCL backend"
+  DESCRIPTION "Libraries and dependencies of the OpenCL backend."
   PARENT_GROUP backends)
 
 set(PACKAGE_MKL_DEPS OFF)
@@ -153,32 +153,32 @@ if ((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL)
   set(PACKAGE_MKL_DEPS ON)
   cpack_add_component(mkl_dependencies
     DISPLAY_NAME "Intel MKL"
-	DESCRIPTION "Intel Math Kernel Libraries for FFTW, BLAS and LAPACK routines"
+	DESCRIPTION "Intel Math Kernel Libraries for FFTW, BLAS, and LAPACK routines."
 	GROUP backends
     INSTALL_TYPES Development Runtime)
 endif ()
 
 cpack_add_component(common_backend_dependencies
   DISPLAY_NAME "Dependencies"
-  DESCRIPTION "Libraries that are commonly required by all ArrayFire backends"
+  DESCRIPTION "Libraries commonly required by all ArrayFire backends."
   GROUP backends
   INSTALL_TYPES Development Runtime)
 
 cpack_add_component(opencl_dependencies
   DISPLAY_NAME "OpenCL Dependencies"
-  DESCRIPTION "Libraries required by OpenCL Backend"
+  DESCRIPTION "Libraries required by the OpenCL backend."
   GROUP opencl_backend
   INSTALL_TYPES Development Runtime)
   
 cpack_add_component(cuda_dependencies
   DISPLAY_NAME "CUDA Dependencies"
-  DESCRIPTION "CUDA Runtime and libraries required for the CUDA backend."
+  DESCRIPTION "CUDA runtime and libraries required by the CUDA backend."
   GROUP cuda_backend
   INSTALL_TYPES Development Runtime)
 
 cpack_add_component(cuda
   DISPLAY_NAME "CUDA Backend"
-  DESCRIPTION "This Backend allows you to take advantage of the CUDA enabled GPUs to run ArrayFire code. Please make sure you have CUDA toolkit installed or install CUDA dependencies component."
+  DESCRIPTION "Run ArrayFire code on CUDA-enabled GPUs. Verify you have the CUDA toolkit installed or install the CUDA dependencies component."
   GROUP cuda_backend
   DEPENDS common_backend_dependencies cuda_dependencies
   INSTALL_TYPES Development Runtime)
@@ -197,26 +197,26 @@ endif ()
 
 cpack_add_component(cpu
   DISPLAY_NAME "CPU Backend"
-  DESCRIPTION "This Backend allows you to run ArrayFire code on native CPUs."
+  DESCRIPTION "Run ArrayFire code on your CPU."
   GROUP cpu_backend
   DEPENDS ${cpu_deps_comps}
   INSTALL_TYPES Development Runtime)
 
 cpack_add_component(opencl
   DISPLAY_NAME "OpenCL Backend"
-  DESCRIPTION "This Backend allows you to take advantage of OpenCL capable GPUs to run ArrayFire code. Currently ArrayFire does not support OpenCL for the Intel CPU on OSX."
+  DESCRIPTION "Run ArrayFire code on OpenCL-capable GPUs. ArrayFire does not currently support OpenCL for Intel CPUs on OSX."
   GROUP opencl_backend
   DEPENDS ${ocl_deps_comps}
   INSTALL_TYPES Development Runtime)
 
 cpack_add_component(unified
   DISPLAY_NAME "Unified Backend"
-  DESCRIPTION "This Backend allows you to choose the platform(cpu, cuda, opencl) at runtime. This option requires at least one of the three backends to be installed to work properly."
+  DESCRIPTION "Select any of the installed backends at runtime (CUDA, OpenCL, or CPU)."
   GROUP backends
   INSTALL_TYPES Development Runtime)
 cpack_add_component(headers
   DISPLAY_NAME "C/C++ Headers"
-  DESCRIPTION "Headers for the ArrayFire Libraries."
+  DESCRIPTION "Headers for the ArrayFire libraries."
   GROUP backends
   INSTALL_TYPES Development)
 cpack_add_component(cmake
@@ -233,7 +233,7 @@ cpack_add_component(examples
   INSTALL_TYPES Extra)
 cpack_add_component(licenses
   DISPLAY_NAME "Licenses"
-  DESCRIPTION "License files for upstream libraries and ArrayFire."
+  DESCRIPTION "License files for ArrayFire and its upstream libraries."
   REQUIRED)
 
 if (INSTALL_FORGE_DEV)
