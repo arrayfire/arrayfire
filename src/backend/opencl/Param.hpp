@@ -18,9 +18,17 @@ namespace opencl
     {
         cl::Buffer *data;
         KParam info;
-        Param() : data(nullptr), info{{0, 0, 0, 0}, {0, 0, 0, 0}, 0} {}
-        Param(cl::Buffer *data_, KParam info_) : data(data_), info(info_) {}
+        Param& operator=(const Param& other) = default;
+        Param(const Param& other) = default;
+        Param(Param&& other) = default;
+
+        // DEPRECATED("Use Array<T>")
+        Param();
+        // DEPRECATED("Use Array<T>")
+        Param(cl::Buffer *data_, KParam info_);
+        ~Param() = default;
     };
 
+    // DEPRECATED("Use Array<T>")
     Param makeParam(cl_mem mem, int off, int dims[4], int strides[4]);
 }

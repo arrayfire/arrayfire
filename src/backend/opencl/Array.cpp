@@ -312,11 +312,11 @@ namespace opencl
 
     template<typename T>
     Array<T>
-    createDeviceDataArray(const dim4 &size, const void *data)
+    createDeviceDataArray(const dim4 &size, const void *data, bool copy)
     {
         verifyDoubleSupport<T>();
 
-        return Array<T>(size, (cl_mem)(data), 0, false);
+        return Array<T>(size, (cl_mem)(data), 0, copy);
     }
 
     template<typename T>
@@ -405,7 +405,7 @@ namespace opencl
 
 #define INSTANTIATE(T)                                                  \
     template       Array<T>  createHostDataArray<T>   (const dim4 &size, const T * const data); \
-    template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data); \
+    template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data, bool copy); \
     template       Array<T>  createValueArray<T>      (const dim4 &size, const T &value); \
     template       Array<T>  createEmptyArray<T>      (const dim4 &size); \
     template       Array<T>  *initArray<T      >      ();               \
