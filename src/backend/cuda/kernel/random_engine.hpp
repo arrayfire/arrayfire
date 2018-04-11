@@ -400,11 +400,14 @@ namespace kernel
     }
 
     template <typename T>
-    __global__ void uniformPhilox(T *out, uint hi, uint lo, uint counter, uint elementsPerBlock, uint elements)
+    __global__ void uniformPhilox(T *out, uint hi, uint lo, uint hic, unit loc, uint elementsPerBlock, uint elements)
     {
         uint index = blockIdx.x*elementsPerBlock + threadIdx.x;
-        uint key[2] = {index+counter, hi};
-        uint ctr[4] = {index+counter, 0, 0, lo};
+        uint key[2] = {lo, hi};
+        uint ctr[4] = {loc, hic, 0, 0};
+        ctr[0] += index;
+        ctr[1] += (ctr[0] < loc);
+        ctr[2] += (ctr[1] < hic);
         if (blockIdx.x != (gridDim.x - 1)) {
             philox(key, ctr);
             writeOut128Bytes(out, index, ctr[0], ctr[1], ctr[2], ctr[3]);
@@ -415,11 +418,13 @@ namespace kernel
     }
 
     template <typename T>
-    __global__ void uniformThreefry(T *out, uint hi, uint lo, uint counter, uint elementsPerBlock, uint elements)
+    __global__ void uniformThreefry(T *out, uint hi, uint lo, uint hic, uint loc, uint elementsPerBlock, uint elements)
     {
         uint index = blockIdx.x*elementsPerBlock + threadIdx.x;
-        uint key[2] = {index+counter, hi};
-        uint ctr[2] = {index+counter, lo};
+        uint key[2] = {lo, hi};
+        uint ctr[2] = {loc, hic};
+        ctr[0] += index;
+        ctr[1] += (ctr[0] < loc);
         uint o[4];
         if (blockIdx.x != (gridDim.x - 1)) {
             threefry(key, ctr, o);
@@ -496,11 +501,14 @@ namespace kernel
     }
 
     template <typename T>
-    __global__ void normalPhilox(T *out, uint hi, uint lo, uint counter, uint elementsPerBlock, uint elements)
+    __global__ void normalPhilox(T *out, uint hi, uint lo, uint hic, unit loc, uint elementsPerBlock, uint elements)
     {
         uint index = blockIdx.x*elementsPerBlock + threadIdx.x;
-        uint key[2] = {index+counter, hi};
-        uint ctr[4] = {index+counter, 0, 0, lo};
+        uint key[2] = {lo, hi};
+        uint ctr[4] = {loc, hic, 0, 0};
+        ctr[0] += index;
+        ctr[1] += (ctr[0] < loc);
+        ctr[2] += (ctr[1] < hic);
         if (blockIdx.x != (gridDim.x - 1)) {
             philox(key, ctr);
             boxMullerWriteOut128Bytes(out, index, ctr[0], ctr[1], ctr[2], ctr[3]);
@@ -511,11 +519,13 @@ namespace kernel
     }
 
     template <typename T>
-    __global__ void normalThreefry(T *out, uint hi, uint lo, uint counter, uint elementsPerBlock, uint elements)
+    __global__ void normalThreefry(T *out, uint hi, uint lo, uint hic, unit loc, uint elementsPerBlock, uint elements)
     {
         uint index = blockIdx.x*elementsPerBlock + threadIdx.x;
-        uint key[2] = {index+counter, hi};
-        uint ctr[2] = {index+counter, lo};
+        uint key[2] = {lo, hi};
+        uint ctr[2] = {loc, hic};
+        ctr[0] += index;
+        ctr[1] += (ctr[0] < loc);
         uint o[4];
         if (blockIdx.x != (gridDim.x - 1)) {
             threefry(key, ctr, o);
@@ -636,11 +646,13 @@ namespace kernel
         int blocks = divup(elements, elementsPerBlock);
         uint hi = seed>>32;
         uint lo = seed;
+        uint hic = counter>>32;
+        uint loc = counter;
         switch (type) {
         case AF_RANDOM_ENGINE_PHILOX_4X32_10   :
-            CUDA_LAUNCH(uniformPhilox, blocks, threads, out, hi, lo, counter, elementsPerBlock, elements); break;
+            CUDA_LAUNCH(uniformPhilox, blocks, threads, out, hi, lo, hic, loc, elementsPerBlock, elements); break;
         case AF_RANDOM_ENGINE_THREEFRY_2X32_16 :
-            CUDA_LAUNCH(uniformThreefry, blocks, threads, out, hi, lo, counter, elementsPerBlock, elements); break;
+            CUDA_LAUNCH(uniformThreefry, blocks, threads, out, hi, lo, hic, loc, elementsPerBlock, elements); break;
         default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
         counter += elements;
@@ -654,11 +666,13 @@ namespace kernel
         int blocks = divup(elements, elementsPerBlock);
         uint hi = seed>>32;
         uint lo = seed;
+        uint hic = counter>>32;
+        uint loc = counter;
         switch (type) {
         case AF_RANDOM_ENGINE_PHILOX_4X32_10   :
-            CUDA_LAUNCH(normalPhilox, blocks, threads, out, hi, lo, counter, elementsPerBlock, elements); break;
+            CUDA_LAUNCH(normalPhilox, blocks, threads, out, hi, lo, hic, loc, elementsPerBlock, elements); break;
         case AF_RANDOM_ENGINE_THREEFRY_2X32_16 :
-            CUDA_LAUNCH(normalThreefry, blocks, threads, out, hi, lo, counter, elementsPerBlock, elements); break;
+            CUDA_LAUNCH(normalThreefry, blocks, threads, out, hi, lo, hic, loc, elementsPerBlock, elements); break;
         default : AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
         }
         counter += elements;
