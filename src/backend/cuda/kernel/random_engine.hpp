@@ -400,7 +400,7 @@ namespace kernel
     }
 
     template <typename T>
-    __global__ void uniformPhilox(T *out, uint hi, uint lo, uint hic, unit loc, uint elementsPerBlock, uint elements)
+    __global__ void uniformPhilox(T *out, uint hi, uint lo, uint hic, uint loc, uint elementsPerBlock, uint elements)
     {
         uint index = blockIdx.x*elementsPerBlock + threadIdx.x;
         uint key[2] = {lo, hi};
@@ -501,7 +501,7 @@ namespace kernel
     }
 
     template <typename T>
-    __global__ void normalPhilox(T *out, uint hi, uint lo, uint hic, unit loc, uint elementsPerBlock, uint elements)
+    __global__ void normalPhilox(T *out, uint hi, uint lo, uint hic, uint loc, uint elementsPerBlock, uint elements)
     {
         uint index = blockIdx.x*elementsPerBlock + threadIdx.x;
         uint key[2] = {lo, hi};
@@ -519,7 +519,7 @@ namespace kernel
     }
 
     template <typename T>
-    __global__ void normalThreefry(T *out, uint hi, uint lo, uint hic, unit loc, uint elementsPerBlock, uint elements)
+    __global__ void normalThreefry(T *out, uint hi, uint lo, uint hic, uint loc, uint elementsPerBlock, uint elements)
     {
         uint index = blockIdx.x*elementsPerBlock + threadIdx.x;
         uint key[2] = {lo, hi};
