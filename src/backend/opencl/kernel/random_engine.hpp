@@ -146,15 +146,17 @@ namespace opencl
 
             uint hi = seed>>32;
             uint lo = seed;
+	    uint hic = counter>>32;
+	    uint loc = counter;
 
             NDRange local(THREADS, 1);
             NDRange global(THREADS * groups, 1);
 
             if ((type == AF_RANDOM_ENGINE_PHILOX_4X32_10) || (type == AF_RANDOM_ENGINE_THREEFRY_2X32_16)) {
                 Kernel ker = get_random_engine_kernel<T>(type, kerIdx, elementsPerBlock);
-                auto randomEngineOp = KernelFunctor<cl::Buffer, uint, uint, uint, uint>(ker);
+                auto randomEngineOp = KernelFunctor<cl::Buffer, uint, uint, uint, uint, uint>(ker);
                 randomEngineOp(EnqueueArgs(getQueue(), global, local),
-                        out, elements, counter, hi, lo);
+			       out, elements, hic, loc, hi, lo);
             }
 
             counter += elements;
