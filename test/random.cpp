@@ -427,3 +427,37 @@ TYPED_TEST(RandomEngineSeed, mersenneSeedUniform)
 {
     testRandomEngineSeed<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
 }
+
+template <typename T>
+void testRandomEnginePeriod(randomEngineType type)
+{
+    if (noDoubleTests<T>()) return;
+    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+
+    uint elem = 1024*1024;
+    uint steps = 4*1024;
+    af::randomEngine r(type, 0);
+
+    af::array first = af::randu(elem, ty, r);
+
+    for (int i = 0; i < steps; ++i) {
+        af::array step = af::randu(elem, ty, r);
+        bool different = !af::allTrue<bool>(first == step);
+        ASSERT_TRUE(different);
+    }
+}
+
+TYPED_TEST(RandomEngine, DISABLED_philoxRandomEnginePeriod)
+{
+    testRandomEnginePeriod<TypeParam>(AF_RANDOM_ENGINE_PHILOX_4X32_10);
+}
+
+TYPED_TEST(RandomEngine, DISABLED_threefryRandomEnginePeriod)
+{
+    testRandomEnginePeriod<TypeParam>(AF_RANDOM_ENGINE_THREEFRY_2X32_16);
+}
+
+TYPED_TEST(RandomEngine, DISABLED_mersenneRandomEnginePeriod)
+{
+    testRandomEnginePeriod<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
+}
