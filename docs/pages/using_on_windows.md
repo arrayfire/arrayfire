@@ -1,11 +1,10 @@
 Using ArrayFire with Microsoft Windows and Visual Studio {#using_on_windows}
 =====
 
-If you have not already done so, please make sure you have installed,
-configured, and tested ArrayFire following the
-[installation instructions](\ref installing).
+If you have not already done so, please make sure you have installed, configured, and tested ArrayFire following the [installation instructions](\ref installing).
 
 ## The big picture
+
 The ArrayFire Windows installer creates the following:
 1. **AF_PATH** environment variable to point to the installation location. The
    default install location is `C:\Program Files\ArrayFire\v3`
@@ -16,21 +15,18 @@ The ArrayFire Windows installer creates the following:
 5. **AF_PATH/examples**        : Examples to get started.
 6. **AF_PATH/cmake**           : CMake config files for automatic configuration by external projects
 7. **AF_PATH/uninstall.exe**   : Uninstaller
-8. **AF_PATH/\***               : Other miscellenous files including licenses, logos, copyrights
+8. **AF_PATH/\***               : Other miscellaneous files including licenses, logos, copyrights
 
 The installer will prompt the user for following three options.
 * Do not add **%%AF_PATH%/lib** to PATH
 * Add **%%AF_PATH%/lib** to PATH environment variable of current user
 * Add **%%AF_PATH%/lib** to PATH environment variable for all users
 
-If you chose not to modify PATH during installation please make sure to
-do so manually so that all applications using ArrayFire libraries will be
-able to find the required dlls.
+If you chose not to modify PATH during installation please make sure to do so manually so that all applications using ArrayFire libraries will be able to find the required DLLs.
 
 ## <a name="section1" />Build and Run Helloworld
 
-This can be done in two ways either by using CMake build tool or using Visual
-Studio directly.
+This can be done in two ways either by using CMake build tool or using Visual Studio directly.
 
 ### <a name="section1part1"/> Using CMake
 1. Download and install [CMake](https://cmake.org/download/), preferrably the latest version.
@@ -118,8 +114,7 @@ You can alternately download the template project from
 [ArrayFire Template Projects](https://github.com/arrayfire/arrayfire-project-templates)
 
 ## <a name="section4" />Using ArrayFire with CMake
-ArrayFire ships with a series of CMake scripts to make finding and using our
-library easy.
+ArrayFire ships with a series of CMake scripts to make finding and using our library easy.
 
 First create a file called `CMakeLists.txt` in your project directory:
 
@@ -138,18 +133,13 @@ and populate it with the following code:
     # Unified backend lets you choose the backend at runtime
     target_link_libraries(my_executable ArrayFire::af)
 
-where `my_executable` is the name of the executable you wish to create.
-See the [CMake documentation](https://cmake.org/documentation/) for more
-information on how to use CMake. To link with a specific backend directly,
-replace the `ArrayFire::af` with the following for their respective backends.
+where `my_executable` is the name of the executable you wish to create. See the [CMake documentation](https://cmake.org/documentation/) for more information on how to use CMake. To link with a specific backend directly, replace the `ArrayFire::af` with the following for their respective backends.
 
 * `ArrayFire::afcpu` for CPU backend.
 * `ArrayFire::afcuda` for CUDA backend.
 * `ArrayFire::afopencl` for OpenCL backend.
 
-Next we need to instruct CMake to create build instructions and then compile.
-We suggest using CMake's out-of-source build functionality to keep your build
-and source files cleanly separated. To do this open the CMake GUI.
+Next we need to instruct CMake to create build instructions and then compile. We suggest using CMake's out-of-source build functionality to keep your build and source files cleanly separated. To do this open the CMake GUI.
 
 * Under source directory, add the path to your project
 * Under build directory, add the path to your project and append /build

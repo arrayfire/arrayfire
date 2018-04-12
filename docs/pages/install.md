@@ -1,117 +1,100 @@
-ArrayFire Binary Installation Instructions {#installing}
-=====
+# ArrayFire Installer {#installing}
 
-Installing ArrayFire couldn't be easier. We ship installers for Windows,
-OSX, and Linux. Although you could
-[build ArrayFire from source](https://github.com/arrayfire/arrayfire), we
-suggest using our pre-compiled binaries as they include the Intel Math
-Kernel Library to accelerate linear algebra functions.
+Installing ArrayFire couldn't be easier. Navigate to https://arrayfire.com/download and download the installer for your architecture and operating system. Although you could [build ArrayFire from source](https://github.com/arrayfire/arrayfire), we recommend using our installers as we have packaged together all of the necessary dependencies to give you the best performance.
 
-You can download official ArrayFire installers by navigating to
-http://arrayfire.com/download/ . Select the installer for your architecture and
-operating system.
+We provide installers for Windows, Linux, and macOS. There are two installers for each operating system: one with graphics support and the other without graphics support. Download the installer with graphics support if you would like to be able to do high performance visualizations using our [Forge](https://github.com/arrayfire/forge) library. Otherwise, download the installer without graphics support.
 
-Make sure you have the latest drivers installed on your system before using
-ArrayFire. If you are going to be targeting the CPU using OpenCL, you will need
-to have the OpenCL **runtime*** installed on your system. You can download the
-drivers and runtimes from the device vendors website.
+Make sure you have the latest device drivers installed on your system before using ArrayFire. If you are going to be targeting the CPU using ArrayFire’s OpenCL backend, you will need to have the OpenCL **runtime** installed on your system. Drivers and runtimes should be downloaded and installed from your device vendor’s website.
 
 # Install Instructions
 
 * [Windows](#Windows)
-* Linux
-    * [Debian derivatives (Ubuntu etc.)](#Debian)
-    * [RedHat, Fedora, and CentOS](#RPM-distros)
-* [Mac OSX (.sh and brew)](#OSX)
+* [Linux](#Linux)
+* [macOS](#macOS)
 
 ## <a name="Windows"></a> Windows
 
-Additionally you will need to install the 64-bit(x64) visual studio 2015 runtime
- libraries from
- [here](https://www.microsoft.com/en-in/download/details.aspx?id=48145).
+Prior to installing ArrayFire on Windows, [download](https://www.microsoft.com/en-in/download/details.aspx?id=48145) install the Visual Studio 2015 (x64) runtime libraries.
 
-If you chose not to modify PATH during the installation procedure, you'll need
-to manually add ArrayFire to the path for all users. Simply append
-`%AF_PATH%/lib `to the PATH variable so that the loader can find ArrayFire DLLs.
+Once you have downloaded the ArrayFire installer, execute the installer as you normally would on Windows. If you choose not to modify the path during the installation procedure, you'll need to manually add ArrayFire to the path for all users. Simply append `%AF_PATH%/lib` to the PATH variable so that the loader can find ArrayFire DLLs.
 
-## Linux
+For more information on using ArrayFire on Windows, visit the following [page](http://arrayfire.org/docs/using_on_windows.htm).
 
-Run the ArrayFire installer for your system. The prefix command determines the
-location of the installed files. You can install ArrayFire in any directory but
-it is recommended you install in /opt.
+## <a name="Linux"></a> Linux
+
+Once you have downloaded the ArrayFire installer, execute the installer from the terminal as shown below. Set the `--prefix` argument to the directory you would like to install ArrayFire to - we recommend `/opt`.
 
     ./Arrayfire_*_Linux_x86_64.sh --include-subdir --prefix=/opt
+
+Given sudo permissions, you can add the ArrayFire libraries via `ldconfig` like so:
+
     echo /opt/arrayfire/lib > /etc/ld.so.conf.d/arrayfire.conf
-    ldconfig
+    sudo ldconfig
 
-In addition to the drivers and runtime files, you will also need to install
-FreeImage and some additional dependencies if you are installing the graphics
-version.
+Otherwise, you will need to set the `LD_LIBRARY_PATH` environment variable in order to let your shared library loader find the ArrayFire libraries.
 
-### <a name="Debian"></a> Debian 8 & Debian derivatives such as Ubuntu(14.04 or later)
+For more information on using ArrayFire on Linux, visit the following [page](http://arrayfire.org/docs/using_on_linux.htm).
 
-    apt update
-    apt install build-essential libfreeimage3
+### Graphics support
 
-    # Additional dependencies for graphics installers
-    apt install libfontconfig1 libglu1-mesa
+ArrayFire allows you to do high performance visualizations via our [Forge](https://github.com/arrayfire/forge) library. On Linux, there are a few dependencies you will need to install to enable graphics support:
 
-### <a name="RPM-distros"></a> RedHat, Fedora, and CentOS
+FreeImage
+Fontconfig
+GLU (OpenGL Utility Library)
 
-    # Install prerequiste packages
-    yum install freeimage
+We show how to install these dependencies on common Linux distributions:
 
-    # Additional dependencies for graphics installers
-    yum install fontconfig mesa-libGLU
+__Debian, Ubuntu (14.04 and above), and other Debian derivatives__
 
-### Special instructions for Tegra X1
+    apt install build-essential libfreeimage3 libfontconfig1 libglu1-mesa
 
-**The ArrayFire binary installer for Tegra X1 requires at least JetPack 2.3 or
-L4T 24.2 for Jetson TX1. This includes Ubuntu 16.04, CUDA 8.0 etc.**
+__Fedora, Redhat, CentOS__
 
-You will also want to install the following packages when using ArrayFire on
-the Tegra X1:
+    yum install freeimage fontconfig mesa-libGLU
 
-    sudo apt-get install libopenblas-dev liblapacke-dev
 
-### Special instructions for Tegra K1
+## <a name="macOS"></a> macOS
 
-You will also want to install the following packages when using ArrayFire on
-the Tegra K1:
 
-    sudo apt-get install libatlas3gf-base libatlas-dev libfftw3-dev liblapacke-dev
-
-Finally, [download](http://arrayfire.com/download/) ArrayFire for your
-system. After you have the file, run the installer using:
-
-    ./Arrayfire_*_Linux_x86_64.sh --include-subdir --prefix=/opt
-
-## <a name="OSX"></a> Mac OSX
-
-Simply [download](http://arrayfire.com/download/) ArrayFire for your
-system. After you have the file, run the installer from command line using:
+Once you have downloaded the ArrayFire installer, execute the installer by either double clicking on the ArrayFire `pkg` file or running the following command from your terminal:
 
     sudo installer -pkg Arrayfire-*_OSX.pkg -target /
 
+For more information on using ArrayFire on macOS, visit the following [page](http://arrayfire.org/docs/using_on_osx.htm).
+
+## NVIDIA Tegra devices
+
+ArrayFire is capable of running on TX1 and TX2 devices. The TK1 is no longer supported.
+
+Prior to installing ArrayFire, make sure you have the latest version of JetPack (v2.3 and above) or L4T (v24.2 and above) on your device.
+
+### Tegra prerequisites
+
+The following dependencies are required for Tegra devices:
+
+    sudo apt install libopenblas-dev liblapacke-dev
+
 ## Testing installation
 
-Test ArrayFire on Unix style platforms after the installation process by
-building the example programs as follows:
+
+After ArrayFire is finished installing, we recommend building and running a few of the provided examples to verify things are working as expected.
+
+On Unix-like systems:
 
     cp -r /opt/arrayfire/share/ArrayFire/examples /tmp/examples
     cd /tmp/examples
     mkdir build
     cd build
-    cmake -DASSETS_DIR:PATH=/tmp .. 
+    cmake -DASSETS_DIR:PATH=/tmp ..
     make
+    ./helloworld/helloworld_{cpu,cuda,opencl}
 
-On Windows, open the CMakeLists.txt file from CMake-GUI and set ASSETS\_DIR
-varible to the parent folder of examples folder. Once the project is configured
-and generated, you can build and run the examples from Visual Studio.
+On Windows, open the CMakeLists.txt file from CMake-GUI and set `ASSETS_DIR` variable to the parent folder of examples folder. Once the project is configured and generated, you can build and run the examples from Visual Studio.
 
 ## <a name="GettingHelp"></a> Getting help
 
 * Google Groups: https://groups.google.com/forum/#!forum/arrayfire-users
-* ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/)
+* ArrayFire Services:  [Consulting](https://arrayfire.com/consulting/)  |  [Support](https://arrayfire.com/support/)   |  [Training](https://arrayfire.com/training/)
 * ArrayFire Blogs: http://arrayfire.com/blog/
 * Email: <mailto:technical@arrayfire.com>
