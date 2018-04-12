@@ -461,3 +461,62 @@ TYPED_TEST(RandomEngine, DISABLED_mersenneRandomEnginePeriod)
 {
     testRandomEnginePeriod<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
 }
+
+template <typename T>
+T chi2_statistic(array input, array expected) {
+    expected *= af::sum<T>(input) / af::sum<T>(expected);
+    array diff = input - expected;
+    return af::sum<T>((diff * diff) / expected);
+}
+
+template <typename T>
+void testRandomEngineUniformChi2(randomEngineType type)
+{
+    if (noDoubleTests<T>()) return;
+    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+
+    int elem = 256*1024*1024;
+    int steps = 32;
+    int bins = 100;
+
+    array total_hist = af::constant(0.0, bins, ty);
+    array expected = af::constant(1.0/bins, bins, ty);
+
+    af::randomEngine r(type, 0);
+
+    // R> qchisq(c(5e-6, 1 - 5e-6), 99)
+    // [1]  48.68125 173.87456
+    T lower = 48.68125;
+    T upper = 173.87456;
+
+    bool prev_step = true;
+    bool prev_total = true;
+    for (int i = 0; i < steps; ++i) {
+        array step_hist = af::histogram(af::randu(elem, ty, r), bins, 0.0, 1.0);
+        T step_chi2 = chi2_statistic<T>(step_hist, expected);
+        bool step = step_chi2 > lower && step_chi2 < upper;
+        ASSERT_TRUE(step || prev_step);
+        prev_step = step;
+
+        total_hist += step_hist;
+        T total_chi2 = chi2_statistic<T>(total_hist, expected);
+        bool total = total_chi2 > lower && total_chi2 < upper;
+        ASSERT_TRUE(total || prev_total);
+        prev_total = total;
+    }
+}
+
+TYPED_TEST(RandomEngine, DISABLED_philoxRandomEngineUniformChi2)
+{
+    testRandomEngineUniformChi2<TypeParam>(AF_RANDOM_ENGINE_PHILOX_4X32_10);
+}
+
+TYPED_TEST(RandomEngine, DISABLED_threefryRandomEngineUniformChi2)
+{
+    testRandomEngineUniformChi2<TypeParam>(AF_RANDOM_ENGINE_THREEFRY_2X32_16);
+}
+
+TYPED_TEST(RandomEngine, DISABLED_mersenneRandomEngineUniformChi2)
+{
+    testRandomEngineUniformChi2<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
+}
