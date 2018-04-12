@@ -91,17 +91,10 @@ IF(UNIX)
     # GCC 5.3 and above give errors for mempcy from <string.h>
     # This is a (temporary) fix for that
     # This was fixed in CUDA 8.0
-    IF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.3.0")
-        IF(${CUDA_VERSION_MAJOR} LESS 8)
-            ADD_DEFINITIONS(-D_FORCE_INLINES)
-        ENDIF(${CUDA_VERSION_MAJOR} LESS 8)
-
-        # GCC 6.0 and above default to g++14, enabling c++11 features by default
-        # Enabling c++11 with nvcc 7.5 + gcc 6.x doesn't seem to work
-        # Only solution for now is to force use c++03 for gcc 6.x
-        IF(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "6.0.0")
-          message( FATAL_ERROR "NVCC does not support GCC version 6.0 or greater." )
-        ENDIF()
+    IF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND
+       CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.3.0" AND
+       ${CUDA_VERSION_MAJOR} LESS 8)
+        ADD_DEFINITIONS(-D_FORCE_INLINES)
     ENDIF()
 
     # Forcing STRICT ANSI should resolve a bunch of issues that NVIDIA seems to face with GCC compilers.
