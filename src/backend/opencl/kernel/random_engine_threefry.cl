@@ -117,18 +117,23 @@ inline void threefry(uint k[2], uint c[2], uint X[2])
 }
 
 __kernel void generate(__global T *output, unsigned elements,
-        unsigned counter, unsigned hi, unsigned lo)
+        unsigned hic, unsigned loc, unsigned hi, unsigned lo)
 {
     unsigned gid = get_group_id(0);
     unsigned off = get_local_size(0);
     unsigned index =  gid * ELEMENTS_PER_BLOCK + get_local_id(0);
 
-    uint key[2] = {index+counter, hi};
-    uint ctr[2] = {index+counter, lo};
+    uint key[2] = {lo, hi};
+    uint ctr[2] = {loc, hic};
     uint o[4];
 
+    ctr[0] += index;
+    ctr[1] += (ctr[0] < index);
+
     threefry(key, ctr, o);
-    ctr[0] += elements;
+    uint step = ELEMENTS_PER_BLOCK / 2;
+    ctr[0] += step;
+    ctr[1] += (ctr[0] < step);
     threefry(key, ctr, o+2);
 
     if (gid != get_num_groups(0) - 1) {

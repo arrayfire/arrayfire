@@ -93,14 +93,18 @@ void philox(uint key[2], uint ctr[4])
 }
 
 __kernel void generate(__global T *output, unsigned elements,
-        unsigned counter, unsigned hi, unsigned lo)
+        unsigned hic, unsigned loc, unsigned hi, unsigned lo)
 {
     unsigned gid = get_group_id(0);
     unsigned off = get_local_size(0);
     unsigned index =  gid * ELEMENTS_PER_BLOCK + get_local_id(0);
 
-    uint key[2] = {index+counter, hi};
-    uint ctr[4] = {index+counter, 0, 0, lo};
+    uint key[2] = {lo, hi};
+    uint ctr[4] = {loc, hic, 0, 0};
+    ctr[0] += index;
+    ctr[1] += (ctr[0] < loc);
+    ctr[2] += (ctr[1] < hic);
+
     philox(key, ctr);
 
     if (gid != get_num_groups(0) - 1) {

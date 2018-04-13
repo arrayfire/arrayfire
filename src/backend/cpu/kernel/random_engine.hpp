@@ -101,8 +101,10 @@ namespace kernel
     {
         uint hi = seed>>32;
         uint lo = seed;
-        uint key[2] = {(uint)counter, hi};
-        uint ctr[4] = {(uint)counter, 0, 0, lo};
+        uint hic = counter>>32;
+        uint loc = counter;
+        uint key[2] = {lo, hi};
+        uint ctr[4] = {loc, hic, 0, 0};
 
         int reset = (4*sizeof(uint))/sizeof(T);
         for (int i = 0; i < (int)elements; i += reset) {
@@ -119,14 +121,17 @@ namespace kernel
     {
         uint hi = seed>>32;
         uint lo = seed;
-        uint key[2] = {(uint)counter, hi};
-        uint ctr[2] = {(uint)counter, lo};
+        uint hic = counter>>32;
+        uint loc = counter;
+        uint key[2] = {lo, hi};
+        uint ctr[2] = {loc, hic};
         uint val[2];
 
         int reset = (2*sizeof(uint))/sizeof(T);
         for (int i = 0; i < (int)elements; i += reset) {
             threefry(key, ctr, val);
-            ++ctr[0]; ++key[0];
+            ++ctr[0];
+            ctr[1] += (ctr[0] == 0);
             int lim = (reset < (int)(elements - i))? reset : (int)(elements - i);
             for (int j = 0; j < lim; ++j) {
                 out[i + j] = transform<T>(val, j);
@@ -162,8 +167,10 @@ namespace kernel
     {
         uint hi = seed>>32;
         uint lo = seed;
-        uint key[2] = {(uint)counter, hi};
-        uint ctr[4] = {(uint)counter, 0, 0, lo};
+        uint hic = counter>>32;
+        uint loc = counter;
+        uint key[2] = {lo, hi};
+        uint ctr[4] = {loc, hic, 0, 0};
         T temp[(4*sizeof(uint))/sizeof(T)];
 
         int reset = (4*sizeof(uint))/sizeof(T);
@@ -182,17 +189,21 @@ namespace kernel
     {
         uint hi = seed>>32;
         uint lo = seed;
-        uint key[2] = {(uint)counter, hi};
-        uint ctr[2] = {(uint)counter, lo};
+        uint hic = counter>>32;
+        uint loc = counter;
+        uint key[2] = {lo, hi};
+        uint ctr[2] = {loc, hic};
         uint val[4];
         T temp[(4*sizeof(uint))/sizeof(T)];
 
         int reset = (4*sizeof(uint))/sizeof(T);
         for (int i = 0; i < (int)elements; i += reset) {
             threefry(key, ctr, val);
-            ++ctr[0]; ++key[0];
+            ++ctr[0];
+            ctr[1] += (ctr[0] == 0);
             threefry(key, ctr, val+2);
-            ++ctr[0]; ++key[0];
+            ++ctr[0];
+            ctr[1] += (ctr[0] == 0);
             boxMullerTransform(val, temp);
             int lim = (reset < (int)(elements - i))? reset : (int)(elements - i);
             for (int j = 0; j < lim; ++j) {
