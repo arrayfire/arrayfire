@@ -494,15 +494,19 @@ void testRandomEngineUniformChi2(randomEngineType type)
     for (int i = 0; i < steps; ++i) {
         array step_hist = af::histogram(af::randu(elem, ty, r), bins, 0.0, 1.0);
         T step_chi2 = chi2_statistic<T>(step_hist, expected);
-        bool step = step_chi2 > lower && step_chi2 < upper;
-        ASSERT_TRUE(step || prev_step);
-        prev_step = step;
+        if (!prev_step) {
+          EXPECT_GT(step_chi2, lower) << "at step: " << i;
+          EXPECT_LT(step_chi2, upper) << "at step: " << i;
+        }
+        prev_step = step_chi2 > lower && step_chi2 < upper;
 
         total_hist += step_hist;
         T total_chi2 = chi2_statistic<T>(total_hist, expected);
-        bool total = total_chi2 > lower && total_chi2 < upper;
-        ASSERT_TRUE(total || prev_total);
-        prev_total = total;
+        if (!prev_total) {
+          EXPECT_GT(total_chi2, lower) << "at step: " << i;
+          EXPECT_LT(total_chi2, upper) << "at step: " << i;
+        }
+        prev_total = total_chi2 > lower && total_chi2 < upper;
     }
 }
 
