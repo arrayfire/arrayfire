@@ -9,12 +9,14 @@
 
 #pragma once
 
-#include <common/err_common.hpp>
 #include <common/dispatch.hpp>
+#include <common/err_common.hpp>
 #include <common/util.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <iomanip>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -22,8 +24,8 @@
 
 namespace common
 {
-typedef std::recursive_mutex mutex_t;
-typedef std::lock_guard<mutex_t> lock_guard_t;
+using mutex_t      = std::recursive_mutex;
+using lock_guard_t = std::lock_guard<mutex_t>;
 
 const unsigned MAX_BUFFERS   = 1000;
 const size_t ONE_GB = 1 << 30;
@@ -38,11 +40,13 @@ class MemoryManager
         size_t bytes;
     } locked_info;
 
-    using locked_t = typename std::unordered_map<void *, locked_info>;
+    using locked_t    = typename std::unordered_map<void *, locked_info>;
     using locked_iter = typename locked_t::iterator;
 
-    typedef std::unordered_map<size_t, std::vector<void *> >free_t;
-    typedef free_t::iterator free_iter;
+    using free_t    = std::unordered_map<size_t, std::vector<void *> >;
+    using free_iter = free_t::iterator;
+
+    using uptr_t = std::unique_ptr<void, std::function<void(void*)>>;
 
     typedef struct memory_info
     {
@@ -91,23 +95,33 @@ class MemoryManager
     {
         if (this->debug_mode) return;
 
-        lock_guard_t lock(this->memory_mutex);
+        // This vector is used to store the pointers which will be deleted by
+        // the memory manager. We are using this to avoid calling free while
+        // the lock is being held becasue the CPU backend calls sync.
+        std::vector<void*> free_ptrs;
         memory_info& current = memory[device];
+        {
+            lock_guard_t lock(this->memory_mutex);
+            // Return if all buffers are locked
+            if (current.total_buffers == current.lock_buffers) return;
+            free_ptrs.reserve(32);
 
-        // Return if all buffers are locked
-        if (current.total_buffers == current.lock_buffers) return;
-
-        for (auto &kv : current.free_map) {
-            size_t num_ptrs = kv.second.size();
-            //Free memory by popping the last element
-            for (int n = num_ptrs-1; n >= 0; n--) {
-                this->nativeFree(kv.second[n]);
-                current.total_bytes -= kv.first;
-                current.total_buffers--;
-                kv.second.pop_back();
+            for (auto &kv : current.free_map) {
+                size_t num_ptrs = kv.second.size();
+                // Free memory by pushing the last element into the free_ptrs
+                // vector which will be freed once outside of the lock
+                for(auto p : kv.second) {
+                    free_ptrs.push_back(p);
+                }
+                current.total_bytes -= num_ptrs * kv.first;
+                current.total_buffers -= num_ptrs;
             }
+            current.free_map.clear();
         }
-        current.free_map.clear();
+        // Free memory outside of the lock
+        for(auto ptr : free_ptrs) {
+            this->nativeFree(ptr);
+        }
     }
 
     public:
@@ -171,13 +185,14 @@ class MemoryManager
 
     void *alloc(const size_t bytes, bool user_lock)
     {
-        lock_guard_t lock(this->memory_mutex);
-
-        void *ptr = NULL;
-        size_t alloc_bytes = this->debug_mode ? bytes : (divup(bytes, mem_step_size) * mem_step_size);
+        void *ptr = nullptr;
+        size_t alloc_bytes =
+          this->debug_mode ? bytes :
+                             (divup(bytes, mem_step_size) * mem_step_size);
 
         if (bytes > 0) {
             memory_info& current = this->getCurrentMemoryInfo();
+            locked_info info = {!user_lock, user_lock, alloc_bytes};
 
             // There is no memory cache in debug mode
             if (!this->debug_mode) {
@@ -188,36 +203,38 @@ class MemoryManager
                     this->garbageCollect();
                 }
 
+                lock_guard_t lock(this->memory_mutex);
                 free_iter iter = current.free_map.find(alloc_bytes);
 
                 if (iter != current.free_map.end() && !iter->second.empty()) {
                     ptr = iter->second.back();
                     iter->second.pop_back();
+                    current.locked_map[ptr] = info;
+                    current.lock_bytes += alloc_bytes;
+                    current.lock_buffers++;
                 }
-
             }
 
             // Only comes here if buffer size not found or in debug mode
-            if (ptr == NULL) {
+            if (ptr == nullptr) {
                 // Perform garbage collection if memory can not be allocated
                 try {
                     ptr = this->nativeAlloc(alloc_bytes);
-                } catch (AfError &ex) {
+                } catch (const AfError &ex) {
                     // If out of memory, run garbage collect and try again
                     if (ex.getError() != AF_ERR_NO_MEM) throw;
                     this->garbageCollect();
                     ptr = this->nativeAlloc(alloc_bytes);
                 }
+
+                lock_guard_t lock(this->memory_mutex);
                 // Increment these two only when it succeeds to come here.
                 current.total_bytes += alloc_bytes;
                 current.total_buffers += 1;
+                current.locked_map[ptr] = info;
+                current.lock_bytes += alloc_bytes;
+                current.lock_buffers++;
             }
-
-
-            locked_info info = {!user_lock, user_lock, alloc_bytes};
-            current.locked_map[ptr] = info;
-            current.lock_bytes += alloc_bytes;
-            current.lock_buffers++;
         }
         return ptr;
     }
@@ -236,53 +253,46 @@ class MemoryManager
         // Shortcut for empty arrays
         if (!ptr) return;
 
-        lock_guard_t lock(this->memory_mutex);
-        memory_info& current = this->getCurrentMemoryInfo();
+        // Frees the pointer outside the lock.
+        uptr_t freed_ptr(nullptr, [this](void* p) { this->nativeFree(p); });
+        {
+            lock_guard_t lock(this->memory_mutex);
+            memory_info& current = this->getCurrentMemoryInfo();
 
-        locked_iter iter = current.locked_map.find((void *)ptr);
+            locked_iter iter = current.locked_map.find((void *)ptr);
 
-        // Pointer not found in locked map
-        if (iter == current.locked_map.end()) {
-            // Probably came from user, just free it
-            this->nativeFree(ptr);
-            return;
-        }
-
-        if (user_unlock) {
-            (iter->second).user_lock = false;
-        } else {
-            (iter->second).manager_lock = false;
-        }
-
-        // Return early if either one is locked
-        if ((iter->second).user_lock || (iter->second).manager_lock) return;
-
-        size_t bytes = iter->second.bytes;
-        current.lock_bytes -= iter->second.bytes;
-        current.lock_buffers--;
-
-        if (this->debug_mode) {
-            // Just free memory in debug mode
-            if ((iter->second).bytes > 0) {
-                this->nativeFree(iter->first);
-                current.total_buffers--;
-                current.total_bytes -= iter->second.bytes;
+            // Pointer not found in locked map
+            if (iter == current.locked_map.end()) {
+                // Probably came from user, just free it
+                freed_ptr.reset(ptr);
+                return;
             }
-        } else {
-            // In regular mode, move buffer to free map
-            free_iter fiter = current.free_map.find(bytes);
-            if (fiter != current.free_map.end()) {
-                // If found, push back
-                fiter->second.push_back(ptr);
+
+            if (user_unlock) {
+                (iter->second).user_lock = false;
             } else {
-                // If not found, create new vector for this size
-                std::vector<void *> ptrs;
-                ptrs.push_back(ptr);
-                current.free_map[bytes] = ptrs;
+                (iter->second).manager_lock = false;
             }
-        }
 
-        current.locked_map.erase(iter);
+            // Return early if either one is locked
+            if ((iter->second).user_lock || (iter->second).manager_lock) return;
+
+            size_t bytes = iter->second.bytes;
+            current.lock_bytes -= iter->second.bytes;
+            current.lock_buffers--;
+
+            if (this->debug_mode) {
+                // Just free memory in debug mode
+                if ((iter->second).bytes > 0) {
+                    freed_ptr.reset(iter->first);
+                    current.total_buffers--;
+                    current.total_bytes -= iter->second.bytes;
+                }
+            } else {
+                current.free_map[bytes].push_back(ptr);
+            }
+            current.locked_map.erase(iter);
+        }
     }
 
     void garbageCollect()
@@ -290,10 +300,8 @@ class MemoryManager
         cleanDeviceMemoryManager(this->getActiveDeviceId());
     }
 
-
     void printInfo(const char *msg, const int device)
     {
-        lock_guard_t lock(this->memory_mutex);
         const memory_info& current = this->getCurrentMemoryInfo();
 
         printf("%s\n", msg);
@@ -301,6 +309,7 @@ class MemoryManager
                "|     POINTER      |    SIZE    |  AF LOCK  | USER LOCK |\n"
                "---------------------------------------------------------\n");
 
+        lock_guard_t lock(this->memory_mutex);
         for(auto& kv : current.locked_map) {
             const char* status_mngr = "Yes";
             const char* status_user = "Unknown";
@@ -342,8 +351,8 @@ class MemoryManager
     void bufferInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                     size_t *lock_bytes,  size_t *lock_buffers)
     {
-        lock_guard_t lock(this->memory_mutex);
         const memory_info& current = this->getCurrentMemoryInfo();
+        lock_guard_t lock(this->memory_mutex);
         if (alloc_bytes   ) *alloc_bytes   = current.total_bytes;
         if (alloc_buffers ) *alloc_buffers = current.total_buffers;
         if (lock_bytes    ) *lock_bytes    = current.lock_bytes;
@@ -357,7 +366,6 @@ class MemoryManager
         lock_guard_t lock(this->memory_mutex);
 
         locked_iter iter = current.locked_map.find(const_cast<void *>(ptr));
-
         if (iter != current.locked_map.end()) {
             iter->second.user_lock = true;
         } else {
