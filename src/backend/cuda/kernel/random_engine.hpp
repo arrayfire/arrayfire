@@ -426,15 +426,16 @@ namespace kernel
         ctr[0] += index;
         ctr[1] += (ctr[0] < loc);
         uint o[4];
+
+	threefry(key, ctr, o);
+	uint step = elementsPerBlock / 2;
+	ctr[0] += step;
+	ctr[1] += (ctr[0] < step);
+	threefry(key, ctr, o + 2);
+
         if (blockIdx.x != (gridDim.x - 1)) {
-            threefry(key, ctr, o);
-            ctr[0] += elements;
-            threefry(key, ctr, o + 2);
             writeOut128Bytes(out, index, o[0], o[1], o[2], o[3]);
         } else {
-            threefry(key, ctr, o);
-            ctr[0] += elements;
-            threefry(key, ctr, o + 2);
             partialWriteOut128Bytes(out, index, o[0], o[1], o[2], o[3], elements);
         }
     }
@@ -527,15 +528,16 @@ namespace kernel
         ctr[0] += index;
         ctr[1] += (ctr[0] < loc);
         uint o[4];
-        if (blockIdx.x != (gridDim.x - 1)) {
-            threefry(key, ctr, o);
-            ctr[0] += elements;
-            threefry(key, ctr, o + 2);
+
+	threefry(key, ctr, o);
+	uint step = elementsPerBlock / 2;
+	ctr[0] += step;
+	ctr[1] += (ctr[0] < step);
+	threefry(key, ctr, o + 2);
+
+	if (blockIdx.x != (gridDim.x - 1)) {
             boxMullerWriteOut128Bytes(out, index, o[0], o[1], o[2], o[3]);
         } else {
-            threefry(key, ctr, o);
-            ctr[0] += elements;
-            threefry(key, ctr, o + 2);
             partialBoxMullerWriteOut128Bytes(out, index, o[0], o[1], o[2], o[3], elements);
         }
     }
