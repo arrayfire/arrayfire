@@ -156,7 +156,6 @@ MemoryManager::MemoryManager()
 
 MemoryManager::~MemoryManager()
 {
-    common::lock_guard_t lock(this->memory_mutex);
     for (int n = 0; n < cuda::getDeviceCount(); n++) {
         try {
             cuda::setDevice(n);

@@ -228,14 +228,18 @@ std::string getDeviceInfo()
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
-    common::lock_guard_t lock(devMngr.deviceMutex);
+    vector<cl::Device*> devices;
+    {
+      common::lock_guard_t lock(devMngr.deviceMutex);
+      devices = devMngr.mDevices;
+    }
 
     ostringstream info;
     info << "ArrayFire v" << AF_VERSION
-         << " (OpenCL, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
+         << " (OpenCL, " << get_system() << ", build " << AF_REVISION << ")\n";
 
     unsigned nDevices = 0;
-    for(auto &device: devMngr.mDevices) {
+    for(auto device: devices) {
         const Platform platform(device->getInfo<CL_DEVICE_PLATFORM>());
 
         string dstr = device->getInfo<CL_DEVICE_NAME>();
@@ -256,7 +260,7 @@ std::string getDeviceInfo()
         info << devVersion;
         info << " -- Device driver " << driVersion;
         info << " -- FP64 Support: "
-             << (device->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False");
+             << (device->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>() > 0 ? "True" : "False");
         info << " -- Unified Memory ("
              << (isHostUnifiedMemory(*device) ? "True" : "False")
              << ")";
@@ -376,7 +380,6 @@ const cl::Device& getDevice(int id)
     DeviceManager& devMngr = DeviceManager::getInstance();
 
     common::lock_guard_t lock(devMngr.deviceMutex);
-
     return *(devMngr.mDevices[id]);
 }
 
@@ -384,9 +387,12 @@ size_t getDeviceMemorySize(int device)
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
-    common::lock_guard_t lock(devMngr.deviceMutex);
-
-    const cl::Device& dev = getDevice(device);
+    cl::Device dev;
+    {
+      common::lock_guard_t lock(devMngr.deviceMutex);
+      // Assuming devices don't deallocate or are invalidated during execution
+      dev = *devMngr.mDevices[device];
+    }
     size_t msize = dev.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
     return msize;
 }
@@ -446,9 +452,13 @@ bool isDoubleSupported(int device)
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
-    common::lock_guard_t lock(devMngr.deviceMutex);
+    cl::Device dev;
+    {
+      common::lock_guard_t lock(devMngr.deviceMutex);
+      dev = *devMngr.mDevices[device];
+    }
 
-    return (devMngr.mDevices[device]->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0);
+    return (dev.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>() > 0);
 }
 
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
@@ -459,9 +469,13 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
 
     DeviceManager& devMngr = DeviceManager::getInstance();
 
-    common::lock_guard_t lock(devMngr.deviceMutex);
+    vector<cl::Context*> contexts;
+    {
+        common::lock_guard_t lock(devMngr.deviceMutex);
+        contexts = devMngr.mContexts; // NOTE: copy, not a reference
+    }
 
-    for (auto context : devMngr.mContexts) {
+    for (auto context : contexts) {
         vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
 
         for (auto &device : devices) {
@@ -510,8 +524,7 @@ int setDevice(int device)
     common::lock_guard_t lock(devMngr.deviceMutex);
 
     if (device >= (int)devMngr.mQueues.size() ||
-            device>= (int)DeviceManager::MAX_DEVICES) {
-        //throw runtime_error("@setDevice: invalid device index");
+        device >= (int)DeviceManager::MAX_DEVICES) {
         return -1;
     } else {
         int old = getActiveDeviceId();
@@ -552,30 +565,33 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que)
 
     DeviceManager& devMngr   = DeviceManager::getInstance();
 
-    common::lock_guard_t lock(devMngr.deviceMutex);
+    int nDevices = 0;
+    {
+        common::lock_guard_t lock(devMngr.deviceMutex);
 
-    cl::Device* tDevice      = new cl::Device(dev);
-    cl::Context* tContext    = new cl::Context(ctx);
-    cl::CommandQueue* tQueue = (que==NULL ?
-            new cl::CommandQueue(*tContext, *tDevice) : new cl::CommandQueue(que));
-    devMngr.mDevices.push_back(tDevice);
-    devMngr.mContexts.push_back(tContext);
-    devMngr.mQueues.push_back(tQueue);
-    devMngr.mPlatforms.push_back(getPlatformEnum(*tDevice));
-    // FIXME: add OpenGL Interop for user provided contexts later
-    devMngr.mIsGLSharingOn.push_back(false);
+        cl::Device* tDevice      = new cl::Device(dev);
+        cl::Context* tContext    = new cl::Context(ctx);
+        cl::CommandQueue* tQueue = (que==NULL ?
+                new cl::CommandQueue(*tContext, *tDevice) : new cl::CommandQueue(que));
+        devMngr.mDevices.push_back(tDevice);
+        devMngr.mContexts.push_back(tContext);
+        devMngr.mQueues.push_back(tQueue);
+        devMngr.mPlatforms.push_back(getPlatformEnum(*tDevice));
+        // FIXME: add OpenGL Interop for user provided contexts later
+        devMngr.mIsGLSharingOn.push_back(false);
+        nDevices = devMngr.mDevices.size()-1;
+
+        //cache the boost program_cache object, clean up done on program exit
+        //not during removeDeviceContext
+        namespace compute = boost::compute;
+        using BPCache = DeviceManager::BoostProgCache;
+        compute::context c(ctx);
+        BPCache currCache = compute::program_cache::get_global_cache(c);
+        devMngr.mBoostProgCacheVector.emplace_back(new BPCache(currCache));
+    }
 
     // Last/newly added device needs memory management
-    memoryManager().addMemoryManagement(devMngr.mDevices.size()-1);
-
-
-    //cache the boost program_cache object, clean up done on program exit
-    //not during removeDeviceContext
-    namespace compute = boost::compute;
-    using BPCache = DeviceManager::BoostProgCache;
-    compute::context c(ctx);
-    BPCache currCache = compute::program_cache::get_global_cache(c);
-    devMngr.mBoostProgCacheVector.emplace_back(new BPCache(currCache));
+    memoryManager().addMemoryManagement(nDevices);
 }
 
 void setDeviceContext(cl_device_id dev, cl_context ctx)
@@ -588,8 +604,8 @@ void setDeviceContext(cl_device_id dev, cl_context ctx)
     const int dCount = devMngr.mDevices.size();
     for (int i=0; i<dCount; ++i) {
         if(devMngr.mDevices[i]->operator()()==dev &&
-                devMngr.mContexts[i]->operator()()==ctx) {
-            setDevice(i);
+           devMngr.mContexts[i]->operator()()==ctx) {
+            setActiveContext(i);
             return;
         }
     }
@@ -604,25 +620,29 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx)
 
     DeviceManager& devMngr = DeviceManager::getInstance();
 
-    common::lock_guard_t lock(devMngr.deviceMutex);
-
-    const int dCount = devMngr.mDevices.size();
     int deleteIdx = -1;
-    for (int i = 0; i<dCount; ++i) {
-        if(devMngr.mDevices[i]->operator()()==dev &&
-                devMngr.mContexts[i]->operator()()==ctx) {
-            deleteIdx = i;
-            break;
+    {
+        common::lock_guard_t lock(devMngr.deviceMutex);
+
+        const int dCount = devMngr.mDevices.size();
+        for (int i = 0; i<dCount; ++i) {
+            if(devMngr.mDevices[i]->operator()()==dev &&
+               devMngr.mContexts[i]->operator()()==ctx) {
+                deleteIdx = i;
+                break;
+            }
         }
     }
+
     if (deleteIdx < (int)devMngr.mUserDeviceOffset) {
         AF_ERROR("Cannot pop ArrayFire internal devices", AF_ERR_ARG);
     } else if (deleteIdx == -1) {
         AF_ERROR("No matching device found", AF_ERR_ARG);
     } else {
-        //remove memory management for device added by user
+        //remove memory management for device added by user outside of the lock
         memoryManager().removeMemoryManagement(deleteIdx);
 
+        common::lock_guard_t lock(devMngr.deviceMutex);
         clReleaseDevice((*devMngr.mDevices[deleteIdx])());
         clReleaseContext((*devMngr.mContexts[deleteIdx])());
         clReleaseCommandQueue((*devMngr.mQueues[deleteIdx])());

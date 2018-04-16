@@ -24,7 +24,7 @@
 
 namespace common
 {
-using mutex_t      = std::recursive_mutex;
+using mutex_t      = std::mutex;
 using lock_guard_t = std::lock_guard<mutex_t>;
 
 const unsigned MAX_BUFFERS   = 1000;
