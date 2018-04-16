@@ -19,7 +19,6 @@
 #include <cusparse.hpp>
 
 #include <memory>
-#include <mutex>
 #include <string>
 #include <vector>
 
@@ -41,8 +40,6 @@ bool isDoubleSupported(int device);
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
 unsigned getMaxJitSize();
-
-std::recursive_mutex& getDriverApiMutex(int device);
 
 int getDeviceCount();
 
@@ -114,8 +111,6 @@ class DeviceManager
         friend GraphicsResourceManager& interopManager();
 #endif
 
-        friend std::recursive_mutex& getDriverApiMutex(int device);
-
         friend std::string getDeviceInfo(int device);
 
         friend std::string getPlatformInfo();
@@ -147,8 +142,6 @@ class DeviceManager
         // variables
         DeviceManager(DeviceManager const&);
         void operator=(DeviceManager const&);
-
-        std::recursive_mutex driver_api_mutex[MAX_DEVICES];
 
         // Attributes
         std::vector<cudaDevice_t> cuDevices;

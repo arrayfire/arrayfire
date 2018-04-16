@@ -298,8 +298,6 @@ std::vector<char> compileToPTX(const char *ker_name, string jit_ker)
 
 static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 {
-    lock_guard<recursive_mutex> lock(getDriverApiMutex(getActiveDeviceId()));
-
     const size_t linkLogSize = 1024;
     char linkInfo[linkLogSize] = {0};
     char linkError[linkLogSize] = {0};
@@ -459,7 +457,6 @@ void evalNodes(vector<Param<T>>& outputs, vector<Node *> output_nodes)
     args.push_back((void *)&blocks_x_total);
     args.push_back((void *)&num_odims);
 
-    lock_guard<recursive_mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     CU_CHECK(cuLaunchKernel(ker,
                             blocks_x,
                             blocks_y,
