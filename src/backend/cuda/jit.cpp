@@ -373,15 +373,19 @@ void evalNodes(vector<Param<T>>& outputs, vector<Node *> output_nodes)
 
     if (num_outputs == 0) return;
 
-    Node_map_t nodes;
-    vector<Node *> full_nodes;
-    vector<Node_ids> full_ids;
-    vector<int> output_ids;
+    // Use thread local to reuse the memory every time you are here.
+    thread_local Node_map_t nodes;
+    thread_local vector<Node *> full_nodes;
+    thread_local vector<Node_ids> full_ids;
+    thread_local vector<int> output_ids;
 
     // Reserve some space to improve performance at smaller sizes
-    output_ids.reserve(output_nodes.size());
-    full_nodes.reserve(1024);
-    full_ids.reserve(1024);
+    if (nodes.size() == 0) {
+        nodes.reserve(1024);
+        output_ids.reserve(output_nodes.size());
+        full_nodes.reserve(1024);
+        full_ids.reserve(1024);
+    }
 
     for (auto &node : output_nodes) {
         int id = node->getNodesMap(nodes, full_nodes, full_ids);
@@ -467,6 +471,12 @@ void evalNodes(vector<Param<T>>& outputs, vector<Node *> output_nodes)
                             getActiveStream(),
                             &args.front(),
                             NULL));
+
+    // Reset the thread local vectors
+    nodes.clear();
+    output_ids.clear();
+    full_nodes.clear();
+    full_ids.clear();
 }
 
 template<typename T>

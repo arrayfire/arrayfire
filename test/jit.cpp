@@ -403,3 +403,24 @@ TEST(JIT, LinearLarge)
         ASSERT_EQ(hc[i], v3);
     }
 }
+
+TEST(JIT, NonLinearBuffers1)
+{
+    af::array a = af::randu(5, 5);
+    af::array a0 = a;
+    for (int i = 0; i < 1000; i++) {
+        af::array b = af::randu(1, 5);
+        a += af::tile(b, 5);
+    }
+    a.eval();
+}
+
+TEST(JIT, NonLinearBuffers2)
+{
+    af::array a = af::randu(100, 310);
+    af::array b = af::randu(10, 10);
+    for (int i = 0; i < 300; i++) {
+        b += a(seq(10), seq(i, i+9)) * randu(10, 10);
+    }
+    b.eval();
+}

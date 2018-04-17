@@ -208,15 +208,19 @@ void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes)
     //FIXME: Add assert to check if all outputs are same size?
     KParam out_info = outputs[0].info;
 
-    Node_map_t nodes;
-    vector<Node *> full_nodes;
-    vector<Node_ids> full_ids;
-    vector<int> output_ids;
+    // Use thread local to reuse the memory every time you are here.
+    thread_local Node_map_t nodes;
+    thread_local vector<Node *> full_nodes;
+    thread_local vector<Node_ids> full_ids;
+    thread_local vector<int> output_ids;
 
     // Reserve some space to improve performance at smaller sizes
-    output_ids.reserve(output_nodes.size());
-    full_nodes.reserve(1024);
-    full_ids.reserve(1024);
+    if (nodes.size() == 0) {
+        nodes.reserve(1024);
+        output_ids.reserve(output_nodes.size());
+        full_nodes.reserve(1024);
+        full_ids.reserve(1024);
+    }
 
     for (auto &node : output_nodes) {
         int id = node->getNodesMap(nodes, full_nodes, full_ids);
@@ -290,6 +294,12 @@ void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes)
     ker.setArg(nargs + 3,  num_odims);
 
     getQueue().enqueueNDRangeKernel(ker, cl::NullRange, global, local);
+
+    // Reset the thread local vectors
+    nodes.clear();
+    output_ids.clear();
+    full_nodes.clear();
+    full_ids.clear();
 }
 
 void evalNodes(Param &out, Node *node)

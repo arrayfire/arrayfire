@@ -116,7 +116,7 @@ namespace cuda
     void Array<T>::eval()
     {
         if (isReady()) return;
- 
+
         this->setId(getActiveDeviceId());
         this->data = shared_ptr<T>(memAlloc<T>(elements()).release(), memFree<T>);
 
@@ -209,28 +209,57 @@ namespace cuda
             if (node->getHeight() >= (int)getMaxJitSize()) {
                 out.eval();
             } else {
+
                 size_t alloc_bytes, alloc_buffers;
                 size_t lock_bytes, lock_buffers;
 
                 deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
                                  &lock_bytes, &lock_buffers);
 
-                // Check if approaching the memory limit
-                if (lock_bytes > getMaxBytes() ||
-                    lock_buffers > getMaxBuffers()) {
+                bool isBufferLimit =
+                    lock_bytes > getMaxBytes() ||
+                    lock_buffers > getMaxBuffers();
 
-                    unsigned length =0, buf_count = 0, bytes = 0;
+
+                // We eval in the following cases.
+                // 1. Too many bytes are locked up by JIT causing memory pressure.
+                // Too many bytes is assumed to be half of all bytes allocated so far.
+                // 2. Too many buffers in a nonlinear kernel cause param space overflow.
+                // Too many buffers comes out to be about 50 (51 including output).
+                // Too many buffers can occur in a tree of size 25 in the worst case scenario.
+                // TODO: Find better solution than the following emperical solution.
+                if (node->getHeight() > 25 || isBufferLimit) {
+
                     Node *n = node.get();
-                    JIT::Node_map_t nodes_map;
-                    std::vector<JIT::Node *> full_nodes;
-                    std::vector<JIT::Node_ids> full_ids;
-                    n->getNodesMap(nodes_map, full_nodes, full_ids);
 
-                    for(auto &jit_node : full_nodes) {
-                        jit_node->getInfo(length, buf_count, bytes);
+                    // Use thread local to reuse the memory every time you are here.
+                    thread_local JIT::Node_map_t nodes_map;
+                    thread_local std::vector<Node *> full_nodes;
+                    thread_local std::vector<JIT::Node_ids> full_ids;
+
+                    // Reserve some memory
+                    if (nodes_map.size() == 0) {
+                        nodes_map.reserve(1024);
+                        full_nodes.reserve(1024);
+                        full_ids.reserve(1024);
                     }
 
-                    if (2 * bytes > lock_bytes) {
+                    n->getNodesMap(nodes_map, full_nodes, full_ids);
+
+                    unsigned length = 0, buf_count = 0, bytes = 0;
+                    bool is_linear = true;
+                    dim_t dims_[] = {dims[0], dims[1], dims[2], dims[3]};
+                    for(auto &jit_node : full_nodes) {
+                        jit_node->getInfo(length, buf_count, bytes);
+                        is_linear &= jit_node->isLinear(dims_);
+                    }
+
+                    // Reset the thread local vectors
+                    nodes_map.clear();
+                    full_nodes.clear();
+                    full_ids.clear();
+
+                    if (2 * bytes > lock_bytes || (!is_linear && buf_count >= 50)) {
                         out.eval();
                     }
                 }
