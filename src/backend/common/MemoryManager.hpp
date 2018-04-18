@@ -427,8 +427,6 @@ class MemoryManager
         static_cast<T*>(this)->nativeFree(ptr);
     }
 
-    virtual ~MemoryManager() {}
-
     bool checkMemoryLimit()
     {
         const memory_info& current = this->getCurrentMemoryInfo();
@@ -436,6 +434,12 @@ class MemoryManager
     }
 
     protected:
+    MemoryManager() = delete;
+    ~MemoryManager() = default;
+    MemoryManager(const MemoryManager& other) = delete;
+    MemoryManager(const MemoryManager&& other) = delete;
+    MemoryManager& operator=(const MemoryManager& other) = delete;
+    MemoryManager& operator=(const MemoryManager&& other) = delete;
     mutex_t memory_mutex;
 };
 
