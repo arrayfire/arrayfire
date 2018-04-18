@@ -326,6 +326,18 @@ writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     memcpy(arr.get(), (const T * const)data, bytes);
 }
 
+
+template<typename T>
+void
+Array<T>::setDataDims(const dim4 &new_dims)
+{
+    modDims(new_dims);
+    data_dims = new_dims;
+    if (node->isBuffer()) {
+        node = bufferNodePtr<T>();
+    }
+}
+
 #define INSTANTIATE(T)                                                  \
     template       Array<T>  createHostDataArray<T>   (const dim4 &size, const T * const data); \
     template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data); \
@@ -349,6 +361,7 @@ writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
     template       void      evalMultiple<T>     (vector<Array<T>*> arrays); \
+    template       void Array<T>::setDataDims(const dim4 &new_dims);    \
 
 INSTANTIATE(float)
 INSTANTIATE(double)
