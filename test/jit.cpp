@@ -424,3 +424,29 @@ TEST(JIT, NonLinearBuffers2)
     }
     b.eval();
 }
+
+TEST(JIT, TransposeBuffers)
+{
+    const int num = 10;
+    af::array a = af::randu(1, num);
+    af::array b = af::randu(1, num);
+    af::array c =  a + b;
+    af::array d = a.T() + b.T();
+
+    std::vector<float> ha(a.elements());
+    a.host(ha.data());
+
+    std::vector<float> hb(b.elements());
+    b.host(hb.data());
+
+    std::vector<float> hc(c.elements());
+    c.host(hc.data());
+
+    std::vector<float> hd(d.elements());
+    d.host(hd.data());
+
+    for (int i = 0; i < num; i++) {
+        ASSERT_FLOAT_EQ(ha[i] + hb[i], hc[i]);
+        ASSERT_FLOAT_EQ(hc[i], hd[i]);
+    }
+}
