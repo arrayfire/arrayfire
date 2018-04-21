@@ -236,7 +236,7 @@ cpack_add_component(licenses
   DESCRIPTION "License files for ArrayFire and its upstream libraries."
   REQUIRED)
 
-if (INSTALL_FORGE_DEV)
+if (AF_INSTALL_FORGE_DEV)
   cpack_add_component(forge
     DISPLAY_NAME "Forge"
     DESCRIPTION "High Performance Visualization Library"
@@ -295,7 +295,7 @@ cpack_ifw_configure_component(licenses FORCED_INSTALLATION
   "Boost" ${boost_lic_path} "clBLAS, clFFT" ${apache_lic_path} "SIFT" ${sift_lic_path}
   "BSD3" ${bsd3_lic_path} "Intel MKL" ${issl_lic_path}
 )
-if (INSTALL_FORGE_DEV)
+if (AF_INSTALL_FORGE_DEV)
     cpack_ifw_configure_component(forge)
 endif ()
 

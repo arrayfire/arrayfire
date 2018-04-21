@@ -181,8 +181,10 @@ install(FILES ${ArrayFire_BINARY_DIR}/include/af/version.h
         COMPONENT headers)
 
 if(Forge_FOUND AND NOT AF_USE_SYSTEM_FORGE)
-    option(INSTALL_FORGE_DEV "Install Forge Header and Share Files with ArrayFire" OFF)
-    if(INSTALL_FORGE_DEV)
+    option(AF_INSTALL_FORGE_DEV "Install Forge Header and Share Files with ArrayFire" OFF)
+    mark_as_advanced(AF_INSTALL_FORGE_DEV)
+    af_deprecate(INSTALL_FORGE_DEV AF_INSTALL_FORGE_DEV)
+    if(AF_INSTALL_FORGE_DEV)
         install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/include/"
                 DESTINATION "${AF_INSTALL_INC_DIR}"
                 COMPONENT headers
