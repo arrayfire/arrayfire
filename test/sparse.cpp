@@ -236,7 +236,7 @@ TYPED_TEST(Sparse, EmptyDeepCopy) {
     using namespace af;
     array a = sparse(0, 0,
                      array(0, (af_dtype)af::dtype_traits<TypeParam>::af_type),
-                     array(0, s32), array(0, s32));
+                     array(1, s32), array(0, s32));
     EXPECT_TRUE(a.issparse());
     EXPECT_EQ(0, sparseGetNNZ(a));
 
