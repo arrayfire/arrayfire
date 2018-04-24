@@ -131,6 +131,7 @@ TEST(Sparse, ISSUE_2134_COO)
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSR));
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSC));
   EXPECT_EQ(AF_SUCCESS, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_COO));
+  if(A != 0) af_release_array(A);
 }
 
 TEST(Sparse, ISSUE_2134_CSR)
@@ -145,6 +146,7 @@ TEST(Sparse, ISSUE_2134_CSR)
   EXPECT_EQ(AF_SUCCESS, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSR));
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSC));
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_COO));
+  if(A != 0) af_release_array(A);
 }
 
 TEST(Sparse, ISSUE_2134_CSC)
@@ -159,6 +161,7 @@ TEST(Sparse, ISSUE_2134_CSC)
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSR));
   EXPECT_EQ(AF_SUCCESS, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSC));
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_COO));
+  if(A != 0) af_release_array(A);
 }
 
 template<typename T>
