@@ -31,6 +31,8 @@
 
   !define env_af_hklm 'HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"'
 
+  !define cmake_pkg_reg_key 'HKCU "Software\Kitware\CMake\Packages\ArrayFire"'
+
 ;--------------------------------
 ;General
 
@@ -697,8 +699,6 @@ Section "-Core installation"
 @CPACK_NSIS_CREATE_ICONS_EXTRA@
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
 
-  CreateShortcut "$INSTDIR\..\cmake.lnk" "$INSTDIR\cmake"
-
   ;Read a value from an InstallOptions INI file
   !insertmacro MUI_INSTALLOPTIONS_READ $DO_NOT_ADD_TO_PATH "NSIS.InstallOptions.ini" "Field 2" "State"
   !insertmacro MUI_INSTALLOPTIONS_READ $ADD_TO_PATH_ALL_USERS "NSIS.InstallOptions.ini" "Field 3" "State"
@@ -708,6 +708,9 @@ Section "-Core installation"
   ;Create AF_PATH variable
   WriteRegExpandStr ${env_af_hklm} AF_PATH '$INSTDIR'
   WriteRegExpandStr ${env_af_hklm} AF_PATH_v@CPACK_PACKAGE_VERSION_MAJOR@ '$INSTDIR'
+
+  ;Add key for CMake package
+  WriteRegStr ${cmake_pkg_reg_key} ArrayFire_CMake_DIR '$INSTDIR'
 
   ; make sure windows knows about the change
   SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
@@ -850,6 +853,9 @@ Section "Uninstall"
   DeleteRegValue ${env_af_hklm} AF_PATH
   DeleteRegValue ${env_af_hklm} AF_PATH_v@CPACK_PACKAGE_VERSION_MAJOR@
 
+  ;Delete cmake package key
+  DeleteRegValue ${cmake_pkg_reg_key} ArrayFire_CMake_DIR
+
   ; make sure windows knows about the change
   SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
 
@@ -873,7 +879,6 @@ Section "Uninstall"
 @CPACK_NSIS_DELETE_ICONS@
 @CPACK_NSIS_DELETE_ICONS_EXTRA@
 
-  Delete "$INSTDIR\..\cmake.lnk"
   ;Delete empty start menu parent diretories
   StrCpy $MUI_TEMP "$SMPROGRAMS\$MUI_TEMP"
 
