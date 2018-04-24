@@ -226,7 +226,7 @@ cpack_add_component(cmake
   INSTALL_TYPES All Development)
 cpack_add_component(documentation
   DISPLAY_NAME "Documentation"
-  DESCRIPTION "Doxygen documentation"
+  DESCRIPTION "ArrayFire html documentation"
   INSTALL_TYPES All Extra)
 cpack_add_component(examples
   DISPLAY_NAME "ArrayFire Examples"
@@ -297,7 +297,7 @@ cpack_ifw_configure_component(licenses FORCED_INSTALLATION
   "BSD3" ${bsd3_lic_path} "Intel MKL" ${issl_lic_path}
 )
 if (AF_INSTALL_FORGE_DEV)
-    cpack_ifw_configure_component(forge)
+  cpack_ifw_configure_component(forge)
 endif ()
 
 ##
