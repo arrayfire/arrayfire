@@ -309,7 +309,6 @@ configure_package_config_file(
 # TODO(umar): Disable for now. Causing issues with builds on windows.
 #export(PACKAGE ArrayFire)
 
-include(CPackConfig)
 include(CTest)
 
 # Handle depricated BUILD_TEST variable if found.
@@ -322,3 +321,5 @@ conditional_directory(BUILD_TESTING test)
 set(ASSETS_DIR "${ArrayFire_SOURCE_DIR}/assets")
 conditional_directory(AF_BUILD_EXAMPLES examples)
 conditional_directory(AF_BUILD_DOCS docs)
+
+include(CPackConfig)
