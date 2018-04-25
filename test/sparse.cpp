@@ -129,7 +129,9 @@ TEST(Sparse, ISSUE_2134_COO)
   af::array value(7, values);
   af_array A = 0;
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSR));
+  if(A != 0) af_release_array(A);
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSC));
+  if(A != 0) af_release_array(A);
   EXPECT_EQ(AF_SUCCESS, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_COO));
   if(A != 0) af_release_array(A);
 }
@@ -144,7 +146,9 @@ TEST(Sparse, ISSUE_2134_CSR)
   af::array value(7, values);
   af_array A = 0;
   EXPECT_EQ(AF_SUCCESS, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSR));
+  if(A != 0) af_release_array(A);
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSC));
+  if(A != 0) af_release_array(A);
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_COO));
   if(A != 0) af_release_array(A);
 }
@@ -159,7 +163,9 @@ TEST(Sparse, ISSUE_2134_CSC)
   af::array value(7, values);
   af_array A = 0;
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSR));
+  if(A != 0) af_release_array(A);
   EXPECT_EQ(AF_SUCCESS, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSC));
+  if(A != 0) af_release_array(A);
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_COO));
   if(A != 0) af_release_array(A);
 }
