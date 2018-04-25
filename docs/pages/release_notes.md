@@ -18,7 +18,7 @@ Major Updates
   <sup>[3](https://github.com/arrayfire/arrayfire/pull/2059)</sup>
 - Added anisotropic diffusion, `anisotropicDiffusion()`.
   [Documentation](http://arrayfire.org/docs/group__image__func__anisotropic__diffusion.htm)
-  <sup>[3](https://github.com/arrayfire/arrayfire/pull/1850)</sup>.
+  <sup>[4](https://github.com/arrayfire/arrayfire/pull/1850)</sup>.
 
 Features
 --------
@@ -45,10 +45,8 @@ Improvements
   <sup>[2](https://github.com/arrayfire/arrayfire/pull/1861)</sup>
   <sup>[3](https://github.com/arrayfire/arrayfire/pull/2070)</sup>
   <sup>[4](https://github.com/arrayfire/arrayfire/pull/2018)</sup>
-- Improved the quality of the random number generator (thanks to @rstub)
-  <sup>[5](https://github.com/arrayfire/arrayfire/pull/2122)
-- Corrected assert function calls in select() tests.
-  <sup>[5](https://github.com/arrayfire/arrayfire/pull/2058)</sup>
+- Improved the quality of the random number generator, thanks to Ralf Stubner.
+  <sup>[5](https://github.com/arrayfire/arrayfire/pull/2122)</sup>
 - Modified `af_colormap` struct to match forge's definition.
   <sup>[6](https://github.com/arrayfire/arrayfire/pull/2082)</sup>
 - Improved Black Scholes example.
@@ -58,14 +56,16 @@ Improvements
 - Refactored
   [black_scholes_options](https://github.com/arrayfire/arrayfire/blob/master/examples/financial/black_scholes_options.cpp)
   example to use built-in `af::erfc` function for cumulative normal
-  distribution.<sup>[9](https://github.com/arrayfire/arrayfire/pull/2079).
+  distribution.<sup>[9](https://github.com/arrayfire/arrayfire/pull/2079)</sup>.
 - Reduced the scope of mutexes in memory manager
-  [10](https://github.com/arrayfire/arrayfire/pull/2125)
+  <sup>[10](https://github.com/arrayfire/arrayfire/pull/2125)</sup>
 - Official installers do not require the CUDA toolkit to be installed
 - Significant CMake improvements have been made. Using CPack to generate
   installers. <sup>[11](https://github.com/arrayfire/arrayfire/pull/1861)</sup>
   <sup>[12](https://github.com/arrayfire/arrayfire/pull/2070)</sup>
   <sup>[13](https://github.com/arrayfire/arrayfire/pull/2018)</sup>
+- Corrected assert function calls in select() tests.
+  <sup>[14](https://github.com/arrayfire/arrayfire/pull/2058)</sup>
 
 Bug fixes
 -----------
@@ -73,11 +73,11 @@ Bug fixes
 - Fixed `shfl_down()` warnings with CUDA 9.
   <sup>[1](https://github.com/arrayfire/arrayfire/pull/2040)</sup>
 - Disabled CUDA JIT debug flags on ARM
-  architecture.<sup>[2](https://github.com/arrayfire/arrayfire/pull/2037)
+  architecture.<sup>[2](https://github.com/arrayfire/arrayfire/pull/2037)</sup>
 - Fixed CLBLast install lib dir for linux platform where `lib` directory has
-  arch(64) suffix.<sup>[3](https://github.com/arrayfire/arrayfire/pull/2094)
+  arch(64) suffix.<sup>[3](https://github.com/arrayfire/arrayfire/pull/2094)</sup>
 - Fixed assert condition in 3d morph opencl
-  kernel.<sup>[4](https://github.com/arrayfire/arrayfire/pull/2033)
+  kernel.<sup>[4](https://github.com/arrayfire/arrayfire/pull/2033)</sup>
 - Fix JIT errors with large non-linear
   kernels<sup>[5](https://github.com/arrayfire/arrayfire/pull/2127)</sup>
 - Fix bug in CPU jit after moddims was called
