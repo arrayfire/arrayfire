@@ -87,6 +87,18 @@ af_err af_create_sparse_array(
         ARG_ASSERT(5, cInfo.getType() == s32);
         DIM_ASSERT(5, cInfo.isLinear());
 
+        const size_t nNZ = vInfo.elements();
+        if(stype == AF_STORAGE_COO) {
+          DIM_ASSERT(4, rInfo.elements() == nNZ);
+          DIM_ASSERT(5, cInfo.elements() == nNZ);
+        } else if(stype == AF_STORAGE_CSR) {
+          DIM_ASSERT(4, rInfo.elements() == nRows + 1);
+          DIM_ASSERT(5, cInfo.elements() == nNZ);
+        } else if(stype == AF_STORAGE_CSC) {
+          DIM_ASSERT(4, rInfo.elements() == nNZ);
+          DIM_ASSERT(5, cInfo.elements() == nCols + 1);
+        }
+
         af_array output = 0;
 
         af::dim4 dims(nRows, nCols);
