@@ -11,13 +11,9 @@ project(ArrayFire-Examples
   VERSION 3.5.0
   LANGUAGES CXX)
 
-if(EXISTS "${ArrayFire_SOURCE_DIR}/CMakeModules/ArrayFireExampleOverloads.cmake")
-  include(ArrayFireExampleOverloads)
-else()
+if(NOT EXISTS "${ArrayFire_SOURCE_DIR}/CMakeLists.txt")
   set(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 endif()
-
-file(TO_NATIVE_PATH ${ASSETS_DIR} ASSETS_DIR)
 
 file(TO_NATIVE_PATH ${ASSETS_DIR} ASSETS_DIR)
 

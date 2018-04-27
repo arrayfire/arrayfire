@@ -91,6 +91,8 @@ foreach(backend Unified CPU OpenCL CUDA)
   else()
     string(TOLOWER "${backend}" lowerbackend)
   endif()
+
+  string(TOUPPER "${backend}" upperbackend)
   if(NOT TARGET ArrayFire::af${lowerbackend} AND NOT TARGET af${lowerbackend})
     # Either we are not in the ArrayFire project or the target was not built
     if(EXISTS @PACKAGE_CMAKE_DIR@/ArrayFire${backend}Targets.cmake)
@@ -111,6 +113,13 @@ foreach(backend Unified CPU OpenCL CUDA)
       set(ArrayFire_LIBRARIES ArrayFire::af${lowerbackend})
   else()
       set(ArrayFire_${backend}_FOUND OFF)
+  endif()
+
+  # If this project is built as part of the ArrayFire project, make sure the
+  # backends are only enabled if the backend is selected to be built even if
+  # the Binary exists.
+  if(DEFINED AF_BUILD_${upperbackend} AND NOT AF_BUILD_${upperbackend})
+    set(ArrayFire_${backend}_FOUND OFF)
   endif()
 endforeach()
 

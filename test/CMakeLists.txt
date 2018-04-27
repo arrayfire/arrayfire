@@ -85,7 +85,7 @@ function(make_test)
        NOT ${backend} IN_LIST mt_args_BACKENDS)
       continue()
     endif()
-    set(target "${src_name}_${backend}")
+    set(target "test_${src_name}_${backend}")
     add_executable(${target} ${mt_args_SRC})
     target_include_directories(${target}
       PRIVATE
@@ -118,9 +118,10 @@ function(make_test)
           CXX_STANDARD 11)
     endif(${mt_args_CXX11})
 
-	  set_target_properties(${target}
+    set_target_properties(${target}
       PROPERTIES
-        FOLDER "Tests")
+        FOLDER "Tests"
+        OUTPUT_NAME "${src_name}_${backend}")
 
     target_compile_definitions(${target}
       PRIVATE
