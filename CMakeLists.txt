@@ -18,6 +18,7 @@ include(Version)
 include(build_cl2hpp)
 include(platform)
 include(GetPrerequisites)
+include(CheckCXXCompilerFlag)
 
 arrayfire_set_cmake_default_variables()
 
@@ -149,6 +150,15 @@ endif()
 set_target_properties(${built_backends} PROPERTIES
                       VERSION "${ArrayFire_VERSION}"
                       SOVERSION "${ArrayFire_VERSION_MAJOR}")
+
+# On some distributions the linker will not add a library to the ELF header if
+# the symbols are not needed when the library was first parsed by the linker.
+# This causes undefined references issues when linking with libraries which have
+# circular dependencies.
+if(UNIX AND NOT APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  set_target_properties(${built_backends} PROPERTIES
+                        LINK_FLAGS "-Wl,--no-as-needed")
+endif()
 
 foreach(backend ${built_backends})
   target_compile_definitions(${backend} PRIVATE AFDLL)
@@ -323,3 +333,4 @@ conditional_directory(AF_BUILD_EXAMPLES examples)
 conditional_directory(AF_BUILD_DOCS docs)
 
 include(CPackConfig)
+
