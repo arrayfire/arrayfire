@@ -500,6 +500,15 @@ typedef enum {
     AF_INVERSE_DECONV_TIKHONOV       = 1,        ///< Tikhonov Inverse deconvolution
     AF_INVERSE_DECONV_DEFAULT        = 0,        ///< Default is Tikhonov deconvolution
 } af_inverse_deconv_algo;
+
+#endif
+
+#if AF_API_VERSION >= 37
+typedef enum {
+              AF_VARIANCE_DEFAULT    = 0, ///< Default (Population) variance
+              AF_VARIANCE_SAMPLE     = 1, ///< Sample variance
+              AF_VARIANCE_POPULATION = 2, ///< Population variance
+} af_var_bias;
 #endif
 
 #ifdef __cplusplus

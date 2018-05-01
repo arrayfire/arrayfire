@@ -35,6 +35,13 @@ af_err af_var_weighted(af_array *out, const af_array in, const af_array weights,
     return CALL(out, in, weights, dim);
 }
 
+af_err af_meanvar(af_array *mean, af_array *var, const af_array in,
+                  const af_array weights, const af_var_bias bias, const dim_t dim)
+{
+    CHECK_ARRAYS(in, weights);
+    return CALL(mean, var, in, weights, bias, dim);
+}
+
 af_err af_stdev(af_array *out, const af_array in, const dim_t dim)
 {
     CHECK_ARRAYS(in);
