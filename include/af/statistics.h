@@ -70,6 +70,23 @@ AFAPI array var(const array& in, const bool isbiased=false, const dim_t dim=-1);
 */
 AFAPI array var(const array& in, const array &weights, const dim_t dim=-1);
 
+#if AF_API_VERSION >= 37
+/**
+   C++ Interface for mean and variance
+
+   \param[out] mean     The mean of the input array along \p dim dimension
+   \param[out] var      The variance of the input array along the \p dim dimension
+   \param[in]  in       The input array
+   \param[in]  weights  The weights to scale the input array before calculating
+                        the mean and varience. If empty, the input is not scaled
+   \param[in] bias      The type of bias used for variance calculation
+   \param[in] dim       The dimension along which the variance and mean are
+                        calculated. Default is -1 meaning the first non-zero dim
+  */
+AFAPI void meanvar(array& mean, array& var, const array& in, const array& weights,
+                   const af_var_bias bias = AF_VARIANCE_POPULATION, const dim_t dim=-1);
+#endif
+
 /**
    C++ Interface for standard deviation
 
@@ -279,6 +296,23 @@ AFAPI af_err af_var(af_array *out, const af_array in, const bool isbiased, const
 */
 AFAPI af_err af_var_weighted(af_array *out, const af_array in, const af_array weights, const dim_t dim);
 
+#if AF_API_VERSION >= 37
+/**
+   C Interface for mean and variance
+
+   \param[out] mean     The mean of the input array along \p dim dimension
+   \param[out] var      The variance of the input array along the \p dim dimension
+   \param[in]  in       The input array
+   \param[in]  weights  The weights to scale the input array before calculating
+                        the mean and varience. If empty, the input is not scaled
+   \param[in]  bias     The type of bias used for variance calculation
+   \param[in]  dim      The dimension along which the variance and mean are
+                        calculated. Default is -1 meaning the first non-zero dim
+  */
+AFAPI af_err af_meanvar(af_array *mean, af_array *var, const af_array in,
+                        const af_array weights, const af_var_bias bias, const dim_t dim);
+#endif
+
 /**
    C Interface for standard deviation
 
@@ -416,7 +450,6 @@ AFAPI af_err af_median_all(double *realVal, double *imagVal, const af_array in);
 
    \ingroup stat_func_corrcoef
 */
-
 AFAPI af_err af_corrcoef(double *realVal, double *imagVal, const af_array X, const af_array Y);
 
 #if AF_API_VERSION >= 36
