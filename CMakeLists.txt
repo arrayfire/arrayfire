@@ -109,7 +109,21 @@ if(AF_WITH_NONFREE)
     "Columbia.")
 endif()
 
-add_executable(bin2cpp ${ArrayFire_SOURCE_DIR}/CMakeModules/bin2cpp.cpp)
+# when crosscompiling use the bin2cpp file from the native bin directory
+if(CMAKE_CROSSCOMPILING)
+  set(NATIVE_BIN_DIR "NATIVE_BIN_DIR-NOTFOUND"
+    CACHE FILEPATH "Path to the Native build directory.")
+  if(NATIVE_BIN_DIR)
+    include(${NATIVE_BIN_DIR}/ImportExecutables.cmake)
+  else()
+    message(SEND_ERROR "Native Directory not found. Run cmake in a separate"
+                       "directory and build the bin2cpp target.")
+  endif()
+else()
+  add_executable(bin2cpp ${ArrayFire_SOURCE_DIR}/CMakeModules/bin2cpp.cpp)
+  target_link_libraries(bin2cpp)
+  export(TARGETS bin2cpp FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake)
+endif()
 
 if(NOT LAPACK_FOUND)
     if(APPLE)
