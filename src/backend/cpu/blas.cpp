@@ -163,8 +163,8 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     int aColDim = (lOpts == CblasNoTrans) ? 1 : 0;
     int bColDim = (rOpts == CblasNoTrans) ? 1 : 0;
 
-    dim4 lDims = lhs.dims();
-    dim4 rDims = rhs.dims();
+    auto lDims = lhs.dims();
+    auto rDims = rhs.dims();
     int M = lDims[aRowDim];
     int N = rDims[bColDim];
     int K = lDims[aColDim];
@@ -174,7 +174,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
 
     dim_t d2 = std::max(lDims[2], rDims[2]);
     dim_t d3 = std::max(lDims[3], rDims[3]);
-    dim4 oDims = af::dim4(M, N, d2, d3);
+    const dim4 oDims(M, N, d2, d3);
     Array<T> out = createEmptyArray<T>(oDims);
 
     auto func = [=] (Param<T> output, CParam<T> left, CParam<T> right) {

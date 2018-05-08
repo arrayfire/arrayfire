@@ -452,8 +452,8 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
 
     static const int rColDim = 1;
 
-    dim4 lDims = lhs.dims();
-    dim4 rDims = rhs.dims();
+    auto lDims = lhs.dims();
+    auto rDims = rhs.dims();
     int M = lDims[lRowDim];
     int N = rDims[rColDim];
 
