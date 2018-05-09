@@ -21,8 +21,6 @@ namespace opencl
 template<typename T>
 Array<T> regions(const Array<char> &in, af_connectivity connectivity)
 {
-    ARG_ASSERT(2, (connectivity==AF_CONNECTIVITY_4 || connectivity==AF_CONNECTIVITY_8));
-
     const af::dim4 dims = in.dims();
 
     Array<T> out  = createEmptyArray<T>(dims);
