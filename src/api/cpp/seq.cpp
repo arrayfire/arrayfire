@@ -14,7 +14,6 @@
 
 namespace af
 {
-
 int end = -1;
 seq span(af_span);
 
@@ -69,9 +68,9 @@ seq::seq(double begin, double end, double step): m_gfor(false)
         if (begin != end)   // Span
             AF_THROW_ERR("Invalid step size", AF_ERR_ARG);
     }
-    if (end >= 0 && begin >= 0 && signbit(end-begin) != signbit(step))
+    if ((signbit(end      ) == signbit(begin)) &&
+        (signbit(end-begin) != signbit(step )))
         AF_THROW_ERR("Sequence is invalid", AF_ERR_ARG);
-        //AF_THROW("step must match direction of sequence");
     init(begin, end, step);
 }
 
@@ -91,5 +90,4 @@ seq::operator array() const
     array res = s.begin + s.step * tmp;
     return res;
 }
-
 }

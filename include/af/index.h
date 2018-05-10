@@ -20,7 +20,7 @@
 /// object with the same \ref af_seq::begin and \ref af_seq::end with an
 /// af_seq::step of 1
 ///
-typedef struct af_index_t{
+typedef struct af_index_t {
     union {
         af_array arr;   ///< The af_array used for indexing
         af_seq   seq;   ///< The af_seq used for indexing
