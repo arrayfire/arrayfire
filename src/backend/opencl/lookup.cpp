@@ -15,9 +15,9 @@
 
 namespace opencl
 {
-
 template<typename in_t, typename idx_t>
-Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices, const unsigned dim)
+Array<in_t> lookup(const Array<in_t> &input,
+                   const Array<idx_t> &indices, const unsigned dim)
 {
     const dim4 iDims = input.dims();
 
@@ -40,15 +40,15 @@ Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices, const 
 }
 
 #define INSTANTIATE(T)  \
-    template Array<T> lookup<T, float   >(const Array<T> &input, const Array<float   > &indices, const unsigned dim); \
-    template Array<T> lookup<T, double  >(const Array<T> &input, const Array<double  > &indices, const unsigned dim); \
-    template Array<T> lookup<T, int     >(const Array<T> &input, const Array<int     > &indices, const unsigned dim); \
-    template Array<T> lookup<T, unsigned>(const Array<T> &input, const Array<unsigned> &indices, const unsigned dim); \
-    template Array<T> lookup<T, short   >(const Array<T> &input, const Array<short   > &indices, const unsigned dim); \
-    template Array<T> lookup<T, ushort  >(const Array<T> &input, const Array<ushort  > &indices, const unsigned dim); \
-    template Array<T> lookup<T, intl    >(const Array<T> &input, const Array<intl    > &indices, const unsigned dim); \
-    template Array<T> lookup<T, uintl   >(const Array<T> &input, const Array<uintl   > &indices, const unsigned dim); \
-    template Array<T> lookup<T, uchar   >(const Array<T> &input, const Array<uchar   > &indices, const unsigned dim);
+template Array<T> lookup<T, float   >(const Array<T>&, const Array<float   >&, const unsigned); \
+template Array<T> lookup<T, double  >(const Array<T>&, const Array<double  >&, const unsigned); \
+template Array<T> lookup<T, int     >(const Array<T>&, const Array<int     >&, const unsigned); \
+template Array<T> lookup<T, unsigned>(const Array<T>&, const Array<unsigned>&, const unsigned); \
+template Array<T> lookup<T, short   >(const Array<T>&, const Array<short   >&, const unsigned); \
+template Array<T> lookup<T, ushort  >(const Array<T>&, const Array<ushort  >&, const unsigned); \
+template Array<T> lookup<T, intl    >(const Array<T>&, const Array<intl    >&, const unsigned); \
+template Array<T> lookup<T, uintl   >(const Array<T>&, const Array<uintl   >&, const unsigned); \
+template Array<T> lookup<T, uchar   >(const Array<T>&, const Array<uchar   >&, const unsigned);
 
 INSTANTIATE(float   );
 INSTANTIATE(cfloat  );
@@ -62,5 +62,4 @@ INSTANTIATE(uchar   );
 INSTANTIATE(char    );
 INSTANTIATE(ushort  );
 INSTANTIATE(short   );
-
 }

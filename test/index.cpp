@@ -1591,3 +1591,17 @@ TEST(Index, Issue1867ChainedIndexingLeak)
                       &lock_bytes, &lock_buffers);
     ASSERT_EQ(0u, lock_buffers);
 }
+
+TEST(Index, InvalidSequence_SingleElementNegativeStep)
+{
+    EXPECT_THROW(af::seq(1,1,-1), af::exception);
+}
+TEST(Index, InvalidSequence_PositiveRangeNegativeStep)
+{
+    EXPECT_THROW(af::seq(1,5,-1), af::exception);
+}
+
+TEST(Index, InvalidSequence_NegativeRangePositiveStep)
+{
+    EXPECT_THROW(af::seq(-1,-5,1), af::exception);
+}
