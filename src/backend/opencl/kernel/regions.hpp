@@ -171,13 +171,20 @@ void regions(Param out, Param in)
     // Sort the copy
     compute::sort(tmp.begin(), tmp.end(), c_queue);
 
-    // Take the max element, this is the number of label assignments to
-    // compute.
-    //int num_bins = tmp[size - 1] + 1;
+    // Take the max element which is the number
+    // of label assignments to compute.
     T last_label;
     clEnqueueReadBuffer(getQueue()(), tmp.get_buffer().get(), CL_TRUE,
                         (size - 1) * sizeof(T), sizeof(T), &last_label, 0, NULL, NULL);
-    int num_bins = (int)last_label + 1;
+    const int num_bins = (int)last_label + 1;
+
+    // If the number of label assignments is two,
+    // then either the entire input image is one big
+    // component(1's) or it has only one component other than
+    // background(0's). Either way, no further
+    // post-processing of labels is required.
+    if (num_bins<=2)
+        return;
 
     Buffer labels(getContext(), CL_MEM_READ_WRITE, num_bins * sizeof(T));
     compute::buffer c_labels(labels());
