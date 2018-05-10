@@ -250,3 +250,20 @@ TEST(Regions, Docs_4)
         ASSERT_EQ(gold[i], output[i])<<" mismatch at i="<<i<<std::endl;
     }
 }
+
+TEST(Regions, Issue1650)
+{
+    const int dim = 101;
+    const int sz  = dim*dim;
+    std::vector<char> input(sz, 1);
+    std::vector<float> gold(sz, 1.0f);
+
+    af::array in  = af::array(dim, dim, input.data());
+    af::array out = af::regions(in, AF_CONNECTIVITY_4);
+
+    std::vector<float> output(sz);
+    out.host((void*)output.data());
+
+    for (int i=0; i<sz; ++i)
+        ASSERT_FLOAT_EQ(gold[i], output[i])<<" mismatch at i="<<i<<std::endl;
+}
