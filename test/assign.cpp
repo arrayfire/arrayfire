@@ -546,7 +546,6 @@ TEST(ArrayAssign, CPP_END)
         ASSERT_EQ(hA[i * n + end_off], hB[i]);
     }
 
-
     af_free_host(hA);
     af_free_host(hB);
 }

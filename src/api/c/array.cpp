@@ -76,36 +76,21 @@ af_err af_create_array(af_array *result, const void * const data,
 }
 
 //Strong Exception Guarantee
-af_err af_create_handle(af_array *result, const unsigned ndims, const dim_t * const dims,
+af_err af_create_handle(af_array *result,
+                        const unsigned ndims, const dim_t * const dims,
                         const af_dtype type)
 {
     try {
-        af_array out = 0;
         AF_CHECK(af_init());
 
-        if (ndims > 0) {
-            ARG_ASSERT(2, ndims > 0 && dims != NULL);
-        }
+        if (ndims > 0) ARG_ASSERT(2, ndims > 0 && dims != NULL);
+
         dim4 d(0);
         for(unsigned i = 0; i < ndims; i++) {
             d[i] = dims[i];
         }
 
-        switch(type) {
-        case f32:   out = createHandle<float  >(d); break;
-        case c32:   out = createHandle<cfloat >(d); break;
-        case f64:   out = createHandle<double >(d); break;
-        case c64:   out = createHandle<cdouble>(d); break;
-        case b8:    out = createHandle<char   >(d); break;
-        case s32:   out = createHandle<int    >(d); break;
-        case u32:   out = createHandle<uint   >(d); break;
-        case u8:    out = createHandle<uchar  >(d); break;
-        case s64:   out = createHandle<intl   >(d); break;
-        case u64:   out = createHandle<uintl  >(d); break;
-        case s16:   out = createHandle<short  >(d); break;
-        case u16:   out = createHandle<ushort >(d); break;
-        default:    TYPE_ERROR(3, type);
-        }
+        af_array out = createHandle(d, type);
         std::swap(*result, out);
     }
     CATCHALL
