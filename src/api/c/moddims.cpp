@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2018, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -19,42 +19,27 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
-Array<T> modDims(const Array<T>& in, const af::dim4 &newDims)
+namespace
 {
-    //FIXME: Figure out a better way
-    in.eval();
-
-    Array<T> Out = in;
-
-    if (!in.isLinear()) {
-        Out = copyArray<T>(in);
-    }
-
-    Out.setDataDims(newDims);
-
-    return Out;
+template<typename T>
+af_array modDims(const af_array in, const dim4& newDims)
+{
+    return getHandle(::modDims(getArray<T>(in), newDims));
 }
-
-template Array<float> modDims(const Array<float> &in, const af::dim4 &newDims);
-template Array<double> modDims(const Array<double> &in, const af::dim4 &newDims);
-template Array<cfloat> modDims(const Array<cfloat> &in, const af::dim4 &newDims);
-template Array<cdouble> modDims(const Array<cdouble> &in, const af::dim4 &newDims);
-template Array<int> modDims(const Array<int> &in, const af::dim4 &newDims);
-template Array<uint> modDims(const Array<uint> &in, const af::dim4 &newDims);
-template Array<intl> modDims(const Array<intl> &in, const af::dim4 &newDims);
-template Array<uintl> modDims(const Array<uintl> &in, const af::dim4 &newDims);
-template Array<short> modDims(const Array<short> &in, const af::dim4 &newDims);
-template Array<ushort> modDims(const Array<ushort> &in, const af::dim4 &newDims);
-template Array<uchar> modDims(const Array<uchar> &in, const af::dim4 &newDims);
-template Array<char> modDims(const Array<char> &in, const af::dim4 &newDims);
+template<typename T>
+af_array flat(const af_array in)
+{
+    return getHandle(::flat(getArray<T>(in)));
+}
+}
 
 af_err af_moddims(af_array *out, const af_array in,
                   const unsigned ndims, const dim_t * const dims)
 {
     try {
         if(ndims == 0) {
-            return af_retain_array(out, in);
+            *out = retain(in);
+            return AF_SUCCESS;
         }
         ARG_ASSERT(2, ndims >= 1);
         ARG_ASSERT(3, dims != NULL);
@@ -70,19 +55,19 @@ af_err af_moddims(af_array *out, const af_array in,
         af_dtype type = info.getType();
 
         switch(type) {
-        case f32: output = getHandle(modDims<float  >(getArray<float  >(in), newDims)); break;
-        case c32: output = getHandle(modDims<cfloat >(getArray<cfloat >(in), newDims)); break;
-        case f64: output = getHandle(modDims<double >(getArray<double >(in), newDims)); break;
-        case c64: output = getHandle(modDims<cdouble>(getArray<cdouble>(in), newDims)); break;
-        case b8:  output = getHandle(modDims<char   >(getArray<char   >(in), newDims)); break;
-        case s32: output = getHandle(modDims<int    >(getArray<int    >(in), newDims)); break;
-        case u32: output = getHandle(modDims<uint   >(getArray<uint   >(in), newDims)); break;
-        case u8:  output = getHandle(modDims<uchar  >(getArray<uchar  >(in), newDims)); break;
-        case s64: output = getHandle(modDims<intl   >(getArray<intl   >(in), newDims)); break;
-        case u64: output = getHandle(modDims<uintl  >(getArray<uintl  >(in), newDims)); break;
-        case s16: output = getHandle(modDims<short  >(getArray<short  >(in), newDims)); break;
-        case u16: output = getHandle(modDims<ushort >(getArray<ushort >(in), newDims)); break;
-        default: TYPE_ERROR(1, type);
+            case f32: output = modDims<float  >(in, newDims); break;
+            case c32: output = modDims<cfloat >(in, newDims); break;
+            case f64: output = modDims<double >(in, newDims); break;
+            case c64: output = modDims<cdouble>(in, newDims); break;
+            case b8:  output = modDims<char   >(in, newDims); break;
+            case s32: output = modDims<int    >(in, newDims); break;
+            case u32: output = modDims<uint   >(in, newDims); break;
+            case u8:  output = modDims<uchar  >(in, newDims); break;
+            case s64: output = modDims<intl   >(in, newDims); break;
+            case u64: output = modDims<uintl  >(in, newDims); break;
+            case s16: output = modDims<short  >(in, newDims); break;
+            case u16: output = modDims<ushort >(in, newDims); break;
+            default: TYPE_ERROR(1, type);
         }
         std::swap(*out,output);
     }
@@ -93,19 +78,33 @@ af_err af_moddims(af_array *out, const af_array in,
 
 af_err af_flat(af_array *out, const af_array in)
 {
-    af_array res;
     try {
+        const ArrayInfo& info = getInfo(in);
 
-        const ArrayInfo& in_info = getInfo(in);
-
-        if (in_info.ndims() == 1) {
-            AF_CHECK(af_retain_array(&res, in));
+        if (info.ndims() == 1) {
+            *out = retain(in);
         } else {
-            const dim_t num = (dim_t)(in_info.elements());
-            AF_CHECK(af_moddims(&res, in, 1, &num));
-        }
+            af_array output = 0;
+            af_dtype type = info.getType();
 
-        std::swap(*out, res);
-    } CATCHALL;
+            switch(type) {
+                case f32: output = flat<float  >(in); break;
+                case c32: output = flat<cfloat >(in); break;
+                case f64: output = flat<double >(in); break;
+                case c64: output = flat<cdouble>(in); break;
+                case b8:  output = flat<char   >(in); break;
+                case s32: output = flat<int    >(in); break;
+                case u32: output = flat<uint   >(in); break;
+                case u8:  output = flat<uchar  >(in); break;
+                case s64: output = flat<intl   >(in); break;
+                case u64: output = flat<uintl  >(in); break;
+                case s16: output = flat<short  >(in); break;
+                case u16: output = flat<ushort >(in); break;
+                default: TYPE_ERROR(1, type);
+            }
+            std::swap(*out,output);
+        }
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }

@@ -9,6 +9,7 @@
 
 #pragma once
 #include <af/array.h>
+#include <af/defines.h>
 #include <Array.hpp>
 #include <backend.hpp>
 #include <common/err_common.hpp>
@@ -19,9 +20,26 @@
 
 const ArrayInfo& getInfo(const af_array arr, bool sparse_check = true, bool device_check = true);
 
-// Implemented in src/api/c/moddims.cpp
 template<typename T>
-detail::Array<T> modDims(const detail::Array<T>& in, const af::dim4 &newDims);
+static
+detail::Array<T> modDims(const detail::Array<T>& in, const af::dim4 &newDims)
+{
+    in.eval(); //FIXME: Figure out a better way
+
+    detail::Array<T> Out = in;
+    if (!in.isLinear()) Out = detail::copyArray<T>(in);
+    Out.setDataDims(newDims);
+
+    return Out;
+}
+
+template<typename T>
+static
+detail::Array<T> flat(const detail::Array<T>& in)
+{
+    const af::dim4 newDims(in.elements());
+    return modDims<T>(in, newDims);
+}
 
 template<typename T>
 static const detail::Array<T> &
@@ -45,19 +63,19 @@ detail::Array<To> castArray(const af_array &in)
 
     const ArrayInfo& info = getInfo(in);
     switch (info.getType()) {
-    case f32: return detail::cast<To, float  >(getArray<float  >(in));
-    case f64: return detail::cast<To, double >(getArray<double >(in));
-    case c32: return detail::cast<To, cfloat >(getArray<cfloat >(in));
-    case c64: return detail::cast<To, cdouble>(getArray<cdouble>(in));
-    case s32: return detail::cast<To, int    >(getArray<int    >(in));
-    case u32: return detail::cast<To, uint   >(getArray<uint   >(in));
-    case u8 : return detail::cast<To, uchar  >(getArray<uchar  >(in));
-    case b8 : return detail::cast<To, char   >(getArray<char   >(in));
-    case s64: return detail::cast<To, intl   >(getArray<intl   >(in));
-    case u64: return detail::cast<To, uintl  >(getArray<uintl  >(in));
-    case s16: return detail::cast<To, short  >(getArray<short  >(in));
-    case u16: return detail::cast<To, ushort >(getArray<ushort >(in));
-    default: TYPE_ERROR(1, info.getType());
+        case f32: return detail::cast<To, float  >(getArray<float  >(in));
+        case f64: return detail::cast<To, double >(getArray<double >(in));
+        case c32: return detail::cast<To, cfloat >(getArray<cfloat >(in));
+        case c64: return detail::cast<To, cdouble>(getArray<cdouble>(in));
+        case s32: return detail::cast<To, int    >(getArray<int    >(in));
+        case u32: return detail::cast<To, uint   >(getArray<uint   >(in));
+        case u8 : return detail::cast<To, uchar  >(getArray<uchar  >(in));
+        case b8 : return detail::cast<To, char   >(getArray<char   >(in));
+        case s64: return detail::cast<To, intl   >(getArray<intl   >(in));
+        case u64: return detail::cast<To, uintl  >(getArray<uintl  >(in));
+        case s16: return detail::cast<To, short  >(getArray<short  >(in));
+        case u16: return detail::cast<To, ushort >(getArray<ushort >(in));
+        default: TYPE_ERROR(1, info.getType());
     }
 }
 
@@ -84,6 +102,27 @@ template<typename T>
 static af_array createHandle(af::dim4 d)
 {
     return getHandle(detail::createEmptyArray<T>(d));
+}
+
+static af_array createHandle(af::dim4 d, af_dtype dtype)
+{
+    using namespace detail;
+
+    switch(dtype) {
+        case f32: return createHandle<float  >(d);
+        case c32: return createHandle<cfloat >(d);
+        case f64: return createHandle<double >(d);
+        case c64: return createHandle<cdouble>(d);
+        case b8:  return createHandle<char   >(d);
+        case s32: return createHandle<int    >(d);
+        case u32: return createHandle<uint   >(d);
+        case u8:  return createHandle<uchar  >(d);
+        case s64: return createHandle<intl   >(d);
+        case u64: return createHandle<uintl  >(d);
+        case s16: return createHandle<short  >(d);
+        case u16: return createHandle<ushort >(d);
+        default:    TYPE_ERROR(3, dtype);
+    }
 }
 
 template<typename T>
