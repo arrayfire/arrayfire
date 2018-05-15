@@ -28,6 +28,8 @@ namespace kernel
     static double __host__ __device__ cabs(const cfloat &in) { return (double)abs(in); }
     static double __host__ __device__ cabs(const cdouble &in) { return (double)abs(in); }
     template<typename T> __host__ __device__ static bool isNan(T in) { return in != in; }
+    static bool __host__ __device__ isNan(const cfloat &in) { return in.x != in.x || in.y != in.y; }
+    static bool __host__ __device__ isNan(const cdouble &in) { return in.x != in.x || in.y != in.y; }
 
     template<af_op_t op, typename T>
     struct MinMaxOp
