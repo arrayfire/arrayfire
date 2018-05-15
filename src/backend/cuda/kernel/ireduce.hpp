@@ -27,6 +27,7 @@ namespace kernel
     static double __host__ __device__ cabs(const char in) { return (double)(in > 0); }
     static double __host__ __device__ cabs(const cfloat &in) { return (double)abs(in); }
     static double __host__ __device__ cabs(const cdouble &in) { return (double)abs(in); }
+    template<typename T> __host__ __device__ static bool isNan(T in) { return in != in; }
 
     template<af_op_t op, typename T>
     struct MinMaxOp
@@ -36,13 +37,17 @@ namespace kernel
         __host__ __device__ MinMaxOp(T val, uint idx) :
             m_val(val), m_idx(idx)
         {
+            if (isNan(val)) {
+                Binary<T, op> ireduce;
+                m_val = ireduce.init();
+            }
         }
 
         __host__ __device__ void operator()(T val, uint idx)
         {
-            if (cabs(val) < cabs(m_val) ||
-                (cabs(val) == cabs(m_val) &&
-                 idx > m_idx)) {
+            if (!isNan(val) &&
+                (cabs(val) < cabs(m_val) ||
+                cabs(val) == cabs(m_val))) {
                 m_val = val;
                 m_idx = idx;
             }
@@ -57,13 +62,17 @@ namespace kernel
         __host__ __device__ MinMaxOp(T val, uint idx) :
             m_val(val), m_idx(idx)
         {
+            if (isNan(val)) {
+                Binary<T, af_max_t> ireduce;
+                m_val = ireduce.init();
+            }
         }
 
         __host__ __device__ void operator()(T val, uint idx)
         {
-            if (cabs(val) > cabs(m_val) ||
-                (cabs(val) == cabs(m_val) &&
-                 idx <= m_idx)) {
+            if (!isNan(val) &&
+                (cabs(val) > cabs(m_val) ||
+                cabs(val) == cabs(m_val))) {
                 m_val = val;
                 m_idx = idx;
             }

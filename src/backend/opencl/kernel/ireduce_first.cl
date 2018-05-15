@@ -52,7 +52,7 @@ void ireduce_first_kernel(__global T *oData,
     uint out_idx = xid;
 
     if (cond && xid < lim) {
-        out_val = iData[xid];
+        if (!(IS_NAN(iData[xid]))) out_val = iData[xid];
         if (!IS_FIRST) out_idx = ilData[xid];
     }
 
