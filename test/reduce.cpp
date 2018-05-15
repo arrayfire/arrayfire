@@ -629,6 +629,15 @@ TEST(MinMax, MaxCplxNaN)
         NAN, NAN, 106.103029, 128.447592, 672.343090
     };
 
+    // 4th element is unusually large to cover the case where
+    //  one part holds the largest value among the array,
+    //  and the other part is NaN.
+    // There's a possibility where the NaN is turned into 0
+    //  (since Binary<>::init() will initialize it to 0 in
+    //  for complex max op) during the comparisons, and so its 
+    //  magnitude will determine that that element is the max, 
+    //  whereas it should have been ignored since its other 
+    //  part is NaN
     float imag_wnan_data[] = {
         NAN, NAN, 728.556795, 7414701.03, 465.926785,
         175.408103, NAN, 464.726170, NAN, 934.297652
