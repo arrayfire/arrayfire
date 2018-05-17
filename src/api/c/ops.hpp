@@ -220,7 +220,7 @@ struct Transform<Ti, To, af_min_t>
 {
     __DH__ To operator ()(Ti in)
     {
-        return (To) (IS_NAN(in) ? Binary<To, af_min_t>()::init() : in);
+        return (To) (IS_NAN(in) ? Binary<To, af_min_t>::init() : in);
     }
 };
 
@@ -229,7 +229,7 @@ struct Transform<Ti, To, af_max_t>
 {
     __DH__ To operator ()(Ti in)
     {
-        return (To) (IS_NAN(in) ? Binary<To, af_max_t>()::init() : in);
+        return (To) (IS_NAN(in) ? Binary<To, af_max_t>::init() : in);
     }
 };
 

@@ -14,7 +14,7 @@ std::complex<double> max(std::complex<double> lhs, std::complex<double> rhs);
 template<typename T, af_binary_op op>
 struct Binary
 {
-    T init()
+    static T init()
     {
         return (T)(0);
     }
@@ -28,7 +28,7 @@ struct Binary
 template<typename T>
 struct Binary<T, AF_BINARY_ADD>
 {
-    T init()
+    static T init()
     {
         return (T)(0);
     }
@@ -42,7 +42,7 @@ struct Binary<T, AF_BINARY_ADD>
 template<typename T>
 struct Binary<T, AF_BINARY_MUL>
 {
-    T init()
+    static T init()
     {
         return (T)(1);
     }
@@ -56,7 +56,7 @@ struct Binary<T, AF_BINARY_MUL>
 template<typename T>
 struct Binary<T, AF_BINARY_MIN>
 {
-    T init()
+    static T init()
     {
         return std::numeric_limits<T>::max();
     }
@@ -70,7 +70,7 @@ struct Binary<T, AF_BINARY_MIN>
 template<typename T>
 struct Binary<T, AF_BINARY_MAX>
 {
-    T init()
+    static T init()
     {
         return std::numeric_limits<T>::min();
     }
@@ -85,7 +85,7 @@ struct Binary<T, AF_BINARY_MAX>
     template<>                                      \
     struct Binary<T, AF_BINARY_MIN>                 \
     {                                               \
-        T init()                                    \
+        static T init()                                    \
         {                                           \
             return                                  \
             (T)(std::numeric_limits<Tr>::max());    \
@@ -105,7 +105,7 @@ SPECIALIZE_COMPLEX_MIN(std::complex<double>, double)
     template<>                                      \
     struct Binary<T, AF_BINARY_MAX>                 \
     {                                               \
-        T init()                                    \
+        static T init()                                    \
         {                                           \
             return (T)((Tr)(0));                    \
         }                                           \
@@ -124,7 +124,7 @@ SPECIALIZE_COMPLEX_MAX(std::complex<double>, double)
     template<>                                      \
     struct Binary<T, AF_BINARY_MAX>                 \
     {                                               \
-        T init()                                    \
+        static T init()                                    \
         {                                           \
             return                                  \
             (T)(-std::numeric_limits<Tr>::max());   \
