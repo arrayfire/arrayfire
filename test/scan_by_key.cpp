@@ -96,7 +96,7 @@ void verify(af::dim4 dims,
 
     for (int start = 0; start < stride; ++start) {
         Tk keyval = key[start];
-        To gold = binOp.init();
+        To gold = Binary<To, op>::init();
         for (int index = start + (!inclusive_scan)*stride, i = (!inclusive_scan);
                 index < elemCount;
                 index += stride, i = (i+1)%dims[scanDim]) {
@@ -106,7 +106,7 @@ void verify(af::dim4 dims,
                     gold = (To)in[index];
                     ASSERT_NEAR(gold, out[index], eps);
                 } else {
-                    gold = binOp.init();
+                    gold = Binary<To, op>::init();
                 }
             } else {
                 To dataval = (To)in[index - (!inclusive_scan)*stride];

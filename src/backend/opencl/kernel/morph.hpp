@@ -44,7 +44,7 @@ template<typename T, bool isDilation, int SeLength>
 std::string generateOptionsString()
 {
     ToNumStr<T> toNumStr;
-    T init = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
+    T init = isDilation ? Binary<T, af_max_t>()::init() : Binary<T, af_min_t>()::init();
     std::ostringstream options;
     options << " -D T=" << dtype_traits<T>::getName()
         << " -D isDilation="<< isDilation

@@ -68,7 +68,7 @@ To reduce_all(const Array<Ti> &in, bool change_nan, double nanval)
     Transform<Ti, To, op> transform;
     Binary<To, op> reduce;
 
-    To out = reduce.init();
+    To out = Binary<To, op>::init();
 
     // Decrement dimension of select dimension
     af::dim4 dims = in.dims();
