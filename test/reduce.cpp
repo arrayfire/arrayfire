@@ -18,6 +18,7 @@
 #include <algorithm>
 
 using std::vector;
+using std::complex;
 using std::string;
 using std::cout;
 using std::endl;
@@ -532,88 +533,30 @@ TEST(MinMax, MinMaxNaN)
     freeHost(h_A);
 }
 
-TEST(MinMax, MinLocNaN)
-{
-    float test_data[] = { 1, NAN, 5, 0.1, NAN, -0.5, NAN, 0 };
-    int rows = 4;
-    int cols = 2;
-    af::array a(rows, cols, test_data);
-
-    float gold_min_val[] = { 0.1, -0.5 };
-    int gold_min_idx[] = { 3, 1 };
-    
-    af::array min_val;
-    af::array min_idx;
-    af::min(min_val, min_idx, a);
-
-    std::vector<float> h_min_val(cols);
-    min_val.host(&h_min_val[0]);
-
-    std::vector<int> h_min_idx(cols);
-    min_idx.host(&h_min_idx[0]);
-
-    for (int i = 0; i < cols; i++) {
-        ASSERT_FLOAT_EQ(h_min_val[i], gold_min_val[i]);
-    }
-
-    for (int i = 0; i < cols; i++) {
-        ASSERT_FLOAT_EQ(h_min_idx[i], gold_min_idx[i]);
-    }
-}
-
-TEST(MinMax, MaxLocNaN)
-{
-    float test_data[] = { 1, NAN, 5, 0.1, NAN, -0.5, NAN, 0 };
-    int rows = 4;
-    int cols = 2;
-    af::array a(rows, cols, test_data);
-
-    float gold_max_val[] = { 5.0, 0.0 };
-    int gold_max_idx[] = { 2, 3 };
-    
-    af::array max_val;
-    af::array max_idx;
-    af::max(max_val, max_idx, a);
-
-    std::vector<float> h_max_val(cols);
-    max_val.host(&h_max_val[0]);
-
-    std::vector<int> h_max_idx(cols);
-    max_idx.host(&h_max_idx[0]);
-
-    for (int i = 0; i < cols; i++) {
-        ASSERT_FLOAT_EQ(h_max_val[i], gold_max_val[i]);
-    }
-
-    for (int i = 0; i < cols; i++) {
-        ASSERT_FLOAT_EQ(h_max_idx[i], gold_max_idx[i]);
-    }
-}
-
 TEST(MinMax, MinCplxNaN)
 {
     float real_wnan_data[] = {
-        849.088836, NAN, 889.189274, NAN, 506.472337,
-        NAN, NAN, 106.103029, 128.447592, 672.343090
+        0.005, NAN, -6.3, NAN, -0.5,
+        NAN, NAN, 0.2, -1205.4, 8.9
     };
 
     float imag_wnan_data[] = {
-        NAN, NAN, 728.556795, 741.470103, 465.926785,
-        175.408103, NAN, 464.726170, NAN, 934.297652
+        NAN, NAN, -9.0, -0.005, -0.3,
+        0.007, NAN, 0.1, NAN, 4.5
     };
 
     int rows = 5;
     int cols = 2;
-    af::array real_wnan(rows, cols, real_wnan_data);
-    af::array imag_wnan(rows, cols, imag_wnan_data);
-    af::array a = af::complex(real_wnan, imag_wnan);
+    array real_wnan(rows, cols, real_wnan_data);
+    array imag_wnan(rows, cols, imag_wnan_data);
+    array a = af::complex(real_wnan, imag_wnan);
 
-    float gold_min_real[] = { 506.472337, 106.103029 };
-    float gold_min_imag[] = { 465.926785, 464.726170 };
+    float gold_min_real[] = { -0.5, 0.2 };
+    float gold_min_imag[] = { -0.3, 0.1 };
     
-    af::array min_val = af::min(a);
+    array min_val = af::min(a);
 
-    std::vector< std::complex<float> > h_min_val(cols);
+    vector< complex<float> > h_min_val(cols);
     min_val.host(&h_min_val[0]);
 
     for (int i = 0; i < cols; i++) {
@@ -624,11 +567,6 @@ TEST(MinMax, MinCplxNaN)
 
 TEST(MinMax, MaxCplxNaN)
 {
-    float real_wnan_data[] = {
-        849.088836, NAN, 889.189274, NAN, 506.472337,
-        NAN, NAN, 106.103029, 128.447592, 672.343090
-    };
-
     // 4th element is unusually large to cover the case where
     //  one part holds the largest value among the array,
     //  and the other part is NaN.
@@ -638,112 +576,33 @@ TEST(MinMax, MaxCplxNaN)
     //  magnitude will determine that that element is the max, 
     //  whereas it should have been ignored since its other 
     //  part is NaN
+    float real_wnan_data[] = {
+        0.005, NAN, -6.3, NAN, -0.5,
+        NAN, NAN, 0.2, -1205.4, 8.9
+    };
+
     float imag_wnan_data[] = {
-        NAN, NAN, 728.556795, 7414701.03, 465.926785,
-        175.408103, NAN, 464.726170, NAN, 934.297652
+        NAN, NAN, -9.0, -0.005, -0.3,
+        0.007, NAN, 0.1, NAN, 4.5
     };
 
     int rows = 5;
     int cols = 2;
-    af::array real_wnan(rows, cols, real_wnan_data);
-    af::array imag_wnan(rows, cols, imag_wnan_data);
-    af::array a = af::complex(real_wnan, imag_wnan);
+    array real_wnan(rows, cols, real_wnan_data);
+    array imag_wnan(rows, cols, imag_wnan_data);
+    array a = af::complex(real_wnan, imag_wnan);
 
-    float gold_max_real[] = { 889.189274, 672.343090 };
-    float gold_max_imag[] = { 728.556795, 934.297652 };
+    float gold_max_real[] = { -6.3, 8.9 };
+    float gold_max_imag[] = { -9.0, 4.5 };
     
-    af::array max_val = af::max(a);
+    array max_val = af::max(a);
 
-    std::vector< std::complex<float> > h_max_val(cols);
+    vector< complex<float> > h_max_val(cols);
     max_val.host(&h_max_val[0]);
 
     for (int i = 0; i < cols; i++) {
         ASSERT_FLOAT_EQ(h_max_val[i].real(), gold_max_real[i]);
         ASSERT_FLOAT_EQ(h_max_val[i].imag(), gold_max_imag[i]);
-    }
-}
-
-TEST(MinMax, MinLocCplxNaN)
-{
-    float real_wnan_data[] = {
-        849.088836, NAN, 889.189274, NAN, 506.472337,
-        NAN, NAN, 106.103029, 128.447592, 672.343090
-    };
-
-    float imag_wnan_data[] = {
-        NAN, NAN, 728.556795, 741.470103, 465.926785,
-        175.408103, NAN, 464.726170, NAN, 934.297652
-    };
-
-    int rows = 5;
-    int cols = 2;
-    af::array real_wnan(rows, cols, real_wnan_data);
-    af::array imag_wnan(rows, cols, imag_wnan_data);
-    af::array a = af::complex(real_wnan, imag_wnan);
-
-    float gold_min_real[] = { 506.472337, 106.103029 };
-    float gold_min_imag[] = { 465.926785, 464.726170 };
-    int gold_min_idx[] = { 4, 2 };
-    
-    af::array min_val;
-    af::array min_idx;
-    af::min(min_val, min_idx, a);
-
-    std::vector< std::complex<float> > h_min_val(cols);
-    min_val.host(&h_min_val[0]);
-
-    std::vector<int> h_min_idx(cols);
-    min_idx.host(&h_min_idx[0]);
-
-    for (int i = 0; i < cols; i++) {
-        ASSERT_FLOAT_EQ(h_min_val[i].real(), gold_min_real[i]);
-        ASSERT_FLOAT_EQ(h_min_val[i].imag(), gold_min_imag[i]);
-    }
-
-    for (int i = 0; i < cols; i++) {
-        ASSERT_FLOAT_EQ(h_min_idx[i], gold_min_idx[i]);
-    }
-}
-
-TEST(MinMax, MaxLocCplxNaN)
-{
-    float real_wnan_data[] = {
-        849.088836, NAN, 889.189274, NAN, 506.472337,
-        NAN, NAN, 106.103029, 128.447592, 672.343090
-    };
-
-    float imag_wnan_data[] = {
-        NAN, NAN, 728.556795, 741.470103, 465.926785,
-        175.408103, NAN, 464.726170, NAN, 934.297652
-    };
-
-    int rows = 5;
-    int cols = 2;
-    af::array real_wnan(rows, cols, real_wnan_data);
-    af::array imag_wnan(rows, cols, imag_wnan_data);
-    af::array a = af::complex(real_wnan, imag_wnan);
-
-    float gold_max_real[] = { 889.189274, 672.343090 };
-    float gold_max_imag[] = { 728.556795, 934.297652 };
-    int gold_max_idx[] = { 2, 4 };
-    
-    af::array max_val;
-    af::array max_idx;
-    af::max(max_val, max_idx, a);
-
-    std::vector< std::complex<float> > h_max_val(cols);
-    max_val.host(&h_max_val[0]);
-
-    std::vector<int> h_max_idx(cols);
-    max_idx.host(&h_max_idx[0]);
-
-    for (int i = 0; i < cols; i++) {
-        ASSERT_FLOAT_EQ(h_max_val[i].real(), gold_max_real[i]);
-        ASSERT_FLOAT_EQ(h_max_val[i].imag(), gold_max_imag[i]);
-    }
-
-    for (int i = 0; i < cols; i++) {
-        ASSERT_FLOAT_EQ(h_max_idx[i], gold_max_idx[i]);
     }
 }
 

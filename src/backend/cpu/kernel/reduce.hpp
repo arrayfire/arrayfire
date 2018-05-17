@@ -54,7 +54,7 @@ struct reduce_dim<op, Ti, To, 0>
         Ti const * const inPtr = in.get() + inOffset;
         dim_t stride = istrides[dim];
 
-        To out_val = reduce.init();
+        To out_val = Binary<To, op>::init();
         for (dim_t i = 0; i < idims[dim]; i++) {
             To in_val = transform(inPtr[i * stride]);
             if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
@@ -64,7 +64,6 @@ struct reduce_dim<op, Ti, To, 0>
         *outPtr = out_val;
     }
 };
-
 
 }
 }

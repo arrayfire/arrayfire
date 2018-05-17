@@ -22,14 +22,30 @@ namespace cuda
 {
 namespace kernel
 {
+    template<typename T> __host__ __device__ 
+    static double cabs(const T in) { return (double)in; }
 
-    template<typename T> __host__ __device__ double cabs(const T in) { return (double)in; }
-    static double __host__ __device__ cabs(const char in) { return (double)(in > 0); }
-    static double __host__ __device__ cabs(const cfloat &in) { return (double)abs(in); }
-    static double __host__ __device__ cabs(const cdouble &in) { return (double)abs(in); }
-    template<typename T> __host__ __device__ static bool isNan(T in) { return in != in; }
-    static bool __host__ __device__ isNan(const cfloat &in) { return in.x != in.x || in.y != in.y; }
-    static bool __host__ __device__ isNan(const cdouble &in) { return in.x != in.x || in.y != in.y; }
+    template<> __host__ __device__
+    static double cabs<char>(const char in) { return (double)(in > 0); }
+
+    template<> __host__ __device__
+    static double cabs<cfloat>(const cfloat &in) { return (double)abs(in); }
+
+    template<> __host__ __device__
+    static double cabs<cdouble>(const cdouble &in) { return (double)abs(in); }
+
+    template<typename T> __host__ __device__ 
+    static bool isNan(T in) { return in != in; }
+
+    template<> __host__ __device__ 
+    static bool isNan<cfloat>(const cfloat &in) { 
+        return in.x != in.x || in.y != in.y;
+    }
+
+    template<> __host__ __device__
+    static bool isNan<cdouble>(const cdouble &in) { 
+        return in.x != in.x || in.y != in.y; 
+    }
 
     template<af_op_t op, typename T>
     struct MinMaxOp
@@ -123,9 +139,7 @@ namespace kernel
             (ids[2] < in.dims[2]) &&
             (ids[3] < in.dims[3]);
 
-        Binary<T, op> ireduce;
-
-        T val = ireduce.init();
+        T val = Binary<T, op>::init();
         uint idx = id_dim_in;
 
         if (is_valid && id_dim_in < in.dims[dim]) {
@@ -315,9 +329,7 @@ namespace kernel
 
         int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
 
-        Binary<T, op> ireduce;
-
-        T val = ireduce.init();
+        T val = Binary<T, op>::init();
         uint idx = xid;
 
         if (xid < lim) {

@@ -29,7 +29,7 @@ void morph(Param<T> out, CParam<T> in, CParam<T> mask)
     const dim_t R0      = window[0]/2;
     const dim_t R1      = window[1]/2;
 
-    T init = IsDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
+    T init = IsDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
 
     for(dim_t b3=0; b3<dims[3]; ++b3) {
 
@@ -93,7 +93,7 @@ void morph3d(Param<T> out, CParam<T> in, CParam<T> mask)
     const T*   inData   = in.get();
     const T*   filter   = mask.get();
 
-    T init = IsDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
+    T init = IsDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
 
     for(dim_t batchId=0; batchId<bCount; ++batchId) {
         // either channels or batch is handled by outer most loop

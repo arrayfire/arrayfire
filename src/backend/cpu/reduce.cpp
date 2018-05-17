@@ -22,7 +22,7 @@ using af::dim4;
 template<>
 struct Binary<cdouble, af_add_t>
 {
-    cdouble init()
+    static cdouble init()
     {
         return cdouble(0,0);
     }

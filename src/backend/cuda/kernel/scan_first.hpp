@@ -64,7 +64,7 @@ namespace kernel
         Transform<Ti, To, op> transform;
         Binary<To, op> binop;
 
-        const To init = binop.init();
+        const To init = Binary<To, op>::init();
         int id = xid;
         To val = init;
 
