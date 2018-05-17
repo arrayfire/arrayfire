@@ -56,8 +56,7 @@ namespace kernel
             m_val(val), m_idx(idx)
         {
             if (isNan(val)) {
-                Binary<T, op> ireduce;
-                m_val = ireduce.init();
+                m_val = Binary<T, op>::init();
             }
         }
 
@@ -81,8 +80,7 @@ namespace kernel
             m_val(val), m_idx(idx)
         {
             if (isNan(val)) {
-                Binary<T, af_max_t> ireduce;
-                m_val = ireduce.init();
+                m_val = Binary<T, af_max_t>::init();
             }
         }
 
