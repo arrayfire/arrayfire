@@ -26,24 +26,24 @@ namespace kernel
     static double cabs(const T& in) { return (double)in; }
 
     template<> __host__ __device__
-    static double cabs<char>(const char& in) { return (double)(in > 0); }
+    double cabs<char>(const char& in) { return (double)(in > 0); }
 
     template<> __host__ __device__
-    static double cabs<cfloat>(const cfloat &in) { return (double)abs(in); }
+    double cabs<cfloat>(const cfloat &in) { return (double)abs(in); }
 
     template<> __host__ __device__
-    static double cabs<cdouble>(const cdouble &in) { return (double)abs(in); }
+    double cabs<cdouble>(const cdouble &in) { return (double)abs(in); }
 
     template<typename T> __host__ __device__ 
     static bool isNan(const T& in) { return in != in; }
 
     template<> __host__ __device__ 
-    static bool isNan<cfloat>(const cfloat &in) { 
+    bool isNan<cfloat>(const cfloat &in) { 
         return in.x != in.x || in.y != in.y;
     }
 
     template<> __host__ __device__
-    static bool isNan<cdouble>(const cdouble &in) { 
+    bool isNan<cdouble>(const cdouble &in) { 
         return in.x != in.x || in.y != in.y; 
     }
 
