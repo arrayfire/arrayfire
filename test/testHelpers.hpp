@@ -135,7 +135,7 @@ float convert(af::half in) {
 template<>
 af_half convert(int in) {
     half_float::half h = half_float::half(in);
-    return *reinterpret_cast<af_half*>(&h);
+    return *reinterpret_cast<af_half *>(&h);
 }
 
 template<typename inType, typename outType, typename FileElementType>
@@ -485,9 +485,9 @@ bool noDoubleTests(af::dtype ty) {
 }
 
 bool noHalfTests(af::dtype ty) {
-    bool isTypeHalf        = (ty == f16);
-    int dev                = af::getDevice();
-    bool isHalfSupported   = af::isHalfAvailable(dev);
+    bool isTypeHalf      = (ty == f16);
+    int dev              = af::getDevice();
+    bool isHalfSupported = af::isHalfAvailable(dev);
 
     return ((isTypeHalf && !isHalfSupported) ? true : false);
 }
@@ -549,9 +549,9 @@ af::array cpu_randu(const af::dim4 dims) {
 
     bool isTypeCplx = is_same_type<T, af::cfloat>::value ||
                       is_same_type<T, af::cdouble>::value;
-    bool isTypeFloat =
-      is_same_type<BT, float>::value || is_same_type<BT, double>::value ||
-      is_same_type<BT, half_float::half>::value;
+    bool isTypeFloat = is_same_type<BT, float>::value ||
+                       is_same_type<BT, double>::value ||
+                       is_same_type<BT, half_float::half>::value;
 
     size_t elements = (isTypeCplx ? 2 : 1) * dims.elements();
 
@@ -611,9 +611,7 @@ const af::cfloat &operator+(const af::cfloat &val) { return val; }
 
 const af::cdouble &operator+(const af::cdouble &val) { return val; }
 
-const af_half& operator+(const af_half& val) {
-    return val;
-}
+const af_half &operator+(const af_half &val) { return val; }
 
 // Calculate a multi-dimensional coordinates' linearized index
 dim_t ravelIdx(af::dim4 coords, af::dim4 strides) {

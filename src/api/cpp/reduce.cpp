@@ -26,6 +26,24 @@ array sum(const array &in, const int dim, const double nanval) {
     return array(out);
 }
 
+void sumByKey(array &keys_out, array &vals_out, const array &keys,
+              const array &vals, const int dim) {
+    af_array okeys, ovals;
+    AF_THROW(af_sum_by_key(&okeys, &ovals, keys.get(), vals.get(),
+                           getFNSD(dim, vals.dims())));
+    keys_out = array(okeys);
+    vals_out = array(ovals);
+}
+
+void sumByKey(array &keys_out, array &vals_out, const array &keys,
+              const array &vals, const int dim, const double nanval) {
+    af_array okeys, ovals;
+    AF_THROW(
+        af_sum_nan_by_key(&okeys, &ovals, keys.get(), vals.get(), dim, nanval));
+    keys_out = array(okeys);
+    vals_out = array(ovals);
+}
+
 array product(const array &in, const int dim) {
     af_array out = 0;
     AF_THROW(af_product(&out, in.get(), getFNSD(dim, in.dims())));
@@ -38,6 +56,24 @@ array product(const array &in, const int dim, const double nanval) {
     return array(out);
 }
 
+void productByKey(array &keys_out, array &vals_out, const array &keys,
+                  const array &vals, const int dim) {
+    af_array okeys, ovals;
+    AF_THROW(af_product_by_key(&okeys, &ovals, keys.get(), vals.get(),
+                               getFNSD(dim, vals.dims())));
+    keys_out = array(okeys);
+    vals_out = array(ovals);
+}
+
+void productByKey(array &keys_out, array &vals_out, const array &keys,
+                  const array &vals, const int dim, const double nanval) {
+    af_array okeys, ovals;
+    AF_THROW(af_product_nan_by_key(&okeys, &ovals, keys.get(), vals.get(), dim,
+                                   nanval));
+    keys_out = array(okeys);
+    vals_out = array(ovals);
+}
+
 array mul(const array &in, const int dim) { return product(in, dim); }
 
 array min(const array &in, const int dim) {
@@ -46,10 +82,28 @@ array min(const array &in, const int dim) {
     return array(out);
 }
 
+void minByKey(array &keys_out, array &vals_out, const array &keys,
+              const array &vals, const int dim) {
+    af_array okeys, ovals;
+    AF_THROW(af_min_by_key(&okeys, &ovals, keys.get(), vals.get(),
+                           getFNSD(dim, vals.dims())));
+    keys_out = array(okeys);
+    vals_out = array(ovals);
+}
+
 array max(const array &in, const int dim) {
     af_array out = 0;
     AF_THROW(af_max(&out, in.get(), getFNSD(dim, in.dims())));
     return array(out);
+}
+
+void maxByKey(array &keys_out, array &vals_out, const array &keys,
+              const array &vals, const int dim) {
+    af_array okeys, ovals;
+    AF_THROW(af_max_by_key(&okeys, &ovals, keys.get(), vals.get(),
+                           getFNSD(dim, vals.dims())));
+    keys_out = array(okeys);
+    vals_out = array(ovals);
 }
 
 // 2.1 compatibility
@@ -60,6 +114,15 @@ array allTrue(const array &in, const int dim) {
     return array(out);
 }
 
+void allTrueByKey(array &keys_out, array &vals_out, const array &keys,
+                  const array &vals, const int dim) {
+    af_array okeys, ovals;
+    AF_THROW(af_all_true_by_key(&okeys, &ovals, keys.get(), vals.get(),
+                                getFNSD(dim, vals.dims())));
+    keys_out = array(okeys);
+    vals_out = array(ovals);
+}
+
 // 2.1 compatibility
 array anytrue(const array &in, const int dim) { return anyTrue(in, dim); }
 array anyTrue(const array &in, const int dim) {
@@ -68,10 +131,28 @@ array anyTrue(const array &in, const int dim) {
     return array(out);
 }
 
+void anyTrueByKey(array &keys_out, array &vals_out, const array &keys,
+                  const array &vals, const int dim) {
+    af_array okeys, ovals;
+    AF_THROW(af_any_true_by_key(&okeys, &ovals, keys.get(), vals.get(),
+                                getFNSD(dim, vals.dims())));
+    keys_out = array(okeys);
+    vals_out = array(ovals);
+}
+
 array count(const array &in, const int dim) {
     af_array out = 0;
     AF_THROW(af_count(&out, in.get(), getFNSD(dim, in.dims())));
     return array(out);
+}
+
+void countByKey(array &keys_out, array &vals_out, const array &keys,
+                const array &vals, const int dim) {
+    af_array okeys, ovals;
+    AF_THROW(af_count_by_key(&okeys, &ovals, keys.get(), vals.get(),
+                             getFNSD(dim, vals.dims())));
+    keys_out = array(okeys);
+    vals_out = array(ovals);
 }
 
 void min(array &val, array &idx, const array &in, const int dim) {
@@ -107,7 +188,7 @@ void max(array &val, array &idx, const array &in, const int dim) {
     INSTANTIATE_CPLX(fnC, fnCPP, af_cdouble, double)
 
 #define INSTANTIATE_REAL(fnC, fnCPP, T)                   \
-    template<>                                            \
+    template <>                                           \
     AFAPI T fnCPP(const array &in) {                      \
         double rval, ival;                                \
         AF_THROW(af_##fnC##_all(&rval, &ival, in.get())); \
@@ -115,7 +196,7 @@ void max(array &val, array &idx, const array &in, const int dim) {
     }
 
 #define INSTANTIATE_CPLX(fnC, fnCPP, T, Tr)               \
-    template<>                                            \
+    template <>                                           \
     AFAPI T fnCPP(const array &in) {                      \
         double rval, ival;                                \
         AF_THROW(af_##fnC##_all(&rval, &ival, in.get())); \
@@ -138,7 +219,7 @@ INSTANTIATE_REAL(any_true, anyTrue, bool);
 #undef INSTANTIATE_CPLX
 
 #define INSTANTIATE_REAL(fnC, fnCPP, T)                           \
-    template<>                                                    \
+    template <>                                                   \
     AFAPI T fnCPP(const array &in, const double nanval) {         \
         double rval, ival;                                        \
         AF_THROW(af_##fnC##_all(&rval, &ival, in.get(), nanval)); \
@@ -146,7 +227,7 @@ INSTANTIATE_REAL(any_true, anyTrue, bool);
     }
 
 #define INSTANTIATE_CPLX(fnC, fnCPP, T, Tr)                       \
-    template<>                                                    \
+    template <>                                                   \
     AFAPI T fnCPP(const array &in, const double nanval) {         \
         double rval, ival;                                        \
         AF_THROW(af_##fnC##_all(&rval, &ival, in.get(), nanval)); \
@@ -162,7 +243,7 @@ INSTANTIATE(product_nan, product)
 #undef INSTANTIATE
 
 #define INSTANTIATE_COMPAT(fnCPP, fnCompat, T) \
-    template<>                                 \
+    template <>                                \
     AFAPI T fnCompat(const array &in) {        \
         return fnCPP<T>(in);                   \
     }
@@ -194,7 +275,7 @@ INSTANTIATE_COMPAT(anyTrue, anytrue, bool)
 #undef INSTANTIATE_COMPAT
 
 #define INSTANTIATE_REAL(fn, T)                                \
-    template<>                                                 \
+    template <>                                                \
     AFAPI void fn(T *val, unsigned *idx, const array &in) {    \
         double rval, ival;                                     \
         AF_THROW(af_i##fn##_all(&rval, &ival, idx, in.get())); \
@@ -202,7 +283,7 @@ INSTANTIATE_COMPAT(anyTrue, anytrue, bool)
     }
 
 #define INSTANTIATE_CPLX(fn, T, Tr)                            \
-    template<>                                                 \
+    template <>                                                \
     AFAPI void fn(T *val, unsigned *idx, const array &in) {    \
         double rval, ival;                                     \
         AF_THROW(af_i##fn##_all(&rval, &ival, idx, in.get())); \

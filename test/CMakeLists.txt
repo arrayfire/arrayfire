@@ -80,7 +80,7 @@ include(CMakeParseArguments)
 # Parameters
 # ----------
 # 'CXX11'       If set the tests will be compiled using c++11. Tests should strive
-#               to be C++98 compilient
+#               to be C++98 compliant
 # 'SRC'         The source files for the test
 # 'LIBRARIES'   Libraries other than ArrayFire that need to be linked
 # 'DEFINITIONS' Definitions that need to be defined
@@ -258,7 +258,7 @@ make_test(SRC qr_dense.cpp SERIAL)
 make_test(SRC random.cpp)
 make_test(SRC range.cpp)
 make_test(SRC rank_dense.cpp SERIAL)
-make_test(SRC reduce.cpp)
+make_test(SRC reduce.cpp CXX11)
 make_test(SRC regions.cpp)
 make_test(SRC reorder.cpp)
 make_test(SRC replace.cpp)

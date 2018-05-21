@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/dispatch.hpp>
@@ -25,7 +26,8 @@ using std::unique_ptr;
 
 namespace cuda {
 namespace kernel {
-template<typename Ti, typename To, af_op_t op, uint dim, uint DIMY>
+
+template <typename Ti, typename To, af_op_t op, uint dim, uint DIMY>
 __global__ static void reduce_dim_kernel(Param<To> out, CParam<Ti> in,
                                          uint blocks_x, uint blocks_y,
                                          uint offset_dim, bool change_nan,
@@ -104,7 +106,7 @@ __global__ static void reduce_dim_kernel(Param<To> out, CParam<Ti> in,
     }
 }
 
-template<typename Ti, typename To, af_op_t op, int dim>
+template <typename Ti, typename To, af_op_t op, int dim>
 void reduce_dim_launcher(Param<To> out, CParam<Ti> in, const uint threads_y,
                          const dim_t blocks_dim[4], bool change_nan,
                          double nanval) {
@@ -143,7 +145,7 @@ void reduce_dim_launcher(Param<To> out, CParam<Ti> in, const uint threads_y,
     POST_LAUNCH_CHECK();
 }
 
-template<typename Ti, typename To, af_op_t op, int dim>
+template <typename Ti, typename To, af_op_t op, int dim>
 void reduce_dim(Param<To> out, CParam<Ti> in, bool change_nan, double nanval) {
     uint threads_y = std::min(THREADS_Y, nextpow2(in.dims[dim]));
     uint threads_x = THREADS_X;
@@ -160,8 +162,8 @@ void reduce_dim(Param<To> out, CParam<Ti> in, bool change_nan, double nanval) {
         tmp.dims[dim]    = blocks_dim[dim];
 
         for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
-        tmp_alloc = memAlloc<To>(tmp_elements);
-        tmp.ptr   = tmp_alloc.get();
+        tmp_alloc  = memAlloc<To>(tmp_elements);
+        tmp.ptr    = tmp_alloc.get();
 
         for (int k = dim + 1; k < 4; k++) tmp.strides[k] *= blocks_dim[dim];
     }
@@ -182,7 +184,7 @@ void reduce_dim(Param<To> out, CParam<Ti> in, bool change_nan, double nanval) {
     }
 }
 
-template<typename Ti, typename To, af_op_t op, uint DIMX>
+template <typename Ti, typename To, af_op_t op, uint DIMX>
 __global__ static void reduce_first_kernel(Param<To> out, CParam<Ti> in,
                                            uint blocks_x, uint blocks_y,
                                            uint repeat, bool change_nan,
@@ -254,7 +256,7 @@ __global__ static void reduce_first_kernel(Param<To> out, CParam<Ti> in,
     if (tidx == 0) optr[blockIdx_x] = data_t<To>(out_val);
 }
 
-template<typename Ti, typename To, af_op_t op>
+template <typename Ti, typename To, af_op_t op>
 void reduce_first_launcher(Param<To> out, CParam<Ti> in, const uint blocks_x,
                            const uint blocks_y, const uint threads_x,
                            bool change_nan, double nanval) {
@@ -294,7 +296,7 @@ void reduce_first_launcher(Param<To> out, CParam<Ti> in, const uint blocks_x,
     POST_LAUNCH_CHECK();
 }
 
-template<typename Ti, typename To, af_op_t op>
+template <typename Ti, typename To, af_op_t op>
 void reduce_first(Param<To> out, CParam<Ti> in, bool change_nan,
                   double nanval) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
@@ -330,7 +332,7 @@ void reduce_first(Param<To> out, CParam<Ti> in, bool change_nan,
     }
 }
 
-template<typename Ti, typename To, af_op_t op>
+template <typename Ti, typename To, af_op_t op>
 void reduce(Param<To> out, CParam<Ti> in, int dim, bool change_nan,
             double nanval) {
     switch (dim) {
@@ -341,7 +343,7 @@ void reduce(Param<To> out, CParam<Ti> in, int dim, bool change_nan,
     }
 }
 
-template<typename Ti, typename To, af_op_t op>
+template <typename Ti, typename To, af_op_t op>
 To reduce_all(CParam<Ti> in, bool change_nan, double nanval) {
     int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
     bool is_linear  = (in.strides[0] == 1);
@@ -358,7 +360,6 @@ To reduce_all(CParam<Ti> in, bool change_nan, double nanval) {
                 in.strides[k] = in_elements;
             }
         }
-
         uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
         threads_x      = std::min(threads_x, THREADS_PER_BLOCK);
         uint threads_y = THREADS_PER_BLOCK / threads_x;
@@ -411,7 +412,7 @@ To reduce_all(CParam<Ti> in, bool change_nan, double nanval) {
         for (int i = 0; i < in_elements; i++) {
             compute_t<To> in_val = transform(h_data[i]);
             if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval_to;
-            out = reduce(out, in_val);
+            out                    = reduce(out, in_val);
         }
 
         return data_t<To>(out);
