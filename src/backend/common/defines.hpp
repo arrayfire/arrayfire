@@ -51,8 +51,10 @@ typedef enum {
 } AF_BATCH_KIND;
 
 #ifdef OS_WIN
-#include <WinDef.h>
+#include <Windows.h>
 using LibHandle = HMODULE;
+static const char* librarySuffix = ".dll";
+static const char* libraryPrefix = "";
 #elif defined(OS_MAC)
 static const char* librarySuffix = ".dylib";
 static const char* libraryPrefix = "lib";

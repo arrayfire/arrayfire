@@ -30,12 +30,12 @@ namespace {
 namespace common {
 
 #ifdef OS_WIN
-void* DependencyModule::getFunctionPointer(LibHandle handle, const char* name) {
+void* DependencyModule::getFunctionPointer(LibHandle handle, const char* symbolName) {
     return GetProcAddress(handle, symbolName);
 }
 #else
-void* DependencyModule::getFunctionPointer(LibHandle handle, const char* name) {
-    return dlsym(handle, name);
+void* DependencyModule::getFunctionPointer(LibHandle handle, const char* symbolName) {
+    return dlsym(handle, symbolName);
 }
 #endif
 

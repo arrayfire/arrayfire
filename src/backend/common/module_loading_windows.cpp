@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <module_loading.hpp>
+#include <common/module_loading.hpp>
 #include <common/defines.hpp>
 
 #include <string>
@@ -26,11 +26,9 @@ void unloadLibrary(LibHandle handle) {
 }
 
 string getErrorMessage() {
-    LPVOID lpMsgBuf;
-    LPVOID lpDisplayBuf;
+    const char* lpMsgBuf;
     DWORD dw = GetLastError();
 
-    size_t characters_in_message;
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
                   FORMAT_MESSAGE_FROM_SYSTEM |
                   FORMAT_MESSAGE_IGNORE_INSERTS,
