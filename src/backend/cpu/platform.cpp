@@ -86,7 +86,7 @@ CPUInfo::CPUInfo()
             mNumCores = mNumLogCpus = 1;
         }
     } else {
-        mVendorId = "Unkown";
+        mVendorId = "Unknown";
     }
     // Get processor brand string
     // This seems to be working for both Intel & AMD vendors

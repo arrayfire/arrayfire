@@ -108,16 +108,15 @@ af_err af_load_image_native(af_array *out, const char* filename)
     try {
         ARG_ASSERT(1, filename != NULL);
 
-        // for statically linked FI
-        FI_Init();
+        FreeImage_Module& _ = getFreeImagePlugin();
 
         // set your own FreeImage error handler
-        FreeImage_SetOutputMessage(FreeImageErrorHandler);
+        _.FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
         // try to guess the file format from the file extension
-        FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(filename);
+        FREE_IMAGE_FORMAT fif = _.FreeImage_GetFileType(filename, 0);
         if (fif == FIF_UNKNOWN) {
-            fif = FreeImage_GetFIFFromFilename(filename);
+            fif = _.FreeImage_GetFIFFromFilename(filename);
         }
 
         if(fif == FIF_UNKNOWN) {
@@ -128,21 +127,18 @@ af_err af_load_image_native(af_array *out, const char* filename)
         if(fif == FIF_JPEG) flags = flags | JPEG_ACCURATE;
 
         // check that the plugin has reading capabilities ...
-        FIBITMAP* pBitmap = NULL;
-        if (FreeImage_FIFSupportsReading(fif)) {
-            pBitmap = FreeImage_Load(fif, filename, flags);
+        bitmap_ptr pBitmap = make_bitmap_ptr(nullptr);
+        if (_.FreeImage_FIFSupportsReading(fif)) {
+            pBitmap.reset(_.FreeImage_Load(fif, filename, flags));
         }
 
         if(pBitmap == NULL) {
             AF_ERROR("FreeImage Error: Error reading image or file does not exist", AF_ERR_RUNTIME);
         }
 
-        // make sure pBitmap is unleaded automatically, no matter how we exit this function
-        FI_BitmapResource bitmapUnloader(pBitmap);
-
         // check image color type
-        uint color_type = FreeImage_GetColorType(pBitmap);
-        const uint fi_bpp = FreeImage_GetBPP(pBitmap);
+        uint color_type = _.FreeImage_GetColorType(pBitmap.get());
+        const uint fi_bpp = _.FreeImage_GetBPP(pBitmap.get());
         //int fi_color = (int)((fi_bpp / 8.0) + 0.5);        //ceil
         int fi_color;
         switch(color_type) {
@@ -165,15 +161,15 @@ af_err af_load_image_native(af_array *out, const char* filename)
         }
 
         // data type
-        FREE_IMAGE_TYPE image_type = FreeImage_GetImageType(pBitmap);
+        FREE_IMAGE_TYPE image_type = _.FreeImage_GetImageType(pBitmap.get());
 
         // sizes
-        uint fi_w = FreeImage_GetWidth(pBitmap);
-        uint fi_h = FreeImage_GetHeight(pBitmap);
+        uint fi_w = _.FreeImage_GetWidth(pBitmap.get());
+        uint fi_h = _.FreeImage_GetHeight(pBitmap.get());
 
         // FI = row major | AF = column major
-        uint nSrcPitch = FreeImage_GetPitch(pBitmap);
-        const uchar* pSrcLine = FreeImage_GetBits(pBitmap) + nSrcPitch * (fi_h - 1);
+        uint nSrcPitch = _.FreeImage_GetPitch(pBitmap.get());
+        const uchar* pSrcLine = _.FreeImage_GetBits(pBitmap.get()) + nSrcPitch * (fi_h - 1);
 
         // result image
         af_array rImage;
@@ -298,15 +294,15 @@ af_err af_save_image_native(const char* filename, const af_array in)
 
         ARG_ASSERT(0, filename != NULL);
 
-        FI_Init();
+        FreeImage_Module& _ = getFreeImagePlugin();
 
         // set your own FreeImage error handler
-        FreeImage_SetOutputMessage(FreeImageErrorHandler);
+        _.FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
         // try to guess the file format from the file extension
-        FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(filename);
+        FREE_IMAGE_FORMAT fif = _.FreeImage_GetFileType(filename, 0);
         if (fif == FIF_UNKNOWN) {
-            fif = FreeImage_GetFIFFromFilename(filename);
+            fif = _.FreeImage_GetFIFFromFilename(filename);
         }
 
         if(fif == FIF_UNKNOWN) {
@@ -339,11 +335,11 @@ af_err af_save_image_native(const char* filename, const af_array in)
         FREE_IMAGE_TYPE fit_type = getFIT(channels, type);
 
         // create the result image storage using FreeImage
-        FIBITMAP* pResultBitmap = NULL;
+        bitmap_ptr pResultBitmap = make_bitmap_ptr(nullptr);
         switch(type) {
-            case u8:  pResultBitmap = FreeImage_AllocateT(fit_type, fi_w, fi_h, fi_bpp); break;
-            case u16: pResultBitmap = FreeImage_AllocateT(fit_type, fi_w, fi_h, fi_bpp); break;
-            case f32: pResultBitmap = FreeImage_AllocateT(fit_type, fi_w, fi_h, fi_bpp); break;
+            case u8:  pResultBitmap.reset(_.FreeImage_AllocateT(fit_type, fi_w, fi_h, fi_bpp, 0, 0, 0)); break;
+            case u16: pResultBitmap.reset(_.FreeImage_AllocateT(fit_type, fi_w, fi_h, fi_bpp, 0, 0, 0)); break;
+            case f32: pResultBitmap.reset(_.FreeImage_AllocateT(fit_type, fi_w, fi_h, fi_bpp, 0, 0, 0)); break;
             default: TYPE_ERROR(1, type);
         }
 
@@ -351,12 +347,9 @@ af_err af_save_image_native(const char* filename, const af_array in)
             AF_ERROR("FreeImage Error: Error creating image or file", AF_ERR_RUNTIME);
         }
 
-        // make sure pResultBitmap is unloaded automatically, no matter how we exit this function
-        FI_BitmapResource resultBitmapUnloader(pResultBitmap);
-
         // FI = row major | AF = column major
-        uint nDstPitch = FreeImage_GetPitch(pResultBitmap);
-        void* pDstLine = FreeImage_GetBits(pResultBitmap) + nDstPitch * (fi_h - 1);
+        uint nDstPitch = _.FreeImage_GetPitch(pResultBitmap.get());
+        void* pDstLine = _.FreeImage_GetBits(pResultBitmap.get()) + nDstPitch * (fi_h - 1);
 
         if(channels == AFFI_GRAY) {
             switch(type) {
@@ -385,7 +378,7 @@ af_err af_save_image_native(const char* filename, const af_array in)
         if(fif == FIF_JPEG) flags = flags | JPEG_QUALITYSUPERB;
 
         // now save the result image
-        if (!(FreeImage_Save(fif, pResultBitmap, filename, flags) == TRUE)) {
+        if (!(_.FreeImage_Save(fif, pResultBitmap.get(), filename, flags) == TRUE)) {
             AF_ERROR("FreeImage Error: Failed to save image", AF_ERR_RUNTIME);
         }
 

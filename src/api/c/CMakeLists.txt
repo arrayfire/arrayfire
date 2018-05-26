@@ -58,6 +58,7 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/corrcoef.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/covariance.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/data.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/det.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/diff.cpp
@@ -155,9 +156,10 @@ target_sources(c_api_interface
 if(FreeImage_FOUND AND AF_WITH_IMAGEIO)
   target_compile_definitions(c_api_interface INTERFACE WITH_FREEIMAGE)
   if (AF_WITH_STATIC_FREEIMAGE)
+    target_compile_definitions(c_api_interface INTERFACE FREEIMAGE_STATIC)
     target_link_libraries(c_api_interface INTERFACE FreeImage::FreeImage_STATIC)
   else ()
-    target_link_libraries(c_api_interface INTERFACE FreeImage::FreeImage)
+    target_include_directories(c_api_interface INTERFACE $<TARGET_PROPERTY:FreeImage::FreeImage,INTERFACE_INCLUDE_DIRECTORIES>)
     if (WIN32 AND AF_INSTALL_STANDALONE)
       install(FILES $<TARGET_FILE:FreeImage::FreeImage>
         DESTINATION ${AF_INSTALL_BIN_DIR}
