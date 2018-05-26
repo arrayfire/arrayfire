@@ -26,7 +26,7 @@
 #include <common/err_common.hpp>
 #include <handle.hpp>
 
-#include <DependencyModule.hpp>
+#include <common/DependencyModule.hpp>
 
 #include <string>
 #include <cstring>

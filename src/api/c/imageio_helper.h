@@ -10,7 +10,7 @@
 #ifndef IMAGEIO_HELPER_H
 #define IMAGEIO_HELPER_H
 
-#include <DependencyModule.hpp>
+#include <common/DependencyModule.hpp>
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <af/index.h>
@@ -22,7 +22,7 @@
 #include <functional>
 
 class FreeImage_Module {
-    DependencyModule module;
+    common::DependencyModule module;
 
 public:
     MODULE_MEMBER(FreeImage_Allocate);

@@ -1,16 +1,21 @@
+/*******************************************************
+ * Copyright (c) 2018, ArrayFire
+ * All rights reserved.
+ *
+ * This file is distributed under 3-clause BSD license.
+ * The complete license agreement can be obtained at:
+ * http://arrayfire.com/licenses/BSD-3-Clause
+ ********************************************************/
+
 #pragma once
-#include <dlfcn.h>
+#include <common/defines.hpp>
+
 #include <utility>
 #include <type_traits>
 #include <vector>
 #include <string>
 
-#if(OS_WIN)
-#include <Windows.h>
-using LibHandle = HMODULE;
-#else
-using LibHandle = void*;
-#endif
+namespace common {
 
 /// Allows you to create classes which dynamically load dependencies at runtime
 ///
@@ -45,6 +50,8 @@ public:
   /// library
   std::string getErrorMessage();
 };
+
+}
 
 /// Creates a function pointer
 #define MODULE_MEMBER(NAME)                     \
