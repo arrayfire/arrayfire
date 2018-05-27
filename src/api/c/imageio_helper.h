@@ -10,51 +10,54 @@
 #ifndef IMAGEIO_HELPER_H
 #define IMAGEIO_HELPER_H
 
-#include <FreeImage.h>
-
+#include <common/DependencyModule.hpp>
 #include <af/array.h>
-#include <af/index.h>
 #include <af/dim4.hpp>
+#include <af/index.h>
 #include <common/err_common.hpp>
 
-class FI_Manager
-{
-    public:
-    FI_Manager()
-    {
-#ifdef FREEIMAGE_LIB
-        FreeImage_Initialise();
-#endif
-    }
+#include <FreeImage.h>
 
-    ~FI_Manager()
-    {
-#ifdef FREEIMAGE_LIB
-        FreeImage_DeInitialise();
-#endif
-    }
-};
+#include <memory>
+#include <functional>
 
-static void FI_Init()
-{
-    static FI_Manager manager = FI_Manager();
-}
+class FreeImage_Module {
+    common::DependencyModule module;
 
-class FI_BitmapResource
-{
 public:
-    explicit FI_BitmapResource(FIBITMAP * p) :
-        pBitmap(p)
-    {
-    }
+    MODULE_MEMBER(FreeImage_Allocate);
+    MODULE_MEMBER(FreeImage_AllocateT);
+    MODULE_MEMBER(FreeImage_CloseMemory);
+    MODULE_MEMBER(FreeImage_DeInitialise);
+    MODULE_MEMBER(FreeImage_FIFSupportsReading);
+    MODULE_MEMBER(FreeImage_GetBPP);
+    MODULE_MEMBER(FreeImage_GetBits);
+    MODULE_MEMBER(FreeImage_GetColorType);
+    MODULE_MEMBER(FreeImage_GetFIFFromFilename);
+    MODULE_MEMBER(FreeImage_GetFileType);
+    MODULE_MEMBER(FreeImage_GetFileTypeFromMemory);
+    MODULE_MEMBER(FreeImage_GetHeight);
+    MODULE_MEMBER(FreeImage_GetImageType);
+    MODULE_MEMBER(FreeImage_GetPitch);
+    MODULE_MEMBER(FreeImage_GetWidth);
+    MODULE_MEMBER(FreeImage_Initialise);
+    MODULE_MEMBER(FreeImage_Load);
+    MODULE_MEMBER(FreeImage_LoadFromMemory);
+    MODULE_MEMBER(FreeImage_OpenMemory);
+    MODULE_MEMBER(FreeImage_Save);
+    MODULE_MEMBER(FreeImage_SaveToMemory);
+    MODULE_MEMBER(FreeImage_SeekMemory);
+    MODULE_MEMBER(FreeImage_SetOutputMessage);
+    MODULE_MEMBER(FreeImage_Unload);
 
-    ~FI_BitmapResource()
-    {
-        FreeImage_Unload(pBitmap);
-    }
-private:
-    FIBITMAP * pBitmap;
+    FreeImage_Module();
+    ~FreeImage_Module();
 };
+
+FreeImage_Module& getFreeImagePlugin();
+
+using bitmap_ptr = std::unique_ptr<FIBITMAP, std::function<void(FIBITMAP*)>>;
+bitmap_ptr make_bitmap_ptr(FIBITMAP*);
 
 typedef enum {
     AFFI_GRAY = 1,
