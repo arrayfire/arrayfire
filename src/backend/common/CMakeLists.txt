@@ -1,4 +1,9 @@
-
+# Copyright (c) 2018, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
 
 add_library(afcommon_interface INTERFACE)
 
@@ -6,10 +11,13 @@ target_sources(afcommon_interface
   INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/ArrayInfo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ArrayInfo.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FFTPlanCache.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MatrixAlgebraHandle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MemoryManager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MersenneTwister.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/module_loading.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas_headers.hpp
@@ -28,6 +36,12 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/util.hpp
     ${PROJECT_BINARY_DIR}/version.hpp
   )
+
+if(WIN32)
+target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_windows.cpp)
+else()
+target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_unix.cpp)
+endif()
 
 target_include_directories(afcommon_interface
   INTERFACE
