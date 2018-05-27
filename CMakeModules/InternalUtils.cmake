@@ -68,6 +68,7 @@ macro(arrayfire_set_cmake_default_variables)
 
   set(CMAKE_CXX_STANDARD 11)
   set(CMAKE_CXX_EXTENSIONS OFF)
+  set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
   # Set a default build type if none was specified
   if(NOT CMAKE_BUILD_TYPE)
