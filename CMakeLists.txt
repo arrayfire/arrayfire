@@ -333,6 +333,10 @@ configure_package_config_file(
 # TODO(umar): Disable for now. Causing issues with builds on windows.
 #export(PACKAGE ArrayFire)
 
+# Unset the visibility to avoid setting policy commands for older versions of
+# CMake for examples and tests.
+unset(CMAKE_CXX_VISIBILITY_PRESET)
+
 include(CTest)
 
 # Handle depricated BUILD_TEST variable if found.
