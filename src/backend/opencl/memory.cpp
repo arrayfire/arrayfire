@@ -12,6 +12,11 @@
 #include <types.hpp>
 #include <err_opencl.hpp>
 
+#include <common/MemoryManagerImpl.hpp>
+
+template class common::MemoryManager<opencl::MemoryManager>;
+template class common::MemoryManager<opencl::MemoryManagerPinned>;
+
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
 #endif
