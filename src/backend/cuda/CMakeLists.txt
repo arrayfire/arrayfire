@@ -115,7 +115,7 @@ endfunction()
 
 arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
 if(NOT MSVC)
-  set(cuda_cxx_flags "${cuda_cxx_flags} -Xcompiler -fPIC")
+  set(cuda_cxx_flags "${cuda_cxx_flags} -Xcompiler -fPIC  -Xcompiler=${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden")
 endif()
 
 if(AF_WITH_NONFREE AND CMAKE_VERSION VERSION_LESS "3.7")
