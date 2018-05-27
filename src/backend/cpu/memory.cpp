@@ -13,6 +13,10 @@
 #include <platform.hpp>
 #include <queue.hpp>
 
+#include <common/MemoryManagerImpl.hpp>
+
+template class common::MemoryManager<cpu::MemoryManager>;
+
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
 #endif
