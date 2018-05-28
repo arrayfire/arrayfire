@@ -8,9 +8,9 @@
  ********************************************************/
 
 #if CPLX
-    #define IS_NAN(in) !((in.x) == (in.x)) || !((in.y) == (in.y))
+inline bool is_nan(T in) { return (in.x != in.x) || (in.y != in.y); }
 #else
-    #define IS_NAN(in) !((in) == (in))
+inline bool is_nan(T in) { return (in != in); }
 #endif
 
 #if CPLX
@@ -20,7 +20,7 @@ void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
 {
     if ((sabs(lhs[0]) > sabs(rhs)) ||
         (sabs(lhs[0]) == sabs(rhs)) &&
-        !(IS_NAN(lhs[0]))) {
+        !is_nan(lhs[0])) {
         *lhs = rhs;
         *lidx = ridx;
     }
@@ -32,20 +32,19 @@ void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
 {
     if ((sabs(lhs[0]) < sabs(rhs)) ||
         (sabs(lhs[0]) == sabs(rhs)) &&
-        !(IS_NAN(lhs[0]))) {
+        !is_nan(lhs[0])) {
         *lhs = rhs;
         *lidx = ridx;
     }
 }
 #endif
 #else
-#define sabs(in) in
 #ifdef MIN_OP
 void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
 {
     if (((*lhs > rhs) ||
         (*lhs == rhs)) &&
-        !(IS_NAN(*lhs))) {
+        !is_nan(*lhs)) {
         *lhs = rhs;
         *lidx = ridx;
     }
@@ -57,7 +56,7 @@ void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
 {
     if (((*lhs < rhs) ||
         (*lhs == rhs)) &&
-        !(IS_NAN(*lhs))) {
+        !is_nan(*lhs)) {
         *lhs = rhs;
         *lidx = ridx;
     }
