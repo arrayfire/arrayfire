@@ -1,5 +1,16 @@
 
 #include <common/MemoryManager.hpp>
+#include <common/Logger.hpp>
+
+#include <string>
+#include <vector>
+
+using std::max;
+using std::stoi;
+using std::string;
+using std::vector;
+
+using spdlog::logger;
 
 namespace common
 {
@@ -26,7 +37,8 @@ void MemoryManager<T>::cleanDeviceMemoryManager(int device) {
     // This vector is used to store the pointers which will be deleted by
     // the memory manager. We are using this to avoid calling free while
     // the lock is being held becasue the CPU backend calls sync.
-    std::vector<void*> free_ptrs;
+    vector<void*> free_ptrs;
+    size_t bytes_freed = 0;
     memory_info& current = memory[device];
     {
         lock_guard_t lock(this->memory_mutex);
@@ -42,10 +54,13 @@ void MemoryManager<T>::cleanDeviceMemoryManager(int device) {
                 free_ptrs.push_back(p);
             }
             current.total_bytes -= num_ptrs * kv.first;
+            bytes_freed += num_ptrs * kv.first;
             current.total_buffers -= num_ptrs;
         }
         current.free_map.clear();
     }
+
+    AF_TRACE("GC: Clearing {} buffers {}", free_ptrs.size(), bytes_to_string(bytes_freed));
     // Free memory outside of the lock
     for(auto ptr : free_ptrs) {
         this->nativeFree(ptr);
@@ -54,23 +69,24 @@ void MemoryManager<T>::cleanDeviceMemoryManager(int device) {
 
 template<typename T>
 MemoryManager<T>::MemoryManager(int num_devices,
-                              unsigned max_buffers,
-                              bool debug)
+                                unsigned max_buffers,
+                                bool debug)
     : mem_step_size(1024),
       max_buffers(max_buffers),
       memory(num_devices),
-      debug_mode(debug) {
+      debug_mode(debug),
+      logger (logger_factory("mem")) {
     // Check for environment variables
 
     // Debug mode
-    std::string env_var = getEnvVar("AF_MEM_DEBUG");
+    string env_var = getEnvVar("AF_MEM_DEBUG");
     if (!env_var.empty()) this->debug_mode = env_var[0] != '0';
     if (this->debug_mode) mem_step_size = 1;
 
     // Max Buffer count
     env_var = getEnvVar("AF_MAX_BUFFERS");
     if (!env_var.empty())
-      this->max_buffers = std::max(1, std::stoi(env_var));
+      this->max_buffers = max(1, stoi(env_var));
 }
 
 template<typename T>
@@ -105,7 +121,7 @@ void MemoryManager<T>::setMaxMemorySize() {
         // memsize returned 0, then use 1GB
         size_t memsize = this->getMaxMemorySize(n);
         memory[n].max_bytes = memsize == 0 ? ONE_GB :
-            std::max(memsize * 0.75, (double)(memsize - ONE_GB));
+            max(memsize * 0.75, (double)(memsize - ONE_GB));
     }
 }
 
@@ -335,6 +351,11 @@ size_t MemoryManager<T>::getMaxBytes() {
 template<typename T>
 unsigned MemoryManager<T>::getMaxBuffers() {
     return this->max_buffers;
+}
+
+template<typename T>
+logger* MemoryManager<T>::getLogger() {
+    return this->logger.get();
 }
 
 template<typename T>

@@ -18,10 +18,14 @@
 #include <cusolverDn.hpp>
 #include <cusparse.hpp>
 
+
 #include <memory>
 #include <string>
 #include <vector>
 
+namespace spdlog {
+  class logger;
+}
 namespace cuda
 {
 int getBackend();
@@ -54,6 +58,8 @@ cudaStream_t getActiveStream();
 size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();
+
+spdlog::logger* getLogger();
 
 int setDevice(int device);
 

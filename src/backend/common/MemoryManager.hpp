@@ -22,6 +22,9 @@
 #include <unordered_map>
 #include <vector>
 
+namespace spdlog {
+  class logger;
+}
 namespace common
 {
 using mutex_t      = std::mutex;
@@ -77,13 +80,14 @@ class MemoryManager
     bool debug_mode;
 
     memory_info& getCurrentMemoryInfo();
+    std::shared_ptr<spdlog::logger> logger;
 
     inline int getActiveDeviceId();
     inline size_t getMaxMemorySize(int id);
     void cleanDeviceMemoryManager(int device);
 
   public:
-     MemoryManager(int num_devices, unsigned max_buffers, bool debug);
+    MemoryManager(int num_devices, unsigned max_buffers, bool debug);
 
     // Intended to be used with OpenCL backend, where
     // users are allowed to add external devices(context, device pair)
@@ -130,6 +134,7 @@ class MemoryManager
     inline void nativeFree(void *ptr);
     bool checkMemoryLimit();
   protected:
+    spdlog::logger* getLogger();
     MemoryManager() = delete;
     ~MemoryManager() = default;
     MemoryManager(const MemoryManager& other) = delete;

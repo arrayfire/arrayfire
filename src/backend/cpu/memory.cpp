@@ -8,10 +8,12 @@
  ********************************************************/
 
 #include <memory.hpp>
+
+#include <common/Logger.hpp>
 #include <err_cpu.hpp>
-#include <types.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <types.hpp>
 
 #include <common/MemoryManagerImpl.hpp>
 
@@ -24,6 +26,8 @@ template class common::MemoryManager<cpu::MemoryManager>;
 #ifndef AF_CPU_MEM_DEBUG
 #define AF_CPU_MEM_DEBUG 0
 #endif
+
+using common::bytes_to_string;
 
 using std::unique_ptr;
 using std::function;
@@ -178,12 +182,14 @@ size_t MemoryManager::getMaxMemorySize(int id)
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
     void *ptr = malloc(bytes);
+    AF_TRACE("{}: {} {}", __func__, bytes_to_string(bytes), ptr);
     if (!ptr) AF_ERROR("Unable to allocate memory", AF_ERR_NO_MEM);
     return ptr;
 }
 
 void MemoryManager::nativeFree(void *ptr)
 {
+    AF_TRACE("nativeFree: {}", ptr);
     // Make sure this pointer is not being used on the queue before freeing the memory.
     getQueue().sync();
     return free((void *)ptr);
