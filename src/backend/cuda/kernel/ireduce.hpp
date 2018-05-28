@@ -22,7 +22,7 @@ namespace cuda
 {
 namespace kernel
 {
-    template<typename T> __host__ __device__ 
+    template<typename T> __host__ __device__
     static double cabs(const T& in) { return (double)in; }
 
     template<> __host__ __device__
@@ -34,17 +34,17 @@ namespace kernel
     template<> __host__ __device__
     double cabs<cdouble>(const cdouble &in) { return (double)abs(in); }
 
-    template<typename T> __host__ __device__ 
-    static bool isNan(const T& in) { return in != in; }
+    template<typename T> __host__ __device__
+    static bool is_nan(const T& in) { return in != in; }
 
-    template<> __host__ __device__ 
-    bool isNan<cfloat>(const cfloat &in) { 
+    template<> __host__ __device__
+    bool is_nan<cfloat>(const cfloat &in) {
         return in.x != in.x || in.y != in.y;
     }
 
     template<> __host__ __device__
-    bool isNan<cdouble>(const cdouble &in) { 
-        return in.x != in.x || in.y != in.y; 
+    bool is_nan<cdouble>(const cdouble &in) {
+        return in.x != in.x || in.y != in.y;
     }
 
     template<af_op_t op, typename T>
@@ -55,16 +55,16 @@ namespace kernel
         __host__ __device__ MinMaxOp(T val, uint idx) :
             m_val(val), m_idx(idx)
         {
-            if (isNan(val)) {
+            if (is_nan(val)) {
                 m_val = Binary<T, op>::init();
             }
         }
 
         __host__ __device__ void operator()(T val, uint idx)
         {
-            if (!isNan(val) &&
-                (cabs(val) < cabs(m_val) ||
-                cabs(val) == cabs(m_val))) {
+            if ((cabs(val) < cabs(m_val) ||
+                cabs(val) == cabs(m_val)) &&
+                !is_nan(val)) {
                 m_val = val;
                 m_idx = idx;
             }
@@ -79,16 +79,16 @@ namespace kernel
         __host__ __device__ MinMaxOp(T val, uint idx) :
             m_val(val), m_idx(idx)
         {
-            if (isNan(val)) {
+            if (is_nan(val)) {
                 m_val = Binary<T, af_max_t>::init();
             }
         }
 
         __host__ __device__ void operator()(T val, uint idx)
         {
-            if (!isNan(val) &&
-                (cabs(val) > cabs(m_val) ||
-                cabs(val) == cabs(m_val))) {
+            if ((cabs(val) > cabs(m_val) ||
+                cabs(val) == cabs(m_val)) &&
+                !is_nan(val)) {
                 m_val = val;
                 m_idx = idx;
             }

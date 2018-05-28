@@ -20,7 +20,7 @@ template<typename T> double cabs(const T in) { return (double)in; }
 static double cabs(const char in) { return (double)(in > 0); }
 static double cabs(const cfloat &in) { return (double)abs(in); }
 static double cabs(const cdouble &in) { return (double)abs(in); }
-template<typename T> static bool isNan(T in) { return in != in; }
+template<typename T> static bool is_nan(T in) { return in != in; }
 
 template<af_op_t op, typename T>
 struct MinMaxOp
@@ -30,17 +30,17 @@ struct MinMaxOp
     MinMaxOp(T val, uint idx) :
         m_val(val), m_idx(idx)
     {
-        if (isNan(val)) {
+        if (is_nan(val)) {
             m_val = Binary<T, op>::init();
         }
     }
 
     void operator()(T val, uint idx)
     {
-        if (!isNan(val) &&
-            (cabs(val) < cabs(m_val) ||
+        if ((cabs(val) < cabs(m_val) ||
             cabs(val) == cabs(m_val)) &&
-            idx >= m_idx) {
+            idx >= m_idx &&
+            !is_nan(val)) {
             m_val = val;
             m_idx = idx;
         }
@@ -55,17 +55,17 @@ struct MinMaxOp<af_max_t, T>
     MinMaxOp(T val, uint idx) :
         m_val(val), m_idx(idx)
     {
-        if (isNan(val)) {
+        if (is_nan(val)) {
             m_val = Binary<T, af_max_t>::init();
         }
     }
 
     void operator()(T val, uint idx)
     {
-        if (!isNan(val) &&
-            (cabs(val) > cabs(m_val) ||
+        if ((cabs(val) > cabs(m_val) ||
             cabs(val) == cabs(m_val)) &&
-            idx >= m_idx) {
+            idx >= m_idx &&
+            !is_nan(val)) {
             m_val = val;
             m_idx = idx;
         }
