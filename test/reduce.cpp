@@ -536,13 +536,13 @@ TEST(MinMax, MinMaxNaN)
 TEST(MinMax, MinCplxNaN)
 {
     float real_wnan_data[] = {
-        0.005, NAN, -6.3, NAN, -0.5,
-        NAN, NAN, 0.2, -1205.4, 8.9
+        0.005f, NAN, -6.3f, NAN, -0.5f,
+        NAN, NAN, 0.2f, -1205.4f, 8.9f
     };
 
     float imag_wnan_data[] = {
-        NAN, NAN, -9.0, -0.005, -0.3,
-        0.007, NAN, 0.1, NAN, 4.5
+        NAN, NAN, -9.0f, -0.005f, -0.3f,
+        0.007f, NAN, 0.1f, NAN, 4.5f
     };
 
     int rows = 5;
@@ -551,9 +551,9 @@ TEST(MinMax, MinCplxNaN)
     array imag_wnan(rows, cols, imag_wnan_data);
     array a = af::complex(real_wnan, imag_wnan);
 
-    float gold_min_real[] = { -0.5, 0.2 };
-    float gold_min_imag[] = { -0.3, 0.1 };
-    
+    float gold_min_real[] = { -0.5f, 0.2f };
+    float gold_min_imag[] = { -0.3f, 0.1f };
+
     array min_val = af::min(a);
 
     vector< complex<float> > h_min_val(cols);
@@ -572,18 +572,18 @@ TEST(MinMax, MaxCplxNaN)
     //  and the other part is NaN.
     // There's a possibility where the NaN is turned into 0
     //  (since Binary<>::init() will initialize it to 0 in
-    //  for complex max op) during the comparisons, and so its 
-    //  magnitude will determine that that element is the max, 
-    //  whereas it should have been ignored since its other 
+    //  for complex max op) during the comparisons, and so its
+    //  magnitude will determine that that element is the max,
+    //  whereas it should have been ignored since its other
     //  part is NaN
     float real_wnan_data[] = {
-        0.005, NAN, -6.3, NAN, -0.5,
-        NAN, NAN, 0.2, -1205.4, 8.9
+        0.005f, NAN, -6.3f, NAN, -0.5f,
+        NAN, NAN, 0.2f, -1205.4f, 8.9f
     };
 
     float imag_wnan_data[] = {
-        NAN, NAN, -9.0, -0.005, -0.3,
-        0.007, NAN, 0.1, NAN, 4.5
+        NAN, NAN, -9.0f, -0.005f, -0.3f,
+        0.007f, NAN, 0.1f, NAN, 4.5f
     };
 
     int rows = 5;
@@ -592,9 +592,9 @@ TEST(MinMax, MaxCplxNaN)
     array imag_wnan(rows, cols, imag_wnan_data);
     array a = af::complex(real_wnan, imag_wnan);
 
-    float gold_max_real[] = { -6.3, 8.9 };
-    float gold_max_imag[] = { -9.0, 4.5 };
-    
+    float gold_max_real[] = { -6.3f, 8.9f };
+    float gold_max_imag[] = { -9.0f, 4.5f };
+
     array max_val = af::max(a);
 
     vector< complex<float> > h_max_val(cols);
