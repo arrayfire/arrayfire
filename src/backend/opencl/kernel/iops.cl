@@ -18,8 +18,9 @@ inline bool is_nan(T in) { return (in != in); }
 #ifdef MIN_OP
 void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
 {
-    if ((sabs(lhs[0]) > sabs(rhs)) ||
-        (sabs(lhs[0]) == sabs(rhs)) &&
+    if (((sabs(lhs[0]) > sabs(rhs)) ||
+         (sabs(lhs[0]) == sabs(rhs) &&
+          *lidx < ridx)) &&
         !is_nan(lhs[0])) {
         *lhs = rhs;
         *lidx = ridx;
@@ -30,8 +31,9 @@ void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
 #ifdef MAX_OP
 void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
 {
-    if ((sabs(lhs[0]) < sabs(rhs)) ||
-        (sabs(lhs[0]) == sabs(rhs)) &&
+    if (((sabs(lhs[0]) < sabs(rhs)) ||
+         (sabs(lhs[0]) == sabs(rhs) &&
+          *lidx > ridx)) &&
         !is_nan(lhs[0])) {
         *lhs = rhs;
         *lidx = ridx;
@@ -43,7 +45,7 @@ void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
 void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
 {
     if (((*lhs > rhs) ||
-        (*lhs == rhs)) &&
+         (*lhs == rhs && *lidx < ridx)) &&
         !is_nan(*lhs)) {
         *lhs = rhs;
         *lidx = ridx;
@@ -55,7 +57,7 @@ void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
 void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
 {
     if (((*lhs < rhs) ||
-        (*lhs == rhs)) &&
+         (*lhs == rhs && *lidx > ridx)) &&
         !is_nan(*lhs)) {
         *lhs = rhs;
         *lidx = ridx;

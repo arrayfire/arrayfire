@@ -63,7 +63,8 @@ namespace kernel
         __host__ __device__ void operator()(T val, uint idx)
         {
             if ((cabs(val) < cabs(m_val) ||
-                cabs(val) == cabs(m_val)) &&
+                 (cabs(val) == cabs(m_val) &&
+                  idx > m_idx)) &&
                 !is_nan(val)) {
                 m_val = val;
                 m_idx = idx;
@@ -87,7 +88,8 @@ namespace kernel
         __host__ __device__ void operator()(T val, uint idx)
         {
             if ((cabs(val) > cabs(m_val) ||
-                cabs(val) == cabs(m_val)) &&
+                 (cabs(val) == cabs(m_val) &&
+                  idx <= m_idx)) &&
                 !is_nan(val)) {
                 m_val = val;
                 m_idx = idx;
