@@ -7,20 +7,21 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <cuda_runtime.h>
-#include <platform.hpp>
-#include <err_cuda.hpp>
 #include <memory.hpp>
-#include <common/util.hpp>
-#include <types.hpp>
+
+#include <common/Logger.hpp>
 #include <common/dispatch.hpp>
+#include <common/util.hpp>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include <err_cuda.hpp>
+#include <platform.hpp>
+#include <types.hpp>
 
 #include <mutex>
 
 #include <common/MemoryManagerImpl.hpp>
-
 template class common::MemoryManager<cuda::MemoryManager>;
 template class common::MemoryManager<cuda::MemoryManagerPinned>;
 
@@ -31,6 +32,8 @@ template class common::MemoryManager<cuda::MemoryManagerPinned>;
 #ifndef AF_CUDA_MEM_DEBUG
 #define AF_CUDA_MEM_DEBUG 0
 #endif
+
+using common::bytesToString;
 
 using std::lock_guard;
 using std::recursive_mutex;
@@ -185,11 +188,13 @@ void *MemoryManager::nativeAlloc(const size_t bytes)
 {
     void *ptr = NULL;
     CUDA_CHECK(cudaMalloc(&ptr, bytes));
+    AF_TRACE("nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     return ptr;
 }
 
 void MemoryManager::nativeFree(void *ptr)
 {
+    AF_TRACE("nativeFree:          {}", ptr);
     cudaError_t err = cudaFree(ptr);
     if (err != cudaErrorCudartUnloading) {
         CUDA_CHECK(err);
@@ -222,11 +227,13 @@ void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
 {
     void *ptr;
     CUDA_CHECK(cudaMallocHost(&ptr, bytes));
+    AF_TRACE("Pinned::nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     return ptr;
 }
 
 void MemoryManagerPinned::nativeFree(void *ptr)
 {
+    AF_TRACE("Pinned::nativeFree:          {}", ptr);
     cudaError_t err = cudaFreeHost(ptr);
     if (err != cudaErrorCudartUnloading) {
         CUDA_CHECK(err);
