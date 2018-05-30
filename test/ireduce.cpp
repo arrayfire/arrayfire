@@ -337,3 +337,108 @@ TEST(IndexedReduce, MaxCplxNaN)
     }
 }
 
+TEST(IndexedReduce, MinPreferLargerIdxIfEqual)
+{
+    float test_data[] = {0.f, 50.f, 50.f, 0.f};
+    int len = 4;
+    array a(len, test_data);
+
+    float gold_min_val = 0.f;
+    int gold_min_idx = 3;
+
+    array min_val;
+    array min_idx;
+    min(min_val, min_idx, a);
+
+    vector<float> h_min_val(1);
+    min_val.host(&h_min_val[0]);
+
+    vector<int> h_min_idx(1);
+    min_idx.host(&h_min_idx[0]);
+
+    ASSERT_FLOAT_EQ(h_min_val[0], gold_min_val);
+    ASSERT_EQ(h_min_idx[0], gold_min_idx);
+}
+
+TEST(IndexedReduce, MaxPreferSmallerIdxIfEqual)
+{
+    float test_data[] = {0.f, 50.f, 50.f, 0.f};
+    int len = 4;
+    array a(len, test_data);
+
+    float gold_max_val = 50.f;
+    int gold_max_idx = 1;
+
+    array max_val;
+    array max_idx;
+    max(max_val, max_idx, a);
+
+    vector<float> h_max_val(1);
+    max_val.host(&h_max_val[0]);
+
+    vector<int> h_max_idx(1);
+    max_idx.host(&h_max_idx[0]);
+
+    ASSERT_FLOAT_EQ(h_max_val[0], gold_max_val);
+    ASSERT_EQ(h_max_idx[0], gold_max_idx);
+}
+
+TEST(IndexedReduce, MinCplxPreferLargerIdxIfEqual)
+{
+    float real_wnan_data[] = { 0.f, 50.f, 50.f, 0.f };
+    float imag_wnan_data[] = { 0.f, 50.f, 50.f, 0.f };
+
+    int len = 4;
+    array real_wnan(len, real_wnan_data);
+    array imag_wnan(len, imag_wnan_data);
+    array a = af::complex(real_wnan, imag_wnan);
+
+    float gold_min_real = 0.f;
+    float gold_min_imag = 0.f;
+    int gold_min_idx = 3;
+
+    array min_val;
+    array min_idx;
+    min(min_val, min_idx, a);
+
+    vector< complex<float> > h_min_val(1);
+    min_val.host(&h_min_val[0]);
+
+    vector<int> h_min_idx(1);
+    min_idx.host(&h_min_idx[0]);
+
+    ASSERT_FLOAT_EQ(h_min_val[0].real(), gold_min_real);
+    ASSERT_FLOAT_EQ(h_min_val[0].imag(), gold_min_imag);
+
+    ASSERT_EQ(h_min_idx[0], gold_min_idx);
+}
+
+TEST(IndexedReduce, MaxCplxPreferSmallerIdxIfEqual)
+{
+    float real_wnan_data[] = { 0.f, 50.f, 50.f, 0.f };
+    float imag_wnan_data[] = { 0.f, 50.f, 50.f, 0.f };
+
+    int len = 4;
+    array real_wnan(len, real_wnan_data);
+    array imag_wnan(len, imag_wnan_data);
+    array a = af::complex(real_wnan, imag_wnan);
+
+    float gold_max_real = 50.f;
+    float gold_max_imag = 50.f;
+    int gold_max_idx = 1;
+
+    array max_val;
+    array max_idx;
+    max(max_val, max_idx, a);
+
+    vector< complex<float> > h_max_val(1);
+    max_val.host(&h_max_val[0]);
+
+    vector<int> h_max_idx(1);
+    max_idx.host(&h_max_idx[0]);
+
+    ASSERT_FLOAT_EQ(h_max_val[0].real(), gold_max_real);
+    ASSERT_FLOAT_EQ(h_max_val[0].imag(), gold_max_imag);
+
+    ASSERT_EQ(h_max_idx[0], gold_max_idx);
+}
