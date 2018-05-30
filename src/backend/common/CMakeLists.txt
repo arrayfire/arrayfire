@@ -14,10 +14,11 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FFTPlanCache.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Logger.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MatrixAlgebraHandle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MemoryManager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MersenneTwister.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/module_loading.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas_headers.hpp
@@ -31,6 +32,7 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/err_common.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/module_loading.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse_helpers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.hpp
@@ -50,6 +52,16 @@ target_include_directories(afcommon_interface
   )
 
 add_library(afcommon_lapack_interface INTERFACE)
+
+
+if(AF_WITH_LOGGING)
+  dependency_check(spdlog_FOUND "spdlog not found.")
+  target_compile_definitions(afcommon_interface
+    INTERFACE AF_WITH_LOGGING)
+  target_link_libraries(afcommon_interface
+    INTERFACE
+      spdlog::spdlog)
+endif()
 
 if(AF_WITH_GRAPHICS)
   dependency_check(glbinding_FOUND "glbinding not found.")

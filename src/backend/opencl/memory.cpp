@@ -12,8 +12,9 @@
 #include <types.hpp>
 #include <err_opencl.hpp>
 
-#include <common/MemoryManagerImpl.hpp>
+#include <common/Logger.hpp>
 
+#include <common/MemoryManagerImpl.hpp>
 template class common::MemoryManager<opencl::MemoryManager>;
 template class common::MemoryManager<opencl::MemoryManagerPinned>;
 
@@ -24,6 +25,8 @@ template class common::MemoryManager<opencl::MemoryManagerPinned>;
 #ifndef AF_OPENCL_MEM_DEBUG
 #define AF_OPENCL_MEM_DEBUG 0
 #endif
+
+using common::bytesToString;
 
 using std::unique_ptr;
 using std::function;
@@ -182,11 +185,14 @@ size_t MemoryManager::getMaxMemorySize(int id)
 
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
-    return (void *)(new cl::Buffer(getContext(), CL_MEM_READ_WRITE, bytes));
+    auto ptr = (void *)(new cl::Buffer(getContext(), CL_MEM_READ_WRITE, bytes));
+    AF_TRACE("nativeAlloc: {} {}", bytesToString(bytes), ptr);
+    return ptr;
 }
 
 void MemoryManager::nativeFree(void *ptr)
 {
+    AF_TRACE("nativeFree:          {}", ptr);
     delete (cl::Buffer *)ptr;
 }
 
@@ -226,12 +232,14 @@ void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
     void *ptr = NULL;
     cl::Buffer* buf = new cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, bytes);
     ptr = getQueue().enqueueMapBuffer(*buf, true, CL_MAP_READ | CL_MAP_WRITE, 0, bytes);
+    AF_TRACE("Pinned::nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     pinnedMaps[opencl::getActiveDeviceId()].emplace(ptr, buf);
     return ptr;
 }
 
 void MemoryManagerPinned::nativeFree(void *ptr)
 {
+    AF_TRACE("Pinned::nativeFree:          {}", ptr);
     int n = opencl::getActiveDeviceId();
     auto map = pinnedMaps[n];
     auto iter = map.find(ptr);
