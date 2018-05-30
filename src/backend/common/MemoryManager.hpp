@@ -77,10 +77,10 @@ class MemoryManager
     size_t mem_step_size;
     unsigned max_buffers;
     std::vector<memory_info> memory;
+    std::shared_ptr<spdlog::logger> logger;
     bool debug_mode;
 
     memory_info& getCurrentMemoryInfo();
-    std::shared_ptr<spdlog::logger> logger;
 
     inline int getActiveDeviceId();
     inline size_t getMaxMemorySize(int id);

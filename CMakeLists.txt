@@ -49,6 +49,7 @@ option(AF_BUILD_EXAMPLES "Build Examples"                            ON)
 
 option(AF_WITH_GRAPHICS "Build ArrayFire with Forge Graphics"  $<AND:${OPENGL_FOUND},${Forge_FOUND},${glbinding_FOUND}>)
 option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
+option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ${spdlog_FOUND})
 
 option(AF_INSTALL_STANDALONE "Build installers that include all dependencies" OFF)
 
@@ -61,8 +62,6 @@ cmake_dependent_option(AF_WITH_IMAGEIO "Build ArrayFire with Image IO support" $
                        "FreeImage_FOUND" OFF)
 cmake_dependent_option(AF_BUILD_FRAMEWORK "Build an ArrayFire framework for Apple platforms.(Experimental)" OFF
                        "APPLE" OFF)
-cmake_dependent_option(AF_WITH_LOGGING "Build ArrayFire with support for logging functionallity." ON
-                       "TARGET spdlog::spdlog" OFF)
 
 option(AF_WITH_STATIC_FREEIMAGE "Use Static FreeImage Lib" OFF)
 

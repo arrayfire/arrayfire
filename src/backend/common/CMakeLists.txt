@@ -55,6 +55,7 @@ add_library(afcommon_lapack_interface INTERFACE)
 
 
 if(AF_WITH_LOGGING)
+  dependency_check(spdlog_FOUND "spdlog not found.")
   target_compile_definitions(afcommon_interface
     INTERFACE AF_WITH_LOGGING)
   target_link_libraries(afcommon_interface
