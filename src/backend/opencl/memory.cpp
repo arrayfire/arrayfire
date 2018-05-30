@@ -26,7 +26,7 @@ template class common::MemoryManager<opencl::MemoryManagerPinned>;
 #define AF_OPENCL_MEM_DEBUG 0
 #endif
 
-using common::bytes_to_string;
+using common::bytesToString;
 
 using std::unique_ptr;
 using std::function;
@@ -186,7 +186,7 @@ size_t MemoryManager::getMaxMemorySize(int id)
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
     auto ptr = (void *)(new cl::Buffer(getContext(), CL_MEM_READ_WRITE, bytes));
-    AF_TRACE("{}: {} {}", __func__, bytes_to_string(bytes), ptr);
+    AF_TRACE("{}: {} {}", __func__, bytesToString(bytes), ptr);
     return ptr;
 }
 
@@ -232,7 +232,7 @@ void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
     void *ptr = NULL;
     cl::Buffer* buf = new cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, bytes);
     ptr = getQueue().enqueueMapBuffer(*buf, true, CL_MAP_READ | CL_MAP_WRITE, 0, bytes);
-    AF_TRACE("Pinned::{}: {} {}", __func__, bytes_to_string(bytes), ptr);
+    AF_TRACE("Pinned::{}: {} {}", __func__, bytesToString(bytes), ptr);
     pinnedMaps[opencl::getActiveDeviceId()].emplace(ptr, buf);
     return ptr;
 }

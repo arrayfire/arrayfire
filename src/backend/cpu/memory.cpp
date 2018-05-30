@@ -27,7 +27,7 @@ template class common::MemoryManager<cpu::MemoryManager>;
 #define AF_CPU_MEM_DEBUG 0
 #endif
 
-using common::bytes_to_string;
+using common::bytesToString;
 
 using std::unique_ptr;
 using std::function;
@@ -182,7 +182,7 @@ size_t MemoryManager::getMaxMemorySize(int id)
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
     void *ptr = malloc(bytes);
-    AF_TRACE("{}: {} {}", __func__, bytes_to_string(bytes), ptr);
+    AF_TRACE("{}: {} {}", __func__, bytesToString(bytes), ptr);
     if (!ptr) AF_ERROR("Unable to allocate memory", AF_ERR_NO_MEM);
     return ptr;
 }

@@ -16,6 +16,9 @@
 #include <spdlog/spdlog.h>
 #else
 
+/// This is a stub class to match the spdlog API in case it is not installed on
+/// the users system. Only the functions we used are implemented here. Other
+/// functions will need to be implemented later.
 namespace spdlog {
   class logger{ public: logger() {} };
   std::shared_ptr<logger>
@@ -27,8 +30,8 @@ namespace spdlog {
 #endif
 
 namespace common {
-    std::shared_ptr<spdlog::logger> logger_factory(std::string name);
-    std::string bytes_to_string(size_t bytes);
+    std::shared_ptr<spdlog::logger> loggerFactory(std::string name);
+    std::string bytesToString(size_t bytes);
 }
 
 #ifdef AF_WITH_LOGGING

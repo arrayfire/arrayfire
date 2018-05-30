@@ -60,7 +60,7 @@ void MemoryManager<T>::cleanDeviceMemoryManager(int device) {
         current.free_map.clear();
     }
 
-    AF_TRACE("GC: Clearing {} buffers {}", free_ptrs.size(), bytes_to_string(bytes_freed));
+    AF_TRACE("GC: Clearing {} buffers {}", free_ptrs.size(), bytesToString(bytes_freed));
     // Free memory outside of the lock
     for(auto ptr : free_ptrs) {
         this->nativeFree(ptr);
@@ -75,7 +75,7 @@ MemoryManager<T>::MemoryManager(int num_devices,
       max_buffers(max_buffers),
       memory(num_devices),
       debug_mode(debug),
-      logger (logger_factory("mem")) {
+      logger (loggerFactory("mem")) {
     // Check for environment variables
 
     // Debug mode

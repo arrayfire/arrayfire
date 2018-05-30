@@ -33,7 +33,7 @@ template class common::MemoryManager<cuda::MemoryManagerPinned>;
 #define AF_CUDA_MEM_DEBUG 0
 #endif
 
-using common::bytes_to_string;
+using common::bytesToString;
 
 using std::lock_guard;
 using std::recursive_mutex;
@@ -188,7 +188,7 @@ void *MemoryManager::nativeAlloc(const size_t bytes)
 {
     void *ptr = NULL;
     CUDA_CHECK(cudaMalloc(&ptr, bytes));
-    AF_TRACE("{}: {} {}", __func__, bytes_to_string(bytes), ptr);
+    AF_TRACE("{}: {} {}", __func__, bytesToString(bytes), ptr);
     return ptr;
 }
 
@@ -227,7 +227,7 @@ void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
 {
     void *ptr;
     CUDA_CHECK(cudaMallocHost(&ptr, bytes));
-    AF_TRACE("Pinned::{}: {} {}", __func__, bytes_to_string(bytes), ptr);
+    AF_TRACE("Pinned::{}: {} {}", __func__, bytesToString(bytes), ptr);
     return ptr;
 }
 

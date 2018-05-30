@@ -21,7 +21,7 @@ namespace common {
 
 #ifdef AF_WITH_LOGGING
 shared_ptr<logger>
-logger_factory(string name) {
+loggerFactory(string name) {
     auto logger = stdout_logger_mt(name);
     logger->set_pattern("[%n][%t] %v");
 
@@ -33,7 +33,7 @@ logger_factory(string name) {
     return logger;
 }
 
-string bytes_to_string(size_t bytes) {
+string bytesToString(size_t bytes) {
   static array<const char *, 5> units{"B", "KB", "MB", "GB", "TB"};
   int count = 0;
   double fbytes = static_cast<double>(bytes);
@@ -44,11 +44,11 @@ string bytes_to_string(size_t bytes) {
 }
 #else
   shared_ptr<logger>
-  logger_factory(string name) {
+  loggerFactory(string name) {
     return make_shared<logger>();
   }
 
-  string bytes_to_string(size_t bytes) {
+  string bytesToString(size_t bytes) {
     return "";
   }
 #endif
