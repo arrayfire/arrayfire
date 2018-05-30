@@ -182,14 +182,14 @@ size_t MemoryManager::getMaxMemorySize(int id)
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
     void *ptr = malloc(bytes);
-    AF_TRACE("{}: {} {}", __func__, bytesToString(bytes), ptr);
+    AF_TRACE("nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     if (!ptr) AF_ERROR("Unable to allocate memory", AF_ERR_NO_MEM);
     return ptr;
 }
 
 void MemoryManager::nativeFree(void *ptr)
 {
-    AF_TRACE("nativeFree: {}", ptr);
+    AF_TRACE("nativeFree: {: >8} {}", " ", ptr);
     // Make sure this pointer is not being used on the queue before freeing the memory.
     getQueue().sync();
     return free((void *)ptr);

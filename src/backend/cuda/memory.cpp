@@ -188,13 +188,13 @@ void *MemoryManager::nativeAlloc(const size_t bytes)
 {
     void *ptr = NULL;
     CUDA_CHECK(cudaMalloc(&ptr, bytes));
-    AF_TRACE("{}: {} {}", __func__, bytesToString(bytes), ptr);
+    AF_TRACE("nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     return ptr;
 }
 
 void MemoryManager::nativeFree(void *ptr)
 {
-    AF_TRACE("{}: {}", __func__, ptr);
+    AF_TRACE("nativeFree:          {}", ptr);
     cudaError_t err = cudaFree(ptr);
     if (err != cudaErrorCudartUnloading) {
         CUDA_CHECK(err);
@@ -227,13 +227,13 @@ void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
 {
     void *ptr;
     CUDA_CHECK(cudaMallocHost(&ptr, bytes));
-    AF_TRACE("Pinned::{}: {} {}", __func__, bytesToString(bytes), ptr);
+    AF_TRACE("Pinned::nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     return ptr;
 }
 
 void MemoryManagerPinned::nativeFree(void *ptr)
 {
-    AF_TRACE("Pinned::{}: {}", __func__, ptr);
+    AF_TRACE("Pinned::nativeFree:          {}", ptr);
     cudaError_t err = cudaFreeHost(ptr);
     if (err != cudaErrorCudartUnloading) {
         CUDA_CHECK(err);
