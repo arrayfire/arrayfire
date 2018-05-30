@@ -26,18 +26,15 @@
 
 namespace cpu
 {
-namespace kernel
-{
-    template<typename T> void evalArray(Param<T> in, TNJ::Node_ptr node);
+    namespace kernel
+    {
+        template<typename T> void evalArray(Param<T> in, TNJ::Node_ptr node);
 
-    template<typename T>
-    void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> nodes);
+        template<typename T>
+        void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> nodes);
 
-}
-}
+    }
 
-namespace cpu
-{
     template<typename T> class Array;
 
     using std::shared_ptr;

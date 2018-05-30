@@ -33,6 +33,7 @@ find_package(CBLAS)
 find_package(LAPACKE)
 find_package(Doxygen)
 find_package(MKL)
+find_package(spdlog QUIET)
 
 # Graphics dependencies
 find_package(glbinding QUIET)
@@ -48,6 +49,7 @@ option(AF_BUILD_EXAMPLES "Build Examples"                            ON)
 
 option(AF_WITH_GRAPHICS "Build ArrayFire with Forge Graphics"  $<AND:${OPENGL_FOUND},${Forge_FOUND},${glbinding_FOUND}>)
 option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
+option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ${spdlog_FOUND})
 
 option(AF_INSTALL_STANDALONE "Build installers that include all dependencies" OFF)
 
@@ -60,6 +62,7 @@ cmake_dependent_option(AF_WITH_IMAGEIO "Build ArrayFire with Image IO support" $
                        "FreeImage_FOUND" OFF)
 cmake_dependent_option(AF_BUILD_FRAMEWORK "Build an ArrayFire framework for Apple platforms.(Experimental)" OFF
                        "APPLE" OFF)
+
 option(AF_WITH_STATIC_FREEIMAGE "Use Static FreeImage Lib" OFF)
 
 set(AF_WITH_CPUID ON CACHE BOOL "Build with CPUID integration")
