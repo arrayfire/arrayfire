@@ -101,14 +101,11 @@ FreeImage_Module::FreeImage_Module()
 #else
 FreeImage_Module::FreeImage_Module()
   : module("freeimage", nullptr) {
-    printf(__FILE__"%d\n", __LINE__);
     if(!module.isLoaded()) {
-        printf(__FILE__"%d\n", __LINE__);
         string error_message = "Error loading FreeImage: " + module.getErrorMessage()
             + "\nFreeImage or one of it's dependencies failed to "
               "load. Try installing FreeImage or check if FreeImage is in the "
               "search path.";
-        printf(__FILE__"%d\n", __LINE__);
         AF_ERROR(error_message.c_str(), AF_ERR_LOAD_LIB);
     }
 #endif
@@ -139,12 +136,10 @@ FreeImage_Module::FreeImage_Module()
 
 #ifndef FREEIMAGE_STATIC
     if(!module.symbolsLoaded()) {
-        printf(__FILE__"%d\n", __LINE__);
         string error_message = "Error loading FreeImage: "
           + module.getErrorMessage()
           + "\nThe installed version of FreeImage is not compatible with "
             "ArrayFire. Please create an issue on which this error message";
-        printf(__FILE__"%d\n", __LINE__);
         AF_ERROR(error_message.c_str(), AF_ERR_LOAD_LIB);
     }
 #endif
