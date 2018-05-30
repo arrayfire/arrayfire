@@ -20,10 +20,9 @@
 /// the users system. Only the functions we used are implemented here. Other
 /// functions will need to be implemented later.
 namespace spdlog {
+    class logger { public: logger() {} };
     std::shared_ptr<spdlog::logger> get(std::string &name);
-    class logger{ public: logger() {} };
-    std::shared_ptr<spdlog::logger>
-    stdout_logger_mt(std::string&);
+    std::shared_ptr<spdlog::logger> stdout_logger_mt(std::string&);
     namespace level {
         enum enum_level { trace };
     }
