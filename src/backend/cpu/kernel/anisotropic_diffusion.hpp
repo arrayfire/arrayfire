@@ -27,7 +27,7 @@ namespace kernel
 
 int index(int x, int y, int stride1)
 {
-    return x+ y*stride1;
+    return y*stride1+x;
 }
 
 float quad(float value)
@@ -52,25 +52,29 @@ float computeGradientBasedUpdate(const float mct,
     df  = E - C;
     db  = C - W;
 
+    float gmsqf = (df*df + 0.25f*pow(dy+0.5f*(SE - NE), 2.f)) * mct ;
+    float gmsqb = (db*db + 0.25f*pow(dy+0.5f*(SW - NW), 2.f)) * mct;
     if (fftype==AF_FLUX_EXPONENTIAL) {
-        cx  = exp( (df*df + 0.25f*pow(dy+0.5f*(SE - NE), 2.f)) * mct );
-        cxd = exp( (db*db + 0.25f*pow(dy+0.5f*(SW - NW), 2.f)) * mct );
+        cx  = exp(gmsqf);
+        cxd = exp(gmsqb);
     } else {
-        cx  = quad( (df*df + 0.25f*pow(dy+0.5f*(SE - NE), 2.f)) * mct );
-        cxd = quad( (db*db + 0.25f*pow(dy+0.5f*(SW - NW), 2.f)) * mct );
+        cx  = quad(gmsqf);
+        cxd = quad(gmsqb);
     }
-    delta += (cx*df - cxd*db);
+    delta = (cx*df - cxd*db);
 
     // half-d's and conductance along second dimension
     df  = S - C;
     db  = C - N;
 
+    gmsqf = (df*df + 0.25f*pow(dx+0.5f*(SE - SW), 2.f)) * mct;
+    gmsqb = (db*db + 0.25f*pow(dx+0.5f*(NE - NW), 2.f)) * mct;
     if (fftype==AF_FLUX_EXPONENTIAL) {
-        cx  = exp( (df*df + 0.25f*pow(dx+0.5f*(SE - SW), 2.f)) * mct );
-        cxd = exp( (db*db + 0.25f*pow(dx+0.5f*(NE - NW), 2.f)) * mct );
+        cx  = exp(gmsqf);
+        cxd = exp(gmsqb);
     } else {
-        cx  = quad( (df*df + 0.25f*pow(dx+0.5f*(SE - SW), 2.f)) * mct );
-        cxd = quad( (db*db + 0.25f*pow(dx+0.5f*(NE - NW), 2.f)) * mct );
+        cx  = quad(gmsqf);
+        cxd = quad(gmsqb);
     }
     delta += (cx*df - cxd*db);
 
@@ -98,13 +102,8 @@ float computeCurvatureBasedUpdate(const float mct,
     df0 = df;
     db0 = db;
 
-    if (fftype==AF_FLUX_EXPONENTIAL) {
-        gmsqf = (df*df + 0.25f*pow(dy+0.5f*(SE - NE), 2.f));
-        gmsqb = (db*db + 0.25f*pow(dy+0.5f*(SW - NW), 2.f));
-    } else {
-        gmsqf = (df*df + 0.25f*pow(dy+0.5f*(SE - NE), 2.f));
-        gmsqb = (db*db + 0.25f*pow(dy+0.5f*(SW - NW), 2.f));
-    }
+    gmsqf = (df*df + 0.25f*pow(dy+0.5f*(SE - NE), 2.f));
+    gmsqb = (db*db + 0.25f*pow(dy+0.5f*(SW - NW), 2.f));
 
     gmf = sqrt(1.0e-10f + gmsqf);
     gmb = sqrt(1.0e-10f + gmsqb);
@@ -112,19 +111,14 @@ float computeCurvatureBasedUpdate(const float mct,
     cx  = exp( gmsqf * mct );
     cxd = exp( gmsqb * mct );
 
-    delta += ((df/gmf)*cx - (db/gmb)*cxd);
+    delta = ((df/gmf)*cx - (db/gmb)*cxd);
 
     // half-d's and conductance along second dimension
     df  = S - C;
     db  = C - N;
 
-    if (fftype==AF_FLUX_EXPONENTIAL) {
-        gmsqf = (df*df + 0.25f*pow(dx+0.5f*(SE - SW), 2.f));
-        gmsqb = (db*db + 0.25f*pow(dx+0.5f*(NE - NW), 2.f));
-    } else {
-        gmsqf = (df*df + 0.25f*pow(dx+0.5f*(SE - SW), 2.f));
-        gmsqb = (db*db + 0.25f*pow(dx+0.5f*(NE - NW), 2.f));
-    }
+    gmsqf = (df*df + 0.25f*pow(dx+0.5f*(SE - SW), 2.f));
+    gmsqb = (db*db + 0.25f*pow(dx+0.5f*(NE - NW), 2.f));
     gmf = sqrt(1.0e-10f + gmsqf);
     gmb = sqrt(1.0e-10f + gmsqb);
 
@@ -133,7 +127,7 @@ float computeCurvatureBasedUpdate(const float mct,
 
     delta += ((df/gmf)*cx - (db/gmb)*cxd);
 
-    if (delta>0){
+    if (delta>0.f) {
         prop_grad += (pow(fminf(db0, 0.0f),2.0f) + pow(fmaxf(df0, 0.0f), 2.0f));
         prop_grad += (pow(fminf( db, 0.0f),2.0f) + pow(fmaxf( df, 0.0f), 2.0f));
     } else {
@@ -147,59 +141,55 @@ float computeCurvatureBasedUpdate(const float mct,
 template<typename T, bool isMCDE>
 void anisotropicDiffusion(Param<T> inout, const float dt, const float mct, const af_flux_function fftype)
 {
-    auto dims = inout.dims();
-    auto strides = inout.strides();
+    const auto dims = inout.dims();
+    const auto strides = inout.strides();
+    const auto d1stride = strides[1];
+    const int d0 = dims[0] - 1;
+    const int d1 = dims[1] - 1;
+    const int d2 = dims[2];
+    const int d3 = dims[3];
 
-    for(int b3=0; b3<dims[3]; ++b3) {
-        for(int b2=0; b2<dims[2]; ++b2) {
-
+    for(int b3=0; b3<d2; ++b3) {
+        for(int b2=0; b2<d3; ++b2) {
             T* img = inout.get() + b2*strides[2] + b3*strides[3];
-
-            for(int j=1; j<dims[1]-1; ++j)
-            {
-                for(int i=1; i<dims[0]-1; ++i)
-                {
+            for(int j=1; j<d1; ++j) {
+                for(int i=1; i<d0; ++i) {
                     float C = 0.f;
                     float delta = 0.f;
 
-                    // int ip1 = clamp((int)i + 1, 0, (int)dims[0]-1);
-                    // int im1 = clamp((int)i - 1, 0, (int)dims[0]-1);
-                    // int jp1 = clamp((int)j + 1, 0, (int)dims[1]-1);
-                    // int jm1 = clamp((int)j - 1, 0, (int)dims[1]-1);
-                    // 400ms
-                    int ip1 = i + 1;
-                    int im1 = i - 1;
-                    int jp1 = j + 1;
-                    int jm1 = j - 1;
+                    const int ip1 = i + 1;
+                    const int im1 = i - 1;
+                    const int jp1 = j + 1;
+                    const int jm1 = j - 1;
 
                     if (isMCDE) {
                         delta = computeCurvatureBasedUpdate(
                                 mct,
-                                img[ index(im1, jm1, strides[1]) ],
-                                img[ index(i  , jm1, strides[1]) ],
-                                img[ index(ip1, jm1, strides[1]) ],
-                                img[ index(im1, j  , strides[1]) ],
-                                C = img[ index(i  , j,  strides[1]) ],
-                                img[ index(ip1, j  , strides[1]) ],
-                                img[ index(im1, jp1, strides[1]) ],
-                                img[ index(i  , jp1, strides[1]) ],
-                                img[ index(ip1, jp1, strides[1]) ], fftype);
+                                img[ index(im1, jm1, d1stride) ],
+                                img[ index(i  , jm1, d1stride) ],
+                                img[ index(ip1, jm1, d1stride) ],
+                                img[ index(im1, j  , d1stride) ],
+                            C = img[ index(i  , j,   d1stride) ],
+                                img[ index(ip1, j  , d1stride) ],
+                                img[ index(im1, jp1, d1stride) ],
+                                img[ index(i  , jp1, d1stride) ],
+                                img[ index(ip1, jp1, d1stride) ], fftype);
 
                     } else {
                         delta = computeGradientBasedUpdate(
                                 mct,
-                                img[ index(im1, jm1,  strides[1]) ],
-                                img[ index(i  , jm1,  strides[1]) ],
-                                img[ index(ip1, jm1,  strides[1]) ],
-                                img[ index(im1, j  ,  strides[1]) ],
-                                C = img[ index(i  , j,  strides[1]) ],
-                                img[ index(ip1, j  ,  strides[1]) ],
-                                img[ index(im1, jp1,  strides[1]) ],
-                                img[ index(i  , jp1,  strides[1]) ],
-                                img[ index(ip1, jp1,  strides[1]) ], fftype);
+                                img[ index(im1, jm1,  d1stride) ],
+                                img[ index(i  , jm1,  d1stride) ],
+                                img[ index(ip1, jm1,  d1stride) ],
+                                img[ index(im1, j  ,  d1stride) ],
+                            C = img[ index(i  , j,    d1stride) ],
+                                img[ index(ip1, j  ,  d1stride) ],
+                                img[ index(im1, jp1,  d1stride) ],
+                                img[ index(i  , jp1,  d1stride) ],
+                                img[ index(ip1, jp1,  d1stride) ], fftype);
                     }
 
-                    img[i + j*strides[1]] = (T)(C + delta*dt);
+                    img[i + j*d1stride] = (T)(C + delta*dt);
                 }
             }
         }
