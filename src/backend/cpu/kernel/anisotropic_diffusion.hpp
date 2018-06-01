@@ -149,8 +149,8 @@ void anisotropicDiffusion(Param<T> inout, const float dt, const float mct, const
     const int d2 = dims[2];
     const int d3 = dims[3];
 
-    for(int b3=0; b3<d2; ++b3) {
-        for(int b2=0; b2<d3; ++b2) {
+    for(int b3=0; b3<d3; ++b3) {
+        for(int b2=0; b2<d2; ++b2) {
             T* img = inout.get() + b2*strides[2] + b3*strides[3];
             for(int j=1; j<d1; ++j) {
                 for(int i=1; i<d0; ++i) {
