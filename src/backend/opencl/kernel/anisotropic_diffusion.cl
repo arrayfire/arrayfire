@@ -89,13 +89,8 @@ float computeCurvatureBasedUpdate(const float mct, const float C,
     df0 = df;
     db0 = db;
 
-    if (FLUX_FN==2) {
-        gmsqf = (df*df + 0.25f*pow(dy+0.5f*(SE - NE), 2));
-        gmsqb = (db*db + 0.25f*pow(dy+0.5f*(SW - NW), 2));
-    } else {
-        gmsqf = (df*df + 0.25f*pow(dy+0.5f*(SE - NE), 2));
-        gmsqb = (db*db + 0.25f*pow(dy+0.5f*(SW - NW), 2));
-    }
+    gmsqf = (df*df + 0.25f*pow(dy+0.5f*(SE - NE), 2));
+    gmsqb = (db*db + 0.25f*pow(dy+0.5f*(SW - NW), 2));
 
     gmf = sqrt(1.0e-10f + gmsqf);
     gmb = sqrt(1.0e-10f + gmsqb);
@@ -109,13 +104,8 @@ float computeCurvatureBasedUpdate(const float mct, const float C,
     df  = S - C;
     db  = C - N;
 
-    if (FLUX_FN==2) {
-        gmsqf = (df*df + 0.25f*pow(dx+0.5f*(SE - SW), 2));
-        gmsqb = (db*db + 0.25f*pow(dx+0.5f*(NE - NW), 2));
-    } else {
-        gmsqf = (df*df + 0.25f*pow(dx+0.5f*(SE - SW), 2));
-        gmsqb = (db*db + 0.25f*pow(dx+0.5f*(NE - NW), 2));
-    }
+    gmsqf = (df*df + 0.25f*pow(dx+0.5f*(SE - SW), 2));
+    gmsqb = (db*db + 0.25f*pow(dx+0.5f*(NE - NW), 2));
 
     gmf = sqrt(1.0e-10 + gmsqf);
     gmb = sqrt(1.0e-10 + gmsqb);

@@ -106,13 +106,8 @@ float computeCurvatureBasedUpdate(const float mct, const float C,
     df0 = df;
     db0 = db;
 
-    if (fftype==AF_FLUX_EXPONENTIAL) {
-        gmsqf = (df*df + 0.25f*powf(dy+0.5f*(SE - NE), 2));
-        gmsqb = (db*db + 0.25f*powf(dy+0.5f*(SW - NW), 2));
-    } else {
-        gmsqf = (df*df + 0.25f*powf(dy+0.5f*(SE - NE), 2));
-        gmsqb = (db*db + 0.25f*powf(dy+0.5f*(SW - NW), 2));
-    }
+    gmsqf = (df*df + 0.25f*powf(dy+0.5f*(SE - NE), 2));
+    gmsqb = (db*db + 0.25f*powf(dy+0.5f*(SW - NW), 2));
 
     gmf = sqrtf(1.0e-10 + gmsqf);
     gmb = sqrtf(1.0e-10 + gmsqb);
@@ -126,13 +121,8 @@ float computeCurvatureBasedUpdate(const float mct, const float C,
     df  = S - C;
     db  = C - N;
 
-    if (fftype==AF_FLUX_EXPONENTIAL) {
-        gmsqf = (df*df + 0.25f*powf(dx+0.5f*(SE - SW), 2));
-        gmsqb = (db*db + 0.25f*powf(dx+0.5f*(NE - NW), 2));
-    } else {
-        gmsqf = (df*df + 0.25f*powf(dx+0.5f*(SE - SW), 2));
-        gmsqb = (db*db + 0.25f*powf(dx+0.5f*(NE - NW), 2));
-    }
+    gmsqf = (df*df + 0.25f*powf(dx+0.5f*(SE - SW), 2));
+    gmsqb = (db*db + 0.25f*powf(dx+0.5f*(NE - NW), 2));
     gmf = sqrtf(1.0e-10 + gmsqf);
     gmb = sqrtf(1.0e-10 + gmsqb);
 
