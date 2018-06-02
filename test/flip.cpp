@@ -30,8 +30,8 @@ TEST(FlipTests, Test_flip_1D)
             << "at (" << i << ")";
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
 
 TEST(FlipTests, Test_flip_2D0)
@@ -54,8 +54,8 @@ TEST(FlipTests, Test_flip_2D0)
         }
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
 
 TEST(FlipTests, Test_flip_2D1)
@@ -78,8 +78,8 @@ TEST(FlipTests, Test_flip_2D1)
         }
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
 
 
@@ -101,8 +101,8 @@ TEST(FlipTests, Test_flip_1D_index)
             << "at (" << i << ")";
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
 
 TEST(FlipTests, Test_flip_2D_index00)
@@ -129,8 +129,8 @@ TEST(FlipTests, Test_flip_2D_index00)
         }
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
 
 TEST(FlipTests, Test_flip_2D_index01)
@@ -157,8 +157,8 @@ TEST(FlipTests, Test_flip_2D_index01)
         }
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
 
 TEST(FlipTests, Test_flip_2D_index10)
@@ -186,8 +186,8 @@ TEST(FlipTests, Test_flip_2D_index10)
         }
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
 
 TEST(FlipTests, Test_flip_2D_index11)
@@ -215,6 +215,6 @@ TEST(FlipTests, Test_flip_2D_index11)
         }
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }

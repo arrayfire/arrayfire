@@ -40,7 +40,7 @@ TEST(GFOR, Assign_Scalar_Span)
         ASSERT_EQ(hA[i], val);
     }
 
-    delete[] hA;
+    freeHost(hA);
 }
 
 TEST(GFOR, Assign_Scalar_Seq)
@@ -64,8 +64,8 @@ TEST(GFOR, Assign_Scalar_Seq)
         else ASSERT_EQ(hA[i], hB[i]);
     }
 
-    delete[] hA;
-    delete[] hB;
+    freeHost(hA);
+    freeHost(hB);
 }
 
 TEST(GFOR, Inc_Scalar_Span)
@@ -86,8 +86,8 @@ TEST(GFOR, Inc_Scalar_Span)
         ASSERT_EQ(hA[i], val + hB[i]);
     }
 
-    delete[] hA;
-    delete[] hB;
+    freeHost(hA);
+    freeHost(hB);
 }
 
 TEST(GFOR, Inc_Scalar_Seq)
@@ -111,8 +111,8 @@ TEST(GFOR, Inc_Scalar_Seq)
         else ASSERT_EQ(hA[i], hB[i]);
     }
 
-    delete[] hA;
-    delete[] hB;
+    freeHost(hA);
+    freeHost(hB);
 }
 
 TEST(GFOR, Assign_Array_Span)
@@ -132,7 +132,7 @@ TEST(GFOR, Assign_Array_Span)
         ASSERT_EQ(hA[i], val);
     }
 
-    delete[] hA;
+    freeHost(hA);
 }
 
 TEST(GFOR, Assign_Array_Seq)
@@ -162,9 +162,9 @@ TEST(GFOR, Assign_Array_Seq)
         }
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hC;
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hC);
 }
 
 TEST(GFOR, Inc_Array_Span)
@@ -186,8 +186,8 @@ TEST(GFOR, Inc_Array_Span)
         ASSERT_EQ(hA[i], val + hB[i]);
     }
 
-    delete[] hA;
-    delete[] hB;
+    freeHost(hA);
+    freeHost(hB);
 }
 
 TEST(GFOR, Inc_Array_Seq)
@@ -217,9 +217,9 @@ TEST(GFOR, Inc_Array_Seq)
         }
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hC;
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hC);
 }
 
 TEST(BatchFunc, 2D0)

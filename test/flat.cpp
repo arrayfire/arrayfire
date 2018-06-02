@@ -28,8 +28,8 @@ TEST(FlatTests, Test_flat_1D)
         ASSERT_EQ(h_in[i], h_out[i]);
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
 
 TEST(FlatTests, Test_flat_2D)
@@ -48,8 +48,8 @@ TEST(FlatTests, Test_flat_2D)
         ASSERT_EQ(h_in[i], h_out[i]);
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
 
 TEST(FlatTests, Test_flat_1D_index)
@@ -69,8 +69,8 @@ TEST(FlatTests, Test_flat_1D_index)
         ASSERT_EQ(h_in[i], h_out[i - st]);
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
 
 TEST(FlatTests, Test_flat_2D_index0)
@@ -97,8 +97,8 @@ TEST(FlatTests, Test_flat_2D_index0)
         }
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
 
 TEST(FlatTests, Test_flat_2D_index1)
@@ -126,6 +126,6 @@ TEST(FlatTests, Test_flat_2D_index1)
         }
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
