@@ -283,5 +283,7 @@ TEST(Array, TestEmptyImage) {
     ASSERT_EQ(nd, 0u);
     af_get_numdims(&nd, hout);
     ASSERT_EQ(nd, 0u);
+    ASSERT_EQ(AF_SUCCESS, af_release_array(h));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(hout));
 }
 

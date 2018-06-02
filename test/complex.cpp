@@ -37,9 +37,9 @@ const int num = 10;
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], CPLX(Tc)(h_a[i], h_b[i])) <<              \
                 "for values: " << h_a[i]  << "," << h_b[i] << std::endl; \
-        delete[] h_a;                                                   \
-        delete[] h_b;                                                   \
-        delete[] h_c;                                                   \
+        freeHost(h_a);                                                  \
+        freeHost(h_b);                                                  \
+        freeHost(h_c);                                                  \
     }                                                                   \
     TEST(ComplexTests, Test_cplx_##Ta##_##Tb##_left)                    \
     {                                                                   \
@@ -55,8 +55,8 @@ const int num = 10;
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], CPLX(Ta)(h_a[i], h_b)) <<                 \
                 "for values: " << h_a[i]  << "," << h_b << std::endl;   \
-        delete[] h_a;                                                   \
-        delete[] h_c;                                                   \
+        freeHost(h_a);                                                  \
+        freeHost(h_c);                                                  \
     }                                                                   \
                                                                         \
     TEST(ComplexTests, Test_cplx_##Ta##_##Tb##_right)                   \
@@ -73,8 +73,8 @@ const int num = 10;
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], CPLX(Tb)(h_a, h_b[i])) <<                 \
                 "for values: " << h_a  << "," << h_b[i] << std::endl;   \
-        delete[] h_b;                                                   \
-        delete[] h_c;                                                   \
+        freeHost(h_b);                                                  \
+        freeHost(h_c);                                                  \
     }                                                                   \
     TEST(ComplexTests, Test_##Ta##_##Tb##_Real)                         \
     {                                                                   \
@@ -92,8 +92,8 @@ const int num = 10;
         Tc *h_d = d.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_d[i], h_a[i]) << "at: " << i << std::endl;      \
-        delete[] h_a;                                                   \
-        delete[] h_d;                                                   \
+        freeHost(h_a);                                                  \
+        freeHost(h_d);                                                  \
     }                                                                   \
     TEST(ComplexTests, Test_##Ta##_##Tb##_Imag)                         \
     {                                                                   \
@@ -111,8 +111,8 @@ const int num = 10;
         Tc *h_d = d.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_d[i], h_b[i])  << "at: " << i << std::endl;     \
-        delete[] h_b;                                                   \
-        delete[] h_d;                                                   \
+        freeHost(h_b);                                                  \
+        freeHost(h_d);                                                  \
     }                                                                   \
     TEST(ComplexTests, Test_##Ta##_##Tb##_Conj)                         \
     {                                                                   \
@@ -131,8 +131,8 @@ const int num = 10;
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(conj(h_c[i]), h_d[i])                             \
                 << "at: " << i << std::endl;                            \
-        delete[] h_c;                                                   \
-        delete[] h_d;                                                   \
+        freeHost(h_c);                                                  \
+        freeHost(h_d);                                                  \
     }                                                                   \
 
 

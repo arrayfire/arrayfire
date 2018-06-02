@@ -122,6 +122,7 @@ void imageTest(string pTestFile, const float dt, const float K, const uint iters
         ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.025f));
 
         ASSERT_EQ(AF_SUCCESS, af_release_array(_inArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(_outArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(cstArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(minArray));

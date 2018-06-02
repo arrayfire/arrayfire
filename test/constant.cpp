@@ -57,6 +57,7 @@ void ConstantCCheck(T value) {
     for (int i = 0; i < num; i++) {
         ASSERT_EQ(::real(h_in[i]), val);
     }
+    ASSERT_EQ(AF_SUCCESS, af_release_array(out));
 }
 
 template<typename T>
@@ -138,6 +139,7 @@ void IdentityCCheck() {
                 ASSERT_EQ(h_in[i * num + j], T(0));
         }
     }
+    ASSERT_EQ(AF_SUCCESS, af_release_array(out));
 }
 
 template<typename T>

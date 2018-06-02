@@ -52,10 +52,9 @@ void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
     if(testFile.good()) {
         unsigned inputCount;
         testFile >> inputCount;
+        inputDims.resize(inputCount);
         for(unsigned i=0; i<inputCount; i++) {
-            af::dim4 temp(1);
-            testFile >> temp;
-            inputDims.push_back(temp);
+            testFile >> inputDims[i];
         }
 
         unsigned testCount;
