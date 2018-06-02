@@ -28,6 +28,7 @@ using std::cout;
 using std::endl;
 using std::ostream_iterator;
 using af::dtype_traits;
+using af::freeHost;
 
 void testGeneralAssignOneArray(string pTestFile, const dim_t ndims, af_index_t* indexs, int arrayDim)
 {
@@ -252,11 +253,11 @@ TEST(ArrayAssign, CPP_ASSIGN_INDEX)
         ASSERT_EQ(hAO[i], hAC[i]);
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hAC;
-    delete[] hAO;
-    delete[] hIdx;
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hAC);
+    freeHost(hAO);
+    freeHost(hIdx);
 }
 
 TEST(ArrayAssign, CPP_ASSIGN_INDEX_LOGICAL)
@@ -304,11 +305,11 @@ TEST(ArrayAssign, CPP_ASSIGN_INDEX_LOGICAL)
             ASSERT_EQ(hAO[i], hAC[i]);
         }
 
-        delete[] hA;
-        delete[] hB;
-        delete[] hAC;
-        delete[] hAO;
-        delete[] hIdx;
+        freeHost(hA);
+        freeHost(hB);
+        freeHost(hAC);
+        freeHost(hAO);
+        freeHost(hIdx);
     } catch(af::exception &ex) {
         FAIL() << ex.what() << std::endl;
     }
@@ -347,9 +348,9 @@ TEST(GeneralAssign, CPP_ASNN)
         }
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hIdx;
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hIdx);
 }
 
 TEST(GeneralAssign, CPP_SANN)
@@ -384,9 +385,9 @@ TEST(GeneralAssign, CPP_SANN)
         }
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hIdx;
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hIdx);
 }
 
 TEST(GeneralAssign, CPP_SSAN)
@@ -424,9 +425,9 @@ TEST(GeneralAssign, CPP_SSAN)
         }
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hIdx;
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hIdx);
 }
 
 TEST(GeneralAssign, CPP_AANN)
@@ -459,8 +460,8 @@ TEST(GeneralAssign, CPP_AANN)
         }
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hIdx0;
-    delete[] hIdx1;
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hIdx0);
+    freeHost(hIdx1);
 }

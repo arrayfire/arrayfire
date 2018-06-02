@@ -176,8 +176,8 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     ASSERT_EQ(AF_SUCCESS, af_release_array(dist_thr));
     ASSERT_EQ(AF_SUCCESS, af_release_array(train_idx));
     ASSERT_EQ(AF_SUCCESS, af_release_array(query_idx));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(query_feat_x));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(query_feat_y));
+    ASSERT_EQ(AF_SUCCESS, af_release_features(query_feat));
+    ASSERT_EQ(AF_SUCCESS, af_release_features(train_feat));
     ASSERT_EQ(AF_SUCCESS, af_release_array(train_feat_x_idx));
     ASSERT_EQ(AF_SUCCESS, af_release_array(train_feat_y_idx));
     ASSERT_EQ(AF_SUCCESS, af_release_array(query_feat_x_idx));
@@ -186,8 +186,6 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     ASSERT_EQ(AF_SUCCESS, af_release_array(trainArray));
     ASSERT_EQ(AF_SUCCESS, af_release_array(trainArray_f32));
     ASSERT_EQ(AF_SUCCESS, af_release_array(train_desc));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(train_feat_x));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(train_feat_y));
 }
 
 #define HOMOGRAPHY_INIT(desc, image, htype, rotate, size_ratio)                 \
