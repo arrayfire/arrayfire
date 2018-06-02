@@ -183,9 +183,9 @@ TEST(GeneralIndex, CPP_ASNN)
         }
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hIdx;
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hIdx);
 }
 
 TEST(GeneralIndex, CPP_SANN)
@@ -217,9 +217,9 @@ TEST(GeneralIndex, CPP_SANN)
         }
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hIdx;
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hIdx);
 }
 
 TEST(GeneralIndex, CPP_SSAN)
@@ -255,9 +255,9 @@ TEST(GeneralIndex, CPP_SSAN)
         }
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hIdx;
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hIdx);
 }
 
 TEST(GeneralIndex, CPP_AANN)
@@ -289,8 +289,8 @@ TEST(GeneralIndex, CPP_AANN)
         }
     }
 
-    delete[] hA;
-    delete[] hB;
-    delete[] hIdx0;
-    delete[] hIdx1;
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hIdx0);
+    freeHost(hIdx1);
 }

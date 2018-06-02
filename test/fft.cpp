@@ -511,8 +511,8 @@ TEST(fft, CPP_4D)
         ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
     }
 
-    delete[] h_b;
-    delete[] h_B;
+    freeHost(h_b);
+    freeHost(h_B);
 }
 
 TEST(ifft, CPP_4D)
@@ -530,8 +530,8 @@ TEST(ifft, CPP_4D)
         ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
     }
 
-    delete[] h_b;
-    delete[] h_B;
+    freeHost(h_b);
+    freeHost(h_B);
 }
 
 TEST(fft, GFOR)
@@ -551,8 +551,8 @@ TEST(fft, GFOR)
         ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << std::endl;
     }
 
-    delete[] h_b;
-    delete[] h_c;
+    freeHost(h_b);
+    freeHost(h_c);
 }
 
 TEST(fft2, GFOR)
@@ -572,8 +572,8 @@ TEST(fft2, GFOR)
         ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << std::endl;
     }
 
-    delete[] h_b;
-    delete[] h_c;
+    freeHost(h_b);
+    freeHost(h_c);
 }
 
 TEST(fft3, GFOR)
@@ -593,8 +593,8 @@ TEST(fft3, GFOR)
         ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << std::endl;
     }
 
-    delete[] h_b;
-    delete[] h_c;
+    freeHost(h_b);
+    freeHost(h_c);
 }
 
 TEST(fft, InPlace)
