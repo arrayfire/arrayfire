@@ -84,7 +84,10 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
     size_t localMemSize   = (num_shrd_elems + num_gauss_elems)*sizeof(outType);
     size_t MaxLocalSize   = getDevice(getActiveDeviceId()).getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
     if (localMemSize>MaxLocalSize) {
-        OPENCL_NOT_SUPPORTED();
+        char errMessage[256];
+        snprintf(errMessage, sizeof(errMessage),
+                 "\nOpenCL Bilateral filter doesn't support %f spatial sigma\n", s_sigma);
+        OPENCL_NOT_SUPPORTED(errMessage);
     }
 
     bilateralOp(EnqueueArgs(getQueue(), global, local),

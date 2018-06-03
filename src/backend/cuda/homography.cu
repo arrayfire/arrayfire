@@ -40,7 +40,7 @@ int homography(Array<T> &bestH,
     const unsigned nsamples = idims[0];
 
     unsigned iter = iterations;
-    Array<float> err = createEmptyArray<float>(af::dim4());
+    Array<float> err = *initArray<float>();
     if (htype == AF_HOMOGRAPHY_LMEDS) {
         iter = ::std::min(iter, (unsigned)(log(1.f - LMEDSConfidence) / log(1.f - pow(1.f - LMEDSOutlierRatio, 4.f))));
         err = createValueArray<float>(af::dim4(nsamples, iter), FLT_MAX);
@@ -51,8 +51,6 @@ int homography(Array<T> &bestH,
     Array<float> rnd = arithOp<float, af_mul_t>(initial, fctr, rdims);
 
     Array<T> tmpH = createValueArray<T>(af::dim4(9, iter), (T)0);
-
-    bestH = createValueArray<T>(af::dim4(3, 3), (T)0);
 
     return kernel::computeH<T>(bestH, tmpH, err,
                                x_src, y_src, x_dst, y_dst,

@@ -29,9 +29,8 @@ struct scan_dim
         const int D1 = D - 1;
         for (dim_t i = 0; i < odims[D1]; i++) {
             scan_dim<op, Ti, To, D1, inclusive_scan> func;
-            getQueue().enqueue(func,
-                    out, outOffset + i * ostrides[D1],
-                    in, inOffset + i * istrides[D1], dim);
+            func(out, outOffset + i * ostrides[D1], in,
+                 inOffset + i * istrides[D1], dim);
             if (D1 == dim) break;
         }
     }

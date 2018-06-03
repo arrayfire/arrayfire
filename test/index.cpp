@@ -28,6 +28,7 @@ using std::cout;
 using std::endl;
 using std::ostream_iterator;
 using af::dtype_traits;
+using af::freeHost;
 
 template<typename T, typename OP>
 void
@@ -709,6 +710,15 @@ TEST(lookup, largeDim)
     af::array output = af::lookup(input, indices);
 }
 
+TEST(lookup, Issue2009)
+{
+    af::array a   = af::range(af::dim4(1000, 1));
+    af::array idx = af::constant(0, 1, u32);
+    af::array b   = af::lookup(a, idx, 1);
+
+    ASSERT_EQ(true, af::allTrue<bool>(a==b));
+}
+
 TEST(SeqIndex, CPP_END)
 {
     using af::array;
@@ -728,8 +738,8 @@ TEST(SeqIndex, CPP_END)
     }
 
 
-    delete[] hA;
-    delete[] hB;
+    freeHost(hA);
+    freeHost(hB);
 }
 
 
@@ -751,8 +761,8 @@ TEST(SeqIndex, CPP_END_SEQ)
         ASSERT_EQ(hA[i + end_begin - 1], hB[i]);
     }
 
-    delete[] hA;
-    delete[] hB;
+    freeHost(hA);
+    freeHost(hB);
 }
 
 af::array cpp_scope_seq_test(const int num, const float val, const af::seq s)
@@ -777,7 +787,7 @@ TEST(SeqIndex, CPP_SCOPE_SEQ)
         ASSERT_EQ(hB[i], val);
     }
 
-    delete[] hB;
+    freeHost(hB);
 }
 
 af::array cpp_scope_arr_test(const int num, const float val)
@@ -801,7 +811,7 @@ TEST(SeqIndex, CPP_SCOPE_ARR)
         ASSERT_EQ(hB[i], val * (val - 1));
     }
 
-    delete[] hB;
+    freeHost(hB);
 }
 
 TEST(SeqIndex, CPPLarge)
@@ -875,9 +885,9 @@ TEST(SeqIndex, Cascade00)
         }
     }
 
-    delete[] h_a;
-    delete[] h_b;
-    delete[] h_c;
+    freeHost(h_a);
+    freeHost(h_b);
+    freeHost(h_c);
 }
 
 TEST(SeqIndex, Cascade01)
@@ -921,9 +931,9 @@ TEST(SeqIndex, Cascade01)
         }
     }
 
-    delete[] h_a;
-    delete[] h_b;
-    delete[] h_c;
+    freeHost(h_a);
+    freeHost(h_b);
+    freeHost(h_c);
 }
 
 TEST(SeqIndex, Cascade10)
@@ -967,9 +977,9 @@ TEST(SeqIndex, Cascade10)
         }
     }
 
-    delete[] h_a;
-    delete[] h_b;
-    delete[] h_c;
+    freeHost(h_a);
+    freeHost(h_b);
+    freeHost(h_c);
 }
 
 TEST(SeqIndex, Cascade11)
@@ -1014,9 +1024,9 @@ TEST(SeqIndex, Cascade11)
         }
     }
 
-    delete[] h_a;
-    delete[] h_b;
-    delete[] h_c;
+    freeHost(h_a);
+    freeHost(h_b);
+    freeHost(h_c);
 }
 
 TEST(ArrayIndex, CPP_INDEX_VECTOR)
@@ -1039,8 +1049,8 @@ TEST(ArrayIndex, CPP_INDEX_VECTOR)
         ASSERT_EQ(h_C[i], h_B[(int)h_inds[i]]);
     }
 
-    delete[] h_B;
-    delete[] h_C;
+    freeHost(h_B);
+    freeHost(h_C);
 }
 
 TEST(SeqIndex, CPP_INDEX_VECTOR)
@@ -1067,8 +1077,8 @@ TEST(SeqIndex, CPP_INDEX_VECTOR)
         ASSERT_EQ(h_C[i], h_B[i + st]);
     }
 
-    delete[] h_B;
-    delete[] h_C;
+    freeHost(h_B);
+    freeHost(h_C);
 }
 
 
@@ -1092,8 +1102,8 @@ TEST(ArrayIndex, CPP_INDEX_VECTOR_2D)
         ASSERT_EQ(h_C[i], h_B[(int)h_inds[i]]);
     }
 
-    delete[] h_B;
-    delete[] h_C;
+    freeHost(h_B);
+    freeHost(h_C);
 }
 
 TEST(SeqIndex, CPP_INDEX_VECTOR_2D)
@@ -1121,8 +1131,8 @@ TEST(SeqIndex, CPP_INDEX_VECTOR_2D)
         ASSERT_EQ(h_C[i], h_B[i + st]);
     }
 
-    delete[] h_B;
-    delete[] h_C;
+    freeHost(h_B);
+    freeHost(h_C);
 }
 
 template<typename T>
@@ -1328,7 +1338,7 @@ TEST(Indexing, SNIPPET_indexing_copy)
   // freed once.
 }
 
-TEST(Asssign, LinearIndexSeq)
+TEST(Assign, LinearIndexSeq)
 {
     using af::array;
     const int nx = 5;
@@ -1364,7 +1374,7 @@ TEST(Asssign, LinearIndexSeq)
     }
 }
 
-TEST(Asssign, LinearIndexGenSeq)
+TEST(Assign, LinearIndexGenSeq)
 {
     using af::array;
     const int nx = 5;
@@ -1400,7 +1410,7 @@ TEST(Asssign, LinearIndexGenSeq)
     }
 }
 
-TEST(Asssign, LinearIndexGenArr)
+TEST(Assign, LinearIndexGenArr)
 {
     using af::array;
     const int nx = 5;

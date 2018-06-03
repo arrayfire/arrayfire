@@ -34,16 +34,16 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
     dim4 idims = in.dims();
 
     // Window filter
-    convAccT* h_filter = memAlloc<convAccT>(filter_len);
+    auto h_filter = memAlloc<convAccT>(filter_len);
     // Decide between rectangular or circular filter
     if (sigma < 0.5f) {
         for (unsigned i = 0; i < filter_len; i++)
             h_filter[i] = (T)1.f / (filter_len);
     } else {
-        gaussian1D<convAccT>(h_filter, (int)filter_len, sigma);
+      gaussian1D<convAccT>(h_filter.get(), (int)filter_len, sigma);
     }
-    Array<convAccT> filter = createDeviceDataArray<convAccT>(dim4(filter_len), (const void*)h_filter);
-
+    Array<convAccT> filter = createDeviceDataArray<convAccT>(dim4(filter_len),
+                                                             (const void*)h_filter.release());
     unsigned border_len = filter_len / 2 + 1;
 
     Array<T> ix = createEmptyArray<T>(idims);

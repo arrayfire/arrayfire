@@ -67,9 +67,9 @@ namespace cuda
 
             // Create/call iota
             // Array<uint> key = iota<uint>(seqDims, tileDims);
-            uint* Seq = memAlloc<uint>(elements);
+            auto Seq = memAlloc<uint>(elements);
             Param<uint> pSeq;
-            pSeq.ptr = Seq;
+            pSeq.ptr = Seq.get();
             pSeq.strides[0] = 1;
             pSeq.dims[0] = inDims[0];
             for(int i = 1; i < 4; i++) {
@@ -79,31 +79,28 @@ namespace cuda
             cuda::kernel::iota<uint>(pSeq, seqDims, tileDims);
 
             Tk *Key = pKey.ptr;
-            Tk *cKey = memAlloc<Tk>(elements);
-            CUDA_CHECK(cudaMemcpyAsync(cKey, Key, elements * sizeof(Tk),
+            auto cKey = memAlloc<Tk>(elements);
+            CUDA_CHECK(cudaMemcpyAsync(cKey.get(), Key, elements * sizeof(Tk),
                                        cudaMemcpyDeviceToDevice,
                                        getActiveStream()));
 
             Tv *Val = pVal.ptr;
             thrustSortByKey(Key, Val, elements, isAscending);
-            thrustSortByKey(cKey, Seq, elements, isAscending);
+            thrustSortByKey(cKey.get(), Seq.get(), elements, isAscending);
 
-            uint *cSeq = memAlloc<uint>(elements);
-            CUDA_CHECK(cudaMemcpyAsync(cSeq, Seq, elements * sizeof(uint),
+            auto cSeq = memAlloc<uint>(elements);
+            CUDA_CHECK(cudaMemcpyAsync(cSeq.get(), Seq.get(), elements * sizeof(uint),
                                        cudaMemcpyDeviceToDevice,
                                        getActiveStream()));
 
             // This always needs to be ascending
-            thrustSortByKey(Seq, Val, elements, true);
-            thrustSortByKey(cSeq, Key, elements, true);
+            thrustSortByKey(Seq.get(), Val, elements, true);
+            thrustSortByKey(cSeq.get(), Key, elements, true);
 
             // No need of doing moddims here because the original Array<T>
             // dimensions have not been changed
             //val.modDims(inDims);
 
-            memFree(Seq);
-            memFree(cSeq);
-            memFree(cKey);
         }
 
         template<typename Tk, typename Tv>

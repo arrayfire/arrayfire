@@ -36,12 +36,39 @@ function(arrayfire_get_cuda_cxx_flags cuda_flags)
   endif()
 endfunction()
 
+function(__af_deprecate_var var access value)
+  if(access STREQUAL "READ_ACCESS")
+    message(DEPRECATION "Variable ${var} is deprecated. Use AF_${var} instead.")
+  endif()
+endfunction()
+
+function(af_deprecate var newvar)
+  if(DEFINED ${var})
+    message(DEPRECATION "Variable ${var} is deprecated. Use ${newvar} instead.")
+    get_property(doc CACHE ${newvar} PROPERTY HELPSTRING)
+    set(${newvar} ${${var}} CACHE BOOL "${doc}" FORCE)
+    unset(${var} CACHE)
+  endif()
+  variable_watch(${var} __af_deprecate_var)
+endfunction()
+
+function(get_native_path out_path path)
+  file(TO_NATIVE_PATH ${path} native_path)
+  if (WIN32)
+    string(REPLACE "\\" "\\\\" native_path  ${native_path})
+    set(${out_path} ${native_path} PARENT_SCOPE)
+  else ()
+    set(${out_path} ${path} PARENT_SCOPE)
+  endif ()
+endfunction()
+
 macro(arrayfire_set_cmake_default_variables)
-  set(CMAKE_PREFIX_PATH "${ArrayFire_BINARY_DIR}/cmake;${CMAKE_PREFIX_PATH}")
+  set(CMAKE_PREFIX_PATH "${ArrayFire_BINARY_DIR};${CMAKE_PREFIX_PATH}")
   set(BUILD_SHARED_LIBS ON)
 
   set(CMAKE_CXX_STANDARD 11)
   set(CMAKE_CXX_EXTENSIONS OFF)
+  set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
   # Set a default build type if none was specified
   if(NOT CMAKE_BUILD_TYPE)
@@ -94,7 +121,8 @@ macro(arrayfire_set_cmake_default_variables)
       CMAKE_C_FLAGS_COVERAGE
       CMAKE_EXE_LINKER_FLAGS_COVERAGE
       CMAKE_SHARED_LINKER_FLAGS_COVERAGE
-      CMAKE_STATIC_LINKER_FLAGS_COVERAGE )
+      CMAKE_STATIC_LINKER_FLAGS_COVERAGE
+      CMAKE_MODULE_LINKER_FLAGS_COVERAGE)
 
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -104,7 +132,6 @@ macro(arrayfire_set_cmake_default_variables)
   endif()
 
   if(APPLE)
-    # TODO(umar) Remove rpath to third_party lib
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_LIB_DIR};${ArrayFire_BINARY_DIR}/third_party/forge/lib")
+    set(CMAKE_INSTALL_RPATH "/opt/arrayfire/lib")
   endif()
 endmacro()

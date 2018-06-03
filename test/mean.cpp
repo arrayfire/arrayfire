@@ -321,3 +321,26 @@ TEST(WeightedMean, Broadacst)
         ASSERT_NEAR(hc[i], hd[i], 1E-5);
     }
 }
+
+TEST(Mean, Issue2093)
+{
+  using namespace af;
+
+  const int NELEMS = 512;
+
+  array data = randu(1, NELEMS);
+  array wts  = constant(1.0f, 1, NELEMS);
+  vector<float> hdata(NELEMS);
+  data.host(hdata.data());
+
+  array out = mean(data, wts, 1);
+  float outVal;
+  out.host(&outVal);
+
+  float expected = 0.0;
+  for (size_t i=0; i<NELEMS; ++i)
+      expected += hdata[i];
+  expected /= NELEMS;
+
+  ASSERT_NEAR(outVal, expected, 0.001);
+}

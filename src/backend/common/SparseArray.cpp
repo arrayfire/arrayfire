@@ -12,6 +12,9 @@
 #include <copy.hpp>
 #include <math.hpp>
 #include <platform.hpp>
+#include <af/traits.hpp>
+
+using af::dtype_traits;
 
 namespace common
 {

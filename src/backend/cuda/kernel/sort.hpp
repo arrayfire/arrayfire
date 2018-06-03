@@ -67,9 +67,9 @@ namespace cuda
             // Create/call iota
             // Array<uint> key = iota<uint>(seqDims, tileDims);
             dim4 keydims = inDims;
-            uint* key = memAlloc<uint>(keydims.elements());
+            auto key = memAlloc<uint>(keydims.elements());
             Param<uint> pKey;
-            pKey.ptr = key;
+            pKey.ptr = key.get();
             pKey.strides[0] = 1;
             pKey.dims[0] = keydims[0];
             for(int i = 1; i < 4; i++) {
@@ -105,7 +105,6 @@ namespace cuda
 
             // Not really necessary
             // CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
-            memFree(key);
         }
 
         template<typename T>

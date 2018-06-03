@@ -37,7 +37,7 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
     auto y_corners    = createEmptyArray<float>(dim4(corner_lim));
     auto resp_corners = createEmptyArray<float>(dim4(corner_lim));
     auto response     = createEmptyArray<T>(dim4(in.elements()));
-    auto corners_found= std::shared_ptr<unsigned>(memAlloc<unsigned>(1), memFree<unsigned>);
+    auto corners_found= std::shared_ptr<unsigned>(memAlloc<unsigned>(1).release(), memFree<unsigned>);
     corners_found.get()[0] = 0;
 
     getQueue().enqueue(kernel::susan_responses<T>, response, in, idims[0], idims[1],

@@ -53,7 +53,7 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
 
         if (isLast) l_tmp[lidy] = val;
 
-        bool cond = ((id < oInfo.dims[0]) && cond_yzw);
+        bool cond = ((id < iInfo.dims[0]) && cond_yzw);
         val = cond ? transform(iData[id]) : init_val;
         l_val[lid] = val;
         barrier(CLK_LOCAL_MEM_FENCE);

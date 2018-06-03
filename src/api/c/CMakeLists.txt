@@ -1,3 +1,9 @@
+# Copyright (c) 2018, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
 
 add_library(c_api_interface INTERFACE)
 
@@ -41,6 +47,7 @@ target_sources(c_api_interface
 
 target_sources(c_api_interface
   INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/anisotropic_diffusion.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/approx.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/array.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/assign.cpp
@@ -134,6 +141,7 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/susan.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/svd.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tile.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/topk.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/transform.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/transform_coordinates.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/transpose.cpp
@@ -150,13 +158,26 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/ycbcr_rgb.cpp
     )
 
-if(FreeImage_FOUND AND WITH_IMAGEIO)
-    target_compile_definitions(c_api_interface INTERFACE WITH_FREEIMAGE)
-    target_link_libraries(     c_api_interface INTERFACE FreeImage::FreeImage)
+if(FreeImage_FOUND AND AF_WITH_IMAGEIO)
+  target_compile_definitions(c_api_interface INTERFACE WITH_FREEIMAGE)
+  if (AF_WITH_STATIC_FREEIMAGE)
+    target_compile_definitions(c_api_interface INTERFACE FREEIMAGE_STATIC)
+    target_link_libraries(c_api_interface INTERFACE FreeImage::FreeImage_STATIC)
+  else ()
+    target_include_directories(c_api_interface INTERFACE $<TARGET_PROPERTY:FreeImage::FreeImage,INTERFACE_INCLUDE_DIRECTORIES>)
+    target_link_libraries(c_api_interface INTERFACE ${CMAKE_DL_LIBS})
+    if (WIN32 AND AF_INSTALL_STANDALONE)
+      install(FILES $<TARGET_FILE:FreeImage::FreeImage>
+        DESTINATION ${AF_INSTALL_BIN_DIR}
+        COMPONENT common_backend_dependencies)
+    endif ()
+  endif ()
 endif()
 
-if(BUILD_GRAPHICS)
-    add_dependencies(c_api_interface forge-ext)
+if(AF_WITH_GRAPHICS)
+    if(NOT AF_USE_SYSTEM_FORGE)
+      add_dependencies(c_api_interface forge-ext)
+    endif()
     target_compile_definitions(c_api_interface INTERFACE WITH_GRAPHICS)
 endif()
 

@@ -7,19 +7,20 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <type_traits>
 #include <Array.hpp>
+#include <common/ArrayInfo.hpp>
 #include <copy.hpp>
-#include <cstring>
-#include <algorithm>
-#include <complex>
-#include <vector>
-#include <cassert>
 #include <err_cpu.hpp>
-#include <math.hpp>
+#include <kernel/copy.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/copy.hpp>
+#include <types.hpp>
+
+#include <af/defines.h>
+#include <af/dim4.hpp>
+
+#include <cstdio>
+#include <cstring>
 
 namespace cpu
 {
@@ -108,7 +109,10 @@ INSTANTIATE_COPY_ARRAY_COMPLEX(cdouble)
 #define SPECILIAZE_UNUSED_COPYARRAY(SRC_T, DST_T) \
     template<> void copyArray<SRC_T, DST_T>(Array<DST_T> &out, Array<SRC_T> const &in) \
     {\
-        CPU_NOT_SUPPORTED();\
+        char errMessage[1024];                                              \
+        snprintf(errMessage, sizeof(errMessage),                            \
+                "CPU copyArray<"#SRC_T","#DST_T"> is not supported\n");    \
+        CPU_NOT_SUPPORTED(errMessage);                                      \
     }
 
 SPECILIAZE_UNUSED_COPYARRAY(cfloat , double)

@@ -5,6 +5,7 @@ target_sources(cpp_api_interface
   INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/common.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/error.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/anisotropic_diffusion.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/approx.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/array.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bilateral.cpp
@@ -69,6 +70,7 @@ target_sources(cpp_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/stdev.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/susan.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/timing.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/topk.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/transform.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/transform_coordinates.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/translate.cpp

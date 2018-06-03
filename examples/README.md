@@ -11,10 +11,10 @@ process; however, the compiled examples are not packaged in the ArrayFire
 installer. After compiling ArrayFire, the examples will be in subdirectories
 located in the `build/examples` directory.
 
-If you wish to disable example compilation, simply set the `BUILD_EXAMPLES`
+If you wish to disable example compilation, simply set the `AF_BUILD_EXAMPLES`
 variable to `OFF` in the CMake GUI or `ccmake` curses wrapper. If you are
 using the command-line version of `cmake`, simply specify 
-`-DBUILD_EXAMPLES=OFF` as an argument.
+`-DAF_BUILD_EXAMPLES=OFF` as an argument.
 
 ## Building examples as a stand-alone project
 

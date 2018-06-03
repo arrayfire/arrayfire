@@ -39,7 +39,7 @@ typedef struct
     float d[272];
 } desc_t;
 
-#ifdef  AF_BUILD_NONFREE_SIFT
+#ifdef  AF_WITH_NONFREE_SIFT
 static bool feat_cmp(feat_desc_t i, feat_desc_t j)
 {
     for (int k = 0; k < 5; k++)
@@ -138,7 +138,7 @@ TYPED_TEST_CASE(GLOH, TestTypes);
 template<typename T>
 void glohTest(string pTestFile)
 {
-#ifdef AF_BUILD_NONFREE_SIFT
+#ifdef AF_WITH_NONFREE_SIFT
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
 
@@ -250,7 +250,7 @@ void glohTest(string pTestFile)
 //
 TEST(GLOH, CPP)
 {
-#ifdef AF_BUILD_NONFREE_SIFT
+#ifdef AF_WITH_NONFREE_SIFT
     if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 

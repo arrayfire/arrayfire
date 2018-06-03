@@ -202,6 +202,15 @@ TYPED_TEST(Random,InvalidDims)
 
 ////////////////////////////////////// CPP /////////////////////////////////////
 //
+TEST(RandomEngine, Default)
+{
+    // Using default Random engine will cause segfaults
+    // without setting one. This test should be before
+    // setting it to test if default engine setup is working
+    // as expected, otherwise the test will fail.
+    af::randomEngine engine = af::getDefaultRandomEngine();
+}
+
 TEST(Random, CPP)
 {
     if (noDoubleTests<float>()) return;
@@ -417,4 +426,101 @@ TYPED_TEST(RandomEngineSeed, threefrySeedUniform)
 TYPED_TEST(RandomEngineSeed, mersenneSeedUniform)
 {
     testRandomEngineSeed<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
+}
+
+template <typename T>
+void testRandomEnginePeriod(randomEngineType type)
+{
+    if (noDoubleTests<T>()) return;
+    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+
+    uint elem = 1024*1024;
+    uint steps = 4*1024;
+    af::randomEngine r(type, 0);
+
+    af::array first = af::randu(elem, ty, r);
+
+    for (int i = 0; i < steps; ++i) {
+        af::array step = af::randu(elem, ty, r);
+        bool different = !af::allTrue<bool>(first == step);
+        ASSERT_TRUE(different);
+    }
+}
+
+TYPED_TEST(RandomEngine, DISABLED_philoxRandomEnginePeriod)
+{
+    testRandomEnginePeriod<TypeParam>(AF_RANDOM_ENGINE_PHILOX_4X32_10);
+}
+
+TYPED_TEST(RandomEngine, DISABLED_threefryRandomEnginePeriod)
+{
+    testRandomEnginePeriod<TypeParam>(AF_RANDOM_ENGINE_THREEFRY_2X32_16);
+}
+
+TYPED_TEST(RandomEngine, DISABLED_mersenneRandomEnginePeriod)
+{
+    testRandomEnginePeriod<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
+}
+
+template <typename T>
+T chi2_statistic(array input, array expected) {
+    expected *= af::sum<T>(input) / af::sum<T>(expected);
+    array diff = input - expected;
+    return af::sum<T>((diff * diff) / expected);
+}
+
+template <typename T>
+void testRandomEngineUniformChi2(randomEngineType type)
+{
+    if (noDoubleTests<T>()) return;
+    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+
+    int elem = 256*1024*1024;
+    int steps = 32;
+    int bins = 100;
+
+    array total_hist = af::constant(0.0, bins, ty);
+    array expected = af::constant(1.0/bins, bins, ty);
+
+    af::randomEngine r(type, 0);
+
+    // R> qchisq(c(5e-6, 1 - 5e-6), 99)
+    // [1]  48.68125 173.87456
+    T lower = 48.68125;
+    T upper = 173.87456;
+
+    bool prev_step = true;
+    bool prev_total = true;
+    for (int i = 0; i < steps; ++i) {
+        array step_hist = af::histogram(af::randu(elem, ty, r), bins, 0.0, 1.0);
+        T step_chi2 = chi2_statistic<T>(step_hist, expected);
+        if (!prev_step) {
+          EXPECT_GT(step_chi2, lower) << "at step: " << i;
+          EXPECT_LT(step_chi2, upper) << "at step: " << i;
+        }
+        prev_step = step_chi2 > lower && step_chi2 < upper;
+
+        total_hist += step_hist;
+        T total_chi2 = chi2_statistic<T>(total_hist, expected);
+        if (!prev_total) {
+          EXPECT_GT(total_chi2, lower) << "at step: " << i;
+          EXPECT_LT(total_chi2, upper) << "at step: " << i;
+        }
+        prev_total = total_chi2 > lower && total_chi2 < upper;
+    }
+}
+
+TYPED_TEST(RandomEngine, DISABLED_philoxRandomEngineUniformChi2)
+{
+    testRandomEngineUniformChi2<TypeParam>(AF_RANDOM_ENGINE_PHILOX_4X32_10);
+}
+
+TYPED_TEST(RandomEngine, DISABLED_threefryRandomEngineUniformChi2)
+{
+    testRandomEngineUniformChi2<TypeParam>(AF_RANDOM_ENGINE_THREEFRY_2X32_16);
+}
+
+TYPED_TEST(RandomEngine, DISABLED_mersenneRandomEngineUniformChi2)
+{
+    testRandomEngineUniformChi2<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
 }

@@ -7,9 +7,6 @@
 
 include(InternalUtils)
 
-dependency_check(FFTW_FOUND "FFTW not found")
-dependency_check(CBLAS_FOUND "CBLAS not found")
-
 add_library(afcpu "")
 add_library(ArrayFire::afcpu ALIAS afcpu)
 
@@ -18,6 +15,8 @@ target_sources(afcpu
   PRIVATE
     Array.cpp
     Array.hpp
+    anisotropic_diffusion.cpp
+    anisotropic_diffusion.hpp
     approx.cpp
     approx.hpp
     arith.hpp
@@ -156,6 +155,8 @@ target_sources(afcpu
     svd.hpp
     tile.cpp
     tile.hpp
+    topk.cpp
+    topk.hpp
     traits.hpp
     transform.cpp
     transform.hpp
@@ -178,6 +179,7 @@ target_sources(afcpu
 target_sources(afcpu
   PRIVATE
     kernel/Array.hpp
+    kernel/anisotropic_diffusion.hpp
     kernel/approx.hpp
     kernel/assign.hpp
     kernel/bilateral.hpp
@@ -228,7 +230,6 @@ target_sources(afcpu
     kernel/sobel.hpp
     kernel/sort.hpp
     kernel/sort_by_key.hpp
-    kernel/sort_by_key_impl.hpp
     kernel/sort_helper.hpp
     kernel/sparse.hpp
     kernel/sparse_arith.hpp
@@ -241,9 +242,9 @@ target_sources(afcpu
     kernel/wrap.hpp
   )
 
-if (USE_CPUID)
-  target_compile_definitions(afcpu PRIVATE -DUSE_CPUID)
-endif(USE_CPUID)
+if (AF_WITH_CPUID)
+  target_compile_definitions(afcpu PRIVATE -DAF_WITH_CPUID)
+endif(AF_WITH_CPUID)
 
 target_sources(afcpu
   PRIVATE
@@ -256,13 +257,15 @@ endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
-if(BUILD_NONFREE)
+if(AF_WITH_NONFREE)
   target_sources(afcpu PRIVATE kernel/sift_nonfree.hpp)
-  target_compile_definitions(afcpu PRIVATE AF_BUILD_NONFREE_SIFT)
+  target_compile_definitions(afcpu PRIVATE AF_WITH_NONFREE_SIFT)
 endif()
 
-if(BUILD_GRAPHICS)
-  add_dependencies(afcpu forge-ext)
+if(AF_WITH_GRAPHICS)
+  if(NOT AF_USE_SYSTEM_FORGE)
+    add_dependencies(afcpu forge-ext)
+  endif()
   target_sources(afcpu
     PRIVATE
       hist_graphics.cpp
@@ -312,17 +315,35 @@ target_compile_definitions(afcpu
     AF_CPU
   )
 
-target_link_libraries(afcpu
-  PRIVATE
-    c_api_interface
-    cpp_api_interface
-    afcommon_interface
-    afcommon_lapack_interface
-    cpu_sort_by_key
-    ${CBLAS_LIBRARIES}
-    FFTW::FFTW
-    FFTW::FFTWF
-  )
+if(USE_CPU_MKL)
+  target_link_libraries(afcpu
+    PRIVATE
+      c_api_interface
+      cpp_api_interface
+      afcommon_interface
+      afcommon_lapack_interface
+      cpu_sort_by_key
+      MKL::MKL
+      Threads::Threads
+    )
+else()
+  dependency_check(FFTW_FOUND "FFTW not found")
+  dependency_check(CBLAS_FOUND "CBLAS not found")
+
+  target_link_libraries(afcpu
+    PRIVATE
+      c_api_interface
+      cpp_api_interface
+      afcommon_interface
+      afcommon_lapack_interface
+      cpu_sort_by_key
+      ${CBLAS_LIBRARIES}
+      ${LAPACK_LIBRARIES}
+      FFTW::FFTW
+      FFTW::FFTWF
+      Threads::Threads
+    )
+endif()
 
 install(TARGETS afcpu
   EXPORT ArrayFireCPUTargets

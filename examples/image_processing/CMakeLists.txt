@@ -1,5 +1,11 @@
+# Copyright (c) 2018, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
+
 cmake_minimum_required(VERSION 3.0)
-cmake_policy(VERSION 3.5)
 project(ArrayFire-Example-Image-Processing
   VERSION 3.5.0
   LANGUAGES CXX)
@@ -48,6 +54,10 @@ if(ArrayFire_CPU_FOUND)
   # Pyramids example
   add_executable(pyramids_cpu pyramids.cpp)
   target_link_libraries(pyramids_cpu ArrayFire::afcpu)
+
+  # Gradient anisotropic diffusion example
+  add_executable(gradient_diffusion_cpu gradient_diffusion.cpp)
+  target_link_libraries(gradient_diffusion_cpu ArrayFire::afcpu)
 endif()
 
 if(ArrayFire_CUDA_FOUND)
@@ -80,6 +90,10 @@ if(ArrayFire_CUDA_FOUND)
 
   add_executable(pyramids_cuda pyramids.cpp)
   target_link_libraries(pyramids_cuda ArrayFire::afcuda)
+
+  # Gradient anisotropic diffusion example
+  add_executable(gradient_diffusion_cuda gradient_diffusion.cpp)
+  target_link_libraries(gradient_diffusion_cuda ArrayFire::afcuda)
 endif()
 
 if(ArrayFire_OpenCL_FOUND)
@@ -112,4 +126,8 @@ if(ArrayFire_OpenCL_FOUND)
 
   add_executable(pyramids_opencl pyramids.cpp)
   target_link_libraries(pyramids_opencl ArrayFire::afopencl)
+
+  # Gradient anisotropic diffusion example
+  add_executable(gradient_diffusion_opencl gradient_diffusion.cpp)
+  target_link_libraries(gradient_diffusion_opencl ArrayFire::afopencl)
 endif()

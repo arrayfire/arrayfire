@@ -7,37 +7,41 @@
 
 include(ExternalProject)
 
-set(FORGE_VERSION 1.0.2-ft)
+set(FORGE_VERSION af3.6.0)
 set(prefix "${ArrayFire_BINARY_DIR}/third_party/forge")
+set(PX ${CMAKE_SHARED_LIBRARY_PREFIX})
+set(SX ${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 if(MSVC)
   set(disable_warning_flags "/wd4251")
-  set(forge_shared_lib "${ArrayFire_BINARY_DIR}/third_party/forge/lib/${CMAKE_SHARED_LIBRARY_PREFIX}forge${CMAKE_LINK_LIBRARY_SUFFIX}")
-else()
-  set(forge_shared_lib "${ArrayFire_BINARY_DIR}/third_party/forge/lib/${CMAKE_SHARED_LIBRARY_PREFIX}forge${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  set(SX ${CMAKE_LINK_LIBRARY_SUFFIX})
 endif()
+
+set(forge_lib "${PROJECT_BINARY_DIR}/third_party/forge/lib/${PX}forge${SX}")
+
+# Create a list with an alternate separator e.g. pipe symbol
+string(REPLACE ";" "|" CMAKE_PREFIX_PATH_ALT_SEP "${CMAKE_PREFIX_PATH}")
 
 # FIXME Tag forge correctly during release
 ExternalProject_Add(
     forge-ext
     GIT_REPOSITORY https://github.com/arrayfire/forge.git
-    GIT_TAG v${FORGE_VERSION}
+    GIT_TAG ${FORGE_VERSION}
     PREFIX "${prefix}"
     UPDATE_COMMAND ""
-    BUILD_BYPRODUCTS ${forge_shared_lib}
+    BUILD_BYPRODUCTS ${forge_lib}
     CMAKE_GENERATOR "${CMAKE_GENERATOR}"
+	LIST_SEPARATOR | # Use the alternate list separator
     CMAKE_ARGS
-      -DBUILD_EXAMPLES:BOOL=OFF
-      -DBUILD_DOCUMENTATION:BOOL=OFF
+      -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH_ALT_SEP}"
+      -DBUILD_SHARED_LIBS:BOOL=ON
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-      -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+      -DCMAKE_BUILD_TYPE:STRING=Release
       -DCMAKE_CXX_FLAGS:STRING=${disable_warning_flags}
-      -Dglbinding_DIR:STRING=${glbinding_DIR}
-      -DGLFW_ROOT_DIR:STRING=${GLFW_ROOT_DIR}
-      -DBOOST_INCLUDEDIR:PATH=${Boost_INCLUDE_DIRS}
-      -Dglbinding_DIR:PATH=${glbinding_DIR}
-      -DUSE_SYSTEM_GLBINDING:BOOL=TRUE
-      -DUSE_FREEIMAGE:BOOL=OFF
+      -DFG_BUILD_EXAMPLES:BOOL=OFF
+      -DFG_BUILD_DOCS:BOOL=OFF
+      -DFG_WITH_FREEIMAGE:BOOL=OFF
+      -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
     )
 
 # NOTE: This approach doesn't work because the ExternalProject_Add outputs are
@@ -45,18 +49,18 @@ ExternalProject_Add(
 #
 # make_directory("${prefix}/include")
 # make_directory("${ArrayFire_BINARY_DIR}/third_party/forge/lib")
-# execute_process(COMMAND ${CMAKE_COMMAND} -E touch "${forge_shared_lib}")
+# execute_process(COMMAND ${CMAKE_COMMAND} -E touch "${forge_lib}")
 
 # add_library(Forge::Forge SHARED IMPORTED GLOBAL)
 # set_target_properties(Forge::Forge PROPERTIES
-#   INTERFACE_LINK_LIBRARIES "${forge_shared_lib}"
+#   INTERFACE_LINK_LIBRARIES "${forge_lib}"
 #   INTERFACE_INCLUDE_DIRECTORIES "${prefix}/include"
 #   )
 #
 # add_dependencies(Forge::Forge forge-ext)
 
 set(Forge_INCLUDE_DIR "${prefix}/include")
-set(Forge_LIBRARIES "${forge_shared_lib}")
+set(Forge_LIBRARIES "${forge_lib}")
 
 find_package_handle_standard_args(Forge DEFAULT_MSG
     Forge_INCLUDE_DIR Forge_LIBRARIES)

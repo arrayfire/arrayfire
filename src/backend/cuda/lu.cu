@@ -134,20 +134,18 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
                                        in.get(), in.strides()[1],
                                        &lwork));
 
-    T *workspace = memAlloc<T>(lwork);
-    int *info = memAlloc<int>(1);
+    auto workspace = memAlloc<T>(lwork);
+    auto info = memAlloc<int>(1);
 
     CUSOLVER_CHECK(getrf_func<T>()(solverDnHandle(),
                                    M, N,
                                    in.get(), in.strides()[1],
-                                   workspace,
+                                   workspace.get(),
                                    pivot.get(),
-                                   info));
+                                   info.get()));
 
     if(convert_pivot) convertPivot(pivot, M);
 
-    memFree(workspace);
-    memFree(info);
 
     return pivot;
 }

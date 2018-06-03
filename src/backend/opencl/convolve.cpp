@@ -52,7 +52,13 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, AF_BATCH_KI
         case 3: if ((fDims[0]*fDims[1]*fDims[2]) > (MCFL3 * MCFL3 * MCFL3)) callKernel = false; break;
     }
 
-    if(!callKernel) { OPENCL_NOT_SUPPORTED(); }
+    if(!callKernel) {
+        char errMessage[256];
+        snprintf(errMessage, sizeof(errMessage),
+                 "\nOpenCL N Dimensional Convolution doesn't support %llux%llux%llu kernel\n",
+                 fDims[0], fDims[1], fDims[2]);
+        OPENCL_NOT_SUPPORTED(errMessage);
+    }
 
     kernel::convolve_nd<T, accT, baseDim, expand>(out, signal, filter, kind);
 

@@ -12,6 +12,12 @@
 #include <types.hpp>
 #include <err_opencl.hpp>
 
+#include <common/Logger.hpp>
+
+#include <common/MemoryManagerImpl.hpp>
+template class common::MemoryManager<opencl::MemoryManager>;
+template class common::MemoryManager<opencl::MemoryManagerPinned>;
+
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
 #endif
@@ -19,6 +25,11 @@
 #ifndef AF_OPENCL_MEM_DEBUG
 #define AF_OPENCL_MEM_DEBUG 0
 #endif
+
+using common::bytesToString;
+
+using std::unique_ptr;
+using std::function;
 
 namespace opencl
 {
@@ -53,9 +64,11 @@ void printMemInfo(const char *msg, const int device)
 }
 
 template<typename T>
-T* memAlloc(const size_t &elements)
+unique_ptr<T[], function<void(T *)>>
+memAlloc(const size_t &elements)
 {
-    return (T *)memoryManager().alloc(elements * sizeof(T), false);
+    T* ptr = (T *)memoryManager().alloc(elements * sizeof(T), false);
+    return unique_ptr<T[], function<void(T *)>>(ptr, memFree<T>);
 }
 
 void* memAllocUser(const size_t &bytes)
@@ -122,11 +135,11 @@ bool checkMemoryLimit()
     return memoryManager().checkMemoryLimit();
 }
 
-#define INSTANTIATE(T)                                      \
-    template T* memAlloc(const size_t &elements);           \
-    template void memFree(T* ptr);                          \
-    template T* pinnedAlloc(const size_t &elements);        \
-    template void pinnedFree(T* ptr);                       \
+#define INSTANTIATE(T)                                                              \
+    template unique_ptr<T[], function<void(T *)>> memAlloc(const size_t &elements); \
+    template void memFree(T* ptr);                                                  \
+    template T* pinnedAlloc(const size_t &elements);                                \
+    template void pinnedFree(T* ptr);                                               \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)
@@ -172,11 +185,14 @@ size_t MemoryManager::getMaxMemorySize(int id)
 
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
-    return (void *)(new cl::Buffer(getContext(), CL_MEM_READ_WRITE, bytes));
+    auto ptr = (void *)(new cl::Buffer(getContext(), CL_MEM_READ_WRITE, bytes));
+    AF_TRACE("nativeAlloc: {} {}", bytesToString(bytes), ptr);
+    return ptr;
 }
 
 void MemoryManager::nativeFree(void *ptr)
 {
+    AF_TRACE("nativeFree:          {}", ptr);
     delete (cl::Buffer *)ptr;
 }
 
@@ -216,12 +232,14 @@ void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
     void *ptr = NULL;
     cl::Buffer* buf = new cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, bytes);
     ptr = getQueue().enqueueMapBuffer(*buf, true, CL_MAP_READ | CL_MAP_WRITE, 0, bytes);
+    AF_TRACE("Pinned::nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     pinnedMaps[opencl::getActiveDeviceId()].emplace(ptr, buf);
     return ptr;
 }
 
 void MemoryManagerPinned::nativeFree(void *ptr)
 {
+    AF_TRACE("Pinned::nativeFree:          {}", ptr);
     int n = opencl::getActiveDeviceId();
     auto map = pinnedMaps[n];
     auto iter = map.find(ptr);

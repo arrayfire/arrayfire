@@ -10,24 +10,17 @@
 #pragma once
 #include <platform.hpp>
 #include <common/util.hpp>
-#include <string>
-#include <mutex>
 
-using cl::Buffer;
-using cl::Program;
-using cl::Kernel;
-using cl::EnqueueArgs;
-using cl::NDRange;
-using std::string;
+#include <cstdio>
+#include <string>
 
 #define SHOW_DEBUG_BUILD_INFO(PROG) do {                                \
         cl_uint numDevices = PROG.getInfo<CL_PROGRAM_NUM_DEVICES>();    \
         for (unsigned int i = 0; i<numDevices; ++i) {                   \
-            std::cout << PROG.getBuildInfo<CL_PROGRAM_BUILD_LOG>(       \
-                PROG.getInfo<CL_PROGRAM_DEVICES>()[i]) << std::endl;    \
-                                                                        \
-            std::cout << PROG.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(   \
-                PROG.getInfo<CL_PROGRAM_DEVICES>()[i]) << std::endl;    \
+          printf("%s\n", PROG.getBuildInfo<CL_PROGRAM_BUILD_LOG>(       \
+                      PROG.getInfo<CL_PROGRAM_DEVICES>()[i]).c_str());  \
+          printf("%s\n", PROG.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(   \
+                      PROG.getInfo<CL_PROGRAM_DEVICES>()[i]).c_str());  \
         }                                                               \
     } while(0)                                                          \
 
@@ -44,6 +37,10 @@ using std::string;
 #else
 #define SHOW_BUILD_INFO(PROG) SHOW_DEBUG_BUILD_INFO(PROG)
 #endif
+
+namespace cl {
+  class Program;
+}
 
 namespace opencl
 {

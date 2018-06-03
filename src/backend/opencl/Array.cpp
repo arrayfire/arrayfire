@@ -93,16 +93,16 @@ namespace opencl
 
 
     template<typename T>
-    Array<T>::Array(Param &tmp) :
+    Array<T>::Array(Param &tmp, bool owner_) :
         info(getActiveDeviceId(),
              af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3]),
              0,
              af::dim4(tmp.info.strides[0], tmp.info.strides[1],
                       tmp.info.strides[2], tmp.info.strides[3]),
              (af_dtype)dtype_traits<T>::af_type),
-        data(tmp.data, bufferFree),
+        data(tmp.data, owner_ ? bufferFree : [] (cl::Buffer* ptr) {}),
         data_dims(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3])),
-        node(bufferNodePtr<T>()), ready(true), owner(true)
+        node(bufferNodePtr<T>()), ready(true), owner(owner_)
     {
     }
 
@@ -228,30 +228,66 @@ namespace opencl
         Array<T> out =  Array<T>(dims, node);
 
         if (evalFlag()) {
+
             if (node->getHeight() >= (int)getMaxJitSize()) {
                 out.eval();
             } else {
+
                 size_t alloc_bytes, alloc_buffers;
                 size_t lock_bytes, lock_buffers;
 
                 deviceMemoryInfo(&alloc_bytes, &alloc_buffers,
                                  &lock_bytes, &lock_buffers);
 
-                if (lock_bytes > getMaxBytes() ||
-                    lock_buffers > getMaxBuffers()) {
+                bool isBufferLimit =
+                    lock_bytes > getMaxBytes() ||
+                    lock_buffers > getMaxBuffers();
 
-                    unsigned length =0, buf_count = 0, bytes = 0;
+
+                bool isNvidia = getActivePlatform() == AFCL_PLATFORM_NVIDIA;
+                // We eval in the following cases.
+                // 1. Too many bytes are locked up by JIT causing memory pressure.
+                // Too many bytes is assumed to be half of all bytes allocated so far.
+                // 2. Too many buffers in a nonlinear kernel cause param space overflow.
+                // Too many buffers comes out to be about 48 (49 including output).
+                // Too many buffers can occur in a tree of size 24 in the worst case scenario.
+                // This error only happens on nvidia devices.
+                // TODO: Find better solution than the following emperical solution.
+                bool isParamLimit = (isNvidia && node->getHeight() > 24);
+                if (isParamLimit || isBufferLimit) {
+
                     Node *n = node.get();
-                    JIT::Node_map_t nodes_map;
-                    std::vector<JIT::Node *> full_nodes;
-                    std::vector<JIT::Node_ids> full_ids;
-                    n->getNodesMap(nodes_map, full_nodes, full_ids);
 
-                    for(auto &jit_node : full_nodes) {
-                        jit_node->getInfo(length, buf_count, bytes);
+                    // Use thread local to reuse the memory every time you are here.
+                    thread_local JIT::Node_map_t nodes_map;
+                    thread_local std::vector<Node *> full_nodes;
+                    thread_local std::vector<JIT::Node_ids> full_ids;
+
+                    // Reserve some memory
+                    if (nodes_map.size() == 0) {
+                        nodes_map.reserve(1024);
+                        full_nodes.reserve(1024);
+                        full_ids.reserve(1024);
                     }
 
-                    if (2 * bytes > lock_bytes) {
+                    n->getNodesMap(nodes_map, full_nodes, full_ids);
+
+                    unsigned length = 0, buf_count = 0, bytes = 0;
+                    bool is_linear = true;
+                    dim_t dims_[] = {dims[0], dims[1], dims[2], dims[3]};
+                    for(auto &jit_node : full_nodes) {
+                        jit_node->getInfo(length, buf_count, bytes);
+                        is_linear &= jit_node->isLinear(dims_);
+                    }
+
+                    // Reset the thread local vectors
+                    nodes_map.clear();
+                    full_nodes.clear();
+                    full_ids.clear();
+
+                    isBufferLimit = 2 * bytes > lock_bytes;
+                    isParamLimit = isNvidia && !is_linear && buf_count >= 48;
+                    if (isBufferLimit || isParamLimit) {
                         out.eval();
                     }
                 }
@@ -312,11 +348,11 @@ namespace opencl
 
     template<typename T>
     Array<T>
-    createDeviceDataArray(const dim4 &size, const void *data)
+    createDeviceDataArray(const dim4 &size, const void *data, bool copy)
     {
         verifyDoubleSupport<T>();
 
-        return Array<T>(size, (cl_mem)(data), 0, false);
+        return Array<T>(size, (cl_mem)(data), 0, copy);
     }
 
     template<typename T>
@@ -343,10 +379,10 @@ namespace opencl
 
     template<typename T>
     Array<T>
-    createParamArray(Param &tmp)
+    createParamArray(Param &tmp, bool owner)
     {
         verifyDoubleSupport<T>();
-        return Array<T>(tmp);
+        return Array<T>(tmp, owner);
     }
 
     template<typename T>
@@ -405,11 +441,11 @@ namespace opencl
 
 #define INSTANTIATE(T)                                                  \
     template       Array<T>  createHostDataArray<T>   (const dim4 &size, const T * const data); \
-    template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data); \
+    template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data, bool copy); \
     template       Array<T>  createValueArray<T>      (const dim4 &size, const T &value); \
     template       Array<T>  createEmptyArray<T>      (const dim4 &size); \
     template       Array<T>  *initArray<T      >      ();               \
-    template       Array<T>  createParamArray<T>      (Param &tmp);     \
+    template       Array<T>  createParamArray<T>      (Param &tmp, bool owner);    \
     template       Array<T>  createSubArray<T>        (const Array<T> &parent, \
                                                        const std::vector<af_seq> &index, \
                                                        bool copy);      \

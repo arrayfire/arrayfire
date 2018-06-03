@@ -119,6 +119,63 @@ TEST(Sparse, ISSUE_1745)
   ASSERT_EQ(AF_ERR_ARG, af_create_sparse_array(&A_sparse, A.dims(0), A.dims(1), data.get(), row_idx.get(), col_idx.get(), AF_STORAGE_CSR));
 }
 
+TEST(Sparse, ISSUE_2134_COO)
+{
+  int rows[] = {0,0,0,1,1,2,2};
+  int cols[] = {0,1,2,0,1,0,2};
+  float values[] = {3,3,4,3,10,4,3};
+  af::array row(7, rows);
+  af::array col(7, cols);
+  af::array value(7, values);
+  af_array A = 0;
+  EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSR));
+  if(A != 0) af_release_array(A);
+  A = 0;
+  EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSC));
+  if(A != 0) af_release_array(A);
+  A = 0;
+  EXPECT_EQ(AF_SUCCESS, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_COO));
+  if(A != 0) af_release_array(A);
+}
+
+TEST(Sparse, ISSUE_2134_CSR)
+{
+  int rows[] = {0,3,5,7};
+  int cols[] = {0,1,2,0,1,0,2};
+  float values[] = {3,3,4,3,10,4,3};
+  af::array row(4, rows);
+  af::array col(7, cols);
+  af::array value(7, values);
+  af_array A = 0;
+  EXPECT_EQ(AF_SUCCESS, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSR));
+  if(A != 0) af_release_array(A);
+  A = 0;
+  EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSC));
+  if(A != 0) af_release_array(A);
+  A = 0;
+  EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_COO));
+  if(A != 0) af_release_array(A);
+}
+
+TEST(Sparse, ISSUE_2134_CSC)
+{
+  int rows[] = {0,0,0,1,1,2,2};
+  int cols[] = {0,3,5,7};
+  float values[] = {3,3,4,3,10,4,3};
+  af::array row(7, rows);
+  af::array col(4, cols);
+  af::array value(7, values);
+  af_array A = 0;
+  EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSR));
+  if(A != 0) af_release_array(A);
+  A = 0;
+  EXPECT_EQ(AF_SUCCESS, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSC));
+  if(A != 0) af_release_array(A);
+  A = 0;
+  EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_COO));
+  if(A != 0) af_release_array(A);
+}
+
 template<typename T>
 class Sparse : public ::testing::Test {};
 
@@ -194,7 +251,7 @@ TYPED_TEST(Sparse, EmptyDeepCopy) {
     using namespace af;
     array a = sparse(0, 0,
                      array(0, (af_dtype)af::dtype_traits<TypeParam>::af_type),
-                     array(0, s32), array(0, s32));
+                     array(1, s32), array(0, s32));
     EXPECT_TRUE(a.issparse());
     EXPECT_EQ(0, sparseGetNNZ(a));
 

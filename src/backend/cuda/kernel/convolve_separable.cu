@@ -16,10 +16,8 @@
 
 namespace cuda
 {
-
 namespace kernel
 {
-
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
@@ -118,8 +116,12 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<accType> filter)
 {
     int fLen = filter.dims[0] * filter.dims[1] * filter.dims[2] * filter.dims[3];
     if(fLen > kernel::MAX_SCONV_FILTER_LEN) {
-        // call upon fft
-        CUDA_NOT_SUPPORTED();
+        // TODO call upon fft
+        char errMessage[256];
+        snprintf(errMessage, sizeof(errMessage),
+                 "\nCUDA convolution supports max kernel size of %d\n",
+                 kernel::MAX_SCONV_FILTER_LEN);
+        CUDA_NOT_SUPPORTED(errMessage);
     }
 
     dim3 threads(THREADS_X, THREADS_Y);
@@ -166,7 +168,13 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<accType> filter)
         case 29: conv2Helper<T, accType, conv_dim, expand, 29>(blocks, threads, out, signal, blk_x, blk_y); break;
         case 30: conv2Helper<T, accType, conv_dim, expand, 30>(blocks, threads, out, signal, blk_x, blk_y); break;
         case 31: conv2Helper<T, accType, conv_dim, expand, 31>(blocks, threads, out, signal, blk_x, blk_y); break;
-        default: CUDA_NOT_SUPPORTED();
+        default:
+            {
+                char errMessage[256];
+                snprintf(errMessage, sizeof(errMessage),
+                        "\nCUDA Separable convolution doesn't support %d kernel\n", fLen);
+                CUDA_NOT_SUPPORTED(errMessage);
+            };
     }
 
    POST_LAUNCH_CHECK();
@@ -191,7 +199,5 @@ INSTANTIATE(ushort ,   float)
 INSTANTIATE(short  ,   float)
 INSTANTIATE(uintl  ,   float)
 INSTANTIATE(intl   ,   float)
-
 }
-
 }

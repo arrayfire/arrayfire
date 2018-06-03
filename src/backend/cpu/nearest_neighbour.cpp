@@ -27,7 +27,7 @@ void nearest_neighbour(Array<uint>& idx, Array<To>& dist,
                        const af_match_type dist_type)
 {
     if (n_dist > 1) {
-        CPU_NOT_SUPPORTED();
+        CPU_NOT_SUPPORTED("\nNumber of smallest distances can't be <1\n");
     }
 
     idx.eval();

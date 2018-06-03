@@ -9,45 +9,39 @@
 
 //This is the array implementation class.
 #pragma once
-#include <af/dim4.hpp>
-#include <common/ArrayInfo.hpp>
-#include <backend.hpp>
-#include <types.hpp>
-#include <traits.hpp>
-#include <TNJ/Node.hpp>
 #include <Param.hpp>
+#include <TNJ/Node.hpp>
+#include <common/ArrayInfo.hpp>
 #include <memory.hpp>
-#include <memory>
-#include <algorithm>
-#include <vector>
 #include <platform.hpp>
 #include <queue.hpp>
 
-// cpu::Array class forward declaration
-namespace cpu
-{
-template<typename T> class Array;
-// kernel::evalArray fn forward declaration
-namespace kernel
-{
-    template<typename T> void evalArray(Param<T> in, TNJ::Node_ptr node);
+#include <af/defines.h>
+#include <af/dim4.hpp>
+#include <af/seq.h>
 
-    template<typename T>
-    void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> nodes);
-
-}
-}
+#include <cstddef>
+#include <memory>
+#include <vector>
 
 namespace cpu
 {
+    namespace kernel
+    {
+        template<typename T> void evalArray(Param<T> in, TNJ::Node_ptr node);
+
+        template<typename T>
+        void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> nodes);
+
+    }
+
+    template<typename T> class Array;
 
     using std::shared_ptr;
     using af::dim4;
 
     template<typename T>
     void evalMultiple(std::vector<Array<T> *> arrays);
-
-    template<typename T> class Array;
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
@@ -187,11 +181,7 @@ namespace cpu
             return data_dims;
         }
 
-        void setDataDims(const dim4 &new_dims)
-        {
-            modDims(new_dims);
-            data_dims = new_dims;
-        }
+        void setDataDims(const dim4 &new_dims);
 
         size_t getAllocatedBytes() const
         {

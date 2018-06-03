@@ -244,6 +244,34 @@ TYPED_TEST(MatrixMultiply, MultiGPURectangleVector_CPP)
     DEVICE_ITERATE((cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test")));
 }
 
+TEST(MatrixMultiply, Batched)
+{
+    const int M = 512;
+    const int K = 1024;
+    const int N = 32;
+    const int D2 = 2;
+    const int D3 = 3;
+
+    for (int d3 = 1; d3 <= D3; d3 *= D3) {
+        for (int d2 = 1; d2 <= D2; d2 *= D2) {
+            af::array a = af::randu(M, K, d2, d3);
+            af::array b = af::randu(K, N, d2, d3);
+            af::array c = af::matmul(a, b);
+
+            for (int j = 0; j < d3; j++) {
+                for (int i = 0; i < d2; i++) {
+                    af::array a_ij = a(af::span, af::span, i, j);
+                    af::array b_ij = b(af::span, af::span, i, j);
+                    af::array c_ij = c(af::span, af::span, i, j);
+                    af::array res = af::matmul(a_ij, b_ij);
+                    ASSERT_LT(af::max<float>(af::abs(c_ij - res)), 1E-5)
+                        << " for d2 = " << d2 << " for d3 = " << d3;
+                }
+            }
+        }
+    }
+}
+
 #undef DEVICE_ITERATE
 
 TEST(MatrixMultiply, ISSUE_1882)

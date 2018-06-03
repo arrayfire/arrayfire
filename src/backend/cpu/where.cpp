@@ -32,7 +32,7 @@ Array<uint> where(const Array<T> &in)
     static const T zero = scalar<T>(0);
 
     const T *iptr = in.get();
-    uint *out_vec  = memAlloc<uint>(in.elements());
+    auto out_vec  = memAlloc<uint>(in.elements());
 
     dim_t count = 0;
     dim_t idx = 0;
@@ -58,7 +58,8 @@ Array<uint> where(const Array<T> &in)
         }
     }
 
-    Array<uint> out = createDeviceDataArray<uint>(dim4(count), out_vec);
+    Array<uint> out = createDeviceDataArray<uint>(dim4(count), out_vec.get());
+    out_vec.release();
     return out;
 }
 

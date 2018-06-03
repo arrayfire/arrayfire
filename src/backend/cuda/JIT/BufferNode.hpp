@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+#include "../Param.hpp"
 #include "Node.hpp"
 #include <iomanip>
 #include <mutex>

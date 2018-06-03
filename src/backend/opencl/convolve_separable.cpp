@@ -26,8 +26,12 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
 
     if ((cflen > kernel::MAX_SCONV_FILTER_LEN) ||
         (rflen > kernel::MAX_SCONV_FILTER_LEN)) {
-        // call upon fft
-        OPENCL_NOT_SUPPORTED();
+        // TODO call upon fft
+        char errMessage[256];
+        snprintf(errMessage, sizeof(errMessage),
+                "\nOpenCL Separable convolution doesn't support %lld(coloumn) %lld(row) filters\n",
+                 cflen, rflen);
+        OPENCL_NOT_SUPPORTED(errMessage);
     }
 
     const dim4 sDims = signal.dims();

@@ -33,7 +33,7 @@ unsigned orb(Array<float> &x, Array<float> &y,
     std::vector<unsigned> feat_pyr, lvl_best;
     std::vector<float> lvl_scl;
     std::vector<float*> d_x_pyr, d_y_pyr;
-    std::vector<CParam<T> > img_pyr;
+    std::vector<Array<T>> img_pyr;
 
     fast_pyramid<T>(feat_pyr, d_x_pyr, d_y_pyr, lvl_best, lvl_scl, img_pyr,
                     image, fast_thr, max_feat, scl_fctr, levels, REF_PAT_SIZE);
@@ -47,8 +47,8 @@ unsigned orb(Array<float> &x, Array<float> &y,
     unsigned *desc_out;
 
     kernel::orb<T, convAccT>(&nfeat_out, &x_out, &y_out, &score_out, &orientation_out, &size_out,
-                             &desc_out, feat_pyr, d_x_pyr, d_y_pyr, lvl_best, lvl_scl, img_pyr,
-                             fast_thr, max_feat, scl_fctr, levels, blur_img);
+                              &desc_out, feat_pyr, d_x_pyr, d_y_pyr, lvl_best, lvl_scl, img_pyr,
+                              fast_thr, max_feat, scl_fctr, levels, blur_img);
 
     if (nfeat_out > 0) {
 

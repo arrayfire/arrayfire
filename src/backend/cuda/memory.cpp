@@ -7,17 +7,23 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <cuda_runtime.h>
-#include <platform.hpp>
-#include <err_cuda.hpp>
 #include <memory.hpp>
-#include <common/util.hpp>
-#include <types.hpp>
+
+#include <common/Logger.hpp>
 #include <common/dispatch.hpp>
+#include <common/util.hpp>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include <err_cuda.hpp>
+#include <platform.hpp>
+#include <types.hpp>
 
 #include <mutex>
+
+#include <common/MemoryManagerImpl.hpp>
+template class common::MemoryManager<cuda::MemoryManager>;
+template class common::MemoryManager<cuda::MemoryManagerPinned>;
 
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
@@ -27,8 +33,12 @@
 #define AF_CUDA_MEM_DEBUG 0
 #endif
 
+using common::bytesToString;
+
 using std::lock_guard;
 using std::recursive_mutex;
+using std::function;
+using std::unique_ptr;
 
 namespace cuda
 {
@@ -63,9 +73,12 @@ void printMemInfo(const char *msg, const int device)
 }
 
 template<typename T>
-T* memAlloc(const size_t &elements)
+uptr<T>
+memAlloc(const size_t &elements)
 {
-    return (T *)memoryManager().alloc(elements * sizeof(T), false);
+    size_t size = elements * sizeof(T);
+    return uptr<T>(static_cast<T*>(memoryManager().alloc(size, false)),
+                   memFree<T>);
 }
 
 void* memAllocUser(const size_t &bytes)
@@ -75,7 +88,7 @@ void* memAllocUser(const size_t &bytes)
 template<typename T>
 void memFree(T *ptr)
 {
-    return memoryManager().unlock((void *)ptr, false);
+    memoryManager().unlock((void *)ptr, false);
 }
 
 void memFreeUser(void *ptr)
@@ -122,11 +135,11 @@ bool checkMemoryLimit()
     return memoryManager().checkMemoryLimit();
 }
 
-#define INSTANTIATE(T)                                      \
-    template T* memAlloc(const size_t &elements);           \
-    template void memFree(T* ptr);                          \
-    template T* pinnedAlloc(const size_t &elements);        \
-    template void pinnedFree(T* ptr);                       \
+#define INSTANTIATE(T)                                 \
+    template uptr<T> memAlloc(const size_t &elements); \
+    template void memFree(T* ptr);                     \
+    template T* pinnedAlloc(const size_t &elements);   \
+    template void pinnedFree(T* ptr);
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)
@@ -140,6 +153,7 @@ bool checkMemoryLimit()
     INSTANTIATE(uintl)
     INSTANTIATE(short)
     INSTANTIATE(ushort)
+    INSTANTIATE(void *)
 
 MemoryManager::MemoryManager()
     : common::MemoryManager<cuda::MemoryManager>(getDeviceCount(), common::MAX_BUFFERS,
@@ -150,7 +164,6 @@ MemoryManager::MemoryManager()
 
 MemoryManager::~MemoryManager()
 {
-    common::lock_guard_t lock(this->memory_mutex);
     for (int n = 0; n < cuda::getDeviceCount(); n++) {
         try {
             cuda::setDevice(n);
@@ -173,15 +186,15 @@ size_t MemoryManager::getMaxMemorySize(int id)
 
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
-    lock_guard<recursive_mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     void *ptr = NULL;
     CUDA_CHECK(cudaMalloc(&ptr, bytes));
+    AF_TRACE("nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     return ptr;
 }
 
 void MemoryManager::nativeFree(void *ptr)
 {
-    lock_guard<recursive_mutex> lock(getDriverApiMutex(getActiveDeviceId()));
+    AF_TRACE("nativeFree:          {}", ptr);
     cudaError_t err = cudaFree(ptr);
     if (err != cudaErrorCudartUnloading) {
         CUDA_CHECK(err);
@@ -212,15 +225,15 @@ size_t MemoryManagerPinned::getMaxMemorySize(int id)
 
 void *MemoryManagerPinned::nativeAlloc(const size_t bytes)
 {
-    lock_guard<recursive_mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     void *ptr;
     CUDA_CHECK(cudaMallocHost(&ptr, bytes));
+    AF_TRACE("Pinned::nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     return ptr;
 }
 
 void MemoryManagerPinned::nativeFree(void *ptr)
 {
-    lock_guard<recursive_mutex> lock(getDriverApiMutex(getActiveDeviceId()));
+    AF_TRACE("Pinned::nativeFree:          {}", ptr);
     cudaError_t err = cudaFreeHost(ptr);
     if (err != cudaErrorCudartUnloading) {
         CUDA_CHECK(err);

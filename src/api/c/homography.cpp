@@ -37,6 +37,7 @@ static inline void homography(af_array &H, int &inliers,
                             getArray<float>(x_dst), getArray<float>(y_dst),
                             getArray<float>(initial),
                             htype, inlier_thr, iterations);
+    AF_CHECK(af_release_array(initial));
 
     H = getHandle<T>(bestH);
 }

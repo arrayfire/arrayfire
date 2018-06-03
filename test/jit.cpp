@@ -403,3 +403,50 @@ TEST(JIT, LinearLarge)
         ASSERT_EQ(hc[i], v3);
     }
 }
+
+TEST(JIT, NonLinearBuffers1)
+{
+    af::array a = af::randu(5, 5);
+    af::array a0 = a;
+    for (int i = 0; i < 1000; i++) {
+        af::array b = af::randu(1, 5);
+        a += af::tile(b, 5);
+    }
+    a.eval();
+}
+
+TEST(JIT, NonLinearBuffers2)
+{
+    af::array a = af::randu(100, 310);
+    af::array b = af::randu(10, 10);
+    for (int i = 0; i < 300; i++) {
+        b += a(seq(10), seq(i, i+9)) * randu(10, 10);
+    }
+    b.eval();
+}
+
+TEST(JIT, TransposeBuffers)
+{
+    const int num = 10;
+    af::array a = af::randu(1, num);
+    af::array b = af::randu(1, num);
+    af::array c =  a + b;
+    af::array d = a.T() + b.T();
+
+    std::vector<float> ha(a.elements());
+    a.host(ha.data());
+
+    std::vector<float> hb(b.elements());
+    b.host(hb.data());
+
+    std::vector<float> hc(c.elements());
+    c.host(hc.data());
+
+    std::vector<float> hd(d.elements());
+    d.host(hd.data());
+
+    for (int i = 0; i < num; i++) {
+        ASSERT_FLOAT_EQ(ha[i] + hb[i], hc[i]);
+        ASSERT_FLOAT_EQ(hc[i], hd[i]);
+    }
+}

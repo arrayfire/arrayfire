@@ -34,10 +34,9 @@ struct scan_dim_by_key
         const int D1 = D - 1;
         for (dim_t i = 0; i < odims[D1]; i++) {
             scan_dim_by_key<op, Ti, Tk, To, D1> func(inclusive_scan);
-            getQueue().enqueue(func,
-                    out, outOffset + i * ostrides[D1],
-                    key, keyOffset + i * kstrides[D1],
-                    in, inOffset + i * istrides[D1], dim);
+            func(out, outOffset + i * ostrides[D1], key,
+                 keyOffset + i * kstrides[D1], in, inOffset + i * istrides[D1],
+                 dim);
             if (D1 == dim) break;
         }
     }

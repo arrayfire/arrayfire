@@ -91,5 +91,8 @@ typedef enum {
 
     af_sigmoid_t,
 
-    af_noop_t
+    af_noop_t,
+
+    af_select_t,
+    af_not_select_t,
 } af_op_t;

@@ -13,7 +13,7 @@ set(CLBlast_location ${prefix}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}clblast${CMAKE_
 ExternalProject_Add(
     CLBlast-ext
     GIT_REPOSITORY https://github.com/cnugteren/CLBlast.git
-    GIT_TAG 48133a0cd1a7b61b87906ec1f4608e766e20a973
+    GIT_TAG 1.2.0
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
@@ -26,6 +26,7 @@ ExternalProject_Add(
       "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} -w -fPIC"
       -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+      -DCMAKE_INSTALL_LIBDIR:PATH=lib
       -DBUILD_SHARED_LIBS:BOOL=OFF
       -DSAMPLES:BOOL=OFF
       -DTUNERS:BOOL=OFF

@@ -17,6 +17,8 @@
 #include "config.hpp"
 #include <memory.hpp>
 
+#include <cub/warp/warp_reduce.cuh>
+
 using std::unique_ptr;
 
 namespace cuda
@@ -153,13 +155,14 @@ namespace kernel
         blocks_dim[dim] = divup(in.dims[dim], threads_y * REPEAT);
 
         Param<To> tmp = out;
-
+        uptr<To> tmp_alloc;
         if (blocks_dim[dim] > 1) {
             int tmp_elements = 1;
             tmp.dims[dim] = blocks_dim[dim];
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
-            tmp.ptr = memAlloc<To>(tmp_elements);
+            tmp_alloc = memAlloc<To>(tmp_elements);
+            tmp.ptr = tmp_alloc.get();
 
             for (int k = dim + 1; k < 4; k++) tmp.strides[k] *= blocks_dim[dim];
         }
@@ -177,51 +180,9 @@ namespace kernel
                                                            change_nan, nanval);
             }
 
-            memFree(tmp.ptr);
         }
     }
 
-    template<typename To, af_op_t op>
-    struct WarpReduce
-    {
-        __device__ To operator()(To *s_ptr, uint tidx)
-        {
-            Binary<To, op> reduce;
-#pragma unroll
-            for (int n = 16; n >= 1; n >>= 1) {
-                if (tidx < n) {
-                    s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx + n]);
-                }
-                __syncthreads();
-            }
-            return s_ptr[tidx];
-        }
-    };
-
-
-#if (__CUDA_ARCH__ >= 300)
-#define WARP_REDUCE(T)                                  \
-    template<af_op_t op>                                \
-    struct WarpReduce<T, op>                            \
-    {                                                   \
-        __device__ T operator()(T *s_ptr, uint tidx)    \
-        {                                               \
-            Binary<T, op> reduce;                       \
-                                                        \
-            T val = s_ptr[tidx];                        \
-                                                        \
-            for (int n = 16; n >= 1; n >>= 1) {         \
-                val = reduce(val, __shfl_down(val, n)); \
-            }                                           \
-            return val;                                 \
-        }                                               \
-    };                                                  \
-
-    WARP_REDUCE(float)
-    WARP_REDUCE(int)
-    WARP_REDUCE(uchar) // upcasted to int
-    WARP_REDUCE(char)  // upcasted to int
-#endif
 
     template<typename Ti, typename To, af_op_t op, uint DIMX>
     __global__
@@ -284,8 +245,11 @@ namespace kernel
             __syncthreads();
         }
 
+        typedef cub::WarpReduce<To> WarpReduce;
+        __shared__ typename WarpReduce::TempStorage temp_storage;
 
-        out_val = WarpReduce<To, op>()(s_ptr, tidx);
+        To warp_val = s_ptr[tidx];
+        out_val = WarpReduce(temp_storage).Reduce(warp_val, reduce);
 
         To * const optr = out.ptr + (wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1]);
         if (tidx == 0)
@@ -336,11 +300,10 @@ namespace kernel
         uint blocks_y = divup(in.dims[1], threads_y);
 
         Param<To> tmp = out;
+        uptr<To> tmp_alloc;
         if (blocks_x > 1) {
-            tmp.ptr = memAlloc<To>(blocks_x *
-                                   in.dims[1] *
-                                   in.dims[2] *
-                                   in.dims[3]);
+            tmp_alloc = memAlloc<To>(blocks_x * in.dims[1] * in.dims[2] * in.dims[3]);
+            tmp.ptr = tmp_alloc.get();
 
             tmp.dims[0] = blocks_x;
             for (int k = 1; k < 4; k++) tmp.strides[k] *= blocks_x;
@@ -358,7 +321,6 @@ namespace kernel
                                                         change_nan, nanval);
             }
 
-            memFree(tmp.ptr);
         }
     }
 
@@ -412,7 +374,8 @@ namespace kernel
 
             int tmp_elements = tmp.strides[3] * tmp.dims[3];
 
-            tmp.ptr = memAlloc<To>(tmp_elements);
+            auto tmp_alloc = memAlloc<To>(tmp_elements);
+            tmp.ptr = tmp_alloc.get();
             reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x,
                                               change_nan, nanval);
 
@@ -422,7 +385,6 @@ namespace kernel
             CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(To),
                        cudaMemcpyDeviceToHost, cuda::getActiveStream()));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
-            memFree(tmp.ptr);
 
             Binary<To, op> reduce;
             To out = reduce.init();

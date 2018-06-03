@@ -33,41 +33,59 @@ endif()
 unset(CMAKE_CXX_STANDARD)
 set(TESTDATA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
 
-if(${USE_RELATIVE_TEST_DIR})
+if(${AF_USE_RELATIVE_TEST_DIR})
     # RELATIVE_TEST_DATA_DIR is a User-visible option with default value of test/data directory
     set(RELATIVE_TEST_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data" CACHE STRING "Relative Test Data Directory")
     set(TESTDATA_SOURCE_DIR ${RELATIVE_TEST_DATA_DIR})
-else(${USE_RELATIVE_TEST_DIR})  # Not using relative test data directory
+else(${AF_USE_RELATIVE_TEST_DIR})  # Not using relative test data directory
     set(TESTDATA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
-endif(${USE_RELATIVE_TEST_DIR})
+endif(${AF_USE_RELATIVE_TEST_DIR})
 
-if(BUILD_CPU)
+if(AF_BUILD_CPU)
   list(APPEND enabled_backends "cpu")
-endif(BUILD_CPU)
+endif(AF_BUILD_CPU)
 
-if(BUILD_CUDA)
+if(AF_BUILD_CUDA)
   list(APPEND enabled_backends "cuda")
-endif(BUILD_CUDA)
+endif(AF_BUILD_CUDA)
 
-if(BUILD_OPENCL)
+if(AF_BUILD_OPENCL)
   list(APPEND enabled_backends "opencl")
-endif(BUILD_OPENCL)
+endif(AF_BUILD_OPENCL)
 
-if(BUILD_UNIFIED)
+if(AF_BUILD_UNIFIED)
   list(APPEND enabled_backends "unified")
-endif(BUILD_UNIFIED)
+endif(AF_BUILD_UNIFIED)
 
 include(CMakeParseArguments)
 
+# Creates tests for all backends
+#
+# Creates a standard test for all backends. Most of the time you only need to
+# specify the name of the source file to create a test.
+#
+# Parameters
+# ----------
+# 'CXX11'       If set the tests will be compiled using c++11. Tests should strive
+#               to be C++98 compilient
+# 'SRC'         The source files for the test
+# 'LIBRARIES'   Libraries other than ArrayFire that need to be linked
+# 'DEFINITIONS' Definitions that need to be defined
+# 'BACKENDS'    Backends to target for this test. If not set then the test will
+#               compiled againat all backends
 function(make_test)
   set(options CXX11)
   set(single_args SRC)
-  set(multi_args LIBRARIES DEFINITIONS)
+  set(multi_args LIBRARIES DEFINITIONS BACKENDS)
   cmake_parse_arguments(mt_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
 
   get_filename_component(src_name ${mt_args_SRC} NAME_WE)
   foreach(backend ${enabled_backends})
-    set(target "${src_name}_${backend}")
+    if(NOT "${mt_args_BACKENDS}" STREQUAL "" AND
+       NOT ${backend} IN_LIST mt_args_BACKENDS)
+      continue()
+    endif()
+    set(target "test_${src_name}_${backend}")
     add_executable(${target} ${mt_args_SRC})
     target_include_directories(${target}
       PRIVATE
@@ -100,9 +118,10 @@ function(make_test)
           CXX_STANDARD 11)
     endif(${mt_args_CXX11})
 
-	  set_target_properties(${target}
+    set_target_properties(${target}
       PROPERTIES
-        FOLDER "Tests")
+        FOLDER "Tests"
+        OUTPUT_NAME "${src_name}_${backend}")
 
     target_compile_definitions(${target}
       PRIVATE
@@ -125,6 +144,7 @@ function(make_test)
   endforeach()
 endfunction(make_test)
 
+make_test(SRC anisotropic_diffusion.cpp)
 make_test(SRC approx1.cpp)
 make_test(SRC approx2.cpp)
 make_test(SRC array.cpp)
@@ -200,7 +220,8 @@ make_test(SRC nearest_neighbour.cpp)
 
 if(OpenCL_FOUND)
   make_test(SRC ocl_ext_context.cpp
-            LIBRARIES OpenCL::OpenCL)
+            LIBRARIES OpenCL::OpenCL
+            BACKENDS "opencl")
 endif()
 
 make_test(SRC orb.cpp)
@@ -222,13 +243,13 @@ make_test(SRC select.cpp)
 make_test(SRC set.cpp)
 make_test(SRC shift.cpp)
 
-if(BUILD_NONFREE)
-  make_test(SRC gloh_nonfree.cpp DEFINITIONS AF_BUILD_NONFREE_SIFT)
-  make_test(SRC sift_nonfree.cpp DEFINITIONS AF_BUILD_NONFREE_SIFT)
+if(AF_WITH_NONFREE)
+  make_test(SRC gloh_nonfree.cpp DEFINITIONS AF_WITH_NONFREE_SIFT)
+  make_test(SRC sift_nonfree.cpp DEFINITIONS AF_WITH_NONFREE_SIFT)
 endif()
 
 make_test(SRC sobel.cpp)
-make_test(SRC solve_dense.cpp        CXX11)
+make_test(SRC solve_dense.cpp       CXX11)
 make_test(SRC sort.cpp)
 make_test(SRC sort_by_key.cpp)
 make_test(SRC sort_index.cpp)
@@ -238,8 +259,9 @@ make_test(SRC sparse_convert.cpp)
 make_test(SRC stdev.cpp)
 make_test(SRC susan.cpp)
 make_test(SRC svd_dense.cpp)
-make_test(SRC threading.cpp          CXX11)
+make_test(SRC threading.cpp         CXX11)
 make_test(SRC tile.cpp)
+make_test(SRC topk.cpp              CXX11)
 make_test(SRC transform.cpp)
 make_test(SRC transform_coordinates.cpp)
 make_test(SRC translate.cpp)

@@ -35,9 +35,9 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
                              thr, feature_ratio, edge);
 
     if (nfeat > 0) {
-        x_out = createParamArray<float>(x);
-        y_out = createParamArray<float>(y);
-        score_out = createParamArray<float>(score);
+        x_out = createParamArray<float>(x, true);
+        y_out = createParamArray<float>(y, true);
+        score_out = createParamArray<float>(score, true);
     }
 
     return nfeat;

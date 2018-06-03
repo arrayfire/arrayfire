@@ -8,7 +8,8 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <types.hpp>
+
+#include <af/defines.h>
 
 namespace cpu
 {

@@ -31,6 +31,10 @@ void meanShift(Param<T> out, CParam<T> in, const float spatialSigma,
     const dim_t radius      = std::max((int)(spatialSigma * 1.5f), 1);
     const AccType cvar      = chromaticSigma * chromaticSigma;
 
+
+    std::array<AccType, 4> currentCenterColors{0};
+    std::array<AccType, 4> currentMeanColors{0};
+    std::array<AccType, 4> tempColors{0};
     for (dim_t b3=0; b3<dims[3]; ++b3) {
         for (unsigned b2=0; b2<bCount; ++b2) {
 
@@ -47,10 +51,8 @@ void meanShift(Param<T> out, CParam<T> in, const float spatialSigma,
                     dim_t i_in_off  = i*istrides[0];
                     dim_t i_out_off = i*ostrides[0];
 
-                    std::vector<T> currentCenterColors(channels, 0);
-
                     for (unsigned ch=0; ch<channels; ++ch)
-                        currentCenterColors[ch] = inData[j_in_off + i_in_off + ch*istrides[2]];
+                        currentCenterColors[ch] = static_cast<AccType>(inData[j_in_off + i_in_off + ch*istrides[2]]);
 
                     int meanPosJ = j;
                     int meanPosI = i;
@@ -64,8 +66,7 @@ void meanShift(Param<T> out, CParam<T> in, const float spatialSigma,
                         int shift_y = 0;
                         int shift_x = 0;
 
-                        std::vector<AccType> currentMeanColors(channels, 0);
-
+                        currentMeanColors.fill(0);
                         // Windowing operation
                         for (dim_t wj=-radius; wj<=radius; ++wj) {
 
@@ -82,19 +83,15 @@ void meanShift(Param<T> out, CParam<T> in, const float spatialSigma,
 
                                 dim_t tistride = ti*istrides[0];
 
-                                std::vector<T> tempColors(channels, 0);
-
                                 AccType norm = 0;
                                 for (unsigned ch=0; ch<channels; ++ch) {
-                                    tempColors[ch] = inData[ tistride + tjstride + ch*istrides[2] ];
-                                    AccType diff = static_cast<AccType>(currentCenterColors[ch]) -
-                                                   static_cast<AccType>(tempColors[ch]);
+                                    tempColors[ch] = static_cast<AccType>(inData[ tistride + tjstride + ch*istrides[2] ]);
+                                    AccType diff = currentCenterColors[ch] - tempColors[ch];
                                     norm += (diff * diff);
                                 }
-
                                 if (norm <= cvar) {
                                     for(unsigned ch=0; ch<channels; ++ch)
-                                        currentMeanColors[ch] += static_cast<AccType>(tempColors[ch]);
+                                        currentMeanColors[ch] += tempColors[ch];
 
                                     shift_x += ti;
                                     ++hit_count;
@@ -116,7 +113,7 @@ void meanShift(Param<T> out, CParam<T> in, const float spatialSigma,
 
                         AccType norm = 0;
                         for (unsigned ch=0; ch<channels; ++ch) {
-                            AccType diff = currentMeanColors[ch] - static_cast<AccType>(currentCenterColors[ch]);
+                            AccType diff = currentMeanColors[ch] - currentCenterColors[ch];
                             norm += (diff*diff);
                         }
 
@@ -125,13 +122,13 @@ void meanShift(Param<T> out, CParam<T> in, const float spatialSigma,
                                     ((abs(oldMeanPosJ-meanPosJ) + abs(oldMeanPosI-meanPosI) + norm) <= 1);
 
                         for (unsigned ch=0; ch<channels; ++ch)
-                            currentCenterColors[ch] = static_cast<T>(currentMeanColors[ch]);
+                            currentCenterColors[ch] = currentMeanColors[ch];
 
                         if (stop) break;
                     } // scope of meanshift iterations end
 
                     for (dim_t ch=0; ch<channels; ++ch)
-                        outData[j_out_off + i_out_off + ch*ostrides[2]] = currentCenterColors[ch];
+                        outData[j_out_off + i_out_off + ch*ostrides[2]] = static_cast<T>(currentCenterColors[ch]);
                 }
             }
         }

@@ -7,14 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
-#include <Array.hpp>
-#include <fft.hpp>
 #include <kernel/fft.hpp>
-#include <copy.hpp>
-#include <math.hpp>
+#include <fft.hpp>
+
+#include <Array.hpp>
 #include <platform.hpp>
-#include <queue.hpp>
+
+#include <af/dim4.hpp>
 
 using af::dim4;
 

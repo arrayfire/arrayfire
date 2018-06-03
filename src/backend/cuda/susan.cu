@@ -27,33 +27,31 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
     dim4 idims = in.dims();
 
     const unsigned corner_lim = in.elements() * feature_ratio;
-    float* x_corners          = memAlloc<float>(corner_lim);
-    float* y_corners          = memAlloc<float>(corner_lim);
-    float* resp_corners       = memAlloc<float>(corner_lim);
+    auto x_corners          = memAlloc<float>(corner_lim);
+    auto y_corners          = memAlloc<float>(corner_lim);
+    auto resp_corners       = memAlloc<float>(corner_lim);
 
-    T* resp = memAlloc<T>(in.elements());
+    auto resp = memAlloc<T>(in.elements());
     unsigned corners_found = 0;
 
-    kernel::susan_responses<T>(resp, in.get(), idims[0], idims[1], radius, diff_thr, geom_thr, edge);
+    kernel::susan_responses<T>(resp.get(), in.get(), idims[0], idims[1], radius, diff_thr, geom_thr, edge);
 
-    kernel::nonMaximal<T>(x_corners, y_corners, resp_corners, &corners_found,
-                           idims[0], idims[1], resp, edge, corner_lim);
-
-    memFree(resp);
+    kernel::nonMaximal<T>(x_corners.get(), y_corners.get(), resp_corners.get(), &corners_found,
+                          idims[0], idims[1], resp.get(), edge, corner_lim);
 
     const unsigned corners_out = min(corners_found, corner_lim);
     if (corners_out == 0) {
-        memFree(x_corners);
-        memFree(y_corners);
-        memFree(resp_corners);
         x_out    = createEmptyArray<float>(dim4());
         y_out    = createEmptyArray<float>(dim4());
         resp_out = createEmptyArray<float>(dim4());
         return 0;
     } else {
-        x_out    = createDeviceDataArray<float>(dim4(corners_out), (void*)x_corners);
-        y_out    = createDeviceDataArray<float>(dim4(corners_out), (void*)y_corners);
-        resp_out = createDeviceDataArray<float>(dim4(corners_out), (void*)resp_corners);
+        x_out    = createDeviceDataArray<float>(dim4(corners_out), (void*)x_corners.get());
+        y_out    = createDeviceDataArray<float>(dim4(corners_out), (void*)y_corners.get());
+        resp_out = createDeviceDataArray<float>(dim4(corners_out), (void*)resp_corners.get());
+        x_corners.release();
+        y_corners.release();
+        resp_corners.release(); 
         return corners_out;
     }
 }

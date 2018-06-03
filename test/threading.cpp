@@ -560,7 +560,7 @@ void cppMatMulCheck(int targetDevice, string TestFile)
     }
 }
 
-#define TEST_FOR_TYPE(TypeName)                                         \
+#define TEST_BLAS_FOR_TYPE(TypeName)                                         \
     tests.emplace_back(cppMatMulCheck<TypeName, false>,                             \
             nextTargetDeviceId()%numDevices, TEST_DIR "/blas/Basic.test");          \
     tests.emplace_back(cppMatMulCheck<TypeName, false>,                             \
@@ -579,12 +579,12 @@ TEST(Threading, BLAS)
     int numDevices = 1;
     ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
 
-    TEST_FOR_TYPE(      float);
-    TEST_FOR_TYPE( af::cfloat);
+    TEST_BLAS_FOR_TYPE(      float);
+    TEST_BLAS_FOR_TYPE( af::cfloat);
 
     if (noDoubleTests<double>()) {
-        TEST_FOR_TYPE(     double);
-        TEST_FOR_TYPE(af::cdouble);
+        TEST_BLAS_FOR_TYPE(     double);
+        TEST_BLAS_FOR_TYPE(af::cdouble);
     }
 
     for (size_t testId=0; testId<tests.size(); ++testId)
@@ -652,4 +652,24 @@ TEST(Threading, DISABLED_MemoryManagerStressTest)
   for (auto& t : threads) {
     t.join();
   }
+}
+
+TEST(Threading, DISABLED_Sort)
+{
+    cleanSlate(); // Clean up everything done so far
+
+    vector<std::thread> tests;
+
+    ASSERT_EQ(AF_SUCCESS, af_set_device(0));
+
+    for (int i=0; i<THREAD_COUNT; ++i) {
+        tests.emplace_back([] {
+            array a = randu(100, 100);
+            for (int k=0; k<100; ++k)
+                array b = sort(a);
+        });
+    }
+
+    for (auto& t: tests)
+        if (t.joinable()) t.join();
 }

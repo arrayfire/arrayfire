@@ -379,20 +379,28 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
     // component to being sequentially numbered components starting at
     // 1.
     int size = in.dims[0] * in.dims[1];
-    T* tmp = cuda::memAlloc<T>(size);
-    CUDA_CHECK(cudaMemcpyAsync(tmp, out.ptr, size * sizeof(T),
+    auto tmp = cuda::memAlloc<T>(size);
+    CUDA_CHECK(cudaMemcpyAsync(tmp.get(), out.ptr, size * sizeof(T),
                           cudaMemcpyDeviceToDevice,
                           cuda::getActiveStream()));
 
     // Wrap raw device ptr
-    thrust::device_ptr<T> wrapped_tmp = thrust::device_pointer_cast(tmp);
+    thrust::device_ptr<T> wrapped_tmp = thrust::device_pointer_cast(tmp.get());
 
     // Sort the copy
     THRUST_SELECT(thrust::sort, wrapped_tmp, wrapped_tmp + size);
 
-    // Take the max element, this is the number of label assignments to
-    // compute.
-    int num_bins = wrapped_tmp[size - 1] + 1;
+    // Take the max element which is the number
+    // of label assignments to compute.
+    const int num_bins = wrapped_tmp[size - 1] + 1;
+
+    // If the number of label assignments is two,
+    // then either the entire input image is one big
+    // component(1's) or it has only one component other than
+    // background(0's). Either way, no further
+    // post-processing of labels is required.
+    if (num_bins<=2)
+        return;
 
     cuda::ThrustVector<T> labels(num_bins);
 
@@ -401,14 +409,14 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
     THRUST_SELECT(thrust::upper_bound, wrapped_tmp,  wrapped_tmp  + size,
                         search_begin, search_begin + num_bins,
                         labels.begin());
+
     THRUST_SELECT(thrust::adjacent_difference, labels.begin(), labels.end(), labels.begin());
 
     // Operators for the scan
     clamp_to_one<T> clamp;
     thrust::plus<T> add;
 
-    // Perform the scan -- this can computes the correct labels for each
-    // component
+    // Perform scan -- this computes the correct labels for each component
     THRUST_SELECT(thrust::transform_exclusive_scan,
                                      labels.begin(),
                                      labels.end(),
@@ -416,12 +424,9 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
                                      clamp,
                                      0,
                                      add);
-
     // Apply the correct labels to the equivalency map
     CUDA_LAUNCH((final_relabel<T,n_per_thread>), blocks,threads,
             out, in, thrust::raw_pointer_cast(&labels[0]));
 
     POST_LAUNCH_CHECK();
-
-    cuda::memFree(tmp);
 }

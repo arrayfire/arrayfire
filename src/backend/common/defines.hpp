@@ -49,3 +49,20 @@ typedef enum {
     AF_BATCH_SAME,             /* signal and filter have same batch size */
     AF_BATCH_DIFF,             /* signal and filter have different batch size */
 } AF_BATCH_KIND;
+
+#ifdef OS_WIN
+#include <Windows.h>
+using LibHandle = HMODULE;
+static const char* librarySuffix = ".dll";
+static const char* libraryPrefix = "";
+#elif defined(OS_MAC)
+static const char* librarySuffix = ".dylib";
+static const char* libraryPrefix = "lib";
+using LibHandle = void*;
+#elif defined(OS_LNX)
+static const char* librarySuffix = ".so";
+static const char* libraryPrefix = "lib";
+using LibHandle = void*;
+#else
+#error "Unsupported platform"
+#endif

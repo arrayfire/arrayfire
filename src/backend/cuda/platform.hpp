@@ -18,11 +18,14 @@
 #include <cusolverDn.hpp>
 #include <cusparse.hpp>
 
+
 #include <memory>
-#include <mutex>
 #include <string>
 #include <vector>
 
+namespace spdlog {
+  class logger;
+}
 namespace cuda
 {
 int getBackend();
@@ -42,8 +45,6 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
 unsigned getMaxJitSize();
 
-std::recursive_mutex& getDriverApiMutex(int device);
-
 int getDeviceCount();
 
 int getActiveDeviceId();
@@ -57,6 +58,8 @@ cudaStream_t getActiveStream();
 size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();
+
+spdlog::logger* getLogger();
 
 int setDevice(int device);
 
@@ -114,8 +117,6 @@ class DeviceManager
         friend GraphicsResourceManager& interopManager();
 #endif
 
-        friend std::recursive_mutex& getDriverApiMutex(int device);
-
         friend std::string getDeviceInfo(int device);
 
         friend std::string getPlatformInfo();
@@ -147,8 +148,6 @@ class DeviceManager
         // variables
         DeviceManager(DeviceManager const&);
         void operator=(DeviceManager const&);
-
-        std::recursive_mutex driver_api_mutex[MAX_DEVICES];
 
         // Attributes
         std::vector<cudaDevice_t> cuDevices;

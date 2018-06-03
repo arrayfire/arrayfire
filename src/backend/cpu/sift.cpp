@@ -19,7 +19,7 @@
 #include <cfloat>
 #include <vector>
 
-#ifdef AF_BUILD_NONFREE_SIFT
+#ifdef AF_WITH_NONFREE_SIFT
 #include <kernel/sift_nonfree.hpp>
 #endif
 
@@ -37,7 +37,7 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
               const float img_scale, const float feature_ratio,
               const bool compute_GLOH)
 {
-#ifdef AF_BUILD_NONFREE_SIFT
+#ifdef AF_WITH_NONFREE_SIFT
     return sift_impl<T, convAccT>(x, y, score, ori, size, desc, in, n_layers,
                                   contrast_thr, edge_thr, init_sigma, double_input,
                                   img_scale, feature_ratio, compute_GLOH);

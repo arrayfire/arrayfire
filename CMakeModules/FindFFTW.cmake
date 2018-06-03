@@ -33,20 +33,20 @@ find_path( FFTW_INCLUDE_DIR
   )
 
 find_library( FFTW_LIBRARY
-  NAMES "fftw3" "libfftw3-3" "fftw3-3" "mkl_core" "mkl_rt"
+  NAMES "fftw3" "libfftw3-3" "fftw3-3"
   PATHS ${FFTW_ROOT}
         ${CMAKE_SYSTEM_PREFIX_PATH}
         ${PKG_FFTW_LIBRARY_DIRS}
-  PATH_SUFFIXES "lib" "lib64" "lib/intel64" "lib/ia32"
+  PATH_SUFFIXES "lib" "lib64"
 )
 
 find_library( FFTWF_LIBRARY
-  NAMES "fftw3f" "libfftw3f-3" "fftw3f-3" "mkl_core" "mkl_rt"
+  NAMES "fftw3f" "libfftw3f-3" "fftw3f-3"
   PATHS ${FFTW_ROOT}
         ${CMAKE_SYSTEM_PREFIX_PATH}
         ${CMAKE_SYSTEM_LIBRARY_PATH}
         ${PKG_FFTW_LIBRARY_DIRS}
-  PATH_SUFFIXES "lib" "lib64" "lib/intel64" "lib/ia32"
+  PATH_SUFFIXES "lib" "lib64"
 )
 
 mark_as_advanced(FFTW_INCLUDE_DIR FFTW_LIBRARY FFTWF_LIBRARY)

@@ -15,7 +15,6 @@
 
 #ifdef __cplusplus
 #include <af/traits.hpp>
-#include <vector>
 namespace af
 {
 
@@ -75,7 +74,7 @@ namespace af
             array_proxy& operator OP(const long  &a);               \
             array_proxy& operator OP(const unsigned long &a);       \
             array_proxy& operator OP(const long long  &a);          \
-            array_proxy& operator OP(const unsigned long long &a);  \
+            array_proxy& operator OP(const unsigned long long &a);
 
             ASSIGN(=)
             ASSIGN(+=)
@@ -87,7 +86,7 @@ namespace af
 #if AF_API_VERSION >= 32
 #define ASSIGN(OP)                                                  \
             array_proxy& operator OP(const short &a);               \
-            array_proxy& operator OP(const unsigned short &a);      \
+            array_proxy& operator OP(const unsigned short &a);
 
             ASSIGN(=)
             ASSIGN(+=)
@@ -867,28 +866,29 @@ namespace af
         /// \ingroup method_mat
         array H() const;
 
-#define ASSIGN_(OP)                                                                     \
-        array& OP(const array &val);                                                    \
-        array& OP(const double &val);              /**< \copydoc OP (const array &) */  \
-        array& OP(const cdouble &val);             /**< \copydoc OP (const array &) */  \
-        array& OP(const cfloat &val);              /**< \copydoc OP (const array &) */  \
-        array& OP(const float &val);               /**< \copydoc OP (const array &) */  \
-        array& OP(const int &val);                 /**< \copydoc OP (const array &) */  \
-        array& OP(const unsigned &val);            /**< \copydoc OP (const array &) */  \
-        array& OP(const bool &val);                /**< \copydoc OP (const array &) */  \
-        array& OP(const char &val);                /**< \copydoc OP (const array &) */  \
-        array& OP(const unsigned char &val);       /**< \copydoc OP (const array &) */  \
-        array& OP(const long  &val);               /**< \copydoc OP (const array &) */  \
-        array& OP(const unsigned long &val);       /**< \copydoc OP (const array &) */  \
-        array& OP(const long long  &val);          /**< \copydoc OP (const array &) */  \
-        array& OP(const unsigned long long &val);  /**< \copydoc OP (const array &) */  \
+#define ASSIGN_(OP2)                                                                      \
+        array& OP2(const array &val);                                                     \
+        array& OP2(const double &val);              /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const cdouble &val);             /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const cfloat &val);              /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const float &val);               /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const int &val);                 /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const unsigned &val);            /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const bool &val);                /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const char &val);                /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const unsigned char &val);       /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const long  &val);               /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const unsigned long &val);       /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const long long  &val);          /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const unsigned long long &val);
+
 
 #if AF_API_VERSION >= 32
-#define ASSIGN(OP)                                                                      \
-        ASSIGN_(OP)                                                                     \
-        array& OP(const short  &val);              /**< \copydoc OP (const array &) */  \
-        array& OP(const unsigned short &val);      /**< \copydoc OP (const array &) */  \
-
+#define ASSIGN(OP)                                                                        \
+        ASSIGN_(OP)                                                                       \
+          array& OP(const short  &val);              /**< \copydoc OP##(const array &) */ \
+          array& OP(const unsigned short &val);
+ 
 #else
 #define ASSIGN(OP) ASSIGN_(OP)
 #endif
@@ -1009,40 +1009,40 @@ namespace af
 
 #define BIN_OP_(OP)                                                                                                      \
     AFAPI array OP (const array& lhs, const array& rhs);                                                                 \
-    AFAPI array OP (const bool& lhs, const array& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const int& lhs, const array& rhs);                  /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const unsigned& lhs, const array& rhs);             /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const char& lhs, const array& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const unsigned char& lhs, const array& rhs);        /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const long& lhs, const array& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const unsigned long& lhs, const array& rhs);        /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const long long& lhs, const array& rhs);            /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const unsigned long long& lhs, const array& rhs);   /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const double& lhs, const array& rhs);               /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const float& lhs, const array& rhs);                /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const cfloat& lhs, const array& rhs);               /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const cdouble& lhs, const array& rhs);              /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const bool& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const int& rhs);                  /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const unsigned& rhs);             /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const char& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const unsigned char& rhs);        /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const long& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const unsigned long& rhs);        /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const long long& rhs);            /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const unsigned long long& rhs);   /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const double& rhs);               /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const float& rhs);                /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const cfloat& rhs);               /**< \copydoc OP (const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const cdouble& rhs);              /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const bool& lhs, const array& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const int& lhs, const array& rhs);                /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const unsigned& lhs, const array& rhs);           /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const char& lhs, const array& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const unsigned char& lhs, const array& rhs);      /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const long& lhs, const array& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const unsigned long& lhs, const array& rhs);      /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const long long& lhs, const array& rhs);          /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const unsigned long long& lhs, const array& rhs); /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const double& lhs, const array& rhs);             /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const float& lhs, const array& rhs);              /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const cfloat& lhs, const array& rhs);             /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const cdouble& lhs, const array& rhs);            /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const bool& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const int& rhs);                /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const unsigned& rhs);           /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const char& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const unsigned char& rhs);      /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const long& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const unsigned long& rhs);      /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const long long& rhs);          /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const unsigned long long& rhs); /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const double& rhs);             /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const float& rhs);              /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const cfloat& rhs);             /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const cdouble& rhs);
 
 #if AF_API_VERSION >= 32
-#define BIN_OP(OP)                                                                                                       \
-        BIN_OP_(OP)                                                                                                      \
-        AFAPI array OP (const short& lhs, const array& rhs);            /**< \copydoc OP (const array&, const array&) */ \
-        AFAPI array OP (const unsigned short& lhs, const array& rhs);   /**< \copydoc OP (const array&, const array&) */ \
-        AFAPI array OP (const array& lhs, const short& rhs);            /**< \copydoc OP (const array&, const array&) */ \
-        AFAPI array OP (const array& lhs, const unsigned short& rhs);   /**< \copydoc OP (const array&, const array&) */ \
+#define BIN_OP(OP)                                                                                                        \
+        BIN_OP_(OP)                                                                                                       \
+        AFAPI array OP (const short& lhs, const array& rhs);           /**< \copydoc OP##(const array&, const array&) */ \
+        AFAPI array OP (const unsigned short& lhs, const array& rhs);  /**< \copydoc OP##(const array&, const array&) */ \
+        AFAPI array OP (const array& lhs, const short& rhs);           /**< \copydoc OP##(const array&, const array&) */ \
+        AFAPI array OP (const array& lhs, const unsigned short& rhs);
 
 #else
 #define BIN_OP(OP) BIN_OP_(OP)
@@ -1135,7 +1135,6 @@ namespace af
     /// \param[in] rhs the right hand side value of the operand
     ///
     /// \returns    an array of type b8 with the <= operation performed on each element
-    ///             of \p lhs and \p rhs
     BIN_OP(operator<=)
     /// @}
 
@@ -1163,19 +1162,6 @@ namespace af
     BIN_OP(operator>=)
     /// @}
 
-    /// \ingroup arith_func_and
-    /// @{
-    /// \brief  Performs a logical AND operation on two arrays or an array and a
-    ///         value.
-    ///
-    /// \param[in] lhs the left hand side value of the operand
-    /// \param[in] rhs the right hand side value of the operand
-    ///
-    /// \returns    an array of type b8 with a logical AND operation performed on each
-    ///             element of \p lhs and \p rhs
-    BIN_OP(operator&&)
-    /// @}
-
     /// \ingroup arith_func_or
     /// @{
     /// \brief  Performs an logical OR operation on two arrays or an array and a
@@ -1199,19 +1185,6 @@ namespace af
     /// \returns    an array with a modulo operation performed on each
     ///             element of \p lhs and \p rhs
     BIN_OP(operator% )
-    /// @}
-
-    /// \ingroup arith_func_bitand
-    /// @{
-    /// \brief  Performs an bitwise AND operation on two arrays or an array and
-    ///         a value.
-    ///
-    /// \param[in] lhs the left hand side value of the operand
-    /// \param[in] rhs the right hand side value of the operand
-    ///
-    /// \returns    an array with a bitwise AND operation performed on each
-    ///             element of \p lhs and \p rhs
-    BIN_OP(operator& )
     /// @}
 
     /// \ingroup arith_func_bitor
@@ -1268,6 +1241,93 @@ namespace af
 
 #undef BIN_OP
 #undef BIN_OP_
+
+    /// \ingroup arith_func_bitand
+    /// @{
+    /// \brief  Performs an bitwise AND operation on two arrays or an array and
+    ///         a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with a bitwise AND operation performed on each
+    ///             element of \p lhs and \p rhs
+    AFAPI array operator&(const array& lhs, const array& rhs);
+    AFAPI array operator&(const array& lhs, const bool& rhs);
+    AFAPI array operator&(const array& lhs, const cdouble& rhs);
+    AFAPI array operator&(const array& lhs, const cfloat& rhs);
+    AFAPI array operator&(const array& lhs, const char& rhs);
+    AFAPI array operator&(const array& lhs, const double& rhs);
+    AFAPI array operator&(const array& lhs, const float& rhs);
+    AFAPI array operator&(const array& lhs, const int& rhs);
+    AFAPI array operator&(const array& lhs, const long long& rhs);
+    AFAPI array operator&(const array& lhs, const long& rhs);
+    AFAPI array operator&(const array& lhs, const short& rhs);
+    AFAPI array operator&(const array& lhs, const unsigned char& rhs);
+    AFAPI array operator&(const array& lhs, const unsigned long long& rhs);
+    AFAPI array operator&(const array& lhs, const unsigned long& rhs);
+    AFAPI array operator&(const array& lhs, const unsigned short& rhs);
+    AFAPI array operator&(const array& lhs, const unsigned& rhs);
+    AFAPI array operator&(const bool& lhs, const array& rhs);
+    AFAPI array operator&(const cdouble& lhs, const array& rhs);
+    AFAPI array operator&(const cfloat& lhs, const array& rhs);
+    AFAPI array operator&(const char& lhs, const array& rhs);
+    AFAPI array operator&(const double& lhs, const array& rhs);
+    AFAPI array operator&(const float& lhs, const array& rhs);
+    AFAPI array operator&(const int& lhs, const array& rhs);
+    AFAPI array operator&(const long long& lhs, const array& rhs);
+    AFAPI array operator&(const long& lhs, const array& rhs);
+    AFAPI array operator&(const short& lhs, const array& rhs);
+    AFAPI array operator&(const unsigned char& lhs, const array& rhs);
+    AFAPI array operator&(const unsigned long long& lhs, const array& rhs);
+    AFAPI array operator&(const unsigned long& lhs, const array& rhs);
+    AFAPI array operator&(const unsigned short& lhs, const array& rhs);
+    AFAPI array operator&(const unsigned& lhs, const array& rhs);
+    /// @}
+
+    /// \ingroup arith_func_and
+    /// @{
+    /// \brief  Performs a logical AND operation on two arrays or an array and a
+    ///         value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array of type b8 with a logical AND operation performed on each
+    ///             element of \p lhs and \p rhs
+    AFAPI array operator&&(const array& lhs, const array& rhs);
+    AFAPI array operator&&(const array& lhs, const bool& rhs);
+    AFAPI array operator&&(const array& lhs, const cdouble& rhs);
+    AFAPI array operator&&(const array& lhs, const cfloat& rhs);
+    AFAPI array operator&&(const array& lhs, const char& rhs);
+    AFAPI array operator&&(const array& lhs, const double& rhs);
+    AFAPI array operator&&(const array& lhs, const float& rhs);
+    AFAPI array operator&&(const array& lhs, const int& rhs);
+    AFAPI array operator&&(const array& lhs, const long long& rhs);
+    AFAPI array operator&&(const array& lhs, const long& rhs);
+    AFAPI array operator&&(const array& lhs, const short& rhs);
+    AFAPI array operator&&(const array& lhs, const unsigned char& rhs);
+    AFAPI array operator&&(const array& lhs, const unsigned long long& rhs);
+    AFAPI array operator&&(const array& lhs, const unsigned long& rhs);
+    AFAPI array operator&&(const array& lhs, const unsigned short& rhs);
+    AFAPI array operator&&(const array& lhs, const unsigned& rhs);
+    AFAPI array operator&&(const bool& lhs, const array& rhs);
+    AFAPI array operator&&(const cdouble& lhs, const array& rhs);
+    AFAPI array operator&&(const cfloat& lhs, const array& rhs);
+    AFAPI array operator&&(const char& lhs, const array& rhs);
+    AFAPI array operator&&(const double& lhs, const array& rhs);
+    AFAPI array operator&&(const float& lhs, const array& rhs);
+    AFAPI array operator&&(const int& lhs, const array& rhs);
+    AFAPI array operator&&(const long long& lhs, const array& rhs);
+    AFAPI array operator&&(const long& lhs, const array& rhs);
+    AFAPI array operator&&(const short& lhs, const array& rhs);
+    AFAPI array operator&&(const unsigned char& lhs, const array& rhs);
+    AFAPI array operator&&(const unsigned long long& lhs, const array& rhs);
+    AFAPI array operator&&(const unsigned long& lhs, const array& rhs);
+    AFAPI array operator&&(const unsigned short& lhs, const array& rhs);
+    AFAPI array operator&&(const unsigned& lhs, const array& rhs);
+    /// @}
+
 
     /// Evaluate an expression (nonblocking).
     /**

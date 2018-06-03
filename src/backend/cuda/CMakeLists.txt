@@ -21,9 +21,12 @@ cuda_select_nvcc_arch_flags(cuda_architecture_flags ${CUDA_architecture_build_ta
 message(STATUS "CUDA Architectures: ${CUDA_architecture_build_targets}")
 
 find_cuda_helper_libs(nvrtc)
+find_cuda_helper_libs(nvrtc-builtins)
 
 get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
-mark_as_advanced(CUDA_LIBRARIES_PATH)
+mark_as_advanced(
+    CUDA_LIBRARIES_PATH
+    CUDA_architecture_build_targets)
 
 # TODO(umar): Move these flags to a separate function/target
 if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.3.0")
@@ -45,6 +48,7 @@ cuda_include_directories(
   ${ArrayFire_BINARY_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel
   ${CMAKE_CURRENT_SOURCE_DIR}/JIT
+  ${CMAKE_CURRENT_SOURCE_DIR}/cub
   ${ArrayFire_SOURCE_DIR}/src/api/c
   ${ArrayFire_SOURCE_DIR}/src/backend
 
@@ -111,15 +115,15 @@ endfunction()
 
 arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
 if(NOT MSVC)
-  set(cuda_cxx_flags "${cuda_cxx_flags} -Xcompiler -fPIC")
+  set(cuda_cxx_flags "${cuda_cxx_flags} -Xcompiler -fPIC  -Xcompiler=${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden")
 endif()
 
-if(BUILD_NONFREE AND CMAKE_VERSION VERSION_LESS "3.7")
+if(AF_WITH_NONFREE AND CMAKE_VERSION VERSION_LESS "3.7")
   # This definition is required in addition to the definition below because in
   # an older verion of cmake definitions added using target_compile_definitions
   # were not added to the nvcc flags. This manually adds these definitions and
   # pass them to the options parameter in cuda_add_library
-  string(APPEND cuda_cxx_flags " -DAF_BUILD_NONFREE_SIFT")
+  string(APPEND cuda_cxx_flags " -DAF_WITH_NONFREE_SIFT")
 endif()
 
 include(kernel/scan_by_key/CMakeLists.txt)
@@ -128,6 +132,7 @@ include(kernel/thrust_sort_by_key/CMakeLists.txt)
 cuda_add_library(afcuda
     scan.cu
     all.cu
+    anisotropic_diffusion.cu
     any.cu
     approx.cu
     assign.cu
@@ -180,7 +185,6 @@ cuda_add_library(afcuda
     scan_by_key.cu
     select.cu
     set.cu
-    shift.cu
     sift.cu
     sobel.cu
     solve.cu
@@ -193,6 +197,7 @@ cuda_add_library(afcuda
     susan.cu
     svd.cu
     tile.cu
+    topk.cu
     transform.cu
     transpose.cu
     transpose_inplace.cu
@@ -204,6 +209,7 @@ cuda_add_library(afcuda
     kernel/convolve.cu
     kernel/convolve_separable.cu
 
+    kernel/anisotropic_diffusion.hpp
     kernel/approx.hpp
     kernel/assign.hpp
     kernel/atomics.hpp
@@ -260,7 +266,6 @@ cuda_add_library(afcuda
     kernel/scan_first_by_key_impl.hpp
     kernel/select.hpp
     kernel/shared.hpp
-    kernel/shift.hpp
     kernel/sift_nonfree.hpp
     kernel/sobel.hpp
     kernel/sort.hpp
@@ -271,6 +276,7 @@ cuda_add_library(afcuda
     kernel/thrust_sort_by_key.hpp
     kernel/thrust_sort_by_key_impl.hpp
     kernel/tile.hpp
+    kernel/topk.hpp
     kernel/transform.hpp
     kernel/transpose.hpp
     kernel/transpose_inplace.hpp
@@ -282,6 +288,7 @@ cuda_add_library(afcuda
     Array.cpp
     Array.hpp
     Param.hpp
+    anisotropic_diffusion.hpp
     approx.hpp
     arith.hpp
     assign.hpp
@@ -363,6 +370,7 @@ cuda_add_library(afcuda
     scan_by_key.hpp
     select.hpp
     set.hpp
+    shift.cpp
     shift.hpp
     sift.hpp
     sobel.hpp
@@ -377,6 +385,7 @@ cuda_add_library(afcuda
     susan.hpp
     svd.hpp
     tile.hpp
+    topk.hpp
     traits.hpp
     transform.hpp
     transpose.hpp
@@ -394,6 +403,8 @@ cuda_add_library(afcuda
     JIT/Node.hpp
     JIT/ScalarNode.hpp
     JIT/UnaryNode.hpp
+    JIT/NaryNode.hpp
+    JIT/ShiftNode.hpp
     JIT/types.h
 
     OPTIONS "${cuda_cxx_flags} -Xcudafe \"--diag_suppress=1427\""
@@ -401,11 +412,14 @@ cuda_add_library(afcuda
 
 add_library(ArrayFire::afcuda ALIAS afcuda)
 
-if(BUILD_NONFREE)
-  target_compile_definitions(afcuda PRIVATE AF_BUILD_NONFREE_SIFT)
+if(AF_WITH_NONFREE)
+  target_compile_definitions(afcuda PRIVATE AF_WITH_NONFREE_SIFT)
 endif()
 
-if(BUILD_GRAPHICS)
+if(AF_WITH_GRAPHICS)
+  if(NOT AF_USE_SYSTEM_FORGE)
+    add_dependencies(afcuda forge-ext)
+  endif()
   target_sources(afcuda
     PRIVATE
       GraphicsResourceManager.cpp
@@ -473,14 +487,16 @@ else()
   find_library(CUDA_CUDA_STUB
              NAMES cuda
              PATHS ${CUDA_LIBRARIES_PATH}/stubs
-
              NO_DEFAULT_PATH
          )
   if(CUDA_CUDA_STUB)
     message(STATUS "CUDA driver stub FOUND: ${CUDA_CUDA_STUB}")
   endif()
 
-  target_link_libraries(afcuda ${CUDA_CUDA_STUB})
+  #NOTE: Only link against the stub library when building
+  target_link_libraries(afcuda
+    PUBLIC
+      $<BUILD_INTERFACE:${CUDA_CUDA_STUB}>)
 endif()
 
 # TODO(umar): This is required for NVRTC to work correctly on OSX. It may not
@@ -499,6 +515,61 @@ install(TARGETS afcuda
   FRAMEWORK DESTINATION framework
   INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
   )
+
+set(cuda_deps "")
+set (PX ${CMAKE_SHARED_LIBRARY_PREFIX})
+set (SX ${CMAKE_SHARED_LIBRARY_SUFFIX})
+set (dlib_path_prefix ${CUDA_LIBRARIES_PATH})
+if (WIN32)
+  set(dlib_path_prefix "${CUDA_TOOLKIT_ROOT_DIR}/bin")
+endif ()
+
+macro(afcu_collect_libs libname)
+  if (WIN32)
+    install(FILES       "${dlib_path_prefix}/${PX}${libname}64_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}${SX}"
+            DESTINATION ${AF_INSTALL_BIN_DIR}
+            COMPONENT   cuda_dependencies)
+  elseif (APPLE)
+    get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
+    install(FILES       "${outpath}"
+            DESTINATION ${AF_INSTALL_BIN_DIR}
+            RENAME      "${PX}${libname}${SX}.${CUDA_VERSION}"
+            COMPONENT   cuda_dependencies)
+  else () #UNIX
+    get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}${SX}" REALPATH)
+    install(FILES       ${outpath}
+            DESTINATION ${AF_INSTALL_BIN_DIR}
+            RENAME      "${PX}${libname}${SX}.${CUDA_VERSION}"
+            COMPONENT   cuda_dependencies)
+  endif ()
+endmacro()
+
+if(AF_INSTALL_STANDALONE)
+  afcu_collect_libs(cufft)
+  afcu_collect_libs(cublas)
+  afcu_collect_libs(cusolver)
+  afcu_collect_libs(cusparse)
+  afcu_collect_libs(nvrtc)
+
+  if(APPLE)
+    afcu_collect_libs(cudart)
+
+    get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
+    install(FILES       ${nvrtc_outpath}
+            DESTINATION ${AF_INSTALL_BIN_DIR}
+            RENAME      "${PX}nvrtc-builtins${SX}"
+            COMPONENT   cuda_dependencies)
+  elseif(UNIX)
+    get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins${SX}" REALPATH)
+    install(FILES       ${nvrtc_outpath}
+            DESTINATION ${AF_INSTALL_BIN_DIR}
+            RENAME      "${PX}nvrtc-builtins${SX}"
+            COMPONENT   cuda_dependencies)
+  else()
+    afcu_collect_libs(nvrtc-builtins)
+  endif()
+endif()
+
 
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)

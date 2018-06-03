@@ -18,10 +18,8 @@
 
 namespace cuda
 {
-
 namespace kernel
 {
-
 static const int MAX_MORPH_FILTER_LEN = 17;
 // cFilter is used by both 2d morph and 3d morph
 // Maximum kernel size supported for 2d morph is 19x19*8 = 2888
@@ -57,19 +55,35 @@ inline __device__ void load2ShrdMem(T * shrd, const T * const in,
     shrd[ lIdx(lx, ly, shrdStride, 1) ] = val;
 }
 
+
 // kernel assumes mask/filter is square and hence does the
 // necessary operations accordingly.
-template<typename T, bool isDilation, int windLen>
+//
+// Notes on template arguments for morphKernel:
+//   * T is the data type of the image & kernel
+//   * isDilation indicates if the current kernel invocation is an erosion operation or dilation
+//   operation
+//   * SeLength is the structuring element length a.k.a the kernel window length. This template
+//   parameter takes precedence over the kernel argument `windLen`.
+//
+// Please make sure at least one of the following variables is not 0.
+//  * SeLength (structuring element a.k.a window/kernel)
+//  * windLen
+// If SeLength is > 0, then that will override the kernel argument.
+template<typename T, bool isDilation, int SeLength=0>
 static __global__ void morphKernel(Param<T> out, CParam<T> in,
-                                   int nBBS0, int nBBS1)
+                                   int nBBS0, int nBBS1,
+                                   int windLen=0)
 {
+    windLen = (SeLength>0 ? SeLength : windLen);
+
     // get shared memory pointer
     SharedMemory<T> shared;
     T * shrdMem = shared.getPointer();
 
     // calculate necessary offset and window parameters
-    const int halo   = windLen/2;
-    const int padding= 2*halo;
+    const int halo     = windLen/2;
+    const int padding  = (windLen%2==0 ? (windLen-1) : (2*(windLen/2)));
     const int shrdLen  = blockDim.x + padding + 1;
     const int shrdLen1 = blockDim.y + padding;
 
@@ -158,13 +172,13 @@ static __global__ void morph3DKernel(Param<T> out, CParam<T> in, int nBBS)
     T * shrdMem = shared.getPointer();
 
     const int halo      = windLen/2;
-    const int padding   = 2*halo;
+    const int padding   = (windLen%2==0 ? (windLen-1) : (2*(windLen/2)));
 
     const int se_area   = windLen*windLen;
     const int shrdLen   = blockDim.x + padding + 1;
     const int shrdLen1  = blockDim.y + padding;
     const int shrdLen2  = blockDim.z + padding;
-    const int shrdArea  = shrdLen * (blockDim.y+padding);
+    const int shrdArea  = shrdLen * shrdLen1;
 
     // gfor batch offsets
     unsigned batchId = blockIdx.x / nBBS;
@@ -239,22 +253,22 @@ void morph(Param<T> out, CParam<T> in, int windLen)
     dim3 blocks(blk_x * in.dims[2], blk_y * in.dims[3]);
 
     // calculate shared memory size
-    int halo      = windLen/2;
-    int padding   = 2*halo;
+    int padding   = (windLen%2==0 ? (windLen-1) : (2*(windLen/2)));
     int shrdLen   = kernel::THREADS_X + padding + 1; // +1 for to avoid bank conflicts
     int shrdSize  = shrdLen * (kernel::THREADS_Y + padding) * sizeof(T);
 
     switch(windLen) {
-        case  3: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation, 3>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
-        case  5: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation, 5>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
-        case  7: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation, 7>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
-        case  9: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation, 9>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
-        case 11: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,11>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
-        case 13: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,13>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
-        case 15: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,15>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
-        case 17: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,17>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
-        case 19: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,19>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
-        default: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation, 3>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
+        case  2: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,  2>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
+        case  3: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,  3>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
+        case  4: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,  4>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
+        case  5: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,  5>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
+        case  6: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,  6>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
+        case  7: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,  7>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
+        case  8: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,  8>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
+        case  9: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation,  9>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
+        case 10: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation, 10>), blocks, threads, shrdSize, out, in, blk_x, blk_y); break;
+        default: CUDA_LAUNCH_SMEM((morphKernel<T, isDilation>), blocks, threads, shrdSize, out, in, blk_x, blk_y, windLen);
+                 break;
     }
 
     POST_LAUNCH_CHECK();
@@ -271,20 +285,21 @@ void morph3d(Param<T> out, CParam<T> in, int windLen)
     dim3 blocks(blk_x * in.dims[3], blk_y, blk_z);
 
     // calculate shared memory size
-    int halo      = windLen/2;
-    int padding   = 2*halo;
+    int padding   = (windLen%2==0 ? (windLen-1) : (2*(windLen/2)));
     int shrdLen   = kernel::CUBE_X + padding + 1; // +1 for to avoid bank conflicts
     int shrdSize  = shrdLen * (kernel::CUBE_Y + padding) * (kernel::CUBE_Z + padding) * sizeof(T);
 
     switch(windLen) {
+        case  2: CUDA_LAUNCH_SMEM((morph3DKernel<T, isDilation, 2>), blocks, threads, shrdSize, out, in, blk_x); break;
         case  3: CUDA_LAUNCH_SMEM((morph3DKernel<T, isDilation, 3>), blocks, threads, shrdSize, out, in, blk_x); break;
+        case  4: CUDA_LAUNCH_SMEM((morph3DKernel<T, isDilation, 4>), blocks, threads, shrdSize, out, in, blk_x); break;
         case  5: CUDA_LAUNCH_SMEM((morph3DKernel<T, isDilation, 5>), blocks, threads, shrdSize, out, in, blk_x); break;
+        case  6: CUDA_LAUNCH_SMEM((morph3DKernel<T, isDilation, 6>), blocks, threads, shrdSize, out, in, blk_x); break;
         case  7: CUDA_LAUNCH_SMEM((morph3DKernel<T, isDilation, 7>), blocks, threads, shrdSize, out, in, blk_x); break;
-        default: CUDA_LAUNCH_SMEM((morph3DKernel<T, isDilation, 3>), blocks, threads, shrdSize, out, in, blk_x); break;
+        default: CUDA_NOT_SUPPORTED("Morph 3D does not support kernels larger than 7.");
     }
 
     POST_LAUNCH_CHECK();
 }
-
 }
 }

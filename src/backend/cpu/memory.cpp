@@ -8,10 +8,16 @@
  ********************************************************/
 
 #include <memory.hpp>
+
+#include <common/Logger.hpp>
 #include <err_cpu.hpp>
-#include <types.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <types.hpp>
+
+#include <common/MemoryManagerImpl.hpp>
+
+template class common::MemoryManager<cpu::MemoryManager>;
 
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
@@ -20,6 +26,11 @@
 #ifndef AF_CPU_MEM_DEBUG
 #define AF_CPU_MEM_DEBUG 0
 #endif
+
+using common::bytesToString;
+
+using std::unique_ptr;
+using std::function;
 
 namespace cpu
 {
@@ -54,11 +65,13 @@ void printMemInfo(const char *msg, const int device)
 }
 
 template<typename T>
-T* memAlloc(const size_t &elements)
+unique_ptr<T[], function<void(T *)>>
+memAlloc(const size_t &elements)
 {
     T *ptr = nullptr;
+
     ptr = (T *)memoryManager().alloc(elements * sizeof(T), false);
-    return ptr;
+    return unique_ptr<T[], function<void(T *)>>(ptr, memFree<T>);
 }
 
 void* memAllocUser(const size_t &bytes)
@@ -118,12 +131,12 @@ bool checkMemoryLimit()
     return memoryManager().checkMemoryLimit();
 }
 
-#define INSTANTIATE(T)                                      \
-    template T* memAlloc(const size_t &elements);           \
-    template void memFree(T* ptr);                          \
-    template T* pinnedAlloc(const size_t &elements);        \
-    template void pinnedFree(T* ptr);                       \
-
+#define INSTANTIATE(T)                                                                        \
+    template std::unique_ptr<T[], std::function<void(T *)>> memAlloc(const size_t &elements); \
+    template void memFree(T* ptr);                                                            \
+    template T* pinnedAlloc(const size_t &elements);                                          \
+    template void pinnedFree(T* ptr);                                                         \
+ 
 INSTANTIATE(float)
 INSTANTIATE(cfloat)
 INSTANTIATE(double)
@@ -146,7 +159,6 @@ MemoryManager::MemoryManager()
 
 MemoryManager::~MemoryManager()
 {
-    common::lock_guard_t lock(this->memory_mutex);
     for (int n = 0; n < cpu::getDeviceCount(); n++) {
         try {
             cpu::setDevice(n);
@@ -170,12 +182,14 @@ size_t MemoryManager::getMaxMemorySize(int id)
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
     void *ptr = malloc(bytes);
+    AF_TRACE("nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     if (!ptr) AF_ERROR("Unable to allocate memory", AF_ERR_NO_MEM);
     return ptr;
 }
 
 void MemoryManager::nativeFree(void *ptr)
 {
+    AF_TRACE("nativeFree: {: >8} {}", " ", ptr);
     // Make sure this pointer is not being used on the queue before freeing the memory.
     getQueue().sync();
     return free((void *)ptr);

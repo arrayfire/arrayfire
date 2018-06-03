@@ -22,7 +22,7 @@ namespace opencl
         Param Out;
         Param In = in;
         kernel::where<T>(Out, In);
-        return createParamArray<uint>(Out);
+        return createParamArray<uint>(Out, true);
     }
 
 

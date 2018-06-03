@@ -49,7 +49,7 @@ TYPED_TEST(Meanshift, InvalidArgs)
 }
 
 template<typename T, bool isColor>
-void meanshiftTest(string pTestFile)
+void meanshiftTest(string pTestFile, const float ss)
 {
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
@@ -82,7 +82,7 @@ void meanshiftTest(string pTestFile)
         ASSERT_EQ(AF_SUCCESS, conv_image<T>(&goldArray, goldArray_f32)); // af_load_image always returns float array
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_mean_shift(&outArray, inArray, 11.5f, 30.f, 5, isColor));
+        ASSERT_EQ(AF_SUCCESS, af_mean_shift(&outArray, inArray, ss, 30.f, 5, isColor));
 
         std::vector<T> outData(nElems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
@@ -106,19 +106,18 @@ void meanshiftTest(string pTestFile)
 //       Note: compareArraysRMSD is handling upcasting while working
 //       with two different type of types
 //
-#define IMAGE_TESTS(T)                                                      \
-    TEST(Meanshift, Grayscale_##T)                                          \
-    {                                                                       \
-        meanshiftTest<T, false>(string(TEST_DIR"/meanshift/gray.test"));    \
-    }                                                                       \
-    TEST(Meanshift, Color_##T)                                              \
-    {                                                                       \
-        meanshiftTest<T, true>(string(TEST_DIR"/meanshift/color.test"));    \
+#define IMAGE_TESTS(T)                                                              \
+    TEST(Meanshift, Grayscale_##T)                                                  \
+    {                                                                               \
+        meanshiftTest<T, false>(string(TEST_DIR"/meanshift/gray.test"), 6.67f);     \
+    }                                                                               \
+    TEST(Meanshift, Color_##T)                                                      \
+    {                                                                               \
+        meanshiftTest<T, true>(string(TEST_DIR"/meanshift/color.test"), 3.5f);      \
     }
 
 IMAGE_TESTS(float )
 IMAGE_TESTS(double)
-
 
 //////////////////////////////////////// CPP ///////////////////////////////
 //
@@ -143,7 +142,7 @@ TEST(Meanshift, Color_CPP)
         af::array img   = af::loadImage(inFiles[testId].c_str(), true);
         af::array gold  = af::loadImage(outFiles[testId].c_str(), true);
         dim_t nElems = gold.elements();
-        af::array output= af::meanShift(img, 11.5f, 30.f, 5, true);
+        af::array output= af::meanShift(img, 3.5f, 30.f, 5, true);
 
         std::vector<float> outData(nElems);
         output.host((void*)outData.data());
@@ -155,7 +154,7 @@ TEST(Meanshift, Color_CPP)
     }
 }
 
-TEST(meanshift, GFOR)
+TEST(Meanshift, GFOR)
 {
     using namespace af;
 
@@ -170,6 +169,7 @@ TEST(meanshift, GFOR)
     for(int ii = 0; ii < 3; ii++) {
         array c_ii = meanShift(A(span, span, ii), 3, 5, 3);
         array b_ii = B(span, span, ii);
-        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+
+        ASSERT_LT(max<double>(abs(c_ii - b_ii)), 1E-5);
     }
 }

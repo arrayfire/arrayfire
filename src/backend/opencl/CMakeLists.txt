@@ -6,17 +6,20 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 include(InternalUtils)
-if("${Boost_VERSION}" VERSION_LESS 106100)
-  dependency_check(Boost_FOUND "Boost not found.")
-  include(build_boost_compute)
+
+set(AF_OPENCL_BLAS_LIBRARY clBLAS CACHE STRING "Select OpenCL BLAS back-end")
+set_property(CACHE AF_OPENCL_BLAS_LIBRARY PROPERTY STRINGS "clBLAS" "CLBlast")
+
+af_deprecate(OPENCL_BLAS_LIBRARY AF_OPENCL_BLAS_LIBRARY)
+
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-Wno-ignored-attributes has_ignored_attributes_flag)
+
+if(has_ignored_attributes_flag)
+  set(opencl_cxx_flags -Wno-ignored-attributes)
 endif()
 
-set(OPENCL_BLAS_LIBRARY clBLAS CACHE STRING "Select OpenCL BLAS back-end")
-set_property(CACHE OPENCL_BLAS_LIBRARY PROPERTY STRINGS "clBLAS" "CLBlast")
-
 include(build_clFFT)
-
-dependency_check(OpenCL_FOUND "OpenCL not found.")
 
 file(GLOB kernel_src kernel/*.cl kernel/KParam.hpp)
 
@@ -47,6 +50,8 @@ target_sources(afopencl
     Param.cpp
     Param.hpp
     all.cpp
+    anisotropic_diffusion.cpp
+    anisotropic_diffusion.hpp
     any.cpp
     api.cpp
     approx.cpp
@@ -208,6 +213,8 @@ target_sources(afopencl
     svd.hpp
     tile.cpp
     tile.hpp
+    topk.cpp
+    topk.hpp
     traits.hpp
     transform.cpp
     transform.hpp
@@ -231,6 +238,7 @@ target_sources(afopencl
 target_sources(afopencl
   PRIVATE
     kernel/KParam.hpp
+    kernel/anisotropic_diffusion.hpp
     kernel/approx.hpp
     kernel/assign.hpp
     kernel/bilateral.hpp
@@ -290,7 +298,6 @@ target_sources(afopencl
     kernel/scan_first_by_key.hpp
     kernel/scan_first_by_key_impl.hpp
     kernel/select.hpp
-    kernel/shift.hpp
     kernel/sobel.hpp
     kernel/sort.hpp
     kernel/sort_by_key.hpp
@@ -377,10 +384,12 @@ target_include_directories(afopencl
   )
 
 add_dependencies(afopencl ${cl_kernel_targets})
-add_dependencies(opencl_scan_by_key ${cl_kernel_targets} cl2hpp)
-add_dependencies(opencl_sort_by_key ${cl_kernel_targets} cl2hpp)
+add_dependencies(opencl_scan_by_key ${cl_kernel_targets} cl2hpp Boost::boost)
+add_dependencies(opencl_sort_by_key ${cl_kernel_targets} cl2hpp Boost::boost)
 
 set_target_properties(afopencl PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+target_compile_options(afopencl PRIVATE ${opencl_cxx_flags})
 
 target_compile_definitions(afopencl
   PRIVATE
@@ -399,15 +408,16 @@ target_link_libraries(afopencl
     opencl_scan_by_key
     opencl_sort_by_key
     Boost::boost
+    Threads::Threads
     )
 
-if(OPENCL_BLAS_LIBRARY STREQUAL "clBLAS")
+if(AF_OPENCL_BLAS_LIBRARY STREQUAL "clBLAS")
   include(build_clBLAS)
   target_compile_definitions(afopencl PRIVATE USE_CLBLAS)
   target_link_libraries(afopencl
     PRIVATE
       clBLAS::clBLAS)
-elseif(OPENCL_BLAS_LIBRARY STREQUAL "CLBlast")
+elseif(AF_OPENCL_BLAS_LIBRARY STREQUAL "CLBlast")
   include(build_CLBlast)
   target_compile_definitions(afopencl PRIVATE USE_CLBLAST)
   target_link_libraries(afopencl
@@ -417,12 +427,15 @@ elseif(OPENCL_BLAS_LIBRARY STREQUAL "CLBlast")
 endif()
 
 
-if(BUILD_NONFREE)
+if(AF_WITH_NONFREE)
   target_sources(afopencl PRIVATE kernel/sift_nonfree.hpp)
-  target_compile_definitions(afopencl PRIVATE AF_BUILD_NONFREE_SIFT)
+  target_compile_definitions(afopencl PRIVATE AF_WITH_NONFREE_SIFT)
 endif()
 
-if(BUILD_GRAPHICS)
+if(AF_WITH_GRAPHICS)
+  if(NOT AF_USE_SYSTEM_FORGE)
+    add_dependencies(afopencl forge-ext)
+  endif()
   target_sources(afopencl
     PRIVATE
       GraphicsResourceManager.hpp
@@ -479,24 +492,26 @@ if(LAPACK_FOUND)
     dependency_check(MKL_FOUND "MKL not found")
     target_compile_definitions(afopencl PRIVATE USE_MKL)
 
-    # TODO(umar) Find a better way to determine BLAS selection
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
-      (CMAKE_CXX_COMPILER_ID STREQUAL "Intel" AND (UNIX AND NOT APPLE)))
-      # MKL requires multiple passes when linking with the static libs. This can be
-      # done in CMake using LINK_INTERFACE_MULTIPLICITY but that will require
-      # changine the way FindCBLAS works. This can also be done using the
-      # --start-group and --end-group linker around the libraries in the linking
-      # step.
-      #
-      # TODO(umar): Change the way CBLAS libraries are found and linked
-      set(CBLAS_LIBRARIES -Wl,--start-group ${CBLAS_LIBRARIES} -Wl,--end-group)
-    endif()
+    target_link_libraries(afopencl
+      PRIVATE
+        MKL::MKL
+      )
+
   else()
+    dependency_check(OpenCL_FOUND "OpenCL not found.")
+
     if(USE_CPU_F77_BLAS)
       target_compile_definitions(afopencl PRIVATE USE_F77_BLAS)
     endif()
 
     dependency_check(CBLAS_LIBRARIES "CBLAS not found.")
+    target_include_directories(afopencl
+      PRIVATE
+        ${CBLAS_INCLUDE_DIR})
+    target_link_libraries(afopencl
+      PRIVATE
+        ${CBLAS_LIBRARIES}
+        ${LAPACK_LIBRARIES})
   endif()
 
   target_compile_definitions(
@@ -507,12 +522,7 @@ if(LAPACK_FOUND)
 
   target_link_libraries(afopencl
     PRIVATE
-      afcommon_lapack_interface
-      ${CBLAS_LIBRARIES}
-    )
-  target_include_directories(afopencl
-    PRIVATE
-      ${CBLAS_INCLUDE_DIR})
+      afcommon_lapack_interface)
 endif(LAPACK_FOUND)
 
 install(TARGETS afopencl
@@ -525,6 +535,40 @@ install(TARGETS afopencl
   FRAMEWORK DESTINATION framework
   INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
   )
+
+if(NOT APPLE AND AF_INSTALL_STANDALONE)
+  if(UNIX)
+    get_filename_component(opencl_outpath "${OpenCL_LIBRARIES}" REALPATH)
+    install(FILES ${opencl_outpath}
+        DESTINATION ${AF_INSTALL_BIN_DIR}
+        RENAME "${CMAKE_SHARED_LIBRARY_PREFIX}OpenCL${CMAKE_SHARED_LIBRARY_SUFFIX}.1"
+        COMPONENT opencl_dependencies)
+  else()
+    find_file(OpenCL_DLL_LIBRARY
+      NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}OpenCL${CMAKE_SHARED_LIBRARY_SUFFIX}
+	  PATHS
+        ENV "PROGRAMFILES(X86)"
+        ENV "PROGRAMFILES"
+        ENV AMDAPPSDKROOT
+        ENV INTELOCLSDKROOT
+        ENV CUDA_PATH
+        ENV NVSDKCOMPUTE_ROOT
+        ENV ATISTREAMSDKROOT
+      PATH_SUFFIXES
+        "AMD APP SDK/bin/x86_64"
+        "bin/x86_64"
+        "bin/x64"
+        "bin/icd/x64"
+        "OpenCL SDK/bin/icd/x64"
+        "Intel/OpenCL SDK/bin/icd/x64"
+        "OpenCL SDK/bin/icd/x64"
+        "NVIDIA Corporation/OpenCL")
+    mark_as_advanced(OpenCL_DLL_LIBRARY)
+    install(FILES "${OpenCL_DLL_LIBRARY}"
+        DESTINATION ${AF_INSTALL_BIN_DIR}
+        COMPONENT opencl_dependencies)
+  endif()
+endif()
 
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)

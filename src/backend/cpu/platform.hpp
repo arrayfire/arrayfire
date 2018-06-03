@@ -16,7 +16,7 @@
 #include <memory.hpp>
 #include <queue.hpp>
 
-#if defined(USE_CPUID) && (defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) || defined(_WIN64))
+#if defined(AF_WITH_CPUID) && (defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) || defined(_WIN64))
 #define CPUID_CAPABLE
 #endif
 

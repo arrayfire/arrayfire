@@ -94,3 +94,10 @@ af_err af_corrcoef(double *realVal, double *imagVal, const af_array X, const af_
     CHECK_ARRAYS(X, Y);
     return CALL(realVal, imagVal, X, Y);
 }
+
+af_err af_topk(af_array *values, af_array *indices, const af_array in,
+               const int k, const int dim, const af_topk_function order)
+{
+    CHECK_ARRAYS(in);
+    return CALL(values, indices, in, k, dim, order);
+}

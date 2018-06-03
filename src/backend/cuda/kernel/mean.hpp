@@ -9,6 +9,7 @@
 
 #include <ops.hpp>
 #include <backend.hpp>
+#include <copy.hpp>
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <math.hpp>
@@ -204,22 +205,17 @@ namespace kernel
 
         blocks_dim[dim] = divup(in.dims[dim], threads_y * REPEAT);
 
-        Param<To> tmpOut = out;
-        Param<Tw> tmpWt;
-        tmpWt.ptr = NULL;
+        Array<To> tmpOut = *initArray<To>();
+        Array<Tw> tmpWt  = *initArray<Tw>();
 
         if (blocks_dim[dim] > 1) {
-            int tmp_elements = 1;
-            tmpOut.dims[dim] = blocks_dim[dim];
-
-            for (int k = 0; k < 4; k++) tmp_elements *= tmpOut.dims[k];
-            tmpOut.ptr = memAlloc<To>(tmp_elements);
-            tmpWt.ptr = memAlloc<Tw>(tmp_elements);
-
-            for (int k = dim + 1; k < 4; k++) {
-                tmpOut.strides[k] *= blocks_dim[dim];
-                tmpWt.strides[k] *= blocks_dim[dim];
-            }
+          dim4 dims(4, out.dims);
+          dims[dim] = blocks_dim[dim];
+          tmpOut = createEmptyArray<To>(dims);
+          tmpWt  = createEmptyArray<Tw>(dims);
+        }
+        else {
+          tmpOut = createParamArray(out, false);
         }
 
         mean_dim_launcher<Ti, Tw, To, dim>(tmpOut, tmpWt, in, iwt, threads_y, blocks_dim);
@@ -227,13 +223,10 @@ namespace kernel
         if (blocks_dim[dim] > 1) {
             blocks_dim[dim] = 1;
 
-            Param<Tw> owt;
-            owt.ptr = NULL;
+            Array<Tw> owt = *initArray<Tw>();
             mean_dim_launcher<To, Tw, To, dim>(out, owt, tmpOut, tmpWt,
                                                     threads_y, blocks_dim);
 
-            memFree(tmpOut.ptr);
-            memFree(tmpWt.ptr);
         }
 
     }
@@ -393,22 +386,13 @@ namespace kernel
         uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
         uint blocks_y = divup(in.dims[1], threads_y);
 
-        Param<To> tmpOut = out;
-        Param<Tw> tmpWt;
-        tmpWt.ptr = NULL;
+        Array<To> tmpOut = *initArray<To>();
+        Array<Tw> tmpWt  = *initArray<Tw>();
         if (blocks_x > 1) {
-            tmpOut.ptr = memAlloc<To>(blocks_x *
-                                  in.dims[1] *
-                                  in.dims[2] *
-                                  in.dims[3]);
-
-            tmpWt.ptr = memAlloc<Tw>(blocks_x *
-                                   in.dims[1] *
-                                   in.dims[2] *
-                                   in.dims[3]);
-
-            tmpOut.dims[0] = blocks_x;
-            for (int k = 1; k < 4; k++) tmpOut.strides[k] *= blocks_x;
+          tmpOut = createEmptyArray<To>({blocks_x, in.dims[1], in.dims[2], in.dims[3]});
+          tmpWt = createEmptyArray<Tw>({blocks_x, in.dims[1], in.dims[2], in.dims[3]});
+        } else {
+          tmpOut = createParamArray(out, false);
         }
 
         mean_first_launcher<Ti, Tw, To>(tmpOut, tmpWt, in, iwt, blocks_x, blocks_y, threads_x);
@@ -417,9 +401,6 @@ namespace kernel
             Param<Tw> owt;
             owt.ptr = NULL;
             mean_first_launcher<To, Tw, To>(out, owt, tmpOut, tmpWt, 1, blocks_y, threads_x);
-
-            memFree(tmpOut.ptr);
-            memFree(tmpWt.ptr);
         }
     }
 
@@ -473,38 +454,22 @@ namespace kernel
             threads_x = std::min(threads_x, THREADS_PER_BLOCK);
             uint threads_y = THREADS_PER_BLOCK / threads_x;
 
-            Param<T> tmpOut;
-            Param<Tw> tmpWt;
-
             uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
             uint blocks_y = divup(in.dims[1], threads_y);
 
-            tmpOut.dims[0] = blocks_x;
-            tmpOut.strides[0] = 1;
+            Array<T> tmpOut = createEmptyArray<T>({blocks_x, in.dims[1], in.dims[2], in.dims[3]});
+            Array<Tw> tmpWt = createEmptyArray<Tw>({blocks_x, in.dims[1], in.dims[2], in.dims[3]});
 
-            for (int k = 1; k < 4; k++) {
-                tmpOut.dims[k] = in.dims[k];
-                tmpOut.strides[k] = tmpOut.dims[k - 1] * tmpOut.strides[k - 1];
-            }
+            int tmp_elements = tmpOut.elements();
 
-            int tmp_elements = tmpOut.strides[3] * tmpOut.dims[3];
-
-            //TODO: Use scoped_ptr
-            tmpOut.ptr = memAlloc<T>(tmp_elements);
-            tmpWt.ptr = memAlloc<Tw>(tmp_elements);
             mean_first_launcher<T, Tw, T>(tmpOut, tmpWt, in, iwt, blocks_x, blocks_y, threads_x);
 
             vector<T>  h_ptr(tmp_elements);
             vector<Tw> h_wptr(tmp_elements);
 
-            CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), tmpOut.ptr, tmp_elements * sizeof(T),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaMemcpyAsync(h_wptr.data(), tmpWt.ptr, tmp_elements * sizeof(Tw),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+            copyData<T>(h_ptr.data(),  tmpOut);
+            copyData<Tw>(h_wptr.data(), tmpWt);
             CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
-            memFree(tmpOut.ptr);
-            memFree(tmpWt.ptr);
-
 
             T val = h_ptr[0];
             Tw weight = h_wptr[0];
@@ -561,38 +526,23 @@ namespace kernel
             threads_x = std::min(threads_x, THREADS_PER_BLOCK);
             uint threads_y = THREADS_PER_BLOCK / threads_x;
 
-            Param<To> tmpOut;
-            Param<Tw> tmpCt;
-            Param<Tw> iwt;
 
             uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
             uint blocks_y = divup(in.dims[1], threads_y);
 
-            tmpOut.dims[0] = blocks_x;
-            tmpOut.strides[0] = 1;
+            Param<Tw> iwt;
+            Array<To> tmpOut = createEmptyArray<To>({blocks_x, in.dims[1], in.dims[2], in.dims[3]});
+            Array<Tw> tmpCt = createEmptyArray<Tw>({blocks_x, in.dims[1], in.dims[2], in.dims[3]});
 
-            for (int k = 1; k < 4; k++) {
-                tmpOut.dims[k] = in.dims[k];
-                tmpOut.strides[k] = tmpOut.dims[k - 1] * tmpOut.strides[k - 1];
-            }
-
-            int tmp_elements = tmpOut.strides[3] * tmpOut.dims[3];
-
-            tmpOut.ptr = memAlloc<To>(tmp_elements);
-            tmpCt.ptr = memAlloc<Tw>(tmp_elements);
-            iwt.ptr = NULL;
             mean_first_launcher<Ti, Tw, To>(tmpOut, tmpCt, in, iwt, blocks_x, blocks_y, threads_x);
 
+            int tmp_elements = tmpOut.elements();
             vector<To> h_ptr(tmp_elements);
             vector<Tw> h_cptr(tmp_elements);
 
-            CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), tmpOut.ptr, tmp_elements * sizeof(To),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
-            CUDA_CHECK(cudaMemcpyAsync(h_cptr.data(), tmpCt.ptr, tmp_elements * sizeof(Tw),
-                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+            copyData<To>(h_ptr.data(), tmpOut);
+            copyData<Tw>(h_cptr.data(), tmpCt);
             CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
-            memFree(tmpOut.ptr);
-            memFree(tmpCt.ptr);
 
             To val = h_ptr[0];
             Tw weight = h_cptr[0];
@@ -605,6 +555,7 @@ namespace kernel
         } else {
 
             vector<Ti> h_ptr(in_elements);
+
             CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), in.ptr, in_elements * sizeof(Ti),
                        cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));

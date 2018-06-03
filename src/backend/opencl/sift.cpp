@@ -13,7 +13,7 @@
 #include <err_opencl.hpp>
 #include <math.hpp>
 
-#ifdef AF_BUILD_NONFREE_SIFT
+#ifdef AF_WITH_NONFREE_SIFT
 #include <kernel/sift_nonfree.hpp>
 #endif
 
@@ -32,7 +32,7 @@ unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
               const float img_scale, const float feature_ratio,
               const bool compute_GLOH)
 {
-#ifdef AF_BUILD_NONFREE_SIFT
+#ifdef AF_WITH_NONFREE_SIFT
     unsigned nfeat_out;
     unsigned desc_len;
 
@@ -51,12 +51,12 @@ unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
         const dim4 out_dims(nfeat_out);
         const dim4 desc_dims(desc_len, nfeat_out);
 
-        x_out     = createParamArray<float>(x);
-        y_out     = createParamArray<float>(y);
-        score_out = createParamArray<float>(score);
-        ori_out   = createParamArray<float>(ori);
-        size_out  = createParamArray<float>(size);
-        desc_out  = createParamArray<float>(desc);
+        x_out     = createParamArray<float>(x, true);
+        y_out     = createParamArray<float>(y, true);
+        score_out = createParamArray<float>(score, true);
+        ori_out   = createParamArray<float>(ori, true);
+        size_out  = createParamArray<float>(size, true);
+        desc_out  = createParamArray<float>(desc, true);
     }
 
     return nfeat_out;

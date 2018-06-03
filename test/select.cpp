@@ -133,7 +133,7 @@ TEST(Select, NaN)
     c.host(&hc[0]);
 
     for (int i = 0; i < num; i++) {
-        ASSERT_EQ(hc[i], std::isnan(ha[i]) ? b : ha[i]);
+        ASSERT_FLOAT_EQ(hc[i], std::isnan(ha[i]) ? b : ha[i]);
     }
 }
 
@@ -153,7 +153,7 @@ TEST(Select, ISSUE_1249)
     c.host(&hc[0]);
 
     for (int i = 0; i < num; i++) {
-        ASSERT_EQ(hc[i], hb[i]) << "at " << i;
+        EXPECT_NEAR(hc[i], hb[i], 1e-7) << "at " << i;
     }
 }
 
@@ -173,7 +173,7 @@ TEST(Select, 4D)
     c.host(&hc[0]);
 
     for (int i = 0; i < num; i++) {
-        ASSERT_EQ(hc[i], hb[i]) << "at " << i;
+        EXPECT_NEAR(hc[i], hb[i], 1e-7) << "at " << i;
     }
 }
 
@@ -201,9 +201,9 @@ TEST(Select, Issue_1730)
     for (int j = 0; j < m; j++) {
         for (int i = 0; i < n; i++) {
             if (i < n1 || i > n2) {
-                ASSERT_EQ(ha1[i], ha2[i]) << "at (" << i << ", " << j << ")";
+                ASSERT_FLOAT_EQ(ha1[i], ha2[i]) << "at (" << i << ", " << j << ")";
             } else {
-                ASSERT_EQ(ha2[i], (ha1[i] >= 0 ? ha1[i] : -ha1[i]))  << "at (" << i << ", " << j << ")";
+                ASSERT_FLOAT_EQ(ha2[i], (ha1[i] >= 0 ? ha1[i] : -ha1[i]))  << "at (" << i << ", " << j << ")";
             }
         }
     }
@@ -234,9 +234,9 @@ TEST(Select, Issue_1730_scalar)
     for (int j = 0; j < m; j++) {
         for (int i = 0; i < n; i++) {
             if (i < n1 || i > n2) {
-                ASSERT_EQ(ha1[i], ha2[i]) << "at (" << i << ", " << j << ")";
+                ASSERT_FLOAT_EQ(ha1[i], ha2[i]) << "at (" << i << ", " << j << ")";
             } else {
-                ASSERT_EQ(ha2[i], (ha1[i] >= 0 ? ha1[i] : val))  << "at (" << i << ", " << j << ")";
+                ASSERT_FLOAT_EQ(ha2[i], (ha1[i] >= 0 ? ha1[i] : val))  << "at (" << i << ", " << j << ")";
             }
         }
     }
@@ -253,7 +253,7 @@ TEST(Select, MaxDim)
     af::array sel  = af::select(cond, a, b);
     float sum = af::sum<float>(sel);
 
-    ASSERT_EQ(sum, 0.f);
+    ASSERT_FLOAT_EQ(sum, 0.f);
 
     a    = af::constant(1, 1, largeDim);
     b    = af::constant(0, 1, largeDim);
@@ -262,7 +262,7 @@ TEST(Select, MaxDim)
     sel  = af::select(cond, a, b);
     sum = af::sum<float>(sel);
 
-    ASSERT_EQ(sum, 0.f);
+    ASSERT_FLOAT_EQ(sum, 0.f);
 
     a    = af::constant(1, 1, 1, largeDim);
     b    = af::constant(0, 1, 1, largeDim);
@@ -271,7 +271,7 @@ TEST(Select, MaxDim)
     sel  = af::select(cond, a, b);
     sum = af::sum<float>(sel);
 
-    ASSERT_EQ(sum, 0.f);
+    ASSERT_FLOAT_EQ(sum, 0.f);
 
     a    = af::constant(1, 1, 1, 1, largeDim);
     b    = af::constant(0, 1, 1, 1, largeDim);
@@ -280,5 +280,5 @@ TEST(Select, MaxDim)
     sel  = af::select(cond, a, b);
     sum = af::sum<float>(sel);
 
-    ASSERT_EQ(sum, 0.f);
+    ASSERT_FLOAT_EQ(sum, 0.f);
 }

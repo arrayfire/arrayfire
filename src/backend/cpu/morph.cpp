@@ -19,7 +19,6 @@ using af::dim4;
 
 namespace cpu
 {
-
 template<typename T, bool isDilation>
 Array<T> morph(const Array<T> &in, const Array<T> &mask)
 {
@@ -60,5 +59,4 @@ INSTANTIATE(uint  )
 INSTANTIATE(uchar )
 INSTANTIATE(ushort)
 INSTANTIATE(short )
-
 }

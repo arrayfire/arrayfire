@@ -12,6 +12,7 @@
 #include <err_cpu.hpp>
 #include <type_traits>
 #include "interp.hpp"
+#include <af/traits.hpp>
 
 namespace cpu
 {
@@ -74,7 +75,7 @@ void transform(Param<T> output, CParam<T> input,
                const bool perspective,
                af_interp_type method)
 {
-    typedef typename dtype_traits<T>::base_type BT;
+    typedef typename af::dtype_traits<T>::base_type BT;
     typedef wtype_t<BT> WT;
 
     const af::dim4 idims    = input.dims();

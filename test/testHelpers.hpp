@@ -52,10 +52,9 @@ void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
     if(testFile.good()) {
         unsigned inputCount;
         testFile >> inputCount;
+        inputDims.resize(inputCount);
         for(unsigned i=0; i<inputCount; i++) {
-            af::dim4 temp(1);
-            testFile >> temp;
-            inputDims.push_back(temp);
+            testFile >> inputDims[i];
         }
 
         unsigned testCount;
@@ -323,7 +322,6 @@ bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance)
     accum /= data_size;
     double NRMSD = std::sqrt(accum)/(maxion-minion);
 
-    std::cout<<"NRMSD = "<<NRMSD<<std::endl;
     if (std::isnan(NRMSD) || NRMSD > tolerance)
         return false;
 

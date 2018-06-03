@@ -16,30 +16,13 @@
 #include "input.h"
 using namespace af;
 
-// The following function is a modified version of http://www.johndcook.com/blog/cpp_phi/
-// The example above references Handbook of Mathematical Functions by Abramowitz and Stegun
-
+// Use the relationship between the cumulative normal distribution and the
+// (complementary) error function:
+// https://en.wikipedia.org/wiki/Error_function#Cumulative_distribution_function
 array cnd(array x)
 {
-    // constants
-    const float a1 =  0.254829592;
-    const float a2 = -0.284496736;
-    const float a3 =  1.421413741;
-    const float a4 = -1.453152027;
-    const float a5 =  1.061405429;
-    const float p  =  0.3275911;
-    const float sqrt2 = sqrt(2.0);
-
-    // Save the sign of x
-    array xSign = sign(x);
-
-    x = abs(x) / sqrt2;
-
-    // A&S formula 7.1.26
-    array t = 1.0f / (1.0f + p*x);
-    array y = 1.0f + 0.5f * (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*exp(-x*x);
-
-    return xSign * y + !xSign * (1 - y); // equivalent of (x >= 0) ? y : (1 - y);
+    const float sqrt05 = sqrt(0.5f);
+    return 0.5f * erfc(- x * sqrt05);
 }
 
 static void black_scholes(array& C, array& P,

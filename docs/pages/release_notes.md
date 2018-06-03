@@ -1,6 +1,190 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.6.0
+======
+
+The source code with submodules can be downloaded directly from the following link:
+http://arrayfire.com/arrayfire_source/arrayfire-full-3.6.0.tar.bz2
+
+Major Updates
+-------------
+
+- Added the `topk()` function
+  [Documentation](http://arrayfire.org/docs/group__stat__func__topk.htm).
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/2061)</sup>
+- Added batched matrix multiply support.
+  <sup>[2](https://github.com/arrayfire/arrayfire/pull/1898)</sup>
+  <sup>[3](https://github.com/arrayfire/arrayfire/pull/2059)</sup>
+- Added anisotropic diffusion, `anisotropicDiffusion()`.
+  [Documentation](http://arrayfire.org/docs/group__image__func__anisotropic__diffusion.htm)
+  <sup>[4](https://github.com/arrayfire/arrayfire/pull/1850)</sup>.
+
+Features
+--------
+
+- Added support for batched matrix multiply.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1898)</sup>
+  <sup>[2](https://github.com/arrayfire/arrayfire/pull/2059)</sup>
+- New anisotropic diffusion function, `anisotropicDiffusion()`.
+  [Documentation](http://arrayfire.org/docs/group__image__func__anisotropic__diffusion.htm)
+  <sup>[3](https://github.com/arrayfire/arrayfire/pull/1850)</sup>.
+- New `topk()` function, which returns the top k elements along a given
+  dimension of the input.
+  [Documentation](http://arrayfire.org/docs/group__stat__func__topk.htm).
+  <sup>[4](https://github.com/arrayfire/arrayfire/pull/2061)</sup>
+- New gradient diffusion
+  [example](https://github.com/arrayfire/arrayfire/blob/master/examples/image_processing/gradient_diffusion.cpp).
+
+Improvements
+------------
+
+- JITted `select()` and `shift()` functions for CUDA and OpenCL backends.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/2047)</sup>
+- Significant CMake improvements.
+  <sup>[2](https://github.com/arrayfire/arrayfire/pull/1861)</sup>
+  <sup>[3](https://github.com/arrayfire/arrayfire/pull/2070)</sup>
+  <sup>[4](https://github.com/arrayfire/arrayfire/pull/2018)</sup>
+- Improved the quality of the random number generator, thanks to Ralf Stubner.
+  <sup>[5](https://github.com/arrayfire/arrayfire/pull/2122)</sup>
+- Modified `af_colormap` struct to match forge's definition.
+  <sup>[6](https://github.com/arrayfire/arrayfire/pull/2082)</sup>
+- Improved Black Scholes example.
+  <sup>[7](https://github.com/arrayfire/arrayfire/pull/2079)</sup>
+- Using CPack to generate installers.
+  <sup>[8](https://github.com/arrayfire/arrayfire/pull/1861)</sup>
+- Refactored
+  [black_scholes_options](https://github.com/arrayfire/arrayfire/blob/master/examples/financial/black_scholes_options.cpp)
+  example to use built-in `af::erfc` function for cumulative normal
+  distribution.<sup>[9](https://github.com/arrayfire/arrayfire/pull/2079)</sup>.
+- Reduced the scope of mutexes in memory manager
+  <sup>[10](https://github.com/arrayfire/arrayfire/pull/2125)</sup>
+- Official installers do not require the CUDA toolkit to be installed
+- Significant CMake improvements have been made. Using CPack to generate
+  installers. <sup>[11](https://github.com/arrayfire/arrayfire/pull/1861)</sup>
+  <sup>[12](https://github.com/arrayfire/arrayfire/pull/2070)</sup>
+  <sup>[13](https://github.com/arrayfire/arrayfire/pull/2018)</sup>
+- Corrected assert function calls in select() tests.
+  <sup>[14](https://github.com/arrayfire/arrayfire/pull/2058)</sup>
+
+Bug fixes
+-----------
+
+- Fixed `shfl_down()` warnings with CUDA 9.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/2040)</sup>
+- Disabled CUDA JIT debug flags on ARM
+  architecture.<sup>[2](https://github.com/arrayfire/arrayfire/pull/2037)</sup>
+- Fixed CLBLast install lib dir for linux platform where `lib` directory has
+  arch(64) suffix.<sup>[3](https://github.com/arrayfire/arrayfire/pull/2094)</sup>
+- Fixed assert condition in 3d morph opencl
+  kernel.<sup>[4](https://github.com/arrayfire/arrayfire/pull/2033)</sup>
+- Fix JIT errors with large non-linear
+  kernels<sup>[5](https://github.com/arrayfire/arrayfire/pull/2127)</sup>
+- Fix bug in CPU jit after moddims was called
+  <sup>[5](https://github.com/arrayfire/arrayfire/pull/2127)</sup>
+- Fixed deadlock caused by calls to from the worker thread
+  <sup>[6](https://github.com/arrayfire/arrayfire/pull/2124)</sup>
+
+Documentation
+-------------
+
+- Fixed variable name typo in `vectorization.md`.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/2032)</sup>
+- Fixed `AF_API_VERSION` value in Doxygen config file.
+  <sup>[2](https://github.com/arrayfire/arrayfire/pull/2053)</sup>
+
+Known issues
+------------
+
+- Several OpenCL tests failing on OSX:
+  - `canny_opencl, fft_opencl, gen_assign_opencl, homography_opencl,
+    reduce_opencl, scan_by_key_opencl, solve_dense_opencl,
+    sparse_arith_opencl, sparse_convert_opencl, where_opencl`
+
+Community contributions
+-----------------------
+
+Special thanks to our contributors:
+[Adrien F. Vincent](https://github.com/afvincent), [Cedric
+Nugteren](https://github.com/CNugteren),
+[Felix](https://github.com/fzimmermann89), [Filip
+Matzner](https://github.com/FloopCZ),
+[HoneyPatouceul](https://github.com/HoneyPatouceul), [Patrick
+Lavin](https://github.com/plavin), [Ralf Stubner](https://github.com/rstub),
+[William Tambellini](https://github.com/WilliamTambellini)
+
+
+v3.5.1
+======
+
+The source code with submodules can be downloaded directly from the following
+link: http://arrayfire.com/arrayfire_source/arrayfire-full-3.5.1.tar.bz2
+
+Installer CUDA Version: 8.0 (Required) Installer OpenCL Version: 1.2 (Minimum)
+
+Improvements
+------------
+- Relaxed `af::unwrap()` function's arguments.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1853)</sup>
+- Changed behavior of af::array::allocated() to specify memory allocated.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1877)</sup>
+- Removed restriction on the number of bins for `af::histogram()` on CUDA and
+  OpenCL kernels. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1895)</sup>
+
+
+Performance
+-----------
+
+- Improved JIT performance.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1864)</sup>
+- Improved CPU element-wise operation performance.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1890)</sup>
+- Improved regions performance using texture objects. <sup>
+  [1](https://github.com/arrayfire/arrayfire/pull/1903)</sup>
+
+
+Bug fixes
+---------
+- Fixed overflow issues in mean.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1849)</sup>
+- Fixed memory leak when chaining indexing operations.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1879)</sup>
+- Fixed bug in array assignment when using an empty array to index.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1897)</sup>
+- Fixed bug with `af::matmul()` which occured when its RHS argument was an
+  indexed vector.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1883)</sup>
+- Fixed bug deadlock bug when sparse array was used with a JIT Array.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1889)</sup>
+- Fixed pixel tests for FAST kernels.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1891)</sup>
+- Fixed `af::replace` so that it is now copy-on-write.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1892)</sup>
+- Fixed launch configuration issues in CUDA JIT.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1893)</sup>
+- Fixed segfaults and "Pure Virtual Call" error warnings when exiting on
+  Windows. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1899)
+  [2](https://github.com/arrayfire/arrayfire/pull/1924)</sup>
+- Workaround for `clEnqueueReadBuffer` bug on OSX.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1888)</sup>
+
+Build
+-----
+
+- Fixed issues when compiling with GCC 7.1.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1872)</sup>
+  <sup>[2](https://github.com/arrayfire/arrayfire/pull/1876)</sup>
+- Eliminated unnecessary Boost dependency from CPU and CUDA backends.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1857)</sup>
+
+Misc
+----
+
+- Updated support links to point to Slack instead of Gitter.
+  <sup>[1](https://github.com/arrayfire/arrayfire/pull/1905)</sup>
+
+
+
 v3.5.0
 ==============
 
@@ -36,7 +220,7 @@ Improvements
   [NVVM](http://docs.nvidia.com/cuda/nvvm-ir-spec/index.html).
 * Performance improvements in \ref af::reorder().
   <sup>[1](https://github.com/arrayfire/arrayfire/pull/1766)</sup>
-* Performance improvements in \ref array::scalar<T>().
+* Performance improvements in \ref af::array::scalar<T>().
   <sup>[1](https://github.com/arrayfire/arrayfire/pull/1809)</sup>
 * Improved unified backend performance.
   <sup>[1](https://github.com/arrayfire/arrayfire/pull/1770)</sup>
@@ -45,7 +229,7 @@ Improvements
 * Can now specify the FFT plan cache size using the
   \ref af::setFFTPlanCacheSize() function.
 * Get the number of physical bytes allocated by the memory manager
-  \ref `af_get_allocated_bytes()`. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1630)</sup>
+  \ref af_get_allocated_bytes(). <sup>[1](https://github.com/arrayfire/arrayfire/pull/1630)</sup>
 * \ref af::dot() can now return a scalar value to the
   host. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1628)</sup>
 
@@ -61,7 +245,7 @@ Bug Fixes
 * Fixed complex (`c32`,`c64`) multiplication in OpenCL convolution
   kernels. <sup>[1](https://github.com/arrayfire/arrayfire/pull/1816)</sup>
 * Fixed inconsistent behavior with \ref af::replace() and \ref
-  replace_scalar(). <sup>[1](https://github.com/arrayfire/arrayfire/pull/1773)</sup>
+  af_replace_scalar(). <sup>[1](https://github.com/arrayfire/arrayfire/pull/1773)</sup>
 * Fixed memory leak in \ref
   af_fir(). <sup>[1](https://github.com/arrayfire/arrayfire/pull/1765)</sup>
 * Fixed memory leaks in \ref af_cast for sparse arrays.

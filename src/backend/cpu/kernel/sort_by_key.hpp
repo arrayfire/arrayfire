@@ -9,7 +9,6 @@
 
 #pragma once
 #include <Param.hpp>
-#include <err_cpu.hpp>
 
 namespace cpu
 {

@@ -33,12 +33,15 @@ void morph(__global T *              out,
            KParam                  iInfo,
            __constant const T *   d_filt,
            __local T *          localMem,
-           int nBBS0, int nBBS1)
+           int nBBS0, int nBBS1, int windLen)
 {
-    const int halo   = windLen/2;
-    const int padding= 2*halo;
-    const int shrdLen = get_local_size(0) + padding + 1;
-    const int shrdLen1= get_local_size(1) + padding;
+    if (SeLength>0)
+        windLen = SeLength;
+
+    const int halo     = windLen/2;
+    const int padding  = (windLen%2==0 ? (windLen-1) : (2*(windLen/2)));
+    const int shrdLen  = get_local_size(0) + padding + 1;
+    const int shrdLen1 = get_local_size(1) + padding;
 
     // gfor batch offsets
     int b2 = get_group_id(0) / nBBS0;
@@ -125,14 +128,13 @@ void morph3d(__global T *         out,
              __local T *          localMem,
              int             nBBS)
 {
-    const int halo   = windLen/2;
-    const int padding= 2*halo;
-
-    const int se_area   = windLen*windLen;
+    const int halo      = SeLength/2;
+    const int padding   = (SeLength%2==0 ? (SeLength-1) : (2*(SeLength/2)));
+    const int se_area   = SeLength*SeLength;
     const int shrdLen   = get_local_size(0) + padding + 1;
     const int shrdLen1  = get_local_size(1) + padding;
     const int shrdLen2  = get_local_size(2) + padding;
-    const int shrdArea  = shrdLen * (get_local_size(1)+padding);
+    const int shrdArea  = shrdLen * shrdLen1;
 
     // gfor batch offsets
     int batchId    = get_group_id(0) / nBBS;
@@ -171,15 +173,15 @@ void morph3d(__global T *         out,
 
     T acc = init;
 #pragma unroll
-    for(int wk=0; wk<windLen; ++wk) {
+    for(int wk=0; wk<SeLength; ++wk) {
         int koff   = wk*se_area;
         int w_koff = (k+wk-halo)*shrdArea;
 #pragma unroll
-        for(int wj=0; wj<windLen; ++wj) {
-        int joff   = wj*windLen;
+        for(int wj=0; wj<SeLength; ++wj) {
+        int joff   = wj*SeLength;
         int w_joff = (j+wj-halo)*shrdLen;
 #pragma unroll
-            for(int wi=0; wi<windLen; ++wi) {
+            for(int wi=0; wi<SeLength; ++wi) {
                 T cur  = localMem[w_koff+w_joff + i+wi-halo];
                 if (d_filt[koff+joff+wi]) {
                     if (isDilation)

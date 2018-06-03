@@ -7,24 +7,19 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include "shared.hpp"
 #include <common/dispatch.hpp>
-#include <err_cuda.hpp>
+#include <cub/block/block_reduce.cuh>
 #include <debug_cuda.hpp>
+#include <err_cuda.hpp>
 #include <kernel/fast_lut.hpp>
 #include <memory.hpp>
-#include "shared.hpp"
+#include <math.hpp>
 
 namespace cuda
 {
-
 namespace kernel
 {
-
-inline __device__
-int clamp(const int f, const int a, const int b)
-{
-    return max(a, min(f, b));
-}
 
 inline __device__
 int idx_y(const int i)
@@ -269,7 +264,9 @@ void non_max_counts(
     const int yend = (blockIdx.y + 1) * blockDim.y * 8;
 
     const int bid = blockIdx.y * gridDim.x + blockIdx.x;
-    __shared__ unsigned s_counts[256];
+    using BlockReduce = cub::BlockReduce<unsigned, 32, cub::BLOCK_REDUCE_WARP_REDUCTIONS, 8>;
+
+    __shared__ typename BlockReduce::TempStorage temp_storage;
 
     unsigned count = 0;
     for (int y = yid; y < yend; y += yoff) {
@@ -302,26 +299,11 @@ void non_max_counts(
         }
     }
 
-    s_counts[tid] = count;
-    __syncthreads();
-
-    if (tid >= 128) return;
-    if (tid < 128) s_counts[tid] += s_counts[tid + 128]; __syncthreads();
-
-    if (tid >= 64) return;
-    if (tid <  64) s_counts[tid] += s_counts[tid +  64]; __syncthreads();
-
-    if (tid >= 32) return;
-    if (tid <  32) s_counts[tid] += s_counts[tid +  32];
-    if (tid <  16) s_counts[tid] += s_counts[tid +  16];
-    if (tid <   8) s_counts[tid] += s_counts[tid +   8];
-    if (tid <   4) s_counts[tid] += s_counts[tid +   4];
-    if (tid <   2) s_counts[tid] += s_counts[tid +   2];
-    if (tid <   1) s_counts[tid] += s_counts[tid +   1];
+    int sum = BlockReduce(temp_storage).Sum(count);
 
     if (tid == 0) {
-        unsigned total = s_counts[0] ? atomicAdd(d_total, s_counts[0]) : 0;
-        d_counts [bid] = s_counts[0];
+        unsigned total = sum ? atomicAdd(d_total, sum) : 0;
+        d_counts [bid] = sum;
         d_offsets[bid] = total;
     }
 }
@@ -385,27 +367,28 @@ void fast(unsigned* out_feat,
           float** x_out,
           float** y_out,
           float** score_out,
-          CParam<T> in,
+          const Array<T>& in,
           const float thr,
           const unsigned arc_length,
           const unsigned nonmax,
           const float feature_ratio,
           const unsigned edge)
 {
-    const unsigned max_feat = ceil(in.dims[0] * in.dims[1] * feature_ratio);
+    dim4 indims = in.dims();
+    const unsigned max_feat = ceil(indims[0] * indims[1] * feature_ratio);
 
     dim3 threads(16, 16);
-    dim3 blocks(divup(in.dims[0]-edge*2, threads.x), divup(in.dims[1]-edge*2, threads.y));
+    dim3 blocks(divup(indims[0]-edge*2, threads.x), divup(indims[1]-edge*2, threads.y));
 
     // Matrix containing scores for detected features, scores are stored in the
     // same coordinates as features, dimensions should be equal to in.
-    float *d_score = NULL;
-    size_t score_bytes = in.dims[0] * in.dims[1] * sizeof(float) + sizeof(unsigned);
-    d_score = (float *)memAlloc<char>(score_bytes);
+    auto d_score = memAlloc<float>(indims[0] * indims[1] + 1);
 
-    float *d_flags = d_score;
+    float *d_flags = d_score.get();
+    uptr<float> d_flags_alloc;
     if (nonmax) {
-        d_flags = memAlloc<float>(in.dims[0] * in.dims[1]);
+        d_flags_alloc = memAlloc<float>(indims[0] * indims[1]);
+        d_flags = d_flags_alloc.get();
     }
 
     // Shared memory size
@@ -413,28 +396,28 @@ void fast(unsigned* out_feat,
 
     switch(arc_length) {
     case 9:
-        CUDA_LAUNCH_SMEM((locate_features<T, 9>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T, 9>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 10:
-        CUDA_LAUNCH_SMEM((locate_features<T,10>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,10>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 11:
-        CUDA_LAUNCH_SMEM((locate_features<T,11>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,11>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 12:
-        CUDA_LAUNCH_SMEM((locate_features<T,12>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,12>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 13:
-        CUDA_LAUNCH_SMEM((locate_features<T,13>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,13>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 14:
-        CUDA_LAUNCH_SMEM((locate_features<T,14>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,14>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 15:
-        CUDA_LAUNCH_SMEM((locate_features<T,15>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,15>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     case 16:
-        CUDA_LAUNCH_SMEM((locate_features<T,16>), blocks, threads, shared_size, in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,16>), blocks, threads, shared_size, in, d_score.get(), thr, edge);
         break;
     }
 
@@ -443,22 +426,22 @@ void fast(unsigned* out_feat,
     threads.x = 32;
     threads.y =  8;
 
-    blocks.x = divup(in.dims[0], 64);
-    blocks.y = divup(in.dims[1], 64);
+    blocks.x = divup(indims[0], 64);
+    blocks.y = divup(indims[1], 64);
 
-    unsigned *d_total = (unsigned *)(d_score + in.dims[0] * in.dims[1]);
+    unsigned *d_total = (unsigned *)(d_score.get() + (indims[0] * indims[1]));
     CUDA_CHECK(cudaMemsetAsync(d_total, 0, sizeof(unsigned), cuda::getActiveStream()));
-    unsigned *d_counts  = memAlloc<unsigned>(blocks.x * blocks.y);
-    unsigned *d_offsets = memAlloc<unsigned>(blocks.x * blocks.y);
+    auto d_counts  = memAlloc<unsigned>(blocks.x * blocks.y);
+    auto d_offsets = memAlloc<unsigned>(blocks.x * blocks.y);
 
     if (nonmax)
         CUDA_LAUNCH((non_max_counts<true >), blocks, threads,
-                d_counts, d_offsets, d_total, d_flags,
-                d_score, in.dims[0], in.dims[1], edge);
+                    d_counts.get(), d_offsets.get(), d_total, d_flags,
+                    d_score.get(), indims[0], indims[1], edge);
     else
         CUDA_LAUNCH((non_max_counts<false>), blocks, threads,
-                d_counts, d_offsets, d_total, d_flags,
-                d_score, in.dims[0], in.dims[1], edge);
+                    d_counts.get(), d_offsets.get(), d_total, d_flags,
+                    d_score.get(), indims[0], indims[1], edge);
 
     POST_LAUNCH_CHECK();
 
@@ -470,27 +453,26 @@ void fast(unsigned* out_feat,
     total = total < max_feat ? total : max_feat;
 
     if (total > 0) {
-        *x_out     = memAlloc<float>(total);
-        *y_out     = memAlloc<float>(total);
-        *score_out = memAlloc<float>(total);
+        auto x_out_alloc = memAlloc<float>(total);
+        auto y_out_alloc = memAlloc<float>(total);
+        auto score_out_alloc = memAlloc<float>(total);
+        *x_out     = x_out_alloc.get();
+        *y_out     = y_out_alloc.get();
+        *score_out = score_out_alloc.get();
 
         CUDA_LAUNCH((get_features<float>), blocks, threads,
-                *x_out, *y_out, *score_out, d_flags, d_counts,
-                d_offsets, total, in.dims[0], in.dims[1], edge);
+                *x_out, *y_out, *score_out, d_flags, d_counts.get(),
+                d_offsets.get(), total, indims[0], indims[1], edge);
 
         POST_LAUNCH_CHECK();
+
+        x_out_alloc.release();
+        y_out_alloc.release();
+        score_out_alloc.release();
     }
 
     *out_feat = total;
-
-    memFree<uchar>((uchar *)d_score);
-    memFree(d_counts);
-    memFree(d_offsets);
-    if (nonmax) {
-        memFree(d_flags);
-    }
 }
 
-} // namespace kernel
-
-} // namespace cuda
+}  // namespace kernel
+}  // namespace cuda

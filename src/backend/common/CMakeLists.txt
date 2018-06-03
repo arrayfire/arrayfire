@@ -1,4 +1,9 @@
-
+# Copyright (c) 2018, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
 
 add_library(afcommon_interface INTERFACE)
 
@@ -6,7 +11,11 @@ target_sources(afcommon_interface
   INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/ArrayInfo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ArrayInfo.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FFTPlanCache.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Logger.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MatrixAlgebraHandle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MemoryManager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MersenneTwister.hpp
@@ -23,11 +32,18 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/err_common.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/module_loading.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse_helpers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.hpp
     ${PROJECT_BINARY_DIR}/version.hpp
   )
+
+if(WIN32)
+target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_windows.cpp)
+else()
+target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_unix.cpp)
+endif()
 
 target_include_directories(afcommon_interface
   INTERFACE
@@ -37,7 +53,17 @@ target_include_directories(afcommon_interface
 
 add_library(afcommon_lapack_interface INTERFACE)
 
-if(BUILD_GRAPHICS)
+
+if(AF_WITH_LOGGING)
+  dependency_check(spdlog_FOUND "spdlog not found.")
+  target_compile_definitions(afcommon_interface
+    INTERFACE AF_WITH_LOGGING)
+  target_link_libraries(afcommon_interface
+    INTERFACE
+      spdlog::spdlog)
+endif()
+
+if(AF_WITH_GRAPHICS)
   dependency_check(glbinding_FOUND "glbinding not found.")
 
   target_include_directories(afcommon_interface
@@ -57,7 +83,7 @@ if(BUILD_GRAPHICS)
       OpenGL::GL
       ${Forge_LIBRARIES})
 
-    target_compile_definitions(afcommon_interface INTERFACE WITH_GRAPHICS)
+  target_compile_definitions(afcommon_interface INTERFACE WITH_GRAPHICS)
 
   if(APPLE)
     # TODO: On APPLE platform linking directly against glbinding brings in flags
@@ -69,12 +95,21 @@ if(BUILD_GRAPHICS)
       INTERFACE
         $<TARGET_PROPERTY:glbinding::glbinding,IMPORTED_LOCATION_RELEASE>)
   else()
-    target_link_libraries(afcommon_interface
-      INTERFACE
-      glbinding::glbinding)
+    target_link_libraries(afcommon_interface INTERFACE glbinding::glbinding)
   endif()
 
-  add_dependencies(afcommon_interface forge-ext)
+  if(AF_INSTALL_STANDALONE)
+    install(FILES
+        $<TARGET_FILE:glbinding::glbinding>
+        $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
+        $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
+      DESTINATION ${AF_INSTALL_BIN_DIR}
+      COMPONENT common_backend_dependencies)
+  endif()
+
+  if(NOT AF_USE_SYSTEM_FORGE)
+    add_dependencies(afcommon_interface forge-ext)
+  endif()
 endif()
 
 if(LAPACK_FOUND)
@@ -89,8 +124,4 @@ if(LAPACK_FOUND)
 
   target_compile_definitions(afcommon_lapack_interface
     INTERFACE WITH_LINEAR_ALGEBRA)
-
-  target_link_libraries(afcommon_lapack_interface
-    INTERFACE
-      ${LAPACK_LIBRARIES})
 endif()

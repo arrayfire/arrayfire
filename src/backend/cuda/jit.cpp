@@ -282,7 +282,7 @@ std::vector<char> compileToPTX(const char *ker_name, string jit_ker)
              dev.major, dev.minor);
     const char* compiler_options[] = {
       arch.data(),
-#ifndef NDEBUG
+#if !(defined(NDEBUG) || defined(__aarch64__) || defined(__LP64__))
       "--device-debug",
       "--generate-line-info"
 #endif
@@ -298,8 +298,6 @@ std::vector<char> compileToPTX(const char *ker_name, string jit_ker)
 
 static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 {
-    lock_guard<recursive_mutex> lock(getDriverApiMutex(getActiveDeviceId()));
-
     const size_t linkLogSize = 1024;
     char linkInfo[linkLogSize] = {0};
     char linkError[linkLogSize] = {0};
@@ -367,21 +365,25 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
 }
 
 template<typename T>
-void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
+void evalNodes(vector<Param<T>>& outputs, vector<Node *> output_nodes)
 {
     int num_outputs = (int)outputs.size();
 
     if (num_outputs == 0) return;
 
-    Node_map_t nodes;
-    vector<Node *> full_nodes;
-    vector<Node_ids> full_ids;
-    vector<int> output_ids;
+    // Use thread local to reuse the memory every time you are here.
+    thread_local Node_map_t nodes;
+    thread_local vector<Node *> full_nodes;
+    thread_local vector<Node_ids> full_ids;
+    thread_local vector<int> output_ids;
 
     // Reserve some space to improve performance at smaller sizes
-    output_ids.reserve(output_nodes.size());
-    full_nodes.reserve(1024);
-    full_ids.reserve(1024);
+    if (nodes.size() == 0) {
+        nodes.reserve(1024);
+        output_ids.reserve(output_nodes.size());
+        full_nodes.reserve(1024);
+        full_ids.reserve(1024);
+    }
 
     for (auto &node : output_nodes) {
         int id = node->getNodesMap(nodes, full_nodes, full_ids);
@@ -455,7 +457,6 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
     args.push_back((void *)&blocks_x_total);
     args.push_back((void *)&num_odims);
 
-    lock_guard<recursive_mutex> lock(getDriverApiMutex(getActiveDeviceId()));
     CU_CHECK(cuLaunchKernel(ker,
                             blocks_x,
                             blocks_y,
@@ -467,10 +468,16 @@ void evalNodes(vector<Param<T> >&outputs, vector<Node *> output_nodes)
                             getActiveStream(),
                             &args.front(),
                             NULL));
+
+    // Reset the thread local vectors
+    nodes.clear();
+    output_ids.clear();
+    full_nodes.clear();
+    full_ids.clear();
 }
 
 template<typename T>
-void evalNodes(Param<T> &out, Node *node)
+void evalNodes(Param<T> out, Node *node)
 {
     vector<Param<T>> outputs;
     vector<Node *> output_nodes;
@@ -481,18 +488,18 @@ void evalNodes(Param<T> &out, Node *node)
     return;
 }
 
-template void evalNodes<float  >(Param<float  > &out, Node *node);
-template void evalNodes<double >(Param<double > &out, Node *node);
-template void evalNodes<cfloat >(Param<cfloat > &out, Node *node);
-template void evalNodes<cdouble>(Param<cdouble> &out, Node *node);
-template void evalNodes<int    >(Param<int    > &out, Node *node);
-template void evalNodes<uint   >(Param<uint   > &out, Node *node);
-template void evalNodes<char   >(Param<char   > &out, Node *node);
-template void evalNodes<uchar  >(Param<uchar  > &out, Node *node);
-template void evalNodes<intl   >(Param<intl   > &out, Node *node);
-template void evalNodes<uintl  >(Param<uintl  > &out, Node *node);
-template void evalNodes<short  >(Param<short  > &out, Node *node);
-template void evalNodes<ushort >(Param<ushort > &out, Node *node);
+template void evalNodes<float  >(Param<float  > out, Node *node);
+template void evalNodes<double >(Param<double > out, Node *node);
+template void evalNodes<cfloat >(Param<cfloat > out, Node *node);
+template void evalNodes<cdouble>(Param<cdouble> out, Node *node);
+template void evalNodes<int    >(Param<int    > out, Node *node);
+template void evalNodes<uint   >(Param<uint   > out, Node *node);
+template void evalNodes<char   >(Param<char   > out, Node *node);
+template void evalNodes<uchar  >(Param<uchar  > out, Node *node);
+template void evalNodes<intl   >(Param<intl   > out, Node *node);
+template void evalNodes<uintl  >(Param<uintl  > out, Node *node);
+template void evalNodes<short  >(Param<short  > out, Node *node);
+template void evalNodes<ushort >(Param<ushort > out, Node *node);
 
 template void evalNodes<float  >(vector<Param<float  > > &out, vector<Node *> node);
 template void evalNodes<double >(vector<Param<double > > &out, vector<Node *> node);

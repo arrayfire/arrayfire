@@ -28,7 +28,7 @@ namespace cuda
     template<typename T> class Array;
 
     template<typename T>
-    void evalNodes(Param<T> &out, JIT::Node *node);
+    void evalNodes(Param<T> out, JIT::Node *node);
 
     template<typename T>
     void evalNodes(std::vector<Param<T> > &out, std::vector<JIT::Node *> nodes);
@@ -36,15 +36,12 @@ namespace cuda
     template<typename T>
     void evalMultiple(std::vector<Array<T> *> arrays);
 
-    // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T> createNodeArray(const af::dim4 &size, JIT::Node_ptr node);
 
-    // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T> createValueArray(const af::dim4 &size, const T& value);
 
-    // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T> createHostDataArray(const af::dim4 &size, const T * const data);
 
@@ -67,7 +64,7 @@ namespace cuda
 
     // Create an Array object from Param<T>
     template<typename T>
-    Array<T> createParamArray(Param<T> &tmp);
+    Array<T> createParamArray(Param<T> &tmp, bool owner);
 
     template<typename T>
     Array<T> createSubArray(const Array<T>& parent,
@@ -107,7 +104,7 @@ namespace cuda
 
         explicit Array(af::dim4 dims, const T * const in_data, bool is_device = false, bool copy_device = false);
         Array(const Array<T>& parnt, const dim4 &dims, const dim_t &offset, const dim4 &stride);
-        Array(Param<T> &tmp);
+        Array(Param<T> &tmp, bool owner);
         Array(af::dim4 dims, JIT::Node_ptr n);
     public:
 
@@ -228,7 +225,7 @@ namespace cuda
 
         friend Array<T> *initArray<T>();
         friend Array<T> createEmptyArray<T>(const af::dim4 &size);
-        friend Array<T> createParamArray<T>(Param<T> &tmp);
+        friend Array<T> createParamArray<T>(Param<T> &tmp, bool owner);
         friend Array<T> createNodeArray<T>(const af::dim4 &dims, JIT::Node_ptr node);
 
         friend Array<T> createSubArray<T>(const Array<T>& parent,

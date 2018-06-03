@@ -1,52 +1,85 @@
-# Defines the following variables:
-# ArrayFire_INCLUDE_DIRS    - Location of ArrayFire's include directory.
-# ArrayFire_LIBRARIES       - Location of ArrayFire's libraries. This will default
-#                             to a GPU backend if one is found.
-# ArrayFire_FOUND           - True if ArrayFire has been located
-#
-# You may provide a hint to where ArrayFire's root directory may be located
-# by setting ArrayFire_DIR.
-#
-# ----------------------------------------------------------------------------
-#
-# ArrayFire_CPU_FOUND         - True of the ArrayFire CPU library has been found.
-# ArrayFire_CPU_LIBRARIES     - Location of ArrayFire's CPU library, if found
-# ArrayFire_CUDA_FOUND        - True of the ArrayFire CUDA library has been found.
-# ArrayFire_CUDA_LIBRARIES    - Location of ArrayFire's CUDA library, if found
-# ArrayFire_OpenCL_FOUND      - True of the ArrayFire OpenCL library has been found.
-# ArrayFire_OpenCL_LIBRARIES  - Location of ArrayFire's OpenCL library, if found
-# ArrayFire_Unified_FOUND     - True of the ArrayFire Unified library has been found.
-# ArrayFire_Unified_LIBRARIES - Location of ArrayFire's Unified library, if found
-#
-#=============================================================================
-# Copyright (c) 2015, ArrayFire
+# Copyright (c) 2017, ArrayFire
 # All rights reserved.
 #
-# Redistribution and use in source and binary forms, with or without modification,
-# are permitted provided that the following conditions are met:
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
+
+# ArrayFire
+# ---------
 #
-# * Redistributions of source code must retain the above copyright notice, this
-#   list of conditions and the following disclaimer.
+# IMPORTED Targets
+# ^^^^^^^^^^^^^^^^
 #
-# * Redistributions in binary form must reproduce the above copyright notice, this
-#   list of conditions and the following disclaimer in the documentation and/or
-#   other materials provided with the distribution.
+# This is the configuration file for the ArrayFire Library. It provides the
+# following :prop_tgt:`IMPORTED` targets:
 #
-# * Neither the name of the ArrayFire nor the names of its
-#   contributors may be used to endorse or promote products derived from
-#   this software without specific prior written permission.
+# ``ArrayFire::af``
+#   Target for the ArrayFire Unified backend.
+# ``ArrayFire::afcpu``
+#   Target for the ArrayFire CPU backend.
+# ``ArrayFire::afcuda``
+#   Target for the ArrayFire CUDA backend.
+# ``ArrayFire::afopencl``
+#   Target for the ArrayFire OpenCL backend.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-# ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#=============================================================================
+# These targets can be used to link with your application using the
+# ``target_link_library`` command. Here is an example of how to use these
+# targets in your application:
+#
+#   add_executable(mybinary source.cpp)
+#   target_link_library(mybinary PRIVATE ArrayFire::afopencl)
+#
+# This example creates a mybinary executable from the source.cpp file and links
+# against the OpenCL backend of ArrayFire library. Note you do *not* need to set
+# the include directories as they are automatically included with the target.
+#
+# This is the recommended way of linking against ArrayFire
+#
+# Legacy Variables
+# ^^^^^^^^^^^^^^^^
+#
+# Additionally, this config file creates the following variables for backward
+# compatibility with legacy cmake files:
+#
+# ``ArrayFire_INCLUDE_DIRS``
+#  Path to ArrayFire's include directory.
+# ``ArrayFire_LIBRARIES``
+#  ArrayFire's libraries. This will default to a GPU backend if one
+#  is found.
+# ``ArrayFire_FOUND``
+#  True if ArrayFire has been located
+#
+# ``ArrayFire_CPU_FOUND``
+#   True of the ArrayFire CPU library has been found.
+# ``ArrayFire_CPU_LIBRARIES``
+#   Location of ArrayFire's CPU library, if found
+#
+# ``ArrayFire_CUDA_FOUND``
+#   True of the ArrayFire CUDA library has been found.
+# ``ArrayFire_CUDA_LIBRARIES``
+#   Location of ArrayFire's CUDA library, if found
+#
+# ``ArrayFire_OpenCL_FOUND``
+#   True of the ArrayFire OpenCL library has been found.
+# ``ArrayFire_OpenCL_LIBRARIES``
+#   Location of ArrayFire's OpenCL library, if found
+#
+# ``ArrayFire_Unified_FOUND``
+#   True of the ArrayFire Unified library has been found.
+# ``ArrayFire_Unified_LIBRARIES``
+#   Location of ArrayFire's Unified library, if found
+#
+# It is recommended you use imported targets instead of these variables.
+#
+# You may provide a hint to where ArrayFire's root directory may be located
+# by setting ArrayFire_DIR. You should not need to set this if you installed
+# ArrayFire using the official installers or the package manager(please submit
+# a bug report). If CMake is unable to locate ArrayFire then set the
+# ArrayFire_DIR to the directory of this file.
+#
+# If you are trying to link against a source build then this should be set to
+# the build directory.
 
 @PACKAGE_INIT@
 
@@ -58,18 +91,42 @@ foreach(backend Unified CPU OpenCL CUDA)
   else()
     string(TOLOWER "${backend}" lowerbackend)
   endif()
-  if(NOT TARGET ArrayFire::af${lowerbackend})
+
+  string(TOUPPER "${backend}" upperbackend)
+  if(NOT TARGET ArrayFire::af${lowerbackend} AND NOT TARGET af${lowerbackend})
+    # Either we are not in the ArrayFire project or the target was not built
     if(EXISTS @PACKAGE_CMAKE_DIR@/ArrayFire${backend}Targets.cmake)
       include(@PACKAGE_CMAKE_DIR@/ArrayFire${backend}Targets.cmake)
     endif()
   endif()
-
   if(TARGET ArrayFire::af${lowerbackend})
+    get_property(config TARGET ArrayFire::af${lowerbackend} PROPERTY IMPORTED_CONFIGURATIONS)
+    if(NOT config)
+      set(config "NOCONFIG")
+    endif()
+    get_property(loc TARGET ArrayFire::af${lowerbackend} PROPERTY IMPORTED_LOCATION_${config})
+  endif()
+
+  if((TARGET ArrayFire::af${lowerbackend} AND EXISTS ${loc}) OR TARGET af${lowerbackend})
       set(ArrayFire_${backend}_FOUND ON)
       set(ArrayFire_${backend}_LIBRARIES ArrayFire::af${lowerbackend})
       set(ArrayFire_LIBRARIES ArrayFire::af${lowerbackend})
   else()
       set(ArrayFire_${backend}_FOUND OFF)
+  endif()
+
+  # If this project is built as part of the ArrayFire project, make sure the
+  # backends are only enabled if the backend is selected to be built even if
+  # the Binary exists.
+  if(DEFINED AF_BUILD_${upperbackend} AND NOT AF_BUILD_${upperbackend})
+    set(ArrayFire_${backend}_FOUND OFF)
+  endif()
+endforeach()
+
+foreach(_comp ${ArrayFire_FIND_COMPONENTS})
+  if (NOT ArrayFire_${_comp}_FOUND)
+    set(ArrayFire_FOUND False)
+    set(ArrayFire_NOT_FOUND_MESSAGE "Required ArrayFire component ${_comp} not found")
   endif()
 endforeach()
 

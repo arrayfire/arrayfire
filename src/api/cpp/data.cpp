@@ -14,6 +14,7 @@
 #include <af/traits.hpp>
 #include <af/gfor.h>
 #include "error.hpp"
+#include <af/defines.h>
 
 namespace af
 {

@@ -88,18 +88,15 @@ SVD_SPECIALIZE(cdouble, double, Z);
 
         CUSOLVER_CHECK(gesvd_buf_func<T>(solverDnHandle(), M, N, &lwork));
 
-        T  *lWorkspace = memAlloc<T >(lwork);
-        Tr *rWorkspace = memAlloc<Tr>(5 * std::min(M, N));
+        auto lWorkspace = memAlloc<T >(lwork);
+        auto rWorkspace = memAlloc<Tr>(5 * std::min(M, N));
 
-        int *info = memAlloc<int>(1);
+        auto info = memAlloc<int>(1);
 
         gesvd_func<T, Tr>(solverDnHandle(), 'A', 'A', M, N, in.get(),
                           M, s.get(), u.get(), M, vt.get(), N,
-                          lWorkspace, lwork, rWorkspace, info);
+                          lWorkspace.get(), lwork, rWorkspace.get(), info.get());
 
-        memFree(info);
-        memFree(lWorkspace);
-        memFree(rWorkspace);
     }
 
     template <typename T, typename Tr>
