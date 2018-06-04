@@ -104,7 +104,10 @@ static af_array median(const af_array& in, const dim_t dim)
 
     if (dimLength % 2 == 1) {
         // mid-1 is our guy
-        if (input.isFloating()) return left;
+        if (input.isFloating()) {
+            AF_CHECK(af_release_array(sortedIn_handle));
+            return left;
+        }
 
         // Return as floats for consistency
         af_array out;
