@@ -78,8 +78,9 @@ af_err af_moments_all(double* out, const af_array in, const af_moment_type momen
         DIM_ASSERT(1, idims[2] == 1 && idims[3] == 1);
 
         af_array moments_arr;
-        af_moments(&moments_arr, in, moment);
+        AF_CHECK(af_moments(&moments_arr, in, moment));
         moment_copy<float>(out, moments_arr);
+        AF_CHECK(af_release_array(moments_arr));
     }
     CATCHALL;
 
