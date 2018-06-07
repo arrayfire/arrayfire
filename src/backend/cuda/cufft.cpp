@@ -117,7 +117,7 @@ SharedPlan findPlan(int rank, int *n,
     if (retVal)
         return retVal;
 
-    PlanType* temp = (PlanType*)malloc(sizeof(PlanType));
+    PlanType* temp = (PlanType*)calloc(1, sizeof(PlanType));
     cufftResult res = cufftPlanMany(temp, rank, n,
                                     inembed, istride, idist, onembed, ostride, odist,
                                     type, batch);

@@ -136,7 +136,7 @@ bool checkMemoryLimit()
     template void memFree(T* ptr);                                                            \
     template T* pinnedAlloc(const size_t &elements);                                          \
     template void pinnedFree(T* ptr);                                                         \
- 
+
 INSTANTIATE(float)
 INSTANTIATE(cfloat)
 INSTANTIATE(double)
@@ -181,7 +181,7 @@ size_t MemoryManager::getMaxMemorySize(int id)
 
 void *MemoryManager::nativeAlloc(const size_t bytes)
 {
-    void *ptr = malloc(bytes);
+    void *ptr = calloc(bytes, 1);
     AF_TRACE("nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     if (!ptr) AF_ERROR("Unable to allocate memory", AF_ERR_NO_MEM);
     return ptr;
