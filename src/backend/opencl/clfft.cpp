@@ -128,7 +128,7 @@ SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout,
     if (retVal)
         return retVal;
 
-    PlanType* temp = (PlanType*)malloc(sizeof(PlanType));
+    PlanType* temp = (PlanType*)calloc(1, sizeof(PlanType));
 
     // getContext() returns object of type Context
     // Context() returns the actual cl_context handle

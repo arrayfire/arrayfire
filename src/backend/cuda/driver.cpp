@@ -31,7 +31,7 @@ int nvDriverVersion(char *result, int len)
     dwLen = GetFileVersionInfoSize(lptstrFilename, &dwHandle);
     if (dwLen == 0) return 0;
 
-    lpData = malloc(dwLen);
+    lpData = calloc(1, dwLen);
     if (!lpData) return 0;
 
     rv = GetFileVersionInfo(lptstrFilename, 0, dwLen, lpData);
