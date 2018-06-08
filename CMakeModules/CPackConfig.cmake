@@ -3,7 +3,7 @@
 #
 # This file is distributed under 3-clause BSD license.
 # The complete license agreement can be obtained at:
-# http://arrayfire.com/licenses/BSD-3-Clause
+# https://arrayfire.com/licenses/BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.5)
 
@@ -19,7 +19,7 @@ mark_as_advanced(CPACK_GENERATOR)
 set(VENDOR_NAME "ArrayFire")
 set(LIBRARY_NAME ${PROJECT_NAME})
 string(TOLOWER "${LIBRARY_NAME}" APP_LOW_NAME)
-set(SITE_URL "www.arrayfire.com")
+set(SITE_URL "https://arrayfire.com")
 
 # Long description of the package
 set(CPACK_PACKAGE_DESCRIPTION
@@ -312,10 +312,15 @@ set(CPACK_DEBIAN_PACKAGE_HOMEPAGE http://www.arrayfire.com)
 ##
 # RPM package
 ##
-set(CPACK_RPM_PACKAGE_LICENSE "BSD")
+set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
 set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
+set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
+set(CPACK_RPM_PACKAGE_LICENSE "BSD")
+set(CPACK_RPM_PACKAGE_URL "${SITE_URL}")
+if(AF_WITH_GRAPHICS)
+    set(CPACK_RPM_PACKAGE_REQUIRES "fontconfig-devel, libX11, libXrandr, libXinerama, libXxf86vm, libXcursor, mesa-libGL-devel")
+endif()
 
-set(CPACK_PACKAGE_GROUP "Development/Libraries")
 ##
 # Source package
 ##
