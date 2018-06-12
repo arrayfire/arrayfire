@@ -37,13 +37,14 @@ void testFunction()
 
 void infoTest()
 {
+    int nDevices = 0;
+    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&nDevices));
+    ASSERT_EQ(true, nDevices>0);
+
     const char* ENV = getenv("AF_MULTI_GPU_TESTS");
     if(ENV && ENV[0] == '0') {
         testFunction<float>();
     } else {
-        int nDevices = 0;
-        ASSERT_EQ(AF_SUCCESS, af_get_device_count(&nDevices));
-
         int oldDevice = af::getDevice();
         for(int d = 0; d < nDevices; d++) {
             af::setDevice(d);
