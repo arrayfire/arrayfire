@@ -28,11 +28,13 @@ Array<outType> fft(const Array<inType> input, const double norm_factor,
 {
     dim4 pdims(1);
     computePaddedDims(pdims, input.dims(), npad, pad);
-    Array<outType> output = padArray<inType, outType>(input, pdims, scalar<outType>(0), norm_factor);
+    auto res = padArray(input, pdims, scalar<outType>(0));
 
-    fft_inplace<outType, rank, direction>(output);
+    fft_inplace<outType, rank, direction>(res);
+    if (norm_factor != 1.0)
+        multiply_inplace(res, norm_factor);
 
-    return output;
+    return res;
 }
 
 template<typename inType, typename outType, int rank>
@@ -51,16 +53,14 @@ Array<outType> fft_r2c(const Array<inType> input, const double norm_factor,
     if (is_pad) {
         dim4 pdims(1);
         computePaddedDims(pdims, input.dims(), npad, pad);
-        tmp = padArray<inType, inType>(input, pdims, scalar<inType>(0), norm_factor);
+        tmp = padArray(input, pdims, scalar<inType>(0));
     }
 
-    Array<outType> output = fft_r2c<outType, inType, rank>(tmp);
-    if (!is_pad && norm_factor != 1) {
-        // Normalize input because tmp was not normalized
-        multiply_inplace(output, norm_factor);
-    }
+    auto res = fft_r2c<outType, inType, rank>(tmp);
+    if (norm_factor != 1.0)
+        multiply_inplace(res, norm_factor);
 
-    return output;
+    return res;
 }
 
 template<typename inType, typename outType, int rank>
