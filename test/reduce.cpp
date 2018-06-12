@@ -24,6 +24,8 @@ using std::endl;
 using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::freeHost;
 
 
 template<typename T>
@@ -31,7 +33,7 @@ class Reduce : public ::testing::Test
 {
 };
 
-typedef ::testing::Types<float, double, af::cfloat, af::cdouble, uint, int, intl, uintl, uchar, short, ushort> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl, uchar, short, ushort> TestTypes;
 TYPED_TEST_CASE(Reduce, TestTypes);
 
 typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
@@ -42,12 +44,12 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
     if (noDoubleTests<Ti>()) return;
     if (noDoubleTests<To>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<int> > data;
     vector<vector<int> > tests;
     readTests<int,int,int> (pTestFile,numDims,data,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     vector<Ti> in(data[0].begin(), data[0].end());
 
@@ -102,7 +104,7 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
 
 
         // Delete
-        delete[] outData;
+        freeHost(outData);
         ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
     }
 
@@ -121,11 +123,11 @@ template<> struct promote_type<short , af_sum>       { typedef int  type; };
 template<> struct promote_type<ushort, af_sum>       { typedef uint type; };
 template<> struct promote_type<uchar , af_product>   { typedef uint type; };
 template<> struct promote_type<char  , af_product>   { typedef uint type; };
-template<> struct promote_type<short, af_product>    { typedef int  type; };
+template<> struct promote_type<short , af_product>   { typedef int  type; };
 template<> struct promote_type<ushort, af_product>   { typedef uint type; };
 
 #define REDUCE_TESTS(FN)                                                                    \
-    TYPED_TEST(Reduce,Test_##FN)                                                    \
+    TYPED_TEST(Reduce,Test_##FN)                                                            \
     {                                                                                       \
         reduceTest<TypeParam, typename promote_type<TypeParam, af_##FN>::type, af_##FN>(    \
             string(TEST_DIR"/reduce/"#FN".test")                                            \
@@ -138,7 +140,7 @@ REDUCE_TESTS(max);
 
 #undef REDUCE_TESTS
 #define REDUCE_TESTS(FN, OT)                        \
-    TYPED_TEST(Reduce,Test_##FN)            \
+    TYPED_TEST(Reduce,Test_##FN)                    \
     {                                               \
         reduceTest<TypeParam, OT, af_##FN>(         \
             string(TEST_DIR"/reduce/"#FN".test")    \
@@ -177,15 +179,20 @@ TEST(Reduce,Test_Reduce_Big1)
 //
 typedef af::array (*ReductionOp)(const af::array&, const int);
 
-using af::dim4;
-using af::iota;
-using af::constant;
-using af::sum;
-using af::min;
-using af::max;
+using af::NaN;
 using af::allTrue;
 using af::anyTrue;
+using af::constant;
 using af::count;
+using af::iota;
+using af::max;
+using af::min;
+using af::product;
+using af::randu;
+using af::round;
+using af::seq;
+using af::span;
+using af::sum;
 
 template<typename Ti, typename To, ReductionOp reduce>
 void cppReduceTest(string pTestFile)
@@ -193,16 +200,16 @@ void cppReduceTest(string pTestFile)
     if (noDoubleTests<Ti>()) return;
     if (noDoubleTests<To>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<int> > data;
     vector<vector<int> > tests;
     readTests<int,int,int> (pTestFile,numDims,data,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     vector<Ti> in(data[0].begin(), data[0].end());
 
-    af::array input(dims, &in.front());
+    array input(dims, &in.front());
 
     // Compare result
     for (int d = 0; d < (int)tests.size(); ++d) {
@@ -210,7 +217,7 @@ void cppReduceTest(string pTestFile)
         vector<To> currGoldBar(tests[d].begin(), tests[d].end());
 
         // Run sum
-        af::array output = reduce(input, d);
+        array output = reduce(input, d);
 
         // Get result
         To *outData = new To[dims.elements()];
@@ -223,7 +230,7 @@ void cppReduceTest(string pTestFile)
         }
 
         // Delete
-        delete[] outData;
+        freeHost(outData);
     }
 }
 
@@ -310,10 +317,10 @@ CPP_REDUCE_TESTS(count, count, float, unsigned);
 
 TEST(Reduce, Test_Product_Global)
 {
-    int num = 100;
-    af::array a = 1 + af::round(5 * af::randu(num, 1)) / 100;
+    const int num = 100;
+    array a = 1 + round(5 * randu(num, 1)) / 100;
 
-    float res = af::product<float>(a);
+    float res = product<float>(a);
     float *h_a = a.host<float>();
     float gold = 1;
 
@@ -322,15 +329,15 @@ TEST(Reduce, Test_Product_Global)
     }
 
     ASSERT_NEAR(gold, res, 1e-3);
-    delete[] h_a;
+    freeHost(h_a);
 }
 
 TEST(Reduce, Test_Sum_Global)
 {
-    int num = 10000;
-    af::array a = af::round(2 * af::randu(num, 1));
+    const int num = 10000;
+    array a = round(2 * randu(num, 1));
 
-    float res = af::sum<float>(a);
+    float res = sum<float>(a);
     float *h_a = a.host<float>();
     float gold = 0;
 
@@ -339,16 +346,16 @@ TEST(Reduce, Test_Sum_Global)
     }
 
     ASSERT_EQ(gold, res);
-    delete[] h_a;
+    freeHost(h_a);
 }
 
 TEST(Reduce, Test_Count_Global)
 {
-    int num = 10000;
-    af::array a = af::round(2 * af::randu(num, 1));
-    af::array b = a.as(b8);
+    const int num = 10000;
+    array a = round(2 * randu(num, 1));
+    array b = a.as(b8);
 
-    int res = af::count<int>(b);
+    int res = count<int>(b);
     char *h_b = b.host<char>();
     int gold = 0;
 
@@ -357,16 +364,16 @@ TEST(Reduce, Test_Count_Global)
     }
 
     ASSERT_EQ(gold, res);
-    delete[] h_b;
+    freeHost(h_b);
 }
 
 TEST(Reduce, Test_min_Global)
 {
     if (noDoubleTests<double>()) return;
 
-    int num = 10000;
-    af::array a = af::randu(num, 1, f64);
-    double res = af::min<double>(a);
+    const int num = 10000;
+    array a = randu(num, 1, f64);
+    double res = min<double>(a);
     double *h_a = a.host<double>();
     double gold = std::numeric_limits<double>::max();
 
@@ -377,14 +384,14 @@ TEST(Reduce, Test_min_Global)
     }
 
     ASSERT_EQ(gold, res);
-    delete[] h_a;
+    freeHost(h_a);
 }
 
 TEST(Reduce, Test_max_Global)
 {
-    int num = 10000;
-    af::array a = af::randu(num, 1);
-    float res = af::max<float>(a);
+    const int num = 10000;
+    array a = randu(num, 1);
+    float res = max<float>(a);
     float *h_a = a.host<float>();
     float gold = -std::numeric_limits<float>::max();
 
@@ -393,7 +400,7 @@ TEST(Reduce, Test_max_Global)
     }
 
     ASSERT_EQ(gold, res);
-    delete[] h_a;
+    freeHost(h_a);
 }
 
 
@@ -416,7 +423,7 @@ void typed_assert_eq<double>(double lhs, double rhs, bool both)
 }
 
 template<>
-void typed_assert_eq<af::cfloat>(af::cfloat lhs, af::cfloat rhs, bool both)
+void typed_assert_eq<cfloat>(cfloat lhs, cfloat rhs, bool both)
 {
     ASSERT_FLOAT_EQ(real(lhs), real(rhs));
     if(both) {
@@ -425,7 +432,7 @@ void typed_assert_eq<af::cfloat>(af::cfloat lhs, af::cfloat rhs, bool both)
 }
 
 template<>
-void typed_assert_eq<af::cdouble>(af::cdouble lhs, af::cdouble rhs, bool both)
+void typed_assert_eq<cdouble>(cdouble lhs, cdouble rhs, bool both)
 {
     ASSERT_DOUBLE_EQ(real(lhs), real(rhs));
     if(both) {
@@ -443,24 +450,24 @@ TYPED_TEST(Reduce, Test_All_Global)
         vector<TypeParam> h_vals(num, (TypeParam)true);
         array a(2, num/2, &h_vals.front());
 
-        TypeParam res = af::allTrue<TypeParam>(a);
+        TypeParam res = allTrue<TypeParam>(a);
         typed_assert_eq((TypeParam)true, res, false);
 
         h_vals[3] = false;
         a = array(2, num/2, &h_vals.front());
 
-        res = af::allTrue<TypeParam>(a);
+        res = allTrue<TypeParam>(a);
         typed_assert_eq((TypeParam)false, res, false);
     }
 
     // false value location test
-    int num = 10000;
+    const int num = 10000;
     vector<TypeParam> h_vals(num, (TypeParam)true);
     for(int i = 1; i < 10000; i+=100) {
         h_vals[i] = false;
         array a(2, num/2, &h_vals.front());
 
-        TypeParam res = af::allTrue<TypeParam>(a);
+        TypeParam res = allTrue<TypeParam>(a);
         typed_assert_eq((TypeParam)false, res, false);
 
         h_vals[i] = true;
@@ -477,24 +484,24 @@ TYPED_TEST(Reduce, Test_Any_Global)
         vector<TypeParam> h_vals(num, (TypeParam)false);
         array a(2, num/2, &h_vals.front());
 
-        TypeParam res = af::anyTrue<TypeParam>(a);
+        TypeParam res = anyTrue<TypeParam>(a);
         typed_assert_eq((TypeParam)false, res, false);
 
         h_vals[3] = true;
         a = array(2, num/2, &h_vals.front());
 
-        res = af::anyTrue<TypeParam>(a);
+        res = anyTrue<TypeParam>(a);
         typed_assert_eq((TypeParam)true, res, false);
     }
 
     // true value location test
-    int num = 10000;
+    const int num = 10000;
     vector<TypeParam> h_vals(num, (TypeParam)false);
     for(int i = 1; i < 10000; i+=100) {
         h_vals[i] = true;
         array a(2, num/2, &h_vals.front());
 
-        TypeParam res = af::anyTrue<TypeParam>(a);
+        TypeParam res = anyTrue<TypeParam>(a);
         typed_assert_eq((TypeParam)true, res, false);
 
         h_vals[i] = false;
@@ -504,11 +511,11 @@ TYPED_TEST(Reduce, Test_Any_Global)
 TEST(MinMax, NaN)
 {
     const int num = 10000;
-    af::array A = af::randu(num);
-    A(where(A < 0.25)) = af::NaN;
+    array A = randu(num);
+    A(where(A < 0.25)) = NaN;
 
-    float minval = af::min<float>(A);
-    float maxval = af::max<float>(A);
+    float minval = min<float>(A);
+    float maxval = max<float>(A);
 
     ASSERT_NE(std::isnan(minval), true);
     ASSERT_NE(std::isnan(maxval), true);
@@ -521,30 +528,32 @@ TEST(MinMax, NaN)
             ASSERT_GE(maxval, h_A[i]);
         }
     }
+
+    freeHost(h_A);
 }
 
 TEST(Count, NaN)
 {
     const int num = 10000;
-    af::array A = af::round(5 * af::randu(num));
-    af::array B = A;
+    array A = round(5 * randu(num));
+    array B = A;
 
-    A(where(A == 2)) = af::NaN;
+    A(where(A == 2)) = NaN;
 
-    ASSERT_EQ(af::count<uint>(A), af::count<uint>(B));
+    ASSERT_EQ(count<uint>(A), count<uint>(B));
 }
 
 TEST(Sum, NaN)
 {
     const int num = 10000;
-    af::array A = af::randu(num);
-    A(where(A < 0.25)) = af::NaN;
+    array A = randu(num);
+    A(where(A < 0.25)) = NaN;
 
-    float res = af::sum<float>(A);
+    float res = sum<float>(A);
 
     ASSERT_EQ(std::isnan(res), true);
 
-    res = af::sum<float>(A, 0);
+    res = sum<float>(A, 0);
     float *h_A = A.host<float>();
 
     float tmp = 0;
@@ -553,19 +562,20 @@ TEST(Sum, NaN)
     }
 
     ASSERT_NEAR(res/num, tmp/num, 1E-5);
+    freeHost(h_A);
 }
 
 TEST(Product, NaN)
 {
     const int num = 5;
-    af::array A = af::randu(num);
-    A(2) = af::NaN;
+    array A = randu(num);
+    A(2) = NaN;
 
-    float res = af::product<float>(A);
+    float res = product<float>(A);
 
     ASSERT_EQ(std::isnan(res), true);
 
-    res = af::product<float>(A, 1);
+    res = product<float>(A, 1);
     float *h_A = A.host<float>();
 
     float tmp = 1;
@@ -574,20 +584,21 @@ TEST(Product, NaN)
     }
 
     ASSERT_NEAR(res/num, tmp/num, 1E-5);
+    freeHost(h_A);
 }
 
 TEST(AnyAll, NaN)
 {
     const int num = 10000;
-    af::array A = (af::randu(num) > 0.5).as(f32);
-    af::array B = A;
+    array A = (randu(num) > 0.5).as(f32);
+    array B = A;
 
-    B(af::where(B == 0)) = af::NaN;
+    B(where(B == 0)) = NaN;
 
-    ASSERT_EQ(af::anyTrue<bool>(B), true);
-    ASSERT_EQ(af::allTrue<bool>(B), true);
-    ASSERT_EQ(af::anyTrue<bool>(A), true);
-    ASSERT_EQ(af::allTrue<bool>(A), false);
+    ASSERT_EQ(anyTrue<bool>(B), true);
+    ASSERT_EQ(allTrue<bool>(B), true);
+    ASSERT_EQ(anyTrue<bool>(A), true);
+    ASSERT_EQ(allTrue<bool>(A), false);
 }
 
 TEST(MaxAll, IndexedSmall)
@@ -595,10 +606,10 @@ TEST(MaxAll, IndexedSmall)
     const int num = 1000;
     const int st = 10;
     const int en = num - 100;
-    af::array a = af::randu(num);
-    float b = af::max<float>(a(af::seq(st, en)));
+    array a = randu(num);
+    float b = max<float>(a(seq(st, en)));
 
-    std::vector<float> ha(num);
+    vector<float> ha(num);
     a.host(&ha[0]);
 
     float res = ha[st];
@@ -614,10 +625,10 @@ TEST(MaxAll, IndexedBig)
     const int num = 100000;
     const int st = 1000;
     const int en = num - 1000;
-    af::array a = af::randu(num);
-    float b = af::max<float>(a(af::seq(st, en)));
+    array a = randu(num);
+    float b = max<float>(a(seq(st, en)));
 
-    std::vector<float> ha(num);
+    vector<float> ha(num);
     a.host(&ha[0]);
 
     float res = ha[st];
@@ -634,19 +645,19 @@ TEST(Reduce, KernelName)
     const int n = 100;
     const int b = 5;
 
-    array in = af::constant(0, m, n, b);
+    array in = constant(0, m, n, b);
     for (int i = 0; i < b; i++) {
-        array tmp = af::randu(m, n);
-        in(af::span, af::span, i) = tmp;
-        ASSERT_EQ(af::min<float>(in(af::span, af::span, i)),
-                  af::min<float>(tmp));
+        array tmp = randu(m, n);
+        in(span, span, i) = tmp;
+        ASSERT_EQ(min<float>(in(span, span, i)),
+                  min<float>(tmp));
     }
 }
 
 TEST(Reduce, AllSmallIndexed)
 {
-    int LEN = 1000;
-    array a = af::range(af::dim4(LEN, 2));
-    array b = a(af::seq(LEN/2), af::span);
-    ASSERT_EQ(af::max<float>(b), LEN/2-1);
+    const int len = 1000;
+    array a = af::range(dim4(len, 2));
+    array b = a(seq(len/2), span);
+    ASSERT_EQ(max<float>(b), len/2-1);
 }
