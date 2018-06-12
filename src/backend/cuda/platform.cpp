@@ -555,7 +555,7 @@ int DeviceManager::setActiveDevice(int device, int nId)
 
     int numDevices = cuDevices.size();
 
-    if (device > numDevices)
+    if (device >= numDevices)
         return -1;
 
     int old = getActiveDeviceId();
