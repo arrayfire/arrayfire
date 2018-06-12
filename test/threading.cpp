@@ -344,8 +344,9 @@ TEST(Threading, FFT_R2C)
 
     vector<std::thread> tests;
 
-    int numDevices = 1;
+    int numDevices = 0;
     ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+    ASSERT_EQ(true, numDevices>0);
 
     // Real to complex transforms
     INSTANTIATE_TEST(fft ,  R2C_Float, false,  float,  cfloat, string(TEST_DIR"/signal/fft_r2c.test") );
@@ -388,8 +389,9 @@ TEST(Threading, FFT_C2C)
 
     vector<std::thread> tests;
 
-    int numDevices = 1;
+    int numDevices = 0;
     ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+    ASSERT_EQ(true, numDevices>0);
 
     // complex to complex transforms
     INSTANTIATE_TEST(fft ,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft_c2c.test") );
@@ -437,8 +439,9 @@ TEST(Threading, FFT_ALL)
 
     vector<std::thread> tests;
 
-    int numDevices = 1;
+    int numDevices = 0;
     ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+    ASSERT_EQ(true, numDevices>0);
 
     // Real to complex transforms
     INSTANTIATE_TEST(fft ,  R2C_Float, false,  float,  cfloat, string(TEST_DIR"/signal/fft_r2c.test") );
@@ -576,8 +579,9 @@ TEST(Threading, BLAS)
 
     vector<std::thread> tests;
 
-    int numDevices = 1;
+    int numDevices = 0;
     ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+    ASSERT_EQ(true, numDevices>0);
 
     TEST_BLAS_FOR_TYPE(      float);
     TEST_BLAS_FOR_TYPE( af::cfloat);
@@ -606,8 +610,9 @@ TEST(Threading, Sparse)
 
     vector<std::thread> tests;
 
-    int numDevices = 1;
+    int numDevices = 0;
     ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+    ASSERT_EQ(true, numDevices>0);
 
     SPARSE_TESTS(  float, 1E-3);
     SPARSE_TESTS( cfloat, 1E-3);

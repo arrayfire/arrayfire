@@ -165,8 +165,9 @@ TEST(Solve, Threading)
 
     vector<std::thread> tests;
 
-    int numDevices = 1;
+    int numDevices = 0;
     ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+    ASSERT_EQ(true, numDevices>0);
 
     SOLVE_LU_TESTS_THREADING(float, 0.01);
     SOLVE_LU_TESTS_THREADING(cfloat, 0.01);
