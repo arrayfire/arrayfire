@@ -19,6 +19,7 @@
 #include <common/host_memory.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cstdio>
 #include <mutex>
 #include <sstream>
@@ -144,6 +145,18 @@ static inline string toString(T val)
     stringstream s;
     s << val;
     return s.str();
+}
+
+static inline
+int getMinSupportedCompute(int cudaMajorVer)
+{
+    // Vector of minimum supported compute versions
+    // for CUDA toolkit (i+1).* where i is the index
+    // of the vector
+    static const std::array<int,10> minSV{1, 1, 1, 1, 1, 1, 2, 2, 3, 3};
+
+    auto CVSize = minSV.size();
+    return (cudaMajorVer>CVSize ? minSV[CVSize-1] : minSV[cudaMajorVer-1]);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -496,16 +509,26 @@ DeviceManager::DeviceManager()
     CUDA_CHECK(cudaGetDeviceCount(&nDevices));
     if (nDevices == 0)
         throw runtime_error("No CUDA-Capable devices found");
-
     cuDevices.reserve(nDevices);
+
+    int cudaRtVer = 0;
+    CUDA_CHECK(cudaRuntimeGetVersion(&cudaRtVer));
+    int cudaMajorVer = cudaRtVer / 1000;
 
     for(int i = 0; i < nDevices; i++) {
         cudaDevice_t dev;
         cudaGetDeviceProperties(&dev.prop, i);
-        dev.flops = dev.prop.multiProcessorCount * compute2cores(dev.prop.major, dev.prop.minor) * dev.prop.clockRate;
-        dev.nativeId = i;
-        cuDevices.push_back(dev);
+        if (dev.prop.major<getMinSupportedCompute(cudaMajorVer)) {
+            continue;
+        } else {
+            dev.flops = dev.prop.multiProcessorCount *
+                        compute2cores(dev.prop.major, dev.prop.minor) *
+                        dev.prop.clockRate;
+            dev.nativeId = i;
+            cuDevices.push_back(dev);
+        }
     }
+    nDevices = cuDevices.size();
 
     sortDevices();
 
