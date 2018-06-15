@@ -25,31 +25,20 @@ using std::vector;
 using std::numeric_limits;
 using std::abs;
 
-dim4::dim4()
+dim4::dim4() : dims{0, 0, 0, 0}
 {
-    dims[0] = 0;
-    dims[1] = 0;
-    dims[2] = 0;
-    dims[3] = 0;
 }
 
 dim4::dim4( dim_t first,
             dim_t second,
             dim_t third,
-            dim_t fourth)
+            dim_t fourth) :
+  dims { first, second, third, fourth}
 {
-    dims[0] = first;
-    dims[1] = second;
-    dims[2] = third;
-    dims[3] = fourth;
 }
 
 dim4::dim4(const dim4& other)
-{
-    dims[0] = other.dims[0];
-    dims[1] = other.dims[1];
-    dims[2] = other.dims[2];
-    dims[3] = other.dims[3];
+  : dims{other.dims[0], other.dims[1], other.dims[2], other.dims[3]} {
 }
 
 dim4::dim4(const unsigned ndims_, const dim_t * const dims_)
