@@ -95,11 +95,9 @@ namespace kernel
             (ids[3] < in.dims[3]);
 
         Transform<Ti, To, af_add_t> transform;
-        Binary<To, af_add_t> mean_obj;
-        Binary<Tw, af_add_t> weight_obj;
 
-        To val = mean_obj.init();
-        Tw weight = weight_obj.init();
+        To val = Binary<To, af_add_t>::init();
+        Tw weight = Binary<Tw, af_add_t>::init();
 
         if (is_valid && id_dim_in < in.dims[dim]) {
             val = transform(*iptr);
@@ -280,11 +278,9 @@ namespace kernel
         int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
 
         Transform<Ti, To, af_add_t> transform;
-        Binary<To, af_add_t> mean_obj;
-        Binary<Tw, af_add_t> weight_obj;
 
-        To val = mean_obj.init();
-        Tw weight = weight_obj.init();
+        To val = Binary<To, af_add_t>::init();
+        Tw weight = Binary<Tw, af_add_t>::init();
 
         if (xid < lim) {
             val = transform(iptr[xid]);

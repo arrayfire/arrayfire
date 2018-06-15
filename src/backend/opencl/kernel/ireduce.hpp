@@ -67,7 +67,6 @@ namespace kernel
 
         if (entry.prog==0 && entry.ker==0) {
 
-            Binary<T, op> ireduce;
             ToNumStr<T> toNumStr;
 
             std::ostringstream options;
@@ -75,7 +74,7 @@ namespace kernel
                 << " -D dim=" << dim
                 << " -D DIMY=" << threads_y
                 << " -D THREADS_X=" << THREADS_X
-                << " -D init=" << toNumStr(ireduce.init())
+                << " -D init=" << toNumStr(Binary<T, op>::init())
                 << " -D " << binOpName<op>()
                 << " -D CPLX=" << af::iscplx<T>()
                 << " -D IS_FIRST=" << is_first;
@@ -177,14 +176,13 @@ namespace kernel
 
         if (entry.prog==0 && entry.ker==0) {
 
-            Binary<T, op> ireduce;
             ToNumStr<T> toNumStr;
 
             std::ostringstream options;
             options << " -D T=" << dtype_traits<T>::getName()
                     << " -D DIMX=" << threads_x
                     << " -D THREADS_PER_GROUP=" << THREADS_PER_GROUP
-                    << " -D init=" << toNumStr(ireduce.init())
+                    << " -D init=" << toNumStr(Binary<T, op>::init())
                     << " -D " << binOpName<op>()
                     << " -D CPLX=" << af::iscplx<T>()
                     << " -D IS_FIRST=" << is_first;

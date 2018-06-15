@@ -102,6 +102,10 @@ uint transform(Ti in)
 
 #ifdef MIN_OP
 
+#if CPLX
+    #define IS_NAN(in) !((in.x) == (in.x)) || !((in.y) == (in.y))
+#endif
+
 T transform(T in)
 {
     T val = init;
@@ -121,6 +125,10 @@ T binOp(T lhs, T rhs)
 #endif
 
 #ifdef MAX_OP
+
+#if CPLX
+    #define IS_NAN(in) !((in.x) == (in.x)) || !((in.y) == (in.y))
+#endif
 
 T transform(T in)
 {

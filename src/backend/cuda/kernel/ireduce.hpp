@@ -22,11 +22,30 @@ namespace cuda
 {
 namespace kernel
 {
+    template<typename T> __host__ __device__
+    static double cabs(const T& in) { return (double)in; }
 
-    template<typename T> __host__ __device__ double cabs(const T in) { return (double)in; }
-    static double __host__ __device__ cabs(const char in) { return (double)(in > 0); }
-    static double __host__ __device__ cabs(const cfloat &in) { return (double)abs(in); }
-    static double __host__ __device__ cabs(const cdouble &in) { return (double)abs(in); }
+    template<> __host__ __device__
+    double cabs<char>(const char& in) { return (double)(in > 0); }
+
+    template<> __host__ __device__
+    double cabs<cfloat>(const cfloat &in) { return (double)abs(in); }
+
+    template<> __host__ __device__
+    double cabs<cdouble>(const cdouble &in) { return (double)abs(in); }
+
+    template<typename T> __host__ __device__
+    static bool is_nan(const T& in) { return in != in; }
+
+    template<> __host__ __device__
+    bool is_nan<cfloat>(const cfloat &in) {
+        return in.x != in.x || in.y != in.y;
+    }
+
+    template<> __host__ __device__
+    bool is_nan<cdouble>(const cdouble &in) {
+        return in.x != in.x || in.y != in.y;
+    }
 
     template<af_op_t op, typename T>
     struct MinMaxOp
@@ -36,13 +55,15 @@ namespace kernel
         __host__ __device__ MinMaxOp(T val, uint idx) :
             m_val(val), m_idx(idx)
         {
+            if (is_nan(val)) {
+                m_val = Binary<T, op>::init();
+            }
         }
 
         __host__ __device__ void operator()(T val, uint idx)
         {
-            if (cabs(val) < cabs(m_val) ||
-                (cabs(val) == cabs(m_val) &&
-                 idx > m_idx)) {
+            if ((cabs(val) < cabs(m_val) ||
+                 (cabs(val) == cabs(m_val) && idx > m_idx))) {
                 m_val = val;
                 m_idx = idx;
             }
@@ -57,13 +78,15 @@ namespace kernel
         __host__ __device__ MinMaxOp(T val, uint idx) :
             m_val(val), m_idx(idx)
         {
+            if (is_nan(val)) {
+                m_val = Binary<T, af_max_t>::init();
+            }
         }
 
         __host__ __device__ void operator()(T val, uint idx)
         {
-            if (cabs(val) > cabs(m_val) ||
-                (cabs(val) == cabs(m_val) &&
-                 idx <= m_idx)) {
+            if ((cabs(val) > cabs(m_val) ||
+                 (cabs(val) == cabs(m_val) && idx <= m_idx))) {
                 m_val = val;
                 m_idx = idx;
             }
@@ -112,9 +135,7 @@ namespace kernel
             (ids[2] < in.dims[2]) &&
             (ids[3] < in.dims[3]);
 
-        Binary<T, op> ireduce;
-
-        T val = ireduce.init();
+        T val = Binary<T, op>::init();
         uint idx = id_dim_in;
 
         if (is_valid && id_dim_in < in.dims[dim]) {
@@ -304,9 +325,7 @@ namespace kernel
 
         int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
 
-        Binary<T, op> ireduce;
-
-        T val = ireduce.init();
+        T val = Binary<T, op>::init();
         uint idx = xid;
 
         if (xid < lim) {

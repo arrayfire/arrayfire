@@ -62,7 +62,6 @@ namespace kernel
 
         if (entry.prog==0 && entry.ker==0) {
 
-            Binary<To, op> scan;
             ToNumStr<To> toNumStr;
 
             std::ostringstream options;
@@ -73,7 +72,7 @@ namespace kernel
                     << " -D dim=" << dim
                     << " -D DIMY=" << threads_y
                     << " -D THREADS_X=" << THREADS_X
-                    << " -D init=" << toNumStr(scan.init())
+                    << " -D init=" << toNumStr(Binary<To, op>::init())
                     << " -D " << binOpName<op>()
                     << " -D CPLX=" << af::iscplx<Ti>()
                     << " -D calculateFlags=" << calculateFlags
