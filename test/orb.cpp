@@ -213,11 +213,7 @@ void orbTest(string pTestFile)
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(x));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(y));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(score));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(orientation));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(size));
+        ASSERT_EQ(AF_SUCCESS, af_release_features(feat));
         ASSERT_EQ(AF_SUCCESS, af_release_array(desc));
 
         delete[] outX;

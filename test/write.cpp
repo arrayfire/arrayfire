@@ -22,6 +22,7 @@ using std::cout;
 using std::endl;
 using af::cfloat;
 using af::cdouble;
+using af::freeHost;
 
 template<typename T>
 class Write : public ::testing::Test
@@ -65,9 +66,9 @@ void writeTest(af::dim4 dims)
         ASSERT_EQ(h_check2[i], 0) << "at: " << i << std::endl;
     }
 
-    delete [] a_host;
-    delete [] h_check1;
-    delete [] h_check2;
+    freeHost(a_host);
+    freeHost(h_check1);
+    freeHost(h_check2);
 }
 
 TYPED_TEST(Write, Vector0)
