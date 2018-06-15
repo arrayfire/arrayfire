@@ -52,7 +52,7 @@ AFAPI array approx2(const array &in, const array &pos0, const array &pos1,
    C++ Interface for fast fourier transform on one dimensional signals
 
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  odim0 is the length of output signals - used to either truncate or pad the input signals
    \return     the transformed array
 
@@ -64,7 +64,7 @@ AFAPI array fftNorm(const array& in, const double norm_factor, const dim_t odim0
    C++ Interface for fast fourier transform on two dimensional signals
 
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  odim0 is the length of output signals along first dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output signals along second dimension - used to either truncate/pad the input
    \return     the transformed array
@@ -77,7 +77,7 @@ AFAPI array fft2Norm(const array& in, const double norm_factor, const dim_t odim
    C++ Interface for fast fourier transform on three dimensional signals
 
    \param[in]  in is the input array and the output of 1D fourier transform on exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  odim0 is the length of output signals along first dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output signals along second dimension - used to either truncate/pad the input
    \param[in]  odim2 is the length of output signals along third dimension - used to either truncate/pad the input
@@ -92,7 +92,7 @@ AFAPI array fft3Norm(const array& in, const double norm_factor, const dim_t odim
    C++ Interface for fast fourier transform on one dimensional signals
 
    \param[inout]  in is the input array on entry and the output of 1D forward fourier transform on exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
 
    \note The input \p in must be complex
 
@@ -106,7 +106,7 @@ AFAPI void fftInPlace(array& in, const double norm_factor = 1);
    C++ Interface for fast fourier transform on two dimensional signals
 
    \param[inout]  in is the input array on entry and the output of 2D forward fourier transform on exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \return     the transformed array
 
    \note The input \p in must be complex
@@ -121,7 +121,7 @@ AFAPI void fft2InPlace(array& in, const double norm_factor = 1);
    C++ Interface for fast fourier transform on three dimensional signals
 
    \param[inout]  in is the input array on entry and the output of 3D forward fourier transform on exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \return     the transformed array
 
    \note The input \p in must be complex
@@ -180,7 +180,7 @@ AFAPI array fft3(const array& in, const dim_t odim0=0, const dim_t odim1=0, cons
    C++ Interface for fast fourier transform on any(1d, 2d, 3d) dimensional signals
 
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  outDims is an object of \ref dim4 that has the output array dimensions - used to either truncate or pad the input signals
    \return     the transformed array
 
@@ -219,7 +219,7 @@ AFAPI array dft(const array& in);
    C++ Interface for inverse fast fourier transform on one dimensional signals
 
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  odim0 is the length of output signals - used to either truncate or pad the input signals
    \return     the transformed array
 
@@ -231,7 +231,7 @@ AFAPI array ifftNorm(const array& in, const double norm_factor, const dim_t odim
    C++ Interface for inverse fast fourier transform on two dimensional signals
 
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  odim0 is the length of output signals along first dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output signals along second dimension - used to either truncate/pad the input
    \return     the transformed array
@@ -244,7 +244,7 @@ AFAPI array ifft2Norm(const array& in, const double norm_factor, const dim_t odi
    C++ Interface for inverse fast fourier transform on three dimensional signals
 
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  odim0 is the length of output signals along first dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output signals along second dimension - used to either truncate/pad the input
    \param[in]  odim2 is the length of output signals along third dimension - used to either truncate/pad the input
@@ -259,7 +259,7 @@ AFAPI array ifft3Norm(const array& in, const double norm_factor, const dim_t odi
    C++ Interface for fast fourier transform on one dimensional signals
 
    \param[inout]  in is the input array on entry and the output of 1D inverse fourier transform on exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
 
    \note The input \p in must be complex
 
@@ -273,7 +273,7 @@ AFAPI void ifftInPlace(array& in, const double norm_factor = 1);
    C++ Interface for fast fourier transform on two dimensional signals
 
    \param[inout]  in is the input array on entry and the output of 2D inverse fourier transform on exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \return     the transformed array
 
    \note The input \p in must be complex
@@ -288,7 +288,7 @@ AFAPI void ifft2InPlace(array& in, const double norm_factor = 1);
    C++ Interface for fast fourier transform on three dimensional signals
 
    \param[inout]  in is the input array on entry and the output of 3D inverse fourier transform on exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \return     the transformed array
 
    \note The input \p in must be complex
@@ -347,7 +347,7 @@ AFAPI array ifft3(const array& in, const dim_t odim0=0, const dim_t odim1=0, con
    C++ Interface for inverse fast fourier transform on any(1d, 2d, 3d) dimensional signals
 
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  outDims is an object of \ref dim4 that has the output array dimensions - used to either truncate or pad the input signals
    \return     the transformed array
 
@@ -388,7 +388,7 @@ AFAPI array idft(const array& in);
 
    \param[in]  in is a real array
    \param[in]  dims is the requested padded dimensions before the transform is applied
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \return     a complex array containing the non redundant parts of \p in along the first dimension.
 
    \note The first dimension of the output will be of size (dims[0] / 2) + 1. The remaining dimensions are unchanged.
@@ -406,7 +406,7 @@ array fftR2C(const array &in,
    C++ Interface for real to complex fast fourier transform for one dimensional signals
 
    \param[in]  in is a real array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \return     a complex array containing the non redundant parts of \p in along the first dimension.
 
    \note The first dimension of the output will be of size (in.dims(0) / 2) + 1. The remaining dimensions are unchanged.
@@ -424,7 +424,7 @@ array fftR2C(const array &in,
 
    \param[in]  in is a complex array containing only the non redundant parts of the signals
    \param[in]  is_odd is a flag signifying if the output should be even or odd size
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \tparam     rank signifies the dimensionality of the transform
    \return     A real array of size [2 * idim0 - 2 + is_odd, idim1, idim2, idim3] where idim{0,1,2,3} signify input dimensions
 
@@ -713,7 +713,7 @@ AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, c
 
    \param[out] out is the transformed array
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  odim0 is the length of output signals - used to either truncate or pad the input signals
    \return     \ref AF_SUCCESS if the fft transform is successful,
                otherwise an appropriate error code is returned.
@@ -727,7 +727,7 @@ AFAPI af_err af_fft(af_array *out, const af_array in, const double norm_factor, 
    C Interface for fast fourier transform on one dimensional signals
 
    \param[inout]  in is the input array on entry and the output of 1D forward fourier transform at exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \return     \ref AF_SUCCESS if the fft transform is successful,
                otherwise an appropriate error code is returned.
 
@@ -743,7 +743,7 @@ AFAPI af_err af_fft_inplace(af_array in, const double norm_factor);
 
    \param[out] out is the transformed array
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  odim0 is the length of output signals along first dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output signals along second dimension - used to either truncate/pad the input
    \return     \ref AF_SUCCESS if the fft transform is successful,
@@ -758,7 +758,7 @@ AFAPI af_err af_fft2(af_array *out, const af_array in, const double norm_factor,
    C Interface for fast fourier transform on two dimensional signals
 
    \param[inout]  in is the input array on entry and the output of 2D forward fourier transform on exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \return     \ref AF_SUCCESS if the fft transform is successful,
                otherwise an appropriate error code is returned.
 
@@ -774,7 +774,7 @@ AFAPI af_err af_fft2_inplace(af_array in, const double norm_factor);
 
    \param[out] out is the transformed array
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  odim0 is the length of output signals along first dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output signals along second dimension - used to either truncate/pad the input
    \param[in]  odim2 is the length of output signals along third dimension - used to either truncate/pad the input
@@ -790,7 +790,7 @@ AFAPI af_err af_fft3(af_array *out, const af_array in, const double norm_factor,
    C Interface for fast fourier transform on three dimensional signals
 
    \param[inout]  in is the input array on entry and the output of 3D forward fourier transform on exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \return     \ref AF_SUCCESS if the fft transform is successful,
                otherwise an appropriate error code is returned.
 
@@ -806,7 +806,7 @@ AFAPI af_err af_fft3_inplace(af_array in, const double norm_factor);
 
    \param[out] out is the transformed array
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  odim0 is the length of output signals - used to either truncate or pad the input signals
    \return     \ref AF_SUCCESS if the fft transform is successful,
                otherwise an appropriate error code is returned.
@@ -820,7 +820,7 @@ AFAPI af_err af_ifft(af_array *out, const af_array in, const double norm_factor,
    C Interface for fast fourier transform on one dimensional signals
 
    \param[inout]  in is the input array on entry and the output of 1D inverse fourier transform at exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \return     \ref AF_SUCCESS if the ifft transform is successful,
                otherwise an appropriate error code is returned.
 
@@ -836,7 +836,7 @@ AFAPI af_err af_ifft_inplace(af_array in, const double norm_factor);
 
    \param[out] out is the transformed array
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  odim0 is the length of output signals along first dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output signals along second dimension - used to either truncate/pad the input
    \return     \ref AF_SUCCESS if the fft transform is successful,
@@ -851,7 +851,7 @@ AFAPI af_err af_ifft2(af_array *out, const af_array in, const double norm_factor
    C Interface for fast fourier transform on two dimensional signals
 
    \param[inout]  in is the input array on entry and the output of 2D inverse fourier transform on exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \return     \ref AF_SUCCESS if the ifft transform is successful,
                otherwise an appropriate error code is returned.
 
@@ -867,7 +867,7 @@ AFAPI af_err af_ifft2_inplace(af_array in, const double norm_factor);
 
    \param[out] out is the transformed array
    \param[in]  in is the input array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  odim0 is the length of output signals along first dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output signals along second dimension - used to either truncate/pad the input
    \param[in]  odim2 is the length of output signals along third dimension - used to either truncate/pad the input
@@ -883,7 +883,7 @@ AFAPI af_err af_ifft3(af_array *out, const af_array in, const double norm_factor
    C Interface for fast fourier transform on three dimensional signals
 
    \param[inout]  in is the input array on entry and the output of 3D inverse fourier transform on exit
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \return     \ref AF_SUCCESS if the ifft transform is successful,
                otherwise an appropriate error code is returned.
 
@@ -900,7 +900,7 @@ AFAPI af_err af_ifft3_inplace(af_array in, const double norm_factor);
 
    \param[out] out is a complex array containing the non redundant parts of \p in.
    \param[in]  in is a real array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  pad0 is the length of output signals along first dimension - used to either truncate/pad the input
    \return     \ref AF_SUCCESS if the fft transform is successful,
                otherwise an appropriate error code is returned.
@@ -918,7 +918,7 @@ AFAPI af_err af_fft_r2c (af_array *out, const af_array in, const double norm_fac
 
    \param[out] out is a complex array containing the non redundant parts of \p in.
    \param[in]  in is a real array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  pad0 is the length of output signals along first dimension - used to either truncate/pad the input
    \param[in]  pad1 is the length of output signals along second dimension - used to either truncate/pad the input
    \return     \ref AF_SUCCESS if the fft transform is successful,
@@ -937,7 +937,7 @@ AFAPI af_err af_fft2_r2c(af_array *out, const af_array in, const double norm_fac
 
    \param[out] out is a complex array containing the non redundant parts of \p in.
    \param[in]  in is a real array
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  pad0 is the length of output signals along first dimension - used to either truncate/pad the input
    \param[in]  pad1 is the length of output signals along second dimension - used to either truncate/pad the input
    \param[in]  pad2 is the length of output signals along third dimension - used to either truncate/pad the input
@@ -957,7 +957,7 @@ AFAPI af_err af_fft3_r2c(af_array *out, const af_array in, const double norm_fac
 
    \param[out] out is a real array containing the output of the transform.
    \param[in]  in is a complex array containing only the non redundant parts of the signals.
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  is_odd is a flag signifying if the output should be even or odd size
    \return     \ref AF_SUCCESS if the fft transform is successful,
                otherwise an appropriate error code is returned.
@@ -976,7 +976,7 @@ AFAPI af_err af_fft_c2r (af_array *out, const af_array in, const double norm_fac
 
    \param[out] out is a real array containing the output of the transform.
    \param[in]  in is a complex array containing only the non redundant parts of the signals.
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  is_odd is a flag signifying if the output should be even or odd size
    \return     \ref AF_SUCCESS if the fft transform is successful,
                otherwise an appropriate error code is returned.
@@ -994,7 +994,7 @@ AFAPI af_err af_fft2_c2r(af_array *out, const af_array in, const double norm_fac
 
    \param[out] out is a real array containing the output of the transform.
    \param[in]  in is a complex array containing only the non redundant parts of the signals.
-   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
    \param[in]  is_odd is a flag signifying if the output should be even or odd size
    \return     \ref AF_SUCCESS if the fft transform is successful,
                otherwise an appropriate error code is returned.
