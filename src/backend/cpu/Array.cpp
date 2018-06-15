@@ -213,7 +213,7 @@ createEmptyArray(const dim4 &size)
 }
 
 template<typename T>
-Array<T> *initArray() { return new Array<T>(dim4(0, 0, 0, 0)); }
+Array<T> *initArray() { return new Array<T>(dim4()); }
 
 template<typename T>
 Array<T>
