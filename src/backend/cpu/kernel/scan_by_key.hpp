@@ -70,18 +70,18 @@ struct scan_dim_by_key<op, Ti, Tk, To, 0>
         // FIXME: Change the name to something better
         Binary<To, op> scan;
 
-        To out_val = scan.init();
+        To out_val = Binary<To, op>::init();
         Tk key_val = key[0];
 
         dim_t k = !inclusive_scan;
         if (!inclusive_scan) {
-            out[0] = scan.init();
+            out[0] = Binary<To, op>::init();
         }
 
         for (dim_t i = 0; i < idims[dim] - (!inclusive_scan); i++, k++) {
             To in_val = transform(in[i * istride]);
             if (key[k * kstride] != key_val) {
-                out_val = !inclusive_scan? scan.init() : in_val;
+                out_val = !inclusive_scan? Binary<To, op>::init() : in_val;
                 key_val = key[k * kstride];
             } else {
                 out_val = scan(in_val, out_val);

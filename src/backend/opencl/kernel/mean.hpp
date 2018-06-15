@@ -154,7 +154,6 @@ void mean_dim_launcher(Param out, Param owt,
 
     if (entry.prog==0 && entry.ker==0) {
 
-        Binary<To, af_add_t> mean;
         ToNumStr<To> toNumStr;
         ToNumStr<Tw> twNumStr;
         Transform<uint, Tw, af_add_t> transform_weight;
@@ -166,7 +165,7 @@ void mean_dim_launcher(Param out, Param owt,
             << " -D dim=" << dim
             << " -D DIMY=" << threads_y
             << " -D THREADS_X=" << THREADS_X
-            << " -D init_To=" << toNumStr(mean.init())
+            << " -D init_To=" << toNumStr(Binary<To, af_add_t>::init())
             << " -D init_Tw=" << twNumStr(transform_weight(0))
             << " -D one_Tw=" << twNumStr(transform_weight(1));
 
@@ -322,7 +321,6 @@ void mean_first_launcher(Param out, Param owt,
 
     if (entry.prog==0 && entry.ker==0) {
 
-        Binary<To, af_add_t> mean;
         ToNumStr<To> toNumStr;
         ToNumStr<Tw> twNumStr;
         Transform<uint, Tw, af_add_t> transform_weight;
@@ -333,7 +331,7 @@ void mean_first_launcher(Param out, Param owt,
             << " -D To=" << dtype_traits<To>::getName()
             << " -D DIMX=" << threads_x
             << " -D THREADS_PER_GROUP=" << THREADS_PER_GROUP
-            << " -D init_To=" << toNumStr(mean.init())
+            << " -D init_To=" << toNumStr(Binary<To, af_add_t>::init())
             << " -D init_Tw=" << twNumStr(transform_weight(0))
             << " -D one_Tw=" << twNumStr(transform_weight(1));
 
