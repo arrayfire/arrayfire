@@ -191,6 +191,7 @@ TEST(TopK, ValidationCheck_DimN)
     af_array out, idx, in;
     ASSERT_EQ(AF_SUCCESS, af_randu(&in, 2, dims, f32));
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_topk(&out, &idx, in, 10, 1, AF_TOPK_MAX));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(in));
 }
 
 TEST(TopK, ValidationCheck_DefaultDim)
@@ -199,6 +200,9 @@ TEST(TopK, ValidationCheck_DefaultDim)
     af_array out, idx, in;
     ASSERT_EQ(AF_SUCCESS, af_randu(&in, 4, dims, f32));
     ASSERT_EQ(AF_SUCCESS, af_topk(&out, &idx, in, 10, -1, AF_TOPK_MAX));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(in));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(out));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(idx));
 }
 
 

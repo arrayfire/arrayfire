@@ -244,6 +244,7 @@ TYPED_TEST(Sparse, Empty) {
     bool sparse = false;
     EXPECT_EQ(AF_SUCCESS, af_is_sparse(&sparse, ret));
     EXPECT_EQ(true, sparse);
+    EXPECT_EQ(AF_SUCCESS, af_release_array(ret));
 }
 
 TYPED_TEST(Sparse, EmptyDeepCopy) {

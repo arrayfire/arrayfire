@@ -24,9 +24,11 @@ using std::string;
 using std::cout;
 using std::endl;
 using std::abs;
+
 using af::cfloat;
 using af::cdouble;
 using af::dim4;
+using af::freeHost;
 
 template<typename T>
 class Triangle : public ::testing::Test { };
@@ -69,8 +71,8 @@ void triangleTester(const dim4 dims, bool is_upper, bool is_unit_diag=false)
         }
     }
 
-    delete[] h_in;
-    delete[] h_out;
+    freeHost(h_in);
+    freeHost(h_out);
 }
 
 TYPED_TEST(Triangle, Lower2DRect0)
