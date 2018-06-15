@@ -27,10 +27,10 @@ namespace TNJ
         shared_ptr<T> m_sptr;
         T *m_ptr;
         unsigned m_bytes;
-        bool m_linear_buffer;
         dim_t m_strides[4];
         dim_t m_dims[4];
         std::once_flag m_set_data_flag;
+        bool m_linear_buffer;
     public:
 
         BufferNode() : TNode<T>(0, 0, {})

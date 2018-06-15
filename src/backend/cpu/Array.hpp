@@ -120,8 +120,6 @@ namespace cpu
         explicit Array(af::dim4 dims, TNJ::Node_ptr n);
 
     public:
-
-
         Array(af::dim4 dims, af::dim4 strides, dim_t offset,
               const T * const in_data, bool is_device = false);
 
