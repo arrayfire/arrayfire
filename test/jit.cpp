@@ -47,7 +47,7 @@ TEST(JIT, CPP_JIT_HASH)
             ASSERT_EQ(hF1[i], valF1);
         }
 
-        delete[] hF1;
+        freeHost(hF1);
     }
 
     // Making sure a different kernel is generated
@@ -61,7 +61,7 @@ TEST(JIT, CPP_JIT_HASH)
             ASSERT_EQ(hF2[i], valF2);
         }
 
-        delete[] hF2;
+        freeHost(hF2);
     }
 }
 

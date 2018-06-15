@@ -61,6 +61,7 @@ void transformCoordinatesTest(string pTestFile)
         vector<T> outData(outEl);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
 
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
         const float thr = 1.f;
 
         for (dim_t elIter = 0; elIter < outEl; elIter++) {
@@ -69,7 +70,6 @@ void transformCoordinatesTest(string pTestFile)
     }
 
     if(tfArray  != 0) af_release_array(tfArray);
-    if(outArray != 0) af_release_array(outArray);
 }
 
 TYPED_TEST(TransformCoordinates, RotateMatrix)

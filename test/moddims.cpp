@@ -131,15 +131,17 @@ void moddimsArgsTest(string pTestFile)
 
     af_array inArray   = 0;
     af_array outArray  = 0;
+    af_array outArray2  = 0;
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     af::dim4 newDims(1);
     newDims[0] = dims[1];
     newDims[1] = dims[0]*dims[2];
     ASSERT_EQ(AF_SUCCESS, af_moddims(&outArray,inArray,0,newDims.get()));
-    ASSERT_EQ(AF_ERR_ARG, af_moddims(&outArray,inArray,newDims.ndims(),NULL));
+    ASSERT_EQ(AF_ERR_ARG, af_moddims(&outArray2,inArray,newDims.ndims(),NULL));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TYPED_TEST(Moddims,InvalidArgs)
