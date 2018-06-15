@@ -48,7 +48,7 @@ inline __device__ void load2ShrdMem(T * shrd, const T * const in,
         int gx, int gy,
         int inStride1, int inStride0)
 {
-    T val = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
+    T val = isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
     if (gx>=0 && gx<dim0 && gy>=0 && gy<dim1) {
         val = in[ lIdx(gx, gy, inStride1, inStride0) ];
     }
@@ -116,7 +116,7 @@ static __global__ void morphKernel(Param<T> out, CParam<T> in,
     __syncthreads();
 
     const T * d_filt = (const T *)cFilter;
-    T acc = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
+    T acc = isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
 #pragma unroll
     for(int wj=0; wj<windLen; ++wj) {
         int joff   = wj*windLen;
@@ -153,7 +153,7 @@ inline __device__ void load2ShrdVolume(T * shrd, const T * const in,
         int gx, int gy, int gz,
         int inStride2, int inStride1, int inStride0)
 {
-    T val = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
+    T val = isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
     if (gx>=0 && gx<dim0 &&
         gy>=0 && gy<dim1 &&
         gz>=0 && gz<dim2) {
@@ -212,7 +212,7 @@ static __global__ void morph3DKernel(Param<T> out, CParam<T> in, int nBBS)
     int k  = lz + halo;
 
     const T * d_filt = (const T *)cFilter;
-    T acc = isDilation ? Binary<T, af_max_t>().init() : Binary<T, af_min_t>().init();
+    T acc = isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
 #pragma unroll
     for(int wk=0; wk<windLen; ++wk) {
         int koff   = wk*se_area;

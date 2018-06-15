@@ -64,7 +64,6 @@ namespace kernel
         kc_entry_t entry = kernelCache(device, ref_name);
 
         if (entry.prog==0 && entry.ker==0) {
-            Binary<To, op> reduce;
             ToNumStr<To> toNumStr;
 
             std::ostringstream options;
@@ -74,7 +73,7 @@ namespace kernel
                     << " -D dim=" << dim
                     << " -D DIMY=" << threads_y
                     << " -D THREADS_X=" << THREADS_X
-                    << " -D init=" << toNumStr(reduce.init())
+                    << " -D init=" << toNumStr(Binary<To, op>::init())
                     << " -D " << binOpName<op>()
                     << " -D CPLX=" << af::iscplx<Ti>();
             if (std::is_same<Ti, double>::value ||
@@ -181,7 +180,6 @@ namespace kernel
 
         if (entry.prog==0 && entry.ker==0) {
 
-            Binary<To, op> reduce;
             ToNumStr<To> toNumStr;
 
             std::ostringstream options;
@@ -190,7 +188,7 @@ namespace kernel
                     << " -D T=To"
                     << " -D DIMX=" << threads_x
                     << " -D THREADS_PER_GROUP=" << THREADS_PER_GROUP
-                    << " -D init=" << toNumStr(reduce.init())
+                    << " -D init=" << toNumStr(Binary<To, op>::init())
                     << " -D " << binOpName<op>()
                     << " -D CPLX=" << af::iscplx<Ti>();
             if (std::is_same<Ti, double>::value ||
@@ -311,7 +309,7 @@ namespace kernel
             getQueue().enqueueReadBuffer(*tmp.get(), CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr.data());
 
             Binary<To, op> reduce;
-            To out = reduce.init();
+            To out = Binary<To, op>::init();
             for (int i = 0; i < (int)tmp_elements; i++) {
                 out = reduce(out, h_ptr[i]);
             }
@@ -324,7 +322,7 @@ namespace kernel
 
             Transform<Ti, To, op> transform;
             Binary<To, op> reduce;
-            To out = reduce.init();
+            To out = Binary<To, op>::init();
             To nanval_to = scalar<To>(nanval);
 
             for (int i = 0; i < (int)in_elements; i++) {

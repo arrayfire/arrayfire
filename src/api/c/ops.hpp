@@ -25,7 +25,7 @@ using namespace detail;
 template<typename T, af_op_t op>
 struct Binary
 {
-    __DH__ T init()
+    static __DH__ T init()
     {
         return detail::scalar<T>(0);
     }
@@ -39,7 +39,7 @@ struct Binary
 template<typename T>
 struct Binary<T, af_add_t>
 {
-    __DH__ T init()
+    static __DH__ T init()
     {
         return detail::scalar<T>(0);
     }
@@ -53,7 +53,7 @@ struct Binary<T, af_add_t>
 template<typename T>
 struct Binary<T, af_mul_t>
 {
-    __DH__ T init()
+    static __DH__ T init()
     {
         return detail::scalar<T>(1);
     }
@@ -67,7 +67,7 @@ struct Binary<T, af_mul_t>
 template<typename T>
 struct Binary<T, af_or_t>
 {
-    __DH__ T init()
+    static __DH__ T init()
     {
         return detail::scalar<T>(0);
     }
@@ -81,7 +81,7 @@ struct Binary<T, af_or_t>
 template<typename T>
 struct Binary<T, af_and_t>
 {
-    __DH__ T init()
+    static __DH__ T init()
     {
         return detail::scalar<T>(1);
     }
@@ -95,7 +95,7 @@ struct Binary<T, af_and_t>
 template<typename T>
 struct Binary<T, af_notzero_t>
 {
-    __DH__ T init()
+    static __DH__ T init()
     {
         return detail::scalar<T>(0);
     }
@@ -109,7 +109,7 @@ struct Binary<T, af_notzero_t>
 template<typename T>
 struct Binary<T, af_min_t>
 {
-    __DH__ T init()
+    static __DH__ T init()
     {
         return detail::maxval<T>();
     }
@@ -120,11 +120,10 @@ struct Binary<T, af_min_t>
     }
 };
 
-
 template<>
 struct Binary<char, af_min_t>
 {
-    __DH__ char init()
+    static __DH__ char init()
     {
         return 1;
     }
@@ -139,10 +138,10 @@ struct Binary<char, af_min_t>
     template<>                                  \
     struct Binary<T, af_min_t>                  \
     {                                           \
-        __DH__ T init()                         \
+        static __DH__ T init()                  \
         {                                       \
             return detail::scalar<T>(           \
-                detail::maxval<Tr>()         \
+                detail::maxval<Tr>()            \
                 );                              \
         }                                       \
                                                 \
@@ -150,7 +149,7 @@ struct Binary<char, af_min_t>
         {                                       \
             return detail::min(lhs, rhs);       \
         }                                       \
-    };                                          \
+    };
 
 SPECIALIZE_COMPLEX_MIN(cfloat, float)
 SPECIALIZE_COMPLEX_MIN(cdouble, double)
@@ -160,7 +159,7 @@ SPECIALIZE_COMPLEX_MIN(cdouble, double)
 template<typename T>
 struct Binary<T, af_max_t>
 {
-    __DH__ T init()
+    static __DH__ T init()
     {
         return detail::minval<T>();
     }
@@ -174,7 +173,7 @@ struct Binary<T, af_max_t>
 template<>
 struct Binary<char, af_max_t>
 {
-    __DH__ char init()
+    static __DH__ char init()
     {
         return 0;
     }
@@ -189,7 +188,7 @@ struct Binary<char, af_max_t>
     template<>                                  \
     struct Binary<T, af_max_t>                  \
     {                                           \
-        __DH__ T init()                         \
+        static __DH__ T init()                  \
         {                                       \
             return detail::scalar<T>(           \
                 detail::scalar<Tr>(0)           \
@@ -200,7 +199,7 @@ struct Binary<char, af_max_t>
         {                                       \
             return detail::max(lhs, rhs);       \
         }                                       \
-    };                                          \
+    };
 
 SPECIALIZE_COMPLEX_MAX(cfloat, float)
 SPECIALIZE_COMPLEX_MAX(cdouble, double)
@@ -221,7 +220,7 @@ struct Transform<Ti, To, af_min_t>
 {
     __DH__ To operator ()(Ti in)
     {
-        return (To) (IS_NAN(in) ? Binary<To, af_min_t>().init() : in);
+        return (To) (IS_NAN(in) ? Binary<To, af_min_t>::init() : in);
     }
 };
 
@@ -230,7 +229,7 @@ struct Transform<Ti, To, af_max_t>
 {
     __DH__ To operator ()(Ti in)
     {
-        return (To) (IS_NAN(in) ? Binary<To, af_max_t>().init() : in);
+        return (To) (IS_NAN(in) ? Binary<To, af_max_t>::init() : in);
     }
 };
 

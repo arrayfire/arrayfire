@@ -18,6 +18,7 @@
 #include <algorithm>
 
 using std::vector;
+using std::complex;
 using std::string;
 using std::cout;
 using std::endl;
@@ -508,7 +509,7 @@ TYPED_TEST(Reduce, Test_Any_Global)
     }
 }
 
-TEST(MinMax, NaN)
+TEST(MinMax, MinMaxNaN)
 {
     const int num = 10000;
     array A = randu(num);
@@ -530,6 +531,79 @@ TEST(MinMax, NaN)
     }
 
     freeHost(h_A);
+}
+
+TEST(MinMax, MinCplxNaN)
+{
+    float real_wnan_data[] = {
+        0.005f, NAN, -6.3f, NAN, -0.5f,
+        NAN, NAN, 0.2f, -1205.4f, 8.9f
+    };
+
+    float imag_wnan_data[] = {
+        NAN, NAN, -9.0f, -0.005f, -0.3f,
+        0.007f, NAN, 0.1f, NAN, 4.5f
+    };
+
+    int rows = 5;
+    int cols = 2;
+    array real_wnan(rows, cols, real_wnan_data);
+    array imag_wnan(rows, cols, imag_wnan_data);
+    array a = af::complex(real_wnan, imag_wnan);
+
+    float gold_min_real[] = { -0.5f, 0.2f };
+    float gold_min_imag[] = { -0.3f, 0.1f };
+
+    array min_val = af::min(a);
+
+    vector< complex<float> > h_min_val(cols);
+    min_val.host(&h_min_val[0]);
+
+    for (int i = 0; i < cols; i++) {
+        ASSERT_FLOAT_EQ(h_min_val[i].real(), gold_min_real[i]);
+        ASSERT_FLOAT_EQ(h_min_val[i].imag(), gold_min_imag[i]);
+    }
+}
+
+TEST(MinMax, MaxCplxNaN)
+{
+    // 4th element is unusually large to cover the case where
+    //  one part holds the largest value among the array,
+    //  and the other part is NaN.
+    // There's a possibility where the NaN is turned into 0
+    //  (since Binary<>::init() will initialize it to 0 in
+    //  for complex max op) during the comparisons, and so its
+    //  magnitude will determine that that element is the max,
+    //  whereas it should have been ignored since its other
+    //  part is NaN
+    float real_wnan_data[] = {
+        0.005f, NAN, -6.3f, NAN, -0.5f,
+        NAN, NAN, 0.2f, -1205.4f, 8.9f
+    };
+
+    float imag_wnan_data[] = {
+        NAN, NAN, -9.0f, -0.005f, -0.3f,
+        0.007f, NAN, 0.1f, NAN, 4.5f
+    };
+
+    int rows = 5;
+    int cols = 2;
+    array real_wnan(rows, cols, real_wnan_data);
+    array imag_wnan(rows, cols, imag_wnan_data);
+    array a = af::complex(real_wnan, imag_wnan);
+
+    float gold_max_real[] = { -6.3f, 8.9f };
+    float gold_max_imag[] = { -9.0f, 4.5f };
+
+    array max_val = af::max(a);
+
+    vector< complex<float> > h_max_val(cols);
+    max_val.host(&h_max_val[0]);
+
+    for (int i = 0; i < cols; i++) {
+        ASSERT_FLOAT_EQ(h_max_val[i].real(), gold_max_real[i]);
+        ASSERT_FLOAT_EQ(h_max_val[i].imag(), gold_max_imag[i]);
+    }
 }
 
 TEST(Count, NaN)

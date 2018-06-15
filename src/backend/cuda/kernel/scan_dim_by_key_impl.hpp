@@ -99,7 +99,7 @@ namespace kernel
         Transform<Ti, To, op> transform;
         Binary<To, op> binop;
 
-        const To init = binop.init();
+        const To init = Binary<To, op>::init();
         To val = init;
 
         const bool isLast = (tidy == (DIMY - 1));
@@ -254,7 +254,7 @@ namespace kernel
         Transform<Ti, To, op> transform;
         Binary<To, op> binop;
 
-        const To init = binop.init();
+        const To init = Binary<To, op>::init();
         To val = init;
 
         const bool isLast = (tidy == (DIMY - 1));
