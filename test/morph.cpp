@@ -493,7 +493,10 @@ TEST(Morph, UnsupportedKernel2D)
 
 #if defined(AF_CPU)
     ASSERT_EQ(AF_SUCCESS, af_dilate(&out, in, mask));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(out));
 #else
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_dilate(&out, in, mask));
 #endif
+    ASSERT_EQ(AF_SUCCESS, af_release_array(in));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(mask));
 }
