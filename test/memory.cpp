@@ -41,7 +41,7 @@ TEST(Memory, Scope)
         array a = randu(5, 5);
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
         ASSERT_EQ(lock_buffers, 1u);
@@ -52,7 +52,7 @@ TEST(Memory, Scope)
 
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 0u); // 0 because a is out of scope
@@ -103,7 +103,7 @@ void memAllocArrayScopeTest(int elements)
         array a = randu(elements, (af_dtype)dtype_traits<T>::af_type);
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
         ASSERT_EQ(lock_buffers, 1u);
@@ -113,7 +113,7 @@ void memAllocArrayScopeTest(int elements)
     }
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 0u); // 0 because a is out of scope
@@ -136,7 +136,7 @@ void memAllocPtrScopeTest(int elements)
         T *ptr = alloc<T>(elements);
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
         ASSERT_EQ(lock_buffers, 1u);
@@ -144,11 +144,11 @@ void memAllocPtrScopeTest(int elements)
         ASSERT_EQ(alloc_bytes, roundUpToStep(elements * sizeof(T)));
         ASSERT_EQ(lock_bytes, roundUpToStep(elements * sizeof(T)));
 
-        free(ptr);
+        af::free(ptr);
     }
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 0u); // 0 because a is out of scope
@@ -163,7 +163,7 @@ void memAllocPtrScopeTest(int elements)
         void *ptr = alloc(elements, (af_dtype)dtype_traits<T>::af_type);
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
         ASSERT_EQ(lock_buffers, 1u);
@@ -171,11 +171,11 @@ void memAllocPtrScopeTest(int elements)
         ASSERT_EQ(alloc_bytes, roundUpToStep(elements * sizeof(T)));
         ASSERT_EQ(lock_bytes, roundUpToStep(elements * sizeof(T)));
 
-        free(ptr);
+        af::free(ptr);
     }
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 0u); // 0 because a is out of scope
@@ -237,7 +237,7 @@ TEST(Memory, SingleSizeLoop)
             a = randu(5,5);
 
             deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                              &lock_bytes, &lock_buffers);
+                          &lock_bytes, &lock_buffers);
 
             ASSERT_EQ(alloc_buffers, 2u); //2 because a new one is created before a is destroyed
             ASSERT_EQ(lock_buffers, 1u);
@@ -271,7 +271,7 @@ TEST(Memory, LargeLoop)
 
         // Verify that new buffers are being allocated
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         // Limit to 10 to check before garbage collection
         if (i < 10) {
@@ -287,7 +287,7 @@ TEST(Memory, LargeLoop)
     size_t old_alloc_buffers = alloc_buffers;
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(old_alloc_bytes, alloc_bytes);
     ASSERT_EQ(old_alloc_buffers, alloc_buffers);
@@ -308,7 +308,7 @@ TEST(Memory, IndexingOffset)
     array a = randu(num);
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 1u);
@@ -319,7 +319,7 @@ TEST(Memory, IndexingOffset)
         array b = a(seq(1, num/2)); // Should just be an offset
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
         ASSERT_EQ(lock_buffers, 1u);
@@ -330,7 +330,7 @@ TEST(Memory, IndexingOffset)
 
     // b should not have deleted a
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 1u);
@@ -351,7 +351,7 @@ TEST(Memory, IndexingCopy)
     array a = randu(num);
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 1u);
@@ -363,7 +363,7 @@ TEST(Memory, IndexingCopy)
         array b = a(seq(0, num/2-1, 2));
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 2u);
         ASSERT_EQ(lock_buffers, 2u);
@@ -374,7 +374,7 @@ TEST(Memory, IndexingCopy)
 
     // b should not have deleted a
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 2u);
     ASSERT_EQ(lock_buffers, 1u);
@@ -395,7 +395,7 @@ TEST(Memory, Assign)
     array a = randu(num);
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 1u);
@@ -407,7 +407,7 @@ TEST(Memory, Assign)
         a(seq(num / 2)) = b;
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 2u);
         ASSERT_EQ(lock_buffers, 2u);
@@ -418,7 +418,7 @@ TEST(Memory, Assign)
 
     // b should not have deleted a
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 2u);
     ASSERT_EQ(lock_buffers, 1u);
@@ -440,7 +440,7 @@ TEST(Memory, AssignLoop)
     array a = randu(num, cols);
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 1u);
@@ -453,7 +453,7 @@ TEST(Memory, AssignLoop)
         a(span, i) = b;
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 2u); // 3 because you need another scratch space for b
         ASSERT_EQ(lock_buffers, 2u);
@@ -475,7 +475,7 @@ TEST(Memory, AssignRef)
     array a_ref = a;
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 1u);
@@ -488,7 +488,7 @@ TEST(Memory, AssignRef)
         a(seq(num / 2)) = b;
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 3u);
         ASSERT_EQ(lock_buffers, 3u);
@@ -499,7 +499,7 @@ TEST(Memory, AssignRef)
 
     // b should not have deleted a
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 3u);
     ASSERT_EQ(lock_buffers, 2u); // a_ref
@@ -522,7 +522,7 @@ TEST(Memory, AssignRefLoop)
     array a_ref = a;
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 1u);
@@ -535,7 +535,7 @@ TEST(Memory, AssignRefLoop)
         a(span, i) = b;
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 3u);
         ASSERT_EQ(lock_buffers, 3u);
@@ -546,7 +546,7 @@ TEST(Memory, AssignRefLoop)
 
     // b should not have deleted a
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 3u);
     ASSERT_EQ(lock_buffers, 2u); // a_ref
@@ -566,7 +566,7 @@ TEST(Memory, device)
         array a = randu(5, 5);
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
         ASSERT_EQ(lock_buffers, 1u);
@@ -576,7 +576,7 @@ TEST(Memory, device)
         a.device<float>();
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
         ASSERT_EQ(lock_buffers, 1u);
@@ -587,7 +587,7 @@ TEST(Memory, device)
     }
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 0u);
@@ -611,7 +611,7 @@ TEST(Memory, unlock)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&arr, &in[0], 1, &num, f32));
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 1u);
@@ -625,7 +625,7 @@ TEST(Memory, unlock)
 
         // No new memory should be allocated
         deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+                      &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
         ASSERT_EQ(lock_buffers, 1u);
@@ -639,7 +639,7 @@ TEST(Memory, unlock)
     deviceGC();
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+                  &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 0u);
     ASSERT_EQ(lock_buffers, 0u);
