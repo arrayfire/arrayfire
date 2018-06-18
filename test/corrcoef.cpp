@@ -17,7 +17,12 @@
 #include <algorithm>
 #include <testHelpers.hpp>
 
-using namespace af;
+using std::string;
+using std::vector;
+using af::array;
+using af::cfloat;
+using af::corrcoef;
+using af::dim4;
 
 template<typename T>
 class CorrelationCoefficient : public ::testing::Test
@@ -73,21 +78,21 @@ TYPED_TEST(CorrelationCoefficient, All)
     if (noDoubleTests<TypeParam>()) return;
     if (noDoubleTests<outType>()) return;
 
-    std::vector<af::dim4>      numDims;
-    std::vector<std::vector<int> >       in;
-    std::vector<std::vector<float> >  tests;
+    vector<dim4>          numDims;
+    vector<vector<int> >       in;
+    vector<vector<float> >  tests;
 
-    readTestsFromFile<int,float>(std::string(TEST_DIR "/corrcoef/mat_10x10_scalar.test"),
+    readTestsFromFile<int,float>(string(TEST_DIR "/corrcoef/mat_10x10_scalar.test"),
                                  numDims, in, tests);
 
-    std::vector<TypeParam> input1(in[0].begin(), in[0].end());
-    std::vector<TypeParam> input2(in[1].begin(), in[1].end());
+    vector<TypeParam> input1(in[0].begin(), in[0].end());
+    vector<TypeParam> input2(in[1].begin(), in[1].end());
 
     array a(numDims[0], &(input1.front()));
     array b(numDims[1], &(input2.front()));
     outType c = corrcoef<outType>(a, b);
 
-    std::vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
+    vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
     ASSERT_NEAR(::real(currGoldBar[0]), ::real(c), 1.0e-3);
     ASSERT_NEAR(::imag(currGoldBar[0]), ::imag(c), 1.0e-3);
 }

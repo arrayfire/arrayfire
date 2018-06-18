@@ -18,9 +18,11 @@
 #include <testHelpers.hpp>
 #include <typeinfo>
 
+using std::endl;
 using std::string;
 using std::vector;
 using std::abs;
+using af::array;
 using af::dim4;
 
 template<typename T>
@@ -35,7 +37,7 @@ typedef ::testing::Types<float, double> TestTypes;
 TYPED_TEST_CASE(Homography, TestTypes);
 
 template<typename T>
-af::array perspectiveTransform(af::dim4 inDims, af::array H)
+array perspectiveTransform(dim4 inDims, array H)
 {
     T d0 = (T)inDims[0];
     T d1 = (T)inDims[1];
@@ -46,6 +48,9 @@ template<typename T>
 void homographyTest(string pTestFile, const af_homography_type htype,
                     const bool rotate, const float size_ratio)
 {
+    using af::Pi;
+    using af::dtype_traits;
+
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
 
@@ -89,7 +94,7 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     af_array query_feat_y_idx = 0;
     af_features query_feat;
 
-    const float theta = af::Pi * 0.5f;
+    const float theta = Pi * 0.5f;
     const dim_t test_d0 = inDims[0][0] * size_ratio;
     const dim_t test_d1 = inDims[0][1] * size_ratio;
     const dim_t tDims[] = {test_d0, test_d1};
@@ -135,11 +140,11 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     int inliers = 0;
     ASSERT_EQ(AF_SUCCESS, af_homography(&H, &inliers, train_feat_x_idx, train_feat_y_idx,
                                         query_feat_x_idx, query_feat_y_idx, htype,
-                                        3.0f, 1000, (af_dtype) af::dtype_traits<T>::af_type));
+                                        3.0f, 1000, (af_dtype) dtype_traits<T>::af_type));
 
-    af::array HH(H);
+    array HH(H);
 
-    af::array t = perspectiveTransform<T>(inDims[0], HH);
+    array t = perspectiveTransform<T>(inDims[0], HH);
 
     T* gold_t = new T[8];
     for (int i = 0; i < 8; i++)
@@ -161,7 +166,7 @@ void homographyTest(string pTestFile, const af_homography_type htype,
 
     for (int elIter = 0; elIter < 8; elIter++) {
         ASSERT_LE(fabs(out_t[elIter] - gold_t[elIter]) / tDims[elIter & 1], 0.25f)
-            << "at: " << elIter << std::endl;
+            << "at: " << elIter << endl;
     }
 
     delete[] gold_t;
@@ -204,6 +209,10 @@ void homographyTest(string pTestFile, const af_homography_type htype,
 
 ///////////////////////////////////// CPP ////////////////////////////////
 //
+
+using af::features;
+using af::loadImage;
+
 TEST(Homography, CPP)
 {
     if (noImageIOTests()) return;
@@ -218,35 +227,35 @@ TEST(Homography, CPP)
 
     const float size_ratio = 0.5f;
 
-    af::array train_img = af::loadImage(inFiles[0].c_str(), false);
-    af::array query_img = af::resize(size_ratio, train_img);
-    af::dim4 tDims = train_img.dims();
+    array train_img = loadImage(inFiles[0].c_str(), false);
+    array query_img = resize(size_ratio, train_img);
+    dim4 tDims = train_img.dims();
 
-    af::features feat_train, feat_query;
-    af::array desc_train, desc_query;
+    features feat_train, feat_query;
+    array desc_train, desc_query;
     orb(feat_train, desc_train, train_img, 20, 2000, 1.2, 8, true);
     orb(feat_query, desc_query, query_img, 20, 2000, 1.2, 8, true);
 
-    af::array idx, dist;
-    af::hammingMatcher(idx, dist, desc_train, desc_query, 0, 1);
+    array idx, dist;
+    hammingMatcher(idx, dist, desc_train, desc_query, 0, 1);
 
-    af::array train_idx = where(dist < 30);
-    af::array query_idx = idx(train_idx);
+    array train_idx = where(dist < 30);
+    array query_idx = idx(train_idx);
 
-    af::array feat_train_x = feat_train.getX()(train_idx);
-    af::array feat_train_y = feat_train.getY()(train_idx);
-    af::array feat_train_score = feat_train.getScore()(train_idx);
-    af::array feat_train_orientation = feat_train.getOrientation()(train_idx);
-    af::array feat_train_size = feat_train.getSize()(train_idx);
-    af::array feat_query_x = feat_query.getX()(query_idx);
-    af::array feat_query_y = feat_query.getY()(query_idx);
-    af::array feat_query_score = feat_query.getScore()(query_idx);
-    af::array feat_query_orientation = feat_query.getOrientation()(query_idx);
-    af::array feat_query_size = feat_query.getSize()(query_idx);
+    array feat_train_x = feat_train.getX()(train_idx);
+    array feat_train_y = feat_train.getY()(train_idx);
+    array feat_train_score = feat_train.getScore()(train_idx);
+    array feat_train_orientation = feat_train.getOrientation()(train_idx);
+    array feat_train_size = feat_train.getSize()(train_idx);
+    array feat_query_x = feat_query.getX()(query_idx);
+    array feat_query_y = feat_query.getY()(query_idx);
+    array feat_query_score = feat_query.getScore()(query_idx);
+    array feat_query_orientation = feat_query.getOrientation()(query_idx);
+    array feat_query_size = feat_query.getSize()(query_idx);
 
-    af::array H;
+    array H;
     int inliers = 0;
-    af::homography(H, inliers, feat_train_x, feat_train_y, feat_query_x, feat_query_y, AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
+    homography(H, inliers, feat_train_x, feat_train_y, feat_query_x, feat_query_y, AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
 
     float* gold_t = new float[8];
     for (int i = 0; i < 8; i++)
@@ -256,14 +265,14 @@ TEST(Homography, CPP)
     gold_t[5] = tDims[0] * size_ratio;
     gold_t[6] = tDims[0] * size_ratio;
 
-    af::array t = perspectiveTransform<float>(train_img.dims(), H);
+    array t = perspectiveTransform<float>(train_img.dims(), H);
 
     float* out_t = new float[4*2];
     t.host(out_t);
 
     for (int elIter = 0; elIter < 8; elIter++) {
         ASSERT_LE(fabs(out_t[elIter] - gold_t[elIter]) / tDims[elIter & 1], 0.1f)
-            << "at: " << elIter << std::endl;
+            << "at: " << elIter << endl;
     }
 
     delete[] gold_t;

@@ -14,6 +14,8 @@
 #include <testHelpers.hpp>
 
 using std::vector;
+using af::array;
+using af::constant;
 
 TEST(BasicTests, constant1000x1000)
 {
@@ -214,7 +216,7 @@ TEST(BasicArrayTests, constant10x10)
 
     dim_t dim_size = 10;
     double valA = 3.14;
-    af::array a = af::constant(valA, dim_size, dim_size, f32);
+    array a = constant(valA, dim_size, dim_size, f32);
 
     vector<float> h_a(dim_size * dim_size, 0);
     a.host(&h_a.front());
@@ -237,7 +239,7 @@ TEST(BasicTests, constant100x100_CPP)
 
     double valA = 4.9;
     dim4 dims(d[0], d[1]);
-    af::array a = constant(valA, dims);
+    array a = constant(valA, dims);
 
     vector<float> h_a(dim_size * dim_size, 0);
     a.host((void**)&h_a[0]);
@@ -262,13 +264,13 @@ TEST(BasicTests, AdditionSameType_CPP)
     double valB = 5.7;
     double  valCf = valA + valB;
 
-    af::array a32 = constant(valA, dims, f32);
-    af::array b32 = constant(valB, dims, f32);
-    af::array c32 = a32 + b32;
+    array a32 = constant(valA, dims, f32);
+    array b32 = constant(valB, dims, f32);
+    array c32 = a32 + b32;
 
-    af::array a64 = constant(valA, dims, f64);
-    af::array b64 = constant(valB, dims, f64);
-    af::array c64 = a64 + b64;
+    array a64 = constant(valA, dims, f64);
+    array b64 = constant(valB, dims, f64);
+    array c64 = a64 + b64;
 
     vector<float>  h_cf32 (dim_size * dim_size);
     vector<double> h_cf64 (dim_size * dim_size);
@@ -301,9 +303,9 @@ TEST(BasicTests, Additionf32f64_CPP)
     double valB = 5.7;
     double valC = valA + valB;
 
-    af::array a = constant(valA, dims);
-    af::array b = constant(valB, dims, f64);
-    af::array c = a + b;
+    array a = constant(valA, dims);
+    array b = constant(valB, dims, f64);
+    array c = a + b;
 
     vector<double> h_c(dim_size * dim_size);
     c.host((void**)&h_c[0]);

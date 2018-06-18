@@ -15,11 +15,16 @@
 #include <vector>
 #include <testHelpers.hpp>
 
+using std::abs;
+using std::endl;
 using std::string;
 using std::vector;
-using std::abs;
+using af::allTrue;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class Transpose : public ::testing::Test
@@ -49,21 +54,21 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=N
     if (noDoubleTests<T>())
         return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<T> >   in;
     vector<vector<T> >   tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     af_array outArray   = 0;
     af_array inArray    = 0;
     T *outData;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     // check if the test is for indexed Array
     if (isSubRef) {
-        af::dim4 newDims(dims[1]-4,dims[0]-4,dims[2],dims[3]);
+        dim4 newDims(dims[1]-4,dims[0]-4,dims[2],dims[3]);
         af_array subArray = 0;
         ASSERT_EQ(AF_SUCCESS, af_index(&subArray,inArray,seqv->size(),&seqv->front()));
         ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray,subArray, false));
@@ -84,7 +89,7 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=N
         vector<T> currGoldBar   = tests[testIter];
         size_t nElems        = currGoldBar.size();
         for (size_t elIter=0; elIter<nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< std::endl;
+            ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< endl;
         }
     }
 
@@ -155,17 +160,17 @@ TYPED_TEST(Transpose,SubRefBatch)
 template<typename T>
 void trsCPPTest(string pFileName)
 {
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<T> >   in;
     vector<vector<T> >   tests;
     readTests<T, T, int>(pFileName, numDims, in, tests);
-    af::dim4 dims = numDims[0];
+    dim4 dims = numDims[0];
 
     if (noDoubleTests<T>()) return;
 
-    af::array input(dims, &(in[0].front()));
-    af::array output = af::transpose(input);
+    array input(dims, &(in[0].front()));
+    array output = transpose(input);
 
     T *outData = new T[dims.elements()];
     output.host((void*)outData);
@@ -174,7 +179,7 @@ void trsCPPTest(string pFileName)
         vector<T> currGoldBar = tests[testIter];
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter << std::endl;
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter << endl;
         }
     }
 
@@ -195,15 +200,15 @@ TEST(Transpose, CPP_f32)
 template<typename T>
 void trsCPPConjTest(dim_t d0, dim_t d1 = 1, dim_t d2 = 1, dim_t d3 = 1)
 {
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
-    af::dim4 dims(d0, d1, d2, d3);
+    dim4 dims(d0, d1, d2, d3);
 
     if (noDoubleTests<T>()) return;
 
-    af::array input = randu(dims, (af_dtype) af::dtype_traits<T>::af_type);
-    af::array output_t = af::transpose(input, false);
-    af::array output_c = af::transpose(input, true);
+    array input = randu(dims, (af_dtype) dtype_traits<T>::af_type);
+    array output_t = transpose(input, false);
+    array output_c = transpose(input, true);
 
     T *tData  = new T[dims.elements()];
     T *cData = new T[dims.elements()];
@@ -212,8 +217,8 @@ void trsCPPConjTest(dim_t d0, dim_t d1 = 1, dim_t d2 = 1, dim_t d3 = 1)
 
     size_t nElems = dims.elements();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_NEAR(real(tData[elIter]), real(cData[elIter]), 1e-6)<< "at: " << elIter << std::endl;
-        ASSERT_NEAR(-imag(tData[elIter]), imag(cData[elIter]), 1e-6)<< "at: " << elIter << std::endl;
+        ASSERT_NEAR(real(tData[elIter]), real(cData[elIter]), 1e-6)<< "at: " << elIter << endl;
+        ASSERT_NEAR(-imag(tData[elIter]), imag(cData[elIter]), 1e-6)<< "at: " << elIter << endl;
     }
 
     // cleanup
@@ -240,25 +245,29 @@ TEST(Transpose, MaxDim)
 {
     const size_t largeDim = 65535 * 33 + 1;
 
-    af::array input  = af::range(af::dim4(2, largeDim, 1, 1));
-    af::array gold   = af::range(af::dim4(largeDim, 2, 1, 1), 1);
-    af::array output = af::transpose(input);
+    array input  = range(dim4(2, largeDim, 1, 1));
+    array gold   = range(dim4(largeDim, 2, 1, 1), 1);
+    array output = transpose(input);
 
     ASSERT_EQ(output.dims(0), (int)largeDim);
     ASSERT_EQ(output.dims(1), 2);
-    ASSERT_TRUE(af::allTrue<bool>(output == gold));
+    ASSERT_TRUE(allTrue<bool>(output == gold));
 
-    input  = af::range(af::dim4(2, 5, 1, largeDim));
-    gold   = af::range(af::dim4(5, 2, 1, largeDim), 1);
-    output = af::transpose(input);
+    input  = range(dim4(2, 5, 1, largeDim));
+    gold   = range(dim4(5, 2, 1, largeDim), 1);
+    output = transpose(input);
 
-    ASSERT_TRUE(af::allTrue<bool>(output == gold));
+    ASSERT_TRUE(allTrue<bool>(output == gold));
 }
 
 
 TEST(Transpose, GFOR)
 {
-    using namespace af;
+    using af::constant;
+    using af::max;
+    using af::seq;
+    using af::span;
+
     dim4 dims = dim4(100, 100, 3);
     array A = round(100 * randu(dims));
     array B = constant(0, 100, 100, 3);

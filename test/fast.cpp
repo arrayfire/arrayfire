@@ -18,9 +18,10 @@
 #include <testHelpers.hpp>
 #include <typeinfo>
 
+using std::abs;
+using std::endl;
 using std::string;
 using std::vector;
-using std::abs;
 using af::dim4;
 
 typedef struct
@@ -131,11 +132,11 @@ void fastTest(string pTestFile, bool nonmax)
         std::sort(gold_feat.begin(), gold_feat.end(), feat_cmp);
 
         for (int elIter = 0; elIter < (int)nElems; elIter++) {
-            ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << std::endl;
-            ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << std::endl;
-            ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << std::endl;
-            ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << std::endl;
-            ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << std::endl;
+            ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << endl;
+            ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << endl;
+            ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << endl;
+            ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << endl;
+            ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << endl;
         }
 
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
@@ -170,6 +171,10 @@ void fastTest(string pTestFile, bool nonmax)
 
 /////////////////////////////////// CPP ////////////////////////////////
 
+using af::array;
+using af::features;
+using af::loadImage;
+
 TEST(FloatFAST, CPP)
 {
     if (noDoubleTests<float>()) return;
@@ -182,9 +187,9 @@ TEST(FloatFAST, CPP)
     readImageTests(string(TEST_DIR"/fast/square_nonmax_float.test"), inDims, inFiles, gold);
     inFiles[0].insert(0,string(TEST_DIR"/fast/"));
 
-    af::array in = af::loadImage(inFiles[0].c_str(), false);
+    array in = loadImage(inFiles[0].c_str(), false);
 
-    af::features out = fast(in, 20.0f, 9, true, 0.05f, 3);
+    features out = fast(in, 20.0f, 9, true, 0.05f, 3);
 
     float * outX           = new float[gold[0].size()];
     float * outY           = new float[gold[1].size()];
@@ -207,11 +212,11 @@ TEST(FloatFAST, CPP)
     std::sort(gold_feat.begin(), gold_feat.end(), feat_cmp);
 
     for (unsigned elIter = 0; elIter < out.getNumFeatures(); elIter++) {
-        ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << std::endl;
-        ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << std::endl;
-        ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << std::endl;
-        ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << std::endl;
-        ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << endl;
+        ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << endl;
+        ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << endl;
+        ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << endl;
+        ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << endl;
     }
 
     delete[] outX;

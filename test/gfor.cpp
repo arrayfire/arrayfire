@@ -18,11 +18,16 @@
 
 using std::vector;
 using std::string;
-using std::cout;
 using std::endl;
+using af::array;
 using af::cfloat;
 using af::cdouble;
-using namespace af;
+using af::constant;
+using af::freeHost;
+using af::gforSet;
+using af::seq;
+using af::span;
+using af::randu;
 
 TEST(GFOR, Assign_Scalar_Span)
 {
@@ -471,7 +476,6 @@ TEST(BatchFunc, 4D_2_3)
 
 TEST(ASSIGN, ISSUE_1127)
 {
-    using namespace af;
     array orig = randu(512, 768, 3);
     array vert = randu(512, 768, 3);
     array horiz = randu(512, 768, 3);
@@ -492,8 +496,8 @@ TEST(ASSIGN, ISSUE_1127)
     out1(seq(0,rows-1,2), seq(1,cols-1,2), span) = horiz;
     out1(seq(1,rows-1,2), seq(1,cols-1,2), span) = diag;
 
-    std::vector<float> hout0(out0.elements());
-    std::vector<float> hout1(out1.elements());
+    vector<float> hout0(out0.elements());
+    vector<float> hout1(out1.elements());
 
     out0.host(&hout0[0]);
     out1.host(&hout1[0]);

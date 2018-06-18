@@ -22,8 +22,12 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
+using af::range;
 
 template<typename T>
 class Range : public ::testing::Test
@@ -48,11 +52,11 @@ void rangeTest(const uint x, const uint y, const uint z, const uint w, const uin
 {
     if (noDoubleTests<T>()) return;
 
-    af::dim4 idims(x, y, z, w);
+    dim4 idims(x, y, z, w);
 
     af_array outArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_range(&outArray, idims.ndims(), idims.get(), dim, (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_range(&outArray, idims.ndims(), idims.get(), dim, (af_dtype) dtype_traits<T>::af_type));
 
     // Get result
     T* outData = new T[idims.elements()];
@@ -77,7 +81,7 @@ void rangeTest(const uint x, const uint y, const uint z, const uint w, const uin
                                  + z * idims[0] * idims[1]
                                  + y * idims[0] + x;
 
-                    ASSERT_EQ(val, outData[idx]) << "at: " << idx << std::endl;
+                    ASSERT_EQ(val, outData[idx]) << "at: " << idx << endl;
                 }
             }
         }
@@ -89,10 +93,10 @@ void rangeTest(const uint x, const uint y, const uint z, const uint w, const uin
     if(outArray  != 0) af_release_array(outArray);
 }
 
-#define RANGE_INIT(desc, x, y, z, w, rep)                                                    \
-    TYPED_TEST(Range, desc)                                                                  \
-    {                                                                                       \
-        rangeTest<TypeParam>(x, y, z, w, rep);                                               \
+#define RANGE_INIT(desc, x, y, z, w, rep)                               \
+    TYPED_TEST(Range, desc)                                             \
+    {                                                                   \
+        rangeTest<TypeParam>(x, y, z, w, rep);                          \
     }
 
     RANGE_INIT(Range1D0, 100,  1, 1, 1, 0);
@@ -126,8 +130,8 @@ TEST(Range, CPP)
     const unsigned w = 2;
     const unsigned dim = 2;
 
-    af::dim4 idims(x, y, z, w);
-    af::array output = af::range(x, y, z, w, dim, f32);
+    dim4 idims(x, y, z, w);
+    array output = range(x, y, z, w, dim, f32);
 
     // Get result
     float* outData = new float[idims.elements()];
@@ -151,7 +155,7 @@ TEST(Range, CPP)
                     dim_t idx = (w * idims[0] * idims[1] * idims[2]) +
                                    (z * idims[0] * idims[1]) +
                                    (y * idims[0]) + x;
-                    ASSERT_EQ(val, outData[idx]) << "at: " << idx << std::endl;
+                    ASSERT_EQ(val, outData[idx]) << "at: " << idx << endl;
                 }
             }
         }

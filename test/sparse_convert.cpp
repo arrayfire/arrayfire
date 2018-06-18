@@ -20,17 +20,18 @@
 
 using std::vector;
 using std::string;
-using std::cout;
-using std::endl;
 using std::abs;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::max;
 
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 
 template<typename T>
-af::array makeSparse(af::array A, int factor)
+array makeSparse(array A, int factor)
 {
     A = floor(A * 1000);
     A = A * ((A % factor) == 0) / 1000;
@@ -38,28 +39,28 @@ af::array makeSparse(af::array A, int factor)
 }
 
 template<>
-af::array makeSparse<cfloat>(af::array A, int factor)
+array makeSparse<cfloat>(array A, int factor)
 {
-    af::array r = real(A);
+    array r = real(A);
     r = floor(r * 1000);
     r = r * ((r % factor) == 0) / 1000;
 
-    af::array i = r / 2;
+    array i = r / 2;
 
-    A = af::complex(r, i);
+    A = complex(r, i);
     return A;
 }
 
 template<>
-af::array makeSparse<cdouble>(af::array A, int factor)
+array makeSparse<cdouble>(array A, int factor)
 {
-    af::array r = real(A);
+    array r = real(A);
     r = floor(r * 1000);
     r = r * ((r % factor) == 0) / 1000;
 
-    af::array i = r / 2;
+    array i = r / 2;
 
-    A = af::complex(r, i);
+    A = complex(r, i);
     return A;
 }
 
@@ -68,18 +69,18 @@ void sparseConvertTester(const int m, const int n, int factor)
 {
     if (noDoubleTests<T>()) return;
 
-    af::array A = cpu_randu<T>(af::dim4(m, n));
+    array A = cpu_randu<T>(dim4(m, n));
 
     A = makeSparse<T>(A, factor);
 
     // Create Sparse Array of type src and dest From Dense
-    af::array sA = af::sparse(A, src);
+    array sA = sparse(A, src);
 
     // Convert src to dest format and dest to src
-    af::array s2d = sparseConvertTo(sA, dest);
+    array s2d = sparseConvertTo(sA, dest);
 
     // Create the dest type from dense - gold
-    af::array dA = af::sparse(A, dest);
+    array dA = sparse(A, dest);
 
     // Verify nnZ
     dim_t dNNZ   = sparseGetNNZ(dA);
@@ -94,21 +95,21 @@ void sparseConvertTester(const int m, const int n, int factor)
     ASSERT_EQ(dType, s2dType);
 
     // Get the individual arrays and verify equality
-    af::array dValues = sparseGetValues(dA);
-    af::array dRowIdx = sparseGetRowIdx(dA);
-    af::array dColIdx = sparseGetColIdx(dA);
+    array dValues = sparseGetValues(dA);
+    array dRowIdx = sparseGetRowIdx(dA);
+    array dColIdx = sparseGetColIdx(dA);
 
-    af::array s2dValues = sparseGetValues(s2d);
-    af::array s2dRowIdx = sparseGetRowIdx(s2d);
-    af::array s2dColIdx = sparseGetColIdx(s2d);
+    array s2dValues = sparseGetValues(s2d);
+    array s2dRowIdx = sparseGetRowIdx(s2d);
+    array s2dColIdx = sparseGetColIdx(s2d);
 
     // Verify values
-    ASSERT_EQ(0, af::max<double>(af::real(dValues - s2dValues)));
-    ASSERT_EQ(0, af::max<double>(af::imag(dValues - s2dValues)));
+    ASSERT_EQ(0, max<double>(real(dValues - s2dValues)));
+    ASSERT_EQ(0, max<double>(imag(dValues - s2dValues)));
 
     // Verify row and col indices
-    ASSERT_EQ(0, af::max<int   >(dRowIdx - s2dRowIdx));
-    ASSERT_EQ(0, af::max<int   >(dColIdx - s2dColIdx));
+    ASSERT_EQ(0, max<int   >(dRowIdx - s2dRowIdx));
+    ASSERT_EQ(0, max<int   >(dColIdx - s2dColIdx));
 }
 
 #define CONVERT_TESTS_TYPES(T, STYPE, DTYPE, SUFFIX, M, N, F)                   \
@@ -141,12 +142,12 @@ TEST(SPARSE_CONVERT, CSC_ARG_ERROR)
 {
     const int m = 100, n = 28, factor = 5;
 
-    af::array A = cpu_randu<float>(af::dim4(m, n));
+    array A = cpu_randu<float>(dim4(m, n));
 
     A = makeSparse<float>(A, factor);
 
     // Create Sparse Array of type src and dest From Dense
-    af::array sA = af::sparse(A, AF_STORAGE_CSR);
+    array sA = sparse(A, AF_STORAGE_CSR);
 
     // Convert src to dest format and dest to src
     // Use C-API to catch error

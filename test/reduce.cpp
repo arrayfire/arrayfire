@@ -89,7 +89,7 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
             for (size_t elIter = 0; elIter < nElems; ++elIter) {
 
                 EXPECT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                                << " for dim " << d + off << std::endl;
+                                                                << " for dim " << d + off << endl;
             }
             af_print_array(outArray);
             for(int i = 0; i < (int)nElems; i++) {
@@ -227,7 +227,7 @@ void cppReduceTest(string pTestFile)
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
             ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                            << " for dim " << d << std::endl;
+                                                            << " for dim " << d << endl;
         }
 
         // Delete

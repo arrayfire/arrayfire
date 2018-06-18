@@ -20,6 +20,7 @@ using std::vector;
 using af::cdouble;
 using af::cfloat;
 using af::array;
+using af::dim4;
 
 template<typename T>
 class Var : public ::testing::Test
@@ -57,7 +58,7 @@ struct varOutType {
 // test var_all interface using cpp api
 
 template<typename T>
-void testCPPVar(T const_value, af::dim4 dims)
+void testCPPVar(T const_value, dim4 dims)
 {
     typedef typename varOutType<T>::type outType;
     if (noDoubleTests<T>()) return;
@@ -99,17 +100,17 @@ void testCPPVar(T const_value, af::dim4 dims)
 
 TYPED_TEST(Var, AllCPPSmall)
 {
-    testCPPVar<TypeParam>(2, af::dim4(10, 10, 1, 1));
+    testCPPVar<TypeParam>(2, dim4(10, 10, 1, 1));
 }
 
 TYPED_TEST(Var, AllCPPMedium)
 {
-    testCPPVar<TypeParam>(2, af::dim4(100, 100, 1, 1));
+    testCPPVar<TypeParam>(2, dim4(100, 100, 1, 1));
 }
 
 TYPED_TEST(Var, AllCPPLarge)
 {
-    testCPPVar<TypeParam>(2, af::dim4(1000, 1000, 1, 1));
+    testCPPVar<TypeParam>(2, dim4(1000, 1000, 1, 1));
 }
 
 TYPED_TEST(Var, DimCPPSmall)
@@ -119,7 +120,7 @@ TYPED_TEST(Var, DimCPPSmall)
     if (noDoubleTests<TypeParam>()) return;
     if (noDoubleTests<outType>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<TypeParam> > in;
     vector<vector<outType> > tests;
 
@@ -164,10 +165,12 @@ TYPED_TEST(Var, DimCPPSmall)
 }
 
 TEST(Var, ISSUE2117) {
-  using namespace af;
+    using af::constant;
+    using af::var;
+    using af::sum;
 
-  array myArray = constant(1, 1000, 3000);
-  myArray = af::var(myArray, true, 1);
+    array myArray = constant(1, 1000, 3000);
+    myArray = var(myArray, true, 1);
 
-  ASSERT_NEAR(0.0f, sum<float>(myArray), 0.000001);
+    ASSERT_NEAR(0.0f, sum<float>(myArray), 0.000001);
 }

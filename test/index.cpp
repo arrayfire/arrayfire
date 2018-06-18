@@ -23,12 +23,13 @@
 
 using std::vector;
 using std::string;
-using std::generate;
 using std::cout;
 using std::endl;
 using std::ostream_iterator;
+using af::cdouble;
+using af::cfloat;
+using af::dim4;
 using af::dtype_traits;
-using af::freeHost;
 
 template<typename T, typename OP>
 void
@@ -126,7 +127,7 @@ public:
     vector<af_seq> span_seqs;
 };
 
-typedef ::testing::Types<float, double, af::cfloat, af::cdouble, int, unsigned, unsigned char, intl, uintl, short, ushort> AllTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned, unsigned char, intl, uintl, short, ushort> AllTypes;
 TYPED_TEST_CASE(Indexing1D, AllTypes);
 
 TYPED_TEST(Indexing1D, Continious)          { DimCheck<TypeParam>(this->continuous_seqs);           }
@@ -258,15 +259,15 @@ DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile, size_t NDims)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<T> > hData;
     vector<vector<T> > tests;
     readTests<T,T,int>(TestFile, numDims, hData, tests);
-    af::dim4 dimensions = numDims[0];
+    dim4 dimensions = numDims[0];
 
     af_array a = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &(hData[0].front()), NDims, dimensions.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &(hData[0].front()), NDims, dimensions.get(), (af_dtype) dtype_traits<T>::af_type));
 
     vector<af_array> indexed_arrays(seqs.size(), 0);
     for(size_t i = 0; i < seqs.size(); i++) {
@@ -551,11 +552,26 @@ TEST(Index, Docs_Util_C_API)
 }
 
 //////////////////////////////// CPP ////////////////////////////////
+
+
+using af::allTrue;
+using af::array;
+using af::constant;
+using af::deviceGC;
+using af::deviceMemInfo;
+using af::end;
+using af::freeHost;
+using af::randu;
+using af::range;
+using af::reorder;
+using af::seq;
+using af::span;
+using af::where;
+
+
 TEST(Indexing2D, ColumnContiniousCPP)
 {
     if (noDoubleTests<float>()) return;
-
-    using af::array;
 
     vector<vector<af_seq> > seqs;
 
@@ -563,12 +579,12 @@ TEST(Indexing2D, ColumnContiniousCPP)
     //seqs.push_back(make_vec(span, af_make_seq(  4,  9,  1)));
     //seqs.push_back(make_vec(span, af_make_seq(  3,  8,  1)));
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<float> > hData;
     vector<vector<float> > tests;
     readTests<float, float, int>(TEST_DIR"/index/ColumnContinious.test", numDims, hData, tests);
-    af::dim4 dimensions = numDims[0];
+    dim4 dimensions = numDims[0];
 
     array a(dimensions,&(hData[0].front()));
 
@@ -612,23 +628,23 @@ void arrayIndexTest(string pTestFile, int dim)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4>  numDims;
+    vector<dim4>  numDims;
     vector<vector<T> >      in;
     vector<vector<T> >   tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
-    af::dim4 dims0     = numDims[0];
-    af::dim4 dims1     = numDims[1];
+    dim4 dims0     = numDims[0];
+    dim4 dims1     = numDims[1];
     af_array outArray  = 0;
     af_array inArray   = 0;
     af_array idxArray  = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
-                dims0.ndims(), dims0.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                dims0.ndims(), dims0.get(), (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray, &(in[1].front()),
-                dims1.ndims(), dims1.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                dims1.ndims(), dims1.get(), (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_lookup(&outArray, inArray, idxArray, dim));
 
@@ -639,7 +655,7 @@ void arrayIndexTest(string pTestFile, int dim)
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
     delete[] outData;
@@ -670,16 +686,14 @@ TYPED_TEST(lookup, Dim3)
 
 TEST(lookup, CPP)
 {
-    using af::array;
-
-    vector<af::dim4>      numDims;
+    vector<dim4>      numDims;
     vector<vector<float> >      in;
     vector<vector<float> >   tests;
 
     readTests<float, float, int>(string(TEST_DIR"/arrayindex/dim0.test"), numDims, in, tests);
 
-    af::dim4 dims0     = numDims[0];
-    af::dim4 dims1     = numDims[1];
+    dim4 dims0     = numDims[0];
+    dim4 dims1     = numDims[1];
 
     array input(dims0, &(in[0].front()));
     array indices(dims1, &(in[1].front()));
@@ -692,7 +706,7 @@ TEST(lookup, CPP)
     output.host((void*)outData);
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
     delete[] outData;
@@ -700,35 +714,32 @@ TEST(lookup, CPP)
 
 TEST(lookup, largeDim)
 {
-    using af::array;
     const size_t largeDim = 65535 * 8 + 1;
 
     cleanSlate();
-    af::array input   = af::range(af::dim4(2, largeDim));
-    af::array indices = af::constant(1, 100);
+    array input   = range(dim4(2, largeDim));
+    array indices = constant(1, 100);
 
-    af::array output = af::lookup(input, indices);
+    array output = af::lookup(input, indices);
 }
 
 TEST(lookup, Issue2009)
 {
-    af::array a   = af::range(af::dim4(1000, 1));
-    af::array idx = af::constant(0, 1, u32);
-    af::array b   = af::lookup(a, idx, 1);
+    array a   = range(dim4(1000, 1));
+    array idx = constant(0, 1, u32);
+    array b   = af::lookup(a, idx, 1);
 
-    ASSERT_EQ(true, af::allTrue<bool>(a==b));
+    ASSERT_EQ(true, allTrue<bool>(a==b));
 }
 
 TEST(SeqIndex, CPP_END)
 {
-    using af::array;
-
     const int n = 5;
     const int m = 5;
     const int end_off = 2;
 
-    array a = af::randu(n, m);
-    array b = a(af::end - end_off, af::span);
+    array a = randu(n, m);
+    array b = a(end - end_off, span);
 
     float *hA = a.host<float>();
     float *hB = b.host<float>();
@@ -745,14 +756,12 @@ TEST(SeqIndex, CPP_END)
 
 TEST(SeqIndex, CPP_END_SEQ)
 {
-    using af::array;
-
     const int num = 20;
     const int end_begin = 10;
     const int end_end = 0;
 
-    array a = af::randu(num);
-    array b = a(af::seq(af::end - end_begin, af::end - end_end));
+    array a = randu(num);
+    array b = a(seq(end - end_begin, end - end_end));
 
     float *hA = a.host<float>();
     float *hB = b.host<float>();
@@ -765,22 +774,20 @@ TEST(SeqIndex, CPP_END_SEQ)
     freeHost(hB);
 }
 
-af::array cpp_scope_seq_test(const int num, const float val, const af::seq s)
+array cpp_scope_seq_test(const int num, const float val, const seq s)
 {
-    af::array a = af::constant(val, num);
+    array a = constant(val, num);
     return a(s);
 }
 
 TEST(SeqIndex, CPP_SCOPE_SEQ)
 {
-    using af::array;
-
     const int num = 20;
     const int seq_begin = 3;
     const int seq_end = 10;
     const float val = 133.33;
 
-    array b = cpp_scope_seq_test(num, val, af::seq(seq_begin, seq_end));
+    array b = cpp_scope_seq_test(num, val, seq(seq_begin, seq_end));
     float *hB = b.host<float>();
 
     for (int i = 0; i < seq_end - seq_begin + 1; i++) {
@@ -790,17 +797,15 @@ TEST(SeqIndex, CPP_SCOPE_SEQ)
     freeHost(hB);
 }
 
-af::array cpp_scope_arr_test(const int num, const float val)
+array cpp_scope_arr_test(const int num, const float val)
 {
-    af::array a = af::constant(val, num);
-    af::array idx = where(a > val/2);
+    array a = constant(val, num);
+    array idx = where(a > val/2);
     return a(idx) * (val - 1);
 }
 
 TEST(SeqIndex, CPP_SCOPE_ARR)
 {
-    using af::array;
-
     const int num = 20;
     const float val = 133.33;
 
@@ -816,16 +821,14 @@ TEST(SeqIndex, CPP_SCOPE_ARR)
 
 TEST(SeqIndex, CPPLarge)
 {
-    using af::array;
-
-    vector<af::dim4>      numDims;
+    vector<dim4>      numDims;
     vector<vector<float> >      in;
     vector<vector<float> >   tests;
 
     readTests<float, float, int>(string(TEST_DIR"/arrayindex/dim0Large.test"), numDims, in, tests);
 
-    af::dim4 dims0     = numDims[0];
-    af::dim4 dims1     = numDims[1];
+    dim4 dims0     = numDims[0];
+    dim4 dims1     = numDims[1];
 
     array input(dims0, &(in[0].front()));
     array indices(dims1, &(in[1].front()));
@@ -838,7 +841,7 @@ TEST(SeqIndex, CPPLarge)
     output.host((void*)outData);
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
     delete[] outData;
@@ -846,9 +849,6 @@ TEST(SeqIndex, CPPLarge)
 
 TEST(SeqIndex, Cascade00)
 {
-    using af::seq;
-    using af::span;
-
     const int nx = 200;
     const int ny = 200;
 
@@ -862,9 +862,9 @@ TEST(SeqIndex, Cascade00)
     const int en = stb + enc;
     const int nxc = en - st + 1;
 
-    af::array a = af::randu(nx, ny);
-    af::array b = a(seq(stb, enb), span);
-    af::array c = b(seq(stc, enc), span);
+    array a = randu(nx, ny);
+    array b = a(seq(stb, enb), span);
+    array c = b(seq(stc, enc), span);
 
     ASSERT_EQ(c.dims(1), (dim_t)ny );
     ASSERT_EQ(c.dims(0), (dim_t)nxc);
@@ -892,9 +892,6 @@ TEST(SeqIndex, Cascade00)
 
 TEST(SeqIndex, Cascade01)
 {
-    using af::seq;
-    using af::span;
-
     const int nx = 200;
     const int ny = 200;
 
@@ -907,9 +904,9 @@ TEST(SeqIndex, Cascade01)
     const int nxc = enb - stb + 1;
     const int nyc = enc - stc + 1;
 
-    af::array a = af::randu(nx, ny);
-    af::array b = a(seq(stb, enb), span);
-    af::array c = b(span, seq(stc, enc));
+    array a = randu(nx, ny);
+    array b = a(seq(stb, enb), span);
+    array c = b(span, seq(stc, enc));
 
     ASSERT_EQ(c.dims(1), (dim_t)nyc);
     ASSERT_EQ(c.dims(0), (dim_t)nxc);
@@ -938,9 +935,6 @@ TEST(SeqIndex, Cascade01)
 
 TEST(SeqIndex, Cascade10)
 {
-    using af::seq;
-    using af::span;
-
     const int nx = 200;
     const int ny = 200;
 
@@ -953,9 +947,9 @@ TEST(SeqIndex, Cascade10)
     const int nxc = enc - stc + 1;
     const int nyc = enb - stb + 1;
 
-    af::array a = af::randu(nx, ny);
-    af::array b = a(span, seq(stb, enb));
-    af::array c = b(seq(stc, enc), span);
+    array a = randu(nx, ny);
+    array b = a(span, seq(stb, enb));
+    array c = b(seq(stc, enc), span);
 
     ASSERT_EQ(c.dims(1), (dim_t)nyc);
     ASSERT_EQ(c.dims(0), (dim_t)nxc);
@@ -984,9 +978,6 @@ TEST(SeqIndex, Cascade10)
 
 TEST(SeqIndex, Cascade11)
 {
-    using af::seq;
-    using af::span;
-
     const int nx = 200;
     const int ny = 200;
 
@@ -1000,9 +991,9 @@ TEST(SeqIndex, Cascade11)
     const int en = stb + enc;
     const int nyc = en - st + 1;
 
-    af::array a = af::randu(nx, ny);
-    af::array b = a(span, seq(stb, enb));
-    af::array c = b(span, seq(stc, enc));
+    array a = randu(nx, ny);
+    array b = a(span, seq(stb, enb));
+    array c = b(span, seq(stc, enc));
 
     ASSERT_EQ(c.dims(1), nyc);
     ASSERT_EQ(c.dims(0), nx );
@@ -1031,10 +1022,9 @@ TEST(SeqIndex, Cascade11)
 
 TEST(ArrayIndex, CPP_INDEX_VECTOR)
 {
-    using af::array;
     float h_inds[] = {0, 3, 2, 1}; // zero-based indexing
     array inds(1, 4, h_inds);
-    array B = af::randu(1, 4);
+    array B = randu(1, 4);
     array C = B(inds);
 
     ASSERT_EQ(B.dims(0), 1);
@@ -1055,15 +1045,13 @@ TEST(ArrayIndex, CPP_INDEX_VECTOR)
 
 TEST(SeqIndex, CPP_INDEX_VECTOR)
 {
-    using af::array;
-
     const int num = 20;
     const int len = 10;
     const int st  =  3;
     const int en  = st + len - 1;
 
-    array B = af::randu(1, 20);
-    array C = B(af::seq(st, en));
+    array B = randu(1, 20);
+    array C = B(seq(st, en));
 
     ASSERT_EQ(1  , B.dims(0));
     ASSERT_EQ(num, B.dims(1));
@@ -1084,10 +1072,9 @@ TEST(SeqIndex, CPP_INDEX_VECTOR)
 
 TEST(ArrayIndex, CPP_INDEX_VECTOR_2D)
 {
-    using af::array;
     float h_inds[] = {3, 5, 7, 2}; // zero-based indexing
     array inds(1, 4, h_inds);
-    array B = af::randu(4, 4);
+    array B = randu(4, 4);
     array C = B(inds);
 
     ASSERT_EQ(B.dims(0), 4);
@@ -1108,16 +1095,14 @@ TEST(ArrayIndex, CPP_INDEX_VECTOR_2D)
 
 TEST(SeqIndex, CPP_INDEX_VECTOR_2D)
 {
-    using af::array;
-
     const int nx = 4;
     const int ny = 3 * nx;
     const int len = 2 * nx;
     const int st  = nx - 1;
     const int en  = st + len - 1;
 
-    array B = af::randu(nx, ny);
-    array C = B(af::seq(st, en));
+    array B = randu(nx, ny);
+    array C = B(seq(st, en));
 
     ASSERT_EQ(nx , B.dims(0));
     ASSERT_EQ(ny , B.dims(1));
@@ -1148,37 +1133,35 @@ TYPED_TEST_CASE(IndexedMembers, AllTypes);
 TYPED_TEST(IndexedMembers, MemFuncs)
 {
     if (noDoubleTests<TypeParam>()) return;
-    using af::array;
-    dim_t dimsize = 100;
+
+    const dim_t dimsize = 100;
     vector<TypeParam> in(dimsize * dimsize);
     for(int i = 0; i < (int)in.size(); i++) in[i] = i;
     array input(dimsize, dimsize, &in.front(), afHost);
 
-    ASSERT_EQ(dimsize, input(af::span, 1).elements());
-    ASSERT_EQ(input.type(), input(af::span, 1).type());
-    ASSERT_EQ(af::dim4(dimsize), input(af::span, 1).dims());
-    ASSERT_EQ(1u, input(af::span, 1).numdims());
-    ASSERT_FALSE(input(af::span, 1).isempty());
-    ASSERT_FALSE(input(af::span, 1).isscalar());
+    ASSERT_EQ(dimsize, input(span, 1).elements());
+    ASSERT_EQ(input.type(), input(span, 1).type());
+    ASSERT_EQ(dim4(dimsize), input(span, 1).dims());
+    ASSERT_EQ(1u, input(span, 1).numdims());
+    ASSERT_FALSE(input(span, 1).isempty());
+    ASSERT_FALSE(input(span, 1).isscalar());
     ASSERT_TRUE(input(1, 1).isscalar());
-    ASSERT_TRUE(input(af::span, 1).isvector());
-    ASSERT_FALSE(input(af::span, 1).isrow());
-    ASSERT_EQ(input.iscomplex(), input(af::span, 1).iscomplex());
-    ASSERT_EQ(input.isdouble(), input(af::span, 1).isdouble());
-    ASSERT_EQ(input.issingle(), input(af::span, 1).issingle());
-    ASSERT_EQ(input.isrealfloating(), input(af::span, 1).isrealfloating());
-    ASSERT_EQ(input.isfloating(), input(af::span, 1).isfloating());
-    ASSERT_EQ(input.isinteger(), input(af::span, 1).isinteger());
-    ASSERT_EQ(input.isbool(), input(af::span, 1).isbool());
+    ASSERT_TRUE(input(span, 1).isvector());
+    ASSERT_FALSE(input(span, 1).isrow());
+    ASSERT_EQ(input.iscomplex(), input(span, 1).iscomplex());
+    ASSERT_EQ(input.isdouble(), input(span, 1).isdouble());
+    ASSERT_EQ(input.issingle(), input(span, 1).issingle());
+    ASSERT_EQ(input.isrealfloating(), input(span, 1).isrealfloating());
+    ASSERT_EQ(input.isfloating(), input(span, 1).isfloating());
+    ASSERT_EQ(input.isinteger(), input(span, 1).isinteger());
+    ASSERT_EQ(input.isbool(), input(span, 1).isbool());
     // TODO: Doesn't compile in cuda for cfloat and cdouble
-    //ASSERT_EQ(input.scalar<TypeParam>(), input(af::span, 0).scalar<TypeParam>());
+    //ASSERT_EQ(input.scalar<TypeParam>(), input(span, 0).scalar<TypeParam>());
 }
 
-
-#if 0
+#if 1
 TYPED_TEST(IndexedMembers, MemIndex)
 {
-    using namespace af;
     array a = range(dim4(10, 10));
     array b = a(seq(1,7), span);
     array brow = b.row(5);
@@ -1211,7 +1194,6 @@ TYPED_TEST(IndexedMembers, MemIndex)
 
 TEST(Indexing, SNIPPET_indexing_first)
 {
-    using namespace af;
     //! [ex_indexing_first]
     array A = array(seq(1,9), 3, 3);
     af_print(A);
@@ -1284,7 +1266,6 @@ TEST(Indexing, SNIPPET_indexing_first)
 
 TEST(Indexing, SNIPPET_indexing_set)
 {
-    using namespace af;
     //! [ex_indexing_set]
     array A = constant(0, 3, 3);
     af_print(A);
@@ -1309,7 +1290,6 @@ TEST(Indexing, SNIPPET_indexing_set)
 
 TEST(Indexing, SNIPPET_indexing_ref)
 {
-    using namespace af;
     //! [ex_indexing_ref]
     float h_inds[] = {0, 4, 2, 1}; // zero-based indexing
     array inds(1, 4, h_inds);
@@ -1330,7 +1310,7 @@ TEST(Indexing, SNIPPET_indexing_ref)
 
 TEST(Indexing, SNIPPET_indexing_copy)
 {
-  af::array A = af::constant(0,1, s32);
+  array A = constant(0,1, s32);
   af::index s1;
   s1 = af::index(A);
   // At exit both A and s1 will be destroyed
@@ -1340,7 +1320,6 @@ TEST(Indexing, SNIPPET_indexing_copy)
 
 TEST(Assign, LinearIndexSeq)
 {
-    using af::array;
     const int nx = 5;
     const int ny = 4;
 
@@ -1348,8 +1327,8 @@ TEST(Assign, LinearIndexSeq)
     const int en = nx * (ny - 1);
     const int num = (en - st + 1);
 
-    array a = af::randu(nx, ny);
-    af::index idx = af::seq(st, en);
+    array a = randu(nx, ny);
+    af::index idx = seq(st, en);
 
     af_array in_arr = a.get();
     af_index_t ii = idx.get();
@@ -1358,13 +1337,13 @@ TEST(Assign, LinearIndexSeq)
     ASSERT_EQ(AF_SUCCESS,
               af_index(&out_arr, in_arr, 1, &ii.idx.seq));
 
-    af::array out(out_arr);
+    array out(out_arr);
 
     ASSERT_EQ(out.dims(0), num);
     ASSERT_EQ(out.elements(), num);
 
-    std::vector<float> hout(nx * ny);
-    std::vector<float> ha(nx * ny);
+    vector<float> hout(nx * ny);
+    vector<float> ha(nx * ny);
 
     a.host(&ha[0]);
     out.host(&hout[0]);
@@ -1376,7 +1355,6 @@ TEST(Assign, LinearIndexSeq)
 
 TEST(Assign, LinearIndexGenSeq)
 {
-    using af::array;
     const int nx = 5;
     const int ny = 4;
 
@@ -1384,8 +1362,8 @@ TEST(Assign, LinearIndexGenSeq)
     const int en = nx * (ny - 1);
     const int num = (en - st + 1);
 
-    array a = af::randu(nx, ny);
-    af::index idx = af::seq(st, en);
+    array a = randu(nx, ny);
+    af::index idx = seq(st, en);
 
     af_array in_arr = a.get();
     af_index_t ii = idx.get();
@@ -1394,13 +1372,13 @@ TEST(Assign, LinearIndexGenSeq)
     ASSERT_EQ(AF_SUCCESS,
               af_index_gen(&out_arr, in_arr, 1, &ii));
 
-    af::array out(out_arr);
+    array out(out_arr);
 
     ASSERT_EQ(out.dims(0), num);
     ASSERT_EQ(out.elements(), num);
 
-    std::vector<float> hout(nx * ny);
-    std::vector<float> ha(nx * ny);
+    vector<float> hout(nx * ny);
+    vector<float> ha(nx * ny);
 
     a.host(&ha[0]);
     out.host(&hout[0]);
@@ -1412,7 +1390,6 @@ TEST(Assign, LinearIndexGenSeq)
 
 TEST(Assign, LinearIndexGenArr)
 {
-    using af::array;
     const int nx = 5;
     const int ny = 4;
 
@@ -1420,8 +1397,8 @@ TEST(Assign, LinearIndexGenArr)
     const int en = nx * (ny - 1);
     const int num = (en - st + 1);
 
-    array a = af::randu(nx, ny);
-    af::index idx = af::array(af::seq(st, en));
+    array a = randu(nx, ny);
+    af::index idx = array(seq(st, en));
 
     af_array in_arr = a.get();
     af_index_t ii = idx.get();
@@ -1430,13 +1407,13 @@ TEST(Assign, LinearIndexGenArr)
     ASSERT_EQ(AF_SUCCESS,
               af_index_gen(&out_arr, in_arr, 1, &ii));
 
-    af::array out(out_arr);
+    array out(out_arr);
 
     ASSERT_EQ(out.dims(0), num);
     ASSERT_EQ(out.elements(), num);
 
-    std::vector<float> hout(nx * ny);
-    std::vector<float> ha(nx * ny);
+    vector<float> hout(nx * ny);
+    vector<float> ha(nx * ny);
 
     a.host(&ha[0]);
     out.host(&hout[0]);
@@ -1448,13 +1425,11 @@ TEST(Assign, LinearIndexGenArr)
 
 TEST(Index, OutOfBounds)
 {
-    using af::array;
-
     uint gold[7] = {0, 9, 49, 119, 149, 149, 148};
     uint h_idx[7] = {0, 9, 49, 119, 149, 150, 151};
     uint output[7];
 
-    array a = af::iota(af::dim4(50, 1, 3)).as(s32);
+    array a = iota(dim4(50, 1, 3)).as(s32);
     array idx(7, h_idx);
     array b = a(idx);
     b.host((void*)output);
@@ -1465,10 +1440,9 @@ TEST(Index, OutOfBounds)
 
 TEST(Index, ISSUE_1101_FULL)
 {
-    using namespace af;
     deviceGC();
     array a = randu(5,5);
-    std::vector<float> ha(a.elements());
+    vector<float> ha(a.elements());
     a.host(&ha[0]);
 
     size_t aby, abu, lby, lbu;
@@ -1484,7 +1458,7 @@ TEST(Index, ISSUE_1101_FULL)
     ASSERT_EQ(lby, lby1);
     ASSERT_EQ(lbu, lbu1);
 
-    std::vector<float> hb(b.elements());
+    vector<float> hb(b.elements());
     b.host(&hb[0]);
     for (int i = 0; i < b.elements(); i++) {
         ASSERT_EQ(ha[i], hb[i]);
@@ -1493,10 +1467,9 @@ TEST(Index, ISSUE_1101_FULL)
 
 TEST(Index, ISSUE_1101_COL0)
 {
-    using namespace af;
     deviceGC();
     array a = randu(5,5);
-    std::vector<float> ha(a.elements());
+    vector<float> ha(a.elements());
     a.host(&ha[0]);
 
     size_t aby, abu, lby, lbu;
@@ -1512,7 +1485,7 @@ TEST(Index, ISSUE_1101_COL0)
     ASSERT_EQ(lby, lby1);
     ASSERT_EQ(lbu, lbu1);
 
-    std::vector<float> hb(b.elements());
+    vector<float> hb(b.elements());
     b.host(&hb[0]);
     for (int i = 0; i < b.elements(); i++) {
         ASSERT_EQ(ha[i], hb[i]);
@@ -1522,10 +1495,9 @@ TEST(Index, ISSUE_1101_COL0)
 
 TEST(Index, ISSUE_1101_MODDIMS)
 {
-    using namespace af;
     deviceGC();
     array a = randu(5,5);
-    std::vector<float> ha(a.elements());
+    vector<float> ha(a.elements());
     a.host(&ha[0]);
 
     size_t aby, abu, lby, lbu;
@@ -1545,13 +1517,13 @@ TEST(Index, ISSUE_1101_MODDIMS)
     ASSERT_EQ(lby, lby1);
     ASSERT_EQ(lbu, lbu1);
 
-    std::vector<float> hb(b.elements());
+    vector<float> hb(b.elements());
     b.host(&hb[0]);
     for (int i = 0; i < b.elements(); i++) {
         ASSERT_EQ(ha[i + st], hb[i]);
     }
 
-    std::vector<float> hc(c.elements());
+    vector<float> hc(c.elements());
     c.host(&hc[0]);
     for (int i = 0; i < c.elements(); i++) {
         ASSERT_EQ(ha[i + st], hc[i]);
@@ -1560,17 +1532,15 @@ TEST(Index, ISSUE_1101_MODDIMS)
 
 TEST(Index, Issue1846IndexStepCascade)
 {
-    using namespace af;
     array a = randu(3, 12);
-    array b = a(span, seq(0, af::end, 2));
-    array c = b(span, seq(0, af::end, 3));
-    array d = a(span, seq(0, af::end, 6));
+    array b = a(span, seq(0, end, 2));
+    array c = b(span, seq(0, end, 3));
+    array d = a(span, seq(0, end, 6));
     EXPECT_EQ(allTrue<bool>(c == d), true);
 }
 
 TEST(Index, Issue1845IndexStepReorder)
 {
-    using namespace af;
     array a = randu(1,8,1);
     array b = reorder(a,0,2,1);
     array d = reorder(b(0,0,span),2,1,0);
@@ -1579,15 +1549,16 @@ TEST(Index, Issue1845IndexStepReorder)
 
 TEST(Index, Issue1867ChainedIndexingLeak)
 {
-    using namespace af;
+    using af::randn;
+    using af::sync;
     {
         array lInput = randn(100, 100, f32);
         array Q3 = lInput.rows(0, 3).cols(0, 3);
         Q3.eval();
-        af::sync();
+        sync();
     }
     size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
     ASSERT_EQ(0u, lock_buffers);
 }

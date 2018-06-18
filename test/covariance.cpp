@@ -17,9 +17,15 @@
 #include <algorithm>
 #include <testHelpers.hpp>
 
+using std::endl;
 using std::string;
 using std::vector;
-using namespace af;
+using af::array;
+using af::cdouble;
+using af::cfloat;
+using af::constant;
+using af::dim4;
+using af::exception;
 
 template<typename T>
 class Covariance : public ::testing::Test
@@ -76,14 +82,14 @@ void covTest(string pFileName, bool isbiased=false)
     if (noDoubleTests<T>()) return;
     if (noDoubleTests<outType>()) return;
 
-    vector<af::dim4>      numDims;
+    vector<dim4>      numDims;
     vector<vector<int> >        in;
     vector<vector<float> >   tests;
 
     readTestsFromFile<int,float>(pFileName, numDims, in, tests);
 
-    af::dim4 dims1 = numDims[0];
-    af::dim4 dims2 = numDims[1];
+    dim4 dims1 = numDims[0];
+    dim4 dims2 = numDims[1];
     vector<T> input1(in[0].begin(), in[0].end());
     vector<T> input2(in[1].begin(), in[1].end());
 
@@ -95,13 +101,13 @@ void covTest(string pFileName, bool isbiased=false)
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
 
     size_t nElems    = currGoldBar.size();
-    std::vector<outType> outData(nElems);
+    vector<outType> outData(nElems);
 
     c.host((void*)outData.data());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_NEAR(::real(currGoldBar[elIter]), ::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
-        ASSERT_NEAR(::imag(currGoldBar[elIter]), ::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
+        ASSERT_NEAR(::real(currGoldBar[elIter]), ::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< endl;
+        ASSERT_NEAR(::imag(currGoldBar[elIter]), ::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< endl;
     }
 }
 
@@ -119,7 +125,7 @@ TEST(Covariance, c32)
 {
     array a = constant(cfloat(1.0f, -1.0f), 10, c32);
     array b = constant(cfloat(2.0f, -1.0f), 10, c32);
-    ASSERT_THROW(cov(a, b), af::exception);
+    ASSERT_THROW(cov(a, b), exception);
 }
 
 TEST(Covariance, c64)
@@ -127,5 +133,5 @@ TEST(Covariance, c64)
     if (noDoubleTests<double>()) return;
     array a = constant(cdouble(1.0, -1.0), 10, c64);
     array b = constant(cdouble(2.0, -1.0), 10, c64);
-    ASSERT_THROW(cov(a, b), af::exception);
+    ASSERT_THROW(cov(a, b), exception);
 }

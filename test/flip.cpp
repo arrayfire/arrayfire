@@ -14,13 +14,19 @@
 #include <af/index.h>
 #include <testHelpers.hpp>
 
-using namespace af;
+using af::array;
+using af::randu;
+using af::flip;
+using af::freeHost;
+using af::randu;
+using af::seq;
+using af::span;
 
 TEST(FlipTests, Test_flip_1D)
 {
     const int num = 10000;
-    af::array in = randu(num);
-    af::array out = flip(in, 0);
+    array in = randu(num);
+    array out = flip(in, 0);
 
     float *h_in = in.host<float>();
     float *h_out = out.host<float>();
@@ -39,8 +45,8 @@ TEST(FlipTests, Test_flip_2D0)
     const int nx = 200;
     const int ny = 200;
 
-    af::array in = randu(nx, ny);
-    af::array out = flip(in, 0);
+    array in = randu(nx, ny);
+    array out = flip(in, 0);
 
     float *h_in = in.host<float>();
     float *h_out = out.host<float>();
@@ -63,8 +69,8 @@ TEST(FlipTests, Test_flip_2D1)
     const int nx = 200;
     const int ny = 200;
 
-    af::array in = randu(nx, ny);
-    af::array out = flip(in, 1);
+    array in = randu(nx, ny);
+    array out = flip(in, 1);
 
     float *h_in = in.host<float>();
     float *h_out = out.host<float>();
@@ -89,9 +95,9 @@ TEST(FlipTests, Test_flip_1D_index)
     const int st = 101;
     const int en = 5000;
 
-    af::array in = randu(num);
-    af::array tmp = in(seq(st, en));
-    af::array out = flip(tmp, 0);
+    array in = randu(num);
+    array tmp = in(seq(st, en));
+    array out = flip(tmp, 0);
 
     float *h_in = in.host<float>();
     float *h_out = out.host<float>();
@@ -113,9 +119,9 @@ TEST(FlipTests, Test_flip_2D_index00)
     const int en = 180;
     const int nxo = (en - st + 1);
 
-    af::array in = randu(nx, ny);
-    af::array tmp = in(seq(st, en), span);
-    af::array out = flip(tmp, 0);
+    array in = randu(nx, ny);
+    array tmp = in(seq(st, en), span);
+    array out = flip(tmp, 0);
 
     float *h_in = in.host<float>();
     float *h_out = out.host<float>();
@@ -141,9 +147,9 @@ TEST(FlipTests, Test_flip_2D_index01)
     const int en = 180;
     const int nxo = (en - st + 1);
 
-    af::array in = randu(nx, ny);
-    af::array tmp = in(seq(st, en), span);
-    af::array out = flip(tmp, 1);
+    array in = randu(nx, ny);
+    array tmp = in(seq(st, en), span);
+    array out = flip(tmp, 1);
 
     float *h_in = in.host<float>();
     float *h_out = out.host<float>();
@@ -168,9 +174,9 @@ TEST(FlipTests, Test_flip_2D_index10)
     const int st = 21;
     const int en = 180;
 
-    af::array in = randu(nx, ny);
-    af::array tmp = in(span, seq(st, en));
-    af::array out = flip(tmp, 0);
+    array in = randu(nx, ny);
+    array tmp = in(span, seq(st, en));
+    array out = flip(tmp, 0);
 
     float *h_in = in.host<float>();
     float *h_out = out.host<float>();
@@ -197,9 +203,9 @@ TEST(FlipTests, Test_flip_2D_index11)
     const int st = 21;
     const int en = 180;
 
-    af::array in = randu(nx, ny);
-    af::array tmp = in(span, seq(st, en));
-    af::array out = flip(tmp, 1);
+    array in = randu(nx, ny);
+    array tmp = in(span, seq(st, en));
+    array out = flip(tmp, 1);
 
     float *h_in = in.host<float>();
     float *h_out = out.host<float>();

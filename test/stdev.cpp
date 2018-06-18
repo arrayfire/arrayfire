@@ -18,9 +18,17 @@
 #include <algorithm>
 #include <testHelpers.hpp>
 
-using namespace af;
+using std::cout;
+using std::endl;
 using std::string;
 using std::vector;
+using af::array;
+using af::cdouble;
+using af::cfloat;
+using af::dim4;
+using af::exception;
+using af::seq;
+using af::stdev;
 
 template<typename T>
 class StandardDev : public ::testing::Test
@@ -77,29 +85,29 @@ void stdevDimTest(string pFileName, dim_t dim=-1)
     if (noDoubleTests<T>()) return;
     if (noDoubleTests<outType>()) return;
 
-    vector<af::dim4>      numDims;
+    vector<dim4>      numDims;
     vector<vector<int> >       in;
     vector<vector<float> >  tests;
 
     readTestsFromFile<int,float>(pFileName, numDims, in, tests);
 
-    af::dim4 dims = numDims[0];
+    dim4 dims = numDims[0];
     vector<T> input(in[0].begin(), in[0].end());
 
-    af::array a(dims, &(input.front()));
+    array a(dims, &(input.front()));
 
-    af::array b = stdev(a, dim);
+    array b = stdev(a, dim);
 
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
 
     size_t nElems    = currGoldBar.size();
-    std::vector<outType> outData(nElems);
+    vector<outType> outData(nElems);
 
     b.host((void*)outData.data());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_NEAR(::real(currGoldBar[elIter]), ::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
-        ASSERT_NEAR(::imag(currGoldBar[elIter]), ::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
+        ASSERT_NEAR(::real(currGoldBar[elIter]), ::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< endl;
+        ASSERT_NEAR(::imag(currGoldBar[elIter]), ::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< endl;
     }
 }
 
@@ -125,12 +133,12 @@ TYPED_TEST(StandardDev, Dim3)
 
 TEST(StandardDev, InvalidDim)
 {
-    ASSERT_THROW(af::stdev(af::array(), 5), af::exception);
+    ASSERT_THROW(stdev(array(), 5), exception);
 }
 
 TEST(StandardDev, InvalidType)
 {
-    ASSERT_THROW(af::stdev(constant(cdouble(1.0, -1.0), 10)), af::exception);
+    ASSERT_THROW(stdev(constant(cdouble(1.0, -1.0), 10)), exception);
 }
 
 template<typename T>
@@ -140,30 +148,30 @@ void stdevDimIndexTest(string pFileName, dim_t dim=-1)
     if (noDoubleTests<T>()) return;
     if (noDoubleTests<outType>()) return;
 
-    vector<af::dim4>      numDims;
+    vector<dim4>      numDims;
     vector<vector<int> >       in;
     vector<vector<float> >  tests;
 
     readTestsFromFile<int,float>(pFileName, numDims, in, tests);
 
-    af::dim4 dims = numDims[0];
+    dim4 dims = numDims[0];
     vector<T> input(in[0].begin(), in[0].end());
 
-    af::array a(dims, &(input.front()));
-    af::array b = a(seq(2,6), seq(1,7));
+    array a(dims, &(input.front()));
+    array b = a(seq(2,6), seq(1,7));
 
-    af::array c = stdev(b, dim);
+    array c = stdev(b, dim);
 
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
 
     size_t nElems    = currGoldBar.size();
-    std::vector<outType> outData(nElems);
+    vector<outType> outData(nElems);
 
     c.host((void*)outData.data());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_NEAR(::real(currGoldBar[elIter]), ::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
-        ASSERT_NEAR(::imag(currGoldBar[elIter]), ::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
+        ASSERT_NEAR(::real(currGoldBar[elIter]), ::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< endl;
+        ASSERT_NEAR(::imag(currGoldBar[elIter]), ::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< endl;
     }
 }
 
@@ -183,17 +191,17 @@ TYPED_TEST(StandardDev, All)
     if (noDoubleTests<TypeParam>()) return;
     if (noDoubleTests<outType>()) return;
 
-    vector<af::dim4>      numDims;
+    vector<dim4>      numDims;
     vector<vector<int> >       in;
     vector<vector<float> >  tests;
 
     readTestsFromFile<int,float>(string(TEST_DIR "/stdev/mat_10x10_scalar.test"),
                                  numDims, in, tests);
 
-    af::dim4 dims = numDims[0];
+    dim4 dims = numDims[0];
     vector<TypeParam> input(in[0].begin(), in[0].end());
 
-    af::array a(dims, &(input.front()));
+    array a(dims, &(input.front()));
     outType b = stdev<outType>(a);
 
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());

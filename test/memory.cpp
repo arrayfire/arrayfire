@@ -13,16 +13,20 @@
 #include <af/traits.hpp>
 #include <vector>
 #include <iostream>
-#include <string>
 #include <testHelpers.hpp>
 #include <af/internal.h>
 
 using std::vector;
-using std::string;
-using std::cout;
-using std::endl;
+using af::alloc;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::deviceGC;
+using af::deviceMemInfo;
+using af::dtype_traits;
+using af::randu;
+using af::seq;
+using af::span;
 
 const size_t step_bytes = 1024;
 
@@ -34,9 +38,9 @@ TEST(Memory, Scope)
     cleanSlate(); // Clean up everything done so far
 
     {
-        af::array a = af::randu(5, 5);
+        array a = randu(5, 5);
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
@@ -47,7 +51,7 @@ TEST(Memory, Scope)
     }
 
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -96,9 +100,9 @@ void memAllocArrayScopeTest(int elements)
     cleanSlate(); // Clean up everything done so far
 
     {
-        af::array a = af::randu(elements, (af_dtype)af::dtype_traits<T>::af_type);
+        array a = randu(elements, (af_dtype)dtype_traits<T>::af_type);
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
@@ -108,7 +112,7 @@ void memAllocArrayScopeTest(int elements)
         ASSERT_EQ(lock_bytes, roundUpToStep(elements * sizeof(T)));
     }
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -129,9 +133,9 @@ void memAllocPtrScopeTest(int elements)
     cleanSlate(); // Clean up everything done so far
 
     {
-        T *ptr = af::alloc<T>(elements);
+        T *ptr = alloc<T>(elements);
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
@@ -140,10 +144,10 @@ void memAllocPtrScopeTest(int elements)
         ASSERT_EQ(alloc_bytes, roundUpToStep(elements * sizeof(T)));
         ASSERT_EQ(lock_bytes, roundUpToStep(elements * sizeof(T)));
 
-        af::free(ptr);
+        free(ptr);
     }
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -156,9 +160,9 @@ void memAllocPtrScopeTest(int elements)
     cleanSlate(); // Clean up everything done so far
 
     {
-        void *ptr = af::alloc(elements, (af_dtype)af::dtype_traits<T>::af_type);
+        void *ptr = alloc(elements, (af_dtype)dtype_traits<T>::af_type);
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
@@ -167,10 +171,10 @@ void memAllocPtrScopeTest(int elements)
         ASSERT_EQ(alloc_bytes, roundUpToStep(elements * sizeof(T)));
         ASSERT_EQ(lock_bytes, roundUpToStep(elements * sizeof(T)));
 
-        af::free(ptr);
+        free(ptr);
     }
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -218,9 +222,9 @@ TEST(Memory, SingleSizeLoop)
     cleanSlate(); // Clean up everything done so far
 
     {
-        af::array a = af::randu(5, 5);
+        array a = randu(5, 5);
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
@@ -230,9 +234,9 @@ TEST(Memory, SingleSizeLoop)
 
         for (int i = 0; i < 100; i++) {
 
-            a = af::randu(5,5);
+            a = randu(5,5);
 
-            af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+            deviceMemInfo(&alloc_bytes, &alloc_buffers,
                               &lock_bytes, &lock_buffers);
 
             ASSERT_EQ(alloc_buffers, 2u); //2 because a new one is created before a is destroyed
@@ -253,20 +257,20 @@ TEST(Memory, LargeLoop)
     const int num = step_bytes / sizeof(float);
     size_t allocated = step_bytes;
 
-    af::array a = af::randu(num);
+    array a = randu(num);
 
-    std::vector<float> hA(num);
+    vector<float> hA(num);
 
     a.host(&hA[0]);
 
     // Run a large loop that allocates more and more memory at each step
     for (int i = 0; i < 250; i++) {
-        af::array b = af::randu(num * (i + 1));
+        array b = randu(num * (i + 1));
         size_t current = (i + 1) * step_bytes;
         allocated += current;
 
         // Verify that new buffers are being allocated
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         // Limit to 10 to check before garbage collection
@@ -282,7 +286,7 @@ TEST(Memory, LargeLoop)
     size_t old_alloc_bytes = alloc_bytes;
     size_t old_alloc_buffers = alloc_buffers;
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(old_alloc_bytes, alloc_bytes);
@@ -301,9 +305,9 @@ TEST(Memory, IndexingOffset)
 
     const int num = step_bytes / sizeof(float);
 
-    af::array a = af::randu(num);
+    array a = randu(num);
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -312,9 +316,9 @@ TEST(Memory, IndexingOffset)
     ASSERT_EQ(lock_bytes, 1 * step_bytes);
 
     {
-        af::array b = a(af::seq(1, num/2)); // Should just be an offset
+        array b = a(seq(1, num/2)); // Should just be an offset
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
@@ -325,7 +329,7 @@ TEST(Memory, IndexingOffset)
 
 
     // b should not have deleted a
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -344,9 +348,9 @@ TEST(Memory, IndexingCopy)
 
     const int num = step_bytes / sizeof(float);
 
-    af::array a = af::randu(num);
+    array a = randu(num);
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -356,9 +360,9 @@ TEST(Memory, IndexingCopy)
 
     {
         // Should just a copy
-        af::array b = a(af::seq(0, num/2-1, 2));
+        array b = a(seq(0, num/2-1, 2));
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 2u);
@@ -369,7 +373,7 @@ TEST(Memory, IndexingCopy)
 
 
     // b should not have deleted a
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 2u);
@@ -388,9 +392,9 @@ TEST(Memory, Assign)
 
     const int num = step_bytes / sizeof(float);
 
-    af::array a = af::randu(num);
+    array a = randu(num);
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -399,10 +403,10 @@ TEST(Memory, Assign)
     ASSERT_EQ(lock_bytes, 1 * step_bytes);
 
     {
-        af::array b = af::randu(num / 2);
-        a(af::seq(num / 2)) = b;
+        array b = randu(num / 2);
+        a(seq(num / 2)) = b;
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 2u);
@@ -413,7 +417,7 @@ TEST(Memory, Assign)
 
 
     // b should not have deleted a
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 2u);
@@ -433,9 +437,9 @@ TEST(Memory, AssignLoop)
     const int num = step_bytes / sizeof(float);
     const int cols = 100;
 
-    af::array a = af::randu(num, cols);
+    array a = randu(num, cols);
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -445,10 +449,10 @@ TEST(Memory, AssignLoop)
 
     for (int i = 0; i < cols; i++) {
 
-        af::array b = af::randu(num);
-        a(af::span, i) = b;
+        array b = randu(num);
+        a(span, i) = b;
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 2u); // 3 because you need another scratch space for b
@@ -467,10 +471,10 @@ TEST(Memory, AssignRef)
 
     const int num = step_bytes / sizeof(float);
 
-    af::array a = af::randu(num);
-    af::array a_ref = a;
+    array a = randu(num);
+    array a_ref = a;
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -479,11 +483,11 @@ TEST(Memory, AssignRef)
     ASSERT_EQ(lock_bytes, 1 * step_bytes);
 
     {
-        af::array b = af::randu(num / 2);
+        array b = randu(num / 2);
         // This should do a full copy of a
-        a(af::seq(num / 2)) = b;
+        a(seq(num / 2)) = b;
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 3u);
@@ -494,7 +498,7 @@ TEST(Memory, AssignRef)
 
 
     // b should not have deleted a
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 3u);
@@ -514,10 +518,10 @@ TEST(Memory, AssignRefLoop)
     const int num = step_bytes / sizeof(float);
     const int cols = 100;
 
-    af::array a = af::randu(num, cols);
-    af::array a_ref = a;
+    array a = randu(num, cols);
+    array a_ref = a;
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -527,10 +531,10 @@ TEST(Memory, AssignRefLoop)
 
     for (int i = 0; i < cols; i++) {
 
-        af::array b = af::randu(num);
-        a(af::span, i) = b;
+        array b = randu(num);
+        a(span, i) = b;
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 3u);
@@ -541,7 +545,7 @@ TEST(Memory, AssignRefLoop)
 
 
     // b should not have deleted a
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 3u);
@@ -559,9 +563,9 @@ TEST(Memory, device)
     cleanSlate(); // Clean up everything done so far
 
     {
-        af::array a = af::randu(5, 5);
+        array a = randu(5, 5);
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
@@ -571,7 +575,7 @@ TEST(Memory, device)
 
         a.device<float>();
 
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
@@ -582,7 +586,7 @@ TEST(Memory, device)
         a.unlock(); //to reset the lock flag
     }
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -601,12 +605,12 @@ TEST(Memory, unlock)
 
     const dim_t num = step_bytes / sizeof(float);
 
-    std::vector<float> in(num);
+    vector<float> in(num);
 
     af_array arr = 0;
     ASSERT_EQ(AF_SUCCESS, af_create_array(&arr, &in[0], 1, &num, f32));
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
@@ -616,11 +620,11 @@ TEST(Memory, unlock)
 
     // arr1 gets released by end of the following code block
     {
-        af::array a(arr);
+        array a(arr);
         a.lock();
 
         // No new memory should be allocated
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
@@ -632,9 +636,9 @@ TEST(Memory, unlock)
     }
 
     // Making sure all unlocked buffers are freed
-    af::deviceGC();
+    deviceGC();
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 0u);
@@ -649,26 +653,26 @@ TEST(Memory, IndexedDevice)
     const int nx = 8;
     const int ny = 8;
 
-    af::array in = af::randu(nx, ny);
+    array in = randu(nx, ny);
 
-    std::vector<float> in1(in.elements());
+    vector<float> in1(in.elements());
     in.host(&in1[0]);
 
     int offx = nx / 4;
     int offy = ny / 4;
 
-    in = in(af::seq(offx, offx + nx/2 - 1),
-            af::seq(offy, offy + ny/2- 1));
+    in = in(seq(offx, offx + nx/2 - 1),
+            seq(offy, offy + ny/2- 1));
 
     int nxo = (int)in.dims(0);
     int nyo = (int)in.dims(1);
 
-    void *rawPtr = af::getRawPtr(in);
+    void *rawPtr = getRawPtr(in);
     void *devPtr = in.device<float>();
     ASSERT_NE(devPtr, rawPtr);
     in.unlock();
 
-    std::vector<float> in2(in.elements());
+    vector<float> in2(in.elements());
     in.host(&in2[0]);
 
     for (int y = 0; y < nyo; y++) {

@@ -16,13 +16,15 @@
 #include <string>
 #include <testHelpers.hpp>
 
-using std::vector;
-using std::string;
-using std::cout;
 using std::endl;
+using std::string;
+using std::vector;
+using af::array;
 using af::cfloat;
 using af::cdouble;
 using af::freeHost;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class Write : public ::testing::Test
@@ -39,15 +41,15 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char, un
 TYPED_TEST_CASE(Write, TestTypes);
 
 template<typename T>
-void writeTest(af::dim4 dims)
+void writeTest(dim4 dims)
 {
     if (noDoubleTests<T>()) return;
 
-    af::array A = af::randu(dims, (af_dtype) af::dtype_traits<T>::af_type);
-    af::array B = af::randu(dims, (af_dtype) af::dtype_traits<T>::af_type);
+    array A = randu(dims, (af_dtype) dtype_traits<T>::af_type);
+    array B = randu(dims, (af_dtype) dtype_traits<T>::af_type);
 
-    af::array A_copy = A.copy();
-    af::array B_copy = B.copy();
+    array A_copy = A.copy();
+    array B_copy = B.copy();
 
     T *a_host = A.host<T>();
     T *b_dev  = B.device<T>();
@@ -55,15 +57,15 @@ void writeTest(af::dim4 dims)
     A.write(b_dev, dims.elements() * sizeof(T), afDevice);
     B.write(a_host, dims.elements() * sizeof(T), afHost);
 
-    af::array check1 = A != B_copy;     // False so check1 is all 0s
-    af::array check2 = B != A_copy;     // False so check2 is all 0s
+    array check1 = A != B_copy;     // False so check1 is all 0s
+    array check2 = B != A_copy;     // False so check2 is all 0s
 
     char *h_check1 = check1.host<char>();
     char *h_check2 = check2.host<char>();
 
     for(int i = 0; i < (int)dims.elements(); i++) {
-        ASSERT_EQ(h_check1[i], 0) << "at: " << i << std::endl;
-        ASSERT_EQ(h_check2[i], 0) << "at: " << i << std::endl;
+        ASSERT_EQ(h_check1[i], 0) << "at: " << i << endl;
+        ASSERT_EQ(h_check2[i], 0) << "at: " << i << endl;
     }
 
     freeHost(a_host);
@@ -73,30 +75,30 @@ void writeTest(af::dim4 dims)
 
 TYPED_TEST(Write, Vector0)
 {
-    writeTest<TypeParam>(af::dim4(10));
+    writeTest<TypeParam>(dim4(10));
 }
 
 TYPED_TEST(Write, Vector1)
 {
-    writeTest<TypeParam>(af::dim4(1000));
+    writeTest<TypeParam>(dim4(1000));
 }
 
 TYPED_TEST(Write, Matrix0)
 {
-    writeTest<TypeParam>(af::dim4(64, 8));
+    writeTest<TypeParam>(dim4(64, 8));
 }
 
 TYPED_TEST(Write, Matrix1)
 {
-    writeTest<TypeParam>(af::dim4(256, 256));
+    writeTest<TypeParam>(dim4(256, 256));
 }
 
 TYPED_TEST(Write, Volume0)
 {
-    writeTest<TypeParam>(af::dim4(10, 10, 10));
+    writeTest<TypeParam>(dim4(10, 10, 10));
 }
 
 TYPED_TEST(Write, Volume1)
 {
-    writeTest<TypeParam>(af::dim4(32, 64, 16));
+    writeTest<TypeParam>(dim4(32, 64, 16));
 }

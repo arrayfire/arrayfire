@@ -16,12 +16,24 @@
 #include <testHelpers.hpp>
 #include <string>
 
-using std::string;
+using std::copy;
 using std::cout;
 using std::endl;
 using std::ostream_iterator;
-using std::copy;
+using std::string;
 using std::vector;
+using af::array;
+using af::cdouble;
+using af::cfloat;
+using af::dim4;
+using af::dtype_traits;
+using af::getDevice;
+using af::getDeviceCount;
+using af::matmul;
+using af::max;
+using af::randu;
+using af::setDevice;
+using af::span;
 
 template<typename T>
 class MatrixMultiply : public ::testing::Test
@@ -29,7 +41,7 @@ class MatrixMultiply : public ::testing::Test
 
 };
 
-typedef ::testing::Types<float, af::cfloat, double, af::cdouble> TestTypes;
+typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
 TYPED_TEST_CASE(MatrixMultiply, TestTypes);
 
 template<typename T, bool isBVector>
@@ -37,8 +49,7 @@ void MatMulCheck(string TestFile)
 {
     if (noDoubleTests<T>()) return;
 
-    using std::vector;
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<T> > hData;
     vector<vector<T> > tests;
@@ -46,8 +57,8 @@ void MatMulCheck(string TestFile)
 
     af_array a, aT, b, bT;
     ASSERT_EQ(AF_SUCCESS,
-            af_create_array(&a, &hData[0].front(), numDims[0].ndims(), numDims[0].get(), (af_dtype) af::dtype_traits<T>::af_type));
-    af::dim4 atdims = numDims[0];
+            af_create_array(&a, &hData[0].front(), numDims[0].ndims(), numDims[0].get(), (af_dtype) dtype_traits<T>::af_type));
+    dim4 atdims = numDims[0];
     {
         dim_t f  =    atdims[0];
         atdims[0]   =    atdims[1];
@@ -56,8 +67,8 @@ void MatMulCheck(string TestFile)
     ASSERT_EQ(AF_SUCCESS,
             af_moddims(&aT, a, atdims.ndims(), atdims.get()));
     ASSERT_EQ(AF_SUCCESS,
-            af_create_array(&b, &hData[1].front(), numDims[1].ndims(), numDims[1].get(), (af_dtype) af::dtype_traits<T>::af_type));
-    af::dim4 btdims = numDims[1];
+            af_create_array(&b, &hData[1].front(), numDims[1].ndims(), numDims[1].get(), (af_dtype) dtype_traits<T>::af_type));
+    dim4 btdims = numDims[1];
     {
         dim_t f = btdims[0];
         btdims[0] = btdims[1];
@@ -132,45 +143,44 @@ void cppMatMulCheck(string TestFile)
 {
     if (noDoubleTests<T>()) return;
 
-    using std::vector;
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<T> > hData;
     vector<vector<T> > tests;
     readTests<T,T,int>(TestFile, numDims, hData, tests);
 
-    af::array a(numDims[0], &hData[0].front());
-    af::array b(numDims[1], &hData[1].front());
+    array a(numDims[0], &hData[0].front());
+    array b(numDims[1], &hData[1].front());
 
-    af::dim4 atdims = numDims[0];
+    dim4 atdims = numDims[0];
     {
         dim_t f  =    atdims[0];
         atdims[0]   =    atdims[1];
         atdims[1]   =    f;
     }
-    af::dim4 btdims = numDims[1];
+    dim4 btdims = numDims[1];
     {
         dim_t f = btdims[0];
         btdims[0] = btdims[1];
         btdims[1] = f;
     }
 
-    af::array aT = moddims(a, atdims.ndims(), atdims.get());
-    af::array bT = moddims(b, btdims.ndims(), btdims.get());
+    array aT = moddims(a, atdims.ndims(), atdims.get());
+    array bT = moddims(b, btdims.ndims(), btdims.get());
 
-    vector<af::array> out(tests.size());
+    vector<array> out(tests.size());
     if(isBVector) {
-        out[0] = af::matmul(aT, b,    AF_MAT_NONE,    AF_MAT_NONE);
-        out[1] = af::matmul(bT, a,   AF_MAT_NONE,    AF_MAT_NONE);
-        out[2] = af::matmul(b, a,    AF_MAT_TRANS,       AF_MAT_NONE);
-        out[3] = af::matmul(bT, aT,   AF_MAT_NONE,    AF_MAT_TRANS);
-        out[4] = af::matmul(b, aT,    AF_MAT_TRANS,       AF_MAT_TRANS);
+        out[0] = matmul(aT, b,    AF_MAT_NONE,    AF_MAT_NONE);
+        out[1] = matmul(bT, a,   AF_MAT_NONE,    AF_MAT_NONE);
+        out[2] = matmul(b, a,    AF_MAT_TRANS,       AF_MAT_NONE);
+        out[3] = matmul(bT, aT,   AF_MAT_NONE,    AF_MAT_TRANS);
+        out[4] = matmul(b, aT,    AF_MAT_TRANS,       AF_MAT_TRANS);
     }
     else {
-        out[0] = af::matmul(a, b, AF_MAT_NONE,   AF_MAT_NONE);
-        out[1] = af::matmul(a, bT, AF_MAT_NONE,   AF_MAT_TRANS);
-        out[2] = af::matmul(a, bT, AF_MAT_TRANS,      AF_MAT_NONE);
-        out[3] = af::matmul(aT, bT, AF_MAT_TRANS,      AF_MAT_TRANS);
+        out[0] = matmul(a, b, AF_MAT_NONE,   AF_MAT_NONE);
+        out[1] = matmul(a, bT, AF_MAT_NONE,   AF_MAT_TRANS);
+        out[2] = matmul(a, bT, AF_MAT_TRANS,      AF_MAT_NONE);
+        out[3] = matmul(aT, bT, AF_MAT_TRANS,      AF_MAT_TRANS);
     }
 
     for(size_t i = 0; i < tests.size(); i++) {
@@ -209,18 +219,18 @@ TYPED_TEST(MatrixMultiply, RectangleVector_CPP)
     cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test");
 }
 
-#define DEVICE_ITERATE(func) do {                                           \
-    const char* ENV = getenv("AF_MULTI_GPU_TESTS");                         \
-    if(ENV && ENV[0] == '0') {                                              \
-        func;                                                               \
-    } else {                                                                \
-        int oldDevice = af::getDevice();                                    \
-        for(int i = 0; i < af::getDeviceCount(); i++) {                     \
-            af::setDevice(i);                                               \
-            func;                                                           \
-        }                                                                   \
-        af::setDevice(oldDevice);                                           \
-    }                                                                       \
+#define DEVICE_ITERATE(func) do {                                       \
+    const char* ENV = getenv("AF_MULTI_GPU_TESTS");                     \
+    if(ENV && ENV[0] == '0') {                                          \
+        func;                                                           \
+    } else {                                                            \
+        int oldDevice = getDevice();                                    \
+        for(int i = 0; i < getDeviceCount(); i++) {                     \
+            setDevice(i);                                               \
+            func;                                                       \
+        }                                                               \
+        setDevice(oldDevice);                                           \
+    }                                                                   \
 } while(0);
 
 
@@ -254,17 +264,17 @@ TEST(MatrixMultiply, Batched)
 
     for (int d3 = 1; d3 <= D3; d3 *= D3) {
         for (int d2 = 1; d2 <= D2; d2 *= D2) {
-            af::array a = af::randu(M, K, d2, d3);
-            af::array b = af::randu(K, N, d2, d3);
-            af::array c = af::matmul(a, b);
+            array a = randu(M, K, d2, d3);
+            array b = randu(K, N, d2, d3);
+            array c = matmul(a, b);
 
             for (int j = 0; j < d3; j++) {
                 for (int i = 0; i < d2; i++) {
-                    af::array a_ij = a(af::span, af::span, i, j);
-                    af::array b_ij = b(af::span, af::span, i, j);
-                    af::array c_ij = c(af::span, af::span, i, j);
-                    af::array res = af::matmul(a_ij, b_ij);
-                    ASSERT_LT(af::max<float>(af::abs(c_ij - res)), 1E-5)
+                    array a_ij = a(span, span, i, j);
+                    array b_ij = b(span, span, i, j);
+                    array c_ij = c(span, span, i, j);
+                    array res = matmul(a_ij, b_ij);
+                    ASSERT_LT(max<float>(abs(c_ij - res)), 1E-5)
                         << " for d2 = " << d2 << " for d3 = " << d3;
                 }
             }
@@ -278,15 +288,15 @@ TEST(MatrixMultiply, ISSUE_1882)
 {
     const int m = 2;
     const int n = 3;
-    af::array A = af::randu(m, n);
-    af::array BB = af::randu(n, m);
-    af::array B = BB(0, af::span);
+    array A = randu(m, n);
+    array BB = randu(n, m);
+    array B = BB(0, span);
 
-    af::array res1 = af::matmul(A.T(), B.T());
-    af::array res2 = af::matmulTT(A, B);
+    array res1 = matmul(A.T(), B.T());
+    array res2 = matmulTT(A, B);
 
-    std::vector<float> hres1(res1.elements());
-    std::vector<float> hres2(res2.elements());
+    vector<float> hres1(res1.elements());
+    vector<float> hres2(res2.elements());
 
     res1.host(&hres1.front());
     res2.host(&hres2.front());

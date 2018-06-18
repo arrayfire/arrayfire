@@ -21,7 +21,7 @@ TEST(GettingStarted, SNIPPET_getting_started_gen)
 {
 
     //! [ex_getting_started_constructors]
-    // Arrays may be created using the af::array constructor and dimensioned
+    // Arrays may be created using the array constructor and dimensioned
     // as 1D, 2D, 3D; however, the values in these arrays will be undefined
     array undefined_1D(100);        // 1D array with 100 elements
     array undefined_2D(10, 100);    // 2D array of size 10 x 100
@@ -31,20 +31,20 @@ TEST(GettingStarted, SNIPPET_getting_started_gen)
     //! [ex_getting_started_gen]
     // Generate an array of size three filled with zeros.
     // If no data type is specified, ArrayFire defaults to f32.
-    // The af::constant function generates the data on the device.
+    // The constant function generates the data on the device.
     array zeros      = constant(0, 3);
 
     // Generate a 1x4 array of uniformly distributed [0,1] random numbers
-    // The af::randu function generates the data on the device.
+    // The randu function generates the data on the device.
     array rand1      = randu(1, 4);
 
     // Generate a 2x2 array (or matrix, if you prefer) of random numbers
     // sampled from a normal distribution.
-    // The af::randn function generates data on the device.
+    // The randn function generates data on the device.
     array rand2      = randn(2, 2);
 
     // Generate a 3x3 identity matrix. The data is generated on the device.
-    array iden       = af::identity(3, 3);
+    array iden       = identity(3, 3);
 
     // Lastly, create a 2x1 array (column vector) of uniformly distributed
     // 32-bit complex numbers (c32 data type):
@@ -88,7 +88,7 @@ TEST(GettingStarted, SNIPPET_getting_started_init)
     // constructor. Here we copy the data into a 2x3 matrix:
     array A(2, 3, hA);
 
-    // ArrayFire provides a convenince function for printing af::array
+    // ArrayFire provides a convenince function for printing array
     // objects in case you wish to see how the data is stored:
     af_print(A);
 
@@ -144,7 +144,7 @@ TEST(GettingStarted, SNIPPET_getting_started_dims)
     // the `dims` function:
     printf("dims = [%lld %lld]\n", a.dims(0), a.dims(1)); // 4,5
 
-    // Or the elements of a af::dim4 object:
+    // Or the elements of a dim4 object:
     dim4 dims = a.dims();
     printf("dims = [%lld %lld]\n", dims[0], dims[1]); // 4,5
     //! [ex_getting_started_dims]
@@ -188,7 +188,7 @@ TEST(GettingStarted, SNIPPET_getting_started_arith)
 {
     //! [ex_getting_started_arith]
     array R = randu(3, 3);
-    af_print(constant(1, 3, 3) + af::complex(sin(R)));  // will be c32
+    af_print(constant(1, 3, 3) + complex(sin(R)));  // will be c32
 
     // rescale complex values to unit circle
     array a = randn(5, c32);
@@ -296,7 +296,7 @@ TEST(GettingStarted, SNIPPET_getting_started_constants)
 {
     //! [ex_getting_started_constants]
     array A = randu(5,5);
-    A(where(A > .5)) = af::NaN;
+    A(where(A > .5)) = NaN;
 
     array x = randu(10e6), y = randu(10e6);
     double pi_est = 4 * sum<float>(hypot(x,y) < 1) / 10e6;

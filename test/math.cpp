@@ -13,9 +13,13 @@
 #include <testHelpers.hpp>
 
 // This makes the macros cleaner
-using namespace std;
-using namespace af;
 using std::abs;
+using std::endl;
+using std::vector;
+using af::array;
+using af::dtype_traits;
+using af::exception;
+using af::randu;
 
 const int num = 10000;
 const float flt_err = 1e-3;
@@ -36,19 +40,19 @@ T sigmoid(T in)
         try {                                                       \
             if (noDoubleTests<T>()) return;                         \
             af_dtype ty = (af_dtype)dtype_traits<T>::af_type;       \
-            af::array a = (hi - lo) * randu(num, ty) + lo + err;    \
-            af::eval(a);                                            \
-            af::array b = af::func(a);                              \
-            std::vector<T> h_a(a.elements());                       \
-            std::vector<T> h_b(b.elements());                       \
+            array a = (hi - lo) * randu(num, ty) + lo + err;    \
+            eval(a);                                            \
+            array b = func(a);                              \
+            vector<T> h_a(a.elements());                       \
+            vector<T> h_b(b.elements());                       \
             a.host(&h_a[0]);                                        \
             b.host(&h_b[0]);                                        \
                                                                     \
             for (int i = 0; i < num; i++) {                         \
                 ASSERT_NEAR(h_b[i], func(h_a[i]), err) <<           \
-                    "for value: " << h_a[i] << std::endl;           \
+                    "for value: " << h_a[i] << endl;           \
             }                                                       \
-        } catch (af::exception &ex) {                               \
+        } catch (exception &ex) {                               \
             FAIL() << ex.what();                                    \
         }                                                           \
     }                                                               \
@@ -59,22 +63,22 @@ T sigmoid(T in)
         try {                                                       \
             if (noDoubleTests<T>()) return;                         \
             af_dtype ty = (af_dtype)dtype_traits<T>::af_type;       \
-            af::array a = (hi - lo) * randu(num, ty) + lo + err;    \
-            af::eval(a);                                            \
-            af::array b = af::func(a);                              \
-            std::vector<T> h_a(a.elements());                       \
-            std::vector<T> h_b(b.elements());                       \
+            array a = (hi - lo) * randu(num, ty) + lo + err;    \
+            eval(a);                                            \
+            array b = func(a);                              \
+            vector<T> h_a(a.elements());                       \
+            vector<T> h_b(b.elements());                       \
             a.host(&h_a[0]);                                        \
             b.host(&h_b[0]);                                        \
                                                                     \
             for (int i = 0; i < num; i++) {                         \
                 T res = func(h_a[i]);                               \
                 ASSERT_NEAR(real(h_b[i]), real(res), err) <<        \
-                    "for real value: " << h_a[i] << std::endl;      \
+                    "for real value: " << h_a[i] << endl;      \
                 ASSERT_NEAR(imag(h_b[i]), imag(res), err) <<        \
-                    "for imag value: " << h_a[i] << std::endl;      \
+                    "for imag value: " << h_a[i] << endl;      \
             }                                                       \
-        } catch (af::exception &ex) {                               \
+        } catch (exception &ex) {                               \
             FAIL() << ex.what();                                    \
         }                                                           \
     }                                                               \
@@ -149,8 +153,8 @@ MATH_TESTS_REAL(erfc)
 
 TEST(MathTests, Not)
 {
-    af::array a = af::randu(5, 5, b8);
-    af::array b = !a;
+    array a = randu(5, 5, b8);
+    array b = !a;
     char *ha = a.host<char>();
     char *hb = b.host<char>();
 

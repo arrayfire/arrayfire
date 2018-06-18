@@ -13,27 +13,34 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
-using namespace af;
 using std::vector;
+using af::array;
+using af::dtype;
+using af::dtype_traits;
+using af::median;
+using af::randu;
+using af::seq;
+using af::span;
+using af::sum;
 
 template<typename Ti>
-af::array generateArray(int nx, int ny, int nz, int nw)
+array generateArray(int nx, int ny, int nz, int nw)
 {
-    array a = randu(nx, ny, nz, nw, (af::dtype)dtype_traits<Ti>::af_type);
+    array a = randu(nx, ny, nz, nw, (dtype)dtype_traits<Ti>::af_type);
     return a;
 }
 
 template<>
-af::array generateArray<int>(int nx, int ny, int nz, int nw)
+array generateArray<int>(int nx, int ny, int nz, int nw)
 {
-    array a = (randu(nx, ny, nz, nw, (af::dtype)dtype_traits<float>::af_type) * 1e6).as(s32);
+    array a = (randu(nx, ny, nz, nw, (dtype)dtype_traits<float>::af_type) * 1e6).as(s32);
     return a;
 }
 
 template<>
-af::array generateArray<unsigned int>(int nx, int ny, int nz, int nw)
+array generateArray<unsigned int>(int nx, int ny, int nz, int nw)
 {
-    array a = (randu(nx, ny, nz, nw, (af::dtype)dtype_traits<float>::af_type) * 1e6).as(u32);
+    array a = (randu(nx, ny, nz, nw, (dtype)dtype_traits<float>::af_type) * 1e6).as(u32);
     return a;
 }
 
@@ -49,7 +56,7 @@ void median_flat(int nx, int ny=1, int nz=1, int nw=1)
 
     To verify;
 
-    To *h_sa = sa.as((af_dtype)af::dtype_traits<To>::af_type).host<To>();
+    To *h_sa = sa.as((af_dtype)dtype_traits<To>::af_type).host<To>();
     if(sa.dims(0) % 2 == 1) {
         verify = h_sa[mid - 1];
     } else {
@@ -81,8 +88,8 @@ void median_test(int nx, int ny=1, int nz=1, int nw=1)
     array sa = sort(a, dim);
 
     double mid = (a.dims(dim) + 1) / 2;
-    af::seq mSeq[4] = {span, span, span, span};
-    mSeq[dim] = af::seq(mid, mid, 1.0);
+    seq mSeq[4] = {span, span, span, span};
+    mSeq[dim] = seq(mid, mid, 1.0);
 
     if(sa.dims(dim) % 2 == 1) {
         mSeq[dim] = mSeq[dim] - 1.0;
@@ -90,7 +97,7 @@ void median_test(int nx, int ny=1, int nz=1, int nw=1)
     } else {
         dim_t sdim[4] = {0};
         sdim[dim] = 1;
-        sa = sa.as((af_dtype)af::dtype_traits<To>::af_type);
+        sa = sa.as((af_dtype)dtype_traits<To>::af_type);
         array sas = shift(sa, sdim[0], sdim[1], sdim[2], sdim[3]);
         verify = ((sa + sas) / 2)(mSeq[0], mSeq[1], mSeq[2], mSeq[3]);
     }
@@ -99,7 +106,7 @@ void median_test(int nx, int ny=1, int nz=1, int nw=1)
     array out = median(a, dim);
 
     ASSERT_EQ(out.dims() == verify.dims(), true);
-    ASSERT_NEAR(0, sum<double>(af::abs(out - verify)), 1e-5);
+    ASSERT_NEAR(0, sum<double>(abs(out - verify)), 1e-5);
 }
 
 #define MEDIAN_FLAT(To, Ti)                     \

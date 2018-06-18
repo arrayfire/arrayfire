@@ -20,10 +20,11 @@
 
 using std::vector;
 using std::string;
-using std::cout;
 using std::endl;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class Iota : public ::testing::Test
@@ -44,22 +45,22 @@ typedef ::testing::Types<float, double, int, unsigned int, intl, uintl, unsigned
 TYPED_TEST_CASE(Iota, TestTypes);
 
 template<typename T>
-void iotaTest(const af::dim4 idims, const af::dim4 tdims)
+void iotaTest(const dim4 idims, const dim4 tdims)
 {
     if (noDoubleTests<T>()) return;
 
     af_array outArray = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_iota(&outArray, idims.ndims(), idims.get(),
-               tdims.ndims(), tdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+               tdims.ndims(), tdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     af_array temp0 = 0, temp1 = 0, temp2 = 0;
-    af::dim4 tempdims(idims.elements());
-    af::dim4 fulldims;
+    dim4 tempdims(idims.elements());
+    dim4 fulldims;
     for(unsigned i = 0; i < 4; i++) {
         fulldims[i] = idims[i] * tdims[i];
     }
-    ASSERT_EQ(AF_SUCCESS, af_range(&temp2, tempdims.ndims(), tempdims.get(), 0, (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_range(&temp2, tempdims.ndims(), tempdims.get(), 0, (af_dtype) dtype_traits<T>::af_type));
     ASSERT_EQ(AF_SUCCESS, af_moddims(&temp1, temp2, idims.ndims(), idims.get()));
     ASSERT_EQ(AF_SUCCESS, af_tile(&temp0, temp1, tdims[0], tdims[1], tdims[2], tdims[3]));
 
@@ -72,7 +73,7 @@ void iotaTest(const af::dim4 idims, const af::dim4 tdims)
 
     // Compare result
     for(int i = 0; i < (int) fulldims.elements(); i++)
-        ASSERT_EQ(tileData[i], outData[i]) << "at: " << i << std::endl;
+        ASSERT_EQ(tileData[i], outData[i]) << "at: " << i << endl;
 
     if(outArray  != 0) af_release_array(outArray);
     if(temp0     != 0) af_release_array(temp0);
@@ -83,7 +84,7 @@ void iotaTest(const af::dim4 idims, const af::dim4 tdims)
 #define IOTA_INIT(desc, x, y, z, w, a, b, c, d)                                             \
     TYPED_TEST(Iota, desc)                                                                  \
     {                                                                                       \
-        iotaTest<TypeParam>(af::dim4(x, y, z, w), af::dim4(a, b, c, d));                    \
+        iotaTest<TypeParam>(dim4(x, y, z, w), dim4(a, b, c, d));                    \
     }
 
     IOTA_INIT(Iota1D0, 100,  1, 1, 1, 2, 3, 1, 1);
@@ -106,19 +107,23 @@ void iotaTest(const af::dim4 idims, const af::dim4 tdims)
 
 ///////////////////////////////// CPP ////////////////////////////////////
 //
+
+using af::array;
+using af::iota;
+
 TEST(Iota, CPP)
 {
     if (noDoubleTests<float>()) return;
 
-    af::dim4 idims(23, 15, 1, 1);
-    af::dim4 tdims(2, 2, 1, 1);
-    af::dim4 fulldims;
+    dim4 idims(23, 15, 1, 1);
+    dim4 tdims(2, 2, 1, 1);
+    dim4 fulldims;
     for(unsigned i = 0; i < 4; i++) {
         fulldims[i] = idims[i] * tdims[i];
     }
 
-    af::array output = af::iota(idims, tdims);
-    af::array tileArray = af::tile(af::moddims(af::range(af::dim4(idims.elements()), 0), idims), tdims);
+    array output = iota(idims, tdims);
+    array tileArray = tile(moddims(range(dim4(idims.elements()), 0), idims), tdims);
 
     // Get result
     vector<float> outData (fulldims.elements());
@@ -129,5 +134,5 @@ TEST(Iota, CPP)
 
     // Compare result
     for(int i = 0; i < (int)fulldims.elements(); i++)
-        ASSERT_EQ(tileData[i], outData[i]) << "at: " << i << std::endl;
+        ASSERT_EQ(tileData[i], outData[i]) << "at: " << i << endl;
 }

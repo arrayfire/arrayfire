@@ -20,10 +20,11 @@
 
 using std::vector;
 using std::string;
-using std::cout;
 using std::endl;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class Grad : public ::testing::Test
@@ -48,12 +49,12 @@ void gradTest(string pTestFile, const unsigned resultIdx0, const unsigned result
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> > in;
     vector<vector<T> > tests;
     readTests<T, T, float>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
+    dim4 idims = numDims[0];
 
     af_array inArray = 0;
     af_array tempArray = 0;
@@ -61,11 +62,11 @@ void gradTest(string pTestFile, const unsigned resultIdx0, const unsigned result
     af_array g1Array = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     ASSERT_EQ(AF_SUCCESS, af_gradient(&g0Array, &g1Array, inArray));
@@ -77,7 +78,7 @@ void gradTest(string pTestFile, const unsigned resultIdx0, const unsigned result
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], grad0Data[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], grad0Data[elIter]) << "at: " << elIter << endl;
     }
 
     // Get result
@@ -86,7 +87,7 @@ void gradTest(string pTestFile, const unsigned resultIdx0, const unsigned result
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], grad1Data[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx1][elIter], grad1Data[elIter]) << "at: " << elIter << endl;
     }
 
 
@@ -113,6 +114,9 @@ void gradTest(string pTestFile, const unsigned resultIdx0, const unsigned result
 
 /////////////////////////////////////// CPP ///////////////////////////////////////////
 //
+
+using af::array;
+
 TEST(Grad, CPP)
 {
     if (noDoubleTests<float>()) return;
@@ -120,16 +124,16 @@ TEST(Grad, CPP)
     const unsigned resultIdx0 = 0;
     const unsigned resultIdx1 = 1;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, float>(string(TEST_DIR"/grad/grad3D.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
+    dim4 idims = numDims[0];
 
-    af::array input(idims, &(in[0].front()));
-    af::array g0, g1;
-    af::grad(g0, g1, input);
+    array input(idims, &(in[0].front()));
+    array g0, g1;
+    grad(g0, g1, input);
 
     size_t nElems = tests[resultIdx0].size();
     // Get result
@@ -138,7 +142,7 @@ TEST(Grad, CPP)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], grad0Data[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], grad0Data[elIter]) << "at: " << elIter << endl;
     }
 
     // Get result
@@ -147,7 +151,7 @@ TEST(Grad, CPP)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], grad1Data[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx1][elIter], grad1Data[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -157,14 +161,17 @@ TEST(Grad, CPP)
 
 TEST(Grad, MaxDim)
 {
+    using af::constant;
+    using af::sum;
+
     if (noDoubleTests<float>()) return;
 
     const size_t largeDim = 65535 * 8 + 1;
 
-    af::array input = af::constant(1, 2, largeDim);
-    af::array g0, g1;
-    af::grad(g0, g1, input);
+    array input = constant(1, 2, largeDim);
+    array g0, g1;
+    grad(g0, g1, input);
 
-    ASSERT_EQ(0.f, af::sum<float>(g0));
-    ASSERT_EQ(0.f, af::sum<float>(g1));
+    ASSERT_EQ(0.f, sum<float>(g0));
+    ASSERT_EQ(0.f, sum<float>(g1));
 }

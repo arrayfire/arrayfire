@@ -23,8 +23,14 @@ using std::string;
 using std::cout;
 using std::endl;
 using std::abs;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dtype;
+using af::dtype_traits;
+using af::randu;
+using af::seq;
+using af::span;
 
 template<typename T>
 class svd : public ::testing::Test
@@ -57,25 +63,25 @@ void svdTest(const int M, const int N)
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
 
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
 
-    af::array A = af::randu(M, N, ty);
+    array A = randu(M, N, ty);
 
     //! [ex_svd_reg]
-    af::array U, S, Vt;
+    array U, S, Vt;
     af::svd(U, S, Vt, A);
 
     const int MN = std::min(M, N);
 
-    af::array UU = U(af::span, af::seq(MN));
-    af::array SS = af::diag(S, 0, false).as(ty);
-    af::array VV = Vt(af::seq(MN), af::span);
+    array UU = U(span, seq(MN));
+    array SS = diag(S, 0, false).as(ty);
+    array VV = Vt(seq(MN), span);
 
-    af::array AA = matmul(UU, SS, VV);
+    array AA = matmul(UU, SS, VV);
     //! [ex_svd_reg]
 
-    std::vector<T> hA(M * N);
-    std::vector<T> hAA(M * N);
+    vector<T> hA(M * N);
+    vector<T> hAA(M * N);
 
     A.host(&hA[0]);
     AA.host(&hAA[0]);
