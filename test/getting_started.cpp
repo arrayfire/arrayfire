@@ -232,11 +232,11 @@ TEST(GettingStarted, SNIPPET_getting_started_ptr)
     array a = randu(3, f32);
 
     // Copy an array on the device to the host:
-    float * host_a = a.host<float>();
+    float *host_a = a.host<float>();
     // access the host data as a normal array
     printf("host_a[2] = %g\n", host_a[2]);  // last element
-    // and free memory using delete:
-    delete[] host_a;
+    // and free memory using freeHost:
+    freeHost(host_a);
 
     // Get access to the device memory for a CUDA kernel
     float * d_cuda = a.device<float>();    // no need to free this

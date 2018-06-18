@@ -40,19 +40,19 @@ T sigmoid(T in)
         try {                                                       \
             if (noDoubleTests<T>()) return;                         \
             af_dtype ty = (af_dtype)dtype_traits<T>::af_type;       \
-            array a = (hi - lo) * randu(num, ty) + lo + err;    \
-            eval(a);                                            \
-            array b = func(a);                              \
-            vector<T> h_a(a.elements());                       \
-            vector<T> h_b(b.elements());                       \
+            array a = (hi - lo) * randu(num, ty) + lo + err;        \
+            eval(a);                                                \
+            array b = func(a);                                      \
+            vector<T> h_a(a.elements());                            \
+            vector<T> h_b(b.elements());                            \
             a.host(&h_a[0]);                                        \
             b.host(&h_b[0]);                                        \
                                                                     \
             for (int i = 0; i < num; i++) {                         \
                 ASSERT_NEAR(h_b[i], func(h_a[i]), err) <<           \
-                    "for value: " << h_a[i] << endl;           \
+                    "for value: " << h_a[i] << endl;                \
             }                                                       \
-        } catch (exception &ex) {                               \
+        } catch (exception &ex) {                                   \
             FAIL() << ex.what();                                    \
         }                                                           \
     }                                                               \
@@ -63,22 +63,22 @@ T sigmoid(T in)
         try {                                                       \
             if (noDoubleTests<T>()) return;                         \
             af_dtype ty = (af_dtype)dtype_traits<T>::af_type;       \
-            array a = (hi - lo) * randu(num, ty) + lo + err;    \
-            eval(a);                                            \
-            array b = func(a);                              \
-            vector<T> h_a(a.elements());                       \
-            vector<T> h_b(b.elements());                       \
+            array a = (hi - lo) * randu(num, ty) + lo + err;        \
+            eval(a);                                                \
+            array b = func(a);                                      \
+            vector<T> h_a(a.elements());                            \
+            vector<T> h_b(b.elements());                            \
             a.host(&h_a[0]);                                        \
             b.host(&h_b[0]);                                        \
                                                                     \
             for (int i = 0; i < num; i++) {                         \
                 T res = func(h_a[i]);                               \
                 ASSERT_NEAR(real(h_b[i]), real(res), err) <<        \
-                    "for real value: " << h_a[i] << endl;      \
+                    "for real value: " << h_a[i] << endl;           \
                 ASSERT_NEAR(imag(h_b[i]), imag(res), err) <<        \
-                    "for imag value: " << h_a[i] << endl;      \
+                    "for imag value: " << h_a[i] << endl;           \
             }                                                       \
-        } catch (exception &ex) {                               \
+        } catch (exception &ex) {                                   \
             FAIL() << ex.what();                                    \
         }                                                           \
     }                                                               \

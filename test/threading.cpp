@@ -565,7 +565,7 @@ void cppMatMulCheck(int targetDevice, string TestFile)
     }
 }
 
-#define TEST_BLAS_FOR_TYPE(TypeName)                                         \
+#define TEST_BLAS_FOR_TYPE(TypeName)                                                \
     tests.emplace_back(cppMatMulCheck<TypeName, false>,                             \
             nextTargetDeviceId()%numDevices, TEST_DIR "/blas/Basic.test");          \
     tests.emplace_back(cppMatMulCheck<TypeName, false>,                             \

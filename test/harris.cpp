@@ -139,9 +139,9 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size)
     }
 }
 
-#define HARRIS_INIT(desc, image, sigma, block_size) \
-    TYPED_TEST(Harris, desc) \
-    {   \
+#define HARRIS_INIT(desc, image, sigma, block_size)                     \
+    TYPED_TEST(Harris, desc)                                            \
+    {                                                                   \
         harrisTest<TypeParam>(string(TEST_DIR"/harris/"#image"_"#sigma"_"#block_size".test"), sigma, block_size); \
     }
 

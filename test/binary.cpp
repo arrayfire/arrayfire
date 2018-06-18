@@ -57,7 +57,7 @@ af::array randgen(const int num, dtype ty)
         Tc *h_c = c.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], func(h_a[i], h_b[i])) <<                  \
-              "for values: " << h_a[i]  << "," << h_b[i] << endl;  \
+                "for values: " << h_a[i]  << "," << h_b[i] << endl;     \
         af_free_host(h_a);                                              \
         af_free_host(h_b);                                              \
         af_free_host(h_c);                                              \
@@ -94,7 +94,7 @@ af::array randgen(const int num, dtype ty)
         Tb *h_c = c.host<Tb>();                                         \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], func(h_a, h_b[i])) <<                     \
-              "for values: " << h_a  << "," << h_b[i] << endl;     \
+                "for values: " << h_a  << "," << h_b[i] << endl;        \
         af_free_host(h_b);                                              \
         af_free_host(h_c);                                              \
     }                                                                   \
@@ -117,7 +117,7 @@ af::array randgen(const int num, dtype ty)
         Tc *h_c = c.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
             MY_ASSERT_NEAR(h_c[i], func(h_a[i], h_b[i]), (err)) <<      \
-                "for values: " << h_a[i]  << "," << h_b[i] << endl; \
+                "for values: " << h_a[i]  << "," << h_b[i] << endl;     \
         af_free_host(h_a);                                              \
         af_free_host(h_b);                                              \
         af_free_host(h_c);                                              \
@@ -136,7 +136,7 @@ af::array randgen(const int num, dtype ty)
         Td *h_d = c.host<Td>();                                         \
         for (int i = 0; i < num; i++)                                   \
             MY_ASSERT_NEAR(h_d[i], func(h_a[i], h_b), err) <<           \
-                "for values: " << h_a[i]  << "," << h_b << endl;   \
+                "for values: " << h_a[i]  << "," << h_b << endl;        \
         af_free_host(h_a);                                              \
         af_free_host(h_d);                                              \
     }                                                                   \
@@ -155,7 +155,7 @@ af::array randgen(const int num, dtype ty)
         Te *h_e = c.host<Te>();                                         \
         for (int i = 0; i < num; i++)                                   \
             MY_ASSERT_NEAR(h_e[i], func(h_a, h_b[i]), err) <<           \
-              "for values: " << h_a  << "," << h_b[i] << endl;     \
+                "for values: " << h_a  << "," << h_b[i] << endl;        \
         af_free_host(h_b);                                              \
         af_free_host(h_e);                                              \
     }                                                                   \
@@ -264,7 +264,7 @@ BINARY_TESTS_NEAR_GENERAL(cfloat, double, cdouble, cfloat, cdouble, div, 1e-5)
         for (int i = 0; i < num; i++)                       \
             ASSERT_EQ(h_c[i], valc) <<                      \
                 "for values: " << h_a[i]  <<                \
-                "," << h_b[i] << endl;                 \
+                "," << h_b[i] << endl;                      \
         af_free_host(h_a);                                  \
         af_free_host(h_b);                                  \
         af_free_host(h_c);                                  \

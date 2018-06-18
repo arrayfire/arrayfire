@@ -105,7 +105,7 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
 
 
         // Delete
-        freeHost(outData);
+        delete[] outData;
         ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
     }
 
@@ -231,7 +231,7 @@ void cppReduceTest(string pTestFile)
         }
 
         // Delete
-        freeHost(outData);
+        delete[] outData;
     }
 }
 

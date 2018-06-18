@@ -138,10 +138,10 @@ void scanByKeyTest(dim4 dims, int scanDim, vector<int> nodeLengths,
 #define SCAN_BY_KEY_TEST(FN, X, Y, Z, W, Ti, To, INC, DIM, DSTART, DEND, EPS)   \
 TEST(ScanByKey,Test_Scan_By_Key_##FN##_##Ti##_##INC##_##DIM)                    \
 {                                                                               \
-    dim4 dims(X, Y, Z, W);                                                  \
+    dim4 dims(X, Y, Z, W);                                                      \
     int scanDim = DIM;                                                          \
     int nodel[] = {37, 256};                                                    \
-    vector<int> nodeLengths(nodel, nodel+sizeof(nodel)/sizeof(int));       \
+    vector<int> nodeLengths(nodel, nodel+sizeof(nodel)/sizeof(int));            \
     int keyStart = 0;                                                           \
     int keyEnd = 15;                                                            \
     int dataStart = DSTART;                                                     \

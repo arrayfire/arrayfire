@@ -118,10 +118,10 @@ void susanTest(string pTestFile, float t, float g)
     }
 }
 
-#define SUSAN_TEST(image, tval, gval) \
-    TYPED_TEST(Susan, image) \
-    {   \
-        susanTest<TypeParam>(string(TEST_DIR "/susan/"#image".test"), tval, gval);\
+#define SUSAN_TEST(image, tval, gval)                                   \
+    TYPED_TEST(Susan, image)                                            \
+    {                                                                   \
+        susanTest<TypeParam>(string(TEST_DIR "/susan/"#image".test"), tval, gval); \
     }
 
 SUSAN_TEST(man_t32_g10, 32, 10);

@@ -70,7 +70,7 @@ void transposeip_test(dim4 dims)
 #define INIT_TEST(Side, D3, D4)                                                     \
     TYPED_TEST(Transpose, TranposeIP_##Side)                                        \
     {                                                                               \
-        transposeip_test<TypeParam>(dim4(Side, Side, D3, D4));                  \
+        transposeip_test<TypeParam>(dim4(Side, Side, D3, D4));                      \
     }
 
 INIT_TEST(10, 1, 1);

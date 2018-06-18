@@ -152,15 +152,15 @@ void fastTest(string pTestFile, bool nonmax)
     }
 }
 
-#define FLOAT_FAST_INIT(desc, image, nonmax) \
-    TYPED_TEST(FloatFAST, desc) \
-    {   \
+#define FLOAT_FAST_INIT(desc, image, nonmax)                            \
+    TYPED_TEST(FloatFAST, desc)                                         \
+    {                                                                   \
         fastTest<TypeParam>(string(TEST_DIR"/fast/"#image"_float.test"), nonmax); \
     }
 
-#define FIXED_FAST_INIT(desc, image, nonmax) \
-    TYPED_TEST(FixedFAST, desc) \
-    {   \
+#define FIXED_FAST_INIT(desc, image, nonmax)                            \
+    TYPED_TEST(FixedFAST, desc)                                         \
+    {                                                                   \
         fastTest<TypeParam>(string(TEST_DIR"/fast/"#image"_fixed.test"), nonmax); \
     }
 

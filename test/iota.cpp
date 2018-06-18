@@ -81,10 +81,10 @@ void iotaTest(const dim4 idims, const dim4 tdims)
     if(temp2     != 0) af_release_array(temp2);
 }
 
-#define IOTA_INIT(desc, x, y, z, w, a, b, c, d)                                             \
-    TYPED_TEST(Iota, desc)                                                                  \
-    {                                                                                       \
-        iotaTest<TypeParam>(dim4(x, y, z, w), dim4(a, b, c, d));                    \
+#define IOTA_INIT(desc, x, y, z, w, a, b, c, d)                     \
+    TYPED_TEST(Iota, desc)                                          \
+    {                                                               \
+        iotaTest<TypeParam>(dim4(x, y, z, w), dim4(a, b, c, d));    \
     }
 
     IOTA_INIT(Iota1D0, 100,  1, 1, 1, 2, 3, 1, 1);

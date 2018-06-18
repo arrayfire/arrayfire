@@ -14,14 +14,14 @@ int main(int argc, char ** argv) {
   int device = argc > 2 ? atoi(argv[2]) : 0;
   setDevice(device);
   int rng = argc > 3 ? atoi(argv[3]) : 100;
-  setDefaultRandomEngineType(static_cast<randomEngineType>(rng)); 	
-  
+  setDefaultRandomEngineType(static_cast<randomEngineType>(rng));
+
   setSeed(0xfe47fe0cc078ec30ULL);
   int samples = 1024 * 1024;
   while (1) {
     array values = randu(samples, u32);
     uint32_t *pvalues = values.host<uint32_t>();
     fwrite((void*) pvalues, samples * sizeof(*pvalues), 1, stdout);
-    free(pvalues);
+    freeHost(pvalues);
   }
 }

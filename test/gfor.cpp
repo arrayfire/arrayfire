@@ -249,6 +249,9 @@ TEST(BatchFunc, 2D0)
     }
 
     gforSet(false);
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hC);
 }
 
 TEST(BatchFunc, 2D1)
@@ -273,6 +276,9 @@ TEST(BatchFunc, 2D1)
     }
 
     gforSet(false);
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hC);
 }
 
 TEST(BatchFunc, 3D0)
@@ -300,6 +306,9 @@ TEST(BatchFunc, 3D0)
     }
 
     gforSet(false);
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hC);
 }
 
 TEST(BatchFunc, 3D1)
@@ -327,6 +336,9 @@ TEST(BatchFunc, 3D1)
     }
 
     gforSet(false);
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hC);
 }
 
 TEST(BatchFunc, 3D2)
@@ -354,6 +366,9 @@ TEST(BatchFunc, 3D2)
     }
 
     gforSet(false);
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hC);
 }
 
 TEST(BatchFunc, 3D01)
@@ -381,6 +396,9 @@ TEST(BatchFunc, 3D01)
     }
 
     gforSet(false);
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hC);
 }
 
 TEST(BatchFunc, 3D_1_2)
@@ -408,6 +426,9 @@ TEST(BatchFunc, 3D_1_2)
     }
 
     gforSet(false);
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hC);
 }
 
 TEST(BatchFunc, 4D3)
@@ -440,6 +461,9 @@ TEST(BatchFunc, 4D3)
     }
 
     gforSet(false);
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hC);
 }
 
 
@@ -472,6 +496,9 @@ TEST(BatchFunc, 4D_2_3)
     }
 
     gforSet(false);
+    freeHost(hA);
+    freeHost(hB);
+    freeHost(hC);
 }
 
 TEST(ASSIGN, ISSUE_1127)

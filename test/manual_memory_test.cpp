@@ -40,7 +40,7 @@ TEST(Memory, recover)
         for (int i = 0; i < 1000 * 1000; i++) {
             ASSERT_EQ(h_a[i], val);
         }
-        delete[] h_a;
+        freeHost(h_a);
     }
 
 }

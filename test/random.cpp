@@ -115,17 +115,17 @@ void randnTest(dim4 &dims)
     if(outArray != 0) af_release_array(outArray);
 }
 
-#define RAND(d0, d1, d2, d3)                                    \
-    TYPED_TEST(Random,randu_##d0##_##d1##_##d2##_##d3)          \
-    {                                                           \
+#define RAND(d0, d1, d2, d3)                                \
+    TYPED_TEST(Random,randu_##d0##_##d1##_##d2##_##d3)      \
+    {                                                       \
         dim4 dims(d0, d1, d2, d3);                          \
-        randuTest<TypeParam>(dims);                             \
-    }                                                           \
-    TYPED_TEST(Random_norm,randn_##d0##_##d1##_##d2##_##d3)     \
-    {                                                           \
+        randuTest<TypeParam>(dims);                         \
+    }                                                       \
+    TYPED_TEST(Random_norm,randn_##d0##_##d1##_##d2##_##d3) \
+    {                                                       \
         dim4 dims(d0, d1, d2, d3);                          \
-        randnTest<TypeParam>(dims);                             \
-    }                                                           \
+        randnTest<TypeParam>(dims);                         \
+    }                                                       \
 
 RAND(1024, 1024,    1,    1);
 RAND( 512,  512,    1,    1);
