@@ -99,6 +99,15 @@ getHandle(const detail::Array<T> &A)
 }
 
 template<typename T>
+static af_array retainHandle(const af_array in)
+{
+    detail::Array<T> *A = reinterpret_cast<detail::Array<T> *>(in);
+    detail::Array<T> *out = detail::initArray<T>();
+    *out= *A;
+    return reinterpret_cast<af_array>(out);
+}
+
+template<typename T>
 static af_array createHandle(af::dim4 d)
 {
     return getHandle(detail::createEmptyArray<T>(d));
