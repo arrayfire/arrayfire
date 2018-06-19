@@ -94,6 +94,7 @@ static void harris_demo(bool console)
             }
         }
     }
+    freeHost(h_corners);
 
     printf("Corners found: %u\n", good_corners);
 
