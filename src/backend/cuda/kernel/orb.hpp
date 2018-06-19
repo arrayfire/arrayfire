@@ -339,7 +339,7 @@ void orb(unsigned* out_feat,
     unsigned total_feat = 0;
 
     // Calculate a separable Gaussian kernel
-    Array<convAccT> gauss_filter = *initArray<convAccT>();
+    Array<convAccT> gauss_filter = createEmptyArray<convAccT>(dim4());
     if (blur_img) {
         unsigned gauss_len = 9;
         vector<convAccT> h_gauss(gauss_len);
