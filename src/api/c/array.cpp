@@ -236,16 +236,6 @@ af_err af_release_array(af_array arr)
     return AF_SUCCESS;
 }
 
-
-template<typename T>
-static af_array retainHandle(const af_array in)
-{
-    detail::Array<T> *A = reinterpret_cast<detail::Array<T> *>(in);
-    detail::Array<T> *out = detail::initArray<T>();
-    *out= *A;
-    return reinterpret_cast<af_array>(out);
-}
-
 af_array retain(const af_array in)
 {
     const ArrayInfo& info = getInfo(in, false, false);
