@@ -23,8 +23,15 @@ using std::string;
 using std::cout;
 using std::endl;
 using std::abs;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::det;
+using af::dim4;
+using af::dtype;
+using af::dtype_traits;
+using af::join;
+using af::randu;
 
 template<typename T>
 class Rank : public ::testing::Test
@@ -36,7 +43,7 @@ class Det : public ::testing::Test
 {
 };
 
-typedef ::testing::Types<float, double, af::cfloat, af::cdouble> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 TYPED_TEST_CASE(Rank, TestTypes);
 TYPED_TEST_CASE(Det, TestTypes);
 
@@ -47,9 +54,9 @@ void rankSmall()
     if (noLAPACKTests()) return;
 
     T ha[] = {1, 4, 7, 2, 5, 8, 3, 6, 20};
-    af::array a(3, 3, ha);
+    array a(3, 3, ha);
 
-    ASSERT_EQ(3, (int)af::rank(a));
+    ASSERT_EQ(3, (int)rank(a));
 }
 
 template<typename T>
@@ -58,13 +65,13 @@ void rankBig(const int num)
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
 
-    af::dtype dt = (af::dtype)af::dtype_traits<T>::af_type;
-    af::array a = af::randu(num, num, dt);
-    ASSERT_EQ(num, (int)af::rank(a));
+    dtype dt = (dtype)dtype_traits<T>::af_type;
+    array a = randu(num, num, dt);
+    ASSERT_EQ(num, (int)rank(a));
 
-    af::array b = af::randu(num, num/2, dt);
-    ASSERT_EQ(num/2, (int)af::rank(b));
-    ASSERT_EQ(num/2, (int)af::rank(transpose(b)));
+    array b = randu(num, num/2, dt);
+    ASSERT_EQ(num/2, (int)rank(b));
+    ASSERT_EQ(num/2, (int)rank(transpose(b)));
 }
 
 template<typename T>
@@ -73,15 +80,15 @@ void rankLow(const int num)
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
 
-    af::dtype dt = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype dt = (dtype)dtype_traits<T>::af_type;
 
-    af::array a = af::randu(3 * num, num, dt);
-    af::array b = af::randu(3 * num, num, dt);
-    af::array c = a + 0.2 * b;
-    af::array in = join(1, a, b, c);
+    array a = randu(3 * num, num, dt);
+    array b = randu(3 * num, num, dt);
+    array c = a + 0.2 * b;
+    array in = join(1, a, b, c);
 
     // The last third is just a linear combination of first and second thirds
-    ASSERT_EQ(2 * num, (int)af::rank(in));
+    ASSERT_EQ(2 * num, (int)rank(in));
 }
 
 TYPED_TEST(Rank, small)
@@ -105,17 +112,17 @@ void detTest()
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
 
-    af::dtype dt = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype dt = (dtype)dtype_traits<T>::af_type;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<float> >   in;
     vector<vector<float> >   tests;
     readTests<float,float,float>(string(TEST_DIR"/lapack/detSmall.test"),numDims,in,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
-    af::array input = af::array(dims, &(in[0].front())).as(dt);
-    T output = af::det<T>(input);
+    array input = array(dims, &(in[0].front())).as(dt);
+    T output = det<T>(input);
 
     ASSERT_NEAR(abs((T)tests[0][0]), abs(output), 1e-6);
 }

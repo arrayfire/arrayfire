@@ -17,21 +17,35 @@
 #include <testHelpers.hpp>
 
 using std::vector;
-using namespace af;
+using af::NaN;
+using af::array;
+using af::cdouble;
+using af::cfloat;
+using af::constant;
+using af::dim4;
+using af::dtype;
+using af::dtype_traits;
+using af::eval;
+using af::randu;
+using af::select;
+using af::seq;
+using af::span;
+using af::sum;
+
 
 template<typename T>
 class Select : public ::testing::Test
 {
 };
 
-typedef ::testing::Types<float, double, af::cfloat, af::cdouble, uint, int, intl, uintl, uchar, char, short, ushort> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl, uchar, char, short, ushort> TestTypes;
 TYPED_TEST_CASE(Select, TestTypes);
 
 template<typename T>
 void selectTest(const dim4 &dims)
 {
     if (noDoubleTests<T>()) return;
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
 
     array a = randu(dims, ty);
     array b = randu(dims, ty);
@@ -47,10 +61,10 @@ void selectTest(const dim4 &dims)
 
     int num = (int)a.elements();
 
-    std::vector<T> ha(num);
-    std::vector<T> hb(num);
-    std::vector<T> hc(num);
-    std::vector<char> hcond(num);
+    vector<T> ha(num);
+    vector<T> hb(num);
+    vector<T> hc(num);
+    vector<char> hcond(num);
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -66,7 +80,7 @@ template<typename T, bool is_right>
 void selectScalarTest(const dim4 &dims)
 {
     if (noDoubleTests<T>()) return;
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
 
     array a = randu(dims, ty);
     array cond = randu(dims, ty) > a;
@@ -80,9 +94,9 @@ void selectScalarTest(const dim4 &dims)
 
     int num = (int)a.elements();
 
-    std::vector<T> ha(num);
-    std::vector<T> hc(num);
-    std::vector<char> hcond(num);
+    vector<T> ha(num);
+    vector<T> hc(num);
+    vector<char> hcond(num);
 
     a.host(&ha[0]);
     c.host(&hc[0]);
@@ -117,17 +131,17 @@ TYPED_TEST(Select, LeftScalar)
 TEST(Select, NaN)
 {
     dim4 dims(1000, 1250);
-    af::dtype ty = f32;
+    dtype ty = f32;
 
     array a = randu(dims, ty);
-    a(seq(a.dims(0) / 2), span, span, span) = af::NaN;
+    a(seq(a.dims(0) / 2), span, span, span) = NaN;
     float b = 0;
     array c = select(isNaN(a), b, a);
 
     int num = (int)a.elements();
 
-    std::vector<float> ha(num);
-    std::vector<float> hc(num);
+    vector<float> ha(num);
+    vector<float> hc(num);
 
     a.host(&ha[0]);
     c.host(&hc[0]);
@@ -140,14 +154,14 @@ TEST(Select, NaN)
 TEST(Select, ISSUE_1249)
 {
     dim4 dims(2, 3, 4);
-    array cond = af::randu(dims) > 0.5;
-    array a = af::randu(dims);
+    array cond = randu(dims) > 0.5;
+    array a = randu(dims);
     array b = select(cond, a - a * 0.9, a);
     array c = a - a * cond * 0.9;
 
     int num = (int)dims.elements();
-    std::vector<float> hb(num);
-    std::vector<float> hc(num);
+    vector<float> hb(num);
+    vector<float> hc(num);
 
     b.host(&hb[0]);
     c.host(&hc[0]);
@@ -160,14 +174,14 @@ TEST(Select, ISSUE_1249)
 TEST(Select, 4D)
 {
     dim4 dims(2, 3, 4, 2);
-    array cond = af::randu(dims) > 0.5;
-    array a = af::randu(dims);
+    array cond = randu(dims) > 0.5;
+    array a = randu(dims);
     array b = select(cond, a - a * 0.9, a);
     array c = a - a * cond * 0.9;
 
     int num = (int)dims.elements();
-    std::vector<float> hb(num);
-    std::vector<float> hc(num);
+    vector<float> hb(num);
+    vector<float> hc(num);
 
     b.host(&hb[0]);
     c.host(&hc[0]);
@@ -181,21 +195,21 @@ TEST(Select, Issue_1730)
 {
     const int n = 1000;
     const int m = 200;
-    af::array a = af::randu(n, m) - 0.5;
-    af::eval(a);
+    array a = randu(n, m) - 0.5;
+    eval(a);
 
-    std::vector<float> ha1(a.elements());
+    vector<float> ha1(a.elements());
     a.host(&ha1[0]);
 
     const int n1 = n / 2;
     const int n2 = n1 + n / 4;
 
-    a(af::seq(n1, n2), af::span) =
-        af::select(a(af::seq(n1, n2), af::span) >= 0,
-                   a(af::seq(n1, n2), af::span),
-                   a(af::seq(n1, n2), af::span) * -1);
+    a(seq(n1, n2), span) =
+        select(a(seq(n1, n2), span) >= 0,
+                   a(seq(n1, n2), span),
+                   a(seq(n1, n2), span) * -1);
 
-    std::vector<float> ha2(a.elements());
+    vector<float> ha2(a.elements());
     a.host(&ha2[0]);
 
     for (int j = 0; j < m; j++) {
@@ -213,22 +227,22 @@ TEST(Select, Issue_1730_scalar)
 {
     const int n = 1000;
     const int m = 200;
-    af::array a = af::randu(n, m) - 0.5;
-    af::eval(a);
+    array a = randu(n, m) - 0.5;
+    eval(a);
 
-    std::vector<float> ha1(a.elements());
+    vector<float> ha1(a.elements());
     a.host(&ha1[0]);
 
     const int n1 = n / 2;
     const int n2 = n1 + n / 4;
 
     float val = 0;
-    a(af::seq(n1, n2), af::span) =
-        af::select(a(af::seq(n1, n2), af::span) >= 0,
-                   a(af::seq(n1, n2), af::span),
+    a(seq(n1, n2), span) =
+        select(a(seq(n1, n2), span) >= 0,
+                   a(seq(n1, n2), span),
                    val);
 
-    std::vector<float> ha2(a.elements());
+    vector<float> ha2(a.elements());
     a.host(&ha2[0]);
 
     for (int j = 0; j < m; j++) {
@@ -246,38 +260,38 @@ TEST(Select, MaxDim)
 {
     const size_t largeDim = 65535 * 32 + 1;
 
-    af::array a    = af::constant(1, largeDim);
-    af::array b    = af::constant(0, largeDim);
-    af::array cond = af::constant(0, largeDim, b8);
+    array a    = constant(1, largeDim);
+    array b    = constant(0, largeDim);
+    array cond = constant(0, largeDim, b8);
 
-    af::array sel  = af::select(cond, a, b);
+    array sel  = select(cond, a, b);
     float sum = af::sum<float>(sel);
 
     ASSERT_FLOAT_EQ(sum, 0.f);
 
-    a    = af::constant(1, 1, largeDim);
-    b    = af::constant(0, 1, largeDim);
-    cond = af::constant(0, 1, largeDim, b8);
+    a    = constant(1, 1, largeDim);
+    b    = constant(0, 1, largeDim);
+    cond = constant(0, 1, largeDim, b8);
 
-    sel  = af::select(cond, a, b);
+    sel  = select(cond, a, b);
     sum = af::sum<float>(sel);
 
     ASSERT_FLOAT_EQ(sum, 0.f);
 
-    a    = af::constant(1, 1, 1, largeDim);
-    b    = af::constant(0, 1, 1, largeDim);
-    cond = af::constant(0, 1, 1, largeDim, b8);
+    a    = constant(1, 1, 1, largeDim);
+    b    = constant(0, 1, 1, largeDim);
+    cond = constant(0, 1, 1, largeDim, b8);
 
-    sel  = af::select(cond, a, b);
+    sel  = select(cond, a, b);
     sum = af::sum<float>(sel);
 
     ASSERT_FLOAT_EQ(sum, 0.f);
 
-    a    = af::constant(1, 1, 1, 1, largeDim);
-    b    = af::constant(0, 1, 1, 1, largeDim);
-    cond = af::constant(0, 1, 1, 1, largeDim, b8);
+    a    = constant(1, 1, 1, 1, largeDim);
+    b    = constant(0, 1, 1, 1, largeDim);
+    cond = constant(0, 1, 1, 1, largeDim, b8);
 
-    sel  = af::select(cond, a, b);
+    sel  = select(cond, a, b);
     sum = af::sum<float>(sel);
 
     ASSERT_FLOAT_EQ(sum, 0.f);

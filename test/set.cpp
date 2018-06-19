@@ -23,13 +23,15 @@ using std::cout;
 using std::endl;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 void uniqueTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<int> > data;
     vector<vector<int> > tests;
@@ -39,7 +41,7 @@ void uniqueTest(string pTestFile)
     // Compare result
     for (int d = 0; d < (int)tests.size(); ++d) {
 
-        af::dim4 dims       = numDims[d];
+        dim4 dims       = numDims[d];
         vector<T> in(data[d].begin(), data[d].end());
 
         af_array inArray   = 0;
@@ -47,7 +49,7 @@ void uniqueTest(string pTestFile)
 
         // Get input array
         ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(),
-                                              dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+                                              dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
 
         vector<T> currGoldBar(tests[d].begin(), tests[d].end());
@@ -62,7 +64,7 @@ void uniqueTest(string pTestFile)
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
             ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                            << " for test: " << d << std::endl;
+                                                            << " for test: " << d << endl;
         }
 
         if(inArray   != 0) af_release_array(inArray);
@@ -93,7 +95,7 @@ void setTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<int> > data;
     vector<vector<int> > tests;
@@ -103,10 +105,10 @@ void setTest(string pTestFile)
     // Compare result
     for (int d = 0; d < (int)tests.size(); d += 2) {
 
-        af::dim4 dims0       = numDims[d + 0];
+        dim4 dims0       = numDims[d + 0];
         vector<T> in0(data[d + 0].begin(), data[d + 0].end());
 
-        af::dim4 dims1       = numDims[d + 1];
+        dim4 dims1       = numDims[d + 1];
         vector<T> in1(data[d + 1].begin(), data[d + 1].end());
 
         af_array inArray0   = 0;
@@ -114,11 +116,11 @@ void setTest(string pTestFile)
         af_array outArray  = 0;
 
         ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray0, &in0.front(), dims0.ndims(),
-                                              dims0.get(), (af_dtype) af::dtype_traits<T>::af_type));
+                                              dims0.get(), (af_dtype) dtype_traits<T>::af_type));
 
 
         ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray1, &in1.front(), dims1.ndims(),
-                                              dims1.get(), (af_dtype) af::dtype_traits<T>::af_type));
+                                              dims1.get(), (af_dtype) dtype_traits<T>::af_type));
         vector<T> currGoldBar(tests[d].begin(), tests[d].end());
 
         // Run sum
@@ -131,7 +133,7 @@ void setTest(string pTestFile)
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
             ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                            << " for test: " << d << std::endl;
+                                                            << " for test: " << d << endl;
         }
 
         if(inArray0   != 0) af_release_array(inArray0);

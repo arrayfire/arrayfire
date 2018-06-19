@@ -16,11 +16,32 @@
 #include <stdexcept>
 #include <testHelpers.hpp>
 
+using std::abs;
+using std::endl;
 using std::string;
 using std::vector;
-using std::abs;
-using af::cfloat;
+using af::array;
 using af::cdouble;
+using af::cfloat;
+using af::constant;
+using af::dim4;
+using af::dtype_traits;
+using af::fft2;
+using af::fft2InPlace;
+using af::fft3;
+using af::fft3InPlace;
+using af::fft;
+using af::fftInPlace;
+using af::ifft2;
+using af::ifft2InPlace;
+using af::ifft3;
+using af::ifft3InPlace;
+using af::ifft;
+using af::ifftInPlace;
+using af::moddims;
+using af::randu;
+using af::seq;
+using af::span;
 
 TEST(fft, Invalid_Type)
 {
@@ -29,9 +50,9 @@ TEST(fft, Invalid_Type)
     af_array inArray   = 0;
     af_array outArray  = 0;
 
-    af::dim4 dims(5 * 5 * 2 * 2);
+    dim4 dims(5 * 5 * 2 * 2);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
+                dims.ndims(), dims.get(), (af_dtype) dtype_traits<char>::af_type));
 
     ASSERT_EQ(AF_ERR_TYPE, af_fft(&outArray, inArray, 1.0, 0));
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
@@ -46,9 +67,9 @@ TEST(fft2, Invalid_Array)
     af_array inArray   = 0;
     af_array outArray  = 0;
 
-    af::dim4 dims(5 * 5 * 2 * 2);
+    dim4 dims(5 * 5 * 2 * 2);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
+                dims.ndims(), dims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft2(&outArray, inArray, 1.0, 0, 0));
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
@@ -63,9 +84,9 @@ TEST(fft3, Invalid_Array)
     af_array inArray   = 0;
     af_array outArray  = 0;
 
-    af::dim4 dims(10,10,1,1);
+    dim4 dims(10,10,1,1);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
+                dims.ndims(), dims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft3(&outArray, inArray, 1.0, 0, 0, 0));
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
@@ -80,9 +101,9 @@ TEST(ifft2, Invalid_Array)
     af_array inArray   = 0;
     af_array outArray  = 0;
 
-    af::dim4 dims(100,1,1,1);
+    dim4 dims(100,1,1,1);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
+                dims.ndims(), dims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft2(&outArray, inArray, 0.01, 0, 0));
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
@@ -97,9 +118,9 @@ TEST(ifft3, Invalid_Array)
     af_array inArray   = 0;
     af_array outArray  = 0;
 
-    af::dim4 dims(10,10,1,1);
+    dim4 dims(10,10,1,1);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
+                dims.ndims(), dims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft3(&outArray, inArray, 0.01, 0, 0, 0));
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
@@ -111,18 +132,18 @@ void fftTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
 
-    vector<af::dim4>        numDims;
+    vector<dim4>        numDims;
     vector<vector<inType> >       in;
     vector<vector<outType> >   tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
     af_array outArray   = 0;
     af_array inArray    = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
-                dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
+                dims.ndims(), dims.get(), (af_dtype)dtype_traits<inType>::af_type));
 
     if (isInverse){
         switch (dims.ndims()) {
@@ -158,7 +179,7 @@ void fftTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
         bool isUnderTolerance = abs(goldBar[elIter]-outData[elIter])<0.001;
         ASSERT_EQ(true, isUnderTolerance)<<
             "Expected value="<<goldBar[elIter] <<"\t Actual Value="<<
-            (output_scale*outData[elIter]) << " at: " << elIter<< std::endl;
+            (output_scale*outData[elIter]) << " at: " << elIter<< endl;
     }
 
     // cleanup
@@ -227,18 +248,18 @@ void fftBatchTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
 
-    vector<af::dim4>        numDims;
+    vector<dim4>        numDims;
     vector<vector<inType> >       in;
     vector<vector<outType> >   tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
     af_array outArray   = 0;
     af_array inArray    = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
-                dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
+                dims.ndims(), dims.get(), (af_dtype)dtype_traits<inType>::af_type));
 
     if(isInverse) {
         switch(rank) {
@@ -281,7 +302,7 @@ void fftBatchTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
             bool isUnderTolerance = abs(goldBar[elIter+off]-outData[elIter+off])<0.001;
             ASSERT_EQ(true, isUnderTolerance)<<"Batch id = "<<batchId<<
                 "; Expected value="<<goldBar[elIter+off] <<"\t Actual Value="<<
-                (output_scale*outData[elIter+off]) << " at: " << elIter<< std::endl;
+                (output_scale*outData[elIter+off]) << " at: " << elIter<< endl;
         }
     }
 
@@ -328,15 +349,15 @@ void cppFFTTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
 
-    vector<af::dim4>        numDims;
+    vector<dim4>        numDims;
     vector<vector<inType> >       in;
     vector<vector<outType> >   tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
-    af::dim4 dims = numDims[0];
-    af::array signal(dims, &(in[0].front()));
-    af::array output;
+    dim4 dims = numDims[0];
+    array signal(dims, &(in[0].front()));
+    array output;
 
     if (isInverse){
         output = ifft3Norm(signal, 1.0);
@@ -362,7 +383,7 @@ void cppFFTTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
         bool isUnderTolerance = abs(goldBar[elIter]-outData[elIter])<0.001;
         ASSERT_EQ(true, isUnderTolerance)<<
             "Expected value="<<goldBar[elIter] <<"\t Actual Value="<<
-            (output_scale*outData[elIter]) << " at: " << elIter<< std::endl;
+            (output_scale*outData[elIter]) << " at: " << elIter<< endl;
     }
     // cleanup
     delete[] outData;
@@ -374,15 +395,15 @@ void cppDFTTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
 
-    vector<af::dim4>        numDims;
+    vector<dim4>        numDims;
     vector<vector<inType> >       in;
     vector<vector<outType> >   tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
-    af::dim4 dims = numDims[0];
-    af::array signal(dims, &(in[0].front()));
-    af::array output;
+    dim4 dims = numDims[0];
+    array signal(dims, &(in[0].front()));
+    array output;
 
     if (isInverse){
         output = idft(signal);
@@ -408,7 +429,7 @@ void cppDFTTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
         bool isUnderTolerance = abs(goldBar[elIter]-outData[elIter])<0.001;
         ASSERT_EQ(true, isUnderTolerance)<<
             "Expected value="<<goldBar[elIter] <<"\t Actual Value="<<
-            (output_scale*outData[elIter]) << " at: " << elIter<< std::endl;
+            (output_scale*outData[elIter]) << " at: " << elIter<< endl;
     }
     // cleanup
     delete[] outData;
@@ -427,14 +448,14 @@ TEST(ifft3, CPP)
 
 TEST(fft3, RandomData)
 {
-    af::array a = af::randu(31, 31, 31);
-    af::array b = af::fft3(a, 64, 64, 64);
-    af::array c = af::ifft3(b);
+    array a = randu(31, 31, 31);
+    array b = fft3(a, 64, 64, 64);
+    array c = ifft3(b);
 
-    af::dim4 aDims = a.dims();
-    af::dim4 cDims = c.dims();
-    af::dim4 aStrides(1, aDims[0], aDims[0]*aDims[1], aDims[0]*aDims[1]*aDims[2]);
-    af::dim4 cStrides(1, cDims[0], cDims[0]*cDims[1], cDims[0]*cDims[1]*cDims[2]);
+    dim4 aDims = a.dims();
+    dim4 cDims = c.dims();
+    dim4 aStrides(1, aDims[0], aDims[0]*aDims[1], aDims[0]*aDims[1]*aDims[2]);
+    dim4 cStrides(1, cDims[0], cDims[0]*cDims[1], cDims[0]*cDims[1]*cDims[2]);
 
     float* gold = new float[a.elements()];
     float* out  = new float[2*c.elements()];
@@ -457,7 +478,7 @@ TEST(fft3, RandomData)
 
                 bool isUnderTolerance = std::abs(gold[gi]-out[2*oi])<0.001;
                 ASSERT_EQ(true, isUnderTolerance)<< "Expected value="<<
-                    gold[gi] <<"\t Actual Value="<< out[2*oi] << " at: " <<gi<< std::endl;
+                    gold[gi] <<"\t Actual Value="<< out[2*oi] << " at: " <<gi<< endl;
             }
         }
     }
@@ -498,17 +519,17 @@ TEST(idft3, CPP)
 
 TEST(fft, CPP_4D)
 {
-    af::array a = af::randu(1024, 1024);
-    af::array b = af::fft(a);
+    array a = randu(1024, 1024);
+    array b = fft(a);
 
-    af::array A = af::moddims(a, 1024, 32, 16, 2);
-    af::array B = af::fft(A);
+    array A = moddims(a, 1024, 32, 16, 2);
+    array B = fft(A);
 
-    af::cfloat *h_b = b.host<af::cfloat>();
-    af::cfloat *h_B = B.host<af::cfloat>();
+    cfloat *h_b = b.host<cfloat>();
+    cfloat *h_B = B.host<cfloat>();
 
     for (int i = 0; i < (int)a.elements(); i++) {
-        ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
+        ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << endl;
     }
 
     freeHost(h_b);
@@ -517,17 +538,17 @@ TEST(fft, CPP_4D)
 
 TEST(ifft, CPP_4D)
 {
-    af::array a = af::randu(1024, 1024, c32);
-    af::array b = af::ifft(a);
+    array a = randu(1024, 1024, c32);
+    array b = ifft(a);
 
-    af::array A = af::moddims(a, 1024, 32, 16, 2);
-    af::array B = af::ifft(A);
+    array A = moddims(a, 1024, 32, 16, 2);
+    array B = ifft(A);
 
-    af::cfloat *h_b = b.host<af::cfloat>();
-    af::cfloat *h_B = B.host<af::cfloat>();
+    cfloat *h_b = b.host<cfloat>();
+    cfloat *h_B = B.host<cfloat>();
 
     for (int i = 0; i < (int)a.elements(); i++) {
-        ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
+        ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << endl;
     }
 
     freeHost(h_b);
@@ -536,19 +557,19 @@ TEST(ifft, CPP_4D)
 
 TEST(fft, GFOR)
 {
-    af::array a = af::randu(1024, 1024);
-    af::array b = af::constant(0, 1024, 1024, c32);
-    af::array c = af::fft(a);
+    array a = randu(1024, 1024);
+    array b = constant(0, 1024, 1024, c32);
+    array c = fft(a);
 
-    gfor(af::seq ii, a.dims(1)) {
-        b(af::span, ii) = af::fft(a(af::span, ii));
+    gfor(seq ii, a.dims(1)) {
+        b(span, ii) = fft(a(span, ii));
     }
 
-    af::cfloat *h_b = b.host<af::cfloat>();
-    af::cfloat *h_c = c.host<af::cfloat>();
+    cfloat *h_b = b.host<cfloat>();
+    cfloat *h_c = c.host<cfloat>();
 
     for (int i = 0; i < (int)a.elements(); i++) {
-        ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << std::endl;
+        ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << endl;
     }
 
     freeHost(h_b);
@@ -557,19 +578,19 @@ TEST(fft, GFOR)
 
 TEST(fft2, GFOR)
 {
-    af::array a = af::randu(1024, 1024, 4);
-    af::array b = af::constant(0, 1024, 1024, 4, c32);
-    af::array c = af::fft2(a);
+    array a = randu(1024, 1024, 4);
+    array b = constant(0, 1024, 1024, 4, c32);
+    array c = fft2(a);
 
-    gfor(af::seq ii, a.dims(2)) {
-        b(af::span, af::span, ii) = af::fft2(a(af::span, af::span, ii));
+    gfor(seq ii, a.dims(2)) {
+        b(span, span, ii) = fft2(a(span, span, ii));
     }
 
-    af::cfloat *h_b = b.host<af::cfloat>();
-    af::cfloat *h_c = c.host<af::cfloat>();
+    cfloat *h_b = b.host<cfloat>();
+    cfloat *h_c = c.host<cfloat>();
 
     for (int i = 0; i < (int)a.elements(); i++) {
-        ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << std::endl;
+        ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << endl;
     }
 
     freeHost(h_b);
@@ -578,19 +599,19 @@ TEST(fft2, GFOR)
 
 TEST(fft3, GFOR)
 {
-    af::array a = af::randu(32, 32, 32, 4);
-    af::array b = af::constant(0, 32, 32, 32, 4, c32);
-    af::array c = af::fft3(a);
+    array a = randu(32, 32, 32, 4);
+    array b = constant(0, 32, 32, 32, 4, c32);
+    array c = fft3(a);
 
-    gfor(af::seq ii, a.dims(3)) {
-        b(af::span, af::span, af::span, ii) = af::fft3(a(af::span, af::span, af::span, ii));
+    gfor(seq ii, a.dims(3)) {
+        b(span, span, span, ii) = fft3(a(span, span, span, ii));
     }
 
-    af::cfloat *h_b = b.host<af::cfloat>();
-    af::cfloat *h_c = c.host<af::cfloat>();
+    cfloat *h_b = b.host<cfloat>();
+    cfloat *h_c = c.host<cfloat>();
 
     for (int i = 0; i < (int)a.elements(); i++) {
-        ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << std::endl;
+        ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << endl;
     }
 
     freeHost(h_b);
@@ -599,12 +620,12 @@ TEST(fft3, GFOR)
 
 TEST(fft, InPlace)
 {
-    af::array a = af::randu(1024, 1024, c32);
-    af::array b = af::fft(a);
-    af::fftInPlace(a);
+    array a = randu(1024, 1024, c32);
+    array b = fft(a);
+    fftInPlace(a);
 
-    std::vector<af::cfloat> ha(a.elements());
-    std::vector<af::cfloat> hb(b.elements());
+    vector<cfloat> ha(a.elements());
+    vector<cfloat> hb(b.elements());
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -616,12 +637,12 @@ TEST(fft, InPlace)
 
 TEST(ifft, InPlace)
 {
-    af::array a = af::randu(1024, 1024, c32);
-    af::array b = af::ifft(a);
-    af::ifftInPlace(a);
+    array a = randu(1024, 1024, c32);
+    array b = ifft(a);
+    ifftInPlace(a);
 
-    std::vector<af::cfloat> ha(a.elements());
-    std::vector<af::cfloat> hb(b.elements());
+    vector<cfloat> ha(a.elements());
+    vector<cfloat> hb(b.elements());
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -633,12 +654,12 @@ TEST(ifft, InPlace)
 
 TEST(fft2, InPlace)
 {
-    af::array a = af::randu(1024, 1024, c32);
-    af::array b = af::fft2(a);
-    af::fft2InPlace(a);
+    array a = randu(1024, 1024, c32);
+    array b = fft2(a);
+    fft2InPlace(a);
 
-    std::vector<af::cfloat> ha(a.elements());
-    std::vector<af::cfloat> hb(b.elements());
+    vector<cfloat> ha(a.elements());
+    vector<cfloat> hb(b.elements());
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -650,12 +671,12 @@ TEST(fft2, InPlace)
 
 TEST(ifft2, InPlace)
 {
-    af::array a = af::randu(1024, 1024, c32);
-    af::array b = af::ifft2(a);
-    af::ifft2InPlace(a);
+    array a = randu(1024, 1024, c32);
+    array b = ifft2(a);
+    ifft2InPlace(a);
 
-    std::vector<af::cfloat> ha(a.elements());
-    std::vector<af::cfloat> hb(b.elements());
+    vector<cfloat> ha(a.elements());
+    vector<cfloat> hb(b.elements());
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -667,12 +688,12 @@ TEST(ifft2, InPlace)
 
 TEST(fft3, InPlace)
 {
-    af::array a = af::randu(32, 32, 32, c32);
-    af::array b = af::fft3(a);
-    af::fft3InPlace(a);
+    array a = randu(32, 32, 32, c32);
+    array b = fft3(a);
+    fft3InPlace(a);
 
-    std::vector<af::cfloat> ha(a.elements());
-    std::vector<af::cfloat> hb(b.elements());
+    vector<cfloat> ha(a.elements());
+    vector<cfloat> hb(b.elements());
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -684,12 +705,12 @@ TEST(fft3, InPlace)
 
 TEST(ifft3, InPlace)
 {
-    af::array a = af::randu(32, 32, 32, c32);
-    af::array b = af::ifft3(a);
-    af::ifft3InPlace(a);
+    array a = randu(32, 32, 32, c32);
+    array b = ifft3(a);
+    ifft3InPlace(a);
 
-    std::vector<af::cfloat> ha(a.elements());
-    std::vector<af::cfloat> hb(b.elements());
+    vector<cfloat> ha(a.elements());
+    vector<cfloat> hb(b.elements());
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -701,12 +722,12 @@ TEST(ifft3, InPlace)
 
 void fft2InPlaceFunc()
 {
-    af::array a = af::randu(1024, 1024, c32);
-    af::array b = af::fft2(a);
-    af::fft2InPlace(a);
+    array a = randu(1024, 1024, c32);
+    array b = fft2(a);
+    fft2InPlace(a);
 
-    std::vector<af::cfloat> ha(a.elements());
-    std::vector<af::cfloat> hb(b.elements());
+    vector<cfloat> ha(a.elements());
+    vector<cfloat> hb(b.elements());
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -716,17 +737,21 @@ void fft2InPlaceFunc()
     }
 }
 
+using af::setDevice;
+using af::getDevice;
+using af::getDeviceCount;
+
 #define DEVICE_ITERATE(func) do {                                           \
     const char* ENV = getenv("AF_MULTI_GPU_TESTS");                         \
     if(ENV && ENV[0] == '0') {                                              \
         func;                                                               \
     } else {                                                                \
-        int oldDevice = af::getDevice();                                    \
-        for(int i = 0; i < af::getDeviceCount(); i++) {                     \
-            af::setDevice(i);                                               \
+        int oldDevice = getDevice();                                        \
+        for(int i = 0; i < getDeviceCount(); i++) {                         \
+            setDevice(i);                                                   \
             func;                                                           \
         }                                                                   \
-        af::setDevice(oldDevice);                                           \
+        setDevice(oldDevice);                                               \
     }                                                                       \
 } while(0);
 

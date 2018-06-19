@@ -16,14 +16,16 @@
 
 using std::vector;
 using std::complex;
+using af::allTrue;
 using af::array;
+using af::constant;
 using af::dtype;
 using af::dtype_traits;
-using af::randu;
-using af::constant;
-using af::span;
+using af::max;
 using af::min;
-using af::allTrue;
+using af::randu;
+using af::seq;
+using af::span;
 
 #define MINMAXOP(fn, ty)                                \
     TEST(IndexedReduce, fn##_##ty##_0)                  \
@@ -32,9 +34,9 @@ using af::allTrue;
         dtype dty = (dtype)dtype_traits<ty>::af_type;   \
         const int nx = 10000;                           \
         const int ny = 100;                             \
-        af::array in = randu(nx, ny, dty);              \
-        af::array val, idx;                             \
-        af::fn(val, idx, in, 0);                        \
+        array in = randu(nx, ny, dty);                  \
+        array val, idx;                                 \
+        fn(val, idx, in, 0);                            \
                                                         \
         ty *h_in = in.host<ty>();                       \
         ty *h_in_st = h_in;                             \
@@ -58,9 +60,9 @@ using af::allTrue;
         dtype dty = (dtype)dtype_traits<ty>::af_type;   \
         const int nx = 100;                             \
         const int ny = 100;                             \
-        af::array in = randu(nx, ny, dty);              \
-        af::array val, idx;                             \
-        af::fn(val, idx, in, 1);                        \
+        array in = randu(nx, ny, dty);                  \
+        array val, idx;                                 \
+        fn(val, idx, in, 1);                            \
                                                         \
         ty *h_in = in.host<ty>();                       \
         ty *h_val = val.host<ty>();                     \
@@ -82,10 +84,10 @@ using af::allTrue;
         if (noDoubleTests<ty>()) return;                \
         dtype dty = (dtype)dtype_traits<ty>::af_type;   \
         const int num = 100000;                         \
-        af::array in = randu(num, dty);                 \
+        array in = randu(num, dty);                     \
         ty val;                                         \
         uint idx;                                       \
-        af::fn<ty>(&val, &idx, in);                     \
+        fn<ty>(&val, &idx, in);                         \
         ty *h_in = in.host<ty>();                       \
         ty tmp = *std::fn##_element(h_in, h_in + num);  \
         ASSERT_EQ(tmp, val);                            \
@@ -112,13 +114,13 @@ TEST(IndexedReduce, MaxIndexedSmall)
     const int num = 1000;
     const int st = 10;
     const int en = num - 100;
-    af::array a = af::randu(num);
+    array a = randu(num);
 
     float b;
     unsigned idx;
-    af::max<float>(&b, &idx, a(af::seq(st, en)));
+    max<float>(&b, &idx, a(seq(st, en)));
 
-    std::vector<float> ha(num);
+    vector<float> ha(num);
     a.host(&ha[0]);
 
     float res = ha[st];
@@ -134,13 +136,13 @@ TEST(IndexedReduce, MaxIndexedBig)
     const int num = 100000;
     const int st = 1000;
     const int en = num - 1000;
-    af::array a = af::randu(num);
+    array a = randu(num);
 
     float b;
     unsigned idx;
-    af::max<float>(&b, &idx, a(af::seq(st, en)));
+    max<float>(&b, &idx, a(seq(st, en)));
 
-    std::vector<float> ha(num);
+    vector<float> ha(num);
     a.host(&ha[0]);
 
     float res = ha[st];

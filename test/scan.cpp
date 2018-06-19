@@ -23,8 +23,16 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using af::allTrue;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::constant;
+using af::dim4;
+using af::dtype_traits;
+using af::range;
+using af::span;
+using af::seq;
 
 typedef af_err (*scanFunc)(af_array *, const af_array, const int);
 
@@ -33,12 +41,12 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<a
 {
     if (noDoubleTests<Ti>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<int> > data;
     vector<vector<int> > tests;
     readTests<int,int,int> (pTestFile,numDims,data,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     vector<Ti> in(data[0].begin(), data[0].end());
 
@@ -48,12 +56,12 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<a
 
     // Get input array
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) dtype_traits<Ti>::af_type));
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
         ASSERT_EQ(AF_SUCCESS, af_release_array(tempArray));
     } else {
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) dtype_traits<Ti>::af_type));
     }
 
     // Compare result
@@ -72,7 +80,7 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<a
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
             ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
                 << " for dim " << d +off
-                << std::endl;
+                << endl;
         }
 
         // Delete
@@ -122,25 +130,25 @@ TEST(Scan,Test_Scan_Big1)
 ///////////////////////////////// CPP ////////////////////////////////////
 TEST(Accum, CPP)
 {
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<int> > data;
     vector<vector<int> > tests;
     readTests<int,int,int> (string(TEST_DIR"/scan/accum.test"),numDims,data,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     vector<float> in(data[0].begin(), data[0].end());
 
     if (noDoubleTests<float>()) return;
 
-    af::array input(dims, &(in.front()));
+    array input(dims, &(in.front()));
 
     // Compare result
     for (int d = 0; d < (int)tests.size(); ++d) {
         vector<float> currGoldBar(tests[d].begin(), tests[d].end());
 
         // Run sum
-        af::array output = af::accum(input, d);
+        array output = accum(input, d);
 
         // Get result
         float *outData;
@@ -151,7 +159,7 @@ TEST(Accum, CPP)
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
             ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
                 << " for dim " << d
-                << std::endl;
+                << endl;
         }
 
         // Delete
@@ -164,44 +172,44 @@ TEST(Accum, MaxDim)
     const size_t largeDim = 65535 * 32 + 1;
 
     //first dimension kernel tests
-    af::array input = af::constant(0, 2, largeDim, 2, 2);
-    input(af::span, af::seq(0, 9999), af::span, af::span) = 1;
+    array input = constant(0, 2, largeDim, 2, 2);
+    input(span, seq(0, 9999), span, span) = 1;
 
-    af::array gold_first = af::constant(0, 2, largeDim, 2, 2);
-    gold_first(af::span, af::seq(0, 9999), af::span, af::span) = af::range(2, 10000, 2, 2) + 1;
+    array gold_first = constant(0, 2, largeDim, 2, 2);
+    gold_first(span, seq(0, 9999), span, span) = range(2, 10000, 2, 2) + 1;
 
-    af::array output_first = af::accum(input, 0);
-    ASSERT_TRUE(af::allTrue<bool>(output_first == gold_first));
+    array output_first = accum(input, 0);
+    ASSERT_TRUE(allTrue<bool>(output_first == gold_first));
 
 
-    input = af::constant(0, 2, 2, 2, largeDim);
-    input(af::span, af::span, af::span, af::seq(0, 9999)) = 1;
+    input = constant(0, 2, 2, 2, largeDim);
+    input(span, span, span, seq(0, 9999)) = 1;
 
-    gold_first = af::constant(0, 2, 2, 2, largeDim);
-    gold_first(af::span, af::span, af::span, af::seq(0, 9999)) = af::range(2, 2, 2, 10000) + 1;
+    gold_first = constant(0, 2, 2, 2, largeDim);
+    gold_first(span, span, span, seq(0, 9999)) = range(2, 2, 2, 10000) + 1;
 
-    output_first = af::accum(input, 0);
-    ASSERT_TRUE(af::allTrue<bool>(output_first == gold_first));
+    output_first = accum(input, 0);
+    ASSERT_TRUE(allTrue<bool>(output_first == gold_first));
 
 
     //other dimension kernel tests
-    input = af::constant(0, 2, largeDim, 2, 2);
-    input(af::span, af::seq(0, 9999), af::span, af::span) = 1;
+    input = constant(0, 2, largeDim, 2, 2);
+    input(span, seq(0, 9999), span, span) = 1;
 
-    af::array gold_dim = af::constant(10000, 2, largeDim, 2, 2);
-    gold_dim(af::span, af::seq(0, 9999), af::span, af::span) = af::range(af::dim4(2, 10000, 2, 2), 1) + 1;
+    array gold_dim = constant(10000, 2, largeDim, 2, 2);
+    gold_dim(span, seq(0, 9999), span, span) = range(dim4(2, 10000, 2, 2), 1) + 1;
 
-    af::array output_dim = af::accum(input, 1);
-    ASSERT_TRUE(af::allTrue<bool>(output_dim == gold_dim));
+    array output_dim = accum(input, 1);
+    ASSERT_TRUE(allTrue<bool>(output_dim == gold_dim));
 
 
-    input = af::constant(0, 2, 2, 2, largeDim);
-    input(af::span, af::span, af::span, af::seq(0, 9999)) = 1;
+    input = constant(0, 2, 2, 2, largeDim);
+    input(span, span, span, seq(0, 9999)) = 1;
 
-    gold_dim = af::constant(0, 2, 2, 2, largeDim);
-    gold_dim(af::span, af::span, af::span, af::seq(0, 9999)) = af::range(af::dim4(2, 2, 2, 10000), 1) + 1;
+    gold_dim = constant(0, 2, 2, 2, largeDim);
+    gold_dim(span, span, span, seq(0, 9999)) = range(dim4(2, 2, 2, 10000), 1) + 1;
 
-    output_dim = af::accum(input, 1);
-    ASSERT_TRUE(af::allTrue<bool>(output_dim == gold_dim));
+    output_dim = accum(input, 1);
+    ASSERT_TRUE(allTrue<bool>(output_dim == gold_dim));
 
 }

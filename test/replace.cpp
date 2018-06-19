@@ -17,14 +17,23 @@
 #include <testHelpers.hpp>
 
 using std::vector;
-using namespace af;
+using af::NaN;
+using af::array;
+using af::cdouble;
+using af::cfloat;
+using af::dim4;
+using af::dtype;
+using af::dtype_traits;
+using af::randu;
+using af::seq;
+using af::span;
 
 template<typename T>
 class Replace : public ::testing::Test
 {
 };
 
-typedef ::testing::Types<float, double, af::cfloat, af::cdouble, uint, int, intl, uintl, uchar, char, short, ushort> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl, uchar, char, short, ushort> TestTypes;
 
 TYPED_TEST_CASE(Replace, TestTypes);
 
@@ -32,7 +41,7 @@ template<typename T>
 void replaceTest(const dim4 &dims)
 {
     if (noDoubleTests<T>()) return;
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
 
     array a = randu(dims, ty);
     array b = randu(dims, ty);
@@ -50,10 +59,10 @@ void replaceTest(const dim4 &dims)
 
     int num = (int)a.elements();
 
-    std::vector<T> ha(num);
-    std::vector<T> hb(num);
-    std::vector<T> hc(num);
-    std::vector<char> hcond(num);
+    vector<T> ha(num);
+    vector<T> hb(num);
+    vector<T> hc(num);
+    vector<char> hcond(num);
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -69,7 +78,7 @@ template<typename T>
 void replaceScalarTest(const dim4 &dims)
 {
     if (noDoubleTests<T>()) return;
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
 
     array a = randu(dims, ty);
 
@@ -84,9 +93,9 @@ void replaceScalarTest(const dim4 &dims)
     replace(c, cond, b);
     int num = (int)a.elements();
 
-    std::vector<T> ha(num);
-    std::vector<T> hc(num);
-    std::vector<char> hcond(num);
+    vector<T> ha(num);
+    vector<T> hc(num);
+    vector<char> hcond(num);
 
     a.host(&ha[0]);
     c.host(&hc[0]);
@@ -110,18 +119,18 @@ TYPED_TEST(Replace, Scalar)
 TEST(Replace, NaN)
 {
     dim4 dims(1000, 1250);
-    af::dtype ty = f32;
+    dtype ty = f32;
 
     array a = randu(dims, ty);
-    a(seq(a.dims(0) / 2), span, span, span) = af::NaN;
+    a(seq(a.dims(0) / 2), span, span, span) = NaN;
     array c = a.copy();
     float b = 0;
     replace(c, !isNaN(c), b);
 
     int num = (int)a.elements();
 
-    std::vector<float> ha(num);
-    std::vector<float> hc(num);
+    vector<float> ha(num);
+    vector<float> hc(num);
 
     a.host(&ha[0]);
     c.host(&hc[0]);
@@ -134,15 +143,15 @@ TEST(Replace, NaN)
 TEST(Replace, ISSUE_1249)
 {
     dim4 dims(2, 3, 4);
-    array cond = af::randu(dims) > 0.5;
-    array a = af::randu(dims);
+    array cond = randu(dims) > 0.5;
+    array a = randu(dims);
     array b = a.copy();
     replace(b, !cond, a - a * 0.9);
     array c = a - a * cond * 0.9;
 
     int num = (int)dims.elements();
-    std::vector<float> hb(num);
-    std::vector<float> hc(num);
+    vector<float> hb(num);
+    vector<float> hc(num);
 
     b.host(&hb[0]);
     c.host(&hc[0]);
@@ -156,15 +165,15 @@ TEST(Replace, ISSUE_1249)
 TEST(Replace, 4D)
 {
     dim4 dims(2, 3, 4, 2);
-    array cond = af::randu(dims) > 0.5;
-    array a = af::randu(dims);
+    array cond = randu(dims) > 0.5;
+    array a = randu(dims);
     array b = a.copy();
     replace(b, !cond, a - a * 0.9);
     array c = a - a * cond * 0.9;
 
     int num = (int)dims.elements();
-    std::vector<float> hb(num);
-    std::vector<float> hc(num);
+    vector<float> hb(num);
+    vector<float> hc(num);
 
     b.host(&hb[0]);
     c.host(&hc[0]);
@@ -177,16 +186,16 @@ TEST(Replace, 4D)
 TEST(Replace, ISSUE_1683)
 {
     array A = randu(10, 20, f32);
-    std::vector<float> ha1(A.elements());
+    vector<float> ha1(A.elements());
     A.host(ha1.data());
 
     array B = A(0, span);
     replace(B, A(0, span) > 0.5, 0);
 
-    std::vector<float> ha2(A.elements());
+    vector<float> ha2(A.elements());
     A.host(ha2.data());
 
-    std::vector<float> hb(B.elements());
+    vector<float> hb(B.elements());
     B.host(hb.data());
 
     // Ensures A is not modified by replace

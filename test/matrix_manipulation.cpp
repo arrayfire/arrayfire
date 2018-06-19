@@ -12,8 +12,11 @@
 #include <arrayfire.h>
 #include <vector>
 
-using namespace af;
 using std::vector;
+using af::array;
+using af::join;
+using af::randu;
+using af::tile;
 
 TEST(MatrixManipulation, SNIPPET_matrix_manipulation_tile)
 {

@@ -19,10 +19,16 @@
 
 using std::vector;
 using std::string;
-using std::cout;
 using std::endl;
+using af::allTrue;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype;
+using af::dtype_traits;
+using af::randu;
+using af::range;
 
 template<typename T>
 class Where : public ::testing::Test { };
@@ -35,12 +41,12 @@ void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<int> > data;
     vector<vector<int> > tests;
     readTests<int,int,int> (pTestFile,numDims,data,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     vector<T> in(data[0].begin(), data[0].end());
 
@@ -50,11 +56,11 @@ void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=
 
     // Get input array
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
     } else {
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     // Compare result
@@ -70,7 +76,7 @@ void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                        << std::endl;
+                                                        << endl;
     }
 
     if(inArray   != 0) af_release_array(inArray);
@@ -97,16 +103,16 @@ TYPED_TEST(Where, CPP)
 {
     if (noDoubleTests<TypeParam>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<int> > data;
     vector<vector<int> > tests;
     readTests<int,int,int> (string(TEST_DIR"/where/where.test"),numDims,data,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     vector<float> in(data[0].begin(), data[0].end());
-    af::array input(dims, &in.front(), afHost);
-    af::array output = where(input);
+    array input(dims, &in.front(), afHost);
+    array output = where(input);
 
     // Compare result
     vector<uint> currGoldBar(tests[0].begin(), tests[0].end());
@@ -118,7 +124,7 @@ TYPED_TEST(Where, CPP)
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                        << std::endl;
+                                                        << endl;
     }
 }
 
@@ -126,19 +132,19 @@ TEST(Where, MaxDim)
 {
     const size_t largeDim = 65535 * 32 + 2;
 
-    af::array input = af::range(af::dim4(1, largeDim), 1);
-    af::array output = where(input % 2 == 0);
-    af::array gold = 2 * af::range(largeDim/2);
-    ASSERT_TRUE(af::allTrue<bool>(output == gold));
+    array input = range(dim4(1, largeDim), 1);
+    array output = where(input % 2 == 0);
+    array gold = 2 * range(largeDim/2);
+    ASSERT_TRUE(allTrue<bool>(output == gold));
 
-    input = af::range(af::dim4(1, 1, 1, largeDim), 3);
+    input = range(dim4(1, 1, 1, largeDim), 3);
     output = where(input % 2 == 0);
-    ASSERT_TRUE(af::allTrue<bool>(output == gold));
+    ASSERT_TRUE(allTrue<bool>(output == gold));
 }
 
 TEST(Where, ISSUE_1259)
 {
-    af::array a = af::randu(10, 10, 10);
-    af::array indices = af::where(a > 2);
+    array a = randu(10, 10, 10);
+    array indices = where(a > 2);
     ASSERT_EQ(indices.elements(), 0);
 }

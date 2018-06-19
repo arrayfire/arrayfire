@@ -14,13 +14,17 @@
 #include <vector>
 #include <testHelpers.hpp>
 
+using std::vector;
+using af::array;
+using af::randu;
+
 TEST(rgb_gray, 32bit)
 {
-    af::array rgb = af::randu(10, 10, 3);
-    af::array gray = af::rgb2gray(rgb);
+    array rgb = randu(10, 10, 3);
+    array gray = rgb2gray(rgb);
 
-    std::vector<float> h_rgb(rgb.elements());
-    std::vector<float> h_gray(gray.elements());
+    vector<float> h_rgb(rgb.elements());
+    vector<float> h_gray(gray.elements());
 
     rgb.host(&h_rgb[0]);
     gray.host(&h_gray[0]);
@@ -46,11 +50,11 @@ TEST(rgb_gray, 32bit)
 
 TEST(rgb_gray, 8bit)
 {
-    af::array rgb = af::randu(10, 10, 3, u8);
-    af::array gray = af::rgb2gray(rgb);
+    array rgb = randu(10, 10, 3, u8);
+    array gray = rgb2gray(rgb);
 
-    std::vector<uchar> h_rgb(rgb.elements());
-    std::vector<float> h_gray(gray.elements());
+    vector<uchar> h_rgb(rgb.elements());
+    vector<float> h_gray(gray.elements());
 
     rgb.host(&h_rgb[0]);
     gray.host(&h_gray[0]);
@@ -76,15 +80,15 @@ TEST(rgb_gray, 8bit)
 
 TEST(gray_rgb, 32bit)
 {
-    af::array gray = af::randu(10, 10);
+    array gray = randu(10, 10);
 
     const float rPercent=0.33f;
     const float gPercent=0.34f;
     const float bPercent=0.33f;
 
-    af::array rgb = af::gray2rgb(gray, rPercent, gPercent, bPercent);
-    std::vector<float> h_rgb(rgb.elements());
-    std::vector<float> h_gray(gray.elements());
+    array rgb = gray2rgb(gray, rPercent, gPercent, bPercent);
+    vector<float> h_rgb(rgb.elements());
+    vector<float> h_gray(gray.elements());
 
     int num = gray.elements();
     int roff = 0;
@@ -107,11 +111,11 @@ TEST(gray_rgb, 32bit)
 TEST(rgb_gray, MaxDim)
 {
     size_t largeDim = 65535 * 32 + 1;
-    af::array rgb = af::randu(1, largeDim, 3, u8);
-    af::array gray = af::rgb2gray(rgb);
+    array rgb = randu(1, largeDim, 3, u8);
+    array gray = rgb2gray(rgb);
 
-    std::vector<uchar> h_rgb(rgb.elements());
-    std::vector<float> h_gray(gray.elements());
+    vector<uchar> h_rgb(rgb.elements());
+    vector<float> h_gray(gray.elements());
 
     rgb.host(&h_rgb[0]);
     gray.host(&h_gray[0]);

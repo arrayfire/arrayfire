@@ -47,6 +47,9 @@ static void fast_demo(bool console)
         img_color(seq(y-draw_len, y+draw_len), x, 2) = 0.f;
     }
 
+    freeHost(h_x);
+    freeHost(h_y);
+
     printf("Features found: %lu\n", feat.getNumFeatures());
 
     if (!console) {

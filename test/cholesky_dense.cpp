@@ -19,12 +19,17 @@
 
 using std::vector;
 using std::string;
-using std::cout;
 using std::endl;
 using std::abs;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype;
 using af::dtype_traits;
+using af::identity;
+using af::matmul;
+using af::max;
 
 template<typename T>
 void choleskyTester(const int n, double eps, bool is_upper)
@@ -32,36 +37,36 @@ void choleskyTester(const int n, double eps, bool is_upper)
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
 
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
 
     // Prepare positive definite matrix
 #if 1
-    af::array a = cpu_randu<T>(af::dim4(n, n));
+    array a = cpu_randu<T>(dim4(n, n));
 #else
-    af::array a = af::randu(n, n, ty);
+    array a = randu(n, n, ty);
 #endif
-    af::array b = 10 * n * af::identity(n, n, ty);
-    af::array in = matmul(a.H(), a) + b;
+    array b = 10 * n * identity(n, n, ty);
+    array in = matmul(a.H(), a) + b;
 
     //! [ex_chol_reg]
-    af::array out;
+    array out;
     cholesky(out, in, is_upper);
     //! [ex_chol_reg]
 
-    af::array re = is_upper ? matmul(out.H(), out) : matmul(out, out.H());
+    array re = is_upper ? matmul(out.H(), out) : matmul(out, out.H());
 
-    ASSERT_NEAR(0, af::max<typename dtype_traits<T>::base_type>(af::abs(real(in - re))), eps);
-    ASSERT_NEAR(0, af::max<typename dtype_traits<T>::base_type>(af::abs(imag(in - re))), eps);
+    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(abs(real(in - re))), eps);
+    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(abs(imag(in - re))), eps);
 
     //! [ex_chol_inplace]
-    af::array in2 = in.copy();
+    array in2 = in.copy();
     choleskyInPlace(in2, is_upper);
     //! [ex_chol_inplace]
 
-    af::array out2 = is_upper ? upper(in2) : lower(in2);
+    array out2 = is_upper ? upper(in2) : lower(in2);
 
-    ASSERT_NEAR(0, af::max<typename dtype_traits<T>::base_type>(af::abs(real(out2 - out))), eps);
-    ASSERT_NEAR(0, af::max<typename dtype_traits<T>::base_type>(af::abs(imag(out2 - out))), eps);
+    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(abs(real(out2 - out))), eps);
+    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(abs(imag(out2 - out))), eps);
 }
 
 template<typename T>

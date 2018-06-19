@@ -21,8 +21,11 @@ using std::string;
 using std::cout;
 using std::endl;
 using std::abs;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class RotateLinear : public ::testing::Test
@@ -49,12 +52,12 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> >   in;
     vector<vector<T> >   tests;
     readTests<T, T, float>(pTestFile,numDims,in,tests);
 
-    af::dim4 dims = numDims[0];
+    dim4 dims = numDims[0];
 
     af_array inArray = 0;
     af_array outArray = 0;
@@ -64,11 +67,11 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
 
     if (isSubRef) {
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     ASSERT_EQ(AF_SUCCESS, af_rotate(&outArray, inArray, theta, crop, AF_INTERP_BILINEAR));
@@ -93,10 +96,10 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
             fail_count++;
         }
     }
-    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.02)) << "where count = " << fail_count << std::endl;
+    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.02)) << "where count = " << fail_count << endl;
 
     //for (size_t elIter = 0; elIter < nElems; ++elIter) {
-    //    ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+    //    ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     //}
 
 
@@ -174,16 +177,16 @@ TEST(RotateLinear, CPP)
     const float angle = 180;
     const bool crop = false;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> >   in;
     vector<vector<float> >   tests;
     readTests<float, float, float>(string(TEST_DIR"/rotate/rotatelinear1.test"),numDims,in,tests);
 
-    af::dim4 dims = numDims[0];
+    dim4 dims = numDims[0];
     float theta = angle * PI / 180.0f;
 
-    af::array input(dims, &(in[0].front()));
-    af::array output = af::rotate(input, theta, crop, AF_INTERP_BILINEAR);
+    array input(dims, &(in[0].front()));
+    array output = rotate(input, theta, crop, AF_INTERP_BILINEAR);
 
     // Get result
     float* outData = new float[tests[resultIdx].size()];

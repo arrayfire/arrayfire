@@ -20,10 +20,14 @@
 
 using std::vector;
 using std::string;
-using std::cout;
 using std::endl;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::constant;
+using af::dim4;
+using af::dtype_traits;
+using af::product;
 
 template<typename T>
 class Tile : public ::testing::Test
@@ -49,23 +53,23 @@ void tileTest(string pTestFile, const unsigned resultIdx, const uint x, const ui
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> > in;
     vector<vector<T> > tests;
     readTests<T, T, int>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
+    dim4 idims = numDims[0];
 
     af_array inArray = 0;
     af_array outArray = 0;
     af_array tempArray = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     ASSERT_EQ(AF_SUCCESS, af_tile(&outArray, inArray, x, y, z, w));
@@ -77,7 +81,7 @@ void tileTest(string pTestFile, const unsigned resultIdx, const uint x, const ui
     // Compare result
     size_t nElems = tests[resultIdx].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -125,14 +129,14 @@ TEST(Tile, CPP)
     const unsigned z = 2;
     const unsigned w = 1;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/tile/tile_large3D.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array input(idims, &(in[0].front()));
-    af::array output = af::tile(input, x, y, z, w);
+    dim4 idims = numDims[0];
+    array input(idims, &(in[0].front()));
+    array output = tile(input, x, y, z, w);
 
     // Get result
     float* outData = new float[tests[resultIdx].size()];
@@ -141,7 +145,7 @@ TEST(Tile, CPP)
     // Compare result
     size_t nElems = tests[resultIdx].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -158,27 +162,27 @@ TEST(Tile, MaxDim)
     unsigned y = 2;
     unsigned w = 1;
 
-    af::array input = af::constant(1, 1, largeDim);
-    af::array output = af::tile(input, x, y, z, w);
+    array input = constant(1, 1, largeDim);
+    array output = tile(input, x, y, z, w);
 
     ASSERT_EQ(1, output.dims(0));
     ASSERT_EQ(2 * largeDim, output.dims(1));
     ASSERT_EQ(1, output.dims(2));
     ASSERT_EQ(1, output.dims(3));
 
-    ASSERT_EQ(1.f, af::product<float>(output));
+    ASSERT_EQ(1.f, product<float>(output));
 
     y = 1;
     w = 2;
 
-    input  = af::constant(1, 1, 1, 1, largeDim);
-    output = af::tile(input, x, y, z, w);
+    input  = constant(1, 1, 1, 1, largeDim);
+    output = tile(input, x, y, z, w);
 
     ASSERT_EQ(1, output.dims(0));
     ASSERT_EQ(1, output.dims(1));
     ASSERT_EQ(1, output.dims(2));
     ASSERT_EQ(2 * largeDim, output.dims(3));
 
-    ASSERT_EQ(1.f, af::product<float>(output));
+    ASSERT_EQ(1.f, product<float>(output));
 
 }

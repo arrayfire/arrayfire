@@ -18,10 +18,15 @@
 #include <testHelpers.hpp>
 #include <typeinfo>
 
+using std::abs;
+using std::cout;
+using std::endl;
 using std::string;
 using std::vector;
-using std::abs;
+using af::array;
 using af::dim4;
+using af::features;
+using af::loadImage;
 
 typedef struct
 {
@@ -104,16 +109,16 @@ static bool compareEuclidean(dim_t desc_len, dim_t ndesc, float *cpu, float *gpu
             sum += x*x;
             if (abs(x) > (float)unit_thr) {
                 ret = false;
-                std::cout<<std::endl<<"@compareEuclidean: unit mismatch."<<std::endl;
-                std::cout<<"(cpu,gpu,cpu-gpu)["<<i<<","<<l<<"] : {"<<cpu[idx]<<","<<gpu[idx]<<","<<cpu[idx]-gpu[idx]<<"}"<<std::endl;
-                std::cout<<std::endl;
+                cout<<endl<<"@compareEuclidean: unit mismatch."<<endl;
+                cout<<"(cpu,gpu,cpu-gpu)["<<i<<","<<l<<"] : {"<<cpu[idx]<<","<<gpu[idx]<<","<<cpu[idx]-gpu[idx]<<"}"<<endl;
+                cout<<endl;
                 break;
             }
         }
         if (sqrt(sum) > euc_thr) {
             ret = false;
-            std::cout<<std::endl<<"@compareEuclidean: distance mismatch."<<std::endl;
-            std::cout<<"Euclidean distance: "<<sqrt(sum)<<std::endl;
+            cout<<endl<<"@compareEuclidean: distance mismatch."<<endl;
+            cout<<"Euclidean distance: "<<sqrt(sum)<<endl;
         }
         if (ret == false)
             return ret;
@@ -208,11 +213,11 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr, float edgeT
         split_feat_desc(gold_feat_desc, gold_feat, v_gold_desc);
 
         for (int elIter = 0; elIter < (int)n; elIter++) {
-            ASSERT_LE(fabs(out_feat[elIter].f[0] - gold_feat[elIter].f[0]), 1e-3) << "at: " << elIter << std::endl;
-            ASSERT_LE(fabs(out_feat[elIter].f[1] - gold_feat[elIter].f[1]), 1e-3) << "at: " << elIter << std::endl;
-            ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << std::endl;
-            ASSERT_LE(fabs(out_feat[elIter].f[3] - gold_feat[elIter].f[3]), 0.5f) << "at: " << elIter << std::endl;
-            ASSERT_LE(fabs(out_feat[elIter].f[4] - gold_feat[elIter].f[4]), 1e-3) << "at: " << elIter << std::endl;
+            ASSERT_LE(fabs(out_feat[elIter].f[0] - gold_feat[elIter].f[0]), 1e-3) << "at: " << elIter << endl;
+            ASSERT_LE(fabs(out_feat[elIter].f[1] - gold_feat[elIter].f[1]), 1e-3) << "at: " << elIter << endl;
+            ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << endl;
+            ASSERT_LE(fabs(out_feat[elIter].f[3] - gold_feat[elIter].f[3]), 0.5f) << "at: " << elIter << endl;
+            ASSERT_LE(fabs(out_feat[elIter].f[4] - gold_feat[elIter].f[4]), 1e-3) << "at: " << elIter << endl;
         }
 
         EXPECT_TRUE(compareEuclidean(descDims[0], descDims[1], (float*)&v_out_desc[0], (float*)&v_gold_desc[0], 2.f, 4.5f));
@@ -238,10 +243,10 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr, float edgeT
 }
 
 #define SIFT_INIT(desc, image, nLayers, contrastThr, edgeThr, initSigma, doubleInput) \
-    TYPED_TEST(SIFT, desc) \
-    {   \
-        for (int i = 0; i < 1; i++) \
-        siftTest<TypeParam>(string(TEST_DIR"/sift/"#image".test"), nLayers, contrastThr, edgeThr, initSigma, doubleInput);   \
+    TYPED_TEST(SIFT, desc)                                              \
+    {                                                                   \
+        for (int i = 0; i < 1; i++)                                     \
+            siftTest<TypeParam>(string(TEST_DIR"/sift/"#image".test"), nLayers, contrastThr, edgeThr, initSigma, doubleInput); \
     }
 
     SIFT_INIT(Man_Default, man, 3, 0.04f, 10.0f, 1.6f, true);
@@ -267,11 +272,11 @@ TEST(SIFT, CPP)
     readImageFeaturesDescriptors<float>(string(TEST_DIR"/sift/man.test"), inDims, inFiles, goldFeat, goldDesc);
     inFiles[0].insert(0,string(TEST_DIR"/sift/"));
 
-    af::array in = af::loadImage(inFiles[0].c_str(), false);
+    array in = loadImage(inFiles[0].c_str(), false);
 
-    af::features feat;
-    af::array desc;
-    af::sift(feat, desc, in, 3, 0.04f, 10.0f, 1.6f, true, 1.f/256.f, 0.05f);
+    features feat;
+    array desc;
+    sift(feat, desc, in, 3, 0.04f, 10.0f, 1.6f, true, 1.f/256.f, 0.05f);
 
     float * outX           = new float[feat.getNumFeatures()];
     float * outY           = new float[feat.getNumFeatures()];
@@ -279,7 +284,7 @@ TEST(SIFT, CPP)
     float * outOrientation = new float[feat.getNumFeatures()];
     float * outSize        = new float[feat.getNumFeatures()];
     float * outDesc        = new float[desc.elements()];
-    af::dim4 descDims = desc.dims();
+    dim4 descDims = desc.dims();
     feat.getX().host(outX);
     feat.getY().host(outY);
     feat.getScore().host(outScore);
@@ -305,11 +310,11 @@ TEST(SIFT, CPP)
     split_feat_desc(gold_feat_desc, gold_feat, v_gold_desc);
 
     for (int elIter = 0; elIter < (int)feat.getNumFeatures(); elIter++) {
-        ASSERT_LE(fabs(out_feat[elIter].f[0] - gold_feat[elIter].f[0]), 1e-3) << "at: " << elIter << std::endl;
-        ASSERT_LE(fabs(out_feat[elIter].f[1] - gold_feat[elIter].f[1]), 1e-3) << "at: " << elIter << std::endl;
-        ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << std::endl;
-        ASSERT_LE(fabs(out_feat[elIter].f[3] - gold_feat[elIter].f[3]), 0.5f) << "at: " << elIter << std::endl;
-        ASSERT_LE(fabs(out_feat[elIter].f[4] - gold_feat[elIter].f[4]), 1e-3) << "at: " << elIter << std::endl;
+        ASSERT_LE(fabs(out_feat[elIter].f[0] - gold_feat[elIter].f[0]), 1e-3) << "at: " << elIter << endl;
+        ASSERT_LE(fabs(out_feat[elIter].f[1] - gold_feat[elIter].f[1]), 1e-3) << "at: " << elIter << endl;
+        ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << endl;
+        ASSERT_LE(fabs(out_feat[elIter].f[3] - gold_feat[elIter].f[3]), 0.5f) << "at: " << elIter << endl;
+        ASSERT_LE(fabs(out_feat[elIter].f[4] - gold_feat[elIter].f[4]), 1e-3) << "at: " << elIter << endl;
     }
 
     EXPECT_TRUE(compareEuclidean(descDims[0], descDims[1], (float*)&v_out_desc[0], (float*)&v_gold_desc[0], 2.f, 4.5f));

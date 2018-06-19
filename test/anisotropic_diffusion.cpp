@@ -19,6 +19,12 @@
 using std::string;
 using std::vector;
 using std::abs;
+using af::array;
+using af::exception;
+using af::fluxFunction;
+using af::max;
+using af::min;
+using af::randu;
 
 template<typename T>
 class AnisotropicDiffusion : public ::testing::Test
@@ -30,16 +36,16 @@ typedef ::testing::Types<float, double, int, uint, uchar, short, ushort> TestTyp
 TYPED_TEST_CASE(AnisotropicDiffusion, TestTypes);
 
 template<typename T>
-af::array normalize(const af::array &p_in)
+array normalize(const array &p_in)
 {
-    T mx = af::max<T>(p_in);
-    T mn = af::min<T>(p_in);
+    T mx = max<T>(p_in);
+    T mn = min<T>(p_in);
     return (p_in-mn)/(mx-mn);
 }
 
 template<typename T, bool isColor>
 void imageTest(string pTestFile, const float dt, const float K, const uint iters,
-               af::fluxFunction fluxKind, bool isCurvatureDiffusion=false)
+               fluxFunction fluxKind, bool isCurvatureDiffusion=false)
 {
     typedef typename cond_type<is_same_type<T, double>::value, double, float>::type OutType;
 
@@ -113,10 +119,10 @@ void imageTest(string pTestFile, const float dt, const float K, const uint iters
         ASSERT_EQ(AF_SUCCESS, af_div(&divArray, numArray, denArray, false));
         ASSERT_EQ(AF_SUCCESS, af_mul(&outArray, divArray, cstArray, false));
 
-        std::vector<OutType> outData(nElems);
+        vector<OutType> outData(nElems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
-        std::vector<OutType> goldData(nElems);
+        vector<OutType> goldData(nElems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
 
         ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.025f));
@@ -155,8 +161,8 @@ TYPED_TEST(AnisotropicDiffusion, GradientColorImage)
 TEST(AnisotropicDiffusion, GradientInvalidInputArray)
 {
     try {
-        af::array out = af::anisotropicDiffusion(af::randu(100), 0.125f, 0.2f, 10, AF_FLUX_QUADRATIC);
-    } catch (af::exception &exp) {
+        array out = anisotropicDiffusion(randu(100), 0.125f, 0.2f, 10, AF_FLUX_QUADRATIC);
+    } catch (exception &exp) {
         ASSERT_EQ(AF_ERR_SIZE, exp.err());
     }
 }
@@ -181,8 +187,8 @@ TYPED_TEST(AnisotropicDiffusion, CurvatureColorImage)
 TEST(AnisotropicDiffusion, CurvatureInvalidInputArray)
 {
     try {
-        af::array out = af::anisotropicDiffusion(af::randu(100), 0.125f, 0.2f, 10);
-    } catch (af::exception &exp) {
+        array out = anisotropicDiffusion(randu(100), 0.125f, 0.2f, 10);
+    } catch (exception &exp) {
         ASSERT_EQ(AF_ERR_SIZE, exp.err());
     }
 }

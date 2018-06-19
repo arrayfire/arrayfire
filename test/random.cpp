@@ -21,13 +21,12 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::cfloat;
-using af::cdouble;
 using af::array;
-using af::randomEngine;
-using af::randomEngineType;
-using af::mean;
-using af::stdev;
+using af::cdouble;
+using af::cfloat;
+using af::dim4;
+using af::dtype;
+using af::dtype_traits;
 
 template<typename T>
 class Random : public ::testing::Test
@@ -95,38 +94,38 @@ typedef ::testing::Types<unsigned> TestTypesSeed;
 TYPED_TEST_CASE(RandomSeed, TestTypesSeed);
 
 template<typename T>
-void randuTest(af::dim4 & dims)
+void randuTest(dim4 & dims)
 {
     if (noDoubleTests<T>()) return;
 
     af_array outArray = 0;
-    ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     ASSERT_EQ(af_sync(-1), AF_SUCCESS);
     if(outArray != 0) af_release_array(outArray);
 }
 
 template<typename T>
-void randnTest(af::dim4 &dims)
+void randnTest(dim4 &dims)
 {
     if (noDoubleTests<T>()) return;
 
     af_array outArray = 0;
-    ASSERT_EQ(AF_SUCCESS, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     ASSERT_EQ(af_sync(-1), AF_SUCCESS);
     if(outArray != 0) af_release_array(outArray);
 }
 
-#define RAND(d0, d1, d2, d3)                                    \
-    TYPED_TEST(Random,randu_##d0##_##d1##_##d2##_##d3)          \
-    {                                                           \
-        af::dim4 dims(d0, d1, d2, d3);                          \
-        randuTest<TypeParam>(dims);                             \
-    }                                                           \
-    TYPED_TEST(Random_norm,randn_##d0##_##d1##_##d2##_##d3)     \
-    {                                                           \
-        af::dim4 dims(d0, d1, d2, d3);                          \
-        randnTest<TypeParam>(dims);                             \
-    }                                                           \
+#define RAND(d0, d1, d2, d3)                                \
+    TYPED_TEST(Random,randu_##d0##_##d1##_##d2##_##d3)      \
+    {                                                       \
+        dim4 dims(d0, d1, d2, d3);                          \
+        randuTest<TypeParam>(dims);                         \
+    }                                                       \
+    TYPED_TEST(Random_norm,randn_##d0##_##d1##_##d2##_##d3) \
+    {                                                       \
+        dim4 dims(d0, d1, d2, d3);                          \
+        randnTest<TypeParam>(dims);                         \
+    }                                                       \
 
 RAND(1024, 1024,    1,    1);
 RAND( 512,  512,    1,    1);
@@ -167,7 +166,7 @@ void randuArgsTest()
     dim_t ndims = 4;
     dim_t dims[] = {1, 2, 3, 0};
     af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_SIZE, af_randu(&outArray, ndims, dims, (af_dtype) af::dtype_traits<char>::af_type));
+    ASSERT_EQ(AF_ERR_SIZE, af_randu(&outArray, ndims, dims, (af_dtype) dtype_traits<char>::af_type));
     ASSERT_EQ(af_sync(-1), AF_SUCCESS);
     if(outArray != 0) af_release_array(outArray);
 }
@@ -182,16 +181,16 @@ void randuDimsTest()
 {
     if (noDoubleTests<T>()) return;
 
-    af::dim4 dims(1, 65535*32, 1, 1);
-    af::array large_rand = af::randu(dims, (af_dtype) af::dtype_traits<T>::af_type);
+    dim4 dims(1, 65535*32, 1, 1);
+    array large_rand = randu(dims, (af_dtype) dtype_traits<T>::af_type);
     ASSERT_EQ(large_rand.dims()[1], 65535*32);
 
-    dims = af::dim4(1, 1, 65535*32, 1);
-    large_rand = af::randu(dims, (af_dtype) af::dtype_traits<T>::af_type);
+    dims = dim4(1, 1, 65535*32, 1);
+    large_rand = randu(dims, (af_dtype) dtype_traits<T>::af_type);
     ASSERT_EQ(large_rand.dims()[2], 65535*32);
 
-    dims = af::dim4(1, 1, 1, 65535*32);
-    large_rand = af::randu(dims, (af_dtype) af::dtype_traits<T>::af_type);
+    dims = dim4(1, 1, 1, 65535*32);
+    large_rand = randu(dims, (af_dtype) dtype_traits<T>::af_type);
     ASSERT_EQ(large_rand.dims()[3], 65535*32);
 }
 
@@ -202,13 +201,27 @@ TYPED_TEST(Random,InvalidDims)
 
 ////////////////////////////////////// CPP /////////////////////////////////////
 //
+
+using af::allTrue;
+using af::constant;
+using af::getDefaultRandomEngine;
+using af::getSeed;
+using af::mean;
+using af::randomEngine;
+using af::randomEngineType;
+using af::randu;
+using af::setDefaultRandomEngineType;
+using af::setSeed;
+using af::stdev;
+using af::sum;
+
 TEST(RandomEngine, Default)
 {
     // Using default Random engine will cause segfaults
     // without setting one. This test should be before
     // setting it to test if default engine setup is working
     // as expected, otherwise the test will fail.
-    af::randomEngine engine = af::getDefaultRandomEngine();
+    randomEngine engine = getDefaultRandomEngine();
 }
 
 TEST(Random, CPP)
@@ -217,18 +230,18 @@ TEST(Random, CPP)
 
     // TEST will fail if exception is thrown, which are thrown
     // when only wrong inputs are thrown on bad access happens
-    af::dim4 dims(1, 2, 3, 1);
-    af::array out1 = af::randu(dims);
-    af::array out2 = af::randn(dims);
-    af::setDefaultRandomEngineType(AF_RANDOM_ENGINE_PHILOX);
-    af::array out3 = af::randu(dims);
-    af::array out4 = af::randn(dims);
-    af::setDefaultRandomEngineType(AF_RANDOM_ENGINE_THREEFRY);
-    af::array out5 = af::randu(dims);
-    af::array out6 = af::randn(dims);
-    af::setDefaultRandomEngineType(AF_RANDOM_ENGINE_MERSENNE);
-    af::array out7 = af::randu(dims);
-    af::array out8 = af::randn(dims);
+    dim4 dims(1, 2, 3, 1);
+    array out1 = randu(dims);
+    array out2 = randn(dims);
+    setDefaultRandomEngineType(AF_RANDOM_ENGINE_PHILOX);
+    array out3 = randu(dims);
+    array out4 = randn(dims);
+    setDefaultRandomEngineType(AF_RANDOM_ENGINE_THREEFRY);
+    array out5 = randu(dims);
+    array out6 = randn(dims);
+    setDefaultRandomEngineType(AF_RANDOM_ENGINE_MERSENNE);
+    array out7 = randu(dims);
+    array out8 = randn(dims);
     af::sync();
 }
 
@@ -238,25 +251,25 @@ void testSetSeed(const uintl seed0, const uintl seed1)
 
     if (noDoubleTests<T>()) return;
 
-    uintl orig_seed = af::getSeed();
+    uintl orig_seed = getSeed();
 
     const int num = 1024 * 1024;
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
 
-    af::setSeed(seed0);
-    af::array in0 = af::randu(num, ty);
+    setSeed(seed0);
+    array in0 = randu(num, ty);
 
-    af::setSeed(seed1);
-    af::array in1 = af::randu(num, ty);
+    setSeed(seed1);
+    array in1 = randu(num, ty);
 
-    af::setSeed(seed0);
-    af::array in2 = af::randu(num, ty);
-    af::array in3 = af::randu(num, ty);
+    setSeed(seed0);
+    array in2 = randu(num, ty);
+    array in3 = randu(num, ty);
 
-    std::vector<T> h_in0(num);
-    std::vector<T> h_in1(num);
-    std::vector<T> h_in2(num);
-    std::vector<T> h_in3(num);
+    vector<T> h_in0(num);
+    vector<T> h_in1(num);
+    vector<T> h_in2(num);
+    vector<T> h_in3(num);
 
     in0.host((void *)&h_in0[0]);
     in1.host((void *)&h_in1[0]);
@@ -280,7 +293,7 @@ void testSetSeed(const uintl seed0, const uintl seed1)
         }
     }
 
-    af::setSeed(orig_seed); // Reset the seed
+    setSeed(orig_seed); // Reset the seed
 }
 
 TYPED_TEST(RandomSeed, setSeed)
@@ -293,24 +306,24 @@ void testGetSeed(const uintl seed0, const uintl seed1)
 {
     if (noDoubleTests<T>()) return;
 
-    uintl orig_seed = af::getSeed();
+    uintl orig_seed = getSeed();
 
     const int num = 1024;
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
 
-    af::setSeed(seed0);
-    af::array in0 = af::randu(num, ty);
-    ASSERT_EQ(af::getSeed(), seed0);
+    setSeed(seed0);
+    array in0 = randu(num, ty);
+    ASSERT_EQ(getSeed(), seed0);
 
-    af::setSeed(seed1);
-    af::array in1 = af::randu(num, ty);
-    ASSERT_EQ(af::getSeed(), seed1);
+    setSeed(seed1);
+    array in1 = randu(num, ty);
+    ASSERT_EQ(getSeed(), seed1);
 
-    af::setSeed(seed0);
-    af::array in2 = af::randu(num, ty);
-    ASSERT_EQ(af::getSeed(), seed0);
+    setSeed(seed0);
+    array in2 = randu(num, ty);
+    ASSERT_EQ(getSeed(), seed0);
 
-    af::setSeed(orig_seed); // Reset the seed
+    setSeed(orig_seed); // Reset the seed
 }
 
 TYPED_TEST(Random, getSeed)
@@ -322,10 +335,10 @@ template <typename T>
 void testRandomEngineUniform(randomEngineType type)
 {
     if (noDoubleTests<T>()) return;
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
 
     int elem = 16*1024*1024;
-    af::randomEngine r(type, 0);
+    randomEngine r(type, 0);
     array A = randu(elem, ty, r);
     T m = mean<T>(A);
     T s = stdev<T>(A);
@@ -337,10 +350,10 @@ template <typename T>
 void testRandomEngineNormal(randomEngineType type)
 {
     if (noDoubleTests<T>()) return;
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
 
     int elem = 16*1024*1024;
-    af::randomEngine r(type, 0);
+    randomEngine r(type, 0);
     array A = randn(elem, ty, r);
     T m = mean<T>(A);
     T s = stdev<T>(A);
@@ -384,9 +397,9 @@ void testRandomEngineSeed(randomEngineType type)
     int elem = 4*32*1024;
     uintl orig_seed = 0;
     uintl new_seed = 1;
-    af::randomEngine e(type, orig_seed);
+    randomEngine e(type, orig_seed);
 
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
     array d1 = randu(elem, ty, e);
     e.setSeed(new_seed);
     array d2 = randu(elem, ty, e);
@@ -394,10 +407,10 @@ void testRandomEngineSeed(randomEngineType type)
     array d3 = randu(elem, ty, e);
     array d4 = randu(elem, ty, e);
 
-    std::vector<T> h1(elem);
-    std::vector<T> h2(elem);
-    std::vector<T> h3(elem);
-    std::vector<T> h4(elem);
+    vector<T> h1(elem);
+    vector<T> h2(elem);
+    vector<T> h3(elem);
+    vector<T> h4(elem);
 
     d1.host((void*)h1.data());
     d2.host((void*)h2.data());
@@ -432,17 +445,17 @@ template <typename T>
 void testRandomEnginePeriod(randomEngineType type)
 {
     if (noDoubleTests<T>()) return;
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
 
     uint elem = 1024*1024;
     uint steps = 4*1024;
-    af::randomEngine r(type, 0);
+    randomEngine r(type, 0);
 
-    af::array first = af::randu(elem, ty, r);
+    array first = randu(elem, ty, r);
 
     for (int i = 0; i < steps; ++i) {
-        af::array step = af::randu(elem, ty, r);
-        bool different = !af::allTrue<bool>(first == step);
+        array step = randu(elem, ty, r);
+        bool different = !allTrue<bool>(first == step);
         ASSERT_TRUE(different);
     }
 }
@@ -464,25 +477,25 @@ TYPED_TEST(RandomEngine, DISABLED_mersenneRandomEnginePeriod)
 
 template <typename T>
 T chi2_statistic(array input, array expected) {
-    expected *= af::sum<T>(input) / af::sum<T>(expected);
+    expected *= sum<T>(input) / sum<T>(expected);
     array diff = input - expected;
-    return af::sum<T>((diff * diff) / expected);
+    return sum<T>((diff * diff) / expected);
 }
 
 template <typename T>
 void testRandomEngineUniformChi2(randomEngineType type)
 {
     if (noDoubleTests<T>()) return;
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+    dtype ty = (dtype)dtype_traits<T>::af_type;
 
     int elem = 256*1024*1024;
     int steps = 32;
     int bins = 100;
 
-    array total_hist = af::constant(0.0, bins, ty);
-    array expected = af::constant(1.0/bins, bins, ty);
+    array total_hist = constant(0.0, bins, ty);
+    array expected = constant(1.0/bins, bins, ty);
 
-    af::randomEngine r(type, 0);
+    randomEngine r(type, 0);
 
     // R> qchisq(c(5e-6, 1 - 5e-6), 99)
     // [1]  48.68125 173.87456
@@ -492,7 +505,7 @@ void testRandomEngineUniformChi2(randomEngineType type)
     bool prev_step = true;
     bool prev_total = true;
     for (int i = 0; i < steps; ++i) {
-        array step_hist = af::histogram(af::randu(elem, ty, r), bins, 0.0, 1.0);
+        array step_hist = histogram(randu(elem, ty, r), bins, 0.0, 1.0);
         T step_chi2 = chi2_statistic<T>(step_hist, expected);
         if (!prev_step) {
           EXPECT_GT(step_chi2, lower) << "at step: " << i;

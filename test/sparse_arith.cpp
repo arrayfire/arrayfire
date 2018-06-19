@@ -20,14 +20,18 @@
 
 using std::vector;
 using std::string;
-using std::cout;
-using std::endl;
 using std::abs;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::deviceGC;
+using af::dim4;
+using af::freeHost;
+using af::max;
+using af::sum;
 
 template<typename T>
-af::array makeSparse(af::array A, int factor)
+array makeSparse(array A, int factor)
 {
     A = floor(A * 1000);
     A = A * ((A % factor) == 0) / 1000;
@@ -35,28 +39,28 @@ af::array makeSparse(af::array A, int factor)
 }
 
 template<>
-af::array makeSparse<cfloat>(af::array A, int factor)
+array makeSparse<cfloat>(array A, int factor)
 {
-    af::array r = real(A);
+    array r = real(A);
     r = floor(r * 1000);
     r = r * ((r % factor) == 0) / 1000;
 
-    af::array i = r / 2;
+    array i = r / 2;
 
-    A = af::complex(r, i);
+    A = complex(r, i);
     return A;
 }
 
 template<>
-af::array makeSparse<cdouble>(af::array A, int factor)
+array makeSparse<cdouble>(array A, int factor)
 {
-    af::array r = real(A);
+    array r = real(A);
     r = floor(r * 1000);
     r = r * ((r % factor) == 0) / 1000;
 
-    af::array i = r / 2;
+    array i = r / 2;
 
-    A = af::complex(r, i);
+    A = complex(r, i);
     return A;
 }
 
@@ -70,7 +74,7 @@ typedef enum {
 template<af_op_t op>
 struct arith_op
 {
-    af::array operator()(af::array v1, af::array v2)
+    array operator()(array v1, array v2)
     {
         return v1;
     }
@@ -79,7 +83,7 @@ struct arith_op
 template<>
 struct arith_op<af_add_t>
 {
-    af::array operator()(af::array v1, af::array v2)
+    array operator()(array v1, array v2)
     {
         return v1 + v2;
     }
@@ -88,7 +92,7 @@ struct arith_op<af_add_t>
 template<>
 struct arith_op<af_sub_t>
 {
-    af::array operator()(af::array v1, af::array v2)
+    array operator()(array v1, array v2)
     {
         return v1 - v2;
     }
@@ -97,7 +101,7 @@ struct arith_op<af_sub_t>
 template<>
 struct arith_op<af_mul_t>
 {
-    af::array operator()(af::array v1, af::array v2)
+    array operator()(array v1, array v2)
     {
         return v1 * v2;
     }
@@ -106,14 +110,14 @@ struct arith_op<af_mul_t>
 template<>
 struct arith_op<af_div_t>
 {
-    af::array operator()(af::array v1, af::array v2)
+    array operator()(array v1, array v2)
     {
         return v1 / v2;
     }
 };
 
 template<typename T>
-void sparseCompare(af::array A, af::array B, const double eps)
+void sparseCompare(array A, array B, const double eps)
 {
 // This macro is used to check if either value is finite and then call assert
 // If neither value is finite, then they can be assumed to be equal to either inf or nan
@@ -122,17 +126,17 @@ void sparseCompare(af::array A, af::array B, const double eps)
         ASSERT_NEAR(V1, V2, eps) << "at : " << i;   \
     }                                               \
 
-    af::array AValues = sparseGetValues(A);
-    af::array ARowIdx = sparseGetRowIdx(A);
-    af::array AColIdx = sparseGetColIdx(A);
+    array AValues = sparseGetValues(A);
+    array ARowIdx = sparseGetRowIdx(A);
+    array AColIdx = sparseGetColIdx(A);
 
-    af::array BValues = sparseGetValues(B);
-    af::array BRowIdx = sparseGetRowIdx(B);
-    af::array BColIdx = sparseGetColIdx(B);
+    array BValues = sparseGetValues(B);
+    array BRowIdx = sparseGetRowIdx(B);
+    array BColIdx = sparseGetColIdx(B);
 
     // Verify row and col indices
-    ASSERT_EQ(0, af::max<int>(ARowIdx - BRowIdx));
-    ASSERT_EQ(0, af::max<int>(AColIdx - BColIdx));
+    ASSERT_EQ(0, max<int>(ARowIdx - BRowIdx));
+    ASSERT_EQ(0, max<int>(AColIdx - BColIdx));
 
     T *ptrA = AValues.host<T>();
     T *ptrB = BValues.host<T>();
@@ -143,8 +147,8 @@ void sparseCompare(af::array A, af::array B, const double eps)
             ASSERT_FINITE_EQ(imag(ptrA[i]), imag(ptrB[i]));
         }
     }
-    af::freeHost(ptrA);
-    af::freeHost(ptrB);
+    freeHost(ptrA);
+    freeHost(ptrB);
 
 #undef ASSERT_FINITE_EQ
 }
@@ -152,101 +156,101 @@ void sparseCompare(af::array A, af::array B, const double eps)
 template<typename T, af_op_t op>
 void sparseArithTester(const int m, const int n, int factor, const double eps)
 {
-    af::deviceGC();
+    deviceGC();
 
     if (noDoubleTests<T>()) return;
 
 #if 1
-    af::array A = cpu_randu<T>(af::dim4(m, n));
-    af::array B = cpu_randu<T>(af::dim4(m, n));
+    array A = cpu_randu<T>(dim4(m, n));
+    array B = cpu_randu<T>(dim4(m, n));
 #else
-    af::array A = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
-    af::array B = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
+    array A = randu(m, n, (dtype)dtype_traits<T>::af_type);
+    array B = randu(m, n, (dtype)dtype_traits<T>::af_type);
 #endif
 
     A = makeSparse<T>(A, factor);
 
-    af::array RA = af::sparse(A, AF_STORAGE_CSR);
-    af::array OA = af::sparse(A, AF_STORAGE_COO);
+    array RA = sparse(A, AF_STORAGE_CSR);
+    array OA = sparse(A, AF_STORAGE_COO);
 
     // Arith Op
-    af::array resR = arith_op<op>()(RA, B);
-    af::array resO = arith_op<op>()(OA, B);
-    af::array resD = arith_op<op>()( A, B);
+    array resR = arith_op<op>()(RA, B);
+    array resO = arith_op<op>()(OA, B);
+    array resD = arith_op<op>()( A, B);
 
-    af::array revR = arith_op<op>()(B, RA);
-    af::array revO = arith_op<op>()(B, OA);
-    af::array revD = arith_op<op>()(B,  A);
+    array revR = arith_op<op>()(B, RA);
+    array revO = arith_op<op>()(B, OA);
+    array revD = arith_op<op>()(B,  A);
 
-    ASSERT_NEAR(0, af::sum<double>(af::abs(real(resR - resD))) / (m * n), eps);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(resR - resD))) / (m * n), eps);
+    ASSERT_NEAR(0, sum<double>(abs(real(resR - resD))) / (m * n), eps);
+    ASSERT_NEAR(0, sum<double>(abs(imag(resR - resD))) / (m * n), eps);
 
-    ASSERT_NEAR(0, af::sum<double>(af::abs(real(resO - resD))) / (m * n), eps);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(resO - resD))) / (m * n), eps);
+    ASSERT_NEAR(0, sum<double>(abs(real(resO - resD))) / (m * n), eps);
+    ASSERT_NEAR(0, sum<double>(abs(imag(resO - resD))) / (m * n), eps);
 
-    ASSERT_NEAR(0, af::sum<double>(af::abs(real(revR - revD))) / (m * n), eps);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(revR - revD))) / (m * n), eps);
+    ASSERT_NEAR(0, sum<double>(abs(real(revR - revD))) / (m * n), eps);
+    ASSERT_NEAR(0, sum<double>(abs(imag(revR - revD))) / (m * n), eps);
 
-    ASSERT_NEAR(0, af::sum<double>(af::abs(real(revO - revD))) / (m * n), eps);
-    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(revO - revD))) / (m * n), eps);
+    ASSERT_NEAR(0, sum<double>(abs(real(revO - revD))) / (m * n), eps);
+    ASSERT_NEAR(0, sum<double>(abs(imag(revO - revD))) / (m * n), eps);
 }
 
 // Mul
 template<typename T>
 void sparseArithTesterMul(const int m, const int n, int factor, const double eps)
 {
-    af::deviceGC();
+    deviceGC();
 
     if (noDoubleTests<T>()) return;
 
 #if 1
-    af::array A = cpu_randu<T>(af::dim4(m, n));
-    af::array B = cpu_randu<T>(af::dim4(m, n));
+    array A = cpu_randu<T>(dim4(m, n));
+    array B = cpu_randu<T>(dim4(m, n));
 #else
-    af::array A = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
-    af::array B = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
+    array A = randu(m, n, (dtype)dtype_traits<T>::af_type);
+    array B = randu(m, n, (dtype)dtype_traits<T>::af_type);
 #endif
 
     A = makeSparse<T>(A, factor);
 
-    af::array RA = af::sparse(A, AF_STORAGE_CSR);
-    af::array OA = af::sparse(A, AF_STORAGE_COO);
+    array RA = sparse(A, AF_STORAGE_CSR);
+    array OA = sparse(A, AF_STORAGE_COO);
 
     // Forward
     {
         // Arith Op
-        af::array resR = arith_op<af_mul_t>()(RA, B);
-        af::array resO = arith_op<af_mul_t>()(OA, B);
+        array resR = arith_op<af_mul_t>()(RA, B);
+        array resO = arith_op<af_mul_t>()(OA, B);
 
         // We will test this by converting the COO to CSR and CSR to COO and
         // comparing them. In essense, we are comparing the resR and resO
         // TODO: Make a better comparison using dense
 
         // Check resR against conR
-        af::array conR = sparseConvertTo(resR, AF_STORAGE_CSR);
+        array conR = sparseConvertTo(resR, AF_STORAGE_CSR);
         sparseCompare<T>(resR, conR, eps);
 
         // Check resO against conO
-        af::array conO = sparseConvertTo(resR, AF_STORAGE_COO);
+        array conO = sparseConvertTo(resR, AF_STORAGE_COO);
         sparseCompare<T>(resO, conO, eps);
     }
 
     // Reverse
     {
         // Arith Op
-        af::array resR = arith_op<af_mul_t>()(B, RA);
-        af::array resO = arith_op<af_mul_t>()(B, OA);
+        array resR = arith_op<af_mul_t>()(B, RA);
+        array resO = arith_op<af_mul_t>()(B, OA);
 
         // We will test this by converting the COO to CSR and CSR to COO and
         // comparing them. In essense, we are comparing the resR and resO
         // TODO: Make a better comparison using dense
 
         // Check resR against conR
-        af::array conR = sparseConvertTo(resR, AF_STORAGE_CSR);
+        array conR = sparseConvertTo(resR, AF_STORAGE_CSR);
         sparseCompare<T>(resR, conR, eps);
 
         // Check resO against conO
-        af::array conO = sparseConvertTo(resR, AF_STORAGE_COO);
+        array conO = sparseConvertTo(resR, AF_STORAGE_COO);
         sparseCompare<T>(resO, conO, eps);
     }
 }
@@ -255,26 +259,26 @@ void sparseArithTesterMul(const int m, const int n, int factor, const double eps
 template<typename T>
 void sparseArithTesterDiv(const int m, const int n, int factor, const double eps)
 {
-    af::deviceGC();
+    deviceGC();
 
     if (noDoubleTests<T>()) return;
 
 #if 1
-    af::array A = cpu_randu<T>(af::dim4(m, n));
-    af::array B = cpu_randu<T>(af::dim4(m, n));
+    array A = cpu_randu<T>(dim4(m, n));
+    array B = cpu_randu<T>(dim4(m, n));
 #else
-    af::array A = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
-    af::array B = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
+    array A = randu(m, n, (dtype)dtype_traits<T>::af_type);
+    array B = randu(m, n, (dtype)dtype_traits<T>::af_type);
 #endif
 
     A = makeSparse<T>(A, factor);
 
-    af::array RA = af::sparse(A, AF_STORAGE_CSR);
-    af::array OA = af::sparse(A, AF_STORAGE_COO);
+    array RA = sparse(A, AF_STORAGE_CSR);
+    array OA = sparse(A, AF_STORAGE_COO);
 
     // Arith Op
-    af::array resR = arith_op<af_div_t>()(RA, B);
-    af::array resO = arith_op<af_div_t>()(OA, B);
+    array resR = arith_op<af_div_t>()(RA, B);
+    array resO = arith_op<af_div_t>()(OA, B);
 
     // Assert division by sparse is not allowed
     af_array out_temp = 0;
@@ -287,11 +291,11 @@ void sparseArithTesterDiv(const int m, const int n, int factor, const double eps
     // TODO: Make a better comparison using dense
 
     // Check resR against conR
-    af::array conR = sparseConvertTo(resR, AF_STORAGE_CSR);
+    array conR = sparseConvertTo(resR, AF_STORAGE_CSR);
     sparseCompare<T>(resR, conR, eps);
 
     // Check resO against conO
-    af::array conO = sparseConvertTo(resR, AF_STORAGE_COO);
+    array conO = sparseConvertTo(resR, AF_STORAGE_COO);
     sparseCompare<T>(resO, conO, eps);
 }
 
