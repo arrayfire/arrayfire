@@ -106,8 +106,8 @@ void topkDim0(Param<T> ovals, Param<uint> oidxs, CParam<T> ivals,
     // before the first iteration and reused for further iterations.
 
     // Temporary storage allocation for iterations
-    Array<T> tvals = *initArray<T>();
-    Array<uint> tidxs = *initArray<uint>();
+    Array<T> tvals = createEmptyArray<T>(dim4());
+    Array<uint> tidxs = createEmptyArray<uint>(dim4());
 
     if (numBlocksX > 1) {
         tvals = createEmptyArray<T>(dim4(k * numBlocksX, ivals.dims[1]));
