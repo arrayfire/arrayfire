@@ -20,6 +20,9 @@
 
 using std::string;
 using std::vector;
+using af::dtype_traits;
+using af::getAvailableBackends;
+using af::setBackend;
 
 const char *getActiveBackendString(af_backend active)
 {
@@ -43,7 +46,7 @@ void testFunction()
 
     af_array outArray = 0;
     dim_t dims[] = {32, 32};
-    ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, 2, dims, (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, 2, dims, (af_dtype) dtype_traits<T>::af_type));
 
     // Verify backends returned by array and by function are the same
     af_backend arrayBackend = (af_backend)0;
@@ -58,7 +61,7 @@ void testFunction()
 
 void backendTest()
 {
-    int backends = af::getAvailableBackends();
+    int backends = getAvailableBackends();
 
     ASSERT_NE(backends, 0);
 
@@ -71,19 +74,19 @@ void backendTest()
 
     if(cpu) {
         printf("\nRunning CPU Backend...\n");
-        af::setBackend(AF_BACKEND_CPU);
+        setBackend(AF_BACKEND_CPU);
         testFunction<float>();
     }
 
     if(cuda) {
         printf("\nRunning CUDA Backend...\n");
-        af::setBackend(AF_BACKEND_CUDA);
+        setBackend(AF_BACKEND_CUDA);
         testFunction<float>();
     }
 
     if(opencl) {
         printf("\nRunning OpenCL Backend...\n");
-        af::setBackend(AF_BACKEND_OPENCL);
+        setBackend(AF_BACKEND_OPENCL);
         testFunction<float>();
     }
 }

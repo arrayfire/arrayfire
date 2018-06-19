@@ -14,20 +14,22 @@
 #include <testHelpers.hpp>
 
 using std::abs;
-using namespace af;
+using std::vector;
+using af::array;
+using af::randu;
 
 const int num = 10000;
 
 TEST(ClampTests, FloatArrayArray)
 {
-    af::array in = af::randu(num, f32);
-    af::array lo = af::randu(num, f32)/10;       // Ensure lo <= 0.1
-    af::array hi = 1.0 - af::randu(num, f32)/10; // Ensure hi >= 0.9
-    af::eval(lo, hi);
+    array in = randu(num, f32);
+    array lo = randu(num, f32)/10;       // Ensure lo <= 0.1
+    array hi = 1.0 - randu(num, f32)/10; // Ensure hi >= 0.9
+    eval(lo, hi);
 
 
-    std::vector<float> hout(num), hin(num), hlo(num), hhi(num);
-    af::array out = clamp(in, lo, hi);
+    vector<float> hout(num), hin(num), hlo(num), hhi(num);
+    array out = clamp(in, lo, hi);
     out.host(&hout[0]);
     in.host(&hin[0]);
     lo.host(&hlo[0]);
@@ -42,12 +44,12 @@ TEST(ClampTests, FloatArrayArray)
 
 TEST(ClampTests, FloatArrayScalar)
 {
-    af::array in = af::randu(num, f32);
-    af::array lo = af::randu(num, f32)/10; // Ensure lo <= 0.1
+    array in = randu(num, f32);
+    array lo = randu(num, f32)/10; // Ensure lo <= 0.1
     float hi = 0.9;
 
-    std::vector<float> hout(num), hin(num), hlo(num);
-    af::array out = clamp(in, lo, hi);
+    vector<float> hout(num), hin(num), hlo(num);
+    array out = clamp(in, lo, hi);
 
     out.host(&hout[0]);
     in.host(&hin[0]);
@@ -62,12 +64,12 @@ TEST(ClampTests, FloatArrayScalar)
 
 TEST(ClampTests, FloatScalarArray)
 {
-    af::array in = af::randu(num, f32);
+    array in = randu(num, f32);
     float lo = 0.1;
-    af::array hi = 1.0 - af::randu(num, f32)/10; // Ensure hi >= 0.9
+    array hi = 1.0 - randu(num, f32)/10; // Ensure hi >= 0.9
 
-    std::vector<float> hout(num), hin(num), hhi(num);
-    af::array out = clamp(in, lo, hi);
+    vector<float> hout(num), hin(num), hhi(num);
+    array out = clamp(in, lo, hi);
 
     out.host(&hout[0]);
     in.host(&hin[0]);
@@ -82,12 +84,12 @@ TEST(ClampTests, FloatScalarArray)
 
 TEST(ClampTests, FloatScalarScalar)
 {
-    af::array in = af::randu(num, f32);
+    array in = randu(num, f32);
     float lo = 0.1;
     float hi = 0.9;
 
-    std::vector<float> hout(num), hin(num);
-    af::array out = clamp(in, lo, hi);
+    vector<float> hout(num), hin(num);
+    array out = clamp(in, lo, hi);
 
     out.host(&hout[0]);
     in.host(&hin[0]);

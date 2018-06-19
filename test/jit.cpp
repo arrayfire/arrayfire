@@ -13,12 +13,18 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
-using namespace af;
+using std::vector;
+using af::array;
+using af::constant;
+using af::eval;
+using af::freeHost;
+using af::gforSet;
+using af::randu;
+using af::randn;
+using af::seq;
 
 TEST(JIT, CPP_JIT_HASH)
 {
-    using af::array;
-
     const int num = 20;
     const float valA = 3;
     const float valB = 5;
@@ -28,12 +34,12 @@ TEST(JIT, CPP_JIT_HASH)
     const float valF1 = valD * valE - valE;
     const float valF2 = valD * valE - valD;
 
-    array a = af::constant(valA, num);
-    array b = af::constant(valB, num);
-    array c = af::constant(valC, num);
-    af::eval(a);
-    af::eval(b);
-    af::eval(c);
+    array a = constant(valA, num);
+    array b = constant(valB, num);
+    array c = constant(valC, num);
+    eval(a);
+    eval(b);
+    eval(c);
 
 
     // Creating a kernel
@@ -67,21 +73,19 @@ TEST(JIT, CPP_JIT_HASH)
 
 TEST(JIT, CPP_JIT_Reset_Binary)
 {
-    using af::array;
-
-    af::array a = af::constant(2, 5,5);
-    af::array b = af::constant(1, 5,5);
-    af::array c = a + b;
-    af::array d = a - b;
-    af::array e = c * d;
+    array a = constant(2, 5,5);
+    array b = constant(1, 5,5);
+    array c = a + b;
+    array d = a - b;
+    array e = c * d;
     e.eval();
-    af::array f = c - d;
+    array f = c - d;
     f.eval();
-    af::array g = d - c;
+    array g = d - c;
     g.eval();
 
-    std::vector<float> hf(f.elements());
-    std::vector<float> hg(g.elements());
+    vector<float> hf(f.elements());
+    vector<float> hg(g.elements());
     f.host(&hf[0]);
     g.host(&hg[0]);
 
@@ -92,21 +96,19 @@ TEST(JIT, CPP_JIT_Reset_Binary)
 
 TEST(JIT, CPP_JIT_Reset_Unary)
 {
-    using af::array;
-
-    af::array a = af::constant(2, 5,5);
-    af::array b = af::constant(1, 5,5);
-    af::array c = af::sin(a);
-    af::array d = af::cos(b);
-    af::array e = c * d;
+    array a = constant(2, 5,5);
+    array b = constant(1, 5,5);
+    array c = sin(a);
+    array d = cos(b);
+    array e = c * d;
     e.eval();
-    af::array f = c - d;
+    array f = c - d;
     f.eval();
-    af::array g = d - c;
+    array g = d - c;
     g.eval();
 
-    std::vector<float> hf(f.elements());
-    std::vector<float> hg(g.elements());
+    vector<float> hf(f.elements());
+    vector<float> hg(g.elements());
     f.host(&hf[0]);
     g.host(&hg[0]);
 
@@ -117,19 +119,17 @@ TEST(JIT, CPP_JIT_Reset_Unary)
 
 TEST(JIT, CPP_Multi_linear)
 {
-    using af::array;
-
     const int num = 1 << 16;
-    af::array a = af::randu(num, s32);
-    af::array b = af::randu(num, s32);
-    af::array x = a + b;
-    af::array y = a - b;
-    af::eval(x, y);
+    array a = randu(num, s32);
+    array b = randu(num, s32);
+    array x = a + b;
+    array y = a - b;
+    eval(x, y);
 
-    std::vector<int> ha(num);
-    std::vector<int> hb(num);
-    std::vector<int> hx(num);
-    std::vector<int> hy(num);
+    vector<int> ha(num);
+    vector<int> hb(num);
+    vector<int> hx(num);
+    vector<int> hy(num);
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -144,22 +144,20 @@ TEST(JIT, CPP_Multi_linear)
 
 TEST(JIT, CPP_strided)
 {
-    using af::array;
-
     const int num = 1024;
-    af::gforSet(true);
-    af::array a = af::randu(num, 1, s32);
-    af::array b = af::randu(1, num, s32);
-    af::array x = a + b;
-    af::array y = a - b;
-    af::eval(x);
-    af::eval(y);
-    af::gforSet(false);
+    gforSet(true);
+    array a = randu(num, 1, s32);
+    array b = randu(1, num, s32);
+    array x = a + b;
+    array y = a - b;
+    eval(x);
+    eval(y);
+    gforSet(false);
 
-    std::vector<int> ha(num);
-    std::vector<int> hb(num);
-    std::vector<int> hx(num * num);
-    std::vector<int> hy(num * num);
+    vector<int> ha(num);
+    vector<int> hb(num);
+    vector<int> hx(num * num);
+    vector<int> hy(num * num);
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -176,21 +174,19 @@ TEST(JIT, CPP_strided)
 
 TEST(JIT, CPP_Multi_strided)
 {
-    using af::array;
-
     const int num = 1024;
-    af::gforSet(true);
-    af::array a = af::randu(num, 1, s32);
-    af::array b = af::randu(1, num, s32);
-    af::array x = a + b;
-    af::array y = a - b;
-    af::eval(x, y);
-    af::gforSet(false);
+    gforSet(true);
+    array a = randu(num, 1, s32);
+    array b = randu(1, num, s32);
+    array x = a + b;
+    array y = a - b;
+    eval(x, y);
+    gforSet(false);
 
-    std::vector<int> ha(num);
-    std::vector<int> hb(num);
-    std::vector<int> hx(num * num);
-    std::vector<int> hy(num * num);
+    vector<int> ha(num);
+    vector<int> hb(num);
+    vector<int> hx(num * num);
+    vector<int> hy(num * num);
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -207,27 +203,25 @@ TEST(JIT, CPP_Multi_strided)
 
 TEST(JIT, CPP_Multi_pre_eval)
 {
-    using af::array;
-
     const int num = 1 << 16;
-    af::array a = af::randu(num, s32);
-    af::array b = af::randu(num, s32);
-    af::array x = a + b;
-    af::array y = a - b;
+    array a = randu(num, s32);
+    array b = randu(num, s32);
+    array x = a + b;
+    array y = a - b;
 
-    af::eval(x);
+    eval(x);
 
     // Should evaluate only y
-    af::eval(x, y);
+    eval(x, y);
 
     // Should not evaluate anything
     // Should not error out
-    af::eval(x, y);
+    eval(x, y);
 
-    std::vector<int> ha(num);
-    std::vector<int> hb(num);
-    std::vector<int> hx(num);
-    std::vector<int> hy(num);
+    vector<int> ha(num);
+    vector<int> hb(num);
+    vector<int> hx(num);
+    vector<int> hy(num);
 
     a.host(&ha[0]);
     b.host(&hb[0]);
@@ -242,19 +236,19 @@ TEST(JIT, CPP_Multi_pre_eval)
 
 TEST(JIT, CPP_common_node)
 {
-    af::array r = seq(-3, 3, 0.5);
+    array r = seq(-3, 3, 0.5);
 
     int n = r.dims(0);
 
-    af::array x = af::tile(r, 1, r.dims(0));
-    af::array y = af::tile(r.T(), r.dims(0), 1);
+    array x = tile(r, 1, r.dims(0));
+    array y = tile(r.T(), r.dims(0), 1);
     x.eval();
     y.eval();
 
 
-    std::vector<float> hx(x.elements());
-    std::vector<float> hy(y.elements());
-    std::vector<float> hr(r.elements());
+    vector<float> hx(x.elements());
+    vector<float> hy(y.elements());
+    vector<float> hr(r.elements());
 
     x.host(&hx[0]);
     y.host(&hy[0]);
@@ -270,16 +264,16 @@ TEST(JIT, CPP_common_node)
 
 TEST(JIT, ISSUE_1646)
 {
-    af::array test1 = af::randn(10, 10);
-    af::array test2 = af::randn(10);
-    af::array test3 = af::randn(10);
+    array test1 = randn(10, 10);
+    array test2 = randn(10);
+    array test3 = randn(10);
 
     for (int i = 0; i < 1000; i++) {
-        test3 += af::sum(test1, 1);
+        test3 += sum(test1, 1);
         test2 += test3;
     }
-    af::eval(test2);
-    af::eval(test3);
+    eval(test2);
+    eval(test3);
 }
 
 TEST(JIT, NonLinearLargeY)
@@ -287,16 +281,16 @@ TEST(JIT, NonLinearLargeY)
     const int d0 = 2;
     // This needs to be > 2 * (1 << 20) to properly check this.
     const int d1 = 3 * (1 << 20);
-    af::array a = af::randn(d0);
-    af::array b = af::randn(1, d1);
+    array a = randn(d0);
+    array b = randn(1, d1);
 
     // tile is jit-ted for both the operations
-    af::array c = af::tile(a, 1, d1) + af::tile(b, d0, 1);
-    af::eval(c);
+    array c = tile(a, 1, d1) + tile(b, d0, 1);
+    eval(c);
 
-    std::vector<float> ha(d0);
-    std::vector<float> hb(d1);
-    std::vector<float> hc(d0 * d1);
+    vector<float> ha(d0);
+    vector<float> hb(d1);
+    vector<float> hc(d0 * d1);
 
     a.host(ha.data());
     b.host(hb.data());
@@ -333,9 +327,9 @@ TEST(JIT, NonLinearLargeX)
         selem *= sdims[i];
     }
 
-    std::vector<float> hr(relem);
-    std::vector<float> hc(celem);
-    std::vector<float> hs(selem);
+    vector<float> hr(relem);
+    vector<float> hc(celem);
+    vector<float> hs(selem);
 
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr(hr.data(), r));
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr(hc.data(), c));
@@ -369,11 +363,11 @@ TEST(JIT, NonLinearLargeX)
 
 TEST(JIT, ISSUE_1894)
 {
-    af::array a = af::randu(1);
-    af::array b = af::tile(a, 2 * (1 << 20));
-    af::eval(b);
+    array a = randu(1);
+    array b = tile(a, 2 * (1 << 20));
+    eval(b);
     float ha = -100;
-    std::vector<float> hb(b.elements(), -200);
+    vector<float> hb(b.elements(), -200);
 
     a.host(&ha);
     b.host(hb.data());
@@ -389,14 +383,14 @@ TEST(JIT, LinearLarge)
     float v1 = std::rand() % 100;
     float v2 = std::rand() % 100;
 
-    af::array a = af::constant(v1, 1 << 25);
-    af::array b = af::constant(v2, 1 << 25);
-    af::array c = (a + b) * (a - b);
-    af::eval(c);
+    array a = constant(v1, 1 << 25);
+    array b = constant(v2, 1 << 25);
+    array c = (a + b) * (a - b);
+    eval(c);
 
     float v3 = (v1 + v2) * (v1 - v2);
 
-    std::vector<float> hc(c.elements());
+    vector<float> hc(c.elements());
     c.host(hc.data());
 
     for (size_t i = 0; i < hc.size(); i++) {
@@ -406,19 +400,19 @@ TEST(JIT, LinearLarge)
 
 TEST(JIT, NonLinearBuffers1)
 {
-    af::array a = af::randu(5, 5);
-    af::array a0 = a;
+    array a = randu(5, 5);
+    array a0 = a;
     for (int i = 0; i < 1000; i++) {
-        af::array b = af::randu(1, 5);
-        a += af::tile(b, 5);
+        array b = randu(1, 5);
+        a += tile(b, 5);
     }
     a.eval();
 }
 
 TEST(JIT, NonLinearBuffers2)
 {
-    af::array a = af::randu(100, 310);
-    af::array b = af::randu(10, 10);
+    array a = randu(100, 310);
+    array b = randu(10, 10);
     for (int i = 0; i < 300; i++) {
         b += a(seq(10), seq(i, i+9)) * randu(10, 10);
     }
@@ -428,21 +422,21 @@ TEST(JIT, NonLinearBuffers2)
 TEST(JIT, TransposeBuffers)
 {
     const int num = 10;
-    af::array a = af::randu(1, num);
-    af::array b = af::randu(1, num);
-    af::array c =  a + b;
-    af::array d = a.T() + b.T();
+    array a = randu(1, num);
+    array b = randu(1, num);
+    array c =  a + b;
+    array d = a.T() + b.T();
 
-    std::vector<float> ha(a.elements());
+    vector<float> ha(a.elements());
     a.host(ha.data());
 
-    std::vector<float> hb(b.elements());
+    vector<float> hb(b.elements());
     b.host(hb.data());
 
-    std::vector<float> hc(c.elements());
+    vector<float> hc(c.elements());
     c.host(hc.data());
 
-    std::vector<float> hd(d.elements());
+    vector<float> hd(d.elements());
     d.host(hd.data());
 
     for (int i = 0; i < num; i++) {

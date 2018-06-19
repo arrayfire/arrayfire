@@ -13,13 +13,21 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
-using namespace af;
 using std::vector;
+using af::array;
+using af::cdouble;
+using af::cfloat;
+using af::constant;
+using af::dtype;
+using af::dtype_traits;
+using af::exception;
+using af::identity;
+using af::sum;
 
 template<typename T>
 class Constant : public ::testing::Test { };
 
-typedef ::testing::Types<float, af::cfloat, double, af::cdouble, int, unsigned, char, uchar, uintl, intl, short, ushort> TestTypes;
+typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char, uchar, uintl, intl, short, ushort> TestTypes;
 TYPED_TEST_CASE(Constant, TestTypes);
 
 template<typename T>
@@ -29,7 +37,7 @@ void ConstantCPPCheck(T value) {
     const int num = 1000;
     T val = value;
     dtype dty = (dtype) dtype_traits<T>::af_type;
-    af::array in = constant(val, num, dty);
+    array in = constant(val, num, dty);
 
     vector<T> h_in(num);
     in.host(&h_in.front());
@@ -44,7 +52,7 @@ void ConstantCCheck(T value) {
     if (noDoubleTests<T>()) return;
 
     const int num = 1000;
-    typedef typename af::dtype_traits<T>::base_type BT;
+    typedef typename dtype_traits<T>::base_type BT;
     BT val = ::real(value);
     dtype dty = (dtype) dtype_traits<T>::af_type;
     af_array out;
@@ -66,7 +74,7 @@ void IdentityCPPCheck() {
 
     int num = 1000;
     dtype dty = (dtype) dtype_traits<T>::af_type;
-    array out = af::identity(num, num, dty);
+    array out = identity(num, num, dty);
 
     vector<T> h_in(num*num);
     out.host(&h_in.front());
@@ -81,7 +89,7 @@ void IdentityCPPCheck() {
     }
 
     num = 100;
-    out = af::identity(num, num, num, dty);
+    out = identity(num, num, num, dty);
 
     h_in.resize(num*num*num);
     out.host(&h_in.front());
@@ -105,17 +113,17 @@ void IdentityLargeDimCheck() {
     const size_t largeDim = 65535 * 8 + 1;
 
     dtype dty = (dtype) dtype_traits<T>::af_type;
-    array out = af::identity(largeDim, dty);
-    ASSERT_EQ(1.f, af::sum<float>(out));
+    array out = identity(largeDim, dty);
+    ASSERT_EQ(1.f, sum<float>(out));
 
-    out = af::identity(1, largeDim, dty);
-    ASSERT_EQ(1.f, af::sum<float>(out));
+    out = identity(1, largeDim, dty);
+    ASSERT_EQ(1.f, sum<float>(out));
 
-    out = af::identity(1, 1, largeDim, dty);
-    ASSERT_EQ(largeDim, af::sum<float>(out));
+    out = identity(1, 1, largeDim, dty);
+    ASSERT_EQ(largeDim, sum<float>(out));
 
-    out = af::identity(1, 1, 1, largeDim, dty);
-    ASSERT_EQ(largeDim, af::sum<float>(out));
+    out = identity(1, 1, 1, largeDim, dty);
+    ASSERT_EQ(largeDim, sum<float>(out));
 }
 
 template<typename T>
@@ -149,9 +157,9 @@ void IdentityCPPError() {
     static const int num = 1000;
     dtype dty = (dtype) dtype_traits<T>::af_type;
     try {
-        array out = af::identity(num, 0, 10, dty);
+        array out = identity(num, 0, 10, dty);
     }
-    catch(const af::exception &ex) {
+    catch(const exception &ex) {
         FAIL() << "Incorrectly thrown 0-length exception";
         return;
     }

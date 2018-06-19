@@ -16,20 +16,20 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/traits.hpp>
-#include <vector>
 #include <iostream>
 #include <complex>
-#include <string>
 #include <testHelpers.hpp>
 
-using std::vector;
-using std::string;
-using std::cout;
-using std::endl;
 using std::abs;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype;
 using af::dtype_traits;
+using af::identity;
+using af::matmul;
+using af::max;
 
 template<typename T>
 void inverseTester(const int m, const int n, const int k, double eps)
@@ -37,20 +37,20 @@ void inverseTester(const int m, const int n, const int k, double eps)
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
 #if 1
-    af::array A  = cpu_randu<T>(af::dim4(m, n));
+    array A  = cpu_randu<T>(dim4(m, n));
 #else
-    af::array A  = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
+    array A  = randu(m, n, (dtype)dtype_traits<T>::af_type);
 #endif
 
     //! [ex_inverse]
-    af::array IA = inverse(A);
-    af::array I = af::matmul(A, IA);
+    array IA = inverse(A);
+    array I = matmul(A, IA);
     //! [ex_inverse]
 
-    af::array I2 = af::identity(m, n, (af::dtype)af::dtype_traits<T>::af_type);
+    array I2 = identity(m, n, (dtype)dtype_traits<T>::af_type);
 
-    ASSERT_NEAR(0, af::max<typename dtype_traits<T>::base_type>(af::abs(real(I - I2))), eps);
-    ASSERT_NEAR(0, af::max<typename dtype_traits<T>::base_type>(af::abs(imag(I - I2))), eps);
+    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(abs(real(I - I2))), eps);
+    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(abs(imag(I - I2))), eps);
 }
 
 

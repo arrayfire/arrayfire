@@ -15,10 +15,12 @@
 #include <vector>
 #include <testHelpers.hpp>
 
+using std::endl;
 using std::vector;
 using std::string;
 using af::cfloat;
 using af::cdouble;
+using af::dtype_traits;
 
 template<typename T>
 class HammingMatcher8  : public ::testing::Test
@@ -67,9 +69,9 @@ void hammingMatcherTest(string pTestFile, int feat_dim)
     af_array dist  = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&query, &(in[0].front()),
-                qDims.ndims(), qDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                qDims.ndims(), qDims.get(), (af_dtype)dtype_traits<T>::af_type));
     ASSERT_EQ(AF_SUCCESS, af_create_array(&train, &(in[1].front()),
-                tDims.ndims(), tDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                tDims.ndims(), tDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_hamming_matcher(&idx, &dist, query, train, feat_dim, 1));
 
@@ -83,7 +85,7 @@ void hammingMatcherTest(string pTestFile, int feat_dim)
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outDist, dist));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(goldDist[elIter], outDist[elIter])<< "at: " << elIter<< std::endl;
+        ASSERT_EQ(goldDist[elIter], outDist[elIter])<< "at: " << elIter<< endl;
     }
 
     delete[] outIdx;
@@ -146,7 +148,7 @@ TEST(HammingMatcher, CPP)
     dist.host(outDist);
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(goldDist[elIter], outDist[elIter])<< "at: " << elIter<< std::endl;
+        ASSERT_EQ(goldDist[elIter], outDist[elIter])<< "at: " << elIter<< endl;
     }
 
     delete[] outIdx;

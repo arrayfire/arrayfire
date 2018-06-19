@@ -18,10 +18,11 @@
 
 using std::vector;
 using std::string;
-using std::cout;
 using std::endl;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class Moddims : public ::testing::Test
@@ -46,12 +47,12 @@ void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *se
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<T> >   in;
     vector<vector<T> >   tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     T *outData;
 
@@ -60,11 +61,11 @@ void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *se
         af_array subArray  = 0;
         af_array outArray  = 0;
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&subArray,inArray,seqv->size(),&seqv->front()));
 
-        af::dim4 newDims(1);
+        dim4 newDims(1);
         newDims[0] = 2;
         newDims[1] = 3;
         ASSERT_EQ(AF_SUCCESS, af_moddims(&outArray,subArray,newDims.ndims(),newDims.get()));
@@ -82,9 +83,9 @@ void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *se
         af_array inArray   = 0;
         af_array outArray  = 0;
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-        af::dim4 newDims(1);
+        dim4 newDims(1);
         newDims[0] = dims[1];
         newDims[1] = dims[0]*dims[2];
         ASSERT_EQ(AF_SUCCESS, af_moddims(&outArray,inArray,newDims.ndims(),newDims.get()));
@@ -100,7 +101,7 @@ void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *se
         vector<T> currGoldBar   = tests[testIter];
         size_t nElems        = currGoldBar.size();
         for (size_t elIter=0; elIter<nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< std::endl;
+            ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< endl;
         }
     }
     delete[] outData;
@@ -122,19 +123,19 @@ void moddimsArgsTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<T> >   in;
     vector<vector<T> >   tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     af_array inArray   = 0;
     af_array outArray  = 0;
     af_array outArray2  = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-    af::dim4 newDims(1);
+    dim4 newDims(1);
     newDims[0] = dims[1];
     newDims[1] = dims[0]*dims[2];
     ASSERT_EQ(AF_SUCCESS, af_moddims(&outArray,inArray,0,newDims.get()));
@@ -154,18 +155,18 @@ void moddimsMismatchTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<T> >   in;
     vector<vector<T> >   tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     af_array inArray   = 0;
     af_array outArray  = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-    af::dim4 newDims(1);
+    dim4 newDims(1);
     newDims[0] = dims[1]-1;
     newDims[1] = (dims[0]-1)*dims[2];
     ASSERT_EQ(AF_ERR_SIZE, af_moddims(&outArray,inArray,newDims.ndims(),newDims.get()));
@@ -181,41 +182,44 @@ TYPED_TEST(Moddims,Mismatch)
 
 /////////////////////////////////// CPP ///////////////////////////////////
 //
+
+using af::array;
+
 template<typename T>
 void cppModdimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=NULL)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<T> >   in;
     vector<vector<T> >   tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     T *outData;
 
     if (isSubRef) {
-        af::array input(dims, &(in[0].front()));
+        array input(dims, &(in[0].front()));
 
-        af::array subArray = input(seqv->at(0), seqv->at(1));
+        array subArray = input(seqv->at(0), seqv->at(1));
 
-        af::dim4 newDims(1);
+        dim4 newDims(1);
         newDims[0] = 2;
         newDims[1] = 3;
-        af::array output = af::moddims(subArray, newDims.ndims(), newDims.get());
+        array output = moddims(subArray, newDims.ndims(), newDims.get());
 
         dim_t nElems = output.elements();
         outData = new T[nElems];
         output.host((void*)outData);
     } else {
-        af::array input(dims, &(in[0].front()));
+        array input(dims, &(in[0].front()));
 
-        af::dim4 newDims(1);
+        dim4 newDims(1);
         newDims[0] = dims[1];
         newDims[1] = dims[0]*dims[2];
 
-        af::array output = af::moddims(input, newDims.ndims(), newDims.get());
+        array output = moddims(input, newDims.ndims(), newDims.get());
 
         outData = new T[dims.elements()];
         output.host((void*)outData);
@@ -225,7 +229,7 @@ void cppModdimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> 
         vector<T> currGoldBar   = tests[testIter];
         size_t nElems        = currGoldBar.size();
         for (size_t elIter=0; elIter<nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< std::endl;
+            ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< endl;
         }
     }
     delete[] outData;

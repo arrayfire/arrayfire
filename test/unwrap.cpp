@@ -20,10 +20,14 @@
 
 using std::vector;
 using std::string;
-using std::cout;
 using std::endl;
+using af::allTrue;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
+using af::range;
 
 template<typename T>
 class Unwrap : public ::testing::Test
@@ -45,37 +49,37 @@ void unwrapTest(string pTestFile, const unsigned resultIdx,
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> > in;
     vector<vector<T> > tests;
     readTests<T, T, int>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
+    dim4 idims = numDims[0];
 
     af_array inArray = 0;
     af_array outArray = 0;
     af_array outArrayT = 0;
     af_array outArray2 = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_unwrap(&outArray , inArray, wx, wy, sx, sy, px, py, true ));
     ASSERT_EQ(AF_SUCCESS, af_unwrap(&outArrayT, inArray, wx, wy, sx, sy, px, py, false));
     ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray2, outArrayT, false));
 
     size_t nElems = tests[resultIdx].size();
-    std::vector<T> outData(nElems);
+    vector<T> outData(nElems);
 
     // Compare is_column == true results
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData[0], outArray));
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     }
 
     // Compare is_column == false results
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData[0], outArray2));
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     }
 
     if(inArray   != 0) af_release_array(inArray);
@@ -154,14 +158,14 @@ TEST(Unwrap, CPP)
     const unsigned px = 3;
     const unsigned py = 3;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/unwrap/unwrap_small.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array input(idims, &(in[0].front()));
-    af::array output = af::unwrap(input, wx, wy, sx, sy, px, py);
+    dim4 idims = numDims[0];
+    array input(idims, &(in[0].front()));
+    array output = unwrap(input, wx, wy, sx, sy, px, py);
 
     // Get result
     float* outData = new float[tests[resultIdx].size()];
@@ -170,7 +174,7 @@ TEST(Unwrap, CPP)
     // Compare result
     size_t nElems = tests[resultIdx].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -180,7 +184,7 @@ TEST(Unwrap, CPP)
 TEST(Unwrap, MaxDim)
 {
     const size_t largeDim = 65535 + 1;
-    af::array input = af::range(5, 5, largeDim);
+    array input = range(5, 5, largeDim);
 
     const unsigned wx = 5;
     const unsigned wy = 5;
@@ -189,10 +193,10 @@ TEST(Unwrap, MaxDim)
     const unsigned px = 0;
     const unsigned py = 0;
 
-    af::array output = af::unwrap(input, wx, wy, sx, sy, px, py);
+    array output = unwrap(input, wx, wy, sx, sy, px, py);
 
-    af::array gold = af::range(af::dim4(5, 5, 1, largeDim));
-    gold = af::moddims(gold, af::dim4(25, 1, largeDim));
+    array gold = range(dim4(5, 5, 1, largeDim));
+    gold = moddims(gold, dim4(25, 1, largeDim));
 
-    ASSERT_TRUE(af::allTrue<bool>(output == gold));
+    ASSERT_TRUE(allTrue<bool>(output == gold));
 }

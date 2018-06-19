@@ -15,8 +15,10 @@
 #include <vector>
 #include <testHelpers.hpp>
 
+using std::endl;
 using std::string;
 using std::vector;
+using af::dim4;
 
 template<typename T>
 class GaussianKernel : public ::testing::Test
@@ -36,7 +38,7 @@ void gaussianKernelTest(string pFileName, double sigma)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4>     numDims;
+    vector<dim4>     numDims;
     vector<vector<int> > in;
     vector<vector<T> >   tests;
 
@@ -60,7 +62,7 @@ void gaussianKernelTest(string pFileName, double sigma)
     ASSERT_EQ(outElems, (dim_t)nElems);
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< std::endl;
+        ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< endl;
     }
 
     delete[] outData;
@@ -107,12 +109,12 @@ TYPED_TEST(GaussianKernel, SmallSmall2DWithSigma)
 
 #include <iostream>
 
+using af::array;
+using af::gaussianKernel;
+
 void gaussianKernelTestCPP(string pFileName, double sigma)
 {
-    using af::array;
-    using af::gaussianKernel;
-
-    vector<af::dim4>       numDims;
+    vector<dim4>       numDims;
     vector<vector<int> >   in;
     vector<vector<float> > tests;
 
@@ -132,7 +134,7 @@ void gaussianKernelTestCPP(string pFileName, double sigma)
     ASSERT_EQ(outElems, (dim_t)nElems);
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< std::endl;
+        ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< endl;
     }
 
     delete[] outData;

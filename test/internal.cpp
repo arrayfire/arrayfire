@@ -16,6 +16,13 @@
 #include <vector>
 #include <testHelpers.hpp>
 
+using std::vector;
+using af::array;
+using af::dim4;
+using af::randu;
+using af::seq;
+using af::span;
+
 TEST(Internal, CreateStrided)
 {
     float ha[] = {1,
@@ -33,15 +40,15 @@ TEST(Internal, CreateStrided)
     unsigned ndims = 3;
     dim_t dims[] = {3, 3, 2};
     dim_t strides[] = {1, 5, 20};
-    af::array a = createStridedArray((void *)ha,
+    array a = createStridedArray((void *)ha,
                                      offset,
-                                     af::dim4(ndims, dims),
-                                     af::dim4(ndims, strides),
+                                     dim4(ndims, dims),
+                                     dim4(ndims, strides),
                                      f32,
                                      afHost);
 
-    af::dim4 astrides = getStrides(a);
-    af::dim4 adims = a.dims();
+    dim4 astrides = getStrides(a);
+    dim4 adims = a.dims();
 
     ASSERT_EQ(offset, getOffset(a));
     for (int i = 0; i < (int)ndims; i++) {
@@ -49,7 +56,7 @@ TEST(Internal, CreateStrided)
         ASSERT_EQ(dims[i], adims[i]);
     }
 
-    std::vector<float> va(a.elements());
+    vector<float> va(a.elements());
     a.host(&va[0]);
 
     int o = offset;
@@ -69,22 +76,22 @@ TEST(Internal, CreateStrided)
 
 TEST(Internal, CheckInfo)
 {
-    int xdim = 10;
-    int ydim = 8;
+    const int xdim = 10;
+    const int ydim = 8;
 
-    int xoff = 1;
-    int yoff = 2;
+    const int xoff = 1;
+    const int yoff = 2;
 
-    int xnum = 5;
-    int ynum = 3;
+    const int xnum = 5;
+    const int ynum = 3;
 
-    af::array a = af::randu(10, 8);
+    array a = randu(10, 8);
 
-    af::array b = a(af::seq(xoff, xoff + xnum - 1),
-                    af::seq(yoff, yoff + ynum - 1));
+    array b = a(seq(xoff, xoff + xnum - 1),
+                    seq(yoff, yoff + ynum - 1));
 
-    af::dim4 strides = getStrides(b);
-    af::dim4 dims = b.dims();
+    dim4 strides = getStrides(b);
+    dim4 dims = b.dims();
 
     dim_t offset = xoff + yoff * xdim;
 
@@ -102,18 +109,18 @@ TEST(Internal, CheckInfo)
 
 TEST(Internal, Linear)
 {
-    af::array c;
+    array c;
     {
-        af::array a = af::randu(10, 8);
+        array a = randu(10, 8);
 
         // b is just pointing to same underlying data
         // b is an owner;
-        af::array b = a;
+        array b = a;
         ASSERT_EQ(isOwner(b), true);
 
         // C is considered sub array
         // C will not be an owner
-        c = a(af::span);
+        c = a(span);
         ASSERT_EQ(isOwner(c), false);
     }
 
@@ -125,27 +132,27 @@ TEST(Internal, Linear)
 
 TEST(Internal, Allocated)
 {
-    af::array a = af::randu(10, 8);
+    array a = randu(10, 8);
     size_t a_allocated = a.allocated();
     size_t a_bytes = a.bytes();
 
     // b is just pointing to same underlying data
     // b is an owner;
-    af::array b = a;
+    array b = a;
     ASSERT_EQ(b.allocated(), a_allocated);
     ASSERT_EQ(b.bytes(), a_bytes);
 
     // C is considered sub array
     // C will not be an owner
-    af::array c = a(af::span);
+    array c = a(span);
     ASSERT_EQ(c.allocated(), a_allocated);
     ASSERT_EQ(c.bytes(), a_bytes);
 
-    af::array d = a.col(1);
+    array d = a.col(1);
     ASSERT_EQ(d.allocated(), a_allocated);
 
-    a = af::randu(20);
-    b = af::randu(20);
+    a = randu(20);
+    b = randu(20);
 
     // Even though a, b are reallocated and c, d are not owners
     // the allocated and bytes should remain the same

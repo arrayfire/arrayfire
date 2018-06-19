@@ -23,8 +23,15 @@ using std::string;
 using std::cout;
 using std::endl;
 using std::abs;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::exception;
+using af::identity;
+using af::matmul;
+using af::max;
+
 
 ///////////////////////////////// CPP ////////////////////////////////////
 TEST(QRFactorized, CPP)
@@ -34,19 +41,19 @@ TEST(QRFactorized, CPP)
 
     int resultIdx = 0;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, float>(string(TEST_DIR"/lapack/qrfactorized.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array input(idims, &(in[0].front()));
+    dim4 idims = numDims[0];
+    array input(idims, &(in[0].front()));
 
-    af::array q, r, tau;
-    af::qr(q, r, tau, input);
+    array q, r, tau;
+    qr(q, r, tau, input);
 
-    af::dim4 qdims = q.dims();
-    af::dim4 rdims = r.dims();
+    dim4 qdims = q.dims();
+    dim4 rdims = r.dims();
 
     // Get result
     float* qData = new float[qdims.elements()];
@@ -58,7 +65,7 @@ TEST(QRFactorized, CPP)
     for (int y = 0; y < (int)qdims[1]; ++y) {
         for (int x = 0; x < (int)qdims[0]; ++x) {
             int elIter = y * qdims[0] + x;
-            ASSERT_NEAR(tests[resultIdx][elIter], qData[elIter], 0.001) << "at: " << elIter << std::endl;
+            ASSERT_NEAR(tests[resultIdx][elIter], qData[elIter], 0.001) << "at: " << elIter << endl;
         }
     }
 
@@ -69,7 +76,7 @@ TEST(QRFactorized, CPP)
             // Test only upper half
             if(x <= y) {
                 int elIter = y * rdims[0] + x;
-                ASSERT_NEAR(tests[resultIdx][elIter], rData[elIter], 0.001) << "at: " << elIter << std::endl;
+                ASSERT_NEAR(tests[resultIdx][elIter], rData[elIter], 0.001) << "at: " << elIter << endl;
             }
         }
     }
@@ -87,46 +94,46 @@ void qrTester(const int m, const int n, double eps)
         if (noLAPACKTests()) return;
 
 #if 1
-        af::array in = cpu_randu<T>(af::dim4(m, n));
+        array in = cpu_randu<T>(dim4(m, n));
 #else
-        af::array in = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
+        array in = randu(m, n, (dtype)dtype_traits<T>::af_type);
 #endif
 
         //! [ex_qr_unpacked]
-        af::array q, r, tau;
-        af::qr(q, r, tau, in);
+        array q, r, tau;
+        qr(q, r, tau, in);
         //! [ex_qr_unpacked]
 
-        af::array qq = af::matmul(q, q.H());
-        af::array ii = af::identity(qq.dims(), qq.type());
+        array qq = matmul(q, q.H());
+        array ii = identity(qq.dims(), qq.type());
 
-        ASSERT_NEAR(0, af::max<double>(af::abs(real(qq - ii))), eps);
-        ASSERT_NEAR(0, af::max<double>(af::abs(imag(qq - ii))), eps);
+        ASSERT_NEAR(0, max<double>(abs(real(qq - ii))), eps);
+        ASSERT_NEAR(0, max<double>(abs(imag(qq - ii))), eps);
 
         //! [ex_qr_recon]
-        af::array re = af::matmul(q, r);
+        array re = matmul(q, r);
         //! [ex_qr_recon]
 
-        ASSERT_NEAR(0, af::max<double>(af::abs(real(re - in))), eps);
-        ASSERT_NEAR(0, af::max<double>(af::abs(imag(re - in))), eps);
+        ASSERT_NEAR(0, max<double>(abs(real(re - in))), eps);
+        ASSERT_NEAR(0, max<double>(abs(imag(re - in))), eps);
 
         //! [ex_qr_packed]
-        af::array out = in.copy();
-        af::array tau2;
+        array out = in.copy();
+        array tau2;
         qrInPlace(tau2, out);
         //! [ex_qr_packed]
 
-        af::array r2 = upper(out);
+        array r2 = upper(out);
 
-        ASSERT_NEAR(0, af::max<double>(af::abs(real(tau - tau2))), eps);
-        ASSERT_NEAR(0, af::max<double>(af::abs(imag(tau - tau2))), eps);
+        ASSERT_NEAR(0, max<double>(abs(real(tau - tau2))), eps);
+        ASSERT_NEAR(0, max<double>(abs(imag(tau - tau2))), eps);
 
-        ASSERT_NEAR(0, af::max<double>(af::abs(real(r2 - r))), eps);
-        ASSERT_NEAR(0, af::max<double>(af::abs(imag(r2 - r))), eps);
+        ASSERT_NEAR(0, max<double>(abs(real(r2 - r))), eps);
+        ASSERT_NEAR(0, max<double>(abs(imag(r2 - r))), eps);
 
 
-    } catch(af::exception &ex) {
-        std::cout << ex.what() << std::endl;
+    } catch(exception &ex) {
+        cout << ex.what() << endl;
         throw;
     }
 }

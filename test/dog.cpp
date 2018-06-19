@@ -16,6 +16,16 @@
 #include <vector>
 #include <testHelpers.hpp>
 
+using af::array;
+using af::dim4;
+using af::dtype_traits;
+using af::exception;
+using af::gaussianKernel;
+using af::convolve2;
+using af::dog;
+using af::randu;
+using af::sum;
+
 template<typename T>
 class DOG : public ::testing::Test
 {
@@ -34,18 +44,18 @@ TYPED_TEST(DOG, Basic)
 {
     if (noDoubleTests<TypeParam>()) return;
 
-    af::dim4 iDims(512, 512, 1, 1);
-    af::array in = af::constant(1, iDims, (af_dtype)af::dtype_traits<float>::af_type);
+    dim4 iDims(512, 512, 1, 1);
+    array in = constant(1, iDims, (af_dtype)dtype_traits<float>::af_type);
     /* calculate DOG using ArrayFire functions */
-    af::array k1    = af::gaussianKernel(3, 3);
-    af::array k2    = af::gaussianKernel(2, 2);
-    af::array smth1 = af::convolve2(in, k1);
-    af::array smth2 = af::convolve2(in, k2);
-    af::array diff  = smth1 - smth2;
+    array k1    = gaussianKernel(3, 3);
+    array k2    = gaussianKernel(2, 2);
+    array smth1 = convolve2(in, k1);
+    array smth2 = convolve2(in, k2);
+    array diff  = smth1 - smth2;
     /* calcuate DOG using new function */
-    af::array out= af::dog(in, 3, 2);
+    array out= dog(in, 3, 2);
     /* compare both the values */
-    float accumErr = af::sum<float>(out-diff);
+    float accumErr = sum<float>(out-diff);
     EXPECT_EQ(true, accumErr<1.0e-2);
 }
 
@@ -53,24 +63,24 @@ TYPED_TEST(DOG, Batch)
 {
     if (noDoubleTests<TypeParam>()) return;
 
-    af::dim4 iDims(512, 512, 3, 1);
-    af::array in = af::constant(1, iDims, (af_dtype)af::dtype_traits<float>::af_type);
+    dim4 iDims(512, 512, 3, 1);
+    array in = constant(1, iDims, (af_dtype)dtype_traits<float>::af_type);
     /* calculate DOG using ArrayFire functions */
-    af::array k1    = af::gaussianKernel(3, 3);
-    af::array k2    = af::gaussianKernel(2, 2);
-    af::array smth1 = af::convolve2(in, k1);
-    af::array smth2 = af::convolve2(in, k2);
-    af::array diff  = smth1 - smth2;
+    array k1    = gaussianKernel(3, 3);
+    array k2    = gaussianKernel(2, 2);
+    array smth1 = convolve2(in, k1);
+    array smth2 = convolve2(in, k2);
+    array diff  = smth1 - smth2;
     /* calcuate DOG using new function */
-    af::array out= af::dog(in, 3, 2);
+    array out= dog(in, 3, 2);
     /* compare both the values */
-    float accumErr = af::sum<float>(out-diff);
+    float accumErr = sum<float>(out-diff);
     EXPECT_EQ(true, accumErr<1.0e-2);
 }
 
 TYPED_TEST(DOG, InvalidArray)
 {
-    af::array in = af::randu(512);
-    EXPECT_THROW(af::dog(in, 3, 2),
-                 af::exception);
+    array in = randu(512);
+    EXPECT_THROW(dog(in, 3, 2),
+                 exception);
 }

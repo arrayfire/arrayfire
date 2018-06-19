@@ -22,8 +22,15 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using af::allTrue;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
+using af::reorder;
+using af::tile;
+
 
 template<typename T>
 class Reorder : public ::testing::Test
@@ -50,23 +57,23 @@ void reorderTest(string pTestFile, const unsigned resultIdx,
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> > in;
     vector<vector<T> > tests;
     readTests<T, T, int>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
+    dim4 idims = numDims[0];
 
     af_array inArray = 0;
     af_array outArray = 0;
     af_array tempArray = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     ASSERT_EQ(AF_SUCCESS, af_reorder(&outArray, inArray, x, y, z, w));
@@ -78,7 +85,7 @@ void reorderTest(string pTestFile, const unsigned resultIdx,
     // Compare result
     size_t nElems = tests[resultIdx].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -140,15 +147,15 @@ TEST(Reorder, CPP)
     const unsigned z = 2;
     const unsigned w = 3;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/reorder/reorder4d.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
+    dim4 idims = numDims[0];
 
-    af::array input(idims, &(in[0].front()));
-    af::array output = af::reorder(input, x, y, z, w);
+    array input(idims, &(in[0].front()));
+    array output = reorder(input, x, y, z, w);
 
     // Get result
     float* outData = new float[tests[resultIdx].size()];
@@ -157,7 +164,7 @@ TEST(Reorder, CPP)
     // Compare result
     size_t nElems = tests[resultIdx].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -175,9 +182,9 @@ TEST(Reorder, ISSUE_1777)
         h_input[i] = (float)(i);
     }
 
-    af::array a(m, n, &h_input[0]);
-    af::array a_t = af::tile(a, 1, 1, 3);
-    af::array a_r = af::reorder(a_t, 0, 2, 1);
+    array a(m, n, &h_input[0]);
+    array a_t = tile(a, 1, 1, 3);
+    array a_r = reorder(a_t, 0, 2, 1);
 
     vector<float> h_output(m * n * k);
     a_r.host((void *)&h_output[0]);
@@ -196,10 +203,10 @@ TEST(Reorder, MaxDim)
 
     const size_t largeDim = 65535 * 32 + 1 ;
 
-    af::array input  = af::range(af::dim4(2, largeDim, 2), 2);
-    af::array output = af::reorder(input, 2, 1, 0);
+    array input  = range(dim4(2, largeDim, 2), 2);
+    array output = reorder(input, 2, 1, 0);
 
-    af::array gold = af::range(af::dim4(2, largeDim, 2));
+    array gold = range(dim4(2, largeDim, 2));
 
-    ASSERT_TRUE(af::allTrue<bool>(output == gold));
+    ASSERT_TRUE(allTrue<bool>(output == gold));
 }

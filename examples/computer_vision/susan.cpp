@@ -51,6 +51,8 @@ static void susan_demo(bool console)
         img_color(seq(x-draw_len, x+draw_len), y, 1) = 1.f;
         img_color(seq(x-draw_len, x+draw_len), y, 2) = 0.f;
     }
+    freeHost(h_x);
+    freeHost(h_y);
 
     printf("Features found: %lu\n", feat.getNumFeatures());
 

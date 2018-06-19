@@ -17,10 +17,16 @@
 
 using std::vector;
 using std::string;
-using std::cout;
 using std::endl;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::constant;
+using af::deviceGC;
+using af::diff2;
+using af::dim4;
+using af::dtype_traits;
+using af::sum;
 
 template<typename T>
 class Diff2 : public ::testing::Test
@@ -55,12 +61,12 @@ void diff2Test(string pTestFile, unsigned dim, bool isSubRef=false, const vector
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<T> >   in;
     vector<vector<T> >   tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     T *outData;
 
@@ -70,11 +76,11 @@ void diff2Test(string pTestFile, unsigned dim, bool isSubRef=false, const vector
     // Get input array
     if (isSubRef) {
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     // Run diff2
@@ -89,7 +95,7 @@ void diff2Test(string pTestFile, unsigned dim, bool isSubRef=false, const vector
         vector<T> currGoldBar = tests[testIter];
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter << std::endl;
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter << endl;
         }
     }
 
@@ -154,17 +160,17 @@ void diff2ArgsTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<T> > in;
     vector<vector<T> > tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
 
     af_array inArray  = 0;
     af_array outArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_diff2(&outArray, inArray, -1));
     ASSERT_EQ(AF_ERR_ARG, af_diff2(&outArray, inArray,  5));
@@ -182,26 +188,26 @@ TEST(Diff2, DiffLargeDim)
 {
     const size_t largeDim = 65535 * 32 + 1;
 
-    af::deviceGC();
+    deviceGC();
     {
-        af::array in = af::constant(1, largeDim);
-        af::array diff = af::diff2(in, 0);
-        float s = af::sum<float>(diff, 1);
+        array in = constant(1, largeDim);
+        array diff = diff2(in, 0);
+        float s = sum<float>(diff, 1);
         ASSERT_EQ(s, 0.f);
 
-        in = af::constant(1, 1, largeDim);
-        diff = af::diff2(in, 1);
-        s = af::sum<float>(diff, 1);
+        in = constant(1, 1, largeDim);
+        diff = diff2(in, 1);
+        s = sum<float>(diff, 1);
         ASSERT_EQ(s, 0.f);
 
-        in = af::constant(1, 1, 1, largeDim);
-        diff = af::diff2(in, 2);
-        s = af::sum<float>(diff, 1);
+        in = constant(1, 1, 1, largeDim);
+        diff = diff2(in, 2);
+        s = sum<float>(diff, 1);
         ASSERT_EQ(s, 0.f);
 
-        in = af::constant(1, 1, 1, 1, largeDim);
-        diff = af::diff2(in, 3);
-        s = af::sum<float>(diff, 1);
+        in = constant(1, 1, 1, 1, largeDim);
+        diff = diff2(in, 3);
+        s = sum<float>(diff, 1);
         ASSERT_EQ(s, 0.f);
     }
 }
@@ -213,14 +219,14 @@ TEST(Diff2, CPP)
     if (noDoubleTests<float>()) return;
 
     const unsigned dim = 1;
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<float> >   in;
     vector<vector<float> >   tests;
     readTests<float,float,int>(string(TEST_DIR"/diff2/matrix1.test"),numDims,in,tests);
-    af::dim4 dims       = numDims[0];
-    af::array input(dims, &(in[0].front()));
-    af::array output = af::diff2(input, dim);
+    dim4 dims       = numDims[0];
+    array input(dims, &(in[0].front()));
+    array output = diff2(input, dim);
 
     float *outData = new float[dims.elements()];
     output.host((void*)outData);
@@ -230,7 +236,7 @@ TEST(Diff2, CPP)
         vector<float> currGoldBar = tests[testIter];
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter << std::endl;
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter << endl;
         }
     }
 

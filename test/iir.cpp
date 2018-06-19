@@ -17,9 +17,17 @@
 
 using std::vector;
 using std::string;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::convolve1;
 using af::dim4;
+using af::dtype;
+using af::dtype_traits;
+using af::exception;
+using af::iir;
+using af::fir;
+using af::randu;
 
 template<typename T>
 class filter : public ::testing::Test
@@ -38,12 +46,12 @@ void firTest(const int xrows, const int xcols, const int brows, const int bcols)
 {
     if (noDoubleTests<T>()) return;
     try {
-        af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
-        af::array x = af::randu(xrows, xcols, ty);
-        af::array b = af::randu(brows, bcols, ty);
+        dtype ty = (dtype)dtype_traits<T>::af_type;
+        array x = randu(xrows, xcols, ty);
+        array b = randu(brows, bcols, ty);
 
-        af::array y = af::fir(b, x);
-        af::array c = af::convolve1(x, b, AF_CONV_EXPAND);
+        array y = fir(b, x);
+        array c = convolve1(x, b, AF_CONV_EXPAND);
 
         const int ycols = xcols * bcols;
         const int crows = xrows + brows - 1;
@@ -61,7 +69,7 @@ void firTest(const int xrows, const int xcols, const int brows, const int bcols)
                             real(hc[j * crows + i]), 0.01);
             }
         }
-    } catch (af::exception &ex) {
+    } catch (exception &ex) {
         FAIL() << ex.what();
     }
 }
@@ -91,14 +99,14 @@ void iirA0Test(const int xrows, const int xcols, const int brows, const int bcol
 {
     if (noDoubleTests<T>()) return;
     try {
-        af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
-        af::array x = af::randu(xrows, xcols, ty);
-        af::array b = af::randu(brows, bcols, ty);
-        af::array a = af::randu(    1, bcols, ty);
-        af::array bNorm = b / tile(a, brows);
+        dtype ty = (dtype)dtype_traits<T>::af_type;
+        array x = randu(xrows, xcols, ty);
+        array b = randu(brows, bcols, ty);
+        array a = randu(    1, bcols, ty);
+        array bNorm = b / tile(a, brows);
 
-        af::array y = af::iir(b, a, x);
-        af::array c = af::convolve1(x, bNorm, AF_CONV_EXPAND);
+        array y = iir(b, a, x);
+        array c = convolve1(x, bNorm, AF_CONV_EXPAND);
 
         const int ycols = xcols * bcols;
         const int crows = xrows + brows - 1;
@@ -116,7 +124,7 @@ void iirA0Test(const int xrows, const int xcols, const int brows, const int bcol
                             real(hc[j * crows + i]), 0.01);
             }
         }
-    } catch (af::exception &ex) {
+    } catch (exception &ex) {
         FAIL() << ex.what();
     }
 }
@@ -145,29 +153,29 @@ template<typename T>
 void iirTest(const char *testFile)
 {
     if (noDoubleTests<T>()) return;
-    vector<af::dim4> inDims;
+    vector<dim4> inDims;
 
     vector<vector<T> > inputs;
     vector<vector<T> > outputs;
     readTests<T, T, float> (testFile, inDims, inputs, outputs);
 
     try {
-        af::array a = af::array(inDims[0], &inputs[0][0]);
-        af::array b = af::array(inDims[1], &inputs[1][0]);
-        af::array x = af::array(inDims[2], &inputs[2][0]);
+        array a = array(inDims[0], &inputs[0][0]);
+        array b = array(inDims[1], &inputs[1][0]);
+        array x = array(inDims[2], &inputs[2][0]);
 
-        af::array y = af::iir(b, a, x);
-        std::vector<T> gold = outputs[0];
+        array y = iir(b, a, x);
+        vector<T> gold = outputs[0];
         ASSERT_EQ(gold.size(), (size_t)y.elements());
 
-        std::vector<T> out(y.elements());
+        vector<T> out(y.elements());
         y.host(&out[0]);
 
         for(size_t i = 0; i < gold.size(); i++) {
             ASSERT_NEAR(real(out[i]), real(gold[i]), 0.01) << "at: " << i;
         }
 
-    } catch (af::exception &ex) {
+    } catch (exception &ex) {
         FAIL() << ex.what();
     }
 }

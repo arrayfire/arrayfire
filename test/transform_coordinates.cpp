@@ -18,8 +18,10 @@
 
 using std::vector;
 using std::string;
-using std::cout;
 using std::endl;
+using af::array;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class TransformCoordinates : public ::testing::Test
@@ -37,7 +39,7 @@ void transformCoordinatesTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4>       inDims;
+    vector<dim4>       inDims;
     vector<vector<T> >     in;
     vector<vector<float> > gold;
 
@@ -45,7 +47,7 @@ void transformCoordinatesTest(string pTestFile)
 
     af_array tfArray = 0;
     af_array outArray = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&tfArray, &(in[0].front()), inDims[0].ndims(), inDims[0].get(), (af_dtype)af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&tfArray, &(in[0].front()), inDims[0].ndims(), inDims[0].get(), (af_dtype)dtype_traits<T>::af_type));
 
     int nTests = in.size();
 
@@ -65,7 +67,7 @@ void transformCoordinatesTest(string pTestFile)
         const float thr = 1.f;
 
         for (dim_t elIter = 0; elIter < outEl; elIter++) {
-            ASSERT_LE(fabs(outData[elIter] - gold[test-1][elIter]), thr) << "at: " << elIter << std::endl;
+            ASSERT_LE(fabs(outData[elIter] - gold[test-1][elIter]), thr) << "at: " << elIter << endl;
         }
     }
 
@@ -86,19 +88,19 @@ TYPED_TEST(TransformCoordinates, 3DMatrix)
 //
 TEST(TransformCoordinates, CPP)
 {
-    vector<af::dim4>       inDims;
+    vector<dim4>       inDims;
     vector<vector<float> > in;
     vector<vector<float> > gold;
 
     readTests<float, float, float>(TEST_DIR"/transformCoordinates/3d_matrix.test",inDims,in,gold);
 
-    af::array tf = af::array(inDims[0][0], inDims[0][1], &(in[0].front()));
+    array tf = array(inDims[0][0], inDims[0][1], &(in[0].front()));
 
     float d0 = in[1][0];
     float d1 = in[1][1];
 
-    af::array out = af::transformCoordinates(tf, d0, d1);
-    af::dim4 outDims = out.dims();
+    array out = transformCoordinates(tf, d0, d1);
+    dim4 outDims = out.dims();
 
     vector<float> h_out(outDims[0] * outDims[1]);
     out.host(&h_out.front());
@@ -107,6 +109,6 @@ TEST(TransformCoordinates, CPP)
     const float thr = 1.f;
 
     for (size_t elIter = 0; elIter < n; elIter++) {
-        ASSERT_LE(fabs(h_out[elIter] - gold[0][elIter]), thr) << "at: " << elIter << std::endl;
+        ASSERT_LE(fabs(h_out[elIter] - gold[0][elIter]), thr) << "at: " << elIter << endl;
     }
 }

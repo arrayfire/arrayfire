@@ -22,8 +22,11 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class SortIndex : public ::testing::Test
@@ -48,12 +51,12 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> > in;
     vector<vector<float> > tests;
     readTests<T, float, int>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
+    dim4 idims = numDims[0];
 
     af_array inArray = 0;
     af_array tempArray = 0;
@@ -61,11 +64,11 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     af_array ixArray = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     ASSERT_EQ(AF_SUCCESS, af_sort_index(&sxArray, &ixArray, inArray, 0, dir));
@@ -78,7 +81,7 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << endl;
     }
 
     // Get result
@@ -88,7 +91,7 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
 #ifndef AF_OPENCL
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << endl;
     }
 #endif
 
@@ -136,15 +139,15 @@ TEST(SortIndex, CPPDim0)
     const unsigned resultIdx0 = 0;
     const unsigned resultIdx1 = 1;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/sort/sort_10x10.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array input(idims, &(in[0].front()));
-    af::array outValues, outIndices;
-    af::sort(outValues, outIndices, input, 0, dir);
+    dim4 idims = numDims[0];
+    array input(idims, &(in[0].front()));
+    array outValues, outIndices;
+    sort(outValues, outIndices, input, 0, dir);
 
     size_t nElems = tests[resultIdx0].size();
 
@@ -154,7 +157,7 @@ TEST(SortIndex, CPPDim0)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << endl;
     }
 
     // Get result
@@ -163,7 +166,7 @@ TEST(SortIndex, CPPDim0)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -179,17 +182,17 @@ TEST(SortIndex, CPPDim1)
     const unsigned resultIdx0 = 0;
     const unsigned resultIdx1 = 1;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/sort/sort_10x10.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array input_(idims, &(in[0].front()));
-    af::array input = reorder(input_, 1, 0, 2, 3);
+    dim4 idims = numDims[0];
+    array input_(idims, &(in[0].front()));
+    array input = reorder(input_, 1, 0, 2, 3);
 
-    af::array outValues, outIndices;
-    af::sort(outValues, outIndices, input, 1, dir);
+    array outValues, outIndices;
+    sort(outValues, outIndices, input, 1, dir);
 
     outValues  = reorder(outValues,  1, 0, 2, 3);
     outIndices = reorder(outIndices, 1, 0, 2, 3);
@@ -202,7 +205,7 @@ TEST(SortIndex, CPPDim1)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << endl;
     }
 
     // Get result
@@ -211,7 +214,7 @@ TEST(SortIndex, CPPDim1)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -227,17 +230,17 @@ TEST(SortIndex, CPPDim2)
     const unsigned resultIdx0 = 2;
     const unsigned resultIdx1 = 3;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/sort/sort_med.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array input_(idims, &(in[0].front()));
-    af::array input = reorder(input_, 1, 2, 0, 3);
+    dim4 idims = numDims[0];
+    array input_(idims, &(in[0].front()));
+    array input = reorder(input_, 1, 2, 0, 3);
 
-    af::array outValues, outIndices;
-    af::sort(outValues, outIndices, input, 2, dir);
+    array outValues, outIndices;
+    sort(outValues, outIndices, input, 2, dir);
 
     outValues  = reorder(outValues,  2, 0, 1, 3);
     outIndices = reorder(outIndices, 2, 0, 1, 3);
@@ -249,7 +252,7 @@ TEST(SortIndex, CPPDim2)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << endl;
     }
 
     // Get result
@@ -258,7 +261,7 @@ TEST(SortIndex, CPPDim2)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete

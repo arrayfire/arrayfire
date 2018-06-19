@@ -17,6 +17,12 @@
 
 using std::string;
 using std::vector;
+using af::accum;
+using af::allTrue;
+using af::array;
+using af::dtype_traits;
+using af::randu;
+using af::sat;
 
 template<typename T>
 class SAT : public ::testing::Test
@@ -35,11 +41,11 @@ TYPED_TEST(SAT, IntegralImage)
 {
     if(noDoubleTests<TypeParam>()) return;
 
-    af::array a = af::randu(530, 671, (af_dtype)af::dtype_traits<TypeParam>::af_type);
-    af::array b = af::accum(a, 0);
-    af::array c = af::accum(b, 1);
+    array a = randu(530, 671, (af_dtype)dtype_traits<TypeParam>::af_type);
+    array b = accum(a, 0);
+    array c = accum(b, 1);
 
-    af::array s = af::sat(a);
+    array s = sat(a);
 
-    EXPECT_EQ(true, af::allTrue<float>(c==s));
+    EXPECT_EQ(true, allTrue<float>(c==s));
 }

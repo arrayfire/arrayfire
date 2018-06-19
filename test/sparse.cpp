@@ -11,6 +11,14 @@
 #include <testHelpers.hpp>
 #include <sparse_common.hpp>
 
+using af::allTrue;
+using af::array;
+using af::deviceMemInfo;
+using af::dtype_traits;
+using af::identity;
+using af::randu;
+using af::span;
+
 #define SPARSE_TESTS(T, eps)                                \
     TEST(Sparse, T##Square)                                 \
     {                                                       \
@@ -69,7 +77,7 @@ CREATE_TESTS(AF_STORAGE_COO)
 
 TEST(Sparse, Create_AF_STORAGE_CSC)
 {
-    af::array d = af::identity(3, 3);
+    array d = identity(3, 3);
 
     af_array out = 0;
     ASSERT_EQ(AF_ERR_ARG, af_create_sparse_array_from_dense(&out, d.get(), AF_STORAGE_CSC));
@@ -104,16 +112,19 @@ CAST_TESTS(cdouble, cfloat  )
 CAST_TESTS(cdouble, cdouble )
 
 
+
 TEST(Sparse, ISSUE_1745)
 {
-  af::array A = af::randu(4, 4);
-  A(1, af::span) = 0;
-  A(2, af::span) = 0;
+  using af::where;
 
-  af::array idx = where(A);
-  af::array data = A(idx);
-  af::array row_idx = (idx / A.dims()[0]).as(s64);
-  af::array col_idx = (idx % A.dims()[0]).as(s64);
+  array A = randu(4, 4);
+  A(1, span) = 0;
+  A(2, span) = 0;
+
+  array idx = where(A);
+  array data = A(idx);
+  array row_idx = (idx / A.dims()[0]).as(s64);
+  array col_idx = (idx % A.dims()[0]).as(s64);
 
   af_array A_sparse;
   ASSERT_EQ(AF_ERR_ARG, af_create_sparse_array(&A_sparse, A.dims(0), A.dims(1), data.get(), row_idx.get(), col_idx.get(), AF_STORAGE_CSR));
@@ -124,9 +135,9 @@ TEST(Sparse, ISSUE_2134_COO)
   int rows[] = {0,0,0,1,1,2,2};
   int cols[] = {0,1,2,0,1,0,2};
   float values[] = {3,3,4,3,10,4,3};
-  af::array row(7, rows);
-  af::array col(7, cols);
-  af::array value(7, values);
+  array row(7, rows);
+  array col(7, cols);
+  array value(7, values);
   af_array A = 0;
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSR));
   if(A != 0) af_release_array(A);
@@ -143,9 +154,9 @@ TEST(Sparse, ISSUE_2134_CSR)
   int rows[] = {0,3,5,7};
   int cols[] = {0,1,2,0,1,0,2};
   float values[] = {3,3,4,3,10,4,3};
-  af::array row(4, rows);
-  af::array col(7, cols);
-  af::array value(7, values);
+  array row(4, rows);
+  array col(7, cols);
+  array value(7, values);
   af_array A = 0;
   EXPECT_EQ(AF_SUCCESS, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSR));
   if(A != 0) af_release_array(A);
@@ -162,9 +173,9 @@ TEST(Sparse, ISSUE_2134_CSC)
   int rows[] = {0,0,0,1,1,2,2};
   int cols[] = {0,3,5,7};
   float values[] = {3,3,4,3,10,4,3};
-  af::array row(7, rows);
-  af::array col(4, cols);
-  af::array value(7, values);
+  array row(7, rows);
+  array col(4, cols);
+  array value(7, values);
   af_array A = 0;
   EXPECT_EQ(AF_ERR_SIZE, af_create_sparse_array(&A, 3, 3, value.get(), row.get(), col.get(), AF_STORAGE_CSR));
   if(A != 0) af_release_array(A);
@@ -179,12 +190,12 @@ TEST(Sparse, ISSUE_2134_CSC)
 template<typename T>
 class Sparse : public ::testing::Test {};
 
-typedef ::testing::Types<float, af::cfloat, double, af::cdouble> SparseTypes;
+typedef ::testing::Types<float, cfloat, double, cdouble> SparseTypes;
 TYPED_TEST_CASE(Sparse, SparseTypes);
 
 TYPED_TEST(Sparse, DeepCopy) {
     if (noDoubleTests<TypeParam>()) return;
-    using namespace af;
+
     cleanSlate();
 
     array s;
@@ -201,7 +212,7 @@ TYPED_TEST(Sparse, DeepCopy) {
     size_t alloc_bytes, alloc_buffers;
     size_t lock_bytes, lock_buffers;
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
     size_t size_of_alloc = lock_bytes;
     size_t buffers_per_sparse = lock_buffers;
@@ -211,7 +222,7 @@ TYPED_TEST(Sparse, DeepCopy) {
         s2.eval();
 
         // Make sure that the deep copy allocated additional memory
-        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+        deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
         EXPECT_NE(s.get(), s2.get()) << "The sparse arrays point to the same "
@@ -231,7 +242,7 @@ TYPED_TEST(Sparse, DeepCopy) {
 
 TYPED_TEST(Sparse, Empty) {
     if (noDoubleTests<TypeParam>()) return;
-    using namespace af;
+
     af_array ret = 0;
     dim_t rows = 0, cols = 0, nnz = 0;
     EXPECT_EQ(AF_SUCCESS,
@@ -249,9 +260,9 @@ TYPED_TEST(Sparse, Empty) {
 
 TYPED_TEST(Sparse, EmptyDeepCopy) {
     if (noDoubleTests<TypeParam>()) return;
-    using namespace af;
+
     array a = sparse(0, 0,
-                     array(0, (af_dtype)af::dtype_traits<TypeParam>::af_type),
+                     array(0, (af_dtype)dtype_traits<TypeParam>::af_type),
                      array(1, s32), array(0, s32));
     EXPECT_TRUE(a.issparse());
     EXPECT_EQ(0, sparseGetNNZ(a));

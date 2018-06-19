@@ -22,8 +22,11 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class Sort : public ::testing::Test
@@ -48,23 +51,23 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, bool 
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> > in;
     vector<vector<float> > tests;
     readTests<T, float, int>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
+    dim4 idims = numDims[0];
 
     af_array inArray = 0;
     af_array tempArray = 0;
     af_array sxArray = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     ASSERT_EQ(AF_SUCCESS, af_sort(&sxArray, inArray, 0, dir));
@@ -77,7 +80,7 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, bool 
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -122,15 +125,15 @@ TEST(Sort, CPPDim0)
     const bool dir = true;
     const unsigned resultIdx0 = 0;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/sort/sort_10x10.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array input(idims, &(in[0].front()));
+    dim4 idims = numDims[0];
+    array input(idims, &(in[0].front()));
 
-    af::array output = af::sort(input, 0, dir);
+    array output = sort(input, 0, dir);
 
     size_t nElems = tests[resultIdx0].size();
 
@@ -140,7 +143,7 @@ TEST(Sort, CPPDim0)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -154,17 +157,17 @@ TEST(Sort, CPPDim1)
     const bool dir = true;
     const unsigned resultIdx0 = 0;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/sort/sort_10x10.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array input(idims, &(in[0].front()));
+    dim4 idims = numDims[0];
+    array input(idims, &(in[0].front()));
 
-    af::array input_ = reorder(input, 1, 0, 2, 3);
+    array input_ = reorder(input, 1, 0, 2, 3);
 
-    af::array output = af::sort(input_, 1, dir);
+    array output = sort(input_, 1, dir);
 
     output = reorder(output, 1, 0, 2, 3); // Required for checking with test data
 
@@ -176,7 +179,7 @@ TEST(Sort, CPPDim1)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -190,17 +193,17 @@ TEST(Sort, CPPDim2)
     const bool dir = false;
     const unsigned resultIdx0 = 2;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/sort/sort_med.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array input(idims, &(in[0].front()));
+    dim4 idims = numDims[0];
+    array input(idims, &(in[0].front()));
 
-    af::array input_ = reorder(input, 1, 2, 0, 3);
+    array input_ = reorder(input, 1, 2, 0, 3);
 
-    af::array output = af::sort(input_, 2, dir);
+    array output = sort(input_, 2, dir);
 
     output = reorder(output, 2, 0, 1, 3); // Required for checking with test data
 
@@ -212,7 +215,7 @@ TEST(Sort, CPPDim2)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete

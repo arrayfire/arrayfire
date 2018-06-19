@@ -131,8 +131,8 @@ TEST(Array, TestEmptyLinAlg) {
     ASSERT_EQ(det<float  >(constant(0,0)), 1);
     ASSERT_EQ(det<cfloat >(constant(0,0)).real, 1);
     ASSERT_EQ(det<cdouble>(constant(0,0)).real, 1);
-    ASSERT_EQ(af::norm(constant(0,0)), 0);
-    ASSERT_EQ(af::rank(constant(0,0)), 0u);
+    ASSERT_EQ(norm(constant(0,0)), 0);
+    ASSERT_EQ(rank(constant(0,0)), 0u);
 
     array tau_qr, arr = constant(0,0);
     qrInPlace(tau_qr, arr);
@@ -241,7 +241,7 @@ TEST(Array, TestEmptyVecOp) {
 TEST(Array, TestEmptyArrMod) {
     ASSERT_EQ(diag  (constant(0,0))             .numdims(), 0u);
     ASSERT_EQ(diag  (constant(0,0), true)       .numdims(), 0u);
-    ASSERT_EQ(af::identity(0)                   .numdims(), 0u);
+    ASSERT_EQ(identity(0)                   .numdims(), 0u);
     ASSERT_EQ(iota(dim4(0))                     .numdims(), 0u);
     ASSERT_EQ(lower(constant(0,0))              .numdims(), 0u);
     ASSERT_EQ(upper(constant(0,0))              .numdims(), 0u);

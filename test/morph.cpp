@@ -16,9 +16,12 @@
 #include <vector>
 #include <testHelpers.hpp>
 
+using std::abs;
+using std::endl;
 using std::string;
 using std::vector;
-using std::abs;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class Morph : public ::testing::Test
@@ -38,22 +41,22 @@ void morphTest(string pTestFile)
 {
     if (noDoubleTests<inType>()) return;
 
-    vector<af::dim4>       numDims;
+    vector<dim4>       numDims;
     vector<vector<inType> >      in;
     vector<vector<inType> >   tests;
 
     readTests<inType,inType,int>(pTestFile, numDims, in, tests);
 
-    af::dim4 dims      = numDims[0];
-    af::dim4 maskDims  = numDims[1];
+    dim4 dims      = numDims[0];
+    dim4 maskDims  = numDims[1];
     af_array outArray  = 0;
     af_array inArray   = 0;
     af_array maskArray = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
-                dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
+                dims.ndims(), dims.get(), (af_dtype)dtype_traits<inType>::af_type));
     ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &(in[1].front()),
-                maskDims.ndims(), maskDims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
+                maskDims.ndims(), maskDims.get(), (af_dtype)dtype_traits<inType>::af_type));
 
     if (isDilation) {
         if (isVolume)
@@ -68,7 +71,7 @@ void morphTest(string pTestFile)
             ASSERT_EQ(AF_SUCCESS, af_erode(&outArray, inArray, maskArray));
     }
 
-    std::vector<inType> outData(dims.elements());
+    vector<inType> outData(dims.elements());
 
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
@@ -76,7 +79,7 @@ void morphTest(string pTestFile)
         vector<inType> currGoldBar = tests[testIter];
         size_t nElems        = currGoldBar.size();
         for (size_t elIter=0; elIter<nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
         }
     }
 
@@ -147,8 +150,6 @@ void morphImageTest(string pTestFile)
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
 
-    using af::dim4;
-
     vector<dim4>       inDims;
     vector<string>    inFiles;
     vector<dim_t> outSizes;
@@ -171,7 +172,7 @@ void morphImageTest(string pTestFile)
 
         dim4 mdims(3,3,1,1);
         ASSERT_EQ(AF_SUCCESS, af_constant(&maskArray, 1.0,
-                    mdims.ndims(), mdims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                    mdims.ndims(), mdims.get(), (af_dtype)dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray, inFiles[testId].c_str(), isColor));
         ASSERT_EQ(AF_SUCCESS, af_load_image(&goldArray, outFiles[testId].c_str(), isColor));
@@ -182,10 +183,10 @@ void morphImageTest(string pTestFile)
         else
             ASSERT_EQ(AF_SUCCESS, af_erode(&outArray, inArray, maskArray));
 
-        std::vector<T> outData(nElems);
+        vector<T> outData(nElems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
-        std::vector<T> goldData(nElems);
+        vector<T> goldData(nElems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
 
         ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.018f));
@@ -220,14 +221,14 @@ void morphInputTest(void)
     vector<T>   mask(9,1);
 
     // Check for 1D inputs
-    af::dim4 dims = af::dim4(100,1,1,1);
-    af::dim4 mdims(3,3,1,1);
+    dim4 dims = dim4(100,1,1,1);
+    dim4 mdims(3,3,1,1);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &mask.front(),
-                mdims.ndims(), mdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+                mdims.ndims(), mdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+                dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     if (isDilation)
         ASSERT_EQ(AF_ERR_SIZE, af_dilate(&outArray, inArray, maskArray));
@@ -262,14 +263,14 @@ void morphMaskTest(void)
     vector<T>   mask(16,1);
 
     // Check for 4D mask
-    af::dim4 dims(10,10,1,1);
-    af::dim4 mdims(2,2,2,2);
+    dim4 dims(10,10,1,1);
+    dim4 mdims(2,2,2,2);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+                dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &mask.front(),
-                mdims.ndims(), mdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+                mdims.ndims(), mdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     if (isDilation)
         ASSERT_EQ(AF_ERR_SIZE, af_dilate(&outArray, inArray, maskArray));
@@ -279,10 +280,10 @@ void morphMaskTest(void)
     ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
 
     // Check for 1D mask
-    mdims = af::dim4(16,1,1,1);
+    mdims = dim4(16,1,1,1);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &mask.front(),
-                mdims.ndims(), mdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+                mdims.ndims(), mdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     if (isDilation)
         ASSERT_EQ(AF_ERR_SIZE, af_dilate(&outArray, inArray, maskArray));
@@ -317,14 +318,14 @@ void morph3DMaskTest(void)
     vector<T>   mask(81,1);
 
     // Check for 2D mask
-    af::dim4 dims(10,10,10,1);
-    af::dim4 mdims(9,9,1,1);
+    dim4 dims(10,10,10,1);
+    dim4 mdims(9,9,1,1);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+                dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &mask.front(),
-                mdims.ndims(), mdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+                mdims.ndims(), mdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     if (isDilation)
         ASSERT_EQ(AF_ERR_SIZE, af_dilate3(&outArray, inArray, maskArray));
@@ -334,10 +335,10 @@ void morph3DMaskTest(void)
     ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
 
     // Check for 4D mask
-    mdims = af::dim4(3,3,3,3);
+    mdims = dim4(3,3,3,3);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &mask.front(),
-                mdims.ndims(), mdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+                mdims.ndims(), mdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     if (isDilation)
         ASSERT_EQ(AF_ERR_SIZE, af_dilate3(&outArray, inArray, maskArray));
@@ -362,13 +363,22 @@ TYPED_TEST(Morph, ErodeVolumeInvalidMask)
 
 ////////////////////////////////////// CPP //////////////////////////////////
 //
+
+using af::array;
+using af::constant;
+using af::loadImage;
+using af::erode;
+using af::iota;
+using af::max;
+using af::randu;
+using af::seq;
+using af::span;
+
 template<typename T, bool isDilation, bool isColor>
 void cppMorphImageTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
-
-    using af::dim4;
 
     vector<dim4>       inDims;
     vector<string>    inFiles;
@@ -383,21 +393,21 @@ void cppMorphImageTest(string pTestFile)
         inFiles[testId].insert(0,string(TEST_DIR"/morph/"));
         outFiles[testId].insert(0,string(TEST_DIR"/morph/"));
 
-        af::array mask = af::constant(1.0, 3, 3);
-        af::array img = af::loadImage(inFiles[testId].c_str(), isColor);
-        af::array gold = af::loadImage(outFiles[testId].c_str(), isColor);
+        array mask = constant(1.0, 3, 3);
+        array img = loadImage(inFiles[testId].c_str(), isColor);
+        array gold = loadImage(outFiles[testId].c_str(), isColor);
         dim_t nElems   = gold.elements();
-        af::array output;
+        array output;
 
         if (isDilation)
             output = dilate(img, mask);
         else
             output = erode(img, mask);
 
-        std::vector<T> outData(nElems);
+        vector<T> outData(nElems);
         output.host((void*)outData.data());
 
-        std::vector<T> goldData(nElems);
+        vector<T> goldData(nElems);
         gold.host((void*)goldData.data());
 
         ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.018f));
@@ -414,7 +424,6 @@ TEST(Morph, ColorImage_CPP)
     cppMorphImageTest<float, false, true>(string(TEST_DIR"/morph/color.test"));
 }
 
-using namespace af;
 TEST(Morph, GFOR)
 {
     dim4 dims = dim4(10, 10, 3);
@@ -472,7 +481,7 @@ TEST(Morph, EdgeIssue1564)
     array dilated = dilate(input.as(b8), mask.as(b8));
 
     size_t nElems = dilated.elements();
-    std::vector<char> outData(nElems);
+    vector<char> outData(nElems);
     dilated.host((void*)outData.data());
 
     for (size_t i=0; i<nElems; ++i) {

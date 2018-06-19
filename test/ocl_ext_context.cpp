@@ -13,11 +13,18 @@
 #include <af/opencl.h>
 #include <iostream>
 
+using std::endl;
 using std::vector;
+using af::array;
+using af::constant;
+using af::getDeviceCount;
+using af::info;
+using af::randu;
+using af::setDevice;
 
 inline void checkErr(cl_int err, const char * name) {
     if (err != CL_SUCCESS) {
-        std::cerr << "ERROR: " << name  << " (" << err << ")" << std::endl;
+        std::cerr << "ERROR: " << name  << " (" << err << ")" << endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -60,18 +67,18 @@ TEST(OCLExtContext, PushAndPop)
     cl_command_queue queue = NULL;
 
     getExternals(deviceId, context, queue);
-    int dCount = af::getDeviceCount();
+    int dCount = getDeviceCount();
     printf("\n%d devices before afcl::addDevice\n\n", dCount);
-    af::info();
+    info();
 
     afcl::addDevice(deviceId, context, queue);
-    ASSERT_EQ(true, dCount+1==af::getDeviceCount());
-    printf("\n%d devices after afcl::addDevice\n", af::getDeviceCount());
+    ASSERT_EQ(true, dCount+1==getDeviceCount());
+    printf("\n%d devices after afcl::addDevice\n", getDeviceCount());
 
     afcl::deleteDevice(deviceId, context);
-    ASSERT_EQ(true, dCount==af::getDeviceCount());
-    printf("\n%d devices after afcl::deleteDevice\n\n", af::getDeviceCount());
-    af::info();
+    ASSERT_EQ(true, dCount==getDeviceCount());
+    printf("\n%d devices after afcl::deleteDevice\n\n", getDeviceCount());
+    info();
 }
 
 TEST(OCLExtContext, set)
@@ -80,33 +87,33 @@ TEST(OCLExtContext, set)
     cl_context context = NULL;
     cl_command_queue queue = NULL;
 
-    int dCount = af::getDeviceCount(); //Before user device addition
-    af::setDevice(0);
-    af::info();
-    af::array t = af::randu(5,5);
+    int dCount = getDeviceCount(); //Before user device addition
+    setDevice(0);
+    info();
+    array t = randu(5,5);
     af_print(t);
 
     getExternals(deviceId, context, queue);
     afcl::addDevice(deviceId, context, queue);
     printf("\nBefore setting device to newly added one\n\n");
-    af::info();
+    info();
 
     printf("\n\nBefore setting device to newly added one\n\n");
-    af::setDevice(dCount); //In 0-based index, dCount is index of newly added device
-    af::info();
+    setDevice(dCount); //In 0-based index, dCount is index of newly added device
+    info();
 
     const int x = 5;
     const int y = 5;
     const int s = x * y;
-    af::array a = af::constant(1, x, y);
+    array a = constant(1, x, y);
     vector<float> host(s);
     a.host((void*)host.data());
     for (int i=0; i<s; ++i)
         ASSERT_EQ(host[i], 1.0f);
 
     printf("\n\nAfter reset to default set of devices\n\n");
-    af::setDevice(0);
-    af::info();
+    setDevice(0);
+    info();
     af_print(t);
 }
 

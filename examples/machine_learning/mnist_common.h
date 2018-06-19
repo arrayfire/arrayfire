@@ -34,6 +34,7 @@ std::string classify(af::array arr, int k)
 
         std::stable_sort(data.begin(), data.end(), compare);
 
+        af::freeHost(h_vec);
         ss << data[0].second;
     } else {
         ss << (int)(arr(k).as(f32).scalar<float>());
@@ -85,8 +86,8 @@ static void setup_mnist(int *num_classes, int *num_train, int *num_test,
             test_labels(ldata[ h_test_idx[ii]], ii) = 1;
         }
 
-        delete[] h_train_idx;
-        delete[] h_test_idx;
+        af::freeHost(h_train_idx);
+        af::freeHost(h_test_idx);
     } else {
         af::array labels = af::array(ldims[0], &ldata[0]);
         train_labels = labels(train_indices);
@@ -152,7 +153,7 @@ static void display_results(const af::array &test_images,
             }
             std::cout << std::endl;
         }
-        delete[] img;
+        af::freeHost(img);
         getchar();
     }
 #endif

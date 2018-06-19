@@ -15,10 +15,14 @@
 #include <vector>
 #include <testHelpers.hpp>
 
+using std::endl;
 using std::vector;
 using std::string;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class NearestNeighbour : public ::testing::Test
@@ -64,8 +68,6 @@ void nearestNeighbourTest(string pTestFile, int feat_dim, const af_match_type ty
 
     typedef typename otype_t<T>::otype To;
 
-    using af::dim4;
-
     vector<dim4>         numDims;
     vector<vector<T> >   in;
     vector<vector<uint> >  tests;
@@ -80,9 +82,9 @@ void nearestNeighbourTest(string pTestFile, int feat_dim, const af_match_type ty
     af_array dist  = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&query, &(in[0].front()),
-                qDims.ndims(), qDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                qDims.ndims(), qDims.get(), (af_dtype)dtype_traits<T>::af_type));
     ASSERT_EQ(AF_SUCCESS, af_create_array(&train, &(in[1].front()),
-                tDims.ndims(), tDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                tDims.ndims(), tDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_nearest_neighbour(&idx, &dist, query, train, feat_dim, 1, type));
 
@@ -96,7 +98,7 @@ void nearestNeighbourTest(string pTestFile, int feat_dim, const af_match_type ty
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outDist, dist));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ((To)goldDist[elIter], outDist[elIter])<< "at: " << elIter<< std::endl;
+        ASSERT_EQ((To)goldDist[elIter], outDist[elIter])<< "at: " << elIter<< endl;
     }
 
     delete[] outIdx;
@@ -157,9 +159,6 @@ TYPED_TEST(NearestNeighbour, NN_SAD_500_5000_Dim1)
 //
 TEST(NearestNeighbourSSD, CPP)
 {
-    using af::array;
-    using af::dim4;
-
     vector<dim4>         numDims;
     vector<vector<uint> >     in;
     vector<vector<uint> >  tests;
@@ -185,7 +184,7 @@ TEST(NearestNeighbourSSD, CPP)
     dist.host(outDist);
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(goldDist[elIter], outDist[elIter])<< "at: " << elIter<< std::endl;
+        ASSERT_EQ(goldDist[elIter], outDist[elIter])<< "at: " << elIter<< endl;
     }
 
     delete[] outIdx;
@@ -194,9 +193,6 @@ TEST(NearestNeighbourSSD, CPP)
 
 TEST(NearestNeighbourSAD, CPP)
 {
-    using af::array;
-    using af::dim4;
-
     vector<dim4>         numDims;
     vector<vector<uint> >     in;
     vector<vector<uint> >  tests;
@@ -222,7 +218,7 @@ TEST(NearestNeighbourSAD, CPP)
     dist.host(outDist);
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(goldDist[elIter], outDist[elIter])<< "at: " << elIter<< std::endl;
+        ASSERT_EQ(goldDist[elIter], outDist[elIter])<< "at: " << elIter<< endl;
     }
 
     delete[] outIdx;
@@ -245,11 +241,11 @@ TEST(NearestNeighbourSSD, small)
         6, 5,
         8, 6.5
     };
-    af::array t(nfeat, ntrain, train);
-    af::array q(nfeat, nquery, query);
-    af::array indices;
-    af::array distances;
-    af::nearestNeighbour(indices, distances, q, t, 0, 1, AF_SSD);
+    array t(nfeat, ntrain, train);
+    array q(nfeat, nquery, query);
+    array indices;
+    array distances;
+    nearestNeighbour(indices, distances, q, t, 0, 1, AF_SSD);
 
     float expectedDistances[nquery] = {
         (5 - 0) * (5 - 0) + (5 - 0) * (5 - 0),
@@ -259,7 +255,7 @@ TEST(NearestNeighbourSSD, small)
         (5 - 8) * (5 - 8) + (5 - 6.5) * (5 - 6.5)
     };
 
-    std::vector<float> actualDistances(nquery);
+    vector<float> actualDistances(nquery);
     distances.host(&actualDistances[0]);
     for (int i = 0; i < nquery; i++)
     {

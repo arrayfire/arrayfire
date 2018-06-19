@@ -23,6 +23,8 @@ using std::endl;
 using std::abs;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class Resize : public ::testing::Test
@@ -70,10 +72,10 @@ TYPED_TEST(Resize, InvalidDims)
     af_array inArray  = 0;
     af_array outArray = 0;
 
-    af::dim4 dims = af::dim4(8,8,1,1);
+    dim4 dims = dim4(8,8,1,1);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(),
-                                          (af_dtype) af::dtype_traits<TypeParam>::af_type));
+                                          (af_dtype) dtype_traits<TypeParam>::af_type));
     ASSERT_EQ(AF_ERR_SIZE, af_resize(&outArray, inArray, 0, 0, AF_INTERP_NEAREST));
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
@@ -81,33 +83,33 @@ TYPED_TEST(Resize, InvalidDims)
 template<typename T>
 void compare(T test, T out, double err, size_t i)
 {
-    ASSERT_EQ(abs(test - out) < 0.0001, true) << "at: " << i << std::endl
-             << "for test = : " << test << std::endl
-             << "out data = : " << out << std::endl;
+    ASSERT_EQ(abs(test - out) < 0.0001, true) << "at: " << i << endl
+             << "for test = : " << test << endl
+             << "out data = : " << out << endl;
 }
 
 template<>
 void compare<uintl>(uintl test, uintl out, double err, size_t i)
 {
-    ASSERT_EQ(((intl)test - (intl)out) < 0.0001, true) << "at: " << i << std::endl
-             << "for test = : " << test << std::endl
-             << "out data = : " << out << std::endl;
+    ASSERT_EQ(((intl)test - (intl)out) < 0.0001, true) << "at: " << i << endl
+             << "for test = : " << test << endl
+             << "out data = : " << out << endl;
 }
 
 template<>
 void compare<uint>(uint test, uint out, double err, size_t i)
 {
-    ASSERT_EQ(((int)test - (int)out) < 0.0001, true) << "at: " << i << std::endl
-             << "for test = : " << test << std::endl
-             << "out data = : " << out << std::endl;
+    ASSERT_EQ(((int)test - (int)out) < 0.0001, true) << "at: " << i << endl
+             << "for test = : " << test << endl
+             << "out data = : " << out << endl;
 }
 
 template<>
 void compare<uchar>(uchar test, uchar out, double err, size_t i)
 {
-    ASSERT_EQ(((int)test - (int)out) < 0.0001, true) << "at: " << i << std::endl
-             << "for test = : " << test << std::endl
-             << "out data = : " << out << std::endl;
+    ASSERT_EQ(((int)test - (int)out) < 0.0001, true) << "at: " << i << endl
+             << "for test = : " << test << endl
+             << "out data = : " << out << endl;
 }
 
 template<typename T>
@@ -115,29 +117,29 @@ void resizeTest(string pTestFile, const unsigned resultIdx, const dim_t odim0, c
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> >   in;
     vector<vector<T> >   tests;
     readTests<T, T, float>(pTestFile,numDims,in,tests);
 
-    af::dim4 dims = numDims[0];
+    dim4 dims = numDims[0];
 
     af_array inArray = 0;
     af_array outArray = 0;
     af_array tempArray = 0;
     if (isSubRef) {
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     ASSERT_EQ(AF_SUCCESS, af_resize(&outArray, inArray, odim0, odim1, method));
 
     // Get result
-    af::dim4 odims(odim0, odim1, dims[2], dims[3]);
+    dim4 odims(odim0, odim1, dims[2], dims[3]);
     T* outData = new T[odims.elements()];
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
@@ -316,20 +318,20 @@ TYPED_TEST(ResizeI, Resize1CLargeDownLinear)
 }
 
 template<typename T>
-void resizeArgsTest(af_err err, string pTestFile, const af::dim4 odims, const af_interp_type method)
+void resizeArgsTest(af_err err, string pTestFile, const dim4 odims, const af_interp_type method)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> >   in;
     vector<vector<T> >   tests;
     readTests<T, T, float>(pTestFile,numDims,in,tests);
 
-    af::dim4 dims = numDims[0];
+    dim4 dims = numDims[0];
 
     af_array inArray = 0;
     af_array outArray = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     ASSERT_EQ(err, af_resize(&outArray, inArray, odims[0], odims[1], method));
 
@@ -339,40 +341,47 @@ void resizeArgsTest(af_err err, string pTestFile, const af::dim4 odims, const af
 
 TYPED_TEST(Resize,InvalidArgsDims0)
 {
-    af::dim4 dims(0, 5, 2, 1);
+    dim4 dims(0, 5, 2, 1);
     resizeArgsTest<TypeParam>(AF_ERR_SIZE, string(TEST_DIR"/resize/square.test"), dims, AF_INTERP_BILINEAR);
 }
 
 TYPED_TEST(Resize,InvalidArgsMethod)
 {
-    af::dim4 dims(10, 10, 1, 1);
+    dim4 dims(10, 10, 1, 1);
     resizeArgsTest<TypeParam>(AF_ERR_ARG, string(TEST_DIR"/resize/square.test"), dims, AF_INTERP_CUBIC);
 }
 
 ///////////////////////////////// CPP ////////////////////////////////////
 //
+
+using af::array;
+using af::constant;
+using af::max;
+using af::seq;
+using af::span;
+
 TEST(Resize, CPP)
 {
     if (noDoubleTests<float>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> >   in;
     vector<vector<float> >   tests;
     readTests<float, float, float>(string(TEST_DIR"/resize/square.test"),numDims,in,tests);
 
-    af::dim4 dims = numDims[0];
-    af::array input(dims, &(in[0].front()));
-    af::array output = af::resize(input, 16, 16);
+    dim4 dims = numDims[0];
+    array input(dims, &(in[0].front()));
+    array output = resize(input, 16, 16);
 
     // Get result
-    af::dim4 odims(16, 16, dims[2], dims[3]);
+    dim4 odims(16, 16, dims[2], dims[3]);
     float* outData = new float[odims.elements()];
     output.host((void*)outData);
 
     // Compare result
     size_t nElems = tests[0].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_NEAR(tests[0][elIter], outData[elIter], 0.0001) << "at: " << elIter << std::endl;
+        ASSERT_NEAR(tests[0][elIter], outData[elIter], 0.0001) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -383,24 +392,24 @@ TEST(ResizeScale1, CPP)
 {
     if (noDoubleTests<float>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> >   in;
     vector<vector<float> >   tests;
     readTests<float, float, float>(string(TEST_DIR"/resize/square.test"),numDims,in,tests);
 
-    af::dim4 dims = numDims[0];
-    af::array input(dims, &(in[0].front()));
-    af::array output = af::resize(2.f, input);
+    dim4 dims = numDims[0];
+    array input(dims, &(in[0].front()));
+    array output = resize(2.f, input);
 
     // Get result
-    af::dim4 odims(16, 16, dims[2], dims[3]);
+    dim4 odims(16, 16, dims[2], dims[3]);
     float* outData = new float[odims.elements()];
     output.host((void*)outData);
 
     // Compare result
     size_t nElems = tests[0].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_NEAR(tests[0][elIter], outData[elIter], 0.0001) << "at: " << elIter << std::endl;
+        ASSERT_NEAR(tests[0][elIter], outData[elIter], 0.0001) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -411,35 +420,32 @@ TEST(ResizeScale2, CPP)
 {
     if (noDoubleTests<float>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> >   in;
     vector<vector<float> >   tests;
     readTests<float, float, float>(string(TEST_DIR"/resize/square.test"),numDims,in,tests);
 
-    af::dim4 dims = numDims[0];
-    af::array input(dims, &(in[0].front()));
-    af::array output = af::resize(2.f, 2.f, input);
+    dim4 dims = numDims[0];
+    array input(dims, &(in[0].front()));
+    array output = resize(2.f, 2.f, input);
 
     // Get result
-    af::dim4 odims(16, 16, dims[2], dims[3]);
+    dim4 odims(16, 16, dims[2], dims[3]);
     float* outData = new float[odims.elements()];
     output.host((void*)outData);
 
     // Compare result
     size_t nElems = tests[0].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_NEAR(tests[0][elIter], outData[elIter], 0.0001) << "at: " << elIter << std::endl;
+        ASSERT_NEAR(tests[0][elIter], outData[elIter], 0.0001) << "at: " << elIter << endl;
     }
 
     // Delete
     delete[] outData;
 }
 
-
-
 TEST(Resize, ExtractGFOR)
 {
-    using namespace af;
     dim4 dims = dim4(100, 100, 3);
     array A = round(100 * randu(dims));
     array B = constant(0, 200, 200, 3);

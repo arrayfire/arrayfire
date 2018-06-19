@@ -22,8 +22,12 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
+using af::regions;
 
 template<typename T>
 class Regions : public ::testing::Test
@@ -43,26 +47,26 @@ void regionsTest(string pTestFile, af_connectivity connectivity, bool isSubRef =
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<uchar> > in;
     vector<vector<T> > tests;
     readTests<uchar, T, unsigned>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
+    dim4 idims = numDims[0];
 
     af_array inArray = 0;
     af_array tempArray = 0;
     af_array outArray = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<char>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<char>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<char>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<char>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_regions(&outArray, inArray, connectivity, (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_regions(&outArray, inArray, connectivity, (af_dtype) dtype_traits<T>::af_type));
 
     // Get result
     T* outData = new T[idims.elements()];
@@ -73,7 +77,7 @@ void regionsTest(string pTestFile, af_connectivity connectivity, bool isSubRef =
         vector<T> currGoldBar = tests[testIter];
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter << std::endl;
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter << endl;
         }
     }
 
@@ -103,14 +107,14 @@ TEST(Regions, CPP)
 {
     if (noDoubleTests<float>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, unsigned>(string(TEST_DIR"/regions/regions_8x8_4.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array input(idims, (float*)&(in[0].front()));
-    af::array output = af::regions(input.as(b8));
+    dim4 idims = numDims[0];
+    array input(idims, (float*)&(in[0].front()));
+    array output = regions(input.as(b8));
 
     // Get result
     float* outData = new float[idims.elements()];
@@ -121,7 +125,7 @@ TEST(Regions, CPP)
         vector<float> currGoldBar = tests[testIter];
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter << std::endl;
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter << endl;
         }
     }
 
@@ -156,7 +160,7 @@ TEST(Regions, Docs_8)
     };
 
     //![ex_image_regions]
-    af::array in(8, 8, input);
+    array in(8, 8, input);
     //af_print(in);
     // in =
     // 0   0   0   0   1   0   1   0
@@ -169,7 +173,7 @@ TEST(Regions, Docs_8)
     // 0   1   0   0   0   1   0   0
 
     // Compute the label matrix using 8-way connectivity
-    af::array out = regions(in.as(b8), AF_CONNECTIVITY_8);
+    array out = regions(in.as(b8), AF_CONNECTIVITY_8);
     //af_print(out);
     // 0   0   0   0   4   0   5   0
     // 0   0   0   0   0   0   5   5
@@ -186,7 +190,7 @@ TEST(Regions, Docs_8)
     out.host((void*)output);
 
     for (int i=0; i<64; ++i) {
-        ASSERT_EQ(gold[i], output[i])<<" mismatch at i="<<i<<std::endl;
+        ASSERT_EQ(gold[i], output[i])<<" mismatch at i="<<i<<endl;
     }
 }
 
@@ -217,7 +221,7 @@ TEST(Regions, Docs_4)
 
 
     //![ex_image_regions_4conn]
-    af::array in(8, 8, input);
+    array in(8, 8, input);
     //af_print(in.T());
     //in
     //0  0  0  0  1  0  1  0
@@ -229,7 +233,7 @@ TEST(Regions, Docs_4)
     //0  0  0  0  1  0  0  1
     //0  1  0  0  0  1  0  0
     // Compute the label matrix using 4-way connectivity
-    af::array out = regions(in.as(b8), AF_CONNECTIVITY_4);
+    array out = regions(in.as(b8), AF_CONNECTIVITY_4);
     //af_print(out.T());
     //out
     //0  0  0  0  7  0 11  0
@@ -247,7 +251,7 @@ TEST(Regions, Docs_4)
     out.host((void*)output);
 
     for (int i=0; i<64; ++i) {
-        ASSERT_EQ(gold[i], output[i])<<" mismatch at i="<<i<<std::endl;
+        ASSERT_EQ(gold[i], output[i])<<" mismatch at i="<<i<<endl;
     }
 }
 
@@ -255,32 +259,32 @@ TEST(Regions, WholeImageComponent)
 {
     const int dim = 101;
     const int sz  = dim*dim;
-    std::vector<char> input(sz, 1);
-    std::vector<float> gold(sz, 1.0f);
+    vector<char> input(sz, 1);
+    vector<float> gold(sz, 1.0f);
 
-    af::array in  = af::array(dim, dim, input.data());
-    af::array out = af::regions(in, AF_CONNECTIVITY_4);
+    array in  = array(dim, dim, input.data());
+    array out = regions(in, AF_CONNECTIVITY_4);
 
-    std::vector<float> output(sz);
+    vector<float> output(sz);
     out.host((void*)output.data());
 
     for (int i=0; i<sz; ++i)
-        ASSERT_FLOAT_EQ(gold[i], output[i])<<" mismatch at i="<<i<<std::endl;
+        ASSERT_FLOAT_EQ(gold[i], output[i])<<" mismatch at i="<<i<<endl;
 }
 
 TEST(Regions, NoComponentImage)
 {
     const int dim = 101;
     const int sz  = dim*dim;
-    std::vector<char> input(sz, 0);
-    std::vector<float> gold(sz, 0.0f);
+    vector<char> input(sz, 0);
+    vector<float> gold(sz, 0.0f);
 
-    af::array in  = af::array(dim, dim, input.data());
-    af::array out = af::regions(in, AF_CONNECTIVITY_4);
+    array in  = array(dim, dim, input.data());
+    array out = regions(in, AF_CONNECTIVITY_4);
 
-    std::vector<float> output(sz);
+    vector<float> output(sz);
     out.host((void*)output.data());
 
     for (int i=0; i<sz; ++i)
-        ASSERT_FLOAT_EQ(gold[i], output[i])<<" mismatch at i="<<i<<std::endl;
+        ASSERT_FLOAT_EQ(gold[i], output[i])<<" mismatch at i="<<i<<endl;
 }

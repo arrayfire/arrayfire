@@ -22,8 +22,11 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class SortByKey : public ::testing::Test
@@ -48,12 +51,12 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> > in;
     vector<vector<float> > tests;
     readTests<T, float, int>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
+    dim4 idims = numDims[0];
 
     af_array ikeyArray = 0;
     af_array ivalArray = 0;
@@ -62,12 +65,12 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     af_array ovalArray = 0;
 
     if (isSubRef) {
-        //ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        //ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         //ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&ikeyArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&ivalArray, &(in[1].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&ikeyArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&ivalArray, &(in[1].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     ASSERT_EQ(AF_SUCCESS, af_sort_by_key(&okeyArray, &ovalArray, ikeyArray, ivalArray, 0, dir));
@@ -80,7 +83,7 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], keyData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], keyData[elIter]) << "at: " << elIter << endl;
     }
 
     T* valData = new T[tests[resultIdx1].size()];
@@ -89,7 +92,7 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
 #ifndef AF_OPENCL
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], valData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx1][elIter], valData[elIter]) << "at: " << elIter << endl;
     }
 #endif
 
@@ -135,16 +138,16 @@ TEST(SortByKey, CPPDim0)
     const unsigned resultIdx0 = 0;
     const unsigned resultIdx1 = 1;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/sort/sort_by_key_tiny.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array keys(idims, &(in[0].front()));
-    af::array vals(idims, &(in[1].front()));
-    af::array out_keys, out_vals;
-    af::sort(out_keys, out_vals, keys, vals, 0, dir);
+    dim4 idims = numDims[0];
+    array keys(idims, &(in[0].front()));
+    array vals(idims, &(in[1].front()));
+    array out_keys, out_vals;
+    sort(out_keys, out_vals, keys, vals, 0, dir);
 
     size_t nElems = tests[resultIdx0].size();
     // Get result
@@ -153,7 +156,7 @@ TEST(SortByKey, CPPDim0)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], keyData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], keyData[elIter]) << "at: " << elIter << endl;
     }
 
     float* valData = new float[tests[resultIdx1].size()];
@@ -161,7 +164,7 @@ TEST(SortByKey, CPPDim0)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], valData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx1][elIter], valData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -177,20 +180,20 @@ TEST(SortByKey, CPPDim1)
     const unsigned resultIdx0 = 0;
     const unsigned resultIdx1 = 1;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/sort/sort_by_key_large.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array keys(idims, &(in[0].front()));
-    af::array vals(idims, &(in[1].front()));
+    dim4 idims = numDims[0];
+    array keys(idims, &(in[0].front()));
+    array vals(idims, &(in[1].front()));
 
-    af::array keys_ = reorder(keys, 1, 0, 2, 3);
-    af::array vals_ = reorder(vals, 1, 0, 2, 3);
+    array keys_ = reorder(keys, 1, 0, 2, 3);
+    array vals_ = reorder(vals, 1, 0, 2, 3);
 
-    af::array out_keys, out_vals;
-    af::sort(out_keys, out_vals, keys_, vals_, 1, dir);
+    array out_keys, out_vals;
+    sort(out_keys, out_vals, keys_, vals_, 1, dir);
 
     out_keys = reorder(out_keys, 1, 0, 2, 3);
     out_vals = reorder(out_vals, 1, 0, 2, 3);
@@ -202,7 +205,7 @@ TEST(SortByKey, CPPDim1)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], keyData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], keyData[elIter]) << "at: " << elIter << endl;
     }
 
     float* valData = new float[tests[resultIdx1].size()];
@@ -210,7 +213,7 @@ TEST(SortByKey, CPPDim1)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], valData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx1][elIter], valData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -226,20 +229,20 @@ TEST(SortByKey, CPPDim2)
     const unsigned resultIdx0 = 2;
     const unsigned resultIdx1 = 3;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/sort/sort_by_key_large.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array keys(idims, &(in[0].front()));
-    af::array vals(idims, &(in[1].front()));
+    dim4 idims = numDims[0];
+    array keys(idims, &(in[0].front()));
+    array vals(idims, &(in[1].front()));
 
-    af::array keys_ = reorder(keys, 1, 2, 0, 3);
-    af::array vals_ = reorder(vals, 1, 2, 0, 3);
+    array keys_ = reorder(keys, 1, 2, 0, 3);
+    array vals_ = reorder(vals, 1, 2, 0, 3);
 
-    af::array out_keys, out_vals;
-    af::sort(out_keys, out_vals, keys_, vals_, 2, dir);
+    array out_keys, out_vals;
+    sort(out_keys, out_vals, keys_, vals_, 2, dir);
 
     out_keys = reorder(out_keys, 2, 0, 1, 3);
     out_vals = reorder(out_vals, 2, 0, 1, 3);
@@ -251,7 +254,7 @@ TEST(SortByKey, CPPDim2)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], keyData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], keyData[elIter]) << "at: " << elIter << endl;
     }
 
     float* valData = new float[tests[resultIdx1].size()];
@@ -259,7 +262,7 @@ TEST(SortByKey, CPPDim2)
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], valData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx1][elIter], valData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
