@@ -215,7 +215,6 @@ using af::setSeed;
 using af::stdev;
 using af::sum;
 
-
 TEST(RandomEngine, Default)
 {
     // Using default Random engine will cause segfaults
@@ -243,7 +242,7 @@ TEST(Random, CPP)
     setDefaultRandomEngineType(AF_RANDOM_ENGINE_MERSENNE);
     array out7 = randu(dims);
     array out8 = randn(dims);
-    sync();
+    af::sync();
 }
 
 template<typename T>
