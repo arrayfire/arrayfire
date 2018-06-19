@@ -58,17 +58,22 @@ namespace cpu
     template<typename T>
     Array<T> createDeviceDataArray(const af::dim4 &size, const void *data);
 
-    // Copies data to an existing Array object from a host pointer
+    /// Copies data to an existing Array object from a host pointer
     template<typename T>
     void writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes);
 
-    // Copies data to an existing Array object from a device pointer
+    /// Copies data to an existing Array object from a device pointer
     template<typename T>
     void writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes);
 
-    // Create an Array object and do not assign any values to it
+    /// Create an Array object and do not assign any values to it.
+    /// \NOTE: This object should not be used to initalize an array. Use
+    ///       createEmptyArray instead
     template<typename T> Array<T> *initArray();
 
+    /// Creates an empty array of a given size. No data is initialized
+    ///
+    /// \param[in] size The dimension of the output array
     template<typename T>
     Array<T> createEmptyArray(const af::dim4 &size);
 
