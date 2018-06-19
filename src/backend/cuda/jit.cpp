@@ -293,6 +293,7 @@ std::vector<char> compileToPTX(const char *ker_name, string jit_ker)
     NVRTC_CHECK(nvrtcGetPTXSize(prog, &ptx_size));
     ptx.resize(ptx_size);
     NVRTC_CHECK(nvrtcGetPTX(prog, ptx.data()));
+    NVRTC_CHECK(nvrtcDestroyProgram(&prog));
     return ptx;
 }
 
@@ -333,6 +334,7 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
     CU_LINK_CHECK(cuLinkComplete(linkState, &cubin, &cubinSize));
     CU_CHECK(cuModuleLoadDataEx(&module, cubin, 0, 0, 0));
     CU_CHECK(cuModuleGetFunction(&kernel, module, ker_name));
+    CU_LINK_CHECK(cuLinkDestroy(linkState));
     kc_entry_t entry = {module, kernel};
     return entry;
 }
@@ -351,7 +353,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
     int device      = getActiveDeviceId();
 
     kc_t::iterator idx = kernelCaches[device].find(funcName);
-    kc_entry_t entry = {NULL, NULL};
+    kc_entry_t entry{nullptr, nullptr};
 
     if (idx == kernelCaches[device].end()) {
         string jit_ker = getKernelString(funcName, full_nodes, full_ids, output_ids, is_linear);
