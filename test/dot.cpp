@@ -16,11 +16,16 @@
 #include <complex>
 #include <testHelpers.hpp>
 
-using std::vector;
-using std::string;
 using std::abs;
+using std::endl;
+using std::string;
+using std::vector;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dot;
+using af::dtype_traits;
 
 template<typename T>
 class DotF : public ::testing::Test
@@ -50,8 +55,6 @@ void dotTest(string pTestFile, const int resultIdx,
 {
     if (noDoubleTests<T>()) return;
 
-    using af::dim4;
-
     vector<dim4>        numDims;
     vector<vector<T> >  in;
     vector<vector<T> >  tests;
@@ -66,9 +69,9 @@ void dotTest(string pTestFile, const int resultIdx,
     af_array out = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &(in[0].front()),
-                aDims.ndims(), aDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                aDims.ndims(), aDims.get(), (af_dtype)dtype_traits<T>::af_type));
     ASSERT_EQ(AF_SUCCESS, af_create_array(&b, &(in[1].front()),
-                bDims.ndims(), bDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                bDims.ndims(), bDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_dot(&out, a, b, optLhs, optRhs));
 
@@ -79,7 +82,7 @@ void dotTest(string pTestFile, const int resultIdx,
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), out));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_NEAR(abs(goldData[elIter]), abs(outData[elIter]), 0.03)<< "at: " << elIter<< std::endl;
+        ASSERT_NEAR(abs(goldData[elIter]), abs(outData[elIter]), 0.03)<< "at: " << elIter<< endl;
     }
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(a));
@@ -113,8 +116,6 @@ void dotAllTest(string pTestFile, const int resultIdx,
 {
     if (noDoubleTests<T>()) return;
 
-    using af::dim4;
-
     vector<dim4>        numDims;
     vector<vector<T> >  in;
     vector<vector<T> >  tests;
@@ -128,9 +129,9 @@ void dotAllTest(string pTestFile, const int resultIdx,
     af_array b = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &(in[0].front()),
-                aDims.ndims(), aDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                aDims.ndims(), aDims.get(), (af_dtype)dtype_traits<T>::af_type));
     ASSERT_EQ(AF_SUCCESS, af_create_array(&b, &(in[1].front()),
-                bDims.ndims(), bDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                bDims.ndims(), bDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
     double rval = 0, ival = 0;
     ASSERT_EQ(AF_SUCCESS, af_dot_all(&rval, &ival, a, b, optLhs, optRhs));
@@ -186,9 +187,6 @@ INSTANTIATEC(25600  , dot_c_25600);
 //
 TEST(DotF, CPP)
 {
-    using af::array;
-    using af::dim4;
-
     vector<dim4>         numDims;
     vector<vector<float> >  in;
     vector<vector<float> >  tests;
@@ -210,15 +208,12 @@ TEST(DotF, CPP)
     out.host(&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(goldData[elIter], outData[elIter]) << "at: " << elIter<< std::endl;
+        ASSERT_EQ(goldData[elIter], outData[elIter]) << "at: " << elIter<< endl;
     }
 }
 
 TEST(DotCCU, CPP)
 {
-    using af::array;
-    using af::dim4;
-
     vector<dim4>         numDims;
     vector<vector<cfloat> >  in;
     vector<vector<cfloat> >  tests;
@@ -240,15 +235,12 @@ TEST(DotCCU, CPP)
     out.host(&outData.front());
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(goldData[elIter], outData[elIter]) << "at: " << elIter<< std::endl;
+        ASSERT_EQ(goldData[elIter], outData[elIter]) << "at: " << elIter<< endl;
     }
 }
 
 TEST(DotAllF, CPP)
 {
-    using af::array;
-    using af::dim4;
-
     vector<dim4>         numDims;
     vector<vector<float> >  in;
     vector<vector<float> >  tests;
@@ -261,7 +253,7 @@ TEST(DotAllF, CPP)
     array a(aDims, &(in[0].front()));
     array b(bDims, &(in[1].front()));
 
-    float out = af::dot<float>(a, b, AF_MAT_CONJ, AF_MAT_NONE);
+    float out = dot<float>(a, b, AF_MAT_CONJ, AF_MAT_NONE);
 
     vector<float> goldData = tests[0];
 
@@ -270,9 +262,6 @@ TEST(DotAllF, CPP)
 
 TEST(DotAllCCU, CPP)
 {
-    using af::array;
-    using af::dim4;
-
     vector<dim4>         numDims;
     vector<vector<cfloat> >  in;
     vector<vector<cfloat> >  tests;
@@ -285,7 +274,7 @@ TEST(DotAllCCU, CPP)
     array a(aDims, &(in[0].front()));
     array b(bDims, &(in[1].front()));
 
-    cfloat out = af::dot<cfloat>(a, b, AF_MAT_CONJ, AF_MAT_NONE);
+    cfloat out = dot<cfloat>(a, b, AF_MAT_CONJ, AF_MAT_NONE);
 
     vector<cfloat> goldData = tests[2];
 

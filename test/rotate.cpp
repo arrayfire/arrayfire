@@ -21,8 +21,11 @@ using std::string;
 using std::cout;
 using std::endl;
 using std::abs;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class Rotate : public ::testing::Test
@@ -45,12 +48,12 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> >   in;
     vector<vector<T> >   tests;
     readTests<T, T, float>(pTestFile,numDims,in,tests);
 
-    af::dim4 dims = numDims[0];
+    dim4 dims = numDims[0];
 
     af_array inArray = 0;
     af_array outArray = 0;
@@ -58,7 +61,7 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
 
     float theta = angle * PI / 180.0f;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_rotate(&outArray, inArray, theta, crop, AF_INTERP_NEAREST));
 
@@ -84,7 +87,7 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
     ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.005));
 
     //for (size_t elIter = 0; elIter < nElems; ++elIter) {
-    //    ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+    //    ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     //}
 
 
@@ -162,16 +165,16 @@ TEST(Rotate, CPP)
     const float angle = 180;
     const bool crop = false;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> >   in;
     vector<vector<float> >   tests;
     readTests<float, float, float>(string(TEST_DIR"/rotate/rotate1.test"),numDims,in,tests);
 
-    af::dim4 dims = numDims[0];
+    dim4 dims = numDims[0];
     float theta = angle * PI / 180.0f;
 
-    af::array input(dims, &(in[0].front()));
-    af::array output = af::rotate(input, theta, crop, AF_INTERP_NEAREST);
+    array input(dims, &(in[0].front()));
+    array output = rotate(input, theta, crop, AF_INTERP_NEAREST);
 
     // Get result
     float* outData = new float[tests[resultIdx].size()];

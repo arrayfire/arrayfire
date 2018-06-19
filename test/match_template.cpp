@@ -15,8 +15,14 @@
 #include <vector>
 #include <testHelpers.hpp>
 
+using std::cout;
+using std::endl;
 using std::string;
 using std::vector;
+using af::array;
+using af::dim4;
+using af::dtype_traits;
+using af::exception;
 
 template<typename T>
 class MatchTemplate : public ::testing::Test
@@ -37,34 +43,34 @@ void matchTemplateTest(string pTestFile, af_match_type pMatchType)
     typedef typename cond_type<is_same_type<T, double>::value, double, float>::type outType;
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4>  numDims;
+    vector<dim4>  numDims;
     vector<vector<T> >      in;
     vector<vector<outType> >   tests;
 
     readTests<T, outType, float>(pTestFile, numDims, in, tests);
 
-    af::dim4 sDims    = numDims[0];
-    af::dim4 tDims    = numDims[1];
+    dim4 sDims    = numDims[0];
+    dim4 tDims    = numDims[1];
     af_array outArray = 0;
     af_array sArray   = 0;
     af_array tArray   = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&sArray, &(in[0].front()),
-                sDims.ndims(), sDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                sDims.ndims(), sDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&tArray, &(in[1].front()),
-                tDims.ndims(), tDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                tDims.ndims(), tDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_match_template(&outArray, sArray, tArray, pMatchType));
 
-    std::vector<outType> outData(sDims.elements());
+    vector<outType> outData(sDims.elements());
 
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     vector<outType> currGoldBar = tests[0];
     size_t nElems        = currGoldBar.size();
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< std::endl;
+        ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< endl;
     }
 
     // cleanup
@@ -96,14 +102,14 @@ TEST(MatchTemplate, InvalidMatchType)
 
     vector<float>   in(100, 1);
 
-    af::dim4 sDims(10, 10, 1, 1);
-    af::dim4 tDims(4, 4, 1, 1);
+    dim4 sDims(10, 10, 1, 1);
+    dim4 tDims(4, 4, 1, 1);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
-                sDims.ndims(), sDims.get(), (af_dtype) af::dtype_traits<float>::af_type));
+                sDims.ndims(), sDims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&tArray, &in.front(),
-                tDims.ndims(), tDims.get(), (af_dtype) af::dtype_traits<float>::af_type));
+                tDims.ndims(), tDims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_match_template(&outArray, inArray, tArray, (af_match_type)-1));
 
@@ -117,15 +123,15 @@ TEST(MatchTemplate, CPP)
 {
     vector<float>   in(100, 1);
 
-    af::dim4 sDims(10, 10, 1, 1);
-    af::dim4 tDims(4, 4, 1, 1);
+    dim4 sDims(10, 10, 1, 1);
+    dim4 tDims(4, 4, 1, 1);
 
     try {
-        af::array input(sDims, &in.front());
-        af::array tmplt(tDims, &in.front());
+        array input(sDims, &in.front());
+        array tmplt(tDims, &in.front());
 
-        af::array out = matchTemplate(input, tmplt, (af_match_type)-1);
-    } catch(af::exception &e) {
-        std::cout<<"Invalid Match test: "<<e.what()<<std::endl;
+        array out = matchTemplate(input, tmplt, (af_match_type)-1);
+    } catch(exception &e) {
+        cout << "Invalid Match test: " << e.what() << endl;
     }
 }

@@ -23,14 +23,12 @@
 #include <string>
 #include <utility>
 
-using af::allTrue;
 using af::array;
-using af::randu;
-using af::seq;
-using af::sort;
-using af::span;
-using af::sum;
+using af::dim4;
+using af::dtype_traits;
+using af::iota;
 using af::topk;
+using af::topkFunction;
 
 using std::iota;
 using std::make_pair;
@@ -55,7 +53,7 @@ void topkTest(const unsigned ndims, const dim_t* dims,
                    const int k, const int dim,
                    const af_topk_function order)
 {
-    af_dtype dtype = (af_dtype)af::dtype_traits<T>::af_type;
+    af_dtype dtype = (af_dtype)dtype_traits<T>::af_type;
 
     af_array input, output, outindex;
 
@@ -211,7 +209,7 @@ struct topk_params {
   int d1;
   int k;
   int dim;
-  af::topkFunction order;
+  topkFunction order;
 };
 
 ostream& operator<<(ostream& os, const topk_params &param) {
@@ -272,8 +270,6 @@ string print_context(int idx0, int idx1, const vector<float> &val, const vector<
 }
 
 TEST_P(TopKParams, CPP) {
-    using namespace af;
-
     topk_params params = GetParam();
     int d0 = params.d0;
     int d1 = params.d1;

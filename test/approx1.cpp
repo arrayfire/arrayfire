@@ -34,7 +34,6 @@ using af::seq;
 using af::sum;
 
 using std::abs;
-using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
@@ -51,10 +50,10 @@ class Approx1 : public ::testing::Test
         vector<af_seq> subMat0;
 };
 
-// create a list of types to be tested
+// Create a list of types to be tested
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 
-// register the type list
+// Register the type list
 TYPED_TEST_CASE(Approx1, TestTypes);
 
 template<typename T>
@@ -62,14 +61,14 @@ void approx1Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
 {
     if (noDoubleTests<T>()) return;
 
-    typedef typename af::dtype_traits<T>::base_type BT;
-    vector<af::dim4> numDims;
+    typedef typename dtype_traits<T>::base_type BT;
+    vector<dim4> numDims;
     vector<vector<BT> > in;
     vector<vector<T> > tests;
     readTests<BT, T, float>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::dim4 pdims = numDims[1];
+    dim4 idims = numDims[0];
+    dim4 pdims = numDims[1];
 
     af_array inArray = 0;
     af_array posArray = 0;
@@ -79,14 +78,14 @@ void approx1Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
     vector<T> input(in[0].begin(), in[0].end());
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&posArray, &(in[1].front()), pdims.ndims(), pdims.get(), (af_dtype) af::dtype_traits<BT>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&posArray, &(in[1].front()), pdims.ndims(), pdims.get(), (af_dtype) dtype_traits<BT>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_approx1(&outArray, inArray, posArray, method, 0));
 
@@ -99,7 +98,7 @@ void approx1Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
     bool ret = true;
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
         ret = (abs(tests[resultIdx][elIter] - outData[elIter]) < 0.0005);
-        ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
+        ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << endl;
     }
 
     // Delete
@@ -127,14 +126,14 @@ void approx1CubicTest(string pTestFile, const unsigned resultIdx, const af_inter
 {
     if (noDoubleTests<T>()) return;
 
-    typedef typename af::dtype_traits<T>::base_type BT;
-    vector<af::dim4> numDims;
+    typedef typename dtype_traits<T>::base_type BT;
+    vector<dim4> numDims;
     vector<vector<BT> > in;
     vector<vector<T> > tests;
     readTests<BT, T, float>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::dim4 pdims = numDims[1];
+    dim4 idims = numDims[0];
+    dim4 pdims = numDims[1];
 
     af_array inArray = 0;
     af_array posArray = 0;
@@ -144,13 +143,13 @@ void approx1CubicTest(string pTestFile, const unsigned resultIdx, const af_inter
     vector<T> input(in[0].begin(), in[0].end());
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&posArray, &(in[1].front()), pdims.ndims(), pdims.get(), (af_dtype) af::dtype_traits<BT>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&posArray, &(in[1].front()), pdims.ndims(), pdims.get(), (af_dtype) dtype_traits<BT>::af_type));
     ASSERT_EQ(AF_SUCCESS, af_approx1(&outArray, inArray, posArray, method, 0));
 
     // Get result
@@ -171,14 +170,14 @@ void approx1CubicTest(string pTestFile, const unsigned resultIdx, const af_inter
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
         double integral;
-        //test that control points are exact
+        // Test that control points are exact
         if((std::modf(in[1][elIter], &integral) < 0.001) || (std::modf(in[1][elIter], &integral) > 0.999))  {
             ret = abs(tests[resultIdx][elIter] - outData[elIter]) < 0.001;
-            ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
+            ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << endl;
         } else {
-            //match intermediate values withing a threshold
+            // Match intermediate values within a threshold
             ret = abs(tests[resultIdx][elIter] - outData[elIter]) < 0.035 * range;
-            ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
+            ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << endl;
         }
     }
 
@@ -203,14 +202,14 @@ template<typename T>
 void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp_type method, const af_err err)
 {
     if (noDoubleTests<T>()) return;
-    typedef typename af::dtype_traits<T>::base_type BT;
-    vector<af::dim4> numDims;
+    typedef typename dtype_traits<T>::base_type BT;
+    vector<dim4> numDims;
     vector<vector<BT> > in;
     vector<vector<T> > tests;
     readTests<BT, T, float>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::dim4 pdims = numDims[1];
+    dim4 idims = numDims[0];
+    dim4 pdims = numDims[1];
 
     af_array inArray  = 0;
     af_array posArray = 0;
@@ -218,9 +217,9 @@ void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
 
     vector<T> input(in[0].begin(), in[0].end());
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&posArray, &(in[1].front()), pdims.ndims(), pdims.get(), (af_dtype) af::dtype_traits<BT>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&posArray, &(in[1].front()), pdims.ndims(), pdims.get(), (af_dtype) dtype_traits<BT>::af_type));
 
     ASSERT_EQ(err, af_approx1(&outArray, inArray, posArray, method, 0));
 
@@ -246,13 +245,13 @@ template<typename T>
 void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const af_interp_type method)
 {
     if (noDoubleTests<T>()) return;
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> > in;
     vector<vector<T> > tests;
     readTests<T, T, float>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::dim4 pdims = numDims[1];
+    dim4 idims = numDims[0];
+    dim4 pdims = numDims[1];
 
     af_array inArray  = 0;
     af_array posArray = 0;
@@ -260,12 +259,12 @@ void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
 
     vector<T> input(in[0].begin(), in[0].end());
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(input.front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&posArray, &(in[1].front()), pdims.ndims(), pdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&posArray, &(in[1].front()), pdims.ndims(), pdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-    if((af_dtype) af::dtype_traits<T>::af_type == c32 ||
-       (af_dtype) af::dtype_traits<T>::af_type == c64) {
+    if((af_dtype) dtype_traits<T>::af_type == c32 ||
+       (af_dtype) dtype_traits<T>::af_type == c64) {
         ASSERT_EQ(AF_ERR_ARG, af_approx1(&outArray, inArray, posArray, method, 0));
     } else {
         ASSERT_EQ(AF_SUCCESS, af_approx1(&outArray, inArray, posArray, method, 0));
@@ -321,7 +320,7 @@ TEST(Approx1, CPP)
     bool ret = true;
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
         ret = (std::abs(tests[resultIdx][elIter] - outData[elIter]) < 0.0005);
-        ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
+        ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << endl;
     }
 
     // Delete
@@ -410,17 +409,17 @@ TEST(Approx1, CPPNearestMaxDims)
     if (noDoubleTests<float>()) return;
 
     const size_t largeDim = 65535 * 32 + 1;
-    af::array input = af::randu(1, largeDim);
-    af::array pos   = input.dims(0) * af::randu(1, largeDim);
-    af::array out   = af::approx1(input, pos, AF_INTERP_NEAREST);
+    array input = randu(1, largeDim);
+    array pos   = input.dims(0) * randu(1, largeDim);
+    array out   = approx1(input, pos, AF_INTERP_NEAREST);
 
-    input = af::randu(1, 1, largeDim);
-    pos   = input.dims(0) * af::randu(1, 1, largeDim);
-    out   = af::approx1(input, pos, AF_INTERP_NEAREST);
+    input = randu(1, 1, largeDim);
+    pos   = input.dims(0) * randu(1, 1, largeDim);
+    out   = approx1(input, pos, AF_INTERP_NEAREST);
 
-    input = af::randu(1, 1, 1, largeDim);
-    pos   = input.dims(0) * af::randu(1, 1, 1, largeDim);
-    out   = af::approx1(input, pos, AF_INTERP_NEAREST);
+    input = randu(1, 1, 1, largeDim);
+    pos   = input.dims(0) * randu(1, 1, 1, largeDim);
+    out   = approx1(input, pos, AF_INTERP_NEAREST);
 
     SUCCEED();
 }
@@ -430,17 +429,17 @@ TEST(Approx1, CPPLinearMaxDims)
     if (noDoubleTests<float>()) return;
 
     const size_t largeDim = 65535 * 32 + 1;
-    af::array input = af::iota(af::dim4(1, largeDim), c32);
-    af::array pos   = input.dims(0) * af::randu(1, largeDim);
-    af::array outBatch = af::approx1(input, pos, AF_INTERP_LINEAR);
+    array input = iota(dim4(1, largeDim), c32);
+    array pos   = input.dims(0) * randu(1, largeDim);
+    array outBatch = approx1(input, pos, AF_INTERP_LINEAR);
 
-    input = af::iota(af::dim4(1, 1, largeDim), c32);
-    pos   = input.dims(0) * af::randu(1, 1, largeDim);
-    outBatch = af::approx1(input, pos, AF_INTERP_LINEAR);
+    input = iota(dim4(1, 1, largeDim), c32);
+    pos   = input.dims(0) * randu(1, 1, largeDim);
+    outBatch = approx1(input, pos, AF_INTERP_LINEAR);
 
-    input = af::iota(af::dim4(1, 1, 1, largeDim), c32);
-    pos   = input.dims(0) * af::randu(1, 1, 1, largeDim);
-    outBatch = af::approx1(input, pos, AF_INTERP_LINEAR);
+    input = iota(dim4(1, 1, 1, largeDim), c32);
+    pos   = input.dims(0) * randu(1, 1, 1, largeDim);
+    outBatch = approx1(input, pos, AF_INTERP_LINEAR);
 
     SUCCEED();
 }
@@ -450,17 +449,17 @@ TEST(Approx1, CPPCubicMaxDims)
     if (noDoubleTests<float>()) return;
 
     const size_t largeDim = 65535 * 32 + 1;
-    af::array input = af::iota(af::dim4(1, largeDim), c32);
-    af::array pos   = input.dims(0) * af::randu(1, largeDim);
-    af::array outBatch = af::approx1(input, pos, AF_INTERP_CUBIC);
+    array input = iota(dim4(1, largeDim), c32);
+    array pos   = input.dims(0) * randu(1, largeDim);
+    array outBatch = approx1(input, pos, AF_INTERP_CUBIC);
 
-    input = af::iota(af::dim4(1, 1, largeDim), c32);
-    pos   = input.dims(0) * af::randu(1, 1, largeDim);
-    outBatch = af::approx1(input, pos, AF_INTERP_CUBIC);
+    input = iota(dim4(1, 1, largeDim), c32);
+    pos   = input.dims(0) * randu(1, 1, largeDim);
+    outBatch = approx1(input, pos, AF_INTERP_CUBIC);
 
-    input = af::iota(af::dim4(1, 1, 1, largeDim), c32);
-    pos   = input.dims(0) * af::randu(1, 1, 1, largeDim);
-    outBatch = af::approx1(input, pos, AF_INTERP_CUBIC);
+    input = iota(dim4(1, 1, 1, largeDim), c32);
+    pos   = input.dims(0) * randu(1, 1, 1, largeDim);
+    outBatch = approx1(input, pos, AF_INTERP_CUBIC);
 
     SUCCEED();
 }

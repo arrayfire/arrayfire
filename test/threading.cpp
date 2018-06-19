@@ -23,6 +23,8 @@
 
 using namespace af;
 
+using std::cout;
+using std::endl;
 using std::vector;
 using std::string;
 
@@ -43,14 +45,14 @@ int nextTargetDeviceId()
 void morphTest(const array input, const array mask, const bool isDilation,
                const array gold, int targetDevice)
 {
-    af::setDevice(targetDevice);
+    setDevice(targetDevice);
 
     vector<float> goldData(gold.elements());
     vector<float> outData(gold.elements());
 
     gold.host((void*)goldData.data());
 
-    af::array out;
+    array out;
 
     for (unsigned i=0; i<ITERATION_COUNT; ++i)
         out = isDilation ? dilate(input, mask) : erode(input, mask);
@@ -97,13 +99,13 @@ TEST(Threading, SetPerThreadActiveDevice)
 
         for (size_t testId=0; testId<testCount; ++testId)
         {
-            int trgtDeviceId = totalTestCount % af::getDeviceCount();
+            int trgtDeviceId = totalTestCount % getDeviceCount();
 
             //prefix full path to image file names
             inFiles[testId].insert(0,string(TEST_DIR "/morph/"));
             outFiles[testId].insert(0,string(TEST_DIR "/morph/"));
 
-            af::setDevice(trgtDeviceId);
+            setDevice(trgtDeviceId);
 
             const array mask = constant(1.0, maskdims);
 
@@ -129,7 +131,7 @@ enum ArithOp
 
 void calc(ArithOp opcode, array op1, array op2, float outValue)
 {
-    af::setDevice(0);
+    setDevice(0);
     array res;
     for (unsigned i=0; i<ITERATION_COUNT; ++i)
     {
@@ -141,7 +143,7 @@ void calc(ArithOp opcode, array op1, array op2, float outValue)
         }
     }
 
-    std::vector<float> out(res.elements());
+    vector<float> out(res.elements());
     res.host((void*)out.data());
 
     for (unsigned i=0; i <out.size(); ++i)
@@ -150,9 +152,9 @@ void calc(ArithOp opcode, array op1, array op2, float outValue)
 
 TEST(Threading, SimultaneousRead)
 {
-    af::setDevice(0);
-    af::array A = af::constant(1.0, 100, 100);
-    af::array B = af::constant(1.0, 100, 100);
+    setDevice(0);
+    array A = constant(1.0, 100, 100);
+    array B = constant(1.0, 100, 100);
 
     vector<std::thread> tests;
 
@@ -182,7 +184,7 @@ size_t counter = THREAD_COUNT;
 
 void doubleAllocationTest()
 {
-    af::setDevice(0);
+    setDevice(0);
 
     //Block until all threads are launched and the
     //counter variable hits zero
@@ -196,7 +198,7 @@ void doubleAllocationTest()
         cv.wait(lock, [] {return counter==0;});
     lock.unlock();
 
-    af::array a = randu(5, 5);
+    array a = randu(5, 5);
 
     // Wait for for other threads to hit randu call
     // while this thread's variable a is still in scope.
@@ -219,7 +221,7 @@ TEST(Threading, MemoryManagementScope)
     size_t alloc_bytes, alloc_buffers;
     size_t lock_bytes, lock_buffers;
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
             &lock_bytes, &lock_buffers);
 
     ASSERT_EQ( lock_buffers,     0u);
@@ -230,10 +232,10 @@ TEST(Threading, MemoryManagementScope)
 
 void jitAllocationTest()
 {
-    af::setDevice(0);
+    setDevice(0);
 
     for (int i = 0; i < 100; ++i)
-        af::array a = af::constant(1, 5, 5);
+        array a = constant(1, 5, 5);
 }
 
 TEST(Threading, MemoryManagement_JIT_Node)
@@ -252,7 +254,7 @@ TEST(Threading, MemoryManagement_JIT_Node)
     size_t alloc_bytes, alloc_buffers;
     size_t lock_bytes, lock_buffers;
 
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+    deviceMemInfo(&alloc_bytes, &alloc_buffers,
             &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers,     0u);
@@ -267,20 +269,20 @@ void fftTest(int targetDevice, string pTestFile, dim_t pad0=0, dim_t pad1=0, dim
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
 
-    vector<af::dim4>        numDims;
+    vector<dim4>        numDims;
     vector<vector<inType> >       in;
     vector<vector<outType> >   tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
-    af::dim4 dims       = numDims[0];
+    dim4 dims       = numDims[0];
     af_array outArray   = 0;
     af_array inArray    = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_set_device(targetDevice));
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
-                dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
+                dims.ndims(), dims.get(), (af_dtype)dtype_traits<inType>::af_type));
 
     if (isInverse){
         switch (dims.ndims()) {
@@ -317,7 +319,7 @@ void fftTest(int targetDevice, string pTestFile, dim_t pad0=0, dim_t pad1=0, dim
         ASSERT_EQ(true, isUnderTolerance)<<
             "Expected value="<<goldBar[elIter] <<"\t Actual Value="<<
             (output_scale*outData[elIter]) << " at: " << elIter <<
-            " from thread: "<< std::this_thread::get_id() << std::endl;
+            " from thread: "<< std::this_thread::get_id() << endl;
     }
 
     // cleanup
@@ -505,46 +507,46 @@ void cppMatMulCheck(int targetDevice, string TestFile)
     if (noDoubleTests<T>()) return;
 
     using std::vector;
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
 
     vector<vector<T> > hData;
     vector<vector<T> > tests;
     readTests<T,T,int>(TestFile, numDims, hData, tests);
 
-    af::setDevice(targetDevice);
+    setDevice(targetDevice);
 
-    af::array a(numDims[0], &hData[0].front());
-    af::array b(numDims[1], &hData[1].front());
+    array a(numDims[0], &hData[0].front());
+    array b(numDims[1], &hData[1].front());
 
-    af::dim4 atdims = numDims[0];
+    dim4 atdims = numDims[0];
     {
         dim_t f  =    atdims[0];
         atdims[0]   =    atdims[1];
         atdims[1]   =    f;
     }
-    af::dim4 btdims = numDims[1];
+    dim4 btdims = numDims[1];
     {
         dim_t f = btdims[0];
         btdims[0] = btdims[1];
         btdims[1] = f;
     }
 
-    af::array aT = moddims(a, atdims.ndims(), atdims.get());
-    af::array bT = moddims(b, btdims.ndims(), btdims.get());
+    array aT = moddims(a, atdims.ndims(), atdims.get());
+    array bT = moddims(b, btdims.ndims(), btdims.get());
 
-    vector<af::array> out(tests.size());
+    vector<array> out(tests.size());
     if(isBVector) {
-        out[0] = af::matmul(aT, b,    AF_MAT_NONE,    AF_MAT_NONE);
-        out[1] = af::matmul(bT, a,   AF_MAT_NONE,    AF_MAT_NONE);
-        out[2] = af::matmul(b, a,    AF_MAT_TRANS,       AF_MAT_NONE);
-        out[3] = af::matmul(bT, aT,   AF_MAT_NONE,    AF_MAT_TRANS);
-        out[4] = af::matmul(b, aT,    AF_MAT_TRANS,       AF_MAT_TRANS);
+        out[0] = matmul(aT, b,    AF_MAT_NONE,    AF_MAT_NONE);
+        out[1] = matmul(bT, a,   AF_MAT_NONE,    AF_MAT_NONE);
+        out[2] = matmul(b, a,    AF_MAT_TRANS,       AF_MAT_NONE);
+        out[3] = matmul(bT, aT,   AF_MAT_NONE,    AF_MAT_TRANS);
+        out[4] = matmul(b, aT,    AF_MAT_TRANS,       AF_MAT_TRANS);
     }
     else {
-        out[0] = af::matmul(a, b, AF_MAT_NONE,   AF_MAT_NONE);
-        out[1] = af::matmul(a, bT, AF_MAT_NONE,   AF_MAT_TRANS);
-        out[2] = af::matmul(a, bT, AF_MAT_TRANS,      AF_MAT_NONE);
-        out[3] = af::matmul(aT, bT, AF_MAT_TRANS,      AF_MAT_TRANS);
+        out[0] = matmul(a, b, AF_MAT_NONE,   AF_MAT_NONE);
+        out[1] = matmul(a, bT, AF_MAT_NONE,   AF_MAT_TRANS);
+        out[2] = matmul(a, bT, AF_MAT_TRANS,      AF_MAT_NONE);
+        out[3] = matmul(aT, bT, AF_MAT_TRANS,      AF_MAT_TRANS);
     }
 
     for(size_t i = 0; i < tests.size(); i++) {
@@ -554,16 +556,16 @@ void cppMatMulCheck(int targetDevice, string TestFile)
 
         if (false == equal(h_out.begin(), h_out.end(), tests[i].begin())) {
 
-            std::cout << "Failed test " << i << "\nCalculated: " << std::endl;
-            std::copy(h_out.begin(), h_out.end(), std::ostream_iterator<T>(std::cout, ", "));
-            std::cout << "Expected: " << std::endl;
-            std::copy(tests[i].begin(), tests[i].end(), std::ostream_iterator<T>(std::cout, ", "));
+            cout << "Failed test " << i << "\nCalculated: " << endl;
+            std::copy(h_out.begin(), h_out.end(), std::ostream_iterator<T>(cout, ", "));
+            cout << "Expected: " << endl;
+            std::copy(tests[i].begin(), tests[i].end(), std::ostream_iterator<T>(cout, ", "));
             FAIL();
         }
     }
 }
 
-#define TEST_BLAS_FOR_TYPE(TypeName)                                         \
+#define TEST_BLAS_FOR_TYPE(TypeName)                                                \
     tests.emplace_back(cppMatMulCheck<TypeName, false>,                             \
             nextTargetDeviceId()%numDevices, TEST_DIR "/blas/Basic.test");          \
     tests.emplace_back(cppMatMulCheck<TypeName, false>,                             \
@@ -584,11 +586,11 @@ TEST(Threading, BLAS)
     ASSERT_EQ(true, numDevices>0);
 
     TEST_BLAS_FOR_TYPE(      float);
-    TEST_BLAS_FOR_TYPE( af::cfloat);
+    TEST_BLAS_FOR_TYPE( cfloat);
 
     if (noDoubleTests<double>()) {
         TEST_BLAS_FOR_TYPE(     double);
-        TEST_BLAS_FOR_TYPE(af::cdouble);
+        TEST_BLAS_FOR_TYPE(cdouble);
     }
 
     for (size_t testId=0; testId<tests.size(); ++testId)
@@ -631,7 +633,7 @@ TEST(Threading, DISABLED_MemoryManagerStressTest)
   vector<std::thread> threads;
   for (int i = 0; i < THREAD_COUNT; i++) {
     threads.emplace_back([] {
-        vector<af::array> arrg;
+        vector<array> arrg;
         int size = 100;
         int ex_count = 0;
 
@@ -640,13 +642,13 @@ TEST(Threading, DISABLED_MemoryManagerStressTest)
           try {
             // constantly change size of the array allocated
             size+=10;
-            arrg.push_back(af::randu(size));
+            arrg.push_back(randu(size));
 
             // delete some values intermittently
             if (!(size%200)) {
               arrg.erase(std::begin(arrg), std::begin(arrg)+5);
             }
-          } catch( const af::exception &ex ) {
+          } catch( const exception &ex ) {
             if (ex_count++ > 3) {
               break;
             }

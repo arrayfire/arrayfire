@@ -23,43 +23,42 @@
 
 using std::vector;
 using std::string;
-using std::generate;
-using std::cout;
 using std::endl;
 using std::ostream_iterator;
+using af::dim4;
 using af::dtype_traits;
 
 void testGeneralIndexOneArray(string pTestFile, const dim_t ndims, af_index_t* indexs, int arrayDim)
 {
-    vector<af::dim4>        numDims;
+    vector<dim4>        numDims;
     vector< vector<float> >      in;
     vector< vector<float> >   tests;
 
     readTestsFromFile<float, float>(pTestFile, numDims, in, tests);
 
-    af::dim4 dims0     = numDims[0];
-    af::dim4 dims1     = numDims[1];
+    dim4 dims0     = numDims[0];
+    dim4 dims1     = numDims[1];
     af_array outArray  = 0;
     af_array inArray   = 0;
     af_array idxArray  = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
-                dims0.ndims(), dims0.get(), (af_dtype)af::dtype_traits<float>::af_type));
+                dims0.ndims(), dims0.get(), (af_dtype)dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray, &(in[1].front()),
-                dims1.ndims(), dims1.get(), (af_dtype)af::dtype_traits<float>::af_type));
+                dims1.ndims(), dims1.get(), (af_dtype)dtype_traits<float>::af_type));
     indexs[arrayDim].idx.arr = idxArray;
 
     ASSERT_EQ(AF_SUCCESS, af_index_gen(&outArray, inArray, ndims, indexs));
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
-    std::vector<float> outData(nElems);
+    vector<float> outData(nElems);
 
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
@@ -107,15 +106,15 @@ TEST(GeneralIndex, SASS)
 
 TEST(GeneralIndex, AASS)
 {
-    vector<af::dim4>        numDims;
+    vector<dim4>        numDims;
     vector< vector<float> >      in;
     vector< vector<float> >   tests;
 
     readTestsFromFile<float, float>(string(TEST_DIR"/gen_index/aas0_ns0_n.test"), numDims, in, tests);
 
-    af::dim4 dims0     = numDims[0];
-    af::dim4 dims1     = numDims[1];
-    af::dim4 dims2     = numDims[2];
+    dim4 dims0     = numDims[0];
+    dim4 dims1     = numDims[1];
+    dim4 dims2     = numDims[2];
     af_array outArray  = 0;
     af_array inArray   = 0;
     af_array idxArray0 = 0;
@@ -124,15 +123,15 @@ TEST(GeneralIndex, AASS)
     af_index_t indexs[2];
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
-                dims0.ndims(), dims0.get(), (af_dtype)af::dtype_traits<float>::af_type));
+                dims0.ndims(), dims0.get(), (af_dtype)dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray0, &(in[1].front()),
-                dims1.ndims(), dims1.get(), (af_dtype)af::dtype_traits<float>::af_type));
+                dims1.ndims(), dims1.get(), (af_dtype)dtype_traits<float>::af_type));
     indexs[0].isSeq = false;
     indexs[0].idx.arr = idxArray0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray1, &(in[2].front()),
-                dims2.ndims(), dims2.get(), (af_dtype)af::dtype_traits<float>::af_type));
+                dims2.ndims(), dims2.get(), (af_dtype)dtype_traits<float>::af_type));
     indexs[1].isSeq = false;
     indexs[1].idx.arr = idxArray1;
 
@@ -140,12 +139,12 @@ TEST(GeneralIndex, AASS)
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
-    std::vector<float> outData(nElems);
+    vector<float> outData(nElems);
 
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
@@ -154,9 +153,15 @@ TEST(GeneralIndex, AASS)
     ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
+using af::array;
+using af::freeHost;
+using af::randu;
+using af::seq;
+using af::span;
+using af::where;
+
 TEST(GeneralIndex, CPP_ASNN)
 {
-    using namespace af;
     const int nx = 1000;
     const int ny = 1000;
     const int st = 200;
@@ -179,7 +184,7 @@ TEST(GeneralIndex, CPP_ASNN)
         float *hBt = hB + j * nxb;
         for (int i = 0; i < nxb; i++) {
             ASSERT_EQ(hAt[hIdx[i]], hBt[i])
-                << "at " << i << " " << j << std::endl;
+                << "at " << i << " " << j << endl;
         }
     }
 
@@ -190,7 +195,6 @@ TEST(GeneralIndex, CPP_ASNN)
 
 TEST(GeneralIndex, CPP_SANN)
 {
-    using namespace af;
     const int nx = 1000;
     const int ny = 1000;
     const int st = 200;
@@ -213,7 +217,7 @@ TEST(GeneralIndex, CPP_SANN)
 
         for (int i = 0; i < nxb; i++) {
             ASSERT_EQ(hAt[i + st], hBt[i])
-            << "at " << i << " " << j << std::endl;
+            << "at " << i << " " << j << endl;
         }
     }
 
@@ -224,7 +228,6 @@ TEST(GeneralIndex, CPP_SANN)
 
 TEST(GeneralIndex, CPP_SSAN)
 {
-    using namespace af;
     const int nx = 100;
     const int ny = 100;
     const int nz = 100;
@@ -250,7 +253,7 @@ TEST(GeneralIndex, CPP_SSAN)
         for (int j = 0; j < nyb; j++) {
             for (int i = 0; i < nxb; i++) {
                 ASSERT_EQ(hAt[j * nx  + i + st], hBt[j * nxb + i])
-                    << "at " << i << " " << j << " " << k << std::endl;
+                    << "at " << i << " " << j << " " << k << endl;
             }
         }
     }
@@ -262,7 +265,6 @@ TEST(GeneralIndex, CPP_SSAN)
 
 TEST(GeneralIndex, CPP_AANN)
 {
-    using namespace af;
     const int nx = 1000;
     const int ny = 1000;
 
@@ -285,7 +287,7 @@ TEST(GeneralIndex, CPP_AANN)
         float *hBt = hB + j * nxb;
         for (int i = 0; i < nxb; i++) {
             ASSERT_EQ(hAt[hIdx0[i]], hBt[i])
-                << "at " << i << " " << j << std::endl;
+                << "at " << i << " " << j << endl;
         }
     }
 

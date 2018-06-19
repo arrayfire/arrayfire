@@ -18,6 +18,7 @@
 #include <testHelpers.hpp>
 #include <typeinfo>
 
+using std::endl;
 using std::string;
 using std::vector;
 using std::abs;
@@ -124,11 +125,11 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size)
         std::sort(gold_feat.begin(), gold_feat.end(), feat_cmp);
 
         for (int elIter = 0; elIter < (int)nElems; elIter++) {
-            ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << std::endl;
-            ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << std::endl;
-            ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e2) << "at: " << elIter << std::endl;
-            ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << std::endl;
-            ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << std::endl;
+            ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << endl;
+            ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << endl;
+            ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e2) << "at: " << elIter << endl;
+            ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << endl;
+            ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << endl;
         }
 
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
@@ -138,9 +139,9 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size)
     }
 }
 
-#define HARRIS_INIT(desc, image, sigma, block_size) \
-    TYPED_TEST(Harris, desc) \
-    {   \
+#define HARRIS_INIT(desc, image, sigma, block_size)                     \
+    TYPED_TEST(Harris, desc)                                            \
+    {                                                                   \
         harrisTest<TypeParam>(string(TEST_DIR"/harris/"#image"_"#sigma"_"#block_size".test"), sigma, block_size); \
     }
 
@@ -155,6 +156,11 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size)
 
 /////////////////////////////////// CPP ////////////////////////////////
 
+using af::array;
+using af::features;
+using af::harris;
+using af::loadImage;
+
 TEST(FloatHarris, CPP)
 {
     if (noDoubleTests<float>()) return;
@@ -167,9 +173,9 @@ TEST(FloatHarris, CPP)
     readImageTests(string(TEST_DIR"/harris/square_0_3.test"), inDims, inFiles, gold);
     inFiles[0].insert(0,string(TEST_DIR"/harris/"));
 
-    af::array in = af::loadImage(inFiles[0].c_str(), false);
+    array in = loadImage(inFiles[0].c_str(), false);
 
-    af::features out = harris(in, 500, 1e5f, 0.0f, 3, 0.04f);
+    features out = harris(in, 500, 1e5f, 0.0f, 3, 0.04f);
 
     vector<float> outX           (gold[0].size());
     vector<float> outY           (gold[1].size());
@@ -196,10 +202,10 @@ TEST(FloatHarris, CPP)
     std::sort(gold_feat.begin(), gold_feat.end(), feat_cmp);
 
     for (unsigned elIter = 0; elIter < out.getNumFeatures(); elIter++) {
-        ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << std::endl;
-        ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << std::endl;
-        ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e2) << "at: " << elIter << std::endl;
-        ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << std::endl;
-        ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << endl;
+        ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << endl;
+        ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e2) << "at: " << elIter << endl;
+        ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << endl;
+        ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << endl;
     }
 }

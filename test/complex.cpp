@@ -13,6 +13,7 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
+using std::endl;
 using namespace af;
 
 const int num = 10;
@@ -28,15 +29,15 @@ const int num = 10;
                                                                         \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;              \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;              \
-        af::array a = randu(num, ta);                                   \
-        af::array b = randu(num, tb);                                   \
-        af::array c = af::complex(a, b);                                \
+        array a = randu(num, ta);                                       \
+        array b = randu(num, tb);                                       \
+        array c = complex(a, b);                                        \
         Ta *h_a = a.host<Ta>();                                         \
         Tb *h_b = b.host<Tb>();                                         \
         CPLX(Tc) *h_c = c.host< CPLX(Tc) >();                           \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], CPLX(Tc)(h_a[i], h_b[i])) <<              \
-                "for values: " << h_a[i]  << "," << h_b[i] << std::endl; \
+                "for values: " << h_a[i]  << "," << h_b[i] << endl;     \
         freeHost(h_a);                                                  \
         freeHost(h_b);                                                  \
         freeHost(h_c);                                                  \
@@ -47,14 +48,14 @@ const int num = 10;
         if (noDoubleTests<Tb>()) return;                                \
                                                                         \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;              \
-        af::array a = randu(num, ta);                                   \
+        array a = randu(num, ta);                                       \
         Tb h_b = 0.3;                                                   \
-        af::array c = af::complex(a, h_b);                              \
+        array c = complex(a, h_b);                                      \
         Ta *h_a = a.host<Ta>();                                         \
         CPLX(Ta) *h_c = c.host<CPLX(Ta) >();                            \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], CPLX(Ta)(h_a[i], h_b)) <<                 \
-                "for values: " << h_a[i]  << "," << h_b << std::endl;   \
+                "for values: " << h_a[i]  << "," << h_b << endl;        \
         freeHost(h_a);                                                  \
         freeHost(h_c);                                                  \
     }                                                                   \
@@ -66,13 +67,13 @@ const int num = 10;
                                                                         \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;              \
         Ta h_a = 0.3;                                                   \
-        af::array b = randu(num, tb);                                   \
-        af::array c = af::complex(h_a, b);                              \
+        array b = randu(num, tb);                                       \
+        array c = complex(h_a, b);                                      \
         Tb *h_b = b.host<Tb>();                                         \
         CPLX(Tb) *h_c = c.host<CPLX(Tb) >();                            \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], CPLX(Tb)(h_a, h_b[i])) <<                 \
-                "for values: " << h_a  << "," << h_b[i] << std::endl;   \
+                "for values: " << h_a  << "," << h_b[i] << endl;        \
         freeHost(h_b);                                                  \
         freeHost(h_c);                                                  \
     }                                                                   \
@@ -84,14 +85,14 @@ const int num = 10;
                                                                         \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;              \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;              \
-        af::array a = randu(num, ta);                                   \
-        af::array b = randu(num, tb);                                   \
-        af::array c = af::complex(a, b);                                \
-        af::array d = af::real(c);                                      \
+        array a = randu(num, ta);                                       \
+        array b = randu(num, tb);                                       \
+        array c = complex(a, b);                                        \
+        array d = real(c);                                              \
         Ta *h_a = a.host<Ta>();                                         \
         Tc *h_d = d.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
-            ASSERT_EQ(h_d[i], h_a[i]) << "at: " << i << std::endl;      \
+            ASSERT_EQ(h_d[i], h_a[i]) << "at: " << i << endl;           \
         freeHost(h_a);                                                  \
         freeHost(h_d);                                                  \
     }                                                                   \
@@ -103,14 +104,14 @@ const int num = 10;
                                                                         \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;              \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;              \
-        af::array a = randu(num, ta);                                   \
-        af::array b = randu(num, tb);                                   \
-        af::array c = af::complex(a, b);                                \
-        af::array d = af::imag(c);                                      \
+        array a = randu(num, ta);                                       \
+        array b = randu(num, tb);                                       \
+        array c = complex(a, b);                                        \
+        array d = imag(c);                                              \
         Tb *h_b = b.host<Tb>();                                         \
         Tc *h_d = d.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
-            ASSERT_EQ(h_d[i], h_b[i])  << "at: " << i << std::endl;     \
+            ASSERT_EQ(h_d[i], h_b[i])  << "at: " << i << endl;          \
         freeHost(h_b);                                                  \
         freeHost(h_d);                                                  \
     }                                                                   \
@@ -122,15 +123,15 @@ const int num = 10;
                                                                         \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;              \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;              \
-        af::array a = randu(num, ta);                                   \
-        af::array b = randu(num, tb);                                   \
-        af::array c = af::complex(a, b);                                \
-        af::array d = af::conjg(c);                                     \
+        array a = randu(num, ta);                                       \
+        array b = randu(num, tb);                                       \
+        array c = complex(a, b);                                        \
+        array d = conjg(c);                                             \
         CPLX(Tc) *h_c = c.host<CPLX(Tc) >();                            \
         CPLX(Tc) *h_d = d.host<CPLX(Tc) >();                            \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(conj(h_c[i]), h_d[i])                             \
-                << "at: " << i << std::endl;                            \
+                << "at: " << i << endl;                                 \
         freeHost(h_c);                                                  \
         freeHost(h_d);                                                  \
     }                                                                   \

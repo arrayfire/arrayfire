@@ -11,43 +11,36 @@
 #include <arrayfire.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
-#include <vector>
 #include <iostream>
-#include <string>
 #include <testHelpers.hpp>
-
-using std::vector;
-using std::string;
-using std::cout;
-using std::endl;
 
 TEST(Memory, recover)
 {
     cleanSlate(); // Clean up everything done so far
 
     try {
-        af::array vec[100];
+        array vec[100];
 
         // Trying to allocate 1 Terrabyte of memory and trash the memory manager
         // should crash memory manager
         for (int i = 0; i < 1000; i++) {
-            vec[i] = af::randu(1024, 1024, 256); //Allocating 1GB
+            vec[i] = randu(1024, 1024, 256); //Allocating 1GB
         }
 
         ASSERT_EQ(true, false); //Is there a simple assert statement?
-    } catch (af::exception &ae) {
+    } catch (exception &ae) {
 
         ASSERT_EQ(ae.err(), AF_ERR_NO_MEM);
 
         const int num = 1000 * 1000;
         const float val = 1.0;
 
-        af::array a = af::constant(val, num); // This should work as expected
+        array a = constant(val, num); // This should work as expected
         float *h_a = a.host<float>();
         for (int i = 0; i < 1000 * 1000; i++) {
             ASSERT_EQ(h_a[i], val);
         }
-        delete[] h_a;
+        freeHost(h_a);
     }
 
 }

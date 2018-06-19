@@ -22,8 +22,12 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dim4;
+using af::dtype_traits;
+using af::product;
 
 template<typename T>
 class Shift : public ::testing::Test
@@ -49,23 +53,23 @@ void shiftTest(string pTestFile, const unsigned resultIdx,
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<T> > in;
     vector<vector<T> > tests;
     readTests<T, T, int>(pTestFile,numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
+    dim4 idims = numDims[0];
 
     af_array inArray = 0;
     af_array outArray = 0;
     af_array tempArray = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     ASSERT_EQ(AF_SUCCESS, af_shift(&outArray, inArray, x, y, z, w));
@@ -77,7 +81,7 @@ void shiftTest(string pTestFile, const unsigned resultIdx,
     // Compare result
     size_t nElems = tests[resultIdx].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -123,14 +127,14 @@ TEST(Shift, CPP)
     const unsigned z = 0;
     const unsigned w = 0;
 
-    vector<af::dim4> numDims;
+    vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/shift/shift4d.test"),numDims,in,tests);
 
-    af::dim4 idims = numDims[0];
-    af::array input(idims, &(in[0].front()));
-    af::array output = af::shift(input, x, y, z, w);
+    dim4 idims = numDims[0];
+    array input(idims, &(in[0].front()));
+    array output = shift(input, x, y, z, w);
 
     // Get result
     float* outData = new float[tests[resultIdx].size()];
@@ -139,7 +143,7 @@ TEST(Shift, CPP)
     // Compare result
     size_t nElems = tests[resultIdx].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     }
 
     // Delete
@@ -153,15 +157,15 @@ TEST(Shift, MaxDim)
     const size_t largeDim = 65535 * 32 + 1 ;
     const unsigned shift_x = 1;
 
-    af::array input = af::range(af::dim4(2, largeDim));
-    af::array output = af::shift(input, shift_x);
+    array input = range(dim4(2, largeDim));
+    array output = shift(input, shift_x);
 
-    output = af::abs(input - output);
-    ASSERT_EQ(1.f, af::product<float>(output));
+    output = abs(input - output);
+    ASSERT_EQ(1.f, product<float>(output));
 
-    input = af::range(af::dim4(2, 1, 1, largeDim));
-    output = af::shift(input, shift_x);
+    input = range(dim4(2, 1, 1, largeDim));
+    output = shift(input, shift_x);
 
-    output = af::abs(input - output);
-    ASSERT_EQ(1.f, af::product<float>(output));
+    output = abs(input - output);
+    ASSERT_EQ(1.f, product<float>(output));
 }

@@ -15,8 +15,11 @@
 #include <vector>
 #include <testHelpers.hpp>
 
+using std::endl;
 using std::string;
 using std::vector;
+using af::dim4;
+using af::dtype_traits;
 
 template<typename T>
 class CannyEdgeDetector : public ::testing::Test
@@ -36,29 +39,29 @@ void cannyTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4>  numDims;
+    vector<dim4>  numDims;
     vector<vector<T> >      in;
     vector<vector<char> >   tests;
 
     readTests<T, char, int>(pTestFile, numDims, in, tests);
 
-    af::dim4 sDims    = numDims[0];
+    dim4 sDims        = numDims[0];
     af_array outArray = 0;
     af_array sArray   = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&sArray, &(in[0].front()),
-                sDims.ndims(), sDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                sDims.ndims(), sDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_canny(&outArray, sArray, AF_CANNY_THRESHOLD_MANUAL, 0.4147f, 0.8454f, 3, true));
 
-    std::vector<char> outData(sDims.elements());
+    vector<char> outData(sDims.elements());
 
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     vector<char> currGoldBar = tests[0];
     size_t nElems        = currGoldBar.size();
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
     // cleanup
@@ -107,7 +110,7 @@ void cannyImageOtsuTest(string pTestFile, bool isColor)
         inFiles[testId].insert(0,string(TEST_DIR "/CannyEdgeDetector/"));
         outFiles[testId].insert(0,string(TEST_DIR "/CannyEdgeDetector/"));
 
-        af_dtype type = (af_dtype)af::dtype_traits<T>::af_type;
+        af_dtype type = (af_dtype)dtype_traits<T>::af_type;
 
         ASSERT_EQ(AF_SUCCESS, af_load_image(&_inArray, inFiles[testId].c_str(), isColor));
 
@@ -130,10 +133,10 @@ void cannyImageOtsuTest(string pTestFile, bool isColor)
         ASSERT_EQ(AF_SUCCESS, af_mul(&mulArray, cstArray, _outArray, false));
         ASSERT_EQ(AF_SUCCESS, af_cast(&outArray, mulArray, u8));
 
-        std::vector<unsigned char> outData(nElems);
+        vector<unsigned char> outData(nElems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
-        std::vector<unsigned char> goldData(nElems);
+        vector<unsigned char> goldData(nElems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
 
         ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 1.0e-3));
@@ -160,10 +163,10 @@ TEST(CannyEdgeDetector, InvalidSizeArray)
 
     vector<float>   in(100, 1);
 
-    af::dim4 sDims(100, 1, 1, 1);
+    dim4 sDims(100, 1, 1, 1);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
-                sDims.ndims(), sDims.get(), (af_dtype) af::dtype_traits<float>::af_type));
+                sDims.ndims(), sDims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_canny(&outArray, inArray, AF_CANNY_THRESHOLD_MANUAL, 0.24, 0.72, 3, true));
 
@@ -177,10 +180,10 @@ TEST(CannyEdgeDetector, Array4x4_Invalid)
 
     vector<float>   in(16, 1);
 
-    af::dim4 sDims(4, 4, 1, 1);
+    dim4 sDims(4, 4, 1, 1);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
-                sDims.ndims(), sDims.get(), (af_dtype) af::dtype_traits<float>::af_type));
+                sDims.ndims(), sDims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_canny(&outArray, inArray, AF_CANNY_THRESHOLD_MANUAL, 0.24, 0.72, 3, true));
 
@@ -194,10 +197,10 @@ TEST(CannyEdgeDetector, Sobel5x5_Invalid)
 
     vector<float>   in(25, 1);
 
-    af::dim4 sDims(5, 5, 1, 1);
+    dim4 sDims(5, 5, 1, 1);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
-                sDims.ndims(), sDims.get(), (af_dtype) af::dtype_traits<float>::af_type));
+                sDims.ndims(), sDims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_canny(&outArray, inArray, AF_CANNY_THRESHOLD_MANUAL, 0.24, 0.72, 5, true));
 

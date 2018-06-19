@@ -20,15 +20,20 @@
 
 using std::string;
 using std::vector;
+using af::dim4;
+using af::dtype_traits;
+using af::getDevice;
+using af::info;
+using af::setDevice;
 
 template<typename T>
 void testFunction()
 {
-    af::info();
+    info();
 
     af_array outArray = 0;
-    af::dim4 dims(32, 32, 1, 1);
-    ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    dim4 dims(32, 32, 1, 1);
+    ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     // cleanup
     if(outArray != 0) {
         ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
@@ -45,12 +50,12 @@ void infoTest()
     if(ENV && ENV[0] == '0') {
         testFunction<float>();
     } else {
-        int oldDevice = af::getDevice();
+        int oldDevice = getDevice();
         for(int d = 0; d < nDevices; d++) {
-            af::setDevice(d);
+            setDevice(d);
             testFunction<float>();
         }
-        af::setDevice(oldDevice);
+        setDevice(oldDevice);
     }
 }
 

@@ -24,8 +24,14 @@ using std::string;
 using std::cout;
 using std::endl;
 using std::abs;
+using af::allTrue;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+using af::dtype;
+using af::dtype_traits;
+using af::randu;
+using af::range;
 
 template<typename T>
 class Wrap : public ::testing::Test
@@ -80,13 +86,13 @@ void wrapTest(const dim_t ix, const dim_t iy,
 
     int lim = std::max((dim_t)2, (dim_t)(250) / (wx * wy));
 
-    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
-    af::array in = af::round(lim * af::randu(ix, iy, nc, f32)).as(ty);
+    dtype ty = (dtype)dtype_traits<T>::af_type;
+    array in = round(lim * randu(ix, iy, nc, f32)).as(ty);
 
-    std::vector<T> h_in(in.elements());
+    vector<T> h_in(in.elements());
     in.host(&h_in[0]);
 
-    std::vector<int> h_factor(ix * iy);
+    vector<int> h_factor(ix * iy);
 
     dim_t ny = (iy + 2 * py - wy) / sy + 1;
     dim_t nx = (ix + 2 * px - wx) / sx + 1;
@@ -110,14 +116,14 @@ void wrapTest(const dim_t ix, const dim_t iy,
         }
     }
 
-    af::array factor(ix, iy, &h_factor[0]);
+    array factor(ix, iy, &h_factor[0]);
 
-    af::array in_dim = af::unwrap(in, wx, wy, sx, sy, px, py, cond);
-    af::array res_dim = af::wrap(in_dim, ix, iy, wx, wy, sx, sy, px, py, cond);
+    array in_dim = unwrap(in, wx, wy, sx, sy, px, py, cond);
+    array res_dim = wrap(in_dim, ix, iy, wx, wy, sx, sy, px, py, cond);
 
     ASSERT_EQ(in.elements(), res_dim.elements());
 
-    std::vector<T> h_res(ix * iy);
+    vector<T> h_res(ix * iy);
     res_dim.host(&h_res[0]);
 
     for (int n = 0; n < nc; n++) {
@@ -135,7 +141,7 @@ void wrapTest(const dim_t ix, const dim_t iy,
                 if (get_val(ival) == 0) continue;
 
                 ASSERT_NEAR(get_val<T>(ival * factor), get_val<T>(rval), 1E-5)
-                    << "at " << x << "," << y <<  " for cond  == " << cond << std::endl;
+                    << "at " << x << "," << y <<  " for cond  == " << cond << endl;
             }
         }
 
@@ -182,7 +188,7 @@ void wrapTest(const dim_t ix, const dim_t iy,
 TEST(Wrap, MaxDim)
 {
     const size_t largeDim = 65535 + 1;
-    af::array input = af::range(5, 5, 1, largeDim);
+    array input = range(5, 5, 1, largeDim);
 
     const unsigned wx = 5;
     const unsigned wy = 5;
@@ -191,8 +197,8 @@ TEST(Wrap, MaxDim)
     const unsigned px = 0;
     const unsigned py = 0;
 
-    af::array unwrapped = af::unwrap(input, wx, wy, sx, sy, px, py);
-    af::array output = af::wrap(unwrapped, 5, 5, wx, wy, sx, sy, px, py);
+    array unwrapped = unwrap(input, wx, wy, sx, sy, px, py);
+    array output = wrap(unwrapped, 5, 5, wx, wy, sx, sy, px, py);
 
-    ASSERT_TRUE(af::allTrue<bool>(output == input));
+    ASSERT_TRUE(allTrue<bool>(output == input));
 }

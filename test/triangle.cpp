@@ -21,10 +21,9 @@
 
 using std::vector;
 using std::string;
-using std::cout;
 using std::endl;
 using std::abs;
-
+using af::array;
 using af::cfloat;
 using af::cdouble;
 using af::dim4;
@@ -33,7 +32,7 @@ using af::freeHost;
 template<typename T>
 class Triangle : public ::testing::Test { };
 
-typedef ::testing::Types<float, af::cfloat, double, af::cdouble, int, unsigned, char, uchar, uintl, intl, short, ushort> TestTypes;
+typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char, uchar, uintl, intl, short, ushort> TestTypes;
 TYPED_TEST_CASE(Triangle, TestTypes);
 
 template<typename T>
@@ -41,13 +40,13 @@ void triangleTester(const dim4 dims, bool is_upper, bool is_unit_diag=false)
 {
     if (noDoubleTests<T>()) return;
 #if 1
-    af::array in = cpu_randu<T>(dims);
+    array in = cpu_randu<T>(dims);
 #else
-    af::array in = af::randu(dims, (af::dtype)af::dtype_traits<T>::af_type);
+    array in = randu(dims, (dtype)dtype_traits<T>::af_type);
 #endif
 
     T *h_in = in.host<T>();
-    af::array out = is_upper ?  upper(in, is_unit_diag) : lower(in, is_unit_diag);
+    array out = is_upper ?  upper(in, is_unit_diag) : lower(in, is_unit_diag);
     T *h_out = out.host<T>();
 
     int m = dims[0];
@@ -163,7 +162,13 @@ TYPED_TEST(Triangle, MaxDim)
 
 TEST(Lower, ExtractGFOR)
 {
-    using namespace af;
+    using af::constant;
+    using af::lower;
+    using af::max;
+    using af::round;
+    using af::seq;
+    using af::span;
+
     dim4 dims = dim4(100, 100, 3);
     array A = round(100 * randu(dims));
     array B = constant(0, 100, 100, 3);

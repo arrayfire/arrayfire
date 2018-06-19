@@ -13,6 +13,11 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
+using std::vector;
+using af::array;
+using af::dtype_traits;
+using af::randu;
+
 template<typename T>
 class Compare : public ::testing::Test
 {
@@ -27,12 +32,12 @@ TYPED_TEST_CASE(Compare, TestTypes);
         typedef TypeParam T;                                    \
         if (noDoubleTests<T>()) return;                         \
         const int num = 1 << 20;                                \
-        af_dtype ty = (af_dtype) af::dtype_traits<T>::af_type;  \
-        af::array a = af::randu(num, ty);                       \
-        af::array b = af::randu(num, ty);                       \
-        af::array c = a OP b;                                   \
-        std::vector<T> ha(num), hb(num);                        \
-        std::vector<char> hc(num);                              \
+        af_dtype ty = (af_dtype) dtype_traits<T>::af_type;      \
+        array a = randu(num, ty);                               \
+        array b = randu(num, ty);                               \
+        array c = a OP b;                                       \
+        vector<T> ha(num), hb(num);                             \
+        vector<char> hc(num);                                   \
         a.host(&ha[0]);                                         \
         b.host(&hb[0]);                                         \
         c.host(&hc[0]);                                         \
