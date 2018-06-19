@@ -203,17 +203,17 @@ namespace kernel
 
         blocks_dim[dim] = divup(in.dims[dim], threads_y * REPEAT);
 
-        Array<To> tmpOut = *initArray<To>();
-        Array<Tw> tmpWt  = *initArray<Tw>();
+        Array<To> tmpOut = createEmptyArray<To>(dim4());
+        Array<Tw> tmpWt  = createEmptyArray<Tw>(dim4());
 
         if (blocks_dim[dim] > 1) {
-          dim4 dims(4, out.dims);
-          dims[dim] = blocks_dim[dim];
-          tmpOut = createEmptyArray<To>(dims);
-          tmpWt  = createEmptyArray<Tw>(dims);
+            dim4 dims(4, out.dims);
+            dims[dim] = blocks_dim[dim];
+            tmpOut = createEmptyArray<To>(dims);
+            tmpWt  = createEmptyArray<Tw>(dims);
         }
         else {
-          tmpOut = createParamArray(out, false);
+            tmpOut = createParamArray(out, false);
         }
 
         mean_dim_launcher<Ti, Tw, To, dim>(tmpOut, tmpWt, in, iwt, threads_y, blocks_dim);
@@ -221,7 +221,7 @@ namespace kernel
         if (blocks_dim[dim] > 1) {
             blocks_dim[dim] = 1;
 
-            Array<Tw> owt = *initArray<Tw>();
+            Array<Tw> owt = createEmptyArray<Tw>(dim4());
             mean_dim_launcher<To, Tw, To, dim>(out, owt, tmpOut, tmpWt,
                                                     threads_y, blocks_dim);
 
@@ -382,8 +382,8 @@ namespace kernel
         uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
         uint blocks_y = divup(in.dims[1], threads_y);
 
-        Array<To> tmpOut = *initArray<To>();
-        Array<Tw> tmpWt  = *initArray<Tw>();
+        Array<To> tmpOut = createEmptyArray<To>(dim4());
+        Array<Tw> tmpWt  = createEmptyArray<Tw>(dim4());
         if (blocks_x > 1) {
           tmpOut = createEmptyArray<To>({blocks_x, in.dims[1], in.dims[2], in.dims[3]});
           tmpWt = createEmptyArray<Tw>({blocks_x, in.dims[1], in.dims[2], in.dims[3]});
