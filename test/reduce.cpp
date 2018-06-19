@@ -79,12 +79,11 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
         af_get_type(&t, outArray);
 
         // Get result
-        To *outData;
-        outData = new To[dims.elements()];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+        vector<To> outData(dims.elements());
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
 
         size_t nElems = currGoldBar.size();
-        if(std::equal(currGoldBar.begin(), currGoldBar.end(), outData) == false)
+        if(std::equal(currGoldBar.begin(), currGoldBar.end(), outData.begin()) == false)
         {
             for (size_t elIter = 0; elIter < nElems; ++elIter) {
 
@@ -103,9 +102,6 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
             FAIL();
         }
 
-
-        // Delete
-        delete[] outData;
         ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
     }
 
@@ -221,17 +217,14 @@ void cppReduceTest(string pTestFile)
         array output = reduce(input, d);
 
         // Get result
-        To *outData = new To[dims.elements()];
-        output.host((void*)outData);
+        vector<To> outData(dims.elements());
+        output.host((void*)&outData.front());
 
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
             ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
                                                             << " for dim " << d << endl;
         }
-
-        // Delete
-        delete[] outData;
     }
 }
 

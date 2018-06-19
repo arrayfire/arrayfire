@@ -257,8 +257,8 @@ TYPED_TEST(MatrixMultiply, MultiGPURectangleVector_CPP)
 TEST(MatrixMultiply, Batched)
 {
     const int M = 512;
-    const int K = 1024;
-    const int N = 32;
+    const int K = 512;
+    const int N = 10;
     const int D2 = 2;
     const int D3 = 3;
 
@@ -274,7 +274,7 @@ TEST(MatrixMultiply, Batched)
                     array b_ij = b(span, span, i, j);
                     array c_ij = c(span, span, i, j);
                     array res = matmul(a_ij, b_ij);
-                    ASSERT_LT(max<float>(abs(c_ij - res)), 1E-5)
+                    EXPECT_LT(max<float>(abs(c_ij - res)), 1E-5)
                         << " for d2 = " << d2 << " for d3 = " << d3;
                 }
             }
