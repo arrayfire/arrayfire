@@ -40,7 +40,7 @@ int homography(Array<T> &bestH,
     const unsigned nsamples = idims[0];
 
     unsigned iter = iterations;
-    Array<float> err = *initArray<float>();
+    Array<float> err = createEmptyArray<float>(dim4());
     if (htype == AF_HOMOGRAPHY_LMEDS) {
         iter = ::std::min(iter, (unsigned)(log(1.f - LMEDSConfidence) / log(1.f - pow(1.f - LMEDSOutlierRatio, 4.f))));
         err = createValueArray<float>(af::dim4(nsamples, iter), FLT_MAX);
