@@ -7,7 +7,7 @@
 
 include(InternalUtils)
 
-set(AF_OPENCL_BLAS_LIBRARY CLBlast CACHE STRING "Select OpenCL BLAS back-end")
+set(AF_OPENCL_BLAS_LIBRARY clBLAS CACHE STRING "Select OpenCL BLAS back-end")
 set_property(CACHE AF_OPENCL_BLAS_LIBRARY PROPERTY STRINGS "clBLAS" "CLBlast")
 
 af_deprecate(OPENCL_BLAS_LIBRARY AF_OPENCL_BLAS_LIBRARY)
