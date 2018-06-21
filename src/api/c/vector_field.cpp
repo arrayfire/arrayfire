@@ -162,7 +162,8 @@ af_err vectorFieldWrapper(const af_window wind, const af_array points, const af_
         auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
         // Window's draw function requires either image or chart
         if (props->col > -1 && props->row > -1)
-            window->draw(gridDims.first, gridDims.second, props->col * gridDims.first + props->row,
+            window->draw(gridDims.first, gridDims.second,
+                         props->row * gridDims.second + props->col,
                          *chart, props->title);
         else
             window->draw(*chart);
@@ -252,7 +253,8 @@ af_err vectorFieldWrapper(const af_window wind,
         auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
         // Window's draw function requires either image or chart
         if (props->col > -1 && props->row > -1)
-            window->draw(gridDims.first, gridDims.second, props->col * gridDims.first + props->row,
+            window->draw(gridDims.first, gridDims.second,
+                         props->row * gridDims.second + props->col,
                          *chart, props->title);
         else
             window->draw(*chart);
@@ -330,7 +332,8 @@ af_err vectorFieldWrapper(const af_window wind,
         auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
         // Window's draw function requires either image or chart
         if (props->col > -1 && props->row > -1)
-            window->draw(gridDims.first, gridDims.second, props->col * gridDims.first + props->row,
+            window->draw(gridDims.first, gridDims.second,
+                         props->row * gridDims.second + props->col,
                          *chart, props->title);
         else
             window->draw(*chart);
