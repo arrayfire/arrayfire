@@ -170,7 +170,8 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
 
         auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
         if (props->col>-1 && props->row>-1)
-            window->draw(gridDims.first, gridDims.second, props->col * gridDims.first + props->row,
+            window->draw(gridDims.first, gridDims.second,
+                         props->row * gridDims.second + props->col,
                          *chart, props->title);
         else
             window->draw(*chart);
