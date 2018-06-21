@@ -488,8 +488,8 @@ class AFAPI Window {
         /**
            Setup grid layout for multiview mode in a window
 
-           \param[in]   rows is number of rows you want to show in a window
-           \param[in]   cols is number of coloumns you want to show in a window
+           \param[in]   rows is number of rows you want to divide the display area
+           \param[in]   cols is number of coloumns you want to divide the display area
 
            \ingroup gfx_func_window
         */
@@ -531,6 +531,9 @@ class AFAPI Window {
            store the cell coordinates and return a reference to the very object that
            called upon this function. This reference can be used later to issue
            draw calls using rendering functions.
+
+           \param[in] r is row identifier where current object has to be rendered
+           \param[in] c is column identifier where current object has to be rendered
 
            \return a reference to the object pointed by this
            to enable cascading this call with rendering functions.
