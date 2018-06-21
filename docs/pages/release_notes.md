@@ -1,6 +1,28 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.6.1
+======
+
+Improvements
+------------
+ - FreeImage is now a run-time dependency [#2164]
+ - Reduced binary size by setting the symbol visibility to hidden [#2168]
+ - Add memory manager logging using the AF_TRACE=mem environment variable [#2169]
+ - Improved CPU Anisotropic Diffusion performance [#2174]
+ - Perform normalization after FFT for improved accuracy [#2185][#2192]
+ - Updated CLBlast to v1.4.0[#2178]
+ - Added additional validation when using af::seq for indexing [#2153]
+ - Perform checks for unsupported cards by the CUDA implementation [#2182]
+
+Bug Fixes
+---------
+  - Fixed region when all pixels were the foreground or background [#2152]
+  - Fixed several memory leaks [#2202][#2201][#2180][#2179][#2177][#2175]
+  - Fixed bug in setDevice which didn't allow you to select the last device [#2189]
+  - Fixed bug in min/max where the first element of the array was a NaN value [#2155]
+  - Fix window cell indexing for graphics [#2207]
+
 v3.6.0
 ======
 
