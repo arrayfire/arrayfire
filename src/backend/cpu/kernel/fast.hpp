@@ -198,8 +198,8 @@ void non_maximal(CParam<float> score, CParam<float> x_in, CParam<float> y_in,
         max_v = std::max(max_v, score_ptr[y+1 + score_dims[0] * (x)  ]);
         max_v = std::max(max_v, score_ptr[y+1 + score_dims[0] * (x+1)]);
 
-        if (y >= score_dims[1] - edge - 1 || y <= edge + 1 ||
-            x >= score_dims[0] - edge - 1 || x <= edge + 1)
+        if (y >= score_dims[0] - edge - 1 || y <= edge + 1 ||
+            x >= score_dims[1] - edge - 1 || x <= edge + 1)
             continue;
 
         // Stores keypoint to feat_out if it's response is maximum compared to
