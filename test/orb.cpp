@@ -309,3 +309,43 @@ TEST(ORB, CPP)
     delete[] outSize;
     delete[] outDesc;
 }
+
+TEST(ORB, WideImages) {
+    array img = loadImage(TEST_DIR"/orb/squares_horiz.jpg", true);
+    img = colorSpace(img, AF_GRAY, AF_RGB);
+    features feats;
+    array descs;
+    orb(feats, descs, img);
+    float* featsX = feats.getX().host<float>();
+    unsigned int numFeats = feats.getNumFeatures();
+    unsigned int numRows = img.dims()[0];
+    bool featsFoundBeyondNumRows = false;
+
+    for (unsigned int i = 0; i < numFeats; ++i) {
+        if (featsX[i] > numRows) {
+            featsFoundBeyondNumRows = true;
+        }
+    }
+
+    ASSERT_TRUE(featsFoundBeyondNumRows);
+}
+
+TEST(ORB, TallImages) {
+    array img = loadImage(TEST_DIR"/orb/squares_vert.jpg", true);
+    img = colorSpace(img, AF_GRAY, AF_RGB);
+    features feats;
+    array descs;
+    orb(feats, descs, img);
+    float* featsY = feats.getY().host<float>();
+    unsigned int numFeats = feats.getNumFeatures();
+    unsigned int numCols = img.dims()[1];
+    bool featsFoundBeyondNumCols = false;
+
+    for (unsigned int i = 0; i < numFeats; ++i) {
+        if (featsY[i] > numCols) {
+            featsFoundBeyondNumCols = true;
+        }
+    }
+
+    ASSERT_TRUE(featsFoundBeyondNumCols);
+}

@@ -182,3 +182,39 @@ TEST(Susan, InvalidEdge)
         EXPECT_TRUE(true);
     }
 }
+
+TEST(Susan, WideImages) {
+    array img = loadImage(TEST_DIR"/susan/squares_horiz.jpg", true);
+    img = colorSpace(img, AF_GRAY, AF_RGB);
+    features feats = susan(img);
+    float* featsX = feats.getX().host<float>();
+    unsigned int numFeats = feats.getNumFeatures();
+    unsigned int numRows = img.dims()[0];
+    bool featsFoundBeyondNumRows = false;
+
+    for (unsigned int i = 0; i < numFeats; ++i) {
+        if (featsX[i] > numRows) {
+            featsFoundBeyondNumRows = true;
+        }
+    }
+
+    ASSERT_TRUE(featsFoundBeyondNumRows);
+}
+
+TEST(Susan, TallImages) {
+    array img = loadImage(TEST_DIR"/susan/squares_vert.jpg", true);
+    img = colorSpace(img, AF_GRAY, AF_RGB);
+    features feats = susan(img);
+    float* featsY = feats.getY().host<float>();
+    unsigned int numFeats = feats.getNumFeatures();
+    unsigned int numCols = img.dims()[1];
+    bool featsFoundBeyondNumCols = false;
+
+    for (unsigned int i = 0; i < numFeats; ++i) {
+        if (featsY[i] > numCols) {
+            featsFoundBeyondNumCols = true;
+        }
+    }
+
+    ASSERT_TRUE(featsFoundBeyondNumCols);
+}
