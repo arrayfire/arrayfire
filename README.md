@@ -121,7 +121,8 @@ Wrappers for other languages are a work-in-progress:
   [Java](https://github.com/arrayfire/arrayfire-java),
   [Lua](https://github.com/arrayfire/arrayfire-lua),
   [NodeJS](https://github.com/arrayfire/arrayfire-js),
-  [R](https://github.com/arrayfire/arrayfire-r)
+  [R](https://github.com/arrayfire/arrayfire-r),
+  [Ruby](https://github.com/arrayfire/arrayfire-rb)
 
 __Third-party wrappers__
 
