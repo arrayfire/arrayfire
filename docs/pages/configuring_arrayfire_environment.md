@@ -163,12 +163,14 @@ enable tracing of various modules within ArrayFire. This is a comma separated
 list of modules to trace. If enabled, ArrayFire will print relevant information
 to stdout. Currently the following modules are supported:
 
+- all: All trace outputs
 - mem: Memory management allocation, free and garbage collection information
+- unified: Unified backend dynamic loading information
 
 Tracing displays the information that could be useful when debugging or
 optimizing your application. Here is how you would use this variable:
 
-    AF_TRACE=mem ./myprogram
+    AF_TRACE=mem:unified ./myprogram
 
 This will print information about memory operations such as allocations,
 deallocations, and garbage collection.
