@@ -21,7 +21,7 @@
 /// functions will need to be implemented later.
 namespace spdlog {
     class logger { public: logger() {} };
-    std::shared_ptr<spdlog::logger> get(std::string &name);
+    std::shared_ptr<spdlog::logger> get(const std::string &name);
     std::shared_ptr<spdlog::logger> stdout_logger_mt(std::string&);
     namespace level {
         enum enum_level { trace };
