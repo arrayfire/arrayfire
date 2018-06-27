@@ -17,10 +17,10 @@
 #include <type_traits>
 
 
-#ifndef WIN_OS
-#include <dlfcn.h>
-#else
+#ifdef OS_WIN
 #include <Windows.h>
+#else
+#include <dlfcn.h>
 #endif
 
 using common::getFunctionPointer;
@@ -125,8 +125,7 @@ LibHandle openDynLibrary(const af_backend bknd_idx, int flag=RTLD_LAZY)
     LibHandle retVal = nullptr;
     for (int i = 0; i < extent<decltype(paths)>::value; i++) {
         AF_TRACE("Attempting: {}", paths[i]);
-        if (retVal =
-            common::loadLibrary(join_path(paths[i], bkndLibName).c_str())) {
+        if (retVal = loadLibrary(join_path(paths[i], bkndLibName).c_str())) {
             AF_TRACE("Found: {}", join_path(paths[i], bkndLibName));
 
             func count_func = (func)getFunctionPointer(retVal,
