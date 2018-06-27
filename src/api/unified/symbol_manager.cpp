@@ -8,133 +8,120 @@
  ********************************************************/
 
 #include "symbol_manager.hpp"
-#include <algorithm>
-#include <vector>
-#include <string>
-#include <cmath>
 #include <af/version.h>
+#include <common/module_loading.hpp>
 
+#include <cmath>
+#include <string>
+#include <type_traits>
+
+
+#ifndef WIN_OS
+#include <dlfcn.h>
+#else
+#include <Windows.h>
+#endif
+
+using common::loadLibrary;
+using common::unloadLibrary;
+
+using std::extent;
 using std::string;
-using std::replace;
 
 namespace unified
 {
 
-static const char* LIB_AF_BKND_NAME[NUM_BACKENDS] = {"cpu", "cuda", "opencl"};
 #if defined(OS_WIN)
-static const char* LIB_AF_BKND_PREFIX = "af";
+static const char* LIB_AF_BKND_PREFIX = "";
 static const char* LIB_AF_BKND_SUFFIX = ".dll";
+#define PATH_SEPARATOR "\\"
 #define RTLD_LAZY 0
 #else
-#if defined(__APPLE__)
-#define SO_SUFFIX_HELPER(VER) "." #VER ".dylib"
-#else
-#define SO_SUFFIX_HELPER(VER) ".so." #VER
-#endif // APPLE
-static const char* LIB_AF_BKND_PREFIX = "libaf";
 
-#define GET_SO_SUFFIX(VER) SO_SUFFIX_HELPER(VER)
-static const char* LIB_AF_BKND_SUFFIX = GET_SO_SUFFIX(AF_VERSION_MAJOR);
+#if defined(__APPLE__)
+#  define SO_SUFFIX_HELPER(VER) "." #VER ".dylib"
+#else
+#  define SO_SUFFIX_HELPER(VER) ".so." #VER
+#endif
+   static const char* LIB_AF_BKND_PREFIX = "lib";
+#  define PATH_SEPARATOR "/"
+
+#  define GET_SO_SUFFIX(VER) SO_SUFFIX_HELPER(VER)
+   static const char* LIB_AF_BKND_SUFFIX = GET_SO_SUFFIX(AF_VERSION_MAJOR);
 #endif
 
-static const char* LIB_AF_ENVARS[NUM_ENV_VARS] = {"AF_PATH", "AF_BUILD_PATH"};
-static const char* LIB_AF_RPATHS[NUM_ENV_VARS] = {"/lib/", "/src/backend/"};
-static const bool LIB_AF_RPATH_SUFFIX[NUM_ENV_VARS] = {false, true};
+string getBkndLibName(const af_backend backend) {
+    string ret;
+    switch (backend) {
+        case AF_BACKEND_CUDA: ret = string(LIB_AF_BKND_PREFIX) + "afcuda" + LIB_AF_BKND_SUFFIX; break;
+        case AF_BACKEND_OPENCL: ret = string(LIB_AF_BKND_PREFIX) + "afopencl" + LIB_AF_BKND_SUFFIX; break;
+        case AF_BACKEND_CPU: ret = string(LIB_AF_BKND_PREFIX) + "afcpu" + LIB_AF_BKND_SUFFIX; break;
+        default: assert(1!=1 && "Invalid backend");
+    }
+    return ret;
+}
+string getBackendDirectoryName(const af_backend backend) {
+    string ret;
+    switch (backend) {
+        case AF_BACKEND_CUDA: ret = "cuda"; break;
+        case AF_BACKEND_OPENCL: ret = "opencl"; break;
+        case AF_BACKEND_CPU: ret = "cpu"; break;
+        default: assert(1!=1 && "Invalid backend");
+      }
+    return ret;
+}
 
-inline string getBkndLibName(const int backend_index)
-{
-    int i = backend_index >=0 && backend_index<NUM_BACKENDS ? backend_index : 0;
-    return string(LIB_AF_BKND_PREFIX) + LIB_AF_BKND_NAME[i] + LIB_AF_BKND_SUFFIX;
+string join_path(string first) {
+    return first;
+}
+
+template<typename... ARGS>
+string join_path(string first, ARGS... args) {
+    if(first.empty()) { return join_path(args...); }
+    else              { return first + PATH_SEPARATOR + join_path(args...); }
 }
 
 /*flag parameter is not used on windows platform */
-LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
+LibHandle openDynLibrary(const af_backend bknd_idx, int flag=RTLD_LAZY)
 {
-    /*
-     * The default search path is the colon separated list of
-     * paths stored in the environment variables:
-     * * LD_LIBRARY_PATH(Linux/Unix/Apple)
-     * * DYLD_LIBRARY_PATH (Apple)
-     * * PATH (Windows)
-    */
+    // The default search path is the colon separated list of paths stored in
+    // the environment variables:
     string bkndLibName = getBkndLibName(bknd_idx);
     string show_flag = getEnvVar("AF_SHOW_LOAD_PATH");
     bool show_load_path = show_flag=="1";
 
-#if defined(OS_WIN)
-    HMODULE retVal = LoadLibrary(bkndLibName.c_str());
-#else
-    LibHandle retVal = dlopen(bkndLibName.c_str(), flag);
-#endif
-    if(retVal != NULL) { // Success
-        if (show_load_path)
-            printf("Using %s from system path\n", bkndLibName.c_str());
-    } else {
-        /*
-         * In the event that dlopen returns NULL, search for the lib
-         * in hard coded paths based on the environment variables
-         * defined in the constant string array LIB_AF_PATHS
-         * * AF_PATH
-         * * AF_BUILD_PATH
-         *
-         * Note: This does not guarantee successful loading as the dependent
-         * libraries may still not load
-        */
+    string paths[] = {
+        "",  // Default paths
+        ".", // Shared libraries in current directory
+        // Running from the CMake Build directory
+        join_path(".", "src", "backend", getBackendDirectoryName(bknd_idx)),
+        // Running from the test directory
+        join_path("..", "src", "backend", getBackendDirectoryName(bknd_idx)),
+        // Environment variable PATHS
+        join_path(getEnvVar("AF_BUILD_PATH"), "src", "backend", getBackendDirectoryName(bknd_idx)),
+        join_path(getEnvVar("AF_PATH"), "lib"),
+        join_path(getEnvVar("AF_PATH"), "lib64"),
 
-        for (int i=0; i<NUM_ENV_VARS; ++i) {
-            string abs_path = getEnvVar(LIB_AF_ENVARS[i])
-                                 + LIB_AF_RPATHS[i]
-                                 + (LIB_AF_RPATH_SUFFIX[i] ? LIB_AF_BKND_NAME[bknd_idx]+ string("/") : "")
-                                 + bkndLibName;
-#if defined(OS_WIN)
-            replace(abs_path.begin(), abs_path.end(), '/', '\\');
-            retVal = LoadLibrary(abs_path.c_str());
-#else
-            retVal = dlopen(abs_path.c_str(), flag);
-#endif
-            if (retVal!=NULL) {
-                if (show_load_path)
-                    printf("Using %s\n", abs_path.c_str());
-                // if the current absolute path based dlopen
-                // search is a success, then abandon search
-                // and proceed for compute
-                break;
-            }
-        }
-
+        // Common install paths
 #if !defined(OS_WIN)
-        /*
-         * If Linux/OSX, then the following are also checked
-         * (only if lib is not found)
-         * /opt/arrayfire/lib
-         * /opt/arrayfire-3/lib
-         * /usr/local/lib
-         * /usr/local/arrayfire/lib
-         * /usr/local/arrayfire-3/lib
-        */
-        if (retVal == NULL) {
-            static const
-            std::vector<std::string> extraLibPaths {"/opt/arrayfire-3/lib/",
-                                                    "/opt/arrayfire/lib/",
-                                                    "/usr/local/lib/",
-                                                    "/usr/local/arrayfire-3/lib/",
-                                                    "/usr/local/arrayfire/lib/",
-                                                   };
-
-            for (auto libPath: extraLibPaths) {
-                string abs_path = libPath + bkndLibName;
-                retVal = dlopen(abs_path.c_str(), flag);
-                if (retVal != NULL) {
-                    if (show_load_path)
-                        printf("Using %s\n", abs_path.c_str());
-                    // if the current absolute path based dlopen
-                    // search is a success, then abandon search
-                    // and proceed for compute
-                    break;
-                }
-            }
-        }
+        "/opt/arrayfire-3/lib/",
+        "/opt/arrayfire/lib/",
+        "/usr/local/lib/",
+        "/usr/local/arrayfire/lib/"
+#else
+        join_path(getEnvVar("ProgramFiles"), "ArrayFire", "lib"),
+        join_path(getEnvVar("ProgramFiles"), "ArrayFire", "v3", "lib")
 #endif
+    };
+
+    LibHandle retVal = nullptr;
+    for (int i = 0; i < extent<decltype(paths)>::value; i++) {
+        if (retVal = common::loadLibrary(join_path(paths[i], bkndLibName).c_str())) {
+            if (show_load_path) {
+                printf("Using %s\n", bkndLibName.c_str());
+            }
+            break;
+        }
     }
 
     return retVal;
@@ -142,11 +129,7 @@ LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
 
 void closeDynLibrary(LibHandle handle)
 {
-#if defined(OS_WIN)
-    FreeLibrary(handle);
-#else
-    dlclose(handle);
-#endif
+    unloadLibrary(handle);
 }
 
 AFSymbolManager& AFSymbolManager::getInstance()
@@ -159,14 +142,14 @@ AFSymbolManager::AFSymbolManager()
     : activeHandle(NULL), defaultHandle(NULL), numBackends(0), backendsAvailable(0)
 {
     // In order of priority.
-    static const int order[] = {AF_BACKEND_CUDA,        // 1 -> Most Preferred
-                                AF_BACKEND_OPENCL,      // 4 -> Preferred if CUDA unavailable
-                                AF_BACKEND_CPU};        // 2 -> Preferred if CUDA and OpenCL unavailable
+    static const af_backend order[] = { AF_BACKEND_CUDA,
+                                        AF_BACKEND_OPENCL,
+                                        AF_BACKEND_CPU};
 
     // Decremeting loop. The last successful backend loaded will be the most prefered one.
     for(int i = NUM_BACKENDS - 1; i >= 0; i--) {
-        int backend = order[i] >> 1;    // Convert order[1, 4, 2] -> backend[0, 2, 1]
-        bkndHandles[backend] = openDynLibrary(backend);
+        int backend = order[i] >> 1; // 2 4 1 -> 1 2 0
+        bkndHandles[backend] = openDynLibrary(order[i]);
         if (bkndHandles[backend]) {
             activeHandle = bkndHandles[backend];
             activeBackend = (af_backend)order[i];
@@ -174,9 +157,9 @@ AFSymbolManager::AFSymbolManager()
             backendsAvailable += order[i];
         }
     }
-    // Keep a copy of default order handle
-    // inorder to use it in ::setBackend when
-    // the user passes AF_BACKEND_DEFAULT
+
+    // Keep a copy of default order handle inorder to use it in ::setBackend
+    // when the user passes AF_BACKEND_DEFAULT
     defaultHandle = activeHandle;
     defaultBackend = activeBackend;
 }
