@@ -10,6 +10,7 @@
 
 #include <af/defines.h>
 #include <common/err_common.hpp>
+#include <common/Logger.hpp>
 #include <common/module_loading.hpp>
 #include <common/util.hpp>
 
@@ -64,9 +65,11 @@ class AFSymbolManager {
             af_func& funcHandle = funcHandles[index][symbolName];
 
             if (!funcHandle) {
+                AF_TRACE("Loading: {}", symbolName);
                 funcHandle = (af_func)common::getFunctionPointer(activeHandle, symbolName);
             }
             if (!funcHandle) {
+                AF_TRACE("Failed to load symbol: {}", symbolName);
                 std::string str = "Failed to load symbol: ";
                 str += symbolName;
                 AF_RETURN_ERROR(str.c_str(),
@@ -77,6 +80,7 @@ class AFSymbolManager {
         }
 
         LibHandle getHandle() { return activeHandle; }
+        spdlog::logger* getLogger();
 
     protected:
         AFSymbolManager();
@@ -98,6 +102,7 @@ class AFSymbolManager {
         int backendsAvailable;
         af_backend activeBackend;
         af_backend defaultBackend;
+        std::shared_ptr<spdlog::logger> logger;
 };
 
 // Helper functions to ensure all the input arrays are on the active backend

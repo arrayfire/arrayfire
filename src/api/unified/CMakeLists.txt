@@ -32,13 +32,15 @@ target_sources(af
 
 target_sources(af
   PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/api/c/version.cpp
     ${CMAKE_SOURCE_DIR}/src/api/c/type_util.cpp
+    ${CMAKE_SOURCE_DIR}/src/api/c/version.cpp
+    ${CMAKE_SOURCE_DIR}/src/backend/common/Logger.cpp
+    ${CMAKE_SOURCE_DIR}/src/backend/common/Logger.hpp
+    ${CMAKE_SOURCE_DIR}/src/backend/common/constants.cpp
     ${CMAKE_SOURCE_DIR}/src/backend/common/dim4.cpp
     ${CMAKE_SOURCE_DIR}/src/backend/common/err_common.cpp
-    ${CMAKE_SOURCE_DIR}/src/backend/common/constants.cpp
-    ${CMAKE_SOURCE_DIR}/src/backend/common/util.hpp
     ${CMAKE_SOURCE_DIR}/src/backend/common/util.cpp
+    ${CMAKE_SOURCE_DIR}/src/backend/common/util.hpp
   )
 
 if(WIN32)
@@ -67,6 +69,14 @@ target_include_directories(af
     ${CMAKE_BINARY_DIR}
   )
 
+if(AF_WITH_LOGGING)
+  dependency_check(spdlog_FOUND "spdlog not found.")
+  target_compile_definitions(af
+    PRIVATE AF_WITH_LOGGING)
+  target_link_libraries(af
+    PRIVATE
+      spdlog::spdlog)
+endif()
 
 target_link_libraries(af
   PRIVATE
