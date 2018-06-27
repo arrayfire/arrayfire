@@ -29,16 +29,6 @@ namespace {
 
 namespace common {
 
-#ifdef OS_WIN
-void* DependencyModule::getFunctionPointer(LibHandle handle, const char* symbolName) {
-    return GetProcAddress(handle, symbolName);
-}
-#else
-void* DependencyModule::getFunctionPointer(LibHandle handle, const char* symbolName) {
-    return dlsym(handle, symbolName);
-}
-#endif
-
 DependencyModule::DependencyModule(const char* plugin_file_name, const char** paths)
     : handle(nullptr) {
     // TODO(umar): Implement handling of non-standard paths

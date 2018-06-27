@@ -46,12 +46,12 @@ void testFunction()
 
     af_array outArray = 0;
     dim_t dims[] = {32, 32};
-    ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, 2, dims, (af_dtype) dtype_traits<T>::af_type));
+    EXPECT_EQ(AF_SUCCESS, af_randu(&outArray, 2, dims, (af_dtype) dtype_traits<T>::af_type));
 
     // Verify backends returned by array and by function are the same
     af_backend arrayBackend = (af_backend)0;
     af_get_backend_id(&arrayBackend, outArray);
-    ASSERT_EQ(arrayBackend, activeBackend);
+    EXPECT_EQ(arrayBackend, activeBackend);
 
     // cleanup
     if(outArray != 0) {
