@@ -9,16 +9,9 @@
 #pragma once
 
 #include <af/defines.h>
-#include <common/util.hpp>
 #include <common/err_common.hpp>
-
-#if defined(OS_WIN)
-#include <Windows.h>
-typedef HMODULE LibHandle;
-#else
-#include <dlfcn.h>
-typedef void* LibHandle;
-#endif
+#include <common/module_loading.hpp>
+#include <common/util.hpp>
 
 #include <array>
 #include <cstdlib>
@@ -29,7 +22,6 @@ namespace unified
 {
 
 const int NUM_BACKENDS = 3;
-const int NUM_ENV_VARS = 2;
 
 #define UNIFIED_ERROR_LOAD_LIB()                                        \
     AF_RETURN_ERROR("Failed to load dynamic library. "                  \
@@ -72,11 +64,7 @@ class AFSymbolManager {
             af_func& funcHandle = funcHandles[index][symbolName];
 
             if (!funcHandle) {
-#if defined(OS_WIN)
-                funcHandle = (af_func)GetProcAddress(activeHandle, symbolName);
-#else
-                funcHandle = (af_func)dlsym(activeHandle, symbolName);
-#endif
+                funcHandle = (af_func)common::getFunctionPointer(activeHandle, symbolName);
             }
             if (!funcHandle) {
                 std::string str = "Failed to load symbol: ";
@@ -141,8 +129,4 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg)
 #define CALL_NO_PARAMS() unified::AFSymbolManager::getInstance().call(__func__)
 #endif
 
-#if defined(OS_WIN)
-#define LOAD_SYMBOL() GetProcAddress(unified::AFSymbolManager::getInstance().getHandle(), __FUNCTION__)
-#else
-#define LOAD_SYMBOL() dlsym(unified::AFSymbolManager::getInstance().getHandle(), __func__)
-#endif
+#define LOAD_SYMBOL() common::getFunctionPointer(unified::AFSymbolManager::getInstance().getHandle(), __FUNCTION__)
