@@ -38,9 +38,10 @@ loggerFactory(string name) {
 
         // Log mode
         string env_var = getEnvVar("AF_TRACE");
-        if(env_var.find_first_of("all") != string::npos ||
-          env_var.find_first_of(name) != string::npos)
-              logger->set_level(trace);
+        if(env_var.find("all") != string::npos ||
+           env_var.find(name) != string::npos) {
+          logger->set_level(trace);
+        }
     }
     return logger;
 }
