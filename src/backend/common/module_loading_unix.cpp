@@ -17,6 +17,9 @@ using std::string;
 
 namespace common {
 
+void* getFunctionPointer(LibHandle handle, const char* symbolName) {
+  return dlsym(handle, symbolName);
+}
 
 LibHandle loadLibrary(const char* library_name) {
     return dlopen(library_name, RTLD_LAZY);

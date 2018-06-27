@@ -41,6 +41,16 @@ target_sources(af
     ${CMAKE_SOURCE_DIR}/src/backend/common/util.cpp
   )
 
+if(WIN32)
+  target_sources(af
+    PRIVATE
+      ${CMAKE_SOURCE_DIR}/src/backend/common/module_loading_windows.cpp)
+else()
+  target_sources(af
+    PRIVATE
+      ${CMAKE_SOURCE_DIR}/src/backend/common/module_loading_unix.cpp)
+endif()
+
 target_compile_definitions(af
   PRIVATE
     AFDLL

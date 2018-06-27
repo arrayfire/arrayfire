@@ -17,6 +17,10 @@ using std::string;
 
 namespace common {
 
+void* getFunctionPointer(LibHandle handle, const char* symbolName) {
+  return GetProcAddress(handle, symbolName);
+}
+
 LibHandle loadLibrary(const char* library_name) {
     return LoadLibrary(library_name);
 }
