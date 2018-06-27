@@ -12,6 +12,7 @@
 #include <common/module_loading.hpp>
 
 #include <cmath>
+#include <functional>
 #include <string>
 #include <type_traits>
 
@@ -22,11 +23,13 @@
 #include <Windows.h>
 #endif
 
+using common::getFunctionPointer;
 using common::loadLibrary;
-using common::unloadLibrary;
 using common::loggerFactory;
+using common::unloadLibrary;
 
 using std::extent;
+using std::function;
 using std::string;
 
 namespace unified
@@ -117,12 +120,27 @@ LibHandle openDynLibrary(const af_backend bknd_idx, int flag=RTLD_LAZY)
         join_path(getEnvVar("ProgramFiles"), "ArrayFire", "v3", "lib")
 #endif
     };
+    typedef af_err(*func)(int*);
 
     LibHandle retVal = nullptr;
     for (int i = 0; i < extent<decltype(paths)>::value; i++) {
         AF_TRACE("Attempting: {}", paths[i]);
-        if (retVal = common::loadLibrary(join_path(paths[i], bkndLibName).c_str())) {
-            AF_TRACE("FOUND: {}", join_path(paths[i], bkndLibName));
+        if (retVal =
+            common::loadLibrary(join_path(paths[i], bkndLibName).c_str())) {
+            AF_TRACE("Found: {}", join_path(paths[i], bkndLibName));
+
+            func count_func = (func)getFunctionPointer(retVal,
+                                                       "af_get_device_count");
+            if(count_func) {
+                int count = 0;
+                count_func(&count);
+                AF_TRACE("Device Count: {}.", count);
+                if(count == 0) {
+                    retVal = nullptr;
+                    continue;
+                }
+            }
+
             if (show_load_path) {
                 printf("Using %s\n", bkndLibName.c_str());
             }
