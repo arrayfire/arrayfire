@@ -24,6 +24,7 @@
 
 using common::loadLibrary;
 using common::unloadLibrary;
+using common::loggerFactory;
 
 using std::extent;
 using std::string;
@@ -90,6 +91,9 @@ LibHandle openDynLibrary(const af_backend bknd_idx, int flag=RTLD_LAZY)
     string show_flag = getEnvVar("AF_SHOW_LOAD_PATH");
     bool show_load_path = show_flag=="1";
 
+    // FIXME(umar): avoid this if at all possible
+    auto getLogger = [&]{ return spdlog::get("unified"); };
+
     string paths[] = {
         "",  // Default paths
         ".", // Shared libraries in current directory
@@ -116,7 +120,9 @@ LibHandle openDynLibrary(const af_backend bknd_idx, int flag=RTLD_LAZY)
 
     LibHandle retVal = nullptr;
     for (int i = 0; i < extent<decltype(paths)>::value; i++) {
+        AF_TRACE("Attempting: {}", paths[i]);
         if (retVal = common::loadLibrary(join_path(paths[i], bkndLibName).c_str())) {
+            AF_TRACE("FOUND: {}", join_path(paths[i], bkndLibName));
             if (show_load_path) {
                 printf("Using %s\n", bkndLibName.c_str());
             }
@@ -138,8 +144,13 @@ AFSymbolManager& AFSymbolManager::getInstance()
     return symbolManager;
 }
 
+spdlog::logger* AFSymbolManager::getLogger() {
+    return logger.get();
+}
+
 AFSymbolManager::AFSymbolManager()
-    : activeHandle(NULL), defaultHandle(NULL), numBackends(0), backendsAvailable(0)
+    : activeHandle(nullptr), defaultHandle(nullptr), numBackends(0),
+      backendsAvailable(0), logger(loggerFactory("unified"))
 {
     // In order of priority.
     static const af_backend order[] = { AF_BACKEND_CUDA,
@@ -157,6 +168,7 @@ AFSymbolManager::AFSymbolManager()
             backendsAvailable += order[i];
         }
     }
+    AF_TRACE("AF_DEFAULT_BACKEND: {}", getBackendDirectoryName(activeBackend));
 
     // Keep a copy of default order handle inorder to use it in ::setBackend
     // when the user passes AF_BACKEND_DEFAULT
