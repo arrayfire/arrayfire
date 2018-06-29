@@ -533,7 +533,7 @@ macro(afcu_collect_libs libname)
     get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
     install(FILES       "${outpath}"
             DESTINATION ${AF_INSTALL_BIN_DIR}
-            RENAME      "${PX}${libname}${SX}.${CUDA_VERSION}"
+            RENAME      "${PX}${libname}.${CUDA_VERSION}${SX}"
             COMPONENT   cuda_dependencies)
   else () #UNIX
     get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}${SX}" REALPATH)
