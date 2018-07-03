@@ -190,13 +190,13 @@ void non_maximal(CParam<float> score, CParam<float> x_in, CParam<float> y_in,
 
         float v = score_ptr[y * score_dims[0] + x];
         float max_v;
-        max_v = max(score_ptr[(y-1) * score_dims[0] + x-1], score_ptr[(y-1) * score_dims[0] + x]);
-        max_v = max(max_v, score_ptr[(y-1) * score_dims[0] + x+1]);
-        max_v = max(max_v, score_ptr[y     * score_dims[0] + x-1]);
-        max_v = max(max_v, score_ptr[y     * score_dims[0] + x+1]);
-        max_v = max(max_v, score_ptr[(y+1) * score_dims[0] + x-1]);
-        max_v = max(max_v, score_ptr[(y+1) * score_dims[0] + x  ]);
-        max_v = max(max_v, score_ptr[(y+1) * score_dims[0] + x+1]);
+        max_v = max(score_ptr[x-1 + score_dims[0] * (y-1)], score_ptr[x-1 + score_dims[0] * y]);
+        max_v = max(max_v, score_ptr[x-1 + score_dims[0] * (y+1)]);
+        max_v = max(max_v, score_ptr[x   + score_dims[0] * (y-1)]);
+        max_v = max(max_v, score_ptr[x   + score_dims[0] * (y+1)]);
+        max_v = max(max_v, score_ptr[x+1 + score_dims[0] * (y-1)]);
+        max_v = max(max_v, score_ptr[x+1 + score_dims[0] * (y)  ]);
+        max_v = max(max_v, score_ptr[x+1 + score_dims[0] * (y+1)]);
 
         if (y >= score_dims[1] - edge - 1 || y <= edge + 1 ||
             x >= score_dims[0] - edge - 1 || x <= edge + 1)
