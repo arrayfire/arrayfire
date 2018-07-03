@@ -16,7 +16,7 @@ namespace cpu
 namespace kernel
 {
 
-inline int idx_y(int i)
+inline int idx_x(int i)
 {
     if (i >= 8)
         return clamp(-(i-8-4), -3, 3);
@@ -24,17 +24,17 @@ inline int idx_y(int i)
     return clamp(i-4, -3, 3);
 }
 
-inline int idx_x(int i)
+inline int idx_y(int i)
 {
     if (i < 12)
-        return idx_y(i+4);
+        return idx_x(i+4);
 
-    return idx_y(i-12);
+    return idx_x(i-12);
 }
 
 inline int idx(int y, int x, unsigned idim0)
 {
-    return x * idim0 + y;
+    return y * idim0 + x;
 }
 
 // test_greater()
@@ -90,8 +90,8 @@ void locate_features(CParam<T> in, Param<float> score,
     af::dim4 in_dims = in.dims();
     T const * in_ptr = in.get();
 
-    for (int y = edge; y < (int)(in_dims[0] - edge); y++) {
-        for (int x = edge; x < (int)(in_dims[1] - edge); x++) {
+    for (int y = edge; y < (int)(in_dims[1] - edge); y++) {
+        for (int x = edge; x < (int)(in_dims[0] - edge); x++) {
             float p = in_ptr[idx(y, x, in_dims[0])];
 
             // Start by testing opposite pixels of the circle that will result in
@@ -188,15 +188,15 @@ void non_maximal(CParam<float> score, CParam<float> x_in, CParam<float> y_in,
         unsigned x = static_cast<unsigned>(round(x_in_ptr[k]));
         unsigned y = static_cast<unsigned>(round(y_in_ptr[k]));
 
-        float v = score_ptr[y + score_dims[0] * x];
+        float v = score_ptr[y * score_dims[0] + x];
         float max_v;
-        max_v = std::max(score_ptr[y-1 + score_dims[0] * (x-1)], score_ptr[y-1 + score_dims[0] * x]);
-        max_v = std::max(max_v, score_ptr[y-1 + score_dims[0] * (x+1)]);
-        max_v = std::max(max_v, score_ptr[y   + score_dims[0] * (x-1)]);
-        max_v = std::max(max_v, score_ptr[y   + score_dims[0] * (x+1)]);
-        max_v = std::max(max_v, score_ptr[y+1 + score_dims[0] * (x-1)]);
-        max_v = std::max(max_v, score_ptr[y+1 + score_dims[0] * (x)  ]);
-        max_v = std::max(max_v, score_ptr[y+1 + score_dims[0] * (x+1)]);
+        max_v = max(score_ptr[(y-1) * score_dims[0] + x-1], score_ptr[(y-1) * score_dims[0] + x]);
+        max_v = max(max_v, score_ptr[(y-1) * score_dims[0] + x+1]);
+        max_v = max(max_v, score_ptr[y     * score_dims[0] + x-1]);
+        max_v = max(max_v, score_ptr[y     * score_dims[0] + x+1]);
+        max_v = max(max_v, score_ptr[(y+1) * score_dims[0] + x-1]);
+        max_v = max(max_v, score_ptr[(y+1) * score_dims[0] + x  ]);
+        max_v = max(max_v, score_ptr[(y+1) * score_dims[0] + x+1]);
 
         if (y >= score_dims[0] - edge - 1 || y <= edge + 1 ||
             x >= score_dims[1] - edge - 1 || x <= edge + 1)
