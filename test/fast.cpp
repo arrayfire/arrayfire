@@ -230,14 +230,16 @@ TEST(FloatFAST, WideImages) {
     array img = loadImage(TEST_DIR"/fast/squares_horiz.jpg", true);
     img = colorSpace(img, AF_GRAY, AF_RGB);
     features feats = fast(img);
-    float* featsX = feats.getX().host<float>();
+    // Remember that the image is transposed after loadImage()
+    float* featsY = feats.getY().host<float>();
     unsigned int numFeats = feats.getNumFeatures();
     unsigned int numRows = img.dims()[0];
     bool featsFoundBeyondNumRows = false;
 
     for (unsigned int i = 0; i < numFeats; ++i) {
-        if (featsX[i] > numRows) {
+        if (featsY[i] > numRows) {
             featsFoundBeyondNumRows = true;
+            break;
         }
     }
 
@@ -248,14 +250,16 @@ TEST(FloatFAST, TallImages) {
     array img = loadImage(TEST_DIR"/fast/squares_vert.jpg", true);
     img = colorSpace(img, AF_GRAY, AF_RGB);
     features feats = fast(img);
-    float* featsY = feats.getY().host<float>();
+    // Remember that the image is transposed after loadImage()
+    float* featsX = feats.getX().host<float>();
     unsigned int numFeats = feats.getNumFeatures();
     unsigned int numCols = img.dims()[1];
     bool featsFoundBeyondNumCols = false;
 
     for (unsigned int i = 0; i < numFeats; ++i) {
-        if (featsY[i] > numCols) {
+        if (featsX[i] > numCols) {
             featsFoundBeyondNumCols = true;
+            break;
         }
     }
 
