@@ -355,8 +355,8 @@ void get_features(
 
             unsigned id = atomicAdd(&s_idx, 1u);
             if (id >= total) return;
-            y_out[id] = x;
-            x_out[id] = y;
+            x_out[id] = x;
+            y_out[id] = y;
             score_out[id] = v;
         }
     }

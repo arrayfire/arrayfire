@@ -293,8 +293,8 @@ __kernel void get_features(
 
             unsigned id = atomic_inc(&s_idx);
             if (id < total) {
-                y_out[id] = x;
-                x_out[id] = y;
+                x_out[id] = x;
+                y_out[id] = y;
                 score_out[id] = v;
             }
         }
