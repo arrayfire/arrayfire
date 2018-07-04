@@ -13,7 +13,7 @@ set(CLBlast_location ${prefix}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}clblast${CMAKE_
 ExternalProject_Add(
     CLBlast-ext
     GIT_REPOSITORY https://github.com/cnugteren/CLBlast.git
-    GIT_TAG 1.4.0
+    GIT_TAG 43e3f27254c4f7e4a0b332f5b88965c53c20bdd1 # v1.4.0 plus CLBlast #295
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
