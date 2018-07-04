@@ -43,9 +43,9 @@ void harris_responses(Param<T> resp, const unsigned idim0, const unsigned idim1,
     const T* iyy_in  = iyy.get();
     const unsigned r = border_len;
 
-    for (unsigned x = r; x < idim1 - r; x++) {
-        for (unsigned y = r; y < idim0 - r; y++) {
-            const unsigned idx = x * idim0 + y;
+    for (unsigned y = r; y < idim1 - r; y++) {
+        for (unsigned x = r; x < idim0 - r; x++) {
+            const unsigned idx = y * idim0 + x;
 
             // Calculates matrix trace and determinant
             T tr = ixx_in[idx] + iyy_in[idx];
@@ -69,19 +69,26 @@ void non_maximal(Param<float> xOut, Param<float> yOut, Param<float> respOut, uns
     // Responses on the border don't have 8-neighbors to compare, discard them
     const unsigned r = border_len + 1;
 
-    for (unsigned x = r; x < idim1 - r; x++) {
-        for (unsigned y = r; y < idim0 - r; y++) {
-            const T v = resp_in[x * idim0 + y];
+    for (unsigned y = r; y < idim1 - r; y++) {
+        for (unsigned x = r; x < idim0 - r; x++) {
+            const T v = resp_in[y * idim0 + x];
 
             // Find maximum neighborhood response
             T max_v;
-            max_v = max(resp_in[(x-1) * idim0 + y-1], resp_in[x * idim0 + y-1]);
-            max_v = max(max_v, resp_in[(x+1) * idim0 + y-1]);
-            max_v = max(max_v, resp_in[(x-1) * idim0 + y  ]);
-            max_v = max(max_v, resp_in[(x+1) * idim0 + y  ]);
-            max_v = max(max_v, resp_in[(x-1) * idim0 + y+1]);
-            max_v = max(max_v, resp_in[(x)   * idim0 + y+1]);
-            max_v = max(max_v, resp_in[(x+1) * idim0 + y+1]);
+            // max_v = max(resp_in[(x-1) * idim0 + y-1], resp_in[x * idim0 + y-1]);
+            // max_v = max(max_v, resp_in[(x+1) * idim0 + y-1]);
+            // max_v = max(max_v, resp_in[(x-1) * idim0 + y  ]);
+            // max_v = max(max_v, resp_in[(x+1) * idim0 + y  ]);
+            // max_v = max(max_v, resp_in[(x-1) * idim0 + y+1]);
+            // max_v = max(max_v, resp_in[(x)   * idim0 + y+1]);
+            // max_v = max(max_v, resp_in[(x+1) * idim0 + y+1]);
+            max_v = max(resp_in[x-1 + idim0 * (y-1)], resp_in[x-1 + idim0 * y]);
+            max_v = max(max_v, resp_in[x-1 + idim0 * (y+1)]);
+            max_v = max(max_v, resp_in[x   + idim0 * (y-1)]);
+            max_v = max(max_v, resp_in[x   + idim0 * (y+1)]);
+            max_v = max(max_v, resp_in[x+1 + idim0 * (y-1)]);
+            max_v = max(max_v, resp_in[x+1 + idim0 * (y)  ]);
+            max_v = max(max_v, resp_in[x+1 + idim0 * (y+1)]);
 
             // Stores corner to {x,y,resp}_out if it's response is maximum compared
             // to its 8-neighborhood and greater or equal minimum response
