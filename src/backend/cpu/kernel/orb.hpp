@@ -347,7 +347,7 @@ void harris_response(
         // the image, sqrt(2.f) is the radius when angle is 45 degrees and
         // represents widest case possible
         unsigned patch_r = ceil(size * sqrt(2.f) / 2.f);
-        if (x < patch_r || y < patch_r || x >= idims[1] - patch_r || y >= idims[0] - patch_r)
+        if (x < patch_r || y < patch_r || x >= idims[0] - patch_r || y >= idims[1] - patch_r)
             continue;
 
         unsigned r = block_size / 2;
@@ -405,7 +405,7 @@ void centroid_angle(
         unsigned y = (unsigned)round(y_in[f]);
 
         unsigned r = patch_size / 2;
-        if (x < r || y < r || x > idims[1] - r || y > idims[0] - r)
+        if (x < r || y < r || x > idims[0] - r || y > idims[1] - r)
             continue;
 
         T m01 = (T)0, m10 = (T)0;
@@ -415,7 +415,7 @@ void centroid_angle(
             int j = k % patch_size - r;
 
             // Calculate first order moments
-            T p = image_ptr[(x+i) * idims[0] + y+j];
+            T p = image_ptr[(y+j) * idims[0] + (x+i)];
             m01 += j * p;
             m10 += i * p;
         }
@@ -446,7 +446,7 @@ inline T get_pixel(
     x += round(dist_x * patch_scl * ori_cos - dist_y * patch_scl * ori_sin);
     y += round(dist_x * patch_scl * ori_sin + dist_y * patch_scl * ori_cos);
 
-    return image_ptr[x * idims[0] + y];
+    return image_ptr[y * idims[0] + x];
 }
 
 template<typename T>
@@ -469,7 +469,7 @@ void extract_orb(
         unsigned size = patch_size;
 
         unsigned r = ceil(patch_size * sqrt(2.f) / 2.f);
-        if (x < r || y < r || x >= idims[1] - r || y >= idims[0] - r)
+        if (x < r || y < r || x >= idims[0] - r || y >= idims[1] - r)
             continue;
 
         // Descriptor fixed at 256 bits for now
