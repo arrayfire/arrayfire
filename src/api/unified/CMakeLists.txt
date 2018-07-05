@@ -65,7 +65,7 @@ target_include_directories(af
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
     ${ArrayFire_SOURCE_DIR}/src/api/c
-    $<JOIN:$<TARGET_PROPERTY:afcommon_interface,INTERFACE_INCLUDE_DIRECTORIES>, >
+    $<TARGET_PROPERTY:afcommon_interface,INTERFACE_INCLUDE_DIRECTORIES>
     ${CMAKE_BINARY_DIR}
   )
 
