@@ -136,7 +136,7 @@ __global__ void harris_response(
         // the image, sqrt(2.f) is the radius when angle is 45 degrees and
         // represents widest case possible
         unsigned patch_r = ceil(size * sqrt(2.f) / 2.f);
-        if (x < patch_r || y < patch_r || x >= image.dims[1] - patch_r || y >= image.dims[0] - patch_r)
+        if (x < patch_r || y < patch_r || x >= image.dims[0] - patch_r || y >= image.dims[1] - patch_r)
             return;
 
         unsigned r = block_size / 2;
@@ -147,8 +147,8 @@ __global__ void harris_response(
             int j = k % block_size - r;
 
             // Calculate local x and y derivatives
-            float ix = image.ptr[(x+i+1) * image.dims[0] + y+j] - image.ptr[(x+i-1) * image.dims[0] + y+j];
-            float iy = image.ptr[(x+i) * image.dims[0] + y+j+1] - image.ptr[(x+i) * image.dims[0] + y+j-1];
+            float ix = image.ptr[(y+j) * image.dims[0] + (x+i+1)] - image.ptr[(y+j) * image.dims[0] + (x+i-1)];
+            float iy = image.ptr[(y+j+1) * image.dims[0] + (x+i)] - image.ptr[(y+j-1) * image.dims[0] + (x+i)];
 
             // Accumulate second order derivatives
             ixx += ix*ix;
@@ -196,7 +196,7 @@ __global__ void centroid_angle(
         unsigned y = (unsigned)round(y_in[f]);
 
         unsigned r = patch_size / 2;
-        if (x < r || y < r || x > image.dims[1] - r || y > image.dims[0] - r)
+        if (x < r || y < r || x > image.dims[0] - r || y > image.dims[1] - r)
             return;
 
         T m01 = (T)0, m10 = (T)0;
@@ -206,7 +206,7 @@ __global__ void centroid_angle(
             int j = k % patch_size - r;
 
             // Calculate first order moments
-            T p = image.ptr[(x+i) * image.dims[0] + y+j];
+            T p = image.ptr[(y+j) * image.dims[0] + (x+i)];
             m01 += j * p;
             m10 += i * p;
         }
@@ -240,7 +240,7 @@ inline __device__ T get_pixel(
     x += round(dist_x * patch_scl * ori_cos - dist_y * patch_scl * ori_sin);
     y += round(dist_x * patch_scl * ori_sin + dist_y * patch_scl * ori_cos);
 
-    return image.ptr[x * image.dims[0] + y];
+    return image.ptr[y * image.dims[0] + x];
 }
 
 template<typename T>
@@ -264,7 +264,7 @@ __global__ void extract_orb(
         unsigned size = patch_size;
 
         unsigned r = ceil(patch_size * sqrt(2.f) / 2.f);
-        if (x < r || y < r || x >= image.dims[1] - r || y >= image.dims[0] - r)
+        if (x < r || y < r || x >= image.dims[0] - r || y >= image.dims[1] - r)
             return;
 
         // Descriptor fixed at 256 bits for now
