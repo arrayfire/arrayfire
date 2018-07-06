@@ -348,7 +348,7 @@ __kernel void harris_response(
         // represents widest case possible
         unsigned patch_r = ceil(size * sqrt(2.f) / 2.f);
 
-        if (x >= patch_r && y >= patch_r && x < iInfo.dims[1] - patch_r && y < iInfo.dims[0] - patch_r) {
+        if (x >= patch_r && y >= patch_r && x < iInfo.dims[0] - patch_r && y < iInfo.dims[1] - patch_r) {
             unsigned r = block_size / 2;
 
             unsigned block_size_sq = block_size * block_size;
@@ -357,8 +357,8 @@ __kernel void harris_response(
                 int j = k % block_size - r;
 
                 // Calculate local x and y derivatives
-                float ix = image[(x+i+1) * iInfo.dims[0] + y+j] - image[(x+i-1) * iInfo.dims[0] + y+j];
-                float iy = image[(x+i) * iInfo.dims[0] + y+j+1] - image[(x+i) * iInfo.dims[0] + y+j-1];
+                float ix = image[(y+j) * iInfo.dims[0] + (x+i+1)] - image[(y+j) * iInfo.dims[0] + (x+i-1)];
+                float iy = image[(y+j+1) * iInfo.dims[0] + (x+i)] - image[(y+j-1) * iInfo.dims[0] + (x+i)];
 
                 // Accumulate second order derivatives
                 ixx += ix*ix;
@@ -414,14 +414,14 @@ __kernel void centroid_angle(
 
         unsigned r = patch_size / 2;
 
-        if (x >= r && y >= r && x <= iInfo.dims[1] - r && y <= iInfo.dims[0] - r) {
+        if (x >= r && y >= r && x <= iInfo.dims[0] - r && y <= iInfo.dims[1] - r) {
             unsigned patch_size_sq = patch_size * patch_size;
             for (unsigned k = get_local_id(1); k < patch_size_sq; k += get_local_size(1)) {
                 int i = k / patch_size - r;
                 int j = k % patch_size - r;
 
                 // Calculate first order moments
-                T p = image[(x+i) * iInfo.dims[0] + y+j];
+                T p = image[(y+j) * iInfo.dims[0] + (x+i)];
                 m01 += j * p;
                 m10 += i * p;
             }
@@ -456,7 +456,7 @@ inline T get_pixel(
     x += round(dist_x * patch_scl * ori_cos - dist_y * patch_scl * ori_sin);
     y += round(dist_x * patch_scl * ori_sin + dist_y * patch_scl * ori_cos);
 
-    return image[x * iInfo.dims[0] + y];
+    return image[y * iInfo.dims[0] + x];
 }
 
 __kernel void extract_orb(
@@ -483,7 +483,7 @@ __kernel void extract_orb(
 
         unsigned r = ceil(patch_size * sqrt(2.f) / 2.f);
 
-        if (x >= r && y >= r && x < iInfo.dims[1] - r && y < iInfo.dims[0] - r) {
+        if (x >= r && y >= r && x < iInfo.dims[0] - r && y < iInfo.dims[1] - r) {
            // Descriptor fixed at 256 bits for now
             for (unsigned i = get_local_id(1); i < 16; i += get_local_size(1)) {
                 unsigned v = 0;
