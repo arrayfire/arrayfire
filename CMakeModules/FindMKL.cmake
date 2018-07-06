@@ -1,15 +1,62 @@
 # Copyright (c) 2018, ArrayFire
 # All rights reserved.
 #
-# This file is distributed under 3-clause BSD license.
-# The complete license agreement can be obtained at:
-# http://arrayfire.com/licenses/BSD-3-Clause
+# This file is distributed under 3-clause BSD license. The complete license
+# agreement can be obtained at: http://arrayfire.com/licenses/BSD-3-Clause
 #
 # A FindMKL script based on the recommendations by the Intel's Link Line
 # Advisor. It currently only tested on the 2018 version of MKL on Windows,
-# Linux, and OSX but it should work on older versions. It creates an MKL::MKL
-# library which has the required dependencies to for a dynamic link based
-# on the advisor's output.
+# Linux, and OSX but it should work on older versions.
+#
+# To use this module call the mklvars.(sh,bat) script before you call cmake. This
+# script is located in the bin folder of your mkl installation. This will set the
+# MKLROOT environment variable which will be used to find the libraries on your system.
+#
+# Example:
+# set(MKL_THREAD_LAYER "TBB")
+# find_package(MKL)
+#
+# add_executable(myapp main.cpp)
+# target_link_libraries(myapp PRIVATE MKL::MKL)
+#
+# This module bases its behavior based on the following variables:
+#
+# ``MKL_THREAD_LAYER``
+#   The threading layer that needs to be used by the MKL library. This
+#   Defines which library will be used to parallelize the MKL kernels. Possible
+#   options are TBB(Default), GNU OpenMP, Intel OpenMP, Sequential
+#
+# This module provides the following :prop_tgt:'IMPORTED' targets:
+#
+# ``MKL::MKL``
+#   Target used to define and link all MKL libraries required by Intel's Link
+#   Line Advisor. This usually the only thing you need to link against unless
+#   you want to link against the single dynamic library version of MKL
+#   (libmkl_rt.so)
+#
+#  Optional:
+#
+# ``MKL::ThreadLayer{_STATIC}``
+#   Target used to define the threading layer(TBB, OpenMP, etc.) based on
+#   MKL_THREAD_LAYER variable.
+#
+# ``MKL::ThreadingLibrary``
+#   Target used to define the threading library(libtbb, libomp, etc) that the
+#   application will need to link against.
+#
+# ``MKL::Interface``
+#   Target used to determine which interface library to use(32bit int or 64bit
+#   int).
+#
+# ``MKL::Core``
+#   Target for the dynamic library dispatcher
+#
+# ``MKL::RT``
+#   Target for the single dynamic library
+#
+# ``MKL::{mkl_def;mkl_mc;mkl_mc3;mkl_avx;mkl_avx2;mkl_avx512}{_STATIC}``
+#   Targets for MKL kernel libraries.
+
 include(CheckTypeSize)
 
 check_type_size("int" INT_SIZE
