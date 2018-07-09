@@ -97,9 +97,9 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
-    static void scan_dim_launcher(Param &out,
-                                  Param &tmp,
-                                  const Param &in,
+    static void scan_dim_launcher(Param out,
+                                  Param tmp,
+                                  const Param in,
                                   int dim, bool isFinalPass, uint threads_y,
                                   const uint groups_all[4])
     {
@@ -126,8 +126,8 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
-    static void bcast_dim_launcher(Param &out,
-                                   Param &tmp,
+    static void bcast_dim_launcher(Param out,
+                                   Param tmp,
                                    int dim, bool isFinalPass, uint threads_y,
                                    const uint groups_all[4])
     {
@@ -152,7 +152,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, bool inclusive_scan = true>
-    static void scan_dim(Param &out, const Param &in, int dim)
+    static void scan_dim(Param out, const Param in, int dim)
     {
         uint threads_y = std::min(THREADS_Y, nextpow2(out.info.dims[dim]));
         uint threads_x = THREADS_X;

@@ -89,30 +89,15 @@ namespace opencl
             seqDims[dim] = 1;
 
             // Create/call iota
-            // Array<uint> key = iota<uint>(seqDims, tileDims);
-            dim4 keydims = inDims;
-            cl::Buffer* key = bufferAlloc(keydims.elements() * sizeof(uint));
-            Param pKey;
-            pKey.data = key;
-            pKey.info.offset = 0;
-            pKey.info.dims[0] = keydims[0];
-            pKey.info.strides[0] = 1;
-            for(int i = 1; i < 4; i++) {
-                pKey.info.dims[i] = keydims[i];
-                pKey.info.strides[i] = pKey.info.strides[i - 1] * pKey.info.dims[i - 1];
-            }
+            Array<uint> pKey = createEmptyArray<uint>(inDims);
             kernel::iota<uint>(pKey, seqDims, tileDims);
 
+            pKey.setDataDims(inDims.elements());
+
             // Flat
-            //val.modDims(inDims.elements());
-            //key.modDims(inDims.elements());
-            pKey.info.dims[0] = inDims.elements();
-            pKey.info.strides[0] = 1;
             pVal.info.dims[0] = inDims.elements();
             pVal.info.strides[0] = 1;
             for(int i = 1; i < 4; i++) {
-                pKey.info.dims[i] = 1;
-                pKey.info.strides[i] = pKey.info.strides[i - 1] * pKey.info.dims[i - 1];
                 pVal.info.dims[i] = 1;
                 pVal.info.strides[i] = pVal.info.strides[i - 1] * pVal.info.dims[i - 1];
             }
@@ -122,13 +107,13 @@ namespace opencl
             //kernel::sort0_by_key<T, uint, isAscending>(pVal, pKey);
             compute::command_queue c_queue(getQueue()());
 
-            compute::buffer pKey_buf((*pKey.data)());
+            compute::buffer pKey_buf((*pKey.get())());
             compute::buffer pVal_buf((*pVal.data)());
 
             compute::buffer_iterator<type_t<T> > val0 = compute::make_buffer_iterator<type_t<T> >(pVal_buf, 0);
             compute::buffer_iterator<type_t<T> > valN = compute::make_buffer_iterator<type_t<T> >(pVal_buf,+ pVal.info.dims[0]);
             compute::buffer_iterator<uint      > key0 = compute::make_buffer_iterator<uint>(pKey_buf, 0);
-            compute::buffer_iterator<uint      > keyN = compute::make_buffer_iterator<uint>(pKey_buf, pKey.info.dims[0]);
+            compute::buffer_iterator<uint      > keyN = compute::make_buffer_iterator<uint>(pKey_buf, pKey.dims()[0]);
             if(isAscending) {
                 compute::sort_by_key(val0, valN, key0, c_queue);
             } else {
@@ -139,12 +124,7 @@ namespace opencl
             //kernel::sort0_by_key<uint, T, true>(pKey, pVal);
             compute::sort_by_key(key0, keyN, val0, c_queue);
 
-            // No need of doing moddims here because the original Array<T>
-            // dimensions have not been changed
-            //val.modDims(inDims);
-
             CL_DEBUG_FINISH(getQueue());
-            bufferFree(key);
         }
 
         template<typename T>
