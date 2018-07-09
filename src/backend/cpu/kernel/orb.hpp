@@ -355,12 +355,12 @@ void harris_response(
         float ixx = 0.f, iyy = 0.f, ixy = 0.f;
         unsigned block_size_sq = block_size * block_size;
         for (unsigned k = 0; k < block_size_sq; k++) {
-            int i = k / block_size - r;
-            int j = k % block_size - r;
+            int i = k % block_size - r;
+            int j = k / block_size - r;
 
             // Calculate local x and y derivatives
-            float ix = image_ptr[(y+j) * image.dims()[0] + (x+i+1)] - image_ptr[(y+j) * image.dims()[0] + (x+i-1)];
-            float iy = image_ptr[(y+j+1) * image.dims()[0] + (x+i)] - image_ptr[(y+j-1) * image.dims()[0] + (x+i)];
+            float ix = image_ptr[(y+j) * idims[0] + (x+i+1)] - image_ptr[(y+j) * idims[0] + (x+i-1)];
+            float iy = image_ptr[(y+j+1) * idims[0] + (x+i)] - image_ptr[(y+j-1) * idims[0] + (x+i)];
 
             // Accumulate second order derivatives
             ixx += ix*ix;
@@ -411,13 +411,13 @@ void centroid_angle(
         T m01 = (T)0, m10 = (T)0;
         unsigned patch_size_sq = patch_size * patch_size;
         for (unsigned k = 0; k < patch_size_sq; k++) {
-            int i = k / patch_size - r;
-            int j = k % patch_size - r;
+            int i = k % patch_size - r;
+            int j = k / patch_size - r;
 
             // Calculate first order moments
-            T p = image_ptr[(y+j) * image.dims()[0] + (x+i)];
-            m01 += j * p;
+            T p = image_ptr[(y+j) * idims[0] + (x+i)];
             m10 += i * p;
+            m01 += j * p;
         }
 
         float angle = atan2(m01, m10);
@@ -446,7 +446,7 @@ inline T get_pixel(
     x += round(dist_x * patch_scl * ori_cos - dist_y * patch_scl * ori_sin);
     y += round(dist_x * patch_scl * ori_sin + dist_y * patch_scl * ori_cos);
 
-    return image_ptr[y * image.dims()[0] + x];
+    return image_ptr[y * idims[0] + x];
 }
 
 template<typename T>
