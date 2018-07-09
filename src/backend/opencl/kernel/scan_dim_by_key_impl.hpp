@@ -101,12 +101,12 @@ namespace kernel
     }
 
     template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
-    static void scan_dim_nonfinal_launcher(Param &out,
-                                  Param &tmp,
-                                  Param &tmpflg,
-                                  Param &tmpid,
-                                  const Param &in,
-                                  const Param &key,
+    static void scan_dim_nonfinal_launcher(Param out,
+                                  Param tmp,
+                                  Param tmpflg,
+                                  Param tmpid,
+                                  const Param in,
+                                  const Param key,
                                   int dim, uint threads_y,
                                   const uint groups_all[4])
     {
@@ -139,9 +139,9 @@ namespace kernel
     }
 
     template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
-    static void scan_dim_final_launcher(Param &out,
-                                  const Param &in,
-                                  const Param &key,
+    static void scan_dim_final_launcher(Param out,
+                                  const Param in,
+                                  const Param key,
                                   int dim, const bool calculateFlags, uint threads_y,
                                   const uint groups_all[4])
     {
@@ -167,9 +167,9 @@ namespace kernel
     }
 
     template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
-    static void bcast_dim_launcher(Param &out,
-                                   Param &tmp,
-                                   Param &tmpid,
+    static void bcast_dim_launcher(Param out,
+                                   Param tmp,
+                                   Param tmpid,
                                    int dim, uint threads_y,
                                    const uint groups_all[4])
     {
@@ -195,7 +195,7 @@ namespace kernel
     }
 
     template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
-    void scan_dim(Param &out, const Param &in, const Param &key, int dim)
+    void scan_dim(Param out, const Param in, const Param key, int dim)
     {
         uint threads_y = std::min(THREADS_Y, nextpow2(out.info.dims[dim]));
         uint threads_x = THREADS_X;
@@ -264,8 +264,8 @@ namespace kernel
 }
 
 #define INSTANTIATE_SCAN_DIM_BY_KEY(ROp, Ti, Tk, To)\
-    template void scan_dim<Ti, Tk, To, ROp,  true>(Param &out, const Param &in, const Param &key, int dim);\
-    template void scan_dim<Ti, Tk, To, ROp, false>(Param &out, const Param &in, const Param &key, int dim);
+    template void scan_dim<Ti, Tk, To, ROp,  true>(Param out, const Param in, const Param key, int dim);\
+    template void scan_dim<Ti, Tk, To, ROp, false>(Param out, const Param in, const Param key, int dim);
 
 #define INSTANTIATE_SCAN_DIM_BY_KEY_TYPES(ROp, Tk)          \
     INSTANTIATE_SCAN_DIM_BY_KEY(ROp, float  , Tk, float  )  \
