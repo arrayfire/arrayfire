@@ -103,7 +103,7 @@ if(AF_WITH_GRAPHICS)
         $<TARGET_FILE:glbinding::glbinding>
         $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
         $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
-      DESTINATION ${AF_INSTALL_BIN_DIR}
+      DESTINATION ${AF_INSTALL_LIB_DIR}
       COMPONENT common_backend_dependencies)
   endif()
 
