@@ -231,7 +231,7 @@ if(Forge_FOUND AND NOT AF_USE_SYSTEM_FORGE)
       set(fg_dlib_px "lib")
     endif ()
     install(DIRECTORY "${PROJECT_BINARY_DIR}/third_party/forge/${fg_dlib_px}/"
-      DESTINATION "${AF_INSTALL_BIN_DIR}"
+      DESTINATION "${AF_INSTALL_LIB_DIR}"
       COMPONENT common_backend_dependencies)
 endif()
 
@@ -293,14 +293,14 @@ if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL AND AF_INSTALL_STANDALONE
   if(TARGET MKL::ThreadingLibrary)
     install(FILES
       $<TARGET_FILE:MKL::ThreadingLibrary>
-      DESTINATION ${AF_INSTALL_BIN_DIR}
+      DESTINATION ${AF_INSTALL_LIB_DIR}
       COMPONENT mkl_dependencies)
   endif()
 
   if(NOT WIN32)
     install(FILES
       $<TARGET_FILE:MKL::Interface>
-      DESTINATION ${AF_INSTALL_BIN_DIR}
+      DESTINATION ${AF_INSTALL_LIB_DIR}
       COMPONENT mkl_dependencies)
   endif()
 
@@ -313,7 +313,7 @@ if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL AND AF_INSTALL_STANDALONE
     # is a linker script and not a symlink so it cant be resolved using
     # get_filename_component
     ${AF_ADDITIONAL_MKL_LIBRARIES}
-    DESTINATION ${AF_INSTALL_BIN_DIR}
+    DESTINATION ${AF_INSTALL_LIB_DIR}
     COMPONENT mkl_dependencies)
 endif()
 

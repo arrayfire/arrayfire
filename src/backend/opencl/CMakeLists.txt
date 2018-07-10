@@ -540,7 +540,7 @@ if(NOT APPLE AND AF_INSTALL_STANDALONE)
   if(UNIX)
     get_filename_component(opencl_outpath "${OpenCL_LIBRARIES}" REALPATH)
     install(FILES ${opencl_outpath}
-        DESTINATION ${AF_INSTALL_BIN_DIR}
+        DESTINATION ${AF_INSTALL_LIB_DIR}
         RENAME "${CMAKE_SHARED_LIBRARY_PREFIX}OpenCL${CMAKE_SHARED_LIBRARY_SUFFIX}.1"
         COMPONENT opencl_dependencies)
   else()
