@@ -2,6 +2,8 @@
 # Sets ArrayFire installation paths.
 #
 
+include(GNUInstallDirs)
+
 # NOTE: These paths are all relative to the project installation prefix.
 
 # Executables
@@ -11,7 +13,11 @@ endif()
 
 # Libraries
 if(NOT DEFINED AF_INSTALL_LIB_DIR)
-  set(AF_INSTALL_LIB_DIR "lib" CACHE PATH "Installation path for libraries")
+  if(WIN32)
+    set(AF_INSTALL_LIB_DIR "lib" CACHE PATH "Installation path for libraries")
+  else()
+    set(AF_INSTALL_LIB_DIR "${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Installation path for libraries")
+  endif()
 endif()
 
 # Header files

@@ -538,7 +538,7 @@ macro(afcu_collect_libs libname)
   else () #UNIX
     get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}${SX}" REALPATH)
     install(FILES       ${outpath}
-            DESTINATION ${AF_INSTALL_BIN_DIR}
+            DESTINATION ${AF_INSTALL_LIB_DIR}
             RENAME      "${PX}${libname}${SX}.${CUDA_VERSION}"
             COMPONENT   cuda_dependencies)
   endif ()
@@ -562,7 +562,7 @@ if(AF_INSTALL_STANDALONE)
   elseif(UNIX)
     get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins${SX}" REALPATH)
     install(FILES       ${nvrtc_outpath}
-            DESTINATION ${AF_INSTALL_BIN_DIR}
+            DESTINATION ${AF_INSTALL_LIB_DIR}
             RENAME      "${PX}nvrtc-builtins${SX}"
             COMPONENT   cuda_dependencies)
   else()
