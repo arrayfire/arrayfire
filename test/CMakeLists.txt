@@ -74,7 +74,7 @@ include(CMakeParseArguments)
 # 'BACKENDS'    Backends to target for this test. If not set then the test will
 #               compiled againat all backends
 function(make_test)
-  set(options CXX11)
+  set(options CXX11 SERIAL)
   set(single_args SRC)
   set(multi_args LIBRARIES DEFINITIONS BACKENDS)
   cmake_parse_arguments(mt_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
@@ -140,7 +140,13 @@ function(make_test)
     # TODO(umar): Create this executable separately
     if(NOT ${backend} STREQUAL "unified" OR ${target} STREQUAL "backend_unified")
       add_test(NAME ${target} COMMAND ${target})
+	    if(${mt_args_SERIAL})
+        set_tests_properties(${target}
+          PROPERTIES
+            RUN_SERIAL ON)
+	    endif(${mt_args_SERIAL})
     endif()
+
   endforeach()
 endfunction(make_test)
 
@@ -259,7 +265,7 @@ make_test(SRC sparse_convert.cpp)
 make_test(SRC stdev.cpp)
 make_test(SRC susan.cpp)
 make_test(SRC svd_dense.cpp)
-make_test(SRC threading.cpp         CXX11)
+make_test(SRC threading.cpp         CXX11 SERIAL)
 make_test(SRC tile.cpp)
 make_test(SRC topk.cpp              CXX11)
 make_test(SRC transform.cpp)
