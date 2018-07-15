@@ -41,7 +41,8 @@ foreach(SBK_TYPE ${SBK_TYPES})
         POSITION_INDEPENDENT_CODE ON
         FOLDER "Generated Targets")
 
-    target_compile_options(opencl_sort_by_key_${SBK_TYPE} PRIVATE ${opencl_cxx_flags})
+    arrayfire_set_default_cxx_flags(opencl_sort_by_key_${SBK_TYPE})
+
     target_compile_definitions(opencl_sort_by_key_${SBK_TYPE}
       PRIVATE
         $<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>

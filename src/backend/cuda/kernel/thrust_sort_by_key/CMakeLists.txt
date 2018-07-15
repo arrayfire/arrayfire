@@ -17,6 +17,9 @@ foreach(STR ${FILESTRINGS})
     endif()
 endforeach()
 
+arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
+arrayfire_get_platform_definitions(platform_flags)
+
 foreach(SBK_TYPE ${SBK_TYPES})
     foreach(SBK_INST ${SBK_INSTS})
 
@@ -36,7 +39,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
           OPTIONS
             -DSBK_TYPE=${SBK_TYPE}
             -DINSTANTIATESBK_INST=INSTANTIATE${SBK_INST}
-            "${cuda_cxx_flags} -DAFDLL"
+            "${platform_flags} ${cuda_cxx_flags} -DAFDLL"
       )
 
       list(APPEND SORT_OBJ ${scan_by_key_gen_files})

@@ -46,7 +46,7 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
         POSITION_INDEPENDENT_CODE ON
         FOLDER "Generated Targets")
 
-    target_compile_options(opencl_scan_by_key_${SBK_BINARY_OP} PRIVATE ${opencl_cxx_flags})
+    arrayfire_set_default_cxx_flags(opencl_scan_by_key_${SBK_BINARY_OP})
     target_compile_definitions(opencl_scan_by_key_${SBK_BINARY_OP}
       PRIVATE
         $<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>
