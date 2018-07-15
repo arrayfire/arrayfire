@@ -454,7 +454,7 @@ if(AF_WITH_GRAPHICS)
     )
 endif()
 
-if(LAPACK_FOUND)
+if(LAPACK_FOUND OR MKL_FOUND)
   target_sources(afopencl
     PRIVATE
       magma/gebrd.cpp
@@ -486,8 +486,7 @@ if(LAPACK_FOUND)
       magma/ungqr.cpp
       magma/unmqr.cpp
       #magma/unmqr2.cpp
-
-    )
+      )
 
   if(USE_OPENCL_MKL)
     dependency_check(MKL_FOUND "MKL not found")
@@ -495,9 +494,7 @@ if(LAPACK_FOUND)
 
     target_link_libraries(afopencl
       PRIVATE
-        MKL::MKL
-      )
-
+        MKL::MKL)
   else()
     dependency_check(OpenCL_FOUND "OpenCL not found.")
 
@@ -508,7 +505,8 @@ if(LAPACK_FOUND)
     dependency_check(CBLAS_LIBRARIES "CBLAS not found.")
     target_include_directories(afopencl
       PRIVATE
-        ${CBLAS_INCLUDE_DIR})
+        ${CBLAS_INCLUDE_DIR}
+        ${LAPACK_INCLUDE_DIR})
     target_link_libraries(afopencl
       PRIVATE
         ${CBLAS_LIBRARIES}
@@ -518,13 +516,8 @@ if(LAPACK_FOUND)
   target_compile_definitions(
     afopencl
     PRIVATE
-      WITH_OPENCL_LINEAR_ALGEBRA
-    )
-
-  target_link_libraries(afopencl
-    PRIVATE
-      afcommon_lapack_interface)
-endif(LAPACK_FOUND)
+      WITH_LINEAR_ALGEBRA)
+endif(LAPACK_FOUND OR MKL_FOUND)
 
 install(TARGETS afopencl
   EXPORT ArrayFireOpenCLTargets

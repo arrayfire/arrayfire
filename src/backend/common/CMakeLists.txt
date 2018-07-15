@@ -32,6 +32,8 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/err_common.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lapacke.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lapacke.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/module_loading.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse_helpers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
@@ -40,9 +42,9 @@ target_sources(afcommon_interface
   )
 
 if(WIN32)
-target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_windows.cpp)
+  target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_windows.cpp)
 else()
-target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_unix.cpp)
+  target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_unix.cpp)
 endif()
 
 target_include_directories(afcommon_interface
@@ -50,9 +52,6 @@ target_include_directories(afcommon_interface
     ${CMAKE_SOURCE_DIR}/src/backend
     ${PROJECT_BINARY_DIR}
   )
-
-add_library(afcommon_lapack_interface INTERFACE)
-
 
 if(AF_WITH_LOGGING)
   dependency_check(spdlog_FOUND "spdlog not found.")
@@ -110,18 +109,4 @@ if(AF_WITH_GRAPHICS)
   if(NOT AF_USE_SYSTEM_FORGE)
     add_dependencies(afcommon_interface forge-ext)
   endif()
-endif()
-
-if(LAPACK_FOUND)
-  target_sources(afcommon_lapack_interface
-    INTERFACE
-      ${CMAKE_CURRENT_SOURCE_DIR}/lapacke.cpp
-      ${CMAKE_CURRENT_SOURCE_DIR}/lapacke.hpp
-    )
-
-  target_include_directories(afcommon_lapack_interface
-    INTERFACE ${LAPACK_INCLUDE_DIR})
-
-  target_compile_definitions(afcommon_lapack_interface
-    INTERFACE WITH_LINEAR_ALGEBRA)
 endif()
