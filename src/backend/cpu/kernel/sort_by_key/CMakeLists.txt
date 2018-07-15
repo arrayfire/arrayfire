@@ -25,6 +25,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
       COMPILE_DEFINITIONS "TYPE=${SBK_TYPE};AFDLL"
       FOLDER "Generated Targets")
 
+  arrayfire_set_default_cxx_flags(cpu_sort_by_key_${SBK_TYPE})
   # TODO(umar): This should just use the include directories from the
   # afcpu_static target
   target_include_directories(cpu_sort_by_key_${SBK_TYPE}

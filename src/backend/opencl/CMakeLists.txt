@@ -12,13 +12,6 @@ set_property(CACHE AF_OPENCL_BLAS_LIBRARY PROPERTY STRINGS "clBLAS" "CLBlast")
 
 af_deprecate(OPENCL_BLAS_LIBRARY AF_OPENCL_BLAS_LIBRARY)
 
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag(-Wno-ignored-attributes has_ignored_attributes_flag)
-
-if(has_ignored_attributes_flag)
-  set(opencl_cxx_flags -Wno-ignored-attributes)
-endif()
-
 include(build_clFFT)
 
 file(GLOB kernel_src kernel/*.cl kernel/KParam.hpp)
@@ -384,13 +377,13 @@ target_include_directories(afopencl
     ../../../include
   )
 
+arrayfire_set_default_cxx_flags(afopencl)
+
 add_dependencies(afopencl ${cl_kernel_targets})
 add_dependencies(opencl_scan_by_key ${cl_kernel_targets} cl2hpp Boost::boost)
 add_dependencies(opencl_sort_by_key ${cl_kernel_targets} cl2hpp Boost::boost)
 
 set_target_properties(afopencl PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
-target_compile_options(afopencl PRIVATE ${opencl_cxx_flags})
 
 target_compile_definitions(afopencl
   PRIVATE

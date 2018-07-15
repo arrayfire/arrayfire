@@ -30,6 +30,4 @@ if(WIN32)
   # C4275: Warnings about using non-exported classes as base class of an
   #        exported class
   add_compile_options(/wd4251 /wd4068 /wd4275)
-
-  set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 endif()
