@@ -88,9 +88,6 @@ mark_as_advanced(
   CUDA_USE_STATIC_CUDA_RUNTIME
   CUDA_rt_LIBRARY)
 
-# TODO(umar): Add definitions should not be used. Instead use
-arrayfire_get_platform_definitions(platform_definitions)
-add_definitions(${platform_definitions})
 
 if(AF_WITH_GRAPHICS AND NOT AF_USE_SYSTEM_FORGE)
   include(build_forge)

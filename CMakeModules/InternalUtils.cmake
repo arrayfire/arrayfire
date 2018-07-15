@@ -30,9 +30,43 @@ endfunction()
 
 function(arrayfire_get_cuda_cxx_flags cuda_flags)
   if(NOT MSVC)
-    set(${cuda_flags} "-std=c++11"  PARENT_SCOPE)
+    set(${cuda_flags} "-std=c++11 -Xcompiler -fPIC  -Xcompiler=${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden"  PARENT_SCOPE)
   else()
     set(${cuda_flags} "-Xcompiler /wd4251 -Xcompiler /wd4068 -Xcompiler /wd4275"  PARENT_SCOPE)
+  endif()
+
+  if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.3.0")
+    if(${CUDA_VERSION_MAJOR} LESS 8)
+      set(cuda_flags "${cuda_flags} -D_FORCE_INLINES -D_MWAITXINTRIN_H_INCLUDED")
+    endif()
+  endif()
+endfunction()
+
+include(CheckCXXCompilerFlag)
+
+function(arrayfire_set_default_cxx_flags target)
+  arrayfire_get_platform_definitions(defs)
+  target_compile_definitions(${target} PRIVATE ${defs})
+
+  if(MSVC)
+    target_compile_options(${target}
+      PRIVATE
+        /wd4251 /wd4068 /wd4275 /bigobj)
+
+    if(CMAKE_GENERATOR MATCHES "Ninja")
+      target_compile_options(${target}
+        PRIVATE
+          /FS)
+    endif()
+  else()
+    check_cxx_compiler_flag(-Wno-ignored-attributes has_ignored_attributes_flag)
+
+    # OpenCL targets need this flag to avoid ignored attribute warnings in the
+    # OpenCL headers
+    if(has_ignored_attributes_flag)
+        target_compile_options(${target}
+          PRIVATE -Wno-ignored-attributes)
+    endif()
   endif()
 endfunction()
 

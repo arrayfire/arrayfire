@@ -252,9 +252,7 @@ target_sources(afcpu
     ${CMAKE_CURRENT_SOURCE_DIR}/threads/async_queue.hpp
   )
 
-if(MSVC)
-  target_compile_options(afcpu PRIVATE /bigobj)
-endif()
+arrayfire_set_default_cxx_flags(afcpu)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
