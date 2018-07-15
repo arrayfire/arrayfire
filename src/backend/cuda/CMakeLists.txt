@@ -10,6 +10,13 @@ include(select_compute_arch)
 
 dependency_check(CUDA_FOUND "CUDA not found.")
 
+find_cuda_helper_libs(nvrtc)
+find_cuda_helper_libs(nvrtc-builtins)
+
+get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
+
+include(CLKernelToH)
+
 if(NOT CUDA_architecture_build_targets)
   cuda_detect_installed_gpus(detected_gpus)
 endif()
@@ -18,28 +25,15 @@ set(CUDA_architecture_build_targets ${detected_gpus} CACHE
   STRING "The compute architectures targeted by this build. (Options: 3.0;Maxwell;All;Common)")
 
 cuda_select_nvcc_arch_flags(cuda_architecture_flags ${CUDA_architecture_build_targets})
-message(STATUS "CUDA Architectures: ${CUDA_architecture_build_targets}")
-
-find_cuda_helper_libs(nvrtc)
-find_cuda_helper_libs(nvrtc-builtins)
-
-get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
-mark_as_advanced(
-    CUDA_LIBRARIES_PATH
-    CUDA_architecture_build_targets)
-
-# TODO(umar): Move these flags to a separate function/target
-if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.3.0")
-  if(${CUDA_VERSION_MAJOR} LESS 8)
-    add_definitions(-D_FORCE_INLINES -D_MWAITXINTRIN_H_INCLUDED)
-  endif()
-endif()
-
-include(CLKernelToH)
+message(STATUS "CUDA_architecture_build_targets: ${CUDA_architecture_build_targets}")
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};
   ${cuda_architecture_flags}
   )
+
+mark_as_advanced(
+    CUDA_LIBRARIES_PATH
+    CUDA_architecture_build_targets)
 
 cuda_include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
@@ -114,9 +108,6 @@ function(cuda_add_library cuda_target)
 endfunction()
 
 arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
-if(NOT MSVC)
-  set(cuda_cxx_flags "${cuda_cxx_flags} -Xcompiler -fPIC  -Xcompiler=${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden")
-endif()
 
 if(AF_WITH_NONFREE AND CMAKE_VERSION VERSION_LESS "3.7")
   # This definition is required in addition to the definition below because in
@@ -411,6 +402,8 @@ cuda_add_library(afcuda
 
     OPTIONS "${cuda_cxx_flags} -Xcudafe \"--diag_suppress=1427\""
   )
+
+arrayfire_set_default_cxx_flags(afcuda)
 
 add_library(ArrayFire::afcuda ALIAS afcuda)
 
