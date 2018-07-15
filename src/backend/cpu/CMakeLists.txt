@@ -322,7 +322,6 @@ if(USE_CPU_MKL)
       c_api_interface
       cpp_api_interface
       afcommon_interface
-      afcommon_lapack_interface
       cpu_sort_by_key
       MKL::MKL
       Threads::Threads
@@ -336,14 +335,26 @@ else()
       c_api_interface
       cpp_api_interface
       afcommon_interface
-      afcommon_lapack_interface
       cpu_sort_by_key
       ${CBLAS_LIBRARIES}
-      ${LAPACK_LIBRARIES}
       FFTW::FFTW
       FFTW::FFTWF
       Threads::Threads
     )
+  if(LAPACK_FOUND)
+    target_link_libraries(afcpu
+      PRIVATE
+        ${LAPACK_LIBRARIES})
+    target_include_directories(afcpu
+      PRIVATE
+        ${LAPACK_INCLUDE_DIR})
+  endif()
+endif()
+
+if(LAPACK_FOUND OR MKL_FOUND)
+  target_compile_definitions(afcpu
+    PRIVATE
+      WITH_LINEAR_ALGEBRA)
 endif()
 
 install(TARGETS afcpu
