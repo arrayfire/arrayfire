@@ -339,6 +339,10 @@ unset(CMAKE_CXX_VISIBILITY_PRESET)
 
 include(CTest)
 
+configure_file(
+  ${CMAKE_MODULE_PATH}/CTestCustom.cmake
+  ${PROJECT_BINARY_DIR}/CTestCustom.cmake)
+
 # Handle depricated BUILD_TEST variable if found.
 if(BUILD_TEST)
   set(BUILD_TESTING ${BUILD_TEST})
