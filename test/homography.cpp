@@ -23,7 +23,9 @@ using std::string;
 using std::vector;
 using std::abs;
 using af::array;
+using af::constant;
 using af::dim4;
+using af::span;
 
 template<typename T>
 class Homography : public ::testing::Test
@@ -201,7 +203,7 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     }
 
     HOMOGRAPHY_INIT(Tux_RANSAC, tux, AF_HOMOGRAPHY_RANSAC, false, 1.0f);
-    HOMOGRAPHY_INIT(Tux_RANSAC_90degrees, tux, AF_HOMOGRAPHY_RANSAC, true, 1.0f);
+    HOMOGRAPHY_INIT(DISABLED_Tux_RANSAC_90degrees, tux, AF_HOMOGRAPHY_RANSAC, true, 1.0f);
     HOMOGRAPHY_INIT(Tux_RANSAC_resize, tux, AF_HOMOGRAPHY_RANSAC, false, 1.5f);
     //HOMOGRAPHY_INIT(Tux_LMedS, tux, AF_HOMOGRAPHY_LMEDS, false, 1.0f);
     //HOMOGRAPHY_INIT(Tux_LMedS_90degrees, tux, AF_HOMOGRAPHY_LMEDS, true, 1.0f);
@@ -277,4 +279,44 @@ TEST(Homography, CPP)
 
     delete[] gold_t;
     delete[] out_t;
+}
+
+TEST(Homography, Rotation_90degCCW) {
+    int nfeats = 6;
+
+    // h_in and h_in_rot are actual matching points from
+    //  transposed tux.png and transposed rotated tux.png
+    float h_in_x[] = {170.f, 209.f, 177.f, 197.f, 95.f, 249.f};
+    float h_in_y[] = {121.f, 131.f, 144.f, 285.f, 347.f, 406.f};
+    array in_x(nfeats, h_in_x);
+    array in_y(nfeats, h_in_y);
+
+    float h_in_rot_x[] = {121.f, 131.f, 144.f, 285.f, 347.f, 406.f};
+    float h_in_rot_y[] = {205.f, 166.f, 198.f, 178.f, 280.f, 126.f};
+    array in_rot_x(nfeats, h_in_rot_x);
+    array in_rot_y(nfeats, h_in_rot_y);
+
+    array H;
+    int inliers = 0;
+    homography(H, inliers, in_x, in_y, in_rot_x, in_rot_y,
+               AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
+    // Transpose H because input points came from transposed images too
+    H = H.T();
+
+    array ones = constant(1.f, in_x.elements());
+    array in_xy = join(0, in_x.T(), in_y.T(), ones.T());
+
+    array out_xy = matmul(H, in_xy);
+    out_xy /= tile(out_xy(2, span), 3);
+
+    float* h_out_x = out_xy(0, span).host<float>();
+    float* h_out_y = out_xy(1, span).host<float>();
+    float* h_gold_x = &h_in_rot_x[0];
+    float* h_gold_y = &h_in_rot_y[0];
+
+    ASSERT_EQ(out_xy.dims()[1], nfeats);
+    for (int i = 0; i < nfeats; ++i) {
+        ASSERT_LE(fabs(h_out_x[i] - h_gold_x[i]), 0.001) << "at: " << i << endl;
+        ASSERT_LE(fabs(h_out_y[i] - h_gold_y[i]), 0.001) << "at: " << i << endl;
+    }
 }
