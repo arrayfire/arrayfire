@@ -18,14 +18,21 @@
 #include <testHelpers.hpp>
 #include <typeinfo>
 
-using std::endl;
-using std::string;
-using std::vector;
-using std::abs;
 using af::array;
 using af::constant;
 using af::dim4;
 using af::span;
+using std::cout;
+using std::endl;
+using std::string;
+using std::vector;
+
+template<typename T>
+int print(vector<T> arr) {
+    std::cout << "\n";
+    copy(arr.begin(), arr.end(), std::ostream_iterator<float>(cout, ", "));
+    return 0;
+}
 
 template<typename T>
 class Homography : public ::testing::Test
@@ -39,11 +46,11 @@ typedef ::testing::Types<float, double> TestTypes;
 TYPED_TEST_CASE(Homography, TestTypes);
 
 template<typename T>
-array perspectiveTransform(dim4 inDims, array H)
+array perspectiveTransform(dim4 inDims, array H_matrix)
 {
     T d0 = (T)inDims[0];
     T d1 = (T)inDims[1];
-    return transformCoordinates(H, d0, d1);
+    return transformCoordinates(H_matrix, d0, d1);
 }
 
 template<typename T>
@@ -89,7 +96,7 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     af_array query_idx        = 0;
     af_array query_feat_x     = 0;
     af_array query_feat_y     = 0;
-    af_array H                = 0;
+    af_array H_matrix                = 0;
     af_array train_feat_x_idx = 0;
     af_array train_feat_y_idx = 0;
     af_array query_feat_x_idx = 0;
@@ -140,11 +147,11 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     ASSERT_EQ(AF_SUCCESS, af_index_gen(&query_feat_y_idx, query_feat_y, 1, &qindexs));
 
     int inliers = 0;
-    ASSERT_EQ(AF_SUCCESS, af_homography(&H, &inliers, train_feat_x_idx, train_feat_y_idx,
+    ASSERT_EQ(AF_SUCCESS, af_homography(&H_matrix, &inliers, train_feat_x_idx, train_feat_y_idx,
                                         query_feat_x_idx, query_feat_y_idx, htype,
                                         3.0f, 1000, (af_dtype) dtype_traits<T>::af_type));
 
-    array HH(H);
+    array HH(H_matrix);
 
     array t = perspectiveTransform<T>(inDims[0], HH);
 
@@ -255,9 +262,9 @@ TEST(Homography, CPP)
     array feat_query_orientation = feat_query.getOrientation()(query_idx);
     array feat_query_size = feat_query.getSize()(query_idx);
 
-    array H;
+    array H_matrix;
     int inliers = 0;
-    homography(H, inliers, feat_train_x, feat_train_y, feat_query_x, feat_query_y, AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
+    homography(H_matrix, inliers, feat_train_x, feat_train_y, feat_query_x, feat_query_y, AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
 
     float* gold_t = new float[8];
     for (int i = 0; i < 8; i++)
@@ -267,7 +274,7 @@ TEST(Homography, CPP)
     gold_t[5] = tDims[0] * size_ratio;
     gold_t[6] = tDims[0] * size_ratio;
 
-    array t = perspectiveTransform<float>(train_img.dims(), H);
+    array t = perspectiveTransform<float>(train_img.dims(), H_matrix);
 
     float* out_t = new float[4*2];
     t.host(out_t);
@@ -282,41 +289,64 @@ TEST(Homography, CPP)
 }
 
 TEST(Homography, Rotation_90degCCW) {
-    int nfeats = 6;
+    int nfeats = 200;
 
-    // h_in and h_in_rot are actual matching points from
-    //  transposed tux.png and transposed rotated tux.png
-    float h_in_x[] = {170.f, 209.f, 177.f, 197.f, 95.f, 249.f};
-    float h_in_y[] = {121.f, 131.f, 144.f, 285.f, 347.f, 406.f};
-    array in_x(nfeats, h_in_x);
-    array in_y(nfeats, h_in_y);
-
-    float h_in_rot_x[] = {121.f, 131.f, 144.f, 285.f, 347.f, 406.f};
-    float h_in_rot_y[] = {205.f, 166.f, 198.f, 178.f, 280.f, 126.f};
-    array in_rot_x(nfeats, h_in_rot_x);
-    array in_rot_y(nfeats, h_in_rot_y);
-
-    array H;
-    int inliers = 0;
-    homography(H, inliers, in_x, in_y, in_rot_x, in_rot_y,
-               AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
-    // Transpose H because input points came from transposed images too
-    H = H.T();
-
+    // Generate points to rotate
+    array in_x = af::randu(nfeats);
+    array in_y = af::randu(nfeats);
     array ones = constant(1.f, in_x.elements());
     array in_xy = join(0, in_x.T(), in_y.T(), ones.T());
 
-    array out_xy = matmul(H, in_xy);
-    out_xy /= tile(out_xy(2, span), 3);
+    // Build transformation matrix for 90deg CCW rotation
+    float hh_rot_matrix[] = {0.f, -1.f, 0.f,
+                             1.f,  0.f, 0.f,
+                             0.f,  0.f, 1.f};
+    vector<float> h_rot_matrix(hh_rot_matrix, hh_rot_matrix + 9);
+    array rot_matrix(3, 3, h_rot_matrix.data());
+    rot_matrix = rot_matrix.T();
 
-    float* h_out_x = out_xy(0, span).host<float>();
-    float* h_out_y = out_xy(1, span).host<float>();
-    float* h_gold_x = &h_in_rot_x[0];
-    float* h_gold_y = &h_in_rot_y[0];
+    // Do the rotation using the hardcoded
+    //  transformation matrix
+    array in_rot = matmul(rot_matrix, in_xy);
+    array in_rot_x = in_rot(0, span).T();
+    array in_rot_y = in_rot(1, span).T();
+    in_rot = in_rot.T();
 
-    ASSERT_EQ(out_xy.dims()[1], nfeats);
+    // Use homography to extract the transformation
+    //  between generated points and their rotated versions
+    array H_matrix;
+    int inliers = 0;
+    homography(H_matrix, inliers, in_x, in_y, in_rot_x, in_rot_y,
+               AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
+
+    // Do the rotation using the transformation
+    //  matrix returned by homography()
+    H_matrix = H_matrix.T();
+    array in_rot_H = matmul(H_matrix.as(f32), in_xy);
+    in_rot_H /= tile(in_rot_H(2, span), 3);
+
+    // Get the hardcoded transformation's results
+    //  back to the host
+    vector<float> h_in_rot(in_rot.elements());
+    vector<float> h_in_rot_x(in_rot_x.elements());
+    vector<float> h_in_rot_y(in_rot_y.elements());
+    in_rot.host(h_in_rot.data());
+    in_rot_x.host(h_in_rot_x.data());
+    in_rot_y.host(h_in_rot_y.data());
+
+    // Get the results due to homography back to
+    //  the host
+    vector<float> h_in_rot_H_x(in_rot_H.dims()[1]);
+    vector<float> h_in_rot_H_y(in_rot_H.dims()[1]);
+    in_rot_H(0, span).host(h_in_rot_H_x.data());
+    in_rot_H(1, span).host(h_in_rot_H_y.data());
+
+    // Compare results - output points using homography's
+    //  transformation matrix must match those of the
+    //  hardcoded transformation matrix
+    ASSERT_EQ(in_rot_H.dims()[1], nfeats);
     for (int i = 0; i < nfeats; ++i) {
-        ASSERT_LE(fabs(h_out_x[i] - h_gold_x[i]), 0.001) << "at: " << i << endl;
-        ASSERT_LE(fabs(h_out_y[i] - h_gold_y[i]), 0.001) << "at: " << i << endl;
+        ASSERT_NEAR(h_in_rot_H_x[i] - h_in_rot_x[i], 0.f, 1.f) << "at: " << i << " " << print<float>(h_in_rot_H_x) << print(h_in_rot_x) << endl;
+        ASSERT_NEAR(h_in_rot_H_y[i] - h_in_rot_y[i], 0.f, 1.f) << "at: " << i << " " << print<float>(h_in_rot_H_y) << print(h_in_rot_y) << endl;
     }
 }
