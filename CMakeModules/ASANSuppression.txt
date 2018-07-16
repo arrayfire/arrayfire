@@ -1,0 +1,5 @@
+# This is a known leak.
+leak:getKernel
+#leak:libOpenCL
+leak:libnvidia-ptxjitcompile
+leak:tbb::internal::task_stream
