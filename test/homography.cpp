@@ -289,7 +289,7 @@ TEST(Homography, CPP)
 }
 
 TEST(Homography, Rotation_90degCCW) {
-    int nfeats = 200;
+    int nfeats = 100;
 
     // Generate points to rotate
     array in_x = af::randu(nfeats);
@@ -298,12 +298,11 @@ TEST(Homography, Rotation_90degCCW) {
     array in_xy = join(0, in_x.T(), in_y.T(), ones.T());
 
     // Build transformation matrix for 90deg CCW rotation
-    float hh_rot_matrix[] = {0.f, -1.f, 0.f,
-                             1.f,  0.f, 0.f,
+    float hh_rot_matrix[] = {0.f,  1.f, 0.f,
+                            -1.f,  0.f, 0.f,
                              0.f,  0.f, 1.f};
     vector<float> h_rot_matrix(hh_rot_matrix, hh_rot_matrix + 9);
     array rot_matrix(3, 3, h_rot_matrix.data());
-    rot_matrix = rot_matrix.T();
 
     // Do the rotation using the hardcoded
     //  transformation matrix
@@ -318,10 +317,10 @@ TEST(Homography, Rotation_90degCCW) {
     int inliers = 0;
     homography(H_matrix, inliers, in_x, in_y, in_rot_x, in_rot_y,
                AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
+    H_matrix = H_matrix.T();
 
     // Do the rotation using the transformation
     //  matrix returned by homography()
-    H_matrix = H_matrix.T();
     array in_rot_H = matmul(H_matrix.as(f32), in_xy);
     in_rot_H /= tile(in_rot_H(2, span), 3);
 
@@ -345,8 +344,9 @@ TEST(Homography, Rotation_90degCCW) {
     //  transformation matrix must match those of the
     //  hardcoded transformation matrix
     ASSERT_EQ(in_rot_H.dims()[1], nfeats);
+
     for (int i = 0; i < nfeats; ++i) {
-        ASSERT_NEAR(h_in_rot_H_x[i] - h_in_rot_x[i], 0.f, 1.f) << "at: " << i << " " << print<float>(h_in_rot_H_x) << print(h_in_rot_x) << endl;
-        ASSERT_NEAR(h_in_rot_H_y[i] - h_in_rot_y[i], 0.f, 1.f) << "at: " << i << " " << print<float>(h_in_rot_H_y) << print(h_in_rot_y) << endl;
+        ASSERT_NEAR(h_in_rot_H_x[i] - h_in_rot_x[i], 0.f, 3.f) << "at: " << i << " " << print<float>(h_in_rot_H_x) << print(h_in_rot_x) << endl;
+        ASSERT_NEAR(h_in_rot_H_y[i] - h_in_rot_y[i], 0.f, 3.f) << "at: " << i << " " << print<float>(h_in_rot_H_y) << print(h_in_rot_y) << endl;
     }
 }
