@@ -10,8 +10,9 @@
 #include <gtest/gtest.h>
 #include <arrayfire.h>
 #include <af/data.h>
-#include <vector>
 #include <testHelpers.hpp>
+
+#include <vector>
 
 using std::vector;
 using af::array;
@@ -319,4 +320,65 @@ TEST(BasicTests, Additionf32f64_CPP)
         err = err + df * df;
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
+}
+
+TEST(Assert, TestEqualsCpp) {
+    array A = constant(1, 10, 10);
+    array B = constant(1, 10, 10);
+
+    // Testing this macro
+    // ASSERT_ARRAY_EQ(A, B);
+    ASSERT_TRUE(assertArrayEq("A", "B", A, B));
+}
+
+TEST(Assert, TestEqualsC) {
+    af_array A = 0;
+    af_array B = 0;
+    dim_t dims[] = {10, 10, 1, 1};
+    af_constant(&A, 1.0, 4, dims, f32);
+    af_constant(&B, 1.0, 4, dims, f32);
+
+    // Testing this macro
+    //ASSERT_ARRAY_EQ(a, b);
+    ASSERT_TRUE(assertArrayEq("A", "B", A, B));
+}
+
+TEST(Assert, TestEqualsDiffTypes) {
+    array A = constant(1, 10, 10, f64);
+    array B = constant(1, 10, 10);
+
+    // Testing this macro
+    // ASSERT_ARRAY_EQ(A, B);
+    ASSERT_FALSE(assertArrayEq("A", "B", A, B));
+}
+
+TEST(Assert, TestEqualsDiffSizes) {
+    array A = constant(1, 10, 9);
+    array B = constant(1, 10, 10);
+
+    // Testing this macro
+    // ASSERT_ARRAY_EQ(A, B);
+    ASSERT_FALSE(assertArrayEq("A", "B", A, B));
+}
+
+TEST(Assert, TestEqualsDiffValue) {
+    // array A = af::randu(3, 3, 3);
+    array A = constant(1, 3, 3);
+    array B = A;
+    B(2, 2) = 2;
+
+    // Testing this macro
+    //ASSERT_ARRAY_EQ(A, B);
+    ASSERT_FALSE(assertArrayEq("A", "B", A, B));
+}
+
+TEST(Assert, TestEqualsDiffComplexValue) {
+    // array A = af::randu(3, 3, 3);
+    array A = constant(af::cfloat(3.1f, 3.1f), 3, 3, c32);
+    array B = A;
+    B(2, 2) = 2.2;
+
+    // Testing this macro
+    // ASSERT_ARRAY_EQ(A, B);
+    ASSERT_FALSE(assertArrayEq("A", "B", A, B));
 }
