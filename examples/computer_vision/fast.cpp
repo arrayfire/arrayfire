@@ -36,15 +36,15 @@ static void fast_demo(bool console)
     for (size_t f = 0; f < feat.getNumFeatures(); f++) {
         int x = h_x[f];
         int y = h_y[f];
-        img_color(y, seq(x-draw_len, x+draw_len), 0) = 0.f;
-        img_color(y, seq(x-draw_len, x+draw_len), 1) = 1.f;
-        img_color(y, seq(x-draw_len, x+draw_len), 2) = 0.f;
+        img_color(x, seq(y-draw_len, y+draw_len), 0) = 0.f;
+        img_color(x, seq(y-draw_len, y+draw_len), 1) = 1.f;
+        img_color(x, seq(y-draw_len, y+draw_len), 2) = 0.f;
 
         // Draw vertical line of (draw_len * 2 + 1) pixels centered on  the corner
         // Set only the first channel to 1 (green lines)
-        img_color(seq(y-draw_len, y+draw_len), x, 0) = 0.f;
-        img_color(seq(y-draw_len, y+draw_len), x, 1) = 1.f;
-        img_color(seq(y-draw_len, y+draw_len), x, 2) = 0.f;
+        img_color(seq(x-draw_len, x+draw_len), y, 0) = 0.f;
+        img_color(seq(x-draw_len, x+draw_len), y, 1) = 1.f;
+        img_color(seq(x-draw_len, x+draw_len), y, 2) = 0.f;
     }
 
     freeHost(h_x);

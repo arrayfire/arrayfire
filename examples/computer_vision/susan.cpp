@@ -57,7 +57,7 @@ static void susan_demo(bool console)
     printf("Features found: %lu\n", feat.getNumFeatures());
 
     if (!console) {
-        af::Window wnd("FAST Feature Detector");
+        af::Window wnd("SUSAN Feature Detector");
 
         // Previews color image with green crosshairs
         while(!wnd.close())
