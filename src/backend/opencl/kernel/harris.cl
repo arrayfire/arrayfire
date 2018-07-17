@@ -76,13 +76,13 @@ __kernel void non_maximal(
 
         // Find maximum neighborhood response
         T max_v;
-        max_v = MAX_VAL(resp_in[x-1 + idim0 * (y-1)], resp_in[x-1 + idim0 * y]);
-        max_v = MAX_VAL(max_v, resp_in[x-1 + idim0 * (y+1)]);
-        max_v = MAX_VAL(max_v, resp_in[x   + idim0 * (y-1)]);
-        max_v = MAX_VAL(max_v, resp_in[x   + idim0 * (y+1)]);
-        max_v = MAX_VAL(max_v, resp_in[x+1 + idim0 * (y-1)]);
-        max_v = MAX_VAL(max_v, resp_in[x+1 + idim0 * (y)  ]);
-        max_v = MAX_VAL(max_v, resp_in[x+1 + idim0 * (y+1)]);
+        max_v = MAX_VAL(resp_in[(y-1) * idim0 + x-1], resp_in[y * idim0 + x-1]);
+        max_v = MAX_VAL(max_v, resp_in[(y+1) * idim0 + x-1]);
+        max_v = MAX_VAL(max_v, resp_in[(y-1) * idim0 + x  ]);
+        max_v = MAX_VAL(max_v, resp_in[(y+1) * idim0 + x  ]);
+        max_v = MAX_VAL(max_v, resp_in[(y-1) * idim0 + x+1]);
+        max_v = MAX_VAL(max_v, resp_in[(y)   * idim0 + x+1]);
+        max_v = MAX_VAL(max_v, resp_in[(y+1) * idim0 + x+1]);
 
         // Stores corner to {x,y,resp}_out if it's response is maximum compared
         // to its 8-neighborhood and greater or equal minimum response
