@@ -10,17 +10,21 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 
-#include <string>
+#include <af/array.h>
+#include <af/dim4.hpp>
+#include <af/internal.h>
+#include <arrayfire.h>
+#include <cfloat>
+#include <gtest/gtest.h>
+
+#include <algorithm>
 #include <fstream>
 #include <iterator>
-#include <vector>
-#include <algorithm>
 #include <limits>
 #include <stdexcept>
-#include <cfloat>
-#include <arrayfire.h>
-#include <af/dim4.hpp>
-#include <af/array.h>
+#include <string>
+#include <utility>
+#include <vector>
 
 typedef unsigned char  uchar;
 typedef unsigned int   uint;
@@ -333,7 +337,7 @@ bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance)
 }
 
 template<typename T, typename Other>
-struct is_same_type{
+struct is_same_type {
     static const bool value = false;
 };
 
@@ -355,6 +359,12 @@ struct cond_type<false, T, Other> {
     typedef Other type;
 };
 
+template<bool B, class T = void>
+struct enable_if {};
+
+template<class T>
+struct enable_if<true, T> { typedef T type; };
+
 template<typename T>
 inline double real(T val) { return (double)val; }
 template<>
@@ -368,6 +378,14 @@ template<>
 inline double imag<af::cdouble>(af::cdouble val) { return imag(val); }
 template<>
 inline double imag<af::cfloat> (af::cfloat val) { return imag(val); }
+
+
+template< class T >
+struct is_floating_point {
+    static const bool value = is_same_type<float, T>::value  ||
+        is_same_type<double, T>::value  ||
+        is_same_type<long double, T>::value;
+};
 
 template<typename T>
 bool noDoubleTests()
@@ -463,6 +481,174 @@ void cleanSlate()
   af::setMemStepSize(step_bytes);
 
   ASSERT_EQ(af::getMemStepSize(), step_bytes);
+}
+
+std::string dTypeToStr(af::dtype type) {
+    switch (type) {
+    case f32: return "f32"; break;
+    case c32: return "c32"; break;
+    case f64: return "f64"; break;
+    case c64: return "c64"; break;
+    case b8:  return "b8";  break;
+    case s32: return "s32"; break;
+    case u32: return "u32"; break;
+    case u8:  return "u8";  break;
+    case s64: return "s64"; break;
+    case u64: return "u64"; break;
+    case s16: return "s16"; break;
+    case u16: return "u16"; break;
+    default: return "";
+    }
+}
+
+af::dim4 unravel_idx(uint idx, af::array arr) {
+    af::dim4 coords;
+    af::dim4 dims = arr.dims();
+    af::dim4 st = af::getStrides(arr);
+
+    coords[3] = idx / (st[3]);
+    coords[2] = idx / (st[2]) % dims[2];
+    coords[1] = idx / (st[1]) % dims[1];
+    coords[0] = idx % dims[0];
+
+    return coords;
+}
+
+/// Compares two af::array or af_arrays for their type, dims, and values.
+///
+/// \param[in] EXPECTED This is the expected value of the assertion
+/// \param[in] ACTUAL This is the actual value of the calculation
+///
+/// \NOTE: This macro will deallocated the af_arrays after the call
+#define ASSERT_ARRAY_EQ(EXPECTED, ACTUAL) \
+    EXPECT_PRED_FORMAT2(assertArrayEq, EXPECTED, ACTUAL)
+
+struct float_tag {};
+struct integer_tag {};
+
+template<typename T>
+::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
+                                      af::array a, af::array b,
+                                      integer_tag) {
+    uint nElems = a.elements();
+    af::dim4 arrDims = a.dims();
+
+    std::vector<T> hA(nElems);
+    a.host(hA.data());
+
+    std::vector<T> hB(nElems);
+    b.host(hB.data());
+
+    typedef typename std::vector<T>::iterator iter;
+    std::pair<iter, iter> mismatches = std::mismatch(hA.begin(), hA.end(), hB.begin());
+    iter aItr = mismatches.first;
+    iter bItr = mismatches.second;
+
+    if (aItr == hA.end()) {
+        return ::testing::AssertionSuccess();
+    } else {
+        int idx = std::distance(hA.begin(), aItr);
+        af::dim4 coords = unravel_idx(idx, a);
+
+        return ::testing::AssertionFailure() << "VALUE DIFFERS at ("
+                                             << coords[0] << ", " << coords[1] << ", "
+                                             << coords[2] << ", " << coords[3] << "): "
+                                             << aName << "(" << *aItr << "), "
+                                             << bName << "(" << *bItr << ")";
+    }
+
+}
+
+template<typename T>
+::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
+                                      af::array a, af::array b,
+                                      float_tag) {
+    uint nElems = a.elements();
+    af::dim4 arrDims = a.dims();
+
+    std::vector<T> hA(nElems);
+    a.host(hA.data());
+
+    std::vector<T> hB(nElems);
+    b.host(hB.data());
+
+    typedef typename std::vector<T>::iterator iter;
+    std::pair<iter, iter> mismatches = std::mismatch(hA.begin(), hA.end(), hB.begin());
+    iter aItr = mismatches.first;
+    iter bItr = mismatches.second;
+
+    if (aItr == hA.end()) {
+        return ::testing::AssertionSuccess();
+    } else {
+        int idx = std::distance(hA.begin(), aItr);
+        af::dim4 coords = unravel_idx(idx, a);
+
+        return ::testing::AssertionFailure() << "VALUE DIFFERS at ("
+                                             << coords[0] << ", " << coords[1] << ", "
+                                             << coords[2] << ", " << coords[3] << "): "
+                                             << aName << "(" << *aItr << "), "
+                                             << bName << "(" << *bItr << ")";
+    }
+}
+
+template<typename T>
+::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
+                                      af::array a, af::array b) {
+    typedef typename cond_type<
+        is_floating_point<typename af::dtype_traits<T>::base_type>::value,
+              float_tag, integer_tag>::type tag_type;
+    tag_type tag;
+
+    return elemWiseEq<T>(aName, bName, a, b, tag);
+}
+
+::testing::AssertionResult assertArrayEq(std::string aName, std::string bName,
+                                         af::array a, af::array b) {
+
+    af::dtype aType = a.type();
+    af::dtype bType = b.type();
+    if (aType != bType)
+        return ::testing::AssertionFailure() << "TYPE MISMATCH: "
+                                             << aName << "(" <<  dTypeToStr(a.type()) << ") and "
+                                             << bName << "(" << dTypeToStr(b.type()) << ")";
+
+    af::dtype arrDtype = aType;
+
+    const uint ndimIds = 4;
+    for (uint i = 0; i < ndimIds; ++i) {
+        if (a.dims()[i] != b.dims()[i])
+            return ::testing::AssertionFailure() << "SIZE MISMATCH on dim " << i << ": "
+                                                 << aName << "[" << a.dims() << "], "
+                                                 << bName << "[" << b.dims() << "]";
+    }
+
+    switch (arrDtype) {
+    case f32: return elemWiseEq<float>(aName, bName, a, b);              break;
+    case c32: return elemWiseEq<af::cfloat>(aName, bName, a, b);         break;
+    case f64: return elemWiseEq<double>(aName, bName, a, b);             break;
+    case c64: return elemWiseEq<af::cdouble>(aName, bName, a, b);        break;
+    case b8:  return elemWiseEq<char>(aName, bName, a, b);               break;
+    case s32: return elemWiseEq<int>(aName, bName, a, b);                break;
+    case u32: return elemWiseEq<uint>(aName, bName, a, b);               break;
+    case u8:  return elemWiseEq<uchar>(aName, bName, a, b);              break;
+    case s64: return elemWiseEq<long long>(aName, bName, a, b);          break;
+    case u64: return elemWiseEq<unsigned long long>(aName, bName, a, b); break;
+    case s16: return elemWiseEq<short>(aName, bName, a, b);              break;
+    case u16: return elemWiseEq<unsigned short>(aName, bName, a, b);     break;
+    default:  return ::testing::AssertionFailure()
+            << "INVALID TYPE, see enum numbers: "
+            << aName << "(" << a.type() << ") and "
+            << bName << "(" << b.type() << ")";
+    }
+
+    return ::testing::AssertionSuccess();
+}
+
+::testing::AssertionResult assertArrayEq(std::string aName, std::string bName,
+                                         af_array a, af_array b) {
+    af::array aa(a);
+    af::array bb(b);
+    return assertArrayEq(aName, bName, aa, bb);
 }
 
 #pragma GCC diagnostic pop
