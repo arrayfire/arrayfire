@@ -7,14 +7,18 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
+#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <arrayfire.h>
+#include <gtest/gtest.h>
+#include <testHelpers.hpp>
+
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
-#include <vector>
+
+#include <cstdio>
 #include <iostream>
 #include <string>
-#include <testHelpers.hpp>
+#include <vector>
 
 using af::NaN;
 using af::array;
@@ -32,7 +36,6 @@ using af::span;
 using af::sum;
 using std::string;
 using std::stringstream;
-using std::to_string;
 using std::vector;
 
 
@@ -305,13 +308,19 @@ struct select_params {
     dim4 cond;
     dim4 a;
     dim4 b;
+  select_params(dim4 out_, dim4 cond_, dim4 a_, dim4 b_)
+    : out(out_), cond(cond_), a(a_), b(b_)
+  {}
 };
 
 class Select_ : public ::testing::TestWithParam<select_params> {};
 
 string pd4(dim4 dims) {
-    return to_string(dims[0]) + "_" + to_string(dims[1]) + "_"
-         + to_string(dims[2]) + "_" + to_string(dims[3]) + "_";
+    string out(32, '\0');
+    int len = snprintf(const_cast<char*>(out.data()), 32,
+                       "%d_%d_%d_%d", dims[0], dims[1], dims[2], dims[3]);
+    out.resize(len);
+    return out;
 }
 
 string testNameGenerator(const ::testing::TestParamInfo<Select_::ParamType> info) {
@@ -324,16 +333,17 @@ string testNameGenerator(const ::testing::TestParamInfo<Select_::ParamType> info
 }
 
 vector<select_params> getSelectTestParams(int M, int N) {
-  return {select_params{dim4(M), dim4(M), dim4(M), dim4(M)},
-          select_params{dim4(M, N), dim4(M, N), dim4(M, N), dim4(M, N)},
-          select_params{dim4(M, N, N), dim4(M, N, N), dim4(M, N, N), dim4(M, N, N)},
-          select_params{dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N)},
-          select_params{dim4(M, N), dim4(M, 1), dim4(M, 1), dim4(M, N)},
-          select_params{dim4(M, N), dim4(M, 1), dim4(M, N), dim4(M, 1)},
-          select_params{dim4(M, N), dim4(M, 1), dim4(M, N), dim4(M, N)},
-          select_params{dim4(M, N), dim4(M, N), dim4(M, 1), dim4(M, N)},
-          select_params{dim4(M, N), dim4(M, N), dim4(M, N), dim4(M, 1)},
-          select_params{dim4(M, N), dim4(M, N), dim4(M, 1), dim4(M, 1)}};
+  const select_params _[] = {select_params(dim4(M), dim4(M), dim4(M), dim4(M)),
+          select_params(dim4(M, N), dim4(M, N), dim4(M, N), dim4(M, N)),
+          select_params(dim4(M, N, N), dim4(M, N, N), dim4(M, N, N), dim4(M, N, N)),
+          select_params(dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N)),
+          select_params(dim4(M, N), dim4(M, 1), dim4(M, 1), dim4(M, N)),
+          select_params(dim4(M, N), dim4(M, 1), dim4(M, N), dim4(M, 1)),
+          select_params(dim4(M, N), dim4(M, 1), dim4(M, N), dim4(M, N)),
+          select_params(dim4(M, N), dim4(M, N), dim4(M, 1), dim4(M, N)),
+          select_params(dim4(M, N), dim4(M, N), dim4(M, N), dim4(M, 1)),
+          select_params(dim4(M, N), dim4(M, N), dim4(M, 1), dim4(M, 1))};
+  return vector<select_params>(_, _ + sizeof(_) / sizeof(_[0]));
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -381,17 +391,22 @@ struct selectlr_params {
   dim4 out;
   dim4 cond;
   dim4 ab;
+  selectlr_params(dim4 out_, dim4 cond_, dim4 ab_)
+    : out(out_), cond(cond_), ab(ab_) {}
 };
 
 class SelectLR_ : public ::testing::TestWithParam<selectlr_params> {};
 
 vector<selectlr_params> getSelectLRTestParams(int M, int N) {
-  return {selectlr_params{dim4(M), dim4(M), dim4(M)},
-          selectlr_params{dim4(M, N), dim4(M, N), dim4(M, N)},
-          selectlr_params{dim4(M, N, N), dim4(M, N, N), dim4(M, N, N)},
-          selectlr_params{dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N)},
-          selectlr_params{dim4(M, N), dim4(M, 1), dim4(M, N)},
-          selectlr_params{dim4(M, N), dim4(M, N), dim4(M, 1)}};
+  const selectlr_params _[] = {
+              selectlr_params(dim4(M), dim4(M), dim4(M)),
+              selectlr_params(dim4(M, N), dim4(M, N), dim4(M, N)),
+              selectlr_params(dim4(M, N, N), dim4(M, N, N), dim4(M, N, N)),
+              selectlr_params(dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N)),
+              selectlr_params(dim4(M, N), dim4(M, 1), dim4(M, N)),
+              selectlr_params(dim4(M, N), dim4(M, N), dim4(M, 1))};
+
+  return vector<selectlr_params> (_, _+sizeof(_)/sizeof(_[0]));
 }
 
 string testNameGeneratorLR(const ::testing::TestParamInfo<SelectLR_::ParamType> info) {
@@ -472,18 +487,18 @@ TEST(Select, InvalidSizeOfAB) {
     af_array out = 0;
 
     double val = 0;
-    std::array<dim_t, 1> dims = {10};
-    ASSERT_EQ(AF_SUCCESS, af_constant(&a, val, 1, dims.data(), f32));
+    dim_t dims = 10;
+    ASSERT_EQ(AF_SUCCESS, af_constant(&a, val, 1, &dims, f32));
 
-    dims[0] = 9;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&b, val, 1, dims.data(), f32));
+    dims = 9;
+    ASSERT_EQ(AF_SUCCESS, af_constant(&b, val, 1, &dims, f32));
 
-    dims[0] = 10;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&cond, val, 1, dims.data(), b8));
+    dims = 10;
+    ASSERT_EQ(AF_SUCCESS, af_constant(&cond, val, 1, &dims, b8));
 
     ASSERT_EQ(AF_ERR_SIZE, af_select(&out, cond, a, b));
 
-    char* msg = nullptr;
+    char* msg = NULL;
     dim_t len = 0;
     af_get_last_error(&msg, &len);
     af_free_host(msg);
@@ -499,18 +514,18 @@ TEST(Select, InvalidSizeOfCond) {
     af_array out = 0;
 
     double val = 0;
-    std::array<dim_t, 1> dims = {10};
-    ASSERT_EQ(AF_SUCCESS, af_constant(&a, val, 1, dims.data(), f32));
+    dim_t dims = 10;
+    ASSERT_EQ(AF_SUCCESS, af_constant(&a, val, 1, &dims, f32));
 
-    dims[0] = 10;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&b, val, 1, dims.data(), f32));
+    dims = 10;
+    ASSERT_EQ(AF_SUCCESS, af_constant(&b, val, 1, &dims, f32));
 
-    dims[0] = 9;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&cond, val, 1, dims.data(), b8));
+    dims = 9;
+    ASSERT_EQ(AF_SUCCESS, af_constant(&cond, val, 1, &dims, b8));
 
     ASSERT_EQ(AF_ERR_SIZE, af_select(&out, cond, a, b));
 
-    char* msg = nullptr;
+    char* msg = NULL;
     dim_t len = 0;
     af_get_last_error(&msg, &len);
     af_free_host(msg);
