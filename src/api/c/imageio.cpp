@@ -90,6 +90,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
     // NOTE: Redefine the MODULE_FUNCTION_INIT macro to call the static functions
     // instead of dynamically loaded symbols in case we are building with a static
     // FreeImage library
+    #undef MODULE_FUNCTION_INIT
     #define MODULE_FUNCTION_INIT(NAME)                  \
       NAME = &::NAME
 

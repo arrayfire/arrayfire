@@ -16,12 +16,21 @@
 #include "error.hpp"
 #include <af/defines.h>
 
-namespace af
-{
+#include <type_traits>
+
+using std::enable_if;
+using af::array;
+using af::dim4;
+using af::dtype;
+
+namespace {
+    template<typename T> struct is_complex          { static const bool value = false;  };
+    template<> struct           is_complex<af::cfloat>  { static const bool value = true;   };
+    template<> struct           is_complex<af::cdouble> { static const bool value = true;   };
 
     template<typename T>
-    array
-    constant(T val, const dim4 &dims, const af::dtype type)
+    typename enable_if<is_complex<T>::value == false, array>::type
+    constant(T val, const dim4& dims, const dtype type)
     {
         af_array res;
         if (type != s64 && type != u64) {
@@ -40,11 +49,12 @@ namespace af
         return array(res);
     }
 
-    template<>
-    AFAPI array constant(cfloat val, const dim4 &dims, const af::dtype type)
+    template<typename T>
+    typename enable_if<is_complex<T>::value == true, array>::type
+    constant(T val, const dim4& dims, const dtype type)
     {
         if (type != c32 && type != c64) {
-            return constant(real(val), dims, type);
+            return ::constant(real(val), dims, type);
         }
         af_array res;
         AF_THROW(af_constant_complex(&res,
@@ -53,58 +63,54 @@ namespace af
                                      dims.ndims(),
                                      dims.get(), type));
         return array(res);
+    }
+}
+
+namespace af
+{
+    template<typename T>
+    array constant(T val, const dim4& dims, const af::dtype type) {
+         return ::constant(val, dims, type);
     }
 
-    template<>
-    AFAPI array constant(cdouble val, const dim4 &dims, const af::dtype type)
-    {
-        if (type != c32 && type != c64) {
-            return constant(real(val), dims, type);
-        }
-        af_array res;
-        AF_THROW(af_constant_complex(&res,
-                                     real(val),
-                                     imag(val),
-                                     dims.ndims(),
-                                     dims.get(), type));
-        return array(res);
-    }
-    template<typename T>
-    array constant(T val, const dim_t d0, const af::dtype ty)
-    {
-        return constant(val, dim4(d0), ty);
-    }
+     template<typename T>
+     array constant(T val, const dim_t d0, const af::dtype ty)
+     {
+         return ::constant(val, dim4(d0), ty);
+     }
 
     template<typename T>
     array constant(T val, const dim_t d0, const dim_t d1, const af::dtype ty)
     {
-        return constant(val, dim4(d0, d1), ty);
+        return ::constant(val, dim4(d0, d1), ty);
     }
 
     template<typename T>
     array constant(T val, const dim_t d0, const dim_t d1, const dim_t d2, const af::dtype ty)
     {
-        return constant(val, dim4(d0, d1, d2), ty);
+        return ::constant(val, dim4(d0, d1, d2), ty);
     }
 
     template<typename T>
     array constant(T val, const dim_t d0, const dim_t d1, const dim_t d2, const dim_t d3, const af::dtype ty)
     {
-        return constant(val, dim4(d0, d1, d2, d3), ty);
+        return ::constant(val, dim4(d0, d1, d2, d3), ty);
     }
 
-#define CONSTANT(TYPE)                                                              \
-    template AFAPI array constant<TYPE>(TYPE val, const dim4 &dims, const af::dtype ty);  \
-    template AFAPI array constant<TYPE>(TYPE val, const dim_t d0, const af::dtype ty);    \
-    template AFAPI array constant<TYPE>(TYPE val, const dim_t d0,                         \
-                                            const dim_t d1, const af::dtype ty);    \
-    template AFAPI array constant<TYPE>(TYPE val, const dim_t d0,                         \
-                                            const dim_t d1,                         \
-                                            const dim_t d2, const af::dtype ty);    \
-    template AFAPI array constant<TYPE>(TYPE val, const dim_t d0,                         \
-                                            const dim_t d1,                         \
-                                            const dim_t d2,                         \
-                                            const dim_t d3, const af::dtype ty);
+#define CONSTANT(TYPE)                                                       \
+    template AFAPI array constant<TYPE>(TYPE val, const dim4&  dims,         \
+                                        const af::dtype ty);                 \
+    template AFAPI array constant<TYPE>(TYPE val, const dim_t d0,            \
+                                        const af::dtype ty);                 \
+    template AFAPI array constant<TYPE>(TYPE val, const dim_t d0,            \
+                                        const dim_t d1, const af::dtype ty); \
+    template AFAPI array constant<TYPE>(TYPE val, const dim_t d0,            \
+                                        const dim_t d1, const dim_t d2,      \
+                                        const af::dtype ty);                 \
+    template AFAPI array constant<TYPE>(TYPE val, const dim_t d0,            \
+                                        const dim_t d1,                      \
+                                        const dim_t d2,                      \
+                                        const dim_t d3, const af::dtype ty);
     CONSTANT(double);
     CONSTANT(float);
     CONSTANT(int);
