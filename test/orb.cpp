@@ -151,6 +151,7 @@ void orbTest(string pTestFile)
 
     for (size_t testId=0; testId<testCount; ++testId) {
         af_array inArray_f32  = 0;
+        af_array inArray_f32_T= 0;
         af_array inArray      = 0;
         af_array desc         = 0;
         af_features feat;
@@ -158,7 +159,8 @@ void orbTest(string pTestFile)
         inFiles[testId].insert(0,string(TEST_DIR"/orb/"));
 
         ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
-        ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
+        ASSERT_EQ(AF_SUCCESS, af_transpose(&inArray_f32_T, inArray_f32, false));
+        ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32_T));
 
         ASSERT_EQ(AF_SUCCESS, af_orb(&feat, &desc, inArray, 20.0f, 400, 1.2f, 8, true));
 
@@ -255,7 +257,7 @@ TEST(ORB, CPP)
     readImageFeaturesDescriptors<unsigned>(string(TEST_DIR"/orb/square.test"), inDims, inFiles, goldFeat, goldDesc);
     inFiles[0].insert(0,string(TEST_DIR"/orb/"));
 
-    array in = loadImage(inFiles[0].c_str(), false);
+    array in = loadImage(inFiles[0].c_str(), false).T();
 
     features feat;
     array desc;
@@ -308,4 +310,46 @@ TEST(ORB, CPP)
     delete[] outOrientation;
     delete[] outSize;
     delete[] outDesc;
+}
+
+TEST(ORB, WideImages) {
+    array img = loadImage(TEST_DIR"/orb/squares_horiz.jpg", true);
+    img = colorSpace(img, AF_GRAY, AF_RGB);
+    features feats;
+    array descs;
+    orb(feats, descs, img);
+    float* featsDim1 = feats.getY().host<float>();
+    unsigned int numFeats = feats.getNumFeatures();
+    unsigned int idim0 = img.dims()[0];
+    bool featsFoundBeyondNumRows = false;
+
+    for (unsigned int i = 0; i < numFeats; ++i) {
+        if (featsDim1[i] > idim0) {
+            featsFoundBeyondNumRows = true;
+            break;
+        }
+    }
+
+    ASSERT_TRUE(featsFoundBeyondNumRows);
+}
+
+TEST(ORB, TallImages) {
+    array img = loadImage(TEST_DIR"/orb/squares_vert.jpg", true);
+    img = colorSpace(img, AF_GRAY, AF_RGB);
+    features feats;
+    array descs;
+    orb(feats, descs, img);
+    float* featsDim0 = feats.getX().host<float>();
+    unsigned int numFeats = feats.getNumFeatures();
+    unsigned int idim1 = img.dims()[1];
+    bool featsFoundBeyondNumCols = false;
+
+    for (unsigned int i = 0; i < numFeats; ++i) {
+        if (featsDim0[i] > idim1) {
+            featsFoundBeyondNumCols = true;
+            break;
+        }
+    }
+
+    ASSERT_TRUE(featsFoundBeyondNumCols);
 }

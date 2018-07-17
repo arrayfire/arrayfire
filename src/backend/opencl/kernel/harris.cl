@@ -41,8 +41,8 @@ __kernel void harris_responses(
     const unsigned x = get_global_id(0) + r;
     const unsigned y = get_global_id(1) + r;
 
-    if (x < idim1 - r && y < idim0 - r) {
-        const unsigned idx = x * idim0 + y;
+    if (x < idim0 - r && y < idim1 - r) {
+        const unsigned idx = y * idim0 + x;
 
         // Calculates matrix trace and determinant
         T tr = ixx_in[idx] + iyy_in[idx];
@@ -71,18 +71,18 @@ __kernel void non_maximal(
     const unsigned x = get_global_id(0) + r;
     const unsigned y = get_global_id(1) + r;
 
-    if (x < idim1 - r && y < idim0 - r) {
-        const T v = resp_in[x * idim0 + y];
+    if (x < idim0 - r && y < idim1 - r) {
+        const T v = resp_in[y * idim0 + x];
 
         // Find maximum neighborhood response
         T max_v;
-        max_v = MAX_VAL(resp_in[(x-1) * idim0 + y-1], resp_in[x * idim0 + y-1]);
-        max_v = MAX_VAL(max_v, resp_in[(x+1) * idim0 + y-1]);
-        max_v = MAX_VAL(max_v, resp_in[(x-1) * idim0 + y  ]);
-        max_v = MAX_VAL(max_v, resp_in[(x+1) * idim0 + y  ]);
-        max_v = MAX_VAL(max_v, resp_in[(x-1) * idim0 + y+1]);
-        max_v = MAX_VAL(max_v, resp_in[(x)   * idim0 + y+1]);
-        max_v = MAX_VAL(max_v, resp_in[(x+1) * idim0 + y+1]);
+        max_v = MAX_VAL(resp_in[(y-1) * idim0 + x-1], resp_in[y * idim0 + x-1]);
+        max_v = MAX_VAL(max_v, resp_in[(y+1) * idim0 + x-1]);
+        max_v = MAX_VAL(max_v, resp_in[(y-1) * idim0 + x  ]);
+        max_v = MAX_VAL(max_v, resp_in[(y+1) * idim0 + x  ]);
+        max_v = MAX_VAL(max_v, resp_in[(y-1) * idim0 + x+1]);
+        max_v = MAX_VAL(max_v, resp_in[(y)   * idim0 + x+1]);
+        max_v = MAX_VAL(max_v, resp_in[(y+1) * idim0 + x+1]);
 
         // Stores corner to {x,y,resp}_out if it's response is maximum compared
         // to its 8-neighborhood and greater or equal minimum response

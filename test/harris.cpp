@@ -209,3 +209,43 @@ TEST(FloatHarris, CPP)
         ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << endl;
     }
 }
+
+TEST(FloatHarris, WideImages) {
+    array img = loadImage(TEST_DIR"/harris/squares_horiz.jpg", true);
+    img = colorSpace(img, AF_GRAY, AF_RGB);
+    features feats = harris(img);
+    // Remember that the image is transposed after loadImage()
+    float* featsDim1 = feats.getY().host<float>();
+    unsigned int numFeats = feats.getNumFeatures();
+    unsigned int idim0 = img.dims()[0];
+    bool featsFoundBeyondNumRows = false;
+
+    for (unsigned int i = 0; i < numFeats; ++i) {
+        if (featsDim1[i] > idim0) {
+            featsFoundBeyondNumRows = true;
+            break;
+        }
+    }
+
+    ASSERT_TRUE(featsFoundBeyondNumRows);
+}
+
+TEST(FloatHarris, TallImages) {
+    array img = loadImage(TEST_DIR"/harris/squares_vert.jpg", true);
+    img = colorSpace(img, AF_GRAY, AF_RGB);
+    features feats = harris(img);
+    // Remember that the image is transposed after loadImage()
+    float* featsDim0 = feats.getX().host<float>();
+    unsigned int numFeats = feats.getNumFeatures();
+    unsigned int idim1 = img.dims()[1];
+    bool featsFoundBeyondNumCols = false;
+
+    for (unsigned int i = 0; i < numFeats; ++i) {
+        if (featsDim0[i] > idim1) {
+            featsFoundBeyondNumCols = true;
+            break;
+        }
+    }
+
+    ASSERT_TRUE(featsFoundBeyondNumCols);
+}

@@ -210,13 +210,13 @@ void non_max_counts(
 
 #if NONMAX
                 float max_v = v;
-                max_v = MAX_VAL(score[x-1 + iInfo.dims[0] * (y-1)], score[x-1 + iInfo.dims[0] * y]);
-                max_v = MAX_VAL(max_v, score[x-1 + iInfo.dims[0] * (y+1)]);
-                max_v = MAX_VAL(max_v, score[x   + iInfo.dims[0] * (y-1)]);
-                max_v = MAX_VAL(max_v, score[x   + iInfo.dims[0] * (y+1)]);
-                max_v = MAX_VAL(max_v, score[x+1 + iInfo.dims[0] * (y-1)]);
-                max_v = MAX_VAL(max_v, score[x+1 + iInfo.dims[0] * (y)  ]);
-                max_v = MAX_VAL(max_v, score[x+1 + iInfo.dims[0] * (y+1)]);
+                max_v = MAX_VAL(score[(y-1) * iInfo.dims[0] + x-1], score[y * iInfo.dims[0] + x-1]);
+                max_v = MAX_VAL(max_v, score[(y+1) * iInfo.dims[0] + x-1]);
+                max_v = MAX_VAL(max_v, score[(y-1) * iInfo.dims[0] + x  ]);
+                max_v = MAX_VAL(max_v, score[(y+1) * iInfo.dims[0] + x  ]);
+                max_v = MAX_VAL(max_v, score[(y-1) * iInfo.dims[0] + x+1]);
+                max_v = MAX_VAL(max_v, score[(y)   * iInfo.dims[0] + x+1]);
+                max_v = MAX_VAL(max_v, score[(y+1) * iInfo.dims[0] + x+1]);
 
                 v = (v > max_v) ? v : 0;
                 flags[y * iInfo.dims[0] + x] = v;
@@ -293,8 +293,8 @@ __kernel void get_features(
 
             unsigned id = atomic_inc(&s_idx);
             if (id < total) {
-                y_out[id] = x;
-                x_out[id] = y;
+                x_out[id] = x;
+                y_out[id] = y;
                 score_out[id] = v;
             }
         }

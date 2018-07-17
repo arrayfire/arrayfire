@@ -182,3 +182,43 @@ TEST(Susan, InvalidEdge)
         EXPECT_TRUE(true);
     }
 }
+
+TEST(Susan, WideImages) {
+    array img = loadImage(TEST_DIR"/susan/squares_horiz.jpg", true);
+    img = colorSpace(img, AF_GRAY, AF_RGB);
+    features feats = susan(img);
+    // Remember that the image is transposed after loadImage()
+    float* featsDim1 = feats.getY().host<float>();
+    unsigned int numFeats = feats.getNumFeatures();
+    unsigned int idim0 = img.dims()[0];
+    bool featsFoundBeyondNumRows = false;
+
+    for (unsigned int i = 0; i < numFeats; ++i) {
+        if (featsDim1[i] > idim0) {
+            featsFoundBeyondNumRows = true;
+            break;
+        }
+    }
+
+    ASSERT_TRUE(featsFoundBeyondNumRows);
+}
+
+TEST(Susan, TallImages) {
+    array img = loadImage(TEST_DIR"/susan/squares_vert.jpg", true);
+    img = colorSpace(img, AF_GRAY, AF_RGB);
+    features feats = susan(img);
+    // Remember that the image is transposed after loadImage()
+    float* featsDim0 = feats.getX().host<float>();
+    unsigned int numFeats = feats.getNumFeatures();
+    unsigned int idim1 = img.dims()[1];
+    bool featsFoundBeyondNumCols = false;
+
+    for (unsigned int i = 0; i < numFeats; ++i) {
+        if (featsDim0[i] > idim1) {
+            featsFoundBeyondNumCols = true;
+            break;
+        }
+    }
+
+    ASSERT_TRUE(featsFoundBeyondNumCols);
+}

@@ -282,13 +282,13 @@ void non_max_counts(
 
             if (nonmax) {
                 float max_v = v;
-                max_v = max_val(score[x-1 + idim0 * (y-1)], score[x-1 + idim0 * y]);
-                max_v = max_val(max_v, score[x-1 + idim0 * (y+1)]);
-                max_v = max_val(max_v, score[x   + idim0 * (y-1)]);
-                max_v = max_val(max_v, score[x   + idim0 * (y+1)]);
-                max_v = max_val(max_v, score[x+1 + idim0 * (y-1)]);
-                max_v = max_val(max_v, score[x+1 + idim0 * (y)  ]);
-                max_v = max_val(max_v, score[x+1 + idim0 * (y+1)]);
+                max_v = max_val(score[(y-1) * idim0 + x-1], score[y * idim0 + x-1]);
+                max_v = max_val(max_v, score[(y+1) * idim0 + x-1]);
+                max_v = max_val(max_v, score[(y-1) * idim0 + x  ]);
+                max_v = max_val(max_v, score[(y+1) * idim0 + x  ]);
+                max_v = max_val(max_v, score[(y-1) * idim0 + x+1]);
+                max_v = max_val(max_v, score[(y)   * idim0 + x+1]);
+                max_v = max_val(max_v, score[(y+1) * idim0 + x+1]);
 
                 v = (v > max_v) ? v : 0;
                 flags[y * idim0 + x] = v;
@@ -355,8 +355,8 @@ void get_features(
 
             unsigned id = atomicAdd(&s_idx, 1u);
             if (id >= total) return;
-            y_out[id] = x;
-            x_out[id] = y;
+            x_out[id] = x;
+            y_out[id] = y;
             score_out[id] = v;
         }
     }
