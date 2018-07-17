@@ -32,8 +32,6 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/err_common.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/lapacke.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/lapacke.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/module_loading.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse_helpers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
@@ -60,6 +58,13 @@ if(AF_WITH_LOGGING)
   target_link_libraries(afcommon_interface
     INTERFACE
       spdlog::spdlog)
+endif()
+
+if(APPLE AND NOT USE_MKL)
+  target_sources(afcommon_interface
+    INTERFACE
+      ${CMAKE_CURRENT_SOURCE_DIR}/lapacke.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/lapacke.hpp)
 endif()
 
 if(AF_WITH_GRAPHICS)

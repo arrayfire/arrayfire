@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
 ********************************************************/
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) && !defined(AF_CUDA)
 #include <types.hpp>
 #include <backend.hpp>
 
