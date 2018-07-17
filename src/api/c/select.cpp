@@ -33,26 +33,24 @@ af_err af_select(af_array *out, const af_array cond, const af_array a, const af_
     try {
         const ArrayInfo& ainfo = getInfo(a);
         const ArrayInfo& binfo = getInfo(b);
-        const ArrayInfo& cinfo = getInfo(cond);
+        const ArrayInfo& cond_info = getInfo(cond);
 
-        if(cinfo.ndims() == 0) {
+        if(cond_info.ndims() == 0) {
             return af_retain_array(out, cond);
         }
 
         ARG_ASSERT(2, ainfo.getType() == binfo.getType());
-        ARG_ASSERT(1, cinfo.getType() == b8);
-
-        DIM_ASSERT(1, cinfo.ndims() == std::min(ainfo.ndims(), binfo.ndims()));
+        ARG_ASSERT(1, cond_info.getType() == b8);
 
         dim4 adims = ainfo.dims();
         dim4 bdims = binfo.dims();
-        dim4 cdims = cinfo.dims();
+        dim4 cond_dims = cond_info.dims();
         dim4 odims(1, 1, 1, 1);
 
         for (int i = 0; i < 4; i++) {
-            DIM_ASSERT(1, cdims[i] == std::min(adims[i], bdims[i]));
-            DIM_ASSERT(2, adims[i] == bdims[i] || adims[i] == 1 || bdims[i] == 1);
-            odims[i] = std::max(adims[i], bdims[i]);
+            DIM_ASSERT(2, (adims[i] == bdims[i] && adims[i] == cond_dims[i])
+                        || adims[i] == 1 || bdims[i] == 1 || cond_dims[i] == 1);
+            odims[i] = std::max(std::max(adims[i], bdims[i]), cond_dims[i]);
         }
 
         af_array res;
@@ -92,30 +90,31 @@ af_err af_select_scalar_r(af_array *out, const af_array cond, const af_array a, 
         const ArrayInfo& cinfo = getInfo(cond);
 
         ARG_ASSERT(1, cinfo.getType() == b8);
-        DIM_ASSERT(1, cinfo.ndims() == ainfo.ndims());
 
         dim4 adims = ainfo.dims();
-        dim4 cdims = cinfo.dims();
+        dim4 cond_dims = cinfo.dims();
+        dim4 odims(1);
 
         for (int i = 0; i < 4; i++) {
-            DIM_ASSERT(1, cdims[i] == adims[i]);
+            DIM_ASSERT(1, cond_dims[i] == adims[i] | cond_dims[i] == 1 | adims[i] == 1);
+            odims[i] = std::max(cond_dims[i], adims[i]);
         }
 
         af_array res;
 
         switch (ainfo.getType()) {
-        case f32: res = select_scalar<float  , false>(cond, a, b, adims); break;
-        case f64: res = select_scalar<double , false>(cond, a, b, adims); break;
-        case c32: res = select_scalar<cfloat , false>(cond, a, b, adims); break;
-        case c64: res = select_scalar<cdouble, false>(cond, a, b, adims); break;
-        case s32: res = select_scalar<int    , false>(cond, a, b, adims); break;
-        case u32: res = select_scalar<uint   , false>(cond, a, b, adims); break;
-        case s16: res = select_scalar<short  , false>(cond, a, b, adims); break;
-        case u16: res = select_scalar<ushort , false>(cond, a, b, adims); break;
-        case s64: res = select_scalar<intl   , false>(cond, a, b, adims); break;
-        case u64: res = select_scalar<uintl  , false>(cond, a, b, adims); break;
-        case u8:  res = select_scalar<uchar  , false>(cond, a, b, adims); break;
-        case b8:  res = select_scalar<char   , false>(cond, a, b, adims); break;
+        case f32: res = select_scalar<float  , false>(cond, a, b, odims); break;
+        case f64: res = select_scalar<double , false>(cond, a, b, odims); break;
+        case c32: res = select_scalar<cfloat , false>(cond, a, b, odims); break;
+        case c64: res = select_scalar<cdouble, false>(cond, a, b, odims); break;
+        case s32: res = select_scalar<int    , false>(cond, a, b, odims); break;
+        case u32: res = select_scalar<uint   , false>(cond, a, b, odims); break;
+        case s16: res = select_scalar<short  , false>(cond, a, b, odims); break;
+        case u16: res = select_scalar<ushort , false>(cond, a, b, odims); break;
+        case s64: res = select_scalar<intl   , false>(cond, a, b, odims); break;
+        case u64: res = select_scalar<uintl  , false>(cond, a, b, odims); break;
+        case u8:  res = select_scalar<uchar  , false>(cond, a, b, odims); break;
+        case b8:  res = select_scalar<char   , false>(cond, a, b, odims); break;
         default:  TYPE_ERROR(2, ainfo.getType());
         }
 
@@ -131,30 +130,31 @@ af_err af_select_scalar_l(af_array *out, const af_array cond, const double a, co
         const ArrayInfo& cinfo = getInfo(cond);
 
         ARG_ASSERT(1, cinfo.getType() == b8);
-        DIM_ASSERT(1, cinfo.ndims() == binfo.ndims());
 
         dim4 bdims = binfo.dims();
-        dim4 cdims = cinfo.dims();
+        dim4 cond_dims = cinfo.dims();
+        dim4 odims(1);
 
         for (int i = 0; i < 4; i++) {
-            DIM_ASSERT(1, cdims[i] == bdims[i]);
+            DIM_ASSERT(1, cond_dims[i] == bdims[i] || cond_dims[i] == 1 || bdims[i] == 1);
+            odims[i] = std::max(cond_dims[i], bdims[i]);
         }
 
         af_array res;
 
         switch (binfo.getType()) {
-        case f32: res = select_scalar<float  , true >(cond, b, a, bdims); break;
-        case f64: res = select_scalar<double , true >(cond, b, a, bdims); break;
-        case c32: res = select_scalar<cfloat , true >(cond, b, a, bdims); break;
-        case c64: res = select_scalar<cdouble, true >(cond, b, a, bdims); break;
-        case s32: res = select_scalar<int    , true >(cond, b, a, bdims); break;
-        case u32: res = select_scalar<uint   , true >(cond, b, a, bdims); break;
-        case s16: res = select_scalar<short  , true >(cond, b, a, bdims); break;
-        case u16: res = select_scalar<ushort , true >(cond, b, a, bdims); break;
-        case s64: res = select_scalar<intl   , true >(cond, b, a, bdims); break;
-        case u64: res = select_scalar<uintl  , true >(cond, b, a, bdims); break;
-        case u8:  res = select_scalar<uchar  , true >(cond, b, a, bdims); break;
-        case b8:  res = select_scalar<char   , true >(cond, b, a, bdims); break;
+        case f32: res = select_scalar<float  , true >(cond, b, a, odims); break;
+        case f64: res = select_scalar<double , true >(cond, b, a, odims); break;
+        case c32: res = select_scalar<cfloat , true >(cond, b, a, odims); break;
+        case c64: res = select_scalar<cdouble, true >(cond, b, a, odims); break;
+        case s32: res = select_scalar<int    , true >(cond, b, a, odims); break;
+        case u32: res = select_scalar<uint   , true >(cond, b, a, odims); break;
+        case s16: res = select_scalar<short  , true >(cond, b, a, odims); break;
+        case u16: res = select_scalar<ushort , true >(cond, b, a, odims); break;
+        case s64: res = select_scalar<intl   , true >(cond, b, a, odims); break;
+        case u64: res = select_scalar<uintl  , true >(cond, b, a, odims); break;
+        case u8:  res = select_scalar<uchar  , true >(cond, b, a, odims); break;
+        case b8:  res = select_scalar<char   , true >(cond, b, a, odims); break;
         default:  TYPE_ERROR(2, binfo.getType());
         }
 

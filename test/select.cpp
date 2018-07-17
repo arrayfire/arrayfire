@@ -16,7 +16,6 @@
 #include <string>
 #include <testHelpers.hpp>
 
-using std::vector;
 using af::NaN;
 using af::array;
 using af::cdouble;
@@ -31,6 +30,10 @@ using af::select;
 using af::seq;
 using af::span;
 using af::sum;
+using std::string;
+using std::stringstream;
+using std::to_string;
+using std::vector;
 
 
 template<typename T>
@@ -295,4 +298,223 @@ TEST(Select, MaxDim)
     sum = af::sum<float>(sel);
 
     ASSERT_FLOAT_EQ(sum, 0.f);
+}
+
+struct select_params {
+    dim4 out;
+    dim4 cond;
+    dim4 a;
+    dim4 b;
+};
+
+class Select_ : public ::testing::TestWithParam<select_params> {};
+
+string pd4(dim4 dims) {
+    return to_string(dims[0]) + "_" + to_string(dims[1]) + "_"
+         + to_string(dims[2]) + "_" + to_string(dims[3]) + "_";
+}
+
+string testNameGenerator(const ::testing::TestParamInfo<Select_::ParamType> info) {
+    stringstream ss;
+    ss << "out_" << pd4(info.param.out)
+       << "_cond_" << pd4(info.param.cond)
+       << "_a_" << pd4(info.param.a)
+       << "_b_" << pd4(info.param.b);
+    return ss.str();
+}
+
+vector<select_params> getSelectTestParams(int M, int N) {
+  return {select_params{dim4(M), dim4(M), dim4(M), dim4(M)},
+          select_params{dim4(M, N), dim4(M, N), dim4(M, N), dim4(M, N)},
+          select_params{dim4(M, N, N), dim4(M, N, N), dim4(M, N, N), dim4(M, N, N)},
+          select_params{dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N)},
+          select_params{dim4(M, N), dim4(M, 1), dim4(M, 1), dim4(M, N)},
+          select_params{dim4(M, N), dim4(M, 1), dim4(M, N), dim4(M, 1)},
+          select_params{dim4(M, N), dim4(M, 1), dim4(M, N), dim4(M, N)},
+          select_params{dim4(M, N), dim4(M, N), dim4(M, 1), dim4(M, N)},
+          select_params{dim4(M, N), dim4(M, N), dim4(M, N), dim4(M, 1)},
+          select_params{dim4(M, N), dim4(M, N), dim4(M, 1), dim4(M, 1)}};
+}
+
+INSTANTIATE_TEST_CASE_P(
+  SmallDims,
+  Select_,
+  ::testing::ValuesIn(getSelectTestParams(10, 5)),
+  testNameGenerator);
+
+INSTANTIATE_TEST_CASE_P(
+  Dims33_9,
+  Select_,
+  ::testing::ValuesIn(getSelectTestParams(33, 9)),
+  testNameGenerator);
+
+INSTANTIATE_TEST_CASE_P(
+  DimsLg,
+  Select_,
+  ::testing::ValuesIn(getSelectTestParams(512, 32)),
+  testNameGenerator);
+
+TEST_P(Select_, Batch) {
+    select_params params = GetParam();
+
+    float aval = 5.0f;
+    float bval = 10.0f;
+    array a = constant(aval, params.a);
+    array b = constant(bval, params.b);
+    array cond = (iota(params.cond) % 2).as(b8);
+
+    array out = select(cond, a, b);
+
+    EXPECT_EQ(out.dims(), params.out);
+
+    vector<float> h_out(out.elements()); out.host(h_out.data());
+    vector<unsigned char> h_cond(cond.elements()); cond.host(h_cond.data());
+
+    vector<float> gold(params.out.elements());
+    for(int i = 0; i < gold.size(); i++) {
+        gold[i] = h_cond[i % h_cond.size()] ? aval : bval;
+        ASSERT_FLOAT_EQ(gold[i], h_out[i]) << "at: " << i;
+    }
+}
+
+struct selectlr_params {
+  dim4 out;
+  dim4 cond;
+  dim4 ab;
+};
+
+class SelectLR_ : public ::testing::TestWithParam<selectlr_params> {};
+
+vector<selectlr_params> getSelectLRTestParams(int M, int N) {
+  return {selectlr_params{dim4(M), dim4(M), dim4(M)},
+          selectlr_params{dim4(M, N), dim4(M, N), dim4(M, N)},
+          selectlr_params{dim4(M, N, N), dim4(M, N, N), dim4(M, N, N)},
+          selectlr_params{dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N)},
+          selectlr_params{dim4(M, N), dim4(M, 1), dim4(M, N)},
+          selectlr_params{dim4(M, N), dim4(M, N), dim4(M, 1)}};
+}
+
+string testNameGeneratorLR(const ::testing::TestParamInfo<SelectLR_::ParamType> info) {
+  stringstream ss;
+  ss << "out_" << pd4(info.param.out)
+     << "_cond_" << pd4(info.param.cond)
+     << "_ab_" << pd4(info.param.ab);
+  return ss.str();
+}
+
+INSTANTIATE_TEST_CASE_P(
+                        SmallDims,
+                        SelectLR_,
+                        ::testing::ValuesIn(getSelectLRTestParams(10, 5)),
+                        testNameGeneratorLR);
+
+INSTANTIATE_TEST_CASE_P(
+                        Dims33_9,
+                        SelectLR_,
+                        ::testing::ValuesIn(getSelectLRTestParams(33, 9)),
+                        testNameGeneratorLR);
+
+INSTANTIATE_TEST_CASE_P(
+                        DimsLg,
+                        SelectLR_,
+                        ::testing::ValuesIn(getSelectLRTestParams(512, 32)),
+                        testNameGeneratorLR);
+
+
+TEST_P(SelectLR_, BatchL) {
+    selectlr_params params = GetParam();
+
+    float aval = 5.0f;
+    float bval = 10.0f;
+    array b = constant(bval, params.ab);
+    array cond = (iota(params.cond) % 2).as(b8);
+
+    array out = select(cond, static_cast<double>(aval), b);
+
+    EXPECT_EQ(out.dims(), params.out);
+
+    vector<float> h_out(out.elements()); out.host(h_out.data());
+    vector<unsigned char> h_cond(cond.elements()); cond.host(h_cond.data());
+
+    vector<float> gold(params.out.elements());
+    for(int i = 0; i < gold.size(); i++) {
+        gold[i] = h_cond[i % h_cond.size()] ? aval : bval;
+        ASSERT_FLOAT_EQ(gold[i], h_out[i]) << "at: " << i;
+    }
+}
+
+TEST_P(SelectLR_, BatchR) {
+    selectlr_params params = GetParam();
+
+    float aval = 5.0f;
+    float bval = 10.0f;
+    array a = constant(aval, params.ab);
+    array cond = (iota(params.cond) % 2).as(b8);
+
+    array out = select(cond, a, static_cast<double>(bval));
+
+    EXPECT_EQ(out.dims(), params.out);
+
+    vector<float> h_out(out.elements()); out.host(h_out.data());
+    vector<unsigned char> h_cond(cond.elements()); cond.host(h_cond.data());
+
+    vector<float> gold(params.out.elements());
+    for(int i = 0; i < gold.size(); i++) {
+        gold[i] = h_cond[i % h_cond.size()] ? aval : bval;
+        ASSERT_FLOAT_EQ(gold[i], h_out[i]) << "at: " << i;
+    }
+}
+
+TEST(Select, InvalidSizeOfAB) {
+    af_array a = 0;
+    af_array b = 0;
+    af_array cond = 0;
+    af_array out = 0;
+
+    double val = 0;
+    std::array<dim_t, 1> dims = {10};
+    ASSERT_EQ(AF_SUCCESS, af_constant(&a, val, 1, dims.data(), f32));
+
+    dims[0] = 9;
+    ASSERT_EQ(AF_SUCCESS, af_constant(&b, val, 1, dims.data(), f32));
+
+    dims[0] = 10;
+    ASSERT_EQ(AF_SUCCESS, af_constant(&cond, val, 1, dims.data(), b8));
+
+    ASSERT_EQ(AF_ERR_SIZE, af_select(&out, cond, a, b));
+
+    char* msg = nullptr;
+    dim_t len = 0;
+    af_get_last_error(&msg, &len);
+    af_free_host(msg);
+    af_release_array(a);
+    af_release_array(b);
+    af_release_array(cond);
+}
+
+TEST(Select, InvalidSizeOfCond) {
+    af_array a = 0;
+    af_array b = 0;
+    af_array cond = 0;
+    af_array out = 0;
+
+    double val = 0;
+    std::array<dim_t, 1> dims = {10};
+    ASSERT_EQ(AF_SUCCESS, af_constant(&a, val, 1, dims.data(), f32));
+
+    dims[0] = 10;
+    ASSERT_EQ(AF_SUCCESS, af_constant(&b, val, 1, dims.data(), f32));
+
+    dims[0] = 9;
+    ASSERT_EQ(AF_SUCCESS, af_constant(&cond, val, 1, dims.data(), b8));
+
+    ASSERT_EQ(AF_ERR_SIZE, af_select(&out, cond, a, b));
+
+    char* msg = nullptr;
+    dim_t len = 0;
+    af_get_last_error(&msg, &len);
+    af_free_host(msg);
+    af_release_array(a);
+    af_release_array(b);
+    af_release_array(cond);
 }
