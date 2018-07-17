@@ -404,6 +404,7 @@ cuda_add_library(afcuda
   )
 
 arrayfire_set_default_cxx_flags(afcuda)
+target_compile_definitions(afcuda PRIVATE AF_CUDA)
 
 add_library(ArrayFire::afcuda ALIAS afcuda)
 
