@@ -90,7 +90,7 @@ void morph(Param out, const Param in, const Param mask, int windLen=0)
 
     // copy mask/filter to constant memory
     cl_int se_size   = sizeof(T)*windLen*windLen;
-    cl::Buffer *mBuff = bufferAlloc(se_size);
+    auto mBuff = memAlloc<T>(windLen*windLen);
     getQueue().enqueueCopyBuffer(*mask.data, *mBuff, 0, 0, se_size);
 
     // calculate shared memory size
@@ -101,8 +101,6 @@ void morph(Param out, const Param in, const Param mask, int windLen=0)
     morphOp(EnqueueArgs(getQueue(), global, local),
             *out.data, out.info, *in.data, in.info, *mBuff,
             cl::Local(locSize*sizeof(T)), blk_x, blk_y, windLen);
-
-    bufferFree(mBuff);
 
     CL_DEBUG_FINISH(getQueue());
 }
