@@ -64,11 +64,11 @@ void printMemInfo(const char *msg, const int device)
 }
 
 template<typename T>
-unique_ptr<T[], function<void(T *)>>
+unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>
 memAlloc(const size_t &elements)
 {
-    T* ptr = (T *)memoryManager().alloc(elements * sizeof(T), false);
-    return unique_ptr<T[], function<void(T *)>>(ptr, memFree<T>);
+    cl::Buffer* ptr = static_cast<cl::Buffer *>(memoryManager().alloc(elements * sizeof(T), false));
+    return unique_ptr<cl::Buffer, function<void(cl::Buffer* )>>(ptr, bufferFree);
 }
 
 void* memAllocUser(const size_t &bytes)
@@ -135,11 +135,11 @@ bool checkMemoryLimit()
     return memoryManager().checkMemoryLimit();
 }
 
-#define INSTANTIATE(T)                                                              \
-    template unique_ptr<T[], function<void(T *)>> memAlloc(const size_t &elements); \
-    template void memFree(T* ptr);                                                  \
-    template T* pinnedAlloc(const size_t &elements);                                \
-    template void pinnedFree(T* ptr);                                               \
+#define INSTANTIATE(T)                                                                                 \
+    template unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc<T>(const size_t &elements); \
+    template void memFree(T* ptr);                                                                     \
+    template T* pinnedAlloc(const size_t &elements);                                                   \
+    template void pinnedFree(T* ptr);                                                                  \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)
