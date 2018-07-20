@@ -17,7 +17,10 @@
 #include <platform.hpp>
 #include <queue.hpp>
 
+#include <array>
+
 using af::dim4;
+using std::array;
 
 namespace cpu
 {
@@ -52,38 +55,38 @@ struct EPS<double>
     static double eps() { return DBL_EPSILON; }
 };
 
-template<typename T>
-void JacobiSVD(T* S, T* V, int m, int n)
+template<typename T, int M, int N>
+void JacobiSVD(T* S, T* V)
 {
     const int iterations = 30;
-    T* d = new T[n];
+    array<T, N> d;
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < N; i++) {
         T sd = 0;
-        for (int j = 0; j < m; j++) {
-            T t = S[i*m + j];
+        for (int j = 0; j < M; j++) {
+            T t = S[i*M + j];
             sd += t*t;
         }
         d[i] = sd;
 
-        V[i*n + i] = 1;
+        V[i*N + i] = 1;
     }
 
     for (int it = 0; it < iterations; it++) {
         bool converged = false;
 
-        for (int i = 0; i < n-1; i++) {
-            for (int j = i+1; j < n; j++) {
-                T* Si = S + i*m;
-                T* Sj = S + j*m;
-                T* Vi = V + i*n;
-                T* Vj = V + j*n;
+        for (int i = 0; i < N-1; i++) {
+            for (int j = i+1; j < N; j++) {
+                T* Si = S + i*M;
+                T* Sj = S + j*M;
+                T* Vi = V + i*N;
+                T* Vj = V + j*N;
 
                 T p = (T)0;
-                for (int k = 0; k < m; k++)
+                for (int k = 0; k < M; k++)
                     p += Si[k]*Sj[k];
 
-                if (std::abs(p) <= m*EPS<T>::eps()*std::sqrt(d[i]*d[j]))
+                if (std::abs(p) <= M*EPS<T>::eps()*std::sqrt(d[i]*d[j]))
                     continue;
 
                 T y = d[i] - d[j];
@@ -100,7 +103,7 @@ void JacobiSVD(T* S, T* V, int m, int n)
                 }
 
                 T a = 0, b = 0;
-                for (int k = 0; k < m; k++) {
+                for (int k = 0; k < M; k++) {
                     T t0 = c*Si[k] + s*Sj[k];
                     T t1 = c*Sj[k] - s*Si[k];
                     Si[k] = t0;
@@ -112,7 +115,7 @@ void JacobiSVD(T* S, T* V, int m, int n)
                 d[i] = a;
                 d[j] = b;
 
-                for (int l = 0; l < n; l++) {
+                for (int l = 0; l < N; l++) {
                     T t0 = Vi[l] * c + Vj[l] * s;
                     T t1 = Vj[l] * c - Vi[l] * s;
 
@@ -126,8 +129,6 @@ void JacobiSVD(T* S, T* V, int m, int n)
                 break;
         }
     }
-
-    delete[] d;
 }
 
 unsigned updateIterations(float inlier_ratio, unsigned iter)
@@ -212,14 +213,14 @@ int computeHomography(T* H_ptr, const float* rnd_ptr,
     Array<T> V = createValueArray<T>(af::dim4(Adims[1], Adims[1]), (T)0);
     V.eval();
     getQueue().sync();
-    JacobiSVD<T>(A.get(), V.get(), 9, 9);
+    JacobiSVD<T, 9, 9>(A.get(), V.get());
 
-    af::dim4 Vdims = V.dims();
+    dim4 Vdims = V.dims();
     T* V_ptr = V.get();
 
-    std::vector<T> vH;
+    array<T, 9> vH;
     for (unsigned j = 0; j < 9; j++)
-        vH.push_back(V_ptr[8 * Vdims[0] + j]);
+        vH[j] = V_ptr[8 * Vdims[0] + j];
 
     H_ptr[0] = src_scale*x_dst_mean*vH[6] + src_scale*vH[0]/dst_scale;
     H_ptr[1] = src_scale*x_dst_mean*vH[7] + src_scale*vH[1]/dst_scale;

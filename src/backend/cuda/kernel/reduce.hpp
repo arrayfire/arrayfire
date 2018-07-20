@@ -19,6 +19,8 @@
 
 #include <cub/warp/warp_reduce.cuh>
 
+#include <vector>
+
 using std::unique_ptr;
 
 namespace cuda
@@ -379,26 +381,21 @@ namespace kernel
             reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x,
                                               change_nan, nanval);
 
-            unique_ptr<To[]> h_ptr(new To[tmp_elements]);
-            To* h_ptr_raw = h_ptr.get();
-
-            CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(To),
+            std::vector<To> h_data(tmp_elements);
+            CUDA_CHECK(cudaMemcpyAsync(h_data.data(), tmp.ptr, tmp_elements * sizeof(To),
                        cudaMemcpyDeviceToHost, cuda::getActiveStream()));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
             Binary<To, op> reduce;
             To out = Binary<To, op>::init();
             for (int i = 0; i < tmp_elements; i++) {
-                out = reduce(out, h_ptr_raw[i]);
+                out = reduce(out, h_data[i]);
             }
 
             return out;
-
         } else {
-
-            unique_ptr<Ti[]> h_ptr(new Ti[in_elements]);
-            Ti* h_ptr_raw = h_ptr.get();
-            CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, in.ptr, in_elements * sizeof(Ti),
+            std::vector<Ti> h_data(in_elements);
+            CUDA_CHECK(cudaMemcpyAsync(h_data.data(), in.ptr, in_elements * sizeof(Ti),
                        cudaMemcpyDeviceToHost, cuda::getActiveStream()));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
@@ -408,7 +405,7 @@ namespace kernel
             To nanval_to = scalar<To>(nanval);
 
             for (int i = 0; i < in_elements; i++) {
-                To in_val = transform(h_ptr_raw[i]);
+                To in_val = transform(h_data[i]);
                 if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval_to;
                 out = reduce(out, in_val);
             }

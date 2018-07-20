@@ -19,6 +19,8 @@
 #include "sort_by_key.hpp"
 #include "range.hpp"
 
+#include <vector>
+
 namespace cuda
 {
 
@@ -193,14 +195,14 @@ void harris(unsigned* corners_out,
             const float k_thr)
 {
     // Window filter
-    convAccT *h_filter = new convAccT[filter_len];
+    std::vector<convAccT> h_filter(filter_len);
     // Decide between rectangular or circular filter
     if (sigma < 0.5f) {
         for (unsigned i = 0; i < filter_len; i++)
             h_filter[i] = (T)1.f / (filter_len);
     }
     else {
-        gaussian1D<convAccT>(h_filter, (int)filter_len, sigma);
+        gaussian1D<convAccT>(h_filter.data(), (int)filter_len, sigma);
     }
 
     // Copy filter to device object
@@ -216,10 +218,8 @@ void harris(unsigned* corners_out,
     int filter_elem = filter.strides[3] * filter.dims[3];
     auto filter_alloc = memAlloc<convAccT>(filter_elem);
     filter.ptr = filter_alloc.get();
-    CUDA_CHECK(cudaMemcpyAsync(filter.ptr, h_filter, filter_elem * sizeof(convAccT),
+    CUDA_CHECK(cudaMemcpyAsync(filter.ptr, h_filter.data(), filter_elem * sizeof(convAccT),
                 cudaMemcpyHostToDevice, cuda::getActiveStream()));
-
-    delete[] h_filter;
 
     const unsigned border_len = filter_len / 2 + 1;
 
