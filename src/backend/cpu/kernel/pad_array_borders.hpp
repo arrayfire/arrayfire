@@ -103,36 +103,24 @@ void padBorders(Param<T> out, CParam<T> in,
      * PADDED REGIONS AND SKIP REST
      * */
     for (dim_t l=0; l<oDims[3]; ++l) {
-        bool skipL = (l>=lBoundPadSize[3] && l<validRegEnds[3]);
-
-        if (skipL) continue;
-
+        bool skipL  = (l>=lBoundPadSize[3] && l<validRegEnds[3]);
         dim_t oLOff = oStrs[3] * l;
         dim_t iLOff = iStrs[3] *
             idxByndEdge(l, lBoundPadSize[3], iDims[3], btype);
-
         for (dim_t k=0; k<oDims[2]; ++k) {
-            bool skipK = (k>=lBoundPadSize[2] && k<validRegEnds[2]);
-
-            if (skipK) continue;
-
+            bool skipK  = (k>=lBoundPadSize[2] && k<validRegEnds[2]);
             dim_t oKOff = oStrs[2] * k;
             dim_t iKOff = iStrs[2] *
                 idxByndEdge(k, lBoundPadSize[2], iDims[2], btype);
-
             for (dim_t j=0; j<oDims[1]; ++j) {
-                bool skipJ = (j>=lBoundPadSize[1] && j<validRegEnds[1]);
-
-                if (skipJ) continue;
-
+                bool skipJ  = (j>=lBoundPadSize[1] && j<validRegEnds[1]);
                 dim_t oJOff = oStrs[1] * j;
                 dim_t iJOff = iStrs[1] *
                     idxByndEdge(j, lBoundPadSize[1], iDims[1], btype);
-
                 for (dim_t i=0; i<oDims[0]; ++i) {
                     bool skipI = (i>=lBoundPadSize[0] && i<validRegEnds[0]);
-
-                    if (skipI) continue;
+                    if (skipI && skipJ && skipK && skipL)
+                        continue;
 
                     dim_t oIOff = oStrs[0] * i;
                     dim_t iIOff = iStrs[0] *

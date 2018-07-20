@@ -38,6 +38,7 @@ namespace cpu
                              const dim4& upperBoundPadding,
                              const af::borderType btype)
     {
+        in.eval();
         const dim4& iDims = in.dims();
 
         dim4 oDims(lowerBoundPadding[0] + iDims[0] + upperBoundPadding[0],
