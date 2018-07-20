@@ -33,7 +33,8 @@ typedef ::testing::Types<float, uchar, short, ushort> TestTypes;
 TYPED_TEST_CASE(IterativeDeconvolution, TestTypes);
 
 template<typename T, bool isColor>
-void imageTest(string pTestFile, const unsigned iters, const float rf, const af::iterativeDeconvAlgo algo)
+void iterDeconvImageTest(string pTestFile, const unsigned iters, const float rf,
+                         const af::iterativeDeconvAlgo algo)
 {
     typedef typename cond_type<is_same_type<T, double>::value, double, float>::type OutType;
 
@@ -72,6 +73,7 @@ void imageTest(string pTestFile, const unsigned iters, const float rf, const af:
 
         ASSERT_EQ(AF_SUCCESS, af_gaussian_kernel(&kerArray, 13, 13, 2.25, 2.25));
 
+        af_dtype itype = (af_dtype)af::dtype_traits<T>::af_type;
         af_dtype otype = (af_dtype)af::dtype_traits<OutType>::af_type;
 
         ASSERT_EQ(AF_SUCCESS, af_load_image(&_inArray, inFiles[testId].c_str(), isColor));
@@ -104,25 +106,27 @@ void imageTest(string pTestFile, const unsigned iters, const float rf, const af:
         std::vector<OutType> goldData(nElems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
 
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.03));
-
         ASSERT_EQ(AF_SUCCESS, af_release_array(_inArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(kerArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(cstArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(minArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(denArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(numArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(divArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(_outArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(_goldArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray));
+
+        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.03));
     }
 }
 
 TYPED_TEST(IterativeDeconvolution, LandweberOnGrayscale)
 {
     // Test file name format: <colorspace>_<iterations>_<number/1000:relaxation factor>_<algo>.test
-    imageTest<TypeParam, false>(string(TEST_DIR "/iterative_deconv/gray_100_50_landweber.test"),
+    iterDeconvImageTest<TypeParam, false>(string(TEST_DIR "/iterative_deconv/gray_100_50_landweber.test"),
             100, 0.05, AF_ITERATIVE_DECONV_LANDWEBER);
 }
 
@@ -130,6 +134,6 @@ TYPED_TEST(IterativeDeconvolution, RichardsonLucyOnGrayscale)
 {
     // Test file name format: <colorspace>_<iterations>_<number/1000:relaxation factor>_<algo>.test
     // For RichardsonLucy algorithm, relaxation factor is not used.
-    imageTest<TypeParam, false>(string(TEST_DIR "/iterative_deconv/gray_100_50_lucy.test"),
+    iterDeconvImageTest<TypeParam, false>(string(TEST_DIR "/iterative_deconv/gray_100_50_lucy.test"),
             100, 0.05, AF_ITERATIVE_DECONV_RICHARDSONLUCY);
 }

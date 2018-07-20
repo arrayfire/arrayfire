@@ -82,6 +82,8 @@ calcPadInfo(dim4& inLPad, dim4& psfLPad,
 
             nElems *= odims[d];
         } else {
+            inLPad[d]  = 0;
+            psfLPad[d] = 0;
             inUPad[d]  = 0;
             psfUPad[d] = 0;
             odims[d]   = std::max(idims[d], fdims[d]);
@@ -263,7 +265,6 @@ af_array invDeconv(const af_array in, const af_array ker, const float gamma,
 
     auto index     = calcPadInfo(inLPad, psfLPad, inUPad, psfUPad,
                                  odims, nElems, idims, fdims);
-
     auto paddedIn  = padArrayBorders<T>(input,  inLPad,  inUPad,
                                         AF_PAD_CLAMP_TO_EDGE);
     auto paddedPsf = padArrayBorders<T>(psf, psfLPad, psfUPad,
