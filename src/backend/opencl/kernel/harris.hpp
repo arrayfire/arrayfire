@@ -20,7 +20,9 @@
 #include <kernel_headers/harris.hpp>
 #include <memory.hpp>
 #include <cache.hpp>
+
 #include <tuple>
+#include <vector>
 
 namespace opencl
 {
@@ -132,21 +134,20 @@ harris(unsigned* corners_out,
     using cl::EnqueueArgs;
     using cl::NDRange;
 
-
     // Window filter
-    convAccT* h_filter = new convAccT[filter_len];
+    std::vector<convAccT> h_filter(filter_len);
     // Decide between rectangular or circular filter
     if (sigma < 0.5f) {
         for (unsigned i = 0; i < filter_len; i++)
             h_filter[i] = (T)1.f / (filter_len);
     } else {
-        gaussian1D<convAccT>(h_filter, (int)filter_len, sigma);
+        gaussian1D<convAccT>(h_filter.data(), (int)filter_len, sigma);
     }
 
     const unsigned border_len = filter_len / 2 + 1;
 
     // Copy filter to device object
-    Array<convAccT> filter = createHostDataArray<convAccT>(filter_len, h_filter);
+    Array<convAccT> filter = createHostDataArray<convAccT>(filter_len, h_filter.data());
     Array<T> ix = createEmptyArray<T>(dim4(4, in.info.dims));
     Array<T> iy = createEmptyArray<T>(dim4(4, in.info.dims));
 
