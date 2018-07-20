@@ -33,7 +33,7 @@ typedef ::testing::Types<float, uchar, short, ushort> TestTypes;
 TYPED_TEST_CASE(InverseDeconvolution, TestTypes);
 
 template<typename T, bool isColor>
-void imageTest(string pTestFile, const float gamma, const af_inverse_deconv_algo algo)
+void invDeconvImageTest(string pTestFile, const float gamma, const af_inverse_deconv_algo algo)
 {
     typedef typename cond_type<is_same_type<T, double>::value, double, float>::type OutType;
 
@@ -72,6 +72,7 @@ void imageTest(string pTestFile, const float gamma, const af_inverse_deconv_algo
 
         ASSERT_EQ(AF_SUCCESS, af_gaussian_kernel(&kerArray, 13, 13, 2.25, 2.25));
 
+        af_dtype itype = (af_dtype)af::dtype_traits<T>::af_type;
         af_dtype otype = (af_dtype)af::dtype_traits<OutType>::af_type;
 
         ASSERT_EQ(AF_SUCCESS, af_load_image(&_inArray, inFiles[testId].c_str(), isColor));
@@ -104,32 +105,34 @@ void imageTest(string pTestFile, const float gamma, const af_inverse_deconv_algo
         std::vector<OutType> goldData(nElems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
 
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.03));
-
         ASSERT_EQ(AF_SUCCESS, af_release_array(_inArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(kerArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(cstArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(minArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(denArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(numArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(divArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(_outArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(_goldArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray));
+
+        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.03));
     }
 }
 
 TYPED_TEST(InverseDeconvolution, TikhonovOnGrayscale)
 {
     // Test file name format: <colorspace>_<gamma with dots replaced by "_">_<inverse deconv algo>.test
-    imageTest<TypeParam, false>(string(TEST_DIR "/inverse_deconv/gray_00_1_tikhonov.test"),
+    invDeconvImageTest<TypeParam, false>(string(TEST_DIR "/inverse_deconv/gray_00_1_tikhonov.test"),
                                 00.1f, AF_INVERSE_DECONV_TIKHONOV);
 }
 
 TYPED_TEST(InverseDeconvolution, DISABLED_WienerOnGrayscale)
 {
     // Test file name format: <colorspace>_<gamma with dots replaced by "_">_<inverse deconv algo>.test
-    imageTest<TypeParam, false>(string(TEST_DIR "/inverse_deconv/gray_1_wiener.test"),
+    invDeconvImageTest<TypeParam, false>(string(TEST_DIR "/inverse_deconv/gray_1_wiener.test"),
                                 1.0, AF_INVERSE_DECONV_DEFAULT);
     //TODO(pradeep) change to wiener enum value
 }
