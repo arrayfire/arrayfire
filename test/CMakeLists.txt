@@ -30,7 +30,7 @@ if(NOT TARGET gtest)
 endif()
 
 # Reset the CXX flags for tests
-unset(CMAKE_CXX_STANDARD)
+set(CMAKE_CXX_STANDARD 98)
 set(TESTDATA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
 
 if(${AF_USE_RELATIVE_TEST_DIR})
@@ -102,9 +102,7 @@ function(make_test)
     if(${backend} STREQUAL "unified")
       target_link_libraries(${target}
         PRIVATE
-          af
-          ${CMAKE_DL_LIBS}
-          )
+          af)
     else()
       target_link_libraries(${target}
         PRIVATE
@@ -133,8 +131,7 @@ function(make_test)
       target_compile_definitions(${target}
         PRIVATE
           WIN32_LEAN_AND_MEAN
-          NOMINMAX
-        )
+          NOMINMAX)
     endif()
 
     # TODO(umar): Create this executable separately
