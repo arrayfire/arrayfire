@@ -51,7 +51,13 @@ void getExternals(cl_device_id &deviceId, cl_context &context, cl_command_queue 
         cId = clCreateContext(NULL, 1, &dId, NULL, NULL, &errorCode);
         checkErr(errorCode, "Context creation failed");
 
+        #ifdef CL_VERSION_2_0
+        qId = clCreateCommandQueueWithProperties(cId, dId, 0, &errorCode);
+        #else
         qId = clCreateCommandQueue(cId, dId, 0, &errorCode);
+        #endif
+
+
         checkErr(errorCode, "Command queue creation failed");
         call_once = false;
     }

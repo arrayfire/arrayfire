@@ -278,6 +278,7 @@ make_test(SRC wrap.cpp)
 make_test(SRC write.cpp)
 make_test(SRC ycbcr_rgb.cpp)
 
+
 add_executable(print_info print_info.cpp)
 if(AF_BUILD_UNIFIED)
   target_link_libraries(print_info ArrayFire::af)
