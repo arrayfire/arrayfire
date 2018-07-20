@@ -81,7 +81,9 @@ template<typename T, bool flip>
 void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const double b)
 {
     af::dim4 astrides = a.strides();
+    af::dim4 adims = a.dims();
     af::dim4 cstrides = cond.strides();
+    af::dim4 cdims = cond.dims();
 
     af::dim4 odims = out.dims();
     af::dim4 ostrides = out.strides();
@@ -90,27 +92,36 @@ void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const double b)
     T *optr = out.get();
     const char *cptr = cond.get();
 
+
+    bool is_a_same[] = {adims[0] == odims[0], adims[1] == odims[1],
+                        adims[2] == odims[2], adims[3] == odims[3]};
+
+    bool is_c_same[] = {cdims[0] == odims[0], cdims[1] == odims[1],
+                        cdims[2] == odims[2], cdims[3] == odims[3]};
+
     for (int l = 0; l < odims[3]; l++) {
 
         int o_off3 = ostrides[3] * l;
-        int a_off3 = astrides[3] * l;
-        int c_off3 = cstrides[3] * l;
+        int a_off3 = astrides[3] * is_a_same[3] * l;
+        int c_off3 = cstrides[3] * is_c_same[3] * l;
 
         for (int k = 0; k < odims[2]; k++) {
 
             int o_off2 = ostrides[2] * k + o_off3;
-            int a_off2 = astrides[2] * k + a_off3;
-            int c_off2 = cstrides[2] * k + c_off3;
+            int a_off2 = astrides[2] * is_a_same[2] * k + a_off3;
+            int c_off2 = cstrides[2] * is_c_same[2] * k + c_off3;
 
             for (int j = 0; j < odims[1]; j++) {
 
                 int o_off1 = ostrides[1] * j + o_off2;
-                int a_off1 = astrides[1] * j + a_off2;
-                int c_off1 = cstrides[1] * j + c_off2;
+                int a_off1 = astrides[1] * is_a_same[1] * j + a_off2;
+                int c_off1 = cstrides[1] * is_c_same[1] * j + c_off2;
 
                 for (int i = 0; i < odims[0]; i++) {
 
-                    optr[o_off1 + i] = (flip ^ cptr[c_off1 + i]) ? aptr[a_off1 + i] : b;
+                    bool cval = is_c_same[0] ? cptr[c_off1 + i] : cptr[c_off1];
+                    T    aval = is_a_same[0] ? aptr[a_off1 + i] : aptr[a_off1];
+                    optr[o_off1 + i] = (flip ^ cval) ? aval : b;
                 }
             }
         }
