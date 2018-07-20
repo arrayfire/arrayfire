@@ -24,8 +24,11 @@
 #include <arith.hpp>
 
 #include <limits>
+#include <vector>
 
 using af::dim4;
+
+using std::vector;
 using namespace detail;
 
 template<typename T>
@@ -60,14 +63,12 @@ af_err af_moments(af_array *out, const af_array in, const af_moment_type moment)
 template<typename T>
 static inline void moment_copy(double* out, const af_array moments)
 {
-    dim_t elems;
-    af_get_elements(&elems, moments);
-    T *h_ptr = new T[elems];
-    af_get_data_ptr((void *)h_ptr, moments);
+    auto info = getInfo(moments);
+    vector<T> h_moments(info.elements());
+    copyData(h_moments.data(), moments);
 
-    for(unsigned i=0; i<elems; ++i)
-        out[i] = (double)h_ptr[i];
-    delete[] h_ptr;
+    // convert to double
+    copy(begin(h_moments), end(h_moments), out);
 }
 
 af_err af_moments_all(double* out, const af_array in, const af_moment_type moment)
