@@ -7,20 +7,24 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+
+
+#include <backend.hpp>
+#include <common/ArrayInfo.hpp>
+#include <common/err_common.hpp>
+#include <handle.hpp>
+#include <type_util.hpp>
+
+#include <af/array.h>
+#include <af/index.h>
+
 #include <fstream>
 #include <iomanip>
 #include <vector>
 
-#include <af/array.h>
-#include <common/ArrayInfo.hpp>
-#include <handle.hpp>
-#include <backend.hpp>
-#include <common/err_common.hpp>
-#include <type_util.hpp>
-
-#include <af/index.h>
-
 using namespace detail;
+using std::string;
+using std::vector;
 
 #define STREAM_FORMAT_VERSION 0x1
 static const char sfv_char = STREAM_FORMAT_VERSION;
@@ -297,21 +301,19 @@ int checkVersionAndFindIndex(const char *filename, const char *k)
         for(int i = 0; i < n_arrays; i++) {
             int klen = -1;
             fs.read((char*)&klen, sizeof(int));
-            char *readKey = new char[klen + 1];
-            fs.read(readKey, klen);
-            readKey[klen] = '\0';
+            string readKey;
+            readKey.resize(klen);
+            fs.read(&readKey.front(), klen);
 
             if(key == readKey) {
                 // Ket matches, break
                 index = i;
-                delete [] readKey;
                 break;
             } else {
                 // Key doesn't match. Skip the data
                 intl offset = -1;
                 fs.read((char*)&offset, sizeof(intl));
                 fs.seekg(offset, std::ios_base::cur);
-                delete [] readKey;
             }
         }
     } else {
