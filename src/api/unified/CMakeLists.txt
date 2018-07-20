@@ -29,7 +29,6 @@ target_sources(af
     ${CMAKE_CURRENT_SOURCE_DIR}/vision.cpp
   )
 
-
 target_sources(af
   PRIVATE
     ${CMAKE_SOURCE_DIR}/src/api/c/type_util.cpp
