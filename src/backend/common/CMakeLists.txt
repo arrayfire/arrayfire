@@ -45,6 +45,9 @@ else()
   target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_unix.cpp)
 endif()
 
+target_link_libraries(afcommon_interface
+  INTERFACE ${CMAKE_DL_LIBS})
+
 target_include_directories(afcommon_interface
   INTERFACE
     ${CMAKE_SOURCE_DIR}/src/backend
