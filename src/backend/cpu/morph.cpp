@@ -23,6 +23,8 @@ namespace cpu
 template<typename T, bool isDilation>
 Array<T> morph(const Array<T> &in, const Array<T> &mask)
 {
+    af::borderType padType = isDilation ? AF_PAD_ZERO : AF_PAD_CLAMP_TO_EDGE;
+
     in.eval();
     mask.eval();
 
@@ -36,7 +38,7 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask)
                          idims[2], idims[3]);
 
     auto out = createEmptyArray<T>(odims);
-    auto inp = padArrayBorders(in, lpad, upad, AF_PAD_ZERO);
+    auto inp = padArrayBorders(in, lpad, upad, padType);
 
     getQueue().enqueue(kernel::morph<T, isDilation>, out, inp, mask);
 

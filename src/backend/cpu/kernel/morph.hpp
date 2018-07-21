@@ -39,8 +39,16 @@ void getOffsets(std::vector<dim_t>& offsets,
 }
 
 template<typename T, bool IsDilation>
+struct MorphFilterOp {
+    T operator()(const T& a, const T& b) {
+        return IsDilation ? std::max(a, b) : std::min(a, b);
+    }
+};
+
+template<typename T, bool IsDilation>
 void morph(Param<T> paddedOut, CParam<T> paddedIn, CParam<T> mask)
 {
+    MorphFilterOp<T, IsDilation> filterOp;
     T init = IsDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
 
     const af::dim4 ostrides = paddedOut.strides();
@@ -52,28 +60,20 @@ void morph(Param<T> paddedOut, CParam<T> paddedIn, CParam<T> mask)
     std::vector<dim_t> offsets;
     getOffsets(offsets, istrides, mask);
 
-    dim_t batchNumElements = dims[0] * dims[1];
-    for(dim_t b3=0; b3<dims[3]; ++b3) {
-        for(dim_t b2=0; b2<dims[2]; ++b2) {
-            for (dim_t n = 0; n < batchNumElements; ++n) {
-                T filterResult = init;
-                for (size_t oi = 0; oi < offsets.size(); ++oi) {
-                    dim_t x = n + offsets[oi];
-                    if (x >= 0 && x < batchNumElements) {
-                        T inValue = inData[x];
-                        if (IsDilation) {
-                            filterResult = std::max(filterResult, inValue);
-                        } else {
-                            filterResult = std::min(filterResult, inValue);
-                        }
-                    }
-                }
-                outData[n] = filterResult;
+    const dim_t batchSize = dims[0] * dims[1];
+    const int  batchCount = dims[2] * dims[3];
+    for (int b = 0; b < batchCount; ++b) {
+        for (dim_t n = 0; n < batchSize; ++n) {
+            T filterResult = init;
+            for (size_t oi = 0; oi < offsets.size(); ++oi) {
+                dim_t x = n + offsets[oi];
+                if (x >= 0 && x < batchSize)
+                    filterResult = filterOp(filterResult, inData[x]);
             }
-            // next iteration will be next batch if any
-            outData += ostrides[2];
-            inData  += istrides[2];
+            outData[n] = filterResult;
         }
+        outData += ostrides[2];
+        inData  += istrides[2];
     }
 }
 
