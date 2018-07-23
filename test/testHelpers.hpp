@@ -380,8 +380,8 @@ template<>
 inline double imag<af::cfloat> (af::cfloat val) { return imag(val); }
 
 
-template< class T >
-struct is_floating_point {
+template<class T>
+struct IsFloatingPoint {
     static const bool value = is_same_type<float, T>::value  ||
         is_same_type<double, T>::value  ||
         is_same_type<long double, T>::value;
@@ -483,25 +483,31 @@ void cleanSlate()
   ASSERT_EQ(af::getMemStepSize(), step_bytes);
 }
 
-std::string dTypeToStr(af::dtype type) {
-    switch (type) {
-    case f32: return "f32"; break;
-    case c32: return "c32"; break;
-    case f64: return "f64"; break;
-    case c64: return "c64"; break;
-    case b8:  return "b8";  break;
-    case s32: return "s32"; break;
-    case u32: return "u32"; break;
-    case u8:  return "u8";  break;
-    case s64: return "s64"; break;
-    case u64: return "u64"; break;
-    case s16: return "s16"; break;
-    case u16: return "u16"; break;
-    default: return "";
-    }
+std::ostream& operator<<(std::ostream& os, af_err e) {
+    return os << af_err_to_string(e);
 }
 
-af::dim4 unravel_idx(uint idx, af::array arr) {
+std::ostream& operator<<(std::ostream& os, af::dtype type) {
+    std::string name;
+    switch (type) {
+    case f32: name = "f32"; break;
+    case c32: name = "c32"; break;
+    case f64: name = "f64"; break;
+    case c64: name = "c64"; break;
+    case b8:  name = "b8";  break;
+    case s32: name = "s32"; break;
+    case u32: name = "u32"; break;
+    case u8:  name = "u8";  break;
+    case s64: name = "s64"; break;
+    case u64: name = "u64"; break;
+    case s16: name = "s16"; break;
+    case u16: name = "u16"; break;
+    default: assert(false && "Invalid type");
+    }
+    return os << name;
+}
+
+af::dim4 unravelIdx(uint idx, af::array arr) {
     af::dim4 coords;
     af::dim4 dims = arr.dims();
     af::dim4 st = af::getStrides(arr);
@@ -523,13 +529,13 @@ af::dim4 unravel_idx(uint idx, af::array arr) {
 #define ASSERT_ARRAY_EQ(EXPECTED, ACTUAL) \
     EXPECT_PRED_FORMAT2(assertArrayEq, EXPECTED, ACTUAL)
 
-struct float_tag {};
-struct integer_tag {};
+struct FloatTag {};
+struct IntegerTag {};
 
 template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       af::array a, af::array b,
-                                      integer_tag) {
+                                      IntegerTag) {
     uint nElems = a.elements();
     af::dim4 arrDims = a.dims();
 
@@ -548,7 +554,7 @@ template<typename T>
         return ::testing::AssertionSuccess();
     } else {
         int idx = std::distance(hA.begin(), aItr);
-        af::dim4 coords = unravel_idx(idx, a);
+        af::dim4 coords = unravelIdx(idx, a);
 
         return ::testing::AssertionFailure() << "VALUE DIFFERS at ("
                                              << coords[0] << ", " << coords[1] << ", "
@@ -562,7 +568,7 @@ template<typename T>
 template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       af::array a, af::array b,
-                                      float_tag) {
+                                      FloatTag) {
     uint nElems = a.elements();
     af::dim4 arrDims = a.dims();
 
@@ -581,7 +587,7 @@ template<typename T>
         return ::testing::AssertionSuccess();
     } else {
         int idx = std::distance(hA.begin(), aItr);
-        af::dim4 coords = unravel_idx(idx, a);
+        af::dim4 coords = unravelIdx(idx, a);
 
         return ::testing::AssertionFailure() << "VALUE DIFFERS at ("
                                              << coords[0] << ", " << coords[1] << ", "
@@ -595,9 +601,9 @@ template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       af::array a, af::array b) {
     typedef typename cond_type<
-        is_floating_point<typename af::dtype_traits<T>::base_type>::value,
-              float_tag, integer_tag>::type tag_type;
-    tag_type tag;
+        IsFloatingPoint<typename af::dtype_traits<T>::base_type>::value,
+              FloatTag, IntegerTag>::type TagType;
+    TagType tag;
 
     return elemWiseEq<T>(aName, bName, a, b, tag);
 }
@@ -609,8 +615,8 @@ template<typename T>
     af::dtype bType = b.type();
     if (aType != bType)
         return ::testing::AssertionFailure() << "TYPE MISMATCH: "
-                                             << aName << "(" <<  dTypeToStr(a.type()) << ") and "
-                                             << bName << "(" << dTypeToStr(b.type()) << ")";
+                                             << aName << "(" <<  a.type() << ") and "
+                                             << bName << "(" << b.type() << ")";
 
     af::dtype arrDtype = aType;
 
@@ -650,5 +656,8 @@ template<typename T>
     af::array bb(b);
     return assertArrayEq(aName, bName, aa, bb);
 }
+
+#define ASSERT_SUCCESS(CALL) \
+    ASSERT_EQ(AF_SUCCESS, CALL)
 
 #pragma GCC diagnostic pop
