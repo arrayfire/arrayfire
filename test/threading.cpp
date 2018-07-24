@@ -279,30 +279,30 @@ void fftTest(int targetDevice, string pTestFile, dim_t pad0=0, dim_t pad1=0, dim
     af_array outArray   = 0;
     af_array inArray    = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_set_device(targetDevice));
+    ASSERT_SUCCESS(af_set_device(targetDevice));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()),
                 dims.ndims(), dims.get(), (af_dtype)dtype_traits<inType>::af_type));
 
     if (isInverse){
         switch (dims.ndims()) {
-            case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, 1.0, pad0));              break;
-            case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, 1.0, pad0, pad1));        break;
-            case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, 1.0, pad0, pad1, pad2));  break;
+            case 1 : ASSERT_SUCCESS(af_ifft (&outArray, inArray, 1.0, pad0));              break;
+            case 2 : ASSERT_SUCCESS(af_ifft2(&outArray, inArray, 1.0, pad0, pad1));        break;
+            case 3 : ASSERT_SUCCESS(af_ifft3(&outArray, inArray, 1.0, pad0, pad1, pad2));  break;
             default: throw std::runtime_error("This error shouldn't happen, pls check");
         }
     } else {
         switch(dims.ndims()) {
-            case 1 : ASSERT_EQ(AF_SUCCESS, af_fft (&outArray, inArray, 1.0, pad0));               break;
-            case 2 : ASSERT_EQ(AF_SUCCESS, af_fft2(&outArray, inArray, 1.0, pad0, pad1));         break;
-            case 3 : ASSERT_EQ(AF_SUCCESS, af_fft3(&outArray, inArray, 1.0, pad0, pad1, pad2));   break;
+            case 1 : ASSERT_SUCCESS(af_fft (&outArray, inArray, 1.0, pad0));               break;
+            case 2 : ASSERT_SUCCESS(af_fft2(&outArray, inArray, 1.0, pad0, pad1));         break;
+            case 3 : ASSERT_SUCCESS(af_fft3(&outArray, inArray, 1.0, pad0, pad1, pad2));   break;
             default: throw std::runtime_error("This error shouldn't happen, pls check");
         }
     }
 
     size_t out_size = tests[0].size();
     outType *outData= new outType[out_size];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
     vector<outType> goldBar(tests[0].begin(), tests[0].end());
 
@@ -324,8 +324,8 @@ void fftTest(int targetDevice, string pTestFile, dim_t pad0=0, dim_t pad1=0, dim
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 #define INSTANTIATE_TEST(func, name, is_inverse, in_t, out_t, file)                         \
@@ -347,7 +347,7 @@ TEST(Threading, FFT_R2C)
     vector<std::thread> tests;
 
     int numDevices = 0;
-    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+    ASSERT_SUCCESS(af_get_device_count(&numDevices));
     ASSERT_EQ(true, numDevices>0);
 
     // Real to complex transforms
@@ -392,7 +392,7 @@ TEST(Threading, FFT_C2C)
     vector<std::thread> tests;
 
     int numDevices = 0;
-    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+    ASSERT_SUCCESS(af_get_device_count(&numDevices));
     ASSERT_EQ(true, numDevices>0);
 
     // complex to complex transforms
@@ -442,7 +442,7 @@ TEST(Threading, FFT_ALL)
     vector<std::thread> tests;
 
     int numDevices = 0;
-    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+    ASSERT_SUCCESS(af_get_device_count(&numDevices));
     ASSERT_EQ(true, numDevices>0);
 
     // Real to complex transforms
@@ -582,7 +582,7 @@ TEST(Threading, BLAS)
     vector<std::thread> tests;
 
     int numDevices = 0;
-    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+    ASSERT_SUCCESS(af_get_device_count(&numDevices));
     ASSERT_EQ(true, numDevices>0);
 
     TEST_BLAS_FOR_TYPE(      float);
@@ -613,7 +613,7 @@ TEST(Threading, Sparse)
     vector<std::thread> tests;
 
     int numDevices = 0;
-    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&numDevices));
+    ASSERT_SUCCESS(af_get_device_count(&numDevices));
     ASSERT_EQ(true, numDevices>0);
 
     SPARSE_TESTS(  float, 1E-3);
@@ -667,7 +667,7 @@ TEST(Threading, DISABLED_Sort)
 
     vector<std::thread> tests;
 
-    ASSERT_EQ(AF_SUCCESS, af_set_device(0));
+    ASSERT_SUCCESS(af_set_device(0));
 
     for (int i=0; i<THREAD_COUNT; ++i) {
         tests.emplace_back([] {

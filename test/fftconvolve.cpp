@@ -66,28 +66,28 @@ void fftconvolveTest(string pTestFile, bool expand)
     af_array outArray = 0;
     af_dtype in_type =(af_dtype)dtype_traits<T>::af_type;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&signal, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&signal, &(in[0].front()),
                                           sDims.ndims(), sDims.get(), in_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&filter, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&filter, &(in[1].front()),
                                           fDims.ndims(), fDims.get(), in_type));
 
     af_conv_mode mode = expand ? AF_CONV_EXPAND : AF_CONV_DEFAULT;
     switch(baseDim) {
-        case 1: ASSERT_EQ(AF_SUCCESS, af_fft_convolve1(&outArray, signal, filter, mode)); break;
-        case 2: ASSERT_EQ(AF_SUCCESS, af_fft_convolve2(&outArray, signal, filter, mode)); break;
-        case 3: ASSERT_EQ(AF_SUCCESS, af_fft_convolve3(&outArray, signal, filter, mode)); break;
+        case 1: ASSERT_SUCCESS(af_fft_convolve1(&outArray, signal, filter, mode)); break;
+        case 2: ASSERT_SUCCESS(af_fft_convolve2(&outArray, signal, filter, mode)); break;
+        case 3: ASSERT_SUCCESS(af_fft_convolve3(&outArray, signal, filter, mode)); break;
     }
 
     vector<T> currGoldBar = tests[0];
     size_t nElems         = currGoldBar.size();
 
     dim_t out_elems = 0;
-    ASSERT_EQ(AF_SUCCESS, af_get_elements(&out_elems, outArray));
+    ASSERT_SUCCESS(af_get_elements(&out_elems, outArray));
     ASSERT_EQ(nElems, (size_t)out_elems);
 
     vector<T> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(
@@ -96,9 +96,9 @@ void fftconvolveTest(string pTestFile, bool expand)
             , 1e-2)<< "at: " << elIter<< endl;
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(signal));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(filter));
+    ASSERT_SUCCESS(af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(signal));
+    ASSERT_SUCCESS(af_release_array(filter));
 }
 
 template<typename T, int baseDim>

@@ -51,11 +51,11 @@ TEST(fft, Invalid_Type)
     af_array outArray  = 0;
 
     dim4 dims(5 * 5 * 2 * 2);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) dtype_traits<char>::af_type));
 
     ASSERT_EQ(AF_ERR_TYPE, af_fft(&outArray, inArray, 1.0, 0));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 TEST(fft2, Invalid_Array)
@@ -68,11 +68,11 @@ TEST(fft2, Invalid_Array)
     af_array outArray  = 0;
 
     dim4 dims(5 * 5 * 2 * 2);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft2(&outArray, inArray, 1.0, 0, 0));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 TEST(fft3, Invalid_Array)
@@ -85,11 +85,11 @@ TEST(fft3, Invalid_Array)
     af_array outArray  = 0;
 
     dim4 dims(10,10,1,1);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft3(&outArray, inArray, 1.0, 0, 0, 0));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 TEST(ifft2, Invalid_Array)
@@ -102,11 +102,11 @@ TEST(ifft2, Invalid_Array)
     af_array outArray  = 0;
 
     dim4 dims(100,1,1,1);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft2(&outArray, inArray, 0.01, 0, 0));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 TEST(ifft3, Invalid_Array)
@@ -119,11 +119,11 @@ TEST(ifft3, Invalid_Array)
     af_array outArray  = 0;
 
     dim4 dims(10,10,1,1);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft3(&outArray, inArray, 0.01, 0, 0, 0));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 template<typename inType, typename outType, bool isInverse>
@@ -142,28 +142,28 @@ void fftTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
     af_array outArray   = 0;
     af_array inArray    = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()),
                 dims.ndims(), dims.get(), (af_dtype)dtype_traits<inType>::af_type));
 
     if (isInverse){
         switch (dims.ndims()) {
-            case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, 1.0, pad0));              break;
-            case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, 1.0, pad0, pad1));        break;
-            case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, 1.0, pad0, pad1, pad2));  break;
+            case 1 : ASSERT_SUCCESS(af_ifft (&outArray, inArray, 1.0, pad0));              break;
+            case 2 : ASSERT_SUCCESS(af_ifft2(&outArray, inArray, 1.0, pad0, pad1));        break;
+            case 3 : ASSERT_SUCCESS(af_ifft3(&outArray, inArray, 1.0, pad0, pad1, pad2));  break;
             default: throw std::runtime_error("This error shouldn't happen, pls check");
         }
     } else {
         switch(dims.ndims()) {
-            case 1 : ASSERT_EQ(AF_SUCCESS, af_fft (&outArray, inArray, 1.0, pad0));               break;
-            case 2 : ASSERT_EQ(AF_SUCCESS, af_fft2(&outArray, inArray, 1.0, pad0, pad1));         break;
-            case 3 : ASSERT_EQ(AF_SUCCESS, af_fft3(&outArray, inArray, 1.0, pad0, pad1, pad2));   break;
+            case 1 : ASSERT_SUCCESS(af_fft (&outArray, inArray, 1.0, pad0));               break;
+            case 2 : ASSERT_SUCCESS(af_fft2(&outArray, inArray, 1.0, pad0, pad1));         break;
+            case 3 : ASSERT_SUCCESS(af_fft3(&outArray, inArray, 1.0, pad0, pad1, pad2));   break;
             default: throw std::runtime_error("This error shouldn't happen, pls check");
         }
     }
 
     size_t out_size = tests[0].size();
     outType *outData= new outType[out_size];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
     vector<outType> goldBar(tests[0].begin(), tests[0].end());
 
@@ -184,8 +184,8 @@ void fftTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 #define INSTANTIATE_TEST(func, name, is_inverse, in_t, out_t, ...)  \
@@ -258,28 +258,28 @@ void fftBatchTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
     af_array outArray   = 0;
     af_array inArray    = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()),
                 dims.ndims(), dims.get(), (af_dtype)dtype_traits<inType>::af_type));
 
     if(isInverse) {
         switch(rank) {
-            case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, 1.0, pad0));              break;
-            case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, 1.0, pad0, pad1));        break;
-            case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, 1.0, pad0, pad1, pad2));  break;
+            case 1 : ASSERT_SUCCESS(af_ifft (&outArray, inArray, 1.0, pad0));              break;
+            case 2 : ASSERT_SUCCESS(af_ifft2(&outArray, inArray, 1.0, pad0, pad1));        break;
+            case 3 : ASSERT_SUCCESS(af_ifft3(&outArray, inArray, 1.0, pad0, pad1, pad2));  break;
             default: throw std::runtime_error("This error shouldn't happen, pls check");
         }
     } else {
         switch(rank) {
-            case 1 : ASSERT_EQ(AF_SUCCESS, af_fft (&outArray, inArray, 1.0, pad0));               break;
-            case 2 : ASSERT_EQ(AF_SUCCESS, af_fft2(&outArray, inArray, 1.0, pad0, pad1));         break;
-            case 3 : ASSERT_EQ(AF_SUCCESS, af_fft3(&outArray, inArray, 1.0, pad0, pad1, pad2));   break;
+            case 1 : ASSERT_SUCCESS(af_fft (&outArray, inArray, 1.0, pad0));               break;
+            case 2 : ASSERT_SUCCESS(af_fft2(&outArray, inArray, 1.0, pad0, pad1));         break;
+            case 3 : ASSERT_SUCCESS(af_fft3(&outArray, inArray, 1.0, pad0, pad1, pad2));   break;
             default: throw std::runtime_error("This error shouldn't happen, pls check");
         }
     }
 
     size_t out_size = tests[0].size();
     outType *outData= new outType[out_size];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
     vector<outType> goldBar(tests[0].begin(), tests[0].end());
 
@@ -308,8 +308,8 @@ void fftBatchTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 #define INSTANTIATE_BATCH_TEST(func, name, rank, is_inverse, in_t, out_t, ...) \
@@ -624,15 +624,7 @@ TEST(fft, InPlace)
     array b = fft(a);
     fftInPlace(a);
 
-    vector<cfloat> ha(a.elements());
-    vector<cfloat> hb(b.elements());
-
-    a.host(&ha[0]);
-    b.host(&hb[0]);
-
-    for (int i = 0; i < (int)a.elements(); i++) {
-        ASSERT_EQ(ha[i], hb[i]);
-    }
+    ASSERT_ARRAYS_EQ(a, b);
 }
 
 TEST(ifft, InPlace)
@@ -644,12 +636,7 @@ TEST(ifft, InPlace)
     vector<cfloat> ha(a.elements());
     vector<cfloat> hb(b.elements());
 
-    a.host(&ha[0]);
-    b.host(&hb[0]);
-
-    for (int i = 0; i < (int)a.elements(); i++) {
-        ASSERT_EQ(ha[i], hb[i]);
-    }
+    ASSERT_ARRAYS_EQ(a, b);
 }
 
 TEST(fft2, InPlace)
@@ -658,15 +645,7 @@ TEST(fft2, InPlace)
     array b = fft2(a);
     fft2InPlace(a);
 
-    vector<cfloat> ha(a.elements());
-    vector<cfloat> hb(b.elements());
-
-    a.host(&ha[0]);
-    b.host(&hb[0]);
-
-    for (int i = 0; i < (int)a.elements(); i++) {
-        ASSERT_EQ(ha[i], hb[i]);
-    }
+    ASSERT_ARRAYS_EQ(a, b);
 }
 
 TEST(ifft2, InPlace)
@@ -675,15 +654,7 @@ TEST(ifft2, InPlace)
     array b = ifft2(a);
     ifft2InPlace(a);
 
-    vector<cfloat> ha(a.elements());
-    vector<cfloat> hb(b.elements());
-
-    a.host(&ha[0]);
-    b.host(&hb[0]);
-
-    for (int i = 0; i < (int)a.elements(); i++) {
-        ASSERT_EQ(ha[i], hb[i]);
-    }
+    ASSERT_ARRAYS_EQ(a, b);
 }
 
 TEST(fft3, InPlace)
@@ -692,15 +663,7 @@ TEST(fft3, InPlace)
     array b = fft3(a);
     fft3InPlace(a);
 
-    vector<cfloat> ha(a.elements());
-    vector<cfloat> hb(b.elements());
-
-    a.host(&ha[0]);
-    b.host(&hb[0]);
-
-    for (int i = 0; i < (int)a.elements(); i++) {
-        ASSERT_EQ(ha[i], hb[i]);
-    }
+    ASSERT_ARRAYS_EQ(a, b);
 }
 
 TEST(ifft3, InPlace)
@@ -709,15 +672,7 @@ TEST(ifft3, InPlace)
     array b = ifft3(a);
     ifft3InPlace(a);
 
-    vector<cfloat> ha(a.elements());
-    vector<cfloat> hb(b.elements());
-
-    a.host(&ha[0]);
-    b.host(&hb[0]);
-
-    for (int i = 0; i < (int)a.elements(); i++) {
-        ASSERT_EQ(ha[i], hb[i]);
-    }
+    ASSERT_ARRAYS_EQ(a, b);
 }
 
 void fft2InPlaceFunc()
@@ -726,15 +681,7 @@ void fft2InPlaceFunc()
     array b = fft2(a);
     fft2InPlace(a);
 
-    vector<cfloat> ha(a.elements());
-    vector<cfloat> hb(b.elements());
-
-    a.host(&ha[0]);
-    b.host(&hb[0]);
-
-    for (int i = 0; i < (int)a.elements(); i++) {
-        ASSERT_EQ(ha[i], hb[i]);
-    }
+    ASSERT_ARRAYS_EQ(a, b);
 }
 
 using af::setDevice;

@@ -61,23 +61,24 @@ void unwrapTest(string pTestFile, const unsigned resultIdx,
     af_array outArrayT = 0;
     af_array outArray2 = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_unwrap(&outArray , inArray, wx, wy, sx, sy, px, py, true ));
-    ASSERT_EQ(AF_SUCCESS, af_unwrap(&outArrayT, inArray, wx, wy, sx, sy, px, py, false));
-    ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray2, outArrayT, false));
+    ASSERT_SUCCESS(af_unwrap(&outArray , inArray, wx, wy, sx, sy, px, py, true ));
+    ASSERT_SUCCESS(af_unwrap(&outArrayT, inArray, wx, wy, sx, sy, px, py, false));
+    ASSERT_SUCCESS(af_transpose(&outArray2, outArrayT, false));
 
     size_t nElems = tests[resultIdx].size();
     vector<T> outData(nElems);
 
+    // TODO: Change to ASSERT_VEC_ARRAY_EQ
     // Compare is_column == true results
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData[0], outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)&outData[0], outArray));
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
         ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     }
 
     // Compare is_column == false results
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData[0], outArray2));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)&outData[0], outArray2));
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
         ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
     }
@@ -198,5 +199,5 @@ TEST(Unwrap, MaxDim)
     array gold = range(dim4(5, 5, 1, largeDim));
     gold = moddims(gold, dim4(25, 1, largeDim));
 
-    ASSERT_TRUE(allTrue<bool>(output == gold));
+    ASSERT_ARRAYS_EQ(gold, output);
 }

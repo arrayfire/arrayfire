@@ -56,11 +56,11 @@ void rangeTest(const uint x, const uint y, const uint z, const uint w, const uin
 
     af_array outArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_range(&outArray, idims.ndims(), idims.get(), dim, (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_range(&outArray, idims.ndims(), idims.get(), dim, (af_dtype) dtype_traits<T>::af_type));
 
     // Get result
     T* outData = new T[idims.elements()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
     // Compare result
     for(int w = 0; w < (int)idims[3]; w++) {

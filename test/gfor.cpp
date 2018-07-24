@@ -523,13 +523,5 @@ TEST(ASSIGN, ISSUE_1127)
     out1(seq(0,rows-1,2), seq(1,cols-1,2), span) = horiz;
     out1(seq(1,rows-1,2), seq(1,cols-1,2), span) = diag;
 
-    vector<float> hout0(out0.elements());
-    vector<float> hout1(out1.elements());
-
-    out0.host(&hout0[0]);
-    out1.host(&hout1[0]);
-
-    for (int i = 0; i < out0.elements(); i++) {
-        ASSERT_EQ(hout0[i], hout1[i]);
-    }
+    ASSERT_ARRAYS_EQ(out0, out1);
 }

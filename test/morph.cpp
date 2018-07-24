@@ -53,40 +53,33 @@ void morphTest(string pTestFile)
     af_array inArray   = 0;
     af_array maskArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()),
                 dims.ndims(), dims.get(), (af_dtype)dtype_traits<inType>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&maskArray, &(in[1].front()),
                 maskDims.ndims(), maskDims.get(), (af_dtype)dtype_traits<inType>::af_type));
 
     if (isDilation) {
         if (isVolume)
-            ASSERT_EQ(AF_SUCCESS, af_dilate3(&outArray, inArray, maskArray));
+            ASSERT_SUCCESS(af_dilate3(&outArray, inArray, maskArray));
         else
-            ASSERT_EQ(AF_SUCCESS, af_dilate(&outArray, inArray, maskArray));
+            ASSERT_SUCCESS(af_dilate(&outArray, inArray, maskArray));
     }
     else {
         if (isVolume)
-            ASSERT_EQ(AF_SUCCESS, af_erode3(&outArray, inArray, maskArray));
+            ASSERT_SUCCESS(af_erode3(&outArray, inArray, maskArray));
         else
-            ASSERT_EQ(AF_SUCCESS, af_erode(&outArray, inArray, maskArray));
+            ASSERT_SUCCESS(af_erode(&outArray, inArray, maskArray));
     }
-
-    vector<inType> outData(dims.elements());
-
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t testIter=0; testIter<tests.size(); ++testIter) {
         vector<inType> currGoldBar = tests[testIter];
-        size_t nElems        = currGoldBar.size();
-        for (size_t elIter=0; elIter<nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
-        }
+        ASSERT_VEC_ARRAY_EQ(currGoldBar, dims, outArray);
     }
 
     // cleanup
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(maskArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 TYPED_TEST(Morph, Dilate3x3)
@@ -171,30 +164,30 @@ void morphImageTest(string pTestFile)
         outFiles[testId].insert(0,string(TEST_DIR"/morph/"));
 
         dim4 mdims(3,3,1,1);
-        ASSERT_EQ(AF_SUCCESS, af_constant(&maskArray, 1.0,
+        ASSERT_SUCCESS(af_constant(&maskArray, 1.0,
                     mdims.ndims(), mdims.get(), (af_dtype)dtype_traits<T>::af_type));
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray, inFiles[testId].c_str(), isColor));
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&goldArray, outFiles[testId].c_str(), isColor));
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
+        ASSERT_SUCCESS(af_load_image(&inArray, inFiles[testId].c_str(), isColor));
+        ASSERT_SUCCESS(af_load_image(&goldArray, outFiles[testId].c_str(), isColor));
+        ASSERT_SUCCESS(af_get_elements(&nElems, goldArray));
 
         if (isDilation)
-            ASSERT_EQ(AF_SUCCESS, af_dilate(&outArray, inArray, maskArray));
+            ASSERT_SUCCESS(af_dilate(&outArray, inArray, maskArray));
         else
-            ASSERT_EQ(AF_SUCCESS, af_erode(&outArray, inArray, maskArray));
+            ASSERT_SUCCESS(af_erode(&outArray, inArray, maskArray));
 
         vector<T> outData(nElems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
         vector<T> goldData(nElems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)goldData.data(), goldArray));
 
         ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.018f));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray));
+        ASSERT_SUCCESS(af_release_array(inArray));
+        ASSERT_SUCCESS(af_release_array(maskArray));
+        ASSERT_SUCCESS(af_release_array(outArray));
+        ASSERT_SUCCESS(af_release_array(goldArray));
     }
 }
 
@@ -224,10 +217,10 @@ void morphInputTest(void)
     dim4 dims = dim4(100,1,1,1);
     dim4 mdims(3,3,1,1);
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &mask.front(),
+    ASSERT_SUCCESS(af_create_array(&maskArray, &mask.front(),
                 mdims.ndims(), mdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+    ASSERT_SUCCESS(af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     if (isDilation)
@@ -235,9 +228,9 @@ void morphInputTest(void)
     else
         ASSERT_EQ(AF_ERR_SIZE, af_erode(&outArray, inArray, maskArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
+    ASSERT_SUCCESS(af_release_array(maskArray));
 }
 
 TYPED_TEST(Morph, DilateInvalidInput)
@@ -266,10 +259,10 @@ void morphMaskTest(void)
     dim4 dims(10,10,1,1);
     dim4 mdims(2,2,2,2);
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+    ASSERT_SUCCESS(af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &mask.front(),
+    ASSERT_SUCCESS(af_create_array(&maskArray, &mask.front(),
                 mdims.ndims(), mdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     if (isDilation)
@@ -277,12 +270,12 @@ void morphMaskTest(void)
     else
         ASSERT_EQ(AF_ERR_SIZE, af_erode(&outArray, inArray, maskArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
+    ASSERT_SUCCESS(af_release_array(maskArray));
 
     // Check for 1D mask
     mdims = dim4(16,1,1,1);
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &mask.front(),
+    ASSERT_SUCCESS(af_create_array(&maskArray, &mask.front(),
                 mdims.ndims(), mdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     if (isDilation)
@@ -290,9 +283,9 @@ void morphMaskTest(void)
     else
         ASSERT_EQ(AF_ERR_SIZE, af_erode(&outArray, inArray, maskArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
+    ASSERT_SUCCESS(af_release_array(maskArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 TYPED_TEST(Morph, DilateInvalidMask)
@@ -321,10 +314,10 @@ void morph3DMaskTest(void)
     dim4 dims(10,10,10,1);
     dim4 mdims(9,9,1,1);
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+    ASSERT_SUCCESS(af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &mask.front(),
+    ASSERT_SUCCESS(af_create_array(&maskArray, &mask.front(),
                 mdims.ndims(), mdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     if (isDilation)
@@ -332,12 +325,12 @@ void morph3DMaskTest(void)
     else
         ASSERT_EQ(AF_ERR_SIZE, af_erode3(&outArray, inArray, maskArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
+    ASSERT_SUCCESS(af_release_array(maskArray));
 
     // Check for 4D mask
     mdims = dim4(3,3,3,3);
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &mask.front(),
+    ASSERT_SUCCESS(af_create_array(&maskArray, &mask.front(),
                 mdims.ndims(), mdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     if (isDilation)
@@ -345,9 +338,9 @@ void morph3DMaskTest(void)
     else
         ASSERT_EQ(AF_ERR_SIZE, af_erode3(&outArray, inArray, maskArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
+    ASSERT_SUCCESS(af_release_array(maskArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 TYPED_TEST(Morph, DilateVolumeInvalidMask)
@@ -497,15 +490,15 @@ TEST(Morph, UnsupportedKernel2D)
 
     af_array in, mask, out;
 
-    ASSERT_EQ(AF_SUCCESS, af_constant(&mask, 1.0, ndims, kdims, f32));
-    ASSERT_EQ(AF_SUCCESS, af_randu(&in, ndims, dims, f32));
+    ASSERT_SUCCESS(af_constant(&mask, 1.0, ndims, kdims, f32));
+    ASSERT_SUCCESS(af_randu(&in, ndims, dims, f32));
 
 #if defined(AF_CPU)
-    ASSERT_EQ(AF_SUCCESS, af_dilate(&out, in, mask));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(out));
+    ASSERT_SUCCESS(af_dilate(&out, in, mask));
+    ASSERT_SUCCESS(af_release_array(out));
 #else
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_dilate(&out, in, mask));
 #endif
-    ASSERT_EQ(AF_SUCCESS, af_release_array(in));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(mask));
+    ASSERT_SUCCESS(af_release_array(in));
+    ASSERT_SUCCESS(af_release_array(mask));
 }

@@ -33,17 +33,17 @@ void testFunction()
 
     af_array outArray = 0;
     dim4 dims(32, 32, 1, 1);
-    ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     // cleanup
     if(outArray != 0) {
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+        ASSERT_SUCCESS(af_release_array(outArray));
     }
 }
 
 void infoTest()
 {
     int nDevices = 0;
-    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&nDevices));
+    ASSERT_SUCCESS(af_get_device_count(&nDevices));
     ASSERT_EQ(true, nDevices>0);
 
     const char* ENV = getenv("AF_MULTI_GPU_TESTS");
