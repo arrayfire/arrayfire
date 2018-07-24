@@ -61,40 +61,40 @@ void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *se
         af_array subArray  = 0;
         af_array outArray  = 0;
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-        ASSERT_EQ(AF_SUCCESS, af_index(&subArray,inArray,seqv->size(),&seqv->front()));
+        ASSERT_SUCCESS(af_index(&subArray,inArray,seqv->size(),&seqv->front()));
 
         dim4 newDims(1);
         newDims[0] = 2;
         newDims[1] = 3;
-        ASSERT_EQ(AF_SUCCESS, af_moddims(&outArray,subArray,newDims.ndims(),newDims.get()));
+        ASSERT_SUCCESS(af_moddims(&outArray,subArray,newDims.ndims(),newDims.get()));
 
         dim_t nElems;
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems,outArray));
+        ASSERT_SUCCESS(af_get_elements(&nElems,outArray));
 
         outData          = new T[nElems];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(subArray));
+        ASSERT_SUCCESS(af_release_array(inArray));
+        ASSERT_SUCCESS(af_release_array(outArray));
+        ASSERT_SUCCESS(af_release_array(subArray));
     } else {
         af_array inArray   = 0;
         af_array outArray  = 0;
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
         dim4 newDims(1);
         newDims[0] = dims[1];
         newDims[1] = dims[0]*dims[2];
-        ASSERT_EQ(AF_SUCCESS, af_moddims(&outArray,inArray,newDims.ndims(),newDims.get()));
+        ASSERT_SUCCESS(af_moddims(&outArray,inArray,newDims.ndims(),newDims.get()));
 
         outData          = new T[dims.elements()];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+        ASSERT_SUCCESS(af_release_array(inArray));
+        ASSERT_SUCCESS(af_release_array(outArray));
     }
 
     for (size_t testIter=0; testIter<tests.size(); ++testIter) {
@@ -133,16 +133,16 @@ void moddimsArgsTest(string pTestFile)
     af_array inArray   = 0;
     af_array outArray  = 0;
     af_array outArray2  = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     dim4 newDims(1);
     newDims[0] = dims[1];
     newDims[1] = dims[0]*dims[2];
-    ASSERT_EQ(AF_SUCCESS, af_moddims(&outArray,inArray,0,newDims.get()));
+    ASSERT_SUCCESS(af_moddims(&outArray,inArray,0,newDims.get()));
     ASSERT_EQ(AF_ERR_ARG, af_moddims(&outArray2,inArray,newDims.ndims(),NULL));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 TYPED_TEST(Moddims,InvalidArgs)
@@ -164,14 +164,14 @@ void moddimsMismatchTest(string pTestFile)
 
     af_array inArray   = 0;
     af_array outArray  = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     dim4 newDims(1);
     newDims[0] = dims[1]-1;
     newDims[1] = (dims[0]-1)*dims[2];
     ASSERT_EQ(AF_ERR_SIZE, af_moddims(&outArray,inArray,newDims.ndims(),newDims.get()));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 TYPED_TEST(Moddims,Mismatch)

@@ -48,13 +48,13 @@ void gaussianKernelTest(string pFileName, double sigma)
 
     vector<int> input(in[0].begin(), in[0].end());
 
-    ASSERT_EQ(AF_SUCCESS, af_gaussian_kernel(&outArray, input[0], input[1], sigma, sigma));
+    ASSERT_SUCCESS(af_gaussian_kernel(&outArray, input[0], input[1], sigma, sigma));
 
     dim_t outElems = 0;
-    ASSERT_EQ(AF_SUCCESS, af_get_elements(&outElems, outArray));
+    ASSERT_SUCCESS(af_get_elements(&outElems, outArray));
     T *outData = new T[outElems];
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
     vector<T> currGoldBar(tests[0].begin(), tests[0].end());
     size_t nElems = currGoldBar.size();
@@ -66,7 +66,7 @@ void gaussianKernelTest(string pFileName, double sigma)
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 TYPED_TEST(GaussianKernel, Small1D)

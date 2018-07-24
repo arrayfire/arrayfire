@@ -79,27 +79,27 @@ void transformTest(string pTestFile, string pHomographyFile, const af_interp_typ
     af_array outArray = 0;
     af_array HArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_load_image(&sceneArray_f32, inFiles[1].c_str(), false));
-    ASSERT_EQ(AF_SUCCESS, af_load_image(&goldArray_f32, goldFiles[0].c_str(), false));
+    ASSERT_SUCCESS(af_load_image(&sceneArray_f32, inFiles[1].c_str(), false));
+    ASSERT_SUCCESS(af_load_image(&goldArray_f32, goldFiles[0].c_str(), false));
 
-    ASSERT_EQ(AF_SUCCESS, conv_image<T>(&sceneArray, sceneArray_f32));
-    ASSERT_EQ(AF_SUCCESS, conv_image<T>(&goldArray, goldArray_f32));
+    ASSERT_SUCCESS(conv_image<T>(&sceneArray, sceneArray_f32));
+    ASSERT_SUCCESS(conv_image<T>(&goldArray, goldArray_f32));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&HArray, &(HIn[0].front()), HDims.ndims(), HDims.get(), f32));
+    ASSERT_SUCCESS(af_create_array(&HArray, &(HIn[0].front()), HDims.ndims(), HDims.get(), f32));
 
-    ASSERT_EQ(AF_SUCCESS, af_transform(&outArray, sceneArray, HArray, objDims[0], objDims[1], method, invert));
+    ASSERT_SUCCESS(af_transform(&outArray, sceneArray, HArray, objDims[0], objDims[1], method, invert));
 
     // Get gold data
     dim_t goldEl = 0;
-    ASSERT_EQ(AF_SUCCESS, af_get_elements(&goldEl, goldArray));
+    ASSERT_SUCCESS(af_get_elements(&goldEl, goldArray));
     vector<T> goldData(goldEl);
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&goldData.front(), goldArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)&goldData.front(), goldArray));
 
     // Get result
     dim_t outEl = 0;
-    ASSERT_EQ(AF_SUCCESS, af_get_elements(&outEl, outArray));
+    ASSERT_SUCCESS(af_get_elements(&outEl, outArray));
     vector<T> outData(outEl);
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
 
     const float thr = 1.1f;
 

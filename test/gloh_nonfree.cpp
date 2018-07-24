@@ -164,20 +164,20 @@ void glohTest(string pTestFile)
 
         inFiles[testId].insert(0,string(TEST_DIR"/gloh/"));
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
-        ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
+        ASSERT_SUCCESS(af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
+        ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_gloh(&feat, &desc, inArray, 3, 0.04f, 10.0f, 1.6f, true, 1.f/256.f, 0.05f));
+        ASSERT_SUCCESS(af_gloh(&feat, &desc, inArray, 3, 0.04f, 10.0f, 1.6f, true, 1.f/256.f, 0.05f));
 
         dim_t n = 0;
         af_array x, y, score, orientation, size;
 
-        ASSERT_EQ(AF_SUCCESS, af_get_features_num(&n, feat));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_xpos(&x, feat));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_ypos(&y, feat));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_score(&score, feat));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_orientation(&orientation, feat));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_size(&size, feat));
+        ASSERT_SUCCESS(af_get_features_num(&n, feat));
+        ASSERT_SUCCESS(af_get_features_xpos(&x, feat));
+        ASSERT_SUCCESS(af_get_features_ypos(&y, feat));
+        ASSERT_SUCCESS(af_get_features_score(&score, feat));
+        ASSERT_SUCCESS(af_get_features_orientation(&orientation, feat));
+        ASSERT_SUCCESS(af_get_features_size(&size, feat));
 
         float * outX           = new float[n];
         float * outY           = new float[n];
@@ -186,15 +186,15 @@ void glohTest(string pTestFile)
         float * outSize        = new float[n];
         dim_t descSize;
         dim_t descDims[4];
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&descSize, desc));
-        ASSERT_EQ(AF_SUCCESS, af_get_dims(&descDims[0], &descDims[1], &descDims[2], &descDims[3], desc));
+        ASSERT_SUCCESS(af_get_elements(&descSize, desc));
+        ASSERT_SUCCESS(af_get_dims(&descDims[0], &descDims[1], &descDims[2], &descDims[3], desc));
         float * outDesc     = new float[descSize];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outX, x));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outY, y));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outScore, score));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outOrientation, orientation));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outSize, size));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outDesc, desc));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outX, x));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outY, y));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outScore, score));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outOrientation, orientation));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outSize, size));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outDesc, desc));
 
         vector<feat_desc_t> out_feat_desc;
         array_to_feat_desc(out_feat_desc, outX, outY, outScore, outOrientation, outSize, outDesc, n);
@@ -223,15 +223,15 @@ void glohTest(string pTestFile)
 
         EXPECT_TRUE(compareEuclidean(descDims[0], descDims[1], (float*)&v_out_desc[0], (float*)&v_gold_desc[0], 2.f, 5.5f));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray_f32));
+        ASSERT_SUCCESS(af_release_array(inArray));
+        ASSERT_SUCCESS(af_release_array(inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(x));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(y));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(score));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(orientation));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(size));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(desc));
+        ASSERT_SUCCESS(af_release_array(x));
+        ASSERT_SUCCESS(af_release_array(y));
+        ASSERT_SUCCESS(af_release_array(score));
+        ASSERT_SUCCESS(af_release_array(orientation));
+        ASSERT_SUCCESS(af_release_array(size));
+        ASSERT_SUCCESS(af_release_array(desc));
 
         delete[] outX;
         delete[] outY;

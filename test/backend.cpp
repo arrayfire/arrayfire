@@ -55,7 +55,7 @@ void testFunction()
 
     // cleanup
     if(outArray != 0) {
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+        ASSERT_SUCCESS(af_release_array(outArray));
     }
 }
 

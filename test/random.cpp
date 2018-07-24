@@ -99,7 +99,7 @@ void randuTest(dim4 & dims)
     if (noDoubleTests<T>()) return;
 
     af_array outArray = 0;
-    ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     ASSERT_EQ(af_sync(-1), AF_SUCCESS);
     if(outArray != 0) af_release_array(outArray);
 }
@@ -110,7 +110,7 @@ void randnTest(dim4 &dims)
     if (noDoubleTests<T>()) return;
 
     af_array outArray = 0;
-    ASSERT_EQ(AF_SUCCESS, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     ASSERT_EQ(af_sync(-1), AF_SUCCESS);
     if(outArray != 0) af_release_array(outArray);
 }

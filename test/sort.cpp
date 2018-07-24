@@ -63,20 +63,20 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, bool 
     af_array sxArray = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
+        ASSERT_SUCCESS(af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_sort(&sxArray, inArray, 0, dir));
+    ASSERT_SUCCESS(af_sort(&sxArray, inArray, 0, dir));
 
     size_t nElems = tests[resultIdx0].size();
 
     // Get result
     T* sxData = new T[tests[resultIdx0].size()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)sxData, sxArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)sxData, sxArray));
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {

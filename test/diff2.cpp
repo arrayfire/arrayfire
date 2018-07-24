@@ -68,39 +68,35 @@ void diff2Test(string pTestFile, unsigned dim, bool isSubRef=false, const vector
     readTests<T,T,int>(pTestFile,numDims,in,tests);
     dim4 dims       = numDims[0];
 
-    T *outData;
-
     af_array inArray   = 0;
     af_array outArray  = 0;
     af_array tempArray = 0;
     // Get input array
     if (isSubRef) {
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
+        ASSERT_SUCCESS(af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     // Run diff2
-    ASSERT_EQ(AF_SUCCESS, af_diff2(&outArray, inArray, dim));
-
-    // Get result
-    outData = new T[dims.elements()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_SUCCESS(af_diff2(&outArray, inArray, dim));
 
     // Compare result
     for (size_t testIter = 0; testIter < tests.size(); ++testIter) {
         vector<T> currGoldBar = tests[testIter];
-        size_t nElems = currGoldBar.size();
-        for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter << endl;
-        }
-    }
+        dim4 goldDims;
+        ASSERT_SUCCESS(af_get_dims(&goldDims[0],
+                                   &goldDims[1],
+                                   &goldDims[2],
+                                   &goldDims[3],
+                                   inArray));
+        goldDims[dim] -= 2;
 
-    // Delete
-    delete[] outData;
+        ASSERT_VEC_ARRAY_EQ(currGoldBar, goldDims, outArray);
+    }
 
     if(inArray   != 0) af_release_array(inArray);
     if(outArray  != 0) af_release_array(outArray);
@@ -170,7 +166,7 @@ void diff2ArgsTest(string pTestFile)
     af_array inArray  = 0;
     af_array outArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_diff2(&outArray, inArray, -1));
     ASSERT_EQ(AF_ERR_ARG, af_diff2(&outArray, inArray,  5));
@@ -228,19 +224,13 @@ TEST(Diff2, CPP)
     array input(dims, &(in[0].front()));
     array output = diff2(input, dim);
 
-    float *outData = new float[dims.elements()];
-    output.host((void*)outData);
-
     // Compare result
     for (size_t testIter = 0; testIter < tests.size(); ++testIter) {
         vector<float> currGoldBar = tests[testIter];
-        size_t nElems = currGoldBar.size();
-        for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter << endl;
-        }
-    }
+        dim4 goldDims = input.dims();
+        goldDims[dim] -= 2;
 
-    // Delete
-    delete[] outData;
+        ASSERT_VEC_ARRAY_EQ(currGoldBar, goldDims, output);
+    }
 }
 

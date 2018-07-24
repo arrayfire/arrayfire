@@ -509,6 +509,8 @@ std::ostream& operator<<(std::ostream& os, af::dtype type) {
     return os << name;
 }
 
+// Calculate a linearized index's multi-dimensonal coordinates in an af::array,
+//  given its dimension sizes and strides
 af::dim4 unravelIdx(uint idx, af::dim4 dims, af::dim4 strides) {
     af::dim4 coords;
     coords[3] = idx / (strides[3]);
@@ -531,20 +533,18 @@ af::dim4 unravelIdx(uint idx, af::array arr) {
 #define ASSERT_SUCCESS(CALL)                    \
     ASSERT_EQ(AF_SUCCESS, CALL)
 
-/// Compares two af::array or af_arrays for their type, dims, and values.
+/// Compares two af::array or af_arrays for their types, dims, and values.
 ///
-/// \param[in] EXPECTED This is the expected value of the assertion
-/// \param[in] ACTUAL This is the actual value of the calculation
-///
-/// \NOTE: This macro will deallocate the af_arrays after the call
+/// \param[in] EXPECTED The expected array of the assertion
+/// \param[in] ACTUAL The actual resulting array from the calculation
 #define ASSERT_ARRAYS_EQ(EXPECTED, ACTUAL) \
     EXPECT_PRED_FORMAT2(assertArrayEq, EXPECTED, ACTUAL)
 
-/// Compares a std::vector with an af::array for their dims and values.
+/// Compares a std::vector with an af::/af_array for their types, dims, and values.
 ///
 /// \param[in] EXPECTED_VEC The vector that represents the expected array
 /// \param[in] EXPECTED_ARR_DIMS The dimensions of the expected array
-/// \param[in] ACTUAL_ARR The actual array from the calculation
+/// \param[in] ACTUAL_ARR The actual resulting array from the calculation
 #define ASSERT_VEC_ARRAY_EQ(EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR) \
     EXPECT_PRED_FORMAT3(assertArrayEq, EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR)
 
@@ -754,15 +754,15 @@ template<typename T>
     const uint ndimIds = 4;
     if(aDims != b.dims()) {
         return ::testing::AssertionFailure() << "SIZE MISMATCH: "
-                                             << hA_name << "[" << aDims << "], "
-                                             << bName << "[" << b.dims() << "]";
+                                             << aDimsName << "([" << aDims << "]), "
+                                             << bName << "([" << b.dims() << "])";
     }
 
     // In case vector<T> a.size() != aDims.elements()
     if (hA.size() != aDims.elements())
-        return ::testing::AssertionFailure() << "Gold af::array and std::vector SIZE MISMATCH: "
+        return ::testing::AssertionFailure() << "SIZE MISMATCH: "
                                              << hA_name << ".size()(" << hA.size() << "), "
-                                             << bName << "([" << aDims << "] = "
+                                             << aDimsName << "([" << aDims << "] = "
                                              << aDims.elements() << ")";
 
     return elemWiseEq<T>(hA_name, bName, hA, aDims, b);

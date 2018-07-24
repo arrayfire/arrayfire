@@ -56,7 +56,7 @@ void MatMulCheck(string TestFile)
     readTests<T,T,int>(TestFile, numDims, hData, tests);
 
     af_array a, aT, b, bT;
-    ASSERT_EQ(AF_SUCCESS,
+    ASSERT_SUCCESS(
             af_create_array(&a, &hData[0].front(), numDims[0].ndims(), numDims[0].get(), (af_dtype) dtype_traits<T>::af_type));
     dim4 atdims = numDims[0];
     {
@@ -64,9 +64,9 @@ void MatMulCheck(string TestFile)
         atdims[0]   =    atdims[1];
         atdims[1]   =    f;
     }
-    ASSERT_EQ(AF_SUCCESS,
+    ASSERT_SUCCESS(
             af_moddims(&aT, a, atdims.ndims(), atdims.get()));
-    ASSERT_EQ(AF_SUCCESS,
+    ASSERT_SUCCESS(
             af_create_array(&b, &hData[1].front(), numDims[1].ndims(), numDims[1].get(), (af_dtype) dtype_traits<T>::af_type));
     dim4 btdims = numDims[1];
     {
@@ -74,29 +74,29 @@ void MatMulCheck(string TestFile)
         btdims[0] = btdims[1];
         btdims[1] = f;
     }
-    ASSERT_EQ(AF_SUCCESS,
+    ASSERT_SUCCESS(
             af_moddims(&bT, b, btdims.ndims(), btdims.get()));
 
     vector<af_array> out(tests.size(), 0);
     if(isBVector) {
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[0] , aT, b,    AF_MAT_NONE,    AF_MAT_NONE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[1] , bT, a,   AF_MAT_NONE,    AF_MAT_NONE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[2] , b, a,    AF_MAT_TRANS,       AF_MAT_NONE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[3] , bT, aT,   AF_MAT_NONE,    AF_MAT_TRANS));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[4] , b, aT,    AF_MAT_TRANS,       AF_MAT_TRANS));
+        ASSERT_SUCCESS(af_matmul( &out[0] , aT, b,    AF_MAT_NONE,    AF_MAT_NONE));
+        ASSERT_SUCCESS(af_matmul( &out[1] , bT, a,   AF_MAT_NONE,    AF_MAT_NONE));
+        ASSERT_SUCCESS(af_matmul( &out[2] , b, a,    AF_MAT_TRANS,       AF_MAT_NONE));
+        ASSERT_SUCCESS(af_matmul( &out[3] , bT, aT,   AF_MAT_NONE,    AF_MAT_TRANS));
+        ASSERT_SUCCESS(af_matmul( &out[4] , b, aT,    AF_MAT_TRANS,       AF_MAT_TRANS));
     }
     else {
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[0] , a, b, AF_MAT_NONE,   AF_MAT_NONE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[1] , a, bT, AF_MAT_NONE,   AF_MAT_TRANS));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[2] , a, bT, AF_MAT_TRANS,      AF_MAT_NONE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[3] , aT, bT, AF_MAT_TRANS,      AF_MAT_TRANS));
+        ASSERT_SUCCESS(af_matmul( &out[0] , a, b, AF_MAT_NONE,   AF_MAT_NONE));
+        ASSERT_SUCCESS(af_matmul( &out[1] , a, bT, AF_MAT_NONE,   AF_MAT_TRANS));
+        ASSERT_SUCCESS(af_matmul( &out[2] , a, bT, AF_MAT_TRANS,      AF_MAT_NONE));
+        ASSERT_SUCCESS(af_matmul( &out[3] , aT, bT, AF_MAT_TRANS,      AF_MAT_TRANS));
     }
 
     for(size_t i = 0; i < tests.size(); i++) {
         dim_t elems;
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, out[i]));
+        ASSERT_SUCCESS(af_get_elements(&elems, out[i]));
         vector<T> h_out(elems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void *)&h_out.front(), out[i]));
+        ASSERT_SUCCESS(af_get_data_ptr((void *)&h_out.front(), out[i]));
 
         if( false == equal(h_out.begin(), h_out.end(), tests[i].begin()) ) {
 
@@ -108,13 +108,13 @@ void MatMulCheck(string TestFile)
         }
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(aT));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(b));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(bT));
+    ASSERT_SUCCESS(af_release_array(a));
+    ASSERT_SUCCESS(af_release_array(aT));
+    ASSERT_SUCCESS(af_release_array(b));
+    ASSERT_SUCCESS(af_release_array(bT));
 
     for (size_t i = 0; i <  out.size(); i++) {
-        ASSERT_EQ(AF_SUCCESS, af_release_array(out[i]));
+        ASSERT_SUCCESS(af_release_array(out[i]));
     }
 }
 

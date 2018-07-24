@@ -488,13 +488,13 @@ TEST(Select, InvalidSizeOfAB) {
 
     double val = 0;
     dim_t dims = 10;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&a, val, 1, &dims, f32));
+    ASSERT_SUCCESS(af_constant(&a, val, 1, &dims, f32));
 
     dims = 9;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&b, val, 1, &dims, f32));
+    ASSERT_SUCCESS(af_constant(&b, val, 1, &dims, f32));
 
     dims = 10;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&cond, val, 1, &dims, b8));
+    ASSERT_SUCCESS(af_constant(&cond, val, 1, &dims, b8));
 
     ASSERT_EQ(AF_ERR_SIZE, af_select(&out, cond, a, b));
 
@@ -515,13 +515,13 @@ TEST(Select, InvalidSizeOfCond) {
 
     double val = 0;
     dim_t dims = 10;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&a, val, 1, &dims, f32));
+    ASSERT_SUCCESS(af_constant(&a, val, 1, &dims, f32));
 
     dims = 10;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&b, val, 1, &dims, f32));
+    ASSERT_SUCCESS(af_constant(&b, val, 1, &dims, f32));
 
     dims = 9;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&cond, val, 1, &dims, b8));
+    ASSERT_SUCCESS(af_constant(&cond, val, 1, &dims, b8));
 
     ASSERT_EQ(AF_ERR_SIZE, af_select(&out, cond, a, b));
 

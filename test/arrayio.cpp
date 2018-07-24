@@ -118,6 +118,6 @@ TEST(ArrayIO, Save) {
     array aread = readArray("arr.af", "a");
     array bread = readArray("arr.af", "b");
 
-    ASSERT_TRUE(allTrue<bool>(aread == a));
-    ASSERT_TRUE(allTrue<bool>(bread == b));
+    ASSERT_ARRAYS_EQ(a, aread);
+    ASSERT_ARRAYS_EQ(b, bread);
 }

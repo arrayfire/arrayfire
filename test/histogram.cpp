@@ -54,25 +54,24 @@ void histTest(string pTestFile, unsigned nbins, double minval, double maxval)
     af_array outArray   = 0;
     af_array inArray    = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<inType>::af_type));
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<inType>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS,af_histogram(&outArray,inArray,nbins,minval,maxval));
+    ASSERT_SUCCESS(af_histogram(&outArray,inArray,nbins,minval,maxval));
 
     vector<outType> outData(dims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t testIter=0; testIter<tests.size(); ++testIter) {
         vector<outType> currGoldBar = tests[testIter];
-        size_t nElems        = currGoldBar.size();
-        for (size_t elIter=0; elIter<nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< endl;
-        }
+
+        dim4 goldDims(nbins, 1, dims[2], dims[3]);
+        ASSERT_VEC_ARRAY_EQ(currGoldBar, goldDims, outArray);
     }
 
     // cleanup
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 TYPED_TEST(Histogram,256Bins0min255max_ones)
@@ -137,10 +136,11 @@ TEST(Histogram, CPP)
 
     for (size_t testIter=0; testIter<tests.size(); ++testIter) {
         vector<uint> currGoldBar = tests[testIter];
-        size_t nElems        = currGoldBar.size();
-        for (size_t elIter=0; elIter<nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< endl;
-        }
+
+        dim4 goldDims = numDims[0];
+        goldDims[0] = nbins;
+        goldDims[1] = 1;
+        ASSERT_VEC_ARRAY_EQ(currGoldBar, goldDims, output);
     }
 }
 
