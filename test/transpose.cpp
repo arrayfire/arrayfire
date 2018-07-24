@@ -64,26 +64,26 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=N
     af_array outArray   = 0;
     af_array inArray    = 0;
     T *outData;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     // check if the test is for indexed Array
     if (isSubRef) {
         dim4 newDims(dims[1]-4,dims[0]-4,dims[2],dims[3]);
         af_array subArray = 0;
-        ASSERT_EQ(AF_SUCCESS, af_index(&subArray,inArray,seqv->size(),&seqv->front()));
-        ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray,subArray, false));
+        ASSERT_SUCCESS(af_index(&subArray,inArray,seqv->size(),&seqv->front()));
+        ASSERT_SUCCESS(af_transpose(&outArray,subArray, false));
         // destroy the temporary indexed Array
-        ASSERT_EQ(AF_SUCCESS, af_release_array(subArray));
+        ASSERT_SUCCESS(af_release_array(subArray));
 
         dim_t nElems;
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems,outArray));
+        ASSERT_SUCCESS(af_get_elements(&nElems,outArray));
         outData = new T[nElems];
     } else {
-        ASSERT_EQ(AF_SUCCESS,af_transpose(&outArray,inArray, false));
+        ASSERT_SUCCESS(af_transpose(&outArray,inArray, false));
         outData = new T[dims.elements()];
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
     for (size_t testIter=0; testIter<tests.size(); ++testIter) {
         vector<T> currGoldBar   = tests[testIter];
@@ -95,8 +95,8 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=N
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 TYPED_TEST(Transpose,Vector)
@@ -251,13 +251,13 @@ TEST(Transpose, MaxDim)
 
     ASSERT_EQ(output.dims(0), (int)largeDim);
     ASSERT_EQ(output.dims(1), 2);
-    ASSERT_TRUE(allTrue<bool>(output == gold));
+    ASSERT_ARRAYS_EQ(gold, output);
 
     input  = range(dim4(2, 5, 1, largeDim));
     gold   = range(dim4(5, 2, 1, largeDim), 1);
     output = transpose(input);
 
-    ASSERT_TRUE(allTrue<bool>(output == gold));
+    ASSERT_ARRAYS_EQ(gold, output);
 }
 
 

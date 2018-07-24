@@ -74,10 +74,10 @@ TYPED_TEST(Resize, InvalidDims)
 
     dim4 dims = dim4(8,8,1,1);
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(),
+    ASSERT_SUCCESS(af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(),
                                           (af_dtype) dtype_traits<TypeParam>::af_type));
     ASSERT_EQ(AF_ERR_SIZE, af_resize(&outArray, inArray, 0, 0, AF_INTERP_NEAREST));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 template<typename T>
@@ -129,19 +129,19 @@ void resizeTest(string pTestFile, const unsigned resultIdx, const dim_t odim0, c
     af_array tempArray = 0;
     if (isSubRef) {
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
+        ASSERT_SUCCESS(af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_resize(&outArray, inArray, odim0, odim1, method));
+    ASSERT_SUCCESS(af_resize(&outArray, inArray, odim0, odim1, method));
 
     // Get result
     dim4 odims(odim0, odim1, dims[2], dims[3]);
     T* outData = new T[odims.elements()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
     // Compare result
     size_t nElems = tests[resultIdx].size();
@@ -331,7 +331,7 @@ void resizeArgsTest(af_err err, string pTestFile, const dim4 odims, const af_int
 
     af_array inArray = 0;
     af_array outArray = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     ASSERT_EQ(err, af_resize(&outArray, inArray, odims[0], odims[1], method));
 

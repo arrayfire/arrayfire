@@ -65,27 +65,20 @@ void tileTest(string pTestFile, const unsigned resultIdx, const uint x, const ui
     af_array tempArray = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
+        ASSERT_SUCCESS(af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_tile(&outArray, inArray, x, y, z, w));
+    ASSERT_SUCCESS(af_tile(&outArray, inArray, x, y, z, w));
 
-    // Get result
-    T* outData = new T[tests[resultIdx].size()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
-
-    // Compare result
-    size_t nElems = tests[resultIdx].size();
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
-    }
-
-    // Delete
-    delete[] outData;
+    dim4 goldDims(idims[0] * x,
+                  idims[1] * y,
+                  idims[2] * z,
+                  idims[3] * w);
+    ASSERT_VEC_ARRAY_EQ(tests[resultIdx], goldDims, outArray);
 
     if(inArray   != 0) af_release_array(inArray);
     if(outArray  != 0) af_release_array(outArray);
@@ -138,18 +131,11 @@ TEST(Tile, CPP)
     array input(idims, &(in[0].front()));
     array output = tile(input, x, y, z, w);
 
-    // Get result
-    float* outData = new float[tests[resultIdx].size()];
-    output.host((void*)outData);
-
-    // Compare result
-    size_t nElems = tests[resultIdx].size();
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
-    }
-
-    // Delete
-    delete[] outData;
+    dim4 goldDims(idims[0] * x,
+                  idims[1] * y,
+                  idims[2] * z,
+                  idims[3] * w);
+    ASSERT_VEC_ARRAY_EQ(tests[resultIdx], goldDims, output);
 }
 
 TEST(Tile, MaxDim)

@@ -49,14 +49,14 @@ void cannyTest(string pTestFile)
     af_array outArray = 0;
     af_array sArray   = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&sArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&sArray, &(in[0].front()),
                 sDims.ndims(), sDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_canny(&outArray, sArray, AF_CANNY_THRESHOLD_MANUAL, 0.4147f, 0.8454f, 3, true));
+    ASSERT_SUCCESS(af_canny(&outArray, sArray, AF_CANNY_THRESHOLD_MANUAL, 0.4147f, 0.8454f, 3, true));
 
     vector<char> outData(sDims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
     vector<char> currGoldBar = tests[0];
     size_t nElems        = currGoldBar.size();
@@ -65,8 +65,8 @@ void cannyTest(string pTestFile)
     }
 
     // cleanup
-    ASSERT_EQ(AF_SUCCESS, af_release_array(sArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(sArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 TYPED_TEST(CannyEdgeDetector, ArraySizeLessThanBlockSize10x10)
@@ -112,42 +112,42 @@ void cannyImageOtsuTest(string pTestFile, bool isColor)
 
         af_dtype type = (af_dtype)dtype_traits<T>::af_type;
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&_inArray, inFiles[testId].c_str(), isColor));
+        ASSERT_SUCCESS(af_load_image(&_inArray, inFiles[testId].c_str(), isColor));
 
-        ASSERT_EQ(AF_SUCCESS, af_cast(&inArray, _inArray, type));
+        ASSERT_SUCCESS(af_cast(&inArray, _inArray, type));
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image_native(&goldArray, outFiles[testId].c_str()));
+        ASSERT_SUCCESS(af_load_image_native(&goldArray, outFiles[testId].c_str()));
 
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
+        ASSERT_SUCCESS(af_get_elements(&nElems, goldArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_canny(&_outArray, inArray, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false));
+        ASSERT_SUCCESS(af_canny(&_outArray, inArray, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false));
 
         unsigned ndims = 0;
         dim_t dims[4];
 
-        ASSERT_EQ(AF_SUCCESS, af_get_numdims(&ndims, _outArray));
-        ASSERT_EQ(AF_SUCCESS, af_get_dims(dims, dims+1, dims+2, dims+3, _outArray));
+        ASSERT_SUCCESS(af_get_numdims(&ndims, _outArray));
+        ASSERT_SUCCESS(af_get_dims(dims, dims+1, dims+2, dims+3, _outArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_constant(&cstArray, 255.0, ndims, dims, f32));
+        ASSERT_SUCCESS(af_constant(&cstArray, 255.0, ndims, dims, f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_mul(&mulArray, cstArray, _outArray, false));
-        ASSERT_EQ(AF_SUCCESS, af_cast(&outArray, mulArray, u8));
+        ASSERT_SUCCESS(af_mul(&mulArray, cstArray, _outArray, false));
+        ASSERT_SUCCESS(af_cast(&outArray, mulArray, u8));
 
         vector<unsigned char> outData(nElems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
         vector<unsigned char> goldData(nElems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)goldData.data(), goldArray));
 
         ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 1.0e-3));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(_inArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(cstArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(mulArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(_outArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray));
+        ASSERT_SUCCESS(af_release_array(_inArray));
+        ASSERT_SUCCESS(af_release_array(inArray));
+        ASSERT_SUCCESS(af_release_array(cstArray));
+        ASSERT_SUCCESS(af_release_array(mulArray));
+        ASSERT_SUCCESS(af_release_array(_outArray));
+        ASSERT_SUCCESS(af_release_array(outArray));
+        ASSERT_SUCCESS(af_release_array(goldArray));
     }
 }
 
@@ -165,12 +165,12 @@ TEST(CannyEdgeDetector, InvalidSizeArray)
 
     dim4 sDims(100, 1, 1, 1);
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+    ASSERT_SUCCESS(af_create_array(&inArray, &in.front(),
                 sDims.ndims(), sDims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_canny(&outArray, inArray, AF_CANNY_THRESHOLD_MANUAL, 0.24, 0.72, 3, true));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 TEST(CannyEdgeDetector, Array4x4_Invalid)
@@ -182,12 +182,12 @@ TEST(CannyEdgeDetector, Array4x4_Invalid)
 
     dim4 sDims(4, 4, 1, 1);
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+    ASSERT_SUCCESS(af_create_array(&inArray, &in.front(),
                 sDims.ndims(), sDims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_canny(&outArray, inArray, AF_CANNY_THRESHOLD_MANUAL, 0.24, 0.72, 3, true));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 TEST(CannyEdgeDetector, Sobel5x5_Invalid)
@@ -199,10 +199,10 @@ TEST(CannyEdgeDetector, Sobel5x5_Invalid)
 
     dim4 sDims(5, 5, 1, 1);
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+    ASSERT_SUCCESS(af_create_array(&inArray, &in.front(),
                 sDims.ndims(), sDims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_canny(&outArray, inArray, AF_CANNY_THRESHOLD_MANUAL, 0.24, 0.72, 5, true));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }

@@ -236,7 +236,7 @@ TYPED_TEST(Sparse, DeepCopy) {
                                   "copy do not match the original array";
         array d = dense(s);
         array d2 = dense(s2);
-        ASSERT_TRUE(allTrue<bool>(d == d2));
+        ASSERT_ARRAYS_EQ(d, d2);
     }
 }
 

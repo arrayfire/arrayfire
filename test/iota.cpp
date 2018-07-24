@@ -51,7 +51,7 @@ void iotaTest(const dim4 idims, const dim4 tdims)
 
     af_array outArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_iota(&outArray, idims.ndims(), idims.get(),
+    ASSERT_SUCCESS(af_iota(&outArray, idims.ndims(), idims.get(),
                tdims.ndims(), tdims.get(), (af_dtype) dtype_traits<T>::af_type));
 
     af_array temp0 = 0, temp1 = 0, temp2 = 0;
@@ -60,20 +60,11 @@ void iotaTest(const dim4 idims, const dim4 tdims)
     for(unsigned i = 0; i < 4; i++) {
         fulldims[i] = idims[i] * tdims[i];
     }
-    ASSERT_EQ(AF_SUCCESS, af_range(&temp2, tempdims.ndims(), tempdims.get(), 0, (af_dtype) dtype_traits<T>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_moddims(&temp1, temp2, idims.ndims(), idims.get()));
-    ASSERT_EQ(AF_SUCCESS, af_tile(&temp0, temp1, tdims[0], tdims[1], tdims[2], tdims[3]));
+    ASSERT_SUCCESS(af_range(&temp2, tempdims.ndims(), tempdims.get(), 0, (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_moddims(&temp1, temp2, idims.ndims(), idims.get()));
+    ASSERT_SUCCESS(af_tile(&temp0, temp1, tdims[0], tdims[1], tdims[2], tdims[3]));
 
-    // Get result
-    vector<T> outData(fulldims.elements());
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
-
-    vector<T> tileData(fulldims.elements());
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&tileData.front(), temp0));
-
-    // Compare result
-    for(int i = 0; i < (int) fulldims.elements(); i++)
-        ASSERT_EQ(tileData[i], outData[i]) << "at: " << i << endl;
+    ASSERT_ARRAYS_EQ(temp0, outArray);
 
     if(outArray  != 0) af_release_array(outArray);
     if(temp0     != 0) af_release_array(temp0);
@@ -125,14 +116,5 @@ TEST(Iota, CPP)
     array output = iota(idims, tdims);
     array tileArray = tile(moddims(range(dim4(idims.elements()), 0), idims), tdims);
 
-    // Get result
-    vector<float> outData (fulldims.elements());
-    output.host((void*)&outData.front());
-
-    vector<float> tileData (fulldims.elements());
-    tileArray.host((void*)&tileData.front());
-
-    // Compare result
-    for(int i = 0; i < (int)fulldims.elements(); i++)
-        ASSERT_EQ(tileData[i], outData[i]) << "at: " << i << endl;
+    ASSERT_ARRAYS_EQ(tileArray, output);
 }

@@ -48,18 +48,18 @@ void uniqueTest(string pTestFile)
         af_array outArray  = 0;
 
         // Get input array
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(),
+        ASSERT_SUCCESS(af_create_array(&inArray, &in.front(), dims.ndims(),
                                               dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
 
         vector<T> currGoldBar(tests[d].begin(), tests[d].end());
 
         // Run sum
-        ASSERT_EQ(AF_SUCCESS, af_set_unique(&outArray, inArray, d == 0 ? false : true));
+        ASSERT_SUCCESS(af_set_unique(&outArray, inArray, d == 0 ? false : true));
 
         // Get result
         vector<T >outData (currGoldBar.size());
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
 
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
@@ -115,20 +115,20 @@ void setTest(string pTestFile)
         af_array inArray1   = 0;
         af_array outArray  = 0;
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray0, &in0.front(), dims0.ndims(),
+        ASSERT_SUCCESS(af_create_array(&inArray0, &in0.front(), dims0.ndims(),
                                               dims0.get(), (af_dtype) dtype_traits<T>::af_type));
 
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray1, &in1.front(), dims1.ndims(),
+        ASSERT_SUCCESS(af_create_array(&inArray1, &in1.front(), dims1.ndims(),
                                               dims1.get(), (af_dtype) dtype_traits<T>::af_type));
         vector<T> currGoldBar(tests[d].begin(), tests[d].end());
 
         // Run sum
-        ASSERT_EQ(AF_SUCCESS, af_set_func(&outArray, inArray0, inArray1, d == 0 ? false : true));
+        ASSERT_SUCCESS(af_set_func(&outArray, inArray0, inArray1, d == 0 ? false : true));
 
         // Get result
         vector<T> outData(currGoldBar.size());
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
 
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {

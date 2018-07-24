@@ -56,12 +56,12 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<a
 
     // Get input array
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) dtype_traits<Ti>::af_type));
-        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(tempArray));
+        ASSERT_SUCCESS(af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) dtype_traits<Ti>::af_type));
+        ASSERT_SUCCESS(af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
+        ASSERT_SUCCESS(af_release_array(tempArray));
     } else {
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) dtype_traits<Ti>::af_type));
+        ASSERT_SUCCESS(af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) dtype_traits<Ti>::af_type));
     }
 
     // Compare result
@@ -69,12 +69,12 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<a
         vector<To> currGoldBar(tests[d].begin(), tests[d].end());
 
         // Run sum
-        ASSERT_EQ(AF_SUCCESS, af_scan(&outArray, inArray, d + off));
+        ASSERT_SUCCESS(af_scan(&outArray, inArray, d + off));
 
         // Get result
         To *outData;
         outData = new To[dims.elements()];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
@@ -85,10 +85,10 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<a
 
         // Delete
         delete[] outData;
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+        ASSERT_SUCCESS(af_release_array(outArray));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 #define SCAN_TESTS(FN, TAG, Ti, To)             \
@@ -179,7 +179,7 @@ TEST(Accum, MaxDim)
     gold_first(span, seq(0, 9999), span, span) = range(2, 10000, 2, 2) + 1;
 
     array output_first = accum(input, 0);
-    ASSERT_TRUE(allTrue<bool>(output_first == gold_first));
+    ASSERT_ARRAYS_EQ(gold_first, output_first);
 
 
     input = constant(0, 2, 2, 2, largeDim);
@@ -189,7 +189,7 @@ TEST(Accum, MaxDim)
     gold_first(span, span, span, seq(0, 9999)) = range(2, 2, 2, 10000) + 1;
 
     output_first = accum(input, 0);
-    ASSERT_TRUE(allTrue<bool>(output_first == gold_first));
+    ASSERT_ARRAYS_EQ(gold_first, output_first);
 
 
     //other dimension kernel tests
@@ -200,7 +200,7 @@ TEST(Accum, MaxDim)
     gold_dim(span, seq(0, 9999), span, span) = range(dim4(2, 10000, 2, 2), 1) + 1;
 
     array output_dim = accum(input, 1);
-    ASSERT_TRUE(allTrue<bool>(output_dim == gold_dim));
+    ASSERT_ARRAYS_EQ(gold_dim, output_dim);
 
 
     input = constant(0, 2, 2, 2, largeDim);
@@ -210,6 +210,6 @@ TEST(Accum, MaxDim)
     gold_dim(span, span, span, seq(0, 9999)) = range(dim4(2, 2, 2, 10000), 1) + 1;
 
     output_dim = accum(input, 1);
-    ASSERT_TRUE(allTrue<bool>(output_dim == gold_dim));
+    ASSERT_ARRAYS_EQ(gold_dim, output_dim);
 
 }

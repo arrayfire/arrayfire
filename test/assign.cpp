@@ -116,17 +116,17 @@ void assignTest(string pTestFile, const vector<af_seq> *seqv)
     af_array rhsArray  = 0;
     af_array outArray  = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&rhsArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&rhsArray, &(in[0].front()),
                 dims0.ndims(), dims0.get(), (af_dtype)dtype_traits<inType>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&lhsArray, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&lhsArray, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)dtype_traits<outType>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_assign_seq(&outArray, lhsArray, seqv->size(), &seqv->front(), rhsArray));
+    ASSERT_SUCCESS(af_assign_seq(&outArray, lhsArray, seqv->size(), &seqv->front(), rhsArray));
 
     outType *outData = new outType[dims1.elements()];
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
     vector<outType> currGoldBar = tests[0];
     size_t nElems        = currGoldBar.size();
@@ -135,9 +135,9 @@ void assignTest(string pTestFile, const vector<af_seq> *seqv)
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(rhsArray));
+    ASSERT_SUCCESS(af_release_array(lhsArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 template<typename T>
@@ -500,13 +500,13 @@ TEST(ArrayAssign, InvalidArgs)
     ASSERT_EQ(AF_ERR_ARG, af_assign_seq(&outArray,
                                     lhsArray, seqv.size(), &seqv.front(), rhsArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&rhsArray, &(in.front()),
+    ASSERT_SUCCESS(af_create_array(&rhsArray, &(in.front()),
                 dims0.ndims(), dims0.get(), (af_dtype)dtype_traits<cfloat>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_assign_seq(&outArray,
                                     lhsArray, seqv.size(), &seqv.front(), rhsArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&lhsArray, &(in.front()),
+    ASSERT_SUCCESS(af_create_array(&lhsArray, &(in.front()),
                 dims1.ndims(), dims1.get(), (af_dtype)dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_assign_seq(&outArray, lhsArray, 0, &seqv.front(), rhsArray));
@@ -514,8 +514,8 @@ TEST(ArrayAssign, InvalidArgs)
     ASSERT_EQ(AF_ERR_TYPE, af_assign_seq(&outArray,
                                          lhsArray, seqv.size(), &seqv.front(), rhsArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
+    ASSERT_SUCCESS(af_release_array(rhsArray));
+    ASSERT_SUCCESS(af_release_array(lhsArray));
 }
 
 TEST(ArrayAssign, CPP_ASSIGN_TO_INDEXED)
@@ -891,7 +891,7 @@ TEST(Asssign, LinearAssignSeq)
     af_array rhs_arr = rhs.get();
     af_array out_arr;
 
-    ASSERT_EQ(AF_SUCCESS,
+    ASSERT_SUCCESS(
               af_assign_seq(&out_arr, in_arr, 1, &ii.idx.seq, rhs_arr));
 
     array out(out_arr);
@@ -931,7 +931,7 @@ TEST(Asssign, LinearAssignGenSeq)
     af_array rhs_arr = rhs.get();
     af_array out_arr;
 
-    ASSERT_EQ(AF_SUCCESS,
+    ASSERT_SUCCESS(
               af_assign_gen(&out_arr, in_arr, 1, &ii, rhs_arr));
 
     array out(out_arr);
@@ -971,7 +971,7 @@ TEST(Asssign, LinearAssignGenArr)
     af_array rhs_arr = rhs.get();
     af_array out_arr;
 
-    ASSERT_EQ(AF_SUCCESS,
+    ASSERT_SUCCESS(
               af_assign_gen(&out_arr, in_arr, 1, &ii, rhs_arr));
 
     array out(out_arr);

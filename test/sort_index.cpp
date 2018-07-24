@@ -64,40 +64,22 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     af_array ixArray = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
+        ASSERT_SUCCESS(af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_sort_index(&sxArray, &ixArray, inArray, 0, dir));
+    ASSERT_SUCCESS(af_sort_index(&sxArray, &ixArray, inArray, 0, dir));
 
-    size_t nElems = tests[resultIdx0].size();
-
-    // Get result
-    T* sxData = new T[tests[resultIdx0].size()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)sxData, sxArray));
-
-    // Compare result
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << endl;
-    }
-
-    // Get result
-    unsigned* ixData = new unsigned[tests[resultIdx1].size()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)ixData, ixArray));
+    vector<T> sxTest(tests[resultIdx0].begin(), tests[resultIdx0].end());
+    ASSERT_VEC_ARRAY_EQ(sxTest, idims, sxArray);
 
 #ifndef AF_OPENCL
-    // Compare result
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << endl;
-    }
+    vector<unsigned> ixTest(tests[resultIdx1].begin(), tests[resultIdx1].end());
+    ASSERT_VEC_ARRAY_EQ(ixTest, idims, ixArray);
 #endif
-
-    // Delete
-    delete[] sxData;
-    delete[] ixData;
 
     if(inArray   != 0) af_release_array(inArray);
     if(sxArray   != 0) af_release_array(sxArray);
@@ -151,27 +133,10 @@ TEST(SortIndex, CPPDim0)
 
     size_t nElems = tests[resultIdx0].size();
 
-    // Get result
-    float* sxData = new float[tests[resultIdx0].size()];
-    outValues.host((void*)sxData);
+    ASSERT_VEC_ARRAY_EQ(tests[resultIdx0], idims, outValues);
 
-    // Compare result
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << endl;
-    }
-
-    // Get result
-    unsigned* ixData = new unsigned[tests[resultIdx1].size()];
-    outIndices.host((void*)ixData);
-
-    // Compare result
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << endl;
-    }
-
-    // Delete
-    delete[] sxData;
-    delete[] ixData;
+    vector<unsigned> ixTest(tests[resultIdx1].begin(), tests[resultIdx1].end());
+    ASSERT_VEC_ARRAY_EQ(ixTest, idims, outIndices);
 }
 
 TEST(SortIndex, CPPDim1)
@@ -199,27 +164,10 @@ TEST(SortIndex, CPPDim1)
 
     size_t nElems = tests[resultIdx0].size();
 
-    // Get result
-    float* sxData = new float[tests[resultIdx0].size()];
-    outValues.host((void*)sxData);
+    ASSERT_VEC_ARRAY_EQ(tests[resultIdx0], idims, outValues);
 
-    // Compare result
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << endl;
-    }
-
-    // Get result
-    unsigned* ixData = new unsigned[tests[resultIdx1].size()];
-    outIndices.host((void*)ixData);
-
-    // Compare result
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << endl;
-    }
-
-    // Delete
-    delete[] sxData;
-    delete[] ixData;
+    vector<unsigned> ixTest(tests[resultIdx1].begin(), tests[resultIdx1].end());
+    ASSERT_VEC_ARRAY_EQ(ixTest, idims, outIndices);
 }
 
 TEST(SortIndex, CPPDim2)
@@ -246,25 +194,8 @@ TEST(SortIndex, CPPDim2)
     outIndices = reorder(outIndices, 2, 0, 1, 3);
     size_t nElems = tests[resultIdx0].size();
 
-    // Get result
-    float* sxData = new float[tests[resultIdx0].size()];
-    outValues.host((void*)sxData);
+    ASSERT_VEC_ARRAY_EQ(tests[resultIdx0], idims, outValues);
 
-    // Compare result
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << endl;
-    }
-
-    // Get result
-    unsigned* ixData = new unsigned[tests[resultIdx1].size()];
-    outIndices.host((void*)ixData);
-
-    // Compare result
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx1][elIter], ixData[elIter]) << "at: " << elIter << endl;
-    }
-
-    // Delete
-    delete[] sxData;
-    delete[] ixData;
+    vector<unsigned> ixTest(tests[resultIdx1].begin(), tests[resultIdx1].end());
+    ASSERT_VEC_ARRAY_EQ(ixTest, idims, outIndices);
 }

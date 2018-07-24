@@ -59,32 +59,24 @@ void testSobelDerivatives(string pTestFile)
     af_array dyArray = 0;
     af_array inArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()),
                 dims.ndims(), dims.get(), (af_dtype)dtype_traits<Ti>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_sobel_operator(&dxArray, &dyArray, inArray, 3));
-
-    vector<To> dxData(dims.elements());
-    vector<To> dyData(dims.elements());
-
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)dxData.data(), dxArray));
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)dyData.data(), dyArray));
+    ASSERT_SUCCESS(af_sobel_operator(&dxArray, &dyArray, inArray, 3));
 
     vector<To> currDXGoldBar = tests[0];
     vector<To> currDYGoldBar = tests[1];
+
     size_t nElems = currDXGoldBar.size();
-    for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(currDXGoldBar[elIter], dxData[elIter])<< "at: " << elIter<< endl;
-    }
+    ASSERT_VEC_ARRAY_EQ(currDXGoldBar, dims, dxArray);
+
     nElems = currDYGoldBar.size();
-    for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(currDYGoldBar[elIter], dyData[elIter])<< "at: " << elIter<< endl;
-    }
+    ASSERT_VEC_ARRAY_EQ(currDYGoldBar, dims, dyArray);
 
     // cleanup
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(dxArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(dyArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(dxArray));
+    ASSERT_SUCCESS(af_release_array(dyArray));
 }
 
 TYPED_TEST(Sobel, Rectangle)

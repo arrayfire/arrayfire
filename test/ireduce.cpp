@@ -182,7 +182,7 @@ TEST(IndexedReduce, MinReduceDimensionHasSingleValue)
     array mm, indx;
     min(mm, indx, data, 2);
 
-    ASSERT_TRUE(allTrue<bool>(mm == data));
+    ASSERT_ARRAYS_EQ(data, mm);
     ASSERT_TRUE(allTrue<bool>(indx == 0));
 }
 
@@ -193,7 +193,7 @@ TEST(IndexedReduce, MaxReduceDimensionHasSingleValue)
     array mm, indx;
     max(mm, indx, data, 2);
 
-    ASSERT_TRUE(allTrue<bool>(mm == data));
+    ASSERT_ARRAYS_EQ(data, mm);
     ASSERT_TRUE(allTrue<bool>(indx == 0));
 }
 

@@ -68,12 +68,12 @@ void hammingMatcherTest(string pTestFile, int feat_dim)
     af_array idx   = 0;
     af_array dist  = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&query, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&query, &(in[0].front()),
                 qDims.ndims(), qDims.get(), (af_dtype)dtype_traits<T>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&train, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&train, &(in[1].front()),
                 tDims.ndims(), tDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_hamming_matcher(&idx, &dist, query, train, feat_dim, 1));
+    ASSERT_SUCCESS(af_hamming_matcher(&idx, &dist, query, train, feat_dim, 1));
 
     vector<uint> goldIdx  = tests[0];
     vector<uint> goldDist = tests[1];
@@ -81,8 +81,8 @@ void hammingMatcherTest(string pTestFile, int feat_dim)
     uint *outIdx          = new uint[nElems];
     uint *outDist         = new uint[nElems];
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outIdx,  idx));
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outDist, dist));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outIdx,  idx));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outDist, dist));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(goldDist[elIter], outDist[elIter])<< "at: " << elIter<< endl;
@@ -90,10 +90,10 @@ void hammingMatcherTest(string pTestFile, int feat_dim)
 
     delete[] outIdx;
     delete[] outDist;
-    ASSERT_EQ(AF_SUCCESS, af_release_array(query));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(train));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(idx));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(dist));
+    ASSERT_SUCCESS(af_release_array(query));
+    ASSERT_SUCCESS(af_release_array(train));
+    ASSERT_SUCCESS(af_release_array(idx));
+    ASSERT_SUCCESS(af_release_array(dist));
 }
 
 TYPED_TEST(HammingMatcher8, Hamming_500_5000_Dim0)

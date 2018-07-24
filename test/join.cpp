@@ -69,35 +69,27 @@ void joinTest(string pTestFile, const unsigned dim, const unsigned in0, const un
     af_array tempArray = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[in0].front()), i0dims.ndims(), i0dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&tempArray, &(in[in0].front()), i0dims.ndims(), i0dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-        ASSERT_EQ(AF_SUCCESS, af_index(&in0Array, tempArray, seqv->size(), &seqv->front()));
+        ASSERT_SUCCESS(af_index(&in0Array, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&in0Array, &(in[in0].front()), i0dims.ndims(), i0dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&in0Array, &(in[in0].front()), i0dims.ndims(), i0dims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[in1].front()), i1dims.ndims(), i1dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&tempArray, &(in[in1].front()), i1dims.ndims(), i1dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-        ASSERT_EQ(AF_SUCCESS, af_index(&in1Array, tempArray, seqv->size(), &seqv->front()));
+        ASSERT_SUCCESS(af_index(&in1Array, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&in1Array, &(in[in1].front()), i1dims.ndims(), i1dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&in1Array, &(in[in1].front()), i1dims.ndims(), i1dims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_join(&outArray, dim, in0Array, in1Array));
+    ASSERT_SUCCESS(af_join(&outArray, dim, in0Array, in1Array));
 
-    // Get result
-    T* outData = new T[tests[resultIdx].size()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    dim4 goldDims = i0dims;
+    goldDims[dim] = i0dims[dim] + i1dims[dim];
 
-    // Compare result
-    size_t nElems = tests[resultIdx].size();
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
-    }
-
-    // Delete
-    delete[] outData;
+    ASSERT_VEC_ARRAY_EQ(tests[resultIdx], goldDims, outArray);
 
     if(in0Array  != 0) af_release_array(in0Array);
     if(in1Array  != 0) af_release_array(in1Array);
@@ -170,18 +162,10 @@ TEST(Join, CPP)
 
     array output = join(dim, input0, input1);
 
-    // Get result
-    float* outData = new float[tests[resultIdx].size()];
-    output.host((void*)outData);
+    dim4 goldDims = i0dims;
+    goldDims[dim] = i0dims[dim] + i1dims[dim];
 
-    // Compare result
-    size_t nElems = tests[resultIdx].size();
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << endl;
-    }
-
-    // Delete
-    delete[] outData;
+    ASSERT_VEC_ARRAY_EQ(tests[resultIdx], goldDims, output);
 }
 
 TEST(JoinMany0, CPP)

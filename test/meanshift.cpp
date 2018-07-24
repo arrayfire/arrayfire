@@ -43,10 +43,10 @@ TYPED_TEST(Meanshift, InvalidArgs)
     af_array outArray  = 0;
 
     dim4 dims = dim4(100,1,1,1);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+    ASSERT_SUCCESS(af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) dtype_traits<TypeParam>::af_type));
     ASSERT_EQ(AF_ERR_SIZE, af_mean_shift(&outArray, inArray, 0.12f, 0.34f, 5, true));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 template<typename T, bool isColor>
@@ -76,28 +76,28 @@ void meanshiftTest(string pTestFile, const float ss)
         inFiles[testId].insert(0,string(TEST_DIR"/meanshift/"));
         outFiles[testId].insert(0,string(TEST_DIR"/meanshift/"));
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray_f32, inFiles[testId].c_str(), isColor));
-        ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
+        ASSERT_SUCCESS(af_load_image(&inArray_f32, inFiles[testId].c_str(), isColor));
+        ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&goldArray_f32, outFiles[testId].c_str(), isColor));
-        ASSERT_EQ(AF_SUCCESS, conv_image<T>(&goldArray, goldArray_f32)); // af_load_image always returns float array
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
+        ASSERT_SUCCESS(af_load_image(&goldArray_f32, outFiles[testId].c_str(), isColor));
+        ASSERT_SUCCESS(conv_image<T>(&goldArray, goldArray_f32)); // af_load_image always returns float array
+        ASSERT_SUCCESS(af_get_elements(&nElems, goldArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_mean_shift(&outArray, inArray, ss, 30.f, 5, isColor));
+        ASSERT_SUCCESS(af_mean_shift(&outArray, inArray, ss, 30.f, 5, isColor));
 
         vector<T> outData(nElems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
         vector<T> goldData(nElems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)goldData.data(), goldArray));
 
         ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.02f));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray_f32));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray_f32));
+        ASSERT_SUCCESS(af_release_array(inArray));
+        ASSERT_SUCCESS(af_release_array(inArray_f32));
+        ASSERT_SUCCESS(af_release_array(outArray));
+        ASSERT_SUCCESS(af_release_array(goldArray));
+        ASSERT_SUCCESS(af_release_array(goldArray_f32));
     }
 }
 

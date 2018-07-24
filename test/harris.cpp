@@ -83,35 +83,35 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size)
 
         inFiles[testId].insert(0,string(TEST_DIR"/harris/"));
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
+        ASSERT_SUCCESS(af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
 
-        ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
+        ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_harris(&out, inArray, 500, 1e5f, sigma, block_size, 0.04f));
+        ASSERT_SUCCESS(af_harris(&out, inArray, 500, 1e5f, sigma, block_size, 0.04f));
 
         dim_t n = 0;
         af_array x, y, score, orientation, size;
 
-        ASSERT_EQ(AF_SUCCESS, af_get_features_num(&n, out));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_xpos(&x, out));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_ypos(&y, out));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_score(&score, out));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_orientation(&orientation, out));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_size(&size, out));
+        ASSERT_SUCCESS(af_get_features_num(&n, out));
+        ASSERT_SUCCESS(af_get_features_xpos(&x, out));
+        ASSERT_SUCCESS(af_get_features_ypos(&y, out));
+        ASSERT_SUCCESS(af_get_features_score(&score, out));
+        ASSERT_SUCCESS(af_get_features_orientation(&orientation, out));
+        ASSERT_SUCCESS(af_get_features_size(&size, out));
 
 
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, x));
+        ASSERT_SUCCESS(af_get_elements(&nElems, x));
 
         vector<float> outX           (gold[0].size());
         vector<float> outY           (gold[1].size());
         vector<float> outScore       (gold[2].size());
         vector<float> outOrientation (gold[3].size());
         vector<float> outSize        (gold[4].size());
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outX.front(), x));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outY.front(), y));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outScore.front(), score));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outOrientation.front(), orientation));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outSize.front(), size));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)&outX.front(), x));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)&outY.front(), y));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)&outScore.front(), score));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)&outOrientation.front(), orientation));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)&outSize.front(), size));
 
         vector<feat_t> out_feat;
         array_to_feat(out_feat, &outX.front(), &outY.front(),
@@ -132,10 +132,10 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size)
             ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << endl;
         }
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray_f32));
+        ASSERT_SUCCESS(af_release_array(inArray));
+        ASSERT_SUCCESS(af_release_array(inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_features(out));
+        ASSERT_SUCCESS(af_release_features(out));
     }
 }
 

@@ -34,7 +34,7 @@ void cast_test()
     af_err err = af_cast(&b, a, tb);
     af_release_array(a);
     af_release_array(b);
-    ASSERT_EQ(err, AF_SUCCESS);
+    ASSERT_SUCCESS(err);
 }
 
 #define REAL_TO_TESTS(Ti, To)                   \
@@ -91,7 +91,7 @@ void cast_test_complex_real()
     af_randu(&a, dims.ndims(), dims.get(), ta);
     af_err err = af_cast(&b, a, tb);
     ASSERT_EQ(err, AF_ERR_TYPE);
-    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
+    ASSERT_SUCCESS(af_release_array(a));
 }
 
 #define COMPLEX_REAL_TESTS(Ti, To)                      \

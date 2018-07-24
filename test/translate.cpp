@@ -64,13 +64,13 @@ void translateTest(string pTestFile, const unsigned resultIdx, dim4 odims, const
 
     dim4 dims = numDims[0];
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_translate(&outArray, inArray, tx, ty, odims[0], odims[1], method));
+    ASSERT_SUCCESS(af_translate(&outArray, inArray, tx, ty, odims[0], odims[1], method));
 
     // Get result
     T* outData = new T[tests[resultIdx].size()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
     // Compare result
     size_t nElems = tests[resultIdx].size();
