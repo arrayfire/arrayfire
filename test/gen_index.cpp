@@ -42,28 +42,28 @@ void testGeneralIndexOneArray(string pTestFile, const dim_t ndims, af_index_t* i
     af_array inArray   = 0;
     af_array idxArray  = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()),
                 dims0.ndims(), dims0.get(), (af_dtype)dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&idxArray, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)dtype_traits<float>::af_type));
     indexs[arrayDim].idx.arr = idxArray;
 
-    ASSERT_EQ(AF_SUCCESS, af_index_gen(&outArray, inArray, ndims, indexs));
+    ASSERT_SUCCESS(af_index_gen(&outArray, inArray, ndims, indexs));
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
     vector<float> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(idxArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 TEST(GeneralIndex, SSSA)
@@ -122,35 +122,35 @@ TEST(GeneralIndex, AASS)
 
     af_index_t indexs[2];
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()),
                 dims0.ndims(), dims0.get(), (af_dtype)dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray0, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&idxArray0, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)dtype_traits<float>::af_type));
     indexs[0].isSeq = false;
     indexs[0].idx.arr = idxArray0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray1, &(in[2].front()),
+    ASSERT_SUCCESS(af_create_array(&idxArray1, &(in[2].front()),
                 dims2.ndims(), dims2.get(), (af_dtype)dtype_traits<float>::af_type));
     indexs[1].isSeq = false;
     indexs[1].idx.arr = idxArray1;
 
-    ASSERT_EQ(AF_SUCCESS, af_index_gen(&outArray, inArray, 2, indexs));
+    ASSERT_SUCCESS(af_index_gen(&outArray, inArray, 2, indexs));
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
     vector<float> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray0));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray1));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(idxArray0));
+    ASSERT_SUCCESS(af_release_array(idxArray1));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 using af::array;

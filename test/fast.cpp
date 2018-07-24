@@ -92,35 +92,35 @@ void fastTest(string pTestFile, bool nonmax)
 
         inFiles[testId].insert(0,string(TEST_DIR"/fast/"));
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
+        ASSERT_SUCCESS(af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
 
-        ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
+        ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_fast(&out, inArray, 20.0f, 9, nonmax, 0.05f, 3));
+        ASSERT_SUCCESS(af_fast(&out, inArray, 20.0f, 9, nonmax, 0.05f, 3));
 
         dim_t n = 0;
         af_array x, y, score, orientation, size;
 
-        ASSERT_EQ(AF_SUCCESS, af_get_features_num(&n, out));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_xpos(&x, out));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_ypos(&y, out));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_score(&score, out));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_orientation(&orientation, out));
-        ASSERT_EQ(AF_SUCCESS, af_get_features_size(&size, out));
+        ASSERT_SUCCESS(af_get_features_num(&n, out));
+        ASSERT_SUCCESS(af_get_features_xpos(&x, out));
+        ASSERT_SUCCESS(af_get_features_ypos(&y, out));
+        ASSERT_SUCCESS(af_get_features_score(&score, out));
+        ASSERT_SUCCESS(af_get_features_orientation(&orientation, out));
+        ASSERT_SUCCESS(af_get_features_size(&size, out));
 
 
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, x));
+        ASSERT_SUCCESS(af_get_elements(&nElems, x));
 
         float * outX           = new float[gold[0].size()];
         float * outY           = new float[gold[1].size()];
         float * outScore       = new float[gold[2].size()];
         float * outOrientation = new float[gold[3].size()];
         float * outSize        = new float[gold[4].size()];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outX, x));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outY, y));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outScore, score));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outOrientation, orientation));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outSize, size));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outX, x));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outY, y));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outScore, score));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outOrientation, orientation));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outSize, size));
 
         vector<feat_t> out_feat;
         array_to_feat(out_feat, outX, outY, outScore, outOrientation, outSize, n);
@@ -139,10 +139,10 @@ void fastTest(string pTestFile, bool nonmax)
             ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << endl;
         }
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray_f32));
+        ASSERT_SUCCESS(af_release_array(inArray));
+        ASSERT_SUCCESS(af_release_array(inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_features(out));
+        ASSERT_SUCCESS(af_release_features(out));
 
         delete [] outX;
         delete [] outY;

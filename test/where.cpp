@@ -56,28 +56,20 @@ void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=
 
     // Get input array
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
-        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
+        ASSERT_SUCCESS(af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
     } else {
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
     // Compare result
     vector<uint> currGoldBar(tests[0].begin(), tests[0].end());
 
     // Run sum
-    ASSERT_EQ(AF_SUCCESS, af_where(&outArray, inArray));
+    ASSERT_SUCCESS(af_where(&outArray, inArray));
 
-    // Get result
-    size_t nElems = currGoldBar.size();
-    vector<uint> outData(nElems);
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr(&outData.front(), outArray));
-
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                        << endl;
-    }
+    ASSERT_VEC_ARRAY_EQ(currGoldBar, dim4(tests[0].size()), outArray);
 
     if(inArray   != 0) af_release_array(inArray);
     if(outArray  != 0) af_release_array(outArray);
@@ -117,15 +109,7 @@ TYPED_TEST(Where, CPP)
     // Compare result
     vector<uint> currGoldBar(tests[0].begin(), tests[0].end());
 
-    // Get result
-    size_t nElems = currGoldBar.size();
-    vector<uint> outData(nElems);
-    output.host((void*)&(outData.front()));
-
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                        << endl;
-    }
+    ASSERT_VEC_ARRAY_EQ(currGoldBar, dim4(tests[0].size()), output);
 }
 
 TEST(Where, MaxDim)
@@ -135,11 +119,11 @@ TEST(Where, MaxDim)
     array input = range(dim4(1, largeDim), 1);
     array output = where(input % 2 == 0);
     array gold = 2 * range(largeDim/2);
-    ASSERT_TRUE(allTrue<bool>(output == gold));
+    ASSERT_ARRAYS_EQ(gold.as(u32), output);
 
     input = range(dim4(1, 1, 1, largeDim), 3);
     output = where(input % 2 == 0);
-    ASSERT_TRUE(allTrue<bool>(output == gold));
+    ASSERT_ARRAYS_EQ(gold.as(u32), output);
 }
 
 TEST(Where, ISSUE_1259)

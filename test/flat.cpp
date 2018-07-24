@@ -13,12 +13,17 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
+#include <vector>
+
 using af::array;
+using af::dim4;
 using af::flat;
 using af::freeHost;
 using af::randu;
 using af::seq;
 using af::span;
+
+using std::vector;
 
 TEST(FlatTests, Test_flat_1D)
 {
@@ -26,15 +31,7 @@ TEST(FlatTests, Test_flat_1D)
     array in = randu(num);
     array out = flat(in);
 
-    float *h_in = in.host<float>();
-    float *h_out = out.host<float>();
-
-    for (int i = 0; i < num; i++) {
-        ASSERT_EQ(h_in[i], h_out[i]);
-    }
-
-    freeHost(h_in);
-    freeHost(h_out);
+    ASSERT_ARRAYS_EQ(in, out);
 }
 
 TEST(FlatTests, Test_flat_2D)
@@ -46,15 +43,10 @@ TEST(FlatTests, Test_flat_2D)
     array in = randu(nx, ny);
     array out = flat(in);
 
-    float *h_in = in.host<float>();
-    float *h_out = out.host<float>();
-
-    for (int i = 0; i < num; i++) {
-        ASSERT_EQ(h_in[i], h_out[i]);
-    }
-
-    freeHost(h_in);
-    freeHost(h_out);
+    vector<float> h_in_flat(in.elements());
+    in.host(h_in_flat.data());
+    dim4 h_in_flat_dims = dim4(nx*ny);
+    ASSERT_VEC_ARRAY_EQ(h_in_flat, h_in_flat_dims, out);
 }
 
 TEST(FlatTests, Test_flat_1D_index)
@@ -70,6 +62,7 @@ TEST(FlatTests, Test_flat_1D_index)
     float *h_in = in.host<float>();
     float *h_out = out.host<float>();
 
+    // TODO: Use ASSERT_ARRAYS_EQUAL
     for (int i = st; i <= en; i++) {
         ASSERT_EQ(h_in[i], h_out[i - st]);
     }
@@ -93,6 +86,7 @@ TEST(FlatTests, Test_flat_2D_index0)
     float *h_in = in.host<float>();
     float *h_out = out.host<float>();
 
+    // TODO: Use ASSERT_ARRAYS_EQUAL
     for (int j = 0; j < ny; j++) {
         const int in_off = j * nx;
         const int out_off =j * nxo;
@@ -120,6 +114,7 @@ TEST(FlatTests, Test_flat_2D_index1)
     float *h_in = in.host<float>();
     float *h_out = out.host<float>();
 
+    // TODO: Use ASSERT_ARRAYS_EQUAL
     for (int j = st; j <= en; j++) {
 
         const int in_off = j * nx;

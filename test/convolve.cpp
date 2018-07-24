@@ -56,31 +56,31 @@ void convolveTest(string pTestFile, int baseDim, bool expand)
     af_array filter   = 0;
     af_array outArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&signal, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&signal, &(in[0].front()),
                 sDims.ndims(), sDims.get(), (af_dtype)dtype_traits<T>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&filter, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&filter, &(in[1].front()),
                 fDims.ndims(), fDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
     af_conv_mode mode = expand ? AF_CONV_EXPAND : AF_CONV_DEFAULT;
     switch(baseDim) {
-    case 1: ASSERT_EQ(AF_SUCCESS, af_convolve1(&outArray, signal, filter, mode, AF_CONV_AUTO)); break;
-    case 2: ASSERT_EQ(AF_SUCCESS, af_convolve2(&outArray, signal, filter, mode, AF_CONV_AUTO)); break;
-    case 3: ASSERT_EQ(AF_SUCCESS, af_convolve3(&outArray, signal, filter, mode, AF_CONV_AUTO)); break;
+    case 1: ASSERT_SUCCESS(af_convolve1(&outArray, signal, filter, mode, AF_CONV_AUTO)); break;
+    case 2: ASSERT_SUCCESS(af_convolve2(&outArray, signal, filter, mode, AF_CONV_AUTO)); break;
+    case 3: ASSERT_SUCCESS(af_convolve3(&outArray, signal, filter, mode, AF_CONV_AUTO)); break;
     }
 
     vector<T> currGoldBar = tests[0];
     size_t nElems         = currGoldBar.size();
     vector<T> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(signal));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(filter));
+    ASSERT_SUCCESS(af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(signal));
+    ASSERT_SUCCESS(af_release_array(filter));
 }
 
 TYPED_TEST(Convolve, Vector)
@@ -222,30 +222,30 @@ void sepConvolveTest(string pTestFile, bool expand)
     af_array r_filter = 0;
     af_array outArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&signal, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&signal, &(in[0].front()),
                 sDims.ndims(), sDims.get(), (af_dtype)dtype_traits<T>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&c_filter, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&c_filter, &(in[1].front()),
                 cfDims.ndims(), cfDims.get(), (af_dtype)dtype_traits<T>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&r_filter, &(in[2].front()),
+    ASSERT_SUCCESS(af_create_array(&r_filter, &(in[2].front()),
                 rfDims.ndims(), rfDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
     af_conv_mode  mode = expand ? AF_CONV_EXPAND : AF_CONV_DEFAULT;
-    ASSERT_EQ(AF_SUCCESS, af_convolve2_sep(&outArray, c_filter, r_filter, signal, mode));
+    ASSERT_SUCCESS(af_convolve2_sep(&outArray, c_filter, r_filter, signal, mode));
 
     vector<T> currGoldBar = tests[0];
     size_t nElems         = currGoldBar.size();
     vector<T> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(signal));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(c_filter));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(r_filter));
+    ASSERT_SUCCESS(af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(signal));
+    ASSERT_SUCCESS(af_release_array(c_filter));
+    ASSERT_SUCCESS(af_release_array(r_filter));
 }
 
 TYPED_TEST(Convolve, Separable2D_Full)
@@ -304,18 +304,18 @@ TEST(Convolve, Separable_TypeCheck)
     af_array r_filter = 0;
     af_array outArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&signal, &(in.front()),
+    ASSERT_SUCCESS(af_create_array(&signal, &(in.front()),
                 sDims.ndims(), sDims.get(), (af_dtype)dtype_traits<float>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&c_filter, &(filt.front()),
+    ASSERT_SUCCESS(af_create_array(&c_filter, &(filt.front()),
                 fDims.ndims(), fDims.get(), (af_dtype)dtype_traits<int>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&r_filter, &(filt.front()),
+    ASSERT_SUCCESS(af_create_array(&r_filter, &(filt.front()),
                 fDims.ndims(), fDims.get(), (af_dtype)dtype_traits<int>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_convolve2_sep(&outArray, c_filter, r_filter, signal, AF_CONV_EXPAND));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(signal));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(c_filter));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(r_filter));
+    ASSERT_SUCCESS(af_release_array(signal));
+    ASSERT_SUCCESS(af_release_array(c_filter));
+    ASSERT_SUCCESS(af_release_array(r_filter));
 }
 
 TEST(Convolve, Separable_DimCheck)
@@ -334,18 +334,18 @@ TEST(Convolve, Separable_DimCheck)
     af_array r_filter = 0;
     af_array outArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&signal, &(in.front()),
+    ASSERT_SUCCESS(af_create_array(&signal, &(in.front()),
                 sDims.ndims(), sDims.get(), (af_dtype)dtype_traits<float>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&c_filter, &(filt.front()),
+    ASSERT_SUCCESS(af_create_array(&c_filter, &(filt.front()),
                 fDims.ndims(), fDims.get(), (af_dtype)dtype_traits<int>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&r_filter, &(filt.front()),
+    ASSERT_SUCCESS(af_create_array(&r_filter, &(filt.front()),
                 fDims.ndims(), fDims.get(), (af_dtype)dtype_traits<int>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_convolve2_sep(&outArray, c_filter, r_filter, signal, AF_CONV_EXPAND));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(c_filter));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(r_filter));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(signal));
+    ASSERT_SUCCESS(af_release_array(c_filter));
+    ASSERT_SUCCESS(af_release_array(r_filter));
+    ASSERT_SUCCESS(af_release_array(signal));
 }
 
 ///////////////////////////////////// CPP ////////////////////////////////

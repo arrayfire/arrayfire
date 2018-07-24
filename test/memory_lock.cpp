@@ -40,7 +40,7 @@ TEST(Memory, lock)
     vector<float> in(num);
 
     af_array arr = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&arr, &in[0], 1, &num, f32));
+    ASSERT_SUCCESS(af_create_array(&arr, &in[0], 1, &num, f32));
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);

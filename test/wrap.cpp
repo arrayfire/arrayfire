@@ -200,5 +200,5 @@ TEST(Wrap, MaxDim)
     array unwrapped = unwrap(input, wx, wy, sx, sy, px, py);
     array output = wrap(unwrapped, 5, 5, wx, wy, sx, sy, px, py);
 
-    ASSERT_TRUE(allTrue<bool>(output == input));
+    ASSERT_ARRAYS_EQ(output, input);
 }

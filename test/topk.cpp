@@ -110,14 +110,14 @@ void topkTest(const unsigned ndims, const dim_t* dims,
         }
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&input, inData.data(), ndims, dims, dtype));
-    ASSERT_EQ(AF_SUCCESS, af_topk(&output, &outindex, input, k, dim, order));
+    ASSERT_SUCCESS(af_create_array(&input, inData.data(), ndims, dims, dtype));
+    ASSERT_SUCCESS(af_topk(&output, &outindex, input, k, dim, order));
 
     vector<T> hovals(oelems);
     vector<uint> hoidxs(oelems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)hovals.data(), output));
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)hoidxs.data(), outindex));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)hovals.data(), output));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)hoidxs.data(), outindex));
 
     for (int i=0; i<oelems; ++i)
     {
@@ -130,9 +130,9 @@ void topkTest(const unsigned ndims, const dim_t* dims,
         ASSERT_EQ(outIdxs[i], hoidxs[i]) << "at: " << i;
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(input    ));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(output   ));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outindex ));
+    ASSERT_SUCCESS(af_release_array(input    ));
+    ASSERT_SUCCESS(af_release_array(output   ));
+    ASSERT_SUCCESS(af_release_array(outindex ));
 }
 
 TYPED_TEST(TopK, Max1D0)
@@ -187,20 +187,20 @@ TEST(TopK, ValidationCheck_DimN)
 {
     dim_t dims[4] = {10, 10, 1, 1};
     af_array out, idx, in;
-    ASSERT_EQ(AF_SUCCESS, af_randu(&in, 2, dims, f32));
+    ASSERT_SUCCESS(af_randu(&in, 2, dims, f32));
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_topk(&out, &idx, in, 10, 1, AF_TOPK_MAX));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(in));
+    ASSERT_SUCCESS(af_release_array(in));
 }
 
 TEST(TopK, ValidationCheck_DefaultDim)
 {
     dim_t dims[4] = {10, 10, 1, 1};
     af_array out, idx, in;
-    ASSERT_EQ(AF_SUCCESS, af_randu(&in, 4, dims, f32));
-    ASSERT_EQ(AF_SUCCESS, af_topk(&out, &idx, in, 10, -1, AF_TOPK_MAX));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(in));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(out));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(idx));
+    ASSERT_SUCCESS(af_randu(&in, 4, dims, f32));
+    ASSERT_SUCCESS(af_topk(&out, &idx, in, 10, -1, AF_TOPK_MAX));
+    ASSERT_SUCCESS(af_release_array(in));
+    ASSERT_SUCCESS(af_release_array(out));
+    ASSERT_SUCCESS(af_release_array(idx));
 }
 
 

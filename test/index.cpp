@@ -54,11 +54,11 @@ DimCheck(const vector<af_seq> &seqs) {
     for(int i = 0; i < (int)dims; i++) { hData[i] = i; }
 
     af_array a = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &hData.front(), ndims, d, (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&a, &hData.front(), ndims, d, (af_dtype) dtype_traits<T>::af_type));
 
     vector<af_array> indexed_array(seqs.size(), 0);
     for(size_t i = 0; i < seqs.size(); i++) {
-        ASSERT_EQ(AF_SUCCESS, af_index(&(indexed_array[i]), a, ndims, &seqs[i]))
+        ASSERT_SUCCESS(af_index(&(indexed_array[i]), a, ndims, &seqs[i]))
             << "where seqs[i].begin == "    << seqs[i].begin
             << " seqs[i].step == "          << seqs[i].step
             << " seqs[i].end == "           << seqs[i].end;
@@ -67,9 +67,9 @@ DimCheck(const vector<af_seq> &seqs) {
     vector<T*> h_indexed(seqs.size());
     for(size_t i = 0; i < seqs.size(); i++) {
         dim_t elems;
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, indexed_array[i]));
+        ASSERT_SUCCESS(af_get_elements(&elems, indexed_array[i]));
         h_indexed[i] = new T[elems];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void *)(h_indexed[i]), indexed_array[i]));
+        ASSERT_SUCCESS(af_get_data_ptr((void *)(h_indexed[i]), indexed_array[i]));
     }
 
     for(size_t k = 0; k < seqs.size(); k++) {
@@ -86,9 +86,9 @@ DimCheck(const vector<af_seq> &seqs) {
         delete[] h_indexed[k];
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
+    ASSERT_SUCCESS(af_release_array(a));
     for (size_t i = 0; i < indexed_array.size(); i++) {
-        ASSERT_EQ(AF_SUCCESS, af_release_array(indexed_array[i]));
+        ASSERT_SUCCESS(af_release_array(indexed_array[i]));
     }
 }
 
@@ -267,19 +267,19 @@ DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile, size_t NDims)
     dim4 dimensions = numDims[0];
 
     af_array a = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &(hData[0].front()), NDims, dimensions.get(), (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&a, &(hData[0].front()), NDims, dimensions.get(), (af_dtype) dtype_traits<T>::af_type));
 
     vector<af_array> indexed_arrays(seqs.size(), 0);
     for(size_t i = 0; i < seqs.size(); i++) {
-        ASSERT_EQ(AF_SUCCESS, af_index(&(indexed_arrays[i]), a, NDims, seqs[i].data()));
+        ASSERT_SUCCESS(af_index(&(indexed_arrays[i]), a, NDims, seqs[i].data()));
     }
 
     vector<T*> h_indexed(seqs.size(), NULL);
     for(size_t i = 0; i < seqs.size(); i++) {
         dim_t elems;
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, indexed_arrays[i]));
+        ASSERT_SUCCESS(af_get_elements(&elems, indexed_arrays[i]));
         h_indexed[i] = new T[elems];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void *)h_indexed[i], indexed_arrays[i]));
+        ASSERT_SUCCESS(af_get_data_ptr((void *)h_indexed[i], indexed_arrays[i]));
 
         T* ptr = h_indexed[i];
         if(false == equal(ptr, ptr + tests[i].size(), tests[i].begin())) {
@@ -292,9 +292,9 @@ DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile, size_t NDims)
         delete[] h_indexed[i];
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
+    ASSERT_SUCCESS(af_release_array(a));
     for (size_t i = 0; i < indexed_arrays.size(); i++) {
-        ASSERT_EQ(AF_SUCCESS, af_release_array(indexed_arrays[i]));
+        ASSERT_SUCCESS(af_release_array(indexed_arrays[i]));
     }
 }
 
@@ -640,28 +640,23 @@ void arrayIndexTest(string pTestFile, int dim)
     af_array inArray   = 0;
     af_array idxArray  = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()),
                 dims0.ndims(), dims0.get(), (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&idxArray, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_lookup(&outArray, inArray, idxArray, dim));
+    ASSERT_SUCCESS(af_lookup(&outArray, inArray, idxArray, dim));
 
     vector<T> currGoldBar = tests[0];
-    size_t nElems = currGoldBar.size();
-    T *outData = new T[nElems];
+    dim4 goldDims = dims0;
+    goldDims[dim] = dims1[0];
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_VEC_ARRAY_EQ(currGoldBar, goldDims, outArray);
 
-    for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
-    }
-
-    delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(idxArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 TYPED_TEST(lookup, Dim0)
@@ -700,16 +695,10 @@ TEST(lookup, CPP)
     array output = af::lookup(input, indices, 0);
 
     vector<float> currGoldBar = tests[0];
-    size_t nElems = currGoldBar.size();
-    float *outData = new float[nElems];
+    dim4 goldDims = dims0;
+    goldDims[0] = dims1[0];
 
-    output.host((void*)outData);
-
-    for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
-    }
-
-    delete[] outData;
+    ASSERT_VEC_ARRAY_EQ(currGoldBar, goldDims, output);
 }
 
 TEST(lookup, largeDim)
@@ -729,7 +718,7 @@ TEST(lookup, Issue2009)
     array idx = constant(0, 1, u32);
     array b   = af::lookup(a, idx, 1);
 
-    ASSERT_EQ(true, allTrue<bool>(a==b));
+    ASSERT_ARRAYS_EQ(a, b);
 }
 
 TEST(SeqIndex, CPP_END)
@@ -835,16 +824,10 @@ TEST(SeqIndex, CPPLarge)
     array output = af::lookup(input, indices, 0);
 
     vector<float> currGoldBar = tests[0];
-    size_t nElems = currGoldBar.size();
-    float *outData = new float[nElems];
+    dim4 goldDims = dims0;
+    goldDims[0] = dims1[0];
 
-    output.host((void*)outData);
-
-    for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
-    }
-
-    delete[] outData;
+    ASSERT_VEC_ARRAY_EQ(currGoldBar, goldDims, output);
 }
 
 TEST(SeqIndex, Cascade00)
@@ -1334,7 +1317,7 @@ TEST(Assign, LinearIndexSeq)
     af_index_t ii = idx.get();
     af_array out_arr;
 
-    ASSERT_EQ(AF_SUCCESS,
+    ASSERT_SUCCESS(
               af_index(&out_arr, in_arr, 1, &ii.idx.seq));
 
     array out(out_arr);
@@ -1369,7 +1352,7 @@ TEST(Assign, LinearIndexGenSeq)
     af_index_t ii = idx.get();
     af_array out_arr;
 
-    ASSERT_EQ(AF_SUCCESS,
+    ASSERT_SUCCESS(
               af_index_gen(&out_arr, in_arr, 1, &ii));
 
     array out(out_arr);
@@ -1404,7 +1387,7 @@ TEST(Assign, LinearIndexGenArr)
     af_index_t ii = idx.get();
     af_array out_arr;
 
-    ASSERT_EQ(AF_SUCCESS,
+    ASSERT_SUCCESS(
               af_index_gen(&out_arr, in_arr, 1, &ii));
 
     array out(out_arr);
@@ -1442,8 +1425,6 @@ TEST(Index, ISSUE_1101_FULL)
 {
     deviceGC();
     array a = randu(5,5);
-    vector<float> ha(a.elements());
-    a.host(&ha[0]);
 
     size_t aby, abu, lby, lbu;
     deviceMemInfo(&aby, &abu, &lby, &lbu);
@@ -1458,11 +1439,7 @@ TEST(Index, ISSUE_1101_FULL)
     ASSERT_EQ(lby, lby1);
     ASSERT_EQ(lbu, lbu1);
 
-    vector<float> hb(b.elements());
-    b.host(&hb[0]);
-    for (int i = 0; i < b.elements(); i++) {
-        ASSERT_EQ(ha[i], hb[i]);
-    }
+    ASSERT_ARRAYS_EQ(a, b);
 }
 
 TEST(Index, ISSUE_1101_COL0)
@@ -1470,7 +1447,8 @@ TEST(Index, ISSUE_1101_COL0)
     deviceGC();
     array a = randu(5,5);
     vector<float> ha(a.elements());
-    a.host(&ha[0]);
+    a.host(ha.data());
+    vector<float> gold(ha.begin(), ha.begin()+5);
 
     size_t aby, abu, lby, lbu;
     deviceMemInfo(&aby, &abu, &lby, &lbu);
@@ -1480,17 +1458,12 @@ TEST(Index, ISSUE_1101_COL0)
     size_t aby1, abu1, lby1, lbu1;
     deviceMemInfo(&aby1, &abu1, &lby1, &lbu1);
 
-    ASSERT_EQ(aby, aby1);
-    ASSERT_EQ(abu, abu1);
-    ASSERT_EQ(lby, lby1);
-    ASSERT_EQ(lbu, lbu1);
+    ASSERT_EQ(aby, aby1) << "Number of bytes different";
+    ASSERT_EQ(abu, abu1) << "Number of buffers different";
+    ASSERT_EQ(lby, lby1) << "Number of bytes different";
+    ASSERT_EQ(lbu, lbu1) << "Number of buffers different";
 
-    vector<float> hb(b.elements());
-    b.host(&hb[0]);
-    for (int i = 0; i < b.elements(); i++) {
-        ASSERT_EQ(ha[i], hb[i]);
-    }
-
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(a.dims()[0]), b);
 }
 
 TEST(Index, ISSUE_1101_MODDIMS)

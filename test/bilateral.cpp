@@ -47,23 +47,23 @@ void bilateralTest(string pTestFile)
         inFiles[testId].insert(0,string(TEST_DIR"/bilateral/"));
         outFiles[testId].insert(0,string(TEST_DIR"/bilateral/"));
 
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray, inFiles[testId].c_str(), isColor));
-        ASSERT_EQ(AF_SUCCESS, af_load_image(&goldArray, outFiles[testId].c_str(), isColor));
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
+        ASSERT_SUCCESS(af_load_image(&inArray, inFiles[testId].c_str(), isColor));
+        ASSERT_SUCCESS(af_load_image(&goldArray, outFiles[testId].c_str(), isColor));
+        ASSERT_SUCCESS(af_get_elements(&nElems, goldArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_bilateral(&outArray, inArray, 2.25f, 25.56f, isColor));
+        ASSERT_SUCCESS(af_bilateral(&outArray, inArray, 2.25f, 25.56f, isColor));
 
         vector<T> outData(nElems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
         vector<T> goldData(nElems);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData.data(), goldArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)goldData.data(), goldArray));
 
         ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(), outData.data(), 0.02f));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray));
+        ASSERT_SUCCESS(af_release_array(inArray));
+        ASSERT_SUCCESS(af_release_array(outArray));
+        ASSERT_SUCCESS(af_release_array(goldArray));
     }
 }
 
@@ -105,14 +105,14 @@ void bilateralDataTest(string pTestFile)
     af_array outArray  = 0;
     af_array inArray   = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()),
                 dims.ndims(), dims.get(), (af_dtype)dtype_traits<inType>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_bilateral(&outArray, inArray, 2.25f, 25.56f, false));
+    ASSERT_SUCCESS(af_bilateral(&outArray, inArray, 2.25f, 25.56f, false));
 
     vector<outType> outData(dims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t testIter=0; testIter<tests.size(); ++testIter) {
         vector<outType> currGoldBar = tests[testIter];
@@ -121,8 +121,8 @@ void bilateralDataTest(string pTestFile)
     }
 
     // cleanup
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 TYPED_TEST(BilateralOnData, Rectangle)
@@ -146,10 +146,10 @@ TYPED_TEST(BilateralOnData, InvalidArgs)
 
     // check for color image bilateral
     dim4 dims = dim4(100,1,1,1);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+    ASSERT_SUCCESS(af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) dtype_traits<TypeParam>::af_type));
     ASSERT_EQ(AF_ERR_SIZE, af_bilateral(&outArray, inArray, 0.12f, 0.34f, true));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 // C++ unit tests

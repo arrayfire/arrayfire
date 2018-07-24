@@ -47,7 +47,7 @@ void transformCoordinatesTest(string pTestFile)
 
     af_array tfArray = 0;
     af_array outArray = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&tfArray, &(in[0].front()), inDims[0].ndims(), inDims[0].get(), (af_dtype)dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&tfArray, &(in[0].front()), inDims[0].ndims(), inDims[0].get(), (af_dtype)dtype_traits<T>::af_type));
 
     int nTests = in.size();
 
@@ -55,15 +55,15 @@ void transformCoordinatesTest(string pTestFile)
         dim_t d0 = (dim_t)in[test][0];
         dim_t d1 = (dim_t)in[test][1];
 
-        ASSERT_EQ(AF_SUCCESS, af_transform_coordinates(&outArray, tfArray, d0, d1));
+        ASSERT_SUCCESS(af_transform_coordinates(&outArray, tfArray, d0, d1));
 
         // Get result
         dim_t outEl = 0;
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&outEl, outArray));
+        ASSERT_SUCCESS(af_get_elements(&outEl, outArray));
         vector<T> outData(outEl);
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+        ASSERT_SUCCESS(af_release_array(outArray));
         const float thr = 1.f;
 
         for (dim_t elIter = 0; elIter < outEl; elIter++) {

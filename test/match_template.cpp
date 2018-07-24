@@ -55,17 +55,17 @@ void matchTemplateTest(string pTestFile, af_match_type pMatchType)
     af_array sArray   = 0;
     af_array tArray   = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&sArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&sArray, &(in[0].front()),
                 sDims.ndims(), sDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&tArray, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&tArray, &(in[1].front()),
                 tDims.ndims(), tDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_match_template(&outArray, sArray, tArray, pMatchType));
+    ASSERT_SUCCESS(af_match_template(&outArray, sArray, tArray, pMatchType));
 
     vector<outType> outData(sDims.elements());
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
     vector<outType> currGoldBar = tests[0];
     size_t nElems        = currGoldBar.size();
@@ -74,9 +74,9 @@ void matchTemplateTest(string pTestFile, af_match_type pMatchType)
     }
 
     // cleanup
-    ASSERT_EQ(AF_SUCCESS, af_release_array(sArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(tArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(sArray));
+    ASSERT_SUCCESS(af_release_array(tArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 TYPED_TEST(MatchTemplate, Matrix_SAD)
@@ -105,16 +105,16 @@ TEST(MatchTemplate, InvalidMatchType)
     dim4 sDims(10, 10, 1, 1);
     dim4 tDims(4, 4, 1, 1);
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+    ASSERT_SUCCESS(af_create_array(&inArray, &in.front(),
                 sDims.ndims(), sDims.get(), (af_dtype) dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&tArray, &in.front(),
+    ASSERT_SUCCESS(af_create_array(&tArray, &in.front(),
                 tDims.ndims(), tDims.get(), (af_dtype) dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_match_template(&outArray, inArray, tArray, (af_match_type)-1));
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(tArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(tArray));
 }
 
 ///////////////////////////////// CPP TESTS /////////////////////////////

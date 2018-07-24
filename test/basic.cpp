@@ -28,17 +28,17 @@ TEST(BasicTests, constant1000x1000)
 
     double valA = 3.9;
     af_array a;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&a, valA, ndims, d, f32));
+    ASSERT_SUCCESS(af_constant(&a, valA, ndims, d, f32));
 
     vector<float> h_a(dim_size * dim_size, 100);
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void **)&h_a[0], a));
+    ASSERT_SUCCESS(af_get_data_ptr((void **)&h_a[0], a));
 
     size_t elements = dim_size * dim_size;
     for(size_t i = 0; i < elements; i++) {
         ASSERT_FLOAT_EQ(valA, h_a[i]);
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
+    ASSERT_SUCCESS(af_release_array(a));
 }
 
 TEST(BasicTests, constant10x10)
@@ -51,17 +51,17 @@ TEST(BasicTests, constant10x10)
 
     double valA = 3.9;
     af_array a;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&a, valA, ndims, d, f32));
+    ASSERT_SUCCESS(af_constant(&a, valA, ndims, d, f32));
 
     vector<float> h_a(dim_size * dim_size, 0);
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void **)&h_a[0], a));
+    ASSERT_SUCCESS(af_get_data_ptr((void **)&h_a[0], a));
 
     size_t elements = dim_size * dim_size;
     for(size_t i = 0; i < elements; i++) {
         ASSERT_FLOAT_EQ(valA, h_a[i]);
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
+    ASSERT_SUCCESS(af_release_array(a));
 }
 
 TEST(BasicTests, constant100x100)
@@ -74,17 +74,17 @@ TEST(BasicTests, constant100x100)
 
     double valA = 4.9;
     af_array a;
-    ASSERT_EQ(AF_SUCCESS, af_constant(&a, valA, ndims, d, f32));
+    ASSERT_SUCCESS(af_constant(&a, valA, ndims, d, f32));
 
     vector<float> h_a(dim_size * dim_size, 0);
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void **)&h_a[0], a));
+    ASSERT_SUCCESS(af_get_data_ptr((void **)&h_a[0], a));
 
     size_t elements = dim_size * dim_size;
     for(size_t i = 0; i < elements; i++) {
         ASSERT_FLOAT_EQ(valA, h_a[i]);
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
+    ASSERT_SUCCESS(af_release_array(a));
 }
 
 //TODO: Test All The Types \o/
@@ -104,19 +104,19 @@ TEST(BasicTests, AdditionSameType)
     af_array af32, bf32, cf32;
     af_array af64, bf64, cf64;
 
-    ASSERT_EQ(AF_SUCCESS, af_constant(&af32, valA, ndims, d, f32));
-    ASSERT_EQ(AF_SUCCESS, af_constant(&af64, valA, ndims, d, f64));
+    ASSERT_SUCCESS(af_constant(&af32, valA, ndims, d, f32));
+    ASSERT_SUCCESS(af_constant(&af64, valA, ndims, d, f64));
 
-    ASSERT_EQ(AF_SUCCESS, af_constant(&bf32, valB, ndims, d, f32));
-    ASSERT_EQ(AF_SUCCESS, af_constant(&bf64, valB, ndims, d, f64));
+    ASSERT_SUCCESS(af_constant(&bf32, valB, ndims, d, f32));
+    ASSERT_SUCCESS(af_constant(&bf64, valB, ndims, d, f64));
 
-    ASSERT_EQ(AF_SUCCESS, af_add(&cf32, af32, bf32, false));
-    ASSERT_EQ(AF_SUCCESS, af_add(&cf64, af64, bf64, false));
+    ASSERT_SUCCESS(af_add(&cf32, af32, bf32, false));
+    ASSERT_SUCCESS(af_add(&cf64, af64, bf64, false));
 
     vector<float>  h_cf32 (dim_size * dim_size);
     vector<double> h_cf64 (dim_size * dim_size);
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void **)&h_cf32[0], cf32));
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void **)&h_cf64[0], cf64));
+    ASSERT_SUCCESS(af_get_data_ptr((void **)&h_cf32[0], cf32));
+    ASSERT_SUCCESS(af_get_data_ptr((void **)&h_cf64[0], cf64));
 
     double err = 0;
 
@@ -129,12 +129,12 @@ TEST(BasicTests, AdditionSameType)
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(af32));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(af64));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(bf32));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(bf64));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(cf32));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(cf64));
+    ASSERT_SUCCESS(af_release_array(af32));
+    ASSERT_SUCCESS(af_release_array(af64));
+    ASSERT_SUCCESS(af_release_array(bf32));
+    ASSERT_SUCCESS(af_release_array(bf64));
+    ASSERT_SUCCESS(af_release_array(cf32));
+    ASSERT_SUCCESS(af_release_array(cf64));
 }
 
 TEST(BasicTests, Additionf64f64)
@@ -151,12 +151,12 @@ TEST(BasicTests, Additionf64f64)
 
     af_array a, b, c;
 
-    ASSERT_EQ(AF_SUCCESS, af_constant(&a, valA, ndims, d, f64));
-    ASSERT_EQ(AF_SUCCESS, af_constant(&b, valB, ndims, d, f64));
-    ASSERT_EQ(AF_SUCCESS, af_add(&c, a, b, false));
+    ASSERT_SUCCESS(af_constant(&a, valA, ndims, d, f64));
+    ASSERT_SUCCESS(af_constant(&b, valB, ndims, d, f64));
+    ASSERT_SUCCESS(af_add(&c, a, b, false));
 
     vector<double> h_c(dim_size * dim_size, 0);
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void **)&h_c[0], c));
+    ASSERT_SUCCESS(af_get_data_ptr((void **)&h_c[0], c));
 
     double err = 0;
 
@@ -168,9 +168,9 @@ TEST(BasicTests, Additionf64f64)
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(b));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(c));
+    ASSERT_SUCCESS(af_release_array(a));
+    ASSERT_SUCCESS(af_release_array(b));
+    ASSERT_SUCCESS(af_release_array(c));
 
 }
 
@@ -189,12 +189,12 @@ TEST(BasicTests, Additionf32f64)
 
     af_array a, b, c;
 
-    ASSERT_EQ(AF_SUCCESS, af_constant(&a, valA, ndims, d, f32));
-    ASSERT_EQ(AF_SUCCESS, af_constant(&b, valB, ndims, d, f64));
-    ASSERT_EQ(AF_SUCCESS, af_add(&c, a, b, false));
+    ASSERT_SUCCESS(af_constant(&a, valA, ndims, d, f32));
+    ASSERT_SUCCESS(af_constant(&b, valB, ndims, d, f64));
+    ASSERT_SUCCESS(af_add(&c, a, b, false));
 
     vector<double> h_c(dim_size * dim_size);
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void **)&h_c[0], c));
+    ASSERT_SUCCESS(af_get_data_ptr((void **)&h_c[0], c));
 
     double err = 0;
 
@@ -206,9 +206,9 @@ TEST(BasicTests, Additionf32f64)
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(b));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(c));
+    ASSERT_SUCCESS(af_release_array(a));
+    ASSERT_SUCCESS(af_release_array(b));
+    ASSERT_SUCCESS(af_release_array(c));
 }
 
 TEST(BasicArrayTests, constant10x10)
@@ -365,7 +365,6 @@ TEST(Assert, TestEqualsDiffSizes) {
 }
 
 TEST(Assert, TestEqualsDiffValue) {
-    // array A = af::randu(3, 3, 3);
     array gold = constant(1, 3, 3);
     array out = gold;
     out(2, 2) = 2;
@@ -376,7 +375,6 @@ TEST(Assert, TestEqualsDiffValue) {
 }
 
 TEST(Assert, TestEqualsDiffComplexValue) {
-    // array A = af::randu(3, 3, 3);
     array gold = constant(af::cfloat(3.1f, 3.1f), 3, 3, c32);
     array out = gold;
     out(2, 2) = 2.2;
@@ -412,10 +410,10 @@ TEST(Assert, TestVectorDiffVecType) {
                               gold, goldDims, out));
 }
 
-TEST(Assert, TestVectorDiffDim4) {
+TEST(Assert, TestVectorDiffGoldSizeDims) {
     array out = constant(3.1f, 3, 3);
 
-    vector<float> gold(out.elements());
+    vector<float> gold(3 * 3);
     dim4 goldDims(3, 2);
     fill(gold.begin(), gold.end(), 3.1f);
 
@@ -425,15 +423,37 @@ TEST(Assert, TestVectorDiffDim4) {
                                gold, goldDims, out));
 }
 
-TEST(Assert, TestVectorDiffVecSize) {
+TEST(Assert, TestVectorDiffOutSizeGoldSize) {
     array out = constant(3.1f, 3, 3);
 
-    vector<float> gold(out.elements() - 1);
-    dim4 goldDims(3, 3);
+    vector<float> gold(3 * 2);
+    dim4 goldDims(3, 2);
     fill(gold.begin(), gold.end(), 3.1f);
 
     // Testing this macro
     // ASSERT_VEC_ARRAY_EQ(gold, goldDims, out);
     ASSERT_FALSE(assertArrayEq("gold", "goldDims", "out",
                                gold, goldDims, out));
+}
+
+TEST(Assert, TestVectorDiffDim4) {
+    array A = constant(3.1f, 3, 3);
+    vector<float> hA(A.elements());
+    dim4 adims(3, 2);
+    fill(hA.begin(), hA.end(), 3.1f);
+
+    // Testing this macro
+    // ASSERT_ARRAYS_EQ(A, B);
+    ASSERT_FALSE(assertArrayEq("hA", "adims", "A", hA, adims, A));
+}
+
+TEST(Assert, TestVectorDiffVecSize) {
+    array A = constant(3.1f, 3, 3);
+    vector<float> hA(A.elements()-1);
+    dim4 adims(3, 3);
+    fill(hA.begin(), hA.end(), 3.1f);
+
+    // Testing this macro
+    // ASSERT_ARRAYS_EQ(A, B);
+    ASSERT_FALSE(assertArrayEq("hA", "adims", "A", hA, adims, A));
 }

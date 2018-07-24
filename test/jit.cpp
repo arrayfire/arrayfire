@@ -311,11 +311,11 @@ TEST(JIT, NonLinearLargeX)
     dim_t sdims[] = {1, 1, 1};
     dim_t ndims = 3;
 
-    ASSERT_EQ(AF_SUCCESS, af_randu(&r, ndims, rdims, f32));
-    ASSERT_EQ(AF_SUCCESS, af_constant(&c, 1, ndims, cdims, f32));
-    ASSERT_EQ(AF_SUCCESS, af_eval(c));
-    ASSERT_EQ(AF_SUCCESS, af_sub(&s, r, c, true));
-    ASSERT_EQ(AF_SUCCESS, af_eval(s));
+    ASSERT_SUCCESS(af_randu(&r, ndims, rdims, f32));
+    ASSERT_SUCCESS(af_constant(&c, 1, ndims, cdims, f32));
+    ASSERT_SUCCESS(af_eval(c));
+    ASSERT_SUCCESS(af_sub(&s, r, c, true));
+    ASSERT_SUCCESS(af_eval(s));
 
     dim_t relem = 1;
     dim_t celem = 1;
@@ -331,9 +331,9 @@ TEST(JIT, NonLinearLargeX)
     vector<float> hc(celem);
     vector<float> hs(selem);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr(hr.data(), r));
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr(hc.data(), c));
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr(hs.data(), s));
+    ASSERT_SUCCESS(af_get_data_ptr(hr.data(), r));
+    ASSERT_SUCCESS(af_get_data_ptr(hc.data(), c));
+    ASSERT_SUCCESS(af_get_data_ptr(hs.data(), s));
 
     for (int k = 0; k < sdims[2]; k++) {
         for (int j = 0; j < sdims[1]; j++) {
@@ -356,9 +356,9 @@ TEST(JIT, NonLinearLargeX)
         }
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(r));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(c));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(s));
+    ASSERT_SUCCESS(af_release_array(r));
+    ASSERT_SUCCESS(af_release_array(c));
+    ASSERT_SUCCESS(af_release_array(s));
 }
 
 TEST(JIT, ISSUE_1894)

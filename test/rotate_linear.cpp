@@ -67,18 +67,18 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
 
     if (isSubRef) {
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
 
-        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
+        ASSERT_SUCCESS(af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_rotate(&outArray, inArray, theta, crop, AF_INTERP_BILINEAR));
+    ASSERT_SUCCESS(af_rotate(&outArray, inArray, theta, crop, AF_INTERP_BILINEAR));
 
     // Get result
     T* outData = new T[tests[resultIdx].size()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData, outArray));
 
     // Compare result
     size_t nElems = tests[resultIdx].size();

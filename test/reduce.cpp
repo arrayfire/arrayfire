@@ -60,11 +60,11 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
 
     // Get input array
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
-        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(tempArray));
+        ASSERT_SUCCESS(af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
+        ASSERT_SUCCESS(af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
+        ASSERT_SUCCESS(af_release_array(tempArray));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
+        ASSERT_SUCCESS(af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
     }
 
     // Compare result
@@ -73,14 +73,14 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
         vector<To> currGoldBar(tests[d].begin(), tests[d].end());
 
         // Run sum
-        ASSERT_EQ(AF_SUCCESS, af_reduce(&outArray, inArray, d + off));
+        ASSERT_SUCCESS(af_reduce(&outArray, inArray, d + off));
 
         af_dtype t;
         af_get_type(&t, outArray);
 
         // Get result
         vector<To> outData(dims.elements());
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), outArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
 
         size_t nElems = currGoldBar.size();
         if(std::equal(currGoldBar.begin(), currGoldBar.end(), outData.begin()) == false)
@@ -102,10 +102,10 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
             FAIL();
         }
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+        ASSERT_SUCCESS(af_release_array(outArray));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_SUCCESS(af_release_array(inArray));
 }
 
 template<typename T,reduceFunc OP>

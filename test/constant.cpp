@@ -57,7 +57,7 @@ void ConstantCCheck(T value) {
     dtype dty = (dtype) dtype_traits<T>::af_type;
     af_array out;
     dim_t dim[] = {(dim_t)num};
-    ASSERT_EQ(AF_SUCCESS, af_constant(&out, val, 1, dim, dty));
+    ASSERT_SUCCESS(af_constant(&out, val, 1, dim, dty));
 
     vector<T> h_in(num);
     af_get_data_ptr(&h_in.front(), out);
@@ -65,7 +65,7 @@ void ConstantCCheck(T value) {
     for (int i = 0; i < num; i++) {
         ASSERT_EQ(::real(h_in[i]), val);
     }
-    ASSERT_EQ(AF_SUCCESS, af_release_array(out));
+    ASSERT_SUCCESS(af_release_array(out));
 }
 
 template<typename T>
@@ -134,7 +134,7 @@ void IdentityCCheck() {
     dtype dty = (dtype) dtype_traits<T>::af_type;
     af_array out;
     dim_t dim[] = {(dim_t)num, (dim_t)num};
-    ASSERT_EQ(AF_SUCCESS, af_identity(&out, 2, dim, dty));
+    ASSERT_SUCCESS(af_identity(&out, 2, dim, dty));
 
     vector<T> h_in(num*num);
     af_get_data_ptr(&h_in.front(), out);
@@ -147,7 +147,7 @@ void IdentityCCheck() {
                 ASSERT_EQ(h_in[i * num + j], T(0));
         }
     }
-    ASSERT_EQ(AF_SUCCESS, af_release_array(out));
+    ASSERT_SUCCESS(af_release_array(out));
 }
 
 template<typename T>

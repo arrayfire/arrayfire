@@ -50,11 +50,11 @@ void loadImageTest(string pTestFile, string pImageFile, const bool isColor)
     dim4 dims       = numDims[0];
 
     af_array imgArray = 0;
-    ASSERT_EQ(AF_SUCCESS, af_load_image(&imgArray, pImageFile.c_str(), isColor));
+    ASSERT_SUCCESS(af_load_image(&imgArray, pImageFile.c_str(), isColor));
 
     // Get result
     float *imgData = new float[dims.elements()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*) imgData, imgArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*) imgData, imgArray));
 
     bool isJPEG = false;
     if(pImageFile.find(".jpg") != string::npos) {

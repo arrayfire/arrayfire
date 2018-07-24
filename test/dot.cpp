@@ -68,26 +68,26 @@ void dotTest(string pTestFile, const int resultIdx,
     af_array b = 0;
     af_array out = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&a, &(in[0].front()),
                 aDims.ndims(), aDims.get(), (af_dtype)dtype_traits<T>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&b, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&b, &(in[1].front()),
                 bDims.ndims(), bDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_dot(&out, a, b, optLhs, optRhs));
+    ASSERT_SUCCESS(af_dot(&out, a, b, optLhs, optRhs));
 
     vector<T> goldData = tests[resultIdx];
     size_t nElems      = goldData.size();
     vector<T> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData.front(), out));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), out));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(abs(goldData[elIter]), abs(outData[elIter]), 0.03)<< "at: " << elIter<< endl;
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(b));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(out));
+    ASSERT_SUCCESS(af_release_array(a));
+    ASSERT_SUCCESS(af_release_array(b));
+    ASSERT_SUCCESS(af_release_array(out));
 }
 
 template<typename T>
@@ -128,20 +128,20 @@ void dotAllTest(string pTestFile, const int resultIdx,
     af_array a = 0;
     af_array b = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&a, &(in[0].front()),
                 aDims.ndims(), aDims.get(), (af_dtype)dtype_traits<T>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&b, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&b, &(in[1].front()),
                 bDims.ndims(), bDims.get(), (af_dtype)dtype_traits<T>::af_type));
 
     double rval = 0, ival = 0;
-    ASSERT_EQ(AF_SUCCESS, af_dot_all(&rval, &ival, a, b, optLhs, optRhs));
+    ASSERT_SUCCESS(af_dot_all(&rval, &ival, a, b, optLhs, optRhs));
 
     vector<T> goldData = tests[resultIdx];
 
     compare<T>(rval, ival, goldData[0]);
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(b));
+    ASSERT_SUCCESS(af_release_array(a));
+    ASSERT_SUCCESS(af_release_array(b));
 }
 
 
@@ -202,14 +202,8 @@ TEST(DotF, CPP)
     array out = dot(a, b, AF_MAT_CONJ, AF_MAT_NONE);
 
     vector<float> goldData = tests[0];
-    size_t nElems = goldData.size();
-    vector<float> outData(nElems);
-
-    out.host(&outData.front());
-
-    for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(goldData[elIter], outData[elIter]) << "at: " << elIter<< endl;
-    }
+    dim4 goldDims(1);
+    ASSERT_VEC_ARRAY_EQ(goldData, goldDims, out);
 }
 
 TEST(DotCCU, CPP)
@@ -229,14 +223,8 @@ TEST(DotCCU, CPP)
     array out = dot(a, b, AF_MAT_CONJ, AF_MAT_NONE);
 
     vector<cfloat> goldData = tests[2];
-    size_t nElems         = goldData.size();
-    vector<cfloat> outData(nElems);
-
-    out.host(&outData.front());
-
-    for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(goldData[elIter], outData[elIter]) << "at: " << elIter<< endl;
-    }
+    dim4 goldDims(1);
+    ASSERT_VEC_ARRAY_EQ(goldData, goldDims, out);
 }
 
 TEST(DotAllF, CPP)

@@ -51,32 +51,32 @@ void testGeneralAssignOneArray(string pTestFile, const dim_t ndims, af_index_t* 
     af_array lhsArray  = 0;
     af_array idxArray  = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&lhsArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&lhsArray, &(in[0].front()),
                 dims0.ndims(), dims0.get(), (af_dtype)dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&rhsArray, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&rhsArray, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray, &(in[2].front()),
+    ASSERT_SUCCESS(af_create_array(&idxArray, &(in[2].front()),
                 dims2.ndims(), dims2.get(), (af_dtype)dtype_traits<float>::af_type));
     indexs[arrayDim].idx.arr = idxArray;
 
-    ASSERT_EQ(AF_SUCCESS, af_assign_gen(&outArray, lhsArray, ndims, indexs, rhsArray));
+    ASSERT_SUCCESS(af_assign_gen(&outArray, lhsArray, ndims, indexs, rhsArray));
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
     vector<float> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(rhsArray));
+    ASSERT_SUCCESS(af_release_array(lhsArray));
+    ASSERT_SUCCESS(af_release_array(idxArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 TEST(GeneralAssign, ASSS)
@@ -119,27 +119,27 @@ TEST(GeneralAssign, SSSS)
     indexs[0].isSeq = true;
     indexs[1].isSeq = true;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&lhsArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&lhsArray, &(in[0].front()),
                 dims0.ndims(), dims0.get(), (af_dtype)dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&rhsArray, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&rhsArray, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_assign_gen(&outArray, lhsArray, 2, indexs, rhsArray));
+    ASSERT_SUCCESS(af_assign_gen(&outArray, lhsArray, 2, indexs, rhsArray));
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
     vector<float> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(rhsArray));
+    ASSERT_SUCCESS(af_release_array(lhsArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
 }
 
 TEST(GeneralAssign, AAAA)
@@ -170,47 +170,47 @@ TEST(GeneralAssign, AAAA)
     indexs[2].isSeq = false;
     indexs[3].isSeq = false;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&lhsArray, &(in[0].front()),
+    ASSERT_SUCCESS(af_create_array(&lhsArray, &(in[0].front()),
                 dims0.ndims(), dims0.get(), (af_dtype)dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&rhsArray, &(in[1].front()),
+    ASSERT_SUCCESS(af_create_array(&rhsArray, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray0, &(in[2].front()),
+    ASSERT_SUCCESS(af_create_array(&idxArray0, &(in[2].front()),
                 dims2.ndims(), dims2.get(), (af_dtype)dtype_traits<float>::af_type));
     indexs[0].idx.arr = idxArray0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray1, &(in[3].front()),
+    ASSERT_SUCCESS(af_create_array(&idxArray1, &(in[3].front()),
                 dims3.ndims(), dims3.get(), (af_dtype)dtype_traits<float>::af_type));
     indexs[1].idx.arr = idxArray1;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray2, &(in[4].front()),
+    ASSERT_SUCCESS(af_create_array(&idxArray2, &(in[4].front()),
                 dims4.ndims(), dims4.get(), (af_dtype)dtype_traits<float>::af_type));
     indexs[2].idx.arr = idxArray2;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray3, &(in[5].front()),
+    ASSERT_SUCCESS(af_create_array(&idxArray3, &(in[5].front()),
                 dims5.ndims(), dims5.get(), (af_dtype)dtype_traits<float>::af_type));
     indexs[3].idx.arr = idxArray3;
 
-    ASSERT_EQ(AF_SUCCESS, af_assign_gen(&outArray, lhsArray, 4, indexs, rhsArray));
+    ASSERT_SUCCESS(af_assign_gen(&outArray, lhsArray, 4, indexs, rhsArray));
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
     vector<float> outData(nElems);
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData.data(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< endl;
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray0));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray1));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray2));
-    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray3));
+    ASSERT_SUCCESS(af_release_array(rhsArray));
+    ASSERT_SUCCESS(af_release_array(lhsArray));
+    ASSERT_SUCCESS(af_release_array(outArray));
+    ASSERT_SUCCESS(af_release_array(idxArray0));
+    ASSERT_SUCCESS(af_release_array(idxArray1));
+    ASSERT_SUCCESS(af_release_array(idxArray2));
+    ASSERT_SUCCESS(af_release_array(idxArray3));
 }
 
 
