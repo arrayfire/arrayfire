@@ -62,13 +62,16 @@ UNARY_FN(cbrt)
 
 UNARY_FN(trunc)
 UNARY_FN(round)
-UNARY_FN(sign)
+UNARY_FN(signbit)
 UNARY_FN(ceil)
 UNARY_FN(floor)
 
 UNARY_FN(isinf)
 UNARY_FN(isnan)
 UNARY_FN(iszero)
+
+#undef UNARY_DECL
+#undef UNARY_FN
 
 template<typename T, af_op_t op>
 Array<T> unaryOp(const Array<T> &in)
