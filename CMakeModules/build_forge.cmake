@@ -13,7 +13,7 @@ set(PX ${CMAKE_SHARED_LIBRARY_PREFIX})
 set(SX ${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 if(MSVC)
-  set(disable_warning_flags "/wd4251")
+  set(disable_warning_flags "/wd4251 /EHsc")
   set(SX ${CMAKE_LINK_LIBRARY_SUFFIX})
 endif()
 
