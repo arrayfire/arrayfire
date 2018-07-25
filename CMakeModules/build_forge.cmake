@@ -7,7 +7,7 @@
 
 include(ExternalProject)
 
-set(FORGE_VERSION af3.6.0)
+set(FORGE_VERSION v1.0.2)
 set(prefix "${ArrayFire_BINARY_DIR}/third_party/forge")
 set(PX ${CMAKE_SHARED_LIBRARY_PREFIX})
 set(SX ${CMAKE_SHARED_LIBRARY_SUFFIX})
