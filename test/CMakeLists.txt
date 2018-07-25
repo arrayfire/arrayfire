@@ -128,6 +128,10 @@ function(make_test)
         ${mt_args_DEFINITIONS}
       )
     if(WIN32)
+      target_compile_options(${target}
+        PRIVATE
+          /bigobj
+          /EHsc)
       target_compile_definitions(${target}
         PRIVATE
           WIN32_LEAN_AND_MEAN
