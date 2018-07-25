@@ -24,7 +24,6 @@ typedef cuDoubleComplex cdouble;
 // ----------------------------------------------
 // REAL NUMBER OPERATIONS
 // ----------------------------------------------
-#define sign(in) signbit((in))
 #define __noop(a) (a)
 #define __add(lhs, rhs) (lhs) + (rhs)
 #define __sub(lhs, rhs) (lhs) - (rhs)

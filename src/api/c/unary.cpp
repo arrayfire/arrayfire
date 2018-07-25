@@ -108,11 +108,13 @@ static af_err af_unary_complex(af_array *out, const af_array in)
     return AF_SUCCESS;
 }
 
-#define UNARY(fn)                                       \
-    af_err af_##fn(af_array *out, const af_array in)    \
+#define UNARY_FN(name, opcode)                          \
+    af_err af_##name(af_array *out, const af_array in)  \
     {                                                   \
-        return af_unary<af_##fn##_t>(out, in);          \
+        return af_unary<af_##opcode##_t>(out, in);          \
     }
+
+#define UNARY(fn) UNARY_FN(fn, fn)
 
 #define UNARY_COMPLEX(fn)                               \
     af_err af_##fn(af_array *out, const af_array in)    \
@@ -121,7 +123,7 @@ static af_err af_unary_complex(af_array *out, const af_array in)
     }
 
 UNARY(trunc)
-UNARY(sign)
+UNARY_FN(sign, signbit)
 UNARY(round)
 UNARY(floor)
 UNARY(ceil)
