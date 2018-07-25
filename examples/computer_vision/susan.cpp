@@ -77,7 +77,7 @@ int main(int argc, char** argv)
     try {
         af::setDevice(device);
         af::info();
-        printf("** ArrayFire FAST Feature Detector Demo **\n\n");
+        printf("** ArrayFire SUSAN Feature Detector Demo **\n\n");
         susan_demo(console);
 
     } catch (af::exception& ae) {
