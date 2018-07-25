@@ -323,62 +323,117 @@ TEST(BasicTests, Additionf32f64_CPP)
 }
 
 TEST(Assert, TestEqualsCpp) {
-    array A = constant(1, 10, 10);
-    array B = constant(1, 10, 10);
+    array gold = constant(1, 10, 10);
+    array out = constant(1, 10, 10);
 
     // Testing this macro
-    // ASSERT_ARRAY_EQ(A, B);
-    ASSERT_TRUE(assertArrayEq("A", "B", A, B));
+    // ASSERT_ARRAYS_EQ(gold, out);
+    ASSERT_TRUE(assertArrayEq("gold", "out", gold, out));
 }
 
 TEST(Assert, TestEqualsC) {
-    af_array A = 0;
-    af_array B = 0;
+    af_array gold = 0;
+    af_array out = 0;
     dim_t dims[] = {10, 10, 1, 1};
-    af_constant(&A, 1.0, 4, dims, f32);
-    af_constant(&B, 1.0, 4, dims, f32);
+    af_constant(&gold, 1.0, 4, dims, f32);
+    af_constant(&out, 1.0, 4, dims, f32);
 
     // Testing this macro
-    //ASSERT_ARRAY_EQ(a, b);
-    ASSERT_TRUE(assertArrayEq("A", "B", A, B));
+    // ASSERT_ARRAYS_EQ(gold, out);
+    ASSERT_TRUE(assertArrayEq("gold", "out", gold, out));
+
+    ASSERT_SUCCESS(af_release_array(out));
+    ASSERT_SUCCESS(af_release_array(gold));
 }
 
 TEST(Assert, TestEqualsDiffTypes) {
-    array A = constant(1, 10, 10, f64);
-    array B = constant(1, 10, 10);
+    array gold = constant(1, 10, 10, f64);
+    array out = constant(1, 10, 10);
 
     // Testing this macro
-    // ASSERT_ARRAY_EQ(A, B);
-    ASSERT_FALSE(assertArrayEq("A", "B", A, B));
+    // ASSERT_ARRAYS_EQ(gold, out);
+    ASSERT_FALSE(assertArrayEq("gold", "out", gold, out));
 }
 
 TEST(Assert, TestEqualsDiffSizes) {
-    array A = constant(1, 10, 9);
-    array B = constant(1, 10, 10);
+    array gold = constant(1, 10, 9);
+    array out = constant(1, 10, 10);
 
     // Testing this macro
-    // ASSERT_ARRAY_EQ(A, B);
-    ASSERT_FALSE(assertArrayEq("A", "B", A, B));
+    // ASSERT_ARRAYS_EQ(gold, out);
+    ASSERT_FALSE(assertArrayEq("gold", "out", gold, out));
 }
 
 TEST(Assert, TestEqualsDiffValue) {
     // array A = af::randu(3, 3, 3);
-    array A = constant(1, 3, 3);
-    array B = A;
-    B(2, 2) = 2;
+    array gold = constant(1, 3, 3);
+    array out = gold;
+    out(2, 2) = 2;
 
     // Testing this macro
-    //ASSERT_ARRAY_EQ(A, B);
-    ASSERT_FALSE(assertArrayEq("A", "B", A, B));
+    // ASSERT_ARRAYS_EQ(gold, out);
+    ASSERT_FALSE(assertArrayEq("gold", "out", gold, out));
 }
 
 TEST(Assert, TestEqualsDiffComplexValue) {
     // array A = af::randu(3, 3, 3);
-    array A = constant(af::cfloat(3.1f, 3.1f), 3, 3, c32);
-    array B = A;
-    B(2, 2) = 2.2;
+    array gold = constant(af::cfloat(3.1f, 3.1f), 3, 3, c32);
+    array out = gold;
+    out(2, 2) = 2.2;
 
     // Testing this macro
-    // ASSERT_ARRAY_EQ(A, B);
-    ASSERT_FALSE(assertArrayEq("A", "B", A, B));
+    // ASSERT_ARRAYS_EQ(gold, out);
+    ASSERT_FALSE(assertArrayEq("gold", "out", gold, out));
+}
+
+TEST(Assert, TestVectorEquals) {
+    array out = constant(3.1f, 3, 3);
+
+    vector<float> gold(out.elements());
+    dim4 goldDims(3, 3);
+    fill(gold.begin(), gold.end(), 3.1f);
+
+    // Testing this macro
+    // ASSERT_VEC_ARRAY_EQ(gold, goldDims, out);
+    ASSERT_TRUE(assertArrayEq("gold", "goldDims", "out",
+                              gold, goldDims, out));
+}
+
+TEST(Assert, TestVectorDiffVecType) {
+    array out = constant(3.1f, 3, 3);
+
+    vector<int> gold(out.elements());
+    dim4 goldDims(3, 3);
+    fill(gold.begin(), gold.end(), 3.1f);
+
+    // Testing this macro
+    // ASSERT_VEC_ARRAY_EQ(gold, goldDims, out);
+    ASSERT_FALSE(assertArrayEq("gold", "goldDims", "out",
+                              gold, goldDims, out));
+}
+
+TEST(Assert, TestVectorDiffDim4) {
+    array out = constant(3.1f, 3, 3);
+
+    vector<float> gold(out.elements());
+    dim4 goldDims(3, 2);
+    fill(gold.begin(), gold.end(), 3.1f);
+
+    // Testing this macro
+    // ASSERT_VEC_ARRAY_EQ(gold, goldDims, out);
+    ASSERT_FALSE(assertArrayEq("gold", "goldDims", "out",
+                               gold, goldDims, out));
+}
+
+TEST(Assert, TestVectorDiffVecSize) {
+    array out = constant(3.1f, 3, 3);
+
+    vector<float> gold(out.elements() - 1);
+    dim4 goldDims(3, 3);
+    fill(gold.begin(), gold.end(), 3.1f);
+
+    // Testing this macro
+    // ASSERT_VEC_ARRAY_EQ(gold, goldDims, out);
+    ASSERT_FALSE(assertArrayEq("gold", "goldDims", "out",
+                               gold, goldDims, out));
 }
