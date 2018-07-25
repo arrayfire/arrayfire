@@ -17,12 +17,6 @@ namespace cpu
 {
 
 template<typename T>
-T sign(T in)
-{
-    return T(std::signbit(in));
-}
-
-template<typename T>
 T sigmoid(T in)
 {
     return (1.0) / (1 + std::exp(-in));
@@ -61,7 +55,7 @@ UNARY_OP(atanh)
 
 UNARY_OP(round)
 UNARY_OP(trunc)
-UNARY_OP_FN(sign, sign)
+UNARY_OP(signbit)
 UNARY_OP(floor)
 UNARY_OP(ceil)
 
@@ -83,7 +77,7 @@ UNARY_OP(tgamma)
 UNARY_OP(lgamma)
 
 #undef UNARY_OP
-#undef sign
+#undef UNARY_OP_FN
 
     template<typename T, af_op_t op>
     Array<T> unaryOp(const Array<T> &in)
