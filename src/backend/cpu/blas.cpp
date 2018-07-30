@@ -29,6 +29,9 @@
 
 #include <algorithm>
 #include <type_traits>
+#include <vector>
+
+using std::vector;
 
 namespace cpu
 {
@@ -48,28 +51,48 @@ using common::is_complex;
 //
 // Sample cgemm API
 // OpenBLAS
-// void cblas_cgemm(OPENBLAS_CONST enum CBLAS_ORDER Order, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransA, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransB,
-//                  OPENBLAS_CONST blasint M, OPENBLAS_CONST blasint N, OPENBLAS_CONST blasint K,
-//                  OPENBLAS_CONST float *alpha, OPENBLAS_CONST float *A, OPENBLAS_CONST blasint lda,
-//                  OPENBLAS_CONST float *B, OPENBLAS_CONST blasint ldb, OPENBLAS_CONST float *beta,
+// void cblas_cgemm(OPENBLAS_CONST enum CBLAS_ORDER Order,
+//                  OPENBLAS_CONST enum CBLAS_TRANSPOSE TransA,
+//                  OPENBLAS_CONST enum CBLAS_TRANSPOSE TransB,
+//                  OPENBLAS_CONST blasint M,
+//                  OPENBLAS_CONST blasint N,
+//                  OPENBLAS_CONST blasint K,
+//                  OPENBLAS_CONST float *alpha, OPENBLAS_CONST float *A,
+//                  OPENBLAS_CONST blasint lda,
+//                  OPENBLAS_CONST float *B, OPENBLAS_CONST blasint ldb,
+//                  OPENBLAS_CONST float *beta,
 //                  float *C, OPENBLAS_CONST blasint ldc);
 //
 // MKL
-// void cblas_cgemm(const  CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE TransA, const  CBLAS_TRANSPOSE TransB,
+// void cblas_cgemm(const  CBLAS_LAYOUT Layout,
+//                  const CBLAS_TRANSPOSE TransA, const  CBLAS_TRANSPOSE TransB,
 //                  const MKL_INT M, const MKL_INT N, const MKL_INT K,
 //                  const void *alpha, const void *A, const MKL_INT lda,
 //                  const void *B, const MKL_INT ldb, const void *beta,
 //                  void *C, const MKL_INT ldc);
+// void cblas_cgemm_batch(const  CBLAS_LAYOUT Layout,
+//                        const CBLAS_TRANSPOSE* TransA,
+//                        const CBLAS_TRANSPOSE* TransB,
+//                        const MKL_INT* M, const MKL_INT* N, const MKL_INT* K,
+//                        const void *alpha, const void **A, const MKL_INT* lda,
+//                        const void **B, const MKL_INT* ldb, const void *beta,
+//                        void **C, const MKL_INT* ldc,
+//                        const MKL_INT group_count, const MKL_INT* group_size);
+//
 // atlas cblas
-// void cblas_cgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA,
-//                  const enum CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
+// void cblas_cgemm(const enum CBLAS_ORDER Order,
+//                  const enum CBLAS_TRANSPOSE TransA,
+//                  const enum CBLAS_TRANSPOSE TransB,
+//                  const int M, const int N, const int K,
 //                  const void *alpha, const void *A, const int lda,
 //                  const void *B, const int ldb, const void *beta,
 //                  void *C, const int ldc);
 //
 // LAPACKE
-// void cblas_cgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA,
-//                  const enum CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
+// void cblas_cgemm(const enum CBLAS_ORDER Order,
+//                  const enum CBLAS_TRANSPOSE TransA,
+//                  const enum CBLAS_TRANSPOSE TransB,
+//                  const int M, const int N, const int K,
 //                  const void *alpha, const void *A, const int lda,
 //                  const void *B, const int ldb, const void *beta,
 //                  void *C, const int ldc);
@@ -82,20 +105,26 @@ struct blas_base {
 };
 
 template<typename T>
-using cptr_type     =   typename conditional<   is_complex<T>::value,
-                                                const typename blas_base<T>::type *,
-                                                const T*>::type;
+using cptr_type   =   typename conditional<is_complex<T>::value,
+                                           const typename blas_base<T>::type *,
+                                           const T*>::type;
 template<typename T>
-using ptr_type     =    typename conditional<   is_complex<T>::value,
-                                                typename blas_base<T>::type *,
-                                                T*>::type;
+using ptr_type   =    typename conditional<is_complex<T>::value,
+                                           typename blas_base<T>::type *,
+                                           T*>::type;
 template<typename T>
-using scale_type   =    typename conditional<   is_complex<T>::value,
-                                                const typename blas_base<T>::type *,
-                                                const T>::type;
+using scale_type =    typename conditional<is_complex<T>::value,
+                                           const typename blas_base<T>::type *,
+                                           const T>::type;
 
 template<typename T>
-using gemm_func_def = void (*)( const CBLAS_ORDER, const CBLAS_TRANSPOSE, const CBLAS_TRANSPOSE,
+using batch_scale_type = typename conditional<is_complex<T>::value,
+                                              const typename blas_base<T>::type*,
+                                              const T*>::type;
+
+template<typename T>
+using gemm_func_def = void (*)( const CBLAS_ORDER, const CBLAS_TRANSPOSE,
+                                const CBLAS_TRANSPOSE,
                                 const blasint, const blasint, const blasint,
                                 scale_type<T>, cptr_type<T>, const blasint,
                                 cptr_type<T>, const blasint,
@@ -107,6 +136,18 @@ using gemv_func_def = void (*)( const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                 scale_type<T>, cptr_type<T>, const blasint,
                                 cptr_type<T>, const blasint,
                                 scale_type<T>, ptr_type<T>, const blasint);
+
+#ifdef USE_MKL
+template<typename T>
+using gemm_batch_func_def = void (*)( const CBLAS_LAYOUT,
+                                      const CBLAS_TRANSPOSE*,
+                                      const CBLAS_TRANSPOSE*,
+                                      const MKL_INT*, const MKL_INT*, const MKL_INT*,
+                                      batch_scale_type<T>, cptr_type<T>*, const MKL_INT*,
+                                      cptr_type<T>*, const MKL_INT*, batch_scale_type<T>,
+                                      ptr_type<T>*, const MKL_INT*,
+                                      const MKL_INT, const MKL_INT*);
+#endif
 
 #define BLAS_FUNC_DEF( FUNC )                           \
 template<typename T> FUNC##_func_def<T> FUNC##_func();
@@ -126,6 +167,14 @@ BLAS_FUNC(gemv , float   , s)
 BLAS_FUNC(gemv , double  , d)
 BLAS_FUNC(gemv , cfloat  , c)
 BLAS_FUNC(gemv , cdouble , z)
+
+#ifdef USE_MKL
+BLAS_FUNC_DEF( gemm_batch )
+BLAS_FUNC(gemm_batch , float   , s)
+BLAS_FUNC(gemm_batch , double  , d)
+BLAS_FUNC(gemm_batch , cfloat  , c)
+BLAS_FUNC(gemm_batch , cdouble , z)
+#endif
 
 template<typename T, int value>
 typename enable_if<is_floating_point<T>::value, scale_type<T>>::type
@@ -188,44 +237,64 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
         dim4 rStrides = right.strides();
         dim4 oStrides = output.strides();
 
-        int batchSize = oDims[2] * oDims[3];
-
-        bool is_l_d2_batched = oDims[2] == lDims[2];
-        bool is_l_d3_batched = oDims[3] == lDims[3];
-        bool is_r_d2_batched = oDims[2] == rDims[2];
-        bool is_r_d3_batched = oDims[3] == rDims[3];
-
-        for (int n = 0; n < batchSize; n++) {
-            int w = n / oDims[2];
-            int z = n - w * oDims[2];
-
-            int loff = z * (is_l_d2_batched * lStrides[2]) + w * (is_l_d3_batched * lStrides[3]);
-            int roff = z * (is_r_d2_batched * rStrides[2]) + w * (is_r_d3_batched * rStrides[3]);
-
-            CBT *lptr = reinterpret_cast<CBT*>(left.get() + loff);
-            CBT *rptr = reinterpret_cast<CBT*>(right.get() + roff);
-            BT *optr = reinterpret_cast<BT*>(output.get() + z * oStrides[2] + w * oStrides[3]);
-
-            if(rDims[bColDim] == 1) {
+        if (oDims.ndims() <= 2) {
+            if (rDims[bColDim] == 1) {
                 dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
-                gemv_func<T>()(
-                    CblasColMajor, lOpts,
-                    lDims[0], lDims[1],
-                    alpha,
-                    lptr, lStrides[1],
-                    rptr, incr,
-                    beta,
-                    optr, 1);
+                gemv_func<T>()(CblasColMajor, lOpts, lDims[0], lDims[1], alpha,
+                        left.get(), lStrides[1], right.get(), incr, beta,
+                        output.get(), 1);
             } else {
-                gemm_func<T>()(
-                    CblasColMajor, lOpts, rOpts,
-                    M, N, K,
-                    alpha,
-                    lptr, lStrides[1],
-                    rptr, rStrides[1],
-                    beta,
-                    optr, output.dims(0));
+                gemm_func<T>()(CblasColMajor, lOpts, rOpts, M, N, K, alpha,
+                        left.get(), lStrides[1], right.get(), rStrides[1], beta,
+                        output.get(), output.dims(0));
             }
+        } else {
+            int batchSize = oDims[2] * oDims[3];
+
+            const bool is_l_d2_batched = oDims[2] == lDims[2];
+            const bool is_l_d3_batched = oDims[3] == lDims[3];
+            const bool is_r_d2_batched = oDims[2] == rDims[2];
+            const bool is_r_d3_batched = oDims[3] == rDims[3];
+
+            vector< CBT* > lptrs(batchSize);
+            vector< CBT* > rptrs(batchSize);
+            vector<  BT* > optrs(batchSize);
+
+            for (int n = 0; n < batchSize; n++) {
+                int w = n / oDims[2];
+                int z = n - w * oDims[2];
+
+                int loff = z * (is_l_d2_batched * lStrides[2]) + w * (is_l_d3_batched * lStrides[3]);
+                int roff = z * (is_r_d2_batched * rStrides[2]) + w * (is_r_d3_batched * rStrides[3]);
+
+                lptrs[n] = reinterpret_cast<CBT*>(left.get() + loff);
+                rptrs[n] = reinterpret_cast<CBT*>(right.get() + roff);
+                optrs[n] = reinterpret_cast<BT*>(output.get() + z * oStrides[2] + w * oStrides[3]);
+            }
+
+#ifdef USE_MKL
+            // MKL can handle multiple groups of batches
+            // However, for ArrayFire's use case, the group_count=1
+            const MKL_INT lda = lStrides[1];
+            const MKL_INT ldb = rStrides[1];
+            const MKL_INT ldc = oStrides[1];
+
+            gemm_batch_func<T>()(CblasColMajor, &lOpts, &rOpts, &M, &N, &K,
+                    &alpha, lptrs.data(), &lda, rptrs.data(), &ldb, &beta,
+                    optrs.data(), &ldc, 1, &batchSize);
+#else
+            for (int n = 0; n < batchSize; n++) {
+                if(rDims[bColDim] == 1) {
+                    dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
+                    gemv_func<T>()(CblasColMajor, lOpts, lDims[0], lDims[1], alpha,
+                            lptrs[n], lStrides[1], rptrs[n], incr, beta, optrs[n], 1);
+                } else {
+                    gemm_func<T>()(CblasColMajor, lOpts, rOpts, M, N, K, alpha,
+                            lptrs[n], lStrides[1], rptrs[n], rStrides[1], beta,
+                            optrs[n], output.dims(0));
+                }
+            }
+#endif
         }
     };
     getQueue().enqueue(func, out, lhs, rhs);

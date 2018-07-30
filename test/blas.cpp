@@ -252,7 +252,6 @@ TEST(MatrixMultiply, Batched)
     const int N = 10;
     const int D2 = 2;
     const int D3 = 3;
-
     for (int d3 = 1; d3 <= D3; d3 *= D3) {
         for (int d2 = 1; d2 <= D2; d2 *= D2) {
             array a = randu(M, K, d2, d3);
