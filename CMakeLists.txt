@@ -22,6 +22,9 @@ include(CheckCXXCompilerFlag)
 
 arrayfire_set_cmake_default_variables()
 
+#Set Intel OpenMP as default MKL thread layer
+set(MKL_THREAD_LAYER "Intel OpenMP" CACHE STRING "The thread layer to choose for MKL")
+
 find_package(CUDA 7.0)
 find_package(OpenCL 1.2)
 find_package(OpenGL)

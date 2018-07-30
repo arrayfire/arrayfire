@@ -230,8 +230,9 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     //Unsupported : (rOpts == SPARSE_OPERATION_NON_TRANSPOSE;) ? 1 : 0;
     static const int rColDim = 1;
 
-    dim4 lDims = lhs.dims();
-    const dim4 rDims = rhs.dims();
+    const dim4& lDims = lhs.dims();
+    const dim4& rDims = rhs.dims();
+
     int M = lDims[lRowDim];
     int N = rDims[rColDim];
     //int K = lDims[lColDim];
@@ -461,8 +462,9 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
 
     static const int rColDim = 1;
 
-    auto lDims = lhs.dims();
-    const auto rDims = rhs.dims();
+    const dim4& lDims = lhs.dims();
+    const dim4& rDims = rhs.dims();
+
     int M = lDims[lRowDim];
     int N = rDims[rColDim];
 
