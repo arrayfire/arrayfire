@@ -457,3 +457,19 @@ TEST(Assert, TestVectorDiffVecSize) {
     // ASSERT_ARRAYS_EQ(A, B);
     ASSERT_FALSE(assertArrayEq("hA", "adims", "A", hA, adims, A));
 }
+
+TEST(Assert, TestArraysNear) {
+    array gold = constant(1, 3, 3);
+    array out = constant(1, 3, 3);
+    gold(2, 2) = 2.2345;
+    out(2, 2) = 2.2445;
+    float maxDiff = 0.001;
+
+    // Testing this macro
+    // ASSERT_ARRAYS_NEAR(gold, out, maxDiff);
+    ASSERT_FALSE(assertArrayEq("gold", "out", gold, out, maxDiff));
+}
+
+TEST(Assert, TestVecArrayNear) {
+    ASSERT_TRUE(true);
+}
