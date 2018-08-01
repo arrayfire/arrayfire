@@ -7,9 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
-#include <arrayfire.h>
 #include <af/data.h>
+#include <arrayfire.h>
+#include <gtest/gtest.h>
 #include <testHelpers.hpp>
 
 #include <vector>
@@ -17,6 +17,7 @@
 using std::vector;
 using af::array;
 using af::constant;
+using af::dim4;
 
 TEST(BasicTests, constant1000x1000)
 {
@@ -437,39 +438,111 @@ TEST(Assert, TestVectorDiffOutSizeGoldSize) {
 }
 
 TEST(Assert, TestVectorDiffDim4) {
-    array A = constant(3.1f, 3, 3);
-    vector<float> hA(A.elements());
-    dim4 adims(3, 2);
-    fill(hA.begin(), hA.end(), 3.1f);
+    array out = constant(3.1f, 3, 3);
+    vector<float> gold(out.elements());
+    dim4 goldDims(3, 2);
+    fill(gold.begin(), gold.end(), 3.1f);
 
     // Testing this macro
-    // ASSERT_ARRAYS_EQ(A, B);
-    ASSERT_FALSE(assertArrayEq("hA", "adims", "A", hA, adims, A));
+    // ASSERT_VEC_ARRAY_EQ(gold, goldDims, out);
+    ASSERT_FALSE(assertArrayEq("gold", "goldDims", "out", gold, goldDims, out));
 }
 
 TEST(Assert, TestVectorDiffVecSize) {
-    array A = constant(3.1f, 3, 3);
-    vector<float> hA(A.elements()-1);
-    dim4 adims(3, 3);
-    fill(hA.begin(), hA.end(), 3.1f);
+    array out = constant(3.1f, 3, 3);
+    vector<float> gold(out.elements() - 1);
+    dim4 goldDims(3, 3);
+    fill(gold.begin(), gold.end(), 3.1f);
 
     // Testing this macro
-    // ASSERT_ARRAYS_EQ(A, B);
-    ASSERT_FALSE(assertArrayEq("hA", "adims", "A", hA, adims, A));
+    // ASSERT_VEC_ARRAY_EQ(gold, goldDims, out);
+    ASSERT_FALSE(assertArrayEq("gold", "goldDims", "out", gold, goldDims, out));
 }
 
-TEST(Assert, TestArraysNear) {
-    array gold = constant(1, 3, 3);
-    array out = constant(1, 3, 3);
-    gold(2, 2) = 2.2345;
-    out(2, 2) = 2.2445;
-    float maxDiff = 0.001;
+TEST(Assert, TestArraysNearC) {
+    af_array gold = 0;
+    af_array out = 0;
+    dim_t dims[] = {10, 10, 1, 1};
+    af_constant(&gold, 2.2345f, 4, dims, f32);
+    af_constant(&out, 2.2346f, 4, dims, f32);
+
+    float maxDiff = 0.001f;
 
     // Testing this macro
     // ASSERT_ARRAYS_NEAR(gold, out, maxDiff);
-    ASSERT_FALSE(assertArrayEq("gold", "out", gold, out, maxDiff));
+    ASSERT_TRUE(assertArrayNear("gold", "out", "maxDiff", gold, out, maxDiff));
+
+    ASSERT_SUCCESS(af_release_array(out));
+    ASSERT_SUCCESS(af_release_array(gold));
 }
 
-TEST(Assert, TestVecArrayNear) {
-    ASSERT_TRUE(true);
+TEST(Assert, TestVecArrayNearC) {
+    vector<float> gold(3 * 3);
+    fill(gold.begin(), gold.end(), 2.2345f);
+    dim4 goldDims(3, 3);
+
+    af_array out = 0;
+    dim_t dims[] = {3, 3, 1, 1};
+    af_constant(&out, 2.2346f, 4, dims, f32);
+
+    float maxDiff = 0.001f;
+
+    // Testing this macro
+    // ASSERT_VEC_ARRAY_NEAR(gold, goldDims, out, maxDiff);
+    ASSERT_TRUE(assertArrayNear("gold", "goldDims", "out", "maxDiff",
+                                gold, goldDims, out, maxDiff));
+
+    ASSERT_SUCCESS(af_release_array(out));
+}
+
+TEST(Assert, TestArraysNearWithinThresh) {
+    array gold = constant(2.2345f, 3, 3);
+    array out = gold;
+    out(2, 2) += 0.0001f;
+    float maxDiff = 0.001f;
+
+    // Testing this macro
+    // ASSERT_ARRAYS_NEAR(gold, out, maxDiff);
+    ASSERT_TRUE(assertArrayNear("gold", "out", "maxDiff", gold, out, maxDiff));
+}
+
+TEST(Assert, TestArraysNearExceedThresh) {
+    array gold = constant(2.2345f, 3, 3);
+    array out = gold;
+    out(2, 2) += 0.002f;
+    float maxDiff = 0.001f;
+
+    // Testing this macro
+    // ASSERT_ARRAYS_NEAR(gold, out, maxDiff);
+    ASSERT_FALSE(assertArrayNear("gold", "out", "maxDiff", gold, out, maxDiff));
+}
+
+TEST(Assert, TestVecArrayNearWithinThresh) {
+    vector<float> gold(3 * 3);
+    fill(gold.begin(), gold.end(), 2.2345f);
+    dim4 goldDims(3, 3);
+
+    array out = constant(2.2345f, goldDims);
+    out(2, 2) += 0.0001f;
+    float maxDiff = 0.001f;
+
+    // Testing this macro
+    // ASSERT_VEC_ARRAY_NEAR(gold, goldDims, out, maxDiff);
+    ASSERT_TRUE(assertArrayNear("gold", "goldDims", "out", "maxAbsDiff",
+                                 gold, goldDims, out, maxDiff));
+}
+
+TEST(Assert, TestVecArrayNearExceedThresh) {
+    vector<float> gold(3 * 3);
+    fill(gold.begin(), gold.end(), 2.2345f);
+    dim4 goldDims(3, 3);
+
+    array out = constant(2.2345f, goldDims);
+    out(2, 2) += 0.002f;
+    float maxDiff = 0.001f;
+
+    // Testing this macro
+    // ASSERT_VEC_ARRAY_NEAR(gold, goldDims, out, maxDiff);
+    ASSERT_FALSE(assertArrayNear("gold", "goldDims", "out", "maxAbsDiff",
+                                 gold, goldDims, out, maxDiff));
 }
