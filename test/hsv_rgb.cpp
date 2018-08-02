@@ -50,14 +50,8 @@ TEST(hsv2rgb, CPP)
     array input(dims, &(in[0].front()));
     array output = hsv2rgb(input);
 
-    vector<float> outData(dims.elements());
-    output.host((void*)outData.data());
-
     vector<float> currGoldBar = tests[0];
-    size_t nElems = currGoldBar.size();
-    for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< endl;
-    }
+    ASSERT_VEC_ARRAY_NEAR(currGoldBar, dims, output, 1.0e-3);
 }
 
 TEST(rgb2hsv, CPP)
@@ -72,14 +66,8 @@ TEST(rgb2hsv, CPP)
     array input(dims, &(in[0].front()));
     array output = rgb2hsv(input);
 
-    vector<float> outData(dims.elements());
-    output.host((void*)outData.data());
-
     vector<float> currGoldBar = tests[0];
-    size_t nElems = currGoldBar.size();
-    for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< endl;
-    }
+    ASSERT_VEC_ARRAY_NEAR(currGoldBar, dims, output, 1.0e-3);
 }
 
 TEST(rgb2hsv, MaxDim)

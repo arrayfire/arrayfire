@@ -172,20 +172,7 @@ void fftconvolveTestLarge(int sDim, int fDim, int sBatch, int fBatch, bool expan
         break;
     }
 
-    size_t outElems  = out.elements();
-    size_t goldElems = gold.elements();
-
-    ASSERT_EQ(goldElems, outElems);
-
-    vector<T> goldData(goldElems);
-    gold.host(&goldData.front());
-
-    vector<T> outData(outElems);
-    out.host(&outData.front());
-
-    for (size_t elIter=0; elIter<outElems; ++elIter) {
-        ASSERT_NEAR(goldData[elIter], outData[elIter], 5e-2) << "at: " << elIter << endl;
-    }
+    ASSERT_ARRAYS_NEAR(gold, out, 5e-2);
 }
 
 TYPED_TEST(FFTConvolveLarge, VectorLargeSignalSmallFilter)
