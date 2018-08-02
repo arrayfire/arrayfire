@@ -22,6 +22,7 @@
 #include <fstream>
 #include <iterator>
 #include <limits>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <typeinfo>
@@ -511,6 +512,13 @@ std::ostream& operator<<(std::ostream& os, af::dtype type) {
     return os << name;
 }
 
+int ravelIdx(af::dim4 coords, af::dim4 dims) {
+    return coords[3] * dims[0] * dims[1] * dims[2]
+        + coords[2] * dims[0] * dims[1]
+        + coords[1] * dims[0]
+        + coords[0];
+}
+
 // Calculate a linearized index's multi-dimensonal coordinates in an af::array,
 //  given its dimension sizes and strides
 af::dim4 unravelIdx(uint idx, af::dim4 dims, af::dim4 strides) {
@@ -531,6 +539,25 @@ af::dim4 unravelIdx(uint idx, af::array arr) {
 
 struct FloatTag {};
 struct IntegerTag {};
+
+template<typename T>
+std::string printContext(const std::vector<T>& hArr, af::dim4 arrDims,
+                         af::dim4 tgtCoords) {
+    int idx = ravelIdx(tgtCoords, arrDims);
+    int ctxWidth = 5;
+    int startIdx = std::max<int>(0, idx - ctxWidth);
+    int endIdx = std::min<int>(idx + ctxWidth + 1, hArr.size());
+    std::ostringstream os;
+    os << "{ ";
+    for (uint i = startIdx; i < endIdx; ++i) {
+        if (i == idx)
+            os << "[" << hArr[i] << "]" << " ";
+        else
+            os << hArr[i] << " ";
+    }
+    os << "}";
+    return os.str();
+}
 
 af::dim4 calcStrides(const af::dim4 &parentDim)
 {
@@ -565,7 +592,10 @@ template<typename T>
         return ::testing::AssertionFailure() << "VALUE DIFFERS:\n"
                                              << " at ([" << coords << "]):\n"
                                              << aName << "(" << a[idx] << ")\n"
-                                             << bName << "(" << b[idx] << ")";
+                                             << bName << "(" << b[idx] << ")\n"
+                                             << "Context:\n"
+                                             << aName << ": " << printContext(a, aDims, coords) << "\n"
+                                             << bName << ": " << printContext(b, bDims, coords);
     }
 }
 
@@ -612,8 +642,13 @@ template<typename T>
             using af::abs;
             double absdiff = abs(*aItr - *bItr);
             result << "\nExpected diff: " << maxAbsDiff << "\n"
-                    << "  Actual diff: " << absdiff;
+                   << "  Actual diff: " << absdiff;
         }
+
+        result << "\nContext:\n"
+               << aName << ": " << printContext(a, aDims, coords) << "\n"
+               << bName << ": " << printContext(b, bDims, coords);
+
         return result;
     }
 }
