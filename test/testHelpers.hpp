@@ -32,6 +32,8 @@ typedef unsigned char  uchar;
 typedef unsigned int   uint;
 typedef unsigned short ushort;
 
+namespace {
+
 std::string readNextNonEmptyLine(std::ifstream &file)
 {
     std::string result = "";
@@ -567,6 +569,18 @@ template<typename T>
     }
 }
 
+struct absMatch{
+    float diff_;
+    absMatch(float diff) : diff_(diff) {}
+
+    template<typename T>
+    bool operator() (T lhs, T rhs) {
+        using std::abs;
+        using af::abs;
+        return abs(rhs - lhs) <= diff_;
+    }
+};
+
 template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       std::vector<T>& a, af::dim4 aDims,
@@ -574,41 +588,33 @@ template<typename T>
                                       float maxAbsDiff, FloatTag) {
     typedef typename std::vector<T>::iterator iter;
     // TODO(mark): Modify equality for float
-    std::pair<iter, iter> mismatches = std::mismatch(a.begin(), a.end(), b.begin());
+    std::pair<iter, iter> mismatches = std::mismatch(a.begin(), a.end(),
+                                                     b.begin(),
+                                                     absMatch(maxAbsDiff));
+
     iter aItr = mismatches.first;
     iter bItr = mismatches.second;
 
-    // ASSERT_NEAR
-    if (maxAbsDiff != 0) {
-        using std::abs;
-        using af::abs;
-        for (int idx = 0; idx < a.size(); ++idx) {
-            double absdiff = abs(a[idx] - b[idx]);
-            if (absdiff > maxAbsDiff) {
-                af::dim4 coords = unravelIdx(idx, aDims, calcStrides(aDims));
-                return ::testing::AssertionFailure() << "ABS DIFF EXCEEDS THRESHOLD:\n"
-                                                     << " at ([" << coords << "]):\n"
-                                                     << aName << "(" << a[idx] << ")\n"
-                                                     << bName << "(" << b[idx] << ")\n"
-                                                     << "Expected abs diff: " << maxAbsDiff << "\n"
-                                                     << "Actual abs diff  : " << absdiff;
-            }
-        }
+    if (aItr == a.end()) {
         return ::testing::AssertionSuccess();
-    }
-    // ASSERT_EQ
-    else {
-        if (bItr == b.end()) {
-            return ::testing::AssertionSuccess();
-        } else {
-            int idx = std::distance(b.begin(), bItr);
-            af::dim4 coords = unravelIdx(idx, bDims, calcStrides(bDims));
+    } else {
+        int idx = std::distance(b.begin(), bItr);
+        af::dim4 coords = unravelIdx(idx, bDims, calcStrides(bDims));
 
-            return ::testing::AssertionFailure() << "VALUE DIFFERS:\n"
-                                                 << " at ([" << coords << "]):\n"
-                                                 << aName << "(" << a[idx] << ")\n"
-                                                 << bName << "(" << b[idx] << ")";
+        ::testing::AssertionResult result =
+        ::testing::AssertionFailure() << "VALUE DIFFERS:\n"
+                                                << " at ([" << coords << "]):\n"
+                                                << aName << "(" << a[idx] << ")\n"
+                                                << bName << "(" << b[idx] << ")";
+
+        if(maxAbsDiff > 0) {
+            using std::abs;
+            using af::abs;
+            double absdiff = abs(*aItr - *bItr);
+            result << "\nExpected diff: " << maxAbsDiff << "\n"
+                    << "  Actual diff: " << absdiff;
         }
+        return result;
     }
 }
 
@@ -815,4 +821,5 @@ template<typename T>
                             MAX_ABSDIFF)
 
 
+}
 #pragma GCC diagnostic pop
