@@ -373,19 +373,8 @@ TEST(Resize, CPP)
     array input(dims, &(in[0].front()));
     array output = resize(input, 16, 16);
 
-    // Get result
-    dim4 odims(16, 16, dims[2], dims[3]);
-    float* outData = new float[odims.elements()];
-    output.host((void*)outData);
-
-    // Compare result
-    size_t nElems = tests[0].size();
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_NEAR(tests[0][elIter], outData[elIter], 0.0001) << "at: " << elIter << endl;
-    }
-
-    // Delete
-    delete[] outData;
+    dim4 goldDims(16, 16, dims[2], dims[3]);
+    ASSERT_VEC_ARRAY_NEAR(tests[0], goldDims, output, 0.0001);
 }
 
 TEST(ResizeScale1, CPP)
@@ -401,19 +390,8 @@ TEST(ResizeScale1, CPP)
     array input(dims, &(in[0].front()));
     array output = resize(2.f, input);
 
-    // Get result
-    dim4 odims(16, 16, dims[2], dims[3]);
-    float* outData = new float[odims.elements()];
-    output.host((void*)outData);
-
-    // Compare result
-    size_t nElems = tests[0].size();
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_NEAR(tests[0][elIter], outData[elIter], 0.0001) << "at: " << elIter << endl;
-    }
-
-    // Delete
-    delete[] outData;
+    dim4 goldDims(16, 16, dims[2], dims[3]);
+    ASSERT_VEC_ARRAY_NEAR(tests[0], goldDims, output, 0.0001);
 }
 
 TEST(ResizeScale2, CPP)
@@ -429,19 +407,8 @@ TEST(ResizeScale2, CPP)
     array input(dims, &(in[0].front()));
     array output = resize(2.f, 2.f, input);
 
-    // Get result
-    dim4 odims(16, 16, dims[2], dims[3]);
-    float* outData = new float[odims.elements()];
-    output.host((void*)outData);
-
-    // Compare result
-    size_t nElems = tests[0].size();
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_NEAR(tests[0][elIter], outData[elIter], 0.0001) << "at: " << elIter << endl;
-    }
-
-    // Delete
-    delete[] outData;
+    dim4 goldDims(16, 16, dims[2], dims[3]);
+    ASSERT_VEC_ARRAY_NEAR(tests[0], goldDims, output, 0.0001);
 }
 
 TEST(Resize, ExtractGFOR)
