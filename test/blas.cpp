@@ -295,15 +295,5 @@ TEST(MatrixMultiply, ISSUE_1882)
     array res1 = matmul(A.T(), B.T());
     array res2 = matmulTT(A, B);
 
-    vector<float> hres1(res1.elements());
-    vector<float> hres2(res2.elements());
-
-    res1.host(&hres1.front());
-    res2.host(&hres2.front());
-
-    ASSERT_EQ(hres1.size(), hres2.size());
-
-    for (size_t i = 0; i < hres1.size(); i++) {
-        ASSERT_NEAR(hres1[i], hres2[i], 1E-5);
-    }
+    ASSERT_ARRAYS_NEAR(res1, res2, 1E-5);
 }
