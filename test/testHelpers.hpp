@@ -512,10 +512,11 @@ std::ostream& operator<<(std::ostream& os, af::dtype type) {
     return os << name;
 }
 
-int ravelIdx(af::dim4 coords, af::dim4 dims) {
-    return coords[3] * dims[0] * dims[1] * dims[2]
-        + coords[2] * dims[0] * dims[1]
-        + coords[1] * dims[0]
+// Calculate a multi-dimensional coordinates' linearized index
+int ravelIdx(af::dim4 coords, af::dim4 strides) {
+    return coords[3] * strides[2]
+        + coords[2] * strides[1]
+        + coords[1] * strides[0]
         + coords[0];
 }
 
@@ -541,9 +542,9 @@ struct FloatTag {};
 struct IntegerTag {};
 
 template<typename T>
-std::string printContext(const std::vector<T>& hArr, af::dim4 arrDims,
+std::string printContext(const std::vector<T>& hArr, af::dim4 arrStrides,
                          af::dim4 tgtCoords) {
-    int idx = ravelIdx(tgtCoords, arrDims);
+    int idx = ravelIdx(tgtCoords, arrStrides);
     int ctxWidth = 5;
     int startIdx = std::max<int>(0, idx - ctxWidth);
     int endIdx = std::min<int>(idx + ctxWidth + 1, hArr.size());
@@ -574,10 +575,10 @@ af::dim4 calcStrides(const af::dim4 &parentDim)
 
 template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
-                                      std::vector<T>& a, af::dim4 aDims,
-                                      std::vector<T>& b, af::dim4 bDims,
+                                      const std::vector<T>& a, af::dim4 aDims,
+                                      const std::vector<T>& b, af::dim4 bDims,
                                       float maxAbsDiff, IntegerTag) {
-    typedef typename std::vector<T>::iterator iter;
+    typedef typename std::vector<T>::const_iterator iter;
     std::pair<iter, iter> mismatches = std::mismatch(a.begin(), a.end(), b.begin());
     iter aItr = mismatches.first;
     iter bItr = mismatches.second;
@@ -586,16 +587,18 @@ template<typename T>
         return ::testing::AssertionSuccess();
     } else {
         int idx = std::distance(b.begin(), bItr);
+        af::dim4 aStrides = calcStrides(aDims);
         af::dim4 bStrides = calcStrides(bDims);
         af::dim4 coords = unravelIdx(idx, bDims, bStrides);
 
-        return ::testing::AssertionFailure() << "VALUE DIFFERS:\n"
-                                             << " at ([" << coords << "]):\n"
-                                             << aName << "(" << a[idx] << ")\n"
-                                             << bName << "(" << b[idx] << ")\n"
-                                             << "Context:\n"
-                                             << aName << ": " << printContext(a, aDims, coords) << "\n"
-                                             << bName << ": " << printContext(b, bDims, coords);
+        return ::testing::AssertionFailure()
+            << "VALUE DIFFERS:\n"
+            << " at ([" << coords << "]):\n"
+            << aName << "(" << a[idx] << ")\n"
+            << bName << "(" << b[idx] << ")\n"
+            << "Context:\n"
+            << aName << ": " << printContext(a, aStrides, coords) << "\n"
+            << bName << ": " << printContext(b, bStrides, coords);
     }
 }
 
@@ -613,10 +616,10 @@ struct absMatch{
 
 template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
-                                      std::vector<T>& a, af::dim4 aDims,
-                                      std::vector<T>& b, af::dim4 bDims,
+                                      const std::vector<T>& a, af::dim4 aDims,
+                                      const std::vector<T>& b, af::dim4 bDims,
                                       float maxAbsDiff, FloatTag) {
-    typedef typename std::vector<T>::iterator iter;
+    typedef typename std::vector<T>::const_iterator iter;
     // TODO(mark): Modify equality for float
     std::pair<iter, iter> mismatches = std::mismatch(a.begin(), a.end(),
                                                      b.begin(),
@@ -633,9 +636,9 @@ template<typename T>
 
         ::testing::AssertionResult result =
         ::testing::AssertionFailure() << "VALUE DIFFERS:\n"
-                                                << " at ([" << coords << "]):\n"
-                                                << aName << "(" << a[idx] << ")\n"
-                                                << bName << "(" << b[idx] << ")";
+                                      << " at ([" << coords << "]):\n"
+                                      << aName << "(" << a[idx] << ")\n"
+                                      << bName << "(" << b[idx] << ")";
 
         if(maxAbsDiff > 0) {
             using std::abs;
@@ -645,6 +648,8 @@ template<typename T>
                    << "  Actual diff: " << absdiff;
         }
 
+        af::dim4 aStrides = calcStrides(aDims);
+        af::dim4 bStrides = calcStrides(bDims);
         result << "\nContext:\n"
                << aName << ": " << printContext(a, aDims, coords) << "\n"
                << bName << ": " << printContext(b, bDims, coords);
@@ -655,7 +660,8 @@ template<typename T>
 
 template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
-                                      af::array a, af::array b, float maxAbsDiff) {
+                                      const af::array& a, const af::array& b,
+                                      float maxAbsDiff) {
     typedef typename cond_type<
         IsFloatingPoint<typename af::dtype_traits<T>::base_type>::value,
         FloatTag, IntegerTag>::type TagType;
@@ -670,20 +676,23 @@ template<typename T>
 }
 
 ::testing::AssertionResult assertArrayEq(std::string aName, std::string bName,
-                                         af::array a, af::array b,
+                                         const af::array& a, const af::array& b,
                                          float maxAbsDiff = 0.f) {
     af::dtype aType = a.type();
     af::dtype bType = b.type();
     if (aType != bType)
-        return ::testing::AssertionFailure() << "TYPE MISMATCH: \n"
-                                             << "Expected: " << aName << "(" << a.type() << ")\n"
-                                             << "Actual:   " << bName << "(" << b.type() << ")";
+        return ::testing::AssertionFailure()
+            << "TYPE MISMATCH: \n"
+            << "Expected: " << aName << "(" << a.type() << ")\n"
+            << "Actual:   " << bName << "(" << b.type() << ")";
+
     af::dtype arrDtype = aType;
     const uint ndimIds = 4;
     if (a.dims() != b.dims())
-        return ::testing::AssertionFailure() << "SIZE MISMATCH: \n"
-                                             << "Expected: " << aName << "([" << a.dims() << "]),\n"
-                                             << "Actual:   " << bName << "([" << b.dims() << "])";
+        return ::testing::AssertionFailure()
+            << "SIZE MISMATCH: \n"
+            << "Expected: " << aName << "([" << a.dims() << "]),\n"
+            << "Actual:   " << bName << "([" << b.dims() << "])";
 
     uint nElems = a.elements();
     af::dim4 arrDims = a.dims();
@@ -713,29 +722,32 @@ template<typename T>
 template<typename T>
 ::testing::AssertionResult assertArrayEq(std::string aName, std::string aDimsName,
                                          std::string bName,
-                                         std::vector<T>& hA, af::dim4 aDims,
-                                         af::array b,
+                                         const std::vector<T>& hA, af::dim4 aDims,
+                                         const af::array& b,
                                          float maxAbsDiff = 0.0f) {
     af::dtype aDtype = (af::dtype) af::dtype_traits<T>::af_type;
     if (aDtype != b.type()) {
-        return ::testing::AssertionFailure() << "TYPE MISMATCH:\n"
-                                             << "Expected: " << aName << "(" << aDtype << ")\n"
-                                             << "Actual:   " << bName << "(" << b.type() << ")";
+        return ::testing::AssertionFailure()
+            << "TYPE MISMATCH:\n"
+            << "Expected: " << aName << "(" << aDtype << ")\n"
+            << "Actual:   " << bName << "(" << b.type() << ")";
     }
 
     const uint ndimIds = 4;
     if(aDims != b.dims()) {
-        return ::testing::AssertionFailure() << "SIZE MISMATCH:\n"
-                                             << "Expected: " << aDimsName << "([" << aDims << "])\n"
-                                             << "Actual:   " << bName << "([" << b.dims() << "])";
+        return ::testing::AssertionFailure()
+            << "SIZE MISMATCH:\n"
+            << "Expected: " << aDimsName << "([" << aDims << "])\n"
+            << "Actual:   " << bName << "([" << b.dims() << "])";
     }
 
     // In case vector<T> a.size() != aDims.elements()
     if (hA.size() != aDims.elements())
-        return ::testing::AssertionFailure() << "SIZE MISMATCH:\n"
-                                             << "Expected: " << aName << ".size()(" << hA.size() << ")\n"
-                                             << "Actual:   " << aDimsName << "([" << aDims << "] => "
-                                             << aDims.elements() << ")";
+        return ::testing::AssertionFailure()
+            << "SIZE MISMATCH:\n"
+            << "Expected: " << aName << ".size()(" << hA.size() << ")\n"
+            << "Actual:   " << aDimsName << "([" << aDims << "] => "
+            << aDims.elements() << ")";
 
     typedef typename cond_type<
         IsFloatingPoint<typename af::dtype_traits<T>::base_type>::value,
@@ -749,7 +761,7 @@ template<typename T>
 
 // To support C API
 ::testing::AssertionResult assertArrayEq(std::string aName, std::string bName,
-                                         af_array a, af_array b) {
+                                         const af_array a, const af_array b) {
     af_array aa = 0, bb = 0;
     af_retain_array(&aa, a);
     af_retain_array(&bb, b);
@@ -762,7 +774,8 @@ template<typename T>
 template<typename T>
 ::testing::AssertionResult assertArrayEq(std::string hA_name, std::string aDimsName,
                                          std::string bName,
-                                         std::vector<T>& hA, af::dim4 aDims, af_array b) {
+                                         const std::vector<T>& hA, af::dim4 aDims,
+                                         const af_array b) {
     af_array bb = 0;
     af_retain_array(&bb, b);
     af::array bbb(bb);
@@ -771,7 +784,8 @@ template<typename T>
 
 ::testing::AssertionResult assertArrayNear(std::string aName, std::string bName,
                                            std::string maxAbsDiffName,
-                                           af::array a, af::array b, float maxAbsDiff) {
+                                           const af::array& a, const af::array& b,
+                                           float maxAbsDiff) {
     return assertArrayEq(aName, bName, a, b, maxAbsDiff);
 }
 
@@ -779,8 +793,8 @@ template<typename T>
 ::testing::AssertionResult assertArrayNear(std::string hA_name, std::string aDimsName,
                                            std::string bName,
                                            std::string maxAbsDiffName,
-                                           std::vector<T>& hA, af::dim4 aDims,
-                                           af::array b,
+                                           const std::vector<T>& hA, af::dim4 aDims,
+                                           const af::array& b,
                                            float maxAbsDiff) {
     return assertArrayEq(hA_name, aDimsName, bName, hA, aDims, b, maxAbsDiff);
 }
@@ -788,7 +802,8 @@ template<typename T>
 // To support C API
 ::testing::AssertionResult assertArrayNear(std::string aName, std::string bName,
                                            std::string maxAbsDiffName,
-                                           af_array a, af_array b, float maxAbsDiff) {
+                                           const af_array a, const af_array b,
+                                           float maxAbsDiff) {
     af_array aa = 0, bb = 0;
     af_retain_array(&aa, a);
     af_retain_array(&bb, b);
@@ -802,8 +817,8 @@ template<typename T>
 ::testing::AssertionResult assertArrayNear(std::string hA_name, std::string aDimsName,
                                            std::string bName,
                                            std::string maxAbsDiffName,
-                                           std::vector<T>& hA, af::dim4 aDims,
-                                           af_array b,
+                                           const std::vector<T>& hA, af::dim4 aDims,
+                                           const af_array b,
                                            float maxAbsDiff) {
     af_array bb = 0;
     af_retain_array(&bb, b);
@@ -854,7 +869,6 @@ template<typename T>
 #define ASSERT_VEC_ARRAY_NEAR(EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR, MAX_ABSDIFF) \
     EXPECT_PRED_FORMAT4(assertArrayNear, EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR, \
                             MAX_ABSDIFF)
-
 
 }
 #pragma GCC diagnostic pop
