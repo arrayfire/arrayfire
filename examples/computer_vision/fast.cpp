@@ -50,7 +50,7 @@ static void fast_demo(bool console)
     freeHost(h_x);
     freeHost(h_y);
 
-    printf("Features found: %lu\n", feat.getNumFeatures());
+    printf("Features found: %zu\n", feat.getNumFeatures());
 
     if (!console) {
         af::Window wnd("FAST Feature Detector");

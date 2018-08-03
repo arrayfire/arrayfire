@@ -318,7 +318,7 @@ class Select_ : public ::testing::TestWithParam<select_params> {};
 string pd4(dim4 dims) {
     string out(32, '\0');
     int len = snprintf(const_cast<char*>(out.data()), 32,
-                       "%d_%d_%d_%d", dims[0], dims[1], dims[2], dims[3]);
+                       "%lld_%lld_%lld_%lld", dims[0], dims[1], dims[2], dims[3]);
     out.resize(len);
     return out;
 }
