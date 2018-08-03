@@ -77,7 +77,7 @@ int main(int argc, char **argv)
         af::Window wnd(WIDTH, HEIGHT, "Fractal Demo");
         wnd.setColorMap(AF_COLORMAP_SPECTRUM);
 
-        float center[] = {-0.75, 0.1};
+        float center[] = {-0.75f, 0.1f};
         // Keep zomming out for each frame
         for (int i = 10; i < 400; i++) {
             int zoom = i * i;
