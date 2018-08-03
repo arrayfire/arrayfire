@@ -385,7 +385,7 @@ extern "C" {
        \ingroup device_func_mem
     */
 #if AF_API_VERSION >= 33
-    DEPRECATED("Use af_lock_array instead")
+    AF_DEPRECATED("Use af_lock_array instead")
 #endif
     AFAPI af_err af_lock_device_ptr(const af_array arr);
 #endif
@@ -398,7 +398,7 @@ extern "C" {
        \ingroup device_func_mem
     */
 #if AF_API_VERSION >= 33
-    DEPRECATED("Use af_unlock_array instead")
+    AF_DEPRECATED("Use af_unlock_array instead")
 #endif
     AFAPI af_err af_unlock_device_ptr(const af_array arr);
 #endif

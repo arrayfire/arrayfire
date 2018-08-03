@@ -26,15 +26,15 @@
     #endif
     #define __PRETTY_FUNCTION__ __FUNCSIG__
     #define SIZE_T_FRMT_SPECIFIER "%Iu"
-    #define DEPRECATED(msg) __declspec(deprecated( msg ))
+    #define AF_DEPRECATED(msg) __declspec(deprecated( msg ))
 #else
     #define AFAPI   __attribute__((visibility("default")))
     #include <stdbool.h>
     #define SIZE_T_FRMT_SPECIFIER "%zu"
 #if __GNUC__ >= 4 && __GNUC_MINOR > 4
-    #define DEPRECATED(msg) __attribute__((deprecated( msg )))
+    #define AF_DEPRECATED(msg) __attribute__((deprecated( msg )))
 #else
-    #define DEPRECATED(msg) __attribute__((deprecated))
+    #define AF_DEPRECATED(msg) __attribute__((deprecated))
 #endif
 
 #endif
