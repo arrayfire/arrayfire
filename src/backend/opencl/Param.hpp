@@ -22,13 +22,13 @@ namespace opencl
         Param(const Param& other) = default;
         Param(Param&& other) = default;
 
-        // DEPRECATED("Use Array<T>")
+        // AF_DEPRECATED("Use Array<T>")
         Param();
-        // DEPRECATED("Use Array<T>")
+        // AF_DEPRECATED("Use Array<T>")
         Param(cl::Buffer *data_, KParam info_);
         ~Param() = default;
     };
 
-    // DEPRECATED("Use Array<T>")
+    // AF_DEPRECATED("Use Array<T>")
     Param makeParam(cl_mem mem, int off, int dims[4], int strides[4]);
 }

@@ -169,7 +169,7 @@ class AFAPI Window {
 
            \ingroup gfx_func_draw
          */
-        DEPRECATED("Use plot instead")
+        AF_DEPRECATED("Use plot instead")
         void plot3(const array& in, const char* title=NULL);
 #endif
 
@@ -279,7 +279,7 @@ class AFAPI Window {
 
            \ingroup gfx_func_draw
          */
-        DEPRECATED("Use scatter instead")
+        AF_DEPRECATED("Use scatter instead")
         void scatter3(const array& P, const af::markerType marker = AF_MARKER_POINT,
                       const char* const title = NULL);
 #endif
@@ -644,7 +644,7 @@ AFAPI af_err af_draw_image(const af_window wind, const af_array in, const af_cel
 
    \ingroup gfx_func_draw
 */
-DEPRECATED("Use af_draw_plot_nd or af_draw_plot_2d instead")
+AF_DEPRECATED("Use af_draw_plot_nd or af_draw_plot_2d instead")
 AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props);
 
 #if AF_API_VERSION >= 32
@@ -663,7 +663,7 @@ AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array
 
    \ingroup gfx_func_draw
 */
-DEPRECATED("Use af_draw_plot_nd or af_draw_plot_3d instead")
+AF_DEPRECATED("Use af_draw_plot_nd or af_draw_plot_3d instead")
 AFAPI af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* const props);
 #endif
 
@@ -749,7 +749,7 @@ AFAPI af_err af_draw_plot_3d(const af_window wind,
 
    \ingroup gfx_func_draw
 */
-DEPRECATED("Use af_draw_scatter_nd or af_draw_scatter_2d instead")
+AF_DEPRECATED("Use af_draw_scatter_nd or af_draw_scatter_2d instead")
 AFAPI af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y,
                              const af_marker_type marker, const af_cell* const props);
 #endif
@@ -769,7 +769,7 @@ AFAPI af_err af_draw_scatter(const af_window wind, const af_array X, const af_ar
 
    \ingroup gfx_func_draw
 */
-DEPRECATED("Use af_draw_scatter_nd or af_draw_scatter_3d instead")
+AF_DEPRECATED("Use af_draw_scatter_nd or af_draw_scatter_3d instead")
 AFAPI af_err af_draw_scatter3(const af_window wind, const af_array P,
                               const af_marker_type marker, const af_cell* const props);
 #endif
