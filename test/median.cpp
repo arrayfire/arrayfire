@@ -167,7 +167,7 @@ MEDIAN_FLAT(double, double)
     TEST(Median, Ti##_4D_##dim##_odd)           \
     {                                           \
         median_test<To, Ti, dim>(123, 25, 3, 3);\
-    }                                           \
+    }
 
 
 #define MEDIAN(To, Ti)      \
