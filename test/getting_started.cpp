@@ -163,7 +163,7 @@ TEST(GettingStarted, SNIPPET_getting_started_dims)
 
     // and whether or not the array is empty and how much memory it takes on
     // the device:
-    printf("empty? %d  total elements: %lld  bytes: %lu\n", a.isempty(), a.elements(), a.bytes());
+    printf("empty? %d  total elements: %lld  bytes: %zu\n", a.isempty(), a.elements(), a.bytes());
     //! [ex_getting_started_prop]
 
     ASSERT_EQ(f32, a.type());
