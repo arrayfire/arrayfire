@@ -108,11 +108,14 @@ static void validateRandomType(const af_random_engine_type type)
 
 af_err af_get_default_random_engine(af_random_engine *r)
 {
-    AF_CHECK(af_init());
+    try {
+        AF_CHECK(af_init());
 
-    thread_local RandomEngine re;
-    *r = static_cast<af_random_engine> (&re);
-    return AF_SUCCESS;
+        thread_local RandomEngine re;
+        *r = static_cast<af_random_engine> (&re);
+        return AF_SUCCESS;
+    }
+    CATCHALL;
 }
 
 af_err af_create_random_engine(af_random_engine *engineHandle, af_random_engine_type rtype, uintl seed)
