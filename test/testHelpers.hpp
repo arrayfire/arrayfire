@@ -514,9 +514,9 @@ std::ostream& operator<<(std::ostream& os, af::dtype type) {
 
 // Calculate a multi-dimensional coordinates' linearized index
 int ravelIdx(af::dim4 coords, af::dim4 strides) {
-    return coords[3] * strides[2]
-        + coords[2] * strides[1]
-        + coords[1] * strides[0]
+    return coords[3] * strides[3]
+        + coords[2] * strides[2]
+        + coords[1] * strides[1]
         + coords[0];
 }
 
@@ -538,28 +538,6 @@ af::dim4 unravelIdx(uint idx, af::array arr) {
     return unravelIdx(idx, dims, st);
 }
 
-struct FloatTag {};
-struct IntegerTag {};
-
-template<typename T>
-std::string printContext(const std::vector<T>& hArr, af::dim4 arrStrides,
-                         af::dim4 tgtCoords) {
-    int idx = ravelIdx(tgtCoords, arrStrides);
-    int ctxWidth = 5;
-    int startIdx = std::max<int>(0, idx - ctxWidth);
-    int endIdx = std::min<int>(idx + ctxWidth + 1, hArr.size());
-    std::ostringstream os;
-    os << "{ ";
-    for (uint i = startIdx; i < endIdx; ++i) {
-        if (i == idx)
-            os << "[" << hArr[i] << "]" << " ";
-        else
-            os << hArr[i] << " ";
-    }
-    os << "}";
-    return os.str();
-}
-
 af::dim4 calcStrides(const af::dim4 &parentDim)
 {
     af::dim4 out(1, 1, 1, 1);
@@ -572,6 +550,107 @@ af::dim4 calcStrides(const af::dim4 &parentDim)
 
     return out;
 }
+
+std::string minimalDim4(af::dim4 coords, af::dim4 dims) {
+    std::ostringstream os;
+    os << "(" << coords[0];
+    if (dims[1] > 1)
+        os << ", " << coords[1];
+    if (dims[2] > 1)
+        os << ", " << coords[2];
+    if (dims[3] > 1)
+        os << ", " << coords[3];
+    os << ")";
+
+    return os.str();
+}
+
+template<typename T>
+std::string printContext(const std::vector<T>& hGold, std::string goldName,
+                         const std::vector<T>& hOut, std::string outName,
+                         af::dim4 arrDims,
+                         af::dim4 arrStrides,
+                         int idx) {
+    std::ostringstream os;
+
+    af::dim4 coords = unravelIdx(idx, arrDims, arrStrides);
+    int ctxWidth = 5;
+
+    // Coordinates that span dim0
+    af::dim4 coordsMinBound = coords;
+    coordsMinBound[0] = 0;
+    af::dim4 coordsMaxBound = coords;
+    coordsMaxBound[0] = arrDims[0] - 1;
+
+    // dim0 positions that can be displayed
+    int dim0Start = std::max<int>(0, coords[0] - ctxWidth);
+    int dim0End = std::min<int>(coords[0] + ctxWidth + 1, arrDims[0]);
+
+    // Linearized indices of values in vectors that can be displayed
+    int vecStartIdx = std::max<int>(ravelIdx(coordsMinBound, arrStrides),
+                                     idx - ctxWidth);
+    int vecEndIdx = std::min<int>(idx + ctxWidth + 1,
+                                   ravelIdx(coordsMaxBound, arrStrides) + 1);
+
+    // Display as minimal coordinates as needed
+    // First value is the range of dim0 positions that will be displayed
+    os << "Viewing slice (" << dim0Start << ":" << dim0End - 1;
+    if (arrDims[1] > 1)
+        os << ", " << coords[1];
+    if (arrDims[2] > 1)
+        os << ", " << coords[2];
+    if (arrDims[3] > 1)
+        os << ", " << coords[3];
+    os << "), dims are " << minimalDim4(arrDims, arrDims) << "\n";
+
+    int varNameWidth = std::max<int>(goldName.length(), outName.length());
+    int valsWidth = 10;
+
+    // Display dim0 positions
+    os << std::setw(varNameWidth) << "" << "    ";
+    for (uint i = dim0Start; i < dim0End; ++i) {
+        if (i == coords[0]) {
+            std::ostringstream tmpOs;
+            tmpOs << "[" << i << "]";
+            os << std::setw(valsWidth) << std::left << tmpOs.str() << " ";
+        } else
+            os << std::setw(valsWidth) << std::left << i << " ";
+    }
+    os << "\n";
+
+    // Display output values
+    os << std::setw(varNameWidth) << outName << ": { ";
+    for (uint i = vecStartIdx; i < vecEndIdx; ++i) {
+        if (i == idx) {
+            std::ostringstream tmpOs;
+            tmpOs << "[" << hOut[i] << "]";
+            os << std::setw(valsWidth) << tmpOs.str() << " ";
+        }
+        else {
+            os << std::setw(valsWidth) << hOut[i] << " ";
+        }
+    }
+    os << "}\n";
+
+    // Display reference values
+    os << std::setw(varNameWidth) << goldName << ": { ";
+    for (uint i = vecStartIdx; i < vecEndIdx; ++i) {
+        if (i == idx) {
+            std::ostringstream tmpOs;
+            tmpOs << "[" << hGold[i] << "]";
+            os << std::setw(valsWidth) << tmpOs.str() << " ";
+        }
+        else {
+            os << std::setw(valsWidth) << hGold[i] << " ";
+        }
+    }
+    os << "}";
+
+    return os.str();
+}
+
+struct FloatTag {};
+struct IntegerTag {};
 
 template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
@@ -592,13 +671,9 @@ template<typename T>
         af::dim4 coords = unravelIdx(idx, bDims, bStrides);
 
         return ::testing::AssertionFailure()
-            << "VALUE DIFFERS:\n"
-            << " at ([" << coords << "]):\n"
-            << aName << "(" << a[idx] << ")\n"
-            << bName << "(" << b[idx] << ")\n"
-            << "Context:\n"
-            << aName << ": " << printContext(a, aStrides, coords) << "\n"
-            << bName << ": " << printContext(b, bStrides, coords);
+            << "VALUE DIFFERS at "
+            << minimalDim4(coords, aDims) << ":\n"
+            << printContext(a, aName, b, bName, aDims, aStrides, idx);
     }
 }
 
@@ -634,25 +709,22 @@ template<typename T>
         int idx = std::distance(b.begin(), bItr);
         af::dim4 coords = unravelIdx(idx, bDims, calcStrides(bDims));
 
+        af::dim4 aStrides = calcStrides(aDims);
+        af::dim4 bStrides = calcStrides(bDims);
+
         ::testing::AssertionResult result =
-        ::testing::AssertionFailure() << "VALUE DIFFERS:\n"
-                                      << " at ([" << coords << "]):\n"
-                                      << aName << "(" << a[idx] << ")\n"
-                                      << bName << "(" << b[idx] << ")";
+        ::testing::AssertionFailure()
+              << "VALUE DIFFERS at "
+              << minimalDim4(coords, aDims) << ":\n"
+              << printContext(a, aName, b, bName, aDims, aStrides, idx);
 
         if(maxAbsDiff > 0) {
             using std::abs;
             using af::abs;
             double absdiff = abs(*aItr - *bItr);
-            result << "\nExpected diff: " << maxAbsDiff << "\n"
-                   << "  Actual diff: " << absdiff;
+            result << "\n  Actual diff: " << absdiff << "\n"
+                   << "Expected diff: " << maxAbsDiff;
         }
-
-        af::dim4 aStrides = calcStrides(aDims);
-        af::dim4 bStrides = calcStrides(bDims);
-        result << "\nContext:\n"
-               << aName << ": " << printContext(a, aDims, coords) << "\n"
-               << bName << ": " << printContext(b, bDims, coords);
 
         return result;
     }
@@ -683,16 +755,16 @@ template<typename T>
     if (aType != bType)
         return ::testing::AssertionFailure()
             << "TYPE MISMATCH: \n"
-            << "Expected: " << aName << "(" << a.type() << ")\n"
-            << "Actual:   " << bName << "(" << b.type() << ")";
+            << "  Actual: " << bName << "(" << b.type() << ")\n"
+            << "Expected: " << aName << "(" << a.type() << ")";
 
     af::dtype arrDtype = aType;
     const uint ndimIds = 4;
     if (a.dims() != b.dims())
         return ::testing::AssertionFailure()
             << "SIZE MISMATCH: \n"
-            << "Expected: " << aName << "([" << a.dims() << "]),\n"
-            << "Actual:   " << bName << "([" << b.dims() << "])";
+            << "  Actual: " << bName << "([" << b.dims() << "])\n"
+            << "Expected: " << aName << "([" << a.dims() << "])";
 
     uint nElems = a.elements();
     af::dim4 arrDims = a.dims();
@@ -712,8 +784,8 @@ template<typename T>
     case u16: return elemWiseEq<unsigned short>     (aName, bName, a, b, maxAbsDiff); break;
     default:  return ::testing::AssertionFailure()
             << "INVALID TYPE, see enum numbers: "
-            << aName << "(" << a.type() << ") and "
-            << bName << "(" << b.type() << ")";
+            << bName << "(" << b.type() << ") and "
+            << aName << "(" << a.type() << ")";
     }
 
     return ::testing::AssertionSuccess();
@@ -729,25 +801,25 @@ template<typename T>
     if (aDtype != b.type()) {
         return ::testing::AssertionFailure()
             << "TYPE MISMATCH:\n"
-            << "Expected: " << aName << "(" << aDtype << ")\n"
-            << "Actual:   " << bName << "(" << b.type() << ")";
+            << "  Actual: " << bName << "(" << b.type() << ")\n"
+            << "Expected: " << aName << "(" << aDtype << ")";
     }
 
     const uint ndimIds = 4;
     if(aDims != b.dims()) {
         return ::testing::AssertionFailure()
             << "SIZE MISMATCH:\n"
-            << "Expected: " << aDimsName << "([" << aDims << "])\n"
-            << "Actual:   " << bName << "([" << b.dims() << "])";
+            << "  Actual: " << bName << "([" << b.dims() << "])\n"
+            << "Expected: " << aDimsName << "([" << aDims << "])";
     }
 
     // In case vector<T> a.size() != aDims.elements()
     if (hA.size() != aDims.elements())
         return ::testing::AssertionFailure()
             << "SIZE MISMATCH:\n"
-            << "Expected: " << aName << ".size()(" << hA.size() << ")\n"
-            << "Actual:   " << aDimsName << "([" << aDims << "] => "
-            << aDims.elements() << ")";
+            << "  Actual: " << aDimsName << "([" << aDims << "] => "
+            << aDims.elements() << ")\n"
+            << "Expected: " << aName << ".size()(" << hA.size() << ")";
 
     typedef typename cond_type<
         IsFloatingPoint<typename af::dtype_traits<T>::base_type>::value,
