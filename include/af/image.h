@@ -732,7 +732,9 @@ AFAPI array anisotropicDiffusion(const af::array& in, const float timestep,
                                  const float conductance, const unsigned iterations,
                                  const fluxFunction fftype=AF_FLUX_EXPONENTIAL,
                                  const diffusionEq diffusionKind=AF_DIFFUSION_GRAD);
+#endif
 
+#if AF_API_VERSION >= 37
 /**
   C++ Interface for Iterative deconvolution algorithm
 
@@ -1516,7 +1518,7 @@ extern "C" {
                                           const af_diffusion_eq diffusion_kind);
 #endif
 
-#if AF_API_VERSION >= 36
+#if AF_API_VERSION >= 37
     /**
        C Interface for Iterative deconvolution algorithm
 
