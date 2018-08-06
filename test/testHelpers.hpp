@@ -22,6 +22,7 @@
 #include <fstream>
 #include <iterator>
 #include <limits>
+#include <numeric>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -512,12 +513,20 @@ std::ostream& operator<<(std::ostream& os, af::dtype type) {
     return os << name;
 }
 
+// Overloading unary + op is needed to make unsigned char values printable
+//  as numbers
+
+const af::cfloat& operator+(const af::cfloat& val) {
+    return val;
+}
+
+const af::cdouble& operator+(const af::cdouble& val) {
+    return val;
+}
+
 // Calculate a multi-dimensional coordinates' linearized index
 int ravelIdx(af::dim4 coords, af::dim4 strides) {
-    return coords[3] * strides[3]
-        + coords[2] * strides[2]
-        + coords[1] * strides[1]
-        + coords[0];
+    return std::inner_product(coords.get(), coords.get()+4, strides.get(), 0);
 }
 
 // Calculate a linearized index's multi-dimensonal coordinates in an af::array,
@@ -589,8 +598,6 @@ std::string printContext(const std::vector<T>& hGold, std::string goldName,
     // Linearized indices of values in vectors that can be displayed
     int vecStartIdx = std::max<int>(ravelIdx(coordsMinBound, arrStrides),
                                      idx - ctxWidth);
-    int vecEndIdx = std::min<int>(idx + ctxWidth + 1,
-                                   ravelIdx(coordsMaxBound, arrStrides) + 1);
 
     // Display as minimal coordinates as needed
     // First value is the range of dim0 positions that will be displayed
@@ -603,48 +610,78 @@ std::string printContext(const std::vector<T>& hGold, std::string goldName,
         os << ", " << coords[3];
     os << "), dims are " << minimalDim4(arrDims, arrDims) << "\n";
 
-    int varNameWidth = std::max<int>(goldName.length(), outName.length());
-    int valsWidth = 10;
+    uint ctxElems = dim0End - dim0Start;
+    std::vector<int> valFieldWidths(ctxElems);
+    std::vector<std::string> ctxDim0(ctxElems);
+    std::vector<std::string> ctxOutVals(ctxElems);
+    std::vector<std::string> ctxGoldVals(ctxElems);
 
-    // Display dim0 positions
-    os << std::setw(varNameWidth) << "" << "    ";
-    for (uint i = dim0Start; i < dim0End; ++i) {
-        if (i == coords[0]) {
-            std::ostringstream tmpOs;
-            tmpOs << "[" << i << "]";
-            os << std::setw(valsWidth) << std::left << tmpOs.str() << " ";
-        } else
-            os << std::setw(valsWidth) << std::left << i << " ";
+    // Get dim0 positions and out/reference values for the context window
+    //
+    // Also get the max string length between the position and out/ref values
+    // per item so that it can be used later as the field width for
+    // displaying each item in the context window
+    for (uint i = 0; i < ctxElems; ++i) {
+        std::ostringstream tmpOs;
+
+        uint dim0 = dim0Start + i;
+        if (dim0 == coords[0])
+            tmpOs << "[" << dim0 << "]";
+        else
+            tmpOs << dim0;
+        ctxDim0[i] = tmpOs.str();
+        int dim0Len = tmpOs.str().length();
+        tmpOs.str(std::string());
+
+        uint valIdx = vecStartIdx + i;
+
+        T outVal = hOut[valIdx];
+        if (valIdx == idx) {
+            tmpOs << "[" << +hOut[valIdx] << "]";
+        }
+        else {
+            tmpOs << +hOut[valIdx];
+        }
+        ctxOutVals[i] = tmpOs.str();
+        int outLen = tmpOs.str().length();
+        tmpOs.str(std::string());
+
+        T goldVal = hGold[valIdx];
+        if (valIdx == idx) {
+            tmpOs << "[" << +hGold[valIdx] << "]";
+        }
+        else {
+            tmpOs << +hGold[valIdx];
+        }
+        ctxGoldVals[i] = tmpOs.str();
+        int goldLen = tmpOs.str().length();
+        tmpOs.str(std::string());
+
+        int maxWidth = std::max<int>(dim0Len, outLen);
+        maxWidth = std::max<int>(maxWidth, goldLen);
+        valFieldWidths[i] = maxWidth;
+    }
+
+    int varNameWidth = std::max<int>(goldName.length(), outName.length());
+
+    // Display dim0 positions, output values, and reference values
+    os << std::right << std::setw(varNameWidth) << "" << "   ";
+    for (uint i = 0; i < (dim0End - dim0Start); ++i) {
+        os << std::setw(valFieldWidths[i] + 1) << std::right << ctxDim0[i];
     }
     os << "\n";
 
-    // Display output values
-    os << std::setw(varNameWidth) << outName << ": { ";
-    for (uint i = vecStartIdx; i < vecEndIdx; ++i) {
-        if (i == idx) {
-            std::ostringstream tmpOs;
-            tmpOs << "[" << hOut[i] << "]";
-            os << std::setw(valsWidth) << tmpOs.str() << " ";
-        }
-        else {
-            os << std::setw(valsWidth) << hOut[i] << " ";
-        }
+    os << std::right << std::setw(varNameWidth) << outName << ": {";
+    for (uint i = 0; i < (dim0End - dim0Start); ++i) {
+        os << std::setw(valFieldWidths[i] + 1) << std::right << ctxOutVals[i];
     }
-    os << "}\n";
+    os << " }\n";
 
-    // Display reference values
-    os << std::setw(varNameWidth) << goldName << ": { ";
-    for (uint i = vecStartIdx; i < vecEndIdx; ++i) {
-        if (i == idx) {
-            std::ostringstream tmpOs;
-            tmpOs << "[" << hGold[i] << "]";
-            os << std::setw(valsWidth) << tmpOs.str() << " ";
-        }
-        else {
-            os << std::setw(valsWidth) << hGold[i] << " ";
-        }
+    os << std::right << std::setw(varNameWidth) << goldName << ": {";
+    for (uint i = 0; i < (dim0End - dim0Start); ++i) {
+        os << std::setw(valFieldWidths[i] + 1) << std::right << ctxGoldVals[i];
     }
-    os << "}";
+    os << " }";
 
     return os.str();
 }
@@ -656,6 +693,8 @@ template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       const std::vector<T>& a, af::dim4 aDims,
                                       const std::vector<T>& b, af::dim4 bDims,
+
+
                                       float maxAbsDiff, IntegerTag) {
     typedef typename std::vector<T>::const_iterator iter;
     std::pair<iter, iter> mismatches = std::mismatch(a.begin(), a.end(), b.begin());
