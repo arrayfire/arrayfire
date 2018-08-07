@@ -7,18 +7,23 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#ifdef _WIN32
+#include <windows.h> // spdlog needs this
+#endif
+
 #include <common/Logger.hpp>
 #include <common/util.hpp>
 
 #include <array>
 #include <cstdlib>
-#include <string>
 #include <memory>
+#include <string>
+#include <spdlog/sinks/stdout_sinks.h>
 
 using std::array;
 using std::make_shared;
-using std::string;
 using std::shared_ptr;
+using std::string;
 using std::to_string;
 
 using spdlog::get;
@@ -27,8 +32,6 @@ using spdlog::logger;
 using spdlog::stdout_logger_mt;
 
 namespace common {
-
-#ifdef AF_WITH_LOGGING
 shared_ptr<logger>
 loggerFactory(string name) {
     shared_ptr<logger> logger;
@@ -55,14 +58,4 @@ string bytesToString(size_t bytes) {
     }
     return fmt::format("{:.3g} {}", fbytes, units[count]);
 }
-#else
-  shared_ptr<logger>
-  loggerFactory(string name) {
-    return make_shared<logger>();
-  }
-
-  string bytesToString(size_t bytes) {
-    return "";
-  }
-#endif
 }

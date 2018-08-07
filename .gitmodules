@@ -13,3 +13,6 @@
 [submodule "src/backend/cuda/cub"]
 	path = src/backend/cuda/cub
 	url = https://github.com/NVlabs/cub.git
+[submodule "extern/spdlog"]
+	path = extern/spdlog
+	url = https://github.com/gabime/spdlog.git
