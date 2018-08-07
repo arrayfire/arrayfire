@@ -12,23 +12,9 @@
 #include <memory>
 #include <string>
 
-#ifdef AF_WITH_LOGGING
-#include <spdlog/spdlog.h>
-#else
-
-/// This is a stub class to match the spdlog API in case it is not installed on
-/// the users system. Only the functions we used are implemented here. Other
-/// functions will need to be implemented later.
 namespace spdlog {
-    class logger { public: logger() {} };
-    std::shared_ptr<spdlog::logger> get(const std::string &name);
-    std::shared_ptr<spdlog::logger> stdout_logger_mt(std::string&);
-    namespace level {
-        enum enum_level { trace };
-    }
+    class logger;
 }
-#endif
-
 namespace common {
     std::shared_ptr<spdlog::logger> loggerFactory(std::string name);
     std::string bytesToString(size_t bytes);
