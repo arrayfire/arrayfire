@@ -33,7 +33,6 @@ find_package(CBLAS)
 find_package(LAPACKE)
 find_package(Doxygen)
 find_package(MKL)
-find_package(spdlog QUIET)
 
 # Graphics dependencies
 find_package(glbinding QUIET)
@@ -49,7 +48,7 @@ option(AF_BUILD_EXAMPLES "Build Examples"                            ON)
 
 option(AF_WITH_GRAPHICS "Build ArrayFire with Forge Graphics"  $<AND:${OPENGL_FOUND},${Forge_FOUND},${glbinding_FOUND}>)
 option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
-option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ${spdlog_FOUND})
+option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ON)
 
 option(AF_INSTALL_STANDALONE "Build installers that include all dependencies" OFF)
 
@@ -86,7 +85,10 @@ mark_as_advanced(
   AF_WITH_CPUID
   CUDA_HOST_COMPILER
   CUDA_USE_STATIC_CUDA_RUNTIME
-  CUDA_rt_LIBRARY)
+  CUDA_rt_LIBRARY
+  SPDLOG_BUILD_EXAMPLES
+  SPDLOG_BUILD_TESTING)
+
 
 
 if(AF_WITH_GRAPHICS AND NOT AF_USE_SYSTEM_FORGE)
@@ -136,6 +138,8 @@ if(NOT LAPACK_FOUND)
     endif()
 endif()
 
+set(SPDLOG_BUILD_TESTING OFF)
+add_subdirectory(extern/spdlog EXCLUDE_FROM_ALL)
 add_subdirectory(src/backend/common)
 add_subdirectory(src/api/c)
 add_subdirectory(src/api/cpp)
@@ -356,3 +360,4 @@ conditional_directory(AF_BUILD_DOCS docs)
 
 include(CPackConfig)
 
+ 

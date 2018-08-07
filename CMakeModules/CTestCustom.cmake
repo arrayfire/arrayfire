@@ -8,6 +8,7 @@ list(APPEND CTEST_CUSTOM_COVERAGE_EXCLUDE
 	"test/gtest/*"
 
   # All external and third_party libraries
+	"extern/spdlog/*"
 	"src/backend/cpu/threads/*"
 	"src/backend/cuda/cub/*"
 	"cl2.hpp"
