@@ -46,22 +46,15 @@ else()
 endif()
 
 target_link_libraries(afcommon_interface
-  INTERFACE ${CMAKE_DL_LIBS})
+  INTERFACE
+    spdlog
+    ${CMAKE_DL_LIBS})
 
 target_include_directories(afcommon_interface
   INTERFACE
     ${CMAKE_SOURCE_DIR}/src/backend
     ${PROJECT_BINARY_DIR}
   )
-
-if(AF_WITH_LOGGING)
-  dependency_check(spdlog_FOUND "spdlog not found.")
-  target_compile_definitions(afcommon_interface
-    INTERFACE AF_WITH_LOGGING)
-  target_link_libraries(afcommon_interface
-    INTERFACE
-      spdlog::spdlog)
-endif()
 
 if(APPLE AND NOT USE_MKL)
   target_sources(afcommon_interface

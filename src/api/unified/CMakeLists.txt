@@ -64,18 +64,10 @@ target_include_directories(af
     ${CMAKE_BINARY_DIR}
   )
 
-if(AF_WITH_LOGGING)
-  dependency_check(spdlog_FOUND "spdlog not found.")
-  target_compile_definitions(af
-    PRIVATE AF_WITH_LOGGING)
-  target_link_libraries(af
-    PRIVATE
-      spdlog::spdlog)
-endif()
-
 target_link_libraries(af
   PRIVATE
     cpp_api_interface
+    spdlog
     Threads::Threads
     ${CMAKE_DL_LIBS}
   )

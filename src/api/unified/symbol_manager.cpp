@@ -15,6 +15,7 @@
 #include <functional>
 #include <string>
 #include <type_traits>
+#include <spdlog/spdlog.h>
 
 
 #ifdef OS_WIN
