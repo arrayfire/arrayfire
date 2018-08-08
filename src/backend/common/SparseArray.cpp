@@ -135,7 +135,7 @@ SparseArray<T> createDeviceDataSparseArray(
         const int * const _rowIdx, const int * const _colIdx,
         const af::storage _storage, const bool _copy)
 {
-    return SparseArray<T>(_dims, nNZ, _values, _rowIdx, _colIdx, _storage, _copy);
+    return SparseArray<T>(_dims, nNZ, _values, _rowIdx, _colIdx, _storage, true, _copy);
 }
 
 template<typename T>
