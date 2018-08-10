@@ -79,6 +79,13 @@ af_err af_inverse(af_array *out, const af_array in, const af_mat_prop options)
     return CALL(out, in, options);
 }
 
+af_err af_pinverse(af_array *out, const af_array in, const double tol,
+                   const af_mat_prop options)
+{
+    CHECK_ARRAYS(in);
+    return CALL(out, in, options);
+}
+
 af_err af_rank(unsigned *rank, const af_array in, const double tol)
 {
     CHECK_ARRAYS(in);

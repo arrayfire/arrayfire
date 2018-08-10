@@ -252,6 +252,31 @@ I [3 3 1 1]
 
 \endcode
 
+=======================================================================
+
+\defgroup lapack_ops_func_pinv pinverse
+
+\ingroup lapack_ops_mat
+
+\brief Pseudo-invert a matrix
+
+This function calculates the Moore-Penrose pseudoinverse of a matrix \f$A\f$,
+using \ref af::svd at its core. If \f$A\f$ is of size \f$M \times N\f$, then its
+pseudoinverse \f$A^+\f$ will be of size \f$N \times M\f$.
+
+This calculation can be batched if the input array is three or four-dimensional
+\f$(M \times N \times P \times Q\f$, with \f$Q=1\f$ for only three dimensions
+\f$)\f$. Each \f$M \times N\f$ slice along the third dimension will have its own
+pseudoinverse, for a total of \f$P \times Q\f$ pseudoinverses in the output array
+\f$(N \times M \times P \times Q)\f$.
+
+Here's an example snippet of its usage. In this example, we have a matrix \f$A\f$
+and we compute its pseudoinverse \f$A^+\f$. This condition must hold:
+\f$AA^+A=A\f$, given that the two matrices are pseudoinverses of each other (in
+fact, this is one of the Moore-Penrose conditions):
+
+\snippet test/pinverse.cpp ex_pinverse
+
 ==================================================================================
 
 \defgroup lapack_ops_func_rank rank

@@ -117,6 +117,13 @@ namespace af
         return array(out);
     }
 
+    array pinverse(const array &in, const double tol, const matProp options)
+    {
+        af_array out;
+        AF_THROW(af_pinverse(&out, in.get(), tol, options));
+        return array(out);
+    }
+
     unsigned rank(const array &in, const double tol)
     {
         unsigned r = 0;
