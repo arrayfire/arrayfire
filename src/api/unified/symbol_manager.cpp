@@ -8,14 +8,17 @@
  ********************************************************/
 
 #include "symbol_manager.hpp"
+
 #include <af/version.h>
+
+#include <common/Logger.hpp>
 #include <common/module_loading.hpp>
+#include <spdlog/spdlog.h>
 
 #include <cmath>
 #include <functional>
 #include <string>
 #include <type_traits>
-#include <spdlog/spdlog.h>
 
 
 #ifdef OS_WIN

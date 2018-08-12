@@ -13,6 +13,7 @@
 #include <err_opencl.hpp>
 
 #include <common/Logger.hpp>
+#include <spdlog/spdlog.h>
 
 #include <common/MemoryManagerImpl.hpp>
 template class common::MemoryManager<opencl::MemoryManager>;

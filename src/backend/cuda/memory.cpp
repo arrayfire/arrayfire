@@ -10,6 +10,7 @@
 #include <memory.hpp>
 
 #include <common/Logger.hpp>
+#include <common/MemoryManagerImpl.hpp>
 #include <common/dispatch.hpp>
 #include <common/util.hpp>
 #include <cuda.h>
@@ -17,11 +18,11 @@
 #include <cuda_runtime_api.h>
 #include <err_cuda.hpp>
 #include <platform.hpp>
+#include <spdlog/spdlog.h>
 #include <types.hpp>
 
 #include <mutex>
 
-#include <common/MemoryManagerImpl.hpp>
 template class common::MemoryManager<cuda::MemoryManager>;
 template class common::MemoryManager<cuda::MemoryManagerPinned>;
 
