@@ -180,6 +180,10 @@ endif()
 
 foreach(backend ${built_backends})
   target_compile_definitions(${backend} PRIVATE AFDLL)
+  if(AF_WITH_LOGGING)
+    target_compile_definitions(${backend}
+      PRIVATE AF_WITH_LOGGING)
+  endif()
 endforeach()
 
 if(AF_BUILD_FRAMEWORK)

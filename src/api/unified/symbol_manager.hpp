@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <string>
 #include <unordered_map>
+#include <spdlog/spdlog.h>
 
 namespace unified
 {
