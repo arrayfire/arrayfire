@@ -10,12 +10,12 @@
 #include <memory.hpp>
 
 #include <common/Logger.hpp>
+#include <common/MemoryManagerImpl.hpp>
 #include <err_cpu.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <spdlog/spdlog.h>
 #include <types.hpp>
-
-#include <common/MemoryManagerImpl.hpp>
 
 template class common::MemoryManager<cpu::MemoryManager>;
 
