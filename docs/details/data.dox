@@ -277,11 +277,33 @@ Mirrors the array along the specified dimensions.
 
 \defgroup data_func_select select
 
-\brief Select elements from two arrays based on an conditional array
+\brief Selects elements from two arrays based on the values of a binary
+       conditional array.
 
-If the condition array has an element as true, then the element from
-the lhs array/value is selected, otherwise the element from the rhs
-array/value is selected.
+Creates a new array that is composed of values either from array \p a or array
+\p b, based on a third conditional array. For all non-zero elements in the
+conditional array, the output array will contain values from \p a. Otherwise the
+output will contain values from \p b.
+
+\snippet test/select.cpp ex_data_select
+
+is equivalent to:
+
+\snippet test/select.cpp ex_data_select_c
+
+The conditional array must be a b8 typed array.
+
+The select function can perform batched operations based on the size of each of
+the inputs. The following table describes the input and output sizes for
+supported batched configurations.
+
+| Output | Condition Array | Array A | Array B |
+|--------|-----------------|---------|---------|
+| (M, N) | (M, 1)          | (M, 1)  | (M, N)  |
+| (M, N) | (M, 1)          | (M, N)  | (M, 1)  |
+| (M, N) | (M, 1)          | (M, N)  | (M, N)  |
+| (M, N) | (M, N)          | (M, 1)  | (M, N)  |
+| (M, N) | (M, N)          | (M, 1)  | (M, N)  |
 
 \ingroup manip_mat
 \ingroup arrayfire_func
@@ -290,7 +312,7 @@ array/value is selected.
 
 \defgroup data_func_replace replace
 
-\brief Replace elements of an array based on an conditional array
+\brief Replace elements of an array based on a conditional array
 
 - Input values are retained when corresponding elements from condition array are true.
 - Input values are replaced when corresponding elements from condition array are false.
