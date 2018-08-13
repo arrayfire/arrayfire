@@ -277,11 +277,13 @@ Mirrors the array along the specified dimensions.
 
 \defgroup data_func_select select
 
-\brief Select elements from two arrays based on an conditional array
+\brief Selects elements based on a conditional array
 
-If the condition array has an element as true, then the element from
-the lhs array/value is selected, otherwise the element from the rhs
-array/value is selected.
+If the condition array has a non-zero element, then the element from the \p a
+array/value is selected, otherwise the element from the \p b array/value is
+selected.
+
+\snippet test/select.cpp ex_data_select
 
 \ingroup manip_mat
 \ingroup arrayfire_func
@@ -290,7 +292,7 @@ array/value is selected.
 
 \defgroup data_func_replace replace
 
-\brief Replace elements of an array based on an conditional array
+\brief Replace elements of an array based on a conditional array
 
 - Input values are retained when corresponding elements from condition array are true.
 - Input values are replaced when corresponding elements from condition array are false.

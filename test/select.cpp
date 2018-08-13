@@ -533,3 +533,28 @@ TEST(Select, InvalidSizeOfCond) {
     af_release_array(b);
     af_release_array(cond);
 }
+
+
+TEST(Select, SNIPPET_select) {
+    //! [ex_data_select]
+    int elements = 9;
+    char hCond[] = {1, 0, 1, 0, 1, 0, 1, 0, 1};
+    float hA[]  = {2, 2, 2, 2, 2, 2, 2, 2, 2};
+    float hB[]  = {3, 3, 3, 3, 3, 3, 3, 3, 3};
+
+    array cond(elements, hCond);
+    array a(elements, hA);
+    array b(elements, hB);
+
+    array out = select(cond, a, b);
+    //out = {2, 3, 2, 3, 2, 3, 2, 3, 2};
+    //! [ex_data_select]
+
+    vector<float> gold(hCond, hCond+elements);
+    for(size_t i = 0; i < gold.size(); i++) {
+      if(gold[i]) gold[i] = hA[i];
+      else gold[i] = hB[i];
+    }
+
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(9), out);
+}
