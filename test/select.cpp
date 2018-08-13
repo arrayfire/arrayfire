@@ -550,11 +550,13 @@ TEST(Select, SNIPPET_select) {
     //out = {2, 3, 2, 3, 2, 3, 2, 3, 2};
     //! [ex_data_select]
 
-    vector<float> gold(hCond, hCond+elements);
-    for(size_t i = 0; i < gold.size(); i++) {
-      if(gold[i]) gold[i] = hA[i];
-      else gold[i] = hB[i];
+    //! [ex_data_select_c]
+    vector<float> hOut(elements);
+    for(size_t i = 0; i < hOut.size(); i++) {
+        if(hCond[i]) { hOut[i] = hA[i]; }
+        else         { hOut[i] = hB[i]; }
     }
+    //! [ex_data_select_c]
 
-    ASSERT_VEC_ARRAY_EQ(gold, dim4(9), out);
+    ASSERT_VEC_ARRAY_EQ(hOut, dim4(9), out);
 }
