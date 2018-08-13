@@ -533,3 +533,30 @@ TEST(Select, InvalidSizeOfCond) {
     af_release_array(b);
     af_release_array(cond);
 }
+
+
+TEST(Select, SNIPPET_select) {
+    //! [ex_data_select]
+    int elements = 9;
+    char hCond[] = {1, 0, 1, 0, 1, 0, 1, 0, 1};
+    float hA[]  = {2, 2, 2, 2, 2, 2, 2, 2, 2};
+    float hB[]  = {3, 3, 3, 3, 3, 3, 3, 3, 3};
+
+    array cond(elements, hCond);
+    array a(elements, hA);
+    array b(elements, hB);
+
+    array out = select(cond, a, b);
+    //out = {2, 3, 2, 3, 2, 3, 2, 3, 2};
+    //! [ex_data_select]
+
+    //! [ex_data_select_c]
+    vector<float> hOut(elements);
+    for(size_t i = 0; i < hOut.size(); i++) {
+        if(hCond[i]) { hOut[i] = hA[i]; }
+        else         { hOut[i] = hB[i]; }
+    }
+    //! [ex_data_select_c]
+
+    ASSERT_VEC_ARRAY_EQ(hOut, dim4(9), out);
+}
