@@ -46,7 +46,6 @@ unsigned _shd_(T v1, T v2)
 
 __kernel
 void nearest_neighbour_unroll(
-    __global unsigned* out_idx,
     __global To* out_dist,
     __global const T* query,
     KParam qInfo,
@@ -62,13 +61,11 @@ void nearest_neighbour_unroll(
     unsigned tid = get_local_id(0);
 
     __local To l_dist[THREADS];
-    __local unsigned l_idx[THREADS];
 
     __local T* l_query = lmem;
     __local T* l_train = lmem + FEAT_LEN;
 
     l_dist[tid] = max_dist;
-    l_idx[tid]  = 0xffffffff;
 
     bool valid_feat = (f < ntrain);
 
@@ -111,74 +108,13 @@ void nearest_neighbour_unroll(
         // than the best match found so far
         if (valid_feat) {
             l_dist[tid] = dist;
-            l_idx[tid]  = f;
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        // Find best match in training features from block to the current
-        // query feature
-        if (tid < 128) {
-            if (l_dist[tid + 128] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 128];
-                l_idx[tid]  = l_idx[tid + 128];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 64) {
-            if (l_dist[tid + 64] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 64];
-                l_idx[tid]  = l_idx[tid + 64];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 32) {
-            if (l_dist[tid + 32] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 32];
-                l_idx[tid]  = l_idx[tid + 32];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 16) {
-            if (l_dist[tid + 16] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 16];
-                l_idx[tid]  = l_idx[tid + 16];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 8) {
-            if (l_dist[tid + 8] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 8];
-                l_idx[tid]  = l_idx[tid + 8];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 4) {
-            if (l_dist[tid + 4] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 4];
-                l_idx[tid]  = l_idx[tid + 4];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 2) {
-            if (l_dist[tid + 2] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 2];
-                l_idx[tid]  = l_idx[tid + 2];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 1) {
-            if (l_dist[tid + 1] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 1];
-                l_idx[tid]  = l_idx[tid + 1];
-            }
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
         // Store best match in training features from block to the current
         // query feature
         if (valid_feat) {
-            out_dist[j * get_num_groups(0) + get_group_id(0)] = l_dist[0];
-            out_idx[j * get_num_groups(0) + get_group_id(0)]  = l_idx[0];
+            out_dist[j * ntrain + f] = l_dist[tid];
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
@@ -186,7 +122,6 @@ void nearest_neighbour_unroll(
 
 __kernel
 void nearest_neighbour(
-    __global unsigned* out_idx,
     __global To* out_dist,
     __global const T* query,
     KParam qInfo,
@@ -203,13 +138,11 @@ void nearest_neighbour(
     unsigned tid = get_local_id(0);
 
     __local To l_dist[THREADS];
-    __local unsigned l_idx[THREADS];
 
     __local T* l_query = lmem;
     __local T* l_train = lmem + feat_len;
 
     l_dist[tid] = max_dist;
-    l_idx[tid]  = 0xffffffff;
 
     bool valid_feat = (f < ntrain);
 
@@ -250,74 +183,13 @@ void nearest_neighbour(
         // than the best match found so far
         if (valid_feat) {
             l_dist[tid] = dist;
-            l_idx[tid]  = f;
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        // Find best match in training features from block to the current
-        // query feature
-        if (tid < 128) {
-            if (l_dist[tid + 128] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 128];
-                l_idx[tid]  = l_idx[tid + 128];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 64) {
-            if (l_dist[tid + 64] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 64];
-                l_idx[tid]  = l_idx[tid + 64];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 32) {
-            if (l_dist[tid + 32] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 32];
-                l_idx[tid]  = l_idx[tid + 32];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 16) {
-            if (l_dist[tid + 16] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 16];
-                l_idx[tid]  = l_idx[tid + 16];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 8) {
-            if (l_dist[tid + 8] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 8];
-                l_idx[tid]  = l_idx[tid + 8];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 4) {
-            if (l_dist[tid + 4] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 4];
-                l_idx[tid]  = l_idx[tid + 4];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 2) {
-            if (l_dist[tid + 2] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 2];
-                l_idx[tid]  = l_idx[tid + 2];
-            }
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid < 1) {
-            if (l_dist[tid + 1] < l_dist[tid]) {
-                l_dist[tid] = l_dist[tid + 1];
-                l_idx[tid]  = l_idx[tid + 1];
-            }
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
         // Store best match in training features from block to the current
         // query feature
         if (valid_feat) {
-            out_dist[j * get_num_groups(0) + get_group_id(0)] = l_dist[0];
-            out_idx[j * get_num_groups(0) + get_group_id(0)]  = l_idx[0];
+            out_dist[j * ntrain + f] = l_dist[tid];
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }

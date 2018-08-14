@@ -262,3 +262,49 @@ TEST(NearestNeighbourSSD, small)
         EXPECT_NEAR(expectedDistances[i], actualDistances[i], 1E-8);
     }
 }
+
+TEST(KNearestNeighbourSSD, small)
+{
+    const int ntrain = 5;
+    const int nquery = 3;
+    const int nfeat  = 2;
+
+    float query[nquery * nfeat] = {
+        5, 5,
+        0, 0,
+       10, 10,
+    };
+
+    float train[ntrain * nfeat] = {
+        0, 0,
+        3.5, 4,
+        5, 5,
+        6, 5,
+        8, 6.5
+    };
+
+    array t(nfeat, ntrain, train);
+    array q(nfeat, nquery, query);
+    array indices;
+    array distances;
+    const int k = 2;
+    nearestNeighbour(indices, distances, q, t, 0, k, AF_SSD);
+
+    float expectedDistances[nquery * ntrain] = {
+        (5 - 5) * (5 - 5) + (5 - 5) * (5 - 5),
+        (5 - 6) * (5 - 6) + (5 - 5) * (5 - 5),
+
+        (0 - 0)   * (0 - 0) + (0 - 0)   * (0 - 0),
+        (0 - 3.5) * (0 - 4) + (0 - 3.5) * (0 - 4),
+
+        (10 - 8)   * (10 - 8)   + (10 - 6.5) * (10 - 6.5),
+        (10 - 6)   * (10 - 5)   + (10 - 6)   * (10 - 5)
+    };
+
+    vector<float> actualDistances(nquery);
+    distances.host(&actualDistances[0]);
+    for (int i = 0; i < nquery; i++)
+    {
+        EXPECT_NEAR(expectedDistances[i], actualDistances[i], 1E-8);
+    }
+}

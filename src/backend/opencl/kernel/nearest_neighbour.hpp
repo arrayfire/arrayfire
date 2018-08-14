@@ -35,8 +35,7 @@ namespace kernel
 static const unsigned THREADS = 256;
 
 template<typename T, typename To, af_match_type dist_type>
-void nearest_neighbour(Param idx,
-                       Param dist,
+void nearest_neighbour(Param dist,
                        Param query,
                        Param train,
                        const dim_t dist_dim,
@@ -118,54 +117,33 @@ void nearest_neighbour(Param idx,
     const NDRange local(THREADS, 1);
     const NDRange global(nblk * THREADS, 1);
 
-    cl::Buffer *d_blk_idx  = bufferAlloc(nblk * nquery * sizeof(unsigned));
-    cl::Buffer *d_blk_dist = bufferAlloc(nblk * nquery * sizeof(To));
-
     // For each query vector, find training vector with smallest Hamming
     // distance per CUDA block
     if (unroll_len > 0) {
-        auto huOp = KernelFunctor<Buffer, Buffer,
-                                Buffer, KParam,
-                                Buffer, KParam,
-                                const To,
-                                LocalSpaceArg> (entry.ker[0]);
+        auto huOp = KernelFunctor<Buffer,
+                                  Buffer, KParam,
+                                  Buffer, KParam,
+                                  const To,
+                                  LocalSpaceArg> (entry.ker[0]);
 
         huOp(EnqueueArgs(getQueue(), global, local),
-              *d_blk_idx, *d_blk_dist,
+              *dist.data,
               *query.data, query.info, *train.data, train.info,
               max_dist, cl::Local(lmem_sz));
     }
     else {
-        auto hmOp = KernelFunctor<Buffer, Buffer,
-                                Buffer, KParam,
-                                Buffer, KParam,
-                                const To, const unsigned,
-                                LocalSpaceArg> (entry.ker[1]);
+        auto hmOp = KernelFunctor<Buffer,
+                                  Buffer, KParam,
+                                  Buffer, KParam,
+                                  const To, const unsigned,
+                                  LocalSpaceArg> (entry.ker[1]);
 
         hmOp(EnqueueArgs(getQueue(), global, local),
-              *d_blk_idx, *d_blk_dist,
+              *dist.data,
               *query.data, query.info, *train.data, train.info,
               max_dist, feat_len, cl::Local(lmem_sz));
     }
     CL_DEBUG_FINISH(getQueue());
-
-    const NDRange local_sm(32, 8);
-    const NDRange global_sm(divup(nquery, 32) * 32, 8);
-
-    // Reduce all smallest Hamming distances from each block and store final
-    // best match
-    auto smOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer,
-                            const unsigned, const unsigned,
-                            const To> (entry.ker[2]);
-
-    smOp(EnqueueArgs(getQueue(), global_sm, local_sm),
-          *idx.data, *dist.data,
-          *d_blk_idx, *d_blk_dist,
-          nquery, nblk, max_dist);
-    CL_DEBUG_FINISH(getQueue());
-
-    bufferFree(d_blk_idx);
-    bufferFree(d_blk_dist);
 }
 
 } // namespace kernel

@@ -97,7 +97,6 @@ struct dist_op<uchar, To, AF_SHD>
 
 template<typename T, typename To, af_match_type dist_type, unsigned feat_len, bool use_shmem>
 __global__ void nearest_neighbour_unroll(
-    unsigned* out_idx,
     To* out_dist,
     CParam<T> query,
     CParam<T> train,
@@ -110,14 +109,12 @@ __global__ void nearest_neighbour_unroll(
     unsigned tid = threadIdx.x;
 
     __shared__ To       s_dist[THREADS];
-    __shared__ unsigned s_idx[THREADS];
 
     extern __shared__ char smem[];
     T* s_query = (T*)smem;
     T* s_train = (T*)smem + feat_len;
 
     s_dist[tid] = max_dist;
-    s_idx[tid]  = 0xffffffff;
 
     bool valid_feat = (f < ntrain);
 
@@ -152,8 +149,7 @@ __global__ void nearest_neighbour_unroll(
                 // accumulates to dist
                 if (use_shmem) {
                     dist += op(s_train[k * blockDim.x + tid], s_query[k]);
-                }
-                else {
+                } else {
                     dist += op(train.ptr[k * ntrain + f], s_query[k]);
                 }
             }
@@ -161,74 +157,13 @@ __global__ void nearest_neighbour_unroll(
             // Only stores the feature index and distance if it's smaller
             // than the best match found so far
             s_dist[tid] = dist;
-            s_idx[tid]  = f;
-        }
-        __syncthreads();
-
-        // Find best match in training features from block to the current
-        // query feature
-        if (tid < 128) {
-            if (s_dist[tid + 128] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 128];
-                s_idx[tid]  = s_idx[tid + 128];
-            }
-        }
-        __syncthreads();
-        if (tid < 64) {
-            if (s_dist[tid + 64] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 64];
-                s_idx[tid]  = s_idx[tid + 64];
-            }
-        }
-        __syncthreads();
-        if (tid < 32) {
-            if (s_dist[tid + 32] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 32];
-                s_idx[tid]  = s_idx[tid + 32];
-            }
-        }
-        __syncthreads();
-        if (tid < 16) {
-            if (s_dist[tid + 16] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 16];
-                s_idx[tid]  = s_idx[tid + 16];
-            }
-        }
-        __syncthreads();
-        if (tid < 8) {
-            if (s_dist[tid + 8] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 8];
-                s_idx[tid]  = s_idx[tid + 8];
-            }
-        }
-        __syncthreads();
-        if (tid < 4) {
-            if (s_dist[tid + 4] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 4];
-                s_idx[tid]  = s_idx[tid + 4];
-            }
-        }
-        __syncthreads();
-        if (tid < 2) {
-            if (s_dist[tid + 2] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 2];
-                s_idx[tid]  = s_idx[tid + 2];
-            }
-        }
-        __syncthreads();
-        if (tid < 1) {
-            if (s_dist[tid + 1] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 1];
-                s_idx[tid]  = s_idx[tid + 1];
-            }
         }
         __syncthreads();
 
         // Store best match in training features from block to the current
         // query feature
         if (valid_feat) {
-            out_dist[j * gridDim.x + blockIdx.x] = s_dist[0];
-            out_idx[j * gridDim.x + blockIdx.x]  = s_idx[0];
+            out_dist[j * ntrain + f] = s_dist[tid];
         }
         __syncthreads();
     }
@@ -236,7 +171,6 @@ __global__ void nearest_neighbour_unroll(
 
 template<typename T, typename To, af_match_type dist_type, bool use_shmem>
 __global__ void nearest_neighbour(
-    unsigned* out_idx,
     To* out_dist,
     CParam<T> query,
     CParam<T> train,
@@ -250,14 +184,12 @@ __global__ void nearest_neighbour(
     unsigned tid = threadIdx.x;
 
     __shared__ To s_dist[THREADS];
-    __shared__ unsigned s_idx[THREADS];
 
     extern __shared__ char smem[];
     T* s_query = (T*)smem;
     T* s_train = (T*)smem + feat_len;
 
     s_dist[tid] = max_dist;
-    s_idx[tid]  = 0xffffffff;
 
     bool valid_feat = (f < ntrain);
 
@@ -299,74 +231,13 @@ __global__ void nearest_neighbour(
             // Only stores the feature index and distance if it's smaller
             // than the best match found so far
             s_dist[tid] = dist;
-            s_idx[tid]  = f;
         }
-        __syncthreads();
 
-        // Find best match in training features from block to the current
-        // query feature
-        if (tid < 128) {
-            if (s_dist[tid + 128] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 128];
-                s_idx[tid]  = s_idx[tid + 128];
-            }
-        }
         __syncthreads();
-        if (tid < 64) {
-            if (s_dist[tid + 64] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 64];
-                s_idx[tid]  = s_idx[tid + 64];
-            }
-        }
-        __syncthreads();
-        if (tid < 32) {
-            if (s_dist[tid + 32] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 32];
-                s_idx[tid]  = s_idx[tid + 32];
-            }
-        }
-        __syncthreads();
-        if (tid < 16) {
-            if (s_dist[tid + 16] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 16];
-                s_idx[tid]  = s_idx[tid + 16];
-            }
-        }
-        __syncthreads();
-        if (tid < 8) {
-            if (s_dist[tid + 8] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 8];
-                s_idx[tid]  = s_idx[tid + 8];
-            }
-        }
-        __syncthreads();
-        if (tid < 4) {
-            if (s_dist[tid + 4] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 4];
-                s_idx[tid]  = s_idx[tid + 4];
-            }
-        }
-        __syncthreads();
-        if (tid < 2) {
-            if (s_dist[tid + 2] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 2];
-                s_idx[tid]  = s_idx[tid + 2];
-            }
-        }
-        __syncthreads();
-        if (tid < 1) {
-            if (s_dist[tid + 1] < s_dist[tid]) {
-                s_dist[tid] = s_dist[tid + 1];
-                s_idx[tid]  = s_idx[tid + 1];
-            }
-        }
-        __syncthreads();
-
         // Store best match in training features from block to the current
         // query feature
         if (valid_feat) {
-            out_dist[j * gridDim.x + blockIdx.x] = s_dist[0];
-            out_idx[j * gridDim.x + blockIdx.x]  = s_idx[0];
+            out_dist[j * ntrain + f] = s_dist[tid];
         }
         __syncthreads();
     }
@@ -423,8 +294,7 @@ __global__ void select_matches(
 }
 
 template<typename T, typename To, af_match_type dist_type>
-void nearest_neighbour(Param<uint> idx,
-                       Param<To> dist,
+void nearest_neighbour(Param<To> dist,
                        CParam<T> query,
                        CParam<T> train,
                        const dim_t dist_dim,
@@ -459,9 +329,6 @@ void nearest_neighbour(Param<uint> idx,
 
     unsigned nblk = blocks.x;
 
-    auto d_blk_idx  = memAlloc<unsigned>(nblk * nquery);
-    auto d_blk_dist = memAlloc<To>(nblk * nquery);
-
     // For each query vector, find training vector with smallest Hamming
     // distance per CUDA block
     if (use_shmem) {
@@ -469,35 +336,35 @@ void nearest_neighbour(Param<uint> idx,
         // Optimized lengths (faster due to loop unrolling)
         case 1:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,1,true>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         case 2:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,2,true>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         case 4:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,4,true>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         case 8:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,8,true>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         case 16:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,16,true>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         case 32:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,32,true>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         case 64:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,64,true>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         default:
             CUDA_LAUNCH_SMEM((nearest_neighbour<T,To,dist_type,true>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist, feat_len);
+                             dist.ptr, query, train, max_dist, feat_len);
         }
     }
     else {
@@ -505,48 +372,38 @@ void nearest_neighbour(Param<uint> idx,
         // Optimized lengths (faster due to loop unrolling)
         case 1:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,1,false>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         case 2:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,2,false>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         case 4:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,4,false>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         case 8:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,8,false>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         case 16:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,16,false>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         case 32:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,32,false>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         case 64:
             CUDA_LAUNCH_SMEM((nearest_neighbour_unroll<T,To,dist_type,64,false>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist);
+                             dist.ptr, query, train, max_dist);
             break;
         default:
             CUDA_LAUNCH_SMEM((nearest_neighbour<T,To,dist_type,false>), blocks, threads, smem_sz,
-                             d_blk_idx.get(), d_blk_dist.get(), query, train, max_dist, feat_len);
+                             dist.ptr, query, train, max_dist, feat_len);
         }
     }
     POST_LAUNCH_CHECK();
-
-    threads = dim3(32, 8);
-    blocks = dim3(nquery, 1);
-
-    // Reduce all smallest Hamming distances from each block and store final
-    // best match
-    CUDA_LAUNCH(select_matches, blocks, threads,
-                idx, dist, d_blk_idx.get(), d_blk_dist.get(), nquery, nblk, max_dist);
-    POST_LAUNCH_CHECK();
-
 }
 
 } // namespace kernel

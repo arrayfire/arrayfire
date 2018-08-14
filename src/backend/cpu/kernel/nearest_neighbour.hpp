@@ -86,7 +86,7 @@ struct dist_op<ushort, To, AF_SHD>
 };
 
 template<typename T, typename To, af_match_type dist_type>
-void nearest_neighbour(Param<uint> idx, Param<To> dist,
+void nearest_neighbour(Param<To> dists,
                        CParam<T> query, CParam<T> train,
                        const uint dist_dim, const uint n_dist)
 {
@@ -100,8 +100,7 @@ void nearest_neighbour(Param<uint> idx, Param<To> dist,
 
     const T* qPtr = query.get();
     const T* tPtr = train.get();
-    uint* iPtr = idx.get();
-    To* dPtr = dist.get();
+    To* dPtr = dists.get();
 
     dist_op<T, To, dist_type> op;
 
@@ -125,16 +124,8 @@ void nearest_neighbour(Param<uint> idx, Param<To> dist,
                 local_dist += op(qPtr[qIdx], tPtr[tIdx]);
             }
 
-            if (local_dist < best_dist) {
-                best_dist = local_dist;
-                best_idx  = j;
-            }
+            dPtr[i*nTrain + j] = local_dist;
         }
-
-        size_t oIdx;
-        oIdx = i;
-        iPtr[oIdx] = best_idx;
-        dPtr[oIdx] = best_dist;
     }
 }
 

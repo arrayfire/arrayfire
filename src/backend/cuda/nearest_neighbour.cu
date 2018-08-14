@@ -12,6 +12,7 @@
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <kernel/nearest_neighbour.hpp>
+#include <topk.hpp>
 #include <transpose.hpp>
 
 using af::dim4;
@@ -25,11 +26,14 @@ void nearest_neighbour(Array<uint>& idx, Array<To>& dist,
                      const uint dist_dim, const uint n_dist,
                      const af_match_type dist_type)
 {
-    uint sample_dim = (dist_dim == 0) ? 1 : 0;
+    uint  sample_dim = (dist_dim == 0) ? 1 : 0;
     const dim4 qDims = query.dims();
     const dim4 tDims = train.dims();
 
     const dim4 outDims(n_dist, qDims[sample_dim]);
+    const dim4 distDims(tDims[sample_dim], qDims[sample_dim]);
+
+    Array<To> tmp_dists = createEmptyArray<To>(distDims);
 
     idx  = createEmptyArray<uint>(outDims);
     dist = createEmptyArray<To>(outDims);
@@ -38,14 +42,16 @@ void nearest_neighbour(Array<uint>& idx, Array<To>& dist,
     Array<T> trainT = dist_dim == 0 ? transpose(train, false) : train;
 
     switch(dist_type) {
-        case AF_SAD: kernel::nearest_neighbour<T, To, AF_SAD>(idx, dist, queryT, trainT, 1, n_dist);
+        case AF_SAD: kernel::nearest_neighbour<T, To, AF_SAD>(tmp_dists, queryT, trainT, 1, n_dist);
                      break;
-        case AF_SSD: kernel::nearest_neighbour<T, To, AF_SSD>(idx, dist, queryT, trainT, 1, n_dist);
+        case AF_SSD: kernel::nearest_neighbour<T, To, AF_SSD>(tmp_dists, queryT, trainT, 1, n_dist);
                      break;
-        case AF_SHD: kernel::nearest_neighbour<T, To, AF_SHD>(idx, dist, queryT, trainT, 1, n_dist);
+        case AF_SHD: kernel::nearest_neighbour<T, To, AF_SHD>(tmp_dists, queryT, trainT, 1, n_dist);
                      break;
         default: AF_ERROR("Unsupported dist_type", AF_ERR_NOT_CONFIGURED);
     }
+
+    cuda::topk(dist, idx, tmp_dists, n_dist, 0, AF_TOPK_MIN);
 }
 
 #define INSTANTIATE(T, To)                                                              \
