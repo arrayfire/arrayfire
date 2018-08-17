@@ -100,9 +100,9 @@ void all_distances(
                 // Calculate Hamming distance for 32-bits of descriptor and
                 // accumulates to dist
 #ifdef USE_LOCAL_MEM
-                dist += DISTOP(l_train[k * get_local_size(0) + tid], l_query[k]);
+                dist += DISTOP(l_train[(k - feat_offset) * get_local_size(0) + tid], l_query[k - feat_offset]);
 #else
-                dist += DISTOP(train[k * ntrain + f + tInfo.offset], l_query[k]);
+                dist += DISTOP(train[k * ntrain + f + tInfo.offset], l_query[k - feat_offset]);
 #endif
             }
         }

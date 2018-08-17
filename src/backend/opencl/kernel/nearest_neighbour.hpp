@@ -129,8 +129,8 @@ void all_distances(Param dist,
               *dist.data,
               *query.data, query.info, *train.data, train.info,
               max_dist, feat_len, max_kern_feat_len, feat_offset, cl::Local(lmem_sz));
+        CL_DEBUG_FINISH(getQueue());
     }
-    CL_DEBUG_FINISH(getQueue());
 }
 
 } // namespace kernel
