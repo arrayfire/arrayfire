@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <gtest/gtest.h>
 #include <arrayfire.h>
 #include <af/dim4.hpp>
