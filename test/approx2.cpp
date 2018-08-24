@@ -440,35 +440,33 @@ TEST(Approx2, SNIPPET_approx2) {
 
     //! [ex_data_approx2]
     // constant input data
-    // {{1 1 1 1 1},
-    //  {2 2 2 2 2},
-    //  {3 3 3 3 3},
-    //  {4 4 4 4 4},
-    //  {5 5 5 5 5}};
-    array input = af::range(af::dim4(5, 5)) + 1;
-
-    // locations to interpolate along each axis
-    float p[4] = {0.5, 1.5, 2.5, 3.5};
-    array pos(4, p);
+    // {{1 1 1},
+    //  {2 2 2},
+    //  {3 3 3}},
+    float input_vals[9] = {1, 1, 1,
+                           2, 2, 2,
+                           3, 3, 3};
+    array input(3, 3, input_vals);
 
     // generate grid of interpolation locations
-    // dim0 locations range from 0->4 staying constant across dim1
-    array pos0 = af::tile(pos, 1, 4);
-    // dim1 locations range from 0->4 staying constant across dim0
-    array pos1 = pos0.T();
+    // interpolation locations along dim0
+    float p0[4] = {0.5, 1.5,
+                   0.5, 1.5};
+    array pos0(2, 2, p0);
+    // interpolation locations along dim1
+    float p1[4] = {0.5, 0.5,
+                   1.5, 1.5};
+    array pos1(2, 2, p1);
 
     array interpolated = approx2(input, pos0, pos1);
-    // interpolated == {{1.5 1.5 1.5 1.5},
-    //                   2.5 2.5 2.5 2.5},
-    //                   3.5 3.5 3.5 3.5},
-    //                   4.5 4.5 4.5 4.5}};
+    // interpolated == {{1.5 1.5},
+    //                   2.5 2.5}};
     //! [ex_data_approx2]
 
-    float expected_interp[16] = {1.5, 1.5, 1.5, 1.5,
-                                 2.5, 2.5, 2.5, 2.5,
-                                 3.5, 3.5, 3.5, 3.5,
-                                 4.5, 4.5, 4.5, 4.5};
-    array interpolated_gold(4, 4, expected_interp);
-    ASSERT_ARRAYS_NEAR(interpolated, interpolated_gold.T(), 1e-5);
+    float expected_interp[4] = {1.5, 1.5,
+                                2.5, 2.5};
+
+    array interpolated_gold(2, 2, expected_interp);
+    ASSERT_ARRAYS_NEAR(interpolated, interpolated_gold, 1e-5);
 
 }
