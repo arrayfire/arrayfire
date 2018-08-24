@@ -18,7 +18,10 @@ class array;
 class dim4;
 
 /**
-   C++ Interface for data interpolation on one dimensional signals
+   C++ Interface for data interpolation on one dimensional signals.
+   Interpolation is performed assuming input data is equally spaced with indices in the range [2, n).
+   The positions are sampled with respect to data at these locations.
+
 
    \param[in]  in is the input array
    \param[in]  pos array contains the interpolation locations
@@ -33,7 +36,10 @@ AFAPI array approx1(const array &in, const array &pos,
                     const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
 
 /**
-   C++ Interface for data interpolation on two dimensional signals
+   C++ Interface for data interpolation on two dimensional signals.
+   Interpolation is performed assuming input data is equally spaced with indices in the range [0, n) along each dimension.
+   The positions are sampled with respect to data at these locations.
+
 
    \param[in]  in is the input array
    \param[in]  pos0 array contains the interpolation locations for first dimension
@@ -674,7 +680,9 @@ extern "C" {
 #endif
 
 /**
-   C Interface for signals interpolation on one dimensional signals
+   C Interface for signals interpolation on one dimensional signals.
+   Interpolation is performed assuming input data is equally spaced with indices in the range [0, n).
+   The positions are sampled with respect to data at these locations.
 
    \param[out] out is the array with interpolated values
    \param[in]  in is the input array
@@ -691,7 +699,9 @@ AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
                         const af_interp_type method, const float offGrid);
 
 /**
-   C Interface for signals interpolation on two dimensional signals
+   C Interface for signals interpolation on two dimensional signals.
+   Interpolation is performed assuming input data is equally spaced with indices in the range [0, n) along each dimension.
+   The positions are sampled with respect to data at these locations.
 
    \param[out] out is the array with interpolated values
    \param[in]  in is the input array
