@@ -19,6 +19,7 @@
 #include <vector>
 
 using af::abs;
+using af::allTrue;
 using af::approx2;
 using af::array;
 using af::cdouble;
@@ -439,15 +440,23 @@ TEST(Approx2, CPPCubicMaxDims)
 TEST(Approx2, SNIPPET_approx2) {
 
     //! [ex_data_approx2]
-    // input data
-    array input = af::randn(10, 10);
+    // constant input data
+    array input = af::constant(1.f, 5, 5);
 
-    // dim0 locations range from 0->9 staying constant across dim1
-    array pos0 = 0.1 * range(af::dim4(90, 90));
-    // dim1 locations range from 0->9 staying constant across dim0
-    array pos1 = 0.1 * range(af::dim4(90, 90), 1);
+    // locations to interpolate along each axis
+    float p[4] = {0.5, 1.5, 2.5, 3.5};
+    array pos(4, p);
 
+    // generate grid of interpolation locations
+    // dim0 locations range from 0->4 staying constant across dim1
+    array pos0 = af::tile(pos, 1, 4);
+    // dim1 locations range from 0->4 staying constant across dim0
+    array pos1 = pos0.T();
+
+    // interpolated values between constant data should equal same constant
     array interpolated = approx2(input, pos0, pos1);
-
     //! [ex_data_approx2]
+
+    ASSERT_TRUE(allTrue<bool>(interpolated - af::constant(1.f, 4,4) < 1e-5));
+
 }

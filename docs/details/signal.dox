@@ -219,8 +219,8 @@ It has three options for the type of interpolation to perform:
 - Cubic interpolation - \ref AF_INTERP_CUBIC
 
 Interpolation is performed assuming input data is equally spaced with indices
-in the range [0, n).
-The positions are sampled with respect to data at these locations.
+in the range [0, n). The positions are sampled with respect to
+data at these locations.
 
 \snippet test/approx1.cpp ex_data_approx1
 
