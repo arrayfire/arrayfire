@@ -466,7 +466,8 @@ TEST(Approx1, CPPCubicMaxDims)
 
 TEST(Approx1, SNIPPET_approx1) {
 
-    //! [ex_data_approx1]
+    //! [ex_signal_approx1]
+
     // input data
     float inv[3] = {10, 20, 30};
     af::array in(3, inv);
@@ -477,7 +478,8 @@ TEST(Approx1, SNIPPET_approx1) {
 
     af::array interpolated = approx1(in, pos);
     // interpolated == { 10, 15, 20, 25, 30 };
-    //! [ex_data_approx1]
+
+    //! [ex_signal_approx1]
 
     float iv[5] = {10, 15, 20, 25, 30 };
     af::array interp_gold(5, iv);

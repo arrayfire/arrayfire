@@ -438,11 +438,12 @@ TEST(Approx2, CPPCubicMaxDims)
 
 TEST(Approx2, SNIPPET_approx2) {
 
-    //! [ex_data_approx2]
+    //! [ex_signal_approx2]
+
     // constant input data
-    // {{1 1 1},
-    //  {2 2 2},
-    //  {3 3 3}},
+    // {{1 2 3},
+    //  {1 2 3},
+    //  {1 2 3}},
     float input_vals[9] = {1, 1, 1,
                            2, 2, 2,
                            3, 3, 3};
@@ -459,9 +460,10 @@ TEST(Approx2, SNIPPET_approx2) {
     array pos1(2, 2, p1);
 
     array interpolated = approx2(input, pos0, pos1);
-    // interpolated == {{1.5 1.5},
-    //                   2.5 2.5}};
-    //! [ex_data_approx2]
+    // interpolated == {{1.5 2.5},
+    //                  {1.5 2.5}};
+
+    //! [ex_signal_approx2]
 
     float expected_interp[4] = {1.5, 1.5,
                                 2.5, 2.5};
