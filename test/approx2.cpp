@@ -19,7 +19,6 @@
 #include <vector>
 
 using af::abs;
-using af::allTrue;
 using af::approx2;
 using af::array;
 using af::cdouble;
@@ -441,7 +440,12 @@ TEST(Approx2, SNIPPET_approx2) {
 
     //! [ex_data_approx2]
     // constant input data
-    array input = af::constant(1.f, 5, 5);
+    // {{1 1 1 1 1},
+    //  {2 2 2 2 2},
+    //  {3 3 3 3 3},
+    //  {4 4 4 4 4},
+    //  {5 5 5 5 5}};
+    array input = af::range(af::dim4(5, 5)) + 1;
 
     // locations to interpolate along each axis
     float p[4] = {0.5, 1.5, 2.5, 3.5};
@@ -453,10 +457,18 @@ TEST(Approx2, SNIPPET_approx2) {
     // dim1 locations range from 0->4 staying constant across dim0
     array pos1 = pos0.T();
 
-    // interpolated values between constant data should equal same constant
     array interpolated = approx2(input, pos0, pos1);
+    // interpolated == {{1.5 1.5 1.5 1.5},
+    //                   2.5 2.5 2.5 2.5},
+    //                   3.5 3.5 3.5 3.5},
+    //                   4.5 4.5 4.5 4.5}};
     //! [ex_data_approx2]
 
-    ASSERT_TRUE(allTrue<bool>(interpolated - af::constant(1.f, 4,4) < 1e-5));
+    float expected_interp[16] = {1.5, 1.5, 1.5, 1.5,
+                                 2.5, 2.5, 2.5, 2.5,
+                                 3.5, 3.5, 3.5, 3.5,
+                                 4.5, 4.5, 4.5, 4.5};
+    array interpolated_gold(4, 4, expected_interp);
+    ASSERT_ARRAYS_NEAR(interpolated, interpolated_gold.T(), 1e-5);
 
 }
