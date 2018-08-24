@@ -463,3 +463,23 @@ TEST(Approx1, CPPCubicMaxDims)
 
     SUCCEED();
 }
+
+TEST(Approx1, SNIPPET_approx1) {
+
+    //! [ex_data_approx1]
+    // input data
+    float inv[3] = {10, 20, 30};
+    af::array in(3, inv);
+
+    // positions of interpolated values
+    float pv[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    af::array pos(5, pv);
+
+    af::array interpolated = approx1(in, pos);
+    // interpolated == { 10, 15, 20, 25, 30 };
+    //! [ex_data_approx1]
+
+    float iv[5] = {10, 15, 20, 25, 30 };
+    af::array interp_gold(5, iv);
+    ASSERT_ARRAYS_NEAR(interpolated, interp_gold, 1e-5);
+}

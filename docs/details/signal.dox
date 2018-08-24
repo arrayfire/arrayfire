@@ -218,6 +218,12 @@ It has three options for the type of interpolation to perform:
 - Bilinear interpolation - \ref AF_INTERP_BILINEAR
 - Cubic interpolation - \ref AF_INTERP_CUBIC
 
+Interpolation is performed assuming input data is equally spaced with indices
+in the range [0, n).
+The positions are sampled with respect to data at these locations.
+
+\snippet test/approx1.cpp ex_data_approx1
+
 \defgroup signal_func_approx2 approx2
 \ingroup approx_mat
 
@@ -227,6 +233,12 @@ It has three options for the type of interpolation to perform:
 - Linear interpolation  - \ref AF_INTERP_LINEAR
 - Bilinear interpolation - \ref AF_INTERP_BILINEAR
 - Cubic interpolation - \ref AF_INTERP_CUBIC
+
+Interpolation is performed assuming input data is equally spaced with indices
+in the range [0, n) along each dimension.
+The positions are sampled with respect to data at these locations.
+
+\snippet test/approx2.cpp ex_data_approx2
 
 \defgroup signal_func_fir fir
 \ingroup sigfilt_mat

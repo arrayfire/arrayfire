@@ -435,3 +435,19 @@ TEST(Approx2, CPPCubicMaxDims)
 
     SUCCEED();
 }
+
+TEST(Approx2, SNIPPET_approx2) {
+
+    //! [ex_data_approx2]
+    // input data
+    array input = af::randn(10, 10);
+
+    // dim0 locations range from 0->9 staying constant across dim1
+    array pos0 = 0.1 * range(af::dim4(90, 90));
+    // dim1 locations range from 0->9 staying constant across dim0
+    array pos1 = 0.1 * range(af::dim4(90, 90), 1);
+
+    array interpolated = approx2(input, pos0, pos1);
+
+    //! [ex_data_approx2]
+}
