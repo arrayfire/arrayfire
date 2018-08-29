@@ -313,16 +313,27 @@ TEST(KNearestNeighbourSSD, small)
 
 struct nearest_neighbors_params {
     string testname_;
-    int    k_;
+    int    k_, nfeat_, ntrain_, nquery_;
     int    feat_dim_;
-    array  query_;
-    array  train_;
-    array  indices_;
-    array  dists_;
+    dim4 qdims_, tdims_, idims_, ddims_;
+    vector<float> query_;
+    vector<float> train_;
+    vector<unsigned int> indices_;
+    vector<float> dists_;
 
-    nearest_neighbors_params(array indices, array dists, array query, array train, int k, int feat_dim, string testname)
-    : indices_(indices), dists_(dists), query_(query), train_(train), k_(k), feat_dim_(feat_dim), testname_(testname)
-    { }
+    nearest_neighbors_params(string testname, int k, int feat_dim, array query, array train, array indices, array dists)
+    : testname_(testname), k_(k), feat_dim_(feat_dim), query_(query.elements()), train_(train.elements()), indices_(indices.elements()), dists_(dists.elements())
+    {
+        qdims_ = query.dims();
+        tdims_ = train.dims();
+        idims_ = indices.dims();
+        ddims_ = dists.dims();
+
+        query.host(query_.data());
+        train.host(train_.data());
+        indices.host(indices_.data());
+        dists.host(dists_.data());
+    }
 };
 
 template<typename TestClass>
@@ -347,7 +358,8 @@ single_knn_data(const string testname, const int nquery, const int ntrain, const
 
     indices = constant(0, k, nquery, u32);
     dists   = constant(nfeat, k, nquery);
-    return nearest_neighbors_params(indices, dists, query, train, k, feat_dim, testname);
+
+    return nearest_neighbors_params(testname, k, feat_dim, query, train, indices, dists);
 }
 
 nearest_neighbors_params
@@ -366,7 +378,7 @@ knn_data(const string testname, const int nquery, const int ntrain, const int nf
     dists   = range(dim4(k, nquery));
     dists  *= dists;
 
-    return nearest_neighbors_params(indices, dists, query, train, k, feat_dim, testname);
+    return nearest_neighbors_params(testname, k, feat_dim, query, train, indices, dists);
 }
 
 vector<nearest_neighbors_params> genNNTests() {
@@ -425,33 +437,40 @@ INSTANTIATE_TEST_CASE_P(KNearestNeighborsSSD,
 
 TEST_P(NearestNeighborsTest, SingleQTests) {
     nearest_neighbors_params params = GetParam();
+    array query = array(params.qdims_, params.query_.data());
+    array train = array(params.tdims_, params.train_.data());
 
-    array query = params.query_;
-    array train = params.train_;
-
-    array indices;
-    array distances;
     const int k = params.k_;
     const int feat_dim = params.feat_dim_;
+
+    array indices, distances;
+
     nearestNeighbour(indices, distances, query, train, feat_dim, k, AF_SSD);
 
-    ASSERT_ARRAYS_EQ(indices, params.indices_);
-    ASSERT_ARRAYS_NEAR(distances, params.dists_, 1e-5);
+    array indices_gold(params.idims_, params.indices_.data());
+    array distances_gold(params.ddims_, params.dists_.data());
+
+    ASSERT_ARRAYS_EQ(indices_gold, indices);
+    ASSERT_ARRAYS_NEAR(distances_gold, distances, 1e-5);
 }
 
 TEST_P(KNearestNeighborsTest, SingleQTests) {
     nearest_neighbors_params params = GetParam();
 
-    array query = params.query_;
-    array train = params.train_;
+    array query = array(params.qdims_, params.query_.data());
+    array train = array(params.tdims_, params.train_.data());
 
-    array indices;
-    array distances;
     const int k = params.k_;
     const int feat_dim = params.feat_dim_;
+
+    array indices, distances;
+
     nearestNeighbour(indices, distances, query, train, feat_dim, k, AF_SSD);
 
-    ASSERT_ARRAYS_EQ(indices, params.indices_);
-    ASSERT_ARRAYS_NEAR(distances, params.dists_, 1e-5);
+    array indices_gold(params.idims_, params.indices_.data());
+    array distances_gold(params.ddims_, params.dists_.data());
+
+    ASSERT_ARRAYS_EQ(indices_gold, indices);
+    ASSERT_ARRAYS_NEAR(distances_gold, distances, 1e-5);
 }
 
