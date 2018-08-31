@@ -116,55 +116,71 @@ void svd(Array<T > &arrU,
     int nru = 0;
     int ncvt = 0;
 
-    std::vector<T> A(m * n);
+    // Instead of copying U, S, VT, and A to the host and copying the results
+    // back to the device, create a pointer that's mapped to device memory where
+    // the computation can directly happen
+    T *mappedA = (T*) getQueue().enqueueMapBuffer(*arrA.get(), CL_FALSE,
+                                                  CL_MAP_READ,
+                                                  sizeof(T) * arrA.getOffset(),
+                                                  sizeof(T) * arrA.elements());
     std::vector<T> tauq(min_mn), taup(min_mn);
     std::vector<T> work(lwork);
-    std::vector<Tr> s0(min_mn), s1(min_mn - 1);
+    Tr *mappedS0 = (Tr*) getQueue().enqueueMapBuffer(*arrS.get(), CL_TRUE,
+                                                     CL_MAP_WRITE,
+                                                     sizeof(Tr) * arrS.getOffset(),
+                                                     sizeof(Tr) * arrS.elements());
+    std::vector<Tr> s1(min_mn - 1);
     std::vector<Tr> rwork(5 * min_mn);
 
     int info = 0;
-
-    copyData(&A[0], arrA);
-
 
     // Bidiagonalize A
     // (CWorkspace: need 2*N + M, prefer 2*N + (M + N)*NB)
     // (RWorkspace: need N)
     magma_gebrd_hybrid<T>(m, n,
-                          &A[0], lda,
+                          mappedA, lda,
                           (*arrA.get())(), arrA.getOffset(), ldda,
-                          (void *)&s0[0], (void *)&s1[0],
+                          (void *)mappedS0, (void *)&s1[0],
                           &tauq[0], &taup[0],
                           &work[0], lwork,
                           getQueue()(), &info, false);
 
-    std::vector<T> U(1), VT(1);
+    T *mappedU = nullptr, *mappedVT = nullptr;
     std::vector<T> cdummy(1);
 
     if (want_vectors) {
 
-        U = std::vector<T>(m * m);
-        VT = std::vector<T>(n * n);
+        mappedU = (T*) getQueue().enqueueMapBuffer(*arrU.get(), CL_FALSE,
+                                                   CL_MAP_WRITE,
+                                                   sizeof(T) * arrU.getOffset(),
+                                                   sizeof(T) * arrU.elements());
+        mappedVT = (T*) getQueue().enqueueMapBuffer(*arrVT.get(), CL_TRUE,
+                                                    CL_MAP_WRITE,
+                                                    sizeof(T) * arrVT.getOffset(),
+                                                    sizeof(T) * arrVT.elements());
 
         // If left singular vectors desired in U, copy result to U
         // and generate left bidiagonalizing vectors in U
         // (CWorkspace: need 2*N + NCU, prefer 2*N + NCU*NB)
         // (RWorkspace: 0)
-        LAPACKE_CHECK(cpu_lapack_lacpy('L', m, n, &A[0], lda, &U[0], ldu));
+        LAPACKE_CHECK(cpu_lapack_lacpy('L', m, n, mappedA, lda, mappedU, ldu));
 
         int ncu = m;
-        LAPACKE_CHECK(cpu_lapack_ungbr_work('Q', m, ncu, n, &U[0], ldu, &tauq[0], &work[0], lwork));
+        LAPACKE_CHECK(cpu_lapack_ungbr_work('Q', m, ncu, n, mappedU, ldu,
+                                            &tauq[0], &work[0], lwork));
 
         // If right singular vectors desired in VT, copy result to
         // VT and generate right bidiagonalizing vectors in VT
         // (CWorkspace: need 3*N-1, prefer 2*N + (N-1)*NB)
         // (RWorkspace: 0)
-        LAPACKE_CHECK(cpu_lapack_lacpy('U', n, n, &A[0], lda, &VT[0], ldvt));
-        LAPACKE_CHECK(cpu_lapack_ungbr_work('P', n, n, n, &VT[0], ldvt, &taup[0], &work[0], lwork));
+        LAPACKE_CHECK(cpu_lapack_lacpy('U', n, n, mappedA, lda, mappedVT, ldvt));
+        LAPACKE_CHECK(cpu_lapack_ungbr_work('P', n, n, n, mappedVT, ldvt,
+                                            &taup[0], &work[0], lwork));
 
         nru = m;
         ncvt = n;
     }
+    getQueue().enqueueUnmapMemObject(*arrA.get(), mappedA);
 
     // Perform bidiagonal QR iteration, if desired, computing
     // left singular vectors in U and computing right singular
@@ -172,16 +188,17 @@ void svd(Array<T > &arrU,
     // (CWorkspace: need 0)
     // (RWorkspace: need BDSPAC)
     LAPACKE_CHECK(cpu_lapack_bdsqr_work('U', n, ncvt, nru, izero,
-                                        &s0[0], &s1[0], &VT[0], ldvt, &U[0], ldu,
+                                        mappedS0, &s1[0], mappedVT,
+                                        ldvt, mappedU, ldu,
                                         &cdummy[0], ione, &rwork[0]));
 
 
     if (want_vectors) {
-        writeHostDataArray(arrU, &U[0], arrU.elements() * sizeof(T));
-        writeHostDataArray(arrVT, &VT[0], arrVT.elements() * sizeof(T));
+          getQueue().enqueueUnmapMemObject(*arrU.get(), mappedU);
+          getQueue().enqueueUnmapMemObject(*arrVT.get(), mappedVT);
     }
 
-    writeHostDataArray(arrS, &s0[0], arrS.elements() * sizeof(Tr));
+    getQueue().enqueueUnmapMemObject(*arrS.get(), mappedS0);
 
     if (iscl == 1) {
         Tr rscale = scalar<Tr>(1);
