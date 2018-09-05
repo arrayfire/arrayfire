@@ -435,3 +435,40 @@ TEST(Approx2, CPPCubicMaxDims)
 
     SUCCEED();
 }
+
+TEST(Approx2, SNIPPET_approx2) {
+
+    //! [ex_signal_approx2]
+
+    // constant input data
+    // {{1 2 3},
+    //  {1 2 3},
+    //  {1 2 3}},
+    float input_vals[9] = {1, 1, 1,
+                           2, 2, 2,
+                           3, 3, 3};
+    array input(3, 3, input_vals);
+
+    // generate grid of interpolation locations
+    // interpolation locations along dim0
+    float p0[4] = {0.5, 1.5,
+                   0.5, 1.5};
+    array pos0(2, 2, p0);
+    // interpolation locations along dim1
+    float p1[4] = {0.5, 0.5,
+                   1.5, 1.5};
+    array pos1(2, 2, p1);
+
+    array interpolated = approx2(input, pos0, pos1);
+    // interpolated == {{1.5 2.5},
+    //                  {1.5 2.5}};
+
+    //! [ex_signal_approx2]
+
+    float expected_interp[4] = {1.5, 1.5,
+                                2.5, 2.5};
+
+    array interpolated_gold(2, 2, expected_interp);
+    ASSERT_ARRAYS_NEAR(interpolated, interpolated_gold, 1e-5);
+
+}
