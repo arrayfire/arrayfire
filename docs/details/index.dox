@@ -5,49 +5,27 @@
 \defgroup index_func_index index
 \ingroup index_mat
 
-\brief Lookup values on array based on sequences and/or arrays
+\brief Lookup values of an array based on sequences and/or arrays
 
 
 
 \defgroup index_func_lookup Lookup
 \ingroup index_mat
 
-\brief Index an array using another array.
+\brief Lookup values of an array by indexing with another array.
 
-Lets look at an example of how \ref af::lookup function does indexing.
-\code
-array a = range(dim4(5));
-af_print(a);
-//  0
-//  1
-//  2
-//  3
-//  4
+\ref af::lookup will look up the values of an array accoring to specified indices inside of an index array.
+The resulting array contains values corresponding to each of the provided indices.
+Locations of the input data are assumed to be in the range [0, n). Indexing outside of this range will result in mirrored wrap-around behavior.
 
-array b = range(dim4(2)) + 2; // Create an array with values [0,2] range and add 2 to them
-af_print(b);
-// 2
-// 3
+A simple example of one-dimension indexing can be seen in the following example.
 
-array c = lookup(a, b, 0);
-af_print(c);
-//  2
-//  3
+\snippet test/index.cpp ex_index_lookup1d
 
+The dimensiong along which to query the indices can also be specified. The resulting array will be of the same size as the input, except for the queried dimension which will match the number of elements in the index array.
 
-array d = lookup(a, b, 1);
-af_print(d);
-//  0   0
-//  1   1
-//  2   2
-//  3   3
-//  4   4
+\snippet test/index.cpp ex_index_lookup2d
 
-// Since the second(1) dimension has only single element, all indices map to first & single element
-// along that dimension. Thus, the output array has two columns with elements repeatd twice because
-// the index array b has 2 elements.
-
-\endcode
 
 
 
