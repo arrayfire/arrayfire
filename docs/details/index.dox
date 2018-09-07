@@ -14,13 +14,17 @@
 
 \brief Lookup values of an array by indexing with another array.
 
-\ref af::lookup will look up the values of an array accoring to specified indices inside of an index array.
+Will return an array with the values in the \p in array from the locations specified in the \p idx array.
 The resulting array contains values corresponding to each of the provided indices.
 Locations of the input data are assumed to be in the range [0, n). Indexing outside of this range will result in mirrored wrap-around behavior.
 
 A simple example of one-dimension indexing can be seen in the following example.
 
 \snippet test/index.cpp ex_index_lookup1d
+
+Index locations can also be out of bounds.
+
+\snippet test/index.cpp ex_index_lookup_oob
 
 The dimensiong along which to query the indices can also be specified. The resulting array will be of the same size as the input, except for the queried dimension which will match the number of elements in the index array.
 

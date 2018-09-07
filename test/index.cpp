@@ -734,25 +734,7 @@ TEST(lookup, SNIPPET_lookup1d)
     af::array idx(3, idx_);
 
     af::array indexed = af::lookup(in, idx);
-    af_print(indexed);
     // indexed == { 20, 40, 30 };
-
-
-    // indexes can be out of bounds
-    // indexing past end of array
-    int idx_outofbounds_p_[8] = {4,  5,  6,  7,  8,  9, 10, 11};
-    // and indexing before beginning of array
-    int idx_outofbounds_n_[8] = {0, -1, -2, -3, -4, -5, -6, -7};
-
-    af::array idx_outofbounds_p(8, idx_outofbounds_p_);
-    af::array idx_outofbounds_n(8, idx_outofbounds_n_);
-
-    af::array indexed_out_of_bounds_pos = af::lookup(in, idx_outofbounds_p);
-    af::array indexed_out_of_bounds_neg = af::lookup(in, idx_outofbounds_n);
-    // indexed_out_of_bounds_pos = { 50, 50, 40, 30, 20, 10, 50, 40 }
-    af_print(indexed_out_of_bounds_pos);
-    // indexed_out_of_bounds_neg = { 10, 10, 20, 30, 40, 50, 10, 20 }
-    af_print(indexed_out_of_bounds_neg);
 
     //! [ex_index_lookup1d]
 
@@ -760,13 +742,37 @@ TEST(lookup, SNIPPET_lookup1d)
     float in_g[3] = {20, 40, 30 };
     af::array indexed_gold(3, in_g);
     ASSERT_ARRAYS_NEAR(indexed, indexed_gold, 1e-5);
+}
+
+TEST(lookup, SNIPPET_lookup_oob)
+{
+    //! [ex_index_lookup_oob]
+
+    // input array
+    float in_[5] = {10, 20, 30, 40, 50};
+    af::array in(5, in_);
+
+    // indexing past end of array
+    int idx_outofbounds_p_[8] = {4,  5,  6,  7,  8,  9, 10, 11};
+    af::array idx_outofbounds_p(8, idx_outofbounds_p_);
+
+    // and indexing before beginning of array
+    int idx_outofbounds_n_[8] = {0, -1, -2, -3, -4, -5, -6, -7};
+    af::array idx_outofbounds_n(8, idx_outofbounds_n_);
+
+    af::array indexed_out_of_bounds_pos = af::lookup(in, idx_outofbounds_p);
+    af::array indexed_out_of_bounds_neg = af::lookup(in, idx_outofbounds_n);
+    // indexed_out_of_bounds_pos == { 50, 50, 40, 30, 20, 10, 50, 40 }
+    // indexed_out_of_bounds_neg == { 10, 10, 20, 30, 40, 50, 10, 20 }
+
+    //! [ex_index_lookup_oob]
 
     // out of bounds tests
     float oob_p_g_[8] = { 50, 50, 40, 30, 20, 10, 50, 40 };
     af::array oob_p_g(8, oob_p_g_);
     ASSERT_ARRAYS_NEAR(indexed_out_of_bounds_pos, oob_p_g, 1e-5);
     float oob_n_g_[8] = { 10, 10, 20, 30, 40, 50, 10, 20 };
-    af::array oob_n_g(8, oob_p_g_);
+    af::array oob_n_g(8, oob_n_g_);
     ASSERT_ARRAYS_NEAR(indexed_out_of_bounds_neg, oob_n_g, 1e-5);
 }
 
