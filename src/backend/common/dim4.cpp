@@ -64,7 +64,7 @@ dim4::elements()
 dim_t
 dim4::ndims() const
 {
-    int num = elements();
+    dim_t num = elements();
     if (num == 0) return 0;
     if (num == 1) return 1;
 
