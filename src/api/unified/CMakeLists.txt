@@ -31,26 +31,26 @@ target_sources(af
 
 target_sources(af
   PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/api/c/type_util.cpp
-    ${CMAKE_SOURCE_DIR}/src/api/c/version.cpp
-    ${CMAKE_SOURCE_DIR}/src/backend/common/Logger.cpp
-    ${CMAKE_SOURCE_DIR}/src/backend/common/Logger.hpp
-    ${CMAKE_SOURCE_DIR}/src/backend/common/constants.cpp
-    ${CMAKE_SOURCE_DIR}/src/backend/common/dim4.cpp
-    ${CMAKE_SOURCE_DIR}/src/backend/common/err_common.cpp
-    ${CMAKE_SOURCE_DIR}/src/backend/common/util.cpp
-    ${CMAKE_SOURCE_DIR}/src/backend/common/util.hpp
+    ${ArrayFire_SOURCE_DIR}/src/api/c/type_util.cpp
+    ${ArrayFire_SOURCE_DIR}/src/api/c/version.cpp
+    ${ArrayFire_SOURCE_DIR}/src/backend/common/Logger.cpp
+    ${ArrayFire_SOURCE_DIR}/src/backend/common/Logger.hpp
+    ${ArrayFire_SOURCE_DIR}/src/backend/common/constants.cpp
+    ${ArrayFire_SOURCE_DIR}/src/backend/common/dim4.cpp
+    ${ArrayFire_SOURCE_DIR}/src/backend/common/err_common.cpp
+    ${ArrayFire_SOURCE_DIR}/src/backend/common/util.cpp
+    ${ArrayFire_SOURCE_DIR}/src/backend/common/util.hpp
   )
 
 arrayfire_set_default_cxx_flags(af)
 if(WIN32)
   target_sources(af
     PRIVATE
-      ${CMAKE_SOURCE_DIR}/src/backend/common/module_loading_windows.cpp)
+      ${ArrayFire_SOURCE_DIR}/src/backend/common/module_loading_windows.cpp)
 else()
   target_sources(af
     PRIVATE
-      ${CMAKE_SOURCE_DIR}/src/backend/common/module_loading_unix.cpp)
+      ${ArrayFire_SOURCE_DIR}/src/backend/common/module_loading_unix.cpp)
 endif()
 
 target_include_directories(af
