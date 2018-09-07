@@ -36,7 +36,7 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse_helpers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.hpp
-    ${PROJECT_BINARY_DIR}/version.hpp
+    ${ArrayFire_BINARY_DIR}/version.hpp
   )
 
 if(WIN32)
@@ -52,8 +52,8 @@ target_link_libraries(afcommon_interface
 
 target_include_directories(afcommon_interface
   INTERFACE
-    ${CMAKE_SOURCE_DIR}/src/backend
-    ${PROJECT_BINARY_DIR}
+    ${ArrayFire_SOURCE_DIR}/src/backend
+    ${ArrayFire_BINARY_DIR}
   )
 
 if(APPLE AND NOT USE_MKL)
