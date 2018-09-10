@@ -796,7 +796,6 @@ TEST(lookup, SNIPPET_lookup2d)
 
     //will look up all indices along specified dimension
     af::array indexed = af::lookup(input, idx); //(dim = 0)
-    af_print(indexed);
     // indexed == { 10, 11, 12,
     //              10, 11, 12,
     //              20, 21, 22,
@@ -805,7 +804,6 @@ TEST(lookup, SNIPPET_lookup2d)
     //              30, 31, 32 };
 
     af::array indexed_dim1 = af::lookup(input, idx, 1);
-    af_print(indexed_dim1);
     // indexed_dim1 == { 10, 10, 11, 11, 12, 12,
     //                   20, 20, 21, 21, 22, 22,
     //                   30, 30, 31, 31, 32, 32 };
