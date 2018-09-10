@@ -36,7 +36,20 @@ AFAPI af_err af_get_backend_count(unsigned* num_backends);
 
 #if AF_API_VERSION >= 32
 /**
-   \param[out] backends is the OR sum of the backends available.
+   Returns a flag of all available backends
+
+   \code{.cpp}
+   int backends = 0;
+   af_get_available_backends(&backends);
+
+   if(backends & AF_BACKEND_CUDA) {
+       // The CUDA backend is available
+   }
+   \endcode
+
+   \param[out] backends A flag of all available backends. Use the &(and)
+   operator to check if a particular backend is available
+
    \returns \ref af_err error code
 
    \ingroup unified_func_getavailbackends
@@ -107,7 +120,17 @@ AFAPI unsigned getBackendCount();
 
 #if AF_API_VERSION >= 32
 /**
-   \returns OR sum of the backends available
+   Returns a flag of all available backends
+
+   \code{.cpp}
+   int backends = getAvailableBackends();
+
+   if(backends & AF_BACKEND_CUDA) {
+   // The CUDA backend is available
+   }
+   \endcode
+
+   \returns A flag of available backends
 
    \ingroup unified_func_getavailbackends
  */
