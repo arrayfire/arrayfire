@@ -43,7 +43,7 @@ af_err af_topk(af_array *values, af_array *indices, const af_array in,
 
         ArrayInfo inInfo = getInfo(in);
 
-        ARG_ASSERT(1, (inInfo.ndims()>0));
+        ARG_ASSERT(2, (inInfo.ndims()>0));
 
         if (inInfo.elements() == 1) {
             dim_t dims[1] = {1};
@@ -62,6 +62,9 @@ af_err af_topk(af_array *values, af_array *indices, const af_array in,
                 }
             }
         }
+
+        ARG_ASSERT(2, (inInfo.dims()[rdim] >= k));
+        ARG_ASSERT(4, (k <= 256)); // TODO(umar): Remove this limitation
 
         if (rdim!=0)
             AF_ERROR("topk is supported along dimenion 0 only.", AF_ERR_NOT_SUPPORTED);
