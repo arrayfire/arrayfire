@@ -241,7 +241,8 @@ INSTANTIATE_TEST_CASE_P(InstantiationName,
                                           topk_params{10, 10,     5, 0,  AF_TOPK_MAX},
                                           topk_params{10, 100,    5, 0,  AF_TOPK_MAX},
                                           topk_params{10, 1000,   5, 0,  AF_TOPK_MAX},
-                                          topk_params{10, 10000,  5, 0,  AF_TOPK_MAX}
+                                          topk_params{10, 10000,  5, 0,  AF_TOPK_MAX},
+                                          topk_params{1000, 10,   256, 0,  AF_TOPK_MAX}
                                           ),
                         []( const ::testing::TestParamInfo<TopKParams::ParamType> info) {
                           stringstream ss;
