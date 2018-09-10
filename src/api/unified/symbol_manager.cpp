@@ -189,7 +189,9 @@ AFSymbolManager::AFSymbolManager()
             backendsAvailable += order[i];
         }
     }
-    AF_TRACE("AF_DEFAULT_BACKEND: {}", getBackendDirectoryName(activeBackend));
+    if(activeBackend) {
+        AF_TRACE("AF_DEFAULT_BACKEND: {}", getBackendDirectoryName(activeBackend));
+    }
 
     // Keep a copy of default order handle inorder to use it in ::setBackend
     // when the user passes AF_BACKEND_DEFAULT
