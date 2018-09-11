@@ -28,6 +28,8 @@ using af::constant;
 using af::dim4;
 using af::dtype_traits;
 using af::product;
+using af::seq;
+using af::span;
 
 template<typename T>
 class Tile : public ::testing::Test
@@ -171,4 +173,51 @@ TEST(Tile, MaxDim)
 
     ASSERT_EQ(1.f, product<float>(output));
 
+}
+
+TEST(Tile, DocSnippet) {
+    //! [ex_tile_input]
+    float hA[] = {0, 1, 2, 3, 4, 5};
+    array A(3, 2, hA);
+    //  0.  3.
+    //  1.  4.
+    //  2.  5.
+    //! [ex_tile_input]
+
+    //! [ex_tile_0_2]
+    array B = tile(A, 2, 1);
+    //  0.  3.
+    //  1.  4.
+    //  2.  5.
+    //  0.  3.
+    //  1.  4.
+    //  2.  5.
+    //! [ex_tile_0_2]
+
+    ASSERT_ARRAYS_EQ(A, B(seq(0, 2), span));
+    ASSERT_ARRAYS_EQ(A, B(seq(3, 5), span));
+
+    //! [ex_tile_1_3]
+    array C = tile(A, 1, 3);
+    //  0.  3.  0.  3.  0.  3.
+    //  1.  4.  1.  4.  1.  4.
+    //  2.  5.  2.  5.  2.  5.
+    //! [ex_tile_1_3]
+
+    ASSERT_ARRAYS_EQ(A, C(span, seq(0, 1)));
+    ASSERT_ARRAYS_EQ(A, C(span, seq(2, 3)));
+    ASSERT_ARRAYS_EQ(A, C(span, seq(4, 5)));
+
+    //! [ex_tile_0_2_and_1_3]
+    array D = tile(A, 2, 3);
+    //  0.  3.  0.  3.  0.  3.
+    //  1.  4.  1.  4.  1.  4.
+    //  2.  5.  2.  5.  2.  5.
+    //  0.  3.  0.  3.  0.  3.
+    //  1.  4.  1.  4.  1.  4.
+    //  2.  5.  2.  5.  2.  5.
+    //! [ex_tile_0_2_and_1_3]
+
+    ASSERT_ARRAYS_EQ(C, D(seq(0, 2), span));
+    ASSERT_ARRAYS_EQ(C, D(seq(3, 5), span));
 }

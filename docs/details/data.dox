@@ -159,9 +159,31 @@ Requires that all dimensions except the join dimension must be the same for all 
 
 \defgroup manip_func_tile tile
 
-\brief Tile the input array along specified dimensions
+\brief Repeat the contents of the input array along the specified dimensions
 
-Creates copys of the array a specified number of times within the output array
+Creates copies of the input array and concatenates them with each other, such
+that the output array will have as many copies of the input array as the user
+specifies, along each dimension. In this sense, the output array is essentially
+a set of "tiles", where each copy of the input array (including the original) is
+a "tile" (hence the name of this function).
+
+Given below are some examples. The input array looks like this:
+
+\snippet test/tile.cpp ex_tile_input
+
+Here, the input array is tiled along the first dimenson, 2 times:
+
+\snippet test/tile.cpp ex_tile_0_2
+
+Here, the input is tiled along the second dimension, 3 times:
+
+\snippet test/tile.cpp ex_tile_1_3
+
+Lastly, one can also tile along multiple dimensions simultaneously. Here, the
+input is tiled 2 times in the first dimension and 3 times in the second
+dimension:
+
+\snippet test/tile.cpp ex_tile_0_2_and_1_3
 
 \ingroup manip_mat
 \ingroup arrayfire_func
