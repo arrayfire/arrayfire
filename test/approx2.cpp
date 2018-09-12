@@ -471,6 +471,7 @@ TEST(Approx2, SNIPPET_approx2)
 
     array interpolated_gold(2, 2, expected_interp);
     ASSERT_ARRAYS_NEAR(interpolated, interpolated_gold, 1e-5);
+}
 
 TEST(Approx2, OtherDimLinear)
 {

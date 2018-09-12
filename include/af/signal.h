@@ -49,7 +49,7 @@ AFAPI array approx2(const array &zi, const array &xo, const array &yo,
                     const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
 
 
-#if AF_API_VERSION >= 36
+#if AF_API_VERSION >= 37
 /**
    C++ Interface for data interpolation on one dimensional signals
 
@@ -80,6 +80,12 @@ AFAPI array approx1(const array &yi,
                enum \ref af_interp_type
    \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
    \return     the array with interpolated values
+   \param[in]  xdim Specifies the first dimension along which measurements were made.
+   \param[in]  ydim Specifies the second dimension along which measurements were made.
+   \param[in]  xi_beg Initial value of the grid on which original values were measured for the first dimension.
+   \param[in]  xi_step Step size of the grid on which original values were measured for the first dimension.
+   \param[in]  yi_beg Initial value of the grid on which original values were measured for the second dimension.
+   \param[in]  yi_step Step size of the grid on which original values were measured for the second dimension.
 
    \ingroup signal_func_approx2
  */
@@ -751,14 +757,14 @@ AFAPI af_err af_approx1(af_array *yo, const af_array yi, const af_array xo,
 AFAPI af_err af_approx2(af_array *zo, const af_array zi, const af_array xo, const af_array yo,
                         const af_interp_type method, const float offGrid);
 
-#if AF_API_VERSION >= 36
+#if AF_API_VERSION >= 37
 /**
    C Interface for signals interpolation on one dimensional signals along specified dimension.
 
    \param[out] yo is the array with interpolated values.
    \param[in]  yi is the array containing the measured / reference values.
    \param[in]  xo array containining the interpolation locations.
-   \param[in]  dim The dimension along the measurements were made.
+   \param[in]  xdim The dimension along which measurements were made.
    \param[in]  xi_beg Initial value of the grid on which the original values were measured.
    \param[in]  xi_step Step size of the grid on which the original values were measured.
    \param[in]  method is the interpolation type, it can take one of the values defined by the
