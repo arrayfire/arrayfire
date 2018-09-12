@@ -18,14 +18,13 @@ class array;
 class dim4;
 
 /**
-   C++ Interface for data interpolation on one dimensional signals.
+   C++ Interface for data interpolation on one-dimensional signals.
 
    \param[in]  yi is the input array
    \param[in]  xo array contains the interpolation locations
-   \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type
-   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
-   \return     the array with interpolated values
+   \param[in]  method is the interpolation type. The following types (defined in enum \ref af_interp_type) can be used: nearest neighbor, linear, and cubic.
+   \param[in]  offGrid is the value that will be set in the output array for any indices that are out of bounds.
+   \return     Interpolated array.
 
    \ingroup signal_func_approx1
  */
@@ -33,15 +32,14 @@ AFAPI array approx1(const array &yi, const array &xo,
                     const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
 
 /**
-   C++ Interface for data interpolation on two dimensional signals.
+   C++ Interface for data interpolation on two-dimensional signals.
 
    \param[in]  zi is the input array
    \param[in]  xo array contains the interpolation locations for first dimension
    \param[in]  yo array contains the interpolation locations for second dimension
-   \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type
-   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
-   \return     the array with interpolated values
+   \param[in]  method is the interpolation type. All interpolation types defined in \ref af_interp_type are supported.
+   \param[in]  offGrid is the value that will be set in the output array for any indices that are out of bounds.
+   \return     Interpolated array.
 
    \ingroup signal_func_approx2
  */
@@ -51,17 +49,16 @@ AFAPI array approx2(const array &zi, const array &xo, const array &yo,
 
 #if AF_API_VERSION >= 37
 /**
-   C++ Interface for data interpolation on one dimensional signals
+   C++ Interface for data interpolation on one-dimensional signals.
 
-   \param[in]  yi is the input array
-   \param[in]  xo array contains the interpolation locations
-   \param[in]  xdim Specifies the dimension along with measurements were made.
+   \param[in]  yi is the input array.
+   \param[in]  xo array contains the interpolation locations.
+   \param[in]  xdim Specifies the dimension along which measurements were made.
    \param[in]  xi_beg Initial value of the grid on which original values were measured.
    \param[in]  xi_step Step size of the grid on which original values were measured.
-   \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type
-   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
-   \return     the array with interpolated values
+   \param[in]  method is the interpolation type. The following types (defined in enum \ref af_interp_type) can be used: nearest neighbor, linear, and cubic.
+   \param[in]  offGrid is the value that will be set in the output array for any indices that are out of bounds.
+   \return     Interpolated array.
 
    \ingroup signal_func_approx1
  */
@@ -71,21 +68,20 @@ AFAPI array approx1(const array &yi,
                     const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
 
 /**
-   C++ Interface for data interpolation on two dimensional signals
+   C++ Interface for data interpolation on two-dimensional signals.
 
-   \param[in]  zi is the input array
-   \param[in]  xo array contains the interpolation locations for first dimension
-   \param[in]  yo array contains the interpolation locations for second dimension
-   \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type
-   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
-   \return     the array with interpolated values
+   \param[in]  zi is the input array.
+   \param[in]  xo array contains the interpolation locations along the first dimension.
    \param[in]  xdim Specifies the first dimension along which measurements were made.
+   \param[in]  yo array contains the interpolation locations along the second dimension.
    \param[in]  ydim Specifies the second dimension along which measurements were made.
    \param[in]  xi_beg Initial value of the grid on which original values were measured for the first dimension.
    \param[in]  xi_step Step size of the grid on which original values were measured for the first dimension.
    \param[in]  yi_beg Initial value of the grid on which original values were measured for the second dimension.
    \param[in]  yi_step Step size of the grid on which original values were measured for the second dimension.
+   \param[in]  method is the interpolation type. All interpolation types defined in \ref af_interp_type are supported.
+   \param[in]  offGrid is the value that will be set in the output array for any indices that are out of bounds.
+   \return     Interpolated array.
 
    \ingroup signal_func_approx2
  */
