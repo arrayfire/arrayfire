@@ -81,6 +81,7 @@ af_err af_approx1_uniform(af_array *yo, const af_array yi,
             }
         }
 
+        ARG_ASSERT(5, xi_step != 0);
         ARG_ASSERT(6, (method == AF_INTERP_LINEAR  ||
                        method == AF_INTERP_NEAREST ||
                        method == AF_INTERP_CUBIC   ||
@@ -150,6 +151,8 @@ af_err af_approx2_uniform(af_array *zo, const af_array zi,
 
         ARG_ASSERT(3, xdim >= 0 && xdim < 4);
         ARG_ASSERT(5, ydim >= 0 && ydim < 4);
+        ARG_ASSERT(7, xi_step != 0);
+        ARG_ASSERT(9, yi_step != 0);
 
         // POS should either be (x, y, 1, 1) or (x, y, zi_dims[2], zi_dims[3])
         if (xo_dims[xdim] * xo_dims[ydim] != xo_dims.elements()) {
