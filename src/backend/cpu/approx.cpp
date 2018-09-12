@@ -8,12 +8,8 @@
  ********************************************************/
 
 #include <approx.hpp>
-
-#include <Array.hpp>
 #include <kernel/approx.hpp>
 #include <platform.hpp>
-
-#include <af/defines.h>
 #include <af/dim4.hpp>
 
 namespace cpu
@@ -28,7 +24,7 @@ Array<Ty> approx1(const Array<Ty> &yi,
     yi.eval();
     xo.eval();
 
-    af::dim4 odims = yi.dims();
+    dim4 odims = yi.dims();
     odims[xdim] = xo.dims()[xdim];
 
     Array<Ty> yo = createEmptyArray<Ty>(odims);
@@ -67,7 +63,7 @@ Array<Ty> approx2(const Array<Ty> &zi,
     xo.eval();
     yo.eval();
 
-    af::dim4 odims = zi.dims();
+    dim4 odims = zi.dims();
     odims[xdim] = xo.dims()[xdim];
     odims[ydim] = xo.dims()[ydim];
 

@@ -65,16 +65,13 @@ af_err af_approx1_uniform(af_array *yo, const af_array yi,
         dim4 yi_dims = yi_info.dims();
         dim4 xo_dims = xo_info.dims();
 
-        af_dtype itype = yi_info.getType();
-
-        ARG_ASSERT(1, yi_info.isFloating());                       // Only floating and complex types
-        ARG_ASSERT(2, xo_info.isRealFloating());                   // Only floating types
+        ARG_ASSERT(1, yi_info.isFloating());                        // Only floating and complex types
+        ARG_ASSERT(2, xo_info.isRealFloating()) ;                   // Only floating types
         ARG_ASSERT(1, yi_info.isSingle() == xo_info.isSingle());    // Must have same precision
         ARG_ASSERT(1, yi_info.isDouble() == xo_info.isDouble());    // Must have same precision
-        // POS should either be (x, 1, 1, 1) or (1, yi_dims[1], yi_dims[2], yi_dims[3])
-
         ARG_ASSERT(3, xdim >= 0 && xdim < 4);
 
+        // POS should either be (x, 1, 1, 1) or (1, yi_dims[1], yi_dims[2], yi_dims[3])
         if (xo_dims[xdim] != xo_dims.elements()) {
             for (int i = 0; i < 4; i++) {
                 if (xdim != i) DIM_ASSERT(2, xo_dims[i] == yi_dims[i]);
@@ -82,20 +79,20 @@ af_err af_approx1_uniform(af_array *yo, const af_array yi,
         }
 
         ARG_ASSERT(5, xi_step != 0);
-        ARG_ASSERT(6, (method == AF_INTERP_LINEAR  ||
-                       method == AF_INTERP_NEAREST ||
-                       method == AF_INTERP_CUBIC   ||
-                       method == AF_INTERP_CUBIC_SPLINE ||
+        ARG_ASSERT(6, (method == AF_INTERP_CUBIC         ||
+                       method == AF_INTERP_CUBIC_SPLINE  ||
+                       method == AF_INTERP_LINEAR        ||
                        method == AF_INTERP_LINEAR_COSINE ||
-                       method == AF_INTERP_LOWER));
+                       method == AF_INTERP_LOWER         ||
+                       method == AF_INTERP_NEAREST));
 
-        if(yi_dims.ndims() == 0 || xo_dims.ndims() ==  0) {
-            return af_create_handle(yo, 0, nullptr, itype);
+        if (yi_dims.ndims() == 0 || xo_dims.ndims() ==  0) {
+            return af_create_handle(yo, 0, nullptr, yi_info.getType());
         }
 
         af_array output;
 
-        switch(itype) {
+        switch(yi_info.getType()) {
         case f32: output = approx1<float  , float >(yi, xo, xdim,
                                                     xi_beg, xi_step,
                                                     method, offGrid);  break;
@@ -108,7 +105,7 @@ af_err af_approx1_uniform(af_array *yo, const af_array yi,
         case c64: output = approx1<cdouble, double>(yi, xo, xdim,
                                                     xi_beg, xi_step,
                                                     method, offGrid);  break;
-        default:  TYPE_ERROR(1, itype);
+        default:  TYPE_ERROR(1, yi_info.getType());
         }
         std::swap(*yo,output);
     }
@@ -139,8 +136,6 @@ af_err af_approx2_uniform(af_array *zo, const af_array zi,
         dim4 xo_dims = xo_info.dims();
         dim4 yo_dims = yo_info.dims();
 
-        af_dtype itype = zi_info.getType();
-
         ARG_ASSERT(1, zi_info.isFloating());                     // Only floating and complex types
         ARG_ASSERT(2, xo_info.isRealFloating());                 // Only floating types
         ARG_ASSERT(4, yo_info.isRealFloating());                 // Only floating types
@@ -161,13 +156,13 @@ af_err af_approx2_uniform(af_array *zo, const af_array zi,
             }
         }
 
-        if(zi_dims.ndims() == 0 || xo_dims.ndims() ==  0 || yo_dims.ndims() == 0) {
-            return af_create_handle(zo, 0, nullptr, itype);
+        if (zi_dims.ndims() == 0 || xo_dims.ndims() ==  0 || yo_dims.ndims() == 0) {
+            return af_create_handle(zo, 0, nullptr, zi_info.getType());
         }
 
         af_array output;
 
-        switch(itype) {
+        switch(zi_info.getType()) {
         case f32: output = approx2<float  , float >(zi, xo, xdim, yo, ydim,
                                                     xi_beg, xi_step, yi_beg, yi_step,
                                                     method, offGrid);  break;
@@ -180,7 +175,7 @@ af_err af_approx2_uniform(af_array *zo, const af_array zi,
         case c64: output = approx2<cdouble, double>(zi, xo, xdim, yo, ydim,
                                                     xi_beg, xi_step, yi_beg, yi_step,
                                                     method, offGrid);  break;
-        default:  TYPE_ERROR(1, itype);
+        default:  TYPE_ERROR(1, zi_info.getType());
         }
         std::swap(*zo, output);
     }
