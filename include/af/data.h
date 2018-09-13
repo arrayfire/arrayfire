@@ -234,11 +234,15 @@ namespace af
 
     /**
         \param[in] in is the input array
-        \param[in] x is the number of times \p in is tiled along first dimension
-        \param[in] y is the number of times \p in is tiled along second dimension
-        \param[in] z is the number of times \p in is tiled along third dimension
-        \param[in] w is the number of times \p in is tiled along fourth dimension
-        \return the tiled output
+        \param[in] x is the number of times \p in is copied along the first dimension
+        \param[in] y is the number of times \p in is copied along the the second dimension
+        \param[in] z is the number of times \p in is copied along the third dimension
+        \param[in] w is the number of times \p in is copied along the fourth dimension
+        \return The tiled version of the input array
+
+        \note \p x, \p y, \p z, and \p w includes the original in the count as
+              well. Thus, if no duplicates are needed in a certain dimension,
+              leave it as 1 (the default value for just one copy)
 
         \ingroup manip_func_tile
     */
@@ -247,8 +251,12 @@ namespace af
 
     /**
         \param[in] in is the input array
-        \param[in] dims dim4 of tile dimensions
-        \return the tiled output
+        \param[in] dims specifies the number of times \p in is copied along each dimension
+        \return The tiled version of the input array
+
+        \note Each component of \p dims includes the original in the count as
+              well. Thus, if no duplicates are needed in a certain dimension,
+              leave it as 1 (the default value for just one copy)
 
         \ingroup manip_func_tile
     */
@@ -550,12 +558,16 @@ extern "C" {
     AFAPI af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays, const af_array *inputs);
 
     /**
-        \param[out] out is the generated array
+        \param[out] out is the tiled version of the input array
         \param[in] in is the input matrix
-        \param[in] x is the number of times \p in is tiled along first dimension
-        \param[in] y is the number of times \p in is tiled along second dimension
-        \param[in] z is the number of times \p in is tiled along third dimension
-        \param[in] w is the number of times \p in is tiled along fourth dimension
+        \param[in] x is the number of times \p in is copied along the first dimension
+        \param[in] y is the number of times \p in is copied along the the second dimension
+        \param[in] z is the number of times \p in is copied along the third dimension
+        \param[in] w is the number of times \p in is copied along the fourth dimension
+
+        \note \p x, \p y, \p z, and \p w includes the original in the count as
+              well. Thus, if no duplicates are needed in a certain dimension,
+              leave it as 1 (the default value for just one copy)
 
         \ingroup manip_func_tile
     */
