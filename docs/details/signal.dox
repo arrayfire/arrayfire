@@ -211,30 +211,37 @@ respectively, then the possible batch operations are as follows.
 \defgroup signal_func_approx1 approx1
 \ingroup approx_mat
 
-approx1 interpolates data along the first dimension.
-It supports the following types of interpolation:
-- Nearest neighbor interpolation - \ref AF_INTERP_NEAREST
-- Linear interpolation  - \ref AF_INTERP_LINEAR, \ref AF_INTERP_LINEAR_COSINE
-- Cubic interpolation - \ref AF_INTERP_CUBIC, \ref AF_INTERP_CUBIC_SPLINE
-- Lower interpolation - \ref AF_INTERP_LOWER
+approx1 interpolates data along a single dimension.
 
 Unless specified, interpolation is performed assuming input data is
 equally spaced with indices in the range [0, n). The positions are
 sampled with respect to data at these locations.
 
+The following interpolation types are supported for approx1:
+- Nearest neighbor interpolation - \ref AF_INTERP_NEAREST
+- Linear interpolation  - \ref AF_INTERP_LINEAR, \ref AF_INTERP_LINEAR_COSINE
+- Cubic interpolation - \ref AF_INTERP_CUBIC, \ref AF_INTERP_CUBIC_SPLINE
+- Lower interpolation - \ref AF_INTERP_LOWER
+
 \snippet test/approx1.cpp ex_signal_approx1
+
+\snippet test/approx1.cpp ex_uniform_approx1
 
 \defgroup signal_func_approx2 approx2
 \ingroup approx_mat
 
-approx2 performs interpolation on data along the first and second dimensions.
-It supports all of the interpolation types defined in \ref af_interp_type.
+approx2 interpolates data on two dimensions.
 
 Unless specified, interpolation is performed assuming input data is
 equally spaced with indices in the range [0, n) along each dimension.
 The positions are sampled with respect to data at these locations.
 
+All of the interpolation types defined in \ref af_interp_type are
+supported by approx2.
+
 \snippet test/approx2.cpp ex_signal_approx2
+
+\snippet test/approx2.cpp ex_uniform_approx2
 
 \defgroup signal_func_fir fir
 \ingroup sigfilt_mat
