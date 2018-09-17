@@ -509,6 +509,8 @@ TEST(Approx1, CPP2DInput)
 
 TEST(Approx1, CPPUniformUsage)
 {
+    //! [ex_uniform_approx1]
+
     // input data
     float inv[3] = {10, 20, 30};
     array in(dim4(3,1), inv);
@@ -524,6 +526,9 @@ TEST(Approx1, CPPUniformUsage)
     array interpolated = approx1(in,
                                  pos, dim0,
                                  start, step);
+    // interpolated == {10, 15, 20, 25, 30};
+    //! [ex_uniform_approx1]
+
     float iv[5] = {10, 15, 20, 25, 30};
     array interp_gold(dim4(5,1), iv);
     ASSERT_ARRAYS_NEAR(interpolated, interp_gold, 1e-5);

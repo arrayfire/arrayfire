@@ -474,6 +474,8 @@ TEST(Approx2, CPPUsage)
 
 TEST(Approx2, CPPUniformUsage)
 {
+    //! [ex_uniform_approx2]
+
     // constant input data
     // {{1 2 3},
     //  {1 2 3},
@@ -503,6 +505,8 @@ TEST(Approx2, CPPUniformUsage)
                                  start, step);
     // interpolated == {{1.5 2.5},
     //                  {1.5 2.5}};
+    //! [ex_uniform_approx2]
+
     float expected_interp[4] = {1.5, 1.5,
                                 2.5, 2.5};
 
