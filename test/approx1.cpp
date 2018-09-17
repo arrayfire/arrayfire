@@ -534,6 +534,25 @@ TEST(Approx1, CPPUniformUsage)
     ASSERT_ARRAYS_NEAR(interpolated, interp_gold, 1e-5);
 }
 
+// \TODO(miguel) double check
+TEST(Approx1, CPPNonMonotonicPos)
+{
+    float inv[3] = {10, 20, 30};
+    array in(dim4(3,1), inv);
+    float pv[3] = {0.0, 1.0, 0.5};
+    array pos(dim4(3,1), pv);
+
+    const int start = 0;
+    const double step = 0.5;
+    const int dim0 = 0;
+    array interpolated = approx1(in,
+                                 pos, dim0,
+                                 start, step);
+    float iv[3] = {10, 30, 20};
+    array interp_gold(dim4(3,1), iv);
+    ASSERT_ARRAYS_EQ(interpolated, interp_gold);
+}
+
 TEST(Approx1, CPPUniformDecimalStep)
 {
     float inv[3] = {10, 20, 30};
@@ -697,3 +716,57 @@ TEST(Approx1, OtherDimCubic)
         ASSERT_NEAR(0, af::max<float>(af::abs(res - yo)), 1E-3);
     }
 }
+
+// Unless the sampling grid specifications - begin, step - are
+// specified by the user, ArrayFire will assume a regular grid with a
+// starting index of 0 and a step value of 1.
+TEST(Approx1, InfCheck)
+{
+    array sampled(seq(0.0, 5.0, 0.5));
+    sampled(0) = -af::Inf;
+    seq xo(0.0, 2.0, 0.25);
+    int dim0 = 0;
+    array interp = approx1(sampled, xo); // fail
+    array interp_augmented = join(1, xo, interp);
+
+    float goldv[9] = {-af::Inf, -af::Inf, -af::Inf, -af::Inf, 0.5, 0.625, 0.75, 0.875, 1.0};
+    array gold(dim4(9,1), goldv);
+
+    // \TODO(miguel) handle infs
+    // ASSERT_ARRAYS_EQ(interp, gold);
+}
+
+
+// \TODO(miguel)
+// TEST(Approx1, UniformInfCheck)
+// {
+//     // float sampledv[8] = {-af::Inf, 0, 0.5, 1, 1.5, 2, 2.5, 3};
+//     // array sampled(dim4(8,1), sampledv);
+
+//     // float xov[6] = {0., 0.25, 0.5, 0.75, 1.0, 1.5};
+//     // array xo(dim4(6,1), xov);
+
+//     const float measured_start = 0.0;
+//     const float measured_step = 0.5;
+//     array sampled(seq(measured_start, 5.0, measured_step));
+
+//     sampled(0) = -af::Inf;
+//     seq xo(0.0, 5.0, 0.5);
+
+//     int dim0 = 0;
+//     array interp = approx1(sampled,
+//                            xo, dim0,
+//                            measured_start, measured_step);
+//     // array interp = approx1(sampled, xo); // fail
+//     // array interp_augmented = join(1, xo, interp);
+//     // af_print(interp_augmented);
+//     // getchar();
+
+//     // float goldv[9] = {-af::Inf, -af::Inf, 0.5, 0.625, 0.75, 0.875, 1.0};
+//     // array gold(dim4(9,1), goldv);
+
+//     float goldv[9] = {-af::Inf, -af::Inf, -af::Inf, 0.5, 0.625, 0.75, 0.875, 1.0};
+//     array gold(dim4(9,1), goldv);
+
+//     ASSERT_ARRAYS_NEAR(interp, gold, 1e-5);
+// }
