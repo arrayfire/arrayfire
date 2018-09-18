@@ -18,8 +18,10 @@ int trimIndex(int idx, const int len)
     int ret_val = idx;
     int offset  = abs(ret_val)%len;
     if (ret_val<0) {
-        ret_val = offset-1;
+        int offset  = (abs(ret_val)-1)%len;
+        ret_val = offset;
     } else if (ret_val>=len) {
+        int offset  = abs(ret_val)%len;
         ret_val = len-offset-1;
     }
     return ret_val;
