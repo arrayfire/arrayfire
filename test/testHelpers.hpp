@@ -696,8 +696,6 @@ template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       const std::vector<T>& a, af::dim4 aDims,
                                       const std::vector<T>& b, af::dim4 bDims,
-
-
                                       float maxAbsDiff, IntegerTag) {
     typedef typename std::vector<T>::const_iterator iter;
     std::pair<iter, iter> mismatches = std::mismatch(a.begin(), a.end(), b.begin());

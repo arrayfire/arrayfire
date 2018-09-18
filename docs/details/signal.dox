@@ -213,6 +213,11 @@ respectively, then the possible batch operations are as follows.
 
 approx1 interpolates data along a single dimension.
 
+approx1 is responsible for interpolating data `yi` at `xo` points,
+with the interpolated data being returned by the function. The `xdim`
+argument is used to select which dimension to interpolate
+across. Otherwise, the first dimension is interpolated by default.
+
 Unless specified, interpolation is performed assuming input data is
 equally spaced with indices in the range [0, n). The positions are
 sampled with respect to data at these locations.
@@ -231,6 +236,12 @@ The following interpolation types are supported for approx1:
 \ingroup approx_mat
 
 approx2 interpolates data on two dimensions.
+
+approx2 is responsible for interpolating data `zi` at `xo` and `yo`
+points, with the interpolated data being returned by the function. The
+`xdim` and `ydim` arguments specify which dimensions were measured
+first and second, respectively. Otherwise, the first dimension and
+second dimensions are selected by default.
 
 Unless specified, interpolation is performed assuming input data is
 equally spaced with indices in the range [0, n) along each dimension.

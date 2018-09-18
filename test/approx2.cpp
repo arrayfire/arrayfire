@@ -459,17 +459,27 @@ TEST(Approx2, CPPUsage)
                    1.5, 1.5};
     array pos1(2, 2, p1);
 
-    array interpolated = approx2(input, pos0, pos1);
-    // interpolated == {{1.5 2.5},
-    //                  {1.5 2.5}};
+    const int start = 0;
+    const double step = 1;
+    const int dim0 = 0;
+    array interp_uniform = approx2(input,
+                                   pos0, dim0,
+                                   pos1, dim0 + 1,
+                                   start, step,
+                                   start, step);
+
+    array interp = approx2(input, pos0, pos1);
+    // interp == interp_uniform == {{1.5 2.5},
+    //                              {1.5 2.5}};;
 
     //! [ex_signal_approx2]
 
     float expected_interp[4] = {1.5, 1.5,
                                 2.5, 2.5};
 
-    array interpolated_gold(2, 2, expected_interp);
-    ASSERT_ARRAYS_NEAR(interpolated, interpolated_gold, 1e-5);
+    array interp_gold(2, 2, expected_interp);
+    ASSERT_ARRAYS_NEAR(interp, interp_gold, 1e-5);
+    ASSERT_ARRAYS_NEAR(interp, interp_gold, 1e-5);
 }
 
 TEST(Approx2, CPPUniformUsage)
@@ -570,7 +580,37 @@ TEST(Approx2, CPPUniformTwoDimIndices)
     ASSERT_ARRAYS_NEAR(interpolated, interpolated_gold, 1e-5);
 }
 
-TEST(Approx2, CPPUniformFlippedDims)
+TEST(Approx2, CPPUniformInvalidStepSize)
+{
+    try
+    {
+        float inv[9] = {10, 20, 30,
+                        40, 50, 60,
+                        70, 80, 90};
+        array in(dim4(3,3), inv);
+        float pv[3] = {0.0, -1.0, -2.0};
+        array pos(dim4(3,1), pv);
+
+        const int start = -1;
+        const double step = 0;
+        const int dim0 = 0;
+        array interpolated = approx2(in,
+                                     pos, dim0,
+                                     pos, dim0+1,
+                                     start, step,
+                                     start, step);
+        FAIL() << "Expected af::exception\n";
+        float iv[3] = {0.0, 10.0, 20.0};
+        array interp_gold(dim4(3,1), iv);
+        ASSERT_ARRAYS_EQ(interpolated, interp_gold);
+    } catch (af::exception &ex) {
+        SUCCEED();
+    } catch(...) {
+        FAIL() << "Expected af::exception\n";
+    }
+}
+
+TEST(Approx2, CPPUniformRowMajorInterpolation)
 {
     float inv[9] = {10, 20, 30,
                     40, 50, 60,
@@ -588,7 +628,7 @@ TEST(Approx2, CPPUniformFlippedDims)
     const int d1 = 1;
     array interpolated = approx2(input,
                                  pos1, d1,
-                                 pos0, d1 - 1,
+                                 pos0, d1-1,
                                  start, step,
                                  start, step);
 
@@ -659,4 +699,35 @@ TEST(Approx2, OtherDimCubic)
         array res = reorder(yo_reordered, rdims[0], rdims[1], rdims[2], rdims[3]);
         ASSERT_NEAR(0, af::max<float>(af::abs(res - yo)), 1E-3);
     }
+}
+
+TEST(Approx2, CPPEmptyPos)
+{
+    float inv[3] = {10.0, 20.0, 30.0};
+    array in(dim4(3,1), inv);
+    array pos;
+    array interpolated = approx2(in, pos, pos);
+    ASSERT_TRUE(pos.isempty());
+    ASSERT_TRUE(interpolated.isempty());
+}
+
+TEST(Approx2, CPPEmptyInput)
+{
+    array in;
+    float pv[3] = {0.0, 1.0, 2.0};
+    array pos(dim4(3,1), pv);
+
+    array interpolated = approx2(in, pos, pos);
+    ASSERT_TRUE(in.isempty());
+    ASSERT_TRUE(interpolated.isempty());
+}
+
+TEST(Approx2, CPPEmptyPosAndInput)
+{
+    array in;
+    array pos;
+    array interpolated = approx2(in, pos, pos);
+    ASSERT_TRUE(in.isempty());
+    ASSERT_TRUE(pos.isempty());
+    ASSERT_TRUE(interpolated.isempty());
 }

@@ -297,7 +297,6 @@ TYPED_TEST(Approx1, Approx1CubicArgsPrecision)
 TEST(Approx1, CPP)
 {
     const unsigned resultIdx = 1;
-    const af_interp_type method = AF_INTERP_LINEAR;
 #define BT dtype_traits<float>::base_type
     vector<dim4> numDims;
     vector<vector<BT> > in;
@@ -309,7 +308,7 @@ TEST(Approx1, CPP)
 
     array input(idims, &(in[0].front()));
     array pos(pdims, &(in[1].front()));
-
+    const af_interp_type method = AF_INTERP_LINEAR;
     array output = approx1(input, pos, method, 0);
 
     // Get result
@@ -469,93 +468,118 @@ TEST(Approx1, CPPUsage)
 {
     //! [ex_signal_approx1]
 
-    // input data
-    float inv[3] = {10, 20, 30};
-    array in(3, inv);
+    // Input data.
+    float inv[3] = {10.0, 20.0, 30.0};
+    array in(dim4(3, 1), inv);
 
-    // positions of interpolated values
+    // Positions of interpolated values.
     float pv[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
-    array pos(5, pv);
+    array pos(dim4(5,1), pv);
 
-    array interpolated = approx1(in, pos);
-    // interpolated == { 10, 15, 20, 25, 30 };
+    // Interpolate data across the first dimension, with a start grid
+    // index of 0 and a grid step size of 1.
+    array interp_uniform = approx1(in,
+                                   pos, 0,
+                                   0, 1);
+    // interp_uniform == { 10, 15, 20, 25, 30 };
+
+    // Interpolate data across the first dimension. Grid start point
+    // is 0 and grid step is 1 by default.
+    array interp         = approx1(in, pos);
+    // interp == interp_uniform == { 10, 15, 20, 25, 30 };
 
     //! [ex_signal_approx1]
 
-    float iv[5] = {10, 15, 20, 25, 30};
-    array interp_gold(5, iv);
-    ASSERT_ARRAYS_NEAR(interpolated, interp_gold, 1e-5);
+    float iv[5] = {10.0, 15.0, 20.0, 25.0, 30.0};
+    array interp_gold(dim4(5,1), iv);
+    ASSERT_ARRAYS_EQ(interp, interp_gold);
+    ASSERT_ARRAYS_EQ(interp, interp_uniform);
 }
 
 TEST(Approx1, CPP2DInput)
 {
-    float inv[9] = {10, 20, 30,
-                    40, 50, 60,
-                    70, 80, 90};
+    float inv[9] = {10.0, 20.0, 30.0,
+                    40.0, 50.0, 60.0,
+                    70.0, 80.0, 90.0};
     array in(dim4(3,3), inv);
-    float pv[5] = {0, 0.5, 1, 1.5, 2};
+    float pv[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
     array pos(dim4(5,1), pv);
 
-    const int start = 0;
-    const double step = 1;
-    const int dim0 = 0;
     array interpolated = approx1(in, pos);
     float iv[15] = {10.0, 15.0, 20.0, 25.0, 30.0,
                     40.0, 45.0, 50.0, 55.0, 60.0,
                     70.0, 75.0, 80.0, 85.0, 90.0};
     array interp_gold(dim4(5,3), iv);
-    ASSERT_ARRAYS_NEAR(interpolated, interp_gold, 1e-5);
+    ASSERT_ARRAYS_EQ(interpolated, interp_gold);
 }
 
 TEST(Approx1, CPPUniformUsage)
 {
     //! [ex_uniform_approx1]
 
-    // input data
-    float inv[3] = {10, 20, 30};
+    // Input data.
+    float inv[3] = {10.0, 20.0, 30.0};
     array in(dim4(3,1), inv);
 
-    // positions of interpolated values
+    // Positions of interpolated values.
     float pv[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
     array pos(dim4(5,1), pv);
 
-    // grid metadata along which measurements were made
-    const int start = 0;
-    const double step = 1;
-    const int dim0 = 0;
+    const int    dim0 = 0;  // Dimension to interpolate across.
+    const int   start = 0;  // Starting index value of grid on which measurements were made.
+    const double step = 1;  // Step size of grid on which measurements were made.
     array interpolated = approx1(in,
                                  pos, dim0,
                                  start, step);
     // interpolated == {10, 15, 20, 25, 30};
     //! [ex_uniform_approx1]
 
-    float iv[5] = {10, 15, 20, 25, 30};
+    float iv[5] = {10.0, 15.0, 20.0, 25.0, 30.0};
     array interp_gold(dim4(5,1), iv);
-    ASSERT_ARRAYS_NEAR(interpolated, interp_gold, 1e-5);
+    ASSERT_ARRAYS_EQ(interpolated, interp_gold);
 }
 
-// \TODO(miguel) double check
-TEST(Approx1, CPPNonMonotonicPos)
+TEST(Approx1, CPPUniformNonMonotonicPos)
 {
-    float inv[3] = {10, 20, 30};
-    array in(dim4(3,1), inv);
-    float pv[3] = {0.0, 1.0, 0.5};
-    array pos(dim4(3,1), pv);
+    float inv[10] = {10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0};
+    array in(dim4(10,1), inv);
+
+    float pv[10] = {1.0, 0.0, 2.0, 9.0, 7.0, 4.0, 3.0, 5.0, 6.0, 8.0};
+    array pos(dim4(10,1), pv);
 
     const int start = 0;
-    const double step = 0.5;
+    const double step = 1.0;
     const int dim0 = 0;
     array interpolated = approx1(in,
                                  pos, dim0,
                                  start, step);
-    float iv[3] = {10, 30, 20};
-    array interp_gold(dim4(3,1), iv);
+    float iv[10] = {20.0, 10.0, 30.0, 100.0, 80.0, 50.0, 40.0, 60.0, 70.0, 90.0};
+    array interp_gold(dim4(10,1), iv);
+    ASSERT_ARRAYS_EQ(interpolated, interp_gold);
+}
+
+TEST(Approx1, CPPUniformSamePos)
+{
+    float inv[10] = {10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0};
+    array in(dim4(10,1), inv);
+
+    float pv[10] = {0.0, 0.0, 0.0, 9.0, 9.0, 9.0, 2.0, 2.0, 2.0, 8.0};
+    array pos(dim4(10,1), pv);
+
+    const int start = 0;
+    const double step = 1.0;
+    const int dim0 = 0;
+    array interpolated = approx1(in,
+                                 pos, dim0,
+                                 start, step);
+    float iv[10] = {10.0, 10.0, 10.0, 100.0, 100.0, 100.0, 30.0, 30.0, 30.0, 90.0};
+    array interp_gold(dim4(10,1), iv);
     ASSERT_ARRAYS_EQ(interpolated, interp_gold);
 }
 
 TEST(Approx1, CPPUniformDecimalStep)
 {
-    float inv[3] = {10, 20, 30};
+    float inv[3] = {10.0, 20.0, 30.0};
     array in(dim4(3,1), inv);
     float pv[3] = {0, 0.5, 1.0};
     array pos(dim4(3,1), pv);
@@ -566,32 +590,32 @@ TEST(Approx1, CPPUniformDecimalStep)
     array interpolated = approx1(in,
                                  pos, dim0,
                                  start, step);
-    float iv[3] = {10, 20, 30};
+    float iv[3] = {10.0, 20.0, 30.0};
     array interp_gold(dim4(3,1), iv);
-    ASSERT_ARRAYS_NEAR(interpolated, interp_gold, 1e-5);
+    ASSERT_ARRAYS_EQ(interpolated, interp_gold);
 }
 
 TEST(Approx1, CPPUniformMismatchingIndexingDim)
 {
-    float inv[3] = {10, 20, 30};
+    float inv[3] = {10.0, 20.0, 30.0};
     array in(dim4(3,1), inv);
-    float pv[3] = {0, 0.5, 1.0};
+    float pv[3] = {0.0, 1.0, 2.0};
     array pos(dim4(3,1), pv);
 
     const int start = 0;
-    const double step = 0.5;
+    const double step = 1.0;
     const int dim1 = 1;
     array interpolated = approx1(in,
                                  pos, dim1,
                                  start, step);
-    float iv[3] = {10, 0, 0};
+    float iv[3] = {10.0, 0.0, 0.0};
     array interp_gold(dim4(3,1), iv);
-    ASSERT_ARRAYS_NEAR(interpolated, interp_gold, 1e-5);
+    ASSERT_ARRAYS_EQ(interpolated, interp_gold);
 }
 
-TEST(Approx1, CPPUniformNonZeroStartAndStep)
+TEST(Approx1, CPPUniformPositiveStartAndStep)
 {
-    float inv[3] = {10, 20, 30};
+    float inv[3] = {10.0, 20.0, 30.0};
     array in(dim4(3,1), inv);
     float pv[3] = {0.0, 1.0, 2.0};
     array pos(dim4(3,1), pv);
@@ -602,14 +626,50 @@ TEST(Approx1, CPPUniformNonZeroStartAndStep)
     array interpolated = approx1(in,
                                  pos, dim0,
                                  start, step);
-    float iv[3] = {0, 10, 20};
+    float iv[3] = {0.0, 10.0, 20.0};
     array interp_gold(dim4(3,1), iv);
-    ASSERT_ARRAYS_NEAR(interpolated, interp_gold, 1e-5);
+    ASSERT_ARRAYS_EQ(interpolated, interp_gold);
+}
+
+TEST(Approx1, CPPUniformNegativeStart)
+{
+    float inv[3] = {10.0, 20.0, 30.0};
+    array in(dim4(3,1), inv);
+    float pv[3] = {0.0, 1.0, 2.0};
+    array pos(dim4(3,1), pv);
+
+    const int start = -1;
+    const double step = 1;
+    const int dim0 = 0;
+    array interpolated = approx1(in,
+                                 pos, dim0,
+                                 start, step);
+    float iv[3] = {20.0, 30.0, 0.0};
+    array interp_gold(dim4(3,1), iv);
+    ASSERT_ARRAYS_EQ(interpolated, interp_gold);
+}
+
+TEST(Approx1, CPPUniformInterpolateBackwards)
+{
+    float inv[3] = {10.0, 20.0, 30.0};
+    array in(dim4(3,1), inv);
+    float pv[3] = {0.0, 1.0, 2.0};
+    array pos(dim4(3,1), pv);
+
+    const int start = 2;
+    const double step = -1;
+    const int dim0 = 0;
+    array interpolated = approx1(in,
+                                 pos, dim0,
+                                 start, step);
+    float iv[3] = {30.0, 20.0, 10.0};
+    array interp_gold(dim4(3,1), iv);
+    ASSERT_ARRAYS_EQ(interpolated, interp_gold);
 }
 
 TEST(Approx1, CPPUniformOffGridAndNegativeStep)
 {
-    float inv[3] = {10, 20, 30};
+    float inv[3] = {10.0, 20.0, 30.0};
     array in(dim4(3,1), inv);
     float pv[3] = {0.0, -1.0, -2.0};
     array pos(dim4(3,1), pv);
@@ -620,16 +680,42 @@ TEST(Approx1, CPPUniformOffGridAndNegativeStep)
     array interpolated = approx1(in,
                                  pos, dim0,
                                  start, step);
-    float iv[3] = {0, 10, 20};
+    float iv[3] = {0.0, 10.0, 20.0};
     array interp_gold(dim4(3,1), iv);
-    ASSERT_ARRAYS_NEAR(interpolated, interp_gold, 1e-5);
+    ASSERT_ARRAYS_EQ(interpolated, interp_gold);
+}
+
+TEST(Approx1, CPPUniformInvalidStepSize)
+{
+    try
+    {
+        float inv[3] = {10.0, 20.0, 30.0};
+        array in(dim4(3,1), inv);
+        float pv[3] = {0.0, -1.0, -2.0};
+        array pos(dim4(3,1), pv);
+
+        const int start = -1;
+        const double step = 0;
+        const int dim0 = 0;
+        array interpolated = approx1(in,
+                                     pos, dim0,
+                                     start, step);
+        FAIL() << "Expected af::exception\n";
+        float iv[3] = {0.0, 10.0, 20.0};
+        array interp_gold(dim4(3,1), iv);
+        ASSERT_ARRAYS_EQ(interpolated, interp_gold);
+    } catch (af::exception &ex) {
+        SUCCEED();
+    } catch(...) {
+        FAIL() << "Expected af::exception\n";
+    }
 }
 
 TEST(Approx1, CPPUniformInterpDim0)
 {
-    float inv[9] = {10, 20, 30,
-                    40, 50, 60,
-                    70, 80, 90};
+    float inv[9] = {10.0, 20.0, 30.0,
+                    40.0, 50.0, 60.0,
+                    70.0, 80.0, 90.0};
     array in(dim4(3,3), inv);
     float pv[3] = {0, 1, 2};
     array pos(dim4(3,1), pv);
@@ -640,18 +726,18 @@ TEST(Approx1, CPPUniformInterpDim0)
     array interpolated = approx1(in,
                                  pos, dim0,
                                  start, step);
-    float iv[9] = {10, 20, 30,
-                   40, 50, 60,
-                   70, 80, 90};
+    float iv[9] = {10.0, 20.0, 30.0,
+                   40.0, 50.0, 60.0,
+                   70.0, 80.0, 90.0};
     array interp_gold(dim4(3,3), iv);
-    ASSERT_ARRAYS_NEAR(interpolated, interp_gold, 1e-5);
+    ASSERT_ARRAYS_EQ(interpolated, interp_gold);
 }
 
 TEST(Approx1, CPPUniformInterpDim1)
 {
-    float inv[9] = {10, 20, 30,
-                    40, 50, 60,
-                    70, 80, 90};
+    float inv[9] = {10.0, 20.0, 30.0,
+                    40.0, 50.0, 60.0,
+                    70.0, 80.0, 90.0};
     array in(dim4(3,3), inv);
     float pv[3] = {0, 1, 2};
     array pos(dim4(1,3), pv);
@@ -662,11 +748,11 @@ TEST(Approx1, CPPUniformInterpDim1)
     array interpolated = approx1(in,
                                  pos, dim1,
                                  start, step);
-    float iv[9] = {10, 20, 30,
-                   40, 50, 60,
-                   70, 80, 90};
+    float iv[9] = {10.0, 20.0, 30.0,
+                   40.0, 50.0, 60.0,
+                   70.0, 80.0, 90.0};
     array interp_gold(dim4(3,3), iv);
-    ASSERT_ARRAYS_NEAR(interpolated, interp_gold, 1e-5);
+    ASSERT_ARRAYS_EQ(interpolated, interp_gold);
 }
 
 TEST(Approx1, OtherDimLinear)
@@ -720,53 +806,64 @@ TEST(Approx1, OtherDimCubic)
 // Unless the sampling grid specifications - begin, step - are
 // specified by the user, ArrayFire will assume a regular grid with a
 // starting index of 0 and a step value of 1.
-TEST(Approx1, InfCheck)
+TEST(Approx1, CPPInfCheck)
 {
     array sampled(seq(0.0, 5.0, 0.5));
-    sampled(0) = -af::Inf;
+    sampled(0) = af::Inf;
     seq xo(0.0, 2.0, 0.25);
-    int dim0 = 0;
-    array interp = approx1(sampled, xo); // fail
+    array interp = approx1(sampled, xo);
     array interp_augmented = join(1, xo, interp);
 
-    float goldv[9] = {-af::Inf, -af::Inf, -af::Inf, -af::Inf, 0.5, 0.625, 0.75, 0.875, 1.0};
+    float goldv[9] = {af::Inf, af::Inf, af::Inf, af::Inf, 0.5, 0.625, 0.75, 0.875, 1.0};
     array gold(dim4(9,1), goldv);
-
-    // \TODO(miguel) handle infs
-    // ASSERT_ARRAYS_EQ(interp, gold);
+    interp(af::isInf(interp)) = 0;
+    gold(af::isInf(gold)) = 0;
+    ASSERT_ARRAYS_EQ(interp, gold);
 }
 
+TEST(Approx1, CPPUniformInfCheck)
+{
+    array sampled(seq(10.0, 50.0, 10.0));
+    sampled(0) = af::Inf;
+    seq xo(0.0, 8.0, 2.0);
+    array interp = approx1(sampled,
+                           xo, 0,
+                           0, 2);
+    float goldv[5] = {af::Inf, 20.0, 30.0, 40.0, 50.0};
+    array gold(dim4(5,1), goldv);
+    interp(af::isInf(interp)) = 0;
+    gold(af::isInf(gold)) = 0;
+    ASSERT_ARRAYS_EQ(interp, gold);
+}
 
-// \TODO(miguel)
-// TEST(Approx1, UniformInfCheck)
-// {
-//     // float sampledv[8] = {-af::Inf, 0, 0.5, 1, 1.5, 2, 2.5, 3};
-//     // array sampled(dim4(8,1), sampledv);
+TEST(Approx1, CPPEmptyPos)
+{
+    float inv[3] = {10.0, 20.0, 30.0};
+    array in(dim4(3,1), inv);
+    array pos;
+    array interpolated = approx1(in, pos);
+    ASSERT_TRUE(pos.isempty());
+    ASSERT_TRUE(interpolated.isempty());
+}
 
-//     // float xov[6] = {0., 0.25, 0.5, 0.75, 1.0, 1.5};
-//     // array xo(dim4(6,1), xov);
+TEST(Approx1, CPPEmptyInput)
+{
+    array in;
+    float pv[3] = {0.0, 1.0, 2.0};
+    array pos(dim4(3,1), pv);
 
-//     const float measured_start = 0.0;
-//     const float measured_step = 0.5;
-//     array sampled(seq(measured_start, 5.0, measured_step));
+    array interpolated = approx1(in, pos);
+    ASSERT_TRUE(in.isempty());
+    ASSERT_TRUE(interpolated.isempty());
+}
 
-//     sampled(0) = -af::Inf;
-//     seq xo(0.0, 5.0, 0.5);
+TEST(Approx1, CPPEmptyPosAndInput)
+{
+    array in;
+    array pos;
+    array interpolated = approx1(in, pos);
+    ASSERT_TRUE(in.isempty());
+    ASSERT_TRUE(pos.isempty());
+    ASSERT_TRUE(interpolated.isempty());
+}
 
-//     int dim0 = 0;
-//     array interp = approx1(sampled,
-//                            xo, dim0,
-//                            measured_start, measured_step);
-//     // array interp = approx1(sampled, xo); // fail
-//     // array interp_augmented = join(1, xo, interp);
-//     // af_print(interp_augmented);
-//     // getchar();
-
-//     // float goldv[9] = {-af::Inf, -af::Inf, 0.5, 0.625, 0.75, 0.875, 1.0};
-//     // array gold(dim4(9,1), goldv);
-
-//     float goldv[9] = {-af::Inf, -af::Inf, -af::Inf, 0.5, 0.625, 0.75, 0.875, 1.0};
-//     array gold(dim4(9,1), goldv);
-
-//     ASSERT_ARRAYS_NEAR(interp, gold, 1e-5);
-// }
