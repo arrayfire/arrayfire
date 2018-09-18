@@ -721,6 +721,114 @@ TEST(lookup, Issue2009)
     ASSERT_ARRAYS_EQ(a, b);
 }
 
+TEST(lookup, SNIPPET_lookup1d)
+{
+    //! [ex_index_lookup1d]
+
+    // input array
+    float in_[5] = {10, 20, 30, 40, 50};
+    af::array in(5, in_);
+
+    // indices to lookup
+    int idx_[3] = {1, 3, 2};
+    af::array idx(3, idx_);
+
+    af::array indexed = af::lookup(in, idx);
+    // indexed == { 20, 40, 30 };
+
+    //! [ex_index_lookup1d]
+
+    //indexing tests
+    float in_g[3] = {20, 40, 30 };
+    af::array indexed_gold(3, in_g);
+    ASSERT_ARRAYS_NEAR(indexed, indexed_gold, 1e-5);
+}
+
+TEST(lookup, SNIPPET_lookup_oob)
+{
+    //! [ex_index_lookup_oob]
+
+    // input array
+    float in_[5] = {10, 20, 30, 40, 50};
+    af::array in(5, in_);
+
+    // indexing past end of array
+    int idx_outofbounds_p_[8] = {4,  5,  6,  7,  8,  9, 10, 11};
+    af::array idx_outofbounds_p(8, idx_outofbounds_p_);
+
+    // and indexing before beginning of array
+    int idx_outofbounds_n_[8] = {0, -1, -2, -3, -4, -5, -6, -7};
+    af::array idx_outofbounds_n(8, idx_outofbounds_n_);
+
+    af::array indexed_out_of_bounds_pos = af::lookup(in, idx_outofbounds_p);
+    af::array indexed_out_of_bounds_neg = af::lookup(in, idx_outofbounds_n);
+    // indexed_out_of_bounds_pos == { 50, 50, 40, 30, 20, 10, 50, 40 }
+    // indexed_out_of_bounds_neg == { 10, 10, 20, 30, 40, 50, 10, 20 }
+
+    //! [ex_index_lookup_oob]
+
+    // out of bounds tests
+    float oob_p_g_[8] = { 50, 50, 40, 30, 20, 10, 50, 40 };
+    af::array oob_p_g(8, oob_p_g_);
+    ASSERT_ARRAYS_NEAR(indexed_out_of_bounds_pos, oob_p_g, 1e-5);
+    float oob_n_g_[8] = { 10, 10, 20, 30, 40, 50, 10, 20 };
+    af::array oob_n_g(8, oob_n_g_);
+    ASSERT_ARRAYS_NEAR(indexed_out_of_bounds_neg, oob_n_g, 1e-5);
+}
+
+TEST(lookup, SNIPPET_lookup2d)
+{
+    //! [ex_index_lookup2d]
+
+    // constant input data
+    float input_vals[9] = {10, 20, 30,
+                           11, 21, 31,
+                           12, 22, 32};
+    array input(3, 3, input_vals);
+    // {{10 11 12},
+    //  {20 21 22},
+    //  {30 31 32}},
+
+
+    // indices to lookup
+    int idx_[6] = {0, 0, 1, 1, 2, 2};
+    af::array idx(6, idx_);
+
+    //will look up all indices along specified dimension
+    af::array indexed = af::lookup(input, idx); //(dim = 0)
+    // indexed == { 10, 11, 12,
+    //              10, 11, 12,
+    //              20, 21, 22,
+    //              20, 21, 22,
+    //              30, 31, 32,
+    //              30, 31, 32 };
+
+    af::array indexed_dim1 = af::lookup(input, idx, 1);
+    // indexed_dim1 == { 10, 10, 11, 11, 12, 12,
+    //                   20, 20, 21, 21, 22, 22,
+    //                   30, 30, 31, 31, 32, 32 };
+
+    //! [ex_index_lookup2d]
+
+    float expected_indexed[18] = { 10, 10, 20, 20, 30, 30,
+                                   11, 11, 21, 21, 31, 31,
+                                   12, 12, 22, 22, 32, 32 };
+
+    array indexed_gold(6, 3, expected_indexed);
+    ASSERT_ARRAYS_NEAR(indexed, indexed_gold, 1e-5);
+
+    float expected_indexed_dim1[18] = { 10, 20, 30,
+                                        10, 20, 30,
+                                        11, 21, 31,
+                                        11, 21, 31,
+                                        12, 22, 32,
+                                        12, 22, 32 };
+
+    array indexed_gold_dim1(3, 6, expected_indexed_dim1);
+    ASSERT_ARRAYS_NEAR(indexed_dim1, indexed_gold_dim1, 1e-5);
+
+}
+
 TEST(SeqIndex, CPP_END)
 {
     const int n = 5;
