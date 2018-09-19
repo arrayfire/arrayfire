@@ -16,16 +16,17 @@
 #include <vector>
 #include <testHelpers.hpp>
 
-using std::endl;
-using std::vector;
-using std::string;
 using af::array;
-using af::cfloat;
 using af::cdouble;
+using af::cfloat;
 using af::constant;
 using af::dim4;
 using af::dtype_traits;
+using af::randu;
 using af::range;
+using std::endl;
+using std::string;
+using std::vector;
 
 template<typename T>
 class NearestNeighbour : public ::testing::Test
@@ -472,5 +473,35 @@ TEST_P(KNearestNeighborsTest, SingleQTests) {
 
     ASSERT_ARRAYS_EQ(indices_gold, indices);
     ASSERT_ARRAYS_NEAR(distances_gold, distances, 1e-5);
+}
+
+TEST(KNearestNeighbours, InvalidNegativeK)
+{
+    const int ntrain = 500;
+    const int nquery = 1;
+    const int nfeat  = 2;
+
+    array t = randu(nfeat, ntrain);
+    array q = randu(nfeat, nquery);
+
+    array indices;
+    array distances;
+    int k = -1;
+    ASSERT_THROW(nearestNeighbour(indices, distances, q, t, 0, k, AF_SSD), af::exception);
+}
+
+TEST(KNearestNeighbours, InvalidLargeK)
+{
+    const int ntrain = 500;
+    const int nquery = 1;
+    const int nfeat  = 2;
+
+    array t = randu(nfeat, ntrain);
+    array q = randu(nfeat, nquery);
+
+    array indices;
+    array distances;
+    int k = 257;
+    ASSERT_THROW(nearestNeighbour(indices, distances, q, t, 0, k, AF_SSD), af::exception);
 }
 
