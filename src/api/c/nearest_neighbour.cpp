@@ -54,6 +54,7 @@ af_err af_nearest_neighbour(af_array* idx, af_array* dist,
         DIM_ASSERT(3, tDims[2] == 1 && tDims[3] == 1);
         DIM_ASSERT(4, (dist_dim == 0 || dist_dim == 1));
         DIM_ASSERT(5, n_dist > 0 && n_dist <= (uint)tDims[train_samples]);
+        ARG_ASSERT(5, n_dist > 0 && n_dist <= 256);
         ARG_ASSERT(6, dist_type == AF_SAD || dist_type == AF_SSD || dist_type == AF_SHD);
         TYPE_ASSERT(qType == tType);
 

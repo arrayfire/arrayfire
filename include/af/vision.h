@@ -223,8 +223,8 @@ AFAPI void hammingMatcher(array& idx, array& dist,
    \param[in]  train is the array containing the data used as training data
    \param[in]  dist_dim indicates the dimension to analyze for distance (the dimension
                indicated here must be of equal length for both query and train arrays)
-   \param[in]  n_dist is the number of smallest distances to return (currently, only 1
-               is supported)
+   \param[in]  n_dist is the number of smallest distances to return (currently only 
+               values <= 256 are supported)
    \param[in]  dist_type is the distance computation type. Currently \ref AF_SAD (sum
                of absolute differences), \ref AF_SSD (sum of squared differences), and
                \ref AF_SHD (hamming distances) are supported.
@@ -535,8 +535,8 @@ extern "C" {
         \param[in]  train is the array containing the data used as training data
         \param[in]  dist_dim indicates the dimension to analyze for distance (the dimension
                     indicated here must be of equal length for both query and train arrays)
-        \param[in]  n_dist is the number of smallest distances to return (currently, only 1
-                    is supported)
+        \param[in]  n_dist is the number of smallest distances to return (currently, only
+                    values <= 256 are supported)
         \param[in]  dist_type is the distance computation type. Currently \ref AF_SAD (sum
                     of absolute differences), \ref AF_SSD (sum of squared differences), and
                     \ref AF_SHD (hamming distances) are supported.
