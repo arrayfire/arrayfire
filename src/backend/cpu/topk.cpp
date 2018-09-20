@@ -95,4 +95,6 @@ INSTANTIATE(float )
 INSTANTIATE(double)
 INSTANTIATE(int   )
 INSTANTIATE(uint  )
+INSTANTIATE(long long)
+INSTANTIATE(unsigned long long)
 }
