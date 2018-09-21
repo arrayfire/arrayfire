@@ -213,3 +213,52 @@ TEST(Accum, MaxDim)
     ASSERT_ARRAYS_EQ(gold_dim, output_dim);
 
 }
+
+TEST(Accum, DocSnippet) {
+    //! [ex_accum_1D]
+    float hA[] = {0, 1, 2, 3, 4};
+    array A(5, hA);
+    //  0.
+    //  1.
+    //  2.
+    //  3.
+    //  4.
+
+    array accumA = accum(A);
+    //  0.
+    //  1.
+    //  3.
+    //  6.
+    //  10.
+    //! [ex_accum_1D]
+
+    float h_gold_accumA[] = {0, 1, 3, 6, 10};
+    array gold_accumA(5, h_gold_accumA);
+    ASSERT_ARRAYS_EQ(gold_accumA, accumA);
+
+    //! [ex_accum_2D]
+    float hB[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+    array B(3, 3, hB);
+    //  0.     3.     6.
+    //  1.     4.     7.
+    //  2.     5.     8.
+
+    array accumB_dim0 = accum(B);
+    //  0.     3.     6.
+    //  1.     7.     13.
+    //  3.     12.    21.
+
+    array accumB_dim1 = accum(B, 1);
+    //  0.     3.     9.
+    //  1.     5.     12.
+    //  2.     7.     15.
+    //! [ex_accum_2D]
+
+    float h_gold_accumB_dim0[] = {0, 1, 3, 3, 7, 12, 6, 13, 21};
+    array gold_accumB_dim0(3, 3, h_gold_accumB_dim0);
+    ASSERT_ARRAYS_EQ(gold_accumB_dim0, accumB_dim0);
+
+    float h_gold_accumB_dim1[] = {0, 1, 2, 3, 5, 7, 9, 12, 15};
+    array gold_accumB_dim1(3, 3, h_gold_accumB_dim1);
+    ASSERT_ARRAYS_EQ(gold_accumB_dim1, accumB_dim1);
+}
