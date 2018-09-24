@@ -251,7 +251,7 @@ make_test(SRC sat.cpp)
 make_test(SRC scan.cpp)
 make_test(SRC scan_by_key.cpp)
 make_test(SRC select.cpp)
-make_test(SRC set.cpp)
+make_test(SRC set.cpp CXX11)
 make_test(SRC shift.cpp)
 
 if(AF_WITH_NONFREE)

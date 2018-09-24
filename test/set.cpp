@@ -179,9 +179,9 @@ TEST(Set, SNIPPET_setUniqueSorted) {
 
     //! [ex_set_unique_sorted]
 
-    int h_unique_gold[3] = { 1, 2, 3 };
-    af::array unique_gold(3, h_unique_gold);
-    ASSERT_ARRAYS_EQ(unique_gold, unique);
+    vector<int> unique_gold = { 1, 2, 3 };
+    dim4 gold_dim(3, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(unique_gold, gold_dim, unique);
 }
 
 TEST(Set, SNIPPET_setUniqueSortedDesc) {
@@ -201,9 +201,9 @@ TEST(Set, SNIPPET_setUniqueSortedDesc) {
 
     //! [ex_set_unique_desc]
 
-    int h_unique_gold[3] = { 3, 2, 1 };
-    af::array unique_gold(3, h_unique_gold);
-    ASSERT_ARRAYS_EQ(unique_gold, unique);
+    vector<int> unique_gold = { 3, 2, 1 };
+    dim4 gold_dim(3, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(unique_gold, gold_dim, unique);
 }
 
 TEST(Set, SNIPPET_setUniqueSimple) {
@@ -219,9 +219,9 @@ TEST(Set, SNIPPET_setUniqueSimple) {
 
     //! [ex_set_unique_simple]
 
-    int h_unique_gold[3] = { 1, 2, 3 };
-    af::array unique_gold(3, h_unique_gold);
-    ASSERT_ARRAYS_EQ(unique_gold, unique);
+    vector<int> unique_gold = { 1, 2, 3 };
+    dim4 gold_dim(3, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(unique_gold, gold_dim, unique);
 }
 
 // Documentation examples for setUnion
@@ -244,9 +244,9 @@ TEST(Set, SNIPPET_setUnion) {
 
     //! [ex_set_union]
 
-    int h_union_gold[5] = { 1, 2, 3, 4, 5 };
-    af::array union_gold(5, h_union_gold);
-    ASSERT_ARRAYS_EQ(union_gold, setAB);
+    vector<int> union_gold = { 1, 2, 3, 4, 5 };
+    dim4 gold_dim(5, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(union_gold, gold_dim, setAB);
 }
 
 TEST(Set, SNIPPET_setUnionSimple) {
@@ -264,9 +264,9 @@ TEST(Set, SNIPPET_setUnionSimple) {
 
     //! [ex_set_union_simple]
 
-    int h_union_gold[5] = { 1, 2, 3, 4, 5 };
-    af::array union_gold(5, h_union_gold);
-    ASSERT_ARRAYS_EQ(union_gold, setAB);
+    vector<int> union_gold = { 1, 2, 3, 4, 5 };
+    dim4 gold_dim(5, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(union_gold, gold_dim, setAB);
 }
 
 // Documentation examples for setIntersect()
@@ -289,9 +289,9 @@ TEST(Set, SNIPPET_setIntersect) {
 
     //! [ex_set_intersect]
 
-    int h_intersect_gold[3] = { 2, 3, 4 };
-    af::array intersect_gold(3, h_intersect_gold);
-    ASSERT_ARRAYS_EQ(intersect_gold, setA_B);
+    vector<int> intersect_gold = { 2, 3, 4 };
+    dim4 gold_dim(3, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(intersect_gold, gold_dim, setA_B);
 }
 
 TEST(Set, SNIPPET_setIntersectSimple) {
@@ -309,7 +309,7 @@ TEST(Set, SNIPPET_setIntersectSimple) {
 
     //! [ex_set_intersect_simple]
 
-    int h_intersect_gold[1] = { 3 };
-    af::array intersect_gold(1, h_intersect_gold);
-    ASSERT_ARRAYS_EQ(intersect_gold, setA_B);
+    vector<int> intersect_gold = { 3 };
+    dim4 gold_dim(1, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(intersect_gold, gold_dim, setA_B);
 }
