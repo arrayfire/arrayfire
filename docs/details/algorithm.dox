@@ -107,9 +107,26 @@ Return type is u32 for all input types
 
 \ingroup scan_mat
 
-Perform inclusive sum along specified dimension
+Calculate the cumulative sum (inclusive) along the specified dimension
 
-This table defines the return value types for the corresponding input types
+For a 1D array \f$X\f$, the inclusive cumulative sum calculates \f$x_i =
+\sum_{p=0}^{i}x_p\f$ for every \f$x \in X\f$. Here is a simple example for the
+1D case:
+
+\snippet test/scan.cpp ex_accum_1D
+
+For 2D arrays (and higher dimensions), you can specify the dimension along which
+the cumulative sum will be calculated. Thus, the formula above will be
+calculated for all array slices along the specified dimension (in the 2D case
+for example, this looks like \f$x_{i,j} = \sum_{p=0}^{j}x_{i,p}\f$ if the second
+dimension (dim1) was chosen). If no dimension is specified, then the first
+dimension (dim0) is used by default (only in the C++ API; the dimension is
+required to be specified in the C API):
+
+\snippet test/scan.cpp ex_accum_2D
+
+The output array type may be different from the input array type. The following
+table defines the corresponding output types for each input type:
 
 Input Type          | Output Type
 --------------------|---------------------
