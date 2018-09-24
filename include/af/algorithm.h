@@ -306,11 +306,11 @@ namespace af
     template<typename T> void max(T *val, unsigned *idx, const array &in);
 
     /**
-       C++ Interface inclusive sum (cumulative sum) of an array
+       C++ Interface for computing the cumulative sum (inclusive) of an array
 
        \param[in] in is the input array
-       \param[in] dim The dimension along which exclusive sum is performed
-       \return the output containing exclusive sums of the input
+       \param[in] dim is the dimension along which the inclusive sum is calculated
+       \return the output containing inclusive sums of the input
 
        \ingroup scan_func_accum
     */
@@ -761,11 +761,11 @@ extern "C" {
     AFAPI af_err af_imax_all(double *real, double *imag, unsigned *idx, const af_array in);
 
     /**
-       C Interface inclusive sum (cumulative sum) of an array
+       C Interface for computing the cumulative sum (inclusive) of an array
 
-       \param[out] out will contain exclusive sums of the input
+       \param[out] out will contain inclusive sums of the input
        \param[in] in is the input array
-       \param[in] dim The dimension along which exclusive sum is performed
+       \param[in] dim is the dimension along which the inclusive sum is calculated
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup scan_func_accum
