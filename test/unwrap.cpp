@@ -201,3 +201,48 @@ TEST(Unwrap, MaxDim)
 
     ASSERT_ARRAYS_EQ(gold, output);
 }
+
+TEST(Unwrap, DocSnippet) {
+    //! [ex_unwrap]
+    float hA[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    array A(dim4(3, 3), hA);
+    //  1.     4.     7.
+    //  2.     5.     8.
+    //  3.     6.     9.
+
+    array A_simple = unwrap(A,
+                            2, 2,  // window size
+                            1, 1); // stride (sliding window)
+    //  1.     2.     4.     5.
+    //  2.     3.     5.     6.
+    //  4.     5.     7.     8.
+    //  5.     6.     8.     9.
+
+    array A_padded = unwrap(A,
+                            2, 2,  // window size
+                            2, 2,  // stride (distinct)
+                            1, 1); // padding
+    //  0.     0.     0.     5.
+    //  0.     0.     4.     6.
+    //  0.     2.     0.     8.
+    //  1.     3.     7.     9.
+    //! [ex_unwrap]
+
+    float gold_hA_simple[] = {
+        1, 2, 4, 5,
+        2, 3, 5, 6,
+        4, 5, 7, 8,
+        5, 6, 8, 9
+    };
+    array gold_A_simple(dim4(4, 4), gold_hA_simple);
+    ASSERT_ARRAYS_EQ(gold_A_simple, A_simple);
+
+    float gold_hA_padded[] = {
+        0, 0, 0, 1,
+        0, 0, 2, 3,
+        0, 4, 0, 7,
+        5, 6, 8, 9
+    };
+    array gold_A_padded(dim4(4, 4), gold_hA_padded);
+    ASSERT_ARRAYS_EQ(gold_A_padded, A_padded);
+}
