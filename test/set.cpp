@@ -161,3 +161,155 @@ SET_TESTS(short)
 SET_TESTS(ushort)
 SET_TESTS(intl)
 SET_TESTS(uintl)
+
+// Documentation examples for setUnique
+TEST(Set, SNIPPET_setUniqueSorted) {
+
+    //! [ex_set_unique_sorted]
+
+    // input data
+    int h_set[6] = {1, 2, 2, 3, 3, 3};
+    af::array set(6, h_set);
+
+    // is_sorted flag specifies if input is sorted,
+    // allows algorithm to skip internal sorting step
+    const bool is_sorted = true;
+    af::array unique = setUnique(set, is_sorted);
+    // unique == { 1, 2, 3 };
+
+    //! [ex_set_unique_sorted]
+
+    vector<int> unique_gold = { 1, 2, 3 };
+    dim4 gold_dim(3, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(unique_gold, gold_dim, unique);
+}
+
+TEST(Set, SNIPPET_setUniqueSortedDesc) {
+
+    //! [ex_set_unique_desc]
+
+    // input data
+    int h_set[6] = {3, 3, 3, 2, 2, 1};
+    af::array set(6, h_set);
+
+    // is_sorted flag specifies if input is sorted,
+    // allows algorithm to skip internal sorting step
+    // input can be sorted in ascending or descending order
+    const bool is_sorted = true;
+    af::array unique = setUnique(set, is_sorted);
+    // unique == { 3, 2, 1 };
+
+    //! [ex_set_unique_desc]
+
+    vector<int> unique_gold = { 3, 2, 1 };
+    dim4 gold_dim(3, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(unique_gold, gold_dim, unique);
+}
+
+TEST(Set, SNIPPET_setUniqueSimple) {
+
+    //! [ex_set_unique_simple]
+
+    // input data
+    int h_set[6] = {3, 2, 3, 3, 2, 1};
+    af::array set(6, h_set);
+
+    af::array unique = setUnique(set);
+    // unique == { 1, 2, 3 };
+
+    //! [ex_set_unique_simple]
+
+    vector<int> unique_gold = { 1, 2, 3 };
+    dim4 gold_dim(3, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(unique_gold, gold_dim, unique);
+}
+
+// Documentation examples for setUnion
+TEST(Set, SNIPPET_setUnion) {
+
+    //! [ex_set_union]
+
+    // input data
+    int h_setA[4] = {1, 2, 3, 4};
+    int h_setB[4] = {2, 3, 4, 5};
+    af::array setA(4, h_setA);
+    af::array setB(4, h_setB);
+
+    const bool is_unique = true;
+    // is_unique flag specifies if inputs are unique,
+    // allows algorithm to skip internal calls to setUnique
+    // inputs must be unique and sorted in increasing order
+    af::array setAB = setUnion(setA, setB, is_unique);
+    // setAB == { 1, 2, 3, 4, 5 };
+
+    //! [ex_set_union]
+
+    vector<int> union_gold = { 1, 2, 3, 4, 5 };
+    dim4 gold_dim(5, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(union_gold, gold_dim, setAB);
+}
+
+TEST(Set, SNIPPET_setUnionSimple) {
+
+    //! [ex_set_union_simple]
+
+    // input data
+    int h_setA[4] = {1, 2, 3, 3};
+    int h_setB[4] = {3, 4, 5, 5};
+    af::array setA(4, h_setA);
+    af::array setB(4, h_setB);
+
+    af::array setAB = setUnion(setA, setB);
+    // setAB == { 1, 2, 3, 4, 5 };
+
+    //! [ex_set_union_simple]
+
+    vector<int> union_gold = { 1, 2, 3, 4, 5 };
+    dim4 gold_dim(5, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(union_gold, gold_dim, setAB);
+}
+
+// Documentation examples for setIntersect()
+TEST(Set, SNIPPET_setIntersect) {
+
+    //! [ex_set_intersect]
+
+    // input data
+    int h_setA[4] = {1, 2, 3, 4};
+    int h_setB[4] = {2, 3, 4, 5};
+    af::array setA(4, h_setA);
+    af::array setB(4, h_setB);
+
+    const bool is_unique = true;
+    // is_unique flag specifies if inputs are unique,
+    // allows algorithm to skip internal calls to setUnique
+    // inputs must be unique and sorted in increasing order
+    af::array setA_B = setIntersect(setA, setB, is_unique);
+    // setA_B == { 2, 3, 4 };
+
+    //! [ex_set_intersect]
+
+    vector<int> intersect_gold = { 2, 3, 4 };
+    dim4 gold_dim(3, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(intersect_gold, gold_dim, setA_B);
+}
+
+TEST(Set, SNIPPET_setIntersectSimple) {
+
+    //! [ex_set_intersect_simple]
+
+    // input data
+    int h_setA[4] = {1, 2, 3, 3};
+    int h_setB[4] = {3, 3, 4, 5};
+    af::array setA(4, h_setA);
+    af::array setB(4, h_setB);
+
+    af::array setA_B = setIntersect(setA, setB);
+    // setA_B == { 3 };
+
+    //! [ex_set_intersect_simple]
+
+    vector<int> intersect_gold = { 3 };
+    dim4 gold_dim(1, 1, 1, 1);
+    ASSERT_VEC_ARRAY_EQ(intersect_gold, gold_dim, setA_B);
+}
