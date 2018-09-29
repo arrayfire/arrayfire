@@ -429,24 +429,24 @@ namespace af
     AFAPI array setUnique(const array &in, const bool is_sorted=false);
 
     /**
-       C++ Interface for performing union of two arrays
+       C++ Interface for finding the union of two arrays
 
-       \param[in] first is the first array
-       \param[in] second is the second array
+       \param[in] first is the first input array
+       \param[in] second is the second input array
        \param[in] is_unique if true, skips calling unique internally
-       \return the union of \p first and \p second
+       \return all unique values present in \p first and \p second (union) in increasing order
 
        \ingroup set_func_union
     */
     AFAPI array setUnion(const array &first, const array &second, const bool is_unique=false);
 
     /**
-       C++ Interface for performing intersect of two arrays
+       C++ Interface for finding the intersection of two arrays
 
-       \param[in] first is the first array
-       \param[in] second is the second array
+       \param[in] first is the first input array
+       \param[in] second is the second input array
        \param[in] is_unique if true, skips calling unique internally
-       \return the intersection of \p first and \p second
+       \return unique values that are present in both \p first and \p second(intersection) in increasing order
 
        \ingroup set_func_intersect
     */
@@ -895,11 +895,11 @@ extern "C" {
     AFAPI af_err af_set_unique(af_array *out, const af_array in, const bool is_sorted);
 
     /**
-       C Interface for performing union of two arrays
+       C Interface for finding the union of two arrays
 
        \param[out] out will contain the union of \p first and \p second
-       \param[in] first is the first array
-       \param[in] second is the second array
+       \param[in] first is the first input array
+       \param[in] second is the second input array
        \param[in] is_unique if true, skips calling unique internally
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -908,11 +908,11 @@ extern "C" {
     AFAPI af_err af_set_union(af_array *out, const af_array first, const af_array second, const bool is_unique);
 
     /**
-       C Interface for performing intersect of two arrays
+       C Interface for finding the intersection of two arrays
 
        \param[out] out will contain the intersection of \p first and \p second
-       \param[in] first is the first array
-       \param[in] second is the second array
+       \param[in] first is the first input array
+       \param[in] second is the second input array
        \param[in] is_unique if true, skips calling unique internally
        \return \ref AF_SUCCESS if the execution completes properly
 

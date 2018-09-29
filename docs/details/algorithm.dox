@@ -234,7 +234,22 @@ Sort a multi dimensional array based on keys
 
 \ingroup set_mat
 
-Find unique values from an input
+Finds unique values from an input set. The input must be a one-dimensional array. Batching is not currently supported.
+
+A simple example of finding the unique values of a set using setUnique() can be seen below:
+
+\snippet test/set.cpp ex_set_unique_simple
+
+The function can be sped up if it is known that the inputs are sorted.
+
+\snippet test/set.cpp ex_set_unique_sorted
+
+The inputs can be sorted in ascending or descending order.
+
+\snippet test/set.cpp ex_set_unique_desc
+
+
+
 
 
 
@@ -242,7 +257,16 @@ Find unique values from an input
 
 \ingroup set_mat
 
-Find union of two inputs
+Find the union of two sets. The inputs must be one-dimensional arrays. Batching is not currently supported.
+
+A simple example of finding the union of two sets using setUnion() can be seen below:
+
+\snippet test/set.cpp ex_set_union_simple
+
+The function can be sped up if it is known that each input is sorted in increasing order and its values are unique.
+
+\snippet test/set.cpp ex_set_union
+
 
 
 
@@ -250,7 +274,15 @@ Find union of two inputs
 
 \ingroup set_mat
 
-Find intersection of two inputs
+Find the intersection of two sets. The inputs must be one-dimensional arrays. Batching is not currently supported.
+
+A simple example of finding the intersection of two sets using setIntersect() can be seen below:
+
+\snippet test/set.cpp ex_set_intersect_simple
+
+The function can be sped up if it is known that each input is sorted in increasing order and its values are unique.
+
+\snippet test/set.cpp ex_set_intersect
 
 
 @}
