@@ -217,7 +217,7 @@ Sort a multi dimensional array based on keys
 
 \ingroup set_mat
 
-Finds unique values from an input set. The input must be a one-dimensional array.
+Finds unique values from an input set. The input must be a one-dimensional array. Batching is not currently supported.
 
 A simple example of finding the unique values of a set using setUnique() can be seen below:
 
@@ -240,7 +240,7 @@ The inputs can be sorted in ascending or descending order.
 
 \ingroup set_mat
 
-Find the union of two sets. The inputs must be one-dimensional arrays.
+Find the union of two sets. The inputs must be one-dimensional arrays. Batching is not currently supported.
 
 A simple example of finding the union of two sets using setUnion() can be seen below:
 
@@ -257,7 +257,7 @@ The function can be sped up if it is known that each input is sorted in increasi
 
 \ingroup set_mat
 
-Find the intersection of two sets. The inputs must be one-dimensional arrays.
+Find the intersection of two sets. The inputs must be one-dimensional arrays. Batching is not currently supported.
 
 A simple example of finding the intersection of two sets using setIntersect() can be seen below:
 
