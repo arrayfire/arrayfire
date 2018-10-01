@@ -572,17 +572,26 @@ AFAPI array colorSpace(const array& image, const CSpace to, const CSpace from);
 
 #if AF_API_VERSION >= 31
 /**
-   C++ Interface wrapper for unwrap
+   C++ Interface for rearranging windowed sections of an input into columns
+   (or rows)
 
-   \param[in]  in is the input image (or set of images)
-   \param[in]  wx is the block window size along 0th-dimension between [1, input.dims[0] + px]
-   \param[in]  wy is the block window size along 1st-dimension between [1, input.dims[1] + py]
-   \param[in]  sx is the stride along 0th-dimension
-   \param[in]  sy is the stride along 1st-dimension
-   \param[in]  px is the padding along 0th-dimension between [0, wx). Padding is applied both before and after.
-   \param[in]  py is the padding along 1st-dimension between [0, wy). Padding is applied both before and after.
-   \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the unrapped patch is laid out as a row.
-   \returns    an array with the image blocks as rows or columns
+   \param[in]  in is the input array
+   \param[in]  wx is the window size along dimension 0
+   \param[in]  wy is the window size along dimension 1
+   \param[in]  sx is the stride along dimension 0
+   \param[in]  sy is the stride along dimension 1
+   \param[in]  px is the padding along dimension 0
+   \param[in]  py is the padding along dimension 1
+   \param[in]  is_column determines whether the section becomes a column (if
+               true) or a row (if false)
+   \returns    an array with the input's sections rearraged as columns (or rows)
+
+   \note \p in can hold multiple images for processing if it is three or
+         four-dimensional
+   \note \p wx and \p wy must be between [1, input.dims(0 (1)) + px (py)]
+   \note \p sx and \p sy must be greater than 1
+   \note \p px and \p py must be between [0, wx (wy) - 1]. Padding becomes part of
+         the input image prior to the windowing
 
    \ingroup image_func_unwrap
 */
@@ -1328,19 +1337,29 @@ extern "C" {
 
 #if AF_API_VERSION >= 31
     /**
-       C Interface wrapper for unwrap
+       C Interface for rearranging windowed sections of an input into columns
+       (or rows)
 
-       \param[out] out is an array with image blocks as rows or columns.
-       \param[in]  in is the input image (or set of images)
-       \param[in]  wx is the block window size along 0th-dimension between [1, input.dims[0] + px]
-       \param[in]  wy is the block window size along 1st-dimension between [1, input.dims[1] + py]
-       \param[in]  sx is the stride along 0th-dimension
-       \param[in]  sy is the stride along 1st-dimension
-       \param[in]  px is the padding along 0th-dimension between [0, wx). Padding is applied both before and after.
-       \param[in]  py is the padding along 1st-dimension between [0, wy). Padding is applied both before and after.
-       \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the unrapped patch is laid out as a row.
-       \return     \ref AF_SUCCESS if the color transformation is successful,
-       otherwise an appropriate error code is returned.
+       \param[out] out is an array with the input's sections rearraged as columns
+                   (or rows)
+       \param[in]  in is the input array
+       \param[in]  wx is the window size along dimension 0
+       \param[in]  wy is the window size along dimension 1
+       \param[in]  sx is the stride along dimension 0
+       \param[in]  sy is the stride along dimension 1
+       \param[in]  px is the padding along dimension 0
+       \param[in]  py is the padding along dimension 1
+       \param[in]  is_column determines whether the section becomes a column (if
+                   true) or a row (if false)
+       \return     \ref AF_SUCCESS if unwrap is successful,
+                   otherwise an appropriate error code is returned.
+
+       \note \p in can hold multiple images for processing if it is three or
+             four-dimensional
+       \note \p wx and \p wy must be between [1, input.dims(0 (1)) + px (py)]
+       \note \p sx and \p sy must be greater than 1
+       \note \p px and \p py must be between [0, wx (wy) - 1]. Padding becomes
+             part of the input image prior to the windowing
 
        \ingroup image_func_unwrap
     */
