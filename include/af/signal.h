@@ -20,77 +20,77 @@ class dim4;
 /**
    C++ Interface for data interpolation on one-dimensional signals.
 
-   \param[in]  yi is the input array
-   \param[in]  xo array contains the interpolation locations
+   \param[in]  in is the input array.
+   \param[in]  pos array contains the interpolation positions.
    \param[in]  method is the interpolation type. The following types (defined in enum \ref af_interp_type) can be used: nearest neighbor, linear, and cubic.
-   \param[in]  offGrid is the value that will be set in the output array for any indices that are out of bounds.
-   \return     Interpolated array.
+   \param[in]  off_grid is the value that will be set in the output array for any indices that are out of bounds.
+   \return     The interpolated array.
 
    \ingroup signal_func_approx1
  */
-AFAPI array approx1(const array &yi, const array &xo,
-                    const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+AFAPI array approx1(const array &in, const array &pos,
+                    const interpType method = AF_INTERP_LINEAR, const float off_grid = 0.0f);
 
 /**
    C++ Interface for data interpolation on two-dimensional signals.
 
-   \param[in]  zi is the input array
-   \param[in]  xo array contains the interpolation locations for first dimension
-   \param[in]  yo array contains the interpolation locations for second dimension
+   \param[in]  in is the input array.
+   \param[in]  pos0 array contains the interpolation positions for first dimension.
+   \param[in]  pos1 array contains the interpolation positions for second dimension.
    \param[in]  method is the interpolation type. All interpolation types defined in \ref af_interp_type are supported.
-   \param[in]  offGrid is the value that will be set in the output array for any indices that are out of bounds.
-   \return     Interpolated array.
+   \param[in]  off_grid is the value that will be set in the output array for any indices that are out of bounds.
+   \return     The interpolated array.
 
    \ingroup signal_func_approx2
  */
-AFAPI array approx2(const array &zi, const array &xo, const array &yo,
-                    const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+AFAPI array approx2(const array &in, const array &pos0, const array &pos1,
+                    const interpType method = AF_INTERP_LINEAR, const float off_grid = 0.0f);
 
 
 #if AF_API_VERSION >= 37
 /**
    C++ Interface for data interpolation on one-dimensional signals.
 
-   \param[in]  yi is the input array.
-   \param[in]  xo array contains the interpolation locations.
-   \param[in]  xdim Specifies the dimension along which measurements were made.
-   \param[in]  xi_beg Initial value of the grid on which original values were measured.
-   \param[in]  xi_step Step size of the grid on which original values were measured.
+   \param[in]  in is the input array.
+   \param[in]  pos array contains the interpolation positions.
+   \param[in]  interp_dim Specifies the dimension along which measurements were made.
+   \param[in]  grid_beg Initial value of the grid on which original values were measured.
+   \param[in]  grid_step Step size of the grid on which original values were measured.
    \param[in]  method is the interpolation type. The following types (defined in enum \ref af_interp_type) can be used: nearest neighbor, linear, and cubic.
-   \param[in]  offGrid is the value that will be set in the output array for any indices that are out of bounds.
-   \return     Interpolated array.
+   \param[in]  off_grid is the value that will be set in the output array for any indices that are out of bounds.
+   \return     The interpolated array.
 
    \ingroup signal_func_approx1
  */
-AFAPI array approx1(const array &yi,
-                    const array &xo, const int xdim,
-                    const double xi_beg, const double xi_step,
-                    const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+AFAPI array approx1(const array &in,
+                    const array &pos, const int interp_dim,
+                    const double grid_beg, const double grid_step,
+                    const interpType method = AF_INTERP_LINEAR, const float off_grid = 0.0f);
 
 /**
    C++ Interface for data interpolation on two-dimensional signals.
 
-   \param[in]  zi is the input array.
-   \param[in]  xo array contains the interpolation locations along the first dimension.
-   \param[in]  xdim Specifies the first dimension along which measurements were made.
-   \param[in]  yo array contains the interpolation locations along the second dimension.
-   \param[in]  ydim Specifies the second dimension along which measurements were made.
-   \param[in]  xi_beg Initial value of the grid on which original values were measured for the first dimension.
-   \param[in]  xi_step Step size of the grid on which original values were measured for the first dimension.
-   \param[in]  yi_beg Initial value of the grid on which original values were measured for the second dimension.
-   \param[in]  yi_step Step size of the grid on which original values were measured for the second dimension.
+   \param[in]  in is the input array.
+   \param[in]  pos0 array contains the interpolation positions along the first dimension.
+   \param[in]  interp_dim0 Specifies the first dimension along which measurements were made.
+   \param[in]  pos1 array contains the interpolation positions along the second dimension.
+   \param[in]  interp_dim1 Specifies the second dimension along which measurements were made.
+   \param[in]  grid0_beg Initial value of the grid on which original values were measured for the first dimension.
+   \param[in]  grid0_step Step size of the grid on which original values were measured for the first dimension.
+   \param[in]  grid1_beg Initial value of the grid on which original values were measured for the second dimension.
+   \param[in]  grid1_step Step size of the grid on which original values were measured for the second dimension.
    \param[in]  method is the interpolation type. All interpolation types defined in \ref af_interp_type are supported.
-   \param[in]  offGrid is the value that will be set in the output array for any indices that are out of bounds.
-   \return     Interpolated array.
+   \param[in]  off_grid is the value that will be set in the output array for any indices that are out of bounds.
+   \return     The interpolated array.
 
    \ingroup signal_func_approx2
  */
-AFAPI array approx2(const array &zi,
-                    const array &xo, const int xdim,
-                    const array &yo, const int ydim,
-                    const double xi_beg, const double xi_step,
-                    const double yi_beg, const double yi_step,
-                    const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+AFAPI array approx2(const array &in,
+                    const array &pos0, const int interp_dim0,
+                    const array &pos1, const int interp_dim1,
+                    const double grid0_beg, const double grid0_step,
+                    const double grid1_beg, const double grid1_step,
+                    const interpType method = AF_INTERP_LINEAR, const float off_grid = 0.0f);
 #endif
 
 /**
@@ -721,88 +721,88 @@ extern "C" {
 /**
    C Interface for signals interpolation on one dimensional signals.
 
-   \param[out] yo is the array with interpolated values
-   \param[in]  yi is the input array
-   \param[in]  xo array contains the interpolation locations
+   \param[out] out is the array with interpolated values.
+   \param[in]  in is the input array.
+   \param[in]  pos array contains the interpolation positions.
    \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type
-   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
+               enum \ref af_interp_type.
+   \param[in]  off_grid is the value that will set in the output array when certain index is out of bounds.
    \return     \ref AF_SUCCESS if the interpolation operation is successful,
                otherwise an appropriate error code is returned.
 
    \ingroup signal_func_approx1
  */
-AFAPI af_err af_approx1(af_array *yo, const af_array yi, const af_array xo,
-                        const af_interp_type method, const float offGrid);
+AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
+                        const af_interp_type method, const float off_grid);
 
 /**
    C Interface for signals interpolation on two dimensional signals.
 
-   \param[out] zo is the array with interpolated values
-   \param[in]  zi is the input array
-   \param[in]  xo array contains the interpolation locations for first dimension
-   \param[in]  yo array contains the interpolation locations for second dimension
+   \param[out] out is the array with interpolated values.
+   \param[in]  in is the input array.
+   \param[in]  pos0 array contains the interpolation positions for first dimension.
+   \param[in]  pos1 array contains the interpolation positions for second dimension.
    \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type
-   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
+               enum \ref af_interp_type.
+   \param[in]  off_grid is the value that will set in the output array when certain index is out of bounds.
    \return     \ref AF_SUCCESS if the interpolation operation is successful,
                otherwise an appropriate error code is returned.
 
    \ingroup signal_func_approx2
  */
-AFAPI af_err af_approx2(af_array *zo, const af_array zi, const af_array xo, const af_array yo,
-                        const af_interp_type method, const float offGrid);
+AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const af_array pos1,
+                        const af_interp_type method, const float off_grid);
 
 #if AF_API_VERSION >= 37
 /**
    C Interface for signals interpolation on one dimensional signals along specified dimension.
 
-   \param[out] yo is the array with interpolated values.
-   \param[in]  yi is the array containing the measured / reference values.
-   \param[in]  xo array containining the interpolation locations.
-   \param[in]  xdim The dimension along which measurements were made.
-   \param[in]  xi_beg Initial value of the grid on which the original values were measured.
-   \param[in]  xi_step Step size of the grid on which the original values were measured.
+   \param[out] out is the array with interpolated values.
+   \param[in]  in is the array containing the measured / reference values.
+   \param[in]  pos array containining the interpolation positions.
+   \param[in]  interp_dim The dimension along which measurements were made.
+   \param[in]  grid0_beg Initial value of the grid on which the original values were measured.
+   \param[in]  grid0_step Step size of the grid on which the original values were measured.
    \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type
-   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
+               enum \ref af_interp_type.
+   \param[in]  off_grid is the value that will set in the output array when certain index is out of bounds.
    \return     \ref AF_SUCCESS if the interpolation operation is successful,
                otherwise an appropriate error code is returned.
 
    \ingroup signal_func_approx1
  */
-AFAPI af_err af_approx1_uniform(af_array *yo, const af_array yi,
-                                const af_array xo, const int xdim,
-                                const double xi_beg, const double xi_step,
-                                const af_interp_type method, const float offGrid);
+AFAPI af_err af_approx1_uniform(af_array *out, const af_array in,
+                                const af_array pos, const int interp_dim,
+                                const double grid0_beg, const double grid0_step,
+                                const af_interp_type method, const float off_grid);
 
 /**
    C Interface for signals interpolation on two dimensional signals alog specified dimensions.
 
-   \param[out] zo is the array with interpolated values.
-   \param[in]  zi is the array containing the measured / reference values.
-   \param[in]  xo array containining the interpolation locations.
-   \param[in]  yo array containining the interpolation locations.
-   \param[in]  xdim The dimension along which the interpolation needs to occur.
-   \param[in]  ydim The dimension along which the interpolation needs to occur.
-   \param[in]  xi_beg Initial value of the grid on which the original values were measured.
-   \param[in]  xi_step Step size of the grid on which the original values were measured.
-   \param[in]  yi_beg Initial value of the grid on which the original values were measured.
-   \param[in]  yi_step Step size of the grid on which the original values were measured.
+   \param[out] out is the array with interpolated values.
+   \param[in]  in is the array containing the measured / reference values.
+   \param[in]  pos0 array containining the interpolation positions.
+   \param[in]  pos1 array containining the interpolation positions.
+   \param[in]  interp_dim0 The dimension along which the interpolation needs to occur.
+   \param[in]  interp_dim1 The dimension along which the interpolation needs to occur.
+   \param[in]  grid0_beg Initial value of the grid on which the original values were measured.
+   \param[in]  grid0_step Step size of the grid on which the original values were measured.
+   \param[in]  grid1_beg Initial value of the grid on which the original values were measured.
+   \param[in]  grid1_step Step size of the grid on which the original values were measured.
    \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type
-   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
+               enum \ref af_interp_type.
+   \param[in]  off_grid is the value that will set in the output array when certain index is out of bounds.
    \return     \ref AF_SUCCESS if the interpolation operation is successful,
                otherwise an appropriate error code is returned.
 
    \ingroup signal_func_approx2
  */
-AFAPI af_err af_approx2_uniform(af_array *zo, const af_array zi,
-                                const af_array xo, const int xdim,
-                                const af_array yo, const int ydim,
-                                const double xi_beg, const double xi_step,
-                                const double yi_beg, const double yi_step,
-                                const af_interp_type method, const float offGrid);
+AFAPI af_err af_approx2_uniform(af_array *out, const af_array in,
+                                const af_array pos0, const int interp_dim0,
+                                const af_array pos1, const int interp_dim1,
+                                const double grid0_beg, const double grid0_step,
+                                const double grid1_beg, const double grid1_step,
+                                const af_interp_type method, const float off_grid);
 #endif
 
 /**
