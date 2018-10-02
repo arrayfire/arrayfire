@@ -1657,3 +1657,42 @@ TEST(Index, InvalidSequence_NegativeRangePositiveStep)
 {
     EXPECT_THROW(af::seq(-1,-5,1), af::exception);
 }
+
+TEST(Index, ISSUE_2273) {
+    int h_idx[2] = {1, 1};
+    array idx(2, h_idx);
+
+    float h_input[12] = {0.f, 1.f, 2.f, 3.f, 4.f, 5.f,
+                         6.f, 7.f, 8.f, 9.f, 10.f, 11.f};
+    array input(2, 3, 2, h_input);
+    array input_reord = reorder(input, 0, 2, 1);
+    array output = input_reord(span, idx, span);
+
+    float h_gold[12] = {6.f, 7.f, 6.f, 7.f,
+                        8.f, 9.f, 8.f, 9.f,
+                        10.f, 11.f, 10.f, 11.f};
+    array gold(2, 2, 3, h_gold);
+
+    ASSERT_ARRAYS_EQ(gold, output);
+}
+
+TEST(Index, ISSUE_2273_Flipped) {
+    int h_idx[2] = {1, 1};
+    array idx(2, h_idx);
+
+    float h_input[12] = {0.f, 1.f, 6.f, 7.f,
+                         2.f, 3.f, 8.f, 9.f,
+                         4.f, 5.f, 10.f, 11.f};
+    array input(2, 2, 3, h_input);
+    array input_reord = reorder(input, 0, 2, 1);
+    array input_slice = input_reord(span, span, idx);
+
+    array input_ref = iota(dim4(2, 3, 2));
+    array input_ref_slice = input_ref(span, span, idx);
+
+    float h_gold[12] = {6.f, 7.f, 8.f, 9.f, 10.f, 11.f,
+                        6.f, 7.f, 8.f, 9.f, 10.f, 11.f};
+    array input_slice_gold(2, 3, 2, h_gold);
+
+    ASSERT_ARRAYS_EQ(input_slice_gold, input_slice);
+}
