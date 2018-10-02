@@ -50,6 +50,7 @@ static inline af_array reorder(const af_array in, const af::dim4 &rdims0)
             ostrides[i] = istrides[rdims[i]];
         }
         Array<T> Out = In;
+        // Use modDims instead of setDataDims to only modify the ArrayInfo
         Out.modDims(odims);
         Out.modStrides(ostrides);
         out = getHandle(Out);

@@ -24,7 +24,7 @@ void index(Param<T> out, CParam<T> in, const af::dim4 dDims,
 {
     const af::dim4 iDims    = in.dims();
     const af::dim4 iOffs    = toOffset(seqs, dDims);
-    const af::dim4 iStrds   = toStride(seqs, dDims);
+    const af::dim4 iStrds   = in.strides();
     const af::dim4 oDims    = out.dims();
     const af::dim4 oStrides = out.strides();
     const T *src        = in.get();
