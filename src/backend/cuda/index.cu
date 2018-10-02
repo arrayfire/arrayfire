@@ -37,7 +37,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     dim4 dDims = in.getDataDims();
     dim4 oDims = toDims  (seqs, iDims);
     dim4 iOffs = toOffset(seqs, dDims);
-    dim4 iStrds= toStride(seqs, dDims);
+    dim4 iStrds= in.strides();
 
     for (dim_t i=0; i<4; ++i) {
         p.isSeq[i] = idxrs[i].isSeq;
