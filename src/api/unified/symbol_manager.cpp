@@ -112,6 +112,7 @@ LibHandle openDynLibrary(const af_backend bknd_idx, int flag=RTLD_LAZY)
         join_path(getEnvVar("AF_BUILD_PATH"), "src", "backend", getBackendDirectoryName(bknd_idx)),
         join_path(getEnvVar("AF_PATH"), "lib"),
         join_path(getEnvVar("AF_PATH"), "lib64"),
+        getEnvVar("AF_BUILD_LIB_CUSTOM_PATH"),
 
         // Common install paths
 #if !defined(OS_WIN)
