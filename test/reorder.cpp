@@ -18,18 +18,18 @@
 #include <string>
 #include <testHelpers.hpp>
 
-using std::vector;
-using std::string;
-using std::cout;
-using std::endl;
 using af::allTrue;
 using af::array;
-using af::cfloat;
 using af::cdouble;
+using af::cfloat;
 using af::dim4;
 using af::dtype_traits;
 using af::reorder;
+using af::seq;
+using af::span;
 using af::tile;
+using std::string;
+using std::vector;
 
 
 template<typename T>
@@ -189,4 +189,14 @@ TEST(Reorder, MaxDim)
     array gold = range(dim4(2, largeDim, 2));
 
     ASSERT_ARRAYS_EQ(gold, output);
+}
+
+TEST(Reorder, InputArrayUnchanged) {
+    float h_input[12] = {0.f, 1.f, 2.f, 3.f, 4.f, 5.f,
+                         6.f, 7.f, 8.f, 9.f, 10.f, 11.f};
+    array input(2, 3, 2, h_input);
+    array input_reord = reorder(input, 0, 2, 1);
+
+    array input_gold(2, 3, 2, h_input);
+    ASSERT_ARRAYS_EQ(input_gold, input);
 }
