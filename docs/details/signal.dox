@@ -213,46 +213,53 @@ respectively, then the possible batch operations are as follows.
 
 approx1 interpolates data along a single dimension.
 
-approx1 is responsible for interpolating data `yi` at `xo` points,
-with the interpolated data being returned by the function. The `xdim`
-argument is used to select which dimension to interpolate
-across. Otherwise, the first dimension is interpolated by default.
+Interpolation is performed assuming input data is equally spaced with
+indices in the range [0, n). The positions are sampled with respect to
+data at these locations.
 
-Unless specified, interpolation is performed assuming input data is
-equally spaced with indices in the range [0, n). The positions are
-sampled with respect to data at these locations.
+The dimension of the input to be interpolated may be
+specified. Otherwise, ArrayFire will perform interpolation on the
+first dimension by default.
 
-The following interpolation types are supported for approx1:
+The beginning and step values of the interpolation grid dimension may
+also be specified. A standard uniform grid with a start value of 0 and
+step value of 1 are assumed otherwise.
+
+ArrayFire supports the following interpolation types for approx1():
 - Nearest neighbor interpolation - \ref AF_INTERP_NEAREST
-- Linear interpolation  - \ref AF_INTERP_LINEAR, \ref AF_INTERP_LINEAR_COSINE
+- Linear interpolation (default) - \ref AF_INTERP_LINEAR, \ref AF_INTERP_LINEAR_COSINE
 - Cubic interpolation - \ref AF_INTERP_CUBIC, \ref AF_INTERP_CUBIC_SPLINE
 - Lower interpolation - \ref AF_INTERP_LOWER
 
-\snippet test/approx1.cpp ex_signal_approx1
+Arrayfire performs linear interpolation by default.
 
-\snippet test/approx1.cpp ex_uniform_approx1
+ArrayFire does not perform extrapolation when out of bounds. The value
+is filled with `off_grid`, instead.
+
+\snippet test/approx1.cpp ex_signal_approx1
 
 \defgroup signal_func_approx2 approx2
 \ingroup approx_mat
 
-approx2 interpolates data on two dimensions.
+approx2 interpolates data along two dimensions.
 
-approx2 is responsible for interpolating data `zi` at `xo` and `yo`
-points, with the interpolated data being returned by the function. The
-`xdim` and `ydim` arguments specify which dimensions were measured
-first and second, respectively. Otherwise, the first dimension and
-second dimensions are selected by default.
+Interpolation is performed assuming input data is equally spaced with
+indices in the range [0, n) along each dimension. The positions are
+sampled with respect to data at these locations.
 
-Unless specified, interpolation is performed assuming input data is
-equally spaced with indices in the range [0, n) along each dimension.
-The positions are sampled with respect to data at these locations.
+The two dimensions of the input to be interpolated may be
+specified. Otherwise, ArrayFire will perform interpolation on the
+first and second dimensions by default.
+
+The beginning and step values of the interpolation grid dimensions may
+also be specified. A standard uniform grid with a start value of 0 and
+step value of 1 are assumed otherwise.
 
 All of the interpolation types defined in \ref af_interp_type are
-supported by approx2.
+supported by approx2(). ArrayFire performs linear interpolation by
+default.
 
 \snippet test/approx2.cpp ex_signal_approx2
-
-\snippet test/approx2.cpp ex_uniform_approx2
 
 \defgroup signal_func_fir fir
 \ingroup sigfilt_mat
