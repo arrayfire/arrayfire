@@ -20,7 +20,7 @@ class dim4;
 /**
    C++ Interface for data interpolation on one-dimensional signals.
 
-   \param[in]  in is the input array.
+   \param[in]  in is the input array. Data assumed to be equally spaced with indices in the range of [0, n).
    \param[in]  pos array contains the interpolation positions.
    \param[in]  method is the interpolation type. The following types (defined in enum \ref af_interp_type) can be used: nearest neighbor, linear, and cubic.
    \param[in]  off_grid is the value that will be set in the output array for any indices that are out of bounds.
@@ -34,7 +34,7 @@ AFAPI array approx1(const array &in, const array &pos,
 /**
    C++ Interface for data interpolation on two-dimensional signals.
 
-   \param[in]  in is the input array.
+   \param[in]  in is the input array. Data assumed to be equally spaced with indices in the range of [0, n) along both dimensions to interpolate across..
    \param[in]  pos0 array contains the interpolation positions for first dimension.
    \param[in]  pos1 array contains the interpolation positions for second dimension.
    \param[in]  method is the interpolation type. All interpolation types defined in \ref af_interp_type are supported.

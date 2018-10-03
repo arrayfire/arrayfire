@@ -128,7 +128,7 @@ void approx2(Param<InT> zo, CParam<InT> zi,
                         y < 0 || zi_dims[ydim] < y + 1 ) {
                         zo_ptr[zo_off + idx] = scalar<InT>(offGrid);
                     } else {
-                        interp(zo, zo_off + idx, zi, zi_off + zi_idx, x, y, method, 1, clamp);
+                        interp(zo, zo_off + idx, zi, zi_off + zi_idx, x, y, method, 1, clamp, xdim, ydim);
                     }
                 }
             }
