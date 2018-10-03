@@ -212,3 +212,13 @@ When set, this environment variable specifies the maximum length of the CPU JIT
 tree after which evaluation is forced.
 
 The default value, as of v3.4, 100. This value was 20 for older versions.
+
+AF_BUILD_LIB_CUSTOM_PATH {#af_build_lib_custom_path}
+-------------------------------------------------------------------------------
+
+When set, this environment variable specifies a custom path along which the
+symbol manager will search for dynamic (shared library) backends to load. This 
+is useful for specialized build configurations that use the unified backend and
+build shared libraries separately.
+
+By default, no additional path will be searched for an empty value.
