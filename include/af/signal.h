@@ -72,13 +72,13 @@ AFAPI array approx1(const array &in,
 
    \param[in]  in is the input array.
    \param[in]  pos0 array contains the interpolation positions along the first dimension.
-   \param[in]  interp_dim0 Specifies the first dimension along which measurements were made.
+   \param[in]  pos0_interp_dim Specifies the first dimension along which measurements were made.
+   \param[in]  pos0_interp_grid_beg Initial value of the grid on which original values were measured for the first dimension.
+   \param[in]  pos0_interp_grid_step Step size of the grid on which original values were measured for the first dimension.
    \param[in]  pos1 array contains the interpolation positions along the second dimension.
-   \param[in]  interp_dim1 Specifies the second dimension along which measurements were made.
-   \param[in]  grid0_beg Initial value of the grid on which original values were measured for the first dimension.
-   \param[in]  grid0_step Step size of the grid on which original values were measured for the first dimension.
-   \param[in]  grid1_beg Initial value of the grid on which original values were measured for the second dimension.
-   \param[in]  grid1_step Step size of the grid on which original values were measured for the second dimension.
+   \param[in]  pos1_interp_dim Specifies the second dimension along which measurements were made.
+   \param[in]  pos1_interp_grid_beg Initial value of the grid on which original values were measured for the second dimension.
+   \param[in]  pos1_interp_grid_step Step size of the grid on which original values were measured for the second dimension.
    \param[in]  method is the interpolation type. All interpolation types defined in \ref af_interp_type are supported.
    \param[in]  off_grid is the value that will be set in the output array for any indices that are out of bounds.
    \return     The interpolated array.
@@ -86,10 +86,8 @@ AFAPI array approx1(const array &in,
    \ingroup signal_func_approx2
  */
 AFAPI array approx2(const array &in,
-                    const array &pos0, const int interp_dim0,
-                    const array &pos1, const int interp_dim1,
-                    const double grid0_beg, const double grid0_step,
-                    const double grid1_beg, const double grid1_step,
+                    const array &pos0, const int pos0_interp_dim, const double pos0_interp_grid_beg, const double pos0_interp_grid_step,
+                    const array &pos1, const int pos1_interp_dim, const double pos1_interp_grid_beg, const double pos1_interp_grid_step,
                     const interpType method = AF_INTERP_LINEAR, const float off_grid = 0.0f);
 #endif
 
@@ -761,8 +759,8 @@ AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, c
    \param[in]  in is the array containing the measured / reference values.
    \param[in]  pos array containining the interpolation positions.
    \param[in]  interp_dim The dimension along which measurements were made.
-   \param[in]  grid0_beg Initial value of the grid on which the original values were measured.
-   \param[in]  grid0_step Step size of the grid on which the original values were measured.
+   \param[in]  pos0_interp_grid_beg Initial value of the grid on which the original values were measured.
+   \param[in]  pos0_interp_grid_step Step size of the grid on which the original values were measured.
    \param[in]  method is the interpolation type, it can take one of the values defined by the
                enum \ref af_interp_type.
    \param[in]  off_grid is the value that will set in the output array when certain index is out of bounds.
@@ -773,7 +771,7 @@ AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, c
  */
 AFAPI af_err af_approx1_uniform(af_array *out, const af_array in,
                                 const af_array pos, const int interp_dim,
-                                const double grid0_beg, const double grid0_step,
+                                const double pos0_interp_grid_beg, const double pos0_interp_grid_step,
                                 const af_interp_type method, const float off_grid);
 
 /**
@@ -782,13 +780,13 @@ AFAPI af_err af_approx1_uniform(af_array *out, const af_array in,
    \param[out] out is the array with interpolated values.
    \param[in]  in is the array containing the measured / reference values.
    \param[in]  pos0 array containining the interpolation positions.
+   \param[in]  pos0_interp_dim The dimension along which the interpolation needs to occur.
+   \param[in]  pos0_interp_grid_beg Initial value of the grid on which the original values were measured.
+   \param[in]  pos0_interp_grid_step Step size of the grid on which the original values were measured.
    \param[in]  pos1 array containining the interpolation positions.
-   \param[in]  interp_dim0 The dimension along which the interpolation needs to occur.
-   \param[in]  interp_dim1 The dimension along which the interpolation needs to occur.
-   \param[in]  grid0_beg Initial value of the grid on which the original values were measured.
-   \param[in]  grid0_step Step size of the grid on which the original values were measured.
-   \param[in]  grid1_beg Initial value of the grid on which the original values were measured.
-   \param[in]  grid1_step Step size of the grid on which the original values were measured.
+   \param[in]  pos1_interp_dim The dimension along which the interpolation needs to occur.
+   \param[in]  pos1_interp_grid_beg Initial value of the grid on which the original values were measured.
+   \param[in]  pos1_interp_grid_step Step size of the grid on which the original values were measured.
    \param[in]  method is the interpolation type, it can take one of the values defined by the
                enum \ref af_interp_type.
    \param[in]  off_grid is the value that will set in the output array when certain index is out of bounds.
@@ -798,10 +796,8 @@ AFAPI af_err af_approx1_uniform(af_array *out, const af_array in,
    \ingroup signal_func_approx2
  */
 AFAPI af_err af_approx2_uniform(af_array *out, const af_array in,
-                                const af_array pos0, const int interp_dim0,
-                                const af_array pos1, const int interp_dim1,
-                                const double grid0_beg, const double grid0_step,
-                                const double grid1_beg, const double grid1_step,
+                                const af_array pos0, const int pos0_interp_dim, const double pos0_interp_grid_beg, const double pos0_interp_grid_step,
+                                const af_array pos1, const int pos1_interp_dim, const double pos1_interp_grid_beg, const double pos1_interp_grid_step,
                                 const af_interp_type method, const float off_grid);
 #endif
 

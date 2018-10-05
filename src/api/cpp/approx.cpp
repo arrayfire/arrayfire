@@ -39,18 +39,14 @@ namespace af
      }
 
     array approx2(const array &zi,
-                  const array &xo, const int xdim,
-                  const array &yo, const int ydim,
-                  const double xi_beg, const double xi_step,
-                  const double yi_beg, const double yi_step,
+                  const array &xo, const int xdim, const double xi_beg, const double xi_step,
+                  const array &yo, const int ydim, const double yi_beg, const double yi_step,
                   const interpType method, const float offGrid)
     {
         af_array zo = 0;
         AF_THROW(af_approx2_uniform(&zo, zi.get(),
-                                    xo.get(), xdim,
-                                    yo.get(), ydim,
-                                    xi_beg, xi_step,
-                                    yi_beg, yi_step,
+                                    xo.get(), xdim, xi_beg, xi_step,
+                                    yo.get(), ydim, yi_beg, yi_step,
                                     method, offGrid));
         return array(zo);
     }

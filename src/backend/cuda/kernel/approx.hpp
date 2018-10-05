@@ -75,10 +75,8 @@ namespace cuda
         template<typename Ty, typename Tp, int order>
         __global__
         void approx2_kernel(Param<Ty> zo, CParam<Ty> zi,
-                            CParam<Tp> xo, const int xdim,
-                            CParam<Tp> yo, const int ydim,
-                            const Tp xi_beg, const Tp xi_step,
-                            const Tp yi_beg, const Tp yi_step,
+                            CParam<Tp> xo, const int xdim, const Tp xi_beg, const Tp xi_step,
+                            CParam<Tp> yo, const int ydim, const Tp yi_beg, const Tp yi_step,
                             const float offGrid,
                             const int blocksMatX, const int blocksMatY, const bool batch,
                             af_interp_type method)
@@ -152,10 +150,8 @@ namespace cuda
 
         template <typename Ty, typename Tp, int order>
         void approx2(Param<Ty> zo, CParam<Ty> zi,
-                     CParam<Tp> xo, const int xdim,
-                     CParam<Tp> yo, const int ydim,
-                     const Tp &xi_beg, const Tp &xi_step,
-                     const Tp &yi_beg, const Tp &yi_step,
+                     CParam<Tp> xo, const int xdim, const Tp &xi_beg, const Tp &xi_step,
+                     CParam<Tp> yo, const int ydim, const Tp &yi_beg, const Tp &yi_step,
                      const float offGrid,
                      af_interp_type method)
         {
@@ -171,7 +167,7 @@ namespace cuda
             blocks.y = divup(blocks.y, blocks.z);
 
             CUDA_LAUNCH((approx2_kernel<Ty, Tp, order>), blocks, threads,
-                        zo, zi, xo, xdim, yo, ydim, xi_beg, xi_step, yi_beg, yi_step,
+                        zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim, yi_beg, yi_step,
                         offGrid, blocksPerMatX, blocksPerMatY, batch, method);
             POST_LAUNCH_CHECK();
         }

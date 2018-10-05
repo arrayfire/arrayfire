@@ -74,10 +74,8 @@ void approx1(Param<InT> yo, CParam<InT> yi,
 
 template<typename InT, typename LocT, int order>
 void approx2(Param<InT> zo, CParam<InT> zi,
-             CParam<LocT> xo, const int xdim,
-             CParam<LocT> yo, const int ydim,
-             const LocT &xi_beg, const LocT &xi_step,
-             const LocT &yi_beg, const LocT &yi_step,
+             CParam<LocT> xo, const int xdim, const LocT &xi_beg, const LocT &xi_step,
+             CParam<LocT> yo, const int ydim, const LocT &yi_beg, const LocT &yi_step,
              float const offGrid, af_interp_type method)
 {
     InT *zo_ptr = zo.get();

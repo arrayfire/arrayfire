@@ -36,14 +36,12 @@ af_err af_approx1_uniform(af_array *yo, const af_array yi,
 }
 
 af_err af_approx2_uniform(af_array *zo, const af_array zi,
-                          const af_array xo, const int xdim,
-                          const af_array yo, const int ydim,
-                          const double xi_beg, const double xi_step,
-                          const double yi_beg, const double yi_step,
+                          const af_array xo, const int xdim, const double xi_beg, const double xi_step,
+                          const af_array yo, const int ydim, const double yi_beg, const double yi_step,
                           const af_interp_type method, const float offGrid)
 {
     CHECK_ARRAYS(zi, xo, yo);
-    return CALL(zo, zi, xo, xdim, yo, ydim, xi_beg, xi_step, yi_beg, yi_step, method, offGrid);
+    return CALL(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim, yi_beg, yi_step, method, offGrid);
 }
 
 af_err af_set_fft_plan_cache_size(size_t cache_size)

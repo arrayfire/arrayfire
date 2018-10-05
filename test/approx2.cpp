@@ -457,9 +457,8 @@ TEST(Approx2, OtherDimLinear)
         array xo_reordered = reorder(xo, rdims[0], rdims[1], rdims[2], rdims[3]);
         array yo_reordered = reorder(yo, rdims[0], rdims[1], rdims[2], rdims[3]);
         array zo_reordered = approx2(zi_reordered,
-                                     xo_reordered, d,
-                                     yo_reordered, d + 1,
-                                     start, step, start, step,
+                                     xo_reordered, d, start, step,
+                                     yo_reordered, d + 1, start, step,
                                      AF_INTERP_LINEAR);
         rdims[d] = 0;
         rdims[0] = d;
@@ -489,9 +488,8 @@ TEST(Approx2, OtherDimCubic)
         array xo_reordered = reorder(xo, rdims[0], rdims[1], rdims[2], rdims[3]);
         array yo_reordered = reorder(yo, rdims[0], rdims[1], rdims[2], rdims[3]);
         array zo_reordered = approx2(zi_reordered,
-                                     xo_reordered, d,
-                                     yo_reordered, d + 1,
-                                     start, step, start, step,
+                                     xo_reordered, d, start, step,
+                                     yo_reordered, d + 1, start, step,
                                      AF_INTERP_CUBIC);
         rdims[d] = 0;
         rdims[0] = d;
@@ -531,10 +529,8 @@ TEST(Approx2, CPPUsage)
     const int pos0_interp_dim = 0;
     const int pos1_interp_dim = 1;
     array interp = approx2(input,
-                           pos0, pos0_interp_dim,
-                           pos1, pos1_interp_dim,
-                           pos0_interp_grid_start, pos0_interp_grid_step,
-                           pos0_interp_grid_start, pos0_interp_grid_step);
+                           pos0, pos0_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step,
+                           pos1, pos1_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step);
     // [2 2 1 1]
     //     1.5000     2.5000
     //     1.5000     2.5000
@@ -563,10 +559,8 @@ TEST(Approx2, CPPUniformOneDimIndices)
     const int pos0_interp_grid_start = 0;
     const double pos0_interp_grid_step = 1;
     array interpolated = approx2(input,
-                                 pos0, 0,
-                                 pos1, 1,
-                                 pos0_interp_grid_start, pos0_interp_grid_step,
-                                 pos0_interp_grid_start, pos0_interp_grid_step);
+                                 pos0, 0, pos0_interp_grid_start, pos0_interp_grid_step,
+                                 pos1, 1, pos0_interp_grid_start, pos0_interp_grid_step);
 
     float expected_interp[3] = {10.0, 50.0, 90.0};
 
@@ -592,10 +586,8 @@ TEST(Approx2, CPPUniformTwoDimIndices)
     const int pos1_interp_dim = 1;
 
     array interpolated = approx2(input,
-                                 pos0, pos0_interp_dim,
-                                 pos1, pos1_interp_dim,
-                                 pos0_interp_grid_start, pos0_interp_grid_step,
-                                 pos0_interp_grid_start, pos0_interp_grid_step);
+                                 pos0, pos0_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step,
+                                 pos1, pos1_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step);
 
     float expected_interp[4] = {10.0, 30.0, 70.0, 90.0};
     array interpolated_gold(dim4(2,2), expected_interp);
@@ -618,10 +610,8 @@ TEST(Approx2, CPPUniformInvalidStepSize)
         const int pos1_interp_dim = 1;
 
         array interpolated = approx2(in,
-                                     pos, pos0_interp_dim,
-                                     pos, pos1_interp_dim,
-                                     pos0_interp_grid_start, pos0_interp_grid_step,
-                                     pos0_interp_grid_start, pos0_interp_grid_step);
+                                     pos, pos0_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step,
+                                     pos, pos1_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step);
         FAIL() << "Expected af::exception\n";
 
     } catch (af::exception &ex) {
@@ -648,16 +638,12 @@ TEST(Approx2, CPPUniformColumnMajorInterpolation)
     const double pos0_interp_grid_step = 1;
 
     array first = approx2(input,
-                          pos0, pos0_interp_dim,
-                          pos1, pos1_interp_dim,
-                          pos0_interp_grid_start, pos0_interp_grid_step,
-                          pos0_interp_grid_start, pos0_interp_grid_step);
+                          pos0, pos0_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step,
+                          pos1, pos1_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step);
 
     array second = approx2(input,
-                           pos1, pos1_interp_dim,
-                           pos0, pos0_interp_dim,
-                           pos0_interp_grid_start, pos0_interp_grid_step,
-                           pos0_interp_grid_start, pos0_interp_grid_step);
+                           pos1, pos1_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step,
+                           pos0, pos0_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step);
 
     // Verify.
     float expected_interp[4] = {10.0, 30.0, 70.0, 90.0};
@@ -681,16 +667,12 @@ TEST(Approx2, CPPUniformRowMajorInterpolation)
     const double pos0_interp_grid_step = 1;
 
     array first = approx2(input,
-                          pos0, 1,
-                          pos1, 0,
-                          pos0_interp_grid_start, pos0_interp_grid_step,
-                          pos0_interp_grid_start, pos0_interp_grid_step);
+                          pos0, 1, pos0_interp_grid_start, pos0_interp_grid_step,
+                          pos1, 0, pos0_interp_grid_start, pos0_interp_grid_step);
 
     array second = approx2(input,
-                           pos1, 0,
-                           pos0, 1,
-                           pos0_interp_grid_start, pos0_interp_grid_step,
-                           pos0_interp_grid_start, pos0_interp_grid_step);
+                           pos1, 0, pos0_interp_grid_start, pos0_interp_grid_step,
+                           pos0, 1, pos0_interp_grid_start, pos0_interp_grid_step);
 
     // Verify.
     float expected_interp[4] = {10.0, 70.0, 30.0, 90.0};

@@ -122,10 +122,8 @@ void approx1(Param yo, const Param yi, const Param xo, const int xdim,
 
 template <typename Ty, typename Tp, int order>
 void approx2(Param zo, const Param zi,
-             const Param xo, const int xdim,
-             const Param yo, const int ydim,
-             const Tp &xi_beg, const Tp &xi_step,
-             const Tp &yi_beg, const Tp &yi_step,
+             const Param xo, const int xdim, const Tp &xi_beg, const Tp &xi_step,
+             const Param yo, const int ydim, const Tp &yi_beg, const Tp &yi_step,
              const float offGrid, af_interp_type method)
 {
     std::string refName = std::string("approx2_kernel_") +
