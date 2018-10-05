@@ -436,250 +436,6 @@ TEST(Approx2, CPPCubicMaxDims)
     SUCCEED();
 }
 
-TEST(Approx2, CPPUsage)
-{
-    //! [ex_signal_approx2]
-
-    // constant input data
-    // {{1 2 3},
-    //  {1 2 3},
-    //  {1 2 3}},
-    float input_vals[9] = {1.0, 1.0, 1.0,
-                           2.0, 2.0, 2.0,
-                           3.0, 3.0, 3.0};
-    array input(3, 3, input_vals);
-
-    // generate grid of interpolation locations
-    // interpolation locations along dim0
-    float p0[4] = {0.5, 1.5,
-                   0.5, 1.5};
-    array pos0(2, 2, p0);
-    // interpolation locations along dim1
-    float p1[4] = {0.5, 0.5,
-                   1.5, 1.5};
-    array pos1(2, 2, p1);
-
-    const int start = 0;
-    const double step = 1;
-    const int dim0 = 0;
-    array interp_uniform = approx2(input,
-                                   pos0, dim0,
-                                   pos1, dim0 + 1,
-                                   start, step,
-                                   start, step);
-
-    array interp = approx2(input, pos0, pos1);
-    // interp == interp_uniform == {{1.5 2.5},
-    //                              {1.5 2.5}};;
-
-    //! [ex_signal_approx2]
-
-    float expected_interp[4] = {1.5, 1.5,
-                                2.5, 2.5};
-
-    array interp_gold(2, 2, expected_interp);
-    ASSERT_ARRAYS_EQ(interp, interp_gold);
-    ASSERT_ARRAYS_EQ(interp, interp_gold);
-}
-
-TEST(Approx2, CPPUniformUsage)
-{
-    //! [ex_uniform_approx2]
-
-    // constant input data
-    // {{1 2 3},
-    //  {1 2 3},
-    //  {1 2 3}},
-    float input_vals[9] = {1.0, 1.0, 1.0,
-                           2.0, 2.0, 2.0,
-                           3.0, 3.0, 3.0};
-    array input(3, 3, input_vals);
-
-    // generate grid of interpolation locations
-    // interpolation locations along dim0
-    float p0[4] = {0.5, 1.5,
-                   0.5, 1.5};
-    array pos0(2, 2, p0);
-    // interpolation locations along dim1
-    float p1[4] = {0.5, 0.5,
-                   1.5, 1.5};
-    array pos1(2, 2, p1);
-
-    const int start = 0;
-    const double step = 1;
-    const int dim0 = 0;
-    array interpolated = approx2(input,
-                                 pos0, dim0,
-                                 pos1, dim0 + 1,
-                                 start, step,
-                                 start, step);
-    // interpolated == {{1.5 2.5},
-    //                  {1.5 2.5}};
-    //! [ex_uniform_approx2]
-
-    float expected_interp[4] = {1.5, 1.5,
-                                2.5, 2.5};
-
-    array interpolated_gold(2, 2, expected_interp);
-    ASSERT_ARRAYS_EQ(interpolated, interpolated_gold);
-}
-
-TEST(Approx2, CPPUniformOneDimIndices)
-{
-    float inv[9] = {10.0, 20.0, 30.0,
-                    40.0, 50.0, 60.0,
-                    70.0, 80.0, 90.0};
-    array input(dim4(3,3), inv);
-
-    // generate grid of interpolation locations
-    float p0[3] = {0.0, 1.0, 2.0};
-    float p1[3] = {0.0, 1.0, 2.0};
-    array pos0(dim4(3,1), p0);
-    array pos1(dim4(3,1), p1);
-
-    const int start = 0;
-    const double step = 1;
-    array interpolated = approx2(input,
-                                 pos0, 0,
-                                 pos1, 1,
-                                 start, step,
-                                 start, step);
-
-    float expected_interp[3] = {10.0, 50.0, 90.0};
-
-
-    array interpolated_gold(dim4(3,1), expected_interp);
-    ASSERT_ARRAYS_EQ(interpolated, interpolated_gold);
-}
-
-TEST(Approx2, CPPUniformTwoDimIndices)
-{
-    float inv[9] = {10.0, 20.0, 30.0,
-                    40.0, 50.0, 60.0,
-                    70.0, 80.0, 90.0};
-    array input(dim4(3,3), inv);
-
-    // generate grid of interpolation locations
-    float p0[4] = {0, 2, 0, 2};
-    float p1[4] = {0, 0, 2, 2};
-    array pos0(dim4(2,2), p0);
-    array pos1(dim4(2,2), p1);
-
-    const int start = 0;
-    const double step = 1;
-    const int d0 = 0;
-    array interpolated = approx2(input,
-                                 pos0, d0,
-                                 pos1, d0 + 1,
-                                 start, step,
-                                 start, step);
-
-    float expected_interp[4] = {10.0, 30.0, 70.0, 90.0};
-    array interpolated_gold(dim4(2,2), expected_interp);
-    ASSERT_ARRAYS_EQ(interpolated, interpolated_gold);
-}
-
-TEST(Approx2, CPPUniformInvalidStepSize)
-{
-    try
-    {
-        float inv[9] = {10.0, 20.0, 30.0,
-                        40.0, 50.0, 60.0,
-                        70.0, 80.0, 90.0};
-        array in(dim4(3,3), inv);
-        float pv[3] = {0.0, -1.0, -2.0};
-        array pos(dim4(3,1), pv);
-
-        const int start = -1;
-        const double step = 0;
-        const int dim0 = 0;
-        array interpolated = approx2(in,
-                                     pos, dim0,
-                                     pos, dim0+1,
-                                     start, step,
-                                     start, step);
-        FAIL() << "Expected af::exception\n";
-        float iv[3] = {0.0, 10.0, 20.0};
-        array interp_gold(dim4(3,1), iv);
-        ASSERT_ARRAYS_EQ(interpolated, interp_gold);
-    } catch (af::exception &ex) {
-        SUCCEED();
-    } catch(...) {
-        FAIL() << "Expected af::exception\n";
-    }
-}
-
-TEST(Approx2, CPPUniformColumnMajorInterpolation)
-{
-    float inv[9] = {10.0, 20.0, 30.0,
-                    40.0, 50.0, 60.0,
-                    70.0, 80.0, 90.0};
-    array input(dim4(3,3), inv);
-
-    // Generate grid of interpolation locations
-    float p0[4] = {0, 2, 0, 2};
-    float p1[4] = {0, 0, 2, 2};
-    array pos0(dim4(2,2), p0);
-    array pos1(dim4(2,2), p1);
-
-    // Grid metadata.
-    const int start = 0;
-    const double step = 1;
-
-    array first = approx2(input,
-                          pos0, 0,
-                          pos1, 1,
-                          start, step,
-                          start, step);
-
-    array second = approx2(input,
-                           pos1, 1,
-                           pos0, 0,
-                           start, step,
-                           start, step);
-
-    // Verify.
-    float expected_interp[4] = {10.0, 30.0, 70.0, 90.0};
-    array interpolated_gold(dim4(2,2), expected_interp);
-    ASSERT_ARRAYS_EQ(first, interpolated_gold);
-    ASSERT_ARRAYS_EQ(first, second);
-}
-
-TEST(Approx2, CPPUniformRowMajorInterpolation)
-{
-    float inv[9] = {10.0, 20.0, 30.0,
-                    40.0, 50.0, 60.0,
-                    70.0, 80.0, 90.0};
-    array input(dim4(3,3), inv);
-
-    // Generate grid of interpolation locations.
-    float p0[4] = {0, 2, 0, 2};
-    float p1[4] = {0, 0, 2, 2};
-    array pos0(dim4(2,2), p0);
-    array pos1(dim4(2,2), p1);
-
-    // Grid metadata.
-    const int start = 0;
-    const double step = 1;
-    array first = approx2(input,
-                          pos0, 1,
-                          pos1, 0,
-                          start, step,
-                          start, step);
-
-    array second = approx2(input,
-                           pos1, 0,
-                           pos0, 1,
-                           start, step,
-                           start, step);
-
-    // Verify.
-    float expected_interp[4] = {10.0, 70.0, 30.0, 90.0};
-    array interpolated_gold(dim4(2,2), expected_interp);
-    ASSERT_ARRAYS_EQ(first, interpolated_gold);
-    ASSERT_ARRAYS_EQ(first, second);
-}
-
 TEST(Approx2, OtherDimLinear)
 {
     int start = 0;
@@ -742,6 +498,205 @@ TEST(Approx2, OtherDimCubic)
         array res = reorder(yo_reordered, rdims[0], rdims[1], rdims[2], rdims[3]);
         ASSERT_NEAR(0, af::max<float>(af::abs(res - yo)), 1E-3);
     }
+}
+
+TEST(Approx2, CPPUsage)
+{
+    //! [ex_signal_approx2]
+
+    // Input data.
+    float input_vals[9] = {1.0, 1.0, 1.0,
+                           2.0, 2.0, 2.0,
+                           3.0, 3.0, 3.0};
+    array input(3, 3, input_vals);
+    // [3 3 1 1]
+    //     1.0000     2.0000     3.0000
+    //     1.0000     2.0000     3.0000
+    //     1.0000     2.0000     3.0000
+
+    float p0[4] = {0.5, 1.5, 0.5, 1.5};
+    array pos0(2, 2, p0);
+    // [2 2 1 1]
+    //     0.5000     0.5000
+    //     1.5000     1.5000
+
+    float p1[4] = {0.5, 0.5, 1.5, 1.5};
+    array pos1(2, 2, p1);
+    // [2 2 1 1]
+    //     0.5000     1.5000
+    //     0.5000     1.5000
+
+    const int pos0_interp_grid_start = 0;
+    const double pos0_interp_grid_step = 1;
+    const int pos0_interp_dim = 0;
+    const int pos1_interp_dim = 1;
+    array interp = approx2(input,
+                           pos0, pos0_interp_dim,
+                           pos1, pos1_interp_dim,
+                           pos0_interp_grid_start, pos0_interp_grid_step,
+                           pos0_interp_grid_start, pos0_interp_grid_step);
+    // [2 2 1 1]
+    //     1.5000     2.5000
+    //     1.5000     2.5000
+
+    //! [ex_signal_approx2]
+
+    float expected_interp[4] = {1.5, 1.5,
+                                2.5, 2.5};
+
+    array interp_gold(2, 2, expected_interp);
+    ASSERT_ARRAYS_EQ(interp, interp_gold);
+}
+
+TEST(Approx2, CPPUniformOneDimIndices)
+{
+    float inv[9] = {10.0, 20.0, 30.0,
+                    40.0, 50.0, 60.0,
+                    70.0, 80.0, 90.0};
+    array input(dim4(3,3), inv);
+
+    float p0[3] = {0.0, 1.0, 2.0};
+    float p1[3] = {0.0, 1.0, 2.0};
+    array pos0(dim4(3,1), p0);
+    array pos1(dim4(3,1), p1);
+
+    const int pos0_interp_grid_start = 0;
+    const double pos0_interp_grid_step = 1;
+    array interpolated = approx2(input,
+                                 pos0, 0,
+                                 pos1, 1,
+                                 pos0_interp_grid_start, pos0_interp_grid_step,
+                                 pos0_interp_grid_start, pos0_interp_grid_step);
+
+    float expected_interp[3] = {10.0, 50.0, 90.0};
+
+
+    array interpolated_gold(dim4(3,1), expected_interp);
+    ASSERT_ARRAYS_EQ(interpolated, interpolated_gold);
+}
+
+TEST(Approx2, CPPUniformTwoDimIndices)
+{
+    float inv[9] = {10.0, 20.0, 30.0,
+                    40.0, 50.0, 60.0,
+                    70.0, 80.0, 90.0};
+    array input(dim4(3,3), inv);
+
+    float p0[4] = {0, 2, 0, 2};
+    float p1[4] = {0, 0, 2, 2};
+    array pos0(dim4(2,2), p0);
+    array pos1(dim4(2,2), p1);
+    const int pos0_interp_grid_start = 0;
+    const double pos0_interp_grid_step = 1;
+    const int pos0_interp_dim = 0;
+    const int pos1_interp_dim = 1;
+
+    array interpolated = approx2(input,
+                                 pos0, pos0_interp_dim,
+                                 pos1, pos1_interp_dim,
+                                 pos0_interp_grid_start, pos0_interp_grid_step,
+                                 pos0_interp_grid_start, pos0_interp_grid_step);
+
+    float expected_interp[4] = {10.0, 30.0, 70.0, 90.0};
+    array interpolated_gold(dim4(2,2), expected_interp);
+    ASSERT_ARRAYS_EQ(interpolated, interpolated_gold);
+}
+
+TEST(Approx2, CPPUniformInvalidStepSize)
+{
+    try
+    {
+        float inv[9] = {10.0, 20.0, 30.0,
+                        40.0, 50.0, 60.0,
+                        70.0, 80.0, 90.0};
+        array in(dim4(3,3), inv);
+        float pv[3] = {0.0, -1.0, -2.0};
+        array pos(dim4(3,1), pv);
+        const int pos0_interp_grid_start = -1;
+        const double pos0_interp_grid_step = 0;
+        const int pos0_interp_dim = 0;
+        const int pos1_interp_dim = 1;
+
+        array interpolated = approx2(in,
+                                     pos, pos0_interp_dim,
+                                     pos, pos1_interp_dim,
+                                     pos0_interp_grid_start, pos0_interp_grid_step,
+                                     pos0_interp_grid_start, pos0_interp_grid_step);
+        FAIL() << "Expected af::exception\n";
+
+    } catch (af::exception &ex) {
+        SUCCEED();
+    } catch(...) {
+        FAIL() << "Expected af::exception\n";
+    }
+}
+
+TEST(Approx2, CPPUniformColumnMajorInterpolation)
+{
+    float inv[9] = {10.0, 20.0, 30.0,
+                    40.0, 50.0, 60.0,
+                    70.0, 80.0, 90.0};
+    array input(dim4(3,3), inv);
+
+    float p0[4] = {0, 2, 0, 2};
+    float p1[4] = {0, 0, 2, 2};
+    array pos0(dim4(2,2), p0);
+    array pos1(dim4(2,2), p1);
+    const int pos0_interp_dim = 0;
+    const int pos1_interp_dim = 1;
+    const int pos0_interp_grid_start = 0;
+    const double pos0_interp_grid_step = 1;
+
+    array first = approx2(input,
+                          pos0, pos0_interp_dim,
+                          pos1, pos1_interp_dim,
+                          pos0_interp_grid_start, pos0_interp_grid_step,
+                          pos0_interp_grid_start, pos0_interp_grid_step);
+
+    array second = approx2(input,
+                           pos1, pos1_interp_dim,
+                           pos0, pos0_interp_dim,
+                           pos0_interp_grid_start, pos0_interp_grid_step,
+                           pos0_interp_grid_start, pos0_interp_grid_step);
+
+    // Verify.
+    float expected_interp[4] = {10.0, 30.0, 70.0, 90.0};
+    array interpolated_gold(dim4(2,2), expected_interp);
+    ASSERT_ARRAYS_EQ(first, interpolated_gold);
+    ASSERT_ARRAYS_EQ(first, second);
+}
+
+TEST(Approx2, CPPUniformRowMajorInterpolation)
+{
+    float inv[9] = {10.0, 20.0, 30.0,
+                    40.0, 50.0, 60.0,
+                    70.0, 80.0, 90.0};
+    array input(dim4(3,3), inv);
+
+    float p0[4] = {0, 2, 0, 2};
+    float p1[4] = {0, 0, 2, 2};
+    array pos0(dim4(2,2), p0);
+    array pos1(dim4(2,2), p1);
+    const int pos0_interp_grid_start = 0;
+    const double pos0_interp_grid_step = 1;
+
+    array first = approx2(input,
+                          pos0, 1,
+                          pos1, 0,
+                          pos0_interp_grid_start, pos0_interp_grid_step,
+                          pos0_interp_grid_start, pos0_interp_grid_step);
+
+    array second = approx2(input,
+                           pos1, 0,
+                           pos0, 1,
+                           pos0_interp_grid_start, pos0_interp_grid_step,
+                           pos0_interp_grid_start, pos0_interp_grid_step);
+
+    // Verify.
+    float expected_interp[4] = {10.0, 70.0, 30.0, 90.0};
+    array interpolated_gold(dim4(2,2), expected_interp);
+    ASSERT_ARRAYS_EQ(first, interpolated_gold);
+    ASSERT_ARRAYS_EQ(first, second);
 }
 
 TEST(Approx2, CPPEmptyPos)
