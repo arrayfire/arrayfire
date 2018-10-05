@@ -211,53 +211,108 @@ respectively, then the possible batch operations are as follows.
 \defgroup signal_func_approx1 approx1
 \ingroup approx_mat
 
-approx1 interpolates data along a single dimension.
+approx1 interpolates data along one dimension. Interpolation computes
+for values of unknown points out of known ones.
 
-Interpolation is performed assuming input data is equally spaced with
-indices in the range [0, n). The positions are sampled with respect to
-data at these locations.
+The multi-dimensional (>=1D) input array, `in`, contains known values
+to be used for interpolation. These known values lie on a 1D
+interpolation grid - a one-dimensional, uniformly-spaced grid of
+points. Interpolation is performed to obtain values for any unknown
+points on the grid. The index values of the grid can be specified with
+the `grid_beg` and `grid_step` arguments.
 
-The dimension of the input to be interpolated may be
-specified. Otherwise, ArrayFire will perform interpolation on the
-first dimension by default.
+The position array (<=1D), `pos`, contains a combination of known and
+unkown positions/indices on the interpolation grid. The position
+array, `pos`, must be one-dimensional and must lead across the
+dimension in which the measurements will be made in the input array.
 
-The beginning and step values of the interpolation grid dimension may
-also be specified. A standard uniform grid with a start value of 0 and
-step value of 1 are assumed otherwise.
+Any unknown position/index values that lie within the interpolation
+grid range will be calculated for using interpolation. Unknown points
+that are outside of the interpolation grid range will be replaced with
+the `off_grid` value. Known points will be replaced with corresponding
+values from the input array.
 
-ArrayFire supports the following interpolation types for approx1():
+The interpolation dimension, `interp_dim`, is the leading dimension
+used to measure across the interpolation grid. Interpolation is thus
+performed along the same dimension of the input array.
+
+The uniformly-spaced one-dimensional interpolation grid on which the
+input values lie on can be adjusted with the corresponding `grid_beg`
+and `grid_step` arguments. A standard uniform interpolation grid with
+equally spaced indices in the range of [0,n) can be achieved with grid
+begin and step values of 0 and 1, respectively. A standard uniform
+grid will be used in the case that the interpolating dimension as well
+as the grid start and step values are not passed in.
+
+The type of interpolation to be performed is controlled with the
+`method` argument. The following are the different interpolation types
+supported by `approx1()`:
+
 - Nearest neighbor interpolation - \ref AF_INTERP_NEAREST
 - Linear interpolation (default) - \ref AF_INTERP_LINEAR, \ref AF_INTERP_LINEAR_COSINE
 - Cubic interpolation - \ref AF_INTERP_CUBIC, \ref AF_INTERP_CUBIC_SPLINE
 - Lower interpolation - \ref AF_INTERP_LOWER
 
-Arrayfire performs linear interpolation by default.
+Unless specified, linear interpolation is performed by default. Refer
+to \ref af_interp_type for more information about ArrayFire's
+interpolation types.
 
-ArrayFire does not perform extrapolation when out of bounds. The value
-is filled with `off_grid`, instead.
+Interpolation positions outside of the interpolation grid range are
+not extrapolated. Instead, those values default to `off_grid`, whose
+default value is 0.
 
 \snippet test/approx1.cpp ex_signal_approx1
 
 \defgroup signal_func_approx2 approx2
 \ingroup approx_mat
 
-approx2 interpolates data along two dimensions.
+approx2 interpolates data along two dimensions. Interpolation computes
+for values of unknown points out of known ones.
 
-Interpolation is performed assuming input data is equally spaced with
-indices in the range [0, n) along each dimension. The positions are
-sampled with respect to data at these locations.
+The multi-dimensional (>=2D) input array, `in`, contains known values
+to be used for interpolation. These known values lie on a 2D
+interpolation grid - a two-dimensional, uniformly-spaced grid of
+points. Interpolation is performed to obtain values for any unknown
+points on the grid. The index values of the grid can be specified with
+the `grid_beg` and `grid_step` arguments.
 
-The two dimensions of the input to be interpolated may be
-specified. Otherwise, ArrayFire will perform interpolation on the
-first and second dimensions by default.
+Two position arrays (<=2D), `pos0` and `pos1`, contain a combination
+of known and unkown positions/indices on the interpolation grid. Each
+of the position arrays must be of at most two dimensions. The index
+values for each of the position arrays is read along the dimensions
+specified by `pos0_interp_dim` and `pos1_interp_dim`, respectively.
 
-The beginning and step values of the interpolation grid dimensions may
-also be specified. A standard uniform grid with a start value of 0 and
-step value of 1 are assumed otherwise.
+Any unknown position/index values that lie within the interpolation
+grid range will be calculated for using interpolation. Unknown points
+that are outside of the interpolation grid range will be replaced with
+the `off_grid` value. Known points will be replaced with corresponding
+values from the input array.
+
+The two interpolation dimensions, `pos0_interp_dim` and
+`pos1_interp_dim`, correspond to the dimensions that the `pos0` and
+`pos1` arrays will be measured across the interpolation
+grid. Interpolation is thus performed along both specified dimensions
+of the input array.
+
+The uniformly-spaced two-dimensional interpolation grid on which the
+input values lie on can be adjusted with the corresponding grid begin
+and step arguments. A standard uniform interpolation grid with equally
+spaced indices in the range of [0,n) can be achieved with grid begin
+and step values of 0 and 1, respectively. A standard uniform grid will
+be used in the case that the interpolating dimension as well as the
+grid start and step values are not passed in.
 
 All of the interpolation types defined in \ref af_interp_type are
 supported by approx2(). ArrayFire performs linear interpolation by
 default.
+
+Unless specified, linear interpolation is performed by default. Refer
+to \ref af_interp_type for more information about ArrayFire's
+interpolation types.
+
+Interpolation positions outside of the interpolation grid range are
+not extrapolated. Instead, those values default to `off_grid`, whose
+default value is 0.
 
 \snippet test/approx2.cpp ex_signal_approx2
 

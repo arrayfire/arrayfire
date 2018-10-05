@@ -20,10 +20,10 @@ class dim4;
 /**
    C++ Interface for data interpolation on one-dimensional signals.
 
-   \param[in]  in is the input array. Data assumed to be equally spaced with indices in the range of [0, n).
-   \param[in]  pos array contains the interpolation positions.
-   \param[in]  method is the interpolation type. The following types (defined in enum \ref af_interp_type) can be used: nearest neighbor, linear, and cubic.
-   \param[in]  off_grid is the value that will be set in the output array for any indices that are out of bounds.
+   \param[in]  in Input array containing known values to perform interpolation on. Interpolation grid assumed to be uniformly spaced with indices in the range of `[0, n)`, where `n` is the number of elements in the array.
+   \param[in]  pos Contains known and unkown positions along the first dimension of the interpolation grid. Unknown values will be calculated for using interpolation.
+   \param[in]  method Interpolation type. The following types (defined in enum \ref af_interp_type) are supported: nearest neighbor, linear, and cubic.
+   \param[in]  off_grid Default value for any positions/points that lie outside of the interpolation grid.
    \return     The interpolated array.
 
    \ingroup signal_func_approx1
@@ -34,11 +34,11 @@ AFAPI array approx1(const array &in, const array &pos,
 /**
    C++ Interface for data interpolation on two-dimensional signals.
 
-   \param[in]  in is the input array. Data assumed to be equally spaced with indices in the range of [0, n) along both dimensions to interpolate across..
-   \param[in]  pos0 array contains the interpolation positions for first dimension.
-   \param[in]  pos1 array contains the interpolation positions for second dimension.
-   \param[in]  method is the interpolation type. All interpolation types defined in \ref af_interp_type are supported.
-   \param[in]  off_grid is the value that will be set in the output array for any indices that are out of bounds.
+   \param[in]  in Input array containing known values to perform interpolation on. Must be of at least two dimensions. Interpolation grid assumed to be uniformly spaced with indices in the range of `[0, n)` across both dimension, where `n` is the number of elements in the array.
+   \param[in]  pos0 Contains known and unkown positions along the first dimension of the interpolation grid. Unknown values will be calculated for using interpolation.
+   \param[in]  pos1 Contains known and unkown positions along the second dimension of the interpolation grid. Unknown values will be calculated for using interpolation.
+   \param[in]  method Interpolation type. All interpolation types defined in \ref af_interp_type are supported.
+   \param[in]  off_grid Default value for any positions/points that lie outside of the interpolation grid.
    \return     The interpolated array.
 
    \ingroup signal_func_approx2
@@ -51,36 +51,36 @@ AFAPI array approx2(const array &in, const array &pos0, const array &pos1,
 /**
    C++ Interface for data interpolation on one-dimensional signals.
 
-   \param[in]  in is the input array.
-   \param[in]  pos array contains the interpolation positions.
+   \param[in]  in Input array containing known values to perform interpolation on. The interpolation grid on which these points lie on are controlled by the `grid_beg` and `grid_step` arguments.
+   \param[in]  pos Contains known and unkown positions from the interpolation grid along the dimension specified by `interp_dim`.
    \param[in]  interp_dim Specifies the dimension along which measurements were made.
-   \param[in]  grid_beg Initial value of the grid on which original values were measured.
-   \param[in]  grid_step Step size of the grid on which original values were measured.
-   \param[in]  method is the interpolation type. The following types (defined in enum \ref af_interp_type) can be used: nearest neighbor, linear, and cubic.
-   \param[in]  off_grid is the value that will be set in the output array for any indices that are out of bounds.
+   \param[in]  interp_grid_beg Initial value of the grid on which original values were measured.
+   \param[in]  interp_grid_step Step size of the grid on which original values were measured.
+   \param[in]  method Interpolation type. The following types (defined in enum \ref af_interp_type) are supported: nearest neighbor, linear, and cubic.
+   \param[in]  off_grid Default value for any positions/points that lie outside of the interpolation grid.
    \return     The interpolated array.
 
    \ingroup signal_func_approx1
  */
 AFAPI array approx1(const array &in,
                     const array &pos, const int interp_dim,
-                    const double grid_beg, const double grid_step,
+                    const double interp_grid_beg, const double interp_grid_step,
                     const interpType method = AF_INTERP_LINEAR, const float off_grid = 0.0f);
 
 /**
    C++ Interface for data interpolation on two-dimensional signals.
 
-   \param[in]  in is the input array.
-   \param[in]  pos0 array contains the interpolation positions along the first dimension.
+   \param[in]  in Input array containing known values to perform interpolation on. Must be of at least two dimensions. The interpolation grid on which these points lie on are controlled by the `grid_beg` and `grid_step` arguments.
+   \param[in]  pos0 Contains known and unknown positions along the first dimension of the interpolation grid, specified by `pos0_interp_grid_dim`.
    \param[in]  pos0_interp_dim Specifies the first dimension along which measurements were made.
    \param[in]  pos0_interp_grid_beg Initial value of the grid on which original values were measured for the first dimension.
    \param[in]  pos0_interp_grid_step Step size of the grid on which original values were measured for the first dimension.
-   \param[in]  pos1 array contains the interpolation positions along the second dimension.
+   \param[in]  pos1 Contains known and unknown positions along the second dimension of the interpolation grid, specified by `pos1_interp_grid_dim`.
    \param[in]  pos1_interp_dim Specifies the second dimension along which measurements were made.
    \param[in]  pos1_interp_grid_beg Initial value of the grid on which original values were measured for the second dimension.
    \param[in]  pos1_interp_grid_step Step size of the grid on which original values were measured for the second dimension.
-   \param[in]  method is the interpolation type. All interpolation types defined in \ref af_interp_type are supported.
-   \param[in]  off_grid is the value that will be set in the output array for any indices that are out of bounds.
+   \param[in]  method Interpolation type. All interpolation types defined in \ref af_interp_type are supported.
+   \param[in]  off_grid Default value for any positions/points that lie outside of the interpolation grid.
    \return     The interpolated array.
 
    \ingroup signal_func_approx2
@@ -719,12 +719,11 @@ extern "C" {
 /**
    C Interface for signals interpolation on one dimensional signals.
 
-   \param[out] out is the array with interpolated values.
-   \param[in]  in is the input array.
-   \param[in]  pos array contains the interpolation positions.
-   \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type.
-   \param[in]  off_grid is the value that will set in the output array when certain index is out of bounds.
+   \param[out] out The interpolated array.
+   \param[in]  in Input array containing known values to perform interpolation on. Interpolation grid assumed to be uniformly spaced with indices in the range of `[0, n)`, where `n` is the number of elements in the array.
+   \param[in]  pos Contains known and unkown positions along the first dimension of the interpolation grid. Unknown values will be calculated for using interpolation.
+   \param[in]  method method Interpolation type. The following types (defined in enum \ref af_interp_type) are supported: nearest neighbor, linear, and cubic.
+   \param[in]  off_grid Default value for any positions/points that lie outside of the interpolation grid.
    \return     \ref AF_SUCCESS if the interpolation operation is successful,
                otherwise an appropriate error code is returned.
 
@@ -736,13 +735,12 @@ AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
 /**
    C Interface for signals interpolation on two dimensional signals.
 
-   \param[out] out is the array with interpolated values.
-   \param[in]  in is the input array.
-   \param[in]  pos0 array contains the interpolation positions for first dimension.
-   \param[in]  pos1 array contains the interpolation positions for second dimension.
-   \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type.
-   \param[in]  off_grid is the value that will set in the output array when certain index is out of bounds.
+   \param[out] out The interpolated array.
+   \param[in]  in in Input array containing known values to perform interpolation on. Must be of at least two dimensions. Interpolation grid assumed to be uniformly spaced with indices in the range of `[0, n)` across both dimension, where `n` is the number of elements in the array.
+   \param[in]  pos0 Contains known and unkown positions along the first dimension of the interpolation grid. Unknown values will be calculated for using interpolation.
+   \param[in]  pos1 Contains known and unkown positions along the second dimension of the interpolation grid. Unknown values will be calculated for using interpolation.
+   \param[in]  method Interpolation type. All interpolation types defined in \ref af_interp_type are supported.
+   \param[in]  off_grid Default value for any positions/points that lie outside of the interpolation grid.
    \return     \ref AF_SUCCESS if the interpolation operation is successful,
                otherwise an appropriate error code is returned.
 
@@ -755,15 +753,14 @@ AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, c
 /**
    C Interface for signals interpolation on one dimensional signals along specified dimension.
 
-   \param[out] out is the array with interpolated values.
-   \param[in]  in is the array containing the measured / reference values.
-   \param[in]  pos array containining the interpolation positions.
-   \param[in]  interp_dim The dimension along which measurements were made.
-   \param[in]  pos0_interp_grid_beg Initial value of the grid on which the original values were measured.
-   \param[in]  pos0_interp_grid_step Step size of the grid on which the original values were measured.
-   \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type.
-   \param[in]  off_grid is the value that will set in the output array when certain index is out of bounds.
+   \param[out] out The interpolated array.
+   \param[in]  in Input array containing known values to perform interpolation on. The interpolation grid on which these points lie on are controlled by the `grid_beg` and `grid_step` arguments.
+   \param[in]  pos Contains known and unkown positions from the interpolation grid along the dimension specified by `interp_dim`.
+   \param[in]  interp_dim Specifies the dimension along which measurements were made.
+   \param[in]  interp_grid_beg Initial value of the grid on which the original values were measured.
+   \param[in]  interp_grid_step Step size of the grid on which the original values were measured.
+   \param[in]  method Interpolation type. The following types (defined in enum \ref af_interp_type) are supported: nearest neighbor, linear, and cubic.
+   \param[in]  off_grid Default value for any positions/points that lie outside of the interpolation grid.
    \return     \ref AF_SUCCESS if the interpolation operation is successful,
                otherwise an appropriate error code is returned.
 
@@ -771,25 +768,24 @@ AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, c
  */
 AFAPI af_err af_approx1_uniform(af_array *out, const af_array in,
                                 const af_array pos, const int interp_dim,
-                                const double pos0_interp_grid_beg, const double pos0_interp_grid_step,
+                                const double interp_grid_beg, const double interp_grid_step,
                                 const af_interp_type method, const float off_grid);
 
 /**
    C Interface for signals interpolation on two dimensional signals alog specified dimensions.
 
-   \param[out] out is the array with interpolated values.
-   \param[in]  in is the array containing the measured / reference values.
-   \param[in]  pos0 array containining the interpolation positions.
-   \param[in]  pos0_interp_dim The dimension along which the interpolation needs to occur.
-   \param[in]  pos0_interp_grid_beg Initial value of the grid on which the original values were measured.
-   \param[in]  pos0_interp_grid_step Step size of the grid on which the original values were measured.
-   \param[in]  pos1 array containining the interpolation positions.
-   \param[in]  pos1_interp_dim The dimension along which the interpolation needs to occur.
-   \param[in]  pos1_interp_grid_beg Initial value of the grid on which the original values were measured.
-   \param[in]  pos1_interp_grid_step Step size of the grid on which the original values were measured.
-   \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type.
-   \param[in]  off_grid is the value that will set in the output array when certain index is out of bounds.
+   \param[out] out The interpolated array.
+   \param[in]  in Input array containing known values to perform interpolation on. Must be of at least two dimensions. The interpolation grid on which these points lie on are controlled by the `grid_beg` and `grid_step` arguments.
+   \param[in]  pos0 Contains known and unknown positions along the first dimension of the interpolation grid, specified by `pos0_interp_dim`.
+   \param[in]  pos0_interp_dim Specifies the second dimension along which measurements were made.
+   \param[in]  pos0_interp_grid_beg Initial value of the grid on which original values were measured for the first dimension.
+   \param[in]  pos0_interp_grid_step Step size of the grid on which original values were measured for the first dimension.
+   \param[in]  pos1 Contains known and unknown positions along the second dimension of the interpolation grid, specified by `pos1_interp_dim`.
+   \param[in]  pos1_interp_dim Specifies the second dimension along which measurements were made.
+   \param[in]  pos1_interp_grid_beg Initial value of the grid on which original values were measured for the second dimension.
+   \param[in]  pos1_interp_grid_step Step size of the grid on which original values were measured for the second dimension.
+   \param[in]  method Interpolation type. All interpolation types defined in \ref af_interp_type are supported.
+   \param[in]  off_grid Default value for any positions/points that lie outside of the interpolation grid.
    \return     \ref AF_SUCCESS if the interpolation operation is successful,
                otherwise an appropriate error code is returned.
 

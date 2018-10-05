@@ -512,18 +512,24 @@ TEST(Approx2, CPPUsage)
     //     1.0000     2.0000     3.0000
     //     1.0000     2.0000     3.0000
 
+    // First array of known and unknown positions to measure and perform
+    // interpolation along a specified dimension.
     float p0[4] = {0.5, 1.5, 0.5, 1.5};
     array pos0(2, 2, p0);
     // [2 2 1 1]
     //     0.5000     0.5000
     //     1.5000     1.5000
 
+    // Second array of known and unknown positions to measure and perform
+    // interpolation along a specified dimension.
     float p1[4] = {0.5, 0.5, 1.5, 1.5};
     array pos1(2, 2, p1);
     // [2 2 1 1]
     //     0.5000     1.5000
     //     0.5000     1.5000
 
+    // Specify a standard uniform grid with start and step values of 0
+    // and 1 along each of the interpolation grid dimensions.
     const int pos0_interp_grid_start = 0;
     const double pos0_interp_grid_step = 1;
     const int pos0_interp_dim = 0;
@@ -613,7 +619,6 @@ TEST(Approx2, CPPUniformInvalidStepSize)
                                      pos, pos0_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step,
                                      pos, pos1_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step);
         FAIL() << "Expected af::exception\n";
-
     } catch (af::exception &ex) {
         SUCCEED();
     } catch(...) {
