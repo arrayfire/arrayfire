@@ -17,7 +17,7 @@
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 Array<T> wrap(const Array<T> &in, const dim_t ox, const dim_t oy,
               const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
               const dim_t px, const dim_t py, const bool is_column) {
@@ -47,4 +47,39 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+#undef INSTANTIATE
+
+template <typename T>
+Array<T> wrap_dilated(const Array<T> &in, const dim_t ox, const dim_t oy,
+                      const dim_t wx, const dim_t wy, const dim_t sx,
+                      const dim_t sy, const dim_t px, const dim_t py,
+                      const dim_t dx, const dim_t dy, const bool is_column) {
+    af::dim4 idims = in.dims();
+    af::dim4 odims(ox, oy, idims[2], idims[3]);
+    Array<T> out = createValueArray<T>(odims, scalar<T>(0));
+
+    kernel::wrap_dilated<T>(out, in, wx, wy, sx, sy, px, py, dx, dy, is_column);
+    return out;
+}
+
+#define INSTANTIATE(T)                                                      \
+    template Array<T> wrap_dilated<T>(                                      \
+        const Array<T> &in, const dim_t ox, const dim_t oy, const dim_t wx, \
+        const dim_t wy, const dim_t sx, const dim_t sy, const dim_t px,     \
+        const dim_t py, const dim_t dx, const dim_t dy, const bool is_column);
+
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(cfloat)
+INSTANTIATE(cdouble)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
+#undef INSTANTIATE
+
 }  // namespace opencl

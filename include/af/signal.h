@@ -591,6 +591,23 @@ AFAPI array convolve1(const array& signal, const array& filter, const convMode m
 AFAPI array convolve2(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT, const convDomain domain=AF_CONV_AUTO);
 
 /**
+   C++ Interface for convolution on two dimensional signals
+
+   \snippet test/convolve.cpp ex_image_convolve2
+
+   \param[in]  signal is the input signal
+   \param[in]  filter is the filter that will be used for the convolution operation
+   \param[in]  stride specifies the filter strides along each dimension
+   \param[in]  padding specifies the padding along each dimension
+   \param[in]  dilation specifies the amount to dilate the filter before convolution
+   \return     the convolved array
+
+   \ingroup signal_func_convolve2
+ */
+AFAPI array convolve2(const array& signal, const array& filter,
+                      const dim4 stride, const dim4 padding, const dim4 dilation);
+
+/**
    C++ Interface for convolution on three dimensional signals
 
    \snippet test/convolve.cpp ex_image_convolve3
@@ -1380,6 +1397,29 @@ AFAPI af_err af_convolve1(af_array *out, const af_array signal, const af_array f
    \ingroup signal_func_convolve2
  */
 AFAPI af_err af_convolve2(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode, af_conv_domain domain);
+
+/**
+   C Interface for convolution on two dimensional signals
+
+   \param[out] out is convolved array
+   \param[in]  signal is the input signal
+   \param[in]  filter is the filter that will be used for the convolution operation
+   \param[in]  stride_dims specifies the number of stride dimension parameters
+   \param[in]  strides array of values specifying the amounts the filter strides along each dimension
+   \param[in]  padding_dims specifies the number of padding dimension parameters
+   \param[in]  paddings array of values specifying the amounts to pad along each dimension
+   \param[in]  dilation_dims specifies the number of dilation dimension parameters
+   \param[in]  dilations array of values specifying the amounts to dilate the filter
+               before convolving along each dimension
+   \return     \ref AF_SUCCESS if the convolution is successful,
+               otherwise an appropriate error code is returned.
+
+   \ingroup signal_func_convolve2
+ */
+AFAPI af_err af_convolve2_strided(af_array *out, const af_array signal, const af_array filter,
+                                  const unsigned stride_dims,   const dim_t *strides,
+                                  const unsigned padding_dims,  const dim_t *paddings,
+                                  const unsigned dilation_dims, const dim_t *dilations);
 
 /**
    C Interface for convolution on three dimensional signals

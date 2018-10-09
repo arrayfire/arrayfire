@@ -9,8 +9,18 @@
 
 #pragma once
 
+#include <GraphicsResourceManager.hpp>
+#include <cublas.hpp>
+#include <cublas.hpp>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <cudnn.hpp>
+#include <cufft.hpp>
+#include <cusolverDn.hpp>
+#include <cusparse.hpp>
+#include <memory.hpp>
+
+#include <memory>
 #include <string>
 
 /* Forward declarations of Opaque structure holding
@@ -88,19 +98,21 @@ cudaDeviceProp getDeviceProp(int device);
 
 std::pair<int, int> getComputeCapability(const int device);
 
-bool& evalFlag();
+bool &evalFlag();
 
 MemoryManager& memoryManager();
 
-MemoryManagerPinned& pinnedMemoryManager();
+MemoryManagerPinned &pinnedMemoryManager();
 
-graphics::ForgeManager& forgeManager();
+graphics::ForgeManager &forgeManager();
 
-GraphicsResourceManager& interopManager();
+GraphicsResourceManager &interopManager();
 
-PlanCache& fftManager();
+PlanCache &fftManager();
 
 BlasHandle blasHandle();
+
+NNHandle nnHandle();
 
 SolveHandle solverDnHandle();
 

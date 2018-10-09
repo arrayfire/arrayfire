@@ -290,6 +290,19 @@
         contained in the \p afcu namespace provide methods to get the stream and native
         device id that ArrayFire is using.
    @}
+
+   @defgroup ml Machine Learning
+   @{
+
+     Machine learning related functions and forward/backward
+     propagation
+
+     @defgroup ml_pool Pooling operations
+     Pool 2D, ND, maxpooling, minpooling, meanpooling
+
+     @defgroup ml_convolution Convolutions
+     Forward and backward convolution passes
+   @}
 @}
 
 
@@ -313,6 +326,7 @@
 #include "af/image.h"
 #include "af/index.h"
 #include "af/lapack.h"
+#include "af/ml.h"
 #include "af/random.h"
 #include "af/seq.h"
 #include "af/signal.h"

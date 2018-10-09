@@ -7,7 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <arrayfire.h>
+#include <gtest/gtest.h>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
@@ -26,7 +28,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Convolve : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -40,7 +42,7 @@ typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, uchar,
 // register the type list
 TYPED_TEST_CASE(Convolve, TestTypes);
 
-template<typename T>
+template <typename T>
 void convolveTest(string pTestFile, int baseDim, bool expand) {
     SUPPORTED_TYPE_CHECK(T);
 
@@ -83,11 +85,11 @@ void convolveTest(string pTestFile, int baseDim, bool expand) {
     size_t nElems         = currGoldBar.size();
     vector<T> outData(nElems);
 
-    ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void *)&outData.front(), outArray));
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 
     ASSERT_SUCCESS(af_release_array(outArray));
@@ -213,7 +215,7 @@ TYPED_TEST(Convolve, Same_Cuboid_One2Many) {
         string(TEST_DIR "/convolve/cuboid_same_one2many.test"), 3, false);
 }
 
-template<typename T>
+template <typename T>
 void sepConvolveTest(string pTestFile, bool expand) {
     SUPPORTED_TYPE_CHECK(T);
 
@@ -249,11 +251,11 @@ void sepConvolveTest(string pTestFile, bool expand) {
     size_t nElems         = currGoldBar.size();
     vector<T> outData(nElems);
 
-    ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void *)&outData.front(), outArray));
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 
     ASSERT_SUCCESS(af_release_array(outArray));
@@ -404,8 +406,8 @@ TEST(Convolve1, CPP) {
     output.host(&outData.front());
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 }
 
@@ -440,8 +442,8 @@ TEST(Convolve2, CPP) {
     output.host(&outData.front());
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 }
 
@@ -475,8 +477,8 @@ TEST(Convolve3, CPP) {
     output.host(&outData.front());
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 }
 
@@ -511,11 +513,11 @@ TEST(Convolve, separable_CPP) {
     size_t nElems             = output.elements();
     vector<float> outData(nElems);
 
-    output.host((void*)&outData.front());
+    output.host((void *)&outData.front());
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 }
 
@@ -823,4 +825,336 @@ TEST(Convolve, CuboidBatchLaunchBugFix) {
     af::array output = convolve3(signal, filter);
 
     ASSERT_VEC_ARRAY_NEAR(tests[0], sDims, output, 1.0e-3);
+}
+
+struct conv2_strided_params {
+    string testname_;
+    dim4 signal_sz_, filt_sz_, stride_, padding_, dilation_;
+
+    conv2_strided_params(string testname, dim4 signal_sz, dim4 filt_sz,
+                         dim4 stride, dim4 padding, dim4 dilation)
+        : testname_(testname)
+        , signal_sz_(signal_sz)
+        , filt_sz_(filt_sz)
+        , stride_(stride)
+        , padding_(padding)
+        , dilation_(dilation) {}
+};
+
+template <typename TestClass>
+string testNameGenerator(
+    const ::testing::TestParamInfo<typename TestClass::ParamType> info) {
+    return info.param.testname_;
+}
+
+class Conv2ConsistencyTest
+    : public ::testing::TestWithParam<conv2_strided_params> {};
+
+conv2_strided_params conv2_consistency_data(dim4 signal_sz, dim4 filt_sz) {
+    dim4 stride(1, 1);
+    dim4 padding(filt_sz[0] / 2, filt_sz[1] / 2);
+    dim4 dilation(1, 1);
+    std::string testname =
+        "conv2_consistency_" + std::to_string(signal_sz[0]) +
+        std::to_string(signal_sz[1]) + std::to_string(signal_sz[2]) +
+        std::to_string(signal_sz[3]) + "__" + std::to_string(filt_sz[0]) +
+        std::to_string(filt_sz[1]) + std::to_string(filt_sz[2]) +
+        std::to_string(filt_sz[3]) + "__" + "s" + std::to_string(stride[0]) +
+        std::to_string(stride[1]) + "_" + "p" + std::to_string(padding[0]) +
+        std::to_string(padding[1]) + "_" + "d" + std::to_string(dilation[0]) +
+        std::to_string(dilation[1]);
+
+    return conv2_strided_params(testname, signal_sz, filt_sz, stride, padding,
+                                dilation);
+}
+vector<conv2_strided_params> genConsistencyTests() {
+    // TODO: test nfilters and nfeatures
+    return {conv2_consistency_data(dim4(10, 10), dim4(3, 3)),
+            conv2_consistency_data(dim4(11, 11), dim4(5, 5)),
+            conv2_consistency_data(dim4(12, 12), dim4(7, 7)),
+            conv2_consistency_data(dim4(19, 19), dim4(9, 9))};
+}
+
+INSTANTIATE_TEST_CASE_P(Conv2Consistency, Conv2ConsistencyTest,
+                        ::testing::ValuesIn(genConsistencyTests()),
+                        testNameGenerator<Conv2ConsistencyTest>);
+
+TEST_P(Conv2ConsistencyTest, RandomConvolutions) {
+    conv2_strided_params params = GetParam();
+    array signal                = randn(params.signal_sz_);
+    array filter                = randn(params.filt_sz_);
+
+    array out_native = convolve2(signal, filter);
+    array out = convolve2(signal, filter, params.stride_, params.padding_,
+                          params.dilation_);
+
+    ASSERT_ARRAYS_NEAR(out_native, out, 1e-5);
+}
+
+template <typename T>
+void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
+                          dim4 dilation) {
+    if (noDoubleTests<T>()) return;
+
+    vector<dim4> numDims;
+    vector<vector<float> > in;
+    vector<vector<float> > tests;
+
+    readTests<float, float, float>(pTestFile, numDims, in, tests);
+
+    dim4 sDims         = numDims[0];
+    dim4 fDims         = numDims[1];
+    af_array signal    = 0;
+    af_array filter    = 0;
+    af_array convolved = 0;
+
+    ASSERT_SUCCESS(af_create_array(&signal, &(in[0].front()), sDims.ndims(),
+                                   sDims.get(),
+                                   (af_dtype)dtype_traits<float>::af_type));
+    ASSERT_SUCCESS(af_create_array(&filter, &(in[1].front()), fDims.ndims(),
+                                   fDims.get(),
+                                   (af_dtype)dtype_traits<float>::af_type));
+
+    ASSERT_SUCCESS(
+        af_cast(&signal, signal, (af_dtype)dtype_traits<T>::af_type));
+
+    ASSERT_SUCCESS(af_convolve2_strided(
+        &convolved, signal, filter, stride.ndims(), stride.get(),
+        padding.ndims(), padding.get(), dilation.ndims(), dilation.get()));
+
+    vector<T> currGoldBar;
+    for (auto t : tests[0]) { currGoldBar.push_back((T)t); }
+
+    size_t nElems = currGoldBar.size();
+
+    dim_t expectedDim0 =
+        1 +
+        (sDims[0] + 2 * padding[0] - (((fDims[0] - 1) * dilation[0]) + 1)) /
+            stride[0];
+    dim_t expectedDim1 =
+        1 +
+        (sDims[1] + 2 * padding[1] - (((fDims[1] - 1) * dilation[1]) + 1)) /
+            stride[1];
+
+    ASSERT_VEC_ARRAY_NEAR(currGoldBar,
+                          dim4(expectedDim0, expectedDim1, fDims[3], sDims[3]),
+                          convolved, 1e-4);
+
+    ASSERT_SUCCESS(af_release_array(convolved));
+    ASSERT_SUCCESS(af_release_array(signal));
+    ASSERT_SUCCESS(af_release_array(filter));
+}
+
+template <typename T>
+void convolve2GradientTest(string pTestFile, dim4 stride, dim4 padding,
+                           dim4 dilation) {
+    if (noDoubleTests<T>()) return;
+
+    vector<dim4> numDims;
+    vector<vector<T> > in;
+    vector<vector<float> > tests;
+
+    readTests<T, float, float>(pTestFile, numDims, in, tests);
+
+    dim4 sDims         = numDims[0];
+    dim4 fDims         = numDims[1];
+    af_array signal    = 0;
+    af_array filter    = 0;
+    af_array convolved = 0;
+
+    ASSERT_SUCCESS(af_create_array(&signal, &(in[0].front()), sDims.ndims(),
+                                   sDims.get(),
+                                   (af_dtype)dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&filter, &(in[1].front()), fDims.ndims(),
+                                   fDims.get(),
+                                   (af_dtype)dtype_traits<T>::af_type));
+
+    vector<T> currGoldBar;
+    for (auto t : tests[0]) currGoldBar.push_back((T)t);
+    size_t nElems = currGoldBar.size();
+
+    dim_t expectedDim0 =
+        1 +
+        (sDims[0] + 2 * padding[0] - (((fDims[0] - 1) * dilation[0]) + 1)) /
+            stride[0];
+    dim_t expectedDim1 =
+        1 +
+        (sDims[1] + 2 * padding[1] - (((fDims[1] - 1) * dilation[1]) + 1)) /
+            stride[1];
+    dim4 cDims(expectedDim0, expectedDim1, fDims[3], sDims[3]);
+    ASSERT_EQ(nElems, cDims.elements());
+
+    ASSERT_SUCCESS(af_create_array(&convolved, &(currGoldBar.front()),
+                                   cDims.ndims(), cDims.get(),
+                                   (af_dtype)dtype_traits<T>::af_type));
+
+    af_array incoming_gradient = 0;
+    ASSERT_SUCCESS(af_constant(&incoming_gradient, 1, cDims.ndims(),
+                               cDims.get(),
+                               (af_dtype)dtype_traits<T>::af_type));
+
+    af_array filter_gradient = 0;
+    ASSERT_SUCCESS(af_convolve2Gradient(
+        &filter_gradient, incoming_gradient, signal, filter, convolved,
+        stride.ndims(), stride.get(), padding.ndims(), padding.get(),
+        dilation.ndims(), dilation.get(), AF_CONV_GRADIENT_FILTER));
+
+    af_array data_gradient = 0;
+    ASSERT_SUCCESS(af_convolve2Gradient(
+        &data_gradient, incoming_gradient, signal, filter, convolved,
+        stride.ndims(), stride.get(), padding.ndims(), padding.get(),
+        dilation.ndims(), dilation.get(), AF_CONV_GRADIENT_DATA));
+
+    vector<T> dataGradientGold;
+    for (auto t : tests[1]) dataGradientGold.push_back((T)t);
+    ASSERT_VEC_ARRAY_NEAR(dataGradientGold, sDims, data_gradient, 1e-4);
+
+    vector<T> filterGradientGold;
+    for (auto t : tests[2]) filterGradientGold.push_back((T)t);
+    ASSERT_VEC_ARRAY_NEAR(filterGradientGold, fDims, filter_gradient, 1e-4);
+
+    ASSERT_SUCCESS(af_release_array(incoming_gradient));
+    ASSERT_SUCCESS(af_release_array(convolved));
+    ASSERT_SUCCESS(af_release_array(signal));
+    ASSERT_SUCCESS(af_release_array(filter));
+    ASSERT_SUCCESS(af_release_array(filter_gradient));
+    ASSERT_SUCCESS(af_release_array(data_gradient));
+}
+
+template <typename T>
+class ConvolveStrided : public ::testing::Test {
+   public:
+    virtual void SetUp() {}
+};
+// create a list of types to be tested
+typedef ::testing::Types<float, double>
+    TestTypesStrided;  // TODO: integral types??
+
+// register the type list
+TYPED_TEST_CASE(ConvolveStrided, TestTypesStrided);
+
+TYPED_TEST(ConvolveStrided, Strided_sig1010_filt33_s11_p11_d11) {
+    convolve2stridedTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt3311_s11_p11_d11.test"),
+        dim4(1, 1), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Strided_sig810_filt33_s11_p11_d11) {
+    convolve2stridedTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig81011_filt3311_s11_p11_d11.test"),
+        dim4(1, 1), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Gradient_sig1010_filt33_s11_p11_d11) {
+    convolve2GradientTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt3311_s11_p11_d11.test"),
+        dim4(1, 1), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Strided_sig1010_filt33_s33_p11_d11) {
+    convolve2stridedTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt3311_s33_p11_d11.test"),
+        dim4(3, 3), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Gradient_sig1010_filt33_s33_p11_d11) {
+    convolve2GradientTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt3311_s33_p11_d11.test"),
+        dim4(3, 3), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Strided_sig1010_filt55_s55_p11_d11) {
+    convolve2stridedTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt5511_s55_p11_d11.test"),
+        dim4(5, 5), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Gradient_sig1010_filt55_s55_p11_d11) {
+    convolve2GradientTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt5511_s55_p11_d11.test"),
+        dim4(5, 5), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Strided_sig1010_filt77_s77_p11_d11) {
+    convolve2stridedTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt7711_s77_p11_d11.test"),
+        dim4(7, 7), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Gradient_sig1010_filt77_s77_p11_d11) {
+    convolve2GradientTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt7711_s77_p11_d11.test"),
+        dim4(7, 7), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Strided_sig1010_filt33_s11_p11_d22) {
+    convolve2stridedTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt3311_s11_p11_d22.test"),
+        dim4(1, 1), dim4(1, 1), dim4(2, 2));
+}
+
+TYPED_TEST(ConvolveStrided, Gradient_sig1010_filt33_s11_p11_d22) {
+    convolve2GradientTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt3311_s11_p11_d22.test"),
+        dim4(1, 1), dim4(1, 1), dim4(2, 2));
+}
+
+TYPED_TEST(ConvolveStrided, Strided_sig1010_filt33_s11_p11_d33) {
+    convolve2stridedTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt3311_s11_p11_d33.test"),
+        dim4(1, 1), dim4(1, 1), dim4(3, 3));
+}
+
+TYPED_TEST(ConvolveStrided, Gradient_sig1010_filt33_s11_p11_d33) {
+    convolve2GradientTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt3311_s11_p11_d33.test"),
+        dim4(1, 1), dim4(1, 1), dim4(3, 3));
+}
+
+TYPED_TEST(ConvolveStrided, Strided_sig1010_filt35_s11_p11_d11) {
+    convolve2stridedTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt3511_s11_p11_d11.test"),
+        dim4(1, 1), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Gradient_sig1010_filt35_s11_p11_d11) {
+    convolve2GradientTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt3511_s11_p11_d11.test"),
+        dim4(1, 1), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Strided_sig1010_filt53_s11_p11_d11) {
+    convolve2stridedTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt5311_s11_p11_d11.test"),
+        dim4(1, 1), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Gradient_sig1010_filt53_s11_p11_d11) {
+    convolve2GradientTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt5311_s11_p11_d11.test"),
+        dim4(1, 1), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Strided_sig1010_filt35_s31_p11_d21) {
+    convolve2stridedTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt3511_s31_p11_d21.test"),
+        dim4(3, 1), dim4(1, 1), dim4(2, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Gradient_sig1010_filt35_s31_p11_d21) {
+    convolve2GradientTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig101011_filt3511_s31_p11_d21.test"),
+        dim4(3, 1), dim4(1, 1), dim4(2, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Strided_sig81032_filt3334_s11_p11_d11) {
+    convolve2stridedTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig81032_filt3334_s11_p11_d11.test"),
+        dim4(1, 1), dim4(1, 1), dim4(1, 1));
+}
+
+TYPED_TEST(ConvolveStrided, Gradient_sig81032_filt3334_s11_p11_d11) {
+    convolve2GradientTest<TypeParam>(
+        string(TEST_DIR "/convolve/sig81032_filt3334_s11_p11_d11.test"),
+        dim4(1, 1), dim4(1, 1), dim4(1, 1));
 }

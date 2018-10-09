@@ -9,13 +9,16 @@
 
 #include <af/array.h>
 #include <af/compatible.h>
+#include <af/dim4.hpp>
+#include <af/ml.h>
 #include <af/signal.h>
 #include <algorithm>
+#include "error.hpp"
 #include "error.hpp"
 
 namespace af {
 
-array convolve(const array& signal, const array& filter, const convMode mode,
+array convolve(const array &signal, const array &filter, const convMode mode,
                convDomain domain) {
     unsigned sN = signal.numdims();
     unsigned fN = filter.numdims();
@@ -28,36 +31,60 @@ array convolve(const array& signal, const array& filter, const convMode mode,
     }
 }
 
-array convolve(const array& col_filter, const array& row_filter,
-               const array& signal, const convMode mode) {
+array convolve(const array &col_filter, const array &row_filter,
+               const array &signal, const convMode mode) {
     af_array out = 0;
     AF_THROW(af_convolve2_sep(&out, col_filter.get(), row_filter.get(),
                               signal.get(), mode));
     return array(out);
 }
 
-array convolve1(const array& signal, const array& filter, const convMode mode,
+array convolve1(const array &signal, const array &filter, const convMode mode,
                 convDomain domain) {
     af_array out = 0;
     AF_THROW(af_convolve1(&out, signal.get(), filter.get(), mode, domain));
     return array(out);
 }
 
-array convolve2(const array& signal, const array& filter, const convMode mode,
+array convolve2(const array &signal, const array &filter, const convMode mode,
                 convDomain domain) {
     af_array out = 0;
     AF_THROW(af_convolve2(&out, signal.get(), filter.get(), mode, domain));
     return array(out);
 }
 
-array convolve3(const array& signal, const array& filter, const convMode mode,
+array convolve2(const array &signal, const array &filter, const dim4 stride,
+                const dim4 padding, const dim4 dilation) {
+    af_array out = 0;
+    AF_THROW(af_convolve2_strided(
+        &out, signal.get(), filter.get(), stride.ndims(), stride.get(),
+        padding.ndims(), padding.get(), dilation.ndims(), dilation.get()));
+    return array(out);
+}
+
+array convolve2Gradient(const array &incoming_gradient,
+                        const array &original_signal,
+                        const array &original_filter,
+                        const array &convolved_output, const dim4 stride,
+                        const dim4 padding, const dim4 dilation,
+                        af_conv_gradient_type gradType) {
+    af_array out = 0;
+    AF_THROW(af_convolve2Gradient(&out, incoming_gradient.get(),
+                                  original_signal.get(), original_filter.get(),
+                                  convolved_output.get(), stride.ndims(),
+                                  stride.get(), padding.ndims(), padding.get(),
+                                  dilation.ndims(), dilation.get(), gradType));
+    return array(out);
+}
+
+array convolve3(const array &signal, const array &filter, const convMode mode,
                 convDomain domain) {
     af_array out = 0;
     AF_THROW(af_convolve3(&out, signal.get(), filter.get(), mode, domain));
     return array(out);
 }
 
-array filter(const array& image, const array& kernel) {
+array filter(const array &image, const array &kernel) {
     return convolve(image, kernel, AF_CONV_DEFAULT, AF_CONV_AUTO);
 }
 

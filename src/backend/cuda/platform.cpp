@@ -386,6 +386,22 @@ BlasHandle blasHandle() {
     return *cublasManager(cuda::getActiveDeviceId());
 }
 
+NNHandle nnHandle() {
+    thread_local std::unique_ptr<cudnnHandle>
+        cudnnHandles[DeviceManager::MAX_DEVICES];
+    thread_local std::once_flag initFlags[DeviceManager::MAX_DEVICES];
+
+    int id = cuda::getActiveDeviceId();
+
+    std::call_once(initFlags[id],
+                   [&] { cudnnHandles[id].reset(new cudnnHandle()); });
+
+    CUDNN_CHECK(
+        cudnnSetStream(cudnnHandles[id].get()->get(), cuda::getStream(id)));
+
+    return cudnnHandles[id].get()->get();
+}
+
 SolveHandle solverDnHandle() {
     return *cusolverManager(cuda::getActiveDeviceId());
 }
