@@ -14,7 +14,7 @@
 #include "types.hpp"
 
 #ifdef __CUDACC__
-#include <math_functions.h>
+#include <cuda_runtime_api.h>
 #include <math_constants.h>
 #endif
 
