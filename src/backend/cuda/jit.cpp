@@ -212,29 +212,35 @@ typedef struct {
     CUfunction ker;
 } kc_entry_t;
 
-#define CU_CHECK(fn) do {                       \
-        CUresult res = fn;                      \
-        if (res == CUDA_SUCCESS) break;         \
-        char cu_err_msg[1024];                  \
-        snprintf(cu_err_msg,                    \
-                 sizeof(cu_err_msg),            \
-                 "CU Error (%d)\n",             \
-                 (int)(res));                   \
-        AF_ERROR(cu_err_msg,                    \
-                 AF_ERR_INTERNAL);              \
+#define CU_CHECK(fn) do {                                 \
+        CUresult res = fn;                                \
+        if (res == CUDA_SUCCESS) break;                   \
+        char cu_err_msg[1024];                            \
+        const char *cu_err_name;                          \
+        const char *cu_err_string;                        \
+        cuGetErrorName(res, &cu_err_name);                \
+        cuGetErrorString(res, &cu_err_string);            \
+        snprintf(cu_err_msg,                              \
+                 sizeof(cu_err_msg),                      \
+                 "CU Error %s(%d): %s\n",                 \
+                 cu_err_name, (int)(res), cu_err_string); \
+        AF_ERROR(cu_err_msg,                              \
+                 AF_ERR_INTERNAL);                        \
     } while(0)
 
 #ifndef NDEBUG
-#define CU_LINK_CHECK(fn) do {                  \
-        CUresult res = fn;                      \
-        if (res == CUDA_SUCCESS) break;         \
-        char cu_err_msg[1024];                  \
-        snprintf(cu_err_msg,                    \
-                 sizeof(cu_err_msg),            \
-                 "CU Error (%d)\n%s\n",         \
-                 (int)(res), linkError);        \
-        AF_ERROR(cu_err_msg,                    \
-                 AF_ERR_INTERNAL);              \
+#define CU_LINK_CHECK(fn) do {                            \
+        CUresult res = fn;                                \
+        if (res == CUDA_SUCCESS) break;                   \
+        char cu_err_msg[1024];                            \
+        const char *cu_err_name;                          \
+        cuGetErrorName(res, &cu_err_name);                \
+        snprintf(cu_err_msg,                              \
+                 sizeof(cu_err_msg),                      \
+                 "CU Error %s(%d): %s\n",                 \
+                 cu_err_name, (int)(res), linkError);     \
+        AF_ERROR(cu_err_msg,                              \
+                 AF_ERR_INTERNAL);                        \
     } while(0)
 #else
 #define CU_LINK_CHECK(fn) CU_CHECK(fn)
