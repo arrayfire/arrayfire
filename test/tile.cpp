@@ -221,3 +221,26 @@ TEST(Tile, DocSnippet) {
     ASSERT_ARRAYS_EQ(C, D(seq(0, 2), span));
     ASSERT_ARRAYS_EQ(C, D(seq(3, 5), span));
 }
+
+// The tile was failing for larger sizes because of JIT kernels were not able to
+// handle repeated x blocks. The kernels were exiting early which caused the
+// next iteration to fail
+TEST(Tile, LargeRepeatDim) {
+    long long dim0 = 33;
+    long long largeDim = 40001;
+    array temp_ones = af::iota(largeDim, dim4(1), u8);
+    temp_ones = af::moddims(temp_ones, 1, 1, largeDim);
+    temp_ones.eval();
+
+    array temp = tile(temp_ones,  dim0, 1, 1);
+    temp.eval();
+    vector<unsigned char> empty(dim0 * largeDim);
+    for(long long ii = 0; ii < largeDim; ii++) {
+        int offset = ii * dim0;
+        for(int i = 0; i < dim0; i++) {
+            empty[offset + i] = ii;
+        }
+    }
+
+    ASSERT_VEC_ARRAY_EQ(empty, dim4(dim0, 1, largeDim), temp);
+}
