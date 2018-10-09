@@ -518,7 +518,7 @@ DeviceManager::DeviceManager()
     for(int i = 0; i < nDevices; i++) {
         cudaDevice_t dev;
         cudaGetDeviceProperties(&dev.prop, i);
-        if (dev.prop.major<getMinSupportedCompute(cudaMajorVer)) {
+        if (dev.prop.major < getMinSupportedCompute(cudaMajorVer)) {
             continue;
         } else {
             dev.flops = dev.prop.multiProcessorCount *

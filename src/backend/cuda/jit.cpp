@@ -113,12 +113,12 @@ struct Param
 
     static const char *linearIndex = R"JIT(
         uint threadId = threadIdx.x;
-        int idx = blockIdx_x * blockDim.x * blockDim.y + threadId;
+        long long idx = blockIdx_x * blockDim.x * blockDim.y + threadId;
         if (idx >= outref.dims[3] * outref.strides[3]) return;
         )JIT";
 
     static const char *generalIndex = R"JIT(
-        uint id0 = 0, id1 = 0, id2 = 0, id3 = 0;
+        long long id0 = 0, id1 = 0, id2 = 0, id3 = 0;
         long blockIdx_y = blockIdx.z * gridDim.y + blockIdx.y;
         if (num_odims > 2) {
             id2 = blockIdx_x / blocks_x;
@@ -142,11 +142,12 @@ struct Param
                     id1 < outref.dims[1] &&
                     id2 < outref.dims[2] &&
                     id3 < outref.dims[3];
-        if (!cond) return;
 
-        int idx = outref.strides[3] * id3 +
-                  outref.strides[2] * id2 +
-                  outref.strides[1] * id1 + id0;
+        if (!cond) { continue; }
+
+        long long idx = outref.strides[3] * id3 +
+                        outref.strides[2] * id2 +
+                        outref.strides[1] * id1 + id0;
         )JIT";
 
     stringstream inParamStream;
@@ -167,8 +168,8 @@ struct Param
         node->genFuncs(opsStream, ids_curr);
     }
 
-    outrefstream << "Param<" << full_nodes[output_ids[0]]->getTypeStr()
-                 << "> outref = out" << output_ids[0] << ";\n";
+    outrefstream << "const Param<" << full_nodes[output_ids[0]]->getTypeStr()
+                 << "> &outref = out" << output_ids[0] << ";\n";
 
     for (int i = 0; i < (int)output_ids.size(); i++) {
         int id = output_ids[i];
@@ -370,6 +371,7 @@ template<typename T>
 void evalNodes(vector<Param<T>>& outputs, vector<Node *> output_nodes)
 {
     int num_outputs = (int)outputs.size();
+    int device      = getActiveDeviceId();
 
     if (num_outputs == 0) return;
 
@@ -404,17 +406,18 @@ void evalNodes(vector<Param<T>>& outputs, vector<Node *> output_nodes)
     int threads_x = 1, threads_y = 1;
     int blocks_x_ = 1, blocks_y_ = 1;
     int blocks_x  = 1, blocks_y = 1, blocks_z = 1, blocks_x_total;
-    const int max_blocks = 65535;
+
+    cudaDeviceProp properties = getDeviceProp(device);
+    const long long max_blocks_x = properties.maxGridSize[0];
+    const long long max_blocks_y = properties.maxGridSize[1];
 
     int num_odims = 4;
-
     while (num_odims >= 1) {
         if (outputs[0].dims[num_odims - 1] == 1) num_odims--;
         else break;
     }
 
     if (is_linear) {
-
         threads_x = 256;
         threads_y =  1;
 
@@ -423,12 +426,11 @@ void evalNodes(vector<Param<T>>& outputs, vector<Node *> output_nodes)
                                 outputs[0].dims[2] *
                                 outputs[0].dims[3]), threads_x);
 
-        int repeat_x = divup(blocks_x_total, max_blocks);
+        int repeat_x = divup(blocks_x_total, max_blocks_x);
         blocks_x = divup(blocks_x_total, repeat_x);
     } else {
-
         threads_x = 32;
-        threads_y =  8;
+        threads_y = 8;
 
         blocks_x_ = divup(outputs[0].dims[0], threads_x);
         blocks_y_ = divup(outputs[0].dims[1], threads_y);
@@ -436,11 +438,11 @@ void evalNodes(vector<Param<T>>& outputs, vector<Node *> output_nodes)
         blocks_x = blocks_x_ * outputs[0].dims[2];
         blocks_y = blocks_y_ * outputs[0].dims[3];
 
-        blocks_z = divup(blocks_y, max_blocks);
+        blocks_z = divup(blocks_y, max_blocks_y);
         blocks_y = divup(blocks_y, blocks_z);
 
         blocks_x_total = blocks_x;
-        int repeat_x = divup(blocks_x_total, max_blocks);
+        int repeat_x = divup(blocks_x_total, max_blocks_x);
         blocks_x = divup(blocks_x_total, repeat_x);
     }
 
@@ -468,7 +470,7 @@ void evalNodes(vector<Param<T>>& outputs, vector<Node *> output_nodes)
                             1,
                             0,
                             getActiveStream(),
-                            &args.front(),
+                            args.data(),
                             NULL));
 
     // Reset the thread local vectors
