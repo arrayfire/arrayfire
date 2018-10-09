@@ -525,13 +525,13 @@ const af::cdouble& operator+(const af::cdouble& val) {
 }
 
 // Calculate a multi-dimensional coordinates' linearized index
-int ravelIdx(af::dim4 coords, af::dim4 strides) {
+dim_t ravelIdx(af::dim4 coords, af::dim4 strides) {
     return std::inner_product(coords.get(), coords.get()+4, strides.get(), 0);
 }
 
 // Calculate a linearized index's multi-dimensonal coordinates in an af::array,
 //  given its dimension sizes and strides
-af::dim4 unravelIdx(uint idx, af::dim4 dims, af::dim4 strides) {
+af::dim4 unravelIdx(dim_t idx, af::dim4 dims, af::dim4 strides) {
     af::dim4 coords;
     coords[3] = idx / (strides[3]);
     coords[2] = idx / (strides[2]) % dims[2];
@@ -541,7 +541,7 @@ af::dim4 unravelIdx(uint idx, af::dim4 dims, af::dim4 strides) {
     return coords;
 }
 
-af::dim4 unravelIdx(uint idx, af::array arr) {
+af::dim4 unravelIdx(dim_t idx, af::array arr) {
     af::dim4 dims = arr.dims();
     af::dim4 st = af::getStrides(arr);
     return unravelIdx(idx, dims, st);
@@ -563,12 +563,15 @@ af::dim4 calcStrides(const af::dim4 &parentDim)
 std::string minimalDim4(af::dim4 coords, af::dim4 dims) {
     std::ostringstream os;
     os << "(" << coords[0];
-    if (dims[1] > 1)
+    if (dims[1] > 1 || dims[2] > 1 || dims[3] > 1) {
         os << ", " << coords[1];
-    if (dims[2] > 1)
+    }
+    if (dims[2] > 1 || dims[3] > 1) {
         os << ", " << coords[2];
-    if (dims[3] > 1)
+    }
+    if (dims[3] > 1) {
         os << ", " << coords[3];
+    }
     os << ")";
 
     return os.str();
@@ -579,11 +582,11 @@ std::string printContext(const std::vector<T>& hGold, std::string goldName,
                          const std::vector<T>& hOut, std::string outName,
                          af::dim4 arrDims,
                          af::dim4 arrStrides,
-                         int idx) {
+                         dim_t idx) {
     std::ostringstream os;
 
     af::dim4 coords = unravelIdx(idx, arrDims, arrStrides);
-    int ctxWidth = 5;
+    dim_t ctxWidth = 5;
 
     // Coordinates that span dim0
     af::dim4 coordsMinBound = coords;
@@ -592,23 +595,23 @@ std::string printContext(const std::vector<T>& hGold, std::string goldName,
     coordsMaxBound[0] = arrDims[0] - 1;
 
     // dim0 positions that can be displayed
-    int dim0Start = std::max<int>(0, coords[0] - ctxWidth);
-    int dim0End = std::min<int>(coords[0] + ctxWidth + 1, arrDims[0]);
+    dim_t dim0Start = std::max<int>(0, coords[0] - ctxWidth);
+    dim_t dim0End = std::min<int>(coords[0] + ctxWidth + 1, arrDims[0]);
 
     // Linearized indices of values in vectors that can be displayed
-    int vecStartIdx = std::max<int>(ravelIdx(coordsMinBound, arrStrides),
-                                     idx - ctxWidth);
+    dim_t vecStartIdx = std::max<int>(ravelIdx(coordsMinBound, arrStrides),
+                                      idx - ctxWidth);
 
     // Display as minimal coordinates as needed
     // First value is the range of dim0 positions that will be displayed
     os << "Viewing slice (" << dim0Start << ":" << dim0End - 1;
-    if (arrDims[1] > 1)
+    if (arrDims[1] > 1 || arrDims[2] > 1 || arrDims[3] > 1)
         os << ", " << coords[1];
-    if (arrDims[2] > 1)
+    if (arrDims[2] > 1 || arrDims[3] > 1)
         os << ", " << coords[2];
     if (arrDims[3] > 1)
         os << ", " << coords[3];
-    os << "), dims are " << minimalDim4(arrDims, arrDims) << "\n";
+    os << "), dims are (" << arrDims << ") strides: (" << arrStrides << ")\n";
 
     uint ctxElems = dim0End - dim0Start;
     std::vector<int> valFieldWidths(ctxElems);
@@ -704,7 +707,7 @@ template<typename T>
     if (bItr == b.end()) {
         return ::testing::AssertionSuccess();
     } else {
-        int idx = std::distance(b.begin(), bItr);
+        dim_t idx = std::distance(b.begin(), bItr);
         af::dim4 aStrides = calcStrides(aDims);
         af::dim4 bStrides = calcStrides(bDims);
         af::dim4 coords = unravelIdx(idx, bDims, bStrides);
@@ -745,7 +748,7 @@ template<typename T>
     if (aItr == a.end()) {
         return ::testing::AssertionSuccess();
     } else {
-        int idx = std::distance(b.begin(), bItr);
+        dim_t idx = std::distance(b.begin(), bItr);
         af::dim4 coords = unravelIdx(idx, bDims, calcStrides(bDims));
 
         af::dim4 aStrides = calcStrides(aDims);
@@ -805,7 +808,7 @@ template<typename T>
             << "  Actual: " << bName << "([" << b.dims() << "])\n"
             << "Expected: " << aName << "([" << a.dims() << "])";
 
-    uint nElems = a.elements();
+    dim_t nElems = a.elements();
     af::dim4 arrDims = a.dims();
 
     switch (arrDtype) {
