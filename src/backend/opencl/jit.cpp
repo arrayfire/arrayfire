@@ -41,7 +41,7 @@ using std::vector;
 static string getFuncName(const vector<Node *> &output_nodes,
                           const vector<Node *> &full_nodes,
                           const vector<Node_ids> &full_ids,
-                          bool is_linear, bool *is_double)
+                          bool is_linear)
 {
     stringstream hashName;
     stringstream funcName;
@@ -59,11 +59,6 @@ static string getFuncName(const vector<Node *> &output_nodes,
     for (int i = 0; i < (int)full_nodes.size(); i++) {
         full_nodes[i]->genKerName(funcName, full_ids[i]);
     }
-
-    string nameStr = funcName.str();
-    string dblChars = "dDzZ";
-    size_t loc = nameStr.find_first_of(dblChars);
-    *is_double = (loc != std::string::npos);
 
     std::hash<std::string> hash_fn;
     hashName << "KER" << hash_fn(funcName.str());
@@ -176,8 +171,7 @@ static Kernel getKernel(const vector<Node *> &output_nodes,
                         const vector<Node_ids> &full_ids,
                         const bool is_linear)
 {
-    bool is_dbl = false;
-    string funcName = getFuncName(output_nodes, full_nodes, full_ids, is_linear, &is_dbl);
+    string funcName = getFuncName(output_nodes, full_nodes, full_ids, is_linear);
     int device = getActiveDeviceId();
 
     kc_entry_t entry = kernelCache(device, funcName);
@@ -189,7 +183,8 @@ static Kernel getKernel(const vector<Node *> &output_nodes,
         const int ker_lens[] = {jit_cl_len, (int)jit_ker.size()};
 
         cl::Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, is_dbl ? string(" -D USE_DOUBLE") :  string(""));
+        buildProgram(prog, 2, ker_strs, ker_lens,
+                     isDoubleSupported(device) ? string(" -D USE_DOUBLE") :  string(""));
 
         entry.prog = new cl::Program(prog);
         entry.ker = new Kernel(*entry.prog, funcName.c_str());
