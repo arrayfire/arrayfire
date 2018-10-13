@@ -55,10 +55,14 @@ typedef cuDoubleComplex cdouble;
 #define __max(lhs, rhs) ((lhs) > (rhs)) ? (lhs) : (rhs)
 #define __rem(lhs, rhs) ((lhs) % (rhs))
 #define __mod(lhs, rhs) ((lhs) % (rhs))
-#define __pow(lhs, rhs) fpow((float)lhs, (float)rhs)
+
+#define __pow(lhs, rhs) __float2int_rn(pow(__int2float_rn((int)lhs), __int2float_rn((int)rhs)))
+#define __powll(lhs, rhs) __double2ll_rn(pow(__ll2double_rn(lhs), __ll2double_rn(rhs)))
+#define __powul(lhs, rhs) __double2ull_rn(pow(__ull2double_rn(lhs), __ull2double_rn(rhs)))
+#define __powui(lhs, rhs) __double2uint_rn(pow(__uint2double_rn(lhs), __uint2double_rn(rhs)))
+#define __powsi(lhs, rhs) __double2int_rn(pow(__int2double_rn(lhs), __int2double_rn(rhs)))
 
 #define __convert_char(val) (char)((val) != 0)
-#define fpow(lhs, rhs) pow((lhs), (rhs))
 #define frem(lhs, rhs) remainder((lhs), (rhs))
 #define iszero(a) ((a) == 0)
 
