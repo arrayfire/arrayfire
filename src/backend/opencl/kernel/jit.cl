@@ -111,7 +111,18 @@ float2 __cdivf(float2 lhs, float2 rhs)
 #define __max(lhs, rhs) ((lhs) > (rhs)) ? (lhs) : (rhs)
 #define __rem(lhs, rhs) ((lhs) % (rhs))
 #define __mod(lhs, rhs) ((lhs) % (rhs))
-#define __pow(lhs, rhs) fpow((float)lhs, (float)rhs)
+
+#define __pow(lhs, rhs) convert_int_rte(pow(convert_float_rte(lhs), convert_float_rte(rhs)))
+#define __powll(lhs, rhs) convert_long_rte(pow(convert_double_rte(lhs), convert_double_rte(rhs)))
+#define __powul(lhs, rhs) convert_ulong_rte(pow(convert_double_rte(lhs), convert_double_rte(rhs)))
+
+#ifdef USE_DOUBLE
+#define __powui(lhs, rhs) convert_uint_rte(pow(convert_double_rte(lhs), convert_double_rte(rhs)))
+#define __powsi(lhs, rhs) convert_int_rte(pow(convert_double_rte(lhs), convert_double_rte(rhs)))
+#else
+#define __powui(lhs, rhs) convert_uint_rte(pow(convert_float_rte(lhs), convert_float_rte(rhs)))
+#define __powsi(lhs, rhs) convert_int_rte(pow(convert_float_rte(lhs), convert_float_rte(rhs)))
+#endif
 
 float2 __cminf(float2 lhs, float2 rhs)
 {
@@ -136,8 +147,6 @@ float2 __convert_cfloat(float in)
 }
 
 #define __convert_char(val) (char)(convert_char((val)) != 0)
-
-#define fpow(lhs, rhs) pow((lhs), (rhs))
 
 #define frem(lhs, rhs) remainder((lhs), (rhs))
 

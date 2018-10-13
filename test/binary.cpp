@@ -7,11 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <gtest/gtest.h>
 #include <af/array.h>
 #include <af/arith.h>
 #include <af/data.h>
 #include <testHelpers.hpp>
+
+#include <cfenv>
+#include <cmath>
 
 using namespace std;
 using namespace af;
@@ -346,3 +350,53 @@ TEST(BinaryTests, ISSUE_1762)
         ASSERT_EQ(imag(hres[i]), 0);
     }
 }
+
+template<typename T>
+class PowPrecisionTest : public ::testing::TestWithParam<T> {};
+
+#define DEF_TEST(Sx, T)                                 \
+using PowPrecisionTest##Sx = PowPrecisionTest< T >;     \
+TEST_P(PowPrecisionTest##Sx, Issue2304)                 \
+{                                                       \
+    T param     = GetParam();                           \
+    auto dtype  = (af_dtype)dtype_traits< T >::af_type; \
+    af::array A = af::constant(param, 1, dtype);        \
+    af::array B = af::pow(A, 2);                        \
+    vector<T> hres(1, 0);                               \
+    B.host(&hres[0]);                                   \
+    std::fesetround(FE_TONEAREST);                      \
+    T gold = (T)std::rint(std::pow((double)param, 2.0));\
+    ASSERT_EQ(hres[0], gold);                           \
+}
+
+DEF_TEST(ULong , unsigned long long)
+DEF_TEST(Long  , long long)
+DEF_TEST(UInt  , unsigned int)
+DEF_TEST(Int   , int)
+DEF_TEST(UShort, unsigned short)
+DEF_TEST(Short , short)
+DEF_TEST(UChar , unsigned char)
+
+#undef DEF_TEST
+
+INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestULong,
+                        testing::Range<unsigned long long>(1, 1e7, 1e6));
+INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestLong,
+                        testing::Range<long long>(1, 1e7, 1e6));
+INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestUInt,
+                        testing::Range<unsigned int>(1, 65000, 15e3));
+INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestInt,
+                        testing::Range<int>(1, 46340, 10e3));
+INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestUShort,
+                        testing::Range<unsigned short>(1, 255, 100));
+INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestShort,
+                        testing::Range<short>(1, 180, 50));
+INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestUChar,
+                        testing::Range<unsigned char>(1, 12, 5));
+
+INSTANTIATE_TEST_CASE_P(NegativeValues, PowPrecisionTestLong,
+                        testing::Range<long long>(-1e7, 0, 1e6));
+INSTANTIATE_TEST_CASE_P(NegativeValues, PowPrecisionTestInt,
+                        testing::Range<int  >(-46340, 0, 10e3));
+INSTANTIATE_TEST_CASE_P(NegativeValues, PowPrecisionTestShort,
+                        testing::Range<short>(-180, 0, 50));
