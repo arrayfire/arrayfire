@@ -121,9 +121,28 @@ BINARY_TYPE_1(bitshiftr)
 
 BINARY_TYPE_2(min)
 BINARY_TYPE_2(max)
-BINARY_TYPE_2(pow)
 BINARY_TYPE_2(rem)
 BINARY_TYPE_2(mod)
+
+template<typename To, typename Ti>
+struct BinOp<To, Ti, af_pow_t> {
+    const char *name() { return "__pow"; }
+};
+
+#define POW_BINARY_OP(INTYPE, OPNAME)       \
+template<typename To>                       \
+struct BinOp<To, INTYPE, af_pow_t> {        \
+    const char *name() { return OPNAME; }   \
+};
+
+POW_BINARY_OP(double, "pow"    )
+POW_BINARY_OP( float, "pow"    )
+POW_BINARY_OP(  intl, "__powll")
+POW_BINARY_OP( uintl, "__powul")
+POW_BINARY_OP(  uint, "__powui")
+POW_BINARY_OP(   int, "__powsi")
+
+#undef POW_BINARY_OP
 
 template<typename Ti>
 struct BinOp<cfloat, Ti, af_cplx2_t>
