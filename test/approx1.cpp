@@ -516,7 +516,7 @@ TEST(Approx1, CPPUsage)
 {
     //! [ex_signal_approx1]
 
-    // Input data.
+    // Input data array.
     float input_vals[9] = {10.0, 20.0, 30.0,
                            40.0, 50.0, 60.0,
                            70.0, 80.0, 90.0};
@@ -526,8 +526,10 @@ TEST(Approx1, CPPUsage)
     //     20.0000    50.0000    80.0000
     //     30.0000    60.0000    90.0000
 
-    // Array of known and unknown positions to measure and perform
-    // interpolation along a specified dimension.
+
+
+    // Array of positions to be found along the interpolation
+    // dimension, `interp_dim`.
     float pv[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
     array pos(dim4(5,1), pv);
     // [5 1 1 1]
@@ -537,15 +539,16 @@ TEST(Approx1, CPPUsage)
     //     1.5000
     //     2.0000
 
-    // Specify a standard uniform grid with start and step values of 0
-    // and 1, respectively.
-    const int interp_grid_start = 0;
-    const double interp_grid_step = 1.0;
 
-    // Perform column major interpolation on the 2-dimensional input
-    // array.
+
+    // Define range of indices with which the input values will
+    // correspond along the interpolation dimension.
+    const double idx_start = 0.0;
+    const double idx_step = 1.0;
+
+    // Perform interpolation across dimension 0.
     int interp_dim = 0;
-    array col_major_interp = approx1(in, pos, interp_dim, interp_grid_start, interp_grid_step);
+    array col_major_interp = approx1(in, pos, interp_dim, idx_start, idx_step);
     // [5 3 1 1]
     //     10.0000    40.0000    70.0000
     //     15.0000    45.0000    75.0000
@@ -553,11 +556,9 @@ TEST(Approx1, CPPUsage)
     //     25.0000    55.0000    85.0000
     //     30.0000    60.0000    90.0000
 
-    // Perform row major interpolation on the 2-dimensional input
-    // array.
-    pos = transpose(pos);
+    // Perform interpolation across dimension 1.
     interp_dim = 1;
-    array row_major_interp = approx1(in, pos, interp_dim, interp_grid_start, interp_grid_step);
+    array row_major_interp = approx1(in, transpose(pos), interp_dim, idx_start, idx_step);
     // [3 5 1 1]
     //     10.0000    25.0000    40.0000    55.0000    70.0000
     //     20.0000    35.0000    50.0000    65.0000    80.0000

@@ -502,7 +502,7 @@ TEST(Approx2, CPPUsage)
 {
     //! [ex_signal_approx2]
 
-    // Input data.
+    // Input data array.
     float input_vals[9] = {1.0, 1.0, 1.0,
                            2.0, 2.0, 2.0,
                            3.0, 3.0, 3.0};
@@ -512,31 +512,35 @@ TEST(Approx2, CPPUsage)
     //     1.0000     2.0000     3.0000
     //     1.0000     2.0000     3.0000
 
-    // First array of known and unknown positions to measure and perform
-    // interpolation along a specified dimension.
-    float p0[4] = {0.5, 1.5, 0.5, 1.5};
-    array pos0(2, 2, p0);
+
+
+    // First array of positions to be found along the interpolation
+    // dimension, `interp_dim0`.
+    float pv0[4] = {0.5, 1.5, 0.5, 1.5};
+    array pos0(2, 2, pv0);
     // [2 2 1 1]
     //     0.5000     0.5000
     //     1.5000     1.5000
 
-    // Second array of known and unknown positions to measure and perform
-    // interpolation along a specified dimension.
-    float p1[4] = {0.5, 0.5, 1.5, 1.5};
-    array pos1(2, 2, p1);
+    // Second array of positions to be found along the interpolation
+    // dimension, `interp_dim1`.
+    float pv1[4] = {0.5, 0.5, 1.5, 1.5};
+    array pos1(2, 2, pv1);
     // [2 2 1 1]
     //     0.5000     1.5000
     //     0.5000     1.5000
 
-    // Specify a standard uniform grid with start and step values of 0
-    // and 1 along each of the interpolation grid dimensions.
-    const int pos0_interp_grid_start = 0;
-    const double pos0_interp_grid_step = 1;
-    const int pos0_interp_dim = 0;
-    const int pos1_interp_dim = 1;
+
+
+    // Define range of indices with which the input values will
+    // correspond along both dimensions to be interpolated.
+    const double idx_start_dim0 = 0.0;
+    const double idx_step_dim0 = 1.0;
+    const int interp_dim0 = 0;
+    const int interp_dim1 = 1;
     array interp = approx2(input,
-                           pos0, pos0_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step,
-                           pos1, pos1_interp_dim, pos0_interp_grid_start, pos0_interp_grid_step);
+                           pos0, interp_dim0, idx_start_dim0, idx_step_dim0,
+                           pos1, interp_dim1, idx_start_dim0, idx_step_dim0);
     // [2 2 1 1]
     //     1.5000     2.5000
     //     1.5000     2.5000
