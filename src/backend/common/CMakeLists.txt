@@ -19,6 +19,7 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/MatrixAlgebraHandle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MemoryManager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MersenneTwister.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/NodeIterator.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas_headers.hpp

@@ -7,28 +7,30 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
 #include <Array.hpp>
+#include <JIT/BufferNode.hpp>
+#include <common/NodeIterator.hpp>
+#include <af/dim4.hpp>
 #include <copy.hpp>
 #include <err_cuda.hpp>
-#include <JIT/BufferNode.hpp>
-#include <scalar.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
+#include <scalar.hpp>
 
 #include <cstddef>
 #include <memory>
+#include <numeric>
 
 using af::dim4;
+using cuda::JIT::BufferNode;
+using cuda::JIT::Node;
+using common::NodeIterator;
+using cuda::JIT::Node_ptr;
+using std::accumulate;
 using std::shared_ptr;
 
 namespace cuda
 {
-
-    using JIT::BufferNode;
-    using JIT::Node;
-    using JIT::Node_ptr;
-
     template<typename T>
     Node_ptr bufferNodePtr()
     {
@@ -220,46 +222,66 @@ namespace cuda
                     lock_bytes > getMaxBytes() ||
                     lock_buffers > getMaxBuffers();
 
-
                 // We eval in the following cases.
-                // 1. Too many bytes are locked up by JIT causing memory pressure.
-                // Too many bytes is assumed to be half of all bytes allocated so far.
-                // 2. Too many buffers in a nonlinear kernel cause param space overflow.
-                // Too many buffers comes out to be about 50 (51 including output).
-                // Too many buffers can occur in a tree of size 25 in the worst case scenario.
+                //
+                // 1. Too many bytes are locked up by JIT causing memory
+                //    pressure. Too many bytes is assumed to be half of all bytes
+                //    allocated so far.
+                //
+                // 2. Too many buffers in a nonlinear kernel cause param space
+                //    overflow. This happens when the number of nodes reaches 50
+                //    (51 including output). Too many buffers can occur in a tree
+                //    of size 25 in the worst case.
+                //
                 // TODO: Find better solution than the following emperical solution.
                 if (node->getHeight() > 25 || isBufferLimit) {
+                    // This is the size of the params that are passed by default
+                    constexpr int param_base_size = sizeof(Param<T>) + (4 * sizeof(uint));
 
+                    // This is the maximum size of the params that can be allowed by CUDA
+                    // NOTE: This number should have been (4096 - some_buffer_size) BUT
+                    // kernels who's kernel sizes come close to this value are not passing
+                    // and cuModuleLoadDataEx is failing with CUDA_ERROR_INVALID_IMAGE(200).
+                    // 35*sizeof(int) seems to be the magic number that passes all tests.
+                    // I have no idea why this is the case.
+                    constexpr int max_param_size = (4096 - (sizeof(Param<T>) + 35*sizeof(uint)));
                     Node *n = node.get();
 
-                    // Use thread local to reuse the memory every time you are here.
-                    thread_local JIT::Node_map_t nodes_map;
-                    thread_local std::vector<Node *> full_nodes;
-                    thread_local std::vector<JIT::Node_ids> full_ids;
-
-                    // Reserve some memory
-                    if (nodes_map.size() == 0) {
-                        nodes_map.reserve(1024);
-                        full_nodes.reserve(1024);
-                        full_ids.reserve(1024);
+                    struct  tree_info {
+                        size_t buffer_size;
+                        int num_buffers;
+                        int param_scalar_size;
+                        bool is_linear;
+                    };
+                    NodeIterator end_node;
+                    dim4 outdim = out.dims();
+                    tree_info info = accumulate(NodeIterator(n), end_node,
+                                                tree_info{0, 0, 0, true},
+                                                [=](tree_info& prev, const Node& node) {
+                                                    if(node.isBuffer()) {
+                                                        const auto& buf_node = static_cast<const BufferNode<T>&>(node);
+                                                        prev.buffer_size += buf_node.getBytes();
+                                                        prev.num_buffers++;
+                                                        prev.is_linear &= buf_node.isLinear((dim_t*)outdim.get());
+                                                    } else {
+                                                        prev.param_scalar_size += node.getParamBytes();
+                                                    }
+                                                    // getBytes returns the size of the data Array. Sub arrays will
+                                                    // be represented by their parent size.
+                                                    return prev;
+                                                });
+                    int param_size = param_base_size + info.param_scalar_size;
+                    if(info.is_linear) {
+                        param_size += info.num_buffers * sizeof(T*);
+                    } else {
+                        param_size += info.num_buffers * sizeof(Param<T>);
                     }
 
-                    n->getNodesMap(nodes_map, full_nodes, full_ids);
 
-                    unsigned length = 0, buf_count = 0, bytes = 0;
-                    bool is_linear = true;
-                    dim_t dims_[] = {dims[0], dims[1], dims[2], dims[3]};
-                    for(auto &jit_node : full_nodes) {
-                        jit_node->getInfo(length, buf_count, bytes);
-                        is_linear &= jit_node->isLinear(dims_);
-                    }
-
-                    // Reset the thread local vectors
-                    nodes_map.clear();
-                    full_nodes.clear();
-                    full_ids.clear();
-
-                    if (2 * bytes > lock_bytes || (!is_linear && buf_count >= 50)) {
+                    // TODO: the buffer_size check here is very conservative. It will trigger
+                    // an evaluation of the node in most cases. We should be checking the
+                    // amount of memory available to guard this eval
+                    if (param_size >= max_param_size  || info.buffer_size * 2 > lock_bytes) {
                         out.eval();
                     }
                 }
