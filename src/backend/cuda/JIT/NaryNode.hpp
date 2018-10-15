@@ -37,7 +37,8 @@ namespace JIT
               m_op_str(op_str)
         {
         }
-        void genKerName(std::stringstream &kerStream, Node_ids ids)
+
+        void genKerName(std::stringstream &kerStream, Node_ids ids) const final
         {
             // Make the dec representation of enum part of the Kernel name
             kerStream << "_" << std::setw(3) << std::setfill('0') << std::dec << m_op;
@@ -50,7 +51,7 @@ namespace JIT
             kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id << std::dec;
         }
 
-        void genFuncs(std::stringstream &kerStream, Node_ids ids)
+        void genFuncs(std::stringstream &kerStream, Node_ids ids) const final
         {
             kerStream << m_type_str << " val" << ids.id << " = " << m_op_str << "(";
             for (int i = 0; i < m_num_children; i++) {

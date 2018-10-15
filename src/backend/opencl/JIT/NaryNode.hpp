@@ -10,6 +10,7 @@
 #pragma once
 #include "Node.hpp"
 #include <iomanip>
+#include <utility>
 
 namespace opencl
 {
@@ -29,15 +30,16 @@ namespace JIT
                  const char *name_str,
                  const char *op_str,
                  const int num_children,
-                 const std::array<Node_ptr, MAX_CHILDREN> &children,
+                 const std::array<Node_ptr, MAX_CHILDREN>&& children,
                  const int op, const int height)
-            : Node(out_type_str, name_str, height, children),
+          : Node(out_type_str, name_str, height,
+                 std::forward<const std::array<Node_ptr, MAX_CHILDREN>>(children)),
               m_num_children(num_children),
               m_op(op),
               m_op_str(op_str)
         {
         }
-        void genKerName(std::stringstream &kerStream, Node_ids ids)
+        void genKerName(std::stringstream &kerStream, Node_ids ids) const final
         {
             // Make the dec representation of enum part of the Kernel name
             kerStream << "_" << std::setw(3) << std::setfill('0') << std::dec << m_op;
@@ -50,7 +52,7 @@ namespace JIT
             kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id << std::dec;
         }
 
-        void genFuncs(std::stringstream &kerStream, Node_ids ids)
+        void genFuncs(std::stringstream &kerStream, Node_ids ids) const final
         {
             kerStream << m_type_str << " val" << ids.id << " = " << m_op_str << "(";
             for (int i = 0; i < m_num_children; i++) {
