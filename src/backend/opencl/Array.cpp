@@ -7,31 +7,34 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
 #include <Array.hpp>
-#include <copy.hpp>
-#include <scalar.hpp>
 #include <JIT/BufferNode.hpp>
+#include <af/dim4.hpp>
+#include <af/opencl.h>
+#include <common/NodeIterator.hpp>
+#include <common/util.hpp>
+#include <copy.hpp>
 #include <err_opencl.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
+#include <scalar.hpp>
+
 #include <cstddef>
-#include <af/opencl.h>
-#include <common/util.hpp>
+#include <numeric>
 
 using af::dim4;
+using common::NodeIterator;
+using opencl::JIT::BufferNode;
+using opencl::JIT::Node;
+using opencl::JIT::Node_ptr;
+using std::accumulate;
 
 namespace opencl
 {
-    using JIT::BufferNode;
-    using JIT::Node;
-    using JIT::Node_ptr;
-
     template<typename T>
     Node_ptr bufferNodePtr()
     {
-        return Node_ptr(new BufferNode(dtype_traits<T>::getName(),
-                                       shortname<T>(true)));
+        return std::make_shared<BufferNode>(dtype_traits<T>::getName(), shortname<T>(true));
     }
 
     template<typename T>
@@ -255,38 +258,38 @@ namespace opencl
                 // TODO: Find better solution than the following emperical solution.
                 bool isParamLimit = (isNvidia && node->getHeight() > 24);
                 if (isParamLimit || isBufferLimit) {
+                    // This is the maximum non-linear buffers that are allowed in
+                    // the parameter list
+                    constexpr int max_nonlinear_buffer_count = 48;
 
                     Node *n = node.get();
 
-                    // Use thread local to reuse the memory every time you are here.
-                    thread_local JIT::Node_map_t nodes_map;
-                    thread_local std::vector<Node *> full_nodes;
-                    thread_local std::vector<JIT::Node_ids> full_ids;
+                    struct  tree_info {
+                        size_t buffer_size;
+                        int num_buffers;
+                        bool is_linear;
+                    };
+                    NodeIterator it(n);
+                    NodeIterator end_node;
+                    dim4 outdim = out.dims();
+                    tree_info info = accumulate(it, end_node,
+                                                tree_info{0, 0, true},
+                                                [=](tree_info& prev, Node& n) {
+                                                    if(n.isBuffer()) {
+                                                        auto& buf_node = static_cast<BufferNode&>(n);
+                                                        prev.buffer_size += buf_node.getBytes();
+                                                        prev.num_buffers++;
+                                                        prev.is_linear &= buf_node.isLinear((dim_t*)outdim.get());
+                                                    }
+                                                    // getBytes returns the size of the data Array. Sub arrays will
+                                                    // be represented by their parent size.
+                                                    return prev;
+                                                });
+                    isBufferLimit = 2 * info.buffer_size > lock_bytes;
+                    isParamLimit = isNvidia &&
+                                   !info.is_linear &&
+                                   info.num_buffers >= max_nonlinear_buffer_count;
 
-                    // Reserve some memory
-                    if (nodes_map.size() == 0) {
-                        nodes_map.reserve(1024);
-                        full_nodes.reserve(1024);
-                        full_ids.reserve(1024);
-                    }
-
-                    n->getNodesMap(nodes_map, full_nodes, full_ids);
-
-                    unsigned length = 0, buf_count = 0, bytes = 0;
-                    bool is_linear = true;
-                    dim_t dims_[] = {dims[0], dims[1], dims[2], dims[3]};
-                    for(auto &jit_node : full_nodes) {
-                        jit_node->getInfo(length, buf_count, bytes);
-                        is_linear &= jit_node->isLinear(dims_);
-                    }
-
-                    // Reset the thread local vectors
-                    nodes_map.clear();
-                    full_nodes.clear();
-                    full_ids.clear();
-
-                    isBufferLimit = 2 * bytes > lock_bytes;
-                    isParamLimit = isNvidia && !is_linear && buf_count >= 48;
                     if (isBufferLimit || isParamLimit) {
                         out.eval();
                     }

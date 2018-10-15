@@ -38,7 +38,7 @@ namespace JIT
         {
         }
 
-        bool isBuffer() { return true; }
+        bool isBuffer() const final { return true; }
 
         void setData(Param<T> param, std::shared_ptr<T> data, const unsigned bytes, bool is_linear)
         {
@@ -50,7 +50,7 @@ namespace JIT
                 });
         }
 
-        bool isLinear(dim_t dims[4])
+        bool isLinear(dim_t dims[4]) const final
         {
             bool same_dims = true;
             for (int i = 0; same_dims && i < 4; i++) {
@@ -59,13 +59,13 @@ namespace JIT
             return m_linear_buffer && same_dims;
         }
 
-        void genKerName(std::stringstream &kerStream, Node_ids ids)
+        void genKerName(std::stringstream &kerStream, Node_ids ids) const final
         {
             kerStream << "_" << m_name_str;
             kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id << std::dec;
         }
 
-        void genParams(std::stringstream &kerStream, int id, bool is_linear)
+        void genParams(std::stringstream &kerStream, int id, bool is_linear) const final
         {
             if (is_linear) {
                 kerStream << m_type_str << " *in" << id << "_ptr,\n";
@@ -75,7 +75,7 @@ namespace JIT
             }
         }
 
-        void setArgs(std::vector<void *> &args, bool is_linear)
+        void setArgs(std::vector<void *> &args, bool is_linear) const final
         {
             if (is_linear) {
                 args.push_back((void *)&m_param.ptr);
@@ -84,7 +84,7 @@ namespace JIT
             }
         }
 
-        void genOffsets(std::stringstream &kerStream, int id, bool is_linear)
+        void genOffsets(std::stringstream &kerStream, int id, bool is_linear) const final
         {
             std::string idx_str = std::string("int idx") + std::to_string(id);
 
@@ -106,21 +106,33 @@ namespace JIT
             }
         }
 
-        void genFuncs(std::stringstream &kerStream, Node_ids ids)
+        void genFuncs(std::stringstream &kerStream, Node_ids ids) const final
         {
             kerStream << m_type_str << " val" << ids.id << " = "
                       << "in" << ids.id << "_ptr[idx" << ids.id << "];"
                       << "\n";
         }
 
-        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes) const final
         {
             len++;
             buf_count++;
             bytes += m_bytes;
             return;
         }
+
+        // Return the size of the size of the buffer node in bytes. Zero otherwise
+        virtual size_t getBytes() const final {
+            return m_bytes;
+        }
+
+        // Return the size of the parameter in bytes that will be passed to the
+        // kernel
+        virtual short getParamBytes() const final {
+            return m_linear_buffer ? sizeof(T*) : sizeof(Param<T>);
+        }
     };
+
 
 }
 

@@ -16,6 +16,7 @@
 #include <JIT/ScalarNode.hpp>
 #include <Param.hpp>
 #include <common/ArrayInfo.hpp>
+#include <common/NodeIterator.hpp>
 #include <common/err_common.hpp>
 #include <copy.hpp>
 #include <memory.hpp>
@@ -40,6 +41,7 @@ using JIT::BufferNode;
 using JIT::Node;
 using JIT::Node_ptr;
 using JIT::Node_map_t;
+using common::NodeIterator;
 
 using af::dim4;
 using std::vector;
@@ -238,14 +240,16 @@ createNodeArray(const dim4 &dims, Node_ptr node)
 
                 Node *n = node.get();
 
-                Node_map_t nodes_map;
-                vector<Node *> full_nodes;
-                n->getNodesMap(nodes_map, full_nodes);
-                unsigned length =0, buf_count = 0, bytes = 0;
-                for(auto &entry : nodes_map) {
-                    Node *node = entry.first;
-                    node->getInfo(length, buf_count, bytes);
-                }
+                size_t buffer_size;
+                NodeIterator it(n);
+                NodeIterator end_node;
+                size_t bytes = accumulate(it, end_node,
+                                          size_t(0),
+                                          [=](const size_t prev, const Node& n) {
+                                              // getBytes returns the size of the data Array. Sub arrays will
+                                              // be represented by their parent size.
+                                              return prev + n.getBytes();
+                                          });
 
                 if (2 * bytes > lock_bytes) {
                     out.eval();
