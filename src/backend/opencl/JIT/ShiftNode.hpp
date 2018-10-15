@@ -37,26 +37,24 @@ namespace JIT
         {
         }
 
-        bool isBuffer() { return false; }
-
         void setData(KParam info, std::shared_ptr<cl::Buffer> data, const unsigned bytes, bool is_linear)
         {
             auto node_ptr = m_buffer_node.get();
             dynamic_cast<BufferNode *>(node_ptr)->setData(info, data, bytes, is_linear);
         }
 
-        bool isLinear(dim_t dims[4])
+        bool isLinear(dim_t dims[4]) const final
         {
             return false;
         }
 
-        void genKerName(std::stringstream &kerStream, Node_ids ids)
+        void genKerName(std::stringstream &kerStream, Node_ids ids) const final
         {
             kerStream << "_" << m_name_str;
             kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id << std::dec;
         }
 
-        void genParams(std::stringstream &kerStream, int id, bool is_linear)
+        void genParams(std::stringstream &kerStream, int id, bool is_linear) const final
         {
             auto node_ptr = m_buffer_node.get();
             dynamic_cast<BufferNode *>(node_ptr)->genParams(kerStream, id, is_linear);
@@ -65,7 +63,7 @@ namespace JIT
             }
         }
 
-        int setArgs(cl::Kernel &ker, int id, bool is_linear)
+        int setArgs(cl::Kernel &ker, int id, bool is_linear) const final
         {
             auto node_ptr = m_buffer_node.get();
             int curr_id = dynamic_cast<BufferNode *>(node_ptr)->setArgs(ker, id, is_linear);
@@ -75,7 +73,7 @@ namespace JIT
             return curr_id + 4;
         }
 
-        void genOffsets(std::stringstream &kerStream, int id, bool is_linear)
+        void genOffsets(std::stringstream &kerStream, int id, bool is_linear) const final
         {
             std::string idx_str = std::string("idx") + std::to_string(id);
             std::string info_str = std::string("iInfo") + std::to_string(id);
@@ -105,14 +103,14 @@ namespace JIT
                       << "\n";
         }
 
-        void genFuncs(std::stringstream &kerStream, Node_ids ids)
+        void genFuncs(std::stringstream &kerStream, Node_ids ids) const final
         {
             kerStream << m_type_str << " val" << ids.id << " = "
                       << "in" << ids.id << "[idx" << ids.id << "];"
                       << "\n";
         }
 
-        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes) const final
         {
             auto node_ptr = m_buffer_node.get();
             dynamic_cast<BufferNode *>(node_ptr)->getInfo(len, buf_count, bytes);

@@ -38,7 +38,9 @@ namespace JIT
         {
         }
 
-        bool isBuffer() { return true; }
+        bool isBuffer() const final {
+            return true;
+        }
 
         void setData(KParam info, std::shared_ptr<cl::Buffer> data, const unsigned bytes, bool is_linear)
         {
@@ -50,7 +52,7 @@ namespace JIT
                 });
         }
 
-        bool isLinear(dim_t dims[4])
+        bool isLinear(dim_t dims[4]) const final
         {
             bool same_dims = true;
             for (int i = 0; same_dims && i < 4; i++) {
@@ -59,13 +61,13 @@ namespace JIT
             return m_linear_buffer && same_dims;
         }
 
-        void genKerName(std::stringstream &kerStream, Node_ids ids)
+        void genKerName(std::stringstream &kerStream, Node_ids ids) const final
         {
             kerStream << "_" << m_name_str;
             kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id << std::dec;
         }
 
-        void genParams(std::stringstream &kerStream, int id, bool is_linear)
+        void genParams(std::stringstream &kerStream, int id, bool is_linear) const final
         {
             if (!is_linear) {
                 kerStream << "__global " << m_type_str << " *in" << id
@@ -76,7 +78,7 @@ namespace JIT
             }
         }
 
-        int setArgs(cl::Kernel &ker, int id, bool is_linear)
+        int setArgs(cl::Kernel &ker, int id, bool is_linear) const final
         {
             ker.setArg(id + 0, *m_data);
             if (!is_linear) {
@@ -87,7 +89,7 @@ namespace JIT
             return id + 2;
         }
 
-        void genOffsets(std::stringstream &kerStream, int id, bool is_linear)
+        void genOffsets(std::stringstream &kerStream, int id, bool is_linear) const final
         {
             std::string idx_str = std::string("int idx") + std::to_string(id);
             std::string info_str = std::string("iInfo") + std::to_string(id);
@@ -108,19 +110,27 @@ namespace JIT
             }
         }
 
-        void genFuncs(std::stringstream &kerStream, Node_ids ids)
+        // Return the size of the parameter in bytes that will be passed to the
+        // kernel
+        virtual short getParamBytes() const final {
+            return m_linear_buffer ? sizeof(void*) : sizeof(KParam);
+        }
+
+        void genFuncs(std::stringstream &kerStream, Node_ids ids) const final
         {
             kerStream << m_type_str << " val" << ids.id << " = "
                       << "in" << ids.id << "[idx" << ids.id << "];"
                       << "\n";
         }
 
-        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes) const final
         {
             len++;
             buf_count++;
             bytes += m_bytes;
         }
+
+        size_t getBytes() const final { return m_bytes; }
     };
 
 }

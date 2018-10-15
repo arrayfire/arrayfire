@@ -39,7 +39,7 @@ using std::stringstream;
 using std::vector;
 
 static string getFuncName(const vector<Node *> &output_nodes,
-                          const vector<Node *> &full_nodes,
+                          const vector<const Node *> &full_nodes,
                           const vector<Node_ids> &full_ids,
                           bool is_linear)
 {
@@ -66,7 +66,7 @@ static string getFuncName(const vector<Node *> &output_nodes,
 }
 
 static string getKernelString(const string funcName,
-                              const vector<Node *> &full_nodes,
+                              const vector<const Node *> &full_nodes,
                               const vector<Node_ids> &full_ids,
                               const vector<int> &output_ids,
                               bool is_linear)
@@ -167,7 +167,7 @@ static string getKernelString(const string funcName,
 
 static Kernel getKernel(const vector<Node *> &output_nodes,
                         const vector<int> &output_ids,
-                        const vector<Node *> &full_nodes,
+                        const vector<const Node *> &full_nodes,
                         const vector<Node_ids> &full_ids,
                         const bool is_linear)
 {
@@ -205,7 +205,7 @@ void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes)
 
     // Use thread local to reuse the memory every time you are here.
     thread_local Node_map_t nodes;
-    thread_local vector<Node *> full_nodes;
+    thread_local vector<const Node *> full_nodes;
     thread_local vector<Node_ids> full_ids;
     thread_local vector<int> output_ids;
 

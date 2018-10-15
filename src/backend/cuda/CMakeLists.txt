@@ -394,6 +394,7 @@ cuda_add_library(afcuda
     JIT/BinaryNode.hpp
     JIT/BufferNode.hpp
     JIT/Node.hpp
+    JIT/Node.cpp
     JIT/ScalarNode.hpp
     JIT/UnaryNode.hpp
     JIT/NaryNode.hpp
