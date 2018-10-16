@@ -92,8 +92,8 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     bool is_r_d3_batched = oDims[3] == rDims[3];
 
     for (int n = 0; n < batchSize; n++) {
-        int w = n / rDims[2];
-        int z = n - w * rDims[2];
+        int w = n / oDims[2];
+        int z = n - w * oDims[2];
 
         int loff = z * (is_l_d2_batched * lStrides[2]) + w * (is_l_d3_batched * lStrides[3]);
         int roff = z * (is_r_d2_batched * rStrides[2]) + w * (is_r_d3_batched * rStrides[3]);
