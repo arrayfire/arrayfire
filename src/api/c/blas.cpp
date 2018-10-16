@@ -127,7 +127,7 @@ af_err af_matmul(af_array *out,
         dim4 lDims = lhsInfo.dims();
         dim4 rDims = rhsInfo.dims();
 
-        if (lDims.ndims() > 2 || rDims.ndims() > 2) {
+        if (lDims.ndims() > 2 && rDims.ndims() > 2) {
             DIM_ASSERT(1, lDims.ndims() == rDims.ndims());
             if (lDims[2] != rDims[2] && lDims[2] != 1 && rDims[2] != 1) {
                 AF_ERROR("Batch size mismatch along dimension 2", AF_ERR_BATCH);
