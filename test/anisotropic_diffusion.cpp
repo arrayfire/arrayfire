@@ -148,14 +148,14 @@ TYPED_TEST(AnisotropicDiffusion, GradientGrayscale)
     // Divide second value by 100 to get time step `K`
     // Divide third value stays as it is since it is iteration count
     // Fourth value is a 4-character string indicating the flux kind
-    imageTest<TypeParam, false>(string(TEST_DIR "/gradient_diffusion/gray_00125_100_64_exp.test"),
-                                0.125f, 1.0, 64, AF_FLUX_EXPONENTIAL);
+    imageTest<TypeParam, false>(string(TEST_DIR "/gradient_diffusion/gray_00125_100_2_exp.test"),
+                                0.125f, 1.0, 2, AF_FLUX_EXPONENTIAL);
 }
 
 TYPED_TEST(AnisotropicDiffusion, GradientColorImage)
 {
-    imageTest<TypeParam, true>(string(TEST_DIR "/gradient_diffusion/color_00125_100_64_exp.test"),
-                               0.125f, 1.0, 64, AF_FLUX_EXPONENTIAL);
+    imageTest<TypeParam, true>(string(TEST_DIR "/gradient_diffusion/color_00125_100_2_exp.test"),
+                               0.125f, 1.0, 2, AF_FLUX_EXPONENTIAL);
 }
 
 TEST(AnisotropicDiffusion, GradientInvalidInputArray)
@@ -174,14 +174,14 @@ TYPED_TEST(AnisotropicDiffusion, CurvatureGrayscale)
     // Divide second value by 100 to get time step `K`
     // Divide third value stays as it is since it is iteration count
     // Fourth value is a 4-character string indicating the flux kind
-    imageTest<TypeParam, false>(string(TEST_DIR "/curvature_diffusion/gray_00125_100_64_mcde.test"),
-                                0.125f, 1.0, 64, AF_FLUX_EXPONENTIAL, true);
+    imageTest<TypeParam, false>(string(TEST_DIR "/curvature_diffusion/gray_00125_100_2_mcde.test"),
+                                0.125f, 1.0, 2, AF_FLUX_EXPONENTIAL, true);
 }
 
 TYPED_TEST(AnisotropicDiffusion, CurvatureColorImage)
 {
-    imageTest<TypeParam, true>(string(TEST_DIR "/curvature_diffusion/color_00125_100_64_mcde.test"),
-                               0.125f, 1.0, 64, AF_FLUX_EXPONENTIAL, true);
+    imageTest<TypeParam, true>(string(TEST_DIR "/curvature_diffusion/color_00125_100_2_mcde.test"),
+                               0.125f, 1.0, 2, AF_FLUX_EXPONENTIAL, true);
 }
 
 TEST(AnisotropicDiffusion, CurvatureInvalidInputArray)
