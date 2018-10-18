@@ -20,10 +20,10 @@ namespace cpu
     template<typename To, typename Ti, af_op_t op>
     struct BinOp
     {
-        void eval(TNJ::array<To> &out,
-                  const TNJ::array<Ti> &lhs,
-                  const TNJ::array<Ti> &rhs,
-                  int lim)
+        void eval(JIT::array<To> &out,
+                  const JIT::array<Ti> &lhs,
+                  const JIT::array<Ti> &rhs,
+                  int lim) const
         {
             for (int i = 0; i < lim; i++) {
                 out[i] = scalar<To>(0);
@@ -31,7 +31,7 @@ namespace cpu
         }
     };
 
-namespace TNJ
+namespace JIT
 {
 
     template<typename To, typename Ti, af_op_t op>
@@ -50,12 +50,12 @@ namespace TNJ
         {
         }
 
-        void calc(int x, int y, int z, int w, int lim)
+        void calc(int x, int y, int z, int w, int lim) final
         {
             m_op.eval(this->m_val, m_lhs->m_val, m_rhs->m_val, lim);
         }
 
-        void calc(int idx, int lim)
+        void calc(int idx, int lim) final
         {
             m_op.eval(this->m_val, m_lhs->m_val, m_rhs->m_val, lim);
         }

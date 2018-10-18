@@ -10,7 +10,7 @@
 #pragma once
 #include <Param.hpp>
 #include <platform.hpp>
-#include <TNJ/Node.hpp>
+#include <JIT/Node.hpp>
 #include <vector>
 
 namespace cpu
@@ -19,20 +19,20 @@ namespace kernel
 {
 
 template<typename T>
-void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> output_nodes_)
+void evalMultiple(std::vector<Param<T>> arrays, std::vector<JIT::Node_ptr> output_nodes_)
 {
     af::dim4 odims = arrays[0].dims();
     af::dim4 ostrs = arrays[0].strides();
 
-    TNJ::Node_map_t nodes;
+    JIT::Node_map_t nodes;
     std::vector<T *> ptrs;
-    std::vector<TNJ::TNode<T> *> output_nodes;
-    std::vector<TNJ::Node *> full_nodes;
+    std::vector<JIT::TNode<T> *> output_nodes;
+    std::vector<JIT::Node *> full_nodes;
 
     int narrays = static_cast<int>(arrays.size());
     for (int i = 0; i < narrays; i++) {
         ptrs.push_back(arrays[i].get());
-        output_nodes.push_back(reinterpret_cast<TNJ::TNode<T> *>(output_nodes_[i].get()));
+        output_nodes.push_back(reinterpret_cast<JIT::TNode<T> *>(output_nodes_[i].get()));
         output_nodes_[i]->getNodesMap(nodes, full_nodes);
     }
 
@@ -43,9 +43,9 @@ void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> outpu
 
     if (is_linear) {
         int num = arrays[0].dims().elements();
-        int cnum = TNJ::VECTOR_LENGTH * std::ceil(double(num) / TNJ::VECTOR_LENGTH);
-        for (int i = 0; i < cnum; i += TNJ::VECTOR_LENGTH) {
-            int lim = std::min(TNJ::VECTOR_LENGTH, num - i);
+        int cnum = JIT::VECTOR_LENGTH * std::ceil(double(num) / JIT::VECTOR_LENGTH);
+        for (int i = 0; i < cnum; i += JIT::VECTOR_LENGTH) {
+            int lim = std::min(JIT::VECTOR_LENGTH, num - i);
             for (int n = 0; n < (int)full_nodes.size(); n++) {
                 full_nodes[n]->calc(i, lim);
             }
@@ -67,9 +67,9 @@ void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> outpu
                     dim_t offy = y * ostrs[1] + offz;
 
                     int dim0 = odims[0];
-                    int cdim0 = TNJ::VECTOR_LENGTH * std::ceil(double(dim0) / TNJ::VECTOR_LENGTH);
-                    for (int x = 0; x < (int)cdim0; x += TNJ::VECTOR_LENGTH) {
-                        int lim = std::min(TNJ::VECTOR_LENGTH, dim0 - x);
+                    int cdim0 = JIT::VECTOR_LENGTH * std::ceil(double(dim0) / JIT::VECTOR_LENGTH);
+                    for (int x = 0; x < (int)cdim0; x += JIT::VECTOR_LENGTH) {
+                        int lim = std::min(JIT::VECTOR_LENGTH, dim0 - x);
                         dim_t id = x + offy;
 
                         for (int n = 0; n < (int)full_nodes.size(); n++) {
@@ -88,7 +88,7 @@ void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> outpu
 }
 
 template<typename T>
-void evalArray(Param<T> arr, TNJ::Node_ptr node)
+void evalArray(Param<T> arr, JIT::Node_ptr node)
 {
     evalMultiple<T>({arr}, {node});
 }

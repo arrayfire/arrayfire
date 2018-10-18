@@ -15,7 +15,7 @@
 namespace cpu
 {
 
-namespace TNJ
+namespace JIT
 {
 
     template<typename T>

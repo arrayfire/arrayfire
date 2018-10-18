@@ -15,7 +15,7 @@
 namespace cpu
 {
 
-namespace TNJ
+namespace JIT
 {
 
     using std::shared_ptr;
@@ -58,7 +58,7 @@ namespace TNJ
                            });
         }
 
-        void calc(int x, int y, int z, int w, int lim)
+        void calc(int x, int y, int z, int w, int lim) final
         {
             dim_t l_off = 0;
             l_off += (w < (int)m_dims[3]) * w * m_strides[3];
@@ -71,7 +71,7 @@ namespace TNJ
             }
         }
 
-        void calc(int idx, int lim)
+        void calc(int idx, int lim) final
         {
             T *in_ptr = m_ptr + idx;
             T *out_ptr = this->m_val.data();
@@ -80,7 +80,7 @@ namespace TNJ
             }
         }
 
-        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes) const final
         {
             len++;
             buf_count++;
@@ -88,7 +88,11 @@ namespace TNJ
             return;
         }
 
-        bool isLinear(const dim_t *dims)
+        size_t getBytes() const final {
+            return m_bytes;
+        }
+
+        bool isLinear(const dim_t *dims) const final
         {
             return m_linear_buffer &&
                 dims[0] == m_dims[0] &&
@@ -97,7 +101,7 @@ namespace TNJ
                 dims[3] == m_dims[3];
         }
 
-        bool isBuffer() { return true; }
+        bool isBuffer() const final { return true; }
 
     };
 
