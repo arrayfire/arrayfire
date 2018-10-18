@@ -628,8 +628,8 @@ AFAPI array unwrap(const array& in, const dim_t wx, const dim_t wy,
          \p is_column is false), must equal \f$nx \times\ ny\f$, where
          \f$\displaystyle nx = \frac{ox + 2px - wx}{sx} + 1\f$ and
          \f$\displaystyle ny = \frac{oy + 2py - wy}{sy} + 1\f$
-   \note Batched wrap can be performed on multiple unwrapped images if \p in is
-         three or four dimensional and each 2D slice is an unwrapped image.
+   \note Batched wrap can be performed on multiple 2D slices at once if \p in
+         is three or four-dimensional
 
    \ingroup image_func_wrap
 */
@@ -1414,8 +1414,8 @@ extern "C" {
              \p is_column is false), must equal \f$nx \times\ ny\f$, where
              \f$\displaystyle nx = \frac{ox + 2px - wx}{sx} + 1\f$ and
              \f$\displaystyle ny = \frac{oy + 2py - wy}{sy} + 1\f$
-       \note Batched wrap can be performed on multiple unwrapped images if \p in is
-             three or four dimensional and each 2D slice is an unwrapped image.
+       \note Batched wrap can be performed on multiple 2D slices at once if \p in
+             is three or four-dimensional
 
        \ingroup image_func_wrap
     */

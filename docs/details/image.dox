@@ -895,6 +895,13 @@ consideration.
 
 \image html wrap_sliding.png "Wrap on the same array as above, but with 1x1 stride (sliding window)"
 
+For inputs that have more than two dimensions, the wrap operation will be
+applied to each 2D slice of the input. This is especially useful for
+independently processing each channel of an image (or set of images) - each
+channel (along the third dimension) on the input corresponds to the same channel
+on the output, and each image (along the fourth dimension) on the input
+corresponds to the same image on the output.
+
 Here are some code examples that demonstrate wrap's usage. The first one shows
 wrapping a previously unwrapped array that used a 1x1 padding and a distinct
 window configuration. Notice how the arguments used in unwrap are the same as
