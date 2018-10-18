@@ -840,3 +840,81 @@ TEST(Approx1, CPPEmptyPosAndInput)
     ASSERT_TRUE(pos.isempty());
     ASSERT_TRUE(interp.isempty());
 }
+
+TEST(Approx1, UseNullInitialOutput) {
+    float h_in[3] = {10, 20, 30};
+    dim_t h_in_dims[1] = {3};
+
+    af_array in = 0;
+    af_create_array(&in, &h_in[0], 1, &h_in_dims[0], f32);
+
+    float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    dim_t h_pos_dims[1] = {5};
+    af_array pos = 0;
+    af_create_array(&pos, &h_pos[0], 1, &h_pos_dims[0], f32);
+
+    dim_t h_out_dims[1] = {5};
+    af_array out = 0;
+    af_approx1(&out, in, pos, AF_INTERP_LINEAR, 0);
+
+    ASSERT_FALSE(out == 0);
+}
+
+TEST(Approx1, UseExistingOutputArray) {
+    float h_in[3] = {10, 20, 30};
+    dim_t h_in_dims[1] = {3};
+
+    af_array in = 0;
+    af_create_array(&in, &h_in[0], 1, &h_in_dims[0], f32);
+
+    float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    dim_t h_pos_dims[1] = {5};
+    af_array pos = 0;
+    af_create_array(&pos, &h_pos[0], 1, &h_pos_dims[0], f32);
+
+    dim_t h_out_dims[1] = {5};
+    af_array out = 0;
+    af_create_handle(&out, 1, &h_out_dims[0], f32);
+    // af_print_array_gen("out", out, 4);
+    af_array out_copy = out;
+    // af_print_array_gen("out_copy", out_copy, 4);
+    af_approx1(&out, in, pos, AF_INTERP_LINEAR, 0);
+    // af_print_array_gen("out", out, 4);
+    // af_print_array_gen("out_copy", out_copy, 4);
+
+    ASSERT_EQ(out_copy, out);
+    ASSERT_ARRAYS_EQ(out_copy, out);
+}
+
+TEST(Approx1, UseExistingOutputSlice) {
+    float h_in[3] = {10, 20, 30};
+    dim_t h_in_dims[1] = {3};
+
+    af_array in = 0;
+    af_create_array(&in, &h_in[0], 1, &h_in_dims[0], f32);
+
+    float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    dim_t h_pos_dims[1] = {5};
+    af_array pos = 0;
+    af_create_array(&pos, &h_pos[0], 1, &h_pos_dims[0], f32);
+
+    float h_out[15] = {1.0, 1.5, 2.0, 2.5, 3.0,
+                       4.0, 4.5, 5.0, 5.5, 6.0,
+                       7.0, 7.5, 8.0, 8.5, 9.0};
+    dim_t h_out_dims[2] = {5, 3};
+    af_array out = 0;
+    af_create_array(&out, &h_out[0], 2, &h_out_dims[0], f32);
+    // af_print_array_gen("out", out, 4);
+    af_seq idx_dim1 = {1, 1, 1};
+    af_seq idx[2] = {af_span, idx_dim1};
+    af_array out_slice = 0;
+    af_index(&out_slice, out, 2, &idx[0]);
+    // af_print_array_gen("out_slice", out_slice, 4);
+    af_approx1(&out_slice, in, pos, AF_INTERP_LINEAR, 0);
+    // af_print_array_gen("out_slice", out_slice, 4);
+    // af_print_array_gen("out", out, 4);
+
+    float h_gold_arr[5] = {10.0, 15.0, 20.0, 25.0, 30.0};
+    vector<float> h_gold(h_gold_arr, h_gold_arr + 5);
+    ASSERT_VEC_ARRAY_EQ(h_gold, dim4(5), out_slice);
+}
