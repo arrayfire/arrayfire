@@ -14,14 +14,18 @@
 #include <memory>
 #include <unordered_map>
 
+namespace common {
+    class NodeIterator;
+}
+
 namespace cpu
 {
 
-namespace TNJ
+namespace JIT
 {
 
     static const int VECTOR_LENGTH = 256;
-    static const int MAX_CHILDREN = 2;
+    static const int MAX_CHILDREN = 3;
 
     class Node;
     using std::shared_ptr;
@@ -42,6 +46,7 @@ namespace TNJ
 
         const int m_height;
         const std::array<Node_ptr, MAX_CHILDREN> m_children;
+        friend common::NodeIterator;
 
     public:
         Node(const int height, const std::array<Node_ptr, MAX_CHILDREN> children) :
@@ -53,7 +58,7 @@ namespace TNJ
         {
             auto iter = node_map.find(this);
             if (iter == node_map.end()) {
-                for (const auto &child : m_children) {
+                for (auto &child : m_children) {
                     if (child == nullptr) break;
                     child->getNodesMap(node_map, full_nodes);
                 }
@@ -75,22 +80,25 @@ namespace TNJ
         {
         }
 
-        virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes) const
         {
             len++;
         }
 
-        virtual bool isLinear(const dim_t *dims) { return true; }
-        virtual bool isBuffer() { return false; }
+        virtual bool isLinear(const dim_t *dims) const { return true; }
+        virtual bool isBuffer() const { return false; }
         virtual ~Node() {}
 
+        virtual size_t getBytes() const {
+          return 0;
+        }
     };
 
     template<typename T>
     class TNode : public Node
     {
     public:
-        alignas(16) TNJ::array<T> m_val;
+        alignas(16) JIT::array<T> m_val;
     public:
         TNode(T val, const int height, const std::array<Node_ptr, MAX_CHILDREN> children) :
             Node(height, children)

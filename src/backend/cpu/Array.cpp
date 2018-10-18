@@ -11,10 +11,10 @@
 #include <Array.hpp>
 #include <kernel/Array.hpp>
 
+#include <JIT/BufferNode.hpp>
+#include <JIT/Node.hpp>
+#include <JIT/ScalarNode.hpp>
 #include <Param.hpp>
-#include <TNJ/BufferNode.hpp>
-#include <TNJ/Node.hpp>
-#include <TNJ/ScalarNode.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
 #include <copy.hpp>
@@ -36,9 +36,10 @@
 namespace cpu
 {
 
-using TNJ::BufferNode;
-using TNJ::Node;
-using TNJ::Node_ptr;
+using JIT::BufferNode;
+using JIT::Node;
+using JIT::Node_ptr;
+using JIT::Node_map_t;
 
 using af::dim4;
 using std::vector;
@@ -74,7 +75,7 @@ Array<T>::Array(dim4 dims, const T * const in_data, bool is_device, bool copy_de
 }
 
 template<typename T>
-Array<T>::Array(af::dim4 dims, TNJ::Node_ptr n) :
+Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
     info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
     data(), data_dims(dims),
     node(n), ready(false), owner(true)
@@ -143,7 +144,7 @@ template<typename T>
 void evalMultiple(vector<Array<T>*> array_ptrs)
 {
     vector<Array<T>> arrays;
-    vector<TNJ::Node_ptr> nodes;
+    vector<JIT::Node_ptr> nodes;
     bool isWorker = getQueue().is_worker();
     for (auto &array : array_ptrs) {
         if (array->ready) continue;
@@ -200,9 +201,9 @@ template<typename T>
 Array<T>
 createValueArray(const dim4 &size, const T& value)
 {
-    TNJ::ScalarNode<T> *node = new TNJ::ScalarNode<T>(value);
-    return createNodeArray<T>(size, TNJ::Node_ptr(
-                                  reinterpret_cast<TNJ::Node *>(node)));
+    JIT::ScalarNode<T> *node = new JIT::ScalarNode<T>(value);
+    return createNodeArray<T>(size, JIT::Node_ptr(
+                                  reinterpret_cast<JIT::Node *>(node)));
 }
 
 template<typename T>
@@ -237,8 +238,8 @@ createNodeArray(const dim4 &dims, Node_ptr node)
 
                 Node *n = node.get();
 
-                TNJ::Node_map_t nodes_map;
-                vector<TNJ::Node *> full_nodes;
+                Node_map_t nodes_map;
+                vector<Node *> full_nodes;
                 n->getNodesMap(nodes_map, full_nodes);
                 unsigned length =0, buf_count = 0, bytes = 0;
                 for(auto &entry : nodes_map) {
@@ -348,7 +349,7 @@ Array<T>::setDataDims(const dim4 &new_dims)
                                                        const vector<af_seq> &index, \
                                                        bool copy);      \
     template       void      destroyArray<T>          (Array<T> *A);    \
-    template       Array<T>  createNodeArray<T>       (const dim4 &size, TNJ::Node_ptr node); \
+    template       Array<T>  createNodeArray<T>       (const dim4 &size, JIT::Node_ptr node); \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
     template       T*   Array<T>::device();                             \
@@ -357,7 +358,7 @@ Array<T>::setDataDims(const dim4 &new_dims)
     template       Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset, \
                                    const T * const in_data,             \
                                    bool is_device);                     \
-    template       TNJ::Node_ptr Array<T>::getNode() const;             \
+    template       JIT::Node_ptr Array<T>::getNode() const;             \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
     template       void      evalMultiple<T>     (vector<Array<T>*> arrays); \
