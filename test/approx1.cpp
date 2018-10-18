@@ -517,6 +517,45 @@ TEST(Approx1, CPPUsage)
     //! [ex_signal_approx1]
 
     // Input data array.
+    float input_vals[3] = {10.0, 20.0, 30.0};
+    array in(dim4(3, 1), input_vals);
+    // [3 1 1 1]
+    //     10.0000
+    //     20.0000
+    //     30.0000
+
+    // Array of positions to be found along the first dimension.
+    float pv[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    array pos(dim4(5,1), pv);
+    // [5 1 1 1]
+    //     0.0000
+    //     0.5000
+    //     1.0000
+    //     1.5000
+    //     2.0000
+
+    // Perform interpolation across dimension 0.
+    array interp = approx1(in, pos);
+    // [5 1 1 1]
+    //     10.0000
+    //     15.0000
+    //     20.0000
+    //     25.0000
+    //     30.0000
+
+    //! [ex_signal_approx1]
+
+    float civ[5] = {10.0, 15.0, 20.0, 25.0, 30.0};
+    array interp_gold(dim4(5,1), civ);
+    ASSERT_ARRAYS_EQ(interp, interp_gold);
+
+}
+
+
+TEST(Approx1, CPPUniformUsage)
+{
+    //! [ex_signal_approx1_uniform]
+
     float input_vals[9] = {10.0, 20.0, 30.0,
                            40.0, 50.0, 60.0,
                            70.0, 80.0, 90.0};
@@ -525,8 +564,6 @@ TEST(Approx1, CPPUsage)
     //     10.0000    40.0000    70.0000
     //     20.0000    50.0000    80.0000
     //     30.0000    60.0000    90.0000
-
-
 
     // Array of positions to be found along the interpolation
     // dimension, `interp_dim`.
@@ -538,8 +575,6 @@ TEST(Approx1, CPPUsage)
     //     1.0000
     //     1.5000
     //     2.0000
-
-
 
     // Define range of indices with which the input values will
     // correspond along the interpolation dimension.
@@ -564,7 +599,7 @@ TEST(Approx1, CPPUsage)
     //     20.0000    35.0000    50.0000    65.0000    80.0000
     //     30.0000    45.0000    60.0000    75.0000    90.0000
 
-    //! [ex_signal_approx1]
+    //! [ex_signal_approx1_uniform]
 
     float civ[15] = {10.0, 15.0, 20.0, 25.0, 30.0,
                      40.0, 45.0, 50.0, 55.0, 60.0,
@@ -580,7 +615,6 @@ TEST(Approx1, CPPUsage)
                      70.0, 80.0, 90.0};
     array interp_gold_row(dim4(3,5), riv);
     ASSERT_ARRAYS_EQ(row_major_interp, interp_gold_row);
-
 }
 
 TEST(Approx1, CPPDecimalStepRescaleGrid)

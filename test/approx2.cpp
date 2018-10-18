@@ -512,7 +512,48 @@ TEST(Approx2, CPPUsage)
     //     1.0000     2.0000     3.0000
     //     1.0000     2.0000     3.0000
 
+    // First array of positions to be found along the first dimension.
+    float pv0[4] = {0.5, 1.5, 0.5, 1.5};
+    array pos0(2, 2, pv0);
+    // [2 2 1 1]
+    //     0.5000     0.5000
+    //     1.5000     1.5000
 
+    // Second array of positions to be found along the second
+    // dimension.
+    float pv1[4] = {0.5, 0.5, 1.5, 1.5};
+    array pos1(2, 2, pv1);
+    // [2 2 1 1]
+    //     0.5000     1.5000
+    //     0.5000     1.5000
+
+    array interp = approx2(input, pos0, pos1);
+    // [2 2 1 1]
+    //     1.5000     2.5000
+    //     1.5000     2.5000
+
+    //! [ex_signal_approx2]
+
+    float expected_interp[4] = {1.5, 1.5,
+                                2.5, 2.5};
+
+    array interp_gold(2, 2, expected_interp);
+    ASSERT_ARRAYS_EQ(interp, interp_gold);
+}
+
+TEST(Approx2, CPPUniformUsage)
+{
+    //! [ex_signal_approx2_uniform]
+
+    // Input data array.
+    float input_vals[9] = {1.0, 1.0, 1.0,
+                           2.0, 2.0, 2.0,
+                           3.0, 3.0, 3.0};
+    array input(3, 3, input_vals);
+    // [3 3 1 1]
+    //     1.0000     2.0000     3.0000
+    //     1.0000     2.0000     3.0000
+    //     1.0000     2.0000     3.0000
 
     // First array of positions to be found along the interpolation
     // dimension, `interp_dim0`.
@@ -530,8 +571,6 @@ TEST(Approx2, CPPUsage)
     //     0.5000     1.5000
     //     0.5000     1.5000
 
-
-
     // Define range of indices with which the input values will
     // correspond along both dimensions to be interpolated.
     const double idx_start_dim0 = 0.0;
@@ -545,7 +584,7 @@ TEST(Approx2, CPPUsage)
     //     1.5000     2.5000
     //     1.5000     2.5000
 
-    //! [ex_signal_approx2]
+    //! [ex_signal_approx2_uniform]
 
     float expected_interp[4] = {1.5, 1.5,
                                 2.5, 2.5};

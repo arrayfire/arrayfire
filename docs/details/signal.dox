@@ -214,39 +214,24 @@ respectively, then the possible batch operations are as follows.
 Performs interpolation on data along a single dimension.
 
 Interpolation is the process of computing for unknown values within a
-continuous range described by a discrete set of known values.
+continuous range described by a discrete set of known values. These
+known values (`in`) correspond to a uniformly-spaced range of indices
+determined by start and step values, whose defaults are 0.0 and 1.0,
+respectively.
 
-`in`, the N-D input array, is comprised of known values that will be
-used for interpolation in order to compute for values at unknown
-indices. These known values correspond to a uniformly-spaced range of
-indices determined by `idx_start`, `idx_step`.
-
-`idx_start` (default: 0.0) defines the first index in the range.
-
-`idx_step` (default: 1.0) defines the uniform spacing value used
-between subsequent indices.
-
-`interp_dim` (default: 0) defines the dimension which we'd like to
-perform interpolation across respective to the input array.
-
-`pos`, the positions array, contains indices whose values we want to
-find along corresponding dimension `interp_dim` in the input
-array. Values of **known indices** will be looked up in the input
-array, while values of **unknown indices** will be found via
-interpolation. Indices outside of the index range are not
-extrapolated. Instead, those values are set to `off_grid`, whose
+The positions array (`pos`) contains the interpolating points (indices
+whose values we want to find) along a given dimension. Values of **known indices**
+will be looked up in the input array, while values of **unknown indices**
+will be found via interpolation. Indices outside of the index range
+are not extrapolated. Instead, those values are set `off_grid`, whose
 default value is 0.0.
 
-Using the default start and step values,
+The following image illustrates a simple example (known values
+represented by blue dots, unknown values represented by red dots):
 
 \image html approx1_default_idx.png "approx1() using idx_start=0.0, idx_step=1.0"
 
-If instead, we chose 10 for start and step,
-
-\image html approx1_arbitrary_idx.png "approx1() using idx_start=10.0, idx_step=10.0"
-
-`method` controls the interpolation method to be performed. Several
-interpolation methods are supported by `approx1()`:
+Several interpolation methods are supported by approx1:
 
 - Nearest neighbor interpolation - \ref AF_INTERP_NEAREST
 - Linear interpolation (default) - \ref AF_INTERP_LINEAR, \ref AF_INTERP_LINEAR_COSINE
@@ -257,59 +242,28 @@ Unless specified, linear interpolation is performed by default. Refer
 to \ref af_interp_type for more information about ArrayFire's
 interpolation types.
 
-It is not necessary to specify the `idx_start`, `idx_step`, and
-`interp_dim` as long as desired values match the default ones.
-
-\snippet test/approx1.cpp ex_signal_approx1
-
 \defgroup signal_func_approx2 approx2
 \ingroup approx_mat
 
 Performs interpolation on data along two dimensions.
 
 Interpolation is the process of computing for unknown values within a
-continuous range described by a discrete set of known values. For 2D
-interpolation, two sets of values, indices, and interpolation
-dimensions are necessary.
+continuous range described by a discrete set of known values. These
+known values correspond to a uniformly-spaced range of indices
+determined by start and step values, whose defaults are 0.0 and 1.0,
+respectively.
 
-`in`, the N-D input array, is comprised of known values that will be
-used for interpolation in order to compute for values at unknown
-indices. These known values correspond to a uniformly-spaced range of
-indices determined by:
-
-- `idx_start_dim0` and `idx_step_dim0` along `interp_dim0`
-- `idx_start_dim1` and `idx_step_dim1` along `interp_dim1`
-
-`idx_start_dim0` (default: 0.0) and `idx_start_dim1` (default: 0.0) each
-define the first index value along their respective dimension.
-
-`idx_step_dim0` (default: 1.0) and `idx_step_dim1` (default: 1.0) each
-define the uniform spacing value used between subsequent indices along
-their respective dimension.
-
-`interp_dim0` (default: 0) and `interp_dim1` (default: 1), define the
-dimensions which we'd like to perform interpolation across respective
-to the input array.
-
-`pos0` and `pos1`, the positions arrays, contain indices whose values
-we want to find along corresponding dimensions `interp_dim0` and
-`interp_dim1` in the input array. Values of **known indices** will be
-looked up in the input array, while values of **unknown indices** will
-be found via interpolation. Indices outside of the index range are not
+The positions arrays (`pos0` and `pos1`) contain the interpolating
+points (indices whose values we want to find) along two given
+dimensions. Values of **known indices** will be looked up in the input
+array, while values of **unknown indices** will be found via
+interpolation. Indices outside of the index range are not
 extrapolated. Instead, those values are set to `off_grid`, whose
 default value is 0.0.
 
-`method` controls the interpolation method to be performed. All of the
-interpolation methods defined in \ref af_interp_type are supported by
-approx2(). Unless specified, linear interpolation is performed by
-default.
-
-It is not necessary to specify the start arguments (`idx_start_dim0`,
-`idx_start_dim1`), step arguments (`idx_step_dim0` and
-`idx_step_dim1`), and dimension arguments (`interp_dim0` and
-`interp_dim1`) as long as desired values match the default ones.
-
-\snippet test/approx2.cpp ex_signal_approx2
+All of the interpolation methods defined in \ref af_interp_type are
+supported by approx2. Unless specified, linear interpolation is
+performed by default.
 
 \defgroup signal_func_fir fir
 \ingroup sigfilt_mat
