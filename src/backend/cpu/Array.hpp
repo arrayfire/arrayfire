@@ -10,7 +10,7 @@
 //This is the array implementation class.
 #pragma once
 #include <Param.hpp>
-#include <TNJ/Node.hpp>
+#include <JIT/Node.hpp>
 #include <common/ArrayInfo.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
@@ -28,10 +28,10 @@ namespace cpu
 {
     namespace kernel
     {
-        template<typename T> void evalArray(Param<T> in, TNJ::Node_ptr node);
+        template<typename T> void evalArray(Param<T> in, JIT::Node_ptr node);
 
         template<typename T>
-        void evalMultiple(std::vector<Param<T>> arrays, std::vector<TNJ::Node_ptr> nodes);
+        void evalMultiple(std::vector<Param<T>> arrays, std::vector<JIT::Node_ptr> nodes);
 
     }
 
@@ -45,7 +45,7 @@ namespace cpu
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
-    Array<T> createNodeArray(const af::dim4 &size, TNJ::Node_ptr node);
+    Array<T> createNodeArray(const af::dim4 &size, JIT::Node_ptr node);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
@@ -112,7 +112,7 @@ namespace cpu
         //data if parent. empty if child
         std::shared_ptr<T> data;
         af::dim4 data_dims;
-        TNJ::Node_ptr node;
+        JIT::Node_ptr node;
 
         bool ready;
         bool owner;
@@ -122,7 +122,7 @@ namespace cpu
 
         explicit Array(dim4 dims, const T * const in_data, bool is_device, bool copy_device=false);
         Array(const Array<T>& parnt, const dim4 &dims, const dim_t &offset, const dim4 &stride);
-        explicit Array(af::dim4 dims, TNJ::Node_ptr n);
+        explicit Array(af::dim4 dims, JIT::Node_ptr n);
 
     public:
         Array(af::dim4 dims, af::dim4 strides, dim_t offset,
@@ -231,7 +231,7 @@ namespace cpu
             return CParam<T>(this->get(), this->dims(), this->strides());
         }
 
-        TNJ::Node_ptr getNode() const;
+        JIT::Node_ptr getNode() const;
 
         friend void evalMultiple<T>(std::vector<Array<T> *> arrays);
 
@@ -241,15 +241,15 @@ namespace cpu
 
         friend Array<T> *initArray<T>();
         friend Array<T> createEmptyArray<T>(const af::dim4 &size);
-        friend Array<T> createNodeArray<T>(const af::dim4 &dims, TNJ::Node_ptr node);
+        friend Array<T> createNodeArray<T>(const af::dim4 &dims, JIT::Node_ptr node);
 
         friend Array<T> createSubArray<T>(const Array<T>& parent,
                                           const std::vector<af_seq> &index,
                                           bool copy);
 
-        friend void kernel::evalArray<T>(Param<T> in, TNJ::Node_ptr node);
+        friend void kernel::evalArray<T>(Param<T> in, JIT::Node_ptr node);
         friend void kernel::evalMultiple<T>(std::vector<Param<T>> arrays,
-                                            std::vector<TNJ::Node_ptr> nodes);
+                                            std::vector<JIT::Node_ptr> nodes);
 
         friend void destroyArray<T>(Array<T> *arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);
