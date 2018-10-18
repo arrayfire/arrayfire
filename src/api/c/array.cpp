@@ -194,9 +194,6 @@ af_err af_release_array(af_array arr)
                 default : TYPE_ERROR(0, type);
             }
         } else {
-
-            setDevice(info.getDevId());
-
             switch(type) {
             case f32:   releaseHandle<float   >(arr); break;
             case c32:   releaseHandle<cfloat  >(arr); break;
@@ -212,8 +209,6 @@ af_err af_release_array(af_array arr)
             case u16:   releaseHandle<ushort  >(arr); break;
             default:    TYPE_ERROR(0, type);
             }
-
-            setDevice(dev);
         }
     }
     CATCHALL
