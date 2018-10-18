@@ -10,7 +10,7 @@
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <err_cpu.hpp>
-#include <TNJ/UnaryNode.hpp>
+#include <JIT/UnaryNode.hpp>
 #include <cmath>
 
 namespace cpu
@@ -26,8 +26,8 @@ T sigmoid(T in)
     template<typename T>                            \
     struct UnOp<T, T, af_##op##_t>                  \
     {                                               \
-        void eval(TNJ::array<T> &out,               \
-                  const TNJ::array<T> &in, int lim) \
+        void eval(JIT::array<T> &out,               \
+                  const JIT::array<T> &in, int lim) \
         {                                           \
             for (int i = 0; i < lim; i++) {         \
                 out[i] = fn(in[i]);                 \
@@ -82,11 +82,11 @@ UNARY_OP(lgamma)
     template<typename T, af_op_t op>
     Array<T> unaryOp(const Array<T> &in)
     {
-        TNJ::Node_ptr in_node = in.getNode();
-        TNJ::UnaryNode<T, T, op> *node = new TNJ::UnaryNode<T, T, op>(in_node);
+        JIT::Node_ptr in_node = in.getNode();
+        JIT::UnaryNode<T, T, op> *node = new JIT::UnaryNode<T, T, op>(in_node);
 
         return createNodeArray<T>(in.dims(),
-                                  TNJ::Node_ptr(reinterpret_cast<TNJ::Node *>(node)));
+                                  JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }
 
 #define iszero(a) ((a) == 0)
@@ -95,8 +95,8 @@ UNARY_OP(lgamma)
     template<typename T>                            \
     struct UnOp<char, T, af_##name##_t>             \
     {                                               \
-        void eval(TNJ::array<char> &out,            \
-                  const TNJ::array<T> &in, int lim) \
+        void eval(JIT::array<char> &out,            \
+                  const JIT::array<T> &in, int lim) \
         {                                           \
             for (int i = 0; i < lim; i++) {         \
                 out[i] = op(in[i]);                 \
@@ -111,11 +111,11 @@ UNARY_OP(lgamma)
     template<typename T, af_op_t op>
     Array<char> checkOp(const Array<T> &in)
     {
-        TNJ::Node_ptr in_node = in.getNode();
-        TNJ::UnaryNode<char, T, op> *node = new TNJ::UnaryNode<char, T, op>(in_node);
+        JIT::Node_ptr in_node = in.getNode();
+        JIT::UnaryNode<char, T, op> *node = new JIT::UnaryNode<char, T, op>(in_node);
 
         return createNodeArray<char>(in.dims(),
-                                     TNJ::Node_ptr(reinterpret_cast<TNJ::Node *>(node)));
+                                     JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }
 
 }

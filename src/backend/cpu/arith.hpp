@@ -12,7 +12,7 @@
 #include <optypes.hpp>
 #include <err_cpu.hpp>
 #include <cmath>
-#include <TNJ/BinaryNode.hpp>
+#include <JIT/BinaryNode.hpp>
 
 namespace cpu
 {
@@ -21,10 +21,10 @@ namespace cpu
     template<typename T>                        \
     struct BinOp<T, T, OP>                      \
     {                                           \
-        void eval(TNJ::array<T> &out,           \
-                  const TNJ::array<T> &lhs,     \
-                  const TNJ::array<T> &rhs,     \
-                  int lim)                      \
+        void eval(JIT::array<T> &out,           \
+                  const JIT::array<T> &lhs,     \
+                  const JIT::array<T> &rhs,     \
+                  int lim) const                \
         {                                       \
             for (int i = 0; i < lim; i++) {     \
                 out[i] = lhs[i] op rhs[i];      \
@@ -58,9 +58,9 @@ template<> STATIC_ double __rem<double>(double lhs, double rhs) { return remaind
     template<typename T>                        \
     struct BinOp<T, T, OP>                      \
     {                                           \
-        void eval(TNJ::array<T> &out,           \
-                  const TNJ::array<T> &lhs,     \
-                  const TNJ::array<T> &rhs,     \
+        void eval(JIT::array<T> &out,           \
+                  const JIT::array<T> &lhs,     \
+                  const JIT::array<T> &rhs,     \
                   int lim)                      \
         {                                       \
             for (int i = 0; i < lim; i++) {     \
@@ -80,13 +80,13 @@ NUMERIC_FN(af_hypot_t, hypot)
 template<typename T, af_op_t op>
 Array<T> arithOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
 {
-    TNJ::Node_ptr lhs_node = lhs.getNode();
-    TNJ::Node_ptr rhs_node = rhs.getNode();
+    JIT::Node_ptr lhs_node = lhs.getNode();
+    JIT::Node_ptr rhs_node = rhs.getNode();
 
-    TNJ::BinaryNode<T, T, op> *node = new TNJ::BinaryNode<T, T, op>(lhs_node, rhs_node);
+    JIT::BinaryNode<T, T, op> *node = new JIT::BinaryNode<T, T, op>(lhs_node, rhs_node);
 
-    return createNodeArray<T>(odims, TNJ::Node_ptr(
-                                  reinterpret_cast<TNJ::Node *>(node)));
+    return createNodeArray<T>(odims,
+                              JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
 }
 
 }
