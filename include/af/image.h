@@ -602,19 +602,34 @@ AFAPI array unwrap(const array& in, const dim_t wx, const dim_t wy,
 
 #if AF_API_VERSION >= 31
 /**
-   C++ Interface wrapper for wrap
+   C++ Interface for performing the opposite of \ref unwrap()
 
-   \param[in]  in is the input image (or set of images)
-   \param[in]  ox is the 0th-dimension of output
-   \param[in]  oy is the ist-dimension of output
-   \param[in]  wx is the block window size along 0th-dimension between
-   \param[in]  wy is the block window size along 1st-dimension between
-   \param[in]  sx is the stride along 0th-dimension
-   \param[in]  sy is the stride along 1st-dimension
-   \param[in]  px is the padding used along 0th-dimension between [0, wx).
-   \param[in]  py is the padding used along 1st-dimension between [0, wy).
-   \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the rows are treated as patches
-   \returns    an array of images after converting rows or columns into image windows
+   \param[in]  in is the input array
+   \param[in]  ox is the output's dimension 0 size
+   \param[in]  oy is the output's dimension 1 size
+   \param[in]  wx is the window size along dimension 0
+   \param[in]  wy is the window size along dimension 1
+   \param[in]  sx is the stride along dimension 0
+   \param[in]  sy is the stride along dimension 1
+   \param[in]  px is the padding along dimension 0
+   \param[in]  py is the padding along dimension 1
+   \param[in]  is_column determines whether an output patch is formed from a
+               column (if true) or a row (if false)
+   \returns    an array with the input's columns (or rows) reshaped as patches
+
+   \note Wrap is typically used to recompose an unwrapped image. If this is the
+         case, use the same parameters that were used in \ref unwrap(). Also
+         use the original image size (before unwrap) for \p ox and \p oy.
+   \note The window/patch size, \p wx \f$\times\f$ \p wy, must equal
+         `input.dims(0)` (or `input.dims(1)` if \p is_column is false).
+   \note \p sx and \p sy must be at least 1
+   \note \p px and \p py must be between [0, wx) and [0, wy), respectively
+   \note The number of patches, `input.dims(1)` (or `input.dims(0)` if
+         \p is_column is false), must equal \f$nx \times\ ny\f$, where
+         \f$\displaystyle nx = \frac{ox + 2px - wx}{sx} + 1\f$ and
+         \f$\displaystyle ny = \frac{oy + 2py - wy}{sy} + 1\f$
+   \note Batched wrap can be performed on multiple 2D slices at once if \p in
+         is three or four-dimensional
 
    \ingroup image_func_wrap
 */
@@ -1370,23 +1385,37 @@ extern "C" {
 
 #if AF_API_VERSION >= 31
     /**
-       C Interface wrapper for wrap
+       C Interface for performing the opposite of \ref unwrap()
 
-       \param[out] out is an array after converting
+       \param[out] out is an array with the input's columns (or rows) reshaped as
+                   patches
        \param[in]  in is the input array
-       \param[in]  ox is the 0th-dimension of \p out
-       \param[in]  oy is the ist-dimension of \p out
-       \param[in]  wx is the block window size along 0th-dimension between
-       \param[in]  wy is the block window size along 1st-dimension between
-       \param[in]  sx is the stride along 0th-dimension
-       \param[in]  sy is the stride along 1st-dimension
-       \param[in]  px is the padding used along 0th-dimension between [0, wx).
-       \param[in]  py is the padding used along 1st-dimension between [0, wy).
-       \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the rows are treated as the patches
+       \param[in]  ox is the output's dimension 0 size
+       \param[in]  oy is the output's dimension 1 size
+       \param[in]  wx is the window size along dimension 0
+       \param[in]  wy is the window size along dimension 1
+       \param[in]  sx is the stride along dimension 0
+       \param[in]  sy is the stride along dimension 1
+       \param[in]  px is the padding along dimension 0
+       \param[in]  py is the padding along dimension 1
+       \param[in]  is_column determines whether an output patch is formed from a
+                   column (if true) or a row (if false)
        \return     \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
 
-       \note The padding used in \ref af_unwrap is calculated from the provided parameters
+       \note Wrap is typically used to recompose an unwrapped image. If this is the
+             case, use the same parameters that were used in \ref unwrap(). Also
+             use the original image size (before unwrap) for \p ox and \p oy.
+       \note The window/patch size, \p wx \f$\times\f$ \p wy, must equal
+             `input.dims(0)` (or `input.dims(1)` if \p is_column is false).
+       \note \p sx and \p sy must be at least 1
+       \note \p px and \p py must be between [0, wx) and [0, wy), respectively
+       \note The number of patches, `input.dims(1)` (or `input.dims(0)` if
+             \p is_column is false), must equal \f$nx \times\ ny\f$, where
+             \f$\displaystyle nx = \frac{ox + 2px - wx}{sx} + 1\f$ and
+             \f$\displaystyle ny = \frac{oy + 2py - wy}{sy} + 1\f$
+       \note Batched wrap can be performed on multiple 2D slices at once if \p in
+             is three or four-dimensional
 
        \ingroup image_func_wrap
     */

@@ -843,9 +843,80 @@ is described above, but the effect should be the same.
 \defgroup image_func_wrap wrap
 \ingroup image_mod_mat
 
-Wrap takes an unwrapped image (see \ref unwrap()) and converts it back to an image.
+Performs the opposite of \ref unwrap().
 
-The inputs to this function should be the same as the inputs used to generate the unwrapped image.
+More specifically, wrap takes each column (or row if `is_column` is false) of the
+\f$m \times n\f$ input array and reshapes them into `wx` \f$\times\f$ `wy`
+patches (where \f$m =\f$ `wx` \f$\times\f$ `wy`) of the `ox` \f$\times\f$ `oy`
+output array. Wrap is typically used on an array that has been previously
+unwrapped - for example, in the case of image processing, one can unwrap an
+image, process the unwrapped array, and then compose it back into an image using
+wrap. 
+
+The figure below illustrates how wrap works. The process can be visualized as a
+moving window (orange boxes in the figure) taking a column from the input
+(top-left), reshaping it into a patch (bottom-left), and then placing that patch
+on its corresponding position in the output array (right; numbers in yellow show
+correspondence). It starts placing a patch on the output's top-left corner, then
+moves `sx` units along the column, and `sy` units along the row whenever it
+exhausts a column. If padding exists in the input array (gray-filled boxes),
+which typically happens when padding was applied on the previous unwrap, then
+`px` and `py` must be specified in order for the padding to be removed on the
+output array (in the figure, the output array on the right will actually only
+contain the inner boxes, size `ox` \f$\times\f$ `oy`).
+
+\image html wrap_distinct.png "Wrap on a 4x6 input array, using a 2x2 window, 2x2 stride, 1x1 padding. The output array is 3x4"
+
+There are some things that must be considered when wrapping a previously
+unwrapped array. First, wrap must use the same parameters that unwrap used, and
+must use the original array's size (before unwrap) as `ox` and `oy`. This is
+necessary to correctly elicit wrap's behavior as the opposite of unwrap. Second,
+one must consider whether the previous unwrap used a distinct or sliding window
+configuration, since the element-wise mapping from the input array to the output
+depends on the configuration. If the distinct window configuration (the stride is
+at least as large as the window size) was used, then the mapping is
+straightforward - each column will map to a unique section in the output array,
+and therefore each element in the input will map to a unique position in the
+output (shown in the figure above). However, in the case of the sliding window
+configuration (the stride is smaller than the window size), some of the columns
+will map to overlapping sections in the output array, and so elements from
+multiple columns will map to the same position on the output array. Recomposing
+the array then requires some way to choose between competing elements to place in
+that position. To address this contention, wrap simply sums all of the competing
+elements and places the sum in that position. The figure below illustrates this
+behavior: the fourth element of the first column and the third element of the
+second column in the input array both map to the same position on the output
+array, and thus their sum is placed on that position (this happens on the second
+and third column of the input as well - they both map to the third element of the
+second column in the output). Given this behavior, it is up to the user to
+pre-process the input (unwrapped) array (or post-process the output (wrapped)
+array) in a way that somehow takes all of the competing elements into
+consideration.
+
+\image html wrap_sliding.png "Wrap on the same array as above, but with 1x1 stride (sliding window)"
+
+For inputs that have more than two dimensions, the wrap operation will be
+applied to each 2D slice of the input. This is especially useful for
+independently processing each channel of an image (or set of images) - each
+channel (along the third dimension) on the input corresponds to the same channel
+on the output, and each image (along the fourth dimension) on the input
+corresponds to the same image on the output.
+
+Here are some code examples that demonstrate wrap's usage. The first one shows
+wrapping a previously unwrapped array that used a 1x1 padding and a distinct
+window configuration. Notice how the arguments used in unwrap are the same as
+those used in wrap:
+
+\snippet test/wrap.cpp ex_wrap_1
+
+The next one shows what happens when both unwrap and wrap uses the sliding window
+configuration. Notice how the original array is not recovered through wrap;
+instead, overlapping elements are summed, just as described above:
+
+\snippet test/wrap.cpp ex_wrap_2
+
+Note that the actual implementation of unwrap may not match the way the operation
+is visualized above, but the effect should be the same.
 
 =======================================================================
 
