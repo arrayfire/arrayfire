@@ -19,19 +19,20 @@
 #include <testHelpers.hpp>
 #include <algorithm>
 
-using std::vector;
-using std::string;
-using std::cout;
-using std::endl;
-using std::abs;
 using af::allTrue;
 using af::array;
-using af::cfloat;
 using af::cdouble;
+using af::cfloat;
+using af::dim4;
 using af::dtype;
 using af::dtype_traits;
 using af::randu;
 using af::range;
+using std::abs;
+using std::cout;
+using std::endl;
+using std::string;
+using std::vector;
 
 template<typename T>
 class Wrap : public ::testing::Test
@@ -201,4 +202,60 @@ TEST(Wrap, MaxDim)
     array output = wrap(unwrapped, 5, 5, wx, wy, sx, sy, px, py);
 
     ASSERT_ARRAYS_EQ(output, input);
+}
+
+TEST(Wrap, DocSnippet) {
+    //! [ex_wrap_1]
+    float hA[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    array A(dim4(3, 3), hA);
+    //  1.     4.     7.
+    //  2.     5.     8.
+    //  3.     6.     9.
+
+    array A_unwrapped = unwrap(A,
+                               2, 2,  // window size
+                               2, 2,  // stride (distinct)
+                               1, 1); // padding
+    //  0.     0.     0.     5.
+    //  0.     0.     4.     6.
+    //  0.     2.     0.     8.
+    //  1.     3.     7.     9.
+
+    array A_wrapped = wrap(A_unwrapped,
+                           3, 3,  // A's size
+                           2, 2,  // window size
+                           2, 2,  // stride (distinct)
+                           1, 1); // padding
+    //  1.     4.     7.
+    //  2.     5.     8.
+    //  3.     6.     9.
+    //! [ex_wrap_1]
+
+    ASSERT_ARRAYS_EQ(A, A_wrapped);
+
+    //! [ex_wrap_2]
+    float hB[] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+    array B(dim4(3, 3), hB);
+    //  1.     1.     1.
+    //  1.     1.     1.
+    //  1.     1.     1.
+    array B_unwrapped = unwrap(B,
+                               2, 2,  // window size
+                               1, 1); // stride (sliding)
+    //  1.     1.     1.     1.
+    //  1.     1.     1.     1.
+    //  1.     1.     1.     1.
+    //  1.     1.     1.     1.
+    array B_wrapped = wrap(B_unwrapped,
+                           3, 3,  // B's size
+                           2, 2,  // window size
+                           1, 1); // stride (sliding)
+    //  1.     2.     1.
+    //  2.     4.     2.
+    //  1.     2.     1.
+    //! [ex_wrap_2]
+
+    float gold_hB_wrapped[] = {1, 2, 1, 2, 4, 2, 1, 2, 1};
+    array gold_B_wrapped(dim4(3, 3), gold_hB_wrapped);
+    ASSERT_ARRAYS_EQ(gold_B_wrapped, B_wrapped);
 }
