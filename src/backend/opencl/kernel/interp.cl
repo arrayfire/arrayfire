@@ -83,114 +83,136 @@ InterpValTy bicubicInterpFunc(InterpValTy val[4][4], InterpPosTy xratio, InterpP
 }
 
 #if INTERP_ORDER == 1
-void interp1(
+void interp1_general(
     __global InterpInTy *d_out,
     KParam out, int ooff,
     __global const InterpInTy *d_in,
     KParam in, int ioff, InterpPosTy x,
-    int method, int batch, bool clamp)
+    int method, int batch, bool clamp,
+    int xdim, int batch_dim)
 {
-    int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
     InterpInTy zero = ZERO;
-    bool cond = xid >= 0 && xid < in.dims[0];
-    if (clamp) xid = max(0, min(xid, (int)in.dims[0]));
-    const int idx = ioff + xid;
+
+    const int x_lim = in.dims[xdim];
+    const int x_stride = in.strides[xdim];
+
+    int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
+    bool cond = xid >= 0 && xid < x_lim;
+    if (clamp) xid = max(0, min(xid, x_lim));
+
+    const int idx = ioff + xid * x_stride;
+
     for (int n = 0; n < batch; n++) {
-        int idx_n = idx + n * in.strides[1];
-        d_out[ooff + n * out.strides[1]] = (clamp || cond) ? d_in[idx_n] : zero;
+        int idx_n = idx + n * in.strides[batch_dim];
+        d_out[ooff + n * out.strides[batch_dim]] = (clamp || cond) ? d_in[idx_n] : zero;
     }
 }
 #elif INTERP_ORDER == 2
-void interp1(
+void interp1_general(
     __global InterpInTy *d_out,
     KParam out, int ooff,
     __global const InterpInTy *d_in,
     KParam in, int ioff, InterpPosTy x,
-    int method, int batch, bool clamp)
+    int method, int batch, bool clamp,
+    int xdim, int batch_dim)
 {
     const int grid_x = floor(x);    // nearest grid
     const InterpPosTy off_x = x - grid_x;    // fractional offset
-    const int idx = ioff + grid_x;
-    InterpValTy zero = ZERO;
-    bool cond[2] = {true, grid_x + 1 < in.dims[0]};
-    int  offx[2]  = {0, cond[1] ? 1 : 0};
 
+    const int x_lim = in.dims[xdim];
+    const int x_stride = in.strides[xdim];
+    const int idx = ioff + grid_x * x_stride;
+
+    InterpValTy zero = ZERO;
+    bool cond[2] = {true, grid_x + 1 < x_lim};
+    int  offx[2]  = {0, cond[1] ? 1 : 0};
     InterpPosTy ratio = off_x;
     if (method == AF_INTERP_LINEAR_COSINE) {
         ratio = (1 - cos(ratio * (InterpPosTy)M_PI))/2;
     }
 
     for (int n = 0; n < batch; n++) {
-        int idx_n = idx + n * in.strides[1];
-        InterpValTy val[2] = {(clamp || cond[0]) ? d_in[idx_n + offx[0]] : zero,
-                              (clamp || cond[1]) ? d_in[idx_n + offx[1]] : zero};
+        int idx_n = idx + n * in.strides[batch_dim];
+        InterpValTy val[2] = {(clamp || cond[0]) ? d_in[idx_n + offx[0] * x_stride] : zero,
+                              (clamp || cond[1]) ? d_in[idx_n + offx[1] * x_stride] : zero};
 
-        d_out[ooff + n * out.strides[1]] = linearInterpFunc(val, ratio);
+        d_out[ooff + n * out.strides[batch_dim]] = linearInterpFunc(val, ratio);
     }
 }
 #elif INTERP_ORDER == 3
-void interp1(
+void interp1_general(
     __global InterpInTy *d_out,
     KParam out, int ooff,
     __global const InterpInTy *d_in,
     KParam in, int ioff, InterpPosTy x,
-    int method, int batch, bool clamp)
+    int method, int batch, bool clamp,
+    int xdim, int batch_dim)
 {
     const int grid_x = floor(x);    // nearest grid
     const InterpPosTy off_x = x - grid_x;    // fractional offset
-    const int idx = ioff + grid_x;
 
-    bool cond[4] = {grid_x - 1 >= 0, true, grid_x + 1 < in.dims[0], grid_x + 2 < in.dims[0]};
+    const int x_lim = in.dims[xdim];
+    const int x_stride = in.strides[xdim];
+    const int idx = ioff + grid_x * x_stride;
+
+    bool cond[4] = {grid_x - 1 >= 0, true, grid_x + 1 < x_lim, grid_x + 2 < x_lim};
     int  off[4]  = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0, cond[3] ? 2 : (cond[2] ? 1 : 0)};
 
     InterpValTy zero = ZERO;
 
     for (int n = 0; n < batch; n++) {
         InterpValTy val[4];
-        int idx_n = idx + n * in.strides[1];
+        int idx_n = idx + n * in.strides[batch_dim];
         for (int i = 0; i < 4; i++) {
-            val[i] = (clamp || cond[i]) ? d_in[idx_n + off[i]] : zero;
+            val[i] = (clamp || cond[i]) ? d_in[idx_n + off[i] * x_stride] : zero;
         }
         bool spline = method == AF_INTERP_CUBIC_SPLINE;
-        d_out[ooff + n * out.strides[1]] = cubicInterpFunc(val, off_x, spline);;
+        d_out[ooff + n * out.strides[batch_dim]] = cubicInterpFunc(val, off_x, spline);;
     }
 }
 #endif
 
 #if INTERP_ORDER == 1
-void interp2(
+void interp2_general(
     __global InterpInTy *d_out,
     KParam out, int ooff,
     __global const InterpInTy *d_in,
     KParam in, int ioff, InterpPosTy x, InterpPosTy y,
-    int method, int nimages, bool clamp)
+    int method, int batch, bool clamp,
+    int xdim, int ydim, int batch_dim)
 {
     int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
     int yid = (method == AF_INTERP_LOWER ? floor(y) : round(y));
 
-    if (clamp) {
-        xid = max(0, min(xid, (int)in.dims[0]));
-        yid = max(0, min(yid, (int)in.dims[1]));
-    }
-    int idx = ioff + yid * in.strides[1] + xid;
+    const int x_lim = in.dims[xdim];
+    const int y_lim = in.dims[ydim];
+    const int x_stride = in.strides[xdim];
+    const int y_stride = in.strides[ydim];
 
-    bool condX = xid >= 0 && xid < in.dims[0];
-    bool condY = yid >= 0 && yid < in.dims[1];
+    if (clamp) {
+        xid = max(0, min(xid, x_lim));
+        yid = max(0, min(yid, y_lim));
+    }
+    const int idx = ioff + yid * y_stride + xid * x_stride;
+
+    bool condX = xid >= 0 && xid < x_lim;
+    bool condY = yid >= 0 && yid < y_lim;
 
     InterpInTy zero = ZERO;
     bool cond = condX && condY;
-    for (int n = 0; n < nimages; n++) {
-        int idx_n = idx + n * in.strides[2];
-        d_out[ooff + n * out.strides[2]] =  (clamp || cond) ? d_in[idx_n] : zero;
+    for (int n = 0; n < batch; n++) {
+        int idx_n = idx + n * in.strides[batch_dim];
+        d_out[ooff + n * out.strides[batch_dim]] =  (clamp || cond) ? d_in[idx_n] : zero;
     }
 }
 #elif INTERP_ORDER == 2
-void interp2(
+void interp2_general(
     __global InterpInTy *d_out,
     KParam out, int ooff,
     __global const InterpInTy *d_in,
     KParam in, int ioff, InterpPosTy x, InterpPosTy y,
-    int method, int nimages, bool clamp)
+    int method, int batch, bool clamp,
+    int xdim, int ydim, int batch_dim)
 {
     const int grid_x = floor(x);
     const InterpPosTy off_x = x - grid_x;
@@ -198,10 +220,14 @@ void interp2(
     const int grid_y = floor(y);
     const InterpPosTy off_y = y - grid_y;
 
-    const int idx = ioff + grid_y * in.strides[1] + grid_x;
+    const int x_lim = in.dims[xdim];
+    const int y_lim = in.dims[ydim];
+    const int x_stride = in.strides[xdim];
+    const int y_stride = in.strides[ydim];
+    const int idx = ioff + grid_y * y_stride + grid_x * x_stride;
 
-    bool condX[2] = {true, x + 1 < in.dims[0]};
-    bool condY[2] = {true, y + 1 < in.dims[1]};
+    bool condX[2] = {true, x + 1 < x_lim};
+    bool condY[2] = {true, y + 1 < y_lim};
     int  offx[2]  = {0, condX[1] ? 1 : 0};
     int  offy[2]  = {0, condY[1] ? 1 : 0};
 
@@ -212,26 +238,27 @@ void interp2(
     }
 
     InterpValTy zero = ZERO;
-    for (int n = 0; n < nimages; n++) {
-        int idx_n = idx + n * in.strides[2];
+    for (int n = 0; n < batch; n++) {
+        int idx_n = idx + n * in.strides[batch_dim];
         InterpValTy val[2][2];
         for (int j = 0; j < 2; j++) {
-            int off_y = idx_n + offy[j] * in.strides[1];
+            int off_y = idx_n + offy[j] * y_stride;
             for (int i = 0; i < 2; i++) {
                 bool cond = (clamp || (condX[i] && condY[j]));
-                val[j][i] = cond ? d_in[off_y + offx[i]] : zero;
+                val[j][i] = cond ? d_in[off_y + offx[i] * x_stride] : zero;
             }
         }
-        d_out[ooff + n * out.strides[2]] =  bilinearInterpFunc(val, xratio, yratio);
+        d_out[ooff + n * out.strides[batch_dim]] =  bilinearInterpFunc(val, xratio, yratio);
     }
 }
 #elif INTERP_ORDER == 3
-void interp2(
+void interp2_general(
     __global InterpInTy *d_out,
     KParam out, int ooff,
     __global const InterpInTy *d_in,
     KParam in, int ioff, InterpPosTy x, InterpPosTy y,
-    int method, int nimages, bool clamp)
+    int method, int batch, bool clamp,
+    int xdim, int ydim, int batch_dim)
 {
     const int grid_x = floor(x);
     const InterpPosTy off_x = x - grid_x;
@@ -239,31 +266,76 @@ void interp2(
     const int grid_y = floor(y);
     const InterpPosTy off_y = y - grid_y;
 
-    const int idx = ioff + grid_y * in.strides[1] + grid_x;
-
+    const int x_lim = in.dims[xdim];
+    const int y_lim = in.dims[ydim];
+    const int x_stride = in.strides[xdim];
+    const int y_stride = in.strides[ydim];
+    const int idx = ioff + grid_y * y_stride + grid_x * x_stride;
 
     // used for setting values at boundaries
-    bool condX[4] = {grid_x - 1 >= 0, true, grid_x + 1 < in.dims[0], grid_x + 2 < in.dims[0]};
-    bool condY[4] = {grid_y - 1 >= 0, true, grid_y + 1 < in.dims[1], grid_y + 2 < in.dims[1]};
+    bool condX[4] = {grid_x - 1 >= 0, true, grid_x + 1 < x_lim, grid_x + 2 < x_lim};
+    bool condY[4] = {grid_y - 1 >= 0, true, grid_y + 1 < y_lim, grid_y + 2 < y_lim};
     int  offX[4]  = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0 , condX[3] ? 2 : (condX[2] ? 1 : 0)};
     int  offY[4]  = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0 , condY[3] ? 2 : (condY[2] ? 1 : 0)};
 
     InterpValTy zero = ZERO;
-    for (int n = 0; n < nimages; n++) {
-        int idx_n = idx + n * in.strides[2];
+    for (int n = 0; n < batch; n++) {
+        int idx_n = idx + n * in.strides[batch_dim];
         //for bicubic interpolation, work with 4x4 val at a time
         InterpValTy val[4][4];
 #pragma unroll
         for (int j = 0; j < 4; j++) {
-            int ioff_j = idx_n + offY[j] * in.strides[1];
+            int ioff_j = idx_n + offY[j] * y_stride;
 #pragma unroll
             for (int i = 0; i < 4; i++) {
                 bool cond = (clamp || (condX[i] && condY[j]));
-                val[j][i] = cond ? d_in[ioff_j + offX[i]] : zero;
+                val[j][i] = cond ? d_in[ioff_j + offX[i] * x_stride] : zero;
             }
         }
         bool spline  = method == AF_INTERP_CUBIC_SPLINE || method == AF_INTERP_BICUBIC_SPLINE;
-        d_out[ooff +  n * out.strides[2]] = bicubicInterpFunc(val, off_x, off_y, spline);
+        d_out[ooff +  n * out.strides[batch_dim]] = bicubicInterpFunc(val, off_x, off_y, spline);
     }
 }
 #endif
+
+#define interp1_dim(d_out,                      \
+                    out, ooff, d_in,            \
+                    in, ioff, x,                \
+                    method, batch, clamp,       \
+                    xdim)                       \
+    interp1_general(d_out,                      \
+                    out, ooff, d_in,            \
+                    in, ioff, x,                \
+                    method, batch, clamp,       \
+                    xdim, 1)                    \
+
+#define interp1(d_out,                          \
+                out, ooff, d_in,                \
+                in, ioff, x,                    \
+                method, batch, clamp)           \
+    interp1_dim(d_out,                          \
+                out, ooff, d_in,                \
+                in, ioff, x,                    \
+                method, batch, clamp,           \
+                0)                              \
+
+#define interp2_dim(d_out,                      \
+                    out, ooff, d_in,            \
+                    in, ioff, x, y,             \
+                    method, batch, clamp,       \
+                    xdim, ydim)                 \
+    interp2_general(d_out,                      \
+                    out, ooff, d_in,            \
+                    in, ioff, x, y,             \
+                    method, batch, clamp,       \
+                    xdim, ydim, 2)              \
+
+#define interp2(d_out,                          \
+                out, ooff, d_in,                \
+                in, ioff, x, y,                 \
+                method, batch, clamp)           \
+    interp2_dim(d_out,                          \
+                out, ooff, d_in,                \
+                in, ioff, x, y,                 \
+                method, batch, clamp,           \
+                0, 1)                           \

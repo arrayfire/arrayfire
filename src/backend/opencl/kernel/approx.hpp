@@ -73,7 +73,8 @@ std::string generateOptionsString()
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
 template <typename Ty, typename Tp, int order>
-void approx1(Param out, const Param in, const Param xpos, const float offGrid,
+void approx1(Param yo, const Param yi, const Param xo, const int xdim,
+             const Tp xi_beg, const Tp xi_step, const float offGrid,
              af_interp_type method)
 {
     std::string refName = std::string("approx1_kernel_") +
@@ -98,27 +99,31 @@ void approx1(Param out, const Param in, const Param xpos, const float offGrid,
     }
 
     auto approx1Op = KernelFunctor< Buffer, const KParam, const Buffer, const KParam,
-                                    const Buffer, const KParam, const Ty,
+                                    const Buffer, const KParam, const int,
+                                    const Tp, const Tp, const Ty,
                                     const int, const int, const int >(*entry.ker);
 
     NDRange local(THREADS, 1, 1);
-    dim_t blocksPerMat = divup(out.info.dims[0], local[0]);
-    NDRange global(blocksPerMat * local[0] * out.info.dims[1],
-                   out.info.dims[2] * out.info.dims[3] * local[1], 1);
+    dim_t blocksPerMat = divup(yo.info.dims[0], local[0]);
+    NDRange global(blocksPerMat * local[0] * yo.info.dims[1],
+                   yo.info.dims[2] * yo.info.dims[3] * local[1]);
 
     // Passing bools to opencl kernels is not allowed
-    bool batch = !(xpos.info.dims[1] == 1 && xpos.info.dims[2] == 1 && xpos.info.dims[3] == 1);
+    bool batch = !(xo.info.dims[1] == 1 && xo.info.dims[2] == 1 && xo.info.dims[3] == 1);
 
     approx1Op(EnqueueArgs(getQueue(), global, local),
-              *out.data, out.info, *in.data, in.info,
-              *xpos.data, xpos.info, scalar<Ty>(offGrid),
+              *yo.data, yo.info, *yi.data, yi.info,
+              *xo.data, xo.info, xdim, xi_beg, xi_step,
+              scalar<Ty>(offGrid),
               blocksPerMat, (int)batch, (int)method);
 
     CL_DEBUG_FINISH(getQueue());
 }
 
 template <typename Ty, typename Tp, int order>
-void approx2(Param out, const Param in, const Param xpos, const Param ypos,
+void approx2(Param zo, const Param zi,
+             const Param xo, const int xdim, const Tp &xi_beg, const Tp &xi_step,
+             const Param yo, const int ydim, const Tp &yi_beg, const Tp &yi_step,
              const float offGrid, af_interp_type method)
 {
     std::string refName = std::string("approx2_kernel_") +
@@ -142,22 +147,27 @@ void approx2(Param out, const Param in, const Param xpos, const Param ypos,
         addKernelToCache(device, refName, entry);
     }
 
-    auto approx2Op = KernelFunctor< Buffer, const KParam, const Buffer, const KParam,
-                                    const Buffer, const KParam, const Buffer, const KParam,
+    auto approx2Op = KernelFunctor< Buffer, const KParam,
+                                    const Buffer, const KParam,
+                                    const Buffer, const KParam, const int,
+                                    const Buffer, const KParam, const int,
+                                    const Tp, const Tp, const Tp, const Tp,
                                     const Ty, const int, const int, const int, const int >(*entry.ker);
 
     NDRange local(TX, TY, 1);
-    dim_t blocksPerMatX = divup(out.info.dims[0], local[0]);
-    dim_t blocksPerMatY = divup(out.info.dims[1], local[1]);
-    NDRange global(blocksPerMatX * local[0] * out.info.dims[2],
-                   blocksPerMatY * local[1] * out.info.dims[3], 1);
+    dim_t blocksPerMatX = divup(zo.info.dims[0], local[0]);
+    dim_t blocksPerMatY = divup(zo.info.dims[1], local[1]);
+    NDRange global(blocksPerMatX * local[0] * zo.info.dims[2],
+                   blocksPerMatY * local[1] * zo.info.dims[3], 1);
 
     // Passing bools to opencl kernels is not allowed
-    bool batch = !(xpos.info.dims[2] == 1 && xpos.info.dims[3] == 1);
+    bool batch = !(xo.info.dims[2] == 1 && xo.info.dims[3] == 1);
 
     approx2Op(EnqueueArgs(getQueue(), global, local),
-              *out.data, out.info, *in.data, in.info,
-              *xpos.data, xpos.info, *ypos.data, ypos.info,
+              *zo.data, zo.info, *zi.data, zi.info,
+              *xo.data, xo.info, xdim,
+              *yo.data, yo.info, ydim,
+              xi_beg, xi_step, yi_beg, yi_step,
               scalar<Ty>(offGrid), blocksPerMatX, blocksPerMatY, (int)batch, (int)method);
 
     CL_DEBUG_FINISH(getQueue());

@@ -8,98 +8,118 @@
  ********************************************************/
 
 #include <approx.hpp>
-
-#include <Array.hpp>
 #include <kernel/approx.hpp>
 #include <platform.hpp>
-
-#include <af/defines.h>
 #include <af/dim4.hpp>
 
 namespace cpu
 {
 
 template<typename Ty, typename Tp>
-Array<Ty> approx1(const Array<Ty> &in, const Array<Tp> &pos,
+Array<Ty> approx1(const Array<Ty> &yi,
+                  const Array<Tp> &xo, const int xdim,
+                  const Tp &xi_beg, const Tp &xi_step,
                   const af_interp_type method, const float offGrid)
 {
-    in.eval();
-    pos.eval();
+    yi.eval();
+    xo.eval();
 
-    af::dim4 odims = in.dims();
-    odims[0] = pos.dims()[0];
+    dim4 odims = yi.dims();
+    odims[xdim] = xo.dims()[xdim];
 
-    Array<Ty> out = createEmptyArray<Ty>(odims);
+    Array<Ty> yo = createEmptyArray<Ty>(odims);
 
     switch(method) {
     case AF_INTERP_NEAREST:
     case AF_INTERP_LOWER:
         getQueue().enqueue(kernel::approx1<Ty, Tp, 1>,
-                           out, in, pos, offGrid, method);
+                           yo, yi, xo, xdim, xi_beg, xi_step, offGrid, method);
         break;
     case AF_INTERP_LINEAR:
     case AF_INTERP_LINEAR_COSINE:
         getQueue().enqueue(kernel::approx1<Ty, Tp, 2>,
-                           out, in, pos, offGrid, method);
+                           yo, yi, xo, xdim, xi_beg, xi_step, offGrid, method);
         break;
     case AF_INTERP_CUBIC:
     case AF_INTERP_CUBIC_SPLINE:
         getQueue().enqueue(kernel::approx1<Ty, Tp, 3>,
-                           out, in, pos, offGrid, method);
+                           yo, yi, xo, xdim, xi_beg, xi_step, offGrid, method);
         break;
     default:
         break;
     }
-    return out;
+    return yo;
 }
 
-
 template<typename Ty, typename Tp>
-Array<Ty> approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &pos1,
+Array<Ty> approx2(const Array<Ty> &zi,
+                  const Array<Tp> &xo, const int xdim, const Tp &xi_beg, const Tp &xi_step,
+                  const Array<Tp> &yo, const int ydim, const Tp &yi_beg, const Tp &yi_step,
                   const af_interp_type method, const float offGrid)
 {
-    in.eval();
-    pos0.eval();
-    pos1.eval();
+    zi.eval();
+    xo.eval();
+    yo.eval();
 
-    af::dim4 odims = in.dims();
-    odims[0] = pos0.dims()[0];
-    odims[1] = pos0.dims()[1];
+    dim4 odims = zi.dims();
+    odims[xdim] = xo.dims()[xdim];
+    odims[ydim] = xo.dims()[ydim];
 
-    Array<Ty> out = createEmptyArray<Ty>(odims);
+    Array<Ty> zo = createEmptyArray<Ty>(odims);
 
     switch(method) {
     case AF_INTERP_NEAREST:
     case AF_INTERP_LOWER:
         getQueue().enqueue(kernel::approx2<Ty, Tp, 1>,
-                           out, in, pos0, pos1, offGrid, method);
+                           zo, zi,
+                           xo, xdim, xi_beg, xi_step,
+                           yo, ydim, yi_beg, yi_step, offGrid, method);
         break;
     case AF_INTERP_LINEAR:
     case AF_INTERP_BILINEAR:
     case AF_INTERP_LINEAR_COSINE:
     case AF_INTERP_BILINEAR_COSINE:
         getQueue().enqueue(kernel::approx2<Ty, Tp, 2>,
-                           out, in, pos0, pos1, offGrid, method);
+                           zo, zi,
+                           xo, xdim, xi_beg, xi_step,
+                           yo, ydim, yi_beg, yi_step,
+                           offGrid, method);
         break;
     case AF_INTERP_CUBIC:
     case AF_INTERP_BICUBIC:
     case AF_INTERP_CUBIC_SPLINE:
     case AF_INTERP_BICUBIC_SPLINE:
         getQueue().enqueue(kernel::approx2<Ty, Tp, 3>,
-                           out, in, pos0, pos1, offGrid, method);
+                           zo, zi,
+                           xo, xdim, xi_beg, xi_step,
+                           yo, ydim, yi_beg, yi_step,
+                           offGrid, method);
         break;
     default:
         break;
     }
-    return out;
+    return zo;
 }
 
-#define INSTANTIATE(Ty, Tp)                                                                    \
-    template Array<Ty> approx1<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos,              \
-                                       const af_interp_type method, const float offGrid);      \
-    template Array<Ty> approx2<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos0,             \
-                                       const Array<Tp> &pos1, const af_interp_type method,     \
-                                       const float offGrid);                                   \
+#define INSTANTIATE(Ty, Tp)                                         \
+    template Array<Ty> approx1<Ty, Tp>(const Array<Ty> &yi,         \
+                                       const Array<Tp> &xo,         \
+                                       const int xdim,              \
+                                       const Tp &xi_beg,            \
+                                       const Tp &xi_step,           \
+                                       const af_interp_type method, \
+                                       const float offGrid);        \
+    template Array<Ty> approx2<Ty, Tp>(const Array<Ty> &zi,         \
+                                       const Array<Tp> &xo,         \
+                                       const int xdim,              \
+                                       const Tp &xi_beg,            \
+                                       const Tp &xi_step,           \
+                                       const Array<Tp> &yo,         \
+                                       const int ydim,              \
+                                       const Tp &yi_beg,            \
+                                       const Tp &yi_step,           \
+                                       const af_interp_type method, \
+                                       const float offGrid);        \
 
 INSTANTIATE(float  , float )
 INSTANTIATE(double , double)

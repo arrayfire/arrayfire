@@ -93,22 +93,28 @@ struct Interp1<InT, LocT, 1>
 {
     void operator()(Param<InT> &out, int ooff,
                     CParam<InT> &in, int ioff, LocT x,
-                    af_interp_type  method, int batch, bool clamp)
+                    af_interp_type  method, int batch, bool clamp,
+                    int xdim = 0, int batch_dim = 1)
     {
         const InT *inptr = in.get();
         const dim4 idims = in.dims();
         const dim4 istrides = in.strides();
-        int xid = (method == AF_INTERP_LOWER ? std::floor(x) : std::round(x));
-        bool cond = xid >= 0 && xid < idims[0];
-        if (clamp) xid = std::max(0, std::min(xid, (int)idims[0]));
 
         InT *outptr = out.get();
         const dim4 ostrides = out.strides();
-        int idx = ioff + xid;
+
+        const int x_lim = idims[xdim];
+        const int x_stride = istrides[xdim];
+
+        int xid = (method == AF_INTERP_LOWER ? std::floor(x) : std::round(x));
+        bool cond = xid >= 0 && xid < x_lim;
+        if (clamp) xid = std::max(0, std::min(xid, x_lim));
+
+        const int idx = ioff + xid * x_stride;
 
         for (int n = 0; n < batch; n++) {
-            int idx_n = idx + n * istrides[1];
-            outptr[ooff + n * ostrides[1]] = (cond || clamp) ? inptr[idx_n] : scalar<InT>(0);
+            int idx_n = idx + n * istrides[batch_dim];
+            outptr[ooff + n * ostrides[batch_dim]] = (cond || clamp) ? inptr[idx_n] : scalar<InT>(0);
         }
     }
 };
@@ -118,20 +124,25 @@ struct Interp1<InT, LocT, 2>
 {
     void operator()(Param<InT> &out, int ooff,
                     CParam<InT> &in, int ioff, LocT x,
-                    af_interp_type  method, int batch, bool clamp)
+                    af_interp_type  method, int batch, bool clamp,
+                    int xdim = 0, int batch_dim = 1)
     {
         typedef vtype_t<InT> VT;
 
         const int grid_x = floor(x);    // nearest grid
-        const LocT off_x = x - grid_x;    // fractional offset
-        const int idx = ioff + grid_x;
+        const LocT off_x = x - grid_x;  // fractional offset
+
         const InT *inptr = in.get();
         const dim4 idims = in.dims();
         const dim4 istrides = in.strides();
         InT *outptr = out.get();
         const dim4 ostrides = out.strides();
 
-        bool cond[2] = {true, grid_x + 1 < idims[0]};
+        const int x_lim = idims[xdim];
+        const int x_stride = istrides[xdim];
+        const int idx = ioff + grid_x * x_stride;
+
+        bool cond[2] = {true, grid_x + 1 < x_lim};
         int  offx[2] = {0 , cond[1] ? 1 : 0};
 
         LocT ratio = off_x;
@@ -142,12 +153,12 @@ struct Interp1<InT, LocT, 2>
 
         const VT zero = scalar<VT>(0);
         for (int n = 0; n < batch; n++) {
-            int idx_n = idx + n * istrides[1];
+            int idx_n = idx + n * istrides[batch_dim];
             VT val[2] = {zero, zero};
             for (int i = 0; i < 2; i++) {
-                if (clamp || cond[i]) val[i] = inptr[idx_n + offx[i]];
+                if (clamp || cond[i]) val[i] = inptr[idx_n + offx[i] * x_stride];
             }
-            outptr[ooff + n * ostrides[1]] = linearInterpFunc(val, ratio);
+            outptr[ooff + n * ostrides[batch_dim]] = linearInterpFunc(val, ratio);
         }
     }
 };
@@ -157,31 +168,37 @@ struct Interp1<InT, LocT, 3>
 {
     void operator()(Param<InT> &out, int ooff,
                     CParam<InT> &in, int ioff, LocT x,
-                    af_interp_type  method, int batch, bool clamp)
+                    af_interp_type  method, int batch, bool clamp,
+                    int xdim = 0, int batch_dim = 1)
     {
         typedef vtype_t<InT> VT;
 
         const int grid_x = floor(x);    // nearest grid
-        const LocT off_x = x - grid_x;    // fractional offset
-        const int idx = ioff + grid_x;
+        const LocT off_x = x - grid_x;  // fractional offset
+
         const InT *inptr = in.get();
         const dim4 idims = in.dims();
         const dim4 istrides = in.strides();
         InT *outptr = out.get();
         const dim4 ostrides = out.strides();
 
-        bool cond[4] = {grid_x - 1 >= 0, true, grid_x + 1 < idims[0], grid_x + 2 < idims[0]};
+
+        const int x_lim = idims[xdim];
+        const int x_stride = istrides[xdim];
+        const int idx = ioff + grid_x * x_stride;
+
+        bool cond[4] = {grid_x - 1 >= 0, true, grid_x + 1 < x_lim, grid_x + 2 < x_lim};
         int  off[4]  = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0, cond[3] ? 2 : (cond[2] ? 1 : 0)};
 
         const VT zero = scalar<VT>(0);
         for (int n = 0; n < batch; n++) {
-            int idx_n = idx + n * istrides[1];
+            int idx_n = idx + n * istrides[batch_dim];
             VT val[4] = {zero, zero, zero, zero};
             for (int i = 0; i < 4; i++) {
-                if (clamp || cond[i]) val[i] = inptr[idx_n + off[i]];
+                if (clamp || cond[i]) val[i] = inptr[idx_n + off[i] * x_stride];
             }
             bool spline = method == AF_INTERP_CUBIC_SPLINE;
-            outptr[ooff + n * ostrides[2]] =  cubicInterpFunc(val, off_x, spline);
+            outptr[ooff + n * ostrides[batch_dim]] =  cubicInterpFunc(val, off_x, spline);
         }
     }
 };
@@ -196,7 +213,8 @@ struct Interp2<InT, LocT, 1>
 {
     void operator()(Param<InT> &out, int ooff,
                     CParam<InT> &in, int ioff, LocT x, LocT y,
-                    af_interp_type  method, int nimages, bool clamp)
+                    af_interp_type  method, int nimages, bool clamp,
+                    int xdim = 0, int ydim = 1, int batch_dim = 2)
     {
         const InT *inptr = in.get();
         const dim4 istrides = in.strides();
@@ -208,19 +226,24 @@ struct Interp2<InT, LocT, 1>
         int xid = (method == AF_INTERP_LOWER ? std::floor(x) : std::round(x));
         int yid = (method == AF_INTERP_LOWER ? std::floor(y) : std::round(y));
 
-        bool condX = xid >= 0 && xid < idims[0];
-        bool condY = yid >= 0 && yid < idims[1];
+        const int x_lim = idims[xdim];
+        const int y_lim = idims[ydim];
+        const int x_stride = istrides[xdim];
+        const int y_stride = istrides[ydim];
+        const int idx = ioff + yid * y_stride + xid * x_stride;
+
+        bool condX = xid >= 0 && xid < x_lim;
+        bool condY = yid >= 0 && yid < y_lim;
 
         if (clamp) {
-            xid = std::max(0, std::min(xid, (int)idims[0]));
-            yid = std::max(0, std::min(yid, (int)idims[1]));
+            xid = std::max(0, std::min(xid, x_lim));
+            yid = std::max(0, std::min(yid, y_lim));
         }
 
         bool cond = condX && condY;
-        int idx = ioff + yid * istrides[1] + xid;
         for (int n = 0; n < nimages; n++) {
-            int idx_n = idx + n * istrides[2];
-            outptr[ooff + n * ostrides[2]] = (clamp || cond) ? inptr[idx_n] : scalar<InT>(0);
+            int idx_n = idx + n * istrides[batch_dim];
+            outptr[ooff + n * ostrides[batch_dim]] = (clamp || cond) ? inptr[idx_n] : scalar<InT>(0);
         }
     }
 };
@@ -230,7 +253,8 @@ struct Interp2<InT, LocT, 2>
 {
     void operator()(Param<InT> &out, int ooff,
                     CParam<InT> &in, int ioff, LocT x, LocT y,
-                    af_interp_type  method, int nimages, bool clamp)
+                    af_interp_type  method, int nimages, bool clamp,
+                    int xdim = 0, int ydim = 1, int batch_dim = 2)
     {
         typedef vtype_t<InT> VT;
 
@@ -247,10 +271,14 @@ struct Interp2<InT, LocT, 2>
         const int grid_y = floor(y);
         const LocT off_y = y - grid_y;
 
-        const int idx = ioff + grid_y * istrides[1] + grid_x;
+        const int x_lim = idims[xdim];
+        const int y_lim = idims[ydim];
+        const int x_stride = istrides[xdim];
+        const int y_stride = istrides[ydim];
+        const int idx = ioff + grid_y * y_stride + grid_x * x_stride;
 
-        bool condX[2] = {true, x + 1 < idims[0]};
-        bool condY[2] = {true, y + 1 < idims[1]};
+        bool condX[2] = {true, x + 1 < x_lim};
+        bool condY[2] = {true, y + 1 < y_lim};
 
         int offX[2] = {0, condX[1] ? 1 : 0};
         int offY[2] = {0, condY[1] ? 1 : 0};
@@ -266,16 +294,16 @@ struct Interp2<InT, LocT, 2>
         }
 
         for (int n = 0; n < nimages; n++) {
-            int idx_n = idx + n * istrides[2];
+            int idx_n = idx + n * istrides[batch_dim];
             VT val[2][2];
             for (int j = 0; j < 2; j++) {
-                int off_y = idx_n + offY[j] * istrides[1];
+                int off_y = idx_n + offY[j] * y_stride;
                 for (int i = 0; i < 2; i++) {
                     bool cond = clamp || (condX[i] && condY[j]);
-                    val[j][i] = cond ? inptr[off_y + offX[i]] : zero;
+                    val[j][i] = cond ? inptr[off_y + offX[i] * x_stride] : zero;
                 }
             }
-            outptr[ooff + n * ostrides[2]] = bilinearInterpFunc(val, off_x, off_y);
+            outptr[ooff + n * ostrides[batch_dim]] = bilinearInterpFunc(val, off_x, off_y);
         }
     }
 };
@@ -285,7 +313,8 @@ struct Interp2<InT, LocT, 3>
 {
     void operator()(Param<InT> &out, int ooff,
                     CParam<InT> &in, int ioff, LocT x, LocT y,
-                    af_interp_type  method, int nimages, bool clamp)
+                    af_interp_type  method, int nimages, bool clamp,
+                    int xdim = 0, int ydim = 1, int batch_dim = 2)
     {
         typedef vtype_t<InT> VT;
 
@@ -302,29 +331,33 @@ struct Interp2<InT, LocT, 3>
         const int grid_y = floor(y);
         const LocT off_y = y - grid_y;
 
-        const int idx = ioff + grid_y * istrides[1] + grid_x;
+        const int x_lim = idims[xdim];
+        const int y_lim = idims[ydim];
+        const int x_stride = istrides[xdim];
+        const int y_stride = istrides[ydim];
+        const int idx = ioff + grid_y * y_stride + grid_x * x_stride;
 
         // used for setting values at boundaries
-        bool condX[4] = {grid_x - 1 >= 0, true, grid_x + 1 < idims[0], grid_x + 2 < idims[0]};
-        bool condY[4] = {grid_y - 1 >= 0, true, grid_y + 1 < idims[1], grid_y + 2 < idims[1]};
+        bool condX[4] = {grid_x - 1 >= 0, true, grid_x + 1 < x_lim, grid_x + 2 < x_lim};
+        bool condY[4] = {grid_y - 1 >= 0, true, grid_y + 1 < y_lim, grid_y + 2 < y_lim};
         int  offX[4]  = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0 , condX[3] ? 2 : (condX[2] ? 1 : 0)};
         int  offY[4]  = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0 , condY[3] ? 2 : (condY[2] ? 1 : 0)};
 
         bool spline = (method == AF_INTERP_CUBIC_SPLINE || method == AF_INTERP_BICUBIC_SPLINE);
         VT zero = scalar<VT>(0);
         for (int n = 0; n < nimages; n++) {
-            int idx_n = idx + n * istrides[2];
+            int idx_n = idx + n * istrides[batch_dim];
 
             //for bicubic interpolation, work with 4x4 val at a time
             VT val[4][4];
             for (int j = 0; j < 4; j++) {
-                int ioff_j = idx_n + offY[j] * istrides[1];
+                int ioff_j = idx_n + offY[j] * y_stride;
                 for (int i = 0; i < 4; i++) {
                     bool cond = clamp || (condX[i] && condY[j]);
-                    val[j][i] = cond ? inptr[ioff_j + offX[i]] : zero;
+                    val[j][i] = cond ? inptr[ioff_j + offX[i] * x_stride] : zero;
                 }
             }
-            outptr[ooff + n * ostrides[2]] = bicubicInterpFunc(val, off_x, off_y, spline);
+            outptr[ooff + n * ostrides[batch_dim]] = bicubicInterpFunc(val, off_x, off_y, spline);
         }
     }
 };

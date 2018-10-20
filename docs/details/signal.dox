@@ -211,34 +211,59 @@ respectively, then the possible batch operations are as follows.
 \defgroup signal_func_approx1 approx1
 \ingroup approx_mat
 
-approx1 interpolates data along the first dimensions.
-It has three options for the type of interpolation to perform:
-- Nearest neighbor  - \ref AF_INTERP_NEAREST
-- Linear interpolation  - \ref AF_INTERP_LINEAR
-- Bilinear interpolation - \ref AF_INTERP_BILINEAR
-- Cubic interpolation - \ref AF_INTERP_CUBIC
+Performs interpolation on data along a single dimension.
 
-Interpolation is performed assuming input data is equally spaced with indices
-in the range [0, n). The positions are sampled with respect to data at these
-locations.
+Interpolation is the process of computing for unknown values within a
+continuous range described by a discrete set of known values. These
+known values (`in`) correspond to a uniformly-spaced range of indices
+determined by start and step values, whose defaults are 0.0 and 1.0,
+respectively.
 
-\snippet test/approx1.cpp ex_signal_approx1
+The positions array (`pos`) contains the interpolating points (indices
+whose values we want to find) along a given dimension. Values of **known indices**
+will be looked up in the input array, while values of **unknown indices**
+will be found via interpolation. Indices outside of the index range
+are not extrapolated. Instead, those values are set `off_grid`, whose
+default value is 0.0.
+
+The following image illustrates a simple example (known values
+represented by blue dots, unknown values represented by red dots):
+
+\image html approx1_default_idx.png "approx1() using idx_start=0.0, idx_step=1.0"
+
+Several interpolation methods are supported by approx1:
+
+- Nearest neighbor interpolation - \ref AF_INTERP_NEAREST
+- Linear interpolation (default) - \ref AF_INTERP_LINEAR, \ref AF_INTERP_LINEAR_COSINE
+- Cubic interpolation - \ref AF_INTERP_CUBIC, \ref AF_INTERP_CUBIC_SPLINE
+- Lower interpolation - \ref AF_INTERP_LOWER
+
+Unless specified, linear interpolation is performed by default. Refer
+to \ref af_interp_type for more information about ArrayFire's
+interpolation types.
 
 \defgroup signal_func_approx2 approx2
 \ingroup approx_mat
 
-approx2 performs interpolation on data along the first and second dimensions.
-It has three options for the type of interpolation to perform:
-- Nearest neighbor  - \ref AF_INTERP_NEAREST
-- Linear interpolation  - \ref AF_INTERP_LINEAR
-- Bilinear interpolation - \ref AF_INTERP_BILINEAR
-- Cubic interpolation - \ref AF_INTERP_CUBIC
+Performs interpolation on data along two dimensions.
 
-Interpolation is performed assuming input data is equally spaced with indices
-in the range [0, n) along each dimension.
-The positions are sampled with respect to data at these locations.
+Interpolation is the process of computing for unknown values within a
+continuous range described by a discrete set of known values. These
+known values correspond to a uniformly-spaced range of indices
+determined by start and step values, whose defaults are 0.0 and 1.0,
+respectively.
 
-\snippet test/approx2.cpp ex_signal_approx2
+The positions arrays (`pos0` and `pos1`) contain the interpolating
+points (indices whose values we want to find) along two given
+dimensions. Values of **known indices** will be looked up in the input
+array, while values of **unknown indices** will be found via
+interpolation. Indices outside of the index range are not
+extrapolated. Instead, those values are set to `off_grid`, whose
+default value is 0.0.
+
+All of the interpolation methods defined in \ref af_interp_type are
+supported by approx2. Unless specified, linear interpolation is
+performed by default.
 
 \defgroup signal_func_fir fir
 \ingroup sigfilt_mat

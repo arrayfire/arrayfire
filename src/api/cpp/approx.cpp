@@ -13,18 +13,41 @@
 
 namespace af
 {
-    array approx1(const array& in, const array &pos, const interpType method, const float offGrid)
+    array approx1(const array& yi, const array &xo, const interpType method, const float offGrid)
     {
-        af_array out = 0;
-        AF_THROW(af_approx1(&out, in.get(), pos.get(), method, offGrid));
-        return array(out);
+        af_array yo = 0;
+        AF_THROW(af_approx1(&yo, yi.get(), xo.get(), method, offGrid));
+        return array(yo);
     }
 
-    array approx2(const array& in, const array &pos0, const array &pos1,
+    array approx2(const array& zi, const array &xo, const array &yo,
                   const interpType method, const float offGrid)
     {
-        af_array out = 0;
-        AF_THROW(af_approx2(&out, in.get(), pos0.get(), pos1.get(), method, offGrid));
-        return array(out);
+        af_array zo = 0;
+        AF_THROW(af_approx2(&zo, zi.get(), xo.get(), yo.get(), method, offGrid));
+        return array(zo);
+    }
+
+     array approx1(const array &yi,
+                   const array &xo, const int xdim,
+                   const double xi_beg, const double xi_step,
+                   const interpType method, const float offGrid)
+     {
+        af_array yo = 0;
+        AF_THROW(af_approx1_uniform(&yo, yi.get(), xo.get(), xdim, xi_beg, xi_step, method, offGrid));
+        return array(yo);
+     }
+
+    array approx2(const array &zi,
+                  const array &xo, const int xdim, const double xi_beg, const double xi_step,
+                  const array &yo, const int ydim, const double yi_beg, const double yi_step,
+                  const interpType method, const float offGrid)
+    {
+        af_array zo = 0;
+        AF_THROW(af_approx2_uniform(&zo, zi.get(),
+                                    xo.get(), xdim, xi_beg, xi_step,
+                                    yo.get(), ydim, yi_beg, yi_step,
+                                    method, offGrid));
+        return array(zo);
     }
 }

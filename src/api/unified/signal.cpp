@@ -11,16 +11,37 @@
 #include <af/signal.h>
 #include "symbol_manager.hpp"
 
-af_err af_approx1(af_array *out, const af_array in, const af_array pos, const af_interp_type method, const float offGrid)
+af_err af_approx1(af_array *yo, const af_array yi, const af_array xo,
+                  const af_interp_type method, const float offGrid)
 {
-    CHECK_ARRAYS(in, pos);
-    return CALL(out, in, pos, method, offGrid);
+    CHECK_ARRAYS(yi, xo);
+    return CALL(yo, yi, xo, method, offGrid);
 }
 
-af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const af_array pos1, const af_interp_type method, const float offGrid)
+af_err af_approx2(af_array *zo, const af_array zi,
+                  const af_array xo, const af_array yo,
+                  const af_interp_type method, const float offGrid)
 {
-    CHECK_ARRAYS(in, pos0, pos1);
-    return CALL(out, in, pos0, pos1, method, offGrid);
+    CHECK_ARRAYS(zi, xo, yo);
+    return CALL(zo, zi, xo, yo, method, offGrid);
+}
+
+af_err af_approx1_uniform(af_array *yo, const af_array yi,
+                          const af_array xo, const int xdim,
+                          const double xi_beg, const double xi_step,
+                          const af_interp_type method, const float offGrid)
+{
+    CHECK_ARRAYS(yi, xo);
+    return CALL(yo, yi, xo, xdim, xi_beg, xi_step, method, offGrid);
+}
+
+af_err af_approx2_uniform(af_array *zo, const af_array zi,
+                          const af_array xo, const int xdim, const double xi_beg, const double xi_step,
+                          const af_array yo, const int ydim, const double yi_beg, const double yi_step,
+                          const af_interp_type method, const float offGrid)
+{
+    CHECK_ARRAYS(zi, xo, yo);
+    return CALL(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim, yi_beg, yi_step, method, offGrid);
 }
 
 af_err af_set_fft_plan_cache_size(size_t cache_size)

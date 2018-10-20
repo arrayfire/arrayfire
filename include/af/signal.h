@@ -18,35 +18,112 @@ class array;
 class dim4;
 
 /**
-   C++ Interface for data interpolation on one dimensional signals.
+   C++ Interface for data interpolation on one-dimensional signals.
 
-   \param[in]  in is the input array
-   \param[in]  pos array contains the interpolation locations
-   \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type
-   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
-   \return     the array with interpolated values
+   \param[in]  in is the multidimensional input array. Values assumed to lie uniformly spaced indices in the range of `[0, n)`, where `n` is the number of elements in the array.
+   \param[in]  pos positions of the interpolation points along the first dimension.
+   \param[in]  method is the interpolation method to be used. The following types (defined in enum \ref af_interp_type) are supported: nearest neighbor, linear, and cubic.
+   \param[in]  off_grid is the default value for any indices outside the valid range of indices.
+   \returns    the interpolated array.
+
+   The code sample below demonstrates approx1()'s usage:
+
+   \snippet test/approx1.cpp ex_signal_approx1
 
    \ingroup signal_func_approx1
  */
 AFAPI array approx1(const array &in, const array &pos,
-                    const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+                    const interpType method = AF_INTERP_LINEAR, const float off_grid = 0.0f);
 
 /**
-   C++ Interface for data interpolation on two dimensional signals.
+   C++ Interface for data interpolation on two-dimensional signals.
 
-   \param[in]  in is the input array
-   \param[in]  pos0 array contains the interpolation locations for first dimension
-   \param[in]  pos1 array contains the interpolation locations for second dimension
-   \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type
-   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
-   \return     the array with interpolated values
+   \param[in]  in is the multidimensional input array. Values assumed to lie uniformly spaced indices in the range of `[0, n)` along both interpolation dimensions. `n` is the number of elements in the array.
+   \param[in]  pos0 positions of the interpolation points along the first dimension.
+   \param[in]  pos1 positions of the interpolation points along the second dimension.
+   \param[in]  method is the interpolation method to be used. All interpolation types defined in \ref af_interp_type are supported.
+   \param[in]  off_grid is the default value for any indices outside the valid range of indices.
+   \returns    the interpolated array.
+
+   The code sample below demonstrates approx2()'s usage:
+
+   \snippet test/approx2.cpp ex_signal_approx2
 
    \ingroup signal_func_approx2
  */
 AFAPI array approx2(const array &in, const array &pos0, const array &pos1,
-                    const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+                    const interpType method = AF_INTERP_LINEAR, const float off_grid = 0.0f);
+
+
+#if AF_API_VERSION >= 37
+/**
+   C++ Interface for data interpolation on one-dimensional signals.
+
+   The following version of approx1() accepts the dimension to perform
+   the interpolation along the input. It also accepts start and step
+   values which define the uniform range of corresponding indices.
+
+   The following image illustrates what the range of indices
+   corresponding to the input values look like if `idx_start` and
+   `idx_step` are set to an arbitrary value of 10,
+
+   \image html approx1_arbitrary_idx.png "approx1() using idx_start=10.0, idx_step=10.0"
+
+   The blue dots represent indices whose values are known. The red dots
+   represent indices whose values are unknown.
+
+   \param[in]  in is the multidimensional input array. Values lie on uniformly spaced indices determined by `idx_start` and `idx_step`.
+   \param[in]  pos positions of the interpolation points along `interp_dim`.
+   \param[in]  interp_dim is the dimension to perform interpolation across.
+   \param[in]  idx_start is the first index value along `interp_dim`.
+   \param[in]  idx_step is the uniform spacing value between subsequent indices along `interp_dim`.
+   \param[in]  method is the interpolation method to be used. The following types (defined in enum \ref af_interp_type) are supported: nearest neighbor, linear, and cubic.
+   \param[in]  off_grid is the default value for any indices outside the valid range of indices.
+   \returns    the interpolated array.
+
+   The code sample below demonstrates usage:
+
+   \snippet test/approx1.cpp ex_signal_approx1_uniform
+
+   \ingroup signal_func_approx1
+ */
+AFAPI array approx1(const array &in,
+                    const array &pos, const int interp_dim,
+                    const double idx_start, const double idx_step,
+                    const interpType method = AF_INTERP_LINEAR, const float off_grid = 0.0f);
+
+/**
+   C++ Interface for data interpolation on two-dimensional signals.
+
+   The following version of the approx2() accepts the two dimensions
+   to perform the interpolation along the input. It also accepts start
+   and step values which define the uniform range of corresponding
+   indices.
+
+   \param[in]  in is the multidimensional input array.
+   \param[in]  pos0 positions of the interpolation points along `interp_dim0`.
+   \param[in]  interp_dim0 is the first dimension to perform interpolation across.
+   \param[in]  idx_start_dim0 is the first index value along `interp_dim0`.
+   \param[in]  idx_step_dim0 is the uniform spacing value between subsequent indices along `interp_dim0`.
+   \param[in]  pos1 positions of the interpolation points along `interp_dim1`.
+   \param[in]  interp_dim1 is the second dimension to perform interpolation across.
+   \param[in]  idx_start_dim1 is the first index value along `interp_dim1`.
+   \param[in]  idx_step_dim1 is the uniform spacing value between subsequent indices along `interp_dim1`.
+   \param[in]  method is the interpolation method to be used. All interpolation types defined in \ref af_interp_type are supported.
+   \param[in]  off_grid is the default value for any indices outside the valid range of indices.
+   \returns    the interpolated array.
+
+   The code sample below demonstrates usage:
+
+   \snippet test/approx2.cpp ex_signal_approx2_uniform
+
+   \ingroup signal_func_approx2
+ */
+AFAPI array approx2(const array &in,
+                    const array &pos0, const int interp_dim0, const double idx_start_dim0, const double idx_step_dim0,
+                    const array &pos1, const int interp_dim1, const double idx_start_dim1, const double idx_step_dim1,
+                    const interpType method = AF_INTERP_LINEAR, const float off_grid = 0.0f);
+#endif
 
 /**
    C++ Interface for fast fourier transform on one dimensional signals
@@ -676,37 +753,100 @@ extern "C" {
 /**
    C Interface for signals interpolation on one dimensional signals.
 
-   \param[out] out is the array with interpolated values
-   \param[in]  in is the input array
-   \param[in]  pos array contains the interpolation locations
-   \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type
-   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
+   \param[out] out the interpolated array.
+   \param[in]  in is the multidimensional input array. Values assumed to lie uniformly spaced indices in the range of `[0, n)`, where `n` is the number of elements in the array.
+   \param[in]  pos positions of the interpolation points along the first dimension.
+   \param[in]  method is the interpolation method to be used. The following types (defined in enum \ref af_interp_type) are supported: nearest neighbor, linear, and cubic.
+   \param[in]  off_grid is the default value for any indices outside the valid range of indices.
    \return     \ref AF_SUCCESS if the interpolation operation is successful,
                otherwise an appropriate error code is returned.
 
    \ingroup signal_func_approx1
  */
 AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
-                        const af_interp_type method, const float offGrid);
+                        const af_interp_type method, const float off_grid);
 
 /**
    C Interface for signals interpolation on two dimensional signals.
 
-   \param[out] out is the array with interpolated values
-   \param[in]  in is the input array
-   \param[in]  pos0 array contains the interpolation locations for first dimension
-   \param[in]  pos1 array contains the interpolation locations for second dimension
-   \param[in]  method is the interpolation type, it can take one of the values defined by the
-               enum \ref af_interp_type
-   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
+   \param[out] out the interpolated array.
+   \param[in]  in is the multidimensional input array. Values assumed to lie uniformly spaced indices in the range of `[0, n)` along both interpolation dimensions. `n` is the number of elements in the array.
+   \param[in]  pos0 positions of the interpolation points along the first dimension.
+   \param[in]  pos1 positions of the interpolation points along the second dimension.
+   \param[in]  method is the interpolation method to be used. All interpolation types defined in \ref af_interp_type are supported.
+   \param[in]  off_grid is the default value for any indices outside the valid range of indices.
    \return     \ref AF_SUCCESS if the interpolation operation is successful,
                otherwise an appropriate error code is returned.
 
    \ingroup signal_func_approx2
  */
 AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const af_array pos1,
-                        const af_interp_type method, const float offGrid);
+                        const af_interp_type method, const float off_grid);
+
+#if AF_API_VERSION >= 37
+/**
+   C Interface for signals interpolation on one dimensional signals along specified dimension.
+
+   af_approx1_uniform() accepts the dimension to perform the
+   interpolation along the input. It also accepts start and step
+   values which define the uniform range of corresponding indices.
+
+   The following image illustrates what the range of indices
+   corresponding to the input values look like if `idx_start` and
+   `idx_step` are set to an arbitrary value of 10,
+
+   \image html approx1_arbitrary_idx.png "approx1() using idx_start=10.0, idx_step=10.0"
+
+   The blue dots represent indices whose values are known. The red dots
+   represent indices whose values are unknown.
+
+   \param[out] out the interpolated array.
+   \param[in]  in is the multidimensional input array. Values lie on uniformly spaced indices determined by `idx_start` and `idx_step`.
+   \param[in]  pos positions of the interpolation points along `interp_dim`.
+   \param[in]  interp_dim is the dimension to perform interpolation across.
+   \param[in]  idx_start is the first index value along `interp_dim`.
+   \param[in]  idx_step is the uniform spacing value between subsequent indices along `interp_dim`.
+   \param[in]  method is the interpolation method to be used. The following types (defined in enum \ref af_interp_type) are supported: nearest neighbor, linear, and cubic.
+   \param[in]  off_grid is the default value for any indices outside the valid range of indices.
+   \return     \ref AF_SUCCESS if the interpolation operation is successful,
+               otherwise an appropriate error code is returned.
+
+   \ingroup signal_func_approx1
+ */
+AFAPI af_err af_approx1_uniform(af_array *out, const af_array in,
+                                const af_array pos, const int interp_dim,
+                                const double idx_start, const double idx_step,
+                                const af_interp_type method, const float off_grid);
+
+/**
+   C Interface for signals interpolation on two dimensional signals alog specified dimensions.
+
+   af_approx2_uniform() accepts two dimensions to perform the
+   interpolation along the input. It also accepts start and step
+   values which define the uniform range of corresponding indices.
+
+   \param[out] out the interpolated array.
+   \param[in]  in is the multidimensional input array.
+   \param[in]  pos0 positions of the interpolation points along `interp_dim0`.
+   \param[in]  interp_dim0 is the first dimension to perform interpolation across.
+   \param[in]  idx_start_dim0 is the first index value along `interp_dim0`.
+   \param[in]  idx_step_dim0 is the uniform spacing value between subsequent indices along `interp_dim0`.
+   \param[in]  pos1 positions of the interpolation points along `interp_dim1`.
+   \param[in]  interp_dim1 is the second dimension to perform interpolation across.
+   \param[in]  idx_start_dim1 is the first index value along `interp_dim1`.
+   \param[in]  idx_step_dim1 is the uniform spacing value between subsequent indices along `interp_dim1`.
+   \param[in]  method is the interpolation method to be used. All interpolation types defined in \ref af_interp_type are supported.
+   \param[in]  off_grid is the default value for any indices outside the valid range of indices.
+   \return     \ref AF_SUCCESS if the interpolation operation is successful,
+               otherwise an appropriate error code is returned.
+
+   \ingroup signal_func_approx2
+ */
+AFAPI af_err af_approx2_uniform(af_array *out, const af_array in,
+                                const af_array pos0, const int interp_dim0, const double idx_start_dim0, const double idx_step_dim0,
+                                const af_array pos1, const int interp_dim1, const double idx_start_dim1, const double idx_step_dim1,
+                                const af_interp_type method, const float off_grid);
+#endif
 
 /**
    C Interface for fast fourier transform on one dimensional signals
