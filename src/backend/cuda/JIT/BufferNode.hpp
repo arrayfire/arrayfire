@@ -18,8 +18,6 @@ namespace cuda
 
 namespace JIT
 {
-
-
     template<typename T>
     class BufferNode : public Node
     {
@@ -70,8 +68,7 @@ namespace JIT
             if (is_linear) {
                 kerStream << m_type_str << " *in" << id << "_ptr,\n";
             } else {
-                kerStream << "Param<" << m_type_str << "> in" << id
-                          << ",\n";
+                kerStream << "Param<" << m_type_str << "> in" << id << ",\n";
             }
         }
 
@@ -92,25 +89,18 @@ namespace JIT
                 kerStream << idx_str << " = idx;\n";
             } else {
                 std::string info_str = std::string("in") + std::to_string(id);
-                kerStream << idx_str << " = "
-                          << "(id3 < " << info_str << ".dims[3]) * "
-                          << info_str << ".strides[3] * id3 + "
-                          << "(id2 < " << info_str << ".dims[2]) * "
-                          << info_str << ".strides[2] * id2 + "
-                          << "(id1 < " << info_str << ".dims[1]) * "
-                          << info_str << ".strides[1] * id1 + "
-                          << "(id0 < " << info_str << ".dims[0]) * "
-                          << "id0;"
-                          << "\n";
+                kerStream << idx_str << " = (id3 < " << info_str << ".dims[3]) * "
+                          << info_str << ".strides[3] * id3 + (id2 < " << info_str << ".dims[2]) * "
+                          << info_str << ".strides[2] * id2 + (id1 < " << info_str << ".dims[1]) * "
+                          << info_str << ".strides[1] * id1 + (id0 < " << info_str << ".dims[0]) * id0;\n";
                 kerStream << m_type_str << " *in" << id << "_ptr = in" << id << ".ptr;\n";
             }
         }
 
         void genFuncs(std::stringstream &kerStream, Node_ids ids) const final
         {
-            kerStream << m_type_str << " val" << ids.id << " = "
-                      << "in" << ids.id << "_ptr[idx" << ids.id << "];"
-                      << "\n";
+            kerStream << m_type_str << " val" << ids.id
+                      << " = in" << ids.id << "_ptr[idx" << ids.id << "];\n";
         }
 
         void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes) const final
