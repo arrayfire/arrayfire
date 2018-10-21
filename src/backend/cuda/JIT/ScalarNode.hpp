@@ -41,7 +41,7 @@ namespace JIT
 
         void genParams(std::stringstream &kerStream, int id, bool is_linear) const final
         {
-            kerStream << m_type_str << " scalar" << id << ", " << "\n";
+            kerStream << m_type_str << " scalar" << id << ", \n";
         }
 
         void setArgs(std::vector<void *> &args, bool is_linear) const final
@@ -51,9 +51,8 @@ namespace JIT
 
         void genFuncs(std::stringstream &kerStream, Node_ids ids) const final
         {
-            kerStream << m_type_str << " val" << ids.id << " = "
-                      << "scalar" << ids.id << ";"
-                      << "\n";
+            kerStream << m_type_str << " val" << ids.id
+                      << " = scalar" << ids.id << ";\n";
         }
 
         // Return the info for the params and the size of the buffers
