@@ -13,10 +13,8 @@
 
 namespace cuda
 {
-
 namespace JIT
 {
-
     class NaryNode : public Node
     {
     private:
@@ -61,7 +59,5 @@ namespace JIT
             kerStream << ");\n";
         }
     };
-
 }
-
 }

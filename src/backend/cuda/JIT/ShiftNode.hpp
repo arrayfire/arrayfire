@@ -15,22 +15,20 @@
 
 namespace cuda
 {
-
 namespace JIT
 {
     template<typename T>
     class ShiftNode : public Node
     {
     private:
-
-        Node_ptr m_buffer_node;
+        std::shared_ptr<BufferNode<T>> m_buffer_node;
         const std::array<int, 4> m_shifts;
 
     public:
 
         ShiftNode(const char *type_str,
                   const char *name_str,
-                  Node_ptr buffer_node,
+                  std::shared_ptr<BufferNode<T>> buffer_node,
                   const std::array<int, 4> shifts)
             : Node(type_str, name_str, 0, {}),
               m_buffer_node(buffer_node),
@@ -40,8 +38,7 @@ namespace JIT
 
         void setData(Param<T> param, std::shared_ptr<T> data, const unsigned bytes, bool is_linear)
         {
-            auto node_ptr = m_buffer_node.get();
-            dynamic_cast<BufferNode<T> *>(node_ptr)->setData(param, data, bytes, is_linear);
+            m_buffer_node->setData(param, data, bytes, is_linear);
         }
 
         bool isLinear(dim_t dims[4]) const final
@@ -57,8 +54,7 @@ namespace JIT
 
         void genParams(std::stringstream &kerStream, int id, bool is_linear) const final
         {
-            auto node_ptr = m_buffer_node.get();
-            dynamic_cast<BufferNode<T> *>(node_ptr)->genParams(kerStream, id, is_linear);
+            m_buffer_node->genParams(kerStream, id, is_linear);
             for (int i = 0; i < 4; i++) {
                 kerStream << "int shift" << id << "_" << i << ",\n";
             }
@@ -66,8 +62,7 @@ namespace JIT
 
         void setArgs(std::vector<void *> &args, bool is_linear) const final
         {
-            auto node_ptr = m_buffer_node.get();
-            dynamic_cast<BufferNode<T> *>(node_ptr)->setArgs(args, is_linear);
+            m_buffer_node->setArgs(args, is_linear);
             for (int i = 0; i < 4; i++) {
                 const int &d = m_shifts[i];
                 args.push_back((void *)&d);
@@ -85,39 +80,30 @@ namespace JIT
                 kerStream << "int " << id_str << i
                           << " = __circular_mod(id" << i
                           << " + " << shift_str << i
-                          << ", " << info_str << ".dims[" << i << "]"
-                          << ");\n";
+                          << ", " << info_str << ".dims[" << i << "]);\n";
             }
 
-            kerStream << "int " << idx_str << " = "
-                      << "(" << id_str << "3 < " << info_str << ".dims[3]) * "
+            kerStream << "int " << idx_str << " = (" << id_str << "3 < " << info_str << ".dims[3]) * "
                       << info_str << ".strides[3] * " << id_str << "3;\n";
-            kerStream << idx_str  << " += "
-                      << "(" << id_str << "2 < " << info_str << ".dims[2]) * "
+            kerStream << idx_str  << " += (" << id_str << "2 < " << info_str << ".dims[2]) * "
                       << info_str << ".strides[2] * " << id_str << "2;\n";
-            kerStream << idx_str  << " += "
-                      << "(" << id_str << "1 < " << info_str << ".dims[1]) * "
+            kerStream << idx_str  << " += (" << id_str << "1 < " << info_str << ".dims[1]) * "
                       << info_str << ".strides[1] * " << id_str << "1;\n";
-            kerStream << idx_str  << " += "
-                      << "(" << id_str << "0 < " << info_str << ".dims[0]) * "
-                      << id_str << "0;"
-                      << "\n";
+            kerStream << idx_str  << " += (" << id_str << "0 < " << info_str << ".dims[0]) * "
+                      << id_str << "0;\n";
             kerStream << m_type_str << " *in" << id << "_ptr = in" << id << ".ptr;\n";
         }
 
         void genFuncs(std::stringstream &kerStream, Node_ids ids) const final
         {
-            kerStream << m_type_str << " val" << ids.id << " = "
-                      << "in" << ids.id << "_ptr[idx" << ids.id << "];"
-                      << "\n";
+            kerStream << m_type_str << " val" << ids.id
+                      << " = in" << ids.id << "_ptr[idx" << ids.id << "];\n";
         }
 
         void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes) const final
         {
-            auto node_ptr = m_buffer_node.get();
-            dynamic_cast<BufferNode<T> *>(node_ptr)->getInfo(len, buf_count, bytes);
+            m_buffer_node->getInfo(len, buf_count, bytes);
         }
     };
 }
-
 }

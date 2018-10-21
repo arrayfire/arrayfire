@@ -71,10 +71,10 @@ namespace JIT
         {
             if (!is_linear) {
                 kerStream << "__global " << m_type_str << " *in" << id
-                          << ", KParam iInfo" << id << ", " << "\n";
+                          << ", KParam iInfo" << id << ", \n";
             } else {
                 kerStream << "__global " << m_type_str << " *in" << id
-                          << ", dim_t iInfo" << id << "_offset, " << "\n";
+                          << ", dim_t iInfo" << id << "_offset, \n";
             }
         }
 
