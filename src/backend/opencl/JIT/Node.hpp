@@ -106,11 +106,7 @@ namespace JIT
         virtual size_t getBytes() const { return 0; }
         std::string getNameStr() const { return m_name_str; }
 
-        virtual ~Node() {}
-        Node(const Node& other) = delete;
-        Node(const Node&& other) = delete;
-        Node& operator=(const Node& other) = delete;
-        Node& operator=(const Node&& other) = delete;
+        virtual ~Node() = default;
     };
 }
 

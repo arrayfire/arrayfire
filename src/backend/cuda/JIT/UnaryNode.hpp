@@ -16,7 +16,6 @@ namespace cuda
 
 namespace JIT
 {
-
     class UnaryNode : public NaryNode
     {
     public:
@@ -28,7 +27,6 @@ namespace JIT
         {
         }
     };
-
 }
 
 }
