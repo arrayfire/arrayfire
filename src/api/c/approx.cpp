@@ -20,15 +20,15 @@ using af::dim4;
 using namespace detail;
 
 template<typename Ty, typename Tp>
-static inline af_array approx1(const af_array yi,
-                               const af_array xo, const int xdim,
-                               const Tp &xi_beg, const Tp &xi_step,
-                               const af_interp_type method, const float offGrid)
+static inline void approx1(af_array *yo, const af_array yi,
+                           const af_array xo, const int xdim,
+                           const Tp &xi_beg, const Tp &xi_step,
+                           const af_interp_type method, const float offGrid)
 {
-    return getHandle(approx1<Ty>(getArray<Ty>(yi),
-                                 getArray<Tp>(xo), xdim,
-                                 xi_beg, xi_step,
-                                 method, offGrid));
+    approx1<Ty>(getWritableArray<Ty>(*yo), getArray<Ty>(yi),
+                getArray<Tp>(xo), xdim,
+                xi_beg, xi_step,
+                method, offGrid);
 }
 
 template<typename Ty, typename Tp>
@@ -86,24 +86,29 @@ af_err af_approx1_uniform(af_array *yo, const af_array yi,
             return af_create_handle(yo, 0, nullptr, yi_info.getType());
         }
 
-        af_array output;
+        dim4 yo_dims = yi_dims;
+        yo_dims[xdim] = xo_dims[xdim];
+        if (*yo == 0) {
+            af_create_handle(yo, yo_dims.ndims(), yo_dims.get(), yi_info.getType());
+        }
+
+        DIM_ASSERT(1, getInfo(*yo).dims() == yo_dims);
 
         switch(yi_info.getType()) {
-        case f32: output = approx1<float  , float >(yi, xo, xdim,
-                                                    xi_beg, xi_step,
-                                                    method, offGrid);  break;
-        case f64: output = approx1<double , double>(yi, xo, xdim,
-                                                    xi_beg, xi_step,
-                                                    method, offGrid);  break;
-        case c32: output = approx1<cfloat , float >(yi, xo, xdim,
-                                                    xi_beg, xi_step,
-                                                    method, offGrid);  break;
-        case c64: output = approx1<cdouble, double>(yi, xo, xdim,
+        case f32: approx1<float  , float >(yo, yi, xo, xdim,
+                                           xi_beg, xi_step,
+                                           method, offGrid);  break;
+        case f64: approx1<double , double>(yo, yi, xo, xdim,
+                                           xi_beg, xi_step,
+                                           method, offGrid);  break;
+        case c32: approx1<cfloat , float >(yo, yi, xo, xdim,
+                                           xi_beg, xi_step,
+                                           method, offGrid);  break;
+        case c64: approx1<cdouble, double>(yo, yi, xo, xdim,
                                                     xi_beg, xi_step,
                                                     method, offGrid);  break;
         default:  TYPE_ERROR(1, yi_info.getType());
         }
-        std::swap(*yo,output);
     }
     CATCHALL;
 
