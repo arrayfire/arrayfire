@@ -873,17 +873,17 @@ TEST(Approx1, UseExistingOutputArray) {
     af_create_array(&pos, &h_pos[0], 1, &h_pos_dims[0], f32);
 
     dim_t h_out_dims[1] = {5};
-    af_array out = 0;
-    af_create_handle(&out, 1, &h_out_dims[0], f32);
-    // af_print_array_gen("out", out, 4);
-    af_array out_copy = out;
-    // af_print_array_gen("out_copy", out_copy, 4);
-    af_approx1(&out, in, pos, AF_INTERP_LINEAR, 0);
-    // af_print_array_gen("out", out, 4);
-    // af_print_array_gen("out_copy", out_copy, 4);
+    af_array out_ptr = 0;
+    af_create_handle(&out_ptr, 1, &h_out_dims[0], f32);
+    // af_print_array_gen("out_ptr", out_ptr, 4);
+    af_array out_ptr_copy = out_ptr;
+    // af_print_array_gen("out_ptr_copy", out_ptr_copy, 4);
+    af_approx1(&out_ptr, in, pos, AF_INTERP_LINEAR, 0);
+    // af_print_array_gen("out_ptr", out_ptr, 4);
+    // af_print_array_gen("out_ptr_copy", out_ptr_copy, 4);
 
-    ASSERT_EQ(out_copy, out);
-    ASSERT_ARRAYS_EQ(out_copy, out);
+    ASSERT_EQ(out_ptr_copy, out_ptr);
+    ASSERT_ARRAYS_EQ(out_ptr_copy, out_ptr);
 }
 
 TEST(Approx1, UseExistingOutputSlice) {
@@ -905,7 +905,7 @@ TEST(Approx1, UseExistingOutputSlice) {
     af_array out = 0;
     af_create_array(&out, &h_out[0], 2, &h_out_dims[0], f32);
     // af_print_array_gen("out", out, 4);
-    af_seq idx_dim1 = {1, 1, 1};
+    af_seq idx_dim1 = {1, 1, 1}; // get slice 1 of dim1
     af_seq idx[2] = {af_span, idx_dim1};
     af_array out_slice = 0;
     af_index(&out_slice, out, 2, &idx[0]);
@@ -914,7 +914,16 @@ TEST(Approx1, UseExistingOutputSlice) {
     // af_print_array_gen("out_slice", out_slice, 4);
     // af_print_array_gen("out", out, 4);
 
+    dim_t nelems = 0;
+    af_get_elements(&nelems, out);
+    vector<float> h_out_approx(nelems);
+    af_get_data_ptr(&h_out_approx.front(), out);
+
     float h_gold_arr[5] = {10.0, 15.0, 20.0, 25.0, 30.0};
-    vector<float> h_gold(h_gold_arr, h_gold_arr + 5);
-    ASSERT_VEC_ARRAY_EQ(h_gold, dim4(5), out_slice);
+
+    // Check slice 1 of dim1 (elements 5 to 9 of h_out_approx) to see if they
+    // contain af_approx1's results
+    for (int i = 0; i < 5; ++i) {
+        EXPECT_EQ(h_gold_arr[i], h_out_approx[5+i]) << "at i: " << i << endl;
+    }
 }
