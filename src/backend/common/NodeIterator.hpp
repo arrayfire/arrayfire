@@ -100,7 +100,7 @@ class NodeIterator : public std::iterator<std::input_iterator_tag, detail::JIT::
     NodeIterator(const NodeIterator& other) = default;
     NodeIterator(NodeIterator&& other) noexcept = default;
     ~NodeIterator() noexcept = default;
-    NodeIterator& operator=(const NodeIterator& other) noexcept = default;
+    NodeIterator& operator=(const NodeIterator& other) = default;
     NodeIterator& operator=(NodeIterator&& other) noexcept = default;
 };
 
