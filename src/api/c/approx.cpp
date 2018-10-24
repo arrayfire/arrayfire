@@ -83,13 +83,14 @@ af_err af_approx1_uniform(af_array *yo, const af_array yi,
                        method == AF_INTERP_NEAREST));
 
         if (yi_dims.ndims() == 0 || xo_dims.ndims() ==  0) {
-            return af_create_handle(yo, 0, nullptr, yi_info.getType());
+            *yo = createHandle(dim4(0,0,0,0), yi_info.getType());;
+            return AF_SUCCESS;
         }
 
         dim4 yo_dims = yi_dims;
         yo_dims[xdim] = xo_dims[xdim];
         if (*yo == 0) {
-            af_create_handle(yo, yo_dims.ndims(), yo_dims.get(), yi_info.getType());
+            *yo = createHandle(yo_dims, yi_info.getType());
         }
 
         DIM_ASSERT(1, getInfo(*yo).dims() == yo_dims);
