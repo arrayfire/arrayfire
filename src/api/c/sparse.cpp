@@ -45,7 +45,7 @@ const SparseArrayBase &getSparseArrayBase(const af_array in,
 // Sparse Creation
 ////////////////////////////////////////////////////////////////////////////////
 template<typename T>
-af_array createSparseArrayFromData(const af::dim4 &dims, const af_array values,
+af_array createSparseArrayFromData(const dim4 &dims, const af_array values,
                                    const af_array rowIdx, const af_array colIdx,
                                    const af::storage stype) {
     SparseArray<T> sparse = common::createArrayDataSparseArray(
@@ -96,9 +96,9 @@ af_err af_create_sparse_array(af_array *out, const dim_t nRows,
             DIM_ASSERT(5, (dim_t)cInfo.elements() == nCols + 1);
         }
 
-        af_array output = 0;
+        af_array output = nullptr;
 
-        af::dim4 dims(nRows, nCols);
+        dim4 dims(nRows, nCols);
 
         switch (vInfo.getType()) {
             case f32:
@@ -168,9 +168,9 @@ af_err af_create_sparse_array_from_ptr(
 
         TYPE_ASSERT(type == f32 || type == f64 || type == c32 || type == c64);
 
-        af_array output = 0;
+        af_array output = nullptr;
 
-        af::dim4 dims(nRows, nCols);
+        dim4 dims(nRows, nCols);
 
         switch (type) {
             case f32:
@@ -319,9 +319,9 @@ af_err af_sparse_convert_to(af_array *out, const af_array in,
             return af_create_sparse_array_from_dense(out, in, destStorage);
         }
 
-        af_array output = 0;
+        af_array output = nullptr;
 
-        const SparseArrayBase base = getSparseArrayBase(in);
+        const SparseArrayBase &base = getSparseArrayBase(in);
 
         // Dense not allowed as input -> Should never happen with
         // SparseArrayBase CSC is currently not supported
@@ -360,9 +360,9 @@ af_err af_sparse_convert_to(af_array *out, const af_array in,
 
 af_err af_sparse_to_dense(af_array *out, const af_array in) {
     try {
-        af_array output = 0;
+        af_array output = nullptr;
 
-        const SparseArrayBase base = getSparseArrayBase(in);
+        const SparseArrayBase &base = getSparseArrayBase(in);
 
         // Dense not allowed as input -> Should never happen
         // To convert from dense to type, use the create* functions
@@ -414,7 +414,7 @@ af_err af_sparse_get_values(af_array *out, const af_array in) {
     try {
         const SparseArrayBase base = getSparseArrayBase(in);
 
-        af_array output = 0;
+        af_array output = nullptr;
 
         switch (base.getType()) {
             case f32: output = getSparseValues<float>(in); break;
