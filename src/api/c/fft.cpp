@@ -91,7 +91,7 @@ af_err af_ifft3(af_array *out, const af_array in, const double norm_factor, cons
 }
 
 template<typename T, int rank, bool direction>
-static void fft_inplace(const af_array in, const double norm_factor)
+static void fft_inplace(af_array in, const double norm_factor)
 {
     Array<T> &input = getWritableArray<T>(in);
     fft_inplace<T, rank, direction>(input);
