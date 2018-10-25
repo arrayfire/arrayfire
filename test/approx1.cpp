@@ -875,14 +875,11 @@ TEST(Approx1, UseExistingOutputArray) {
     dim_t h_out_dims[1] = {5};
     af_array out_ptr = 0;
     af_create_handle(&out_ptr, 1, &h_out_dims[0], f32);
-    // af_print_array_gen("out_ptr", out_ptr, 4);
     af_array out_ptr_copy = out_ptr;
-    // af_print_array_gen("out_ptr_copy", out_ptr_copy, 4);
     af_approx1(&out_ptr, in, pos, AF_INTERP_LINEAR, 0);
-    // af_print_array_gen("out_ptr", out_ptr, 4);
-    // af_print_array_gen("out_ptr_copy", out_ptr_copy, 4);
 
     ASSERT_EQ(out_ptr_copy, out_ptr);
+    // Verify that the original af_array does contain the results
     ASSERT_ARRAYS_EQ(out_ptr_copy, out_ptr);
 }
 
@@ -904,15 +901,11 @@ TEST(Approx1, UseExistingOutputSlice) {
     dim_t h_out_dims[2] = {5, 3};
     af_array out = 0;
     af_create_array(&out, &h_out[0], 2, &h_out_dims[0], f32);
-    // af_print_array_gen("out", out, 4);
     af_seq idx_dim1 = {1, 1, 1}; // get slice 1 of dim1
     af_seq idx[2] = {af_span, idx_dim1};
     af_array out_slice = 0;
     af_index(&out_slice, out, 2, &idx[0]);
-    // af_print_array_gen("out_slice", out_slice, 4);
     af_approx1(&out_slice, in, pos, AF_INTERP_LINEAR, 0);
-    // af_print_array_gen("out_slice", out_slice, 4);
-    // af_print_array_gen("out", out, 4);
 
     dim_t nelems = 0;
     af_get_elements(&nelems, out);
@@ -921,8 +914,9 @@ TEST(Approx1, UseExistingOutputSlice) {
 
     float h_gold_arr[5] = {10.0, 15.0, 20.0, 25.0, 30.0};
 
-    // Check slice 1 of dim1 (elements 5 to 9 of h_out_approx) to see if they
-    // contain af_approx1's results
+    // Check slice 1 of dim2 (elements 5 to 9 of h_out_approx) to see if they
+    // contain af_approx1's results (without additional intermediate processing
+    // like indexing)
     for (int i = 0; i < 5; ++i) {
         EXPECT_EQ(h_gold_arr[i], h_out_approx[5+i]) << "at i: " << i << endl;
     }
