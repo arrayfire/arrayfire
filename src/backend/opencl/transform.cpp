@@ -13,14 +13,14 @@
 #include <af/dim4.hpp>
 #include <stdexcept>
 
-namespace opencl {
-template<typename T>
-Array<T> transform(const Array<T> &in, const Array<float> &tf,
-                   const af::dim4 &odims, const af_interp_type method,
-                   const bool inverse, const bool perspective) {
-    Array<T> out = createEmptyArray<T>(odims);
-
-    switch (method) {
+namespace opencl
+{
+    template<typename T>
+    void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
+                   const dim4 &odims, const af_interp_type method,
+                   const bool inverse, const bool perspective)
+    {
+        switch(method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
             kernel::transform<T, 1>(out, in, tf, inverse, perspective, method);
@@ -33,16 +33,18 @@ Array<T> transform(const Array<T> &in, const Array<float> &tf,
         case AF_INTERP_BICUBIC_SPLINE:
             kernel::transform<T, 3>(out, in, tf, inverse, perspective, method);
             break;
-        default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
+        default:
+            AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
+        }
     }
     return out;
 }
 
-#define INSTANTIATE(T)                                                      \
-    template Array<T> transform(const Array<T> &in, const Array<float> &tf, \
-                                const af::dim4 &odims,                      \
-                                const af_interp_type method,                \
-                                const bool inverse, const bool perspective);
+
+#define INSTANTIATE(T)                                                                  \
+    template void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,  \
+                            const dim4 &odims, const af_interp_type method,             \
+                            const bool inverse, const bool perspective);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

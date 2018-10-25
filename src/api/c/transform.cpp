@@ -19,12 +19,10 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline af_array transform(const af_array in, const af_array tf,
-                                 const af::dim4 &odims,
-                                 const af_interp_type method,
-                                 const bool inverse, const bool perspective) {
-    return getHandle(transform<T>(getArray<T>(in), getArray<float>(tf), odims,
-                                  method, inverse, perspective));
+static inline void transform(af_array *out, const af_array in, const af_array tf, const dim4 &odims,
+                             const af_interp_type method, const bool inverse, const bool perspective)
+{
+    transform<T>(getWritableArray<T>(*out), getArray<T>(in), getArray<float>(tf), odims, method, inverse, perspective);
 }
 
 AF_BATCH_KIND getTransformBatchKind(const dim4 &iDims, const dim4 &tDims) {
@@ -60,9 +58,9 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         const ArrayInfo &t_info = getInfo(tf);
         const ArrayInfo &i_info = getInfo(in);
 
-        af::dim4 idims = i_info.dims();
-        af::dim4 tdims = t_info.dims();
-        af_dtype itype = i_info.getType();
+        const dim4 idims = i_info.dims();
+        const dim4 tdims = t_info.dims();
+        const af_dtype itype = i_info.getType();
 
         // Assert type and interpolation
         ARG_ASSERT(2, t_info.getType() == f32);
@@ -109,14 +107,14 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
             o1 = idims[1];
         }
 
-        switch (getTransformBatchKind(idims, tdims)) {
-            case AF_BATCH_NONE:  // Both are exactly 2D
-            case AF_BATCH_LHS:   // Image is 3/4D, transform is 2D
-            case AF_BATCH_SAME:  // Both are 3/4D and have the same dims
+        switch(getTransformBatchKind(idims, tdims)) {
+            case AF_BATCH_NONE:     // Both are exactly 2D
+            case AF_BATCH_LHS:      // Image is 3/4D, transform is 2D
+            case AF_BATCH_SAME:     // Both are 3/4D and have the same dims
                 o2 = idims[2];
                 o3 = idims[3];
                 break;
-            case AF_BATCH_RHS:  // Image is 2D, transform is 3/4D
+            case AF_BATCH_RHS:      // Image is 2D, transform is 3/4D
                 o2 = tdims[2];
                 o3 = tdims[3];
                 break;
@@ -133,61 +131,26 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
                 break;
         }
 
-        af::dim4 odims(o0, o1, o2, o3);
-
-        af_array output = 0;
-        switch (itype) {
-            case f32:
-                output = transform<float>(in, tf, odims, method, inverse,
-                                          perspective);
-                break;
-            case f64:
-                output = transform<double>(in, tf, odims, method, inverse,
-                                           perspective);
-                break;
-            case c32:
-                output = transform<cfloat>(in, tf, odims, method, inverse,
-                                           perspective);
-                break;
-            case c64:
-                output = transform<cdouble>(in, tf, odims, method, inverse,
-                                            perspective);
-                break;
-            case s32:
-                output =
-                    transform<int>(in, tf, odims, method, inverse, perspective);
-                break;
-            case u32:
-                output = transform<uint>(in, tf, odims, method, inverse,
-                                         perspective);
-                break;
-            case s64:
-                output = transform<intl>(in, tf, odims, method, inverse,
-                                         perspective);
-                break;
-            case u64:
-                output = transform<uintl>(in, tf, odims, method, inverse,
-                                          perspective);
-                break;
-            case s16:
-                output = transform<short>(in, tf, odims, method, inverse,
-                                          perspective);
-                break;
-            case u16:
-                output = transform<ushort>(in, tf, odims, method, inverse,
-                                           perspective);
-                break;
-            case u8:
-                output = transform<uchar>(in, tf, odims, method, inverse,
-                                          perspective);
-                break;
-            case b8:
-                output = transform<char>(in, tf, odims, method, inverse,
-                                         perspective);
-                break;
-            default: TYPE_ERROR(1, itype);
+        const dim4 odims(o0, o1, o2, o3);
+        if (*out == 0) {
+            *out = createHandle(odims, itype);
         }
-        std::swap(*out, output);
+        switch(itype) {
+            case f32: transform<float  >(out, in, tf, odims, method, inverse, perspective);  break;
+            case f64: transform<double >(out, in, tf, odims, method, inverse, perspective);  break;
+            case c32: transform<cfloat >(out, in, tf, odims, method, inverse, perspective);  break;
+            case c64: transform<cdouble>(out, in, tf, odims, method, inverse, perspective);  break;
+            case s32: transform<int    >(out, in, tf, odims, method, inverse, perspective);  break;
+            case u32: transform<uint   >(out, in, tf, odims, method, inverse, perspective);  break;
+            case s64: transform<intl   >(out, in, tf, odims, method, inverse, perspective);  break;
+            case u64: transform<uintl  >(out, in, tf, odims, method, inverse, perspective);  break;
+            case s16: transform<short  >(out, in, tf, odims, method, inverse, perspective);  break;
+            case u16: transform<ushort >(out, in, tf, odims, method, inverse, perspective);  break;
+            case u8:  transform<uchar  >(out, in, tf, odims, method, inverse, perspective);  break;
+            case b8:  transform<char   >(out, in, tf, odims, method, inverse, perspective);  break;
+            default:  TYPE_ERROR(1, itype);
+        }
+>>>>>>> Modified backend transform() to accept output arg
     }
     CATCHALL;
 
@@ -202,7 +165,7 @@ af_err af_translate(af_array *out, const af_array in, const float trans0,
         trans_mat[2]       = trans0;
         trans_mat[5]       = trans1;
 
-        const af::dim4 tdims(3, 2, 1, 1);
+        const dim4 tdims(3, 2, 1, 1);
         af_array t = 0;
 
         AF_CHECK(
@@ -219,8 +182,8 @@ af_err af_scale(af_array *out, const af_array in, const float scale0,
                 const float scale1, const dim_t odim0, const dim_t odim1,
                 const af_interp_type method) {
     try {
-        const ArrayInfo &i_info = getInfo(in);
-        af::dim4 idims          = i_info.dims();
+        const ArrayInfo& i_info = getInfo(in);
+        dim4 idims = i_info.dims();
 
         dim_t _odim0 = odim0, _odim1 = odim1;
         float sx, sy;
@@ -248,7 +211,7 @@ af_err af_scale(af_array *out, const af_array in, const float scale0,
         trans_mat[0]       = sx;
         trans_mat[4]       = sy;
 
-        const af::dim4 tdims(3, 2, 1, 1);
+        const dim4 tdims(3, 2, 1, 1);
         af_array t = 0;
         AF_CHECK(
             af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32));
@@ -284,7 +247,7 @@ af_err af_skew(af_array *out, const af_array in, const float skew0,
                 trans_mat[4] = d;
             }
         }
-        const af::dim4 tdims(3, 2, 1, 1);
+        const dim4 tdims(3, 2, 1, 1);
         af_array t = 0;
         AF_CHECK(
             af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32));
