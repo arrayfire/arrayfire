@@ -111,9 +111,22 @@ detail::Array<To> castArray(const af_array &in) {
 }
 
 template<typename T>
-af_array getHandle(const detail::Array<T> &A) {
-    detail::Array<T> *ret = new detail::Array<T>(A);
-    return static_cast<af_array>(ret);
+static detail::Array<T> &
+getWritableArray(af_array &arr)
+{
+    const detail::Array<T> &A = getArray<T>((const af_array) arr);
+    ARG_ASSERT(0, A.isSparse() == false);
+    return const_cast<detail::Array<T>&>(A);
+}
+
+template<typename T>
+static af_array
+getHandle(const detail::Array<T> &A)
+{
+    detail::Array<T> *ret = detail::initArray<T>();
+    *ret = A;
+    af_array arr = reinterpret_cast<af_array>(ret);
+    return arr;
 }
 
 template<typename T>
