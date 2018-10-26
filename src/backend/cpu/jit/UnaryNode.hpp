@@ -12,53 +12,49 @@
 #include <vector>
 #include <math.hpp>
 #include "Node.hpp"
-#include <array>
 
 namespace cpu
 {
-
     template<typename To, typename Ti, af_op_t op>
-    struct BinOp
+    struct UnOp
     {
-        void eval(JIT::array<To> &out,
-                  const JIT::array<Ti> &lhs,
-                  const JIT::array<Ti> &rhs,
-                  int lim) const
+        void eval(jit::array<To> &out,
+                  const jit::array<Ti> &in, int lim) const
         {
             for (int i = 0; i < lim; i++) {
-                out[i] = scalar<To>(0);
+                out[i] = To(in[i]);
             }
         }
     };
 
-namespace JIT
+namespace jit
 {
 
     template<typename To, typename Ti, af_op_t op>
-    class BinaryNode  : public TNode<To>
+    class UnaryNode  : public TNode<To>
     {
 
     protected:
-        BinOp<To, Ti, op> m_op;
-        TNode<Ti> *m_lhs, *m_rhs;
+        UnOp<To, Ti, op> m_op;
+        TNode<Ti> *m_child;
 
     public:
-        BinaryNode(Node_ptr lhs, Node_ptr rhs) :
-            TNode<To>(0, std::max(lhs->getHeight(), rhs->getHeight()) + 1, {{lhs, rhs}}),
-            m_lhs(reinterpret_cast<TNode<Ti> *>(lhs.get())),
-            m_rhs(reinterpret_cast<TNode<Ti> *>(rhs.get()))
+        UnaryNode(Node_ptr child) :
+            TNode<To>(0, child->getHeight() + 1, {{child}}),
+            m_child(reinterpret_cast<TNode<Ti> *>(child.get()))
         {
         }
 
         void calc(int x, int y, int z, int w, int lim) final
         {
-            m_op.eval(this->m_val, m_lhs->m_val, m_rhs->m_val, lim);
+            m_op.eval(TNode<To>::m_val, m_child->m_val, lim);
         }
 
         void calc(int idx, int lim) final
         {
-            m_op.eval(this->m_val, m_lhs->m_val, m_rhs->m_val, lim);
+            m_op.eval(TNode<To>::m_val, m_child->m_val, lim);
         }
+
     };
 
 }

@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <JIT/Node.hpp>
 #include <backend.hpp>
 
 #include <cstddef>
@@ -16,17 +15,22 @@
 #include <vector>
 
 namespace common {
-  // TODO: unify all definitions of MAX_CHILDREN
-  constexpr int MAX_CHILDREN = 3;
+class Node; // TODO(umar): Remove when CPU backend Node class is moved from JIT to common
 
 /// A node iterator that performs a breadth first traversal of the node tree
-class NodeIterator : public std::iterator<std::input_iterator_tag, detail::JIT::Node> {
+template<typename Node = common::Node>
+class NodeIterator : public std::iterator<std::input_iterator_tag, Node> {
+  public:
+    using pointer   = Node*;
+    using reference = Node&;
+
+  private:
     std::vector<pointer> tree;
     int index;
 
     /// Copies the children of the \p n Node to the end of the tree vector
-    void copy_children_to_end(detail::JIT::Node* n) {
-        for(int i = 0; n->m_children[i] != nullptr && i < MAX_CHILDREN; i++) {
+    void copy_children_to_end(Node* n) {
+        for(int i = 0; n->m_children[i] != nullptr && i < Node::kMaxChildren; i++) {
             auto ptr = n->m_children[i].get();
             if(find(begin(tree), end(tree), ptr) == end(tree)) {
                 tree.push_back(ptr);
@@ -35,8 +39,6 @@ class NodeIterator : public std::iterator<std::input_iterator_tag, detail::JIT::
     }
 
   public:
-    using pointer   = detail::JIT::Node*;
-    using reference = detail::JIT::Node&;
 
     /// NodeIterator Constructor
     ///

@@ -11,12 +11,12 @@
 #include <Array.hpp>
 #include <kernel/Array.hpp>
 
-#include <JIT/BufferNode.hpp>
-#include <JIT/Node.hpp>
-#include <JIT/ScalarNode.hpp>
+#include <jit/BufferNode.hpp>
+#include <jit/Node.hpp>
+#include <jit/ScalarNode.hpp>
 #include <Param.hpp>
 #include <common/ArrayInfo.hpp>
-#include <common/NodeIterator.hpp>
+#include <common/jit/NodeIterator.hpp>
 #include <common/err_common.hpp>
 #include <copy.hpp>
 #include <memory.hpp>
@@ -37,10 +37,10 @@
 namespace cpu
 {
 
-using JIT::BufferNode;
-using JIT::Node;
-using JIT::Node_ptr;
-using JIT::Node_map_t;
+using jit::BufferNode;
+using jit::Node;
+using jit::Node_ptr;
+using jit::Node_map_t;
 using common::NodeIterator;
 
 using af::dim4;
@@ -77,7 +77,7 @@ Array<T>::Array(dim4 dims, const T * const in_data, bool is_device, bool copy_de
 }
 
 template<typename T>
-Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
+Array<T>::Array(af::dim4 dims, Node_ptr n) :
     info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
     data(), data_dims(dims),
     node(n), ready(false), owner(true)
@@ -146,7 +146,7 @@ template<typename T>
 void evalMultiple(vector<Array<T>*> array_ptrs)
 {
     vector<Array<T>> arrays;
-    vector<JIT::Node_ptr> nodes;
+    vector<Node_ptr> nodes;
     bool isWorker = getQueue().is_worker();
     for (auto &array : array_ptrs) {
         if (array->ready) continue;
@@ -203,9 +203,8 @@ template<typename T>
 Array<T>
 createValueArray(const dim4 &size, const T& value)
 {
-    JIT::ScalarNode<T> *node = new JIT::ScalarNode<T>(value);
-    return createNodeArray<T>(size, JIT::Node_ptr(
-                                  reinterpret_cast<JIT::Node *>(node)));
+    jit::ScalarNode<T> *node = new jit::ScalarNode<T>(value);
+    return createNodeArray<T>(size, Node_ptr(node));
 }
 
 template<typename T>
@@ -241,8 +240,8 @@ createNodeArray(const dim4 &dims, Node_ptr node)
                 Node *n = node.get();
 
                 size_t buffer_size;
-                NodeIterator it(n);
-                NodeIterator end_node;
+                NodeIterator<jit::Node> it(n);
+                NodeIterator<jit::Node> end_node;
                 size_t bytes = accumulate(it, end_node,
                                           size_t(0),
                                           [=](const size_t prev, const Node& n) {
@@ -353,7 +352,7 @@ Array<T>::setDataDims(const dim4 &new_dims)
                                                        const vector<af_seq> &index, \
                                                        bool copy);      \
     template       void      destroyArray<T>          (Array<T> *A);    \
-    template       Array<T>  createNodeArray<T>       (const dim4 &size, JIT::Node_ptr node); \
+    template       Array<T>  createNodeArray<T>       (const dim4 &size, Node_ptr node); \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
     template       T*   Array<T>::device();                             \
@@ -362,7 +361,7 @@ Array<T>::setDataDims(const dim4 &new_dims)
     template       Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset, \
                                    const T * const in_data,             \
                                    bool is_device);                     \
-    template       JIT::Node_ptr Array<T>::getNode() const;             \
+    template       Node_ptr Array<T>::getNode() const;                  \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
     template       void      evalMultiple<T>     (vector<Array<T>*> arrays); \

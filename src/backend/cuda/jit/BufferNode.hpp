@@ -8,25 +8,14 @@
  ********************************************************/
 
 #pragma once
-#include <optypes.hpp>
-#include <vector>
-#include "Node.hpp"
+#include "../Param.hpp"
+#include <common/jit/BufferNodeBase.hpp>
 
-namespace cpu
+namespace cuda
 {
-
-namespace JIT
+namespace jit
 {
-
-    template<typename T>
-    class ScalarNode : public TNode<T>
-    {
-
-    public:
-        ScalarNode(T val) : TNode<T>(val, 0, {})
-        {
-        }
-    };
+  template<typename T>
+  using BufferNode = common::BufferNodeBase<std::shared_ptr<T>, Param<T>>;
 }
-
 }

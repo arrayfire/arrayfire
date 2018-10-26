@@ -19,6 +19,6 @@
 #define __DH__
 #endif
 
-#include "types.hpp"
+namespace cuda {}
 
 namespace detail = cuda;
