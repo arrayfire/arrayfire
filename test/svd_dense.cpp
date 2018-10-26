@@ -162,10 +162,11 @@ TYPED_TEST(svd, InPlaceRect0)
     svdInPlaceTest<TypeParam>(500, 300);
 }
 
-TYPED_TEST(svd, InPlaceRect1)
-{
-    svdInPlaceTest<TypeParam>(300, 500);
-}
+// dim0 < dim1 case not supported for now
+// TYPED_TEST(svd, InPlaceRect1)
+// {
+//     svdInPlaceTest<TypeParam>(300, 500);
+// }
 
 TYPED_TEST(svd, InPlaceSameResultsSquare)
 {
@@ -177,7 +178,8 @@ TYPED_TEST(svd, InPlaceSameResultsRect0)
     checkInPlaceSameResults<TypeParam>(10, 8);
 }
 
-TYPED_TEST(svd, InPlaceSameResultsRect1)
-{
-    checkInPlaceSameResults<TypeParam>(8, 10);
-}
+// dim0 < dim1 case not supported for now
+// TYPED_TEST(svd, InPlaceSameResultsRect1)
+// {
+//     checkInPlaceSameResults<TypeParam>(8, 10);
+// }

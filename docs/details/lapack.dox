@@ -127,21 +127,23 @@ When memory is a concern, users can perform Cholesky decomposition in place as s
 
 \ingroup lapack_factor_mat
 
-\brief Perform Singular Value Decomposition
+\brief Computes the singular value decomposition of a matrix
 
-This function factorizes a  matrix **A** into two unitary matrices **U** and **Vt**, and a diagonal matrix **S** such that
+This function factorizes a matrix \f$A\f$ into two unitary matrices, \f$U\f$ and
+\f$V^T\f$, and a diagonal matrix \f$S\f$, such that \f$A = USV^T\f$. If \f$A\f$
+has \f$M\f$ rows and \f$N\f$ columns (\f$M \times N\f$), then \f$U\f$ will be
+\f$M \times M\f$, \f$V\f$ will be \f$N \times N\f$, and \f$S\f$ will be
+\f$M \times N\f$. However, for \f$S\f$, this function only returns the non-zero
+diagonal elements as a sorted (in descending order) 1D array.
 
-     \f$A = U * S * Vt\f$
-
-If **A** has **M** rows and **N** columns, **U** is of the size **M x M** , **V** is of size **N x N**, and **S** is of size **M x N**
-
-The arrayfire function only returns the non zero diagonal elements of **S**. To reconstruct the original matrix **A** from the individual factors, the following code snuppet can be used:
-
+To reconstruct the original matrix \f$A\f$ from the individual factors, the
+following code snippet can be used:
 
 \snippet test/svd_dense.cpp ex_svd_reg
 
-When memory is a concern, and **A** is dispensible, \ref svdInPlace() can be used
-
+When memory is a concern, and \f$A\f$ is dispensable, \ref svdInPlace() can be
+used. However, this in-place version is currently limited to input arrays where
+\f$M \geq N\f$.
 
 =======================================================================
 

@@ -107,6 +107,7 @@ af_err af_svd_inplace(af_array *u, af_array *s, af_array *vt, af_array in)
         const ArrayInfo& info = getInfo(in);
         af::dim4 dims = info.dims();
 
+        DIM_ASSERT(3, dims[0] >= dims[1]);
         ARG_ASSERT(3, (dims.ndims() >= 0 && dims.ndims() <= 3));
         af_dtype type = info.getType();
 
