@@ -269,45 +269,26 @@ TEST(Sparse, CPPSparseFromHostArrays)
     int col_idx[] = { 0, 1, 2, 1 };
     const int M = 4, N = 4, nnz = 4;
 
-    array sparse = af::sparse(M, N, nnz, vals, row_ptr, col_idx, f32, AF_STORAGE_CSR);
+    // Create sparse array (CSR) from host pointers to values, row
+    // pointers, and column indices.
+    array sparse = af::sparse(M, N, nnz, vals, row_ptr, col_idx, f32, AF_STORAGE_CSR, afHost);
+
     // sparse
-    // Storage Format : AF_STORAGE_CSR
-    // [4 4 1 1]
-    // sparse: Values
-    // [4 1 1 1]
-    //     5.0000
-    //     8.0000
-    //     3.0000
-    //     6.0000
-
-    // sparse: RowIdx
-    // [5 1 1 1]
-    //          0
-    //          0
-    //          2
-    //          3
-    //          4
-
-    // sparse: ColIdx
-    // [4 1 1 1]
-    //          0
-    //          1
-    //          2
-    //          1
+    //     values:  [ 5.0, 8.0, 3.0, 6.0 ]
+    //     row_ptr: [ 0, 0, 2, 3, 4 ]
+    //     col_idx: [ 0, 1, 2, 1 ]
 
     //! [ex_sparse_host_arrays]
 
-    array    vals_out = sparseGetValues(sparse);
-    array row_ptr_out = sparseGetRowIdx(sparse);
-    array col_idx_out = sparseGetColIdx(sparse);
+    array sparse_vals, sparse_row_ptr, sparse_col_idx;
+    af::storage sparse_storage;
+    sparseGetInfo(sparse_vals, sparse_row_ptr, sparse_col_idx, sparse_storage, sparse);
 
-    array    vals_in = array(dim4(nnz,1), vals);
-    array row_ptr_in = array(dim4(M+1,1), row_ptr);
-    array col_idx_in = array(dim4(nnz,1), col_idx);
-
-    ASSERT_ARRAYS_EQ(vals_out, vals_in);
-    ASSERT_ARRAYS_EQ(row_ptr_out, row_ptr_in);
-    ASSERT_ARRAYS_EQ(col_idx_out, col_idx_in);
+    ASSERT_ARRAYS_EQ(sparse_vals   , array(dim4(nnz,1), vals));
+    ASSERT_ARRAYS_EQ(sparse_row_ptr, array(dim4(M+1,1), row_ptr));
+    ASSERT_ARRAYS_EQ(sparse_col_idx, array(dim4(nnz,1), col_idx));
+    ASSERT_EQ(sparse_storage, AF_STORAGE_CSR);
+    ASSERT_EQ(sparseGetNNZ(sparse), nnz);
 }
 
 TEST(Sparse, CPPSparseFromAFArrays)
@@ -322,82 +303,52 @@ TEST(Sparse, CPPSparseFromAFArrays)
     array row_ptr = array(dim4(M+1), r);
     array col_idx = array(dim4(nnz), c);
 
+    // Create sparse array (CSR) from af::arrays containing values,
+    // row pointers, and column indices.
     array sparse = af::sparse(M, N, vals, row_ptr, col_idx, AF_STORAGE_CSR);
+
     // sparse
-    // Storage Format : AF_STORAGE_CSR
-    // [4 4 1 1]
-    // sparse: Values
-    // [4 1 1 1]
-    //     5.0000
-    //     8.0000
-    //     3.0000
-    //     6.0000
-
-    // sparse: RowIdx
-    // [5 1 1 1]
-    //          0
-    //          0
-    //          2
-    //          3
-    //          4
-
-    // sparse: ColIdx
-    // [4 1 1 1]
-    //          0
-    //          1
-    //          2
-    //          1
+    //     values:  [ 5.0, 8.0, 3.0, 6.0 ]
+    //     row_ptr: [ 0, 0, 2, 3, 4 ]
+    //     col_idx: [ 0, 1, 2, 1 ]
 
     //! [ex_sparse_af_arrays]
 
-    ASSERT_ARRAYS_EQ(sparseGetValues(sparse), vals);
-    ASSERT_ARRAYS_EQ(sparseGetRowIdx(sparse), row_ptr);
-    ASSERT_ARRAYS_EQ(sparseGetColIdx(sparse), col_idx);
+    array sparse_vals, sparse_row_ptr, sparse_col_idx;
+    af::storage sparse_storage;
+    sparseGetInfo(sparse_vals, sparse_row_ptr, sparse_col_idx, sparse_storage, sparse);
+
+    ASSERT_ARRAYS_EQ(sparse_vals   , vals);
+    ASSERT_ARRAYS_EQ(sparse_row_ptr, row_ptr);
+    ASSERT_ARRAYS_EQ(sparse_col_idx, col_idx);
+    ASSERT_EQ(sparse_storage, AF_STORAGE_CSR);
+    ASSERT_EQ(sparseGetNNZ(sparse), nnz);
 }
 
 TEST(Sparse, CPPSparseFromDenseUsage)
 {
-    //! [ex_sparse_from_dense]
-
     float dns[] = { 0, 5, 0, 0,
                     0, 8, 0, 6,
                     0, 0, 3, 0,
                     0, 0, 0, 0 };
     const int M = 4, N = 4, nnz = 4;
-
     array dense(dim4(M,N), dns);
+
+    //! [ex_sparse_from_dense]
+
     // dense
-    // [4 4 1 1]
-    //     0.0000     0.0000     0.0000     0.0000
-    //     5.0000     8.0000     0.0000     0.0000
-    //     0.0000     0.0000     3.0000     0.0000
-    //     0.0000     6.0000     0.0000     0.0000
+    //     0     0     0     0
+    //     5     8     0     0
+    //     0     0     3     0
+    //     0     6     0     0
 
+    // Convert dense af::array to its sparse (CSR) representation.
     array sparse = af::sparse(dense, AF_STORAGE_CSR);
+
     // sparse
-    // Storage Format : AF_STORAGE_CSR
-    // [4 4 1 1]
-    // sparse: Values
-    // [4 1 1 1]
-    //     5.0000
-    //     8.0000
-    //     3.0000
-    //     6.0000
-
-    // sparse: RowIdx
-    // [5 1 1 1]
-    //          0
-    //          0
-    //          2
-    //          3
-    //          4
-
-    // sparse: ColIdx
-    // [4 1 1 1]
-    //          0
-    //          1
-    //          2
-    //          1
+    //     values:  [ 5.0, 8.0, 3.0, 6.0 ]
+    //     row_ptr: [ 0, 0, 2, 3, 4 ]
+    //     col_idx: [ 0, 1, 2, 1 ]
 
     //! [ex_sparse_from_dense]
 
@@ -407,55 +358,43 @@ TEST(Sparse, CPPSparseFromDenseUsage)
     array gold_vals(   dim4(nnz), v);
     array gold_row_ptr(dim4(M+1), r);
     array gold_col_idx(dim4(nnz), c);
-    ASSERT_ARRAYS_EQ(sparseGetValues(sparse), gold_vals);
-    ASSERT_ARRAYS_EQ(sparseGetRowIdx(sparse), gold_row_ptr);
-    ASSERT_ARRAYS_EQ(sparseGetColIdx(sparse), gold_col_idx);
+
+    array sparse_vals, sparse_row_ptr, sparse_col_idx;
+    af::storage sparse_storage;
+    sparseGetInfo(sparse_vals, sparse_row_ptr, sparse_col_idx, sparse_storage, sparse);
+
+    ASSERT_ARRAYS_EQ(sparse_vals   , gold_vals);
+    ASSERT_ARRAYS_EQ(sparse_row_ptr, gold_row_ptr);
+    ASSERT_ARRAYS_EQ(sparse_col_idx, gold_col_idx);
+    ASSERT_EQ(sparse_storage, AF_STORAGE_CSR);
+    ASSERT_EQ(sparseGetNNZ(sparse), nnz);
 }
 
 TEST(Sparse, CPPDenseToSparseToDenseUsage)
 {
-    //! [ex_dense_from_sparse]
-
     float g[] = { 0, 5, 0, 0,
                   0, 8, 0, 6,
                   0, 0, 3, 0,
                   0, 0, 0, 0 };
     const int M = 4, N = 4;
     array in(dim4(M,N), g);
-
     array sparse = af::sparse(in, AF_STORAGE_CSR);
+
+    //! [ex_dense_from_sparse]
+
     // sparse
-    // Storage Format : AF_STORAGE_CSR
-    // [4 4 1 1]
-    // sparse: Values
-    // [4 1 1 1]
-    //     5.0000
-    //     8.0000
-    //     3.0000
-    //     6.0000
+    //     values:  [ 5.0, 8.0, 3.0, 6.0 ]
+    //     row_ptr: [ 0, 0, 2, 3, 4 ]
+    //     col_idx: [ 0, 1, 2, 1 ]
 
-    // sparse: RowIdx
-    // [5 1 1 1]
-    //          0
-    //          0
-    //          2
-    //          3
-    //          4
-
-    // sparse: ColIdx
-    // [4 1 1 1]
-    //          0
-    //          1
-    //          2
-    //          1
-
+    // Get dense representation of given sparse af::array.
     array dense = af::dense(sparse);
+
     // dense
-    // [4 4 1 1]
-    //     0.0000     0.0000     0.0000     0.0000
-    //     5.0000     8.0000     0.0000     0.0000
-    //     0.0000     0.0000     3.0000     0.0000
-    //     0.0000     6.0000     0.0000     0.0000
+    //     0     0     0     0
+    //     5     8     0     0
+    //     0     0     3     0
+    //     0     6     0     0
 
     //! [ex_dense_from_sparse]
 
@@ -467,9 +406,15 @@ TEST(Sparse, CPPDenseToSparseToDenseUsage)
     array gold_row_ptr(dim4(M+1), r);
     array gold_col_idx(dim4(nnz), c);
 
-    ASSERT_ARRAYS_EQ(sparseGetValues(sparse), gold_vals);
-    ASSERT_ARRAYS_EQ(sparseGetRowIdx(sparse), gold_row_ptr);
-    ASSERT_ARRAYS_EQ(sparseGetColIdx(sparse), gold_col_idx);
+    array sparse_vals, sparse_row_ptr, sparse_col_idx;
+    af::storage sparse_storage;
+    sparseGetInfo(sparse_vals, sparse_row_ptr, sparse_col_idx, sparse_storage, sparse);
+
+    ASSERT_ARRAYS_EQ(sparse_vals   , gold_vals);
+    ASSERT_ARRAYS_EQ(sparse_row_ptr, gold_row_ptr);
+    ASSERT_ARRAYS_EQ(sparse_col_idx, gold_col_idx);
+    ASSERT_EQ(sparse_storage, AF_STORAGE_CSR);
+    ASSERT_EQ(sparseGetNNZ(sparse), nnz);
 
     // Check dense array
     array gold(dim4(M,N), g);
