@@ -8,10 +8,10 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <JIT/BufferNode.hpp>
+#include <jit/BufferNode.hpp>
 #include <af/dim4.hpp>
 #include <af/opencl.h>
-#include <common/NodeIterator.hpp>
+#include <common/jit/NodeIterator.hpp>
 #include <common/util.hpp>
 #include <copy.hpp>
 #include <err_opencl.hpp>
@@ -23,22 +23,29 @@
 #include <numeric>
 
 using af::dim4;
+
+using cl::Buffer;
+
 using common::NodeIterator;
-using opencl::JIT::BufferNode;
-using opencl::JIT::Node;
-using opencl::JIT::Node_ptr;
+using opencl::jit::BufferNode;
+using common::Node;
+using common::Node_ptr;
+
 using std::accumulate;
+using std::is_standard_layout;
+using std::make_shared;
+using std::vector;
 
 namespace opencl
 {
     template<typename T>
     Node_ptr bufferNodePtr()
     {
-        return std::make_shared<BufferNode>(dtype_traits<T>::getName(), shortname<T>(true));
+        return make_shared<BufferNode>(dtype_traits<T>::getName(), shortname<T>(true));
     }
 
     template<typename T>
-    Array<T>::Array(af::dim4 dims) :
+    Array<T>::Array(dim4 dims) :
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(info.elements() * sizeof(T)), bufferFree),
         data_dims(dims),
@@ -47,7 +54,7 @@ namespace opencl
     }
 
     template<typename T>
-    Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
+    Array<T>::Array(dim4 dims, Node_ptr n) :
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
         data_dims(dims),
@@ -56,27 +63,27 @@ namespace opencl
     }
 
     template<typename T>
-    Array<T>::Array(af::dim4 dims, const T * const in_data) :
+    Array<T>::Array(dim4 dims, const T * const in_data) :
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(info.elements()*sizeof(T)), bufferFree),
         data_dims(dims),
         node(bufferNodePtr<T>()), ready(true), owner(true)
     {
-        static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
+        static_assert(is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
         static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
         getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*info.elements(), in_data);
     }
 
     template<typename T>
-    Array<T>::Array(af::dim4 dims, cl_mem mem, size_t src_offset, bool copy) :
+    Array<T>::Array(dim4 dims, cl_mem mem, size_t src_offset, bool copy) :
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(copy ? bufferAlloc(info.elements() * sizeof(T)) : new cl::Buffer(mem), bufferFree),
+        data(copy ? bufferAlloc(info.elements() * sizeof(T)) : new Buffer(mem), bufferFree),
         data_dims(dims),
         node(bufferNodePtr<T>()), ready(true), owner(true)
     {
         if (copy) {
             clRetainMemObject(mem);
-            cl::Buffer src_buf = cl::Buffer((cl_mem)(mem));
+            Buffer src_buf = Buffer((cl_mem)(mem));
             getQueue().enqueueCopyBuffer(src_buf, *data.get(),
                                          src_offset, 0,
                                          sizeof(T) * info.elements());
@@ -98,23 +105,23 @@ namespace opencl
     template<typename T>
     Array<T>::Array(Param &tmp, bool owner_) :
         info(getActiveDeviceId(),
-             af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3]),
+             dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3]),
              0,
-             af::dim4(tmp.info.strides[0], tmp.info.strides[1],
+             dim4(tmp.info.strides[0], tmp.info.strides[1],
                       tmp.info.strides[2], tmp.info.strides[3]),
              (af_dtype)dtype_traits<T>::af_type),
-        data(tmp.data, owner_ ? bufferFree : [] (cl::Buffer* ptr) {}),
-        data_dims(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3])),
+        data(tmp.data, owner_ ? bufferFree : [] (Buffer* ptr) {}),
+        data_dims(dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3])),
         node(bufferNodePtr<T>()), ready(true), owner(owner_)
     {
     }
 
     template<typename T>
-    Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
+    Array<T>::Array(dim4 dims, dim4 strides, dim_t offset_,
                     const T * const in_data, bool is_device) :
         info(getActiveDeviceId(), dims, offset_, strides, (af_dtype)dtype_traits<T>::af_type),
         data(is_device ?
-             (new cl::Buffer((cl_mem)in_data)) :
+             (new Buffer((cl_mem)in_data)) :
              (bufferAlloc(info.total() * sizeof(T))), bufferFree),
         data_dims(dims),
         node(bufferNodePtr<T>()),
@@ -154,7 +161,7 @@ namespace opencl
     }
 
     template<typename T>
-    cl::Buffer* Array<T>::device()
+    Buffer* Array<T>::device()
     {
         if (!isOwner() || getOffset() || data.use_count() > 1) {
             *this = copyArray<T>(*this);
@@ -163,10 +170,10 @@ namespace opencl
     }
 
     template<typename T>
-    void evalMultiple(std::vector<Array<T>*> arrays)
+    void evalMultiple(vector<Array<T>*> arrays)
     {
-        std::vector<Param> outputs;
-        std::vector<Node *> nodes;
+        vector<Param> outputs;
+        vector<Node *> nodes;
 
         for (auto array : arrays) {
             if (array->isReady()) {
@@ -222,8 +229,6 @@ namespace opencl
         return node;
     }
 
-    using af::dim4;
-
     template<typename T>
     Array<T> createNodeArray(const dim4 &dims, Node_ptr node)
     {
@@ -269,10 +274,9 @@ namespace opencl
                         int num_buffers;
                         bool is_linear;
                     };
-                    NodeIterator it(n);
-                    NodeIterator end_node;
+                    NodeIterator<> it(n);
                     dim4 outdim = out.dims();
-                    tree_info info = accumulate(it, end_node,
+                    tree_info info = accumulate(it, NodeIterator<>(),
                                                 tree_info{0, 0, true},
                                                 [=](tree_info& prev, Node& n) {
                                                     if(n.isBuffer()) {
@@ -302,7 +306,7 @@ namespace opencl
 
     template<typename T>
     Array<T> createSubArray(const Array<T>& parent,
-                            const std::vector<af_seq> &index,
+                            const vector<af_seq> &index,
                             bool copy)
     {
         parent.eval();
@@ -419,10 +423,10 @@ namespace opencl
             arr = copyArray<T>(arr);
         }
 
-        cl::Buffer& buf = *arr.get();
+        Buffer& buf = *arr.get();
 
         clRetainMemObject((cl_mem)(data));
-        cl::Buffer data_buf = cl::Buffer((cl_mem)(data));
+        Buffer data_buf = Buffer((cl_mem)(data));
 
         getQueue().enqueueCopyBuffer(data_buf, buf,
                                      0, (size_t)arr.getOffset(),
@@ -450,24 +454,24 @@ namespace opencl
     template       Array<T>  *initArray<T      >      ();               \
     template       Array<T>  createParamArray<T>      (Param &tmp, bool owner);    \
     template       Array<T>  createSubArray<T>        (const Array<T> &parent, \
-                                                       const std::vector<af_seq> &index, \
+                                                       const vector<af_seq> &index, \
                                                        bool copy);      \
     template       void      destroyArray<T>          (Array<T> *A);    \
-    template       Array<T>  createNodeArray<T>       (const dim4 &size, JIT::Node_ptr node); \
-    template       Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset, \
+    template       Array<T>  createNodeArray<T>       (const dim4 &size, Node_ptr node); \
+    template       Array<T>::Array(dim4 dims, dim4 strides, dim_t offset, \
                                    const T * const in_data,             \
                                    bool is_device);                     \
-    template       Array<T>::Array(af::dim4 dims, cl_mem mem, size_t src_offset, bool copy); \
+    template       Array<T>::Array(dim4 dims, cl_mem mem, size_t src_offset, bool copy); \
     template       Array<T>::~Array        ();                          \
     template       Node_ptr Array<T>::getNode() const;                  \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
-    template       cl::Buffer* Array<T>::device();                      \
+    template       Buffer* Array<T>::device();                      \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, \
                                                        const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, \
                                                        const size_t bytes); \
-    template       void      evalMultiple<T>     (std::vector<Array<T>*> arrays); \
+    template       void      evalMultiple<T>     (vector<Array<T>*> arrays); \
     template       void Array<T>::setDataDims(const dim4 &new_dims);    \
 
     INSTANTIATE(float)

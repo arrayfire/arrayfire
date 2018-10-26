@@ -13,7 +13,7 @@
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <optypes.hpp>
-#include <JIT/UnaryNode.hpp>
+#include <common/jit/UnaryNode.hpp>
 #include <types.hpp>
 #include <Array.hpp>
 
@@ -106,12 +106,12 @@ struct CastWrapper
     Array<To> operator()(const Array<Ti> &in)
     {
         CastOp<To, Ti> cop;
-        JIT::Node_ptr in_node = in.getNode();
-        JIT::UnaryNode *node = new JIT::UnaryNode(getFullName<To>(),
-                                                  shortname<To>(true),
-                                                  cop.name(),
-                                                  in_node, af_cast_t);
-        return createNodeArray<To>(in.dims(), JIT::Node_ptr(node));
+        common::Node_ptr in_node = in.getNode();
+        common::UnaryNode *node = new common::UnaryNode(getFullName<To>(),
+                                                        shortname<To>(true),
+                                                        cop.name(),
+                                                        in_node, af_cast_t);
+        return createNodeArray<To>(in.dims(), common::Node_ptr(node));
     }
 };
 

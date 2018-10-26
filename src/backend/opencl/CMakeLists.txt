@@ -216,7 +216,6 @@ target_sources(afopencl
     transpose_inplace.cpp
     triangle.cpp
     triangle.hpp
-    types.cpp
     types.hpp
     unary.hpp
     unwrap.cpp
@@ -330,11 +329,8 @@ target_sources(afopencl
 
 target_sources(afopencl
   PRIVATE
-    JIT/BinaryNode.hpp
-    JIT/BufferNode.hpp
-    JIT/Node.hpp
-    JIT/ScalarNode.hpp
-    JIT/UnaryNode.hpp
+    jit/BufferNode.hpp
+    jit/kernel_generators.hpp
   )
 
 target_sources(afopencl

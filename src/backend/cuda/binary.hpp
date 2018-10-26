@@ -12,7 +12,7 @@
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <math.hpp>
-#include <JIT/BinaryNode.hpp>
+#include <common/jit/BinaryNode.hpp>
 
 namespace cuda
 {
@@ -192,15 +192,15 @@ Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs, const af:
 {
     BinOp<To, Ti, op> bop;
 
-    JIT::Node_ptr lhs_node = lhs.getNode();
-    JIT::Node_ptr rhs_node = rhs.getNode();
-    JIT::BinaryNode *node = new JIT::BinaryNode(getFullName<To>(),
-                                                shortname<To>(true),
-                                                bop.name(),
-                                                lhs_node,
-                                                rhs_node, (int)(op));
+    common::Node_ptr lhs_node = lhs.getNode();
+    common::Node_ptr rhs_node = rhs.getNode();
+    common::BinaryNode *node = new common::BinaryNode(getFullName<To>(),
+                                                      shortname<To>(true),
+                                                      bop.name(),
+                                                      lhs_node,
+                                                      rhs_node, (int)(op));
 
-    return createNodeArray<To>(odims, JIT::Node_ptr(node));
+    return createNodeArray<To>(odims, common::Node_ptr(node));
 }
 
 }
