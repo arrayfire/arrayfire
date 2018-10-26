@@ -8,22 +8,22 @@
  ********************************************************/
 
 #pragma once
-#include "NaryNode.hpp"
-#include <iomanip>
+#include <optypes.hpp>
+#include <vector>
+#include "Node.hpp"
 
-namespace cuda
+namespace cpu
 {
 
-namespace JIT
+namespace jit
 {
-    class UnaryNode : public NaryNode
+
+    template<typename T>
+    class ScalarNode : public TNode<T>
     {
+
     public:
-        UnaryNode(const char *out_type_str, const char *name_str,
-                  const char *op_str,
-                  Node_ptr child, int op)
-            : NaryNode(out_type_str, name_str, op_str,
-                       1, {{child}}, op, child->getHeight() + 1)
+        ScalarNode(T val) : TNode<T>(val, 0, {})
         {
         }
     };

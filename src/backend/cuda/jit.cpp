@@ -13,7 +13,7 @@
 
 #include <Array.hpp>
 #include <copy.hpp>
-#include <JIT/Node.hpp>
+#include <common/jit/Node.hpp>
 #include <platform.hpp>
 #include <math.hpp>
 
@@ -32,9 +32,9 @@
 namespace cuda
 {
 
-using JIT::Node;
-using JIT::Node_ids;
-using JIT::Node_map_t;
+using common::Node;
+using common::Node_ids;
+using common::Node_map_t;
 
 using std::array;
 using std::hash;
@@ -455,7 +455,9 @@ void evalNodes(vector<Param<T>>& outputs, vector<Node *> output_nodes)
     vector<void *> args;
 
     for (const auto &node : full_nodes) {
-        node->setArgs(args, is_linear);
+        node->setArgs(0, is_linear, [&] (int id, const void* ptr, size_t size){
+                                        args.push_back(const_cast<void*>(ptr));
+                                    });
     }
 
     for (int i = 0; i < num_outputs; i++) {

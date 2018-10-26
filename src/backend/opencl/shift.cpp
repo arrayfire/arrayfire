@@ -10,17 +10,16 @@
 #include <Array.hpp>
 #include <shift.hpp>
 #include <err_opencl.hpp>
-#include <JIT/ShiftNode.hpp>
-#include <JIT/ShiftNode.hpp>
+#include <common/jit/ShiftNodeBase.hpp>
 
 #include <memory>
 #include <stdexcept>
 
 using af::dim4;
 
-using opencl::JIT::BufferNode;
-using opencl::JIT::Node_ptr;
-using opencl::JIT::ShiftNode;
+using opencl::jit::BufferNode;
+using common::Node_ptr;
+using common::ShiftNodeBase;
 
 using std::array;
 using std::make_shared;
@@ -29,6 +28,8 @@ using std::string;
 
 namespace opencl
 {
+    using ShiftNode = ShiftNodeBase<BufferNode>;
+
     template<typename T>
     Array<T> shift(const Array<T> &in, const int sdims[4])
     {
@@ -52,7 +53,7 @@ namespace opencl
         auto node = make_shared<ShiftNode>(dtype_traits<T>::getName(), name_str.c_str(),
                                            static_pointer_cast<BufferNode>(in.getNode()),
                                            shifts);
-        return createNodeArray<T>(oDims, Node_ptr(node));
+        return createNodeArray<T>(oDims, common::Node_ptr(node));
     }
 
 #define INSTANTIATE(T)                                                  \

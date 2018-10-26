@@ -7,14 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Node.hpp>
+#include <common/jit/Node.hpp>
 
 #include <string>
 #include <vector>
 using namespace std;
 
-namespace cuda {
-namespace JIT {
+namespace common {
 
   int Node::getNodesMap(Node_map_t &node_map,
                 vector<const Node *> &full_nodes,
@@ -23,7 +22,7 @@ namespace JIT {
     if (iter == node_map.end()) {
         Node_ids ids;
 
-        for (int i = 0; i < MAX_CHILDREN && m_children[i] != nullptr; i++) {
+        for (int i = 0; i < kMaxChildren && m_children[i] != nullptr; i++) {
             ids.child_ids[i] = m_children[i]->getNodesMap(node_map, full_nodes,
                                                           full_ids);
         }
@@ -36,5 +35,4 @@ namespace JIT {
     return iter->second;
 }
 
-  }
 }

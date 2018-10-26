@@ -16,7 +16,7 @@
 #include <types.hpp>
 #include <traits.hpp>
 #include <Param.hpp>
-#include <JIT/Node.hpp>
+#include <common/jit/Node.hpp>
 #include <memory.hpp>
 #include <memory>
 #include <err_opencl.hpp>
@@ -30,12 +30,12 @@ namespace opencl
     template<typename T>
     void evalMultiple(std::vector<Array<T> *> arrays);
 
-    void evalNodes(Param &out, JIT::Node *node);
-    void evalNodes(std::vector<Param> &outputs, std::vector<JIT::Node *> nodes);
+    void evalNodes(Param &out, common::Node *node);
+    void evalNodes(std::vector<Param> &outputs, std::vector<common::Node *> nodes);
 
     /// Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
-    Array<T> createNodeArray(const af::dim4 &size, JIT::Node_ptr node);
+    Array<T> createNodeArray(const af::dim4 &size, common::Node_ptr node);
 
     /// Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
@@ -110,7 +110,7 @@ namespace opencl
         Buffer_ptr  data;
         af::dim4 data_dims;
 
-        JIT::Node_ptr node;
+        common::Node_ptr node;
         bool ready;
         bool owner;
 
@@ -118,7 +118,7 @@ namespace opencl
 
         Array(const Array<T>& parnt, const dim4 &dims, const dim_t &offset, const dim4 &stride);
         Array(Param &tmp, bool owner);
-        explicit Array(af::dim4 dims, JIT::Node_ptr n);
+        explicit Array(af::dim4 dims, common::Node_ptr n);
         explicit Array(af::dim4 dims, const T * const in_data);
         explicit Array(af::dim4 dims, cl_mem mem, size_t offset, bool copy);
 
@@ -245,8 +245,8 @@ namespace opencl
             return kinfo;
         }
 
-        JIT::Node_ptr getNode() const;
-        JIT::Node_ptr getNode();
+        common::Node_ptr getNode() const;
+        common::Node_ptr getNode();
 
     public:
         std::shared_ptr<T> getMappedPtr() const
@@ -280,7 +280,7 @@ namespace opencl
         friend Array<T> *initArray<T>();
         friend Array<T> createEmptyArray<T>(const af::dim4 &size);
         friend Array<T> createParamArray<T>(Param &tmp, bool owner);
-        friend Array<T> createNodeArray<T>(const af::dim4 &dims, JIT::Node_ptr node);
+        friend Array<T> createNodeArray<T>(const af::dim4 &dims, common::Node_ptr node);
 
         friend Array<T> createSubArray<T>(const Array<T>& parent,
                                           const std::vector<af_seq> &index,

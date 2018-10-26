@@ -8,25 +8,17 @@
  ********************************************************/
 
 #pragma once
-#include "NaryNode.hpp"
+#include <af/defines.h>
+#include "../kernel/KParam.hpp"
+#include <common/jit/Node.hpp>
+#include <common/jit/BufferNodeBase.hpp>
 #include <iomanip>
+#include <mutex>
 
 namespace opencl
 {
-
-namespace JIT
+namespace jit
 {
-    class UnaryNode : public NaryNode
-    {
-    public:
-        UnaryNode(const char *out_type_str, const char *name_str,
-                  const char *op_str,
-                  Node_ptr child, int op)
-            : NaryNode(out_type_str, name_str, op_str,
-                       1, {{child}}, op, child->getHeight() + 1)
-        {
-        }
-    };
+    using BufferNode = common::BufferNodeBase<std::shared_ptr<cl::Buffer>, KParam>;
 }
-
 }

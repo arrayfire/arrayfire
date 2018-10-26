@@ -8,18 +8,17 @@
  ********************************************************/
 
 #pragma once
-#include "Node.hpp"
+#include <common/jit/Node.hpp>
+
+#include <array>
 #include <iomanip>
+#include <string>
+#include <sstream>
 #include <utility>
 
-namespace opencl
-{
+namespace common {
 
-namespace JIT
-{
-
-    class NaryNode : public Node
-    {
+    class NaryNode : public Node {
     private:
         const int m_num_children;
         const int m_op;
@@ -30,16 +29,17 @@ namespace JIT
                  const char *name_str,
                  const char *op_str,
                  const int num_children,
-                 const std::array<Node_ptr, MAX_CHILDREN>&& children,
+                 const std::array<common::Node_ptr, Node::kMaxChildren> &&children,
                  const int op, const int height)
-          : Node(out_type_str, name_str, height,
-                 std::forward<const std::array<Node_ptr, MAX_CHILDREN>>(children)),
+            : common::Node(out_type_str, name_str, height,
+                           std::forward<const std::array<common::Node_ptr, Node::kMaxChildren>>(children)),
               m_num_children(num_children),
               m_op(op),
               m_op_str(op_str)
         {
         }
-        void genKerName(std::stringstream &kerStream, Node_ids ids) const final
+
+        void genKerName(std::stringstream &kerStream, const common::Node_ids& ids) const final
         {
             // Make the dec representation of enum part of the Kernel name
             kerStream << "_" << std::setw(3) << std::setfill('0') << std::dec << m_op;
@@ -52,7 +52,7 @@ namespace JIT
             kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id << std::dec;
         }
 
-        void genFuncs(std::stringstream &kerStream, Node_ids ids) const final
+        void genFuncs(std::stringstream &kerStream, const common::Node_ids& ids) const final
         {
             kerStream << m_type_str << " val" << ids.id << " = " << m_op_str << "(";
             for (int i = 0; i < m_num_children; i++) {
@@ -62,7 +62,4 @@ namespace JIT
             kerStream << ");\n";
         }
     };
-
-}
-
 }

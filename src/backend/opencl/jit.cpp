@@ -9,34 +9,36 @@
 
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <map>
-#include <vector>
-#include <stdexcept>
 #include <copy.hpp>
-#include <JIT/Node.hpp>
+#include <common/jit/Node.hpp>
 #include <kernel_headers/jit.hpp>
 #include <program.hpp>
 #include <common/dispatch.hpp>
 #include <err_opencl.hpp>
-#include <functional>
 #include <af/opencl.h>
+
+#include <functional>
+#include <stdexcept>
+#include <vector>
+
+using common::Node;
+using common::Node_ids;
+using common::Node_map_t;
+
+using cl::Buffer;
+using cl::EnqueueArgs;
+using cl::Kernel;
+using cl::KernelFunctor;
+using cl::NDRange;
+using cl::NullRange;
+using cl::Program;
+
+using std::hash;
+using std::string; using std::stringstream;
+using std::vector;
 
 namespace opencl
 {
-
-using JIT::Node;
-using JIT::Node_ids;
-using JIT::Node_map_t;
-
-using cl::Buffer;
-using cl::Program;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::EnqueueArgs;
-using cl::NDRange;
-using std::string;
-using std::stringstream;
-using std::vector;
 
 static string getFuncName(const vector<Node *> &output_nodes,
                           const vector<const Node *> &full_nodes,
@@ -60,7 +62,7 @@ static string getFuncName(const vector<Node *> &output_nodes,
         full_nodes[i]->genKerName(funcName, full_ids[i]);
     }
 
-    std::hash<std::string> hash_fn;
+    hash<string> hash_fn;
     hashName << "KER" << hash_fn(funcName.str());
     return hashName.str();
 }
@@ -182,11 +184,11 @@ static Kernel getKernel(const vector<Node *> &output_nodes,
         const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
         const int ker_lens[] = {jit_cl_len, (int)jit_ker.size()};
 
-        cl::Program prog;
+        Program prog;
         buildProgram(prog, 2, ker_strs, ker_lens,
                      isDoubleSupported(device) ? string(" -D USE_DOUBLE") :  string(""));
 
-        entry.prog = new cl::Program(prog);
+        entry.prog = new Program(prog);
         entry.ker = new Kernel(*entry.prog, funcName.c_str());
 
         addKernelToCache(device, funcName, entry);
@@ -271,7 +273,10 @@ void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes)
 
     int nargs = 0;
     for (const auto &node : full_nodes) {
-        nargs = node->setArgs(ker, nargs, is_linear);
+        nargs = node->setArgs(nargs, is_linear,
+                              [&] (int id, const void* ptr, size_t arg_size) {
+                                  ker.setArg(id, arg_size, ptr);
+                              });
     }
 
     // Set output parameters
@@ -288,7 +293,7 @@ void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes)
     ker.setArg(nargs + 2,  groups_1);
     ker.setArg(nargs + 3,  num_odims);
 
-    getQueue().enqueueNDRangeKernel(ker, cl::NullRange, global, local);
+    getQueue().enqueueNDRangeKernel(ker, NullRange, global, local);
 
     // Reset the thread local vectors
     nodes.clear();

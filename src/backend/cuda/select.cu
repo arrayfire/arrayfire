@@ -11,7 +11,10 @@
 #include <scalar.hpp>
 #include <err_cuda.hpp>
 #include <kernel/select.hpp>
-#include <JIT/NaryNode.hpp>
+#include <common/jit/NaryNode.hpp>
+
+using common::NaryNode;
+using common::Node_ptr;
 
 namespace cuda
 {
@@ -42,11 +45,11 @@ namespace cuda
         int height = std::max(a_node->getHeight(), b_node->getHeight());
         height = std::max(height, cond_node->getHeight()) + 1;
 
-        JIT::NaryNode *node = new JIT::NaryNode(getFullName<T>(), shortname<T>(true),
-                                                "__select", 3, {{cond_node, a_node, b_node}},
-                                                (int)af_select_t, height);
+        NaryNode *node = new NaryNode(getFullName<T>(), shortname<T>(true),
+                                      "__select", 3, {{cond_node, a_node, b_node}},
+                                      (int)af_select_t, height);
 
-        Array<T> out = createNodeArray<T>(odims, JIT::Node_ptr(node));
+        Array<T> out = createNodeArray<T>(odims, Node_ptr(node));
         return out;
     }
 
@@ -62,13 +65,13 @@ namespace cuda
         int height = std::max(a_node->getHeight(), b_node->getHeight());
         height = std::max(height, cond_node->getHeight()) + 1;
 
-        JIT::NaryNode *node = new JIT::NaryNode(getFullName<T>(), shortname<T>(true),
-                                                flip ? "__not_select" : "__select",
-                                                3, {{cond_node, a_node, b_node}},
-                                                (int)(flip ? af_not_select_t : af_select_t),
-                                                height);
+        NaryNode *node = new NaryNode(getFullName<T>(), shortname<T>(true),
+                                      flip ? "__not_select" : "__select",
+                                      3, {{cond_node, a_node, b_node}},
+                                      (int)(flip ? af_not_select_t : af_select_t),
+                                      height);
 
-        Array<T> out = createNodeArray<T>(odims, JIT::Node_ptr(node));
+        Array<T> out = createNodeArray<T>(odims, Node_ptr(node));
         return out;
     }
 

@@ -12,7 +12,7 @@
 #include <optypes.hpp>
 #include <err_cpu.hpp>
 #include <cmath>
-#include <JIT/BinaryNode.hpp>
+#include <jit/BinaryNode.hpp>
 
 namespace cpu
 {
@@ -21,9 +21,9 @@ namespace cpu
     template<typename T>                        \
     struct BinOp<T, T, OP>                      \
     {                                           \
-        void eval(JIT::array<T> &out,           \
-                  const JIT::array<T> &lhs,     \
-                  const JIT::array<T> &rhs,     \
+        void eval(jit::array<T> &out,           \
+                  const jit::array<T> &lhs,     \
+                  const jit::array<T> &rhs,     \
                   int lim) const                \
         {                                       \
             for (int i = 0; i < lim; i++) {     \
@@ -58,9 +58,9 @@ template<> STATIC_ double __rem<double>(double lhs, double rhs) { return remaind
     template<typename T>                        \
     struct BinOp<T, T, OP>                      \
     {                                           \
-        void eval(JIT::array<T> &out,           \
-                  const JIT::array<T> &lhs,     \
-                  const JIT::array<T> &rhs,     \
+        void eval(jit::array<T> &out,           \
+                  const jit::array<T> &lhs,     \
+                  const jit::array<T> &rhs,     \
                   int lim)                      \
         {                                       \
             for (int i = 0; i < lim; i++) {     \
@@ -80,13 +80,12 @@ NUMERIC_FN(af_hypot_t, hypot)
 template<typename T, af_op_t op>
 Array<T> arithOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
 {
-    JIT::Node_ptr lhs_node = lhs.getNode();
-    JIT::Node_ptr rhs_node = rhs.getNode();
+    jit::Node_ptr lhs_node = lhs.getNode();
+    jit::Node_ptr rhs_node = rhs.getNode();
 
-    JIT::BinaryNode<T, T, op> *node = new JIT::BinaryNode<T, T, op>(lhs_node, rhs_node);
+    jit::BinaryNode<T, T, op> *node = new jit::BinaryNode<T, T, op>(lhs_node, rhs_node);
 
-    return createNodeArray<T>(odims,
-                              JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    return createNodeArray<T>(odims, jit::Node_ptr(node));
 }
 
 }

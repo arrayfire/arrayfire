@@ -10,7 +10,7 @@
 #include <kernel/select.hpp>
 
 #include <Array.hpp>
-#include <JIT/NaryNode.hpp>
+#include <common/jit/NaryNode.hpp>
 #include <err_opencl.hpp>
 #include <scalar.hpp>
 
@@ -18,7 +18,7 @@
 
 using af::dim4;
 
-using opencl::JIT::NaryNode;
+using common::NaryNode;
 
 using std::make_shared;
 using std::max;

@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <JIT/BufferNode.hpp>
-#include <JIT/ShiftNode.hpp>
+#include <jit/BufferNode.hpp>
+#include <common/jit/ShiftNodeBase.hpp>
 #include <Array.hpp>
 #include <shift.hpp>
 #include <err_cuda.hpp>
@@ -17,9 +17,10 @@
 
 using af::dim4;
 
-using cuda::JIT::BufferNode;
-using cuda::JIT::Node_ptr;
-using cuda::JIT::ShiftNode;
+using common::Node_ptr;
+using common::ShiftNodeBase;
+
+using cuda::jit::BufferNode;
 
 using std::array;
 using std::make_shared;
@@ -28,6 +29,9 @@ using std::string;
 
 namespace cuda
 {
+    template<typename T>
+    using ShiftNode = ShiftNodeBase<BufferNode<T>>;
+
     template<typename T>
     Array<T> shift(const Array<T> &in, const int sdims[4])
     {

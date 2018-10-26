@@ -10,65 +10,60 @@
 #pragma once
 #include <platform.hpp>
 #include <optypes.hpp>
+
 #include <array>
-#include <string>
-#include <vector>
+#include <functional>
 #include <memory>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace common {
-    class NodeIterator;
-}
-using std::shared_ptr;
-using std::vector;
-
-namespace cuda
-{
-
-namespace JIT
-{
-
-    constexpr int MAX_CHILDREN = 3;
     class Node;
+    struct Node_ids;
 
-    typedef struct
-    {
-        int id;
-        std::array<int, MAX_CHILDREN> child_ids;
-    } Node_ids;
-
-    using Node_ptr = shared_ptr<Node>;
+    using Node_ptr = std::shared_ptr<Node>;
     using Node_map_t = std::unordered_map<const Node *, int> ;
     using Node_map_iter = Node_map_t::iterator;
 
     class Node
     {
+    public:
+        static const int kMaxChildren = 3;
     protected:
+        const std::array<Node_ptr, kMaxChildren> m_children;
         const std::string m_type_str;
         const std::string m_name_str;
-        const std::array<Node_ptr, MAX_CHILDREN> m_children;
         const int m_height;
-        friend class common::NodeIterator;
+        template<typename T> friend class NodeIterator;
 
     public:
-
         Node(const char *type_str, const char *name_str, const int height,
-             const std::array<Node_ptr, MAX_CHILDREN> children)
+             const std::array<Node_ptr, kMaxChildren> children)
             : m_type_str(type_str),
               m_name_str(name_str),
               m_children(children),
               m_height(height) {}
 
         int getNodesMap(Node_map_t &node_map,
-                        vector<const Node *> &full_nodes,
-                        vector<Node_ids> &full_ids) const;
+                        std::vector<const Node *> &full_nodes,
+                        std::vector<Node_ids> &full_ids) const;
 
-        virtual void genKerName (std::stringstream &kerStream, Node_ids ids) const {}
-        virtual void genParams  (std::stringstream &kerStream, int id, bool is_linear) const {}
-        virtual void genOffsets (std::stringstream &kerStream, int id, bool is_linear) const {}
-        virtual void genFuncs   (std::stringstream &kerStream, Node_ids) const {}
+        virtual void genKerName (std::stringstream &kerStream, const Node_ids& ids) const { }
+        virtual void genParams  (std::stringstream &kerStream, int id, bool is_linear) const { }
+        virtual void genOffsets (std::stringstream &kerStream, int id, bool is_linear) const { }
+        virtual void genFuncs   (std::stringstream &kerStream, const Node_ids& ids) const { }
 
-        virtual void setArgs (std::vector<void *> &args, bool is_linear) const { }
+        /// Calls the setArg function on each of the arguments passed into the kernel
+        ///
+        /// \param[in] start_id The index of the staring argument
+        /// \param[in] is_linear determines if the kernel should be linear or not
+        /// \param[in] setArg the function that will be called for each argument
+        ///
+        /// \returns the next index that will need to be set in the kernl. This
+        ///          is usually start_id + the number of times setArg is called
+        virtual int setArgs(int start_id, bool is_linear,
+                            std::function<void(int id, const void* ptr, size_t arg_size)> setArg) const { return start_id; }
 
         virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes) const {
             len++;
@@ -90,6 +85,9 @@ namespace JIT
 
         virtual ~Node() {}
     };
-}
 
+    struct Node_ids {
+        std::array<int, Node::kMaxChildren> child_ids;
+        int id;
+    };
 }

@@ -41,7 +41,7 @@ cuda_include_directories(
   ${ArrayFire_SOURCE_DIR}/include
   ${ArrayFire_BINARY_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel
-  ${CMAKE_CURRENT_SOURCE_DIR}/JIT
+  ${CMAKE_CURRENT_SOURCE_DIR}/jit
   ${CMAKE_CURRENT_SOURCE_DIR}/cub
   ${ArrayFire_SOURCE_DIR}/src/api/c
   ${ArrayFire_SOURCE_DIR}/src/backend
@@ -122,6 +122,9 @@ include(kernel/thrust_sort_by_key/CMakeLists.txt)
 
 cuda_add_library(afcuda
     scan.cu
+    kernel/convolve.cu
+    kernel/convolve_separable.cu
+
     all.cu
     anisotropic_diffusion.cu
     any.cu
@@ -197,9 +200,6 @@ cuda_add_library(afcuda
     unwrap.cu
     where.cu
     wrap.cu
-
-    kernel/convolve.cu
-    kernel/convolve_separable.cu
 
     kernel/anisotropic_diffusion.hpp
     kernel/approx.hpp
@@ -383,7 +383,6 @@ cuda_add_library(afcuda
     transform.hpp
     transpose.hpp
     triangle.hpp
-    types.cpp
     types.hpp
     unary.hpp
     unwrap.hpp
@@ -391,15 +390,8 @@ cuda_add_library(afcuda
     where.hpp
     wrap.hpp
 
-    JIT/BinaryNode.hpp
-    JIT/BufferNode.hpp
-    JIT/Node.hpp
-    JIT/Node.cpp
-    JIT/ScalarNode.hpp
-    JIT/UnaryNode.hpp
-    JIT/NaryNode.hpp
-    JIT/ShiftNode.hpp
-    JIT/types.h
+    jit/BufferNode.hpp
+    jit/kernel_generators.hpp
 
     OPTIONS "${cuda_cxx_flags} -Xcudafe \"--diag_suppress=1427\""
   )
@@ -445,7 +437,7 @@ target_include_directories (afcuda
     ${ArrayFire_SOURCE_DIR}/src/api/c
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel
-    ${CMAKE_CURRENT_SOURCE_DIR}/JIT
+    ${CMAKE_CURRENT_SOURCE_DIR}/jit
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 

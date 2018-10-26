@@ -15,46 +15,41 @@
 #include <unordered_map>
 
 namespace common {
+    template<typename T>
     class NodeIterator;
 }
 
 namespace cpu
 {
 
-namespace JIT
+namespace jit
 {
-
-    static const int VECTOR_LENGTH = 256;
-    static const int MAX_CHILDREN = 3;
-
     class Node;
-    using std::shared_ptr;
-    using std::vector;
-    typedef shared_ptr<Node> Node_ptr;
+    constexpr int VECTOR_LENGTH = 256;
 
-    typedef std::unordered_map<Node *, int> Node_map_t;
-    typedef Node_map_t::iterator Node_map_iter;
+    using Node_ptr = std::shared_ptr<Node>;
+    using Node_map_t = std::unordered_map<Node *, int>;
+    using Node_map_iter = Node_map_t::iterator;
 
     template<typename T>
     using array = std::array<T, VECTOR_LENGTH>;
 
-
     class Node
     {
-
+    public:
+        static const int kMaxChildren = 2;
     protected:
-
         const int m_height;
-        const std::array<Node_ptr, MAX_CHILDREN> m_children;
-        friend common::NodeIterator;
+        const std::array<Node_ptr, kMaxChildren> m_children;
+        template<typename T> friend class common::NodeIterator;
 
     public:
-        Node(const int height, const std::array<Node_ptr, MAX_CHILDREN> children) :
+        Node(const int height, const std::array<Node_ptr, kMaxChildren> children) :
             m_height(height),
             m_children(children)
         {}
 
-        int getNodesMap(Node_map_t &node_map, vector<Node *> &full_nodes)
+        int getNodesMap(Node_map_t &node_map, std::vector<Node *> &full_nodes)
         {
             auto iter = node_map.find(this);
             if (iter == node_map.end()) {
@@ -98,9 +93,9 @@ namespace JIT
     class TNode : public Node
     {
     public:
-        alignas(16) JIT::array<T> m_val;
+        alignas(16) jit::array<T> m_val;
     public:
-        TNode(T val, const int height, const std::array<Node_ptr, MAX_CHILDREN> children) :
+        TNode(T val, const int height, const std::array<Node_ptr, kMaxChildren> children) :
             Node(height, children)
             {
                 m_val.fill(val);

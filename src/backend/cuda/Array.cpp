@@ -8,8 +8,8 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <JIT/BufferNode.hpp>
-#include <common/NodeIterator.hpp>
+#include <jit/BufferNode.hpp>
+#include <common/jit/NodeIterator.hpp>
 #include <af/dim4.hpp>
 #include <copy.hpp>
 #include <err_cuda.hpp>
@@ -22,10 +22,10 @@
 #include <numeric>
 
 using af::dim4;
-using cuda::JIT::BufferNode;
-using cuda::JIT::Node;
+using cuda::jit::BufferNode;
+using common::Node;
 using common::NodeIterator;
-using cuda::JIT::Node_ptr;
+using common::Node_ptr;
 using std::accumulate;
 using std::shared_ptr;
 
@@ -89,7 +89,7 @@ namespace cuda
     }
 
     template<typename T>
-    Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
+    Array<T>::Array(af::dim4 dims, common::Node_ptr n) :
         info(getActiveDeviceId(), dims, 0, calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(), data_dims(dims),
         node(n), ready(false), owner(true)
@@ -148,7 +148,7 @@ namespace cuda
     void evalMultiple(std::vector<Array<T>*> arrays)
     {
         std::vector<Param<T> > outputs;
-        std::vector<JIT::Node *> nodes;
+        std::vector<common::Node *> nodes;
 
         for (int i = 0; i < (int)arrays.size(); i++) {
             Array<T> *array = arrays[i];
@@ -253,9 +253,9 @@ namespace cuda
                         int param_scalar_size;
                         bool is_linear;
                     };
-                    NodeIterator end_node;
+                    NodeIterator<> end_node;
                     dim4 outdim = out.dims();
-                    tree_info info = accumulate(NodeIterator(n), end_node,
+                    tree_info info = accumulate(NodeIterator<>(n), end_node,
                                                 tree_info{0, 0, 0, true},
                                                 [=](tree_info& prev, const Node& node) {
                                                     if(node.isBuffer()) {
@@ -427,7 +427,7 @@ namespace cuda
                                                        const std::vector<af_seq> &index, \
                                                        bool copy);      \
     template       void      destroyArray<T>          (Array<T> *A);    \
-    template       Array<T>  createNodeArray<T>       (const dim4 &size, JIT::Node_ptr node); \
+    template       Array<T>  createNodeArray<T>       (const dim4 &size, common::Node_ptr node); \
     template       Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset, \
                                    const T * const in_data,             \
                                    bool is_device);                     \
