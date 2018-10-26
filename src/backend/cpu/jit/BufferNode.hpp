@@ -15,7 +15,7 @@
 namespace cpu
 {
 
-namespace JIT
+namespace jit
 {
 
     using std::shared_ptr;

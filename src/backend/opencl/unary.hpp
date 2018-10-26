@@ -10,7 +10,7 @@
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <math.hpp>
-#include <JIT/UnaryNode.hpp>
+#include <common/jit/UnaryNode.hpp>
 
 namespace opencl
 {
@@ -75,27 +75,27 @@ UNARY_FN(iszero)
 template<typename T, af_op_t op>
 Array<T> unaryOp(const Array<T> &in)
 {
-    JIT::Node_ptr in_node = in.getNode();
+    common::Node_ptr in_node = in.getNode();
 
-    JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<T>::getName(),
-                                              shortname<T>(true),
-                                              unaryName<op>(),
-                                              in_node, op);
+    common::UnaryNode *node = new common::UnaryNode(dtype_traits<T>::getName(),
+                                                    shortname<T>(true),
+                                                    unaryName<op>(),
+                                                    in_node, op);
 
-    return createNodeArray<T>(in.dims(), JIT::Node_ptr(node));
+    return createNodeArray<T>(in.dims(), common::Node_ptr(node));
 }
 
 template<typename T, af_op_t op>
 Array<char> checkOp(const Array<T> &in)
 {
-    JIT::Node_ptr in_node = in.getNode();
+    common::Node_ptr in_node = in.getNode();
 
-    JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<char>::getName(),
-                                              shortname<char>(true),
-                                              unaryName<op>(),
-                                              in_node, op);
+    common::UnaryNode *node = new common::UnaryNode(dtype_traits<char>::getName(),
+                                                    shortname<char>(true),
+                                                    unaryName<op>(),
+                                                    in_node, op);
 
-    return createNodeArray<char>(in.dims(), JIT::Node_ptr(node));
+    return createNodeArray<char>(in.dims(), common::Node_ptr(node));
 }
 
 }

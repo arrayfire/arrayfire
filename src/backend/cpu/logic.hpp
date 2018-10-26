@@ -12,7 +12,7 @@
 #include <optypes.hpp>
 #include <err_cpu.hpp>
 #include <types.hpp>
-#include <JIT/BinaryNode.hpp>
+#include <jit/BinaryNode.hpp>
 
 namespace cpu
 {
@@ -21,9 +21,9 @@ namespace cpu
     template<typename T>                        \
     struct BinOp<char, T, OP>                   \
     {                                           \
-        void eval(JIT::array<char> &out,        \
-                  const JIT::array<T> &lhs,     \
-                  const JIT::array<T> &rhs,     \
+        void eval(jit::array<char> &out,        \
+                  const jit::array<T> &lhs,     \
+                  const jit::array<T> &rhs,     \
                   int lim)                      \
         {                                       \
             for (int i = 0; i < lim; i++) {     \
@@ -49,9 +49,9 @@ namespace cpu
     struct BinOp<char, std::complex<T>, OP>     \
     {                                           \
         typedef std::complex<T> Ti;             \
-        void eval(JIT::array<char> &out,        \
-                  const JIT::array<Ti> &lhs,    \
-                  const JIT::array<Ti> &rhs,    \
+        void eval(jit::array<char> &out,        \
+                  const jit::array<Ti> &lhs,    \
+                  const jit::array<Ti> &rhs,    \
                   int lim)                      \
         {                                       \
             for (int i = 0; i < lim; i++) {     \
@@ -82,13 +82,12 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
     template<typename T, af_op_t op>
     Array<char> logicOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
     {
-        JIT::Node_ptr lhs_node = lhs.getNode();
-        JIT::Node_ptr rhs_node = rhs.getNode();
+        jit::Node_ptr lhs_node = lhs.getNode();
+        jit::Node_ptr rhs_node = rhs.getNode();
 
-        JIT::BinaryNode<char, T, op> *node = new JIT::BinaryNode<char, T, op>(lhs_node, rhs_node);
+        jit::BinaryNode<char, T, op> *node = new jit::BinaryNode<char, T, op>(lhs_node, rhs_node);
 
-        return createNodeArray<char>(odims,
-                                     JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+        return createNodeArray<char>(odims, jit::Node_ptr(node));
     }
 
 
@@ -97,9 +96,9 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
     template<typename T>                        \
     struct BinOp<T, T, OP>                      \
     {                                           \
-        void eval(JIT::array<T> &out,           \
-                  const JIT::array<T> &lhs,     \
-                  const JIT::array<T> &rhs,     \
+        void eval(jit::array<T> &out,           \
+                  const jit::array<T> &lhs,     \
+                  const jit::array<T> &rhs,     \
                   int lim)                      \
         {                                       \
             for (int i = 0; i < lim; i++) {     \
@@ -119,12 +118,11 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
     template<typename T, af_op_t op>
     Array<T> bitOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
     {
-        JIT::Node_ptr lhs_node = lhs.getNode();
-        JIT::Node_ptr rhs_node = rhs.getNode();
+        jit::Node_ptr lhs_node = lhs.getNode();
+        jit::Node_ptr rhs_node = rhs.getNode();
 
-        JIT::BinaryNode<T, T, op> *node = new JIT::BinaryNode<T, T, op>(lhs_node, rhs_node);
+        jit::BinaryNode<T, T, op> *node = new jit::BinaryNode<T, T, op>(lhs_node, rhs_node);
 
-        return createNodeArray<T>(odims,
-                                  JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+        return createNodeArray<T>(odims, jit::Node_ptr(node));
     }
 }

@@ -10,7 +10,8 @@
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <math.hpp>
-#include <JIT/ScalarNode.hpp>
+#include <common/jit/ScalarNode.hpp>
+#include <memory>
 
 namespace cuda
 {
@@ -18,7 +19,7 @@ namespace cuda
 template<typename T>
 Array<T> createScalarNode(const dim4 &size, const T val)
 {
-    return createNodeArray<T>(size, JIT::Node_ptr(new JIT::ScalarNode<T>(val)));
+    return createNodeArray<T>(size, std::make_shared<common::ScalarNode<T>>(val));
 }
 
 }
