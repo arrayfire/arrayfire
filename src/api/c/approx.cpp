@@ -83,7 +83,7 @@ af_err af_approx1_uniform(af_array *yo, const af_array yi,
                        method == AF_INTERP_NEAREST));
 
         if (yi_dims.ndims() == 0 || xo_dims.ndims() ==  0) {
-            *yo = createHandle(dim4(0,0,0,0), yi_info.getType());;
+            *yo = createHandle(dim4(0,0,0,0), yi_info.getType());
             return AF_SUCCESS;
         }
 

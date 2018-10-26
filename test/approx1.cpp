@@ -843,17 +843,16 @@ TEST(Approx1, CPPEmptyPosAndInput)
 
 TEST(Approx1, UseNullInitialOutput) {
     float h_in[3] = {10, 20, 30};
-    dim_t h_in_dims[1] = {3};
+    dim_t h_in_dims = 3;
 
     af_array in = 0;
-    af_create_array(&in, &h_in[0], 1, &h_in_dims[0], f32);
+    af_create_array(&in, &h_in[0], 1, &h_in_dims, f32);
 
     float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
-    dim_t h_pos_dims[1] = {5};
+    dim_t h_pos_dims = 5;
     af_array pos = 0;
-    af_create_array(&pos, &h_pos[0], 1, &h_pos_dims[0], f32);
+    af_create_array(&pos, &h_pos[0], 1, &h_pos_dims, f32);
 
-    dim_t h_out_dims[1] = {5};
     af_array out = 0;
     af_approx1(&out, in, pos, AF_INTERP_LINEAR, 0);
 
@@ -862,19 +861,19 @@ TEST(Approx1, UseNullInitialOutput) {
 
 TEST(Approx1, UseExistingOutputArray) {
     float h_in[3] = {10, 20, 30};
-    dim_t h_in_dims[1] = {3};
+    dim_t h_in_dims = 3;
 
     af_array in = 0;
-    af_create_array(&in, &h_in[0], 1, &h_in_dims[0], f32);
+    af_create_array(&in, &h_in[0], 1, &h_in_dims, f32);
 
     float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
-    dim_t h_pos_dims[1] = {5};
+    dim_t h_pos_dims = 5;
     af_array pos = 0;
-    af_create_array(&pos, &h_pos[0], 1, &h_pos_dims[0], f32);
+    af_create_array(&pos, &h_pos[0], 1, &h_pos_dims, f32);
 
-    dim_t h_out_dims[1] = {5};
+    dim_t h_out_dims = 5;
     af_array out_ptr = 0;
-    af_create_handle(&out_ptr, 1, &h_out_dims[0], f32);
+    af_create_handle(&out_ptr, 1, &h_out_dims, f32);
     af_array out_ptr_copy = out_ptr;
     af_approx1(&out_ptr, in, pos, AF_INTERP_LINEAR, 0);
 
@@ -885,15 +884,15 @@ TEST(Approx1, UseExistingOutputArray) {
 
 TEST(Approx1, UseExistingOutputSlice) {
     float h_in[3] = {10, 20, 30};
-    dim_t h_in_dims[1] = {3};
+    dim_t h_in_dims = 3;
 
     af_array in = 0;
-    af_create_array(&in, &h_in[0], 1, &h_in_dims[0], f32);
+    af_create_array(&in, &h_in[0], 1, &h_in_dims, f32);
 
     float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
-    dim_t h_pos_dims[1] = {5};
+    dim_t h_pos_dims = 5;
     af_array pos = 0;
-    af_create_array(&pos, &h_pos[0], 1, &h_pos_dims[0], f32);
+    af_create_array(&pos, &h_pos[0], 1, &h_pos_dims, f32);
 
     float h_out[15] = {1.0, 1.5, 2.0, 2.5, 3.0,
                        4.0, 4.5, 5.0, 5.5, 6.0,
