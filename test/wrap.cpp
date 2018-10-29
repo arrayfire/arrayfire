@@ -152,34 +152,35 @@ void wrapTest(const dim_t ix, const dim_t iy, const dim_t wx, const dim_t wy,
         wrapTest<TypeParam>(ix, iy, wx, wy, sx, sy, px, py, false); \
     }
 
-WRAP_INIT(00, 300, 100, 3, 3, 1, 1, 0, 0);
-WRAP_INIT(01, 300, 100, 3, 3, 1, 1, 1, 1);
-WRAP_INIT(03, 300, 100, 3, 3, 2, 2, 0, 0);
-WRAP_INIT(04, 300, 100, 3, 3, 2, 2, 1, 1);
-WRAP_INIT(05, 300, 100, 3, 3, 2, 2, 2, 2);
-WRAP_INIT(06, 300, 100, 3, 3, 3, 3, 0, 0);
-WRAP_INIT(07, 300, 100, 3, 3, 3, 3, 1, 1);
-WRAP_INIT(08, 300, 100, 3, 3, 3, 3, 2, 2);
-WRAP_INIT(09, 300, 100, 4, 4, 1, 1, 0, 0);
-WRAP_INIT(13, 300, 100, 4, 4, 2, 2, 0, 0);
-WRAP_INIT(14, 300, 100, 4, 4, 2, 2, 1, 1);
-WRAP_INIT(15, 300, 100, 4, 4, 2, 2, 2, 2);
-WRAP_INIT(16, 300, 100, 4, 4, 2, 2, 3, 3);
-WRAP_INIT(17, 300, 100, 4, 4, 4, 4, 0, 0);
-WRAP_INIT(18, 300, 100, 4, 4, 4, 4, 1, 1);
-WRAP_INIT(19, 300, 100, 4, 4, 4, 4, 2, 2);
-WRAP_INIT(27, 300, 100, 8, 8, 8, 8, 0, 0);
-WRAP_INIT(28, 300, 100, 8, 8, 8, 8, 7, 7);
-WRAP_INIT(31, 300, 100, 12, 12, 12, 12, 0, 0);
-WRAP_INIT(32, 300, 100, 12, 12, 12, 12, 2, 2);
-WRAP_INIT(35, 300, 100, 16, 16, 16, 16, 15, 15);
-WRAP_INIT(36, 300, 100, 31, 31, 8, 8, 15, 15);
-WRAP_INIT(39, 300, 100, 8, 12, 8, 12, 0, 0);
-WRAP_INIT(40, 300, 100, 8, 12, 8, 12, 7, 11);
-WRAP_INIT(43, 300, 100, 15, 10, 15, 10, 0, 0);
-WRAP_INIT(44, 300, 100, 15, 10, 15, 10, 14, 9);
+    WRAP_INIT(00, 300, 100,  3,  3,  1,  1,  0,  0);
+    // WRAP_INIT(01, 300, 100,  3,  3,  1,  1,  1,  1);
+    // WRAP_INIT(03, 300, 100,  3,  3,  2,  2,  0,  0);
+    // WRAP_INIT(04, 300, 100,  3,  3,  2,  2,  1,  1);
+    // WRAP_INIT(05, 300, 100,  3,  3,  2,  2,  2,  2);
+    // WRAP_INIT(06, 300, 100,  3,  3,  3,  3,  0,  0);
+    // WRAP_INIT(07, 300, 100,  3,  3,  3,  3,  1,  1);
+    // WRAP_INIT(08, 300, 100,  3,  3,  3,  3,  2,  2);
+    // WRAP_INIT(09, 300, 100,  4,  4,  1,  1,  0,  0);
+    // WRAP_INIT(13, 300, 100,  4,  4,  2,  2,  0,  0);
+    // WRAP_INIT(14, 300, 100,  4,  4,  2,  2,  1,  1);
+    // WRAP_INIT(15, 300, 100,  4,  4,  2,  2,  2,  2);
+    // WRAP_INIT(16, 300, 100,  4,  4,  2,  2,  3,  3);
+    // WRAP_INIT(17, 300, 100,  4,  4,  4,  4,  0,  0);
+    // WRAP_INIT(18, 300, 100,  4,  4,  4,  4,  1,  1);
+    // WRAP_INIT(19, 300, 100,  4,  4,  4,  4,  2,  2);
+    // WRAP_INIT(27, 300, 100,  8,  8,  8,  8,  0,  0);
+    // WRAP_INIT(28, 300, 100,  8,  8,  8,  8,  7,  7);
+    // WRAP_INIT(31, 300, 100, 12, 12, 12, 12,  0,  0);
+    // WRAP_INIT(32, 300, 100, 12, 12, 12, 12,  2,  2);
+    // WRAP_INIT(35, 300, 100, 16, 16, 16, 16, 15, 15);
+    // WRAP_INIT(36, 300, 100, 31, 31,  8,  8, 15, 15);
+    // WRAP_INIT(39, 300, 100,  8, 12,  8, 12,  0,  0);
+    // WRAP_INIT(40, 300, 100,  8, 12,  8, 12,  7, 11);
+    // WRAP_INIT(43, 300, 100, 15, 10, 15, 10,  0,  0);
+    // WRAP_INIT(44, 300, 100, 15, 10, 15, 10, 14,  9);
 
-TEST(Wrap, MaxDim) {
+TEST(Wrap, MaxDim)
+{
     const size_t largeDim = 65535 + 1;
     array input           = range(5, 5, 1, largeDim);
 
@@ -247,3 +248,169 @@ TEST(Wrap, DocSnippet) {
     array gold_B_wrapped(dim4(3, 3), gold_hB_wrapped);
     ASSERT_ARRAYS_EQ(gold_B_wrapped, B_wrapped);
 }
+
+TEST(Wrap, NullInput)
+{
+    float h_in[] = { 10, 20, 30, 40,
+                     20, 30, 40, 50,
+                     30, 40, 50, 60,
+                     40, 50, 60, 70 };
+    af_array in = 0;
+    dim_t in_dims[4] = { dim_t(4), dim_t(4), 1, 1};
+    ASSERT_SUCCESS(af_create_array(&in, &h_in[0], 2, in_dims, f32));
+
+
+    dim_t window_size = 2;
+    dim_t stride_size = 2;
+    dim_t padding_size = 0;
+    af_array unwrapped = 0;
+    ASSERT_SUCCESS(af_unwrap(&unwrapped, in,
+                             window_size,  window_size,
+                             stride_size,  stride_size,
+                             padding_size, padding_size,
+                             true));
+
+
+    af_array out = 0;
+    ASSERT_SUCCESS(af_wrap(&out, unwrapped,
+                           in_dims[0], in_dims[1],
+                           window_size,  window_size,
+                           stride_size,  stride_size,
+                           padding_size, padding_size,
+                           true));
+    ASSERT_FALSE(out == 0);
+
+    if (in != 0) af_release_array(in);
+    if (unwrapped != 0) af_release_array(unwrapped);
+    if (out != 0) af_release_array(out);
+}
+
+TEST(Wrap, EmptyInput)
+{
+    float h_in[] = { 10, 20, 20, 30,
+                     30, 40, 40, 50,
+                     30, 40, 40, 50,
+                     50, 60, 60, 70 };
+
+    // NOTE: `h_in` was obtained calling `unwrap(image, wrap = 2, stride = 2, padding = 0)`
+    // where image looks like the following:
+    //
+    // [4 4 1 1]
+    //     10.0000    20.0000    30.0000    40.0000
+    //     20.0000    30.0000    40.0000    50.0000
+    //     30.0000    40.0000    50.0000    60.0000
+    //     40.0000    50.0000    60.0000    70.0000
+    // win = 2, stride = 2, padding = 0
+
+    af_array in = 0;
+    dim_t in_dims[4] = { dim_t(4), dim_t(4), 1, 1 };
+    ASSERT_SUCCESS(af_create_array(&in, &h_in[0], 2, in_dims, f32));
+    cout << "\nin:\n\n";
+    af_print_array(in);
+
+    af_array wrapped = 0;
+    ASSERT_SUCCESS(af_create_handle(&wrapped, 2, in_dims, f32));
+    {
+        dim_t d0, d1, d2, d3;
+        af_get_dims(&d0, &d1, &d2, &d3, wrapped);
+        ASSERT_EQ(d0, in_dims[0]);
+        ASSERT_EQ(d1, in_dims[1]);
+        ASSERT_EQ(d2, 1);
+        ASSERT_EQ(d3, 1);
+    }
+
+    // af_array wrapped_copy = wrapped;
+    const dim_t window_size = 2;
+    const dim_t stride_size = 2;
+    const dim_t padding_size = 0;
+    ASSERT_SUCCESS(af_wrap(&wrapped, in,
+                           in_dims[0], in_dims[1],
+                           window_size, window_size,
+                           stride_size, stride_size,
+                           padding_size, padding_size,
+                           true));
+    cout << "\nwrapped:\n\n";
+    af_print_array(wrapped);
+
+
+    af_array gold = 0;
+    float h_gold[] = { 10, 20, 30, 40,
+                       20, 30, 40, 50,
+                       30, 40, 50, 60,
+                       40, 50, 60, 70 };
+    dim_t gold_dims[4] = { dim_t(4), dim_t(4), 1, 1 };
+    ASSERT_SUCCESS(af_create_array(&gold, &h_gold[0], 2, gold_dims, f32));
+
+    ASSERT_FALSE(wrapped == 0);
+
+    // \TODO why are `wrapped` and `gold` mismatching? why does
+    // `wrapped` have incorrect values greater than any of input
+    // values?
+    ASSERT_ARRAYS_EQ(wrapped, gold);
+
+    // wrapped
+    // [4 4 1 1]
+    //    20.0000    40.0000    50.0000    70.0000
+    //    50.0000    70.0000    80.0000   100.0000
+    //    60.0000    80.0000    90.0000   110.0000
+    //    90.0000   110.0000   120.0000   140.0000
+
+    // gold
+    // [4 4 1 1]
+    //    10.0000    20.0000    30.0000    40.0000
+    //    20.0000    30.0000    40.0000    50.0000
+    //    30.0000    40.0000    50.0000    60.0000
+    //    40.0000    50.0000    60.0000    70.0000
+
+
+
+
+    // ASSERT_EQ(wrapped_copy, wrapped);
+    // ASSERT_ARRAYS_EQ(wrapped_copy, wrapped);
+
+    if (in != 0) af_release_array(in);
+    if (wrapped != 0) af_release_array(wrapped);
+    if (gold != 0) af_release_array(gold);
+}
+
+// TEST(Wrap, NonEmptyInput)
+// {
+//     float h_in[] = { 10, 20, 30, 40,
+//                      20, 30, 40, 50,
+//                      30, 40, 50, 60,
+//                      40, 50, 60, 70 };
+//     af_array in = 0;
+//     dim_t in_dims[4] = { dim_t(4), dim_t(4), 1, 1 };
+//     ASSERT_SUCCESS(af_create_array(&in, &h_in[0], 2, in_dims, f32));
+
+//     const dim_t window_size = 2;
+//     const dim_t stride_size = 2;
+//     const dim_t padding_size = 0;
+//     af_array unwrapped = 0;
+//     ASSERT_SUCCESS(af_unwrap(&unwrapped, in,
+//                              window_size,  window_size,
+//                              stride_size,  stride_size,
+//                              padding_size, padding_size,
+//                              true));
+//     af_print_array(unwrapped);
+
+//     af_array out = 0;
+//     dim_t h_out_dims[2] = {4, 4};
+//     ASSERT_SUCCESS(af_randu(&out, 2, h_out_dims, f32));
+
+//     // \TODO indexing
+
+//     ASSERT_SUCCESS(af_wrap(&out, unwrapped,
+//                            in_dims[0], in_dims[1],
+//                            window_size,  window_size,
+//                            stride_size,  stride_size,
+//                            padding_size, padding_size,
+//                            true));
+
+//     ASSERT_FALSE(out == 0);
+//     ASSERT_ARRAYS_EQ(out, in);
+
+//     if (in != 0) af_release_array(in);
+//     if (unwrapped != 0) af_release_array(unwrapped);
+//     if (out != 0) af_release_array(out);
+// }

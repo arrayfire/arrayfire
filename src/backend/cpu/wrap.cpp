@@ -27,10 +27,11 @@ void wrap(Array<T> &out, const Array<T> &in,
           const dim_t px, const dim_t py,
           const bool is_column)
 {
+
     in.eval();
-    const dim4 idims = in.dims();
-    const dim4 odims(ox, oy, idims[2], idims[3]);
-    out = createValueArray<T>(odims, scalar<T>(0));
+    // const dim4 idims = in.dims();
+    // const dim4 odims(ox, oy, idims[2], idims[3]);
+    // out = createValueArray<T>(odims, scalar<T>(0));
     out.eval();
 
     if (is_column) {

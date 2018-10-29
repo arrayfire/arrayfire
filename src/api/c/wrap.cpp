@@ -37,10 +37,10 @@ af_err af_wrap(af_array* out, const af_array in, const dim_t ox, const dim_t oy,
         const af_dtype in_type = info.getType();
         const dim4 in_dims = info.dims();
 
-        ARG_ASSERT(2, wx > 0);
-        ARG_ASSERT(3, wx > 0);
-        ARG_ASSERT(4, sx > 0);
-        ARG_ASSERT(5, sy > 0);
+        ARG_ASSERT(4, wx > 0);
+        ARG_ASSERT(5, wy > 0);
+        ARG_ASSERT(6, sx > 0);
+        ARG_ASSERT(7, sy > 0);
 
         const dim_t nx = (ox + 2 * px - wx) / sx + 1;
         const dim_t ny = (oy + 2 * py - wy) / sy + 1;
@@ -53,6 +53,8 @@ af_err af_wrap(af_array* out, const af_array in, const dim_t ox, const dim_t oy,
 
         if (*out == 0) {
             *out = createHandle(dim4(ox, oy, in_dims[2], in_dims[3]), in_type);
+        } else {
+            // \TODO
         }
 
         switch(in_type) {
