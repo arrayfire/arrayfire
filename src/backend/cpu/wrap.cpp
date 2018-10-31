@@ -27,12 +27,7 @@ void wrap(Array<T> &out, const Array<T> &in,
           const dim_t px, const dim_t py,
           const bool is_column)
 {
-
-    in.eval();
-    // const dim4 idims = in.dims();
-    // const dim4 odims(ox, oy, idims[2], idims[3]);
-    // out = createValueArray<T>(odims, scalar<T>(0));
-    out.eval();
+    evalMultiple<T>(std::vector<Array<T>*>{const_cast<Array<T>*>(&in), &out});
 
     if (is_column) {
         getQueue().enqueue(kernel::wrap_dim<T, 1>, out, in, wx, wy, sx, sy, px,

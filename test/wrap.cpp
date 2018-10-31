@@ -249,7 +249,7 @@ TEST(Wrap, DocSnippet) {
     ASSERT_ARRAYS_EQ(gold_B_wrapped, B_wrapped);
 }
 
-TEST(Wrap, NullInput)
+TEST(Wrap, NullOutput)
 {
     float h_in[] = { 10, 20, 30, 40,
                      20, 30, 40, 50,
@@ -285,7 +285,7 @@ TEST(Wrap, NullInput)
     if (out != 0) af_release_array(out);
 }
 
-TEST(Wrap, EmptyInput)
+TEST(Wrap, EmptyOutput)
 {
     float h_in[] = { 10, 20, 20, 30,
                      30, 40, 40, 50,
@@ -305,19 +305,9 @@ TEST(Wrap, EmptyInput)
     af_array in = 0;
     dim_t in_dims[4] = { dim_t(4), dim_t(4), 1, 1 };
     ASSERT_SUCCESS(af_create_array(&in, &h_in[0], 2, in_dims, f32));
-    cout << "\nin:\n\n";
-    af_print_array(in);
 
     af_array wrapped = 0;
     ASSERT_SUCCESS(af_create_handle(&wrapped, 2, in_dims, f32));
-    {
-        dim_t d0, d1, d2, d3;
-        af_get_dims(&d0, &d1, &d2, &d3, wrapped);
-        ASSERT_EQ(d0, in_dims[0]);
-        ASSERT_EQ(d1, in_dims[1]);
-        ASSERT_EQ(d2, 1);
-        ASSERT_EQ(d3, 1);
-    }
 
     // af_array wrapped_copy = wrapped;
     const dim_t window_size = 2;
@@ -329,9 +319,6 @@ TEST(Wrap, EmptyInput)
                            stride_size, stride_size,
                            padding_size, padding_size,
                            true));
-    cout << "\nwrapped:\n\n";
-    af_print_array(wrapped);
-
 
     af_array gold = 0;
     float h_gold[] = { 10, 20, 30, 40,

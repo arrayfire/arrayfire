@@ -15,6 +15,7 @@ target_sources(afcpu
   PRIVATE
     Array.cpp
     Array.hpp
+    ArrayIterator.hpp
     anisotropic_diffusion.cpp
     anisotropic_diffusion.hpp
     approx.cpp

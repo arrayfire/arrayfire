@@ -26,7 +26,16 @@ static inline void wrap(af_array *out, const af_array in,
                         const dim_t px, const dim_t py,
                         const bool is_column)
 {
-    wrap<T>(getWritableArray<T>(*out), getArray<T>(in), ox, oy, wx, wy, sx, sy, px, py, is_column);
+    const Array<T>& in_ = getArray<T>(in);
+    dim4 in_dims = in_.dims();
+
+    if (*out == 0) {
+        Array<T> out_ = createEmptyArray<T>(dim4(ox, oy, in_dims[2], in_dims[3]));
+        wrap<T>(out_, in_, ox, oy, wx, wy, sx, sy, px, py, is_column);
+        *out = getHandle(out_);
+    } else {
+        wrap<T>(getWritableArray<T>(*out), in_, ox, oy, wx, wy, sx, sy, px, py, is_column);
+    }
 }
 
 af_err af_wrap(af_array* out, const af_array in, const dim_t ox, const dim_t oy,
@@ -50,12 +59,6 @@ af_err af_wrap(af_array* out, const af_array in, const dim_t ox, const dim_t oy,
 
         DIM_ASSERT(1, patch_size == wx * wy);
         DIM_ASSERT(1, num_patches == nx * ny);
-
-        if (*out == 0) {
-            *out = createHandle(dim4(ox, oy, in_dims[2], in_dims[3]), in_type);
-        } else {
-            // \TODO
-        }
 
         switch(in_type) {
             case f32: wrap<float  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
