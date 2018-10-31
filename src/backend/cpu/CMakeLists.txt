@@ -101,6 +101,7 @@ target_sources(afcpu
     orb.cpp
     orb.hpp
     padarray.cpp
+    ParamIterator.hpp
     platform.cpp
     platform.hpp
     print.hpp
