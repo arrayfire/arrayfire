@@ -174,6 +174,7 @@ cuda_add_library(afcuda
     moments.cu
     nearest_neighbour.cu
     orb.cu
+    pad_array_borders.cu
     product.cu
     qr.cu
     random_engine.cu
@@ -248,6 +249,7 @@ cuda_add_library(afcuda
     kernel/nearest_neighbour.hpp
     kernel/orb.hpp
     kernel/orb_patch.hpp
+    kernel/pad_array_borders.hpp
     kernel/random_engine.hpp
     kernel/random_engine_mersenne.hpp
     kernel/random_engine_philox.hpp

@@ -254,7 +254,12 @@ typedef enum {
     ///
     /// Out of bound values are symmetric over the edge
     ///
-    AF_PAD_SYM
+    AF_PAD_SYM,
+
+    ///
+    /// Out of bound values are clamped to the edge
+    ///
+    AF_PAD_CLAMP_TO_EDGE,
 } af_border_type;
 
 typedef enum {
