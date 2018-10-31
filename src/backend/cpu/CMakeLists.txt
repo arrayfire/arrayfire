@@ -213,6 +213,7 @@ target_sources(afcpu
     kernel/morph.hpp
     kernel/nearest_neighbour.hpp
     kernel/orb.hpp
+    kernel/pad_array_borders.hpp
     kernel/random_engine.hpp
     kernel/random_engine_mersenne.hpp
     kernel/random_engine_philox.hpp
