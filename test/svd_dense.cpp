@@ -183,3 +183,10 @@ TYPED_TEST(svd, InPlaceSameResultsRect0)
 // {
 //     checkInPlaceSameResults<TypeParam>(8, 10);
 // }
+
+TEST(svd, InPlaceRect0_Exception) {
+    array in = randu(3, 5);
+    array u, s, v;
+    EXPECT_THROW(svdInPlace(u, s, v, in), af::exception);
+}
+
