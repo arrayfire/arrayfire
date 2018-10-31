@@ -263,6 +263,62 @@ TEST(Transform, CPP) {
     }
 }
 
+TEST(Transform, UseNullInitialOutput)
+{
+  af_array scene_array = 0;
+  af_array gold_array = 0;
+
+  string in = "/home/miguel/work/af/arrayfire/test/data/transform/tux_scene.png";
+  string gold = "/home/miguel/work/af/arrayfire/test/data/transform/tux_scene_nearest.png";
+
+  ASSERT_SUCCESS(af_load_image(&scene_array, in.c_str(), false));
+  ASSERT_SUCCESS(af_load_image(&gold_array, gold.c_str(), false));
+
+  float hA[] = { 7.4543, 0.3170, 0.0006, -0.0844, 7.6983, 0.0010, 892.3555, -4530.7397, 3.990313053131104 };
+  dim4 h_dims(3, 3, 1, 1);
+  af_array h_array = 0;
+  ASSERT_SUCCESS(af_create_array(&h_array, hA, h_dims.ndims(), h_dims.get(), f32));
+
+  dim_t odim0 = 506;
+  dim_t odim1 = 376;
+  af_array out = 0;
+  ASSERT_SUCCESS(af_transform(&out,
+                              scene_array, h_array, odim0, odim1,
+                              AF_INTERP_NEAREST, true));
+
+  // Get gold data
+  dim_t goldEl = 0;
+  ASSERT_SUCCESS(af_get_elements(&goldEl, gold_array));
+  vector<float> gold_data(goldEl);
+  ASSERT_SUCCESS(af_get_data_ptr((void*)&gold_data.front(), gold_array));
+
+  // Get result
+  dim_t outEl = 0;
+  ASSERT_SUCCESS(af_get_elements(&outEl, out));
+  vector<float> out_data(outEl);
+  ASSERT_SUCCESS(af_get_data_ptr((void*)&out_data.front(), out));
+
+  const float thr = 1.1f;
+
+  // Maximum number of wrong pixels must be <= 0.01% of number of elements,
+  // this metric is necessary due to rounding errors between different
+  // backends for AF_INTERP_NEAREST and AF_INTERP_LOWER
+  const size_t maxErr = goldEl * 0.0001f;
+  size_t err = 0;
+
+  for (dim_t elIter = 0; elIter < goldEl; elIter++) {
+      err += fabs((float)floor(out_data[elIter]) - (float)floor(gold_data[elIter])) > thr;
+      if (err > maxErr) {
+          ASSERT_LE(err, maxErr) << "at: " << elIter << endl;
+      }
+  }
+
+  if (out != 0) af_release_array(out);
+  if (scene_array != 0) af_release_array(scene_array);
+  if (gold_array != 0)  af_release_array(gold_array);
+  if (h_array != 0)  af_release_array(h_array);
+}
+
 // This tests batching of different forms
 // tf0 rotates by 90 clockwise
 // tf1 rotates by 90 counter clockwise
