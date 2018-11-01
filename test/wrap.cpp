@@ -249,7 +249,7 @@ TEST(Wrap, DocSnippet) {
     ASSERT_ARRAYS_EQ(gold_B_wrapped, B_wrapped);
 }
 
-class WrapSimple : public ::testing::Test {
+class WrapSimple : public ::testing::Test, ::testing::WithParamInterface<const char *>  {
     void getInput(af_array *data, const dim_t *dims);
     void getGold(af_array *gold, const dim_t *dims);
 protected:
@@ -317,6 +317,7 @@ TEST_F(WrapSimple, SuccessfullyWriteToEmptyOutputArray)
                            win_len, win_len, strd_len, strd_len, pad_len, pad_len,
                            is_column));
     ASSERT_FALSE(out_ == 0);
+    ASSERT_ARRAYS_EQ(out_, gold_);
     if (out_ != 0) af_release_array(out_);
 }
 TEST_F(WrapSimple, SuccessfullyWriteToNonEmptyOutputArray)
@@ -328,6 +329,7 @@ TEST_F(WrapSimple, SuccessfullyWriteToNonEmptyOutputArray)
                            win_len, win_len, strd_len, strd_len, pad_len, pad_len,
                            is_column));
     ASSERT_FALSE(rand_out_ == 0);
+    ASSERT_ARRAYS_EQ(rand_out_, gold_);
     if (rand_out_ != 0) af_release_array(rand_out_);
 }
 
@@ -346,3 +348,71 @@ TEST_F(WrapSimple, ReturnsCorrectErrorCodeForNegativeWindowValues) // Stride, pa
     ASSERT_EQ(err, AF_ERR_ARG);
 }
 
+struct WindowCase {
+    dim_t win_dim0, win_dim1;
+    WindowCase(dim_t d0, dim_t d1)
+        : win_dim0(d0), win_dim1(d1) {}
+};
+struct StrideCase {
+    dim_t str_dim0, str_dim1;
+    StrideCase(dim_t d0, dim_t d1)
+        : str_dim0(d0), str_dim1(d1) {}
+};
+struct PadCase {
+    dim_t pad_dim0, pad_dim1;
+    PadCase(dim_t d0, dim_t d1)
+        : pad_dim0(d0), pad_dim1(d1) {}
+};
+struct ArgumentCase {
+    struct WindowCase wc_;
+    struct StrideCase sc_;
+    struct PadCase    pc_;
+    bool is_column;
+    af_err err;
+
+    ArgumentCase(struct WindowCase wc, struct StrideCase sc, struct PadCase pc)
+        : wc_(wc), sc_(sc), pc_(pc) {}
+    ArgumentCase(dim_t win_dim0, dim_t win_dim1,
+                 dim_t str_dim0, dim_t str_dim1,
+                 dim_t pad_dim0, dim_t pad_dim1,
+                 bool is_col, af_err err)
+        : wc_(win_dim0, win_dim1), sc_(str_dim0, str_dim1), pc_(pad_dim0, pad_dim1), is_column(is_col), err(err){}
+};
+
+class MyParamFixtureSomething: public WrapSimple,
+                               public ::testing::TestWithParam<ArgumentCase> {
+};
+
+TEST_P(MyParamFixtureSomething, CheckDifferentWindowCases)
+{
+    ArgumentCase input = GetParam();
+    WindowCase wc = input.wc_;
+    StrideCase sc = input.sc_;
+    PadCase    pc = input.pc_;
+
+    dim_t win_d0 = wc.win_dim0;
+    dim_t win_d1 = wc.win_dim1;
+    dim_t str_d0 = sc.str_dim0;
+    dim_t str_d1 = sc.str_dim1;
+    dim_t pad_d0 = pc.pad_dim0;
+    dim_t pad_d1 = pc.pad_dim1;
+
+    af_array out_ = 0;
+    af_err err = af_wrap(&out_, in_, in_dims[0], in_dims[1],
+                         win_d0, win_d1, str_d0, str_d1, pad_d0, pad_d1,
+                         is_column);
+
+    ASSERT_EQ(err, AF_SUCCESS);
+    if (out_ != 0) af_release_array(out_);
+}
+ArgumentCase args[] = {
+    ArgumentCase(dim_t(2), dim_t(2),
+                 dim_t(2), dim_t(2),
+                 dim_t(0), dim_t(0),
+                 true,
+                 af_err(0)),
+    // ArgumentCase(dim_t(-1), dim_t(2), af_err(0)), // wtf
+    // ArgumentCase(dim_t(2), dim_t(-1), af_err(0)),
+    // ArgumentCase(dim_t(-1), dim_t(-1), af_err(0)),
+};
+INSTANTIATE_TEST_CASE_P(BulkTest, MyParamFixtureSomething, ::testing::ValuesIn(args));
