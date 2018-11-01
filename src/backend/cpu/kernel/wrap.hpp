@@ -10,7 +10,9 @@
 #pragma once
 #include <Param.hpp>
 #include <err_cpu.hpp>
-#include <ArrayIterator.hpp>
+#include <ParamIterator.hpp>
+
+#include <algorithm>
 
 namespace cpu {
 namespace kernel {
@@ -26,7 +28,7 @@ void wrap_dim(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
     af::dim4 istrides = in.strides();
     af::dim4 ostrides = out.strides();
 
-    fill(begin(out), end(out), scalar<T>(0));
+    std::fill(begin(out), end(out), scalar<T>(0));
 
     dim_t nx = (odims[0] + 2 * px - wx) / sx + 1;
 
