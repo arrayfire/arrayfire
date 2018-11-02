@@ -249,134 +249,62 @@ TEST(Wrap, DocSnippet) {
     ASSERT_ARRAYS_EQ(gold_B_wrapped, B_wrapped);
 }
 
-class WindowCase {
-    dim_t win_dim0, win_dim1;
+class ArgDim
+{
 public:
-    WindowCase()
-        {
-            win_dim0 = 1;
-            win_dim1 = 1;
-        }
-    WindowCase(dim_t d0, dim_t d1)
-        : win_dim0(d0), win_dim1(d1) {}
-    void setWindow(dim_t d0, dim_t d1)
-        {
-            win_dim0 = d0;
-            win_dim1 = d1;
-        }
-    void getWindows(dim_t *d0, dim_t *d1)
-        {
-            *d0 = win_dim0;
-            *d1 = win_dim1;
-        }
-    void printWindow()
-        {
-            dim_t *d0, *d1;
-            this->getWindows(d0, d1);
-            std::cout << "win_dim0: " << *d0 << std::endl;
-            std::cout << "win_dim1: " << *d1 << std::endl;
-        }
+    ArgDim(dim_t d0, dim_t d1)
+        : dim0(d0), dim1(d1) {}
+    void get(dim_t *d0, dim_t *d1);
+private:
+    dim_t dim0;
+    dim_t dim1;
 };
-class StrideCase {
-    dim_t str_dim0, str_dim1;
+void ArgDim::get(dim_t *d0, dim_t *d1)
+{
+    *d0 = this->dim0;
+    *d1 = this->dim1;
+}
+class WindowDims : public ArgDim {
 public:
-    StrideCase()
-        {
-            str_dim0 = 1;
-            str_dim1 = 1;
-        }
-    StrideCase(dim_t d0, dim_t d1)
-        : str_dim0(d0), str_dim1(d1) {}
-    void setStride(dim_t d0, dim_t d1)
-        {
-            str_dim0 = d0;
-            str_dim1 = d1;
-        }
-    void getStrides(dim_t *d0, dim_t *d1)
-        {
-            *d0 = str_dim0;
-            *d1 = str_dim1;
-        }
-    void printStride()
-        {
-            dim_t *d0, *d1;
-            this->getStrides(d0, d1);
-            std::cout << "stride_dim0: " << *d0 << std::endl;
-            std::cout << "stride_dim1: " << *d1 << std::endl;
-        }
+    WindowDims()
+        : ArgDim(1, 1) {}
+    WindowDims(dim_t d0, dim_t d1)
+        : ArgDim(d0, d1) {}
 };
-class PadCase {
-    dim_t pad_dim0, pad_dim1;
+class StrideDims : public ArgDim {
 public:
-    PadCase()
-        {
-            pad_dim0 = 0;
-            pad_dim1 = 0;
-        }
-    PadCase(PadCase &pc)
-        {
-            getPads(&pad_dim0, &pad_dim1);
-        }
-    PadCase(dim_t d0, dim_t d1)
-        : pad_dim0(d0), pad_dim1(d1) {}
-    void setPad(dim_t d0, dim_t d1)
-        {
-            pad_dim0 = d0;
-            pad_dim1 = d1;
-        }
-    void getPads(dim_t *d0, dim_t *d1)
-        {
-            *d0 = pad_dim0;
-            *d1 = pad_dim1;
-        }
-    void printStride()
-        {
-            dim_t *d0, *d1;
-            this->getPads(d0, d1);
-            std::cout << "pad_dim0: " << *d0 << std::endl;
-            std::cout << "pad_dim1: " << *d1 << std::endl;
-        }
+    StrideDims()
+        : ArgDim(1, 1) {}
+    StrideDims(dim_t d0, dim_t d1)
+        : ArgDim(d0, d1) {}
+};
+class PadDims : public ArgDim {
+public:
+    PadDims() : ArgDim(0, 0) {}
+    PadDims(dim_t d0, dim_t d1)
+        : ArgDim(d0, d1){}
 };
 
-class ArgumentCase {
+class WrapArgs {
 public:
-    WindowCase *wc_;
-    StrideCase *sc_;
-    PadCase    *pc_;
+    WindowDims *wc_;
+    StrideDims *sc_;
+    PadDims    *pc_;
     bool is_column;
     af_err err;
-
-    // ArgumentCase(struct WindowCase *wc, struct StrideCase *sc, struct PadCase *pc)
-    //     : wc_(wc), sc_(sc), pc_(pc)
-    //     {
-    //         this->wc_ = new WindowCase();
-    //         this->sc_ = new StrideCase();
-    //         this->pc_ = new PadCase();
-    //     }
-    ArgumentCase(dim_t win_dim0, dim_t win_dim1,
-                 dim_t str_dim0, dim_t str_dim1,
-                 dim_t pad_dim0, dim_t pad_dim1,
+    WrapArgs(dim_t win_d0, dim_t win_d1,
+                 dim_t str_d0, dim_t str_d1,
+                 dim_t pad_d0, dim_t pad_d1,
                  bool is_col, af_err err)
-        {
-            this->wc_ = new WindowCase();
-            this->sc_ = new StrideCase();
-            this->pc_ = new PadCase();
-
-            this->wc_->setWindow(win_dim0, win_dim1);
-            this->sc_->setStride(str_dim0, str_dim1);
-            this->pc_->setPad(pad_dim0, pad_dim1);
-            this->is_column = is_col;
-            this->err = err;
-
-        }
-    ArgumentCase()
-        {
-            wc_ = new WindowCase();
-            sc_ = new StrideCase();
-            pc_ = new PadCase();
-            is_column = true;
-            err = af_err(999);
-        }
+        : wc_(new WindowDims(win_d0, win_d1)),
+          sc_(new StrideDims(str_d0, str_d1)),
+          pc_(new PadDims(pad_d0, pad_d1)),
+          is_column(is_col), err(err) {}
+    WrapArgs()
+        : wc_(new WindowDims()),
+          sc_(new StrideDims()),
+          pc_(new PadDims()),
+          is_column(true), err(af_err(999)) {}
 };
 
 class WrapSimple : virtual public ::testing::Test  {
@@ -462,7 +390,8 @@ TEST_F(WrapSimple, SuccessfullyWriteToNonEmptyOutputArray)
     ASSERT_ARRAYS_EQ(rand_out_, gold_);
     if (rand_out_ != 0) af_release_array(rand_out_);
 }
-class WrapAPITest: public WrapSimple, public ::testing::WithParamInterface<ArgumentCase> {
+
+class WrapAPITest: public WrapSimple, public ::testing::WithParamInterface<WrapArgs> {
     void getInput(af_array *data, const dim_t *dims);
 public:
     virtual void SetUp() {
@@ -478,7 +407,7 @@ public:
         if (in_ != 0) af_release_array(in_);
     }
 
-    ArgumentCase input;
+    WrapArgs input;
     af_array in_;
     dim_t in_dims[4];
 };
@@ -490,19 +419,18 @@ void WrapAPITest::getInput(af_array *data, const dim_t *dims)
                          50, 60, 60, 70 };
     ASSERT_SUCCESS(af_create_array(data, &h_data[0], 2, dims, f32));
 }
-
-TEST_P(WrapAPITest, CheckDifferentArgumentCases)
+TEST_P(WrapAPITest, CheckDifferentWrapArgss)
 {
-    WindowCase *wc = input.wc_;
-    StrideCase *sc = input.sc_;
-    PadCase    *pc = input.pc_;
+    WindowDims *wc = input.wc_;
+    StrideDims *sc = input.sc_;
+    PadDims    *pc = input.pc_;
 
     dim_t win_d0, win_d1;
     dim_t str_d0, str_d1;
     dim_t pad_d0, pad_d1;
-    wc->getWindows(&win_d0, &win_d1);
-    sc->getStrides(&str_d0, &str_d1);
-    pc->getPads(&pad_d0, &pad_d1);
+    wc->get(&win_d0, &win_d1);
+    sc->get(&str_d0, &str_d1);
+    pc->get(&pad_d0, &pad_d1);
 
     af_array out_ = 0;
     af_err err = af_wrap(&out_, in_, in_dims[0], in_dims[1],
@@ -512,23 +440,22 @@ TEST_P(WrapAPITest, CheckDifferentArgumentCases)
     ASSERT_EQ(err, input.err);
     if (out_ != 0) af_release_array(out_);
 }
-ArgumentCase args[] = {
-    ArgumentCase(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true,  af_err(0)),
-    ArgumentCase(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), false, af_err(0)),
+WrapArgs args[] = {
+    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true,  af_err(0)),
+    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), false, af_err(0)),
 
-    ArgumentCase(dim_t(-1), dim_t( 2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, af_err(202)),
-    ArgumentCase(dim_t( 2), dim_t(-1), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, af_err(202)),
-    ArgumentCase(dim_t(-1), dim_t(-1), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, af_err(202)),
+    WrapArgs(dim_t(-1), dim_t( 2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, af_err(202)),
+    WrapArgs(dim_t( 2), dim_t(-1), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, af_err(202)),
+    WrapArgs(dim_t(-1), dim_t(-1), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, af_err(202)),
 
-    ArgumentCase(dim_t(2), dim_t(2), dim_t(-1), dim_t( 2), dim_t(0), dim_t(0), true, af_err(202)),
-    ArgumentCase(dim_t(2), dim_t(2), dim_t( 2), dim_t(-1), dim_t(0), dim_t(0), true, af_err(202)),
-    ArgumentCase(dim_t(2), dim_t(2), dim_t(-1), dim_t(-1), dim_t(0), dim_t(0), true, af_err(202)),
+    WrapArgs(dim_t(2), dim_t(2), dim_t(-1), dim_t( 2), dim_t(0), dim_t(0), true, af_err(202)),
+    WrapArgs(dim_t(2), dim_t(2), dim_t( 2), dim_t(-1), dim_t(0), dim_t(0), true, af_err(202)),
+    WrapArgs(dim_t(2), dim_t(2), dim_t(-1), dim_t(-1), dim_t(0), dim_t(0), true, af_err(202)),
 
-    // ArgumentCase(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(1), dim_t(1), true, af_err(0)), // why 203?
-    // ArgumentCase(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(-1), dim_t(1), true, af_err(0)),
-    // ArgumentCase(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(1), dim_t(-1), true, af_err(0)),
-    // ArgumentCase(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(-1), dim_t(-1), true, af_err(0)),
-
+    // WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(1), dim_t(1), true, af_err(0)), // why 203?
+    // WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(-1), dim_t(1), true, af_err(0)),
+    // WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(1), dim_t(-1), true, af_err(0)),
+    // WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(-1), dim_t(-1), true, af_err(0)),
 };
 INSTANTIATE_TEST_CASE_P(BulkTest,
                         WrapAPITest,
