@@ -249,6 +249,90 @@ TEST(Wrap, DocSnippet) {
     ASSERT_ARRAYS_EQ(gold_B_wrapped, B_wrapped);
 }
 
+static void getInput(af_array *data, const dim_t *dims)
+{
+    float h_data[16] = { 10, 20, 20, 30,
+                         30, 40, 40, 50,
+                         30, 40, 40, 50,
+                         50, 60, 60, 70 };
+    ASSERT_SUCCESS(af_create_array(data, &h_data[0], 2, dims, f32));
+}
+static void getGold(af_array *gold, const dim_t *dims)
+{
+    float h_gold[16]= { 10, 20, 30, 40,
+                        20, 30, 40, 50,
+                        30, 40, 50, 60,
+                        40, 50, 60, 70 };
+    ASSERT_SUCCESS(af_create_array(gold, &h_gold[0], 2, dims, f32));
+}
+
+class WrapSimple : virtual public ::testing::Test  {
+protected:
+    virtual void SetUp() {
+        in_dims[0] = 4;
+        in_dims[1] = 4;
+        in_dims[2] = 1;
+        in_dims[3] = 1;
+
+        ::getInput(&in_, &in_dims[0]);
+        ::getGold(&gold_, &in_dims[0]);
+
+        win_len = 2;
+        strd_len = 2;
+        pad_len = 0;
+        is_column = true;
+    }
+    virtual void TearDown() {
+        if (in_   != 0) af_release_array(in_);
+        if (gold_ != 0) af_release_array(gold_);
+    }
+
+    af_array in_;
+    af_array gold_;
+    dim_t in_dims[4];
+    dim_t win_len;
+    dim_t strd_len;
+    dim_t pad_len;
+    bool is_column;
+};
+
+TEST_F(WrapSimple, SuccessfullyWriteToNullOutputArray)
+{
+    af_array out_ = 0;
+
+    ASSERT_SUCCESS(af_wrap(&out_, in_, in_dims[0], in_dims[1],
+                           win_len, win_len, strd_len, strd_len, pad_len, pad_len,
+                           is_column));
+
+    ASSERT_FALSE(out_ == 0);
+    ASSERT_ARRAYS_EQ(out_, gold_);
+    if (out_ != 0) af_release_array(out_);
+}
+TEST_F(WrapSimple, SuccessfullyWriteToEmptyOutputArray)
+{
+    af_array out_;
+    ASSERT_SUCCESS(af_create_handle(&out_, 2, in_dims, f32));
+
+    ASSERT_SUCCESS(af_wrap(&out_, in_, in_dims[0], in_dims[1],
+                           win_len, win_len, strd_len, strd_len, pad_len, pad_len,
+                           is_column));
+    ASSERT_FALSE(out_ == 0);
+    ASSERT_ARRAYS_EQ(out_, gold_);
+    if (out_ != 0) af_release_array(out_);
+}
+TEST_F(WrapSimple, SuccessfullyWriteToNonEmptyOutputArray)
+{
+    af_array rand_out_ ;
+    ASSERT_SUCCESS(af_randu(&rand_out_, 2, in_dims, f32));
+
+    ASSERT_SUCCESS(af_wrap(&rand_out_, in_, in_dims[0], in_dims[1],
+                           win_len, win_len, strd_len, strd_len, pad_len, pad_len,
+                           is_column));
+    ASSERT_FALSE(rand_out_ == 0);
+    ASSERT_ARRAYS_EQ(rand_out_, gold_);
+    if (rand_out_ != 0) af_release_array(rand_out_);
+}
+
 class ArgDim
 {
 public:
@@ -307,92 +391,7 @@ public:
           is_column(true), err(af_err(999)) {}
 };
 
-class WrapSimple : virtual public ::testing::Test  {
-    void getInput(af_array *data, const dim_t *dims);
-    void getGold(af_array *gold, const dim_t *dims);
-protected:
-    virtual void SetUp() {
-        in_dims[0] = 4;
-        in_dims[1] = 4;
-        in_dims[2] = 1;
-        in_dims[3] = 1;
-
-        getInput(&in_, &in_dims[0]);
-        getGold(&gold_, &in_dims[0]);
-
-        win_len = 2;
-        strd_len = 2;
-        pad_len = 0;
-        is_column = true;
-    }
-    virtual void TearDown() {
-        if (in_   != 0) af_release_array(in_);
-        if (gold_ != 0) af_release_array(gold_);
-    }
-
-    af_array in_;
-    af_array gold_;
-    dim_t in_dims[4];
-    dim_t win_len;
-    dim_t strd_len;
-    dim_t pad_len;
-    bool is_column;
-};
-void WrapSimple::getInput(af_array *data, const dim_t *dims)
-{
-    float h_data[16] = { 10, 20, 20, 30,
-                         30, 40, 40, 50,
-                         30, 40, 40, 50,
-                         50, 60, 60, 70 };
-    ASSERT_SUCCESS(af_create_array(data, &h_data[0], 2, dims, f32));
-}
-void WrapSimple::getGold(af_array *gold, const dim_t *dims)
-{
-    float h_gold[16]= { 10, 20, 30, 40,
-                        20, 30, 40, 50,
-                        30, 40, 50, 60,
-                        40, 50, 60, 70 };
-    ASSERT_SUCCESS(af_create_array(gold, &h_gold[0], 2, dims, f32));
-}
-TEST_F(WrapSimple, SuccessfullyWriteToNullOutputArray)
-{
-    af_array out_ = 0;
-
-    ASSERT_SUCCESS(af_wrap(&out_, in_, in_dims[0], in_dims[1],
-                           win_len, win_len, strd_len, strd_len, pad_len, pad_len,
-                           is_column));
-
-    ASSERT_FALSE(out_ == 0);
-    ASSERT_ARRAYS_EQ(out_, gold_);
-    if (out_ != 0) af_release_array(out_);
-}
-TEST_F(WrapSimple, SuccessfullyWriteToEmptyOutputArray)
-{
-    af_array out_;
-    ASSERT_SUCCESS(af_create_handle(&out_, 2, in_dims, f32));
-
-    ASSERT_SUCCESS(af_wrap(&out_, in_, in_dims[0], in_dims[1],
-                           win_len, win_len, strd_len, strd_len, pad_len, pad_len,
-                           is_column));
-    ASSERT_FALSE(out_ == 0);
-    ASSERT_ARRAYS_EQ(out_, gold_);
-    if (out_ != 0) af_release_array(out_);
-}
-TEST_F(WrapSimple, SuccessfullyWriteToNonEmptyOutputArray)
-{
-    af_array rand_out_ ;
-    ASSERT_SUCCESS(af_randu(&rand_out_, 2, in_dims, f32));
-
-    ASSERT_SUCCESS(af_wrap(&rand_out_, in_, in_dims[0], in_dims[1],
-                           win_len, win_len, strd_len, strd_len, pad_len, pad_len,
-                           is_column));
-    ASSERT_FALSE(rand_out_ == 0);
-    ASSERT_ARRAYS_EQ(rand_out_, gold_);
-    if (rand_out_ != 0) af_release_array(rand_out_);
-}
-
 class WrapAPITest: public WrapSimple, public ::testing::WithParamInterface<WrapArgs> {
-    void getInput(af_array *data, const dim_t *dims);
 public:
     virtual void SetUp() {
         in_dims[0] = 4;
@@ -401,7 +400,7 @@ public:
         in_dims[3] = 1;
 
         input = GetParam();
-        getInput(&in_, &in_dims[0]);
+        ::getInput(&in_, &in_dims[0]);
     }
     virtual void TearDown() {
         if (in_ != 0) af_release_array(in_);
@@ -411,15 +410,7 @@ public:
     af_array in_;
     dim_t in_dims[4];
 };
-void WrapAPITest::getInput(af_array *data, const dim_t *dims)
-{
-    float h_data[16] = { 10, 20, 20, 30,
-                         30, 40, 40, 50,
-                         30, 40, 40, 50,
-                         50, 60, 60, 70 };
-    ASSERT_SUCCESS(af_create_array(data, &h_data[0], 2, dims, f32));
-}
-TEST_P(WrapAPITest, CheckDifferentWrapArgss)
+TEST_P(WrapAPITest, CheckDifferentWrapArgs)
 {
     WindowDims *wc = input.wc_;
     StrideDims *sc = input.sc_;
@@ -441,23 +432,22 @@ TEST_P(WrapAPITest, CheckDifferentWrapArgss)
     if (out_ != 0) af_release_array(out_);
 }
 WrapArgs args[] = {
-    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true,  af_err(0)),
-    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), false, af_err(0)),
+    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true,  AF_SUCCESS),
+    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), false, AF_SUCCESS),
 
-    WrapArgs(dim_t(-1), dim_t( 2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, af_err(202)),
-    WrapArgs(dim_t( 2), dim_t(-1), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, af_err(202)),
-    WrapArgs(dim_t(-1), dim_t(-1), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, af_err(202)),
+    WrapArgs(dim_t(-1), dim_t( 2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, AF_ERR_ARG),
+    WrapArgs(dim_t( 2), dim_t(-1), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, AF_ERR_ARG),
+    WrapArgs(dim_t(-1), dim_t(-1), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, AF_ERR_ARG),
 
-    WrapArgs(dim_t(2), dim_t(2), dim_t(-1), dim_t( 2), dim_t(0), dim_t(0), true, af_err(202)),
-    WrapArgs(dim_t(2), dim_t(2), dim_t( 2), dim_t(-1), dim_t(0), dim_t(0), true, af_err(202)),
-    WrapArgs(dim_t(2), dim_t(2), dim_t(-1), dim_t(-1), dim_t(0), dim_t(0), true, af_err(202)),
+    WrapArgs(dim_t(2), dim_t(2), dim_t(-1), dim_t( 2), dim_t(0), dim_t(0), true, AF_ERR_ARG),
+    WrapArgs(dim_t(2), dim_t(2), dim_t( 2), dim_t(-1), dim_t(0), dim_t(0), true, AF_ERR_ARG),
+    WrapArgs(dim_t(2), dim_t(2), dim_t(-1), dim_t(-1), dim_t(0), dim_t(0), true, AF_ERR_ARG),
 
-    // WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(1), dim_t(1), true, af_err(0)), // why 203?
-    // WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(-1), dim_t(1), true, af_err(0)),
-    // WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(1), dim_t(-1), true, af_err(0)),
-    // WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(-1), dim_t(-1), true, af_err(0)),
+    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t( 1), dim_t( 1), true, AF_ERR_SIZE),
+    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(-1), dim_t( 1), true, AF_ERR_SIZE),
+    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t( 1), dim_t(-1), true, AF_ERR_SIZE),
+    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(-1), dim_t(-1), true, AF_ERR_SIZE),
 };
 INSTANTIATE_TEST_CASE_P(BulkTest,
                         WrapAPITest,
                         ::testing::ValuesIn(args));
-
