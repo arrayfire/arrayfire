@@ -877,9 +877,15 @@ TEST(Approx1, UseExistingOutputArray) {
     af_array out_ptr_copy = out_ptr;
     ASSERT_SUCCESS(af_approx1(&out_ptr, in, pos, AF_INTERP_LINEAR, 0));
 
+    // Verify that the original output af_array memory was used
     ASSERT_EQ(out_ptr_copy, out_ptr);
-    // Verify that the original ASSERT_SUCCESS(af_array does contain the results
-    ASSERT_ARRAYS_EQ(out_ptr_copy, out_ptr);
+
+    af_array out_no_alloc = 0;
+    ASSERT_SUCCESS(af_approx1(&out_no_alloc, in, pos, AF_INTERP_LINEAR, 0));
+
+    // Verify that the contents of an approx with a previously allocated output
+    // and that of a non-allocated output match
+    ASSERT_ARRAYS_EQ(out_ptr, out_no_alloc);
 }
 
 TEST(Approx1, UseExistingOutputSlice) {
