@@ -911,12 +911,10 @@ TEST(Approx1, UseExistingOutputSlice) {
     vector<float> h_out_approx(nelems);
     ASSERT_SUCCESS(af_get_data_ptr(&h_out_approx.front(), out));
 
-    float h_gold_arr[5] = {10.0, 15.0, 20.0, 25.0, 30.0};
-
-    // Check slice 1 of dim2 (elements 5 to 9 of h_out_approx) to see if they
-    // contain ASSERT_SUCCESS(af_approx1's results (without additional intermediate processing
-    // like indexing)
-    for (int i = 0; i < 5; ++i) {
-        EXPECT_EQ(h_gold_arr[i], h_out_approx[5+i]) << "at i: " << i << endl;
-    }
+    float h_gold[15] = {1.0, 1.5, 2.0, 2.5, 3.0,
+                        10.0, 15.0, 20.0, 25.0, 30.0,
+                        7.0, 7.5, 8.0, 8.5, 9.0};
+    af_array gold = 0;
+    ASSERT_SUCCESS(af_create_array(&gold, &h_gold[0], 2, &h_out_dims[0], f32));
+    ASSERT_ARRAYS_EQ(gold, out);
 }
