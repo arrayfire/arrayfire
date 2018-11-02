@@ -431,22 +431,24 @@ TEST_P(WrapAPITest, CheckDifferentWrapArgs)
     ASSERT_EQ(err, input.err);
     if (out_ != 0) af_release_array(out_);
 }
+
 WrapArgs args[] = {
-    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true,  AF_SUCCESS),
-    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), false, AF_SUCCESS),
+    //      | win_dim0 | win_dim1 | str_dim0 | str_dim1 | pad_dim0 | pad_dim1 | is_col |    err    |
+    WrapArgs(        2,         2,         2,         2,         0,         0,    true,  AF_SUCCESS),
+    WrapArgs(        2,         2,         2,         2,         0,         0,   false,  AF_SUCCESS),
 
-    WrapArgs(dim_t(-1), dim_t( 2), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, AF_ERR_ARG),
-    WrapArgs(dim_t( 2), dim_t(-1), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, AF_ERR_ARG),
-    WrapArgs(dim_t(-1), dim_t(-1), dim_t(2), dim_t(2), dim_t(0), dim_t(0), true, AF_ERR_ARG),
+    WrapArgs(       -1,         2,         2,         2,         0,         0,    true,  AF_ERR_ARG),
+    WrapArgs(        2,        -1,         2,         2,         0,         0,    true,  AF_ERR_ARG),
+    WrapArgs(       -1,        -1,         2,         2,         0,         0,    true,  AF_ERR_ARG),
 
-    WrapArgs(dim_t(2), dim_t(2), dim_t(-1), dim_t( 2), dim_t(0), dim_t(0), true, AF_ERR_ARG),
-    WrapArgs(dim_t(2), dim_t(2), dim_t( 2), dim_t(-1), dim_t(0), dim_t(0), true, AF_ERR_ARG),
-    WrapArgs(dim_t(2), dim_t(2), dim_t(-1), dim_t(-1), dim_t(0), dim_t(0), true, AF_ERR_ARG),
+    WrapArgs(        2,         2,        -1,         2,         0,         0,    true,  AF_ERR_ARG),
+    WrapArgs(        2,         2,         2,        -1,         0,         0,    true,  AF_ERR_ARG),
+    WrapArgs(        2,         2,        -1,        -1,         0,         0,    true,  AF_ERR_ARG),
 
-    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t( 1), dim_t( 1), true, AF_ERR_SIZE),
-    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(-1), dim_t( 1), true, AF_ERR_SIZE),
-    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t( 1), dim_t(-1), true, AF_ERR_SIZE),
-    WrapArgs(dim_t(2), dim_t(2), dim_t(2), dim_t(2), dim_t(-1), dim_t(-1), true, AF_ERR_SIZE),
+    WrapArgs(        2,         2,         2,         2,         1,         1,    true,  AF_ERR_SIZE),
+    WrapArgs(        2,         2,         2,         2,        -1,         1,    true,  AF_ERR_SIZE),
+    WrapArgs(        2,         2,         2,         2,         1,        -1,    true,  AF_ERR_SIZE),
+    WrapArgs(        2,         2,         2,         2,        -1,        -1,    true,  AF_ERR_SIZE),
 };
 INSTANTIATE_TEST_CASE_P(BulkTest,
                         WrapAPITest,
