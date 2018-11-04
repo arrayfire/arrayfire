@@ -753,13 +753,23 @@ extern "C" {
 /**
    C Interface for signals interpolation on one dimensional signals.
 
-   \param[out] out the interpolated array.
-   \param[in]  in is the multidimensional input array. Values assumed to lie uniformly spaced indices in the range of `[0, n)`, where `n` is the number of elements in the array.
-   \param[in]  pos positions of the interpolation points along the first dimension.
-   \param[in]  method is the interpolation method to be used. The following types (defined in enum \ref af_interp_type) are supported: nearest neighbor, linear, and cubic.
-   \param[in]  off_grid is the default value for any indices outside the valid range of indices.
-   \return     \ref AF_SUCCESS if the interpolation operation is successful,
-               otherwise an appropriate error code is returned.
+   \param[in,out] out      is the interpolated array.
+   \param[in]     in       is the multidimensional input array. Values assumed to
+                           lie uniformly spaced indices in the range of `[0, n)`,
+                           where `n` is the number of elements in the array.
+   \param[in]     pos      positions of the interpolation points along the first
+                           dimension.
+   \param[in]     method   is the interpolation method to be used. The following
+                           types (defined in enum \ref af_interp_type)
+                           are supported: nearest neighbor, linear, and cubic.
+   \param[in]     off_grid is the default value for any indices outside the
+                           valid range of indices.
+   \return        \ref AF_SUCCESS if the interpolation operation is successful,
+                  otherwise an appropriate error code is returned.
+
+   \note \p out can either be a null or existing `af_array` object. If it is a
+         sub-array of an existing `af_array`, only the corresponding portion of
+         the `af_array` will be overwritten
 
    \ingroup signal_func_approx1
  */
@@ -800,16 +810,28 @@ AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, c
    The blue dots represent indices whose values are known. The red dots
    represent indices whose values are unknown.
 
-   \param[out] out the interpolated array.
-   \param[in]  in is the multidimensional input array. Values lie on uniformly spaced indices determined by `idx_start` and `idx_step`.
-   \param[in]  pos positions of the interpolation points along `interp_dim`.
-   \param[in]  interp_dim is the dimension to perform interpolation across.
-   \param[in]  idx_start is the first index value along `interp_dim`.
-   \param[in]  idx_step is the uniform spacing value between subsequent indices along `interp_dim`.
-   \param[in]  method is the interpolation method to be used. The following types (defined in enum \ref af_interp_type) are supported: nearest neighbor, linear, and cubic.
-   \param[in]  off_grid is the default value for any indices outside the valid range of indices.
-   \return     \ref AF_SUCCESS if the interpolation operation is successful,
-               otherwise an appropriate error code is returned.
+   \param[in,out] out        the interpolated array.
+   \param[in]     in         is the multidimensional input array. Values lie on
+                             uniformly spaced indices determined by `idx_start`
+                             and `idx_step`.
+   \param[in]     pos        positions of the interpolation points along
+                             `interp_dim`.
+   \param[in]     interp_dim is the dimension to perform interpolation across.
+   \param[in]     idx_start  is the first index value along `interp_dim`.
+   \param[in]     idx_step   is the uniform spacing value between subsequent
+                             indices along `interp_dim`.
+   \param[in]     method     is the interpolation method to be used. The
+                             following types (defined in enum
+                             \ref af_interp_type) are supported: nearest
+                             neighbor, linear, and cubic.
+   \param[in]     off_grid   is the default value for any indices outside the
+                             valid range of indices.
+   \return        \ref AF_SUCCESS if the interpolation operation is successful,
+                  otherwise an appropriate error code is returned.
+
+   \note \p out can either be a null or existing `af_array` object. If it is a
+         sub-array of an existing `af_array`, only the corresponding portion of
+         the `af_array` will be overwritten
 
    \ingroup signal_func_approx1
  */

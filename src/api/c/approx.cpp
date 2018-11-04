@@ -20,15 +20,15 @@ using af::dim4;
 using namespace detail;
 
 template<typename Ty, typename Tp>
-static inline af_array approx1(const af_array yi,
-                               const af_array xo, const int xdim,
-                               const Tp &xi_beg, const Tp &xi_step,
-                               const af_interp_type method, const float offGrid)
+static inline void approx1(af_array *yo, const af_array yi,
+                           const af_array xo, const int xdim,
+                           const Tp &xi_beg, const Tp &xi_step,
+                           const af_interp_type method, const float offGrid)
 {
-    return getHandle(approx1<Ty>(getArray<Ty>(yi),
-                                 getArray<Tp>(xo), xdim,
-                                 xi_beg, xi_step,
-                                 method, offGrid));
+    approx1<Ty>(getWritableArray<Ty>(*yo), getArray<Ty>(yi),
+                getArray<Tp>(xo), xdim,
+                xi_beg, xi_step,
+                method, offGrid);
 }
 
 template<typename Ty, typename Tp>
@@ -58,8 +58,8 @@ af_err af_approx1_uniform(af_array *yo, const af_array yi,
         const ArrayInfo& yi_info = getInfo(yi);
         const ArrayInfo& xo_info = getInfo(xo);
 
-        dim4 yi_dims = yi_info.dims();
-        dim4 xo_dims = xo_info.dims();
+        const dim4 yi_dims = yi_info.dims();
+        const dim4 xo_dims = xo_info.dims();
 
         ARG_ASSERT(1, yi_info.isFloating());                        // Only floating and complex types
         ARG_ASSERT(2, xo_info.isRealFloating()) ;                   // Only floating types
@@ -83,27 +83,33 @@ af_err af_approx1_uniform(af_array *yo, const af_array yi,
                        method == AF_INTERP_NEAREST));
 
         if (yi_dims.ndims() == 0 || xo_dims.ndims() ==  0) {
-            return af_create_handle(yo, 0, nullptr, yi_info.getType());
+            *yo = createHandle(dim4(0,0,0,0), yi_info.getType());
+            return AF_SUCCESS;
         }
 
-        af_array output;
+        dim4 yo_dims = yi_dims;
+        yo_dims[xdim] = xo_dims[xdim];
+        if (*yo == 0) {
+            *yo = createHandle(yo_dims, yi_info.getType());
+        }
+
+        DIM_ASSERT(1, getInfo(*yo).dims() == yo_dims);
 
         switch(yi_info.getType()) {
-        case f32: output = approx1<float  , float >(yi, xo, xdim,
-                                                    xi_beg, xi_step,
-                                                    method, offGrid);  break;
-        case f64: output = approx1<double , double>(yi, xo, xdim,
-                                                    xi_beg, xi_step,
-                                                    method, offGrid);  break;
-        case c32: output = approx1<cfloat , float >(yi, xo, xdim,
-                                                    xi_beg, xi_step,
-                                                    method, offGrid);  break;
-        case c64: output = approx1<cdouble, double>(yi, xo, xdim,
+        case f32: approx1<float  , float >(yo, yi, xo, xdim,
+                                           xi_beg, xi_step,
+                                           method, offGrid);  break;
+        case f64: approx1<double , double>(yo, yi, xo, xdim,
+                                           xi_beg, xi_step,
+                                           method, offGrid);  break;
+        case c32: approx1<cfloat , float >(yo, yi, xo, xdim,
+                                           xi_beg, xi_step,
+                                           method, offGrid);  break;
+        case c64: approx1<cdouble, double>(yo, yi, xo, xdim,
                                                     xi_beg, xi_step,
                                                     method, offGrid);  break;
         default:  TYPE_ERROR(1, yi_info.getType());
         }
-        std::swap(*yo,output);
     }
     CATCHALL;
 

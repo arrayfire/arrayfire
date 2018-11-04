@@ -81,9 +81,9 @@ detail::Array<To> castArray(const af_array &in)
 
 template<typename T>
 static detail::Array<T> &
-getWritableArray(const af_array &arr)
+getWritableArray(af_array &arr)
 {
-    const detail::Array<T> &A = getArray<T>(arr);
+    const detail::Array<T> &A = getArray<T>((const af_array) arr);
     ARG_ASSERT(0, A.isSparse() == false);
     return const_cast<detail::Array<T>&>(A);
 }

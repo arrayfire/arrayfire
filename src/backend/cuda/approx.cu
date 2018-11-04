@@ -16,17 +16,11 @@
 namespace cuda
 {
     template<typename Ty, typename Tp>
-    Array<Ty> approx1(const Array<Ty> &yi,
-                      const Array<Tp> &xo, const int xdim,
-                      const Tp &xi_beg, const Tp &xi_step,
-                      const af_interp_type method, const float offGrid)
+    void approx1(Array<Ty> &yo, const Array<Ty> &yi,
+                 const Array<Tp> &xo, const int xdim,
+                 const Tp &xi_beg, const Tp &xi_step,
+                 const af_interp_type method, const float offGrid)
     {
-        af::dim4 odims = yi.dims();
-        odims[xdim] = xo.dims()[xdim];
-
-        // Create output placeholder
-        Array<Ty> yo = createEmptyArray<Ty>(odims);
-
         switch(method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
@@ -43,7 +37,6 @@ namespace cuda
         default:
             break;
         }
-        return yo;
     }
 
     template<typename Ty, typename Tp>
@@ -92,13 +85,14 @@ namespace cuda
     }
 
 #define INSTANTIATE(Ty, Tp)                                         \
-    template Array<Ty> approx1<Ty, Tp>(const Array<Ty> &yi,         \
-                                       const Array<Tp> &xo,         \
-                                       const int xdim,              \
-                                       const Tp &xi_beg,            \
-                                       const Tp &xi_step,           \
-                                       const af_interp_type method, \
-                                       const float offGrid);        \
+    template void approx1<Ty, Tp>(Array<Ty> &yo,                    \
+                                  const Array<Ty> &yi,              \
+                                  const Array<Tp> &xo,              \
+                                  const int xdim,                   \
+                                  const Tp &xi_beg,                 \
+                                  const Tp &xi_step,                \
+                                  const af_interp_type method,      \
+                                  const float offGrid);             \
     template Array<Ty> approx2<Ty, Tp>(const Array<Ty> &zi,         \
                                        const Array<Tp> &xo,         \
                                        const int xdim,              \
