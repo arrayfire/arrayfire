@@ -1,6 +1,69 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.6.2
+======
+
+Features
+--------
+- Batching support for ```cond``` argument in select() [#2243]
+- Broadcast batching for matmul [#2315]
+- Add support for n-multiple nearest neighbors from NearestNeighbour() [#2280]
+- Support for clamp to edge padding [#2333]
+
+Improvements
+------------
+- Performance improvements in morph() [#2238]
+- Fix linking errors when compiling without Freeimage/Graphics [#2248]
+- Add bigobj EHsc and FS flags to CUDA_NVCC_FLAGS and test executables [#2253]
+- Fixes to improve the usage of ArrayFire as a subproject [#2290] 
+- Allow custom library path for loading dynamic backend libraries [#2302]
+- Fix compilation issues on macOS [#2323]
+- Change allocation of raw pointers in backend to prevent potential memory leaks [#2265]
+
+
+Bug fixes
+-----------
+- Fix LAPACK definitions [#2239]
+- Fix LAPACK linking errors [#2245]
+- Fix overflow in dim4::ndims. [#2289]
+- Remove setDevice from af::array destructor [#2319]
+- Fix pow precision for integral types [#2305]
+- Fix issues with tile with a large repeat dimension [#2307]
+- Correct SVD output to OpenCL sub-arrays [#2279]
+- Fix grid based indexing calculation in histogram [#2230]
+- Fix bug when using an ```af::array``` for indexing [#2311]
+- Incorporate CLBlast fixes for Windows [#2222]
+
+Documentation
+-------------
+- Improve unwrap documentation [#2301]
+- Improve wrap documentation [#2320]
+- Fix and improve accum documentation [#2298]
+- Improve tile documentation [#2293]
+- Clarify approx indexing in documentation [#2287]
+- Update examples of select in detailed documentation [#2277]
+- Update lookup examples [#2288]
+- Update set documentation [#2299]
+
+
+Misc
+-------------
+* New arrayfire ASSERT utility functions [#2249][#2256][#2257][#2263]
+* Add missing AF_WITH_LOGGING definiton [#2275]
+* Add Volta and remove Fermi from CUDA Toolkit 9.0 builds [#2269]
+* Improve error messages in JIT [#2309]
+* spdlog v1.0.0 added as part of ArrayFire by default [#2264]
+* ```af*``` library and dependencies directory changed to ```lib64``` [#2186]
+
+
+
+Contributions
+-------------
+Thank you to our contributors:
+[Jacob Kahn](https://github.com/jacobkahn)  
+[Vardan Akopian](https://github.com/vakopian)  
+
 v3.6.1
 ======
 
