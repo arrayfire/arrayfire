@@ -521,7 +521,7 @@ DeviceManager::DeviceManager()
         if (dev.prop.major < getMinSupportedCompute(cudaMajorVer)) {
             continue;
         } else {
-            dev.flops = dev.prop.multiProcessorCount *
+            dev.flops = static_cast<size_t>(dev.prop.multiProcessorCount) *
                         compute2cores(dev.prop.major, dev.prop.minor) *
                         dev.prop.clockRate;
             dev.nativeId = i;
