@@ -245,7 +245,8 @@ ALIASES                = "support{1}=<DIV class=\"support\">\1</DIV>" \
                          "funcgroups{4}=\ingroup \3 \4 \n @{ \n \defgroup \1 \2 \n @{ \n" \
                          "funcgroups{5}=\ingroup \3 \4 \5 \n @{ \n \defgroup \1 \2 \n @{ \n" \
                          "funcgroups{6}=\ingroup \3 \4 \5 \6 \n @{ \n \defgroup \1 \2 \n @{ \n" \
-                         "endfuncgroups=@} \n @}"
+                         "endfuncgroups=@} \n @} " \
+                         "PR{1}=[[#\1](https://github.com/arrayfire/arrayfire/pull/\1)]"
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"
