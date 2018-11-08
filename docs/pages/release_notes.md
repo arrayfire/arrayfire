@@ -6,93 +6,58 @@ v3.6.2
 
 Features
 --------
-- Support batching for `cond` argument in [select()](@ref data_func_select)
-  [[#2243](https://github.com/arrayfire/arrayfire/pull/2243)]
-- Support broadcast batching for [matmul()](@ref blas_func_matmul)
-  [[#2315](https://github.com/arrayfire/arrayfire/pull/2315)]
-- Support multiple nearest neighbors for
-  [nearestNeighbour()](@ref cv_func_nearest_neighbour)
-  [[#2280](https://github.com/arrayfire/arrayfire/pull/2280)]
-- Array border clamp-to-edge padding (see \ref af_border_type)
-  [[#2333](https://github.com/arrayfire/arrayfire/pull/2333)]
+- Support batching for `cond` argument in select() \PR{2243}
+- Support broadcast batching for matmul() \PR{2315}
+- Support multiple nearest neighbors for nearestNeighbour() \PR{2280}
+- Clamp-to-edge padding as an af_border_type option \PR{2333}
 
 Improvements
 ------------
-- Improved performance of [morphological operations](@ref morph_mat)
-  [[#2238](https://github.com/arrayfire/arrayfire/pull/2238)]
+- Improved performance of morphological operations \PR{2238}
 - Changed allocation of raw pointers in backends to prevent potential memory
-  leaks [[#2265](https://github.com/arrayfire/arrayfire/pull/2265)]
-- Fixed linking errors when compiling without Freeimage/Graphics
-  [[#2248](https://github.com/arrayfire/arrayfire/pull/2248)]
+  leaks \PR{2265}
+- Fixed linking errors when compiling without Freeimage/Graphics \PR{2248}
 - Added bigobj EHsc and FS flags to CUDA_NVCC_FLAGS and test executables
-  [[#2253](https://github.com/arrayfire/arrayfire/pull/2253)]
-- Fixed to improve the usage of ArrayFire as a subproject
-  [[#2290](https://github.com/arrayfire/arrayfire/pull/2290)] 
-- Fixed compilation issues on macOS
-  [[#2323](https://github.com/arrayfire/arrayfire/pull/2323)]
+  \PR{2253}
+- Fixed to improve the usage of ArrayFire as a subproject \PR{2290} 
+- Fixed compilation issues on macOS \PR{2323}
 - Enabled configuration of custom library path for loading dynamic backend
-  libraries [[#2302](https://github.com/arrayfire/arrayfire/pull/2302)]
+  libraries \PR{2302}
 
 Bug Fixes
 ---------
-- Fixed LAPACK definitions
-  [[#2239](https://github.com/arrayfire/arrayfire/pull/2239)]
-- Fixed LAPACK linking errors
-  [[#2245](https://github.com/arrayfire/arrayfire/pull/2245)]
-- Fixed overflow in [dim4::ndims()](@ref af::dim4)
-  [[#2289](https://github.com/arrayfire/arrayfire/pull/2289)]
-- Removed setDevice from af::array destructor
-  [[#2319](https://github.com/arrayfire/arrayfire/pull/2319)]
-- Fixed [pow()](@ref arith_func_pow) precision for integral types
-  [[#2305](https://github.com/arrayfire/arrayfire/pull/2305)]
-- Fixed issues with [tile()](@ref manip_func_tile) with a large repeat dimension
-  [[#2307](https://github.com/arrayfire/arrayfire/pull/2307)]
-- Fixed [svd()](@ref lapack_factor_func_svd) sub-array output on OpenCL
-  [[#2279](https://github.com/arrayfire/arrayfire/pull/2279)]
-- Fixed grid-based indexing calculation in [histogram()](@ref image_func_histogram)
-  [[#2230](https://github.com/arrayfire/arrayfire/pull/2230)]
-- Fixed bug when using an af::array for [indexing](@ref indexing)
-  [[#2311](https://github.com/arrayfire/arrayfire/pull/2311)]
+- Fixed LAPACK definitions \PR{2239}
+- Fixed LAPACK linking errors \PR{2245}
+- Fixed overflow in dim4::ndims() \PR{2289}
+- Removed setDevice from af::array destructor \PR{2319}
+- Fixed pow() precision for integral types \PR{2305}
+- Fixed issues with tile() with a large repeat dimension \PR{2307}
+- Fixed svd() sub-array output on OpenCL \PR{2279}
+- Fixed grid-based indexing calculation in histogram() \PR{2230}
+- Fixed bug when using an af::array for indexing \PR{2311}
 - Incorporated [CLBlast](https://github.com/CNugteren/CLBlast) fixes for Windows
-  [[#2222](https://github.com/arrayfire/arrayfire/pull/2222)]
+  \PR{2222}
 
 Documentation
 -------------
-- Improved [unwrap()](@ref image_func_unwrap) documentation
-  [[#2301](https://github.com/arrayfire/arrayfire/pull/2315)]
-- Improved [wrap()](@ref image_func_wrap) documentation
-  [[#2320](https://github.com/arrayfire/arrayfire/pull/2315)]
-- Improved [accum()](@ref scan_func_accum) documentation
-  [[#2298](https://github.com/arrayfire/arrayfire/pull/2315)]
-- Improved [tile()](@ref manip_func_tile) documentation
-  [[#2293](https://github.com/arrayfire/arrayfire/pull/2315)]
-- Clarified [approx1()](@ref signal_func_approx1) and
-  [approx2()](@ref signal_func_approx2) indexing in documentation
-  [[#2287](https://github.com/arrayfire/arrayfire/pull/2315)]
+- Improved unwrap() documentation \PR{2301}
+- Improved wrap() documentation \PR{2320}
+- Improved accum() documentation \PR{2298}
+- Improved tile() documentation \PR{2293}
+- Clarified approx1() and approx2() indexing in documentation \PR{2287}
 - Updated examples of [select()](@ref data_func_select) in detailed documentation
-  [[#2277](https://github.com/arrayfire/arrayfire/pull/2315)]
-- Updated [lookup()](@ref index_func_lookup) examples
-  [[#2288](https://github.com/arrayfire/arrayfire/pull/2315)]
-- Updated [set operations'](@ref set_mat) documentation
-  [[#2299](https://github.com/arrayfire/arrayfire/pull/2315)]
+  \PR{2277}
+- Updated lookup() examples \PR{2288}
+- Updated set operations' documentation \PR{2299}
 
 Misc
 ----
-- `af*` libraries and dependencies directory changed to `lib64`
-  [[#2186](https://github.com/arrayfire/arrayfire/pull/2315)]
-- New arrayfire ASSERT utility functions
-  [[#2249](https://github.com/arrayfire/arrayfire/pull/2315)]
-  [[#2256](https://github.com/arrayfire/arrayfire/pull/2315)]
-  [[#2257](https://github.com/arrayfire/arrayfire/pull/2315)]
-  [[#2263](https://github.com/arrayfire/arrayfire/pull/2315)]
-- Add missing AF_WITH_LOGGING definiton
-  [[#2275](https://github.com/arrayfire/arrayfire/pull/2315)]
-- Add Volta and remove Fermi from CUDA Toolkit 9.0 builds
-  [[#2269](https://github.com/arrayfire/arrayfire/pull/2315)]
-- Improve error messages in JIT
-  [[#2309](https://github.com/arrayfire/arrayfire/pull/2315)]
-- spdlog v1.0.0 added as part of ArrayFire by default
-  [[#2264](https://github.com/arrayfire/arrayfire/pull/2315)]
+- `af*` libraries and dependencies directory changed to `lib64` \PR{2186}
+- New arrayfire ASSERT utility functions \PR{2249} \PR{2256} \PR{2257} \PR{2263}
+- Add missing AF_WITH_LOGGING definiton \PR{2275}
+- Add Volta and remove Fermi from CUDA Toolkit 9.0 builds \PR{2269}
+- Improve error messages in JIT \PR{2309}
+- spdlog v1.0.0 added as part of ArrayFire by default \PR{2264}
 
 Contributions
 -------------
