@@ -26,6 +26,8 @@ clipFilePath(std::string path, std::string str)
     }
 }
 
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
 #if defined(_WIN32) || defined(_MSC_VER)
     #define __PRETTY_FUNCTION__ __FUNCSIG__
     #if _MSC_VER < 1900
@@ -53,15 +55,9 @@ typedef enum {
 #ifdef OS_WIN
 #include <Windows.h>
 using LibHandle = HMODULE;
-static const char* librarySuffix = ".dll";
-static const char* libraryPrefix = "";
 #elif defined(OS_MAC)
-static const char* librarySuffix = ".dylib";
-static const char* libraryPrefix = "lib";
 using LibHandle = void*;
 #elif defined(OS_LNX)
-static const char* librarySuffix = ".so";
-static const char* libraryPrefix = "lib";
 using LibHandle = void*;
 #else
 #error "Unsupported platform"

@@ -26,7 +26,7 @@ Array<T> iota(const dim4 &dims, const dim4 &tile_dims)
 
     Array<T> out = createEmptyArray<T>(outdims);
 
-    getQueue().enqueue(kernel::iota<T>, out, dims, tile_dims);
+    getQueue().enqueue(kernel::iota<T>, out, dims);
 
     return out;
 }

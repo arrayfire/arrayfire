@@ -39,7 +39,7 @@ typedef struct {
 } zlaswp_params_t;
 
 template<typename T>
-void laswp(int n, cl_mem in, size_t offset, int ldda, int k1, int k2, const int *ipiv, int inci)
+void laswp(int n, cl_mem in, size_t offset, int ldda, int k1, int k2, const int *ipiv, int inci, cl::CommandQueue &queue)
 {
     std::string refName = std::string("laswp_") + std::string(dtype_traits<T>::getName());
 
@@ -84,7 +84,7 @@ void laswp(int n, cl_mem in, size_t offset, int ldda, int k1, int k2, const int 
 
         unsigned long long k_offset = offset + k*ldda;
 
-        laswpOp(EnqueueArgs(getQueue(), global, local), n, inObj, k_offset, ldda, params);
+        laswpOp(EnqueueArgs(queue, global, local), n, inObj, k_offset, ldda, params);
     }
 }
 }

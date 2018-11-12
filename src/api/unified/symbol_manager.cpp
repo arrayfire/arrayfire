@@ -128,9 +128,9 @@ LibHandle openDynLibrary(const af_backend bknd_idx, int flag=RTLD_LAZY)
     typedef af_err(*func)(int*);
 
     LibHandle retVal = nullptr;
-    for (int i = 0; i < extent<decltype(paths)>::value; i++) {
+    for (size_t i = 0; i < extent<decltype(paths)>::value; i++) {
         AF_TRACE("Attempting: {}", paths[i]);
-        if (retVal = loadLibrary(join_path(paths[i], bkndLibName).c_str())) {
+        if ((retVal = loadLibrary(join_path(paths[i], bkndLibName).c_str()))) {
             AF_TRACE("Found: {}", join_path(paths[i], bkndLibName));
 
             func count_func = (func)getFunctionPointer(retVal,
@@ -258,6 +258,7 @@ bool checkArray(af_backend activeBackend, af_array a)
 
 bool checkArrays(af_backend activeBackend)
 {
+    UNUSED(activeBackend);
     // Dummy
     return true;
 }

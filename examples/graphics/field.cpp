@@ -17,7 +17,7 @@ const static float MINIMUM = -3.0f;
 const static float MAXIMUM =  3.0f;
 const static float STEP = 0.18f;
 
-int main(int argc, char *argv[])
+int main(int, char **)
 {
     try {
         af::info();

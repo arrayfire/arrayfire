@@ -401,18 +401,21 @@ TEST(Reduce, Test_max_Global)
 template<typename T>
 void typed_assert_eq(T lhs, T rhs, bool both = true)
 {
+    UNUSED(both);
     ASSERT_EQ(lhs, rhs);
 }
 
 template<>
 void typed_assert_eq<float>(float lhs, float rhs, bool both)
 {
+    UNUSED(both);
     ASSERT_FLOAT_EQ(lhs, rhs);
 }
 
 template<>
 void typed_assert_eq<double>(double lhs, double rhs, bool both)
 {
+    UNUSED(both);
     ASSERT_DOUBLE_EQ(lhs, rhs);
 }
 

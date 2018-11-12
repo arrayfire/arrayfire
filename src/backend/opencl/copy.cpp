@@ -19,7 +19,6 @@ namespace opencl
     template<typename T>
     void copyData(T *data, const Array<T> &A)
     {
-
         // FIXME: Merge this with copyArray
         A.eval();
 
@@ -120,6 +119,8 @@ namespace opencl
     template<typename inType, typename outType>
     void copyArray(Array<outType> &out, Array<inType> const &in)
     {
+        static_assert(!(is_complex<inType>::value && !is_complex<outType>::value),
+                      "Cannot copy from complex value to a non complex value");
         copyWrapper<inType, outType> copyFn;
         copyFn(out, in);
     }
@@ -187,36 +188,6 @@ namespace opencl
 
     INSTANTIATE_PAD_ARRAY_COMPLEX(cfloat )
     INSTANTIATE_PAD_ARRAY_COMPLEX(cdouble)
-
-#define SPECILIAZE_UNUSED_COPYARRAY(SRC_T, DST_T) \
-    template<> void copyArray<SRC_T, DST_T>(Array<DST_T> &out, Array<SRC_T> const &in) \
-    {\
-        char errMessage[1024];                                              \
-        snprintf(errMessage, sizeof(errMessage),                            \
-                "OpenCL copyArray<"#SRC_T","#DST_T"> is not supported\n");  \
-        OPENCL_NOT_SUPPORTED(errMessage);                                   \
-    }
-
-    SPECILIAZE_UNUSED_COPYARRAY(cfloat, double)
-    SPECILIAZE_UNUSED_COPYARRAY(cfloat, float)
-    SPECILIAZE_UNUSED_COPYARRAY(cfloat, uchar)
-    SPECILIAZE_UNUSED_COPYARRAY(cfloat, char)
-    SPECILIAZE_UNUSED_COPYARRAY(cfloat, uint)
-    SPECILIAZE_UNUSED_COPYARRAY(cfloat, int)
-    SPECILIAZE_UNUSED_COPYARRAY(cfloat, intl)
-    SPECILIAZE_UNUSED_COPYARRAY(cfloat, uintl)
-    SPECILIAZE_UNUSED_COPYARRAY(cfloat, short)
-    SPECILIAZE_UNUSED_COPYARRAY(cfloat, ushort)
-    SPECILIAZE_UNUSED_COPYARRAY(cdouble, double)
-    SPECILIAZE_UNUSED_COPYARRAY(cdouble, float)
-    SPECILIAZE_UNUSED_COPYARRAY(cdouble, uchar)
-    SPECILIAZE_UNUSED_COPYARRAY(cdouble, char)
-    SPECILIAZE_UNUSED_COPYARRAY(cdouble, uint)
-    SPECILIAZE_UNUSED_COPYARRAY(cdouble, int)
-    SPECILIAZE_UNUSED_COPYARRAY(cdouble, intl)
-    SPECILIAZE_UNUSED_COPYARRAY(cdouble, uintl)
-    SPECILIAZE_UNUSED_COPYARRAY(cdouble, short)
-    SPECILIAZE_UNUSED_COPYARRAY(cdouble, ushort)
 
     template<typename T>
     T getScalar(const Array<T> &in)

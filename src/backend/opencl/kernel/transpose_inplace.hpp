@@ -35,7 +35,7 @@ static const int THREADS_X = TILE_DIM;
 static const int THREADS_Y = 256 / TILE_DIM;
 
 template<typename T, bool conjugate, bool IS32MULTIPLE>
-void transpose_inplace(Param in)
+void transpose_inplace(Param in, cl::CommandQueue &queue)
 {
     std::string refName = std::string("transpose_inplace_") + std::string(dtype_traits<T>::getName()) +
         std::to_string(conjugate) + std::to_string(IS32MULTIPLE);
@@ -74,9 +74,9 @@ void transpose_inplace(Param in)
 
     auto transposeOp = KernelFunctor<Buffer, const KParam, const int, const int> (*entry.ker);
 
-    transposeOp(EnqueueArgs(getQueue(), global, local), *in.data, in.info, blk_x, blk_y);
+    transposeOp(EnqueueArgs(queue, global, local), *in.data, in.info, blk_x, blk_y);
 
-    CL_DEBUG_FINISH(getQueue());
+    CL_DEBUG_FINISH(queue);
 }
 }
 }

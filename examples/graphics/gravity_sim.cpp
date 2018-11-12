@@ -168,10 +168,9 @@ void collisions(vector<af::array> &pos, vector<af::array> &vels, bool is3D) {
 }
 
 
-int main(int argc, char *argv[])
+int main(int, char **)
 {
     try {
-
         af::info();
 
         af::Window myWindow(width, height, "Gravity Simulation using ArrayFire");

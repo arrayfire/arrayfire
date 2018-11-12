@@ -37,7 +37,7 @@ static const int TILEX = 512;
 static const int TILEY = 32;
 
 template<typename T>
-void iota(Param out, const af::dim4 &sdims, const af::dim4 &tdims)
+void iota(Param out, const af::dim4 &sdims)
 {
     std::string refName = std::string("iota_kernel_") + std::string(dtype_traits<T>::getName());
 
@@ -63,7 +63,6 @@ void iota(Param out, const af::dim4 &sdims, const af::dim4 &tdims)
 
     auto iotaOp = KernelFunctor<Buffer, const KParam,
                                 const int, const int, const int, const int,
-                                const int, const int, const int, const int,
                                 const int, const int> (*entry.ker);
 
     NDRange local(IOTA_TX, IOTA_TY, 1);
@@ -75,7 +74,7 @@ void iota(Param out, const af::dim4 &sdims, const af::dim4 &tdims)
 
     iotaOp(EnqueueArgs(getQueue(), global, local),
            *out.data, out.info, sdims[0], sdims[1], sdims[2], sdims[3],
-           tdims[0], tdims[1], tdims[2], tdims[3], blocksPerMatX, blocksPerMatY);
+           blocksPerMatX, blocksPerMatY);
 
     CL_DEBUG_FINISH(getQueue());
 }

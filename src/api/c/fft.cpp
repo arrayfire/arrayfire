@@ -17,6 +17,16 @@
 using af::dim4;
 using namespace detail;
 
+void computePaddedDims(dim4 &pdims,
+                       const dim4 &idims,
+                       const dim_t npad,
+                       dim_t const * const pad)
+{
+    for (int i = 0; i < 4; i++) {
+        pdims[i] = (i < (int)npad) ? pad[i] : idims[i];
+    }
+}
+
 template<typename inType, typename outType, int rank, bool direction>
 static af_array fft(const af_array in, const double norm_factor,
                     const dim_t npad, const dim_t  * const pad)
@@ -91,7 +101,7 @@ af_err af_ifft3(af_array *out, const af_array in, const double norm_factor, cons
 }
 
 template<typename T, int rank, bool direction>
-static void fft_inplace(const af_array in, const double norm_factor)
+static void fft_inplace(af_array in, const double norm_factor)
 {
     Array<T> &input = getWritableArray<T>(in);
     fft_inplace<T, rank, direction>(input);

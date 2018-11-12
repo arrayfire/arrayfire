@@ -10,7 +10,6 @@
 __kernel
 void iota_kernel(__global T *out, const KParam op,
                  const int s0, const int s1, const int s2, const int s3,
-                 const int t0, const int t1, const int t2, const int t3,
                  const int blocksPerMatX, const int blocksPerMatY)
 {
     const int oz = get_group_id(0) / blocksPerMatX;

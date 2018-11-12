@@ -43,6 +43,7 @@ namespace {
 
   /// Generates the code to calculate the offsets for a buffer
   void generateBufferOffsets(std::stringstream &kerStream, int id, bool is_linear, const std::string& type_str) {
+      UNUSED(type_str);
       std::string idx_str = std::string("int idx") + std::to_string(id);
       std::string info_str = std::string("iInfo") + std::to_string(id);
 
@@ -64,8 +65,11 @@ namespace {
   }
 
 
+  inline
   void generateShiftNodeOffsets(std::stringstream &kerStream, int id,
                                 bool is_linear, const std::string& type_str) {
+      UNUSED(is_linear);
+      UNUSED(type_str);
       std::string idx_str = std::string("idx") + std::to_string(id);
       std::string info_str = std::string("iInfo") + std::to_string(id);
       std::string id_str = std::string("sh_id_") + std::to_string(id) + "_";
@@ -88,11 +92,11 @@ namespace {
                 << id_str << "0 + " << info_str << ".offset;\n";
   }
 
+  inline
   void generateShiftNodeRead(std::stringstream &kerStream, int id,
                              const std::string& type_str) {
       kerStream << type_str << " val" << id
                 << " = in" << id << "[idx" << id << "];\n";
   }
-
 }
 }

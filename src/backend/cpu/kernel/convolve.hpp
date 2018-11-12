@@ -189,13 +189,14 @@ void convolve2_separable(InT *optr, InT const * const iptr, AccT const * const f
                         af::dim4 const & oDims, af::dim4 const & sDims, af::dim4 const & orgDims, dim_t fDim,
                         af::dim4 const & oStrides, af::dim4 const & sStrides, dim_t fStride)
 {
+    UNUSED(orgDims);
+    UNUSED(sStrides);
+    UNUSED(fStride);
     for(dim_t j=0; j<oDims[1]; ++j) {
-
         dim_t jOff = j*oStrides[1];
         dim_t cj = j + (conv_dim==1)*(Expand ? 0: fDim>>1);
 
         for(dim_t i=0; i<oDims[0]; ++i) {
-
             dim_t iOff = i*oStrides[0];
             dim_t ci = i + (conv_dim==0)*(Expand ? 0 : fDim>>1);
 

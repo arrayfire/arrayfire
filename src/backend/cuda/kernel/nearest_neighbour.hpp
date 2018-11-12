@@ -179,10 +179,9 @@ template<typename T, typename To, af_match_type dist_type>
 void all_distances(Param<To> dist,
                        CParam<T> query,
                        CParam<T> train,
-                       const dim_t dist_dim,
-                       const unsigned n_dist)
+                       const dim_t dist_dim)
 {
-    const unsigned feat_len = query.dims[dist_dim];
+    const dim_t feat_len = query.dims[dist_dim];
     const unsigned max_kern_feat_len = min(THREADS, feat_len);
     const To max_dist = maxval<To>();
 
@@ -204,7 +203,7 @@ void all_distances(Param<To> dist,
 
     // For each query vector, find training vector with smallest Hamming
     // distance per CUDA block
-    for(int feat_offset=0; feat_offset<feat_len; feat_offset+=THREADS) {
+    for(dim_t feat_offset=0; feat_offset<feat_len; feat_offset+=THREADS) {
         if (use_shmem) {
             CUDA_LAUNCH_SMEM((all_distances<T,To,dist_type,true>), blocks, threads, smem_sz,
                              dist.ptr, query, train, max_dist, feat_len, max_kern_feat_len, feat_offset);

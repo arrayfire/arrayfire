@@ -52,11 +52,16 @@ namespace jit
 
         void calc(int x, int y, int z, int w, int lim) final
         {
+            UNUSED(x);
+            UNUSED(y);
+            UNUSED(z);
+            UNUSED(w);
             m_op.eval(this->m_val, m_lhs->m_val, m_rhs->m_val, lim);
         }
 
         void calc(int idx, int lim) final
         {
+            UNUSED(idx);
             m_op.eval(this->m_val, m_lhs->m_val, m_rhs->m_val, lim);
         }
     };

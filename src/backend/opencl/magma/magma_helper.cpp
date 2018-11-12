@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include "magma_common.h"
+#include "common/defines.hpp"
 
 template<typename T> T magma_one() { return (T)1.0; }
 template<typename T> T magma_neg_one() { return (T)-1.0; }
@@ -119,18 +120,21 @@ magma_int_t magma_get_potrf_nb<double>(magma_int_t m)
 template<>
 magma_int_t magma_get_potrf_nb<magmaFloatComplex>(magma_int_t m)
 {
+    UNUSED(m);
     return 128;
 }
 
 template<>
 magma_int_t magma_get_potrf_nb<magmaDoubleComplex>(magma_int_t m)
 {
+    UNUSED(m);
     return  64;
 }
 
 template<typename T>
 magma_int_t magma_get_geqrf_nb(magma_int_t m )
 {
+    UNUSED(m);
     return 128;
 }
 
@@ -167,7 +171,7 @@ magma_int_t magma_get_geqrf_nb<magmaDoubleComplex>( magma_int_t m )
     /* Other */
 #endif
 
-template<typename T> T magma_make(double r, double i) { return (T) r; }
+template<typename T> T magma_make(double r, double i) { UNUSED(i); return (T) r; }
 template float magma_make<float>(double r, double i);
 template double magma_make<double>(double r, double i);
 template<> magmaFloatComplex magma_make<magmaFloatComplex>(double r, double i)

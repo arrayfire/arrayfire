@@ -67,10 +67,7 @@ void testSobelDerivatives(string pTestFile)
     vector<To> currDXGoldBar = tests[0];
     vector<To> currDYGoldBar = tests[1];
 
-    size_t nElems = currDXGoldBar.size();
     ASSERT_VEC_ARRAY_EQ(currDXGoldBar, dims, dxArray);
-
-    nElems = currDYGoldBar.size();
     ASSERT_VEC_ARRAY_EQ(currDYGoldBar, dims, dyArray);
 
     // cleanup

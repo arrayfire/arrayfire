@@ -128,11 +128,9 @@ TYPED_TEST(Approx2, LinearBatch)
     approx2Test<TypeParam>(string(TEST_DIR"/approx/approx2_batch.test"), 1, AF_INTERP_LINEAR);
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Test Argument Failure Cases
-///////////////////////////////////////////////////////////////////////////////
 template<typename T>
-void approx2ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp_type method, const af_err err)
+void approx2ArgsTest(string pTestFile, const af_interp_type method, const af_err err)
 {
     if (noDoubleTests<T>()) return;
     typedef typename dtype_traits<T>::base_type BT;
@@ -165,24 +163,25 @@ void approx2ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
     if(outArray  != 0) af_release_array(outArray);
 }
 
-    TYPED_TEST(Approx2, Approx2NearestArgsPos3D)
-    {
-        approx2ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx2_pos3d.test"), 0, AF_INTERP_NEAREST, AF_ERR_SIZE);
-    }
+TYPED_TEST(Approx2, Approx2NearestArgsPos3D)
+{
+    approx2ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx2_pos3d.test"), AF_INTERP_NEAREST, AF_ERR_SIZE);
+}
 
-    TYPED_TEST(Approx2, Approx2LinearArgsPos3D)
-    {
-        approx2ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx2_pos3d.test"), 1, AF_INTERP_LINEAR, AF_ERR_SIZE);
-    }
+TYPED_TEST(Approx2, Approx2LinearArgsPos3D)
+{
+    approx2ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx2_pos3d.test"), AF_INTERP_LINEAR, AF_ERR_SIZE);
+}
 
-    TYPED_TEST(Approx2, Approx2NearestArgsPosUnequal)
-    {
-        approx2ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx2_unequal.test"), 0, AF_INTERP_NEAREST, AF_ERR_SIZE);
-    }
+TYPED_TEST(Approx2, Approx2NearestArgsPosUnequal)
+{
+    approx2ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx2_unequal.test"), AF_INTERP_NEAREST, AF_ERR_SIZE);
+}
 
 template<typename T>
 void approx2ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const af_interp_type method)
 {
+    UNUSED(resultIdx);
     if (noDoubleTests<T>()) return;
     vector<dim4> numDims;
     vector<vector<T> > in;

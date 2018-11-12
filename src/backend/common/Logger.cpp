@@ -51,10 +51,11 @@ loggerFactory(string name) {
 
 string bytesToString(size_t bytes) {
     static array<const char *, 5> units{"B", "KB", "MB", "GB", "TB"};
-    int count = 0;
+    size_t count = 0;
     double fbytes = static_cast<double>(bytes);
-    for(count = 0; count < units.size() && fbytes > 1000.0; count++) {
-        fbytes *= (1.0 / 1024.0);
+    size_t num_units = units.size();
+    for(count = 0; count < num_units && fbytes > 1000.0f; count++) {
+        fbytes *= (1.0f / 1024.0f);
     }
     return fmt::format("{:.3g} {}", fbytes, units[count]);
 }

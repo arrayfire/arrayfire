@@ -16,7 +16,7 @@ using namespace af;
 static const int ITERATIONS = 50;
 static const float PRECISION = 1.0f/ITERATIONS;
 
-int main(int argc, char *argv[])
+int main(int, char **)
 {
     try {
         // Initialize the kernel array just once

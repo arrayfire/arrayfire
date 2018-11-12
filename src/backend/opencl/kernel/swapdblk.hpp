@@ -33,7 +33,8 @@ namespace kernel
 template<typename T>
 void swapdblk(int n, int nb,
               cl_mem dA, size_t dA_offset, int ldda, int inca,
-              cl_mem dB, size_t dB_offset, int lddb, int incb)
+              cl_mem dB, size_t dB_offset, int lddb, int incb,
+              cl_command_queue queue)
 {
     std::string refName = std::string("swapdblk_") + std::string(dtype_traits<T>::getName());
 
@@ -91,7 +92,8 @@ void swapdblk(int n, int nb,
     auto swapdOp = KernelFunctor<int, Buffer, unsigned long long, int, int,
                                Buffer, unsigned long long, int, int>(*entry.ker);
 
-    swapdOp(EnqueueArgs(getQueue(), global, local),
+    cl::CommandQueue q(queue);
+    swapdOp(EnqueueArgs(q, global, local),
             nb, dAObj, dA_offset, ldda, inca, dBObj, dB_offset, lddb, incb);
 }
 }

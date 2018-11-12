@@ -67,22 +67,19 @@ af_err af_anisotropic_diffusion(af_array* out, const af_array in, const float dt
         ARG_ASSERT(3, (K>0 || K<0));
         ARG_ASSERT(4, (iterations>0));
 
-        float DT = dt;
-        float maxDt = 1.0f/std::pow(2.0f, static_cast<float>(2)+1);
-
         const af_flux_function F = (fftype==AF_FLUX_DEFAULT ? AF_FLUX_EXPONENTIAL : fftype);
 
         auto input = castArray<float>(in);
 
         af_array output = 0;
         switch(inputType) {
-            case f64: output = diffusion<double>(input, DT, K, iterations, F, eq); break;
+            case f64: output = diffusion<double>(input, dt, K, iterations, F, eq); break;
             case f32:
             case s32:
             case u32:
             case s16:
             case u16:
-            case u8 : output = diffusion<float>(input, DT, K, iterations, F, eq); break;
+            case u8 : output = diffusion<float>(input, dt, K, iterations, F, eq); break;
             default : TYPE_ERROR(1, inputType);
         }
         std::swap(*out, output);

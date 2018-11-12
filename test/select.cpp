@@ -381,7 +381,7 @@ TEST_P(Select_, Batch) {
     vector<unsigned char> h_cond(cond.elements()); cond.host(h_cond.data());
 
     vector<float> gold(params.out.elements());
-    for(int i = 0; i < gold.size(); i++) {
+    for(size_t i = 0; i < gold.size(); i++) {
         gold[i] = h_cond[i % h_cond.size()] ? aval : bval;
         ASSERT_FLOAT_EQ(gold[i], h_out[i]) << "at: " << i;
     }
@@ -452,7 +452,7 @@ TEST_P(SelectLR_, BatchL) {
     vector<unsigned char> h_cond(cond.elements()); cond.host(h_cond.data());
 
     vector<float> gold(params.out.elements());
-    for(int i = 0; i < gold.size(); i++) {
+    for(size_t i = 0; i < gold.size(); i++) {
         gold[i] = h_cond[i % h_cond.size()] ? aval : bval;
         ASSERT_FLOAT_EQ(gold[i], h_out[i]) << "at: " << i;
     }
@@ -474,7 +474,7 @@ TEST_P(SelectLR_, BatchR) {
     vector<unsigned char> h_cond(cond.elements()); cond.host(h_cond.data());
 
     vector<float> gold(params.out.elements());
-    for(int i = 0; i < gold.size(); i++) {
+    for(size_t i = 0; i < gold.size(); i++) {
         gold[i] = h_cond[i % h_cond.size()] ? aval : bval;
         ASSERT_FLOAT_EQ(gold[i], h_out[i]) << "at: " << i;
     }

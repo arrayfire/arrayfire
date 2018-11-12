@@ -160,6 +160,7 @@ inline
 void topk(Param<T> ovals, Param<uint> oidxs, CParam<T> ivals,
           const int k, const int dim, const af::topkFunction order)
 {
+    assert(dim == 0);
     //TODO Add switch statement when support for other dims is added
     topkDim0<T>(ovals, oidxs, ivals, k, order);
 }

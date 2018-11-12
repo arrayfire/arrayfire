@@ -40,19 +40,33 @@ namespace common {
     public:
         Node(const char *type_str, const char *name_str, const int height,
              const std::array<Node_ptr, kMaxChildren> children)
-            : m_type_str(type_str),
+            : m_children(children),
+              m_type_str(type_str),
               m_name_str(name_str),
-              m_children(children),
               m_height(height) {}
 
         int getNodesMap(Node_map_t &node_map,
                         std::vector<const Node *> &full_nodes,
                         std::vector<Node_ids> &full_ids) const;
 
-        virtual void genKerName (std::stringstream &kerStream, const Node_ids& ids) const { }
-        virtual void genParams  (std::stringstream &kerStream, int id, bool is_linear) const { }
-        virtual void genOffsets (std::stringstream &kerStream, int id, bool is_linear) const { }
-        virtual void genFuncs   (std::stringstream &kerStream, const Node_ids& ids) const { }
+        virtual void genKerName (std::stringstream &kerStream, const Node_ids& ids) const {
+            UNUSED(kerStream);
+            UNUSED(ids);
+        }
+        virtual void genParams  (std::stringstream &kerStream, int id, bool is_linear) const {
+            UNUSED(kerStream);
+            UNUSED(id);
+            UNUSED(is_linear);
+        }
+        virtual void genOffsets (std::stringstream &kerStream, int id, bool is_linear) const {
+            UNUSED(kerStream);
+            UNUSED(id);
+            UNUSED(is_linear);
+        }
+        virtual void genFuncs   (std::stringstream &kerStream, const Node_ids& ids) const {
+            UNUSED(kerStream);
+            UNUSED(ids);
+        }
 
         /// Calls the setArg function on each of the arguments passed into the kernel
         ///
@@ -63,9 +77,15 @@ namespace common {
         /// \returns the next index that will need to be set in the kernl. This
         ///          is usually start_id + the number of times setArg is called
         virtual int setArgs(int start_id, bool is_linear,
-                            std::function<void(int id, const void* ptr, size_t arg_size)> setArg) const { return start_id; }
+                            std::function<void(int id, const void* ptr, size_t arg_size)> setArg) const {
+            UNUSED(is_linear);
+            UNUSED(setArg);
+            return start_id;
+        }
 
         virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes) const {
+            UNUSED(buf_count);
+            UNUSED(bytes);
             len++;
         }
 
@@ -78,7 +98,10 @@ namespace common {
         // Return the size of the size of the buffer node in bytes. Zero otherwise
         virtual size_t getBytes() const { return 0; }
         virtual bool isBuffer() const { return false; }
-        virtual bool isLinear(dim_t dims[4]) const { return true; }
+        virtual bool isLinear(dim_t dims[4]) const {
+            UNUSED(dims);
+            return true;
+        }
         std::string getTypeStr() const { return m_type_str; }
         int getHeight()  const { return m_height; }
         std::string getNameStr() const { return m_name_str; }

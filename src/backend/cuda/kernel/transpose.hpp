@@ -91,7 +91,7 @@ namespace kernel
     }
 
     template<typename T, bool conjugate>
-    void transpose(Param<T> out, CParam<T> in, const int ndims)
+    void transpose(Param<T> out, CParam<T> in)
     {
         // dimensions passed to this function should be input dimensions
         // any necessary transformations and dimension related calculations are

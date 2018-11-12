@@ -76,6 +76,7 @@ template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
                  const Array<T> &b, const af_mat_prop options)
 {
+    UNUSED(options);
     A.eval();
     pivot.eval();
     b.eval();

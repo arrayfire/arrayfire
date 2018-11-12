@@ -8,7 +8,9 @@
  ********************************************************/
 
 #pragma once
+#include <common/defines.hpp>
 #include <optypes.hpp>
+
 #include <array>
 #include <vector>
 #include <memory>
@@ -67,20 +69,29 @@ namespace jit
 
         int getHeight() { return m_height; }
 
-        virtual void calc(int x, int y, int z, int w, int lim)
-        {
+        virtual void calc(int x, int y, int z, int w, int lim) {
+            UNUSED(x);
+            UNUSED(y);
+            UNUSED(z);
+            UNUSED(w);
+            UNUSED(lim);
         }
 
-        virtual void calc(int idx, int lim)
-        {
+        virtual void calc(int idx, int lim) {
+            UNUSED(idx);
+            UNUSED(lim);
         }
 
-        virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes) const
-        {
+        virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes) const {
+            UNUSED(buf_count);
+            UNUSED(bytes);
             len++;
         }
 
-        virtual bool isLinear(const dim_t *dims) const { return true; }
+        virtual bool isLinear(const dim_t *dims) const {
+            UNUSED(dims);
+            return true;
+        }
         virtual bool isBuffer() const { return false; }
         virtual ~Node() {}
 

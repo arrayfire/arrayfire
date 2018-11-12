@@ -13,7 +13,7 @@
 
 using namespace af;
 
-int main(int argc, char *argv[])
+int main(int, char **)
 {
     try {
         static const float h_kernel[] = {1, 1, 1, 1, 0, 1, 1, 1, 1};

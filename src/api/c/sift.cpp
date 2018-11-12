@@ -82,6 +82,16 @@ af_err af_sift(af_features* feat, af_array* desc, const af_array in, const unsig
         }
         std::swap(*desc, tmp_desc);
 #else
+        UNUSED(feat);
+        UNUSED(desc);
+        UNUSED(in);
+        UNUSED(n_layers);
+        UNUSED(contrast_thr);
+        UNUSED(edge_thr);
+        UNUSED(init_sigma);
+        UNUSED(double_input);
+        UNUSED(img_scale);
+        UNUSED(feature_ratio);
         AF_ERROR("ArrayFire was not built with nonfree support, SIFT disabled\n", AF_ERR_NONFREE);
 #endif
     }
@@ -123,6 +133,16 @@ af_err af_gloh(af_features* feat, af_array* desc, const af_array in, const unsig
         }
         std::swap(*desc, tmp_desc);
 #else
+        UNUSED(feat);
+        UNUSED(desc);
+        UNUSED(in);
+        UNUSED(n_layers);
+        UNUSED(contrast_thr);
+        UNUSED(edge_thr);
+        UNUSED(init_sigma);
+        UNUSED(double_input);
+        UNUSED(img_scale);
+        UNUSED(feature_ratio);
         AF_ERROR("ArrayFire was not built with nonfree support, GLOH disabled\n", AF_ERR_NONFREE);
 #endif
     }

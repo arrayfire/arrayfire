@@ -159,6 +159,7 @@ void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
                    const af::dim4& fd, const int half_di0, const int baseDim,
                    const int fftScale, const bool expand)
 {
+    UNUSED(id);
     for (int d3 = 0; d3 < (int)od[3]; d3++) {
         for (int d2 = 0; d2 < (int)od[2]; d2++) {
             for (int d1 = 0; d1 < (int)od[1]; d1++) {

@@ -18,7 +18,7 @@ magmablas_swapdblk(magma_int_t n, magma_int_t nb,
 {
     opencl::kernel::swapdblk<T>(n, nb,
                                 dA, dA_offset, ldda, inca,
-                                dB, dB_offset, lddb, incb);
+                                dB, dB_offset, lddb, incb, queue);
 }
 
 

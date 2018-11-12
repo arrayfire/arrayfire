@@ -34,6 +34,8 @@ typedef unsigned char  uchar;
 typedef unsigned int   uint;
 typedef unsigned short ushort;
 
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
 namespace {
 
 std::string readNextNonEmptyLine(std::ifstream &file)
@@ -638,7 +640,6 @@ std::string printContext(const std::vector<T>& hGold, std::string goldName,
 
         uint valIdx = vecStartIdx + i;
 
-        T outVal = hOut[valIdx];
         if (valIdx == idx) {
             tmpOs << "[" << +hOut[valIdx] << "]";
         }
@@ -649,7 +650,6 @@ std::string printContext(const std::vector<T>& hGold, std::string goldName,
         int outLen = tmpOs.str().length();
         tmpOs.str(std::string());
 
-        T goldVal = hGold[valIdx];
         if (valIdx == idx) {
             tmpOs << "[" << +hGold[valIdx] << "]";
         }
@@ -699,9 +699,9 @@ template<typename T>
 
 
                                       float maxAbsDiff, IntegerTag) {
+    UNUSED(maxAbsDiff);
     typedef typename std::vector<T>::const_iterator iter;
     std::pair<iter, iter> mismatches = std::mismatch(a.begin(), a.end(), b.begin());
-    iter aItr = mismatches.first;
     iter bItr = mismatches.second;
 
     if (bItr == b.end()) {
@@ -752,7 +752,6 @@ template<typename T>
         af::dim4 coords = unravelIdx(idx, bDims, calcStrides(bDims));
 
         af::dim4 aStrides = calcStrides(aDims);
-        af::dim4 bStrides = calcStrides(bDims);
 
         ::testing::AssertionResult result =
         ::testing::AssertionFailure()
@@ -801,15 +800,11 @@ template<typename T>
             << "Expected: " << aName << "(" << a.type() << ")";
 
     af::dtype arrDtype = aType;
-    const uint ndimIds = 4;
     if (a.dims() != b.dims())
         return ::testing::AssertionFailure()
             << "SIZE MISMATCH: \n"
             << "  Actual: " << bName << "([" << b.dims() << "])\n"
             << "Expected: " << aName << "([" << a.dims() << "])";
-
-    dim_t nElems = a.elements();
-    af::dim4 arrDims = a.dims();
 
     switch (arrDtype) {
     case f32: return elemWiseEq<float>              (aName, bName, a, b, maxAbsDiff); break;
@@ -847,7 +842,6 @@ template<typename T>
             << "Expected: " << aName << "(" << aDtype << ")";
     }
 
-    const uint ndimIds = 4;
     if(aDims != b.dims()) {
         return ::testing::AssertionFailure()
             << "SIZE MISMATCH:\n"
@@ -856,7 +850,7 @@ template<typename T>
     }
 
     // In case vector<T> a.size() != aDims.elements()
-    if (hA.size() != aDims.elements())
+    if (hA.size() != static_cast<size_t>(aDims.elements()))
         return ::testing::AssertionFailure()
             << "SIZE MISMATCH:\n"
             << "  Actual: " << aDimsName << "([" << aDims << "] => "
@@ -900,6 +894,7 @@ template<typename T>
                                            std::string maxAbsDiffName,
                                            const af::array& a, const af::array& b,
                                            float maxAbsDiff) {
+    UNUSED(maxAbsDiffName);
     return assertArrayEq(aName, bName, a, b, maxAbsDiff);
 }
 
@@ -910,6 +905,7 @@ template<typename T>
                                            const std::vector<T>& hA, af::dim4 aDims,
                                            const af::array& b,
                                            float maxAbsDiff) {
+    UNUSED(maxAbsDiffName);
     return assertArrayEq(hA_name, aDimsName, bName, hA, aDims, b, maxAbsDiff);
 }
 

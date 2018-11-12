@@ -317,6 +317,7 @@ void medfilt1(Param<T> out, CParam<T> in, unsigned w_wid, int nBBS0)
 template<typename T, af_border_type pad>
 void medfilt2(Param<T> out, CParam<T> in, int w_len, int w_wid)
 {
+    UNUSED(w_wid);
     const dim3 threads(THREADS_X, THREADS_Y);
 
     int blk_x = divup(in.dims[0], threads.x);
