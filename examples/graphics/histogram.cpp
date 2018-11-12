@@ -13,7 +13,7 @@
 
 using namespace af;
 
-int main(int argc, char *argv[])
+int main(int, char **)
 {
     try {
         // Initialize the kernel array just once

@@ -19,6 +19,27 @@
 using namespace detail;
 using common::SparseArrayBase;
 
+af_array createHandle(af::dim4 d, af_dtype dtype)
+{
+    using namespace detail;
+
+    switch(dtype) {
+        case f32: return createHandle<float  >(d);
+        case c32: return createHandle<cfloat >(d);
+        case f64: return createHandle<double >(d);
+        case c64: return createHandle<cdouble>(d);
+        case b8:  return createHandle<char   >(d);
+        case s32: return createHandle<int    >(d);
+        case u32: return createHandle<uint   >(d);
+        case u8:  return createHandle<uchar  >(d);
+        case s64: return createHandle<intl   >(d);
+        case u64: return createHandle<uintl  >(d);
+        case s16: return createHandle<short  >(d);
+        case u16: return createHandle<ushort >(d);
+        default:    TYPE_ERROR(3, dtype);
+    }
+}
+
 af_err af_get_data_ptr(void *data, const af_array arr)
 {
     try {
@@ -180,8 +201,6 @@ af_err af_get_data_ref_count(int *use_count, const af_array in)
 af_err af_release_array(af_array arr)
 {
     try {
-        int dev = getActiveDeviceId();
-
         const ArrayInfo& info = getInfo(arr, false, false);
         af_dtype type = info.getType();
 

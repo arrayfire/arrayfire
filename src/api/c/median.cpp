@@ -155,6 +155,7 @@ static af_array median(const af_array& in, const dim_t dim)
 
 af_err af_median_all(double *realVal, double *imagVal, const af_array in)
 {
+    UNUSED(imagVal);
     try {
         const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();

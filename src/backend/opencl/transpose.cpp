@@ -26,16 +26,15 @@ Array<T> transpose(const Array<T> &in, const bool conjugate)
 
     if(conjugate) {
         if(inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0)
-            kernel::transpose<T, true, true>(out, in);
+            kernel::transpose<T, true, true>(out, in, getQueue());
         else
-            kernel::transpose<T, true, false>(out, in);
+            kernel::transpose<T, true, false>(out, in, getQueue());
     } else {
         if(inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0)
-            kernel::transpose<T, false, true>(out, in);
+            kernel::transpose<T, false, true>(out, in, getQueue());
         else
-            kernel::transpose<T, false, false>(out, in);
+            kernel::transpose<T, false, false>(out, in, getQueue());
     }
-
     return out;
 }
 

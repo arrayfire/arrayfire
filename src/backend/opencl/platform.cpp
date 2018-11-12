@@ -63,10 +63,13 @@ using cl::Device;
 
 namespace opencl
 {
+
+#if defined(WITH_GRAPHICS)
 #if defined (OS_MAC)
 static const char* CL_GL_SHARING_EXT = "cl_APPLE_gl_sharing";
 #else
 static const char* CL_GL_SHARING_EXT = "cl_khr_gl_sharing";
+#endif
 #endif
 
 static const std::string get_system(void)
@@ -433,6 +436,8 @@ bool OpenCLCPUOffload(bool forceOffloadOSX)
     bool osx_offload = isHostUnifiedMemory(getDevice());
     // Force condition
     offload = osx_offload && (offload || forceOffloadOSX);
+#else
+    UNUSED(forceOffloadOSX);
 #endif
     return offload;
 }

@@ -28,7 +28,6 @@ namespace cuda
         __global__
         void iota_kernel(Param<T> out,
                          const int s0, const int s1, const int s2, const int s3,
-                         const int t0, const int t1, const int t2, const int t3,
                          const int blocksPerMatX, const int blocksPerMatY)
         {
             const int oz = blockIdx.x / blocksPerMatX;
@@ -69,7 +68,7 @@ namespace cuda
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
         template<typename T>
-        void iota(Param<T> out, const af::dim4 &sdims, const af::dim4 &tdims)
+        void iota(Param<T> out, const af::dim4 &sdims)
         {
             dim3 threads(IOTA_TX, IOTA_TY, 1);
 
@@ -86,7 +85,7 @@ namespace cuda
 
             CUDA_LAUNCH((iota_kernel<T>), blocks, threads,
                     out, sdims[0], sdims[1], sdims[2], sdims[3],
-                    tdims[0], tdims[1], tdims[2], tdims[3], blocksPerMatX, blocksPerMatY);
+                    blocksPerMatX, blocksPerMatY);
 
             POST_LAUNCH_CHECK();
         }

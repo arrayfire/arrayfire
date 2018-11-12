@@ -42,11 +42,11 @@ void nearest_neighbour(Array<uint>& idx, Array<To>& dist,
     Array<T> trainT = dist_dim == 0 ? transpose(train, false) : train;
 
     switch(dist_type) {
-        case AF_SAD: kernel::all_distances<T, To, AF_SAD>(tmp_dists, queryT, trainT, 1, n_dist);
+        case AF_SAD: kernel::all_distances<T, To, AF_SAD>(tmp_dists, queryT, trainT, 1);
                      break;
-        case AF_SSD: kernel::all_distances<T, To, AF_SSD>(tmp_dists, queryT, trainT, 1, n_dist);
+        case AF_SSD: kernel::all_distances<T, To, AF_SSD>(tmp_dists, queryT, trainT, 1);
                      break;
-        case AF_SHD: kernel::all_distances<T, To, AF_SHD>(tmp_dists, queryT, trainT, 1, n_dist);
+        case AF_SHD: kernel::all_distances<T, To, AF_SHD>(tmp_dists, queryT, trainT, 1);
                      break;
         default: AF_ERROR("Unsupported dist_type", AF_ERR_NOT_CONFIGURED);
     }

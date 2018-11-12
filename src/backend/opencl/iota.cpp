@@ -22,7 +22,7 @@ namespace opencl
         dim4 outdims = dims * tile_dims;
 
         Array<T> out = createEmptyArray<T>(outdims);
-        kernel::iota<T>(out, dims, tile_dims);
+        kernel::iota<T>(out, dims);
 
         return out;
     }

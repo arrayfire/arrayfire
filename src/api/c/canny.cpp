@@ -113,7 +113,7 @@ Array<float> otsuThreshold(const Array<float>& supEdges,
 
         auto binRes = createSubArray<float>(sigmas, sliceIndex, false);
 
-        copyArray<float>(binRes, sigma);
+        copyArray(binRes, sigma);
     }
 
     dim4 odims = sigmas.dims();

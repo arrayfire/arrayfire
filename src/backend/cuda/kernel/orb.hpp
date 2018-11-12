@@ -321,6 +321,10 @@ void orb(unsigned* out_feat,
          const unsigned levels,
          const bool blur_img)
 {
+    UNUSED(fast_thr);
+    UNUSED(max_feat);
+    UNUSED(scl_fctr);
+    UNUSED(levels);
     unsigned patch_size = REF_PAT_SIZE;
 
     unsigned max_levels = feat_pyr.size();

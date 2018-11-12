@@ -118,6 +118,9 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
 
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
+    UNUSED(in);
+    UNUSED(props);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }

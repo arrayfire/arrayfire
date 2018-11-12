@@ -18,6 +18,20 @@
 #include <dlfcn.h>
 #endif
 
+#ifdef OS_WIN
+#include <Windows.h>
+static const char* librarySuffix = ".dll";
+static const char* libraryPrefix = "";
+#elif defined(OS_MAC)
+static const char* librarySuffix = ".dylib";
+static const char* libraryPrefix = "lib";
+#elif defined(OS_LNX)
+static const char* librarySuffix = ".so";
+static const char* libraryPrefix = "lib";
+#else
+#error "Unsupported platform"
+#endif
+
 using std::string;
 
 namespace {
@@ -32,6 +46,7 @@ namespace common {
 DependencyModule::DependencyModule(const char* plugin_file_name, const char** paths)
     : handle(nullptr) {
     // TODO(umar): Implement handling of non-standard paths
+    UNUSED(paths);
     if(plugin_file_name) {
         handle = loadLibrary(libName(plugin_file_name).c_str());
     }

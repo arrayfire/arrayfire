@@ -83,22 +83,3 @@ af_err af_cast(af_array *out, const af_array in, const af_dtype type)
 
     return AF_SUCCESS;
 }
-
-af_err af_cplx(af_array *out, const af_array in, const af_dtype type)
-{
-    try {
-        af_array res;
-        const ArrayInfo& in_info = getInfo(in);
-
-        if (in_info.isDouble()) {
-            res = cast(in, c64);
-        } else {
-            res = cast(in, c32);
-        }
-
-        std::swap(*out, res);
-    }
-    CATCHALL;
-
-    return AF_SUCCESS;
-}

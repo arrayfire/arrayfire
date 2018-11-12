@@ -26,7 +26,7 @@ class NodeIterator : public std::iterator<std::input_iterator_tag, Node> {
 
   private:
     std::vector<pointer> tree;
-    int index;
+    size_t index;
 
     /// Copies the children of the \p n Node to the end of the tree vector
     void copy_children_to_end(Node* n) {

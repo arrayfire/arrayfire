@@ -69,6 +69,7 @@ typedef enum {
 // In case this handler is invoked, it throws an af exception.
 static void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage)
 {
+    UNUSED(oFif);
     printf("FreeImage Error Handler: %s\n", zMessage);
 }
 

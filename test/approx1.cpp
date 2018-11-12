@@ -199,7 +199,7 @@ TYPED_TEST(Approx1, Approx1Cubic)
 // Test Argument Failure Cases
 ///////////////////////////////////////////////////////////////////////////////
 template<typename T>
-void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp_type method, const af_err err)
+void approx1ArgsTest(string pTestFile, const af_interp_type method, const af_err err)
 {
     if (noDoubleTests<T>()) return;
     typedef typename dtype_traits<T>::base_type BT;
@@ -230,19 +230,19 @@ void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
 
 TYPED_TEST(Approx1, Approx1NearestArgsPos2D)
 {
-    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1_pos2d.test"), 0, AF_INTERP_NEAREST, AF_ERR_SIZE);
+    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1_pos2d.test"), AF_INTERP_NEAREST, AF_ERR_SIZE);
 }
 TYPED_TEST(Approx1, Approx1LinearArgsPos2D)
 {
-    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1_pos2d.test"), 1, AF_INTERP_LINEAR, AF_ERR_SIZE);
+    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1_pos2d.test"), AF_INTERP_LINEAR, AF_ERR_SIZE);
 }
 TYPED_TEST(Approx1, Approx1ArgsInterpBilinear)
 {
-    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1.test"), 0, AF_INTERP_BILINEAR, AF_ERR_ARG);
+    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1.test"), AF_INTERP_BILINEAR, AF_ERR_ARG);
 }
 
 template<typename T>
-void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const af_interp_type method)
+void approx1ArgsTestPrecision(string pTestFile, const unsigned , const af_interp_type method)
 {
     if (noDoubleTests<T>()) return;
     vector<dim4> numDims;

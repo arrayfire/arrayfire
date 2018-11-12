@@ -148,7 +148,6 @@ namespace opencl
         {
             int num_rows = dense.info.dims[0];
             int num_cols = dense.info.dims[1];
-            int dense_elements = num_rows * num_cols;
 
             // sd1 contains output of scan along dim 1 of dense
             Array<int> sd1 = createEmptyArray<int>(dim4(num_rows, num_cols));

@@ -221,6 +221,7 @@ int MemoryManagerPinned::getActiveDeviceId()
 
 size_t MemoryManagerPinned::getMaxMemorySize(int id)
 {
+    UNUSED(id);
     return cuda::getHostMemorySize();
 }
 

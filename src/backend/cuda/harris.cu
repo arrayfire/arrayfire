@@ -24,8 +24,6 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &score_ou
                 const Array<T> &in, const unsigned max_corners, const float min_response,
                 const float sigma, const unsigned filter_len, const float k_thr)
 {
-    const dim4 dims = in.dims();
-
     unsigned nfeat;
     float *d_x_out;
     float *d_y_out;

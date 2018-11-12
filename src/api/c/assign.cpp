@@ -81,20 +81,28 @@ void assign(Array<Tout> &out, const vector<af_seq> seqs,
 
 template<typename T>
 static
-void assign(Array<T> &out, const vector<af_seq> iv,
-            const af_array &in)
+typename std::enable_if<is_complex<T>::value, void>::type
+assign(Array<T> &out, const vector<af_seq> iv,
+       const af_array &in) {
+    const ArrayInfo& iInfo = getInfo(in);
+    af_dtype iType = iInfo.getType();
+    switch(iType) {
+        case c64: assign<T, cdouble>(out, iv, getArray<cdouble>(in));  break;
+        case c32: assign<T, cfloat >(out, iv, getArray<cfloat >(in));  break;
+        default : TYPE_ERROR(1, iType); break;
+    }
+}
+
+template<typename T>
+static
+typename std::enable_if<is_complex<T>::value == false, void>::type
+assign(Array<T> &out, const vector<af_seq> iv,
+       const af_array &in)
 {
     const ArrayInfo& iInfo = getInfo(in);
     af_dtype iType = iInfo.getType();
 
-    if(out.getType() == c64 || out.getType() == c32) {
-        switch(iType) {
-        case c64: assign<T, cdouble>(out, iv, getArray<cdouble>(in));  break;
-        case c32: assign<T, cfloat >(out, iv, getArray<cfloat >(in));  break;
-        default : TYPE_ERROR(1, iType); break;
-        }
-    } else {
-        switch(iType) {
+    switch(iType) {
         case f64: assign<T, double >(out, iv, getArray<double >(in));  break;
         case f32: assign<T, float  >(out, iv, getArray<float  >(in));  break;
         case s32: assign<T, int    >(out, iv, getArray<int    >(in));  break;
@@ -106,7 +114,6 @@ void assign(Array<T> &out, const vector<af_seq> iv,
         case u8 : assign<T, uchar  >(out, iv, getArray<uchar  >(in));  break;
         case b8 : assign<T, char   >(out, iv, getArray<char   >(in));  break;
         default : TYPE_ERROR(1, iType); break;
-        }
     }
 }
 

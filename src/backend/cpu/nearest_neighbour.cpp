@@ -45,13 +45,13 @@ void nearest_neighbour(Array<uint>& idx, Array<To>& dist,
 
     switch(dist_type) {
         case AF_SAD:
-            getQueue().enqueue(kernel::nearest_neighbour<T, To, AF_SAD>, tmp_dists, query, train, dist_dim, n_dist);
+            getQueue().enqueue(kernel::nearest_neighbour<T, To, AF_SAD>, tmp_dists, query, train, dist_dim);
             break;
         case AF_SSD:
-            getQueue().enqueue(kernel::nearest_neighbour<T, To, AF_SSD>, tmp_dists, query, train, dist_dim, n_dist);
+            getQueue().enqueue(kernel::nearest_neighbour<T, To, AF_SSD>, tmp_dists, query, train, dist_dim);
             break;
         case AF_SHD:
-            getQueue().enqueue(kernel::nearest_neighbour<T, To, AF_SHD>, tmp_dists, query, train, dist_dim, n_dist);
+            getQueue().enqueue(kernel::nearest_neighbour<T, To, AF_SHD>, tmp_dists, query, train, dist_dim);
             break;
         default:
             AF_ERROR("Unsupported dist_type", AF_ERR_NOT_CONFIGURED);

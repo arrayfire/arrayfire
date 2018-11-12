@@ -447,8 +447,8 @@ void testRandomEnginePeriod(randomEngineType type)
     if (noDoubleTests<T>()) return;
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
-    uint elem = 1024*1024;
-    uint steps = 4*1024;
+    int elem = 1024*1024;
+    int steps = 4*1024;
     randomEngine r(type, 0);
 
     array first = randu(elem, ty, r);

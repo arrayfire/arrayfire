@@ -82,8 +82,8 @@ MemoryManager<T>::MemoryManager(int num_devices,
     : mem_step_size(1024),
       max_buffers(max_buffers),
       memory(num_devices),
-      debug_mode(debug),
-      logger (loggerFactory("mem")) {
+      logger (loggerFactory("mem")),
+      debug_mode(debug) {
     // Check for environment variables
 
     // Debug mode
@@ -252,7 +252,7 @@ void MemoryManager<T>::garbageCollect() {
 
 template<typename T>
 void MemoryManager<T>::printInfo(const char *msg, const int device) {
-    const memory_info& current = this->getCurrentMemoryInfo();
+    const memory_info& current = memory[device];
 
     printf("%s\n", msg);
     printf("---------------------------------------------------------\n"

@@ -18,9 +18,9 @@ namespace cuda
 namespace kernel
 {
 
-static const unsigned MAX_BINS  = 4000;
-static const int THREADS_X =  256;
-static const int THRD_LOAD =   16;
+constexpr int MAX_BINS  = 4000;
+constexpr int THREADS_X =  256;
+constexpr int THRD_LOAD =   16;
 
 __forceinline__ __device__ int minimum(int a, int b)
 {

@@ -76,7 +76,9 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     vector<T> sxTest(tests[resultIdx0].begin(), tests[resultIdx0].end());
     ASSERT_VEC_ARRAY_EQ(sxTest, idims, sxArray);
 
-#ifndef AF_OPENCL
+#ifdef AF_OPENCL
+    UNUSED(resultIdx1);
+#else
     vector<unsigned> ixTest(tests[resultIdx1].begin(), tests[resultIdx1].end());
     ASSERT_VEC_ARRAY_EQ(ixTest, idims, ixArray);
 #endif
@@ -131,8 +133,6 @@ TEST(SortIndex, CPPDim0)
     array outValues, outIndices;
     sort(outValues, outIndices, input, 0, dir);
 
-    size_t nElems = tests[resultIdx0].size();
-
     ASSERT_VEC_ARRAY_EQ(tests[resultIdx0], idims, outValues);
 
     vector<unsigned> ixTest(tests[resultIdx1].begin(), tests[resultIdx1].end());
@@ -162,8 +162,6 @@ TEST(SortIndex, CPPDim1)
     outValues  = reorder(outValues,  1, 0, 2, 3);
     outIndices = reorder(outIndices, 1, 0, 2, 3);
 
-    size_t nElems = tests[resultIdx0].size();
-
     ASSERT_VEC_ARRAY_EQ(tests[resultIdx0], idims, outValues);
 
     vector<unsigned> ixTest(tests[resultIdx1].begin(), tests[resultIdx1].end());
@@ -192,7 +190,6 @@ TEST(SortIndex, CPPDim2)
 
     outValues  = reorder(outValues,  2, 0, 1, 3);
     outIndices = reorder(outIndices, 2, 0, 1, 3);
-    size_t nElems = tests[resultIdx0].size();
 
     ASSERT_VEC_ARRAY_EQ(tests[resultIdx0], idims, outValues);
 

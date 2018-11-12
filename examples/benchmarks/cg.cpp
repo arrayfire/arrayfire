@@ -114,7 +114,7 @@ void checkConjugateGradient(const af::array in)
     af_print(dot(res, res));
 }
 
-int main(int argc, char *argv[])
+int main(int , char **)
 {
     af::info();
     setupInputs();

@@ -81,6 +81,7 @@ template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
                  const Array<T> &b, const af_mat_prop options)
 {
+    UNUSED(options);
     int N = A.dims()[0];
     int NRHS = b.dims()[1];
 
