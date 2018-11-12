@@ -10,13 +10,11 @@
 #pragma once
 #include <program.hpp>
 #include <traits.hpp>
-#include <string>
-#include <mutex>
 #include <common/dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
 #include <kernel/sort_helper.hpp>
-#include <kernel/iota.hpp>
+#include <iota.hpp>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -35,7 +33,6 @@ using cl::Kernel;
 using cl::KernelFunctor;
 using cl::EnqueueArgs;
 using cl::NDRange;
-using std::string;
 
 namespace opencl
 {
@@ -74,8 +71,8 @@ namespace opencl
             CL_DEBUG_FINISH(getQueue());
         }
 
-        template<typename T, int dim>
-        void sortBatched(Param pVal, bool isAscending)
+        template<typename T>
+        void sortBatched(Param pVal, int dim, bool isAscending)
         {
             af::dim4 inDims;
             for(int i = 0; i < 4; i++)
@@ -89,8 +86,8 @@ namespace opencl
             seqDims[dim] = 1;
 
             // Create/call iota
-            Array<uint> pKey = createEmptyArray<uint>(inDims);
-            kernel::iota<uint>(pKey, seqDims, tileDims);
+            //Array<uint> pKey = createEmptyArray<uint>(inDims);
+            Array<uint> pKey = iota<uint>(seqDims, tileDims);
 
             pKey.setDataDims(inDims.elements());
 
@@ -133,7 +130,7 @@ namespace opencl
             int higherDims =  val.info.dims[1] * val.info.dims[2] * val.info.dims[3];
             // TODO Make a better heurisitic
             if(higherDims > 10)
-                sortBatched<T, 0>(val, isAscending);
+                sortBatched<T>(val, 0, isAscending);
             else
                 kernel::sort0Iterative<T>(val, isAscending);
         }

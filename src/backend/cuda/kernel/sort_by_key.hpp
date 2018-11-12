@@ -14,17 +14,14 @@
 #include <Param.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
-#include <kernel/iota.hpp>
+#include <iota.hpp>
 #include <kernel/thrust_sort_by_key.hpp>
 
 namespace cuda
 {
     namespace kernel
     {
-
-        ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
-        ///////////////////////////////////////////////////////////////////////////
         template<typename Tk, typename Tv>
         void sort0ByKeyIterative(Param<Tk> okey, Param<Tv> oval, bool isAscending)
         {
@@ -66,17 +63,7 @@ namespace cuda
             seqDims[dim] = 1;
 
             // Create/call iota
-            // Array<uint> key = iota<uint>(seqDims, tileDims);
-            auto Seq = memAlloc<uint>(elements);
-            Param<uint> pSeq;
-            pSeq.ptr = Seq.get();
-            pSeq.strides[0] = 1;
-            pSeq.dims[0] = inDims[0];
-            for(int i = 1; i < 4; i++) {
-                pSeq.dims[i] = inDims[i];
-                pSeq.strides[i] = pSeq.strides[i - 1] * pSeq.dims[i - 1];
-            }
-            cuda::kernel::iota<uint>(pSeq, seqDims, tileDims);
+            Array<uint> Seq = iota<uint>(seqDims, tileDims);
 
             Tk *Key = pKey.ptr;
             auto cKey = memAlloc<Tk>(elements);
@@ -100,17 +87,16 @@ namespace cuda
             // No need of doing moddims here because the original Array<T>
             // dimensions have not been changed
             //val.modDims(inDims);
-
         }
 
         template<typename Tk, typename Tv>
         void sort0ByKey(Param<Tk> okey, Param<Tv> oval, bool isAscending)
         {
             int higherDims =  okey.dims[1] * okey.dims[2] * okey.dims[3];
-            // Batced sort performs 4x sort by keys
-            // But this is only useful before GPU is saturated
-            // The GPU is saturated at around 100,000 integers
-            // Call batched sort only if both conditions are met
+
+            // Batced sort performs 4x sort by keys But this is only useful
+            // before GPU is saturated The GPU is saturated at around 100,000
+            // integers Call batched sort only if both conditions are met
             if(higherDims > 4 && okey.dims[0] < 100000)
                 kernel::sortByKeyBatched<Tk, Tv>(okey, oval, 0, isAscending);
             else

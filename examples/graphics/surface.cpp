@@ -16,7 +16,7 @@ using namespace af;
 static const int M = 30;
 static const int N = 2 * M;
 
-int main(int argc, char *argv[])
+int main(int, char **)
 {
     try {
         // Initialize the kernel array just once

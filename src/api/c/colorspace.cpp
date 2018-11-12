@@ -15,6 +15,8 @@
 template<af_cspace_t FROM, af_cspace_t TO>
 void color_space(af_array *out, const af_array image)
 {
+    UNUSED(out);
+    UNUSED(image);
     AF_ERROR("Color Space: Conversion from source type to output type not supported",
              AF_ERR_NOT_SUPPORTED);
 }
@@ -35,6 +37,7 @@ void color_space<F, T>(af_array *out, const af_array image)     \
 
 INSTANTIATE_CSPACE_DEFS1(AF_HSV  , AF_RGB  , af_hsv2rgb  );
 INSTANTIATE_CSPACE_DEFS1(AF_RGB  , AF_HSV  , af_rgb2hsv  );
+
 INSTANTIATE_CSPACE_DEFS2(AF_RGB  , AF_GRAY , af_rgb2gray , 0.2126f, 0.7152f, 0.0722f);
 INSTANTIATE_CSPACE_DEFS2(AF_GRAY , AF_RGB  , af_gray2rgb , 1.0f, 1.0f, 1.0f);
 INSTANTIATE_CSPACE_DEFS2(AF_YCbCr, AF_RGB  , af_ycbcr2rgb, AF_YCC_601);

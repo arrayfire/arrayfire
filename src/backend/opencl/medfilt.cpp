@@ -36,6 +36,7 @@ Array<T> medfilt1(const Array<T> &in, dim_t w_wid)
 template<typename T, af_border_type pad>
 Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid)
 {
+    UNUSED(w_wid);
     ARG_ASSERT(2, (w_len<=kernel::MAX_MEDFILTER2_LEN));
     ARG_ASSERT(2, (w_len % 2 != 0));
 

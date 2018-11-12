@@ -58,10 +58,10 @@ template<typename T>
 Array<T> pinverseSvd(const Array<T> &in, const double tol)
 {
     in.eval();
-    int M = in.dims()[0];
-    int N = in.dims()[1];
-    int P = in.dims()[2];
-    int Q = in.dims()[3];
+    dim_t M = in.dims()[0];
+    dim_t N = in.dims()[1];
+    dim_t P = in.dims()[2];
+    dim_t Q = in.dims()[3];
 
     // Compute SVD
     typedef typename dtype_traits<T>::base_type Tr;
@@ -70,8 +70,8 @@ Array<T> pinverseSvd(const Array<T> &in, const double tol)
     Array<T> u = createValueArray<T>(dim4(M, M, P, Q), scalar<T>(0));
     Array<T> vT = createValueArray<T>(dim4(N, N, P, Q), scalar<T>(0));
     Array<Tr> sVec = createValueArray<Tr>(dim4(min(M, N), 1, P, Q), scalar<Tr>(0));
-    for (uint j = 0; j < Q; ++j) {
-        for (uint i = 0; i < P; ++i) {
+    for (dim_t j = 0; j < Q; ++j) {
+        for (dim_t i = 0; i < P; ++i) {
             Array<T> inSlice = getSubArray(in, false,
                                            0, M - 1,
                                            0, N - 1,

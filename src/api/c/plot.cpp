@@ -349,6 +349,9 @@ af_err af_draw_plot_nd(const af_window wind, const af_array in,
 #if defined(WITH_GRAPHICS)
     return plotWrapper(wind, in, 1, props);
 #else
+    UNUSED(wind);
+    UNUSED(in);
+    UNUSED(props);
     return AF_ERR_NO_GFX;
 #endif
 }
@@ -359,6 +362,10 @@ af_err af_draw_plot_2d(const af_window wind, const af_array X, const af_array Y,
 #if defined(WITH_GRAPHICS)
     return plotWrapper(wind, X, Y, props);
 #else
+    UNUSED(wind);
+    UNUSED(X);
+    UNUSED(Y);
+    UNUSED(props);
     return AF_ERR_NO_GFX;
 #endif
 }
@@ -370,6 +377,11 @@ af_err af_draw_plot_3d(const af_window wind,
 #if defined(WITH_GRAPHICS)
     return plotWrapper(wind, X, Y, Z, props);
 #else
+    UNUSED(wind);
+    UNUSED(X);
+    UNUSED(Y);
+    UNUSED(Z);
+    UNUSED(props);
     return AF_ERR_NO_GFX;
 #endif
 }
@@ -382,6 +394,10 @@ af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, co
 #if defined(WITH_GRAPHICS)
     return plotWrapper(wind, X, Y, props);
 #else
+    UNUSED(wind);
+    UNUSED(X);
+    UNUSED(Y);
+    UNUSED(props);
     return AF_ERR_NO_GFX;
 #endif
 }
@@ -413,6 +429,9 @@ af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* cons
 
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
+    UNUSED(P);
+    UNUSED(props);
     return AF_ERR_NO_GFX;
 #endif
 }
@@ -427,6 +446,10 @@ af_err af_draw_scatter_nd(const af_window wind, const af_array in,
     forge::MarkerType fg_marker = getFGMarker(af_marker);
     return plotWrapper(wind, in, 1, props, FG_PLOT_SCATTER, fg_marker);
 #else
+    UNUSED(wind);
+    UNUSED(in);
+    UNUSED(af_marker);
+    UNUSED(props);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -438,6 +461,11 @@ af_err af_draw_scatter_2d(const af_window wind, const af_array X, const af_array
     forge::MarkerType fg_marker = getFGMarker(af_marker);
     return plotWrapper(wind, X, Y, props, FG_PLOT_SCATTER, fg_marker);
 #else
+    UNUSED(wind);
+    UNUSED(X);
+    UNUSED(Y);
+    UNUSED(af_marker);
+    UNUSED(props);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -450,6 +478,12 @@ af_err af_draw_scatter_3d(const af_window wind,
     forge::MarkerType fg_marker = getFGMarker(af_marker);
     return plotWrapper(wind, X, Y, Z, props, FG_PLOT_SCATTER, fg_marker);
 #else
+    UNUSED(wind);
+    UNUSED(X);
+    UNUSED(Y);
+    UNUSED(Z);
+    UNUSED(af_marker);
+    UNUSED(props);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -463,6 +497,11 @@ af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y,
     forge::MarkerType fg_marker = getFGMarker(af_marker);
     return plotWrapper(wind, X, Y, props, FG_PLOT_SCATTER, fg_marker);
 #else
+    UNUSED(wind);
+    UNUSED(X);
+    UNUSED(Y);
+    UNUSED(af_marker);
+    UNUSED(props);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -495,6 +534,10 @@ af_err af_draw_scatter3(const af_window wind, const af_array P, const af_marker_
 
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
+    UNUSED(P);
+    UNUSED(af_marker);
+    UNUSED(props);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }

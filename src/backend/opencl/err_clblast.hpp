@@ -69,6 +69,7 @@ static const char * _clblastGetResultString(clblast::StatusCode st)
     case clblast::StatusCode::kInsufficientMemoryY:        return "Vector Y's OpenCL buffer is too small";
 
     // Custom additional status codes for CLBlast
+    case clblast::StatusCode::kInsufficientMemoryTemp:     return "Temporary buffer provided to GEMM routine is too small";
     case clblast::StatusCode::kInvalidBatchCount:          return "The batch count needs to be positive";
     case clblast::StatusCode::kInvalidOverrideKernel:      return "Trying to override parameters for an invalid kernel";
     case clblast::StatusCode::kMissingOverrideParameter:   return "Missing override parameter(s) for the target kernel";

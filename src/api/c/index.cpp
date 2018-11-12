@@ -155,7 +155,7 @@ af_err af_lookup(af_array *out, const af_array in,
             return AF_SUCCESS;
         }
 
-        ARG_ASSERT(3, (dim >= 0 && dim <= 3));
+        ARG_ASSERT(3, (dim <= 3));
         ARG_ASSERT(2, idxInfo.isVector() || idxInfo.isScalar());
 
         af_dtype idxType = idxInfo.getType();

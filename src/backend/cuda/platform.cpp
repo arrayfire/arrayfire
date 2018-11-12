@@ -153,10 +153,10 @@ int getMinSupportedCompute(int cudaMajorVer)
     // Vector of minimum supported compute versions
     // for CUDA toolkit (i+1).* where i is the index
     // of the vector
-    static const std::array<int,10> minSV{1, 1, 1, 1, 1, 1, 2, 2, 3, 3};
+    static const std::array<int, 10> minSV{1, 1, 1, 1, 1, 1, 2, 2, 3, 3};
 
-    auto CVSize = minSV.size();
-    return (cudaMajorVer>CVSize ? minSV[CVSize-1] : minSV[cudaMajorVer-1]);
+    int CVSize = static_cast<int>(minSV.size());
+    return (cudaMajorVer > CVSize ? minSV[CVSize-1] : minSV[cudaMajorVer-1]);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -218,6 +218,7 @@ string getPlatformInfo()
 
 bool isDoubleSupported(int device)
 {
+    UNUSED(device);
     return true;
 }
 
@@ -231,7 +232,7 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     cudaDeviceProp dev = getDeviceProp(getActiveDeviceId());
 
     // Name
-    snprintf(d_name, 64, "%s", dev.name);
+    snprintf(d_name, 256, "%s", dev.name);
 
     //Platform
     std::string cudaRuntime = getCUDARuntimeVersion();
@@ -242,7 +243,7 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     snprintf(d_compute, 10, "%d.%d", dev.major, dev.minor);
 
     // Sanitize input
-    for (int i = 0; i < 63; i++) {
+    for (int i = 0; i < 256; i++) {
         if (d_name[i] == ' ') {
             if (d_name[i + 1] == 0 || d_name[i + 1] == ' ') d_name[i] = 0;
             else d_name[i] = '_';

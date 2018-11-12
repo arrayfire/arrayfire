@@ -137,13 +137,13 @@ meanvar_test_gen(string name, int in_index, int weight_index, af_var_bias bias, 
         readTests<double, typename varOutType<double>::type, double> (TEST_DIR"/meanvar/meanvar.data", numDims_, in_, tests_);
 
         inputs.resize(in_.size());
-        for(int i = 0; i < in_.size(); i++) {
+        for(size_t i = 0; i < in_.size(); i++) {
           af_create_array(&inputs[i], &in_[i].front(),
                           numDims_[i].ndims(), numDims_[i].get(), f64);
         }
 
         outputs.resize(tests_.size());
-        for(int i = 0; i < tests_.size(); i++) {
+        for(size_t i = 0; i < tests_.size(); i++) {
             copy(tests_[i].begin(), tests_[i].end(), back_inserter(outputs[i]));
         }
     } else {
@@ -160,12 +160,12 @@ meanvar_test_gen(string name, int in_index, int weight_index, af_var_bias bias, 
       };
 
       vector<double> large_(full_array_size);
-      for(int i = 0; i < large_.size(); i++) {
+      for(size_t i = 0; i < large_.size(); i++) {
           large_[i] = static_cast<double>(i);
       }
 
       inputs.resize(dimensions.size());
-      for(int i = 0; i < dimensions.size(); i++) {
+      for(size_t i = 0; i < dimensions.size(); i++) {
           af_array large_array = 0;
           af_create_array(&large_array, &large_.front(), 4, dimensions[i].data(), f64);
           inputs[i] = large_array;
@@ -222,7 +222,7 @@ large_test_values() {
     meanvar_test_gen<T>(    "Sample1Ddim1",           1,            -1,     AF_VARIANCE_SAMPLE,     1,           0,          1, MEANVAR_LARGE),
     meanvar_test_gen<T>(    "Sample1Ddim2",           2,            -1,     AF_VARIANCE_SAMPLE,     2,           0,          1, MEANVAR_LARGE),
     meanvar_test_gen<T>(    "Sample2Ddim0",           3,            -1,     AF_VARIANCE_SAMPLE,     0,           2,          3, MEANVAR_LARGE),
-    // TODO(uamr) Add additional large tests
+    // TODO(umar) Add additional large tests
     //meanvar_test_gen<T>(    "Sample2Ddim1",           3,            -1,     AF_VARIANCE_SAMPLE,     1,           2,          3, MEANVAR_LARGE),
     //meanvar_test_gen<T>(    "Sample2Ddim1",           2,            -1,     AF_VARIANCE_SAMPLE,     1,           6,          7, MEANVAR_LARGE),
       };

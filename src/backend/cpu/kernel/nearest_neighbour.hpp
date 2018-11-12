@@ -88,7 +88,7 @@ struct dist_op<ushort, To, AF_SHD>
 template<typename T, typename To, af_match_type dist_type>
 void nearest_neighbour(Param<To> dists,
                        CParam<T> query, CParam<T> train,
-                       const uint dist_dim, const uint n_dist)
+                       const uint dist_dim)
 {
     uint sample_dim = (dist_dim == 0) ? 1 : 0;
     const dim4 qDims = query.dims();
@@ -105,9 +105,6 @@ void nearest_neighbour(Param<To> dists,
     dist_op<T, To, dist_type> op;
 
     for (unsigned i = 0; i < nQuery; i++) {
-        To best_dist = maxval<To>();
-        unsigned best_idx  = 0;
-
         for (unsigned j = 0; j < nTrain; j++) {
             To local_dist = 0;
             for (unsigned k = 0; k < distLength; k++) {

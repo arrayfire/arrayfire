@@ -34,7 +34,17 @@ public:
             strides[i] = istrides[i];
         }
     }
+    size_t elements() const noexcept { return dims[0] * dims[1] * dims[2] * dims[3]; }
 };
+
+template<typename T>
+Param<T> flat(Param<T> in) {
+    in.dims[0] = in.elements();
+    in.dims[1] = 1;
+    in.dims[2] = 1;
+    in.dims[3] = 1;
+    return in;
+}
 
 template<typename T>
 class CParam

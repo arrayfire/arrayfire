@@ -209,6 +209,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
 {
     // MKL: CSRMM Does not support optRhs
+    UNUSED(optRhs);
 
     lhs.eval();
     rhs.eval();
@@ -321,6 +322,7 @@ void mv(Param<T> output,
         CParam<T> right,
         int M)
 {
+    UNUSED(M);
     const T   *valPtr = values.get();
     const int *rowPtr = rowIdx.get();
     const int *colPtr = colIdx.get();
@@ -380,6 +382,7 @@ void mm(Param<T> output,
         int M, int N,
         int ldb, int ldc)
 {
+    UNUSED(M);
     const T *valPtr = values.get();
     const int *rowPtr = rowIdx.get();
     const int *colPtr = colIdx.get();
@@ -442,6 +445,7 @@ template<typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
 {
+    UNUSED(optRhs);
     lhs.eval();
     rhs.eval();
 

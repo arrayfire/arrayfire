@@ -22,16 +22,16 @@
 #define LAPACKE_dungbr_work(...) LAPACKE_dorgbr_work(__VA_ARGS__)
 
 template<typename... Args>
-int LAPACKE_slacgv(Args... args) { return 0; }
+int LAPACKE_slacgv(Args... /*args*/) { return 0; }
 
 template<typename... Args>
-int LAPACKE_dlacgv(Args... args) { return 0; }
+int LAPACKE_dlacgv(Args... /*args*/) { return 0; }
 
 template<typename... Args>
-int LAPACKE_slacgv_work(Args... args) { return 0; }
+int LAPACKE_slacgv_work(Args... /*args*/) { return 0; }
 
 template<typename... Args>
-int LAPACKE_dlacgv_work(Args... args) { return 0; }
+int LAPACKE_dlacgv_work(Args... /*args*/) { return 0; }
 
 #define lapack_complex_float magmaFloatComplex
 #define lapack_complex_double magmaDoubleComplex

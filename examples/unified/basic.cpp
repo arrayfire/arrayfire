@@ -36,7 +36,7 @@ void testBackend()
     af_print(B);
 }
 
-int main(int argc, char *argv[])
+int main(int, char **)
 {
     std::generate(input.begin(), input.end(), unifRand);
 

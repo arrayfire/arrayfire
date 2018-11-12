@@ -92,11 +92,11 @@ af_err af_create_sparse_array(
           DIM_ASSERT(4, rInfo.elements() == nNZ);
           DIM_ASSERT(5, cInfo.elements() == nNZ);
         } else if(stype == AF_STORAGE_CSR) {
-          DIM_ASSERT(4, rInfo.elements() == nRows + 1);
+          DIM_ASSERT(4, (dim_t)rInfo.elements() == nRows + 1);
           DIM_ASSERT(5, cInfo.elements() == nNZ);
         } else if(stype == AF_STORAGE_CSC) {
           DIM_ASSERT(4, rInfo.elements() == nNZ);
-          DIM_ASSERT(5, cInfo.elements() == nCols + 1);
+          DIM_ASSERT(5, (dim_t)cInfo.elements() == nCols + 1);
         }
 
         af_array output = 0;
@@ -191,7 +191,7 @@ af_err af_create_sparse_array_from_ptr(
 
 template<typename T>
 af_array createSparseArrayFromDense(
-        const af::dim4 &dims, const af_array _in,
+        const af_array _in,
         const af_storage stype)
 {
     const Array<T> in = getArray<T>(_in);
@@ -228,15 +228,13 @@ af_err af_create_sparse_array_from_dense(af_array *out, const af_array in,
 
         TYPE_ASSERT(info.isFloating());
 
-        af::dim4 dims(info.dims()[0], info.dims()[1]);
-
         af_array output = 0;
 
         switch(info.getType()) {
-            case f32: output = createSparseArrayFromDense<float  >(dims, in, stype); break;
-            case f64: output = createSparseArrayFromDense<double >(dims, in, stype); break;
-            case c32: output = createSparseArrayFromDense<cfloat >(dims, in, stype); break;
-            case c64: output = createSparseArrayFromDense<cdouble>(dims, in, stype); break;
+            case f32: output = createSparseArrayFromDense<float  >(in, stype); break;
+            case f64: output = createSparseArrayFromDense<double >(in, stype); break;
+            case c32: output = createSparseArrayFromDense<cfloat >(in, stype); break;
+            case c64: output = createSparseArrayFromDense<cdouble>(in, stype); break;
             default: TYPE_ERROR(1, info.getType());
         }
         std::swap(*out, output);

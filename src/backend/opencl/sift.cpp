@@ -61,6 +61,20 @@ unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
 
     return nfeat_out;
 #else
+    UNUSED(x_out);
+    UNUSED(y_out);
+    UNUSED(score_out);
+    UNUSED(ori_out);
+    UNUSED(size_out);
+    UNUSED(desc_out);
+    UNUSED(in);
+    UNUSED(n_layers);
+    UNUSED(contrast_thr);
+    UNUSED(edge_thr);
+    UNUSED(init_sigma);
+    UNUSED(double_input);
+    UNUSED(img_scale);
+    UNUSED(feature_ratio);
     if (compute_GLOH)
         AF_ERROR("ArrayFire was not built with nonfree support, GLOH disabled\n", AF_ERR_NONFREE);
     else

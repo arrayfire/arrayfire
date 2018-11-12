@@ -42,6 +42,7 @@ namespace common {
 
         bool isLinear(dim_t dims[4]) const final
         {
+            UNUSED(dims);
             return false;
         }
 

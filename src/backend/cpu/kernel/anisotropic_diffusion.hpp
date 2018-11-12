@@ -84,7 +84,7 @@ float computeGradientBasedUpdate(const float mct,
 float computeCurvatureBasedUpdate(const float mct,
                                   const float NW, const float N, const float NE,
                                   const float  W, const float C, const float  E,
-                                  const float SW, const float S, const float SE, const af_flux_function fftype)
+                                  const float SW, const float S, const float SE)
 {
     float delta = 0.f;
     float prop_grad = 0.f;
@@ -173,7 +173,7 @@ void anisotropicDiffusion(Param<T> inout, const float dt, const float mct, const
                                 img[ index(ip1, j  , d1stride) ],
                                 img[ index(im1, jp1, d1stride) ],
                                 img[ index(i  , jp1, d1stride) ],
-                                img[ index(ip1, jp1, d1stride) ], fftype);
+                                img[ index(ip1, jp1, d1stride) ]);
 
                     } else {
                         delta = computeGradientBasedUpdate(

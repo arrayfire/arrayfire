@@ -22,6 +22,7 @@ namespace cpu
 
 void setFFTPlanCacheSize(size_t numPlans)
 {
+    UNUSED(numPlans);
 }
 
 template<typename T, int rank, bool direction>

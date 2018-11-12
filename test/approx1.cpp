@@ -200,7 +200,7 @@ TYPED_TEST(Approx1, Approx1Cubic)
 // Test Argument Failure Cases
 ///////////////////////////////////////////////////////////////////////////////
 template<typename T>
-void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp_type method, const af_err err)
+void approx1ArgsTest(string pTestFile, const af_interp_type method, const af_err err)
 {
     if (noDoubleTests<T>()) return;
     typedef typename dtype_traits<T>::base_type BT;
@@ -231,19 +231,19 @@ void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
 
 TYPED_TEST(Approx1, Approx1NearestArgsPos2D)
 {
-    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1_pos2d.test"), 0, AF_INTERP_NEAREST, AF_ERR_SIZE);
+    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1_pos2d.test"), AF_INTERP_NEAREST, AF_ERR_SIZE);
 }
 TYPED_TEST(Approx1, Approx1LinearArgsPos2D)
 {
-    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1_pos2d.test"), 1, AF_INTERP_LINEAR, AF_ERR_SIZE);
+    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1_pos2d.test"), AF_INTERP_LINEAR, AF_ERR_SIZE);
 }
 TYPED_TEST(Approx1, Approx1ArgsInterpBilinear)
 {
-    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1.test"), 0, AF_INTERP_BILINEAR, AF_ERR_ARG);
+    approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/approx1.test"), AF_INTERP_BILINEAR, AF_ERR_ARG);
 }
 
 template<typename T>
-void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const af_interp_type method)
+void approx1ArgsTestPrecision(string pTestFile, const unsigned , const af_interp_type method)
 {
     if (noDoubleTests<T>()) return;
     vector<dim4> numDims;
@@ -517,7 +517,7 @@ TEST(Approx1, CPPUsage)
     //! [ex_signal_approx1]
 
     // Input data array.
-    float input_vals[3] = {10.0, 20.0, 30.0};
+    float input_vals[3] = {10.0f, 20.0f, 30.0f};
     array in(dim4(3, 1), input_vals);
     // [3 1 1 1]
     //     10.0000
@@ -525,7 +525,7 @@ TEST(Approx1, CPPUsage)
     //     30.0000
 
     // Array of positions to be found along the first dimension.
-    float pv[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    float pv[5] = {0.0f, 0.5, 1.0f, 1.5, 2.0f};
     array pos(dim4(5,1), pv);
     // [5 1 1 1]
     //     0.0000
@@ -545,7 +545,7 @@ TEST(Approx1, CPPUsage)
 
     //! [ex_signal_approx1]
 
-    float civ[5] = {10.0, 15.0, 20.0, 25.0, 30.0};
+    float civ[5] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f};
     array interp_gold(dim4(5,1), civ);
     ASSERT_ARRAYS_EQ(interp, interp_gold);
 
@@ -556,9 +556,9 @@ TEST(Approx1, CPPUniformUsage)
 {
     //! [ex_signal_approx1_uniform]
 
-    float input_vals[9] = {10.0, 20.0, 30.0,
-                           40.0, 50.0, 60.0,
-                           70.0, 80.0, 90.0};
+    float input_vals[9] = {10.0f, 20.0f, 30.0f,
+                           40.0f, 50.0f, 60.0f,
+                           70.0f, 80.0f, 90.0f};
     array in(dim4(3, 3), input_vals);
     // [3 3 1 1]
     //     10.0000    40.0000    70.0000
@@ -567,7 +567,7 @@ TEST(Approx1, CPPUniformUsage)
 
     // Array of positions to be found along the interpolation
     // dimension, `interp_dim`.
-    float pv[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    float pv[5] = {0.0f, 0.5, 1.0f, 1.5f, 2.0f};
     array pos(dim4(5,1), pv);
     // [5 1 1 1]
     //     0.0000
@@ -601,27 +601,27 @@ TEST(Approx1, CPPUniformUsage)
 
     //! [ex_signal_approx1_uniform]
 
-    float civ[15] = {10.0, 15.0, 20.0, 25.0, 30.0,
-                     40.0, 45.0, 50.0, 55.0, 60.0,
-                     70.0, 75.0, 80.0, 85.0, 90.0};
+    float civ[15] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f,
+                     40.0f, 45.0f, 50.0f, 55.0f, 60.0f,
+                     70.0f, 75.0f, 80.0f, 85.0f, 90.0f};
     array interp_gold_col(dim4(5,3), civ);
     ASSERT_ARRAYS_EQ(col_major_interp, interp_gold_col);
 
 
-    float riv[15] = {10.0, 20.0, 30.0,
-                     25.0, 35.0, 45.0,
-                     40.0, 50.0, 60.0,
-                     55.0, 65.0, 75.0,
-                     70.0, 80.0, 90.0};
+    float riv[15] = {10.0f, 20.0f, 30.0f,
+                     25.0f, 35.0f, 45.0f,
+                     40.0f, 50.0f, 60.0f,
+                     55.0f, 65.0f, 75.0f,
+                     70.0f, 80.0f, 90.0f};
     array interp_gold_row(dim4(3,5), riv);
     ASSERT_ARRAYS_EQ(row_major_interp, interp_gold_row);
 }
 
 TEST(Approx1, CPPDecimalStepRescaleGrid)
 {
-    float inv[3] = {10.0, 20.0, 30.0};
+    float inv[3] = {10.0f, 20.0f, 30.0f};
     array in(dim4(3,1), inv);
-    float pv[5] = {0, 0.25, 0.5, 0.75, 1.0};
+    float pv[5] = {0.f, 0.25f, 0.5f, 0.75f, 1.0f};
     array pos(dim4(5,1), pv);
 
     const int interp_grid_start = 0;
@@ -630,18 +630,18 @@ TEST(Approx1, CPPDecimalStepRescaleGrid)
     array interp = approx1(in,
                            pos, interp_dim, interp_grid_start, interp_grid_step);
 
-    float iv[5] = {10.0, 15.0, 20.0, 25.0, 30.0};
+    float iv[5] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f};
     array interp_gold(dim4(5,1), iv);
     ASSERT_ARRAYS_EQ(interp, interp_gold);
 }
 
 TEST(Approx1, CPPRepeatPos)
 {
-    float inv[9] = {10.0, 20.0, 30.0,
-                    40.0, 50.0, 60.0,
-                    70.0, 80.0, 90.0};
+    float inv[9] = {10.0f, 20.0f, 30.0f,
+                    40.0f, 50.0f, 60.0f,
+                    70.0f, 80.0f, 90.0f};
     array in(dim4(3, 3), inv);
-    float pv[5] = {0.0, 0.5, 0.5, 1.5, 1.5};
+    float pv[5] = {0.0f, 0.5f, 0.5f, 1.5f, 1.5f};
     array pos(dim4(5,1), pv);
 
     const int interp_grid_start = 0;
@@ -650,9 +650,9 @@ TEST(Approx1, CPPRepeatPos)
     array interp = approx1(in,
                            pos, interp_dim, interp_grid_start, interp_grid_step);
 
-    float iv[15] = {10.0, 15.0, 15.0, 25.0, 25.0,
-                    40.0, 45.0, 45.0, 55.0, 55.0,
-                    70.0, 75.0, 75.0, 85.0, 85.0};
+    float iv[15] = {10.0f, 15.0f, 15.0f, 25.0f, 25.0f,
+                    40.0f, 45.0f, 45.0f, 55.0f, 55.0f,
+                    70.0f, 75.0f, 75.0f, 85.0f, 85.0f};
     array interp_gold(dim4(5,3), iv);
     ASSERT_ARRAYS_EQ(interp, interp_gold);
 }
@@ -660,9 +660,9 @@ TEST(Approx1, CPPRepeatPos)
 
 TEST(Approx1, CPPNonMonotonicPos)
 {
-    float inv[3] = {10.0, 20.0, 30.0};
+    float inv[3] = {10.0f, 20.0f, 30.0f};
     array in(dim4(3,1), inv);
-    float pv[5] = {0.5, 1.0, 1.5, 0.0, 2.0};
+    float pv[5] = {0.5f, 1.0f, 1.5f, 0.0f, 2.0f};
     array pos(dim4(5,1), pv);
 
     const int interp_grid_start = 0;
@@ -671,16 +671,16 @@ TEST(Approx1, CPPNonMonotonicPos)
     array interp = approx1(in,
                            pos, interp_dim, interp_grid_start, interp_grid_step);
 
-    float iv[5] = {15.0, 20.0, 25.0, 10.0, 30.0};
+    float iv[5] = {15.0f, 20.0f, 25.0f, 10.0f, 30.0f};
     array interp_gold(dim4(5,1), iv);
     ASSERT_ARRAYS_EQ(interp, interp_gold);
 }
 
 TEST(Approx1, CPPMismatchingIndexingDim)
 {
-    float inv[3] = {10.0, 20.0, 30.0};
+    float inv[3] = {10.0f, 20.0f, 30.0f};
     array in(dim4(3,1), inv);
-    float pv[4] = {0.0, 0.5, 1.0, 2.0};
+    float pv[4] = {0.0f, 0.5f, 1.0f, 2.0f};
     array pos(dim4(1,4), pv);
 
     const int interp_grid_start = 0;
@@ -691,19 +691,19 @@ TEST(Approx1, CPPMismatchingIndexingDim)
                            pos, interp_dim, interp_grid_start, interp_grid_step,
                            AF_INTERP_LINEAR, off_grid);
 
-    float iv[12] = {10.0, 20.0, 30.0,
-                   -1.0, -1.0, -1.0,
-                   -1.0, -1.0, -1.0,
-                   -1.0, -1.0, -1.0};
+    float iv[12] = {10.0f, 20.0f, 30.0f,
+                   -1.0f, -1.0f, -1.0f,
+                   -1.0f, -1.0f, -1.0f,
+                   -1.0f, -1.0f, -1.0f};
     array interp_gold(dim4(3,4), iv);
     ASSERT_ARRAYS_EQ(interp, interp_gold);
 }
 
 TEST(Approx1, CPPNegativeGridStart)
 {
-    float inv[3] = {10.0, 20.0, 30.0};
+    float inv[3] = {10.0f, 20.0f, 30.0f};
     array in(dim4(3,1), inv);
-    float pv[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    float pv[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
     array pos(dim4(5,1), pv);
 
     const int interp_grid_start = -1;
@@ -712,7 +712,7 @@ TEST(Approx1, CPPNegativeGridStart)
     array interp = approx1(in,
                            pos, interp_dim, interp_grid_start, interp_grid_step);
 
-    float iv[5] = {20.0, 25.0, 30.0, 0.0, 0.0};
+    float iv[5] = {20.0f, 25.0f, 30.0f, 0.0f, 0.0f};
     array interp_gold(dim4(5,1), iv);
     ASSERT_ARRAYS_EQ(interp, interp_gold);
 
@@ -720,9 +720,9 @@ TEST(Approx1, CPPNegativeGridStart)
 
 TEST(Approx1, CPPInterpolateBackwards)
 {
-    float inv[3] = {10.0, 20.0, 30.0};
+    float inv[3] = {10.0f, 20.0f, 30.0f};
     array in(dim4(3,1), inv);
-    float pv[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    float pv[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
     array pos(dim4(3,1), pv);
 
     const int interp_grid_start = in.elements()-1;
@@ -731,7 +731,7 @@ TEST(Approx1, CPPInterpolateBackwards)
     array interp = approx1(in,
                            pos, interp_dim, interp_grid_start, interp_grid_step);
 
-    float iv[5] = {30.0, 25.0, 20.0, 15.0, 10.0};
+    float iv[5] = {30.0f, 25.0f, 20.0f, 15.0f, 10.0f};
     array interp_gold(dim4(3,1), iv);
     ASSERT_ARRAYS_EQ(interp, interp_gold);
 }
@@ -739,9 +739,9 @@ TEST(Approx1, CPPInterpolateBackwards)
 
 TEST(Approx1, CPPStartOffGridAndNegativeStep)
 {
-    float inv[3] = {10.0, 20.0, 30.0};
+    float inv[3] = {10.0f, 20.0f, 30.0f};
     array in(dim4(3,1), inv);
-    float pv[5] = {0.0, -0.5, -1.0, -1.5, -2.0};
+    float pv[5] = {0.0f, -0.5f, -1.0f, -1.5f, -2.0f};
     array pos(dim4(5,1), pv);
 
     const int interp_grid_start = -1;
@@ -750,7 +750,7 @@ TEST(Approx1, CPPStartOffGridAndNegativeStep)
     array interp = approx1(in,
                            pos, interp_dim, interp_grid_start, interp_grid_step);
 
-    float iv[5] = {0.0, 0.0, 10.0, 15.0, 20.0};
+    float iv[5] = {0.0f, 0.0f, 10.0f, 15.0f, 20.0f};
     array interp_gold(dim4(5,1), iv);
     ASSERT_ARRAYS_EQ(interp, interp_gold);
 }
@@ -759,9 +759,9 @@ TEST(Approx1, CPPUniformInvalidStepSize)
 {
     try
     {
-        float inv[3] = {10.0, 20.0, 30.0};
+        float inv[3] = {10.0f, 20.0f, 30.0f};
         array in(dim4(3,1), inv);
-        float pv[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+        float pv[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
         array pos(dim4(5,1), pv);
 
         const int interp_grid_start = 0;
@@ -788,7 +788,11 @@ TEST(Approx1, CPPInfCheck)
     array interp = approx1(sampled, xo);
     array interp_augmented = join(1, xo, interp);
 
-    float goldv[9] = {af::Inf, af::Inf, af::Inf, af::Inf, 0.5, 0.625, 0.75, 0.875, 1.0};
+    float goldv[9] = {static_cast<float>(af::Inf),
+                      static_cast<float>(af::Inf),
+                      static_cast<float>(af::Inf),
+                      static_cast<float>(af::Inf),
+                      0.5f, 0.625f, 0.75f, 0.875f, 1.0f};
     array gold(dim4(9,1), goldv);
     interp(af::isInf(interp)) = 0;
     gold(af::isInf(gold)) = 0;
@@ -803,7 +807,7 @@ TEST(Approx1, CPPUniformInfCheck)
     array interp = approx1(sampled,
                            xo, 0,
                            0, 2);
-    float goldv[5] = {af::Inf, 20.0, 30.0, 40.0, 50.0};
+    float goldv[5] = {static_cast<float>(af::Inf), 20.0f, 30.0f, 40.0f, 50.0f};
     array gold(dim4(5,1), goldv);
     interp(af::isInf(interp)) = 0;
     gold(af::isInf(gold)) = 0;
@@ -812,7 +816,7 @@ TEST(Approx1, CPPUniformInfCheck)
 
 TEST(Approx1, CPPEmptyPos)
 {
-    float inv[3] = {10.0, 20.0, 30.0};
+    float inv[3] = {10.0f, 20.0f, 30.0f};
     array in(dim4(3,1), inv);
     array pos;
     array interp = approx1(in, pos);
@@ -823,7 +827,7 @@ TEST(Approx1, CPPEmptyPos)
 TEST(Approx1, CPPEmptyInput)
 {
     array in;
-    float pv[3] = {0.0, 1.0, 2.0};
+    float pv[3] = {0.0f, 1.0f, 2.0f};
     array pos(dim4(3,1), pv);
 
     array interp = approx1(in, pos);
@@ -842,13 +846,13 @@ TEST(Approx1, CPPEmptyPosAndInput)
 }
 
 TEST(Approx1, UseNullInitialOutput) {
-    float h_in[3] = {10, 20, 30};
+    float h_in[3] = {10.f, 20.f, 30.f};
     dim_t h_in_dims = 3;
 
     af_array in = 0;
     ASSERT_SUCCESS(af_create_array(&in, &h_in[0], 1, &h_in_dims, f32));
 
-    float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
     dim_t h_pos_dims = 5;
     af_array pos = 0;
     ASSERT_SUCCESS(af_create_array(&pos, &h_pos[0], 1, &h_pos_dims, f32));
@@ -860,13 +864,13 @@ TEST(Approx1, UseNullInitialOutput) {
 }
 
 TEST(Approx1, UseExistingOutputArray) {
-    float h_in[3] = {10, 20, 30};
+    float h_in[3] = {10.f, 20.f, 30.f};
     dim_t h_in_dims = 3;
 
     af_array in = 0;
     ASSERT_SUCCESS(af_create_array(&in, &h_in[0], 1, &h_in_dims, f32));
 
-    float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
     dim_t h_pos_dims = 5;
     af_array pos = 0;
     ASSERT_SUCCESS(af_create_array(&pos, &h_pos[0], 1, &h_pos_dims, f32));
@@ -889,20 +893,20 @@ TEST(Approx1, UseExistingOutputArray) {
 }
 
 TEST(Approx1, UseExistingOutputSlice) {
-    float h_in[3] = {10, 20, 30};
+    float h_in[3] = {10.f, 20.f, 30.f};
     dim_t h_in_dims = 3;
 
     af_array in = 0;
     ASSERT_SUCCESS(af_create_array(&in, &h_in[0], 1, &h_in_dims, f32));
 
-    float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
     dim_t h_pos_dims = 5;
     af_array pos = 0;
     ASSERT_SUCCESS(af_create_array(&pos, &h_pos[0], 1, &h_pos_dims, f32));
 
-    float h_out[15] = {1.0, 1.5, 2.0, 2.5, 3.0,
-                       4.0, 4.5, 5.0, 5.5, 6.0,
-                       7.0, 7.5, 8.0, 8.5, 9.0};
+    float h_out[15] = {1.0f, 1.5f, 2.0f, 2.5f, 3.0f,
+                       4.0f, 4.5f, 5.0f, 5.5f, 6.0f,
+                       7.0f, 7.5f, 8.0f, 8.5f, 9.0f};
     dim_t h_out_dims[2] = {5, 3};
     af_array out = 0;
     ASSERT_SUCCESS(af_create_array(&out, &h_out[0], 2, &h_out_dims[0], f32));
@@ -917,9 +921,9 @@ TEST(Approx1, UseExistingOutputSlice) {
     vector<float> h_out_approx(nelems);
     ASSERT_SUCCESS(af_get_data_ptr(&h_out_approx.front(), out));
 
-    float h_gold[15] = {1.0, 1.5, 2.0, 2.5, 3.0,
-                        10.0, 15.0, 20.0, 25.0, 30.0,
-                        7.0, 7.5, 8.0, 8.5, 9.0};
+    float h_gold[15] = {1.0f, 1.5f, 2.0f, 2.5f, 3.0f,
+                        10.0f, 15.0f, 20.0f, 25.0f, 30.0f,
+                        7.0f, 7.5f, 8.0f, 8.5f, 9.0f};
     af_array gold = 0;
     ASSERT_SUCCESS(af_create_array(&gold, &h_gold[0], 2, &h_out_dims[0], f32));
     ASSERT_ARRAYS_EQ(gold, out);

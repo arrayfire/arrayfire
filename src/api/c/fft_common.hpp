@@ -12,15 +12,10 @@
 
 using namespace detail;
 
-static void computePaddedDims(dim4 &pdims,
-                              const dim4 &idims,
-                              const dim_t npad,
-                              dim_t const * const pad)
-{
-    for (int i = 0; i < 4; i++) {
-        pdims[i] = (i < (int)npad) ? pad[i] : idims[i];
-    }
-}
+void computePaddedDims(dim4 &pdims,
+                       const dim4 &idims,
+                       const dim_t npad,
+                       dim_t const * const pad);
 
 template<typename inType, typename outType, int rank, bool direction>
 Array<outType> fft(const Array<inType> input, const double norm_factor,

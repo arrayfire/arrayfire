@@ -239,7 +239,6 @@ createNodeArray(const dim4 &dims, Node_ptr node)
 
                 Node *n = node.get();
 
-                size_t buffer_size;
                 NodeIterator<jit::Node> it(n);
                 NodeIterator<jit::Node> end_node;
                 size_t bytes = accumulate(it, end_node,

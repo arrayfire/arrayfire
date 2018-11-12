@@ -47,10 +47,10 @@ namespace cuda
 namespace kernel
 {
 
-    static const uint N = 351;
-    static const uint BLOCKS = 32;
-    static const uint STATE_SIZE = (256*3);
-    static const uint TABLE_SIZE = 16;
+    constexpr int N = 351;
+    constexpr int BLOCKS = 32;
+    constexpr int STATE_SIZE = (256*3);
+    constexpr int TABLE_SIZE = 16;
 
     //Utils
     static inline __device__ void read_table(uint * const sharedTable, const uint * const table)

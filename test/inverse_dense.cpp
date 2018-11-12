@@ -32,7 +32,7 @@ using af::matmul;
 using af::max;
 
 template<typename T>
-void inverseTester(const int m, const int n, const int k, double eps)
+void inverseTester(const int m, const int n, double eps)
 {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
@@ -87,9 +87,9 @@ typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
 TYPED_TEST_CASE(Inverse, TestTypes);
 
 TYPED_TEST(Inverse, Square) {
-    inverseTester<TypeParam>(1000, 1000, 100, eps<TypeParam>());
+    inverseTester<TypeParam>(1000, 1000, eps<TypeParam>());
 }
 
 TYPED_TEST(Inverse, SquareMultiplePowerOfTwo) {
-    inverseTester<TypeParam>(2048, 2048, 512, eps<TypeParam>());
+    inverseTester<TypeParam>(2048, 2048, eps<TypeParam>());
 }

@@ -142,8 +142,6 @@ var(const Array<inType>& in,
     const Array<typename baseOutType<outType>::type>& weights,
     const af_var_bias bias, int dim)
 {
-    typedef typename baseOutType<outType>::type weightType;
-
     Array<outType> variance = *initArray<outType>();
     tie(ignore, variance) = meanvar<inType, outType>(in, weights, bias, dim);
     return variance;
@@ -302,7 +300,6 @@ af_err af_meanvar(af_array *mean, af_array *var, const af_array in,
                   const af_array weights, const af_var_bias bias, const dim_t dim) {
 
   try {
-      af_array output = 0;
       const ArrayInfo& iInfo = getInfo(in);
       if(weights != 0) {
         const ArrayInfo& wInfo = getInfo(weights);

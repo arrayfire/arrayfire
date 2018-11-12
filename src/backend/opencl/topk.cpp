@@ -73,7 +73,6 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
         Buffer *ibuf = indices.get();
         Buffer *vbuf = values.get();
 
-        cl_int err;
         Event ev_in, ev_val, ev_ind;
 
         T* ptr =

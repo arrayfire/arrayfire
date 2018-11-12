@@ -254,8 +254,7 @@ template<typename convT, typename T>
 void packDataHelper(Param<convT> sig_packed,
                     Param<convT> filter_packed,
                     CParam<T> sig,
-                    CParam<T> filter,
-                    const int baseDim)
+                    CParam<T> filter)
 {
     dim_t *sd = sig.dims;
 
@@ -286,12 +285,10 @@ void packDataHelper(Param<convT> sig_packed,
     POST_LAUNCH_CHECK();
 }
 
+// TODO(umar): This needs a better name
 template<typename T, typename convT>
-void complexMultiplyHelper(Param<T> out,
-                           Param<convT> sig_packed,
+void complexMultiplyHelper(Param<convT> sig_packed,
                            Param<convT> filter_packed,
-                           CParam<T> sig,
-                           CParam<T> filter,
                            AF_BATCH_KIND kind)
 {
     int sig_packed_elem = 1;
@@ -338,8 +335,7 @@ template<typename T, typename convT, bool roundOut, int baseDim, bool expand>
 void reorderOutputHelper(Param<T> out,
                          Param<convT> packed,
                          CParam<T> sig,
-                         CParam<T> filter,
-                         AF_BATCH_KIND kind)
+                         CParam<T> filter)
 {
     dim_t *sd = sig.dims;
     int fftScale = 1;

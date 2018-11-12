@@ -158,7 +158,7 @@ public:
     }
 };
 
-int rbm_demo(bool console, int perc)
+int rbm_demo(bool /*console*/, int perc)
 {
     printf("** ArrayFire RBM Demo **\n\n");
 

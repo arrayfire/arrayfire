@@ -28,8 +28,6 @@ unsigned orb(Array<float> &x, Array<float> &y,
              const float scl_fctr, const unsigned levels,
              const bool blur_img)
 {
-    const dim4 dims = image.dims();
-
     std::vector<unsigned> feat_pyr, lvl_best;
     std::vector<float> lvl_scl;
     std::vector<float*> d_x_pyr, d_y_pyr;
