@@ -79,7 +79,8 @@ magmablas_laswp(
         return;  //info;
     }
 
-    opencl::kernel::laswp<T>(n, dAT, dAT_offset, ldda, k1, k2, ipiv, inci);
+    cl::CommandQueue q(queue, true);
+    opencl::kernel::laswp<T>(n, dAT, dAT_offset, ldda, k1, k2, ipiv, inci, q);
 }
 
 
@@ -89,7 +90,7 @@ magmablas_laswp(
         cl_mem dAT, size_t dAT_offset, magma_int_t ldda,    \
         magma_int_t k1, magma_int_t k2,                     \
         const magma_int_t *ipiv, magma_int_t inci,          \
-        magma_queue_t queue);                               \
+        magma_queue_t queue);
 
 
 INSTANTIATE(float)

@@ -36,6 +36,7 @@ namespace {
   int setKernelArguments(int start_id, bool is_linear,
                          std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,
                          const std::shared_ptr<T>& ptr, const Param<T>& info) {
+      UNUSED(ptr);
       if (is_linear) {
           setArg(start_id, static_cast<const void*>(&info.ptr), sizeof(T*));
       } else {
@@ -69,6 +70,7 @@ namespace {
 
   void generateShiftNodeOffsets(std::stringstream &kerStream, int id,
                                 bool is_linear, const std::string& type_str) {
+      UNUSED(is_linear);
       std::string idx_str = std::string("idx") + std::to_string(id);
       std::string info_str = std::string("in") + std::to_string(id);
       std::string id_str = std::string("sh_id_") + std::to_string(id) + "_";

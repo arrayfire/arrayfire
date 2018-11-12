@@ -16,7 +16,7 @@ namespace kernel
 {
 
 template<typename T>
-void iota(Param<T> output, const af::dim4 &sdims, const af::dim4 &tdims)
+void iota(Param<T> output, const af::dim4 &sdims)
 {
     const af::dim4 dims    = output.dims();
     T* out             = output.get();

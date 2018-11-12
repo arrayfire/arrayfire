@@ -68,8 +68,8 @@ magma_ungqr_gpu(
     magma_queue_t queue,
     magma_int_t *info)
 {
-#define dA(i,j) (dA),  ((i) + (j)*ldda)
-#define dT(j)   (dT),  ((j)*nb)
+#define dA(i,j) (dA),  (dA_offset + ((i) + (j)*ldda))
+#define dT(j)   (dT),  (dT_offset + ((j)*nb))
 
     static const Ty c_zero = magma_zero<Ty>();
     static const Ty c_one  = magma_one<Ty>();

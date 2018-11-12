@@ -82,9 +82,9 @@ magmablas_laset(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
 
 
     switch (uplo) {
-    case MagmaFull : return opencl::kernel::laset<T, 0>(m, n, offdiag, diag, dA, dA_offset, ldda);
-    case MagmaLower: return opencl::kernel::laset<T, 1>(m, n, offdiag, diag, dA, dA_offset, ldda);
-    case MagmaUpper: return opencl::kernel::laset<T, 2>(m, n, offdiag, diag, dA, dA_offset, ldda);
+    case MagmaFull : return opencl::kernel::laset<T, 0>(m, n, offdiag, diag, dA, dA_offset, ldda, queue);
+    case MagmaLower: return opencl::kernel::laset<T, 1>(m, n, offdiag, diag, dA, dA_offset, ldda, queue);
+    case MagmaUpper: return opencl::kernel::laset<T, 2>(m, n, offdiag, diag, dA, dA_offset, ldda, queue);
     default: return;
     }
 

@@ -38,7 +38,6 @@ TEST(FlatTests, Test_flat_2D)
 {
     const int nx = 200;
     const int ny = 200;
-    const int num =  nx * ny;
 
     array in = randu(nx, ny);
     array out = flat(in);

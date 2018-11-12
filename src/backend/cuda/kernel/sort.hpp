@@ -10,19 +10,18 @@
 #include <math.hpp>
 #include <common/dispatch.hpp>
 #include <Param.hpp>
-#include <kernel/iota.hpp>
+#include <iota.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include <thrust/sort.h>
 #include <kernel/thrust_sort_by_key.hpp>
+#include <handle.hpp>
 
 namespace cuda
 {
     namespace kernel
     {
-        ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
-        ///////////////////////////////////////////////////////////////////////////
         template<typename T>
         void sort0Iterative(Param<T> val, bool isAscending)
         {
@@ -50,8 +49,8 @@ namespace cuda
             POST_LAUNCH_CHECK();
         }
 
-        template<typename T, int dim>
-        void sortBatched(Param<T> pVal, bool isAscending)
+        template<typename T>
+        void sortBatched(Param<T> pVal, int dim, bool isAscending)
         {
             af::dim4 inDims;
             for(int i = 0; i < 4; i++)
@@ -65,46 +64,16 @@ namespace cuda
             seqDims[dim] = 1;
 
             // Create/call iota
-            // Array<uint> key = iota<uint>(seqDims, tileDims);
-            dim4 keydims = inDims;
-            auto key = memAlloc<uint>(keydims.elements());
-            Param<uint> pKey;
-            pKey.ptr = key.get();
-            pKey.strides[0] = 1;
-            pKey.dims[0] = keydims[0];
-            for(int i = 1; i < 4; i++) {
-                pKey.dims[i] = keydims[i];
-                pKey.strides[i] = pKey.strides[i - 1] * pKey.dims[i - 1];
-            }
-            kernel::iota<uint>(pKey, seqDims, tileDims);
+            Array<uint> pKey = iota<uint>(seqDims, tileDims);
 
-            // Flat
-            //val.modDims(inDims.elements());
-            //key.modDims(inDims.elements());
-            pKey.dims[0] = inDims.elements();
-            pKey.strides[0] = 1;
-            pVal.dims[0] = inDims.elements();
-            pVal.strides[0] = 1;
-            for(int i = 1; i < 4; i++) {
-                pKey.dims[i] = 1;
-                pKey.strides[i] = pKey.strides[i - 1] * pKey.dims[i - 1];
-                pVal.dims[i] = 1;
-                pVal.strides[i] = pVal.strides[i - 1] * pVal.dims[i - 1];
-            }
+            pVal = flat(pVal);
 
             // Sort indices
             // sort_by_key<T, uint, isAscending>(*resVal, *resKey, val, key, 0);
-            thrustSortByKey(pVal.ptr, pKey.ptr, pVal.dims[0], isAscending);
+            thrustSortByKey(pVal.ptr, pKey.get(), pVal.dims[0], isAscending);
 
             // Needs to be ascending (true) in order to maintain the indices properly
-            thrustSortByKey(pKey.ptr, pVal.ptr, pVal.dims[0], true);
-
-            // No need of doing moddims here because the original Array<T>
-            // dimensions have not been changed
-            //val.modDims(inDims);
-
-            // Not really necessary
-            // CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
+            thrustSortByKey(pKey.get(), pVal.ptr, pVal.dims[0], true);
         }
 
         template<typename T>
@@ -113,9 +82,9 @@ namespace cuda
             int higherDims =  val.dims[1] * val.dims[2] * val.dims[3];
 
             if(higherDims > 10)
-              sortBatched<T, 0>(val, isAscending);
+                sortBatched<T>(val, 0, isAscending);
             else
-              kernel::sort0Iterative<T>(val, isAscending);
+                kernel::sort0Iterative<T>(val, isAscending);
         }
     }
 }

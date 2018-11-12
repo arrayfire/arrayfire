@@ -25,9 +25,9 @@ namespace opencl
             Array<T> out = copyArray<T>(in);
             switch(dim) {
                 case 0: kernel::sort0<T>(out, isAscending); break;
-                case 1: kernel::sortBatched<T, 1>(out, isAscending); break;
-                case 2: kernel::sortBatched<T, 2>(out, isAscending); break;
-                case 3: kernel::sortBatched<T, 3>(out, isAscending); break;
+                case 1: kernel::sortBatched<T>(out, 1, isAscending); break;
+                case 2: kernel::sortBatched<T>(out, 2, isAscending); break;
+                case 3: kernel::sortBatched<T>(out, 3, isAscending); break;
                 default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
             }
 

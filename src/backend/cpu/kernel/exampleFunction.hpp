@@ -19,6 +19,7 @@ namespace kernel
 template<typename T>
 void exampleFunction(Param<T> out, CParam<T> a, CParam<T> b, const af_someenum_t method)
 {
+    UNUSED(method);
     dim4 oDims    = out.dims();
 
     dim4 aStrides = a.strides();        // you can retrieve strides

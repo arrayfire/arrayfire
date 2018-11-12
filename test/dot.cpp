@@ -91,7 +91,7 @@ void dotTest(string pTestFile, const int resultIdx,
 }
 
 template<typename T>
-void compare(double rval, double ival, T gold)
+void compare(double rval, double /*ival*/, T gold)
 {
     ASSERT_NEAR(gold, rval, 0.03);
 }

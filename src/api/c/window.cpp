@@ -53,6 +53,10 @@ af_err af_create_window(af_window *out, const int width, const int height, const
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(out);
+    UNUSED(width);
+    UNUSED(height);
+    UNUSED(title);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -72,6 +76,9 @@ af_err af_set_position(const af_window wind, const unsigned x, const unsigned y)
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
+    UNUSED(x);
+    UNUSED(y);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -91,6 +98,8 @@ af_err af_set_title(const af_window wind, const char* const title)
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
+    UNUSED(title);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -110,6 +119,9 @@ af_err af_set_size(const af_window wind, const unsigned w, const unsigned h)
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
+    UNUSED(w);
+    UNUSED(h);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -132,6 +144,9 @@ af_err af_grid(const af_window wind, const int rows, const int cols)
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
+    UNUSED(rows);
+    UNUSED(cols);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -189,6 +204,12 @@ af_err af_set_axes_limits_compute(const af_window wind,
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
+    UNUSED(x);
+    UNUSED(y);
+    UNUSED(z);
+    UNUSED(exact);
+    UNUSED(props);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -238,6 +259,13 @@ af_err af_set_axes_limits_2d(const af_window wind,
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
+    UNUSED(xmin);
+    UNUSED(xmax);
+    UNUSED(ymin);
+    UNUSED(ymax);
+    UNUSED(exact);
+    UNUSED(props);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -292,6 +320,15 @@ af_err af_set_axes_limits_3d(const af_window wind,
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
+    UNUSED(xmin);
+    UNUSED(xmax);
+    UNUSED(ymin);
+    UNUSED(ymax);
+    UNUSED(zmin);
+    UNUSED(zmax);
+    UNUSED(exact);
+    UNUSED(props);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -328,6 +365,11 @@ af_err af_set_axes_titles(const af_window wind,
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
+    UNUSED(xtitle);
+    UNUSED(ytitle);
+    UNUSED(ztitle);
+    UNUSED(props);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -347,6 +389,7 @@ af_err af_show(const af_window wind)
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -366,6 +409,8 @@ af_err af_is_window_closed(bool *out, const af_window wind)
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(out);
+    UNUSED(wind);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -388,6 +433,8 @@ af_err af_set_visibility(const af_window wind, const bool is_visible)
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
+    UNUSED(is_visible);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
@@ -412,6 +459,7 @@ af_err af_destroy_window(const af_window wind)
     CATCHALL;
     return AF_SUCCESS;
 #else
+    UNUSED(wind);
     AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }

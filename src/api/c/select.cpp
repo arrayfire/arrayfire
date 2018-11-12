@@ -96,7 +96,7 @@ af_err af_select_scalar_r(af_array *out, const af_array cond, const af_array a, 
         dim4 odims(1);
 
         for (int i = 0; i < 4; i++) {
-            DIM_ASSERT(1, cond_dims[i] == adims[i] | cond_dims[i] == 1 | adims[i] == 1);
+            DIM_ASSERT(1, cond_dims[i] == adims[i] || cond_dims[i] == 1 || adims[i] == 1);
             odims[i] = std::max(cond_dims[i], adims[i]);
         }
 

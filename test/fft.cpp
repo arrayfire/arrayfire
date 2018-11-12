@@ -344,7 +344,7 @@ INSTANTIATE_BATCH_TEST(fft2, C2C_Double_Pad, 2, false, cdouble, cdouble, string(
 /////////////////////////////////////// CPP ////////////////////////////////////
 //
 template<typename inType, typename outType, bool isInverse>
-void cppFFTTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
+void cppFFTTest(string pTestFile)
 {
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
@@ -390,7 +390,7 @@ void cppFFTTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
 }
 
 template<typename inType, typename outType, bool isInverse>
-void cppDFTTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
+void cppDFTTest(string pTestFile)
 {
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;

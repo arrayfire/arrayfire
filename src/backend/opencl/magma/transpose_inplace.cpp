@@ -78,18 +78,19 @@ magmablas_transpose_inplace(
 
     using namespace opencl;
 
+    cl::CommandQueue q(queue, true);
     if (n % 32 == 0) {
-        kernel::transpose_inplace<T, false, true >(makeParam(dA , dA_offset , dims, strides));
+        kernel::transpose_inplace<T, false, true >(makeParam(dA , dA_offset , dims, strides), q);
     } else {
-        kernel::transpose_inplace<T, false, false>(makeParam(dA , dA_offset , dims, strides));
+        kernel::transpose_inplace<T, false, false>(makeParam(dA , dA_offset , dims, strides), q);
     }
 }
 
 #define INSTANTIATE(T)                                  \
     template void magmablas_transpose_inplace<T>(       \
         magma_int_t n,                                  \
-        cl_mem dA, size_t dA_offset, magma_int_t ldda,  \
-        magma_queue_t queue);                           \
+        cl_mem dA, size_t dA_offset,                    \
+        magma_int_t ldda, magma_queue_t queue);
 
 
 INSTANTIATE(float)

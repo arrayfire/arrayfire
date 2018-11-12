@@ -26,6 +26,8 @@ template<typename T, bool conjugate, bool both_conjugate>
 void dot(Param<T> output, CParam<T> lhs, CParam<T> rhs,
          af_mat_prop optLhs, af_mat_prop optRhs)
 {
+    UNUSED(optLhs);
+    UNUSED(optRhs);
     int N = lhs.dims(0);
 
     T out = 0;

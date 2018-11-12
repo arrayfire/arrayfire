@@ -11,7 +11,7 @@
 
 using namespace af;
 
-int main(int argc, const char** argv) {
+int main(int, const char**) {
     int backend = getAvailableBackends();
     if (backend & AF_BACKEND_OPENCL) {
         setBackend(AF_BACKEND_OPENCL);

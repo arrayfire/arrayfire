@@ -179,7 +179,7 @@ static void bench_tile2()
     dist_tile2(A, B);
 }
 
-int main(int argc, char **argv)
+int main(int, char **)
 {
     try {
 

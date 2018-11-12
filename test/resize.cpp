@@ -83,7 +83,7 @@ TYPED_TEST(Resize, InvalidDims)
 template<typename T>
 void compare(T test, T out, double err, size_t i)
 {
-    ASSERT_EQ(abs(test - out) < 0.0001, true) << "at: " << i << endl
+    ASSERT_EQ(abs(test - out) < err, true) << "at: " << i << endl
              << "for test = : " << test << endl
              << "out data = : " << out << endl;
 }
@@ -91,7 +91,7 @@ void compare(T test, T out, double err, size_t i)
 template<>
 void compare<uintl>(uintl test, uintl out, double err, size_t i)
 {
-    ASSERT_EQ(((intl)test - (intl)out) < 0.0001, true) << "at: " << i << endl
+    ASSERT_EQ(((intl)test - (intl)out) < err, true) << "at: " << i << endl
              << "for test = : " << test << endl
              << "out data = : " << out << endl;
 }
@@ -99,7 +99,7 @@ void compare<uintl>(uintl test, uintl out, double err, size_t i)
 template<>
 void compare<uint>(uint test, uint out, double err, size_t i)
 {
-    ASSERT_EQ(((int)test - (int)out) < 0.0001, true) << "at: " << i << endl
+    ASSERT_EQ(((int)test - (int)out) < err, true) << "at: " << i << endl
              << "for test = : " << test << endl
              << "out data = : " << out << endl;
 }
@@ -107,7 +107,7 @@ void compare<uint>(uint test, uint out, double err, size_t i)
 template<>
 void compare<uchar>(uchar test, uchar out, double err, size_t i)
 {
-    ASSERT_EQ(((int)test - (int)out) < 0.0001, true) << "at: " << i << endl
+    ASSERT_EQ(((int)test - (int)out) < err, true) << "at: " << i << endl
              << "for test = : " << test << endl
              << "out data = : " << out << endl;
 }

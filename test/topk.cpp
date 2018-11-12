@@ -49,9 +49,9 @@ typedef ::testing::Types<float, double, int, uint> TestTypes;
 TYPED_TEST_CASE(TopK, TestTypes);
 
 template<typename T>
-void topkTest(const unsigned ndims, const dim_t* dims,
-                   const int k, const int dim,
-                   const af_topk_function order)
+void topkTest(const int ndims, const dim_t* dims,
+              const unsigned k, const int dim,
+              const af_topk_function order)
 {
     af_dtype dtype = (af_dtype)dtype_traits<T>::af_type;
 
@@ -63,7 +63,7 @@ void topkTest(const unsigned ndims, const dim_t* dims,
     for (int i=0; i<ndims; i++)
     {
         ielems *= dims[i];
-        oelems *= (i==dim ? k : dims[i]);
+        oelems *= (i == dim ? k : dims[i]);
     }
 
     size_t bCount = ielems/dims[dim];
@@ -119,7 +119,7 @@ void topkTest(const unsigned ndims, const dim_t* dims,
     ASSERT_SUCCESS(af_get_data_ptr((void*)hovals.data(), output));
     ASSERT_SUCCESS(af_get_data_ptr((void*)hoidxs.data(), outindex));
 
-    for (int i=0; i<oelems; ++i)
+    for (size_t i=0; i<oelems; ++i)
     {
         switch(dtype)
         {
@@ -285,7 +285,7 @@ TEST_P(TopKParams, CPP) {
       in = -in + (d0 * d1-1);
     }
     array val, idx;
-    topk(val, idx, in, k, 0, order);
+    topk(val, idx, in, k, dim, order);
 
     vector<float>    hval(k * d1);
     vector<unsigned> hidx(k * d1);

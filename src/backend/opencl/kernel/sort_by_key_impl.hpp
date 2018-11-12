@@ -20,7 +20,7 @@
 #include <Param.hpp>
 #include <debug_opencl.hpp>
 #include <math.hpp>
-#include <kernel/iota.hpp>
+#include <iota.hpp>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -161,8 +161,7 @@ namespace opencl
             seqDims[dim] = 1;
 
             // Create/call iota
-            Array<unsigned> pSeq = createEmptyArray<unsigned>(inDims);
-            kernel::iota<unsigned>(pSeq, seqDims, tileDims);
+            Array<unsigned> pSeq = iota<unsigned>(seqDims, tileDims);
 
             int elements = inDims.elements();
 

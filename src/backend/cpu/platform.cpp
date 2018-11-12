@@ -174,6 +174,7 @@ std::string getDeviceInfo()
 
 bool isDoubleSupported(int device)
 {
+    UNUSED(device);
     return DeviceManager::IS_DOUBLE_SUPPORTED;
 }
 
@@ -216,6 +217,7 @@ int getActiveDeviceId()
 
 size_t getDeviceMemorySize(int device)
 {
+    UNUSED(device);
     return common::getHostMemorySize();
 }
 

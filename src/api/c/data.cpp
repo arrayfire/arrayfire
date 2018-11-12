@@ -30,7 +30,6 @@ using namespace detail;
 
 dim4 verifyDims(const unsigned ndims, const dim_t * const dims)
 {
-
     DIM_ASSERT(1, ndims >= 1);
 
     dim4 d(1, 1, 1, 1);

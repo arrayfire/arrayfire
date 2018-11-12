@@ -72,7 +72,6 @@ void invDeconvImageTest(string pTestFile, const float gamma, const af_inverse_de
 
         ASSERT_SUCCESS(af_gaussian_kernel(&kerArray, 13, 13, 2.25, 2.25));
 
-        af_dtype itype = (af_dtype)af::dtype_traits<T>::af_type;
         af_dtype otype = (af_dtype)af::dtype_traits<OutType>::af_type;
 
         ASSERT_SUCCESS(af_load_image(&_inArray, inFiles[testId].c_str(), isColor));

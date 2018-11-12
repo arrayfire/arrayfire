@@ -38,11 +38,10 @@ template<typename T, typename To, af_match_type dist_type>
 void all_distances(Param dist,
                    Param query,
                    Param train,
-                   const dim_t dist_dim,
-                   const unsigned n_dist)
+                   const dim_t dist_dim)
 {
-    const unsigned feat_len = query.info.dims[dist_dim];
-    const unsigned max_kern_feat_len = min(THREADS, feat_len);
+    const dim_t feat_len = query.info.dims[dist_dim];
+    const unsigned max_kern_feat_len = min(THREADS, static_cast<unsigned>(feat_len));
     const To max_dist = maxval<To>();
 
     // Determine maximum feat_len capable of using shared memory (faster)
@@ -124,7 +123,7 @@ void all_distances(Param dist,
                               const unsigned,const unsigned,
                               LocalSpaceArg> (*entry.ker);
 
-    for(int feat_offset=0; feat_offset<feat_len; feat_offset+=THREADS) {
+    for(dim_t feat_offset=0; feat_offset<feat_len; feat_offset+=THREADS) {
         hmOp(EnqueueArgs(getQueue(), global, local),
               *dist.data,
               *query.data, query.info, *train.data, train.info,

@@ -40,12 +40,14 @@ namespace common
 
         void genParams(std::stringstream &kerStream, int id, bool is_linear) const final
         {
+            UNUSED(is_linear);
             kerStream << m_type_str << " scalar" << id << ", \n";
         }
 
         int setArgs(int start_id, bool is_linear,
                     std::function<void(int id, const void* ptr, size_t arg_size)> setArg) const final
         {
+            UNUSED(is_linear);
             setArg(start_id, static_cast<const void*>(&m_val), sizeof(T));
             return start_id + 1;
         }

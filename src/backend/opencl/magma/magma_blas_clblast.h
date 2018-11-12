@@ -91,7 +91,7 @@ struct gpu_blas_gemm_func
         const cl_mem a_buffer, const size_t a_offset, const size_t a_ld,
         const cl_mem b_buffer, const size_t b_offset, const size_t b_ld, const T beta,
         cl_mem c_buffer, const size_t c_offset, const size_t c_ld,
-        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event *wait_events, cl_event *events)
+        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event */*wait_events*/, cl_event *events)
     {
         assert(num_queues == 1);
         assert(num_wait_events == 0);
@@ -112,7 +112,7 @@ struct gpu_blas_gemv_func
         const cl_mem a_buffer, const size_t a_offset, const size_t a_ld,
         const cl_mem x_buffer, const size_t x_offset, const size_t x_inc, const T beta,
         cl_mem y_buffer, const size_t y_offset, const size_t y_inc,
-        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event *wait_events, cl_event *events)
+        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event */*wait_events*/, cl_event *events)
     {
         assert(num_queues == 1);
         assert(num_wait_events == 0);
@@ -132,7 +132,7 @@ struct gpu_blas_trmm_func
         const size_t m, const size_t n, const T alpha,
         const cl_mem a_buffer, const size_t a_offset, const size_t a_ld,
         cl_mem b_buffer, const size_t b_offset, const size_t b_ld,
-        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event *wait_events, cl_event *events)
+        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event */*wait_events*/, cl_event *events)
     {
         assert(num_queues == 1);
         assert(num_wait_events == 0);
@@ -151,7 +151,7 @@ struct gpu_blas_trsm_func
         const size_t m, const size_t n, const T alpha,
         const cl_mem a_buffer, const size_t a_offset, const size_t a_ld,
         cl_mem b_buffer, const size_t b_offset, const size_t b_ld,
-        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event *wait_events, cl_event *events)
+        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event */*wait_events*/, cl_event *events)
     {
         assert(num_queues == 1);
         assert(num_wait_events == 0);
@@ -170,7 +170,7 @@ struct gpu_blas_trsv_func
         const size_t n,
         const cl_mem a_buffer, const size_t a_offset, const size_t a_ld,
         cl_mem x_buffer, const size_t x_offset, const size_t x_inc,
-        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event *wait_events, cl_event *events)
+        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event */*wait_events*/, cl_event *events)
     {
         assert(num_queues == 1);
         assert(num_wait_events == 0);
@@ -191,7 +191,7 @@ struct gpu_blas_herk_func
         const size_t n, const size_t k, const BasicType alpha,
         const cl_mem a_buffer, const size_t a_offset, const size_t a_ld, const BasicType beta,
         cl_mem c_buffer, const size_t c_offset, const size_t c_ld,
-        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event *wait_events, cl_event *events)
+        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event */*wait_events*/, cl_event *events)
     {
         assert(num_queues == 1);
         assert(num_wait_events == 0);
@@ -212,7 +212,7 @@ struct gpu_blas_herk_func<float>
         const size_t n, const size_t k, const float alpha,
         const cl_mem a_buffer, const size_t a_offset, const size_t a_ld, const float beta,
         cl_mem c_buffer, const size_t c_offset, const size_t c_ld,
-        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event *wait_events, cl_event *events)
+        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event */*wait_events*/, cl_event *events)
     {
         assert(num_queues == 1);
         assert(num_wait_events == 0);
@@ -233,7 +233,7 @@ struct gpu_blas_herk_func<double>
         const size_t n, const size_t k, const double alpha,
         const cl_mem a_buffer, const size_t a_offset, const size_t a_ld, const double beta,
         cl_mem c_buffer, const size_t c_offset, const size_t c_ld,
-        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event *wait_events, cl_event *events)
+        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event */*wait_events*/, cl_event *events)
     {
         assert(num_queues == 1);
         assert(num_wait_events == 0);
@@ -253,7 +253,7 @@ struct gpu_blas_syrk_func
         const size_t n, const size_t k, const T alpha,
         const cl_mem a_buffer, const size_t a_offset, const size_t a_ld, const T beta,
         cl_mem c_buffer, const size_t c_offset, const size_t c_ld,
-        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event *wait_events, cl_event *events)
+        cl_uint num_queues, cl_command_queue *queues, cl_uint num_wait_events, const cl_event */*wait_events*/, cl_event *events)
     {
         assert(num_queues == 1);
         assert(num_wait_events == 0);

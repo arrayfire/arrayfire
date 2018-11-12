@@ -43,7 +43,7 @@ template<> const char *laset_name<2>() { return "laset_upper"; }
 template<typename T, int uplo>
 void laset(int m, int  n,
            T offdiag, T diag,
-           cl_mem dA, size_t dA_offset, magma_int_t ldda)
+           cl_mem dA, size_t dA_offset, magma_int_t ldda, cl_command_queue queue)
 {
     std::string refName = laset_name<uplo>() + std::string("_") +
         std::string(dtype_traits<T>::getName()) +
@@ -83,7 +83,8 @@ void laset(int m, int  n,
 
     auto lasetOp = KernelFunctor<int, int, T, T, Buffer, unsigned long long, int>(*entry.ker);
 
-    lasetOp(EnqueueArgs(getQueue(), global, local), m, n, offdiag, diag, dAObj, dA_offset, ldda);
+    cl::CommandQueue q(queue);
+    lasetOp(EnqueueArgs(q, global, local), m, n, offdiag, diag, dAObj, dA_offset, ldda);
 }
 }
 }

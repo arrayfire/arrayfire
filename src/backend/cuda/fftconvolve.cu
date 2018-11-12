@@ -74,30 +74,27 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
     Array<cT> signal_packed = createEmptyArray<cT>(spDims);
     Array<cT> filter_packed = createEmptyArray<cT>(fpDims);
 
-    kernel::packDataHelper<cT, T>(signal_packed, filter_packed, signal, filter, baseDim);
+    kernel::packDataHelper<cT, T>(signal_packed, filter_packed, signal, filter);
 
     fft_inplace<cT, baseDim, true>(signal_packed);
     fft_inplace<cT, baseDim, true>(filter_packed);
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    if (expand)
-        kernel::complexMultiplyHelper<T, cT>(out, signal_packed, filter_packed, signal, filter, kind);
-    else
-        kernel::complexMultiplyHelper<T, cT>(out, signal_packed, filter_packed, signal, filter, kind);
+    kernel::complexMultiplyHelper<T, cT>(signal_packed, filter_packed, kind);
 
     if (kind == AF_BATCH_RHS) {
         fft_inplace<cT, baseDim, false>(filter_packed);
         if (expand)
-            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true >(out, filter_packed, signal, filter, kind);
+            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true >(out, filter_packed, signal, filter);
         else
-            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, false>(out, filter_packed, signal, filter, kind);
+            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, false>(out, filter_packed, signal, filter);
     } else {
         fft_inplace<cT, baseDim, false>(signal_packed);
         if (expand)
-            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true >(out, signal_packed, signal, filter, kind);
+            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true >(out, signal_packed, signal, filter);
         else
-            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, false>(out, signal_packed, signal, filter, kind);
+            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, false>(out, signal_packed, signal, filter);
     }
 
     return out;

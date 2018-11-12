@@ -110,7 +110,7 @@ namespace opencl
              dim4(tmp.info.strides[0], tmp.info.strides[1],
                       tmp.info.strides[2], tmp.info.strides[3]),
              (af_dtype)dtype_traits<T>::af_type),
-        data(tmp.data, owner_ ? bufferFree : [] (Buffer* ptr) {}),
+        data(tmp.data, owner_ ? bufferFree : [] (Buffer*) {}),
         data_dims(dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3])),
         node(bufferNodePtr<T>()), ready(true), owner(owner_)
     {

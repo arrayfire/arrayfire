@@ -19,10 +19,10 @@ namespace cuda
     namespace kernel
     {
         // Kernel Launch Config Values
-        static const unsigned TX = 16;
-        static const unsigned TY = 16;
+        constexpr unsigned TX = 16;
+        constexpr unsigned TY = 16;
         // Used for batching images
-        static const unsigned TI = 4;
+        constexpr int TI = 4;
 
         typedef struct {
             float tmat[6];

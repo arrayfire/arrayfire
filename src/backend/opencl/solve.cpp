@@ -75,8 +75,9 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
 
     cl::Buffer *A_buf = A.get();
     int info = 0;
+    cl_command_queue q = getQueue()();
     magma_getrf_gpu<T>(M, N, (*A_buf)(), A.getOffset(), A.strides()[1],
-                       &ipiv[0], getQueue()(), &info);
+                       &ipiv[0], q, &info);
 
     cl::Buffer *B_buf = B.get();
     int K = B.dims()[1];
@@ -84,7 +85,7 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
                        (*A_buf)(), A.getOffset(), A.strides()[1],
                        &ipiv[0],
                        (*B_buf)(), B.getOffset(), B.strides()[1],
-                       getQueue()(), &info);
+                       q, &info);
     return B;
 }
 

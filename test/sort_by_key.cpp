@@ -75,12 +75,12 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
 
     ASSERT_SUCCESS(af_sort_by_key(&okeyArray, &ovalArray, ikeyArray, ivalArray, 0, dir));
 
-    size_t nElems = tests[resultIdx0].size();
-
     // Compare result
     ASSERT_VEC_ARRAY_EQ(tests[resultIdx0], idims, okeyArray);
 
-#ifndef AF_OPENCL
+#ifdef AF_OPENCL
+    UNUSED(resultIdx1);
+#else
     // Compare result
     ASSERT_VEC_ARRAY_EQ(tests[resultIdx1], idims, ovalArray);
 #endif

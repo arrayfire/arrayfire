@@ -70,6 +70,7 @@ static af_array stdev(const af_array& in, int dim)
 
 af_err af_stdev_all(double *realVal, double *imagVal, const af_array in)
 {
+    UNUSED(imagVal); //TODO implement for complex values
     try {
         const ArrayInfo& info = getInfo(in);
         af_dtype type = info.getType();
