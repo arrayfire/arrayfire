@@ -6,37 +6,30 @@ v3.6.2
 
 Features
 --------
-- Support batching for `cond` argument in select() \PR{2243}
-- Support broadcast batching for matmul() \PR{2315}
-- Support multiple nearest neighbors for nearestNeighbour() \PR{2280}
-- Clamp-to-edge padding as an af_border_type option \PR{2333}
+- Added support for batching on the `cond` argument in select() \PR{2243}
+- Added support for broadcasting batched matmul() \PR{2315}
+- Added support for multiple nearest neighbors in nearestNeighbour() \PR{2280}
+- Added support for clamp-to-edge padding as an `af_border_type` option \PR{2333}
 
 Improvements
 ------------
 - Improved performance of morphological operations \PR{2238}
-- Changed allocation of raw pointers in backends to prevent potential memory
-  leaks \PR{2265}
 - Fixed linking errors when compiling without Freeimage/Graphics \PR{2248}
-- Added bigobj EHsc and FS flags to CUDA_NVCC_FLAGS and test executables
-  \PR{2253}
-- Fixed to improve the usage of ArrayFire as a subproject \PR{2290} 
-- Fixed compilation issues on macOS \PR{2323}
+- Improved the usage of ArrayFire as a CMake subproject \PR{2290}
 - Enabled configuration of custom library path for loading dynamic backend
   libraries \PR{2302}
 
 Bug Fixes
 ---------
-- Fixed LAPACK definitions \PR{2239}
-- Fixed LAPACK linking errors \PR{2245}
+- Fixed LAPACK definitions and linking errors \PR{2239}
 - Fixed overflow in dim4::ndims() \PR{2289}
-- Removed setDevice from af::array destructor \PR{2319}
 - Fixed pow() precision for integral types \PR{2305}
 - Fixed issues with tile() with a large repeat dimension \PR{2307}
 - Fixed svd() sub-array output on OpenCL \PR{2279}
 - Fixed grid-based indexing calculation in histogram() \PR{2230}
-- Fixed bug when using an af::array for indexing \PR{2311}
-- Incorporated [CLBlast](https://github.com/CNugteren/CLBlast) fixes for Windows
-  \PR{2222}
+- Fixed bug in indexing when used after reorder \PR{2311}
+- Fixed errors when exiting on Windows when using
+  [CLBlast](https://github.com/CNugteren/CLBlast) \PR{2222}
 
 Documentation
 -------------
@@ -53,11 +46,8 @@ Documentation
 Misc
 ----
 - `af*` libraries and dependencies directory changed to `lib64` \PR{2186}
-- New arrayfire ASSERT utility functions \PR{2249} \PR{2256} \PR{2257} \PR{2263}
-- Add missing AF_WITH_LOGGING definiton \PR{2275}
-- Add Volta and remove Fermi from CUDA Toolkit 9.0 builds \PR{2269}
-- Improve error messages in JIT \PR{2309}
-- spdlog v1.0.0 added as part of ArrayFire by default \PR{2264}
+- Added new arrayfire ASSERT utility functions \PR{2249} \PR{2256} \PR{2257} \PR{2263}
+- Improved error messages in JIT \PR{2309}
 
 Contributions
 -------------
