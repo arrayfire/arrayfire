@@ -864,7 +864,13 @@ void testApprox1(float* h_gold, dim4 gold_dim, float* h_in, dim4 in_dim,
     af_array gold = 0;
     ASSERT_SUCCESS(
         af_create_array(&gold, h_gold, gold_dim.ndims(), gold_dim.get(), f32));
+
     ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
+
+    if (gold != 0) ASSERT_SUCCESS(af_release_array(gold));
+    if (out != 0) ASSERT_SUCCESS(af_release_array(out));
+    if (pos != 0) ASSERT_SUCCESS(af_release_array(pos));
+    if (in != 0) ASSERT_SUCCESS(af_release_array(in));
 }
 
 TEST(Approx1, UseNullOutputArray) {

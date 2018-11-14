@@ -822,6 +822,7 @@ template<typename T>
                                          const af::array& a, const af::array& b,
                                          float maxAbsDiff = 0.f);
 
+// Unused externally for now. Only the C-API version should use this
 ::testing::AssertionResult
 testWriteToOutputArray(std::string gold_name, std::string result_name,
                        af::array gold, TestOutputArrayInfo& metadata) {
@@ -1108,12 +1109,11 @@ template<typename T>
 af::array genNullArray(const af::dim4& dims, const af::dtype ty,
                        TestOutputArrayInfo& metadata) {
     af::array out;
-    metadata.out_arr = out;
     metadata.subarr_s0 = af::span;
     metadata.subarr_s1 = af::span;
     metadata.subarr_s2 = af::span;
     metadata.subarr_s3 = af::span;
-    return metadata.out_arr;
+    return out;
 }
 
 // Generates a random array. testWriteToOutputArray expects that it will receive
@@ -1194,6 +1194,7 @@ af::array genReorderedArray(const af::dim4& dims, const af::dtype ty,
     return metadata.out_arr;
 }
 
+// Unused externally for now. Only the C-API version should use this
 af::array genTestOutputArray(const af::dim4& dims, const af::dtype ty,
                              TestOutputArrayInfo& metadata,
                              TestOutputArrayType arr_type) {
@@ -1223,12 +1224,14 @@ void genTestOutputArray(af_array *out, const unsigned ndims, const dim_t *dims,
     af::dim4 arr_dims(ndims, dims);
     af::array test_output_array = genTestOutputArray(arr_dims, ty, *metadata,
                                                      arr_type);
-    af_retain_array(out, test_output_array.get());
 
     // Empty af::array will still have a non-null af_array inside. Thus need to
-    // force out to be 0 for NULL_ARRAY case
+    // force *out to be 0 for NULL_ARRAY case
     if (arr_type == NULL_ARRAY) {
         *out = 0;
+    }
+    else {
+        af_retain_array(out, test_output_array.get());
     }
 
     metadata->out_arr_ptr = *out;
