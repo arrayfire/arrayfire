@@ -842,6 +842,9 @@ testWriteToOutputArray(std::string gold_name, std::string result_name,
     }
 }
 
+// Partner function of genTestOutputArray. This uses the same "special"
+// array that genTestOutputArray generates, and checks whether the
+// af_* function wrote to that array correctly
 ::testing::AssertionResult
 testWriteToOutputArray(std::string gold_name, std::string result_name,
                        af_array gold, af_array out,
@@ -1100,6 +1103,8 @@ template<typename T>
 
 }
 
+// Generates a null af_array. testWriteToOutputArray expects that the array that
+// it receives after the af_* function is a valid, allocated af_array
 af::array genNullArray(const af::dim4& dims, const af::dtype ty,
                        TestOutputArrayInfo& metadata) {
     af::array out;
@@ -1111,6 +1116,8 @@ af::array genNullArray(const af::dim4& dims, const af::dtype ty,
     return metadata.out_arr;
 }
 
+// Generates a random array. testWriteToOutputArray expects that it will receive
+// the same af_array that this generates after the af_* function is called
 af::array genRegularArray(const af::dim4& dims, const af::dtype ty,
                           TestOutputArrayInfo& metadata) {
     metadata.out_arr = af::randu(dims, ty);
@@ -1122,6 +1129,9 @@ af::array genRegularArray(const af::dim4& dims, const af::dtype ty,
     return metadata.out_arr;
 }
 
+// Generates a large, random array, and returns a subarray for the af_* function
+// to use. testWriteToOutputArray expects that the large array that it receives is
+// equal to the same large array with the gold array pasted on the same subarray location
 af::array genSubArray(const af::dim4& dims, const af::dtype ty,
                       TestOutputArrayInfo& metadata) {
     const dim_t pad_size = 2;
@@ -1157,6 +1167,9 @@ af::array genSubArray(const af::dim4& dims, const af::dtype ty,
     return subarr;
 }
 
+// Generates a reordered array. testWriteToOutputArray expects that this array
+// will still have the correct output values from the af_* function, even though
+// the array was initially reordered.
 af::array genReorderedArray(const af::dim4& dims, const af::dtype ty,
                             TestOutputArrayInfo& metadata) {
     // This reorder combination will not move data around, but will simply
@@ -1201,6 +1214,9 @@ af::array genTestOutputArray(const af::dim4& dims, const af::dtype ty,
     }
 }
 
+// Partner function of testWriteToOutputArray. This generates the "special"
+// array that testWriteToOutputArray will use to check if the af_* function
+// correctly uses an existing array as its output
 void genTestOutputArray(af_array *out, const unsigned ndims, const dim_t *dims,
                         const af::dtype ty, TestOutputArrayInfo* metadata,
                         TestOutputArrayType arr_type) {
