@@ -1,6 +1,59 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.6.2
+======
+
+Features
+--------
+- Added support for batching on the `cond` argument in select() \PR{2243}
+- Added support for broadcasting batched matmul() \PR{2315}
+- Added support for multiple nearest neighbors in nearestNeighbour() \PR{2280}
+- Added support for clamp-to-edge padding as an `af_border_type` option \PR{2333}
+
+Improvements
+------------
+- Improved performance of morphological operations \PR{2238}
+- Fixed linking errors when compiling without Freeimage/Graphics \PR{2248}
+- Improved the usage of ArrayFire as a CMake subproject \PR{2290}
+- Enabled configuration of custom library path for loading dynamic backend
+  libraries \PR{2302}
+
+Bug Fixes
+---------
+- Fixed LAPACK definitions and linking errors \PR{2239}
+- Fixed overflow in dim4::ndims() \PR{2289}
+- Fixed pow() precision for integral types \PR{2305}
+- Fixed issues with tile() with a large repeat dimension \PR{2307}
+- Fixed svd() sub-array output on OpenCL \PR{2279}
+- Fixed grid-based indexing calculation in histogram() \PR{2230}
+- Fixed bug in indexing when used after reorder \PR{2311}
+- Fixed errors when exiting on Windows when using
+  [CLBlast](https://github.com/CNugteren/CLBlast) \PR{2222}
+
+Documentation
+-------------
+- Improved unwrap() documentation \PR{2301}
+- Improved wrap() documentation \PR{2320}
+- Improved accum() documentation \PR{2298}
+- Improved tile() documentation \PR{2293}
+- Clarified approx1() and approx2() indexing in documentation \PR{2287}
+- Updated examples of [select()](@ref data_func_select) in detailed documentation
+  \PR{2277}
+- Updated lookup() examples \PR{2288}
+- Updated set operations' documentation \PR{2299}
+
+Misc
+----
+- `af*` libraries and dependencies directory changed to `lib64` \PR{2186}
+- Added new arrayfire ASSERT utility functions \PR{2249} \PR{2256} \PR{2257} \PR{2263}
+- Improved error messages in JIT \PR{2309}
+
+Contributions
+-------------
+Special thanks to our contributors: [Jacob Kahn](https://github.com/jacobkahn),
+[Vardan Akopian](https://github.com/vakopian)  
+
 v3.6.1
 ======
 
