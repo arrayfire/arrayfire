@@ -218,7 +218,11 @@ if(MKL_THREAD_LAYER STREQUAL "Intel OpenMP")
 elseif(MKL_THREAD_LAYER STREQUAL "GNU OpenMP")
   find_package(OpenMP REQUIRED)
   find_mkl_library(NAME ThreadLayer LIBRARY_NAME mkl_gnu_thread)
-  set(MKL::ThreadingLibrary OpenMP::OpenMP_CXX CACHE STRING "The OpenMP Threading Library")
+  add_library(MKL::ThreadingLibrary SHARED IMPORTED)
+  set_target_properties(MKL::ThreadingLibrary
+    PROPERTIES
+      IMPORTED_LOCATION "${OpenMP_gomp_LIBRARY}"
+      INTERFACE_LINK_LIBRARIES OpenMP::OpenMP_CXX)
 elseif(MKL_THREAD_LAYER STREQUAL "TBB")
   find_mkl_library(NAME ThreadLayer LIBRARY_NAME mkl_tbb_thread)
   find_mkl_library(NAME ThreadingLibrary LIBRARY_NAME tbb)
