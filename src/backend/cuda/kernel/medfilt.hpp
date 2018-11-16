@@ -349,16 +349,16 @@ void medfilt1(Param<T> out, CParam<T> in, int w_wid)
     const size_t shrdMemBytes = sizeof(T) * (THREADS_X + w_wid - 1);
 
     switch(w_wid) {
-        case  3: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 3>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
-        case  5: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 4>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
-        case  7: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 5>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
-        case  9: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 6>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
-        case 11: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 7>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
-        case 13: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 8>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
-        case 15: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 9>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
-        case 17: CUDA_LAUNCH_SMEM((medfilt1<T,pad,10>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
-        case 19: CUDA_LAUNCH_SMEM((medfilt1<T,pad,11>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
-        default: CUDA_LAUNCH_SMEM((medfilt1<T,pad,62>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x);
+        case  3: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 3>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x); break;
+        case  5: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 4>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x); break;
+        case  7: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 5>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x); break;
+        case  9: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 6>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x); break;
+        case 11: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 7>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x); break;
+        case 13: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 8>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x); break;
+        case 15: CUDA_LAUNCH_SMEM((medfilt1<T,pad, 9>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x); break;
+        case 17: CUDA_LAUNCH_SMEM((medfilt1<T,pad,10>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x); break;
+        case 19: CUDA_LAUNCH_SMEM((medfilt1<T,pad,11>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x); break;
+        default: CUDA_LAUNCH_SMEM((medfilt1<T,pad,62>), blocks, threads, shrdMemBytes, out, in, w_wid, blk_x); break;
     }
 
     POST_LAUNCH_CHECK();
