@@ -30,6 +30,7 @@ Bug Fixes
 - Fixed bug in indexing when used after reorder \PR{2311}
 - Fixed errors when exiting on Windows when using
   [CLBlast](https://github.com/CNugteren/CLBlast) \PR{2222}
+- Fixed fallthrough error in medfilt1 \PR{2349}
 
 Documentation
 -------------
