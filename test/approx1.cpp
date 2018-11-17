@@ -856,9 +856,9 @@ void testApprox1(float* h_gold, dim4 gold_dim, float* h_in, dim4 in_dim,
         af_create_array(&pos, h_pos, pos_dim.ndims(), pos_dim.get(), f32));
 
     af_array out = 0;
-    TestOutputArrayInfo metadata;
+    TestOutputArrayInfo metadata(out_array_type);
     genTestOutputArray(&out, gold_dim.ndims(), gold_dim.get(), f32,
-                       &metadata, out_array_type);
+                       &metadata);
     ASSERT_SUCCESS(af_approx1(&out, in, pos, AF_INTERP_LINEAR, 0));
 
     af_array gold = 0;
@@ -868,7 +868,6 @@ void testApprox1(float* h_gold, dim4 gold_dim, float* h_in, dim4 in_dim,
     ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
 
     if (gold != 0) ASSERT_SUCCESS(af_release_array(gold));
-    if (out != 0) ASSERT_SUCCESS(af_release_array(out));
     if (pos != 0) ASSERT_SUCCESS(af_release_array(pos));
     if (in != 0) ASSERT_SUCCESS(af_release_array(in));
 }

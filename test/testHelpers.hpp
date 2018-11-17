@@ -817,89 +817,10 @@ template<typename T>
     return elemWiseEq<T>(aName, bName, hA, a.dims(), hB, b.dims(), maxAbsDiff, tag);
 }
 
-// Declaration used by testWriteToOutputArray
-::testing::AssertionResult assertArrayEq(std::string aName, std::string bName,
-                                         const af::array& a, const af::array& b,
-                                         float maxAbsDiff = 0.f);
-
-// Unused externally for now. Only the C-API version should use this
-::testing::AssertionResult
-testWriteToOutputArray(std::string gold_name, std::string result_name,
-                       af::array gold, TestOutputArrayInfo& metadata) {
-    if (metadata.arr_type == SUB_ARRAY) {
-        // "Paste" the gold subarray to the large array
-        af::copy(metadata.out_arr_cpy, gold,
-                 metadata.subarr_s0,
-                 metadata.subarr_s1,
-                 metadata.subarr_s2,
-                 metadata.subarr_s3);
-
-        // Perform the element-wise check on the two large arrays
-        return assertArrayEq(gold_name, result_name,
-                             metadata.out_arr_cpy, metadata.out_arr);
-    }
-    else {
-        return assertArrayEq(gold_name, result_name, gold, metadata.out_arr);
-    }
-}
-
-// Partner function of genTestOutputArray. This uses the same "special"
-// array that genTestOutputArray generates, and checks whether the
-// af_* function wrote to that array correctly
-::testing::AssertionResult
-testWriteToOutputArray(std::string gold_name, std::string result_name,
-                       af_array gold, af_array out,
-                       TestOutputArrayInfo *metadata) {
-    // In the case of NULL_ARRAY, metadata->out_arr starts as null
-    // The af function generates a new output array, hence
-    // metadata->out_arr needs to contain that new output array
-    if (metadata->arr_type == NULL_ARRAY) {
-        af_array out_retain = 0;
-        af_retain_array(&out_retain, out);
-        metadata->out_arr = af::array(out_retain);
-    }
-    // For every other case, must check if the af_array provided by gen*Array
-    // was used by the af function as its output array
-    else {
-        if (metadata->out_arr_ptr != out) {
-            return ::testing::AssertionFailure()
-                << "af_array POINTER MISMATCH:\n"
-                << "  Actual: " << out << "\n"
-                << "Expected: " << metadata->out_arr_ptr;
-        }
-    }
-
-    af_array gold_retain = 0;
-    af_retain_array(&gold_retain, gold);
-    af::array gold_cpp(gold_retain);
-
-    return testWriteToOutputArray(gold_name, result_name, gold_cpp, *metadata);
-}
-
-// Called by ASSERT_SPECIAL_ARRAYS_EQ
-::testing::AssertionResult assertArrayEq(std::string aName, std::string bName,
-                                         std::string metadataName,
-                                         const af_array a, const af_array b,
-                                         TestOutputArrayInfo *metadata) {
-    // b is only used to check if the output af_array's pointer value matches
-    // what's expected. The actual element-wise check uses metadata->out_arr
-    // See testWriteToOutputArray for more details
-    return testWriteToOutputArray(aName, bName, a, b, metadata);
-}
-
-// Unused for now since use of existing arrays as outputs is not currently
-// supported in the C++ API
-::testing::AssertionResult assertArrayEq(std::string aName, std::string bName,
-                                         std::string metadataName,
-                                         const af::array& a, const af::array& b,
-                                         TestOutputArrayInfo &metadata) {
-    return testWriteToOutputArray(aName, bName, a, metadata);
-}
-
 // Called by ASSERT_ARRAYS_EQ
 ::testing::AssertionResult assertArrayEq(std::string aName, std::string bName,
                                          const af::array& a, const af::array& b,
-                                         float maxAbsDiff) {
+                                         float maxAbsDiff = 0.f) {
     af::dtype aType = a.type();
     af::dtype bType = b.type();
     if (aType != bType)
@@ -1104,137 +1025,230 @@ template<typename T>
 
 }
 
+enum TestOutputArrayType {
+    NULL_ARRAY,
+    FULL_ARRAY,
+    SUB_ARRAY,
+    REORDERED_ARRAY
+};
+
+class TestOutputArrayInfo {
+    af_array out_arr_c; // This af_array determines what will be given back to
+                        // the af_* function, and thus what will be released
+                        // after it is used
+    af::index out_subarr_idxs[4];
+    af::array subarr;
+    TestOutputArrayType out_arr_type;
+
+public:
+    // There might be a better way of encapsulating these, but for now, these
+    // are directly exposed to simplify dealing with af::array reference counts
+    af::array out_arr;
+    af::array out_arr_cpy;
+
+    TestOutputArrayInfo(TestOutputArrayType arr_type)
+        :out_arr_type(arr_type) {}
+
+    ~TestOutputArrayInfo() {
+        if (out_arr_c != 0) af_release_array(out_arr_c);
+    }
+
+    TestOutputArrayType getOutputArrayType() { return out_arr_type; }
+
+    void initArrays() {
+        out_arr_c = 0;
+    }
+
+    void initArrays(af::dim4 dims, af::dtype ty) {
+        out_arr = af::randu(dims, ty);
+        out_arr_cpy = out_arr.copy();
+        af_retain_array(&out_arr_c, out_arr.get());
+    }
+
+    void initArrays(af::dim4 dims, af::dtype ty, af::index subarr_idxs[4]) {
+        out_arr = af::randu(dims, ty);
+        out_arr_cpy = out_arr.copy();
+
+        for (int i = 0; i < 4; ++i) {
+            out_subarr_idxs[i] = subarr_idxs[i];
+        }
+        subarr = out_arr(
+            out_subarr_idxs[0],
+            out_subarr_idxs[1],
+            out_subarr_idxs[2],
+            out_subarr_idxs[3]);
+
+        // The output array that will be given to the client is the subarray,
+        // not the full array
+        af_retain_array(&out_arr_c, subarr.get());
+    }
+
+    af_array getOutputArrayC() {
+        return out_arr_c;
+    }
+
+    void setOutputArray(af::array array) {
+        // When reassigning the output array, release the old retained af_array
+        // then retain the new af_array of the new C++ array
+        af_release_array(out_arr_c);
+        out_arr = array;
+        af_retain_array(&out_arr_c, out_arr.get());
+    }
+
+    // This is used in the case of NULL_ARRAY, when taking the output array
+    // generated by the af_* function. Doing this gives TestOutputArrayInfo the
+    // responsibility to release that output array
+    void setOutputArrayC(af_array array) {
+        out_arr_c = array;
+    }
+
+    af::index getSubArrayIdx(dim_t dim) {
+        return out_subarr_idxs[dim];
+    }
+};
+
 // Generates a null af_array. testWriteToOutputArray expects that the array that
 // it receives after the af_* function is a valid, allocated af_array
-af::array genNullArray(const af::dim4& dims, const af::dtype ty,
-                       TestOutputArrayInfo& metadata) {
-    af::array out;
-    metadata.subarr_s0 = af::span;
-    metadata.subarr_s1 = af::span;
-    metadata.subarr_s2 = af::span;
-    metadata.subarr_s3 = af::span;
-    return out;
+void genNullArray(TestOutputArrayInfo& metadata, const af::dim4& dims,
+                  const af::dtype ty) {
+    metadata.initArrays();
 }
 
 // Generates a random array. testWriteToOutputArray expects that it will receive
 // the same af_array that this generates after the af_* function is called
-af::array genRegularArray(const af::dim4& dims, const af::dtype ty,
-                          TestOutputArrayInfo& metadata) {
-    metadata.out_arr = af::randu(dims, ty);
-    metadata.out_arr_cpy = metadata.out_arr.copy();
-    metadata.subarr_s0 = af::span;
-    metadata.subarr_s1 = af::span;
-    metadata.subarr_s2 = af::span;
-    metadata.subarr_s3 = af::span;
-    return metadata.out_arr;
+void genRegularArray(TestOutputArrayInfo& metadata, const af::dim4& dims,
+                  const af::dtype ty) {
+    metadata.initArrays(dims, ty);
 }
 
-// Generates a large, random array, and returns a subarray for the af_* function
+// Generates a large, random array, and extracts a subarray for the af_* function
 // to use. testWriteToOutputArray expects that the large array that it receives is
-// equal to the same large array with the gold array pasted on the same subarray location
-af::array genSubArray(const af::dim4& dims, const af::dtype ty,
-                      TestOutputArrayInfo& metadata) {
+// equal to the same large array with the gold array injected on the same subarray location
+void genSubArray(TestOutputArrayInfo& metadata, const af::dim4& dims,
+                  const af::dtype ty) {
     const dim_t pad_size = 2;
 
-    // Generate a large array that's padded on both sides of each dimension
-    // Padding only applied if the dimension is used, i.e. if dims[i] > 1
+    // The large array is padded on both sides of each dimension
+    // Padding is only applied if the dimension is used, i.e. if dims[i] > 1
     af::dim4 full_arr_dims(dims[0] > 1 ? dims[0] + 2*pad_size : dims[0],
                            dims[1] > 1 ? dims[1] + 2*pad_size : dims[1],
                            dims[2] > 1 ? dims[2] + 2*pad_size : dims[2],
                            dims[3] > 1 ? dims[3] + 2*pad_size : dims[3]);
-    af::array out_arr = af::randu(full_arr_dims, ty);
 
     // Calculate index of sub-array. These will be used also by
     // testWriteToOutputArray so that the gold sub array will be placed in the
-    // same location
-    af::seq subarr_s0 =
-        dims[0] > 1 ? af::seq(pad_size, pad_size + dims[0] - 1) : af::span;
-    af::seq subarr_s1 =
-        dims[1] > 1 ? af::seq(pad_size, pad_size + dims[1] - 1) : af::span;
-    af::seq subarr_s2 =
-        dims[2] > 1 ? af::seq(pad_size, pad_size + dims[2] - 1) : af::span;
-    af::seq subarr_s3 =
-        dims[3] > 1 ? af::seq(pad_size, pad_size + dims[3] - 1) : af::span;
-    af::array subarr = out_arr(subarr_s0, subarr_s1, subarr_s2, subarr_s3);
+    // same location. Currently, this location is the center of the large array
+    af::index subarr_idxs[4];
+    for (int i = 0; i < 4; ++i) {
+        subarr_idxs[i] =
+            dims[i] > 1 ? af::seq(pad_size, pad_size + dims[i] - 1) : af::span;
+    }
 
-    metadata.out_arr = out_arr;
-    metadata.out_arr_cpy = out_arr.copy();
-    metadata.subarr_s0 = subarr_s0;
-    metadata.subarr_s1 = subarr_s1;
-    metadata.subarr_s2 = subarr_s2;
-    metadata.subarr_s3 = subarr_s3;
-
-    return subarr;
+    metadata.initArrays(full_arr_dims, ty, subarr_idxs);
 }
 
 // Generates a reordered array. testWriteToOutputArray expects that this array
 // will still have the correct output values from the af_* function, even though
 // the array was initially reordered.
-af::array genReorderedArray(const af::dim4& dims, const af::dtype ty,
-                            TestOutputArrayInfo& metadata) {
+void genReorderedArray(TestOutputArrayInfo& metadata, const af::dim4& dims,
+                  const af::dtype ty) {
     // This reorder combination will not move data around, but will simply
     // call modDims and modStrides (see src/api/c/reorder.cpp).
-    // Thus this will test if the output is still correct even with the
-    // modified dims and strides "hack"
+    // The output will be checked if it is still correct even with the
+    // modified dims and strides "hack" with no data movement
     unsigned reorder_0 = 0;
     unsigned reorder_1 = 2;
     unsigned reorder_2 = 1;
 
     // Shape the output array such that the reordered output array will have
-    // the correct dimensions that the test asks for (i.e. will match dims)
+    // the correct dimensions that the test asks for (i.e. must match dims arg)
     af::dim4 out_dims(dims[reorder_0], dims[reorder_1], dims[reorder_2]);
-    metadata.out_arr = af::randu(out_dims, ty);
-    metadata.out_arr = af::reorder(metadata.out_arr,
-                                   reorder_0, reorder_1, reorder_2);
-    metadata.out_arr_cpy = metadata.out_arr.copy();
-    metadata.subarr_s0 = af::span;
-    metadata.subarr_s1 = af::span;
-    metadata.subarr_s2 = af::span;
-    metadata.subarr_s3 = af::span;
-    return metadata.out_arr;
-}
-
-// Unused externally for now. Only the C-API version should use this
-af::array genTestOutputArray(const af::dim4& dims, const af::dtype ty,
-                             TestOutputArrayInfo& metadata,
-                             TestOutputArrayType arr_type) {
-    metadata.arr_type = arr_type;
-    switch (arr_type) {
-    case NULL_ARRAY:
-        return genNullArray(dims, ty, metadata);
-        break;
-    case FULL_ARRAY:
-        return genRegularArray(dims, ty, metadata);
-        break;
-    case SUB_ARRAY:
-        return genSubArray(dims, ty, metadata);
-        break;
-    case REORDERED_ARRAY:
-        return genReorderedArray(dims, ty, metadata);
-        break;
-    }
+    metadata.initArrays(out_dims, ty);
+    metadata.setOutputArray(af::reorder(metadata.out_arr,
+                                        reorder_0, reorder_1, reorder_2));
 }
 
 // Partner function of testWriteToOutputArray. This generates the "special"
 // array that testWriteToOutputArray will use to check if the af_* function
 // correctly uses an existing array as its output
-void genTestOutputArray(af_array *out, const unsigned ndims, const dim_t *dims,
-                        const af::dtype ty, TestOutputArrayInfo* metadata,
-                        TestOutputArrayType arr_type) {
+void genTestOutputArray(af_array *out_ptr,
+                        const unsigned ndims, const dim_t *dims,
+                        const af::dtype ty,
+                        TestOutputArrayInfo* metadata) {
     af::dim4 arr_dims(ndims, dims);
-    af::array test_output_array = genTestOutputArray(arr_dims, ty, *metadata,
-                                                     arr_type);
+    switch (metadata->getOutputArrayType()) {
+    case NULL_ARRAY:
+        genNullArray(*metadata, arr_dims, ty);
+        break;
+    case FULL_ARRAY:
+        genRegularArray(*metadata, arr_dims, ty);
+        break;
+    case SUB_ARRAY:
+        genSubArray(*metadata, arr_dims, ty);
+        break;
+    case REORDERED_ARRAY:
+        genReorderedArray(*metadata, arr_dims, ty);
+        break;
+    }
+    *out_ptr = metadata->getOutputArrayC();
+}
 
-    // Empty af::array will still have a non-null af_array inside. Thus need to
-    // force *out to be 0 for NULL_ARRAY case
-    if (arr_type == NULL_ARRAY) {
-        *out = 0;
+// Partner function of genTestOutputArray. This uses the same "special"
+// array that genTestOutputArray generates, and checks whether the
+// af_* function wrote to that array correctly
+::testing::AssertionResult
+testWriteToOutputArray(std::string gold_name, std::string result_name,
+                       const af_array gold, const af_array out,
+                       TestOutputArrayInfo *metadata) {
+    // In the case of NULL_ARRAY, the output array starts out as null.
+    // After the af_* function is called, it shouldn't be null anymore
+    if (metadata->getOutputArrayType() == NULL_ARRAY) {
+        if (out == 0) {
+            return ::testing::AssertionFailure()
+                << "Output af_array " << result_name << " is null";
+        }
+        metadata->setOutputArrayC(out);
+    }
+    // For every other case, must check if the af_array generated by
+    // genTestOutputArray was used by the af_* function as its output array
+    else {
+        if (metadata->getOutputArrayC() != out) {
+            return ::testing::AssertionFailure()
+                << "af_array POINTER MISMATCH:\n"
+                << "  Actual: " << out << "\n"
+                << "Expected: " << metadata->getOutputArrayC();
+        }
+    }
+
+    if (metadata->getOutputArrayType() == SUB_ARRAY) {
+        // There are two full arrays. One will be injected with the gold
+        // subarray, the other should have already been injected with the af_*
+        // function's output. Then we compare the two full arrays
+
+        af_array gold_retain = 0;
+        af_retain_array(&gold_retain, gold);
+        af::array gold_retain_cpp(gold_retain);
+
+        af::copy(metadata->out_arr_cpy, gold_retain_cpp,
+                 metadata->getSubArrayIdx(0),
+                 metadata->getSubArrayIdx(1),
+                 metadata->getSubArrayIdx(2),
+                 metadata->getSubArrayIdx(3));
+
+        return assertArrayEq(gold_name, result_name,
+                             metadata->out_arr_cpy, metadata->out_arr);
     }
     else {
-        af_retain_array(out, test_output_array.get());
+        return assertArrayEq(gold_name, result_name, gold, out);
     }
+}
 
-    metadata->out_arr_ptr = *out;
+// Called by ASSERT_SPECIAL_ARRAYS_EQ
+::testing::AssertionResult assertArrayEq(std::string aName, std::string bName,
+                                         std::string metadataName,
+                                         const af_array a, const af_array b,
+                                         TestOutputArrayInfo *metadata) {
+    return testWriteToOutputArray(aName, bName, a, b, metadata);
 }
 
 #pragma GCC diagnostic pop
