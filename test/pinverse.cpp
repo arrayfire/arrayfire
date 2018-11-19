@@ -283,27 +283,29 @@ TEST(Pinverse, CustomTol) {
 
 TEST(Pinverse, C) {
     array in = readTestInput<float>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
-    af_array inpinv = 0, out = 0;
+    af_array inpinv = 0, identity = 0, out = 0;
     ASSERT_SUCCESS(af_pinverse(&inpinv, in.get(), 1e-6, AF_MAT_NONE));
-    ASSERT_SUCCESS(af_matmul(&out, in.get(), inpinv, AF_MAT_NONE, AF_MAT_NONE));
-    ASSERT_SUCCESS(af_matmul(&out, out, in.get(), AF_MAT_NONE, AF_MAT_NONE));
+    ASSERT_SUCCESS(af_matmul(&identity, in.get(), inpinv, AF_MAT_NONE, AF_MAT_NONE));
+    ASSERT_SUCCESS(af_matmul(&out, identity, in.get(), AF_MAT_NONE, AF_MAT_NONE));
 
     ASSERT_ARRAYS_NEAR(in.get(), out, eps<float>());
 
     ASSERT_SUCCESS(af_release_array(out));
+    ASSERT_SUCCESS(af_release_array(identity));
     ASSERT_SUCCESS(af_release_array(inpinv));
 }
 
 TEST(Pinverse, C_CustomTol) {
     array in = readTestInput<float>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
-    af_array inpinv = 0, out = 0;
+    af_array inpinv = 0, identity = 0, out = 0;
     ASSERT_SUCCESS(af_pinverse(&inpinv, in.get(), 1e-12, AF_MAT_NONE));
-    ASSERT_SUCCESS(af_matmul(&out, in.get(), inpinv, AF_MAT_NONE, AF_MAT_NONE));
-    ASSERT_SUCCESS(af_matmul(&out, out, in.get(), AF_MAT_NONE, AF_MAT_NONE));
+    ASSERT_SUCCESS(af_matmul(&identity, in.get(), inpinv, AF_MAT_NONE, AF_MAT_NONE));
+    ASSERT_SUCCESS(af_matmul(&out, identity, in.get(), AF_MAT_NONE, AF_MAT_NONE));
 
     ASSERT_ARRAYS_NEAR(in.get(), out, eps<float>());
 
     ASSERT_SUCCESS(af_release_array(out));
+    ASSERT_SUCCESS(af_release_array(identity));
     ASSERT_SUCCESS(af_release_array(inpinv));
 }
 
