@@ -16,6 +16,7 @@ if(APPLE)
 
   # Default path for Intel MKL libraries
   set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/opt/intel/mkl/lib")
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 endif()
 
 if(UNIX AND NOT APPLE)
