@@ -58,6 +58,12 @@ namespace cpu
     template<typename T>
     Array<T> createDeviceDataArray(const af::dim4 &size, const void *data);
 
+    template<typename T>
+    Array<T> createStridedArray(af::dim4 dims, af::dim4 strides, dim_t offset,
+                                const T * const in_data, bool is_device) {
+        return Array<T>(dims, strides, offset, in_data, is_device);
+    }
+
     /// Copies data to an existing Array object from a host pointer
     template<typename T>
     void writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes);
@@ -107,7 +113,6 @@ namespace cpu
     class Array
     {
         ArrayInfo info; // Must be the first element of Array<T>
-        //TODO: Generator based array
 
         //data if parent. empty if child
         std::shared_ptr<T> data;
@@ -123,10 +128,10 @@ namespace cpu
         explicit Array(dim4 dims, const T * const in_data, bool is_device, bool copy_device=false);
         Array(const Array<T>& parnt, const dim4 &dims, const dim_t &offset, const dim4 &stride);
         explicit Array(af::dim4 dims, jit::Node_ptr n);
-
-    public:
         Array(af::dim4 dims, af::dim4 strides, dim_t offset,
               const T * const in_data, bool is_device = false);
+
+    public:
 
         void resetInfo(const af::dim4& dims)        { info.resetInfo(dims);         }
         void resetDims(const af::dim4& dims)        { info.resetDims(dims);         }
@@ -238,6 +243,9 @@ namespace cpu
         friend Array<T> createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T> createHostDataArray<T>(const af::dim4 &size, const T * const data);
         friend Array<T> createDeviceDataArray<T>(const af::dim4 &size, const void *data);
+        friend Array<T> createStridedArray<T>(af::dim4 dims, af::dim4 strides, dim_t offset,
+                                              const T * const in_data, bool is_device);
+
 
         friend Array<T> *initArray<T>();
         friend Array<T> createEmptyArray<T>(const af::dim4 &size);

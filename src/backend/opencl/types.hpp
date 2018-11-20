@@ -25,13 +25,13 @@
 
 namespace opencl
 {
-using cfloat  = cl_float2;
 using cdouble = cl_double2;
+using cfloat  = cl_float2;
+using intl    = long long;
 using uchar   = cl_uchar;
 using uint    = cl_uint;
-using ushort  = cl_ushort;
-using intl    = long long;
 using uintl   = unsigned long long;
+using ushort  = cl_ushort;
 
 template<typename T>
 struct ToNumStr

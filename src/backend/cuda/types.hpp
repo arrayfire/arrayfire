@@ -15,9 +15,9 @@ namespace cuda
 {
 using cdouble = cuDoubleComplex;
 using cfloat  = cuFloatComplex;
+using intl    = long long;
 using uchar   = unsigned char;
 using uint    = unsigned int;
-using intl    = long long;
 using uintl   = unsigned long long;
 using ushort  = unsigned short;
 
