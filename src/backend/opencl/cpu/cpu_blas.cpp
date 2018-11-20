@@ -12,11 +12,9 @@
 #include <cpu/cpu_blas.hpp>
 #include <math.hpp>
 #include <common/blas_headers.hpp>
+#include <common/complex.hpp>
 
-namespace opencl
-{
-namespace cpu
-{
+using common::is_complex;
 
 using std::add_const;
 using std::add_pointer;
@@ -24,6 +22,11 @@ using std::enable_if;
 using std::is_floating_point;
 using std::remove_const;
 using std::conditional;
+
+namespace opencl
+{
+namespace cpu
+{
 
 // Some implementations of BLAS require void* for complex pointers while others use float*/double*
 //

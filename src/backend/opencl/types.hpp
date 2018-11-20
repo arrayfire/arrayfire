@@ -16,13 +16,12 @@
 #include <CL/cl.h>
 #endif
 #pragma GCC diagnostic pop
-#include <sstream>
-#include <string>
-#include <cmath>
 #include <type_util.hpp>
 #include <af/traits.hpp>
 
-using std::string;
+#include <sstream>
+#include <string>
+#include <cmath>
 
 namespace opencl
 {
@@ -33,10 +32,6 @@ using uint    = cl_uint;
 using ushort  = cl_ushort;
 using intl    = long long;
 using uintl   = unsigned long long;
-
-template<typename T> struct is_complex          { static const bool value = false;  };
-template<> struct           is_complex<cfloat>  { static const bool value = true;   };
-template<> struct           is_complex<cdouble> { static const bool value = true;   };
 
 template<typename T>
 struct ToNumStr
@@ -70,7 +65,7 @@ struct ToNumStr<double>
         static const char* PINF = "+INFINITY";
         static const char* NINF = "-INFINITY";
         if (std::isinf(val)) {
-            return string(val < 0 ? NINF : PINF);
+            return val < 0 ? NINF : PINF;
         }
         return std::to_string(val);
     }

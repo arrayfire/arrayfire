@@ -13,6 +13,7 @@
 #include <af/data.h>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/complex.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 #include <Array.hpp>
@@ -23,11 +24,16 @@
 #include <indexing_common.hpp>
 
 using namespace detail;
-using std::vector;
-using std::swap;
+
+using std::enable_if;
 using std::signbit;
+using std::swap;
+using std::vector;
+
 using common::convert2Canonical;
 using common::createSpanIndex;
+using common::if_complex;
+using common::if_real;
 
 template<typename Tout, typename Tin>
 static
@@ -81,9 +87,9 @@ void assign(Array<Tout> &out, const vector<af_seq> seqs,
 
 template<typename T>
 static
-typename std::enable_if<is_complex<T>::value, void>::type
+if_complex<T>
 assign(Array<T> &out, const vector<af_seq> iv,
-       const af_array &in) {
+            const af_array &in) {
     const ArrayInfo& iInfo = getInfo(in);
     af_dtype iType = iInfo.getType();
     switch(iType) {
@@ -95,9 +101,9 @@ assign(Array<T> &out, const vector<af_seq> iv,
 
 template<typename T>
 static
-typename std::enable_if<is_complex<T>::value == false, void>::type
+if_real<T>
 assign(Array<T> &out, const vector<af_seq> iv,
-       const af_array &in)
+            const af_array &in)
 {
     const ArrayInfo& iInfo = getInfo(in);
     af_dtype iType = iInfo.getType();
