@@ -25,7 +25,7 @@ static inline void approx1(af_array *yo, const af_array yi,
                            const Tp &xi_beg, const Tp &xi_step,
                            const af_interp_type method, const float offGrid)
 {
-    approx1<Ty>(getWritableArray<Ty>(*yo), getArray<Ty>(yi),
+    approx1<Ty>(getArray<Ty>(*yo), getArray<Ty>(yi),
                 getArray<Tp>(xo), xdim,
                 xi_beg, xi_step,
                 method, offGrid);

@@ -37,7 +37,7 @@ static inline void lu(af_array *lower, af_array *upper, af_array *pivot,
 template<typename T>
 static inline af_array lu_inplace(af_array in, bool is_lapack_piv)
 {
-    return getHandle(lu_inplace<T>(getWritableArray<T>(in), !is_lapack_piv));
+    return getHandle(lu_inplace<T>(getArray<T>(in), !is_lapack_piv));
 }
 
 af_err af_lu(af_array *lower, af_array *upper, af_array *pivot, const af_array in)
