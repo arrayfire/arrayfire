@@ -30,12 +30,18 @@ namespace af
 
 #if AF_API_VERSION >= 31
     /**
-       C++ Interface for SVD decomposition
+       C++ Interface for SVD decomposition (in-place)
 
-       \param[out] u is the output array containing U
-       \param[out] s is the output array containing the diagonal values of sigma, (singular values of the input matrix))
-       \param[out] vt is the output array containing V^H
-       \param[inout] in is the input matrix and will contain random data after this operation
+       \param[out]    u is the output array containing U
+       \param[out]    s is the output array containing the diagonal values of sigma,
+                        (singular values of the input matrix))
+       \param[out]    vt is the output array containing V^H
+       \param[in,out] in is the input matrix and will contain random data after
+                         this operation
+
+       \note Currently, \p in is limited to arrays where `dim0` \f$\geq\f$ `dim1`
+       \note This is best used when minimizing memory usage and \p in is
+             dispensable
 
        \ingroup lapack_factor_func_svd
     */
@@ -272,12 +278,18 @@ extern "C" {
 
 #if AF_API_VERSION >= 31
     /**
-       C Interface for SVD decomposition
+       C Interface for SVD decomposition (in-place)
 
-       \param[out] u is the output array containing U
-       \param[out] s is the output array containing the diagonal values of sigma, (singular values of the input matrix))
-       \param[out] vt is the output array containing V^H
-       \param[inout] in is the input matrix that will contain random data after this operation
+       \param[out]    u  is the output array containing U
+       \param[out]    s  is the output array containing the diagonal values of
+                         sigma, (singular values of the input matrix))
+       \param[out]    vt is the output array containing V^H
+       \param[in,out] in is the input matrix that will contain random data after
+                         this operation
+
+       \note Currently, \p in is limited to arrays where `dim0` \f$\geq\f$ `dim1`
+       \note This is best used when minimizing memory usage and \p in is
+             dispensable
 
        \ingroup lapack_factor_func_svd
     */
