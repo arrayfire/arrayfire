@@ -25,42 +25,39 @@ const common::SparseArrayBase& getSparseArrayBase(const af_array arr, bool devic
 template<typename T>
 const common::SparseArray<T>& getSparseArray(const af_array &arr)
 {
-    common::SparseArray<T> *A = reinterpret_cast<common::SparseArray<T>*>(arr);
+    const common::SparseArray<T> *A = static_cast<const common::SparseArray<T>*>(arr);
     ARG_ASSERT(0, A->isSparse() == true);
     return *A;
 }
 
 template<typename T>
-common::SparseArray<T>& getWritableSparseArray(const af_array &arr)
+common::SparseArray<T>& getSparseArray(af_array &arr)
 {
-    const common::SparseArray<T> &A = getSparseArray<T>(arr);
-    ARG_ASSERT(0, A.isSparse() == true);
-    return const_cast<common::SparseArray<T>&>(A);
+    common::SparseArray<T> *A =  static_cast<common::SparseArray<T>*>(arr);
+    ARG_ASSERT(0, A->isSparse() == true);
+    return *A;
 }
 
 template<typename T>
 static af_array
 getHandle(const common::SparseArray<T> &A)
 {
-    common::SparseArray<T> *ret = common::initSparseArray<T>();
-    *ret = A;
-    af_array arr = reinterpret_cast<af_array>(ret);
-    return arr;
+    common::SparseArray<T> *ret = new common::SparseArray<T>(A);
+    return static_cast<af_array>(ret);
 }
 
 template<typename T>
 static void releaseSparseHandle(const af_array arr)
 {
-    common::destroySparseArray(reinterpret_cast<common::SparseArray<T>*>(arr));
+    common::destroySparseArray(static_cast<common::SparseArray<T>*>(arr));
 }
 
 template<typename T>
 af_array retainSparseHandle(const af_array in)
 {
-    common::SparseArray<T> *sparse = reinterpret_cast<common::SparseArray<T> *>(in);
-    common::SparseArray<T> *out = common::initSparseArray<T>();
-    *out = *sparse;
-    return reinterpret_cast<af_array>(out);
+    const common::SparseArray<T> *sparse = static_cast<const common::SparseArray<T> *>(in);
+    common::SparseArray<T> *out = new common::SparseArray<T>(*sparse);
+    return static_cast<af_array>(out);
 }
 
 // based on castArray in handle.hpp

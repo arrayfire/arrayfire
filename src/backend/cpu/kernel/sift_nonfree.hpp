@@ -628,6 +628,7 @@ void computeDescriptor(
     const unsigned octave,
     const unsigned n_layers)
 {
+    UNUSED(response_in);
     float desc[128];
 
     for (unsigned f = 0; f < total_feat; f++) {
@@ -747,6 +748,7 @@ void computeGLOHDescriptor(
     const unsigned octave,
     const unsigned n_layers)
 {
+    UNUSED(response_in);
     float desc[272];
 
     for (unsigned f = 0; f < total_feat; f++) {

@@ -32,8 +32,6 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
               const bool compute_GLOH)
 {
 #ifdef AF_WITH_NONFREE_SIFT
-    const dim4 dims = in.dims();
-
     unsigned nfeat_out;
     unsigned desc_len;
     float* x_out;

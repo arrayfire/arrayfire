@@ -79,7 +79,7 @@ af_err af_transpose(af_array *out, af_array in, const bool conjugate)
 template<typename T>
 static inline void transpose_inplace(af_array in, const bool conjugate)
 {
-    return detail::transpose_inplace<T>(getWritableArray<T>(in), conjugate);
+    return detail::transpose_inplace<T>(getArray<T>(in), conjugate);
 }
 
 af_err af_transpose_inplace(af_array in, const bool conjugate)
