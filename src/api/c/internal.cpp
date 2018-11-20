@@ -18,7 +18,15 @@
 #include <common/err_common.hpp>
 #include <cstring>
 
-using namespace detail;
+using af::dim4;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createStridedArray;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 af_err af_create_strided_array(af_array *arr,
                                const void *data,
@@ -54,18 +62,18 @@ af_err af_create_strided_array(af_array *arr,
         AF_CHECK(af_init());
 
         switch (ty) {
-        case f32: res = getHandle(Array<float  >(dims, strides, offset, (float   *)data, isdev)); break;
-        case f64: res = getHandle(Array<double >(dims, strides, offset, (double  *)data, isdev)); break;
-        case c32: res = getHandle(Array<cfloat >(dims, strides, offset, (cfloat  *)data, isdev)); break;
-        case c64: res = getHandle(Array<cdouble>(dims, strides, offset, (cdouble *)data, isdev)); break;
-        case u32: res = getHandle(Array<uint   >(dims, strides, offset, (uint    *)data, isdev)); break;
-        case s32: res = getHandle(Array<int    >(dims, strides, offset, (int     *)data, isdev)); break;
-        case u64: res = getHandle(Array<uintl  >(dims, strides, offset, (uintl   *)data, isdev)); break;
-        case s64: res = getHandle(Array<intl   >(dims, strides, offset, (intl    *)data, isdev)); break;
-        case u16: res = getHandle(Array<ushort >(dims, strides, offset, (ushort  *)data, isdev)); break;
-        case s16: res = getHandle(Array<short  >(dims, strides, offset, (short   *)data, isdev)); break;
-        case b8 : res = getHandle(Array<char   >(dims, strides, offset, (char    *)data, isdev)); break;
-        case u8 : res = getHandle(Array<uchar  >(dims, strides, offset, (uchar   *)data, isdev)); break;
+        case f32: res = getHandle(createStridedArray<float  >(dims, strides, offset, (float   *)data, isdev)); break;
+        case f64: res = getHandle(createStridedArray<double >(dims, strides, offset, (double  *)data, isdev)); break;
+        case c32: res = getHandle(createStridedArray<cfloat >(dims, strides, offset, (cfloat  *)data, isdev)); break;
+        case c64: res = getHandle(createStridedArray<cdouble>(dims, strides, offset, (cdouble *)data, isdev)); break;
+        case u32: res = getHandle(createStridedArray<uint   >(dims, strides, offset, (uint    *)data, isdev)); break;
+        case s32: res = getHandle(createStridedArray<int    >(dims, strides, offset, (int     *)data, isdev)); break;
+        case u64: res = getHandle(createStridedArray<uintl  >(dims, strides, offset, (uintl   *)data, isdev)); break;
+        case s64: res = getHandle(createStridedArray<intl   >(dims, strides, offset, (intl    *)data, isdev)); break;
+        case u16: res = getHandle(createStridedArray<ushort >(dims, strides, offset, (ushort  *)data, isdev)); break;
+        case s16: res = getHandle(createStridedArray<short  >(dims, strides, offset, (short   *)data, isdev)); break;
+        case b8 : res = getHandle(createStridedArray<char   >(dims, strides, offset, (char    *)data, isdev)); break;
+        case u8 : res = getHandle(createStridedArray<uchar  >(dims, strides, offset, (uchar   *)data, isdev)); break;
         default: TYPE_ERROR(6, ty);
         }
 
