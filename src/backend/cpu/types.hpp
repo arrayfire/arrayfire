@@ -12,11 +12,11 @@
 
 namespace cpu
 {
-using cfloat  = std::complex<float>;
 using cdouble = std::complex<double>;
+using cfloat  = std::complex<float>;
+using intl    = long long;
 using uint    = unsigned int;
 using uchar   = unsigned char;
-using ushort  = unsigned short;
-using intl    = long long;
 using uintl   = unsigned long long;
+using ushort  = unsigned short;
 }
