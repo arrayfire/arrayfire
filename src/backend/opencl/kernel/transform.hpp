@@ -8,27 +8,22 @@
  ********************************************************/
 
 #pragma once
-#include <kernel_headers/interp.hpp>
 #include <kernel_headers/transform.hpp>
-#include <program.hpp>
-#include <traits.hpp>
-#include <string>
-#include <common/dispatch.hpp>
-#include <Param.hpp>
-#include <cache.hpp>
-#include <debug_opencl.hpp>
-#include <type_util.hpp>
-#include <math.hpp>
+#include <kernel_headers/interp.hpp>
+
 #include "config.hpp"
 #include "interp.hpp"
+#include <Param.hpp>
+#include <cache.hpp>
+#include <common/dispatch.hpp>
+#include <common/complex.hpp>
+#include <debug_opencl.hpp>
+#include <math.hpp>
+#include <program.hpp>
+#include <traits.hpp>
+#include <type_util.hpp>
 
-using cl::Buffer;
-using cl::Program;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::EnqueueArgs;
-using cl::NDRange;
-using std::string;
+#include <string>
 
 namespace opencl
 {
@@ -39,15 +34,13 @@ namespace opencl
         // Used for batching images
         static const int TI = 4;
 
-        using std::conditional;
-        using std::is_same;
         template<typename T>
-        using wtype_t = typename conditional<is_same<T, double>::value, double, float>::type;
+        using wtype_t = typename std::conditional<std::is_same<T, double>::value,
+                                                  double, float>::type;
 
         template<typename T>
-        using vtype_t = typename conditional<is_complex<T>::value,
-                                             T, wtype_t<T>
-                                            >::type;
+        using vtype_t = typename std::conditional<common::is_complex<T>::value,
+                                                  T, wtype_t<T>>::type;
 
 
         template<typename T, int order>
@@ -56,7 +49,7 @@ namespace opencl
                        bool isPerspective, af_interp_type method)
         {
 
-            typedef typename dtype_traits<T>::base_type BT;
+            using BT = typename dtype_traits<T>::base_type;
 
             std::string ref_name =
                 std::string("transform_") +
@@ -99,26 +92,26 @@ namespace opencl
 
                 const char *ker_strs[] = {interp_cl, transform_cl};
                 const int   ker_lens[] = {interp_cl_len, transform_cl_len};
-                Program prog;
+                cl::Program prog;
                 buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-                entry.prog = new Program(prog);
-                entry.ker = new Kernel(*entry.prog, "transform_kernel");
+                entry.prog = new cl::Program(prog);
+                entry.ker = new cl::Kernel(*entry.prog, "transform_kernel");
 
                 addKernelToCache(device, ref_name, entry);
             }
 
-            auto transformOp = KernelFunctor<Buffer, const KParam,
-                                              const Buffer, const KParam,
-                                              const Buffer, const KParam,
-                                              const int, const int, const int, const int,
-                                              const int, const int, const int, const int>(*entry.ker);
+            auto transformOp = cl::KernelFunctor<cl::Buffer, const KParam,
+                                                 const cl::Buffer, const KParam,
+                                                 const cl::Buffer, const KParam,
+                                                 const int, const int, const int, const int,
+                                                 const int, const int, const int, const int>(*entry.ker);
 
             const int nImg2 = in.info.dims[2];
             const int nImg3 = in.info.dims[3];
             const int nTfs2 = tf.info.dims[2];
             const int nTfs3 = tf.info.dims[3];
 
-            NDRange local(TX, TY, 1);
+            cl::NDRange local(TX, TY, 1);
 
             int batchImg2 = 1;
             if(nImg2 != nTfs2)
@@ -137,9 +130,9 @@ namespace opencl
                           * max((nTfs2 / nImg2), 1)
                           * max((nTfs3 / nImg3), 1);
 
-            NDRange global(global_x, global_y, global_z);
+            cl::NDRange global(global_x, global_y, global_z);
 
-            transformOp(EnqueueArgs(getQueue(), global, local),
+            transformOp(cl::EnqueueArgs(getQueue(), global, local),
                         *out.data, out.info, *in.data, in.info, *tf.data, tf.info,
                         nImg2, nImg3, nTfs2, nTfs3, batchImg2,
                         blocksXPerImage, blocksYPerImage, (int)method);

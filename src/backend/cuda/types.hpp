@@ -21,10 +21,6 @@ using intl    = long long;
 using uintl   = unsigned long long;
 using ushort  = unsigned short;
 
-template<typename T> struct is_complex          { static const bool value = false;  };
-template<> struct           is_complex<cfloat>  { static const bool value = true;   };
-template<> struct           is_complex<cdouble> { static const bool value = true;   };
-
 namespace {
 template<typename T> const char *shortname(bool caps = false) { return caps ?  "Q" : "q"; }
 template<> const char *shortname<float   >(bool caps) { return caps ?  "S" : "s"; }

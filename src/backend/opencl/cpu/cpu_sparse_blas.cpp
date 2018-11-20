@@ -10,22 +10,17 @@
 #if defined(WITH_LINEAR_ALGEBRA)
 #include <cpu/cpu_sparse_blas.hpp>
 
-#include <stdexcept>
-#include <string>
-#include <cassert>
-
 #include <af/dim4.hpp>
+#include <common/complex.hpp>
 #include <complex.hpp>
 #include <err_opencl.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 
-namespace opencl
-{
-namespace cpu
-{
+#include <stdexcept>
+#include <string>
 
-using namespace common;
+using common::is_complex;
 
 using std::add_const;
 using std::add_pointer;
@@ -34,6 +29,9 @@ using std::is_floating_point;
 using std::remove_const;
 using std::conditional;
 using std::is_same;
+
+namespace opencl {
+namespace cpu {
 
 template<typename T, class Enable = void>
 struct blas_base {

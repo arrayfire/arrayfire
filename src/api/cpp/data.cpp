@@ -24,12 +24,16 @@ using af::dim4;
 using af::dtype;
 
 namespace {
-    template<typename T> struct is_complex          { static const bool value = false;  };
+    // NOTE: we are repeating this here so that we don't need to access the is_complex
+    // types in backend/common. This is done to isolate the C++ API from the internal
+    // API
+    template<typename T> struct is_complex              { static const bool value = false;  };
     template<> struct           is_complex<af::cfloat>  { static const bool value = true;   };
     template<> struct           is_complex<af::cdouble> { static const bool value = true;   };
 
-    template<typename T>
-    typename enable_if<is_complex<T>::value == false, array>::type
+    template<typename T,
+             typename = typename enable_if<is_complex<T>::value == false, T>::type>
+    array
     constant(T val, const dim4& dims, const dtype type)
     {
         af_array res;

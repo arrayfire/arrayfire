@@ -19,8 +19,4 @@ using uchar   = unsigned char;
 using ushort  = unsigned short;
 using intl    = long long;
 using uintl   = unsigned long long;
-
-template<typename T> struct is_complex          { static const bool value = false;  };
-template<> struct           is_complex<cfloat>  { static const bool value = true;   };
-template<> struct           is_complex<cdouble> { static const bool value = true;   };
 }

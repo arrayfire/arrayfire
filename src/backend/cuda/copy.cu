@@ -14,6 +14,10 @@
 #include <err_cuda.hpp>
 #include <math.hpp>
 
+#include <common/complex.hpp>
+
+using common::is_complex;
+
 namespace cuda
 {
 
