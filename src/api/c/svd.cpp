@@ -57,7 +57,7 @@ static inline void svdInPlace(af_array *s, af_array *u, af_array *vt, af_array i
     Array<T > uA  = createEmptyArray<T >(af::dim4(M, M));
     Array<T > vtA = createEmptyArray<T >(af::dim4(N, N));
 
-    svdInPlace<T, Tr>(sA, uA, vtA, getWritableArray<T>(in));
+    svdInPlace<T, Tr>(sA, uA, vtA, getArray<T>(in));
 
     *s = getHandle(sA);
     *u = getHandle(uA);

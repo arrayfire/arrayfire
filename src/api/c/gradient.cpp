@@ -21,7 +21,7 @@ using namespace detail;
 template<typename T>
 static inline void gradient(af_array *grad0, af_array *grad1, const af_array in)
 {
-    gradient<T>(getWritableArray<T>(*grad0), getWritableArray<T>(*grad1), getArray<T>(in));
+    gradient<T>(getArray<T>(*grad0), getArray<T>(*grad1), getArray<T>(in));
 }
 
 af_err af_gradient(af_array *grows, af_array *gcols, const af_array in)

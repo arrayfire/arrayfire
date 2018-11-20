@@ -280,9 +280,9 @@ template<typename T>
 void write_array(af_array arr, const T * const data, const size_t bytes, af_source src)
 {
     if(src == afHost) {
-        writeHostDataArray(getWritableArray<T>(arr), data, bytes);
+        writeHostDataArray(getArray<T>(arr), data, bytes);
     } else {
-        writeDeviceDataArray(getWritableArray<T>(arr), data, bytes);
+        writeDeviceDataArray(getArray<T>(arr), data, bytes);
     }
     return;
 }

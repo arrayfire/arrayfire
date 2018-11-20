@@ -210,6 +210,7 @@ int getDeviceCount()
     return DeviceManager::NUM_DEVICES;
 }
 
+// Get the currently active device id
 int getActiveDeviceId()
 {
     return DeviceManager::ACTIVE_DEVICE_ID;

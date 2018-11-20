@@ -36,7 +36,7 @@ static inline void qr(af_array *q, af_array *r, af_array *tau, const af_array in
 template<typename T>
 static inline af_array qr_inplace(af_array in)
 {
-    return getHandle(qr_inplace<T>(getWritableArray<T>(in)));
+    return getHandle(qr_inplace<T>(getArray<T>(in)));
 }
 
 af_err af_qr(af_array *q, af_array *r, af_array *tau, const af_array in)

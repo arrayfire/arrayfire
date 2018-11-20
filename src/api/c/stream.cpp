@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-
-
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
@@ -22,9 +20,18 @@
 #include <iomanip>
 #include <vector>
 
-using namespace detail;
 using std::string;
 using std::vector;
+
+using af::dim4;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createHostDataArray;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 #define STREAM_FORMAT_VERSION 0x1
 static const char sfv_char = STREAM_FORMAT_VERSION;
