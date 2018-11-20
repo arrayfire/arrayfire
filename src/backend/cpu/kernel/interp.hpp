@@ -11,6 +11,7 @@
 #include <math.hpp>
 #include <af/constants.h>
 #include <type_traits>
+#include <common/complex.hpp>
 
 namespace cpu
 {
@@ -24,7 +25,7 @@ template<typename T>
 using wtype_t = typename conditional<is_same<T, double>::value, double, float>::type;
 
 template<typename T>
-using vtype_t = typename conditional<is_complex<T>::value,
+using vtype_t = typename conditional<common::is_complex<T>::value,
                                      T, wtype_t<T>
                                      >::type;
 

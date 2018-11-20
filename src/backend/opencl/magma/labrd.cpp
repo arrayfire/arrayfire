@@ -60,7 +60,7 @@
 #include "magma_helper.h"
 #include "magma_sync.h"
 #include <traits.hpp>
-#include <types.hpp>
+#include <common/complex.hpp>
 
 #include <algorithm>
 
@@ -207,7 +207,7 @@ magma_labrd_gpu(
 
     typedef typename af::dtype_traits<Ty>::base_type Tr;
 
-    const bool is_cplx = opencl::is_complex<Ty>::value;
+    constexpr bool is_cplx = common::is_complex<Ty>::value;
 
     Tr *d = (Tr *)_d;
     Tr *e = (Tr *)_e;

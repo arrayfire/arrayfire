@@ -15,11 +15,11 @@
 #endif
 
 #ifdef USE_MKL
-typedef MKL_Complex8    sp_cfloat;
-typedef MKL_Complex16   sp_cdouble;
+using sp_cfloat = MKL_Complex8;
+using sp_cdouble = MKL_Complex16;
 #else
-typedef opencl::cfloat  sp_cfloat;
-typedef opencl::cdouble sp_cdouble;
+using sp_cfloat = opencl::cfloat;
+using sp_cdouble = opencl::cdouble;
 #endif
 
 namespace opencl

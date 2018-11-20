@@ -14,16 +14,9 @@
 #include <string>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/complex.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
-
-using cl::Buffer;
-using cl::Program;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::EnqueueArgs;
-using cl::NDRange;
-using std::string;
 
 namespace opencl
 {
@@ -32,13 +25,11 @@ namespace kernel
 static const int RESIZE_TX = 16;
 static const int RESIZE_TY = 16;
 
-using std::conditional;
-using std::is_same;
 template<typename T>
-using wtype_t = typename conditional<is_same<T, double>::value, double, float>::type;
+using wtype_t = typename std::conditional<std::is_same<T, double>::value, double, float>::type;
 
 template<typename T>
-using vtype_t = typename conditional< is_complex<T>::value, T, wtype_t<T> >::type;
+using vtype_t = typename std::conditional<common::is_complex<T>::value, T, wtype_t<T> >::type;
 
 template<typename T, af_interp_type method>
 void resize(Param out, const Param in)
@@ -78,30 +69,30 @@ void resize(Param out, const Param in)
 
         const char* ker_strs[] = {resize_cl};
         const int   ker_lens[] = {resize_cl_len};
-        Program prog;
+        cl::Program prog;
         buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "resize_kernel");
+        entry.prog = new cl::Program(prog);
+        entry.ker  = new cl::Kernel(*entry.prog, "resize_kernel");
 
         addKernelToCache(device, refName, entry);
     }
 
-    auto resizeOp = KernelFunctor< Buffer, const KParam, const Buffer, const KParam,
-                                   const int, const int, const float, const float > (*entry.ker);
+    auto resizeOp = cl::KernelFunctor<cl::Buffer, const KParam, const cl::Buffer, const KParam,
+                                      const int, const int, const float, const float > (*entry.ker);
 
-    NDRange local(RESIZE_TX, RESIZE_TY, 1);
+    cl::NDRange local(RESIZE_TX, RESIZE_TY, 1);
 
     int blocksPerMatX = divup(out.info.dims[0], local[0]);
     int blocksPerMatY = divup(out.info.dims[1], local[1]);
-    NDRange global(local[0] * blocksPerMatX * in.info.dims[2],
-                   local[1] * blocksPerMatY * in.info.dims[3], 1);
+    cl::NDRange global(local[0] * blocksPerMatX * in.info.dims[2],
+                       local[1] * blocksPerMatY * in.info.dims[3], 1);
 
     double xd = (double)in.info.dims[0] / (double)out.info.dims[0];
     double yd = (double)in.info.dims[1] / (double)out.info.dims[1];
 
     float xf = (float)xd, yf = (float)yd;
 
-    resizeOp(EnqueueArgs(getQueue(), global, local),
+    resizeOp(cl::EnqueueArgs(getQueue(), global, local),
              *out.data, out.info, *in.data, in.info, blocksPerMatX, blocksPerMatY, xf, yf);
 
     CL_DEBUG_FINISH(getQueue());

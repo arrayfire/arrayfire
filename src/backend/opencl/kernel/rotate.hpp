@@ -15,20 +15,13 @@
 #include <string>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/complex.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
 #include <type_util.hpp>
 #include <math.hpp>
 #include "config.hpp"
 #include "interp.hpp"
-
-using cl::Buffer;
-using cl::Program;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::EnqueueArgs;
-using cl::NDRange;
-using std::string;
 
 namespace opencl
 {
@@ -43,13 +36,11 @@ typedef struct {
     float tmat[6];
 } tmat_t;
 
-using std::conditional;
-using std::is_same;
 template<typename T>
-using wtype_t = typename conditional<is_same<T, double>::value, double, float>::type;
+using wtype_t = typename std::conditional<std::is_same<T, double>::value, double, float>::type;
 
 template<typename T>
-using vtype_t = typename conditional< is_complex<T>::value, T, wtype_t<T> >::type;
+using vtype_t = typename std::conditional<common::is_complex<T>::value, T, wtype_t<T> >::type;
 
 template<typename T, int order>
 void rotate(Param out, const Param in, const float theta, af_interp_type method)
@@ -87,17 +78,17 @@ void rotate(Param out, const Param in, const float theta, af_interp_type method)
 
         const char *ker_strs[] = {interp_cl, rotate_cl};
         const int   ker_lens[] = {interp_cl_len, rotate_cl_len};
-        Program prog;
+        cl::Program prog;
         buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "rotate_kernel");
+        entry.prog = new cl::Program(prog);
+        entry.ker  = new cl::Kernel(*entry.prog, "rotate_kernel");
 
         addKernelToCache(device, refName, entry);
     }
 
-    auto rotateOp = KernelFunctor<Buffer, const KParam, const Buffer, const KParam,
-                                  const tmat_t, const int, const int,
-                                  const int, const int, const int>(*entry.ker);
+    auto rotateOp = cl::KernelFunctor<cl::Buffer, const KParam, const cl::Buffer, const KParam,
+                                      const tmat_t, const int, const int,
+                                      const int, const int, const int>(*entry.ker);
 
     const float c = cos(-theta), s = sin(-theta);
     float tx, ty;
@@ -122,7 +113,7 @@ void rotate(Param out, const Param in, const float theta, af_interp_type method)
     t.tmat[5] = round(ty * 1000) / 1000.0f;
 
 
-    NDRange local(TX, TY, 1);
+    cl::NDRange local(TX, TY, 1);
 
     int nimages  = in.info.dims[2];
     int nbatches = in.info.dims[3];
@@ -138,9 +129,9 @@ void rotate(Param out, const Param in, const float theta, af_interp_type method)
     }
     global_y *= nbatches;
 
-    NDRange global(global_x, global_y, 1);
+    cl::NDRange global(global_x, global_y, 1);
 
-    rotateOp(EnqueueArgs(getQueue(), global, local),
+    rotateOp(cl::EnqueueArgs(getQueue(), global, local),
              *out.data, out.info, *in.data, in.info, t, nimages, nbatches,
              blocksXPerImage, blocksYPerImage, (int)method);
 
