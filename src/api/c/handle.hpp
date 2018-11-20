@@ -49,13 +49,21 @@ detail::Array<T> flat(const detail::Array<T>& in)
 }
 
 template<typename T>
-const detail::Array<T> &
+const detail::Array<T>&
 getArray(const af_array &arr)
 {
-    detail::Array<T> *A = reinterpret_cast<detail::Array<T>*>(arr);
+    const detail::Array<T> *A = static_cast<const detail::Array<T>*>(arr);
     if ((af_dtype)af::dtype_traits<T>::af_type != A->getType())
         AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
-    ARG_ASSERT(0, A->isSparse() == false);
+    return *A;
+}
+
+template<typename T>
+detail::Array<T>& getArray(af_array &arr)
+{
+    detail::Array<T> *A = static_cast<detail::Array<T>*>(arr);
+    if ((af_dtype)af::dtype_traits<T>::af_type != A->getType())
+        AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
     return *A;
 }
 
@@ -89,31 +97,19 @@ detail::Array<To> castArray(const af_array &in)
 }
 
 template<typename T>
-detail::Array<T> &
-getWritableArray(af_array &arr)
-{
-    const detail::Array<T> &A = getArray<T>(arr);
-    ARG_ASSERT(0, A.isSparse() == false);
-    return const_cast<detail::Array<T>&>(A);
-}
-
-template<typename T>
 af_array
 getHandle(const detail::Array<T> &A)
 {
-    detail::Array<T> *ret = detail::initArray<T>();
-    *ret = A;
-    af_array arr = reinterpret_cast<af_array>(ret);
-    return arr;
+    detail::Array<T> *ret = new detail::Array<T>(A);
+    return static_cast<af_array>(ret);
 }
 
 template<typename T>
 af_array retainHandle(const af_array in)
 {
-    detail::Array<T> *A = reinterpret_cast<detail::Array<T> *>(in);
-    detail::Array<T> *out = detail::initArray<T>();
-    *out= *A;
-    return reinterpret_cast<af_array>(out);
+    detail::Array<T> *A = static_cast<detail::Array<T> *>(in);
+    detail::Array<T> *out = new detail::Array<T>(*A);
+    return static_cast<af_array>(out);
 }
 
 template<typename T>
@@ -150,14 +146,14 @@ af_array copyArray(const af_array in)
 template<typename T>
 void releaseHandle(const af_array arr)
 {
-    detail::destroyArray(reinterpret_cast<detail::Array<T>*>(arr));
+    detail::destroyArray(static_cast<detail::Array<T>*>(arr));
 }
 
 template<typename T>
 detail::Array<T> &
 getCopyOnWriteArray(const af_array &arr)
 {
-    detail::Array<T> *A = reinterpret_cast<detail::Array<T>*>(arr);
+    detail::Array<T> *A = static_cast<detail::Array<T>*>(arr);
 
     if ((af_dtype)af::dtype_traits<T>::af_type != A->getType())
         AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);

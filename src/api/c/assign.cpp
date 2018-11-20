@@ -181,18 +181,18 @@ af_err af_assign_seq(af_array *out,
                 const ArrayInfo& oInfo = getInfo(res);
                 af_dtype oType = oInfo.getType();
                 switch(oType) {
-                case c64: assign(getWritableArray<cdouble>(res), inSeqs, rhs); break;
-                case c32: assign(getWritableArray<cfloat >(res), inSeqs, rhs); break;
-                case f64: assign(getWritableArray<double >(res), inSeqs, rhs); break;
-                case f32: assign(getWritableArray<float  >(res), inSeqs, rhs); break;
-                case s32: assign(getWritableArray<int    >(res), inSeqs, rhs); break;
-                case u32: assign(getWritableArray<uint   >(res), inSeqs, rhs); break;
-                case s64: assign(getWritableArray<intl   >(res), inSeqs, rhs); break;
-                case u64: assign(getWritableArray<uintl  >(res), inSeqs, rhs); break;
-                case s16: assign(getWritableArray<short  >(res), inSeqs, rhs); break;
-                case u16: assign(getWritableArray<ushort >(res), inSeqs, rhs); break;
-                case u8 : assign(getWritableArray<uchar  >(res), inSeqs, rhs); break;
-                case b8 : assign(getWritableArray<char   >(res), inSeqs, rhs); break;
+                case c64: assign(getArray<cdouble>(res), inSeqs, rhs); break;
+                case c32: assign(getArray<cfloat >(res), inSeqs, rhs); break;
+                case f64: assign(getArray<double >(res), inSeqs, rhs); break;
+                case f32: assign(getArray<float  >(res), inSeqs, rhs); break;
+                case s32: assign(getArray<int    >(res), inSeqs, rhs); break;
+                case u32: assign(getArray<uint   >(res), inSeqs, rhs); break;
+                case s64: assign(getArray<intl   >(res), inSeqs, rhs); break;
+                case u64: assign(getArray<uintl  >(res), inSeqs, rhs); break;
+                case s16: assign(getArray<short  >(res), inSeqs, rhs); break;
+                case u16: assign(getArray<ushort >(res), inSeqs, rhs); break;
+                case u8 : assign(getArray<uchar  >(res), inSeqs, rhs); break;
+                case b8 : assign(getArray<char   >(res), inSeqs, rhs); break;
                 default : TYPE_ERROR(1, oType); break;
                 }
             }
@@ -210,7 +210,7 @@ template<typename T>
 inline
 void genAssign(af_array& out, const af_index_t* indexs, const af_array& rhs)
 {
-    detail::assign<T>(getWritableArray<T>(out), indexs, getArray<T>(rhs));
+    detail::assign<T>(getArray<T>(out), indexs, getArray<T>(rhs));
 }
 
 af_err af_assign_gen(af_array *out, const af_array lhs,

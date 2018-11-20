@@ -8,7 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <string>
 #include <af/defines.h>
 
 const char *getName(af_dtype type);
