@@ -17,6 +17,7 @@
 #include <Param.hpp>
 #include <common/blas_headers.hpp>
 #include <common/err_common.hpp>
+#include <common/complex.hpp>
 #include <kernel/dot.hpp>
 #include <platform.hpp>
 #include <types.hpp>
@@ -40,6 +41,8 @@ using std::enable_if;
 using std::is_floating_point;
 using std::remove_const;
 using std::conditional;
+
+using common::is_complex;
 
 // Some implementations of BLAS require void* for complex pointers while others use float*/double*
 //

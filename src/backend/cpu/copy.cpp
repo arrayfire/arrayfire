@@ -14,13 +14,15 @@
 #include <kernel/copy.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <types.hpp>
+#include <common/complex.hpp>
 
 #include <af/defines.h>
 #include <af/dim4.hpp>
 
 #include <cstdio>
 #include <cstring>
+
+using common::is_complex;
 
 namespace cpu
 {
@@ -53,7 +55,7 @@ template<typename inType, typename outType>
 void copyArray(Array<outType> &out, Array<inType> const &in)
 {
     static_assert(!(is_complex<inType>::value && !is_complex<outType>::value),
-                  "Cannot copy from complex value to a non complex value");
+                  "Cannot copy from complex Array<T> to a non complex Array<T>");
     out.eval();
     in.eval();
     getQueue().enqueue(kernel::copy<outType, inType>, out, in);

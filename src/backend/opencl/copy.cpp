@@ -12,6 +12,9 @@
 #include <kernel/memcopy.hpp>
 #include <err_opencl.hpp>
 #include <math.hpp>
+#include <common/complex.hpp>
+
+using common::is_complex;
 
 namespace opencl
 {

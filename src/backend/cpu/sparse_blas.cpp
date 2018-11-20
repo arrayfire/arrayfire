@@ -12,6 +12,7 @@
 #include <af/dim4.hpp>
 #include <complex.hpp>
 #include <common/err_common.hpp>
+#include <common/complex.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
@@ -20,10 +21,7 @@
 #include <string>
 #include <cassert>
 
-namespace cpu
-{
-
-using namespace common;
+using common::is_complex;
 
 using std::add_const;
 using std::add_pointer;
@@ -33,6 +31,9 @@ using std::remove_const;
 using std::conditional;
 using std::is_same;
 
+namespace cpu
+{
+
 template<typename T, class Enable = void>
 struct blas_base {
     using type = T;
@@ -41,8 +42,7 @@ struct blas_base {
 template<typename T>
 struct blas_base <T, typename enable_if<is_complex<T>::value>::type> {
     using type = typename conditional<is_same<T, cdouble>::value,
-                                      sp_cdouble, sp_cfloat>
-                                     ::type;
+                                      sp_cdouble, sp_cfloat>::type;
 };
 
 template<typename T>
