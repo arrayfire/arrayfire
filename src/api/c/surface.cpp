@@ -153,7 +153,7 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
             DIM_ASSERT(3, ( X_dims[0] * Y_dims[0] == (dim_t)Sinfo.elements()));
         }
 
-        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
         forge::Chart* chart = NULL;
