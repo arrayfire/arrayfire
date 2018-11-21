@@ -137,7 +137,7 @@ af_err plotWrapper(const af_window wind, const af_array in, const int order_dim,
         DIM_ASSERT(0, dims.ndims() == 2);
         DIM_ASSERT(0, dims[order_dim] == 2 || dims[order_dim] == 3);
 
-        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
         forge::Chart* chart = NULL;
@@ -200,7 +200,7 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, con
         af_array pIn[] = {X, Y, Z};
         AF_CHECK(af_join_many(&in, 1, 3, pIn));
 
-        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
         forge::Chart* chart = NULL;
@@ -257,7 +257,7 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y,
         af_array in = 0;
         AF_CHECK(af_join(&in, 1, X, Y));
 
-        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
         forge::Chart* chart = NULL;

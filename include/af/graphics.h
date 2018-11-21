@@ -12,7 +12,7 @@
 #include <af/defines.h>
 #include <af/array.h>
 
-typedef unsigned long long af_window;
+typedef void* af_window;
 
 typedef struct {
     int row;

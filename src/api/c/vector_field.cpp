@@ -138,7 +138,7 @@ af_err vectorFieldWrapper(const af_window wind, const af_array points, const af_
 
         TYPE_ASSERT(pType == dType);
 
-        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
         forge::Chart* chart = NULL;
@@ -225,7 +225,7 @@ af_err vectorFieldWrapper(const af_window wind,
         DIM_ASSERT(1, xpType == ypType);
         DIM_ASSERT(1, xpType == zpType);
 
-        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
         forge::Chart* chart = NULL;
@@ -306,7 +306,7 @@ af_err vectorFieldWrapper(const af_window wind,
 
         DIM_ASSERT(1, xpType == ypType);
 
-        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
         forge::Chart* chart = NULL;
