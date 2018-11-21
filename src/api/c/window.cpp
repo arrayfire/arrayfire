@@ -48,7 +48,7 @@ af_err af_create_window(af_window *out, const int width, const int height, const
         // Create a chart map
         fgMngr.setWindowChartGrid(wnd, 1, 1);
 
-        *out = reinterpret_cast<af_window>(wnd);
+        *out = static_cast<af_window>(wnd);
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -70,7 +70,7 @@ af_err af_set_position(const af_window wind, const unsigned x, const unsigned y)
     }
 
     try {
-        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* wnd = static_cast<forge::Window*>(wind);
         wnd->setPos(x, y);
     }
     CATCHALL;
@@ -92,7 +92,7 @@ af_err af_set_title(const af_window wind, const char* const title)
     }
 
     try {
-        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* wnd = static_cast<forge::Window*>(wind);
         wnd->setTitle(title);
     }
     CATCHALL;
@@ -113,7 +113,7 @@ af_err af_set_size(const af_window wind, const unsigned w, const unsigned h)
     }
 
     try {
-        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* wnd = static_cast<forge::Window*>(wind);
         wnd->setSize(w, h);
     }
     CATCHALL;
@@ -135,7 +135,7 @@ af_err af_grid(const af_window wind, const int rows, const int cols)
     }
 
     try {
-        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* wnd = static_cast<forge::Window*>(wind);
 
         // Recreate a chart map
         ForgeManager& fgMngr = ForgeManager::getInstance();
@@ -162,7 +162,7 @@ af_err af_set_axes_limits_compute(const af_window wind,
     }
 
     try {
-        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* window = static_cast<forge::Window*>(wind);
 
         // Recreate a chart map
         ForgeManager& fgMngr = ForgeManager::getInstance();
@@ -226,7 +226,7 @@ af_err af_set_axes_limits_2d(const af_window wind,
     }
 
     try {
-        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* window = static_cast<forge::Window*>(wind);
 
         // Recreate a chart map
         ForgeManager& fgMngr = ForgeManager::getInstance();
@@ -283,7 +283,7 @@ af_err af_set_axes_limits_3d(const af_window wind,
     }
 
     try {
-        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* window = static_cast<forge::Window*>(wind);
 
         // Recreate a chart map
         ForgeManager& fgMngr = ForgeManager::getInstance();
@@ -346,7 +346,7 @@ af_err af_set_axes_titles(const af_window wind,
     }
 
     try {
-        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* window = static_cast<forge::Window*>(wind);
 
         // Recreate a chart map
         ForgeManager& fgMngr = ForgeManager::getInstance();
@@ -383,7 +383,7 @@ af_err af_show(const af_window wind)
     }
 
     try {
-        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* wnd = static_cast<forge::Window*>(wind);
         wnd->swapBuffers();
     }
     CATCHALL;
@@ -403,7 +403,7 @@ af_err af_is_window_closed(bool *out, const af_window wind)
     }
 
     try {
-        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* wnd = static_cast<forge::Window*>(wind);
         *out = wnd->close();
     }
     CATCHALL;
@@ -424,7 +424,7 @@ af_err af_set_visibility(const af_window wind, const bool is_visible)
     }
 
     try {
-        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* wnd = static_cast<forge::Window*>(wind);
         if (is_visible)
             wnd->show();
         else
@@ -448,7 +448,7 @@ af_err af_destroy_window(const af_window wind)
     }
 
     try {
-        forge::Window* wnd = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* wnd = static_cast<forge::Window*>(wind);
 
         // Delete chart map
         ForgeManager& fgMngr = ForgeManager::getInstance();

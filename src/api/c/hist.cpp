@@ -93,7 +93,7 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
 
         ARG_ASSERT(0, Xinfo.isVector());
 
-        forge::Window* window = reinterpret_cast<forge::Window*>(wind);
+        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
         forge::Chart* chart = NULL;
