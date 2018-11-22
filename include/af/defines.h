@@ -18,7 +18,7 @@
         #define AFAPI  __declspec(dllimport)
     #endif
 
-// bool
+    // bool
     #ifndef __cplusplus
         #define bool unsigned char
         #define false 0
@@ -52,8 +52,10 @@
 
 #include <stdlib.h>
 
-typedef long long intl;
-typedef unsigned long long uintl;
+#ifndef AFDLL  // prevents the use of these types internally
+typedef AF_DEPRECATED("intl is deprecated. Use long long instead.") long long intl;
+typedef AF_DEPRECATED("uintl is deprecated. Use unsigned long long instead.") unsigned long long uintl;
+#endif
 
 #include <af/version.h>
 #ifndef AF_API_VERSION

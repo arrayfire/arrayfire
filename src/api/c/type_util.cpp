@@ -7,8 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/util.h>
 #include <type_util.hpp>
+
+#include <af/util.h>
 #include <common/err_common.hpp>
 
 size_t size_of(af_dtype type)
@@ -25,8 +26,8 @@ size_t size_of(af_dtype type)
             case c64: return sizeof(double) * 2;
             case s16: return sizeof(short);
             case u16: return sizeof(unsigned short);
-            case s64: return sizeof(intl);
-            case u64: return sizeof(uintl);
+            case s64: return sizeof(long long);
+            case u64: return sizeof(unsigned long long);
             default : TYPE_ERROR(1, type);
         }
     } CATCHALL;
