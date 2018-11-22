@@ -14,12 +14,12 @@
 namespace cuda
 {
 using cdouble = cuDoubleComplex;
-using cfloat = cuFloatComplex;
-using uchar = unsigned char;
-using uint = unsigned int;
-// using intl = long long ;                // defined in af/defines.h
-// using uintl = unsigned long long;       // defined in af/defines.h
-using ushort = unsigned short;
+using cfloat  = cuFloatComplex;
+using uchar   = unsigned char;
+using uint    = unsigned int;
+using intl    = long long;
+using uintl   = unsigned long long;
+using ushort  = unsigned short;
 
 template<typename T> struct is_complex          { static const bool value = false;  };
 template<> struct           is_complex<cfloat>  { static const bool value = true;   };

@@ -7,21 +7,26 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+
+#include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/statistics.h>
-#include <af/defines.h>
-#include <common/err_common.hpp>
-#include <backend.hpp>
-#include <handle.hpp>
-#include <reduce.hpp>
 #include <arith.hpp>
-#include <math.hpp>
+#include <backend.hpp>
 #include <cast.hpp>
+#include <common/err_common.hpp>
+#include <handle.hpp>
+#include <math.hpp>
+#include <reduce.hpp>
+#include <stats.h>
+#include <types.hpp>
+
 #include <cmath>
 
-#include "stats.h"
-
-using namespace detail;
+using detail::arithOp;
+using detail::reduce_all;
+using detail::intl;
+using detail::uintl;
 
 template<typename Ti, typename To>
 static To corrcoef(const af_array& X, const af_array& Y)

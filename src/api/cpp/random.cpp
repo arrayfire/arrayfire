@@ -15,7 +15,7 @@
 
 namespace af
 {
-    randomEngine::randomEngine(randomEngineType type, uintl seed) : engine(0)
+    randomEngine::randomEngine(randomEngineType type, unsigned long long seed) : engine(0)
     {
         AF_THROW(af_create_random_engine(&engine, type, seed));
     }
@@ -59,14 +59,14 @@ namespace af
         AF_THROW(af_random_engine_set_type(&engine, type));
     }
 
-    void randomEngine::setSeed(const uintl seed)
+    void randomEngine::setSeed(const unsigned long long seed)
     {
         AF_THROW(af_random_engine_set_seed(&engine, seed));
     }
 
-    uintl randomEngine::getSeed(void) const
+    unsigned long long randomEngine::getSeed(void) const
     {
-        uintl seed;
+        unsigned long long seed;
         AF_THROW(af_random_engine_get_seed(&seed, engine));
         return seed;
     }
@@ -166,14 +166,14 @@ namespace af
         return randomEngine(handle);
     }
 
-    void setSeed(const uintl seed)
+    void setSeed(const unsigned long long seed)
     {
         AF_THROW(af_set_seed(seed));
     }
 
-    uintl getSeed()
+    unsigned long long getSeed()
     {
-        uintl seed = 0;
+        unsigned long long seed = 0;
         AF_THROW(af_get_seed(&seed));
         return seed;
     }

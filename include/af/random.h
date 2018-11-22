@@ -48,7 +48,7 @@ namespace af
                 \ingroup random_engine_func_constructor
             */
             explicit
-            randomEngine(randomEngineType typeIn = AF_RANDOM_ENGINE_DEFAULT, uintl seedIn = 0);
+            randomEngine(randomEngineType typeIn = AF_RANDOM_ENGINE_DEFAULT, unsigned long long seedIn = 0);
 
             /**
                 Copy constructor for \ref af::randomEngine.
@@ -121,7 +121,7 @@ namespace af
 
                 \ingroup random_engine_class
             */
-            void setSeed(const uintl seed);
+            void setSeed(const unsigned long long seed);
 
             /**
                 \defgroup random_engine_get_seed getSeed
@@ -132,7 +132,7 @@ namespace af
 
                 \ingroup random_engine_class
             */
-            uintl getSeed(void) const;
+            unsigned long long getSeed(void) const;
 
             /**
                 \defgroup random_engine_get_handle get
@@ -314,14 +314,14 @@ namespace af
 
         \ingroup random_func_set_seed
     */
-    AFAPI void setSeed(const uintl seed);
+    AFAPI void setSeed(const unsigned long long seed);
 
     /**
         \returns seed A 64 bit unsigned integer
 
         \ingroup random_func_get_seed
     */
-    AFAPI uintl getSeed();
+    AFAPI unsigned long long getSeed();
 
 }
 #endif
@@ -342,7 +342,7 @@ extern "C" {
 
        \ingroup random_engine_func_constructor
     */
-    AFAPI af_err af_create_random_engine(af_random_engine *engine, af_random_engine_type rtype, uintl seed);
+    AFAPI af_err af_create_random_engine(af_random_engine *engine, af_random_engine_type rtype, unsigned long long seed);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -432,7 +432,7 @@ extern "C" {
 
        \ingroup random_engine_set_seed
     */
-    AFAPI af_err af_random_engine_set_seed(af_random_engine *engine, const uintl seed);
+    AFAPI af_err af_random_engine_set_seed(af_random_engine *engine, const unsigned long long seed);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -472,7 +472,7 @@ extern "C" {
 
        \ingroup random_engine_get_type
     */
-    AFAPI af_err af_random_engine_get_seed(uintl * const seed, af_random_engine engine);
+    AFAPI af_err af_random_engine_get_seed(unsigned long long * const seed, af_random_engine engine);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -512,14 +512,14 @@ extern "C" {
 
         \ingroup random_func_set_seed
     */
-    AFAPI af_err af_set_seed(const uintl seed);
+    AFAPI af_err af_set_seed(const unsigned long long seed);
 
     /**
         \param[out] seed A 64 bit unsigned integer
 
         \ingroup random_func_get_seed
     */
-    AFAPI af_err af_get_seed(uintl *seed);
+    AFAPI af_err af_get_seed(unsigned long long *seed);
 
 #ifdef __cplusplus
 }
