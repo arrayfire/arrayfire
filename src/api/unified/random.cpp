@@ -56,12 +56,12 @@ af_err af_release_random_engine(af_random_engine engineHandle)
     return CALL(engineHandle);
 }
 
-af_err af_random_engine_set_seed(af_random_engine *engine, const uintl seed)
+af_err af_random_engine_set_seed(af_random_engine *engine, const unsigned long long seed)
 {
     return CALL(engine, seed);
 }
 
-af_err af_random_engine_get_seed(uintl * const seed, af_random_engine engine)
+af_err af_random_engine_get_seed(unsigned long long * const seed, af_random_engine engine)
 {
     return CALL(seed, engine);
 }
@@ -76,12 +76,12 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, c
     return CALL(out, ndims, dims, type);
 }
 
-af_err af_set_seed(const uintl seed)
+af_err af_set_seed(const unsigned long long seed)
 {
     return CALL(seed);
 }
 
-af_err af_get_seed(uintl *seed)
+af_err af_get_seed(unsigned long long *seed)
 {
     return CALL(seed);
 }

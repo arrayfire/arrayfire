@@ -12,11 +12,13 @@
 
 namespace cpu
 {
-typedef std::complex<float>     cfloat;
-typedef std::complex<double>    cdouble;
-typedef unsigned int   uint;
-typedef unsigned char  uchar;
-typedef unsigned short ushort;
+using cfloat  = std::complex<float>;
+using cdouble = std::complex<double>;
+using uint    = unsigned int;
+using uchar   = unsigned char;
+using ushort  = unsigned short;
+using intl    = long long;
+using uintl   = unsigned long long;
 
 template<typename T> struct is_complex          { static const bool value = false;  };
 template<> struct           is_complex<cfloat>  { static const bool value = true;   };

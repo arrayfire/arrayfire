@@ -38,11 +38,11 @@ namespace {
                                  dims.ndims(), dims.get(), type));
         }
         else if (type == s64) {
-                AF_THROW(af_constant_long (&res, ( intl)val,
+                AF_THROW(af_constant_long (&res, (long long)val,
                                            dims.ndims(),
                                            dims.get()));
         } else {
-            AF_THROW(af_constant_ulong(&res, (uintl)val,
+            AF_THROW(af_constant_ulong(&res, (unsigned long long)val,
                                        dims.ndims(),
                                        dims.get()));
         }

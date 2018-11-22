@@ -17,6 +17,7 @@
 #include <copy.hpp>
 #include <cast.hpp>
 #include <af/dim4.hpp>
+#include <types.hpp>
 
 const ArrayInfo& getInfo(const af_array arr, bool sparse_check = true, bool device_check = true);
 
@@ -63,7 +64,9 @@ detail::Array<To> castArray(const af_array &in)
 {
     using detail::cfloat;
     using detail::cdouble;
+    using detail::intl;
     using detail::uint;
+    using detail::uintl;
     using detail::uchar;
     using detail::ushort;
 

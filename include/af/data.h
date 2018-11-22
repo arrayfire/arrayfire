@@ -461,7 +461,7 @@ extern "C" {
        \ingroup data_func_constant
     */
 
-    AFAPI af_err af_constant_long (af_array *arr, const  intl val, const unsigned ndims, const dim_t * const dims);
+    AFAPI af_err af_constant_long (af_array *arr, const long long val, const unsigned ndims, const dim_t * const dims);
 
     /**
         \param[out] arr is the generated array of type \ref u64
@@ -472,7 +472,7 @@ extern "C" {
        \ingroup data_func_constant
     */
 
-    AFAPI af_err af_constant_ulong(af_array *arr, const uintl val, const unsigned ndims, const dim_t * const dims);
+    AFAPI af_err af_constant_ulong(af_array *arr, const unsigned long long val, const unsigned ndims, const dim_t * const dims);
     /**
        @}
     */

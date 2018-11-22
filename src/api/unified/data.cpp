@@ -26,13 +26,13 @@ af_err af_constant_complex(af_array *arr, const double real, const double imag,
 }
 
 
-af_err af_constant_long (af_array *arr, const  intl val, const unsigned ndims, const dim_t * const dims)
+af_err af_constant_long (af_array *arr, const long long val, const unsigned ndims, const dim_t * const dims)
 {
     return CALL(arr, val, ndims, dims);
 }
 
 
-af_err af_constant_ulong(af_array *arr, const uintl val, const unsigned ndims, const dim_t * const dims)
+af_err af_constant_ulong(af_array *arr, const unsigned long long val, const unsigned ndims, const dim_t * const dims)
 {
     return CALL(arr, val, ndims, dims);
 }

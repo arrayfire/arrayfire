@@ -213,7 +213,7 @@ namespace af
     INSTANTIATE(char)
     INSTANTIATE(short)
     INSTANTIATE(unsigned short)
-    INSTANTIATE(intl)
-    INSTANTIATE(uintl)
+    INSTANTIATE(long long)
+    INSTANTIATE(unsigned long long)
 
 }

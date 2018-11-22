@@ -22,6 +22,7 @@
 #include <cache.hpp>
 #include "names.hpp"
 #include "config.hpp"
+#include <types.hpp>
 
 using cl::Buffer;
 using cl::Program;
