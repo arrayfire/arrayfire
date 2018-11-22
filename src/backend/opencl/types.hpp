@@ -26,11 +26,13 @@ using std::string;
 
 namespace opencl
 {
-typedef cl_float2   cfloat;
-typedef cl_double2 cdouble;
-typedef cl_uchar     uchar;
-typedef cl_uint       uint;
-typedef cl_ushort   ushort;
+using cfloat  = cl_float2;
+using cdouble = cl_double2;
+using uchar   = cl_uchar;
+using uint    = cl_uint;
+using ushort  = cl_ushort;
+using intl    = long long;
+using uintl   = unsigned long long;
 
 template<typename T> struct is_complex          { static const bool value = false;  };
 template<> struct           is_complex<cfloat>  { static const bool value = true;   };

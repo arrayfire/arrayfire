@@ -30,13 +30,24 @@
 #include <utility>
 #include <vector>
 
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
+namespace aft {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+typedef intl intl;
+typedef uintl uintl;
+#pragma GCC diagnostic pop
+}
+
+using aft::uintl;
+using aft::intl;
+
+namespace {
+
 typedef unsigned char  uchar;
 typedef unsigned int   uint;
 typedef unsigned short ushort;
-
-#define UNUSED(expr) do { (void)(expr); } while (0)
-
-namespace {
 
 std::string readNextNonEmptyLine(std::ifstream &file)
 {

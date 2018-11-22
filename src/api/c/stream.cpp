@@ -34,13 +34,12 @@ static int save(const char *key, const af_array arr, const char *filename, const
 {
     // (char     )   Version (Once)
     // (int      )   No. of Arrays (Once)
-        // (int    )   Length of the key
-        // (cstring)   Key
-        // (intl   )   Offset bytes to next array (type + dims + data)
-        // (char   )   Type
-        // (intl   )   dim4 (x 4)
-        // (T      )   data (x elements)
-
+    // (int    )   Length of the key
+    // (cstring)   Key
+    // (intl   )   Offset bytes to next array (type + dims + data)
+    // (char   )   Type
+    // (intl   )   dim4 (x 4)
+    // (T      )   data (x elements)
     // Setup all the data structures that need to be written to file
     ///////////////////////////////////////////////////////////////////////////
     std::string k(key);
