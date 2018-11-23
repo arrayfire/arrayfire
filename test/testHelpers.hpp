@@ -539,7 +539,7 @@ const af::cdouble& operator+(const af::cdouble& val) {
 
 // Calculate a multi-dimensional coordinates' linearized index
 dim_t ravelIdx(af::dim4 coords, af::dim4 strides) {
-    return std::inner_product(coords.get(), coords.get()+4, strides.get(), 0);
+    return std::inner_product(coords.get(), coords.get()+4, strides.get(), 0LL);
 }
 
 // Calculate a linearized index's multi-dimensonal coordinates in an af::array,
