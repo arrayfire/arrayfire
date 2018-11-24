@@ -19,16 +19,18 @@
 using af::dim4;
 using namespace detail;
 
-template<typename Ty, typename Tp>
-static inline void approx1(af_array *yo, const af_array yi,
-                           const af_array xo, const int xdim,
-                           const Tp &xi_beg, const Tp &xi_step,
-                           const af_interp_type method, const float offGrid)
-{
-    approx1<Ty>(getArray<Ty>(*yo), getArray<Ty>(yi),
-                getArray<Tp>(xo), xdim,
-                xi_beg, xi_step,
-                method, offGrid);
+namespace {
+    template<typename Ty, typename Tp>
+    inline void approx1(af_array *yo, const af_array yi,
+                        const af_array xo, const int xdim,
+                        const Tp &xi_beg, const Tp &xi_step,
+                        const af_interp_type method, const float offGrid)
+    {
+        approx1<Ty>(getArray<Ty>(*yo), getArray<Ty>(yi),
+                    getArray<Tp>(xo), xdim,
+                    xi_beg, xi_step,
+                    method, offGrid);
+    }
 }
 
 template<typename Ty, typename Tp>
@@ -41,12 +43,6 @@ static inline af_array approx2(const af_array zi,
                                  getArray<Tp>(xo), xdim, xi_beg, xi_step,
                                  getArray<Tp>(yo), ydim, yi_beg, yi_step,
                                  method, offGrid));
-}
-
-af_err af_approx1(af_array *yo, const af_array yi, const af_array xo,
-                  const af_interp_type method, const float offGrid)
-{
-    return af_approx1_uniform(yo, yi, xo, 0, 0.0, 1.0, method, offGrid);
 }
 
 af_err af_approx1_uniform(af_array *yo, const af_array yi,
@@ -116,10 +112,11 @@ af_err af_approx1_uniform(af_array *yo, const af_array yi,
     return AF_SUCCESS;
 }
 
-af_err af_approx2(af_array *zo, const af_array zi, const af_array xo, const af_array yo,
+
+af_err af_approx1(af_array *yo, const af_array yi, const af_array xo,
                   const af_interp_type method, const float offGrid)
 {
-    return af_approx2_uniform(zo, zi, xo, 0, 0.0, 1.0, yo, 1, 0.0, 1.0, method, offGrid);
+  return af_approx1_uniform(yo, yi, xo, 0, 0.0, 1.0, method, offGrid);
 }
 
 af_err af_approx2_uniform(af_array *zo, const af_array zi,
@@ -187,3 +184,10 @@ af_err af_approx2_uniform(af_array *zo, const af_array zi,
 
     return AF_SUCCESS;
 }
+
+af_err af_approx2(af_array *zo, const af_array zi, const af_array xo, const af_array yo,
+                  const af_interp_type method, const float offGrid)
+{
+  return af_approx2_uniform(zo, zi, xo, 0, 0.0, 1.0, yo, 1, 0.0, 1.0, method, offGrid);
+}
+
