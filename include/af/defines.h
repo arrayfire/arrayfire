@@ -564,6 +564,9 @@ namespace af
     typedef af_iterative_deconv_algo iterativeDeconvAlgo;
     typedef af_inverse_deconv_algo inverseDeconvAlgo;
 #endif
+#if AF_API_VERSION >= 37
+    typedef af_var_bias varBias;
+#endif
 }
 
 #endif
