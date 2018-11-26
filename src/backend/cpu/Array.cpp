@@ -215,9 +215,6 @@ createEmptyArray(const dim4 &size)
 }
 
 template<typename T>
-Array<T> *initArray() { return new Array<T>(dim4()); }
-
-template<typename T>
 Array<T>
 createNodeArray(const dim4 &dims, Node_ptr node)
 {
@@ -346,7 +343,6 @@ Array<T>::setDataDims(const dim4 &new_dims)
     template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data); \
     template       Array<T>  createValueArray<T>      (const dim4 &size, const T &value); \
     template       Array<T>  createEmptyArray<T>      (const dim4 &size); \
-    template       Array<T>  *initArray<T      >      ();               \
     template       Array<T>  createSubArray<T>        (const Array<T> &parent, \
                                                        const vector<af_seq> &index, \
                                                        bool copy);      \

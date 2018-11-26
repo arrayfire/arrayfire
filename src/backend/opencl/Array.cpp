@@ -379,12 +379,6 @@ namespace opencl
     }
 
     template<typename T>
-    Array<T> *initArray()
-    {
-        return new Array<T>(dim4());
-    }
-
-    template<typename T>
     Array<T>
     createParamArray(Param &tmp, bool owner)
     {
@@ -451,7 +445,6 @@ namespace opencl
     template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data, bool copy); \
     template       Array<T>  createValueArray<T>      (const dim4 &size, const T &value); \
     template       Array<T>  createEmptyArray<T>      (const dim4 &size); \
-    template       Array<T>  *initArray<T      >      ();               \
     template       Array<T>  createParamArray<T>      (Param &tmp, bool owner);    \
     template       Array<T>  createSubArray<T>        (const Array<T> &parent, \
                                                        const vector<af_seq> &index, \
