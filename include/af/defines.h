@@ -66,63 +66,63 @@ typedef enum {
     ///
     /// The function returned successfully
     ///
-    AF_SUCCESS            =   0,
+    AF_SUCCESS            =   0
 
     // 100-199 Errors in environment
 
     ///
     /// The system or device ran out of memory
     ///
-    AF_ERR_NO_MEM         = 101,
+    , AF_ERR_NO_MEM         = 101
 
     ///
     /// There was an error in the device driver
     ///
-    AF_ERR_DRIVER         = 102,
+    , AF_ERR_DRIVER         = 102
 
     ///
     /// There was an error with the runtime environment
     ///
-    AF_ERR_RUNTIME        = 103,
+    , AF_ERR_RUNTIME        = 103
 
     // 200-299 Errors in input parameters
 
     ///
     /// The input array is not a valid af_array object
     ///
-    AF_ERR_INVALID_ARRAY  = 201,
+    , AF_ERR_INVALID_ARRAY  = 201
 
     ///
     /// One of the function arguments is incorrect
     ///
-    AF_ERR_ARG            = 202,
+    , AF_ERR_ARG            = 202
 
     ///
     /// The size is incorrect
     ///
-    AF_ERR_SIZE           = 203,
+    , AF_ERR_SIZE           = 203
 
     ///
     /// The type is not suppported by this function
     ///
-    AF_ERR_TYPE           = 204,
+    , AF_ERR_TYPE           = 204
 
     ///
     /// The type of the input arrays are not compatible
     ///
-    AF_ERR_DIFF_TYPE      = 205,
+    , AF_ERR_DIFF_TYPE      = 205
 
     ///
     /// Function does not support GFOR / batch mode
     ///
-    AF_ERR_BATCH          = 207,
+    , AF_ERR_BATCH          = 207
 
 
 #if AF_API_VERSION >= 33
     ///
     /// Input does not belong to the current device.
     ///
-    AF_ERR_DEVICE         = 208,
+    , AF_ERR_DEVICE         = 208
 #endif
 
     // 300-399 Errors for missing software features
@@ -130,18 +130,18 @@ typedef enum {
     ///
     /// The option is not supported
     ///
-    AF_ERR_NOT_SUPPORTED  = 301,
+    , AF_ERR_NOT_SUPPORTED  = 301
 
     ///
     /// This build of ArrayFire does not support this feature
     ///
-    AF_ERR_NOT_CONFIGURED = 302,
+    , AF_ERR_NOT_CONFIGURED = 302
 
 #if AF_API_VERSION >= 32
     ///
     /// This build of ArrayFire is not compiled with "nonfree" algorithms
     ///
-    AF_ERR_NONFREE        = 303,
+    , AF_ERR_NONFREE        = 303
 #endif
 
     // 400-499 Errors for missing hardware features
@@ -149,13 +149,13 @@ typedef enum {
     ///
     /// This device does not support double
     ///
-    AF_ERR_NO_DBL         = 401,
+    , AF_ERR_NO_DBL         = 401
 
     ///
     /// This build of ArrayFire was not built with graphics or this device does
     /// not support graphics
     ///
-    AF_ERR_NO_GFX         = 402,
+    , AF_ERR_NO_GFX         = 402
 
     // 500-599 Errors specific to heterogenous API
 
@@ -163,21 +163,21 @@ typedef enum {
     ///
     /// There was an error when loading the libraries
     ///
-    AF_ERR_LOAD_LIB       = 501,
+    , AF_ERR_LOAD_LIB       = 501
 #endif
 
 #if AF_API_VERSION >= 32
     ///
     /// There was an error when loading the symbols
     ///
-    AF_ERR_LOAD_SYM       = 502,
+    , AF_ERR_LOAD_SYM       = 502
 #endif
 
 #if AF_API_VERSION >= 32
     ///
     /// There was a mismatch between the input array and the active backend
     ///
-    AF_ERR_ARR_BKND_MISMATCH    = 503,
+    , AF_ERR_ARR_BKND_MISMATCH    = 503
 #endif
 
     // 900-999 Errors from upstream libraries and runtimes
@@ -186,12 +186,12 @@ typedef enum {
     /// There was an internal error either in ArrayFire or in a project
     /// upstream
     ///
-    AF_ERR_INTERNAL       = 998,
+    , AF_ERR_INTERNAL       = 998
 
     ///
     /// Unknown Error
     ///
-    AF_ERR_UNKNOWN        = 999
+    , AF_ERR_UNKNOWN        = 999
 } af_err;
 
 typedef enum {
@@ -204,18 +204,18 @@ typedef enum {
     u32,    ///< 32-bit unsigned integral values
     u8 ,    ///< 8-bit unsigned integral values
     s64,    ///< 64-bit signed integral values
-    u64,    ///< 64-bit unsigned integral values
+    u64    ///< 64-bit unsigned integral values
 #if AF_API_VERSION >= 32
-    s16,    ///< 16-bit signed integral values
+    , s16    ///< 16-bit signed integral values
 #endif
 #if AF_API_VERSION >= 32
-    u16,    ///< 16-bit unsigned integral values
+    , u16    ///< 16-bit unsigned integral values
 #endif
 } af_dtype;
 
 typedef enum {
     afDevice,   ///< Device pointer
-    afHost,     ///< Host pointer
+    afHost     ///< Host pointer
 } af_source;
 
 #define AF_MAX_DIMS 4
@@ -228,21 +228,21 @@ typedef enum {
     AF_INTERP_LINEAR,          ///< Linear Interpolation
     AF_INTERP_BILINEAR,        ///< Bilinear Interpolation
     AF_INTERP_CUBIC,           ///< Cubic Interpolation
-    AF_INTERP_LOWER,           ///< Floor Indexed
+    AF_INTERP_LOWER           ///< Floor Indexed
 #if AF_API_VERSION >= 34
-    AF_INTERP_LINEAR_COSINE,   ///< Linear Interpolation with cosine smoothing
+    , AF_INTERP_LINEAR_COSINE   ///< Linear Interpolation with cosine smoothing
 #endif
 #if AF_API_VERSION >= 34
-    AF_INTERP_BILINEAR_COSINE, ///< Bilinear Interpolation with cosine smoothing
+    , AF_INTERP_BILINEAR_COSINE ///< Bilinear Interpolation with cosine smoothing
 #endif
 #if AF_API_VERSION >= 34
-    AF_INTERP_BICUBIC,         ///< Bicubic Interpolation
+    , AF_INTERP_BICUBIC         ///< Bicubic Interpolation
 #endif
 #if AF_API_VERSION >= 34
-    AF_INTERP_CUBIC_SPLINE,    ///< Cubic Interpolation with Catmull-Rom splines
+    , AF_INTERP_CUBIC_SPLINE    ///< Cubic Interpolation with Catmull-Rom splines
 #endif
 #if AF_API_VERSION >= 34
-    AF_INTERP_BICUBIC_SPLINE,  ///< Bicubic Interpolation with Catmull-Rom splines
+    , AF_INTERP_BICUBIC_SPLINE  ///< Bicubic Interpolation with Catmull-Rom splines
 #endif
 
 } af_interp_type;
@@ -261,7 +261,7 @@ typedef enum {
     ///
     /// Out of bound values are clamped to the edge
     ///
-    AF_PAD_CLAMP_TO_EDGE,
+    AF_PAD_CLAMP_TO_EDGE
 } af_border_type;
 
 typedef enum {
@@ -286,13 +286,13 @@ typedef enum {
     ///
     /// Output of the convolution is signal_len + filter_len - 1
     ///
-    AF_CONV_EXPAND,
+    AF_CONV_EXPAND
 } af_conv_mode;
 
 typedef enum {
     AF_CONV_AUTO,    ///< ArrayFire automatically picks the right convolution algorithm
     AF_CONV_SPATIAL, ///< Perform convolution in spatial domain
-    AF_CONV_FREQ,    ///< Perform convolution in frequency domain
+    AF_CONV_FREQ     ///< Perform convolution in frequency domain
 } af_conv_domain;
 
 typedef enum {
@@ -311,16 +311,16 @@ typedef enum {
 typedef enum {
     AF_YCC_601 = 601,  ///< ITU-R BT.601 (formerly CCIR 601) standard
     AF_YCC_709 = 709,  ///< ITU-R BT.709 standard
-    AF_YCC_2020 = 2020  ///< ITU-R BT.2020 standard
+    AF_YCC_2020 = 2020 ///< ITU-R BT.2020 standard
 } af_ycc_std;
 #endif
 
 typedef enum {
     AF_GRAY = 0, ///< Grayscale
     AF_RGB,      ///< 3-channel RGB
-    AF_HSV,      ///< 3-channel HSV
+    AF_HSV       ///< 3-channel HSV
 #if AF_API_VERSION >= 31
-    AF_YCbCr     ///< 3-channel YCbCr
+    , AF_YCbCr     ///< 3-channel YCbCr
 #endif
 } af_cspace_t;
 
@@ -349,7 +349,7 @@ typedef enum {
     AF_NORM_MATRIX_2,      ///< returns the max singular value). Currently NOT SUPPORTED
     AF_NORM_MATRIX_L_PQ,   ///< returns Lpq-norm
 
-    AF_NORM_EUCLID = AF_NORM_VECTOR_2, ///< The default. Same as AF_NORM_VECTOR_2
+    AF_NORM_EUCLID = AF_NORM_VECTOR_2 ///< The default. Same as AF_NORM_VECTOR_2
 } af_norm_type;
 
 #if AF_API_VERSION >= 31
@@ -393,7 +393,7 @@ typedef enum {
     AF_BACKEND_DEFAULT = 0,  ///< Default backend order: OpenCL -> CUDA -> CPU
     AF_BACKEND_CPU     = 1,  ///< CPU a.k.a sequential algorithms
     AF_BACKEND_CUDA    = 2,  ///< CUDA Compute Backend
-    AF_BACKEND_OPENCL  = 4,  ///< OpenCL Compute Backend
+    AF_BACKEND_OPENCL  = 4   ///< OpenCL Compute Backend
 } af_backend;
 #endif
 
@@ -460,7 +460,7 @@ typedef enum {
 #if AF_API_VERSION >= 35
 typedef enum {
     AF_CANNY_THRESHOLD_MANUAL    = 0, ///< User has to define canny thresholds manually
-    AF_CANNY_THRESHOLD_AUTO_OTSU = 1, ///< Determine canny algorithm thresholds using Otsu algorithm
+    AF_CANNY_THRESHOLD_AUTO_OTSU = 1  ///< Determine canny algorithm thresholds using Otsu algorithm
 } af_canny_threshold;
 #endif
 
@@ -469,7 +469,7 @@ typedef enum {
     AF_STORAGE_DENSE     = 0,   ///< Storage type is dense
     AF_STORAGE_CSR       = 1,   ///< Storage type is CSR
     AF_STORAGE_CSC       = 2,   ///< Storage type is CSC
-    AF_STORAGE_COO       = 3,   ///< Storage type is COO
+    AF_STORAGE_COO       = 3    ///< Storage type is COO
 } af_storage;
 #endif
 
@@ -491,6 +491,7 @@ typedef enum {
     AF_TOPK_MAX     = 2,  ///< Top k max values
     AF_TOPK_DEFAULT = 0   ///< Default option (max)
 } af_topk_function;
+
 #endif
 
 #ifdef __cplusplus

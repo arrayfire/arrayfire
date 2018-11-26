@@ -50,7 +50,7 @@ loggerFactory(string name) {
 }
 
 string bytesToString(size_t bytes) {
-    static array<const char *, 5> units{"B", "KB", "MB", "GB", "TB"};
+    static array<const char *, 5> units{{"B", "KB", "MB", "GB", "TB"}};
     size_t count = 0;
     double fbytes = static_cast<double>(bytes);
     size_t num_units = units.size();

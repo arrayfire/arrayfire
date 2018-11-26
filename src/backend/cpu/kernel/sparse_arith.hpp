@@ -21,6 +21,8 @@ struct arith_op
 {
     T operator()(T v1, T v2)
     {
+        UNUSED(v1);
+        UNUSED(v2);
         return scalar<T>(0);
     }
 };

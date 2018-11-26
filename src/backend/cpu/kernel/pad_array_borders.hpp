@@ -16,7 +16,8 @@ namespace cpu
 {
 namespace kernel
 {
-static dim_t
+namespace {
+static inline dim_t
 idxByndEdge(const dim_t i, const dim_t lb,
             const dim_t len, const af::borderType btype)
 {
@@ -33,6 +34,7 @@ idxByndEdge(const dim_t i, const dim_t lb,
             break;
     }
     return retVal;
+}
 }
 
 template<typename T>

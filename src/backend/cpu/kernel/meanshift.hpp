@@ -32,9 +32,9 @@ void meanShift(Param<T> out, CParam<T> in, const float spatialSigma,
     const AccType cvar      = chromaticSigma * chromaticSigma;
 
 
-    std::array<AccType, 4> currentCenterColors{0};
-    std::array<AccType, 4> currentMeanColors{0};
-    std::array<AccType, 4> tempColors{0};
+    std::array<AccType, 4> currentCenterColors{{ 0 }};
+    std::array<AccType, 4> currentMeanColors{{ 0 }};
+    std::array<AccType, 4> tempColors{{ 0 }};
     for (dim_t b3=0; b3<dims[3]; ++b3) {
         for (unsigned b2=0; b2<bCount; ++b2) {
 

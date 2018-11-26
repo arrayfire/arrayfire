@@ -218,7 +218,7 @@ namespace cpu
         int useCount() const
         {
             if (!data.get()) eval();
-            return data.use_count();
+            return static_cast<int>(data.use_count());
         }
 
         operator Param<T>()
