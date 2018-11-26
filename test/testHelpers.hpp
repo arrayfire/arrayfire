@@ -91,7 +91,7 @@ void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
 
         testInputs.resize(inputCount,vector<inType>(0));
         for(unsigned k=0; k<inputCount; k++) {
-            unsigned nElems = inputDims[k].elements();
+            dim_t nElems = inputDims[k].elements();
             testInputs[k].resize(nElems);
             FileElementType tmp;
             for(unsigned i = 0; i < nElems; i++) {
@@ -143,7 +143,7 @@ void readTestsFromFile(const std::string &FileName, std::vector<af::dim4> &input
 
         testInputs.resize(inputCount,vector<inType>(0));
         for(unsigned k=0; k<inputCount; k++) {
-            unsigned nElems = inputDims[k].elements();
+            dim_t nElems = inputDims[k].elements();
             testInputs[k].resize(nElems);
             inType tmp;
             for(unsigned i = 0; i < nElems; i++) {
@@ -470,10 +470,10 @@ af::array cpu_randu(const af::dim4 dims)
     bool isTypeCplx = is_same_type<T, af::cfloat>::value || is_same_type<T, af::cdouble>::value;
     bool isTypeFloat = is_same_type<BT, float>::value || is_same_type<BT, double>::value;
 
-    dim_t elements = (isTypeCplx ? 2 : 1) * dims.elements();
+    size_t elements = (isTypeCplx ? 2 : 1) * dims.elements();
 
     std::vector<BT> out(elements);
-    for(int i = 0; i < (int)elements; i++) {
+    for(size_t i = 0; i < elements; i++) {
         out[i] = isTypeFloat ? (BT)(rand())/RAND_MAX : rand() % 100;
     }
 
@@ -608,12 +608,12 @@ std::string printContext(const std::vector<T>& hGold, std::string goldName,
     coordsMaxBound[0] = arrDims[0] - 1;
 
     // dim0 positions that can be displayed
-    dim_t dim0Start = std::max<int>(0, coords[0] - ctxWidth);
-    dim_t dim0End = std::min<int>(coords[0] + ctxWidth + 1, arrDims[0]);
+    dim_t dim0Start = std::max<dim_t>(0LL, coords[0] - ctxWidth);
+    dim_t dim0End = std::min<dim_t>(coords[0] + ctxWidth + 1LL, arrDims[0]);
 
     // Linearized indices of values in vectors that can be displayed
-    dim_t vecStartIdx = std::max<int>(ravelIdx(coordsMinBound, arrStrides),
-                                      idx - ctxWidth);
+    dim_t vecStartIdx = std::max<dim_t>(ravelIdx(coordsMinBound, arrStrides),
+                                        idx - ctxWidth);
 
     // Display as minimal coordinates as needed
     // First value is the range of dim0 positions that will be displayed
@@ -626,7 +626,7 @@ std::string printContext(const std::vector<T>& hGold, std::string goldName,
         os << ", " << coords[3];
     os << "), dims are (" << arrDims << ") strides: (" << arrStrides << ")\n";
 
-    uint ctxElems = dim0End - dim0Start;
+    dim_t ctxElems = dim0End - dim0Start;
     std::vector<int> valFieldWidths(ctxElems);
     std::vector<std::string> ctxDim0(ctxElems);
     std::vector<std::string> ctxOutVals(ctxElems);
@@ -637,19 +637,19 @@ std::string printContext(const std::vector<T>& hGold, std::string goldName,
     // Also get the max string length between the position and out/ref values
     // per item so that it can be used later as the field width for
     // displaying each item in the context window
-    for (uint i = 0; i < ctxElems; ++i) {
+    for (dim_t i = 0; i < ctxElems; ++i) {
         std::ostringstream tmpOs;
 
-        uint dim0 = dim0Start + i;
+        dim_t dim0 = dim0Start + i;
         if (dim0 == coords[0])
             tmpOs << "[" << dim0 << "]";
         else
             tmpOs << dim0;
         ctxDim0[i] = tmpOs.str();
-        int dim0Len = tmpOs.str().length();
+        size_t dim0Len = tmpOs.str().length();
         tmpOs.str(std::string());
 
-        uint valIdx = vecStartIdx + i;
+        dim_t valIdx = vecStartIdx + i;
 
         if (valIdx == idx) {
             tmpOs << "[" << +hOut[valIdx] << "]";
@@ -658,7 +658,7 @@ std::string printContext(const std::vector<T>& hGold, std::string goldName,
             tmpOs << +hOut[valIdx];
         }
         ctxOutVals[i] = tmpOs.str();
-        int outLen = tmpOs.str().length();
+        size_t outLen = tmpOs.str().length();
         tmpOs.str(std::string());
 
         if (valIdx == idx) {
@@ -668,7 +668,7 @@ std::string printContext(const std::vector<T>& hGold, std::string goldName,
             tmpOs << +hGold[valIdx];
         }
         ctxGoldVals[i] = tmpOs.str();
-        int goldLen = tmpOs.str().length();
+        size_t goldLen = tmpOs.str().length();
         tmpOs.str(std::string());
 
         int maxWidth = std::max<int>(dim0Len, outLen);
@@ -676,7 +676,7 @@ std::string printContext(const std::vector<T>& hGold, std::string goldName,
         valFieldWidths[i] = maxWidth;
     }
 
-    int varNameWidth = std::max<int>(goldName.length(), outName.length());
+    size_t varNameWidth = std::max<size_t>(goldName.length(), outName.length());
 
     // Display dim0 positions, output values, and reference values
     os << std::right << std::setw(varNameWidth) << "" << "   ";
@@ -791,10 +791,10 @@ template<typename T>
         FloatTag, IntegerTag>::type TagType;
     TagType tag;
 
-    std::vector<T> hA(a.elements());
+    std::vector<T> hA(static_cast<size_t>(a.elements()));
     a.host(hA.data());
 
-    std::vector<T> hB(b.elements());
+    std::vector<T> hB(static_cast<size_t>(b.elements()));
     b.host(hB.data());
     return elemWiseEq<T>(aName, bName, hA, a.dims(), hB, b.dims(), maxAbsDiff, tag);
 }

@@ -40,7 +40,7 @@ class array;
     \ingroup cv_func_fast
  */
 AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9,
-                    const bool non_max=true, const float feature_ratio=0.05,
+                    const bool non_max=true, const float feature_ratio=0.05f,
                     const unsigned edge=3);
 
 #if AF_API_VERSION >= 31

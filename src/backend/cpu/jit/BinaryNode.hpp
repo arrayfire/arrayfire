@@ -25,6 +25,8 @@ namespace cpu
                   const jit::array<Ti> &rhs,
                   int lim) const
         {
+            UNUSED(lhs);
+            UNUSED(rhs);
             for (int i = 0; i < lim; i++) {
                 out[i] = scalar<To>(0);
             }

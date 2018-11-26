@@ -9,6 +9,7 @@
 
 #if defined(__APPLE__) && !defined(AF_CUDA)
 #include <common/lapacke.hpp>
+#include <common/defines.hpp>
 #include <Accelerate/Accelerate.h>
 #include <traits.hpp>
 
@@ -29,6 +30,7 @@
 #define LAPACK_FUNC(X, T, TO)                                                       \
 int LAPACKE_##X##geqrf(int layout, int M, int N, T *A, int lda, T *tau)             \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     int lwork = N * BS;                                                             \
     T *work = new T[lwork];                                                         \
     int info = 0;                                                                   \
@@ -39,12 +41,14 @@ int LAPACKE_##X##geqrf(int layout, int M, int N, T *A, int lda, T *tau)         
 int LAPACKE_##X##geqrf_work(int layout, int M, int N, T *A, int lda,                \
                             T *tau, T *work, int lwork)                             \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     int info = 0;                                                                   \
     X##geqrf_(&M, &N, (TO)A, &lda, (TO)tau, (TO)work, &lwork, &info);               \
     return info;                                                                    \
 }                                                                                   \
 int LAPACKE_##X##getrf(int layout, int M, int N, T *A, int lda, int *pivot)         \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     int info = 0;                                                                   \
     X##getrf_(&M, &N, (TO)A, &lda, pivot, &info);                                   \
     return info;                                                                    \
@@ -52,12 +56,14 @@ int LAPACKE_##X##getrf(int layout, int M, int N, T *A, int lda, int *pivot)     
 int LAPACKE_##X##getrs(int layout, char trans, int M, int N, const T *A,            \
                        int lda, const int *pivot, T *B, int ldb)                    \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     int info = 0;                                                                   \
     X##getrs_(&trans, &M, &N, (TO)A, &lda, (int *)pivot, (TO)B, &ldb, &info);       \
     return info;                                                                    \
 }                                                                                   \
 int LAPACKE_##X##potrf(int layout, char uplo, int N, T *A, int lda)                 \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     int info = 0;                                                                   \
     X##potrf_(&uplo, &N, (TO)A, &lda, &info);                                       \
     return info;                                                                    \
@@ -65,6 +71,7 @@ int LAPACKE_##X##potrf(int layout, char uplo, int N, T *A, int lda)             
 int LAPACKE_##X##gesv(int layout, int N, int nrhs, T *A, int lda,                   \
                       int *pivot, T *B, int ldb)                                    \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     int info = 0;                                                                   \
     X##gesv_(&N, &nrhs, (TO)A, &lda, pivot, (TO)B, &ldb, &info);                    \
     return info;                                                                    \
@@ -72,6 +79,7 @@ int LAPACKE_##X##gesv(int layout, int N, int nrhs, T *A, int lda,               
 int LAPACKE_##X##gels(int layout, char trans, int M, int N, int nrhs,               \
                       T *A, int lda, T *B, int ldb)                                 \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     int lwork = std::min(M, N) + std::max(M, std::max(N, nrhs)) * BS;               \
     T *work = new T[lwork];                                                         \
     int info = 0;                                                                   \
@@ -82,6 +90,7 @@ int LAPACKE_##X##gels(int layout, char trans, int M, int N, int nrhs,           
 }                                                                                   \
 int LAPACKE_##X##getri(int layout, int N, T *A, int lda, const int *pivot)          \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     int lwork = N * BS;                                                             \
     T *work = new T[lwork];                                                         \
     int info = 0;                                                                   \
@@ -92,6 +101,7 @@ int LAPACKE_##X##getri(int layout, int N, T *A, int lda, const int *pivot)      
 }                                                                                   \
 int LAPACKE_##X##trtri(int layout, char uplo, char diag, int N, T *A, int lda)      \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     int info = 0;                                                                   \
     X##trtri_(&uplo, &diag, &N, (TO)A, &lda, &info);                                \
     return info;                                                                    \
@@ -99,6 +109,7 @@ int LAPACKE_##X##trtri(int layout, char uplo, char diag, int N, T *A, int lda)  
 int LAPACKE_##X##trtrs(int layout, char uplo, char trans, char diag,                \
                        int N, int NRHS, const T *A, int lda, T *B, int ldb)         \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     int info = 0;                                                                   \
     X##trtrs_(&uplo, &trans, &diag, &N, &NRHS, (TO)A, &lda, (TO)B, &ldb, &info);    \
     return info;                                                                    \
@@ -106,6 +117,7 @@ int LAPACKE_##X##trtrs(int layout, char uplo, char trans, char diag,            
 int LAPACKE_##X##larft(int layout, char direct, char storev, int N, int K,          \
                        const T *v, int ldv, const T *tau, T *t, int ldt)            \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     X##larft_(&direct, &storev, &N, &K, (TO)v, &ldv,                                \
                         (TO)const_cast<T*>(tau), (TO)t, &ldt);                      \
     return 0;                                                                       \
@@ -113,6 +125,7 @@ int LAPACKE_##X##larft(int layout, char direct, char storev, int N, int K,      
 int LAPACKE_##X##laswp(int layout, int N, T *A, int lda,                            \
                        int k1, int k2, const int *pivot, int incx)                  \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     X##laswp_(&N, (TO)A, &lda, &k1, &k2, const_cast<int*>(pivot), &incx);           \
     return 0;                                                                       \
 }                                                                                   \
@@ -125,6 +138,7 @@ LAPACK_FUNC(z, cdouble, __CLPK_doublecomplex*)
 #define LAPACK_GQR(P, X, T, TO)                                                     \
 int LAPACKE_##X##P(int layout, int M, int N, int K, T *A, int lda, const T *tau)    \
 {                                                                                   \
+    UNUSED(layout);                                                       \
     int lwork = N * 32;                                                             \
     T *work = new T[lwork];                                                         \
     int info = 0;                                                                   \
@@ -142,6 +156,7 @@ LAPACK_GQR(ungqr, z, cdouble, __CLPK_doublecomplex*)
 int LAPACKE_##X##P##_work(int layout, int M, int N, int K, T *A, int lda,           \
                           const T *tau, T *work, int lwork)                         \
 {                                                                                   \
+    UNUSED(layout);                                                                 \
     int info = 0;                                                                   \
     X##P##_(&M, &N, &K, (TO)A, &lda, (TO)tau, (TO)work, &lwork, &info);             \
     return info;                                                                    \
@@ -157,6 +172,7 @@ int LAPACKE_##X##P##_work(int layout, char side, char trans, int M, int N, int K
                           const T *A, int lda, const T *tau, T *c, int ldc,         \
                           T *work, int lwork)                                       \
 {                                                                                   \
+    UNUSED(layout);                                                        \
     int info = 0;                                                                   \
     X##P##_(&side, &trans, &M, &N, &K, (TO)A, &lda, (TO)tau, (TO)c, &ldc,           \
                       (TO)work, &lwork, &info);                                     \
@@ -178,6 +194,7 @@ LAPACK_MQR_WORK(unmqr, z, cdouble, __CLPK_doublecomplex*)
                        T* u, int ldu,               \
                        T* vt, int ldvt)             \
     {                                               \
+        UNUSED(layout);                             \
         int info = 0;                               \
         int lwork = -1;                             \
         T work_param = 0;                           \
@@ -204,6 +221,7 @@ LAPACK_MQR_WORK(unmqr, z, cdouble, __CLPK_doublecomplex*)
                        T* u, int ldu,               \
                        T* vt, int ldvt)             \
     {                                               \
+        UNUSED(layout);                             \
         int info = 0;                               \
         int max_mn = std::max(m, n);                \
         int min_mn = std::max(m, n);                \
@@ -240,6 +258,7 @@ LAPACK_LAMCH(d, double)
                            int lda, T* b,                       \
                            int ldb )                            \
     {                                                           \
+        UNUSED(matrix_order);                                   \
         int info = 0;                                           \
         X##lacpy_(&uplo, &m, &n, (TO)a, &lda, (TO)b, &ldb);     \
         return info;                                            \
@@ -256,6 +275,7 @@ LAPACK_LACPY(z, cdouble,__CLPK_doublecomplex*)
                               int lda, const T* tau, T* work,       \
                               int lwork )                           \
     {                                                               \
+        UNUSED(matrix_order);                                       \
         int info = 0;                                               \
         X##P##_(&vect, &m, &n, &k, (TO)a, &lda,                     \
                 (TO)tau, (TO)work, &lwork, &info);                  \
@@ -275,6 +295,7 @@ LAPACK_GBR_WORK(ungbr, z, cdouble,__CLPK_doublecomplex*)
                                  int ldu, T* c,                         \
                                  int ldc, Tr* work)                     \
     {                                                                   \
+        UNUSED(matrix_order);                                           \
         int info = 0;                                                   \
         X##bdsqr_(&uplo, &n, &ncvt, &nru, &ncc, d, e,                   \
                   (TO)vt, &ldvt, (TO)u, &ldu,                           \
@@ -296,6 +317,7 @@ LAPACK_BDSQR_WORK(z, cdouble, double,__CLPK_doublecomplex*)
                                  T* taup,                           \
                                  T* work, int lwork )               \
     {                                                               \
+        UNUSED(matrix_order);                                       \
         int info = 0;                                               \
         X##gebrd_(&m, &n, (TO)a, &lda, d, e, (TO)tauq, (TO)taup,    \
                   (TO)work, &lwork, &info);                         \
