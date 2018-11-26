@@ -36,8 +36,6 @@ using std::swap;
 
 using namespace detail;
 
-const double dfltTol = 1e-6;
-
 template<typename T>
 Array<T> getSubArray(const Array<T> &in, const bool copy,
                        uint dim0begin = 0, uint dim0end = 0,
