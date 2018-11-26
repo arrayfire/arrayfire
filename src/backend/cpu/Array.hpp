@@ -72,11 +72,6 @@ namespace cpu
     template<typename T>
     void writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes);
 
-    /// Create an Array object and do not assign any values to it.
-    /// \NOTE: This object should not be used to initalize an array. Use
-    ///       createEmptyArray instead
-    template<typename T> Array<T> *initArray();
-
     /// Creates an empty array of a given size. No data is initialized
     ///
     /// \param[in] size The dimension of the output array
@@ -247,7 +242,6 @@ namespace cpu
                                               const T * const in_data, bool is_device);
 
 
-        friend Array<T> *initArray<T>();
         friend Array<T> createEmptyArray<T>(const af::dim4 &size);
         friend Array<T> createNodeArray<T>(const af::dim4 &dims, jit::Node_ptr node);
 

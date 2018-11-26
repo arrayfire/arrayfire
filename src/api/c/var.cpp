@@ -82,8 +82,8 @@ meanvar(const Array<inType> &in, const Array<typename baseOutType<outType>::type
     Array<outType> input = cast<outType>(in);
     dim4 iDims = input.dims();
 
-    Array<outType> meanArr = *initArray<outType>();
-    Array<outType> normArr = *initArray<outType>();
+    Array<outType> meanArr = createEmptyArray<outType>({0});
+    Array<outType> normArr = createEmptyArray<outType>({0});
     if(weights.isEmpty()) {
         meanArr = mean<outType, weightType, outType>(input, dim);
         auto val = 1.0 / (bias == AF_VARIANCE_POPULATION ? iDims[dim] : iDims[dim]-1);
@@ -121,9 +121,9 @@ meanvar(const af_array &in, const af_array &weights,
         const af_var_bias bias, const dim_t dim) {
 
   typedef typename baseOutType<outType>::type weightType;
-  Array<outType> mean = *initArray<outType>(), var = *initArray<outType>();
+  Array<outType> mean = createEmptyArray<outType>({0}), var = createEmptyArray<outType>({0});
 
-  Array<weightType> w = *initArray<weightType>();
+  Array<weightType> w = createEmptyArray<weightType>({0});
   if(weights != 0) {
     w = getArray<weightType>(weights);
   }
@@ -142,7 +142,7 @@ var(const Array<inType>& in,
     const Array<typename baseOutType<outType>::type>& weights,
     const af_var_bias bias, int dim)
 {
-    Array<outType> variance = *initArray<outType>();
+    Array<outType> variance = createEmptyArray<outType>({0});
     tie(ignore, variance) = meanvar<inType, outType>(in, weights, bias, dim);
     return variance;
 }
@@ -152,10 +152,10 @@ static af_array var_(const af_array& in, const af_array& weights,
                      const af_var_bias bias, int dim) {
   using bType = typename baseOutType<outType>::type;
   if(weights == 0) {
-    Array<bType> empty = *initArray<bType>();
-    return getHandle(var<inType, outType>(getArray<inType>(in), empty, bias, dim));
+      Array<bType> empty = createEmptyArray<bType>({0});
+      return getHandle(var<inType, outType>(getArray<inType>(in), empty, bias, dim));
   } else {
-    return getHandle(var<inType, outType>(getArray<inType>(in), getArray<bType>(weights), bias, dim));
+      return getHandle(var<inType, outType>(getArray<inType>(in), getArray<bType>(weights), bias, dim));
   }
 }
 
