@@ -49,6 +49,14 @@ struct resize_op
               const af::dim4 &ostrides, const af::dim4 &istrides,
               const dim_t x, const dim_t y)
     {
+        UNUSED(outPtr);
+        UNUSED(inPtr);
+        UNUSED(odims);
+        UNUSED(idims);
+        UNUSED(ostrides);
+        UNUSED(istrides);
+        UNUSED(x);
+        UNUSED(y);
         return;
     }
 };

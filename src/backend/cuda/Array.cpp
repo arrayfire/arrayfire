@@ -316,12 +316,6 @@ namespace cuda
     }
 
     template<typename T>
-    Array<T> *initArray()
-    {
-        return new Array<T>(dim4());
-    }
-
-    template<typename T>
     Array<T> createSubArray(const Array<T>& parent,
                             const std::vector<af_seq> &index,
                             bool copy)
@@ -421,7 +415,6 @@ namespace cuda
     template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data); \
     template       Array<T>  createValueArray<T>      (const dim4 &size, const T &value); \
     template       Array<T>  createEmptyArray<T>      (const dim4 &size); \
-    template       Array<T>  *initArray<T      >      ();               \
     template       Array<T>  createParamArray<T>      (Param<T> &tmp, bool owner); \
     template       Array<T>  createSubArray<T>        (const Array<T> &parent, \
                                                        const std::vector<af_seq> &index, \
