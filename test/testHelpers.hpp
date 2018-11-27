@@ -1008,9 +1008,22 @@ template<typename T>
 }
 
 enum TestOutputArrayType {
+    // Test af_* function when given a null array as its output
     NULL_ARRAY,
+
+    // Test af_* function when given an output array that is the same size as
+    // the expected output
     FULL_ARRAY,
+
+    // Test af_* function when given an output array that is a sub-array of a
+    // larger array (the sub-array size is still the same size as the expected
+    // output). Only the sub-array must be modified by the af_* function
     SUB_ARRAY,
+
+    // Test af_* function when given an output array that was previously
+    // reordered (but after the reorder, has still the same shape as the expected
+    // output). This specifically uses the reorder behavior when dim0 is kept,
+    // and thus no data movement is done - only the dims and strides are modified
     REORDERED_ARRAY
 };
 
