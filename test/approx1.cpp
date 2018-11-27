@@ -845,32 +845,32 @@ TEST(Approx1, CPPEmptyPosAndInput)
     ASSERT_TRUE(interp.isempty());
 }
 
-void testSpclOutArray(float* h_gold, dim4 gold_dim, float* h_in, dim4 in_dim,
-                      float* h_pos, dim4 pos_dim,
+void testSpclOutArray(float* h_gold, dim4 gold_dims, float* h_in, dim4 in_dims,
+                      float* h_pos, dim4 pos_dims,
                       TestOutputArrayType out_array_type)
 {
     af_array in = 0;
     af_array pos = 0;
     ASSERT_SUCCESS(
-        af_create_array(&in, h_in, in_dim.ndims(), in_dim.get(), f32));
+        af_create_array(&in, h_in, in_dims.ndims(), in_dims.get(), f32));
     ASSERT_SUCCESS(
-        af_create_array(&pos, h_pos, pos_dim.ndims(), pos_dim.get(), f32));
+        af_create_array(&pos, h_pos, pos_dims.ndims(), pos_dims.get(), f32));
 
     af_array out = 0;
     TestOutputArrayInfo metadata(out_array_type);
-    genTestOutputArray(&out, gold_dim.ndims(), gold_dim.get(), f32,
+    genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(), f32,
                        &metadata);
     ASSERT_SUCCESS(af_approx1(&out, in, pos, AF_INTERP_LINEAR, 0));
 
     af_array gold = 0;
     ASSERT_SUCCESS(
-        af_create_array(&gold, h_gold, gold_dim.ndims(), gold_dim.get(), f32));
+        af_create_array(&gold, h_gold, gold_dims.ndims(), gold_dims.get(), f32));
 
     ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
 
-    if (gold != 0) ASSERT_SUCCESS(af_release_array(gold));
-    if (pos != 0) ASSERT_SUCCESS(af_release_array(pos));
-    if (in != 0) ASSERT_SUCCESS(af_release_array(in));
+    if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
+    if (pos != 0)  { ASSERT_SUCCESS(af_release_array(pos)); }
+    if (in != 0)   { ASSERT_SUCCESS(af_release_array(in)); }
 }
 
 TEST(Approx1, UseNullOutputArray) {

@@ -1031,7 +1031,7 @@ public:
          out_subarr_ndims(0),
          out_arr_type(arr_type)
     {
-        for (int i = 0; i < 4; ++i) {
+        for (uint i = 0; i < 4; ++i) {
             out_subarr_idxs[i] = af_span;
         }
     }
@@ -1052,7 +1052,7 @@ public:
                     const af_seq *const subarr_idxs) {
         ASSERT_SUCCESS(af_randu(&out_arr, ndims, dims, ty));
         ASSERT_SUCCESS(af_copy_array(&out_arr_cpy, out_arr));
-        for (int i = 0; i < ndims; ++i) {
+        for (uint i = 0; i < ndims; ++i) {
             out_subarr_idxs[i] = subarr_idxs[i];
         }
         out_subarr_ndims = ndims;
@@ -1070,7 +1070,9 @@ public:
     }
 
     void setOutput(af_array array) {
-        if (out_arr != 0) ASSERT_SUCCESS(af_release_array(out_arr));
+        if (out_arr != 0) {
+            ASSERT_SUCCESS(af_release_array(out_arr));
+        }
         out_arr = array;
     }
 
@@ -1097,23 +1099,18 @@ void genSubArray(TestOutputArrayInfo *metadata,
 
     // The large array is padded on both sides of each dimension
     // Padding is only applied if the dimension is used, i.e. if dims[i] > 1
-    dim_t full_arr_dims[4];
-    for (int i = 0; i < 4; ++i) {
-        full_arr_dims[i] = i < ndims ? dims[i] + 2*pad_size : dims[i];
+    dim_t full_arr_dims[4] = {dims[0], dims[1], dims[2], dims[3]};
+    for (uint i = 0; i < ndims; ++i) {
+        full_arr_dims[i] = dims[i] + 2*pad_size;
     }
 
     // Calculate index of sub-array. These will be used also by
     // testWriteToOutputArray so that the gold sub array will be placed in the
     // same location. Currently, this location is the center of the large array
-    af_seq subarr_idxs[4];
-    for (int i = 0; i < 4; ++i) {
-        if (i < ndims) {
-            af_seq idx = {pad_size, pad_size + dims[i] - 1, 1};
-            subarr_idxs[i] = idx;
-        }
-        else {
-            subarr_idxs[i] = af_span;
-        }
+    af_seq subarr_idxs[4] = {af_span, af_span, af_span, af_span};
+    for (uint i = 0; i < ndims; ++i) {
+        af_seq idx = {pad_size, pad_size + dims[i] - 1.0, 1.0};
+        subarr_idxs[i] = idx;
     }
 
     metadata->init(ndims, full_arr_dims, ty, &subarr_idxs[0]);
@@ -1124,26 +1121,31 @@ void genSubArray(TestOutputArrayInfo *metadata,
 // the array was initially reordered.
 void genReorderedArray(TestOutputArrayInfo *metadata,
                        const unsigned ndims, const dim_t *const dims, const af_dtype ty) {
+    // The rest of this function assumes that dims has 4 elements. Just in case
+    // dims has < 4 elements, use another dims array that is filled with 1s
+    dim_t all_dims[4] = {1, 1, 1, 1};
+    for (uint i = 0; i < ndims; ++i) {
+        all_dims[i] = dims[i];
+    }
+
     // This reorder combination will not move data around, but will simply
     // call modDims and modStrides (see src/api/c/reorder.cpp).
     // The output will be checked if it is still correct even with the
     // modified dims and strides "hack" with no data movement
-    unsigned reorder_0 = 0;
-    unsigned reorder_1 = 2;
-    unsigned reorder_2 = 1;
-    unsigned reorder_3 = 3;
+    uint reorder_idxs[4] = {0, 2, 1, 3};
 
     // Shape the output array such that the reordered output array will have
     // the correct dimensions that the test asks for (i.e. must match dims arg)
-    dim_t out_dims[4];
-    out_dims[0] = dims[reorder_0];
-    out_dims[1] = dims[reorder_1];
-    out_dims[2] = dims[reorder_2];
-    out_dims[3] = dims[reorder_3];
-    metadata->init(4, out_dims, ty);
+    dim_t init_dims[4] = {all_dims[0], all_dims[1], all_dims[2], all_dims[3]};
+    for (uint i = 0; i < 4; ++i) {
+        init_dims[i] = all_dims[reorder_idxs[i]];
+    }
+    metadata->init(4, init_dims, ty);
+
     af_array reordered = 0;
     ASSERT_SUCCESS(af_reorder(&reordered, metadata->getOutput(),
-                              reorder_0, reorder_1, reorder_2, reorder_3));
+                              reorder_idxs[0], reorder_idxs[1],
+                              reorder_idxs[2], reorder_idxs[3]));
     metadata->setOutput(reordered);
 }
 
