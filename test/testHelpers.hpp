@@ -49,24 +49,6 @@ typedef unsigned char  uchar;
 typedef unsigned int   uint;
 typedef unsigned short ushort;
 
-enum TestOutputArrayType {
-    NULL_ARRAY,
-    FULL_ARRAY,
-    SUB_ARRAY,
-    REORDERED_ARRAY
-};
-
-struct TestOutputArrayInfo {
-    af::array out_arr;
-    af::array out_arr_cpy;
-    af_array out_arr_ptr;
-    af::index subarr_s0;
-    af::index subarr_s1;
-    af::index subarr_s2;
-    af::index subarr_s3;
-    TestOutputArrayType arr_type;
-};
-
 std::string readNextNonEmptyLine(std::ifstream &file)
 {
     std::string result = "";
@@ -1036,7 +1018,8 @@ class TestOutputArrayInfo {
     af_array out_arr;
     af_array out_arr_cpy;
     af_array out_subarr;
-    std::vector<af_seq> out_subarr_idxs;
+    dim_t out_subarr_ndims;
+    af_seq out_subarr_idxs[4];
     TestOutputArrayType out_arr_type;
 
 public:
@@ -1045,7 +1028,13 @@ public:
         :out_arr(0),
          out_arr_cpy(0),
          out_subarr(0),
-         out_arr_type(arr_type) {}
+         out_subarr_ndims(0),
+         out_arr_type(arr_type)
+    {
+        for (int i = 0; i < 4; ++i) {
+            out_subarr_idxs[i] = af_span;
+        }
+    }
 
     ~TestOutputArrayInfo() {
         if (out_subarr)  af_release_array(out_subarr);
@@ -1053,23 +1042,25 @@ public:
         if (out_arr)     af_release_array(out_arr);
     }
 
-    void initArrays(const unsigned ndims, const dim_t *const dims,
+    void init(const unsigned ndims, const dim_t *const dims,
                     const af_dtype ty) {
         ASSERT_SUCCESS(af_randu(&out_arr, ndims, dims, ty));
     }
 
-    void initArrays(const unsigned ndims, const dim_t *const dims,
+    void init(const unsigned ndims, const dim_t *const dims,
                     const af_dtype ty,
-                    const unsigned nidxs, const af_seq *const subarr_idxs) {
+                    const af_seq *const subarr_idxs) {
         ASSERT_SUCCESS(af_randu(&out_arr, ndims, dims, ty));
         ASSERT_SUCCESS(af_copy_array(&out_arr_cpy, out_arr));
-        for (int i = 0; i < nidxs; ++i) {
-            out_subarr_idxs.push_back(subarr_idxs[i]);
+        for (int i = 0; i < ndims; ++i) {
+            out_subarr_idxs[i] = subarr_idxs[i];
         }
-        ASSERT_SUCCESS(af_index(&out_subarr, out_arr, nidxs, subarr_idxs));
+        out_subarr_ndims = ndims;
+
+        ASSERT_SUCCESS(af_index(&out_subarr, out_arr, ndims, subarr_idxs));
     }
 
-    af_array getOutputArray() {
+    af_array getOutput() {
         if (out_arr_type == SUB_ARRAY) {
             return out_subarr;
         }
@@ -1078,15 +1069,15 @@ public:
         }
     }
 
-    void setOutputArray(af_array array) {
+    void setOutput(af_array array) {
         if (out_arr != 0) ASSERT_SUCCESS(af_release_array(out_arr));
         out_arr = array;
     }
 
-    af_array getFullOutputArray()            { return out_arr; }
-    af_array getFullOutputArrayCopy()        { return out_arr_cpy; }
-    unsigned getSubArrayNumIdxs()            { return out_subarr_idxs.size(); }
-    af_seq   *getSubArrayIdxs()              { return &out_subarr_idxs.front(); }
+    af_array getFullOutput()                 { return out_arr; }
+    af_array getFullOutputCopy()             { return out_arr_cpy; }
+    af_seq   *getSubArrayIdxs()              { return &out_subarr_idxs[0]; }
+    dim_t    getSubArrayNumDims()            { return out_subarr_ndims; }
     TestOutputArrayType getOutputArrayType() { return out_arr_type; }
 };
 
@@ -1094,7 +1085,7 @@ public:
 // the same af_array that this generates after the af_* function is called
 void genRegularArray(TestOutputArrayInfo *metadata,
                      const unsigned ndims, const dim_t *const dims, const af_dtype ty) {
-    metadata->initArrays(ndims, dims, ty);
+    metadata->init(ndims, dims, ty);
 }
 
 // Generates a large, random array, and extracts a subarray for the af_* function
@@ -1106,21 +1097,26 @@ void genSubArray(TestOutputArrayInfo *metadata,
 
     // The large array is padded on both sides of each dimension
     // Padding is only applied if the dimension is used, i.e. if dims[i] > 1
-    dim_t full_arr_dims[ndims];
-    for (int i = 0; i < ndims; ++i) {
-        full_arr_dims[i] = dims[i] + 2*pad_size;
+    dim_t full_arr_dims[4];
+    for (int i = 0; i < 4; ++i) {
+        full_arr_dims[i] = i < ndims ? dims[i] + 2*pad_size : dims[i];
     }
 
     // Calculate index of sub-array. These will be used also by
     // testWriteToOutputArray so that the gold sub array will be placed in the
     // same location. Currently, this location is the center of the large array
-    af_seq subarr_idxs[ndims];
-    for (int i = 0; i < ndims; ++i) {
-        af_seq idx = {pad_size, pad_size + dims[i] - 1, 1};
-        subarr_idxs[i] = idx;
+    af_seq subarr_idxs[4];
+    for (int i = 0; i < 4; ++i) {
+        if (i < ndims) {
+            af_seq idx = {pad_size, pad_size + dims[i] - 1, 1};
+            subarr_idxs[i] = idx;
+        }
+        else {
+            subarr_idxs[i] = af_span;
+        }
     }
 
-    metadata->initArrays(ndims, full_arr_dims, ty, ndims, &subarr_idxs[0]);
+    metadata->init(ndims, full_arr_dims, ty, &subarr_idxs[0]);
 }
 
 // Generates a reordered array. testWriteToOutputArray expects that this array
@@ -1144,11 +1140,11 @@ void genReorderedArray(TestOutputArrayInfo *metadata,
     out_dims[1] = dims[reorder_1];
     out_dims[2] = dims[reorder_2];
     out_dims[3] = dims[reorder_3];
-    metadata->initArrays(4, out_dims, ty);
+    metadata->init(4, out_dims, ty);
     af_array reordered = 0;
-    ASSERT_SUCCESS(af_reorder(&reordered, metadata->getOutputArray(),
+    ASSERT_SUCCESS(af_reorder(&reordered, metadata->getOutput(),
                               reorder_0, reorder_1, reorder_2, reorder_3));
-    metadata->setOutputArray(reordered);
+    metadata->setOutput(reordered);
 }
 
 // Partner function of testWriteToOutputArray. This generates the "special"
@@ -1171,7 +1167,7 @@ void genTestOutputArray(af_array *out_ptr,
     default:
         break;
     }
-    *out_ptr = metadata->getOutputArray();
+    *out_ptr = metadata->getOutput();
 }
 
 // Partner function of genTestOutputArray. This uses the same "special"
@@ -1188,16 +1184,16 @@ testWriteToOutputArray(std::string gold_name, std::string result_name,
             return ::testing::AssertionFailure()
                 << "Output af_array " << result_name << " is null";
         }
-        metadata->setOutputArray(out);
+        metadata->setOutput(out);
     }
     // For every other case, must check if the af_array generated by
     // genTestOutputArray was used by the af_* function as its output array
     else {
-        if (metadata->getOutputArray() != out) {
+        if (metadata->getOutput() != out) {
             return ::testing::AssertionFailure()
                 << "af_array POINTER MISMATCH:\n"
                 << "  Actual: " << out << "\n"
-                << "Expected: " << metadata->getOutputArray();
+                << "Expected: " << metadata->getOutput();
         }
     }
 
@@ -1205,16 +1201,16 @@ testWriteToOutputArray(std::string gold_name, std::string result_name,
         // There are two full arrays. One will be injected with the gold
         // subarray, the other should have already been injected with the af_*
         // function's output. Then we compare the two full arrays
-        af_array gold_full_array = metadata->getFullOutputArrayCopy();
+        af_array gold_full_array = metadata->getFullOutputCopy();
         af_assign_seq(&gold_full_array,
                       gold_full_array,
-                      metadata->getSubArrayNumIdxs(),
+                      metadata->getSubArrayNumDims(),
                       metadata->getSubArrayIdxs(),
                       gold);
 
         return assertArrayEq(gold_name, result_name,
-                             metadata->getFullOutputArrayCopy(),
-                             metadata->getFullOutputArray());
+                             metadata->getFullOutputCopy(),
+                             metadata->getFullOutput());
     }
     else {
         return assertArrayEq(gold_name, result_name, gold, out);

@@ -845,8 +845,9 @@ TEST(Approx1, CPPEmptyPosAndInput)
     ASSERT_TRUE(interp.isempty());
 }
 
-void testApprox1(float* h_gold, dim4 gold_dim, float* h_in, dim4 in_dim,
-                 float* h_pos, dim4 pos_dim, TestOutputArrayType out_array_type)
+void testSpclOutArray(float* h_gold, dim4 gold_dim, float* h_in, dim4 in_dim,
+                      float* h_pos, dim4 pos_dim,
+                      TestOutputArrayType out_array_type)
 {
     af_array in = 0;
     af_array pos = 0;
@@ -873,66 +874,66 @@ void testApprox1(float* h_gold, dim4 gold_dim, float* h_in, dim4 in_dim,
 }
 
 TEST(Approx1, UseNullOutputArray) {
-    float h_in[3] = {10, 20, 30};
-    dim4 h_in_dims(3);
+    float h_in[3] = {10.0f, 20.0f, 30.0f};
+    dim4 in_dims(3);
 
-    float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
-    dim4 h_pos_dims(5);
+    float h_pos[5] = {0.0f, 0.5, 1.0f, 1.5, 2.0f};
+    dim4 pos_dims(5);
 
-    dim4 gold_subarr_dim(5);
-    float h_gold_subarr[5] = {10.0, 15.0, 20.0, 25.0, 30.0};
+    float h_gold[5] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f};
+    dim4 gold_dims(5);
 
     SCOPED_TRACE("UseNullOutputArray");
-    testApprox1(h_gold_subarr, gold_subarr_dim, h_in, h_in_dims,
-                h_pos, h_pos_dims, NULL_ARRAY);
+    testSpclOutArray(h_gold, gold_dims, h_in, in_dims,
+                     h_pos, pos_dims, NULL_ARRAY);
 }
 
 TEST(Approx1, UseFullExistingOutputArray) {
-    float h_in[3] = {10, 20, 30};
-    dim4 h_in_dims(3);
+    float h_in[3] = {10.0f, 20.0f, 30.0f};
+    dim4 in_dims(3);
 
-    float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
-    dim4 h_pos_dims (5);
+    float h_pos[5] = {0.0f, 0.5, 1.0f, 1.5, 2.0f};
+    dim4 pos_dims(5);
 
-    dim4 gold_subarr_dim (5);
-    float h_gold_subarr[5] = {10.0, 15.0, 20.0, 25.0, 30.0};
+    float h_gold[5] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f};
+    dim4 gold_dims(5);
 
     SCOPED_TRACE("UseFullExistingOutputArray");
-    testApprox1(h_gold_subarr, gold_subarr_dim, h_in, h_in_dims,
-                h_pos, h_pos_dims, FULL_ARRAY);
+    testSpclOutArray(h_gold, gold_dims, h_in, in_dims,
+                     h_pos, pos_dims, FULL_ARRAY);
 }
 
 TEST(Approx1, UseExistingOutputSubArray) {
-    float h_in[3] = {10, 20, 30};
-    dim4 h_in_dims(3);
+    float h_in[3] = {10.0f, 20.0f, 30.0f};
+    dim4 in_dims(3);
 
-    float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
-    dim4 h_pos_dims (5);
+    float h_pos[5] = {0.0f, 0.5, 1.0f, 1.5, 2.0f};
+    dim4 pos_dims (5);
 
-    dim4 gold_subarr_dim (5);
-    float h_gold_subarr[5] = {10.0, 15.0, 20.0, 25.0, 30.0};
+    float h_gold_subarr[5] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f};
+    dim4 gold_subarr_dims(5);
 
     SCOPED_TRACE("UseExistingOutputSubArray");
-    testApprox1(h_gold_subarr, gold_subarr_dim, h_in, h_in_dims,
-                h_pos, h_pos_dims, SUB_ARRAY);
+    testSpclOutArray(h_gold_subarr, gold_subarr_dims, h_in, in_dims,
+                     h_pos, pos_dims, SUB_ARRAY);
 }
 
 TEST(Approx1, UseReorderedOutputArray) {
 
-    float h_in[9] = {10, 20, 30,
-                     40, 50, 60,
-                     70, 80, 90};
-    dim4 h_in_dims(3, 3);
+    float h_in[9] = {10.0f, 20.0f, 30.0f,
+                     40.0f, 50.0f, 60.0f,
+                     70.0f, 80.0f, 90.0f};
+    dim4 in_dims(3, 3);
 
-    float h_pos[5] = {0.0, 0.5, 1.0, 1.5, 2.0};
-    dim4 h_pos_dims (5);
+    float h_pos[5] = {0.0f, 0.5, 1.0f, 1.5, 2.0f};
+    dim4 pos_dims(5);
 
-    dim4 gold_subarr_dim(5, 3);
-    float h_gold_subarr[15] = {10.0, 15.0, 20.0, 25.0, 30.0,
-                               40.0, 45.0, 50.0, 55.0, 60.0,
-                               70.0, 75.0, 80.0, 85.0, 90.0};
+    float h_gold[15] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f,
+                        40.0f, 45.0f, 50.0f, 55.0f, 60.0f,
+                        70.0f, 75.0f, 80.0f, 85.0f, 90.0f};
+    dim4 gold_dims(5, 3);
 
     SCOPED_TRACE("UseReorderedOutputArray");
-    testApprox1(h_gold_subarr, gold_subarr_dim, h_in, h_in_dims,
-                h_pos, h_pos_dims, REORDERED_ARRAY);
+    testSpclOutArray(h_gold, gold_dims, h_in, in_dims,
+                     h_pos, pos_dims, REORDERED_ARRAY);
 }
