@@ -877,7 +877,7 @@ TEST(Approx1, UseNullOutputArray) {
     float h_in[3] = {10.0f, 20.0f, 30.0f};
     dim4 in_dims(3);
 
-    float h_pos[5] = {0.0f, 0.5, 1.0f, 1.5, 2.0f};
+    float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
     dim4 pos_dims(5);
 
     float h_gold[5] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f};
@@ -892,7 +892,7 @@ TEST(Approx1, UseFullExistingOutputArray) {
     float h_in[3] = {10.0f, 20.0f, 30.0f};
     dim4 in_dims(3);
 
-    float h_pos[5] = {0.0f, 0.5, 1.0f, 1.5, 2.0f};
+    float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
     dim4 pos_dims(5);
 
     float h_gold[5] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f};
@@ -907,7 +907,7 @@ TEST(Approx1, UseExistingOutputSubArray) {
     float h_in[3] = {10.0f, 20.0f, 30.0f};
     dim4 in_dims(3);
 
-    float h_pos[5] = {0.0f, 0.5, 1.0f, 1.5, 2.0f};
+    float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
     dim4 pos_dims (5);
 
     float h_gold_subarr[5] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f};
@@ -925,7 +925,7 @@ TEST(Approx1, UseReorderedOutputArray) {
                      70.0f, 80.0f, 90.0f};
     dim4 in_dims(3, 3);
 
-    float h_pos[5] = {0.0f, 0.5, 1.0f, 1.5, 2.0f};
+    float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
     dim4 pos_dims(5);
 
     float h_gold[15] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f,
