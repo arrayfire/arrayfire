@@ -328,3 +328,59 @@ ARITH_TESTS(float  , 1e-6)
 ARITH_TESTS(double , 1e-6)
 ARITH_TESTS(cfloat , 1e-4) // This is mostly for complex division in OpenCL
 ARITH_TESTS(cdouble, 1e-6)
+
+// Sparse-Sparse Arithmetic testing function
+template<typename T, af_op_t op>
+void ssArithmetic(const int m, const int n, int factor, const double eps)
+{
+    deviceGC();
+
+    if (noDoubleTests<T>()) return;
+
+#if 1
+    array A = cpu_randu<T>(dim4(m, n));
+    array B = cpu_randu<T>(dim4(m, n));
+#else
+    array A = randu(m, n, (dtype)dtype_traits<T>::af_type);
+    array B = randu(m, n, (dtype)dtype_traits<T>::af_type);
+#endif
+
+    A = makeSparse<T>(A, factor);
+    B = makeSparse<T>(B, factor);
+
+    array spA = sparse(A, AF_STORAGE_CSR);
+    array spB = sparse(B, AF_STORAGE_CSR);
+
+    arith_op<op> binOp;
+
+    // Arith Op
+    array resS = binOp(spA, spB);
+    array resD = binOp(A, B);
+    array revS = binOp(spB, spA);
+    array revD = binOp(B,  A);
+
+    ASSERT_ARRAYS_NEAR(resD, dense(resS), eps);
+    ASSERT_ARRAYS_NEAR(revD, dense(revS), eps);
+}
+
+#define SP_SP_ARITH_TEST(type, m, n, factor, eps)       \
+TEST(SparseSparseArith, type##_Addition_##m##_##n)      \
+{                                                       \
+    ssArithmetic<type, af_add_t>(m, n, factor, eps);    \
+}                                                       \
+TEST(SparseSparseArith, type##_Subtraction_##m##_##n)   \
+{                                                       \
+    ssArithmetic<type, af_sub_t>(m, n, factor, eps);    \
+}
+
+#define SP_SP_ARITH_TESTS(T, eps)                       \
+    SP_SP_ARITH_TEST(T, 10  , 10  , 5, eps)             \
+    SP_SP_ARITH_TEST(T, 1024, 1024, 5, eps)             \
+    SP_SP_ARITH_TEST(T, 100 , 100 , 1, eps)             \
+    SP_SP_ARITH_TEST(T, 2048, 1000, 6, eps)             \
+    SP_SP_ARITH_TEST(T, 123 , 278 , 5, eps)             \
+
+SP_SP_ARITH_TESTS(float  , 1e-6)
+SP_SP_ARITH_TESTS(double , 1e-6)
+SP_SP_ARITH_TESTS(cfloat , 1e-4) // This is mostly for complex division in OpenCL
+SP_SP_ARITH_TESTS(cdouble, 1e-6)

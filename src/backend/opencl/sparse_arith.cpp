@@ -21,6 +21,7 @@
 #include <lookup.hpp>
 #include <math.hpp>
 #include <platform.hpp>
+#include <scan.hpp>
 #include <where.hpp>
 
 namespace opencl
@@ -103,6 +104,45 @@ SparseArray<T> arithOpS(const SparseArray<T> &lhs, const Array<T> &rhs, const bo
     return out;
 }
 
+template<typename T, af_op_t op>
+SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs)
+{
+    lhs.eval();
+    rhs.eval();
+    af::storage sfmt = lhs.getStorage();
+
+    const dim4 ldims = lhs.dims();
+
+    const uint M = ldims[0];
+    const uint N = ldims[1];
+
+    const dim_t nnzA = lhs.getNNZ();
+    const dim_t nnzB = rhs.getNNZ();
+
+    auto temp = createValueArray<int>(dim4(M+1), scalar<int>(0));
+    temp.eval();
+
+    unsigned nnzC = 0;
+    kernel::csrCalcOutNNZ(temp, nnzC, M, N,
+            nnzA, lhs.getRowIdx(), lhs.getColIdx(),
+            nnzB, rhs.getRowIdx(), rhs.getColIdx());
+
+    auto outRowIdx = scan<af_add_t, int, int>(temp, 0);
+
+    auto outColIdx = createEmptyArray<int>(dim4(nnzC));
+    auto outValues = createEmptyArray<T>(dim4(nnzC));
+
+    kernel::ssArithCSR<T, op>(outValues, outColIdx,
+            outRowIdx, M, N,
+            nnzA, lhs.getValues(), lhs.getRowIdx(), lhs.getColIdx(),
+            nnzB, rhs.getValues(), rhs.getRowIdx(), rhs.getColIdx());
+
+    SparseArray<T> retVal = createArrayDataSparseArray(ldims,
+                                 outValues, outRowIdx, outColIdx,
+                                 sfmt);
+    return retVal;
+}
+
 #define INSTANTIATE(T)                                                                              \
     template Array<T> arithOpD<T, af_add_t>(const SparseArray<T> &lhs, const Array<T> &rhs,         \
                                             const bool reverse);                                    \
@@ -120,6 +160,10 @@ SparseArray<T> arithOpS(const SparseArray<T> &lhs, const Array<T> &rhs, const bo
                                                   const bool reverse);                              \
     template SparseArray<T> arithOpS<T, af_div_t>(const SparseArray<T> &lhs, const Array<T> &rhs,   \
                                                   const bool reverse);                              \
+    template SparseArray<T> arithOp<T, af_add_t>(const common::SparseArray<T> &lhs,                 \
+                                                 const common::SparseArray<T> &rhs);                \
+    template SparseArray<T> arithOp<T, af_sub_t>(const common::SparseArray<T> &lhs,                 \
+                                                 const common::SparseArray<T> &rhs);                \
 
 INSTANTIATE(float  )
 INSTANTIATE(double )
@@ -127,4 +171,3 @@ INSTANTIATE(cfloat )
 INSTANTIATE(cdouble)
 
 }
-

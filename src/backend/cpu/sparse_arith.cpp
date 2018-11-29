@@ -9,14 +9,8 @@
 
 #include <sparse_arith.hpp>
 #include <common/SparseArray.hpp>
-#include <optypes.hpp>
 #include <sparse.hpp>
-
-#include <kernel/sparse_arith.hpp>
-
-#include <stdexcept>
-#include <string>
-
+#include <optypes.hpp>
 #include <af/dim4.hpp>
 #include <arith.hpp>
 #include <complex.hpp>
@@ -25,6 +19,13 @@
 #include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+
+#include <kernel/sparse_arith.hpp>
+
+#include <algorithm>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace cpu
 {
@@ -115,6 +116,39 @@ SparseArray<T> arithOpS(const SparseArray<T> &lhs, const Array<T> &rhs, const bo
     return out;
 }
 
+template<typename T, af_op_t op>
+SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs)
+{
+    af::storage sfmt = lhs.getStorage();
+
+    lhs.eval();
+    rhs.eval();
+
+    const dim4 dims = lhs.dims();
+    const uint M = dims[0];
+    const uint N = dims[1];
+
+    auto rowArr = createEmptyArray<int>(dim4(M+1));
+
+    getQueue().enqueue(kernel::calcOutNNZ, rowArr, M, N,
+                       lhs.getRowIdx(), lhs.getColIdx(),
+                       rhs.getRowIdx(), rhs.getColIdx());
+    getQueue().sync();
+
+    uint nnz = rowArr.get()[M];
+    auto out = createEmptySparseArray<T>(dims, nnz, sfmt);
+    out.eval();
+
+    copyArray(out.getRowIdx(), rowArr);
+
+    getQueue().enqueue(kernel::sparseArithOp<T, op>,
+                       out.getValues(), out.getColIdx(),
+                       out.getRowIdx(), M,
+                       lhs.getValues(), lhs.getRowIdx(), lhs.getColIdx(),
+                       rhs.getValues(), rhs.getRowIdx(), rhs.getColIdx());
+    return out;
+}
+
 #define INSTANTIATE(T)                                                                              \
     template Array<T> arithOpD<T, af_add_t>(const SparseArray<T> &lhs, const Array<T> &rhs,         \
                                             const bool reverse);                                    \
@@ -132,6 +166,14 @@ SparseArray<T> arithOpS(const SparseArray<T> &lhs, const Array<T> &rhs, const bo
                                                   const bool reverse);                              \
     template SparseArray<T> arithOpS<T, af_div_t>(const SparseArray<T> &lhs, const Array<T> &rhs,   \
                                                  const bool reverse);                               \
+    template SparseArray<T> arithOp<T, af_add_t>(const common::SparseArray<T> &lhs,                 \
+                                                 const common::SparseArray<T> &rhs);                \
+    template SparseArray<T> arithOp<T, af_sub_t>(const common::SparseArray<T> &lhs,                 \
+                                                 const common::SparseArray<T> &rhs);                \
+    template SparseArray<T> arithOp<T, af_mul_t>(const common::SparseArray<T> &lhs,                 \
+                                                 const common::SparseArray<T> &rhs);                \
+    template SparseArray<T> arithOp<T, af_div_t>(const common::SparseArray<T> &lhs,                 \
+                                                 const common::SparseArray<T> &rhs);
 
 INSTANTIATE(float  )
 INSTANTIATE(double )
