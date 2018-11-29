@@ -9,30 +9,32 @@
 
 #include <sparse_blas.hpp>
 
+#ifdef USE_MKL
+#include <mkl_spblas.h>
+#endif
+
 #include <af/dim4.hpp>
 #include <complex.hpp>
-#include <common/err_common.hpp>
 #include <common/complex.hpp>
+#include <common/err_common.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <types.hpp>
 
 #include <stdexcept>
 #include <string>
 #include <cassert>
 
-using common::is_complex;
+namespace cpu {
 
-using std::add_const;
-using std::add_pointer;
-using std::enable_if;
-using std::is_floating_point;
-using std::remove_const;
-using std::conditional;
-using std::is_same;
-
-namespace cpu
-{
+#ifdef USE_MKL
+using sp_cfloat = MKL_Complex8;
+using sp_cdouble = MKL_Complex16;
+#else
+using sp_cfloat = cfloat;
+using sp_cdouble = cdouble;
+#endif
 
 template<typename T, class Enable = void>
 struct blas_base {
@@ -40,21 +42,22 @@ struct blas_base {
 };
 
 template<typename T>
-struct blas_base <T, typename enable_if<is_complex<T>::value>::type> {
-    using type = typename conditional<is_same<T, cdouble>::value,
-                                      sp_cdouble, sp_cfloat>::type;
+struct blas_base <T, typename std::enable_if< common::is_complex<T>::value>::type> {
+    using type = typename std::conditional<std::is_same<T, cdouble>::value,
+                                      sp_cdouble, sp_cfloat>
+                                     ::type;
 };
 
 template<typename T>
-using cptr_type     =   typename conditional<   is_complex<T>::value,
+using cptr_type    = typename std::conditional< common::is_complex<T>::value,
                                                 const typename blas_base<T>::type *,
                                                 const T*>::type;
 template<typename T>
-using ptr_type     =    typename conditional<   is_complex<T>::value,
+using ptr_type     = typename std::conditional< common::is_complex<T>::value,
                                                 typename blas_base<T>::type *,
                                                 T*>::type;
 template<typename T>
-using scale_type   =    typename conditional<   is_complex<T>::value,
+using scale_type   = typename std::conditional< common::is_complex<T>::value,
                                                 const typename blas_base<T>::type,
                                                 const T>::type;
 
@@ -64,9 +67,46 @@ To getScaleValue(Ti val)
     return (To)(val);
 }
 
+template<typename T, int value>
+scale_type<T> getScale()
+{
+    static T val(value);
+    return getScaleValue<scale_type<T>, T>(val);
+}
+
+sparse_operation_t
+toSparseTranspose(af_mat_prop opt)
+{
+    sparse_operation_t out = SPARSE_OPERATION_NON_TRANSPOSE;
+    switch(opt) {
+        case AF_MAT_NONE        : out = SPARSE_OPERATION_NON_TRANSPOSE;         break;
+        case AF_MAT_TRANS       : out = SPARSE_OPERATION_TRANSPOSE;             break;
+        case AF_MAT_CTRANS      : out = SPARSE_OPERATION_CONJUGATE_TRANSPOSE;   break;
+        default                 : AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
+    }
+    return out;
+}
+
 #ifdef USE_MKL
 
-// MKL
+template<>
+const sp_cfloat getScaleValue<const sp_cfloat, cfloat>(cfloat val)
+{
+    sp_cfloat ret;
+    ret.real = val.real();
+    ret.imag = val.imag();
+    return ret;
+}
+
+template<>
+const sp_cdouble getScaleValue<const sp_cdouble, cdouble>(cdouble val)
+{
+    sp_cdouble ret;
+    ret.real = val.real();
+    ret.imag = val.imag();
+    return ret;
+}
+
 // sparse_status_t mkl_sparse_z_create_csr (
 //                 sparse_matrix_t *A,
 //                 sparse_index_base_t indexing,
@@ -74,7 +114,33 @@ To getScaleValue(Ti val)
 //                 MKL_INT *rows_start, MKL_INT *rows_end,
 //                 MKL_INT *col_indx,
 //                 MKL_Complex16 *values);
-//
+
+template<typename T>
+using create_csr_func_def = sparse_status_t (*)
+                           (sparse_matrix_t *,
+                            sparse_index_base_t,
+                            int, int,
+                            int *, int *, int*,
+                            ptr_type<T>);
+
+#define SPARSE_FUNC_DEF( FUNC )                         \
+template<typename T> FUNC##_func_def<T> FUNC##_func();
+
+SPARSE_FUNC_DEF( create_csr )
+
+#undef SPARSE_FUNC_DEF
+
+#define SPARSE_FUNC( FUNC, TYPE, PREFIX )               \
+  template<> FUNC##_func_def<TYPE> FUNC##_func<TYPE>()  \
+{ return &mkl_sparse_##PREFIX##_##FUNC; }
+
+SPARSE_FUNC(create_csr , float   , s)
+SPARSE_FUNC(create_csr , double  , d)
+SPARSE_FUNC(create_csr , cfloat  , c)
+SPARSE_FUNC(create_csr , cdouble , z)
+
+#undef SPARSE_FUNC
+
 // sparse_status_t mkl_sparse_z_mv (
 //                 sparse_operation_t operation,
 //                 MKL_Complex16 alpha,
@@ -95,14 +161,6 @@ To getScaleValue(Ti val)
 //                 MKL_Complex16 beta,
 //                 MKL_Complex16 *y,
 //                 MKL_INT ldy);
-
-template<typename T>
-using create_csr_func_def = sparse_status_t (*)
-                           (sparse_matrix_t *,
-                            sparse_index_base_t,
-                            int, int,
-                            int *, int *, int*,
-                            ptr_type<T>);
 
 template<typename T>
 using mv_func_def         = sparse_status_t (*)
@@ -133,12 +191,6 @@ template<typename T> FUNC##_func_def<T> FUNC##_func();
   template<> FUNC##_func_def<TYPE> FUNC##_func<TYPE>()  \
 { return &mkl_sparse_##PREFIX##_##FUNC; }
 
-SPARSE_FUNC_DEF( create_csr )
-SPARSE_FUNC(create_csr , float   , s)
-SPARSE_FUNC(create_csr , double  , d)
-SPARSE_FUNC(create_csr , cfloat  , c)
-SPARSE_FUNC(create_csr , cdouble , z)
-
 SPARSE_FUNC_DEF( mv )
 SPARSE_FUNC(mv , float   , s)
 SPARSE_FUNC(mv , double  , d)
@@ -151,59 +203,6 @@ SPARSE_FUNC(mm , double  , d)
 SPARSE_FUNC(mm , cfloat  , c)
 SPARSE_FUNC(mm , cdouble , z)
 
-template<>
-const sp_cfloat getScaleValue<const sp_cfloat, cfloat>(cfloat val)
-{
-    sp_cfloat ret;
-    ret.real = val.real();
-    ret.imag = val.imag();
-    return ret;
-}
-
-template<>
-const sp_cdouble getScaleValue<const sp_cdouble, cdouble>(cdouble val)
-{
-    sp_cdouble ret;
-    ret.real = val.real();
-    ret.imag = val.imag();
-    return ret;
-}
-
-#else   // USE_MKL
-
-// From mkl_spblas.h
-typedef enum
-{
-    SPARSE_OPERATION_NON_TRANSPOSE          = 10,
-    SPARSE_OPERATION_TRANSPOSE              = 11,
-    SPARSE_OPERATION_CONJUGATE_TRANSPOSE    = 12,
-} sparse_operation_t;
-
-#endif  // USE_MKL
-
-sparse_operation_t
-toSparseTranspose(af_mat_prop opt)
-{
-    sparse_operation_t out = SPARSE_OPERATION_NON_TRANSPOSE;
-    switch(opt) {
-        case AF_MAT_NONE        : out = SPARSE_OPERATION_NON_TRANSPOSE;         break;
-        case AF_MAT_TRANS       : out = SPARSE_OPERATION_TRANSPOSE;             break;
-        case AF_MAT_CTRANS      : out = SPARSE_OPERATION_CONJUGATE_TRANSPOSE;   break;
-        default                 : AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
-    }
-    return out;
-}
-
-template<typename T, int value>
-scale_type<T> getScale()
-{
-    static T val(value);
-    return getScaleValue<scale_type<T>, T>(val);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-#ifdef USE_MKL // Implementation using MKL
-////////////////////////////////////////////////////////////////////////////////
 template<typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
@@ -291,9 +290,15 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     return out;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-#else // Implementation without using MKL
-////////////////////////////////////////////////////////////////////////////////
+#else // #if USE_MKL
+
+// From mkl_spblas.h
+typedef enum
+{
+    SPARSE_OPERATION_NON_TRANSPOSE          = 10,
+    SPARSE_OPERATION_TRANSPOSE              = 11,
+    SPARSE_OPERATION_CONJUGATE_TRANSPOSE    = 12,
+} sparse_operation_t;
 
 template<typename T>
 T getConjugate(const T &in)
@@ -500,9 +505,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     return out;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-#endif
-////////////////////////////////////////////////////////////////////////////////
+#endif // #if USE_MKL
 
 #define INSTANTIATE_SPARSE(T)                                                           \
     template Array<T> matmul<T>(const common::SparseArray<T> lhs, const Array<T> rhs,   \
