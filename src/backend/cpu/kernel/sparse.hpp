@@ -45,7 +45,7 @@ void coo2dense(Param<T> output,
 }
 
 template<typename T>
-void dense_csr(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
+void dense2csr(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
                CParam<T> in)
 {
     const T * iPtr = in.get();
@@ -70,8 +70,8 @@ void dense_csr(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
 }
 
 template<typename T>
-void csr_dense(Param<T> out,
-                CParam<T> values, CParam<int> rowIdx, CParam<int> colIdx)
+void csr2dense(Param<T> out,
+               CParam<T> values, CParam<int> rowIdx, CParam<int> colIdx)
 {
     T   *oPtr = out.get();
     const T   *vPtr = values.get();
@@ -107,7 +107,7 @@ struct SpKIPCompareK
 };
 
 template<typename T>
-void csr_coo(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
+void csr2coo(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
              CParam<T> ivalues, CParam<int> irowIdx, CParam<int> icolIdx)
 {
     // First calculate the linear index
@@ -143,7 +143,7 @@ void csr_coo(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
 }
 
 template<typename T>
-void coo_csr(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
+void coo2csr(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
              CParam<T> ivalues, CParam<int> irowIdx, CParam<int> icolIdx)
 {
     T   * ovPtr = ovalues.get();
