@@ -59,7 +59,10 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
         glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, vector_field->vertices());
         gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
         if (ptr) {
-            CUDA_CHECK(cudaMemcpy(ptr, points.get(), vector_field->verticesSize(), cudaMemcpyDeviceToHost));
+            auto stream = cuda::getActiveStream();
+            CUDA_CHECK(cudaMemcpyAsync(ptr, points.get(), vector_field->verticesSize(),
+                                       cudaMemcpyDeviceToHost, stream));
+            CUDA_CHECK(cudaStreamSynchronize(stream));
             glUnmapBuffer((gl::GLenum)GL_ARRAY_BUFFER);
         }
         glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, 0);
