@@ -36,6 +36,14 @@ static inline af_array arithOp(const af_array lhs, const af_array rhs,
 }
 
 template<typename T, af_op_t op>
+static inline
+af_array sparseArithOp(const af_array lhs, const af_array rhs)
+{
+    auto res = arithOp<T, op>(getSparseArray<T>(lhs), getSparseArray<T>(rhs));
+    return getHandle(res);
+}
+
+template<typename T, af_op_t op>
 static inline af_array arithSparseDenseOp(const af_array lhs, const af_array rhs,
                                           const bool reverse)
 {
@@ -80,10 +88,11 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs, co
 }
 
 template<af_op_t op>
-static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
+static
+af_err af_arith_real(af_array *out, const af_array lhs, const af_array rhs,
+                     const bool batchMode)
 {
     try {
-
         const ArrayInfo& linfo = getInfo(lhs);
         const ArrayInfo& rinfo = getInfo(rhs);
 
@@ -111,30 +120,33 @@ static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rh
     return AF_SUCCESS;
 }
 
-//template<af_op_t op>
-//static af_err af_arith_sparse(af_array *out, const af_array lhs, const af_array rhs)
-//{
-//    try {
-//        SparseArrayBase linfo = getSparseArrayBase(lhs);
-//        SparseArrayBase rinfo = getSparseArrayBase(rhs);
-//
-//        dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
-//
-//        const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
-//        af_array res;
-//        switch (otype) {
-//        case f32: res = arithOp<float  , op>(lhs, rhs, odims); break;
-//        case f64: res = arithOp<double , op>(lhs, rhs, odims); break;
-//        case c32: res = arithOp<cfloat , op>(lhs, rhs, odims); break;
-//        case c64: res = arithOp<cdouble, op>(lhs, rhs, odims); break;
-//        default: TYPE_ERROR(0, otype);
-//        }
-//
-//        std::swap(*out, res);
-//    }
-//    CATCHALL;
-//    return AF_SUCCESS;
-//}
+template<af_op_t op>
+static af_err
+af_arith_sparse(af_array *out, const af_array lhs, const af_array rhs)
+{
+    try {
+        common::SparseArrayBase linfo = getSparseArrayBase(lhs);
+        common::SparseArrayBase rinfo = getSparseArrayBase(rhs);
+
+        ARG_ASSERT(1, (linfo.getStorage()==rinfo.getStorage()));
+        ARG_ASSERT(1, (linfo.dims()==rinfo.dims()));
+        ARG_ASSERT(1, (linfo.getStorage()==AF_STORAGE_CSR));
+
+        const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
+        af_array res;
+        switch (otype) {
+            case f32: res = sparseArithOp<float  , op>(lhs, rhs); break;
+            case f64: res = sparseArithOp<double , op>(lhs, rhs); break;
+            case c32: res = sparseArithOp<cfloat , op>(lhs, rhs); break;
+            case c64: res = sparseArithOp<cdouble, op>(lhs, rhs); break;
+            default: TYPE_ERROR(0, otype);
+        }
+
+        std::swap(*out, res);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
 
 template<af_op_t op>
 static af_err af_arith_sparse_dense(af_array *out, const af_array lhs, const af_array rhs,
@@ -142,7 +154,7 @@ static af_err af_arith_sparse_dense(af_array *out, const af_array lhs, const af_
 {
     using namespace common;
     try {
-        SparseArrayBase linfo = getSparseArrayBase(lhs);
+        common::SparseArrayBase linfo = getSparseArrayBase(lhs);
         ArrayInfo       rinfo = getInfo(rhs);
 
         const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
@@ -161,18 +173,20 @@ static af_err af_arith_sparse_dense(af_array *out, const af_array lhs, const af_
     return AF_SUCCESS;
 }
 
-af_err af_add(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
+af_err af_add(af_array *out, const af_array lhs, const af_array rhs,
+              const bool batchMode)
 {
     // Check if inputs are sparse
     ArrayInfo linfo = getInfo(lhs, false, true);
     ArrayInfo rinfo = getInfo(rhs, false, true);
 
     if(linfo.isSparse() && rinfo.isSparse()) {
-        return AF_ERR_NOT_SUPPORTED; //af_arith_sparse<af_add_t>(out, lhs, rhs);
+        return af_arith_sparse<af_add_t>(out, lhs, rhs);
     } else if(linfo.isSparse() && !rinfo.isSparse()) {
         return af_arith_sparse_dense<af_add_t>(out, lhs, rhs);
     } else if(!linfo.isSparse() && rinfo.isSparse()) {
-        return af_arith_sparse_dense<af_add_t>(out, rhs, lhs, true); // dense should be rhs
+        // second operand(Array) of af_arith call should be dense
+        return af_arith_sparse_dense<af_add_t>(out, rhs, lhs, true);
     } else {
         return af_arith<af_add_t>(out, lhs, rhs, batchMode);
     }
@@ -185,7 +199,10 @@ af_err af_mul(af_array *out, const af_array lhs, const af_array rhs, const bool 
     ArrayInfo rinfo = getInfo(rhs, false, true);
 
     if(linfo.isSparse() && rinfo.isSparse()) {
-        return AF_ERR_NOT_SUPPORTED; //af_arith_sparse<af_mul_t>(out, lhs, rhs);
+        //return af_arith_sparse<af_mul_t>(out, lhs, rhs);
+        //MKL doesn't have mul or div support yet, hence
+        //this is commented out although alternative cpu code exists
+        return AF_ERR_NOT_SUPPORTED;
     } else if(linfo.isSparse() && !rinfo.isSparse()) {
         return af_arith_sparse_dense<af_mul_t>(out, lhs, rhs);
     } else if(!linfo.isSparse() && rinfo.isSparse()) {
@@ -202,7 +219,7 @@ af_err af_sub(af_array *out, const af_array lhs, const af_array rhs, const bool 
     ArrayInfo rinfo = getInfo(rhs, false, true);
 
     if(linfo.isSparse() && rinfo.isSparse()) {
-        return AF_ERR_NOT_SUPPORTED; //af_arith_sparse<af_sub_t>(out, lhs, rhs);
+        return af_arith_sparse<af_sub_t>(out, lhs, rhs);
     } else if(linfo.isSparse() && !rinfo.isSparse()) {
         return af_arith_sparse_dense<af_sub_t>(out, lhs, rhs);
     } else if(!linfo.isSparse() && rinfo.isSparse()) {
@@ -219,7 +236,10 @@ af_err af_div(af_array *out, const af_array lhs, const af_array rhs, const bool 
     ArrayInfo rinfo = getInfo(rhs, false, true);
 
     if(linfo.isSparse() && rinfo.isSparse()) {
-        return AF_ERR_NOT_SUPPORTED; //af_arith_sparse<af_div_t>(out, lhs, rhs);
+        //return af_arith_sparse<af_div_t>(out, lhs, rhs);
+        //MKL doesn't have mul or div support yet, hence
+        //this is commented out although alternative cpu code exists
+        return AF_ERR_NOT_SUPPORTED;
     } else if(linfo.isSparse() && !rinfo.isSparse()) {
         return af_arith_sparse_dense<af_div_t>(out, lhs, rhs);
     } else if(!linfo.isSparse() && rinfo.isSparse()) {

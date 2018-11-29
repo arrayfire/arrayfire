@@ -11,6 +11,8 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+#include <cmath>
+
 namespace cpu
 {
 namespace kernel
@@ -143,5 +145,104 @@ void sparseArithOpS(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
     }
 }
 
+// The following functions can handle CSR
+// storage format only as of now.
+static
+void calcOutNNZ(Param<int> outRowIdx,
+                const uint M, const uint N,
+                CParam<int> lRowIdx, CParam<int> lColIdx,
+                CParam<int> rRowIdx, CParam<int> rColIdx)
+{
+          int *orPtr = outRowIdx.get();
+    const int *lrPtr = lRowIdx.get();
+    const int *lcPtr = lColIdx.get();
+    const int *rrPtr = rRowIdx.get();
+    const int *rcPtr = rColIdx.get();
+
+    unsigned csrOutCount = 0;
+    for (uint row=0; row<M; ++row) {
+        const int lEnd = lrPtr[row+1];
+        const int rEnd = rrPtr[row+1];
+
+        uint rowNNZ = 0;
+        int l = lrPtr[row];
+        int r = rrPtr[row];
+        while (l < lEnd && r < rEnd) {
+            int lci = lcPtr[l];
+            int rci = rcPtr[r];
+
+            l += (lci <= rci);
+            r += (lci >= rci);
+            rowNNZ++;
+        }
+        // Elements from lhs or rhs are exhausted.
+        // Just count left over elements
+        rowNNZ += (lEnd-l);
+        rowNNZ += (rEnd-r);
+
+        orPtr[row] = csrOutCount;
+        csrOutCount += rowNNZ;
+    }
+    //Write out the Rows+1 entry
+    orPtr[M] = csrOutCount;
+}
+
+template<typename T, af_op_t op>
+void sparseArithOp(Param<T> oVals, Param<int> oColIdx,
+                   CParam<int> oRowIdx, const uint Rows,
+                   CParam<T> lvals, CParam<int> lRowIdx, CParam<int> lColIdx,
+                   CParam<T> rvals, CParam<int> rRowIdx, CParam<int> rColIdx)
+{
+    const int *orPtr = oRowIdx.get();
+    const   T *lvPtr = lvals.get();
+    const int *lrPtr = lRowIdx.get();
+    const int *lcPtr = lColIdx.get();
+    const   T *rvPtr = rvals.get();
+    const int *rrPtr = rRowIdx.get();
+    const int *rcPtr = rColIdx.get();
+
+    arith_op<T, op> binOp;
+
+    auto ZERO = scalar<T>(0);
+
+    for (uint row=0; row<Rows; ++row) {
+        const int lEnd = lrPtr[row+1];
+        const int rEnd = rrPtr[row+1];
+        const int offs = orPtr[row];
+
+          T *ovPtr = oVals.get() + offs;
+        int *ocPtr = oColIdx.get() + offs;
+
+        uint rowNNZ = 0;
+        int l = lrPtr[row];
+        int r = rrPtr[row];
+        while (l < lEnd && r < rEnd) {
+            int lci = lcPtr[l];
+            int rci = rcPtr[r];
+
+            T lhs = (lci <= rci ? lvPtr[l] : ZERO);
+            T rhs = (lci >= rci ? rvPtr[r] : ZERO);
+
+            ovPtr[ rowNNZ ] = binOp(lhs, rhs);
+            ocPtr[ rowNNZ ] = (lci <= rci) ? lci : rci;
+
+            l += (lci <= rci);
+            r += (lci >= rci);
+            rowNNZ++;
+        }
+        while (l < lEnd) {
+            ovPtr[ rowNNZ ] = binOp(lvPtr[l], ZERO);
+            ocPtr[ rowNNZ ] = lcPtr[l];
+            l++;
+            rowNNZ++;
+        }
+        while (r < rEnd) {
+            ovPtr[ rowNNZ ] = binOp(ZERO, rvPtr[r]);
+            ocPtr[ rowNNZ ] = rcPtr[r];
+            r++;
+            rowNNZ++;
+        }
+    }
+}
 }
 }
