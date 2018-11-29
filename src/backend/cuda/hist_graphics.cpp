@@ -43,7 +43,9 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
         glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, hist->vertices());
         gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
         if (ptr) {
-            CUDA_CHECK(cudaMemcpy(ptr, data.get(), hist->verticesSize(), cudaMemcpyDeviceToHost));
+            auto stream = cuda::getActiveStream();
+            CUDA_CHECK(cudaMemcpyAsync(ptr, data.get(), hist->verticesSize(), cudaMemcpyDeviceToHost, stream));
+            CUDA_CHECK(cudaStreamSynchronize(stream));
             glUnmapBuffer((gl::GLenum)GL_ARRAY_BUFFER);
         }
         glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, 0);
