@@ -48,7 +48,10 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
         glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, plot->vertices());
         gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
         if (ptr) {
-            CUDA_CHECK(cudaMemcpy(ptr, P.get(), plot->verticesSize(), cudaMemcpyDeviceToHost));
+            auto stream = cuda::getActiveStream();
+            CUDA_CHECK(cudaMemcpyAsync(ptr, P.get(), plot->verticesSize(),
+                                       cudaMemcpyDeviceToHost, stream));
+            CUDA_CHECK(cudaStreamSynchronize(stream));
             glUnmapBuffer((gl::GLenum)GL_ARRAY_BUFFER);
         }
         glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, 0);
