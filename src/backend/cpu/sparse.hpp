@@ -12,21 +12,8 @@
 #include <Array.hpp>
 #include <common/SparseArray.hpp>
 
-#ifdef USE_MKL
-#include <mkl_spblas.h>
-#endif
-
 namespace cpu
 {
-
-#ifdef USE_MKL
-typedef MKL_Complex8  sp_cfloat;
-typedef MKL_Complex16 sp_cdouble;
-#else
-typedef cfloat        sp_cfloat;
-typedef cdouble       sp_cdouble;
-#endif
-
 template<typename T, af_storage stype>
 common::SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in);
 
@@ -35,5 +22,4 @@ Array<T> sparseConvertStorageToDense(const common::SparseArray<T> &in);
 
 template<typename T, af_storage dest, af_storage src>
 common::SparseArray<T> sparseConvertStorageToStorage(const common::SparseArray<T> &in);
-
 }
