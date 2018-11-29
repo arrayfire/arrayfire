@@ -47,7 +47,9 @@ void copy_image(const Array<T> &in, const forge::Image* image)
         glBufferData((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, image->size(), 0, (gl::GLenum)GL_STREAM_DRAW);
         gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
         if (ptr) {
-            CUDA_CHECK(cudaMemcpy(ptr, in.get(), image->size(), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpyAsync(ptr, in.get(), image->size(),
+                                       cudaMemcpyDeviceToHost, cuda::getActiveStream()));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
             glUnmapBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER);
         }
         glBindBuffer((gl::GLenum)GL_PIXEL_UNPACK_BUFFER, 0);

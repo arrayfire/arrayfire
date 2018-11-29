@@ -22,47 +22,49 @@ namespace cuda
 {
 
     template<typename T>
-    void copyData(T *data, const Array<T> &A)
+    void copyData(T *dst, const Array<T> &src)
     {
         // FIXME: Merge this with copyArray
-        A.eval();
+        src.eval();
 
-        Array<T> out = A;
+        Array<T> out = src;
         const T *ptr = NULL;
 
-        if (A.isLinear() || // No offsets, No strides
-            A.ndims() == 1 // Simple offset, no strides.
+        if (src.isLinear() || // No offsets, No strides
+            src.ndims() == 1 // Simple offset, no strides.
             ) {
 
             //A.get() gets data with offsets
-            ptr = A.get();
+            ptr = src.get();
         } else {
             //FIXME: Think about implementing eval
-            out = copyArray(A);
+            out = copyArray(src);
             ptr = out.get();
         }
 
-        CUDA_CHECK(cudaMemcpy(data, ptr,
-                              A.elements() * sizeof(T),
-                              cudaMemcpyDeviceToHost));
-
+        auto stream = cuda::getActiveStream();
+        CUDA_CHECK(cudaMemcpyAsync(dst, ptr,
+                                   src.elements() * sizeof(T),
+                                   cudaMemcpyDeviceToHost,
+                                   stream));
+        CUDA_CHECK(cudaStreamSynchronize(stream));
         return;
     }
 
     template<typename T>
-    Array<T> copyArray(const Array<T> &A)
+    Array<T> copyArray(const Array<T> &src)
     {
-        Array<T> out = createEmptyArray<T>(A.dims());
+        Array<T> out = createEmptyArray<T>(src.dims());
 
-        if (A.isLinear()) {
-            CUDA_CHECK(cudaMemcpyAsync(out.get(), A.get(),
-                                       A.elements() * sizeof(T),
+        if (src.isLinear()) {
+            CUDA_CHECK(cudaMemcpyAsync(out.get(), src.get(),
+                                       src.elements() * sizeof(T),
                                        cudaMemcpyDeviceToDevice,
                                        cuda::getActiveStream()));
         } else {
             // FIXME: Seems to fail when using Param<T>
-            kernel::memcopy(out.get(), out.strides().get(), A.get(), A.dims().get(),
-                            A.strides().get(), (uint)A.ndims());
+            kernel::memcopy(out.get(), out.strides().get(), src.get(), src.dims().get(),
+                            src.strides().get(), (uint)src.ndims());
         }
         return out;
     }
@@ -118,9 +120,9 @@ namespace cuda
         copyFn(out, in);
     }
 
-#define INSTANTIATE(T)                                              \
-    template void      copyData<T> (T *data, const Array<T> &from); \
-    template Array<T> copyArray<T>(const Array<T> &A);              \
+#define INSTANTIATE(T)                                                  \
+    template void      copyData<T> (T *dst, const Array<T> &src);       \
+    template Array<T>  copyArray<T>(const Array<T> &src);               \
     template void      multiply_inplace<T> (Array<T> &in, double norm); \
 
     INSTANTIATE(float  )
