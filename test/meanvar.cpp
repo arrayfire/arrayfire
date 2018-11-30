@@ -23,6 +23,7 @@ using af::cfloat;
 using af::dim4;
 using af::dtype_traits;
 using std::back_inserter;
+using std::move;
 using std::string;
 using std::vector;
 
@@ -53,32 +54,58 @@ using outType = typename varOutType<T>::type;
 
 template<typename T>
 struct meanvar_test {
-  static af_dtype af_type;
-  string test_description_;
-  af_array in_;
-  af_array weights_;
-  af_var_bias bias_;
-  int dim_;
-  vector<outType<T>> mean_;
-  vector<outType<T>> variance_;
-  meanvar_test(string description, af_array in, af_array weights,
-               af_var_bias bias, int dim,
-               vector<double> &mean, vector<double> &variance)
-    : test_description_(description)
-    , in_(0)
-    , weights_(0)
-    , bias_(bias)
-    , dim_(dim) {
-    af_retain_array(&in_, in);
-    if(weights) {
-        af_retain_array(&weights_, weights);
+    static af_dtype af_type;
+    string test_description_;
+    af_array in_;
+    af_array weights_;
+    af_var_bias bias_;
+    int dim_;
+    vector<outType<T>> mean_;
+    vector<outType<T>> variance_;
+
+    meanvar_test(string description, af_array in, af_array weights,
+                af_var_bias bias, int dim,
+                vector<double> &&mean, vector<double> &&variance)
+      : test_description_(description)
+      , in_(0)
+      , weights_(0)
+      , bias_(bias)
+      , dim_(dim) {
+        af_retain_array(&in_, in);
+        if (weights) {
+            af_retain_array(&weights_, weights);
+        }
+        mean_.reserve(mean.size());
+        variance_.reserve(variance.size());
+        std::copy(begin(mean), end(mean), back_inserter(mean_));
+        std::copy(begin(variance), end(variance), back_inserter(variance_));
     }
 
-    mean_.reserve(mean.size());
-    variance_.reserve(variance.size());
-    std::copy(begin(mean), end(mean), back_inserter(mean_));
-    std::copy(begin(variance), end(variance), back_inserter(variance_));
-  }
+    meanvar_test(const meanvar_test<T> &other)
+      : test_description_(other.test_description_)
+      , in_(0)
+      , weights_(0)
+      , bias_(other.bias_)
+      , dim_(other.dim_)
+      , mean_(other.mean_)
+      , variance_(other.variance_) {
+        af_retain_array(&in_, other.in_);
+        if (other.weights_) {
+            af_retain_array(&weights_, other.weights_);
+        }
+    }
+
+    ~meanvar_test() {
+        af_release_array(in_);
+        if (weights_) {
+            af_release_array(weights_);
+            weights_ = 0;
+        }
+    }
+
+    meanvar_test() = default;
+    meanvar_test(meanvar_test<T> &&other) = default;
+    meanvar_test& operator=(meanvar_test<T> &&other) = default;
 };
 
 template<typename T>
@@ -87,7 +114,7 @@ af_dtype meanvar_test<T>::af_type = dtype_traits<T>::af_type;
 template<typename T>
 class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T> > {
 public:
-  void meanvar_test_function(meanvar_test<T> test) {
+  void meanvar_test_function(meanvar_test<T>& test) {
       af_array mean, var;
 
       // Cast to the expected type
@@ -138,8 +165,8 @@ meanvar_test_gen(string name, int in_index, int weight_index, af_var_bias bias, 
 
         inputs.resize(in_.size());
         for(size_t i = 0; i < in_.size(); i++) {
-          af_create_array(&inputs[i], &in_[i].front(),
-                          numDims_[i].ndims(), numDims_[i].get(), f64);
+            af_create_array(&inputs[i], &in_[i].front(),
+                            numDims_[i].ndims(), numDims_[i].get(), f64);
         }
 
         outputs.resize(tests_.size());
@@ -166,33 +193,26 @@ meanvar_test_gen(string name, int in_index, int weight_index, af_var_bias bias, 
 
       inputs.resize(dimensions.size());
       for(size_t i = 0; i < dimensions.size(); i++) {
-          af_array large_array = 0;
-          af_create_array(&large_array, &large_.front(), 4, dimensions[i].data(), f64);
-          inputs[i] = large_array;
+          af_create_array(&inputs[i], &large_.front(), 4, dimensions[i].data(), f64);
       }
 
       outputs.push_back(vector<double>(1, 999.5));
       outputs.push_back(vector<double>(1, 333500));
       outputs.push_back({249.50, 749.50, 1249.50, 1749.50});
       outputs.push_back(vector<double>(4, 20875));
-  }
-  if(weight_index == -1) {
-      return meanvar_test<T> (name,
-                              inputs[in_index],
-                              empty,
-                              bias,
-                              dim,
-                              outputs[mean_index],
-                              outputs[var_index]);
-  } else {
-      return meanvar_test<T>(name,
-                             inputs[in_index],
-                             inputs[weight_index],
-                             bias,
-                             dim,
-                             outputs[mean_index],
-                             outputs[var_index]);
-  }
+    }
+    meanvar_test<T> out = meanvar_test<T> (name,
+                                           inputs[in_index],
+                                           (weight_index == -1) ? empty : inputs[weight_index],
+                                           bias,
+                                           dim,
+                                           move(outputs[mean_index]),
+                                           move(outputs[var_index]));
+
+    for(auto input : inputs) {
+      af_release_array(input);
+    }
+    return out;
 }
 
 
