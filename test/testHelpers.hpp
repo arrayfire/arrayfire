@@ -502,6 +502,8 @@ void cleanSlate()
   ASSERT_EQ(af::getMemStepSize(), step_bytes);
 }
 
+//********** arrayfire custom test asserts ***********
+
 std::ostream& operator<<(std::ostream& os, af_err e) {
     return os << af_err_to_string(e);
 }
@@ -797,6 +799,7 @@ template<typename T>
     return elemWiseEq<T>(aName, bName, hA, a.dims(), hB, b.dims(), maxAbsDiff, tag);
 }
 
+// Called by ASSERT_ARRAYS_EQ
 ::testing::AssertionResult assertArrayEq(std::string aName, std::string bName,
                                          const af::array& a, const af::array& b,
                                          float maxAbsDiff = 0.f) {
@@ -837,6 +840,7 @@ template<typename T>
     return ::testing::AssertionSuccess();
 }
 
+// Called by ASSERT_VEC_ARRAY_EQ
 template<typename T>
 ::testing::AssertionResult assertArrayEq(std::string aName, std::string aDimsName,
                                          std::string bName,
@@ -899,6 +903,7 @@ template<typename T>
     return assertArrayEq(hA_name, aDimsName, bName, hA, aDims, bbb);
 }
 
+// Called by ASSERT_ARRAYS_NEAR
 ::testing::AssertionResult assertArrayNear(std::string aName, std::string bName,
                                            std::string maxAbsDiffName,
                                            const af::array& a, const af::array& b,
@@ -907,6 +912,7 @@ template<typename T>
     return assertArrayEq(aName, bName, a, b, maxAbsDiff);
 }
 
+// Called by ASSERT_VEC_ARRAY_NEAR
 template<typename T>
 ::testing::AssertionResult assertArrayNear(std::string hA_name, std::string aDimsName,
                                            std::string bName,
@@ -959,6 +965,16 @@ template<typename T>
 #define ASSERT_ARRAYS_EQ(EXPECTED, ACTUAL) \
     EXPECT_PRED_FORMAT2(assertArrayEq, EXPECTED, ACTUAL)
 
+/// Same as ASSERT_ARRAYS_EQ, but for cases when a "special" output array is
+/// given to the function.
+/// The special array can be null, a full-sized array, a subarray, or reordered
+/// Can only be used for testing C-API functions currently
+///
+/// \param[in] EXPECTED The expected array of the assertion
+/// \param[in] ACTUAL The actual resulting array from the calculation
+#define ASSERT_SPECIAL_ARRAYS_EQ(EXPECTED, ACTUAL, META)               \
+    EXPECT_PRED_FORMAT3(assertArrayEq, EXPECTED, ACTUAL, META)
+
 /// Compares a std::vector with an af::/af_array for their types, dims, and values (strict equality).
 ///
 /// \param[in] EXPECTED_VEC The vector that represents the expected array
@@ -990,4 +1006,238 @@ template<typename T>
                             MAX_ABSDIFF)
 
 }
+
+enum TestOutputArrayType {
+    // Test af_* function when given a null array as its output
+    NULL_ARRAY,
+
+    // Test af_* function when given an output array that is the same size as
+    // the expected output
+    FULL_ARRAY,
+
+    // Test af_* function when given an output array that is a sub-array of a
+    // larger array (the sub-array size is still the same size as the expected
+    // output). Only the sub-array must be modified by the af_* function
+    SUB_ARRAY,
+
+    // Test af_* function when given an output array that was previously
+    // reordered (but after the reorder, has still the same shape as the expected
+    // output). This specifically uses the reorder behavior when dim0 is kept,
+    // and thus no data movement is done - only the dims and strides are modified
+    REORDERED_ARRAY
+};
+
+class TestOutputArrayInfo {
+    af_array out_arr;
+    af_array out_arr_cpy;
+    af_array out_subarr;
+    dim_t out_subarr_ndims;
+    af_seq out_subarr_idxs[4];
+    TestOutputArrayType out_arr_type;
+
+public:
+
+    TestOutputArrayInfo(TestOutputArrayType arr_type)
+        :out_arr(0),
+         out_arr_cpy(0),
+         out_subarr(0),
+         out_subarr_ndims(0),
+         out_arr_type(arr_type)
+    {
+        for (uint i = 0; i < 4; ++i) {
+            out_subarr_idxs[i] = af_span;
+        }
+    }
+
+    ~TestOutputArrayInfo() {
+        if (out_subarr)  af_release_array(out_subarr);
+        if (out_arr_cpy) af_release_array(out_arr_cpy);
+        if (out_arr)     af_release_array(out_arr);
+    }
+
+    void init(const unsigned ndims, const dim_t *const dims,
+                    const af_dtype ty) {
+        ASSERT_SUCCESS(af_randu(&out_arr, ndims, dims, ty));
+    }
+
+    void init(const unsigned ndims, const dim_t *const dims,
+                    const af_dtype ty,
+                    const af_seq *const subarr_idxs) {
+        ASSERT_SUCCESS(af_randu(&out_arr, ndims, dims, ty));
+        ASSERT_SUCCESS(af_copy_array(&out_arr_cpy, out_arr));
+        for (uint i = 0; i < ndims; ++i) {
+            out_subarr_idxs[i] = subarr_idxs[i];
+        }
+        out_subarr_ndims = ndims;
+
+        ASSERT_SUCCESS(af_index(&out_subarr, out_arr, ndims, subarr_idxs));
+    }
+
+    af_array getOutput() {
+        if (out_arr_type == SUB_ARRAY) {
+            return out_subarr;
+        }
+        else {
+            return out_arr;
+        }
+    }
+
+    void setOutput(af_array array) {
+        if (out_arr != 0) {
+            ASSERT_SUCCESS(af_release_array(out_arr));
+        }
+        out_arr = array;
+    }
+
+    af_array getFullOutput()                 { return out_arr; }
+    af_array getFullOutputCopy()             { return out_arr_cpy; }
+    af_seq   *getSubArrayIdxs()              { return &out_subarr_idxs[0]; }
+    dim_t    getSubArrayNumDims()            { return out_subarr_ndims; }
+    TestOutputArrayType getOutputArrayType() { return out_arr_type; }
+};
+
+// Generates a random array. testWriteToOutputArray expects that it will receive
+// the same af_array that this generates after the af_* function is called
+void genRegularArray(TestOutputArrayInfo *metadata,
+                     const unsigned ndims, const dim_t *const dims, const af_dtype ty) {
+    metadata->init(ndims, dims, ty);
+}
+
+// Generates a large, random array, and extracts a subarray for the af_* function
+// to use. testWriteToOutputArray expects that the large array that it receives is
+// equal to the same large array with the gold array injected on the same subarray location
+void genSubArray(TestOutputArrayInfo *metadata,
+                 const unsigned ndims, const dim_t *const dims, const af_dtype ty) {
+    const dim_t pad_size = 2;
+
+    // The large array is padded on both sides of each dimension
+    // Padding is only applied if the dimension is used, i.e. if dims[i] > 1
+    dim_t full_arr_dims[4] = {dims[0], dims[1], dims[2], dims[3]};
+    for (uint i = 0; i < ndims; ++i) {
+        full_arr_dims[i] = dims[i] + 2*pad_size;
+    }
+
+    // Calculate index of sub-array. These will be used also by
+    // testWriteToOutputArray so that the gold sub array will be placed in the
+    // same location. Currently, this location is the center of the large array
+    af_seq subarr_idxs[4] = {af_span, af_span, af_span, af_span};
+    for (uint i = 0; i < ndims; ++i) {
+        af_seq idx = {pad_size, pad_size + dims[i] - 1.0, 1.0};
+        subarr_idxs[i] = idx;
+    }
+
+    metadata->init(ndims, full_arr_dims, ty, &subarr_idxs[0]);
+}
+
+// Generates a reordered array. testWriteToOutputArray expects that this array
+// will still have the correct output values from the af_* function, even though
+// the array was initially reordered.
+void genReorderedArray(TestOutputArrayInfo *metadata,
+                       const unsigned ndims, const dim_t *const dims, const af_dtype ty) {
+    // The rest of this function assumes that dims has 4 elements. Just in case
+    // dims has < 4 elements, use another dims array that is filled with 1s
+    dim_t all_dims[4] = {1, 1, 1, 1};
+    for (uint i = 0; i < ndims; ++i) {
+        all_dims[i] = dims[i];
+    }
+
+    // This reorder combination will not move data around, but will simply
+    // call modDims and modStrides (see src/api/c/reorder.cpp).
+    // The output will be checked if it is still correct even with the
+    // modified dims and strides "hack" with no data movement
+    uint reorder_idxs[4] = {0, 2, 1, 3};
+
+    // Shape the output array such that the reordered output array will have
+    // the correct dimensions that the test asks for (i.e. must match dims arg)
+    dim_t init_dims[4] = {all_dims[0], all_dims[1], all_dims[2], all_dims[3]};
+    for (uint i = 0; i < 4; ++i) {
+        init_dims[i] = all_dims[reorder_idxs[i]];
+    }
+    metadata->init(4, init_dims, ty);
+
+    af_array reordered = 0;
+    ASSERT_SUCCESS(af_reorder(&reordered, metadata->getOutput(),
+                              reorder_idxs[0], reorder_idxs[1],
+                              reorder_idxs[2], reorder_idxs[3]));
+    metadata->setOutput(reordered);
+}
+
+// Partner function of testWriteToOutputArray. This generates the "special"
+// array that testWriteToOutputArray will use to check if the af_* function
+// correctly uses an existing array as its output
+void genTestOutputArray(af_array *out_ptr,
+                        const unsigned ndims, const dim_t *const dims,
+                        const af_dtype ty,
+                        TestOutputArrayInfo* metadata) {
+    switch (metadata->getOutputArrayType()) {
+    case FULL_ARRAY:
+        genRegularArray(metadata, ndims, dims, ty);
+        break;
+    case SUB_ARRAY:
+        genSubArray(metadata, ndims, dims, ty);
+        break;
+    case REORDERED_ARRAY:
+        genReorderedArray(metadata, ndims, dims, ty);
+        break;
+    default:
+        break;
+    }
+    *out_ptr = metadata->getOutput();
+}
+
+// Partner function of genTestOutputArray. This uses the same "special"
+// array that genTestOutputArray generates, and checks whether the
+// af_* function wrote to that array correctly
+::testing::AssertionResult
+testWriteToOutputArray(std::string gold_name, std::string result_name,
+                       const af_array gold, const af_array out,
+                       TestOutputArrayInfo *metadata) {
+    // In the case of NULL_ARRAY, the output array starts out as null.
+    // After the af_* function is called, it shouldn't be null anymore
+    if (metadata->getOutputArrayType() == NULL_ARRAY) {
+        if (out == 0) {
+            return ::testing::AssertionFailure()
+                << "Output af_array " << result_name << " is null";
+        }
+        metadata->setOutput(out);
+    }
+    // For every other case, must check if the af_array generated by
+    // genTestOutputArray was used by the af_* function as its output array
+    else {
+        if (metadata->getOutput() != out) {
+            return ::testing::AssertionFailure()
+                << "af_array POINTER MISMATCH:\n"
+                << "  Actual: " << out << "\n"
+                << "Expected: " << metadata->getOutput();
+        }
+    }
+
+    if (metadata->getOutputArrayType() == SUB_ARRAY) {
+        // There are two full arrays. One will be injected with the gold
+        // subarray, the other should have already been injected with the af_*
+        // function's output. Then we compare the two full arrays
+        af_array gold_full_array = metadata->getFullOutputCopy();
+        af_assign_seq(&gold_full_array,
+                      gold_full_array,
+                      metadata->getSubArrayNumDims(),
+                      metadata->getSubArrayIdxs(),
+                      gold);
+
+        return assertArrayEq(gold_name, result_name,
+                             metadata->getFullOutputCopy(),
+                             metadata->getFullOutput());
+    }
+    else {
+        return assertArrayEq(gold_name, result_name, gold, out);
+    }
+}
+
+// Called by ASSERT_SPECIAL_ARRAYS_EQ
+::testing::AssertionResult assertArrayEq(std::string aName, std::string bName,
+                                         std::string metadataName,
+                                         const af_array a, const af_array b,
+                                         TestOutputArrayInfo *metadata) {
+    return testWriteToOutputArray(aName, bName, a, b, metadata);
+}
+
 #pragma GCC diagnostic pop
