@@ -5,6 +5,15 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
+set(AF_TEST_WITH_MTX_FILES
+    ON CACHE BOOL
+    "Download and run tests on large matrices form sparse.tamu.edu")
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+if (AF_TEST_WITH_MTX_FILES)
+  include(download_sparse_datasets)
+endif ()
+
 if(NOT TARGET gtest)
   # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
   # newer cmakes. This sets the default global setting for that policy.
@@ -27,6 +36,10 @@ if(NOT TARGET gtest)
     gtest_disable_pthreads
     gtest_force_shared_crt
     gtest_hide_internal_symbols)
+endif()
+
+if(AF_TEST_WITH_MTX_FILES AND NOT TARGET mmio)
+  add_subdirectory(mmio)
 endif()
 
 # Reset the CXX flags for tests
@@ -265,8 +278,10 @@ make_test(SRC solve_dense.cpp       CXX11 SERIAL)
 make_test(SRC sort.cpp)
 make_test(SRC sort_by_key.cpp)
 make_test(SRC sort_index.cpp)
-make_test(SRC sparse.cpp            SERIAL)
-make_test(SRC sparse_arith.cpp)
+make_test(SRC sparse.cpp            SERIAL
+          LIBRARIES mmio)
+make_test(SRC sparse_arith.cpp
+          LIBRARIES mmio)
 make_test(SRC sparse_convert.cpp)
 make_test(SRC stdev.cpp)
 make_test(SRC susan.cpp)
@@ -287,6 +302,9 @@ make_test(SRC wrap.cpp)
 make_test(SRC write.cpp)
 make_test(SRC ycbcr_rgb.cpp)
 
+if(AF_TEST_WITH_MTX_FILES)
+    make_test(SRC matrixmarket.cpp LIBRARIES mmio)
+endif()
 
 add_executable(print_info print_info.cpp)
 if(AF_BUILD_UNIFIED)

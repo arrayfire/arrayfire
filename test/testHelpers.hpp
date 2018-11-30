@@ -30,6 +30,10 @@
 #include <utility>
 #include <vector>
 
+#if defined(USE_MTX)
+#include <mmio.h>
+#endif
+
 #define UNUSED(expr) do { (void)(expr); } while (0)
 
 namespace aft {
@@ -1004,6 +1008,97 @@ template<typename T>
 #define ASSERT_VEC_ARRAY_NEAR(EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR, MAX_ABSDIFF) \
     EXPECT_PRED_FORMAT4(assertArrayNear, EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR, \
                             MAX_ABSDIFF)
+
+#if defined(USE_MTX)
+::testing::AssertionResult
+mtxReadSparseMatrix(af::array &out, const char* fileName)
+{
+    FILE *fileHandle;
+
+    if ((fileHandle = fopen(fileName, "r")) == NULL) {
+        return ::testing::AssertionFailure()
+            << "Failed to open mtx file: " << fileName <<"\n";
+    }
+
+    MM_typecode matcode;
+    if (mm_read_banner(fileHandle, &matcode)) {
+        return ::testing::AssertionFailure()
+            << "Could not process Matrix Market banner.\n";
+    }
+
+    if (!(mm_is_matrix(matcode) && mm_is_sparse(matcode))) {
+        return ::testing::AssertionFailure()
+            << "Input mtx doesn't have a sparse matrix.\n";
+    }
+
+    if(mm_is_integer(matcode)) {
+        return ::testing::AssertionFailure()
+            << "MTX file has integer data. \
+                Integer sparse matrices are not supported in ArrayFire yet.\n";
+    }
+
+    int M=0, N=0, nz=0;
+    if (mm_read_mtx_crd_size(fileHandle, &M, &N, &nz)) {
+        return ::testing::AssertionFailure()
+            << "Failed to read matrix dimensions.\n";
+    }
+
+    if (mm_is_real(matcode)) {
+        std::vector<int> I(nz);
+        std::vector<int> J(nz);
+        std::vector<float> V(nz);
+
+        for (unsigned i=0; i<nz; ++i) {
+            int c, r;
+            double v;
+            int readCount = fscanf(fileHandle, "%d %d %lg\n", &r, &c, &v);
+            if (readCount != 3) {
+                fclose(fileHandle);
+                return ::testing::AssertionFailure()
+                    << "\nEnd of file reached, expected more data, "
+                    << "following are some reasons this happens.\n"
+                    << "\t - use of template type that doesn't match data type\n"
+                    << "\t - the mtx file itself doesn't have enough data\n";
+            }
+            I[i] = r-1;
+            J[i] = c-1;
+            V[i] = (float)v;
+        }
+
+        out = af::sparse(M, N, nz, V.data(), I.data(), J.data(), f32, AF_STORAGE_COO);
+    } else if (mm_is_complex(matcode)) {
+        std::vector<int> I(nz);
+        std::vector<int> J(nz);
+        std::vector<af::cfloat> V(nz);
+
+        for (unsigned i=0; i<nz; ++i) {
+            int c, r;
+            double real, imag;
+            int readCount = fscanf(fileHandle, "%d %d %lg %lg\n", &r, &c, &real, &imag);
+            if (readCount != 4) {
+                fclose(fileHandle);
+                return ::testing::AssertionFailure()
+                    << "\nEnd of file reached, expected more data, "
+                    << "following are some reasons this happens.\n"
+                    << "\t - use of template type that doesn't match data type\n"
+                    << "\t - the mtx file itself doesn't have enough data\n";
+            }
+            I[i] = r-1;
+            J[i] = c-1;
+            V[i] = af::cfloat(float(real), float(imag));
+        }
+
+        out = af::sparse(M, N, nz, V.data(), I.data(), J.data(), c32, AF_STORAGE_COO);
+    } else {
+        return ::testing::AssertionFailure()
+            << "Unknown matcode from MTX FILE\n";
+    }
+
+
+    fclose(fileHandle);
+    return ::testing::AssertionSuccess();
+}
+#endif //USE_MTX
 
 }
 
