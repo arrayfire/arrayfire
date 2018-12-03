@@ -25,9 +25,10 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FFTPlanCache.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/HandleBase.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/InteropManager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Logger.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/HandleBase.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MemoryManager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MersenneTwister.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.cpp
@@ -42,13 +43,16 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/dispatch.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/err_common.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/err_common.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/half.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/half.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/InteropManager.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/kernel_type.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/module_loading.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse_helpers.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/traits.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/unique_handle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.hpp

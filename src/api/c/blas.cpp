@@ -7,20 +7,25 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/blas.h>
+
 #include <Array.hpp>
 #include <backend.hpp>
 #include <blas.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <sparse_blas.hpp>
 #include <sparse_handle.hpp>
+
 #include <af/array.h>
-#include <af/blas.h>
 #include <af/data.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <type_util.hpp>
+
+using common::half;
 
 template<typename T>
 static inline af_array sparseMatmul(const af_array lhs, const af_array rhs,
@@ -188,6 +193,13 @@ af_err af_gemm(af_array *out,
             case c64: gemm<cdouble>(&output, optLhs, optRhs,
                                     static_cast<const cdouble*>(alpha), lhs, rhs,
                                     static_cast<const cdouble*>(beta)); break;
+#ifndef AF_CPU
+            case f16:
+              gemm<common::half>(&output, optLhs, optRhs,
+                                 static_cast<const common::half *>(alpha), lhs, rhs,
+                                 static_cast<const common::half *>(beta)); break;
+          break;
+#endif
             default: TYPE_ERROR(3, lhs_type);
         }
 

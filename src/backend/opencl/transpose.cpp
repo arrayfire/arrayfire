@@ -6,13 +6,15 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
-#include <Array.hpp>
 #include <kernel/transpose.hpp>
 #include <transpose.hpp>
+
+#include <Array.hpp>
+#include <common/half.hpp>
 #include <af/dim4.hpp>
 
 using af::dim4;
+using common::half;
 
 namespace opencl {
 
@@ -53,5 +55,6 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 }  // namespace opencl

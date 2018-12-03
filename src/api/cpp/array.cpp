@@ -19,6 +19,8 @@
 #include <af/util.h>
 #include "error.hpp"
 
+#include <af/half.h>
+
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -215,6 +217,7 @@ INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
 INSTANTIATE(short)
 INSTANTIATE(unsigned short)
+INSTANTIATE(af_half)
 
 #undef INSTANTIATE
 

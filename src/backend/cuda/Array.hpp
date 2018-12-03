@@ -220,13 +220,14 @@ class Array {
         return data.use_count();
     }
 
-    operator Param<T>() {
-        return Param<T>(this->get(), this->dims().get(), this->strides().get());
+    operator Param<data_t<T>>() {
+        return Param<data_t<T>>(this->get(), this->dims().get(),
+                                        this->strides().get());
     }
 
-    operator CParam<T>() const {
-        return CParam<T>(this->get(), this->dims().get(),
-                         this->strides().get());
+    operator CParam<data_t<T>>() const {
+        return CParam<data_t<T>>(this->get(), this->dims().get(),
+                                         this->strides().get());
     }
 
     common::Node_ptr getNode();

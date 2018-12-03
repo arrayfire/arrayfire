@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/traits.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/copy.hpp>
 #include <kernel_headers/memcopy.hpp>

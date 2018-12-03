@@ -10,6 +10,7 @@
 #include <select.hpp>
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <common/jit/NaryNode.hpp>
 #include <err_opencl.hpp>
 #include <scalar.hpp>
@@ -18,6 +19,7 @@
 
 using af::dim4;
 
+using common::half;
 using common::NaryNode;
 
 using std::make_shared;
@@ -122,6 +124,7 @@ INSTANTIATE(char);
 INSTANTIATE(uchar);
 INSTANTIATE(short);
 INSTANTIATE(ushort);
+INSTANTIATE(half);
 
 #undef INSTANTIATE
 }  // namespace opencl

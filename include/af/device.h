@@ -75,9 +75,20 @@ namespace af
     ///
     /// \param[in] device the ID of the device to query
     ///
-    /// \returns true if the \p device supports double precision operations. false otherwise
+    /// \returns true if the \p device supports double precision operations.
+    ///          false otherwise
     /// \ingroup device_func_dbl
     AFAPI bool isDoubleAvailable(const int device);
+
+    /// \brief Queries the current device for half precision floating point
+    ///        support
+    ///
+    /// \param[in] device the ID of the device to query
+    ///
+    /// \returns true if the \p device supports half precision operations.
+    ///          false otherwise
+    /// \ingroup device_func_half
+    AFAPI bool isHalfAvailable(const int device);
 
     /// \brief Sets the current device
     ///
@@ -279,6 +290,11 @@ extern "C" {
     AFAPI af_err af_get_dbl_support(bool* available, const int device);
 
     /**
+       \ingroup device_func_half
+    */
+    AFAPI af_err af_get_half_support(bool *available, const int device);
+
+    /**
        \ingroup device_func_set
     */
     AFAPI af_err af_set_device(const int device);
@@ -296,14 +312,16 @@ extern "C" {
     /**
        \ingroup device_func_alloc
 
-       This device memory returned by this function can only be freed using af_free_device
+       This device memory returned by this function can only be freed using
+       af_free_device
     */
     AFAPI af_err af_alloc_device(void **ptr, const dim_t bytes);
 
     /**
        \ingroup device_func_free
 
-       This function will free a device pointer even if it has been previously locked.
+       This function will free a device pointer even if it has been previously
+       locked.
     */
     AFAPI af_err af_free_device(void *ptr);
 

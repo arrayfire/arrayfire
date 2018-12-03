@@ -46,6 +46,17 @@ floating point operations
 
 ===============================================================================
 
+\defgroup device_func_half isHalfAvailable
+\ingroup device_mat
+
+\brief Check if half(16-bit) precision floating point support is available for
+       specified device
+
+These functions check if a device has support to perform half precision
+floating point operations
+
+===============================================================================
+
 \defgroup device_func_set setDevice
 \ingroup device_mat
 

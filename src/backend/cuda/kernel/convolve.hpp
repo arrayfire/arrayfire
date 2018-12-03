@@ -14,10 +14,10 @@
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
 #include <nvrtc/cache.hpp>
-#include <nvrtc_kernel_headers/convolve1.hpp>
-#include <nvrtc_kernel_headers/convolve2.hpp>
-#include <nvrtc_kernel_headers/convolve3.hpp>
-#include <nvrtc_kernel_headers/convolve_separable.hpp>
+#include <nvrtc_kernel_headers/convolve1_cuh.hpp>
+#include <nvrtc_kernel_headers/convolve2_cuh.hpp>
+#include <nvrtc_kernel_headers/convolve3_cuh.hpp>
+#include <nvrtc_kernel_headers/convolve_separable_cuh.hpp>
 #include <traits.hpp>
 
 #include <string>

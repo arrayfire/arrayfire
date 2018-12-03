@@ -10,7 +10,10 @@
 #include <af/array.h>
 #include <af/data.h>
 #include <af/seq.h>
+
 #include "error.hpp"
+
+#include <cmath>
 
 namespace af {
 int end = -1;
@@ -21,7 +24,7 @@ void seq::init(double begin, double end, double step) {
     this->s.end   = end;
     this->s.step  = step;
     if (step != 0) {  // Not Span
-        size = fabs((end - begin) / step) + 1;
+        size = std::fabs((end - begin) / step) + 1;
     } else {
         size = 0;
     }
@@ -69,7 +72,8 @@ seq::seq(seq other, bool is_gfor)
 seq::operator array() const {
     double diff = s.end - s.begin;
     dim_t len =
-        (int)((diff + fabs(s.step) * (signbit(diff) == 0 ? 1 : -1)) / s.step);
+        (int)((diff + std::fabs(s.step) * (signbit(diff) == 0 ? 1 : -1)) /
+              s.step);
 
     array tmp = (m_gfor) ? range(1, 1, 1, len, 3) : range(len);
 

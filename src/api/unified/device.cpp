@@ -61,6 +61,10 @@ af_err af_get_dbl_support(bool *available, const int device) {
     return CALL(available, device);
 }
 
+af_err af_get_half_support(bool *available, const int device) {
+    return CALL(available, device);
+}
+
 af_err af_set_device(const int device) { return CALL(device); }
 
 af_err af_get_device(int *device) { return CALL(device); }

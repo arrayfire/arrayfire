@@ -14,8 +14,14 @@
 #include <kernel/memcopy.hpp>
 #include <math.hpp>
 
+#include <Array.hpp>
 #include <common/complex.hpp>
+#include <common/half.hpp>
+#include <cuda_runtime_api.h>
+#include <err_cuda.hpp>
+#include <math.hpp>
 
+using common::half;
 using common::is_complex;
 
 namespace cuda {
@@ -125,6 +131,7 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 #define INSTANTIATE_PAD_ARRAY(SRC_T)                                      \
     template Array<float> padArray<SRC_T, float>(                         \
@@ -163,6 +170,9 @@ INSTANTIATE(ushort)
     template Array<char> padArray<SRC_T, char>(                           \
         Array<SRC_T> const &src, dim4 const &dims, char default_value,    \
         double factor);                                                   \
+    template Array<half> padArray<SRC_T, half>(                           \
+        Array<SRC_T> const &src, dim4 const &dims, half default_value,    \
+        double factor);                                                   \
     template void copyArray<SRC_T, float>(Array<float> & dst,             \
                                           Array<SRC_T> const &src);       \
     template void copyArray<SRC_T, double>(Array<double> & dst,           \
@@ -186,8 +196,10 @@ INSTANTIATE(ushort)
     template void copyArray<SRC_T, uchar>(Array<uchar> & dst,             \
                                           Array<SRC_T> const &src);       \
     template void copyArray<SRC_T, char>(Array<char> & dst,               \
+                                         Array<SRC_T> const &src);        \
+    template void copyArray<SRC_T, half>(Array<half> & dst,               \
                                          Array<SRC_T> const &src);
-
+    
 INSTANTIATE_PAD_ARRAY(float)
 INSTANTIATE_PAD_ARRAY(double)
 INSTANTIATE_PAD_ARRAY(int)
@@ -198,6 +210,7 @@ INSTANTIATE_PAD_ARRAY(short)
 INSTANTIATE_PAD_ARRAY(ushort)
 INSTANTIATE_PAD_ARRAY(uchar)
 INSTANTIATE_PAD_ARRAY(char)
+INSTANTIATE_PAD_ARRAY(half)
 
 #define INSTANTIATE_PAD_ARRAY_COMPLEX(SRC_T)                              \
     template Array<cfloat> padArray<SRC_T, cfloat>(                       \
@@ -238,4 +251,6 @@ INSTANTIATE_GETSCALAR(intl)
 INSTANTIATE_GETSCALAR(uintl)
 INSTANTIATE_GETSCALAR(short)
 INSTANTIATE_GETSCALAR(ushort)
+INSTANTIATE_GETSCALAR(half)
+
 }  // namespace cuda

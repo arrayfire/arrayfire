@@ -88,6 +88,9 @@ class DeviceManager {
     static const int ACTIVE_DEVICE_ID     = 0;
     static const bool IS_DOUBLE_SUPPORTED = true;
 
+    // TODO(umar): Half is not supported for BLAS and FFT on x86_64
+    static const bool IS_HALF_SUPPORTED   = true;
+
     static DeviceManager& getInstance();
 
     friend queue& getQueue(int device);

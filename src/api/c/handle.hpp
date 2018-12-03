@@ -12,9 +12,11 @@
 #include <backend.hpp>
 #include <cast.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <copy.hpp>
 #include <math.hpp>
 #include <types.hpp>
+
 #include <af/array.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
@@ -55,10 +57,25 @@ const detail::Array<T> &getArray(const af_array &arr) {
     return *A;
 }
 
+template<>
+const detail::Array<common::half> &getArray<common::half>(const af_array &arr) {
+  const detail::Array<common::half> *A = static_cast<const detail::Array<common::half> *>(arr);
+    if (f16 != A->getType()) AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
+    return *A;
+}
+
 template<typename T>
 detail::Array<T> &getArray(af_array &arr) {
     detail::Array<T> *A = static_cast<detail::Array<T> *>(arr);
     if ((af_dtype)af::dtype_traits<T>::af_type != A->getType())
+        AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
+    return *A;
+}
+
+template<>
+detail::Array<common::half> &getArray<common::half>(af_array &arr) {
+    detail::Array<common::half> *A = static_cast<detail::Array<common::half> *>(arr);
+    if (f16 != A->getType())
         AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
     return *A;
 }
@@ -87,6 +104,8 @@ detail::Array<To> castArray(const af_array &in) {
         case u64: return detail::cast<To, uintl>(getArray<uintl>(in));
         case s16: return detail::cast<To, short>(getArray<short>(in));
         case u16: return detail::cast<To, ushort>(getArray<ushort>(in));
+        case f16:
+            return detail::cast<To, common::half>(getArray<common::half>(in));
         default: TYPE_ERROR(1, info.getType());
     }
 }

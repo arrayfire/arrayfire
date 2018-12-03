@@ -238,6 +238,7 @@ target_sources(afopencl
     triangle.cpp
     triangle.hpp
     types.hpp
+    types.cpp
     unary.hpp
     unwrap.cpp
     unwrap.hpp

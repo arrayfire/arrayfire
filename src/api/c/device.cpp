@@ -10,16 +10,20 @@
 #include <Array.hpp>
 #include <backend.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <platform.hpp>
 #include <sparse_handle.hpp>
+
 #include <af/backend.h>
 #include <af/device.h>
 #include <af/dim4.hpp>
 #include <af/version.h>
+
 #include <cstring>
 
 using namespace detail;
+using common::half;
 
 af_err af_set_backend(const af_backend bknd) {
     try {
@@ -118,6 +122,14 @@ af_err af_get_dbl_support(bool* available, const int device) {
     return AF_SUCCESS;
 }
 
+af_err af_get_half_support(bool* available, const int device) {
+    try {
+        *available = isHalfSupported(device);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_get_device_count(int* nDevices) {
     try {
         *nDevices = getDeviceCount();
@@ -193,6 +205,7 @@ af_err af_eval(af_array arr) {
                 case u64: eval<uintl>(arr); break;
                 case s16: eval<short>(arr); break;
                 case u16: eval<ushort>(arr); break;
+                case f16: eval<common::half>(arr); break;
                 default: TYPE_ERROR(0, type);
             }
         }
@@ -247,6 +260,7 @@ af_err af_eval_multiple(int num, af_array* arrays) {
             case u64: evalMultiple<uintl>(num, arrays); break;
             case s16: evalMultiple<short>(num, arrays); break;
             case u16: evalMultiple<ushort>(num, arrays); break;
+            case f16: evalMultiple<common::half>(num, arrays); break;
             default: TYPE_ERROR(0, type);
         }
     }

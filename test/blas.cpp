@@ -233,6 +233,7 @@ TYPED_TEST(MatrixMultiply, MultiGPURectangleVector_CPP) {
         TEST_DIR "/blas/RectangleVector.test")));
 }
 
+float batch_tol = 1E-2;
 TEST(MatrixMultiply, Batched) {
     const int M  = 512;
     const int K  = 512;
@@ -251,7 +252,7 @@ TEST(MatrixMultiply, Batched) {
                     array b_ij = b(span, span, i, j);
                     array c_ij = c(span, span, i, j);
                     array res  = matmul(a_ij, b_ij);
-                    ASSERT_ARRAYS_NEAR(c_ij, res, 2E-4);
+                    ASSERT_ARRAYS_NEAR(c_ij, res, batch_tol);
                 }
             }
         }
@@ -291,7 +292,7 @@ TEST(MatrixMultiply, LhsBroadcastBatched) {
                     array b_ij = b(span, span, i, j);
                     array c_ij = c(span, span, i, j);
                     array res  = matmul(a, b_ij);
-                    ASSERT_ARRAYS_NEAR(c_ij, res, 2E-4);
+                    ASSERT_ARRAYS_NEAR(c_ij, res, batch_tol);
                 }
             }
         }
@@ -316,7 +317,7 @@ TEST(MatrixMultiply, RhsBroadcastBatched) {
                     array a_ij = a(span, span, i, j);
                     array c_ij = c(span, span, i, j);
                     array res  = matmul(a_ij, b);
-                    ASSERT_ARRAYS_NEAR(c_ij, res, 2E-4);
+                    ASSERT_ARRAYS_NEAR(c_ij, res, batch_tol);
                 }
             }
         }

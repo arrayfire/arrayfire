@@ -12,6 +12,8 @@
 #include <err_cpu.hpp>
 #include <utility.hpp>
 
+using af::dim4;
+
 namespace cpu {
 namespace kernel {
 

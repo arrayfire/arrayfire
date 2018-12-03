@@ -14,7 +14,7 @@
 #include <err_cuda.hpp>
 #include <memory.hpp>
 #include <nvrtc/cache.hpp>
-#include <nvrtc_kernel_headers/scan_first.hpp>
+#include <nvrtc_kernel_headers/scan_first_cuh.hpp>
 #include "config.hpp"
 
 namespace cuda {

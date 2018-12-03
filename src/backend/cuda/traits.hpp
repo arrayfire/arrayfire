@@ -9,8 +9,8 @@
 
 #pragma once
 
+#include <common/traits.hpp>
 #include <cuComplex.h>
-#include <af/traits.hpp>
 
 namespace af {
 

@@ -8,6 +8,9 @@
  ********************************************************/
 
 #include "reduce_impl.hpp"
+#include <common/half.hpp>
+
+using common::half;
 
 namespace cuda {
 // alltrue
@@ -23,4 +26,5 @@ INSTANTIATE(af_and_t, char, char)
 INSTANTIATE(af_and_t, uchar, char)
 INSTANTIATE(af_and_t, short, char)
 INSTANTIATE(af_and_t, ushort, char)
+INSTANTIATE(af_and_t, half, char)
 }  // namespace cuda

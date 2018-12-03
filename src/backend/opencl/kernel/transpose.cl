@@ -15,6 +15,12 @@ T doOp(T in) {
 #define doOp(in) in
 #endif
 
+#pragma OPENCL EXTENSION all : enable
+#ifdef cl_khr_fp16
+#else
+#define half short
+#endif
+
 __kernel void transpose(__global T *oData, const KParam out,
                         const __global T *iData, const KParam in,
                         const int blocksPerMatX, const int blocksPerMatY) {

@@ -7,17 +7,20 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <complex>
-#include <vector>
+#include <blas.hpp>
 
 #include <Array.hpp>
 #include <arith.hpp>
-#include <blas.hpp>
+#include <common/half.hpp>
+#include <common/traits.hpp>
 #include <complex.hpp>
 #include <err_opencl.hpp>
 #include <math.hpp>
 #include <reduce.hpp>
 #include <transpose.hpp>
+
+#include <complex>
+#include <vector>
 
 // Includes one of the supported OpenCL BLAS back-ends (e.g. clBLAS, CLBlast)
 #include <magma/magma_blas.h>
@@ -25,6 +28,8 @@
 #if defined(WITH_LINEAR_ALGEBRA)
 #include <cpu/cpu_blas.hpp>
 #endif
+
+using common::half;
 
 namespace opencl {
 
@@ -45,14 +50,30 @@ toBlasTranspose(af_mat_prop opt) {
 }
 
 template<typename T>
+void gemm_fallback(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
+                   const T *alpha, const Array<T> &lhs, const Array<T> &rhs,
+                   const T *beta) {
+    cpu::gemm(out, optLhs, optRhs, alpha, lhs, rhs, beta);
+}
+
+template<>
+void gemm_fallback<half>(Array<half> &out, af_mat_prop optLhs, af_mat_prop optRhs,
+                          const half *alpha,
+                          const Array<half> &lhs, const Array<half> &rhs,
+                          const half *beta) {
+    assert(false && "CPU fallback not implemented for f16");
+}
+
+
+template<typename T>
 void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
           const T *alpha,
           const Array<T> &lhs, const Array<T> &rhs,
           const T *beta) {
 #if defined(WITH_LINEAR_ALGEBRA)
     // Do not force offload gemm on OSX Intel devices
-    if (OpenCLCPUOffload(false)) {
-        cpu::gemm(out, optLhs, optRhs, alpha, lhs, rhs, beta);
+    if (OpenCLCPUOffload(false) && (af_dtype)dtype_traits<T>::af_type != f16) {
+        gemm_fallback(out, optLhs, optRhs, alpha, lhs, rhs, beta);
         return;
     }
 #endif
@@ -134,6 +155,7 @@ INSTANTIATE_GEMM(float)
 INSTANTIATE_GEMM(cfloat)
 INSTANTIATE_GEMM(double)
 INSTANTIATE_GEMM(cdouble)
+INSTANTIATE_GEMM(half)
 
 #define INSTANTIATE_DOT(TYPE)                                                  \
     template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs,                     \

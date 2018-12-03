@@ -8,8 +8,11 @@
  ********************************************************/
 
 #include <Array.hpp>
+
+#include <common/half.hpp>
 #include <common/jit/NodeIterator.hpp>
 #include <common/util.hpp>
+#include <common/traits.hpp>
 #include <copy.hpp>
 #include <err_opencl.hpp>
 #include <jit/BufferNode.hpp>
@@ -26,6 +29,7 @@ using af::dim4;
 
 using cl::Buffer;
 
+using common::half;
 using common::Node;
 using common::Node_ptr;
 using common::NodeIterator;
@@ -322,7 +326,7 @@ bool passesJitHeuristics(Node *root_node) {
 
 template<typename T>
 Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
-    verifyDoubleSupport<T>();
+    verifyTypeSupport<T>();
     Array<T> out = Array<T>(dims, node);
     return out;
 }
@@ -363,34 +367,34 @@ Array<T> createSubArray(const Array<T> &parent, const vector<af_seq> &index,
 }
 
 template<typename T>
-Array<T> createHostDataArray(const dim4 &dims, const T *const data) {
-    verifyDoubleSupport<T>();
-    return Array<T>(dims, data);
+Array<T> createHostDataArray(const dim4 &size, const T *const data) {
+    verifyTypeSupport<T>();
+    return Array<T>(size, data);
 }
 
 template<typename T>
-Array<T> createDeviceDataArray(const dim4 &dims, void *data) {
-    verifyDoubleSupport<T>();
+Array<T> createDeviceDataArray(const dim4 &size, void *data) {
+    verifyTypeSupport<T>();
 
     bool copy_device = false;
-    return Array<T>(dims, static_cast<cl_mem>(data), 0, copy_device);
+    return Array<T>(size, static_cast<cl_mem>(data), 0, copy_device);
 }
 
 template<typename T>
-Array<T> createValueArray(const dim4 &dims, const T &value) {
-    verifyDoubleSupport<T>();
-    return createScalarNode<T>(dims, value);
+Array<T> createValueArray(const dim4 &size, const T &value) {
+    verifyTypeSupport<T>();
+    return createScalarNode<T>(size, value);
 }
 
 template<typename T>
-Array<T> createEmptyArray(const dim4 &dims) {
-    verifyDoubleSupport<T>();
-    return Array<T>(dims);
+Array<T> createEmptyArray(const dim4 &size) {
+    verifyTypeSupport<T>();
+    return Array<T>(size);
 }
 
 template<typename T>
 Array<T> createParamArray(Param &tmp, bool owner) {
-    verifyDoubleSupport<T>();
+    verifyTypeSupport<T>();
     return Array<T>(tmp, owner);
 }
 
@@ -473,5 +477,6 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 }  // namespace opencl

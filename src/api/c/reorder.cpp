@@ -7,16 +7,20 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <reorder.hpp>
+
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
-#include <reorder.hpp>
 #include <transpose.hpp>
+
 #include <af/blas.h>
 #include <af/data.h>
 
 using af::dim4;
+using common::half;
 using namespace detail;
 
 template<typename T>
@@ -100,6 +104,7 @@ af_err af_reorder(af_array *out, const af_array in, const af::dim4 &rdims) {
             case u64: output = reorder<uintl>(in, rdims); break;
             case s16: output = reorder<short>(in, rdims); break;
             case u16: output = reorder<ushort>(in, rdims); break;
+            case f16: output = reorder<half>(in, rdims); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);

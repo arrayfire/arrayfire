@@ -7,7 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <common/half.hpp>
 #include "reduce_impl.hpp"
+
+using common::half;
 
 namespace opencl {
 // count
@@ -23,4 +26,5 @@ INSTANTIATE(af_notzero_t, char, uint)
 INSTANTIATE(af_notzero_t, uchar, uint)
 INSTANTIATE(af_notzero_t, short, uint)
 INSTANTIATE(af_notzero_t, ushort, uint)
+INSTANTIATE(af_notzero_t, half, uint)
 }  // namespace opencl

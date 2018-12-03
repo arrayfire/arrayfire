@@ -36,7 +36,7 @@ class BinaryNode : public TNode<To> {
 
    public:
     BinaryNode(Node_ptr lhs, Node_ptr rhs)
-        : TNode<To>(0, std::max(lhs->getHeight(), rhs->getHeight()) + 1,
+        : TNode<To>(To(0), std::max(lhs->getHeight(), rhs->getHeight()) + 1,
                     {{lhs, rhs}})
         , m_lhs(reinterpret_cast<TNode<Ti> *>(lhs.get()))
         , m_rhs(reinterpret_cast<TNode<Ti> *>(rhs.get())) {}

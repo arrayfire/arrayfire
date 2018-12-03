@@ -29,7 +29,7 @@ class BufferNode : public TNode<T> {
     bool m_linear_buffer;
 
    public:
-    BufferNode() : TNode<T>(0, 0, {}) {}
+    BufferNode() : TNode<T>(T(0), 0, {}) {}
 
     void setData(shared_ptr<T> data, unsigned bytes, dim_t data_off,
                  const dim_t *dims, const dim_t *strides,
@@ -48,20 +48,24 @@ class BufferNode : public TNode<T> {
     }
 
     void calc(int x, int y, int z, int w, int lim) final {
+        using Tc = compute_t<T>;
+
         dim_t l_off = 0;
         l_off += (w < (int)m_dims[3]) * w * m_strides[3];
         l_off += (z < (int)m_dims[2]) * z * m_strides[2];
         l_off += (y < (int)m_dims[1]) * y * m_strides[1];
-        T *in_ptr  = m_ptr + l_off;
-        T *out_ptr = this->m_val.data();
+        T *in_ptr   = m_ptr + l_off;
+        Tc *out_ptr = this->m_val.data();
         for (int i = 0; i < lim; i++) {
             out_ptr[i] = in_ptr[((x + i) < m_dims[0]) ? (x + i) : 0];
         }
     }
 
     void calc(int idx, int lim) final {
-        T *in_ptr  = m_ptr + idx;
-        T *out_ptr = this->m_val.data();
+        using Tc = compute_t<T>;
+
+        T *in_ptr   = m_ptr + idx;
+        Tc *out_ptr = this->m_val.data();
         for (int i = 0; i < lim; i++) { out_ptr[i] = in_ptr[i]; }
     }
 
@@ -85,5 +89,4 @@ class BufferNode : public TNode<T> {
 };
 
 }  // namespace jit
-
 }  // namespace cpu

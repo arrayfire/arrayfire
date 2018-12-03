@@ -10,12 +10,14 @@
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <join.hpp>
 #include <af/data.h>
 #include <vector>
 
 using af::dim4;
+using common::half;
 using namespace detail;
 
 template<typename Tx, typename Ty>
@@ -77,6 +79,7 @@ af_err af_join(af_array *out, const int dim, const af_array first,
             case s16: output = join<short, short>(dim, first, second); break;
             case u16: output = join<ushort, ushort>(dim, first, second); break;
             case u8: output = join<uchar, uchar>(dim, first, second); break;
+            case f16: output = join<half, half>(dim, first, second); break;
             default: TYPE_ERROR(1, finfo.getType());
         }
         std::swap(*out, output);
@@ -131,6 +134,7 @@ af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays,
             case s16: output = join_many<short>(dim, n_arrays, inputs); break;
             case u16: output = join_many<ushort>(dim, n_arrays, inputs); break;
             case u8: output = join_many<uchar>(dim, n_arrays, inputs); break;
+            case f16: output = join_many<half>(dim, n_arrays, inputs); break;
             default: TYPE_ERROR(1, info[0].getType());
         }
         std::swap(*out, output);

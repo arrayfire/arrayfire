@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <common/jit/NodeIterator.hpp>
 #include <copy.hpp>
 #include <err_cuda.hpp>
@@ -22,6 +23,7 @@
 #include <numeric>
 
 using af::dim4;
+using common::half;
 using common::Node;
 using common::Node_ptr;
 using common::NodeIterator;
@@ -435,5 +437,6 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(common::half)
 
 }  // namespace cuda

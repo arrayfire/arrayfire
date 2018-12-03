@@ -9,6 +9,7 @@
 
 #pragma once
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <errorcodes.hpp>
 #include <platform.hpp>
 #include <types.hpp>
@@ -22,10 +23,13 @@
 
 namespace opencl {
 template<typename T>
-void verifyDoubleSupport() {
+void verifyTypeSupport() {
     if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
         !isDoubleSupported(getActiveDeviceId())) {
         AF_ERROR("Double precision not supported", AF_ERR_NO_DBL);
+    } else if (std::is_same<T, common::half>::value &&
+               !isHalfSupported(getActiveDeviceId())) {
+        AF_ERROR("Half precision not supported", AF_ERR_NO_HALF);
     }
 }
 }  // namespace opencl

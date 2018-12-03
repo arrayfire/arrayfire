@@ -8,6 +8,9 @@
  ********************************************************/
 
 #include "reduce_impl.hpp"
+#include <common/half.hpp>
+
+using common::half;
 
 namespace opencl {
 // anytrue
@@ -23,4 +26,5 @@ INSTANTIATE(af_or_t, char, char)
 INSTANTIATE(af_or_t, uchar, char)
 INSTANTIATE(af_or_t, short, char)
 INSTANTIATE(af_or_t, ushort, char)
+INSTANTIATE(af_or_t, half, char)
 }  // namespace opencl

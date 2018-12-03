@@ -10,6 +10,7 @@
 #pragma once
 #include <Array.hpp>
 #include <common/jit/UnaryNode.hpp>
+#include <common/half.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <optypes.hpp>
@@ -37,6 +38,11 @@ CAST_FN(unsigned short)
 CAST_FN(short)
 CAST_FN(float)
 CAST_FN(double)
+
+template<typename Ti>
+struct CastOp<common::half, Ti> {
+    const char *name() { return "(__half)"; }
+};
 
 #define CAST_CFN(TYPE)                                    \
     template<typename Ti>                                 \

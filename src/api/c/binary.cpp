@@ -24,6 +24,10 @@
 #include <logic.hpp>
 #include <sparse_arith.hpp>
 
+#include <common/half.hpp>
+
+using common::half;
+
 using namespace detail;
 using af::dim4;
 
@@ -77,6 +81,7 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs,
             case u64: res = arithOp<uintl, op>(lhs, rhs, odims); break;
             case s16: res = arithOp<short, op>(lhs, rhs, odims); break;
             case u16: res = arithOp<ushort, op>(lhs, rhs, odims); break;
+            case f16: res = arithOp<half, op>(lhs, rhs, odims); break;
             default: TYPE_ERROR(0, otype);
         }
 
@@ -108,6 +113,7 @@ static af_err af_arith_real(af_array *out, const af_array lhs,
             case u64: res = arithOp<uintl, op>(lhs, rhs, odims); break;
             case s16: res = arithOp<short, op>(lhs, rhs, odims); break;
             case u16: res = arithOp<ushort, op>(lhs, rhs, odims); break;
+            case f16: res = arithOp<half, op>(lhs, rhs, odims); break;
             default: TYPE_ERROR(0, otype);
         }
 

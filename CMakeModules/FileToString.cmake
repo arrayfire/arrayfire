@@ -28,7 +28,7 @@ include(CMakeParseArguments)
 set(BIN2CPP_PROGRAM "bin2cpp")
 
 function(FILE_TO_STRING)
-    cmake_parse_arguments(RTCS "" "VARNAME;EXTENSION;OUTPUT_DIR;TARGETS;NAMESPACE;BINARY;NULLTERM" "SOURCES" ${ARGN})
+    cmake_parse_arguments(RTCS "WITH_EXTENSION;NULLTERM" "VARNAME;EXTENSION;OUTPUT_DIR;TARGETS;NAMESPACE;BINARY" "SOURCES" ${ARGN})
 
     set(_output_files "")
     foreach(_input_file ${RTCS_SOURCES})
@@ -42,14 +42,18 @@ function(FILE_TO_STRING)
         if(${RTCS_BINARY})
             set(_binary "--binary")
         endif(${RTCS_BINARY})
-        if(${RTCS_NULLTERM})
+        if(RTCS_NULLTERM)
             set(_nullterm "--nullterm")
-        endif(${RTCS_NULLTERM})
+        endif(RTCS_NULLTERM)
 
         string(REPLACE "." "_" var_name ${var_name})
 
         set(_output_path "${CMAKE_CURRENT_BINARY_DIR}/${RTCS_OUTPUT_DIR}")
-        set(_output_file "${_output_path}/${_name_we}.${RTCS_EXTENSION}")
+        if(RTCS_WITH_EXTENSION)
+          set(_output_file "${_output_path}/${var_name}.${RTCS_EXTENSION}")
+        else()
+          set(_output_file "${_output_path}/${_name_we}.${RTCS_EXTENSION}")
+        endif()
 
         add_custom_command(
             OUTPUT ${_output_file}

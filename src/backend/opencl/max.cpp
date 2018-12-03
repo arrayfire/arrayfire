@@ -8,6 +8,9 @@
  ********************************************************/
 
 #include "reduce_impl.hpp"
+#include <common/half.hpp>
+
+using common::half;
 
 namespace opencl {
 // max
@@ -23,4 +26,5 @@ INSTANTIATE(af_max_t, char, char)
 INSTANTIATE(af_max_t, uchar, uchar)
 INSTANTIATE(af_max_t, short, short)
 INSTANTIATE(af_max_t, ushort, ushort)
+INSTANTIATE(af_max_t, half, half)
 }  // namespace opencl

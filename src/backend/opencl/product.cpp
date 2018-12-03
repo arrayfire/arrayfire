@@ -23,4 +23,5 @@ INSTANTIATE(af_mul_t, char, int)
 INSTANTIATE(af_mul_t, uchar, uint)
 INSTANTIATE(af_mul_t, short, int)
 INSTANTIATE(af_mul_t, ushort, uint)
+INSTANTIATE(af_mul_t, common::half, float)
 }  // namespace opencl

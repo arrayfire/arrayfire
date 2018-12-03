@@ -10,8 +10,8 @@
 #pragma once
 
 #include <common/defines.hpp>
+#include <common/traits.hpp>
 #include <types.hpp>
-#include <af/traits.hpp>
 #include <sstream>
 #include <string>
 

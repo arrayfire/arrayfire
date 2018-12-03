@@ -172,6 +172,17 @@ macro(arrayfire_set_cmake_default_variables)
   if(APPLE)
     set(CMAKE_INSTALL_RPATH "/opt/arrayfire/lib")
   endif()
+
+  include(WriteCompilerDetectionHeader)
+  write_compiler_detection_header(
+          FILE ${ArrayFire_BINARY_DIR}/include/compiler_header.h
+          PREFIX AF
+          COMPILERS MSVC GNU Clang AppleClang Intel
+          FEATURES cxx_constexpr cxx_relaxed_constexpr cxx_alignas cxx_thread_local
+          #[VERSION <version>]
+          #[PROLOG <prolog>]
+          #[EPILOG <epilog>]
+          )
 endmacro()
 
 mark_as_advanced(

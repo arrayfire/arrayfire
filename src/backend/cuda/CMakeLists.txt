@@ -51,37 +51,30 @@ cuda_include_directories(
   ${COMMON_INTERFACE_DIRS}
   )
 
-set(jit_kernel_headers
-    "kernel_headers")
-
-file(GLOB jit_src "kernel/jit.cuh")
-
-file_to_string(
-    SOURCES ${jit_src}
-    VARNAME jit_files
-    EXTENSION "hpp"
-    OUTPUT_DIR ${jit_kernel_headers}
-    TARGETS jit_kernel_targets
-    NAMESPACE "cuda"
-    )
-
 set(nvrtc_src
   ${CUDA_TOOLKIT_ROOT_DIR}/include/cuComplex.h
+  ${CUDA_INCLUDE_DIRS}/cuda_fp16.h
+  ${CUDA_INCLUDE_DIRS}/cuda_fp16.hpp
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/shared.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transpose.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/half.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/kernel_type.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve1.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve2.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve3.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve_separable.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/jit.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim_by_key.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first_by_key.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/shared.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transpose.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/where.cuh
 
   ${PROJECT_SOURCE_DIR}/src/api/c/ops.hpp
   ${PROJECT_SOURCE_DIR}/src/api/c/optypes.hpp
+  ${PROJECT_SOURCE_DIR}/include/af/defines.h
+  ${PROJECT_SOURCE_DIR}/include/af/traits.hpp
 
   ${CMAKE_CURRENT_SOURCE_DIR}/Param.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/math.hpp
@@ -96,6 +89,8 @@ file_to_string(
     OUTPUT_DIR "nvrtc_kernel_headers"
     TARGETS nvrtc_kernel_targets
     NAMESPACE "cuda"
+    WITH_EXTENSION
+    NULLTERM
     )
 
 ## Copied from FindCUDA.cmake
@@ -450,7 +445,7 @@ cuda_add_library(afcuda
   )
 
 arrayfire_set_default_cxx_flags(afcuda)
-target_compile_definitions(afcuda PRIVATE AF_CUDA)
+target_compile_definitions(afcuda PRIVATE AF_CUDA CUDA_NO_HALF)
 
 add_library(ArrayFire::afcuda ALIAS afcuda)
 

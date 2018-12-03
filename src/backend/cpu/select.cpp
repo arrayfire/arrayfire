@@ -6,14 +6,16 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
-#include <Array.hpp>
 #include <kernel/select.hpp>
-#include <platform.hpp>
-#include <queue.hpp>
 #include <select.hpp>
 
+#include <Array.hpp>
+#include <common/half.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
+
 using af::dim4;
+using common::half;
 
 namespace cpu {
 
@@ -51,5 +53,6 @@ INSTANTIATE(char)
 INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 }  // namespace cpu

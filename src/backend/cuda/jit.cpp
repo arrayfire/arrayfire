@@ -7,15 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/dispatch.hpp>
-#include <err_cuda.hpp>
-#include <kernel_headers/jit.hpp>
-
 #include <Array.hpp>
+#include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <common/jit/Node.hpp>
 #include <copy.hpp>
 #include <debug_cuda.hpp>
 #include <device_manager.hpp>
+#include <err_cuda.hpp>
+#include <nvrtc_kernel_headers/jit_cuh.hpp>
 #include <math.hpp>
 #include <nvrtc/cache.hpp>
 #include <platform.hpp>
@@ -28,8 +28,7 @@
 #include <thread>
 #include <vector>
 
-namespace cuda {
-
+using common::half;
 using common::Node;
 using common::Node_ids;
 using common::Node_map_t;
@@ -39,6 +38,8 @@ using std::map;
 using std::string;
 using std::stringstream;
 using std::vector;
+
+namespace cuda {
 
 static string getFuncName(const vector<Node *> &output_nodes,
                           const vector<const Node *> &full_nodes,
@@ -358,6 +359,7 @@ template void evalNodes<intl>(Param<intl> out, Node *node);
 template void evalNodes<uintl>(Param<uintl> out, Node *node);
 template void evalNodes<short>(Param<short> out, Node *node);
 template void evalNodes<ushort>(Param<ushort> out, Node *node);
+template void evalNodes<half>(Param<half> out, Node *node);
 
 template void evalNodes<float>(vector<Param<float>> &out, vector<Node *> node);
 template void evalNodes<double>(vector<Param<double>> &out,
@@ -375,4 +377,5 @@ template void evalNodes<uintl>(vector<Param<uintl>> &out, vector<Node *> node);
 template void evalNodes<short>(vector<Param<short>> &out, vector<Node *> node);
 template void evalNodes<ushort>(vector<Param<ushort>> &out,
                                 vector<Node *> node);
+template void evalNodes<half>(vector<Param<half>> &out, vector<Node *> node);
 }  // namespace cuda

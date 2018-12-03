@@ -10,6 +10,7 @@
 #include <type_util.hpp>
 
 #include <common/err_common.hpp>
+#include <af/half.h>
 #include <af/util.h>
 
 size_t size_of(af_dtype type) {
@@ -27,6 +28,7 @@ size_t size_of(af_dtype type) {
             case u16: return sizeof(unsigned short);
             case s64: return sizeof(long long);
             case u64: return sizeof(unsigned long long);
+            case f16: return sizeof(af_half);
             default: TYPE_ERROR(1, type);
         }
     }

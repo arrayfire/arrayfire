@@ -322,6 +322,17 @@ bool isDoubleSupported(int device) {
     return (dev.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>() > 0);
 }
 
+bool isHalfSupported(int device) {
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    cl::Device dev;
+    {
+        common::lock_guard_t lock(devMngr.deviceMutex);
+        dev = *devMngr.mDevices[device];
+    }
+    return (dev.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_HALF>() > 0);
+}
+
 void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {
     unsigned nDevices        = 0;
     unsigned currActiveDevId = (unsigned)getActiveDeviceId();

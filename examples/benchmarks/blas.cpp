@@ -18,7 +18,6 @@ using namespace af;
 static array A;  // populated before each timing
 static void fn() {
     array B = matmul(A, A);  // matrix multiply
-    B.eval();                // ensure evaluated
 }
 
 int main(int argc, char** argv) {

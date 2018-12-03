@@ -9,6 +9,7 @@
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <implicit.hpp>
 #include <optypes.hpp>
@@ -20,6 +21,7 @@
 
 using namespace detail;
 using af::dim4;
+using common::half;
 
 template<typename T>
 af_array select(const af_array cond, const af_array a, const af_array b,
@@ -68,6 +70,7 @@ af_err af_select(af_array* out, const af_array cond, const af_array a,
             case u16: res = select<ushort>(cond, a, b, odims); break;
             case u8: res = select<uchar>(cond, a, b, odims); break;
             case b8: res = select<char>(cond, a, b, odims); break;
+            case f16: res = select<half>(cond, a, b, odims); break;
             default: TYPE_ERROR(2, ainfo.getType());
         }
 

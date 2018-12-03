@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <err_cuda.hpp>
 #include <kernel/reorder.hpp>
 #include <reorder.hpp>
@@ -42,5 +43,6 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(common::half)
 
 }  // namespace cuda

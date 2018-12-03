@@ -203,6 +203,12 @@ bool isDoubleSupported(int device) {
     return true;
 }
 
+bool isHalfSupported(int device) {
+    auto prop = getDeviceProp(device);
+    float compute = prop.major * 1000 + prop.minor * 10;
+    return compute >= 5030;
+}
+
 void devprop(char *d_name, char *d_platform, char *d_toolkit, char *d_compute) {
     if (getDeviceCount() <= 0) { return; }
 

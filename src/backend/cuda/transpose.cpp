@@ -11,8 +11,10 @@
 #include <kernel/transpose.hpp>
 #include <transpose.hpp>
 #include <af/dim4.hpp>
+#include <common/half.hpp>
 
 using af::dim4;
+using common::half;
 
 namespace cuda {
 
@@ -47,5 +49,6 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 }  // namespace cuda

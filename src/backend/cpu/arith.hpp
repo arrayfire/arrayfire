@@ -19,8 +19,9 @@ namespace cpu {
 #define ARITH_FN(OP, op)                                                 \
     template<typename T>                                                 \
     struct BinOp<T, T, OP> {                                             \
-        void eval(jit::array<T> &out, const jit::array<T> &lhs,          \
-                  const jit::array<T> &rhs, int lim) const {             \
+        void eval(jit::array<compute_t<T>> &out,                         \
+                  const jit::array<compute_t<T>> &lhs,                   \
+                  const jit::array<compute_t<T>> &rhs, int lim) const {  \
             for (int i = 0; i < lim; i++) { out[i] = lhs[i] op rhs[i]; } \
         }                                                                \
     };
@@ -63,8 +64,9 @@ STATIC_ double __rem<double>(double lhs, double rhs) {
 #define NUMERIC_FN(OP, FN)                                                 \
     template<typename T>                                                   \
     struct BinOp<T, T, OP> {                                               \
-        void eval(jit::array<T> &out, const jit::array<T> &lhs,            \
-                  const jit::array<T> &rhs, int lim) {                     \
+        void eval(jit::array<compute_t<T>> &out,                           \
+                  const jit::array<compute_t<T>> &lhs,                     \
+                  const jit::array<compute_t<T>> &rhs, int lim) {          \
             for (int i = 0; i < lim; i++) { out[i] = FN(lhs[i], rhs[i]); } \
         }                                                                  \
     };

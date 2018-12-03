@@ -10,10 +10,13 @@
 #include <Array.hpp>
 #include <join.hpp>
 #include <kernel/join.hpp>
+#include <common/half.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 
 #include <algorithm>
+
+using common::half;
 
 namespace cpu {
 
@@ -122,6 +125,7 @@ INSTANTIATE(uchar, uchar)
 INSTANTIATE(char, char)
 INSTANTIATE(ushort, ushort)
 INSTANTIATE(short, short)
+INSTANTIATE(half, half)
 
 #undef INSTANTIATE
 
@@ -141,6 +145,7 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
+INSTANTIATE(half)
 
 #undef INSTANTIATE
 }  // namespace cpu

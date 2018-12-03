@@ -7,17 +7,21 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <print.hpp>
+
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <copy.hpp>
 #include <handle.hpp>
-#include <print.hpp>
 #include <sparse_handle.hpp>
 #include <type_util.hpp>
+
 #include <af/array.h>
 #include <af/data.h>
 #include <af/internal.h>
+
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -27,6 +31,8 @@
 #include <af/index.h>
 
 using namespace detail;
+
+using common::half;
 using std::cout;
 using std::endl;
 using std::ostream;
@@ -153,6 +159,7 @@ af_err af_print_array(af_array arr) {
                 case u64: print<uintl>(NULL, arr, 4); break;
                 case s16: print<short>(NULL, arr, 4); break;
                 case u16: print<ushort>(NULL, arr, 4); break;
+                case f16: print<half>(NULL, arr, 4); break;
                 default: TYPE_ERROR(1, type);
             }
         }
@@ -191,6 +198,7 @@ af_err af_print_array_gen(const char *exp, const af_array arr,
                 case u64: print<uintl>(exp, arr, precision); break;
                 case s16: print<short>(exp, arr, precision); break;
                 case u16: print<ushort>(exp, arr, precision); break;
+                case f16: print<half>(exp, arr, precision); break;
                 default: TYPE_ERROR(1, type);
             }
         }

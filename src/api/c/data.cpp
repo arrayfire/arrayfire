@@ -9,6 +9,7 @@
 
 #include <backend.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <copy.hpp>
 #include <diagonal.hpp>
 #include <handle.hpp>
@@ -25,7 +26,10 @@
 #include <af/util.h>
 #include <complex>
 
+#include <complex>
+
 using af::dim4;
+using common::half;
 using namespace detail;
 
 dim4 verifyDims(const unsigned ndims, const dim_t *const dims) {
@@ -68,6 +72,7 @@ af_err af_constant(af_array *result, const double value, const unsigned ndims,
             case u64: out = createHandleFromValue<uintl>(d, value); break;
             case s16: out = createHandleFromValue<short>(d, value); break;
             case u16: out = createHandleFromValue<ushort>(d, value); break;
+            case f16: out = createHandleFromValue<half>(d, value); break;
             default: TYPE_ERROR(4, type);
         }
         std::swap(*result, out);

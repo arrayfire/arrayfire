@@ -53,7 +53,11 @@ std::string getDriverVersion();
 
 std::string getCUDARuntimeVersion();
 
+// Returns true if double is supported by the device
 bool isDoubleSupported(int device);
+
+// Returns true if half is supported by the device
+bool isHalfSupported(int device);
 
 void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute);
 
