@@ -269,16 +269,16 @@ TEST(Accum, DocSnippet) {
 }
 
 TEST(Scan, ExclusiveSum1D) {
-    const int block_work_size = 6912;
-    vector<int> h_in(block_work_size * 4, 1);
-    vector<int> h_gold(block_work_size * 4, 0);
+    const int in_size = 80000;
+    vector<int> h_in(in_size, 1);
+    vector<int> h_gold(in_size, 0);
     for (int i = 1; i < h_gold.size(); ++i) {
         h_gold[i] = h_in[i] + h_gold[i-1];
     }
 
-    array in(block_work_size * 4, &h_in.front());
+    array in(in_size, &h_in.front());
     array out = scan(in, 0, AF_BINARY_ADD, false);
 
-    ASSERT_VEC_ARRAY_EQ(h_gold, dim4(block_work_size * 4), out);
+    ASSERT_VEC_ARRAY_EQ(h_gold, dim4(in_size), out);
 }
 
