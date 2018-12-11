@@ -118,11 +118,12 @@ void bcast_first_kernel(__global To *oData, KParam oInfo,
 
             To accum = tData[groupId_x - 1];
 
+            int offset = !inclusive_scan;
             for (int k = 0, id = xid;
                  k < lim && id < oInfo.dims[0];
                  k++, id += DIMX) {
 
-                oData[id] = binOp(accum, oData[id]);
+                oData[id + offset] = binOp(accum, oData[id + offset]);
             }
         }
     }
