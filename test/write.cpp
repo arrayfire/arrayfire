@@ -57,20 +57,11 @@ void writeTest(dim4 dims)
     A.write(b_dev, dims.elements() * sizeof(T), afDevice);
     B.write(a_host, dims.elements() * sizeof(T), afHost);
 
-    array check1 = A != B_copy;     // False so check1 is all 0s
-    array check2 = B != A_copy;     // False so check2 is all 0s
+    ASSERT_ARRAYS_EQ(B_copy, A);
+    ASSERT_ARRAYS_EQ(A_copy, B);
 
-    char *h_check1 = check1.host<char>();
-    char *h_check2 = check2.host<char>();
-
-    for(int i = 0; i < (int)dims.elements(); i++) {
-        ASSERT_EQ(h_check1[i], 0) << "at: " << i << endl;
-        ASSERT_EQ(h_check2[i], 0) << "at: " << i << endl;
-    }
-
+    af_free_device(b_dev);
     freeHost(a_host);
-    freeHost(h_check1);
-    freeHost(h_check2);
 }
 
 TYPED_TEST(Write, Vector0)
@@ -101,4 +92,15 @@ TYPED_TEST(Write, Volume0)
 TYPED_TEST(Write, Volume1)
 {
     writeTest<TypeParam>(dim4(32, 64, 16));
+}
+
+TEST(Write, VoidPointer) {
+  vector<float> gold(100, 5);
+
+  array a(100);
+
+  void* h_gold = (void*)&gold.front();
+  a.write(h_gold, 100 * sizeof(float), afHost);
+
+  ASSERT_VEC_ARRAY_EQ(gold, dim4(100), a);
 }
