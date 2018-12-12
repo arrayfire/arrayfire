@@ -122,6 +122,8 @@ include(kernel/thrust_sort_by_key/CMakeLists.txt)
 
 cuda_add_library(afcuda
     scan.cu
+    sort.hpp
+    scan_by_key.cu
     kernel/convolve.cu
     kernel/convolve_separable.cu
 
@@ -177,7 +179,6 @@ cuda_add_library(afcuda
     reorder.cu
     resize.cu
     rotate.cu
-    scan_by_key.cu
     select.cu
     set.cu
     sift.cu
@@ -368,7 +369,6 @@ cuda_add_library(afcuda
     sift.hpp
     sobel.hpp
     solve.hpp
-    sort.hpp
     sort_by_key.hpp
     sort_index.hpp
     sparse.hpp
