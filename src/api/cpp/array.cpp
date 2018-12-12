@@ -1019,6 +1019,13 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     INSTANTIATE(short)
     INSTANTIATE(unsigned short)
 
+    template<> AFAPI void array::write(const void *ptr,
+                                       const size_t bytes,
+                                       af::source src)
+    {
+        AF_THROW(af_write_array(get(), ptr, bytes, src));
+    }
+
 #undef INSTANTIATE
 
     template<> AFAPI void* array::device() const
