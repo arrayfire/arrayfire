@@ -93,19 +93,10 @@ void MatMulCheck(string TestFile)
     }
 
     for(size_t i = 0; i < tests.size(); i++) {
-        dim_t elems;
-        ASSERT_SUCCESS(af_get_elements(&elems, out[i]));
-        vector<T> h_out(elems);
-        ASSERT_SUCCESS(af_get_data_ptr((void *)&h_out.front(), out[i]));
-
-        if( false == equal(h_out.begin(), h_out.end(), tests[i].begin()) ) {
-
-            cout << "Failed test " << i << "\nCalculated: " << endl;
-            copy(h_out.begin(), h_out.end(), ostream_iterator<T>(cout, ", "));
-            cout << "Expected: " << endl;
-            copy(tests[i].begin(), tests[i].end(), ostream_iterator<T>(cout, ", "));
-            FAIL();
-        }
+        dim4 dd;
+        dim_t *d = dd.get();
+        af_get_dims(&d[0], &d[1], &d[2], &d[3], out[i]);
+        ASSERT_VEC_ARRAY_EQ(tests[i], dd, out[i]);
     }
 
     ASSERT_SUCCESS(af_release_array(a));
@@ -274,8 +265,7 @@ TEST(MatrixMultiply, Batched)
                     array b_ij = b(span, span, i, j);
                     array c_ij = c(span, span, i, j);
                     array res = matmul(a_ij, b_ij);
-                    EXPECT_LT(max<float>(abs(c_ij - res)), 1E-5)
-                        << " for d2 = " << d2 << " for d3 = " << d3;
+                    ASSERT_ARRAYS_NEAR(c_ij, res, 2E-4);
                 }
             }
         }
@@ -317,8 +307,7 @@ TEST(MatrixMultiply, LhsBroadcastBatched)
                     array b_ij = b(span, span, i, j);
                     array c_ij = c(span, span, i, j);
                     array res = matmul(a, b_ij);
-                    EXPECT_LT(max<float>(abs(c_ij - res)), 1E-3)
-                        << " for d2 = " << d2 << " for d3 = " << d3;
+                    ASSERT_ARRAYS_NEAR(c_ij, res, 2E-4);
                 }
             }
         }
@@ -344,8 +333,7 @@ TEST(MatrixMultiply, RhsBroadcastBatched)
                     array a_ij = a(span, span, i, j);
                     array c_ij = c(span, span, i, j);
                     array res = matmul(a_ij, b);
-                    EXPECT_LT(max<float>(abs(c_ij - res)), 1E-3)
-                        << " for d2 = " << d2 << " for d3 = " << d3;
+                    ASSERT_ARRAYS_NEAR(c_ij, res, 2E-4);
                 }
             }
         }
