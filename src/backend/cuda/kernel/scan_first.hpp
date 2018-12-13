@@ -114,8 +114,10 @@ namespace kernel
     }
 
     template <typename To, af_op_t op, bool inclusive_scan>
-    __global__ static void bcast_first_kernel(Param<To> out, CParam<To> tmp,
-                                              uint blocks_x, uint blocks_y,
+    __global__ static void bcast_first_kernel(Param<To> out,
+                                              CParam<To> tmp,
+                                              uint blocks_x,
+                                              uint blocks_y,
                                               uint lim) {
         const int tidx = threadIdx.x;
         const int tidy = threadIdx.y;
@@ -123,35 +125,28 @@ namespace kernel
         const int zid = blockIdx.x / blocks_x;
         const int wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
         const int blockIdx_x = blockIdx.x - (blocks_x)*zid;
-        const int blockIdx_y =
-            (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y)*wid;
+        const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y)*wid;
         const int xid = blockIdx_x * blockDim.x * lim + tidx;
         const int yid = blockIdx_y * blockDim.y + tidy;
 
-        if (blockIdx_x == 0)
-            return;
+        if (blockIdx_x == 0) return;
 
-        bool cond =
-            (yid < out.dims[1]) && (zid < out.dims[2]) && (wid < out.dims[3]);
-        if (!cond)
-            return;
+        bool cond = (yid < out.dims[1]) && (zid < out.dims[2]) && (wid < out.dims[3]);
+        if (!cond) return;
 
         To *optr = out.ptr;
         const To *tptr = tmp.ptr;
 
-        optr +=
-            wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1];
-        tptr +=
-            wid * tmp.strides[3] + zid * tmp.strides[2] + yid * tmp.strides[1];
+        optr += wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1];
+        tptr += wid * tmp.strides[3] + zid * tmp.strides[2] + yid * tmp.strides[1];
 
         Binary<To, op> binop;
         To accum = tptr[blockIdx_x - 1];
 
-
         int offset = !inclusive_scan;
         for (int k = 0, id = xid;
              k < lim && id < out.dims[0];
-             k++,       id += blockDim.x) {
+             k++, id += blockDim.x) {
             optr[id + offset] = binop(accum, optr[id + offset]);
         }
     }
