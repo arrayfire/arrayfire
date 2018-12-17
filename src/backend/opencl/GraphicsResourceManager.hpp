@@ -20,15 +20,13 @@ namespace cl
 class Buffer;
 }
 
-namespace opencl
-{
-typedef cl::Buffer CGR_t;
-typedef std::shared_ptr<CGR_t> SharedResource;
-typedef std::vector<SharedResource> ShrdResVector;
-
-class GraphicsResourceManager : public common::InteropManager<GraphicsResourceManager, cl::Buffer>
+namespace opencl {
+class GraphicsResourceManager :
+    public common::InteropManager<GraphicsResourceManager, cl::Buffer>
 {
     public:
+        using ShrdResVector = std::vector< std::shared_ptr<cl::Buffer> >;
+
         GraphicsResourceManager() {}
         ShrdResVector registerResources(std::vector<uint32_t> resources);
 

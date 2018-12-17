@@ -15,19 +15,19 @@
 #include <hist_graphics.hpp>
 #include <GraphicsResourceManager.hpp>
 
-namespace opencl
-{
-using namespace gl;
+namespace opencl {
 
 template<typename T>
-void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
+void copy_histogram(const Array<T> &data, fg_histogram hist)
 {
+    ForgeModule& _ = graphics::forgePlugin();
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = data.get();
-        size_t bytes = hist->verticesSize();
+        unsigned bytes = 0;
+        FG_CHECK(fg_get_histogram_vertex_buffer_size(&bytes, hist));
 
-        ShrdResVector res = interopManager().getBufferResource(hist);
+        auto res = interopManager().getHistogramResources(hist);
 
         std::vector<cl::Memory> shared_objects;
         shared_objects.push_back(*(res[0].get()));
@@ -47,11 +47,15 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
         CL_DEBUG_FINISH(getQueue());
         CheckGL("End OpenCL resource copy");
     } else {
+        unsigned bytes = 0, buffer = 0;
+        FG_CHECK(fg_get_histogram_vertex_buffer(&buffer, hist));
+        FG_CHECK(fg_get_histogram_vertex_buffer_size(&bytes, hist));
+
         CheckGL("Begin OpenCL fallback-resource copy");
-        glBindBuffer(GL_ARRAY_BUFFER, hist->vertices());
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
         GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
-            getQueue().enqueueReadBuffer(*data.get(), CL_TRUE, 0, hist->verticesSize(), ptr);
+            getQueue().enqueueReadBuffer(*data.get(), CL_TRUE, 0, bytes, ptr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -60,7 +64,7 @@ void copy_histogram(const Array<T> &data, const forge::Histogram* hist)
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_histogram<T>(const Array<T> &data, const forge::Histogram* hist);
+template void copy_histogram<T>(const Array<T> &, fg_histogram);
 
 INSTANTIATE(float)
 INSTANTIATE(int)

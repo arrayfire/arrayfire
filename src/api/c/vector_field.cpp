@@ -30,9 +30,11 @@ using namespace detail;
 using namespace graphics;
 
 template<typename T>
-forge::Chart* setup_vector_field(const forge::Window* const window,
-                                 const vector<af_array>& points, const vector<af_array>& directions,
-                                 const af_cell* const props, const bool transpose_ = true)
+fg_chart setup_vector_field(fg_window window,
+                            const vector<af_array>& points,
+                            const vector<af_array>& directions,
+                            const af_cell* const props,
+                            const bool transpose_ = true)
 {
     vector< Array<T> > pnts;
     vector< Array<T> > dirs;
@@ -55,7 +57,7 @@ forge::Chart* setup_vector_field(const forge::Window* const window,
     ForgeManager& fgMngr = ForgeManager::getInstance();
 
     // Get the chart for the current grid position (if any)
-    forge::Chart* chart = NULL;
+    fg_chart chart = NULL;
 
     if(pIn.dims()[0] == 2) {
         if (props->col>-1 && props->row>-1)
@@ -69,17 +71,20 @@ forge::Chart* setup_vector_field(const forge::Window* const window,
             chart = fgMngr.getChart(window, 0, 0, FG_CHART_3D);
     }
 
-    forge::VectorField* vectorfield = fgMngr.getVectorField(chart, pIn.dims()[1], getGLType<T>());
+    fg_vector_field vfield = fgMngr.getVectorField(chart, pIn.dims()[1], getGLType<T>());
 
     // ArrayFire LOGO dark blue shade
-    vectorfield->setColor(0.130f, 0.173f, 0.263f, 1.0);
+    FG_CHECK(fg_set_vector_field_color(vfield, 0.130f, 0.173f, 0.263f, 1.0));
 
     // If chart axes limits do not have a manual override
     // then compute and set axes limits
     if(!fgMngr.getChartAxesOverride(chart)) {
         float cmin[3], cmax[3];
         T     dmin[3], dmax[3];
-        chart->getAxesLimits(&cmin[0], &cmax[0], &cmin[1], &cmax[1], &cmin[2], &cmax[2]);
+        FG_CHECK(fg_get_chart_axes_limits(&cmin[0], &cmax[0],
+                                          &cmin[1], &cmax[1],
+                                          &cmin[2], &cmax[2],
+                                          chart));
         copyData(dmin, reduce<af_min_t, T, T>(pIn, 1));
         copyData(dmax, reduce<af_max_t, T, T>(pIn, 1));
 
@@ -103,23 +108,21 @@ forge::Chart* setup_vector_field(const forge::Window* const window,
                 if(cmax[2] < dmax[2])   cmax[2] = step_round(dmax[2], true);
             }
         }
-
-        if(pIn.dims()[0] == 2) {
-            chart->setAxesLimits(cmin[0], cmax[0], cmin[1], cmax[1]);
-        } else if(pIn.dims()[0] == 3) {
-            chart->setAxesLimits(cmin[0], cmax[0], cmin[1], cmax[1], cmin[2], cmax[2]);
-        }
+        FG_CHECK(fg_set_chart_axes_limits(chart,
+                                          cmin[0], cmax[0],
+                                          cmin[1], cmax[1],
+                                          cmin[2], cmax[2]));
     }
-
-    copy_vector_field<T>(pIn, dIn, vectorfield);
+    copy_vector_field<T>(pIn, dIn, vfield);
 
     return chart;
 }
 
-af_err vectorFieldWrapper(const af_window wind, const af_array points, const af_array directions,
+af_err vectorFieldWrapper(const af_window window,
+                          const af_array points, const af_array directions,
                           const af_cell* const props)
 {
-    if(wind==0) {
+    if(window == 0) {
         AF_RETURN_ERROR("Not a valid window", AF_SUCCESS);
     }
 
@@ -138,10 +141,9 @@ af_err vectorFieldWrapper(const af_window wind, const af_array points, const af_
 
         TYPE_ASSERT(pType == dType);
 
-        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
-        forge::Chart* chart = NULL;
+        fg_chart chart = NULL;
 
         vector<af_array> pnts;
         pnts.push_back(points);
@@ -158,29 +160,33 @@ af_err vectorFieldWrapper(const af_window wind, const af_array points, const af_
             case u8 : chart = setup_vector_field<uchar  >(window, pnts, dirs, props); break;
             default:  TYPE_ERROR(1, pType);
         }
-
         auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
-        // Window's draw function requires either image or chart
-        if (props->col > -1 && props->row > -1)
-            window->draw(gridDims.first, gridDims.second,
-                         props->row * gridDims.second + props->col,
-                         *chart, props->title);
-        else
-            window->draw(*chart);
+
+        if (props->col>-1 && props->row>-1) {
+            FG_CHECK(fg_draw_chart_to_cell(window,
+                                           gridDims.first, gridDims.second,
+                                           props->row * gridDims.second + props->col,
+                                           chart, props->title));
+        } else {
+            FG_CHECK(fg_draw_chart(window, chart));
+        }
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err vectorFieldWrapper(const af_window wind,
-                          const af_array xPoints, const af_array yPoints, const af_array zPoints,
-                          const af_array xDirs, const af_array yDirs, const af_array zDirs,
+af_err vectorFieldWrapper(const af_window window,
+                          const af_array xPoints,
+                          const af_array yPoints,
+                          const af_array zPoints,
+                          const af_array xDirs,
+                          const af_array yDirs,
+                          const af_array zDirs,
                           const af_cell* const props)
 {
-    if(wind==0) {
+    if(window == 0) {
         AF_RETURN_ERROR("Not a valid window", AF_SUCCESS);
     }
-
     try {
         const ArrayInfo& xpInfo = getInfo(xPoints);
         const ArrayInfo& ypInfo = getInfo(yPoints);
@@ -225,10 +231,9 @@ af_err vectorFieldWrapper(const af_window wind,
         DIM_ASSERT(1, xpType == ypType);
         DIM_ASSERT(1, xpType == zpType);
 
-        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
-        forge::Chart* chart = NULL;
+        fg_chart chart = NULL;
 
         vector<af_array> points;
         points.push_back(xPoints);
@@ -249,26 +254,27 @@ af_err vectorFieldWrapper(const af_window wind,
             case u8 : chart = setup_vector_field<uchar  >(window, points, directions, props); break;
             default:  TYPE_ERROR(1, xpType);
         }
-
         auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
-        // Window's draw function requires either image or chart
-        if (props->col > -1 && props->row > -1)
-            window->draw(gridDims.first, gridDims.second,
-                         props->row * gridDims.second + props->col,
-                         *chart, props->title);
-        else
-            window->draw(*chart);
+
+        if (props->col>-1 && props->row>-1) {
+            FG_CHECK(fg_draw_chart_to_cell(window,
+                                           gridDims.first, gridDims.second,
+                                           props->row * gridDims.second + props->col,
+                                           chart, props->title));
+        } else {
+            FG_CHECK(fg_draw_chart(window, chart));
+        }
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err vectorFieldWrapper(const af_window wind,
+af_err vectorFieldWrapper(const af_window window,
                           const af_array xPoints, const af_array yPoints,
                           const af_array xDirs, const af_array yDirs,
                           const af_cell* const props)
 {
-    if(wind==0) {
+    if(window == 0) {
         AF_RETURN_ERROR("Not a valid window", AF_SUCCESS);
     }
 
@@ -306,10 +312,9 @@ af_err vectorFieldWrapper(const af_window wind,
 
         DIM_ASSERT(1, xpType == ypType);
 
-        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
-        forge::Chart* chart = NULL;
+        fg_chart chart = NULL;
 
         vector<af_array> points;
         points.push_back(xPoints);
@@ -330,13 +335,15 @@ af_err vectorFieldWrapper(const af_window wind,
         }
 
         auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
-        // Window's draw function requires either image or chart
-        if (props->col > -1 && props->row > -1)
-            window->draw(gridDims.first, gridDims.second,
-                         props->row * gridDims.second + props->col,
-                         *chart, props->title);
-        else
-            window->draw(*chart);
+
+        if (props->col>-1 && props->row>-1) {
+            FG_CHECK(fg_draw_chart_to_cell(window,
+                                           gridDims.first, gridDims.second,
+                                           props->row * gridDims.second + props->col,
+                                           chart, props->title));
+        } else {
+            FG_CHECK(fg_draw_chart(window, chart));
+        }
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -344,10 +351,10 @@ af_err vectorFieldWrapper(const af_window wind,
 
 #endif // WITH_GRAPHICS
 
-// ADD THIS TO UNIFIED
 af_err af_draw_vector_field_nd(const af_window wind,
-                const af_array points, const af_array directions,
-                const af_cell* const props)
+                               const af_array points,
+                               const af_array directions,
+                               const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
     return vectorFieldWrapper(wind, points, directions, props);
@@ -362,8 +369,10 @@ af_err af_draw_vector_field_nd(const af_window wind,
 
 af_err af_draw_vector_field_3d(
                 const af_window wind,
-                const af_array xPoints, const af_array yPoints, const af_array zPoints,
-                const af_array xDirs, const af_array yDirs, const af_array zDirs,
+                const af_array xPoints, const af_array yPoints,
+                const af_array zPoints,
+                const af_array xDirs, const af_array yDirs,
+                const af_array zDirs,
                 const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)

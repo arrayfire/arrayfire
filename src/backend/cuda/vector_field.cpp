@@ -17,62 +17,81 @@
 
 using af::dim4;
 
-namespace cuda
-{
-using namespace gl;
+namespace cuda {
 
 template<typename T>
 void copy_vector_field(const Array<T> &points, const Array<T> &directions,
-                       forge::VectorField* vector_field)
+                       fg_vector_field vfield)
 {
+    ForgeModule& _ = graphics::forgePlugin();
+    auto stream = cuda::getActiveStream();
     if(DeviceManager::checkGraphicsInteropCapability()) {
-        ShrdResVector res = interopManager().getBufferResource(vector_field);
-        CGR_t resources[2] = {*res[0].get(), *res[1].get()};
+        auto res = interopManager().getVectorFieldResources(vfield);
+        cudaGraphicsResource_t resources[2] = {*res[0].get(), *res[1].get()};
 
-        // Map resource. Copy data to VBO. Unmap resource.
-        // Map all resources at once.
-        cudaGraphicsMapResources(2, resources, cuda::getActiveStream());
+        cudaGraphicsMapResources(2, resources, stream);
 
         // Points
         {
-            const T *ptr     = points.get();
-            size_t num_bytes = vector_field->verticesSize();
+            const T *ptr = points.get();
+            size_t bytes = 0;
             T* d_vbo = NULL;
-            cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, resources[0]);
-            cudaMemcpyAsync(d_vbo, ptr, num_bytes, cudaMemcpyDeviceToDevice, cuda::getActiveStream());
+            cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &bytes,
+                                                 resources[0]);
+            cudaMemcpyAsync(d_vbo, ptr, bytes, cudaMemcpyDeviceToDevice, stream);
         }
         // Directions
         {
             const T *ptr = directions.get();
-            size_t num_bytes = vector_field->directionsSize();
+            size_t bytes = 0;
             T* d_vbo = NULL;
-            cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, resources[1]);
-            cudaMemcpyAsync(d_vbo, ptr, num_bytes, cudaMemcpyDeviceToDevice, cuda::getActiveStream());
+            cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &bytes,
+                                                 resources[1]);
+            cudaMemcpyAsync(d_vbo, ptr, bytes, cudaMemcpyDeviceToDevice, stream);
         }
-        cudaGraphicsUnmapResources(2, resources, cuda::getActiveStream());
+        cudaGraphicsUnmapResources(2, resources, stream);
 
         CheckGL("After cuda resource copy");
 
         POST_LAUNCH_CHECK();
     } else {
         CheckGL("Begin CUDA fallback-resource copy");
-        glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, vector_field->vertices());
-        gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
+        unsigned size1 = 0, size2 = 0;
+        unsigned buff1 = 0, buff2 = 0;
+        FG_CHECK(fg_get_vector_field_vertex_buffer_size(&size1, vfield));
+        FG_CHECK(fg_get_vector_field_direction_buffer_size(&size2, vfield));
+        FG_CHECK(fg_get_vector_field_vertex_buffer(&buff1, vfield));
+        FG_CHECK(fg_get_vector_field_direction_buffer(&buff2, vfield));
+
+        // Points
+        glBindBuffer(GL_ARRAY_BUFFER, buff1);
+        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
-            auto stream = cuda::getActiveStream();
-            CUDA_CHECK(cudaMemcpyAsync(ptr, points.get(), vector_field->verticesSize(),
+            CUDA_CHECK(cudaMemcpyAsync(ptr, points.get(), size1,
                                        cudaMemcpyDeviceToHost, stream));
             CUDA_CHECK(cudaStreamSynchronize(stream));
-            glUnmapBuffer((gl::GLenum)GL_ARRAY_BUFFER);
+            glUnmapBuffer(GL_ARRAY_BUFFER);
         }
-        glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        // Directions
+        glBindBuffer(GL_ARRAY_BUFFER, buff2);
+        ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        if (ptr) {
+            CUDA_CHECK(cudaMemcpyAsync(ptr, directions.get(), size2,
+                                       cudaMemcpyDeviceToHost, stream));
+            CUDA_CHECK(cudaStreamSynchronize(stream));
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
         CheckGL("End CUDA fallback-resource copy");
     }
 }
 
-#define INSTANTIATE(T)                                                                      \
-    template void copy_vector_field<T>(const Array<T> &points, const Array<T> &directions,  \
-                                       forge::VectorField* vector_field);
+#define INSTANTIATE(T)                                                  \
+template void copy_vector_field<T>(const Array<T> &, const Array<T> &,  \
+                                   fg_vector_field);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
