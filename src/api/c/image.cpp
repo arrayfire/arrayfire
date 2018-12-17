@@ -53,7 +53,7 @@ Array<float> normalizePerType<float>(const Array<float>& in)
 }
 
 template<typename T>
-static forge::Image* convert_and_copy_image(const af_array in)
+static fg_image convert_and_copy_image(const af_array in)
 {
     const Array<T> _in  = getArray<T>(in);
     dim4 inDims = _in.dims();
@@ -64,24 +64,25 @@ static forge::Image* convert_and_copy_image(const af_array in)
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
 
-    // The inDims[2] * 100 is a hack to convert to forge::ChannelFormat
+    // The inDims[2] * 100 is a hack to convert to fg_channel_format
     // TODO Write a proper conversion function
-    forge::Image* ret_val = fgMngr.getImage(inDims[1], inDims[0], (forge::ChannelFormat)(inDims[2] * 100), getGLType<T>());
-
+    fg_image ret_val = fgMngr.getImage(inDims[1], inDims[0],
+                                       (fg_channel_format)(inDims[2] * 100),
+                                       getGLType<T>());
     copy_image<T>(normalizePerType<T>(imgData), ret_val);
 
     return ret_val;
 }
 #endif
 
-af_err af_draw_image(const af_window wind, const af_array in, const af_cell* const props)
+af_err af_draw_image(const af_window window,
+                     const af_array in, const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
-    if(wind==0) {
+    if(window == 0) {
         fprintf(stderr, "Not a valid window\n");
         return AF_SUCCESS;
     }
-
     try {
         const ArrayInfo& info = getInfo(in);
 
@@ -90,9 +91,8 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
         DIM_ASSERT(0, in_dims[2] == 1 || in_dims[2] == 3 || in_dims[2] == 4);
         DIM_ASSERT(0, in_dims[3] == 1);
 
-        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
-        forge::Image* image = NULL;
+        fg_image image = NULL;
 
         switch(type) {
             case f32: image = convert_and_copy_image<float >(in); break;
@@ -106,21 +106,24 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
         }
 
         auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
-        window->setColorMap((forge::ColorMap)props->cmap);
-        if (props->col>-1 && props->row>-1)
-            window->draw(gridDims.first, gridDims.second,
-                         props->row * gridDims.second + props->col,
-                         *image, props->title);
-        else
-            window->draw(*image);
+        FG_CHECK(fg_set_window_colormap(window, (fg_color_map)props->cmap));
+        if (props->col>-1 && props->row>-1) {
+            FG_CHECK(fg_draw_image_to_cell(window,
+                                           gridDims.first, gridDims.second,
+                                           props->row * gridDims.second + props->col,
+                                           image, props->title, true));
+        } else {
+            FG_CHECK(fg_draw_image(window, image, true));
+        }
     }
     CATCHALL;
 
     return AF_SUCCESS;
 #else
-    UNUSED(wind);
+    UNUSED(window);
     UNUSED(in);
     UNUSED(props);
-    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support",
+                    AF_ERR_NO_GFX);
 #endif
 }

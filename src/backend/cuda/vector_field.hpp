@@ -12,11 +12,12 @@
 #include <Array.hpp>
 #include <common/graphics_common.hpp>
 
-namespace cuda
-{
-    template<typename T>
-    void copy_vector_field(const Array<T> &points, const Array<T> &directions,
-                           forge::VectorField* vector_field);
+namespace cuda {
+
+template<typename T>
+void copy_vector_field(const Array<T> &points, const Array<T> &directions,
+                       fg_vector_field vector_field);
+
 }
 
 #endif

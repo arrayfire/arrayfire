@@ -12,10 +12,11 @@
 #include <Array.hpp>
 #include <common/graphics_common.hpp>
 
-namespace opencl
-{
-    template<typename T>
-    void copy_plot(const Array<T> &P, forge::Plot* plot);
+namespace opencl {
+
+template<typename T>
+void copy_plot(const Array<T> &P, fg_plot plot);
+
 }
 
 #endif

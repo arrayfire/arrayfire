@@ -7,6 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include <af/version.h>
 #include <af/cuda.h>
 #include <platform.hpp>
@@ -17,6 +21,10 @@
 #include <err_cuda.hpp>
 #include <common/util.hpp>
 #include <common/host_memory.hpp>
+// cuda_gl_interop.h does not include OpenGL headers for ARM
+#include <common/graphics_common.hpp>
+#define __gl_h_ //FIXME Hack to avoid gl.h inclusion by cuda_gl_interop.h
+#include <cuda_gl_interop.h>
 
 #include <algorithm>
 #include <array>

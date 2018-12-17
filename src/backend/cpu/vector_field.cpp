@@ -18,34 +18,40 @@
 
 using af::dim4;
 
-namespace cpu
-{
-using namespace gl;
+namespace cpu {
 
 template<typename T>
 void copy_vector_field(const Array<T> &points, const Array<T> &directions,
-                       forge::VectorField* vector_field)
+                       fg_vector_field vfield)
 {
+    ForgeModule& _ = graphics::forgePlugin();
     points.eval();
     directions.eval();
     getQueue().sync();
 
     CheckGL("Before CopyArrayToVBO");
 
-    glBindBuffer(GL_ARRAY_BUFFER, vector_field->vertices());
-    glBufferSubData(GL_ARRAY_BUFFER, 0, vector_field->verticesSize(), points.get());
+    unsigned size1 = 0, size2 = 0;
+    unsigned buff1 = 0, buff2 = 0;
+    FG_CHECK(fg_get_vector_field_vertex_buffer_size(&size1, vfield));
+    FG_CHECK(fg_get_vector_field_direction_buffer_size(&size2, vfield));
+    FG_CHECK(fg_get_vector_field_vertex_buffer(&buff1, vfield));
+    FG_CHECK(fg_get_vector_field_direction_buffer(&buff2, vfield));
+
+    glBindBuffer(GL_ARRAY_BUFFER, buff1);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, size1, points.get());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vector_field->directions());
-    glBufferSubData(GL_ARRAY_BUFFER, 0, vector_field->directionsSize(), directions.get());
+    glBindBuffer(GL_ARRAY_BUFFER, buff2);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, size2, directions.get());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     CheckGL("In CopyArrayToVBO");
 }
 
-#define INSTANTIATE(T)                                                                      \
-    template void copy_vector_field<T>(const Array<T> &points, const Array<T> &directions,  \
-                                       forge::VectorField* vector_field);
+#define INSTANTIATE(T)                                                  \
+template void copy_vector_field<T>(const Array<T> &, const Array<T> &,  \
+                                   fg_vector_field);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

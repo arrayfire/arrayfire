@@ -174,9 +174,6 @@ if(FreeImage_FOUND AND AF_WITH_IMAGEIO)
 endif()
 
 if(AF_WITH_GRAPHICS)
-    if(NOT AF_USE_SYSTEM_FORGE)
-      add_dependencies(c_api_interface forge-ext)
-    endif()
     target_compile_definitions(c_api_interface INTERFACE WITH_GRAPHICS)
 endif()
 

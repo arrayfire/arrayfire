@@ -173,3 +173,9 @@ macro(arrayfire_set_cmake_default_variables)
     set(CMAKE_INSTALL_RPATH "/opt/arrayfire/lib")
   endif()
 endmacro()
+
+mark_as_advanced(
+    pkgcfg_lib_PC_CBLAS_cblas
+    pkgcfg_lib_PC_LAPACKE_lapacke
+    pkgcfg_lib_PKG_FFTW_fftw3
+    )
