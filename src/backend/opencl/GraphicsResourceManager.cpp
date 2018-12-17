@@ -11,9 +11,9 @@
 #include <platform.hpp>
 #include <GraphicsResourceManager.hpp>
 
-namespace opencl
-{
-ShrdResVector GraphicsResourceManager::registerResources(std::vector<uint32_t> resources)
+namespace opencl {
+GraphicsResourceManager::ShrdResVector
+GraphicsResourceManager::registerResources(std::vector<uint32_t> resources)
 {
     ShrdResVector output;
 

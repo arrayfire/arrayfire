@@ -10,6 +10,9 @@
 # Add paths and flags specific platforms. This can inc
 
 if(APPLE)
+  # IMP NOTE: After removing link time dependency of gfx libs, glbinding is
+  #           still needed in cmake's prefix path so that forge doesn't fail
+  #           in cmake generation phase because of no glbinding.
   # Some homebrew libraries(glbinding) are not installed in directories that
   # CMake searches by default.
   set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/usr/local/opt")
@@ -24,10 +27,8 @@ if(UNIX AND NOT APPLE)
 endif()
 
 if(WIN32)
-  # C4251: Warnings about dll interfaces. Thrown by glbinding, may be fixed in
-  #        the future
   # C4068: Warnings about unknown pragmas
   # C4275: Warnings about using non-exported classes as base class of an
   #        exported class
-  add_compile_options(/wd4251 /wd4068 /wd4275)
+  add_compile_options(/wd4068 /wd4275)
 endif()

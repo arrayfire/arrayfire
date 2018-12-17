@@ -34,9 +34,6 @@ find_package(LAPACKE)
 find_package(Doxygen)
 find_package(MKL)
 
-# Graphics dependencies
-find_package(glbinding QUIET)
-find_package(Forge QUIET)
 include(boost_package)
 
 option(AF_BUILD_CPU      "Build ArrayFire with a CPU backend"        ON)
@@ -46,7 +43,7 @@ option(AF_BUILD_UNIFIED  "Build Backend-Independent ArrayFire API"   ON)
 option(AF_BUILD_DOCS     "Create ArrayFire Documentation"            ${DOXYGEN_FOUND})
 option(AF_BUILD_EXAMPLES "Build Examples"                            ON)
 
-option(AF_WITH_GRAPHICS "Build ArrayFire with Forge Graphics"  $<AND:${OPENGL_FOUND},${Forge_FOUND},${glbinding_FOUND}>)
+option(AF_WITH_GRAPHICS "Build ArrayFire with Forge Graphics"  ${OPENGL_FOUND})
 option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
 option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ON)
 
@@ -55,8 +52,6 @@ option(AF_INSTALL_STANDALONE "Build installers that include all dependencies" OF
 cmake_dependent_option(AF_WITH_RELATIVE_TEST_DIR "Use relative paths for the test data directory(For continious integration(CI) purposes only)" OFF
   "BUILD_TESTING" OFF)
 
-cmake_dependent_option(AF_USE_SYSTEM_FORGE "Use system Forge" OFF
-                       "AF_WITH_GRAPHICS" OFF)
 cmake_dependent_option(AF_WITH_IMAGEIO "Build ArrayFire with Image IO support" ${FreeImage_FOUND}
                        "FreeImage_FOUND" OFF)
 cmake_dependent_option(AF_BUILD_FRAMEWORK "Build an ArrayFire framework for Apple platforms.(Experimental)" OFF
@@ -81,7 +76,6 @@ af_deprecate(USE_CPUID             AF_WITH_CPUID)
 mark_as_advanced(
   AF_BUILD_FRAMEWORK
   AF_INSTALL_STANDALONE
-  AF_USE_SYSTEM_FORGE
   AF_WITH_CPUID
   CUDA_HOST_COMPILER
   CUDA_USE_STATIC_CUDA_RUNTIME
@@ -91,8 +85,8 @@ mark_as_advanced(
 
 
 
-if(AF_WITH_GRAPHICS AND NOT AF_USE_SYSTEM_FORGE)
-  include(build_forge)
+if(AF_WITH_GRAPHICS)
+  include(AFconfigure_forge_submodule)
 endif()
 
 configure_file(
@@ -140,6 +134,7 @@ endif()
 
 set(SPDLOG_BUILD_TESTING OFF)
 add_subdirectory(extern/spdlog EXCLUDE_FROM_ALL)
+add_subdirectory(extern/glad)
 add_subdirectory(src/backend/common)
 add_subdirectory(src/api/c)
 add_subdirectory(src/api/cpp)
@@ -212,33 +207,7 @@ install(FILES ${ArrayFire_BINARY_DIR}/include/af/version.h
         DESTINATION "${AF_INSTALL_INC_DIR}/af/"
         COMPONENT headers)
 
-if(Forge_FOUND AND NOT AF_USE_SYSTEM_FORGE)
-    option(AF_INSTALL_FORGE_DEV "Install Forge Header and Share Files with ArrayFire" OFF)
-    mark_as_advanced(AF_INSTALL_FORGE_DEV)
-    af_deprecate(INSTALL_FORGE_DEV AF_INSTALL_FORGE_DEV)
-    if(AF_INSTALL_FORGE_DEV)
-        install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/include/"
-                DESTINATION "${AF_INSTALL_INC_DIR}"
-                COMPONENT headers
-        )
-        install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/share/Forge/"
-                DESTINATION "${AF_INSTALL_DATA_DIR}/../Forge"
-                COMPONENT share
-        )
-        install(DIRECTORY "${ArrayFire_BINARY_DIR}/third_party/forge/lib/"
-                DESTINATION "${AF_INSTALL_LIB_DIR}"
-                COMPONENT forge
-        )
-    endif()
-    #install forge library & dependencies
-    set(fg_dlib_px "bin")
-    if (UNIX)
-      set(fg_dlib_px "lib")
-    endif ()
-    install(DIRECTORY "${PROJECT_BINARY_DIR}/third_party/forge/${fg_dlib_px}/"
-      DESTINATION "${AF_INSTALL_LIB_DIR}"
-      COMPONENT common_backend_dependencies)
-endif()
+#TODO(pradeep) install forge dependency for packaging - not required for builds
 
 # install the examples irrespective of the AF_BUILD_EXAMPLES value
 # only the examples source files are installed, so the installation of these
@@ -363,5 +332,3 @@ conditional_directory(AF_BUILD_EXAMPLES examples)
 conditional_directory(AF_BUILD_DOCS docs)
 
 include(CPackConfig)
-
- 

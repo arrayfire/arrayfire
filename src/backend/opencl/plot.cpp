@@ -13,26 +13,23 @@
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
 #include <GraphicsResourceManager.hpp>
-#include <join.hpp>
 #include <plot.hpp>
-#include <reduce.hpp>
-#include <reorder.hpp>
 
 using af::dim4;
 
-namespace opencl
-{
-using namespace gl;
+namespace opencl {
 
 template<typename T>
-void copy_plot(const Array<T> &P, forge::Plot* plot)
+void copy_plot(const Array<T> &P, fg_plot plot)
 {
+    ForgeModule& _ = graphics::forgePlugin();
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = P.get();
-        size_t bytes = plot->verticesSize();
+        unsigned bytes = 0;
+        FG_CHECK(fg_get_plot_vertex_buffer_size(&bytes, plot));
 
-        ShrdResVector res = interopManager().getBufferResource(plot);
+        auto res = interopManager().getPlotResources(plot);
 
         std::vector<cl::Memory> shared_objects;
         shared_objects.push_back(*(res[0].get()));
@@ -52,11 +49,15 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
         CL_DEBUG_FINISH(getQueue());
         CheckGL("End OpenCL resource copy");
     } else {
+        unsigned bytes = 0, buffer = 0;
+        FG_CHECK(fg_get_plot_vertex_buffer(&buffer, plot));
+        FG_CHECK(fg_get_plot_vertex_buffer_size(&bytes, plot));
+
         CheckGL("Begin OpenCL fallback-resource copy");
-        glBindBuffer(GL_ARRAY_BUFFER, plot->vertices());
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
         GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
-            getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, plot->verticesSize(), ptr);
+            getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, bytes, ptr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -65,7 +66,7 @@ void copy_plot(const Array<T> &P, forge::Plot* plot)
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_plot<T>(const Array<T> &P, forge::Plot* plot);
+template void copy_plot<T>(const Array<T> &, fg_plot);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

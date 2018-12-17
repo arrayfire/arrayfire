@@ -28,9 +28,10 @@ using namespace detail;
 using namespace graphics;
 
 template<typename T>
-forge::Chart* setup_surface(const forge::Window* const window,
-                            const af_array xVals, const af_array yVals, const af_array zVals,
-                            const af_cell* const props)
+fg_chart setup_surface(fg_window window,
+                       const af_array xVals, const af_array yVals,
+                       const af_array zVals,
+                       const af_cell* const props)
 {
     Array<T> xIn = getArray<T>(xVals);
     Array<T> yIn = getArray<T>(yVals);
@@ -71,22 +72,25 @@ forge::Chart* setup_surface(const forge::Window* const window,
     ForgeManager& fgMngr = ForgeManager::getInstance();
 
     // Get the chart for the current grid position (if any)
-    forge::Chart* chart = NULL;
+    fg_chart chart = NULL;
     if (props->col>-1 && props->row>-1)
         chart = fgMngr.getChart(window, props->row, props->col, FG_CHART_3D);
     else
         chart = fgMngr.getChart(window, 0, 0, FG_CHART_3D);
 
-    forge::Surface* surface = fgMngr.getSurface(chart, Z_dims[0], Z_dims[1], getGLType<T>());
+    fg_surface surface = fgMngr.getSurface(chart, Z_dims[0], Z_dims[1], getGLType<T>());
 
-    surface->setColor(0.0, 1.0, 0.0, 1.0);
+    FG_CHECK(fg_set_surface_color(surface, 0.0, 1.0, 0.0, 1.0));
 
     // If chart axes limits do not have a manual override
     // then compute and set axes limits
     if(!fgMngr.getChartAxesOverride(chart)) {
         float cmin[3], cmax[3];
         T     dmin[3], dmax[3];
-        chart->getAxesLimits(&cmin[0], &cmax[0], &cmin[1], &cmax[1], &cmin[2], &cmax[2]);
+        FG_CHECK(fg_get_chart_axes_limits(&cmin[0], &cmax[0],
+                                          &cmin[1], &cmax[1],
+                                          &cmin[2], &cmax[2],
+                                          chart));
         dmin[0] = reduce_all<af_min_t, T, T>(xIn);
         dmax[0] = reduce_all<af_max_t, T, T>(xIn);
         dmin[1] = reduce_all<af_min_t, T, T>(yIn);
@@ -113,19 +117,23 @@ forge::Chart* setup_surface(const forge::Window* const window,
             if(cmax[2] < dmax[2]) cmax[2] = step_round(dmax[2], true);
         }
 
-        chart->setAxesLimits(cmin[0], cmax[0], cmin[1], cmax[1], cmin[2], cmax[2]);
+        FG_CHECK(fg_set_chart_axes_limits(chart,
+                                          cmin[0], cmax[0],
+                                          cmin[1], cmax[1],
+                                          cmin[2], cmax[2]));
     }
-
     copy_surface<T>(Z, surface);
 
     return chart;
 }
 #endif
 
-af_err af_draw_surface(const af_window wind, const af_array xVals, const af_array yVals, const af_array S, const af_cell* const props)
+af_err af_draw_surface(const af_window window,
+                       const af_array xVals, const af_array yVals,
+                       const af_array S, const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
-    if(wind==0) {
+    if(window == 0) {
         std::cerr<<"Not a valid window"<<std::endl;
         return AF_SUCCESS;
     }
@@ -153,10 +161,9 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
             DIM_ASSERT(3, ( X_dims[0] * Y_dims[0] == (dim_t)Sinfo.elements()));
         }
 
-        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
-        forge::Chart* chart = NULL;
+        fg_chart chart = NULL;
 
         switch(Xtype) {
             case f32: chart = setup_surface<float  >(window, xVals, yVals , S, props); break;
@@ -167,19 +174,21 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
             case u8 : chart = setup_surface<uchar  >(window, xVals, yVals , S, props); break;
             default:  TYPE_ERROR(1, Xtype);
         }
-
         auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
-        if (props->col>-1 && props->row>-1)
-            window->draw(gridDims.first, gridDims.second,
-                         props->row * gridDims.second + props->col,
-                         *chart, props->title);
-        else
-            window->draw(*chart);
+
+        if (props->col>-1 && props->row>-1) {
+            FG_CHECK(fg_draw_chart_to_cell(window,
+                                           gridDims.first, gridDims.second,
+                                           props->row * gridDims.second + props->col,
+                                           chart, props->title));
+        } else {
+            FG_CHECK(fg_draw_chart(window, chart));
+        }
     }
     CATCHALL;
     return AF_SUCCESS;
 #else
-    UNUSED(wind);
+    UNUSED(window);
     UNUSED(xVals);
     UNUSED(yVals);
     UNUSED(S);

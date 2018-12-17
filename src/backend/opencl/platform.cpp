@@ -10,28 +10,19 @@
 // Include this before af/opencl.h
 // Causes conflict between system cl.hpp and opencl/cl.hpp
 #if defined(WITH_GRAPHICS)
-
 #include <common/graphics_common.hpp>
-
-#if defined(OS_MAC)
-#include <OpenGL/OpenGL.h>
-#include <libkern/OSAtomic.h>
-#else
-#include <glbinding/gl/gl.h>
-#endif // !__APPLE__
-
 #endif
 
 #include <af/version.h>
 #include <af/opencl.h>
 #include <common/defines.hpp>
+#include <common/host_memory.hpp>
+#include <common/util.hpp>
+#include <blas.hpp>
+#include <clfft.hpp>
 #include <errorcodes.hpp>
 #include <err_opencl.hpp>
-#include <blas.hpp>
-#include <common/host_memory.hpp>
-#include <common/InteropManager.hpp>
 #include <platform.hpp>
-#include <common/util.hpp>
 #include <version.hpp>
 
 #include <boost/compute/context.hpp>
@@ -49,7 +40,6 @@
 #include <thread>
 #include <utility>
 #include <vector>
-#include <clfft.hpp>
 
 using std::string;
 using std::vector;
@@ -940,7 +930,7 @@ DeviceManager::DeviceManager()
             /* loop over devices and replace contexts with
              * OpenGL shared contexts whereever applicable */
             int devCount = mDevices.size();
-            forge::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();
+            fg_window wHandle = graphics::ForgeManager::getInstance().getMainWindow();
             for(int i=0; i<devCount; ++i)
                 markDeviceForInterop(i, wHandle);
         } catch (...) {
@@ -965,7 +955,7 @@ DeviceManager::DeviceManager()
 }
 
 #if defined(WITH_GRAPHICS)
-void DeviceManager::markDeviceForInterop(const int device, const forge::Window* wHandle)
+void DeviceManager::markDeviceForInterop(const int device, const fg_window wHandle)
 {
     try {
         if (device >= (int)mQueues.size() ||
@@ -985,6 +975,10 @@ void DeviceManager::markDeviceForInterop(const int device, const forge::Window* 
             // call forge to get OpenGL sharing context and details
             cl::Platform plat(mDevices[device]->getInfo<CL_DEVICE_PLATFORM>());
 
+            long long wnd_ctx, wnd_dsp;
+            FG_CHECK(fg_get_window_context_handle(&wnd_ctx, wHandle));
+            FG_CHECK(fg_get_window_display_handle(&wnd_dsp, wHandle));
+
 #ifdef OS_MAC
             CGLContextObj cgl_current_ctx = CGLGetCurrentContext();
             CGLShareGroupObj cgl_share_group = CGLGetShareGroup(cgl_current_ctx);
@@ -995,11 +989,11 @@ void DeviceManager::markDeviceForInterop(const int device, const forge::Window* 
             };
 #else
             cl_context_properties cps[] = {
-                CL_GL_CONTEXT_KHR, (cl_context_properties)wHandle->context(),
+                CL_GL_CONTEXT_KHR, (cl_context_properties)wnd_ctx,
 #if defined(_WIN32) || defined(_MSC_VER)
-                CL_WGL_HDC_KHR, (cl_context_properties)wHandle->display(),
+                CL_WGL_HDC_KHR, (cl_context_properties)wnd_dsp,
 #else
-                CL_GLX_DISPLAY_KHR, (cl_context_properties)wHandle->display(),
+                CL_GLX_DISPLAY_KHR, (cl_context_properties)wnd_dsp,
 #endif
                 CL_CONTEXT_PLATFORM, (cl_context_properties)plat(),
                 0
@@ -1008,7 +1002,7 @@ void DeviceManager::markDeviceForInterop(const int device, const forge::Window* 
             // Check if current OpenCL device is belongs to the OpenGL context
             {
                 cl_context_properties test_cps[] = {
-                    CL_GL_CONTEXT_KHR, (cl_context_properties)wHandle->context(),
+                    CL_GL_CONTEXT_KHR, (cl_context_properties)wnd_ctx,
                     CL_CONTEXT_PLATFORM, (cl_context_properties)plat(),
                     0
                 };

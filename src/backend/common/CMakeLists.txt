@@ -60,6 +60,7 @@ endif()
 target_link_libraries(afcommon_interface
   INTERFACE
     spdlog
+    af_glad_interface
     ${CMAKE_DL_LIBS})
 
 target_include_directories(afcommon_interface
@@ -76,50 +77,18 @@ if(APPLE AND NOT USE_MKL)
 endif()
 
 if(AF_WITH_GRAPHICS)
-  dependency_check(glbinding_FOUND "glbinding not found.")
-
   target_include_directories(afcommon_interface
     INTERFACE
-      ${Forge_INCLUDE_DIR}
+    ${OPENGL_INCLUDE_DIR}
+    ${ArrayFire_SOURCE_DIR}/extern/forge/include
+    ${ArrayFire_BINARY_DIR}/extern/forge/include
     )
   target_sources(afcommon_interface
     INTERFACE
-      ${CMAKE_CURRENT_SOURCE_DIR}/InteropManager.cpp
       ${CMAKE_CURRENT_SOURCE_DIR}/InteropManager.hpp
       ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.cpp
       ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.hpp
       )
 
-  target_link_libraries(afcommon_interface
-    INTERFACE
-      OpenGL::GL
-      ${Forge_LIBRARIES})
-
   target_compile_definitions(afcommon_interface INTERFACE WITH_GRAPHICS)
-
-  if(APPLE)
-    # TODO: On APPLE platform linking directly against glbinding brings in flags
-    # that causes issues when building ArrayFire with LAPACK and Graphics. This
-    # was due to the way glbinding was brining in some Framework flags which
-    # cause issues with the Accelerate Framework. This is probably a bug in
-    # glbindings cmake file
-    target_link_libraries(afcommon_interface
-      INTERFACE
-        $<TARGET_PROPERTY:glbinding::glbinding,IMPORTED_LOCATION_RELEASE>)
-  else()
-    target_link_libraries(afcommon_interface INTERFACE glbinding::glbinding)
-  endif()
-
-  if(AF_INSTALL_STANDALONE)
-    install(FILES
-        $<TARGET_FILE:glbinding::glbinding>
-        $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
-        $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:glbinding::glbinding>>
-      DESTINATION ${AF_INSTALL_LIB_DIR}
-      COMPONENT common_backend_dependencies)
-  endif()
-
-  if(NOT AF_USE_SYSTEM_FORGE)
-    add_dependencies(afcommon_interface forge-ext)
-  endif()
 endif()

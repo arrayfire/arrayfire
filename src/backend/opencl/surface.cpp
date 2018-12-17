@@ -20,19 +20,19 @@
 
 using af::dim4;
 
-namespace opencl
-{
-using namespace gl;
+namespace opencl {
 
 template<typename T>
-void copy_surface(const Array<T> &P, forge::Surface* surface)
+void copy_surface(const Array<T> &P, fg_surface surface)
 {
+    ForgeModule& _ = graphics::forgePlugin();
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = P.get();
-        size_t bytes = surface->verticesSize();
+        unsigned bytes = 0;
+        FG_CHECK(fg_get_surface_vertex_buffer_size(&bytes, surface));
 
-        ShrdResVector res = interopManager().getBufferResource(surface);
+        auto res = interopManager().getSurfaceResources(surface);
 
         std::vector<cl::Memory> shared_objects;
         shared_objects.push_back(*(res[0].get()));
@@ -52,11 +52,15 @@ void copy_surface(const Array<T> &P, forge::Surface* surface)
         CL_DEBUG_FINISH(getQueue());
         CheckGL("End OpenCL resource copy");
     } else {
+        unsigned bytes = 0, buffer = 0;
+        FG_CHECK(fg_get_surface_vertex_buffer(&buffer, surface));
+        FG_CHECK(fg_get_surface_vertex_buffer_size(&bytes, surface));
+
         CheckGL("Begin OpenCL fallback-resource copy");
-        glBindBuffer(GL_ARRAY_BUFFER, surface->vertices());
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
         GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
-            getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, surface->verticesSize(), ptr);
+            getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, bytes, ptr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -65,7 +69,7 @@ void copy_surface(const Array<T> &P, forge::Surface* surface)
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_surface<T>(const Array<T> &P, forge::Surface* surface);
+template void copy_surface<T>(const Array<T> &, fg_surface);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
