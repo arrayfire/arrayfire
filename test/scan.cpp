@@ -282,3 +282,22 @@ TEST(Scan, ExclusiveSum1D) {
     ASSERT_VEC_ARRAY_EQ(h_gold, dim4(in_size), out);
 }
 
+TEST(Scan, ExclusiveSum2D_Dim0) {
+    const int in_size = 80000 * 2;
+    // const int in_size = 16386;
+    // const int in_size = 8192 * 4;
+    vector<int> h_in(in_size, 1);
+    vector<int> h_gold(in_size, 0);
+    for (int i = 1; i < h_gold.size() / 2; ++i) {
+        h_gold[i] = h_in[i] + h_gold[i - 1];
+    }
+    for (int i = h_gold.size() / 2 + 1; i < h_gold.size(); ++i) {
+        h_gold[i] = h_in[i] + h_gold[i - 1];
+    }
+
+    array in(in_size / 2, 2, &h_in.front());
+    array out = scan(in, 0, AF_BINARY_ADD, false);
+    array gold(in_size / 2, 2, &h_gold.front());
+
+    ASSERT_ARRAYS_EQ(gold, out);
+}

@@ -145,7 +145,7 @@ namespace kernel
 
         int offset = !inclusive_scan;
         for (int k = 0, id = xid;
-             k < lim && id < out.dims[0];
+             k < lim && id + offset < out.dims[0];
              k++, id += blockDim.x) {
             optr[id + offset] = binop(accum, optr[id + offset]);
         }
