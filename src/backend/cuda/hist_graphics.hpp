@@ -14,13 +14,11 @@
 #include <common/graphics_common.hpp>
 #include <Array.hpp>
 
-namespace cuda
-{
+namespace cuda {
 
 template<typename T>
-void copy_histogram(const Array<T> &data, const forge::Histogram* hist);
+void copy_histogram(const Array<T> &data, fg_histogram hist);
 
 }
 
 #endif
-

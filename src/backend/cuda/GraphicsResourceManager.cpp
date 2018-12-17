@@ -8,16 +8,26 @@
  ********************************************************/
 
 #if defined(WITH_GRAPHICS)
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
+// cuda_gl_interop.h does not include OpenGL headers for ARM
+#include <common/graphics_common.hpp>
+#define __gl_h_ //FIXME Hack to avoid gl.h inclusion by cuda_gl_interop.h
+#include <cuda_gl_interop.h>
+#include <platform.hpp>
 #include <err_cuda.hpp>
 #include <GraphicsResourceManager.hpp>
 
-namespace cuda
-{
-ShrdResVector GraphicsResourceManager::registerResources(std::vector<uint32_t> resources)
+namespace cuda {
+GraphicsResourceManager::ShrdResVector
+GraphicsResourceManager::registerResources(std::vector<uint32_t> resources)
 {
     ShrdResVector output;
 
-    auto deleter = [](CGR_t* handle) {
+    auto deleter = [](cudaGraphicsResource_t* handle) {
         //FIXME Having a CUDA_CHECK around unregister
         //call is causing invalid GL context.
         //Moving ForgeManager class singleton as data
@@ -29,9 +39,10 @@ ShrdResVector GraphicsResourceManager::registerResources(std::vector<uint32_t> r
     };
 
     for (auto id: resources) {
-        CGR_t r;
-        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&r, id, cudaGraphicsMapFlagsWriteDiscard));
-        output.emplace_back(new CGR_t(r), deleter);
+        cudaGraphicsResource_t r;
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&r, id,
+                    cudaGraphicsMapFlagsWriteDiscard));
+        output.emplace_back(new cudaGraphicsResource_t(r), deleter);
     }
 
     return output;

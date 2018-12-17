@@ -17,22 +17,23 @@
 
 using af::dim4;
 
-namespace opencl
-{
-using namespace gl;
+namespace opencl {
 
 template<typename T>
 void copy_vector_field(const Array<T> &points, const Array<T> &directions,
-                       forge::VectorField* vector_field)
+                       fg_vector_field vfield)
 {
+    ForgeModule& _ = graphics::forgePlugin();
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_points      = points.get();
         const cl::Buffer *d_directions  = directions.get();
-        size_t pBytes = vector_field->verticesSize();
-        size_t dBytes = vector_field->directionsSize();
+        unsigned pBytes = 0;
+        unsigned dBytes = 0;
+        FG_CHECK(fg_get_vector_field_vertex_buffer_size(&pBytes, vfield));
+        FG_CHECK(fg_get_vector_field_direction_buffer_size(&dBytes, vfield));
 
-        ShrdResVector res = interopManager().getBufferResource(vector_field);
+        auto res = interopManager().getVectorFieldResources(vfield);
 
         std::vector<cl::Memory> shared_objects;
         shared_objects.push_back(*(res[0].get()));
@@ -54,19 +55,29 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
         CL_DEBUG_FINISH(getQueue());
         CheckGL("End OpenCL resource copy");
     } else {
+        unsigned size1 = 0, size2 = 0;
+        unsigned buff1 = 0, buff2 = 0;
+        FG_CHECK(fg_get_vector_field_vertex_buffer_size(&size1, vfield));
+        FG_CHECK(fg_get_vector_field_direction_buffer_size(&size2, vfield));
+        FG_CHECK(fg_get_vector_field_vertex_buffer(&buff1, vfield));
+        FG_CHECK(fg_get_vector_field_direction_buffer(&buff2, vfield));
+
         CheckGL("Begin OpenCL fallback-resource copy");
-        glBindBuffer(GL_ARRAY_BUFFER, vector_field->vertices());
+
+        // Points
+        glBindBuffer(GL_ARRAY_BUFFER, buff1);
         GLubyte* pPtr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (pPtr) {
-            getQueue().enqueueReadBuffer(*points.get(), CL_TRUE, 0, vector_field->verticesSize(), pPtr);
+            getQueue().enqueueReadBuffer(*points.get(), CL_TRUE, 0, size1, pPtr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        glBindBuffer(GL_ARRAY_BUFFER, vector_field->directions());
+        // Directions
+        glBindBuffer(GL_ARRAY_BUFFER, buff2);
         GLubyte* dPtr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (dPtr) {
-            getQueue().enqueueReadBuffer(*directions.get(), CL_TRUE, 0, vector_field->directionsSize(), dPtr);
+            getQueue().enqueueReadBuffer(*directions.get(), CL_TRUE, 0, size2, dPtr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -74,9 +85,9 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
     }
 }
 
-#define INSTANTIATE(T)                                                                      \
-    template void copy_vector_field<T>(const Array<T> &points, const Array<T> &directions,  \
-                                       forge::VectorField* vector_field);
+#define INSTANTIATE(T)                                                  \
+template void copy_vector_field<T>(const Array<T> &, const Array<T> &,  \
+                                   fg_vector_field);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

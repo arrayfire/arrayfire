@@ -21,21 +21,22 @@
 
 using af::dim4;
 
-namespace cpu
-{
-using namespace gl;
+namespace cpu {
 
 template<typename T>
-void copy_image(const Array<T> &in, const forge::Image* image)
+void copy_image(const Array<T> &in, fg_image image)
 {
+    ForgeModule& _ = graphics::forgePlugin();
     in.eval();
     getQueue().sync();
 
     CheckGL("Before CopyArrayToImage");
     const T *d_X = in.get();
-    size_t data_size = image->size();
+    unsigned data_size = 0, buffer = 0;
+    FG_CHECK(fg_get_pixel_buffer(&buffer, image));
+    FG_CHECK(fg_get_image_size(&data_size, image));
 
-    glBindBuffer(gl::GL_PIXEL_UNPACK_BUFFER, image->pixels());
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
     glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, data_size, d_X);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
@@ -43,7 +44,7 @@ void copy_image(const Array<T> &in, const forge::Image* image)
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_image<T>(const Array<T> &in, const forge::Image* image);
+template void copy_image<T>(const Array<T> &, fg_image);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

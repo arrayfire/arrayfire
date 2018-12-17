@@ -30,9 +30,9 @@ using namespace graphics;
 
 // Requires in_ to be in either [order, n] or [n, order] format
 template<typename T, int order>
-forge::Chart* setup_plot(const forge::Window* const window, const af_array in_,
-                         const af_cell* const props,
-                         forge::PlotType ptype, forge::MarkerType mtype)
+fg_chart setup_plot(fg_window window, const af_array in_,
+                    const af_cell* const props,
+                    fg_plot_type ptype, fg_marker_type mtype)
 {
     Array<T> in = getArray<T>(in_);
 
@@ -51,7 +51,7 @@ forge::Chart* setup_plot(const forge::Window* const window, const af_array in_,
     ForgeManager& fgMngr = ForgeManager::getInstance();
 
     // Get the chart for the current grid position (if any)
-    forge::Chart* chart = NULL;
+    fg_chart chart = NULL;
     fg_chart_type ctype = order == 2 ? FG_CHART_2D : FG_CHART_3D;
 
     if (props->col > -1 && props->row > -1)
@@ -59,17 +59,20 @@ forge::Chart* setup_plot(const forge::Window* const window, const af_array in_,
     else
         chart = fgMngr.getChart(window, 0, 0, ctype);
 
-    forge::Plot* plot = fgMngr.getPlot(chart, tdims[1], getGLType<T>(), ptype, mtype);
+    fg_plot plot = fgMngr.getPlot(chart, tdims[1], getGLType<T>(), ptype, mtype);
 
     // ArrayFire LOGO Orange shade
-    plot->setColor(0.929f, 0.529f, 0.212f, 1.0);
+    FG_CHECK(fg_set_plot_color(plot, 0.929f, 0.529f, 0.212f, 1.0));
 
     // If chart axes limits do not have a manual override
     // then compute and set axes limits
     if(!fgMngr.getChartAxesOverride(chart)) {
         float cmin[3], cmax[3];
         T     dmin[3], dmax[3];
-        chart->getAxesLimits(&cmin[0], &cmax[0], &cmin[1], &cmax[1], &cmin[2], &cmax[2]);
+        FG_CHECK(fg_get_chart_axes_limits(&cmin[0], &cmax[0],
+                                          &cmin[1], &cmax[1],
+                                          &cmin[2], &cmax[2],
+                                          chart));
         copyData(dmin, reduce<af_min_t, T, T>(in, 1));
         copyData(dmax, reduce<af_max_t, T, T>(in, 1));
 
@@ -93,38 +96,36 @@ forge::Chart* setup_plot(const forge::Window* const window, const af_array in_,
                 if(cmax[2] < dmax[2])   cmax[2] = step_round(dmax[2], true);
             }
         }
-
-        if(order == 2) {
-            chart->setAxesLimits(cmin[0], cmax[0], cmin[1], cmax[1]);
-        } else if(order == 3) {
-            chart->setAxesLimits(cmin[0], cmax[0], cmin[1], cmax[1], cmin[2], cmax[2]);
-        }
+        FG_CHECK(fg_set_chart_axes_limits(chart,
+                                          cmin[0], cmax[0],
+                                          cmin[1], cmax[1],
+                                          cmin[2], cmax[2]));
     }
-
     copy_plot<T>(in, plot);
 
     return chart;
 }
 
 template<typename T>
-forge::Chart* setup_plot(const forge::Window* const window, const af_array in_,
-                         const int order, const af_cell* const props,
-                         forge::PlotType ptype, forge::MarkerType mtype)
+fg_chart setup_plot(fg_window window, const af_array in_,
+                    const int order, const af_cell* const props,
+                    fg_plot_type ptype, fg_marker_type mtype)
 {
     if(order == 2)
         return setup_plot<T, 2>(window, in_, props, ptype, mtype);
     else if(order == 3)
         return setup_plot<T, 3>(window, in_, props, ptype, mtype);
-
     // Dummy to avoid warnings
     return NULL;
 }
 
-af_err plotWrapper(const af_window wind, const af_array in, const int order_dim,
+af_err plotWrapper(const af_window window,
+                   const af_array in, const int order_dim,
                    const af_cell* const props,
-                   forge::PlotType ptype = FG_PLOT_LINE, forge::MarkerType marker = FG_MARKER_NONE)
+                   fg_plot_type ptype = FG_PLOT_LINE,
+                   fg_marker_type marker = FG_MARKER_NONE)
 {
-    if(wind==0) {
+    if(window == 0) {
         std::cerr<<"Not a valid window"<<std::endl;
         return AF_SUCCESS;
     }
@@ -137,10 +138,9 @@ af_err plotWrapper(const af_window wind, const af_array in, const int order_dim,
         DIM_ASSERT(0, dims.ndims() == 2);
         DIM_ASSERT(0, dims[order_dim] == 2 || dims[order_dim] == 3);
 
-        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
-        forge::Chart* chart = NULL;
+        fg_chart chart = NULL;
 
         switch(type) {
             case f32: chart = setup_plot<float  >(window, in, dims[order_dim], props, ptype, marker); break;
@@ -153,24 +153,27 @@ af_err plotWrapper(const af_window wind, const af_array in, const int order_dim,
         }
 
         auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
-        // Window's draw function requires either image or chart
-        if (props->col>-1 && props->row>-1)
-            window->draw(gridDims.first, gridDims.second,
-                         props->row * gridDims.second + props->col,
-                         *chart, props->title);
-        else
-            window->draw(*chart);
+
+        if (props->col>-1 && props->row>-1) {
+            FG_CHECK(fg_draw_chart_to_cell(window,
+                                           gridDims.first, gridDims.second,
+                                           props->row * gridDims.second + props->col,
+                                           chart, props->title));
+        } else {
+            FG_CHECK(fg_draw_chart(window, chart));
+        }
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, const af_array Z,
+af_err plotWrapper(const af_window window,
+                   const af_array X, const af_array Y, const af_array Z,
                    const af_cell* const props,
-                   forge::PlotType ptype = FG_PLOT_LINE,
-                   forge::MarkerType marker = FG_MARKER_NONE)
+                   fg_plot_type ptype = FG_PLOT_LINE,
+                   fg_marker_type marker = FG_MARKER_NONE)
 {
-    if(wind==0) {
+    if(window == 0) {
         std::cerr<<"Not a valid window"<<std::endl;
         return AF_SUCCESS;
     }
@@ -200,10 +203,9 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, con
         af_array pIn[] = {X, Y, Z};
         AF_CHECK(af_join_many(&in, 1, 3, pIn));
 
-        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
-        forge::Chart* chart = NULL;
+        fg_chart chart = NULL;
 
         switch(xType) {
             case f32: chart = setup_plot<float  >(window, in, 3, props, ptype, marker); break;
@@ -214,15 +216,16 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, con
             case u8 : chart = setup_plot<uchar  >(window, in, 3, props, ptype, marker); break;
             default:  TYPE_ERROR(1, xType);
         }
-
         auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
-        // Window's draw function requires either image or chart
-        if (props->col>-1 && props->row>-1)
-            window->draw(gridDims.first, gridDims.second,
-                         props->row * gridDims.second + props->col,
-                         *chart, props->title);
-        else
-            window->draw(*chart);
+
+        if (props->col>-1 && props->row>-1) {
+            FG_CHECK(fg_draw_chart_to_cell(window,
+                                           gridDims.first, gridDims.second,
+                                           props->row * gridDims.second + props->col,
+                                           chart, props->title));
+        } else {
+            FG_CHECK(fg_draw_chart(window, chart));
+        }
 
         AF_CHECK(af_release_array(in));
     }
@@ -230,11 +233,13 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, con
     return AF_SUCCESS;
 }
 
-af_err plotWrapper(const af_window wind, const af_array X, const af_array Y,
+af_err plotWrapper(const af_window window,
+                   const af_array X, const af_array Y,
                    const af_cell* const props,
-                   forge::PlotType ptype = FG_PLOT_LINE, forge::MarkerType marker = FG_MARKER_NONE)
+                   fg_plot_type ptype = FG_PLOT_LINE,
+                   fg_marker_type marker = FG_MARKER_NONE)
 {
-    if(wind==0) {
+    if(window == 0) {
         std::cerr<<"Not a valid window"<<std::endl;
         return AF_SUCCESS;
     }
@@ -257,10 +262,9 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y,
         af_array in = 0;
         AF_CHECK(af_join(&in, 1, X, Y));
 
-        forge::Window* window = static_cast<forge::Window*>(wind);
         makeContextCurrent(window);
 
-        forge::Chart* chart = NULL;
+        fg_chart chart = NULL;
 
         switch(xType) {
             case f32: chart = setup_plot<float  >(window, in, 2, props, ptype, marker); break;
@@ -271,15 +275,16 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y,
             case u8 : chart = setup_plot<uchar  >(window, in, 2, props, ptype, marker); break;
             default:  TYPE_ERROR(1, xType);
         }
-
         auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
-        // Window's draw function requires either image or chart
-        if (props->col>-1 && props->row>-1)
-            window->draw(gridDims.first, gridDims.second,
-                         props->row * gridDims.second + props->col,
-                         *chart, props->title);
-        else
-            window->draw(*chart);
+
+        if (props->col>-1 && props->row>-1) {
+            FG_CHECK(fg_draw_chart_to_cell(window,
+                                           gridDims.first, gridDims.second,
+                                           props->row * gridDims.second + props->col,
+                                           chart, props->title));
+        } else {
+            FG_CHECK(fg_draw_chart(window, chart));
+        }
 
         AF_CHECK(af_release_array(in));
     }
@@ -289,60 +294,8 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y,
 
 #endif // WITH_GRAPHICS
 
-//
-//template<typename T>
-//forge::Chart* setup_plot(const forge::Window* const window,
-//                         const af_array X, const af_array Y,
-//                         const af_cell* const props,
-//                         forge::PlotType type, forge::MarkerType marker)
-//{
-//    Array<T> xIn = getArray<T>(X);
-//    Array<T> yIn = getArray<T>(Y);
-//
-//    T xmax = reduce_all<af_max_t, T, T>(xIn);
-//    T xmin = reduce_all<af_min_t, T, T>(xIn);
-//    T ymax = reduce_all<af_max_t, T, T>(yIn);
-//    T ymin = reduce_all<af_min_t, T, T>(yIn);
-//
-//    dim4 rdims(1, 0, 2, 3);
-//
-//    dim_t elements = xIn.elements();
-//    dim4 rowDims = dim4(1, elements, 1, 1);
-//
-//    // Force the vectors to be row vectors
-//    // This ensures we can use join(0,..) and skip reorder
-//    xIn = modDims(xIn, rowDims);
-//    yIn = modDims(yIn, rowDims);
-//
-//    // join along first dimension, skip reorder
-//    Array<T> P = join(0, xIn, yIn);
-//
-//    ForgeManager& fgMngr = ForgeManager::getInstance();
-//
-//    // Get the chart for the current grid position (if any)
-//    forge::Chart* chart = NULL;
-//    if (props->col>-1 && props->row>-1)
-//        chart = fgMngr.getChart(window, props->row, props->col, FG_CHART_2D);
-//    else
-//        chart = fgMngr.getChart(window, 0, 0, FG_CHART_2D);
-//
-//    forge::Plot* plot = fgMngr.getPlot(chart, elements, getGLType<T>(), type, marker);
-//
-//    plot->setColor(1.0, 0.0, 0.0, 1.0);
-//
-//    chart->setAxesLimits(xmin, xmax, ymin, ymax);
-//
-//    chart->setAxesTitles("X Axis", "Y Axis");
-//
-//    copy_plot<T>(P, plot);
-//
-//    return chart;
-//}
 
-
-////////////////////////////////////////////////////////////////////////////////
 // Plot API
-////////////////////////////////////////////////////////////////////////////////
 af_err af_draw_plot_nd(const af_window wind, const af_array in,
                        const af_cell* const props)
 {
@@ -356,7 +309,8 @@ af_err af_draw_plot_nd(const af_window wind, const af_array in,
 #endif
 }
 
-af_err af_draw_plot_2d(const af_window wind, const af_array X, const af_array Y,
+af_err af_draw_plot_2d(const af_window wind,
+                       const af_array X, const af_array Y,
                        const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
@@ -386,10 +340,10 @@ af_err af_draw_plot_3d(const af_window wind,
 #endif
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // Deprecated Plot API
-////////////////////////////////////////////////////////////////////////////////
-af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props)
+af_err af_draw_plot(const af_window wind,
+                    const af_array X, const af_array Y,
+                    const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
     return plotWrapper(wind, X, Y, props);
@@ -402,7 +356,8 @@ af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, co
 #endif
 }
 
-af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* const props)
+af_err af_draw_plot3(const af_window wind,
+                     const af_array P, const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
     try {
@@ -436,14 +391,13 @@ af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* cons
 #endif
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // Scatter API
-////////////////////////////////////////////////////////////////////////////////
 af_err af_draw_scatter_nd(const af_window wind, const af_array in,
-                          const af_marker_type af_marker, const af_cell* const props)
+                          const af_marker_type af_marker,
+                          const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
-    forge::MarkerType fg_marker = getFGMarker(af_marker);
+    fg_marker_type fg_marker = getFGMarker(af_marker);
     return plotWrapper(wind, in, 1, props, FG_PLOT_SCATTER, fg_marker);
 #else
     UNUSED(wind);
@@ -454,11 +408,13 @@ af_err af_draw_scatter_nd(const af_window wind, const af_array in,
 #endif
 }
 
-af_err af_draw_scatter_2d(const af_window wind, const af_array X, const af_array Y,
-                          const af_marker_type af_marker, const af_cell* const props)
+af_err af_draw_scatter_2d(const af_window wind,
+                          const af_array X, const af_array Y,
+                          const af_marker_type af_marker,
+                          const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
-    forge::MarkerType fg_marker = getFGMarker(af_marker);
+    fg_marker_type fg_marker = getFGMarker(af_marker);
     return plotWrapper(wind, X, Y, props, FG_PLOT_SCATTER, fg_marker);
 #else
     UNUSED(wind);
@@ -472,10 +428,11 @@ af_err af_draw_scatter_2d(const af_window wind, const af_array X, const af_array
 
 af_err af_draw_scatter_3d(const af_window wind,
                           const af_array X, const af_array Y, const af_array Z,
-                          const af_marker_type af_marker, const af_cell* const props)
+                          const af_marker_type af_marker,
+                          const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
-    forge::MarkerType fg_marker = getFGMarker(af_marker);
+    fg_marker_type fg_marker = getFGMarker(af_marker);
     return plotWrapper(wind, X, Y, Z, props, FG_PLOT_SCATTER, fg_marker);
 #else
     UNUSED(wind);
@@ -488,13 +445,14 @@ af_err af_draw_scatter_3d(const af_window wind,
 #endif
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // Deprecated Scatter API
-////////////////////////////////////////////////////////////////////////////////
-af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y, const af_marker_type af_marker, const af_cell* const props)
+af_err af_draw_scatter(const af_window wind,
+                       const af_array X, const af_array Y,
+                       const af_marker_type af_marker,
+                       const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
-    forge::MarkerType fg_marker = getFGMarker(af_marker);
+    fg_marker_type fg_marker = getFGMarker(af_marker);
     return plotWrapper(wind, X, Y, props, FG_PLOT_SCATTER, fg_marker);
 #else
     UNUSED(wind);
@@ -506,10 +464,12 @@ af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y,
 #endif
 }
 
-af_err af_draw_scatter3(const af_window wind, const af_array P, const af_marker_type af_marker, const af_cell* const props)
+af_err af_draw_scatter3(const af_window wind,
+                        const af_array P, const af_marker_type af_marker,
+                        const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
-    forge::MarkerType fg_marker = getFGMarker(af_marker);
+    fg_marker_type fg_marker = getFGMarker(af_marker);
     try {
         const ArrayInfo& info = getInfo(P);
         af::dim4  dims = info.dims();

@@ -13,54 +13,54 @@
 #include <plot.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
-#include <join.hpp>
-#include <reduce.hpp>
-#include <reorder.hpp>
 #include <GraphicsResourceManager.hpp>
 
 using af::dim4;
 
-namespace cuda
-{
-using namespace gl;
+namespace cuda {
 
 template<typename T>
-void copy_plot(const Array<T> &P, forge::Plot* plot)
+void copy_plot(const Array<T> &P, fg_plot plot)
 {
+    ForgeModule& _ = graphics::forgePlugin();
+    auto stream = cuda::getActiveStream();
     if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
 
-        ShrdResVector res = interopManager().getBufferResource(plot);
+        auto res = interopManager().getPlotResources(plot);
 
-        // Map resource. Copy data to VBO. Unmap resource.
-        size_t num_bytes = plot->verticesSize();
+        size_t bytes = 0;
         T* d_vbo = NULL;
-        cudaGraphicsMapResources(1, res[0].get(), cuda::getActiveStream());
-        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, *(res[0].get()));
-        cudaMemcpyAsync(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice, cuda::getActiveStream());
-        cudaGraphicsUnmapResources(1, res[0].get(), cuda::getActiveStream());
+        cudaGraphicsMapResources(1, res[0].get(), stream);
+        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo,
+                                             &bytes, *(res[0].get()));
+        cudaMemcpyAsync(d_vbo, d_P, bytes, cudaMemcpyDeviceToDevice, stream);
+        cudaGraphicsUnmapResources(1, res[0].get(), stream);
 
         CheckGL("After cuda resource copy");
 
         POST_LAUNCH_CHECK();
     } else {
+        unsigned bytes = 0, buffer = 0;
+        FG_CHECK(fg_get_plot_vertex_buffer(&buffer, plot));
+        FG_CHECK(fg_get_plot_vertex_buffer_size(&bytes, plot));
+
         CheckGL("Begin CUDA fallback-resource copy");
-        glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, plot->vertices());
-        gl::GLubyte* ptr = (gl::GLubyte*)glMapBuffer((gl::GLenum)GL_ARRAY_BUFFER, (gl::GLenum)GL_WRITE_ONLY);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
-            auto stream = cuda::getActiveStream();
-            CUDA_CHECK(cudaMemcpyAsync(ptr, P.get(), plot->verticesSize(),
+            CUDA_CHECK(cudaMemcpyAsync(ptr, P.get(), bytes,
                                        cudaMemcpyDeviceToHost, stream));
             CUDA_CHECK(cudaStreamSynchronize(stream));
-            glUnmapBuffer((gl::GLenum)GL_ARRAY_BUFFER);
+            glUnmapBuffer(GL_ARRAY_BUFFER);
         }
-        glBindBuffer((gl::GLenum)GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
         CheckGL("End CUDA fallback-resource copy");
     }
 }
 
 #define INSTANTIATE(T)  \
-    template void copy_plot<T>(const Array<T> &P, forge::Plot* plot);
+template void copy_plot<T>(const Array<T> &, fg_plot);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

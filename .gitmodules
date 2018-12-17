@@ -16,3 +16,9 @@
 [submodule "extern/spdlog"]
 	path = extern/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "extern/forge"]
+	path = extern/forge
+	url = https://github.com/arrayfire/forge.git
+[submodule "extern/glad"]
+	path = extern/glad
+	url = https://github.com/arrayfire/glad.git
