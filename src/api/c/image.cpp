@@ -29,8 +29,6 @@
 
 using af::dim4;
 using namespace detail;
-
-#if defined(WITH_GRAPHICS)
 using namespace graphics;
 
 
@@ -73,12 +71,10 @@ static fg_image convert_and_copy_image(const af_array in)
 
     return ret_val;
 }
-#endif
 
 af_err af_draw_image(const af_window window,
                      const af_array in, const af_cell* const props)
 {
-#if defined(WITH_GRAPHICS)
     if(window == 0) {
         fprintf(stderr, "Not a valid window\n");
         return AF_SUCCESS;
@@ -119,11 +115,4 @@ af_err af_draw_image(const af_window window,
     CATCHALL;
 
     return AF_SUCCESS;
-#else
-    UNUSED(window);
-    UNUSED(in);
-    UNUSED(props);
-    AF_RETURN_ERROR("ArrayFire compiled without graphics support",
-                    AF_ERR_NO_GFX);
-#endif
 }

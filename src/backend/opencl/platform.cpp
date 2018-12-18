@@ -9,9 +9,7 @@
 
 // Include this before af/opencl.h
 // Causes conflict between system cl.hpp and opencl/cl.hpp
-#if defined(WITH_GRAPHICS)
 #include <common/graphics_common.hpp>
-#endif
 
 #include <af/version.h>
 #include <af/opencl.h>
@@ -54,12 +52,10 @@ using cl::Device;
 namespace opencl
 {
 
-#if defined(WITH_GRAPHICS)
 #if defined (OS_MAC)
 static const char* CL_GL_SHARING_EXT = "cl_APPLE_gl_sharing";
 #else
 static const char* CL_GL_SHARING_EXT = "cl_khr_gl_sharing";
-#endif
 #endif
 
 static const std::string get_system(void)
@@ -721,7 +717,6 @@ MemoryManagerPinned& pinnedMemoryManager()
     return *(inst.pinnedMemManager.get());
 }
 
-#if defined(WITH_GRAPHICS)
 GraphicsResourceManager& interopManager()
 {
     static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
@@ -734,7 +729,6 @@ GraphicsResourceManager& interopManager()
 
     return *(inst.gfxManagers[id].get());
 }
-#endif
 
 PlanCache& fftManager()
 {
@@ -777,11 +771,9 @@ DeviceManager& DeviceManager::getInstance()
 
 DeviceManager::~DeviceManager()
 {
-#if defined(WITH_GRAPHICS)
     for (int i=0; i<getDeviceCount(); ++i) {
         delete gfxManagers[i].release();
     }
-#endif
 #ifndef OS_WIN
     //TODO: FIXME:
     // clfftTeardown() causes a "Pure Virtual Function Called" crash on
@@ -922,7 +914,6 @@ DeviceManager::DeviceManager()
         }
     }
 
-#if defined(WITH_GRAPHICS)
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
     if(noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
@@ -936,7 +927,7 @@ DeviceManager::DeviceManager()
         } catch (...) {
         }
     }
-#endif
+
     mUserDeviceOffset = mDevices.size();
     //Initialize FFT setup data structure
     CLFFT_CHECK(clfftInitSetupData(mFFTSetup.get()));
@@ -954,8 +945,7 @@ DeviceManager::DeviceManager()
     }
 }
 
-#if defined(WITH_GRAPHICS)
-void DeviceManager::markDeviceForInterop(const int device, const fg_window wHandle)
+void DeviceManager::markDeviceForInterop(const int device, const void* wHandle)
 {
     try {
         if (device >= (int)mQueues.size() ||
@@ -976,8 +966,8 @@ void DeviceManager::markDeviceForInterop(const int device, const fg_window wHand
             cl::Platform plat(mDevices[device]->getInfo<CL_DEVICE_PLATFORM>());
 
             long long wnd_ctx, wnd_dsp;
-            FG_CHECK(fg_get_window_context_handle(&wnd_ctx, wHandle));
-            FG_CHECK(fg_get_window_display_handle(&wnd_dsp, wHandle));
+            FG_CHECK(fg_get_window_context_handle(&wnd_ctx, const_cast<fg_window>(wHandle)));
+            FG_CHECK(fg_get_window_display_handle(&wnd_dsp, const_cast<fg_window>(wHandle)));
 
 #ifdef OS_MAC
             CGLContextObj cgl_current_ctx = CGLGetCurrentContext();
@@ -1059,7 +1049,6 @@ void DeviceManager::markDeviceForInterop(const int device, const fg_window wHand
          * on that particular OpenCL device. So mark it as no GL sharing */
     }
 }
-#endif
 }
 
 using namespace opencl;

@@ -12,16 +12,13 @@
 #include <common/err_common.hpp>
 #include <type_util.hpp>
 #include <common/util.hpp>
+#include <common/graphics_common.hpp>
 
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <sstream>
 #include <string>
-
-#if defined(WITH_GRAPHICS) && !defined(AF_UNIFIED)
-#include <common/graphics_common.hpp>
-#endif
 
 #ifdef AF_OPENCL
 #include <platform.hpp>

@@ -42,8 +42,11 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/dispatch.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/err_common.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/err_common.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/InteropManager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/module_loading.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse_helpers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
@@ -67,6 +70,9 @@ target_include_directories(afcommon_interface
   INTERFACE
     ${ArrayFire_SOURCE_DIR}/src/backend
     ${ArrayFire_BINARY_DIR}
+    ${OPENGL_INCLUDE_DIR}
+    ${ArrayFire_SOURCE_DIR}/extern/forge/include
+    ${ArrayFire_BINARY_DIR}/extern/forge/include
   )
 
 if(APPLE AND NOT USE_MKL)
@@ -74,21 +80,4 @@ if(APPLE AND NOT USE_MKL)
     INTERFACE
       ${CMAKE_CURRENT_SOURCE_DIR}/lapacke.cpp
       ${CMAKE_CURRENT_SOURCE_DIR}/lapacke.hpp)
-endif()
-
-if(AF_WITH_GRAPHICS)
-  target_include_directories(afcommon_interface
-    INTERFACE
-    ${OPENGL_INCLUDE_DIR}
-    ${ArrayFire_SOURCE_DIR}/extern/forge/include
-    ${ArrayFire_BINARY_DIR}/extern/forge/include
-    )
-  target_sources(afcommon_interface
-    INTERFACE
-      ${CMAKE_CURRENT_SOURCE_DIR}/InteropManager.hpp
-      ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.cpp
-      ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.hpp
-      )
-
-  target_compile_definitions(afcommon_interface INTERFACE WITH_GRAPHICS)
 endif()

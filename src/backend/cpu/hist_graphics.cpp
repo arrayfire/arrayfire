@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
-
 #include <hist_graphics.hpp>
 #include <err_cpu.hpp>
 #include <platform.hpp>
@@ -46,5 +44,3 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }
-
-#endif  // WITH_GRAPHICS

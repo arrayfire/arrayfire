@@ -380,10 +380,6 @@ cudaDeviceProp getDeviceProp(int device)
     return DeviceManager::getInstance().cuDevices[0].prop;
 }
 
-///////////////////////////////////////////////////////////////////////////
-// DeviceManager Class Functions
-///////////////////////////////////////////////////////////////////////////
-#if defined(WITH_GRAPHICS)
 bool DeviceManager::checkGraphicsInteropCapability()
 {
     static std::once_flag checkInteropFlag;
@@ -405,7 +401,6 @@ bool DeviceManager::checkGraphicsInteropCapability()
 
     return capable;
 }
-#endif
 
 DeviceManager& DeviceManager::getInstance()
 {
@@ -435,7 +430,6 @@ MemoryManagerPinned& pinnedMemoryManager()
     return *(inst.pinnedMemManager.get());
 }
 
-#if defined(WITH_GRAPHICS)
 GraphicsResourceManager& interopManager()
 {
     static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
@@ -448,7 +442,6 @@ GraphicsResourceManager& interopManager()
 
     return *(inst.gfxManagers[id].get());
 }
-#endif
 
 PlanCache& fftManager()
 {

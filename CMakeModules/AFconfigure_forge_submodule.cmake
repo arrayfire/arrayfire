@@ -12,7 +12,11 @@ set(CMAKE_BUILD_TYPE Release)
 set(FG_BUILD_EXAMPLES OFF CACHE BOOL "Used to build Forge examples")
 set(FG_BUILD_DOCS OFF CACHE BOOL "Used to build Forge documentation")
 set(FG_WITH_FREEIMAGE OFF CACHE BOOL "Turn on usage of freeimage dependency")
-add_subdirectory(extern/forge EXCLUDE_FROM_ALL)
+if (AF_BUILD_FORGE)
+  add_subdirectory(extern/forge)
+else (AF_BUILD_FORGE)
+  add_subdirectory(extern/forge EXCLUDE_FROM_ALL)
+endif (AF_BUILD_FORGE)
 mark_as_advanced(
     FG_BUILD_EXAMPLES
     FG_BUILD_DOCS
@@ -26,3 +30,11 @@ mark_as_advanced(
     )
 set(CMAKE_BUILD_TYPE ${ArrayFireBuildType})
 set(CMAKE_INSTALL_PREFIX ${ArrayFireInstallPrefix})
+
+if (AF_BUILD_FORGE)
+  install(FILES
+      $<TARGET_FILE:forge>
+      $<TARGET_SONAME_FILE:forge>
+      DESTINATION "${AF_INSTALL_LIB_DIR}"
+      COMPONENT common_backend_dependencies)
+endif (AF_BUILD_FORGE)

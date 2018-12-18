@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
-
 #include <Array.hpp>
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
@@ -77,5 +75,3 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }
-
-#endif  // WITH_GRAPHICS
