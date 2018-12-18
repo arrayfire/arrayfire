@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined(WITH_GRAPHICS)
-
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
@@ -48,4 +46,3 @@ GraphicsResourceManager::registerResources(std::vector<uint32_t> resources)
     return output;
 }
 }
-#endif

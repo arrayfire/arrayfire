@@ -9,7 +9,6 @@
 
 #pragma once
 
-#if defined(WITH_GRAPHICS)
 #include <common/InteropManager.hpp>
 
 #include <map>
@@ -30,4 +29,3 @@ class GraphicsResourceManager :
         void operator=(GraphicsResourceManager const&);
 };
 }
-#endif

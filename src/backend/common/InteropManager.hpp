@@ -9,7 +9,6 @@
 
 #pragma once
 
-#if defined(WITH_GRAPHICS)
 #include <common/err_common.hpp>
 #include <common/forge_loader.hpp>
 #include <common/util.hpp>
@@ -104,4 +103,3 @@ class InteropManager
         res_map_t mInteropMap;
 };
 }
-#endif

@@ -8,10 +8,6 @@
  ********************************************************/
 
 #pragma once
-#if defined(WITH_GRAPHICS)
-#include <fg/window.h>
-#endif
-
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION 120
 #define CL_HPP_TARGET_OPENCL_VERSION 120
@@ -106,9 +102,7 @@ MemoryManager& memoryManager();
 
 MemoryManagerPinned& pinnedMemoryManager();
 
-#if defined(WITH_GRAPHICS)
 GraphicsResourceManager& interopManager();
-#endif
 
 PlanCache& fftManager();
 
@@ -126,9 +120,7 @@ class DeviceManager
 
     friend MemoryManagerPinned& pinnedMemoryManager();
 
-#if defined(WITH_GRAPHICS)
     friend GraphicsResourceManager& interopManager();
-#endif
 
     friend PlanCache& fftManager();
 
@@ -186,9 +178,7 @@ class DeviceManager
         // variables
         DeviceManager(DeviceManager const&);
         void operator=(DeviceManager const&);
-#if defined(WITH_GRAPHICS)
-        void markDeviceForInterop(const int device, const fg_window wHandle);
-#endif
+        void markDeviceForInterop(const int device, const void* wHandle);
 
     private:
         // Attributes
@@ -203,10 +193,7 @@ class DeviceManager
 
         std::unique_ptr<MemoryManager> memManager;
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
-
-#if defined(WITH_GRAPHICS)
         std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
-#endif
         std::unique_ptr<clfftSetupData> mFFTSetup;
 
         using BoostProgCache = boost::shared_ptr<boost::compute::program_cache>;

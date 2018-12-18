@@ -42,8 +42,9 @@ option(AF_BUILD_OPENCL   "Build ArrayFire with a OpenCL backend"     ${OpenCL_FO
 option(AF_BUILD_UNIFIED  "Build Backend-Independent ArrayFire API"   ON)
 option(AF_BUILD_DOCS     "Create ArrayFire Documentation"            ${DOXYGEN_FOUND})
 option(AF_BUILD_EXAMPLES "Build Examples"                            ON)
+option(AF_BUILD_FORGE
+    "Forge libs are not built by default as it is not link time dependency" OFF)
 
-option(AF_WITH_GRAPHICS "Build ArrayFire with Forge Graphics"  ${OPENGL_FOUND})
 option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
 option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ON)
 
@@ -65,7 +66,6 @@ af_deprecate(BUILD_CPU             AF_BUILD_CPU)
 af_deprecate(BUILD_CUDA            AF_BUILD_CUDA)
 af_deprecate(BUILD_OPENCL          AF_BUILD_OPENCL)
 af_deprecate(BUILD_UNIFIED         AF_BUILD_UNIFIED)
-af_deprecate(BUILD_GRAPHICS        AF_WITH_GRAPHICS)
 af_deprecate(BUILD_DOCS            AF_BUILD_DOCS)
 af_deprecate(BUILD_NONFREE         AF_WITH_NONFREE)
 af_deprecate(BUILD_EXAMPLES        AF_BUILD_EXAMPLES)
@@ -83,11 +83,10 @@ mark_as_advanced(
   SPDLOG_BUILD_EXAMPLES
   SPDLOG_BUILD_TESTING)
 
-
-
-if(AF_WITH_GRAPHICS)
-  include(AFconfigure_forge_submodule)
-endif()
+#Configure forge submodule
+#forge is included in ALL target if AF_BUILD_FORGE is ON
+#otherwise, forge is not built at all
+include(AFconfigure_forge_submodule)
 
 configure_file(
     ${ArrayFire_SOURCE_DIR}/CMakeModules/version.hpp.in

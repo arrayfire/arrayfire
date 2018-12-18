@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
-
 #include <Array.hpp>
 #include <surface.hpp>
 #include <err_cuda.hpp>
@@ -71,5 +69,3 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }
-
-#endif  // WITH_GRAPHICS

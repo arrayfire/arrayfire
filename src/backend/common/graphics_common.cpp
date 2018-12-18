@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined(WITH_GRAPHICS)
-
 #include <common/graphics_common.hpp>
 #include <common/err_common.hpp>
 #include <backend.hpp>
@@ -566,11 +564,3 @@ void ForgeManager::setChartAxesOverride(fg_chart chart, bool flag)
     mChartAxesOverrideMap[chart] = flag;
 }
 }
-
-#else
-
-ForgeModule::ForgeModule()
-    : module(nullptr, nullptr), glmodule(nullptr, nullptr)
-{ }
-
-#endif

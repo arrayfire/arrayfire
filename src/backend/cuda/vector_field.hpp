@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
-
 #include <Array.hpp>
 #include <common/graphics_common.hpp>
 
@@ -19,6 +17,3 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
                        fg_vector_field vector_field);
 
 }
-
-#endif
-
