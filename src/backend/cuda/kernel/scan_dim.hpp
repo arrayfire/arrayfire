@@ -128,7 +128,7 @@ namespace kernel
             }
     }
 
-    template<typename To, af_op_t op, int dim>
+    template<typename To, af_op_t op, int dim, bool inclusive_scan>
     __global__
     static void bcast_dim_kernel(Param<To> out,
                                  CParam<To> tmp,
@@ -159,9 +159,13 @@ namespace kernel
         const int blockIdx_dim = ids[dim];
 
         ids[dim] = ids[dim] * blockDim.y * lim + tidy;
-        optr  += ids[3] * out.strides[3] + ids[2] * out.strides[2] + ids[1] * out.strides[1] + ids[0];
+        optr += ids[3] * out.strides[3] + ids[2] * out.strides[2] + ids[1] * out.strides[1] + ids[0];
         const int id_dim = ids[dim];
         const int out_dim = out.dims[dim];
+
+        // Shift broadcast one step to the right for exclusive scan (#2366)
+        int offset = inclusive_scan ? 0 : out.strides[dim];
+        optr += offset;
 
         bool is_valid =
             (ids[0] < out.dims[0]) &&
@@ -224,7 +228,7 @@ namespace kernel
 
 
 
-    template<typename To, af_op_t op, int dim>
+    template<typename To, af_op_t op, int dim, bool inclusive_scan>
     static void bcast_dim_launcher(Param<To> out,
                                    CParam<To> tmp,
                                    const uint threads_y,
@@ -242,7 +246,7 @@ namespace kernel
 
         uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
-        CUDA_LAUNCH((bcast_dim_kernel<To, op, dim>), blocks, threads,
+        CUDA_LAUNCH((bcast_dim_kernel<To, op, dim, inclusive_scan>), blocks, threads,
             out, tmp, blocks_all[0], blocks_all[1], blocks_all[dim], lim);
 
         POST_LAUNCH_CHECK();
@@ -296,7 +300,7 @@ namespace kernel
             }
 
             blocks_all[dim] = bdim;
-            bcast_dim_launcher<To, op, dim>(out, tmp, threads_y, blocks_all);
+            bcast_dim_launcher<To, op, dim, inclusive_scan>(out, tmp, threads_y, blocks_all);
         }
     }
 
