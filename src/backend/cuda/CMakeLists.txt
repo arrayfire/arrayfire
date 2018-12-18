@@ -317,13 +317,19 @@ cuda_add_library(afcuda
     fft.cpp
     fft.hpp
     fftconvolve.hpp
+    GraphicsResourceManager.cpp
+    GraphicsResourceManager.hpp
     gradient.hpp
     harris.hpp
+    hist_graphics.cpp
+    hist_graphics.hpp
     histogram.hpp
     homography.hpp
     hsv_rgb.hpp
     identity.hpp
     iir.hpp
+    image.cpp
+    image.hpp
     index.hpp
     inverse.hpp
     iota.hpp
@@ -349,6 +355,8 @@ cuda_add_library(afcuda
     orb.hpp
     platform.cpp
     platform.hpp
+    plot.cpp
+    plot.hpp
     print.hpp
     qr.hpp
     random_engine.hpp
@@ -375,6 +383,8 @@ cuda_add_library(afcuda
     sparse_arith.hpp
     sparse_blas.cpp
     sparse_blas.hpp
+    surface.cpp
+    surface.hpp
     susan.hpp
     svd.hpp
     tile.hpp
@@ -387,6 +397,8 @@ cuda_add_library(afcuda
     unary.hpp
     unwrap.hpp
     utility.hpp
+    vector_field.cpp
+    vector_field.hpp
     where.hpp
     wrap.hpp
 
@@ -403,23 +415,6 @@ add_library(ArrayFire::afcuda ALIAS afcuda)
 
 if(AF_WITH_NONFREE)
   target_compile_definitions(afcuda PRIVATE AF_WITH_NONFREE_SIFT)
-endif()
-
-if(AF_WITH_GRAPHICS)
-  target_sources(afcuda
-    PRIVATE
-      GraphicsResourceManager.cpp
-      GraphicsResourceManager.hpp
-      hist_graphics.cpp
-      hist_graphics.hpp
-      image.cpp
-      image.hpp
-      plot.cpp
-      plot.hpp
-      surface.cpp
-      surface.hpp
-      vector_field.cpp
-      vector_field.hpp)
 endif()
 
 add_dependencies(afcuda ${jit_kernel_targets})

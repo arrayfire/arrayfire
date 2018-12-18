@@ -62,11 +62,7 @@ if (WIN32)
   set(inst_pkg_hash "-${GIT_COMMIT_HASH}")
 endif ()
 
-if(AF_WITH_GRAPHICS)
-  set(CPACK_PACKAGE_FILE_NAME "${inst_pkg_name}${inst_pkg_hash}")
-else()
-  set(CPACK_PACKAGE_FILE_NAME "${inst_pkg_name}-no-gl${inst_pkg_hash}")
-endif()
+set(CPACK_PACKAGE_FILE_NAME "${inst_pkg_name}${inst_pkg_hash}")
 
 # Platform specific settings for CPACK generators
 # - OSX specific
@@ -317,7 +313,7 @@ set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
 set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
 set(CPACK_RPM_PACKAGE_LICENSE "BSD")
 set(CPACK_RPM_PACKAGE_URL "${SITE_URL}")
-if(AF_WITH_GRAPHICS)
+if(AF_BUILD_FORGE)
     set(CPACK_RPM_PACKAGE_REQUIRES "fontconfig-devel, libX11, libXrandr, libXinerama, libXxf86vm, libXcursor, mesa-libGL-devel")
 endif()
 

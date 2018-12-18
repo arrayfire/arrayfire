@@ -25,8 +25,6 @@
 using std::vector;
 using af::dim4;
 using namespace detail;
-
-#if defined(WITH_GRAPHICS)
 using namespace graphics;
 
 template<typename T>
@@ -349,22 +347,12 @@ af_err vectorFieldWrapper(const af_window window,
     return AF_SUCCESS;
 }
 
-#endif // WITH_GRAPHICS
-
 af_err af_draw_vector_field_nd(const af_window wind,
                                const af_array points,
                                const af_array directions,
                                const af_cell* const props)
 {
-#if defined(WITH_GRAPHICS)
     return vectorFieldWrapper(wind, points, directions, props);
-#else
-    UNUSED(wind);
-    UNUSED(points);
-    UNUSED(directions);
-    UNUSED(props);
-    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
-#endif
 }
 
 af_err af_draw_vector_field_3d(
@@ -375,19 +363,7 @@ af_err af_draw_vector_field_3d(
                 const af_array zDirs,
                 const af_cell* const props)
 {
-#if defined(WITH_GRAPHICS)
     return vectorFieldWrapper(wind, xPoints, yPoints, zPoints, xDirs, yDirs, zDirs, props);
-#else
-    UNUSED(wind);
-    UNUSED(xPoints);
-    UNUSED(yPoints);
-    UNUSED(zPoints);
-    UNUSED(xDirs);
-    UNUSED(yDirs);
-    UNUSED(zDirs);
-    UNUSED(props);
-    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
-#endif
 }
 
 af_err af_draw_vector_field_2d(
@@ -396,15 +372,5 @@ af_err af_draw_vector_field_2d(
                 const af_array xDirs, const af_array yDirs,
                 const af_cell* const props)
 {
-#if defined(WITH_GRAPHICS)
     return vectorFieldWrapper(wind, xPoints, yPoints, xDirs, yDirs, props);
-#else
-    UNUSED(wind);
-    UNUSED(xPoints);
-    UNUSED(yPoints);
-    UNUSED(xDirs);
-    UNUSED(yDirs);
-    UNUSED(props);
-    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
-#endif
 }

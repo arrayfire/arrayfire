@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
-
 #include <common/graphics_common.hpp>
 #include <Array.hpp>
 
@@ -18,6 +16,3 @@ template<typename T>
 void copy_histogram(const Array<T> &data, fg_histogram hist);
 
 }
-
-#endif
-

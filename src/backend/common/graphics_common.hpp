@@ -9,8 +9,6 @@
 
 #pragma once
 
-#if defined(WITH_GRAPHICS)
-
 #include <af/graphics.h>
 #include <common/forge_loader.hpp>
 
@@ -139,5 +137,3 @@ class ForgeManager
 }
 
 #define MAIN_WINDOW graphics::ForgeManager::getInstance().getMainWindow()
-
-#endif

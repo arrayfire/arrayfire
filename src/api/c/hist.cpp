@@ -19,8 +19,6 @@
 
 using af::dim4;
 using namespace detail;
-
-#if defined(WITH_GRAPHICS)
 using namespace graphics;
 
 template<typename T>
@@ -79,14 +77,12 @@ fg_chart setup_histogram(fg_window const window,
 
     return chart;
 }
-#endif
 
 af_err af_draw_hist(const af_window window,
                     const af_array X,
                     const double minval, const double maxval,
                     const af_cell* const props)
 {
-#if defined(WITH_GRAPHICS)
     if(window == 0) {
         std::cerr<<"Not a valid window"<<std::endl;
         return AF_SUCCESS;
@@ -124,12 +120,4 @@ af_err af_draw_hist(const af_window window,
     }
     CATCHALL;
     return AF_SUCCESS;
-#else
-    UNUSED(window);
-    UNUSED(X);
-    UNUSED(minval);
-    UNUSED(maxval);
-    UNUSED(props);
-    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
-#endif
 }
