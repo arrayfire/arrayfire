@@ -175,10 +175,6 @@ if(FreeImage_FOUND AND AF_WITH_IMAGEIO)
   endif ()
 endif()
 
-if(AF_WITH_GRAPHICS)
-    target_compile_definitions(c_api_interface INTERFACE WITH_GRAPHICS)
-endif()
-
 target_include_directories(c_api_interface
   INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}

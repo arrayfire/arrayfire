@@ -23,8 +23,6 @@
 
 using af::dim4;
 using namespace detail;
-
-#if defined(WITH_GRAPHICS)
 using namespace graphics;
 
 template<typename T>
@@ -126,13 +124,11 @@ fg_chart setup_surface(fg_window window,
 
     return chart;
 }
-#endif
 
 af_err af_draw_surface(const af_window window,
                        const af_array xVals, const af_array yVals,
                        const af_array S, const af_cell* const props)
 {
-#if defined(WITH_GRAPHICS)
     if(window == 0) {
         std::cerr<<"Not a valid window"<<std::endl;
         return AF_SUCCESS;
@@ -187,12 +183,4 @@ af_err af_draw_surface(const af_window window,
     }
     CATCHALL;
     return AF_SUCCESS;
-#else
-    UNUSED(window);
-    UNUSED(xVals);
-    UNUSED(yVals);
-    UNUSED(S);
-    UNUSED(props);
-    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
-#endif
 }

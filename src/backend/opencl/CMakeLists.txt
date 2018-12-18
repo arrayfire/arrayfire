@@ -95,10 +95,14 @@ target_sources(afopencl
     fft.hpp
     fftconvolve.cpp
     fftconvolve.hpp
+    GraphicsResourceManager.cpp
+    GraphicsResourceManager.hpp
     gradient.cpp
     gradient.hpp
     harris.cpp
     harris.hpp
+    hist_graphics.cpp
+    hist_graphics.hpp
     histogram.cpp
     histogram.hpp
     homography.cpp
@@ -109,6 +113,8 @@ target_sources(afopencl
     identity.hpp
     iir.cpp
     iir.hpp
+    image.cpp
+    image.hpp
     index.cpp
     index.hpp
     inverse.cpp
@@ -150,6 +156,8 @@ target_sources(afopencl
     orb.hpp
     platform.cpp
     platform.hpp
+    plot.cpp
+    plot.hpp
     print.hpp
     product.cpp
     program.cpp
@@ -200,6 +208,8 @@ target_sources(afopencl
     sparse_blas.cpp
     sparse_blas.hpp
     sum.cpp
+    surface.cpp
+    surface.hpp
     susan.cpp
     susan.hpp
     svd.cpp
@@ -220,6 +230,8 @@ target_sources(afopencl
     unary.hpp
     unwrap.cpp
     unwrap.hpp
+    vector_field.cpp
+    vector_field.hpp
     where.cpp
     where.hpp
     wrap.cpp
@@ -421,24 +433,6 @@ endif()
 if(AF_WITH_NONFREE)
   target_sources(afopencl PRIVATE kernel/sift_nonfree.hpp)
   target_compile_definitions(afopencl PRIVATE AF_WITH_NONFREE_SIFT)
-endif()
-
-if(AF_WITH_GRAPHICS)
-  target_sources(afopencl
-    PRIVATE
-      GraphicsResourceManager.hpp
-      GraphicsResourceManager.cpp
-      hist_graphics.cpp
-      hist_graphics.hpp
-      image.cpp
-      image.hpp
-      plot.cpp
-      plot.hpp
-      surface.cpp
-      surface.hpp
-      vector_field.cpp
-      vector_field.hpp
-    )
 endif()
 
 if(LAPACK_FOUND OR MKL_FOUND)

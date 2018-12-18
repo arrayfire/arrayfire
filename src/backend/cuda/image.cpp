@@ -10,8 +10,6 @@
 // Parts of this code sourced from SnopyDogy
 // https://gist.github.com/SnopyDogy/a9a22497a893ec86aa3e
 
-#if defined(WITH_GRAPHICS)
-
 #include <Array.hpp>
 #include <image.hpp>
 #include <err_cuda.hpp>
@@ -74,5 +72,3 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 
 }
-
-#endif
