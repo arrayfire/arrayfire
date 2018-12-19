@@ -22,8 +22,7 @@ Array<T> arithOpD(const common::SparseArray<T> &lhs, const Array<T> &rhs,
                  const bool reverse = false);
 
 template<typename T, af_op_t op>
-common::SparseArray<T> arithOpS(const common::SparseArray<T> &lhs, const Array<T> &rhs,
-                                const bool reverse = false);
+common::SparseArray<T> arithOp(const common::SparseArray<T> &lhs, const Array<T> &rhs,
+                               const bool reverse = false);
 
 }
-
