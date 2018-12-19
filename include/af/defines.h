@@ -491,6 +491,14 @@ typedef enum {
     AF_TOPK_MAX     = 2,  ///< Top k max values
     AF_TOPK_DEFAULT = 0   ///< Default option (max)
 } af_topk_function;
+#endif
+
+#if AF_API_VERSION >= 37
+typedef enum {
+              AF_VARIANCE_DEFAULT    = 0, ///< Default (Population) variance
+              AF_VARIANCE_SAMPLE     = 1, ///< Sample variance
+              AF_VARIANCE_POPULATION = 2  ///< Population variance
+} af_var_bias;
 
 typedef enum {
     AF_ITERATIVE_DECONV_LANDWEBER       = 1,        ///< Landweber Deconvolution
@@ -502,15 +510,6 @@ typedef enum {
     AF_INVERSE_DECONV_TIKHONOV       = 1,        ///< Tikhonov Inverse deconvolution
     AF_INVERSE_DECONV_DEFAULT        = 0         ///< Default is Tikhonov deconvolution
 } af_inverse_deconv_algo;
-
-#endif
-
-#if AF_API_VERSION >= 37
-typedef enum {
-              AF_VARIANCE_DEFAULT    = 0, ///< Default (Population) variance
-              AF_VARIANCE_SAMPLE     = 1, ///< Sample variance
-              AF_VARIANCE_POPULATION = 2  ///< Population variance
-} af_var_bias;
 #endif
 
 #ifdef __cplusplus
@@ -561,11 +560,11 @@ namespace af
     typedef af_flux_function fluxFunction;
     typedef af_diffusion_eq diffusionEq;
     typedef af_topk_function topkFunction;
-    typedef af_iterative_deconv_algo iterativeDeconvAlgo;
-    typedef af_inverse_deconv_algo inverseDeconvAlgo;
 #endif
 #if AF_API_VERSION >= 37
     typedef af_var_bias varBias;
+    typedef af_iterative_deconv_algo iterativeDeconvAlgo;
+    typedef af_inverse_deconv_algo inverseDeconvAlgo;
 #endif
 }
 
