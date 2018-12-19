@@ -34,6 +34,14 @@ using sp_cdouble = MKL_Complex16;
 #else
 using sp_cfloat = cfloat;
 using sp_cdouble = cdouble;
+
+// From mkl_spblas.h
+typedef enum
+{
+    SPARSE_OPERATION_NON_TRANSPOSE          = 10,
+    SPARSE_OPERATION_TRANSPOSE              = 11,
+    SPARSE_OPERATION_CONJUGATE_TRANSPOSE    = 12,
+} sparse_operation_t;
 #endif
 
 template<typename T, class Enable = void>
@@ -291,14 +299,6 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
 }
 
 #else // #if USE_MKL
-
-// From mkl_spblas.h
-typedef enum
-{
-    SPARSE_OPERATION_NON_TRANSPOSE          = 10,
-    SPARSE_OPERATION_TRANSPOSE              = 11,
-    SPARSE_OPERATION_CONJUGATE_TRANSPOSE    = 12,
-} sparse_operation_t;
 
 template<typename T>
 T getConjugate(const T &in)
