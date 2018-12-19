@@ -314,7 +314,7 @@ set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
 set(CPACK_RPM_PACKAGE_LICENSE "BSD")
 set(CPACK_RPM_PACKAGE_URL "${SITE_URL}")
 if(AF_BUILD_FORGE)
-    set(CPACK_RPM_PACKAGE_REQUIRES "fontconfig-devel, libX11, libXrandr, libXinerama, libXxf86vm, libXcursor, mesa-libGL-devel")
+    set(CPACK_RPM_PACKAGE_SUGGESTS "fontconfig-devel, libX11, libXrandr, libXinerama, libXxf86vm, libXcursor, mesa-libGL-devel")
 endif()
 
 ##
