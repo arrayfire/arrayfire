@@ -26,7 +26,6 @@ mark_as_advanced(
     FG_ENABLE_HUNTER
     glfw3_DIR
     glm_DIR
-    glbinding_DIR
     )
 set(CMAKE_BUILD_TYPE ${ArrayFireBuildType})
 set(CMAKE_INSTALL_PREFIX ${ArrayFireInstallPrefix})
