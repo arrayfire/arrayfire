@@ -128,14 +128,15 @@ namespace kernel
             }
     }
 
-    template<typename To, af_op_t op, int dim, bool inclusive_scan>
+    template<typename To, af_op_t op, int dim>
     __global__
     static void bcast_dim_kernel(Param<To> out,
                                  CParam<To> tmp,
                                  uint blocks_x,
                                  uint blocks_y,
                                  uint blocks_dim,
-                                 uint lim)
+                                 uint lim,
+                                 bool inclusive_scan)
     {
         const int tidx = threadIdx.x;
         const int tidy = threadIdx.y;
@@ -228,11 +229,12 @@ namespace kernel
 
 
 
-    template<typename To, af_op_t op, int dim, bool inclusive_scan>
+    template<typename To, af_op_t op, int dim>
     static void bcast_dim_launcher(Param<To> out,
                                    CParam<To> tmp,
                                    const uint threads_y,
-                                   const dim_t blocks_all[4])
+                                   const dim_t blocks_all[4],
+                                   bool inclusive_scan)
     {
 
         dim3 threads(THREADS_X, threads_y);
@@ -246,8 +248,8 @@ namespace kernel
 
         uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
-        CUDA_LAUNCH((bcast_dim_kernel<To, op, dim, inclusive_scan>), blocks, threads,
-            out, tmp, blocks_all[0], blocks_all[1], blocks_all[dim], lim);
+        CUDA_LAUNCH((bcast_dim_kernel<To, op, dim>), blocks, threads,
+                    out, tmp, blocks_all[0], blocks_all[1], blocks_all[dim], lim, inclusive_scan);
 
         POST_LAUNCH_CHECK();
     }
@@ -300,7 +302,7 @@ namespace kernel
             }
 
             blocks_all[dim] = bdim;
-            bcast_dim_launcher<To, op, dim, inclusive_scan>(out, tmp, threads_y, blocks_all);
+            bcast_dim_launcher<To, op, dim>(out, tmp, threads_y, blocks_all, inclusive_scan);
         }
     }
 

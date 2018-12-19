@@ -113,19 +113,20 @@ namespace kernel
         }
     }
 
-    template <typename To, af_op_t op, bool inclusive_scan>
+    template <typename To, af_op_t op>
     __global__ static void bcast_first_kernel(Param<To> out,
                                               CParam<To> tmp,
                                               uint blocks_x,
                                               uint blocks_y,
-                                              uint lim) {
+                                              uint lim,
+                                              bool inclusive_scan) {
         const int tidx = threadIdx.x;
         const int tidy = threadIdx.y;
 
         const int zid = blockIdx.x / blocks_x;
         const int wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
-        const int blockIdx_x = blockIdx.x - (blocks_x)*zid;
-        const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y)*wid;
+        const int blockIdx_x = blockIdx.x - (blocks_x) * zid;
+        const int blockIdx_y = (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y) * wid;
         const int xid = blockIdx_x * blockDim.x * lim + tidx;
         const int yid = blockIdx_y * blockDim.y + tidy;
 
@@ -143,11 +144,12 @@ namespace kernel
         Binary<To, op> binop;
         To accum = tptr[blockIdx_x - 1];
 
+        // Shift broadcast one step to the right for exclusive scan (#2366)
         int offset = !inclusive_scan;
-        for (int k = 0, id = xid;
-             k < lim && id + offset < out.dims[0];
+        for (int k = 0, id = xid + offset;
+             k < lim && id < out.dims[0];
              k++, id += blockDim.x) {
-            optr[id + offset] = binop(accum, optr[id + offset]);
+            optr[id] = binop(accum, optr[id]);
         }
     }
 
@@ -190,12 +192,13 @@ namespace kernel
 
 
 
-    template<typename To, af_op_t op, bool inclusive_scan>
+    template<typename To, af_op_t op>
     static void bcast_first_launcher(Param<To> out,
                                      CParam<To> tmp,
                                      const uint blocks_x,
                                      const uint blocks_y,
-                                     const uint threads_x)
+                                     const uint threads_x,
+                                     bool inclusive_scan)
     {
 
         dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
@@ -208,7 +211,8 @@ namespace kernel
 
         uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
-        CUDA_LAUNCH((bcast_first_kernel<To, op, inclusive_scan>), blocks, threads, out, tmp, blocks_x, blocks_y, lim);
+        CUDA_LAUNCH((bcast_first_kernel<To, op>), blocks, threads,
+                    out, tmp, blocks_x, blocks_y, lim, inclusive_scan);
 
         POST_LAUNCH_CHECK();
     }
@@ -256,7 +260,7 @@ namespace kernel
                                                             threads_x);
             }
 
-            bcast_first_launcher<To, op, inclusive_scan>(out, tmp, blocks_x, blocks_y, threads_x);
+            bcast_first_launcher<To, op>(out, tmp, blocks_x, blocks_y, threads_x, inclusive_scan);
 
         }
     }
