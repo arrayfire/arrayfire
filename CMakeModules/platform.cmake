@@ -10,13 +10,6 @@
 # Add paths and flags specific platforms. This can inc
 
 if(APPLE)
-  # IMP NOTE: After removing link time dependency of gfx libs, glbinding is
-  #           still needed in cmake's prefix path so that forge doesn't fail
-  #           in cmake generation phase because of no glbinding.
-  # Some homebrew libraries(glbinding) are not installed in directories that
-  # CMake searches by default.
-  set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/usr/local/opt")
-
   # Default path for Intel MKL libraries
   set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/opt/intel/mkl/lib")
 endif()
