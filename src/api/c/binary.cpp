@@ -50,7 +50,7 @@ static inline af_array arithSparseDenseOp(const af_array lhs, const af_array rhs
     if(op == af_add_t || op == af_sub_t)
         return getHandle(arithOpD<T, op>(castSparse<T>(lhs), castArray<T>(rhs), reverse));
     else if(op == af_mul_t || op == af_div_t)
-        return getHandle(arithOpS<T, op>(castSparse<T>(lhs), castArray<T>(rhs), reverse));
+        return getHandle(arithOp<T, op>(castSparse<T>(lhs), castArray<T>(rhs), reverse));
 
 }
 
