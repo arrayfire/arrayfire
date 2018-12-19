@@ -52,7 +52,7 @@ fg_chart setup_vector_field(fg_window window,
         dIn = transpose<T>(dIn, false);
     }
 
-    ForgeManager& fgMngr = ForgeManager::getInstance();
+    ForgeManager& fgMngr = forgeManager();
 
     // Get the chart for the current grid position (if any)
     fg_chart chart = NULL;
@@ -158,7 +158,7 @@ af_err vectorFieldWrapper(const af_window window,
             case u8 : chart = setup_vector_field<uchar  >(window, pnts, dirs, props); break;
             default:  TYPE_ERROR(1, pType);
         }
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
+        auto gridDims = forgeManager().getWindowGrid(window);
 
         if (props->col>-1 && props->row>-1) {
             FG_CHECK(fg_draw_chart_to_cell(window,
@@ -252,7 +252,7 @@ af_err vectorFieldWrapper(const af_window window,
             case u8 : chart = setup_vector_field<uchar  >(window, points, directions, props); break;
             default:  TYPE_ERROR(1, xpType);
         }
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
+        auto gridDims = forgeManager().getWindowGrid(window);
 
         if (props->col>-1 && props->row>-1) {
             FG_CHECK(fg_draw_chart_to_cell(window,
@@ -332,7 +332,7 @@ af_err vectorFieldWrapper(const af_window window,
             default:  TYPE_ERROR(1, xpType);
         }
 
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
+        auto gridDims = forgeManager().getWindowGrid(window);
 
         if (props->col>-1 && props->row>-1) {
             FG_CHECK(fg_draw_chart_to_cell(window,

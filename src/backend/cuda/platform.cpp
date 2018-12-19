@@ -430,6 +430,17 @@ MemoryManagerPinned& pinnedMemoryManager()
     return *(inst.pinnedMemManager.get());
 }
 
+graphics::ForgeManager& forgeManager()
+{
+    static std::once_flag flag;
+
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    std::call_once(flag, [&]() { inst.fgMngr.reset(new graphics::ForgeManager()); });
+
+    return *(inst.fgMngr);
+}
+
 GraphicsResourceManager& interopManager()
 {
     static std::once_flag initFlags[DeviceManager::MAX_DEVICES];

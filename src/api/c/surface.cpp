@@ -67,7 +67,7 @@ fg_chart setup_surface(fg_window window,
     std::vector<Array<T> > inputs{xIn, yIn, zIn};
     Array<T> Z = join(0, inputs);
 
-    ForgeManager& fgMngr = ForgeManager::getInstance();
+    ForgeManager& fgMngr = forgeManager();
 
     // Get the chart for the current grid position (if any)
     fg_chart chart = NULL;
@@ -170,7 +170,7 @@ af_err af_draw_surface(const af_window window,
             case u8 : chart = setup_surface<uchar  >(window, xVals, yVals , S, props); break;
             default:  TYPE_ERROR(1, Xtype);
         }
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
+        auto gridDims = forgeManager().getWindowGrid(window);
 
         if (props->col>-1 && props->row>-1) {
             FG_CHECK(fg_draw_chart_to_cell(window,

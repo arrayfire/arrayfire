@@ -14,6 +14,7 @@
 #include <common/graphics_common.hpp>
 #include <common/err_common.hpp>
 #include <backend.hpp>
+#include <platform.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -22,7 +23,7 @@ using namespace graphics;
 af_err af_create_window(af_window *out, const int width, const int height, const char* const title)
 {
     try {
-        graphics::ForgeManager& fgMngr = graphics::ForgeManager::getInstance();
+        ForgeManager& fgMngr = forgeManager();
         fg_window mainWnd = NULL;
 
         try {
@@ -84,7 +85,7 @@ af_err af_grid(const af_window wind, const int rows, const int cols)
         return AF_SUCCESS;
     }
     try {
-        ForgeManager::getInstance().setWindowChartGrid(wind, rows, cols);
+        forgeManager().setWindowChartGrid(wind, rows, cols);
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -99,7 +100,7 @@ af_err af_set_axes_limits_compute(const af_window window,
         return AF_SUCCESS;
     }
     try {
-        ForgeManager& fgMngr = ForgeManager::getInstance();
+        ForgeManager& fgMngr = forgeManager();
 
         fg_chart chart = NULL;
 
@@ -150,7 +151,7 @@ af_err af_set_axes_limits_2d(const af_window window,
         return AF_SUCCESS;
     }
     try {
-        ForgeManager& fgMngr = ForgeManager::getInstance();
+        ForgeManager& fgMngr = forgeManager();
 
         fg_chart chart = NULL;
         // The ctype here below doesn't really matter as it is only fetching
@@ -193,7 +194,7 @@ af_err af_set_axes_limits_3d(const af_window window,
         return AF_SUCCESS;
     }
     try {
-        ForgeManager& fgMngr = ForgeManager::getInstance();
+        ForgeManager& fgMngr = forgeManager();
 
         fg_chart chart = NULL;
         // The ctype here below doesn't really matter as it is only fetching
@@ -240,7 +241,7 @@ af_err af_set_axes_titles(const af_window window,
         return AF_SUCCESS;
     }
     try {
-        ForgeManager& fgMngr = ForgeManager::getInstance();
+        ForgeManager& fgMngr = forgeManager();
 
         fg_chart chart = NULL;
 
@@ -298,7 +299,7 @@ af_err af_destroy_window(const af_window wind)
         return AF_SUCCESS;
     }
     try {
-        ForgeManager::getInstance().setWindowChartGrid(wind, 0, 0);
+        forgeManager().setWindowChartGrid(wind, 0, 0);
     }
     CATCHALL;
     FG_CHECK(fg_release_window(wind));

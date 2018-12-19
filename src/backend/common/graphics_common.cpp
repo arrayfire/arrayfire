@@ -222,13 +222,7 @@ namespace graphics {
 
 ForgeModule& forgePlugin()
 {
-    return *(ForgeManager::getInstance().mPlugin);
-}
-
-ForgeManager& ForgeManager::getInstance()
-{
-    static ForgeManager my_instance;
-    return my_instance;
+    return detail::forgeManager().plugin();
 }
 
 ForgeManager::ForgeManager()
@@ -236,60 +230,61 @@ ForgeManager::ForgeManager()
 
 ForgeManager::~ForgeManager()
 {
-    ForgeModule& _ = forgePlugin();
     /* clear all OpenGL resource objects (images, plots, histograms etc) first
      * and then delete the windows */
     for(ImgMapIter iter = mImgMap.begin(); iter != mImgMap.end(); iter++)
-        _.fg_release_image(iter->second);
+        mPlugin->fg_release_image(iter->second);
 
     for(PltMapIter iter = mPltMap.begin(); iter != mPltMap.end(); iter++)
-        _.fg_release_plot(iter->second);
+        mPlugin->fg_release_plot(iter->second);
 
     for(HstMapIter iter = mHstMap.begin(); iter != mHstMap.end(); iter++)
-        _.fg_release_histogram(iter->second);
+        mPlugin->fg_release_histogram(iter->second);
 
     for(SfcMapIter iter = mSfcMap.begin(); iter != mSfcMap.end(); iter++)
-        _.fg_release_surface(iter->second);
+        mPlugin->fg_release_surface(iter->second);
 
     for(VcfMapIter iter = mVcfMap.begin(); iter != mVcfMap.end(); iter++)
-        _.fg_release_vector_field(iter->second);
+        mPlugin->fg_release_vector_field(iter->second);
 
     for(ChartMapIter iter = mChartMap.begin(); iter != mChartMap.end(); iter++) {
         for(int i = 0; i < (int)(iter->second).size(); i++) {
             fg_chart chrt = (iter->second)[i];
             if (chrt) {
                 mChartAxesOverrideMap.erase((chrt));
-                _.fg_release_chart(chrt);
+                mPlugin->fg_release_chart(chrt);
             }
         }
     }
+    mPlugin->fg_release_window(wnd->handle);
+}
+
+ForgeModule& ForgeManager::plugin() {
+    return *mPlugin;
 }
 
 fg_window ForgeManager::getMainWindow()
 {
-    class Window {
-        public:
-        Window(fg_window h) : handle(h) {}
-        ~Window() { forgePlugin().fg_release_window(handle); }
-        fg_window handle;
-    };
-
     static std::once_flag flag;
-    static std::unique_ptr<Window> wnd;
 
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
 
     if (noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
         std::call_once(flag,
-            [] {
+            [this] {
                 fg_window w = nullptr;
-                FG_CHECK(fg_create_window(&w, WIDTH, HEIGHT, "ArrayFire", NULL, true));
-                makeContextCurrent(w);
-                ForgeManager::getInstance().setWindowChartGrid(w, 1, 1);
-                wnd.reset(new Window(w));
+                fg_err e = mPlugin->fg_create_window(&w,
+                                                     WIDTH, HEIGHT,
+                                                     "ArrayFire", NULL, true);
+                if (e != FG_ERR_NONE) {
+                    AF_ERROR("Graphics Window creation failed", AF_ERR_INTERNAL);
+                }
+                this->mPlugin->fg_make_window_current(w);
+                this->setWindowChartGrid(w, 1, 1);
+                this->wnd.reset(new Window({w}));
                 if (!gladLoadGL()) {
-                AF_ERROR("GL Load Failed", AF_ERR_LOAD_LIB);
+                    AF_ERROR("GL Load Failed", AF_ERR_LOAD_LIB);
                 }
             });
     }

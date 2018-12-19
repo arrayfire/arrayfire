@@ -26,6 +26,11 @@
 namespace spdlog {
   class logger;
 }
+
+namespace graphics {
+  class ForgeManager;
+}
+
 namespace cuda
 {
 int getBackend();
@@ -84,6 +89,8 @@ MemoryManager& memoryManager();
 
 MemoryManagerPinned& pinnedMemoryManager();
 
+graphics::ForgeManager& forgeManager();
+
 GraphicsResourceManager& interopManager();
 
 PlanCache& fftManager();
@@ -108,6 +115,8 @@ class DeviceManager
         friend MemoryManager& memoryManager();
 
         friend MemoryManagerPinned& pinnedMemoryManager();
+
+        friend graphics::ForgeManager& forgeManager();
 
         friend GraphicsResourceManager& interopManager();
 
@@ -154,6 +163,8 @@ class DeviceManager
 
         int nDevices;
         cudaStream_t streams[MAX_DEVICES];
+
+        std::unique_ptr<graphics::ForgeManager> fgMngr;
 
         std::unique_ptr<MemoryManager> memManager;
 

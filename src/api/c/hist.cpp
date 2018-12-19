@@ -31,7 +31,7 @@ fg_chart setup_histogram(fg_window const window,
     dim_t nBins = histogramInput.elements();
 
     // Retrieve Forge Histogram with nBins and array type
-    ForgeManager& fgMngr = ForgeManager::getInstance();
+    ForgeManager& fgMngr = forgeManager();
 
     // Get the chart for the current grid position (if any)
     fg_chart chart = NULL;
@@ -107,7 +107,7 @@ af_err af_draw_hist(const af_window window,
             case u8 : chart = setup_histogram<uchar  >(window, X, minval, maxval, props); break;
             default:  TYPE_ERROR(1, Xtype);
         }
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
+        auto gridDims = forgeManager().getWindowGrid(window);
 
         if (props->col>-1 && props->row>-1) {
             FG_CHECK(fg_draw_chart_to_cell(window,

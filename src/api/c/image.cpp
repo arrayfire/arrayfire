@@ -60,7 +60,7 @@ static fg_image convert_and_copy_image(const af_array in)
 
     Array<T> imgData = reorder(_in, rdims);
 
-    ForgeManager& fgMngr = ForgeManager::getInstance();
+    ForgeManager& fgMngr = forgeManager();
 
     // The inDims[2] * 100 is a hack to convert to fg_channel_format
     // TODO Write a proper conversion function
@@ -101,7 +101,7 @@ af_err af_draw_image(const af_window window,
             default:  TYPE_ERROR(1, type);
         }
 
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
+        auto gridDims = forgeManager().getWindowGrid(window);
         FG_CHECK(fg_set_window_colormap(window, (fg_color_map)props->cmap));
         if (props->col>-1 && props->row>-1) {
             FG_CHECK(fg_draw_image_to_cell(window,

@@ -46,7 +46,7 @@ fg_chart setup_plot(fg_window window, const af_array in_,
 
     af::dim4 tdims = in.dims(); //transposed dimensions
 
-    ForgeManager& fgMngr = ForgeManager::getInstance();
+    ForgeManager& fgMngr = forgeManager();
 
     // Get the chart for the current grid position (if any)
     fg_chart chart = NULL;
@@ -150,7 +150,7 @@ af_err plotWrapper(const af_window window,
             default:  TYPE_ERROR(1, type);
         }
 
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
+        auto gridDims = forgeManager().getWindowGrid(window);
 
         if (props->col>-1 && props->row>-1) {
             FG_CHECK(fg_draw_chart_to_cell(window,
@@ -214,7 +214,7 @@ af_err plotWrapper(const af_window window,
             case u8 : chart = setup_plot<uchar  >(window, in, 3, props, ptype, marker); break;
             default:  TYPE_ERROR(1, xType);
         }
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
+        auto gridDims = forgeManager().getWindowGrid(window);
 
         if (props->col>-1 && props->row>-1) {
             FG_CHECK(fg_draw_chart_to_cell(window,
@@ -273,7 +273,7 @@ af_err plotWrapper(const af_window window,
             case u8 : chart = setup_plot<uchar  >(window, in, 2, props, ptype, marker); break;
             default:  TYPE_ERROR(1, xType);
         }
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
+        auto gridDims = forgeManager().getWindowGrid(window);
 
         if (props->col>-1 && props->row>-1) {
             FG_CHECK(fg_draw_chart_to_cell(window,

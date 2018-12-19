@@ -9,8 +9,9 @@
 
 #include <af/version.h>
 #include <platform.hpp>
-#include <common/defines.hpp>
 #include <version.hpp>
+#include <common/defines.hpp>
+#include <common/graphics_common.hpp>
 #include <common/host_memory.hpp>
 
 #include <cctype>
@@ -269,6 +270,17 @@ MemoryManager& memoryManager()
 {
     DeviceManager& inst = DeviceManager::getInstance();
     return *(inst.memManager);
+}
+
+graphics::ForgeManager& forgeManager()
+{
+    static std::once_flag flag;
+
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    std::call_once(flag, [&]() { inst.fgMngr.reset(new graphics::ForgeManager()); });
+
+    return *(inst.fgMngr);
 }
 
 DeviceManager& DeviceManager::getInstance()

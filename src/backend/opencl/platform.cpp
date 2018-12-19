@@ -721,6 +721,11 @@ MemoryManagerPinned& pinnedMemoryManager()
     return *(inst.pinnedMemManager.get());
 }
 
+graphics::ForgeManager& forgeManager()
+{
+    return *(DeviceManager::getInstance().fgMngr);
+}
+
 GraphicsResourceManager& interopManager()
 {
     static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
@@ -835,8 +840,6 @@ DeviceManager::DeviceManager()
         DEVICE_TYPES = CL_DEVICE_TYPE_ACCELERATOR;
     }
 
-
-
     // Iterate through platforms, get all available devices and store them
     for (auto &platform : platforms) {
         std::vector<Device> current_devices;
@@ -848,7 +851,6 @@ DeviceManager::DeviceManager()
                 throw;
             }
         }
-
         for (auto dev : current_devices) {
             mDevices.push_back(new Device(dev));
         }
@@ -910,7 +912,6 @@ DeviceManager::DeviceManager()
                 break;
             }
         }
-
         if (!default_device_set) {
             printf("WARNING: AF_OPENCL_DEFAULT_DEVICE_TYPE=%s is not available\n",
                     deviceENV.c_str());
@@ -918,14 +919,29 @@ DeviceManager::DeviceManager()
         }
     }
 
+    try {
+        // If forgeManager instantiation fails,
+        // ignore and proceed
+        fgMngr.reset(new graphics::ForgeManager());
+    } catch (AfError &error) {
+        if (error.getError() == AF_ERR_LOAD_LIB) {
+            //Ignore , gfx libs are not present, hence,
+            //that functionality will be disabled.
+        } else {
+            throw;
+        }
+    }
+
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
-    if(noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
+    if (fgMngr &&  noGraphicsENV.empty()) {
+        // If forge library was successfully loaded and
+        // AF_DISABLE_GRAPHICS is not defined
         try {
             /* loop over devices and replace contexts with
              * OpenGL shared contexts whereever applicable */
             int devCount = mDevices.size();
-            fg_window wHandle = graphics::ForgeManager::getInstance().getMainWindow();
+            fg_window wHandle = fgMngr->getMainWindow();
             for(int i=0; i<devCount; ++i)
                 markDeviceForInterop(i, wHandle);
         } catch (...) {
@@ -970,9 +986,10 @@ void DeviceManager::markDeviceForInterop(const int device, const void* wHandle)
             cl::Platform plat(mDevices[device]->getInfo<CL_DEVICE_PLATFORM>());
 
             long long wnd_ctx, wnd_dsp;
-            FG_CHECK(fg_get_window_context_handle(&wnd_ctx, const_cast<fg_window>(wHandle)));
-            FG_CHECK(fg_get_window_display_handle(&wnd_dsp, const_cast<fg_window>(wHandle)));
-
+            fgMngr->plugin().fg_get_window_context_handle(&wnd_ctx,
+                                                          const_cast<fg_window>(wHandle));
+            fgMngr->plugin().fg_get_window_display_handle(&wnd_dsp,
+                                                          const_cast<fg_window>(wHandle));
 #ifdef OS_MAC
             CGLContextObj cgl_current_ctx = CGLGetCurrentContext();
             CGLShareGroupObj cgl_share_group = CGLGetShareGroup(cgl_current_ctx);
