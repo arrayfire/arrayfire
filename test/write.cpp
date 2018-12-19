@@ -60,7 +60,6 @@ void writeTest(dim4 dims)
     ASSERT_ARRAYS_EQ(B_copy, A);
     ASSERT_ARRAYS_EQ(A_copy, B);
 
-    af_free_device(b_dev);
     freeHost(a_host);
 }
 
