@@ -435,6 +435,11 @@ if(AF_WITH_NONFREE)
   target_compile_definitions(afopencl PRIVATE AF_WITH_NONFREE_SIFT)
 endif()
 
+if(APPLE)
+  target_link_libraries(afopencl
+    PRIVATE OpenGL::GL)
+endif()
+
 if(LAPACK_FOUND OR MKL_FOUND)
   target_sources(afopencl
     PRIVATE

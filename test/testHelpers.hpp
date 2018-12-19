@@ -1048,7 +1048,7 @@ mtxReadSparseMatrix(af::array &out, const char* fileName)
         std::vector<int> J(nz);
         std::vector<float> V(nz);
 
-        for (unsigned i=0; i<nz; ++i) {
+        for (int i=0; i < nz; ++i) {
             int c, r;
             double v;
             int readCount = fscanf(fileHandle, "%d %d %lg\n", &r, &c, &v);
@@ -1071,7 +1071,7 @@ mtxReadSparseMatrix(af::array &out, const char* fileName)
         std::vector<int> J(nz);
         std::vector<af::cfloat> V(nz);
 
-        for (unsigned i=0; i<nz; ++i) {
+        for (int i=0; i < nz; ++i) {
             int c, r;
             double real, imag;
             int readCount = fscanf(fileHandle, "%d %d %lg %lg\n", &r, &c, &real, &imag);
@@ -1332,6 +1332,7 @@ testWriteToOutputArray(std::string gold_name, std::string result_name,
                                          std::string metadataName,
                                          const af_array a, const af_array b,
                                          TestOutputArrayInfo *metadata) {
+    UNUSED(metadataName);
     return testWriteToOutputArray(aName, bName, a, b, metadata);
 }
 
