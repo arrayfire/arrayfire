@@ -23,6 +23,10 @@
 #include <platform.hpp>
 #include <version.hpp>
 
+#ifdef OS_MAC
+#include <OpenGL/CGLCurrent.h>
+#endif
+
 #include <boost/compute/context.hpp>
 #include <boost/compute/utility/program_cache.hpp>
 
