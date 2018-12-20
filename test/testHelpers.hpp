@@ -47,6 +47,30 @@ typedef uintl uintl;
 using aft::uintl;
 using aft::intl;
 
+std::ostream &operator<<(std::ostream &os, af_err e) {
+    return os << af_err_to_string(e);
+}
+
+std::ostream &operator<<(std::ostream &os, af::dtype type) {
+    std::string name;
+    switch (type) {
+    case f32: name = "f32"; break;
+    case c32: name = "c32"; break;
+    case f64: name = "f64"; break;
+    case c64: name = "c64"; break;
+    case b8 : name = "b8" ; break;
+    case s32: name = "s32"; break;
+    case u32: name = "u32"; break;
+    case u8 : name = "u8" ; break;
+    case s64: name = "s64"; break;
+    case u64: name = "u64"; break;
+    case s16: name = "s16"; break;
+    case u16: name = "u16"; break;
+    default: assert(false && "Invalid type");
+    }
+    return os << name;
+}
+
 namespace {
 
 typedef unsigned char  uchar;
@@ -507,30 +531,6 @@ void cleanSlate()
 }
 
 //********** arrayfire custom test asserts ***********
-
-std::ostream& operator<<(std::ostream& os, af_err e) {
-    return os << af_err_to_string(e);
-}
-
-std::ostream& operator<<(std::ostream& os, af::dtype type) {
-    std::string name;
-    switch (type) {
-    case f32: name = "f32"; break;
-    case c32: name = "c32"; break;
-    case f64: name = "f64"; break;
-    case c64: name = "c64"; break;
-    case b8:  name = "b8";  break;
-    case s32: name = "s32"; break;
-    case u32: name = "u32"; break;
-    case u8:  name = "u8";  break;
-    case s64: name = "s64"; break;
-    case u64: name = "u64"; break;
-    case s16: name = "s16"; break;
-    case u16: name = "u16"; break;
-    default: assert(false && "Invalid type");
-    }
-    return os << name;
-}
 
 // Overloading unary + op is needed to make unsigned char values printable
 //  as numbers
@@ -1100,7 +1100,7 @@ mtxReadSparseMatrix(af::array &out, const char* fileName)
 }
 #endif //USE_MTX
 
-}
+} // namespace
 
 enum TestOutputArrayType {
     // Test af_* function when given a null array as its output
