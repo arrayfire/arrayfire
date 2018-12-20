@@ -141,7 +141,11 @@ void bcast_dim_kernel(__global To *oData, KParam oInfo,
         tData += ids[3] * tInfo.strides[3] + ids[2] * tInfo.strides[2] + ids[1] * tInfo.strides[1] + ids[0];
 
         ids[dim] = ids[dim] * DIMY * lim + lidy;
-        oData  += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] + ids[1] * oInfo.strides[1] + ids[0];
+        oData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] + ids[1] * oInfo.strides[1] + ids[0];
+
+        // Shift broadcast one step to the right for exclusive scan (#2366)
+        int offset = inclusive_scan ? 0 : oInfo.strides[dim];
+        oData += offset;
 
         const int id_dim = ids[dim];
         const int out_dim = oInfo.dims[dim];

@@ -113,14 +113,13 @@ namespace kernel
         }
     }
 
-    template<typename To, af_op_t op>
-    __global__
-    static void bcast_first_kernel(Param<To> out,
-                                   CParam<To> tmp,
-                                   uint blocks_x,
-                                   uint blocks_y,
-                                   uint lim)
-    {
+    template <typename To, af_op_t op>
+    __global__ static void bcast_first_kernel(Param<To> out,
+                                              CParam<To> tmp,
+                                              uint blocks_x,
+                                              uint blocks_y,
+                                              uint lim,
+                                              bool inclusive_scan) {
         const int tidx = threadIdx.x;
         const int tidy = threadIdx.y;
 
@@ -145,13 +144,13 @@ namespace kernel
         Binary<To, op> binop;
         To accum = tptr[blockIdx_x - 1];
 
-        for (int k = 0, id = xid;
+        // Shift broadcast one step to the right for exclusive scan (#2366)
+        int offset = !inclusive_scan;
+        for (int k = 0, id = xid + offset;
              k < lim && id < out.dims[0];
              k++, id += blockDim.x) {
-
             optr[id] = binop(accum, optr[id]);
         }
-
     }
 
     template<typename Ti, typename To, af_op_t op, bool isFinalPass, bool inclusive_scan>
@@ -198,7 +197,8 @@ namespace kernel
                                      CParam<To> tmp,
                                      const uint blocks_x,
                                      const uint blocks_y,
-                                     const uint threads_x)
+                                     const uint threads_x,
+                                     bool inclusive_scan)
     {
 
         dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
@@ -211,7 +211,8 @@ namespace kernel
 
         uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
-        CUDA_LAUNCH((bcast_first_kernel<To, op>), blocks, threads, out, tmp, blocks_x, blocks_y, lim);
+        CUDA_LAUNCH((bcast_first_kernel<To, op>), blocks, threads,
+                    out, tmp, blocks_x, blocks_y, lim, inclusive_scan);
 
         POST_LAUNCH_CHECK();
     }
@@ -259,7 +260,7 @@ namespace kernel
                                                             threads_x);
             }
 
-            bcast_first_launcher<To, op>(out, tmp, blocks_x, blocks_y, threads_x);
+            bcast_first_launcher<To, op>(out, tmp, blocks_x, blocks_y, threads_x, inclusive_scan);
 
         }
     }
