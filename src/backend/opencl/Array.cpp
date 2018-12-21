@@ -173,15 +173,17 @@ namespace opencl
     void evalMultiple(vector<Array<T>*> arrays)
     {
         vector<Param> outputs;
+        vector<Array<T> *> output_arrays;
         vector<Node *> nodes;
 
-        for (auto array : arrays) {
+        for (Array<T>* array : arrays) {
             if (array->isReady()) {
                 continue;
             }
 
             const ArrayInfo info = array->info;
 
+            array->ready = true;
             array->setId(getActiveDeviceId());
             array->data = Buffer_ptr(bufferAlloc(info.elements() * sizeof(T)), bufferFree);
 
@@ -192,13 +194,13 @@ namespace opencl
                             0};
 
             Param res = {array->data.get(), kInfo};
+
             outputs.push_back(res);
+            output_arrays.push_back(array);
             nodes.push_back(array->node.get());
         }
         evalNodes(outputs, nodes);
-        for (auto array : arrays) {
-            if (array->isReady()) continue;
-            array->ready = true;
+        for (Array<T>* array : output_arrays) {
             array->node = bufferNodePtr<T>();
         }
     }
