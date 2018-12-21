@@ -23,7 +23,7 @@ void copy_histogram(const Array<T> &data, fg_histogram hist)
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = data.get();
         unsigned bytes = 0;
-        FG_CHECK(fg_get_histogram_vertex_buffer_size(&bytes, hist));
+        FG_CHECK(_.fg_get_histogram_vertex_buffer_size(&bytes, hist));
 
         auto res = interopManager().getHistogramResources(hist);
 
@@ -46,8 +46,8 @@ void copy_histogram(const Array<T> &data, fg_histogram hist)
         CheckGL("End OpenCL resource copy");
     } else {
         unsigned bytes = 0, buffer = 0;
-        FG_CHECK(fg_get_histogram_vertex_buffer(&buffer, hist));
-        FG_CHECK(fg_get_histogram_vertex_buffer_size(&bytes, hist));
+        FG_CHECK(_.fg_get_histogram_vertex_buffer(&buffer, hist));
+        FG_CHECK(_.fg_get_histogram_vertex_buffer_size(&bytes, hist));
 
         CheckGL("Begin OpenCL fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);

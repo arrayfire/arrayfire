@@ -92,7 +92,7 @@ ForgeModule& forgePlugin();
 
 #define FG_CHECK(fn)                           \
     do {                                       \
-        fg_err e = graphics::forgePlugin().fn; \
+        fg_err e = (fn);                       \
         if (e != FG_ERR_NONE) {                \
             AF_ERROR("forge call failed",      \
                     AF_ERR_INTERNAL);          \

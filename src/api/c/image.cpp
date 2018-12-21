@@ -101,15 +101,16 @@ af_err af_draw_image(const af_window window,
             default:  TYPE_ERROR(1, type);
         }
 
+        ForgeModule& _ = graphics::forgePlugin();
         auto gridDims = forgeManager().getWindowGrid(window);
-        FG_CHECK(fg_set_window_colormap(window, (fg_color_map)props->cmap));
+        FG_CHECK(_.fg_set_window_colormap(window, (fg_color_map)props->cmap));
         if (props->col>-1 && props->row>-1) {
-            FG_CHECK(fg_draw_image_to_cell(window,
-                                           gridDims.first, gridDims.second,
-                                           props->row * gridDims.second + props->col,
-                                           image, props->title, true));
+            FG_CHECK(_.fg_draw_image_to_cell(window,
+                                             gridDims.first, gridDims.second,
+                                             props->row * gridDims.second + props->col,
+                                             image, props->title, true));
         } else {
-            FG_CHECK(fg_draw_image(window, image, true));
+            FG_CHECK(_.fg_draw_image(window, image, true));
         }
     }
     CATCHALL;

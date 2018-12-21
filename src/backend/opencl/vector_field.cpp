@@ -28,8 +28,8 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
         const cl::Buffer *d_directions  = directions.get();
         unsigned pBytes = 0;
         unsigned dBytes = 0;
-        FG_CHECK(fg_get_vector_field_vertex_buffer_size(&pBytes, vfield));
-        FG_CHECK(fg_get_vector_field_direction_buffer_size(&dBytes, vfield));
+        FG_CHECK(_.fg_get_vector_field_vertex_buffer_size(&pBytes, vfield));
+        FG_CHECK(_.fg_get_vector_field_direction_buffer_size(&dBytes, vfield));
 
         auto res = interopManager().getVectorFieldResources(vfield);
 
@@ -55,10 +55,10 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
     } else {
         unsigned size1 = 0, size2 = 0;
         unsigned buff1 = 0, buff2 = 0;
-        FG_CHECK(fg_get_vector_field_vertex_buffer_size(&size1, vfield));
-        FG_CHECK(fg_get_vector_field_direction_buffer_size(&size2, vfield));
-        FG_CHECK(fg_get_vector_field_vertex_buffer(&buff1, vfield));
-        FG_CHECK(fg_get_vector_field_direction_buffer(&buff2, vfield));
+        FG_CHECK(_.fg_get_vector_field_vertex_buffer_size(&size1, vfield));
+        FG_CHECK(_.fg_get_vector_field_direction_buffer_size(&size2, vfield));
+        FG_CHECK(_.fg_get_vector_field_vertex_buffer(&buff1, vfield));
+        FG_CHECK(_.fg_get_vector_field_direction_buffer(&buff2, vfield));
 
         CheckGL("Begin OpenCL fallback-resource copy");
 

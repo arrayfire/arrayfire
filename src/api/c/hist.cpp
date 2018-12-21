@@ -27,6 +27,8 @@ fg_chart setup_histogram(fg_window const window,
                          const double minval, const double maxval,
                          const af_cell* const props)
 {
+    ForgeModule& _ = graphics::forgePlugin();
+
     Array<T> histogramInput = getArray<T>(in);
     dim_t nBins = histogramInput.elements();
 
@@ -44,13 +46,13 @@ fg_chart setup_histogram(fg_window const window,
     fg_histogram hist = fgMngr.getHistogram(chart, nBins, getGLType<T>());
 
     // Set histogram bar colors to ArrayFire's orange
-    FG_CHECK(fg_set_histogram_color(hist, 0.929f, 0.486f, 0.2745f, 1.0f));
+    FG_CHECK(_.fg_set_histogram_color(hist, 0.929f, 0.486f, 0.2745f, 1.0f));
 
     // If chart axes limits do not have a manual override
     // then compute and set axes limits
     if(!fgMngr.getChartAxesOverride(chart)) {
         float xMin, xMax, yMin, yMax, zMin, zMax;
-        FG_CHECK(fg_get_chart_axes_limits(&xMin, &xMax,
+        FG_CHECK(_.fg_get_chart_axes_limits(&xMin, &xMax,
                                           &yMin, &yMax,
                                           &zMin, &zMax,
                                           chart));
@@ -70,7 +72,7 @@ fg_chart setup_histogram(fg_window const window,
             // For histogram, always set yMin to 0.
             yMin = 0;
         }
-        FG_CHECK(fg_set_chart_axes_limits(chart, xMin, xMax, yMin, yMax, zMin, zMax));
+        FG_CHECK(_.fg_set_chart_axes_limits(chart, xMin, xMax, yMin, yMax, zMin, zMax));
     }
 
     copy_histogram<T>(histogramInput, hist);
@@ -108,13 +110,14 @@ af_err af_draw_hist(const af_window window,
         }
         auto gridDims = forgeManager().getWindowGrid(window);
 
+        ForgeModule& _ = graphics::forgePlugin();
         if (props->col>-1 && props->row>-1) {
-            FG_CHECK(fg_draw_chart_to_cell(window,
-                                           gridDims.first, gridDims.second,
-                                           props->row * gridDims.second + props->col,
-                                           chart, props->title));
+            FG_CHECK(_.fg_draw_chart_to_cell(window,
+                                             gridDims.first, gridDims.second,
+                                             props->row * gridDims.second + props->col,
+                                             chart, props->title));
         } else {
-            FG_CHECK(fg_draw_chart(window, chart));
+            FG_CHECK(_.fg_draw_chart(window, chart));
         }
     }
     CATCHALL;

@@ -166,7 +166,7 @@ size_t getTypeSize(GLenum type)
 
 void makeContextCurrent(fg_window window)
 {
-    FG_CHECK(fg_make_window_current(window));
+    FG_CHECK(graphics::forgePlugin().fg_make_window_current(window));
     CheckGL("End makeContextCurrent");
 }
 
@@ -320,7 +320,7 @@ void ForgeManager::setWindowChartGrid(const fg_window window,
             fg_chart chrt = (iter->second)[i];
             if (chrt) {
                 mChartAxesOverrideMap.erase(chrt);
-                FG_CHECK(fg_release_chart(chrt));
+                FG_CHECK(mPlugin->fg_release_chart(chrt));
             }
         }
         (iter->second).clear();
@@ -368,18 +368,18 @@ fg_chart ForgeManager::getChart(const fg_window window,
 
         if (chart == NULL) {
             // Chart has not been created
-            FG_CHECK(fg_create_chart(&chart, ctype));
+            FG_CHECK(mPlugin->fg_create_chart(&chart, ctype));
             (iter->second)[c * gRows + r] = chart;
             // Set Axes override to false
             mChartAxesOverrideMap[chart] = false;
         } else {
             fg_chart_type chart_type;
-            FG_CHECK(fg_get_chart_type(&chart_type, chart));
+            FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
             if (chart_type != ctype) {
                 // Existing chart is of incompatible type
                 mChartAxesOverrideMap.erase(chart);
-                FG_CHECK(fg_release_chart(chart));
-                FG_CHECK(fg_create_chart(&chart, ctype));
+                FG_CHECK(mPlugin->fg_release_chart(chart));
+                FG_CHECK(mPlugin->fg_create_chart(&chart, ctype));
                 (iter->second)[c * gRows + r] = chart;
                 // Set Axes override to false
                 mChartAxesOverrideMap[chart] = false;
@@ -411,7 +411,7 @@ fg_image ForgeManager::getImage(int w, int h, fg_channel_format mode, fg_dtype t
 
     if (iter==mImgMap.end()) {
         fg_image img = nullptr;
-        FG_CHECK(fg_create_image(&img, w, h, mode, type));
+        FG_CHECK(mPlugin->fg_create_image(&img, w, h, mode, type));
         mImgMap[keypair] = img;
     }
 
@@ -437,16 +437,16 @@ fg_image ForgeManager::getImage(fg_chart chart, int w, int h,
 
     if (iter==mImgMap.end()) {
         fg_chart_type chart_type;
-        FG_CHECK(fg_get_chart_type(&chart_type, chart));
+        FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
         if(chart_type != FG_CHART_2D)
             AF_ERROR("Image can only be added to chart of type FG_CHART_2D",
                      AF_ERR_TYPE);
 
         fg_image img = nullptr;
-        FG_CHECK(fg_create_image(&img, w, h, mode, type));
+        FG_CHECK(mPlugin->fg_create_image(&img, w, h, mode, type));
         mImgMap[keypair] = img;
 
-        FG_CHECK(fg_append_image_to_chart(chart, img));
+        FG_CHECK(mPlugin->fg_append_image_to_chart(chart, img));
     }
 
     return mImgMap[keypair];
@@ -464,13 +464,13 @@ fg_plot ForgeManager::getPlot(fg_chart chart, int nPoints, fg_dtype dtype,
 
     if (iter==mPltMap.end()) {
         fg_chart_type chart_type;
-        FG_CHECK(fg_get_chart_type(&chart_type, chart));
+        FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
 
         fg_plot plt = nullptr;
-        FG_CHECK(fg_create_plot(&plt, nPoints, dtype, chart_type, ptype, mtype));
+        FG_CHECK(mPlugin->fg_create_plot(&plt, nPoints, dtype, chart_type, ptype, mtype));
         mPltMap[keypair] = plt;
 
-        FG_CHECK(fg_append_plot_to_chart(chart, plt));
+        FG_CHECK(mPlugin->fg_append_plot_to_chart(chart, plt));
     }
 
     return mPltMap[keypair];
@@ -486,16 +486,16 @@ fg_histogram ForgeManager::getHistogram(fg_chart chart, int nBins, fg_dtype type
 
     if (iter==mHstMap.end()) {
         fg_chart_type chart_type;
-        FG_CHECK(fg_get_chart_type(&chart_type, chart));
+        FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
         if(chart_type != FG_CHART_2D)
             AF_ERROR("Histogram can only be added to chart of type FG_CHART_2D",
                      AF_ERR_TYPE);
 
         fg_histogram hst = nullptr;
-        FG_CHECK(fg_create_histogram(&hst, nBins, type));
+        FG_CHECK(mPlugin->fg_create_histogram(&hst, nBins, type));
         mHstMap[keypair] = hst;
 
-        FG_CHECK(fg_append_histogram_to_chart(chart, hst));
+        FG_CHECK(mPlugin->fg_append_histogram_to_chart(chart, hst));
     }
 
     return mHstMap[keypair];
@@ -517,17 +517,17 @@ fg_surface ForgeManager::getSurface(fg_chart chart, int nX, int nY, fg_dtype typ
 
     if (iter==mSfcMap.end()) {
         fg_chart_type chart_type;
-        FG_CHECK(fg_get_chart_type(&chart_type, chart));
+        FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
         if(chart_type != FG_CHART_3D)
             AF_ERROR("Surface can only be added to chart of type FG_CHART_3D",
                      AF_ERR_TYPE);
 
         fg_surface surf = nullptr;
-        FG_CHECK(fg_create_surface(&surf, nX, nY, type,
+        FG_CHECK(mPlugin->fg_create_surface(&surf, nX, nY, type,
                                    FG_PLOT_SURFACE, FG_MARKER_NONE));
         mSfcMap[keypair] = surf;
 
-        FG_CHECK(fg_append_surface_to_chart(chart, surf));
+        FG_CHECK(mPlugin->fg_append_surface_to_chart(chart, surf));
     }
 
     return mSfcMap[keypair];
@@ -543,13 +543,13 @@ fg_vector_field ForgeManager::getVectorField(fg_chart chart, int nPoints, fg_dty
 
     if (iter==mVcfMap.end()) {
         fg_chart_type chart_type;
-        FG_CHECK(fg_get_chart_type(&chart_type, chart));
+        FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
 
         fg_vector_field vfield = nullptr;
-        FG_CHECK(fg_create_vector_field(&vfield, nPoints, type, chart_type));
+        FG_CHECK(mPlugin->fg_create_vector_field(&vfield, nPoints, type, chart_type));
         mVcfMap[keypair] = vfield;
 
-        FG_CHECK(fg_append_vector_field_to_chart(chart, vfield));
+        FG_CHECK(mPlugin->fg_append_vector_field_to_chart(chart, vfield));
     }
 
     return mVcfMap[keypair];

@@ -31,6 +31,7 @@ fg_chart setup_surface(fg_window window,
                        const af_array zVals,
                        const af_cell* const props)
 {
+    ForgeModule& _ = graphics::forgePlugin();
     Array<T> xIn = getArray<T>(xVals);
     Array<T> yIn = getArray<T>(yVals);
     Array<T> zIn = getArray<T>(zVals);
@@ -78,14 +79,14 @@ fg_chart setup_surface(fg_window window,
 
     fg_surface surface = fgMngr.getSurface(chart, Z_dims[0], Z_dims[1], getGLType<T>());
 
-    FG_CHECK(fg_set_surface_color(surface, 0.0, 1.0, 0.0, 1.0));
+    FG_CHECK(_.fg_set_surface_color(surface, 0.0, 1.0, 0.0, 1.0));
 
     // If chart axes limits do not have a manual override
     // then compute and set axes limits
     if(!fgMngr.getChartAxesOverride(chart)) {
         float cmin[3], cmax[3];
         T     dmin[3], dmax[3];
-        FG_CHECK(fg_get_chart_axes_limits(&cmin[0], &cmax[0],
+        FG_CHECK(_.fg_get_chart_axes_limits(&cmin[0], &cmax[0],
                                           &cmin[1], &cmax[1],
                                           &cmin[2], &cmax[2],
                                           chart));
@@ -115,7 +116,7 @@ fg_chart setup_surface(fg_window window,
             if(cmax[2] < dmax[2]) cmax[2] = step_round(dmax[2], true);
         }
 
-        FG_CHECK(fg_set_chart_axes_limits(chart,
+        FG_CHECK(_.fg_set_chart_axes_limits(chart,
                                           cmin[0], cmax[0],
                                           cmin[1], cmax[1],
                                           cmin[2], cmax[2]));
@@ -171,13 +172,14 @@ af_err af_draw_surface(const af_window window,
         }
         auto gridDims = forgeManager().getWindowGrid(window);
 
+        ForgeModule& _ = graphics::forgePlugin();
         if (props->col>-1 && props->row>-1) {
-            FG_CHECK(fg_draw_chart_to_cell(window,
-                                           gridDims.first, gridDims.second,
-                                           props->row * gridDims.second + props->col,
-                                           chart, props->title));
+            FG_CHECK(_.fg_draw_chart_to_cell(window,
+                                             gridDims.first, gridDims.second,
+                                             props->row * gridDims.second + props->col,
+                                             chart, props->title));
         } else {
-            FG_CHECK(fg_draw_chart(window, chart));
+            FG_CHECK(_.fg_draw_chart(window, chart));
         }
     }
     CATCHALL;
