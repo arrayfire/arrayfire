@@ -103,6 +103,10 @@ class ForgeManager
 
     public:
         ForgeManager();
+        ForgeManager(ForgeManager const&) = delete;
+        ForgeManager& operator=(ForgeManager const&) = delete;
+        ForgeManager(ForgeManager &&) = delete;
+        ForgeManager& operator=(ForgeManager &&) = delete;
         ~ForgeManager();
         ForgeModule& plugin();
         fg_window getMainWindow();
@@ -132,11 +136,5 @@ class ForgeManager
 
         bool getChartAxesOverride(fg_chart chart);
         void setChartAxesOverride(fg_chart chart, bool flag = true);
-
-    protected:
-        ForgeManager(ForgeManager const&);
-        ForgeManager& operator=(ForgeManager const&);
-        ForgeManager(ForgeManager &&);
-        ForgeManager& operator=(ForgeManager &&);
 };
 }
