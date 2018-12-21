@@ -145,23 +145,24 @@ T* Array<T>::device()
 template<typename T>
 void evalMultiple(vector<Array<T>*> array_ptrs)
 {
-    vector<Array<T>> arrays;
+    vector<Array<T>*> output_arrays;
     vector<Node_ptr> nodes;
-    bool isWorker = getQueue().is_worker();
-    for (auto &array : array_ptrs) {
+    vector<Param<T>> params;
+    if (getQueue().is_worker()) AF_ERROR("Array not evaluated", AF_ERR_INTERNAL);
+    for (Array<T>* array : array_ptrs) {
         if (array->ready) continue;
-        if (isWorker) AF_ERROR("Array not evaluated", AF_ERR_INTERNAL);
+
         array->setId(getActiveDeviceId());
         array->data = shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree<T>);
-        arrays.push_back(*array);
+
+        output_arrays.push_back(array);
+        params.push_back(*array);
         nodes.push_back(array->node);
     }
 
-    vector<Param<T>> params(arrays.begin(), arrays.end());
-    if (arrays.size() > 0) {
+    if (output_arrays.size() > 0) {
         getQueue().enqueue(kernel::evalMultiple<T>, params, nodes);
-        for (auto &array : array_ptrs) {
-            if (array->ready) continue;
+        for (Array<T>* array : output_arrays) {
             array->ready = true;
             array->node = bufferNodePtr<T>();
         }

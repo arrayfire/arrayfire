@@ -26,8 +26,10 @@ using cuda::jit::BufferNode;
 using common::Node;
 using common::NodeIterator;
 using common::Node_ptr;
+
 using std::accumulate;
 using std::shared_ptr;
+using std::vector;
 
 namespace cuda
 {
@@ -147,12 +149,11 @@ namespace cuda
     template<typename T>
     void evalMultiple(std::vector<Array<T>*> arrays)
     {
-        std::vector<Param<T> > outputs;
-        std::vector<common::Node *> nodes;
+        vector<Param<T> > outputs;
+        vector<Array<T> *> output_arrays;
+        vector<Node*> nodes;
 
-        for (int i = 0; i < (int)arrays.size(); i++) {
-            Array<T> *array = arrays[i];
-
+        for (Array<T>* array : arrays) {
             if (array->isReady()) {
                 continue;
             }
@@ -162,18 +163,15 @@ namespace cuda
             array->data = shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree<T>);
 
             outputs.push_back(*array);
+            output_arrays.push_back(array);
             nodes.push_back(array->node.get());
         }
 
         evalNodes(outputs, nodes);
 
-        for (int i = 0; i < (int)arrays.size(); i++) {
-            Array<T> *array = arrays[i];
-
-            if (array->isReady()) continue;
-            // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
+        for(Array<T>* array : output_arrays)
             array->node = bufferNodePtr<T>();
-        }
+
         return;
     }
 
