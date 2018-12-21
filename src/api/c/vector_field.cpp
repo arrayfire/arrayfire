@@ -120,11 +120,11 @@ af_err vectorFieldWrapper(const af_window window,
                           const af_array points, const af_array directions,
                           const af_cell* const props)
 {
-    if(window == 0) {
-        AF_RETURN_ERROR("Not a valid window", AF_SUCCESS);
-    }
-
     try {
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+
         const ArrayInfo& pInfo = getInfo(points);
         af::dim4 pDims  = pInfo.dims();
         af_dtype pType  = pInfo.getType();
@@ -182,10 +182,11 @@ af_err vectorFieldWrapper(const af_window window,
                           const af_array zDirs,
                           const af_cell* const props)
 {
-    if(window == 0) {
-        AF_RETURN_ERROR("Not a valid window", AF_SUCCESS);
-    }
     try {
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_SUCCESS);
+        }
+
         const ArrayInfo& xpInfo = getInfo(xPoints);
         const ArrayInfo& ypInfo = getInfo(yPoints);
         const ArrayInfo& zpInfo = getInfo(zPoints);
@@ -272,11 +273,11 @@ af_err vectorFieldWrapper(const af_window window,
                           const af_array xDirs, const af_array yDirs,
                           const af_cell* const props)
 {
-    if(window == 0) {
-        AF_RETURN_ERROR("Not a valid window", AF_SUCCESS);
-    }
-
     try {
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_SUCCESS);
+        }
+
         const ArrayInfo& xpInfo = getInfo(xPoints);
         const ArrayInfo& ypInfo = getInfo(yPoints);
 

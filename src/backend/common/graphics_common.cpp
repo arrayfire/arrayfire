@@ -17,82 +17,89 @@
 
 using namespace std;
 
+/// Dynamically loads forge function pointer at runtime
+#define FG_MODULE_FUNCTION_INIT(NAME)                \
+    NAME = DependencyModule::getSymbol<decltype(&::NAME)>(#NAME)
+
 ForgeModule::ForgeModule()
-    : module("forge", nullptr)
+    : DependencyModule("forge", nullptr)
 {
-    if (!module.isLoaded()) {
-        string error_message = "Error loading Forge: "
-            + module.getErrorMessage()
-            + "\nForge or one of it's dependencies failed to "
-            "load. Try installing Forge or check if Forge is in the "
-            "search path.";
-        AF_ERROR(error_message.c_str(), AF_ERR_LOAD_LIB);
+    if (DependencyModule::isLoaded()) {
+        FG_MODULE_FUNCTION_INIT(fg_create_window);
+        FG_MODULE_FUNCTION_INIT(fg_get_window_context_handle);
+        FG_MODULE_FUNCTION_INIT(fg_get_window_display_handle);
+        FG_MODULE_FUNCTION_INIT(fg_make_window_current);
+        FG_MODULE_FUNCTION_INIT(fg_set_window_font);
+        FG_MODULE_FUNCTION_INIT(fg_set_window_position);
+        FG_MODULE_FUNCTION_INIT(fg_set_window_title);
+        FG_MODULE_FUNCTION_INIT(fg_set_window_size);
+        FG_MODULE_FUNCTION_INIT(fg_set_window_colormap);
+        FG_MODULE_FUNCTION_INIT(fg_draw_chart_to_cell);
+        FG_MODULE_FUNCTION_INIT(fg_draw_chart);
+        FG_MODULE_FUNCTION_INIT(fg_draw_image_to_cell);
+        FG_MODULE_FUNCTION_INIT(fg_draw_image);
+        FG_MODULE_FUNCTION_INIT(fg_swap_window_buffers);
+        FG_MODULE_FUNCTION_INIT(fg_close_window);
+        FG_MODULE_FUNCTION_INIT(fg_show_window);
+        FG_MODULE_FUNCTION_INIT(fg_hide_window);
+        FG_MODULE_FUNCTION_INIT(fg_release_window);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_font);
+        FG_MODULE_FUNCTION_INIT(fg_load_system_font);
+        FG_MODULE_FUNCTION_INIT(fg_release_font);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_image);
+        FG_MODULE_FUNCTION_INIT(fg_get_pixel_buffer);
+        FG_MODULE_FUNCTION_INIT(fg_get_image_size);
+        FG_MODULE_FUNCTION_INIT(fg_release_image);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_plot);
+        FG_MODULE_FUNCTION_INIT(fg_set_plot_color);
+        FG_MODULE_FUNCTION_INIT(fg_get_plot_vertex_buffer);
+        FG_MODULE_FUNCTION_INIT(fg_get_plot_vertex_buffer_size);
+        FG_MODULE_FUNCTION_INIT(fg_release_plot);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_histogram);
+        FG_MODULE_FUNCTION_INIT(fg_set_histogram_color);
+        FG_MODULE_FUNCTION_INIT(fg_get_histogram_vertex_buffer);
+        FG_MODULE_FUNCTION_INIT(fg_get_histogram_vertex_buffer_size);
+        FG_MODULE_FUNCTION_INIT(fg_release_histogram);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_surface);
+        FG_MODULE_FUNCTION_INIT(fg_set_surface_color);
+        FG_MODULE_FUNCTION_INIT(fg_get_surface_vertex_buffer);
+        FG_MODULE_FUNCTION_INIT(fg_get_surface_vertex_buffer_size);
+        FG_MODULE_FUNCTION_INIT(fg_release_surface);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_vector_field);
+        FG_MODULE_FUNCTION_INIT(fg_set_vector_field_color);
+        FG_MODULE_FUNCTION_INIT(fg_get_vector_field_vertex_buffer_size);
+        FG_MODULE_FUNCTION_INIT(fg_get_vector_field_direction_buffer_size);
+        FG_MODULE_FUNCTION_INIT(fg_get_vector_field_vertex_buffer);
+        FG_MODULE_FUNCTION_INIT(fg_get_vector_field_direction_buffer);
+        FG_MODULE_FUNCTION_INIT(fg_release_vector_field);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_chart);
+        FG_MODULE_FUNCTION_INIT(fg_get_chart_type);
+        FG_MODULE_FUNCTION_INIT(fg_get_chart_axes_limits);
+        FG_MODULE_FUNCTION_INIT(fg_set_chart_axes_limits);
+        FG_MODULE_FUNCTION_INIT(fg_set_chart_axes_titles);
+        FG_MODULE_FUNCTION_INIT(fg_append_image_to_chart);
+        FG_MODULE_FUNCTION_INIT(fg_append_plot_to_chart);
+        FG_MODULE_FUNCTION_INIT(fg_append_histogram_to_chart);
+        FG_MODULE_FUNCTION_INIT(fg_append_surface_to_chart);
+        FG_MODULE_FUNCTION_INIT(fg_append_vector_field_to_chart);
+        FG_MODULE_FUNCTION_INIT(fg_release_chart);
+
+        if (!DependencyModule::symbolsLoaded()) {
+            string error_message = "Error loading Forge: "
+                + DependencyModule::getErrorMessage()
+                + "\nForge or one of it's dependencies failed to "
+                "load. Try installing Forge or check if Forge is in the "
+                "search path.";
+            AF_ERROR(error_message.c_str(), AF_ERR_LOAD_LIB);
+        }
     }
-    MODULE_FUNCTION_INIT(fg_create_window);
-    MODULE_FUNCTION_INIT(fg_get_window_context_handle);
-    MODULE_FUNCTION_INIT(fg_get_window_display_handle);
-    MODULE_FUNCTION_INIT(fg_make_window_current);
-    MODULE_FUNCTION_INIT(fg_set_window_font);
-    MODULE_FUNCTION_INIT(fg_set_window_position);
-    MODULE_FUNCTION_INIT(fg_set_window_title);
-    MODULE_FUNCTION_INIT(fg_set_window_size);
-    MODULE_FUNCTION_INIT(fg_set_window_colormap);
-    MODULE_FUNCTION_INIT(fg_draw_chart_to_cell);
-    MODULE_FUNCTION_INIT(fg_draw_chart);
-    MODULE_FUNCTION_INIT(fg_draw_image_to_cell);
-    MODULE_FUNCTION_INIT(fg_draw_image);
-    MODULE_FUNCTION_INIT(fg_swap_window_buffers);
-    MODULE_FUNCTION_INIT(fg_close_window);
-    MODULE_FUNCTION_INIT(fg_show_window);
-    MODULE_FUNCTION_INIT(fg_hide_window);
-    MODULE_FUNCTION_INIT(fg_release_window);
-
-    MODULE_FUNCTION_INIT(fg_create_font);
-    MODULE_FUNCTION_INIT(fg_load_system_font);
-    MODULE_FUNCTION_INIT(fg_release_font);
-
-    MODULE_FUNCTION_INIT(fg_create_image);
-    MODULE_FUNCTION_INIT(fg_get_pixel_buffer);
-    MODULE_FUNCTION_INIT(fg_get_image_size);
-    MODULE_FUNCTION_INIT(fg_release_image);
-
-    MODULE_FUNCTION_INIT(fg_create_plot);
-    MODULE_FUNCTION_INIT(fg_set_plot_color);
-    MODULE_FUNCTION_INIT(fg_get_plot_vertex_buffer);
-    MODULE_FUNCTION_INIT(fg_get_plot_vertex_buffer_size);
-    MODULE_FUNCTION_INIT(fg_release_plot);
-
-    MODULE_FUNCTION_INIT(fg_create_histogram);
-    MODULE_FUNCTION_INIT(fg_set_histogram_color);
-    MODULE_FUNCTION_INIT(fg_get_histogram_vertex_buffer);
-    MODULE_FUNCTION_INIT(fg_get_histogram_vertex_buffer_size);
-    MODULE_FUNCTION_INIT(fg_release_histogram);
-
-    MODULE_FUNCTION_INIT(fg_create_surface);
-    MODULE_FUNCTION_INIT(fg_set_surface_color);
-    MODULE_FUNCTION_INIT(fg_get_surface_vertex_buffer);
-    MODULE_FUNCTION_INIT(fg_get_surface_vertex_buffer_size);
-    MODULE_FUNCTION_INIT(fg_release_surface);
-
-    MODULE_FUNCTION_INIT(fg_create_vector_field);
-    MODULE_FUNCTION_INIT(fg_set_vector_field_color);
-    MODULE_FUNCTION_INIT(fg_get_vector_field_vertex_buffer_size);
-    MODULE_FUNCTION_INIT(fg_get_vector_field_direction_buffer_size);
-    MODULE_FUNCTION_INIT(fg_get_vector_field_vertex_buffer);
-    MODULE_FUNCTION_INIT(fg_get_vector_field_direction_buffer);
-    MODULE_FUNCTION_INIT(fg_release_vector_field);
-
-    MODULE_FUNCTION_INIT(fg_create_chart);
-    MODULE_FUNCTION_INIT(fg_get_chart_type);
-    MODULE_FUNCTION_INIT(fg_get_chart_axes_limits);
-    MODULE_FUNCTION_INIT(fg_set_chart_axes_limits);
-    MODULE_FUNCTION_INIT(fg_set_chart_axes_titles);
-    MODULE_FUNCTION_INIT(fg_append_image_to_chart);
-    MODULE_FUNCTION_INIT(fg_append_plot_to_chart);
-    MODULE_FUNCTION_INIT(fg_append_histogram_to_chart);
-    MODULE_FUNCTION_INIT(fg_append_surface_to_chart);
-    MODULE_FUNCTION_INIT(fg_append_vector_field_to_chart);
-    MODULE_FUNCTION_INIT(fg_release_chart);
 }
 
 template<typename T>
@@ -273,10 +280,17 @@ fg_window ForgeManager::getMainWindow()
     if (noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
         std::call_once(flag,
             [this] {
+                if (!this->mPlugin->isLoaded()) {
+                    string error_message = "Error loading Forge: "
+                        + this->mPlugin->getErrorMessage()
+                        + "\nForge or one of it's dependencies failed to "
+                        "load. Try installing Forge or check if Forge is in the "
+                        "search path.";
+                    AF_ERROR(error_message.c_str(), AF_ERR_LOAD_LIB);
+                }
                 fg_window w = nullptr;
-                fg_err e = mPlugin->fg_create_window(&w,
-                                                     WIDTH, HEIGHT,
-                                                     "ArrayFire", NULL, true);
+                fg_err e = this->mPlugin->fg_create_window(&w, WIDTH, HEIGHT,
+                                                           "ArrayFire", NULL, true);
                 if (e != FG_ERR_NONE) {
                     AF_ERROR("Graphics Window creation failed", AF_ERR_INTERNAL);
                 }

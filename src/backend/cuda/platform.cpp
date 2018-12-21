@@ -432,13 +432,7 @@ MemoryManagerPinned& pinnedMemoryManager()
 
 graphics::ForgeManager& forgeManager()
 {
-    static std::once_flag flag;
-
-    DeviceManager& inst = DeviceManager::getInstance();
-
-    std::call_once(flag, [&]() { inst.fgMngr.reset(new graphics::ForgeManager()); });
-
-    return *(inst.fgMngr);
+    return *(DeviceManager::getInstance().fgMngr);
 }
 
 GraphicsResourceManager& interopManager()
@@ -517,7 +511,7 @@ SparseHandle sparseHandle()
 }
 
 DeviceManager::DeviceManager()
-    : cuDevices(0), nDevices(0)
+    : cuDevices(0), nDevices(0), fgMngr(new graphics::ForgeManager())
 {
     CUDA_CHECK(cudaGetDeviceCount(&nDevices));
     if (nDevices == 0)

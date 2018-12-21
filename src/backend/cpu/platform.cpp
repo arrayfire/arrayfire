@@ -263,7 +263,8 @@ bool& evalFlag()
 
 DeviceManager::DeviceManager()
     : queues(MAX_QUEUES)
-    , memManager(new MemoryManager()) {}
+    , memManager(new MemoryManager()),
+      fgMngr(new graphics::ForgeManager()){}
 
 
 MemoryManager& memoryManager()
@@ -274,13 +275,7 @@ MemoryManager& memoryManager()
 
 graphics::ForgeManager& forgeManager()
 {
-    static std::once_flag flag;
-
-    DeviceManager& inst = DeviceManager::getInstance();
-
-    std::call_once(flag, [&]() { inst.fgMngr.reset(new graphics::ForgeManager()); });
-
-    return *(inst.fgMngr);
+    return *(DeviceManager::getInstance().fgMngr);
 }
 
 DeviceManager& DeviceManager::getInstance()

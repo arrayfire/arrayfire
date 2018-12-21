@@ -129,12 +129,11 @@ af_err af_draw_surface(const af_window window,
                        const af_array xVals, const af_array yVals,
                        const af_array S, const af_cell* const props)
 {
-    if(window == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
-    }
-
     try {
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+
         const ArrayInfo& Xinfo = getInfo(xVals);
         af::dim4 X_dims = Xinfo.dims();
         af_dtype Xtype  = Xinfo.getType();

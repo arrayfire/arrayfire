@@ -83,12 +83,11 @@ af_err af_draw_hist(const af_window window,
                     const double minval, const double maxval,
                     const af_cell* const props)
 {
-    if(window == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
-    }
-
     try {
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+
         const ArrayInfo& Xinfo = getInfo(X);
         af_dtype Xtype  = Xinfo.getType();
 

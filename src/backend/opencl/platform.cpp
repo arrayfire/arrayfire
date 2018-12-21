@@ -818,6 +818,7 @@ DeviceManager::~DeviceManager()
 
 DeviceManager::DeviceManager()
     : mUserDeviceOffset(0),
+      fgMngr(new graphics::ForgeManager()),
       mFFTSetup(new clfftSetupData)
 {
     std::vector<cl::Platform>   platforms;
@@ -919,22 +920,9 @@ DeviceManager::DeviceManager()
         }
     }
 
-    try {
-        // If forgeManager instantiation fails,
-        // ignore and proceed
-        fgMngr.reset(new graphics::ForgeManager());
-    } catch (AfError &error) {
-        if (error.getError() == AF_ERR_LOAD_LIB) {
-            //Ignore , gfx libs are not present, hence,
-            //that functionality will be disabled.
-        } else {
-            throw;
-        }
-    }
-
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
-    if (fgMngr &&  noGraphicsENV.empty()) {
+    if (fgMngr->plugin().isLoaded() && noGraphicsENV.empty()) {
         // If forge library was successfully loaded and
         // AF_DISABLE_GRAPHICS is not defined
         try {

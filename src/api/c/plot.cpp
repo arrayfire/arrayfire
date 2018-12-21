@@ -123,12 +123,11 @@ af_err plotWrapper(const af_window window,
                    fg_plot_type ptype = FG_PLOT_LINE,
                    fg_marker_type marker = FG_MARKER_NONE)
 {
-    if(window == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
-    }
-
     try {
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+
         const ArrayInfo& info = getInfo(in);
         af::dim4  dims = info.dims();
         af_dtype  type = info.getType();
@@ -171,12 +170,11 @@ af_err plotWrapper(const af_window window,
                    fg_plot_type ptype = FG_PLOT_LINE,
                    fg_marker_type marker = FG_MARKER_NONE)
 {
-    if(window == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
-    }
-
     try {
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+
         const ArrayInfo& xInfo = getInfo(X);
         af::dim4  xDims = xInfo.dims();
         af_dtype  xType = xInfo.getType();
@@ -237,12 +235,11 @@ af_err plotWrapper(const af_window window,
                    fg_plot_type ptype = FG_PLOT_LINE,
                    fg_marker_type marker = FG_MARKER_NONE)
 {
-    if(window == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
-    }
-
     try {
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+
         const ArrayInfo& xInfo = getInfo(X);
         af::dim4  xDims = xInfo.dims();
         af_dtype  xType = xInfo.getType();
