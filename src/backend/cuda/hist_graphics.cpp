@@ -18,7 +18,6 @@ namespace cuda {
 template<typename T>
 void copy_histogram(const Array<T> &data, fg_histogram hist)
 {
-    ForgeModule& _ = graphics::forgePlugin();
     auto stream = cuda::getActiveStream();
     if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = data.get();
@@ -37,9 +36,10 @@ void copy_histogram(const Array<T> &data, fg_histogram hist)
 
         POST_LAUNCH_CHECK();
     } else {
+        ForgeModule& _ = graphics::forgePlugin();
         unsigned bytes = 0, buffer = 0;
-        FG_CHECK(fg_get_histogram_vertex_buffer(&buffer, hist));
-        FG_CHECK(fg_get_histogram_vertex_buffer_size(&bytes, hist));
+        FG_CHECK(_.fg_get_histogram_vertex_buffer(&buffer, hist));
+        FG_CHECK(_.fg_get_histogram_vertex_buffer_size(&bytes, hist));
 
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);

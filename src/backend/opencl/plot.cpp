@@ -25,7 +25,7 @@ void copy_plot(const Array<T> &P, fg_plot plot)
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = P.get();
         unsigned bytes = 0;
-        FG_CHECK(fg_get_plot_vertex_buffer_size(&bytes, plot));
+        FG_CHECK(_.fg_get_plot_vertex_buffer_size(&bytes, plot));
 
         auto res = interopManager().getPlotResources(plot);
 
@@ -48,8 +48,8 @@ void copy_plot(const Array<T> &P, fg_plot plot)
         CheckGL("End OpenCL resource copy");
     } else {
         unsigned bytes = 0, buffer = 0;
-        FG_CHECK(fg_get_plot_vertex_buffer(&buffer, plot));
-        FG_CHECK(fg_get_plot_vertex_buffer_size(&bytes, plot));
+        FG_CHECK(_.fg_get_plot_vertex_buffer(&buffer, plot));
+        FG_CHECK(_.fg_get_plot_vertex_buffer_size(&bytes, plot));
 
         CheckGL("Begin OpenCL fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
