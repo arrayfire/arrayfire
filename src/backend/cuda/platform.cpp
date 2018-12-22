@@ -430,6 +430,11 @@ MemoryManagerPinned& pinnedMemoryManager()
     return *(inst.pinnedMemManager.get());
 }
 
+graphics::ForgeManager& forgeManager()
+{
+    return *(DeviceManager::getInstance().fgMngr);
+}
+
 GraphicsResourceManager& interopManager()
 {
     static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
@@ -506,7 +511,7 @@ SparseHandle sparseHandle()
 }
 
 DeviceManager::DeviceManager()
-    : cuDevices(0), nDevices(0)
+    : cuDevices(0), nDevices(0), fgMngr(new graphics::ForgeManager())
 {
     CUDA_CHECK(cudaGetDeviceCount(&nDevices));
     if (nDevices == 0)

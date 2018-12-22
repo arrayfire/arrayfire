@@ -27,8 +27,8 @@ void copy_surface(const Array<T> &P, fg_surface surface)
 
     CheckGL("Before CopyArrayToVBO");
     unsigned bytes = 0, buffer = 0;
-    FG_CHECK(fg_get_surface_vertex_buffer(&buffer, surface));
-    FG_CHECK(fg_get_surface_vertex_buffer_size(&bytes, surface));
+    FG_CHECK(_.fg_get_surface_vertex_buffer(&buffer, surface));
+    FG_CHECK(_.fg_get_surface_vertex_buffer_size(&bytes, surface));
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glBufferSubData(GL_ARRAY_BUFFER, 0, bytes, P.get());

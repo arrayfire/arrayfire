@@ -60,7 +60,7 @@ static fg_image convert_and_copy_image(const af_array in)
 
     Array<T> imgData = reorder(_in, rdims);
 
-    ForgeManager& fgMngr = ForgeManager::getInstance();
+    ForgeManager& fgMngr = forgeManager();
 
     // The inDims[2] * 100 is a hack to convert to fg_channel_format
     // TODO Write a proper conversion function
@@ -75,11 +75,11 @@ static fg_image convert_and_copy_image(const af_array in)
 af_err af_draw_image(const af_window window,
                      const af_array in, const af_cell* const props)
 {
-    if(window == 0) {
-        fprintf(stderr, "Not a valid window\n");
-        return AF_SUCCESS;
-    }
     try {
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+
         const ArrayInfo& info = getInfo(in);
 
         af::dim4 in_dims = info.dims();
@@ -101,15 +101,16 @@ af_err af_draw_image(const af_window window,
             default:  TYPE_ERROR(1, type);
         }
 
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
-        FG_CHECK(fg_set_window_colormap(window, (fg_color_map)props->cmap));
+        ForgeModule& _ = graphics::forgePlugin();
+        auto gridDims = forgeManager().getWindowGrid(window);
+        FG_CHECK(_.fg_set_window_colormap(window, (fg_color_map)props->cmap));
         if (props->col>-1 && props->row>-1) {
-            FG_CHECK(fg_draw_image_to_cell(window,
-                                           gridDims.first, gridDims.second,
-                                           props->row * gridDims.second + props->col,
-                                           image, props->title, true));
+            FG_CHECK(_.fg_draw_image_to_cell(window,
+                                             gridDims.first, gridDims.second,
+                                             props->row * gridDims.second + props->col,
+                                             image, props->title, true));
         } else {
-            FG_CHECK(fg_draw_image(window, image, true));
+            FG_CHECK(_.fg_draw_image(window, image, true));
         }
     }
     CATCHALL;

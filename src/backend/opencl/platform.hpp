@@ -36,6 +36,10 @@ namespace boost {
   }
 }
 
+namespace graphics {
+  class ForgeManager;
+}
+
 // Forward declaration from clFFT.h
 struct clfftSetupData_;
 typedef clfftSetupData_ clfftSetupData;
@@ -102,6 +106,8 @@ MemoryManager& memoryManager();
 
 MemoryManagerPinned& pinnedMemoryManager();
 
+graphics::ForgeManager& forgeManager();
+
 GraphicsResourceManager& interopManager();
 
 PlanCache& fftManager();
@@ -119,6 +125,8 @@ class DeviceManager
     friend MemoryManager& memoryManager();
 
     friend MemoryManagerPinned& pinnedMemoryManager();
+
+    friend graphics::ForgeManager& forgeManager();
 
     friend GraphicsResourceManager& interopManager();
 
@@ -191,6 +199,7 @@ class DeviceManager
         std::vector<int>         mPlatforms;
         unsigned mUserDeviceOffset;
 
+        std::unique_ptr<graphics::ForgeManager> fgMngr;
         std::unique_ptr<MemoryManager> memManager;
         std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
         std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];

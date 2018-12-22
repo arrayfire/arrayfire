@@ -31,8 +31,8 @@ void copy_image(const Array<T> &in, fg_image image)
     CheckGL("Before CopyArrayToImage");
     const T *d_X = in.get();
     unsigned data_size = 0, buffer = 0;
-    FG_CHECK(fg_get_pixel_buffer(&buffer, image));
-    FG_CHECK(fg_get_image_size(&data_size, image));
+    FG_CHECK(_.fg_get_pixel_buffer(&buffer, image));
+    FG_CHECK(_.fg_get_image_size(&data_size, image));
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
     glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, data_size, d_X);

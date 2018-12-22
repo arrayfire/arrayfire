@@ -44,7 +44,7 @@ class InteropManager
         res_vec_t getImageResources(const fg_window image) {
             if (mInteropMap.find(image) == mInteropMap.end()) {
                 uint32_t buffer;
-                FG_CHECK(fg_get_pixel_buffer(&buffer, image));
+                FG_CHECK(graphics::forgePlugin().fg_get_pixel_buffer(&buffer, image));
                 mInteropMap[image] =
                     static_cast<T*>(this)->registerResources({buffer});
             }
@@ -54,7 +54,7 @@ class InteropManager
         res_vec_t getPlotResources(const fg_plot plot) {
             if (mInteropMap.find(plot) == mInteropMap.end()) {
                 uint32_t buffer;
-                FG_CHECK(fg_get_plot_vertex_buffer(&buffer, plot));
+                FG_CHECK(graphics::forgePlugin().fg_get_plot_vertex_buffer(&buffer, plot));
                 mInteropMap[plot] =
                     static_cast<T*>(this)->registerResources({buffer});
             }
@@ -64,7 +64,7 @@ class InteropManager
         res_vec_t getHistogramResources(const fg_histogram histogram) {
             if (mInteropMap.find(histogram) == mInteropMap.end()) {
                 uint32_t buffer;
-                FG_CHECK(fg_get_histogram_vertex_buffer(&buffer, histogram));
+                FG_CHECK(graphics::forgePlugin().fg_get_histogram_vertex_buffer(&buffer, histogram));
                 mInteropMap[histogram] =
                     static_cast<T*>(this)->registerResources({buffer});
             }
@@ -74,7 +74,7 @@ class InteropManager
         res_vec_t getSurfaceResources(const fg_surface surface) {
             if (mInteropMap.find(surface) == mInteropMap.end()) {
                 uint32_t buffer;
-                FG_CHECK(fg_get_surface_vertex_buffer(&buffer, surface));
+                FG_CHECK(graphics::forgePlugin().fg_get_surface_vertex_buffer(&buffer, surface));
                 mInteropMap[surface] =
                     static_cast<T*>(this)->registerResources({buffer});
             }
@@ -84,8 +84,8 @@ class InteropManager
         res_vec_t getVectorFieldResources(const fg_vector_field field) {
             if (mInteropMap.find(field) == mInteropMap.end()) {
                 uint32_t verts, dirs;
-                FG_CHECK(fg_get_vector_field_vertex_buffer(&verts, field));
-                FG_CHECK(fg_get_vector_field_direction_buffer(&dirs, field));
+                FG_CHECK(graphics::forgePlugin().fg_get_vector_field_vertex_buffer(&verts, field));
+                FG_CHECK(graphics::forgePlugin().fg_get_vector_field_direction_buffer(&dirs, field));
                 mInteropMap[field] =
                     static_cast<T*>(this)->registerResources({verts, dirs});
             }

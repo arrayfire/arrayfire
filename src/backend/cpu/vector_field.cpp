@@ -31,10 +31,10 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
 
     unsigned size1 = 0, size2 = 0;
     unsigned buff1 = 0, buff2 = 0;
-    FG_CHECK(fg_get_vector_field_vertex_buffer_size(&size1, vfield));
-    FG_CHECK(fg_get_vector_field_direction_buffer_size(&size2, vfield));
-    FG_CHECK(fg_get_vector_field_vertex_buffer(&buff1, vfield));
-    FG_CHECK(fg_get_vector_field_direction_buffer(&buff2, vfield));
+    FG_CHECK(_.fg_get_vector_field_vertex_buffer_size(&size1, vfield));
+    FG_CHECK(_.fg_get_vector_field_direction_buffer_size(&size2, vfield));
+    FG_CHECK(_.fg_get_vector_field_vertex_buffer(&buff1, vfield));
+    FG_CHECK(_.fg_get_vector_field_direction_buffer(&buff2, vfield));
 
     glBindBuffer(GL_ARRAY_BUFFER, buff1);
     glBufferSubData(GL_ARRAY_BUFFER, 0, size1, points.get());

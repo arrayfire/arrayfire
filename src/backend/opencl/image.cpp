@@ -30,7 +30,7 @@ void copy_image(const Array<T> &in, fg_image image)
         const cl::Buffer *d_X = in.get();
 
         unsigned bytes = 0;
-        FG_CHECK(fg_get_image_size(&bytes, image));
+        FG_CHECK(_.fg_get_image_size(&bytes, image));
 
         std::vector<cl::Memory> shared_objects;
         shared_objects.push_back(*(res[0].get()));
@@ -52,8 +52,8 @@ void copy_image(const Array<T> &in, fg_image image)
     } else {
         CheckGL("Begin OpenCL fallback-resource copy");
         unsigned bytes = 0, buffer = 0;
-        FG_CHECK(fg_get_image_size(&bytes, image));
-        FG_CHECK(fg_get_pixel_buffer(&buffer, image));
+        FG_CHECK(_.fg_get_image_size(&bytes, image));
+        FG_CHECK(_.fg_get_pixel_buffer(&buffer, image));
 
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
         glBufferData(GL_PIXEL_UNPACK_BUFFER, bytes, 0, GL_STREAM_DRAW);
