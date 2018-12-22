@@ -78,6 +78,10 @@ class CPUInfo {
         bool   mIsHTT;
 };
 
+namespace graphics {
+  class ForgeManager;
+}
+
 namespace cpu
 {
 int getBackend();
@@ -108,6 +112,8 @@ bool& evalFlag();
 
 MemoryManager& memoryManager();
 
+graphics::ForgeManager& forgeManager();
+
 class DeviceManager
 {
     public:
@@ -122,6 +128,8 @@ class DeviceManager
 
         friend MemoryManager& memoryManager();
 
+        friend graphics::ForgeManager& forgeManager();
+
         CPUInfo getCPUInfo() const;
 
     private:
@@ -134,8 +142,10 @@ class DeviceManager
         void operator=(DeviceManager const&) = delete;
 
         // Attributes
+        std::unique_ptr<graphics::ForgeManager> fgMngr;
+        std::unique_ptr<MemoryManager> memManager;
         std::vector<queue> queues;
         const CPUInfo cinfo;
-        std::unique_ptr<MemoryManager> memManager;
+
 };
 }

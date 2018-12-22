@@ -20,7 +20,6 @@ namespace cuda {
 template<typename T>
 void copy_surface(const Array<T> &P, fg_surface surface)
 {
-    ForgeModule& _ = graphics::forgePlugin();
     auto stream = cuda::getActiveStream();
     if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
@@ -39,9 +38,10 @@ void copy_surface(const Array<T> &P, fg_surface surface)
 
         POST_LAUNCH_CHECK();
     } else {
+        ForgeModule& _ = graphics::forgePlugin();
         unsigned bytes = 0, buffer = 0;
-        FG_CHECK(fg_get_surface_vertex_buffer(&buffer, surface));
-        FG_CHECK(fg_get_surface_vertex_buffer_size(&bytes, surface));
+        FG_CHECK(_.fg_get_surface_vertex_buffer(&buffer, surface));
+        FG_CHECK(_.fg_get_surface_vertex_buffer_size(&bytes, surface));
 
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);

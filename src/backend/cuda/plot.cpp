@@ -20,7 +20,6 @@ namespace cuda {
 template<typename T>
 void copy_plot(const Array<T> &P, fg_plot plot)
 {
-    ForgeModule& _ = graphics::forgePlugin();
     auto stream = cuda::getActiveStream();
     if(DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
@@ -39,9 +38,10 @@ void copy_plot(const Array<T> &P, fg_plot plot)
 
         POST_LAUNCH_CHECK();
     } else {
+        ForgeModule& _ = graphics::forgePlugin();
         unsigned bytes = 0, buffer = 0;
-        FG_CHECK(fg_get_plot_vertex_buffer(&buffer, plot));
-        FG_CHECK(fg_get_plot_vertex_buffer_size(&bytes, plot));
+        FG_CHECK(_.fg_get_plot_vertex_buffer(&buffer, plot));
+        FG_CHECK(_.fg_get_plot_vertex_buffer_size(&bytes, plot));
 
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);

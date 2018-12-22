@@ -23,7 +23,6 @@ namespace cuda {
 template<typename T>
 void copy_image(const Array<T> &in, fg_image image)
 {
-    ForgeModule& _ = graphics::forgePlugin();
     auto stream = cuda::getActiveStream();
     if(DeviceManager::checkGraphicsInteropCapability()) {
         auto res = interopManager().getImageResources(image);
@@ -40,10 +39,11 @@ void copy_image(const Array<T> &in, fg_image image)
         POST_LAUNCH_CHECK();
         CheckGL("After cuda resource copy");
     } else {
+        ForgeModule& _ = graphics::forgePlugin();
         CheckGL("Begin CUDA fallback-resource copy");
         unsigned data_size = 0, buffer = 0;
-        FG_CHECK(fg_get_image_size(&data_size, image));
-        FG_CHECK(fg_get_pixel_buffer(&buffer, image));
+        FG_CHECK(_.fg_get_image_size(&data_size, image));
+        FG_CHECK(_.fg_get_pixel_buffer(&buffer, image));
 
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
         glBufferData(GL_PIXEL_UNPACK_BUFFER, data_size, 0, GL_STREAM_DRAW);

@@ -27,8 +27,8 @@ void copy_plot(const Array<T> &P, fg_plot plot)
 
     CheckGL("Before CopyArrayToVBO");
     unsigned bytes = 0, buffer = 0;
-    FG_CHECK(fg_get_plot_vertex_buffer(&buffer, plot));
-    FG_CHECK(fg_get_plot_vertex_buffer_size(&bytes, plot));
+    FG_CHECK(_.fg_get_plot_vertex_buffer(&buffer, plot));
+    FG_CHECK(_.fg_get_plot_vertex_buffer_size(&bytes, plot));
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glBufferSubData(GL_ARRAY_BUFFER, 0, bytes, P.get());

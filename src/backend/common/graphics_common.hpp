@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <map>
+#include <memory>
 #include <utility>
 
 // default to f32(float) type
@@ -69,20 +70,27 @@ typedef std::map<fg_chart, bool> ChartAxesOverride_t;
 typedef ChartAxesOverride_t::iterator ChartAxesOverrideIter;
 
 /**
- * ForgeManager class follows a single pattern. Any user of this class, has
- * to call ForgeManager::getInstance inorder to use Forge resources for rendering.
- * It manages the windows, and other renderables (given below) that are drawed
- * onto chosen window.
+ * Only device manager class can create objects of this class.
+ * You have to call forgeManager() defined in platform.hpp to
+ * access the object. It manages the windows, and other
+ * renderables (given below) that are drawed onto chosen window.
  * Renderables:
- *             fg_image
- *             fg_plot
- *             fg_histogram
- *             fg_surface
- *             fg_vector_field
+ *      fg_image
+ *      fg_plot
+ *      fg_histogram
+ *      fg_surface
+ *      fg_vector_field
  * */
 class ForgeManager
 {
+    struct Window {
+        fg_window handle;
+    };
+
     private:
+        ForgeModule* mPlugin;
+        std::unique_ptr<Window> wnd;
+
         ImageMap_t          mImgMap;
         PlotMap_t           mPltMap;
         HistogramMap_t      mHstMap;
@@ -93,14 +101,14 @@ class ForgeManager
         WindGridMap_t       mWndGridMap;
         ChartAxesOverride_t mChartAxesOverrideMap;
 
-        ForgeModule* mPlugin;
-
     public:
-        static ForgeManager& getInstance();
+        ForgeManager();
+        ForgeManager(ForgeManager const&) = delete;
+        ForgeManager& operator=(ForgeManager const&) = delete;
+        ForgeManager(ForgeManager &&) = delete;
+        ForgeManager& operator=(ForgeManager &&) = delete;
         ~ForgeManager();
-
-        friend ForgeModule& forgePlugin();
-
+        ForgeModule& plugin();
         fg_window getMainWindow();
 
         void            setWindowChartGrid(const fg_window window,
@@ -128,12 +136,5 @@ class ForgeManager
 
         bool getChartAxesOverride(fg_chart chart);
         void setChartAxesOverride(fg_chart chart, bool flag = true);
-
-    protected:
-        ForgeManager();
-        ForgeManager(ForgeManager const&);
-        void operator=(ForgeManager const&);
 };
 }
-
-#define MAIN_WINDOW graphics::ForgeManager::getInstance().getMainWindow()

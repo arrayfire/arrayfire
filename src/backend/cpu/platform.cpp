@@ -9,8 +9,9 @@
 
 #include <af/version.h>
 #include <platform.hpp>
-#include <common/defines.hpp>
 #include <version.hpp>
+#include <common/defines.hpp>
+#include <common/graphics_common.hpp>
 #include <common/host_memory.hpp>
 
 #include <cctype>
@@ -262,13 +263,19 @@ bool& evalFlag()
 
 DeviceManager::DeviceManager()
     : queues(MAX_QUEUES)
-    , memManager(new MemoryManager()) {}
+    , memManager(new MemoryManager()),
+      fgMngr(new graphics::ForgeManager()){}
 
 
 MemoryManager& memoryManager()
 {
     DeviceManager& inst = DeviceManager::getInstance();
     return *(inst.memManager);
+}
+
+graphics::ForgeManager& forgeManager()
+{
+    return *(DeviceManager::getInstance().fgMngr);
 }
 
 DeviceManager& DeviceManager::getInstance()

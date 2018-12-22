@@ -34,6 +34,7 @@ fg_chart setup_vector_field(fg_window window,
                             const af_cell* const props,
                             const bool transpose_ = true)
 {
+    ForgeModule& _ = graphics::forgePlugin();
     vector< Array<T> > pnts;
     vector< Array<T> > dirs;
 
@@ -52,7 +53,7 @@ fg_chart setup_vector_field(fg_window window,
         dIn = transpose<T>(dIn, false);
     }
 
-    ForgeManager& fgMngr = ForgeManager::getInstance();
+    ForgeManager& fgMngr = forgeManager();
 
     // Get the chart for the current grid position (if any)
     fg_chart chart = NULL;
@@ -72,14 +73,14 @@ fg_chart setup_vector_field(fg_window window,
     fg_vector_field vfield = fgMngr.getVectorField(chart, pIn.dims()[1], getGLType<T>());
 
     // ArrayFire LOGO dark blue shade
-    FG_CHECK(fg_set_vector_field_color(vfield, 0.130f, 0.173f, 0.263f, 1.0));
+    FG_CHECK(_.fg_set_vector_field_color(vfield, 0.130f, 0.173f, 0.263f, 1.0));
 
     // If chart axes limits do not have a manual override
     // then compute and set axes limits
     if(!fgMngr.getChartAxesOverride(chart)) {
         float cmin[3], cmax[3];
         T     dmin[3], dmax[3];
-        FG_CHECK(fg_get_chart_axes_limits(&cmin[0], &cmax[0],
+        FG_CHECK(_.fg_get_chart_axes_limits(&cmin[0], &cmax[0],
                                           &cmin[1], &cmax[1],
                                           &cmin[2], &cmax[2],
                                           chart));
@@ -106,7 +107,7 @@ fg_chart setup_vector_field(fg_window window,
                 if(cmax[2] < dmax[2])   cmax[2] = step_round(dmax[2], true);
             }
         }
-        FG_CHECK(fg_set_chart_axes_limits(chart,
+        FG_CHECK(_.fg_set_chart_axes_limits(chart,
                                           cmin[0], cmax[0],
                                           cmin[1], cmax[1],
                                           cmin[2], cmax[2]));
@@ -120,11 +121,11 @@ af_err vectorFieldWrapper(const af_window window,
                           const af_array points, const af_array directions,
                           const af_cell* const props)
 {
-    if(window == 0) {
-        AF_RETURN_ERROR("Not a valid window", AF_SUCCESS);
-    }
-
     try {
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+
         const ArrayInfo& pInfo = getInfo(points);
         af::dim4 pDims  = pInfo.dims();
         af_dtype pType  = pInfo.getType();
@@ -158,15 +159,16 @@ af_err vectorFieldWrapper(const af_window window,
             case u8 : chart = setup_vector_field<uchar  >(window, pnts, dirs, props); break;
             default:  TYPE_ERROR(1, pType);
         }
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
+        auto gridDims = forgeManager().getWindowGrid(window);
 
+        ForgeModule& _ = graphics::forgePlugin();
         if (props->col>-1 && props->row>-1) {
-            FG_CHECK(fg_draw_chart_to_cell(window,
-                                           gridDims.first, gridDims.second,
-                                           props->row * gridDims.second + props->col,
-                                           chart, props->title));
+            FG_CHECK(_.fg_draw_chart_to_cell(window,
+                                             gridDims.first, gridDims.second,
+                                             props->row * gridDims.second + props->col,
+                                             chart, props->title));
         } else {
-            FG_CHECK(fg_draw_chart(window, chart));
+            FG_CHECK(_.fg_draw_chart(window, chart));
         }
     }
     CATCHALL;
@@ -182,10 +184,11 @@ af_err vectorFieldWrapper(const af_window window,
                           const af_array zDirs,
                           const af_cell* const props)
 {
-    if(window == 0) {
-        AF_RETURN_ERROR("Not a valid window", AF_SUCCESS);
-    }
     try {
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_SUCCESS);
+        }
+
         const ArrayInfo& xpInfo = getInfo(xPoints);
         const ArrayInfo& ypInfo = getInfo(yPoints);
         const ArrayInfo& zpInfo = getInfo(zPoints);
@@ -252,15 +255,16 @@ af_err vectorFieldWrapper(const af_window window,
             case u8 : chart = setup_vector_field<uchar  >(window, points, directions, props); break;
             default:  TYPE_ERROR(1, xpType);
         }
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
+        auto gridDims = forgeManager().getWindowGrid(window);
 
+        ForgeModule& _ = graphics::forgePlugin();
         if (props->col>-1 && props->row>-1) {
-            FG_CHECK(fg_draw_chart_to_cell(window,
-                                           gridDims.first, gridDims.second,
-                                           props->row * gridDims.second + props->col,
-                                           chart, props->title));
+            FG_CHECK(_.fg_draw_chart_to_cell(window,
+                                             gridDims.first, gridDims.second,
+                                             props->row * gridDims.second + props->col,
+                                             chart, props->title));
         } else {
-            FG_CHECK(fg_draw_chart(window, chart));
+            FG_CHECK(_.fg_draw_chart(window, chart));
         }
     }
     CATCHALL;
@@ -272,11 +276,11 @@ af_err vectorFieldWrapper(const af_window window,
                           const af_array xDirs, const af_array yDirs,
                           const af_cell* const props)
 {
-    if(window == 0) {
-        AF_RETURN_ERROR("Not a valid window", AF_SUCCESS);
-    }
-
     try {
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_SUCCESS);
+        }
+
         const ArrayInfo& xpInfo = getInfo(xPoints);
         const ArrayInfo& ypInfo = getInfo(yPoints);
 
@@ -332,15 +336,16 @@ af_err vectorFieldWrapper(const af_window window,
             default:  TYPE_ERROR(1, xpType);
         }
 
-        auto gridDims = ForgeManager::getInstance().getWindowGrid(window);
+        auto gridDims = forgeManager().getWindowGrid(window);
 
+        ForgeModule& _ = graphics::forgePlugin();
         if (props->col>-1 && props->row>-1) {
-            FG_CHECK(fg_draw_chart_to_cell(window,
-                                           gridDims.first, gridDims.second,
-                                           props->row * gridDims.second + props->col,
-                                           chart, props->title));
+            FG_CHECK(_.fg_draw_chart_to_cell(window,
+                                             gridDims.first, gridDims.second,
+                                             props->row * gridDims.second + props->col,
+                                             chart, props->title));
         } else {
-            FG_CHECK(fg_draw_chart(window, chart));
+            FG_CHECK(_.fg_draw_chart(window, chart));
         }
     }
     CATCHALL;

@@ -14,6 +14,7 @@
 #include <common/graphics_common.hpp>
 #include <common/err_common.hpp>
 #include <backend.hpp>
+#include <platform.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -22,22 +23,16 @@ using namespace graphics;
 af_err af_create_window(af_window *out, const int width, const int height, const char* const title)
 {
     try {
-        graphics::ForgeManager& fgMngr = graphics::ForgeManager::getInstance();
-        fg_window mainWnd = NULL;
+        ForgeManager& fgMngr = forgeManager();
+        fg_window mainWnd    = fgMngr.getMainWindow();
 
-        try {
-            mainWnd = fgMngr.getMainWindow();
-        } catch(...) {
-            std::cerr<<"OpenGL context creation failed"<<std::endl;
-        }
         if (mainWnd == 0) {
-            std::cerr<<"Not a valid window"<<std::endl;
-            return AF_SUCCESS;
+            AF_ERROR("OpenGL context creation failed", AF_ERR_INTERNAL);
         }
 
         fg_window temp = nullptr;
 
-        FG_CHECK(fg_create_window(&temp, width, height, title, mainWnd, false));
+        FG_CHECK(forgePlugin().fg_create_window(&temp, width, height, title, mainWnd, false));
 
         fgMngr.setWindowChartGrid(temp, 1, 1);
 
@@ -49,42 +44,47 @@ af_err af_create_window(af_window *out, const int width, const int height, const
 
 af_err af_set_position(const af_window wind, const unsigned x, const unsigned y)
 {
-    if(wind == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
+    try {
+        if(wind == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+        FG_CHECK(forgePlugin().fg_set_window_position(wind, x, y));
     }
-    FG_CHECK(fg_set_window_position(wind, x, y));
+    CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err af_set_title(const af_window wind, const char* const title)
 {
-    if(wind == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
+    try {
+        if(wind == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+        FG_CHECK(forgePlugin().fg_set_window_title(wind, title));
     }
-    FG_CHECK(fg_set_window_title(wind, title));
+    CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err af_set_size(const af_window wind, const unsigned w, const unsigned h)
 {
-    if(wind == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
+    try {
+        if(wind == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+        FG_CHECK(forgePlugin().fg_set_window_size(wind, w, h));
     }
-    FG_CHECK(fg_set_window_size(wind, w, h));
+    CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err af_grid(const af_window wind, const int rows, const int cols)
 {
-    if(wind == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
-    }
     try {
-        ForgeManager::getInstance().setWindowChartGrid(wind, rows, cols);
+        if(wind == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+        forgeManager().setWindowChartGrid(wind, rows, cols);
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -94,12 +94,12 @@ af_err af_set_axes_limits_compute(const af_window window,
                                   const af_array x, const af_array y, const af_array z,
                                   const bool exact, const af_cell* const props)
 {
-    if(window == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
-    }
     try {
-        ForgeManager& fgMngr = ForgeManager::getInstance();
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+
+        ForgeManager& fgMngr = forgeManager();
 
         fg_chart chart = NULL;
 
@@ -133,7 +133,7 @@ af_err af_set_axes_limits_compute(const af_window window,
         }
 
         fgMngr.setChartAxesOverride(chart);
-        FG_CHECK(fg_set_chart_axes_limits(chart, xmin, xmax,
+        FG_CHECK(forgePlugin().fg_set_chart_axes_limits(chart, xmin, xmax,
                                           ymin, ymax, zmin, zmax));
     }
     CATCHALL;
@@ -145,12 +145,12 @@ af_err af_set_axes_limits_2d(const af_window window,
                              const float ymin, const float ymax,
                              const bool exact, const af_cell* const props)
 {
-    if(window == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
-    }
     try {
-        ForgeManager& fgMngr = ForgeManager::getInstance();
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+
+        ForgeManager& fgMngr = forgeManager();
 
         fg_chart chart = NULL;
         // The ctype here below doesn't really matter as it is only fetching
@@ -175,7 +175,7 @@ af_err af_set_axes_limits_2d(const af_window window,
         }
 
         fgMngr.setChartAxesOverride(chart);
-        FG_CHECK(fg_set_chart_axes_limits(chart, _xmin, _xmax,
+        FG_CHECK(forgePlugin().fg_set_chart_axes_limits(chart, _xmin, _xmax,
                                           _ymin, _ymax, 0.0f, 0.0f));
     }
     CATCHALL;
@@ -188,12 +188,12 @@ af_err af_set_axes_limits_3d(const af_window window,
                              const float zmin, const float zmax,
                              const bool exact, const af_cell* const props)
 {
-    if(window == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
-    }
     try {
-        ForgeManager& fgMngr = ForgeManager::getInstance();
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+
+        ForgeManager& fgMngr = forgeManager();
 
         fg_chart chart = NULL;
         // The ctype here below doesn't really matter as it is only fetching
@@ -222,7 +222,7 @@ af_err af_set_axes_limits_3d(const af_window window,
         }
 
         fgMngr.setChartAxesOverride(chart);
-        FG_CHECK(fg_set_chart_axes_limits(chart, _xmin, _xmax,
+        FG_CHECK(forgePlugin().fg_set_chart_axes_limits(chart, _xmin, _xmax,
                                           _ymin, _ymax, _zmin, _zmax));
     }
     CATCHALL;
@@ -235,12 +235,12 @@ af_err af_set_axes_titles(const af_window window,
                           const char * const ztitle,
                           const af_cell* const props)
 {
-    if(window == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
-    }
     try {
-        ForgeManager& fgMngr = ForgeManager::getInstance();
+        if(window == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+
+        ForgeManager& fgMngr = forgeManager();
 
         fg_chart chart = NULL;
 
@@ -251,7 +251,7 @@ af_err af_set_axes_titles(const af_window window,
         else
             chart = fgMngr.getChart(window, 0, 0, ctype);
 
-        FG_CHECK(fg_set_chart_axes_titles(chart, xtitle, ytitle, ztitle));
+        FG_CHECK(forgePlugin().fg_set_chart_axes_titles(chart, xtitle, ytitle, ztitle));
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -259,49 +259,53 @@ af_err af_set_axes_titles(const af_window window,
 
 af_err af_show(const af_window wind)
 {
-    if(wind == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
+    try {
+        if(wind == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+        FG_CHECK(forgePlugin().fg_swap_window_buffers(wind));
     }
-    FG_CHECK(fg_swap_window_buffers(wind));
+    CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err af_is_window_closed(bool *out, const af_window wind)
 {
-    if(wind == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
+    try {
+        if(wind == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+        FG_CHECK(forgePlugin().fg_close_window(out, wind));
     }
-    FG_CHECK(fg_close_window(out, wind));
+    CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err af_set_visibility(const af_window wind, const bool is_visible)
 {
-    if(wind == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
+    try {
+        if(wind == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+        if (is_visible) {
+            FG_CHECK(forgePlugin().fg_show_window(wind));
+        } else {
+            FG_CHECK(forgePlugin().fg_hide_window(wind));
+        }
     }
-    if (is_visible) {
-        FG_CHECK(fg_show_window(wind));
-    } else {
-        FG_CHECK(fg_hide_window(wind));
-    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err af_destroy_window(const af_window wind)
 {
-    if(wind == 0) {
-        std::cerr<<"Not a valid window"<<std::endl;
-        return AF_SUCCESS;
-    }
     try {
-        ForgeManager::getInstance().setWindowChartGrid(wind, 0, 0);
+        if(wind == 0) {
+            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
+        }
+        forgeManager().setWindowChartGrid(wind, 0, 0);
+        FG_CHECK(forgePlugin().fg_release_window(wind));
     }
     CATCHALL;
-    FG_CHECK(fg_release_window(wind));
     return AF_SUCCESS;
 }
-

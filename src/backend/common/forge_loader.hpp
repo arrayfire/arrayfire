@@ -15,10 +15,10 @@
 
 #include <forge.h>
 
-class ForgeModule {
-    common::DependencyModule module;
-
+class ForgeModule : public common::DependencyModule {
     public:
+    ForgeModule();
+
     MODULE_MEMBER(fg_create_window);
     MODULE_MEMBER(fg_get_window_context_handle);
     MODULE_MEMBER(fg_get_window_display_handle);
@@ -84,8 +84,6 @@ class ForgeModule {
     MODULE_MEMBER(fg_append_surface_to_chart);
     MODULE_MEMBER(fg_append_vector_field_to_chart);
     MODULE_MEMBER(fg_release_chart);
-
-    ForgeModule();
 };
 
 namespace graphics {
@@ -94,7 +92,7 @@ ForgeModule& forgePlugin();
 
 #define FG_CHECK(fn)                           \
     do {                                       \
-        fg_err e = graphics::forgePlugin().fn; \
+        fg_err e = (fn);                       \
         if (e != FG_ERR_NONE) {                \
             AF_ERROR("forge call failed",      \
                     AF_ERR_INTERNAL);          \

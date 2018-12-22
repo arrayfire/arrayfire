@@ -17,82 +17,89 @@
 
 using namespace std;
 
+/// Dynamically loads forge function pointer at runtime
+#define FG_MODULE_FUNCTION_INIT(NAME)                \
+    NAME = DependencyModule::getSymbol<decltype(&::NAME)>(#NAME)
+
 ForgeModule::ForgeModule()
-    : module("forge", nullptr)
+    : DependencyModule("forge", nullptr)
 {
-    if (!module.isLoaded()) {
-        string error_message = "Error loading Forge: "
-            + module.getErrorMessage()
-            + "\nForge or one of it's dependencies failed to "
-            "load. Try installing Forge or check if Forge is in the "
-            "search path.";
-        AF_ERROR(error_message.c_str(), AF_ERR_LOAD_LIB);
+    if (DependencyModule::isLoaded()) {
+        FG_MODULE_FUNCTION_INIT(fg_create_window);
+        FG_MODULE_FUNCTION_INIT(fg_get_window_context_handle);
+        FG_MODULE_FUNCTION_INIT(fg_get_window_display_handle);
+        FG_MODULE_FUNCTION_INIT(fg_make_window_current);
+        FG_MODULE_FUNCTION_INIT(fg_set_window_font);
+        FG_MODULE_FUNCTION_INIT(fg_set_window_position);
+        FG_MODULE_FUNCTION_INIT(fg_set_window_title);
+        FG_MODULE_FUNCTION_INIT(fg_set_window_size);
+        FG_MODULE_FUNCTION_INIT(fg_set_window_colormap);
+        FG_MODULE_FUNCTION_INIT(fg_draw_chart_to_cell);
+        FG_MODULE_FUNCTION_INIT(fg_draw_chart);
+        FG_MODULE_FUNCTION_INIT(fg_draw_image_to_cell);
+        FG_MODULE_FUNCTION_INIT(fg_draw_image);
+        FG_MODULE_FUNCTION_INIT(fg_swap_window_buffers);
+        FG_MODULE_FUNCTION_INIT(fg_close_window);
+        FG_MODULE_FUNCTION_INIT(fg_show_window);
+        FG_MODULE_FUNCTION_INIT(fg_hide_window);
+        FG_MODULE_FUNCTION_INIT(fg_release_window);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_font);
+        FG_MODULE_FUNCTION_INIT(fg_load_system_font);
+        FG_MODULE_FUNCTION_INIT(fg_release_font);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_image);
+        FG_MODULE_FUNCTION_INIT(fg_get_pixel_buffer);
+        FG_MODULE_FUNCTION_INIT(fg_get_image_size);
+        FG_MODULE_FUNCTION_INIT(fg_release_image);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_plot);
+        FG_MODULE_FUNCTION_INIT(fg_set_plot_color);
+        FG_MODULE_FUNCTION_INIT(fg_get_plot_vertex_buffer);
+        FG_MODULE_FUNCTION_INIT(fg_get_plot_vertex_buffer_size);
+        FG_MODULE_FUNCTION_INIT(fg_release_plot);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_histogram);
+        FG_MODULE_FUNCTION_INIT(fg_set_histogram_color);
+        FG_MODULE_FUNCTION_INIT(fg_get_histogram_vertex_buffer);
+        FG_MODULE_FUNCTION_INIT(fg_get_histogram_vertex_buffer_size);
+        FG_MODULE_FUNCTION_INIT(fg_release_histogram);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_surface);
+        FG_MODULE_FUNCTION_INIT(fg_set_surface_color);
+        FG_MODULE_FUNCTION_INIT(fg_get_surface_vertex_buffer);
+        FG_MODULE_FUNCTION_INIT(fg_get_surface_vertex_buffer_size);
+        FG_MODULE_FUNCTION_INIT(fg_release_surface);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_vector_field);
+        FG_MODULE_FUNCTION_INIT(fg_set_vector_field_color);
+        FG_MODULE_FUNCTION_INIT(fg_get_vector_field_vertex_buffer_size);
+        FG_MODULE_FUNCTION_INIT(fg_get_vector_field_direction_buffer_size);
+        FG_MODULE_FUNCTION_INIT(fg_get_vector_field_vertex_buffer);
+        FG_MODULE_FUNCTION_INIT(fg_get_vector_field_direction_buffer);
+        FG_MODULE_FUNCTION_INIT(fg_release_vector_field);
+
+        FG_MODULE_FUNCTION_INIT(fg_create_chart);
+        FG_MODULE_FUNCTION_INIT(fg_get_chart_type);
+        FG_MODULE_FUNCTION_INIT(fg_get_chart_axes_limits);
+        FG_MODULE_FUNCTION_INIT(fg_set_chart_axes_limits);
+        FG_MODULE_FUNCTION_INIT(fg_set_chart_axes_titles);
+        FG_MODULE_FUNCTION_INIT(fg_append_image_to_chart);
+        FG_MODULE_FUNCTION_INIT(fg_append_plot_to_chart);
+        FG_MODULE_FUNCTION_INIT(fg_append_histogram_to_chart);
+        FG_MODULE_FUNCTION_INIT(fg_append_surface_to_chart);
+        FG_MODULE_FUNCTION_INIT(fg_append_vector_field_to_chart);
+        FG_MODULE_FUNCTION_INIT(fg_release_chart);
+
+        if (!DependencyModule::symbolsLoaded()) {
+            string error_message = "Error loading Forge: "
+                + DependencyModule::getErrorMessage()
+                + "\nForge or one of it's dependencies failed to "
+                "load. Try installing Forge or check if Forge is in the "
+                "search path.";
+            AF_ERROR(error_message.c_str(), AF_ERR_LOAD_LIB);
+        }
     }
-    MODULE_FUNCTION_INIT(fg_create_window);
-    MODULE_FUNCTION_INIT(fg_get_window_context_handle);
-    MODULE_FUNCTION_INIT(fg_get_window_display_handle);
-    MODULE_FUNCTION_INIT(fg_make_window_current);
-    MODULE_FUNCTION_INIT(fg_set_window_font);
-    MODULE_FUNCTION_INIT(fg_set_window_position);
-    MODULE_FUNCTION_INIT(fg_set_window_title);
-    MODULE_FUNCTION_INIT(fg_set_window_size);
-    MODULE_FUNCTION_INIT(fg_set_window_colormap);
-    MODULE_FUNCTION_INIT(fg_draw_chart_to_cell);
-    MODULE_FUNCTION_INIT(fg_draw_chart);
-    MODULE_FUNCTION_INIT(fg_draw_image_to_cell);
-    MODULE_FUNCTION_INIT(fg_draw_image);
-    MODULE_FUNCTION_INIT(fg_swap_window_buffers);
-    MODULE_FUNCTION_INIT(fg_close_window);
-    MODULE_FUNCTION_INIT(fg_show_window);
-    MODULE_FUNCTION_INIT(fg_hide_window);
-    MODULE_FUNCTION_INIT(fg_release_window);
-
-    MODULE_FUNCTION_INIT(fg_create_font);
-    MODULE_FUNCTION_INIT(fg_load_system_font);
-    MODULE_FUNCTION_INIT(fg_release_font);
-
-    MODULE_FUNCTION_INIT(fg_create_image);
-    MODULE_FUNCTION_INIT(fg_get_pixel_buffer);
-    MODULE_FUNCTION_INIT(fg_get_image_size);
-    MODULE_FUNCTION_INIT(fg_release_image);
-
-    MODULE_FUNCTION_INIT(fg_create_plot);
-    MODULE_FUNCTION_INIT(fg_set_plot_color);
-    MODULE_FUNCTION_INIT(fg_get_plot_vertex_buffer);
-    MODULE_FUNCTION_INIT(fg_get_plot_vertex_buffer_size);
-    MODULE_FUNCTION_INIT(fg_release_plot);
-
-    MODULE_FUNCTION_INIT(fg_create_histogram);
-    MODULE_FUNCTION_INIT(fg_set_histogram_color);
-    MODULE_FUNCTION_INIT(fg_get_histogram_vertex_buffer);
-    MODULE_FUNCTION_INIT(fg_get_histogram_vertex_buffer_size);
-    MODULE_FUNCTION_INIT(fg_release_histogram);
-
-    MODULE_FUNCTION_INIT(fg_create_surface);
-    MODULE_FUNCTION_INIT(fg_set_surface_color);
-    MODULE_FUNCTION_INIT(fg_get_surface_vertex_buffer);
-    MODULE_FUNCTION_INIT(fg_get_surface_vertex_buffer_size);
-    MODULE_FUNCTION_INIT(fg_release_surface);
-
-    MODULE_FUNCTION_INIT(fg_create_vector_field);
-    MODULE_FUNCTION_INIT(fg_set_vector_field_color);
-    MODULE_FUNCTION_INIT(fg_get_vector_field_vertex_buffer_size);
-    MODULE_FUNCTION_INIT(fg_get_vector_field_direction_buffer_size);
-    MODULE_FUNCTION_INIT(fg_get_vector_field_vertex_buffer);
-    MODULE_FUNCTION_INIT(fg_get_vector_field_direction_buffer);
-    MODULE_FUNCTION_INIT(fg_release_vector_field);
-
-    MODULE_FUNCTION_INIT(fg_create_chart);
-    MODULE_FUNCTION_INIT(fg_get_chart_type);
-    MODULE_FUNCTION_INIT(fg_get_chart_axes_limits);
-    MODULE_FUNCTION_INIT(fg_set_chart_axes_limits);
-    MODULE_FUNCTION_INIT(fg_set_chart_axes_titles);
-    MODULE_FUNCTION_INIT(fg_append_image_to_chart);
-    MODULE_FUNCTION_INIT(fg_append_plot_to_chart);
-    MODULE_FUNCTION_INIT(fg_append_histogram_to_chart);
-    MODULE_FUNCTION_INIT(fg_append_surface_to_chart);
-    MODULE_FUNCTION_INIT(fg_append_vector_field_to_chart);
-    MODULE_FUNCTION_INIT(fg_release_chart);
 }
 
 template<typename T>
@@ -159,7 +166,7 @@ size_t getTypeSize(GLenum type)
 
 void makeContextCurrent(fg_window window)
 {
-    FG_CHECK(fg_make_window_current(window));
+    FG_CHECK(graphics::forgePlugin().fg_make_window_current(window));
     CheckGL("End makeContextCurrent");
 }
 
@@ -222,13 +229,7 @@ namespace graphics {
 
 ForgeModule& forgePlugin()
 {
-    return *(ForgeManager::getInstance().mPlugin);
-}
-
-ForgeManager& ForgeManager::getInstance()
-{
-    static ForgeManager my_instance;
-    return my_instance;
+    return detail::forgeManager().plugin();
 }
 
 ForgeManager::ForgeManager()
@@ -236,60 +237,68 @@ ForgeManager::ForgeManager()
 
 ForgeManager::~ForgeManager()
 {
-    ForgeModule& _ = forgePlugin();
     /* clear all OpenGL resource objects (images, plots, histograms etc) first
      * and then delete the windows */
     for(ImgMapIter iter = mImgMap.begin(); iter != mImgMap.end(); iter++)
-        _.fg_release_image(iter->second);
+        mPlugin->fg_release_image(iter->second);
 
     for(PltMapIter iter = mPltMap.begin(); iter != mPltMap.end(); iter++)
-        _.fg_release_plot(iter->second);
+        mPlugin->fg_release_plot(iter->second);
 
     for(HstMapIter iter = mHstMap.begin(); iter != mHstMap.end(); iter++)
-        _.fg_release_histogram(iter->second);
+        mPlugin->fg_release_histogram(iter->second);
 
     for(SfcMapIter iter = mSfcMap.begin(); iter != mSfcMap.end(); iter++)
-        _.fg_release_surface(iter->second);
+        mPlugin->fg_release_surface(iter->second);
 
     for(VcfMapIter iter = mVcfMap.begin(); iter != mVcfMap.end(); iter++)
-        _.fg_release_vector_field(iter->second);
+        mPlugin->fg_release_vector_field(iter->second);
 
     for(ChartMapIter iter = mChartMap.begin(); iter != mChartMap.end(); iter++) {
         for(int i = 0; i < (int)(iter->second).size(); i++) {
             fg_chart chrt = (iter->second)[i];
             if (chrt) {
                 mChartAxesOverrideMap.erase((chrt));
-                _.fg_release_chart(chrt);
+                mPlugin->fg_release_chart(chrt);
             }
         }
     }
+    mPlugin->fg_release_window(wnd->handle);
+}
+
+ForgeModule& ForgeManager::plugin() {
+    return *mPlugin;
 }
 
 fg_window ForgeManager::getMainWindow()
 {
-    class Window {
-        public:
-        Window(fg_window h) : handle(h) {}
-        ~Window() { forgePlugin().fg_release_window(handle); }
-        fg_window handle;
-    };
-
     static std::once_flag flag;
-    static std::unique_ptr<Window> wnd;
 
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
 
     if (noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
         std::call_once(flag,
-            [] {
+            [this] {
+                if (!this->mPlugin->isLoaded()) {
+                    string error_message = "Error loading Forge: "
+                        + this->mPlugin->getErrorMessage()
+                        + "\nForge or one of it's dependencies failed to "
+                        "load. Try installing Forge or check if Forge is in the "
+                        "search path.";
+                    AF_ERROR(error_message.c_str(), AF_ERR_LOAD_LIB);
+                }
                 fg_window w = nullptr;
-                FG_CHECK(fg_create_window(&w, WIDTH, HEIGHT, "ArrayFire", NULL, true));
-                makeContextCurrent(w);
-                ForgeManager::getInstance().setWindowChartGrid(w, 1, 1);
-                wnd.reset(new Window(w));
+                fg_err e = this->mPlugin->fg_create_window(&w, WIDTH, HEIGHT,
+                                                           "ArrayFire", NULL, true);
+                if (e != FG_ERR_NONE) {
+                    AF_ERROR("Graphics Window creation failed", AF_ERR_INTERNAL);
+                }
+                this->mPlugin->fg_make_window_current(w);
+                this->setWindowChartGrid(w, 1, 1);
+                this->wnd.reset(new Window({w}));
                 if (!gladLoadGL()) {
-                AF_ERROR("GL Load Failed", AF_ERR_LOAD_LIB);
+                    AF_ERROR("GL Load Failed", AF_ERR_LOAD_LIB);
                 }
             });
     }
@@ -311,7 +320,7 @@ void ForgeManager::setWindowChartGrid(const fg_window window,
             fg_chart chrt = (iter->second)[i];
             if (chrt) {
                 mChartAxesOverrideMap.erase(chrt);
-                FG_CHECK(fg_release_chart(chrt));
+                FG_CHECK(mPlugin->fg_release_chart(chrt));
             }
         }
         (iter->second).clear();
@@ -359,18 +368,18 @@ fg_chart ForgeManager::getChart(const fg_window window,
 
         if (chart == NULL) {
             // Chart has not been created
-            FG_CHECK(fg_create_chart(&chart, ctype));
+            FG_CHECK(mPlugin->fg_create_chart(&chart, ctype));
             (iter->second)[c * gRows + r] = chart;
             // Set Axes override to false
             mChartAxesOverrideMap[chart] = false;
         } else {
             fg_chart_type chart_type;
-            FG_CHECK(fg_get_chart_type(&chart_type, chart));
+            FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
             if (chart_type != ctype) {
                 // Existing chart is of incompatible type
                 mChartAxesOverrideMap.erase(chart);
-                FG_CHECK(fg_release_chart(chart));
-                FG_CHECK(fg_create_chart(&chart, ctype));
+                FG_CHECK(mPlugin->fg_release_chart(chart));
+                FG_CHECK(mPlugin->fg_create_chart(&chart, ctype));
                 (iter->second)[c * gRows + r] = chart;
                 // Set Axes override to false
                 mChartAxesOverrideMap[chart] = false;
@@ -402,7 +411,7 @@ fg_image ForgeManager::getImage(int w, int h, fg_channel_format mode, fg_dtype t
 
     if (iter==mImgMap.end()) {
         fg_image img = nullptr;
-        FG_CHECK(fg_create_image(&img, w, h, mode, type));
+        FG_CHECK(mPlugin->fg_create_image(&img, w, h, mode, type));
         mImgMap[keypair] = img;
     }
 
@@ -428,16 +437,16 @@ fg_image ForgeManager::getImage(fg_chart chart, int w, int h,
 
     if (iter==mImgMap.end()) {
         fg_chart_type chart_type;
-        FG_CHECK(fg_get_chart_type(&chart_type, chart));
+        FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
         if(chart_type != FG_CHART_2D)
             AF_ERROR("Image can only be added to chart of type FG_CHART_2D",
                      AF_ERR_TYPE);
 
         fg_image img = nullptr;
-        FG_CHECK(fg_create_image(&img, w, h, mode, type));
+        FG_CHECK(mPlugin->fg_create_image(&img, w, h, mode, type));
         mImgMap[keypair] = img;
 
-        FG_CHECK(fg_append_image_to_chart(chart, img));
+        FG_CHECK(mPlugin->fg_append_image_to_chart(chart, img));
     }
 
     return mImgMap[keypair];
@@ -455,13 +464,13 @@ fg_plot ForgeManager::getPlot(fg_chart chart, int nPoints, fg_dtype dtype,
 
     if (iter==mPltMap.end()) {
         fg_chart_type chart_type;
-        FG_CHECK(fg_get_chart_type(&chart_type, chart));
+        FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
 
         fg_plot plt = nullptr;
-        FG_CHECK(fg_create_plot(&plt, nPoints, dtype, chart_type, ptype, mtype));
+        FG_CHECK(mPlugin->fg_create_plot(&plt, nPoints, dtype, chart_type, ptype, mtype));
         mPltMap[keypair] = plt;
 
-        FG_CHECK(fg_append_plot_to_chart(chart, plt));
+        FG_CHECK(mPlugin->fg_append_plot_to_chart(chart, plt));
     }
 
     return mPltMap[keypair];
@@ -477,16 +486,16 @@ fg_histogram ForgeManager::getHistogram(fg_chart chart, int nBins, fg_dtype type
 
     if (iter==mHstMap.end()) {
         fg_chart_type chart_type;
-        FG_CHECK(fg_get_chart_type(&chart_type, chart));
+        FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
         if(chart_type != FG_CHART_2D)
             AF_ERROR("Histogram can only be added to chart of type FG_CHART_2D",
                      AF_ERR_TYPE);
 
         fg_histogram hst = nullptr;
-        FG_CHECK(fg_create_histogram(&hst, nBins, type));
+        FG_CHECK(mPlugin->fg_create_histogram(&hst, nBins, type));
         mHstMap[keypair] = hst;
 
-        FG_CHECK(fg_append_histogram_to_chart(chart, hst));
+        FG_CHECK(mPlugin->fg_append_histogram_to_chart(chart, hst));
     }
 
     return mHstMap[keypair];
@@ -508,17 +517,17 @@ fg_surface ForgeManager::getSurface(fg_chart chart, int nX, int nY, fg_dtype typ
 
     if (iter==mSfcMap.end()) {
         fg_chart_type chart_type;
-        FG_CHECK(fg_get_chart_type(&chart_type, chart));
+        FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
         if(chart_type != FG_CHART_3D)
             AF_ERROR("Surface can only be added to chart of type FG_CHART_3D",
                      AF_ERR_TYPE);
 
         fg_surface surf = nullptr;
-        FG_CHECK(fg_create_surface(&surf, nX, nY, type,
+        FG_CHECK(mPlugin->fg_create_surface(&surf, nX, nY, type,
                                    FG_PLOT_SURFACE, FG_MARKER_NONE));
         mSfcMap[keypair] = surf;
 
-        FG_CHECK(fg_append_surface_to_chart(chart, surf));
+        FG_CHECK(mPlugin->fg_append_surface_to_chart(chart, surf));
     }
 
     return mSfcMap[keypair];
@@ -534,13 +543,13 @@ fg_vector_field ForgeManager::getVectorField(fg_chart chart, int nPoints, fg_dty
 
     if (iter==mVcfMap.end()) {
         fg_chart_type chart_type;
-        FG_CHECK(fg_get_chart_type(&chart_type, chart));
+        FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
 
         fg_vector_field vfield = nullptr;
-        FG_CHECK(fg_create_vector_field(&vfield, nPoints, type, chart_type));
+        FG_CHECK(mPlugin->fg_create_vector_field(&vfield, nPoints, type, chart_type));
         mVcfMap[keypair] = vfield;
 
-        FG_CHECK(fg_append_vector_field_to_chart(chart, vfield));
+        FG_CHECK(mPlugin->fg_append_vector_field_to_chart(chart, vfield));
     }
 
     return mVcfMap[keypair];

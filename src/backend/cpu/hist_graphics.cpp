@@ -23,8 +23,8 @@ void copy_histogram(const Array<T> &data, fg_histogram hist)
 
     CheckGL("Begin copy_histogram");
     unsigned bytes = 0, buffer = 0;
-    FG_CHECK(fg_get_histogram_vertex_buffer(&buffer, hist));
-    FG_CHECK(fg_get_histogram_vertex_buffer_size(&bytes, hist));
+    FG_CHECK(_.fg_get_histogram_vertex_buffer(&buffer, hist));
+    FG_CHECK(_.fg_get_histogram_vertex_buffer_size(&bytes, hist));
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glBufferSubData(GL_ARRAY_BUFFER, 0, bytes, data.get());
