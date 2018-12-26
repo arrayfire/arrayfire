@@ -10,7 +10,7 @@
 #pragma once
 
 template<typename T, typename Other>
-struct is_same{
+struct is_same {
     static const bool value = false;
 };
 
@@ -34,8 +34,7 @@ struct cond_type<false, T, Other> {
 
 template<typename T>
 struct baseOutType {
-    typedef typename cond_type< is_same<T, cdouble>::value ||
-                                is_same<T, double>::value,
-                                double,
-                                float>::type type;
+    typedef typename cond_type<is_same<T, cdouble>::value ||
+                                   is_same<T, double>::value,
+                               double, float>::type type;
 };

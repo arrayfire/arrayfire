@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 
-namespace cuda
-{
+namespace cuda {
 
 template<typename T>
 Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x);

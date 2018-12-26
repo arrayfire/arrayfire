@@ -9,17 +9,15 @@
 
 #include <Array.hpp>
 
-namespace cuda
-{
-    template<typename Ty, typename Tp>
-    void approx1(Array<Ty> &yo, const Array<Ty> &yi,
-                 const Array<Tp> &xo, const int xdim,
-                 const Tp &xi_beg, const Tp &xi_step,
-                 const af_interp_type method, const float offGrid);
+namespace cuda {
+template<typename Ty, typename Tp>
+void approx1(Array<Ty> &yo, const Array<Ty> &yi, const Array<Tp> &xo,
+             const int xdim, const Tp &xi_beg, const Tp &xi_step,
+             const af_interp_type method, const float offGrid);
 
-    template<typename Ty, typename Tp>
-    Array<Ty> approx2(const Array<Ty> &zi,
-                      const Array<Tp> &xo, const int xdim, const Tp &xi_beg, const Tp &xi_step,
-                      const Array<Tp> &yo, const int ydim, const Tp &yi_beg, const Tp &yi_step,
-                      const af_interp_type method, const float offGrid);
-}
+template<typename Ty, typename Tp>
+Array<Ty> approx2(const Array<Ty> &zi, const Array<Tp> &xo, const int xdim,
+                  const Tp &xi_beg, const Tp &xi_step, const Array<Tp> &yo,
+                  const int ydim, const Tp &yi_beg, const Tp &yi_step,
+                  const af_interp_type method, const float offGrid);
+}  // namespace cuda

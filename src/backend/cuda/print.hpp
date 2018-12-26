@@ -8,22 +8,17 @@
  ********************************************************/
 
 #pragma once
-#include <ostream>
 #include <backend.hpp>
+#include <ostream>
 
-namespace cuda
-{
-    static std::ostream&
-    operator<<(std::ostream &out, const cfloat& var)
-    {
-        out << "(" << var.x << "," << var.y << ")";
-        return out;
-    }
-
-    static std::ostream&
-    operator<<(std::ostream &out, const cdouble& var)
-    {
-        out << "(" << var.x << "," << var.y << ")";
-        return out;
-    }
+namespace cuda {
+static std::ostream& operator<<(std::ostream& out, const cfloat& var) {
+    out << "(" << var.x << "," << var.y << ")";
+    return out;
 }
+
+static std::ostream& operator<<(std::ostream& out, const cdouble& var) {
+    out << "(" << var.x << "," << var.y << ")";
+    return out;
+}
+}  // namespace cuda

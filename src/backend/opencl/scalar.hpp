@@ -8,17 +8,16 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <optypes.hpp>
-#include <math.hpp>
 #include <common/jit/ScalarNode.hpp>
+#include <math.hpp>
+#include <optypes.hpp>
 
-namespace opencl
-{
+namespace opencl {
 
 template<typename T>
-Array<T> createScalarNode(const dim4 &size, const T val)
-{
-    return createNodeArray<T>(size, common::Node_ptr(new common::ScalarNode<T>(val)));
+Array<T> createScalarNode(const dim4 &size, const T val) {
+    return createNodeArray<T>(size,
+                              common::Node_ptr(new common::ScalarNode<T>(val)));
 }
 
-}
+}  // namespace opencl

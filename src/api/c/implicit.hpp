@@ -8,14 +8,14 @@
  ********************************************************/
 
 #pragma once
+#include <backend.hpp>
+#include <cast.hpp>
+#include <common/ArrayInfo.hpp>
+#include <handle.hpp>
+#include <optypes.hpp>
+#include <types.hpp>
 #include <af/array.h>
 #include <af/defines.h>
-#include <common/ArrayInfo.hpp>
-#include <optypes.hpp>
-#include <handle.hpp>
-#include <backend.hpp>
-#include <types.hpp>
-#include <cast.hpp>
 
 using namespace detail;
 

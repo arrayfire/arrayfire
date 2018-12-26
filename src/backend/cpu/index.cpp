@@ -7,44 +7,40 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
 #include <Array.hpp>
-#include <index.hpp>
 #include <handle.hpp>
-#include <vector>
+#include <index.hpp>
+#include <kernel/index.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <af/dim4.hpp>
 #include <utility>
-#include <kernel/index.hpp>
+#include <vector>
 
-using std::vector;
 using af::dim4;
+using std::vector;
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
-Array<T> index(const Array<T>& in, const af_index_t idxrs[])
-{
+Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
     in.eval();
 
     vector<bool> isSeq(4);
     vector<af_seq> seqs(4, af_span);
     // create seq vector to retrieve output
     // dimensions, offsets & offsets
-    for (unsigned x=0; x<isSeq.size(); ++x) {
-        if (idxrs[x].isSeq) {
-            seqs[x] = idxrs[x].idx.seq;
-        }
+    for (unsigned x = 0; x < isSeq.size(); ++x) {
+        if (idxrs[x].isSeq) { seqs[x] = idxrs[x].idx.seq; }
         isSeq[x] = idxrs[x].isSeq;
     }
 
     // retrieve
     dim4 oDims = toDims(seqs, in.dims());
 
-    vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
+    vector<Array<uint>> idxArrs(4, createEmptyArray<uint>(dim4()));
     // look through indexs to read af_array indexs
-    for (unsigned x=0; x<isSeq.size(); ++x) {
+    for (unsigned x = 0; x < isSeq.size(); ++x) {
         if (!isSeq[x]) {
             idxArrs[x] = castArray<uint>(idxrs[x].idx.arr);
             idxArrs[x].eval();
@@ -66,16 +62,16 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     template Array<T> index<T>(const Array<T>& in, const af_index_t idxrs[]);
 
 INSTANTIATE(cdouble)
-INSTANTIATE(double )
-INSTANTIATE(cfloat )
-INSTANTIATE(float  )
-INSTANTIATE(uintl  )
-INSTANTIATE(uint   )
-INSTANTIATE(intl   )
-INSTANTIATE(int    )
-INSTANTIATE(uchar  )
-INSTANTIATE(char   )
-INSTANTIATE(ushort )
-INSTANTIATE(short  )
+INSTANTIATE(double)
+INSTANTIATE(cfloat)
+INSTANTIATE(float)
+INSTANTIATE(uintl)
+INSTANTIATE(uint)
+INSTANTIATE(intl)
+INSTANTIATE(int)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
+INSTANTIATE(ushort)
+INSTANTIATE(short)
 
-}
+}  // namespace cpu

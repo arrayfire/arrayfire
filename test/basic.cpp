@@ -7,25 +7,24 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/data.h>
 #include <arrayfire.h>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
+#include <af/data.h>
 
 #include <vector>
 
-using std::vector;
 using af::array;
 using af::constant;
 using af::dim4;
+using std::vector;
 
-TEST(BasicTests, constant1000x1000)
-{
+TEST(BasicTests, constant1000x1000) {
     if (noDoubleTests<float>()) return;
 
-    static const int ndims = 2;
+    static const int ndims    = 2;
     static const int dim_size = 1000;
-    dim_t d[ndims] = {dim_size, dim_size};
+    dim_t d[ndims]            = {dim_size, dim_size};
 
     double valA = 3.9;
     af_array a;
@@ -35,20 +34,17 @@ TEST(BasicTests, constant1000x1000)
     ASSERT_SUCCESS(af_get_data_ptr((void **)&h_a[0], a));
 
     size_t elements = dim_size * dim_size;
-    for(size_t i = 0; i < elements; i++) {
-        ASSERT_FLOAT_EQ(valA, h_a[i]);
-    }
+    for (size_t i = 0; i < elements; i++) { ASSERT_FLOAT_EQ(valA, h_a[i]); }
 
     ASSERT_SUCCESS(af_release_array(a));
 }
 
-TEST(BasicTests, constant10x10)
-{
+TEST(BasicTests, constant10x10) {
     if (noDoubleTests<float>()) return;
 
-    static const int ndims = 2;
+    static const int ndims    = 2;
     static const int dim_size = 10;
-    dim_t d[2] = {dim_size, dim_size};
+    dim_t d[2]                = {dim_size, dim_size};
 
     double valA = 3.9;
     af_array a;
@@ -58,20 +54,17 @@ TEST(BasicTests, constant10x10)
     ASSERT_SUCCESS(af_get_data_ptr((void **)&h_a[0], a));
 
     size_t elements = dim_size * dim_size;
-    for(size_t i = 0; i < elements; i++) {
-        ASSERT_FLOAT_EQ(valA, h_a[i]);
-    }
+    for (size_t i = 0; i < elements; i++) { ASSERT_FLOAT_EQ(valA, h_a[i]); }
 
     ASSERT_SUCCESS(af_release_array(a));
 }
 
-TEST(BasicTests, constant100x100)
-{
+TEST(BasicTests, constant100x100) {
     if (noDoubleTests<float>()) return;
 
-    static const int ndims = 2;
+    static const int ndims    = 2;
     static const int dim_size = 100;
-    dim_t d[2] = {dim_size, dim_size};
+    dim_t d[2]                = {dim_size, dim_size};
 
     double valA = 4.9;
     af_array a;
@@ -81,26 +74,23 @@ TEST(BasicTests, constant100x100)
     ASSERT_SUCCESS(af_get_data_ptr((void **)&h_a[0], a));
 
     size_t elements = dim_size * dim_size;
-    for(size_t i = 0; i < elements; i++) {
-        ASSERT_FLOAT_EQ(valA, h_a[i]);
-    }
+    for (size_t i = 0; i < elements; i++) { ASSERT_FLOAT_EQ(valA, h_a[i]); }
 
     ASSERT_SUCCESS(af_release_array(a));
 }
 
-//TODO: Test All The Types \o/
-TEST(BasicTests, AdditionSameType)
-{
+// TODO: Test All The Types \o/
+TEST(BasicTests, AdditionSameType) {
     if (noDoubleTests<float>()) return;
     if (noDoubleTests<double>()) return;
 
-    static const int ndims = 2;
+    static const int ndims    = 2;
     static const int dim_size = 100;
-    dim_t d[ndims] = {dim_size, dim_size};
+    dim_t d[ndims]            = {dim_size, dim_size};
 
-    double valA = 3.9;
-    double valB = 5.7;
-    double  valCf = valA + valB;
+    double valA  = 3.9;
+    double valB  = 5.7;
+    double valCf = valA + valB;
 
     af_array af32, bf32, cf32;
     af_array af64, bf64, cf64;
@@ -114,18 +104,18 @@ TEST(BasicTests, AdditionSameType)
     ASSERT_SUCCESS(af_add(&cf32, af32, bf32, false));
     ASSERT_SUCCESS(af_add(&cf64, af64, bf64, false));
 
-    vector<float>  h_cf32 (dim_size * dim_size);
-    vector<double> h_cf64 (dim_size * dim_size);
+    vector<float> h_cf32(dim_size * dim_size);
+    vector<double> h_cf64(dim_size * dim_size);
     ASSERT_SUCCESS(af_get_data_ptr((void **)&h_cf32[0], cf32));
     ASSERT_SUCCESS(af_get_data_ptr((void **)&h_cf64[0], cf64));
 
     double err = 0;
 
     size_t elements = dim_size * dim_size;
-    for(size_t i = 0; i < elements; i++) {
+    for (size_t i = 0; i < elements; i++) {
         float df = h_cf32[i] - (valCf);
-        ASSERT_FLOAT_EQ(valCf,  h_cf32[i]);
-        ASSERT_FLOAT_EQ(valCf,  h_cf64[i]);
+        ASSERT_FLOAT_EQ(valCf, h_cf32[i]);
+        ASSERT_FLOAT_EQ(valCf, h_cf64[i]);
         err = err + df * df;
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
@@ -138,13 +128,12 @@ TEST(BasicTests, AdditionSameType)
     ASSERT_SUCCESS(af_release_array(cf64));
 }
 
-TEST(BasicTests, Additionf64f64)
-{
+TEST(BasicTests, Additionf64f64) {
     if (noDoubleTests<double>()) return;
 
-    static const int ndims = 2;
+    static const int ndims    = 2;
     static const int dim_size = 100;
-    dim_t d[ndims] = {dim_size, dim_size};
+    dim_t d[ndims]            = {dim_size, dim_size};
 
     double valA = 3.9;
     double valB = 5.7;
@@ -162,7 +151,7 @@ TEST(BasicTests, Additionf64f64)
     double err = 0;
 
     size_t elements = dim_size * dim_size;
-    for(size_t i = 0; i < elements; i++) {
+    for (size_t i = 0; i < elements; i++) {
         double df = h_c[i] - (valC);
         ASSERT_FLOAT_EQ(valA + valB, h_c[i]);
         err = err + df * df;
@@ -172,17 +161,15 @@ TEST(BasicTests, Additionf64f64)
     ASSERT_SUCCESS(af_release_array(a));
     ASSERT_SUCCESS(af_release_array(b));
     ASSERT_SUCCESS(af_release_array(c));
-
 }
 
-TEST(BasicTests, Additionf32f64)
-{
+TEST(BasicTests, Additionf32f64) {
     if (noDoubleTests<float>()) return;
     if (noDoubleTests<double>()) return;
 
-    static const int ndims = 2;
+    static const int ndims    = 2;
     static const int dim_size = 100;
-    dim_t d[ndims] = {dim_size, dim_size};
+    dim_t d[ndims]            = {dim_size, dim_size};
 
     double valA = 3.9;
     double valB = 5.7;
@@ -200,7 +187,7 @@ TEST(BasicTests, Additionf32f64)
     double err = 0;
 
     size_t elements = dim_size * dim_size;
-    for(size_t i = 0; i < elements; i++) {
+    for (size_t i = 0; i < elements; i++) {
         double df = h_c[i] - (valC);
         ASSERT_FLOAT_EQ(valA + valB, h_c[i]);
         err = err + df * df;
@@ -212,59 +199,53 @@ TEST(BasicTests, Additionf32f64)
     ASSERT_SUCCESS(af_release_array(c));
 }
 
-TEST(BasicArrayTests, constant10x10)
-{
+TEST(BasicArrayTests, constant10x10) {
     if (noDoubleTests<float>()) return;
 
     dim_t dim_size = 10;
-    double valA = 3.14;
-    array a = constant(valA, dim_size, dim_size, f32);
+    double valA    = 3.14;
+    array a        = constant(valA, dim_size, dim_size, f32);
 
     vector<float> h_a(dim_size * dim_size, 0);
     a.host(&h_a.front());
 
     size_t elements = dim_size * dim_size;
-    for(size_t i = 0; i < elements; i++) {
-        ASSERT_FLOAT_EQ(valA, h_a[i]);
-    }
+    for (size_t i = 0; i < elements; i++) { ASSERT_FLOAT_EQ(valA, h_a[i]); }
 }
 
-////////////////////////////////////// CPP Tests //////////////////////////////////
+////////////////////////////////////// CPP Tests
+/////////////////////////////////////
 using af::dim4;
 
-TEST(BasicTests, constant100x100_CPP)
-{
+TEST(BasicTests, constant100x100_CPP) {
     if (noDoubleTests<float>()) return;
 
     static const int dim_size = 100;
-    dim_t d[2] = {dim_size, dim_size};
+    dim_t d[2]                = {dim_size, dim_size};
 
     double valA = 4.9;
     dim4 dims(d[0], d[1]);
     array a = constant(valA, dims);
 
     vector<float> h_a(dim_size * dim_size, 0);
-    a.host((void**)&h_a[0]);
+    a.host((void **)&h_a[0]);
 
     size_t elements = dim_size * dim_size;
-    for(size_t i = 0; i < elements; i++) {
-        ASSERT_FLOAT_EQ(valA, h_a[i]);
-    }
+    for (size_t i = 0; i < elements; i++) { ASSERT_FLOAT_EQ(valA, h_a[i]); }
 }
 
-//TODO: Test All The Types \o/
-TEST(BasicTests, AdditionSameType_CPP)
-{
+// TODO: Test All The Types \o/
+TEST(BasicTests, AdditionSameType_CPP) {
     if (noDoubleTests<float>()) return;
     if (noDoubleTests<double>()) return;
 
     static const int dim_size = 100;
-    dim_t d[2] = {dim_size, dim_size};
+    dim_t d[2]                = {dim_size, dim_size};
     dim4 dims(d[0], d[1]);
 
-    double valA = 3.9;
-    double valB = 5.7;
-    double  valCf = valA + valB;
+    double valA  = 3.9;
+    double valB  = 5.7;
+    double valCf = valA + valB;
 
     array a32 = constant(valA, dims, f32);
     array b32 = constant(valB, dims, f32);
@@ -274,31 +255,30 @@ TEST(BasicTests, AdditionSameType_CPP)
     array b64 = constant(valB, dims, f64);
     array c64 = a64 + b64;
 
-    vector<float>  h_cf32 (dim_size * dim_size);
-    vector<double> h_cf64 (dim_size * dim_size);
+    vector<float> h_cf32(dim_size * dim_size);
+    vector<double> h_cf64(dim_size * dim_size);
 
-    c32.host((void**)&h_cf32[0]);
-    c64.host((void**)&h_cf64[0]);
+    c32.host((void **)&h_cf32[0]);
+    c64.host((void **)&h_cf64[0]);
 
     double err = 0;
 
     size_t elements = dim_size * dim_size;
-    for(size_t i = 0; i < elements; i++) {
+    for (size_t i = 0; i < elements; i++) {
         float df = h_cf32[i] - (valCf);
-        ASSERT_FLOAT_EQ(valCf,  h_cf32[i]);
-        ASSERT_FLOAT_EQ(valCf,  h_cf64[i]);
+        ASSERT_FLOAT_EQ(valCf, h_cf32[i]);
+        ASSERT_FLOAT_EQ(valCf, h_cf64[i]);
         err = err + df * df;
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
 }
 
-TEST(BasicTests, Additionf32f64_CPP)
-{
+TEST(BasicTests, Additionf32f64_CPP) {
     if (noDoubleTests<float>()) return;
     if (noDoubleTests<double>()) return;
 
     static const int dim_size = 100;
-    dim_t d[2] = {dim_size, dim_size};
+    dim_t d[2]                = {dim_size, dim_size};
     dim4 dims(d[0], d[1]);
 
     double valA = 3.9;
@@ -310,12 +290,12 @@ TEST(BasicTests, Additionf32f64_CPP)
     array c = a + b;
 
     vector<double> h_c(dim_size * dim_size);
-    c.host((void**)&h_c[0]);
+    c.host((void **)&h_c[0]);
 
     double err = 0;
 
     size_t elements = dim_size * dim_size;
-    for(size_t i = 0; i < elements; i++) {
+    for (size_t i = 0; i < elements; i++) {
         double df = h_c[i] - (valC);
         ASSERT_FLOAT_EQ(valA + valB, h_c[i]);
         err = err + df * df;
@@ -325,7 +305,7 @@ TEST(BasicTests, Additionf32f64_CPP)
 
 TEST(Assert, TestEqualsCpp) {
     array gold = constant(1, 10, 10);
-    array out = constant(1, 10, 10);
+    array out  = constant(1, 10, 10);
 
     // Testing this macro
     // ASSERT_ARRAYS_EQ(gold, out);
@@ -334,8 +314,8 @@ TEST(Assert, TestEqualsCpp) {
 
 TEST(Assert, TestEqualsC) {
     af_array gold = 0;
-    af_array out = 0;
-    dim_t dims[] = {10, 10, 1, 1};
+    af_array out  = 0;
+    dim_t dims[]  = {10, 10, 1, 1};
     af_constant(&gold, 1.0, 4, dims, f32);
     af_constant(&out, 1.0, 4, dims, f32);
 
@@ -349,7 +329,7 @@ TEST(Assert, TestEqualsC) {
 
 TEST(Assert, TestEqualsDiffTypes) {
     array gold = constant(1, 10, 10, f64);
-    array out = constant(1, 10, 10);
+    array out  = constant(1, 10, 10);
 
     // Testing this macro
     // ASSERT_ARRAYS_EQ(gold, out);
@@ -358,7 +338,7 @@ TEST(Assert, TestEqualsDiffTypes) {
 
 TEST(Assert, TestEqualsDiffSizes) {
     array gold = constant(1, 10, 9);
-    array out = constant(1, 10, 10);
+    array out  = constant(1, 10, 10);
 
     // Testing this macro
     // ASSERT_ARRAYS_EQ(gold, out);
@@ -367,8 +347,8 @@ TEST(Assert, TestEqualsDiffSizes) {
 
 TEST(Assert, TestEqualsDiffValue) {
     array gold = constant(1, 3, 3);
-    array out = gold;
-    out(2, 2) = 2;
+    array out  = gold;
+    out(2, 2)  = 2;
 
     // Testing this macro
     // ASSERT_ARRAYS_EQ(gold, out);
@@ -377,8 +357,8 @@ TEST(Assert, TestEqualsDiffValue) {
 
 TEST(Assert, TestEqualsDiffComplexValue) {
     array gold = constant(af::cfloat(3.1f, 3.1f), 3, 3, c32);
-    array out = gold;
-    out(2, 2) = 2.2;
+    array out  = gold;
+    out(2, 2)  = 2.2;
 
     // Testing this macro
     // ASSERT_ARRAYS_EQ(gold, out);
@@ -394,8 +374,7 @@ TEST(Assert, TestVectorEquals) {
 
     // Testing this macro
     // ASSERT_VEC_ARRAY_EQ(gold, goldDims, out);
-    ASSERT_TRUE(assertArrayEq("gold", "goldDims", "out",
-                              gold, goldDims, out));
+    ASSERT_TRUE(assertArrayEq("gold", "goldDims", "out", gold, goldDims, out));
 }
 
 TEST(Assert, TestVectorDiffVecType) {
@@ -407,8 +386,7 @@ TEST(Assert, TestVectorDiffVecType) {
 
     // Testing this macro
     // ASSERT_VEC_ARRAY_EQ(gold, goldDims, out);
-    ASSERT_FALSE(assertArrayEq("gold", "goldDims", "out",
-                              gold, goldDims, out));
+    ASSERT_FALSE(assertArrayEq("gold", "goldDims", "out", gold, goldDims, out));
 }
 
 TEST(Assert, TestVectorDiffGoldSizeDims) {
@@ -420,8 +398,7 @@ TEST(Assert, TestVectorDiffGoldSizeDims) {
 
     // Testing this macro
     // ASSERT_VEC_ARRAY_EQ(gold, goldDims, out);
-    ASSERT_FALSE(assertArrayEq("gold", "goldDims", "out",
-                               gold, goldDims, out));
+    ASSERT_FALSE(assertArrayEq("gold", "goldDims", "out", gold, goldDims, out));
 }
 
 TEST(Assert, TestVectorDiffOutSizeGoldSize) {
@@ -433,8 +410,7 @@ TEST(Assert, TestVectorDiffOutSizeGoldSize) {
 
     // Testing this macro
     // ASSERT_VEC_ARRAY_EQ(gold, goldDims, out);
-    ASSERT_FALSE(assertArrayEq("gold", "goldDims", "out",
-                               gold, goldDims, out));
+    ASSERT_FALSE(assertArrayEq("gold", "goldDims", "out", gold, goldDims, out));
 }
 
 TEST(Assert, TestVectorDiffDim4) {
@@ -461,8 +437,8 @@ TEST(Assert, TestVectorDiffVecSize) {
 
 TEST(Assert, TestArraysNearC) {
     af_array gold = 0;
-    af_array out = 0;
-    dim_t dims[] = {10, 10, 1, 1};
+    af_array out  = 0;
+    dim_t dims[]  = {10, 10, 1, 1};
     af_constant(&gold, 2.2345f, 4, dims, f32);
     af_constant(&out, 2.2346f, 4, dims, f32);
 
@@ -489,15 +465,15 @@ TEST(Assert, TestVecArrayNearC) {
 
     // Testing this macro
     // ASSERT_VEC_ARRAY_NEAR(gold, goldDims, out, maxDiff);
-    ASSERT_TRUE(assertArrayNear("gold", "goldDims", "out", "maxDiff",
-                                gold, goldDims, out, maxDiff));
+    ASSERT_TRUE(assertArrayNear("gold", "goldDims", "out", "maxDiff", gold,
+                                goldDims, out, maxDiff));
 
     ASSERT_SUCCESS(af_release_array(out));
 }
 
 TEST(Assert, TestArraysNearWithinThresh) {
     array gold = constant(2.2345f, 3, 3);
-    array out = gold;
+    array out  = gold;
     out(2, 2) += 0.0001f;
     float maxDiff = 0.001f;
 
@@ -508,7 +484,7 @@ TEST(Assert, TestArraysNearWithinThresh) {
 
 TEST(Assert, TestArraysNearExceedThresh) {
     array gold = constant(2.2345f, 3, 3);
-    array out = gold;
+    array out  = gold;
     out(2, 2) += 0.002f;
     float maxDiff = 0.001f;
 
@@ -528,8 +504,8 @@ TEST(Assert, TestVecArrayNearWithinThresh) {
 
     // Testing this macro
     // ASSERT_VEC_ARRAY_NEAR(gold, goldDims, out, maxDiff);
-    ASSERT_TRUE(assertArrayNear("gold", "goldDims", "out", "maxAbsDiff",
-                                 gold, goldDims, out, maxDiff));
+    ASSERT_TRUE(assertArrayNear("gold", "goldDims", "out", "maxAbsDiff", gold,
+                                goldDims, out, maxDiff));
 }
 
 TEST(Assert, TestVecArrayNearExceedThresh) {
@@ -543,6 +519,6 @@ TEST(Assert, TestVecArrayNearExceedThresh) {
 
     // Testing this macro
     // ASSERT_VEC_ARRAY_NEAR(gold, goldDims, out, maxDiff);
-    ASSERT_FALSE(assertArrayNear("gold", "goldDims", "out", "maxAbsDiff",
-                                 gold, goldDims, out, maxDiff));
+    ASSERT_FALSE(assertArrayNear("gold", "goldDims", "out", "maxAbsDiff", gold,
+                                 goldDims, out, maxDiff));
 }

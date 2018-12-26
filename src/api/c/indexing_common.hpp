@@ -38,4 +38,4 @@ af_index_t createSpanIndex();
 /// s{1, 2, 1};      will return the same sequence
 /// s{-1, 2, -1};    will return the sequence af_seq(9,2,-1)
 af_seq convert2Canonical(const af_seq s, const dim_t len);
-}
+}  // namespace common

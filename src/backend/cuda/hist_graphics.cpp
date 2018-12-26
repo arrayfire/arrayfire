@@ -8,27 +8,26 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <hist_graphics.hpp>
-#include <err_cuda.hpp>
-#include <debug_cuda.hpp>
 #include <GraphicsResourceManager.hpp>
+#include <debug_cuda.hpp>
+#include <err_cuda.hpp>
+#include <hist_graphics.hpp>
 
 namespace cuda {
 
 template<typename T>
-void copy_histogram(const Array<T> &data, fg_histogram hist)
-{
+void copy_histogram(const Array<T> &data, fg_histogram hist) {
     auto stream = cuda::getActiveStream();
-    if(DeviceManager::checkGraphicsInteropCapability()) {
+    if (DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = data.get();
 
         auto res = interopManager().getHistogramResources(hist);
 
         size_t bytes = 0;
-        T* d_vbo = NULL;
+        T *d_vbo     = NULL;
         cudaGraphicsMapResources(1, res[0].get(), stream);
-        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo,
-                                             &bytes, *(res[0].get()));
+        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &bytes,
+                                             *(res[0].get()));
         cudaMemcpyAsync(d_vbo, d_P, bytes, cudaMemcpyDeviceToDevice, stream);
         cudaGraphicsUnmapResources(1, res[0].get(), stream);
 
@@ -36,14 +35,14 @@ void copy_histogram(const Array<T> &data, fg_histogram hist)
 
         POST_LAUNCH_CHECK();
     } else {
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule &_ = graphics::forgePlugin();
         unsigned bytes = 0, buffer = 0;
         FG_CHECK(_.fg_get_histogram_vertex_buffer(&buffer, hist));
         FG_CHECK(_.fg_get_histogram_vertex_buffer_size(&bytes, hist));
 
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        GLubyte *ptr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
             CUDA_CHECK(cudaMemcpyAsync(ptr, data.get(), bytes,
                                        cudaMemcpyDeviceToHost, stream));
@@ -55,8 +54,8 @@ void copy_histogram(const Array<T> &data, fg_histogram hist)
     }
 }
 
-#define INSTANTIATE(T)  \
-template void copy_histogram<T>(const Array<T> &, fg_histogram);
+#define INSTANTIATE(T) \
+    template void copy_histogram<T>(const Array<T> &, fg_histogram);
 
 INSTANTIATE(float)
 INSTANTIATE(int)
@@ -65,4 +64,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
-}
+}  // namespace cuda

@@ -16,7 +16,7 @@
 #include <forge.h>
 
 class ForgeModule : public common::DependencyModule {
-    public:
+   public:
     ForgeModule();
 
     MODULE_MEMBER(fg_create_window);
@@ -90,11 +90,10 @@ namespace graphics {
 ForgeModule& forgePlugin();
 }
 
-#define FG_CHECK(fn)                           \
-    do {                                       \
-        fg_err e = (fn);                       \
-        if (e != FG_ERR_NONE) {                \
-            AF_ERROR("forge call failed",      \
-                    AF_ERR_INTERNAL);          \
-        }                                      \
-    } while(0);
+#define FG_CHECK(fn)                                        \
+    do {                                                    \
+        fg_err e = (fn);                                    \
+        if (e != FG_ERR_NONE) {                             \
+            AF_ERROR("forge call failed", AF_ERR_INTERNAL); \
+        }                                                   \
+    } while (0);

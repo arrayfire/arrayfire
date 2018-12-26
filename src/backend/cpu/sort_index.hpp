@@ -9,8 +9,8 @@
 
 #include <Array.hpp>
 
-namespace cpu
-{
-    template<typename T>
-    void sort_index(Array<T> &val, Array<unsigned> &idx, const Array<T> &in, const unsigned dim, bool isAscending);
+namespace cpu {
+template<typename T>
+void sort_index(Array<T> &val, Array<unsigned> &idx, const Array<T> &in,
+                const unsigned dim, bool isAscending);
 }

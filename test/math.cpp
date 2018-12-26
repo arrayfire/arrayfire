@@ -6,108 +6,103 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-#include <complex>
 #include <gtest/gtest.h>
+#include <testHelpers.hpp>
 #include <af/arith.h>
 #include <af/data.h>
-#include <testHelpers.hpp>
+#include <complex>
 
 // This makes the macros cleaner
-using std::abs;
-using std::endl;
-using std::vector;
 using af::array;
 using af::dtype_traits;
 using af::exception;
 using af::randu;
+using std::abs;
+using std::endl;
+using std::vector;
 
-const int num = 10000;
-const float flt_err = 1e-3;
+const int num        = 10000;
+const float flt_err  = 1e-3;
 const double dbl_err = 1e-10;
 
 typedef std::complex<float> complex_float;
 typedef std::complex<double> complex_double;
 
 template<typename T>
-T sigmoid(T in)
-{
+T sigmoid(T in) {
     return 1.0 / (1.0 + std::exp(-in));
 }
 
-#define TEST_REAL(T, func, err, lo, hi)                             \
-    TEST(MathTests, Test_##func##_##T)                              \
-    {                                                               \
-        try {                                                       \
-            if (noDoubleTests<T>()) return;                         \
-            af_dtype ty = (af_dtype)dtype_traits<T>::af_type;       \
-            array a = (hi - lo) * randu(num, ty) + lo + err;        \
-            eval(a);                                                \
-            array b = func(a);                                      \
-            vector<T> h_a(a.elements());                            \
-            vector<T> h_b(b.elements());                            \
-            a.host(&h_a[0]);                                        \
-            b.host(&h_b[0]);                                        \
-                                                                    \
-            for (int i = 0; i < num; i++) {                         \
-                ASSERT_NEAR(h_b[i], func(h_a[i]), err) <<           \
-                    "for value: " << h_a[i] << endl;                \
-            }                                                       \
-        } catch (exception &ex) {                                   \
-            FAIL() << ex.what();                                    \
-        }                                                           \
-    }                                                               \
+#define TEST_REAL(T, func, err, lo, hi)                          \
+    TEST(MathTests, Test_##func##_##T) {                         \
+        try {                                                    \
+            if (noDoubleTests<T>()) return;                      \
+            af_dtype ty = (af_dtype)dtype_traits<T>::af_type;    \
+            array a     = (hi - lo) * randu(num, ty) + lo + err; \
+            eval(a);                                             \
+            array b = func(a);                                   \
+            vector<T> h_a(a.elements());                         \
+            vector<T> h_b(b.elements());                         \
+            a.host(&h_a[0]);                                     \
+            b.host(&h_b[0]);                                     \
+                                                                 \
+            for (int i = 0; i < num; i++) {                      \
+                ASSERT_NEAR(h_b[i], func(h_a[i]), err)           \
+                    << "for value: " << h_a[i] << endl;          \
+            }                                                    \
+        } catch (exception & ex) { FAIL() << ex.what(); }        \
+    }
 
-#define TEST_CPLX(T, func, err, lo, hi)                             \
-    TEST(MathTests, Test_##func##_##T)                              \
-    {                                                               \
-        try {                                                       \
-            if (noDoubleTests<T>()) return;                         \
-            af_dtype ty = (af_dtype)dtype_traits<T>::af_type;       \
-            array a = (hi - lo) * randu(num, ty) + lo + err;        \
-            eval(a);                                                \
-            array b = func(a);                                      \
-            vector<T> h_a(a.elements());                            \
-            vector<T> h_b(b.elements());                            \
-            a.host(&h_a[0]);                                        \
-            b.host(&h_b[0]);                                        \
-                                                                    \
-            for (int i = 0; i < num; i++) {                         \
-                T res = func(h_a[i]);                               \
-                ASSERT_NEAR(real(h_b[i]), real(res), err) <<        \
-                    "for real value: " << h_a[i] << endl;           \
-                ASSERT_NEAR(imag(h_b[i]), imag(res), err) <<        \
-                    "for imag value: " << h_a[i] << endl;           \
-            }                                                       \
-        } catch (exception &ex) {                                   \
-            FAIL() << ex.what();                                    \
-        }                                                           \
-    }                                                               \
+#define TEST_CPLX(T, func, err, lo, hi)                          \
+    TEST(MathTests, Test_##func##_##T) {                         \
+        try {                                                    \
+            if (noDoubleTests<T>()) return;                      \
+            af_dtype ty = (af_dtype)dtype_traits<T>::af_type;    \
+            array a     = (hi - lo) * randu(num, ty) + lo + err; \
+            eval(a);                                             \
+            array b = func(a);                                   \
+            vector<T> h_a(a.elements());                         \
+            vector<T> h_b(b.elements());                         \
+            a.host(&h_a[0]);                                     \
+            b.host(&h_b[0]);                                     \
+                                                                 \
+            for (int i = 0; i < num; i++) {                      \
+                T res = func(h_a[i]);                            \
+                ASSERT_NEAR(real(h_b[i]), real(res), err)        \
+                    << "for real value: " << h_a[i] << endl;     \
+                ASSERT_NEAR(imag(h_b[i]), imag(res), err)        \
+                    << "for imag value: " << h_a[i] << endl;     \
+            }                                                    \
+        } catch (exception & ex) { FAIL() << ex.what(); }        \
+    }
 
 #define MATH_TESTS_FLOAT(func) TEST_REAL(float, func, flt_err, 0.05f, 0.95f)
 #define MATH_TESTS_DOUBLE(func) TEST_REAL(double, func, dbl_err, 0.05, 0.95)
 
-#define MATH_TESTS_CFLOAT(func) TEST_CPLX(complex_float, func, flt_err, 0.05f, 0.95f)
-#define MATH_TESTS_CDOUBLE(func) TEST_CPLX(complex_double, func, dbl_err, 0.05, 0.95)
+#define MATH_TESTS_CFLOAT(func) \
+    TEST_CPLX(complex_float, func, flt_err, 0.05f, 0.95f)
+#define MATH_TESTS_CDOUBLE(func) \
+    TEST_CPLX(complex_double, func, dbl_err, 0.05, 0.95)
 
-#define MATH_TESTS_REAL(func)                   \
-    MATH_TESTS_FLOAT(func)                      \
-    MATH_TESTS_DOUBLE(func)                     \
+#define MATH_TESTS_REAL(func) \
+    MATH_TESTS_FLOAT(func)    \
+    MATH_TESTS_DOUBLE(func)
 
-#define MATH_TESTS_CPLX(func)                   \
-    MATH_TESTS_CFLOAT(func)                     \
-    MATH_TESTS_CDOUBLE(func)                    \
+#define MATH_TESTS_CPLX(func) \
+    MATH_TESTS_CFLOAT(func)   \
+    MATH_TESTS_CDOUBLE(func)
 
-#define MATH_TESTS_ALL(func)                    \
-    MATH_TESTS_REAL(func)                       \
-    MATH_TESTS_CPLX(func)                       \
+#define MATH_TESTS_ALL(func) \
+    MATH_TESTS_REAL(func)    \
+    MATH_TESTS_CPLX(func)
 
-#define MATH_TESTS_LIMITS_REAL(func, lo, hi)    \
-    TEST_REAL(float, func, flt_err, lo, hi)     \
-    TEST_REAL(double, func, dbl_err, lo, hi)    \
+#define MATH_TESTS_LIMITS_REAL(func, lo, hi) \
+    TEST_REAL(float, func, flt_err, lo, hi)  \
+    TEST_REAL(double, func, dbl_err, lo, hi)
 
-#define MATH_TESTS_LIMITS_CPLX(func, lo, hi)            \
-    TEST_CPLX(complex_float, func, flt_err, lo, hi)     \
-    TEST_CPLX(complex_double, func, dbl_err, lo, hi)    \
+#define MATH_TESTS_LIMITS_CPLX(func, lo, hi)        \
+    TEST_CPLX(complex_float, func, flt_err, lo, hi) \
+    TEST_CPLX(complex_double, func, dbl_err, lo, hi)
 
 MATH_TESTS_ALL(sin)
 MATH_TESTS_ALL(cos)
@@ -151,16 +146,13 @@ MATH_TESTS_REAL(erf)
 MATH_TESTS_REAL(erfc)
 #endif
 
-TEST(MathTests, Not)
-{
-    array a = randu(5, 5, b8);
-    array b = !a;
+TEST(MathTests, Not) {
+    array a  = randu(5, 5, b8);
+    array b  = !a;
     char *ha = a.host<char>();
     char *hb = b.host<char>();
 
-    for(int i = 0; i < a.elements(); i++) {
-        ASSERT_EQ(ha[i] ^ hb[i], true);
-    }
+    for (int i = 0; i < a.elements(); i++) { ASSERT_EQ(ha[i] ^ hb[i], true); }
 
     af_free_host(ha);
     af_free_host(hb);

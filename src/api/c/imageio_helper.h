@@ -11,20 +11,20 @@
 #define IMAGEIO_HELPER_H
 
 #include <common/DependencyModule.hpp>
+#include <common/err_common.hpp>
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <af/index.h>
-#include <common/err_common.hpp>
 
 #include <FreeImage.h>
 
-#include <memory>
 #include <functional>
+#include <memory>
 
 class FreeImage_Module {
     common::DependencyModule module;
 
-public:
+   public:
     MODULE_MEMBER(FreeImage_Allocate);
     MODULE_MEMBER(FreeImage_AllocateT);
     MODULE_MEMBER(FreeImage_CloseMemory);
@@ -54,21 +54,21 @@ public:
     ~FreeImage_Module();
 };
 
-FreeImage_Module& getFreeImagePlugin();
+FreeImage_Module &getFreeImagePlugin();
 
-using bitmap_ptr = std::unique_ptr<FIBITMAP, std::function<void(FIBITMAP*)>>;
-bitmap_ptr make_bitmap_ptr(FIBITMAP*);
+using bitmap_ptr = std::unique_ptr<FIBITMAP, std::function<void(FIBITMAP *)>>;
+bitmap_ptr make_bitmap_ptr(FIBITMAP *);
 
 typedef enum {
-    AFFI_GRAY = 1,
-    AFFI_RGB  = 3,
-    AFFI_RGBA = 4
+    AFFI_GRAY = 1,  //< gray
+    AFFI_RGB  = 3,  //< rgb
+    AFFI_RGBA = 4   //< rgba
 } FI_CHANNELS;
 
 // Error handler for FreeImage library.
 // In case this handler is invoked, it throws an af exception.
-static void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage)
-{
+static void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif,
+                                  const char *zMessage) {
     UNUSED(oFif);
     printf("FreeImage Error Handler: %s\n", zMessage);
 }
@@ -76,14 +76,13 @@ static void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage)
 //  Split a MxNx3 image into 3 separate channel matrices.
 //  Produce 3 channels if needed
 static af_err channel_split(const af_array rgb, const af::dim4 &dims,
-                            af_array *outr, af_array *outg, af_array *outb, af_array *outa)
-{
+                            af_array *outr, af_array *outg, af_array *outb,
+                            af_array *outa) {
     try {
         af_seq idx[4][3] = {{af_span, af_span, {0, 0, 1}},
                             {af_span, af_span, {1, 1, 1}},
                             {af_span, af_span, {2, 2, 1}},
-                            {af_span, af_span, {3, 3, 1}}
-                           };
+                            {af_span, af_span, {3, 3, 1}}};
 
         if (dims[2] == 4) {
             AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
@@ -97,7 +96,8 @@ static af_err channel_split(const af_array rgb, const af::dim4 &dims,
         } else {
             AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
         }
-    } CATCHALL;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 

@@ -26,8 +26,9 @@ class DependencyModule {
     LibHandle handle;
     std::vector<void*> functions;
 
-  public:
-    DependencyModule(const char* plugin_file_name, const char** paths = nullptr);
+   public:
+    DependencyModule(const char* plugin_file_name,
+                     const char** paths = nullptr);
 
     ~DependencyModule();
 
@@ -49,12 +50,11 @@ class DependencyModule {
     std::string getErrorMessage();
 };
 
-}
+}  // namespace common
 
 /// Creates a function pointer
-#define MODULE_MEMBER(NAME)                     \
-    decltype(&::NAME) NAME
+#define MODULE_MEMBER(NAME) decltype(&::NAME) NAME
 
 /// Dynamically loads the function pointer at runtime
-#define MODULE_FUNCTION_INIT(NAME)                \
+#define MODULE_FUNCTION_INIT(NAME) \
     NAME = module.getSymbol<decltype(&::NAME)>(#NAME)

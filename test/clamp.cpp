@@ -8,25 +8,23 @@
  ********************************************************/
 
 #include <gtest/gtest.h>
-#include <af/array.h>
-#include <af/arith.h>
-#include <af/data.h>
 #include <testHelpers.hpp>
+#include <af/arith.h>
+#include <af/array.h>
+#include <af/data.h>
 
-using std::abs;
-using std::vector;
 using af::array;
 using af::randu;
+using std::abs;
+using std::vector;
 
 const int num = 10000;
 
-TEST(ClampTests, FloatArrayArray)
-{
+TEST(ClampTests, FloatArrayArray) {
     array in = randu(num, f32);
-    array lo = randu(num, f32)/10;       // Ensure lo <= 0.1
-    array hi = 1.0 - randu(num, f32)/10; // Ensure hi >= 0.9
+    array lo = randu(num, f32) / 10;        // Ensure lo <= 0.1
+    array hi = 1.0 - randu(num, f32) / 10;  // Ensure hi >= 0.9
     eval(lo, hi);
-
 
     vector<float> hout(num), hin(num), hlo(num), hhi(num);
     array out = clamp(in, lo, hi);
@@ -38,14 +36,14 @@ TEST(ClampTests, FloatArrayArray)
     for (int i = 0; i < num; i++) {
         ASSERT_LE(hout[i], hhi[i]);
         ASSERT_GE(hout[i], hlo[i]);
-        ASSERT_EQ(true, hout[i] == hin[i] || hout[i] == hlo[i] || hout[i] == hhi[i]);
+        ASSERT_EQ(true,
+                  hout[i] == hin[i] || hout[i] == hlo[i] || hout[i] == hhi[i]);
     }
 }
 
-TEST(ClampTests, FloatArrayScalar)
-{
+TEST(ClampTests, FloatArrayScalar) {
     array in = randu(num, f32);
-    array lo = randu(num, f32)/10; // Ensure lo <= 0.1
+    array lo = randu(num, f32) / 10;  // Ensure lo <= 0.1
     float hi = 0.9;
 
     vector<float> hout(num), hin(num), hlo(num);
@@ -58,15 +56,15 @@ TEST(ClampTests, FloatArrayScalar)
     for (int i = 0; i < num; i++) {
         ASSERT_LE(hout[i], hi);
         ASSERT_GE(hout[i], hlo[i]);
-        ASSERT_EQ(true, hout[i] == hin[i] || hout[i] == hlo[i] || hout[i] == hi);
+        ASSERT_EQ(true,
+                  hout[i] == hin[i] || hout[i] == hlo[i] || hout[i] == hi);
     }
 }
 
-TEST(ClampTests, FloatScalarArray)
-{
+TEST(ClampTests, FloatScalarArray) {
     array in = randu(num, f32);
     float lo = 0.1;
-    array hi = 1.0 - randu(num, f32)/10; // Ensure hi >= 0.9
+    array hi = 1.0 - randu(num, f32) / 10;  // Ensure hi >= 0.9
 
     vector<float> hout(num), hin(num), hhi(num);
     array out = clamp(in, lo, hi);
@@ -78,12 +76,12 @@ TEST(ClampTests, FloatScalarArray)
     for (int i = 0; i < num; i++) {
         ASSERT_LE(hout[i], hhi[i]);
         ASSERT_GE(hout[i], lo);
-        ASSERT_EQ(true, hout[i] == hin[i] || hout[i] == lo || hout[i] == hhi[i]);
+        ASSERT_EQ(true,
+                  hout[i] == hin[i] || hout[i] == lo || hout[i] == hhi[i]);
     }
 }
 
-TEST(ClampTests, FloatScalarScalar)
-{
+TEST(ClampTests, FloatScalarScalar) {
     array in = randu(num, f32);
     float lo = 0.1;
     float hi = 0.9;

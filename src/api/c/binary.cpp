@@ -7,18 +7,18 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/array.h>
-#include <af/defines.h>
-#include <af/arith.h>
-#include <af/data.h>
+#include <backend.hpp>
 #include <common/ArrayInfo.hpp>
-#include <optypes.hpp>
-#include <implicit.hpp>
 #include <common/err_common.hpp>
 #include <handle.hpp>
-#include <backend.hpp>
-#include <sparse_handle.hpp>
+#include <implicit.hpp>
+#include <optypes.hpp>
 #include <sparse.hpp>
+#include <sparse_handle.hpp>
+#include <af/arith.h>
+#include <af/array.h>
+#include <af/data.h>
+#include <af/defines.h>
 
 #include <arith.hpp>
 #include <logic.hpp>
@@ -29,56 +29,55 @@ using af::dim4;
 
 template<typename T, af_op_t op>
 static inline af_array arithOp(const af_array lhs, const af_array rhs,
-                               const dim4 &odims)
-{
-    af_array res = getHandle(arithOp<T, op>(castArray<T>(lhs), castArray<T>(rhs), odims));
+                               const dim4 &odims) {
+    af_array res =
+        getHandle(arithOp<T, op>(castArray<T>(lhs), castArray<T>(rhs), odims));
     return res;
 }
 
 template<typename T, af_op_t op>
-static inline
-af_array sparseArithOp(const af_array lhs, const af_array rhs)
-{
+static inline af_array sparseArithOp(const af_array lhs, const af_array rhs) {
     auto res = arithOp<T, op>(getSparseArray<T>(lhs), getSparseArray<T>(rhs));
     return getHandle(res);
 }
 
 template<typename T, af_op_t op>
-static inline af_array arithSparseDenseOp(const af_array lhs, const af_array rhs,
-                                          const bool reverse)
-{
-    if(op == af_add_t || op == af_sub_t)
-        return getHandle(arithOpD<T, op>(castSparse<T>(lhs), castArray<T>(rhs), reverse));
-    else if(op == af_mul_t || op == af_div_t)
-        return getHandle(arithOp<T, op>(castSparse<T>(lhs), castArray<T>(rhs), reverse));
-
+static inline af_array arithSparseDenseOp(const af_array lhs,
+                                          const af_array rhs,
+                                          const bool reverse) {
+    if (op == af_add_t || op == af_sub_t)
+        return getHandle(
+            arithOpD<T, op>(castSparse<T>(lhs), castArray<T>(rhs), reverse));
+    else if (op == af_mul_t || op == af_div_t)
+        return getHandle(
+            arithOp<T, op>(castSparse<T>(lhs), castArray<T>(rhs), reverse));
 }
 
 template<af_op_t op>
-static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs,
+                       const bool batchMode) {
     try {
-        const ArrayInfo& linfo = getInfo(lhs);
-        const ArrayInfo& rinfo = getInfo(rhs);
+        const ArrayInfo &linfo = getInfo(lhs);
+        const ArrayInfo &rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
         const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
         af_array res;
         switch (otype) {
-        case f32: res = arithOp<float  , op>(lhs, rhs, odims); break;
-        case f64: res = arithOp<double , op>(lhs, rhs, odims); break;
-        case c32: res = arithOp<cfloat , op>(lhs, rhs, odims); break;
-        case c64: res = arithOp<cdouble, op>(lhs, rhs, odims); break;
-        case s32: res = arithOp<int    , op>(lhs, rhs, odims); break;
-        case u32: res = arithOp<uint   , op>(lhs, rhs, odims); break;
-        case u8 : res = arithOp<uchar  , op>(lhs, rhs, odims); break;
-        case b8 : res = arithOp<char   , op>(lhs, rhs, odims); break;
-        case s64: res = arithOp<intl   , op>(lhs, rhs, odims); break;
-        case u64: res = arithOp<uintl  , op>(lhs, rhs, odims); break;
-        case s16: res = arithOp<short  , op>(lhs, rhs, odims); break;
-        case u16: res = arithOp<ushort , op>(lhs, rhs, odims); break;
-        default: TYPE_ERROR(0, otype);
+            case f32: res = arithOp<float, op>(lhs, rhs, odims); break;
+            case f64: res = arithOp<double, op>(lhs, rhs, odims); break;
+            case c32: res = arithOp<cfloat, op>(lhs, rhs, odims); break;
+            case c64: res = arithOp<cdouble, op>(lhs, rhs, odims); break;
+            case s32: res = arithOp<int, op>(lhs, rhs, odims); break;
+            case u32: res = arithOp<uint, op>(lhs, rhs, odims); break;
+            case u8: res = arithOp<uchar, op>(lhs, rhs, odims); break;
+            case b8: res = arithOp<char, op>(lhs, rhs, odims); break;
+            case s64: res = arithOp<intl, op>(lhs, rhs, odims); break;
+            case u64: res = arithOp<uintl, op>(lhs, rhs, odims); break;
+            case s16: res = arithOp<short, op>(lhs, rhs, odims); break;
+            case u16: res = arithOp<ushort, op>(lhs, rhs, odims); break;
+            default: TYPE_ERROR(0, otype);
         }
 
         std::swap(*out, res);
@@ -88,30 +87,28 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs, co
 }
 
 template<af_op_t op>
-static
-af_err af_arith_real(af_array *out, const af_array lhs, const af_array rhs,
-                     const bool batchMode)
-{
+static af_err af_arith_real(af_array *out, const af_array lhs,
+                            const af_array rhs, const bool batchMode) {
     try {
-        const ArrayInfo& linfo = getInfo(lhs);
-        const ArrayInfo& rinfo = getInfo(rhs);
+        const ArrayInfo &linfo = getInfo(lhs);
+        const ArrayInfo &rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
         const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
         af_array res;
         switch (otype) {
-        case f32: res = arithOp<float  , op>(lhs, rhs, odims); break;
-        case f64: res = arithOp<double , op>(lhs, rhs, odims); break;
-        case s32: res = arithOp<int    , op>(lhs, rhs, odims); break;
-        case u32: res = arithOp<uint   , op>(lhs, rhs, odims); break;
-        case u8 : res = arithOp<uchar  , op>(lhs, rhs, odims); break;
-        case b8 : res = arithOp<char   , op>(lhs, rhs, odims); break;
-        case s64: res = arithOp<intl   , op>(lhs, rhs, odims); break;
-        case u64: res = arithOp<uintl  , op>(lhs, rhs, odims); break;
-        case s16: res = arithOp<short  , op>(lhs, rhs, odims); break;
-        case u16: res = arithOp<ushort , op>(lhs, rhs, odims); break;
-        default: TYPE_ERROR(0, otype);
+            case f32: res = arithOp<float, op>(lhs, rhs, odims); break;
+            case f64: res = arithOp<double, op>(lhs, rhs, odims); break;
+            case s32: res = arithOp<int, op>(lhs, rhs, odims); break;
+            case u32: res = arithOp<uint, op>(lhs, rhs, odims); break;
+            case u8: res = arithOp<uchar, op>(lhs, rhs, odims); break;
+            case b8: res = arithOp<char, op>(lhs, rhs, odims); break;
+            case s64: res = arithOp<intl, op>(lhs, rhs, odims); break;
+            case u64: res = arithOp<uintl, op>(lhs, rhs, odims); break;
+            case s16: res = arithOp<short, op>(lhs, rhs, odims); break;
+            case u16: res = arithOp<ushort, op>(lhs, rhs, odims); break;
+            default: TYPE_ERROR(0, otype);
         }
 
         std::swap(*out, res);
@@ -121,23 +118,22 @@ af_err af_arith_real(af_array *out, const af_array lhs, const af_array rhs,
 }
 
 template<af_op_t op>
-static af_err
-af_arith_sparse(af_array *out, const af_array lhs, const af_array rhs)
-{
+static af_err af_arith_sparse(af_array *out, const af_array lhs,
+                              const af_array rhs) {
     try {
         common::SparseArrayBase linfo = getSparseArrayBase(lhs);
         common::SparseArrayBase rinfo = getSparseArrayBase(rhs);
 
-        ARG_ASSERT(1, (linfo.getStorage()==rinfo.getStorage()));
-        ARG_ASSERT(1, (linfo.dims()==rinfo.dims()));
-        ARG_ASSERT(1, (linfo.getStorage()==AF_STORAGE_CSR));
+        ARG_ASSERT(1, (linfo.getStorage() == rinfo.getStorage()));
+        ARG_ASSERT(1, (linfo.dims() == rinfo.dims()));
+        ARG_ASSERT(1, (linfo.getStorage() == AF_STORAGE_CSR));
 
         const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
         af_array res;
         switch (otype) {
-            case f32: res = sparseArithOp<float  , op>(lhs, rhs); break;
-            case f64: res = sparseArithOp<double , op>(lhs, rhs); break;
-            case c32: res = sparseArithOp<cfloat , op>(lhs, rhs); break;
+            case f32: res = sparseArithOp<float, op>(lhs, rhs); break;
+            case f64: res = sparseArithOp<double, op>(lhs, rhs); break;
+            case c32: res = sparseArithOp<cfloat, op>(lhs, rhs); break;
             case c64: res = sparseArithOp<cdouble, op>(lhs, rhs); break;
             default: TYPE_ERROR(0, otype);
         }
@@ -149,22 +145,30 @@ af_arith_sparse(af_array *out, const af_array lhs, const af_array rhs)
 }
 
 template<af_op_t op>
-static af_err af_arith_sparse_dense(af_array *out, const af_array lhs, const af_array rhs,
-                                    const bool reverse = false)
-{
+static af_err af_arith_sparse_dense(af_array *out, const af_array lhs,
+                                    const af_array rhs,
+                                    const bool reverse = false) {
     using namespace common;
     try {
         common::SparseArrayBase linfo = getSparseArrayBase(lhs);
-        ArrayInfo       rinfo = getInfo(rhs);
+        ArrayInfo rinfo               = getInfo(rhs);
 
         const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
         af_array res;
         switch (otype) {
-        case f32: res = arithSparseDenseOp<float  , op>(lhs, rhs, reverse); break;
-        case f64: res = arithSparseDenseOp<double , op>(lhs, rhs, reverse); break;
-        case c32: res = arithSparseDenseOp<cfloat , op>(lhs, rhs, reverse); break;
-        case c64: res = arithSparseDenseOp<cdouble, op>(lhs, rhs, reverse); break;
-        default: TYPE_ERROR(0, otype);
+            case f32:
+                res = arithSparseDenseOp<float, op>(lhs, rhs, reverse);
+                break;
+            case f64:
+                res = arithSparseDenseOp<double, op>(lhs, rhs, reverse);
+                break;
+            case c32:
+                res = arithSparseDenseOp<cfloat, op>(lhs, rhs, reverse);
+                break;
+            case c64:
+                res = arithSparseDenseOp<cdouble, op>(lhs, rhs, reverse);
+                break;
+            default: TYPE_ERROR(0, otype);
         }
 
         std::swap(*out, res);
@@ -174,17 +178,16 @@ static af_err af_arith_sparse_dense(af_array *out, const af_array lhs, const af_
 }
 
 af_err af_add(af_array *out, const af_array lhs, const af_array rhs,
-              const bool batchMode)
-{
+              const bool batchMode) {
     // Check if inputs are sparse
     ArrayInfo linfo = getInfo(lhs, false, true);
     ArrayInfo rinfo = getInfo(rhs, false, true);
 
-    if(linfo.isSparse() && rinfo.isSparse()) {
+    if (linfo.isSparse() && rinfo.isSparse()) {
         return af_arith_sparse<af_add_t>(out, lhs, rhs);
-    } else if(linfo.isSparse() && !rinfo.isSparse()) {
+    } else if (linfo.isSparse() && !rinfo.isSparse()) {
         return af_arith_sparse_dense<af_add_t>(out, lhs, rhs);
-    } else if(!linfo.isSparse() && rinfo.isSparse()) {
+    } else if (!linfo.isSparse() && rinfo.isSparse()) {
         // second operand(Array) of af_arith call should be dense
         return af_arith_sparse_dense<af_add_t>(out, rhs, lhs, true);
     } else {
@@ -192,91 +195,94 @@ af_err af_add(af_array *out, const af_array lhs, const af_array rhs,
     }
 }
 
-af_err af_mul(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_mul(af_array *out, const af_array lhs, const af_array rhs,
+              const bool batchMode) {
     // Check if inputs are sparse
     ArrayInfo linfo = getInfo(lhs, false, true);
     ArrayInfo rinfo = getInfo(rhs, false, true);
 
-    if(linfo.isSparse() && rinfo.isSparse()) {
-        //return af_arith_sparse<af_mul_t>(out, lhs, rhs);
-        //MKL doesn't have mul or div support yet, hence
-        //this is commented out although alternative cpu code exists
+    if (linfo.isSparse() && rinfo.isSparse()) {
+        // return af_arith_sparse<af_mul_t>(out, lhs, rhs);
+        // MKL doesn't have mul or div support yet, hence
+        // this is commented out although alternative cpu code exists
         return AF_ERR_NOT_SUPPORTED;
-    } else if(linfo.isSparse() && !rinfo.isSparse()) {
+    } else if (linfo.isSparse() && !rinfo.isSparse()) {
         return af_arith_sparse_dense<af_mul_t>(out, lhs, rhs);
-    } else if(!linfo.isSparse() && rinfo.isSparse()) {
-        return af_arith_sparse_dense<af_mul_t>(out, rhs, lhs, true); // dense should be rhs
+    } else if (!linfo.isSparse() && rinfo.isSparse()) {
+        return af_arith_sparse_dense<af_mul_t>(out, rhs, lhs,
+                                               true);  // dense should be rhs
     } else {
         return af_arith<af_mul_t>(out, lhs, rhs, batchMode);
     }
 }
 
-af_err af_sub(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_sub(af_array *out, const af_array lhs, const af_array rhs,
+              const bool batchMode) {
     // Check if inputs are sparse
     ArrayInfo linfo = getInfo(lhs, false, true);
     ArrayInfo rinfo = getInfo(rhs, false, true);
 
-    if(linfo.isSparse() && rinfo.isSparse()) {
+    if (linfo.isSparse() && rinfo.isSparse()) {
         return af_arith_sparse<af_sub_t>(out, lhs, rhs);
-    } else if(linfo.isSparse() && !rinfo.isSparse()) {
+    } else if (linfo.isSparse() && !rinfo.isSparse()) {
         return af_arith_sparse_dense<af_sub_t>(out, lhs, rhs);
-    } else if(!linfo.isSparse() && rinfo.isSparse()) {
-        return af_arith_sparse_dense<af_sub_t>(out, rhs, lhs, true); // dense should be rhs
+    } else if (!linfo.isSparse() && rinfo.isSparse()) {
+        return af_arith_sparse_dense<af_sub_t>(out, rhs, lhs,
+                                               true);  // dense should be rhs
     } else {
         return af_arith<af_sub_t>(out, lhs, rhs, batchMode);
     }
 }
 
-af_err af_div(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_div(af_array *out, const af_array lhs, const af_array rhs,
+              const bool batchMode) {
     // Check if inputs are sparse
     ArrayInfo linfo = getInfo(lhs, false, true);
     ArrayInfo rinfo = getInfo(rhs, false, true);
 
-    if(linfo.isSparse() && rinfo.isSparse()) {
-        //return af_arith_sparse<af_div_t>(out, lhs, rhs);
-        //MKL doesn't have mul or div support yet, hence
-        //this is commented out although alternative cpu code exists
+    if (linfo.isSparse() && rinfo.isSparse()) {
+        // return af_arith_sparse<af_div_t>(out, lhs, rhs);
+        // MKL doesn't have mul or div support yet, hence
+        // this is commented out although alternative cpu code exists
         return AF_ERR_NOT_SUPPORTED;
-    } else if(linfo.isSparse() && !rinfo.isSparse()) {
+    } else if (linfo.isSparse() && !rinfo.isSparse()) {
         return af_arith_sparse_dense<af_div_t>(out, lhs, rhs);
-    } else if(!linfo.isSparse() && rinfo.isSparse()) {
+    } else if (!linfo.isSparse() && rinfo.isSparse()) {
         // Division by sparse is currently not allowed - for convinence of
         // dealing with division by 0
-        // return af_arith_sparse_dense<af_div_t>(out, rhs, lhs, true); // dense should be rhs
+        // return af_arith_sparse_dense<af_div_t>(out, rhs, lhs, true); // dense
+        // should be rhs
         return AF_ERR_NOT_SUPPORTED;
     } else {
         return af_arith<af_div_t>(out, lhs, rhs, batchMode);
     }
 }
 
-af_err af_maxof(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_maxof(af_array *out, const af_array lhs, const af_array rhs,
+                const bool batchMode) {
     return af_arith<af_max_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_minof(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_minof(af_array *out, const af_array lhs, const af_array rhs,
+                const bool batchMode) {
     return af_arith<af_min_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_rem(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_rem(af_array *out, const af_array lhs, const af_array rhs,
+              const bool batchMode) {
     return af_arith_real<af_rem_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_mod(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_mod(af_array *out, const af_array lhs, const af_array rhs,
+              const bool batchMode) {
     return af_arith_real<af_mod_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_pow(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_pow(af_array *out, const af_array lhs, const af_array rhs,
+              const bool batchMode) {
     try {
-        const ArrayInfo& linfo = getInfo(lhs);
-        const ArrayInfo& rinfo = getInfo(rhs);
+        const ArrayInfo &linfo = getInfo(lhs);
+        const ArrayInfo &rinfo = getInfo(rhs);
         if (rinfo.isComplex()) {
             af_array log_lhs, log_res;
             af_array res;
@@ -310,16 +316,17 @@ af_err af_pow(af_array *out, const af_array lhs, const af_array rhs, const bool 
             std::swap(*out, res);
             return AF_SUCCESS;
         }
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return af_arith_real<af_pow_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_root(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_root(af_array *out, const af_array lhs, const af_array rhs,
+               const bool batchMode) {
     try {
-        const ArrayInfo& linfo = getInfo(lhs);
-        const ArrayInfo& rinfo = getInfo(rhs);
+        const ArrayInfo &linfo = getInfo(lhs);
+        const ArrayInfo &rinfo = getInfo(rhs);
         if (linfo.isComplex() || rinfo.isComplex()) {
             af_array log_lhs, log_res;
             af_array res;
@@ -331,7 +338,8 @@ af_err af_root(af_array *out, const af_array lhs, const af_array rhs, const bool
         }
 
         af_array one;
-        AF_CHECK(af_constant(&one, 1, linfo.ndims(), linfo.dims().get(), linfo.getType()));
+        AF_CHECK(af_constant(&one, 1, linfo.ndims(), linfo.dims().get(),
+                             linfo.getType()));
 
         af_array inv_lhs;
         AF_CHECK(af_div(&inv_lhs, one, lhs, batchMode));
@@ -340,16 +348,15 @@ af_err af_root(af_array *out, const af_array lhs, const af_array rhs, const bool
 
         AF_CHECK(af_release_array(one));
         AF_CHECK(af_release_array(inv_lhs));
-
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs,
+                const bool batchMode) {
     try {
-
         const af_dtype type = implicit(lhs, rhs);
 
         if (type != f32 && type != f64) {
@@ -357,16 +364,16 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, const boo
                      AF_ERR_NOT_SUPPORTED);
         }
 
-        const ArrayInfo& linfo = getInfo(lhs);
-        const ArrayInfo& rinfo = getInfo(rhs);
+        const ArrayInfo &linfo = getInfo(lhs);
+        const ArrayInfo &rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
         af_array res;
         switch (type) {
-        case f32: res = arithOp<float , af_atan2_t>(lhs, rhs, odims); break;
-        case f64: res = arithOp<double, af_atan2_t>(lhs, rhs, odims); break;
-        default: TYPE_ERROR(0, type);
+            case f32: res = arithOp<float, af_atan2_t>(lhs, rhs, odims); break;
+            case f64: res = arithOp<double, af_atan2_t>(lhs, rhs, odims); break;
+            default: TYPE_ERROR(0, type);
         }
 
         std::swap(*out, res);
@@ -375,10 +382,9 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, const boo
     return AF_SUCCESS;
 }
 
-af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs,
+                const bool batchMode) {
     try {
-
         const af_dtype type = implicit(lhs, rhs);
 
         if (type != f32 && type != f64) {
@@ -386,16 +392,16 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs, const boo
                      AF_ERR_NOT_SUPPORTED);
         }
 
-        const ArrayInfo& linfo = getInfo(lhs);
-        const ArrayInfo& rinfo = getInfo(rhs);
+        const ArrayInfo &linfo = getInfo(lhs);
+        const ArrayInfo &rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
         af_array res;
         switch (type) {
-        case f32: res = arithOp<float , af_hypot_t>(lhs, rhs, odims); break;
-        case f64: res = arithOp<double, af_hypot_t>(lhs, rhs, odims); break;
-        default: TYPE_ERROR(0, type);
+            case f32: res = arithOp<float, af_hypot_t>(lhs, rhs, odims); break;
+            case f64: res = arithOp<double, af_hypot_t>(lhs, rhs, odims); break;
+            default: TYPE_ERROR(0, type);
         }
 
         std::swap(*out, res);
@@ -405,38 +411,39 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs, const boo
 }
 
 template<typename T, af_op_t op>
-static inline af_array logicOp(const af_array lhs, const af_array rhs, const dim4 &odims)
-{
-    af_array res = getHandle(logicOp<T, op>(castArray<T>(lhs), castArray<T>(rhs), odims));
+static inline af_array logicOp(const af_array lhs, const af_array rhs,
+                               const dim4 &odims) {
+    af_array res =
+        getHandle(logicOp<T, op>(castArray<T>(lhs), castArray<T>(rhs), odims));
     return res;
 }
 
 template<af_op_t op>
-static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs,
+                       const bool batchMode) {
     try {
         const af_dtype type = implicit(lhs, rhs);
 
-        const ArrayInfo& linfo = getInfo(lhs);
-        const ArrayInfo& rinfo = getInfo(rhs);
+        const ArrayInfo &linfo = getInfo(lhs);
+        const ArrayInfo &rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
         af_array res;
         switch (type) {
-        case f32: res = logicOp<float  , op>(lhs, rhs, odims); break;
-        case f64: res = logicOp<double , op>(lhs, rhs, odims); break;
-        case c32: res = logicOp<cfloat , op>(lhs, rhs, odims); break;
-        case c64: res = logicOp<cdouble, op>(lhs, rhs, odims); break;
-        case s32: res = logicOp<int    , op>(lhs, rhs, odims); break;
-        case u32: res = logicOp<uint   , op>(lhs, rhs, odims); break;
-        case u8 : res = logicOp<uchar  , op>(lhs, rhs, odims); break;
-        case b8 : res = logicOp<char   , op>(lhs, rhs, odims); break;
-        case s64: res = logicOp<intl   , op>(lhs, rhs, odims); break;
-        case u64: res = logicOp<uintl  , op>(lhs, rhs, odims); break;
-        case s16: res = logicOp<short  , op>(lhs, rhs, odims); break;
-        case u16: res = logicOp<ushort , op>(lhs, rhs, odims); break;
-        default: TYPE_ERROR(0, type);
+            case f32: res = logicOp<float, op>(lhs, rhs, odims); break;
+            case f64: res = logicOp<double, op>(lhs, rhs, odims); break;
+            case c32: res = logicOp<cfloat, op>(lhs, rhs, odims); break;
+            case c64: res = logicOp<cdouble, op>(lhs, rhs, odims); break;
+            case s32: res = logicOp<int, op>(lhs, rhs, odims); break;
+            case u32: res = logicOp<uint, op>(lhs, rhs, odims); break;
+            case u8: res = logicOp<uchar, op>(lhs, rhs, odims); break;
+            case b8: res = logicOp<char, op>(lhs, rhs, odims); break;
+            case s64: res = logicOp<intl, op>(lhs, rhs, odims); break;
+            case u64: res = logicOp<uintl, op>(lhs, rhs, odims); break;
+            case s16: res = logicOp<short, op>(lhs, rhs, odims); break;
+            case u16: res = logicOp<ushort, op>(lhs, rhs, odims); break;
+            default: TYPE_ERROR(0, type);
         }
 
         std::swap(*out, res);
@@ -445,79 +452,80 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs, co
     return AF_SUCCESS;
 }
 
-af_err af_eq(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_eq(af_array *out, const af_array lhs, const af_array rhs,
+             const bool batchMode) {
     return af_logic<af_eq_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_neq(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_neq(af_array *out, const af_array lhs, const af_array rhs,
+              const bool batchMode) {
     return af_logic<af_neq_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_gt(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_gt(af_array *out, const af_array lhs, const af_array rhs,
+             const bool batchMode) {
     return af_logic<af_gt_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_ge(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_ge(af_array *out, const af_array lhs, const af_array rhs,
+             const bool batchMode) {
     return af_logic<af_ge_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_lt(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_lt(af_array *out, const af_array lhs, const af_array rhs,
+             const bool batchMode) {
     return af_logic<af_lt_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_le(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_le(af_array *out, const af_array lhs, const af_array rhs,
+             const bool batchMode) {
     return af_logic<af_le_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_and(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_and(af_array *out, const af_array lhs, const af_array rhs,
+              const bool batchMode) {
     return af_logic<af_and_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_or(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_or(af_array *out, const af_array lhs, const af_array rhs,
+             const bool batchMode) {
     return af_logic<af_or_t>(out, lhs, rhs, batchMode);
 }
 
 template<typename T, af_op_t op>
-static inline af_array bitOp(const af_array lhs, const af_array rhs, const dim4 &odims)
-{
-    af_array res = getHandle(bitOp<T, op>(castArray<T>(lhs), castArray<T>(rhs), odims));
+static inline af_array bitOp(const af_array lhs, const af_array rhs,
+                             const dim4 &odims) {
+    af_array res =
+        getHandle(bitOp<T, op>(castArray<T>(lhs), castArray<T>(rhs), odims));
     return res;
 }
 
 template<af_op_t op>
-static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs,
+                         const bool batchMode) {
     try {
         const af_dtype type = implicit(lhs, rhs);
 
-        const ArrayInfo& linfo = getInfo(lhs);
-        const ArrayInfo& rinfo = getInfo(rhs);
+        const ArrayInfo &linfo = getInfo(lhs);
+        const ArrayInfo &rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
-        if(odims.ndims() == 0) {
+        if (odims.ndims() == 0) {
             return af_create_handle(out, 0, nullptr, type);
         }
 
         af_array res;
         switch (type) {
-        case s32: res = bitOp<int    , op>(lhs, rhs, odims); break;
-        case u32: res = bitOp<uint   , op>(lhs, rhs, odims); break;
-        case u8 : res = bitOp<uchar  , op>(lhs, rhs, odims); break;
-        case b8 : res = bitOp<char   , op>(lhs, rhs, odims); break;
-        case s64: res = bitOp<intl   , op>(lhs, rhs, odims); break;
-        case u64: res = bitOp<uintl  , op>(lhs, rhs, odims); break;
-        case s16: res = bitOp<short  , op>(lhs, rhs, odims); break;
-        case u16: res = bitOp<ushort , op>(lhs, rhs, odims); break;
-        default: TYPE_ERROR(0, type);
+            case s32: res = bitOp<int, op>(lhs, rhs, odims); break;
+            case u32: res = bitOp<uint, op>(lhs, rhs, odims); break;
+            case u8: res = bitOp<uchar, op>(lhs, rhs, odims); break;
+            case b8: res = bitOp<char, op>(lhs, rhs, odims); break;
+            case s64: res = bitOp<intl, op>(lhs, rhs, odims); break;
+            case u64: res = bitOp<uintl, op>(lhs, rhs, odims); break;
+            case s16: res = bitOp<short, op>(lhs, rhs, odims); break;
+            case u16: res = bitOp<ushort, op>(lhs, rhs, odims); break;
+            default: TYPE_ERROR(0, type);
         }
 
         std::swap(*out, res);
@@ -526,27 +534,27 @@ static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs, 
     return AF_SUCCESS;
 }
 
-af_err af_bitand(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_bitand(af_array *out, const af_array lhs, const af_array rhs,
+                 const bool batchMode) {
     return af_bitwise<af_bitand_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_bitor(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_bitor(af_array *out, const af_array lhs, const af_array rhs,
+                const bool batchMode) {
     return af_bitwise<af_bitor_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_bitxor(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_bitxor(af_array *out, const af_array lhs, const af_array rhs,
+                 const bool batchMode) {
     return af_bitwise<af_bitxor_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_bitshiftl(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_bitshiftl(af_array *out, const af_array lhs, const af_array rhs,
+                    const bool batchMode) {
     return af_bitwise<af_bitshiftl_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_bitshiftr(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
-{
+af_err af_bitshiftr(af_array *out, const af_array lhs, const af_array rhs,
+                    const bool batchMode) {
     return af_bitwise<af_bitshiftr_t>(out, lhs, rhs, batchMode);
 }

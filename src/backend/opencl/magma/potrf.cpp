@@ -53,20 +53,17 @@
 
 #include "magma.h"
 #include "magma_blas.h"
-#include "magma_data.h"
 #include "magma_cpu_lapack.h"
+#include "magma_data.h"
 #include "magma_helper.h"
 #include "magma_sync.h"
 
 #include <algorithm>
 
 template<typename Ty>
-magma_int_t magma_potrf_gpu(
-    magma_uplo_t   uplo, magma_int_t    n,
-    cl_mem dA, size_t dA_offset, magma_int_t ldda,
-    magma_queue_t queue,
-    magma_int_t*   info)
-{
+magma_int_t magma_potrf_gpu(magma_uplo_t uplo, magma_int_t n, cl_mem dA,
+                            size_t dA_offset, magma_int_t ldda,
+                            magma_queue_t queue, magma_int_t* info) {
 /*  -- clMAGMA (version 0.1) --
     Univ. of Tennessee, Knoxville
     Univ. of California, Berkeley
@@ -120,18 +117,19 @@ magma_int_t magma_potrf_gpu(
     =====================================================================   */
 
 // produces pointer and offset as two args to magmaBLAS routines
-#define dA(i,j)  dA, ((dA_offset) + (i) + (j)*ldda)
+#define dA(i, j) dA, ((dA_offset) + (i) + (j)*ldda)
 
 // produces pointer as single arg to BLAS routines
-#define A(i,j)  &A[ (i) + (j)*lda ]
+#define A(i, j) &A[(i) + (j)*lda]
 
     magma_int_t j, jb, nb;
-    static const Ty  z_one = magma_one<Ty>();
-    static const Ty mz_one = magma_neg_one<Ty>();
-    static const double    one =  1.0;
-    static const double  m_one = -1.0;
+    static const Ty z_one     = magma_one<Ty>();
+    static const Ty mz_one    = magma_neg_one<Ty>();
+    static const double one   = 1.0;
+    static const double m_one = -1.0;
 
-    static const OPENCL_BLAS_TRANS_T transType = magma_is_real<Ty>() ? OPENCL_BLAS_TRANS : OPENCL_BLAS_CONJ_TRANS;
+    static const OPENCL_BLAS_TRANS_T transType =
+        magma_is_real<Ty>() ? OPENCL_BLAS_TRANS : OPENCL_BLAS_CONJ_TRANS;
 
     Ty* work;
     magma_int_t err;
@@ -141,11 +139,11 @@ magma_int_t magma_potrf_gpu(
         *info = -1;
     } else if (n < 0) {
         *info = -2;
-    } else if (ldda < std::max(1,n)) {
+    } else if (ldda < std::max(1, n)) {
         *info = -4;
     }
     if (*info != 0) {
-        //magma_xerbla(__func__, -(*info));
+        // magma_xerbla(__func__, -(*info));
         return *info;
     }
 
@@ -156,8 +154,7 @@ magma_int_t magma_potrf_gpu(
     gpu_blas_herk_func<Ty> gpu_blas_herk;
     cpu_lapack_potrf_func<Ty> cpu_lapack_potrf;
 
-
-    err = magma_malloc_cpu<Ty>( &work, nb*nb);
+    err = magma_malloc_cpu<Ty>(&work, nb * nb);
     if (err != MAGMA_SUCCESS) {
         *info = MAGMA_ERR_HOST_ALLOC;
         return *info;
@@ -171,48 +168,42 @@ magma_int_t magma_potrf_gpu(
         magma_getmatrix<Ty>(n, n, dA, dA_offset, ldda, work, n, queue);
 
         LAPACKE_CHECK(cpu_lapack_potrf(
-                          uplo == MagmaUpper ? *MagmaUpperStr : *MagmaLowerStr,
-                          n, work, n));
+            uplo == MagmaUpper ? *MagmaUpperStr : *MagmaLowerStr, n, work, n));
 
         magma_setmatrix<Ty>(n, n, work, n, dA, dA_offset, ldda, queue);
-    }
-    else {
+    } else {
         if (uplo == MagmaUpper) {
             // --------------------
             // compute Cholesky factorization A = U'*U
             // using the left looking algorithm
-            for(j = 0; j < n; j += nb) {
+            for (j = 0; j < n; j += nb) {
                 // apply all previous updates to diagonal block
-                jb = std::min(nb, n-j);
+                jb = std::min(nb, n - j);
                 if (j > 0) {
-                    OPENCL_BLAS_CHECK(gpu_blas_herk(OPENCL_BLAS_TRIANGLE_UPPER, transType,
-                                                    jb, j,
-                                                    m_one,
-                                                    dA(0,j), ldda,
-                                                    one,
-                                                    dA(j,j), ldda,
-                                                    1, &queue, 0, nullptr, &blas_event));
+                    OPENCL_BLAS_CHECK(gpu_blas_herk(
+                        OPENCL_BLAS_TRIANGLE_UPPER, transType, jb, j, m_one,
+                        dA(0, j), ldda, one, dA(j, j), ldda, 1, &queue, 0,
+                        nullptr, &blas_event));
                 }
 
                 // start asynchronous data transfer
-                magma_getmatrix_async<Ty>(jb, jb, dA(j,j), ldda, work, jb, queue, &event);
+                magma_getmatrix_async<Ty>(jb, jb, dA(j, j), ldda, work, jb,
+                                          queue, &event);
 
-                // apply all previous updates to block row right of diagonal block
-                if (j+jb < n && j > 0) {
-                    OPENCL_BLAS_CHECK(gpu_blas_gemm(transType, OPENCL_BLAS_NO_TRANS,
-                                                    jb, n-j-jb, j,
-                                                    mz_one,
-                                                    dA(0, j   ), ldda,
-                                                    dA(0, j+jb), ldda,
-                                                    z_one,
-                                                    dA(j, j+jb), ldda,
-                                                    1, &queue, 0, nullptr, &blas_event));
+                // apply all previous updates to block row right of diagonal
+                // block
+                if (j + jb < n && j > 0) {
+                    OPENCL_BLAS_CHECK(gpu_blas_gemm(
+                        transType, OPENCL_BLAS_NO_TRANS, jb, n - j - jb, j,
+                        mz_one, dA(0, j), ldda, dA(0, j + jb), ldda, z_one,
+                        dA(j, j + jb), ldda, 1, &queue, 0, nullptr,
+                        &blas_event));
                 }
 
                 // simultaneous with above zgemm, transfer data, factor
                 // diagonal block on CPU, and test for positive definiteness
                 magma_event_sync(event);
-                LAPACKE_CHECK(cpu_lapack_potrf( *MagmaUpperStr, jb, work, jb));
+                LAPACKE_CHECK(cpu_lapack_potrf(*MagmaUpperStr, jb, work, jb));
 
                 if (*info != 0) {
                     assert(*info > 0);
@@ -220,73 +211,67 @@ magma_int_t magma_potrf_gpu(
                     break;
                 }
 
-                magma_setmatrix_async<Ty>(jb, jb, work, jb, dA(j,j), ldda, queue, &event);
+                magma_setmatrix_async<Ty>(jb, jb, work, jb, dA(j, j), ldda,
+                                          queue, &event);
 
                 // apply diagonal block to block row right of diagonal block
-                if (j+jb < n) {
+                if (j + jb < n) {
                     magma_event_sync(event);
-                    OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_LEFT, OPENCL_BLAS_TRIANGLE_UPPER,
-                                                    transType, OPENCL_BLAS_NON_UNIT_DIAGONAL,
-                                                    jb, n-j-jb,
-                                                    z_one,
-                                                    dA(j, j   ), ldda,
-                                                    dA(j, j+jb), ldda,
-                                                    1, &queue, 0, nullptr, &blas_event));
+                    OPENCL_BLAS_CHECK(gpu_blas_trsm(
+                        OPENCL_BLAS_SIDE_LEFT, OPENCL_BLAS_TRIANGLE_UPPER,
+                        transType, OPENCL_BLAS_NON_UNIT_DIAGONAL, jb,
+                        n - j - jb, z_one, dA(j, j), ldda, dA(j, j + jb), ldda,
+                        1, &queue, 0, nullptr, &blas_event));
                 }
             }
-        }
-        else {
+        } else {
             // --------------------
             // compute Cholesky factorization A = L*L'
             // using the left looking algorithm
-            for(j = 0; j < n; j += nb) {
+            for (j = 0; j < n; j += nb) {
                 // apply all previous updates to diagonal block
-                jb = std::min(nb, n-j);
-                if (j>0) {
-                    OPENCL_BLAS_CHECK(gpu_blas_herk(OPENCL_BLAS_TRIANGLE_LOWER, OPENCL_BLAS_NO_TRANS, jb, j,
-                                                    m_one,
-                                                    dA(j, 0), ldda,
-                                                    one,
-                                                    dA(j, j), ldda,
-                                                    1, &queue, 0, nullptr, &blas_event));
+                jb = std::min(nb, n - j);
+                if (j > 0) {
+                    OPENCL_BLAS_CHECK(gpu_blas_herk(
+                        OPENCL_BLAS_TRIANGLE_LOWER, OPENCL_BLAS_NO_TRANS, jb, j,
+                        m_one, dA(j, 0), ldda, one, dA(j, j), ldda, 1, &queue,
+                        0, nullptr, &blas_event));
                 }
 
                 // start asynchronous data transfer
-                magma_getmatrix_async<Ty>(jb, jb, dA(j,j), ldda, work, jb, queue, &event);
+                magma_getmatrix_async<Ty>(jb, jb, dA(j, j), ldda, work, jb,
+                                          queue, &event);
 
-                // apply all previous updates to block column below diagonal block
-                if (j+jb < n && j > 0) {
-                    OPENCL_BLAS_CHECK(gpu_blas_gemm(OPENCL_BLAS_NO_TRANS, transType,
-                                                    n-j-jb, jb, j,
-                                                    mz_one,
-                                                    dA(j+jb, 0), ldda,
-                                                    dA(j,    0), ldda,
-                                                    z_one,
-                                                    dA(j+jb, j), ldda,
-                                                    1, &queue, 0, nullptr, &blas_event));
+                // apply all previous updates to block column below diagonal
+                // block
+                if (j + jb < n && j > 0) {
+                    OPENCL_BLAS_CHECK(gpu_blas_gemm(
+                        OPENCL_BLAS_NO_TRANS, transType, n - j - jb, jb, j,
+                        mz_one, dA(j + jb, 0), ldda, dA(j, 0), ldda, z_one,
+                        dA(j + jb, j), ldda, 1, &queue, 0, nullptr,
+                        &blas_event));
                 }
 
                 // simultaneous with above zgemm, transfer data, factor
                 // diagonal block on CPU, and test for positive definiteness
                 magma_event_sync(event);
-                LAPACKE_CHECK(cpu_lapack_potrf(
-                                  *MagmaLowerStr, jb, work, jb));
+                LAPACKE_CHECK(cpu_lapack_potrf(*MagmaLowerStr, jb, work, jb));
                 if (*info != 0) {
                     assert(*info > 0);
                     *info += j;
                     break;
                 }
-                magma_setmatrix_async<Ty>(jb, jb, work, jb, dA(j,j), ldda, queue, &event);
+                magma_setmatrix_async<Ty>(jb, jb, work, jb, dA(j, j), ldda,
+                                          queue, &event);
 
                 // apply diagonal block to block column below diagonal
-                if (j+jb < n) {
+                if (j + jb < n) {
                     magma_event_sync(event);
-                    OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_LOWER, transType, OPENCL_BLAS_NON_UNIT_DIAGONAL,
-                                                    n-j-jb, jb,
-                                                    z_one,
-                                                    dA(j   , j), ldda,
-                                                    dA(j+jb, j), ldda,
-                                                    1, &queue, 0, nullptr, &blas_event));
+                    OPENCL_BLAS_CHECK(gpu_blas_trsm(
+                        OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_LOWER,
+                        transType, OPENCL_BLAS_NON_UNIT_DIAGONAL, n - j - jb,
+                        jb, z_one, dA(j, j), ldda, dA(j + jb, j), ldda, 1,
+                        &queue, 0, nullptr, &blas_event));
                 }
             }
         }
@@ -298,12 +283,10 @@ magma_int_t magma_potrf_gpu(
     return *info;
 }
 
-#define INSTANTIATE(T)                                  \
-    template magma_int_t magma_potrf_gpu<T>(            \
-        magma_uplo_t   uplo, magma_int_t    n,          \
-        cl_mem dA, size_t dA_offset, magma_int_t ldda,  \
-        magma_queue_t queue,                            \
-        magma_int_t*   info);                           \
+#define INSTANTIATE(T)                                                 \
+    template magma_int_t magma_potrf_gpu<T>(                           \
+        magma_uplo_t uplo, magma_int_t n, cl_mem dA, size_t dA_offset, \
+        magma_int_t ldda, magma_queue_t queue, magma_int_t * info);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

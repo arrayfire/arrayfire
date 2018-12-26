@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 
-namespace cpu
-{
-    template<typename T>
-    Array<T> inverse(const Array<T> &in);
+namespace cpu {
+template<typename T>
+Array<T> inverse(const Array<T> &in);
 }

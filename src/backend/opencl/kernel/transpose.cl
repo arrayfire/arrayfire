@@ -7,8 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #if DOCONJUGATE
-T doOp(T in)
-{
+T doOp(T in) {
     T out = {in.x, -in.y};
     return out;
 }
@@ -16,14 +15,12 @@ T doOp(T in)
 #define doOp(in) in
 #endif
 
-__kernel
-void transpose(__global T *oData, const KParam out,
-               const __global T *iData, const KParam in,
-               const int blocksPerMatX, const int blocksPerMatY)
-{
-    __local T shrdMem[TILE_DIM*(TILE_DIM+1)];
+__kernel void transpose(__global T *oData, const KParam out,
+                        const __global T *iData, const KParam in,
+                        const int blocksPerMatX, const int blocksPerMatY) {
+    __local T shrdMem[TILE_DIM * (TILE_DIM + 1)];
 
-    const int shrdStride = TILE_DIM+1;
+    const int shrdStride = TILE_DIM + 1;
     // create variables to hold output dimensions
     const int oDim0 = out.dims[0];
     const int oDim1 = out.dims[1];
@@ -53,13 +50,15 @@ void transpose(__global T *oData, const KParam out,
 
     // offset in and out based on batch id
     // also add the subBuffer offsets
-    iData += batchId_x *  in.strides[2] + batchId_y *  in.strides[3] +  in.offset;
-    oData += batchId_x * out.strides[2] + batchId_y * out.strides[3] + out.offset;
+    iData += batchId_x * in.strides[2] + batchId_y * in.strides[3] + in.offset;
+    oData +=
+        batchId_x * out.strides[2] + batchId_y * out.strides[3] + out.offset;
 
     for (int repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
         int gy_ = gy + repeat;
-        if (IS32MULTIPLE || (gx < iDim0 && gy_< iDim1))
-            shrdMem[(ly + repeat) * shrdStride + lx] = iData[gy_ * iStride1 + gx];
+        if (IS32MULTIPLE || (gx < iDim0 && gy_ < iDim1))
+            shrdMem[(ly + repeat) * shrdStride + lx] =
+                iData[gy_ * iStride1 + gx];
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -69,7 +68,8 @@ void transpose(__global T *oData, const KParam out,
     for (int repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
         int gy_ = gy + repeat;
         if (IS32MULTIPLE || (gx < oDim0 && gy_ < oDim1)) {
-            oData[gy_ * oStride1 + gx] = doOp(shrdMem[lx * shrdStride + ly + repeat]);
+            oData[gy_ * oStride1 + gx] =
+                doOp(shrdMem[lx * shrdStride + ly + repeat]);
         }
     }
 }

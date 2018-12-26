@@ -8,17 +8,15 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <shift.hpp>
+#include <kernel/shift.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/shift.hpp>
+#include <shift.hpp>
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
-Array<T> shift(const Array<T> &in, const int sdims[4])
-{
+Array<T> shift(const Array<T> &in, const int sdims[4]) {
     in.eval();
 
     Array<T> out = createEmptyArray<T>(in.dims());
@@ -29,8 +27,8 @@ Array<T> shift(const Array<T> &in, const int sdims[4])
     return out;
 }
 
-#define INSTANTIATE(T)                                                  \
-    template Array<T> shift<T>(const Array<T> &in, const int sdims[4]); \
+#define INSTANTIATE(T) \
+    template Array<T> shift<T>(const Array<T> &in, const int sdims[4]);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -45,4 +43,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

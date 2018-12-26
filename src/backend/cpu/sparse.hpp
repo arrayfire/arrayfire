@@ -12,8 +12,7 @@
 #include <Array.hpp>
 #include <common/SparseArray.hpp>
 
-namespace cpu
-{
+namespace cpu {
 template<typename T, af_storage stype>
 common::SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in);
 
@@ -21,5 +20,6 @@ template<typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const common::SparseArray<T> &in);
 
 template<typename T, af_storage dest, af_storage src>
-common::SparseArray<T> sparseConvertStorageToStorage(const common::SparseArray<T> &in);
-}
+common::SparseArray<T> sparseConvertStorageToStorage(
+    const common::SparseArray<T> &in);
+}  // namespace cpu

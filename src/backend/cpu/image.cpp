@@ -11,9 +11,9 @@
 // https://gist.github.com/SnopyDogy/a9a22497a893ec86aa3e
 
 #include <Array.hpp>
-#include <image.hpp>
-#include <err_cpu.hpp>
 #include <common/graphics_common.hpp>
+#include <err_cpu.hpp>
+#include <image.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 
@@ -22,14 +22,13 @@ using af::dim4;
 namespace cpu {
 
 template<typename T>
-void copy_image(const Array<T> &in, fg_image image)
-{
-    ForgeModule& _ = graphics::forgePlugin();
+void copy_image(const Array<T> &in, fg_image image) {
+    ForgeModule &_ = graphics::forgePlugin();
     in.eval();
     getQueue().sync();
 
     CheckGL("Before CopyArrayToImage");
-    const T *d_X = in.get();
+    const T *d_X       = in.get();
     unsigned data_size = 0, buffer = 0;
     FG_CHECK(_.fg_get_pixel_buffer(&buffer, image));
     FG_CHECK(_.fg_get_image_size(&data_size, image));
@@ -41,8 +40,7 @@ void copy_image(const Array<T> &in, fg_image image)
     CheckGL("In CopyArrayToImage");
 }
 
-#define INSTANTIATE(T)  \
-template void copy_image<T>(const Array<T> &, fg_image);
+#define INSTANTIATE(T) template void copy_image<T>(const Array<T> &, fg_image);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -53,4 +51,4 @@ INSTANTIATE(char)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
 
-}
+}  // namespace cpu

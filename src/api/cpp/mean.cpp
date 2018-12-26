@@ -7,68 +7,65 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
-#include <af/statistics.h>
 #include <af/algorithm.h>
 #include <af/array.h>
-#include "error.hpp"
+#include <af/dim4.hpp>
+#include <af/statistics.h>
 #include "common.hpp"
+#include "error.hpp"
 
-namespace af
-{
+namespace af {
 
-array mean(const array &in, const dim_t dim)
-{
+array mean(const array& in, const dim_t dim) {
     af_array temp = 0;
     AF_THROW(af_mean(&temp, in.get(), getFNSD(dim, in.dims())));
     return array(temp);
 }
 
-array mean(const array &in, const array &weights, const dim_t dim)
-{
+array mean(const array& in, const array& weights, const dim_t dim) {
     af_array temp = 0;
-    AF_THROW(af_mean_weighted(&temp, in.get(), weights.get(), getFNSD(dim, in.dims())));
+    AF_THROW(af_mean_weighted(&temp, in.get(), weights.get(),
+                              getFNSD(dim, in.dims())));
     return array(temp);
 }
 
-#define INSTANTIATE_MEAN(T)                                     \
-    template<> AFAPI T mean(const array& in)                    \
-    {                                                           \
-        double ret_val;                                         \
-        AF_THROW(af_mean_all(&ret_val, NULL, in.get()));        \
-        return (T)ret_val;                                      \
-    }                                                           \
-    template<> AFAPI T mean(const array& in, const array& wts)  \
-    {                                                           \
-        double ret_val;                                         \
-        AF_THROW(af_mean_all_weighted(&ret_val, NULL,           \
-                    in.get(), wts.get()));                      \
-        return (T)ret_val;                                      \
-    }                                                           \
+#define INSTANTIATE_MEAN(T)                                                  \
+    template<>                                                               \
+    AFAPI T mean(const array& in) {                                          \
+        double ret_val;                                                      \
+        AF_THROW(af_mean_all(&ret_val, NULL, in.get()));                     \
+        return (T)ret_val;                                                   \
+    }                                                                        \
+    template<>                                                               \
+    AFAPI T mean(const array& in, const array& wts) {                        \
+        double ret_val;                                                      \
+        AF_THROW(af_mean_all_weighted(&ret_val, NULL, in.get(), wts.get())); \
+        return (T)ret_val;                                                   \
+    }
 
-template<> AFAPI af_cfloat mean(const array& in)
-{
+template<>
+AFAPI af_cfloat mean(const array& in) {
     double real, imag;
     AF_THROW(af_mean_all(&real, &imag, in.get()));
     return af_cfloat((float)real, (float)imag);
 }
 
-template<> AFAPI af_cdouble mean(const array& in)
-{
+template<>
+AFAPI af_cdouble mean(const array& in) {
     double real, imag;
     AF_THROW(af_mean_all(&real, &imag, in.get()));
     return af_cdouble(real, imag);
 }
 
-template<> AFAPI af_cfloat mean(const array& in, const array& weights)
-{
+template<>
+AFAPI af_cfloat mean(const array& in, const array& weights) {
     double real, imag;
     AF_THROW(af_mean_all_weighted(&real, &imag, in.get(), weights.get()));
     return af_cfloat((float)real, (float)imag);
 }
 
-template<> AFAPI af_cdouble mean(const array& in, const array& weights)
-{
+template<>
+AFAPI af_cdouble mean(const array& in, const array& weights) {
     double real, imag;
     AF_THROW(af_mean_all_weighted(&real, &imag, in.get(), weights.get()));
     return af_cdouble(real, imag);
@@ -87,4 +84,4 @@ INSTANTIATE_MEAN(unsigned short);
 
 #undef INSTANTIATE_MEAN
 
-}
+}  // namespace af

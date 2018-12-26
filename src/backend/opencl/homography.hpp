@@ -9,14 +9,12 @@
 
 #include <Array.hpp>
 
-namespace opencl
-{
+namespace opencl {
 
 template<typename T>
-int homography(Array<T> &H,
-               const Array<float> &x_src, const Array<float> &y_src,
-               const Array<float> &x_dst, const Array<float> &y_dst,
-               const Array<float> &initial,
+int homography(Array<T> &H, const Array<float> &x_src,
+               const Array<float> &y_src, const Array<float> &x_dst,
+               const Array<float> &y_dst, const Array<float> &initial,
                const af_homography_type htype, const float inlier_thr,
                const unsigned iterations);
 

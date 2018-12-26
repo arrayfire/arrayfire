@@ -7,35 +7,33 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
-#include <af/dim4.hpp>
-#include <af/defines.h>
-#include <af/traits.hpp>
-#include <vector>
-#include <iostream>
-#include <complex>
-#include <string>
+#include <gtest/gtest.h>
 #include <testHelpers.hpp>
+#include <af/defines.h>
+#include <af/dim4.hpp>
+#include <af/traits.hpp>
+#include <complex>
+#include <iostream>
+#include <string>
+#include <vector>
 
-using std::vector;
-using std::string;
-using std::cout;
-using std::endl;
-using std::abs;
 using af::array;
-using af::cfloat;
 using af::cdouble;
+using af::cfloat;
 using af::dim4;
 using af::exception;
 using af::identity;
 using af::matmul;
 using af::max;
-
+using std::abs;
+using std::cout;
+using std::endl;
+using std::string;
+using std::vector;
 
 ///////////////////////////////// CPP ////////////////////////////////////
-TEST(QRFactorized, CPP)
-{
+TEST(QRFactorized, CPP) {
     if (noDoubleTests<float>()) return;
     if (noLAPACKTests()) return;
 
@@ -44,7 +42,8 @@ TEST(QRFactorized, CPP)
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
-    readTests<float, float, float>(string(TEST_DIR"/lapack/qrfactorized.test"),numDims,in,tests);
+    readTests<float, float, float>(string(TEST_DIR "/lapack/qrfactorized.test"),
+                                   numDims, in, tests);
 
     dim4 idims = numDims[0];
     array input(idims, &(in[0].front()));
@@ -65,7 +64,8 @@ TEST(QRFactorized, CPP)
     for (int y = 0; y < (int)qdims[1]; ++y) {
         for (int x = 0; x < (int)qdims[0]; ++x) {
             int elIter = y * qdims[0] + x;
-            ASSERT_NEAR(tests[resultIdx][elIter], qData[elIter], 0.001) << "at: " << elIter << endl;
+            ASSERT_NEAR(tests[resultIdx][elIter], qData[elIter], 0.001)
+                << "at: " << elIter << endl;
         }
     }
 
@@ -74,9 +74,10 @@ TEST(QRFactorized, CPP)
     for (int y = 0; y < (int)rdims[1]; ++y) {
         for (int x = 0; x < (int)rdims[0]; ++x) {
             // Test only upper half
-            if(x <= y) {
+            if (x <= y) {
                 int elIter = y * rdims[0] + x;
-                ASSERT_NEAR(tests[resultIdx][elIter], rData[elIter], 0.001) << "at: " << elIter << endl;
+                ASSERT_NEAR(tests[resultIdx][elIter], rData[elIter], 0.001)
+                    << "at: " << elIter << endl;
             }
         }
     }
@@ -87,8 +88,7 @@ TEST(QRFactorized, CPP)
 }
 
 template<typename T>
-void qrTester(const int m, const int n, double eps)
-{
+void qrTester(const int m, const int n, double eps) {
     try {
         if (noDoubleTests<T>()) return;
         if (noLAPACKTests()) return;
@@ -131,8 +131,7 @@ void qrTester(const int m, const int n, double eps)
         ASSERT_NEAR(0, max<double>(abs(real(r2 - r))), eps);
         ASSERT_NEAR(0, max<double>(abs(imag(r2 - r))), eps);
 
-
-    } catch(exception &ex) {
+    } catch (exception& ex) {
         cout << ex.what() << endl;
         throw;
     }
@@ -161,10 +160,7 @@ double eps<cdouble>() {
     return 1e-5;
 }
 template<typename T>
-class QR : public ::testing::Test
-{
-
-};
+class QR : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
 TYPED_TEST_CASE(QR, TestTypes);

@@ -7,13 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <arrayfire.h>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
-#include <arrayfire.h>
 
-using std::abs;
-using std::endl;
-using std::vector;
 using af::array;
 using af::constant;
 using af::deviceGC;
@@ -24,98 +21,86 @@ using af::max;
 using af::seq;
 using af::span;
 using af::sum;
+using std::abs;
+using std::endl;
+using std::vector;
 
 template<typename T>
-class Diagonal : public ::testing::Test
-{
+class Diagonal : public ::testing::Test {};
 
-};
-
-typedef ::testing::Types<float, double, int, uint, char, unsigned char> TestTypes;
+typedef ::testing::Types<float, double, int, uint, char, unsigned char>
+    TestTypes;
 TYPED_TEST_CASE(Diagonal, TestTypes);
 
-TYPED_TEST(Diagonal, Create)
-{
+TYPED_TEST(Diagonal, Create) {
     if (noDoubleTests<TypeParam>()) return;
     try {
-
         static const int size = 1000;
-        vector<TypeParam> input (size * size);
-        for(int i = 0; i < size; i++) {
-            input[i] = i;
-        }
-        for(int jj = 10; jj < size; jj+=100) {
+        vector<TypeParam> input(size * size);
+        for (int i = 0; i < size; i++) { input[i] = i; }
+        for (int jj = 10; jj < size; jj += 100) {
             array data(jj, &input.front(), afHost);
             array out = diag(data, 0, false);
 
             vector<TypeParam> h_out(out.elements());
             out.host(&h_out.front());
 
-            for(int i =0; i < (int)out.dims(0); i++) {
-                for(int j =0; j < (int)out.dims(1); j++) {
-                    if(i == j) ASSERT_EQ(input[i], h_out[i * out.dims(0) + j]);
-                    else       ASSERT_EQ(TypeParam(0), h_out[i * out.dims(0) + j]);
+            for (int i = 0; i < (int)out.dims(0); i++) {
+                for (int j = 0; j < (int)out.dims(1); j++) {
+                    if (i == j)
+                        ASSERT_EQ(input[i], h_out[i * out.dims(0) + j]);
+                    else
+                        ASSERT_EQ(TypeParam(0), h_out[i * out.dims(0) + j]);
                 }
             }
         }
-    } catch (const exception& ex) {
-        FAIL() << ex.what() << endl;
-    }
+    } catch (const exception& ex) { FAIL() << ex.what() << endl; }
 }
 
-TYPED_TEST(Diagonal, DISABLED_CreateLargeDim)
-{
+TYPED_TEST(Diagonal, DISABLED_CreateLargeDim) {
     if (noDoubleTests<TypeParam>()) return;
     try {
         deviceGC();
         {
             static const size_t largeDim = 65535 + 1;
-            array diagvals = constant(1, largeDim);
-            array out = diag(diagvals,  0, false);
+            array diagvals               = constant(1, largeDim);
+            array out                    = diag(diagvals, 0, false);
 
             ASSERT_EQ(largeDim, sum<float>(out));
         }
-    } catch (const exception& ex) {
-        FAIL() << ex.what() << endl;
-    }
+    } catch (const exception& ex) { FAIL() << ex.what() << endl; }
 }
 
-TYPED_TEST(Diagonal, Extract)
-{
+TYPED_TEST(Diagonal, Extract) {
     if (noDoubleTests<TypeParam>()) return;
 
     try {
         static const int size = 1000;
-        vector<TypeParam> input (size * size);
-        for(int i = 0; i < size * size; i++) {
-            input[i] = i;
-        }
-        for(int jj = 10; jj < size; jj+=100) {
+        vector<TypeParam> input(size * size);
+        for (int i = 0; i < size * size; i++) { input[i] = i; }
+        for (int jj = 10; jj < size; jj += 100) {
             array data(jj, jj, &input.front(), afHost);
             array out = diag(data, 0);
 
             vector<TypeParam> h_out(out.elements());
             out.host(&h_out.front());
 
-            for(int i =0; i < (int)out.dims(0); i++) {
+            for (int i = 0; i < (int)out.dims(0); i++) {
                 ASSERT_EQ(input[i * data.dims(0) + i], h_out[i]);
             }
         }
-    } catch (const exception& ex) {
-        FAIL() << ex.what() << endl;
-    }
+    } catch (const exception& ex) { FAIL() << ex.what() << endl; }
 }
 
-TYPED_TEST(Diagonal, ExtractLargeDim)
-{
+TYPED_TEST(Diagonal, ExtractLargeDim) {
     if (noDoubleTests<TypeParam>()) return;
 
     try {
-        static const size_t n = 10;
+        static const size_t n        = 10;
         static const size_t largeDim = 65535 + 1;
 
         array largedata = constant(1, n, n, largeDim);
-        array out = diag(largedata, 0);
+        array out       = diag(largedata, 0);
 
         ASSERT_EQ(n * largeDim, sum<float>(out));
 
@@ -124,24 +109,19 @@ TYPED_TEST(Diagonal, ExtractLargeDim)
 
         ASSERT_EQ(n * largeDim, sum<float>(out1));
 
-    } catch (const exception& ex) {
-        FAIL() << ex.what() << endl;
-    }
+    } catch (const exception& ex) { FAIL() << ex.what() << endl; }
 }
 
-TYPED_TEST(Diagonal, ExtractRect)
-{
+TYPED_TEST(Diagonal, ExtractRect) {
     if (noDoubleTests<TypeParam>()) return;
 
     try {
         static const int size0 = 1000, size1 = 900;
-        vector<TypeParam> input (size0 * size1);
-        for(int i = 0; i < size0 * size1; i++) {
-            input[i] = i;
-        }
+        vector<TypeParam> input(size0 * size1);
+        for (int i = 0; i < size0 * size1; i++) { input[i] = i; }
 
-        for(int jj = 10; jj < size0; jj += 100) {
-            for(int kk = 10; kk < size1; kk += 90) {
+        for (int jj = 10; jj < size0; jj += 100) {
+            for (int kk = 10; kk < size1; kk += 90) {
                 array data(jj, kk, &input.front(), afHost);
                 array out = diag(data, 0);
 
@@ -150,27 +130,22 @@ TYPED_TEST(Diagonal, ExtractRect)
 
                 ASSERT_EQ(out.dims(0), std::min(jj, kk));
 
-                for(int i =0; i < (int)out.dims(0); i++) {
+                for (int i = 0; i < (int)out.dims(0); i++) {
                     ASSERT_EQ(input[i * data.dims(0) + i], h_out[i]);
                 }
             }
         }
-    } catch (const exception& ex) {
-        FAIL() << ex.what() << endl;
-    }
+    } catch (const exception& ex) { FAIL() << ex.what() << endl; }
 }
 
-TEST(Diagonal, ExtractGFOR)
-{
+TEST(Diagonal, ExtractGFOR) {
     dim4 dims = dim4(100, 100, 3);
-    array A = round(100 * randu(dims));
-    array B = constant(0, 100, 1, 3);
+    array A   = round(100 * randu(dims));
+    array B   = constant(0, 100, 1, 3);
 
-    gfor(seq ii, 3) {
-        B(span, span, ii) = diag(A(span, span, ii));
-    }
+    gfor(seq ii, 3) { B(span, span, ii) = diag(A(span, span, ii)); }
 
-    for(int ii = 0; ii < 3; ii++) {
+    for (int ii = 0; ii < 3; ii++) {
         array c_ii = diag(A(span, span, ii));
         array b_ii = B(span, span, ii);
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);

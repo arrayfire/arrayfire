@@ -12,8 +12,8 @@
 
 #include <Array.hpp>
 #include <memory.hpp>
-#include <types.hpp>
 #include <platform.hpp>
+#include <types.hpp>
 
 //********************************************************/
 // LAPACK
@@ -28,16 +28,16 @@
 #define LAPACK_NAME(fn) LAPACKE_##fn
 
 #ifdef USE_MKL
-    #include<mkl_lapacke.h>
+#include <mkl_lapacke.h>
 #else
-    #ifdef __APPLE__
-        #include <Accelerate/Accelerate.h>
-        #include <common/lapacke.hpp>
-        #undef AF_LAPACK_COL_MAJOR
-        #define AF_LAPACK_COL_MAJOR 0
-    #else // NETLIB LAPACKE
-        #include<lapacke.h>
-    #endif
+#ifdef __APPLE__
+#include <Accelerate/Accelerate.h>
+#include <common/lapacke.hpp>
+#undef AF_LAPACK_COL_MAJOR
+#define AF_LAPACK_COL_MAJOR 0
+#else  // NETLIB LAPACKE
+#include <lapacke.h>
+#endif
 #endif
 
 #endif  // WITH_LINEAR_ALGEBRA

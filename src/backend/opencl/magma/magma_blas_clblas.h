@@ -16,23 +16,23 @@
 #include <mutex>  // for std::once_flag
 
 // Convert MAGMA constants to clBLAS constants
-clblasOrder          clblas_order_const( magma_order_t order );
-clblasTranspose      clblas_trans_const( magma_trans_t trans );
-clblasUplo           clblas_uplo_const ( magma_uplo_t  uplo  );
-clblasDiag           clblas_diag_const ( magma_diag_t  diag  );
-clblasSide           clblas_side_const ( magma_side_t  side  );
+clblasOrder clblas_order_const(magma_order_t order);
+clblasTranspose clblas_trans_const(magma_trans_t trans);
+clblasUplo clblas_uplo_const(magma_uplo_t uplo);
+clblasDiag clblas_diag_const(magma_diag_t diag);
+clblasSide clblas_side_const(magma_side_t side);
 
 // Error checking
 #define OPENCL_BLAS_CHECK CLBLAS_CHECK
 
 // Transposing
-#define OPENCL_BLAS_TRANS_T clblasTranspose // the type
+#define OPENCL_BLAS_TRANS_T clblasTranspose  // the type
 #define OPENCL_BLAS_NO_TRANS clblasNoTrans
 #define OPENCL_BLAS_TRANS clblasTrans
 #define OPENCL_BLAS_CONJ_TRANS clblasConjTrans
 
 // Triangles
-#define OPENCL_BLAS_TRIANGLE_T clblasUplo // the type
+#define OPENCL_BLAS_TRIANGLE_T clblasUplo  // the type
 #define OPENCL_BLAS_TRIANGLE_UPPER clblasUpper
 #define OPENCL_BLAS_TRIANGLE_LOWER clblasLower
 
@@ -48,17 +48,13 @@ clblasSide           clblas_side_const ( magma_side_t  side  );
 // Only meant to be once and from constructor
 // of DeviceManager singleton
 // DONT'T CALL FROM ANY OTHER LOCATION
-inline void gpu_blas_init()
-{
-    clblasSetup();
-}
+inline void gpu_blas_init() { clblasSetup(); }
 
 // tear down of the OpenCL BLAS library
 // Only meant to be called from destructor
 // of DeviceManager singleton
 // DONT'T CALL FROM ANY OTHER LOCATION
-inline void gpu_blas_deinit()
-{
+inline void gpu_blas_deinit() {
 #ifndef OS_WIN
     // FIXME:
     // clblasTeardown() causes a "Pure Virtual Function Called" crash on
@@ -70,24 +66,20 @@ inline void gpu_blas_deinit()
 #define clblasSherk(...) clblasSsyrk(__VA_ARGS__)
 #define clblasDherk(...) clblasDsyrk(__VA_ARGS__)
 
-#define BLAS_FUNC(NAME, TYPE, PREFIX)                       \
-    template<>                                              \
-    struct gpu_blas_##NAME##_func<TYPE>                     \
-    {                                                       \
-        template<typename... Args>                          \
-            clblasStatus                                    \
-            operator() (Args... args)                       \
-        {                                                   \
-            return clblas##PREFIX##NAME(clblasColumnMajor,  \
-                                        args...);           \
-        }                                                   \
+#define BLAS_FUNC(NAME, TYPE, PREFIX)                                \
+    template<>                                                       \
+    struct gpu_blas_##NAME##_func<TYPE> {                            \
+        template<typename... Args>                                   \
+        clblasStatus operator()(Args... args) {                      \
+            return clblas##PREFIX##NAME(clblasColumnMajor, args...); \
+        }                                                            \
     };
 
-#define BLAS_FUNC_DECL(NAME)                    \
-    BLAS_FUNC(NAME, float,      S)              \
-    BLAS_FUNC(NAME, double,     D)              \
-    BLAS_FUNC(NAME, cfloat,     C)              \
-    BLAS_FUNC(NAME, cdouble,    Z)              \
+#define BLAS_FUNC_DECL(NAME)   \
+    BLAS_FUNC(NAME, float, S)  \
+    BLAS_FUNC(NAME, double, D) \
+    BLAS_FUNC(NAME, cfloat, C) \
+    BLAS_FUNC(NAME, cdouble, Z)
 
 BLAS_FUNC_DECL(gemm)
 BLAS_FUNC_DECL(gemv)

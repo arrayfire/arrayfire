@@ -8,10 +8,10 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <GraphicsResourceManager.hpp>
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
 #include <image.hpp>
-#include <GraphicsResourceManager.hpp>
 
 #include <stdexcept>
 #include <vector>
@@ -19,9 +19,8 @@
 namespace opencl {
 
 template<typename T>
-void copy_image(const Array<T> &in, fg_image image)
-{
-    ForgeModule& _ = graphics::forgePlugin();
+void copy_image(const Array<T> &in, fg_image image) {
+    ForgeModule &_ = graphics::forgePlugin();
     if (isGLSharingSupported()) {
         CheckGL("Begin opencl resource copy");
 
@@ -43,7 +42,8 @@ void copy_image(const Array<T> &in, fg_image image)
 
         getQueue().enqueueAcquireGLObjects(&shared_objects, NULL, &event);
         event.wait();
-        getQueue().enqueueCopyBuffer(*d_X, *(res[0].get()), 0, 0, bytes, NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_X, *(res[0].get()), 0, 0, bytes, NULL,
+                                     &event);
         getQueue().enqueueReleaseGLObjects(&shared_objects, NULL, &event);
         event.wait();
 
@@ -57,7 +57,8 @@ void copy_image(const Array<T> &in, fg_image image)
 
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
         glBufferData(GL_PIXEL_UNPACK_BUFFER, bytes, 0, GL_STREAM_DRAW);
-        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+        GLubyte *ptr =
+            (GLubyte *)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
             getQueue().enqueueReadBuffer(*in.get(), CL_TRUE, 0, bytes, ptr);
             glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
@@ -67,8 +68,7 @@ void copy_image(const Array<T> &in, fg_image image)
     }
 }
 
-#define INSTANTIATE(T)      \
-template void copy_image<T>(const Array<T> &, fg_image);
+#define INSTANTIATE(T) template void copy_image<T>(const Array<T> &, fg_image);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -79,4 +79,4 @@ INSTANTIATE(char)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
 
-}
+}  // namespace opencl

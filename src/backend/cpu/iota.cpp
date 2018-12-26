@@ -9,19 +9,17 @@
 
 #include <Array.hpp>
 #include <iota.hpp>
+#include <kernel/iota.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/iota.hpp>
 
 using namespace std;
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
-Array<T> iota(const dim4 &dims, const dim4 &tile_dims)
-{
+Array<T> iota(const dim4 &dims, const dim4 &tile_dims) {
     dim4 outdims = dims * tile_dims;
 
     Array<T> out = createEmptyArray<T>(outdims);
@@ -31,8 +29,8 @@ Array<T> iota(const dim4 &dims, const dim4 &tile_dims)
     return out;
 }
 
-#define INSTANTIATE(T)                                                          \
-    template Array<T> iota<T>(const af::dim4 &dims, const af::dim4 &tile_dims); \
+#define INSTANTIATE(T) \
+    template Array<T> iota<T>(const af::dim4 &dims, const af::dim4 &tile_dims);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -44,4 +42,4 @@ INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

@@ -7,23 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel
-void reorder_output(
-    __global T           *d_out,
-    KParam                oInfo,
-    __global const CONVT *d_in,
-    KParam                iInfo,
-    KParam                fInfo,
-    const int        half_di0,
-    const int             baseDim,
-    const int             fftScale)
-{
+__kernel void reorder_output(__global T *d_out, KParam oInfo,
+                             __global const CONVT *d_in, KParam iInfo,
+                             KParam fInfo, const int half_di0,
+                             const int baseDim, const int fftScale) {
     const int t = get_global_id(0);
 
     const int tMax = oInfo.strides[3] * oInfo.dims[3];
 
-    if (t >= tMax)
-        return;
+    if (t >= tMax) return;
 
     const int do0 = oInfo.dims[0];
     const int do1 = oInfo.dims[1];
@@ -48,7 +40,7 @@ void reorder_output(
     const int to2 = (t / so2) % do2;
     const int to3 = (t / so3);
 
-    int oidx = to3*so3 + to2*so2 + to1*so1 + to0;
+    int oidx = to3 * so3 + to2 * so2 + to1 * so1 + to0;
 
     int ti0, ti1, ti2, ti3;
 #if EXPAND == 1
@@ -57,9 +49,9 @@ void reorder_output(
     ti2 = to2 * si2;
     ti3 = to3 * si3;
 #else
-    ti0 = to0 + fInfo.dims[0]/2;
-    ti1 = (to1 + (baseDim > 1)*(fInfo.dims[1]/2)) * si1;
-    ti2 = (to2 + (baseDim > 2)*(fInfo.dims[2]/2)) * si2;
+    ti0 = to0 + fInfo.dims[0] / 2;
+    ti1 = (to1 + (baseDim > 1) * (fInfo.dims[1] / 2)) * si1;
+    ti2 = (to2 + (baseDim > 2) * (fInfo.dims[2] / 2)) * si2;
     ti3 = to3 * si3;
 #endif
 
@@ -73,8 +65,7 @@ void reorder_output(
 #else
         d_out[oidx] = (T)(d_in[iidx] / fftScale);
 #endif
-    }
-    else if (ti0 < half_di0 + fInfo.dims[0] - 1) {
+    } else if (ti0 < half_di0 + fInfo.dims[0] - 1) {
         // Add central elements
         int iidx1 = iInfo.offset + ti3 + ti2 + ti1 + ti0 * 2;
         int iidx2 = iInfo.offset + ti3 + ti2 + ti1 + (ti0 - half_di0) * 2 + 1;
@@ -83,10 +74,10 @@ void reorder_output(
 #else
         d_out[oidx] = (T)((d_in[iidx1] + d_in[iidx2]) / fftScale);
 #endif
-    }
-    else {
+    } else {
         // Copy bottom elements
-        const int iidx = iInfo.offset + ti3 + ti2 + ti1 + (ti0 - half_di0) * 2 + 1;
+        const int iidx =
+            iInfo.offset + ti3 + ti2 + ti1 + (ti0 - half_di0) * 2 + 1;
 #if ROUND_OUT == 1
         d_out[oidx] = (T)round(d_in[iidx] / fftScale);
 #else

@@ -53,73 +53,70 @@
 
 #include "magma.h"
 #include "magma_blas.h"
-#include "magma_data.h"
 #include "magma_cpu_lapack.h"
+#include "magma_data.h"
 #include "magma_helper.h"
 
 #include <algorithm>
 
 template<typename Ty>
-magma_int_t magma_getrf_gpu(
-    magma_int_t m, magma_int_t n,
-    cl_mem dA, size_t dA_offset, magma_int_t ldda,
-    magma_int_t *ipiv,
-    magma_queue_t queue,
-    magma_int_t *info)
-{
-/*  -- clMAGMA (version 0.1) --
-    Univ. of Tennessee, Knoxville
-    Univ. of California, Berkeley
-    Univ. of Colorado, Denver
-    @date
+magma_int_t magma_getrf_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
+                            size_t dA_offset, magma_int_t ldda,
+                            magma_int_t *ipiv, magma_queue_t queue,
+                            magma_int_t *info) {
+    /*  -- clMAGMA (version 0.1) --
+        Univ. of Tennessee, Knoxville
+        Univ. of California, Berkeley
+        Univ. of Colorado, Denver
+        @date
 
-    Purpose
-    =======
-    GETRF computes an LU factorization of a general M-by-N matrix A
-    using partial pivoting with row interchanges.
+        Purpose
+        =======
+        GETRF computes an LU factorization of a general M-by-N matrix A
+        using partial pivoting with row interchanges.
 
-    The factorization has the form
-    A = P * L * U
-    where P is a permutation matrix, L is lower triangular with unit
-    diagonal elements (lower trapezoidal if m > n), and U is upper
-    triangular (upper trapezoidal if m < n).
+        The factorization has the form
+        A = P * L * U
+        where P is a permutation matrix, L is lower triangular with unit
+        diagonal elements (lower trapezoidal if m > n), and U is upper
+        triangular (upper trapezoidal if m < n).
 
-    This is the right-looking Level 3 BLAS version of the algorithm.
+        This is the right-looking Level 3 BLAS version of the algorithm.
 
-    Arguments
-    =========
-    M       (input) INTEGER
-    The number of rows of the matrix A.  M >= 0.
+        Arguments
+        =========
+        M       (input) INTEGER
+        The number of rows of the matrix A.  M >= 0.
 
-    N       (input) INTEGER
-    The number of columns of the matrix A.  N >= 0.
+        N       (input) INTEGER
+        The number of columns of the matrix A.  N >= 0.
 
-    A       (input/output) an array on the GPU, dimension (LDDA,N).
-    On entry, the M-by-N matrix to be factored.
-    On exit, the factors L and U from the factorization
-    A = P*L*U; the unit diagonal elements of L are not stored.
+        A       (input/output) an array on the GPU, dimension (LDDA,N).
+        On entry, the M-by-N matrix to be factored.
+        On exit, the factors L and U from the factorization
+        A = P*L*U; the unit diagonal elements of L are not stored.
 
-    LDDA     (input) INTEGER
-    The leading dimension of the array A.  LDDA >= max(1,M).
+        LDDA     (input) INTEGER
+        The leading dimension of the array A.  LDDA >= max(1,M).
 
-    IPIV    (output) INTEGER array, dimension (min(M,N))
-    The pivot indices; for 1 <= i <= min(M,N), row i of the
-    matrix was interchanged with row IPIV(i).
+        IPIV    (output) INTEGER array, dimension (min(M,N))
+        The pivot indices; for 1 <= i <= min(M,N), row i of the
+        matrix was interchanged with row IPIV(i).
 
-    INFO    (output) INTEGER
-    = 0:  successful exit
-    < 0:  if INFO = -i, the i-th argument had an illegal value
-    or another error occured, such as memory allocation failed.
-    > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
-    has been completed, but the factor U is exactly
-    singular, and division by zero will occur if it is used
-    to solve a system of equations.
-    =====================================================================    */
+        INFO    (output) INTEGER
+        = 0:  successful exit
+        < 0:  if INFO = -i, the i-th argument had an illegal value
+        or another error occured, such as memory allocation failed.
+        > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
+        has been completed, but the factor U is exactly
+        singular, and division by zero will occur if it is used
+        to solve a system of equations.
+        ===================================================================== */
 
-#define  dA(i_, j_) dA,   dA_offset  + (i_)*nb       + (j_)*nb*ldda
-#define dAT(i_, j_) dAT,  dAT_offset + (i_)*nb*lddat + (j_)*nb
-#define dAP(i_, j_) dAP,               (i_)          + (j_)*maxm
-#define work(i_)   (work + (i_))
+#define dA(i_, j_) dA, dA_offset + (i_)*nb + (j_)*nb *ldda
+#define dAT(i_, j_) dAT, dAT_offset + (i_)*nb *lddat + (j_)*nb
+#define dAP(i_, j_) dAP, (i_) + (j_)*maxm
+#define work(i_) (work + (i_))
 
     static const Ty c_one     = magma_one<Ty>();
     static const Ty c_neg_one = magma_neg_one<Ty>();
@@ -137,17 +134,16 @@ magma_int_t magma_getrf_gpu(
         *info = -1;
     else if (n < 0)
         *info = -2;
-    else if (ldda < std::max(1,m))
+    else if (ldda < std::max(1, m))
         *info = -4;
 
     if (*info != 0) {
-        //magma_xerbla(__func__, -(*info));
+        // magma_xerbla(__func__, -(*info));
         return *info;
     }
 
     /* Quick return if possible */
-    if (m == 0 || n == 0)
-        return *info;
+    if (m == 0 || n == 0) return *info;
 
     gpu_blas_gemm_func<Ty> gpu_blas_gemm;
     gpu_blas_trsm_func<Ty> gpu_blas_trsm;
@@ -158,23 +154,22 @@ magma_int_t magma_getrf_gpu(
     nb     = magma_get_getrf_nb<Ty>(m);
     s      = mindim / nb;
 
-    if (nb <= 1 || nb >= std::min(m,n)) {
+    if (nb <= 1 || nb >= std::min(m, n)) {
         /* Use CPU code. */
-        if (MAGMA_SUCCESS != magma_malloc_cpu<Ty>(&work, m*n)) {
+        if (MAGMA_SUCCESS != magma_malloc_cpu<Ty>(&work, m * n)) {
             *info = MAGMA_ERR_HOST_ALLOC;
             return *info;
         }
-        magma_getmatrix<Ty>(m, n, dA(0,0), ldda, work(0), m, queue);
-        LAPACKE_CHECK(cpu_lapack_getrf( m, n, work, m, ipiv));
-        magma_setmatrix<Ty>(m, n, work(0), m, dA(0,0), ldda, queue);
+        magma_getmatrix<Ty>(m, n, dA(0, 0), ldda, work(0), m, queue);
+        LAPACKE_CHECK(cpu_lapack_getrf(m, n, work, m, ipiv));
+        magma_setmatrix<Ty>(m, n, work(0), m, dA(0, 0), ldda, queue);
         magma_free_cpu(work);
-    }
-    else {
+    } else {
         /* Use hybrid blocked code. */
-        maxm = ((m + 31)/32)*32;
-        maxn = ((n + 31)/32)*32;
+        maxm = ((m + 31) / 32) * 32;
+        maxn = ((n + 31) / 32) * 32;
 
-        if (MAGMA_SUCCESS != magma_malloc<Ty>(&dAP, nb*maxm)) {
+        if (MAGMA_SUCCESS != magma_malloc<Ty>(&dAP, nb * maxm)) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
@@ -182,27 +177,26 @@ magma_int_t magma_getrf_gpu(
         // square matrices can be done in place;
         // rectangular requires copy to transpose
         if (m == n) {
-            dAT = dA;
+            dAT        = dA;
             dAT_offset = dA_offset;
-            lddat = ldda;
-            magmablas_transpose_inplace<Ty>(m, dAT(0,0), lddat, queue);
-        }
-        else {
-            lddat = maxn;  // N-by-M
+            lddat      = ldda;
+            magmablas_transpose_inplace<Ty>(m, dAT(0, 0), lddat, queue);
+        } else {
+            lddat      = maxn;  // N-by-M
             dAT_offset = 0;
-            if (MAGMA_SUCCESS != magma_malloc<Ty>(&dAT, lddat*maxm)) {
+            if (MAGMA_SUCCESS != magma_malloc<Ty>(&dAT, lddat * maxm)) {
                 magma_free(dAP);
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
             }
-            magmablas_transpose<Ty>(m, n, dA(0,0), ldda, dAT(0,0), lddat, queue);
+            magmablas_transpose<Ty>(m, n, dA(0, 0), ldda, dAT(0, 0), lddat,
+                                    queue);
         }
 
         ldwork = maxm;
-        if (MAGMA_SUCCESS != magma_malloc_cpu<Ty>(&work, ldwork*nb)) {
+        if (MAGMA_SUCCESS != magma_malloc_cpu<Ty>(&work, ldwork * nb)) {
             magma_free(dAP);
-            if (dA != dAT)
-                magma_free(dAT);
+            if (dA != dAT) magma_free(dAT);
 
             *info = MAGMA_ERR_HOST_ALLOC;
             return *info;
@@ -210,132 +204,120 @@ magma_int_t magma_getrf_gpu(
 
         cl_event event = 0;
 
-
-        for(j=0; j < s; j++) {
-
+        for (j = 0; j < s; j++) {
             // download j-th panel
-            magmablas_transpose<Ty>(nb, m-j*nb, dAT(j,j), lddat, dAP(0,0), maxm, queue);
+            magmablas_transpose<Ty>(nb, m - j * nb, dAT(j, j), lddat, dAP(0, 0),
+                                    maxm, queue);
 
-            magma_getmatrix<Ty>(m-j*nb, nb, dAP(0,0), maxm, work(0), ldwork, queue);
+            magma_getmatrix<Ty>(m - j * nb, nb, dAP(0, 0), maxm, work(0),
+                                ldwork, queue);
 
             if (j > 0 && n > (j + 1) * nb) {
-                OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER,
-                                                OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
-                                                n - (j+1)*nb, nb,
-                                                c_one,
-                                                dAT(j-1,j-1), lddat,
-                                                dAT(j-1,j+1), lddat,
-                                                1, &queue, 0, nullptr, &event));
+                OPENCL_BLAS_CHECK(gpu_blas_trsm(
+                    OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER,
+                    OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
+                    n - (j + 1) * nb, nb, c_one, dAT(j - 1, j - 1), lddat,
+                    dAT(j - 1, j + 1), lddat, 1, &queue, 0, nullptr, &event));
 
-                if (m > j * nb)  {
-                    OPENCL_BLAS_CHECK(gpu_blas_gemm(OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_NO_TRANS,
-                                                    n-(j+1)*nb, m-j*nb, nb,
-                                                    c_neg_one,
-                                                    dAT(j-1,j+1), lddat,
-                                                    dAT(j,  j-1), lddat,
-                                                    c_one,
-                                                    dAT(j,  j+1), lddat,
-                                                    1, &queue, 0, nullptr, &event));
+                if (m > j * nb) {
+                    OPENCL_BLAS_CHECK(gpu_blas_gemm(
+                        OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_NO_TRANS,
+                        n - (j + 1) * nb, m - j * nb, nb, c_neg_one,
+                        dAT(j - 1, j + 1), lddat, dAT(j, j - 1), lddat, c_one,
+                        dAT(j, j + 1), lddat, 1, &queue, 0, nullptr, &event));
                 }
             }
 
             // do the cpu part
-            rows = m - j*nb;
-            LAPACKE_CHECK(cpu_lapack_getrf( rows, nb, work, ldwork, ipiv+j*nb));
-            if (*info == 0 && iinfo > 0)
-                *info = iinfo + j*nb;
+            rows = m - j * nb;
+            LAPACKE_CHECK(
+                cpu_lapack_getrf(rows, nb, work, ldwork, ipiv + j * nb));
+            if (*info == 0 && iinfo > 0) *info = iinfo + j * nb;
 
-            for(i=j*nb; i < j*nb + nb; ++i) {
-                ipiv[i] += j*nb;
-            }
-            magmablas_laswp<Ty>(n, dAT(0,0), lddat, j*nb + 1, j*nb + nb, ipiv, 1, queue);
+            for (i = j * nb; i < j * nb + nb; ++i) { ipiv[i] += j * nb; }
+            magmablas_laswp<Ty>(n, dAT(0, 0), lddat, j * nb + 1, j * nb + nb,
+                                ipiv, 1, queue);
 
             // upload j-th panel
-            magma_setmatrix<Ty>(m-j*nb, nb, work(0), ldwork, dAP(0,0), maxm, queue);
+            magma_setmatrix<Ty>(m - j * nb, nb, work(0), ldwork, dAP(0, 0),
+                                maxm, queue);
 
-            magmablas_transpose<Ty>(m-j*nb, nb, dAP(0,0), maxm, dAT(j,j), lddat, queue);
+            magmablas_transpose<Ty>(m - j * nb, nb, dAP(0, 0), maxm, dAT(j, j),
+                                    lddat, queue);
 
             // do the small non-parallel computations (next panel update)
-            if (s > (j+1)) {
-                OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER,
-                                                OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
-                                                nb, nb,
-                                                c_one,
-                                                dAT(j, j  ), lddat,
-                                                dAT(j, j+1), lddat,
-                                                1, &queue, 0, nullptr, &event));
+            if (s > (j + 1)) {
+                OPENCL_BLAS_CHECK(gpu_blas_trsm(
+                    OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER,
+                    OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL, nb, nb,
+                    c_one, dAT(j, j), lddat, dAT(j, j + 1), lddat, 1, &queue, 0,
+                    nullptr, &event));
 
-
-                OPENCL_BLAS_CHECK(gpu_blas_gemm(OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_NO_TRANS,
-                                                nb, m-(j+1)*nb, nb,
-                                                c_neg_one,
-                                                dAT(j,   j+1), lddat,
-                                                dAT(j+1, j  ), lddat,
-                                                c_one,
-                                                dAT(j+1, j+1), lddat,
-                                                1, &queue, 0, nullptr, &event));
-            }
-            else {
+                OPENCL_BLAS_CHECK(gpu_blas_gemm(
+                    OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_NO_TRANS, nb,
+                    m - (j + 1) * nb, nb, c_neg_one, dAT(j, j + 1), lddat,
+                    dAT(j + 1, j), lddat, c_one, dAT(j + 1, j + 1), lddat, 1,
+                    &queue, 0, nullptr, &event));
+            } else {
                 if (n > s * nb) {
-                    OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER,
-                                                    OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
-                                                    n-s*nb, nb,
-                                                    c_one,
-                                                    dAT(j, j  ), lddat,
-                                                    dAT(j, j+1), lddat,
-                                                    1, &queue, 0, nullptr, &event));
+                    OPENCL_BLAS_CHECK(gpu_blas_trsm(
+                        OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER,
+                        OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
+                        n - s * nb, nb, c_one, dAT(j, j), lddat, dAT(j, j + 1),
+                        lddat, 1, &queue, 0, nullptr, &event));
                 }
 
-                if ((n > (j+1) * nb) && (m > (j+1) * nb)) {
-                    OPENCL_BLAS_CHECK(gpu_blas_gemm(OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_NO_TRANS,
-                                                    n-(j+1)*nb, m-(j+1)*nb, nb,
-                                                    c_neg_one,
-                                                    dAT(j,   j+1), lddat,
-                                                    dAT(j+1, j  ), lddat,
-                                                    c_one,
-                                                    dAT(j+1, j+1), lddat,
-                                                    1, &queue, 0, nullptr, &event));
+                if ((n > (j + 1) * nb) && (m > (j + 1) * nb)) {
+                    OPENCL_BLAS_CHECK(gpu_blas_gemm(
+                        OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_NO_TRANS,
+                        n - (j + 1) * nb, m - (j + 1) * nb, nb, c_neg_one,
+                        dAT(j, j + 1), lddat, dAT(j + 1, j), lddat, c_one,
+                        dAT(j + 1, j + 1), lddat, 1, &queue, 0, nullptr,
+                        &event));
                 }
             }
         }
 
-        magma_int_t nb0 = std::min(m - s*nb, n - s*nb);
+        magma_int_t nb0 = std::min(m - s * nb, n - s * nb);
 
         if (nb0 > 0 && m > s * nb) {
-            rows = m - s*nb;
+            rows = m - s * nb;
 
-            magmablas_transpose<Ty>(nb0, rows, dAT(s,s), lddat, dAP(0,0), maxm, queue);
-            magma_getmatrix<Ty>(rows, nb0, dAP(0,0), maxm, work(0), ldwork, queue);
+            magmablas_transpose<Ty>(nb0, rows, dAT(s, s), lddat, dAP(0, 0),
+                                    maxm, queue);
+            magma_getmatrix<Ty>(rows, nb0, dAP(0, 0), maxm, work(0), ldwork,
+                                queue);
 
             // do the cpu part
-            LAPACKE_CHECK(cpu_lapack_getrf( rows, nb0, work, ldwork, ipiv+s*nb));
-            if (*info == 0 && iinfo > 0)
-                *info = iinfo + s*nb;
+            LAPACKE_CHECK(
+                cpu_lapack_getrf(rows, nb0, work, ldwork, ipiv + s * nb));
+            if (*info == 0 && iinfo > 0) *info = iinfo + s * nb;
 
-            for(i=s*nb; i < s*nb + nb0; ++i) {
-                ipiv[i] += s*nb;
-            }
-            magmablas_laswp<Ty>(n, dAT(0,0), lddat, s*nb + 1, s*nb + nb0, ipiv, 1, queue);
+            for (i = s * nb; i < s * nb + nb0; ++i) { ipiv[i] += s * nb; }
+            magmablas_laswp<Ty>(n, dAT(0, 0), lddat, s * nb + 1, s * nb + nb0,
+                                ipiv, 1, queue);
 
             // upload j-th panel
-            magma_setmatrix<Ty>(rows, nb0, work(0), ldwork, dAP(0,0), maxm, queue);
-            magmablas_transpose<Ty>(rows, nb0, dAP(0,0), maxm, dAT(s,s), lddat, queue);
+            magma_setmatrix<Ty>(rows, nb0, work(0), ldwork, dAP(0, 0), maxm,
+                                queue);
+            magmablas_transpose<Ty>(rows, nb0, dAP(0, 0), maxm, dAT(s, s),
+                                    lddat, queue);
 
             if (n > s * nb + nb0) {
-                OPENCL_BLAS_CHECK(gpu_blas_trsm(OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER,
-                                                OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
-                                                n-s*nb-nb0, nb0,
-                                                c_one, dAT(s,s),     lddat,
-                                                dAT(s,s)+nb0, lddat, 1, &queue, 0, nullptr, &event));
+                OPENCL_BLAS_CHECK(gpu_blas_trsm(
+                    OPENCL_BLAS_SIDE_RIGHT, OPENCL_BLAS_TRIANGLE_UPPER,
+                    OPENCL_BLAS_NO_TRANS, OPENCL_BLAS_UNIT_DIAGONAL,
+                    n - s * nb - nb0, nb0, c_one, dAT(s, s), lddat,
+                    dAT(s, s) + nb0, lddat, 1, &queue, 0, nullptr, &event));
             }
         }
 
         // undo transpose
         if (dA == dAT) {
-            magmablas_transpose_inplace<Ty>(m, dAT(0,0), lddat, queue);
-        }
-        else {
-            magmablas_transpose<Ty>(n, m, dAT(0,0), lddat, dA(0,0), ldda, queue);
+            magmablas_transpose_inplace<Ty>(m, dAT(0, 0), lddat, queue);
+        } else {
+            magmablas_transpose<Ty>(n, m, dAT(0, 0), lddat, dA(0, 0), ldda,
+                                    queue);
             magma_free(dAT);
         }
 
@@ -348,13 +330,11 @@ magma_int_t magma_getrf_gpu(
 
 #undef dAT
 
-#define INSTANTIATE(T)                                  \
-    template magma_int_t magma_getrf_gpu<T>(            \
-        magma_int_t m, magma_int_t n,                   \
-        cl_mem dA, size_t dA_offset, magma_int_t ldda,  \
-        magma_int_t *ipiv,                              \
-        magma_queue_t queue,                            \
-        magma_int_t *info);                             \
+#define INSTANTIATE(T)                                             \
+    template magma_int_t magma_getrf_gpu<T>(                       \
+        magma_int_t m, magma_int_t n, cl_mem dA, size_t dA_offset, \
+        magma_int_t ldda, magma_int_t * ipiv, magma_queue_t queue, \
+        magma_int_t * info);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

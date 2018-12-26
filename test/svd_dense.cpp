@@ -7,16 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
-#include <af/dim4.hpp>
-#include <af/defines.h>
-#include <af/traits.hpp>
-#include <vector>
-#include <iostream>
-#include <complex>
-#include <string>
+#include <gtest/gtest.h>
 #include <testHelpers.hpp>
+#include <af/defines.h>
+#include <af/dim4.hpp>
+#include <af/traits.hpp>
+#include <complex>
+#include <iostream>
+#include <string>
+#include <vector>
 
 using af::array;
 using af::cdouble;
@@ -35,32 +35,28 @@ using std::string;
 using std::vector;
 
 template<typename T>
-class svd : public ::testing::Test
-{
-};
+class svd : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 TYPED_TEST_CASE(svd, TestTypes);
 
 template<typename T>
-inline double get_val(T val)
-{
+inline double get_val(T val) {
     return val;
 }
 
-template<> inline double get_val<cfloat>(cfloat val)
-{
+template<>
+inline double get_val<cfloat>(cfloat val) {
     return abs(val);
 }
 
-template<> double get_val<cdouble>(cdouble val)
-{
+template<>
+double get_val<cdouble>(cdouble val) {
     return abs(val);
 }
 
 template<typename T>
-void svdTest(const int M, const int N)
-{
+void svdTest(const int M, const int N) {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
 
@@ -89,14 +85,13 @@ void svdTest(const int M, const int N)
 }
 
 template<typename T>
-void svdInPlaceTest(const int M, const int N)
-{
+void svdInPlaceTest(const int M, const int N) {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
 
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
-    array A = randu(M, N, ty);
+    array A      = randu(M, N, ty);
     array A_copy = A.copy();
 
     array U, S, Vt;
@@ -118,8 +113,7 @@ void svdInPlaceTest(const int M, const int N)
 }
 
 template<typename T>
-void checkInPlaceSameResults(const int M, const int N)
-{
+void checkInPlaceSameResults(const int M, const int N) {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
 
@@ -137,30 +131,15 @@ void checkInPlaceSameResults(const int M, const int N)
     ASSERT_ARRAYS_EQ(v, vv);
 }
 
-TYPED_TEST(svd, Square)
-{
-    svdTest<TypeParam>(500, 500);
-}
+TYPED_TEST(svd, Square) { svdTest<TypeParam>(500, 500); }
 
-TYPED_TEST(svd, Rect0)
-{
-    svdTest<TypeParam>(500, 300);
-}
+TYPED_TEST(svd, Rect0) { svdTest<TypeParam>(500, 300); }
 
-TYPED_TEST(svd, Rect1)
-{
-    svdTest<TypeParam>(300, 500);
-}
+TYPED_TEST(svd, Rect1) { svdTest<TypeParam>(300, 500); }
 
-TYPED_TEST(svd, InPlaceSquare)
-{
-    svdInPlaceTest<TypeParam>(500, 500);
-}
+TYPED_TEST(svd, InPlaceSquare) { svdInPlaceTest<TypeParam>(500, 500); }
 
-TYPED_TEST(svd, InPlaceRect0)
-{
-    svdInPlaceTest<TypeParam>(500, 300);
-}
+TYPED_TEST(svd, InPlaceRect0) { svdInPlaceTest<TypeParam>(500, 300); }
 
 // dim0 < dim1 case not supported for now
 // TYPED_TEST(svd, InPlaceRect1)
@@ -168,13 +147,11 @@ TYPED_TEST(svd, InPlaceRect0)
 //     svdInPlaceTest<TypeParam>(300, 500);
 // }
 
-TYPED_TEST(svd, InPlaceSameResultsSquare)
-{
+TYPED_TEST(svd, InPlaceSameResultsSquare) {
     checkInPlaceSameResults<TypeParam>(10, 10);
 }
 
-TYPED_TEST(svd, InPlaceSameResultsRect0)
-{
+TYPED_TEST(svd, InPlaceSameResultsRect0) {
     checkInPlaceSameResults<TypeParam>(10, 8);
 }
 
@@ -189,4 +166,3 @@ TEST(svd, InPlaceRect0_Exception) {
     array u, s, v;
     EXPECT_THROW(svdInPlace(u, s, v, in), af::exception);
 }
-

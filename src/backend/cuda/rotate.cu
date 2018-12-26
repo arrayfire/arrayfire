@@ -8,19 +8,17 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <rotate.hpp>
 #include <kernel/rotate.hpp>
+#include <rotate.hpp>
 #include <stdexcept>
 
-namespace cuda
-{
-    template<typename T>
-    Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
-                     const af_interp_type method)
-    {
-        Array<T> out = createEmptyArray<T>(odims);
+namespace cuda {
+template<typename T>
+Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
+                const af_interp_type method) {
+    Array<T> out = createEmptyArray<T>(odims);
 
-        switch(method) {
+    switch (method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
             kernel::rotate<T, 1>(out, in, theta, method);
@@ -33,29 +31,27 @@ namespace cuda
         case AF_INTERP_BICUBIC_SPLINE:
             kernel::rotate<T, 3>(out, in, theta, method);
             break;
-        default:
-            AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
-        }
-
-        return out;
+        default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
     }
 
-
-#define INSTANTIATE(T)                                                              \
-    template Array<T> rotate(const Array<T> &in, const float theta,                 \
-                             const af::dim4 &odims, const af_interp_type method);
-
-
-    INSTANTIATE(float)
-    INSTANTIATE(double)
-    INSTANTIATE(cfloat)
-    INSTANTIATE(cdouble)
-    INSTANTIATE(int)
-    INSTANTIATE(uint)
-    INSTANTIATE(intl)
-    INSTANTIATE(uintl)
-    INSTANTIATE(uchar)
-    INSTANTIATE(char)
-    INSTANTIATE(short)
-    INSTANTIATE(ushort)
+    return out;
 }
+
+#define INSTANTIATE(T)                                              \
+    template Array<T> rotate(const Array<T> &in, const float theta, \
+                             const af::dim4 &odims,                 \
+                             const af_interp_type method);
+
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(cfloat)
+INSTANTIATE(cdouble)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
+}  // namespace cuda

@@ -10,8 +10,7 @@
 #include <Array.hpp>
 #include <af/index.h>
 
-namespace opencl
-{
+namespace opencl {
 
 template<typename T>
 Array<T> index(const Array<T>& in, const af_index_t idxrs[]);

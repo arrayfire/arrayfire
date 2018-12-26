@@ -7,35 +7,33 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <complex>
-#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <memory.hpp>
-#include <where.hpp>
 #include <ops.hpp>
-#include <vector>
 #include <platform.hpp>
+#include <where.hpp>
+#include <af/dim4.hpp>
+#include <complex>
+#include <vector>
 
 using af::dim4;
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
-Array<uint> where(const Array<T> &in)
-{
+Array<uint> where(const Array<T> &in) {
     in.eval();
     getQueue().sync();
 
     const dim_t *dims    = in.dims().get();
     const dim_t *strides = in.strides().get();
-    static const T zero = scalar<T>(0);
+    static const T zero  = scalar<T>(0);
 
     const T *iptr = in.get();
     auto out_vec  = memAlloc<uint>(in.elements());
 
     dim_t count = 0;
-    dim_t idx = 0;
+    dim_t idx   = 0;
     for (dim_t w = 0; w < dims[3]; w++) {
         uint offw = w * strides[3];
 
@@ -46,7 +44,6 @@ Array<uint> where(const Array<T> &in)
                 uint offy = y * strides[1] + offz;
 
                 for (dim_t x = 0; x < dims[0]; x++) {
-
                     T val = iptr[offy + x];
                     if (val != zero) {
                         out_vec[count] = idx;
@@ -63,20 +60,19 @@ Array<uint> where(const Array<T> &in)
     return out;
 }
 
-#define INSTANTIATE(T)                                  \
-    template Array<uint> where<T>(const Array<T> &in);    \
+#define INSTANTIATE(T) template Array<uint> where<T>(const Array<T> &in);
 
-INSTANTIATE(float  )
-INSTANTIATE(cfloat )
-INSTANTIATE(double )
+INSTANTIATE(float)
+INSTANTIATE(cfloat)
+INSTANTIATE(double)
 INSTANTIATE(cdouble)
-INSTANTIATE(char   )
-INSTANTIATE(int    )
-INSTANTIATE(uint   )
-INSTANTIATE(intl   )
-INSTANTIATE(uintl  )
-INSTANTIATE(uchar  )
-INSTANTIATE(short  )
-INSTANTIATE(ushort )
+INSTANTIATE(char)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
+INSTANTIATE(uchar)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

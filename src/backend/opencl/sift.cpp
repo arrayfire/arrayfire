@@ -7,11 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
-#include <af/features.h>
 #include <Array.hpp>
 #include <err_opencl.hpp>
 #include <math.hpp>
+#include <af/dim4.hpp>
+#include <af/features.h>
 
 #ifdef AF_WITH_NONFREE_SIFT
 #include <kernel/sift_nonfree.hpp>
@@ -20,18 +20,16 @@
 using af::dim4;
 using af::features;
 
-namespace opencl
-{
+namespace opencl {
 
 template<typename T, typename convAccT>
 unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
-              Array<float>& ori_out, Array<float>& size_out, Array<float>& desc_out,
-              const Array<T>& in, const unsigned n_layers,
-              const float contrast_thr, const float edge_thr,
-              const float init_sigma, const bool double_input,
-              const float img_scale, const float feature_ratio,
-              const bool compute_GLOH)
-{
+              Array<float>& ori_out, Array<float>& size_out,
+              Array<float>& desc_out, const Array<T>& in,
+              const unsigned n_layers, const float contrast_thr,
+              const float edge_thr, const float init_sigma,
+              const bool double_input, const float img_scale,
+              const float feature_ratio, const bool compute_GLOH) {
 #ifdef AF_WITH_NONFREE_SIFT
     unsigned nfeat_out;
     unsigned desc_len;
@@ -43,9 +41,10 @@ unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
     Param size;
     Param desc;
 
-    kernel::sift<T,convAccT>(&nfeat_out, &desc_len, x, y, score, ori, size, desc,
-                             in, n_layers, contrast_thr, edge_thr, init_sigma,
-                             double_input, img_scale, feature_ratio, compute_GLOH);
+    kernel::sift<T, convAccT>(&nfeat_out, &desc_len, x, y, score, ori, size,
+                              desc, in, n_layers, contrast_thr, edge_thr,
+                              init_sigma, double_input, img_scale,
+                              feature_ratio, compute_GLOH);
 
     if (nfeat_out > 0) {
         const dim4 out_dims(nfeat_out);
@@ -76,24 +75,27 @@ unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
     UNUSED(img_scale);
     UNUSED(feature_ratio);
     if (compute_GLOH)
-        AF_ERROR("ArrayFire was not built with nonfree support, GLOH disabled\n", AF_ERR_NONFREE);
+        AF_ERROR(
+            "ArrayFire was not built with nonfree support, GLOH disabled\n",
+            AF_ERR_NONFREE);
     else
-        AF_ERROR("ArrayFire was not built with nonfree support, SIFT disabled\n", AF_ERR_NONFREE);
+        AF_ERROR(
+            "ArrayFire was not built with nonfree support, SIFT disabled\n",
+            AF_ERR_NONFREE);
 #endif
 }
 
+#define INSTANTIATE(T, convAccT)                                              \
+    template unsigned sift<T, convAccT>(                                      \
+        Array<float> & x_out, Array<float> & y_out, Array<float> & score_out, \
+        Array<float> & ori_out, Array<float> & size_out,                      \
+        Array<float> & desc_out, const Array<T>& in, const unsigned n_layers, \
+        const float contrast_thr, const float edge_thr,                       \
+        const float init_sigma, const bool double_input,                      \
+        const float img_scale, const float feature_ratio,                     \
+        const bool compute_GLOH);
 
-#define INSTANTIATE(T, convAccT)                                                            \
-    template unsigned sift<T, convAccT>(Array<float>& x_out, Array<float>& y_out,           \
-                                        Array<float>& score_out, Array<float>& ori_out,     \
-                                        Array<float>& size_out, Array<float>& desc_out,     \
-                                        const Array<T>& in, const unsigned n_layers,        \
-                                        const float contrast_thr, const float edge_thr,     \
-                                        const float init_sigma, const bool double_input,    \
-                                        const float img_scale, const float feature_ratio,   \
-                                        const bool compute_GLOH);
-
-INSTANTIATE(float , float )
+INSTANTIATE(float, float)
 INSTANTIATE(double, double)
 
-}
+}  // namespace opencl

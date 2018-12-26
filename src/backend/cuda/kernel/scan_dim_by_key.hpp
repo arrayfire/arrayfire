@@ -8,14 +8,13 @@
  ********************************************************/
 #pragma once
 
-#include <ops.hpp>
 #include <Param.hpp>
+#include <ops.hpp>
 
-namespace cuda
-{
-    namespace kernel
-    {
-        template<typename Ti, typename Tk, typename To, af_op_t op>
-        void scan_dim_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key, int dim, bool inclusive_scan);
-    }
+namespace cuda {
+namespace kernel {
+template<typename Ti, typename Tk, typename To, af_op_t op>
+void scan_dim_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key, int dim,
+                     bool inclusive_scan);
 }
+}  // namespace cuda

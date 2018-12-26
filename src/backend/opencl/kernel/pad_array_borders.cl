@@ -7,21 +7,19 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if AF_BORDER_TYPE==AF_PAD_SYM
+#if AF_BORDER_TYPE == AF_PAD_SYM
 
-int idxByndEdge(const int i, const int lb, const int len)
-{
-    if (i < lb || i>= (lb+len)) {
-        return (len-1) - ((i-lb)%len);
+int idxByndEdge(const int i, const int lb, const int len) {
+    if (i < lb || i >= (lb + len)) {
+        return (len - 1) - ((i - lb) % len);
     } else
         return i - lb;
 }
 
-#elif AF_BORDER_TYPE==AF_PAD_CLAMP_TO_EDGE
+#elif AF_BORDER_TYPE == AF_PAD_CLAMP_TO_EDGE
 
-int idxByndEdge(const int i, const int lb, const int len)
-{
-    return clamp(i-lb, 0, len-1);
+int idxByndEdge(const int i, const int lb, const int len) {
+    return clamp(i - lb, 0, len - 1);
 }
 
 #else
@@ -30,23 +28,18 @@ int idxByndEdge(const int i, const int lb, const int len)
 
 #endif
 
-__kernel
-void padBorders(__global T *       out,
-                KParam             oInfo,
-                __global const T * in,
-                KParam             iInfo,
-                int l0, int l1, int l2, int l3,
-                unsigned blk_x, unsigned blk_y)
-{
+__kernel void padBorders(__global T* out, KParam oInfo, __global const T* in,
+                         KParam iInfo, int l0, int l1, int l2, int l3,
+                         unsigned blk_x, unsigned blk_y) {
     const int lx = get_local_id(0);
     const int ly = get_local_id(1);
     const int k  = get_group_id(0) / blk_x;
     const int l  = get_group_id(1) / blk_y;
 
-    const int blockIdx_x = get_group_id(0) - (blk_x) * k;
-    const int blockIdx_y = get_group_id(1) - (blk_y) * l;
-    const int i = blockIdx_x * get_local_size(0) + lx;
-    const int j = blockIdx_y * get_local_size(1) + ly;
+    const int blockIdx_x = get_group_id(0) - (blk_x)*k;
+    const int blockIdx_y = get_group_id(1) - (blk_y)*l;
+    const int i          = blockIdx_x * get_local_size(0) + lx;
+    const int j          = blockIdx_y * get_local_size(1) + ly;
 
     const int d0 = iInfo.dims[0];
     const int d1 = iInfo.dims[1];
@@ -57,13 +50,12 @@ void padBorders(__global T *       out,
     const int s2 = iInfo.strides[2];
     const int s3 = iInfo.strides[3];
 
-    __global const T * src = in + iInfo.offset;
-    __global       T * dst = out;
+    __global const T* src = in + iInfo.offset;
+    __global T* dst       = out;
 
-    bool isNotPadding = ( l>=l3 && l<(d3+l3) ) &&
-                        ( k>=l2 && k<(d2+l2) ) &&
-                        ( j>=l1 && j<(d1+l1) ) &&
-                        ( i>=l0 && i<(d0+l0) );
+    bool isNotPadding =
+        (l >= l3 && l < (d3 + l3)) && (k >= l2 && k < (d2 + l2)) &&
+        (j >= l1 && j < (d1 + l1)) && (i >= l0 && i < (d0 + l0));
     T value = (T)0;
 
     if (isNotPadding) {
@@ -72,7 +64,7 @@ void padBorders(__global T *       out,
         unsigned iJOff = (j - l1) * s1;
         unsigned iIOff = (i - l0) * s0;
 
-        value = src[ iLOff + iKOff + iJOff + iIOff ];
+        value = src[iLOff + iKOff + iJOff + iIOff];
     } else {
 #if !defined(DEFAULT_BORDER)
         unsigned iLOff = idxByndEdge(l, l3, d3) * s3;
@@ -80,14 +72,14 @@ void padBorders(__global T *       out,
         unsigned iJOff = idxByndEdge(j, l1, d1) * s1;
         unsigned iIOff = idxByndEdge(i, l0, d0) * s0;
 
-        value = src[ iLOff + iKOff + iJOff + iIOff ];
+        value = src[iLOff + iKOff + iJOff + iIOff];
 #endif
     }
 
-    if (i<oInfo.dims[0] && j<oInfo.dims[1] &&
-        k<oInfo.dims[2] && l<oInfo.dims[3]) {
-        unsigned offset = l*oInfo.strides[3] + k*oInfo.strides[2] +
-                          j*oInfo.strides[1] + i*oInfo.strides[0];
-        dst[ offset ] = value;
+    if (i < oInfo.dims[0] && j < oInfo.dims[1] && k < oInfo.dims[2] &&
+        l < oInfo.dims[3]) {
+        unsigned offset = l * oInfo.strides[3] + k * oInfo.strides[2] +
+                          j * oInfo.strides[1] + i * oInfo.strides[0];
+        dst[offset] = value;
     }
 }

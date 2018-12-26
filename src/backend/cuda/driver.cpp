@@ -7,17 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <driver.h>
 #include <stdio.h>
 #include <string.h>
-#include <driver.h>
 
 #ifdef OS_WIN
-#include <windows.h>
 #include <stdlib.h>
+#include <windows.h>
 #define snprintf _snprintf
 
-int nvDriverVersion(char *result, int len)
-{
+int nvDriverVersion(char *result, int len) {
 #ifndef OS_WIN
     LPCTSTR lptstrFilename = "nvcuda.dll";
     DWORD dwLen, dwHandle;
@@ -40,8 +39,8 @@ int nvDriverVersion(char *result, int len)
     rv = VerQueryValue(lpData, "\\", (LPVOID *)&lpBuffer, &buflen);
     if (!rv) return 0;
 
-    version = (HIWORD(lpBuffer->dwFileVersionLS) - 10)*10000 +
-               LOWORD(lpBuffer->dwFileVersionLS);
+    version = (HIWORD(lpBuffer->dwFileVersionLS) - 10) * 10000 +
+              LOWORD(lpBuffer->dwFileVersionLS);
     fversion = version / 100.f;
 
     snprintf(result, len, "%.2f", fversion);
@@ -55,25 +54,21 @@ int nvDriverVersion(char *result, int len)
 
 #else
 
-int nvDriverVersion(char *result, int len)
-{
+int nvDriverVersion(char *result, int len) {
     int pos = 0, epos = 0, i = 0;
     char buffer[1024];
     FILE *f = NULL;
 
-    if (NULL == (f = fopen("/proc/driver/nvidia/version", "r"))) {
-        return 0;
-    }
+    if (NULL == (f = fopen("/proc/driver/nvidia/version", "r"))) { return 0; }
     if (fgets(buffer, 1024, f) == NULL) {
-        if(f) fclose(f);
+        if (f) fclose(f);
         return 0;
     }
 
-    //just close it now since we've already read what we need
-    if(f) fclose(f);
+    // just close it now since we've already read what we need
+    if (f) fclose(f);
 
     for (i = 1; i < 8; i++) {
-
         while (buffer[pos] != ' ' && buffer[pos] != '\t')
             if (pos >= 1024 || buffer[pos] == '\0' || buffer[pos] == '\n')
                 return 0;
@@ -96,7 +91,7 @@ int nvDriverVersion(char *result, int len)
 
     buffer[epos] = '\0';
 
-    strncpy(result, buffer+pos, len);
+    strncpy(result, buffer + pos, len);
 
     return 1;
 }

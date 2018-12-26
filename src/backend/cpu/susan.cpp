@@ -7,43 +7,43 @@
  * http://Arrayfire.com/licenses/bsd-3-clause
  ********************************************************/
 
-#include <af/features.h>
 #include <Array.hpp>
-#include <cmath>
+#include <kernel/susan.hpp>
 #include <math.hpp>
-#include <memory>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/susan.hpp>
+#include <af/features.h>
+#include <cmath>
+#include <memory>
 
 using af::features;
 using std::shared_ptr;
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
 unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
-               const Array<T> &in,
-               const unsigned radius, const float diff_thr, const float geom_thr,
-               const float feature_ratio, const unsigned edge)
-{
+               const Array<T> &in, const unsigned radius, const float diff_thr,
+               const float geom_thr, const float feature_ratio,
+               const unsigned edge) {
     in.eval();
 
-    dim4 idims = in.dims();
+    dim4 idims                = in.dims();
     const unsigned corner_lim = in.elements() * feature_ratio;
 
-    auto x_corners    = createEmptyArray<float>(dim4(corner_lim));
-    auto y_corners    = createEmptyArray<float>(dim4(corner_lim));
-    auto resp_corners = createEmptyArray<float>(dim4(corner_lim));
-    auto response     = createEmptyArray<T>(dim4(in.elements()));
-    auto corners_found= std::shared_ptr<unsigned>(memAlloc<unsigned>(1).release(), memFree<unsigned>);
+    auto x_corners     = createEmptyArray<float>(dim4(corner_lim));
+    auto y_corners     = createEmptyArray<float>(dim4(corner_lim));
+    auto resp_corners  = createEmptyArray<float>(dim4(corner_lim));
+    auto response      = createEmptyArray<T>(dim4(in.elements()));
+    auto corners_found = std::shared_ptr<unsigned>(
+        memAlloc<unsigned>(1).release(), memFree<unsigned>);
     corners_found.get()[0] = 0;
 
-    getQueue().enqueue(kernel::susan_responses<T>, response, in, idims[0], idims[1],
-                       radius, diff_thr, geom_thr, edge);
-    getQueue().enqueue(kernel::non_maximal<T>, x_corners, y_corners, resp_corners, corners_found,
-                       idims[0], idims[1], response, edge, corner_lim);
+    getQueue().enqueue(kernel::susan_responses<T>, response, in, idims[0],
+                       idims[1], radius, diff_thr, geom_thr, edge);
+    getQueue().enqueue(kernel::non_maximal<T>, x_corners, y_corners,
+                       resp_corners, corners_found, idims[0], idims[1],
+                       response, edge, corner_lim);
     getQueue().sync();
 
     const unsigned corners_out = min((corners_found.get())[0], corner_lim);
@@ -53,8 +53,8 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
         resp_out = createEmptyArray<float>(dim4());
         return 0;
     } else {
-        x_out = x_corners;
-        y_out = y_corners;
+        x_out    = x_corners;
+        y_out    = y_corners;
         resp_out = resp_corners;
         x_out.resetDims(dim4(corners_out));
         y_out.resetDims(dim4(corners_out));
@@ -63,18 +63,19 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
     }
 }
 
-#define INSTANTIATE(T) \
-template unsigned susan<T>(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,   \
-                           const Array<T> &in, const unsigned radius, const float diff_thr,     \
-                           const float geom_thr, const float feature_ratio, const unsigned edge);
+#define INSTANTIATE(T)                                                        \
+    template unsigned susan<T>(                                               \
+        Array<float> & x_out, Array<float> & y_out, Array<float> & score_out, \
+        const Array<T> &in, const unsigned radius, const float diff_thr,      \
+        const float geom_thr, const float feature_ratio, const unsigned edge);
 
-INSTANTIATE(float )
+INSTANTIATE(float)
 INSTANTIATE(double)
-INSTANTIATE(char  )
-INSTANTIATE(int   )
-INSTANTIATE(uint  )
-INSTANTIATE(uchar )
+INSTANTIATE(char)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

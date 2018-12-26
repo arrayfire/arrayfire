@@ -8,11 +8,11 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <vector_field.hpp>
-#include <err_cpu.hpp>
 #include <common/graphics_common.hpp>
+#include <err_cpu.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <vector_field.hpp>
 
 using af::dim4;
 
@@ -20,9 +20,8 @@ namespace cpu {
 
 template<typename T>
 void copy_vector_field(const Array<T> &points, const Array<T> &directions,
-                       fg_vector_field vfield)
-{
-    ForgeModule& _ = graphics::forgePlugin();
+                       fg_vector_field vfield) {
+    ForgeModule &_ = graphics::forgePlugin();
     points.eval();
     directions.eval();
     getQueue().sync();
@@ -47,9 +46,9 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
     CheckGL("In CopyArrayToVBO");
 }
 
-#define INSTANTIATE(T)                                                  \
-template void copy_vector_field<T>(const Array<T> &, const Array<T> &,  \
-                                   fg_vector_field);
+#define INSTANTIATE(T)                                                     \
+    template void copy_vector_field<T>(const Array<T> &, const Array<T> &, \
+                                       fg_vector_field);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -59,4 +58,4 @@ INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

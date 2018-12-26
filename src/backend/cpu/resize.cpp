@@ -8,19 +8,17 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <resize.hpp>
+#include <kernel/resize.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/resize.hpp>
+#include <resize.hpp>
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
 Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
-                const af_interp_type method)
-{
+                const af_interp_type method) {
     af::dim4 idims = in.dims();
     af::dim4 odims(odim0, odim1, idims[2], idims[3]);
     // Create output placeholder
@@ -28,21 +26,25 @@ Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
     out.eval();
     in.eval();
 
-    switch(method) {
+    switch (method) {
         case AF_INTERP_NEAREST:
-            getQueue().enqueue(kernel::resize<T, AF_INTERP_NEAREST>, out, in); break;
+            getQueue().enqueue(kernel::resize<T, AF_INTERP_NEAREST>, out, in);
+            break;
         case AF_INTERP_BILINEAR:
-            getQueue().enqueue(kernel::resize<T, AF_INTERP_BILINEAR>, out, in); break;
+            getQueue().enqueue(kernel::resize<T, AF_INTERP_BILINEAR>, out, in);
+            break;
         case AF_INTERP_LOWER:
-            getQueue().enqueue(kernel::resize<T, AF_INTERP_LOWER>, out, in); break;
+            getQueue().enqueue(kernel::resize<T, AF_INTERP_LOWER>, out, in);
+            break;
         default: break;
     }
     return out;
 }
 
-#define INSTANTIATE(T)                                                                     \
-    template Array<T> resize<T> (const Array<T> &in, const dim_t odim0, const dim_t odim1, \
-                                 const af_interp_type method);
+#define INSTANTIATE(T)                                                 \
+    template Array<T> resize<T>(const Array<T> &in, const dim_t odim0, \
+                                const dim_t odim1,                     \
+                                const af_interp_type method);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -57,4 +59,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

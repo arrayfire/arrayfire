@@ -8,19 +8,18 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <select.hpp>
+#include <kernel/select.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/select.hpp>
+#include <select.hpp>
 
 using af::dim4;
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
-void select(Array<T> &out, const Array<char> &cond, const Array<T> &a, const Array<T> &b)
-{
+void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
+            const Array<T> &b) {
     out.eval();
     cond.eval();
     a.eval();
@@ -29,37 +28,35 @@ void select(Array<T> &out, const Array<char> &cond, const Array<T> &a, const Arr
 }
 
 template<typename T, bool flip>
-void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a, const double &b)
-{
+void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a,
+                   const double &b) {
     out.eval();
     cond.eval();
     a.eval();
     getQueue().enqueue(kernel::select_scalar<T, flip>, out, cond, a, b);
 }
 
-#define INSTANTIATE(T)                                              \
-    template void select<T>(Array<T> &out, const Array<char> &cond, \
-                            const Array<T> &a, const Array<T> &b);  \
-    template void select_scalar<T, true >(Array<T> &out,            \
-                                          const Array<char> &cond,  \
-                                          const Array<T> &a,        \
-                                          const double &b);         \
-    template void select_scalar<T, false>(Array<T> &out, const      \
-                                          Array<char> &cond,        \
-                                          const Array<T> &a,        \
-                                          const double &b);         \
+#define INSTANTIATE(T)                                                        \
+    template void select<T>(Array<T> & out, const Array<char> &cond,          \
+                            const Array<T> &a, const Array<T> &b);            \
+    template void select_scalar<T, true>(Array<T> & out,                      \
+                                         const Array<char> &cond,             \
+                                         const Array<T> &a, const double &b); \
+    template void select_scalar<T, false>(Array<T> & out,                     \
+                                          const Array<char> &cond,            \
+                                          const Array<T> &a, const double &b);
 
-INSTANTIATE(float  )
-INSTANTIATE(double )
-INSTANTIATE(cfloat )
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
-INSTANTIATE(int    )
-INSTANTIATE(uint   )
-INSTANTIATE(intl   )
-INSTANTIATE(uintl  )
-INSTANTIATE(char   )
-INSTANTIATE(uchar  )
-INSTANTIATE(short  )
-INSTANTIATE(ushort )
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
+INSTANTIATE(char)
+INSTANTIATE(uchar)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

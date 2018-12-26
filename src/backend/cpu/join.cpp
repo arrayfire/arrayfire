@@ -9,16 +9,14 @@
 
 #include <Array.hpp>
 #include <join.hpp>
+#include <kernel/join.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/join.hpp>
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename Tx, typename Ty>
-Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
-{
+Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second) {
     first.eval();
     second.eval();
 
@@ -28,8 +26,8 @@ Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
     af::dim4 fdims = first.dims();
     af::dim4 sdims = second.dims();
 
-    for(int i = 0; i < 4; i++) {
-        if(i == dim) {
+    for (int i = 0; i < 4; i++) {
+        if (i == dim) {
             odims[i] = fdims[i] + sdims[i];
         } else {
             odims[i] = fdims[i];
@@ -44,10 +42,8 @@ Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
 }
 
 template<typename T>
-Array<T> join(const int dim, const std::vector<Array<T>> &inputs)
-{
-    for (unsigned i=0; i<inputs.size(); ++i)
-        inputs[i].eval();
+Array<T> join(const int dim, const std::vector<Array<T>> &inputs) {
+    for (unsigned i = 0; i < inputs.size(); ++i) inputs[i].eval();
     // All dimensions except join dimension must be equal
     // Compute output dims
     af::dim4 odims;
@@ -55,13 +51,13 @@ Array<T> join(const int dim, const std::vector<Array<T>> &inputs)
     std::vector<af::dim4> idims(n_arrays);
 
     dim_t dim_size = 0;
-    for(unsigned i = 0; i < idims.size(); i++) {
+    for (unsigned i = 0; i < idims.size(); i++) {
         idims[i] = inputs[i].dims();
         dim_size += idims[i][dim];
     }
 
-    for(int i = 0; i < 4; i++) {
-        if(i == dim) {
+    for (int i = 0; i < 4; i++) {
+        if (i == dim) {
             odims[i] = dim_size;
         } else {
             odims[i] = idims[0][i];
@@ -71,7 +67,7 @@ Array<T> join(const int dim, const std::vector<Array<T>> &inputs)
     std::vector<CParam<T>> inputParams(inputs.begin(), inputs.end());
     Array<T> out = createEmptyArray<T>(odims);
 
-    switch(n_arrays) {
+    switch (n_arrays) {
         case 1:
             getQueue().enqueue(kernel::join<T, 1>, dim, out, inputParams);
             break;
@@ -100,33 +96,35 @@ Array<T> join(const int dim, const std::vector<Array<T>> &inputs)
             getQueue().enqueue(kernel::join<T, 9>, dim, out, inputParams);
             break;
         case 10:
-            getQueue().enqueue(kernel::join<T,10>, dim, out, inputParams);
+            getQueue().enqueue(kernel::join<T, 10>, dim, out, inputParams);
             break;
     }
 
     return out;
 }
 
-#define INSTANTIATE(Tx, Ty) \
-    template Array<Tx> join<Tx, Ty>(const int dim, const Array<Tx> &first, const Array<Ty> &second);
+#define INSTANTIATE(Tx, Ty)                                                \
+    template Array<Tx> join<Tx, Ty>(const int dim, const Array<Tx> &first, \
+                                    const Array<Ty> &second);
 
-INSTANTIATE(float,   float)
-INSTANTIATE(double,  double)
-INSTANTIATE(cfloat,  cfloat)
+INSTANTIATE(float, float)
+INSTANTIATE(double, double)
+INSTANTIATE(cfloat, cfloat)
 INSTANTIATE(cdouble, cdouble)
-INSTANTIATE(int,     int)
-INSTANTIATE(uint,    uint)
-INSTANTIATE(intl,    intl)
-INSTANTIATE(uintl,   uintl)
-INSTANTIATE(uchar,   uchar)
-INSTANTIATE(char,    char)
-INSTANTIATE(ushort,  ushort)
-INSTANTIATE(short,   short)
+INSTANTIATE(int, int)
+INSTANTIATE(uint, uint)
+INSTANTIATE(intl, intl)
+INSTANTIATE(uintl, uintl)
+INSTANTIATE(uchar, uchar)
+INSTANTIATE(char, char)
+INSTANTIATE(ushort, ushort)
+INSTANTIATE(short, short)
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(T)      \
-    template Array<T> join<T>(const int dim, const std::vector<Array<T>> &inputs);
+#define INSTANTIATE(T)                       \
+    template Array<T> join<T>(const int dim, \
+                              const std::vector<Array<T>> &inputs);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -142,4 +140,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 
 #undef INSTANTIATE
-}
+}  // namespace cpu

@@ -7,48 +7,39 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
+#include <gtest/gtest.h>
+#include <testHelpers.hpp>
 #include <af/dim4.hpp>
-#include <af/traits.hpp>
 #include <af/internal.h>
+#include <af/traits.hpp>
 #include <string>
 #include <vector>
-#include <testHelpers.hpp>
 
-using std::vector;
 using af::array;
 using af::dim4;
 using af::randu;
 using af::seq;
 using af::span;
+using std::vector;
 
-TEST(Internal, CreateStrided)
-{
-    float ha[] = {1,
-                  101, 102, 103, 104, 105,
-                  201, 202, 203, 204, 205,
-                  301, 302, 303, 304, 305,
-                  401, 402, 403, 404, 405,
+TEST(Internal, CreateStrided) {
+    float ha[] = {1,    101,  102,  103,  104,  105,  201,  202,  203,  204,
+                  205,  301,  302,  303,  304,  305,  401,  402,  403,  404,
+                  405,
 
-                  1010, 1020, 1030, 1040, 1050,
-                  2010, 2020, 2030, 2040, 2050,
-                  3010, 3020, 3030, 3040, 3050,
-                  4010, 4020, 4030, 4040, 4050};
+                  1010, 1020, 1030, 1040, 1050, 2010, 2020, 2030, 2040, 2050,
+                  3010, 3020, 3030, 3040, 3050, 4010, 4020, 4030, 4040, 4050};
 
-    dim_t offset = 1;
-    unsigned ndims = 3;
-    dim_t dims[] = {3, 3, 2};
+    dim_t offset    = 1;
+    unsigned ndims  = 3;
+    dim_t dims[]    = {3, 3, 2};
     dim_t strides[] = {1, 5, 20};
-    array a = createStridedArray((void *)ha,
-                                     offset,
-                                     dim4(ndims, dims),
-                                     dim4(ndims, strides),
-                                     f32,
-                                     afHost);
+    array a         = createStridedArray((void *)ha, offset, dim4(ndims, dims),
+                                 dim4(ndims, strides), f32, afHost);
 
     dim4 astrides = getStrides(a);
-    dim4 adims = a.dims();
+    dim4 adims    = a.dims();
 
     ASSERT_EQ(offset, getOffset(a));
     for (int i = 0; i < (int)ndims; i++) {
@@ -63,19 +54,16 @@ TEST(Internal, CreateStrided)
     for (int k = 0; k < dims[2]; k++) {
         for (int j = 0; j < dims[1]; j++) {
             for (int i = 0; i < dims[0]; i++) {
-                ASSERT_EQ(va[i + j * dims[0] + k * dims[0] * dims[1]],
-                          ha[i * strides[0] + j * strides[1] + k * strides[2] + o])
-                    << "at ("
-                    << i << ","
-                    << j << ","
-                    << k << ")";
+                ASSERT_EQ(
+                    va[i + j * dims[0] + k * dims[0] * dims[1]],
+                    ha[i * strides[0] + j * strides[1] + k * strides[2] + o])
+                    << "at (" << i << "," << j << "," << k << ")";
             }
         }
     }
 }
 
-TEST(Internal, CheckInfo)
-{
+TEST(Internal, CheckInfo) {
     const int xdim = 10;
     const int ydim = 8;
 
@@ -87,11 +75,10 @@ TEST(Internal, CheckInfo)
 
     array a = randu(10, 8);
 
-    array b = a(seq(xoff, xoff + xnum - 1),
-                    seq(yoff, yoff + ynum - 1));
+    array b = a(seq(xoff, xoff + xnum - 1), seq(yoff, yoff + ynum - 1));
 
     dim4 strides = getStrides(b);
-    dim4 dims = b.dims();
+    dim4 dims    = b.dims();
 
     dim_t offset = xoff + yoff * xdim;
 
@@ -107,8 +94,7 @@ TEST(Internal, CheckInfo)
     ASSERT_EQ(getRawPtr(a), getRawPtr(b));
 }
 
-TEST(Internal, Linear)
-{
+TEST(Internal, Linear) {
     array c;
     {
         array a = randu(10, 8);
@@ -125,16 +111,13 @@ TEST(Internal, Linear)
     }
 
     // Even though a and b are out of scope, c is still not an owner
-    {
-        ASSERT_EQ(isOwner(c), false);
-    }
+    { ASSERT_EQ(isOwner(c), false); }
 }
 
-TEST(Internal, Allocated)
-{
-    array a = randu(10, 8);
+TEST(Internal, Allocated) {
+    array a            = randu(10, 8);
     size_t a_allocated = a.allocated();
-    size_t a_bytes = a.bytes();
+    size_t a_bytes     = a.bytes();
 
     // b is just pointing to same underlying data
     // b is an owner;

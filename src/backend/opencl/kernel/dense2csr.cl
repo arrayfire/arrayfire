@@ -13,15 +13,12 @@
 #define IS_ZERO(val) (val == 0)
 #endif
 
-__kernel
-void dense2csr_split_kernel(__global T *svalptr,
-                            __global int *scolptr,
-                            __global const T *dvalptr,
-                            const KParam valinfo,
-                            __global const int *dcolptr,
-                            const KParam colinfo,
-                            __global const int *rowptr)
-{
+__kernel void dense2csr_split_kernel(__global T *svalptr, __global int *scolptr,
+                                     __global const T *dvalptr,
+                                     const KParam valinfo,
+                                     __global const int *dcolptr,
+                                     const KParam colinfo,
+                                     __global const int *rowptr) {
     int gidx = get_global_id(0);
     int gidy = get_global_id(1);
 
@@ -36,10 +33,10 @@ void dense2csr_split_kernel(__global T *svalptr,
     dcolptr += colinfo.offset;
 
     int idx = gidx + gidy * valinfo.strides[1];
-    T val = dvalptr[gidx + gidy * valinfo.strides[1]];
+    T val   = dvalptr[gidx + gidy * valinfo.strides[1]];
     if (IS_ZERO(val)) return;
 
-    int oloc = dcolptr[gidx + gidy * colinfo.strides[1]];
+    int oloc          = dcolptr[gidx + gidy * colinfo.strides[1]];
     svalptr[oloc - 1] = val;
-    scolptr[oloc - 1]  = gidy;
+    scolptr[oloc - 1] = gidy;
 }
