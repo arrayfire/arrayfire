@@ -7,13 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/features.h>
 #include <Array.hpp>
+#include <af/features.h>
 
 using af::features;
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T, typename convAccT>
 unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,

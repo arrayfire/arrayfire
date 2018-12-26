@@ -12,21 +12,15 @@
 #include <vector>
 #include "Node.hpp"
 
-namespace cpu
-{
+namespace cpu {
 
-namespace jit
-{
+namespace jit {
 
-    template<typename T>
-    class ScalarNode : public TNode<T>
-    {
+template<typename T>
+class ScalarNode : public TNode<T> {
+   public:
+    ScalarNode(T val) : TNode<T>(val, 0, {}) {}
+};
+}  // namespace jit
 
-    public:
-        ScalarNode(T val) : TNode<T>(val, 0, {})
-        {
-        }
-    };
-}
-
-}
+}  // namespace cpu

@@ -7,26 +7,24 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <kernel/lookup.hpp>
 #include <lookup.hpp>
-#include <cstdlib>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/lookup.hpp>
+#include <cstdlib>
 
-namespace cpu
-{
+namespace cpu {
 template<typename in_t, typename idx_t>
-Array<in_t> lookup(const Array<in_t> &input,
-                   const Array<idx_t> &indices, const unsigned dim)
-{
+Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices,
+                   const unsigned dim) {
     input.eval();
     indices.eval();
 
     const dim4 iDims = input.dims();
 
     dim4 oDims(1);
-    for (int d=0; d<4; ++d)
-        oDims[d] = (d==int(dim) ? indices.elements() : iDims[d]);
+    for (int d = 0; d < 4; ++d)
+        oDims[d] = (d == int(dim) ? indices.elements() : iDims[d]);
 
     Array<in_t> out = createEmptyArray<in_t>(oDims);
 
@@ -35,27 +33,36 @@ Array<in_t> lookup(const Array<in_t> &input,
     return out;
 }
 
-#define INSTANTIATE(T)  \
-template Array<T>  lookup<T, float   >(const Array<T>&, const Array<float   >&, const unsigned); \
-template Array<T>  lookup<T, double  >(const Array<T>&, const Array<double  >&, const unsigned); \
-template Array<T>  lookup<T, int     >(const Array<T>&, const Array<int     >&, const unsigned); \
-template Array<T>  lookup<T, unsigned>(const Array<T>&, const Array<unsigned>&, const unsigned); \
-template Array<T>  lookup<T, short   >(const Array<T>&, const Array<short   >&, const unsigned); \
-template Array<T>  lookup<T, ushort  >(const Array<T>&, const Array<ushort  >&, const unsigned); \
-template Array<T>  lookup<T, intl    >(const Array<T>&, const Array<intl    >&, const unsigned); \
-template Array<T>  lookup<T, uintl   >(const Array<T>&, const Array<uintl   >&, const unsigned); \
-template Array<T>  lookup<T, uchar   >(const Array<T>&, const Array<uchar   >&, const unsigned);
+#define INSTANTIATE(T)                                                         \
+    template Array<T> lookup<T, float>(const Array<T> &, const Array<float> &, \
+                                       const unsigned);                        \
+    template Array<T> lookup<T, double>(                                       \
+        const Array<T> &, const Array<double> &, const unsigned);              \
+    template Array<T> lookup<T, int>(const Array<T> &, const Array<int> &,     \
+                                     const unsigned);                          \
+    template Array<T> lookup<T, unsigned>(                                     \
+        const Array<T> &, const Array<unsigned> &, const unsigned);            \
+    template Array<T> lookup<T, short>(const Array<T> &, const Array<short> &, \
+                                       const unsigned);                        \
+    template Array<T> lookup<T, ushort>(                                       \
+        const Array<T> &, const Array<ushort> &, const unsigned);              \
+    template Array<T> lookup<T, intl>(const Array<T> &, const Array<intl> &,   \
+                                      const unsigned);                         \
+    template Array<T> lookup<T, uintl>(const Array<T> &, const Array<uintl> &, \
+                                       const unsigned);                        \
+    template Array<T> lookup<T, uchar>(const Array<T> &, const Array<uchar> &, \
+                                       const unsigned);
 
-INSTANTIATE(float   );
-INSTANTIATE(cfloat  );
-INSTANTIATE(double  );
-INSTANTIATE(cdouble );
-INSTANTIATE(int     );
+INSTANTIATE(float);
+INSTANTIATE(cfloat);
+INSTANTIATE(double);
+INSTANTIATE(cdouble);
+INSTANTIATE(int);
 INSTANTIATE(unsigned);
-INSTANTIATE(intl    );
-INSTANTIATE(uintl   );
-INSTANTIATE(uchar   );
-INSTANTIATE(char    );
-INSTANTIATE(ushort  );
-INSTANTIATE(short   );
-}
+INSTANTIATE(intl);
+INSTANTIATE(uintl);
+INSTANTIATE(uchar);
+INSTANTIATE(char);
+INSTANTIATE(ushort);
+INSTANTIATE(short);
+}  // namespace cpu

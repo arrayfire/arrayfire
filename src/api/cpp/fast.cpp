@@ -7,21 +7,19 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/vision.h>
 #include <af/array.h>
+#include <af/vision.h>
 #include "error.hpp"
 
-namespace af
-{
+namespace af {
 
 features fast(const array& in, const float thr, const unsigned arc_length,
-                const bool non_max, const float feature_ratio,
-                const unsigned edge)
-{
+              const bool non_max, const float feature_ratio,
+              const unsigned edge) {
     af_features temp;
-    AF_THROW(af_fast(&temp, in.get(), thr, arc_length,
-                     non_max, feature_ratio, edge));
+    AF_THROW(af_fast(&temp, in.get(), thr, arc_length, non_max, feature_ratio,
+                     edge));
     return features(temp);
 }
 
-}
+}  // namespace af

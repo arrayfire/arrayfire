@@ -9,18 +9,16 @@
 
 #pragma once
 #include <Param.hpp>
-#include <platform.hpp>
 #include <jit/Node.hpp>
+#include <platform.hpp>
 #include <vector>
 
-namespace cpu
-{
-namespace kernel
-{
+namespace cpu {
+namespace kernel {
 
 template<typename T>
-void evalMultiple(std::vector<Param<T>> arrays, std::vector<jit::Node_ptr> output_nodes_)
-{
+void evalMultiple(std::vector<Param<T>> arrays,
+                  std::vector<jit::Node_ptr> output_nodes_) {
     af::dim4 odims = arrays[0].dims();
     af::dim4 ostrs = arrays[0].strides();
 
@@ -32,18 +30,18 @@ void evalMultiple(std::vector<Param<T>> arrays, std::vector<jit::Node_ptr> outpu
     int narrays = static_cast<int>(arrays.size());
     for (int i = 0; i < narrays; i++) {
         ptrs.push_back(arrays[i].get());
-        output_nodes.push_back(reinterpret_cast<jit::TNode<T> *>(output_nodes_[i].get()));
+        output_nodes.push_back(
+            reinterpret_cast<jit::TNode<T> *>(output_nodes_[i].get()));
         output_nodes_[i]->getNodesMap(nodes, full_nodes);
     }
 
     bool is_linear = true;
-    for(auto node : full_nodes) {
-        is_linear &= node->isLinear(odims.get());
-    }
+    for (auto node : full_nodes) { is_linear &= node->isLinear(odims.get()); }
 
     if (is_linear) {
         int num = arrays[0].dims().elements();
-        int cnum = jit::VECTOR_LENGTH * std::ceil(double(num) / jit::VECTOR_LENGTH);
+        int cnum =
+            jit::VECTOR_LENGTH * std::ceil(double(num) / jit::VECTOR_LENGTH);
         for (int i = 0; i < cnum; i += jit::VECTOR_LENGTH) {
             int lim = std::min(jit::VECTOR_LENGTH, num - i);
             for (int n = 0; n < (int)full_nodes.size(); n++) {
@@ -51,12 +49,10 @@ void evalMultiple(std::vector<Param<T>> arrays, std::vector<jit::Node_ptr> outpu
             }
             for (int n = 0; n < (int)output_nodes.size(); n++) {
                 std::copy(output_nodes[n]->m_val.begin(),
-                          output_nodes[n]->m_val.begin() + lim,
-                          ptrs[n] + i);
+                          output_nodes[n]->m_val.begin() + lim, ptrs[n] + i);
             }
         }
     } else {
-
         for (int w = 0; w < (int)odims[3]; w++) {
             dim_t offw = w * ostrs[3];
 
@@ -66,10 +62,11 @@ void evalMultiple(std::vector<Param<T>> arrays, std::vector<jit::Node_ptr> outpu
                 for (int y = 0; y < (int)odims[1]; y++) {
                     dim_t offy = y * ostrs[1] + offz;
 
-                    int dim0 = odims[0];
-                    int cdim0 = jit::VECTOR_LENGTH * std::ceil(double(dim0) / jit::VECTOR_LENGTH);
+                    int dim0  = odims[0];
+                    int cdim0 = jit::VECTOR_LENGTH *
+                                std::ceil(double(dim0) / jit::VECTOR_LENGTH);
                     for (int x = 0; x < (int)cdim0; x += jit::VECTOR_LENGTH) {
-                        int lim = std::min(jit::VECTOR_LENGTH, dim0 - x);
+                        int lim  = std::min(jit::VECTOR_LENGTH, dim0 - x);
                         dim_t id = x + offy;
 
                         for (int n = 0; n < (int)full_nodes.size(); n++) {
@@ -88,10 +85,9 @@ void evalMultiple(std::vector<Param<T>> arrays, std::vector<jit::Node_ptr> outpu
 }
 
 template<typename T>
-void evalArray(Param<T> arr, jit::Node_ptr node)
-{
+void evalArray(Param<T> arr, jit::Node_ptr node) {
     evalMultiple<T>({arr}, {node});
 }
 
-}
-}
+}  // namespace kernel
+}  // namespace cpu

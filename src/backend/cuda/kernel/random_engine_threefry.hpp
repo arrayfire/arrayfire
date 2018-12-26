@@ -46,85 +46,117 @@
 
 #pragma once
 
-namespace cuda
-{
-namespace kernel
-{
-    //Utils
-    //Source of these constants :
-    //github.com/DEShawResearch/Random123-Boost/blob/master/boost/random/threefry.hpp
+namespace cuda {
+namespace kernel {
+// Utils
+// Source of these constants :
+// github.com/DEShawResearch/Random123-Boost/blob/master/boost/random/threefry.hpp
 
-    static const uint  SKEIN_KS_PARITY32 = 0x1BD11BDA;
+static const uint SKEIN_KS_PARITY32 = 0x1BD11BDA;
 
-    static const uint R0=13;
-    static const uint R1=15;
-    static const uint R2=26;
-    static const uint R3= 6;
-    static const uint R4=17;
-    static const uint R5=29;
-    static const uint R6=16;
-    static const uint R7=24;
+static const uint R0 = 13;
+static const uint R1 = 15;
+static const uint R2 = 26;
+static const uint R3 = 6;
+static const uint R4 = 17;
+static const uint R5 = 29;
+static const uint R6 = 16;
+static const uint R7 = 24;
 
-    static inline __device__ void setSkeinParity(uint *ptr)
-    {
-        *ptr = SKEIN_KS_PARITY32;
-    }
-
-    static inline __device__ uint rotL(uint x, uint N)
-    {
-        return (x << (N & 31)) | (x >> ((32-N) & 31));
-    }
-
-    __device__ void threefry(uint k[2], uint c[2], uint X[2])
-    {
-        uint ks[3];
-
-        setSkeinParity(&ks[2]);
-        ks[0] = k[0];
-        X[0] = c[0];
-        ks[2] ^= k[0];
-        ks[1] = k[1];
-        X[1] = c[1];
-        ks[2] ^= k[1];
-
-        X[0] += ks[0]; X[1] += ks[1];
-
-        X[0] += X[1]; X[1] = rotL(X[1],R0); X[1] ^= X[0];
-        X[0] += X[1]; X[1] = rotL(X[1],R1); X[1] ^= X[0];
-        X[0] += X[1]; X[1] = rotL(X[1],R2); X[1] ^= X[0];
-        X[0] += X[1]; X[1] = rotL(X[1],R3); X[1] ^= X[0];
-
-        /* InjectKey(r=1) */
-        X[0] += ks[1]; X[1] += ks[2];
-        X[1] += 1;     /* X[2-1] += r  */
-
-        X[0] += X[1]; X[1] = rotL(X[1],R4); X[1] ^= X[0];
-        X[0] += X[1]; X[1] = rotL(X[1],R5); X[1] ^= X[0];
-        X[0] += X[1]; X[1] = rotL(X[1],R6); X[1] ^= X[0];
-        X[0] += X[1]; X[1] = rotL(X[1],R7); X[1] ^= X[0];
-
-        /* InjectKey(r=2) */
-        X[0] += ks[2]; X[1] += ks[0];
-        X[1] += 2;
-
-        X[0] += X[1]; X[1] = rotL(X[1],R0); X[1] ^= X[0];
-        X[0] += X[1]; X[1] = rotL(X[1],R1); X[1] ^= X[0];
-        X[0] += X[1]; X[1] = rotL(X[1],R2); X[1] ^= X[0];
-        X[0] += X[1]; X[1] = rotL(X[1],R3); X[1] ^= X[0];
-
-        /* InjectKey(r=3) */
-        X[0] += ks[0]; X[1] += ks[1];
-        X[1] += 3;
-
-        X[0] += X[1]; X[1] = rotL(X[1],R4); X[1] ^= X[0];
-        X[0] += X[1]; X[1] = rotL(X[1],R5); X[1] ^= X[0];
-        X[0] += X[1]; X[1] = rotL(X[1],R6); X[1] ^= X[0];
-        X[0] += X[1]; X[1] = rotL(X[1],R7); X[1] ^= X[0];
-
-        /* InjectKey(r=4) */
-        X[0] += ks[1]; X[1] += ks[2];
-        X[1] += 4;
-    }
-
+static inline __device__ void setSkeinParity(uint *ptr) {
+    *ptr = SKEIN_KS_PARITY32;
 }
+
+static inline __device__ uint rotL(uint x, uint N) {
+    return (x << (N & 31)) | (x >> ((32 - N) & 31));
 }
+
+__device__ void threefry(uint k[2], uint c[2], uint X[2]) {
+    uint ks[3];
+
+    setSkeinParity(&ks[2]);
+    ks[0] = k[0];
+    X[0]  = c[0];
+    ks[2] ^= k[0];
+    ks[1] = k[1];
+    X[1]  = c[1];
+    ks[2] ^= k[1];
+
+    X[0] += ks[0];
+    X[1] += ks[1];
+
+    X[0] += X[1];
+    X[1] = rotL(X[1], R0);
+    X[1] ^= X[0];
+    X[0] += X[1];
+    X[1] = rotL(X[1], R1);
+    X[1] ^= X[0];
+    X[0] += X[1];
+    X[1] = rotL(X[1], R2);
+    X[1] ^= X[0];
+    X[0] += X[1];
+    X[1] = rotL(X[1], R3);
+    X[1] ^= X[0];
+
+    /* InjectKey(r=1) */
+    X[0] += ks[1];
+    X[1] += ks[2];
+    X[1] += 1; /* X[2-1] += r  */
+
+    X[0] += X[1];
+    X[1] = rotL(X[1], R4);
+    X[1] ^= X[0];
+    X[0] += X[1];
+    X[1] = rotL(X[1], R5);
+    X[1] ^= X[0];
+    X[0] += X[1];
+    X[1] = rotL(X[1], R6);
+    X[1] ^= X[0];
+    X[0] += X[1];
+    X[1] = rotL(X[1], R7);
+    X[1] ^= X[0];
+
+    /* InjectKey(r=2) */
+    X[0] += ks[2];
+    X[1] += ks[0];
+    X[1] += 2;
+
+    X[0] += X[1];
+    X[1] = rotL(X[1], R0);
+    X[1] ^= X[0];
+    X[0] += X[1];
+    X[1] = rotL(X[1], R1);
+    X[1] ^= X[0];
+    X[0] += X[1];
+    X[1] = rotL(X[1], R2);
+    X[1] ^= X[0];
+    X[0] += X[1];
+    X[1] = rotL(X[1], R3);
+    X[1] ^= X[0];
+
+    /* InjectKey(r=3) */
+    X[0] += ks[0];
+    X[1] += ks[1];
+    X[1] += 3;
+
+    X[0] += X[1];
+    X[1] = rotL(X[1], R4);
+    X[1] ^= X[0];
+    X[0] += X[1];
+    X[1] = rotL(X[1], R5);
+    X[1] ^= X[0];
+    X[0] += X[1];
+    X[1] = rotL(X[1], R6);
+    X[1] ^= X[0];
+    X[0] += X[1];
+    X[1] = rotL(X[1], R7);
+    X[1] ^= X[0];
+
+    /* InjectKey(r=4) */
+    X[0] += ks[1];
+    X[1] += ks[2];
+    X[1] += 4;
+}
+
+}  // namespace kernel
+}  // namespace cuda

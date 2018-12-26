@@ -7,34 +7,29 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <Param.hpp>
 #include <backend.hpp>
 #include <common/dispatch.hpp>
-#include <Param.hpp>
 #include <debug_cuda.hpp>
 
-namespace cuda
-{
+namespace cuda {
 
-namespace kernel
-{
+namespace kernel {
 
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
 template<typename T, bool isHSV2RGB>
-__global__
-void convert(Param<T> out, CParam<T> in, int nBBS)
-{
+__global__ void convert(Param<T> out, CParam<T> in, int nBBS) {
     // batch offsets
-    unsigned batchId= blockIdx.x / nBBS;
-    const T* src    = (const T *) in.ptr + (batchId *  in.strides[3]);
-    T*       dst    = (T *      )out.ptr + (batchId * out.strides[3]);
+    unsigned batchId = blockIdx.x / nBBS;
+    const T* src     = (const T*)in.ptr + (batchId * in.strides[3]);
+    T* dst           = (T*)out.ptr + (batchId * out.strides[3]);
     // global indices
-    int gx = blockDim.x * (blockIdx.x-batchId*nBBS) + threadIdx.x;
+    int gx = blockDim.x * (blockIdx.x - batchId * nBBS) + threadIdx.x;
     int gy = blockDim.y * (blockIdx.y + blockIdx.z * gridDim.y) + threadIdx.y;
 
     if (gx < out.dims[0] && gy < out.dims[1] && batchId < out.dims[3]) {
-
         int oIdx0 = gx + gy * out.strides[1];
         int oIdx1 = oIdx0 + out.strides[2];
         int oIdx2 = oIdx1 + out.strides[2];
@@ -43,7 +38,7 @@ void convert(Param<T> out, CParam<T> in, int nBBS)
         int iIdx1 = iIdx0 + in.strides[2];
         int iIdx2 = iIdx1 + in.strides[2];
 
-        if(isHSV2RGB) {
+        if (isHSV2RGB) {
             T H = src[iIdx0];
             T S = src[iIdx1];
             T V = src[iIdx2];
@@ -51,11 +46,11 @@ void convert(Param<T> out, CParam<T> in, int nBBS)
             T R, G, B;
             R = G = B = 0;
 
-            int   i = (int)(H * 6);
-            T f = H * 6 - i;
-            T p = V * (1 - S);
-            T q = V * (1 - f * S);
-            T t = V * (1 - (1 - f) * S);
+            int i = (int)(H * 6);
+            T f   = H * 6 - i;
+            T p   = V * (1 - S);
+            T q   = V * (1 - f * S);
+            T t   = V * (1 - (1 - f) * S);
 
             switch (i % 6) {
                 case 0: R = V, G = t, B = p; break;
@@ -70,32 +65,31 @@ void convert(Param<T> out, CParam<T> in, int nBBS)
             dst[oIdx1] = G;
             dst[oIdx2] = B;
         } else {
-            T R = src[iIdx0];
-            T G = src[iIdx1];
-            T B = src[iIdx2];
-            T Cmax = fmax(fmax(R, G), B);
-            T Cmin = fmin(fmin(R, G), B);
-            T delta= Cmax-Cmin;
+            T R     = src[iIdx0];
+            T G     = src[iIdx1];
+            T B     = src[iIdx2];
+            T Cmax  = fmax(fmax(R, G), B);
+            T Cmin  = fmin(fmin(R, G), B);
+            T delta = Cmax - Cmin;
 
             T H = 0;
 
-            if (Cmax!=Cmin) {
-                if (Cmax==R) H = (G-B)/delta + (G<B ? 6 : 0);
-                if (Cmax==G) H = (B-R)/delta + 2;
-                if (Cmax==B) H = (R-G)/delta + 4;
+            if (Cmax != Cmin) {
+                if (Cmax == R) H = (G - B) / delta + (G < B ? 6 : 0);
+                if (Cmax == G) H = (B - R) / delta + 2;
+                if (Cmax == B) H = (R - G) / delta + 4;
                 H = H / 6.0f;
             }
 
             dst[oIdx0] = H;
-            dst[oIdx1] = Cmax==0.0f ? 0 : delta/Cmax;
+            dst[oIdx1] = Cmax == 0.0f ? 0 : delta / Cmax;
             dst[oIdx2] = Cmax;
         }
     }
 }
 
 template<typename T, bool isHSV2RGB>
-void hsv2rgb_convert(Param<T> out, CParam<T> in)
-{
+void hsv2rgb_convert(Param<T> out, CParam<T> in) {
     const dim3 threads(THREADS_X, THREADS_Y);
 
     int blk_x = divup(in.dims[0], threads.x);
@@ -103,9 +97,10 @@ void hsv2rgb_convert(Param<T> out, CParam<T> in)
 
     // all images are three channels, so batch
     // parameter would be along 4th dimension
-    dim3 blocks(blk_x*in.dims[3], blk_y);
+    dim3 blocks(blk_x * in.dims[3], blk_y);
 
-    const int maxBlocksY = cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+    const int maxBlocksY =
+        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
     blocks.z = divup(blocks.y, maxBlocksY);
     blocks.y = divup(blocks.y, blocks.z);
 
@@ -114,6 +109,6 @@ void hsv2rgb_convert(Param<T> out, CParam<T> in)
     POST_LAUNCH_CHECK();
 }
 
-}
+}  // namespace kernel
 
-}
+}  // namespace cuda

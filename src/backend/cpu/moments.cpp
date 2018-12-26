@@ -7,15 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/defines.h>
 #include <Array.hpp>
 #include <err_cpu.hpp>
-#include <platform.hpp>
 #include <kernel/moments.hpp>
+#include <platform.hpp>
 #include <queue.hpp>
+#include <af/defines.h>
 
-namespace cpu
-{
+namespace cpu {
 
 static inline int bitCount(int v) {
     v = v - ((v >> 1) & 0x55555555);
@@ -26,8 +25,7 @@ static inline int bitCount(int v) {
 using af::dim4;
 
 template<typename T>
-Array<float> moments(const Array<T> &in, const af_moment_type moment)
-{
+Array<float> moments(const Array<T> &in, const af_moment_type moment) {
     in.eval();
     dim4 odims, idims = in.dims();
     dim_t moments_dim = bitCount(moment);
@@ -45,9 +43,9 @@ Array<float> moments(const Array<T> &in, const af_moment_type moment)
     return out;
 }
 
-
-#define INSTANTIATE(T)  \
-    template Array<float> moments<T>(const Array<T> &in, const af_moment_type moment);
+#define INSTANTIATE(T)                                   \
+    template Array<float> moments<T>(const Array<T> &in, \
+                                     const af_moment_type moment);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -58,5 +56,4 @@ INSTANTIATE(char)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
 
-}
-
+}  // namespace cpu

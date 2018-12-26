@@ -20,7 +20,6 @@
 #include <string>
 #include <vector>
 
-using af::NaN;
 using af::array;
 using af::cdouble;
 using af::cfloat;
@@ -29,6 +28,7 @@ using af::dim4;
 using af::dtype;
 using af::dtype_traits;
 using af::eval;
+using af::NaN;
 using af::randu;
 using af::select;
 using af::seq;
@@ -38,18 +38,16 @@ using std::string;
 using std::stringstream;
 using std::vector;
 
-
 template<typename T>
-class Select : public ::testing::Test
-{
-};
+class Select : public ::testing::Test {};
 
-typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl, uchar, char, short, ushort> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl,
+                         uchar, char, short, ushort>
+    TestTypes;
 TYPED_TEST_CASE(Select, TestTypes);
 
 template<typename T>
-void selectTest(const dim4 &dims)
-{
+void selectTest(const dim4& dims) {
     if (noDoubleTests<T>()) return;
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
@@ -83,18 +81,15 @@ void selectTest(const dim4 &dims)
 }
 
 template<typename T, bool is_right>
-void selectScalarTest(const dim4 &dims)
-{
+void selectScalarTest(const dim4& dims) {
     if (noDoubleTests<T>()) return;
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
-    array a = randu(dims, ty);
+    array a    = randu(dims, ty);
     array cond = randu(dims, ty) > a;
-    double b = 3;
+    double b   = 3;
 
-    if (a.isinteger()) {
-        a = (a % (1 << 30)).as(ty);
-    }
+    if (a.isinteger()) { a = (a % (1 << 30)).as(ty); }
 
     array c = is_right ? select(cond, a, b) : select(cond, b, a);
 
@@ -119,30 +114,24 @@ void selectScalarTest(const dim4 &dims)
     }
 }
 
-TYPED_TEST(Select, Simple)
-{
-    selectTest<TypeParam>(dim4(1024, 1024));
-}
+TYPED_TEST(Select, Simple) { selectTest<TypeParam>(dim4(1024, 1024)); }
 
-TYPED_TEST(Select, RightScalar)
-{
+TYPED_TEST(Select, RightScalar) {
     selectScalarTest<TypeParam, true>(dim4(1000, 1000));
 }
 
-TYPED_TEST(Select, LeftScalar)
-{
+TYPED_TEST(Select, LeftScalar) {
     selectScalarTest<TypeParam, true>(dim4(1000, 1000));
 }
 
-TEST(Select, NaN)
-{
+TEST(Select, NaN) {
     dim4 dims(1000, 1250);
     dtype ty = f32;
 
-    array a = randu(dims, ty);
+    array a                                 = randu(dims, ty);
     a(seq(a.dims(0) / 2), span, span, span) = NaN;
-    float b = 0;
-    array c = select(isNaN(a), b, a);
+    float b                                 = 0;
+    array c                                 = select(isNaN(a), b, a);
 
     int num = (int)a.elements();
 
@@ -157,13 +146,12 @@ TEST(Select, NaN)
     }
 }
 
-TEST(Select, ISSUE_1249)
-{
+TEST(Select, ISSUE_1249) {
     dim4 dims(2, 3, 4);
     array cond = randu(dims) > 0.5;
-    array a = randu(dims);
-    array b = select(cond, a - a * 0.9, a);
-    array c = a - a * cond * 0.9;
+    array a    = randu(dims);
+    array b    = select(cond, a - a * 0.9, a);
+    array c    = a - a * cond * 0.9;
 
     int num = (int)dims.elements();
     vector<float> hb(num);
@@ -177,13 +165,12 @@ TEST(Select, ISSUE_1249)
     }
 }
 
-TEST(Select, 4D)
-{
+TEST(Select, 4D) {
     dim4 dims(2, 3, 4, 2);
     array cond = randu(dims) > 0.5;
-    array a = randu(dims);
-    array b = select(cond, a - a * 0.9, a);
-    array c = a - a * cond * 0.9;
+    array a    = randu(dims);
+    array b    = select(cond, a - a * 0.9, a);
+    array c    = a - a * cond * 0.9;
 
     int num = (int)dims.elements();
     vector<float> hb(num);
@@ -197,11 +184,10 @@ TEST(Select, 4D)
     }
 }
 
-TEST(Select, Issue_1730)
-{
+TEST(Select, Issue_1730) {
     const int n = 1000;
     const int m = 200;
-    array a = randu(n, m) - 0.5;
+    array a     = randu(n, m) - 0.5;
     eval(a);
 
     vector<float> ha1(a.elements());
@@ -211,9 +197,8 @@ TEST(Select, Issue_1730)
     const int n2 = n1 + n / 4;
 
     a(seq(n1, n2), span) =
-        select(a(seq(n1, n2), span) >= 0,
-                   a(seq(n1, n2), span),
-                   a(seq(n1, n2), span) * -1);
+        select(a(seq(n1, n2), span) >= 0, a(seq(n1, n2), span),
+               a(seq(n1, n2), span) * -1);
 
     vector<float> ha2(a.elements());
     a.host(&ha2[0]);
@@ -221,19 +206,20 @@ TEST(Select, Issue_1730)
     for (int j = 0; j < m; j++) {
         for (int i = 0; i < n; i++) {
             if (i < n1 || i > n2) {
-                ASSERT_FLOAT_EQ(ha1[i], ha2[i]) << "at (" << i << ", " << j << ")";
+                ASSERT_FLOAT_EQ(ha1[i], ha2[i])
+                    << "at (" << i << ", " << j << ")";
             } else {
-                ASSERT_FLOAT_EQ(ha2[i], (ha1[i] >= 0 ? ha1[i] : -ha1[i]))  << "at (" << i << ", " << j << ")";
+                ASSERT_FLOAT_EQ(ha2[i], (ha1[i] >= 0 ? ha1[i] : -ha1[i]))
+                    << "at (" << i << ", " << j << ")";
             }
         }
     }
 }
 
-TEST(Select, Issue_1730_scalar)
-{
+TEST(Select, Issue_1730_scalar) {
     const int n = 1000;
     const int m = 200;
-    array a = randu(n, m) - 0.5;
+    array a     = randu(n, m) - 0.5;
     eval(a);
 
     vector<float> ha1(a.elements());
@@ -244,9 +230,7 @@ TEST(Select, Issue_1730_scalar)
 
     float val = 0;
     a(seq(n1, n2), span) =
-        select(a(seq(n1, n2), span) >= 0,
-                   a(seq(n1, n2), span),
-                   val);
+        select(a(seq(n1, n2), span) >= 0, a(seq(n1, n2), span), val);
 
     vector<float> ha2(a.elements());
     a.host(&ha2[0]);
@@ -254,23 +238,24 @@ TEST(Select, Issue_1730_scalar)
     for (int j = 0; j < m; j++) {
         for (int i = 0; i < n; i++) {
             if (i < n1 || i > n2) {
-                ASSERT_FLOAT_EQ(ha1[i], ha2[i]) << "at (" << i << ", " << j << ")";
+                ASSERT_FLOAT_EQ(ha1[i], ha2[i])
+                    << "at (" << i << ", " << j << ")";
             } else {
-                ASSERT_FLOAT_EQ(ha2[i], (ha1[i] >= 0 ? ha1[i] : val))  << "at (" << i << ", " << j << ")";
+                ASSERT_FLOAT_EQ(ha2[i], (ha1[i] >= 0 ? ha1[i] : val))
+                    << "at (" << i << ", " << j << ")";
             }
         }
     }
 }
 
-TEST(Select, MaxDim)
-{
+TEST(Select, MaxDim) {
     const size_t largeDim = 65535 * 32 + 1;
 
     array a    = constant(1, largeDim);
     array b    = constant(0, largeDim);
     array cond = constant(0, largeDim, b8);
 
-    array sel  = select(cond, a, b);
+    array sel = select(cond, a, b);
     float sum = af::sum<float>(sel);
 
     ASSERT_FLOAT_EQ(sum, 0.f);
@@ -279,7 +264,7 @@ TEST(Select, MaxDim)
     b    = constant(0, 1, largeDim);
     cond = constant(0, 1, largeDim, b8);
 
-    sel  = select(cond, a, b);
+    sel = select(cond, a, b);
     sum = af::sum<float>(sel);
 
     ASSERT_FLOAT_EQ(sum, 0.f);
@@ -288,7 +273,7 @@ TEST(Select, MaxDim)
     b    = constant(0, 1, 1, largeDim);
     cond = constant(0, 1, 1, largeDim, b8);
 
-    sel  = select(cond, a, b);
+    sel = select(cond, a, b);
     sum = af::sum<float>(sel);
 
     ASSERT_FLOAT_EQ(sum, 0.f);
@@ -297,7 +282,7 @@ TEST(Select, MaxDim)
     b    = constant(0, 1, 1, 1, largeDim);
     cond = constant(0, 1, 1, 1, largeDim, b8);
 
-    sel  = select(cond, a, b);
+    sel = select(cond, a, b);
     sum = af::sum<float>(sel);
 
     ASSERT_FLOAT_EQ(sum, 0.f);
@@ -308,151 +293,143 @@ struct select_params {
     dim4 cond;
     dim4 a;
     dim4 b;
-  select_params(dim4 out_, dim4 cond_, dim4 a_, dim4 b_)
-    : out(out_), cond(cond_), a(a_), b(b_)
-  {}
+    select_params(dim4 out_, dim4 cond_, dim4 a_, dim4 b_)
+        : out(out_), cond(cond_), a(a_), b(b_) {}
 };
 
 class Select_ : public ::testing::TestWithParam<select_params> {};
 
 string pd4(dim4 dims) {
     string out(32, '\0');
-    int len = snprintf(const_cast<char*>(out.data()), 32,
-                       "%lld_%lld_%lld_%lld", dims[0], dims[1], dims[2], dims[3]);
+    int len = snprintf(const_cast<char*>(out.data()), 32, "%lld_%lld_%lld_%lld",
+                       dims[0], dims[1], dims[2], dims[3]);
     out.resize(len);
     return out;
 }
 
-string testNameGenerator(const ::testing::TestParamInfo<Select_::ParamType> info) {
+string testNameGenerator(
+    const ::testing::TestParamInfo<Select_::ParamType> info) {
     stringstream ss;
-    ss << "out_" << pd4(info.param.out)
-       << "_cond_" << pd4(info.param.cond)
-       << "_a_" << pd4(info.param.a)
-       << "_b_" << pd4(info.param.b);
+    ss << "out_" << pd4(info.param.out) << "_cond_" << pd4(info.param.cond)
+       << "_a_" << pd4(info.param.a) << "_b_" << pd4(info.param.b);
     return ss.str();
 }
 
 vector<select_params> getSelectTestParams(int M, int N) {
-  const select_params _[] = {select_params(dim4(M), dim4(M), dim4(M), dim4(M)),
-          select_params(dim4(M, N), dim4(M, N), dim4(M, N), dim4(M, N)),
-          select_params(dim4(M, N, N), dim4(M, N, N), dim4(M, N, N), dim4(M, N, N)),
-          select_params(dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N)),
-          select_params(dim4(M, N), dim4(M, 1), dim4(M, 1), dim4(M, N)),
-          select_params(dim4(M, N), dim4(M, 1), dim4(M, N), dim4(M, 1)),
-          select_params(dim4(M, N), dim4(M, 1), dim4(M, N), dim4(M, N)),
-          select_params(dim4(M, N), dim4(M, N), dim4(M, 1), dim4(M, N)),
-          select_params(dim4(M, N), dim4(M, N), dim4(M, N), dim4(M, 1)),
-          select_params(dim4(M, N), dim4(M, N), dim4(M, 1), dim4(M, 1))};
-  return vector<select_params>(_, _ + sizeof(_) / sizeof(_[0]));
+    const select_params _[] = {
+        select_params(dim4(M), dim4(M), dim4(M), dim4(M)),
+        select_params(dim4(M, N), dim4(M, N), dim4(M, N), dim4(M, N)),
+        select_params(dim4(M, N, N), dim4(M, N, N), dim4(M, N, N),
+                      dim4(M, N, N)),
+        select_params(dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N),
+                      dim4(M, N, N, N)),
+        select_params(dim4(M, N), dim4(M, 1), dim4(M, 1), dim4(M, N)),
+        select_params(dim4(M, N), dim4(M, 1), dim4(M, N), dim4(M, 1)),
+        select_params(dim4(M, N), dim4(M, 1), dim4(M, N), dim4(M, N)),
+        select_params(dim4(M, N), dim4(M, N), dim4(M, 1), dim4(M, N)),
+        select_params(dim4(M, N), dim4(M, N), dim4(M, N), dim4(M, 1)),
+        select_params(dim4(M, N), dim4(M, N), dim4(M, 1), dim4(M, 1))};
+    return vector<select_params>(_, _ + sizeof(_) / sizeof(_[0]));
 }
 
-INSTANTIATE_TEST_CASE_P(
-  SmallDims,
-  Select_,
-  ::testing::ValuesIn(getSelectTestParams(10, 5)),
-  testNameGenerator);
+INSTANTIATE_TEST_CASE_P(SmallDims, Select_,
+                        ::testing::ValuesIn(getSelectTestParams(10, 5)),
+                        testNameGenerator);
 
-INSTANTIATE_TEST_CASE_P(
-  Dims33_9,
-  Select_,
-  ::testing::ValuesIn(getSelectTestParams(33, 9)),
-  testNameGenerator);
+INSTANTIATE_TEST_CASE_P(Dims33_9, Select_,
+                        ::testing::ValuesIn(getSelectTestParams(33, 9)),
+                        testNameGenerator);
 
-INSTANTIATE_TEST_CASE_P(
-  DimsLg,
-  Select_,
-  ::testing::ValuesIn(getSelectTestParams(512, 32)),
-  testNameGenerator);
+INSTANTIATE_TEST_CASE_P(DimsLg, Select_,
+                        ::testing::ValuesIn(getSelectTestParams(512, 32)),
+                        testNameGenerator);
 
 TEST_P(Select_, Batch) {
     select_params params = GetParam();
 
     float aval = 5.0f;
     float bval = 10.0f;
-    array a = constant(aval, params.a);
-    array b = constant(bval, params.b);
+    array a    = constant(aval, params.a);
+    array b    = constant(bval, params.b);
     array cond = (iota(params.cond) % 2).as(b8);
 
     array out = select(cond, a, b);
 
     EXPECT_EQ(out.dims(), params.out);
 
-    vector<float> h_out(out.elements()); out.host(h_out.data());
-    vector<unsigned char> h_cond(cond.elements()); cond.host(h_cond.data());
+    vector<float> h_out(out.elements());
+    out.host(h_out.data());
+    vector<unsigned char> h_cond(cond.elements());
+    cond.host(h_cond.data());
 
     vector<float> gold(params.out.elements());
-    for(size_t i = 0; i < gold.size(); i++) {
+    for (size_t i = 0; i < gold.size(); i++) {
         gold[i] = h_cond[i % h_cond.size()] ? aval : bval;
         ASSERT_FLOAT_EQ(gold[i], h_out[i]) << "at: " << i;
     }
 }
 
 struct selectlr_params {
-  dim4 out;
-  dim4 cond;
-  dim4 ab;
-  selectlr_params(dim4 out_, dim4 cond_, dim4 ab_)
-    : out(out_), cond(cond_), ab(ab_) {}
+    dim4 out;
+    dim4 cond;
+    dim4 ab;
+    selectlr_params(dim4 out_, dim4 cond_, dim4 ab_)
+        : out(out_), cond(cond_), ab(ab_) {}
 };
 
 class SelectLR_ : public ::testing::TestWithParam<selectlr_params> {};
 
 vector<selectlr_params> getSelectLRTestParams(int M, int N) {
-  const selectlr_params _[] = {
-              selectlr_params(dim4(M), dim4(M), dim4(M)),
-              selectlr_params(dim4(M, N), dim4(M, N), dim4(M, N)),
-              selectlr_params(dim4(M, N, N), dim4(M, N, N), dim4(M, N, N)),
-              selectlr_params(dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N)),
-              selectlr_params(dim4(M, N), dim4(M, 1), dim4(M, N)),
-              selectlr_params(dim4(M, N), dim4(M, N), dim4(M, 1))};
+    const selectlr_params _[] = {
+        selectlr_params(dim4(M), dim4(M), dim4(M)),
+        selectlr_params(dim4(M, N), dim4(M, N), dim4(M, N)),
+        selectlr_params(dim4(M, N, N), dim4(M, N, N), dim4(M, N, N)),
+        selectlr_params(dim4(M, N, N, N), dim4(M, N, N, N), dim4(M, N, N, N)),
+        selectlr_params(dim4(M, N), dim4(M, 1), dim4(M, N)),
+        selectlr_params(dim4(M, N), dim4(M, N), dim4(M, 1))};
 
-  return vector<selectlr_params> (_, _+sizeof(_)/sizeof(_[0]));
+    return vector<selectlr_params>(_, _ + sizeof(_) / sizeof(_[0]));
 }
 
-string testNameGeneratorLR(const ::testing::TestParamInfo<SelectLR_::ParamType> info) {
-  stringstream ss;
-  ss << "out_" << pd4(info.param.out)
-     << "_cond_" << pd4(info.param.cond)
-     << "_ab_" << pd4(info.param.ab);
-  return ss.str();
+string testNameGeneratorLR(
+    const ::testing::TestParamInfo<SelectLR_::ParamType> info) {
+    stringstream ss;
+    ss << "out_" << pd4(info.param.out) << "_cond_" << pd4(info.param.cond)
+       << "_ab_" << pd4(info.param.ab);
+    return ss.str();
 }
 
-INSTANTIATE_TEST_CASE_P(
-                        SmallDims,
-                        SelectLR_,
+INSTANTIATE_TEST_CASE_P(SmallDims, SelectLR_,
                         ::testing::ValuesIn(getSelectLRTestParams(10, 5)),
                         testNameGeneratorLR);
 
-INSTANTIATE_TEST_CASE_P(
-                        Dims33_9,
-                        SelectLR_,
+INSTANTIATE_TEST_CASE_P(Dims33_9, SelectLR_,
                         ::testing::ValuesIn(getSelectLRTestParams(33, 9)),
                         testNameGeneratorLR);
 
-INSTANTIATE_TEST_CASE_P(
-                        DimsLg,
-                        SelectLR_,
+INSTANTIATE_TEST_CASE_P(DimsLg, SelectLR_,
                         ::testing::ValuesIn(getSelectLRTestParams(512, 32)),
                         testNameGeneratorLR);
-
 
 TEST_P(SelectLR_, BatchL) {
     selectlr_params params = GetParam();
 
     float aval = 5.0f;
     float bval = 10.0f;
-    array b = constant(bval, params.ab);
+    array b    = constant(bval, params.ab);
     array cond = (iota(params.cond) % 2).as(b8);
 
     array out = select(cond, static_cast<double>(aval), b);
 
     EXPECT_EQ(out.dims(), params.out);
 
-    vector<float> h_out(out.elements()); out.host(h_out.data());
-    vector<unsigned char> h_cond(cond.elements()); cond.host(h_cond.data());
+    vector<float> h_out(out.elements());
+    out.host(h_out.data());
+    vector<unsigned char> h_cond(cond.elements());
+    cond.host(h_cond.data());
 
     vector<float> gold(params.out.elements());
-    for(size_t i = 0; i < gold.size(); i++) {
+    for (size_t i = 0; i < gold.size(); i++) {
         gold[i] = h_cond[i % h_cond.size()] ? aval : bval;
         ASSERT_FLOAT_EQ(gold[i], h_out[i]) << "at: " << i;
     }
@@ -463,28 +440,30 @@ TEST_P(SelectLR_, BatchR) {
 
     float aval = 5.0f;
     float bval = 10.0f;
-    array a = constant(aval, params.ab);
+    array a    = constant(aval, params.ab);
     array cond = (iota(params.cond) % 2).as(b8);
 
     array out = select(cond, a, static_cast<double>(bval));
 
     EXPECT_EQ(out.dims(), params.out);
 
-    vector<float> h_out(out.elements()); out.host(h_out.data());
-    vector<unsigned char> h_cond(cond.elements()); cond.host(h_cond.data());
+    vector<float> h_out(out.elements());
+    out.host(h_out.data());
+    vector<unsigned char> h_cond(cond.elements());
+    cond.host(h_cond.data());
 
     vector<float> gold(params.out.elements());
-    for(size_t i = 0; i < gold.size(); i++) {
+    for (size_t i = 0; i < gold.size(); i++) {
         gold[i] = h_cond[i % h_cond.size()] ? aval : bval;
         ASSERT_FLOAT_EQ(gold[i], h_out[i]) << "at: " << i;
     }
 }
 
 TEST(Select, InvalidSizeOfAB) {
-    af_array a = 0;
-    af_array b = 0;
+    af_array a    = 0;
+    af_array b    = 0;
     af_array cond = 0;
-    af_array out = 0;
+    af_array out  = 0;
 
     double val = 0;
     dim_t dims = 10;
@@ -508,10 +487,10 @@ TEST(Select, InvalidSizeOfAB) {
 }
 
 TEST(Select, InvalidSizeOfCond) {
-    af_array a = 0;
-    af_array b = 0;
+    af_array a    = 0;
+    af_array b    = 0;
     af_array cond = 0;
-    af_array out = 0;
+    af_array out  = 0;
 
     double val = 0;
     dim_t dims = 10;
@@ -534,27 +513,29 @@ TEST(Select, InvalidSizeOfCond) {
     af_release_array(cond);
 }
 
-
 TEST(Select, SNIPPET_select) {
     //! [ex_data_select]
     int elements = 9;
     char hCond[] = {1, 0, 1, 0, 1, 0, 1, 0, 1};
-    float hA[]  = {2, 2, 2, 2, 2, 2, 2, 2, 2};
-    float hB[]  = {3, 3, 3, 3, 3, 3, 3, 3, 3};
+    float hA[]   = {2, 2, 2, 2, 2, 2, 2, 2, 2};
+    float hB[]   = {3, 3, 3, 3, 3, 3, 3, 3, 3};
 
     array cond(elements, hCond);
     array a(elements, hA);
     array b(elements, hB);
 
     array out = select(cond, a, b);
-    //out = {2, 3, 2, 3, 2, 3, 2, 3, 2};
+    // out = {2, 3, 2, 3, 2, 3, 2, 3, 2};
     //! [ex_data_select]
 
     //! [ex_data_select_c]
     vector<float> hOut(elements);
-    for(size_t i = 0; i < hOut.size(); i++) {
-        if(hCond[i]) { hOut[i] = hA[i]; }
-        else         { hOut[i] = hB[i]; }
+    for (size_t i = 0; i < hOut.size(); i++) {
+        if (hCond[i]) {
+            hOut[i] = hA[i];
+        } else {
+            hOut[i] = hB[i];
+        }
     }
     //! [ex_data_select_c]
 

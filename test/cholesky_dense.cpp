@@ -7,33 +7,32 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
-#include <af/dim4.hpp>
+#include <gtest/gtest.h>
+#include <testHelpers.hpp>
 #include <af/defines.h>
+#include <af/dim4.hpp>
 #include <af/traits.hpp>
-#include <vector>
 #include <complex>
 #include <string>
-#include <testHelpers.hpp>
+#include <vector>
 
-using std::vector;
-using std::string;
-using std::endl;
-using std::abs;
 using af::array;
-using af::cfloat;
 using af::cdouble;
+using af::cfloat;
 using af::dim4;
 using af::dtype;
 using af::dtype_traits;
 using af::identity;
 using af::matmul;
 using af::max;
+using std::abs;
+using std::endl;
+using std::string;
+using std::vector;
 
 template<typename T>
-void choleskyTester(const int n, double eps, bool is_upper)
-{
+void choleskyTester(const int n, double eps, bool is_upper) {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
 
@@ -45,7 +44,7 @@ void choleskyTester(const int n, double eps, bool is_upper)
 #else
     array a = randu(n, n, ty);
 #endif
-    array b = 10 * n * identity(n, n, ty);
+    array b  = 10 * n * identity(n, n, ty);
     array in = matmul(a.H(), a) + b;
 
     //! [ex_chol_reg]
@@ -55,8 +54,10 @@ void choleskyTester(const int n, double eps, bool is_upper)
 
     array re = is_upper ? matmul(out.H(), out) : matmul(out, out.H());
 
-    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(abs(real(in - re))), eps);
-    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(abs(imag(in - re))), eps);
+    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(abs(real(in - re))),
+                eps);
+    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(abs(imag(in - re))),
+                eps);
 
     //! [ex_chol_inplace]
     array in2 = in.copy();
@@ -65,15 +66,16 @@ void choleskyTester(const int n, double eps, bool is_upper)
 
     array out2 = is_upper ? upper(in2) : lower(in2);
 
-    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(abs(real(out2 - out))), eps);
-    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(abs(imag(out2 - out))), eps);
+    ASSERT_NEAR(0,
+                max<typename dtype_traits<T>::base_type>(abs(real(out2 - out))),
+                eps);
+    ASSERT_NEAR(0,
+                max<typename dtype_traits<T>::base_type>(abs(imag(out2 - out))),
+                eps);
 }
 
 template<typename T>
-class Cholesky : public ::testing::Test
-{
-
-};
+class Cholesky : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
 TYPED_TEST_CASE(Cholesky, TestTypes);
@@ -102,33 +104,33 @@ double eps<cdouble>() {
 }
 
 TYPED_TEST(Cholesky, Upper) {
-    choleskyTester<TypeParam>( 500, eps<TypeParam>(), true );
+    choleskyTester<TypeParam>(500, eps<TypeParam>(), true);
 }
 
 TYPED_TEST(Cholesky, UpperLarge) {
-    choleskyTester<TypeParam>( 1000, eps<TypeParam>(), true );
+    choleskyTester<TypeParam>(1000, eps<TypeParam>(), true);
 }
 
 TYPED_TEST(Cholesky, UpperMultipleOfTwo) {
-    choleskyTester<TypeParam>( 512, eps<TypeParam>(), true );
+    choleskyTester<TypeParam>(512, eps<TypeParam>(), true);
 }
 
 TYPED_TEST(Cholesky, UpperMultipleOfTwoLarge) {
-    choleskyTester<TypeParam>( 1024, eps<TypeParam>(), true );
+    choleskyTester<TypeParam>(1024, eps<TypeParam>(), true);
 }
 
 TYPED_TEST(Cholesky, Lower) {
-    choleskyTester<TypeParam>( 500, eps<TypeParam>(), false );
+    choleskyTester<TypeParam>(500, eps<TypeParam>(), false);
 }
 
 TYPED_TEST(Cholesky, LowerLarge) {
-    choleskyTester<TypeParam>( 1000, eps<TypeParam>(), false );
+    choleskyTester<TypeParam>(1000, eps<TypeParam>(), false);
 }
 
 TYPED_TEST(Cholesky, LowerMultipleOfTwo) {
-    choleskyTester<TypeParam>( 512, eps<TypeParam>(), false );
+    choleskyTester<TypeParam>(512, eps<TypeParam>(), false);
 }
 
 TYPED_TEST(Cholesky, LowerMultipleOfTwoLarge) {
-    choleskyTester<TypeParam>( 1024, eps<TypeParam>(), false );
+    choleskyTester<TypeParam>(1024, eps<TypeParam>(), false);
 }

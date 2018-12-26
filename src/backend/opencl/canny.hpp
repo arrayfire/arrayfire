@@ -9,10 +9,11 @@
 
 #include <Array.hpp>
 
-namespace opencl
-{
+namespace opencl {
 Array<float> nonMaximumSuppression(const Array<float>& mag,
-                                   const Array<float>& gx, const Array<float>& gy);
+                                   const Array<float>& gx,
+                                   const Array<float>& gy);
 
-Array<char> edgeTrackingByHysteresis(const Array<char>& strong, const Array<char>& weak);
-}
+Array<char> edgeTrackingByHysteresis(const Array<char>& strong,
+                                     const Array<char>& weak);
+}  // namespace opencl

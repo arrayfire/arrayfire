@@ -10,8 +10,7 @@
 #include <Array.hpp>
 #include <af/index.h>
 
-namespace cuda
-{
+namespace cuda {
 
 template<typename T>
 Array<T> index(const Array<T>& in, const af_index_t idxrs[]);

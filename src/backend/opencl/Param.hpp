@@ -8,27 +8,25 @@
  ********************************************************/
 
 #pragma once
-#include <platform.hpp>
 #include <kernel/KParam.hpp>
+#include <platform.hpp>
 
-namespace opencl
-{
+namespace opencl {
 
-    struct Param
-    {
-        cl::Buffer *data;
-        KParam info;
-        Param& operator=(const Param& other) = default;
-        Param(const Param& other) = default;
-        Param(Param&& other) = default;
-
-        // AF_DEPRECATED("Use Array<T>")
-        Param();
-        // AF_DEPRECATED("Use Array<T>")
-        Param(cl::Buffer *data_, KParam info_);
-        ~Param() = default;
-    };
+struct Param {
+    cl::Buffer* data;
+    KParam info;
+    Param& operator=(const Param& other) = default;
+    Param(const Param& other)            = default;
+    Param(Param&& other)                 = default;
 
     // AF_DEPRECATED("Use Array<T>")
-    Param makeParam(cl_mem mem, int off, int dims[4], int strides[4]);
-}
+    Param();
+    // AF_DEPRECATED("Use Array<T>")
+    Param(cl::Buffer* data_, KParam info_);
+    ~Param() = default;
+};
+
+// AF_DEPRECATED("Use Array<T>")
+Param makeParam(cl_mem mem, int off, int dims[4], int strides[4]);
+}  // namespace opencl

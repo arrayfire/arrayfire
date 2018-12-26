@@ -13,20 +13,24 @@
 #include <string>
 
 namespace spdlog {
-    class logger;
+class logger;
 }
 namespace common {
-    std::shared_ptr<spdlog::logger> loggerFactory(std::string name);
-    std::string bytesToString(size_t bytes);
-}
+std::shared_ptr<spdlog::logger> loggerFactory(std::string name);
+std::string bytesToString(size_t bytes);
+}  // namespace common
 
 #ifdef AF_WITH_LOGGING
 #define AF_STR_H(x) #x
 #define AF_STR_HELPER(x) AF_STR_H(x)
 #ifdef _MSC_VER
-#define AF_TRACE(...) getLogger()->trace("[ " __FILE__ "(" AF_STR_HELPER(__LINE__) ") ] " __VA_ARGS__)
+#define AF_TRACE(...)                \
+    getLogger()->trace("[ " __FILE__ \
+                       "(" AF_STR_HELPER(__LINE__) ") ] " __VA_ARGS__)
 #else
-#define AF_TRACE(...) getLogger()->trace("[ " __FILE__ ":" AF_STR_HELPER(__LINE__) " ] " __VA_ARGS__)
+#define AF_TRACE(...)                \
+    getLogger()->trace("[ " __FILE__ \
+                       ":" AF_STR_HELPER(__LINE__) " ] " __VA_ARGS__)
 #endif
 #else
 #define AF_TRACE(logger, ...) (void)0

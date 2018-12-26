@@ -8,21 +8,20 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <GraphicsResourceManager.hpp>
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
 #include <hist_graphics.hpp>
-#include <GraphicsResourceManager.hpp>
 
 namespace opencl {
 
 template<typename T>
-void copy_histogram(const Array<T> &data, fg_histogram hist)
-{
-    ForgeModule& _ = graphics::forgePlugin();
+void copy_histogram(const Array<T> &data, fg_histogram hist) {
+    ForgeModule &_ = graphics::forgePlugin();
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = data.get();
-        unsigned bytes = 0;
+        unsigned bytes        = 0;
         FG_CHECK(_.fg_get_histogram_vertex_buffer_size(&bytes, hist));
 
         auto res = interopManager().getHistogramResources(hist);
@@ -38,7 +37,8 @@ void copy_histogram(const Array<T> &data, fg_histogram hist)
 
         getQueue().enqueueAcquireGLObjects(&shared_objects, NULL, &event);
         event.wait();
-        getQueue().enqueueCopyBuffer(*d_P, *(res[0].get()), 0, 0, bytes, NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_P, *(res[0].get()), 0, 0, bytes, NULL,
+                                     &event);
         getQueue().enqueueReleaseGLObjects(&shared_objects, NULL, &event);
         event.wait();
 
@@ -51,7 +51,7 @@ void copy_histogram(const Array<T> &data, fg_histogram hist)
 
         CheckGL("Begin OpenCL fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        GLubyte *ptr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
             getQueue().enqueueReadBuffer(*data.get(), CL_TRUE, 0, bytes, ptr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -61,8 +61,8 @@ void copy_histogram(const Array<T> &data, fg_histogram hist)
     }
 }
 
-#define INSTANTIATE(T)  \
-template void copy_histogram<T>(const Array<T> &, fg_histogram);
+#define INSTANTIATE(T) \
+    template void copy_histogram<T>(const Array<T> &, fg_histogram);
 
 INSTANTIATE(float)
 INSTANTIATE(int)
@@ -71,4 +71,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
-}
+}  // namespace opencl

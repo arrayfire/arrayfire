@@ -11,7 +11,6 @@
 
 #include <boost/compute/exception/opencl_error.hpp>
 
-std::string getErrorMessage(int error_code)
-{
+std::string getErrorMessage(int error_code) {
     return boost::compute::opencl_error::to_string(error_code);
 }

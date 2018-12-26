@@ -8,20 +8,19 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <surface.hpp>
-#include <err_cpu.hpp>
 #include <common/graphics_common.hpp>
+#include <err_cpu.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <surface.hpp>
 
 using af::dim4;
 
 namespace cpu {
 
 template<typename T>
-void copy_surface(const Array<T> &P, fg_surface surface)
-{
-    ForgeModule& _ = graphics::forgePlugin();
+void copy_surface(const Array<T> &P, fg_surface surface) {
+    ForgeModule &_ = graphics::forgePlugin();
     P.eval();
     getQueue().sync();
 
@@ -37,8 +36,8 @@ void copy_surface(const Array<T> &P, fg_surface surface)
     CheckGL("In CopyArrayToVBO");
 }
 
-#define INSTANTIATE(T)  \
-template void copy_surface<T>(const Array<T> &, fg_surface);
+#define INSTANTIATE(T) \
+    template void copy_surface<T>(const Array<T> &, fg_surface);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -48,4 +47,4 @@ INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

@@ -8,43 +8,41 @@
  ********************************************************/
 
 #include <arrayfire.h>
-#include <cstdio>
 #include <math.h>
+#include <cstdio>
 
 using namespace af;
 
-static const int ITERATIONS = 50;
-static const float PRECISION = 1.0f/ITERATIONS;
+static const int ITERATIONS  = 50;
+static const float PRECISION = 1.0f / ITERATIONS;
 
-int main(int, char **)
-{
+int main(int, char**) {
     try {
         // Initialize the kernel array just once
         af::info();
         af::Window myWindow(800, 800, "2D Plot example: ArrayFire");
 
         array Y;
-        int sign = 1;
-        array X = seq(-af::Pi, af::Pi, PRECISION);
-        array noise = randn(X.dims(0))/5.f;
+        int sign    = 1;
+        array X     = seq(-af::Pi, af::Pi, PRECISION);
+        array noise = randn(X.dims(0)) / 5.f;
 
         myWindow.grid(2, 1);
 
-        for (double val=0; !myWindow.close(); ) {
-
+        for (double val = 0; !myWindow.close();) {
             Y = sin(X);
 
-            myWindow(0,0).plot(X, Y);
-            myWindow(1,0).scatter(X, Y + noise, AF_MARKER_POINT);
+            myWindow(0, 0).plot(X, Y);
+            myWindow(1, 0).scatter(X, Y + noise, AF_MARKER_POINT);
 
             myWindow.show();
 
             X = X + PRECISION * float(sign);
             val += PRECISION * float(sign);
 
-            if (val>af::Pi) {
+            if (val > af::Pi) {
                 sign = -1;
-            } else if (val<-af::Pi) {
+            } else if (val < -af::Pi) {
                 sign = 1;
             }
         }

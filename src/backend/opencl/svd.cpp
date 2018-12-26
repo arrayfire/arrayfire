@@ -8,28 +8,26 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <svd.hpp>               // opencl backend function header
-#include <err_opencl.hpp>        // error check functions and Macros
-#include <reduce.hpp>
-#include <copy.hpp>
 #include <blas.hpp>
+#include <copy.hpp>
+#include <err_opencl.hpp>  // error check functions and Macros
+#include <reduce.hpp>
+#include <svd.hpp>  // opencl backend function header
 #include <transpose.hpp>
 
 #if defined(WITH_LINEAR_ALGEBRA)
 
+#include <cpu/cpu_svd.hpp>
 #include <magma/magma.h>
 #include <magma/magma_cpu_lapack.h>
 #include <magma/magma_helper.h>
 #include <platform.hpp>
-#include <cpu/cpu_svd.hpp>
 
-namespace opencl
-{
+namespace opencl {
 
 template<typename Tr>
-Tr calc_scale(Tr From, Tr To)
-{
-    //FIXME: I am not sure this is correct, removing this for now
+Tr calc_scale(Tr From, Tr To) {
+    // FIXME: I am not sure this is correct, removing this for now
 #if 0
     //http://www.netlib.org/lapack/explore-3.1.1-html/dlascl.f.html
     cpu_lapack_lamch_func<Tr> cpu_lapack_lamch;
@@ -62,25 +60,20 @@ Tr calc_scale(Tr From, Tr To)
 }
 
 template<typename T, typename Tr>
-void svd(Array<T > &arrU,
-         Array<Tr> &arrS,
-         Array<T > &arrVT,
-         Array<T > &arrA,
-         bool want_vectors=true)
-{
-
-    dim4 idims = arrA.dims();
+void svd(Array<T> &arrU, Array<Tr> &arrS, Array<T> &arrVT, Array<T> &arrA,
+         bool want_vectors = true) {
+    dim4 idims    = arrA.dims();
     dim4 istrides = arrA.strides();
 
-    const int m = (int)idims[0];
-    const int n = (int)idims[1];
-    const int ldda = (int)istrides[1];
-    const int lda = m;
+    const int m      = (int)idims[0];
+    const int n      = (int)idims[1];
+    const int ldda   = (int)istrides[1];
+    const int lda    = m;
     const int min_mn = std::min(m, n);
-    const int ldu = m;
-    const int ldvt = n;
+    const int ldu    = m;
+    const int ldvt   = n;
 
-    const int nb   = magma_get_gebrd_nb<T>(n);
+    const int nb    = magma_get_gebrd_nb<T>(n);
     const int lwork = (m + n) * nb;
 
     cpu_lapack_lacpy_func<T> cpu_lapack_lacpy;
@@ -89,46 +82,41 @@ void svd(Array<T > &arrU,
     cpu_lapack_lamch_func<Tr> cpu_lapack_lamch;
 
     // Get machine constants
-    static const double eps = cpu_lapack_lamch('P');
+    static const double eps    = cpu_lapack_lamch('P');
     static const double smlnum = std::sqrt(cpu_lapack_lamch('S')) / eps;
     static const double bignum = 1. / smlnum;
 
     Tr anrm = abs(reduce_all<af_max_t, T, T>(arrA));
 
-    T scale = scalar<T>(1);
+    T scale                = scalar<T>(1);
     static const int ione  = 1;
     static const int izero = 0;
 
-
     bool iscl = 0;
     if (anrm > 0. && anrm < smlnum) {
-        iscl = 1;
+        iscl  = 1;
         scale = scalar<T>(calc_scale<Tr>(anrm, smlnum));
     } else if (anrm > bignum) {
-        iscl = 1;
+        iscl  = 1;
         scale = scalar<T>(calc_scale<Tr>(anrm, bignum));
     }
 
-    if (iscl == 1) {
-        multiply_inplace(arrA, abs(scale));
-    }
+    if (iscl == 1) { multiply_inplace(arrA, abs(scale)); }
 
-    int nru = 0;
+    int nru  = 0;
     int ncvt = 0;
 
     // Instead of copying U, S, VT, and A to the host and copying the results
     // back to the device, create a pointer that's mapped to device memory where
     // the computation can directly happen
-    T *mappedA = (T*) getQueue().enqueueMapBuffer(*arrA.get(), CL_FALSE,
-                                                  CL_MAP_READ,
-                                                  sizeof(T) * arrA.getOffset(),
-                                                  sizeof(T) * arrA.elements());
+    T *mappedA = (T *)getQueue().enqueueMapBuffer(
+        *arrA.get(), CL_FALSE, CL_MAP_READ, sizeof(T) * arrA.getOffset(),
+        sizeof(T) * arrA.elements());
     std::vector<T> tauq(min_mn), taup(min_mn);
     std::vector<T> work(lwork);
-    Tr *mappedS0 = (Tr*) getQueue().enqueueMapBuffer(*arrS.get(), CL_TRUE,
-                                                     CL_MAP_WRITE,
-                                                     sizeof(Tr) * arrS.getOffset(),
-                                                     sizeof(Tr) * arrS.elements());
+    Tr *mappedS0 = (Tr *)getQueue().enqueueMapBuffer(
+        *arrS.get(), CL_TRUE, CL_MAP_WRITE, sizeof(Tr) * arrS.getOffset(),
+        sizeof(Tr) * arrS.elements());
     std::vector<Tr> s1(min_mn - 1);
     std::vector<Tr> rwork(5 * min_mn);
 
@@ -137,27 +125,21 @@ void svd(Array<T > &arrU,
     // Bidiagonalize A
     // (CWorkspace: need 2*N + M, prefer 2*N + (M + N)*NB)
     // (RWorkspace: need N)
-    magma_gebrd_hybrid<T>(m, n,
-                          mappedA, lda,
-                          (*arrA.get())(), arrA.getOffset(), ldda,
-                          (void *)mappedS0, (void *)&s1[0],
-                          &tauq[0], &taup[0],
-                          &work[0], lwork,
-                          getQueue()(), &info, false);
+    magma_gebrd_hybrid<T>(m, n, mappedA, lda, (*arrA.get())(), arrA.getOffset(),
+                          ldda, (void *)mappedS0, (void *)&s1[0], &tauq[0],
+                          &taup[0], &work[0], lwork, getQueue()(), &info,
+                          false);
 
     T *mappedU = nullptr, *mappedVT = nullptr;
     std::vector<T> cdummy(1);
 
     if (want_vectors) {
-
-        mappedU = (T*) getQueue().enqueueMapBuffer(*arrU.get(), CL_FALSE,
-                                                   CL_MAP_WRITE,
-                                                   sizeof(T) * arrU.getOffset(),
-                                                   sizeof(T) * arrU.elements());
-        mappedVT = (T*) getQueue().enqueueMapBuffer(*arrVT.get(), CL_TRUE,
-                                                    CL_MAP_WRITE,
-                                                    sizeof(T) * arrVT.getOffset(),
-                                                    sizeof(T) * arrVT.elements());
+        mappedU = (T *)getQueue().enqueueMapBuffer(
+            *arrU.get(), CL_FALSE, CL_MAP_WRITE, sizeof(T) * arrU.getOffset(),
+            sizeof(T) * arrU.elements());
+        mappedVT = (T *)getQueue().enqueueMapBuffer(
+            *arrVT.get(), CL_TRUE, CL_MAP_WRITE, sizeof(T) * arrVT.getOffset(),
+            sizeof(T) * arrVT.elements());
 
         // If left singular vectors desired in U, copy result to U
         // and generate left bidiagonalizing vectors in U
@@ -173,11 +155,12 @@ void svd(Array<T > &arrU,
         // VT and generate right bidiagonalizing vectors in VT
         // (CWorkspace: need 3*N-1, prefer 2*N + (N-1)*NB)
         // (RWorkspace: 0)
-        LAPACKE_CHECK(cpu_lapack_lacpy('U', n, n, mappedA, lda, mappedVT, ldvt));
+        LAPACKE_CHECK(
+            cpu_lapack_lacpy('U', n, n, mappedA, lda, mappedVT, ldvt));
         LAPACKE_CHECK(cpu_lapack_ungbr_work('P', n, n, n, mappedVT, ldvt,
                                             &taup[0], &work[0], lwork));
 
-        nru = m;
+        nru  = m;
         ncvt = n;
     }
     getQueue().enqueueUnmapMemObject(*arrA.get(), mappedA);
@@ -187,15 +170,13 @@ void svd(Array<T > &arrU,
     // vectors in VT
     // (CWorkspace: need 0)
     // (RWorkspace: need BDSPAC)
-    LAPACKE_CHECK(cpu_lapack_bdsqr_work('U', n, ncvt, nru, izero,
-                                        mappedS0, &s1[0], mappedVT,
-                                        ldvt, mappedU, ldu,
+    LAPACKE_CHECK(cpu_lapack_bdsqr_work('U', n, ncvt, nru, izero, mappedS0,
+                                        &s1[0], mappedVT, ldvt, mappedU, ldu,
                                         &cdummy[0], ione, &rwork[0]));
 
-
     if (want_vectors) {
-          getQueue().enqueueUnmapMemObject(*arrU.get(), mappedU);
-          getQueue().enqueueUnmapMemObject(*arrVT.get(), mappedVT);
+        getQueue().enqueueUnmapMemObject(*arrU.get(), mappedU);
+        getQueue().enqueueUnmapMemObject(*arrVT.get(), mappedVT);
     }
 
     getQueue().enqueueUnmapMemObject(*arrS.get(), mappedS0);
@@ -211,27 +192,20 @@ void svd(Array<T > &arrU,
     }
 }
 
-
 template<typename T, typename Tr>
-void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
-{
-    if(OpenCLCPUOffload()) {
-        return cpu::svdInPlace(s, u, vt, in);
-    }
+void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
+    if (OpenCLCPUOffload()) { return cpu::svdInPlace(s, u, vt, in); }
 
     svd<T, Tr>(u, s, vt, in, true);
 }
 
 template<typename T, typename Tr>
-void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
-{
-    if(OpenCLCPUOffload()) {
-        return cpu::svd(s, u, vt, in);
-    }
+void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in) {
+    if (OpenCLCPUOffload()) { return cpu::svd(s, u, vt, in); }
 
     dim4 iDims = in.dims();
-    int M = iDims[0];
-    int N = iDims[1];
+    int M      = iDims[0];
+    int N      = iDims[1];
 
     if (M >= N) {
         Array<T> in_copy = copyArray(in);
@@ -244,43 +218,44 @@ void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
     }
 }
 
-#define INSTANTIATE(T, Tr)                                              \
-    template void svd<T, Tr>(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in); \
-    template void svdInPlace<T, Tr>(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in);
+#define INSTANTIATE(T, Tr)                                               \
+    template void svd<T, Tr>(Array<Tr> & s, Array<T> & u, Array<T> & vt, \
+                             const Array<T> &in);                        \
+    template void svdInPlace<T, Tr>(Array<Tr> & s, Array<T> & u,         \
+                                    Array<T> & vt, Array<T> & in);
 
 INSTANTIATE(float, float)
 INSTANTIATE(double, double)
 INSTANTIATE(cfloat, float)
 INSTANTIATE(cdouble, double)
 
-}
+}  // namespace opencl
 
 #else  // WITH_LINEAR_ALGEBRA
 
-namespace opencl
-{
+namespace opencl {
 
 template<typename T, typename Tr>
-void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
-{
+void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }
 
 template<typename T, typename Tr>
-void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
-{
+void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }
 
-#define INSTANTIATE(T, Tr)                                              \
-    template void svd<T, Tr>(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in); \
-    template void svdInPlace<T, Tr>(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in);
+#define INSTANTIATE(T, Tr)                                               \
+    template void svd<T, Tr>(Array<Tr> & s, Array<T> & u, Array<T> & vt, \
+                             const Array<T> &in);                        \
+    template void svdInPlace<T, Tr>(Array<Tr> & s, Array<T> & u,         \
+                                    Array<T> & vt, Array<T> & in);
 
 INSTANTIATE(float, float)
 INSTANTIATE(double, double)
 INSTANTIATE(cfloat, float)
 INSTANTIATE(cdouble, double)
 
-}
+}  // namespace opencl
 
 #endif  // WITH_LINEAR_ALGEBRA

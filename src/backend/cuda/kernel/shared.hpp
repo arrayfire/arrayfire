@@ -9,32 +9,29 @@
 
 #pragma once
 
-namespace cuda
-{
+namespace cuda {
 
-namespace kernel
-{
+namespace kernel {
 
-template <typename T>
-struct SharedMemory
-{
+template<typename T>
+struct SharedMemory {
     // return a pointer to the runtime-sized shared memory array.
-    __device__ T* getPointer()
-    {
-        extern __device__ void Error_UnsupportedType(); // Ensure that we won't compile any un-specialized types
+    __device__ T* getPointer() {
+        extern __device__ void
+        Error_UnsupportedType();  // Ensure that we won't compile any
+                                  // un-specialized types
         Error_UnsupportedType();
         return (T*)0;
     }
 };
 
-#define SPECIALIZE(T)                           \
-    template <>                                 \
-    struct SharedMemory <T>                     \
-    {                                           \
-        __device__ T* getPointer() {            \
-            extern __shared__ T ptr_##T##_[];   \
-                return ptr_##T##_;              \
-        }                                       \
+#define SPECIALIZE(T)                         \
+    template<>                                \
+    struct SharedMemory<T> {                  \
+        __device__ T* getPointer() {          \
+            extern __shared__ T ptr_##T##_[]; \
+            return ptr_##T##_;                \
+        }                                     \
     };
 
 SPECIALIZE(float)
@@ -52,5 +49,5 @@ SPECIALIZE(uintl)
 
 #undef SPECIALIZE
 
-}
-}
+}  // namespace kernel
+}  // namespace cuda

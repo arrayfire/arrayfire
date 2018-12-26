@@ -7,34 +7,27 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <Param.hpp>
 #include <backend.hpp>
 #include <common/dispatch.hpp>
-#include <err_cuda.hpp>
 #include <debug_cuda.hpp>
-#include <Param.hpp>
+#include <err_cuda.hpp>
 #include <memory.hpp>
 
-namespace cuda
-{
+namespace cuda {
 
-namespace kernel
-{
+namespace kernel {
 
 static const int THREADS = 256;
 
 template<typename To, typename Ti>
-__global__ void packData(
-    Param<To> out,
-    CParam<Ti> in,
-    const int di0_half,
-    const bool odd_di0)
-{
+__global__ void packData(Param<To> out, CParam<Ti> in, const int di0_half,
+                         const bool odd_di0) {
     const int t = blockDim.x * blockIdx.x + threadIdx.x;
 
     const int tMax = out.strides[3] * out.dims[3];
 
-    if (t >= tMax)
-        return;
+    if (t >= tMax) return;
 
     const int do1 = out.dims[1];
     const int do2 = out.dims[2];
@@ -60,16 +53,15 @@ __global__ void packData(
 
     const int iidx1 = ti3 + ti2 + ti1 + ti0;
     const int iidx2 = iidx1 + di0_half;
-    const int oidx = to3*so3 + to2*so2 + to1*so1 + to0;
+    const int oidx  = to3 * so3 + to2 * so2 + to1 * so1 + to0;
 
     if (to0 < di0_half && to1 < di1 && to2 < di2) {
         out.ptr[oidx].x = in.ptr[iidx1];
-        if (ti0 == di0_half-1 && odd_di0)
+        if (ti0 == di0_half - 1 && odd_di0)
             out.ptr[oidx].y = 0;
         else
             out.ptr[oidx].y = in.ptr[iidx2];
-    }
-    else {
+    } else {
         // Pad remaining elements with 0s
         out.ptr[oidx].x = 0;
         out.ptr[oidx].y = 0;
@@ -77,16 +69,12 @@ __global__ void packData(
 }
 
 template<typename To, typename Ti>
-__global__ void padArray(
-    Param<To> out,
-    CParam<Ti> in)
-{
+__global__ void padArray(Param<To> out, CParam<Ti> in) {
     const int t = blockDim.x * blockIdx.x + threadIdx.x;
 
     const int tMax = out.strides[3] * out.dims[3];
 
-    if (t >= tMax)
-        return;
+    if (t >= tMax) return;
 
     const int do1 = out.dims[1];
     const int do2 = out.dims[2];
@@ -114,14 +102,13 @@ __global__ void padArray(
 
     const int iidx = ti3 + ti2 + ti1 + ti0;
 
-    const int t2 = to3*so3 + to2*so2 + to1*so1 + to0;
+    const int t2 = to3 * so3 + to2 * so2 + to1 * so1 + to0;
 
     if (to0 < di0 && to1 < di1 && to2 < di2 && to3 < di3) {
         // Copy input elements to real elements, set imaginary elements to 0
         out.ptr[t2].x = in.ptr[iidx];
         out.ptr[t2].y = 0;
-    }
-    else {
+    } else {
         // Pad remaining of the matrix to 0s
         out.ptr[t2].x = 0;
         out.ptr[t2].y = 0;
@@ -129,16 +116,11 @@ __global__ void padArray(
 }
 
 template<typename convT, AF_BATCH_KIND kind>
-__global__ void complexMultiply(
-    Param<convT> out,
-    Param<convT> in1,
-    Param<convT> in2,
-    const int nelem)
-{
+__global__ void complexMultiply(Param<convT> out, Param<convT> in1,
+                                Param<convT> in2, const int nelem) {
     const int t = blockDim.x * blockIdx.x + threadIdx.x;
 
-    if (t >= nelem)
-        return;
+    if (t >= nelem) return;
 
     if (kind == AF_BATCH_NONE || kind == AF_BATCH_SAME) {
         // Complex multiply each signal to equivalent filter
@@ -147,10 +129,9 @@ __global__ void complexMultiply(
         convT c1 = in1.ptr[ridx];
         convT c2 = in2.ptr[ridx];
 
-        out.ptr[ridx].x = c1.x*c2.x - c1.y*c2.y;
-        out.ptr[ridx].y = c1.x*c2.y + c1.y*c2.x;
-    }
-    else if (kind == AF_BATCH_LHS) {
+        out.ptr[ridx].x = c1.x * c2.x - c1.y * c2.y;
+        out.ptr[ridx].y = c1.x * c2.y + c1.y * c2.x;
+    } else if (kind == AF_BATCH_LHS) {
         // Complex multiply all signals to filter
         const int ridx1 = t;
         const int ridx2 = t % (in2.strides[3] * in2.dims[3]);
@@ -158,10 +139,9 @@ __global__ void complexMultiply(
         convT c1 = in1.ptr[ridx1];
         convT c2 = in2.ptr[ridx2];
 
-        out.ptr[ridx1].x = c1.x*c2.x - c1.y*c2.y;
-        out.ptr[ridx1].y = c1.x*c2.y + c1.y*c2.x;
-    }
-    else if (kind == AF_BATCH_RHS) {
+        out.ptr[ridx1].x = c1.x * c2.x - c1.y * c2.y;
+        out.ptr[ridx1].y = c1.x * c2.y + c1.y * c2.x;
+    } else if (kind == AF_BATCH_RHS) {
         // Complex multiply signal to all filters
         const int ridx1 = t % (in1.strides[3] * in1.dims[3]);
         const int ridx2 = t;
@@ -169,26 +149,20 @@ __global__ void complexMultiply(
         convT c1 = in1.ptr[ridx1];
         convT c2 = in2.ptr[ridx2];
 
-        out.ptr[ridx2].x = c1.x*c2.x - c1.y*c2.y;
-        out.ptr[ridx2].y = c1.x*c2.y + c1.y*c2.x;
+        out.ptr[ridx2].x = c1.x * c2.x - c1.y * c2.y;
+        out.ptr[ridx2].y = c1.x * c2.y + c1.y * c2.x;
     }
 }
 
 template<typename To, typename Ti, bool expand, bool roundOut>
-__global__ void reorderOutput(
-    Param<To> out,
-    Param<Ti> in,
-    CParam<To> filter,
-    const int half_di0,
-    const int baseDim,
-    const int fftScale)
-{
+__global__ void reorderOutput(Param<To> out, Param<Ti> in, CParam<To> filter,
+                              const int half_di0, const int baseDim,
+                              const int fftScale) {
     const int t = blockIdx.x * blockDim.x + threadIdx.x;
 
     const int tMax = out.strides[3] * out.dims[3];
 
-    if (t >= tMax)
-        return;
+    if (t >= tMax) return;
 
     const int do1 = out.dims[1];
     const int do2 = out.dims[2];
@@ -205,7 +179,7 @@ __global__ void reorderOutput(
     const int to2 = (t / so2) % do2;
     const int to3 = (t / so3);
 
-    int oidx = to3*so3 + to2*so2 + to1*so1 + to0;
+    int oidx = to3 * so3 + to2 * so2 + to1 * so1 + to0;
 
     int ti0, ti1, ti2, ti3;
     if (expand) {
@@ -213,11 +187,10 @@ __global__ void reorderOutput(
         ti1 = to1 * si1;
         ti2 = to2 * si2;
         ti3 = to3 * si3;
-    }
-    else {
-        ti0 = to0 + filter.dims[0]/2;
-        ti1 = (to1 + (baseDim > 1)*(filter.dims[1]/2)) * si1;
-        ti2 = (to2 + (baseDim > 2)*(filter.dims[2]/2)) * si2;
+    } else {
+        ti0 = to0 + filter.dims[0] / 2;
+        ti1 = (to1 + (baseDim > 1) * (filter.dims[1] / 2)) * si1;
+        ti2 = (to2 + (baseDim > 2) * (filter.dims[2] / 2)) * si2;
         ti3 = to3 * si3;
     }
 
@@ -230,17 +203,17 @@ __global__ void reorderOutput(
             out.ptr[oidx] = (To)roundf(in.ptr[iidx].x / fftScale);
         else
             out.ptr[oidx] = (To)(in.ptr[iidx].x / fftScale);
-    }
-    else if (ti0 < half_di0 + filter.dims[0] - 1) {
+    } else if (ti0 < half_di0 + filter.dims[0] - 1) {
         // Add signal and filter elements to central part
         int iidx1 = ti3 + ti2 + ti1 + ti0;
         int iidx2 = ti3 + ti2 + ti1 + (ti0 - half_di0);
         if (roundOut)
-            out.ptr[oidx] = (To)roundf((in.ptr[iidx1].x + in.ptr[iidx2].y) / fftScale);
+            out.ptr[oidx] =
+                (To)roundf((in.ptr[iidx1].x + in.ptr[iidx2].y) / fftScale);
         else
-            out.ptr[oidx] = (To)((in.ptr[iidx1].x + in.ptr[iidx2].y) / fftScale);
-    }
-    else {
+            out.ptr[oidx] =
+                (To)((in.ptr[iidx1].x + in.ptr[iidx2].y) / fftScale);
+    } else {
         // Copy bottom elements
         const int iidx = ti3 + ti2 + ti1 + (ti0 - half_di0);
         if (roundOut)
@@ -251,14 +224,11 @@ __global__ void reorderOutput(
 }
 
 template<typename convT, typename T>
-void packDataHelper(Param<convT> sig_packed,
-                    Param<convT> filter_packed,
-                    CParam<T> sig,
-                    CParam<T> filter)
-{
+void packDataHelper(Param<convT> sig_packed, Param<convT> filter_packed,
+                    CParam<T> sig, CParam<T> filter) {
     dim_t *sd = sig.dims;
 
-    int sig_packed_elem = 1;
+    int sig_packed_elem    = 1;
     int filter_packed_elem = 1;
 
     for (int i = 0; i < 4; i++) {
@@ -267,7 +237,7 @@ void packDataHelper(Param<convT> sig_packed,
     }
 
     // Number of packed complex elements in dimension 0
-    int sig_half_d0 = divup(sd[0], 2);
+    int sig_half_d0      = divup(sd[0], 2);
     bool sig_half_d0_odd = (sd[0] % 2 == 1);
 
     dim3 threads(THREADS);
@@ -275,7 +245,8 @@ void packDataHelper(Param<convT> sig_packed,
 
     // Pack signal in a complex matrix where first dimension is half the input
     // (allows faster FFT computation) and pad array to a power of 2 with 0s
-    CUDA_LAUNCH((packData<convT, T>), blocks, threads, sig_packed, sig, sig_half_d0, sig_half_d0_odd);
+    CUDA_LAUNCH((packData<convT, T>), blocks, threads, sig_packed, sig,
+                sig_half_d0, sig_half_d0_odd);
     POST_LAUNCH_CHECK();
 
     blocks = dim3(divup(filter_packed_elem, threads.x));
@@ -287,11 +258,9 @@ void packDataHelper(Param<convT> sig_packed,
 
 // TODO(umar): This needs a better name
 template<typename T, typename convT>
-void complexMultiplyHelper(Param<convT> sig_packed,
-                           Param<convT> filter_packed,
-                           AF_BATCH_KIND kind)
-{
-    int sig_packed_elem = 1;
+void complexMultiplyHelper(Param<convT> sig_packed, Param<convT> filter_packed,
+                           AF_BATCH_KIND kind) {
+    int sig_packed_elem    = 1;
     int filter_packed_elem = 1;
 
     for (int i = 0; i < 4; i++) {
@@ -302,15 +271,16 @@ void complexMultiplyHelper(Param<convT> sig_packed,
     dim3 threads(THREADS);
     dim3 blocks(divup(sig_packed_elem / 2, threads.x));
 
-    int mul_elem = (sig_packed_elem < filter_packed_elem) ?
-                        filter_packed_elem : sig_packed_elem;
+    int mul_elem = (sig_packed_elem < filter_packed_elem) ? filter_packed_elem
+                                                          : sig_packed_elem;
     blocks = dim3(divup(mul_elem, threads.x));
 
     // Multiply filter and signal FFT arrays
-    switch(kind) {
+    switch (kind) {
         case AF_BATCH_NONE:
-            CUDA_LAUNCH((complexMultiply<convT, AF_BATCH_NONE>), blocks, threads,
-                    sig_packed, sig_packed, filter_packed, mul_elem);
+            CUDA_LAUNCH((complexMultiply<convT, AF_BATCH_NONE>), blocks,
+                        threads, sig_packed, sig_packed, filter_packed,
+                        mul_elem);
             break;
         case AF_BATCH_LHS:
             CUDA_LAUNCH((complexMultiply<convT, AF_BATCH_LHS>), blocks, threads,
@@ -318,31 +288,27 @@ void complexMultiplyHelper(Param<convT> sig_packed,
             break;
         case AF_BATCH_RHS:
             CUDA_LAUNCH((complexMultiply<convT, AF_BATCH_RHS>), blocks, threads,
-                    filter_packed, sig_packed, filter_packed, mul_elem);
+                        filter_packed, sig_packed, filter_packed, mul_elem);
             break;
         case AF_BATCH_SAME:
-            CUDA_LAUNCH((complexMultiply<convT, AF_BATCH_SAME>), blocks, threads,
-                    sig_packed, sig_packed, filter_packed, mul_elem);
+            CUDA_LAUNCH((complexMultiply<convT, AF_BATCH_SAME>), blocks,
+                        threads, sig_packed, sig_packed, filter_packed,
+                        mul_elem);
             break;
         case AF_BATCH_UNSUPPORTED:
-        default:
-            break;
+        default: break;
     }
     POST_LAUNCH_CHECK();
 }
 
 template<typename T, typename convT, bool roundOut, int baseDim, bool expand>
-void reorderOutputHelper(Param<T> out,
-                         Param<convT> packed,
-                         CParam<T> sig,
-                         CParam<T> filter)
-{
-    dim_t *sd = sig.dims;
+void reorderOutputHelper(Param<T> out, Param<convT> packed, CParam<T> sig,
+                         CParam<T> filter) {
+    dim_t *sd    = sig.dims;
     int fftScale = 1;
 
     // Calculate the scale by which to divide cuFFT results
-    for (int k = 0; k < baseDim; k++)
-        fftScale *= packed.dims[k];
+    for (int k = 0; k < baseDim; k++) fftScale *= packed.dims[k];
 
     // Number of packed complex elements in dimension 0
     int sig_half_d0 = divup(sd[0], 2);
@@ -351,10 +317,10 @@ void reorderOutputHelper(Param<T> out,
     dim3 blocks(divup(out.strides[3] * out.dims[3], threads.x));
 
     CUDA_LAUNCH((reorderOutput<T, convT, expand, roundOut>), blocks, threads,
-            out, packed, filter, sig_half_d0, baseDim, fftScale);
+                out, packed, filter, sig_half_d0, baseDim, fftScale);
     POST_LAUNCH_CHECK();
 }
 
-} // namespace kernel
+}  // namespace kernel
 
-} // namespace cuda
+}  // namespace cuda

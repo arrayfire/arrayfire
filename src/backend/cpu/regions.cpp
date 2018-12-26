@@ -7,26 +7,24 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
 #include <Array.hpp>
-#include <regions.hpp>
 #include <err_cpu.hpp>
+#include <kernel/regions.hpp>
 #include <math.hpp>
-#include <map>
-#include <set>
-#include <algorithm>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/regions.hpp>
+#include <regions.hpp>
+#include <af/dim4.hpp>
+#include <algorithm>
+#include <map>
+#include <set>
 
 using af::dim4;
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
-Array<T> regions(const Array<char> &in, af_connectivity connectivity)
-{
+Array<T> regions(const Array<char> &in, af_connectivity connectivity) {
     in.eval();
 
     Array<T> out = createValueArray(in.dims(), (T)0);
@@ -37,14 +35,15 @@ Array<T> regions(const Array<char> &in, af_connectivity connectivity)
     return out;
 }
 
-#define INSTANTIATE(T)\
-    template Array<T> regions<T>(const Array<char> &in, af_connectivity connectivity);
+#define INSTANTIATE(T)                                  \
+    template Array<T> regions<T>(const Array<char> &in, \
+                                 af_connectivity connectivity);
 
-INSTANTIATE(float )
+INSTANTIATE(float)
 INSTANTIATE(double)
-INSTANTIATE(int   )
-INSTANTIATE(uint  )
-INSTANTIATE(short )
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

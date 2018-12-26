@@ -7,57 +7,55 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/array.h>
-#include <af/defines.h>
-#include <af/vision.h>
-#include <af/random.h>
-#include <common/err_common.hpp>
-#include <handle.hpp>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
+#include <common/err_common.hpp>
+#include <handle.hpp>
 #include <homography.hpp>
+#include <af/array.h>
+#include <af/defines.h>
+#include <af/random.h>
+#include <af/vision.h>
 
 using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline void homography(af_array &H, int &inliers,
-                              const af_array x_src, const af_array y_src,
-                              const af_array x_dst, const af_array y_dst,
-                              const af_homography_type htype, const float inlier_thr,
-                              const unsigned iterations)
-{
+static inline void homography(af_array& H, int& inliers, const af_array x_src,
+                              const af_array y_src, const af_array x_dst,
+                              const af_array y_dst,
+                              const af_homography_type htype,
+                              const float inlier_thr,
+                              const unsigned iterations) {
     Array<T> bestH = createEmptyArray<T>(af::dim4(3, 3));
     af_array initial;
-    unsigned d = (iterations + 256 - 1) / 256;
+    unsigned d    = (iterations + 256 - 1) / 256;
     dim_t rdims[] = {4, d * 256};
     AF_CHECK(af_randu(&initial, 2, rdims, f32));
-    inliers = homography<T>(bestH,
-                            getArray<float>(x_src), getArray<float>(y_src),
-                            getArray<float>(x_dst), getArray<float>(y_dst),
-                            getArray<float>(initial),
-                            htype, inlier_thr, iterations);
+    inliers =
+        homography<T>(bestH, getArray<float>(x_src), getArray<float>(y_src),
+                      getArray<float>(x_dst), getArray<float>(y_dst),
+                      getArray<float>(initial), htype, inlier_thr, iterations);
     AF_CHECK(af_release_array(initial));
 
     H = getHandle<T>(bestH);
 }
 
-af_err af_homography(af_array *H, int *inliers,
-                     const af_array x_src, const af_array y_src,
-                     const af_array x_dst, const af_array y_dst,
-                     const af_homography_type htype, const float inlier_thr,
-                     const unsigned iterations, const af_dtype otype)
-{
+af_err af_homography(af_array* H, int* inliers, const af_array x_src,
+                     const af_array y_src, const af_array x_dst,
+                     const af_array y_dst, const af_homography_type htype,
+                     const float inlier_thr, const unsigned iterations,
+                     const af_dtype otype) {
     try {
         const ArrayInfo& xsinfo = getInfo(x_src);
         const ArrayInfo& ysinfo = getInfo(y_src);
         const ArrayInfo& xdinfo = getInfo(x_dst);
         const ArrayInfo& ydinfo = getInfo(y_dst);
 
-        af::dim4 xsdims  = xsinfo.dims();
-        af::dim4 ysdims  = ysinfo.dims();
-        af::dim4 xddims  = xdinfo.dims();
-        af::dim4 yddims  = ydinfo.dims();
+        af::dim4 xsdims = xsinfo.dims();
+        af::dim4 ysdims = ysinfo.dims();
+        af::dim4 xddims = xdinfo.dims();
+        af::dim4 yddims = ydinfo.dims();
 
         af_dtype xstype = xsinfo.getType();
         af_dtype ystype = ysinfo.getType();
@@ -80,10 +78,16 @@ af_err af_homography(af_array *H, int *inliers,
         af_array outH;
         int outInl;
 
-        switch(otype) {
-            case f32: homography<float >(outH, outInl, x_src, y_src, x_dst, y_dst, htype, inlier_thr, iterations);  break;
-            case f64: homography<double>(outH, outInl, x_src, y_src, x_dst, y_dst, htype, inlier_thr, iterations);  break;
-            default:  TYPE_ERROR(1, otype);
+        switch (otype) {
+            case f32:
+                homography<float>(outH, outInl, x_src, y_src, x_dst, y_dst,
+                                  htype, inlier_thr, iterations);
+                break;
+            case f64:
+                homography<double>(outH, outInl, x_src, y_src, x_dst, y_dst,
+                                   htype, inlier_thr, iterations);
+                break;
+            default: TYPE_ERROR(1, otype);
         }
         std::swap(*H, outH);
         std::swap(*inliers, outInl);

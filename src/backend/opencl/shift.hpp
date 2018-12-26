@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 
-namespace opencl
-{
-    template<typename T>
-    Array<T> shift(const Array<T> &in, const int sdims[4]);
+namespace opencl {
+template<typename T>
+Array<T> shift(const Array<T> &in, const int sdims[4]);
 }

@@ -11,35 +11,29 @@
 
 #include <cmath>
 
-#define divup(a, b) (((a)+(b)-1)/(b))
+#define divup(a, b) (((a) + (b)-1) / (b))
 
 unsigned nextpow2(unsigned x);
 
 // isPrime & greatestPrimeFactor are tailored after
 // itk::Math::{IsPrimt, GreatestPrimeFactor}
-template <typename T>
-inline bool isPrime(T n)
-{
-    if( n <= 1 )
-        return false;
+template<typename T>
+inline bool isPrime(T n) {
+    if (n <= 1) return false;
 
-    const T last = (T)std::sqrt( (double)n );
-    for (T x=2; x<=last; ++x)
-    {
-        if (n%x == 0)
-            return false;
+    const T last = (T)std::sqrt((double)n);
+    for (T x = 2; x <= last; ++x) {
+        if (n % x == 0) return false;
     }
 
     return true;
 }
 
-template <typename T>
-inline T greatestPrimeFactor(T n)
-{
+template<typename T>
+inline T greatestPrimeFactor(T n) {
     T v = 2;
 
-    while (v <= n)
-    {
+    while (v <= n) {
         if (n % v == 0 && isPrime(v))
             n /= v;
         else

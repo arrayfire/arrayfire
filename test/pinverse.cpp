@@ -7,14 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
-#include <af/dim4.hpp>
-#include <af/defines.h>
-#include <af/traits.hpp>
-#include <iostream>
-#include <complex>
+#include <gtest/gtest.h>
 #include <testHelpers.hpp>
+#include <af/defines.h>
+#include <af/dim4.hpp>
+#include <af/traits.hpp>
+#include <complex>
+#include <iostream>
 #include <limits>
 
 using af::array;
@@ -45,18 +45,18 @@ array makeComplex(dim4 dims, const vector<T>& real, const vector<T>& imag) {
 template<typename T>
 array readTestInput(string testFilePath) {
     typedef typename dtype_traits<T>::base_type InBaseType;
-    dtype outAfType = (dtype) dtype_traits<T>::af_type;
+    dtype outAfType = (dtype)dtype_traits<T>::af_type;
 
     vector<dim4> dimsVec;
     vector<vector<InBaseType> > inVec;
     vector<vector<InBaseType> > goldVec;
-    readTestsFromFile<InBaseType, InBaseType>(testFilePath, dimsVec, inVec, goldVec);
+    readTestsFromFile<InBaseType, InBaseType>(testFilePath, dimsVec, inVec,
+                                              goldVec);
     dim4 inDims = dimsVec[0];
 
     if (outAfType == c32 || outAfType == c64) {
         return makeComplex(inDims, inVec[1], inVec[2]);
-    }
-    else {
+    } else {
         return array(inDims, &inVec[0].front());
     }
 }
@@ -64,27 +64,24 @@ array readTestInput(string testFilePath) {
 template<typename T>
 array readTestGold(string testFilePath) {
     typedef typename dtype_traits<T>::base_type InBaseType;
-    dtype outAfType = (dtype) dtype_traits<T>::af_type;
+    dtype outAfType = (dtype)dtype_traits<T>::af_type;
 
     vector<dim4> dimsVec;
     vector<vector<InBaseType> > inVec;
     vector<vector<InBaseType> > goldVec;
-    readTestsFromFile<InBaseType, InBaseType>(testFilePath, dimsVec, inVec, goldVec);
+    readTestsFromFile<InBaseType, InBaseType>(testFilePath, dimsVec, inVec,
+                                              goldVec);
     dim4 goldDims(dimsVec[0][1], dimsVec[0][0]);
 
     if (outAfType == c32 || outAfType == c64) {
         return makeComplex(goldDims, goldVec[1], goldVec[2]);
-    }
-    else {
+    } else {
         return array(goldDims, &goldVec[0].front());
     }
 }
 
 template<typename T>
-class Pinverse : public ::testing::Test
-{
-
-};
+class Pinverse : public ::testing::Test {};
 
 // Epsilons taken from test/inverse.cpp
 template<typename T>
@@ -113,8 +110,8 @@ double eps<cdouble>() {
 template<typename T>
 double relEps(array in) {
     typedef typename af::dtype_traits<T>::base_type InBaseType;
-    return std::numeric_limits<InBaseType>::epsilon()
-        * std::max(in.dims(0), in.dims(1)) * af::max<double>(in);
+    return std::numeric_limits<InBaseType>::epsilon() *
+           std::max(in.dims(0), in.dims(1)) * af::max<double>(in);
 }
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
@@ -123,72 +120,84 @@ TYPED_TEST_CASE(Pinverse, TestTypes);
 // Test Moore-Penrose conditions in the following first 4 tests
 // See https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_inverse#Definition
 TYPED_TEST(Pinverse, AApinvA_A) {
-    array in = readTestInput<TypeParam>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
+    array in = readTestInput<TypeParam>(
+        string(TEST_DIR "/pinverse/pinverse10x8.test"));
     array inpinv = pinverse(in);
-    array out = matmul(in, inpinv, in);
+    array out    = matmul(in, inpinv, in);
     ASSERT_ARRAYS_NEAR(in, out, eps<TypeParam>());
 }
 
 TYPED_TEST(Pinverse, ApinvAApinv_Apinv) {
-    array in = readTestInput<TypeParam>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
+    array in = readTestInput<TypeParam>(
+        string(TEST_DIR "/pinverse/pinverse10x8.test"));
     array inpinv = pinverse(in);
-    array out = matmul(inpinv, in, inpinv);
+    array out    = matmul(inpinv, in, inpinv);
     ASSERT_ARRAYS_NEAR(inpinv, out, eps<TypeParam>());
 }
 
 TYPED_TEST(Pinverse, AApinv_IsHermitian) {
-    array in = readTestInput<TypeParam>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
+    array in = readTestInput<TypeParam>(
+        string(TEST_DIR "/pinverse/pinverse10x8.test"));
     array inpinv = pinverse(in);
     array aapinv = matmul(in, inpinv);
-    array out = matmul(in, inpinv).H();
+    array out    = matmul(in, inpinv).H();
     ASSERT_ARRAYS_NEAR(aapinv, out, eps<TypeParam>());
 }
 
 TYPED_TEST(Pinverse, ApinvA_IsHermitian) {
-    array in = readTestInput<TypeParam>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
+    array in = readTestInput<TypeParam>(
+        string(TEST_DIR "/pinverse/pinverse10x8.test"));
     array inpinv = pinverse(in);
     array apinva = af::matmul(inpinv, in);
-    array out = af::matmul(inpinv, in).H();
+    array out    = af::matmul(inpinv, in).H();
     ASSERT_ARRAYS_NEAR(apinva, out, eps<TypeParam>());
 }
 
 TYPED_TEST(Pinverse, Large) {
-    array in = readTestInput<TypeParam>(string(TEST_DIR"/pinverse/pinverse640x480.test"));
+    array in = readTestInput<TypeParam>(
+        string(TEST_DIR "/pinverse/pinverse640x480.test"));
     array inpinv = pinverse(in);
-    array out = matmul(in, inpinv, in);
+    array out    = matmul(in, inpinv, in);
     ASSERT_ARRAYS_NEAR(in, out, relEps<TypeParam>(in));
 }
 
 TYPED_TEST(Pinverse, LargeTall) {
-    array in = readTestInput<TypeParam>(string(TEST_DIR"/pinverse/pinverse640x480.test")).T();
+    array in = readTestInput<TypeParam>(
+                   string(TEST_DIR "/pinverse/pinverse640x480.test"))
+                   .T();
     array inpinv = pinverse(in);
-    array out = matmul(in, inpinv, in);
+    array out    = matmul(in, inpinv, in);
     ASSERT_ARRAYS_NEAR(in, out, relEps<TypeParam>(in));
 }
 
 TEST(Pinverse, Square) {
-    array in = readTestInput<float>(string(TEST_DIR"/pinverse/pinverse10x10.test"));
+    array in =
+        readTestInput<float>(string(TEST_DIR "/pinverse/pinverse10x10.test"));
     array inpinv = pinverse(in);
-    array out = matmul(in, inpinv, in);
+    array out    = matmul(in, inpinv, in);
     ASSERT_ARRAYS_NEAR(in, out, eps<float>());
 }
 
 TEST(Pinverse, Dim1GtDim0) {
-    array in = readTestInput<float>(string(TEST_DIR"/pinverse/pinverse8x10.test"));
+    array in =
+        readTestInput<float>(string(TEST_DIR "/pinverse/pinverse8x10.test"));
     array inpinv = pinverse(in);
-    array out = matmul(in, inpinv, in);
+    array out    = matmul(in, inpinv, in);
     ASSERT_ARRAYS_NEAR(in, out, eps<float>());
 }
 
 TEST(Pinverse, CompareWithNumpy) {
-    array in = readTestInput<float>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
-    array gold = readTestGold<float>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
+    array in =
+        readTestInput<float>(string(TEST_DIR "/pinverse/pinverse10x8.test"));
+    array gold =
+        readTestGold<float>(string(TEST_DIR "/pinverse/pinverse10x8.test"));
     array out = pinverse(in);
     ASSERT_ARRAYS_NEAR(gold, out, relEps<float>(gold));
 }
 
 TEST(Pinverse, SmallSigValExistsFloat) {
-    array in = readTestInput<float>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
+    array in =
+        readTestInput<float>(string(TEST_DIR "/pinverse/pinverse10x8.test"));
     const dim_t dim0 = in.dims(0);
     const dim_t dim1 = in.dims(1);
 
@@ -199,23 +208,23 @@ TEST(Pinverse, SmallSigValExistsFloat) {
     af::svd(u, sVec, vT, in);
     dim_t sSize = sVec.elements();
 
-    sVec(2) = 1e-12;
-    af::array s = af::diag(sVec, 0, false);
-    af::array zeros = af::constant(0,
-                                   dim0 > sSize ? dim0 - sSize : sSize,
+    sVec(2)         = 1e-12;
+    af::array s     = af::diag(sVec, 0, false);
+    af::array zeros = af::constant(0, dim0 > sSize ? dim0 - sSize : sSize,
                                    dim1 > sSize ? dim1 - sSize : sSize);
-    s = af::join(dim0 > dim1 ? 0 : 1, s, zeros);
+    s               = af::join(dim0 > dim1 ? 0 : 1, s, zeros);
 
     // Make new input array that has a small non-zero value in its SVD sigma
-    in = af::matmul(u, s, vT);
+    in           = af::matmul(u, s, vT);
     array inpinv = pinverse(in);
-    array out = matmul(in, inpinv, in);
+    array out    = matmul(in, inpinv, in);
 
     ASSERT_ARRAYS_NEAR(in, out, eps<float>());
 }
 
 TEST(Pinverse, SmallSigValExistsDouble) {
-    array in = readTestInput<double>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
+    array in =
+        readTestInput<double>(string(TEST_DIR "/pinverse/pinverse10x8.test"));
     const dim_t dim0 = in.dims(0);
     const dim_t dim1 = in.dims(1);
 
@@ -226,28 +235,27 @@ TEST(Pinverse, SmallSigValExistsDouble) {
     svd(u, sVec, vT, in);
     dim_t sSize = sVec.elements();
 
-    sVec(2) = (double) 1e-16;
-    array s = diag(sVec, 0, false);
-    array zeros = constant(0,
-                           dim0 > sSize ? dim0 - sSize : sSize,
-                           dim1 > sSize ? dim1 - sSize : sSize,
-                           f64);
-    s = join(dim0 > dim1 ? 0 : 1, s, zeros);
+    sVec(2)     = (double)1e-16;
+    array s     = diag(sVec, 0, false);
+    array zeros = constant(0, dim0 > sSize ? dim0 - sSize : sSize,
+                           dim1 > sSize ? dim1 - sSize : sSize, f64);
+    s           = join(dim0 > dim1 ? 0 : 1, s, zeros);
 
     // Make new input array that has a small non-zero value in its SVD sigma
-    in = matmul(u, s, vT);
+    in           = matmul(u, s, vT);
     array inpinv = pinverse(in, 1e-15);
-    array out = matmul(in, inpinv, in);
+    array out    = matmul(in, inpinv, in);
 
     ASSERT_ARRAYS_NEAR(in, out, eps<double>());
 }
 
 TEST(Pinverse, Batching3D) {
-    array in = readTestInput<float>(string(TEST_DIR"/pinverse/pinverse10x8x2.test"));
+    array in =
+        readTestInput<float>(string(TEST_DIR "/pinverse/pinverse10x8x2.test"));
     array inpinv0 = pinverse(in(span, span, 0));
     array inpinv1 = pinverse(in(span, span, 1));
 
-    array out = pinverse(in);
+    array out  = pinverse(in);
     array out0 = out(span, span, 0);
     array out1 = out(span, span, 1);
 
@@ -256,13 +264,14 @@ TEST(Pinverse, Batching3D) {
 }
 
 TEST(Pinverse, Batching4D) {
-    array in = readTestInput<float>(string(TEST_DIR"/pinverse/pinverse10x8x2x2.test"));
+    array in = readTestInput<float>(
+        string(TEST_DIR "/pinverse/pinverse10x8x2x2.test"));
     array inpinv00 = pinverse(in(span, span, 0, 0));
     array inpinv01 = pinverse(in(span, span, 0, 1));
     array inpinv10 = pinverse(in(span, span, 1, 0));
     array inpinv11 = pinverse(in(span, span, 1, 1));
 
-    array out = pinverse(in);
+    array out   = pinverse(in);
     array out00 = out(span, span, 0, 0);
     array out01 = out(span, span, 0, 1);
     array out10 = out(span, span, 1, 0);
@@ -275,18 +284,22 @@ TEST(Pinverse, Batching4D) {
 }
 
 TEST(Pinverse, CustomTol) {
-    array in = readTestInput<float>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
+    array in =
+        readTestInput<float>(string(TEST_DIR "/pinverse/pinverse10x8.test"));
     array inpinv = pinverse(in, 1e-12);
-    array out = matmul(in, inpinv, in);
+    array out    = matmul(in, inpinv, in);
     ASSERT_ARRAYS_NEAR(in, out, eps<float>());
 }
 
 TEST(Pinverse, C) {
-    array in = readTestInput<float>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
+    array in =
+        readTestInput<float>(string(TEST_DIR "/pinverse/pinverse10x8.test"));
     af_array inpinv = 0, identity = 0, out = 0;
     ASSERT_SUCCESS(af_pinverse(&inpinv, in.get(), 1e-6, AF_MAT_NONE));
-    ASSERT_SUCCESS(af_matmul(&identity, in.get(), inpinv, AF_MAT_NONE, AF_MAT_NONE));
-    ASSERT_SUCCESS(af_matmul(&out, identity, in.get(), AF_MAT_NONE, AF_MAT_NONE));
+    ASSERT_SUCCESS(
+        af_matmul(&identity, in.get(), inpinv, AF_MAT_NONE, AF_MAT_NONE));
+    ASSERT_SUCCESS(
+        af_matmul(&out, identity, in.get(), AF_MAT_NONE, AF_MAT_NONE));
 
     ASSERT_ARRAYS_NEAR(in.get(), out, eps<float>());
 
@@ -296,11 +309,14 @@ TEST(Pinverse, C) {
 }
 
 TEST(Pinverse, C_CustomTol) {
-    array in = readTestInput<float>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
+    array in =
+        readTestInput<float>(string(TEST_DIR "/pinverse/pinverse10x8.test"));
     af_array inpinv = 0, identity = 0, out = 0;
     ASSERT_SUCCESS(af_pinverse(&inpinv, in.get(), 1e-12, AF_MAT_NONE));
-    ASSERT_SUCCESS(af_matmul(&identity, in.get(), inpinv, AF_MAT_NONE, AF_MAT_NONE));
-    ASSERT_SUCCESS(af_matmul(&out, identity, in.get(), AF_MAT_NONE, AF_MAT_NONE));
+    ASSERT_SUCCESS(
+        af_matmul(&identity, in.get(), inpinv, AF_MAT_NONE, AF_MAT_NONE));
+    ASSERT_SUCCESS(
+        af_matmul(&out, identity, in.get(), AF_MAT_NONE, AF_MAT_NONE));
 
     ASSERT_ARRAYS_NEAR(in.get(), out, eps<float>());
 
@@ -310,7 +326,8 @@ TEST(Pinverse, C_CustomTol) {
 }
 
 TEST(Pinverse, NegativeTol) {
-    array in = readTestInput<float>(string(TEST_DIR"/pinverse/pinverse10x8.test"));
+    array in =
+        readTestInput<float>(string(TEST_DIR "/pinverse/pinverse10x8.test"));
     array out;
     ASSERT_THROW(out = pinverse(in, -1.f), exception);
 }

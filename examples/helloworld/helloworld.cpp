@@ -13,18 +13,15 @@
 
 using namespace af;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char* argv[]) {
     try {
-
-
         // Select a device and display arrayfire info
         int device = argc > 1 ? atoi(argv[1]) : 0;
         af::setDevice(device);
         af::info();
 
         printf("Create a 5-by-3 matrix of random floats on the GPU\n");
-        array A = randu(5,3, f32);
+        array A = randu(5, 3, f32);
         af_print(A);
 
         printf("Element-wise arithmetic\n");
@@ -53,7 +50,7 @@ int main(int argc, char *argv[])
         af_print(S);
 
         printf("Create 2-by-3 matrix from host data\n");
-        float d[] = { 1, 2, 3, 4, 5, 6 };
+        float d[] = {1, 2, 3, 4, 5, 6};
         array D(2, 3, d, afHost);
         af_print(D);
 
@@ -69,7 +66,6 @@ int main(int argc, char *argv[])
         af_print(inds);
 
     } catch (af::exception& e) {
-
         fprintf(stderr, "%s\n", e.what());
         throw;
     }

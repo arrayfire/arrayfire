@@ -37,28 +37,24 @@
                       |     3 2   => skip below matrix
                               3   => skip below matrix
 
-    Thread assignment for m=10, n=12, k=4, nb=8. Each column is done in parallel.
+    Thread assignment for m=10, n=12, k=4, nb=8. Each column is done in
+ parallel.
 */
-__kernel
-void laset_band_upper(
-    int m, int n,
-    T offdiag, T diag,
-    __global T *A, unsigned long off, int lda)
-{
+__kernel void laset_band_upper(int m, int n, T offdiag, T diag, __global T *A,
+                               unsigned long off, int lda) {
     int k   = get_local_size(0);
     int ibx = get_group_id(0) * NB;
     int ind = ibx + get_local_id(0) - k + 1;
 
-    A += ind + ibx*lda + off;
+    A += ind + ibx * lda + off;
 
     T value = offdiag;
-    if (get_local_id(0) == k-1)
-        value = diag;
+    if (get_local_id(0) == k - 1) value = diag;
 
-    #pragma unroll
-    for (int j=0; j < NB; j++) {
+#pragma unroll
+    for (int j = 0; j < NB; j++) {
         if (ibx + j < n && ind + j >= 0 && ind + j < m) {
-            A[j*(lda+1)] = value;
+            A[j * (lda + 1)] = value;
         }
     }
 }
@@ -88,29 +84,23 @@ void laset_band_upper(
                             3 2   => skip below matrix
                               3   => skip below matrix
 
-    Thread assignment for m=13, n=12, k=4, nb=8. Each column is done in parallel.
+    Thread assignment for m=13, n=12, k=4, nb=8. Each column is done in
+ parallel.
 */
 
-__kernel
-void laset_band_lower(
-    int m, int n,
-    T offdiag, T diag,
-    __global T *A, unsigned long off, int lda)
-{
-    //int k   = get_local_size(0);
+__kernel void laset_band_lower(int m, int n, T offdiag, T diag, __global T *A,
+                               unsigned long off, int lda) {
+    // int k   = get_local_size(0);
     int ibx = get_group_id(0) * NB;
     int ind = ibx + get_local_id(0);
 
-    A += ind + ibx*lda + off;
+    A += ind + ibx * lda + off;
 
     T value = offdiag;
-    if (get_local_id(0) == 0)
-        value = diag;
+    if (get_local_id(0) == 0) value = diag;
 
-    #pragma unroll
-    for (int j=0; j < NB; j++) {
-        if (ibx + j < n && ind + j < m) {
-            A[j*(lda+1)] = value;
-        }
+#pragma unroll
+    for (int j = 0; j < NB; j++) {
+        if (ibx + j < n && ind + j < m) { A[j * (lda + 1)] = value; }
     }
 }

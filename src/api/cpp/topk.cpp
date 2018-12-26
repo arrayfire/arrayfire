@@ -7,17 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/array.h>
 #include <af/dim4.hpp>
 #include <af/statistics.h>
-#include <af/array.h>
-#include "error.hpp"
 #include "common.hpp"
+#include "error.hpp"
 
-namespace af
-{
-void topk(array &values, array &indices, const array& in, const int k,
-          const int dim, const topkFunction order)
-{
+namespace af {
+void topk(array &values, array &indices, const array &in, const int k,
+          const int dim, const topkFunction order) {
     af_array af_vals = 0;
     af_array af_idxs = 0;
 
@@ -26,4 +24,4 @@ void topk(array &values, array &indices, const array& in, const int k,
     values  = array(af_vals);
     indices = array(af_idxs);
 }
-}
+}  // namespace af

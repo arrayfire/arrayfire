@@ -7,14 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <cstdio>
 #include <arrayfire.h>
+#include <cstdio>
 #include <cstdlib>
 
 using namespace af;
 
-static void susan_demo(bool console)
-{
+static void susan_demo(bool console) {
     // Load image
     array img_color;
     if (console)
@@ -23,7 +22,8 @@ static void susan_demo(bool console)
         img_color = loadImage(ASSETS_DIR "/examples/images/man.jpg", true);
     // Convert the image from RGB to gray-scale
     array img = colorSpace(img_color, AF_GRAY, AF_RGB);
-    // For visualization in ArrayFire, color images must be in the [0.0f-1.0f] interval
+    // For visualization in ArrayFire, color images must be in the [0.0f-1.0f]
+    // interval
     img_color /= 255.f;
 
     features feat = susan(img, 3, 32.0f, 10, 0.05f, 3);
@@ -39,17 +39,17 @@ static void susan_demo(bool console)
     // Draw draw_len x draw_len crosshairs where the corners are
     const int draw_len = 3;
     for (size_t f = 0; f < feat.getNumFeatures(); f++) {
-        int x = h_x[f];
-        int y = h_y[f];
-        img_color(x, seq(y-draw_len, y+draw_len), 0) = 0.f;
-        img_color(x, seq(y-draw_len, y+draw_len), 1) = 1.f;
-        img_color(x, seq(y-draw_len, y+draw_len), 2) = 0.f;
+        int x                                            = h_x[f];
+        int y                                            = h_y[f];
+        img_color(x, seq(y - draw_len, y + draw_len), 0) = 0.f;
+        img_color(x, seq(y - draw_len, y + draw_len), 1) = 1.f;
+        img_color(x, seq(y - draw_len, y + draw_len), 2) = 0.f;
 
-        // Draw vertical line of (draw_len * 2 + 1) pixels centered on  the corner
-        // Set only the first channel to 1 (green lines)
-        img_color(seq(x-draw_len, x+draw_len), y, 0) = 0.f;
-        img_color(seq(x-draw_len, x+draw_len), y, 1) = 1.f;
-        img_color(seq(x-draw_len, x+draw_len), y, 2) = 0.f;
+        // Draw vertical line of (draw_len * 2 + 1) pixels centered on  the
+        // corner Set only the first channel to 1 (green lines)
+        img_color(seq(x - draw_len, x + draw_len), y, 0) = 0.f;
+        img_color(seq(x - draw_len, x + draw_len), y, 1) = 1.f;
+        img_color(seq(x - draw_len, x + draw_len), y, 2) = 0.f;
     }
     freeHost(h_x);
     freeHost(h_y);
@@ -60,8 +60,7 @@ static void susan_demo(bool console)
         af::Window wnd("FAST Feature Detector");
 
         // Previews color image with green crosshairs
-        while(!wnd.close())
-            wnd.image(img_color);
+        while (!wnd.close()) wnd.image(img_color);
     } else {
         af_print(feat.getX());
         af_print(feat.getY());
@@ -69,9 +68,8 @@ static void susan_demo(bool console)
     }
 }
 
-int main(int argc, char** argv)
-{
-    int device = argc > 1 ? atoi(argv[1]) : 0;
+int main(int argc, char** argv) {
+    int device   = argc > 1 ? atoi(argv[1]) : 0;
     bool console = argc > 2 ? argv[2][0] == '-' : false;
 
     try {

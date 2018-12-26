@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/MemoryManager.hpp>
 #include <common/Logger.hpp>
+#include <common/MemoryManager.hpp>
 
 #include <string>
 #include <vector>
@@ -20,22 +20,21 @@ using std::vector;
 
 using spdlog::logger;
 
-namespace common
-{
+namespace common {
 template<typename T>
-typename MemoryManager<T>::memory_info&
+typename MemoryManager<T>::memory_info &
 MemoryManager<T>::getCurrentMemoryInfo() {
     return memory[this->getActiveDeviceId()];
 }
 
 template<typename T>
 inline int MemoryManager<T>::getActiveDeviceId() {
-    return static_cast<T*>(this)->getActiveDeviceId();
+    return static_cast<T *>(this)->getActiveDeviceId();
 }
 
 template<typename T>
 inline size_t MemoryManager<T>::getMaxMemorySize(int id) {
-    return static_cast<T*>(this)->getMaxMemorySize(id);
+    return static_cast<T *>(this)->getMaxMemorySize(id);
 }
 
 template<typename T>
@@ -45,9 +44,9 @@ void MemoryManager<T>::cleanDeviceMemoryManager(int device) {
     // This vector is used to store the pointers which will be deleted by
     // the memory manager. We are using this to avoid calling free while
     // the lock is being held becasue the CPU backend calls sync.
-    vector<void*> free_ptrs;
-    size_t bytes_freed = 0;
-    memory_info& current = memory[device];
+    vector<void *> free_ptrs;
+    size_t bytes_freed   = 0;
+    memory_info &current = memory[device];
     {
         lock_guard_t lock(this->memory_mutex);
         // Return if all buffers are locked
@@ -58,9 +57,7 @@ void MemoryManager<T>::cleanDeviceMemoryManager(int device) {
             size_t num_ptrs = kv.second.size();
             // Free memory by pushing the last element into the free_ptrs
             // vector which will be freed once outside of the lock
-            for(auto p : kv.second) {
-                free_ptrs.push_back(p);
-            }
+            for (auto p : kv.second) { free_ptrs.push_back(p); }
             current.total_bytes -= num_ptrs * kv.first;
             bytes_freed += num_ptrs * kv.first;
             current.total_buffers -= num_ptrs;
@@ -68,22 +65,20 @@ void MemoryManager<T>::cleanDeviceMemoryManager(int device) {
         current.free_map.clear();
     }
 
-    AF_TRACE("GC: Clearing {} buffers {}", free_ptrs.size(), bytesToString(bytes_freed));
+    AF_TRACE("GC: Clearing {} buffers {}", free_ptrs.size(),
+             bytesToString(bytes_freed));
     // Free memory outside of the lock
-    for(auto ptr : free_ptrs) {
-        this->nativeFree(ptr);
-    }
+    for (auto ptr : free_ptrs) { this->nativeFree(ptr); }
 }
 
 template<typename T>
-MemoryManager<T>::MemoryManager(int num_devices,
-                                unsigned max_buffers,
+MemoryManager<T>::MemoryManager(int num_devices, unsigned max_buffers,
                                 bool debug)
-    : mem_step_size(1024),
-      max_buffers(max_buffers),
-      memory(num_devices),
-      logger (loggerFactory("mem")),
-      debug_mode(debug) {
+    : mem_step_size(1024)
+    , max_buffers(max_buffers)
+    , memory(num_devices)
+    , logger(loggerFactory("mem"))
+    , debug_mode(debug) {
     // Check for environment variables
 
     // Debug mode
@@ -93,26 +88,24 @@ MemoryManager<T>::MemoryManager(int num_devices,
 
     // Max Buffer count
     env_var = getEnvVar("AF_MAX_BUFFERS");
-    if (!env_var.empty())
-      this->max_buffers = max(1, stoi(env_var));
+    if (!env_var.empty()) this->max_buffers = max(1, stoi(env_var));
 }
 
 template<typename T>
 void MemoryManager<T>::addMemoryManagement(int device) {
     // If there is a memory manager allocated for this device id, we might
     // as well use it and the buffers allocated for it
-    if (static_cast<size_t>(device) < memory.size())
-        return;
+    if (static_cast<size_t>(device) < memory.size()) return;
 
     // Assuming, device need not be always the next device Lets resize to
     // current_size + device + 1 +1 is to account for device being 0-based
     // index of devices
-    memory.resize(memory.size()+device+1);
+    memory.resize(memory.size() + device + 1);
 }
 
 template<typename T>
 void MemoryManager<T>::removeMemoryManagement(int device) {
-    if ((size_t)device>=memory.size())
+    if ((size_t)device >= memory.size())
         AF_ERROR("No matching device found", AF_ERR_ARG);
 
     // Do garbage collection for the device and leave the memory_info struct
@@ -123,35 +116,32 @@ void MemoryManager<T>::removeMemoryManagement(int device) {
 template<typename T>
 void MemoryManager<T>::setMaxMemorySize() {
     for (unsigned n = 0; n < memory.size(); n++) {
-
         // Calls garbage collection when: total_bytes > memsize * 0.75 when
         // memsize < 4GB total_bytes > memsize - 1 GB when memsize >= 4GB If
         // memsize returned 0, then use 1GB
         size_t memsize = this->getMaxMemorySize(n);
-        memory[n].max_bytes = memsize == 0 ? ONE_GB :
-            max(memsize * 0.75, (double)(memsize - ONE_GB));
+        memory[n].max_bytes =
+            memsize == 0 ? ONE_GB
+                         : max(memsize * 0.75, (double)(memsize - ONE_GB));
     }
 }
 
 template<typename T>
 void *MemoryManager<T>::alloc(const size_t bytes, bool user_lock) {
-    void *ptr = nullptr;
-    size_t alloc_bytes =
-      this->debug_mode ? bytes :
-                          (divup(bytes, mem_step_size) * mem_step_size);
+    void *ptr          = nullptr;
+    size_t alloc_bytes = this->debug_mode
+                             ? bytes
+                             : (divup(bytes, mem_step_size) * mem_step_size);
 
     if (bytes > 0) {
-        memory_info& current = this->getCurrentMemoryInfo();
-        locked_info info = {!user_lock, user_lock, alloc_bytes};
+        memory_info &current = this->getCurrentMemoryInfo();
+        locked_info info     = {!user_lock, user_lock, alloc_bytes};
 
         // There is no memory cache in debug mode
         if (!this->debug_mode) {
-
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
-            if (this->checkMemoryLimit()) {
-                this->garbageCollect();
-            }
+            if (this->checkMemoryLimit()) { this->garbageCollect(); }
 
             lock_guard_t lock(this->memory_mutex);
             free_iter iter = current.free_map.find(alloc_bytes);
@@ -192,8 +182,8 @@ void *MemoryManager<T>::alloc(const size_t bytes, bool user_lock) {
 template<typename T>
 size_t MemoryManager<T>::allocated(void *ptr) {
     if (!ptr) return 0;
-    memory_info& current = this->getCurrentMemoryInfo();
-    locked_iter iter = current.locked_map.find((void *)ptr);
+    memory_info &current = this->getCurrentMemoryInfo();
+    locked_iter iter     = current.locked_map.find((void *)ptr);
     if (iter == current.locked_map.end()) return 0;
     return (iter->second).bytes;
 }
@@ -204,10 +194,10 @@ void MemoryManager<T>::unlock(void *ptr, bool user_unlock) {
     if (!ptr) return;
 
     // Frees the pointer outside the lock.
-    uptr_t freed_ptr(nullptr, [this](void* p) { this->nativeFree(p); });
+    uptr_t freed_ptr(nullptr, [this](void *p) { this->nativeFree(p); });
     {
         lock_guard_t lock(this->memory_mutex);
-        memory_info& current = this->getCurrentMemoryInfo();
+        memory_info &current = this->getCurrentMemoryInfo();
 
         locked_iter iter = current.locked_map.find((void *)ptr);
 
@@ -252,46 +242,48 @@ void MemoryManager<T>::garbageCollect() {
 
 template<typename T>
 void MemoryManager<T>::printInfo(const char *msg, const int device) {
-    const memory_info& current = memory[device];
+    const memory_info &current = memory[device];
 
     printf("%s\n", msg);
-    printf("---------------------------------------------------------\n"
-            "|     POINTER      |    SIZE    |  AF LOCK  | USER LOCK |\n"
-            "---------------------------------------------------------\n");
+    printf(
+        "---------------------------------------------------------\n"
+        "|     POINTER      |    SIZE    |  AF LOCK  | USER LOCK |\n"
+        "---------------------------------------------------------\n");
 
     lock_guard_t lock(this->memory_mutex);
-    for(auto& kv : current.locked_map) {
-        const char* status_mngr = "Yes";
-        const char* status_user = "Unknown";
-        if(kv.second.user_lock)     status_user = "Yes";
-        else                        status_user = " No";
+    for (auto &kv : current.locked_map) {
+        const char *status_mngr = "Yes";
+        const char *status_user = "Unknown";
+        if (kv.second.user_lock)
+            status_user = "Yes";
+        else
+            status_user = " No";
 
-        const char* unit = "KB";
-        double size = (double)(kv.second.bytes) / 1024;
-        if(size >= 1024) {
+        const char *unit = "KB";
+        double size      = (double)(kv.second.bytes) / 1024;
+        if (size >= 1024) {
             size = size / 1024;
             unit = "MB";
         }
 
-        printf("|  %14p  |  %6.f %s | %9s | %9s |\n",
-                kv.first, size, unit, status_mngr, status_user);
+        printf("|  %14p  |  %6.f %s | %9s | %9s |\n", kv.first, size, unit,
+               status_mngr, status_user);
     }
 
-    for(auto &kv : current.free_map) {
+    for (auto &kv : current.free_map) {
+        const char *status_mngr = "No";
+        const char *status_user = "No";
 
-        const char* status_mngr = "No";
-        const char* status_user = "No";
-
-        const char* unit = "KB";
-        double size = (double)(kv.first) / 1024;
-        if(size >= 1024) {
+        const char *unit = "KB";
+        double size      = (double)(kv.first) / 1024;
+        if (size >= 1024) {
             size = size / 1024;
             unit = "MB";
         }
 
         for (auto &ptr : kv.second) {
-          printf("|  %14p  |  %6.f %s | %9s | %9s |\n",
-                  ptr, size, unit, status_mngr, status_user);
+            printf("|  %14p  |  %6.f %s | %9s | %9s |\n", ptr, size, unit,
+                   status_mngr, status_user);
         }
     }
 
@@ -300,18 +292,18 @@ void MemoryManager<T>::printInfo(const char *msg, const int device) {
 
 template<typename T>
 void MemoryManager<T>::bufferInfo(size_t *alloc_bytes, size_t *alloc_buffers,
-                                  size_t *lock_bytes,  size_t *lock_buffers) {
-    const memory_info& current = this->getCurrentMemoryInfo();
+                                  size_t *lock_bytes, size_t *lock_buffers) {
+    const memory_info &current = this->getCurrentMemoryInfo();
     lock_guard_t lock(this->memory_mutex);
-    if (alloc_bytes   ) *alloc_bytes   = current.total_bytes;
-    if (alloc_buffers ) *alloc_buffers = current.total_buffers;
-    if (lock_bytes    ) *lock_bytes    = current.lock_bytes;
-    if (lock_buffers  ) *lock_buffers  = current.lock_buffers;
+    if (alloc_bytes) *alloc_bytes = current.total_bytes;
+    if (alloc_buffers) *alloc_buffers = current.total_buffers;
+    if (lock_bytes) *lock_bytes = current.lock_bytes;
+    if (lock_buffers) *lock_buffers = current.lock_buffers;
 }
 
 template<typename T>
 void MemoryManager<T>::userLock(const void *ptr) {
-    memory_info& current = this->getCurrentMemoryInfo();
+    memory_info &current = this->getCurrentMemoryInfo();
 
     lock_guard_t lock(this->memory_mutex);
 
@@ -319,9 +311,7 @@ void MemoryManager<T>::userLock(const void *ptr) {
     if (iter != current.locked_map.end()) {
         iter->second.user_lock = true;
     } else {
-        locked_info info = {false,
-            true,
-            100}; //This number is not relevant
+        locked_info info = {false, true, 100};  // This number is not relevant
 
         current.locked_map[(void *)ptr] = info;
     }
@@ -334,7 +324,7 @@ void MemoryManager<T>::userUnlock(const void *ptr) {
 
 template<typename T>
 bool MemoryManager<T>::isUserLocked(const void *ptr) {
-    memory_info& current = this->getCurrentMemoryInfo();
+    memory_info &current = this->getCurrentMemoryInfo();
     lock_guard_t lock(this->memory_mutex);
     locked_iter iter = current.locked_map.find(const_cast<void *>(ptr));
     if (iter != current.locked_map.end()) {
@@ -362,7 +352,7 @@ unsigned MemoryManager<T>::getMaxBuffers() {
 }
 
 template<typename T>
-logger* MemoryManager<T>::getLogger() {
+logger *MemoryManager<T>::getLogger() {
     return this->logger.get();
 }
 
@@ -374,18 +364,18 @@ void MemoryManager<T>::setMemStepSize(size_t new_step_size) {
 
 template<typename T>
 inline void *MemoryManager<T>::nativeAlloc(const size_t bytes) {
-    return static_cast<T*>(this)->nativeAlloc(bytes);
+    return static_cast<T *>(this)->nativeAlloc(bytes);
 }
 
 template<typename T>
 inline void MemoryManager<T>::nativeFree(void *ptr) {
-    static_cast<T*>(this)->nativeFree(ptr);
+    static_cast<T *>(this)->nativeFree(ptr);
 }
 
 template<typename T>
 bool MemoryManager<T>::checkMemoryLimit() {
-    const memory_info& current = this->getCurrentMemoryInfo();
+    const memory_info &current = this->getCurrentMemoryInfo();
     return current.lock_bytes >= current.max_bytes ||
-            current.total_buffers >= this->max_buffers;
+           current.total_buffers >= this->max_buffers;
 }
-}
+}  // namespace common

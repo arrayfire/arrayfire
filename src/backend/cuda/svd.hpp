@@ -9,11 +9,10 @@
 
 #include <Array.hpp>
 
-namespace cuda
-{
-    template<typename T, typename Tr>
-    void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in);
+namespace cuda {
+template<typename T, typename Tr>
+void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in);
 
-    template<typename T, typename Tr>
-    void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in);
-}
+template<typename T, typename Tr>
+void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in);
+}  // namespace cuda

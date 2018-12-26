@@ -7,37 +7,35 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/graphics.h>
-#include <common/graphics_common.hpp>
+#include <backend.hpp>
+#include <cast.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
-#include <backend.hpp>
-#include <reduce.hpp>
-#include <cast.hpp>
+#include <common/graphics_common.hpp>
 #include <handle.hpp>
 #include <hist_graphics.hpp>
+#include <reduce.hpp>
+#include <af/graphics.h>
 
 using af::dim4;
 using namespace detail;
 using namespace graphics;
 
 template<typename T>
-fg_chart setup_histogram(fg_window const window,
-                         const af_array in,
+fg_chart setup_histogram(fg_window const window, const af_array in,
                          const double minval, const double maxval,
-                         const af_cell* const props)
-{
+                         const af_cell* const props) {
     ForgeModule& _ = graphics::forgePlugin();
 
     Array<T> histogramInput = getArray<T>(in);
-    dim_t nBins = histogramInput.elements();
+    dim_t nBins             = histogramInput.elements();
 
     // Retrieve Forge Histogram with nBins and array type
     ForgeManager& fgMngr = forgeManager();
 
     // Get the chart for the current grid position (if any)
     fg_chart chart = NULL;
-    if (props->col>-1 && props->row>-1)
+    if (props->col > -1 && props->row > -1)
         chart = fgMngr.getChart(window, props->row, props->col, FG_CHART_2D);
     else
         chart = fgMngr.getChart(window, 0, 0, FG_CHART_2D);
@@ -50,15 +48,13 @@ fg_chart setup_histogram(fg_window const window,
 
     // If chart axes limits do not have a manual override
     // then compute and set axes limits
-    if(!fgMngr.getChartAxesOverride(chart)) {
+    if (!fgMngr.getChartAxesOverride(chart)) {
         float xMin, xMax, yMin, yMax, zMin, zMax;
-        FG_CHECK(_.fg_get_chart_axes_limits(&xMin, &xMax,
-                                          &yMin, &yMax,
-                                          &zMin, &zMax,
-                                          chart));
+        FG_CHECK(_.fg_get_chart_axes_limits(&xMin, &xMax, &yMin, &yMax, &zMin,
+                                            &zMax, chart));
         T freqMax = detail::reduce_all<af_max_t, T, T>(histogramInput);
 
-        if(xMin == 0 && xMax == 0 && yMin == 0 && yMax == 0) {
+        if (xMin == 0 && xMax == 0 && yMin == 0 && yMax == 0) {
             // No previous limits. Set without checking
             xMin = step_round(minval, false);
             xMax = step_round(maxval, true);
@@ -66,13 +62,14 @@ fg_chart setup_histogram(fg_window const window,
             // For histogram, always set yMin to 0.
             yMin = 0;
         } else {
-            if(xMin > minval)  xMin = step_round(minval, false);
-            if(xMax < maxval)  xMax = step_round(maxval, true);
-            if(yMax < freqMax) yMax = step_round(freqMax, true);
+            if (xMin > minval) xMin = step_round(minval, false);
+            if (xMax < maxval) xMax = step_round(maxval, true);
+            if (yMax < freqMax) yMax = step_round(freqMax, true);
             // For histogram, always set yMin to 0.
             yMin = 0;
         }
-        FG_CHECK(_.fg_set_chart_axes_limits(chart, xMin, xMax, yMin, yMax, zMin, zMax));
+        FG_CHECK(_.fg_set_chart_axes_limits(chart, xMin, xMax, yMin, yMax, zMin,
+                                            zMax));
     }
 
     copy_histogram<T>(histogramInput, hist);
@@ -80,18 +77,14 @@ fg_chart setup_histogram(fg_window const window,
     return chart;
 }
 
-af_err af_draw_hist(const af_window window,
-                    const af_array X,
+af_err af_draw_hist(const af_window window, const af_array X,
                     const double minval, const double maxval,
-                    const af_cell* const props)
-{
+                    const af_cell* const props) {
     try {
-        if(window == 0) {
-            AF_ERROR("Not a valid window", AF_ERR_INTERNAL);
-        }
+        if (window == 0) { AF_ERROR("Not a valid window", AF_ERR_INTERNAL); }
 
         const ArrayInfo& Xinfo = getInfo(X);
-        af_dtype Xtype  = Xinfo.getType();
+        af_dtype Xtype         = Xinfo.getType();
 
         ARG_ASSERT(0, Xinfo.isVector());
 
@@ -99,23 +92,39 @@ af_err af_draw_hist(const af_window window,
 
         fg_chart chart = NULL;
 
-        switch(Xtype) {
-            case f32: chart = setup_histogram<float  >(window, X, minval, maxval, props); break;
-            case s32: chart = setup_histogram<int    >(window, X, minval, maxval, props); break;
-            case u32: chart = setup_histogram<uint   >(window, X, minval, maxval, props); break;
-            case s16: chart = setup_histogram<short  >(window, X, minval, maxval, props); break;
-            case u16: chart = setup_histogram<ushort >(window, X, minval, maxval, props); break;
-            case u8 : chart = setup_histogram<uchar  >(window, X, minval, maxval, props); break;
-            default:  TYPE_ERROR(1, Xtype);
+        switch (Xtype) {
+            case f32:
+                chart =
+                    setup_histogram<float>(window, X, minval, maxval, props);
+                break;
+            case s32:
+                chart = setup_histogram<int>(window, X, minval, maxval, props);
+                break;
+            case u32:
+                chart = setup_histogram<uint>(window, X, minval, maxval, props);
+                break;
+            case s16:
+                chart =
+                    setup_histogram<short>(window, X, minval, maxval, props);
+                break;
+            case u16:
+                chart =
+                    setup_histogram<ushort>(window, X, minval, maxval, props);
+                break;
+            case u8:
+                chart =
+                    setup_histogram<uchar>(window, X, minval, maxval, props);
+                break;
+            default: TYPE_ERROR(1, Xtype);
         }
         auto gridDims = forgeManager().getWindowGrid(window);
 
         ForgeModule& _ = graphics::forgePlugin();
-        if (props->col>-1 && props->row>-1) {
-            FG_CHECK(_.fg_draw_chart_to_cell(window,
-                                             gridDims.first, gridDims.second,
-                                             props->row * gridDims.second + props->col,
-                                             chart, props->title));
+        if (props->col > -1 && props->row > -1) {
+            FG_CHECK(_.fg_draw_chart_to_cell(
+                window, gridDims.first, gridDims.second,
+                props->row * gridDims.second + props->col, chart,
+                props->title));
         } else {
             FG_CHECK(_.fg_draw_chart(window, chart));
         }

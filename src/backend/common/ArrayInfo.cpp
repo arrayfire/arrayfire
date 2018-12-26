@@ -8,56 +8,53 @@
  ********************************************************/
 
 #include <common/ArrayInfo.hpp>
-#include <numeric>
+#include <common/err_common.hpp>
 #include <algorithm>
 #include <functional>
-#include <common/err_common.hpp>
+#include <numeric>
 
 #include <backend.hpp>
 #include <platform.hpp>
 
 using af::dim4;
 
-dim4 calcStrides(const dim4 &parentDim)
-{
+dim4 calcStrides(const dim4 &parentDim) {
     dim4 out(1, 1, 1, 1);
-    dim_t *out_dims = out.get();
-    const dim_t *parent_dims =  parentDim.get();
+    dim_t *out_dims          = out.get();
+    const dim_t *parent_dims = parentDim.get();
 
-    for (dim_t i=1; i < 4; i++) {
-        out_dims[i] = out_dims[i - 1] * parent_dims[i-1];
+    for (dim_t i = 1; i < 4; i++) {
+        out_dims[i] = out_dims[i - 1] * parent_dims[i - 1];
     }
 
     return out;
 }
 
-int ArrayInfo::getDevId() const
-{
+int ArrayInfo::getDevId() const {
     // The actual device ID is only stored in the first 8 bits of devId
     // See ArrayInfo.hpp for more
     return devId & 0xff;
 }
 
-void ArrayInfo::setId(int id) const
-{
+void ArrayInfo::setId(int id) const {
     // 1 << (backendId + 8) sets the 9th, 10th or 11th bit of devId to 1
     // for CPU, CUDA and OpenCL respectively
     // See ArrayInfo.hpp for more
-    int backendId = detail::getBackend() >> 1; // Convert enums 1, 2, 4 to ints 0, 1, 2
+    int backendId =
+        detail::getBackend() >> 1;  // Convert enums 1, 2, 4 to ints 0, 1, 2
     const_cast<ArrayInfo *>(this)->setId(id | 1 << (backendId + 8));
 }
 
-void ArrayInfo::setId(int id)
-{
+void ArrayInfo::setId(int id) {
     // 1 << (backendId + 8) sets the 9th, 10th or 11th bit of devId to 1
     // for CPU, CUDA and OpenCL respectively
     // See ArrayInfo.hpp for more
-    int backendId = detail::getBackend() >> 1; // Convert enums 1, 2, 4 to ints 0, 1, 2
+    int backendId =
+        detail::getBackend() >> 1;  // Convert enums 1, 2, 4 to ints 0, 1, 2
     devId = id | 1 << (backendId + 8);
 }
 
-af_backend ArrayInfo::getBackendId() const
-{
+af_backend ArrayInfo::getBackendId() const {
     // devId >> 8 converts the backend info to 1, 2, 4 which are enums
     // for CPU, CUDA and OpenCL respectively
     // See ArrayInfo.hpp for more
@@ -65,117 +62,70 @@ af_backend ArrayInfo::getBackendId() const
     return (af_backend)backendId;
 }
 
-void ArrayInfo::modStrides(const dim4 &newStrides)
-{
-    dim_strides = newStrides;
-}
+void ArrayInfo::modStrides(const dim4 &newStrides) { dim_strides = newStrides; }
 
-void ArrayInfo::modDims(const dim4 &newDims)
-{
-    dim_size   = newDims;
+void ArrayInfo::modDims(const dim4 &newDims) {
+    dim_size = newDims;
     modStrides(calcStrides(newDims));
 }
 
-bool ArrayInfo::isEmpty() const
-{
-    return (elements() == 0);
+bool ArrayInfo::isEmpty() const { return (elements() == 0); }
+
+bool ArrayInfo::isScalar() const { return (elements() == 1); }
+
+bool ArrayInfo::isRow() const {
+    return (dims()[0] == 1 && dims()[1] > 1 && dims()[2] == 1 &&
+            dims()[3] == 1);
 }
 
-bool ArrayInfo::isScalar() const
-{
-    return (elements() == 1);
+bool ArrayInfo::isColumn() const {
+    return (dims()[0] > 1 && dims()[1] == 1 && dims()[2] == 1 &&
+            dims()[3] == 1);
 }
 
-bool ArrayInfo::isRow() const
-{
-    return (dims()[0] == 1 && dims()[1] > 1 && dims()[2] == 1 && dims()[3] == 1);
-}
-
-bool ArrayInfo::isColumn() const
-{
-    return (dims()[0] > 1 && dims()[1] == 1 && dims()[2] == 1 && dims()[3] == 1);
-}
-
-bool ArrayInfo::isVector() const
-{
-    int singular_dims = 0;
+bool ArrayInfo::isVector() const {
+    int singular_dims     = 0;
     int non_singular_dims = 0;
-    for(int i = 0; i < AF_MAX_DIMS; i++) {
+    for (int i = 0; i < AF_MAX_DIMS; i++) {
         non_singular_dims += (dims()[i] != 0 && dims()[i] != 1);
         singular_dims += (dims()[i] == 1);
     }
     return singular_dims == AF_MAX_DIMS - 1 && non_singular_dims == 1;
 }
 
-bool ArrayInfo::isComplex() const
-{
-    return ((type == c32) || (type == c64));
+bool ArrayInfo::isComplex() const { return ((type == c32) || (type == c64)); }
+
+bool ArrayInfo::isReal() const { return !isComplex(); }
+
+bool ArrayInfo::isDouble() const { return (type == f64 || type == c64); }
+
+bool ArrayInfo::isSingle() const { return (type == f32 || type == c32); }
+
+bool ArrayInfo::isRealFloating() const { return (type == f64 || type == f32); }
+
+bool ArrayInfo::isFloating() const { return (!isInteger() && !isBool()); }
+
+bool ArrayInfo::isInteger() const {
+    return (type == s32 || type == u32 || type == s64 || type == u64 ||
+            type == s16 || type == u16 || type == u8);
 }
 
-bool ArrayInfo::isReal() const
-{
-    return !isComplex();
-}
+bool ArrayInfo::isBool() const { return (type == b8); }
 
-bool ArrayInfo::isDouble() const
-{
-    return (type == f64 || type == c64);
-}
-
-bool ArrayInfo::isSingle() const
-{
-    return (type == f32 || type == c32);
-}
-
-bool ArrayInfo::isRealFloating() const
-{
-    return (type == f64 || type == f32);
-}
-
-bool ArrayInfo::isFloating() const
-{
-    return (!isInteger() && !isBool());
-}
-
-bool ArrayInfo::isInteger() const
-{
-    return (type == s32
-         || type == u32
-         || type == s64
-         || type == u64
-         || type == s16
-         || type == u16
-         || type == u8);
-}
-
-bool ArrayInfo::isBool() const
-{
-    return (type == b8);
-}
-
-bool ArrayInfo::isLinear() const
-{
-    if (ndims() == 1) {
-        return dim_strides[0] == 1;
-    }
+bool ArrayInfo::isLinear() const {
+    if (ndims() == 1) { return dim_strides[0] == 1; }
 
     dim_t count = 1;
     for (int i = 0; i < (int)ndims(); i++) {
-        if (count != dim_strides[i]) {
-            return false;
-        }
+        if (count != dim_strides[i]) { return false; }
         count *= dim_size[i];
     }
     return true;
 }
 
-bool ArrayInfo::isSparse() const
-{
-    return is_sparse;
-}
+bool ArrayInfo::isSparse() const { return is_sparse; }
 
-dim4 getOutDims(const dim4 &ldims, const dim4 &rdims, bool batchMode)
-{
+dim4 getOutDims(const dim4 &ldims, const dim4 &rdims, bool batchMode) {
     if (!batchMode) {
         DIM_ASSERT(1, ldims == rdims);
         return ldims;
@@ -192,11 +142,9 @@ dim4 getOutDims(const dim4 &ldims, const dim4 &rdims, bool batchMode)
 
 using std::vector;
 
-dim4
-toDims(const vector<af_seq>& seqs, const dim4 &parentDims)
-{
+dim4 toDims(const vector<af_seq> &seqs, const dim4 &parentDims) {
     dim4 outDims(1, 1, 1, 1);
-    for(unsigned i = 0; i < seqs.size(); i++ ) {
+    for (unsigned i = 0; i < seqs.size(); i++) {
         outDims[i] = af::calcDim(seqs[i], parentDims[i]);
         if (outDims[i] > parentDims[i])
             AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
@@ -204,12 +152,10 @@ toDims(const vector<af_seq>& seqs, const dim4 &parentDims)
     return outDims;
 }
 
-dim4
-toOffset(const vector<af_seq>& seqs, const dim4 &parentDims)
-{
+dim4 toOffset(const vector<af_seq> &seqs, const dim4 &parentDims) {
     dim4 outOffsets(0, 0, 0, 0);
-    for(unsigned i = 0; i < seqs.size(); i++ ) {
-        if (seqs[i].step !=0 && seqs[i].begin >= 0) {
+    for (unsigned i = 0; i < seqs.size(); i++) {
+        if (seqs[i].step != 0 && seqs[i].begin >= 0) {
             outOffsets[i] = seqs[i].begin;
         } else if (seqs[i].begin <= -1) {
             outOffsets[i] = parentDims[i] + seqs[i].begin;
@@ -223,30 +169,26 @@ toOffset(const vector<af_seq>& seqs, const dim4 &parentDims)
     return outOffsets;
 }
 
-dim4
-toStride(const vector<af_seq>& seqs, const af::dim4 &parentDims)
-{
+dim4 toStride(const vector<af_seq> &seqs, const af::dim4 &parentDims) {
     dim4 out(calcStrides(parentDims));
-    for(unsigned i = 0; i < seqs.size(); i++ ) {
-        if  (seqs[i].step != 0) {   out[i] *= seqs[i].step; }
+    for (unsigned i = 0; i < seqs.size(); i++) {
+        if (seqs[i].step != 0) { out[i] *= seqs[i].step; }
     }
     return out;
 }
 
-const ArrayInfo&
-getInfo(const af_array arr, bool sparse_check, bool device_check)
-{
-  const ArrayInfo *info = static_cast<ArrayInfo*>(reinterpret_cast<void *>(arr));
+const ArrayInfo &getInfo(const af_array arr, bool sparse_check,
+                         bool device_check) {
+    const ArrayInfo *info =
+        static_cast<ArrayInfo *>(reinterpret_cast<void *>(arr));
 
-  // Check Sparse -> If false, then both standard Array<T> and SparseArray<T> are accepted
-  // Otherwise only regular Array<T> is accepted
-  if(sparse_check) {
-    ARG_ASSERT(0, info->isSparse() == false);
-  }
+    // Check Sparse -> If false, then both standard Array<T> and SparseArray<T>
+    // are accepted Otherwise only regular Array<T> is accepted
+    if (sparse_check) { ARG_ASSERT(0, info->isSparse() == false); }
 
-  if (device_check && info->getDevId() != detail::getActiveDeviceId()) {
-    AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
-  }
+    if (device_check && info->getDevId() != detail::getActiveDeviceId()) {
+        AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
+    }
 
-  return *info;
+    return *info;
 }

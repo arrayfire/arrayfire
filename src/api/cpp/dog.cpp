@@ -11,14 +11,12 @@
 #include <af/vision.h>
 #include "error.hpp"
 
-namespace af
-{
+namespace af {
 
-array dog(const array& in, const int radius1, const int radius2)
-{
+array dog(const array& in, const int radius1, const int radius2) {
     af_array temp = 0;
     AF_THROW(af_dog(&temp, in.get(), radius1, radius2));
     return array(temp);
 }
 
-}
+}  // namespace af

@@ -7,21 +7,20 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/statistics.h>
 #include <af/array.h>
-#include "error.hpp"
+#include <af/statistics.h>
 #include "common.hpp"
+#include "error.hpp"
 
-namespace af
-{
+namespace af {
 
-#define INSTANTIATE_MEDIAN(T)                               \
-    template<> AFAPI T median(const array& in)              \
-    {                                                       \
-        double ret_val;                                     \
-        AF_THROW(af_median_all(&ret_val, NULL, in.get()));  \
-        return (T)ret_val;                                  \
-    }                                                       \
+#define INSTANTIATE_MEDIAN(T)                              \
+    template<>                                             \
+    AFAPI T median(const array& in) {                      \
+        double ret_val;                                    \
+        AF_THROW(af_median_all(&ret_val, NULL, in.get())); \
+        return (T)ret_val;                                 \
+    }
 
 INSTANTIATE_MEDIAN(float);
 INSTANTIATE_MEDIAN(double);
@@ -36,11 +35,10 @@ INSTANTIATE_MEDIAN(unsigned short);
 
 #undef INSTANTIATE_MEDIAN
 
-array median(const array& in, const dim_t dim)
-{
+array median(const array& in, const dim_t dim) {
     af_array temp = 0;
     AF_THROW(af_median(&temp, in.get(), getFNSD(dim, in.dims())));
     return array(temp);
 }
 
-}
+}  // namespace af

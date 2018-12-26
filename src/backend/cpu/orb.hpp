@@ -7,21 +7,18 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/features.h>
 #include <Array.hpp>
+#include <af/features.h>
 
 using af::features;
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T, typename convAccT>
 unsigned orb(Array<float> &x, Array<float> &y, Array<float> &score,
              Array<float> &orientation, Array<float> &size,
-             Array<unsigned> &desc,
-             const Array<T>& image,
-             const float fast_thr, const unsigned max_feat,
-             const float scl_fctr, const unsigned levels,
-             const bool blur_img);
+             Array<unsigned> &desc, const Array<T> &image, const float fast_thr,
+             const unsigned max_feat, const float scl_fctr,
+             const unsigned levels, const bool blur_img);
 
 }

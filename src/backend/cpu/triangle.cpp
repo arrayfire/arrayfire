@@ -7,41 +7,41 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
 #include <Array.hpp>
-#include <triangle.hpp>
+#include <kernel/triangle.hpp>
 #include <math.hpp>
 #include <platform.hpp>
-#include <kernel/triangle.hpp>
+#include <triangle.hpp>
+#include <af/dim4.hpp>
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T, bool is_upper, bool is_unit_diag>
-void triangle(Array<T> &out, const Array<T> &in)
-{
+void triangle(Array<T> &out, const Array<T> &in) {
     in.eval();
     getQueue().enqueue(kernel::triangle<T, is_upper, is_unit_diag>, out, in);
 }
 
 template<typename T, bool is_upper, bool is_unit_diag>
-Array<T> triangle(const Array<T> &in)
-{
+Array<T> triangle(const Array<T> &in) {
     in.eval();
     Array<T> out = createEmptyArray<T>(in.dims());
     triangle<T, is_upper, is_unit_diag>(out, in);
     return out;
 }
 
-#define INSTANTIATE(T)                                                  \
-    template void triangle<T, true ,  true>(Array<T> &out, const Array<T> &in); \
-    template void triangle<T, false,  true>(Array<T> &out, const Array<T> &in); \
-    template void triangle<T, true , false>(Array<T> &out, const Array<T> &in); \
-    template void triangle<T, false, false>(Array<T> &out, const Array<T> &in); \
-    template Array<T> triangle<T, true ,  true>(const Array<T> &in);    \
-    template Array<T> triangle<T, false,  true>(const Array<T> &in);    \
-    template Array<T> triangle<T, true , false>(const Array<T> &in);    \
-    template Array<T> triangle<T, false, false>(const Array<T> &in);    \
+#define INSTANTIATE(T)                                                         \
+    template void triangle<T, true, true>(Array<T> & out, const Array<T> &in); \
+    template void triangle<T, false, true>(Array<T> & out,                     \
+                                           const Array<T> &in);                \
+    template void triangle<T, true, false>(Array<T> & out,                     \
+                                           const Array<T> &in);                \
+    template void triangle<T, false, false>(Array<T> & out,                    \
+                                            const Array<T> &in);               \
+    template Array<T> triangle<T, true, true>(const Array<T> &in);             \
+    template Array<T> triangle<T, false, true>(const Array<T> &in);            \
+    template Array<T> triangle<T, true, false>(const Array<T> &in);            \
+    template Array<T> triangle<T, false, false>(const Array<T> &in);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -56,4 +56,4 @@ INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

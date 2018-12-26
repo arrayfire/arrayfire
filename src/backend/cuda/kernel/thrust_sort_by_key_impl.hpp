@@ -12,48 +12,40 @@
 #include <thrust/sort.h>
 #include <types.hpp>
 
-namespace cuda
-{
-    namespace kernel
-    {
-        // Wrapper functions
-        template<typename Tk, typename Tv>
-        void thrustSortByKey(Tk *keyPtr, Tv *valPtr, int elements, bool isAscending)
-        {
-            if (isAscending) {
-                THRUST_SELECT(thrust::stable_sort_by_key,
-                              keyPtr,
-                              keyPtr + elements,
-                              valPtr);
-            } else {
-                THRUST_SELECT(thrust::stable_sort_by_key,
-                              keyPtr,
-                              keyPtr + elements,
-                              valPtr, thrust::greater<Tk>());
-            }
-            POST_LAUNCH_CHECK();
-        }
-
-#define INSTANTIATE(Tk, Tv)                                             \
-        template void thrustSortByKey<Tk, Tv>(Tk *keyPtr, Tv *valPtr,   \
-                                              int elements,             \
-                                              bool isAscending);        \
-
-#define INSTANTIATE0(Tk    ) \
-    INSTANTIATE(Tk, float  ) \
-    INSTANTIATE(Tk, double ) \
-    INSTANTIATE(Tk, cfloat ) \
-    INSTANTIATE(Tk, cdouble) \
-    INSTANTIATE(Tk, char   ) \
-    INSTANTIATE(Tk, uchar  )
-
-#define INSTANTIATE1(Tk    ) \
-    INSTANTIATE(Tk, int    ) \
-    INSTANTIATE(Tk, uint   ) \
-    INSTANTIATE(Tk, short  ) \
-    INSTANTIATE(Tk, ushort ) \
-    INSTANTIATE(Tk, intl   ) \
-    INSTANTIATE(Tk, uintl  )
-
+namespace cuda {
+namespace kernel {
+// Wrapper functions
+template<typename Tk, typename Tv>
+void thrustSortByKey(Tk *keyPtr, Tv *valPtr, int elements, bool isAscending) {
+    if (isAscending) {
+        THRUST_SELECT(thrust::stable_sort_by_key, keyPtr, keyPtr + elements,
+                      valPtr);
+    } else {
+        THRUST_SELECT(thrust::stable_sort_by_key, keyPtr, keyPtr + elements,
+                      valPtr, thrust::greater<Tk>());
     }
+    POST_LAUNCH_CHECK();
 }
+
+#define INSTANTIATE(Tk, Tv)                                         \
+    template void thrustSortByKey<Tk, Tv>(Tk * keyPtr, Tv * valPtr, \
+                                          int elements, bool isAscending);
+
+#define INSTANTIATE0(Tk)     \
+    INSTANTIATE(Tk, float)   \
+    INSTANTIATE(Tk, double)  \
+    INSTANTIATE(Tk, cfloat)  \
+    INSTANTIATE(Tk, cdouble) \
+    INSTANTIATE(Tk, char)    \
+    INSTANTIATE(Tk, uchar)
+
+#define INSTANTIATE1(Tk)    \
+    INSTANTIATE(Tk, int)    \
+    INSTANTIATE(Tk, uint)   \
+    INSTANTIATE(Tk, short)  \
+    INSTANTIATE(Tk, ushort) \
+    INSTANTIATE(Tk, intl)   \
+    INSTANTIATE(Tk, uintl)
+
+}  // namespace kernel
+}  // namespace cuda

@@ -29,31 +29,29 @@
  * * Redistributions  of  source  code  must  retain  the above copyright
  *   notice,  this  list  of  conditions  and  the  following  disclaimer.
  * * Redistributions  in  binary  form must reproduce the above copyright
- *   notice,  this list of conditions and the following disclaimer in the 
+ *   notice,  this list of conditions and the following disclaimer in the
  *   documentation  and/or other materials provided with the distribution.
- * * Neither  the  name of the University of Tennessee, Knoxville nor the 
+ * * Neither  the  name of the University of Tennessee, Knoxville nor the
  *   names of its contributors may be used to endorse or promote products
  *   derived from this software without specific prior written permission.
  *
  * THIS  SOFTWARE  IS  PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * ``AS IS''  AND  ANY  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
- * LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ * ``AS IS''  AND  ANY  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  * A  PARTICULAR  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
  * HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL,  EXEMPLARY,  OR  CONSEQUENTIAL  DAMAGES  (INCLUDING,  BUT NOT 
+ * SPECIAL,  EXEMPLARY,  OR  CONSEQUENTIAL  DAMAGES  (INCLUDING,  BUT NOT
  * LIMITED  TO,  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA,  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * DATA,  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY  OF  LIABILITY,  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * (INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF  THIS  SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  **********************************************************************/
 
-__kernel void
-swapdblk(int nb,
-         __global T *dA, unsigned long dA_offset, int ldda, int inca,
-         __global T *dB, unsigned long dB_offset, int lddb, int incb)
-{
+__kernel void swapdblk(int nb, __global T *dA, unsigned long dA_offset,
+                       int ldda, int inca, __global T *dB,
+                       unsigned long dB_offset, int lddb, int incb) {
     const int tx = get_local_id(0);
     const int bx = get_group_id(0);
 
@@ -62,10 +60,10 @@ swapdblk(int nb,
 
     T tmp;
 
-    #pragma unroll
-    for( int i = 0; i < nb; i++ ){
-        tmp        = dA[i*ldda];
-        dA[i*ldda] = dB[i*lddb];
-        dB[i*lddb] = tmp;
+#pragma unroll
+    for (int i = 0; i < nb; i++) {
+        tmp          = dA[i * ldda];
+        dA[i * ldda] = dB[i * lddb];
+        dB[i * lddb] = tmp;
     }
 }

@@ -8,17 +8,16 @@
  ********************************************************/
 
 #include <arrayfire.h>
-#include <cstdio>
 #include <math.h>
+#include <cstdio>
 
 using namespace af;
 
 const static float MINIMUM = -3.0f;
-const static float MAXIMUM =  3.0f;
-const static float STEP = 0.18f;
+const static float MAXIMUM = 3.0f;
+const static float STEP    = 0.18f;
 
-int main(int, char **)
-{
+int main(int, char**) {
     try {
         af::info();
         af::Window myWindow(1024, 1024, "2D Vector Field example: ArrayFire");
@@ -36,21 +35,20 @@ int main(int, char **)
         do {
             array points = join(1, flat(x), flat(y));
 
-            array saddle = join(1, flat(x), -1.0f*flat(y));
+            array saddle = join(1, flat(x), -1.0f * flat(y));
 
-            array bvals  = sin(scale*(x*x + y*y));
-            array hbowl  = join(1, constant(1, x.elements()), flat(bvals));
+            array bvals = sin(scale * (x * x + y * y));
+            array hbowl = join(1, constant(1, x.elements()), flat(bvals));
             hbowl.eval();
 
             myWindow(0, 0).vectorField(points, saddle, "Saddle point");
-            myWindow(0, 1).vectorField(points, hbowl, "hilly bowl (in a loop with varying amplitude)");
+            myWindow(0, 1).vectorField(
+                points, hbowl, "hilly bowl (in a loop with varying amplitude)");
             myWindow.show();
 
             scale -= 0.0010f;
-            if (scale < -0.01f) {
-                scale = 2.0f;
-            }
-        } while(!myWindow.close());
+            if (scale < -0.01f) { scale = 2.0f; }
+        } while (!myWindow.close());
 
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());

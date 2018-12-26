@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
 Array<T> regions(const Array<char> &in, af_connectivity connectivity);

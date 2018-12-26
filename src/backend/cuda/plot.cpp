@@ -8,29 +8,28 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <plot.hpp>
-#include <err_cuda.hpp>
-#include <debug_cuda.hpp>
 #include <GraphicsResourceManager.hpp>
+#include <debug_cuda.hpp>
+#include <err_cuda.hpp>
+#include <plot.hpp>
 
 using af::dim4;
 
 namespace cuda {
 
 template<typename T>
-void copy_plot(const Array<T> &P, fg_plot plot)
-{
+void copy_plot(const Array<T> &P, fg_plot plot) {
     auto stream = cuda::getActiveStream();
-    if(DeviceManager::checkGraphicsInteropCapability()) {
+    if (DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
 
         auto res = interopManager().getPlotResources(plot);
 
         size_t bytes = 0;
-        T* d_vbo = NULL;
+        T *d_vbo     = NULL;
         cudaGraphicsMapResources(1, res[0].get(), stream);
-        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo,
-                                             &bytes, *(res[0].get()));
+        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &bytes,
+                                             *(res[0].get()));
         cudaMemcpyAsync(d_vbo, d_P, bytes, cudaMemcpyDeviceToDevice, stream);
         cudaGraphicsUnmapResources(1, res[0].get(), stream);
 
@@ -38,14 +37,14 @@ void copy_plot(const Array<T> &P, fg_plot plot)
 
         POST_LAUNCH_CHECK();
     } else {
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule &_ = graphics::forgePlugin();
         unsigned bytes = 0, buffer = 0;
         FG_CHECK(_.fg_get_plot_vertex_buffer(&buffer, plot));
         FG_CHECK(_.fg_get_plot_vertex_buffer_size(&bytes, plot));
 
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        GLubyte *ptr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
             CUDA_CHECK(cudaMemcpyAsync(ptr, P.get(), bytes,
                                        cudaMemcpyDeviceToHost, stream));
@@ -57,8 +56,7 @@ void copy_plot(const Array<T> &P, fg_plot plot)
     }
 }
 
-#define INSTANTIATE(T)  \
-template void copy_plot<T>(const Array<T> &, fg_plot);
+#define INSTANTIATE(T) template void copy_plot<T>(const Array<T> &, fg_plot);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -68,4 +66,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
-}
+}  // namespace cuda

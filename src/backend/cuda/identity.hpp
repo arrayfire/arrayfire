@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 
-namespace cuda
-{
-    template<typename T>
-    Array<T> identity(const dim4& dim);
+namespace cuda {
+template<typename T>
+Array<T> identity(const dim4& dim);
 }

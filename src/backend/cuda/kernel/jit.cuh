@@ -40,10 +40,10 @@ typedef cuDoubleComplex cdouble;
 #define __neq(lhs, rhs) (lhs) != (rhs)
 
 #define __conj(in) (in)
-#define __real(in) (in)
-#define __imag(in) (0)
+#define __real(in)(in)
+#define __imag(in)(0)
 #define __abs(in) abs(in)
-#define __sigmoid(in) (1.0/(1 + exp(-(in))))
+#define __sigmoid(in) (1.0 / (1 + exp(-(in))))
 
 #define __bitor(lhs, rhs) ((lhs) | (rhs))
 #define __bitand(lhs, rhs) ((lhs) & (rhs))
@@ -56,11 +56,16 @@ typedef cuDoubleComplex cdouble;
 #define __rem(lhs, rhs) ((lhs) % (rhs))
 #define __mod(lhs, rhs) ((lhs) % (rhs))
 
-#define __pow(lhs, rhs) __float2int_rn(pow(__int2float_rn((int)lhs), __int2float_rn((int)rhs)))
-#define __powll(lhs, rhs) __double2ll_rn(pow(__ll2double_rn(lhs), __ll2double_rn(rhs)))
-#define __powul(lhs, rhs) __double2ull_rn(pow(__ull2double_rn(lhs), __ull2double_rn(rhs)))
-#define __powui(lhs, rhs) __double2uint_rn(pow(__uint2double_rn(lhs), __uint2double_rn(rhs)))
-#define __powsi(lhs, rhs) __double2int_rn(pow(__int2double_rn(lhs), __int2double_rn(rhs)))
+#define __pow(lhs, rhs) \
+    __float2int_rn(pow(__int2float_rn((int)lhs), __int2float_rn((int)rhs)))
+#define __powll(lhs, rhs) \
+    __double2ll_rn(pow(__ll2double_rn(lhs), __ll2double_rn(rhs)))
+#define __powul(lhs, rhs) \
+    __double2ull_rn(pow(__ull2double_rn(lhs), __ull2double_rn(rhs)))
+#define __powui(lhs, rhs) \
+    __double2uint_rn(pow(__uint2double_rn(lhs), __uint2double_rn(rhs)))
+#define __powsi(lhs, rhs) \
+    __double2int_rn(pow(__int2double_rn(lhs), __int2double_rn(rhs)))
 
 #define __convert_char(val) (char)((val) != 0)
 #define frem(lhs, rhs) remainder((lhs), (rhs))
@@ -74,59 +79,50 @@ typedef cuDoubleComplex cdouble;
 #define __cimagf(in) ((in).y)
 #define __cabsf(in) hypotf(in.x, in.y)
 
-__device__ cfloat __cplx2f(float x, float y)
-{
+__device__ cfloat __cplx2f(float x, float y) {
     cfloat res = {x, y};
     return res;
 }
 
-__device__ cfloat __cconjf(cfloat in)
-{
+__device__ cfloat __cconjf(cfloat in) {
     cfloat res = {in.x, -in.y};
     return res;
 }
 
-__device__ cfloat __caddf(cfloat lhs, cfloat rhs)
-{
+__device__ cfloat __caddf(cfloat lhs, cfloat rhs) {
     cfloat res = {lhs.x + rhs.x, lhs.y + rhs.y};
     return res;
 }
 
-__device__ cfloat __csubf(cfloat lhs, cfloat rhs)
-{
+__device__ cfloat __csubf(cfloat lhs, cfloat rhs) {
     cfloat res = {lhs.x - rhs.x, lhs.y - rhs.y};
     return res;
 }
 
-__device__ cfloat __cmulf(cfloat lhs, cfloat rhs)
-{
+__device__ cfloat __cmulf(cfloat lhs, cfloat rhs) {
     cfloat out;
     out.x = lhs.x * rhs.x - lhs.y * rhs.y;
     out.y = lhs.x * rhs.y + lhs.y * rhs.x;
     return out;
 }
 
-__device__ cfloat __cdivf(cfloat lhs, cfloat rhs)
-{
+__device__ cfloat __cdivf(cfloat lhs, cfloat rhs) {
     // Normalize by absolute value and multiply
-    float rhs_abs = __cabsf(rhs);
+    float rhs_abs     = __cabsf(rhs);
     float inv_rhs_abs = 1.0f / rhs_abs;
-    float rhs_x = inv_rhs_abs * rhs.x;
-    float rhs_y = inv_rhs_abs * rhs.y;
-    cfloat out = {lhs.x * rhs_x + lhs.y * rhs_y,
-                  lhs.y * rhs_x - lhs.x * rhs_y};
+    float rhs_x       = inv_rhs_abs * rhs.x;
+    float rhs_y       = inv_rhs_abs * rhs.y;
+    cfloat out = {lhs.x * rhs_x + lhs.y * rhs_y, lhs.y * rhs_x - lhs.x * rhs_y};
     out.x *= inv_rhs_abs;
     out.y *= inv_rhs_abs;
     return out;
 }
 
-__device__ cfloat __cminf(cfloat lhs, cfloat rhs)
-{
+__device__ cfloat __cminf(cfloat lhs, cfloat rhs) {
     return __cabsf(lhs) < __cabsf(rhs) ? lhs : rhs;
 }
 
-__device__ cfloat __cmaxf(cfloat lhs, cfloat rhs)
-{
+__device__ cfloat __cmaxf(cfloat lhs, cfloat rhs) {
     return __cabsf(lhs) > __cabsf(rhs) ? lhs : rhs;
 }
 #define __candf(lhs, rhs) __cabsf(lhs) && __cabsf(rhs)
@@ -148,59 +144,51 @@ __device__ cfloat __cmaxf(cfloat lhs, cfloat rhs)
 #define __cimag(in) ((in).y)
 #define __cabs(in) hypot(in.x, in.y)
 
-__device__ cdouble __cplx2(double x, double y)
-{
+__device__ cdouble __cplx2(double x, double y) {
     cdouble res = {x, y};
     return res;
 }
 
-__device__ cdouble __cconj(cdouble in)
-{
+__device__ cdouble __cconj(cdouble in) {
     cdouble res = {in.x, -in.y};
     return res;
 }
 
-__device__ cdouble __cadd(cdouble lhs, cdouble rhs)
-{
+__device__ cdouble __cadd(cdouble lhs, cdouble rhs) {
     cdouble res = {lhs.x + rhs.x, lhs.y + rhs.y};
     return res;
 }
 
-__device__ cdouble __csub(cdouble lhs, cdouble rhs)
-{
+__device__ cdouble __csub(cdouble lhs, cdouble rhs) {
     cdouble res = {lhs.x - rhs.x, lhs.y - rhs.y};
     return res;
 }
 
-__device__ cdouble __cmul(cdouble lhs, cdouble rhs)
-{
+__device__ cdouble __cmul(cdouble lhs, cdouble rhs) {
     cdouble out;
     out.x = lhs.x * rhs.x - lhs.y * rhs.y;
     out.y = lhs.x * rhs.y + lhs.y * rhs.x;
     return out;
 }
 
-__device__ cdouble __cdiv(cdouble lhs, cdouble rhs)
-{
+__device__ cdouble __cdiv(cdouble lhs, cdouble rhs) {
     // Normalize by absolute value and multiply
-    double rhs_abs = __cabs(rhs);
+    double rhs_abs     = __cabs(rhs);
     double inv_rhs_abs = 1.0 / rhs_abs;
-    double rhs_x = inv_rhs_abs * rhs.x;
-    double rhs_y = inv_rhs_abs * rhs.y;
-    cdouble out = {lhs.x * rhs_x + lhs.y * rhs_y,
+    double rhs_x       = inv_rhs_abs * rhs.x;
+    double rhs_y       = inv_rhs_abs * rhs.y;
+    cdouble out        = {lhs.x * rhs_x + lhs.y * rhs_y,
                    lhs.y * rhs_x - lhs.x * rhs_y};
     out.x *= inv_rhs_abs;
     out.y *= inv_rhs_abs;
     return out;
 }
 
-__device__ cdouble __cmin(cdouble lhs, cdouble rhs)
-{
+__device__ cdouble __cmin(cdouble lhs, cdouble rhs) {
     return __cabs(lhs) < __cabs(rhs) ? lhs : rhs;
 }
 
-__device__ cdouble __cmax(cdouble lhs, cdouble rhs)
-{
+__device__ cdouble __cmax(cdouble lhs, cdouble rhs) {
     return __cabs(lhs) > __cabs(rhs) ? lhs : rhs;
 }
 #define __cand(lhs, rhs) __cabs(lhs) && __cabs(rhs)

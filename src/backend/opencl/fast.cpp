@@ -7,54 +7,53 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
-#include <af/features.h>
 #include <Array.hpp>
 #include <err_opencl.hpp>
 #include <kernel/fast.hpp>
+#include <af/dim4.hpp>
+#include <af/features.h>
 
 using af::dim4;
 using af::features;
 
-namespace opencl
-{
+namespace opencl {
 
 template<typename T>
 unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
               const Array<T> &in, const float thr, const unsigned arc_length,
-              const bool non_max, const float feature_ratio, const unsigned edge)
-{
+              const bool non_max, const float feature_ratio,
+              const unsigned edge) {
     unsigned nfeat;
 
     Param x;
     Param y;
     Param score;
 
-    kernel::fast_dispatch<T>(arc_length, non_max,
-                             &nfeat, x, y, score, in,
-                             thr, feature_ratio, edge);
+    kernel::fast_dispatch<T>(arc_length, non_max, &nfeat, x, y, score, in, thr,
+                             feature_ratio, edge);
 
     if (nfeat > 0) {
-        x_out = createParamArray<float>(x, true);
-        y_out = createParamArray<float>(y, true);
+        x_out     = createParamArray<float>(x, true);
+        y_out     = createParamArray<float>(y, true);
         score_out = createParamArray<float>(score, true);
     }
 
     return nfeat;
 }
 
-#define INSTANTIATE(T)                                                                              \
-    template unsigned fast<T>(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,    \
-                              const Array<T> &in, const float thr, const unsigned arc_length,       \
-                              const bool nonmax, const float feature_ratio, const unsigned edge);
+#define INSTANTIATE(T)                                                        \
+    template unsigned fast<T>(                                                \
+        Array<float> & x_out, Array<float> & y_out, Array<float> & score_out, \
+        const Array<T> &in, const float thr, const unsigned arc_length,       \
+        const bool nonmax, const float feature_ratio, const unsigned edge);
 
-INSTANTIATE(float )
+INSTANTIATE(float)
 INSTANTIATE(double)
-INSTANTIATE(char  )
-INSTANTIATE(int   )
-INSTANTIATE(uint  )
-INSTANTIATE(uchar )
-INSTANTIATE(short )
+INSTANTIATE(char)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(uchar)
+INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace opencl

@@ -7,24 +7,21 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <stdio.h>
 #include <arrayfire.h>
+#include <stdio.h>
 #include <af/util.h>
 
 using namespace af;
 
 array A, B;
 
-static array dist_naive(array a, array b)
-{
+static array dist_naive(array a, array b) {
     array dist_mat = constant(0, a.dims(1), (int)b.dims(1));
 
     // Iterate through columns a
     for (int ii = 0; ii < (int)a.dims(1); ii++) {
-
         // Iterate through columns of b
         for (int jj = 0; jj < (int)b.dims(1); jj++) {
-
             // Get the sum of absolute differences
             for (int kk = 0; kk < (int)a.dims(0); kk++) {
                 dist_mat(ii, jj) += abs(a(kk, ii) - b(kk, jj));
@@ -35,8 +32,7 @@ static array dist_naive(array a, array b)
     return dist_mat;
 }
 
-static array dist_vec(array a, array b)
-{
+static array dist_vec(array a, array b) {
     array dist_mat = constant(0, (int)a.dims(1), (int)b.dims(1));
 
     // Iterate through columns a
@@ -55,12 +51,11 @@ static array dist_vec(array a, array b)
     return dist_mat;
 }
 
-static array dist_gfor1(array a, array b)
-{
+static array dist_gfor1(array a, array b) {
     array dist_mat = constant(0, (int)a.dims(1), (int)b.dims(1));
 
     // GFOR along columns of a
-    gfor (seq ii, (int)a.dims(1)) {
+    gfor(seq ii, (int)a.dims(1)) {
         array avec = a(span, ii);
 
         // Itere through columns of b
@@ -75,12 +70,11 @@ static array dist_gfor1(array a, array b)
     return dist_mat;
 }
 
-static array dist_gfor2(array a, array b)
-{
+static array dist_gfor2(array a, array b) {
     array dist_mat = constant(0, (int)a.dims(1), (int)b.dims(1));
 
     // GFOR along columns of b
-    gfor (seq jj, (int)b.dims(1)) {
+    gfor(seq jj, (int)b.dims(1)) {
         array bvec = b(span, jj);
 
         // Iterate through columns of A
@@ -95,8 +89,7 @@ static array dist_gfor2(array a, array b)
     return dist_mat;
 }
 
-static array dist_tile1(array a, array b)
-{
+static array dist_tile1(array a, array b) {
     // int feat_len = (int)a.dims(0); // Same as (int)b.dims(0);
     int alen = (int)a.dims(1);
     int blen = (int)b.dims(1);
@@ -105,7 +98,6 @@ static array dist_tile1(array a, array b)
 
     // Iterate through columns of b
     for (int jj = 0; jj < blen; jj++) {
-
         // Get the column vector of b
         // shape of bvec is (feat_len, 1)
         array bvec = b(span, jj);
@@ -125,11 +117,10 @@ static array dist_tile1(array a, array b)
     return dist_mat;
 }
 
-static array dist_tile2(array a, array b)
-{
+static array dist_tile2(array a, array b) {
     int feat_len = (int)a.dims(0);
-    int alen = (int)a.dims(1);
-    int blen = (int)b.dims(1);
+    int alen     = (int)a.dims(1);
+    int blen     = (int)b.dims(1);
 
     // Shape of a is (feat_len, alen, 1)
     array a_mod = a;
@@ -149,40 +140,20 @@ static array dist_tile2(array a, array b)
     return dist_mat;
 }
 
-static void bench_naive()
-{
-    dist_naive(A, B);
-}
+static void bench_naive() { dist_naive(A, B); }
 
-static void bench_vec()
-{
-    dist_vec(A, B);
-}
+static void bench_vec() { dist_vec(A, B); }
 
-static void bench_gfor1()
-{
-    dist_gfor1(A, B);
-}
+static void bench_gfor1() { dist_gfor1(A, B); }
 
-static void bench_gfor2()
-{
-    dist_gfor2(A, B);
-}
+static void bench_gfor2() { dist_gfor2(A, B); }
 
-static void bench_tile1()
-{
-    dist_tile1(A, B);
-}
+static void bench_tile1() { dist_tile1(A, B); }
 
-static void bench_tile2()
-{
-    dist_tile2(A, B);
-}
+static void bench_tile2() { dist_tile2(A, B); }
 
-int main(int, char **)
-{
+int main(int, char **) {
     try {
-
         af::info();
 
         // Do not increase the sizes
@@ -191,7 +162,7 @@ int main(int, char **)
         B = randu(3, 300);
 
         array d1 = dist_naive(A, B);
-        array d2 = dist_vec  (A, B);
+        array d2 = dist_vec(A, B);
         array d3 = dist_gfor1(A, B);
         array d4 = dist_gfor2(A, B);
         array d5 = dist_tile1(A, B);
@@ -206,13 +177,13 @@ int main(int, char **)
         printf("\n");
 
         printf("Time for dist_naive: %2.2fms\n", 1000 * timeit(bench_naive));
-        printf("Time for dist_vec  : %2.2fms\n", 1000 * timeit(bench_vec  ));
+        printf("Time for dist_vec  : %2.2fms\n", 1000 * timeit(bench_vec));
         printf("Time for dist_gfor1: %2.2fms\n", 1000 * timeit(bench_gfor1));
         printf("Time for dist_gfor2: %2.2fms\n", 1000 * timeit(bench_gfor2));
         printf("Time for dist_tile1: %2.2fms\n", 1000 * timeit(bench_tile1));
         printf("Time for dist_tile2: %2.2fms\n", 1000 * timeit(bench_tile2));
 
-    } catch(af::exception ex) {
+    } catch (af::exception ex) {
         fprintf(stderr, "%s\n", ex.what());
         throw;
     }

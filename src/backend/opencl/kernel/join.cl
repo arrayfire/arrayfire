@@ -7,12 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel
-void join_kernel(__global To *d_out, const KParam out,
-                 __global const Ti *d_in, const KParam in,
-                 const int o0, const int o1, const int o2, const int o3,
-                 const int blocksPerMatX, const int blocksPerMatY)
-{
+__kernel void join_kernel(__global To *d_out, const KParam out,
+                          __global const Ti *d_in, const KParam in,
+                          const int o0, const int o1, const int o2,
+                          const int o3, const int blocksPerMatX,
+                          const int blocksPerMatY) {
     const int iz = get_group_id(0) / blocksPerMatX;
     const int iw = get_group_id(1) / blocksPerMatY;
 
@@ -29,10 +28,10 @@ void join_kernel(__global To *d_out, const KParam out,
 
     if (iz < in.dims[2] && iw < in.dims[3]) {
         d_out = d_out + (iz + o2) * out.strides[2] + (iw + o3) * out.strides[3];
-        d_in = d_in + iz * in.strides[2] + iw * in.strides[3];
+        d_in  = d_in + iz * in.strides[2] + iw * in.strides[3];
 
         for (int iy = yy; iy < in.dims[1]; iy += incy) {
-            __global Ti *d_in_ = d_in + iy * in.strides[1];
+            __global Ti *d_in_  = d_in + iy * in.strides[1];
             __global To *d_out_ = d_out + (iy + o1) * out.strides[1];
 
             for (int ix = xx; ix < in.dims[0]; ix += incx) {

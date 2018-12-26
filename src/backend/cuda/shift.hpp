@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 
-namespace cuda
-{
-    template<typename T>
-    Array<T> shift(const Array<T> &in, const int sdims[4]);
+namespace cuda {
+template<typename T>
+Array<T> shift(const Array<T> &in, const int sdims[4]);
 }

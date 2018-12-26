@@ -10,17 +10,15 @@
 #include <diff.hpp>
 
 #include <Array.hpp>
-#include <platform.hpp>
 #include <kernel/diff.hpp>
+#include <platform.hpp>
 
 #include <af/dim4.hpp>
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
-Array<T>  diff1(const Array<T> &in, const int dim)
-{
+Array<T> diff1(const Array<T> &in, const int dim) {
     in.eval();
 
     // Decrement dimension of select dimension
@@ -35,8 +33,7 @@ Array<T>  diff1(const Array<T> &in, const int dim)
 }
 
 template<typename T>
-Array<T>  diff2(const Array<T> &in, const int dim)
-{
+Array<T> diff2(const Array<T> &in, const int dim) {
     in.eval();
 
     // Decrement dimension of select dimension
@@ -50,9 +47,9 @@ Array<T>  diff2(const Array<T> &in, const int dim)
     return outArray;
 }
 
-#define INSTANTIATE(T)                                                  \
-    template Array<T>  diff1<T>  (const Array<T> &in, const int dim);   \
-    template Array<T>  diff2<T>  (const Array<T> &in, const int dim);   \
+#define INSTANTIATE(T)                                             \
+    template Array<T> diff1<T>(const Array<T> &in, const int dim); \
+    template Array<T> diff2<T>(const Array<T> &in, const int dim);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -67,4 +64,4 @@ INSTANTIATE(char)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
 
-}
+}  // namespace cpu

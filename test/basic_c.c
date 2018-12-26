@@ -9,11 +9,10 @@
 
 #include <arrayfire.h>
 
-int main()
-{
+int main() {
     af_array out = 0;
-    dim_t s[] = {10, 10, 1, 1};
-    af_err e = af_randu(&out, 4, s, f32);
-    if(out != 0) af_release_array(out);
+    dim_t s[]    = {10, 10, 1, 1};
+    af_err e     = af_randu(&out, 4, s, f32);
+    if (out != 0) af_release_array(out);
     return (AF_SUCCESS != e);
 }

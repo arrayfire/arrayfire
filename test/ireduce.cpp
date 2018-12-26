@@ -8,14 +8,12 @@
  ********************************************************/
 
 #include <gtest/gtest.h>
-#include <af/array.h>
-#include <af/arith.h>
-#include <af/data.h>
 #include <testHelpers.hpp>
+#include <af/arith.h>
+#include <af/array.h>
+#include <af/data.h>
 #include <algorithm>
 
-using std::vector;
-using std::complex;
 using af::allTrue;
 using af::array;
 using af::constant;
@@ -26,74 +24,71 @@ using af::min;
 using af::randu;
 using af::seq;
 using af::span;
+using std::complex;
+using std::vector;
 
-#define MINMAXOP(fn, ty)                                \
-    TEST(IndexedReduce, fn##_##ty##_0)                  \
-    {                                                   \
-        if (noDoubleTests<ty>()) return;                \
-        dtype dty = (dtype)dtype_traits<ty>::af_type;   \
-        const int nx = 10000;                           \
-        const int ny = 100;                             \
-        array in = randu(nx, ny, dty);                  \
-        array val, idx;                                 \
-        fn(val, idx, in, 0);                            \
-                                                        \
-        ty *h_in = in.host<ty>();                       \
-        ty *h_in_st = h_in;                             \
-        ty *h_val = val.host<ty>();                     \
-        uint *h_idx = idx.host<uint>();                 \
-        for (int i = 0; i < ny; i++) {                  \
-            ty tmp = *std::fn##_element(h_in, h_in +nx);\
-            ASSERT_EQ(tmp, h_val[i])                    \
-                << "for index" << i;                    \
-            ASSERT_EQ(h_in[h_idx[i]], tmp)              \
-                << "for index" << i;                    \
-            h_in += nx;                                 \
-        }                                               \
-        af_free_host(h_in_st);                          \
-        af_free_host(h_val);                            \
-        af_free_host(h_idx);                            \
-    }                                                   \
-    TEST(IndexedReduce, fn##_##ty##_1)                  \
-    {                                                   \
-        if (noDoubleTests<ty>()) return;                \
-        dtype dty = (dtype)dtype_traits<ty>::af_type;   \
-        const int nx = 100;                             \
-        const int ny = 100;                             \
-        array in = randu(nx, ny, dty);                  \
-        array val, idx;                                 \
-        fn(val, idx, in, 1);                            \
-                                                        \
-        ty *h_in = in.host<ty>();                       \
-        ty *h_val = val.host<ty>();                     \
-        uint *h_idx = idx.host<uint>();                 \
-        for (int i = 0; i < nx; i++) {                  \
-            ty val = h_val[i];                          \
-            for (int j= 0; j < ny; j++) {               \
-                ty tmp = std::fn(val, h_in[j * nx + i]);\
-                ASSERT_EQ(tmp, val);                    \
-            }                                           \
-            ASSERT_EQ(val, h_in[h_idx[i] * nx + i]);    \
-        }                                               \
-        af_free_host(h_in);                             \
-        af_free_host(h_val);                            \
-        af_free_host(h_idx);                            \
-    }                                                   \
-    TEST(IndexedReduce, fn##_##ty##_all)                \
-    {                                                   \
-        if (noDoubleTests<ty>()) return;                \
-        dtype dty = (dtype)dtype_traits<ty>::af_type;   \
-        const int num = 100000;                         \
-        array in = randu(num, dty);                     \
-        ty val;                                         \
-        uint idx;                                       \
-        fn<ty>(&val, &idx, in);                         \
-        ty *h_in = in.host<ty>();                       \
-        ty tmp = *std::fn##_element(h_in, h_in + num);  \
-        ASSERT_EQ(tmp, val);                            \
-        ASSERT_EQ(tmp, h_in[idx]);                      \
-        af_free_host(h_in);                             \
-    }                                                   \
+#define MINMAXOP(fn, ty)                                        \
+    TEST(IndexedReduce, fn##_##ty##_0) {                        \
+        if (noDoubleTests<ty>()) return;                        \
+        dtype dty    = (dtype)dtype_traits<ty>::af_type;        \
+        const int nx = 10000;                                   \
+        const int ny = 100;                                     \
+        array in     = randu(nx, ny, dty);                      \
+        array val, idx;                                         \
+        fn(val, idx, in, 0);                                    \
+                                                                \
+        ty *h_in    = in.host<ty>();                            \
+        ty *h_in_st = h_in;                                     \
+        ty *h_val   = val.host<ty>();                           \
+        uint *h_idx = idx.host<uint>();                         \
+        for (int i = 0; i < ny; i++) {                          \
+            ty tmp = *std::fn##_element(h_in, h_in + nx);       \
+            ASSERT_EQ(tmp, h_val[i]) << "for index" << i;       \
+            ASSERT_EQ(h_in[h_idx[i]], tmp) << "for index" << i; \
+            h_in += nx;                                         \
+        }                                                       \
+        af_free_host(h_in_st);                                  \
+        af_free_host(h_val);                                    \
+        af_free_host(h_idx);                                    \
+    }                                                           \
+    TEST(IndexedReduce, fn##_##ty##_1) {                        \
+        if (noDoubleTests<ty>()) return;                        \
+        dtype dty    = (dtype)dtype_traits<ty>::af_type;        \
+        const int nx = 100;                                     \
+        const int ny = 100;                                     \
+        array in     = randu(nx, ny, dty);                      \
+        array val, idx;                                         \
+        fn(val, idx, in, 1);                                    \
+                                                                \
+        ty *h_in    = in.host<ty>();                            \
+        ty *h_val   = val.host<ty>();                           \
+        uint *h_idx = idx.host<uint>();                         \
+        for (int i = 0; i < nx; i++) {                          \
+            ty val = h_val[i];                                  \
+            for (int j = 0; j < ny; j++) {                      \
+                ty tmp = std::fn(val, h_in[j * nx + i]);        \
+                ASSERT_EQ(tmp, val);                            \
+            }                                                   \
+            ASSERT_EQ(val, h_in[h_idx[i] * nx + i]);            \
+        }                                                       \
+        af_free_host(h_in);                                     \
+        af_free_host(h_val);                                    \
+        af_free_host(h_idx);                                    \
+    }                                                           \
+    TEST(IndexedReduce, fn##_##ty##_all) {                      \
+        if (noDoubleTests<ty>()) return;                        \
+        dtype dty     = (dtype)dtype_traits<ty>::af_type;       \
+        const int num = 100000;                                 \
+        array in      = randu(num, dty);                        \
+        ty val;                                                 \
+        uint idx;                                               \
+        fn<ty>(&val, &idx, in);                                 \
+        ty *h_in = in.host<ty>();                               \
+        ty tmp   = *std::fn##_element(h_in, h_in + num);        \
+        ASSERT_EQ(tmp, val);                                    \
+        ASSERT_EQ(tmp, h_in[idx]);                              \
+        af_free_host(h_in);                                     \
+    }
 
 MINMAXOP(min, float)
 MINMAXOP(min, double)
@@ -109,12 +104,11 @@ MINMAXOP(max, uint)
 MINMAXOP(max, char)
 MINMAXOP(max, uchar)
 
-TEST(IndexedReduce, MaxIndexedSmall)
-{
+TEST(IndexedReduce, MaxIndexedSmall) {
     const int num = 1000;
-    const int st = 10;
-    const int en = num - 100;
-    array a = randu(num);
+    const int st  = 10;
+    const int en  = num - 100;
+    array a       = randu(num);
 
     float b;
     unsigned idx;
@@ -124,19 +118,16 @@ TEST(IndexedReduce, MaxIndexedSmall)
     a.host(&ha[0]);
 
     float res = ha[st];
-    for (int i = st; i <= en; i++) {
-        res = std::max(res, ha[i]);
-    }
+    for (int i = st; i <= en; i++) { res = std::max(res, ha[i]); }
 
     ASSERT_EQ(b, res);
 }
 
-TEST(IndexedReduce, MaxIndexedBig)
-{
+TEST(IndexedReduce, MaxIndexedBig) {
     const int num = 100000;
-    const int st = 1000;
-    const int en = num - 1000;
-    array a = randu(num);
+    const int st  = 1000;
+    const int en  = num - 1000;
+    array a       = randu(num);
 
     float b;
     unsigned idx;
@@ -146,22 +137,19 @@ TEST(IndexedReduce, MaxIndexedBig)
     a.host(&ha[0]);
 
     float res = ha[st];
-    for (int i = st; i <= en; i++) {
-        res = std::max(res, ha[i]);
-    }
+    for (int i = st; i <= en; i++) { res = std::max(res, ha[i]); }
 
     ASSERT_EQ(b, res);
 }
 
-TEST(IndexedReduce, BUG_FIX_1005)
-{
+TEST(IndexedReduce, BUG_FIX_1005) {
     const int m = 64;
     const int n = 100;
     const int b = 5;
 
     array in = constant(0, m, n, b);
     for (int i = 0; i < b; i++) {
-        array tmp = randu(m, n);
+        array tmp         = randu(m, n);
         in(span, span, i) = tmp;
 
         float val0, val1;
@@ -175,8 +163,7 @@ TEST(IndexedReduce, BUG_FIX_1005)
     }
 }
 
-TEST(IndexedReduce, MinReduceDimensionHasSingleValue)
-{
+TEST(IndexedReduce, MinReduceDimensionHasSingleValue) {
     array data = randu(10, 10, 1);
 
     array mm, indx;
@@ -186,8 +173,7 @@ TEST(IndexedReduce, MinReduceDimensionHasSingleValue)
     ASSERT_TRUE(allTrue<bool>(indx == 0));
 }
 
-TEST(IndexedReduce, MaxReduceDimensionHasSingleValue)
-{
+TEST(IndexedReduce, MaxReduceDimensionHasSingleValue) {
     array data = randu(10, 10, 1);
 
     array mm, indx;
@@ -197,15 +183,14 @@ TEST(IndexedReduce, MaxReduceDimensionHasSingleValue)
     ASSERT_TRUE(allTrue<bool>(indx == 0));
 }
 
-TEST(IndexedReduce, MinNaN)
-{
-    float test_data[] = { 1.f, NAN, 5.f, 0.1f, NAN, -0.5f, NAN, 0.f };
-    int rows = 4;
-    int cols = 2;
+TEST(IndexedReduce, MinNaN) {
+    float test_data[] = {1.f, NAN, 5.f, 0.1f, NAN, -0.5f, NAN, 0.f};
+    int rows          = 4;
+    int cols          = 2;
     array a(rows, cols, test_data);
 
-    float gold_min_val[] = { 0.1f, -0.5f };
-    int gold_min_idx[] = { 3, 1 };
+    float gold_min_val[] = {0.1f, -0.5f};
+    int gold_min_idx[]   = {3, 1};
 
     array min_val;
     array min_idx;
@@ -221,20 +206,17 @@ TEST(IndexedReduce, MinNaN)
         ASSERT_FLOAT_EQ(h_min_val[i], gold_min_val[i]);
     }
 
-    for (int i = 0; i < cols; i++) {
-        ASSERT_EQ(h_min_idx[i], gold_min_idx[i]);
-    }
+    for (int i = 0; i < cols; i++) { ASSERT_EQ(h_min_idx[i], gold_min_idx[i]); }
 }
 
-TEST(IndexedReduce, MaxNaN)
-{
-    float test_data[] = { 1.f, NAN, 5.f, 0.1f, NAN, -0.5f, NAN, 0.f };
-    int rows = 4;
-    int cols = 2;
+TEST(IndexedReduce, MaxNaN) {
+    float test_data[] = {1.f, NAN, 5.f, 0.1f, NAN, -0.5f, NAN, 0.f};
+    int rows          = 4;
+    int cols          = 2;
     array a(rows, cols, test_data);
 
-    float gold_max_val[] = { 5.0f, 0.f };
-    int gold_max_idx[] = { 2, 3 };
+    float gold_max_val[] = {5.0f, 0.f};
+    int gold_max_idx[]   = {2, 3};
 
     array max_val;
     array max_idx;
@@ -250,22 +232,15 @@ TEST(IndexedReduce, MaxNaN)
         ASSERT_FLOAT_EQ(h_max_val[i], gold_max_val[i]);
     }
 
-    for (int i = 0; i < cols; i++) {
-        ASSERT_EQ(h_max_idx[i], gold_max_idx[i]);
-    }
+    for (int i = 0; i < cols; i++) { ASSERT_EQ(h_max_idx[i], gold_max_idx[i]); }
 }
 
-TEST(IndexedReduce, MinCplxNaN)
-{
-    float real_wnan_data[] = {
-        0.005f, NAN, -6.3f, NAN, -0.5f,
-        NAN, NAN, 0.2f, -1205.4f, 8.9f
-    };
+TEST(IndexedReduce, MinCplxNaN) {
+    float real_wnan_data[] = {0.005f, NAN, -6.3f, NAN,      -0.5f,
+                              NAN,    NAN, 0.2f,  -1205.4f, 8.9f};
 
-    float imag_wnan_data[] = {
-        NAN, NAN, -9.0f, -0.005f, -0.3f,
-        0.007f, NAN, 0.1f, NAN, 4.5f
-    };
+    float imag_wnan_data[] = {NAN,    NAN, -9.0f, -0.005f, -0.3f,
+                              0.007f, NAN, 0.1f,  NAN,     4.5f};
 
     int rows = 5;
     int cols = 2;
@@ -273,15 +248,15 @@ TEST(IndexedReduce, MinCplxNaN)
     array imag_wnan(rows, cols, imag_wnan_data);
     array a = af::complex(real_wnan, imag_wnan);
 
-    float gold_min_real[] = { -0.5f, 0.2f };
-    float gold_min_imag[] = { -0.3f, 0.1f };
-    int gold_min_idx[] = { 4, 2 };
+    float gold_min_real[] = {-0.5f, 0.2f};
+    float gold_min_imag[] = {-0.3f, 0.1f};
+    int gold_min_idx[]    = {4, 2};
 
     array min_val;
     array min_idx;
     af::min(min_val, min_idx, a);
 
-    vector< complex<float> > h_min_val(cols);
+    vector<complex<float> > h_min_val(cols);
     min_val.host(&h_min_val[0]);
 
     vector<int> h_min_idx(cols);
@@ -292,22 +267,15 @@ TEST(IndexedReduce, MinCplxNaN)
         ASSERT_FLOAT_EQ(h_min_val[i].imag(), gold_min_imag[i]);
     }
 
-    for (int i = 0; i < cols; i++) {
-        ASSERT_EQ(h_min_idx[i], gold_min_idx[i]);
-    }
+    for (int i = 0; i < cols; i++) { ASSERT_EQ(h_min_idx[i], gold_min_idx[i]); }
 }
 
-TEST(IndexedReduce, MaxCplxNaN)
-{
-    float real_wnan_data[] = {
-        0.005f, NAN, -6.3f, NAN, -0.5f,
-        NAN, NAN, 0.2f, -1205.4f, 8.9f
-    };
+TEST(IndexedReduce, MaxCplxNaN) {
+    float real_wnan_data[] = {0.005f, NAN, -6.3f, NAN,      -0.5f,
+                              NAN,    NAN, 0.2f,  -1205.4f, 8.9f};
 
-    float imag_wnan_data[] = {
-        NAN, NAN, -9.0f, -0.005f, -0.3f,
-        0.007f, NAN, 0.1f, NAN, 4.5f
-    };
+    float imag_wnan_data[] = {NAN,    NAN, -9.0f, -0.005f, -0.3f,
+                              0.007f, NAN, 0.1f,  NAN,     4.5f};
 
     int rows = 5;
     int cols = 2;
@@ -315,15 +283,15 @@ TEST(IndexedReduce, MaxCplxNaN)
     array imag_wnan(rows, cols, imag_wnan_data);
     array a = af::complex(real_wnan, imag_wnan);
 
-    float gold_max_real[] = { -6.3f, 8.9f };
-    float gold_max_imag[] = { -9.0f, 4.5f };
-    int gold_max_idx[] = { 2, 4 };
+    float gold_max_real[] = {-6.3f, 8.9f};
+    float gold_max_imag[] = {-9.0f, 4.5f};
+    int gold_max_idx[]    = {2, 4};
 
     array max_val;
     array max_idx;
     af::max(max_val, max_idx, a);
 
-    vector< complex<float> > h_max_val(cols);
+    vector<complex<float> > h_max_val(cols);
     max_val.host(&h_max_val[0]);
 
     vector<int> h_max_idx(cols);
@@ -334,19 +302,16 @@ TEST(IndexedReduce, MaxCplxNaN)
         ASSERT_FLOAT_EQ(h_max_val[i].imag(), gold_max_imag[i]);
     }
 
-    for (int i = 0; i < cols; i++) {
-        ASSERT_EQ(h_max_idx[i], gold_max_idx[i]);
-    }
+    for (int i = 0; i < cols; i++) { ASSERT_EQ(h_max_idx[i], gold_max_idx[i]); }
 }
 
-TEST(IndexedReduce, MinPreferLargerIdxIfEqual)
-{
+TEST(IndexedReduce, MinPreferLargerIdxIfEqual) {
     float test_data[] = {0.f, 50.f, 50.f, 0.f};
-    int len = 4;
+    int len           = 4;
     array a(len, test_data);
 
     float gold_min_val = 0.f;
-    int gold_min_idx = 3;
+    int gold_min_idx   = 3;
 
     array min_val;
     array min_idx;
@@ -362,14 +327,13 @@ TEST(IndexedReduce, MinPreferLargerIdxIfEqual)
     ASSERT_EQ(h_min_idx[0], gold_min_idx);
 }
 
-TEST(IndexedReduce, MaxPreferSmallerIdxIfEqual)
-{
+TEST(IndexedReduce, MaxPreferSmallerIdxIfEqual) {
     float test_data[] = {0.f, 50.f, 50.f, 0.f};
-    int len = 4;
+    int len           = 4;
     array a(len, test_data);
 
     float gold_max_val = 50.f;
-    int gold_max_idx = 1;
+    int gold_max_idx   = 1;
 
     array max_val;
     array max_idx;
@@ -385,10 +349,9 @@ TEST(IndexedReduce, MaxPreferSmallerIdxIfEqual)
     ASSERT_EQ(h_max_idx[0], gold_max_idx);
 }
 
-TEST(IndexedReduce, MinCplxPreferLargerIdxIfEqual)
-{
-    float real_wnan_data[] = { 0.f, 50.f, 50.f, 0.f };
-    float imag_wnan_data[] = { 0.f, 50.f, 50.f, 0.f };
+TEST(IndexedReduce, MinCplxPreferLargerIdxIfEqual) {
+    float real_wnan_data[] = {0.f, 50.f, 50.f, 0.f};
+    float imag_wnan_data[] = {0.f, 50.f, 50.f, 0.f};
 
     int len = 4;
     array real_wnan(len, real_wnan_data);
@@ -397,13 +360,13 @@ TEST(IndexedReduce, MinCplxPreferLargerIdxIfEqual)
 
     float gold_min_real = 0.f;
     float gold_min_imag = 0.f;
-    int gold_min_idx = 3;
+    int gold_min_idx    = 3;
 
     array min_val;
     array min_idx;
     min(min_val, min_idx, a);
 
-    vector< complex<float> > h_min_val(1);
+    vector<complex<float> > h_min_val(1);
     min_val.host(&h_min_val[0]);
 
     vector<int> h_min_idx(1);
@@ -415,10 +378,9 @@ TEST(IndexedReduce, MinCplxPreferLargerIdxIfEqual)
     ASSERT_EQ(h_min_idx[0], gold_min_idx);
 }
 
-TEST(IndexedReduce, MaxCplxPreferSmallerIdxIfEqual)
-{
-    float real_wnan_data[] = { 0.f, 50.f, 50.f, 0.f };
-    float imag_wnan_data[] = { 0.f, 50.f, 50.f, 0.f };
+TEST(IndexedReduce, MaxCplxPreferSmallerIdxIfEqual) {
+    float real_wnan_data[] = {0.f, 50.f, 50.f, 0.f};
+    float imag_wnan_data[] = {0.f, 50.f, 50.f, 0.f};
 
     int len = 4;
     array real_wnan(len, real_wnan_data);
@@ -427,13 +389,13 @@ TEST(IndexedReduce, MaxCplxPreferSmallerIdxIfEqual)
 
     float gold_max_real = 50.f;
     float gold_max_imag = 50.f;
-    int gold_max_idx = 1;
+    int gold_max_idx    = 1;
 
     array max_val;
     array max_idx;
     max(max_val, max_idx, a);
 
-    vector< complex<float> > h_max_val(1);
+    vector<complex<float> > h_max_val(1);
     max_val.host(&h_max_val[0]);
 
     vector<int> h_max_idx(1);

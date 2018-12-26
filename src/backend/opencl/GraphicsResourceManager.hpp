@@ -14,23 +14,21 @@
 #include <map>
 #include <vector>
 
-namespace cl
-{
+namespace cl {
 class Buffer;
 }
 
 namespace opencl {
-class GraphicsResourceManager :
-    public common::InteropManager<GraphicsResourceManager, cl::Buffer>
-{
-    public:
-        using ShrdResVector = std::vector< std::shared_ptr<cl::Buffer> >;
+class GraphicsResourceManager
+    : public common::InteropManager<GraphicsResourceManager, cl::Buffer> {
+   public:
+    using ShrdResVector = std::vector<std::shared_ptr<cl::Buffer>>;
 
-        GraphicsResourceManager() {}
-        ShrdResVector registerResources(std::vector<uint32_t> resources);
+    GraphicsResourceManager() {}
+    ShrdResVector registerResources(std::vector<uint32_t> resources);
 
-    protected:
-        GraphicsResourceManager(GraphicsResourceManager const&);
-        void operator=(GraphicsResourceManager const&);
+   protected:
+    GraphicsResourceManager(GraphicsResourceManager const&);
+    void operator=(GraphicsResourceManager const&);
 };
-}
+}  // namespace opencl

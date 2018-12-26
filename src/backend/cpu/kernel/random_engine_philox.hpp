@@ -47,56 +47,59 @@
 
 #pragma once
 
-namespace cpu
-{
-namespace kernel
-{
-    //Utils
-    //Source of these constants :
-    //github.com/DEShawResearch/Random123-Boost/blob/master/boost/random/philox.hpp
+namespace cpu {
+namespace kernel {
+// Utils
+// Source of these constants :
+// github.com/DEShawResearch/Random123-Boost/blob/master/boost/random/philox.hpp
 
-    static const uint m4x32_0 = 0xD2511F53;
-    static const uint m4x32_1 = 0xCD9E8D57;
-    static const uint w32_0   = 0x9E3779B9;
-    static const uint w32_1   = 0xBB67AE85;
+static const uint m4x32_0 = 0xD2511F53;
+static const uint m4x32_1 = 0xCD9E8D57;
+static const uint w32_0   = 0x9E3779B9;
+static const uint w32_1   = 0xBB67AE85;
 
-    void mulhilo(const uint a, const uint b, uint * const hi, uint * const lo)
-    {
-        *hi = (((uintl)a) * ((uintl)b))>>32;
-        *lo = a*b;
-    }
-
-    void philoxBump(uint * const k)
-    {
-        k[0] += w32_0;
-        k[1] += w32_1;
-    }
-
-    void philoxRound(const uint * const k, uint * const c)
-    {
-        uint hi0, lo0, hi1, lo1;
-        mulhilo(m4x32_0, c[0], &hi0, &lo0);
-        mulhilo(m4x32_1, c[2], &hi1, &lo1);
-        c[0] = hi1^c[1]^k[0];
-        c[1] = lo1;
-        c[2] = hi0^c[3]^k[1];
-        c[3] = lo0;
-    }
-
-    void philox(uint * const key, uint * const ctr)
-    {
-        //10 Rounds
-                           philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-        philoxBump(key);   philoxRound(key, ctr);
-    }
-
+void mulhilo(const uint a, const uint b, uint* const hi, uint* const lo) {
+    *hi = (((uintl)a) * ((uintl)b)) >> 32;
+    *lo = a * b;
 }
+
+void philoxBump(uint* const k) {
+    k[0] += w32_0;
+    k[1] += w32_1;
 }
+
+void philoxRound(const uint* const k, uint* const c) {
+    uint hi0, lo0, hi1, lo1;
+    mulhilo(m4x32_0, c[0], &hi0, &lo0);
+    mulhilo(m4x32_1, c[2], &hi1, &lo1);
+    c[0] = hi1 ^ c[1] ^ k[0];
+    c[1] = lo1;
+    c[2] = hi0 ^ c[3] ^ k[1];
+    c[3] = lo0;
+}
+
+void philox(uint* const key, uint* const ctr) {
+    // 10 Rounds
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+}
+
+}  // namespace kernel
+}  // namespace cpu

@@ -13,16 +13,15 @@
 #include <string>
 
 namespace cl {
-  class Program;
-  class Kernel;
-}
+class Program;
+class Kernel;
+}  // namespace cl
 
-namespace opencl
-{
-    typedef struct {
-        cl::Program* prog;
-        cl::Kernel* ker;
-    } kc_entry_t;
+namespace opencl {
+struct kc_entry_t {
+    cl::Program* prog;
+    cl::Kernel* ker;
+};
 
-    typedef std::map<std::string, kc_entry_t> kc_t;
-}
+typedef std::map<std::string, kc_entry_t> kc_t;
+}  // namespace opencl

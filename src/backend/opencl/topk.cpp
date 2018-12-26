@@ -8,10 +8,10 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <err_opencl.hpp>
+#include <index.hpp>
 #include <sort.hpp>
 #include <sort_index.hpp>
-#include <index.hpp>
-#include <err_opencl.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -27,18 +27,16 @@ using std::partial_sort_copy;
 using std::transform;
 using std::vector;
 
-namespace opencl
-{
-vector<af_index_t> indexForTopK(const int k)
-{
+namespace opencl {
+vector<af_index_t> indexForTopK(const int k) {
     af_index_t idx;
     idx.idx.seq = af_seq{0.0, (double)k - 1, 1.0};
-    idx.isSeq = true;
+    idx.isSeq   = true;
     idx.isBatch = false;
 
     af_index_t sp;
     sp.idx.seq = af_span;
-    sp.isSeq = true;
+    sp.isSeq   = true;
     sp.isBatch = false;
 
     return vector<af_index_t>({idx, sp, sp, sp});
@@ -46,10 +44,8 @@ vector<af_index_t> indexForTopK(const int k)
 
 template<typename T>
 void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
-          const int k, const int dim, const af::topkFunction order)
-{
-
-    if( getDeviceType() == CL_DEVICE_TYPE_CPU ) {
+          const int k, const int dim, const af::topkFunction order) {
+    if (getDeviceType() == CL_DEVICE_TYPE_CPU) {
         // This branch optimizes for CPU devices by first mapping the buffer
         // and calling partial sort on the buffer
 
@@ -59,7 +55,7 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
         // and the same as the input dimension otherwise.
         dim4 out_dims(1);
         int ndims = in.dims().ndims();
-        for(int i = 0; i < ndims; i++) {
+        for (int i = 0; i < ndims; i++) {
             if (i == dim) {
                 out_dims[i] = min(k, (int)in.dims()[i]);
             } else {
@@ -67,29 +63,22 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
             }
         }
 
-        auto values  = createEmptyArray<T>(out_dims);
-        auto indices = createEmptyArray<unsigned>(out_dims);
-        const Buffer *in_buf = in.get();
-        Buffer *ibuf = indices.get();
-        Buffer *vbuf = values.get();
+        auto values          = createEmptyArray<T>(out_dims);
+        auto indices         = createEmptyArray<unsigned>(out_dims);
+        const Buffer* in_buf = in.get();
+        Buffer* ibuf         = indices.get();
+        Buffer* vbuf         = values.get();
 
         Event ev_in, ev_val, ev_ind;
 
-        T* ptr =
-          static_cast<T*>(getQueue().enqueueMapBuffer(*in_buf, CL_FALSE,
-                                                      CL_MAP_READ, 0,
-                                                      in.elements() * sizeof(T),
-                                                      nullptr, &ev_in));
-        uint* iptr =
-          static_cast<uint*>(getQueue().enqueueMapBuffer(*ibuf, CL_FALSE,
-                                                         CL_MAP_READ | CL_MAP_WRITE,
-                                                         0, k * sizeof(uint),
-                                                         nullptr, &ev_ind));
-        T* vptr =
-          static_cast<T*> (getQueue().enqueueMapBuffer(*vbuf, CL_FALSE,
-                                                       CL_MAP_WRITE, 0,
-                                                       k * sizeof(T),
-                                                       nullptr, &ev_val));
+        T* ptr     = static_cast<T*>(getQueue().enqueueMapBuffer(
+            *in_buf, CL_FALSE, CL_MAP_READ, 0, in.elements() * sizeof(T),
+            nullptr, &ev_in));
+        uint* iptr = static_cast<uint*>(getQueue().enqueueMapBuffer(
+            *ibuf, CL_FALSE, CL_MAP_READ | CL_MAP_WRITE, 0, k * sizeof(uint),
+            nullptr, &ev_ind));
+        T* vptr    = static_cast<T*>(getQueue().enqueueMapBuffer(
+            *vbuf, CL_FALSE, CL_MAP_WRITE, 0, k * sizeof(T), nullptr, &ev_val));
 
         vector<uint> idx(in.elements());
 
@@ -98,28 +87,28 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
         Event::waitForEvents({ev_in, ev_ind});
 
         int iter = in.dims()[1] * in.dims()[2] * in.dims()[3];
-        for(int i = 0; i < iter; i++) {
+        for (int i = 0; i < iter; i++) {
             auto idx_itr = begin(idx) + i * in.strides()[1];
-            auto kiptr = iptr + k * i;
+            auto kiptr   = iptr + k * i;
 
-            if(order == AF_TOPK_MIN) {
+            if (order == AF_TOPK_MIN) {
                 // Sort the top k values in each column
-                partial_sort_copy(idx_itr , idx_itr + in.strides()[1],
-                                  kiptr , kiptr + k,
-                                  [ptr](const uint lhs, const uint rhs) -> bool {
-                                      return ptr[lhs] < ptr[rhs];
-                                  });
+                partial_sort_copy(
+                    idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
+                    [ptr](const uint lhs, const uint rhs) -> bool {
+                        return ptr[lhs] < ptr[rhs];
+                    });
             } else {
-                partial_sort_copy(idx_itr , idx_itr + in.strides()[1],
-                                  kiptr , kiptr + k,
-                                  [ptr](const uint lhs, const uint rhs) -> bool {
-                                    return ptr[lhs] >= ptr[rhs];
-                                  });
+                partial_sort_copy(
+                    idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
+                    [ptr](const uint lhs, const uint rhs) -> bool {
+                        return ptr[lhs] >= ptr[rhs];
+                    });
             }
             ev_val.wait();
 
             auto kvptr = vptr + k * i;
-            for(int j = 0; j < k; j++) {
+            for (int j = 0; j < k; j++) {
                 // Update the value arrays with the original values
                 kvptr[j] = ptr[kiptr[j]];
                 // Convert linear indices back to column indices
@@ -134,23 +123,24 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
         vals = values;
         idxs = indices;
     } else {
-      auto values  = createEmptyArray<T>(in.dims());
-      auto indices = createEmptyArray<unsigned>(in.dims());
-      sort_index(values, indices, in, dim, (order==AF_TOPK_MIN ? true : false));
-      auto indVec = indexForTopK(k);
-      vals = index<T>( values, indVec.data());
-      idxs = index<unsigned>(indices, indVec.data());
+        auto values  = createEmptyArray<T>(in.dims());
+        auto indices = createEmptyArray<unsigned>(in.dims());
+        sort_index(values, indices, in, dim,
+                   (order == AF_TOPK_MIN ? true : false));
+        auto indVec = indexForTopK(k);
+        vals        = index<T>(values, indVec.data());
+        idxs        = index<unsigned>(indices, indVec.data());
     }
-
 }
 
-#define INSTANTIATE(T)\
-template void topk<T>(Array<T>&, Array<unsigned>&, const Array<T>&, const int, const int, const af::topkFunction);
+#define INSTANTIATE(T)                                                  \
+    template void topk<T>(Array<T>&, Array<unsigned>&, const Array<T>&, \
+                          const int, const int, const af::topkFunction);
 
-INSTANTIATE(float )
+INSTANTIATE(float)
 INSTANTIATE(double)
-INSTANTIATE(int   )
-INSTANTIATE(uint  )
+INSTANTIATE(int)
+INSTANTIATE(uint)
 INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
-}
+}  // namespace opencl

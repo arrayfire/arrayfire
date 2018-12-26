@@ -11,14 +11,14 @@
 #include <af/image.h>
 #include "symbol_manager.hpp"
 
-af_err af_moments(af_array* out, const af_array in, const af_moment_type moment)
-{
+af_err af_moments(af_array* out, const af_array in,
+                  const af_moment_type moment) {
     CHECK_ARRAYS(in);
     return CALL(out, in, moment);
 }
 
-af_err af_moments_all(double* out, const af_array in, const af_moment_type moment)
-{
+af_err af_moments_all(double* out, const af_array in,
+                      const af_moment_type moment) {
     CHECK_ARRAYS(in);
     return CALL(out, in, moment);
 }

@@ -7,47 +7,46 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/array.h>
 #include <af/image.h>
 #include <af/signal.h>
-#include <af/array.h>
 #include "error.hpp"
 
-namespace af
-{
+namespace af {
 
-array medfilt(const array& in, const dim_t wind_length, const dim_t wind_width, const borderType edge_pad)
-{
-     af_array out = 0;
-     AF_THROW(af_medfilt(&out, in.get(), wind_length, wind_width, edge_pad));
-     return array(out);
+array medfilt(const array& in, const dim_t wind_length, const dim_t wind_width,
+              const borderType edge_pad) {
+    af_array out = 0;
+    AF_THROW(af_medfilt(&out, in.get(), wind_length, wind_width, edge_pad));
+    return array(out);
 }
 
-array medfilt1(const array& in, const dim_t wind_width, const borderType edge_pad)
-{
+array medfilt1(const array& in, const dim_t wind_width,
+               const borderType edge_pad) {
     af_array out = 0;
     AF_THROW(af_medfilt1(&out, in.get(), wind_width, edge_pad));
     return array(out);
 }
 
-array medfilt2(const array& in, const dim_t wind_length, const dim_t wind_width, const borderType edge_pad)
-{
+array medfilt2(const array& in, const dim_t wind_length, const dim_t wind_width,
+               const borderType edge_pad) {
     af_array out = 0;
     AF_THROW(af_medfilt2(&out, in.get(), wind_length, wind_width, edge_pad));
     return array(out);
 }
 
-array minfilt(const array& in, const dim_t wind_length, const dim_t wind_width, const borderType edge_pad)
-{
+array minfilt(const array& in, const dim_t wind_length, const dim_t wind_width,
+              const borderType edge_pad) {
     af_array out = 0;
     AF_THROW(af_minfilt(&out, in.get(), wind_length, wind_width, edge_pad));
     return array(out);
 }
 
-array maxfilt(const array& in, const dim_t wind_length, const dim_t wind_width, const borderType edge_pad)
-{
+array maxfilt(const array& in, const dim_t wind_length, const dim_t wind_width,
+              const borderType edge_pad) {
     af_array out = 0;
     AF_THROW(af_maxfilt(&out, in.get(), wind_length, wind_width, edge_pad));
     return array(out);
 }
 
-}
+}  // namespace af

@@ -6,51 +6,48 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-#include <af/dim4.hpp>
-#include <af/defines.h>
-#include <af/signal.h>
-#include <af/arith.h>
-#include <handle.hpp>
-#include <common/err_common.hpp>
 #include <backend.hpp>
+#include <common/err_common.hpp>
 #include <convolve.hpp>
+#include <handle.hpp>
 #include <iir.hpp>
+#include <af/arith.h>
+#include <af/defines.h>
+#include <af/dim4.hpp>
+#include <af/signal.h>
 
 #include <cstdio>
 
 using af::dim4;
 using namespace detail;
 
-af_err af_fir(af_array *y, const af_array b, const af_array x)
-{
+af_err af_fir(af_array* y, const af_array b, const af_array x) {
     try {
         af_array out;
         AF_CHECK(af_convolve1(&out, x, b, AF_CONV_EXPAND, AF_CONV_AUTO));
 
-        dim4 xdims = getInfo(x).dims();
+        dim4 xdims    = getInfo(x).dims();
         af_seq seqs[] = {af_span, af_span, af_span, af_span};
         seqs[0].begin = 0;
-        seqs[0].end = xdims[0] - 1;
-        seqs[0].step = 1;
+        seqs[0].end   = xdims[0] - 1;
+        seqs[0].step  = 1;
         af_array res;
         AF_CHECK(af_index(&res, out, 4, seqs));
         AF_CHECK(af_release_array(out));
         std::swap(*y, res);
-
-    } CATCHALL;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
 template<typename T>
-inline static af_array iir(const af_array b, const af_array a, const af_array x)
-{
-    return getHandle(iir<T>(getArray<T>(b),
-                            getArray<T>(a),
-                            getArray<T>(x)));
+inline static af_array iir(const af_array b, const af_array a,
+                           const af_array x) {
+    return getHandle(iir<T>(getArray<T>(b), getArray<T>(a), getArray<T>(x)));
 }
 
-af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x)
-{
+af_err af_iir(af_array* y, const af_array b, const af_array a,
+              const af_array x) {
     try {
         const ArrayInfo& ainfo = getInfo(a);
         const ArrayInfo& binfo = getInfo(b);
@@ -66,9 +63,7 @@ af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x)
         dim4 bdims = binfo.dims();
         dim4 xdims = xinfo.dims();
 
-        if(xinfo.ndims() == 0) {
-            return af_retain_array(y, x);
-        }
+        if (xinfo.ndims() == 0) { return af_retain_array(y, x); }
 
         if (xinfo.ndims() > 1) {
             if (binfo.ndims() > 1) {
@@ -89,14 +84,15 @@ af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x)
 
         af_array res;
         switch (xtype) {
-        case f32: res = iir<float  >(b, a, x); break;
-        case f64: res = iir<double >(b, a, x); break;
-        case c32: res = iir<cfloat >(b, a, x); break;
-        case c64: res = iir<cdouble>(b, a, x); break;
-        default: TYPE_ERROR(1, xtype);
+            case f32: res = iir<float>(b, a, x); break;
+            case f64: res = iir<double>(b, a, x); break;
+            case c32: res = iir<cfloat>(b, a, x); break;
+            case c64: res = iir<cdouble>(b, a, x); break;
+            default: TYPE_ERROR(1, xtype);
         }
 
         std::swap(*y, res);
-    } CATCHALL;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
