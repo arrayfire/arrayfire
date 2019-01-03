@@ -335,7 +335,7 @@ extern "C" {
        Create array from device memory
        \ingroup construct_mat
     */
-    AFAPI af_err af_device_array(af_array *arr, const void *data, const unsigned ndims, const dim_t * const dims, const af_dtype type);
+    AFAPI af_err af_device_array(af_array *arr, void *data, const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
     /**
        Get memory information from the memory manager

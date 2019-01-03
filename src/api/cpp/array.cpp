@@ -129,7 +129,7 @@ static void initDataArray(af_array *arr, const T *ptr, af::source src, dim_t d0,
                                      my_dims, ty));
             break;
         case afDevice:
-            AF_THROW(af_device_array(arr, (const void *)ptr, AF_MAX_DIMS,
+            AF_THROW(af_device_array(arr, (void *)ptr, AF_MAX_DIMS,
                                      my_dims, ty));
             break;
         default:
