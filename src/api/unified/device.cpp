@@ -89,7 +89,7 @@ af_err af_free_host(void *ptr) {
     return AF_SUCCESS;
 }
 
-af_err af_device_array(af_array *arr, const void *data, const unsigned ndims,
+af_err af_device_array(af_array *arr, void *data, const unsigned ndims,
                        const dim_t *const dims, const af_dtype type) {
     return CALL(arr, data, ndims, dims, type);
 }
