@@ -26,6 +26,10 @@
 #include <reduce.hpp>
 #include <where.hpp>
 
+#include <functional>
+
+using std::function;
+
 namespace cpu {
 
 using common::createArrayDataSparseArray;

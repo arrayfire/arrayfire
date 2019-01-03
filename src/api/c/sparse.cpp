@@ -140,8 +140,9 @@ af_array createSparseArrayFromPtr(const af::dim4 &dims, const dim_t nNZ,
             sparse = common::createHostDataSparseArray(dims, nNZ, values,
                                                        rowIdx, colIdx, stype);
         else if (source == afDevice)
-            sparse = common::createDeviceDataSparseArray(dims, nNZ, values,
-                                                         rowIdx, colIdx, stype);
+            sparse = common::createDeviceDataSparseArray(
+                dims, nNZ, const_cast<T *>(values), const_cast<int *>(rowIdx),
+                const_cast<int *>(colIdx), stype);
     }
 
     return getHandle(sparse);

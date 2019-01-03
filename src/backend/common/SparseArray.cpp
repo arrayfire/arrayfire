@@ -48,11 +48,10 @@ SparseArrayBase::SparseArrayBase(af::dim4 _dims, dim_t _nNZ,
 #endif
 }
 
-SparseArrayBase::SparseArrayBase(af::dim4 _dims, dim_t _nNZ,
-                                 const int *const _rowIdx,
-                                 const int *const _colIdx,
-                                 const af::storage _storage, af_dtype _type,
-                                 bool _is_device, bool _copy_device)
+SparseArrayBase::SparseArrayBase(af::dim4 _dims, dim_t _nNZ, int *const _rowIdx,
+                                 int *const _colIdx, const af::storage _storage,
+                                 af_dtype _type, bool _is_device,
+                                 bool _copy_device)
     : info(getActiveDeviceId(), _dims, 0, calcStrides(_dims), _type, true)
     , stype(_storage)
     , rowIdx(_is_device
@@ -127,15 +126,18 @@ SparseArray<T> createHostDataSparseArray(const af::dim4 &_dims, const dim_t nNZ,
                                          const int *const _rowIdx,
                                          const int *const _colIdx,
                                          const af::storage _storage) {
-    return SparseArray<T>(_dims, nNZ, _values, _rowIdx, _colIdx, _storage,
-                          false);
+    return SparseArray<T>(_dims, nNZ, const_cast<T *>(_values),
+                          const_cast<int *>(_rowIdx),
+                          const_cast<int *>(_colIdx), _storage, false);
 }
 
 template<typename T>
-SparseArray<T> createDeviceDataSparseArray(
-    const af::dim4 &_dims, const dim_t nNZ, const T *const _values,
-    const int *const _rowIdx, const int *const _colIdx,
-    const af::storage _storage, const bool _copy) {
+SparseArray<T> createDeviceDataSparseArray(const af::dim4 &_dims,
+                                           const dim_t nNZ, T *const _values,
+                                           int *const _rowIdx,
+                                           int *const _colIdx,
+                                           const af::storage _storage,
+                                           const bool _copy) {
     return SparseArray<T>(_dims, nNZ, _values, _rowIdx, _colIdx, _storage, true,
                           _copy);
 }
@@ -179,8 +181,8 @@ SparseArray<T>::SparseArray(dim4 _dims, dim_t _nNZ, af::storage _storage)
 }
 
 template<typename T>
-SparseArray<T>::SparseArray(af::dim4 _dims, dim_t _nNZ, const T *const _values,
-                            const int *const _rowIdx, const int *const _colIdx,
+SparseArray<T>::SparseArray(af::dim4 _dims, dim_t _nNZ, T *const _values,
+                            int *const _rowIdx, int *const _colIdx,
                             const af::storage _storage, bool _is_device,
                             bool _copy_device)
     : base(_dims, _nNZ, _rowIdx, _colIdx, _storage,
@@ -219,9 +221,9 @@ SparseArray<T>::~SparseArray() {}
         const int *const _rowIdx, const int *const _colIdx,                  \
         const af::storage _storage);                                         \
     template SparseArray<T> createDeviceDataSparseArray<T>(                  \
-        const af::dim4 &_dims, const dim_t _nNZ, const T *const _values,     \
-        const int *const _rowIdx, const int *const _colIdx,                  \
-        const af::storage _storage, const bool _copy);                       \
+        const af::dim4 &_dims, const dim_t _nNZ, T *const _values,           \
+        int *const _rowIdx, int *const _colIdx, const af::storage _storage,  \
+        const bool _copy);                                                   \
     template SparseArray<T> createArrayDataSparseArray<T>(                   \
         const af::dim4 &_dims, const Array<T> &_values,                      \
         const Array<int> &_rowIdx, const Array<int> &_colIdx,                \
@@ -233,9 +235,9 @@ SparseArray<T>::~SparseArray() {}
     template SparseArray<T>::SparseArray(af::dim4 _dims, dim_t _nNZ,         \
                                          af::storage _storage);              \
     template SparseArray<T>::SparseArray(                                    \
-        af::dim4 _dims, dim_t _nNZ, const T *const _values,                  \
-        const int *const _rowIdx, const int *const _colIdx,                  \
-        const af::storage _storage, bool _is_device, bool _copy_device);     \
+        af::dim4 _dims, dim_t _nNZ, T *const _values, int *const _rowIdx,    \
+        int *const _colIdx, const af::storage _storage, bool _is_device,     \
+        bool _copy_device);                                                  \
     template SparseArray<T>::SparseArray(                                    \
         af::dim4 _dims, const Array<T> &_values, const Array<int> &_rowIdx,  \
         const Array<int> &_colIdx, const af::storage _storage, bool _copy);  \

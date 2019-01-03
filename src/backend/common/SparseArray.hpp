@@ -43,8 +43,8 @@ class SparseArrayBase {
     SparseArrayBase(af::dim4 _dims, dim_t _nNZ, af::storage _storage,
                     af_dtype _type);
 
-    SparseArrayBase(af::dim4 _dims, dim_t _nNZ, const int *const _rowIdx,
-                    const int *const _colIdx, const af::storage _storage,
+    SparseArrayBase(af::dim4 _dims, dim_t _nNZ, int *const _rowIdx,
+                    int *const _colIdx, const af::storage _storage,
                     af_dtype _type, bool _is_device = false,
                     bool _copy_device = false);
 
@@ -133,8 +133,8 @@ class SparseArray {
 
     SparseArray(af::dim4 _dims, dim_t _nNZ, af::storage stype);
 
-    explicit SparseArray(af::dim4 _dims, dim_t _nNZ, const T *const _values,
-                         const int *const _rowIdx, const int *const _colIdx,
+    explicit SparseArray(af::dim4 _dims, dim_t _nNZ, T *const _values,
+                         int *const _rowIdx, int *const _colIdx,
                          const af::storage _storage, bool _is_device = false,
                          bool _copy_device = false);
 
@@ -218,9 +218,9 @@ class SparseArray {
         const af::storage _storage);
 
     friend SparseArray<T> createDeviceDataSparseArray<T>(
-        const af::dim4 &_dims, const dim_t nNZ, const T *const _values,
-        const int *const _rowIdx, const int *const _colIdx,
-        const af::storage _storage, const bool _copy);
+        const af::dim4 &_dims, const dim_t nNZ, T *const _values,
+        int *const _rowIdx, int *const _colIdx, const af::storage _storage,
+        const bool _copy);
 
     friend SparseArray<T> createArrayDataSparseArray<T>(
         const af::dim4 &_dims, const Array<T> &_values,

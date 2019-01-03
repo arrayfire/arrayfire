@@ -24,7 +24,7 @@ void sort0Iterative(Param<T> val, bool isAscending) {
     // initialize original index locations
     T *val_ptr = val.get();
 
-    function<bool(T, T)> op = std::greater<T>();
+    std::function<bool(T, T)> op = std::greater<T>();
     if (isAscending) { op = std::less<T>(); }
 
     T *comp_ptr = nullptr;
