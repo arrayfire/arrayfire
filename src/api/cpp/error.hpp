@@ -20,7 +20,7 @@
         af::exception ex(msg, __PRETTY_FUNCTION__, __AF_FILENAME__, __LINE__, \
                          __err);                                              \
         af_free_host(msg);                                                    \
-        throw ex;                                                             \
+        throw ex; /* NOLINT(misc-throw-by-value-catch-by-reference)*/         \
     } while (0)
 
 #define AF_THROW_ERR(__msg, __err)                                       \
