@@ -42,8 +42,8 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out,
     } else {
         gaussian1D<convAccT>(h_filter.get(), (int)filter_len, sigma);
     }
-    Array<convAccT> filter = createDeviceDataArray<convAccT>(
-        dim4(filter_len), (const void *)h_filter.release());
+    Array<convAccT> filter =
+        createDeviceDataArray<convAccT>(dim4(filter_len), h_filter.release());
     unsigned border_len = filter_len / 2 + 1;
 
     Array<T> ix = createEmptyArray<T>(idims);

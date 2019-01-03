@@ -303,23 +303,27 @@ Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
 }
 
 template<typename T>
-Array<T> createHostDataArray(const dim4 &size, const T *const data) {
-    return Array<T>(size, data, false);
+Array<T> createHostDataArray(const dim4 &dims, const T *const data) {
+    bool is_device   = false;
+    bool copy_device = false;
+    return Array<T>(dims, data, is_device, copy_device);
 }
 
 template<typename T>
-Array<T> createDeviceDataArray(const dim4 &size, const void *data) {
-    return Array<T>(size, (const T *const)data, true);
+Array<T> createDeviceDataArray(const dim4 &dims, void *data) {
+    bool is_device   = true;
+    bool copy_device = false;
+    return Array<T>(dims, static_cast<T *>(data), is_device, copy_device);
 }
 
 template<typename T>
-Array<T> createValueArray(const dim4 &size, const T &value) {
-    return createScalarNode<T>(size, value);
+Array<T> createValueArray(const dim4 &dims, const T &value) {
+    return createScalarNode<T>(dims, value);
 }
 
 template<typename T>
-Array<T> createEmptyArray(const dim4 &size) {
-    return Array<T>(size);
+Array<T> createEmptyArray(const dim4 &dims) {
+    return Array<T>(dims);
 }
 
 template<typename T>
@@ -403,8 +407,7 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
 #define INSTANTIATE(T)                                                        \
     template Array<T> createHostDataArray<T>(const dim4 &size,                \
                                              const T *const data);            \
-    template Array<T> createDeviceDataArray<T>(const dim4 &size,              \
-                                               const void *data);             \
+    template Array<T> createDeviceDataArray<T>(const dim4 &size, void *data); \
     template Array<T> createValueArray<T>(const dim4 &size, const T &value);  \
     template Array<T> createEmptyArray<T>(const dim4 &size);                  \
     template Array<T> createParamArray<T>(Param<T> & tmp, bool owner);        \

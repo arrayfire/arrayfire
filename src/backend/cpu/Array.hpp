@@ -46,22 +46,24 @@ void evalMultiple(std::vector<Array<T> *> arrays);
 
 // Creates a new Array object on the heap and returns a reference to it.
 template<typename T>
-Array<T> createNodeArray(const af::dim4 &size, jit::Node_ptr node);
-
-// Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
-Array<T> createValueArray(const af::dim4 &size, const T &value);
-
-// Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
-Array<T> createHostDataArray(const af::dim4 &size, const T *const data);
+Array<T> createNodeArray(const af::dim4 &dims, jit::Node_ptr node);
 
 template<typename T>
-Array<T> createDeviceDataArray(const af::dim4 &size, const void *data);
+Array<T> createValueArray(const af::dim4 &dims, const T &value);
+
+// Creates an array and copies from the \p data pointer located in host memory
+//
+// \param[in] dims The dimension of the array
+// \param[in] data The data that will be copied to the array
+template<typename T>
+Array<T> createHostDataArray(const af::dim4 &dims, const T *const data);
+
+template<typename T>
+Array<T> createDeviceDataArray(const af::dim4 &dims, void *data);
 
 template<typename T>
 Array<T> createStridedArray(af::dim4 dims, af::dim4 strides, dim_t offset,
-                            const T *const in_data, bool is_device) {
+                            T *const in_data, bool is_device) {
     return Array<T>(dims, strides, offset, in_data, is_device);
 }
 
@@ -78,7 +80,7 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
 ///
 /// \param[in] size The dimension of the output array
 template<typename T>
-Array<T> createEmptyArray(const af::dim4 &size);
+Array<T> createEmptyArray(const af::dim4 &dims);
 
 template<typename T>
 Array<T> createSubArray(const Array<T> &parent,
@@ -118,13 +120,13 @@ class Array {
     Array() = default;
     Array(dim4 dims);
 
-    explicit Array(dim4 dims, const T *const in_data, bool is_device,
+    explicit Array(const af::dim4 &dims, T *const in_data, bool is_device,
                    bool copy_device = false);
-    Array(const Array<T> &parnt, const dim4 &dims, const dim_t &offset,
+    Array(const Array<T> &parent, const dim4 &dims, const dim_t &offset,
           const dim4 &stride);
-    explicit Array(af::dim4 dims, jit::Node_ptr n);
-    Array(af::dim4 dims, af::dim4 strides, dim_t offset, const T *const in_data,
-          bool is_device = false);
+    explicit Array(const af::dim4 &dims, jit::Node_ptr n);
+    Array(const af::dim4 &dims, const af::dim4 &strides, dim_t offset,
+          T *const in_data, bool is_device = false);
 
    public:
     void resetInfo(const af::dim4 &dims) { info.resetInfo(dims); }
@@ -223,16 +225,15 @@ class Array {
 
     friend void evalMultiple<T>(std::vector<Array<T> *> arrays);
 
-    friend Array<T> createValueArray<T>(const af::dim4 &size, const T &value);
-    friend Array<T> createHostDataArray<T>(const af::dim4 &size,
+    friend Array<T> createValueArray<T>(const af::dim4 &dims, const T &value);
+    friend Array<T> createHostDataArray<T>(const af::dim4 &dims,
                                            const T *const data);
-    friend Array<T> createDeviceDataArray<T>(const af::dim4 &size,
-                                             const void *data);
+    friend Array<T> createDeviceDataArray<T>(const af::dim4 &dims, void *data);
     friend Array<T> createStridedArray<T>(af::dim4 dims, af::dim4 strides,
-                                          dim_t offset, const T *const in_data,
+                                          dim_t offset, T *const in_data,
                                           bool is_device);
 
-    friend Array<T> createEmptyArray<T>(const af::dim4 &size);
+    friend Array<T> createEmptyArray<T>(const af::dim4 &dims);
     friend Array<T> createNodeArray<T>(const af::dim4 &dims,
                                        jit::Node_ptr node);
 

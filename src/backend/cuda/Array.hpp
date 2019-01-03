@@ -42,11 +42,15 @@ Array<T> createNodeArray(const af::dim4 &size, common::Node_ptr node);
 template<typename T>
 Array<T> createValueArray(const af::dim4 &size, const T &value);
 
+// Creates an array and copies from the \p data pointer located in host memory
+//
+// \param[in] dims The dimension of the array
+// \param[in] data The data that will be copied to the array
 template<typename T>
-Array<T> createHostDataArray(const af::dim4 &size, const T *const data);
+Array<T> createHostDataArray(const af::dim4 &dims, const T *const data);
 
 template<typename T>
-Array<T> createDeviceDataArray(const af::dim4 &size, const void *data);
+Array<T> createDeviceDataArray(const af::dim4 &size, void *data);
 
 template<typename T>
 Array<T> createStridedArray(af::dim4 dims, af::dim4 strides, dim_t offset,
@@ -222,8 +226,7 @@ class Array {
     friend Array<T> createValueArray<T>(const af::dim4 &size, const T &value);
     friend Array<T> createHostDataArray<T>(const af::dim4 &size,
                                            const T *const data);
-    friend Array<T> createDeviceDataArray<T>(const af::dim4 &size,
-                                             const void *data);
+    friend Array<T> createDeviceDataArray<T>(const af::dim4 &size, void *data);
     friend Array<T> createStridedArray<T>(af::dim4 dims, af::dim4 strides,
                                           dim_t offset, const T *const in_data,
                                           bool is_device);
