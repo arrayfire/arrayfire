@@ -34,19 +34,18 @@ void evalNodes(std::vector<Param> &outputs, std::vector<common::Node *> nodes);
 
 /// Creates a new Array object on the heap and returns a reference to it.
 template<typename T>
-Array<T> createNodeArray(const af::dim4 &size, common::Node_ptr node);
+Array<T> createNodeArray(const af::dim4 &dims, common::Node_ptr node);
 
 /// Creates a new Array object on the heap and returns a reference to it.
 template<typename T>
-Array<T> createValueArray(const af::dim4 &size, const T &value);
+Array<T> createValueArray(const af::dim4 &dims, const T &value);
 
 /// Creates a new Array object on the heap and returns a reference to it.
 template<typename T>
-Array<T> createHostDataArray(const af::dim4 &size, const T *const data);
+Array<T> createHostDataArray(const af::dim4 &dims, const T *const data);
 
 template<typename T>
-Array<T> createDeviceDataArray(const af::dim4 &size, const void *data,
-                               bool copy = false);
+Array<T> createDeviceDataArray(const af::dim4 &dims, void *data);
 
 template<typename T>
 Array<T> createStridedArray(af::dim4 dims, af::dim4 strides, dim_t offset,
@@ -67,7 +66,7 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
 ///
 /// \param[in] size The dimension of the output array
 template<typename T>
-Array<T> createEmptyArray(const af::dim4 &size);
+Array<T> createEmptyArray(const af::dim4 &dims);
 
 /// Create an Array object from Param object.
 ///
@@ -255,16 +254,15 @@ class Array {
 
     friend void evalMultiple<T>(std::vector<Array<T> *> arrays);
 
-    friend Array<T> createValueArray<T>(const af::dim4 &size, const T &value);
-    friend Array<T> createHostDataArray<T>(const af::dim4 &size,
+    friend Array<T> createValueArray<T>(const af::dim4 &dims, const T &value);
+    friend Array<T> createHostDataArray<T>(const af::dim4 &dims,
                                            const T *const data);
-    friend Array<T> createDeviceDataArray<T>(const af::dim4 &size,
-                                             const void *data, bool copy);
+    friend Array<T> createDeviceDataArray<T>(const af::dim4 &dims, void *data);
     friend Array<T> createStridedArray<T>(af::dim4 dims, af::dim4 strides,
                                           dim_t offset, const T *const in_data,
                                           bool is_device);
 
-    friend Array<T> createEmptyArray<T>(const af::dim4 &size);
+    friend Array<T> createEmptyArray<T>(const af::dim4 &dims);
     friend Array<T> createParamArray<T>(Param &tmp, bool owner);
     friend Array<T> createNodeArray<T>(const af::dim4 &dims,
                                        common::Node_ptr node);
