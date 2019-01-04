@@ -241,12 +241,16 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
                 dim_t incr =
                     (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
                 gemv_func<T>()(CblasColMajor, lOpts, lDims[0], lDims[1], alpha,
-                               left.get(), lStrides[1], right.get(), incr, beta,
-                               output.get(), 1);
+                               reinterpret_cast<CBT*>(left.get()), lStrides[1],
+                               reinterpret_cast<CBT*>(right.get()), incr, beta,
+                               reinterpret_cast<BT*>(output.get()), 1);
             } else {
                 gemm_func<T>()(CblasColMajor, lOpts, rOpts, M, N, K, alpha,
-                               left.get(), lStrides[1], right.get(),
-                               rStrides[1], beta, output.get(), output.dims(0));
+                               reinterpret_cast<CBT*>(left.get()), lStrides[1],
+                               reinterpret_cast<CBT*>(right.get()),
+                               rStrides[1], beta,
+                               reinterpret_cast<BT*>(output.get()),
+                               output.dims(0));
             }
         } else {
             int batchSize = oDims[2] * oDims[3];
