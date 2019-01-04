@@ -350,6 +350,16 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
                                          output_ids, is_linear);
         entry          = compileKernel(funcName.c_str(), jit_ker);
         kernelCaches[device][funcName] = entry;
+	static const char* kernelDir = getenv("AF_DUMP_KERNELS_DIR"))
+	if (kernelDir) {
+	    FILE* f = fopen((std::string(kernelDir) + '/' + funcName + ".cu").c_str(), "w");
+	    if (f) {
+	        fputs(jit_ker.c_str(), f);
+	        fclose(f);
+	    } else {
+	        std::cerr << "Cannot open a file in " << kernelDir << std::endl;
+	    }
+	}
     } else {
         entry = idx->second;
     }
