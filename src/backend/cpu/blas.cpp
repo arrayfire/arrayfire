@@ -241,15 +241,15 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
                 dim_t incr =
                     (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
                 gemv_func<T>()(CblasColMajor, lOpts, lDims[0], lDims[1], alpha,
-                               static_cast<CBT*>(left.get()), lStrides[1],
-                               static_cast<CBT*>(right.get()), incr, beta,
-                               static_cast<BT*>(output.get()), 1);
+                               reinterpret_cast<CBT*>(left.get()), lStrides[1],
+                               reinterpret_cast<CBT*>(right.get()), incr, beta,
+                               reinterpret_cast<BT*>(output.get()), 1);
             } else {
                 gemm_func<T>()(CblasColMajor, lOpts, rOpts, M, N, K, alpha,
-                               static_cast<CBT*>(left.get()), lStrides[1],
-                               static_cast<CBT*>(right.get()),
+                               reinterpret_cast<CBT*>(left.get()), lStrides[1],
+                               reinterpret_cast<CBT*>(right.get()),
                                rStrides[1], beta,
-                               static_cast<BT*>(output.get()),
+                               reinterpret_cast<BT*>(output.get()),
                                output.dims(0));
             }
         } else {
@@ -273,9 +273,9 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
                 int roff = z * (is_r_d2_batched * rStrides[2]) +
                            w * (is_r_d3_batched * rStrides[3]);
 
-                lptrs[n] = static_cast<CBT *>(left.get() + loff);
-                rptrs[n] = static_cast<CBT *>(right.get() + roff);
-                optrs[n] = static_cast<BT *>(
+                lptrs[n] = reinterpret_cast<CBT *>(left.get() + loff);
+                rptrs[n] = reinterpret_cast<CBT *>(right.get() + roff);
+                optrs[n] = reinterpret_cast<BT *>(
                     output.get() + z * oStrides[2] + w * oStrides[3]);
             }
 
