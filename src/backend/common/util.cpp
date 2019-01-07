@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2016, ArrayFire
+ * Copyright (c) 2019, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -54,4 +54,19 @@ const char *getName(af_dtype type) {
         case b8: return "bool";
         default: return "unknown type";
     }
+}
+
+void saveKernel(const std::string& funcName, const std::string& jit_ker, const std::string& ext) {
+  static const char* jitKernelsDir = getenv(dumpJitKernelsEnvVarName);
+  if (!jitKernelsDir)
+    return;
+  const std::string ffp = std::string(jitKernelsDir) + AF_PATH_SEPARATOR + funcName + ext;
+  FILE* f = fopen(ffp.c_str(), "w");
+  if (!f) {
+    std::cerr << "Cannot open file " << ffp << std::endl;
+    return;
+  }
+  if (fputs(jit_ker.c_str(), f) == std::EOF)
+    std::cerr << "Failed to write kernle to file " << ffp << std::endl;
+  fclose(f);
 }
