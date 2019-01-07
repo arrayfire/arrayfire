@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2016, ArrayFire
+ * Copyright (c) 2019, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -16,6 +16,8 @@
 #endif
 
 #include <af/defines.h>
+#include <common/util.hpp>
+#include <common/defines.hpp>
 
 using std::string;
 
@@ -54,4 +56,19 @@ const char *getName(af_dtype type) {
         case b8: return "bool";
         default: return "unknown type";
     }
+}
+
+void saveKernel(const std::string& funcName, const std::string& jit_ker, const std::string& ext) {
+  static const char* jitKernelsDir = getenv(saveJitKernelsEnvVarName);
+  if (!jitKernelsDir)
+    return;
+  const std::string ffp = std::string(jitKernelsDir) + AF_PATH_SEPARATOR + funcName + ext;
+  FILE* f = fopen(ffp.c_str(), "w");
+  if (!f) {
+    fprintf(stderr, "Cannot open file %s\n", ffp.c_str());
+    return;
+  }
+  if (fputs(jit_ker.c_str(), f) == EOF)
+    fprintf(stderr, "Failed to write kernel to file %s\n", ffp.c_str());
+  fclose(f);
 }

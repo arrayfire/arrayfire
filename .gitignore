@@ -1,6 +1,7 @@
 CMakeCache.txt
 CMakeFiles/
 build*/
+Release/
 Makefile
 cmake_install.cmake
 GTAGS
