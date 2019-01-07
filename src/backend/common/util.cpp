@@ -10,6 +10,7 @@
 /// This file contains platform independent utility functions
 #include <cstdlib>
 #include <string>
+#include <cstring>
 
 #if defined(OS_WIN)
 #include <Windows.h>
@@ -59,10 +60,19 @@ const char *getName(af_dtype type) {
 }
 
 void saveKernel(const std::string& funcName, const std::string& jit_ker, const std::string& ext) {
-  static const char* jitKernelsDir = getenv(saveJitKernelsEnvVarName);
-  if (!jitKernelsDir)
+  static const char* jitKernelsOutput = getenv(saveJitKernelsEnvVarName);
+  if (!jitKernelsOutput)
     return;
-  const std::string ffp = std::string(jitKernelsDir) + AF_PATH_SEPARATOR + funcName + ext;
+  if (std::strcmp(jitKernelsOutput, "stdout") == 0) {
+    fprintf(stdout, jit_ker.c_str());
+    return;
+  }
+  if (std::strcmp(jitKernelsOutput, "stderr") == 0) {
+    fprintf(stderr, jit_ker.c_str());
+    return;
+  }
+  // Path to a folder  
+  const std::string ffp = std::string(jitKernelsOutput) + AF_PATH_SEPARATOR + funcName + ext;
   FILE* f = fopen(ffp.c_str(), "w");
   if (!f) {
     fprintf(stderr, "Cannot open file %s\n", ffp.c_str());

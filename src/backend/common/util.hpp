@@ -17,5 +17,5 @@
 std::string getEnvVar(const std::string &key);
 
 // Dump the kernel sources only if the environment variable is defined
-static const char* saveJitKernelsEnvVarName = "AF_DUMP_JIT_KERNELS_DIR";
+static const char* saveJitKernelsEnvVarName = "AF_JIT_KERNEL_TRACE";
 void saveKernel(const std::string& funcName, const std::string& jit_ker, const std::string& ext);
