@@ -214,15 +214,16 @@ simply include the `arrayfire.h` header file and start coding!
     int main(void)
     {
         // generate random values
-        int n = 10000;
         af_array a;
-        af_randu(&a, n);
+        int n_dims = 1;
+        dim_t dims[] = {10000};
+        af_randu(&a, n_dims, dims, f32);
 
         // sum all the values
-        float result;
-        af_sum_all(&result, a, 0);
-
-        printf("sum: %g\n", sum);
+        double result;
+        af_sum_all(&result, 0, a);
+        printf("sum: %g\n", result);
+        
         return 0;
     }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
