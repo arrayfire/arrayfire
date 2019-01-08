@@ -28,6 +28,7 @@ using common::NodeIterator;
 using cuda::jit::BufferNode;
 
 using std::accumulate;
+using std::find_if;
 using std::shared_ptr;
 using std::vector;
 
@@ -284,7 +285,37 @@ Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
                 if (info.is_linear) {
                     param_size += info.num_buffers * sizeof(T *);
                 } else {
-                    param_size += info.num_buffers * sizeof(Param<T>);
+                    vector<Param<T>> params;
+
+                    auto bufit = NodeIterator<>(n);
+                    puts("====");
+                    while (bufit != end_node) {
+                        bufit = find_if(bufit, end_node,
+                            [](const Node &nn) { return nn.isBuffer(); });
+                        if (bufit != end_node) {
+                            params.push_back(
+                                static_cast<BufferNode<T> *>(
+                                    &(*bufit))
+                                    ->getParam());
+                            bufit++;
+                        }
+                    }
+                    auto last = unique(begin(params), end(params), equal_shape<T, T>);
+                    param_size += distance(begin(params), last) * sizeof(Param<T>);
+                    int dist = distance(begin(params), last);
+                    puts("=====");
+                    for(int i = 0; i < dist; i++) {
+                        printf(
+                            "%p: [%lld %lld %lld %lld] | [%lld %lld %lld "
+                            "%lld]\n",
+                            params[i].ptr, params[i].dims[0],
+                            params[i].dims[1], params[i].dims[2],
+                            params[i].dims[3], params[i].strides[0],
+                            params[i].strides[1], params[i].strides[2],
+                            params[i].strides[3]);
+                    }
+                    printf("Dist: %ld\n", dist);
+                    printf("param_size: %d\n", param_size);
                 }
 
                 // TODO: the buffer_size check here is very conservative. It

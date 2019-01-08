@@ -426,4 +426,22 @@ TEST(JIT, ConstEval7) {
         eval(a, b, c, d, e, f, g);
         af::sync();
       });
+
+}
+
+TEST(JIT, TwoLargeNonLinear) {
+    array a(10, 10);
+    array b(10, 10);
+
+    for (int i = 0; i < 1; i++) {
+        a += tile(randu(10), 1, 10) + randu(10, 10);
+    }
+
+    for (int i = 0; i < 1; i++) {
+        b += tile(randu(10), 1, 10) + randu(10, 10);
+    }
+
+    array c = a + b;
+    c.eval();
+    af::sync();
 }

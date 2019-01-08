@@ -9,8 +9,11 @@
 
 #pragma once
 #include <backend.hpp>
+#include <common/jit/Node.hpp>
 #include <jit/kernel_generators.hpp>
 
+#include <iomanip>
+#include <mutex>
 #include <sstream>
 
 namespace common {
@@ -22,6 +25,7 @@ class BufferNodeBase : public common::Node {
     ParamType m_param;
     unsigned m_bytes;
     std::once_flag m_set_data_flag;
+    int param_index;
     bool m_linear_buffer;
 
    public:
@@ -64,9 +68,13 @@ class BufferNodeBase : public common::Node {
     int setArgs(int start_id, bool is_linear,
                 std::function<void(int id, const void *ptr, size_t arg_size)>
                     setArg) const override {
+        printf("param_index: %d\n", param_index);
         return detail::setKernelArguments(start_id, is_linear, setArg, m_data,
-                                          m_param);
+                                          m_param, param_index);
     }
+
+    void setParamIndex(int index) { param_index = index; }
+    int getParamIndex() { return param_index; }
 
     void genOffsets(std::stringstream &kerStream, int id,
                     bool is_linear) const final {
@@ -86,6 +94,7 @@ class BufferNodeBase : public common::Node {
     }
 
     size_t getBytes() const final { return m_bytes; }
+    ParamType &getParam() { return m_param; }
 };
 
 }  // namespace common
