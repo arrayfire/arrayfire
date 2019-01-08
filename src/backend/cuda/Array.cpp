@@ -28,6 +28,7 @@ using common::NodeIterator;
 using cuda::jit::BufferNode;
 
 using std::accumulate;
+using std::find_if;
 using std::shared_ptr;
 using std::vector;
 
@@ -233,16 +234,11 @@ Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
             //    pressure. Too many bytes is assumed to be half of all bytes
             //    allocated so far.
             //
-            // 2. Too many buffers in a nonlinear kernel cause param space
-            //    overflow. This happens when the number of nodes reaches 50
-            //    (51 including output). Too many buffers can occur in a tree
-            //    of size 25 in the worst case.
-            //
             // TODO: Find better solution than the following emperical solution.
             if (node->getHeight() > 25 || isBufferLimit) {
                 // This is the size of the params that are passed by default
                 constexpr size_t param_base_size =
-                    sizeof(Param<T>) + (4 * sizeof(uint));
+                    sizeof(Param<T>) + sizeof(Param<T>*)+ (5 * sizeof(uint));
 
                 // This is the maximum size of the params that can be allowed by
                 // CUDA NOTE: This number should have been (4096 -
@@ -276,7 +272,7 @@ Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
                         return prev;
                     });
                 size_t param_size = param_base_size + info.param_scalar_size;
-                param_size += info.num_buffers * sizeof(Param<T>);
+                param_size += info.num_buffers * (sizeof(T*) + sizeof(int));
 
                 // TODO: the buffer_size check here is very conservative. It
                 // will trigger an evaluation of the node in most cases. We

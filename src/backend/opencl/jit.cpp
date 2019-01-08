@@ -221,7 +221,7 @@ void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes) {
     }
 
     bool is_linear = true;
-    for (auto node : full_nodes) {
+    for (const auto &node : full_nodes) {
         is_linear &= node->isLinear(outputs[0].info.dims);
     }
 

@@ -16,8 +16,9 @@ namespace opencl {
 namespace {
 
 /// Creates a string that will be used to declare the parameter of kernel
-void generateParamDeclaration(std::stringstream& kerStream, int id,
-                              bool is_linear, const std::string& m_type_str) {
+inline void generateParamDeclaration(std::stringstream& kerStream, int id,
+                                     bool is_linear,
+                                     const std::string& m_type_str) {
     if (is_linear) {
         kerStream << "__global " << m_type_str << " *in" << id
                   << ", dim_t iInfo" << id << "_offset, \n";
@@ -28,10 +29,12 @@ void generateParamDeclaration(std::stringstream& kerStream, int id,
 }
 
 /// Calls the setArg function to set the arguments for a kernel call
-int setKernelArguments(
+inline int setKernelArguments(
     int start_id, bool is_linear,
     std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,
-    const std::shared_ptr<cl::Buffer>& ptr, const KParam& info) {
+    const std::shared_ptr<cl::Buffer>& ptr, const KParam& info,
+    const int& param_index) {
+    UNUSED(param_index);
     setArg(start_id + 0, static_cast<const void*>(&ptr.get()->operator()()),
            sizeof(cl_mem));
     if (is_linear) {
@@ -44,9 +47,7 @@ int setKernelArguments(
 }
 
 /// Generates the code to calculate the offsets for a buffer
-inline void generateBufferOffsets(std::stringstream& kerStream, int id, bool is_linear,
-                                  const std::string& type_str) {
-    UNUSED(type_str);
+inline void generateBufferOffsets(std::stringstream& kerStream, int id, bool is_linear) {
     std::string idx_str  = std::string("int idx") + std::to_string(id);
     std::string info_str = std::string("iInfo") + std::to_string(id);
 
@@ -69,11 +70,7 @@ inline void generateBufferRead(std::stringstream& kerStream, int id,
               << "];\n";
 }
 
-inline void generateShiftNodeOffsets(std::stringstream& kerStream, int id,
-                                     bool is_linear,
-                                     const std::string& type_str) {
-    UNUSED(is_linear);
-    UNUSED(type_str);
+inline void generateShiftNodeOffsets(std::stringstream& kerStream, int id) {
     std::string idx_str   = std::string("idx") + std::to_string(id);
     std::string info_str  = std::string("iInfo") + std::to_string(id);
     std::string id_str    = std::string("sh_id_") + std::to_string(id) + "_";
