@@ -21,7 +21,7 @@ static const unsigned TY    = 8;
 static const unsigned TILEX = 512;
 static const unsigned TILEY = 32;
 
-template<typename T>
+template <typename T>
 __global__ void tile_kernel(Param<T> out, CParam<T> in, const int blocksPerMatX,
                             const int blocksPerMatY) {
     const int oz = blockIdx.x / blocksPerMatX;
@@ -62,7 +62,7 @@ __global__ void tile_kernel(Param<T> out, CParam<T> in, const int blocksPerMatX,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 void tile(Param<T> out, CParam<T> in) {
     dim3 threads(TX, TY, 1);
 

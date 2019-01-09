@@ -24,7 +24,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class MatchTemplate : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -37,7 +37,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
 // register the type list
 TYPED_TEST_CASE(MatchTemplate, TestTypes);
 
-template<typename T>
+template <typename T>
 void matchTemplateTest(string pTestFile, af_match_type pMatchType) {
     typedef
         typename cond_type<is_same_type<T, double>::value, double, float>::type

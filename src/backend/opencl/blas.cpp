@@ -43,7 +43,7 @@ toBlasTranspose(af_mat_prop opt) {
     }
 }
 
-template<typename T>
+template <typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
                 af_mat_prop optRhs) {
 #if defined(WITH_LINEAR_ALGEBRA)
@@ -119,7 +119,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
              af_mat_prop optRhs) {
     const Array<T> lhs_ = (optLhs == AF_MAT_NONE ? lhs : conj<T>(lhs));

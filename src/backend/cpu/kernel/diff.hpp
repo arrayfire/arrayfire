@@ -14,7 +14,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void diff1(Param<T> out, CParam<T> in, int const dim) {
     af::dim4 dims = out.dims();
     // Bool for dimension
@@ -33,8 +33,8 @@ void diff1(Param<T> out, CParam<T> in, int const dim) {
                 for (dim_t i = 0; i < dims[0]; i++) {
                     // Operation: out[index] = in[index + 1 * dim_size] -
                     // in[index]
-                    int idx     = getIdx(in.strides(), i, j, k, l);
-                    int jdx     = getIdx(in.strides(), i + is_dim0, j + is_dim1,
+                    int idx = getIdx(in.strides(), i, j, k, l);
+                    int jdx = getIdx(in.strides(), i + is_dim0, j + is_dim1,
                                      k + is_dim2, l + is_dim3);
                     int odx     = getIdx(out.strides(), i, j, k, l);
                     outPtr[odx] = inPtr[jdx] - inPtr[idx];
@@ -44,7 +44,7 @@ void diff1(Param<T> out, CParam<T> in, int const dim) {
     }
 }
 
-template<typename T>
+template <typename T>
 void diff2(Param<T> out, CParam<T> in, int const dim) {
     af::dim4 dims = out.dims();
     // Bool for dimension

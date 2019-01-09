@@ -14,13 +14,13 @@
 #include <functional>
 #include <memory>
 namespace cuda {
-template<typename T>
+template <typename T>
 void memFree(T *ptr);
 
-template<typename T>
+template <typename T>
 using uptr = std::unique_ptr<T[], std::function<void(T[])>>;
 
-template<typename T>
+template <typename T>
 uptr<T> memAlloc(const size_t &elements);
 
 void *memAllocUser(const size_t &bytes);
@@ -35,9 +35,9 @@ void memLock(const void *ptr);
 void memUnlock(const void *ptr);
 bool isLocked(const void *ptr);
 
-template<typename T>
+template <typename T>
 T *pinnedAlloc(const size_t &elements);
-template<typename T>
+template <typename T>
 void pinnedFree(T *ptr);
 
 size_t getMaxBytes();

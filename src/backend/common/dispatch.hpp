@@ -17,7 +17,7 @@ unsigned nextpow2(unsigned x);
 
 // isPrime & greatestPrimeFactor are tailored after
 // itk::Math::{IsPrimt, GreatestPrimeFactor}
-template<typename T>
+template <typename T>
 inline bool isPrime(T n) {
     if (n <= 1) return false;
 
@@ -29,7 +29,7 @@ inline bool isPrime(T n) {
     return true;
 }
 
-template<typename T>
+template <typename T>
 inline T greatestPrimeFactor(T n) {
     T v = 2;
 

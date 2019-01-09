@@ -18,7 +18,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array wrap(const af_array in, const dim_t ox, const dim_t oy,
                             const dim_t wx, const dim_t wy, const dim_t sx,
                             const dim_t sy, const dim_t px, const dim_t py,

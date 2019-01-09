@@ -16,7 +16,7 @@ using af::dim4;
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 void transpose_inplace(Array<T> &in, const bool conjugate) {
     dim4 iDims = in.dims();
 

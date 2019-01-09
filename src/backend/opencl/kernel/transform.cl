@@ -44,8 +44,8 @@ void calc_transf_inverse(float *txo, __global const float *txi) {
     txo[3] = txi[1] / det;
     txo[4] = txi[0] / det;
 
-    txo[2]               = txi[2] * -txo[0] + txi[5] * -txo[1];
-    txo[5]               = txi[2] * -txo[3] + txi[5] * -txo[4];
+    txo[2] = txi[2] * -txo[0] + txi[5] * -txo[1];
+    txo[5] = txi[2] * -txo[3] + txi[5] * -txo[4];
 #endif
 }
 
@@ -124,8 +124,8 @@ __kernel void transform_kernel(__global T *d_out, const KParam out,
         outoff += t_idx3 * out.strides[3];
     }
 
-    // Transform is in global memory.
-    // Needs outoff to correct transform being processed.
+// Transform is in global memory.
+// Needs outoff to correct transform being processed.
 #if PERSPECTIVE
     const int transf_len = 9;
     float tmat[9];

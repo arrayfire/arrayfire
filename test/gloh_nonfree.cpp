@@ -33,13 +33,9 @@ typedef struct {
     unsigned d[272];
 } feat_desc_t;
 
-typedef struct {
-    float f[5];
-} feat_t;
+typedef struct { float f[5]; } feat_t;
 
-typedef struct {
-    float d[272];
-} desc_t;
+typedef struct { float d[272]; } desc_t;
 
 #ifdef AF_WITH_NONFREE_SIFT
 static bool feat_cmp(feat_desc_t i, feat_desc_t j) {
@@ -126,7 +122,7 @@ static bool compareEuclidean(dim_t desc_len, dim_t ndesc, float* cpu,
 }
 #endif
 
-template<typename T>
+template <typename T>
 class GLOH : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -136,7 +132,7 @@ typedef ::testing::Types<float, double> TestTypes;
 
 TYPED_TEST_CASE(GLOH, TestTypes);
 
-template<typename T>
+template <typename T>
 void glohTest(string pTestFile) {
 #ifdef AF_WITH_NONFREE_SIFT
     if (noDoubleTests<T>()) return;

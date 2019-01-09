@@ -25,7 +25,7 @@ af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length,
     return af_medfilt2(out, in, wind_length, wind_width, edge_pad);
 }
 
-template<typename T>
+template <typename T>
 static af_array medfilt1(af_array const &in, dim_t w_wid,
                          af_border_type edge_pad) {
     switch (edge_pad) {
@@ -96,7 +96,7 @@ af_err af_medfilt1(af_array *out, const af_array in, const dim_t wind_width,
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 static af_array medfilt2(af_array const &in, dim_t w_len, dim_t w_wid,
                          af_border_type edge_pad) {
     switch (edge_pad) {

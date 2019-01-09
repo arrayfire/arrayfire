@@ -252,7 +252,7 @@ TEST(Threading, MemoryManagement_JIT_Node) {
     ASSERT_EQ(lock_bytes, 0u);
 }
 
-template<typename inType, typename outType, bool isInverse>
+template <typename inType, typename outType, bool isInverse>
 void fftTest(int targetDevice, string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0,
              dim_t pad2 = 0) {
     if (noDoubleTests<inType>()) return;
@@ -316,9 +316,9 @@ void fftTest(int targetDevice, string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0,
 
     size_t test_size = 0;
     switch (dims.ndims()) {
-        case 1: test_size = dims[0] / 2 + 1; break;
-        case 2: test_size = dims[1] * (dims[0] / 2 + 1); break;
-        case 3: test_size = dims[2] * dims[1] * (dims[0] / 2 + 1); break;
+        case 1: test_size  = dims[0] / 2 + 1; break;
+        case 2: test_size  = dims[1] * (dims[0] / 2 + 1); break;
+        case 3: test_size  = dims[2] * dims[1] * (dims[0] / 2 + 1); break;
         default: test_size = dims[0] / 2 + 1; break;
     }
     outType output_scale = (outType)(isInverse ? test_size : 1);
@@ -575,7 +575,7 @@ TEST(Threading, FFT_ALL) {
         if (tests[testId].joinable()) tests[testId].join();
 }
 
-template<typename T, bool isBVector>
+template <typename T, bool isBVector>
 void cppMatMulCheck(int targetDevice, string TestFile) {
     if (noDoubleTests<T>()) return;
 

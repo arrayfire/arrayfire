@@ -31,7 +31,7 @@ static inline unsigned getIdx(af::dim4 const& strides, int i, int j = 0,
     return (l * strides[3] + k * strides[2] + j * strides[1] + i * strides[0]);
 }
 
-template<typename T>
+template <typename T>
 void gaussian1D(T* out, int const dim, double sigma = 0.0) {
     if (!(sigma > 0)) sigma = 0.25 * dim;
 

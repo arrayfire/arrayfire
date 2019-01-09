@@ -16,27 +16,27 @@
 namespace opencl {
 namespace cpu {
 
-template<typename T>
+template <typename T>
 using gesv_func_def = int (*)(ORDER_TYPE, int, int, T *, int, int *, T *, int);
 
-template<typename T>
+template <typename T>
 using gels_func_def = int (*)(ORDER_TYPE, char, int, int, int, T *, int, T *,
                               int);
 
-template<typename T>
+template <typename T>
 using getrs_func_def = int (*)(ORDER_TYPE, char, int, int, const T *, int,
                                const int *, T *, int);
 
-template<typename T>
+template <typename T>
 using trtrs_func_def = int (*)(ORDER_TYPE, char, char, char, int, int,
                                const T *, int, T *, int);
 
 #define SOLVE_FUNC_DEF(FUNC) \
-    template<typename T>     \
+    template <typename T>    \
     FUNC##_func_def<T> FUNC##_func();
 
 #define SOLVE_FUNC(FUNC, TYPE, PREFIX)          \
-    template<>                                  \
+    template <>                                 \
     FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
         return &LAPACK_NAME(PREFIX##FUNC);      \
     }
@@ -65,7 +65,7 @@ SOLVE_FUNC(trtrs, double, d)
 SOLVE_FUNC(trtrs, cfloat, c)
 SOLVE_FUNC(trtrs, cdouble, z)
 
-template<typename T>
+template <typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
                  const af_mat_prop options) {
     UNUSED(options);
@@ -84,7 +84,7 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
     return B;
 }
 
-template<typename T>
+template <typename T>
 Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
                        const af_mat_prop options) {
     Array<T> B = copyArray<T>(b);
@@ -102,7 +102,7 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
     return B;
 }
 
-template<typename T>
+template <typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b,
                const af_mat_prop options) {
     if (options & AF_MAT_UPPER || options & AF_MAT_LOWER) {

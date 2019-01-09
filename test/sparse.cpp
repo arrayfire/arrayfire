@@ -93,7 +93,7 @@ CAST_TESTS(cdouble, cdouble)
 TEST(Sparse, ISSUE_1745) {
     using af::where;
 
-    array A    = randu(4, 4);
+    array A = randu(4, 4);
     A(1, span) = 0;
     A(2, span) = 0;
 
@@ -180,7 +180,7 @@ TEST(Sparse, ISSUE_2134_CSC) {
     if (A != 0) af_release_array(A);
 }
 
-template<typename T>
+template <typename T>
 class Sparse : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> SparseTypes;

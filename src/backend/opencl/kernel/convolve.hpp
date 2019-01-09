@@ -29,7 +29,7 @@ static const int MAX_CONV3_FILTER_LEN = 5;
  * file under the folder 'kernel/convovel' with their implementations
  * written in corresponding conv[1|2|3].cpp files under the same folder.
  */
-template<typename T, typename accType, int baseDim, bool expand>
+template <typename T, typename accType, int baseDim, bool expand>
 void convolve_nd(Param out, const Param signal, const Param filter,
                  AF_BATCH_KIND kind) {
     conv_kparam_t param;

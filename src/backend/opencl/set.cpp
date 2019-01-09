@@ -30,14 +30,14 @@ using af::dim4;
 
 using std::conditional;
 using std::is_same;
-template<typename T>
+template <typename T>
 using ltype_t = typename conditional<is_same<T, intl>::value, cl_long, T>::type;
 
-template<typename T>
+template <typename T>
 using type_t =
     typename conditional<is_same<T, uintl>::value, cl_ulong, ltype_t<T>>::type;
 
-template<typename T>
+template <typename T>
 Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
     try {
         Array<T> out = copyArray<T>(in);
@@ -59,7 +59,7 @@ Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
     } catch (std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
 }
 
-template<typename T>
+template <typename T>
 Array<T> setUnion(const Array<T> &first, const Array<T> &second,
                   const bool is_unique) {
     try {
@@ -97,7 +97,7 @@ Array<T> setUnion(const Array<T> &first, const Array<T> &second,
     } catch (std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
 }
 
-template<typename T>
+template <typename T>
 Array<T> setIntersect(const Array<T> &first, const Array<T> &second,
                       const bool is_unique) {
     try {

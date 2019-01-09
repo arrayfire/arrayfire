@@ -30,7 +30,7 @@ __constant__ char sFilter[2 * THREADS_Y *
                           (2 * (MAX_SCONV_FILTER_LEN - 1) + THREADS_X) *
                           sizeof(double)];
 
-template<typename T, typename accType, int conv_dim, bool expand, int fLen>
+template <typename T, typename accType, int conv_dim, bool expand, int fLen>
 __global__ void convolve2_separable(Param<T> out, CParam<T> signal, int nBBS0,
                                     int nBBS1) {
     const int smem_len =
@@ -103,21 +103,21 @@ __global__ void convolve2_separable(Param<T> out, CParam<T> signal, int nBBS0,
             // below conditional statement is based on template parameter
             int s_idx = (conv_dim == 0 ? (ly * shrdLen + (i - f))
                                        : ((i - f) * shrdLen + lx));
-            T s_val   = shrdMem[s_idx];
-            accum     = accum + s_val * f_val;
+            T s_val = shrdMem[s_idx];
+            accum   = accum + s_val * f_val;
         }
         dst[oy * out.strides[1] + ox] = (T)accum;
     }
 }
 
-template<typename T, typename aT, int cDim, bool expand, int f>
+template <typename T, typename aT, int cDim, bool expand, int f>
 void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig, int nBBS0,
                  int nBBS1) {
     CUDA_LAUNCH((convolve2_separable<T, aT, cDim, expand, f>), blks, thrds, out,
                 sig, nBBS0, nBBS1);
 }
 
-template<typename T, typename accType, int conv_dim, bool expand>
+template <typename T, typename accType, int conv_dim, bool expand>
 void convolve2(Param<T> out, CParam<T> signal, CParam<accType> filter) {
     int fLen =
         filter.dims[0] * filter.dims[1] * filter.dims[2] * filter.dims[3];

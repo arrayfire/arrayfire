@@ -36,7 +36,7 @@ static const unsigned TY    = 8;
 static const unsigned TILEX = 128;
 static const unsigned TILEY = 32;
 
-template<typename T, bool same_dims>
+template <typename T, bool same_dims>
 void lu_split_launcher(Param lower, Param upper, const Param in) {
     std::string refName = std::string("lu_split_kernel_") +
                           std::string(dtype_traits<T>::getName()) +
@@ -83,7 +83,7 @@ void lu_split_launcher(Param lower, Param upper, const Param in) {
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 void lu_split(Param lower, Param upper, const Param in) {
     bool same_dims = (lower.info.dims[0] == in.info.dims[0]) &&
                      (lower.info.dims[1] == in.info.dims[1]);

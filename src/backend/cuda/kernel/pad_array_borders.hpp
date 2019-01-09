@@ -20,7 +20,7 @@ namespace kernel {
 static const int PADB_THREADS_X = 32;
 static const int PADB_THREADS_Y = 8;
 
-template<af_border_type BType>
+template <af_border_type BType>
 __device__ int idxByndEdge(const int i, const int lb, const int len) {
     uint retVal;
     switch (BType) {
@@ -37,7 +37,7 @@ __device__ int idxByndEdge(const int i, const int lb, const int len) {
     return retVal;
 }
 
-template<typename T, af_border_type BType>
+template <typename T, af_border_type BType>
 __global__ void padBordersKernel(Param<T> out, CParam<T> in, const int l0,
                                  const int l1, const int l2, const int l3,
                                  unsigned blk_x, unsigned blk_y) {
@@ -88,11 +88,11 @@ __global__ void padBordersKernel(Param<T> out, CParam<T> in, const int l0,
         l < out.dims[3]) {
         unsigned off = (l * out.strides[3] + k * out.strides[2] +
                         j * out.strides[1] + i * out.strides[0]);
-        dst[off]     = value;
+        dst[off] = value;
     }
 }
 
-template<typename T>
+template <typename T>
 void padBorders(Param<T> out, CParam<T> in, dim4 const lBoundPadding,
                 const af::borderType btype) {
     dim3 threads(kernel::PADB_THREADS_X, kernel::PADB_THREADS_Y);

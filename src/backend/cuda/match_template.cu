@@ -17,7 +17,7 @@ using af::dim4;
 
 namespace cuda {
 
-template<typename inType, typename outType, af_match_type mType>
+template <typename inType, typename outType, af_match_type mType>
 Array<outType> match_template(const Array<inType> &sImg,
                               const Array<inType> &tImg) {
     Array<outType> out = createEmptyArray<outType>(sImg.dims());

@@ -13,7 +13,7 @@
 #include <af/dim4.hpp>
 
 namespace cuda {
-template<typename T>
+template <typename T>
 void topk(Array<T>& ovals, Array<uint>& oidxs, const Array<T>& ivals,
           const int k, const int dim, const af::topkFunction order) {
     dim4 outDims = ivals.dims();

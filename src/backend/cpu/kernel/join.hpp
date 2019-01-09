@@ -13,7 +13,7 @@
 namespace cpu {
 namespace kernel {
 
-template<int dim>
+template <int dim>
 af::dim4 calcOffset(const af::dim4 dims) {
     af::dim4 offset;
     offset[0] = (dim == 0) ? dims[0] : 0;
@@ -23,7 +23,7 @@ af::dim4 calcOffset(const af::dim4 dims) {
     return offset;
 }
 
-template<typename To, typename Tx, int dim>
+template <typename To, typename Tx, int dim>
 void join_append(To *out, const Tx *X, const af::dim4 &offset,
                  const af::dim4 &xdims, const af::dim4 &ost,
                  const af::dim4 &xst) {
@@ -49,7 +49,7 @@ void join_append(To *out, const Tx *X, const af::dim4 &offset,
     }
 }
 
-template<typename Tx, typename Ty>
+template <typename Tx, typename Ty>
 void join(Param<Tx> out, const int dim, CParam<Tx> first, CParam<Ty> second) {
     Tx *outPtr     = out.get();
     const Tx *fptr = first.get();
@@ -87,7 +87,7 @@ void join(Param<Tx> out, const int dim, CParam<Tx> first, CParam<Ty> second) {
     }
 }
 
-template<typename T, int n_arrays>
+template <typename T, int n_arrays>
 void join(const int dim, Param<T> out, const std::vector<CParam<T>> inputs) {
     af::dim4 zero(0, 0, 0, 0);
     af::dim4 d = zero;

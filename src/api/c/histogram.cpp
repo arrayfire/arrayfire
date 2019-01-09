@@ -17,7 +17,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 static inline af_array histogram(const af_array in, const unsigned &nbins,
                                  const double &minval, const double &maxval,
                                  const bool islinear) {

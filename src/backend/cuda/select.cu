@@ -17,19 +17,19 @@ using common::NaryNode;
 using common::Node_ptr;
 
 namespace cuda {
-template<typename T>
+template <typename T>
 void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
             const Array<T> &b) {
     kernel::select<T>(out, cond, a, b, out.ndims());
 }
 
-template<typename T, bool flip>
+template <typename T, bool flip>
 void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a,
                    const double &b) {
     kernel::select_scalar<T, flip>(out, cond, a, b, out.ndims());
 }
 
-template<typename T>
+template <typename T>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
                           const Array<T> &b, const af::dim4 &odims) {
     auto cond_node = cond.getNode();
@@ -46,7 +46,7 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
     return out;
 }
 
-template<typename T, bool flip>
+template <typename T, bool flip>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
                           const double &b_val, const af::dim4 &odims) {
     auto cond_node = cond.getNode();

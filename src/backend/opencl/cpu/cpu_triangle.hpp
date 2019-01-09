@@ -16,7 +16,7 @@
 namespace opencl {
 namespace cpu {
 
-template<typename T, bool is_upper, bool is_unit_diag>
+template <typename T, bool is_upper, bool is_unit_diag>
 void triangle(T *o, const T *i, const dim4 odm, const dim4 ost,
               const dim4 ist) {
     for (dim_t ow = 0; ow < odm[3]; ow++) {

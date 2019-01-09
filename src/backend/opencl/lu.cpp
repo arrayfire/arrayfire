@@ -35,7 +35,7 @@ Array<int> convertPivot(int *ipiv, int in_sz, int out_sz) {
     return res;
 }
 
-template<typename T>
+template <typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
         const Array<T> &in) {
     if (OpenCLCPUOffload()) { return cpu::lu(lower, upper, pivot, in); }
@@ -56,7 +56,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
     kernel::lu_split<T>(lower, upper, in_copy);
 }
 
-template<typename T>
+template <typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     if (OpenCLCPUOffload()) { return cpu::lu_inplace(in, convert_pivot); }
 
@@ -96,13 +96,13 @@ INSTANTIATE_LU(cdouble)
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
         const Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }
 
-template<typename T>
+template <typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }

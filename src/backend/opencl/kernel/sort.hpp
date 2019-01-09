@@ -36,7 +36,7 @@ using cl::Program;
 
 namespace opencl {
 namespace kernel {
-template<typename T>
+template <typename T>
 void sort0Iterative(Param val, bool isAscending) {
     compute::command_queue c_queue(getQueue()());
 
@@ -69,7 +69,7 @@ void sort0Iterative(Param val, bool isAscending) {
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 void sortBatched(Param pVal, int dim, bool isAscending) {
     af::dim4 inDims;
     for (int i = 0; i < 4; i++) inDims[i] = pVal.info.dims[i];
@@ -125,7 +125,7 @@ void sortBatched(Param pVal, int dim, bool isAscending) {
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 void sort0(Param val, bool isAscending) {
     int higherDims = val.info.dims[1] * val.info.dims[2] * val.info.dims[3];
     // TODO Make a better heurisitic

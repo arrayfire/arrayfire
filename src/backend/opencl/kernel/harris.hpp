@@ -31,7 +31,7 @@ static const unsigned HARRIS_THREADS_X         = 16;
 static const unsigned HARRIS_THREADS_Y =
     HARRIS_THREADS_PER_GROUP / HARRIS_THREADS_X;
 
-template<typename T>
+template <typename T>
 void gaussian1D(T *out, const int dim, double sigma = 0.0) {
     if (!(sigma > 0)) sigma = 0.25 * dim;
 
@@ -47,7 +47,7 @@ void gaussian1D(T *out, const int dim, double sigma = 0.0) {
     for (int k = 0; k < dim; k++) out[k] /= sum;
 }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 void conv_helper(Array<T> &ixx, Array<T> &ixy, Array<T> &iyy,
                  Array<convAccT> &filter) {
     Array<convAccT> ixx_tmp = createEmptyArray<convAccT>(ixx.dims());
@@ -62,7 +62,7 @@ void conv_helper(Array<T> &ixx, Array<T> &ixy, Array<T> &iyy,
     convSep<T, convAccT, 1, false>(iyy, iyy_tmp, filter);
 }
 
-template<typename T>
+template <typename T>
 std::tuple<cl::Kernel *, cl::Kernel *, cl::Kernel *, cl::Kernel *>
 getHarrisKernels() {
     using cl::Kernel;
@@ -112,7 +112,7 @@ getHarrisKernels() {
                            entries[3].ker);
 }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
             Param in, const unsigned max_corners, const float min_response,
             const float sigma, const unsigned filter_len, const float k_thr) {

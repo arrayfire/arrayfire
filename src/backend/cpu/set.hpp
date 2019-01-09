@@ -10,14 +10,14 @@
 #include <Array.hpp>
 
 namespace cpu {
-template<typename T>
+template <typename T>
 Array<T> setUnique(const Array<T> &in, const bool is_sorted);
 
-template<typename T>
+template <typename T>
 Array<T> setUnion(const Array<T> &first, const Array<T> &second,
                   const bool is_unique);
 
-template<typename T>
+template <typename T>
 Array<T> setIntersect(const Array<T> &first, const Array<T> &second,
                       const bool is_unique);
 }  // namespace cpu

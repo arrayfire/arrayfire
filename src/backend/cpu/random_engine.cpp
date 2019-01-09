@@ -18,7 +18,7 @@ void initMersenneState(Array<uint> &state, const uintl seed,
     getQueue().enqueue(kernel::initMersenneState, state.get(), tbl.get(), seed);
 }
 
-template<typename T>
+template <typename T>
 Array<T> uniformDistribution(const af::dim4 &dims,
                              const af_random_engine_type type, const uintl seed,
                              uintl &counter) {
@@ -29,7 +29,7 @@ Array<T> uniformDistribution(const af::dim4 &dims,
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> normalDistribution(const af::dim4 &dims,
                             const af_random_engine_type type, const uintl seed,
                             uintl &counter) {
@@ -40,7 +40,7 @@ Array<T> normalDistribution(const af::dim4 &dims,
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> uniformDistribution(const af::dim4 &dims, Array<uint> pos,
                              Array<uint> sh1, Array<uint> sh2, uint mask,
                              Array<uint> recursion_table,
@@ -53,7 +53,7 @@ Array<T> uniformDistribution(const af::dim4 &dims, Array<uint> pos,
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> normalDistribution(const af::dim4 &dims, Array<uint> pos,
                             Array<uint> sh1, Array<uint> sh2, uint mask,
                             Array<uint> recursion_table,
@@ -85,7 +85,7 @@ Array<T> normalDistribution(const af::dim4 &dims, Array<uint> pos,
         Array<uint> temper_table, Array<uint> state);
 
 #define COMPLEX_UNIFORM_DISTRIBUTION(T, TR)                              \
-    template<>                                                           \
+    template <>                                                          \
     Array<T> uniformDistribution<T>(const af::dim4 &dims,                \
                                     const af_random_engine_type type,    \
                                     const uintl seed, uintl &counter) {  \
@@ -97,7 +97,7 @@ Array<T> normalDistribution(const af::dim4 &dims, Array<uint> pos,
         counter += elements;                                             \
         return out;                                                      \
     }                                                                    \
-    template<>                                                           \
+    template <>                                                          \
     Array<T> uniformDistribution<T>(                                     \
         const af::dim4 &dims, Array<uint> pos, Array<uint> sh1,          \
         Array<uint> sh2, uint mask, Array<uint> recursion_table,         \
@@ -113,7 +113,7 @@ Array<T> normalDistribution(const af::dim4 &dims, Array<uint> pos,
     }
 
 #define COMPLEX_NORMAL_DISTRIBUTION(T, TR)                                     \
-    template<>                                                                 \
+    template <>                                                                \
     Array<T> normalDistribution<T>(const af::dim4 &dims,                       \
                                    const af_random_engine_type type,           \
                                    const uintl seed, uintl &counter) {         \
@@ -125,7 +125,7 @@ Array<T> normalDistribution(const af::dim4 &dims, Array<uint> pos,
         counter += elements;                                                   \
         return out;                                                            \
     }                                                                          \
-    template<>                                                                 \
+    template <>                                                                \
     Array<T> normalDistribution<T>(                                            \
         const af::dim4 &dims, Array<uint> pos, Array<uint> sh1,                \
         Array<uint> sh2, uint mask, Array<uint> recursion_table,               \

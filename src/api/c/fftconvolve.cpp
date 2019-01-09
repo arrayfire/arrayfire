@@ -21,7 +21,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, typename convT, typename cT, int baseDim>
+template <typename T, typename convT, typename cT, int baseDim>
 static inline af_array fftconvolve_fallback(const af_array signal,
                                             const af_array filter,
                                             bool expand) {
@@ -88,8 +88,8 @@ static inline af_array fftconvolve_fallback(const af_array signal,
     }
 }
 
-template<typename T, typename convT, typename cT, bool isDouble, bool roundOut,
-         dim_t baseDim>
+template <typename T, typename convT, typename cT, bool isDouble, bool roundOut,
+          dim_t baseDim>
 inline static af_array fftconvolve(const af_array &s, const af_array &f,
                                    const bool expand, AF_BATCH_KIND kind) {
     if (kind == AF_BATCH_DIFF)
@@ -99,7 +99,7 @@ inline static af_array fftconvolve(const af_array &s, const af_array &f,
             getArray<T>(s), castArray<T>(f), expand, kind));
 }
 
-template<dim_t baseDim>
+template <dim_t baseDim>
 AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims) {
     dim_t sn = sDims.ndims();
     dim_t fn = fDims.ndims();
@@ -124,7 +124,7 @@ AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims) {
         return AF_BATCH_UNSUPPORTED;
 }
 
-template<dim_t baseDim>
+template <dim_t baseDim>
 af_err fft_convolve(af_array *out, const af_array signal, const af_array filter,
                     const bool expand) {
     try {

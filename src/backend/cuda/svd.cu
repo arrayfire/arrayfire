@@ -20,13 +20,13 @@
 #include <cusolverDn.hpp>
 
 namespace cuda {
-template<typename T>
+template <typename T>
 cusolverStatus_t gesvd_buf_func(cusolverDnHandle_t handle, int m, int n,
                                 int *Lwork) {
     return CUSOLVER_STATUS_ARCH_MISMATCH;
 }
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 cusolverStatus_t gesvd_func(cusolverDnHandle_t handle, char jobu, char jobvt,
                             int m, int n, T *A, int lda, Tr *S, T *U, int ldu,
                             T *VT, int ldvt, T *Work, int Lwork, Tr *rwork,
@@ -35,7 +35,7 @@ cusolverStatus_t gesvd_func(cusolverDnHandle_t handle, char jobu, char jobvt,
 }
 
 #define SVD_SPECIALIZE(T, Tr, X)                                         \
-    template<>                                                           \
+    template <>                                                          \
     cusolverStatus_t gesvd_buf_func<T>(cusolverDnHandle_t handle, int m, \
                                        int n, int *Lwork) {              \
         return cusolverDn##X##gesvd_bufferSize(handle, m, n, Lwork);     \
@@ -49,7 +49,7 @@ SVD_SPECIALIZE(cdouble, double, Z);
 #undef SVD_SPECIALIZE
 
 #define SVD_SPECIALIZE(T, Tr, X)                                              \
-    template<>                                                                \
+    template <>                                                               \
     cusolverStatus_t gesvd_func<T, Tr>(                                       \
         cusolverDnHandle_t handle, char jobu, char jobvt, int m, int n, T *A, \
         int lda, Tr *S, T *U, int ldu, T *VT, int ldvt, T *Work, int Lwork,   \
@@ -64,7 +64,7 @@ SVD_SPECIALIZE(double, double, D);
 SVD_SPECIALIZE(cfloat, float, C);
 SVD_SPECIALIZE(cdouble, double, Z);
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
     dim4 iDims = in.dims();
     int M      = iDims[0];
@@ -84,7 +84,7 @@ void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
                       rWorkspace.get(), info.get());
 }
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in) {
     dim4 iDims = in.dims();
     int M      = iDims[0];

@@ -78,8 +78,8 @@ __kernel void all_distances(__global To* out_dist, __global const T* query,
         if (valid_feat) {
             unsigned feat_end = min(feat_offset + max_feat_len, feat_len);
             for (unsigned k = feat_offset; k < feat_end; k++) {
-                // Calculate Hamming distance for 32-bits of descriptor and
-                // accumulates to dist
+// Calculate Hamming distance for 32-bits of descriptor and
+// accumulates to dist
 #ifdef USE_LOCAL_MEM
                 dist +=
                     DISTOP(l_train[(k - feat_offset) * get_local_size(0) + tid],

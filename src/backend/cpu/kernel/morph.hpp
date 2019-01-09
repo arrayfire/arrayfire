@@ -15,7 +15,7 @@
 
 namespace cpu {
 namespace kernel {
-template<typename T>
+template <typename T>
 void getOffsets(std::vector<dim_t>& offsets, const af::dim4& strides,
                 const CParam<T>& mask) {
     const af::dim4 fstrides = mask.strides();
@@ -35,14 +35,14 @@ void getOffsets(std::vector<dim_t>& offsets, const af::dim4& strides,
     }
 }
 
-template<typename T, bool IsDilation>
+template <typename T, bool IsDilation>
 struct MorphFilterOp {
     T operator()(const T& a, const T& b) {
         return IsDilation ? std::max(a, b) : std::min(a, b);
     }
 };
 
-template<typename T, bool IsDilation>
+template <typename T, bool IsDilation>
 void morph(Param<T> paddedOut, CParam<T> paddedIn, CParam<T> mask) {
     MorphFilterOp<T, IsDilation> filterOp;
     T init =
@@ -74,7 +74,7 @@ void morph(Param<T> paddedOut, CParam<T> paddedIn, CParam<T> mask) {
     }
 }
 
-template<typename T, bool IsDilation>
+template <typename T, bool IsDilation>
 void morph3d(Param<T> out, CParam<T> in, CParam<T> mask) {
     const af::dim4 dims     = in.dims();
     const af::dim4 window   = mask.dims();

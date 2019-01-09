@@ -29,7 +29,7 @@ using std::string;
 
 namespace opencl {
 namespace kernel {
-template<typename T, bool batch_a>
+template <typename T, bool batch_a>
 void iir(Param y, Param c, Param a) {
     // FIXME: This is a temporary fix. Ideally the local memory should be
     // allocted outside

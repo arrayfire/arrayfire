@@ -19,7 +19,7 @@ using af::dim4;
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
     kernel::AssignKernelParam_t p;
     std::vector<af_seq> seqs(4, af_span);

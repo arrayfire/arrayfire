@@ -17,21 +17,21 @@
 namespace cpu {
 namespace kernel {
 
-template<int rank>
+template <int rank>
 void computeDims(int rdims[rank], const af::dim4 &idims) {
     for (int i = 0; i < rank; i++) { rdims[i] = idims[(rank - 1) - i]; }
 }
 
-template<typename T>
+template <typename T>
 struct fftw_transform;
 
 #define TRANSFORM(PRE, TY)                                             \
-    template<>                                                         \
+    template <>                                                        \
     struct fftw_transform<TY> {                                        \
         typedef PRE##_plan plan_t;                                     \
         typedef PRE##_complex ctype_t;                                 \
                                                                        \
-        template<typename... Args>                                     \
+        template <typename... Args>                                    \
         plan_t create(Args... args) {                                  \
             return PRE##_plan_many_dft(args...);                       \
         }                                                              \
@@ -42,16 +42,16 @@ struct fftw_transform;
 TRANSFORM(fftwf, cfloat)
 TRANSFORM(fftw, cdouble)
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 struct fftw_real_transform;
 
 #define TRANSFORM_REAL(PRE, To, Ti, POST)                              \
-    template<>                                                         \
+    template <>                                                        \
     struct fftw_real_transform<To, Ti> {                               \
         typedef PRE##_plan plan_t;                                     \
         typedef PRE##_complex ctype_t;                                 \
                                                                        \
-        template<typename... Args>                                     \
+        template <typename... Args>                                    \
         plan_t create(Args... args) {                                  \
             return PRE##_plan_many_dft_##POST(args...);                \
         }                                                              \
@@ -64,7 +64,7 @@ TRANSFORM_REAL(fftw, cdouble, double, r2c)
 TRANSFORM_REAL(fftwf, float, cfloat, c2r)
 TRANSFORM_REAL(fftw, double, cdouble, c2r)
 
-template<typename T, int rank, bool direction>
+template <typename T, int rank, bool direction>
 void fft_inplace(Param<T> in, const af::dim4 iDataDims) {
     int t_dims[rank];
     int in_embed[rank];
@@ -94,7 +94,7 @@ void fft_inplace(Param<T> in, const af::dim4 iDataDims) {
     transform.destroy(plan);
 }
 
-template<typename Tc, typename Tr, int rank>
+template <typename Tc, typename Tr, int rank>
 void fft_r2c(Param<Tc> out, const af::dim4 oDataDims, CParam<Tr> in,
              const af::dim4 iDataDims) {
     af::dim4 idims = in.dims();
@@ -127,7 +127,7 @@ void fft_r2c(Param<Tc> out, const af::dim4 oDataDims, CParam<Tr> in,
     transform.destroy(plan);
 }
 
-template<typename Tr, typename Tc, int rank>
+template <typename Tr, typename Tc, int rank>
 void fft_c2r(Param<Tr> out, const af::dim4 oDataDims, CParam<Tc> in,
              const af::dim4 iDataDims, const af::dim4 odims) {
     int t_dims[rank];

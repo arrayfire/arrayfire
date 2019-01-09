@@ -21,13 +21,13 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Sobel : public ::testing::Test {
    public:
     virtual void SetUp() {}
 };
 
-template<typename T>
+template <typename T>
 class Sobel_Integer : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -42,7 +42,7 @@ typedef ::testing::Types<int, unsigned, char, unsigned char, short, ushort>
 TYPED_TEST_CASE(Sobel, TestTypes);
 TYPED_TEST_CASE(Sobel_Integer, TestTypesInt);
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 void testSobelDerivatives(string pTestFile) {
     if (noDoubleTests<Ti>()) return;
 

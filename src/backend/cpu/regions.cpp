@@ -23,7 +23,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 Array<T> regions(const Array<char> &in, af_connectivity connectivity) {
     in.eval();
 

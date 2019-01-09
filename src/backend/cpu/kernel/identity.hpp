@@ -14,7 +14,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void identity(Param<T> out) {
     T *ptr                  = out.get();
     const af::dim4 out_dims = out.dims();

@@ -38,7 +38,7 @@ static const int CUBE_X = 8;
 static const int CUBE_Y = 8;
 static const int CUBE_Z = 4;
 
-template<typename T, bool isDilation, int SeLength>
+template <typename T, bool isDilation, int SeLength>
 std::string generateOptionsString() {
     ToNumStr<T> toNumStr;
     T init =
@@ -52,7 +52,7 @@ std::string generateOptionsString() {
     return options.str();
 }
 
-template<typename T, bool isDilation, int SeLength = 0>
+template <typename T, bool isDilation, int SeLength = 0>
 void morph(Param out, const Param in, const Param mask, int windLen = 0) {
     std::string refName = std::string("morph_") +
                           std::string(dtype_traits<T>::getName()) +
@@ -103,7 +103,7 @@ void morph(Param out, const Param in, const Param mask, int windLen = 0) {
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T, bool isDilation, int SeLength>
+template <typename T, bool isDilation, int SeLength>
 void morph3d(Param out, const Param in, const Param mask) {
     std::string refName = std::string("morph3d_") +
                           std::string(dtype_traits<T>::getName()) +

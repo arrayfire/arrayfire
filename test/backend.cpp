@@ -33,7 +33,7 @@ const char *getActiveBackendString(af_backend active) {
     }
 }
 
-template<typename T>
+template <typename T>
 void testFunction() {
     af_info();
 

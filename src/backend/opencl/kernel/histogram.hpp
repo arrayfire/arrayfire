@@ -30,7 +30,7 @@ constexpr int MAX_BINS  = 4000;
 constexpr int THREADS_X = 256;
 constexpr int THRD_LOAD = 16;
 
-template<typename inType, typename outType, bool isLinear>
+template <typename inType, typename outType, bool isLinear>
 void histogram(Param out, const Param in, int nbins, float minval,
                float maxval) {
     std::string refName = std::string("histogram_") +

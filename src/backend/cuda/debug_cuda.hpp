@@ -15,7 +15,7 @@
 #include <ThrustAllocator.cuh>
 
 namespace cuda {
-template<typename T>
+template <typename T>
 using ThrustVector = thrust::device_vector<T, cuda::ThrustAllocator<T>>;
 }
 

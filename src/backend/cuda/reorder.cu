@@ -14,7 +14,7 @@
 #include <stdexcept>
 
 namespace cuda {
-template<typename T>
+template <typename T>
 Array<T> reorder(const Array<T> &in, const af::dim4 &rdims) {
     const af::dim4 iDims = in.dims();
     af::dim4 oDims(0);

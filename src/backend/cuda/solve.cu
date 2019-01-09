@@ -37,7 +37,7 @@ namespace cuda {
 //    <> *B, int ldb,
 //    int *devInfo );
 
-template<typename T>
+template <typename T>
 struct getrs_func_def_t {
     typedef cusolverStatus_t (*getrs_func_def)(cusolverDnHandle_t,
                                                cublasOperation_t, int, int,
@@ -46,11 +46,11 @@ struct getrs_func_def_t {
 };
 
 #define SOLVE_FUNC_DEF(FUNC) \
-    template<typename T>     \
+    template <typename T>    \
     typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func();
 
 #define SOLVE_FUNC(FUNC, TYPE, PREFIX)                                      \
-    template<>                                                              \
+    template <>                                                             \
     typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>() { \
         return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
                cusolverDn##PREFIX##FUNC;                                    \
@@ -87,21 +87,21 @@ SOLVE_FUNC(getrs, cdouble, Z)
 //        double *work,
 //        int lwork, int *devInfo);
 
-template<typename T>
+template <typename T>
 struct geqrf_solve_func_def_t {
     typedef cusolverStatus_t (*geqrf_solve_func_def)(cusolverDnHandle_t, int,
                                                      int, T *, int, T *, T *,
                                                      int, int *);
 };
 
-template<typename T>
+template <typename T>
 struct geqrf_solve_buf_func_def_t {
     typedef cusolverStatus_t (*geqrf_solve_buf_func_def)(cusolverDnHandle_t,
                                                          int, int, T *, int,
                                                          int *);
 };
 
-template<typename T>
+template <typename T>
 struct mqr_solve_func_def_t {
     typedef cusolverStatus_t (*mqr_solve_func_def)(
         cusolverDnHandle_t, cublasSideMode_t, cublasOperation_t, int, int, int,
@@ -109,23 +109,23 @@ struct mqr_solve_func_def_t {
 };
 
 #define QR_FUNC_DEF(FUNC)                                                     \
-    template<typename T>                                                      \
+    template <typename T>                                                     \
     static typename FUNC##_solve_func_def_t<T>::FUNC##_solve_func_def         \
         FUNC##_solve_func();                                                  \
                                                                               \
-    template<typename T>                                                      \
+    template <typename T>                                                     \
     static typename FUNC##_solve_buf_func_def_t<T>::FUNC##_solve_buf_func_def \
         FUNC##_solve_buf_func();
 
 #define QR_FUNC(FUNC, TYPE, PREFIX)                                       \
-    template<>                                                            \
+    template <>                                                           \
     typename FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def         \
         FUNC##_solve_func<TYPE>() {                                       \
         return (FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def) &   \
                cusolverDn##PREFIX##FUNC;                                  \
     }                                                                     \
                                                                           \
-    template<>                                                            \
+    template <>                                                           \
     typename FUNC##_solve_buf_func_def_t<TYPE>::FUNC##_solve_buf_func_def \
         FUNC##_solve_buf_func<TYPE>() {                                   \
         return (FUNC##_solve_buf_func_def_t<                              \
@@ -140,12 +140,12 @@ QR_FUNC(geqrf, cfloat, C)
 QR_FUNC(geqrf, cdouble, Z)
 
 #define MQR_FUNC_DEF(FUNC)                                            \
-    template<typename T>                                              \
+    template <typename T>                                             \
     static typename FUNC##_solve_func_def_t<T>::FUNC##_solve_func_def \
         FUNC##_solve_func();
 
 #define MQR_FUNC(FUNC, TYPE, PREFIX)                                    \
-    template<>                                                          \
+    template <>                                                         \
     typename FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def       \
         FUNC##_solve_func<TYPE>() {                                     \
         return (FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def) & \
@@ -158,7 +158,7 @@ MQR_FUNC(mqr, double, Dormqr)
 MQR_FUNC(mqr, cfloat, Cunmqr)
 MQR_FUNC(mqr, cdouble, Zunmqr)
 
-template<typename T>
+template <typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
                  const af_mat_prop options) {
     UNUSED(options);
@@ -176,7 +176,7 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
     return B;
 }
 
-template<typename T>
+template <typename T>
 Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
     int M = a.dims()[0];
     int N = a.dims()[1];
@@ -194,20 +194,20 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
     return B;
 }
 
-template<typename T>
+template <typename T>
 cublasOperation_t trans() {
     return CUBLAS_OP_T;
 }
-template<>
+template <>
 cublasOperation_t trans<cfloat>() {
     return CUBLAS_OP_C;
 }
-template<>
+template <>
 cublasOperation_t trans<cdouble>() {
     return CUBLAS_OP_C;
 }
 
-template<typename T>
+template <typename T>
 Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
     int M = a.dims()[0];
     int N = a.dims()[1];
@@ -301,7 +301,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
     return B;
 }
 
-template<typename T>
+template <typename T>
 Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
                        const af_mat_prop options) {
     Array<T> B = copyArray<T>(b);
@@ -313,7 +313,7 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
     return B;
 }
 
-template<typename T>
+template <typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b,
                const af_mat_prop options) {
     if (options & AF_MAT_UPPER || options & AF_MAT_LOWER) {

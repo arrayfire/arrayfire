@@ -15,7 +15,7 @@
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 Array<T> inverse(const Array<T> &in) {
     Array<T> I = identity<T>(in.dims());
     return solve<T>(in, I);

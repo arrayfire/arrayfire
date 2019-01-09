@@ -10,6 +10,6 @@
 #include <Array.hpp>
 
 namespace cuda {
-template<typename T>
+template <typename T>
 Array<uint> where(const Array<T>& in);
 }

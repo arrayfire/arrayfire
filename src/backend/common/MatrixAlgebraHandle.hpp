@@ -13,7 +13,7 @@
 #include <cstdio>
 
 namespace common {
-template<typename T, typename H>
+template <typename T, typename H>
 class MatrixAlgebraHandle {
    public:
     MatrixAlgebraHandle() { static_cast<T*>(this)->createHandle(&handle); }

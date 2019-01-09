@@ -16,7 +16,7 @@
 
 using namespace af;
 
-template<typename T>
+template <typename T>
 class Array : public ::testing::Test {};
 
 TEST(Array, TestEmptyAssignment) {

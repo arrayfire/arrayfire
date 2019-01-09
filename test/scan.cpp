@@ -41,7 +41,7 @@ using std::vector;
 
 typedef af_err (*scanFunc)(af_array *, const af_array, const int);
 
-template<typename Ti, typename To, scanFunc af_scan>
+template <typename Ti, typename To, scanFunc af_scan>
 void scanTest(string pTestFile, int off = 0, bool isSubRef = false,
               const vector<af_seq> seqv = vector<af_seq>()) {
     if (noDoubleTests<Ti>()) return;
@@ -167,26 +167,26 @@ TEST(Accum, MaxDim) {
     const size_t largeDim = 65535 * 32 + 1;
 
     // first dimension kernel tests
-    array input                           = constant(0, 2, largeDim, 2, 2);
+    array input = constant(0, 2, largeDim, 2, 2);
     input(span, seq(0, 9999), span, span) = 1;
 
-    array gold_first                           = constant(0, 2, largeDim, 2, 2);
+    array gold_first = constant(0, 2, largeDim, 2, 2);
     gold_first(span, seq(0, 9999), span, span) = range(2, 10000, 2, 2) + 1;
 
     array output_first = accum(input, 0);
     ASSERT_ARRAYS_EQ(gold_first, output_first);
 
-    input                                 = constant(0, 2, 2, 2, largeDim);
+    input = constant(0, 2, 2, 2, largeDim);
     input(span, span, span, seq(0, 9999)) = 1;
 
-    gold_first                                 = constant(0, 2, 2, 2, largeDim);
+    gold_first = constant(0, 2, 2, 2, largeDim);
     gold_first(span, span, span, seq(0, 9999)) = range(2, 2, 2, 10000) + 1;
 
     output_first = accum(input, 0);
     ASSERT_ARRAYS_EQ(gold_first, output_first);
 
     // other dimension kernel tests
-    input                                 = constant(0, 2, largeDim, 2, 2);
+    input = constant(0, 2, largeDim, 2, 2);
     input(span, seq(0, 9999), span, span) = 1;
 
     array gold_dim = constant(10000, 2, largeDim, 2, 2);
@@ -196,7 +196,7 @@ TEST(Accum, MaxDim) {
     array output_dim = accum(input, 1);
     ASSERT_ARRAYS_EQ(gold_dim, output_dim);
 
-    input                                 = constant(0, 2, 2, 2, largeDim);
+    input = constant(0, 2, 2, 2, largeDim);
     input(span, span, span, seq(0, 9999)) = 1;
 
     gold_dim = constant(0, 2, 2, 2, largeDim);

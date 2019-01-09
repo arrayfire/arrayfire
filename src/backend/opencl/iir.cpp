@@ -19,7 +19,7 @@
 using af::dim4;
 
 namespace opencl {
-template<typename T>
+template <typename T>
 Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x) {
     AF_BATCH_KIND type = x.ndims() == 1 ? AF_BATCH_NONE : AF_BATCH_SAME;
     if (x.ndims() != b.ndims()) {

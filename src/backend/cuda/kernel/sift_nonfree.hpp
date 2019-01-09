@@ -150,7 +150,7 @@ static const unsigned GLOHAngularBins = 8;
 // Number of GLOH bins per histogram in descriptor
 static const unsigned GLOHHistBins = 16;
 
-template<typename T>
+template <typename T>
 void gaussian1D(T* out, const int dim, double sigma = 0.0) {
     if (!(sigma > 0)) sigma = 0.25 * dim;
 
@@ -166,7 +166,7 @@ void gaussian1D(T* out, const int dim, double sigma = 0.0) {
     for (int k = 0; k < dim; k++) out[k] /= sum;
 }
 
-template<typename T>
+template <typename T>
 Array<T> gauss_filter(float sigma) {
     // Using 6-sigma rule
     unsigned gauss_len = std::min((unsigned)round(sigma * 6 + 1) | 1, 31u);
@@ -179,7 +179,7 @@ Array<T> gauss_filter(float sigma) {
     return gauss_filter;
 }
 
-template<int N>
+template <int N>
 __inline__ __device__ void gaussianElimination(float* A, float* b, float* x) {
 // forward elimination
 #pragma unroll
@@ -205,7 +205,7 @@ __inline__ __device__ void gaussianElimination(float* A, float* b, float* x) {
         sum = b[i];
 #pragma unroll
         for (int j = i + 1; j < N; j++) sum -= A[i * N + j] * x[j];
-        x[i] = sum / A[i * N + i];
+        x[i]       = sum / A[i * N + i];
     }
 }
 
@@ -215,7 +215,7 @@ __inline__ __device__ void normalizeDesc(float* desc, float* accum,
     int tid_y = threadIdx.y;
     int bsz_x = blockDim.x;
 
-    for (int i = tid_x; i < histlen; i += bsz_x)
+    for (int i   = tid_x; i < histlen; i += bsz_x)
         accum[i] = desc[tid_y * histlen + i] * desc[tid_y * histlen + i];
     __syncthreads();
 
@@ -249,7 +249,7 @@ __inline__ __device__ void normalizeGLOHDesc(float* desc, float* accum,
     int tid_y = threadIdx.y;
     int bsz_x = blockDim.x;
 
-    for (int i = tid_x; i < histlen; i += bsz_x)
+    for (int i   = tid_x; i < histlen; i += bsz_x)
         accum[i] = desc[tid_y * histlen + i] * desc[tid_y * histlen + i];
     __syncthreads();
 
@@ -281,7 +281,7 @@ __inline__ __device__ void normalizeGLOHDesc(float* desc, float* accum,
     __syncthreads();
 }
 
-template<typename T>
+template <typename T>
 __global__ void sub(Param<T> out, CParam<T> in, const unsigned nel,
                     const unsigned n_layers) {
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -300,7 +300,7 @@ __global__ void sub(Param<T> out, CParam<T> in, const unsigned nel,
 
 // Determines whether a pixel is a scale-space extremum by comparing it to its
 // 3x3x3 pixel neighborhood.
-template<typename T>
+template <typename T>
 __global__ void detectExtrema(float* x_out, float* y_out, unsigned* layer_out,
                               unsigned* counter, CParam<T> dog,
                               const unsigned max_feat, const float threshold) {
@@ -409,7 +409,7 @@ __global__ void detectExtrema(float* x_out, float* y_out, unsigned* layer_out,
 // Interpolates a scale-space extremum's location and scale to subpixel
 // accuracy to form an image feature. Rejects features with low contrast.
 // Based on Section 4 of Lowe's paper.
-template<typename T>
+template <typename T>
 __global__ void interpolateExtrema(
     float* x_out, float* y_out, unsigned* layer_out, float* response_out,
     float* size_out, unsigned* counter, const float* x_in, const float* y_in,
@@ -508,8 +508,9 @@ __global__ void interpolateExtrema(
         float det = dxx * dyy - dxy * dxy;
 
         // add FLT_EPSILON for double-precision compatibility
-        if (det <= 0 || tr * tr * edge_thr >=
-                            (edge_thr + 1) * (edge_thr + 1) * det + FLT_EPSILON)
+        if (det <= 0 ||
+            tr * tr * edge_thr >=
+                (edge_thr + 1) * (edge_thr + 1) * det + FLT_EPSILON)
             return;
 
         unsigned ridx = atomicAdd(counter, 1u);
@@ -567,7 +568,7 @@ __global__ void removeDuplicates(float* x_out, float* y_out,
 // Computes a canonical orientation for each image feature in an array.  Based
 // on Section 5 of Lowe's paper.  This function adds features to the array when
 // there is more than one dominant orientation at a given feature location.
-template<typename T>
+template <typename T>
 __global__ void calcOrientation(
     float* x_out, float* y_out, unsigned* layer_out, float* response_out,
     float* size_out, float* ori_out, unsigned* counter, const float* x_in,
@@ -590,7 +591,7 @@ __global__ void calcOrientation(
     float* temphist = shrdMem + n * 8;
 
     // Initialize temporary histogram
-    for (int i = tid_x; i < ORI_HIST_BINS; i += bsz_x)
+    for (int i              = tid_x; i < ORI_HIST_BINS; i += bsz_x)
         hist[tid_y * n + i] = 0.f;
     __syncthreads();
 
@@ -662,7 +663,7 @@ __global__ void calcOrientation(
         __syncthreads();
     }
 
-    for (int i = tid_x; i < n; i += bsz_x)
+    for (int i                  = tid_x; i < n; i += bsz_x)
         temphist[tid_y * n + i] = hist[tid_y * n + i];
     __syncthreads();
 
@@ -736,7 +737,7 @@ __global__ void calcOrientation(
 
 // Computes feature descriptors for features in an array.  Based on Section 6
 // of Lowe's paper.
-template<typename T>
+template <typename T>
 __global__ void computeDescriptor(
     float* desc_out, const unsigned desc_len, const unsigned histsz,
     const float* x_in, const float* y_in, const unsigned* layer_in,
@@ -755,7 +756,7 @@ __global__ void computeDescriptor(
     float* desc    = shrdMem;
     float* accum   = shrdMem + desc_len * histsz;
 
-    for (int i = tid_x; i < desc_len * histsz; i += bsz_x)
+    for (int i                     = tid_x; i < desc_len * histsz; i += bsz_x)
         desc[tid_y * desc_len + i] = 0.f;
     __syncthreads();
 
@@ -874,7 +875,7 @@ __global__ void computeDescriptor(
 
 // Computes GLOH feature descriptors for features in an array. Based on Section
 // III-B of Mikolajczyk and Schmid paper.
-template<typename T>
+template <typename T>
 __global__ void computeGLOHDescriptor(
     float* desc_out, const unsigned desc_len, const unsigned histsz,
     const float* x_in, const float* y_in, const unsigned* layer_in,
@@ -894,7 +895,7 @@ __global__ void computeGLOHDescriptor(
     float* desc    = shrdMem;
     float* accum   = shrdMem + desc_len * histsz;
 
-    for (int i = tid_x; i < desc_len * histsz; i += bsz_x)
+    for (int i                     = tid_x; i < desc_len * histsz; i += bsz_x)
         desc[tid_y * desc_len + i] = 0.f;
     __syncthreads();
 
@@ -956,9 +957,11 @@ __global__ void computeGLOHDescriptor(
                 (r < GLOHRadii[0])
                     ? r / GLOHRadii[0]
                     : ((r < GLOHRadii[1])
-                           ? 1 + (r - GLOHRadii[0]) /
+                           ? 1 +
+                                 (r - GLOHRadii[0]) /
                                      (float)(GLOHRadii[1] - GLOHRadii[0])
-                           : min(2 + (r - GLOHRadii[1]) /
+                           : min(2 +
+                                     (r - GLOHRadii[1]) /
                                          (float)(GLOHRadii[2] - GLOHRadii[1]),
                                  3.f - FLT_EPSILON));
 
@@ -1039,7 +1042,7 @@ __global__ void computeGLOHDescriptor(
 
 #undef IPTR
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 Array<T> createInitialImage(CParam<T> img, const float init_sigma,
                             const bool double_input) {
     dim4 dims((double_input) ? img.dims[0] * 2 : img.dims[0],
@@ -1068,7 +1071,7 @@ Array<T> createInitialImage(CParam<T> img, const float init_sigma,
     return init_img;
 }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 std::vector<Array<T>> buildGaussPyr(Param<T> init_img, const unsigned n_octaves,
                                     const unsigned n_layers,
                                     const float init_sigma) {
@@ -1130,7 +1133,7 @@ std::vector<Array<T>> buildGaussPyr(Param<T> init_img, const unsigned n_octaves,
     return gauss_pyr;
 }
 
-template<typename T>
+template <typename T>
 std::vector<Array<T>> buildDoGPyr(std::vector<Array<T>>& gauss_pyr,
                                   const unsigned n_octaves,
                                   const unsigned n_layers) {
@@ -1156,7 +1159,7 @@ std::vector<Array<T>> buildDoGPyr(std::vector<Array<T>>& gauss_pyr,
     return dog_pyr;
 }
 
-template<typename T>
+template <typename T>
 void update_permutation(thrust::device_ptr<T>& keys,
                         cuda::ThrustVector<int>& permutation) {
     // temporary storage for keys
@@ -1171,7 +1174,7 @@ void update_permutation(thrust::device_ptr<T>& keys,
                   permutation.begin());
 }
 
-template<typename T>
+template <typename T>
 void apply_permutation(thrust::device_ptr<T>& keys,
                        cuda::ThrustVector<int>& permutation) {
     // copy keys to temporary vector
@@ -1182,7 +1185,7 @@ void apply_permutation(thrust::device_ptr<T>& keys,
                   temp.begin(), keys);
 }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 void sift(unsigned* out_feat, unsigned* out_dlen, float** d_x, float** d_y,
           float** d_score, float** d_ori, float** d_size, float** d_desc,
           CParam<T> img, const unsigned n_layers, const float contrast_thr,

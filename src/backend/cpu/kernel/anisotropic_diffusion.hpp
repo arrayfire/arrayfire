@@ -131,7 +131,7 @@ float computeCurvatureBasedUpdate(const float mct, const float NW,
     return sqrt(prop_grad) * delta;
 }
 
-template<typename T, bool isMCDE>
+template <typename T, bool isMCDE>
 void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
                           const af_flux_function fftype) {
     const auto dims     = inout.dims();

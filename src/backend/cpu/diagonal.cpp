@@ -20,7 +20,7 @@
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 Array<T> diagCreate(const Array<T> &in, const int num) {
     in.eval();
 
@@ -33,7 +33,7 @@ Array<T> diagCreate(const Array<T> &in, const int num) {
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> diagExtract(const Array<T> &in, const int num) {
     in.eval();
 

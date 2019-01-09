@@ -35,33 +35,33 @@ namespace cuda {
 //        <> *Workspace,
 //        int *devIpiv, int *devInfo );
 
-template<typename T>
+template <typename T>
 struct getrf_func_def_t {
     typedef cusolverStatus_t (*getrf_func_def)(cusolverDnHandle_t, int, int,
                                                T *, int, T *, int *, int *);
 };
 
-template<typename T>
+template <typename T>
 struct getrf_buf_func_def_t {
     typedef cusolverStatus_t (*getrf_buf_func_def)(cusolverDnHandle_t, int, int,
                                                    T *, int, int *);
 };
 
 #define LU_FUNC_DEF(FUNC)                                         \
-    template<typename T>                                          \
+    template <typename T>                                         \
     typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func(); \
                                                                   \
-    template<typename T>                                          \
+    template <typename T>                                         \
     typename FUNC##_buf_func_def_t<T>::FUNC##_buf_func_def FUNC##_buf_func();
 
 #define LU_FUNC(FUNC, TYPE, PREFIX)                                         \
-    template<>                                                              \
+    template <>                                                             \
     typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>() { \
         return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
                cusolverDn##PREFIX##FUNC;                                    \
     }                                                                       \
                                                                             \
-    template<>                                                              \
+    template <>                                                             \
     typename FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def               \
         FUNC##_buf_func<TYPE>() {                                           \
         return (FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def) &         \
@@ -91,7 +91,7 @@ void convertPivot(Array<int> &pivot, int out_sz) {
     pivot = createHostDataArray<int>(out_sz, &d_po[0]);
 }
 
-template<typename T>
+template <typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
         const Array<T> &in) {
     dim4 iDims = in.dims();
@@ -109,7 +109,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
     kernel::lu_split<T>(lower, upper, in_copy);
 }
 
-template<typename T>
+template <typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     dim4 iDims = in.dims();
     int M      = iDims[0];

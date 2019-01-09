@@ -10,7 +10,7 @@
 #include <Array.hpp>
 
 namespace cpu {
-template<typename T>
+template <typename T>
 Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
                 const af_interp_type method);
 }

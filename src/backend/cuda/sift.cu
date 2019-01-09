@@ -21,7 +21,7 @@ using af::features;
 
 namespace cuda {
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
               Array<float>& ori, Array<float>& size, Array<float>& desc,
               const Array<T>& in, const unsigned n_layers,

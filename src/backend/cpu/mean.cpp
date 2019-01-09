@@ -19,11 +19,11 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 using mean_dim_func = std::function<void(
     Param<To>, const dim_t, const CParam<Ti>, const dim_t, const int)>;
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 Array<To> mean(const Array<Ti> &in, const int dim) {
     in.eval();
 
@@ -38,12 +38,12 @@ Array<To> mean(const Array<Ti> &in, const int dim) {
     return out;
 }
 
-template<typename T, typename Tw>
+template <typename T, typename Tw>
 using mean_weighted_dim_func =
     std::function<void(Param<T>, const dim_t, const CParam<T>, const dim_t,
                        const CParam<Tw>, const dim_t, const int)>;
 
-template<typename T, typename Tw>
+template <typename T, typename Tw>
 Array<T> mean(const Array<T> &in, const Array<Tw> &wt, const int dim) {
     in.eval();
     wt.eval();
@@ -61,7 +61,7 @@ Array<T> mean(const Array<T> &in, const Array<Tw> &wt, const int dim) {
     return out;
 }
 
-template<typename T, typename Tw>
+template <typename T, typename Tw>
 T mean(const Array<T> &in, const Array<Tw> &wt) {
     in.eval();
     wt.eval();
@@ -94,7 +94,7 @@ T mean(const Array<T> &in, const Array<Tw> &wt) {
     return Op.runningMean;
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 To mean(const Array<Ti> &in) {
     in.eval();
     getQueue().sync();

@@ -16,15 +16,15 @@
 namespace opencl {
 namespace cpu {
 
-template<typename T>
+template <typename T>
 using getri_func_def = int (*)(ORDER_TYPE, int, T *, int, const int *);
 
 #define INV_FUNC_DEF(FUNC) \
-    template<typename T>   \
+    template <typename T>  \
     FUNC##_func_def<T> FUNC##_func();
 
 #define INV_FUNC(FUNC, TYPE, PREFIX)            \
-    template<>                                  \
+    template <>                                 \
     FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
         return &LAPACK_NAME(PREFIX##FUNC);      \
     }
@@ -35,7 +35,7 @@ INV_FUNC(getri, double, d)
 INV_FUNC(getri, cfloat, c)
 INV_FUNC(getri, cdouble, z)
 
-template<typename T>
+template <typename T>
 Array<T> inverse(const Array<T> &in) {
     int M = in.dims()[0];
     // int N = in.dims()[1];

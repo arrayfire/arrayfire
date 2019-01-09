@@ -24,7 +24,7 @@ using std::array;
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 T sq(T a) {
     return a * a;
 }
@@ -35,22 +35,22 @@ static const float RANSACConfidence  = 0.99f;
 static const float LMEDSConfidence   = 0.99f;
 static const float LMEDSOutlierRatio = 0.4f;
 
-template<typename T>
+template <typename T>
 struct EPS {
     T eps() { return FLT_EPSILON; }
 };
 
-template<>
+template <>
 struct EPS<float> {
     static float eps() { return FLT_EPSILON; }
 };
 
-template<>
+template <>
 struct EPS<double> {
     static double eps() { return DBL_EPSILON; }
 };
 
-template<typename T, int M, int N>
+template <typename T, int M, int N>
 void JacobiSVD(T* S, T* V) {
     const int iterations = 30;
     array<T, N> d;
@@ -137,7 +137,7 @@ unsigned updateIterations(float inlier_ratio, unsigned iter) {
     return n <= d * iter ? iter : (unsigned)round(n / d);
 }
 
-template<typename T>
+template <typename T>
 int computeHomography(T* H_ptr, const float* rnd_ptr, const float* x_src_ptr,
                       const float* y_src_ptr, const float* x_dst_ptr,
                       const float* y_dst_ptr) {
@@ -242,7 +242,7 @@ int computeHomography(T* H_ptr, const float* rnd_ptr, const float* x_src_ptr,
 
 // LMedS:
 // http://research.microsoft.com/en-us/um/people/zhang/INRIA/Publis/Tutorial-Estim/node25.html
-template<typename T>
+template <typename T>
 int findBestHomography(Array<T>& bestH, const Array<float>& x_src,
                        const Array<float>& y_src, const Array<float>& x_dst,
                        const Array<float>& y_dst, const Array<float>& rnd,
@@ -353,7 +353,7 @@ int findBestHomography(Array<T>& bestH, const Array<float>& x_src,
     return bestInliers;
 }
 
-template<typename T>
+template <typename T>
 int homography(Array<T>& bestH, const Array<float>& x_src,
                const Array<float>& y_src, const Array<float>& x_dst,
                const Array<float>& y_dst, const Array<float>& initial,

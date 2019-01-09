@@ -50,7 +50,7 @@ CPUInfo::CPUInfo()
                 CPUID cpuID4(0x0B, lvl);
                 uint32_t currLevel = (LVL_TYPE & cpuID4.ECX()) >> 8;
                 switch (currLevel) {
-                    case 0x01: mNumSMT = LVL_CORES & cpuID4.EBX(); break;
+                    case 0x01: mNumSMT     = LVL_CORES & cpuID4.EBX(); break;
                     case 0x02: mNumLogCpus = LVL_CORES & cpuID4.EBX(); break;
                     default: break;
                 }

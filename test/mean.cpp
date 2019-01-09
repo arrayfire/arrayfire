@@ -28,7 +28,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Mean : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -42,27 +42,27 @@ typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, intl, uintl,
 // register the type list
 TYPED_TEST_CASE(Mean, TestTypes);
 
-template<typename T>
+template <typename T>
 struct f32HelperType {
     typedef
         typename cond_type<is_same_type<T, double>::value, double, float>::type
             type;
 };
 
-template<typename T>
+template <typename T>
 struct c32HelperType {
     typedef typename cond_type<is_same_type<T, cfloat>::value, cfloat,
                                typename f32HelperType<T>::type>::type type;
 };
 
-template<typename T>
+template <typename T>
 struct elseType {
     typedef typename cond_type<is_same_type<T, uintl>::value ||
                                    is_same_type<T, intl>::value,
                                double, T>::type type;
 };
 
-template<typename T>
+template <typename T>
 struct meanOutType {
     typedef typename cond_type<
         is_same_type<T, float>::value || is_same_type<T, int>::value ||
@@ -72,7 +72,7 @@ struct meanOutType {
         float, typename elseType<T>::type>::type type;
 };
 
-template<typename T>
+template <typename T>
 void meanDimTest(string pFileName, dim_t dim, bool isWeighted = false) {
     typedef typename meanOutType<T>::type outType;
     if (noDoubleTests<T>()) return;
@@ -170,7 +170,7 @@ TYPED_TEST(Mean, Wtd_Dim1Matrix) {
                            true);
 }
 
-template<typename T>
+template <typename T>
 void meanAllTest(T const_value, dim4 dims) {
     typedef typename meanOutType<T>::type outType;
     if (noDoubleTests<T>()) return;
@@ -213,22 +213,22 @@ TEST(MeanAll, u16) { meanAllTest<ushort>(2, dim4(100, 1, 1, 1)); }
 
 TEST(MeanAll, c64) { meanAllTest<cdouble>(cdouble(2.1), dim4(10, 10, 1, 1)); }
 
-template<typename T>
+template <typename T>
 T random() {
     return T(std::rand() % 10);
 }
 
-template<>
+template <>
 cfloat random<cfloat>() {
     return cfloat(float(std::rand() % 10), float(std::rand() % 10));
 }
 
-template<>
+template <>
 cdouble random<cdouble>() {
     return cdouble(double(std::rand() % 10), double(std::rand() % 10));
 }
 
-template<typename T>
+template <typename T>
 class WeightedMean : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -237,7 +237,7 @@ class WeightedMean : public ::testing::Test {
 // register the type list
 TYPED_TEST_CASE(WeightedMean, TestTypes);
 
-template<typename T, typename wtsType>
+template <typename T, typename wtsType>
 void weightedMeanAllTest(dim4 dims) {
     typedef typename meanOutType<T>::type outType;
 

@@ -36,7 +36,7 @@ using std::string;
 
 namespace opencl {
 namespace kernel {
-template<typename T>
+template <typename T>
 void cscmv(Param out, const Param &values, const Param &colIdx,
            const Param &rowIdx, const Param &rhs, const T alpha, const T beta,
            bool is_conj) {

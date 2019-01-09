@@ -31,7 +31,7 @@ using std::make_tuple;
 using std::tie;
 using std::tuple;
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 static outType varAll(const af_array& in, const bool isbiased) {
     typedef typename baseOutType<outType>::type weightType;
     Array<inType> inArr  = getArray<inType>(in);
@@ -52,7 +52,7 @@ static outType varAll(const af_array& in, const bool isbiased) {
     return result;
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 static outType varAll(const af_array& in, const af_array weights) {
     typedef typename baseOutType<outType>::type bType;
 
@@ -76,7 +76,7 @@ static outType varAll(const af_array& in, const af_array weights) {
     return result;
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 static tuple<Array<outType>, Array<outType>> meanvar(
     const Array<inType>& in,
     const Array<typename baseOutType<outType>::type>& weights,
@@ -122,7 +122,7 @@ static tuple<Array<outType>, Array<outType>> meanvar(
     return make_tuple(meanArr, variance);
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 static tuple<af_array, af_array> meanvar(const af_array& in,
                                          const af_array& weights,
                                          const af_var_bias bias,
@@ -142,17 +142,17 @@ static tuple<af_array, af_array> meanvar(const af_array& in,
 ///
 /// \note Only calculates the weighted variance if the weights array is
 /// non-empty
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 static Array<outType> var(
     const Array<inType>& in,
     const Array<typename baseOutType<outType>::type>& weights,
     const af_var_bias bias, int dim) {
     Array<outType> variance = createEmptyArray<outType>({0});
-    tie(ignore, variance)   = meanvar<inType, outType>(in, weights, bias, dim);
+    tie(ignore, variance) = meanvar<inType, outType>(in, weights, bias, dim);
     return variance;
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 static af_array var_(const af_array& in, const af_array& weights,
                      const af_var_bias bias, int dim) {
     using bType = typename baseOutType<outType>::type;
@@ -311,8 +311,8 @@ af_err af_var_all(double* realVal, double* imagVal, const af_array in,
             case u16: *realVal = varAll<ushort, float>(in, isbiased); break;
             case s64: *realVal = varAll<intl, double>(in, isbiased); break;
             case u64: *realVal = varAll<uintl, double>(in, isbiased); break;
-            case u8: *realVal = varAll<uchar, float>(in, isbiased); break;
-            case b8: *realVal = varAll<char, float>(in, isbiased); break;
+            case u8: *realVal  = varAll<uchar, float>(in, isbiased); break;
+            case b8: *realVal  = varAll<char, float>(in, isbiased); break;
             case c32: {
                 cfloat tmp = varAll<cfloat, cfloat>(in, isbiased);
                 *realVal   = real(tmp);
@@ -353,8 +353,8 @@ af_err af_var_all_weighted(double* realVal, double* imagVal, const af_array in,
             case u16: *realVal = varAll<ushort, float>(in, weights); break;
             case s64: *realVal = varAll<intl, double>(in, weights); break;
             case u64: *realVal = varAll<uintl, double>(in, weights); break;
-            case u8: *realVal = varAll<uchar, float>(in, weights); break;
-            case b8: *realVal = varAll<char, float>(in, weights); break;
+            case u8: *realVal  = varAll<uchar, float>(in, weights); break;
+            case b8: *realVal  = varAll<char, float>(in, weights); break;
             case c32: {
                 cfloat tmp = varAll<cfloat, cfloat>(in, weights);
                 *realVal   = real(tmp);

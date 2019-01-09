@@ -15,7 +15,7 @@
 #include <af/dim4.hpp>
 
 namespace opencl {
-template<typename T>
+template <typename T>
 Array<T> diagCreate(const Array<T> &in, const int num) {
     int size     = in.dims()[0] + std::abs(num);
     int batch    = in.dims()[1];
@@ -26,7 +26,7 @@ Array<T> diagCreate(const Array<T> &in, const int num) {
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> diagExtract(const Array<T> &in, const int num) {
     const dim_t *idims = in.dims().get();
     dim_t size         = std::min(idims[0], idims[1]) - std::abs(num);

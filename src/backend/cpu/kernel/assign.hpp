@@ -22,7 +22,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void assign(Param<T> out, af::dim4 dDims, CParam<T> rhs,
             std::vector<bool> const isSeq, std::vector<af_seq> const seqs,
             std::vector<CParam<uint>> idxArrs) {

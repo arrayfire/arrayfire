@@ -29,7 +29,7 @@ __device__ __host__ int getOffset(dim_t *dims, dim_t *strides, dim_t *refdims,
     return off;
 }
 
-template<typename T, bool is_same>
+template <typename T, bool is_same>
 __global__ void select_kernel(Param<T> out, CParam<char> cond, CParam<T> a,
                               CParam<T> b, int blk_x, int blk_y) {
     const int idz = blockIdx.x / blk_x;
@@ -73,7 +73,7 @@ __global__ void select_kernel(Param<T> out, CParam<char> cond, CParam<T> a,
     }
 }
 
-template<typename T>
+template <typename T>
 void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b,
             int ndims) {
     bool is_same = true;
@@ -105,7 +105,7 @@ void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b,
     }
 }
 
-template<typename T, bool flip>
+template <typename T, bool flip>
 __global__ void select_scalar_kernel(Param<T> out, CParam<char> cond,
                                      CParam<T> a, T b, int blk_x, int blk_y) {
     const int idz = blockIdx.x / blk_x;
@@ -138,7 +138,7 @@ __global__ void select_scalar_kernel(Param<T> out, CParam<char> cond,
     }
 }
 
-template<typename T, bool flip>
+template <typename T, bool flip>
 void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const double b,
                    int ndims) {
     dim3 threads(DIMX, DIMY);

@@ -19,7 +19,7 @@ namespace cpu {
 namespace kernel {
 
 // Based off of http://stackoverflow.com/a/12399290
-template<typename T>
+template <typename T>
 void sort0Iterative(Param<T> val, bool isAscending) {
     // initialize original index locations
     T *val_ptr = val.get();

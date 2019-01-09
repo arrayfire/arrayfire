@@ -13,7 +13,7 @@
 #include <stdexcept>
 
 namespace opencl {
-template<typename T>
+template <typename T>
 Array<T> tile(const Array<T> &in, const af::dim4 &tileDims) {
     const af::dim4 iDims = in.dims();
     af::dim4 oDims       = iDims;

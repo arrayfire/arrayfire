@@ -30,71 +30,71 @@ static const double PI_VAL =
 #define DBL_FACTOR ((1.0) / (UINTLMAX + (1.0)))
 #define HALF_DBL_FACTOR ((0.5) * DBL_FACTOR)
 
-template<typename T>
+template <typename T>
 T transform(uint *val, int index) {
     T *oval = (T *)val;
     return oval[index];
 }
 
-template<>
+template <>
 char transform<char>(uint *val, int index) {
     char v = val[index >> 2] >> (8 << (index & 3));
     v      = (v & 0x1) ? 1 : 0;
     return v;
 }
 
-template<>
+template <>
 uchar transform<uchar>(uint *val, int index) {
     uchar v = val[index >> 2] >> (8 << (index & 3));
     return v;
 }
 
-template<>
+template <>
 ushort transform<ushort>(uint *val, int index) {
     ushort v = val[index >> 1] >> (16 << (index & 1));
     return v;
 }
 
-template<>
+template <>
 short transform<short>(uint *val, int index) {
     return transform<ushort>(val, index);
 }
 
-template<>
+template <>
 uint transform<uint>(uint *val, int index) {
     return val[index];
 }
 
-template<>
+template <>
 int transform<int>(uint *val, int index) {
     return transform<uint>(val, index);
 }
 
-template<>
+template <>
 uintl transform<uintl>(uint *val, int index) {
     uintl v = (((uintl)val[index << 1]) << 32) | ((uintl)val[(index << 1) + 1]);
     return v;
 }
 
-template<>
+template <>
 intl transform<intl>(uint *val, int index) {
     return transform<uintl>(val, index);
 }
 
 // Generates rationals in [0, 1)
-template<>
+template <>
 float transform<float>(uint *val, int index) {
     return 1.f - (val[index] * FLT_FACTOR + HALF_FLT_FACTOR);
 }
 
 // Generates rationals in [0, 1)
-template<>
+template <>
 double transform<double>(uint *val, int index) {
     uintl v = transform<uintl>(val, index);
     return 1.0 - (v * DBL_FACTOR + HALF_DBL_FACTOR);
 }
 
-template<typename T>
+template <typename T>
 void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     uint hi     = seed >> 32;
     uint lo     = seed;
@@ -111,7 +111,7 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     }
 }
 
-template<typename T>
+template <typename T>
 void threefryUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     uint hi     = seed >> 32;
     uint lo     = seed;
@@ -131,7 +131,7 @@ void threefryUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     }
 }
 
-template<typename T>
+template <typename T>
 void boxMullerTransform(T *const out1, T *const out2, const T r1, const T r2) {
     /*
      * The log of a real value x where 0 < x < 1 is negative.
@@ -154,7 +154,7 @@ void boxMullerTransform(uint val[4], float *temp) {
                        transform<float>(val, 3));
 }
 
-template<typename T>
+template <typename T>
 void philoxNormal(T *out, size_t elements, const uintl seed, uintl counter) {
     uint hi     = seed >> 32;
     uint lo     = seed;
@@ -173,7 +173,7 @@ void philoxNormal(T *out, size_t elements, const uintl seed, uintl counter) {
     }
 }
 
-template<typename T>
+template <typename T>
 void threefryNormal(T *out, size_t elements, const uintl seed, uintl counter) {
     uint hi     = seed >> 32;
     uint lo     = seed;
@@ -198,7 +198,7 @@ void threefryNormal(T *out, size_t elements, const uintl seed, uintl counter) {
     }
 }
 
-template<typename T>
+template <typename T>
 void uniformDistributionMT(T *out, size_t elements, uint *const state,
                            const uint *const pos, const uint *const sh1,
                            const uint *const sh2, uint mask,
@@ -223,7 +223,7 @@ void uniformDistributionMT(T *out, size_t elements, uint *const state,
     state_write(state, l_state);
 }
 
-template<typename T>
+template <typename T>
 void normalDistributionMT(T *out, size_t elements, uint *const state,
                           const uint *const pos, const uint *const sh1,
                           const uint *const sh2, uint mask,
@@ -250,7 +250,7 @@ void normalDistributionMT(T *out, size_t elements, uint *const state,
     state_write(state, l_state);
 }
 
-template<typename T>
+template <typename T>
 void uniformDistributionCBRNG(T *out, size_t elements,
                               af_random_engine_type type, const uintl seed,
                               uintl counter) {
@@ -266,7 +266,7 @@ void uniformDistributionCBRNG(T *out, size_t elements,
     }
 }
 
-template<typename T>
+template <typename T>
 void normalDistributionCBRNG(T *out, size_t elements,
                              af_random_engine_type type, const uintl seed,
                              uintl counter) {

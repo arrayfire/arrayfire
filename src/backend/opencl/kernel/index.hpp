@@ -36,7 +36,7 @@ typedef struct {
     char isSeq[4];
 } IndexKernelParam_t;
 
-template<typename T>
+template <typename T>
 void index(Param out, const Param in, const IndexKernelParam_t& p,
            Buffer* bPtr[4]) {
     std::string refName =

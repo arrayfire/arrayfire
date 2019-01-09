@@ -98,31 +98,31 @@ using common::is_complex;
 //                  void *C, const int ldc);
 // clang-format on
 
-template<typename T>
+template <typename T>
 struct blas_base {
     using type =
         typename conditional<is_complex<T>::value && cplx_void_ptr, void,
                              typename dtype_traits<T>::base_type>::type;
 };
 
-template<typename T>
+template <typename T>
 using cptr_type =
     typename conditional<is_complex<T>::value,
                          const typename blas_base<T>::type *, const T *>::type;
-template<typename T>
+template <typename T>
 using ptr_type = typename conditional<is_complex<T>::value,
                                       typename blas_base<T>::type *, T *>::type;
-template<typename T>
+template <typename T>
 using scale_type =
     typename conditional<is_complex<T>::value,
                          const typename blas_base<T>::type *, const T>::type;
 
-template<typename T>
+template <typename T>
 using batch_scale_type =
     typename conditional<is_complex<T>::value,
                          const typename blas_base<T>::type *, const T *>::type;
 
-template<typename T>
+template <typename T>
 using gemm_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                const CBLAS_TRANSPOSE, const blasint,
                                const blasint, const blasint, scale_type<T>,
@@ -130,7 +130,7 @@ using gemm_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                const blasint, scale_type<T>, ptr_type<T>,
                                const blasint);
 
-template<typename T>
+template <typename T>
 using gemv_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                const blasint, const blasint, scale_type<T>,
                                cptr_type<T>, const blasint, cptr_type<T>,
@@ -138,7 +138,7 @@ using gemv_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                const blasint);
 
 #ifdef USE_MKL
-template<typename T>
+template <typename T>
 using gemm_batch_func_def = void (*)(
     const CBLAS_LAYOUT, const CBLAS_TRANSPOSE *, const CBLAS_TRANSPOSE *,
     const MKL_INT *, const MKL_INT *, const MKL_INT *, batch_scale_type<T>,
@@ -148,11 +148,11 @@ using gemm_batch_func_def = void (*)(
 #endif
 
 #define BLAS_FUNC_DEF(FUNC) \
-    template<typename T>    \
+    template <typename T>   \
     FUNC##_func_def<T> FUNC##_func();
 
 #define BLAS_FUNC(FUNC, TYPE, PREFIX)           \
-    template<>                                  \
+    template <>                                 \
     FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
         return &cblas_##PREFIX##FUNC;           \
     }
@@ -177,13 +177,13 @@ BLAS_FUNC(gemm_batch, cfloat, c)
 BLAS_FUNC(gemm_batch, cdouble, z)
 #endif
 
-template<typename T, int value>
+template <typename T, int value>
 typename enable_if<is_floating_point<T>::value, scale_type<T>>::type
 getScale() {
     return T(value);
 }
 
-template<typename T, int value>
+template <typename T, int value>
 typename enable_if<is_complex<T>::value, scale_type<T>>::type getScale() {
     static T val(value);
     return (const typename blas_base<T>::type *)&val;
@@ -193,15 +193,15 @@ CBLAS_TRANSPOSE
 toCblasTranspose(af_mat_prop opt) {
     CBLAS_TRANSPOSE out = CblasNoTrans;
     switch (opt) {
-        case AF_MAT_NONE: out = CblasNoTrans; break;
-        case AF_MAT_TRANS: out = CblasTrans; break;
+        case AF_MAT_NONE: out   = CblasNoTrans; break;
+        case AF_MAT_TRANS: out  = CblasTrans; break;
         case AF_MAT_CTRANS: out = CblasConjTrans; break;
         default: AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
                 af_mat_prop optRhs) {
     lhs.eval();
@@ -241,16 +241,15 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
                 dim_t incr =
                     (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
                 gemv_func<T>()(CblasColMajor, lOpts, lDims[0], lDims[1], alpha,
-                               reinterpret_cast<CBT*>(left.get()), lStrides[1],
-                               reinterpret_cast<CBT*>(right.get()), incr, beta,
-                               reinterpret_cast<BT*>(output.get()), 1);
+                               reinterpret_cast<CBT *>(left.get()), lStrides[1],
+                               reinterpret_cast<CBT *>(right.get()), incr, beta,
+                               reinterpret_cast<BT *>(output.get()), 1);
             } else {
-                gemm_func<T>()(CblasColMajor, lOpts, rOpts, M, N, K, alpha,
-                               reinterpret_cast<CBT*>(left.get()), lStrides[1],
-                               reinterpret_cast<CBT*>(right.get()),
-                               rStrides[1], beta,
-                               reinterpret_cast<BT*>(output.get()),
-                               output.dims(0));
+                gemm_func<T>()(
+                    CblasColMajor, lOpts, rOpts, M, N, K, alpha,
+                    reinterpret_cast<CBT *>(left.get()), lStrides[1],
+                    reinterpret_cast<CBT *>(right.get()), rStrides[1], beta,
+                    reinterpret_cast<BT *>(output.get()), output.dims(0));
             }
         } else {
             int batchSize = oDims[2] * oDims[3];
@@ -311,7 +310,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
              af_mat_prop optRhs) {
     lhs.eval();

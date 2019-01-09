@@ -14,7 +14,6 @@ namespace opencl {
 namespace kernel {
 
 INSTANTIATE(int, float)
-
 }
 
 }  // namespace opencl

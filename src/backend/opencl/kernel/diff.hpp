@@ -30,7 +30,7 @@ namespace kernel {
 static const int TX = 16;
 static const int TY = 16;
 
-template<typename T, unsigned dim, bool isDiff2>
+template <typename T, unsigned dim, bool isDiff2>
 void diff(Param out, const Param in, const unsigned indims) {
     std::string refName = std::string("diff_kernel_") +
                           std::string(dtype_traits<T>::getName()) +

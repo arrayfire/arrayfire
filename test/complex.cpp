@@ -20,113 +20,113 @@ const int num = 10;
 
 #define CPLX(TYPE) af_c##TYPE
 
-#define COMPLEX_TESTS(Ta, Tb, Tc)                                     \
-    TEST(ComplexTests, Test_##Ta##_##Tb) {                            \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-        if (noDoubleTests<Tc>()) return;                              \
-                                                                      \
-        af_dtype ta   = (af_dtype)dtype_traits<Ta>::af_type;          \
-        af_dtype tb   = (af_dtype)dtype_traits<Tb>::af_type;          \
-        array a       = randu(num, ta);                               \
-        array b       = randu(num, tb);                               \
-        array c       = complex(a, b);                                \
-        Ta *h_a       = a.host<Ta>();                                 \
-        Tb *h_b       = b.host<Tb>();                                 \
-        CPLX(Tc) *h_c = c.host<CPLX(Tc)>();                           \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(h_c[i], CPLX(Tc)(h_a[i], h_b[i]))               \
-                << "for values: " << h_a[i] << "," << h_b[i] << endl; \
-        freeHost(h_a);                                                \
-        freeHost(h_b);                                                \
-        freeHost(h_c);                                                \
-    }                                                                 \
-    TEST(ComplexTests, Test_cplx_##Ta##_##Tb##_left) {                \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-                                                                      \
-        af_dtype ta   = (af_dtype)dtype_traits<Ta>::af_type;          \
-        array a       = randu(num, ta);                               \
-        Tb h_b        = 0.3;                                          \
-        array c       = complex(a, h_b);                              \
-        Ta *h_a       = a.host<Ta>();                                 \
-        CPLX(Ta) *h_c = c.host<CPLX(Ta)>();                           \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(h_c[i], CPLX(Ta)(h_a[i], h_b))                  \
-                << "for values: " << h_a[i] << "," << h_b << endl;    \
-        freeHost(h_a);                                                \
-        freeHost(h_c);                                                \
-    }                                                                 \
-                                                                      \
-    TEST(ComplexTests, Test_cplx_##Ta##_##Tb##_right) {               \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-                                                                      \
-        af_dtype tb   = (af_dtype)dtype_traits<Tb>::af_type;          \
-        Ta h_a        = 0.3;                                          \
-        array b       = randu(num, tb);                               \
-        array c       = complex(h_a, b);                              \
-        Tb *h_b       = b.host<Tb>();                                 \
-        CPLX(Tb) *h_c = c.host<CPLX(Tb)>();                           \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(h_c[i], CPLX(Tb)(h_a, h_b[i]))                  \
-                << "for values: " << h_a << "," << h_b[i] << endl;    \
-        freeHost(h_b);                                                \
-        freeHost(h_c);                                                \
-    }                                                                 \
-    TEST(ComplexTests, Test_##Ta##_##Tb##_Real) {                     \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-        if (noDoubleTests<Tc>()) return;                              \
-                                                                      \
-        af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
-        af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
-        array a     = randu(num, ta);                                 \
-        array b     = randu(num, tb);                                 \
-        array c     = complex(a, b);                                  \
-        array d     = real(c);                                        \
-        Ta *h_a     = a.host<Ta>();                                   \
-        Tc *h_d     = d.host<Tc>();                                   \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(h_d[i], h_a[i]) << "at: " << i << endl;         \
-        freeHost(h_a);                                                \
-        freeHost(h_d);                                                \
-    }                                                                 \
-    TEST(ComplexTests, Test_##Ta##_##Tb##_Imag) {                     \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-        if (noDoubleTests<Tc>()) return;                              \
-                                                                      \
-        af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
-        af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
-        array a     = randu(num, ta);                                 \
-        array b     = randu(num, tb);                                 \
-        array c     = complex(a, b);                                  \
-        array d     = imag(c);                                        \
-        Tb *h_b     = b.host<Tb>();                                   \
-        Tc *h_d     = d.host<Tc>();                                   \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(h_d[i], h_b[i]) << "at: " << i << endl;         \
-        freeHost(h_b);                                                \
-        freeHost(h_d);                                                \
-    }                                                                 \
-    TEST(ComplexTests, Test_##Ta##_##Tb##_Conj) {                     \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-        if (noDoubleTests<Tc>()) return;                              \
-                                                                      \
-        af_dtype ta   = (af_dtype)dtype_traits<Ta>::af_type;          \
-        af_dtype tb   = (af_dtype)dtype_traits<Tb>::af_type;          \
-        array a       = randu(num, ta);                               \
-        array b       = randu(num, tb);                               \
-        array c       = complex(a, b);                                \
-        array d       = conjg(c);                                     \
-        CPLX(Tc) *h_c = c.host<CPLX(Tc)>();                           \
-        CPLX(Tc) *h_d = d.host<CPLX(Tc)>();                           \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(conj(h_c[i]), h_d[i]) << "at: " << i << endl;   \
-        freeHost(h_c);                                                \
-        freeHost(h_d);                                                \
+#define COMPLEX_TESTS(Ta, Tb, Tc)                                              \
+    TEST(ComplexTests, Test_##Ta##_##Tb) {                                     \
+        if (noDoubleTests<Ta>()) return;                                       \
+        if (noDoubleTests<Tb>()) return;                                       \
+        if (noDoubleTests<Tc>()) return;                                       \
+                                                                               \
+        af_dtype ta   = (af_dtype)dtype_traits<Ta>::af_type;                   \
+        af_dtype tb   = (af_dtype)dtype_traits<Tb>::af_type;                   \
+        array a       = randu(num, ta);                                        \
+        array b       = randu(num, tb);                                        \
+        array c       = complex(a, b);                                         \
+        Ta *h_a       = a.host<Ta>();                                          \
+        Tb *h_b       = b.host<Tb>();                                          \
+        CPLX(Tc) *h_c = c.host<CPLX(Tc)>();                                    \
+        for (int i = 0; i < num; i++)                                          \
+            ASSERT_EQ(h_c[i], CPLX(Tc)(h_a[i], h_b[i]))                        \
+                << "for values: " << h_a[i] << "," << h_b[i] << endl;          \
+        freeHost(h_a);                                                         \
+        freeHost(h_b);                                                         \
+        freeHost(h_c);                                                         \
+    }                                                                          \
+    TEST(ComplexTests, Test_cplx_##Ta##_##Tb##_left) {                         \
+        if (noDoubleTests<Ta>()) return;                                       \
+        if (noDoubleTests<Tb>()) return;                                       \
+                                                                               \
+        af_dtype ta   = (af_dtype)dtype_traits<Ta>::af_type;                   \
+        array a       = randu(num, ta);                                        \
+        Tb h_b        = 0.3;                                                   \
+        array c       = complex(a, h_b);                                       \
+        Ta *h_a       = a.host<Ta>();                                          \
+        CPLX(Ta) *h_c = c.host<CPLX(Ta)>();                                    \
+        for (int i = 0; i < num; i++)                                          \
+            ASSERT_EQ(h_c[i], CPLX(Ta)(h_a[i], h_b))                           \
+                << "for values: " << h_a[i] << "," << h_b << endl;             \
+        freeHost(h_a);                                                         \
+        freeHost(h_c);                                                         \
+    }                                                                          \
+                                                                               \
+    TEST(ComplexTests, Test_cplx_##Ta##_##Tb##_right) {                        \
+        if (noDoubleTests<Ta>()) return;                                       \
+        if (noDoubleTests<Tb>()) return;                                       \
+                                                                               \
+        af_dtype tb   = (af_dtype)dtype_traits<Tb>::af_type;                   \
+        Ta h_a        = 0.3;                                                   \
+        array b       = randu(num, tb);                                        \
+        array c       = complex(h_a, b);                                       \
+        Tb *h_b       = b.host<Tb>();                                          \
+        CPLX(Tb) *h_c = c.host<CPLX(Tb)>();                                    \
+        for (int i = 0; i < num; i++)                                          \
+            ASSERT_EQ(h_c[i], CPLX(Tb)(h_a, h_b[i])) << "for values: " << h_a  \
+                                                     << "," << h_b[i] << endl; \
+        freeHost(h_b);                                                         \
+        freeHost(h_c);                                                         \
+    }                                                                          \
+    TEST(ComplexTests, Test_##Ta##_##Tb##_Real) {                              \
+        if (noDoubleTests<Ta>()) return;                                       \
+        if (noDoubleTests<Tb>()) return;                                       \
+        if (noDoubleTests<Tc>()) return;                                       \
+                                                                               \
+        af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;                     \
+        af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;                     \
+        array a     = randu(num, ta);                                          \
+        array b     = randu(num, tb);                                          \
+        array c     = complex(a, b);                                           \
+        array d     = real(c);                                                 \
+        Ta *h_a     = a.host<Ta>();                                            \
+        Tc *h_d     = d.host<Tc>();                                            \
+        for (int i = 0; i < num; i++)                                          \
+            ASSERT_EQ(h_d[i], h_a[i]) << "at: " << i << endl;                  \
+        freeHost(h_a);                                                         \
+        freeHost(h_d);                                                         \
+    }                                                                          \
+    TEST(ComplexTests, Test_##Ta##_##Tb##_Imag) {                              \
+        if (noDoubleTests<Ta>()) return;                                       \
+        if (noDoubleTests<Tb>()) return;                                       \
+        if (noDoubleTests<Tc>()) return;                                       \
+                                                                               \
+        af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;                     \
+        af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;                     \
+        array a     = randu(num, ta);                                          \
+        array b     = randu(num, tb);                                          \
+        array c     = complex(a, b);                                           \
+        array d     = imag(c);                                                 \
+        Tb *h_b     = b.host<Tb>();                                            \
+        Tc *h_d     = d.host<Tc>();                                            \
+        for (int i = 0; i < num; i++)                                          \
+            ASSERT_EQ(h_d[i], h_b[i]) << "at: " << i << endl;                  \
+        freeHost(h_b);                                                         \
+        freeHost(h_d);                                                         \
+    }                                                                          \
+    TEST(ComplexTests, Test_##Ta##_##Tb##_Conj) {                              \
+        if (noDoubleTests<Ta>()) return;                                       \
+        if (noDoubleTests<Tb>()) return;                                       \
+        if (noDoubleTests<Tc>()) return;                                       \
+                                                                               \
+        af_dtype ta   = (af_dtype)dtype_traits<Ta>::af_type;                   \
+        af_dtype tb   = (af_dtype)dtype_traits<Tb>::af_type;                   \
+        array a       = randu(num, ta);                                        \
+        array b       = randu(num, tb);                                        \
+        array c       = complex(a, b);                                         \
+        array d       = conjg(c);                                              \
+        CPLX(Tc) *h_c = c.host<CPLX(Tc)>();                                    \
+        CPLX(Tc) *h_d = d.host<CPLX(Tc)>();                                    \
+        for (int i = 0; i < num; i++)                                          \
+            ASSERT_EQ(conj(h_c[i]), h_d[i]) << "at: " << i << endl;            \
+        freeHost(h_c);                                                         \
+        freeHost(h_d);                                                         \
     }
 
 COMPLEX_TESTS(float, float, float)

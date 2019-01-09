@@ -25,7 +25,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 double matrixNorm(const Array<T> &A, double p) {
     if (p == 1) {
         Array<T> colSum = reduce<af_add_t, T, T>(A, 0);
@@ -39,7 +39,7 @@ double matrixNorm(const Array<T> &A, double p) {
              AF_ERR_NOT_SUPPORTED);
 }
 
-template<typename T>
+template <typename T>
 double vectorNorm(const Array<T> &A, double p) {
     if (p == 1) {
         return reduce_all<af_add_t, T, T>(A);
@@ -55,7 +55,7 @@ double vectorNorm(const Array<T> &A, double p) {
     return std::pow(reduce_all<af_add_t, T, T>(A_p), T(1.0 / p));
 }
 
-template<typename T>
+template <typename T>
 double LPQNorm(const Array<T> &A, double p, double q) {
     Array<T> A_p_norm = createEmptyArray<T>(dim4());
 
@@ -78,7 +78,7 @@ double LPQNorm(const Array<T> &A, double p, double q) {
     return std::pow(reduce_all<af_add_t, T, T>(A_p_norm_q), T(1.0 / q));
 }
 
-template<typename T>
+template <typename T>
 double norm(const af_array a, const af_norm_type type, const double p,
             const double q) {
     typedef typename af::dtype_traits<T>::base_type BT;

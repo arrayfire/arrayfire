@@ -14,7 +14,7 @@
 #include <stdexcept>
 
 namespace cuda {
-template<int dim>
+template <int dim>
 af::dim4 calcOffset(const af::dim4 dims) {
     af::dim4 offset;
     offset[0] = (dim == 0) ? dims[0] : 0;
@@ -24,7 +24,7 @@ af::dim4 calcOffset(const af::dim4 dims) {
     return offset;
 }
 
-template<typename Tx, typename Ty>
+template <typename Tx, typename Ty>
 Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second) {
     // All dimensions except join dimension must be equal
     // Compute output dims
@@ -66,7 +66,7 @@ Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second) {
     return out;
 }
 
-template<typename T, int n_arrays>
+template <typename T, int n_arrays>
 void join_wrapper(const int dim, Array<T> &out,
                   const std::vector<Array<T>> &inputs) {
     af::dim4 zero(0, 0, 0, 0);
@@ -104,7 +104,7 @@ void join_wrapper(const int dim, Array<T> &out,
     }
 }
 
-template<typename T>
+template <typename T>
 Array<T> join(const int dim, const std::vector<Array<T>> &inputs) {
     // All dimensions except join dimension must be equal
     // Compute output dims

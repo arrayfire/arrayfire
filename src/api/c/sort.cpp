@@ -24,7 +24,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array sort(const af_array in, const unsigned dim,
                             const bool isAscending) {
     const Array<T> &inArray = getArray<T>(in);
@@ -51,8 +51,8 @@ af_err af_sort(af_array *out, const af_array in, const unsigned dim,
             case u16: val = sort<ushort>(in, dim, isAscending); break;
             case s64: val = sort<intl>(in, dim, isAscending); break;
             case u64: val = sort<uintl>(in, dim, isAscending); break;
-            case u8: val = sort<uchar>(in, dim, isAscending); break;
-            case b8: val = sort<char>(in, dim, isAscending); break;
+            case u8: val  = sort<uchar>(in, dim, isAscending); break;
+            case b8: val  = sort<char>(in, dim, isAscending); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, val);
@@ -62,7 +62,7 @@ af_err af_sort(af_array *out, const af_array in, const unsigned dim,
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 static inline void sort_index(af_array *val, af_array *idx, const af_array in,
                               const unsigned dim, const bool isAscending) {
     const Array<T> &inArray = getArray<T>(in);
@@ -122,7 +122,7 @@ af_err af_sort_index(af_array *out, af_array *indices, const af_array in,
     return AF_SUCCESS;
 }
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 static inline void sort_by_key(af_array *okey, af_array *oval,
                                const af_array ikey, const af_array ival,
                                const unsigned dim, const bool isAscending) {
@@ -139,7 +139,7 @@ static inline void sort_by_key(af_array *okey, af_array *oval,
     *oval = getHandle(ovalArray);
 }
 
-template<typename Tk>
+template <typename Tk>
 void sort_by_key_tmplt(af_array *okey, af_array *oval, const af_array ikey,
                        const af_array ival, const unsigned dim,
                        const bool isAscending) {

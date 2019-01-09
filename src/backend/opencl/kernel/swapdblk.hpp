@@ -28,7 +28,7 @@ using std::string;
 
 namespace opencl {
 namespace kernel {
-template<typename T>
+template <typename T>
 void swapdblk(int n, int nb, cl_mem dA, size_t dA_offset, int ldda, int inca,
               cl_mem dB, size_t dB_offset, int lddb, int incb,
               cl_command_queue queue) {

@@ -33,7 +33,7 @@ static const int TY    = 8;
 static const int TILEX = 512;
 static const int TILEY = 32;
 
-template<typename T>
+template <typename T>
 void tile(Param out, const Param in) {
     std::string refName =
         std::string("tile_kernel_") + std::string(dtype_traits<T>::getName());

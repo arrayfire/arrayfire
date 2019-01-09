@@ -22,7 +22,7 @@ constexpr int THRD_LOAD = 16;
 
 __forceinline__ __device__ int minimum(int a, int b) { return (a < b ? a : b); }
 
-template<typename inType, typename outType, bool isLinear>
+template <typename inType, typename outType, bool isLinear>
 static __global__ void histogramKernel(Param<outType> out, CParam<inType> in,
                                        int len, int nbins, float minval,
                                        float maxval, int nBBS) {
@@ -50,10 +50,8 @@ static __global__ void histogramKernel(Param<outType> out, CParam<inType> in,
     }
 
     for (int row = start; row < end; row += blockDim.x) {
-        int idx =
-            isLinear
-                ? row
-                : ((row % in.dims[0]) + (row / in.dims[0]) * in.strides[1]);
+        int idx = isLinear ? row : ((row % in.dims[0]) +
+                                    (row / in.dims[0]) * in.strides[1]);
         int bin = (int)((iptr[idx] - minval) / step);
         bin     = (bin < 0) ? 0 : bin;
         bin     = (bin >= nbins) ? (nbins - 1) : bin;
@@ -74,7 +72,7 @@ static __global__ void histogramKernel(Param<outType> out, CParam<inType> in,
     }
 }
 
-template<typename inType, typename outType, bool isLinear>
+template <typename inType, typename outType, bool isLinear>
 void histogram(Param<outType> out, CParam<inType> in, int nbins, float minval,
                float maxval) {
     dim3 threads(kernel::THREADS_X, 1);

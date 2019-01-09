@@ -17,7 +17,7 @@ namespace cpu {
 namespace jit {
 
 using std::shared_ptr;
-template<typename T>
+template <typename T>
 class BufferNode : public TNode<T> {
    protected:
     shared_ptr<T> m_sptr;

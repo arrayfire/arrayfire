@@ -20,7 +20,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 static void sift(af_features& feat_, af_array& descriptors, const af_array& in,
                  const unsigned n_layers, const float contrast_thr,
                  const float edge_thr, const float init_sigma,

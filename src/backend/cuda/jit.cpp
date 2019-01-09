@@ -348,7 +348,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
     if (idx == kernelCaches[device].end()) {
         string jit_ker = getKernelString(funcName, full_nodes, full_ids,
                                          output_ids, is_linear);
-        entry          = compileKernel(funcName.c_str(), jit_ker);
+        entry = compileKernel(funcName.c_str(), jit_ker);
         kernelCaches[device][funcName] = entry;
     } else {
         entry = idx->second;
@@ -357,7 +357,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
     return entry.ker;
 }
 
-template<typename T>
+template <typename T>
 void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
     int num_outputs = (int)outputs.size();
     int device      = getActiveDeviceId();
@@ -464,7 +464,7 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
     full_ids.clear();
 }
 
-template<typename T>
+template <typename T>
 void evalNodes(Param<T> out, Node *node) {
     vector<Param<T>> outputs;
     vector<Node *> output_nodes;

@@ -20,7 +20,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 Array<uint> where(const Array<T> &in) {
     in.eval();
     getQueue().sync();

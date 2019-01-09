@@ -37,9 +37,9 @@ __kernel void reduce_first_kernel(__global To *oData, KParam oInfo,
     To out_val = init;
 
     for (int id = xid; cond && id < lim; id += DIMX) {
-        To in_val = transform(iData[id]);
+        To in_val              = transform(iData[id]);
         if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
-        out_val = binOp(in_val, out_val);
+        out_val                = binOp(in_val, out_val);
     }
 
     s_val[lid] = out_val;

@@ -152,7 +152,7 @@ void array_to_feat(std::vector<feat_t>& feat, float* x, float* y,
     }
 }
 
-template<typename T>
+template <typename T>
 void gaussian1D(T* out, const int dim, double sigma = 0.0) {
     if (!(sigma > 0)) sigma = 0.25 * dim;
 
@@ -168,7 +168,7 @@ void gaussian1D(T* out, const int dim, double sigma = 0.0) {
     for (int k = 0; k < dim; k++) out[k] /= sum;
 }
 
-template<typename T>
+template <typename T>
 Array<T> gauss_filter(float sigma) {
     // Using 6-sigma rule
     unsigned gauss_len = std::min((unsigned)round(sigma * 6 + 1) | 1, 31u);
@@ -179,7 +179,7 @@ Array<T> gauss_filter(float sigma) {
     return filter;
 }
 
-template<int N>
+template <int N>
 void gaussianElimination(float* A, float* b, float* x) {
     // forward elimination
     for (int i = 0; i < N - 1; i++) {
@@ -199,11 +199,11 @@ void gaussianElimination(float* A, float* b, float* x) {
     for (int i = 0; i <= N - 2; i++) {
         sum = b[i];
         for (int j = i + 1; j < N; j++) sum -= A[i * N + j] * x[j];
-        x[i] = sum / A[i * N + i];
+        x[i]       = sum / A[i * N + i];
     }
 }
 
-template<typename T>
+template <typename T>
 void sub(Array<T>& out, const Array<T>& in1, const Array<T>& in2) {
     size_t nel       = in1.elements();
     T* out_ptr       = out.get();
@@ -219,7 +219,7 @@ void sub(Array<T>& out, const Array<T>& in1, const Array<T>& in2) {
 
 // Determines whether a pixel is a scale-space extremum by comparing it to its
 // 3x3x3 pixel neighborhood.
-template<typename T>
+template <typename T>
 void detectExtrema(float* x_out, float* y_out, unsigned* layer_out,
                    unsigned* counter, const Array<T>& prev,
                    const Array<T>& center, const Array<T>& next,
@@ -276,7 +276,7 @@ void detectExtrema(float* x_out, float* y_out, unsigned* layer_out,
 // Interpolates a scale-space extremum's location and scale to subpixel
 // accuracy to form an image feature. Rejects features with low contrast.
 // Based on Section 4 of Lowe's paper.
-template<typename T>
+template <typename T>
 void interpolateExtrema(float* x_out, float* y_out, unsigned* layer_out,
                         float* response_out, float* size_out, unsigned* counter,
                         const float* x_in, const float* y_in,
@@ -376,8 +376,9 @@ void interpolateExtrema(float* x_out, float* y_out, unsigned* layer_out,
         float det = dxx * dyy - dxy * dxy;
 
         // add FLT_EPSILON for double-precision compatibility
-        if (det <= 0 || tr * tr * edge_thr >=
-                            (edge_thr + 1) * (edge_thr + 1) * det + FLT_EPSILON)
+        if (det <= 0 ||
+            tr * tr * edge_thr >=
+                (edge_thr + 1) * (edge_thr + 1) * det + FLT_EPSILON)
             continue;
 
         if (*counter < max_feat) {
@@ -432,7 +433,7 @@ void removeDuplicates(float* x_out, float* y_out, unsigned* layer_out,
 // Computes a canonical orientation for each image feature in an array.  Based
 // on Section 5 of Lowe's paper.  This function adds features to the array when
 // there is more than one dominant orientation at a given feature location.
-template<typename T>
+template <typename T>
 void calcOrientation(float* x_out, float* y_out, unsigned* layer_out,
                      float* response_out, float* size_out, float* ori_out,
                      unsigned* counter, const float* x_in, const float* y_in,
@@ -514,8 +515,9 @@ void calcOrientation(float* x_out, float* y_out, unsigned* layer_out,
             r = (j + 1) % n;
             if (hist[j] > hist[l] && hist[j] > hist[r] && hist[j] >= mag_thr) {
                 if (*counter < max_feat) {
-                    float bin = j + 0.5f * (hist[l] - hist[r]) /
-                                        (hist[l] - 2.0f * hist[j] + hist[r]);
+                    float bin = j +
+                                0.5f * (hist[l] - hist[r]) /
+                                    (hist[l] - 2.0f * hist[j] + hist[r]);
                     bin = (bin < 0.0f) ? bin + n : (bin >= n) ? bin - n : bin;
                     float ori = 360.f - ((360.f / n) * bin);
 
@@ -555,7 +557,7 @@ void normalizeDesc(float* desc, const int histlen) {
 
 // Computes feature descriptors for features in an array.  Based on Section 6
 // of Lowe's paper.
-template<typename T>
+template <typename T>
 void computeDescriptor(float* desc_out, const unsigned desc_len,
                        const float* x_in, const float* y_in,
                        const unsigned* layer_in, const float* response_in,
@@ -649,7 +651,7 @@ void computeDescriptor(float* desc_out, const unsigned desc_len,
 
         normalizeDesc(desc, desc_len);
 
-        for (int i = 0; i < (int)desc_len; i++)
+        for (int i  = 0; i < (int)desc_len; i++)
             desc[i] = min(desc[i], DescrMagThr);
 
         normalizeDesc(desc, desc_len);
@@ -664,7 +666,7 @@ void computeDescriptor(float* desc_out, const unsigned desc_len,
 
 // Computes GLOH feature descriptors for features in an array. Based on Section
 // III-B of Mikolajczyk and Schmid paper.
-template<typename T>
+template <typename T>
 void computeGLOHDescriptor(float* desc_out, const unsigned desc_len,
                            const float* x_in, const float* y_in,
                            const unsigned* layer_in, const float* response_in,
@@ -734,9 +736,11 @@ void computeGLOHDescriptor(float* desc_out, const unsigned desc_len,
                 (r < GLOHRadii[0])
                     ? r / GLOHRadii[0]
                     : ((r < GLOHRadii[1])
-                           ? 1 + (r - GLOHRadii[0]) /
+                           ? 1 +
+                                 (r - GLOHRadii[0]) /
                                      (float)(GLOHRadii[1] - GLOHRadii[0])
-                           : min(2 + (r - GLOHRadii[1]) /
+                           : min(2 +
+                                     (r - GLOHRadii[1]) /
                                          (float)(GLOHRadii[2] - GLOHRadii[1]),
                                  3.f - FLT_EPSILON));
 
@@ -786,7 +790,7 @@ void computeGLOHDescriptor(float* desc_out, const unsigned desc_len,
 
         normalizeDesc(desc, desc_len);
 
-        for (int i = 0; i < (int)desc_len; i++)
+        for (int i  = 0; i < (int)desc_len; i++)
             desc[i] = min(desc[i], DescrMagThr);
 
         normalizeDesc(desc, desc_len);
@@ -801,7 +805,7 @@ void computeGLOHDescriptor(float* desc_out, const unsigned desc_len,
 
 #undef IPTR
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 Array<T> createInitialImage(const Array<T>& img, const float init_sigma,
                             const bool double_input) {
     af::dim4 idims = img.dims();
@@ -828,7 +832,7 @@ Array<T> createInitialImage(const Array<T>& img, const float init_sigma,
     return init_img;
 }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 std::vector<Array<T>> buildGaussPyr(const Array<T>& init_img,
                                     const unsigned n_octaves,
                                     const unsigned n_layers,
@@ -871,7 +875,7 @@ std::vector<Array<T>> buildGaussPyr(const Array<T>& init_img,
     return gauss_pyr;
 }
 
-template<typename T>
+template <typename T>
 std::vector<Array<T>> buildDoGPyr(std::vector<Array<T>>& gauss_pyr,
                                   const unsigned n_octaves,
                                   const unsigned n_layers) {
@@ -893,7 +897,7 @@ std::vector<Array<T>> buildDoGPyr(std::vector<Array<T>>& gauss_pyr,
     return dog_pyr;
 }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
                    Array<float>& ori, Array<float>& size, Array<float>& desc,
                    const Array<T>& in, const unsigned n_layers,

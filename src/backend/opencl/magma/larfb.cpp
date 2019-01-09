@@ -174,7 +174,7 @@
 
     @ingroup magma_zaux3
     ********************************************************************/
-template<typename Ty>
+template <typename Ty>
 magma_int_t magma_larfb_gpu(magma_side_t side, magma_trans_t trans,
                             magma_direct_t direct, magma_storev_t storev,
                             magma_int_t m, magma_int_t n, magma_int_t k,

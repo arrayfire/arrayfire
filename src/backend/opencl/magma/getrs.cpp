@@ -63,7 +63,7 @@
 #include <algorithm>
 #include <string>
 
-template<typename Ty>
+template <typename Ty>
 magma_int_t magma_getrs_gpu(magma_trans_t trans, magma_int_t n,
                             magma_int_t nrhs, cl_mem dA, size_t dA_offset,
                             magma_int_t ldda, magma_int_t *ipiv, cl_mem dB,

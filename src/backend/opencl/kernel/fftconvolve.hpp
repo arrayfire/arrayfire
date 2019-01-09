@@ -67,7 +67,7 @@ void calcParamSizes(Param& sig_tmp, Param& filter_tmp, Param& packed,
     }
 }
 
-template<typename convT, typename T, bool isDouble, typename printT>
+template <typename convT, typename T, bool isDouble, typename printT>
 void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
                     AF_BATCH_KIND kind) {
     std::string refName = std::string("pack_data_") +
@@ -169,7 +169,7 @@ void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename convT, typename T, bool isDouble, typename printT>
+template <typename convT, typename T, bool isDouble, typename printT>
 void complexMultiplyHelper(Param packed, Param sig, Param filter,
                            const int baseDim, AF_BATCH_KIND kind) {
     std::string refName = std::string("complex_multiply_") +
@@ -231,8 +231,8 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T, typename convT, bool isDouble, bool roundOut, bool expand,
-         typename printT>
+template <typename T, typename convT, bool isDouble, bool roundOut, bool expand,
+          typename printT>
 void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
                          const int baseDim, AF_BATCH_KIND kind) {
     std::string refName = std::string("reorder_output_") +

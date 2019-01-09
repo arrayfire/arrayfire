@@ -115,13 +115,13 @@ dim_t SparseArrayBase::getNNZ() const {
 ////////////////////////////////////////////////////////////////////////////
 // Friend functions for Sparse Array Creation Implementations
 ////////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 SparseArray<T> createEmptySparseArray(const af::dim4 &_dims, dim_t _nNZ,
                                       const af::storage _storage) {
     return SparseArray<T>(_dims, _nNZ, _storage);
 }
 
-template<typename T>
+template <typename T>
 SparseArray<T> createHostDataSparseArray(const af::dim4 &_dims, const dim_t nNZ,
                                          const T *const _values,
                                          const int *const _rowIdx,
@@ -131,7 +131,7 @@ SparseArray<T> createHostDataSparseArray(const af::dim4 &_dims, const dim_t nNZ,
                           false);
 }
 
-template<typename T>
+template <typename T>
 SparseArray<T> createDeviceDataSparseArray(
     const af::dim4 &_dims, const dim_t nNZ, const T *const _values,
     const int *const _rowIdx, const int *const _colIdx,
@@ -140,24 +140,24 @@ SparseArray<T> createDeviceDataSparseArray(
                           _copy);
 }
 
-template<typename T>
+template <typename T>
 SparseArray<T> createArrayDataSparseArray(
     const af::dim4 &_dims, const Array<T> &_values, const Array<int> &_rowIdx,
     const Array<int> &_colIdx, const af::storage _storage, const bool _copy) {
     return SparseArray<T>(_dims, _values, _rowIdx, _colIdx, _storage, _copy);
 }
 
-template<typename T>
+template <typename T>
 SparseArray<T> copySparseArray(const SparseArray<T> &other) {
     return SparseArray<T>(other, true);
 }
 
-template<typename T>
+template <typename T>
 SparseArray<T> *initSparseArray() {
     return new SparseArray<T>(dim4(), 0, (af::storage)0);
 }
 
-template<typename T>
+template <typename T>
 void destroySparseArray(SparseArray<T> *sparse) {
     delete sparse;
 }
@@ -165,7 +165,7 @@ void destroySparseArray(SparseArray<T> *sparse) {
 ////////////////////////////////////////////////////////////////////////////
 // Sparse Array Class Implementations
 ////////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 SparseArray<T>::SparseArray(dim4 _dims, dim_t _nNZ, af::storage _storage)
     : base(_dims, _nNZ, _storage, (af_dtype)dtype_traits<T>::af_type)
     , values(createValueArray<T>(dim4(_nNZ), scalar<T>(0))) {
@@ -178,7 +178,7 @@ SparseArray<T>::SparseArray(dim4 _dims, dim_t _nNZ, af::storage _storage)
 #endif
 }
 
-template<typename T>
+template <typename T>
 SparseArray<T>::SparseArray(af::dim4 _dims, dim_t _nNZ, const T *const _values,
                             const int *const _rowIdx, const int *const _colIdx,
                             const af::storage _storage, bool _is_device,
@@ -194,7 +194,7 @@ SparseArray<T>::SparseArray(af::dim4 _dims, dim_t _nNZ, const T *const _values,
     }
 }
 
-template<typename T>
+template <typename T>
 SparseArray<T>::SparseArray(af::dim4 _dims, const Array<T> &_values,
                             const Array<int> &_rowIdx,
                             const Array<int> &_colIdx,
@@ -203,12 +203,12 @@ SparseArray<T>::SparseArray(af::dim4 _dims, const Array<T> &_values,
            (af_dtype)dtype_traits<T>::af_type, _copy)
     , values(_copy ? copyArray<T>(_values) : _values) {}
 
-template<typename T>
+template <typename T>
 SparseArray<T>::SparseArray(const SparseArray<T> &other, bool copy)
     : base(other.base, copy)
     , values(copy ? copyArray<T>(other.values) : other.values) {}
 
-template<typename T>
+template <typename T>
 SparseArray<T>::~SparseArray() {}
 
 #define INSTANTIATE(T)                                                       \

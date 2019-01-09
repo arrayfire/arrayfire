@@ -23,7 +23,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 Array<T> exampleFunction(const Array<T> &a, const Array<T> &b,
                          const af_someenum_t method) {
     a.eval();  // All input Arrays should call eval mandatorily

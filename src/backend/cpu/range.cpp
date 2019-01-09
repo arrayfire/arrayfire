@@ -20,7 +20,7 @@
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 Array<T> range(const dim4& dims, const int seq_dim) {
     // Set dimension along which the sequence should be
     // Other dimensions are simply tiled

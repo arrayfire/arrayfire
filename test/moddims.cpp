@@ -24,7 +24,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Moddims : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -43,7 +43,7 @@ typedef ::testing::Types<float, double, int, unsigned, char, unsigned char,
 // register the type list
 TYPED_TEST_CASE(Moddims, TestTypes);
 
-template<typename T>
+template <typename T>
 void moddimsTest(string pTestFile, bool isSubRef = false,
                  const vector<af_seq> *seqv = NULL) {
     if (noDoubleTests<T>()) return;
@@ -109,8 +109,8 @@ void moddimsTest(string pTestFile, bool isSubRef = false,
         vector<T> currGoldBar = tests[testIter];
         size_t nElems         = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-                << "at: " << elIter << endl;
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                            << endl;
         }
     }
     delete[] outData;
@@ -125,7 +125,7 @@ TYPED_TEST(Moddims, Subref) {
                            &(this->subMat));
 }
 
-template<typename T>
+template <typename T>
 void moddimsArgsTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
 
@@ -158,7 +158,7 @@ TYPED_TEST(Moddims, InvalidArgs) {
     moddimsArgsTest<TypeParam>(string(TEST_DIR "/moddims/basic.test"));
 }
 
-template<typename T>
+template <typename T>
 void moddimsMismatchTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
 
@@ -193,7 +193,7 @@ TYPED_TEST(Moddims, Mismatch) {
 
 using af::array;
 
-template<typename T>
+template <typename T>
 void cppModdimsTest(string pTestFile, bool isSubRef = false,
                     const vector<af_seq> *seqv = NULL) {
     if (noDoubleTests<T>()) return;
@@ -237,8 +237,8 @@ void cppModdimsTest(string pTestFile, bool isSubRef = false,
         vector<T> currGoldBar = tests[testIter];
         size_t nElems         = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-                << "at: " << elIter << endl;
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                            << endl;
         }
     }
     delete[] outData;

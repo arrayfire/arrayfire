@@ -87,7 +87,7 @@ TEST(QRFactorized, CPP) {
     delete[] rData;
 }
 
-template<typename T>
+template <typename T>
 void qrTester(const int m, const int n, double eps) {
     try {
         if (noDoubleTests<T>()) return;
@@ -137,29 +137,29 @@ void qrTester(const int m, const int n, double eps) {
     }
 }
 
-template<typename T>
+template <typename T>
 double eps();
 
-template<>
+template <>
 double eps<float>() {
     return 1e-3;
 }
 
-template<>
+template <>
 double eps<double>() {
     return 1e-5;
 }
 
-template<>
+template <>
 double eps<cfloat>() {
     return 1e-3;
 }
 
-template<>
+template <>
 double eps<cdouble>() {
     return 1e-5;
 }
-template<typename T>
+template <typename T>
 class QR : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;

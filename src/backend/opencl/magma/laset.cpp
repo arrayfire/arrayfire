@@ -56,7 +56,7 @@
 
 #include <algorithm>
 
-template<typename T>
+template <typename T>
 void magmablas_laset(magma_uplo_t uplo, magma_int_t m, magma_int_t n, T offdiag,
                      T diag, cl_mem dA, size_t dA_offset, magma_int_t ldda,
                      magma_queue_t queue) {

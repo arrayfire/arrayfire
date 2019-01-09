@@ -15,7 +15,7 @@
 
 namespace cpu {
 namespace kernel {
-template<typename T, bool IsColor>
+template <typename T, bool IsColor>
 void meanShift(Param<T> out, CParam<T> in, const float spatialSigma,
                const float chromaticSigma, const unsigned numIterations) {
     typedef typename std::conditional<std::is_same<T, double>::value, double,
@@ -45,7 +45,7 @@ void meanShift(Param<T> out, CParam<T> in, const float spatialSigma,
                     dim_t i_in_off  = i * istrides[0];
                     dim_t i_out_off = i * ostrides[0];
 
-                    for (unsigned ch = 0; ch < channels; ++ch)
+                    for (unsigned ch            = 0; ch < channels; ++ch)
                         currentCenterColors[ch] = static_cast<AccType>(
                             inData[j_in_off + i_in_off + ch * istrides[2]]);
 
@@ -123,7 +123,7 @@ void meanShift(Param<T> out, CParam<T> in, const float spatialSigma,
                                     ((abs(oldMeanPosJ - meanPosJ) +
                                       abs(oldMeanPosI - meanPosI) + norm) <= 1);
 
-                        for (unsigned ch = 0; ch < channels; ++ch)
+                        for (unsigned ch            = 0; ch < channels; ++ch)
                             currentCenterColors[ch] = currentMeanColors[ch];
 
                         if (stop) break;

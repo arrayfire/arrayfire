@@ -35,7 +35,7 @@ using common::createSpanIndex;
 using common::if_complex;
 using common::if_real;
 
-template<typename Tout, typename Tin>
+template <typename Tout, typename Tin>
 static void assign(Array<Tout>& out, const vector<af_seq> seqs,
                    const Array<Tin>& in) {
     size_t ndims      = seqs.size();
@@ -80,7 +80,7 @@ static void assign(Array<Tout>& out, const vector<af_seq> seqs,
     }
 }
 
-template<typename T>
+template <typename T>
 static if_complex<T> assign(Array<T>& out, const vector<af_seq> iv,
                             const af_array& in) {
     const ArrayInfo& iInfo = getInfo(in);
@@ -92,7 +92,7 @@ static if_complex<T> assign(Array<T>& out, const vector<af_seq> iv,
     }
 }
 
-template<typename T>
+template <typename T>
 static if_real<T> assign(Array<T>& out, const vector<af_seq> iv,
                          const af_array& in) {
     const ArrayInfo& iInfo = getInfo(in);
@@ -198,7 +198,7 @@ af_err af_assign_seq(af_array* out, const af_array lhs, const unsigned ndims,
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 inline void genAssign(af_array& out, const af_index_t* indexs,
                       const af_array& rhs) {
     detail::assign<T>(getArray<T>(out), indexs, getArray<T>(rhs));

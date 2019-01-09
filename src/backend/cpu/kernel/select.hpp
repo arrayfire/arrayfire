@@ -13,7 +13,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b) {
     af::dim4 adims    = a.dims();
     af::dim4 astrides = a.strides();
@@ -70,7 +70,7 @@ void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b) {
     }
 }
 
-template<typename T, bool flip>
+template <typename T, bool flip>
 void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a,
                    const double b) {
     af::dim4 astrides = a.strides();

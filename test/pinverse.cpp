@@ -35,14 +35,14 @@ using std::abs;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 array makeComplex(dim4 dims, const vector<T>& real, const vector<T>& imag) {
     array realArr(dims, &real.front());
     array imagArr(dims, &imag.front());
     return af::complex(realArr, imagArr);
 }
 
-template<typename T>
+template <typename T>
 array readTestInput(string testFilePath) {
     typedef typename dtype_traits<T>::base_type InBaseType;
     dtype outAfType = (dtype)dtype_traits<T>::af_type;
@@ -61,7 +61,7 @@ array readTestInput(string testFilePath) {
     }
 }
 
-template<typename T>
+template <typename T>
 array readTestGold(string testFilePath) {
     typedef typename dtype_traits<T>::base_type InBaseType;
     dtype outAfType = (dtype)dtype_traits<T>::af_type;
@@ -80,34 +80,34 @@ array readTestGold(string testFilePath) {
     }
 }
 
-template<typename T>
+template <typename T>
 class Pinverse : public ::testing::Test {};
 
 // Epsilons taken from test/inverse.cpp
-template<typename T>
+template <typename T>
 double eps();
 
-template<>
+template <>
 double eps<float>() {
     return 0.01f;
 }
 
-template<>
+template <>
 double eps<double>() {
     return 1e-5;
 }
 
-template<>
+template <>
 double eps<cfloat>() {
     return 0.01f;
 }
 
-template<>
+template <>
 double eps<cdouble>() {
     return 1e-5;
 }
 
-template<typename T>
+template <typename T>
 double relEps(array in) {
     typedef typename af::dtype_traits<T>::base_type InBaseType;
     return std::numeric_limits<InBaseType>::epsilon() *
@@ -212,7 +212,7 @@ TEST(Pinverse, SmallSigValExistsFloat) {
     af::array s     = af::diag(sVec, 0, false);
     af::array zeros = af::constant(0, dim0 > sSize ? dim0 - sSize : sSize,
                                    dim1 > sSize ? dim1 - sSize : sSize);
-    s               = af::join(dim0 > dim1 ? 0 : 1, s, zeros);
+    s = af::join(dim0 > dim1 ? 0 : 1, s, zeros);
 
     // Make new input array that has a small non-zero value in its SVD sigma
     in           = af::matmul(u, s, vT);
@@ -239,7 +239,7 @@ TEST(Pinverse, SmallSigValExistsDouble) {
     array s     = diag(sVec, 0, false);
     array zeros = constant(0, dim0 > sSize ? dim0 - sSize : sSize,
                            dim1 > sSize ? dim1 - sSize : sSize, f64);
-    s           = join(dim0 > dim1 ? 0 : 1, s, zeros);
+    s = join(dim0 > dim1 ? 0 : 1, s, zeros);
 
     // Make new input array that has a small non-zero value in its SVD sigma
     in           = matmul(u, s, vT);

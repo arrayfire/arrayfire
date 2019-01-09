@@ -32,7 +32,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename T>
+template <typename T>
 void nonMaxSuppression(Param output, const Param magnitude, const Param dx,
                        const Param dy) {
     std::string refName = std::string("non_max_suppression_") +
@@ -80,7 +80,7 @@ void nonMaxSuppression(Param output, const Param magnitude, const Param dx,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 void initEdgeOut(Param output, const Param strong, const Param weak) {
     std::string refName =
         std::string("init_edge_out_") + std::string(dtype_traits<T>::getName());
@@ -123,7 +123,7 @@ void initEdgeOut(Param output, const Param strong, const Param weak) {
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 void suppressLeftOver(Param output) {
     std::string refName = std::string("suppress_left_over_") +
                           std::string(dtype_traits<T>::getName());
@@ -167,7 +167,7 @@ void suppressLeftOver(Param output) {
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 void edgeTrackingHysteresis(Param output, const Param strong,
                             const Param weak) {
     std::string refName =

@@ -17,7 +17,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array shift(const af_array in, const int sdims[4]) {
     return getHandle(shift<T>(getArray<T>(in), sdims));
 }
@@ -37,14 +37,14 @@ af_err af_shift(af_array *out, const af_array in, const int sdims[4]) {
             case c32: output = shift<cfloat>(in, sdims); break;
             case f64: output = shift<double>(in, sdims); break;
             case c64: output = shift<cdouble>(in, sdims); break;
-            case b8: output = shift<char>(in, sdims); break;
+            case b8: output  = shift<char>(in, sdims); break;
             case s32: output = shift<int>(in, sdims); break;
             case u32: output = shift<uint>(in, sdims); break;
             case s64: output = shift<intl>(in, sdims); break;
             case u64: output = shift<uintl>(in, sdims); break;
             case s16: output = shift<short>(in, sdims); break;
             case u16: output = shift<ushort>(in, sdims); break;
-            case u8: output = shift<uchar>(in, sdims); break;
+            case u8: output  = shift<uchar>(in, sdims); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);

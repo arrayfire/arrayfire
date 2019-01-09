@@ -17,7 +17,7 @@
 
 namespace cpu {
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 struct BinOp<To, Ti, af_cplx2_t> {
     void eval(jit::array<To> &out, const jit::array<Ti> &lhs,
               const jit::array<Ti> &rhs, int lim) {
@@ -25,7 +25,7 @@ struct BinOp<To, Ti, af_cplx2_t> {
     }
 };
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 Array<To> cplx(const Array<Ti> &lhs, const Array<Ti> &rhs,
                const af::dim4 &odims) {
     jit::Node_ptr lhs_node = lhs.getNode();
@@ -38,7 +38,7 @@ Array<To> cplx(const Array<Ti> &lhs, const Array<Ti> &rhs,
 }
 
 #define CPLX_UNARY_FN(op)                                                   \
-    template<typename To, typename Ti>                                      \
+    template <typename To, typename Ti>                                     \
     struct UnOp<To, Ti, af_##op##_t> {                                      \
         void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) { \
             for (int i = 0; i < lim; i++) { out[i] = std::op(in[i]); }      \
@@ -50,7 +50,7 @@ CPLX_UNARY_FN(imag)
 CPLX_UNARY_FN(conj)
 CPLX_UNARY_FN(abs)
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 Array<To> real(const Array<Ti> &in) {
     jit::Node_ptr in_node = in.getNode();
     jit::UnaryNode<To, Ti, af_real_t> *node =
@@ -60,7 +60,7 @@ Array<To> real(const Array<Ti> &in) {
                                jit::Node_ptr(static_cast<jit::Node *>(node)));
 }
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 Array<To> imag(const Array<Ti> &in) {
     jit::Node_ptr in_node = in.getNode();
     jit::UnaryNode<To, Ti, af_imag_t> *node =
@@ -70,7 +70,7 @@ Array<To> imag(const Array<Ti> &in) {
                                jit::Node_ptr(static_cast<jit::Node *>(node)));
 }
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 Array<To> abs(const Array<Ti> &in) {
     jit::Node_ptr in_node = in.getNode();
     jit::UnaryNode<To, Ti, af_abs_t> *node =
@@ -80,7 +80,7 @@ Array<To> abs(const Array<Ti> &in) {
                                jit::Node_ptr(static_cast<jit::Node *>(node)));
 }
 
-template<typename T>
+template <typename T>
 Array<T> conj(const Array<T> &in) {
     jit::Node_ptr in_node = in.getNode();
     jit::UnaryNode<T, T, af_conj_t> *node =

@@ -20,7 +20,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 static void orb(af_features& feat_, af_array& descriptor, const af_array& in,
                 const float fast_thr, const unsigned max_feat,
                 const float scl_fctr, const unsigned levels,

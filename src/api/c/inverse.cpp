@@ -19,7 +19,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array inverse(const af_array in) {
     return getHandle(inverse<T>(getArray<T>(in)));
 }

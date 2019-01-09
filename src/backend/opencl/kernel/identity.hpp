@@ -29,7 +29,7 @@ using std::string;
 
 namespace opencl {
 namespace kernel {
-template<typename T>
+template <typename T>
 static void identity(Param out) {
     std::string refName = std::string("identity_kernel") +
                           std::string(dtype_traits<T>::getName());

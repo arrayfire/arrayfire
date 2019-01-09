@@ -19,13 +19,13 @@ using af::dim4;
 
 namespace opencl {
 
-template<af_op_t op, typename T>
+template <af_op_t op, typename T>
 void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
              const int dim) {
     kernel::ireduce<T, op>(out, loc.get(), in, dim);
 }
 
-template<af_op_t op, typename T>
+template <af_op_t op, typename T>
 T ireduce_all(unsigned *loc, const Array<T> &in) {
     return kernel::ireduce_all<T, op>(loc, in);
 }

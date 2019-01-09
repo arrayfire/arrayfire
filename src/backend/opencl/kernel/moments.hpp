@@ -37,7 +37,7 @@ static const int THREADS = 128;
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 void moments(Param out, const Param in, af_moment_type moment) {
     std::string ref_name = std::string("moments_") +
                            std::string(dtype_traits<T>::getName()) +

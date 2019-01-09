@@ -28,7 +28,7 @@ using af::dim4;
 using std::vector;
 
 namespace cpu {
-template<typename T>
+template <typename T>
 void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
     out.eval();
     rhs.eval();
@@ -38,7 +38,7 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
     // create seq vector to retrieve output dimensions, offsets & offsets
     for (dim_t x = 0; x < 4; ++x) {
         if (idxrs[x].isSeq) { seqs[x] = idxrs[x].idx.seq; }
-        isSeq[x] = idxrs[x].isSeq;
+        isSeq[x]                      = idxrs[x].isSeq;
     }
 
     vector<Array<uint>> idxArrs(4, createEmptyArray<uint>(dim4()));

@@ -31,7 +31,7 @@ kernel void susan_responses(global T* out, global const T* in_,
         localMem[nucleusIdx] = in[gy * idim0 + gx];
     else
         localMem[nucleusIdx] = 0;
-    T m_0 = localMem[nucleusIdx];
+    T m_0                    = localMem[nucleusIdx];
 
 #pragma unroll
     for (int b = ly, gy2 = gy; b < shrdLen; b += BLOCK_Y, gy2 += BLOCK_Y) {

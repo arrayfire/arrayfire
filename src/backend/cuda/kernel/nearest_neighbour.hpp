@@ -21,51 +21,51 @@ namespace kernel {
 
 static const unsigned THREADS = 256;
 
-template<typename T, typename To, af_match_type dist_type>
+template <typename T, typename To, af_match_type dist_type>
 struct dist_op {
     __DH__ To operator()(T v1, T v2) { return v1 - v2; }
 };
 
-template<typename T, typename To>
+template <typename T, typename To>
 struct dist_op<T, To, AF_SAD> {
     __device__ To operator()(T v1, T v2) {
         return fabsf((float)v1 - (float)v2);
     }
 };
 
-template<typename To>
+template <typename To>
 struct dist_op<double, To, AF_SAD> {
     __device__ To operator()(double v1, double v2) {
         return fabs((double)v1 - (double)v2);
     }
 };
 
-template<typename T, typename To>
+template <typename T, typename To>
 struct dist_op<T, To, AF_SSD> {
     __device__ To operator()(T v1, T v2) { return (v1 - v2) * (v1 - v2); }
 };
 
-template<typename To>
+template <typename To>
 struct dist_op<uint, To, AF_SHD> {
     __device__ To operator()(uint v1, uint v2) { return __popc(v1 ^ v2); }
 };
 
-template<typename To>
+template <typename To>
 struct dist_op<uintl, To, AF_SHD> {
     __device__ To operator()(uintl v1, uintl v2) { return __popc(v1 ^ v2); }
 };
 
-template<typename To>
+template <typename To>
 struct dist_op<ushort, To, AF_SHD> {
     __device__ To operator()(ushort v1, ushort v2) { return __popc(v1 ^ v2); }
 };
 
-template<typename To>
+template <typename To>
 struct dist_op<uchar, To, AF_SHD> {
     __device__ To operator()(uchar v1, uchar v2) { return __popc(v1 ^ v2); }
 };
 
-template<typename T, typename To, af_match_type dist_type, bool use_shmem>
+template <typename T, typename To, af_match_type dist_type, bool use_shmem>
 __global__ void all_distances(To* out_dist, CParam<T> query, CParam<T> train,
                               const To max_dist, const unsigned feat_len,
                               const unsigned max_feat_len,
@@ -143,7 +143,7 @@ __global__ void all_distances(To* out_dist, CParam<T> query, CParam<T> train,
     }
 }
 
-template<typename T, typename To, af_match_type dist_type>
+template <typename T, typename To, af_match_type dist_type>
 void all_distances(Param<To> dist, CParam<T> query, CParam<T> train,
                    const dim_t dist_dim) {
     const dim_t feat_len = query.dims[dist_dim];

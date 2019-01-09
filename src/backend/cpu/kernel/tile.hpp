@@ -13,7 +13,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void tile(Param<T> out, CParam<T> in) {
     T* outPtr      = out.get();
     const T* inPtr = in.get();

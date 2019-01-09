@@ -18,7 +18,7 @@
 namespace cpu {
 
 /// A Param iterator that iterates through a Param object
-template<typename T>
+template <typename T>
 class ParamIterator {
     T* ptr;
 
@@ -94,7 +94,7 @@ class ParamIterator {
     }
 
     /// @copydoc operator++()
-    ParamIterator& operator++(int) noexcept {
+    ParamIterator& operator++(int)noexcept {
         ParamIterator before(*this);
         operator++();
         return before;
@@ -118,22 +118,22 @@ class ParamIterator {
     ParamIterator<T>& operator=(ParamIterator<T>&& other) noexcept = default;
 };
 
-template<typename T>
+template <typename T>
 ParamIterator<T> begin(Param<T>& param) {
     return ParamIterator<T>(param);
 }
 
-template<typename T>
+template <typename T>
 ParamIterator<T> end(Param<T>& param) {
     return ParamIterator<T>();
 }
 
-template<typename T>
+template <typename T>
 ParamIterator<const T> begin(CParam<T>& param) {
     return ParamIterator<const T>(param);
 }
 
-template<typename T>
+template <typename T>
 ParamIterator<const T> end(CParam<T>& param) {
     return ParamIterator<const T>();
 }

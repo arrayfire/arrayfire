@@ -37,7 +37,7 @@ using std::string;
 namespace opencl {
 namespace kernel {
 static const int MAX_CSRMV_GROUPS = 4096;
-template<typename T>
+template <typename T>
 void csrmv(Param out, const Param &values, const Param &rowIdx,
            const Param &colIdx, const Param &rhs, const T alpha, const T beta) {
     bool use_alpha = (alpha != scalar<T>(1.0));

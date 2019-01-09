@@ -21,7 +21,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class CannyEdgeDetector : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -34,7 +34,7 @@ typedef ::testing::Types<float, int, uint, short, ushort, uchar, double>
 // register the type list
 TYPED_TEST_CASE(CannyEdgeDetector, TestTypes);
 
-template<typename T>
+template <typename T>
 void cannyTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
 
@@ -62,8 +62,8 @@ void cannyTest(string pTestFile) {
     vector<char> currGoldBar = tests[0];
     size_t nElems            = currGoldBar.size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 
     // cleanup
@@ -79,7 +79,7 @@ TYPED_TEST(CannyEdgeDetector, ArraySizeEqualBlockSize16x16) {
     cannyTest<TypeParam>(string(TEST_DIR "/CannyEdgeDetector/fast16x16.test"));
 }
 
-template<typename T>
+template <typename T>
 void cannyImageOtsuTest(string pTestFile, bool isColor) {
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;

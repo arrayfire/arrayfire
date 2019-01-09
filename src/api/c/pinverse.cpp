@@ -36,7 +36,7 @@ using std::vector;
 
 using namespace detail;
 
-template<typename T>
+template <typename T>
 Array<T> getSubArray(const Array<T> &in, const bool copy, uint dim0begin = 0,
                      uint dim0end = 0, uint dim1begin = 0, uint dim1end = 0,
                      uint dim2begin = 0, uint dim2end = 0, uint dim3begin = 0,
@@ -50,7 +50,7 @@ Array<T> getSubArray(const Array<T> &in, const bool copy, uint dim0begin = 0,
 }
 
 // Moore-Penrose Pseudoinverse
-template<typename T>
+template <typename T>
 Array<T> pinverseSvd(const Array<T> &in, const double tol) {
     in.eval();
     dim_t M = in.dims()[0];
@@ -72,7 +72,7 @@ Array<T> pinverseSvd(const Array<T> &in, const double tol) {
                 getSubArray(in, false, 0, M - 1, 0, N - 1, i, i, j, j);
             Array<Tr> sVecSlice = getSubArray(
                 sVec, false, 0, sVec.dims()[0] - 1, 0, 0, i, i, j, j);
-            Array<T> uSlice  = getSubArray(u, false, 0, u.dims()[0] - 1, 0,
+            Array<T> uSlice = getSubArray(u, false, 0, u.dims()[0] - 1, 0,
                                           u.dims()[1] - 1, i, i, j, j);
             Array<T> vTSlice = getSubArray(vT, false, 0, vT.dims()[0] - 1, 0,
                                            vT.dims()[1] - 1, i, i, j, j);
@@ -135,7 +135,7 @@ Array<T> pinverseSvd(const Array<T> &in, const double tol) {
     return out;
 }
 
-template<typename T>
+template <typename T>
 static inline af_array pinverse(const af_array in, const double tol) {
     return getHandle(pinverseSvd<T>(getArray<T>(in), tol));
 }

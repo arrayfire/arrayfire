@@ -19,8 +19,8 @@
 
 namespace cuda {
 namespace kernel {
-template<typename Ti, typename To, af_op_t op, bool isFinalPass, uint DIMX,
-         bool inclusive_scan>
+template <typename Ti, typename To, af_op_t op, bool isFinalPass, uint DIMX,
+          bool inclusive_scan>
 __global__ static void scan_first_kernel(Param<To> out, Param<To> tmp,
                                          CParam<Ti> in, uint blocks_x,
                                          uint blocks_y, uint lim) {
@@ -77,8 +77,8 @@ __global__ static void scan_first_kernel(Param<To> out, Param<To> tmp,
 #pragma unroll
         for (int off = 1; off < DIMX; off *= 2) {
             if (tidx >= off) val = binop(val, sptr[(start - off) + tidx]);
-            start              = DIMX - start;
-            sptr[start + tidx] = val;
+            start                = DIMX - start;
+            sptr[start + tidx]   = val;
 
             __syncthreads();
         }
@@ -101,7 +101,7 @@ __global__ static void scan_first_kernel(Param<To> out, Param<To> tmp,
     if (!isFinalPass && isLast) { tptr[blockIdx_x] = val; }
 }
 
-template<typename To, af_op_t op>
+template <typename To, af_op_t op>
 __global__ static void bcast_first_kernel(Param<To> out, CParam<To> tmp,
                                           uint blocks_x, uint blocks_y,
                                           uint lim, bool inclusive_scan) {
@@ -139,8 +139,8 @@ __global__ static void bcast_first_kernel(Param<To> out, CParam<To> tmp,
     }
 }
 
-template<typename Ti, typename To, af_op_t op, bool isFinalPass,
-         bool inclusive_scan>
+template <typename Ti, typename To, af_op_t op, bool isFinalPass,
+          bool inclusive_scan>
 static void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
                                 const uint blocks_x, const uint blocks_y,
                                 const uint threads_x) {
@@ -180,7 +180,7 @@ static void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
     POST_LAUNCH_CHECK();
 }
 
-template<typename To, af_op_t op>
+template <typename To, af_op_t op>
 static void bcast_first_launcher(Param<To> out, CParam<To> tmp,
                                  const uint blocks_x, const uint blocks_y,
                                  const uint threads_x, bool inclusive_scan) {
@@ -200,7 +200,7 @@ static void bcast_first_launcher(Param<To> out, CParam<To> tmp,
     POST_LAUNCH_CHECK();
 }
 
-template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
+template <typename Ti, typename To, af_op_t op, bool inclusive_scan>
 static void scan_first(Param<To> out, CParam<Ti> in) {
     uint threads_x = nextpow2(std::max(32u, (uint)out.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_BLOCK);
@@ -218,7 +218,7 @@ static void scan_first(Param<To> out, CParam<Ti> in) {
 
         tmp.dims[0]    = blocks_x;
         tmp.strides[0] = 1;
-        for (int k = 1; k < 4; k++)
+        for (int k         = 1; k < 4; k++)
             tmp.strides[k] = tmp.strides[k - 1] * tmp.dims[k - 1];
 
         int tmp_elements = tmp.strides[3] * tmp.dims[3];

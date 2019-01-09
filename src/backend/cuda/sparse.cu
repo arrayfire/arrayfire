@@ -37,7 +37,7 @@ using namespace std;
 //                                  *cscSortedColPtr, cusparseAction_t
 //                                  copyValues, cusparseIndexBase_t idxBase);
 
-template<typename T>
+template <typename T>
 struct csr2csc_func_def_t {
     typedef cusparseStatus_t (*csr2csc_func_def)(cusparseHandle_t, int, int,
                                                  int, const T *, const int *,
@@ -53,7 +53,7 @@ struct csr2csc_func_def_t {
 //                                    const int *nnzPerRow,
 //                                    cuDoubleComplex *csrValA,
 //                                    int *csrRowPtrA, int *csrColIndA)
-template<typename T>
+template <typename T>
 struct dense2csr_func_def_t {
     typedef cusparseStatus_t (*dense2csr_func_def)(cusparseHandle_t, int, int,
                                                    const cusparseMatDescr_t,
@@ -68,7 +68,7 @@ struct dense2csr_func_def_t {
 //                                    const int *nnzPerCol,
 //                                    cuDoubleComplex *cscValA,
 //                                    int *cscRowIndA, int *cscColPtrA)
-template<typename T>
+template <typename T>
 struct dense2csc_func_def_t {
     typedef cusparseStatus_t (*dense2csc_func_def)(cusparseHandle_t, int, int,
                                                    const cusparseMatDescr_t,
@@ -83,7 +83,7 @@ struct dense2csc_func_def_t {
 //                                    const int *csrRowPtrA,
 //                                    const int *csrColIndA,
 //                                    cuDoubleComplex *A, int lda)
-template<typename T>
+template <typename T>
 struct csr2dense_func_def_t {
     typedef cusparseStatus_t (*csr2dense_func_def)(cusparseHandle_t, int, int,
                                                    const cusparseMatDescr_t,
@@ -98,7 +98,7 @@ struct csr2dense_func_def_t {
 //                                    const int *cscRowIndA,
 //                                    const int *cscColPtrA,
 //                                    cuDoubleComplex *A, int lda)
-template<typename T>
+template <typename T>
 struct csc2dense_func_def_t {
     typedef cusparseStatus_t (*csc2dense_func_def)(cusparseHandle_t, int, int,
                                                    const cusparseMatDescr_t,
@@ -113,7 +113,7 @@ struct csc2dense_func_def_t {
 //                              const cuDoubleComplex *A, int lda,
 //                              int *nnzPerRowColumn,
 //                              int *nnzTotalDevHostPtr)
-template<typename T>
+template <typename T>
 struct nnz_func_def_t {
     typedef cusparseStatus_t (*nnz_func_def)(cusparseHandle_t,
                                              cusparseDirection_t, int, int,
@@ -126,7 +126,7 @@ struct nnz_func_def_t {
 //                               const cuDoubleComplex *y,
 //                               cuDoubleComplex *xVal, const int *xInd,
 //                               cusparseIndexBase_t idxBase)
-template<typename T>
+template <typename T>
 struct gthr_func_def_t {
     typedef cusparseStatus_t (*gthr_func_def)(cusparseHandle_t, int, const T *,
                                               T *, const int *,
@@ -134,11 +134,11 @@ struct gthr_func_def_t {
 };
 
 #define SPARSE_FUNC_DEF(FUNC) \
-    template<typename T>      \
+    template <typename T>     \
     typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func();
 
 #define SPARSE_FUNC(FUNC, TYPE, PREFIX)                                     \
-    template<>                                                              \
+    template <>                                                             \
     typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>() { \
         return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
                cusparse##PREFIX##FUNC;                                      \
@@ -191,7 +191,7 @@ SPARSE_FUNC(gthr, cdouble, Z)
 
 // Partial template specialization of sparseConvertDenseToStorage for COO
 // However, template specialization is not allowed
-template<typename T>
+template <typename T>
 SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in) {
     Array<uint> nonZeroIdx_ = where<T>(in);
     Array<int> nonZeroIdx   = cast<int, uint>(nonZeroIdx_);
@@ -213,7 +213,7 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in) {
                                          AF_STORAGE_COO);
 }
 
-template<typename T, af_storage stype>
+template <typename T, af_storage stype>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
     const int M = in.dims()[0];
     const int N = in.dims()[1];
@@ -270,7 +270,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
 
 // Partial template specialization of sparseConvertStorageToDense for COO
 // However, template specialization is not allowed
-template<typename T>
+template <typename T>
 Array<T> sparseConvertCOOToDense(const SparseArray<T> &in) {
     Array<T> dense = createValueArray<T>(in.dims(), scalar<T>(0));
 
@@ -283,7 +283,7 @@ Array<T> sparseConvertCOOToDense(const SparseArray<T> &in) {
     return dense;
 }
 
-template<typename T, af_storage stype>
+template <typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const SparseArray<T> &in) {
     // Create Sparse Matrix Descriptor
     cusparseMatDescr_t descr = 0;
@@ -313,7 +313,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in) {
     return dense;
 }
 
-template<typename T, af_storage dest, af_storage src>
+template <typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
     using std::shared_ptr;
     in.eval();
@@ -427,12 +427,12 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
         const SparseArray<T> &in);
 
 #define INSTANTIATE_COO_SPECIAL(T)                                 \
-    template<>                                                     \
+    template <>                                                    \
     SparseArray<T> sparseConvertDenseToStorage<T, AF_STORAGE_COO>( \
         const Array<T> &in) {                                      \
         return sparseConvertDenseToCOO<T>(in);                     \
     }                                                              \
-    template<>                                                     \
+    template <>                                                    \
     Array<T> sparseConvertStorageToDense<T, AF_STORAGE_COO>(       \
         const SparseArray<T> &in) {                                \
         return sparseConvertCOOToDense<T>(in);                     \

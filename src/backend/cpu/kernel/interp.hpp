@@ -19,20 +19,20 @@ namespace kernel {
 using std::conditional;
 using std::is_same;
 
-template<typename T>
+template <typename T>
 using wtype_t =
     typename conditional<is_same<T, double>::value, double, float>::type;
 
-template<typename T>
+template <typename T>
 using vtype_t =
     typename conditional<common::is_complex<T>::value, T, wtype_t<T>>::type;
 
-template<typename InT, typename LocT>
+template <typename InT, typename LocT>
 InT linearInterpFunc(InT val[2], LocT ratio) {
     return (1 - ratio) * val[0] + ratio * val[1];
 }
 
-template<typename InT, typename LocT>
+template <typename InT, typename LocT>
 InT bilinearInterpFunc(InT val[2][2], LocT xratio, LocT yratio) {
     InT res[2];
     res[0] = linearInterpFunc(val[0], xratio);
@@ -40,7 +40,7 @@ InT bilinearInterpFunc(InT val[2][2], LocT xratio, LocT yratio) {
     return linearInterpFunc(res, yratio);
 }
 
-template<typename InT, typename LocT>
+template <typename InT, typename LocT>
 InT cubicInterpFunc(InT val[4], LocT xratio, bool spline) {
     InT a0, a1, a2, a3;
     if (spline) {
@@ -66,7 +66,7 @@ InT cubicInterpFunc(InT val[4], LocT xratio, bool spline) {
     return a0 * xratio3 + a1 * xratio2 + a2 * xratio + a3;
 }
 
-template<typename InT, typename LocT>
+template <typename InT, typename LocT>
 InT bicubicInterpFunc(InT val[4][4], LocT xratio, LocT yratio, bool spline) {
     InT res[4];
     res[0] = cubicInterpFunc(val[0], xratio, spline);
@@ -76,10 +76,10 @@ InT bicubicInterpFunc(InT val[4][4], LocT xratio, LocT yratio, bool spline) {
     return cubicInterpFunc(res, yratio, spline);
 }
 
-template<typename InT, typename LocT, int order>
+template <typename InT, typename LocT, int order>
 struct Interp1 {};
 
-template<typename InT, typename LocT>
+template <typename InT, typename LocT>
 struct Interp1<InT, LocT, 1> {
     void operator()(Param<InT> &out, int ooff, CParam<InT> &in, int ioff,
                     LocT x, af_interp_type method, int batch, bool clamp,
@@ -108,7 +108,7 @@ struct Interp1<InT, LocT, 1> {
     }
 };
 
-template<typename InT, typename LocT>
+template <typename InT, typename LocT>
 struct Interp1<InT, LocT, 2> {
     void operator()(Param<InT> &out, int ooff, CParam<InT> &in, int ioff,
                     LocT x, af_interp_type method, int batch, bool clamp,
@@ -151,7 +151,7 @@ struct Interp1<InT, LocT, 2> {
     }
 };
 
-template<typename InT, typename LocT>
+template <typename InT, typename LocT>
 struct Interp1<InT, LocT, 3> {
     void operator()(Param<InT> &out, int ooff, CParam<InT> &in, int ioff,
                     LocT x, af_interp_type method, int batch, bool clamp,
@@ -173,7 +173,7 @@ struct Interp1<InT, LocT, 3> {
 
         bool cond[4] = {grid_x - 1 >= 0, true, grid_x + 1 < x_lim,
                         grid_x + 2 < x_lim};
-        int off[4]   = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0,
+        int off[4] = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0,
                       cond[3] ? 2 : (cond[2] ? 1 : 0)};
 
         const VT zero = scalar<VT>(0);
@@ -190,10 +190,10 @@ struct Interp1<InT, LocT, 3> {
     }
 };
 
-template<typename InT, typename LocT, int order>
+template <typename InT, typename LocT, int order>
 struct Interp2 {};
 
-template<typename InT, typename LocT>
+template <typename InT, typename LocT>
 struct Interp2<InT, LocT, 1> {
     void operator()(Param<InT> &out, int ooff, CParam<InT> &in, int ioff,
                     LocT x, LocT y, af_interp_type method, int nimages,
@@ -231,7 +231,7 @@ struct Interp2<InT, LocT, 1> {
     }
 };
 
-template<typename InT, typename LocT>
+template <typename InT, typename LocT>
 struct Interp2<InT, LocT, 2> {
     void operator()(Param<InT> &out, int ooff, CParam<InT> &in, int ioff,
                     LocT x, LocT y, af_interp_type method, int nimages,
@@ -289,7 +289,7 @@ struct Interp2<InT, LocT, 2> {
     }
 };
 
-template<typename InT, typename LocT>
+template <typename InT, typename LocT>
 struct Interp2<InT, LocT, 3> {
     void operator()(Param<InT> &out, int ooff, CParam<InT> &in, int ioff,
                     LocT x, LocT y, af_interp_type method, int nimages,
@@ -320,14 +320,14 @@ struct Interp2<InT, LocT, 3> {
                          grid_x + 2 < x_lim};
         bool condY[4] = {grid_y - 1 >= 0, true, grid_y + 1 < y_lim,
                          grid_y + 2 < y_lim};
-        int offX[4]   = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0,
+        int offX[4] = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0,
                        condX[3] ? 2 : (condX[2] ? 1 : 0)};
-        int offY[4]   = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0,
+        int offY[4] = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0,
                        condY[3] ? 2 : (condY[2] ? 1 : 0)};
 
         bool spline = (method == AF_INTERP_CUBIC_SPLINE ||
                        method == AF_INTERP_BICUBIC_SPLINE);
-        VT zero     = scalar<VT>(0);
+        VT zero = scalar<VT>(0);
         for (int n = 0; n < nimages; n++) {
             int idx_n = idx + n * istrides[batch_dim];
 

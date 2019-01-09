@@ -24,7 +24,7 @@ namespace cpu {
 using namespace std;
 using af::dim4;
 
-template<typename T>
+template <typename T>
 Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
     in.eval();
 
@@ -47,7 +47,7 @@ Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> setUnion(const Array<T> &first, const Array<T> &second,
                   const bool is_unique) {
     first.eval();
@@ -81,7 +81,7 @@ Array<T> setUnion(const Array<T> &first, const Array<T> &second,
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> setIntersect(const Array<T> &first, const Array<T> &second,
                       const bool is_unique) {
     first.eval();

@@ -22,7 +22,7 @@ using std::abs;
 using std::string;
 using std::vector;
 
-template<typename T, bool isColor>
+template <typename T, bool isColor>
 void bilateralTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
@@ -77,7 +77,7 @@ TEST(BilateralOnImage, Color) {
     bilateralTest<float, true>(string(TEST_DIR "/bilateral/color.test"));
 }
 
-template<typename T>
+template <typename T>
 class BilateralOnData : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
@@ -86,7 +86,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
 // register the type list
 TYPED_TEST_CASE(BilateralOnData, DataTestTypes);
 
-template<typename inType>
+template <typename inType>
 void bilateralDataTest(string pTestFile) {
     if (noDoubleTests<inType>()) return;
 

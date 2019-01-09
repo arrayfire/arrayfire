@@ -29,7 +29,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Image : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -41,7 +41,7 @@ typedef ::testing::Types<float, double, int> TestTypes;
 // register the type list
 TYPED_TEST_CASE(Image, TestTypes);
 
-template<typename T>
+template <typename T>
 void momentsTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
 
@@ -57,37 +57,37 @@ void momentsTest(string pTestFile) {
     vector<float> mData(momentsArray.elements());
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
-        ASSERT_NEAR(tests[0][i], mData[i], 4e-3 * tests[0][i])
-            << "at: " << i << endl;
+        ASSERT_NEAR(tests[0][i], mData[i], 4e-3 * tests[0][i]) << "at: " << i
+                                                               << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_M01);
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
-        ASSERT_NEAR(tests[1][i], mData[i], 8e-3 * tests[1][i])
-            << "at: " << i << endl;
+        ASSERT_NEAR(tests[1][i], mData[i], 8e-3 * tests[1][i]) << "at: " << i
+                                                               << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_M10);
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
-        ASSERT_NEAR(tests[2][i], mData[i], 3e-3 * tests[2][i])
-            << "at: " << i << endl;
+        ASSERT_NEAR(tests[2][i], mData[i], 3e-3 * tests[2][i]) << "at: " << i
+                                                               << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_M11);
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
-        ASSERT_NEAR(tests[3][i], mData[i], 7e-3 * tests[3][i])
-            << "at: " << i << endl;
+        ASSERT_NEAR(tests[3][i], mData[i], 7e-3 * tests[3][i]) << "at: " << i
+                                                               << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_FIRST_ORDER);
     mData.resize(momentsArray.elements());
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements() / 4; i += 4) {
-        ASSERT_NEAR(tests[0][i], mData[i], 1e-3 * tests[0][i])
-            << "at: " << i << endl;
+        ASSERT_NEAR(tests[0][i], mData[i], 1e-3 * tests[0][i]) << "at: " << i
+                                                               << endl;
         ASSERT_NEAR(tests[1][i], mData[i + 1], 1e-3 * tests[1][i])
             << "at: " << i + 1 << endl;
         ASSERT_NEAR(tests[2][i], mData[i + 2], 1e-3 * tests[2][i])
@@ -117,37 +117,37 @@ void momentsOnImageTest(string pTestFile, string pImageFile, bool isColor) {
     vector<float> mData(momentsArray.elements());
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
-        ASSERT_NEAR(tests[0][i], mData[i], 1e-2 * tests[0][i])
-            << "at: " << i << endl;
+        ASSERT_NEAR(tests[0][i], mData[i], 1e-2 * tests[0][i]) << "at: " << i
+                                                               << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_M01);
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
-        ASSERT_NEAR(tests[1][i], mData[i], 1e-2 * tests[1][i])
-            << "at: " << i << endl;
+        ASSERT_NEAR(tests[1][i], mData[i], 1e-2 * tests[1][i]) << "at: " << i
+                                                               << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_M10);
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
-        ASSERT_NEAR(tests[2][i], mData[i], 1e-2 * tests[2][i])
-            << "at: " << i << endl;
+        ASSERT_NEAR(tests[2][i], mData[i], 1e-2 * tests[2][i]) << "at: " << i
+                                                               << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_M11);
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
-        ASSERT_NEAR(tests[3][i], mData[i], 1e-2 * tests[3][i])
-            << "at: " << i << endl;
+        ASSERT_NEAR(tests[3][i], mData[i], 1e-2 * tests[3][i]) << "at: " << i
+                                                               << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_FIRST_ORDER);
     mData.resize(momentsArray.elements());
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements() / 4; i += 4) {
-        ASSERT_NEAR(tests[0][i], mData[i], 1e-2 * tests[0][i])
-            << "at: " << i << endl;
+        ASSERT_NEAR(tests[0][i], mData[i], 1e-2 * tests[0][i]) << "at: " << i
+                                                               << endl;
         ASSERT_NEAR(tests[1][i], mData[i + 1], 1e-2 * tests[1][i])
             << "at: " << i + 1 << endl;
         ASSERT_NEAR(tests[2][i], mData[i + 2], 1e-2 * tests[2][i])

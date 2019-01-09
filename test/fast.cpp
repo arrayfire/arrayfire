@@ -24,9 +24,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-typedef struct {
-    float f[5];
-} feat_t;
+typedef struct { float f[5]; } feat_t;
 
 static bool feat_cmp(feat_t i, feat_t j) {
     for (int k = 0; k < 5; k++)
@@ -48,13 +46,13 @@ static void array_to_feat(vector<feat_t> &feat, float *x, float *y,
     }
 }
 
-template<typename T>
+template <typename T>
 class FloatFAST : public ::testing::Test {
    public:
     virtual void SetUp() {}
 };
 
-template<typename T>
+template <typename T>
 class FixedFAST : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -66,7 +64,7 @@ typedef ::testing::Types<int, unsigned, short, ushort> FixedTestTypes;
 TYPED_TEST_CASE(FloatFAST, FloatTestTypes);
 TYPED_TEST_CASE(FixedFAST, FixedTestTypes);
 
-template<typename T>
+template <typename T>
 void fastTest(string pTestFile, bool nonmax) {
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;

@@ -15,7 +15,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename InT, typename AccT, bool Expand>
+template <typename InT, typename AccT, bool Expand>
 void one2one_1d(InT *optr, InT const *const iptr, AccT const *const fptr,
                 af::dim4 const &oDims, af::dim4 const &sDims,
                 af::dim4 const &fDims, af::dim4 const &sStrides) {
@@ -34,7 +34,7 @@ void one2one_1d(InT *optr, InT const *const iptr, AccT const *const fptr,
     }
 }
 
-template<typename InT, typename AccT, bool Expand>
+template <typename InT, typename AccT, bool Expand>
 void one2one_2d(InT *optr, InT const *const iptr, AccT const *const fptr,
                 af::dim4 const &oDims, af::dim4 const &sDims,
                 af::dim4 const &fDims, af::dim4 const &oStrides,
@@ -71,7 +71,7 @@ void one2one_2d(InT *optr, InT const *const iptr, AccT const *const fptr,
     }
 }
 
-template<typename InT, typename AccT, bool Expand>
+template <typename InT, typename AccT, bool Expand>
 void one2one_3d(InT *optr, InT const *const iptr, AccT const *const fptr,
                 af::dim4 const &oDims, af::dim4 const &sDims,
                 af::dim4 const &fDims, af::dim4 const &oStrides,
@@ -125,7 +125,7 @@ void one2one_3d(InT *optr, InT const *const iptr, AccT const *const fptr,
     }          // k loop ends here
 }
 
-template<typename InT, typename AccT, dim_t baseDim, bool Expand>
+template <typename InT, typename AccT, dim_t baseDim, bool Expand>
 void convolve_nd(Param<InT> out, CParam<InT> signal, CParam<AccT> filter,
                  AF_BATCH_KIND kind) {
     InT *optr              = out.get();
@@ -156,19 +156,19 @@ void convolve_nd(Param<InT> out, CParam<InT> signal, CParam<AccT> filter,
     for (dim_t i = 1; i < 4; ++i) {
         switch (kind) {
             case AF_BATCH_LHS:
-                out_step[i] = oStrides[i];
-                in_step[i]  = sStrides[i];
+                out_step[i]                = oStrides[i];
+                in_step[i]                 = sStrides[i];
                 if (i >= baseDim) batch[i] = sDims[i];
                 break;
             case AF_BATCH_SAME:
-                out_step[i]  = oStrides[i];
-                in_step[i]   = sStrides[i];
-                filt_step[i] = fStrides[i];
+                out_step[i]                = oStrides[i];
+                in_step[i]                 = sStrides[i];
+                filt_step[i]               = fStrides[i];
                 if (i >= baseDim) batch[i] = sDims[i];
                 break;
             case AF_BATCH_RHS:
-                out_step[i]  = oStrides[i];
-                filt_step[i] = fStrides[i];
+                out_step[i]                = oStrides[i];
+                filt_step[i]               = fStrides[i];
                 if (i >= baseDim) batch[i] = fDims[i];
                 break;
             default: break;
@@ -206,7 +206,7 @@ void convolve_nd(Param<InT> out, CParam<InT> signal, CParam<AccT> filter,
     }
 }
 
-template<typename InT, typename AccT, dim_t conv_dim, bool Expand>
+template <typename InT, typename AccT, dim_t conv_dim, bool Expand>
 void convolve2_separable(InT *optr, InT const *const iptr,
                          AccT const *const fptr, af::dim4 const &oDims,
                          af::dim4 const &sDims, af::dim4 const &orgDims,
@@ -250,7 +250,7 @@ void convolve2_separable(InT *optr, InT const *const iptr,
     }
 }
 
-template<typename InT, typename AccT, bool Expand>
+template <typename InT, typename AccT, bool Expand>
 void convolve2(Param<InT> out, CParam<InT> signal, CParam<AccT> c_filter,
                CParam<AccT> r_filter, Param<InT> temp) {
     dim_t cflen = (dim_t)c_filter.dims().elements();

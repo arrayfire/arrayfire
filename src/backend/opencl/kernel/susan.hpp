@@ -31,7 +31,7 @@ static const unsigned THREADS_PER_BLOCK = 256;
 static const unsigned SUSAN_THREADS_X   = 16;
 static const unsigned SUSAN_THREADS_Y   = 16;
 
-template<typename T, unsigned radius>
+template <typename T, unsigned radius>
 void susan(cl::Buffer* out, const cl::Buffer* in, const unsigned in_off,
            const unsigned idim0, const unsigned idim1, const float t,
            const float g, const unsigned edge) {
@@ -75,7 +75,7 @@ void susan(cl::Buffer* out, const cl::Buffer* in, const unsigned in_off,
             idim1, t, g, edge);
 }
 
-template<typename T>
+template <typename T>
 unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
                     const unsigned idim0, const unsigned idim1,
                     const cl::Buffer* resp_in, const unsigned edge,

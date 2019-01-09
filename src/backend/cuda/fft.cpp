@@ -24,11 +24,11 @@ void setFFTPlanCacheSize(size_t numPlans) {
     fftManager().setMaxCacheSize(numPlans);
 }
 
-template<typename T>
+template <typename T>
 struct cufft_transform;
 
 #define CUFFT_FUNC(T, TRANSFORM_TYPE)                                      \
-    template<>                                                             \
+    template <>                                                            \
     struct cufft_transform<T> {                                            \
         enum { type = CUFFT_##TRANSFORM_TYPE };                            \
         cufftResult operator()(cufftHandle plan, T *in, T *out, int dir) { \
@@ -39,11 +39,11 @@ struct cufft_transform;
 CUFFT_FUNC(cfloat, C2C)
 CUFFT_FUNC(cdouble, Z2Z)
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 struct cufft_real_transform;
 
 #define CUFFT_REAL_FUNC(To, Ti, TRANSFORM_TYPE)                     \
-    template<>                                                      \
+    template <>                                                     \
     struct cufft_real_transform<To, Ti> {                           \
         enum { type = CUFFT_##TRANSFORM_TYPE };                     \
         cufftResult operator()(cufftHandle plan, Ti *in, To *out) { \
@@ -57,12 +57,12 @@ CUFFT_REAL_FUNC(cdouble, double, D2Z)
 CUFFT_REAL_FUNC(float, cfloat, C2R)
 CUFFT_REAL_FUNC(double, cdouble, Z2D)
 
-template<int rank>
+template <int rank>
 void computeDims(int rdims[rank], const dim4 &idims) {
     for (int i = 0; i < rank; i++) { rdims[i] = idims[(rank - 1) - i]; }
 }
 
-template<typename T, int rank, bool direction>
+template <typename T, int rank, bool direction>
 void fft_inplace(Array<T> &in) {
     const dim4 idims    = in.dims();
     const dim4 istrides = in.strides();
@@ -87,7 +87,7 @@ void fft_inplace(Array<T> &in) {
                           direction ? CUFFT_FORWARD : CUFFT_INVERSE));
 }
 
-template<typename Tc, typename Tr, int rank>
+template <typename Tc, typename Tr, int rank>
 Array<Tc> fft_r2c(const Array<Tr> &in) {
     dim4 idims = in.dims();
     dim4 odims = in.dims();
@@ -120,7 +120,7 @@ Array<Tc> fft_r2c(const Array<Tr> &in) {
     return out;
 }
 
-template<typename Tr, typename Tc, int rank>
+template <typename Tr, typename Tc, int rank>
 Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims) {
     Array<Tr> out = createEmptyArray<Tr>(odims);
 

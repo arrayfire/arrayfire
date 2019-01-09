@@ -28,7 +28,7 @@ const double dbl_err = 1e-10;
 typedef std::complex<float> complex_float;
 typedef std::complex<double> complex_double;
 
-template<typename T>
+template <typename T>
 T sigmoid(T in) {
     return 1.0 / (1.0 + std::exp(-in));
 }

@@ -36,7 +36,7 @@ static const unsigned TY    = 8;
 static const unsigned TILEX = 128;
 static const unsigned TILEY = 32;
 
-template<typename T, bool is_upper, bool is_unit_diag>
+template <typename T, bool is_upper, bool is_unit_diag>
 void triangle(Param out, const Param in) {
     std::string refName = std::string("triangle_kernel_") +
                           std::string(dtype_traits<T>::getName()) +

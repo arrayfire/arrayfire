@@ -14,7 +14,7 @@
 namespace cpu {
 namespace kernel {
 
-template<af_op_t op, typename Ti, typename Tk, typename To, int D>
+template <af_op_t op, typename Ti, typename Tk, typename To, int D>
 struct scan_dim_by_key {
     bool inclusive_scan;
     scan_dim_by_key(bool inclusiveSanKey) : inclusive_scan(inclusiveSanKey) {}
@@ -38,7 +38,7 @@ struct scan_dim_by_key {
     }
 };
 
-template<af_op_t op, typename Ti, typename Tk, typename To>
+template <af_op_t op, typename Ti, typename Tk, typename To>
 struct scan_dim_by_key<op, Ti, Tk, To, 0> {
     bool inclusive_scan;
     scan_dim_by_key(bool inclusiveSanKey) : inclusive_scan(inclusiveSanKey) {}

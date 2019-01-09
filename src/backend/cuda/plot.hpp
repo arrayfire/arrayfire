@@ -12,7 +12,6 @@
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 void copy_plot(const Array<T> &P, fg_plot plot);
-
 }

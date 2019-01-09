@@ -18,7 +18,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array transform(const af_array in, const af_array tf,
                                  const af::dim4 &odims,
                                  const af_interp_type method,

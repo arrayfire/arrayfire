@@ -17,7 +17,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
             const Array<T> &b) {
     out.eval();
@@ -27,7 +27,7 @@ void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
     getQueue().enqueue(kernel::select<T>, out, cond, a, b);
 }
 
-template<typename T, bool flip>
+template <typename T, bool flip>
 void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a,
                    const double &b) {
     out.eval();

@@ -44,7 +44,7 @@ const SparseArrayBase &getSparseArrayBase(const af_array in,
 ////////////////////////////////////////////////////////////////////////////////
 // Sparse Creation
 ////////////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 af_array createSparseArrayFromData(const af::dim4 &dims, const af_array values,
                                    const af_array rowIdx, const af_array colIdx,
                                    const af::storage stype) {
@@ -126,7 +126,7 @@ af_err af_create_sparse_array(af_array *out, const dim_t nRows,
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 af_array createSparseArrayFromPtr(const af::dim4 &dims, const dim_t nNZ,
                                   const T *const values,
                                   const int *const rowIdx,
@@ -201,7 +201,7 @@ af_err af_create_sparse_array_from_ptr(
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 af_array createSparseArrayFromDense(const af_array _in,
                                     const af_storage stype) {
     const Array<T> in = getArray<T>(_in);
@@ -214,8 +214,8 @@ af_array createSparseArrayFromDense(const af_array _in,
             return getHandle(
                 sparseConvertDenseToStorage<T, AF_STORAGE_COO>(in));
         case AF_STORAGE_CSC:
-            // return getHandle(sparseConvertDenseToStorage<T,
-            // AF_STORAGE_CSC>(in));
+        // return getHandle(sparseConvertDenseToStorage<T,
+        // AF_STORAGE_CSC>(in));
         default:
             AF_ERROR("Storage type is out of range/unsupported", AF_ERR_ARG);
     }
@@ -264,7 +264,7 @@ af_err af_create_sparse_array_from_dense(af_array *out, const af_array in,
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 af_array sparseConvertStorage(const af_array in_,
                               const af_storage destStorage) {
     const SparseArray<T> in = getSparseArray<T>(in_);
@@ -391,7 +391,7 @@ af_err af_sparse_to_dense(af_array *out, const af_array in) {
 ////////////////////////////////////////////////////////////////////////////////
 // Get Functions
 ////////////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 af_array getSparseValues(const af_array in) {
     return getHandle(getSparseArray<T>(in).getValues());
 }

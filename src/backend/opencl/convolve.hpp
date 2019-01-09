@@ -11,11 +11,11 @@
 
 namespace opencl {
 
-template<typename T, typename accT, dim_t baseDim, bool expand>
+template <typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const& signal, Array<accT> const& filter,
                   AF_BATCH_KIND kind);
 
-template<typename T, typename accT, bool expand>
+template <typename T, typename accT, bool expand>
 Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter,
                    Array<accT> const& r_filter);
 

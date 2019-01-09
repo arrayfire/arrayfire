@@ -20,8 +20,8 @@
 
 namespace cpu {
 
-template<typename T, typename convT, typename cT, bool isDouble, bool roundOut,
-         dim_t baseDim>
+template <typename T, typename convT, typename cT, bool isDouble, bool roundOut,
+          dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                      const bool expand, AF_BATCH_KIND kind) {
     signal.eval();
@@ -95,8 +95,8 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     auto upstream_dft = [=](Param<convT> packed, const dim4 fftDims) {
         int fft_dims[baseDim];
         for (int i = 0; i < baseDim; ++i) fft_dims[i] = fftDims[i];
-        const dim4 packed_dims        = packed.dims();
-        const af::dim4 packed_strides = packed.strides();
+        const dim4 packed_dims                        = packed.dims();
+        const af::dim4 packed_strides                 = packed.strides();
         // Compute forward FFT
         if (isDouble) {
             fftw_plan plan = fftw_plan_many_dft(
@@ -130,8 +130,8 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     auto upstream_idft = [=](Param<convT> packed, const dim4 fftDims) {
         int fft_dims[baseDim];
         for (int i = 0; i < baseDim; ++i) fft_dims[i] = fftDims[i];
-        const dim4 packed_dims        = packed.dims();
-        const af::dim4 packed_strides = packed.strides();
+        const dim4 packed_dims                        = packed.dims();
+        const af::dim4 packed_strides                 = packed.strides();
         // Compute inverse FFT
         if (isDouble) {
             fftw_plan plan = fftw_plan_many_dft(

@@ -13,7 +13,7 @@ namespace cuda {
 
 namespace kernel {
 
-template<typename T>
+template <typename T>
 struct SharedMemory {
     // return a pointer to the runtime-sized shared memory array.
     __device__ T* getPointer() {
@@ -26,7 +26,7 @@ struct SharedMemory {
 };
 
 #define SPECIALIZE(T)                         \
-    template<>                                \
+    template <>                               \
     struct SharedMemory<T> {                  \
         __device__ T* getPointer() {          \
             extern __shared__ T ptr_##T##_[]; \

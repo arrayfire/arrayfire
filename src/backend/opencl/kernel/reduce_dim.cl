@@ -47,10 +47,10 @@ __kernel void reduce_dim_kernel(__global To *oData, KParam oInfo,
     To out_val = init;
     for (int id = id_dim_in; is_valid && (id < iInfo.dims[dim]);
          id += group_dim * get_local_size(1)) {
-        To in_val = transform(*iData);
+        To in_val              = transform(*iData);
         if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
-        out_val = binOp(in_val, out_val);
-        iData   = iData + group_dim * get_local_size(1) * istride_dim;
+        out_val                = binOp(in_val, out_val);
+        iData = iData + group_dim * get_local_size(1) * istride_dim;
     }
 
     s_val[lid] = out_val;

@@ -20,19 +20,19 @@
 
 namespace cpu {
 
-#define SVD_FUNC_DEF(FUNC)            \
-    template<typename T, typename Tr> \
+#define SVD_FUNC_DEF(FUNC)             \
+    template <typename T, typename Tr> \
     svd_func_def<T, Tr> svd_func();
 
 #define SVD_FUNC(FUNC, T, Tr, PREFIX)       \
-    template<>                              \
+    template <>                             \
     svd_func_def<T, Tr> svd_func<T, Tr>() { \
         return &LAPACK_NAME(PREFIX##FUNC);  \
     }
 
 #if defined(USE_MKL) || defined(__APPLE__)
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 using svd_func_def = int (*)(ORDER_TYPE, char jobz, int m, int n, T *in,
                              int ldin, Tr *s, T *u, int ldu, T *vt, int ldvt);
 
@@ -44,7 +44,7 @@ SVD_FUNC(gesdd, cdouble, double, z)
 
 #else  // Atlas causes memory freeing issues with using gesdd
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 using svd_func_def = int (*)(ORDER_TYPE, char jobu, char jobvt, int m, int n,
                              T *in, int ldin, Tr *s, T *u, int ldu, T *vt,
                              int ldvt, Tr *superb);
@@ -57,7 +57,7 @@ SVD_FUNC(gesvd, cdouble, double, z)
 
 #endif
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
     s.eval();
     u.eval();
@@ -83,7 +83,7 @@ void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
     getQueue().enqueue(func, s, u, vt, in);
 }
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in) {
     Array<T> in_copy = copyArray<T>(in);
     svdInPlace(s, u, vt, in_copy);
@@ -95,12 +95,12 @@ void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in) {
 
 namespace cpu {
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }

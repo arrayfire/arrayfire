@@ -14,7 +14,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void exampleFunction(Param<T> out, CParam<T> a, CParam<T> b,
                      const af_someenum_t method) {
     UNUSED(method);
@@ -24,12 +24,10 @@ void exampleFunction(Param<T> out, CParam<T> a, CParam<T> b,
     dim4 bStrides = b.strides();
     dim4 oStrides = out.strides();
 
-    const T* src1 =
-        a.get();  // cpu::Param<T>::get returns the pointer to the
-                  // memory allocated for that Param (with proper offsets)
-    const T* src2 =
-        b.get();  // cpu::Param<T>::get returns the pointer to the
-                  // memory allocated for that Param (with proper offsets)
+    const T* src1 = a.get();  // cpu::Param<T>::get returns the pointer to the
+    // memory allocated for that Param (with proper offsets)
+    const T* src2 = b.get();  // cpu::Param<T>::get returns the pointer to the
+    // memory allocated for that Param (with proper offsets)
     T* dst = out.get();
 
     // Implement your algorithm and write results to dst

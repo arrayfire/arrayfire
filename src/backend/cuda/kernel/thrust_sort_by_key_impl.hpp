@@ -15,7 +15,7 @@
 namespace cuda {
 namespace kernel {
 // Wrapper functions
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void thrustSortByKey(Tk *keyPtr, Tv *valPtr, int elements, bool isAscending) {
     if (isAscending) {
         THRUST_SELECT(thrust::stable_sort_by_key, keyPtr, keyPtr + elements,

@@ -15,7 +15,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename InT, typename LocT, int order>
+template <typename InT, typename LocT, int order>
 void approx1(Param<InT> yo, CParam<InT> yi, CParam<LocT> xo, const int xdim,
              const LocT &xi_beg, const LocT &xi_step, const float offGrid,
              af_interp_type method) {
@@ -72,7 +72,7 @@ void approx1(Param<InT> yo, CParam<InT> yi, CParam<LocT> xo, const int xdim,
     }
 }
 
-template<typename InT, typename LocT, int order>
+template <typename InT, typename LocT, int order>
 void approx2(Param<InT> zo, CParam<InT> zi, CParam<LocT> xo, const int xdim,
              const LocT &xi_beg, const LocT &xi_step, CParam<LocT> yo,
              const int ydim, const LocT &yi_beg, const LocT &yi_step,

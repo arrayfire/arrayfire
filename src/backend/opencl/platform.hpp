@@ -29,7 +29,7 @@
 #include <memory.hpp>
 
 namespace boost {
-template<typename T>
+template <typename T>
 class shared_ptr;
 
 namespace compute {

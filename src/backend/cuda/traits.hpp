@@ -14,14 +14,14 @@
 
 namespace af {
 
-template<>
+template <>
 struct dtype_traits<cuFloatComplex> {
     enum { af_type = c32 };
     typedef float base_type;
     static const char* getName() { return "cuFloatComplex"; }
 };
 
-template<>
+template <>
 struct dtype_traits<cuDoubleComplex> {
     enum { af_type = c64 };
     typedef double base_type;

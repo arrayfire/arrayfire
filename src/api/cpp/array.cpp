@@ -170,32 +170,32 @@ array::array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3, af::dtype ty)
 }
 
 #define INSTANTIATE(T)                                                         \
-    template<>                                                                 \
+    template <>                                                                \
     AFAPI array::array(const dim4 &dims, const T *ptr, af::source src)         \
         : arr(nullptr) {                                                       \
         af::dtype ty = static_cast<af::dtype>(dtype_traits<T>::af_type);       \
         initDataArray(&arr, ptr, ty, src, dims[0], dims[1], dims[2], dims[3]); \
     }                                                                          \
-    template<>                                                                 \
+    template <>                                                                \
     AFAPI array::array(dim_t dim0, const T *ptr, af::source src)               \
         : arr(nullptr) {                                                       \
         af::dtype ty = static_cast<af::dtype>(dtype_traits<T>::af_type);       \
         initDataArray(&arr, ptr, ty, src, dim0);                               \
     }                                                                          \
-    template<>                                                                 \
+    template <>                                                                \
     AFAPI array::array(dim_t dim0, dim_t dim1, const T *ptr, af::source src)   \
         : arr(nullptr) {                                                       \
         af::dtype ty = static_cast<af::dtype>(dtype_traits<T>::af_type);       \
         initDataArray(&arr, ptr, ty, src, dim0, dim1);                         \
     }                                                                          \
-    template<>                                                                 \
+    template <>                                                                \
     AFAPI array::array(dim_t dim0, dim_t dim1, dim_t dim2, const T *ptr,       \
                        af::source src)                                         \
         : arr(nullptr) {                                                       \
         af::dtype ty = static_cast<af::dtype>(dtype_traits<T>::af_type);       \
         initDataArray(&arr, ptr, ty, src, dim0, dim1, dim2);                   \
     }                                                                          \
-    template<>                                                                 \
+    template <>                                                                \
     AFAPI array::array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,         \
                        const T *ptr, af::source src)                           \
         : arr(nullptr) {                                                       \
@@ -561,11 +561,11 @@ MEM_FUNC(af_array, get)
 
 #define ASSIGN_TYPE(TY, OP)                                                \
     array::array_proxy &array::array_proxy::operator OP(const TY &value) { \
-        dim4 pdims = getDims(impl->parent_->get());                        \
+        dim4 pdims                  = getDims(impl->parent_->get());       \
         if (impl->is_linear_) pdims = dim4(pdims.elements());              \
-        dim4 dims    = seqToDims(impl->indices_, pdims);                   \
-        af::dtype ty = impl->parent_->type();                              \
-        array cst    = constant(value, dims, ty);                          \
+        dim4 dims                   = seqToDims(impl->indices_, pdims);    \
+        af::dtype ty                = impl->parent_->type();               \
+        array cst                   = constant(value, dims, ty);           \
         this->operator OP(cst);                                            \
         return *this;                                                      \
     }
@@ -842,7 +842,7 @@ BINARY_OP(||, af_or)
 BINARY_OP(%, af_mod)
 BINARY_OP(&, af_bitand)
 BINARY_OP(|, af_bitor)
-BINARY_OP(^, af_bitxor)
+BINARY_OP (^, af_bitxor)
 BINARY_OP(<<, af_bitshiftl)
 BINARY_OP(>>, af_bitshiftr)
 
@@ -869,7 +869,7 @@ void array::eval() const { AF_THROW(af_eval(get())); }
 
 // array instanciations
 #define INSTANTIATE(T)                                                         \
-    template<>                                                                 \
+    template <>                                                                \
     AFAPI T *array::host() const {                                             \
         if (type() != (af::dtype)dtype_traits<T>::af_type) {                   \
             AF_THROW_ERR("Requested type doesn't match with array",            \
@@ -881,7 +881,7 @@ void array::eval() const { AF_THROW(af_eval(get())); }
                                                                                \
         return (T *)res;                                                       \
     }                                                                          \
-    template<>                                                                 \
+    template <>                                                                \
     AFAPI T array::scalar() const {                                            \
         af_dtype type = (af_dtype)af::dtype_traits<T>::af_type;                \
         if (type != this->type())                                              \
@@ -891,13 +891,13 @@ void array::eval() const { AF_THROW(af_eval(get())); }
         AF_THROW(af_get_scalar(&val, get()));                                  \
         return val;                                                            \
     }                                                                          \
-    template<>                                                                 \
+    template <>                                                                \
     AFAPI T *array::device() const {                                           \
         void *ptr = NULL;                                                      \
         AF_THROW(af_get_device_ptr(&ptr, get()));                              \
         return (T *)ptr;                                                       \
     }                                                                          \
-    template<>                                                                 \
+    template <>                                                                \
     AFAPI void array::write(const T *ptr, const size_t bytes,                  \
                             af::source src) {                                  \
         if (src == afHost) {                                                   \
@@ -921,14 +921,14 @@ INSTANTIATE(unsigned long long)
 INSTANTIATE(short)
 INSTANTIATE(unsigned short)
 
-template<>
+template <>
 AFAPI void array::write(const void *ptr, const size_t bytes, af::source src) {
     AF_THROW(af_write_array(get(), ptr, bytes, src));
 }
 
 #undef INSTANTIATE
 
-template<>
+template <>
 AFAPI void *array::device() const {
     void *ptr = nullptr;
     AF_THROW(af_get_device_ptr(&ptr, get()));
@@ -937,7 +937,7 @@ AFAPI void *array::device() const {
 
 // array_proxy instanciations
 #define TEMPLATE_MEM_FUNC(TYPE, RETURN_TYPE, FUNC)       \
-    template<>                                           \
+    template <>                                          \
     AFAPI RETURN_TYPE array::array_proxy::FUNC() const { \
         array out = *this;                               \
         return out.FUNC<TYPE>();                         \

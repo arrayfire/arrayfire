@@ -278,8 +278,8 @@ TEST(JIT, NonLinearLargeY) {
 
     for (int j = 0; j < d1; j++) {
         for (int i = 0; i < d0; i++) {
-            ASSERT_EQ(hc[i + j * d0], ha[i] + hb[j])
-                << " at " << i << " , " << j;
+            ASSERT_EQ(hc[i + j * d0], ha[i] + hb[j]) << " at " << i << " , "
+                                                     << j;
         }
     }
 }
@@ -326,8 +326,8 @@ TEST(JIT, NonLinearLargeX) {
                 int cidx = (i % cdims[0]) + (j % cdims[1]) * cdims[0] +
                            (k % cdims[2]) * cdims[0] * cdims[1];
 
-                ASSERT_EQ(hs[sidx], hr[ridx] - hc[cidx])
-                    << " at " << i << "," << k;
+                ASSERT_EQ(hs[sidx], hr[ridx] - hc[cidx]) << " at " << i << ","
+                                                         << k;
             }
         }
     }

@@ -73,8 +73,8 @@ TEST(FlipTests, Test_flip_2D1) {
         int ioff = (ny - 1 - j) * nx;
         int ooff = j * nx;
         for (int i = 0; i < nx; i++) {
-            ASSERT_EQ(h_in[ioff + i], h_out[ooff + i])
-                << "at (" << i << "," << j << ")";
+            ASSERT_EQ(h_in[ioff + i], h_out[ooff + i]) << "at (" << i << ","
+                                                       << j << ")";
         }
     }
 
@@ -201,8 +201,8 @@ TEST(FlipTests, Test_flip_2D_index11) {
         const int out_off = (en - j) * nx;
 
         for (int i = 0; i < nx; i++) {
-            ASSERT_EQ(h_in[i + in_off], h_out[i + out_off])
-                << "at (" << i << "," << j << ")";
+            ASSERT_EQ(h_in[i + in_off], h_out[i + out_off]) << "at (" << i
+                                                            << "," << j << ")";
         }
     }
 

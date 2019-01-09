@@ -14,7 +14,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void hsv2rgb(Param<T> out, CParam<T> in) {
     const af::dim4 dims    = in.dims();
     const af::dim4 strides = in.strides();
@@ -65,7 +65,7 @@ void hsv2rgb(Param<T> out, CParam<T> in) {
     }
 }
 
-template<typename T>
+template <typename T>
 void rgb2hsv(Param<T> out, CParam<T> in) {
     const af::dim4 dims    = in.dims();
     const af::dim4 strides = in.strides();
@@ -104,7 +104,7 @@ void rgb2hsv(Param<T> out, CParam<T> in) {
                     if (Cmax == R) H = (G - B) / delta + (G < B ? 6 : 0);
                     if (Cmax == G) H = (B - R) / delta + 2;
                     if (Cmax == B) H = (R - G) / delta + 4;
-                    H = H / 6.0f;
+                    H                = H / 6.0f;
                 }
 
                 dst[oIdx0] = H;

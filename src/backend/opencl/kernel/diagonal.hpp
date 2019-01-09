@@ -29,7 +29,7 @@ using std::string;
 
 namespace opencl {
 namespace kernel {
-template<typename T>
+template <typename T>
 std::string generateOptionsString() {
     std::ostringstream options;
     options << " -D T=" << dtype_traits<T>::getName() << " -D ZERO=(T)("
@@ -40,7 +40,7 @@ std::string generateOptionsString() {
     return options.str();
 }
 
-template<typename T>
+template <typename T>
 static void diagCreate(Param out, Param in, int num) {
     std::string refName = std::string("diagCreateKernel_") +
                           std::string(dtype_traits<T>::getName());
@@ -75,7 +75,7 @@ static void diagCreate(Param out, Param in, int num) {
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 static void diagExtract(Param out, Param in, int num) {
     std::string refName = std::string("diagExtractKernel_") +
                           std::string(dtype_traits<T>::getName());

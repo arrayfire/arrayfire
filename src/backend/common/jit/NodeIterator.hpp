@@ -19,7 +19,7 @@ class Node;  // TODO(umar): Remove when CPU backend Node class is moved from JIT
              // to common
 
 /// A node iterator that performs a breadth first traversal of the node tree
-template<typename Node = common::Node>
+template <typename Node = common::Node>
 class NodeIterator : public std::iterator<std::input_iterator_tag, Node> {
    public:
     using pointer   = Node*;
@@ -74,7 +74,7 @@ class NodeIterator : public std::iterator<std::input_iterator_tag, Node> {
     }
 
     /// @copydoc operator++()
-    NodeIterator operator++(int) noexcept {
+    NodeIterator operator++(int)noexcept {
         NodeIterator before(*this);
         operator++();
         return before;

@@ -33,7 +33,7 @@ static const int TY    = 8;
 static const int TILEX = 512;
 static const int TILEY = 32;
 
-template<typename T>
+template <typename T>
 void reorder(Param out, const Param in, const dim_t* rdims) {
     std::string refName = std::string("reorder_kernel_") +
                           std::string(dtype_traits<T>::getName());

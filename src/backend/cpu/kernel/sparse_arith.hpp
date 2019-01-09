@@ -16,7 +16,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 struct arith_op {
     T operator()(T v1, T v2) {
         UNUSED(v1);
@@ -25,27 +25,27 @@ struct arith_op {
     }
 };
 
-template<typename T>
+template <typename T>
 struct arith_op<T, af_add_t> {
     T operator()(T v1, T v2) { return v1 + v2; }
 };
 
-template<typename T>
+template <typename T>
 struct arith_op<T, af_sub_t> {
     T operator()(T v1, T v2) { return v1 - v2; }
 };
 
-template<typename T>
+template <typename T>
 struct arith_op<T, af_mul_t> {
     T operator()(T v1, T v2) { return v1 * v2; }
 };
 
-template<typename T>
+template <typename T>
 struct arith_op<T, af_div_t> {
     T operator()(T v1, T v2) { return v1 / v2; }
 };
 
-template<typename T, af_op_t op, af_storage type>
+template <typename T, af_op_t op, af_storage type>
 void sparseArithOpD(Param<T> output, CParam<T> values, CParam<int> rowIdx,
                     CParam<int> colIdx, CParam<T> rhs,
                     const bool reverse = false) {
@@ -88,7 +88,7 @@ void sparseArithOpD(Param<T> output, CParam<T> values, CParam<int> rowIdx,
     }
 }
 
-template<typename T, af_op_t op, af_storage type>
+template <typename T, af_op_t op, af_storage type>
 void sparseArithOpS(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
                     CParam<T> rhs, const bool reverse = false) {
     T *vPtr         = values.get();
@@ -164,7 +164,7 @@ static void calcOutNNZ(Param<int> outRowIdx, const uint M, const uint N,
     orPtr[M] = csrOutCount;
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void sparseArithOp(Param<T> oVals, Param<int> oColIdx, CParam<int> oRowIdx,
                    const uint Rows, CParam<T> lvals, CParam<int> lRowIdx,
                    CParam<int> lColIdx, CParam<T> rvals, CParam<int> rRowIdx,

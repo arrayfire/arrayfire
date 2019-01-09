@@ -25,7 +25,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, typename cType>
+template <typename T, typename cType>
 static af_array rgb2gray(const af_array& in, const float r, const float g,
                          const float b) {
     Array<cType> input = cast<cType>(getArray<T>(in));
@@ -61,7 +61,7 @@ static af_array rgb2gray(const af_array& in, const float r, const float g,
     return getHandle<cType>(result);
 }
 
-template<typename T, typename cType>
+template <typename T, typename cType>
 static af_array gray2rgb(const af_array& in, const float r, const float g,
                          const float b) {
     if (r == 1.0 && g == 1.0 && b == 1.0) {
@@ -92,7 +92,7 @@ static af_array gray2rgb(const af_array& in, const float r, const float g,
     return getHandle(join<cType, cType>(2, expr3, expr4));
 }
 
-template<typename T, typename cType, bool isRGB2GRAY>
+template <typename T, typename cType, bool isRGB2GRAY>
 static af_array convert(const af_array& in, const float r, const float g,
                         const float b) {
     if (isRGB2GRAY) {
@@ -102,7 +102,7 @@ static af_array convert(const af_array& in, const float r, const float g,
     }
 }
 
-template<bool isRGB2GRAY>
+template <bool isRGB2GRAY>
 af_err convert(af_array* out, const af_array in, const float r, const float g,
                const float b) {
     try {

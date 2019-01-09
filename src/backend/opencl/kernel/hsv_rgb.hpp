@@ -30,7 +30,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename T, bool isHSV2RGB>
+template <typename T, bool isHSV2RGB>
 void hsv2rgb_convert(Param out, const Param in) {
     std::string refName = std::string("hsvrgb_convert_") +
                           std::string(dtype_traits<T>::getName()) +

@@ -102,7 +102,7 @@ __kernel void csrmm_nt(__global T *output, __global const T *values,
         }
 
         if (within_N) {
-            // Each thread writes the output for one column in the current row
+// Each thread writes the output for one column in the current row
 #if USE_ALPHA
             outval = MUL(alpha, outval);
 #endif

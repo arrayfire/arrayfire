@@ -22,7 +22,7 @@ static const unsigned IOTA_TY = 8;
 static const unsigned TILEX   = 512;
 static const unsigned TILEY   = 32;
 
-template<typename T>
+template <typename T>
 __global__ void iota_kernel(Param<T> out, const int s0, const int s1,
                             const int s2, const int s3, const int blocksPerMatX,
                             const int blocksPerMatY) {
@@ -61,7 +61,7 @@ __global__ void iota_kernel(Param<T> out, const int s0, const int s1,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 void iota(Param<T> out, const af::dim4 &sdims) {
     dim3 threads(IOTA_TX, IOTA_TY, 1);
 

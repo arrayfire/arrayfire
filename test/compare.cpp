@@ -18,7 +18,7 @@ using af::dtype_traits;
 using af::randu;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Compare : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, uint, int, intl, uintl, uchar, short,

@@ -20,42 +20,42 @@
 
 namespace cuda {
 namespace kernel {
-template<typename T>
+template <typename T>
 __host__ __device__ static double cabs(const T &in) {
     return (double)in;
 }
 
-template<>
+template <>
 __host__ __device__ double cabs<char>(const char &in) {
     return (double)(in > 0);
 }
 
-template<>
+template <>
 __host__ __device__ double cabs<cfloat>(const cfloat &in) {
     return (double)abs(in);
 }
 
-template<>
+template <>
 __host__ __device__ double cabs<cdouble>(const cdouble &in) {
     return (double)abs(in);
 }
 
-template<typename T>
+template <typename T>
 __host__ __device__ static bool is_nan(const T &in) {
     return in != in;
 }
 
-template<>
+template <>
 __host__ __device__ bool is_nan<cfloat>(const cfloat &in) {
     return in.x != in.x || in.y != in.y;
 }
 
-template<>
+template <>
 __host__ __device__ bool is_nan<cdouble>(const cdouble &in) {
     return in.x != in.x || in.y != in.y;
 }
 
-template<af_op_t op, typename T>
+template <af_op_t op, typename T>
 struct MinMaxOp {
     T m_val;
     uint m_idx;
@@ -72,7 +72,7 @@ struct MinMaxOp {
     }
 };
 
-template<typename T>
+template <typename T>
 struct MinMaxOp<af_max_t, T> {
     T m_val;
     uint m_idx;
@@ -89,7 +89,7 @@ struct MinMaxOp<af_max_t, T> {
     }
 };
 
-template<typename T, af_op_t op, uint dim, bool is_first, uint DIMY>
+template <typename T, af_op_t op, uint dim, bool is_first, uint DIMY>
 __global__ static void ireduce_dim_kernel(Param<T> out, uint *olptr,
                                           CParam<T> in, const uint *ilptr,
                                           uint blocks_x, uint blocks_y,
@@ -138,7 +138,7 @@ __global__ static void ireduce_dim_kernel(Param<T> out, uint *olptr,
     uint idx = id_dim_in;
 
     if (is_valid && id_dim_in < in.dims[dim]) {
-        val = *iptr;
+        val                = *iptr;
         if (!is_first) idx = *ilptr;
     }
 
@@ -200,7 +200,7 @@ __global__ static void ireduce_dim_kernel(Param<T> out, uint *olptr,
     }
 }
 
-template<typename T, af_op_t op, int dim, bool is_first>
+template <typename T, af_op_t op, int dim, bool is_first>
 void ireduce_dim_launcher(Param<T> out, uint *olptr, CParam<T> in,
                           const uint *ilptr, const uint threads_y,
                           const dim_t blocks_dim[4]) {
@@ -239,7 +239,7 @@ void ireduce_dim_launcher(Param<T> out, uint *olptr, CParam<T> in,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, af_op_t op, int dim>
+template <typename T, af_op_t op, int dim>
 void ireduce_dim(Param<T> out, uint *olptr, CParam<T> in) {
     uint threads_y = std::min(THREADS_Y, nextpow2(in.dims[dim]));
     uint threads_x = THREADS_X;
@@ -258,7 +258,7 @@ void ireduce_dim(Param<T> out, uint *olptr, CParam<T> in) {
         int tmp_elements = 1;
         tmp.dims[dim]    = blocks_dim[dim];
 
-        for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
+        for (int k  = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
         tmp_alloc   = memAlloc<T>(tmp_elements);
         tlptr_alloc = memAlloc<uint>(tmp_elements);
         tmp.ptr     = tmp_alloc.get();
@@ -278,7 +278,7 @@ void ireduce_dim(Param<T> out, uint *olptr, CParam<T> in) {
     }
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 __device__ void warp_reduce(T *s_ptr, uint *s_idx, uint tidx) {
     MinMaxOp<op, T> Op(s_ptr[tidx], s_idx[tidx]);
 #pragma unroll
@@ -292,7 +292,7 @@ __device__ void warp_reduce(T *s_ptr, uint *s_idx, uint tidx) {
     }
 }
 
-template<typename T, af_op_t op, bool is_first, uint DIMX>
+template <typename T, af_op_t op, bool is_first, uint DIMX>
 __global__ static void ireduce_first_kernel(Param<T> out, uint *olptr,
                                             CParam<T> in, const uint *ilptr,
                                             uint blocks_x, uint blocks_y,
@@ -328,7 +328,7 @@ __global__ static void ireduce_first_kernel(Param<T> out, uint *olptr,
     uint idx = xid;
 
     if (xid < lim) {
-        val = iptr[xid];
+        val                = iptr[xid];
         if (!is_first) idx = ilptr[xid];
     }
 
@@ -383,7 +383,7 @@ __global__ static void ireduce_first_kernel(Param<T> out, uint *olptr,
     }
 }
 
-template<typename T, af_op_t op, bool is_first>
+template <typename T, af_op_t op, bool is_first>
 void ireduce_first_launcher(Param<T> out, uint *olptr, CParam<T> in,
                             const uint *ilptr, const uint blocks_x,
                             const uint blocks_y, const uint threads_x) {
@@ -422,7 +422,7 @@ void ireduce_first_launcher(Param<T> out, uint *olptr, CParam<T> in,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void ireduce_first(Param<T> out, uint *olptr, CParam<T> in) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_BLOCK);
@@ -455,7 +455,7 @@ void ireduce_first(Param<T> out, uint *olptr, CParam<T> in) {
     }
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void ireduce(Param<T> out, uint *olptr, CParam<T> in, int dim) {
     switch (dim) {
         case 0: return ireduce_first<T, op>(out, olptr, in);
@@ -465,7 +465,7 @@ void ireduce(Param<T> out, uint *olptr, CParam<T> in, int dim) {
     }
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 T ireduce_all(uint *idx, CParam<T> in) {
     using std::unique_ptr;
     int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];

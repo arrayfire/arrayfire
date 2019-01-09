@@ -15,7 +15,7 @@
 
 namespace cpu {
 namespace kernel {
-template<typename T>
+template <typename T>
 void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dxParam,
                        CParam<T> dyParam) {
     const af::dim4 dims    = magnitude.dims();
@@ -112,7 +112,7 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dxParam,
     }
 }
 
-template<typename T>
+template <typename T>
 void traceEdge(T* out, const T* strong, const T* weak, int t, int width) {
     if (!out || !strong || !weak) return;
 
@@ -148,7 +148,7 @@ void traceEdge(T* out, const T* strong, const T* weak, int t, int width) {
     } while (!edges.empty());
 }
 
-template<typename T>
+template <typename T>
 void edgeTrackingHysteresis(Param<T> out, CParam<T> strong, CParam<T> weak) {
     const af::dim4 dims = strong.dims();
 

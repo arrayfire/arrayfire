@@ -68,7 +68,7 @@ kernel void convert(global T* out, KParam oInfo, global const T* in,
             if (Cmax == R) H = (G - B) / delta + (G < B ? 6 : 0);
             if (Cmax == G) H = (B - R) / delta + 2;
             if (Cmax == B) H = (R - G) / delta + 4;
-            H = H / 6.0f;
+            H                = H / 6.0f;
         }
 
         dst[oIdx0] = H;

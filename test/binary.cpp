@@ -30,7 +30,7 @@ const int num = 10000;
 typedef std::complex<float> complex_float;
 typedef std::complex<double> complex_double;
 
-template<typename T>
+template <typename T>
 T mod(T a, T b) {
     return std::fmod(a, b);
 }
@@ -43,60 +43,60 @@ af::array randgen(const int num, dtype ty) {
 
 #define MY_ASSERT_NEAR(aa, bb, cc) ASSERT_NEAR(abs(aa), abs(bb), (cc))
 
-#define BINARY_TESTS(Ta, Tb, Tc, func)                                \
-    TEST(BinaryTests, Test_##func##_##Ta##_##Tb) {                    \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-        if (noDoubleTests<Tc>()) return;                              \
-                                                                      \
-        af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
-        af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
-        af::array a = randgen(num, ta);                               \
-        af::array b = randgen(num, tb);                               \
-        af::array c = func(a, b);                                     \
-        Ta *h_a     = a.host<Ta>();                                   \
-        Tb *h_b     = b.host<Tb>();                                   \
-        Tc *h_c     = c.host<Tc>();                                   \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(h_c[i], func(h_a[i], h_b[i]))                   \
-                << "for values: " << h_a[i] << "," << h_b[i] << endl; \
-        af_free_host(h_a);                                            \
-        af_free_host(h_b);                                            \
-        af_free_host(h_c);                                            \
-    }                                                                 \
-                                                                      \
-    TEST(BinaryTests, Test_##func##_##Ta##_##Tb##_left) {             \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-                                                                      \
-        af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
-        af::array a = randgen(num, ta);                               \
-        Tb h_b      = 3.0;                                            \
-        af::array c = func(a, h_b);                                   \
-        Ta *h_a     = a.host<Ta>();                                   \
-        Ta *h_c     = c.host<Ta>();                                   \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(h_c[i], func(h_a[i], h_b))                      \
-                << "for values: " << h_a[i] << "," << h_b << endl;    \
-        af_free_host(h_a);                                            \
-        af_free_host(h_c);                                            \
-    }                                                                 \
-                                                                      \
-    TEST(BinaryTests, Test_##func##_##Ta##_##Tb##_right) {            \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-                                                                      \
-        af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
-        Ta h_a      = 5.0;                                            \
-        af::array b = randgen(num, tb);                               \
-        af::array c = func(h_a, b);                                   \
-        Tb *h_b     = b.host<Tb>();                                   \
-        Tb *h_c     = c.host<Tb>();                                   \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(h_c[i], func(h_a, h_b[i]))                      \
-                << "for values: " << h_a << "," << h_b[i] << endl;    \
-        af_free_host(h_b);                                            \
-        af_free_host(h_c);                                            \
+#define BINARY_TESTS(Ta, Tb, Tc, func)                                       \
+    TEST(BinaryTests, Test_##func##_##Ta##_##Tb) {                           \
+        if (noDoubleTests<Ta>()) return;                                     \
+        if (noDoubleTests<Tb>()) return;                                     \
+        if (noDoubleTests<Tc>()) return;                                     \
+                                                                             \
+        af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;                   \
+        af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;                   \
+        af::array a = randgen(num, ta);                                      \
+        af::array b = randgen(num, tb);                                      \
+        af::array c = func(a, b);                                            \
+        Ta *h_a     = a.host<Ta>();                                          \
+        Tb *h_b     = b.host<Tb>();                                          \
+        Tc *h_c     = c.host<Tc>();                                          \
+        for (int i = 0; i < num; i++)                                        \
+            ASSERT_EQ(h_c[i], func(h_a[i], h_b[i]))                          \
+                << "for values: " << h_a[i] << "," << h_b[i] << endl;        \
+        af_free_host(h_a);                                                   \
+        af_free_host(h_b);                                                   \
+        af_free_host(h_c);                                                   \
+    }                                                                        \
+                                                                             \
+    TEST(BinaryTests, Test_##func##_##Ta##_##Tb##_left) {                    \
+        if (noDoubleTests<Ta>()) return;                                     \
+        if (noDoubleTests<Tb>()) return;                                     \
+                                                                             \
+        af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;                   \
+        af::array a = randgen(num, ta);                                      \
+        Tb h_b      = 3.0;                                                   \
+        af::array c = func(a, h_b);                                          \
+        Ta *h_a     = a.host<Ta>();                                          \
+        Ta *h_c     = c.host<Ta>();                                          \
+        for (int i = 0; i < num; i++)                                        \
+            ASSERT_EQ(h_c[i], func(h_a[i], h_b)) << "for values: " << h_a[i] \
+                                                 << "," << h_b << endl;      \
+        af_free_host(h_a);                                                   \
+        af_free_host(h_c);                                                   \
+    }                                                                        \
+                                                                             \
+    TEST(BinaryTests, Test_##func##_##Ta##_##Tb##_right) {                   \
+        if (noDoubleTests<Ta>()) return;                                     \
+        if (noDoubleTests<Tb>()) return;                                     \
+                                                                             \
+        af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;                   \
+        Ta h_a      = 5.0;                                                   \
+        af::array b = randgen(num, tb);                                      \
+        af::array c = func(h_a, b);                                          \
+        Tb *h_b     = b.host<Tb>();                                          \
+        Tb *h_c     = c.host<Tb>();                                          \
+        for (int i = 0; i < num; i++)                                        \
+            ASSERT_EQ(h_c[i], func(h_a, h_b[i])) << "for values: " << h_a    \
+                                                 << "," << h_b[i] << endl;   \
+        af_free_host(h_b);                                                   \
+        af_free_host(h_c);                                                   \
     }
 
 #define BINARY_TESTS_NEAR_GENERAL(Ta, Tb, Tc, Td, Te, func, err)      \
@@ -245,25 +245,25 @@ BINARY_TESTS_NEAR_GENERAL(cfloat, double, cdouble, cfloat, cdouble, sub, 1e-5)
 BINARY_TESTS_NEAR_GENERAL(cfloat, double, cdouble, cfloat, cdouble, mul, 1e-5)
 BINARY_TESTS_NEAR_GENERAL(cfloat, double, cdouble, cfloat, cdouble, div, 1e-5)
 
-#define BITOP(func, T, op)                                            \
-    TEST(BinaryTests, Test_##func##_##T) {                            \
-        af_dtype ty   = (af_dtype)dtype_traits<T>::af_type;           \
-        const T vala  = 4095;                                         \
-        const T valb  = 3;                                            \
-        const T valc  = vala op valb;                                 \
-        const int num = 10;                                           \
-        af::array a   = af::constant(vala, num, ty);                  \
-        af::array b   = af::constant(valb, num, ty);                  \
-        af::array c   = a op b;                                       \
-        T *h_a        = a.host<T>();                                  \
-        T *h_b        = b.host<T>();                                  \
-        T *h_c        = c.host<T>();                                  \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(h_c[i], valc)                                   \
-                << "for values: " << h_a[i] << "," << h_b[i] << endl; \
-        af_free_host(h_a);                                            \
-        af_free_host(h_b);                                            \
-        af_free_host(h_c);                                            \
+#define BITOP(func, T, op)                                             \
+    TEST(BinaryTests, Test_##func##_##T) {                             \
+        af_dtype ty   = (af_dtype)dtype_traits<T>::af_type;            \
+        const T vala  = 4095;                                          \
+        const T valb  = 3;                                             \
+        const T valc  = vala op valb;                                  \
+        const int num = 10;                                            \
+        af::array a   = af::constant(vala, num, ty);                   \
+        af::array b   = af::constant(valb, num, ty);                   \
+        af::array c   = a op b;                                        \
+        T *h_a        = a.host<T>();                                   \
+        T *h_b        = b.host<T>();                                   \
+        T *h_c        = c.host<T>();                                   \
+        for (int i = 0; i < num; i++)                                  \
+            ASSERT_EQ(h_c[i], valc) << "for values: " << h_a[i] << "," \
+                                    << h_b[i] << endl;                 \
+        af_free_host(h_a);                                             \
+        af_free_host(h_b);                                             \
+        af_free_host(h_c);                                             \
     }
 
 BITOP(bitor, int, |)
@@ -338,7 +338,7 @@ TEST(BinaryTests, ISSUE_1762) {
     }
 }
 
-template<typename T>
+template <typename T>
 class PowPrecisionTest : public ::testing::TestWithParam<T> {};
 
 #define DEF_TEST(Sx, T)                                      \

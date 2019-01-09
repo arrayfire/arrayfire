@@ -11,9 +11,9 @@
 #include <ops.hpp>
 
 namespace opencl {
-template<typename T>
+template <typename T>
 Array<T> diagCreate(const Array<T> &in, const int num);
 
-template<typename T>
+template <typename T>
 Array<T> diagExtract(const Array<T> &in, const int num);
 }  // namespace opencl

@@ -18,7 +18,7 @@ static inline dim_t simple_mod(const dim_t i, const dim_t dim) {
     return (i < dim) ? i : (i - dim);
 }
 
-template<typename T>
+template <typename T>
 void shift(Param<T> out, CParam<T> in, const af::dim4 sdims) {
     T* outPtr      = out.get();
     const T* inPtr = in.get();

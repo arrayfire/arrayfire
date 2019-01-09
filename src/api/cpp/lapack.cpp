@@ -116,14 +116,14 @@ unsigned rank(const array &in, const double tol) {
 }
 
 #define INSTANTIATE_DET(TR, TC)                   \
-    template<>                                    \
+    template <>                                   \
     AFAPI TR det(const array &in) {               \
         double real;                              \
         double imag;                              \
         AF_THROW(af_det(&real, &imag, in.get())); \
         return real;                              \
     }                                             \
-    template<>                                    \
+    template <>                                   \
     AFAPI TC det(const array &in) {               \
         double real;                              \
         double imag;                              \

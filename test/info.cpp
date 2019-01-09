@@ -26,7 +26,7 @@ using af::setDevice;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 void testFunction() {
     info();
 

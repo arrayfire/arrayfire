@@ -161,7 +161,7 @@ void ifft3InPlace(array& in, const double norm_factor) {
     AF_THROW(af_ifft3_inplace(in.get(), norm));
 }
 
-template<>
+template <>
 AFAPI array fftR2C<1>(const array& in, const dim4& dims,
                       const double norm_factor) {
     af_array res;
@@ -170,7 +170,7 @@ AFAPI array fftR2C<1>(const array& in, const dim4& dims,
     return array(res);
 }
 
-template<>
+template <>
 AFAPI array fftR2C<2>(const array& in, const dim4& dims,
                       const double norm_factor) {
     af_array res;
@@ -179,7 +179,7 @@ AFAPI array fftR2C<2>(const array& in, const dim4& dims,
     return array(res);
 }
 
-template<>
+template <>
 AFAPI array fftR2C<3>(const array& in, const dim4& dims,
                       const double norm_factor) {
     af_array res;
@@ -192,7 +192,7 @@ inline dim_t getOrigDim(dim_t d, bool is_odd) {
     return 2 * (d - 1) + (is_odd ? 1 : 0);
 }
 
-template<>
+template <>
 AFAPI array fftC2R<1>(const array& in, const bool is_odd,
                       const double norm_factor) {
     double norm = norm_factor;
@@ -208,7 +208,7 @@ AFAPI array fftC2R<1>(const array& in, const bool is_odd,
     return array(res);
 }
 
-template<>
+template <>
 AFAPI array fftC2R<2>(const array& in, const bool is_odd,
                       const double norm_factor) {
     double norm = norm_factor;
@@ -225,7 +225,7 @@ AFAPI array fftC2R<2>(const array& in, const bool is_odd,
     return array(res);
 }
 
-template<>
+template <>
 AFAPI array fftC2R<3>(const array& in, const bool is_odd,
                       const double norm_factor) {
     double norm = norm_factor;
@@ -244,7 +244,7 @@ AFAPI array fftC2R<3>(const array& in, const bool is_odd,
 }
 
 #define FFT_REAL(rank)                                                    \
-    template<>                                                            \
+    template <>                                                           \
     AFAPI array fftR2C<rank>(const array& in, const double norm_factor) { \
         return fftR2C<rank>(in, in.dims(), norm_factor);                  \
     }

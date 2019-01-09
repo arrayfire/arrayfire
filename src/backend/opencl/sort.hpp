@@ -10,6 +10,6 @@
 #include <Array.hpp>
 
 namespace opencl {
-template<typename T>
+template <typename T>
 Array<T> sort(const Array<T> &in, const unsigned dim, bool isAscending);
 }

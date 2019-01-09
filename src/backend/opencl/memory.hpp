@@ -24,7 +24,7 @@ namespace opencl {
 cl::Buffer *bufferAlloc(const size_t &bytes);
 void bufferFree(cl::Buffer *buf);
 
-template<typename T>
+template <typename T>
 std::unique_ptr<cl::Buffer, std::function<void(cl::Buffer *)>> memAlloc(
     const size_t &elements);
 void *memAllocUser(const size_t &bytes);
@@ -32,7 +32,7 @@ void *memAllocUser(const size_t &bytes);
 // Need these as 2 separate function and not a default argument
 // This is because it is used as the deleter in shared pointer
 // which cannot support default arguments
-template<typename T>
+template <typename T>
 void memFree(T *ptr);
 void memFreeUser(void *ptr);
 
@@ -40,9 +40,9 @@ void memLock(const void *ptr);
 void memUnlock(const void *ptr);
 bool isLocked(const void *ptr);
 
-template<typename T>
+template <typename T>
 T *pinnedAlloc(const size_t &elements);
-template<typename T>
+template <typename T>
 void pinnedFree(T *ptr);
 
 size_t getMaxBytes();

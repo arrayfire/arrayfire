@@ -54,7 +54,7 @@ class AFSymbolManager {
 
     af::Backend getActiveBackend() { return activeBackend; }
 
-    template<typename... CalleeArgs>
+    template <typename... CalleeArgs>
     af_err call(const char* symbolName, CalleeArgs... args) {
         typedef af_err (*af_func)(CalleeArgs...);
         if (!activeHandle) { UNIFIED_ERROR_LOAD_LIB(); }
@@ -109,7 +109,7 @@ class AFSymbolManager {
 bool checkArray(af_backend activeBackend, af_array a);
 bool checkArrays(af_backend activeBackend);
 
-template<typename T, typename... Args>
+template <typename T, typename... Args>
 bool checkArrays(af_backend activeBackend, T a, Args... arg) {
     return checkArray(activeBackend, a) && checkArrays(activeBackend, arg...);
 }

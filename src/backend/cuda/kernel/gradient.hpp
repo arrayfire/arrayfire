@@ -21,7 +21,7 @@ static const unsigned TY = 8;
 
 #define sidx(y, x) scratch[y + 1][x + 1]
 
-template<typename T>
+template <typename T>
 __global__ void gradient_kernel(Param<T> grad0, Param<T> grad1, CParam<T> in,
                                 const int blocksPerMatX,
                                 const int blocksPerMatY) {
@@ -97,7 +97,7 @@ __global__ void gradient_kernel(Param<T> grad0, Param<T> grad1, CParam<T> in,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in) {
     dim3 threads(TX, TY, 1);
 

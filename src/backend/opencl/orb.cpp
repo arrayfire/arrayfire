@@ -19,7 +19,7 @@ using af::features;
 
 namespace opencl {
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 unsigned orb(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
              Array<float> &ori_out, Array<float> &size_out,
              Array<uint> &desc_out, const Array<T> &image, const float fast_thr,

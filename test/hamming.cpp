@@ -22,13 +22,13 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class HammingMatcher8 : public ::testing::Test {
    public:
     virtual void SetUp() {}
 };
 
-template<typename T>
+template <typename T>
 class HammingMatcher32 : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -42,7 +42,7 @@ typedef ::testing::Types<uint, uintl> TestTypes32;
 TYPED_TEST_CASE(HammingMatcher8, TestTypes8);
 TYPED_TEST_CASE(HammingMatcher32, TestTypes32);
 
-template<typename T>
+template <typename T>
 void hammingMatcherTest(string pTestFile, int feat_dim) {
     using af::dim4;
 
@@ -82,8 +82,8 @@ void hammingMatcherTest(string pTestFile, int feat_dim) {
     ASSERT_SUCCESS(af_get_data_ptr((void *)outDist, dist));
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(goldDist[elIter], outDist[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(goldDist[elIter], outDist[elIter]) << "at: " << elIter
+                                                     << endl;
     }
 
     delete[] outIdx;
@@ -146,8 +146,8 @@ TEST(HammingMatcher, CPP) {
     dist.host(outDist);
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(goldDist[elIter], outDist[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(goldDist[elIter], outDist[elIter]) << "at: " << elIter
+                                                     << endl;
     }
 
     delete[] outIdx;

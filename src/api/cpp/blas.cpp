@@ -67,7 +67,7 @@ array dot(const array &lhs, const array &rhs, const matProp optLhs,
 }
 
 #define INSTANTIATE_REAL(TYPE)                                               \
-    template<>                                                               \
+    template <>                                                              \
     AFAPI TYPE dot(const array &lhs, const array &rhs, const matProp optLhs, \
                    const matProp optRhs) {                                   \
         double rval = 0, ival = 0;                                           \
@@ -77,7 +77,7 @@ array dot(const array &lhs, const array &rhs, const matProp optLhs,
     }
 
 #define INSTANTIATE_CPLX(TYPE, REAL)                                         \
-    template<>                                                               \
+    template <>                                                              \
     AFAPI TYPE dot(const array &lhs, const array &rhs, const matProp optLhs, \
                    const matProp optRhs) {                                   \
         double rval = 0, ival = 0;                                           \

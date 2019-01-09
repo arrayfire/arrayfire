@@ -54,7 +54,7 @@ af_seq convert2Canonical(const af_seq s, const dim_t len) {
 }
 }  // namespace common
 
-template<typename T>
+template <typename T>
 static af_array indexBySeqs(const af_array& src,
                             const vector<af_seq> indicesV) {
     size_t ndims = indicesV.size();
@@ -92,14 +92,14 @@ af_err af_index(af_array* result, const af_array in, const unsigned ndims,
             case c32: out = indexBySeqs<cfloat>(in, indices_); break;
             case f64: out = indexBySeqs<double>(in, indices_); break;
             case c64: out = indexBySeqs<cdouble>(in, indices_); break;
-            case b8: out = indexBySeqs<char>(in, indices_); break;
+            case b8: out  = indexBySeqs<char>(in, indices_); break;
             case s32: out = indexBySeqs<int>(in, indices_); break;
             case u32: out = indexBySeqs<unsigned>(in, indices_); break;
             case s16: out = indexBySeqs<short>(in, indices_); break;
             case u16: out = indexBySeqs<ushort>(in, indices_); break;
             case s64: out = indexBySeqs<intl>(in, indices_); break;
             case u64: out = indexBySeqs<uintl>(in, indices_); break;
-            case u8: out = indexBySeqs<uchar>(in, indices_); break;
+            case u8: out  = indexBySeqs<uchar>(in, indices_); break;
             default: TYPE_ERROR(1, type);
         }
         swap(*result, out);
@@ -108,13 +108,13 @@ af_err af_index(af_array* result, const af_array in, const unsigned ndims,
     return AF_SUCCESS;
 }
 
-template<typename T, typename idx_t>
+template <typename T, typename idx_t>
 inline af_array lookup(const af_array& in, const af_array& idx,
                        const unsigned dim) {
     return getHandle(lookup(getArray<T>(in), getArray<idx_t>(idx), dim));
 }
 
-template<typename idx_t>
+template <typename idx_t>
 static af_array lookup(const af_array& in, const af_array& idx,
                        const unsigned dim) {
     const ArrayInfo& inInfo = getInfo(in);
@@ -167,7 +167,7 @@ af_err af_lookup(af_array* out, const af_array in, const af_array indices,
             case u16: output = lookup<ushort>(in, indices, dim); break;
             case s64: output = lookup<intl>(in, indices, dim); break;
             case u64: output = lookup<uintl>(in, indices, dim); break;
-            case u8: output = lookup<uchar>(in, indices, dim); break;
+            case u8: output  = lookup<uchar>(in, indices, dim); break;
             default: TYPE_ERROR(1, idxType);
         }
         std::swap(*out, output);
@@ -179,7 +179,7 @@ af_err af_lookup(af_array* out, const af_array in, const af_array indices,
 // idxrs parameter to the below static function
 // expects 4 values which is handled appropriately
 // by the C-API af_index_gen
-template<typename T>
+template <typename T>
 static inline af_array genIndex(const af_array& in, const af_index_t idxrs[]) {
     return getHandle<T>(index<T>(getArray<T>(in), idxrs));
 }
@@ -268,8 +268,8 @@ af_err af_index_gen(af_array* out, const af_array in, const dim_t ndims,
             case s32: output = genIndex<int>(in, ptr); break;
             case u16: output = genIndex<ushort>(in, ptr); break;
             case s16: output = genIndex<short>(in, ptr); break;
-            case u8: output = genIndex<uchar>(in, ptr); break;
-            case b8: output = genIndex<char>(in, ptr); break;
+            case u8: output  = genIndex<uchar>(in, ptr); break;
+            case b8: output  = genIndex<char>(in, ptr); break;
             default: TYPE_ERROR(1, inType);
         }
         std::swap(*out, output);

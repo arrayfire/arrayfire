@@ -14,7 +14,7 @@
 namespace af {
 
 #define INSTANTIATE_CORRCOEF(T)                               \
-    template<>                                                \
+    template <>                                               \
     AFAPI T corrcoef(const array& X, const array& Y) {        \
         double real;                                          \
         AF_THROW(af_corrcoef(&real, NULL, X.get(), Y.get())); \

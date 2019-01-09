@@ -18,7 +18,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array setUnique(const af_array in, const bool is_sorted) {
     return getHandle(setUnique(getArray<T>(in), is_sorted));
 }
@@ -45,8 +45,8 @@ af_err af_set_unique(af_array* out, const af_array in, const bool is_sorted) {
             case u16: res = setUnique<ushort>(in, is_sorted); break;
             case s64: res = setUnique<intl>(in, is_sorted); break;
             case u64: res = setUnique<uintl>(in, is_sorted); break;
-            case b8: res = setUnique<char>(in, is_sorted); break;
-            case u8: res = setUnique<uchar>(in, is_sorted); break;
+            case b8: res  = setUnique<char>(in, is_sorted); break;
+            case u8: res  = setUnique<uchar>(in, is_sorted); break;
             default: TYPE_ERROR(1, type);
         }
 
@@ -57,7 +57,7 @@ af_err af_set_unique(af_array* out, const af_array in, const bool is_sorted) {
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 static inline af_array setUnion(const af_array first, const af_array second,
                                 const bool is_unique) {
     return getHandle(
@@ -92,8 +92,8 @@ af_err af_set_union(af_array* out, const af_array first, const af_array second,
             case u16: res = setUnion<ushort>(first, second, is_unique); break;
             case s64: res = setUnion<intl>(first, second, is_unique); break;
             case u64: res = setUnion<uintl>(first, second, is_unique); break;
-            case b8: res = setUnion<char>(first, second, is_unique); break;
-            case u8: res = setUnion<uchar>(first, second, is_unique); break;
+            case b8: res  = setUnion<char>(first, second, is_unique); break;
+            case u8: res  = setUnion<uchar>(first, second, is_unique); break;
             default: TYPE_ERROR(1, first_type);
         }
 
@@ -104,7 +104,7 @@ af_err af_set_union(af_array* out, const af_array first, const af_array second,
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 static inline af_array setIntersect(const af_array first, const af_array second,
                                     const bool is_unique) {
     return getHandle(

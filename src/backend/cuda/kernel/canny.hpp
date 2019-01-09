@@ -27,7 +27,7 @@ __forceinline__ __device__ int lIdx(int x, int y, int stride0, int stride1) {
     return (x * stride0 + y * stride1);
 }
 
-template<typename T>
+template <typename T>
 static __global__ void nonMaxSuppressionKernel(Param<float> output,
                                                CParam<T> in, CParam<T> dx,
                                                CParam<T> dy, unsigned nBBS0,
@@ -63,7 +63,7 @@ static __global__ void nonMaxSuppressionKernel(Param<float> output,
              (b2 * output.strides[2] + b3 * output.strides[3]) +
              output.strides[1] + 1;
 
-    // pull image to shared memory
+// pull image to shared memory
 #pragma unroll
     for (int b = ly, gy2 = gy; b < SHRD_MEM_HEIGHT;
          b += blockDim.y, gy2 += blockDim.y)
@@ -149,7 +149,7 @@ static __global__ void nonMaxSuppressionKernel(Param<float> output,
     }
 }
 
-template<typename T>
+template <typename T>
 void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dx,
                        CParam<T> dy) {
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
@@ -167,7 +167,7 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dx,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T>
+template <typename T>
 static __global__ void initEdgeOutKernel(Param<T> output, CParam<T> strong,
                                          CParam<T> weak, unsigned nBBS0,
                                          unsigned nBBS1) {
@@ -204,7 +204,7 @@ __device__ int hasChanged = 0;
     ((j) > 0 && (j) < (SHRD_MEM_HEIGHT - 1) && (i) > 0 && \
      (i) < (SHRD_MEM_WIDTH - 1))
 
-template<typename T>
+template <typename T>
 static __global__ void edgeTrackKernel(Param<T> output, unsigned nBBS0,
                                        unsigned nBBS1) {
     const unsigned SHRD_MEM_WIDTH  = THREADS_X + 2;  // Cols
@@ -232,7 +232,7 @@ static __global__ void edgeTrackKernel(Param<T> output, unsigned nBBS0,
     T* oPtr = output.ptr + (b2 * output.strides[2] + b3 * output.strides[3]) +
               output.strides[1] + 1;
 
-    // pull image to shared memory
+// pull image to shared memory
 #pragma unroll
     for (int b = ly, gy2 = gy; b < SHRD_MEM_HEIGHT;
          b += blockDim.y, gy2 += blockDim.y) {
@@ -326,7 +326,7 @@ static __global__ void edgeTrackKernel(Param<T> output, unsigned nBBS0,
         oPtr[lIdx(gx, gy, output.strides[0], output.strides[1])] = outMem[j][i];
 }
 
-template<typename T>
+template <typename T>
 static __global__ void suppressLeftOverKernel(Param<T> output, unsigned nBBS0,
                                               unsigned nBBS1) {
     // batch offsets for 3rd and 4th dimension
@@ -349,7 +349,7 @@ static __global__ void suppressLeftOverKernel(Param<T> output, unsigned nBBS0,
     }
 }
 
-template<typename T>
+template <typename T>
 void edgeTrackingHysteresis(Param<T> output, CParam<T> strong, CParam<T> weak) {
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

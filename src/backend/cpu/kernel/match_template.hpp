@@ -13,7 +13,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename OutT, typename InT, af_match_type MatchT>
+template <typename OutT, typename InT, af_match_type MatchT>
 void matchTemplate(Param<OutT> out, CParam<InT> sImg, CParam<InT> tImg) {
     const af::dim4 sDims    = sImg.dims();
     const af::dim4 tDims    = tImg.dims();

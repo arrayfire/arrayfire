@@ -20,44 +20,44 @@ namespace kernel {
 
 #endif
 
-template<typename T, typename To, af_match_type dist_type>
+template <typename T, typename To, af_match_type dist_type>
 struct dist_op {
     To operator()(T v1, T v2) {
         return v1 - v2;  // Garbage distance
     }
 };
 
-template<typename T, typename To>
+template <typename T, typename To>
 struct dist_op<T, To, AF_SAD> {
     To operator()(T v1, T v2) { return std::abs((double)v1 - (double)v2); }
 };
 
-template<typename T, typename To>
+template <typename T, typename To>
 struct dist_op<T, To, AF_SSD> {
     To operator()(T v1, T v2) { return (v1 - v2) * (v1 - v2); }
 };
 
-template<typename To>
+template <typename To>
 struct dist_op<uint, To, AF_SHD> {
     To operator()(uint v1, uint v2) { return __builtin_popcount(v1 ^ v2); }
 };
 
-template<typename To>
+template <typename To>
 struct dist_op<uintl, To, AF_SHD> {
     To operator()(uintl v1, uintl v2) { return __builtin_popcount(v1 ^ v2); }
 };
 
-template<typename To>
+template <typename To>
 struct dist_op<uchar, To, AF_SHD> {
     To operator()(uchar v1, uchar v2) { return __builtin_popcount(v1 ^ v2); }
 };
 
-template<typename To>
+template <typename To>
 struct dist_op<ushort, To, AF_SHD> {
     To operator()(ushort v1, ushort v2) { return __builtin_popcount(v1 ^ v2); }
 };
 
-template<typename T, typename To, af_match_type dist_type>
+template <typename T, typename To, af_match_type dist_type>
 void nearest_neighbour(Param<To> dists, CParam<T> query, CParam<T> train,
                        const uint dist_dim) {
     uint sample_dim  = (dist_dim == 0) ? 1 : 0;

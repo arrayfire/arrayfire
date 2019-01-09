@@ -24,8 +24,8 @@ using namespace std;
 cusparseOperation_t toCusparseTranspose(af_mat_prop opt) {
     cusparseOperation_t out = CUSPARSE_OPERATION_NON_TRANSPOSE;
     switch (opt) {
-        case AF_MAT_NONE: out = CUSPARSE_OPERATION_NON_TRANSPOSE; break;
-        case AF_MAT_TRANS: out = CUSPARSE_OPERATION_TRANSPOSE; break;
+        case AF_MAT_NONE: out   = CUSPARSE_OPERATION_NON_TRANSPOSE; break;
+        case AF_MAT_TRANS: out  = CUSPARSE_OPERATION_TRANSPOSE; break;
         case AF_MAT_CTRANS: out = CUSPARSE_OPERATION_CONJUGATE_TRANSPOSE; break;
         default: AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
@@ -43,7 +43,7 @@ cusparseOperation_t toCusparseTranspose(af_mat_prop opt) {
 //                                  ldb, const cuDoubleComplex *beta,
 //                                  cuDoubleComplex *C, int ldc);
 
-template<typename T>
+template <typename T>
 struct csrmm_func_def_t {
     typedef cusparseStatus_t (*csrmm_func_def)(
         cusparseHandle_t, cusparseOperation_t, int, int, int, int, const T *,
@@ -61,7 +61,7 @@ struct csrmm_func_def_t {
 //                                  *csrColIndA, const cuDoubleComplex *x, const
 //                                  cuDoubleComplex *beta, cuDoubleComplex *y)
 
-template<typename T>
+template <typename T>
 struct csrmv_func_def_t {
     typedef cusparseStatus_t (*csrmv_func_def)(
         cusparseHandle_t, cusparseOperation_t, int, int, int, const T *,
@@ -79,11 +79,11 @@ struct csrmv_func_def_t {
 //                                  copyValues, cusparseIndexBase_t idxBase);
 
 #define SPARSE_FUNC_DEF(FUNC) \
-    template<typename T>      \
+    template <typename T>     \
     typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func();
 
 #define SPARSE_FUNC(FUNC, TYPE, PREFIX)                                     \
-    template<>                                                              \
+    template <>                                                             \
     typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>() { \
         return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
                cusparse##PREFIX##FUNC;                                      \
@@ -104,7 +104,7 @@ SPARSE_FUNC(csrmv, cdouble, Z)
 #undef SPARSE_FUNC
 #undef SPARSE_FUNC_DEF
 
-template<typename T>
+template <typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
     UNUSED(optRhs);

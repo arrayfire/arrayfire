@@ -19,7 +19,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array tile(const af_array in, const af::dim4 &tileDims) {
     const Array<T> inArray = getArray<T>(in);
     const dim4 inDims      = inArray.dims();
@@ -64,14 +64,14 @@ af_err af_tile(af_array *out, const af_array in, const af::dim4 &tileDims) {
             case c32: output = tile<cfloat>(in, tileDims); break;
             case f64: output = tile<double>(in, tileDims); break;
             case c64: output = tile<cdouble>(in, tileDims); break;
-            case b8: output = tile<char>(in, tileDims); break;
+            case b8: output  = tile<char>(in, tileDims); break;
             case s32: output = tile<int>(in, tileDims); break;
             case u32: output = tile<uint>(in, tileDims); break;
             case s64: output = tile<intl>(in, tileDims); break;
             case u64: output = tile<uintl>(in, tileDims); break;
             case s16: output = tile<short>(in, tileDims); break;
             case u16: output = tile<ushort>(in, tileDims); break;
-            case u8: output = tile<uchar>(in, tileDims); break;
+            case u8: output  = tile<uchar>(in, tileDims); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);

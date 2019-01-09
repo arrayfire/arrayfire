@@ -14,7 +14,7 @@
 namespace cpu {
 namespace kernel {
 
-template<af_op_t op, typename Ti, typename To, int D, bool inclusive_scan>
+template <af_op_t op, typename Ti, typename To, int D, bool inclusive_scan>
 struct scan_dim {
     void operator()(Param<To> out, dim_t outOffset, CParam<Ti> in,
                     dim_t inOffset, const int dim) const {
@@ -32,7 +32,7 @@ struct scan_dim {
     }
 };
 
-template<af_op_t op, typename Ti, typename To, bool inclusive_scan>
+template <af_op_t op, typename Ti, typename To, bool inclusive_scan>
 struct scan_dim<op, Ti, To, 0, inclusive_scan> {
     void operator()(Param<To> output, dim_t outOffset, CParam<Ti> input,
                     dim_t inOffset, const int dim) const {

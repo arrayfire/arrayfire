@@ -30,15 +30,15 @@ dim_t round2int(float value) { return (dim_t)(value + 0.5f); }
 using std::conditional;
 using std::is_same;
 
-template<typename T>
+template <typename T>
 using wtype_t =
     typename conditional<is_same<T, double>::value, double, float>::type;
 
-template<typename T>
+template <typename T>
 using vtype_t =
     typename conditional<common::is_complex<T>::value, T, wtype_t<T>>::type;
 
-template<typename T, af_interp_type method>
+template <typename T, af_interp_type method>
 struct resize_op {
     void operator()(T *outPtr, const T *inPtr, const af::dim4 &odims,
                     const af::dim4 &idims, const af::dim4 &ostrides,
@@ -55,7 +55,7 @@ struct resize_op {
     }
 };
 
-template<typename T>
+template <typename T>
 struct resize_op<T, AF_INTERP_NEAREST> {
     void operator()(T *outPtr, const T *inPtr, const af::dim4 &odims,
                     const af::dim4 &idims, const af::dim4 &ostrides,
@@ -81,7 +81,7 @@ struct resize_op<T, AF_INTERP_NEAREST> {
     }
 };
 
-template<typename T>
+template <typename T>
 struct resize_op<T, AF_INTERP_BILINEAR> {
     void operator()(T *outPtr, const T *inPtr, const af::dim4 &odims,
                     const af::dim4 &idims, const af::dim4 &ostrides,
@@ -128,7 +128,7 @@ struct resize_op<T, AF_INTERP_BILINEAR> {
     }
 };
 
-template<typename T>
+template <typename T>
 struct resize_op<T, AF_INTERP_LOWER> {
     void operator()(T *outPtr, const T *inPtr, const af::dim4 &odims,
                     const af::dim4 &idims, const af::dim4 &ostrides,
@@ -154,7 +154,7 @@ struct resize_op<T, AF_INTERP_LOWER> {
     }
 };
 
-template<typename T, af_interp_type method>
+template <typename T, af_interp_type method>
 void resize(Param<T> out, CParam<T> in) {
     af::dim4 idims    = in.dims();
     af::dim4 odims    = out.dims();

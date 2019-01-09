@@ -33,17 +33,17 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Rank : public ::testing::Test {};
 
-template<typename T>
+template <typename T>
 class Det : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 TYPED_TEST_CASE(Rank, TestTypes);
 TYPED_TEST_CASE(Det, TestTypes);
 
-template<typename T>
+template <typename T>
 void rankSmall() {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
@@ -54,7 +54,7 @@ void rankSmall() {
     ASSERT_EQ(3, (int)rank(a));
 }
 
-template<typename T>
+template <typename T>
 void rankBig(const int num) {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
@@ -68,7 +68,7 @@ void rankBig(const int num) {
     ASSERT_EQ(num / 2, (int)rank(transpose(b)));
 }
 
-template<typename T>
+template <typename T>
 void rankLow(const int num) {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
@@ -90,7 +90,7 @@ TYPED_TEST(Rank, big) { rankBig<TypeParam>(1024); }
 
 TYPED_TEST(Rank, low) { rankBig<TypeParam>(512); }
 
-template<typename T>
+template <typename T>
 void detTest() {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;

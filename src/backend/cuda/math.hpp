@@ -22,7 +22,7 @@
 #include <limits>
 
 namespace cuda {
-template<typename T>
+template <typename T>
 static inline __DH__ T abs(T val) {
     return abs(val);
 }
@@ -41,156 +41,156 @@ static inline __DH__ size_t max(size_t lhs, size_t rhs) {
 }
 
 #ifndef __CUDA_ARCH__
-template<typename T>
+template <typename T>
 static inline __DH__ T min(T lhs, T rhs) {
     return std::min(lhs, rhs);
 }
-template<typename T>
+template <typename T>
 static inline __DH__ T max(T lhs, T rhs) {
     return std::max(lhs, rhs);
 }
 #else
-template<typename T>
+template <typename T>
 static inline __DH__ T min(T lhs, T rhs) {
     return ::min(lhs, rhs);
 }
-template<typename T>
+template <typename T>
 static inline __DH__ T max(T lhs, T rhs) {
     return ::max(lhs, rhs);
 }
 #endif
 
-template<>
+template <>
 __DH__ STATIC_ cfloat max<cfloat>(cfloat lhs, cfloat rhs) {
     return abs(lhs) > abs(rhs) ? lhs : rhs;
 }
 
-template<>
+template <>
 __DH__ STATIC_ cdouble max<cdouble>(cdouble lhs, cdouble rhs) {
     return abs(lhs) > abs(rhs) ? lhs : rhs;
 }
 
-template<>
+template <>
 __DH__ STATIC_ cfloat min<cfloat>(cfloat lhs, cfloat rhs) {
     return abs(lhs) < abs(rhs) ? lhs : rhs;
 }
 
-template<>
+template <>
 __DH__ STATIC_ cdouble min<cdouble>(cdouble lhs, cdouble rhs) {
     return abs(lhs) < abs(rhs) ? lhs : rhs;
 }
 
-template<typename T>
+template <typename T>
 __DH__ static T scalar(double val) {
     return (T)(val);
 }
 
-template<>
+template <>
 __DH__ STATIC_ cfloat scalar<cfloat>(double val) {
     cfloat cval = {(float)val, 0};
     return cval;
 }
 
-template<>
+template <>
 __DH__ STATIC_ cdouble scalar<cdouble>(double val) {
     cdouble cval = {val, 0};
     return cval;
 }
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 __DH__ static To scalar(Ti real, Ti imag) {
     To cval = {real, imag};
     return cval;
 }
 
 #ifndef __CUDA_ARCH__
-template<typename T>
+template <typename T>
 STATIC_ T maxval() {
     return std::numeric_limits<T>::max();
 }
-template<typename T>
+template <typename T>
 STATIC_ T minval() {
     return std::numeric_limits<T>::min();
 }
-template<>
+template <>
 STATIC_ float maxval() {
     return std::numeric_limits<float>::infinity();
 }
-template<>
+template <>
 STATIC_ double maxval() {
     return std::numeric_limits<double>::infinity();
 }
-template<>
+template <>
 STATIC_ float minval() {
     return -std::numeric_limits<float>::infinity();
 }
-template<>
+template <>
 STATIC_ double minval() {
     return -std::numeric_limits<double>::infinity();
 }
 #else
-template<typename T>
+template <typename T>
 __device__ T maxval() {
     return 1u << (8 * sizeof(T) - 1);
 }
-template<typename T>
+template <typename T>
 __device__ T minval() {
     return scalar<T>(0);
 }
 
-template<>
+template <>
 __device__ int maxval<int>() {
     return 0x7fffffff;
 }
-template<>
+template <>
 __device__ int minval<int>() {
     return 0x80000000;
 }
-template<>
+template <>
 __device__ intl maxval<intl>() {
     return 0x7fffffffffffffff;
 }
-template<>
+template <>
 __device__ intl minval<intl>() {
     return 0x8000000000000000;
 }
-template<>
+template <>
 __device__ uintl maxval<uintl>() {
     return 1ULL << (8 * sizeof(uintl) - 1);
 }
-template<>
+template <>
 __device__ char maxval<char>() {
     return 0x7f;
 }
-template<>
+template <>
 __device__ char minval<char>() {
     return 0x80;
 }
-template<>
+template <>
 __device__ float maxval<float>() {
     return CUDART_INF_F;
 }
-template<>
+template <>
 __device__ float minval<float>() {
     return -CUDART_INF_F;
 }
-template<>
+template <>
 __device__ double maxval<double>() {
     return CUDART_INF;
 }
-template<>
+template <>
 __device__ double minval<double>() {
     return -CUDART_INF;
 }
-template<>
+template <>
 __device__ short maxval<short>() {
     return 0x7fff;
 }
-template<>
+template <>
 __device__ short minval<short>() {
     return 0x8000;
 }
-template<>
+template <>
 __device__ ushort maxval<ushort>() {
     return ((ushort)1) << (8 * sizeof(ushort) - 1);
 }
@@ -212,7 +212,7 @@ __SDH__ double real(cdouble c) { return cuCreal(c); }
 __SDH__ float imag(cfloat c) { return cuCimagf(c); }
 __SDH__ double imag(cdouble c) { return cuCimag(c); }
 
-template<typename T>
+template <typename T>
 T __SDH__ conj(T x) {
     return x;
 }
@@ -324,14 +324,14 @@ __SDH__ bool operator==(cdouble a, cdouble b) {
 }
 __SDH__ bool operator!=(cdouble a, cdouble b) { return !(a == b); }
 
-template<typename T>
+template <typename T>
 static inline T division(T lhs, double rhs) {
     return lhs / rhs;
 }
 cfloat division(cfloat lhs, double rhs);
 cdouble division(cdouble lhs, double rhs);
 
-template<typename T>
+template <typename T>
 static inline __DH__ T clamp(const T value, const T lo, const T hi) {
     return max(lo, min(value, hi));
 }

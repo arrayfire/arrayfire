@@ -20,8 +20,8 @@
 namespace cuda {
 namespace kernel {
 
-template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass,
-         uint DIMY, bool inclusive_scan>
+template <typename Ti, typename To, af_op_t op, int dim, bool isFinalPass,
+          uint DIMY, bool inclusive_scan>
 __global__ static void scan_dim_kernel(Param<To> out, Param<To> tmp,
                                        CParam<Ti> in, uint blocks_x,
                                        uint blocks_y, uint blocks_dim,
@@ -90,7 +90,7 @@ __global__ static void scan_dim_kernel(Param<To> out, Param<To> tmp,
 #pragma unroll
         for (int off = 1; off < DIMY; off *= 2) {
             if (tidy >= off) val = binop(val, sptr[(start - off) * THREADS_X]);
-            start                   = DIMY - start;
+            start                = DIMY - start;
             sptr[start * THREADS_X] = val;
 
             __syncthreads();
@@ -117,7 +117,7 @@ __global__ static void scan_dim_kernel(Param<To> out, Param<To> tmp,
     }
 }
 
-template<typename To, af_op_t op, int dim>
+template <typename To, af_op_t op, int dim>
 __global__ static void bcast_dim_kernel(Param<To> out, CParam<To> tmp,
                                         uint blocks_x, uint blocks_y,
                                         uint blocks_dim, uint lim,
@@ -174,8 +174,8 @@ __global__ static void bcast_dim_kernel(Param<To> out, CParam<To> tmp,
     }
 }
 
-template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass,
-         bool inclusive_scan>
+template <typename Ti, typename To, af_op_t op, int dim, bool isFinalPass,
+          bool inclusive_scan>
 static void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
                               const uint threads_y, const dim_t blocks_all[4]) {
     dim3 threads(THREADS_X, threads_y);
@@ -219,7 +219,7 @@ static void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
     POST_LAUNCH_CHECK();
 }
 
-template<typename To, af_op_t op, int dim>
+template <typename To, af_op_t op, int dim>
 static void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
                                const uint threads_y, const dim_t blocks_all[4],
                                bool inclusive_scan) {
@@ -241,7 +241,7 @@ static void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
     POST_LAUNCH_CHECK();
 }
 
-template<typename Ti, typename To, af_op_t op, int dim, bool inclusive_scan>
+template <typename Ti, typename To, af_op_t op, int dim, bool inclusive_scan>
 static void scan_dim(Param<To> out, CParam<Ti> in) {
     uint threads_y = std::min(THREADS_Y, nextpow2(out.dims[dim]));
     uint threads_x = THREADS_X;
@@ -260,7 +260,7 @@ static void scan_dim(Param<To> out, CParam<Ti> in) {
 
         tmp.dims[dim]  = blocks_all[dim];
         tmp.strides[0] = 1;
-        for (int k = 1; k < 4; k++)
+        for (int k         = 1; k < 4; k++)
             tmp.strides[k] = tmp.strides[k - 1] * tmp.dims[k - 1];
 
         int tmp_elements = tmp.strides[3] * tmp.dims[3];

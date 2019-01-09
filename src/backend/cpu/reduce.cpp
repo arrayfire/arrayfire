@@ -19,7 +19,7 @@
 
 using af::dim4;
 
-template<>
+template <>
 struct Binary<cdouble, af_add_t> {
     static cdouble init() { return cdouble(0, 0); }
 
@@ -30,11 +30,11 @@ struct Binary<cdouble, af_add_t> {
 
 namespace cpu {
 
-template<af_op_t op, typename Ti, typename To>
+template <af_op_t op, typename Ti, typename To>
 using reduce_dim_func = std::function<void(
     Param<To>, const dim_t, CParam<Ti>, const dim_t, const int, bool, double)>;
 
-template<af_op_t op, typename Ti, typename To>
+template <af_op_t op, typename Ti, typename To>
 Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan,
                  double nanval) {
     dim4 odims = in.dims();
@@ -54,7 +54,7 @@ Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan,
     return out;
 }
 
-template<af_op_t op, typename Ti, typename To>
+template <af_op_t op, typename Ti, typename To>
 To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
     in.eval();
     getQueue().sync();
@@ -81,9 +81,9 @@ To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
                 for (dim_t i = 0; i < dims[0]; i++) {
                     dim_t idx = i + off1 + off2 + off3;
 
-                    To in_val = transform(inPtr[idx]);
+                    To in_val              = transform(inPtr[idx]);
                     if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
-                    out = reduce(in_val, out);
+                    out                    = reduce(in_val, out);
                 }
             }
         }

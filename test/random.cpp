@@ -28,7 +28,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Random : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -42,25 +42,25 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, intl,
 // register the type list
 TYPED_TEST_CASE(Random, TestTypes);
 
-template<typename T>
+template <typename T>
 class Random_norm : public ::testing::Test {
    public:
     virtual void SetUp() {}
 };
 
-template<typename T>
+template <typename T>
 class RandomEngine : public ::testing::Test {
    public:
     virtual void SetUp() {}
 };
 
-template<typename T>
+template <typename T>
 class RandomEngineSeed : public ::testing::Test {
    public:
     virtual void SetUp() {}
 };
 
-template<typename T>
+template <typename T>
 class RandomSeed : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -85,7 +85,7 @@ typedef ::testing::Types<unsigned> TestTypesSeed;
 // register the type list
 TYPED_TEST_CASE(RandomSeed, TestTypesSeed);
 
-template<typename T>
+template <typename T>
 void randuTest(dim4 &dims) {
     if (noDoubleTests<T>()) return;
 
@@ -96,7 +96,7 @@ void randuTest(dim4 &dims) {
     if (outArray != 0) af_release_array(outArray);
 }
 
-template<typename T>
+template <typename T>
 void randnTest(dim4 &dims) {
     if (noDoubleTests<T>()) return;
 
@@ -148,7 +148,7 @@ RAND(345, 28, 9, 1);
 RAND(79, 68, 12, 6);
 RAND(45, 1, 1, 1);
 
-template<typename T>
+template <typename T>
 void randuArgsTest() {
     if (noDoubleTests<T>()) return;
 
@@ -163,7 +163,7 @@ void randuArgsTest() {
 
 TYPED_TEST(Random, InvalidArgs) { randuArgsTest<TypeParam>(); }
 
-template<typename T>
+template <typename T>
 void randuDimsTest() {
     if (noDoubleTests<T>()) return;
 
@@ -226,7 +226,7 @@ TEST(Random, CPP) {
     af::sync();
 }
 
-template<typename T>
+template <typename T>
 void testSetSeed(const uintl seed0, const uintl seed1) {
     if (noDoubleTests<T>()) return;
 
@@ -278,7 +278,7 @@ void testSetSeed(const uintl seed0, const uintl seed1) {
 
 TYPED_TEST(RandomSeed, setSeed) { testSetSeed<TypeParam>(10101, 23232); }
 
-template<typename T>
+template <typename T>
 void testGetSeed(const uintl seed0, const uintl seed1) {
     if (noDoubleTests<T>()) return;
 
@@ -304,7 +304,7 @@ void testGetSeed(const uintl seed0, const uintl seed1) {
 
 TYPED_TEST(Random, getSeed) { testGetSeed<TypeParam>(1234, 9876); }
 
-template<typename T>
+template <typename T>
 void testRandomEngineUniform(randomEngineType type) {
     if (noDoubleTests<T>()) return;
     dtype ty = (dtype)dtype_traits<T>::af_type;
@@ -318,7 +318,7 @@ void testRandomEngineUniform(randomEngineType type) {
     ASSERT_NEAR(s, 0.2887, 1e-2);
 }
 
-template<typename T>
+template <typename T>
 void testRandomEngineNormal(randomEngineType type) {
     if (noDoubleTests<T>()) return;
     dtype ty = (dtype)dtype_traits<T>::af_type;
@@ -356,7 +356,7 @@ TYPED_TEST(RandomEngine, mersenneRandomEngineNormal) {
     testRandomEngineNormal<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
 }
 
-template<typename T>
+template <typename T>
 void testRandomEngineSeed(randomEngineType type) {
     int elem        = 4 * 32 * 1024;
     uintl orig_seed = 0;
@@ -402,7 +402,7 @@ TYPED_TEST(RandomEngineSeed, mersenneSeedUniform) {
     testRandomEngineSeed<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
 }
 
-template<typename T>
+template <typename T>
 void testRandomEnginePeriod(randomEngineType type) {
     if (noDoubleTests<T>()) return;
     dtype ty = (dtype)dtype_traits<T>::af_type;
@@ -432,14 +432,14 @@ TYPED_TEST(RandomEngine, DISABLED_mersenneRandomEnginePeriod) {
     testRandomEnginePeriod<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
 }
 
-template<typename T>
+template <typename T>
 T chi2_statistic(array input, array expected) {
     expected *= sum<T>(input) / sum<T>(expected);
     array diff = input - expected;
     return sum<T>((diff * diff) / expected);
 }
 
-template<typename T>
+template <typename T>
 void testRandomEngineUniformChi2(randomEngineType type) {
     if (noDoubleTests<T>()) return;
     dtype ty = (dtype)dtype_traits<T>::af_type;

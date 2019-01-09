@@ -20,7 +20,7 @@ using namespace detail;
 
 namespace {
 
-template<typename T>
+template <typename T>
 af_err topk(af_array *v, af_array *i, const af_array in, const int k,
             const int dim, const af_topk_function order) {
     auto vals = createEmptyArray<T>(af::dim4());

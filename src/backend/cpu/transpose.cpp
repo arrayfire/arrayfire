@@ -19,7 +19,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 Array<T> transpose(const Array<T> &in, const bool conjugate) {
     in.eval();
 
@@ -33,7 +33,7 @@ Array<T> transpose(const Array<T> &in, const bool conjugate) {
     return out;
 }
 
-template<typename T>
+template <typename T>
 void transpose_inplace(Array<T> &in, const bool conjugate) {
     in.eval();
     getQueue().enqueue(kernel::transpose_inplace<T>, in, conjugate);

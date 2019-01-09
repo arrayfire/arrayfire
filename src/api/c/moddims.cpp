@@ -19,11 +19,11 @@ using af::dim4;
 using namespace detail;
 
 namespace {
-template<typename T>
+template <typename T>
 af_array modDims(const af_array in, const dim4& newDims) {
     return getHandle(::modDims(getArray<T>(in), newDims));
 }
-template<typename T>
+template <typename T>
 af_array flat(const af_array in) {
     return getHandle(::flat(getArray<T>(in)));
 }
@@ -54,10 +54,10 @@ af_err af_moddims(af_array* out, const af_array in, const unsigned ndims,
             case c32: output = modDims<cfloat>(in, newDims); break;
             case f64: output = modDims<double>(in, newDims); break;
             case c64: output = modDims<cdouble>(in, newDims); break;
-            case b8: output = modDims<char>(in, newDims); break;
+            case b8: output  = modDims<char>(in, newDims); break;
             case s32: output = modDims<int>(in, newDims); break;
             case u32: output = modDims<uint>(in, newDims); break;
-            case u8: output = modDims<uchar>(in, newDims); break;
+            case u8: output  = modDims<uchar>(in, newDims); break;
             case s64: output = modDims<intl>(in, newDims); break;
             case u64: output = modDims<uintl>(in, newDims); break;
             case s16: output = modDims<short>(in, newDims); break;
@@ -86,10 +86,10 @@ af_err af_flat(af_array* out, const af_array in) {
                 case c32: output = flat<cfloat>(in); break;
                 case f64: output = flat<double>(in); break;
                 case c64: output = flat<cdouble>(in); break;
-                case b8: output = flat<char>(in); break;
+                case b8: output  = flat<char>(in); break;
                 case s32: output = flat<int>(in); break;
                 case u32: output = flat<uint>(in); break;
-                case u8: output = flat<uchar>(in); break;
+                case u8: output  = flat<uchar>(in); break;
                 case s64: output = flat<intl>(in); break;
                 case u64: output = flat<uintl>(in); break;
                 case s16: output = flat<short>(in); break;

@@ -16,31 +16,31 @@
 #include <thread>
 #include "solve_common.hpp"
 
-template<typename T>
+template <typename T>
 class Solve : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
 TYPED_TEST_CASE(Solve, TestTypes);
 
-template<typename T>
+template <typename T>
 double eps();
 
-template<>
+template <>
 double eps<float>() {
     return 0.01f;
 }
 
-template<>
+template <>
 double eps<double>() {
     return 1e-5;
 }
 
-template<>
+template <>
 double eps<cfloat>() {
     return 0.01f;
 }
 
-template<>
+template <>
 double eps<cdouble>() {
     return 1e-5;
 }

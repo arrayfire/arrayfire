@@ -19,7 +19,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array solve(const af_array a, const af_array b,
                              const af_mat_prop options) {
     return getHandle(solve<T>(getArray<T>(a), getArray<T>(b), options));
@@ -86,7 +86,7 @@ af_err af_solve(af_array* out, const af_array a, const af_array b,
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 static inline af_array solve_lu(const af_array a, const af_array pivot,
                                 const af_array b, const af_mat_prop options) {
     return getHandle(solveLU<T>(getArray<T>(a), getArray<int>(pivot),

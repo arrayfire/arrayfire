@@ -54,7 +54,7 @@
 #include "kernel/transpose_inplace.hpp"
 #include "magma_data.h"
 
-template<typename T>
+template <typename T>
 void magmablas_transpose_inplace(magma_int_t n, cl_mem dA, size_t dA_offset,
                                  magma_int_t ldda, magma_queue_t queue) {
     magma_int_t info = 0;

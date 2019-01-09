@@ -19,7 +19,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline void qr(af_array *q, af_array *r, af_array *tau,
                       const af_array in) {
     Array<T> qArray = createEmptyArray<T>(af::dim4());
@@ -33,7 +33,7 @@ static inline void qr(af_array *q, af_array *r, af_array *tau,
     *tau = getHandle(tArray);
 }
 
-template<typename T>
+template <typename T>
 static inline af_array qr_inplace(af_array in) {
     return getHandle(qr_inplace<T>(getArray<T>(in)));
 }

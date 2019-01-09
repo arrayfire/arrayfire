@@ -30,7 +30,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Where : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble, int, uint, intl, uintl,
@@ -38,7 +38,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, uint, intl, uintl,
     TestTypes;
 TYPED_TEST_CASE(Where, TestTypes);
 
-template<typename T>
+template <typename T>
 void whereTest(string pTestFile, bool isSubRef = false,
                const vector<af_seq> seqv = vector<af_seq>()) {
     if (noDoubleTests<T>()) return;

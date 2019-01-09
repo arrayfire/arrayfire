@@ -34,7 +34,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, FI_CHANNELS fi_color>
+template <typename T, FI_CHANNELS fi_color>
 static af_err readImage_t(af_array* rImage, const uchar* pSrcLine,
                           const int nSrcPitch, const uint fi_w,
                           const uint fi_h) {
@@ -133,7 +133,7 @@ af_err af_load_image_native(af_array* out, const char* filename) {
                      AF_ERR_NOT_SUPPORTED);
         }
 
-        int flags = 0;
+        int flags                  = 0;
         if (fif == FIF_JPEG) flags = flags | JPEG_ACCURATE;
 
         // check that the plugin has reading capabilities ...
@@ -300,7 +300,7 @@ af_err af_load_image_native(af_array* out, const char* filename) {
     return AF_SUCCESS;
 }
 
-template<typename T, FI_CHANNELS channels>
+template <typename T, FI_CHANNELS channels>
 static void save_t(T* pDstLine, const af_array in, const dim4 dims,
                    uint nDstPitch) {
     af_array rr = 0, gg = 0, bb = 0, aa = 0;
@@ -318,8 +318,8 @@ static void save_t(T* pDstLine, const af_array in, const dim4 dims,
     if (channels >= 3) AF_CHECK(af_transpose(&bbT, bb, false));
     if (channels >= 4) AF_CHECK(af_transpose(&aaT, aa, false));
 
-    const ArrayInfo& cinfo = getInfo(rrT);
-    pSrc0                  = pinnedAlloc<T>(cinfo.elements());
+    const ArrayInfo& cinfo   = getInfo(rrT);
+    pSrc0                    = pinnedAlloc<T>(cinfo.elements());
     if (channels >= 3) pSrc1 = pinnedAlloc<T>(cinfo.elements());
     if (channels >= 3) pSrc2 = pinnedAlloc<T>(cinfo.elements());
     if (channels >= 4) pSrc3 = pinnedAlloc<T>(cinfo.elements());
@@ -414,7 +414,7 @@ af_err af_save_image_native(const char* filename, const af_array in) {
         // FI assumes [0-1]   for f32
         int fi_bpp = 0;
         switch (type) {
-            case u8: fi_bpp = channels * 8; break;
+            case u8: fi_bpp  = channels * 8; break;
             case u16: fi_bpp = channels * 16; break;
             case f32: fi_bpp = channels * 32; break;
             default: TYPE_ERROR(1, type);
@@ -500,7 +500,7 @@ af_err af_save_image_native(const char* filename, const af_array in) {
             }
         }
 
-        int flags = 0;
+        int flags                  = 0;
         if (fif == FIF_JPEG) flags = flags | JPEG_QUALITYSUPERB;
 
         // now save the result image

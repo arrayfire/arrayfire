@@ -23,18 +23,18 @@
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 using geqrf_func_def = int (*)(ORDER_TYPE, int, int, T *, int, T *);
 
-template<typename T>
+template <typename T>
 using gqr_func_def = int (*)(ORDER_TYPE, int, int, int, T *, int, const T *);
 
 #define QR_FUNC_DEF(FUNC) \
-    template<typename T>  \
+    template <typename T> \
     FUNC##_func_def<T> FUNC##_func();
 
 #define QR_FUNC(FUNC, TYPE, PREFIX)             \
-    template<>                                  \
+    template <>                                 \
     FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
         return &LAPACK_NAME(PREFIX##FUNC);      \
     }
@@ -46,11 +46,11 @@ QR_FUNC(geqrf, cfloat, c)
 QR_FUNC(geqrf, cdouble, z)
 
 #define GQR_FUNC_DEF(FUNC) \
-    template<typename T>   \
+    template <typename T>  \
     FUNC##_func_def<T> FUNC##_func();
 
 #define GQR_FUNC(FUNC, TYPE, PREFIX)            \
-    template<>                                  \
+    template <>                                 \
     FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
         return &LAPACK_NAME(PREFIX);            \
     }
@@ -61,7 +61,7 @@ GQR_FUNC(gqr, double, dorgqr)
 GQR_FUNC(gqr, cfloat, cungqr)
 GQR_FUNC(gqr, cdouble, zungqr)
 
-template<typename T>
+template <typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     q.eval();
     r.eval();
@@ -90,7 +90,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     getQueue().enqueue(func, q, t, M, N);
 }
 
-template<typename T>
+template <typename T>
 Array<T> qr_inplace(Array<T> &in) {
     in.eval();
 
@@ -114,12 +114,12 @@ Array<T> qr_inplace(Array<T> &in) {
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }
 
-template<typename T>
+template <typename T>
 Array<T> qr_inplace(Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }

@@ -31,7 +31,7 @@
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
                  const af_mat_prop options) {
     if (OpenCLCPUOffload()) { return cpu::solveLU(A, pivot, b, options); }
@@ -54,7 +54,7 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
     return B;
 }
 
-template<typename T>
+template <typename T>
 Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
     dim4 iDims = a.dims();
     int M      = iDims[0];
@@ -79,7 +79,7 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
     return B;
 }
 
-template<typename T>
+template <typename T>
 Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
     int M  = a.dims()[0];
     int N  = a.dims()[1];
@@ -229,7 +229,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
     return B;
 }
 
-template<typename T>
+template <typename T>
 Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
                        const af_mat_prop options) {
     gpu_blas_trsm_func<T> gpu_blas_trsm;
@@ -274,7 +274,7 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
     return B;
 }
 
-template<typename T>
+template <typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b,
                const af_mat_prop options) {
     if (OpenCLCPUOffload()) { return cpu::solve(a, b, options); }
@@ -307,13 +307,13 @@ INSTANTIATE_SOLVE(cdouble)
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
                  const af_mat_prop options) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }
 
-template<typename T>
+template <typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b,
                const af_mat_prop options) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);

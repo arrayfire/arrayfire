@@ -7,9 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-typedef struct {
-    dim_t dim[4];
-} dims_t;
+typedef struct { dim_t dim[4]; } dims_t;
 
 __kernel void memcopy_kernel(__global T *out, dims_t ostrides,
                              __global const T *in, dims_t idims,

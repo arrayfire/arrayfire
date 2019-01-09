@@ -18,14 +18,14 @@
 using af::dim4;
 using namespace detail;
 
-template<typename inType, typename outType, bool isColor>
+template <typename inType, typename outType, bool isColor>
 static inline af_array bilateral(const af_array &in, const float &sp_sig,
                                  const float &chr_sig) {
     return getHandle(bilateral<inType, outType, isColor>(getArray<inType>(in),
                                                          sp_sig, chr_sig));
 }
 
-template<bool isColor>
+template <bool isColor>
 static af_err bilateral(af_array *out, const af_array &in, const float &s_sigma,
                         const float &c_sigma) {
     try {

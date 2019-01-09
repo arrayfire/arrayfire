@@ -21,22 +21,22 @@ namespace cuda {
 
 namespace kernel {
 
-template<typename T>
+template <typename T>
 __device__ T sq(T a) {
     return a * a;
 }
 
-template<typename T>
+template <typename T>
 struct EPS {
     __device__ T eps() { return FLT_EPSILON; }
 };
 
-template<>
+template <>
 struct EPS<float> {
     __device__ static float eps() { return FLT_EPSILON; }
 };
 
-template<>
+template <>
 struct EPS<double> {
     __device__ static double eps() { return DBL_EPSILON; }
 };
@@ -47,7 +47,7 @@ struct EPS<double> {
 
 extern __shared__ char sh[];
 
-template<typename T>
+template <typename T>
 __device__ void JacobiSVD(int m, int n) {
     const int iterations = 30;
 
@@ -195,7 +195,7 @@ __device__ bool computeMeanScale(
 
 #define SSPTR(Z, Y, X) (s_S[(Z)*81 + (Y)*9 + (X)])
 
-template<typename T>
+template <typename T>
 __global__ void buildLinearSystem(Param<T> H, CParam<float> x_src,
                                   CParam<float> y_src, CParam<float> x_dst,
                                   CParam<float> y_dst, CParam<float> rnd,
@@ -297,7 +297,7 @@ __global__ void buildLinearSystem(Param<T> H, CParam<float> x_src,
 
 // LMedS:
 // http://research.microsoft.com/en-us/um/people/zhang/INRIA/Publis/Tutorial-Estim/node25.html
-template<typename T>
+template <typename T>
 __global__ void computeEvalHomography(
     Param<unsigned> inliers, Param<unsigned> idx, Param<T> H, Param<float> err,
     CParam<float> x_src, CParam<float> y_src, CParam<float> x_dst,
@@ -453,7 +453,7 @@ __global__ void findMinMedian(float* minMedian, unsigned* minIdx,
 
 #undef DIVUP
 
-template<typename T>
+template <typename T>
 __global__ void computeLMedSInliers(Param<unsigned> inliers, CParam<T> H,
                                     CParam<float> x_src, CParam<float> y_src,
                                     CParam<float> x_dst, CParam<float> y_dst,
@@ -494,7 +494,7 @@ __global__ void computeLMedSInliers(Param<unsigned> inliers, CParam<T> H,
     inliers.ptr[bid] = s_inliers[0];
 }
 
-template<typename T>
+template <typename T>
 int computeH(Param<T> bestH, Param<T> H, Param<float> err, CParam<float> x_src,
              CParam<float> y_src, CParam<float> x_dst, CParam<float> y_dst,
              CParam<float> rnd, const unsigned iterations,

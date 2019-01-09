@@ -68,7 +68,7 @@
 // produces pointer as single arg to BLAS routines
 #define A(i, j) &a[(i) + (j)*lda]
 
-template<typename Ty>
+template <typename Ty>
 magma_int_t magma_gebrd_hybrid(magma_int_t m, magma_int_t n, Ty *a,
                                magma_int_t lda, cl_mem da, size_t da_offset,
                                magma_int_t ldda, void *_d, void *_e, Ty *tauq,

@@ -20,7 +20,7 @@ using af::dtype_traits;
 
 const int num = 10;
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 void cast_test() {
     if (noDoubleTests<Ti>()) return;
     if (noDoubleTests<To>()) return;
@@ -73,7 +73,7 @@ CPLX_TEST_INVOKE(cdouble)
 // Converting complex to real; expected to fail as this operation is
 // not allowed. Use functions abs, real, image, arg, etc to make the
 // conversion explicit.
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 void cast_test_complex_real() {
     if (noDoubleTests<Ti>()) return;
     if (noDoubleTests<To>()) return;

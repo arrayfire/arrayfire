@@ -13,7 +13,7 @@ namespace opencl {
 
 namespace kernel {
 
-template<typename T, typename aT, bool expand>
+template <typename T, typename aT, bool expand>
 void conv1(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt) {
     size_t se_size = filt.info.dims[0] * sizeof(aT);
     p.impulse      = bufferAlloc(se_size);

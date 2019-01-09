@@ -23,7 +23,7 @@
 
 namespace cpu {
 
-template<typename T, int dim>
+template <typename T, int dim>
 void sortBatched(Array<T>& val, bool isAscending) {
     af::dim4 inDims = val.dims();
 
@@ -50,7 +50,7 @@ void sortBatched(Array<T>& val, bool isAscending) {
     val.setDataDims(inDims);  // This is correct only for dim0
 }
 
-template<typename T>
+template <typename T>
 void sort0(Array<T>& val, bool isAscending) {
     int higherDims = val.elements() / val.dims()[0];
     // TODO Make a better heurisitic
@@ -60,7 +60,7 @@ void sort0(Array<T>& val, bool isAscending) {
         getQueue().enqueue(kernel::sort0Iterative<T>, val, isAscending);
 }
 
-template<typename T>
+template <typename T>
 Array<T> sort(const Array<T>& in, const unsigned dim, bool isAscending) {
     in.eval();
 

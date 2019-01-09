@@ -33,13 +33,13 @@ using std::abs;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class FFT_REAL : public ::testing::Test {};
 
 typedef ::testing::Types<cfloat, cdouble> TestTypes;
 TYPED_TEST_CASE(FFT_REAL, TestTypes);
 
-template<int rank>
+template <int rank>
 array fft(const array &in, double norm) {
     switch (rank) {
         case 1: return fftNorm(in, norm);
@@ -51,7 +51,7 @@ array fft(const array &in, double norm) {
 
 #define MY_ASSERT_NEAR(aa, bb, cc) ASSERT_NEAR(abs(aa), abs(bb), (cc))
 
-template<typename Tc, int rank>
+template <typename Tc, int rank>
 void fft_real(dim4 dims) {
     typedef typename dtype_traits<Tc>::base_type Tr;
     if (noDoubleTests<Tr>()) return;
@@ -65,7 +65,7 @@ void fft_real(dim4 dims) {
 
     double norm = 1;
     for (int i = 0; i < rank; i++) norm *= dims[i];
-    norm = 1 / norm;
+    norm       = 1 / norm;
 
     array as = fftR2C<rank>(a, norm);
     array af = fft<rank>(a, norm);

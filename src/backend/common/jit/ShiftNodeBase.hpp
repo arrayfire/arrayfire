@@ -22,7 +22,7 @@
 
 namespace common {
 
-template<typename BufferNode>
+template <typename BufferNode>
 class ShiftNodeBase : public Node {
    private:
     std::shared_ptr<BufferNode> m_buffer_node;

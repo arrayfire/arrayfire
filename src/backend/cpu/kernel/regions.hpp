@@ -16,7 +16,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 class LabelNode {
    private:
     T label;
@@ -43,13 +43,13 @@ class LabelNode {
     void setRank(unsigned r) { rank = r; }
 };
 
-template<typename T>
+template <typename T>
 static LabelNode<T>* find(LabelNode<T>* x) {
     if (x->getParent() != x) x->setParent(find(x->getParent()));
     return x->getParent();
 }
 
-template<typename T>
+template <typename T>
 static void setUnion(LabelNode<T>* x, LabelNode<T>* y) {
     LabelNode<T>* xRoot = find(x);
     LabelNode<T>* yRoot = find(y);
@@ -70,7 +70,7 @@ static void setUnion(LabelNode<T>* x, LabelNode<T>* y) {
     }
 }
 
-template<typename T>
+template <typename T>
 void regions(Param<T> out, CParam<char> in, af_connectivity connectivity) {
     const af::dim4 inDims = in.dims();
     const char* inPtr     = in.get();

@@ -34,7 +34,7 @@ static const int FAST_THREADS_Y        = 16;
 static const int FAST_THREADS_NONMAX_X = 32;
 static const int FAST_THREADS_NONMAX_Y = 8;
 
-template<typename T, const bool nonmax>
+template <typename T, const bool nonmax>
 void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
           Param &y_out, Param &score_out, Param in, const float thr,
           const float feature_ratio, const unsigned edge) {
@@ -172,7 +172,7 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
     bufferFree(d_offsets);
 }
 
-template<typename T>
+template <typename T>
 void fast_dispatch(const unsigned arc_length, const bool nonmax,
                    unsigned *out_feat, Param &x_out, Param &y_out,
                    Param &score_out, Param in, const float thr,

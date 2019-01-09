@@ -22,7 +22,7 @@
 
 using namespace detail;
 
-template<typename T>
+template <typename T>
 Array<T> gaussianKernel(const int rows, const int cols, const double sigma_r,
                         const double sigma_c) {
     const dim4 odims = dim4(rows, cols);

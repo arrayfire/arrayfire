@@ -21,7 +21,7 @@ namespace kernel {
 ///////////////////////////////////////////////////////////////////////////
 // Wrap Kernel
 ///////////////////////////////////////////////////////////////////////////
-template<typename T, bool is_column>
+template <typename T, bool is_column>
 __global__ void wrap_kernel(Param<T> out, CParam<T> in, const int wx,
                             const int wy, const int sx, const int sy,
                             const int px, const int py, const int nx,
@@ -79,7 +79,7 @@ __global__ void wrap_kernel(Param<T> out, CParam<T> in, const int wx,
     optr[oidx1 * out.strides[1] + oidx0] = val;
 }
 
-template<typename T>
+template <typename T>
 void wrap(Param<T> out, CParam<T> in, const int wx, const int wy, const int sx,
           const int sy, const int px, const int py, const bool is_column) {
     int nx = (out.dims[0] + 2 * px - wx) / sx + 1;

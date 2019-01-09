@@ -19,21 +19,21 @@
 #include <af/blas.h>
 #include <af/defines.h>
 
-template<typename T>
+template <typename T>
 static inline af_array sparseMatmul(const af_array lhs, const af_array rhs,
                                     af_mat_prop optLhs, af_mat_prop optRhs) {
     return getHandle(detail::matmul<T>(getSparseArray<T>(lhs), getArray<T>(rhs),
                                        optLhs, optRhs));
 }
 
-template<typename T>
+template <typename T>
 static inline af_array matmul(const af_array lhs, const af_array rhs,
                               af_mat_prop optLhs, af_mat_prop optRhs) {
     return getHandle(
         detail::matmul<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
 }
 
-template<typename T>
+template <typename T>
 static inline af_array dot(const af_array lhs, const af_array rhs,
                            af_mat_prop optLhs, af_mat_prop optRhs) {
     return getHandle(
@@ -209,7 +209,7 @@ af_err af_dot(af_array *out, const af_array lhs, const af_array rhs,
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 static inline T dotAll(af_array out) {
     T res;
     AF_CHECK(af_eval(out));
@@ -223,7 +223,7 @@ af_err af_dot_all(double *rval, double *ival, const af_array lhs,
     using namespace detail;
 
     try {
-        *rval = 0;
+        *rval           = 0;
         if (ival) *ival = 0;
 
         af_array out = 0;
@@ -236,13 +236,13 @@ af_err af_dot_all(double *rval, double *ival, const af_array lhs,
             case f32: *rval = dotAll<float>(out); break;
             case f64: *rval = dotAll<double>(out); break;
             case c32: {
-                cfloat temp = dotAll<cfloat>(out);
-                *rval       = real(temp);
+                cfloat temp     = dotAll<cfloat>(out);
+                *rval           = real(temp);
                 if (ival) *ival = imag(temp);
             } break;
             case c64: {
-                cdouble temp = dotAll<cdouble>(out);
-                *rval        = real(temp);
+                cdouble temp    = dotAll<cdouble>(out);
+                *rval           = real(temp);
                 if (ival) *ival = imag(temp);
             } break;
             default: TYPE_ERROR(1, lhs_type);

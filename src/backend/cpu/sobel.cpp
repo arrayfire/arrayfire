@@ -19,7 +19,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 std::pair<Array<To>, Array<To>> sobelDerivatives(const Array<Ti> &img,
                                                  const unsigned &ker_size) {
     UNUSED(ker_size);

@@ -18,7 +18,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, bool isHSV2RGB>
+template <typename T, bool isHSV2RGB>
 static af_array convert(const af_array& in) {
     const Array<T> input = getArray<T>(in);
     if (isHSV2RGB) {
@@ -28,7 +28,7 @@ static af_array convert(const af_array& in) {
     }
 }
 
-template<bool isHSV2RGB>
+template <bool isHSV2RGB>
 af_err convert(af_array* out, const af_array& in) {
     try {
         const ArrayInfo& info = getInfo(in);

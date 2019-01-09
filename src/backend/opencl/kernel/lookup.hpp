@@ -30,7 +30,7 @@ namespace kernel {
 static const int THREADS_X = 32;
 static const int THREADS_Y = 8;
 
-template<typename in_t, typename idx_t, unsigned dim>
+template <typename in_t, typename idx_t, unsigned dim>
 void lookup(Param out, const Param in, const Param indices) {
     std::string refName =
         std::string("lookupND_") + std::string(dtype_traits<in_t>::getName()) +

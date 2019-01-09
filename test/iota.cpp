@@ -26,7 +26,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Iota : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -45,7 +45,7 @@ typedef ::testing::Types<float, double, int, unsigned int, intl, uintl,
 // register the type list
 TYPED_TEST_CASE(Iota, TestTypes);
 
-template<typename T>
+template <typename T>
 void iotaTest(const dim4 idims, const dim4 tdims) {
     if (noDoubleTests<T>()) return;
 

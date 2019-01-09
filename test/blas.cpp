@@ -35,13 +35,13 @@ using std::ostream_iterator;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class MatrixMultiply : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
 TYPED_TEST_CASE(MatrixMultiply, TestTypes);
 
-template<typename T, bool isBVector>
+template <typename T, bool isBVector>
 void MatMulCheck(string TestFile) {
     if (noDoubleTests<T>()) return;
 
@@ -120,7 +120,7 @@ TYPED_TEST(MatrixMultiply, RectangleVector) {
     MatMulCheck<TypeParam, true>(TEST_DIR "/blas/RectangleVector.test");
 }
 
-template<typename T, bool isBVector>
+template <typename T, bool isBVector>
 void cppMatMulCheck(string TestFile) {
     if (noDoubleTests<T>()) return;
 

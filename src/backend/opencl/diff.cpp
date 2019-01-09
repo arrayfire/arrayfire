@@ -14,7 +14,7 @@
 #include <stdexcept>
 
 namespace opencl {
-template<typename T, bool isDiff2>
+template <typename T, bool isDiff2>
 static Array<T> diff(const Array<T> &in, const int dim) {
     const af::dim4 iDims = in.dims();
     af::dim4 oDims       = iDims;
@@ -39,12 +39,12 @@ static Array<T> diff(const Array<T> &in, const int dim) {
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> diff1(const Array<T> &in, const int dim) {
     return diff<T, false>(in, dim);
 }
 
-template<typename T>
+template <typename T>
 Array<T> diff2(const Array<T> &in, const int dim) {
     return diff<T, true>(in, dim);
 }

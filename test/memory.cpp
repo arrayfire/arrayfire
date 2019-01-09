@@ -57,7 +57,7 @@ TEST(Memory, Scope) {
     ASSERT_EQ(lock_bytes, 0u);
 }
 
-template<typename T>
+template <typename T>
 class MemAlloc : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -80,7 +80,7 @@ size_t roundUpToStep(size_t bytes) {
     return bytes + step_bytes - remainder;
 }
 
-template<typename T>
+template <typename T>
 void memAllocArrayScopeTest(int elements) {
     if (noDoubleTests<T>()) return;
 
@@ -110,7 +110,7 @@ void memAllocArrayScopeTest(int elements) {
     ASSERT_EQ(lock_bytes, 0u);
 }
 
-template<typename T>
+template <typename T>
 void memAllocPtrScopeTest(int elements) {
     if (noDoubleTests<T>()) return;
 
@@ -393,7 +393,7 @@ TEST(Memory, AssignLoop) {
     ASSERT_EQ(lock_bytes, cols * step_bytes);
 
     for (int i = 0; i < cols; i++) {
-        array b    = randu(num);
+        array b = randu(num);
         a(span, i) = b;
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
@@ -466,7 +466,7 @@ TEST(Memory, AssignRefLoop) {
     ASSERT_EQ(lock_bytes, cols * step_bytes);
 
     for (int i = 0; i < cols; i++) {
-        array b    = randu(num);
+        array b = randu(num);
         a(span, i) = b;
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);

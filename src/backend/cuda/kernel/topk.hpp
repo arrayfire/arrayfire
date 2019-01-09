@@ -26,7 +26,7 @@ namespace kernel {
 static const int TOPK_THRDS_PER_BLK = 256;
 static const int TOPK_IDX_THRD_LOAD = 4;
 
-template<typename T, bool READ_INDEX>
+template <typename T, bool READ_INDEX>
 static __global__ void kerTopkDim0(Param<T> ovals, Param<uint> oidxs,
                                    CParam<T> ivals, CParam<uint> iidxs,
                                    const int k, const af::topkFunction order,
@@ -82,7 +82,7 @@ static __global__ void kerTopkDim0(Param<T> ovals, Param<uint> oidxs,
     }
 }
 
-template<typename T>
+template <typename T>
 void topkDim0(Param<T> ovals, Param<uint> oidxs, CParam<T> ivals, const int k,
               const af::topkFunction order) {
     const dim3 threads(TOPK_THRDS_PER_BLK, 1);
@@ -147,7 +147,7 @@ void topkDim0(Param<T> ovals, Param<uint> oidxs, CParam<T> ivals, const int k,
     } while (prevBlocksX > 1);
 }
 
-template<typename T>
+template <typename T>
 inline void topk(Param<T> ovals, Param<uint> oidxs, CParam<T> ivals,
                  const int k, const int dim, const af::topkFunction order) {
     assert(dim == 0);

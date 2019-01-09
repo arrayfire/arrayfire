@@ -21,7 +21,7 @@
 using namespace detail;
 using af::dim4;
 
-template<typename T>
+template <typename T>
 af_array select(const af_array cond, const af_array a, const af_array b,
                 const dim4& odims) {
     Array<T> out = createSelectNode(getArray<char>(cond), getArray<T>(a),
@@ -66,8 +66,8 @@ af_err af_select(af_array* out, const af_array cond, const af_array a,
             case u64: res = select<uintl>(cond, a, b, odims); break;
             case s16: res = select<short>(cond, a, b, odims); break;
             case u16: res = select<ushort>(cond, a, b, odims); break;
-            case u8: res = select<uchar>(cond, a, b, odims); break;
-            case b8: res = select<char>(cond, a, b, odims); break;
+            case u8: res  = select<uchar>(cond, a, b, odims); break;
+            case b8: res  = select<char>(cond, a, b, odims); break;
             default: TYPE_ERROR(2, ainfo.getType());
         }
 
@@ -77,7 +77,7 @@ af_err af_select(af_array* out, const af_array cond, const af_array a,
     return AF_SUCCESS;
 }
 
-template<typename T, bool flip>
+template <typename T, bool flip>
 af_array select_scalar(const af_array cond, const af_array a, const double b,
                        const dim4& odims) {
     Array<T> out = createSelectNode<T, flip>(getArray<char>(cond),

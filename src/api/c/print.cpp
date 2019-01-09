@@ -32,7 +32,7 @@ using std::endl;
 using std::ostream;
 using std::vector;
 
-template<typename T>
+template <typename T>
 static void printer(ostream &out, const T *ptr, const ArrayInfo &info,
                     unsigned dim, const int precision) {
     dim_t stride = info.strides()[dim];
@@ -54,7 +54,7 @@ static void printer(ostream &out, const T *ptr, const ArrayInfo &info,
     }
 }
 
-template<typename T>
+template <typename T>
 static void print(const char *exp, af_array arr, const int precision,
                   std::ostream &os = std::cout, bool transpose = true) {
     if (exp == NULL) {
@@ -100,7 +100,7 @@ static void print(const char *exp, af_array arr, const int precision,
     os.flags(backup);
 }
 
-template<typename T>
+template <typename T>
 static void printSparse(const char *exp, af_array arr, const int precision,
                         std::ostream &os = std::cout, bool transpose = true) {
     common::SparseArray<T> sparse = getSparseArray<T>(arr);

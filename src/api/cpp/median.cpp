@@ -15,7 +15,7 @@
 namespace af {
 
 #define INSTANTIATE_MEDIAN(T)                              \
-    template<>                                             \
+    template <>                                            \
     AFAPI T median(const array& in) {                      \
         double ret_val;                                    \
         AF_THROW(af_median_all(&ret_val, NULL, in.get())); \

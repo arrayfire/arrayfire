@@ -16,7 +16,7 @@
 
 namespace cuda {
 namespace kernel {
-template<typename T>
+template <typename T>
 __global__ static void diagCreateKernel(Param<T> out, CParam<T> in, int num,
                                         int blocks_x) {
     unsigned idz        = blockIdx.x / blocks_x;
@@ -35,7 +35,7 @@ __global__ static void diagCreateKernel(Param<T> out, CParam<T> in, int num,
     *optr = val;
 }
 
-template<typename T>
+template <typename T>
 static void diagCreate(Param<T> out, CParam<T> in, int num) {
     dim3 threads(32, 8);
     int blocks_x = divup(out.dims[0], threads.x);
@@ -54,7 +54,7 @@ static void diagCreate(Param<T> out, CParam<T> in, int num) {
     POST_LAUNCH_CHECK();
 }
 
-template<typename T>
+template <typename T>
 __global__ static void diagExtractKernel(Param<T> out, CParam<T> in, int num,
                                          int blocks_z) {
     unsigned idw = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_z;
@@ -73,7 +73,7 @@ __global__ static void diagExtractKernel(Param<T> out, CParam<T> in, int num,
     *optr         = iptr[idx * in.strides[1]];
 }
 
-template<typename T>
+template <typename T>
 static void diagExtract(Param<T> out, CParam<T> in, int num) {
     dim3 threads(256, 1);
     int blocks_x = divup(out.dims[0], threads.x);

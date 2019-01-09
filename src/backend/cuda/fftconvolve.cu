@@ -19,7 +19,7 @@ using af::dim4;
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 static const dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2,
                                  const dim_t baseDim) {
     const dim4 i1d = i1.dims();
@@ -42,8 +42,8 @@ static const dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2,
     return dim4(pd[0], pd[1], pd[2], pd[3]);
 }
 
-template<typename T, typename convT, typename cT, bool isDouble, bool roundOut,
-         dim_t baseDim>
+template <typename T, typename convT, typename cT, bool isDouble, bool roundOut,
+          dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                      const bool expand, AF_BATCH_KIND kind) {
     const dim4 sDims = signal.dims();

@@ -40,7 +40,7 @@ namespace opencl {
 
 namespace kernel {
 
-template<typename T, typename Tw>
+template <typename T, typename Tw>
 struct MeanOp {
     T runningMean;
     Tw runningCount;
@@ -58,7 +58,7 @@ struct MeanOp {
     }
 };
 
-template<>
+template <>
 struct MeanOp<cfloat, float> {
     cfloat runningMean;
     float runningCount;
@@ -79,7 +79,7 @@ struct MeanOp<cfloat, float> {
     }
 };
 
-template<>
+template <>
 struct MeanOp<cdouble, double> {
     cdouble runningMean;
     double runningCount;
@@ -101,7 +101,7 @@ struct MeanOp<cdouble, double> {
     }
 };
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 void mean_dim_launcher(Param out, Param owt, Param in, Param inWeight,
                        const int dim, const int threads_y,
                        const uint groups_all[4]) {
@@ -196,7 +196,7 @@ void mean_dim_launcher(Param out, Param owt, Param in, Param inWeight,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 void mean_dim(Param out, Param in, Param inWeight, int dim) {
     uint threads_y = std::min(THREADS_Y, nextpow2(in.info.dims[dim]));
     uint threads_x = THREADS_X;
@@ -226,7 +226,7 @@ void mean_dim(Param out, Param in, Param inWeight, int dim) {
     }
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 void mean_first_launcher(Param out, Param owt, Param in, Param inWeight,
                          const int threads_x, const uint groups_x,
                          const uint groups_y) {
@@ -318,7 +318,7 @@ void mean_first_launcher(Param out, Param owt, Param in, Param inWeight,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 void mean_first(Param out, Param in, Param inWeight) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_GROUP);
@@ -349,7 +349,7 @@ void mean_first(Param out, Param in, Param inWeight) {
                         in.info.dims[3] * sizeof(Tw));
 
         tmpOut.info.dims[0] = groups_x;
-        for (int k = 1; k < 4; k++) tmpOut.info.strides[k] *= groups_x;
+        for (int k     = 1; k < 4; k++) tmpOut.info.strides[k] *= groups_x;
         tmpWeight.info = tmpOut.info;
     }
 
@@ -366,7 +366,7 @@ void mean_first(Param out, Param in, Param inWeight) {
     }
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 void mean_weighted(Param out, Param in, Param inWeight, int dim) {
     if (dim == 0)
         return mean_first<Ti, Tw, To>(out, in, inWeight);
@@ -374,13 +374,13 @@ void mean_weighted(Param out, Param in, Param inWeight, int dim) {
         return mean_dim<Ti, Tw, To>(out, in, inWeight, dim);
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 void mean(Param out, Param in, int dim) {
     Param noWeight;
     mean_weighted<Ti, Tw, To>(out, in, noWeight, dim);
 }
 
-template<typename T, typename Tw>
+template <typename T, typename Tw>
 T mean_all_weighted(Param in, Param inWeight) {
     int in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
@@ -454,7 +454,7 @@ T mean_all_weighted(Param in, Param inWeight) {
     }
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 To mean_all(Param in) {
     int in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];

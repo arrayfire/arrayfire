@@ -29,7 +29,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Triangle : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char,
@@ -37,7 +37,7 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char,
     TestTypes;
 TYPED_TEST_CASE(Triangle, TestTypes);
 
-template<typename T>
+template <typename T>
 void triangleTester(const dim4 dims, bool is_upper, bool is_unit_diag = false) {
     if (noDoubleTests<T>()) return;
 #if 1
@@ -65,8 +65,8 @@ void triangleTester(const dim4 dims, bool is_upper, bool is_unit_diag = false) {
                     val = (is_unit_diag && y == x) ? (T)(1) : h_in[y_off + x];
                 }
 
-                ASSERT_EQ(h_out[y_off + x], val)
-                    << "at (" << x << ", " << y << ")";
+                ASSERT_EQ(h_out[y_off + x], val) << "at (" << x << ", " << y
+                                                 << ")";
             }
         }
     }

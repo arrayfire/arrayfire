@@ -22,13 +22,13 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 Array<T> multiplyIndexed(const Array<T> &lhs, const Array<T> &rhs,
                          std::vector<af_seq> idx) {
     return matmul(lhs, createSubArray(rhs, idx), AF_MAT_NONE, AF_MAT_NONE);
 }
 
-template<typename T>
+template <typename T>
 static af_array transform_coordinates(const af_array &tf_, const float d0_,
                                       const float d1_) {
     af::dim4 h_dims(4, 3);

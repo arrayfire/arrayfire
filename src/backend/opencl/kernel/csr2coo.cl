@@ -43,8 +43,8 @@ __kernel void csrReduce_kernel(__global int *orowIdx,
     if (id >= nNZ) return;
 
     // Read COO row indices
-    int iRId  = irowIdx[id];
-    int iRId1 = 0;
+    int iRId          = irowIdx[id];
+    int iRId1         = 0;
     if (id > 0) iRId1 = irowIdx[id - 1];
 
     // If id is 0, then mark the edge cases of csrRow[0] and csrRow[M]

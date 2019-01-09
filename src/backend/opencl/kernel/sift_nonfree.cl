@@ -124,7 +124,7 @@ void gaussianElimination(float* A, float* b, float* x, const int n) {
     for (int i = 0; i <= n - 2; i++) {
         sum = b[i];
         for (int j = i + 1; j < n; j++) sum -= A[i * n + j] * x[j];
-        x[i] = sum / A[i * n + i];
+        x[i]       = sum / A[i * n + i];
     }
 }
 
@@ -146,7 +146,7 @@ inline void fatomic_add(volatile __local float* source, const float operand) {
 
 inline void normalizeDesc(__local float* desc, __local float* accum,
                           const int histlen, int lid_x, int lid_y, int lsz_x) {
-    for (int i = lid_x; i < histlen; i += lsz_x)
+    for (int i   = lid_x; i < histlen; i += lsz_x)
         accum[i] = desc[lid_y * histlen + i] * desc[lid_y * histlen + i];
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -182,7 +182,7 @@ inline void normalizeDesc(__local float* desc, __local float* accum,
 inline void normalizeGLOHDesc(__local float* desc, __local float* accum,
                               const int histlen, int lid_x, int lid_y,
                               int lsz_x) {
-    for (int i = lid_x; i < histlen; i += lsz_x)
+    for (int i   = lid_x; i < histlen; i += lsz_x)
         accum[i] = desc[lid_y * histlen + i] * desc[lid_y * histlen + i];
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -224,7 +224,7 @@ __kernel void sub(__global T* out, __global const T* in, unsigned nel,
     unsigned i = get_global_id(0);
 
     if (i < nel) {
-        for (unsigned l = 0; l < n_layers; l++)
+        for (unsigned l      = 0; l < n_layers; l++)
             out[l * nel + i] = in[l * nel + i] - in[(l + 1) * nel + i];
     }
 }
@@ -452,8 +452,9 @@ __kernel void interpolateExtrema(
         float det = dxx * dyy - dxy * dxy;
 
         // add FLT_EPSILON for double-precision compatibility
-        if (det <= 0 || tr * tr * edge_thr >=
-                            (edge_thr + 1) * (edge_thr + 1) * det + FLT_EPSILON)
+        if (det <= 0 ||
+            tr * tr * edge_thr >=
+                (edge_thr + 1) * (edge_thr + 1) * det + FLT_EPSILON)
             return;
 
         unsigned ridx = atomic_inc(counter);
@@ -608,7 +609,7 @@ __kernel void calcOrientation(
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
-    for (int i = lid_x; i < n; i += lsz_x)
+    for (int i                  = lid_x; i < n; i += lsz_x)
         temphist[lid_y * n + i] = hist[lid_y * n + i];
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -700,7 +701,7 @@ __kernel void computeDescriptor(
     __local float* desc  = l_mem;
     __local float* accum = l_mem + desc_len * histsz;
 
-    for (int i = lid_x; i < desc_len * histsz; i += lsz_x)
+    for (int i                     = lid_x; i < desc_len * histsz; i += lsz_x)
         desc[lid_y * desc_len + i] = 0.f;
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -832,7 +833,7 @@ __kernel void computeGLOHDescriptor(
     __local float* desc  = l_mem;
     __local float* accum = l_mem + desc_len * histsz;
 
-    for (int i = lid_x; i < desc_len * histsz; i += lsz_x)
+    for (int i                     = lid_x; i < desc_len * histsz; i += lsz_x)
         desc[lid_y * desc_len + i] = 0.f;
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -892,9 +893,11 @@ __kernel void computeGLOHDescriptor(
                 (r < GLOHRadii[0])
                     ? r / GLOHRadii[0]
                     : ((r < GLOHRadii[1])
-                           ? 1 + (r - GLOHRadii[0]) /
+                           ? 1 +
+                                 (r - GLOHRadii[0]) /
                                      (float)(GLOHRadii[1] - GLOHRadii[0])
-                           : min(2 + (r - GLOHRadii[1]) /
+                           : min(2 +
+                                     (r - GLOHRadii[1]) /
                                          (float)(GLOHRadii[2] - GLOHRadii[1]),
                                  3.f - FLT_EPSILON));
 

@@ -13,7 +13,7 @@
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 class Param {
    public:
     T *ptr;
@@ -34,7 +34,7 @@ class Param {
     }
 };
 
-template<typename T>
+template <typename T>
 Param<T> flat(Param<T> in) {
     in.dims[0] = in.elements();
     in.dims[1] = 1;
@@ -43,7 +43,7 @@ Param<T> flat(Param<T> in) {
     return in;
 }
 
-template<typename T>
+template <typename T>
 class CParam {
    public:
     const T *ptr;

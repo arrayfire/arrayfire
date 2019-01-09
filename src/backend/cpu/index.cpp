@@ -22,7 +22,7 @@ using std::vector;
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
     in.eval();
 
@@ -32,7 +32,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
     // dimensions, offsets & offsets
     for (unsigned x = 0; x < isSeq.size(); ++x) {
         if (idxrs[x].isSeq) { seqs[x] = idxrs[x].idx.seq; }
-        isSeq[x] = idxrs[x].isSeq;
+        isSeq[x]                      = idxrs[x].isSeq;
     }
 
     // retrieve

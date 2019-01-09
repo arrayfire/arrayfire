@@ -36,7 +36,7 @@ using std::string;
 namespace opencl {
 namespace kernel {
 static const int MAX_CSRMM_GROUPS = 4096;
-template<typename T>
+template <typename T>
 void csrmm_nt(Param out, const Param &values, const Param &rowIdx,
               const Param &colIdx, const Param &rhs, const T alpha,
               const T beta) {

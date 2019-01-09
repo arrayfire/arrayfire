@@ -16,7 +16,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void diagCreate(Param<T> out, CParam<T> in, int const num) {
     int batch = in.dims(1);
     int size  = out.dims(0);
@@ -28,7 +28,7 @@ void diagCreate(Param<T> out, CParam<T> in, int const num) {
         for (int j = 0; j < size; j++) {
             for (int i = 0; i < size; i++) {
                 T val = scalar<T>(0);
-                if (i == j - num) { val = (num > 0) ? iptr[i] : iptr[j]; }
+                if (i == j - num) { val      = (num > 0) ? iptr[i] : iptr[j]; }
                 optr[i + j * out.strides(1)] = val;
             }
         }
@@ -37,7 +37,7 @@ void diagCreate(Param<T> out, CParam<T> in, int const num) {
     }
 }
 
-template<typename T>
+template <typename T>
 void diagExtract(Param<T> out, CParam<T> in, int const num) {
     af::dim4 const odims = out.dims();
     af::dim4 const idims = in.dims();

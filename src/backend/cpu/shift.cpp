@@ -15,7 +15,7 @@
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 Array<T> shift(const Array<T> &in, const int sdims[4]) {
     in.eval();
 

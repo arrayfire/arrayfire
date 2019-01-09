@@ -37,7 +37,7 @@ static const int TY = 16;
 
 static const int THREADS = 256;
 
-template<typename Ty, typename Tp, int order>
+template <typename Ty, typename Tp, int order>
 std::string generateOptionsString() {
     ToNumStr<Ty> toNumStr;
 
@@ -68,7 +68,7 @@ std::string generateOptionsString() {
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename Ty, typename Tp, int order>
+template <typename Ty, typename Tp, int order>
 void approx1(Param yo, const Param yi, const Param xo, const int xdim,
              const Tp xi_beg, const Tp xi_step, const float offGrid,
              af_interp_type method) {
@@ -114,7 +114,7 @@ void approx1(Param yo, const Param yi, const Param xo, const int xdim,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename Ty, typename Tp, int order>
+template <typename Ty, typename Tp, int order>
 void approx2(Param zo, const Param zi, const Param xo, const int xdim,
              const Tp &xi_beg, const Tp &xi_step, const Param yo,
              const int ydim, const Tp &yi_beg, const Tp &yi_step,

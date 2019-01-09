@@ -38,13 +38,13 @@ __kernel void lu_split_kernel(__global T *lptr, KParam linfo, __global T *uptr,
             __global T *Yd_u = d_u + oy * uinfo.strides[1];
             for (int ox = xx; ox < iinfo.dims[0]; ox += incx) {
                 if (ox > oy) {
-                    if (same_dims || oy < linfo.dims[1]) Yd_l[ox] = Yd_i[ox];
+                    if (same_dims || oy < linfo.dims[1]) Yd_l[ox]  = Yd_i[ox];
                     if (!same_dims || ox < uinfo.dims[0]) Yd_u[ox] = ZERO;
                 } else if (oy > ox) {
-                    if (same_dims || oy < linfo.dims[1]) Yd_l[ox] = ZERO;
+                    if (same_dims || oy < linfo.dims[1]) Yd_l[ox]  = ZERO;
                     if (!same_dims || ox < uinfo.dims[0]) Yd_u[ox] = Yd_i[ox];
                 } else if (ox == oy) {
-                    if (same_dims || oy < linfo.dims[1]) Yd_l[ox] = ONE;
+                    if (same_dims || oy < linfo.dims[1]) Yd_l[ox]  = ONE;
                     if (!same_dims || ox < uinfo.dims[0]) Yd_u[ox] = Yd_i[ox];
                 }
             }

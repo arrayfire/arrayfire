@@ -154,13 +154,13 @@ af_err af_sync(const int device) {
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 static inline void eval(af_array arr) {
     getArray<T>(arr).eval();
     return;
 }
 
-template<typename T>
+template <typename T>
 static inline void sparseEval(af_array arr) {
     getSparseArray<T>(arr).eval();
     return;
@@ -202,7 +202,7 @@ af_err af_eval(af_array arr) {
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 static inline void evalMultiple(int num, af_array* arrayPtrs) {
     Array<T> empty = createEmptyArray<T>(dim4());
     std::vector<Array<T>*> arrays(num, &empty);

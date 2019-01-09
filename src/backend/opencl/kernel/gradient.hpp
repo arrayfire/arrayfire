@@ -34,7 +34,7 @@ namespace kernel {
 static const int TX = 32;
 static const int TY = 8;
 
-template<typename T>
+template <typename T>
 void gradient(Param grad0, Param grad1, const Param in) {
     std::string refName = std::string("gradient_kernel_") +
                           std::string(dtype_traits<T>::getName());

@@ -25,7 +25,7 @@ using af::dim4;
 using namespace detail;
 using namespace graphics;
 
-template<typename T>
+template <typename T>
 fg_chart setup_surface(fg_window window, const af_array xVals,
                        const af_array yVals, const af_array zVals,
                        const af_cell* const props) {

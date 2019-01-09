@@ -34,7 +34,7 @@ namespace opencl {
 
 using namespace common;
 
-template<typename T>
+template <typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhsIn,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
 #if defined(WITH_LINEAR_ALGEBRA)

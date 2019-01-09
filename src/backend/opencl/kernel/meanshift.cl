@@ -113,7 +113,7 @@ __kernel void meanshift(__global T* d_dst, KParam oInfo,
                  norm) <= 1;
 
 #pragma unroll
-            for (int ch = 0; ch < MAX_CHANNELS; ++ch)
+            for (int ch                 = 0; ch < MAX_CHANNELS; ++ch)
                 currentCenterColors[ch] = (T)(currentMeanColors[ch]);
 
             if (stop) break;

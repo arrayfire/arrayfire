@@ -29,14 +29,14 @@ array var(const array& in, const array& weights, const dim_t dim) {
 }
 
 #define INSTANTIATE_VAR(T)                                                 \
-    template<>                                                             \
+    template <>                                                            \
     AFAPI T var(const array& in, const bool isbiased) {                    \
         double ret_val;                                                    \
         AF_THROW(af_var_all(&ret_val, NULL, in.get(), isbiased));          \
         return (T)ret_val;                                                 \
     }                                                                      \
                                                                            \
-    template<>                                                             \
+    template <>                                                            \
     AFAPI T var(const array& in, const array& weights) {                   \
         double ret_val;                                                    \
         AF_THROW(                                                          \
@@ -44,28 +44,28 @@ array var(const array& in, const array& weights, const dim_t dim) {
         return (T)ret_val;                                                 \
     }
 
-template<>
+template <>
 AFAPI af_cfloat var(const array& in, const bool isbiased) {
     double real, imag;
     AF_THROW(af_var_all(&real, &imag, in.get(), isbiased));
     return af_cfloat((float)real, (float)imag);
 }
 
-template<>
+template <>
 AFAPI af_cdouble var(const array& in, const bool isbiased) {
     double real, imag;
     AF_THROW(af_var_all(&real, &imag, in.get(), isbiased));
     return af_cdouble(real, imag);
 }
 
-template<>
+template <>
 AFAPI af_cfloat var(const array& in, const array& weights) {
     double real, imag;
     AF_THROW(af_var_all_weighted(&real, &imag, in.get(), weights.get()));
     return af_cfloat((float)real, (float)imag);
 }
 
-template<>
+template <>
 AFAPI af_cdouble var(const array& in, const array& weights) {
     double real, imag;
     AF_THROW(af_var_all_weighted(&real, &imag, in.get(), weights.get()));

@@ -49,7 +49,7 @@ void printMemInfo(const char *msg, const int device) {
     memoryManager().printInfo(msg, device);
 }
 
-template<typename T>
+template <typename T>
 unique_ptr<T[], function<void(T *)>> memAlloc(const size_t &elements) {
     T *ptr = nullptr;
 
@@ -63,7 +63,7 @@ void *memAllocUser(const size_t &bytes) {
     return ptr;
 }
 
-template<typename T>
+template <typename T>
 void memFree(T *ptr) {
     return memoryManager().unlock((void *)ptr, false);
 }
@@ -84,12 +84,12 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                                lock_buffers);
 }
 
-template<typename T>
+template <typename T>
 T *pinnedAlloc(const size_t &elements) {
     return (T *)memoryManager().alloc(elements * sizeof(T), false);
 }
 
-template<typename T>
+template <typename T>
 void pinnedFree(T *ptr) {
     return memoryManager().unlock((void *)ptr, false);
 }

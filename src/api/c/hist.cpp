@@ -21,7 +21,7 @@ using af::dim4;
 using namespace detail;
 using namespace graphics;
 
-template<typename T>
+template <typename T>
 fg_chart setup_histogram(fg_window const window, const af_array in,
                          const double minval, const double maxval,
                          const af_cell* const props) {
@@ -62,8 +62,8 @@ fg_chart setup_histogram(fg_window const window, const af_array in,
             // For histogram, always set yMin to 0.
             yMin = 0;
         } else {
-            if (xMin > minval) xMin = step_round(minval, false);
-            if (xMax < maxval) xMax = step_round(maxval, true);
+            if (xMin > minval) xMin  = step_round(minval, false);
+            if (xMax < maxval) xMax  = step_round(maxval, true);
             if (yMax < freqMax) yMax = step_round(freqMax, true);
             // For histogram, always set yMin to 0.
             yMin = 0;

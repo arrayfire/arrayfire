@@ -18,7 +18,7 @@
 #include <stdexcept>
 
 namespace cuda {
-template<typename T>
+template <typename T>
 void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in,
                 const uint dim, bool isAscending) {
     okey = copyArray<T>(in);

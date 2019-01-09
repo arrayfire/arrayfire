@@ -11,11 +11,11 @@
 
 namespace opencl {
 namespace cpu {
-template<typename T>
+template <typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
         const Array<T> &in);
 
-template<typename T>
+template <typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot = true);
 }  // namespace cpu
 }  // namespace opencl

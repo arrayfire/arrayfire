@@ -32,15 +32,13 @@ __kernel void initEdgeOutKernel(__global T* output, KParam oInfo,
         weak + (b2 * wInfo.strides[2] + b3 * wInfo.strides[3] + wInfo.offset) +
         wInfo.strides[1] + 1;
 
-    __global const T* sPtr =
-        strong +
-        (b2 * sInfo.strides[2] + b3 * sInfo.strides[3] + sInfo.offset) +
-        sInfo.strides[1] + 1;
+    __global const T* sPtr = strong + (b2 * sInfo.strides[2] +
+                                       b3 * sInfo.strides[3] + sInfo.offset) +
+                             sInfo.strides[1] + 1;
 
-    __global T* oPtr =
-        output +
-        (b2 * oInfo.strides[2] + b3 * oInfo.strides[3] + oInfo.offset) +
-        oInfo.strides[1] + 1;
+    __global T* oPtr = output + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3] +
+                                 oInfo.offset) +
+                       oInfo.strides[1] + 1;
 
     if (gx < (oInfo.dims[0] - 2) && gy < (oInfo.dims[1] - 2)) {
         int idx   = gx * oInfo.strides[0] + gy * oInfo.strides[1];
@@ -81,7 +79,7 @@ __kernel void edgeTrackKernel(__global T* output, KParam oInfo, unsigned nBBS0,
                        (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]) +
                        oInfo.strides[1] + 1;
 
-    // pull image to local memory
+// pull image to local memory
 #pragma unroll
     for (int b = ly, gy2 = gy; b < SHRD_MEM_HEIGHT;
          b += get_local_size(1), gy2 += get_local_size(1)) {

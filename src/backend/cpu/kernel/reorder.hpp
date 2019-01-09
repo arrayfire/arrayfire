@@ -13,7 +13,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void reorder(Param<T> out, CParam<T> in, const af::dim4 oDims,
              const af::dim4 rdims) {
     T* outPtr      = out.get();

@@ -22,7 +22,7 @@ using af::dim4;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Var : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, uintl, intl,
@@ -30,14 +30,14 @@ typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, uintl, intl,
     TestTypes;
 TYPED_TEST_CASE(Var, TestTypes);
 
-template<typename T>
+template <typename T>
 struct elseType {
     typedef typename cond_type<is_same_type<T, uintl>::value ||
                                    is_same_type<T, intl>::value,
                                double, T>::type type;
 };
 
-template<typename T>
+template <typename T>
 struct varOutType {
     typedef typename cond_type<
         is_same_type<T, float>::value || is_same_type<T, int>::value ||
@@ -50,7 +50,7 @@ struct varOutType {
 //////////////////////////////// CPP ////////////////////////////////////
 // test var_all interface using cpp api
 
-template<typename T>
+template <typename T>
 void testCPPVar(T const_value, dim4 dims) {
     typedef typename varOutType<T>::type outType;
     if (noDoubleTests<T>()) return;

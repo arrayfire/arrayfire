@@ -28,7 +28,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Sort : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -47,7 +47,7 @@ typedef ::testing::Types<float, double, uint, int, uchar, short, ushort, intl,
 // register the type list
 TYPED_TEST_CASE(Sort, TestTypes);
 
-template<typename T>
+template <typename T>
 void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0,
               bool isSubRef = false, const vector<af_seq>* seqv = NULL) {
     if (noDoubleTests<T>()) return;
@@ -86,8 +86,8 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0,
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter
+                                                             << endl;
     }
 
     // Delete
@@ -149,8 +149,8 @@ TEST(Sort, CPPDim0) {
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter
+                                                             << endl;
     }
 
     // Delete
@@ -187,8 +187,8 @@ TEST(Sort, CPPDim1) {
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter
+                                                             << endl;
     }
 
     // Delete
@@ -225,8 +225,8 @@ TEST(Sort, CPPDim2) {
 
     // Compare result
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter
+                                                             << endl;
     }
 
     // Delete

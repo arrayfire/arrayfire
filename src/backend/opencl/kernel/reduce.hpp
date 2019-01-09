@@ -8,8 +8,8 @@
  ********************************************************/
 
 #pragma once
-#include <Param.hpp>
 #include <Array.hpp>
+#include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <debug_opencl.hpp>
@@ -40,7 +40,7 @@ namespace opencl {
 
 namespace kernel {
 
-template<typename Ti, typename To, af_op_t op>
+template <typename Ti, typename To, af_op_t op>
 void reduce_dim_launcher(Param out, Param in, const int dim,
                          const uint threads_y, const uint groups_all[4],
                          int change_nan, double nanval) {
@@ -93,7 +93,7 @@ void reduce_dim_launcher(Param out, Param in, const int dim,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename Ti, typename To, af_op_t op>
+template <typename Ti, typename To, af_op_t op>
 void reduce_dim(Param out, Param in, int change_nan, double nanval, int dim) {
     uint threads_y = std::min(THREADS_Y, nextpow2(in.info.dims[dim]));
     uint threads_x = THREADS_X;
@@ -135,7 +135,7 @@ void reduce_dim(Param out, Param in, int change_nan, double nanval, int dim) {
     }
 }
 
-template<typename Ti, typename To, af_op_t op>
+template <typename Ti, typename To, af_op_t op>
 void reduce_first_launcher(Param out, Param in, const uint groups_x,
                            const uint groups_y, const uint threads_x,
                            int change_nan, double nanval) {
@@ -191,7 +191,7 @@ void reduce_first_launcher(Param out, Param in, const uint groups_x,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename Ti, typename To, af_op_t op>
+template <typename Ti, typename To, af_op_t op>
 void reduce_first(Param out, Param in, int change_nan, double nanval) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_GROUP);
@@ -227,7 +227,7 @@ void reduce_first(Param out, Param in, int change_nan, double nanval) {
     }
 }
 
-template<typename Ti, typename To, af_op_t op>
+template <typename Ti, typename To, af_op_t op>
 void reduce(Param out, Param in, int dim, int change_nan, double nanval) {
     if (dim == 0)
         return reduce_first<Ti, To, op>(out, in, change_nan, nanval);
@@ -235,7 +235,7 @@ void reduce(Param out, Param in, int dim, int change_nan, double nanval) {
         return reduce_dim<Ti, To, op>(out, in, change_nan, nanval, dim);
 }
 
-template<typename Ti, typename To, af_op_t op>
+template <typename Ti, typename To, af_op_t op>
 To reduce_all(Param in, int change_nan, double nanval) {
     int in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
@@ -292,9 +292,9 @@ To reduce_all(Param in, int change_nan, double nanval) {
         To nanval_to = scalar<To>(nanval);
 
         for (int i = 0; i < (int)in_elements; i++) {
-            To in_val = transform(h_ptr[i]);
+            To in_val              = transform(h_ptr[i]);
             if (change_nan) in_val = IS_NAN(in_val) ? nanval_to : in_val;
-            out = reduce(out, in_val);
+            out                    = reduce(out, in_val);
         }
 
         return out;

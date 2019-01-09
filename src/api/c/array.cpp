@@ -169,10 +169,10 @@ af_err af_copy_array(af_array *out, const af_array in) {
                     case c32: res = copyArray<cfloat>(in); break;
                     case f64: res = copyArray<double>(in); break;
                     case c64: res = copyArray<cdouble>(in); break;
-                    case b8: res = copyArray<char>(in); break;
+                    case b8: res  = copyArray<char>(in); break;
                     case s32: res = copyArray<int>(in); break;
                     case u32: res = copyArray<uint>(in); break;
-                    case u8: res = copyArray<uchar>(in); break;
+                    case u8: res  = copyArray<uchar>(in); break;
                     case s64: res = copyArray<intl>(in); break;
                     case u64: res = copyArray<uintl>(in); break;
                     case s16: res = copyArray<short>(in); break;
@@ -199,10 +199,10 @@ af_err af_get_data_ref_count(int *use_count, const af_array in) {
             case c32: res = getArray<cfloat>(in).useCount(); break;
             case f64: res = getArray<double>(in).useCount(); break;
             case c64: res = getArray<cdouble>(in).useCount(); break;
-            case b8: res = getArray<char>(in).useCount(); break;
+            case b8: res  = getArray<char>(in).useCount(); break;
             case s32: res = getArray<int>(in).useCount(); break;
             case u32: res = getArray<uint>(in).useCount(); break;
-            case u8: res = getArray<uchar>(in).useCount(); break;
+            case u8: res  = getArray<uchar>(in).useCount(); break;
             case s64: res = getArray<intl>(in).useCount(); break;
             case u64: res = getArray<uintl>(in).useCount(); break;
             case s16: res = getArray<short>(in).useCount(); break;
@@ -290,7 +290,7 @@ af_err af_retain_array(af_array *out, const af_array in) {
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 void write_array(af_array arr, const T *const data, const size_t bytes,
                  af_source src) {
     if (src == afHost) {
@@ -422,7 +422,7 @@ INSTANTIATE(af_is_sparse, isSparse)
 
 #undef INSTANTIATE
 
-template<typename T>
+template <typename T>
 inline void getScalar(T *out, const af_array &arr) {
     out[0] = getScalar<T>(getArray<T>(arr));
 }

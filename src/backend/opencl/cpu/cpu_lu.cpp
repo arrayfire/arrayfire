@@ -17,15 +17,15 @@
 namespace opencl {
 namespace cpu {
 
-template<typename T>
+template <typename T>
 using getrf_func_def = int (*)(ORDER_TYPE, int, int, T *, int, int *);
 
 #define LU_FUNC_DEF(FUNC) \
-    template<typename T>  \
+    template <typename T> \
     FUNC##_func_def<T> FUNC##_func();
 
 #define LU_FUNC(FUNC, TYPE, PREFIX)             \
-    template<>                                  \
+    template <>                                 \
     FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
         return &LAPACK_NAME(PREFIX##FUNC);      \
     }
@@ -36,7 +36,7 @@ LU_FUNC(getrf, double, d)
 LU_FUNC(getrf, cfloat, c)
 LU_FUNC(getrf, cdouble, z)
 
-template<typename T>
+template <typename T>
 void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in) {
     std::shared_ptr<T> ls = lower.getMappedPtr();
     std::shared_ptr<T> us = upper.getMappedPtr();
@@ -111,7 +111,7 @@ void convertPivot(Array<int> &pivot, int out_sz) {
     pivot = p;
 }
 
-template<typename T>
+template <typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
         const Array<T> &in) {
     dim4 iDims = in.dims();
@@ -130,7 +130,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
     lu_split<T>(lower, upper, in_copy);
 }
 
-template<typename T>
+template <typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     dim4 iDims = in.dims();
     int M      = iDims[0];

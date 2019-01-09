@@ -14,13 +14,13 @@
 #include <af/dim4.hpp>
 
 namespace cuda {
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 Array<To> cplx(const Array<Ti> &lhs, const Array<Ti> &rhs,
                const af::dim4 &odims) {
     return createBinaryNode<To, Ti, af_cplx2_t>(lhs, rhs, odims);
 }
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 Array<To> real(const Array<Ti> &in) {
     common::Node_ptr in_node = in.getNode();
     common::UnaryNode *node  = new common::UnaryNode(
@@ -29,7 +29,7 @@ Array<To> real(const Array<Ti> &in) {
     return createNodeArray<To>(in.dims(), common::Node_ptr(node));
 }
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 Array<To> imag(const Array<Ti> &in) {
     common::Node_ptr in_node = in.getNode();
     common::UnaryNode *node  = new common::UnaryNode(
@@ -38,20 +38,20 @@ Array<To> imag(const Array<Ti> &in) {
     return createNodeArray<To>(in.dims(), common::Node_ptr(node));
 }
 
-template<typename T>
+template <typename T>
 static const char *abs_name() {
     return "fabs";
 }
-template<>
+template <>
 STATIC_ const char *abs_name<cfloat>() {
     return "__cabsf";
 }
-template<>
+template <>
 STATIC_ const char *abs_name<cdouble>() {
     return "__cabs";
 }
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 Array<To> abs(const Array<Ti> &in) {
     common::Node_ptr in_node = in.getNode();
     common::UnaryNode *node =
@@ -61,20 +61,20 @@ Array<To> abs(const Array<Ti> &in) {
     return createNodeArray<To>(in.dims(), common::Node_ptr(node));
 }
 
-template<typename T>
+template <typename T>
 static const char *conj_name() {
     return "__noop";
 }
-template<>
+template <>
 STATIC_ const char *conj_name<cfloat>() {
     return "__cconjf";
 }
-template<>
+template <>
 STATIC_ const char *conj_name<cdouble>() {
     return "__cconj";
 }
 
-template<typename T>
+template <typename T>
 Array<T> conj(const Array<T> &in) {
     common::Node_ptr in_node = in.getNode();
     common::UnaryNode *node =

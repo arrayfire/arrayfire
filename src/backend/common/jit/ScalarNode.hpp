@@ -16,7 +16,7 @@
 
 namespace common {
 
-template<typename T>
+template <typename T>
 class ScalarNode : public common::Node {
    private:
     const T m_val;

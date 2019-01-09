@@ -18,7 +18,7 @@
 #include <vector>
 
 // default to f32(float) type
-template<typename T>
+template <typename T>
 fg_dtype getGLType();
 
 // Print for OpenGL errors

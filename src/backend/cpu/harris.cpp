@@ -23,7 +23,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 unsigned harris(Array<float> &x_out, Array<float> &y_out,
                 Array<float> &resp_out, const Array<T> &in,
                 const unsigned max_corners, const float min_response,

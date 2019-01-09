@@ -42,14 +42,14 @@ using std::string;
 using std::stringstream;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class TopK : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, int, uint> TestTypes;
 
 TYPED_TEST_CASE(TopK, TestTypes);
 
-template<typename T>
+template <typename T>
 void topkTest(const int ndims, const dim_t* dims, const unsigned k,
               const int dim, const af_topk_function order) {
     af_dtype dtype = (af_dtype)dtype_traits<T>::af_type;

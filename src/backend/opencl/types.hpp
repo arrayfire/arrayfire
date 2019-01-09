@@ -32,7 +32,7 @@ using uint    = cl_uint;
 using uintl   = unsigned long long;
 using ushort  = cl_ushort;
 
-template<typename T>
+template <typename T>
 struct ToNumStr {
     inline std::string operator()(T val) {
         ToNum<T> toNum;
@@ -40,7 +40,7 @@ struct ToNumStr {
     }
 };
 
-template<>
+template <>
 struct ToNumStr<float> {
     inline std::string operator()(float val) {
         static const char *PINF = "+INFINITY";
@@ -50,7 +50,7 @@ struct ToNumStr<float> {
     }
 };
 
-template<>
+template <>
 struct ToNumStr<double> {
     inline std::string operator()(double val) {
         static const char *PINF = "+INFINITY";
@@ -60,7 +60,7 @@ struct ToNumStr<double> {
     }
 };
 
-template<>
+template <>
 struct ToNumStr<cfloat> {
     inline std::string operator()(cfloat val) {
         ToNumStr<float> realStr;
@@ -74,7 +74,7 @@ struct ToNumStr<cfloat> {
     }
 };
 
-template<>
+template <>
 struct ToNumStr<cdouble> {
     inline std::string operator()(cdouble val) {
         ToNumStr<double> realStr;
@@ -89,61 +89,61 @@ struct ToNumStr<cdouble> {
 };
 
 namespace {
-template<typename T>
+template <typename T>
 inline const char *shortname(bool caps) {
     return caps ? "X" : "x";
 }
 
-template<>
+template <>
 inline const char *shortname<float>(bool caps) {
     return caps ? "S" : "s";
 }
-template<>
+template <>
 inline const char *shortname<double>(bool caps) {
     return caps ? "D" : "d";
 }
-template<>
+template <>
 inline const char *shortname<cfloat>(bool caps) {
     return caps ? "C" : "c";
 }
-template<>
+template <>
 inline const char *shortname<cdouble>(bool caps) {
     return caps ? "Z" : "z";
 }
-template<>
+template <>
 inline const char *shortname<int>(bool caps) {
     return caps ? "I" : "i";
 }
-template<>
+template <>
 inline const char *shortname<uint>(bool caps) {
     return caps ? "U" : "u";
 }
-template<>
+template <>
 inline const char *shortname<char>(bool caps) {
     return caps ? "J" : "j";
 }
-template<>
+template <>
 inline const char *shortname<uchar>(bool caps) {
     return caps ? "V" : "v";
 }
-template<>
+template <>
 inline const char *shortname<intl>(bool caps) {
     return caps ? "L" : "l";
 }
-template<>
+template <>
 inline const char *shortname<uintl>(bool caps) {
     return caps ? "K" : "k";
 }
-template<>
+template <>
 inline const char *shortname<short>(bool caps) {
     return caps ? "P" : "p";
 }
-template<>
+template <>
 inline const char *shortname<ushort>(bool caps) {
     return caps ? "Q" : "q";
 }
 
-template<typename T>
+template <typename T>
 const char *getFullName() {
     return af::dtype_traits<T>::getName();
 }

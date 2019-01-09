@@ -181,9 +181,9 @@ static Kernel getKernel(const vector<Node *> &output_nodes,
         const int ker_lens[]   = {jit_cl_len, (int)jit_ker.size()};
 
         Program prog;
-        buildProgram(
-            prog, 2, ker_strs, ker_lens,
-            isDoubleSupported(device) ? string(" -D USE_DOUBLE") : string(""));
+        buildProgram(prog, 2, ker_strs, ker_lens, isDoubleSupported(device)
+                                                      ? string(" -D USE_DOUBLE")
+                                                      : string(""));
 
         entry.prog = new Program(prog);
         entry.ker  = new Kernel(*entry.prog, funcName.c_str());

@@ -24,7 +24,7 @@ using af::sat;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class SAT : public ::testing::Test {
    public:
     virtual void SetUp() {}

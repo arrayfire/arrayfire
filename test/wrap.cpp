@@ -34,7 +34,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Wrap : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -48,32 +48,32 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
 // register the type list
 TYPED_TEST_CASE(Wrap, TestTypes);
 
-template<typename T>
+template <typename T>
 inline double get_val(T val) {
     return val;
 }
 
-template<>
+template <>
 inline double get_val<cfloat>(cfloat val) {
     return abs(val);
 }
 
-template<>
+template <>
 inline double get_val<cdouble>(cdouble val) {
     return abs(val);
 }
 
-template<>
+template <>
 inline double get_val<unsigned char>(unsigned char val) {
     return ((int)(val)) % 256;
 }
 
-template<>
+template <>
 inline double get_val<char>(char val) {
     return (val != 0);
 }
 
-template<typename T>
+template <typename T>
 void wrapTest(const dim_t ix, const dim_t iy, const dim_t wx, const dim_t wy,
               const dim_t sx, const dim_t sy, const dim_t px, const dim_t py,
               bool cond) {

@@ -30,14 +30,14 @@ using std::abs;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 array makeSparse(array A, int factor) {
     A = floor(A * 1000);
     A = A * ((A % factor) == 0) / 1000;
     return A;
 }
 
-template<>
+template <>
 array makeSparse<cfloat>(array A, int factor) {
     array r = real(A);
     r       = floor(r * 1000);
@@ -49,7 +49,7 @@ array makeSparse<cfloat>(array A, int factor) {
     return A;
 }
 
-template<>
+template <>
 array makeSparse<cdouble>(array A, int factor) {
     array r = real(A);
     r       = floor(r * 1000);
@@ -68,32 +68,32 @@ typedef enum {
     af_div_t,
 } af_op_t;
 
-template<af_op_t op>
+template <af_op_t op>
 struct arith_op {
     array operator()(array v1, array v2) { return v1; }
 };
 
-template<>
+template <>
 struct arith_op<af_add_t> {
     array operator()(array v1, array v2) { return v1 + v2; }
 };
 
-template<>
+template <>
 struct arith_op<af_sub_t> {
     array operator()(array v1, array v2) { return v1 - v2; }
 };
 
-template<>
+template <>
 struct arith_op<af_mul_t> {
     array operator()(array v1, array v2) { return v1 * v2; }
 };
 
-template<>
+template <>
 struct arith_op<af_div_t> {
     array operator()(array v1, array v2) { return v1 / v2; }
 };
 
-template<typename T>
+template <typename T>
 void sparseCompare(array A, array B, const double eps) {
 // This macro is used to check if either value is finite and then call assert
 // If neither value is finite, then they can be assumed to be equal to either
@@ -128,7 +128,7 @@ void sparseCompare(array A, array B, const double eps) {
 #undef ASSERT_FINITE_EQ
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void sparseArithTester(const int m, const int n, int factor, const double eps) {
     deviceGC();
 
@@ -170,7 +170,7 @@ void sparseArithTester(const int m, const int n, int factor, const double eps) {
 }
 
 // Mul
-template<typename T>
+template <typename T>
 void sparseArithTesterMul(const int m, const int n, int factor,
                           const double eps) {
     deviceGC();
@@ -230,7 +230,7 @@ void sparseArithTesterMul(const int m, const int n, int factor,
 }
 
 // Div
-template<typename T>
+template <typename T>
 void sparseArithTesterDiv(const int m, const int n, int factor,
                           const double eps) {
     deviceGC();
@@ -302,7 +302,7 @@ ARITH_TESTS(cfloat, 1e-4)  // This is mostly for complex division in OpenCL
 ARITH_TESTS(cdouble, 1e-6)
 
 // Sparse-Sparse Arithmetic testing function
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void ssArithmetic(const int m, const int n, int factor, const double eps) {
     deviceGC();
 
@@ -358,7 +358,7 @@ SP_SP_ARITH_TESTS(cdouble, 1e-6)
 #if defined(USE_MTX)
 
 // Sparse-Sparse Arithmetic testing function using mtx files
-template<af_op_t op>
+template <af_op_t op>
 void ssArithmeticMTX(const char* op1, const char* op2) {
     deviceGC();
 

@@ -40,7 +40,7 @@ inline int test_smaller(float x, float p, float thr) { return (x < p - thr); }
 // Returns -1 when x < p - thr
 // Returns  0 when x >= p - thr && x <= p + thr
 // Returns  1 when x > p + thr
-template<typename T>
+template <typename T>
 inline int test_pixel(const T *image, const float p, float thr, int y, int x,
                       unsigned idim0) {
     return -test_smaller((float)image[idx(y, x, idim0)], p, thr) +
@@ -56,7 +56,7 @@ inline unsigned abs_diff(unsigned x, unsigned y) {
 inline float abs_diff(float x, float y) { return fabs(x - y); }
 inline double abs_diff(double x, double y) { return fabs(x - y); }
 
-template<typename T>
+template <typename T>
 void locate_features(CParam<T> in, Param<float> score, Param<float> x_out,
                      Param<float> y_out, Param<float> score_out,
                      unsigned *count, float const thr,

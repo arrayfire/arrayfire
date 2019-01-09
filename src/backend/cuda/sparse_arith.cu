@@ -28,24 +28,24 @@ namespace cuda {
 using namespace common;
 using namespace std;
 
-template<typename T>
+template <typename T>
 T getInf() {
     return scalar<T>(std::numeric_limits<T>::infinity());
 }
 
-template<>
+template <>
 cfloat getInf() {
     return scalar<cfloat, float>(
         NAN, NAN);  // Matches behavior of complex division by 0 in CUDA
 }
 
-template<>
+template <>
 cdouble getInf() {
     return scalar<cdouble, double>(
         NAN, NAN);  // Matches behavior of complex division by 0 in CUDA
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 Array<T> arithOpD(const SparseArray<T> &lhs, const Array<T> &rhs,
                   const bool reverse) {
     lhs.eval();
@@ -81,7 +81,7 @@ Array<T> arithOpD(const SparseArray<T> &lhs, const Array<T> &rhs,
     return out;
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 SparseArray<T> arithOp(const SparseArray<T> &lhs, const Array<T> &rhs,
                        const bool reverse) {
     lhs.eval();
@@ -108,7 +108,7 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const Array<T> &rhs,
     return out;
 }
 
-template<typename T>
+template <typename T>
 using csrgeam_def = cusparseStatus_t (*)(cusparseHandle_t, int, int, const T *,
                                          const cusparseMatDescr_t, int,
                                          const T *, const int *, const int *,
@@ -118,13 +118,13 @@ using csrgeam_def = cusparseStatus_t (*)(cusparseHandle_t, int, int, const T *,
                                          T *, int *, int *);
 
 #define SPARSE_ARITH_OP_FUNC_DEF(FUNC) \
-    template<typename T>               \
+    template <typename T>              \
     FUNC##_def<T> FUNC##_func();
 
 SPARSE_ARITH_OP_FUNC_DEF(csrgeam);
 
 #define SPARSE_ARITH_OP_FUNC(FUNC, TYPE, INFIX) \
-    template<>                                  \
+    template <>                                 \
     FUNC##_def<TYPE> FUNC##_func<TYPE>() {      \
         return cusparse##INFIX##FUNC;           \
     }
@@ -134,7 +134,7 @@ SPARSE_ARITH_OP_FUNC(csrgeam, double, D);
 SPARSE_ARITH_OP_FUNC(csrgeam, cfloat, C);
 SPARSE_ARITH_OP_FUNC(csrgeam, cdouble, Z);
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     lhs.eval();
     rhs.eval();

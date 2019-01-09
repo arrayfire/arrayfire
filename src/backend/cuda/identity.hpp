@@ -10,6 +10,6 @@
 #include <Array.hpp>
 
 namespace cuda {
-template<typename T>
+template <typename T>
 Array<T> identity(const dim4& dim);
 }

@@ -21,7 +21,7 @@ static const unsigned TY    = 8;
 static const unsigned TILEX = 256;
 static const unsigned TILEY = 32;
 
-template<typename To, typename Ti, int dim>
+template <typename To, typename Ti, int dim>
 __global__ void join_kernel(Param<To> out, CParam<Ti> in, const int o0,
                             const int o1, const int o2, const int o3,
                             const int blocksPerMatX, const int blocksPerMatY) {
@@ -58,7 +58,7 @@ __global__ void join_kernel(Param<To> out, CParam<Ti> in, const int o0,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename To, typename Tx, int dim>
+template <typename To, typename Tx, int dim>
 void join(Param<To> out, CParam<Tx> X, const af::dim4 &offset) {
     dim3 threads(TX, TY, 1);
 

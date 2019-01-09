@@ -33,7 +33,7 @@ static const uint DIMX  = 32;
 static const uint DIMY  = 8;
 static const int REPEAT = 64;
 
-template<typename T, bool is_same>
+template <typename T, bool is_same>
 void select_launcher(Param out, Param cond, Param a, Param b, int ndims) {
     std::string refName = std::string("select_kernel_") +
                           std::string(dtype_traits<T>::getName()) +
@@ -82,7 +82,7 @@ void select_launcher(Param out, Param cond, Param a, Param b, int ndims) {
              groups_1);
 }
 
-template<typename T>
+template <typename T>
 void select(Param out, Param cond, Param a, Param b, int ndims) {
     bool is_same = true;
     for (int i = 0; i < 4; i++) {
@@ -96,7 +96,7 @@ void select(Param out, Param cond, Param a, Param b, int ndims) {
     }
 }
 
-template<typename T, bool flip>
+template <typename T, bool flip>
 void select_scalar(Param out, Param cond, Param a, const double b, int ndims) {
     std::string refName = std::string("select_scalar_kernel_") +
                           std::string(dtype_traits<T>::getName()) +

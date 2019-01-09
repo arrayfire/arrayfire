@@ -28,7 +28,7 @@ typedef struct {
     uint* ptr[4];
 } AssignKernelParam_t;
 
-template<typename T>
+template <typename T>
 __global__ void AssignKernel(Param<T> out, CParam<T> in,
                              const AssignKernelParam_t p, const int nBBS0,
                              const int nBBS1) {
@@ -72,7 +72,7 @@ __global__ void AssignKernel(Param<T> out, CParam<T> in,
     }
 }
 
-template<typename T>
+template <typename T>
 void assign(Param<T> out, CParam<T> in, const AssignKernelParam_t& p) {
     const dim3 threads(THREADS_X, THREADS_Y);
 

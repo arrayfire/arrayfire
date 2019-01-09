@@ -26,7 +26,7 @@ using std::abs;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class AnisotropicDiffusion : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, int, uint, uchar, short, ushort>
@@ -34,14 +34,14 @@ typedef ::testing::Types<float, double, int, uint, uchar, short, ushort>
 
 TYPED_TEST_CASE(AnisotropicDiffusion, TestTypes);
 
-template<typename T>
+template <typename T>
 array normalize(const array &p_in) {
     T mx = max<T>(p_in);
     T mn = min<T>(p_in);
     return (p_in - mn) / (mx - mn);
 }
 
-template<typename T, bool isColor>
+template <typename T, bool isColor>
 void imageTest(string pTestFile, const float dt, const float K,
                const uint iters, fluxFunction fluxKind,
                bool isCurvatureDiffusion = false) {

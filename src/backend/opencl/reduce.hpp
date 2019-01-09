@@ -12,10 +12,10 @@
 #include <ops.hpp>
 
 namespace opencl {
-template<af_op_t op, typename Ti, typename To>
+template <af_op_t op, typename Ti, typename To>
 Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan = false,
                  double nanval = 0);
 
-template<af_op_t op, typename Ti, typename To>
+template <af_op_t op, typename Ti, typename To>
 To reduce_all(const Array<Ti> &in, bool change_nan = false, double nanval = 0);
 }  // namespace opencl

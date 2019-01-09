@@ -17,7 +17,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array rotate(const af_array in, const float theta,
                               const af::dim4 &odims,
                               const af_interp_type method) {
@@ -68,8 +68,8 @@ af_err af_rotate(af_array *out, const af_array in, const float theta,
             case u64: output = rotate<uintl>(in, theta, odims, method); break;
             case s16: output = rotate<short>(in, theta, odims, method); break;
             case u16: output = rotate<ushort>(in, theta, odims, method); break;
-            case u8: output = rotate<uchar>(in, theta, odims, method); break;
-            case b8: output = rotate<uchar>(in, theta, odims, method); break;
+            case u8: output  = rotate<uchar>(in, theta, odims, method); break;
+            case b8: output  = rotate<uchar>(in, theta, odims, method); break;
             default: TYPE_ERROR(1, itype);
         }
         std::swap(*out, output);

@@ -12,7 +12,7 @@
 namespace cuda {
 namespace kernel {
 // Wrapper functions
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void thrustSortByKey(Tk *keyPtr, Tv *valPtr, int elements, bool isAscending);
 }  // namespace kernel
 }  // namespace cuda

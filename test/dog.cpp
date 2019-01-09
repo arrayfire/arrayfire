@@ -26,7 +26,7 @@ using af::gaussianKernel;
 using af::randu;
 using af::sum;
 
-template<typename T>
+template <typename T>
 class DOG : public ::testing::Test {
    public:
     virtual void SetUp() {}

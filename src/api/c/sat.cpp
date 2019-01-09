@@ -16,7 +16,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 static af_array sat(const af_array& in) {
     const Array<To> input = castArray<To>(in);
 
@@ -41,8 +41,8 @@ af_err af_sat(af_array* out, const af_array in) {
             case f32: output = sat<float, float>(in); break;
             case s32: output = sat<int, int>(in); break;
             case u32: output = sat<uint, uint>(in); break;
-            case b8: output = sat<int, char>(in); break;
-            case u8: output = sat<uint, uchar>(in); break;
+            case b8: output  = sat<int, char>(in); break;
+            case u8: output  = sat<uint, uchar>(in); break;
             case s64: output = sat<intl, intl>(in); break;
             case u64: output = sat<uintl, uintl>(in); break;
             case s16: output = sat<int, short>(in); break;

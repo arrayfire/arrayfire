@@ -19,13 +19,13 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array cholesky(int *info, const af_array in,
                                 const bool is_upper) {
     return getHandle(cholesky<T>(info, getArray<T>(in), is_upper));
 }
 
-template<typename T>
+template <typename T>
 static inline int cholesky_inplace(af_array in, const bool is_upper) {
     return cholesky_inplace<T>(getArray<T>(in), is_upper);
 }

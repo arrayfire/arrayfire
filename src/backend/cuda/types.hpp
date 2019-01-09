@@ -21,64 +21,64 @@ using uintl   = unsigned long long;
 using ushort  = unsigned short;
 
 namespace {
-template<typename T>
+template <typename T>
 const char *shortname(bool caps = false) {
     return caps ? "Q" : "q";
 }
-template<>
+template <>
 const char *shortname<float>(bool caps) {
     return caps ? "S" : "s";
 }
-template<>
+template <>
 const char *shortname<double>(bool caps) {
     return caps ? "D" : "d";
 }
-template<>
+template <>
 const char *shortname<cfloat>(bool caps) {
     return caps ? "C" : "c";
 }
-template<>
+template <>
 const char *shortname<cdouble>(bool caps) {
     return caps ? "Z" : "z";
 }
-template<>
+template <>
 const char *shortname<int>(bool caps) {
     return caps ? "I" : "i";
 }
-template<>
+template <>
 const char *shortname<uint>(bool caps) {
     return caps ? "U" : "u";
 }
-template<>
+template <>
 const char *shortname<char>(bool caps) {
     return caps ? "J" : "j";
 }
-template<>
+template <>
 const char *shortname<uchar>(bool caps) {
     return caps ? "V" : "v";
 }
-template<>
+template <>
 const char *shortname<intl>(bool caps) {
     return caps ? "X" : "x";
 }
-template<>
+template <>
 const char *shortname<uintl>(bool caps) {
     return caps ? "Y" : "y";
 }
-template<>
+template <>
 const char *shortname<short>(bool caps) {
     return caps ? "P" : "p";
 }
-template<>
+template <>
 const char *shortname<ushort>(bool caps) {
     return caps ? "Q" : "q";
 }
 
-template<typename T>
+template <typename T>
 const char *getFullName();
 
 #define SPECIALIZE(T)              \
-    template<>                     \
+    template <>                    \
     const char *getFullName<T>() { \
         return #T;                 \
     }

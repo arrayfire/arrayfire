@@ -35,7 +35,7 @@ class Node {
     const std::string m_type_str;
     const std::string m_name_str;
     const int m_height;
-    template<typename T>
+    template <typename T>
     friend class NodeIterator;
 
    public:

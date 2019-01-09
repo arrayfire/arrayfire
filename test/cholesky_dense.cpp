@@ -31,14 +31,14 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 void choleskyTester(const int n, double eps, bool is_upper) {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
 
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
-    // Prepare positive definite matrix
+// Prepare positive definite matrix
 #if 1
     array a = cpu_randu<T>(dim4(n, n));
 #else
@@ -74,31 +74,31 @@ void choleskyTester(const int n, double eps, bool is_upper) {
                 eps);
 }
 
-template<typename T>
+template <typename T>
 class Cholesky : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
 TYPED_TEST_CASE(Cholesky, TestTypes);
 
-template<typename T>
+template <typename T>
 double eps();
 
-template<>
+template <>
 double eps<float>() {
     return 0.05f;
 }
 
-template<>
+template <>
 double eps<double>() {
     return 1e-8;
 }
 
-template<>
+template <>
 double eps<cfloat>() {
     return 0.05f;
 }
 
-template<>
+template <>
 double eps<cdouble>() {
     return 1e-8;
 }

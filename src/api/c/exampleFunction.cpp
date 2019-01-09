@@ -34,7 +34,7 @@ using namespace detail;  // detail is an alias to appropriate backend
                          // defined in backend.hpp. You don't need to
                          // change this
 
-template<typename T>
+template <typename T>
 af_array example(const af_array& a, const af_array& b,
                  const af_someenum_t& param) {
     // getArray<T> function is defined in handle.hpp
@@ -75,8 +75,8 @@ af_err af_example_function(af_array* out, const af_array a,
             case f32: output = example<float>(a, a, param); break;
             case s32: output = example<int>(a, a, param); break;
             case u32: output = example<uint>(a, a, param); break;
-            case u8: output = example<uchar>(a, a, param); break;
-            case b8: output = example<char>(a, a, param); break;
+            case u8: output  = example<uchar>(a, a, param); break;
+            case b8: output  = example<char>(a, a, param); break;
             case c32: output = example<cfloat>(a, a, param); break;
             case c64: output = example<cdouble>(a, a, param); break;
             default:

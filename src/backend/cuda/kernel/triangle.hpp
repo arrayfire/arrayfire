@@ -21,7 +21,7 @@ static const unsigned TY    = 8;
 static const unsigned TILEX = 128;
 static const unsigned TILEY = 32;
 
-template<typename T, bool is_upper, bool is_unit_diag>
+template <typename T, bool is_upper, bool is_unit_diag>
 __global__ void triangle_kernel(Param<T> r, CParam<T> in,
                                 const int blocksPerMatX,
                                 const int blocksPerMatY) {
@@ -69,7 +69,7 @@ __global__ void triangle_kernel(Param<T> r, CParam<T> in,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T, bool is_upper, bool is_unit_diag>
+template <typename T, bool is_upper, bool is_unit_diag>
 void triangle(Param<T> r, CParam<T> in) {
     dim3 threads(TX, TY, 1);
 

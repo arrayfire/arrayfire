@@ -27,7 +27,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class RotateLinear : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -47,7 +47,7 @@ TYPED_TEST_CASE(RotateLinear, TestTypes);
 
 #define PI 3.1415926535897931f
 
-template<typename T>
+template <typename T>
 void rotateTest(string pTestFile, const unsigned resultIdx, const float angle,
                 const bool crop, bool isSubRef = false,
                 const vector<af_seq>* seqv = NULL) {

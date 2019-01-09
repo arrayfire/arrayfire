@@ -18,17 +18,17 @@
 using af::dim4;
 using std::swap;
 namespace opencl {
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 To mean(const Array<Ti>& in) {
     return kernel::mean_all<Ti, Tw, To>(in);
 }
 
-template<typename T, typename Tw>
+template <typename T, typename Tw>
 T mean(const Array<T>& in, const Array<Tw>& wts) {
     return kernel::mean_all_weighted<T, Tw>(in, wts);
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 Array<To> mean(const Array<Ti>& in, const int dim) {
     dim4 odims    = in.dims();
     odims[dim]    = 1;
@@ -37,7 +37,7 @@ Array<To> mean(const Array<Ti>& in, const int dim) {
     return out;
 }
 
-template<typename T, typename Tw>
+template <typename T, typename Tw>
 Array<T> mean(const Array<T>& in, const Array<Tw>& wts, const int dim) {
     dim4 odims   = in.dims();
     odims[dim]   = 1;

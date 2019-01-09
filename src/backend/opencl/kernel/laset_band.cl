@@ -48,7 +48,7 @@ __kernel void laset_band_upper(int m, int n, T offdiag, T diag, __global T *A,
 
     A += ind + ibx * lda + off;
 
-    T value = offdiag;
+    T value                             = offdiag;
     if (get_local_id(0) == k - 1) value = diag;
 
 #pragma unroll
@@ -96,7 +96,7 @@ __kernel void laset_band_lower(int m, int n, T offdiag, T diag, __global T *A,
 
     A += ind + ibx * lda + off;
 
-    T value = offdiag;
+    T value                         = offdiag;
     if (get_local_id(0) == 0) value = diag;
 
 #pragma unroll

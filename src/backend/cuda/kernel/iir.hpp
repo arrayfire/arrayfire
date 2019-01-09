@@ -19,7 +19,7 @@ namespace kernel {
 
 static const int MAX_A_SIZE = 1024;
 
-template<typename T, bool batch_a>
+template <typename T, bool batch_a>
 __global__ void iir_kernel(Param<T> y, CParam<T> c, CParam<T> a,
                            const int blocks_y) {
     __shared__ T s_z[MAX_A_SIZE];
@@ -72,7 +72,7 @@ __global__ void iir_kernel(Param<T> y, CParam<T> c, CParam<T> a,
     }
 }
 
-template<typename T, bool batch_a>
+template <typename T, bool batch_a>
 void iir(Param<T> y, CParam<T> c, CParam<T> a) {
     const int blocks_y = y.dims[1];
     const int blocks_x = y.dims[2];

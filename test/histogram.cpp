@@ -25,7 +25,7 @@ using std::ostream_iterator;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Histogram : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -39,7 +39,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort,
 // register the type list
 TYPED_TEST_CASE(Histogram, TestTypes);
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 void histTest(string pTestFile, unsigned nbins, double minval, double maxval) {
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;

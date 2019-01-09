@@ -13,7 +13,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 void packData(Param<To> out, const af::dim4 od, const af::dim4 os,
               CParam<Ti> in) {
     To* out_ptr = out.get();
@@ -52,7 +52,7 @@ void packData(Param<To> out, const af::dim4 od, const af::dim4 os,
     }
 }
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 void padArray(Param<To> out, const af::dim4 od, const af::dim4 os,
               CParam<Ti> in, const dim_t offset) {
     To* out_ptr       = out.get() + offset;
@@ -86,7 +86,7 @@ void padArray(Param<To> out, const af::dim4 od, const af::dim4 os,
     }
 }
 
-template<typename T>
+template <typename T>
 void complexMultiply(Param<T> packed, const af::dim4 sig_dims,
                      const af::dim4 sig_strides, const af::dim4 fit_dims,
                      const af::dim4 fit_strides, AF_BATCH_KIND kind,
@@ -156,7 +156,7 @@ void complexMultiply(Param<T> packed, const af::dim4 sig_dims,
     }
 }
 
-template<typename To, typename Ti, bool roundOut>
+template <typename To, typename Ti, bool roundOut>
 void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
                    const Ti* in_ptr, const af::dim4& id, const af::dim4& is,
                    const af::dim4& fd, const int half_di0, const int baseDim,
@@ -219,7 +219,7 @@ void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
     }
 }
 
-template<typename T, typename convT, bool roundOut, int baseDim>
+template <typename T, typename convT, bool roundOut, int baseDim>
 void reorder(Param<T> out, Param<convT> packed, CParam<T> filter,
              const dim_t sig_half_d0, const dim_t fftScale,
              const dim4 sig_tmp_dims, const dim4 sig_tmp_strides,

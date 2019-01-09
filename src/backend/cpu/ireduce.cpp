@@ -19,19 +19,19 @@ using af::dim4;
 
 namespace cpu {
 
-template<af_op_t op, typename T>
+template <af_op_t op, typename T>
 using ireduce_dim_func = std::function<void(Param<T>, Param<uint>, const dim_t,
                                             CParam<T>, const dim_t, const int)>;
 
-template<af_op_t op, typename T>
+template <af_op_t op, typename T>
 void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
              const int dim) {
     out.eval();
     loc.eval();
     in.eval();
 
-    dim4 odims                                           = in.dims();
-    odims[dim]                                           = 1;
+    dim4 odims = in.dims();
+    odims[dim] = 1;
     static const ireduce_dim_func<op, T> ireduce_funcs[] = {
         kernel::ireduce_dim<op, T, 1>(), kernel::ireduce_dim<op, T, 2>(),
         kernel::ireduce_dim<op, T, 3>(), kernel::ireduce_dim<op, T, 4>()};
@@ -39,7 +39,7 @@ void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
     getQueue().enqueue(ireduce_funcs[in.ndims() - 1], out, loc, 0, in, 0, dim);
 }
 
-template<af_op_t op, typename T>
+template <af_op_t op, typename T>
 T ireduce_all(unsigned *loc, const Array<T> &in) {
     in.eval();
     getQueue().sync();

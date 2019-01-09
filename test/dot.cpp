@@ -27,13 +27,13 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class DotF : public ::testing::Test {
    public:
     virtual void SetUp() {}
 };
 
-template<typename T>
+template <typename T>
 class DotC : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -47,7 +47,7 @@ typedef ::testing::Types<cfloat, cdouble> TestTypesC;
 TYPED_TEST_CASE(DotF, TestTypesF);
 TYPED_TEST_CASE(DotC, TestTypesC);
 
-template<typename T>
+template <typename T>
 void dotTest(string pTestFile, const int resultIdx,
              const af_mat_prop optLhs = AF_MAT_NONE,
              const af_mat_prop optRhs = AF_MAT_NONE) {
@@ -91,24 +91,24 @@ void dotTest(string pTestFile, const int resultIdx,
     ASSERT_SUCCESS(af_release_array(out));
 }
 
-template<typename T>
+template <typename T>
 void compare(double rval, double /*ival*/, T gold) {
     ASSERT_NEAR(gold, rval, 0.03);
 }
 
-template<>
+template <>
 void compare<cfloat>(double rval, double ival, cfloat gold) {
     ASSERT_NEAR(gold.real, rval, 0.03);
     ASSERT_NEAR(gold.imag, ival, 0.03);
 }
 
-template<>
+template <>
 void compare<cdouble>(double rval, double ival, cdouble gold) {
     ASSERT_NEAR(gold.real, rval, 0.03);
     ASSERT_NEAR(gold.imag, ival, 0.03);
 }
 
-template<typename T>
+template <typename T>
 void dotAllTest(string pTestFile, const int resultIdx,
                 const af_mat_prop optLhs = AF_MAT_NONE,
                 const af_mat_prop optRhs = AF_MAT_NONE) {

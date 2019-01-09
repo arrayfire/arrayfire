@@ -20,7 +20,7 @@ using cl::Device;
 
 namespace opencl {
 
-template<typename T, typename To, af_match_type dist_type>
+template <typename T, typename To, af_match_type dist_type>
 void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
                         const Array<T>& query, const Array<T>& train,
                         const uint dist_dim, const uint n_dist) {
@@ -44,7 +44,7 @@ void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
     topk(dist, idx, tmp_dists, n_dist, 0, AF_TOPK_MIN);
 }
 
-template<typename T, typename To>
+template <typename T, typename To>
 void nearest_neighbour(Array<uint>& idx, Array<To>& dist, const Array<T>& query,
                        const Array<T>& train, const uint dist_dim,
                        const uint n_dist, const af_match_type dist_type) {

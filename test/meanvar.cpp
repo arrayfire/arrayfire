@@ -27,14 +27,14 @@ using std::move;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 struct elseType {
     typedef typename cond_type<is_same_type<T, uintl>::value ||
                                    is_same_type<T, intl>::value,
                                double, T>::type type;
 };
 
-template<typename T>
+template <typename T>
 struct varOutType {
     typedef typename cond_type<
         is_same_type<T, float>::value || is_same_type<T, int>::value ||
@@ -44,10 +44,10 @@ struct varOutType {
         float, typename elseType<T>::type>::type type;
 };
 
-template<typename T>
+template <typename T>
 using outType = typename varOutType<T>::type;
 
-template<typename T>
+template <typename T>
 struct meanvar_test {
     static af_dtype af_type;
     string test_description_;
@@ -99,10 +99,10 @@ struct meanvar_test {
     meanvar_test &operator=(meanvar_test<T> &&other) = default;
 };
 
-template<typename T>
+template <typename T>
 af_dtype meanvar_test<T>::af_type = dtype_traits<T>::af_type;
 
-template<typename T>
+template <typename T>
 class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T> > {
    public:
     void meanvar_test_function(meanvar_test<T> &test) {
@@ -141,7 +141,7 @@ af_array empty = 0;
 
 enum test_size { MEANVAR_SMALL, MEANVAR_LARGE };
 
-template<typename T>
+template <typename T>
 meanvar_test<T> meanvar_test_gen(string name, int in_index, int weight_index,
                                  af_var_bias bias, int dim, int mean_index,
                                  int var_index, test_size size) {
@@ -201,7 +201,7 @@ meanvar_test<T> meanvar_test_gen(string name, int in_index, int weight_index,
     return out;
 }
 
-template<typename T>
+template <typename T>
 vector<meanvar_test<T> > small_test_values() {
     return {
         // |           Name |   in_index | weight_index |                  bias
@@ -225,7 +225,7 @@ vector<meanvar_test<T> > small_test_values() {
                             1, 6, 8, MEANVAR_SMALL)};
 }
 
-template<typename T>
+template <typename T>
 vector<meanvar_test<T> > large_test_values() {
     return {
         // |           Name |   in_index | weight_index |                  bias

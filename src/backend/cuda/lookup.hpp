@@ -10,7 +10,7 @@
 #include <Array.hpp>
 
 namespace cuda {
-template<typename in_t, typename idx_t>
+template <typename in_t, typename idx_t>
 Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices,
                    const unsigned dim);
 }

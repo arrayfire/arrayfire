@@ -59,59 +59,59 @@
 
 #include <algorithm>
 
-template<typename Ty>
+template <typename Ty>
 magma_int_t magma_getrf_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
                             size_t dA_offset, magma_int_t ldda,
                             magma_int_t *ipiv, magma_queue_t queue,
                             magma_int_t *info) {
-    /*  -- clMAGMA (version 0.1) --
-        Univ. of Tennessee, Knoxville
-        Univ. of California, Berkeley
-        Univ. of Colorado, Denver
-        @date
+/*  -- clMAGMA (version 0.1) --
+    Univ. of Tennessee, Knoxville
+    Univ. of California, Berkeley
+    Univ. of Colorado, Denver
+    @date
 
-        Purpose
-        =======
-        GETRF computes an LU factorization of a general M-by-N matrix A
-        using partial pivoting with row interchanges.
+    Purpose
+    =======
+    GETRF computes an LU factorization of a general M-by-N matrix A
+    using partial pivoting with row interchanges.
 
-        The factorization has the form
-        A = P * L * U
-        where P is a permutation matrix, L is lower triangular with unit
-        diagonal elements (lower trapezoidal if m > n), and U is upper
-        triangular (upper trapezoidal if m < n).
+    The factorization has the form
+    A = P * L * U
+    where P is a permutation matrix, L is lower triangular with unit
+    diagonal elements (lower trapezoidal if m > n), and U is upper
+    triangular (upper trapezoidal if m < n).
 
-        This is the right-looking Level 3 BLAS version of the algorithm.
+    This is the right-looking Level 3 BLAS version of the algorithm.
 
-        Arguments
-        =========
-        M       (input) INTEGER
-        The number of rows of the matrix A.  M >= 0.
+    Arguments
+    =========
+    M       (input) INTEGER
+    The number of rows of the matrix A.  M >= 0.
 
-        N       (input) INTEGER
-        The number of columns of the matrix A.  N >= 0.
+    N       (input) INTEGER
+    The number of columns of the matrix A.  N >= 0.
 
-        A       (input/output) an array on the GPU, dimension (LDDA,N).
-        On entry, the M-by-N matrix to be factored.
-        On exit, the factors L and U from the factorization
-        A = P*L*U; the unit diagonal elements of L are not stored.
+    A       (input/output) an array on the GPU, dimension (LDDA,N).
+    On entry, the M-by-N matrix to be factored.
+    On exit, the factors L and U from the factorization
+    A = P*L*U; the unit diagonal elements of L are not stored.
 
-        LDDA     (input) INTEGER
-        The leading dimension of the array A.  LDDA >= max(1,M).
+    LDDA     (input) INTEGER
+    The leading dimension of the array A.  LDDA >= max(1,M).
 
-        IPIV    (output) INTEGER array, dimension (min(M,N))
-        The pivot indices; for 1 <= i <= min(M,N), row i of the
-        matrix was interchanged with row IPIV(i).
+    IPIV    (output) INTEGER array, dimension (min(M,N))
+    The pivot indices; for 1 <= i <= min(M,N), row i of the
+    matrix was interchanged with row IPIV(i).
 
-        INFO    (output) INTEGER
-        = 0:  successful exit
-        < 0:  if INFO = -i, the i-th argument had an illegal value
-        or another error occured, such as memory allocation failed.
-        > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
-        has been completed, but the factor U is exactly
-        singular, and division by zero will occur if it is used
-        to solve a system of equations.
-        ===================================================================== */
+    INFO    (output) INTEGER
+    = 0:  successful exit
+    < 0:  if INFO = -i, the i-th argument had an illegal value
+    or another error occured, such as memory allocation failed.
+    > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
+    has been completed, but the factor U is exactly
+    singular, and division by zero will occur if it is used
+    to solve a system of equations.
+    ===================================================================== */
 
 #define dA(i_, j_) dA, dA_offset + (i_)*nb + (j_)*nb *ldda
 #define dAT(i_, j_) dAT, dAT_offset + (i_)*nb *lddat + (j_)*nb

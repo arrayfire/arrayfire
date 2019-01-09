@@ -14,11 +14,10 @@ using af::features;
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 unsigned susan(Array<float> &x_out, Array<float> &y_out,
                Array<float> &score_out, const Array<T> &in,
                const unsigned radius, const float diff_thr,
                const float geom_thr, const float feature_ratio,
                const unsigned edge);
-
 }

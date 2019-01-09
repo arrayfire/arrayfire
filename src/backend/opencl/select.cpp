@@ -24,7 +24,7 @@ using std::make_shared;
 using std::max;
 
 namespace opencl {
-template<typename T>
+template <typename T>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
                           const Array<T> &b, const dim4 &odims) {
     auto cond_node = cond.getNode();
@@ -40,7 +40,7 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
     return out;
 }
 
-template<typename T, bool flip>
+template <typename T, bool flip>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
                           const double &b_val, const dim4 &odims) {
     auto cond_node = cond.getNode();
@@ -59,13 +59,13 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
     return out;
 }
 
-template<typename T>
+template <typename T>
 void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
             const Array<T> &b) {
     kernel::select<T>(out, cond, a, b, out.ndims());
 }
 
-template<typename T, bool flip>
+template <typename T, bool flip>
 void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a,
                    const double &b) {
     kernel::select_scalar<T, flip>(out, cond, a, b, out.ndims());

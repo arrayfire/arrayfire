@@ -16,25 +16,25 @@
 namespace common {
 
 // The value returns true if the type is a complex type. False otherwise
-template<typename T>
+template <typename T>
 struct is_complex {
     static const bool value = false;
 };
-template<>
+template <>
 struct is_complex<detail::cfloat> {
     static const bool value = true;
 };
-template<>
+template <>
 struct is_complex<detail::cdouble> {
     static const bool value = true;
 };
 
 /// This is an enable_if for complex types.
-template<typename T, typename TYPE = void>
+template <typename T, typename TYPE = void>
 using if_complex = typename std::enable_if<is_complex<T>::value, TYPE>::type;
 
 /// This is an enable_if for real types.
-template<typename T, typename TYPE = void>
+template <typename T, typename TYPE = void>
 using if_real =
     typename std::enable_if<is_complex<T>::value == false, TYPE>::type;
 

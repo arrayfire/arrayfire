@@ -37,13 +37,13 @@ using std::make_shared;
 using std::vector;
 
 namespace opencl {
-template<typename T>
+template <typename T>
 Node_ptr bufferNodePtr() {
     return make_shared<BufferNode>(dtype_traits<T>::getName(),
                                    shortname<T>(true));
 }
 
-template<typename T>
+template <typename T>
 Array<T>::Array(dim4 dims)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            (af_dtype)dtype_traits<T>::af_type)
@@ -53,7 +53,7 @@ Array<T>::Array(dim4 dims)
     , ready(true)
     , owner(true) {}
 
-template<typename T>
+template <typename T>
 Array<T>::Array(dim4 dims, Node_ptr n)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            (af_dtype)dtype_traits<T>::af_type)
@@ -63,7 +63,7 @@ Array<T>::Array(dim4 dims, Node_ptr n)
     , ready(false)
     , owner(true) {}
 
-template<typename T>
+template <typename T>
 Array<T>::Array(dim4 dims, const T *const in_data)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            (af_dtype)dtype_traits<T>::af_type)
@@ -81,7 +81,7 @@ Array<T>::Array(dim4 dims, const T *const in_data)
                                   sizeof(T) * info.elements(), in_data);
 }
 
-template<typename T>
+template <typename T>
 Array<T>::Array(dim4 dims, cl_mem mem, size_t src_offset, bool copy)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            (af_dtype)dtype_traits<T>::af_type)
@@ -99,7 +99,7 @@ Array<T>::Array(dim4 dims, cl_mem mem, size_t src_offset, bool copy)
     }
 }
 
-template<typename T>
+template <typename T>
 Array<T>::Array(const Array<T> &parent, const dim4 &dims, const dim_t &offset_,
                 const dim4 &stride)
     : info(parent.getDevId(), dims, offset_, stride,
@@ -110,14 +110,12 @@ Array<T>::Array(const Array<T> &parent, const dim4 &dims, const dim_t &offset_,
     , ready(true)
     , owner(false) {}
 
-template<typename T>
+template <typename T>
 Array<T>::Array(Param &tmp, bool owner_)
-    : info(getActiveDeviceId(),
-           dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2],
-                tmp.info.dims[3]),
-           0,
-           dim4(tmp.info.strides[0], tmp.info.strides[1], tmp.info.strides[2],
-                tmp.info.strides[3]),
+    : info(getActiveDeviceId(), dim4(tmp.info.dims[0], tmp.info.dims[1],
+                                     tmp.info.dims[2], tmp.info.dims[3]),
+           0, dim4(tmp.info.strides[0], tmp.info.strides[1],
+                   tmp.info.strides[2], tmp.info.strides[3]),
            (af_dtype)dtype_traits<T>::af_type)
     , data(tmp.data, owner_ ? bufferFree : [](Buffer *) {})
     , data_dims(dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2],
@@ -126,7 +124,7 @@ Array<T>::Array(Param &tmp, bool owner_)
     , ready(true)
     , owner(owner_) {}
 
-template<typename T>
+template <typename T>
 Array<T>::Array(dim4 dims, dim4 strides, dim_t offset_, const T *const in_data,
                 bool is_device)
     : info(getActiveDeviceId(), dims, offset_, strides,
@@ -144,7 +142,7 @@ Array<T>::Array(dim4 dims, dim4 strides, dim_t offset_, const T *const in_data,
     }
 }
 
-template<typename T>
+template <typename T>
 void Array<T>::eval() {
     if (isReady()) return;
 
@@ -163,13 +161,13 @@ void Array<T>::eval() {
     node  = bufferNodePtr<T>();
 }
 
-template<typename T>
+template <typename T>
 void Array<T>::eval() const {
     if (isReady()) return;
     const_cast<Array<T> *>(this)->eval();
 }
 
-template<typename T>
+template <typename T>
 Buffer *Array<T>::device() {
     if (!isOwner() || getOffset() || data.use_count() > 1) {
         *this = copyArray<T>(*this);
@@ -177,7 +175,7 @@ Buffer *Array<T>::device() {
     return this->get();
 }
 
-template<typename T>
+template <typename T>
 void evalMultiple(vector<Array<T> *> arrays) {
     vector<Param> outputs;
     vector<Array<T> *> output_arrays;
@@ -210,10 +208,10 @@ void evalMultiple(vector<Array<T> *> arrays) {
     for (Array<T> *array : output_arrays) { array->node = bufferNodePtr<T>(); }
 }
 
-template<typename T>
+template <typename T>
 Array<T>::~Array() {}
 
-template<typename T>
+template <typename T>
 Node_ptr Array<T>::getNode() {
     if (node->isBuffer()) {
         KParam kinfo        = *this;
@@ -224,13 +222,13 @@ Node_ptr Array<T>::getNode() {
     return node;
 }
 
-template<typename T>
+template <typename T>
 Node_ptr Array<T>::getNode() const {
     if (node->isBuffer()) { return const_cast<Array<T> *>(this)->getNode(); }
     return node;
 }
 
-template<typename T>
+template <typename T>
 Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
     verifyDoubleSupport<T>();
     Array<T> out = Array<T>(dims, node);
@@ -299,7 +297,7 @@ Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> createSubArray(const Array<T> &parent, const vector<af_seq> &index,
                         bool copy) {
     parent.eval();
@@ -334,43 +332,43 @@ Array<T> createSubArray(const Array<T> &parent, const vector<af_seq> &index,
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> createHostDataArray(const dim4 &size, const T *const data) {
     verifyDoubleSupport<T>();
     return Array<T>(size, data);
 }
 
-template<typename T>
+template <typename T>
 Array<T> createDeviceDataArray(const dim4 &size, const void *data, bool copy) {
     verifyDoubleSupport<T>();
 
     return Array<T>(size, (cl_mem)(data), 0, copy);
 }
 
-template<typename T>
+template <typename T>
 Array<T> createValueArray(const dim4 &size, const T &value) {
     verifyDoubleSupport<T>();
     return createScalarNode<T>(size, value);
 }
 
-template<typename T>
+template <typename T>
 Array<T> createEmptyArray(const dim4 &size) {
     verifyDoubleSupport<T>();
     return Array<T>(size);
 }
 
-template<typename T>
+template <typename T>
 Array<T> createParamArray(Param &tmp, bool owner) {
     verifyDoubleSupport<T>();
     return Array<T>(tmp, owner);
 }
 
-template<typename T>
+template <typename T>
 void destroyArray(Array<T> *A) {
     delete A;
 }
 
-template<typename T>
+template <typename T>
 void writeHostDataArray(Array<T> &arr, const T *const data,
                         const size_t bytes) {
     if (!arr.isOwner()) { arr = copyArray<T>(arr); }
@@ -381,7 +379,7 @@ void writeHostDataArray(Array<T> &arr, const T *const data,
     return;
 }
 
-template<typename T>
+template <typename T>
 void writeDeviceDataArray(Array<T> &arr, const void *const data,
                           const size_t bytes) {
     if (!arr.isOwner()) { arr = copyArray<T>(arr); }
@@ -397,7 +395,7 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
     return;
 }
 
-template<typename T>
+template <typename T>
 void Array<T>::setDataDims(const dim4 &new_dims) {
     modDims(new_dims);
     data_dims = new_dims;

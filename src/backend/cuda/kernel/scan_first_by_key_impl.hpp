@@ -20,13 +20,13 @@
 
 namespace cuda {
 namespace kernel {
-template<typename Tk>
+template <typename Tk>
 __device__ inline static char calculate_head_flags(const Tk *kptr, int id,
                                                    int previd) {
     return (id == 0) ? 1 : (kptr[id] != kptr[previd]);
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op, uint DIMX>
+template <typename Ti, typename Tk, typename To, af_op_t op, uint DIMX>
 __global__ static void scan_nonfinal_kernel(Param<To> out, Param<To> tmp,
                                             Param<char> tflg, Param<int> tlid,
                                             CParam<Ti> in, CParam<Tk> key,
@@ -164,7 +164,7 @@ __global__ static void scan_nonfinal_kernel(Param<To> out, Param<To> tmp,
     }
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op, uint DIMX>
+template <typename Ti, typename Tk, typename To, af_op_t op, uint DIMX>
 __global__ static void scan_final_kernel(Param<To> out, CParam<Ti> in,
                                          CParam<Tk> key, uint blocks_x,
                                          uint blocks_y, uint lim,
@@ -276,7 +276,7 @@ __global__ static void scan_final_kernel(Param<To> out, CParam<Ti> in,
     }
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op>
+template <typename Ti, typename Tk, typename To, af_op_t op>
 static void scan_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                    Param<char> tflg, Param<int> tlid,
                                    CParam<Ti> in, CParam<Tk> key,
@@ -313,7 +313,7 @@ static void scan_nonfinal_launcher(Param<To> out, Param<To> tmp,
     POST_LAUNCH_CHECK();
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op>
+template <typename Ti, typename Tk, typename To, af_op_t op>
 static void scan_final_launcher(Param<To> out, CParam<Ti> in, CParam<Tk> key,
                                 const uint blocks_x, const uint blocks_y,
                                 const uint threads_x, bool calculateFlags,
@@ -349,7 +349,7 @@ static void scan_final_launcher(Param<To> out, CParam<Ti> in, CParam<Tk> key,
     POST_LAUNCH_CHECK();
 }
 
-template<typename To, af_op_t op>
+template <typename To, af_op_t op>
 __global__ static void bcast_first_kernel(Param<To> out, Param<To> tmp,
                                           Param<int> tlid, uint blocks_x,
                                           uint blocks_y, uint lim) {
@@ -387,7 +387,7 @@ __global__ static void bcast_first_kernel(Param<To> out, Param<To> tmp,
     }
 }
 
-template<typename To, af_op_t op>
+template <typename To, af_op_t op>
 static void bcast_first_launcher(Param<To> out, Param<To> tmp, Param<int> tlid,
                                  const dim_t blocks_x, const dim_t blocks_y,
                                  const uint threads_x) {
@@ -400,7 +400,7 @@ static void bcast_first_launcher(Param<To> out, Param<To> tmp, Param<int> tlid,
     POST_LAUNCH_CHECK();
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op>
+template <typename Ti, typename Tk, typename To, af_op_t op>
 void scan_first_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key,
                        bool inclusive_scan) {
     uint threads_x = nextpow2(std::max(32u, (uint)out.dims[0]));

@@ -18,7 +18,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array mean_shift(const af_array &in, const float &s_sigma,
                                   const float &c_sigma, const unsigned niters,
                                   const bool is_color) {

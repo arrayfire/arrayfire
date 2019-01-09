@@ -25,7 +25,7 @@ using af::dim4;
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 Array<T> exampleFunction(const Array<T> &a, const Array<T> &b,
                          const af_someenum_t method) {
     dim4 outputDims;  // this should be '= in.dims();' in most cases

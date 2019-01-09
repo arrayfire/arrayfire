@@ -15,7 +15,7 @@
 using namespace af;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Array : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble, char, unsigned char,

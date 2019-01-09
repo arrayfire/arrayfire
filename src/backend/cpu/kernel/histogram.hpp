@@ -13,7 +13,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename OutT, typename InT, bool IsLinear>
+template <typename OutT, typename InT, bool IsLinear>
 void histogram(Param<OutT> out, CParam<InT> in, unsigned const nbins,
                double const minval, double const maxval) {
     dim4 const outDims  = out.dims();
@@ -28,10 +28,8 @@ void histogram(Param<OutT> out, CParam<InT> in, unsigned const nbins,
         const InT* inData = in.get() + b3 * iStrides[3];
         for (dim_t b2 = 0; b2 < outDims[2]; b2++) {
             for (dim_t i = 0; i < nElems; i++) {
-                int idx =
-                    IsLinear
-                        ? i
-                        : ((i % inDims[0]) + (i / inDims[0]) * iStrides[1]);
+                int idx = IsLinear ? i : ((i % inDims[0]) +
+                                          (i / inDims[0]) * iStrides[1]);
                 int bin = (int)((inData[idx] - minval) / step);
                 bin     = std::max(bin, 0);
                 bin     = std::min(bin, (int)(nbins - 1));

@@ -30,24 +30,24 @@ af_array createHandle(af::dim4 d, af_dtype dtype);
 
 namespace {
 
-template<typename T>
+template <typename T>
 detail::Array<T> modDims(const detail::Array<T> &in, const af::dim4 &newDims) {
     in.eval();  // FIXME: Figure out a better way
 
-    detail::Array<T> Out = in;
+    detail::Array<T> Out    = in;
     if (!in.isLinear()) Out = detail::copyArray<T>(in);
     Out.setDataDims(newDims);
 
     return Out;
 }
 
-template<typename T>
+template <typename T>
 detail::Array<T> flat(const detail::Array<T> &in) {
     const af::dim4 newDims(in.elements());
     return modDims<T>(in, newDims);
 }
 
-template<typename T>
+template <typename T>
 const detail::Array<T> &getArray(const af_array &arr) {
     const detail::Array<T> *A = static_cast<const detail::Array<T> *>(arr);
     if ((af_dtype)af::dtype_traits<T>::af_type != A->getType())
@@ -55,7 +55,7 @@ const detail::Array<T> &getArray(const af_array &arr) {
     return *A;
 }
 
-template<typename T>
+template <typename T>
 detail::Array<T> &getArray(af_array &arr) {
     detail::Array<T> *A = static_cast<detail::Array<T> *>(arr);
     if ((af_dtype)af::dtype_traits<T>::af_type != A->getType())
@@ -63,7 +63,7 @@ detail::Array<T> &getArray(af_array &arr) {
     return *A;
 }
 
-template<typename To>
+template <typename To>
 detail::Array<To> castArray(const af_array &in) {
     using detail::cdouble;
     using detail::cfloat;
@@ -91,51 +91,51 @@ detail::Array<To> castArray(const af_array &in) {
     }
 }
 
-template<typename T>
+template <typename T>
 af_array getHandle(const detail::Array<T> &A) {
     detail::Array<T> *ret = new detail::Array<T>(A);
     return static_cast<af_array>(ret);
 }
 
-template<typename T>
+template <typename T>
 af_array retainHandle(const af_array in) {
     detail::Array<T> *A   = static_cast<detail::Array<T> *>(in);
     detail::Array<T> *out = new detail::Array<T>(*A);
     return static_cast<af_array>(out);
 }
 
-template<typename T>
+template <typename T>
 af_array createHandle(af::dim4 d) {
     return getHandle(detail::createEmptyArray<T>(d));
 }
 
-template<typename T>
+template <typename T>
 af_array createHandleFromValue(af::dim4 d, double val) {
     return getHandle(detail::createValueArray<T>(d, detail::scalar<T>(val)));
 }
 
-template<typename T>
+template <typename T>
 af_array createHandleFromData(af::dim4 d, const T *const data) {
     return getHandle(detail::createHostDataArray<T>(d, data));
 }
 
-template<typename T>
+template <typename T>
 void copyData(T *data, const af_array &arr) {
     return detail::copyData(data, getArray<T>(arr));
 }
 
-template<typename T>
+template <typename T>
 af_array copyArray(const af_array in) {
     const detail::Array<T> &inArray = getArray<T>(in);
     return getHandle<T>(detail::copyArray<T>(inArray));
 }
 
-template<typename T>
+template <typename T>
 void releaseHandle(const af_array arr) {
     detail::destroyArray(static_cast<detail::Array<T> *>(arr));
 }
 
-template<typename T>
+template <typename T>
 detail::Array<T> &getCopyOnWriteArray(const af_array &arr) {
     detail::Array<T> *A = static_cast<detail::Array<T> *>(arr);
 

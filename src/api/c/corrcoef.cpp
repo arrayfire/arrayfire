@@ -27,7 +27,7 @@ using detail::intl;
 using detail::reduce_all;
 using detail::uintl;
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 static To corrcoef(const af_array& X, const af_array& Y) {
     Array<To> xIn = cast<To>(getArray<Ti>(X));
     Array<To> yIn = cast<To>(getArray<Ti>(Y));
@@ -78,8 +78,8 @@ af_err af_corrcoef(double* realVal, double* imagVal, const af_array X,
             case u64: *realVal = corrcoef<uintl, double>(X, Y); break;
             case s16: *realVal = corrcoef<short, float>(X, Y); break;
             case u16: *realVal = corrcoef<ushort, float>(X, Y); break;
-            case u8: *realVal = corrcoef<uchar, float>(X, Y); break;
-            case b8: *realVal = corrcoef<char, float>(X, Y); break;
+            case u8: *realVal  = corrcoef<uchar, float>(X, Y); break;
+            case b8: *realVal  = corrcoef<char, float>(X, Y); break;
             default: TYPE_ERROR(1, xType);
         }
     }

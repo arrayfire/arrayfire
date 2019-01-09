@@ -20,7 +20,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename T, typename accT, int baseDim, bool expand>
+template <typename T, typename accT, int baseDim, bool expand>
 Array<T> convolve(Array<T> const& signal, Array<accT> const& filter,
                   AF_BATCH_KIND kind) {
     signal.eval();
@@ -53,7 +53,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter,
     return out;
 }
 
-template<typename T, typename accT, bool expand>
+template <typename T, typename accT, bool expand>
 Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter,
                    Array<accT> const& r_filter) {
     signal.eval();

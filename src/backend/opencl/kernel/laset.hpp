@@ -13,11 +13,11 @@
 #include <common/dispatch.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/laset.hpp>
+#include <magma_types.h>
 #include <program.hpp>
 #include <traits.hpp>
 #include <types.hpp>
 #include <string>
-#include <magma_types.h>
 
 using cl::Buffer;
 using cl::EnqueueArgs;
@@ -32,24 +32,24 @@ namespace kernel {
 static const int BLK_X = 64;
 static const int BLK_Y = 32;
 
-template<int num>
+template <int num>
 const char *laset_name() {
     return "laset_none";
 }
-template<>
+template <>
 const char *laset_name<0>() {
     return "laset_full";
 }
-template<>
+template <>
 const char *laset_name<1>() {
     return "laset_lower";
 }
-template<>
+template <>
 const char *laset_name<2>() {
     return "laset_upper";
 }
 
-template<typename T, int uplo>
+template <typename T, int uplo>
 void laset(int m, int n, T offdiag, T diag, cl_mem dA, size_t dA_offset,
            magma_int_t ldda, cl_command_queue queue) {
     std::string refName = laset_name<uplo>() + std::string("_") +

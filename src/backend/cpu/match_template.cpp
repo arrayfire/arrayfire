@@ -18,7 +18,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename InT, typename OutT, af_match_type MatchT>
+template <typename InT, typename OutT, af_match_type MatchT>
 Array<OutT> match_template(const Array<InT> &sImg, const Array<InT> &tImg) {
     sImg.eval();
     tImg.eval();

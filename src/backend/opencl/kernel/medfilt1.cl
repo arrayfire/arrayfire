@@ -25,7 +25,7 @@ void load2ShrdMem_1d(__local T* shrd, __global const T* in, int lx, int dim0,
     } else if (pad == AF_PAD_SYM) {
         if (gx < 0) gx *= -1;
         if (gx >= dim0) gx = 2 * (dim0 - 1) - gx;
-        shrd[lx] = in[gx];
+        shrd[lx]           = in[gx];
     }
 }
 
@@ -45,9 +45,8 @@ __kernel void medfilt1(__global T* out, KParam oInfo, __global const T* in,
                              (b1 * iInfo.strides[1] + b2 * iInfo.strides[2] +
                               b3 * iInfo.strides[3]) +
                              iInfo.offset;
-    __global T* optr = out +
-                       (b1 * oInfo.strides[1] + b2 * oInfo.strides[2] +
-                        b3 * oInfo.strides[3]) +
+    __global T* optr = out + (b1 * oInfo.strides[1] + b2 * oInfo.strides[2] +
+                              b3 * oInfo.strides[3]) +
                        oInfo.offset;
 
     // local neighborhood indices
@@ -73,17 +72,17 @@ __kernel void medfilt1(__global T* out, KParam oInfo, __global const T* in,
 #pragma unroll
         for (int k = 0; k <= w_wid / 2 + 1; k++) { v[k] = localMem[lx + k]; }
 
-        // with each pass, remove min and max values and add new value
-        // initial sort
-        // ensure min in first half, max in second half
+// with each pass, remove min and max values and add new value
+// initial sort
+// ensure min in first half, max in second half
 #pragma unroll
         for (int i = 0; i < ARR_SIZE / 2; i++) {
             swap(v[i], v[ARR_SIZE - 1 - i]);
         }
-        // move min in first half to first pos
+// move min in first half to first pos
 #pragma unroll
         for (int i = 1; i < (ARR_SIZE + 1) / 2; i++) { swap(v[0], v[i]); }
-        // move max in second half to last pos
+// move max in second half to last pos
 #pragma unroll
         for (int i = ARR_SIZE - 2; i >= ARR_SIZE / 2; i--) {
             swap(v[i], v[ARR_SIZE - 1]);

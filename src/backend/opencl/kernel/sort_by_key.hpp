@@ -15,13 +15,13 @@
 
 namespace opencl {
 namespace kernel {
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sort0ByKeyIterative(Param pKey, Param pVal, bool isAscending);
 
-template<typename Tk_, typename Tv_>
+template <typename Tk_, typename Tv_>
 void sortByKeyBatched(Param pKey, Param pVal, const int dim, bool isAscending);
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sort0ByKey(Param pKey, Param pVal, bool isAscending);
 }  // namespace kernel
 }  // namespace opencl

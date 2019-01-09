@@ -36,7 +36,7 @@ using detail::ushort;
 #define STREAM_FORMAT_VERSION 0x1
 static const char sfv_char = STREAM_FORMAT_VERSION;
 
-template<typename T>
+template <typename T>
 static int save(const char *key, const af_array arr, const char *filename,
                 const bool append = false) {
     // (char     )   Version (Once)
@@ -138,10 +138,10 @@ af_err af_save_array(int *index, const char *key, const af_array arr,
             case c32: id = save<cfloat>(key, arr, filename, append); break;
             case f64: id = save<double>(key, arr, filename, append); break;
             case c64: id = save<cdouble>(key, arr, filename, append); break;
-            case b8: id = save<char>(key, arr, filename, append); break;
+            case b8: id  = save<char>(key, arr, filename, append); break;
             case s32: id = save<int>(key, arr, filename, append); break;
             case u32: id = save<unsigned>(key, arr, filename, append); break;
-            case u8: id = save<uchar>(key, arr, filename, append); break;
+            case u8: id  = save<uchar>(key, arr, filename, append); break;
             case s64: id = save<intl>(key, arr, filename, append); break;
             case u64: id = save<uintl>(key, arr, filename, append); break;
             case s16: id = save<short>(key, arr, filename, append); break;
@@ -154,7 +154,7 @@ af_err af_save_array(int *index, const char *key, const af_array arr,
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 static af_array readDataToArray(std::fstream &fs) {
     intl dims[4];
     fs.read((char *)&dims, 4 * sizeof(intl));
@@ -237,10 +237,10 @@ static af_array readArrayV1(const char *filename, const unsigned index) {
         case c32: out = readDataToArray<cfloat>(fs); break;
         case f64: out = readDataToArray<double>(fs); break;
         case c64: out = readDataToArray<cdouble>(fs); break;
-        case b8: out = readDataToArray<char>(fs); break;
+        case b8: out  = readDataToArray<char>(fs); break;
         case s32: out = readDataToArray<int>(fs); break;
         case u32: out = readDataToArray<uint>(fs); break;
-        case u8: out = readDataToArray<uchar>(fs); break;
+        case u8: out  = readDataToArray<uchar>(fs); break;
         case s64: out = readDataToArray<intl>(fs); break;
         case u64: out = readDataToArray<uintl>(fs); break;
         case s16: out = readDataToArray<short>(fs); break;

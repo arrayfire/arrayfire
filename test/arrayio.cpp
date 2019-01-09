@@ -73,7 +73,7 @@ TEST_P(ArrayIOType, ReadSize) {
     ASSERT_EQ(arr.dims(), dim4(10, 10));
 }
 
-template<typename T>
+template <typename T>
 void checkVals(array arr, double r, double i, af_dtype t) {
     vector<T> d(arr.elements());
     arr.host(d.data());

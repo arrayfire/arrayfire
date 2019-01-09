@@ -29,7 +29,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Unwrap : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -43,7 +43,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
 // register the type list
 TYPED_TEST_CASE(Unwrap, TestTypes);
 
-template<typename T>
+template <typename T>
 void unwrapTest(string pTestFile, const unsigned resultIdx, const dim_t wx,
                 const dim_t wy, const dim_t sx, const dim_t sy, const dim_t px,
                 const dim_t py) {
@@ -77,15 +77,15 @@ void unwrapTest(string pTestFile, const unsigned resultIdx, const dim_t wx,
     // Compare is_column == true results
     ASSERT_SUCCESS(af_get_data_ptr((void*)&outData[0], outArray));
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter
+                                                             << endl;
     }
 
     // Compare is_column == false results
     ASSERT_SUCCESS(af_get_data_ptr((void*)&outData[0], outArray2));
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter
+                                                             << endl;
     }
 
     if (inArray != 0) af_release_array(inArray);
@@ -179,8 +179,8 @@ TEST(Unwrap, CPP) {
     // Compare result
     size_t nElems = tests[resultIdx].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter
+                                                             << endl;
     }
 
     // Delete

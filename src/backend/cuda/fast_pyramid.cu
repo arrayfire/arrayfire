@@ -18,7 +18,7 @@ using af::features;
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 void fast_pyramid(std::vector<unsigned>& feat_pyr, std::vector<float*>& d_x_pyr,
                   std::vector<float*>& d_y_pyr, std::vector<unsigned>& lvl_best,
                   std::vector<float>& lvl_scl, std::vector<Array<T>>& img_pyr,

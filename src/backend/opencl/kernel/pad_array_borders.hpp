@@ -30,7 +30,7 @@ namespace kernel {
 static const int PADB_THREADS_X = 16;
 static const int PADB_THREADS_Y = 16;
 
-template<typename T, af_border_type BType>
+template <typename T, af_border_type BType>
 void padBorders(Param out, const Param in, dim4 const& lBPadding) {
     std::string refName = std::string("padBorders_") +
                           std::string(dtype_traits<T>::getName()) +

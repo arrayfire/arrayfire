@@ -29,7 +29,7 @@ using af::randu;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class filter : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -39,7 +39,7 @@ class filter : public ::testing::Test {
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 TYPED_TEST_CASE(filter, TestTypes);
 
-template<typename T>
+template <typename T>
 void firTest(const int xrows, const int xcols, const int brows,
              const int bcols) {
     if (noDoubleTests<T>()) return;
@@ -78,7 +78,7 @@ TYPED_TEST(filter, firMatVec) { firTest<TypeParam>(5000, 10, 100, 1); }
 
 TYPED_TEST(filter, firMatMat) { firTest<TypeParam>(5000, 10, 50, 10); }
 
-template<typename T>
+template <typename T>
 void iirA0Test(const int xrows, const int xcols, const int brows,
                const int bcols) {
     if (noDoubleTests<T>()) return;
@@ -119,7 +119,7 @@ TYPED_TEST(filter, iirA0MatVec) { iirA0Test<TypeParam>(5000, 10, 100, 1); }
 
 TYPED_TEST(filter, iirA0MatMat) { iirA0Test<TypeParam>(5000, 10, 50, 10); }
 
-template<typename T>
+template <typename T>
 void iirTest(const char *testFile) {
     if (noDoubleTests<T>()) return;
     vector<dim4> inDims;

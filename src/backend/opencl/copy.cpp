@@ -18,7 +18,7 @@ using common::is_complex;
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 void copyData(T *data, const Array<T> &A) {
     // FIXME: Merge this with copyArray
     A.eval();
@@ -29,7 +29,7 @@ void copyData(T *data, const Array<T> &A) {
 
     if (A.isLinear() ||  // No offsets, No strides
         A.ndims() == 1   // Simple offset, no strides.
-    ) {
+        ) {
         buf    = *A.get();
         offset = A.getOffset();
     } else {
@@ -45,7 +45,7 @@ void copyData(T *data, const Array<T> &A) {
     return;
 }
 
-template<typename T>
+template <typename T>
 Array<T> copyArray(const Array<T> &A) {
     Array<T> out = createEmptyArray<T>(A.dims());
     dim_t offset = A.getOffset();
@@ -62,7 +62,7 @@ Array<T> copyArray(const Array<T> &A) {
     return out;
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
                         outType default_value, double factor) {
     Array<outType> ret = createEmptyArray<outType>(dims);
@@ -76,12 +76,12 @@ Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
     return ret;
 }
 
-template<typename T>
+template <typename T>
 void multiply_inplace(Array<T> &in, double val) {
     kernel::copy<T, T, true>(in, in, in.ndims(), scalar<T>(0), val);
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 struct copyWrapper {
     void operator()(Array<outType> &out, Array<inType> const &in) {
         if (in.dims() == out.dims())
@@ -93,7 +93,7 @@ struct copyWrapper {
     }
 };
 
-template<typename T>
+template <typename T>
 struct copyWrapper<T, T> {
     void operator()(Array<T> &out, Array<T> const &in) {
         if (out.isLinear() && in.isLinear() &&
@@ -112,7 +112,7 @@ struct copyWrapper<T, T> {
     }
 };
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 void copyArray(Array<outType> &out, Array<inType> const &in) {
     static_assert(!(is_complex<inType>::value && !is_complex<outType>::value),
                   "Cannot copy from complex value to a non complex value");
@@ -226,7 +226,7 @@ INSTANTIATE_PAD_ARRAY(ushort)
 INSTANTIATE_PAD_ARRAY_COMPLEX(cfloat)
 INSTANTIATE_PAD_ARRAY_COMPLEX(cdouble)
 
-template<typename T>
+template <typename T>
 T getScalar(const Array<T> &in) {
     T retVal;
     getQueue().enqueueReadBuffer(*in.get(), CL_TRUE, sizeof(T) * in.getOffset(),

@@ -19,7 +19,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline void lu(af_array *lower, af_array *upper, af_array *pivot,
                       const af_array in) {
     Array<T> lowerArray   = createEmptyArray<T>(af::dim4());
@@ -33,7 +33,7 @@ static inline void lu(af_array *lower, af_array *upper, af_array *pivot,
     *pivot = getHandle(pivotArray);
 }
 
-template<typename T>
+template <typename T>
 static inline af_array lu_inplace(af_array in, bool is_lapack_piv) {
     return getHandle(lu_inplace<T>(getArray<T>(in), !is_lapack_piv));
 }

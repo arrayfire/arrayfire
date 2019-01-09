@@ -23,7 +23,7 @@
 using namespace detail;
 using af::dim4;
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 static inline af_array cplx(const af_array lhs, const af_array rhs,
                             const dim4 &odims) {
     af_array res =

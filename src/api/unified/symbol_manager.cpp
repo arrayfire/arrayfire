@@ -75,9 +75,9 @@ string getBkndLibName(const af_backend backend) {
 string getBackendDirectoryName(const af_backend backend) {
     string ret;
     switch (backend) {
-        case AF_BACKEND_CUDA: ret = "cuda"; break;
+        case AF_BACKEND_CUDA: ret   = "cuda"; break;
         case AF_BACKEND_OPENCL: ret = "opencl"; break;
-        case AF_BACKEND_CPU: ret = "cpu"; break;
+        case AF_BACKEND_CPU: ret    = "cpu"; break;
         default: assert(1 != 1 && "Invalid backend");
     }
     return ret;
@@ -85,7 +85,7 @@ string getBackendDirectoryName(const af_backend backend) {
 
 string join_path(string first) { return first; }
 
-template<typename... ARGS>
+template <typename... ARGS>
 string join_path(string first, ARGS... args) {
     if (first.empty()) {
         return join_path(args...);
@@ -119,7 +119,7 @@ LibHandle openDynLibrary(const af_backend bknd_idx, int flag = RTLD_LAZY) {
         join_path(getEnvVar("AF_PATH"), "lib64"),
         getEnvVar("AF_BUILD_LIB_CUSTOM_PATH"),
 
-    // Common install paths
+// Common install paths
 #if !defined(OS_WIN)
         "/opt/arrayfire-3/lib/",
         "/opt/arrayfire/lib/",

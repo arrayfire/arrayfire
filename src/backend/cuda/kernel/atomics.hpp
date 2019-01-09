@@ -9,13 +9,13 @@
 
 namespace cuda {
 namespace kernel {
-template<typename T>
+template <typename T>
 __device__ T atomicAdd(T *ptr, T val) {
     return ::atomicAdd(ptr, val);
 }
 
 #define SPECIALIZE(T, fn1, fn2)                                                \
-    template<>                                                                 \
+    template <>                                                                \
     __device__ T atomicAdd<T>(T * ptr, T val) {                                \
         unsigned long long int *ptr_as_ull = (unsigned long long int *)ptr;    \
         unsigned long long int old         = *ptr_as_ull, assumed;             \
@@ -30,7 +30,7 @@ SPECIALIZE(double, __longlong_as_double, __double_as_longlong)
 SPECIALIZE(intl, intl, uintl)
 SPECIALIZE(uintl, uintl, uintl)
 
-template<>
+template <>
 __device__ cfloat atomicAdd<cfloat>(cfloat *ptr, cfloat val) {
     float *fptr = (float *)(ptr);
     cfloat res;
@@ -39,7 +39,7 @@ __device__ cfloat atomicAdd<cfloat>(cfloat *ptr, cfloat val) {
     return res;
 }
 
-template<>
+template <>
 __device__ cdouble atomicAdd<cdouble>(cdouble *ptr, cdouble val) {
     double *fptr = (double *)(ptr);
     cdouble res;

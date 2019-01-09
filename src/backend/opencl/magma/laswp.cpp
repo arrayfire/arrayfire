@@ -56,7 +56,7 @@
 
 #include <algorithm>
 
-template<typename T>
+template <typename T>
 void magmablas_laswp(magma_int_t n, cl_mem dAT, size_t dAT_offset,
                      magma_int_t ldda, magma_int_t k1, magma_int_t k2,
                      const magma_int_t *ipiv, magma_int_t inci,

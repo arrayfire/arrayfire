@@ -17,7 +17,7 @@
 #include <vector>
 
 namespace common {
-template<typename T>
+template <typename T>
 class NodeIterator;
 }
 
@@ -31,7 +31,7 @@ using Node_ptr      = std::shared_ptr<Node>;
 using Node_map_t    = std::unordered_map<Node *, int>;
 using Node_map_iter = Node_map_t::iterator;
 
-template<typename T>
+template <typename T>
 using array = std::array<T, VECTOR_LENGTH>;
 
 class Node {
@@ -41,7 +41,7 @@ class Node {
    protected:
     const int m_height;
     const std::array<Node_ptr, kMaxChildren> m_children;
-    template<typename T>
+    template <typename T>
     friend class common::NodeIterator;
 
    public:
@@ -95,7 +95,7 @@ class Node {
     virtual size_t getBytes() const { return 0; }
 };
 
-template<typename T>
+template <typename T>
 class TNode : public Node {
    public:
     alignas(16) jit::array<T> m_val;
@@ -108,7 +108,7 @@ class TNode : public Node {
     }
 };
 
-template<typename T>
+template <typename T>
 using TNode_ptr = std::shared_ptr<TNode<T>>;
 }  // namespace jit
 

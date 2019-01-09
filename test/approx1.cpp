@@ -39,7 +39,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Approx1 : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -56,7 +56,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 // Register the type list
 TYPED_TEST_CASE(Approx1, TestTypes);
 
-template<typename T>
+template <typename T>
 void approx1Test(string pTestFile, const unsigned resultIdx,
                  const af_interp_type method, bool isSubRef = false,
                  const vector<af_seq>* seqv = NULL) {
@@ -129,7 +129,7 @@ TYPED_TEST(Approx1, Approx1Linear) {
                            AF_INTERP_LINEAR);
 }
 
-template<typename T>
+template <typename T>
 void approx1CubicTest(string pTestFile, const unsigned resultIdx,
                       const af_interp_type method, bool isSubRef = false,
                       const vector<af_seq>* seqv = NULL) {
@@ -218,7 +218,7 @@ TYPED_TEST(Approx1, Approx1Cubic) {
 ///////////////////////////////////////////////////////////////////////////////
 // Test Argument Failure Cases
 ///////////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 void approx1ArgsTest(string pTestFile, const af_interp_type method,
                      const af_err err) {
     if (noDoubleTests<T>()) return;
@@ -265,7 +265,7 @@ TYPED_TEST(Approx1, Approx1ArgsInterpBilinear) {
                                AF_INTERP_BILINEAR, AF_ERR_ARG);
 }
 
-template<typename T>
+template <typename T>
 void approx1ArgsTestPrecision(string pTestFile, const unsigned,
                               const af_interp_type method) {
     if (noDoubleTests<T>()) return;

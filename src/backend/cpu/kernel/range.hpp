@@ -13,7 +13,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T, int dim>
+template <typename T, int dim>
 void range(Param<T> output) {
     T* out = output.get();
 

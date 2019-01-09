@@ -19,7 +19,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename Ti>
+template <typename Ti>
 __device__ Ti load2ShrdMem(const Ti* in, int dim0, int dim1, int gx, int gy,
                            int inStride1, int inStride0) {
     if (gx < 0 || gx >= dim0 || gy < 0 || gy >= dim1)
@@ -28,7 +28,7 @@ __device__ Ti load2ShrdMem(const Ti* in, int dim0, int dim1, int gx, int gy,
         return in[gx * inStride0 + gy * inStride1];
 }
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 __global__ void sobel3x3(Param<To> dx, Param<To> dy, CParam<Ti> in, int nBBS0,
                          int nBBS1) {
     __shared__ Ti shrdMem[THREADS_X + 2][THREADS_Y + 2];
@@ -90,7 +90,7 @@ __global__ void sobel3x3(Param<To> dx, Param<To> dy, CParam<Ti> in, int nBBS0,
     }
 }
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 void sobel(Param<To> dx, Param<To> dy, CParam<Ti> in,
            const unsigned& ker_size) {
     const dim3 threads(THREADS_X, THREADS_Y);

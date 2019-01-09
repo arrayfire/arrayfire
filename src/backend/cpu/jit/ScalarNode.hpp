@@ -16,7 +16,7 @@ namespace cpu {
 
 namespace jit {
 
-template<typename T>
+template <typename T>
 class ScalarNode : public TNode<T> {
    public:
     ScalarNode(T val) : TNode<T>(val, 0, {}) {}

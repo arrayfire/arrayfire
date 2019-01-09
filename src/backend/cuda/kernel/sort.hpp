@@ -20,7 +20,7 @@
 namespace cuda {
 namespace kernel {
 // Wrapper functions
-template<typename T>
+template <typename T>
 void sort0Iterative(Param<T> val, bool isAscending) {
     for (int w = 0; w < val.dims[3]; w++) {
         int valW = w * val.strides[3];
@@ -43,7 +43,7 @@ void sort0Iterative(Param<T> val, bool isAscending) {
     POST_LAUNCH_CHECK();
 }
 
-template<typename T>
+template <typename T>
 void sortBatched(Param<T> pVal, int dim, bool isAscending) {
     af::dim4 inDims;
     for (int i = 0; i < 4; i++) inDims[i] = pVal.dims[i];
@@ -68,7 +68,7 @@ void sortBatched(Param<T> pVal, int dim, bool isAscending) {
     thrustSortByKey(pKey.get(), pVal.ptr, pVal.dims[0], true);
 }
 
-template<typename T>
+template <typename T>
 void sort0(Param<T> val, bool isAscending) {
     int higherDims = val.dims[1] * val.dims[2] * val.dims[3];
 

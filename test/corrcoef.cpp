@@ -24,7 +24,7 @@ using af::dim4;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class CorrelationCoefficient : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -37,27 +37,27 @@ typedef ::testing::Types<float, double, int, uint, intl, uintl, char, uchar>
 // register the type list
 TYPED_TEST_CASE(CorrelationCoefficient, TestTypes);
 
-template<typename T>
+template <typename T>
 struct f32HelperType {
     typedef
         typename cond_type<is_same_type<T, double>::value, double, float>::type
             type;
 };
 
-template<typename T>
+template <typename T>
 struct c32HelperType {
     typedef typename cond_type<is_same_type<T, cfloat>::value, cfloat,
                                typename f32HelperType<T>::type>::type type;
 };
 
-template<typename T>
+template <typename T>
 struct elseType {
     typedef typename cond_type<is_same_type<T, uintl>::value ||
                                    is_same_type<T, intl>::value,
                                double, T>::type type;
 };
 
-template<typename T>
+template <typename T>
 struct ccOutType {
     typedef typename cond_type<
         is_same_type<T, float>::value || is_same_type<T, int>::value ||

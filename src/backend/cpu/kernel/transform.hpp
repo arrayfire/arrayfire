@@ -17,7 +17,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void calc_transform_inverse(T *txo, const T *txi, const bool perspective) {
     if (perspective) {
         txo[0] = txi[4] * txi[8] - txi[5] * txi[7];
@@ -56,7 +56,7 @@ void calc_transform_inverse(T *txo, const T *txi, const bool perspective) {
     }
 }
 
-template<typename T>
+template <typename T>
 void calc_transform_inverse(T *tmat, const T *tmat_ptr, const bool inverse,
                             const bool perspective, const unsigned transf_len) {
     // The way kernel is structured, it expects an inverse
@@ -69,7 +69,7 @@ void calc_transform_inverse(T *tmat, const T *tmat_ptr, const bool inverse,
     }
 }
 
-template<typename T, int order>
+template <typename T, int order>
 void transform(Param<T> output, CParam<T> input, CParam<float> transform,
                const bool inverse, const bool perspective,
                af_interp_type method) {
@@ -86,7 +86,7 @@ void transform(Param<T> output, CParam<T> input, CParam<float> transform,
     T *out          = output.get();
     const float *tf = transform.get();
 
-    int batch_size = 1;
+    int batch_size                       = 1;
     if (idims[2] != tdims[2]) batch_size = idims[2];
 
     Interp2<T, WT, order> interp;

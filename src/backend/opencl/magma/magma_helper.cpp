@@ -10,15 +10,15 @@
 #include "common/defines.hpp"
 #include "magma_common.h"
 
-template<typename T>
+template <typename T>
 T magma_one() {
     return (T)1.0;
 }
-template<typename T>
+template <typename T>
 T magma_neg_one() {
     return (T)-1.0;
 }
-template<typename T>
+template <typename T>
 T magma_zero() {
     return (T)0;
 }
@@ -33,7 +33,7 @@ INSTANTIATE_REAL(magma_neg_one, double)
 INSTANTIATE_REAL(magma_zero, double)
 
 #define INSTANTIATE_CPLX(func, T, val) \
-    template<>                         \
+    template <>                        \
     T func<T>() {                      \
         T res;                         \
         res.s[0] = val;                \
@@ -48,30 +48,30 @@ INSTANTIATE_CPLX(magma_one, magmaDoubleComplex, 1.0)
 INSTANTIATE_CPLX(magma_neg_one, magmaDoubleComplex, -1.0)
 INSTANTIATE_CPLX(magma_zero, magmaDoubleComplex, 0.0)
 
-template<typename T>
+template <typename T>
 T magma_scalar(double val) {
     return (T)val;
 }
 template float magma_scalar<float>(double val);
 template double magma_scalar<double>(double val);
 
-template<typename T>
+template <typename T>
 double magma_real(T val) {
     return (double)val;
 }
 template double magma_real<float>(float val);
 template double magma_real<double>(double val);
-template<>
+template <>
 double magma_real<magmaFloatComplex>(magmaFloatComplex val) {
     return (double)val.s[0];
 }
-template<>
+template <>
 double magma_real<magmaDoubleComplex>(magmaDoubleComplex val) {
     return (double)val.s[0];
 }
 
 #define INSTANTIATE_CPLX_SCALAR(T)  \
-    template<>                      \
+    template <>                     \
     T magma_scalar<T>(double val) { \
         T res;                      \
         res.s[0] = val;             \
@@ -82,22 +82,22 @@ double magma_real<magmaDoubleComplex>(magmaDoubleComplex val) {
 INSTANTIATE_CPLX_SCALAR(magmaFloatComplex);
 INSTANTIATE_CPLX_SCALAR(magmaDoubleComplex);
 
-template<typename T>
+template <typename T>
 bool magma_is_real() {
     return true;
 }
 template bool magma_is_real<float>();
 template bool magma_is_real<double>();
-template<>
+template <>
 bool magma_is_real<magmaFloatComplex>() {
     return false;
 }
-template<>
+template <>
 bool magma_is_real<magmaDoubleComplex>() {
     return false;
 }
 
-template<typename T>
+template <typename T>
 magma_int_t magma_get_getrf_nb(magma_int_t m) {
     if (m <= 3200)
         return 128;
@@ -109,7 +109,7 @@ magma_int_t magma_get_getrf_nb(magma_int_t m) {
 
 template magma_int_t magma_get_getrf_nb<float>(magma_int_t m);
 
-template<>
+template <>
 magma_int_t magma_get_getrf_nb<double>(magma_int_t m) {
     if (m <= 2048)
         return 64;
@@ -119,7 +119,7 @@ magma_int_t magma_get_getrf_nb<double>(magma_int_t m) {
         return 256;
 }
 
-template<>
+template <>
 magma_int_t magma_get_getrf_nb<magmaFloatComplex>(magma_int_t m) {
     if (m <= 2048)
         return 64;
@@ -127,7 +127,7 @@ magma_int_t magma_get_getrf_nb<magmaFloatComplex>(magma_int_t m) {
         return 128;
 }
 
-template<>
+template <>
 magma_int_t magma_get_getrf_nb<magmaDoubleComplex>(magma_int_t m) {
     if (m <= 3072)
         return 32;
@@ -137,7 +137,7 @@ magma_int_t magma_get_getrf_nb<magmaDoubleComplex>(magma_int_t m) {
         return 128;
 }
 
-template<typename T>
+template <typename T>
 magma_int_t magma_get_potrf_nb(magma_int_t m) {
     if (m <= 1024)
         return 128;
@@ -147,7 +147,7 @@ magma_int_t magma_get_potrf_nb(magma_int_t m) {
 
 template magma_int_t magma_get_potrf_nb<float>(magma_int_t m);
 
-template<>
+template <>
 magma_int_t magma_get_potrf_nb<double>(magma_int_t m) {
     if (m <= 4256)
         return 128;
@@ -155,19 +155,19 @@ magma_int_t magma_get_potrf_nb<double>(magma_int_t m) {
         return 256;
 }
 
-template<>
+template <>
 magma_int_t magma_get_potrf_nb<magmaFloatComplex>(magma_int_t m) {
     UNUSED(m);
     return 128;
 }
 
-template<>
+template <>
 magma_int_t magma_get_potrf_nb<magmaDoubleComplex>(magma_int_t m) {
     UNUSED(m);
     return 64;
 }
 
-template<typename T>
+template <typename T>
 magma_int_t magma_get_geqrf_nb(magma_int_t m) {
     UNUSED(m);
     return 128;
@@ -175,13 +175,13 @@ magma_int_t magma_get_geqrf_nb(magma_int_t m) {
 
 template magma_int_t magma_get_geqrf_nb<float>(magma_int_t m);
 
-template<>
+template <>
 magma_int_t magma_get_geqrf_nb<double>(magma_int_t m) {
     if (m <= 2048) return 64;
     return 128;
 }
 
-template<>
+template <>
 magma_int_t magma_get_geqrf_nb<magmaFloatComplex>(magma_int_t m) {
     if (m <= 2048)
         return 32;
@@ -191,7 +191,7 @@ magma_int_t magma_get_geqrf_nb<magmaFloatComplex>(magma_int_t m) {
         return 128;
 }
 
-template<>
+template <>
 magma_int_t magma_get_geqrf_nb<magmaDoubleComplex>(magma_int_t m) {
     if (m <= 2048)
         return 32;
@@ -209,19 +209,19 @@ magma_int_t magma_get_geqrf_nb<magmaDoubleComplex>(magma_int_t m) {
 /* Other */
 #endif
 
-template<typename T>
+template <typename T>
 T magma_make(double r, double i) {
     UNUSED(i);
     return (T)r;
 }
 template float magma_make<float>(double r, double i);
 template double magma_make<double>(double r, double i);
-template<>
+template <>
 magmaFloatComplex magma_make<magmaFloatComplex>(double r, double i) {
     magmaFloatComplex tmp = {(float)r, (float)i};
     return tmp;
 }
-template<>
+template <>
 magmaDoubleComplex magma_make<magmaDoubleComplex>(double r, double i) {
     magmaDoubleComplex tmp = {r, i};
     return tmp;

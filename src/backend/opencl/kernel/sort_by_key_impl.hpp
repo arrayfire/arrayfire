@@ -46,7 +46,7 @@ using cl::NDRange;
 using cl::Program;
 using std::string;
 
-template<typename Tk, typename Tv, bool isAscending>
+template <typename Tk, typename Tv, bool isAscending>
 inline boost::compute::function<bool(const std::pair<Tk, Tv>,
                                      const std::pair<Tk, Tv>)>
 makeCompareFunction() {
@@ -64,7 +64,7 @@ makeCompareFunction() {
     }
 }
 
-template<typename Tk>
+template <typename Tk>
 inline boost::compute::function<Tk(Tk)> flipFunction() {
     BOOST_COMPUTE_FUNCTION(Tk, negateFn, (const Tk x), { return -x; });
 
@@ -72,7 +72,7 @@ inline boost::compute::function<Tk(Tk)> flipFunction() {
 }
 
 #define INSTANTIATE_FLIP(TY, XMAX)                               \
-    template<>                                                   \
+    template <>                                                  \
     inline boost::compute::function<TY(TY)> flipFunction<TY>() { \
         BOOST_COMPUTE_FUNCTION(TY, negateFn, (const TY x),       \
                                { return XMAX - x; });            \
@@ -91,7 +91,7 @@ namespace opencl {
 namespace kernel {
 static const int copyPairIter = 4;
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sort0ByKeyIterative(Param pKey, Param pVal, bool isAscending) {
     compute::command_queue c_queue(getQueue()());
 
@@ -131,7 +131,7 @@ void sort0ByKeyIterative(Param pKey, Param pVal, bool isAscending) {
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename Tk_, typename Tv_>
+template <typename Tk_, typename Tv_>
 void sortByKeyBatched(Param pKey, Param pVal, const int dim, bool isAscending) {
     typedef type_t<Tk_> Tk;
     typedef type_t<Tv_> Tv;
@@ -223,7 +223,7 @@ void sortByKeyBatched(Param pKey, Param pVal, const int dim, bool isAscending) {
     bufferFree(cKey);
 }
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sort0ByKey(Param pKey, Param pVal, bool isAscending) {
     int higherDims = pKey.info.dims[1] * pKey.info.dims[2] * pKey.info.dims[3];
     // Batced sort performs 4x sort by keys

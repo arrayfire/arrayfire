@@ -25,7 +25,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Homography : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -35,14 +35,14 @@ typedef ::testing::Types<float, double> TestTypes;
 
 TYPED_TEST_CASE(Homography, TestTypes);
 
-template<typename T>
+template <typename T>
 array perspectiveTransform(dim4 inDims, array H) {
     T d0 = (T)inDims[0];
     T d1 = (T)inDims[1];
     return transformCoordinates(H, d0, d1);
 }
 
-template<typename T>
+template <typename T>
 void homographyTest(string pTestFile, const af_homography_type htype,
                     const bool rotate, const float size_ratio) {
     using af::dtype_traits;
@@ -266,10 +266,10 @@ TEST(Homography, CPP) {
 
     float* gold_t = new float[8];
     for (int i = 0; i < 8; i++) gold_t[i] = 0.f;
-    gold_t[2] = tDims[1] * size_ratio;
-    gold_t[3] = tDims[1] * size_ratio;
-    gold_t[5] = tDims[0] * size_ratio;
-    gold_t[6] = tDims[0] * size_ratio;
+    gold_t[2]                             = tDims[1] * size_ratio;
+    gold_t[3]                             = tDims[1] * size_ratio;
+    gold_t[5]                             = tDims[0] * size_ratio;
+    gold_t[6]                             = tDims[0] * size_ratio;
 
     array t = perspectiveTransform<float>(train_img.dims(), H);
 

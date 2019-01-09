@@ -23,7 +23,7 @@
 using namespace detail;
 using af::dim4;
 
-template<typename T>
+template <typename T>
 static double median(const af_array& in) {
     dim_t nElems = getInfo(in).elements();
     dim4 dims(nElems, 1, 1, 1);
@@ -78,7 +78,7 @@ static double median(const af_array& in) {
     return result;
 }
 
-template<typename T>
+template <typename T>
 static af_array median(const af_array& in, const dim_t dim) {
     const Array<T> input = getArray<T>(in);
 
@@ -166,7 +166,7 @@ af_err af_median_all(double* realVal, double* imagVal, const af_array in) {
             case u32: *realVal = median<uint>(in); break;
             case s16: *realVal = median<short>(in); break;
             case u16: *realVal = median<ushort>(in); break;
-            case u8: *realVal = median<uchar>(in); break;
+            case u8: *realVal  = median<uchar>(in); break;
             default: TYPE_ERROR(1, type);
         }
     }
@@ -190,7 +190,7 @@ af_err af_median(af_array* out, const af_array in, const dim_t dim) {
             case u32: output = median<uint>(in, dim); break;
             case s16: output = median<short>(in, dim); break;
             case u16: output = median<ushort>(in, dim); break;
-            case u8: output = median<uchar>(in, dim); break;
+            case u8: output  = median<uchar>(in, dim); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);

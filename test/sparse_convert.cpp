@@ -30,14 +30,14 @@ using std::vector;
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 
-template<typename T>
+template <typename T>
 array makeSparse(array A, int factor) {
     A = floor(A * 1000);
     A = A * ((A % factor) == 0) / 1000;
     return A;
 }
 
-template<>
+template <>
 array makeSparse<cfloat>(array A, int factor) {
     array r = real(A);
     r       = floor(r * 1000);
@@ -49,7 +49,7 @@ array makeSparse<cfloat>(array A, int factor) {
     return A;
 }
 
-template<>
+template <>
 array makeSparse<cdouble>(array A, int factor) {
     array r = real(A);
     r       = floor(r * 1000);
@@ -61,7 +61,7 @@ array makeSparse<cdouble>(array A, int factor) {
     return A;
 }
 
-template<typename T, af_storage src, af_storage dest>
+template <typename T, af_storage src, af_storage dest>
 void sparseConvertTester(const int m, const int n, int factor) {
     if (noDoubleTests<T>()) return;
 

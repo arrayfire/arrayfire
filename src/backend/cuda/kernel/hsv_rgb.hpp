@@ -19,7 +19,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename T, bool isHSV2RGB>
+template <typename T, bool isHSV2RGB>
 __global__ void convert(Param<T> out, CParam<T> in, int nBBS) {
     // batch offsets
     unsigned batchId = blockIdx.x / nBBS;
@@ -78,7 +78,7 @@ __global__ void convert(Param<T> out, CParam<T> in, int nBBS) {
                 if (Cmax == R) H = (G - B) / delta + (G < B ? 6 : 0);
                 if (Cmax == G) H = (B - R) / delta + 2;
                 if (Cmax == B) H = (R - G) / delta + 4;
-                H = H / 6.0f;
+                H                = H / 6.0f;
             }
 
             dst[oIdx0] = H;
@@ -88,7 +88,7 @@ __global__ void convert(Param<T> out, CParam<T> in, int nBBS) {
     }
 }
 
-template<typename T, bool isHSV2RGB>
+template <typename T, bool isHSV2RGB>
 void hsv2rgb_convert(Param<T> out, CParam<T> in) {
     const dim3 threads(THREADS_X, THREADS_Y);
 

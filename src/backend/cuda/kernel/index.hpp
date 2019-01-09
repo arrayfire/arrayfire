@@ -28,7 +28,7 @@ typedef struct {
     uint* ptr[4];
 } IndexKernelParam_t;
 
-template<typename T>
+template <typename T>
 __global__ void indexKernel(Param<T> out, CParam<T> in,
                             const IndexKernelParam_t p, const int nBBS0,
                             const int nBBS1) {
@@ -72,7 +72,7 @@ __global__ void indexKernel(Param<T> out, CParam<T> in,
     }
 }
 
-template<typename T>
+template <typename T>
 void index(Param<T> out, CParam<T> in, const IndexKernelParam_t& p) {
     const dim3 threads(THREADS_X, THREADS_Y);
 

@@ -28,10 +28,10 @@ using std::static_pointer_cast;
 using std::string;
 
 namespace cuda {
-template<typename T>
+template <typename T>
 using ShiftNode = ShiftNodeBase<BufferNode<T>>;
 
-template<typename T>
+template <typename T>
 Array<T> shift(const Array<T> &in, const int sdims[4]) {
     // Shift should only be the first node in the JIT tree.
     // Force input to be evaluated so that in is always a buffer.

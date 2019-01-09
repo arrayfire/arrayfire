@@ -31,14 +31,12 @@ using std::string;
 
 namespace opencl {
 namespace kernel {
-typedef struct {
-    dim_t dim[4];
-} dims_t;
+typedef struct { dim_t dim[4]; } dims_t;
 
 static const uint DIM0 = 32;
 static const uint DIM1 = 8;
 
-template<typename T>
+template <typename T>
 void memcopy(cl::Buffer out, const dim_t *ostrides, const cl::Buffer in,
              const dim_t *idims, const dim_t *istrides, int offset,
              uint ndims) {
@@ -92,7 +90,7 @@ void memcopy(cl::Buffer out, const dim_t *ostrides, const cl::Buffer in,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename inType, typename outType, bool same_dims>
+template <typename inType, typename outType, bool same_dims>
 void copy(Param dst, const Param src, int ndims, outType default_value,
           double factor) {
     std::string refName = std::string("copy_") +

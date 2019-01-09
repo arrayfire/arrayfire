@@ -42,7 +42,7 @@ vector<af_index_t> indexForTopK(const int k) {
     return vector<af_index_t>({idx, sp, sp, sp});
 }
 
-template<typename T>
+template <typename T>
 void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
           const int k, const int dim, const af::topkFunction order) {
     if (getDeviceType() == CL_DEVICE_TYPE_CPU) {
@@ -71,13 +71,13 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
 
         Event ev_in, ev_val, ev_ind;
 
-        T* ptr     = static_cast<T*>(getQueue().enqueueMapBuffer(
+        T* ptr = static_cast<T*>(getQueue().enqueueMapBuffer(
             *in_buf, CL_FALSE, CL_MAP_READ, 0, in.elements() * sizeof(T),
             nullptr, &ev_in));
         uint* iptr = static_cast<uint*>(getQueue().enqueueMapBuffer(
             *ibuf, CL_FALSE, CL_MAP_READ | CL_MAP_WRITE, 0, k * sizeof(uint),
             nullptr, &ev_ind));
-        T* vptr    = static_cast<T*>(getQueue().enqueueMapBuffer(
+        T* vptr = static_cast<T*>(getQueue().enqueueMapBuffer(
             *vbuf, CL_FALSE, CL_MAP_WRITE, 0, k * sizeof(T), nullptr, &ev_val));
 
         vector<uint> idx(in.elements());

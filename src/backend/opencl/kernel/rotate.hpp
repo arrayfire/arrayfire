@@ -30,19 +30,17 @@ static const int TY = 16;
 // Used for batching images
 static const int TI = 4;
 
-typedef struct {
-    float tmat[6];
-} tmat_t;
+typedef struct { float tmat[6]; } tmat_t;
 
-template<typename T>
+template <typename T>
 using wtype_t = typename std::conditional<std::is_same<T, double>::value,
                                           double, float>::type;
 
-template<typename T>
+template <typename T>
 using vtype_t = typename std::conditional<common::is_complex<T>::value, T,
                                           wtype_t<T>>::type;
 
-template<typename T, int order>
+template <typename T, int order>
 void rotate(Param out, const Param in, const float theta,
             af_interp_type method) {
     typedef typename dtype_traits<T>::base_type BT;

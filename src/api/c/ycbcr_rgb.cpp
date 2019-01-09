@@ -20,7 +20,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static Array<T> mix(const Array<T>& X, const Array<T>& Y, double xf,
                     double yf) {
     dim4 dims        = X.dims();
@@ -33,7 +33,7 @@ static Array<T> mix(const Array<T>& X, const Array<T>& Y, double xf,
     return arithOp<T, af_add_t>(fX, fY, dims);
 }
 
-template<typename T>
+template <typename T>
 static Array<T> mix(const Array<T>& X, const Array<T>& Y, const Array<T>& Z,
                     double xf, double yf, double zf) {
     dim4 dims        = X.dims();
@@ -49,7 +49,7 @@ static Array<T> mix(const Array<T>& X, const Array<T>& Y, const Array<T>& Z,
     return arithOp<T, af_add_t>(fx_fy, fZ, dims);
 }
 
-template<typename T>
+template <typename T>
 static Array<T> digitize(const Array<T> ch, const double scale,
                          const double offset) {
     dim4 dims     = ch.dims();
@@ -59,17 +59,17 @@ static Array<T> digitize(const Array<T> ch, const double scale,
     return arithOp<T, af_add_t>(scl, base, dims);
 }
 
-template<typename T, bool isYCbCr2RGB>
+template <typename T, bool isYCbCr2RGB>
 static af_array convert(const af_array& in, const af_ycc_std standard) {
     static const float INV_219 = 0.004566210;
     static const float INV_112 = 0.008928571;
     const static float k[6]    = {0.1140f, 0.2990f, 0.0722f,
                                0.2126f, 0.0593f, 0.2627f};
-    unsigned stdIdx            = 0;  // Default standard is AF_YCC_601
+    unsigned stdIdx = 0;  // Default standard is AF_YCC_601
     switch (standard) {
-        case AF_YCC_709: stdIdx = 2; break;
+        case AF_YCC_709: stdIdx  = 2; break;
         case AF_YCC_2020: stdIdx = 4; break;
-        default: stdIdx = 0; break;
+        default: stdIdx          = 0; break;
     }
     float kb    = k[stdIdx];
     float kr    = k[stdIdx + 1];
@@ -121,7 +121,7 @@ static af_array convert(const af_array& in, const af_ycc_std standard) {
     }
 }
 
-template<bool isYCbCr2RGB>
+template <bool isYCbCr2RGB>
 af_err convert(af_array* out, const af_array& in, const af_ycc_std standard) {
     try {
         const ArrayInfo& info = getInfo(in);

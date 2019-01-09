@@ -22,7 +22,7 @@
 using namespace detail;
 using af::dim4;
 
-template<typename T>
+template <typename T>
 void replace(af_array a, const af_array cond, const af_array b) {
     select(getCopyOnWriteArray<T>(a), getArray<char>(cond), getArray<T>(a),
            getArray<T>(b));
@@ -71,7 +71,7 @@ af_err af_replace(af_array a, const af_array cond, const af_array b) {
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 void replace_scalar(af_array a, const af_array cond, const double b) {
     select_scalar<T, false>(getCopyOnWriteArray<T>(a), getArray<char>(cond),
                             getArray<T>(a), b);

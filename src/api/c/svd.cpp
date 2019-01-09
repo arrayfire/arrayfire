@@ -20,7 +20,7 @@
 
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline void svd(af_array *s, af_array *u, af_array *vt,
                        const af_array in) {
     const ArrayInfo &info = getInfo(in);  // ArrayInfo is the base class which
@@ -42,7 +42,7 @@ static inline void svd(af_array *s, af_array *u, af_array *vt,
     *vt = getHandle(vtA);
 }
 
-template<typename T>
+template <typename T>
 static inline void svdInPlace(af_array *s, af_array *u, af_array *vt,
                               af_array in) {
     const ArrayInfo &info = getInfo(in);  // ArrayInfo is the base class which

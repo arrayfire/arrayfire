@@ -12,7 +12,6 @@
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 void copy_image(const Array<T> &in, fg_image image);
-
 }

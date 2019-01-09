@@ -30,7 +30,7 @@ using af::dim4;
 using namespace detail;
 using namespace graphics;
 
-template<typename T>
+template <typename T>
 Array<T> normalizePerType(const Array<T>& in) {
     Array<float> inFloat = cast<float, T>(in);
 
@@ -41,12 +41,12 @@ Array<T> normalizePerType(const Array<T>& in) {
     return cast<T, float>(scaled);
 }
 
-template<>
+template <>
 Array<float> normalizePerType<float>(const Array<float>& in) {
     return in;
 }
 
-template<typename T>
+template <typename T>
 static fg_image convert_and_copy_image(const af_array in) {
     const Array<T> _in = getArray<T>(in);
     dim4 inDims        = _in.dims();
@@ -84,12 +84,12 @@ af_err af_draw_image(const af_window window, const af_array in,
 
         switch (type) {
             case f32: image = convert_and_copy_image<float>(in); break;
-            case b8: image = convert_and_copy_image<char>(in); break;
+            case b8: image  = convert_and_copy_image<char>(in); break;
             case s32: image = convert_and_copy_image<int>(in); break;
             case u32: image = convert_and_copy_image<uint>(in); break;
             case s16: image = convert_and_copy_image<short>(in); break;
             case u16: image = convert_and_copy_image<ushort>(in); break;
-            case u8: image = convert_and_copy_image<uchar>(in); break;
+            case u8: image  = convert_and_copy_image<uchar>(in); break;
             default: TYPE_ERROR(1, type);
         }
 

@@ -31,7 +31,7 @@ void generateParamDeclaration(std::stringstream& kerStream, int id,
 }
 
 /// Calls the setArg function to set the arguments for a kernel call
-template<typename T>
+template <typename T>
 int setKernelArguments(
     int start_id, bool is_linear,
     std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,

@@ -31,24 +31,24 @@ namespace cpu {
 
 using namespace common;
 
-template<typename T>
+template <typename T>
 T getInf() {
     return scalar<T>(std::numeric_limits<T>::infinity());
 }
 
-template<>
+template <>
 cfloat getInf() {
     return scalar<cfloat, float>(std::numeric_limits<float>::infinity(),
                                  std::numeric_limits<float>::infinity());
 }
 
-template<>
+template <>
 cdouble getInf() {
     return scalar<cdouble, double>(std::numeric_limits<double>::infinity(),
                                    std::numeric_limits<double>::infinity());
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 Array<T> arithOpD(const SparseArray<T> &lhs, const Array<T> &rhs,
                   const bool reverse) {
     lhs.eval();
@@ -84,7 +84,7 @@ Array<T> arithOpD(const SparseArray<T> &lhs, const Array<T> &rhs,
     return out;
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 SparseArray<T> arithOp(const SparseArray<T> &lhs, const Array<T> &rhs,
                        const bool reverse) {
     lhs.eval();
@@ -113,7 +113,7 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const Array<T> &rhs,
     return out;
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     af::storage sfmt = lhs.getStorage();
 

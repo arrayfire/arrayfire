@@ -24,7 +24,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class ImageIO : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -60,11 +60,11 @@ void loadImageTest(string pTestFile, string pImageFile, const bool isColor) {
     size_t nElems = in[0].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
         if (isJPEG)  // Allow +- 1 because of compression when testing JPG
-            ASSERT_NEAR(in[0][elIter], imgData[elIter], 1)
-                << "at: " << elIter << endl;
+            ASSERT_NEAR(in[0][elIter], imgData[elIter], 1) << "at: " << elIter
+                                                           << endl;
         else
-            ASSERT_EQ(in[0][elIter], imgData[elIter])
-                << "at: " << elIter << endl;
+            ASSERT_EQ(in[0][elIter], imgData[elIter]) << "at: " << elIter
+                                                      << endl;
     }
 
     // Delete
@@ -307,7 +307,7 @@ using af::dtype_traits;
 using af::loadImageNative;
 using af::saveImageNative;
 
-template<typename T>
+template <typename T>
 void loadImageNativeCPPTest(string pTestFile, string pImageFile) {
     if (noImageIOTests()) return;
 
@@ -357,7 +357,7 @@ TEST(ImageIONative, LoadImageNative16GrayCPP) {
                                    string(TEST_DIR "/imageio/gray_seq_16.png"));
 }
 
-template<typename T>
+template <typename T>
 void saveLoadImageNativeCPPTest(dim4 dims) {
     if (noImageIOTests()) return;
 

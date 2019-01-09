@@ -21,7 +21,7 @@ using std::string;
 using std::vector;
 using namespace af;
 
-template<typename T>
+template <typename T>
 class InverseDeconvolution : public ::testing::Test {};
 
 // create a list of types to be tested
@@ -30,7 +30,7 @@ typedef ::testing::Types<float, uchar, short, ushort> TestTypes;
 // register the type list
 TYPED_TEST_CASE(InverseDeconvolution, TestTypes);
 
-template<typename T, bool isColor>
+template <typename T, bool isColor>
 void invDeconvImageTest(string pTestFile, const float gamma,
                         const af_inverse_deconv_algo algo) {
     typedef

@@ -11,6 +11,6 @@
 #include <Array.hpp>
 
 namespace opencl {
-template<typename T>
+template <typename T>
 Array<T> iota(const dim4 &dim, const dim4 &tile_dims = dim4(1));
 }

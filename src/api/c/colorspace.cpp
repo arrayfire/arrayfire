@@ -12,7 +12,7 @@
 #include <af/defines.h>
 #include <af/image.h>
 
-template<af_cspace_t FROM, af_cspace_t TO>
+template <af_cspace_t FROM, af_cspace_t TO>
 void color_space(af_array *out, const af_array image) {
     UNUSED(out);
     UNUSED(image);
@@ -22,13 +22,13 @@ void color_space(af_array *out, const af_array image) {
 }
 
 #define INSTANTIATE_CSPACE_DEFS1(F, T, FUNC)                       \
-    template<>                                                     \
+    template <>                                                    \
     void color_space<F, T>(af_array * out, const af_array image) { \
         AF_CHECK(FUNC(out, image));                                \
     }
 
 #define INSTANTIATE_CSPACE_DEFS2(F, T, FUNC, ...)                  \
-    template<>                                                     \
+    template <>                                                    \
     void color_space<F, T>(af_array * out, const af_array image) { \
         AF_CHECK(FUNC(out, image, __VA_ARGS__));                   \
     }
@@ -42,7 +42,7 @@ INSTANTIATE_CSPACE_DEFS2(AF_GRAY, AF_RGB, af_gray2rgb, 1.0f, 1.0f, 1.0f);
 INSTANTIATE_CSPACE_DEFS2(AF_YCbCr, AF_RGB, af_ycbcr2rgb, AF_YCC_601);
 INSTANTIATE_CSPACE_DEFS2(AF_RGB, AF_YCbCr, af_rgb2ycbcr, AF_YCC_601);
 
-template<af_cspace_t FROM>
+template <af_cspace_t FROM>
 static void color_space(af_array *out, const af_array image,
                         const af_cspace_t to) {
     switch (to) {

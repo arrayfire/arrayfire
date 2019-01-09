@@ -23,7 +23,7 @@
 const common::SparseArrayBase &getSparseArrayBase(const af_array arr,
                                                   bool device_check = true);
 
-template<typename T>
+template <typename T>
 const common::SparseArray<T> &getSparseArray(const af_array &arr) {
     const common::SparseArray<T> *A =
         static_cast<const common::SparseArray<T> *>(arr);
@@ -31,25 +31,25 @@ const common::SparseArray<T> &getSparseArray(const af_array &arr) {
     return *A;
 }
 
-template<typename T>
+template <typename T>
 common::SparseArray<T> &getSparseArray(af_array &arr) {
     common::SparseArray<T> *A = static_cast<common::SparseArray<T> *>(arr);
     ARG_ASSERT(0, A->isSparse() == true);
     return *A;
 }
 
-template<typename T>
+template <typename T>
 static af_array getHandle(const common::SparseArray<T> &A) {
     common::SparseArray<T> *ret = new common::SparseArray<T>(A);
     return static_cast<af_array>(ret);
 }
 
-template<typename T>
+template <typename T>
 static void releaseSparseHandle(const af_array arr) {
     common::destroySparseArray(static_cast<common::SparseArray<T> *>(arr));
 }
 
-template<typename T>
+template <typename T>
 af_array retainSparseHandle(const af_array in) {
     const common::SparseArray<T> *sparse =
         static_cast<const common::SparseArray<T> *>(in);
@@ -58,7 +58,7 @@ af_array retainSparseHandle(const af_array in) {
 }
 
 // based on castArray in handle.hpp
-template<typename To>
+template <typename To>
 common::SparseArray<To> castSparse(const af_array &in) {
     const ArrayInfo &info = getInfo(in, false, true);
     using namespace common;
@@ -81,7 +81,7 @@ common::SparseArray<To> castSparse(const af_array &in) {
     }
 }
 
-template<typename T>
+template <typename T>
 static af_array copySparseArray(const af_array in) {
     const common::SparseArray<T> &inArray = getSparseArray<T>(in);
     return getHandle<T>(common::copySparseArray<T>(inArray));

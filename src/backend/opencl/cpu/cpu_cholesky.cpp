@@ -16,15 +16,15 @@
 namespace opencl {
 namespace cpu {
 
-template<typename T>
+template <typename T>
 using potrf_func_def = int (*)(ORDER_TYPE, char, int, T *, int);
 
 #define CH_FUNC_DEF(FUNC) \
-    template<typename T>  \
+    template <typename T> \
     FUNC##_func_def<T> FUNC##_func();
 
 #define CH_FUNC(FUNC, TYPE, PREFIX)             \
-    template<>                                  \
+    template <>                                 \
     FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
         return &LAPACK_NAME(PREFIX##FUNC);      \
     }
@@ -35,7 +35,7 @@ CH_FUNC(potrf, double, d)
 CH_FUNC(potrf, cfloat, c)
 CH_FUNC(potrf, cdouble, z)
 
-template<typename T>
+template <typename T>
 Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
     Array<T> out = copyArray<T>(in);
     *info        = cholesky_inplace(out, is_upper);
@@ -52,12 +52,12 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
     return out;
 }
 
-template<typename T>
+template <typename T>
 int cholesky_inplace(Array<T> &in, const bool is_upper) {
     dim4 iDims = in.dims();
     int N      = iDims[0];
 
-    char uplo = 'L';
+    char uplo          = 'L';
     if (is_upper) uplo = 'U';
 
     std::shared_ptr<T> inPtr = in.getMappedPtr();

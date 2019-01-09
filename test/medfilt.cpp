@@ -22,13 +22,13 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class MedianFilter : public ::testing::Test {
    public:
     virtual void SetUp() {}
 };
 
-template<typename T>
+template <typename T>
 class MedianFilter1d : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -42,7 +42,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
 TYPED_TEST_CASE(MedianFilter, TestTypes);
 TYPED_TEST_CASE(MedianFilter1d, TestTypes);
 
-template<typename T>
+template <typename T>
 void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid,
                  af_border_type pad) {
     if (noDoubleTests<T>()) return;
@@ -70,8 +70,8 @@ void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid,
     vector<T> currGoldBar = tests[0];
     size_t nElems         = currGoldBar.size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 
     // cleanup
@@ -103,7 +103,7 @@ TYPED_TEST(MedianFilter, BATCH_SYMMETRIC_PAD_3x3) {
         3, AF_PAD_SYM);
 }
 
-template<typename T>
+template <typename T>
 void medfilt1_Test(string pTestFile, dim_t w_wid, af_border_type pad) {
     if (noDoubleTests<T>()) return;
 
@@ -130,8 +130,8 @@ void medfilt1_Test(string pTestFile, dim_t w_wid, af_border_type pad) {
     vector<T> currGoldBar = tests[0];
     size_t nElems         = currGoldBar.size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 
     // cleanup
@@ -163,7 +163,7 @@ TYPED_TEST(MedianFilter1d, BATCH_SYMMETRIC_PAD_3) {
         AF_PAD_SYM);
 }
 
-template<typename T, bool isColor>
+template <typename T, bool isColor>
 void medfiltImageTest(string pTestFile, dim_t w_len, dim_t w_wid) {
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
@@ -210,7 +210,7 @@ void medfiltImageTest(string pTestFile, dim_t w_len, dim_t w_wid) {
     }
 }
 
-template<typename T>
+template <typename T>
 void medfiltInputTest(void) {
     if (noDoubleTests<T>()) return;
 
@@ -239,7 +239,7 @@ void medfiltInputTest(void) {
 
 TYPED_TEST(MedianFilter, InvalidArray) { medfiltInputTest<TypeParam>(); }
 
-template<typename T>
+template <typename T>
 void medfiltWindowTest(void) {
     if (noDoubleTests<T>()) return;
 
@@ -262,7 +262,7 @@ void medfiltWindowTest(void) {
 
 TYPED_TEST(MedianFilter, InvalidWindow) { medfiltWindowTest<TypeParam>(); }
 
-template<typename T>
+template <typename T>
 void medfilt1d_WindowTest(void) {
     if (noDoubleTests<T>()) return;
 
@@ -285,7 +285,7 @@ void medfilt1d_WindowTest(void) {
 
 TYPED_TEST(MedianFilter1d, InvalidWindow) { medfilt1d_WindowTest<TypeParam>(); }
 
-template<typename T>
+template <typename T>
 void medfiltPadTest(void) {
     if (noDoubleTests<T>()) return;
 
@@ -312,7 +312,7 @@ void medfiltPadTest(void) {
 
 TYPED_TEST(MedianFilter, InvalidPadType) { medfiltPadTest<TypeParam>(); }
 
-template<typename T>
+template <typename T>
 void medfilt1d_PadTest(void) {
     if (noDoubleTests<T>()) return;
 
@@ -368,8 +368,8 @@ TEST(MedianFilter, CPP) {
     vector<float> currGoldBar = tests[0];
     size_t nElems             = currGoldBar.size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 }
 
@@ -396,8 +396,8 @@ TEST(MedianFilter1d, CPP) {
     vector<float> currGoldBar = tests[0];
     size_t nElems             = currGoldBar.size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 }
 

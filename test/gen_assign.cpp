@@ -73,8 +73,8 @@ void testGeneralAssignOneArray(string pTestFile, const dim_t ndims,
     ASSERT_SUCCESS(af_get_data_ptr((void *)outData.data(), outArray));
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 
     ASSERT_SUCCESS(af_release_array(rhsArray));
@@ -141,8 +141,8 @@ TEST(GeneralAssign, SSSS) {
     ASSERT_SUCCESS(af_get_data_ptr((void *)outData.data(), outArray));
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 
     ASSERT_SUCCESS(af_release_array(rhsArray));
@@ -215,8 +215,8 @@ TEST(GeneralAssign, AAAA) {
     ASSERT_SUCCESS(af_get_data_ptr((void *)outData.data(), outArray));
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 
     ASSERT_SUCCESS(af_release_array(rhsArray));

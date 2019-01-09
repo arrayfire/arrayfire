@@ -38,7 +38,7 @@ using std::string;
 
 namespace opencl {
 namespace kernel {
-template<typename T>
+template <typename T>
 void coo2dense(Param out, const Param values, const Param rowIdx,
                const Param colIdx) {
     std::string ref_name = std::string("coo2dense_") +
@@ -82,7 +82,7 @@ void coo2dense(Param out, const Param values, const Param rowIdx,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 void csr2dense(Param output, const Param values, const Param rowIdx,
                const Param colIdx) {
     const int MAX_GROUPS = 4096;
@@ -130,7 +130,7 @@ void csr2dense(Param output, const Param values, const Param rowIdx,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 void dense2csr(Param values, Param rowIdx, Param colIdx, const Param dense) {
     int num_rows = dense.info.dims[0];
     int num_cols = dense.info.dims[1];
@@ -194,7 +194,7 @@ void dense2csr(Param values, Param rowIdx, Param colIdx, const Param dense) {
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 void swapIndex(Param ovalues, Param oindex, const Param ivalues,
                const cl::Buffer *iindex, const Param swapIdx) {
     std::string ref_name = std::string("swapIndex_kernel_") +
@@ -230,7 +230,7 @@ void swapIndex(Param ovalues, Param oindex, const Param ivalues,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 void csr2coo(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
              const Param irowIdx, const Param icolIdx, Param index) {
     const int MAX_GROUPS = 4096;
@@ -287,7 +287,7 @@ void csr2coo(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
     bufferFree(scratch);
 }
 
-template<typename T>
+template <typename T>
 void coo2csr(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
              const Param irowIdx, const Param icolIdx, Param index,
              Param rowCopy, const int M) {

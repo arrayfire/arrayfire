@@ -14,13 +14,13 @@
 
 namespace opencl {
 
-template<af_op_t op>
+template <af_op_t op>
 static const char *unaryName() {
     return "__noop";
 }
 
 #define UNARY_DECL(OP, FNAME)                      \
-    template<>                                     \
+    template <>                                    \
     STATIC_ const char *unaryName<af_##OP##_t>() { \
         return FNAME;                              \
     }
@@ -72,7 +72,7 @@ UNARY_FN(iszero)
 
 #undef UNARY_FN
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 Array<T> unaryOp(const Array<T> &in) {
     common::Node_ptr in_node = in.getNode();
 
@@ -83,7 +83,7 @@ Array<T> unaryOp(const Array<T> &in) {
     return createNodeArray<T>(in.dims(), common::Node_ptr(node));
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 Array<char> checkOp(const Array<T> &in) {
     common::Node_ptr in_node = in.getNode();
 

@@ -27,7 +27,7 @@ namespace kernel {
 
 static const unsigned BLOCK_SIZE = 16;
 
-template<typename T>
+template <typename T>
 void gaussian1D(T* out, const int dim, double sigma = 0.0) {
     if (!(sigma > 0)) sigma = 0.25 * dim;
 
@@ -56,7 +56,7 @@ inline __device__ double max_val(const double x, const double y) {
     return fmax(x, y);
 }
 
-template<typename T>
+template <typename T>
 __global__ void second_order_deriv(T* ixx_out, T* ixy_out, T* iyy_out,
                                    const unsigned in_len, const T* ix_in,
                                    const T* iy_in) {
@@ -69,7 +69,7 @@ __global__ void second_order_deriv(T* ixx_out, T* ixy_out, T* iyy_out,
     }
 }
 
-template<typename T>
+template <typename T>
 __global__ void harris_responses(T* resp_out, const unsigned idim0,
                                  const unsigned idim1, const T* ixx_in,
                                  const T* ixy_in, const T* iyy_in,
@@ -91,7 +91,7 @@ __global__ void harris_responses(T* resp_out, const unsigned idim0,
     }
 }
 
-template<typename T>
+template <typename T>
 __global__ void non_maximal(float* x_out, float* y_out, float* resp_out,
                             unsigned* count, const unsigned idim0,
                             const unsigned idim1, const T* resp_in,
@@ -146,7 +146,7 @@ __global__ void keep_corners(float* x_out, float* y_out, float* resp_out,
 
 int compare(const void* a, const void* b) { return *(float*)a > *(float*)b; }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 void harris(unsigned* corners_out, float** x_out, float** y_out,
             float** resp_out, CParam<T> in, const unsigned max_corners,
             const float min_response, const float sigma,

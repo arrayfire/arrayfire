@@ -14,7 +14,6 @@ namespace opencl {
 namespace kernel {
 
 INSTANTIATE(double, double)
-
 }
 
 }  // namespace opencl

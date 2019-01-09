@@ -18,7 +18,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void coo2dense(Param<T> output, CParam<T> values, CParam<int> rowIdx,
                CParam<int> colIdx) {
     const T *vPtr   = values.get();
@@ -41,7 +41,7 @@ void coo2dense(Param<T> output, CParam<T> values, CParam<int> rowIdx,
     }
 }
 
-template<typename T>
+template <typename T>
 void dense2csr(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
                CParam<T> in) {
     const T *iPtr = in.get();
@@ -65,7 +65,7 @@ void dense2csr(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
     rPtr[dims[0]] = offset;
 }
 
-template<typename T>
+template <typename T>
 void csr2dense(Param<T> out, CParam<T> values, CParam<int> rowIdx,
                CParam<int> colIdx) {
     T *oPtr         = out.get();
@@ -86,11 +86,11 @@ void csr2dense(Param<T> out, CParam<T> values, CParam<int> rowIdx,
 }
 
 // Modified code from sort helper
-template<typename T>
+template <typename T>
 using SpKeyIndexPair =
     std::tuple<int, T, int>;  // sorting index, value, other index
 
-template<typename T>
+template <typename T>
 struct SpKIPCompareK {
     bool operator()(const SpKeyIndexPair<T> &lhs,
                     const SpKeyIndexPair<T> &rhs) {
@@ -101,7 +101,7 @@ struct SpKIPCompareK {
     }
 };
 
-template<typename T>
+template <typename T>
 void csr2coo(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
              CParam<T> ivalues, CParam<int> irowIdx, CParam<int> icolIdx) {
     // First calculate the linear index
@@ -135,7 +135,7 @@ void csr2coo(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
     }
 }
 
-template<typename T>
+template <typename T>
 void coo2csr(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
              CParam<T> ivalues, CParam<int> irowIdx, CParam<int> icolIdx) {
     T *ovPtr   = ovalues.get();

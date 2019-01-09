@@ -59,7 +59,7 @@
 
 #include <algorithm>
 
-template<typename Ty>
+template <typename Ty>
 magma_int_t magma_ungqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
                             cl_mem dA, size_t dA_offset, magma_int_t ldda,
                             Ty *tau, cl_mem dT, size_t dT_offset,

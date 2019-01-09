@@ -25,7 +25,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 af_array diffusion(const Array<float> in, const float dt, const float K,
                    const unsigned iterations, const af_flux_function fftype,
                    const af::diffusionEq eq) {

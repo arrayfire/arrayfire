@@ -140,13 +140,13 @@ __device__ float computeCurvatureBasedUpdate(const float mct, const float C,
     return sqrtf(prop_grad) * delta;
 }
 
-template<typename T, bool isMCDE>
+template <typename T, bool isMCDE>
 static __global__ void diffUpdate(Param<T> inout, const float dt,
                                   const float mct,
                                   const af_flux_function fftype,
                                   const unsigned blkX, const unsigned blkY) {
-    const unsigned RADIUS         = 1;
-    const unsigned SHRD_MEM_WIDTH = THREADS_X + 2 * RADIUS;   // Coloumns
+    const unsigned RADIUS          = 1;
+    const unsigned SHRD_MEM_WIDTH  = THREADS_X + 2 * RADIUS;  // Coloumns
     const unsigned SHRD_MEM_HEIGHT = THREADS_Y + 2 * RADIUS;  // Rows
 
     __shared__ float shrdMem[SHRD_MEM_HEIGHT][SHRD_MEM_WIDTH];
@@ -168,7 +168,7 @@ static __global__ void diffUpdate(Param<T> inout, const float dt,
 #pragma unroll
         for (int a = lx, gx2 = gx; a < SHRD_MEM_WIDTH;
              a += blockDim.x, gx2 += blockDim.x) {
-            int idx       = index(gx2 - RADIUS, gy2 - RADIUS, inout.dims[0],
+            int idx = index(gx2 - RADIUS, gy2 - RADIUS, inout.dims[0],
                             inout.dims[1], inout.strides[0], inout.strides[1]);
             shrdMem[b][a] = img[idx];
         }
@@ -199,7 +199,7 @@ static __global__ void diffUpdate(Param<T> inout, const float dt,
     }
 }
 
-template<typename T, bool isMCDE>
+template <typename T, bool isMCDE>
 void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
                           const af_flux_function fftype) {
     dim3 threads(THREADS_X, THREADS_Y, 1);

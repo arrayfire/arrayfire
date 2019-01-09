@@ -21,13 +21,13 @@
 namespace cuda {
 namespace kernel {
 
-template<typename Tk>
+template <typename Tk>
 __device__ inline static char calculate_head_flags_dim(const Tk *kptr, int id,
                                                        int stride) {
     return (id == 0) ? 1 : ((*kptr) != (*(kptr - stride)));
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op, uint DIMY>
+template <typename Ti, typename Tk, typename To, af_op_t op, uint DIMY>
 __global__ static void scan_dim_nonfinal_kernel(Param<To> out, Param<To> tmp,
                                                 Param<char> tflg,
                                                 Param<int> tlid, CParam<Ti> in,
@@ -189,7 +189,7 @@ __global__ static void scan_dim_nonfinal_kernel(Param<To> out, Param<To> tmp,
     }
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op, uint DIMY>
+template <typename Ti, typename Tk, typename To, af_op_t op, uint DIMY>
 __global__ static void scan_dim_final_kernel(Param<To> out, CParam<Ti> in,
                                              CParam<Tk> key, int dim,
                                              uint blocks_x, uint blocks_y,
@@ -322,7 +322,7 @@ __global__ static void scan_dim_final_kernel(Param<To> out, CParam<Ti> in,
     }
 }
 
-template<typename To, af_op_t op>
+template <typename To, af_op_t op>
 __global__ static void bcast_dim_kernel(Param<To> out, CParam<To> tmp,
                                         Param<int> tlid, int dim, uint blocks_x,
                                         uint blocks_y, uint blocks_dim,
@@ -377,7 +377,7 @@ __global__ static void bcast_dim_kernel(Param<To> out, CParam<To> tmp,
     }
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op>
+template <typename Ti, typename Tk, typename To, af_op_t op>
 static void scan_dim_final_launcher(Param<To> out, CParam<Ti> in,
                                     CParam<Tk> key, const int dim,
                                     const uint threads_y,
@@ -415,7 +415,7 @@ static void scan_dim_final_launcher(Param<To> out, CParam<Ti> in,
     POST_LAUNCH_CHECK();
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op>
+template <typename Ti, typename Tk, typename To, af_op_t op>
 static void scan_dim_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                        Param<char> tflg, Param<int> tlid,
                                        CParam<Ti> in, CParam<Tk> key,
@@ -454,7 +454,7 @@ static void scan_dim_nonfinal_launcher(Param<To> out, Param<To> tmp,
     POST_LAUNCH_CHECK();
 }
 
-template<typename To, af_op_t op>
+template <typename To, af_op_t op>
 static void bcast_dim_launcher(Param<To> out, CParam<To> tmp, Param<int> tlid,
                                const int dim, const uint threads_y,
                                const dim_t blocks_all[4]) {
@@ -470,7 +470,7 @@ static void bcast_dim_launcher(Param<To> out, CParam<To> tmp, Param<int> tlid,
     POST_LAUNCH_CHECK();
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op>
+template <typename Ti, typename Tk, typename To, af_op_t op>
 void scan_dim_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key, int dim,
                      bool inclusive_scan) {
     uint threads_y = std::min(THREADS_Y, nextpow2(out.dims[dim]));
@@ -492,7 +492,7 @@ void scan_dim_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key, int dim,
 
         tmp.dims[dim]  = blocks_all[dim];
         tmp.strides[0] = 1;
-        for (int k = 1; k < 4; k++)
+        for (int k         = 1; k < 4; k++)
             tmp.strides[k] = tmp.strides[k - 1] * tmp.dims[k - 1];
         for (int k = 0; k < 4; k++) {
             tmpflg.strides[k] = tmp.strides[k];

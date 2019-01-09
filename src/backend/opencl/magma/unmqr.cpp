@@ -59,7 +59,7 @@
 
 #include <algorithm>
 
-template<typename Ty>
+template <typename Ty>
 magma_int_t magma_unmqr_gpu(magma_side_t side, magma_trans_t trans,
                             magma_int_t m, magma_int_t n, magma_int_t k,
                             cl_mem dA, size_t dA_offset, magma_int_t ldda,
@@ -67,97 +67,97 @@ magma_int_t magma_unmqr_gpu(magma_side_t side, magma_trans_t trans,
                             magma_int_t lddc, Ty* hwork, magma_int_t lwork,
                             cl_mem dT, size_t dT_offset, magma_int_t nb,
                             magma_queue_t queue, magma_int_t* info) {
-    /*  -- clMAGMA (version 0.1) --
-           Univ. of Tennessee, Knoxville
-           Univ. of California, Berkeley
-           Univ. of Colorado, Denver
-           @date
+/*  -- clMAGMA (version 0.1) --
+       Univ. of Tennessee, Knoxville
+       Univ. of California, Berkeley
+       Univ. of Colorado, Denver
+       @date
 
-        Purpose
-        =======
-        ZUNMQR_GPU overwrites the general complex M-by-N matrix C with
+    Purpose
+    =======
+    ZUNMQR_GPU overwrites the general complex M-by-N matrix C with
 
-                        SIDE = 'L'     SIDE = 'R'
-        TRANS = 'N':      Q * C          C * Q
-        TRANS = 'T':      Q**H * C       C * Q**H
+                    SIDE = 'L'     SIDE = 'R'
+    TRANS = 'N':      Q * C          C * Q
+    TRANS = 'T':      Q**H * C       C * Q**H
 
-        where Q is a complex orthogonal matrix defined as the product of k
-        elementary reflectors
+    where Q is a complex orthogonal matrix defined as the product of k
+    elementary reflectors
 
-              Q = H(1) H(2) . . . H(k)
+          Q = H(1) H(2) . . . H(k)
 
-        as returned by ZGEQRF. Q is of order M if SIDE = 'L' and of order N
-        if SIDE = 'R'.
+    as returned by ZGEQRF. Q is of order M if SIDE = 'L' and of order N
+    if SIDE = 'R'.
 
-        Arguments
-        =========
-        SIDE    (input) CHARACTER*1
-                = 'L': apply Q or Q**H from the Left;
-                = 'R': apply Q or Q**H from the Right.
+    Arguments
+    =========
+    SIDE    (input) CHARACTER*1
+            = 'L': apply Q or Q**H from the Left;
+            = 'R': apply Q or Q**H from the Right.
 
-        TRANS   (input) CHARACTER*1
-                = 'N':  No transpose, apply Q;
-                = 'T':  Transpose, apply Q**H.
+    TRANS   (input) CHARACTER*1
+            = 'N':  No transpose, apply Q;
+            = 'T':  Transpose, apply Q**H.
 
-        M       (input) INTEGER
-                The number of rows of the matrix C. M >= 0.
+    M       (input) INTEGER
+            The number of rows of the matrix C. M >= 0.
 
-        N       (input) INTEGER
-                The number of columns of the matrix C. N >= 0.
+    N       (input) INTEGER
+            The number of columns of the matrix C. N >= 0.
 
-        K       (input) INTEGER
-                The number of elementary reflectors whose product defines
-                the matrix Q.
-                If SIDE = 'L', M >= K >= 0;
-                if SIDE = 'R', N >= K >= 0.
+    K       (input) INTEGER
+            The number of elementary reflectors whose product defines
+            the matrix Q.
+            If SIDE = 'L', M >= K >= 0;
+            if SIDE = 'R', N >= K >= 0.
 
-        DA      (input) COMPLEX_16 array on the GPU, dimension (LDDA,K)
-                The i-th column must contain the vector which defines the
-                elementary reflector H(i), for i = 1,2,...,k, as returned by
-                ZGEQRF in the first k columns of its array argument DA.
-                DA is modified by the routine but restored on exit.
+    DA      (input) COMPLEX_16 array on the GPU, dimension (LDDA,K)
+            The i-th column must contain the vector which defines the
+            elementary reflector H(i), for i = 1,2,...,k, as returned by
+            ZGEQRF in the first k columns of its array argument DA.
+            DA is modified by the routine but restored on exit.
 
-        LDDA    (input) INTEGER
-                The leading dimension of the array DA.
-                If SIDE = 'L', LDDA >= max(1,M);
-                if SIDE = 'R', LDDA >= max(1,N).
+    LDDA    (input) INTEGER
+            The leading dimension of the array DA.
+            If SIDE = 'L', LDDA >= max(1,M);
+            if SIDE = 'R', LDDA >= max(1,N).
 
-        TAU     (input) COMPLEX_16 array, dimension (K)
-                TAU(i) must contain the scalar factor of the elementary
-                reflector H(i), as returned by ZGEQRF.
+    TAU     (input) COMPLEX_16 array, dimension (K)
+            TAU(i) must contain the scalar factor of the elementary
+            reflector H(i), as returned by ZGEQRF.
 
-        DC      (input/output) COMPLEX_16 array on the GPU, dimension (LDDC,N)
-                On entry, the M-by-N matrix C.
-                On exit, C is overwritten by Q*C or Q**H * C or C * Q**H or C*Q.
+    DC      (input/output) COMPLEX_16 array on the GPU, dimension (LDDC,N)
+            On entry, the M-by-N matrix C.
+            On exit, C is overwritten by Q*C or Q**H * C or C * Q**H or C*Q.
 
-        LDDC     (input) INTEGER
-                The leading dimension of the array DC. LDDC >= max(1,M).
+    LDDC     (input) INTEGER
+            The leading dimension of the array DC. LDDC >= max(1,M).
 
-        HWORK    (workspace/output) COMPLEX_16 array, dimension (MAX(1,LWORK))
-                On exit, if INFO = 0, HWORK(1) returns the optimal LWORK.
+    HWORK    (workspace/output) COMPLEX_16 array, dimension (MAX(1,LWORK))
+            On exit, if INFO = 0, HWORK(1) returns the optimal LWORK.
 
-        LWORK   (input) INTEGER
-                The dimension of the array HWORK.
-                LWORK >= (M-K+NB)*(N+2*NB) if SIDE = 'L',
-                and LWORK >= (N-K+NB)*(M+2*NB) if SIDE = 'R', where NB is the
-                optimal blocksize.
+    LWORK   (input) INTEGER
+            The dimension of the array HWORK.
+            LWORK >= (M-K+NB)*(N+2*NB) if SIDE = 'L',
+            and LWORK >= (N-K+NB)*(M+2*NB) if SIDE = 'R', where NB is the
+            optimal blocksize.
 
-                If LWORK = -1, then a workspace query is assumed; the routine
-                only calculates the optimal size of the HWORK array, returns
-                this value as the first entry of the HWORK array, and no error
-                message related to LWORK is issued by XERBLA.
+            If LWORK = -1, then a workspace query is assumed; the routine
+            only calculates the optimal size of the HWORK array, returns
+            this value as the first entry of the HWORK array, and no error
+            message related to LWORK is issued by XERBLA.
 
-        DT      (input) COMPLEX_16 array on the GPU that is the output
-                (the 9th argument) of magma_zgeqrf_gpu.
+    DT      (input) COMPLEX_16 array on the GPU that is the output
+            (the 9th argument) of magma_zgeqrf_gpu.
 
-        NB      (input) INTEGER
-                This is the blocking size that was used in pre-computing DT,
-       e.g., the blocking size used in magma_zgeqrf_gpu.
+    NB      (input) INTEGER
+            This is the blocking size that was used in pre-computing DT,
+   e.g., the blocking size used in magma_zgeqrf_gpu.
 
-        INFO    (output) INTEGER
-                = 0:  successful exit
-                < 0:  if INFO = -i, the i-th argument had an illegal value
-        ===================================================================== */
+    INFO    (output) INTEGER
+            = 0:  successful exit
+            < 0:  if INFO = -i, the i-th argument had an illegal value
+    ===================================================================== */
 
 #define a_ref(a_1, a_2) dA, (dA_offset + (a_1) + (a_2) * (ldda))
 #define c_ref(a_1, a_2) dC, (dC_offset + (a_1) + (a_2) * (lddc))

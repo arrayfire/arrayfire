@@ -18,7 +18,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static af_array regions(af_array const &in, af_connectivity connectivity) {
     return getHandle<T>(regions<T>(getArray<char>(in), connectivity));
 }

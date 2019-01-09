@@ -20,7 +20,7 @@
 namespace cuda {
 namespace kernel {
 // Wrapper functions
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sort0ByKeyIterative(Param<Tk> okey, Param<Tv> oval, bool isAscending) {
     for (int w = 0; w < okey.dims[3]; w++) {
         int okeyW = w * okey.strides[3];
@@ -41,7 +41,7 @@ void sort0ByKeyIterative(Param<Tk> okey, Param<Tv> oval, bool isAscending) {
     POST_LAUNCH_CHECK();
 }
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim,
                       bool isAscending) {
     af::dim4 inDims;
@@ -81,7 +81,7 @@ void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim,
     // val.modDims(inDims);
 }
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sort0ByKey(Param<Tk> okey, Param<Tv> oval, bool isAscending) {
     int higherDims = okey.dims[1] * okey.dims[2] * okey.dims[3];
 

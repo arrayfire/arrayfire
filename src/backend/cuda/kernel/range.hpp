@@ -21,7 +21,7 @@ static const unsigned RANGE_TY    = 8;
 static const unsigned RANGE_TILEX = 512;
 static const unsigned RANGE_TILEY = 32;
 
-template<typename T>
+template <typename T>
 __global__ void range_kernel(Param<T> out, const int dim,
                              const int blocksPerMatX, const int blocksPerMatY) {
     const int mul0 = (dim == 0);
@@ -65,7 +65,7 @@ __global__ void range_kernel(Param<T> out, const int dim,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 void range(Param<T> out, const int dim) {
     dim3 threads(RANGE_TX, RANGE_TY, 1);
 

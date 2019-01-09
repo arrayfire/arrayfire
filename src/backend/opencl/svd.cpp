@@ -25,9 +25,9 @@
 
 namespace opencl {
 
-template<typename Tr>
+template <typename Tr>
 Tr calc_scale(Tr From, Tr To) {
-    // FIXME: I am not sure this is correct, removing this for now
+// FIXME: I am not sure this is correct, removing this for now
 #if 0
     //http://www.netlib.org/lapack/explore-3.1.1-html/dlascl.f.html
     cpu_lapack_lamch_func<Tr> cpu_lapack_lamch;
@@ -59,7 +59,7 @@ Tr calc_scale(Tr From, Tr To) {
 #endif
 }
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 void svd(Array<T> &arrU, Array<Tr> &arrS, Array<T> &arrVT, Array<T> &arrA,
          bool want_vectors = true) {
     dim4 idims    = arrA.dims();
@@ -192,14 +192,14 @@ void svd(Array<T> &arrU, Array<Tr> &arrS, Array<T> &arrVT, Array<T> &arrA,
     }
 }
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
     if (OpenCLCPUOffload()) { return cpu::svdInPlace(s, u, vt, in); }
 
     svd<T, Tr>(u, s, vt, in, true);
 }
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in) {
     if (OpenCLCPUOffload()) { return cpu::svd(s, u, vt, in); }
 
@@ -235,12 +235,12 @@ INSTANTIATE(cdouble, double)
 
 namespace opencl {
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }
 
-template<typename T, typename Tr>
+template <typename T, typename Tr>
 void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }

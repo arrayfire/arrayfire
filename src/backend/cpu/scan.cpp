@@ -20,7 +20,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<af_op_t op, typename Ti, typename To>
+template <af_op_t op, typename Ti, typename To>
 Array<To> scan(const Array<Ti>& in, const int dim, bool inclusive_scan) {
     dim4 dims     = in.dims();
     Array<To> out = createEmptyArray<To>(dims);

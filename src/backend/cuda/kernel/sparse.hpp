@@ -20,7 +20,7 @@ static const int reps = 4;
 /////////////////////////////////////////////////////////////////////////////
 // Kernel to convert COO into Dense
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 __global__ void coo2dense_kernel(Param<T> output, CParam<T> values,
                                  CParam<int> rowIdx, CParam<int> colIdx) {
     int id = blockIdx.x * blockDim.x * reps + threadIdx.x;
@@ -42,7 +42,7 @@ __global__ void coo2dense_kernel(Param<T> output, CParam<T> values,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 void coo2dense(Param<T> output, CParam<T> values, CParam<int> rowIdx,
                CParam<int> colIdx) {
     dim3 threads(256, 1, 1);

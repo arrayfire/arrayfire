@@ -343,9 +343,9 @@ void partialWriteOut128Bytes_float(__global float *out, const uint *const index,
 
 #if RAND_DIST == 1
 void boxMullerTransform(T *const out1, T *const out2, const T r1, const T r2) {
-    /*
-     * The log of a real value x where 0 < x < 1 is negative.
-     */
+/*
+ * The log of a real value x where 0 < x < 1 is negative.
+ */
 #if defined(IS_APPLE)  // Because Apple is.. "special"
     T r = sqrt((T)(-2.0) * log10(r1) * (T)log10_val);
 #else

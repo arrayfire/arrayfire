@@ -14,7 +14,7 @@
 #include <af/dim4.hpp>
 
 namespace cuda {
-template<typename T>
+template <typename T>
 Array<T> padArrayBorders(Array<T> const& in, dim4 const& lowerBoundPadding,
                          dim4 const& upperBoundPadding,
                          const af::borderType btype) {

@@ -12,7 +12,7 @@
 #include <platform.hpp>
 
 namespace cpu {
-template<typename T>
+template <typename T>
 void anisotropicDiffusion(Array<T>& inout, const float dt, const float mct,
                           const af::fluxFunction fftype,
                           const af::diffusionEq eq) {

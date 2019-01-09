@@ -11,7 +11,7 @@
 #include <ops.hpp>
 
 namespace cuda {
-template<af_op_t op, typename Ti, typename Tk, typename To>
+template <af_op_t op, typename Ti, typename Tk, typename To>
 Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim,
                bool inclusive_scan);
 }

@@ -19,7 +19,7 @@ using af::dtype_traits;
 namespace cpu {
 namespace kernel {
 
-template<typename T, int order>
+template <typename T, int order>
 void rotate(Param<T> output, CParam<T> input, const float theta,
             af_interp_type method) {
     typedef typename dtype_traits<T>::base_type BT;

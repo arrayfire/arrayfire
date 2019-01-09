@@ -21,7 +21,7 @@
 namespace cuda {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 __global__ static void get_out_idx(uint *optr, CParam<uint> otmp,
                                    CParam<uint> rtmp, CParam<T> in,
                                    uint blocks_x, uint blocks_y, uint lim) {
@@ -59,12 +59,12 @@ __global__ static void get_out_idx(uint *optr, CParam<uint> otmp,
 
     for (uint k = 0, id = xid; k < lim && id < otmp.dims[0];
          k++, id += blockDim.x) {
-        uint idx = otptr[id] + accum;
+        uint idx                            = otptr[id] + accum;
         if (iptr[id] != zero) optr[idx - 1] = (off + id);
     }
 }
 
-template<typename T>
+template <typename T>
 static void where(Param<uint> &out, CParam<T> in) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_BLOCK);

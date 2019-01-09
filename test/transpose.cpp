@@ -26,7 +26,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Transpose : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -49,7 +49,7 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, uint, char, uchar,
 // register the type list
 TYPED_TEST_CASE(Transpose, TestTypes);
 
-template<typename T>
+template <typename T>
 void trsTest(string pTestFile, bool isSubRef = false,
              const vector<af_seq> *seqv = NULL) {
     if (noDoubleTests<T>()) return;
@@ -92,8 +92,8 @@ void trsTest(string pTestFile, bool isSubRef = false,
         vector<T> currGoldBar = tests[testIter];
         size_t nElems         = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-                << "at: " << elIter << endl;
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                            << endl;
         }
     }
 
@@ -151,7 +151,7 @@ TYPED_TEST(Transpose, SubRefBatch) {
 
 ////////////////////////////////////// CPP //////////////////////////////////
 //
-template<typename T>
+template <typename T>
 void trsCPPTest(string pFileName) {
     vector<dim4> numDims;
 
@@ -172,8 +172,8 @@ void trsCPPTest(string pFileName) {
         vector<T> currGoldBar = tests[testIter];
         size_t nElems         = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-                << "at: " << elIter << endl;
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                            << endl;
         }
     }
 
@@ -189,7 +189,7 @@ TEST(Transpose, CPP_f32) {
     trsCPPTest<float>(string(TEST_DIR "/transpose/rectangle_batch2.test"));
 }
 
-template<typename T>
+template <typename T>
 void trsCPPConjTest(dim_t d0, dim_t d1 = 1, dim_t d2 = 1, dim_t d3 = 1) {
     vector<dim4> numDims;
 

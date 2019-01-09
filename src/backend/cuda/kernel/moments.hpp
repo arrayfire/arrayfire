@@ -21,7 +21,7 @@ namespace kernel {
 // Kernel Launch Config Values
 static const int THREADS = 128;
 
-template<typename T>
+template <typename T>
 __global__ void moments_kernel(Param<float> out, CParam<T> in,
                                af_moment_type moment, const bool pBatch) {
     const dim_t idw = blockIdx.y / in.dims[2];
@@ -67,7 +67,7 @@ __global__ void moments_kernel(Param<float> out, CParam<T> in,
 }
 
 // Wrapper functions
-template<typename T>
+template <typename T>
 void moments(Param<float> out, CParam<T> in, const af_moment_type moment) {
     dim3 threads(THREADS, 1, 1);
     dim3 blocks(in.dims[1], in.dims[2] * in.dims[3]);

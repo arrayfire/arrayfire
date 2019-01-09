@@ -28,7 +28,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class NearestNeighbour : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -39,22 +39,22 @@ typedef ::testing::Types<float, double, int, uint, intl, uintl, uchar, short,
                          ushort>
     TestTypes;
 
-template<typename T>
+template <typename T>
 struct otype_t {
     typedef T otype;
 };
 
-template<>
+template <>
 struct otype_t<short> {
     typedef int otype;
 };
 
-template<>
+template <>
 struct otype_t<ushort> {
     typedef uint otype;
 };
 
-template<>
+template <>
 struct otype_t<uchar> {
     typedef uint otype;
 };
@@ -62,7 +62,7 @@ struct otype_t<uchar> {
 // register the type list
 TYPED_TEST_CASE(NearestNeighbour, TestTypes);
 
-template<typename T>
+template <typename T>
 void nearestNeighbourTest(string pTestFile, int feat_dim,
                           const af_match_type type) {
     if (noDoubleTests<T>()) return;
@@ -102,8 +102,8 @@ void nearestNeighbourTest(string pTestFile, int feat_dim,
     ASSERT_SUCCESS(af_get_data_ptr((void *)outDist, dist));
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ((To)goldDist[elIter], outDist[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ((To)goldDist[elIter], outDist[elIter]) << "at: " << elIter
+                                                         << endl;
     }
 
     delete[] outIdx;
@@ -198,8 +198,8 @@ TEST(NearestNeighbourSSD, CPP) {
     dist.host(outDist);
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(goldDist[elIter], outDist[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(goldDist[elIter], outDist[elIter]) << "at: " << elIter
+                                                     << endl;
     }
 
     delete[] outIdx;
@@ -234,8 +234,8 @@ TEST(NearestNeighbourSAD, CPP) {
     dist.host(outDist);
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(goldDist[elIter], outDist[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(goldDist[elIter], outDist[elIter]) << "at: " << elIter
+                                                     << endl;
     }
 
     delete[] outIdx;
@@ -247,8 +247,7 @@ TEST(NearestNeighbourSSD, small) {
     const int nquery            = 5;
     const int nfeat             = 2;
     float train[ntrain * nfeat] = {
-        5,
-        5,
+        5, 5,
     };
 
     float query[5 * nfeat] = {0, 0, 3.5, 4, 5, 5, 6, 5, 8, 6.5};
@@ -338,7 +337,7 @@ struct nearest_neighbors_params {
     }
 };
 
-template<typename TestClass>
+template <typename TestClass>
 string testNameGenerator(
     const ::testing::TestParamInfo<typename TestClass::ParamType> info) {
     return info.param.testname_;

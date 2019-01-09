@@ -33,13 +33,9 @@ typedef struct {
     unsigned d[8];
 } feat_desc_t;
 
-typedef struct {
-    float f[5];
-} feat_t;
+typedef struct { float f[5]; } feat_t;
 
-typedef struct {
-    unsigned d[8];
-} desc_t;
+typedef struct { unsigned d[8]; } desc_t;
 
 static bool feat_cmp(feat_desc_t i, feat_desc_t j) {
     for (int k = 0; k < 5; k++)
@@ -117,7 +113,7 @@ bool compareHamming(int data_size, unsigned* cpu, unsigned* gpu,
     return ret;
 }
 
-template<typename T>
+template <typename T>
 class ORB : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -127,7 +123,7 @@ typedef ::testing::Types<float, double> TestTypes;
 
 TYPED_TEST_CASE(ORB, TestTypes);
 
-template<typename T>
+template <typename T>
 void orbTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;

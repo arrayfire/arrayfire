@@ -18,7 +18,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename T, af_border_type pad>
+template <typename T, af_border_type pad>
 Array<T> medfilt1(const Array<T> &in, dim_t w_wid) {
     in.eval();
 
@@ -29,7 +29,7 @@ Array<T> medfilt1(const Array<T> &in, dim_t w_wid) {
     return out;
 }
 
-template<typename T, af_border_type pad>
+template <typename T, af_border_type pad>
 Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid) {
     in.eval();
 

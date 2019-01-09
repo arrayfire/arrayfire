@@ -23,7 +23,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename T, bool isMCDE>
+template <typename T, bool isMCDE>
 void anisotropicDiffusion(Param inout, const float dt, const float mct,
                           const int fluxFnCode) {
     using cl::Buffer;

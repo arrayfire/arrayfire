@@ -33,13 +33,9 @@ typedef struct {
     unsigned d[128];
 } feat_desc_t;
 
-typedef struct {
-    float f[5];
-} feat_t;
+typedef struct { float f[5]; } feat_t;
 
-typedef struct {
-    float d[128];
-} desc_t;
+typedef struct { float d[128]; } desc_t;
 #ifdef AF_WITH_NONFREE_SIFT
 static bool feat_cmp(feat_desc_t i, feat_desc_t j) {
     for (int k = 0; k < 5; k++)
@@ -125,7 +121,7 @@ static bool compareEuclidean(dim_t desc_len, dim_t ndesc, float* cpu,
 }
 #endif
 
-template<typename T>
+template <typename T>
 class SIFT : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -135,7 +131,7 @@ typedef ::testing::Types<float, double> TestTypes;
 
 TYPED_TEST_CASE(SIFT, TestTypes);
 
-template<typename T>
+template <typename T>
 void siftTest(string pTestFile, unsigned nLayers, float contrastThr,
               float edgeThr, float initSigma, bool doubleInput) {
 #ifdef AF_WITH_NONFREE_SIFT

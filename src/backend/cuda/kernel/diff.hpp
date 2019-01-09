@@ -19,7 +19,7 @@ namespace kernel {
 static const unsigned TX = 16;
 static const unsigned TY = 16;
 
-template<typename T, bool D>
+template <typename T, bool D>
 inline __host__ __device__ void diff_this(T* out, const T* in,
                                           const unsigned oMem,
                                           const unsigned iMem0,
@@ -36,7 +36,7 @@ inline __host__ __device__ void diff_this(T* out, const T* in,
 /////////////////////////////////////////////////////////////////////////////
 // 1st and 2nd Order Differential for 4D along all dimensions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T, unsigned dim, bool isDiff2>
+template <typename T, unsigned dim, bool isDiff2>
 __global__ void diff_kernel(Param<T> out, CParam<T> in, const unsigned oElem,
                             const unsigned blocksPerMatX,
                             const unsigned blocksPerMatY) {
@@ -70,7 +70,7 @@ __global__ void diff_kernel(Param<T> out, CParam<T> in, const unsigned oElem,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T, unsigned dim, bool isDiff2>
+template <typename T, unsigned dim, bool isDiff2>
 void diff(Param<T> out, CParam<T> in, const int indims) {
     dim3 threads(TX, TY, 1);
 

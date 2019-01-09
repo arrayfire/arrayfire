@@ -46,7 +46,7 @@ __device__ static double getDouble(const uint &num1, const uint &num2) {
     return (num * DBL_FACTOR + HALF_DBL_FACTOR);
 }
 
-template<typename T>
+template <typename T>
 __device__ static void boxMullerTransform(T *const out1, T *const out2,
                                           const T &r1, const T &r2) {
     /*
@@ -488,7 +488,7 @@ __device__ static void partialBoxMullerWriteOut128Bytes(
     }
 }
 
-template<typename T>
+template <typename T>
 __global__ void uniformPhilox(T *out, uint hi, uint lo, uint hic, uint loc,
                               uint elementsPerBlock, uint elements) {
     uint index  = blockIdx.x * elementsPerBlock + threadIdx.x;
@@ -507,7 +507,7 @@ __global__ void uniformPhilox(T *out, uint hi, uint lo, uint hic, uint loc,
     }
 }
 
-template<typename T>
+template <typename T>
 __global__ void uniformThreefry(T *out, uint hi, uint lo, uint hic, uint loc,
                                 uint elementsPerBlock, uint elements) {
     uint index  = blockIdx.x * elementsPerBlock + threadIdx.x;
@@ -530,7 +530,7 @@ __global__ void uniformThreefry(T *out, uint hi, uint lo, uint hic, uint loc,
     }
 }
 
-template<typename T>
+template <typename T>
 __global__ void uniformMersenne(T *const out, uint *const gState,
                                 const uint *const pos_tbl,
                                 const uint *const sh1_tbl,
@@ -587,7 +587,7 @@ __global__ void uniformMersenne(T *const out, uint *const gState,
     state_write(gState, state);
 }
 
-template<typename T>
+template <typename T>
 __global__ void normalPhilox(T *out, uint hi, uint lo, uint hic, uint loc,
                              uint elementsPerBlock, uint elements) {
     uint index  = blockIdx.x * elementsPerBlock + threadIdx.x;
@@ -606,7 +606,7 @@ __global__ void normalPhilox(T *out, uint hi, uint lo, uint hic, uint loc,
     }
 }
 
-template<typename T>
+template <typename T>
 __global__ void normalThreefry(T *out, uint hi, uint lo, uint hic, uint loc,
                                uint elementsPerBlock, uint elements) {
     uint index  = blockIdx.x * elementsPerBlock + threadIdx.x;
@@ -630,7 +630,7 @@ __global__ void normalThreefry(T *out, uint hi, uint lo, uint hic, uint loc,
     }
 }
 
-template<typename T>
+template <typename T>
 __global__ void normalMersenne(T *const out, uint *const gState,
                                const uint *const pos_tbl,
                                const uint *const sh1_tbl,
@@ -688,7 +688,7 @@ __global__ void normalMersenne(T *const out, uint *const gState,
     state_write(gState, state);
 }
 
-template<typename T>
+template <typename T>
 void uniformDistributionMT(T *out, size_t elements, uint *const state,
                            const uint *const pos, const uint *const sh1,
                            const uint *const sh2, uint mask,
@@ -704,7 +704,7 @@ void uniformDistributionMT(T *out, size_t elements, uint *const state,
                 elements);
 }
 
-template<typename T>
+template <typename T>
 void normalDistributionMT(T *out, size_t elements, uint *const state,
                           const uint *const pos, const uint *const sh1,
                           const uint *const sh2, uint mask,
@@ -720,7 +720,7 @@ void normalDistributionMT(T *out, size_t elements, uint *const state,
                 elements);
 }
 
-template<typename T>
+template <typename T>
 void uniformDistributionCBRNG(T *out, size_t elements,
                               const af_random_engine_type type,
                               const uintl &seed, uintl &counter) {
@@ -746,7 +746,7 @@ void uniformDistributionCBRNG(T *out, size_t elements,
     counter += elements;
 }
 
-template<typename T>
+template <typename T>
 void normalDistributionCBRNG(T *out, size_t elements,
                              const af_random_engine_type type,
                              const uintl &seed, uintl &counter) {

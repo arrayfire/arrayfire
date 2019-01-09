@@ -18,7 +18,7 @@ using af::dim4;
 
 namespace cuda {
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 unsigned orb(Array<float> &x, Array<float> &y, Array<float> &score,
              Array<float> &ori, Array<float> &size, Array<uint> &desc,
              const Array<T> &image, const float fast_thr,

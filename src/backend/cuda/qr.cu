@@ -48,19 +48,19 @@ namespace cuda {
 //        double *work,
 //        int lwork, int *devInfo);
 
-template<typename T>
+template <typename T>
 struct geqrf_func_def_t {
     typedef cusolverStatus_t (*geqrf_func_def)(cusolverDnHandle_t, int, int,
                                                T *, int, T *, T *, int, int *);
 };
 
-template<typename T>
+template <typename T>
 struct geqrf_buf_func_def_t {
     typedef cusolverStatus_t (*geqrf_buf_func_def)(cusolverDnHandle_t, int, int,
                                                    T *, int, int *);
 };
 
-template<typename T>
+template <typename T>
 struct mqr_func_def_t {
     typedef cusolverStatus_t (*mqr_func_def)(cusolverDnHandle_t,
                                              cublasSideMode_t,
@@ -70,20 +70,20 @@ struct mqr_func_def_t {
 };
 
 #define QR_FUNC_DEF(FUNC)                                         \
-    template<typename T>                                          \
+    template <typename T>                                         \
     typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func(); \
                                                                   \
-    template<typename T>                                          \
+    template <typename T>                                         \
     typename FUNC##_buf_func_def_t<T>::FUNC##_buf_func_def FUNC##_buf_func();
 
 #define QR_FUNC(FUNC, TYPE, PREFIX)                                         \
-    template<>                                                              \
+    template <>                                                             \
     typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>() { \
         return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
                cusolverDn##PREFIX##FUNC;                                    \
     }                                                                       \
                                                                             \
-    template<>                                                              \
+    template <>                                                             \
     typename FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def               \
         FUNC##_buf_func<TYPE>() {                                           \
         return (FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def) &         \
@@ -97,11 +97,11 @@ QR_FUNC(geqrf, cfloat, C)
 QR_FUNC(geqrf, cdouble, Z)
 
 #define MQR_FUNC_DEF(FUNC) \
-    template<typename T>   \
+    template <typename T>  \
     typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func();
 
 #define MQR_FUNC(FUNC, TYPE, PREFIX)                                        \
-    template<>                                                              \
+    template <>                                                             \
     typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>() { \
         return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
                cusolverDn##PREFIX;                                          \
@@ -113,7 +113,7 @@ MQR_FUNC(mqr, double, Dormqr)
 MQR_FUNC(mqr, cfloat, Cunmqr)
 MQR_FUNC(mqr, cdouble, Zunmqr)
 
-template<typename T>
+template <typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     dim4 iDims = in.dims();
     int M      = iDims[0];
@@ -153,7 +153,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     q.resetDims(dim4(M, M));
 }
 
-template<typename T>
+template <typename T>
 Array<T> qr_inplace(Array<T> &in) {
     dim4 iDims = in.dims();
     int M      = iDims[0];

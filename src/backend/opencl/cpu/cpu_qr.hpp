@@ -11,10 +11,10 @@
 
 namespace opencl {
 namespace cpu {
-template<typename T>
+template <typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in);
 
-template<typename T>
+template <typename T>
 Array<T> qr_inplace(Array<T> &in);
 }  // namespace cpu
 }  // namespace opencl

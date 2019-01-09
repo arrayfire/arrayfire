@@ -39,7 +39,7 @@ namespace opencl {
 
 namespace kernel {
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void ireduce_dim_launcher(Param out, cl::Buffer *oidx, Param in,
                           cl::Buffer *iidx, const int dim, const int threads_y,
                           const bool is_first, const uint groups_all[4]) {
@@ -91,7 +91,7 @@ void ireduce_dim_launcher(Param out, cl::Buffer *oidx, Param in,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void ireduce_dim(Param out, cl::Buffer *oidx, Param in, int dim) {
     uint threads_y = std::min(THREADS_Y, nextpow2(in.info.dims[dim]));
     uint threads_x = THREADS_X;
@@ -131,7 +131,7 @@ void ireduce_dim(Param out, cl::Buffer *oidx, Param in, int dim) {
     }
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void ireduce_first_launcher(Param out, cl::Buffer *oidx, Param in,
                             cl::Buffer *iidx, const int threads_x,
                             const bool is_first, const uint groups_x,
@@ -185,7 +185,7 @@ void ireduce_first_launcher(Param out, cl::Buffer *oidx, Param in,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void ireduce_first(Param out, cl::Buffer *oidx, Param in) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_GROUP);
@@ -220,7 +220,7 @@ void ireduce_first(Param out, cl::Buffer *oidx, Param in) {
     }
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void ireduce(Param out, cl::Buffer *oidx, Param in, int dim) {
     if (dim == 0)
         return ireduce_first<T, op>(out, oidx, in);
@@ -236,14 +236,14 @@ void ireduce(Param out, cl::Buffer *oidx, Param in, int dim) {
 /* Other */
 #endif
 
-template<typename T>
+template <typename T>
 double cabs(const T in) {
     return (double)in;
 }
 static double cabs(const cfloat in) { return (double)abs(in); }
 static double cabs(const cdouble in) { return (double)abs(in); }
 
-template<af_op_t op, typename T>
+template <af_op_t op, typename T>
 struct MinMaxOp {
     T m_val;
     uint m_idx;
@@ -258,7 +258,7 @@ struct MinMaxOp {
     }
 };
 
-template<typename T>
+template <typename T>
 struct MinMaxOp<af_max_t, T> {
     T m_val;
     uint m_idx;
@@ -280,7 +280,7 @@ struct MinMaxOp<af_max_t, T> {
 /* Other */
 #endif
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 T ireduce_all(uint *loc, Param in) {
     int in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];

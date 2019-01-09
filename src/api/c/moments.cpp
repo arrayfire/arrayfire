@@ -31,7 +31,7 @@ using af::dim4;
 using std::vector;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline void moments(af_array* out, const af_array in,
                            af_moment_type moment) {
     Array<float> temp = moments<T>(getArray<T>(in), moment);
@@ -60,7 +60,7 @@ af_err af_moments(af_array* out, const af_array in,
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 static inline void moment_copy(double* out, const af_array moments) {
     auto info = getInfo(moments);
     vector<T> h_moments(info.elements());

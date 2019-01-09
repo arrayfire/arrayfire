@@ -112,8 +112,8 @@ TEST(FlatTests, Test_flat_2D_index1) {
         const int out_off = (j - st) * nx;
 
         for (int i = 0; i < nx; i++) {
-            ASSERT_EQ(h_in[i + in_off], h_out[i + out_off])
-                << "at (" << i << "," << j << ")";
+            ASSERT_EQ(h_in[i + in_off], h_out[i + out_off]) << "at (" << i
+                                                            << "," << j << ")";
         }
     }
 

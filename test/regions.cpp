@@ -29,7 +29,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Regions : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -41,7 +41,7 @@ typedef ::testing::Types<float, double, int, unsigned, short, ushort> TestTypes;
 // register the type list
 TYPED_TEST_CASE(Regions, TestTypes);
 
-template<typename T>
+template <typename T>
 void regionsTest(string pTestFile, af_connectivity connectivity,
                  bool isSubRef = false, const vector<af_seq>* seqv = NULL) {
     if (noDoubleTests<T>()) return;
@@ -82,8 +82,8 @@ void regionsTest(string pTestFile, af_connectivity connectivity,
         vector<T> currGoldBar = tests[testIter];
         size_t nElems         = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-                << "at: " << elIter << endl;
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                            << endl;
         }
     }
 
@@ -130,8 +130,8 @@ TEST(Regions, CPP) {
         vector<float> currGoldBar = tests[testIter];
         size_t nElems             = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-                << "at: " << elIter << endl;
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                            << endl;
         }
     }
 

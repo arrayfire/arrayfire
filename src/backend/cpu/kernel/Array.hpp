@@ -16,7 +16,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void evalMultiple(std::vector<Param<T>> arrays,
                   std::vector<jit::Node_ptr> output_nodes_) {
     af::dim4 odims = arrays[0].dims();
@@ -84,7 +84,7 @@ void evalMultiple(std::vector<Param<T>> arrays,
     }
 }
 
-template<typename T>
+template <typename T>
 void evalArray(Param<T> arr, jit::Node_ptr node) {
     evalMultiple<T>({arr}, {node});
 }

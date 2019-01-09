@@ -24,14 +24,14 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, typename accT, dim_t baseDim, bool expand>
+template <typename T, typename accT, dim_t baseDim, bool expand>
 inline static af_array convolve(const af_array &s, const af_array &f,
                                 AF_BATCH_KIND kind) {
     return getHandle(convolve<T, accT, baseDim, expand>(
         getArray<T>(s), castArray<accT>(f), kind));
 }
 
-template<typename T, typename accT, bool expand>
+template <typename T, typename accT, bool expand>
 inline static af_array convolve2(const af_array &s, const af_array &c_f,
                                  const af_array &r_f) {
     const Array<accT> colFilter = castArray<accT>(c_f);
@@ -56,7 +56,7 @@ inline static af_array convolve2(const af_array &s, const af_array &c_f,
         convolve2<T, accT, expand>(getArray<T>(s), colFilter, rowFilter));
 }
 
-template<dim_t baseDim>
+template <dim_t baseDim>
 AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims) {
     dim_t sn = sDims.ndims();
     dim_t fn = fDims.ndims();
@@ -81,7 +81,7 @@ AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims) {
         return AF_BATCH_UNSUPPORTED;
 }
 
-template<dim_t baseDim, bool expand>
+template <dim_t baseDim, bool expand>
 af_err convolve(af_array *out, const af_array signal, const af_array filter) {
     try {
         const ArrayInfo &sInfo = getInfo(signal);
@@ -160,7 +160,7 @@ af_err convolve(af_array *out, const af_array signal, const af_array filter) {
     return AF_SUCCESS;
 }
 
-template<bool expand>
+template <bool expand>
 af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter,
                      const af_array signal) {
     try {
@@ -232,7 +232,7 @@ af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter,
     return AF_SUCCESS;
 }
 
-template<int baseDim>
+template <int baseDim>
 bool isFreqDomain(const af_array &signal, const af_array filter,
                   af_conv_domain domain) {
     if (domain == AF_CONV_FREQ) return true;

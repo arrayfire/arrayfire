@@ -19,7 +19,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename inType, typename outType, af_match_type mType, bool needMean>
+template <typename inType, typename outType, af_match_type mType, bool needMean>
 __global__ void matchTemplate(Param<outType> out, CParam<inType> srch,
                               CParam<inType> tmplt, int nBBS0, int nBBS1) {
     unsigned b2 = blockIdx.x / nBBS0;
@@ -126,7 +126,7 @@ __global__ void matchTemplate(Param<outType> out, CParam<inType> srch,
     }
 }
 
-template<typename inType, typename outType, af_match_type mType, bool needMean>
+template <typename inType, typename outType, af_match_type mType, bool needMean>
 void matchTemplate(Param<outType> out, CParam<inType> srch,
                    CParam<inType> tmplt) {
     const dim3 threads(THREADS_X, THREADS_Y);

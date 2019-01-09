@@ -22,7 +22,7 @@ using std::function;
 #define __SYNCHRONOUS_ARCH 1
 class queue_impl {
    public:
-    template<typename F, typename... Args>
+    template <typename F, typename... Args>
     void enqueue(const F func, Args... args) const {
         AF_ERROR("Incorrectly configured", AF_ERR_INTERNAL);
     }
@@ -55,7 +55,7 @@ class queue {
         , sync_calls(__SYNCHRONOUS_ARCH == 1 ||
                      getEnvVar("AF_SYNCHRONOUS_CALLS") == "1") {}
 
-    template<typename F, typename... Args>
+    template <typename F, typename... Args>
     void enqueue(const F func, Args... args) {
         count++;
         if (sync_calls) {

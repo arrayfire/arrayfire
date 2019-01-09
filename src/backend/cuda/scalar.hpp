@@ -15,7 +15,7 @@
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 Array<T> createScalarNode(const dim4 &size, const T val) {
     return createNodeArray<T>(size,
                               std::make_shared<common::ScalarNode<T>>(val));

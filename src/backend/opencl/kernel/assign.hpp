@@ -36,7 +36,7 @@ typedef struct {
     char isSeq[4];
 } AssignKernelParam_t;
 
-template<typename T>
+template <typename T>
 void assign(Param out, const Param in, const AssignKernelParam_t& p,
             Buffer* bPtr[4]) {
     std::string refName =

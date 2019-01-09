@@ -14,7 +14,6 @@
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 void copy_histogram(const Array<T> &data, fg_histogram hist);
-
 }

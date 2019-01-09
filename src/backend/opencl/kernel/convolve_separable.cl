@@ -77,7 +77,7 @@ kernel void convolve(global T *out, KParam oInfo, global T const *signal,
             // kernel compilation
             int s_idx = (CONV_DIM == 0 ? (ly * shrdLen + (i - f))
                                        : ((i - f) * shrdLen + lx));
-            T s_val   = localMem[s_idx];
+            T s_val = localMem[s_idx];
 
             // binOp will do MUL_OP for convolution operation
             accum = accum + binOp((accType)s_val, (accType)f_val);

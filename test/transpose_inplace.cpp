@@ -23,7 +23,7 @@ using af::dtype_traits;
 using std::endl;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Transpose : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -37,7 +37,7 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, uint, char, uchar,
 // register the type list
 TYPED_TEST_CASE(Transpose, TestTypes);
 
-template<typename T>
+template <typename T>
 void transposeip_test(dim4 dims) {
     if (noDoubleTests<T>()) return;
 

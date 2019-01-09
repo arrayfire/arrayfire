@@ -24,13 +24,13 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Transform : public ::testing::Test {
    public:
     virtual void SetUp() {}
 };
 
-template<typename T>
+template <typename T>
 class TransformInt : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -43,7 +43,7 @@ typedef ::testing::Types<int, intl, uint, uintl, short, ushort, uchar>
 TYPED_TEST_CASE(Transform, TestTypes);
 TYPED_TEST_CASE(TransformInt, TestTypesInt);
 
-template<typename T>
+template <typename T>
 void transformTest(string pTestFile, string pHomographyFile,
                    const af_interp_type method, const bool invert) {
     if (noDoubleTests<T>()) return;
@@ -340,9 +340,9 @@ TEST(TransformBatching, CPP) {
         out[i].host((void*)&outData.front());
 
         for (int iter = 0; iter < (int)gold[i].size(); iter++) {
-            ASSERT_EQ(gold[i][iter], outData[iter])
-                << "at: " << iter << endl
-                << "for " << i << "-th operation" << endl;
+            ASSERT_EQ(gold[i][iter], outData[iter]) << "at: " << iter << endl
+                                                    << "for " << i
+                                                    << "-th operation" << endl;
         }
     }
 }

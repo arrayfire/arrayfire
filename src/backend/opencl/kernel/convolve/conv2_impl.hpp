@@ -14,7 +14,7 @@ namespace opencl {
 
 namespace kernel {
 
-template<typename T, typename aT, bool expand>
+template <typename T, typename aT, bool expand>
 void conv2Helper(const conv_kparam_t& param, Param out, const Param signal,
                  const Param filter) {
     int f0 = filter.info.dims[0];
@@ -75,7 +75,7 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal,
            param.s[2]);
 }
 
-template<typename T, typename aT, bool expand>
+template <typename T, typename aT, bool expand>
 void conv2(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt) {
     size_t se_size = filt.info.dims[0] * filt.info.dims[1] * sizeof(aT);
     p.impulse      = bufferAlloc(se_size);

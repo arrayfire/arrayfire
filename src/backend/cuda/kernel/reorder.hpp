@@ -21,7 +21,7 @@ static const unsigned TY    = 8;
 static const unsigned TILEX = 512;
 static const unsigned TILEY = 32;
 
-template<typename T>
+template <typename T>
 __global__ void reorder_kernel(Param<T> out, CParam<T> in, const int d0,
                                const int d1, const int d2, const int d3,
                                const int blocksPerMatX,
@@ -67,7 +67,7 @@ __global__ void reorder_kernel(Param<T> out, CParam<T> in, const int d0,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 void reorder(Param<T> out, CParam<T> in, const dim_t *rdims) {
     dim3 threads(TX, TY, 1);
 

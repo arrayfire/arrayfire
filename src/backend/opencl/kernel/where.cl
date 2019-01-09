@@ -47,8 +47,8 @@ __kernel void get_out_idx_kernel(__global uint *oData, __global uint *otData,
 
     for (uint k = 0, id = xid; k < lim && id < otInfo.dims[0];
          k++, id += get_local_size(0)) {
-        uint idx = otData[id] + accum;
-        T ival   = iData[id];
+        uint idx                          = otData[id] + accum;
+        T ival                            = iData[id];
         if (!isZero(ival)) oData[idx - 1] = (off + id);
     }
 }

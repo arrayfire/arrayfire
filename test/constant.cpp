@@ -24,7 +24,7 @@ using af::identity;
 using af::sum;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Constant : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char,
@@ -32,7 +32,7 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char,
     TestTypes;
 TYPED_TEST_CASE(Constant, TestTypes);
 
-template<typename T>
+template <typename T>
 void ConstantCPPCheck(T value) {
     if (noDoubleTests<T>()) return;
 
@@ -47,7 +47,7 @@ void ConstantCPPCheck(T value) {
     for (int i = 0; i < num; i++) { ASSERT_EQ(h_in[i], val); }
 }
 
-template<typename T>
+template <typename T>
 void ConstantCCheck(T value) {
     if (noDoubleTests<T>()) return;
 
@@ -66,7 +66,7 @@ void ConstantCCheck(T value) {
     ASSERT_SUCCESS(af_release_array(out));
 }
 
-template<typename T>
+template <typename T>
 void IdentityCPPCheck() {
     if (noDoubleTests<T>()) return;
 
@@ -104,7 +104,7 @@ void IdentityCPPCheck() {
     }
 }
 
-template<typename T>
+template <typename T>
 void IdentityLargeDimCheck() {
     if (noDoubleTests<T>()) return;
 
@@ -124,7 +124,7 @@ void IdentityLargeDimCheck() {
     ASSERT_EQ(largeDim, sum<float>(out));
 }
 
-template<typename T>
+template <typename T>
 void IdentityCCheck() {
     if (noDoubleTests<T>()) return;
 
@@ -148,7 +148,7 @@ void IdentityCCheck() {
     ASSERT_SUCCESS(af_release_array(out));
 }
 
-template<typename T>
+template <typename T>
 void IdentityCPPError() {
     if (noDoubleTests<T>()) return;
 

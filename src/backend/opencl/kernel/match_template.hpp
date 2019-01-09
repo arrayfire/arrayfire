@@ -30,7 +30,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename inType, typename outType, af_match_type mType, bool needMean>
+template <typename inType, typename outType, af_match_type mType, bool needMean>
 void matchTemplate(Param out, const Param srch, const Param tmplt) {
     std::string refName = std::string("matchTemplate_") +
                           std::string(dtype_traits<inType>::getName()) +

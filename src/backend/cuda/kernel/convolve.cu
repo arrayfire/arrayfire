@@ -40,7 +40,7 @@ static const int MAX_CONV3_FILTER_LEN = 5;
 __constant__ char
     cFilter[2 * (2 * (MAX_CONV1_FILTER_LEN - 1) + THREADS) * sizeof(double)];
 
-template<typename T, typename aT, bool expand>
+template <typename T, typename aT, bool expand>
 __global__ void convolve1(Param<T> out, CParam<T> signal, int fLen, int nBBS0,
                           int nBBS1, int o1, int o2, int o3, int s1, int s2,
                           int s3) {
@@ -96,7 +96,7 @@ __global__ void convolve1(Param<T> out, CParam<T> signal, int fLen, int nBBS0,
     }
 }
 
-template<typename T, typename aT, bool expand, int fLen0, int fLen1>
+template <typename T, typename aT, bool expand, int fLen0, int fLen1>
 __global__ void convolve2(Param<T> out, CParam<T> signal, int nBBS0, int nBBS1,
                           int o2, int o3, int s2, int s3) {
     const size_t C_SIZE =
@@ -139,13 +139,13 @@ __global__ void convolve2(Param<T> out, CParam<T> signal, int nBBS0, int nBBS1,
     int s1 = signal.strides[1];
     int d0 = signal.dims[0];
     int d1 = signal.dims[1];
-    // below loops are traditional loops, they only run multiple
-    // times filter length is more than launch size
+// below loops are traditional loops, they only run multiple
+// times filter length is more than launch size
 #pragma unroll
     for (int b = ly, gy2 = gy; b < shrdLen1; b += THREADS_Y, gy2 += THREADS_Y) {
         int j     = gy2 - radius1;
         bool is_j = j >= 0 && j < d1;
-        // move row_set THREADS_Y along coloumns
+// move row_set THREADS_Y along coloumns
 #pragma unroll
         for (int a = lx, gx2 = gx; a < shrdLen0;
              a += THREADS_X, gx2 += THREADS_X) {
@@ -179,7 +179,7 @@ __inline__ __device__ int index(int i, int j, int k, int jstride, int kstride) {
     return i + j * jstride + k * kstride;
 }
 
-template<typename T, typename aT, bool expand>
+template <typename T, typename aT, bool expand>
 __global__ void convolve3(Param<T> out, CParam<T> signal, int fLen0, int fLen1,
                           int fLen2, int nBBS, int o3, int s3) {
     SharedMemory<T> shared;
@@ -255,7 +255,7 @@ __global__ void convolve3(Param<T> out, CParam<T> signal, int fLen0, int fLen1,
                     aT f_val = impulse[index(fi, fj, fk, fLen0, fStride)];
                     T s_val = shrdMem[index(ci - fi, cj - fj, ck - fk, shrdLen0,
                                             skStride)];
-                    accum   = accum + s_val * f_val;
+                    accum = accum + s_val * f_val;
                 }
             }
         }
@@ -276,7 +276,7 @@ struct conv_kparam_t {
     int s[3];
 };
 
-template<typename T>
+template <typename T>
 void prepareKernelArgs(conv_kparam_t &params, dim_t oDims[], dim_t fDims[],
                        int baseDim) {
     int batchDims[4] = {1, 1, 1, 1};
@@ -321,7 +321,7 @@ void prepareKernelArgs(conv_kparam_t &params, dim_t oDims[], dim_t fDims[],
     }
 }
 
-template<typename T, typename aT, bool expand, int f0, int f1>
+template <typename T, typename aT, bool expand, int f0, int f1>
 void conv2Helper(const conv_kparam_t &p, Param<T> out, CParam<T> sig) {
     CUDA_LAUNCH((convolve2<T, aT, expand, f0, f1>), p.mBlocks, p.mThreads, out,
                 sig, p.mBlk_x, p.mBlk_y, p.o[1], p.o[2], p.s[1], p.s[2]);
@@ -329,7 +329,7 @@ void conv2Helper(const conv_kparam_t &p, Param<T> out, CParam<T> sig) {
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, typename aT, bool expand, int f0>
+template <typename T, typename aT, bool expand, int f0>
 void conv2Helper(const conv_kparam_t &p, Param<T> out, CParam<T> sig, int f1) {
     switch (f1) {
         case 1: conv2Helper<T, aT, expand, f0, 1>(p, out, sig); break;
@@ -347,7 +347,7 @@ void conv2Helper(const conv_kparam_t &p, Param<T> out, CParam<T> sig, int f1) {
     }
 }
 
-template<typename T, typename aT, bool expand>
+template <typename T, typename aT, bool expand>
 void conv2Helper(const conv_kparam_t &p, Param<T> out, CParam<T> sig, int f0,
                  int f1) {
     switch (f0) {
@@ -417,7 +417,7 @@ void conv2Helper(const conv_kparam_t &p, Param<T> out, CParam<T> sig, int f0,
     }
 }
 
-template<typename T, typename aT, bool expand>
+template <typename T, typename aT, bool expand>
 void convolve_1d(conv_kparam_t &p, Param<T> out, CParam<T> sig,
                  CParam<aT> filt) {
     prepareKernelArgs<T>(p, out.dims, filt.dims, 1);
@@ -458,7 +458,7 @@ void convolve_1d(conv_kparam_t &p, Param<T> out, CParam<T> sig,
     }
 }
 
-template<typename T, typename aT, bool expand>
+template <typename T, typename aT, bool expand>
 void convolve_2d(conv_kparam_t &p, Param<T> out, CParam<T> sig,
                  CParam<aT> filt) {
     prepareKernelArgs<T>(p, out.dims, filt.dims, 2);
@@ -488,7 +488,7 @@ void convolve_2d(conv_kparam_t &p, Param<T> out, CParam<T> sig,
     }
 }
 
-template<typename T, typename aT, bool expand>
+template <typename T, typename aT, bool expand>
 void convolve_3d(conv_kparam_t &p, Param<T> out, CParam<T> sig,
                  CParam<aT> filt) {
     prepareKernelArgs<T>(p, out.dims, filt.dims, 3);
@@ -515,7 +515,7 @@ void convolve_3d(conv_kparam_t &p, Param<T> out, CParam<T> sig,
     }
 }
 
-template<typename T, typename aT, int baseDim, bool expand>
+template <typename T, typename aT, int baseDim, bool expand>
 void convolve_nd(Param<T> out, CParam<T> signal, CParam<aT> filt,
                  AF_BATCH_KIND kind) {
     bool callKernel = true;

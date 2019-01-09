@@ -21,13 +21,13 @@
 using af::dim4;
 using namespace detail;
 
-template<af_op_t op, typename Ti, typename To>
+template <af_op_t op, typename Ti, typename To>
 static inline af_array scan(const af_array in, const int dim,
                             bool inclusive_scan = true) {
     return getHandle(scan<op, Ti, To>(getArray<Ti>(in), dim, inclusive_scan));
 }
 
-template<af_op_t op, typename Ti, typename To>
+template <af_op_t op, typename Ti, typename To>
 static inline af_array scan_key(const af_array key, const af_array in,
                                 const int dim, bool inclusive_scan = true) {
     const ArrayInfo& key_info = getInfo(key);
@@ -56,7 +56,7 @@ static inline af_array scan_key(const af_array key, const af_array in,
     return out;
 }
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 static inline af_array scan_op(const af_array key, const af_array in,
                                const int dim, af_binary_op op,
                                bool inclusive_scan = true) {
@@ -83,7 +83,7 @@ static inline af_array scan_op(const af_array key, const af_array in,
     return out;
 }
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 static inline af_array scan_op(const af_array in, const int dim,
                                af_binary_op op, bool inclusive_scan) {
     af_array out;
@@ -135,7 +135,9 @@ af_err af_accum(af_array* out, const af_array in, const int dim) {
             case s64: res = scan<af_add_t, intl, intl>(in, dim); break;
             case u16: res = scan<af_add_t, ushort, uint>(in, dim); break;
             case s16: res = scan<af_add_t, short, int>(in, dim); break;
-            case u8: res = scan<af_add_t, uchar, uint>(in, dim); break;
+            case u8:
+                res = scan<af_add_t, uchar, uint>(in, dim);
+                break;
             // Make sure you are adding only "1" for every non zero value, even
             // if op == af_add_t
             case b8: res = scan<af_notzero_t, char, uint>(in, dim); break;

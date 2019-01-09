@@ -46,7 +46,7 @@ namespace opencl {
 namespace kernel {
 static const uint THREADS = 256;
 
-template<typename T>
+template <typename T>
 static Kernel get_random_engine_kernel(const af_random_engine_type type,
                                        const int kerIdx,
                                        const uint elementsPerBlock) {
@@ -131,7 +131,7 @@ static Kernel get_mersenne_init_kernel(void) {
     return *entry.ker;
 }
 
-template<typename T>
+template <typename T>
 static void randomDistribution(cl::Buffer out, const size_t elements,
                                const af_random_engine_type type,
                                const uintl &seed, uintl &counter, int kerIdx) {
@@ -160,7 +160,7 @@ static void randomDistribution(cl::Buffer out, const size_t elements,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 void randomDistribution(cl::Buffer out, const size_t elements, cl::Buffer state,
                         cl::Buffer pos, cl::Buffer sh1, cl::Buffer sh2,
                         const uint mask, cl::Buffer recursion_table,
@@ -185,21 +185,21 @@ void randomDistribution(cl::Buffer out, const size_t elements, cl::Buffer state,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 void uniformDistributionCBRNG(cl::Buffer out, const size_t elements,
                               const af_random_engine_type type,
                               const uintl &seed, uintl &counter) {
     randomDistribution<T>(out, elements, type, seed, counter, 0);
 }
 
-template<typename T>
+template <typename T>
 void normalDistributionCBRNG(cl::Buffer out, const size_t elements,
                              const af_random_engine_type type,
                              const uintl &seed, uintl &counter) {
     randomDistribution<T>(out, elements, type, seed, counter, 1);
 }
 
-template<typename T>
+template <typename T>
 void uniformDistributionMT(cl::Buffer out, const size_t elements,
                            cl::Buffer state, cl::Buffer pos, cl::Buffer sh1,
                            cl::Buffer sh2, const uint mask,
@@ -209,7 +209,7 @@ void uniformDistributionMT(cl::Buffer out, const size_t elements,
                           recursion_table, temper_table, 0);
 }
 
-template<typename T>
+template <typename T>
 void normalDistributionMT(cl::Buffer out, const size_t elements,
                           cl::Buffer state, cl::Buffer pos, cl::Buffer sh1,
                           cl::Buffer sh2, const uint mask,

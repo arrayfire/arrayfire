@@ -20,7 +20,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename AccType, typename T, int channels>
+template <typename AccType, typename T, int channels>
 static __global__ void meanshiftKernel(Param<T> out, CParam<T> in, int radius,
                                        float cvar, uint numIters, int nBBS0,
                                        int nBBS1) {
@@ -43,7 +43,7 @@ static __global__ void meanshiftKernel(Param<T> out, CParam<T> in, int radius,
     AccType currentMeanColors[channels];
 
 #pragma unroll
-    for (int ch = 0; ch < channels; ++ch)
+    for (int ch                 = 0; ch < channels; ++ch)
         currentCenterColors[ch] = iptr[(
             gx * in.strides[0] + gy * in.strides[1] + ch * in.strides[2])];
 
@@ -122,7 +122,7 @@ static __global__ void meanshiftKernel(Param<T> out, CParam<T> in, int radius,
                       abs(oldMeanPosI - meanPosI) + norm) <= 1);
 
 #pragma unroll
-        for (int ch = 0; ch < channels; ++ch)
+        for (int ch                 = 0; ch < channels; ++ch)
             currentCenterColors[ch] = (T)(currentMeanColors[ch]);
 
         if (stop) break;
@@ -134,7 +134,7 @@ static __global__ void meanshiftKernel(Param<T> out, CParam<T> in, int radius,
               ch * out.strides[2])] = currentCenterColors[ch];
 }
 
-template<typename T, bool IsColor>
+template <typename T, bool IsColor>
 void meanshift(Param<T> out, CParam<T> in, const float spatialSigma,
                const float chromaticSigma, const uint numIters) {
     typedef typename std::conditional<std::is_same<T, double>::value, double,

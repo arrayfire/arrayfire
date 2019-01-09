@@ -17,7 +17,7 @@
 using af::dim4;
 using std::swap;
 namespace opencl {
-template<af_op_t op, typename Ti, typename To>
+template <af_op_t op, typename Ti, typename To>
 Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan,
                  double nanval) {
     dim4 odims    = in.dims();
@@ -27,7 +27,7 @@ Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan,
     return out;
 }
 
-template<af_op_t op, typename Ti, typename To>
+template <af_op_t op, typename Ti, typename To>
 To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
     return kernel::reduce_all<Ti, To, op>(in, change_nan, nanval);
 }

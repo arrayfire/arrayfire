@@ -22,7 +22,7 @@ using af::dim4;
 using namespace detail;
 
 namespace {
-template<typename Ty, typename Tp>
+template <typename Ty, typename Tp>
 inline void approx1(af_array *yo, const af_array yi, const af_array xo,
                     const int xdim, const Tp &xi_beg, const Tp &xi_step,
                     const af_interp_type method, const float offGrid) {
@@ -31,7 +31,7 @@ inline void approx1(af_array *yo, const af_array yi, const af_array xo,
 }
 }  // namespace
 
-template<typename Ty, typename Tp>
+template <typename Ty, typename Tp>
 static inline af_array approx2(const af_array zi, const af_array xo,
                                const int xdim, const Tp &xi_beg,
                                const Tp &xi_step, const af_array yo,

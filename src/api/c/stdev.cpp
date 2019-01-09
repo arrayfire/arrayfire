@@ -26,7 +26,7 @@
 
 using namespace detail;
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 static outType stdev(const af_array& in) {
     typedef typename baseOutType<outType>::type weightType;
     Array<inType> _in       = getArray<inType>(in);
@@ -43,7 +43,7 @@ static outType stdev(const af_array& in) {
     return sqrt(result);
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 static af_array stdev(const af_array& in, int dim) {
     typedef typename baseOutType<outType>::type weightType;
     Array<inType> _in    = getArray<inType>(in);
@@ -88,8 +88,10 @@ af_err af_stdev_all(double* realVal, double* imagVal, const af_array in) {
             case u16: *realVal = stdev<ushort, float>(in); break;
             case s64: *realVal = stdev<intl, double>(in); break;
             case u64: *realVal = stdev<uintl, double>(in); break;
-            case u8: *realVal = stdev<uchar, float>(in); break;
-            case b8: *realVal = stdev<char, float>(in); break;
+            case u8: *realVal  = stdev<uchar, float>(in); break;
+            case b8:
+                *realVal = stdev<char, float>(in);
+                break;
             // TODO: FIXME: sqrt(complex) is not present in cuda/opencl backend
             // case c32: {
             //    cfloat tmp = stdev<cfloat,cfloat>(in);
@@ -124,8 +126,10 @@ af_err af_stdev(af_array* out, const af_array in, const dim_t dim) {
             case u16: output = stdev<ushort, float>(in, dim); break;
             case s64: output = stdev<intl, double>(in, dim); break;
             case u64: output = stdev<uintl, double>(in, dim); break;
-            case u8: output = stdev<uchar, float>(in, dim); break;
-            case b8: output = stdev<char, float>(in, dim); break;
+            case u8: output  = stdev<uchar, float>(in, dim); break;
+            case b8:
+                output = stdev<char, float>(in, dim);
+                break;
             // TODO: FIXME: sqrt(complex) is not present in cuda/opencl backend
             // case c32: output = stdev<cfloat,  cfloat>(in, dim); break;
             // case c64: output = stdev<cdouble,cdouble>(in, dim); break;

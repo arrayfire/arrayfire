@@ -20,7 +20,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static af_features susan(af_array const& in, const unsigned radius,
                          const float diff_thr, const float geom_thr,
                          const float feature_ratio, const unsigned edge) {

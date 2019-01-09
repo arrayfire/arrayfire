@@ -31,7 +31,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Join : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -50,7 +50,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
 // register the type list
 TYPED_TEST_CASE(Join, TestTypes);
 
-template<typename T>
+template <typename T>
 void joinTest(string pTestFile, const unsigned dim, const unsigned in0,
               const unsigned in1, const unsigned resultIdx,
               bool isSubRef = false, const vector<af_seq>* seqv = NULL) {

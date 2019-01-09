@@ -11,10 +11,9 @@
 
 namespace cpu {
 
-template<typename T, typename To>
+template <typename T, typename To>
 void nearest_neighbour(Array<uint>& idx, Array<To>& dist, const Array<T>& query,
                        const Array<T>& train, const uint dist_dim,
                        const uint n_dist,
                        const af_match_type dist_type = AF_SSD);
-
 }

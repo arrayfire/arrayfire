@@ -22,14 +22,14 @@
 #include <vector>
 
 namespace cpu {
-template<typename T>
+template <typename T>
 void multiply_inplace(Array<T>& in, double val) {
     in.eval();
     getQueue().enqueue(kernel::copyElemwise<T, T>, in, in, static_cast<T>(0),
                        val);
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 Array<outType> padArray(const Array<inType>& in, const dim4& dims,
                         outType default_value, double factor) {
     Array<outType> ret = createValueArray<outType>(dims, default_value);

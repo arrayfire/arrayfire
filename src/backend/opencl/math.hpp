@@ -29,15 +29,15 @@
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 static inline T abs(T val) {
     return std::abs(val);
 }
-template<typename T>
+template <typename T>
 static inline T min(T lhs, T rhs) {
     return std::min(lhs, rhs);
 }
-template<typename T>
+template <typename T>
 static inline T max(T lhs, T rhs) {
     return std::max(lhs, rhs);
 }
@@ -49,39 +49,39 @@ static inline double abs(cdouble cval) {
     return std::sqrt(cval.s[0] * cval.s[0] + cval.s[1] * cval.s[1]);
 }
 
-template<typename T>
+template <typename T>
 static inline T division(T lhs, double rhs) {
     return lhs / rhs;
 }
 cfloat division(cfloat lhs, double rhs);
 cdouble division(cdouble lhs, double rhs);
 
-template<>
+template <>
 STATIC_ cfloat max<cfloat>(cfloat lhs, cfloat rhs) {
     return abs(lhs) > abs(rhs) ? lhs : rhs;
 }
 
-template<>
+template <>
 STATIC_ cdouble max<cdouble>(cdouble lhs, cdouble rhs) {
     return abs(lhs) > abs(rhs) ? lhs : rhs;
 }
 
-template<>
+template <>
 STATIC_ cfloat min<cfloat>(cfloat lhs, cfloat rhs) {
     return abs(lhs) < abs(rhs) ? lhs : rhs;
 }
 
-template<>
+template <>
 STATIC_ cdouble min<cdouble>(cdouble lhs, cdouble rhs) {
     return abs(lhs) < abs(rhs) ? lhs : rhs;
 }
 
-template<typename T>
+template <typename T>
 static T scalar(double val) {
     return (T)(val);
 }
 
-template<>
+template <>
 STATIC_ cfloat scalar<cfloat>(double val) {
     cfloat cval;
     cval.s[0] = (float)val;
@@ -89,7 +89,7 @@ STATIC_ cfloat scalar<cfloat>(double val) {
     return cval;
 }
 
-template<>
+template <>
 STATIC_ cdouble scalar<cdouble>(double val) {
     cdouble cval;
     cval.s[0] = val;
@@ -97,7 +97,7 @@ STATIC_ cdouble scalar<cdouble>(double val) {
     return cval;
 }
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 static To scalar(Ti real, Ti imag) {
     To cval;
     cval.s[0] = real;
@@ -105,27 +105,27 @@ static To scalar(Ti real, Ti imag) {
     return cval;
 }
 
-template<typename T>
+template <typename T>
 STATIC_ T maxval() {
     return std::numeric_limits<T>::max();
 }
-template<typename T>
+template <typename T>
 STATIC_ T minval() {
     return std::numeric_limits<T>::min();
 }
-template<>
+template <>
 STATIC_ float maxval() {
     return std::numeric_limits<float>::infinity();
 }
-template<>
+template <>
 STATIC_ double maxval() {
     return std::numeric_limits<double>::infinity();
 }
-template<>
+template <>
 STATIC_ float minval() {
     return -std::numeric_limits<float>::infinity();
 }
-template<>
+template <>
 STATIC_ double minval() {
     return -std::numeric_limits<double>::infinity();
 }

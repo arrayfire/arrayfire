@@ -37,7 +37,7 @@ int randomInterval(int start, int end) {
     return start + std::rand() % (end - start);
 }
 
-template<typename T>
+template <typename T>
 vector<T> createScanKey(dim4 dims, int scanDim, const vector<int> &nodeLengths,
                         T keyStart, T keyEnd) {
     std::srand(0);
@@ -64,7 +64,7 @@ vector<T> createScanKey(dim4 dims, int scanDim, const vector<int> &nodeLengths,
     return key;
 }
 
-template<typename T>
+template <typename T>
 vector<T> createScanData(dim4 dims, T dataStart, T dataEnd) {
     int elemCount = dims.elements();
     vector<T> in(elemCount);
@@ -74,8 +74,8 @@ vector<T> createScanData(dim4 dims, T dataStart, T dataEnd) {
     return in;
 }
 
-template<typename Ti, typename Tk, typename To, af_binary_op op,
-         bool inclusive_scan>
+template <typename Ti, typename Tk, typename To, af_binary_op op,
+          bool inclusive_scan>
 void verify(dim4 dims, const vector<Ti> &in, const vector<Tk> &key,
             const vector<To> &out, int scanDim, double eps) {
     std::srand(1);
@@ -108,7 +108,7 @@ void verify(dim4 dims, const vector<Ti> &in, const vector<Tk> &key,
     }
 }
 
-template<typename Ti, typename To, af_binary_op op, bool inclusive_scan>
+template <typename Ti, typename To, af_binary_op op, bool inclusive_scan>
 void scanByKeyTest(dim4 dims, int scanDim, vector<int> nodeLengths,
                    int keyStart, int keyEnd, Ti dataStart, Ti dataEnd,
                    double eps) {

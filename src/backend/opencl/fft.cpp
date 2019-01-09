@@ -25,13 +25,13 @@ void setFFTPlanCacheSize(size_t numPlans) {
     fftManager().setMaxCacheSize(numPlans);
 }
 
-template<typename T>
+template <typename T>
 struct Precision;
-template<>
+template <>
 struct Precision<cfloat> {
     enum { type = CLFFT_SINGLE };
 };
-template<>
+template <>
 struct Precision<cdouble> {
     enum { type = CLFFT_DOUBLE };
 };
@@ -61,12 +61,12 @@ inline bool isSupLen(dim_t length) {
     return true;
 }
 
-template<int rank>
+template <int rank>
 void verifySupported(const dim4 dims) {
     for (int i = 0; i < rank; i++) { ARG_ASSERT(1, isSupLen(dims[i])); }
 }
 
-template<typename T, int rank, bool direction>
+template <typename T, int rank, bool direction>
 void fft_inplace(Array<T> &in) {
     verifySupported<rank>(in.dims());
     size_t tdims[4], istrides[4];
@@ -90,7 +90,7 @@ void fft_inplace(Array<T> &in) {
         NULL, NULL, &imem, &imem, NULL));
 }
 
-template<typename Tc, typename Tr, int rank>
+template <typename Tc, typename Tr, int rank>
 Array<Tc> fft_r2c(const Array<Tr> &in) {
     dim4 odims = in.dims();
 
@@ -123,7 +123,7 @@ Array<Tc> fft_r2c(const Array<Tr> &in) {
     return out;
 }
 
-template<typename Tr, typename Tc, int rank>
+template <typename Tr, typename Tc, int rank>
 Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims) {
     Array<Tr> out = createEmptyArray<Tr>(odims);
 

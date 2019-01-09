@@ -57,7 +57,7 @@ struct conv_kparam_t {
     cl::Buffer* impulse;
 };
 
-template<typename T>
+template <typename T>
 void prepareKernelArgs(conv_kparam_t& param, dim_t* oDims, const dim_t* fDims,
                        int baseDim) {
     int batchDims[4] = {1, 1, 1, 1};
@@ -66,10 +66,10 @@ void prepareKernelArgs(conv_kparam_t& param, dim_t* oDims, const dim_t* fDims,
     }
 
     if (baseDim == 1) {
-        param.local    = NDRange(THREADS, 1);
-        param.nBBS0    = divup(oDims[0], THREADS);
-        param.nBBS1    = batchDims[2];
-        param.global   = NDRange(param.nBBS0 * THREADS * batchDims[1],
+        param.local  = NDRange(THREADS, 1);
+        param.nBBS0  = divup(oDims[0], THREADS);
+        param.nBBS1  = batchDims[2];
+        param.global = NDRange(param.nBBS0 * THREADS * batchDims[1],
                                param.nBBS1 * batchDims[3]);
         param.loc_size = (THREADS + 2 * (fDims[0] - 1)) * sizeof(T);
     } else if (baseDim == 2) {
@@ -79,11 +79,11 @@ void prepareKernelArgs(conv_kparam_t& param, dim_t* oDims, const dim_t* fDims,
         param.global = NDRange(param.nBBS0 * THREADS_X * batchDims[2],
                                param.nBBS1 * THREADS_Y * batchDims[3]);
     } else if (baseDim == 3) {
-        param.local    = NDRange(CUBE_X, CUBE_Y, CUBE_Z);
-        param.nBBS0    = divup(oDims[0], CUBE_X);
-        param.nBBS1    = divup(oDims[1], CUBE_Y);
-        int blk_z      = divup(oDims[2], CUBE_Z);
-        param.global   = NDRange(param.nBBS0 * CUBE_X * batchDims[3],
+        param.local  = NDRange(CUBE_X, CUBE_Y, CUBE_Z);
+        param.nBBS0  = divup(oDims[0], CUBE_X);
+        param.nBBS1  = divup(oDims[1], CUBE_Y);
+        int blk_z    = divup(oDims[2], CUBE_Z);
+        param.global = NDRange(param.nBBS0 * CUBE_X * batchDims[3],
                                param.nBBS1 * CUBE_Y, blk_z * CUBE_Z);
         param.loc_size = (CUBE_X + 2 * (fDims[0] - 1)) *
                          (CUBE_Y + 2 * (fDims[1] - 1)) *
@@ -91,7 +91,7 @@ void prepareKernelArgs(conv_kparam_t& param, dim_t* oDims, const dim_t* fDims,
     }
 }
 
-template<typename T, typename aT, int bDim, bool expand>
+template <typename T, typename aT, int bDim, bool expand>
 void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
                  const Param& filter) {
     std::string ref_name = std::string("convolveND_") +
@@ -142,13 +142,13 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
            param.o[1], param.o[2], param.s[0], param.s[1], param.s[2]);
 }
 
-template<typename T, typename aT, bool expand>
+template <typename T, typename aT, bool expand>
 void conv1(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt);
 
-template<typename T, typename aT, bool expand>
+template <typename T, typename aT, bool expand>
 void conv2(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt);
 
-template<typename T, typename aT, bool expand>
+template <typename T, typename aT, bool expand>
 void conv3(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt);
 }  // namespace kernel
 }  // namespace opencl

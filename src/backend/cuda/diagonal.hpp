@@ -11,9 +11,9 @@
 #include <ops.hpp>
 
 namespace cuda {
-template<typename T>
+template <typename T>
 Array<T> diagCreate(const Array<T> &in, const int num);
 
-template<typename T>
+template <typename T>
 Array<T> diagExtract(const Array<T> &in, const int num);
 }  // namespace cuda

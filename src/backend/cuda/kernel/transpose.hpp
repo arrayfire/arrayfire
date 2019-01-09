@@ -21,7 +21,7 @@ static const int TILE_DIM  = 32;
 static const int THREADS_X = TILE_DIM;
 static const int THREADS_Y = 256 / TILE_DIM;
 
-template<typename T, bool conjugate>
+template <typename T, bool conjugate>
 __device__ T doOp(T in) {
     if (conjugate)
         return conj(in);
@@ -30,7 +30,7 @@ __device__ T doOp(T in) {
 }
 
 // Kernel is going access original data in coaleasced format
-template<typename T, bool conjugate, bool is32Multiple>
+template <typename T, bool conjugate, bool is32Multiple>
 __global__ void transpose(Param<T> out, CParam<T> in, const int blocksPerMatX,
                           const int blocksPerMatY) {
     __shared__ T shrdMem[TILE_DIM][TILE_DIM + 1];
@@ -88,7 +88,7 @@ __global__ void transpose(Param<T> out, CParam<T> in, const int blocksPerMatX,
     }
 }
 
-template<typename T, bool conjugate>
+template <typename T, bool conjugate>
 void transpose(Param<T> out, CParam<T> in) {
     // dimensions passed to this function should be input dimensions
     // any necessary transformations and dimension related calculations are

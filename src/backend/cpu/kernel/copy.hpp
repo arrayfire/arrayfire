@@ -18,7 +18,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void stridedCopy(T* dst, af::dim4 const& ostrides, T const* src,
                  af::dim4 const& dims, af::dim4 const& strides, unsigned dim) {
     if (dim == 0) {
@@ -39,7 +39,7 @@ void stridedCopy(T* dst, af::dim4 const& ostrides, T const* src,
     }
 }
 
-template<typename OutT, typename InT>
+template <typename OutT, typename InT>
 void copyElemwise(Param<OutT> dst, CParam<InT> src, OutT default_value,
                   double factor) {
     af::dim4 src_dims    = src.dims();
@@ -86,14 +86,14 @@ void copyElemwise(Param<OutT> dst, CParam<InT> src, OutT default_value,
     }
 }
 
-template<typename OutT, typename InT>
+template <typename OutT, typename InT>
 struct CopyImpl {
     static void copy(Param<OutT> dst, CParam<InT> src) {
         copyElemwise(dst, src, scalar<OutT>(0), 1.0);
     }
 };
 
-template<typename T>
+template <typename T>
 struct CopyImpl<T, T> {
     static void copy(Param<T> dst, CParam<T> src) {
         af::dim4 src_dims    = src.dims();
@@ -149,7 +149,7 @@ struct CopyImpl<T, T> {
     }
 };
 
-template<typename OutT, typename InT>
+template <typename OutT, typename InT>
 void copy(Param<OutT> dst, CParam<InT> src) {
     CopyImpl<OutT, InT>::copy(dst, src);
 }

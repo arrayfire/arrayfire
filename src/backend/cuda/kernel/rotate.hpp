@@ -22,14 +22,12 @@ constexpr unsigned TY = 16;
 // Used for batching images
 constexpr int TI = 4;
 
-typedef struct {
-    float tmat[6];
-} tmat_t;
+typedef struct { float tmat[6]; } tmat_t;
 
 ///////////////////////////////////////////////////////////////////////////
 // Rotate Kernel
 ///////////////////////////////////////////////////////////////////////////
-template<typename T, int order>
+template <typename T, int order>
 __global__ static void rotate_kernel(Param<T> out, CParam<T> in, const tmat_t t,
                                      const int nimages, const int nbatches,
                                      const int blocksXPerImage,
@@ -85,7 +83,7 @@ __global__ static void rotate_kernel(Param<T> out, CParam<T> in, const tmat_t t,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T, int order>
+template <typename T, int order>
 void rotate(Param<T> out, CParam<T> in, const float theta,
             af_interp_type method) {
     const float c = cos(-theta), s = sin(-theta);

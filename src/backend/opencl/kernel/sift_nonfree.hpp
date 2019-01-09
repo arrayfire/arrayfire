@@ -137,7 +137,7 @@ static const unsigned GLOHHistBins = 16;
 
 static const float PI_VAL = 3.14159265358979323846f;
 
-template<typename T>
+template <typename T>
 void gaussian1D(T* out, const int dim, double sigma = 0.0) {
     if (!(sigma > 0)) sigma = 0.25 * dim;
 
@@ -153,7 +153,7 @@ void gaussian1D(T* out, const int dim, double sigma = 0.0) {
     for (int k = 0; k < dim; k++) out[k] /= sum;
 }
 
-template<typename T>
+template <typename T>
 Param gaussFilter(float sigma) {
     // Using 6-sigma rule
     unsigned gauss_len = std::min((unsigned)round(sigma * 6 + 1) | 1, 31u);
@@ -182,7 +182,7 @@ Param gaussFilter(float sigma) {
     return gauss_filter;
 }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 void convSepFull(Param& dst, Param src, Param filter) {
     Param tmp;
     tmp.info.offset = 0;
@@ -200,7 +200,7 @@ void convSepFull(Param& dst, Param src, Param filter) {
     bufferFree(tmp.data);
 }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 Param createInitialImage(Param img, const float init_sigma,
                          const bool double_input) {
     Param init_img;
@@ -240,7 +240,7 @@ Param createInitialImage(Param img, const float init_sigma,
     return init_img;
 }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 std::vector<Param> buildGaussPyr(Param init_img, const unsigned n_octaves,
                                  const unsigned n_layers,
                                  const float init_sigma) {
@@ -349,7 +349,7 @@ std::vector<Param> buildGaussPyr(Param init_img, const unsigned n_octaves,
     return gauss_pyr;
 }
 
-template<typename T>
+template <typename T>
 std::vector<Param> buildDoGPyr(std::vector<Param> gauss_pyr,
                                const unsigned n_octaves,
                                const unsigned n_layers, Kernel* suKernel) {
@@ -388,7 +388,7 @@ std::vector<Param> buildDoGPyr(std::vector<Param> gauss_pyr,
     return dog_pyr;
 }
 
-template<typename T>
+template <typename T>
 void update_permutation(compute::buffer_iterator<T>& keys,
                         compute::vector<int>& permutation,
                         compute::command_queue& queue) {
@@ -403,7 +403,7 @@ void update_permutation(compute::buffer_iterator<T>& keys,
     compute::sort_by_key(temp.begin(), temp.end(), permutation.begin(), queue);
 }
 
-template<typename T>
+template <typename T>
 void apply_permutation(compute::buffer_iterator<T>& keys,
                        compute::vector<int>& permutation,
                        compute::command_queue& queue) {
@@ -415,7 +415,7 @@ void apply_permutation(compute::buffer_iterator<T>& keys,
                     queue);
 }
 
-template<typename T>
+template <typename T>
 std::array<cl::Kernel*, 7> getSiftKernels() {
     static const unsigned NUM_KERNELS           = 7;
     static const char* kernelNames[NUM_KERNELS] = {"sub",
@@ -468,7 +468,7 @@ std::array<cl::Kernel*, 7> getSiftKernels() {
     return retVal;
 }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
           Param& score_out, Param& ori_out, Param& size_out, Param& desc_out,
           Param img, const unsigned n_layers, const float contrast_thr,

@@ -40,7 +40,7 @@ af_err af_fir(af_array* y, const af_array b, const af_array x) {
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 inline static af_array iir(const af_array b, const af_array a,
                            const af_array x) {
     return getHandle(iir<T>(getArray<T>(b), getArray<T>(a), getArray<T>(x)));

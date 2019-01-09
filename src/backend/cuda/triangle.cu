@@ -16,12 +16,12 @@ using af::dim4;
 
 namespace cuda {
 
-template<typename T, bool is_upper, bool is_unit_diag>
+template <typename T, bool is_upper, bool is_unit_diag>
 void triangle(Array<T> &out, const Array<T> &in) {
     kernel::triangle<T, is_upper, is_unit_diag>(out, in);
 }
 
-template<typename T, bool is_upper, bool is_unit_diag>
+template <typename T, bool is_upper, bool is_unit_diag>
 Array<T> triangle(const Array<T> &in) {
     Array<T> out = createEmptyArray<T>(in.dims());
     triangle<T, is_upper, is_unit_diag>(out, in);

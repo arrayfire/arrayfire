@@ -16,7 +16,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename OutT, typename InT, bool IsColor>
+template <typename OutT, typename InT, bool IsColor>
 void bilateral(Param<OutT> out, CParam<InT> in, float const s_sigma,
                float const c_sigma) {
     af::dim4 const dims     = in.dims();

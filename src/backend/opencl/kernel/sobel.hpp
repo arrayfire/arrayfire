@@ -30,7 +30,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename Ti, typename To, unsigned ker_size>
+template <typename Ti, typename To, unsigned ker_size>
 void sobel(Param dx, Param dy, const Param in) {
     std::string refName =
         std::string("sobel3x3_") + std::string(dtype_traits<Ti>::getName()) +

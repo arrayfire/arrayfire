@@ -24,7 +24,7 @@
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig) {
     if (OpenCLCPUOffload()) { return cpu::qr(q, r, t, orig); }
 
@@ -72,7 +72,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig) {
     t = createHostDataArray(dim4(MN), &h_tau[0]);
 }
 
-template<typename T>
+template <typename T>
 Array<T> qr_inplace(Array<T> &in) {
     if (OpenCLCPUOffload()) { return cpu::qr_inplace(in); }
 
@@ -112,12 +112,12 @@ INSTANTIATE_QR(cdouble)
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }
 
-template<typename T>
+template <typename T>
 Array<T> qr_inplace(Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }

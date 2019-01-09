@@ -219,10 +219,10 @@ TEST(GettingStarted, SNIPPET_getting_started_dev_ptr) {
 
     // Convert the CUDA-allocated device memory into an ArrayFire array:
     array b(2, 3, device_ptr, afDevice);  // Note: afDevice (default: afHost)
-    // Note that ArrayFire takes ownership over `device_ptr`, so memory will
-    // be freed when `b` id destructed. Do not call cudaFree(device_ptr)!
+// Note that ArrayFire takes ownership over `device_ptr`, so memory will
+// be freed when `b` id destructed. Do not call cudaFree(device_ptr)!
 
-    //! [ex_getting_started_dev_ptr]
+//! [ex_getting_started_dev_ptr]
 #endif  //__CUDACC__
 }
 
@@ -249,10 +249,10 @@ TEST(GettingStarted, SNIPPET_getting_started_ptr) {
     // Because OpenCL uses references rather than pointers, accessing memory
     // is similar, but has a somewhat clunky syntax. For the C-API
     cl_mem d_opencl = (cl_mem)a.device<float>();
-    // for the C++ API, you can just wrap this object into a cl::Buffer
-    // after calling clRetainMemObject.
+// for the C++ API, you can just wrap this object into a cl::Buffer
+// after calling clRetainMemObject.
 
-    //! [ex_getting_started_ptr]
+//! [ex_getting_started_ptr]
 #endif  //__CUDACC__
 }
 

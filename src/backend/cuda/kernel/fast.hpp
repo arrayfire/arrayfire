@@ -49,7 +49,7 @@ inline __device__ int test_smaller(const float x, const float p,
 // Returns -1 when x < p - thr
 // Returns  0 when x >= p - thr && x <= p + thr
 // Returns  1 when x > p + thr
-template<typename T>
+template <typename T>
 inline __device__ int test_pixel(const T *local_image, const float p,
                                  const float thr, const int x, const int y) {
     return -test_smaller((float)local_image[idx(x, y)], p, thr) +
@@ -100,7 +100,7 @@ inline __device__ double abs_diff(const double x, const double y) {
     return fabs(x - y);
 }
 
-template<typename T, int arc_length>
+template <typename T, int arc_length>
 __device__ void locate_features_core(T *local_image, float *score,
                                      const unsigned idim0, const unsigned idim1,
                                      const float thr, int x, int y,
@@ -162,7 +162,7 @@ __device__ void locate_features_core(T *local_image, float *score,
         score[x + idim0 * y] = max_val(s_bright, s_dark);
 }
 
-template<typename T>
+template <typename T>
 __device__ void load_shared_image(CParam<T> in, T *local_image, unsigned ix,
                                   unsigned iy, unsigned bx, unsigned by,
                                   unsigned x, unsigned y, unsigned lx,
@@ -183,7 +183,7 @@ __device__ void load_shared_image(CParam<T> in, T *local_image, unsigned ix,
     }
 }
 
-template<typename T, int arc_length>
+template <typename T, int arc_length>
 __global__ void locate_features(CParam<T> in, float *score, const float thr,
                                 const unsigned edge) {
     unsigned ix = threadIdx.x;
@@ -203,7 +203,7 @@ __global__ void locate_features(CParam<T> in, float *score, const float thr,
                                         in.dims[1], thr, x, y, edge);
 }
 
-template<bool nonmax>
+template <bool nonmax>
 __global__ void non_max_counts(unsigned *d_counts, unsigned *d_offsets,
                                unsigned *d_total, float *flags,
                                const float *score, const unsigned idim0,
@@ -240,12 +240,12 @@ __global__ void non_max_counts(unsigned *d_counts, unsigned *d_offsets,
                 float max_v = v;
                 max_v       = max_val(score[x - 1 + idim0 * (y - 1)],
                                 score[x - 1 + idim0 * y]);
-                max_v       = max_val(max_v, score[x - 1 + idim0 * (y + 1)]);
-                max_v       = max_val(max_v, score[x + idim0 * (y - 1)]);
-                max_v       = max_val(max_v, score[x + idim0 * (y + 1)]);
-                max_v       = max_val(max_v, score[x + 1 + idim0 * (y - 1)]);
-                max_v       = max_val(max_v, score[x + 1 + idim0 * (y)]);
-                max_v       = max_val(max_v, score[x + 1 + idim0 * (y + 1)]);
+                max_v = max_val(max_v, score[x - 1 + idim0 * (y + 1)]);
+                max_v = max_val(max_v, score[x + idim0 * (y - 1)]);
+                max_v = max_val(max_v, score[x + idim0 * (y + 1)]);
+                max_v = max_val(max_v, score[x + 1 + idim0 * (y - 1)]);
+                max_v = max_val(max_v, score[x + 1 + idim0 * (y)]);
+                max_v = max_val(max_v, score[x + 1 + idim0 * (y + 1)]);
 
                 v                    = (v > max_v) ? v : 0;
                 flags[y * idim0 + x] = v;
@@ -265,7 +265,7 @@ __global__ void non_max_counts(unsigned *d_counts, unsigned *d_offsets,
     }
 }
 
-template<typename T>
+template <typename T>
 __global__ void get_features(float *x_out, float *y_out, float *score_out,
                              const T *flags, const unsigned *d_counts,
                              const unsigned *d_offsets, const unsigned total,
@@ -311,7 +311,7 @@ __global__ void get_features(float *x_out, float *y_out, float *score_out,
     }
 }
 
-template<typename T>
+template <typename T>
 void fast(unsigned *out_feat, float **x_out, float **y_out, float **score_out,
           const Array<T> &in, const float thr, const unsigned arc_length,
           const unsigned nonmax, const float feature_ratio,

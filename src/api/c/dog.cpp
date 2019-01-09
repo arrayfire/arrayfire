@@ -20,7 +20,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, typename accT>
+template <typename T, typename accT>
 static af_array dog(const af_array& in, const int radius1, const int radius2) {
     af_array g1, g2;
     g1 = g2 = 0;
@@ -59,12 +59,12 @@ af_err af_dog(af_array* out, const af_array in, const int radius1,
         switch (type) {
             case f32: output = dog<float, float>(in, radius1, radius2); break;
             case f64: output = dog<double, double>(in, radius1, radius2); break;
-            case b8: output = dog<char, float>(in, radius1, radius2); break;
+            case b8: output  = dog<char, float>(in, radius1, radius2); break;
             case s32: output = dog<int, float>(in, radius1, radius2); break;
             case u32: output = dog<uint, float>(in, radius1, radius2); break;
             case s16: output = dog<short, float>(in, radius1, radius2); break;
             case u16: output = dog<ushort, float>(in, radius1, radius2); break;
-            case u8: output = dog<uchar, float>(in, radius1, radius2); break;
+            case u8: output  = dog<uchar, float>(in, radius1, radius2); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);

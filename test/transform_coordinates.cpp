@@ -23,7 +23,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class TransformCoordinates : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -33,7 +33,7 @@ typedef ::testing::Types<float, double> TestTypes;
 
 TYPED_TEST_CASE(TransformCoordinates, TestTypes);
 
-template<typename T>
+template <typename T>
 void transformCoordinatesTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
 

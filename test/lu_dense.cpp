@@ -127,7 +127,7 @@ TEST(LU, SplitSmall) {
     delete[] uData;
 }
 
-template<typename T>
+template <typename T>
 void luTester(const int m, const int n, double eps) {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
@@ -148,14 +148,12 @@ void luTester(const int m, const int n, double eps) {
     array a_perm  = a_orig(pivot, span);
     //! [ex_lu_recon]
 
-    ASSERT_NEAR(
-        0,
-        max<typename dtype_traits<T>::base_type>(abs(real(a_recon - a_perm))),
-        eps);
-    ASSERT_NEAR(
-        0,
-        max<typename dtype_traits<T>::base_type>(abs(imag(a_recon - a_perm))),
-        eps);
+    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(
+                       abs(real(a_recon - a_perm))),
+                eps);
+    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(
+                       abs(imag(a_recon - a_perm))),
+                eps);
 
     //! [ex_lu_packed]
     array out = a_orig.copy();
@@ -177,40 +175,38 @@ void luTester(const int m, const int n, double eps) {
     array a_recon2 = matmul(l2, u2);
     array a_perm2  = a_orig(pivot2, span);
 
-    ASSERT_NEAR(
-        0,
-        max<typename dtype_traits<T>::base_type>(abs(real(a_recon2 - a_perm2))),
-        eps);
-    ASSERT_NEAR(
-        0,
-        max<typename dtype_traits<T>::base_type>(abs(imag(a_recon2 - a_perm2))),
-        eps);
+    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(
+                       abs(real(a_recon2 - a_perm2))),
+                eps);
+    ASSERT_NEAR(0, max<typename dtype_traits<T>::base_type>(
+                       abs(imag(a_recon2 - a_perm2))),
+                eps);
 }
 
-template<typename T>
+template <typename T>
 double eps();
 
-template<>
+template <>
 double eps<float>() {
     return 1E-3;
 }
 
-template<>
+template <>
 double eps<double>() {
     return 1e-8;
 }
 
-template<>
+template <>
 double eps<cfloat>() {
     return 1E-3;
 }
 
-template<>
+template <>
 double eps<cdouble>() {
     return 1e-8;
 }
 
-template<typename T>
+template <typename T>
 class LU : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;

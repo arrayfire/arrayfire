@@ -348,7 +348,7 @@ TEST(Assert, TestEqualsDiffSizes) {
 TEST(Assert, TestEqualsDiffValue) {
     array gold = constant(1, 3, 3);
     array out  = gold;
-    out(2, 2)  = 2;
+    out(2, 2) = 2;
 
     // Testing this macro
     // ASSERT_ARRAYS_EQ(gold, out);
@@ -358,7 +358,7 @@ TEST(Assert, TestEqualsDiffValue) {
 TEST(Assert, TestEqualsDiffComplexValue) {
     array gold = constant(af::cfloat(3.1f, 3.1f), 3, 3, c32);
     array out  = gold;
-    out(2, 2)  = 2.2;
+    out(2, 2) = 2.2;
 
     // Testing this macro
     // ASSERT_ARRAYS_EQ(gold, out);

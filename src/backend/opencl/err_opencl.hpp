@@ -21,7 +21,7 @@
     } while (0)
 
 namespace opencl {
-template<typename T>
+template <typename T>
 void verifyDoubleSupport() {
     if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
         !isDoubleSupported(getActiveDeviceId())) {

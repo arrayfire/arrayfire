@@ -26,7 +26,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Resize : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -37,7 +37,7 @@ class Resize : public ::testing::Test {
     vector<af_seq> subMat0;
 };
 
-template<typename T>
+template <typename T>
 class ResizeI : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -81,14 +81,14 @@ TYPED_TEST(Resize, InvalidDims) {
     ASSERT_SUCCESS(af_release_array(inArray));
 }
 
-template<typename T>
+template <typename T>
 void compare(T test, T out, double err, size_t i) {
     ASSERT_EQ(abs(test - out) < err, true) << "at: " << i << endl
                                            << "for test = : " << test << endl
                                            << "out data = : " << out << endl;
 }
 
-template<>
+template <>
 void compare<uintl>(uintl test, uintl out, double err, size_t i) {
     ASSERT_EQ(((intl)test - (intl)out) < err, true)
         << "at: " << i << endl
@@ -96,7 +96,7 @@ void compare<uintl>(uintl test, uintl out, double err, size_t i) {
         << "out data = : " << out << endl;
 }
 
-template<>
+template <>
 void compare<uint>(uint test, uint out, double err, size_t i) {
     ASSERT_EQ(((int)test - (int)out) < err, true)
         << "at: " << i << endl
@@ -104,7 +104,7 @@ void compare<uint>(uint test, uint out, double err, size_t i) {
         << "out data = : " << out << endl;
 }
 
-template<>
+template <>
 void compare<uchar>(uchar test, uchar out, double err, size_t i) {
     ASSERT_EQ(((int)test - (int)out) < err, true)
         << "at: " << i << endl
@@ -112,7 +112,7 @@ void compare<uchar>(uchar test, uchar out, double err, size_t i) {
         << "out data = : " << out << endl;
 }
 
-template<typename T>
+template <typename T>
 void resizeTest(string pTestFile, const unsigned resultIdx, const dim_t odim0,
                 const dim_t odim1, const af_interp_type method,
                 bool isSubRef = false, const vector<af_seq>* seqv = NULL) {
@@ -314,7 +314,7 @@ TYPED_TEST(ResizeI, Resize1CLargeDownLinear) {
                           AF_INTERP_BILINEAR);
 }
 
-template<typename T>
+template <typename T>
 void resizeArgsTest(af_err err, string pTestFile, const dim4 odims,
                     const af_interp_type method) {
     if (noDoubleTests<T>()) return;

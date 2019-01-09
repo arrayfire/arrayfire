@@ -30,41 +30,41 @@ array mean(const array& in, const array& weights, const dim_t dim) {
 }
 
 #define INSTANTIATE_MEAN(T)                                                  \
-    template<>                                                               \
+    template <>                                                              \
     AFAPI T mean(const array& in) {                                          \
         double ret_val;                                                      \
         AF_THROW(af_mean_all(&ret_val, NULL, in.get()));                     \
         return (T)ret_val;                                                   \
     }                                                                        \
-    template<>                                                               \
+    template <>                                                              \
     AFAPI T mean(const array& in, const array& wts) {                        \
         double ret_val;                                                      \
         AF_THROW(af_mean_all_weighted(&ret_val, NULL, in.get(), wts.get())); \
         return (T)ret_val;                                                   \
     }
 
-template<>
+template <>
 AFAPI af_cfloat mean(const array& in) {
     double real, imag;
     AF_THROW(af_mean_all(&real, &imag, in.get()));
     return af_cfloat((float)real, (float)imag);
 }
 
-template<>
+template <>
 AFAPI af_cdouble mean(const array& in) {
     double real, imag;
     AF_THROW(af_mean_all(&real, &imag, in.get()));
     return af_cdouble(real, imag);
 }
 
-template<>
+template <>
 AFAPI af_cfloat mean(const array& in, const array& weights) {
     double real, imag;
     AF_THROW(af_mean_all_weighted(&real, &imag, in.get(), weights.get()));
     return af_cfloat((float)real, (float)imag);
 }
 
-template<>
+template <>
 AFAPI af_cdouble mean(const array& in, const array& weights) {
     double real, imag;
     AF_THROW(af_mean_all_weighted(&real, &imag, in.get(), weights.get()));

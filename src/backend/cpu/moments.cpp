@@ -24,7 +24,7 @@ static inline int bitCount(int v) {
 
 using af::dim4;
 
-template<typename T>
+template <typename T>
 Array<float> moments(const Array<T> &in, const af_moment_type moment) {
     in.eval();
     dim4 odims, idims = in.dims();

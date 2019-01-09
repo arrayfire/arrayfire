@@ -23,15 +23,15 @@ namespace kernel {
 static const int RESIZE_TX = 16;
 static const int RESIZE_TY = 16;
 
-template<typename T>
+template <typename T>
 using wtype_t = typename std::conditional<std::is_same<T, double>::value,
                                           double, float>::type;
 
-template<typename T>
+template <typename T>
 using vtype_t = typename std::conditional<common::is_complex<T>::value, T,
                                           wtype_t<T>>::type;
 
-template<typename T, af_interp_type method>
+template <typename T, af_interp_type method>
 void resize(Param out, const Param in) {
     typedef typename dtype_traits<T>::base_type BT;
 

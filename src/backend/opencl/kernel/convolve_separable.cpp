@@ -37,7 +37,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename T, typename accType, int conv_dim, bool expand>
+template <typename T, typename accType, int conv_dim, bool expand>
 void convSep(Param out, const Param signal, const Param filter) {
     const int fLen = filter.info.dims[0] * filter.info.dims[1];
 

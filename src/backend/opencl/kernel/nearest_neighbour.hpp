@@ -31,7 +31,7 @@ namespace kernel {
 
 static const unsigned THREADS = 256;
 
-template<typename T, typename To, af_match_type dist_type>
+template <typename T, typename To, af_match_type dist_type>
 void all_distances(Param dist, Param query, Param train, const dim_t dist_dim) {
     const dim_t feat_len = query.info.dims[dist_dim];
     const unsigned max_kern_feat_len =
@@ -46,7 +46,7 @@ void all_distances(Param dist, Param query, Param train, const dim_t dist_dim) {
     bool use_lmem    = (avail_lmem >= (lmem_predef + ltrain_sz)) ? true : false;
     size_t lmem_sz   = (use_lmem) ? lmem_predef + ltrain_sz : lmem_predef;
 
-    unsigned unroll_len = nextpow2(feat_len);
+    unsigned unroll_len                    = nextpow2(feat_len);
     if (unroll_len != feat_len) unroll_len = 0;
 
     std::string ref_name = std::string("knn_") + std::to_string(dist_type) +

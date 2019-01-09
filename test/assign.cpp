@@ -31,7 +31,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class ArrayAssign : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -98,7 +98,7 @@ typedef ::testing::Types<float, cdouble, cfloat, double, int, uint, char, uchar,
 // register the type list
 TYPED_TEST_CASE(ArrayAssign, TestTypes);
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 void assignTest(string pTestFile, const vector<af_seq> *seqv) {
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
@@ -133,8 +133,8 @@ void assignTest(string pTestFile, const vector<af_seq> *seqv) {
     vector<outType> currGoldBar = tests[0];
     size_t nElems               = currGoldBar.size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 
     delete[] outData;
@@ -143,7 +143,7 @@ void assignTest(string pTestFile, const vector<af_seq> *seqv) {
     ASSERT_SUCCESS(af_release_array(outArray));
 }
 
-template<typename T>
+template <typename T>
 void assignTestCPP(string pTestFile, const vector<af_seq> &seqv) {
     if (noDoubleTests<T>()) return;
     try {
@@ -173,8 +173,8 @@ void assignTestCPP(string pTestFile, const vector<af_seq> &seqv) {
         vector<T> currGoldBar = tests[0];
         size_t nElems         = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            EXPECT_EQ(currGoldBar[elIter], outData[elIter])
-                << "at: " << elIter << endl;
+            EXPECT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                            << endl;
         }
         delete[] outData;
     } catch (const exception &ex) {
@@ -282,7 +282,7 @@ TYPED_TEST(ArrayAssign, Cube2HyperCubeCPP) {
                              this->subMat3D_to_4D);
 }
 
-template<typename T>
+template <typename T>
 void assignScalarCPP(string pTestFile, const vector<af_seq> &seqv) {
     if (noDoubleTests<T>()) return;
     try {
@@ -361,19 +361,19 @@ TYPED_TEST(ArrayAssign, AssignRowCPP) {
     vector<TypeParam> sq(dimsize);
     vector<int> arIdx(2);
     for (int i = 0; i < (int)sq.size(); i++) sq[i] = i;
-    arIdx[0] = 5;
-    arIdx[1] = 7;
+    arIdx[0]                                       = 5;
+    arIdx[1]                                       = 7;
 
     array in(dimsize, dimsize, &input.front(), afHost);
     dim4 size(dimsize, 1, 1, 1);
     array sarr(size, &sq.front(), afHost);
     array arrIdx(2, &arIdx.front(), afHost);
 
-    in.row(0)        = sarr;
-    in.row(2)        = 2;
+    in.row(0) = sarr;
+    in.row(2) = 2;
     in(arrIdx, span) = 8;
-    in.row(end)      = 3;
-    in.rows(3, 4)    = 7;
+    in.row(end) = 3;
+    in.rows(3, 4) = 7;
 
     vector<TypeParam> out(100);
     in.host(&out.front());
@@ -412,19 +412,19 @@ TYPED_TEST(ArrayAssign, AssignColumnCPP) {
     vector<TypeParam> sq(dimsize);
     vector<int> arIdx(2);
     for (int i = 0; i < (int)sq.size(); i++) sq[i] = i;
-    arIdx[0] = 5;
-    arIdx[1] = 7;
+    arIdx[0]                                       = 5;
+    arIdx[1]                                       = 7;
 
     array in(dimsize, dimsize, &input.front(), afHost);
     dim4 size(dimsize, 1, 1, 1);
     array sarr(size, &sq.front(), afHost);
     array arrIdx(2, &arIdx.front(), afHost);
 
-    in.col(0)        = sarr;
-    in.col(2)        = 2;
+    in.col(0) = sarr;
+    in.col(2) = 2;
     in(span, arrIdx) = 8;
-    in.col(end)      = 3;
-    in.cols(3, 4)    = 7;
+    in.col(end) = 3;
+    in.cols(3, 4) = 7;
 
     vector<TypeParam> out(100);
     in.host(&out.front());
@@ -462,19 +462,19 @@ TYPED_TEST(ArrayAssign, AssignSliceCPP) {
     vector<TypeParam> sq(dimsize * dimsize);
     vector<int> arIdx(2);
     for (int i = 0; i < (int)sq.size(); i++) sq[i] = i;
-    arIdx[0] = 5;
-    arIdx[1] = 7;
+    arIdx[0]                                       = 5;
+    arIdx[1]                                       = 7;
 
     array in(dimsize, dimsize, dimsize, &input.front(), afHost);
     dim4 size(dimsize, dimsize, 1, 1);
     array sarr(size, &sq.front(), afHost);
     array arrIdx(2, &arIdx.front(), afHost);
 
-    in.slice(0)            = sarr;
-    in.slice(2)            = 2;
+    in.slice(0) = sarr;
+    in.slice(2) = 2;
     in(span, span, arrIdx) = 8;
-    in.slice(end)          = 3;
-    in.slices(3, 4)        = 7;
+    in.slice(end) = 3;
+    in.slices(3, 4) = 7;
 
     vector<TypeParam> out(1000);
     in.host(&out.front());
@@ -568,8 +568,8 @@ TEST(ArrayAssign, CPP_END) {
     const int m       = 5;
     const int end_off = 2;
 
-    array a                = randu(n, m);
-    array b                = randu(1, m);
+    array a = randu(n, m);
+    array b = randu(1, m);
     a(end - end_off, span) = b;
 
     float *hA = a.host<float>();
@@ -587,8 +587,8 @@ TEST(ArrayAssign, CPP_END_SEQ) {
     const int end_end   = 0;
     const int len       = end_begin - end_end + 1;
 
-    array a                                = randu(num);
-    array b                                = randu(len);
+    array a = randu(num);
+    array b = randu(len);
     a(seq(end - end_begin, end - end_end)) = b;
 
     float *hA = a.host<float>();
@@ -856,7 +856,7 @@ TEST(Asssign, LinearCPPMaxDim) {
     array a       = randu(1, 2 * largeDim);
     array a_copy  = a.copy();
     af::index idx = array(seq(10, largeDim + 10));
-    a(span, idx)  = val;
+    a(span, idx) = val;
 
     ASSERT_EQ(a.dims(0), a_copy.dims(0));
 
@@ -1010,10 +1010,10 @@ TEST(Assign, ISSUE_1764) {
 
 TEST(Assign, ISSUE_1677) {
     try {
-        dim_t sz      = 1;
-        array a       = constant(1.0f, 3, sz, f32);
-        array b       = constant(2.0f, 3, sz, f32);
-        array cond    = constant(0, sz, b8);  // all false
+        dim_t sz   = 1;
+        array a    = constant(1.0f, 3, sz, f32);
+        array b    = constant(2.0f, 3, sz, f32);
+        array cond = constant(0, sz, b8);  // all false
         a(span, cond) = b(span, cond);
     } catch (exception &ex) {
         FAIL() << "ArrayFire exception: " << ex.what();

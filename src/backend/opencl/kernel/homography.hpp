@@ -33,7 +33,7 @@ const int HG_THREADS_X = 16;
 const int HG_THREADS_Y = 16;
 const int HG_THREADS   = 256;
 
-template<typename T, af_homography_type htype>
+template <typename T, af_homography_type htype>
 std::array<cl::Kernel*, 5> getHomographyKernels() {
     static const unsigned NUM_KERNELS           = 5;
     static const char* kernelNames[NUM_KERNELS] = {
@@ -98,7 +98,7 @@ std::array<cl::Kernel*, 5> getHomographyKernels() {
     return retVal;
 }
 
-template<typename T, af_homography_type htype>
+template <typename T, af_homography_type htype>
 int computeH(Param bestH, Param H, Param err, Param x_src, Param y_src,
              Param x_dst, Param y_dst, Param rnd, const unsigned iterations,
              const unsigned nsamples, const float inlier_thr) {
@@ -229,7 +229,7 @@ int computeH(Param bestH, Param H, Param err, Param x_src, Param y_src,
         // Adds up the total number of inliers
         Param totalInliers;
         totalInliers.info.offset = 0;
-        for (int k = 0; k < 4; k++)
+        for (int k                    = 0; k < 4; k++)
             totalInliers.info.dims[k] = totalInliers.info.strides[k] = 1;
         totalInliers.data = bufferAlloc(sizeof(unsigned));
 

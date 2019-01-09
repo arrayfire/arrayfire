@@ -17,7 +17,7 @@
 #include <kernel/scan_first_by_key.hpp>
 
 namespace opencl {
-template<af_op_t op, typename Ti, typename Tk, typename To>
+template <af_op_t op, typename Ti, typename Tk, typename To>
 Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim,
                bool inclusive_scan) {
     Array<To> out = createEmptyArray<To>(in.dims());

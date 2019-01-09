@@ -32,13 +32,13 @@ static const int THREADS_Y = 16;
 __device__ static int continue_flag = 1;
 
 // Wrapper function for texture fetch
-template<typename T>
+template <typename T>
 static inline __device__ T fetch(const int n, cuda::Param<T> equiv_map,
                                  cudaTextureObject_t tex) {
     return tex1Dfetch<T>(tex, n);
 }
 
-template<>
+template <>
 __device__ STATIC_ double fetch<double>(const int n,
                                         cuda::Param<double> equiv_map,
                                         cudaTextureObject_t tex) {
@@ -47,7 +47,7 @@ __device__ STATIC_ double fetch<double>(const int n,
 
 // The initial label kernel distinguishes between valid (nonzero)
 // pixels and "background" (zero) pixels.
-template<typename T, int n_per_thread>
+template <typename T, int n_per_thread>
 __global__ static void initial_label(cuda::Param<T> equiv_map,
                                      cuda::CParam<char> bin) {
     const int base_x = (blockIdx.x * blockDim.x * n_per_thread) + threadIdx.x;
@@ -68,7 +68,7 @@ __global__ static void initial_label(cuda::Param<T> equiv_map,
     }
 }
 
-template<typename T, int n_per_thread>
+template <typename T, int n_per_thread>
 __global__ static void final_relabel(cuda::Param<T> equiv_map,
                                      cuda::CParam<char> bin, const T* d_tmp) {
     const int base_x = (blockIdx.x * blockDim.x * n_per_thread) + threadIdx.x;
@@ -93,7 +93,7 @@ __global__ static void final_relabel(cuda::Param<T> equiv_map,
 
 // When two labels are equivalent, choose the lower label, but
 // do not choose zero, which indicates invalid.
-template<typename T>
+template <typename T>
 __device__ __inline__ static T relabel(const T a, const T b) {
     T aa = (a == 0) ? cuda::maxval<T>() : a;
     T bb = (b == 0) ? cuda::maxval<T>() : b;
@@ -101,7 +101,7 @@ __device__ __inline__ static T relabel(const T a, const T b) {
 }
 
 // Calculates the number of warps at compile time
-template<unsigned thread_count>
+template <unsigned thread_count>
 struct warp_count {
     enum {
         value = ((thread_count % 32) == 0 ? thread_count / 32
@@ -118,7 +118,7 @@ struct warp_count {
 // num_warps = 8; // (Could compute this from block dim)
 // Number of elements to handle per thread in each dimension
 // int n_per_thread = 2; // 2x2 per thread = 4 total elems per thread
-template<typename T, int block_dim, int n_per_thread, bool full_conn>
+template <typename T, int block_dim, int n_per_thread, bool full_conn>
 __global__ static void update_equiv(cuda::Param<T> equiv_map,
                                     const cudaTextureObject_t tex) {
     // Basic coordinates
@@ -337,14 +337,14 @@ __global__ static void update_equiv(cuda::Param<T> equiv_map,
     }
 }
 
-template<typename T>
+template <typename T>
 struct clamp_to_one : public thrust::unary_function<T, T> {
     __host__ __device__ T operator()(const T& in) const {
         return (in >= (T)1) ? (T)1 : in;
     }
 };
 
-template<typename T, bool full_conn, int n_per_thread>
+template <typename T, bool full_conn, int n_per_thread>
 void regions(cuda::Param<T> out, cuda::CParam<char> in,
              cudaTextureObject_t tex) {
     const dim3 threads(THREADS_X, THREADS_Y);

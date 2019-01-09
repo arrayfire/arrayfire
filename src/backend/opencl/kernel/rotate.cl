@@ -11,9 +11,7 @@
 #define BILINEAR transform_b
 #define LOWER transform_l
 
-typedef struct {
-    float tmat[6];
-} tmat_t;
+typedef struct { float tmat[6]; } tmat_t;
 
 __kernel void rotate_kernel(__global T *d_out, const KParam out,
                             __global const T *d_in, const KParam in,

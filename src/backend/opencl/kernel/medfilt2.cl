@@ -90,17 +90,17 @@ __kernel void medfilt2(__global T* out, KParam oInfo, __global const T* in,
             }
         }
 
-        // with each pass, remove min and max values and add new value
-        // initial sort
-        // ensure min in first half, max in second half
+// with each pass, remove min and max values and add new value
+// initial sort
+// ensure min in first half, max in second half
 #pragma unroll
         for (int i = 0; i < ARR_SIZE / 2; i++) {
             swap(v[i], v[ARR_SIZE - 1 - i]);
         }
-        // move min in first half to first pos
+// move min in first half to first pos
 #pragma unroll
         for (int i = 1; i < (ARR_SIZE + 1) / 2; i++) { swap(v[0], v[i]); }
-        // move max in second half to last pos
+// move max in second half to last pos
 #pragma unroll
         for (int i = ARR_SIZE - 2; i >= ARR_SIZE / 2; i--) {
             swap(v[i], v[ARR_SIZE - 1]);

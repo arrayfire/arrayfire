@@ -15,7 +15,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void index(Param<T> out, CParam<T> in, const af::dim4 dDims,
            std::vector<bool> const isSeq, std::vector<af_seq> const seqs,
            std::vector<CParam<uint>> idxArrs) {

@@ -32,7 +32,7 @@ using lock_guard_t = std::lock_guard<mutex_t>;
 const unsigned MAX_BUFFERS = 1000;
 const size_t ONE_GB        = 1 << 30;
 
-template<typename T>
+template <typename T>
 class MemoryManager {
     typedef struct {
         bool manager_lock;

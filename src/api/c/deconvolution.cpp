@@ -48,7 +48,7 @@ const dim_t GREATEST_PRIME_FACTOR = 13;
 const dim_t GREATEST_PRIME_FACTOR = 7;
 #endif
 
-template<typename T, typename CT>
+template <typename T, typename CT>
 Array<T> complexNorm(const Array<CT>& input) {
     auto mag  = abs<T, CT>(input);
     auto TWOS = createValueArray(input.dims(), scalar<T>(2));
@@ -89,7 +89,7 @@ std::vector<af_seq> calcPadInfo(dim4& inLPad, dim4& psfLPad, dim4& inUPad,
     return index;
 }
 
-template<typename T, typename CT>
+template <typename T, typename CT>
 void richardsonLucy(Array<T>& currentEstimate, const Array<T>& in,
                     const Array<CT>& P, const Array<CT>& Pc,
                     const unsigned iters, const float normFactor,
@@ -108,7 +108,7 @@ void richardsonLucy(Array<T>& currentEstimate, const Array<T>& in,
     }
 }
 
-template<typename T, typename CT>
+template <typename T, typename CT>
 void landweber(Array<T>& currentEstimate, const Array<T>& in,
                const Array<CT>& P, const Array<CT>& Pc, const unsigned iters,
                const float relaxFactor, const float normFactor,
@@ -134,14 +134,14 @@ void landweber(Array<T>& currentEstimate, const Array<T>& in,
     currentEstimate = fft_c2r<CT, T, BASE_DIM>(iterTemp, normFactor, odims);
 }
 
-template<typename InputType, typename RealType = float>
+template <typename InputType, typename RealType = float>
 af_array iterDeconv(const af_array in, const af_array ker, const uint iters,
                     const float rfactor, const af_iterative_deconv_algo algo) {
     typedef RealType T;
-    using CT   = typename std::conditional<std::is_same<T, double>::value,
+    using CT = typename std::conditional<std::is_same<T, double>::value,
                                          cdouble, cfloat>::type;
-    auto input = castArray<T>(in);
-    auto psf   = castArray<T>(ker);
+    auto input        = castArray<T>(in);
+    auto psf          = castArray<T>(ker);
     const dim4& idims = input.dims();
     const dim4& fdims = psf.dims();
     dim_t nElems      = 1;
@@ -217,7 +217,7 @@ af_err af_iterative_deconv(af_array* out, const af_array in, const af_array ker,
     return AF_SUCCESS;
 }
 
-template<typename CT>
+template <typename CT>
 Array<CT> denominator(const Array<CT>& I, const Array<CT>& P, const float gamma,
                       const af_inverse_deconv_algo algo) {
     typedef typename af::dtype_traits<CT>::base_type T;
@@ -242,14 +242,14 @@ Array<CT> denominator(const Array<CT>& I, const Array<CT>& P, const float gamma,
     }
 }
 
-template<typename InputType, typename RealType = float>
+template <typename InputType, typename RealType = float>
 af_array invDeconv(const af_array in, const af_array ker, const float gamma,
                    const af_inverse_deconv_algo algo) {
     typedef RealType T;
-    using CT   = typename std::conditional<std::is_same<T, double>::value,
+    using CT = typename std::conditional<std::is_same<T, double>::value,
                                          cdouble, cfloat>::type;
-    auto input = castArray<T>(in);
-    auto psf   = castArray<T>(ker);
+    auto input        = castArray<T>(in);
+    auto psf          = castArray<T>(ker);
     const dim4& idims = input.dims();
     const dim4& fdims = psf.dims();
     dim_t nElems      = 1;
@@ -303,7 +303,7 @@ af_err af_inverse_deconv(af_array* out, const af_array in, const af_array psf,
             case f32: res = invDeconv<float>(in, psf, gamma, algo); break;
             case s16: res = invDeconv<short>(in, psf, gamma, algo); break;
             case u16: res = invDeconv<ushort>(in, psf, gamma, algo); break;
-            case u8: res = invDeconv<uchar>(in, psf, gamma, algo); break;
+            case u8: res  = invDeconv<uchar>(in, psf, gamma, algo); break;
             default: TYPE_ERROR(1, inputType);
         }
         std::swap(res, *out);

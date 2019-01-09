@@ -26,7 +26,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Write : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -40,7 +40,7 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char,
 // register the type list
 TYPED_TEST_CASE(Write, TestTypes);
 
-template<typename T>
+template <typename T>
 void writeTest(dim4 dims) {
     if (noDoubleTests<T>()) return;
 

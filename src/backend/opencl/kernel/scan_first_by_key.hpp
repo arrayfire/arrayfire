@@ -15,7 +15,8 @@
 
 namespace opencl {
 namespace kernel {
-template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
+template <typename Ti, typename Tk, typename To, af_op_t op,
+          bool inclusive_scan>
 void scan_first(Param &out, const Param &in, const Param &key);
 }
 }  // namespace opencl

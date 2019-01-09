@@ -18,14 +18,14 @@
 using af::dim4;
 using namespace detail;
 
-template<typename Tx, typename Ty>
+template <typename Tx, typename Ty>
 static inline af_array join(const int dim, const af_array first,
                             const af_array second) {
     return getHandle(
         join<Tx, Ty>(dim, getArray<Tx>(first), getArray<Ty>(second)));
 }
 
-template<typename T>
+template <typename T>
 static inline af_array join_many(const int dim, const unsigned n_arrays,
                                  const af_array *inputs) {
     std::vector<Array<T>> inputs_;
@@ -69,14 +69,14 @@ af_err af_join(af_array *out, const int dim, const af_array first,
             case c64:
                 output = join<cdouble, cdouble>(dim, first, second);
                 break;
-            case b8: output = join<char, char>(dim, first, second); break;
+            case b8: output  = join<char, char>(dim, first, second); break;
             case s32: output = join<int, int>(dim, first, second); break;
             case u32: output = join<uint, uint>(dim, first, second); break;
             case s64: output = join<intl, intl>(dim, first, second); break;
             case u64: output = join<uintl, uintl>(dim, first, second); break;
             case s16: output = join<short, short>(dim, first, second); break;
             case u16: output = join<ushort, ushort>(dim, first, second); break;
-            case u8: output = join<uchar, uchar>(dim, first, second); break;
+            case u8: output  = join<uchar, uchar>(dim, first, second); break;
             default: TYPE_ERROR(1, finfo.getType());
         }
         std::swap(*out, output);
@@ -123,14 +123,14 @@ af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays,
             case c32: output = join_many<cfloat>(dim, n_arrays, inputs); break;
             case f64: output = join_many<double>(dim, n_arrays, inputs); break;
             case c64: output = join_many<cdouble>(dim, n_arrays, inputs); break;
-            case b8: output = join_many<char>(dim, n_arrays, inputs); break;
+            case b8: output  = join_many<char>(dim, n_arrays, inputs); break;
             case s32: output = join_many<int>(dim, n_arrays, inputs); break;
             case u32: output = join_many<uint>(dim, n_arrays, inputs); break;
             case s64: output = join_many<intl>(dim, n_arrays, inputs); break;
             case u64: output = join_many<uintl>(dim, n_arrays, inputs); break;
             case s16: output = join_many<short>(dim, n_arrays, inputs); break;
             case u16: output = join_many<ushort>(dim, n_arrays, inputs); break;
-            case u8: output = join_many<uchar>(dim, n_arrays, inputs); break;
+            case u8: output  = join_many<uchar>(dim, n_arrays, inputs); break;
             default: TYPE_ERROR(1, info[0].getType());
         }
         std::swap(*out, output);

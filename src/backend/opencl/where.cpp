@@ -15,7 +15,7 @@
 #include <complex>
 
 namespace opencl {
-template<typename T>
+template <typename T>
 Array<uint> where(const Array<T> &in) {
     Param Out;
     Param In = in;

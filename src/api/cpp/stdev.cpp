@@ -16,21 +16,21 @@
 namespace af {
 
 #define INSTANTIATE_STDEV(T)                              \
-    template<>                                            \
+    template <>                                           \
     AFAPI T stdev(const array& in) {                      \
         double ret_val;                                   \
         AF_THROW(af_stdev_all(&ret_val, NULL, in.get())); \
         return (T)ret_val;                                \
     }
 
-template<>
+template <>
 AFAPI af_cfloat stdev(const array& in) {
     double real, imag;
     AF_THROW(af_stdev_all(&real, &imag, in.get()));
     return af_cfloat((float)real, (float)imag);
 }
 
-template<>
+template <>
 AFAPI af_cdouble stdev(const array& in) {
     double real, imag;
     AF_THROW(af_stdev_all(&real, &imag, in.get()));

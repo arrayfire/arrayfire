@@ -26,7 +26,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Grad : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -43,7 +43,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 // register the type list
 TYPED_TEST_CASE(Grad, TestTypes);
 
-template<typename T>
+template <typename T>
 void gradTest(string pTestFile, const unsigned resultIdx0,
               const unsigned resultIdx1, bool isSubRef = false,
               const vector<af_seq>* seqv = NULL) {

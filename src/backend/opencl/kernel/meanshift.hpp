@@ -32,7 +32,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename T, bool is_color>
+template <typename T, bool is_color>
 void meanshift(Param out, const Param in, const float spatialSigma,
                const float chromaticSigma, const uint numIters) {
     typedef typename std::conditional<std::is_same<T, double>::value, double,

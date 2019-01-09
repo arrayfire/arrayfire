@@ -10,6 +10,6 @@
 #include <Array.hpp>
 
 namespace cuda {
-template<typename T>
+template <typename T>
 Array<float> moments(const Array<T> &in, const af_moment_type moment);
 }

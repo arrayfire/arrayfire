@@ -16,7 +16,7 @@
 using af::dim4;
 
 namespace cuda {
-template<typename T, bool isDilation>
+template <typename T, bool isDilation>
 Array<T> morph(const Array<T> &in, const Array<T> &mask) {
     const dim4 mdims = mask.dims();
 

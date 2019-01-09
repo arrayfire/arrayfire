@@ -23,50 +23,50 @@
 namespace opencl {
 typedef std::shared_ptr<cl::Buffer> Buffer_ptr;
 using af::dim4;
-template<typename T>
+template <typename T>
 class Array;
 
-template<typename T>
+template <typename T>
 void evalMultiple(std::vector<Array<T> *> arrays);
 
 void evalNodes(Param &out, common::Node *node);
 void evalNodes(std::vector<Param> &outputs, std::vector<common::Node *> nodes);
 
 /// Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
+template <typename T>
 Array<T> createNodeArray(const af::dim4 &size, common::Node_ptr node);
 
 /// Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
+template <typename T>
 Array<T> createValueArray(const af::dim4 &size, const T &value);
 
 /// Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
+template <typename T>
 Array<T> createHostDataArray(const af::dim4 &size, const T *const data);
 
-template<typename T>
+template <typename T>
 Array<T> createDeviceDataArray(const af::dim4 &size, const void *data,
                                bool copy = false);
 
-template<typename T>
+template <typename T>
 Array<T> createStridedArray(af::dim4 dims, af::dim4 strides, dim_t offset,
                             const T *const in_data, bool is_device) {
     return Array<T>(dims, strides, offset, in_data, is_device);
 }
 
 /// Copies data to an existing Array object from a host pointer
-template<typename T>
+template <typename T>
 void writeHostDataArray(Array<T> &arr, const T *const data, const size_t bytes);
 
 /// Copies data to an existing Array object from a device pointer
-template<typename T>
+template <typename T>
 void writeDeviceDataArray(Array<T> &arr, const void *const data,
                           const size_t bytes);
 
 /// Creates an empty array of a given size. No data is initialized
 ///
 /// \param[in] size The dimension of the output array
-template<typename T>
+template <typename T>
 Array<T> createEmptyArray(const af::dim4 &size);
 
 /// Create an Array object from Param object.
@@ -75,18 +75,18 @@ Array<T> createEmptyArray(const af::dim4 &size);
 /// \param[in] owner If true, the new Array<T> object is the owner of the data.
 /// If false
 ///                  the Array<T> will not delete the object on destruction
-template<typename T>
+template <typename T>
 Array<T> createParamArray(Param &tmp, bool owner);
 
-template<typename T>
+template <typename T>
 Array<T> createSubArray(const Array<T> &parent,
                         const std::vector<af_seq> &index, bool copy = true);
 
 /// Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
+template <typename T>
 void destroyArray(Array<T> *A);
 
-template<typename T>
+template <typename T>
 void *getDevicePtr(const Array<T> &arr) {
     const cl::Buffer *buf = arr.device();
     if (!buf) return NULL;
@@ -95,7 +95,7 @@ void *getDevicePtr(const Array<T> &arr) {
     return (void *)mem;
 }
 
-template<typename T>
+template <typename T>
 void *getRawPtr(const Array<T> &arr) {
     const cl::Buffer *buf = arr.get();
     if (!buf) return NULL;
@@ -103,7 +103,7 @@ void *getRawPtr(const Array<T> &arr) {
     return (void *)mem;
 }
 
-template<typename T>
+template <typename T>
 class Array {
     ArrayInfo info;  // This must be the first element of Array<T>
     Buffer_ptr data;

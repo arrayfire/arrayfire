@@ -27,21 +27,21 @@ namespace {
 // NOTE: we are repeating this here so that we don't need to access the
 // is_complex types in backend/common. This is done to isolate the C++ API from
 // the internal API
-template<typename T>
+template <typename T>
 struct is_complex {
     static const bool value = false;
 };
-template<>
+template <>
 struct is_complex<af::cfloat> {
     static const bool value = true;
 };
-template<>
+template <>
 struct is_complex<af::cdouble> {
     static const bool value = true;
 };
 
-template<typename T,
-         typename = typename enable_if<is_complex<T>::value == false, T>::type>
+template <typename T,
+          typename = typename enable_if<is_complex<T>::value == false, T>::type>
 array constant(T val, const dim4 &dims, const dtype type) {
     af_array res;
     if (type != s64 && type != u64) {
@@ -57,7 +57,7 @@ array constant(T val, const dim4 &dims, const dtype type) {
     return array(res);
 }
 
-template<typename T>
+template <typename T>
 typename enable_if<is_complex<T>::value == true, array>::type constant(
     T val, const dim4 &dims, const dtype type) {
     if (type != c32 && type != c64) {
@@ -71,28 +71,28 @@ typename enable_if<is_complex<T>::value == true, array>::type constant(
 }  // namespace
 
 namespace af {
-template<typename T>
+template <typename T>
 array constant(T val, const dim4 &dims, const af::dtype type) {
     return ::constant(val, dims, type);
 }
 
-template<typename T>
+template <typename T>
 array constant(T val, const dim_t d0, const af::dtype ty) {
     return ::constant(val, dim4(d0), ty);
 }
 
-template<typename T>
+template <typename T>
 array constant(T val, const dim_t d0, const dim_t d1, const af::dtype ty) {
     return ::constant(val, dim4(d0, d1), ty);
 }
 
-template<typename T>
+template <typename T>
 array constant(T val, const dim_t d0, const dim_t d1, const dim_t d2,
                const af::dtype ty) {
     return ::constant(val, dim4(d0, d1, d2), ty);
 }
 
-template<typename T>
+template <typename T>
 array constant(T val, const dim_t d0, const dim_t d1, const dim_t d2,
                const dim_t d3, const af::dtype ty) {
     return ::constant(val, dim4(d0, d1, d2, d3), ty);

@@ -84,8 +84,8 @@ void interp1_general(__global InterpInTy *d_out, KParam out, int ooff,
     const int x_lim    = in.dims[xdim];
     const int x_stride = in.strides[xdim];
 
-    int xid   = (method == AF_INTERP_LOWER ? floor(x) : round(x));
-    bool cond = xid >= 0 && xid < x_lim;
+    int xid        = (method == AF_INTERP_LOWER ? floor(x) : round(x));
+    bool cond      = xid >= 0 && xid < x_lim;
     if (clamp) xid = max(0, min(xid, x_lim));
 
     const int idx = ioff + xid * x_stride;
@@ -139,7 +139,7 @@ void interp1_general(__global InterpInTy *d_out, KParam out, int ooff,
 
     bool cond[4] = {grid_x - 1 >= 0, true, grid_x + 1 < x_lim,
                     grid_x + 2 < x_lim};
-    int off[4]   = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0,
+    int off[4] = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0,
                   cond[3] ? 2 : (cond[2] ? 1 : 0)};
 
     InterpValTy zero = ZERO;
@@ -254,9 +254,9 @@ void interp2_general(__global InterpInTy *d_out, KParam out, int ooff,
                      grid_x + 2 < x_lim};
     bool condY[4] = {grid_y - 1 >= 0, true, grid_y + 1 < y_lim,
                      grid_y + 2 < y_lim};
-    int offX[4]   = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0,
+    int offX[4] = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0,
                    condX[3] ? 2 : (condX[2] ? 1 : 0)};
-    int offY[4]   = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0,
+    int offY[4] = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0,
                    condY[3] ? 2 : (condY[2] ? 1 : 0)};
 
     InterpValTy zero = ZERO;
@@ -296,4 +296,4 @@ void interp2_general(__global InterpInTy *d_out, KParam out, int ooff,
 
 #define interp2(d_out, out, ooff, d_in, in, ioff, x, y, method, batch, clamp) \
     interp2_dim(d_out, out, ooff, d_in, in, ioff, x, y, method, batch, clamp, \
-                0, 1)\
+                0, 1)

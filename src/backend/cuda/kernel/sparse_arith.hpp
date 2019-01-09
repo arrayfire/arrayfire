@@ -24,32 +24,32 @@ static const unsigned TX      = 32;
 static const unsigned TY      = 8;
 static const unsigned THREADS = TX * TY;
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 struct arith_op {
     __DH__ T operator()(T v1, T v2) { return T(0); }
 };
 
-template<typename T>
+template <typename T>
 struct arith_op<T, af_add_t> {
     __device__ T operator()(T v1, T v2) { return v1 + v2; }
 };
 
-template<typename T>
+template <typename T>
 struct arith_op<T, af_sub_t> {
     __device__ T operator()(T v1, T v2) { return v1 - v2; }
 };
 
-template<typename T>
+template <typename T>
 struct arith_op<T, af_mul_t> {
     __device__ T operator()(T v1, T v2) { return v1 * v2; }
 };
 
-template<typename T>
+template <typename T>
 struct arith_op<T, af_div_t> {
     __device__ T operator()(T v1, T v2) { return v1 / v2; }
 };
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 __global__ void sparseArithCSRKernel(Param<T> out, CParam<T> values,
                                      CParam<int> rowIdx, CParam<int> colIdx,
                                      CParam<T> rhs, const bool reverse) {
@@ -78,7 +78,7 @@ __global__ void sparseArithCSRKernel(Param<T> out, CParam<T> values,
     }
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 __global__ void sparseArithCOOKernel(Param<T> out, CParam<T> values,
                                      CParam<int> rowIdx, CParam<int> colIdx,
                                      CParam<T> rhs, const bool reverse) {
@@ -102,7 +102,7 @@ __global__ void sparseArithCOOKernel(Param<T> out, CParam<T> values,
         out.ptr[offset] = arith_op<T, op>()(val, rval);
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void sparseArithOpCSR(Param<T> out, CParam<T> values, CParam<int> rowIdx,
                       CParam<int> colIdx, CParam<T> rhs, const bool reverse) {
     // Each Y for threads does one row
@@ -117,7 +117,7 @@ void sparseArithOpCSR(Param<T> out, CParam<T> values, CParam<int> rowIdx,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void sparseArithOpCOO(Param<T> out, CParam<T> values, CParam<int> rowIdx,
                       CParam<int> colIdx, CParam<T> rhs, const bool reverse) {
     // Linear indexing with one elements per thread
@@ -132,7 +132,7 @@ void sparseArithOpCOO(Param<T> out, CParam<T> values, CParam<int> rowIdx,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 __global__ void sparseArithCSRKernel(Param<T> values, Param<int> rowIdx,
                                      Param<int> colIdx, CParam<T> rhs,
                                      const bool reverse) {
@@ -160,7 +160,7 @@ __global__ void sparseArithCSRKernel(Param<T> values, Param<int> rowIdx,
     }
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 __global__ void sparseArithCOOKernel(Param<T> values, Param<int> rowIdx,
                                      Param<int> colIdx, CParam<T> rhs,
                                      const bool reverse) {
@@ -183,7 +183,7 @@ __global__ void sparseArithCOOKernel(Param<T> values, Param<int> rowIdx,
         values.ptr[idx] = arith_op<T, op>()(val, rval);
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void sparseArithOpCSR(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
                       CParam<T> rhs, const bool reverse) {
     // Each Y for threads does one row
@@ -198,7 +198,7 @@ void sparseArithOpCSR(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void sparseArithOpCOO(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
                       CParam<T> rhs, const bool reverse) {
     // Linear indexing with one elements per thread

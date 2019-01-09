@@ -12,10 +12,10 @@
 
 namespace cpu {
 namespace kernel {
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 using IndexPair = std::tuple<Tk, Tv>;
 
-template<typename Tk, typename Tv, bool isAscending>
+template <typename Tk, typename Tv, bool isAscending>
 struct IPCompare {
     bool operator()(const IndexPair<Tk, Tv> &lhs,
                     const IndexPair<Tk, Tv> &rhs) {
@@ -29,10 +29,10 @@ struct IPCompare {
     }
 };
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 using KeyIndexPair = std::tuple<Tk, Tv, uint>;
 
-template<typename Tk, typename Tv, bool isAscending>
+template <typename Tk, typename Tv, bool isAscending>
 struct KIPCompareV {
     bool operator()(const KeyIndexPair<Tk, Tv> &lhs,
                     const KeyIndexPair<Tk, Tv> &rhs) {
@@ -46,7 +46,7 @@ struct KIPCompareV {
     }
 };
 
-template<typename Tk, typename Tv, bool isAscending>
+template <typename Tk, typename Tv, bool isAscending>
 struct KIPCompareK {
     bool operator()(const KeyIndexPair<Tk, Tv> &lhs,
                     const KeyIndexPair<Tk, Tv> &rhs) {

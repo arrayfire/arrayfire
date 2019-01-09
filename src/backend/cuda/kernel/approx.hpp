@@ -21,7 +21,7 @@ static const int TX      = 16;
 static const int TY      = 16;
 static const int THREADS = 256;
 
-template<typename Ty, typename Tp, int order>
+template <typename Ty, typename Tp, int order>
 __global__ void approx1_kernel(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo,
                                const int xdim, const Tp xi_beg,
                                const Tp xi_step, const float offGrid,
@@ -70,7 +70,7 @@ __global__ void approx1_kernel(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo,
     interp(yo, yo_idx, yi, yi_idx, x, method, 1, clamp, xdim);
 }
 
-template<typename Ty, typename Tp, int order>
+template <typename Ty, typename Tp, int order>
 __global__ void approx2_kernel(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo,
                                const int xdim, const Tp xi_beg,
                                const Tp xi_step, CParam<Tp> yo, const int ydim,
@@ -129,7 +129,7 @@ __global__ void approx2_kernel(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename Ty, typename Tp, int order>
+template <typename Ty, typename Tp, int order>
 void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo, const int xdim,
              const Tp &xi_beg, const Tp &xi_step, const float offGrid,
              af_interp_type method) {
@@ -149,7 +149,7 @@ void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo, const int xdim,
     POST_LAUNCH_CHECK();
 }
 
-template<typename Ty, typename Tp, int order>
+template <typename Ty, typename Tp, int order>
 void approx2(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo, const int xdim,
              const Tp &xi_beg, const Tp &xi_step, CParam<Tp> yo, const int ydim,
              const Tp &yi_beg, const Tp &yi_step, const float offGrid,

@@ -34,7 +34,7 @@ static const int MAX_MEDFILTER1_LEN = 121;
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename T, af_border_type pad>
+template <typename T, af_border_type pad>
 void medfilt1(Param out, const Param in, unsigned w_wid) {
     std::string refName = std::string("medfilt1_") +
                           std::string(dtype_traits<T>::getName()) +
@@ -83,7 +83,7 @@ void medfilt1(Param out, const Param in, unsigned w_wid) {
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T, af_border_type pad, unsigned w_len, unsigned w_wid>
+template <typename T, af_border_type pad, unsigned w_len, unsigned w_wid>
 void medfilt2(Param out, const Param in) {
     std::string refName =
         std::string("medfilt2_") + std::string(dtype_traits<T>::getName()) +

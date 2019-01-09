@@ -19,25 +19,25 @@ namespace kernel {
 static const unsigned TX = 16;
 static const unsigned TY = 16;
 
-template<typename T>
+template <typename T>
 struct itype_t {
     typedef float wtype;
     typedef float vtype;
 };
 
-template<>
+template <>
 struct itype_t<double> {
     typedef double wtype;
     typedef double vtype;
 };
 
-template<>
+template <>
 struct itype_t<cfloat> {
     typedef float wtype;
     typedef cfloat vtype;
 };
 
-template<>
+template <>
 struct itype_t<cdouble> {
     typedef double wtype;
     typedef cdouble vtype;
@@ -46,7 +46,7 @@ struct itype_t<cdouble> {
 ///////////////////////////////////////////////////////////////////////////
 // nearest-neighbor resampling
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 __host__ __device__ void resize_n(Param<T> out, CParam<T> in, const int o_off,
                                   const int i_off, const int blockIdx_x,
                                   const int blockIdx_y, const float xf,
@@ -68,7 +68,7 @@ __host__ __device__ void resize_n(Param<T> out, CParam<T> in, const int o_off,
 ///////////////////////////////////////////////////////////////////////////
 // bilinear resampling
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 __host__ __device__ void resize_b(Param<T> out, CParam<T> in, const int o_off,
                                   const int i_off, const int blockIdx_x,
                                   const int blockIdx_y, const float xf_,
@@ -112,7 +112,7 @@ __host__ __device__ void resize_b(Param<T> out, CParam<T> in, const int o_off,
 ///////////////////////////////////////////////////////////////////////////
 // lower resampling
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 __host__ __device__ void resize_l(Param<T> out, CParam<T> in, const int o_off,
                                   const int i_off, const int blockIdx_x,
                                   const int blockIdx_y, const float xf,
@@ -134,7 +134,7 @@ __host__ __device__ void resize_l(Param<T> out, CParam<T> in, const int o_off,
 ///////////////////////////////////////////////////////////////////////////
 // Resize Kernel
 ///////////////////////////////////////////////////////////////////////////
-template<typename T, af_interp_type method>
+template <typename T, af_interp_type method>
 __global__ void resize_kernel(Param<T> out, CParam<T> in, const int b0,
                               const int b1, const float xf, const float yf) {
     const int bIdx = blockIdx.x / b0;
@@ -158,7 +158,7 @@ __global__ void resize_kernel(Param<T> out, CParam<T> in, const int b0,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T, af_interp_type method>
+template <typename T, af_interp_type method>
 void resize(Param<T> out, CParam<T> in) {
     dim3 threads(TX, TY, 1);
     dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));

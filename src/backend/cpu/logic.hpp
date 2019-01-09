@@ -17,7 +17,7 @@
 namespace cpu {
 
 #define LOGIC_FN(OP, op)                                                 \
-    template<typename T>                                                 \
+    template <typename T>                                                \
     struct BinOp<char, T, OP> {                                          \
         void eval(jit::array<char> &out, const jit::array<T> &lhs,       \
                   const jit::array<T> &rhs, int lim) {                   \
@@ -37,7 +37,7 @@ LOGIC_FN(af_or_t, ||)
 #undef LOGIC_FN
 
 #define LOGIC_CPLX_FN(T, OP, op)                                    \
-    template<>                                                      \
+    template <>                                                     \
     struct BinOp<char, std::complex<T>, OP> {                       \
         typedef std::complex<T> Ti;                                 \
         void eval(jit::array<char> &out, const jit::array<Ti> &lhs, \
@@ -66,7 +66,7 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
 
 #undef LOGIC_CPLX_FN
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 Array<char> logicOp(const Array<T> &lhs, const Array<T> &rhs,
                     const af::dim4 &odims) {
     jit::Node_ptr lhs_node = lhs.getNode();
@@ -79,7 +79,7 @@ Array<char> logicOp(const Array<T> &lhs, const Array<T> &rhs,
 }
 
 #define BITWISE_FN(OP, op)                                               \
-    template<typename T>                                                 \
+    template <typename T>                                                \
     struct BinOp<T, T, OP> {                                             \
         void eval(jit::array<T> &out, const jit::array<T> &lhs,          \
                   const jit::array<T> &rhs, int lim) {                   \
@@ -95,7 +95,7 @@ BITWISE_FN(af_bitshiftr_t, >>)
 
 #undef BITWISE_FN
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 Array<T> bitOp(const Array<T> &lhs, const Array<T> &rhs,
                const af::dim4 &odims) {
     jit::Node_ptr lhs_node = lhs.getNode();

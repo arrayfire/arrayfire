@@ -15,23 +15,23 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 T getConjugate(const T &in) {
     // For non-complex types return same
     return in;
 }
 
-template<>
+template <>
 cfloat getConjugate(const cfloat &in) {
     return std::conj(in);
 }
 
-template<>
+template <>
 cdouble getConjugate(const cdouble &in) {
     return std::conj(in);
 }
 
-template<typename T, bool conjugate>
+template <typename T, bool conjugate>
 void transpose(Param<T> output, CParam<T> input) {
     const dim4 odims    = output.dims();
     const dim4 ostrides = output.strides();
@@ -64,13 +64,13 @@ void transpose(Param<T> output, CParam<T> input) {
     }
 }
 
-template<typename T>
+template <typename T>
 void transpose(Param<T> out, CParam<T> in, const bool conjugate) {
     return (conjugate ? transpose<T, true>(out, in)
                       : transpose<T, false>(out, in));
 }
 
-template<typename T, bool conjugate>
+template <typename T, bool conjugate>
 void transpose_inplace(Param<T> input) {
     const dim4 idims    = input.dims();
     const dim4 istrides = input.strides();
@@ -103,7 +103,7 @@ void transpose_inplace(Param<T> input) {
     }
 }
 
-template<typename T>
+template <typename T>
 void transpose_inplace(Param<T> in, const bool conjugate) {
     return (conjugate ? transpose_inplace<T, true>(in)
                       : transpose_inplace<T, false>(in));

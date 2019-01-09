@@ -23,7 +23,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sort0ByKeyIterative(Param<Tk> okey, Param<Tv> oval, bool isAscending) {
     // Get pointers and initialize original index locations
     Tk *okey_ptr = okey.get();
@@ -73,7 +73,7 @@ void sort0ByKeyIterative(Param<Tk> okey, Param<Tv> oval, bool isAscending) {
     return;
 }
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sortByKeyBatched(Param<Tk> okey, Param<Tv> oval, const int dim,
                       bool isAscending) {
     af::dim4 inDims = okey.dims();
@@ -140,7 +140,7 @@ void sortByKeyBatched(Param<Tk> okey, Param<Tv> oval, const int dim,
     }
 }
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sort0ByKey(Param<Tk> okey, Param<Tv> oval, bool isAscending) {
     int higherDims = okey.dims(1) * okey.dims(2) * okey.dims(3);
     // TODO Make a better heurisitic

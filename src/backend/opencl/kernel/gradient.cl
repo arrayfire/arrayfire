@@ -17,7 +17,7 @@
 
 #else
 
-#define set(a, b) a = b
+#define set(a, b) a        = b
 #define set_scalar(a, b) a = b
 
 #endif

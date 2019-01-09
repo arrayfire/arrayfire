@@ -11,6 +11,6 @@
 #include <Array.hpp>
 
 namespace cpu {
-template<typename T>
+template <typename T>
 Array<T> range(const dim4& dim, const int seq_dim = -1);
 }

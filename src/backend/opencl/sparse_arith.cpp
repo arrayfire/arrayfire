@@ -29,24 +29,24 @@ namespace opencl {
 using namespace common;
 using namespace std;
 
-template<typename T>
+template <typename T>
 T getInf() {
     return scalar<T>(std::numeric_limits<T>::infinity());
 }
 
-template<>
+template <>
 cfloat getInf() {
     return scalar<cfloat, float>(
         NAN, NAN);  // Matches behavior of complex division by 0 in OpenCL
 }
 
-template<>
+template <>
 cdouble getInf() {
     return scalar<cdouble, double>(
         NAN, NAN);  // Matches behavior of complex division by 0 in OpenCL
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 Array<T> arithOpD(const SparseArray<T> &lhs, const Array<T> &rhs,
                   const bool reverse) {
     lhs.eval();
@@ -82,7 +82,7 @@ Array<T> arithOpD(const SparseArray<T> &lhs, const Array<T> &rhs,
     return out;
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 SparseArray<T> arithOp(const SparseArray<T> &lhs, const Array<T> &rhs,
                        const bool reverse) {
     lhs.eval();
@@ -109,7 +109,7 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const Array<T> &rhs,
     return out;
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     lhs.eval();
     rhs.eval();

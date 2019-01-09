@@ -17,7 +17,7 @@ using af::dim4;
 
 namespace opencl {
 
-template<typename T, typename accT, bool expand>
+template <typename T, typename accT, bool expand>
 Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter,
                    Array<accT> const& r_filter) {
     const dim_t cflen = (dim_t)c_filter.elements();

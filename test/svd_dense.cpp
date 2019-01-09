@@ -34,28 +34,28 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class svd : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 TYPED_TEST_CASE(svd, TestTypes);
 
-template<typename T>
+template <typename T>
 inline double get_val(T val) {
     return val;
 }
 
-template<>
+template <>
 inline double get_val<cfloat>(cfloat val) {
     return abs(val);
 }
 
-template<>
+template <>
 double get_val<cdouble>(cdouble val) {
     return abs(val);
 }
 
-template<typename T>
+template <typename T>
 void svdTest(const int M, const int N) {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
@@ -75,7 +75,7 @@ void svdTest(const int M, const int N) {
     array VV = Vt(seq(MN), span);
 
     array AA = matmul(UU, SS, VV);
-    //! [ex_svd_reg]
+//! [ex_svd_reg]
 
 #if defined(OS_MAC)
     ASSERT_ARRAYS_NEAR(A, AA, 3E-3);
@@ -84,7 +84,7 @@ void svdTest(const int M, const int N) {
 #endif
 }
 
-template<typename T>
+template <typename T>
 void svdInPlaceTest(const int M, const int N) {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
@@ -112,7 +112,7 @@ void svdInPlaceTest(const int M, const int N) {
 #endif
 }
 
-template<typename T>
+template <typename T>
 void checkInPlaceSameResults(const int M, const int N) {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;

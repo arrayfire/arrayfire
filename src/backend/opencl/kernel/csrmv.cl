@@ -48,7 +48,7 @@ __kernel void csrmv_thread(__global T *output, __global const T *values,
     int rowNext = get_global_id(0);
 
     while (true) {
-        // Each thread performs multiple "dot" operations
+// Each thread performs multiple "dot" operations
 #if USE_GREEDY
         // Considering that the number of non zero elements per row can be
         // uneven a greedy approach may be useful. This acheived by getting the
@@ -73,7 +73,7 @@ __kernel void csrmv_thread(__global T *output, __global const T *values,
             outval += CMUL(values[id], rhs[cid]);
         }
 
-        // Writing out a single output
+// Writing out a single output
 #if USE_ALPHA
         outval = MUL(alpha, outval);
 #endif

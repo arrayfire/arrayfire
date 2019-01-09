@@ -43,37 +43,37 @@ typedef enum {
 } sparse_operation_t;
 #endif
 
-template<typename T, class Enable = void>
+template <typename T, class Enable = void>
 struct blas_base {
     using type = T;
 };
 
-template<typename T>
+template <typename T>
 struct blas_base<T,
                  typename std::enable_if<common::is_complex<T>::value>::type> {
     using type = typename std::conditional<std::is_same<T, cdouble>::value,
                                            sp_cdouble, sp_cfloat>::type;
 };
 
-template<typename T>
+template <typename T>
 using cptr_type = typename std::conditional<common::is_complex<T>::value,
                                             const typename blas_base<T>::type *,
                                             const T *>::type;
-template<typename T>
+template <typename T>
 using ptr_type =
     typename std::conditional<common::is_complex<T>::value,
                               typename blas_base<T>::type *, T *>::type;
-template<typename T>
+template <typename T>
 using scale_type =
     typename std::conditional<common::is_complex<T>::value,
                               const typename blas_base<T>::type, const T>::type;
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 To getScaleValue(Ti val) {
     return (To)(val);
 }
 
-template<typename T, int value>
+template <typename T, int value>
 scale_type<T> getScale() {
     static T val(value);
     return getScaleValue<scale_type<T>, T>(val);
@@ -82,8 +82,8 @@ scale_type<T> getScale() {
 sparse_operation_t toSparseTranspose(af_mat_prop opt) {
     sparse_operation_t out = SPARSE_OPERATION_NON_TRANSPOSE;
     switch (opt) {
-        case AF_MAT_NONE: out = SPARSE_OPERATION_NON_TRANSPOSE; break;
-        case AF_MAT_TRANS: out = SPARSE_OPERATION_TRANSPOSE; break;
+        case AF_MAT_NONE: out   = SPARSE_OPERATION_NON_TRANSPOSE; break;
+        case AF_MAT_TRANS: out  = SPARSE_OPERATION_TRANSPOSE; break;
         case AF_MAT_CTRANS: out = SPARSE_OPERATION_CONJUGATE_TRANSPOSE; break;
         default: AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
@@ -92,7 +92,7 @@ sparse_operation_t toSparseTranspose(af_mat_prop opt) {
 
 #ifdef USE_MKL
 
-template<>
+template <>
 const sp_cfloat getScaleValue<const sp_cfloat, cfloat>(cfloat val) {
     sp_cfloat ret;
     ret.real = val.real();
@@ -100,7 +100,7 @@ const sp_cfloat getScaleValue<const sp_cfloat, cfloat>(cfloat val) {
     return ret;
 }
 
-template<>
+template <>
 const sp_cdouble getScaleValue<const sp_cdouble, cdouble>(cdouble val) {
     sp_cdouble ret;
     ret.real = val.real();
@@ -116,14 +116,14 @@ const sp_cdouble getScaleValue<const sp_cdouble, cdouble>(cdouble val) {
 //                 MKL_INT *col_indx,
 //                 MKL_Complex16 *values);
 
-template<typename T>
+template <typename T>
 using create_csr_func_def = sparse_status_t (*)(sparse_matrix_t *,
                                                 sparse_index_base_t, int, int,
                                                 int *, int *, int *,
                                                 ptr_type<T>);
 
 #define SPARSE_FUNC_DEF(FUNC) \
-    template<typename T>      \
+    template <typename T>     \
     FUNC##_func_def<T> FUNC##_func();
 
 SPARSE_FUNC_DEF(create_csr)
@@ -131,7 +131,7 @@ SPARSE_FUNC_DEF(create_csr)
 #undef SPARSE_FUNC_DEF
 
 #define SPARSE_FUNC(FUNC, TYPE, PREFIX)         \
-    template<>                                  \
+    template <>                                 \
     FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
         return &mkl_sparse_##PREFIX##_##FUNC;   \
     }
@@ -164,13 +164,13 @@ SPARSE_FUNC(create_csr, cdouble, z)
 //                 MKL_Complex16 *y,
 //                 MKL_INT ldy);
 
-template<typename T>
+template <typename T>
 using mv_func_def = sparse_status_t (*)(sparse_operation_t, scale_type<T>,
                                         const sparse_matrix_t,
                                         struct matrix_descr, cptr_type<T>,
                                         scale_type<T>, ptr_type<T>);
 
-template<typename T>
+template <typename T>
 using mm_func_def = sparse_status_t (*)(sparse_operation_t, scale_type<T>,
                                         const sparse_matrix_t,
                                         struct matrix_descr, sparse_layout_t,
@@ -178,11 +178,11 @@ using mm_func_def = sparse_status_t (*)(sparse_operation_t, scale_type<T>,
                                         ptr_type<T>, int);
 
 #define SPARSE_FUNC_DEF(FUNC) \
-    template<typename T>      \
+    template <typename T>     \
     FUNC##_func_def<T> FUNC##_func();
 
 #define SPARSE_FUNC(FUNC, TYPE, PREFIX)         \
-    template<>                                  \
+    template <>                                 \
     FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
         return &mkl_sparse_##PREFIX##_##FUNC;   \
     }
@@ -199,7 +199,7 @@ SPARSE_FUNC(mm, double, d)
 SPARSE_FUNC(mm, cfloat, c)
 SPARSE_FUNC(mm, cdouble, z)
 
-template<typename T>
+template <typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
     // MKL: CSRMM Does not support optRhs
@@ -279,23 +279,23 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
 
 #else  // #if USE_MKL
 
-template<typename T>
+template <typename T>
 T getConjugate(const T &in) {
     // For non-complex types return same
     return in;
 }
 
-template<>
+template <>
 cfloat getConjugate(const cfloat &in) {
     return std::conj(in);
 }
 
-template<>
+template <>
 cdouble getConjugate(const cdouble &in) {
     return std::conj(in);
 }
 
-template<typename T, bool conjugate>
+template <typename T, bool conjugate>
 void mv(Param<T> output, CParam<T> values, CParam<int> rowIdx,
         CParam<int> colIdx, CParam<T> right, int M) {
     UNUSED(M);
@@ -319,7 +319,7 @@ void mv(Param<T> output, CParam<T> values, CParam<int> rowIdx,
     }
 }
 
-template<typename T, bool conjugate>
+template <typename T, bool conjugate>
 void mtv(Param<T> output, CParam<T> values, CParam<int> rowIdx,
          CParam<int> colIdx, CParam<T> right, int M) {
     const T *valPtr   = values.get();
@@ -342,7 +342,7 @@ void mtv(Param<T> output, CParam<T> values, CParam<int> rowIdx,
     }
 }
 
-template<typename T, bool conjugate>
+template <typename T, bool conjugate>
 void mm(Param<T> output, CParam<T> values, CParam<int> rowIdx,
         CParam<int> colIdx, CParam<T> right, int M, int N, int ldb, int ldc) {
     UNUSED(M);
@@ -370,7 +370,7 @@ void mm(Param<T> output, CParam<T> values, CParam<int> rowIdx,
     }
 }
 
-template<typename T, bool conjugate>
+template <typename T, bool conjugate>
 void mtm(Param<T> output, CParam<T> values, CParam<int> rowIdx,
          CParam<int> colIdx, CParam<T> right, int M, int N, int ldb, int ldc) {
     const T *valPtr   = values.get();
@@ -397,7 +397,7 @@ void mtm(Param<T> output, CParam<T> values, CParam<int> rowIdx,
     }
 }
 
-template<typename T>
+template <typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
     UNUSED(optRhs);

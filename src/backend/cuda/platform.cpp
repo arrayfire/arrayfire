@@ -129,7 +129,7 @@ static const std::string get_system(void) {
 #endif
 }
 
-template<typename T>
+template <typename T>
 static inline string toString(T val) {
     stringstream s;
     s << val;

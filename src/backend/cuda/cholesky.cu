@@ -38,14 +38,14 @@ namespace cuda {
 //        <> *Workspace, int Lwork,
 //        int *devInfo );
 
-template<typename T>
+template <typename T>
 struct potrf_func_def_t {
     typedef cusolverStatus_t (*potrf_func_def)(cusolverDnHandle_t,
                                                cublasFillMode_t, int, T *, int,
                                                T *, int, int *);
 };
 
-template<typename T>
+template <typename T>
 struct potrf_buf_func_def_t {
     typedef cusolverStatus_t (*potrf_buf_func_def)(cusolverDnHandle_t,
                                                    cublasFillMode_t, int, T *,
@@ -53,20 +53,20 @@ struct potrf_buf_func_def_t {
 };
 
 #define CH_FUNC_DEF(FUNC)                                         \
-    template<typename T>                                          \
+    template <typename T>                                         \
     typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func(); \
                                                                   \
-    template<typename T>                                          \
+    template <typename T>                                         \
     typename FUNC##_buf_func_def_t<T>::FUNC##_buf_func_def FUNC##_buf_func();
 
 #define CH_FUNC(FUNC, TYPE, PREFIX)                                         \
-    template<>                                                              \
+    template <>                                                             \
     typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>() { \
         return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
                cusolverDn##PREFIX##FUNC;                                    \
     }                                                                       \
                                                                             \
-    template<>                                                              \
+    template <>                                                             \
     typename FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def               \
         FUNC##_buf_func<TYPE>() {                                           \
         return (FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def) &         \
@@ -79,7 +79,7 @@ CH_FUNC(potrf, double, D)
 CH_FUNC(potrf, cfloat, C)
 CH_FUNC(potrf, cdouble, Z)
 
-template<typename T>
+template <typename T>
 Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
     Array<T> out = copyArray<T>(in);
     *info        = cholesky_inplace(out, is_upper);
@@ -92,7 +92,7 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
     return out;
 }
 
-template<typename T>
+template <typename T>
 int cholesky_inplace(Array<T> &in, const bool is_upper) {
     dim4 iDims = in.dims();
     int N      = iDims[0];
@@ -100,7 +100,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper) {
     int lwork = 0;
 
     cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
-    if (is_upper) uplo = CUBLAS_FILL_MODE_UPPER;
+    if (is_upper) uplo    = CUBLAS_FILL_MODE_UPPER;
 
     CUSOLVER_CHECK(potrf_buf_func<T>()(solverDnHandle(), uplo, N, in.get(),
                                        in.strides()[1], &lwork));

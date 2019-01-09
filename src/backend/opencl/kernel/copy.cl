@@ -7,9 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-typedef struct {
-    dim_t dim[4];
-} dims_t;
+typedef struct { dim_t dim[4]; } dims_t;
 
 inType scale(inType value, float factor) {
 #ifdef inType_float2

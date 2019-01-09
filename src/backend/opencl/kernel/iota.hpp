@@ -34,7 +34,7 @@ static const int IOTA_TY = 8;
 static const int TILEX   = 512;
 static const int TILEY   = 32;
 
-template<typename T>
+template <typename T>
 void iota(Param out, const af::dim4& sdims) {
     std::string refName =
         std::string("iota_kernel_") + std::string(dtype_traits<T>::getName());

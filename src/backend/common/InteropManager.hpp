@@ -19,7 +19,7 @@
 #include <vector>
 
 namespace common {
-template<class T, typename R>
+template <class T, typename R>
 class InteropManager {
     using resource_t = typename std::shared_ptr<R>;
     using res_vec_t  = typename std::vector<resource_t>;

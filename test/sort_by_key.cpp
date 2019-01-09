@@ -28,7 +28,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class SortByKey : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -47,7 +47,7 @@ typedef ::testing::Types<float, double, uint, int, uchar, short, ushort, intl,
 // register the type list
 TYPED_TEST_CASE(SortByKey, TestTypes);
 
-template<typename T>
+template <typename T>
 void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0,
               const unsigned resultIdx1, bool isSubRef = false,
               const vector<af_seq>* seqv = NULL) {

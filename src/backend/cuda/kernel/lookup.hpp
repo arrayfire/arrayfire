@@ -21,7 +21,7 @@ static const int THREADS_X = 32;
 static const int THREADS_Y = 8;
 static const int THRD_LOAD = THREADS_X / THREADS_Y;
 
-template<typename in_t, typename idx_t>
+template <typename in_t, typename idx_t>
 __global__ void lookup1D(Param<in_t> out, CParam<in_t> in,
                          CParam<idx_t> indices, int vDim) {
     int idx = threadIdx.x + blockIdx.x * THREADS * THRD_LOAD;
@@ -39,7 +39,7 @@ __global__ void lookup1D(Param<in_t> out, CParam<in_t> in,
     }
 }
 
-template<typename in_t, typename idx_t, unsigned dim>
+template <typename in_t, typename idx_t, unsigned dim>
 __global__ void lookupND(Param<in_t> out, CParam<in_t> in,
                          CParam<idx_t> indices, int nBBS0, int nBBS1) {
     int lx = threadIdx.x;
@@ -73,7 +73,7 @@ __global__ void lookupND(Param<in_t> out, CParam<in_t> in,
     }
 }
 
-template<typename in_t, typename idx_t, unsigned dim>
+template <typename in_t, typename idx_t, unsigned dim>
 void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices,
             int nDims) {
     /* find which dimension has non-zero # of elements */

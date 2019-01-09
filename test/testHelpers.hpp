@@ -59,10 +59,10 @@ std::ostream &operator<<(std::ostream &os, af::dtype type) {
         case c32: name = "c32"; break;
         case f64: name = "f64"; break;
         case c64: name = "c64"; break;
-        case b8: name = "b8"; break;
+        case b8: name  = "b8"; break;
         case s32: name = "s32"; break;
         case u32: name = "u32"; break;
-        case u8: name = "u8"; break;
+        case u8: name  = "u8"; break;
         case s64: name = "s64"; break;
         case u64: name = "u64"; break;
         case s16: name = "s16"; break;
@@ -92,7 +92,7 @@ std::string readNextNonEmptyLine(std::ifstream &file) {
     return result;
 }
 
-template<typename inType, typename outType, typename FileElementType>
+template <typename inType, typename outType, typename FileElementType>
 void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
                std::vector<std::vector<inType> > &testInputs,
                std::vector<std::vector<outType> > &testOutputs) {
@@ -137,7 +137,7 @@ void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
     }
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 void readTestsFromFile(const std::string &FileName,
                        std::vector<af::dim4> &inputDims,
                        std::vector<std::vector<inType> > &testInputs,
@@ -226,7 +226,7 @@ inline void readImageTests(const std::string &pFileName,
     }
 }
 
-template<typename outType>
+template <typename outType>
 void readImageTests(const std::string &pFileName,
                     std::vector<af::dim4> &pInputDims,
                     std::vector<std::string> &pTestInputs,
@@ -269,7 +269,7 @@ void readImageTests(const std::string &pFileName,
     }
 }
 
-template<typename descType>
+template <typename descType>
 void readImageFeaturesDescriptors(
     const std::string &pFileName, std::vector<af::dim4> &pInputDims,
     std::vector<std::string> &pTestInputs,
@@ -336,7 +336,7 @@ void readImageFeaturesDescriptors(
  * Similarly, we can deduce that 0.0 will be the minimum
  * value of NRMSD. Hence, the range of RMSD is [0,255] for image inputs.
  */
-template<typename T>
+template <typename T>
 bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance) {
     double accum  = 0.0;
     double maxion = -FLT_MAX;  //(double)std::numeric_limits<T>::lowest();
@@ -365,71 +365,71 @@ bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance) {
     return true;
 }
 
-template<typename T, typename Other>
+template <typename T, typename Other>
 struct is_same_type {
     static const bool value = false;
 };
 
-template<typename T>
+template <typename T>
 struct is_same_type<T, T> {
     static const bool value = true;
 };
 
-template<bool, typename T, typename O>
+template <bool, typename T, typename O>
 struct cond_type;
 
-template<typename T, typename Other>
+template <typename T, typename Other>
 struct cond_type<true, T, Other> {
     typedef T type;
 };
 
-template<typename T, typename Other>
+template <typename T, typename Other>
 struct cond_type<false, T, Other> {
     typedef Other type;
 };
 
-template<bool B, class T = void>
+template <bool B, class T = void>
 struct enable_if {};
 
-template<class T>
+template <class T>
 struct enable_if<true, T> {
     typedef T type;
 };
 
-template<typename T>
+template <typename T>
 inline double real(T val) {
     return (double)val;
 }
-template<>
+template <>
 inline double real<af::cdouble>(af::cdouble val) {
     return real(val);
 }
-template<>
+template <>
 inline double real<af::cfloat>(af::cfloat val) {
     return real(val);
 }
 
-template<typename T>
+template <typename T>
 inline double imag(T val) {
     return (double)val;
 }
-template<>
+template <>
 inline double imag<af::cdouble>(af::cdouble val) {
     return imag(val);
 }
-template<>
+template <>
 inline double imag<af::cfloat>(af::cfloat val) {
     return imag(val);
 }
 
-template<class T>
+template <class T>
 struct IsFloatingPoint {
     static const bool value = is_same_type<float, T>::value ||
                               is_same_type<double, T>::value ||
                               is_same_type<long double, T>::value;
 };
 
-template<typename T>
+template <typename T>
 bool noDoubleTests() {
     af::dtype ty           = (af::dtype)af::dtype_traits<T>::af_type;
     bool isTypeDouble      = (ty == f64) || (ty == c64);
@@ -452,7 +452,7 @@ inline bool noLAPACKTests() {
 }
 
 // TODO: perform conversion on device for CUDA and OpenCL
-template<typename T>
+template <typename T>
 af_err conv_image(af_array *out, af_array in) {
     af_array outArray;
 
@@ -481,7 +481,7 @@ af_err conv_image(af_array *out, af_array in) {
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 af::array cpu_randu(const af::dim4 dims) {
     typedef typename af::dtype_traits<T>::base_type BT;
 
@@ -576,7 +576,7 @@ std::string minimalDim4(af::dim4 coords, af::dim4 dims) {
     return os.str();
 }
 
-template<typename T>
+template <typename T>
 std::string printContext(const std::vector<T> &hGold, std::string goldName,
                          const std::vector<T> &hOut, std::string outName,
                          af::dim4 arrDims, af::dim4 arrStrides, dim_t idx) {
@@ -684,7 +684,7 @@ std::string printContext(const std::vector<T> &hGold, std::string goldName,
 struct FloatTag {};
 struct IntegerTag {};
 
-template<typename T>
+template <typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       const std::vector<T> &a, af::dim4 aDims,
                                       const std::vector<T> &b, af::dim4 bDims,
@@ -713,7 +713,7 @@ struct absMatch {
     float diff_;
     absMatch(float diff) : diff_(diff) {}
 
-    template<typename T>
+    template <typename T>
     bool operator()(T lhs, T rhs) {
         using af::abs;
         using std::abs;
@@ -721,7 +721,7 @@ struct absMatch {
     }
 };
 
-template<typename T>
+template <typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       const std::vector<T> &a, af::dim4 aDims,
                                       const std::vector<T> &b, af::dim4 bDims,
@@ -759,7 +759,7 @@ template<typename T>
     }
 }
 
-template<typename T>
+template <typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       const af::array &a, const af::array &b,
                                       float maxAbsDiff) {
@@ -840,7 +840,7 @@ template<typename T>
 }
 
 // Called by ASSERT_VEC_ARRAY_EQ
-template<typename T>
+template <typename T>
 ::testing::AssertionResult assertArrayEq(std::string aName,
                                          std::string aDimsName,
                                          std::string bName,
@@ -893,7 +893,7 @@ template<typename T>
 }
 
 // To support C API
-template<typename T>
+template <typename T>
 ::testing::AssertionResult assertArrayEq(std::string hA_name,
                                          std::string aDimsName,
                                          std::string bName,
@@ -916,7 +916,7 @@ template<typename T>
 }
 
 // Called by ASSERT_VEC_ARRAY_NEAR
-template<typename T>
+template <typename T>
 ::testing::AssertionResult assertArrayNear(
     std::string hA_name, std::string aDimsName, std::string bName,
     std::string maxAbsDiffName, const std::vector<T> &hA, af::dim4 aDims,
@@ -939,7 +939,7 @@ template<typename T>
 }
 
 // To support C API
-template<typename T>
+template <typename T>
 ::testing::AssertionResult assertArrayNear(
     std::string hA_name, std::string aDimsName, std::string bName,
     std::string maxAbsDiffName, const std::vector<T> &hA, af::dim4 aDims,
@@ -1277,8 +1277,8 @@ void genTestOutputArray(af_array *out_ptr, const unsigned ndims,
     // After the af_* function is called, it shouldn't be null anymore
     if (metadata->getOutputArrayType() == NULL_ARRAY) {
         if (out == 0) {
-            return ::testing::AssertionFailure()
-                   << "Output af_array " << result_name << " is null";
+            return ::testing::AssertionFailure() << "Output af_array "
+                                                 << result_name << " is null";
         }
         metadata->setOutput(out);
     }

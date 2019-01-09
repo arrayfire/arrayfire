@@ -26,7 +26,7 @@ using std::vector;
 namespace cuda {
 namespace kernel {
 
-template<typename To, typename Tw>
+template <typename To, typename Tw>
 __device__ __host__ void stable_mean(To *lhs, Tw *l_wt, To rhs, Tw r_wt) {
     if (((*l_wt) != 0) || (r_wt != 0)) {
         Tw l_scale = (*l_wt);
@@ -38,7 +38,7 @@ __device__ __host__ void stable_mean(To *lhs, Tw *l_wt, To rhs, Tw r_wt) {
     }
 }
 
-template<typename Ti, typename Tw, typename To, uint dim, uint DIMY>
+template <typename Ti, typename Tw, typename To, uint dim, uint DIMY>
 __global__ static void mean_dim_kernel(Param<To> out, Param<Tw> owt,
                                        CParam<Ti> in, CParam<Tw> iwt,
                                        uint blocks_x, uint blocks_y,
@@ -149,12 +149,12 @@ __global__ static void mean_dim_kernel(Param<To> out, Param<Tw> owt,
     }
 
     if (tidy == 0 && is_valid && (blockIdx_dim < out.dims[dim])) {
-        *optr = *s_vptr;
+        *optr                     = *s_vptr;
         if (owptr != NULL) *owptr = *s_iptr;
     }
 }
 
-template<typename Ti, typename Tw, typename To, int dim>
+template <typename Ti, typename Tw, typename To, int dim>
 void mean_dim_launcher(Param<To> out, Param<Tw> owt, CParam<Ti> in,
                        CParam<Tw> iwt, const uint threads_y,
                        const dim_t blocks_dim[4]) {
@@ -188,7 +188,7 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, CParam<Ti> in,
     POST_LAUNCH_CHECK();
 }
 
-template<typename Ti, typename Tw, typename To, int dim>
+template <typename Ti, typename Tw, typename To, int dim>
 void mean_dim(Param<To> out, CParam<Ti> in, CParam<Tw> iwt) {
     uint threads_y = std::min(THREADS_Y, nextpow2(in.dims[dim]));
     uint threads_x = THREADS_X;
@@ -222,7 +222,7 @@ void mean_dim(Param<To> out, CParam<Ti> in, CParam<Tw> iwt) {
     }
 }
 
-template<typename T, typename Tw>
+template <typename T, typename Tw>
 __device__ void warp_reduce(T *s_ptr, Tw *s_idx, uint tidx) {
 #pragma unroll
     for (int n = 16; n >= 1; n >>= 1) {
@@ -237,7 +237,7 @@ __device__ void warp_reduce(T *s_ptr, Tw *s_idx, uint tidx) {
 // Calculate mean along the first dimension. If wt is an empty CParam, use
 // weight as 1 and treat it as count. If owt is empty Param, do not write
 // temporary reduced counts/weights to it.
-template<typename Ti, typename Tw, typename To, uint DIMX>
+template <typename Ti, typename Tw, typename To, uint DIMX>
 __global__ static void mean_first_kernel(Param<To> out, Param<Tw> owt,
                                          CParam<Ti> in, CParam<Tw> iwt,
                                          uint blocks_x, uint blocks_y,
@@ -334,12 +334,12 @@ __global__ static void mean_first_kernel(Param<To> out, Param<Tw> owt,
     warp_reduce<To, Tw>(s_vptr, s_iptr, tidx);
 
     if (tidx == 0) {
-        optr[blockIdx_x] = s_vptr[0];
+        optr[blockIdx_x]                     = s_vptr[0];
         if (owptr != NULL) owptr[blockIdx_x] = s_iptr[0];
     }
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 void mean_first_launcher(Param<To> out, Param<Tw> owt, CParam<Ti> in,
                          CParam<Tw> iwt, const uint blocks_x,
                          const uint blocks_y, const uint threads_x) {
@@ -370,7 +370,7 @@ void mean_first_launcher(Param<To> out, Param<Tw> owt, CParam<Ti> in,
     POST_LAUNCH_CHECK();
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 void mean_first(Param<To> out, CParam<Ti> in, CParam<Tw> iwt) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_BLOCK);
@@ -401,7 +401,7 @@ void mean_first(Param<To> out, CParam<Ti> in, CParam<Tw> iwt) {
     }
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 void mean_weighted(Param<To> out, CParam<Ti> in, CParam<Tw> iwt, int dim) {
     switch (dim) {
         case 0: return mean_first<Ti, Tw, To>(out, in, iwt);
@@ -411,13 +411,13 @@ void mean_weighted(Param<To> out, CParam<Ti> in, CParam<Tw> iwt, int dim) {
     }
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 void mean(Param<To> out, CParam<Ti> in, int dim) {
     Param<Tw> dummy_weight;
     mean_weighted<Ti, Tw, To>(out, in, dummy_weight, dim);
 }
 
-template<typename T, typename Tw>
+template <typename T, typename Tw>
 T mean_all_weighted(CParam<T> in, CParam<Tw> iwt) {
     int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
 
@@ -503,7 +503,7 @@ T mean_all_weighted(CParam<T> in, CParam<Tw> iwt) {
     }
 }
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 To mean_all(CParam<Ti> in) {
     using std::unique_ptr;
     int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];

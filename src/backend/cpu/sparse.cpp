@@ -32,7 +32,7 @@ using common::createArrayDataSparseArray;
 using common::createEmptySparseArray;
 using common::SparseArray;
 
-template<typename T, af_storage stype>
+template <typename T, af_storage stype>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
     in.eval();
 
@@ -74,7 +74,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
     }
 }
 
-template<typename T, af_storage stype>
+template <typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const SparseArray<T> &in) {
     in.eval();
 
@@ -96,7 +96,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in) {
     return dense;
 }
 
-template<typename T, af_storage dest, af_storage src>
+template <typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
     in.eval();
 

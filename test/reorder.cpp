@@ -31,7 +31,7 @@ using af::tile;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Reorder : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -50,7 +50,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
 // register the type list
 TYPED_TEST_CASE(Reorder, TestTypes);
 
-template<typename T>
+template <typename T>
 void reorderTest(string pTestFile, const unsigned resultIdx, const uint x,
                  const uint y, const uint z, const uint w,
                  bool isSubRef = false, const vector<af_seq> *seqv = NULL) {

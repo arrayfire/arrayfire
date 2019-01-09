@@ -11,10 +11,10 @@
 
 namespace cpu {
 
-template<typename T, af_border_type edge_pad>
+template <typename T, af_border_type edge_pad>
 Array<T> medfilt1(const Array<T> &in, dim_t w_wid);
 
-template<typename T, af_border_type edge_pad>
+template <typename T, af_border_type edge_pad>
 Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid);
 
 }  // namespace cpu

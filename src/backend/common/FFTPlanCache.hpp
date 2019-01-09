@@ -21,7 +21,7 @@ namespace common {
 //          |
 //          |--> ELSE just push the plan
 // existing plan -> reuse a plan
-template<typename T, typename P>
+template <typename T, typename P>
 class FFTPlanCache {
     using plan_t       = typename std::shared_ptr<P>;
     using plan_pair_t  = typename std::pair<std::string, plan_t>;

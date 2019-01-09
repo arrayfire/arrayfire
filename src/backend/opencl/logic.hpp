@@ -15,13 +15,13 @@
 #include <af/dim4.hpp>
 
 namespace opencl {
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 Array<char> logicOp(const Array<T> &lhs, const Array<T> &rhs,
                     const af::dim4 &odims) {
     return createBinaryNode<char, T, op>(lhs, rhs, odims);
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 Array<T> bitOp(const Array<T> &lhs, const Array<T> &rhs,
                const af::dim4 &odims) {
     return createBinaryNode<T, T, op>(lhs, rhs, odims);

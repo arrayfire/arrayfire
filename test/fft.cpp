@@ -126,7 +126,7 @@ TEST(ifft3, Invalid_Array) {
     ASSERT_SUCCESS(af_release_array(inArray));
 }
 
-template<typename inType, typename outType, bool isInverse>
+template <typename inType, typename outType, bool isInverse>
 void fftTest(string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0, dim_t pad2 = 0) {
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
@@ -187,9 +187,9 @@ void fftTest(string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0, dim_t pad2 = 0) {
 
     size_t test_size = 0;
     switch (dims.ndims()) {
-        case 1: test_size = dims[0] / 2 + 1; break;
-        case 2: test_size = dims[1] * (dims[0] / 2 + 1); break;
-        case 3: test_size = dims[2] * dims[1] * (dims[0] / 2 + 1); break;
+        case 1: test_size  = dims[0] / 2 + 1; break;
+        case 2: test_size  = dims[1] * (dims[0] / 2 + 1); break;
+        case 3: test_size  = dims[2] * dims[1] * (dims[0] / 2 + 1); break;
         default: test_size = dims[0] / 2 + 1; break;
     }
     outType output_scale = (outType)(isInverse ? test_size : 1);
@@ -291,7 +291,7 @@ INSTANTIATE_TEST(ifft3, C2C_Float, true, cfloat, cfloat,
 INSTANTIATE_TEST(ifft3, C2C_Double, true, cdouble, cdouble,
                  string(TEST_DIR "/signal/ifft3_c2c.test"));
 
-template<typename inType, typename outType, int rank, bool isInverse>
+template <typename inType, typename outType, int rank, bool isInverse>
 void fftBatchTest(string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0,
                   dim_t pad2 = 0) {
     if (noDoubleTests<inType>()) return;
@@ -354,9 +354,9 @@ void fftBatchTest(string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0,
     size_t test_size   = 0;
     size_t batch_count = dims[rank];
     switch (rank) {
-        case 1: test_size = dims[0] / 2 + 1; break;
-        case 2: test_size = dims[1] * (dims[0] / 2 + 1); break;
-        case 3: test_size = dims[2] * dims[1] * (dims[0] / 2 + 1); break;
+        case 1: test_size  = dims[0] / 2 + 1; break;
+        case 2: test_size  = dims[1] * (dims[0] / 2 + 1); break;
+        case 3: test_size  = dims[2] * dims[1] * (dims[0] / 2 + 1); break;
         default: test_size = dims[0] / 2 + 1; break;
     }
 
@@ -429,7 +429,7 @@ INSTANTIATE_BATCH_TEST(fft2, C2C_Double_Pad, 2, false, cdouble, cdouble,
 
 /////////////////////////////////////// CPP ////////////////////////////////////
 //
-template<typename inType, typename outType, bool isInverse>
+template <typename inType, typename outType, bool isInverse>
 void cppFFTTest(string pTestFile) {
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
@@ -458,9 +458,9 @@ void cppFFTTest(string pTestFile) {
 
     size_t test_size = 0;
     switch (dims.ndims()) {
-        case 1: test_size = dims[0] / 2 + 1; break;
-        case 2: test_size = dims[1] * (dims[0] / 2 + 1); break;
-        case 3: test_size = dims[2] * dims[1] * (dims[0] / 2 + 1); break;
+        case 1: test_size  = dims[0] / 2 + 1; break;
+        case 2: test_size  = dims[1] * (dims[0] / 2 + 1); break;
+        case 3: test_size  = dims[2] * dims[1] * (dims[0] / 2 + 1); break;
         default: test_size = dims[0] / 2 + 1; break;
     }
     outType output_scale = (outType)(isInverse ? test_size : 1);
@@ -475,7 +475,7 @@ void cppFFTTest(string pTestFile) {
     delete[] outData;
 }
 
-template<typename inType, typename outType, bool isInverse>
+template <typename inType, typename outType, bool isInverse>
 void cppDFTTest(string pTestFile) {
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
@@ -504,9 +504,9 @@ void cppDFTTest(string pTestFile) {
 
     size_t test_size = 0;
     switch (dims.ndims()) {
-        case 1: test_size = dims[0] / 2 + 1; break;
-        case 2: test_size = dims[1] * (dims[0] / 2 + 1); break;
-        case 3: test_size = dims[2] * dims[1] * (dims[0] / 2 + 1); break;
+        case 1: test_size  = dims[0] / 2 + 1; break;
+        case 2: test_size  = dims[1] * (dims[0] / 2 + 1); break;
+        case 3: test_size  = dims[2] * dims[1] * (dims[0] / 2 + 1); break;
         default: test_size = dims[0] / 2 + 1; break;
     }
     outType output_scale = (outType)(isInverse ? test_size : 1);

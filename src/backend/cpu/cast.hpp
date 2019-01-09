@@ -19,14 +19,14 @@
 
 namespace cpu {
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 struct UnOp<To, Ti, af_cast_t> {
     void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) {
         for (int i = 0; i < lim; i++) { out[i] = To(in[i]); }
     }
 };
 
-template<typename To>
+template <typename To>
 struct UnOp<To, std::complex<float>, af_cast_t> {
     typedef std::complex<float> Ti;
     void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) {
@@ -34,7 +34,7 @@ struct UnOp<To, std::complex<float>, af_cast_t> {
     }
 };
 
-template<typename To>
+template <typename To>
 struct UnOp<To, std::complex<double>, af_cast_t> {
     typedef std::complex<double> Ti;
     void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) {
@@ -48,7 +48,7 @@ struct UnOp<To, std::complex<double>, af_cast_t> {
 // so they To(std::abs(v)) instead of To(v) which results in incorrect values
 // when To is complex.
 
-template<>
+template <>
 struct UnOp<std::complex<float>, std::complex<double>, af_cast_t> {
     typedef std::complex<double> Ti;
     typedef std::complex<float> To;
@@ -57,7 +57,7 @@ struct UnOp<std::complex<float>, std::complex<double>, af_cast_t> {
     }
 };
 
-template<>
+template <>
 struct UnOp<std::complex<double>, std::complex<float>, af_cast_t> {
     typedef std::complex<float> Ti;
     typedef std::complex<double> To;
@@ -67,7 +67,7 @@ struct UnOp<std::complex<double>, std::complex<float>, af_cast_t> {
 };
 
 #define CAST_B8(T)                                                           \
-    template<>                                                               \
+    template <>                                                              \
     struct UnOp<char, T, af_cast_t> {                                        \
         void eval(jit::array<char> &out, const jit::array<T> &in, int lim) { \
             for (int i = 0; i < lim; i++) { out[i] = char(in[i] != 0); }     \
@@ -80,7 +80,7 @@ CAST_B8(int)
 CAST_B8(uchar)
 CAST_B8(char)
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 struct CastWrapper {
     Array<To> operator()(const Array<Ti> &in) {
         jit::Node_ptr in_node = in.getNode();
@@ -91,12 +91,12 @@ struct CastWrapper {
     }
 };
 
-template<typename T>
+template <typename T>
 struct CastWrapper<T, T> {
     Array<T> operator()(const Array<T> &in) { return in; }
 };
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 Array<To> cast(const Array<Ti> &in) {
     CastWrapper<To, Ti> cast_op;
     return cast_op(in);

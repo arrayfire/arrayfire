@@ -13,7 +13,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void iir(Param<T> y, Param<T> c, CParam<T> a) {
     dim4 ydims = c.dims();
     int num_a  = a.dims(0);

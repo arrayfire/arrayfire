@@ -22,56 +22,56 @@ using namespace detail;
 // Because isnan(cfloat) and isnan(cdouble) is not defined
 #define IS_NAN(val) !((val) == (val))
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 struct Binary {
     static __DH__ T init() { return detail::scalar<T>(0); }
 
     __DH__ T operator()(T lhs, T rhs) { return lhs + rhs; }
 };
 
-template<typename T>
+template <typename T>
 struct Binary<T, af_add_t> {
     static __DH__ T init() { return detail::scalar<T>(0); }
 
     __DH__ T operator()(T lhs, T rhs) { return lhs + rhs; }
 };
 
-template<typename T>
+template <typename T>
 struct Binary<T, af_mul_t> {
     static __DH__ T init() { return detail::scalar<T>(1); }
 
     __DH__ T operator()(T lhs, T rhs) { return lhs * rhs; }
 };
 
-template<typename T>
+template <typename T>
 struct Binary<T, af_or_t> {
     static __DH__ T init() { return detail::scalar<T>(0); }
 
     __DH__ T operator()(T lhs, T rhs) { return lhs || rhs; }
 };
 
-template<typename T>
+template <typename T>
 struct Binary<T, af_and_t> {
     static __DH__ T init() { return detail::scalar<T>(1); }
 
     __DH__ T operator()(T lhs, T rhs) { return lhs && rhs; }
 };
 
-template<typename T>
+template <typename T>
 struct Binary<T, af_notzero_t> {
     static __DH__ T init() { return detail::scalar<T>(0); }
 
     __DH__ T operator()(T lhs, T rhs) { return lhs + rhs; }
 };
 
-template<typename T>
+template <typename T>
 struct Binary<T, af_min_t> {
     static __DH__ T init() { return detail::maxval<T>(); }
 
     __DH__ T operator()(T lhs, T rhs) { return detail::min(lhs, rhs); }
 };
 
-template<>
+template <>
 struct Binary<char, af_min_t> {
     static __DH__ char init() { return 1; }
 
@@ -81,7 +81,7 @@ struct Binary<char, af_min_t> {
 };
 
 #define SPECIALIZE_COMPLEX_MIN(T, Tr)                                       \
-    template<>                                                              \
+    template <>                                                             \
     struct Binary<T, af_min_t> {                                            \
         static __DH__ T init() {                                            \
             return detail::scalar<T>(detail::maxval<Tr>());                 \
@@ -95,14 +95,14 @@ SPECIALIZE_COMPLEX_MIN(cdouble, double)
 
 #undef SPECIALIZE_COMPLEX_MIN
 
-template<typename T>
+template <typename T>
 struct Binary<T, af_max_t> {
     static __DH__ T init() { return detail::minval<T>(); }
 
     __DH__ T operator()(T lhs, T rhs) { return detail::max(lhs, rhs); }
 };
 
-template<>
+template <>
 struct Binary<char, af_max_t> {
     static __DH__ char init() { return 0; }
 
@@ -112,7 +112,7 @@ struct Binary<char, af_max_t> {
 };
 
 #define SPECIALIZE_COMPLEX_MAX(T, Tr)                                       \
-    template<>                                                              \
+    template <>                                                             \
     struct Binary<T, af_max_t> {                                            \
         static __DH__ T init() {                                            \
             return detail::scalar<T>(detail::scalar<Tr>(0));                \
@@ -126,36 +126,36 @@ SPECIALIZE_COMPLEX_MAX(cdouble, double)
 
 #undef SPECIALIZE_COMPLEX_MAX
 
-template<typename Ti, typename To, af_op_t op>
+template <typename Ti, typename To, af_op_t op>
 struct Transform {
     __DH__ To operator()(Ti in) { return (To)(in); }
 };
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 struct Transform<Ti, To, af_min_t> {
     __DH__ To operator()(Ti in) {
         return (To)(IS_NAN(in) ? Binary<To, af_min_t>::init() : in);
     }
 };
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 struct Transform<Ti, To, af_max_t> {
     __DH__ To operator()(Ti in) {
         return (To)(IS_NAN(in) ? Binary<To, af_max_t>::init() : in);
     }
 };
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 struct Transform<Ti, To, af_or_t> {
     __DH__ To operator()(Ti in) { return (in != detail::scalar<Ti>(0)); }
 };
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 struct Transform<Ti, To, af_and_t> {
     __DH__ To operator()(Ti in) { return (in != detail::scalar<Ti>(0)); }
 };
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 struct Transform<Ti, To, af_notzero_t> {
     __DH__ To operator()(Ti in) { return (in != detail::scalar<Ti>(0)); }
 };

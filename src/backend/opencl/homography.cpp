@@ -24,7 +24,7 @@ namespace opencl {
 #define LMEDSConfidence 0.99f
 #define LMEDSOutlierRatio 0.4f
 
-template<typename T>
+template <typename T>
 int homography(Array<T> &bestH, const Array<float> &x_src,
                const Array<float> &y_src, const Array<float> &x_dst,
                const Array<float> &y_dst, const Array<float> &initial,

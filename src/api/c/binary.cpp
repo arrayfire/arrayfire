@@ -27,7 +27,7 @@
 using namespace detail;
 using af::dim4;
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 static inline af_array arithOp(const af_array lhs, const af_array rhs,
                                const dim4 &odims) {
     af_array res =
@@ -35,13 +35,13 @@ static inline af_array arithOp(const af_array lhs, const af_array rhs,
     return res;
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 static inline af_array sparseArithOp(const af_array lhs, const af_array rhs) {
     auto res = arithOp<T, op>(getSparseArray<T>(lhs), getSparseArray<T>(rhs));
     return getHandle(res);
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 static inline af_array arithSparseDenseOp(const af_array lhs,
                                           const af_array rhs,
                                           const bool reverse) {
@@ -53,7 +53,7 @@ static inline af_array arithSparseDenseOp(const af_array lhs,
             arithOp<T, op>(castSparse<T>(lhs), castArray<T>(rhs), reverse));
 }
 
-template<af_op_t op>
+template <af_op_t op>
 static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs,
                        const bool batchMode) {
     try {
@@ -71,8 +71,8 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs,
             case c64: res = arithOp<cdouble, op>(lhs, rhs, odims); break;
             case s32: res = arithOp<int, op>(lhs, rhs, odims); break;
             case u32: res = arithOp<uint, op>(lhs, rhs, odims); break;
-            case u8: res = arithOp<uchar, op>(lhs, rhs, odims); break;
-            case b8: res = arithOp<char, op>(lhs, rhs, odims); break;
+            case u8: res  = arithOp<uchar, op>(lhs, rhs, odims); break;
+            case b8: res  = arithOp<char, op>(lhs, rhs, odims); break;
             case s64: res = arithOp<intl, op>(lhs, rhs, odims); break;
             case u64: res = arithOp<uintl, op>(lhs, rhs, odims); break;
             case s16: res = arithOp<short, op>(lhs, rhs, odims); break;
@@ -86,7 +86,7 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs,
     return AF_SUCCESS;
 }
 
-template<af_op_t op>
+template <af_op_t op>
 static af_err af_arith_real(af_array *out, const af_array lhs,
                             const af_array rhs, const bool batchMode) {
     try {
@@ -102,8 +102,8 @@ static af_err af_arith_real(af_array *out, const af_array lhs,
             case f64: res = arithOp<double, op>(lhs, rhs, odims); break;
             case s32: res = arithOp<int, op>(lhs, rhs, odims); break;
             case u32: res = arithOp<uint, op>(lhs, rhs, odims); break;
-            case u8: res = arithOp<uchar, op>(lhs, rhs, odims); break;
-            case b8: res = arithOp<char, op>(lhs, rhs, odims); break;
+            case u8: res  = arithOp<uchar, op>(lhs, rhs, odims); break;
+            case b8: res  = arithOp<char, op>(lhs, rhs, odims); break;
             case s64: res = arithOp<intl, op>(lhs, rhs, odims); break;
             case u64: res = arithOp<uintl, op>(lhs, rhs, odims); break;
             case s16: res = arithOp<short, op>(lhs, rhs, odims); break;
@@ -117,7 +117,7 @@ static af_err af_arith_real(af_array *out, const af_array lhs,
     return AF_SUCCESS;
 }
 
-template<af_op_t op>
+template <af_op_t op>
 static af_err af_arith_sparse(af_array *out, const af_array lhs,
                               const af_array rhs) {
     try {
@@ -144,7 +144,7 @@ static af_err af_arith_sparse(af_array *out, const af_array lhs,
     return AF_SUCCESS;
 }
 
-template<af_op_t op>
+template <af_op_t op>
 static af_err af_arith_sparse_dense(af_array *out, const af_array lhs,
                                     const af_array rhs,
                                     const bool reverse = false) {
@@ -410,7 +410,7 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs,
     return AF_SUCCESS;
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 static inline af_array logicOp(const af_array lhs, const af_array rhs,
                                const dim4 &odims) {
     af_array res =
@@ -418,7 +418,7 @@ static inline af_array logicOp(const af_array lhs, const af_array rhs,
     return res;
 }
 
-template<af_op_t op>
+template <af_op_t op>
 static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs,
                        const bool batchMode) {
     try {
@@ -437,8 +437,8 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs,
             case c64: res = logicOp<cdouble, op>(lhs, rhs, odims); break;
             case s32: res = logicOp<int, op>(lhs, rhs, odims); break;
             case u32: res = logicOp<uint, op>(lhs, rhs, odims); break;
-            case u8: res = logicOp<uchar, op>(lhs, rhs, odims); break;
-            case b8: res = logicOp<char, op>(lhs, rhs, odims); break;
+            case u8: res  = logicOp<uchar, op>(lhs, rhs, odims); break;
+            case b8: res  = logicOp<char, op>(lhs, rhs, odims); break;
             case s64: res = logicOp<intl, op>(lhs, rhs, odims); break;
             case u64: res = logicOp<uintl, op>(lhs, rhs, odims); break;
             case s16: res = logicOp<short, op>(lhs, rhs, odims); break;
@@ -492,7 +492,7 @@ af_err af_or(af_array *out, const af_array lhs, const af_array rhs,
     return af_logic<af_or_t>(out, lhs, rhs, batchMode);
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 static inline af_array bitOp(const af_array lhs, const af_array rhs,
                              const dim4 &odims) {
     af_array res =
@@ -500,7 +500,7 @@ static inline af_array bitOp(const af_array lhs, const af_array rhs,
     return res;
 }
 
-template<af_op_t op>
+template <af_op_t op>
 static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs,
                          const bool batchMode) {
     try {
@@ -519,8 +519,8 @@ static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs,
         switch (type) {
             case s32: res = bitOp<int, op>(lhs, rhs, odims); break;
             case u32: res = bitOp<uint, op>(lhs, rhs, odims); break;
-            case u8: res = bitOp<uchar, op>(lhs, rhs, odims); break;
-            case b8: res = bitOp<char, op>(lhs, rhs, odims); break;
+            case u8: res  = bitOp<uchar, op>(lhs, rhs, odims); break;
+            case b8: res  = bitOp<char, op>(lhs, rhs, odims); break;
             case s64: res = bitOp<intl, op>(lhs, rhs, odims); break;
             case u64: res = bitOp<uintl, op>(lhs, rhs, odims); break;
             case s16: res = bitOp<short, op>(lhs, rhs, odims); break;

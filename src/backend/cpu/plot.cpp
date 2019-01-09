@@ -18,7 +18,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 void copy_plot(const Array<T> &P, fg_plot plot) {
     ForgeModule &_ = graphics::forgePlugin();
     P.eval();

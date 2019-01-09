@@ -23,7 +23,7 @@ using std::partial_sort_copy;
 using std::vector;
 
 namespace cpu {
-template<typename T>
+template <typename T>
 void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
           const int k, const int dim, const af::topkFunction order) {
     // The out_dims is of size k along the dimension of the topk operation

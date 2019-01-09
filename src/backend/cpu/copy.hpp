@@ -19,21 +19,21 @@ class dim4;
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 void copyData(T *data, const Array<T> &A);
 
-template<typename T>
+template <typename T>
 Array<T> copyArray(const Array<T> &A);
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 void copyArray(Array<outType> &out, const Array<inType> &in);
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 Array<outType> padArray(const Array<inType> &in, const dim4 &dims,
                         outType default_value = outType(0),
                         double factor         = 1.0);
 
-template<typename T>
+template <typename T>
 Array<T> padArrayBorders(const Array<T> &in, const dim4 &lowerBoundPadding,
                          const dim4 &upperBoundPadding,
                          const af::borderType btype) {
@@ -53,9 +53,9 @@ Array<T> padArrayBorders(const Array<T> &in, const dim4 &lowerBoundPadding,
     return ret;
 }
 
-template<typename T>
+template <typename T>
 void multiply_inplace(Array<T> &in, double val);
 
-template<typename T>
+template <typename T>
 T getScalar(const Array<T> &in);
 }  // namespace cpu

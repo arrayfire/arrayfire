@@ -9,8 +9,8 @@
 
 #pragma once
 #include <kernel_headers/example.hpp>  // This is the header that gets auto-generated
-          // from the .cl file you will create. We pre-process
-          // cl files to obfuscate code.
+// from the .cl file you will create. We pre-process
+// cl files to obfuscate code.
 
 #include <program.hpp>
 #include <traits.hpp>
@@ -21,9 +21,9 @@
 
 #include <cache.hpp>  // Has the definitions of functions such as the following
                       // used in caching and fetching kernels.
-          // * kernelCache - used to fetch existing kernel from cache
-          // if any
-          // * addKernelToCache - push new kernels into cache
+// * kernelCache - used to fetch existing kernel from cache
+// if any
+// * addKernelToCache - push new kernels into cache
 
 #include <common/dispatch.hpp>  // common utility header for CUDA & OpenCL backends
                                 // has the divup macro
@@ -50,7 +50,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename T>
+template <typename T>
 void exampleFunc(Param c, const Param a, const Param b, const af_someenum_t p) {
     std::string refName = std::string("example_") +  //<kernel_function_name>_
                           std::string(dtype_traits<T>::getName());

@@ -14,7 +14,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in) {
     const af::dim4 dims = in.dims();
 

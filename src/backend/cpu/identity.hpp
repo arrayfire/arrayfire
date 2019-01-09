@@ -10,6 +10,6 @@
 #include <Array.hpp>
 
 namespace cpu {
-template<typename T>
+template <typename T>
 Array<T> identity(const dim4& dim);
 }

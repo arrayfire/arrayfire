@@ -19,7 +19,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array reorder(const af_array in, const af::dim4 &rdims0) {
     Array<T> In = getArray<T>(in);
     dim4 rdims  = rdims0;
@@ -92,10 +92,10 @@ af_err af_reorder(af_array *out, const af_array in, const af::dim4 &rdims) {
             case c32: output = reorder<cfloat>(in, rdims); break;
             case f64: output = reorder<double>(in, rdims); break;
             case c64: output = reorder<cdouble>(in, rdims); break;
-            case b8: output = reorder<char>(in, rdims); break;
+            case b8: output  = reorder<char>(in, rdims); break;
             case s32: output = reorder<int>(in, rdims); break;
             case u32: output = reorder<uint>(in, rdims); break;
-            case u8: output = reorder<uchar>(in, rdims); break;
+            case u8: output  = reorder<uchar>(in, rdims); break;
             case s64: output = reorder<intl>(in, rdims); break;
             case u64: output = reorder<uintl>(in, rdims); break;
             case s16: output = reorder<short>(in, rdims); break;

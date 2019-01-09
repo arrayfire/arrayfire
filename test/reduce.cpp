@@ -28,7 +28,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Reduce : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl,
@@ -38,7 +38,7 @@ TYPED_TEST_CASE(Reduce, TestTypes);
 
 typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
 
-template<typename Ti, typename To, reduceFunc af_reduce>
+template <typename Ti, typename To, reduceFunc af_reduce>
 void reduceTest(string pTestFile, int off = 0, bool isSubRef = false,
                 const vector<af_seq> seqv = vector<af_seq>()) {
     if (noDoubleTests<Ti>()) return;
@@ -110,41 +110,41 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef = false,
     ASSERT_SUCCESS(af_release_array(inArray));
 }
 
-template<typename T, reduceFunc OP>
+template <typename T, reduceFunc OP>
 struct promote_type {
     typedef T type;
 };
 
 // char and uchar are promoted to int for sum and product
-template<>
+template <>
 struct promote_type<uchar, af_sum> {
     typedef uint type;
 };
-template<>
+template <>
 struct promote_type<char, af_sum> {
     typedef uint type;
 };
-template<>
+template <>
 struct promote_type<short, af_sum> {
     typedef int type;
 };
-template<>
+template <>
 struct promote_type<ushort, af_sum> {
     typedef uint type;
 };
-template<>
+template <>
 struct promote_type<uchar, af_product> {
     typedef uint type;
 };
-template<>
+template <>
 struct promote_type<char, af_product> {
     typedef uint type;
 };
-template<>
+template <>
 struct promote_type<short, af_product> {
     typedef int type;
 };
-template<>
+template <>
 struct promote_type<ushort, af_product> {
     typedef uint type;
 };
@@ -209,7 +209,7 @@ using af::seq;
 using af::span;
 using af::sum;
 
-template<typename Ti, typename To, ReductionOp reduce>
+template <typename Ti, typename To, ReductionOp reduce>
 void cppReduceTest(string pTestFile) {
     if (noDoubleTests<Ti>()) return;
     if (noDoubleTests<To>()) return;
@@ -389,31 +389,31 @@ TEST(Reduce, Test_max_Global) {
     freeHost(h_a);
 }
 
-template<typename T>
+template <typename T>
 void typed_assert_eq(T lhs, T rhs, bool both = true) {
     UNUSED(both);
     ASSERT_EQ(lhs, rhs);
 }
 
-template<>
+template <>
 void typed_assert_eq<float>(float lhs, float rhs, bool both) {
     UNUSED(both);
     ASSERT_FLOAT_EQ(lhs, rhs);
 }
 
-template<>
+template <>
 void typed_assert_eq<double>(double lhs, double rhs, bool both) {
     UNUSED(both);
     ASSERT_DOUBLE_EQ(lhs, rhs);
 }
 
-template<>
+template <>
 void typed_assert_eq<cfloat>(cfloat lhs, cfloat rhs, bool both) {
     ASSERT_FLOAT_EQ(real(lhs), real(rhs));
     if (both) { ASSERT_FLOAT_EQ(imag(lhs), imag(rhs)); }
 }
 
-template<>
+template <>
 void typed_assert_eq<cdouble>(cdouble lhs, cdouble rhs, bool both) {
     ASSERT_DOUBLE_EQ(real(lhs), real(rhs));
     if (both) { ASSERT_DOUBLE_EQ(imag(lhs), imag(rhs)); }
@@ -671,7 +671,7 @@ TEST(Reduce, KernelName) {
 
     array in = constant(0, m, n, b);
     for (int i = 0; i < b; i++) {
-        array tmp         = randu(m, n);
+        array tmp = randu(m, n);
         in(span, span, i) = tmp;
         ASSERT_EQ(min<float>(in(span, span, i)), min<float>(tmp));
     }

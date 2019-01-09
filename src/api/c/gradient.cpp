@@ -18,7 +18,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline void gradient(af_array *grad0, af_array *grad1,
                             const af_array in) {
     gradient<T>(getArray<T>(*grad0), getArray<T>(*grad1), getArray<T>(in));

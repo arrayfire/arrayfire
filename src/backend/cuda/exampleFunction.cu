@@ -17,15 +17,15 @@
                          // specific to cuda backend
 
 #include <kernel/exampleFunction.hpp>  // this header under the folder src/cuda/kernel
-          // defines the CUDA kernel and its wrapper
-          // function to which the main computation of your
-          // algorithm should be relayed to
+// defines the CUDA kernel and its wrapper
+// function to which the main computation of your
+// algorithm should be relayed to
 
 using af::dim4;
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 Array<T> exampleFunction(const Array<T> &a, const Array<T> &b,
                          const af_someenum_t method) {
     dim4 outputDims;  // this should be '= in.dims();' in most cases

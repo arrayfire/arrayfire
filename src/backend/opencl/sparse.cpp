@@ -31,7 +31,7 @@ using namespace common;
 
 // Partial template specialization of sparseConvertDenseToStorage for COO
 // However, template specialization is not allowed
-template<typename T>
+template <typename T>
 SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in) {
     in.eval();
 
@@ -56,7 +56,7 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in) {
                                          AF_STORAGE_COO);
 }
 
-template<typename T, af_storage stype>
+template <typename T, af_storage stype>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_) {
     in_.eval();
 
@@ -76,7 +76,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_) {
 
 // Partial template specialization of sparseConvertStorageToDense for COO
 // However, template specialization is not allowed
-template<typename T>
+template <typename T>
 Array<T> sparseConvertCOOToDense(const SparseArray<T> &in) {
     in.eval();
 
@@ -92,7 +92,7 @@ Array<T> sparseConvertCOOToDense(const SparseArray<T> &in) {
     return dense;
 }
 
-template<typename T, af_storage stype>
+template <typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_) {
     if (stype != AF_STORAGE_CSR)
         AF_ERROR("OpenCL Backend only supports CSR or COO to Dense",
@@ -116,7 +116,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in_) {
     return dense_;
 }
 
-template<typename T, af_storage dest, af_storage src>
+template <typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
     in.eval();
 
@@ -176,12 +176,12 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
         const SparseArray<T> &in);
 
 #define INSTANTIATE_COO_SPECIAL(T)                                 \
-    template<>                                                     \
+    template <>                                                    \
     SparseArray<T> sparseConvertDenseToStorage<T, AF_STORAGE_COO>( \
         const Array<T> &in) {                                      \
         return sparseConvertDenseToCOO<T>(in);                     \
     }                                                              \
-    template<>                                                     \
+    template <>                                                    \
     Array<T> sparseConvertStorageToDense<T, AF_STORAGE_COO>(       \
         const SparseArray<T> &in) {                                \
         return sparseConvertCOOToDense<T>(in);                     \

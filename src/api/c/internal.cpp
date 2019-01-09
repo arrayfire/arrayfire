@@ -151,8 +151,8 @@ af_err af_get_raw_ptr(void **ptr, const af_array arr) {
             case s64: res = (void *)getRawPtr(getArray<intl>(arr)); break;
             case u16: res = (void *)getRawPtr(getArray<ushort>(arr)); break;
             case s16: res = (void *)getRawPtr(getArray<short>(arr)); break;
-            case b8: res = (void *)getRawPtr(getArray<char>(arr)); break;
-            case u8: res = (void *)getRawPtr(getArray<uchar>(arr)); break;
+            case b8: res  = (void *)getRawPtr(getArray<char>(arr)); break;
+            case u8: res  = (void *)getRawPtr(getArray<uchar>(arr)); break;
             default: TYPE_ERROR(6, ty);
         }
 
@@ -187,8 +187,8 @@ af_err af_is_owner(bool *result, const af_array arr) {
             case s64: res = (void *)getArray<intl>(arr).isOwner(); break;
             case u16: res = (void *)getArray<ushort>(arr).isOwner(); break;
             case s16: res = (void *)getArray<short>(arr).isOwner(); break;
-            case b8: res = (void *)getArray<char>(arr).isOwner(); break;
-            case u8: res = (void *)getArray<uchar>(arr).isOwner(); break;
+            case b8: res  = (void *)getArray<char>(arr).isOwner(); break;
+            case u8: res  = (void *)getArray<uchar>(arr).isOwner(); break;
             default: TYPE_ERROR(6, ty);
         }
 
@@ -215,8 +215,8 @@ af_err af_get_allocated_bytes(size_t *bytes, const af_array arr) {
             case s64: res = getArray<intl>(arr).getAllocatedBytes(); break;
             case u16: res = getArray<ushort>(arr).getAllocatedBytes(); break;
             case s16: res = getArray<short>(arr).getAllocatedBytes(); break;
-            case b8: res = getArray<char>(arr).getAllocatedBytes(); break;
-            case u8: res = getArray<uchar>(arr).getAllocatedBytes(); break;
+            case b8: res  = getArray<char>(arr).getAllocatedBytes(); break;
+            case u8: res  = getArray<uchar>(arr).getAllocatedBytes(); break;
             default: TYPE_ERROR(6, ty);
         }
 

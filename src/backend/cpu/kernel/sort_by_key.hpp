@@ -13,14 +13,14 @@
 namespace cpu {
 namespace kernel {
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sort0ByKeyIterative(Param<Tk> okey, Param<Tv> oval, bool isAscending);
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sortByKeyBatched(Param<Tk> okey, Param<Tv> oval, const int dim,
                       bool isAscending);
 
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sort0ByKey(Param<Tk> okey, Param<Tv> oval, bool isAscending);
 
 }  // namespace kernel

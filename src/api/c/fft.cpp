@@ -24,14 +24,14 @@ void computePaddedDims(dim4 &pdims, const dim4 &idims, const dim_t npad,
     }
 }
 
-template<typename inType, typename outType, int rank, bool direction>
+template <typename inType, typename outType, int rank, bool direction>
 static af_array fft(const af_array in, const double norm_factor,
                     const dim_t npad, const dim_t *const pad) {
     return getHandle(fft<inType, outType, rank, direction>(
         getArray<inType>(in), norm_factor, npad, pad));
 }
 
-template<int rank, bool direction>
+template <int rank, bool direction>
 static af_err fft(af_array *out, const af_array in, const double norm_factor,
                   const dim_t npad, const dim_t *const pad) {
     try {
@@ -110,14 +110,14 @@ af_err af_ifft3(af_array *out, const af_array in, const double norm_factor,
                          (pad0 > 0 && pad1 > 0 && pad2 > 0 ? 3 : 0), pad);
 }
 
-template<typename T, int rank, bool direction>
+template <typename T, int rank, bool direction>
 static void fft_inplace(af_array in, const double norm_factor) {
     Array<T> &input = getArray<T>(in);
     fft_inplace<T, rank, direction>(input);
     if (norm_factor != 1) { multiply_inplace<T>(input, norm_factor); }
 }
 
-template<int rank, bool direction>
+template <int rank, bool direction>
 static af_err fft_inplace(af_array in, const double norm_factor) {
     try {
         const ArrayInfo &info = getInfo(in);
@@ -166,14 +166,14 @@ af_err af_ifft3_inplace(af_array in, const double norm_factor) {
     return fft_inplace<3, false>(in, norm_factor);
 }
 
-template<typename inType, typename outType, int rank>
+template <typename inType, typename outType, int rank>
 static af_array fft_r2c(const af_array in, const double norm_factor,
                         const dim_t npad, const dim_t *const pad) {
     return getHandle(fft_r2c<inType, outType, rank>(getArray<inType>(in),
                                                     norm_factor, npad, pad));
 }
 
-template<int rank>
+template <int rank>
 static af_err fft_r2c(af_array *out, const af_array in,
                       const double norm_factor, const dim_t npad,
                       const dim_t *const pad) {
@@ -224,14 +224,14 @@ af_err af_fft3_r2c(af_array *out, const af_array in, const double norm_factor,
                       (pad0 > 0 && pad1 > 0 && pad2 > 0 ? 3 : 0), pad);
 }
 
-template<typename inType, typename outType, int rank>
+template <typename inType, typename outType, int rank>
 static af_array fft_c2r(const af_array in, const double norm_factor,
                         const dim4 &odims) {
     return getHandle(fft_c2r<inType, outType, rank>(getArray<inType>(in),
                                                     norm_factor, odims));
 }
 
-template<int rank>
+template <int rank>
 static af_err fft_c2r(af_array *out, const af_array in,
                       const double norm_factor, const bool is_odd) {
     try {

@@ -33,7 +33,7 @@ class DependencyModule {
     ~DependencyModule();
 
     /// Returns a function pointer to the function with the name symbol_name
-    template<typename T>
+    template <typename T>
     T getSymbol(const char* symbol_name) {
         functions.push_back(getFunctionPointer(handle, symbol_name));
         return (T)functions.back();

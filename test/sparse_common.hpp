@@ -29,14 +29,14 @@ using std::vector;
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 
-template<typename T>
+template <typename T>
 static af::array makeSparse(af::array A, int factor) {
     A = floor(A * 1000);
     A = A * ((A % factor) == 0) / 1000;
     return A;
 }
 
-template<>
+template <>
 af::array makeSparse<cfloat>(af::array A, int factor) {
     af::array r = real(A);
     r           = floor(r * 1000);
@@ -48,7 +48,7 @@ af::array makeSparse<cfloat>(af::array A, int factor) {
     return A;
 }
 
-template<>
+template <>
 af::array makeSparse<cdouble>(af::array A, int factor) {
     af::array r = real(A);
     r           = floor(r * 1000);
@@ -65,7 +65,7 @@ static double calc_norm(af::array lhs, af::array rhs) {
                            (af::abs(lhs) + af::abs(rhs) + 1E-5));
 }
 
-template<typename T>
+template <typename T>
 static void sparseTester(const int m, const int n, const int k, int factor,
                          double eps, int targetDevice = -1) {
     if (targetDevice >= 0) af::setDevice(targetDevice);
@@ -98,7 +98,7 @@ static void sparseTester(const int m, const int n, const int k, int factor,
     ASSERT_NEAR(0, calc_norm(imag(dRes1), imag(sRes1)), eps);
 }
 
-template<typename T>
+template <typename T>
 static void sparseTransposeTester(const int m, const int n, const int k,
                                   int factor, double eps,
                                   int targetDevice = -1) {
@@ -137,7 +137,7 @@ static void sparseTransposeTester(const int m, const int n, const int k,
     ASSERT_NEAR(0, calc_norm(imag(dRes3), imag(sRes3)), eps);
 }
 
-template<typename T>
+template <typename T>
 static void convertCSR(const int M, const int N, const float ratio,
                        int targetDevice = -1) {
     if (targetDevice >= 0) af::setDevice(targetDevice);
@@ -158,7 +158,7 @@ static void convertCSR(const int M, const int N, const float ratio,
 
 // This test essentially verifies that the sparse structures have the correct
 // dimensions and indices using a very basic test
-template<af_storage stype>
+template <af_storage stype>
 static void createFunction() {
     af::array in = af::sparse(af::identity(3, 3), stype);
 
@@ -176,7 +176,7 @@ static void createFunction() {
                               af::range(af::dim4(colIdx.elements()), 0, s32)));
 }
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 static void sparseCastTester(const int m, const int n, int factor) {
     if (noDoubleTests<Ti>()) return;
     if (noDoubleTests<To>()) return;

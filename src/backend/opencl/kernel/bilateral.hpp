@@ -33,7 +33,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename inType, typename outType, bool isColor>
+template <typename inType, typename outType, bool isColor>
 void bilateral(Param out, const Param in, float s_sigma, float c_sigma) {
     std::string refName = std::string("bilateral_") +
                           std::string(dtype_traits<inType>::getName()) +

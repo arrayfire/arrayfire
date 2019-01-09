@@ -14,7 +14,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename Ti, typename To, bool isDX>
+template <typename Ti, typename To, bool isDX>
 void derivative(Param<To> output, CParam<Ti> input) {
     const af::dim4 dims     = input.dims();
     const af::dim4 istrides = input.strides();

@@ -64,7 +64,7 @@ static const float PI_VAL = 3.14159265358979323846f;
 #define REF_PAT_COORDS 4
 #define REF_PAT_LENGTH (REF_PAT_SAMPLES * REF_PAT_COORDS)
 
-template<typename T>
+template <typename T>
 void gaussian1D(T* out, const int dim, double sigma = 0.0) {
     if (!(sigma > 0)) sigma = 0.25 * dim;
 
@@ -80,7 +80,7 @@ void gaussian1D(T* out, const int dim, double sigma = 0.0) {
     for (int k = 0; k < dim; k++) out[k] /= sum;
 }
 
-template<typename T>
+template <typename T>
 std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*, cl::Kernel*> getOrbKernels() {
     static const char* kernelNames[4] = {"harris_response", "keep_features",
                                          "centroid_angle", "extract_orb"};
@@ -129,7 +129,7 @@ std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*, cl::Kernel*> getOrbKernels() {
                            entries[3].ker);
 }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
          Param& ori_out, Param& size_out, Param& desc_out, Param image,
          const float fast_thr, const unsigned max_feat, const float scl_fctr,
@@ -368,7 +368,7 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
 
             lvl_filt.data = bufferAlloc(lvl_filt.info.dims[0] *
                                         lvl_filt.info.dims[1] * sizeof(T));
-            lvl_tmp.data  = bufferAlloc(lvl_tmp.info.dims[0] *
+            lvl_tmp.data = bufferAlloc(lvl_tmp.info.dims[0] *
                                        lvl_tmp.info.dims[1] * sizeof(T));
 
             // Calculate a separable Gaussian kernel

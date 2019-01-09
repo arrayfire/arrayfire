@@ -22,7 +22,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 T det(const af_array a) {
     const Array<T> A = getArray<T>(a);
 

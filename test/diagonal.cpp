@@ -25,7 +25,7 @@ using std::abs;
 using std::endl;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Diagonal : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, int, uint, char, unsigned char>

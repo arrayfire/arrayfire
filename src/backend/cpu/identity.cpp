@@ -16,7 +16,7 @@
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 Array<T> identity(const dim4& dims) {
     Array<T> out = createEmptyArray<T>(dims);
 

@@ -26,69 +26,69 @@
 
 namespace cpu {
 namespace kernel {
-template<typename T>
+template <typename T>
 void evalArray(Param<T> in, jit::Node_ptr node);
 
-template<typename T>
+template <typename T>
 void evalMultiple(std::vector<Param<T>> arrays,
                   std::vector<jit::Node_ptr> nodes);
 
 }  // namespace kernel
 
-template<typename T>
+template <typename T>
 class Array;
 
 using af::dim4;
 using std::shared_ptr;
 
-template<typename T>
+template <typename T>
 void evalMultiple(std::vector<Array<T> *> arrays);
 
 // Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
+template <typename T>
 Array<T> createNodeArray(const af::dim4 &size, jit::Node_ptr node);
 
 // Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
+template <typename T>
 Array<T> createValueArray(const af::dim4 &size, const T &value);
 
 // Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
+template <typename T>
 Array<T> createHostDataArray(const af::dim4 &size, const T *const data);
 
-template<typename T>
+template <typename T>
 Array<T> createDeviceDataArray(const af::dim4 &size, const void *data);
 
-template<typename T>
+template <typename T>
 Array<T> createStridedArray(af::dim4 dims, af::dim4 strides, dim_t offset,
                             const T *const in_data, bool is_device) {
     return Array<T>(dims, strides, offset, in_data, is_device);
 }
 
 /// Copies data to an existing Array object from a host pointer
-template<typename T>
+template <typename T>
 void writeHostDataArray(Array<T> &arr, const T *const data, const size_t bytes);
 
 /// Copies data to an existing Array object from a device pointer
-template<typename T>
+template <typename T>
 void writeDeviceDataArray(Array<T> &arr, const void *const data,
                           const size_t bytes);
 
 /// Creates an empty array of a given size. No data is initialized
 ///
 /// \param[in] size The dimension of the output array
-template<typename T>
+template <typename T>
 Array<T> createEmptyArray(const af::dim4 &size);
 
-template<typename T>
+template <typename T>
 Array<T> createSubArray(const Array<T> &parent,
                         const std::vector<af_seq> &index, bool copy = true);
 
 // Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
+template <typename T>
 void destroyArray(Array<T> *A);
 
-template<typename T>
+template <typename T>
 void *getDevicePtr(const Array<T> &arr) {
     T *ptr = arr.device();
     memLock(ptr);
@@ -96,14 +96,14 @@ void *getDevicePtr(const Array<T> &arr) {
     return (void *)ptr;
 }
 
-template<typename T>
+template <typename T>
 void *getRawPtr(const Array<T> &arr) {
     getQueue().sync();
     return (void *)(arr.get(false));
 }
 
 // Array Array Implementation
-template<typename T>
+template <typename T>
 class Array {
     ArrayInfo info;  // Must be the first element of Array<T>
 

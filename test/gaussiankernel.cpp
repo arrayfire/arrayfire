@@ -20,7 +20,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class GaussianKernel : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -32,7 +32,7 @@ typedef ::testing::Types<float> TestTypes;
 // register the type list
 TYPED_TEST_CASE(GaussianKernel, TestTypes);
 
-template<typename T>
+template <typename T>
 void gaussianKernelTest(string pFileName, double sigma) {
     if (noDoubleTests<T>()) return;
 

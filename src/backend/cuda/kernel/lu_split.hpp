@@ -21,7 +21,7 @@ static const unsigned TY    = 8;
 static const unsigned TILEX = 128;
 static const unsigned TILEY = 32;
 
-template<typename T, bool same_dims>
+template <typename T, bool same_dims>
 __global__ void lu_split_kernel(Param<T> lower, Param<T> upper, Param<T> in,
                                 const int blocksPerMatX,
                                 const int blocksPerMatY) {
@@ -72,7 +72,7 @@ __global__ void lu_split_kernel(Param<T> lower, Param<T> upper, Param<T> in,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 void lu_split(Param<T> lower, Param<T> upper, Param<T> in) {
     dim3 threads(TX, TY, 1);
 

@@ -14,7 +14,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename Ti, typename To, typename Tw>
+template <typename Ti, typename To, typename Tw>
 struct MeanOp {
     Transform<Ti, To, af_add_t> transform;
     To runningMean;
@@ -35,7 +35,7 @@ struct MeanOp {
     }
 };
 
-template<typename T, typename Tw, int D>
+template <typename T, typename Tw, int D>
 struct mean_weighted_dim {
     void operator()(Param<T> output, const dim_t outOffset,
                     const CParam<T> input, const dim_t inOffset,
@@ -55,7 +55,7 @@ struct mean_weighted_dim {
     }
 };
 
-template<typename T, typename Tw>
+template <typename T, typename Tw>
 struct mean_weighted_dim<T, Tw, 0> {
     void operator()(Param<T> output, const dim_t outOffset,
                     const CParam<T> input, const dim_t inOffset,
@@ -80,7 +80,7 @@ struct mean_weighted_dim<T, Tw, 0> {
     }
 };
 
-template<typename Ti, typename Tw, typename To, int D>
+template <typename Ti, typename Tw, typename To, int D>
 struct mean_dim {
     void operator()(Param<To> output, const dim_t outOffset,
                     const CParam<Ti> input, const dim_t inOffset,
@@ -96,7 +96,7 @@ struct mean_dim {
     }
 };
 
-template<typename Ti, typename Tw, typename To>
+template <typename Ti, typename Tw, typename To>
 struct mean_dim<Ti, Tw, To, 0> {
     void operator()(Param<To> output, const dim_t outOffset,
                     const CParam<Ti> input, const dim_t inOffset,

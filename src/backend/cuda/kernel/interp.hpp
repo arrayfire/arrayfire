@@ -12,36 +12,36 @@
 namespace cuda {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 struct itype_t {
     typedef float wtype;
     typedef float vtype;
 };
 
-template<>
+template <>
 struct itype_t<double> {
     typedef double wtype;
     typedef double vtype;
 };
 
-template<>
+template <>
 struct itype_t<cfloat> {
     typedef float wtype;
     typedef cfloat vtype;
 };
 
-template<>
+template <>
 struct itype_t<cdouble> {
     typedef double wtype;
     typedef cdouble vtype;
 };
 
-template<typename Ty, typename Tp>
+template <typename Ty, typename Tp>
 __device__ Ty linearInterpFunc(Ty val[2], Tp ratio) {
     return (1 - ratio) * val[0] + ratio * val[1];
 }
 
-template<typename Ty, typename Tp>
+template <typename Ty, typename Tp>
 __device__ Ty bilinearInterpFunc(Ty val[2][2], Tp xratio, Tp yratio) {
     Ty res[2];
     res[0] = linearInterpFunc(val[0], xratio);
@@ -49,7 +49,7 @@ __device__ Ty bilinearInterpFunc(Ty val[2][2], Tp xratio, Tp yratio) {
     return linearInterpFunc(res, yratio);
 }
 
-template<typename Ty, typename Tp>
+template <typename Ty, typename Tp>
 __device__ inline static Ty cubicInterpFunc(Ty val[4], Tp xratio, bool spline) {
     Ty a0, a1, a2, a3;
     if (spline) {
@@ -75,7 +75,7 @@ __device__ inline static Ty cubicInterpFunc(Ty val[4], Tp xratio, bool spline) {
     return a0 * xratio3 + a1 * xratio2 + a2 * xratio + a3;
 }
 
-template<typename Ty, typename Tp>
+template <typename Ty, typename Tp>
 __device__ inline static Ty bicubicInterpFunc(Ty val[4][4], Tp xratio,
                                               Tp yratio, bool spline) {
     Ty res[4];
@@ -86,10 +86,10 @@ __device__ inline static Ty bicubicInterpFunc(Ty val[4][4], Tp xratio,
     return cubicInterpFunc(res, yratio, spline);
 }
 
-template<typename Ty, typename Tp, int order>
+template <typename Ty, typename Tp, int order>
 struct Interp1 {};
 
-template<typename Ty, typename Tp>
+template <typename Ty, typename Tp>
 struct Interp1<Ty, Tp, 1> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
                                Tp x, af_interp_type method, int batch,
@@ -99,8 +99,8 @@ struct Interp1<Ty, Tp, 1> {
         const int x_lim    = in.dims[xdim];
         const int x_stride = in.strides[xdim];
 
-        int xid   = (method == AF_INTERP_LOWER ? floor(x) : round(x));
-        bool cond = xid >= 0 && xid < x_lim;
+        int xid        = (method == AF_INTERP_LOWER ? floor(x) : round(x));
+        bool cond      = xid >= 0 && xid < x_lim;
         if (clamp) xid = max(0, min(xid, x_lim));
 
         const int idx = ioff + xid * x_stride;
@@ -114,7 +114,7 @@ struct Interp1<Ty, Tp, 1> {
     }
 };
 
-template<typename Ty, typename Tp>
+template <typename Ty, typename Tp>
 struct Interp1<Ty, Tp, 2> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
                                Tp x, af_interp_type method, int batch,
@@ -150,7 +150,7 @@ struct Interp1<Ty, Tp, 2> {
     }
 };
 
-template<typename Ty, typename Tp>
+template <typename Ty, typename Tp>
 struct Interp1<Ty, Tp, 3> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
                                Tp x, af_interp_type method, int batch,
@@ -167,7 +167,7 @@ struct Interp1<Ty, Tp, 3> {
 
         bool cond[4] = {grid_x - 1 >= 0, true, grid_x + 1 < x_lim,
                         grid_x + 2 < x_lim};
-        int offx[4]  = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0,
+        int offx[4] = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0,
                        cond[3] ? 2 : (cond[2] ? 1 : 0)};
 
         bool spline = method == AF_INTERP_CUBIC_SPLINE;
@@ -185,10 +185,10 @@ struct Interp1<Ty, Tp, 3> {
     }
 };
 
-template<typename Ty, typename Tp, int order>
+template <typename Ty, typename Tp, int order>
 struct Interp2 {};
 
-template<typename Ty, typename Tp>
+template <typename Ty, typename Tp>
 struct Interp2<Ty, Tp, 1> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
                                Tp x, Tp y, af_interp_type method, int batch,
@@ -223,7 +223,7 @@ struct Interp2<Ty, Tp, 1> {
     }
 };
 
-template<typename Ty, typename Tp>
+template <typename Ty, typename Tp>
 struct Interp2<Ty, Tp, 2> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
                                Tp x, Tp y, af_interp_type method, int batch,
@@ -276,7 +276,7 @@ struct Interp2<Ty, Tp, 2> {
     }
 };
 
-template<typename Ty, typename Tp>
+template <typename Ty, typename Tp>
 struct Interp2<Ty, Tp, 3> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
                                Tp x, Tp y, af_interp_type method, int batch,
@@ -302,9 +302,9 @@ struct Interp2<Ty, Tp, 3> {
                          grid_x + 2 < x_lim};
         bool condY[4] = {grid_y - 1 >= 0, true, grid_y + 1 < y_lim,
                          grid_y + 2 < y_lim};
-        int offX[4]   = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0,
+        int offX[4] = {condX[0] ? -1 : 0, 0, condX[2] ? 1 : 0,
                        condX[3] ? 2 : (condX[2] ? 1 : 0)};
-        int offY[4]   = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0,
+        int offY[4] = {condY[0] ? -1 : 0, 0, condY[2] ? 1 : 0,
                        condY[3] ? 2 : (condY[2] ? 1 : 0)};
 
         // for bicubic interpolation, work with 4x4 val at a time

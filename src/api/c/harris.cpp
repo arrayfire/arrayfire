@@ -20,7 +20,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 static af_features harris(af_array const &in, const unsigned max_corners,
                           const float min_response, const float sigma,
                           const unsigned filter_len, const float k_thr) {

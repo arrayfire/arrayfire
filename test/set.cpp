@@ -26,7 +26,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 void uniqueTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
 
@@ -86,7 +86,7 @@ UNIQUE_TESTS(uintl)
 typedef af_err (*setFunc)(af_array *, const af_array, const af_array,
                           const bool);
 
-template<typename T, setFunc af_set_func>
+template <typename T, setFunc af_set_func>
 void setTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
 

@@ -17,7 +17,7 @@ using af::dim4;
 
 namespace cuda {
 
-template<typename T, af_border_type pad>
+template <typename T, af_border_type pad>
 Array<T> medfilt1(const Array<T> &in, dim_t w_wid) {
     ARG_ASSERT(2, (w_wid <= kernel::MAX_MEDFILTER1_LEN));
     ARG_ASSERT(2, (w_wid % 2 != 0));
@@ -31,7 +31,7 @@ Array<T> medfilt1(const Array<T> &in, dim_t w_wid) {
     return out;
 }
 
-template<typename T, af_border_type pad>
+template <typename T, af_border_type pad>
 Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid) {
     ARG_ASSERT(2, (w_len <= kernel::MAX_MEDFILTER2_LEN));
     ARG_ASSERT(2, (w_len % 2 != 0));

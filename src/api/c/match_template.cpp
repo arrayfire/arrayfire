@@ -17,7 +17,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 static af_array match_template(const af_array& sImg, const af_array tImg,
                                af_match_type mType) {
     switch (mType) {

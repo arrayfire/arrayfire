@@ -23,7 +23,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Morph : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -36,7 +36,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
 // register the type list
 TYPED_TEST_CASE(Morph, TestTypes);
 
-template<typename inType, bool isDilation, bool isVolume>
+template <typename inType, bool isDilation, bool isVolume>
 void morphTest(string pTestFile) {
     if (noDoubleTests<inType>()) return;
 
@@ -133,7 +133,7 @@ TYPED_TEST(Morph, Erode4x4x4) {
         string(TEST_DIR "/morph/erode4x4x4.test"));
 }
 
-template<typename T, bool isDilation, bool isColor>
+template <typename T, bool isDilation, bool isColor>
 void morphImageTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
@@ -196,7 +196,7 @@ TEST(Morph, ColorImage) {
     morphImageTest<float, false, true>(string(TEST_DIR "/morph/color.test"));
 }
 
-template<typename T, bool isDilation>
+template <typename T, bool isDilation>
 void morphInputTest(void) {
     if (noDoubleTests<T>()) return;
 
@@ -233,7 +233,7 @@ TYPED_TEST(Morph, DilateInvalidInput) { morphInputTest<TypeParam, true>(); }
 
 TYPED_TEST(Morph, ErodeInvalidInput) { morphInputTest<TypeParam, false>(); }
 
-template<typename T, bool isDilation>
+template <typename T, bool isDilation>
 void morphMaskTest(void) {
     if (noDoubleTests<T>()) return;
 
@@ -284,7 +284,7 @@ TYPED_TEST(Morph, DilateInvalidMask) { morphMaskTest<TypeParam, true>(); }
 
 TYPED_TEST(Morph, ErodeInvalidMask) { morphMaskTest<TypeParam, false>(); }
 
-template<typename T, bool isDilation>
+template <typename T, bool isDilation>
 void morph3DMaskTest(void) {
     if (noDoubleTests<T>()) return;
 
@@ -352,7 +352,7 @@ using af::randu;
 using af::seq;
 using af::span;
 
-template<typename T, bool isDilation, bool isColor>
+template <typename T, bool isDilation, bool isColor>
 void cppMorphImageTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;
@@ -422,7 +422,7 @@ TEST(Morph, EdgeIssue1564) {
                               0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0,
                               0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1};
-    int goldData[10 * 10]  = {0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0,
+    int goldData[10 * 10] = {0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0,
                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                              0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,
                              0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1,

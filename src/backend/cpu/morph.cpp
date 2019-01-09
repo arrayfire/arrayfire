@@ -19,7 +19,7 @@
 using af::dim4;
 
 namespace cpu {
-template<typename T, bool isDilation>
+template <typename T, bool isDilation>
 Array<T> morph(const Array<T> &in, const Array<T> &mask) {
     af::borderType padType = isDilation ? AF_PAD_ZERO : AF_PAD_CLAMP_TO_EDGE;
 
@@ -46,7 +46,7 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask) {
     return createSubArray(out, idxs);
 }
 
-template<typename T, bool isDilation>
+template <typename T, bool isDilation>
 Array<T> morph3d(const Array<T> &in, const Array<T> &mask) {
     in.eval();
     mask.eval();

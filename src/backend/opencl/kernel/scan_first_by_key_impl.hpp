@@ -35,7 +35,8 @@ using std::string;
 namespace opencl {
 namespace kernel {
 
-template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
+template <typename Ti, typename Tk, typename To, af_op_t op,
+          bool inclusive_scan>
 static Kernel get_scan_first_kernels(int kerIdx, bool calculateFlags,
                                      uint threads_x) {
     std::string ref_name =
@@ -89,8 +90,8 @@ static Kernel get_scan_first_kernels(int kerIdx, bool calculateFlags,
     return entry.ker[kerIdx];
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op,
-         bool inclusive_scan = true>
+template <typename Ti, typename Tk, typename To, af_op_t op,
+          bool inclusive_scan = true>
 static void scan_first_nonfinal_launcher(Param &out, Param &tmp, Param &tmpflg,
                                          Param &tmpid, const Param &in,
                                          const Param &key, const uint groups_x,
@@ -118,8 +119,8 @@ static void scan_first_nonfinal_launcher(Param &out, Param &tmp, Param &tmpflg,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op,
-         bool inclusive_scan = true>
+template <typename Ti, typename Tk, typename To, af_op_t op,
+          bool inclusive_scan = true>
 static void scan_first_final_launcher(Param &out, const Param &in,
                                       const Param &key,
                                       const bool calculateFlags,
@@ -143,7 +144,8 @@ static void scan_first_final_launcher(Param &out, const Param &in,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
+template <typename Ti, typename Tk, typename To, af_op_t op,
+          bool inclusive_scan>
 static void bcast_first_launcher(Param &out, Param &tmp, Param &tmpid,
                                  const uint groups_x, const uint groups_y,
                                  const uint threads_x) {
@@ -166,7 +168,8 @@ static void bcast_first_launcher(Param &out, Param &tmp, Param &tmpid,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
+template <typename Ti, typename Tk, typename To, af_op_t op,
+          bool inclusive_scan>
 void scan_first(Param &out, const Param &in, const Param &key) {
     uint threads_x = nextpow2(std::max(32u, (uint)out.info.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_GROUP);

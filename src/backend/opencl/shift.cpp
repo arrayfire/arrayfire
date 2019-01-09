@@ -29,7 +29,7 @@ using std::string;
 namespace opencl {
 using ShiftNode = ShiftNodeBase<BufferNode>;
 
-template<typename T>
+template <typename T>
 Array<T> shift(const Array<T> &in, const int sdims[4]) {
     // Shift should only be the first node in the JIT tree.
     // Force input to be evaluated so that in is always a buffer.

@@ -33,30 +33,30 @@ using std::remove_const;
 namespace opencl {
 namespace cpu {
 
-template<typename T, class Enable = void>
+template <typename T, class Enable = void>
 struct blas_base {
     using type = T;
 };
 
-template<typename T>
+template <typename T>
 struct blas_base<T, typename enable_if<is_complex<T>::value>::type> {
     using type = typename conditional<is_same<T, cdouble>::value, sp_cdouble,
                                       sp_cfloat>::type;
 };
 
-template<typename T>
+template <typename T>
 using cptr_type =
     typename conditional<is_complex<T>::value,
                          const typename blas_base<T>::type *, const T *>::type;
-template<typename T>
+template <typename T>
 using ptr_type = typename conditional<is_complex<T>::value,
                                       typename blas_base<T>::type *, T *>::type;
-template<typename T>
+template <typename T>
 using scale_type =
     typename conditional<is_complex<T>::value,
                          const typename blas_base<T>::type, const T>::type;
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 To getScaleValue(Ti val) {
     return (To)(val);
 }
@@ -93,19 +93,19 @@ To getScaleValue(Ti val) {
 //                 MKL_Complex16 *y,
 //                 MKL_INT ldy);
 
-template<typename T>
+template <typename T>
 using create_csr_func_def = sparse_status_t (*)(sparse_matrix_t *,
                                                 sparse_index_base_t, int, int,
                                                 int *, int *, int *,
                                                 ptr_type<T>);
 
-template<typename T>
+template <typename T>
 using mv_func_def = sparse_status_t (*)(sparse_operation_t, scale_type<T>,
                                         const sparse_matrix_t,
                                         struct matrix_descr, cptr_type<T>,
                                         scale_type<T>, ptr_type<T>);
 
-template<typename T>
+template <typename T>
 using mm_func_def = sparse_status_t (*)(sparse_operation_t, scale_type<T>,
                                         const sparse_matrix_t,
                                         struct matrix_descr, sparse_layout_t,
@@ -113,11 +113,11 @@ using mm_func_def = sparse_status_t (*)(sparse_operation_t, scale_type<T>,
                                         ptr_type<T>, int);
 
 #define SPARSE_FUNC_DEF(FUNC) \
-    template<typename T>      \
+    template <typename T>     \
     FUNC##_func_def<T> FUNC##_func();
 
 #define SPARSE_FUNC(FUNC, TYPE, PREFIX)         \
-    template<>                                  \
+    template <>                                 \
     FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
         return &mkl_sparse_##PREFIX##_##FUNC;   \
     }
@@ -143,7 +143,7 @@ SPARSE_FUNC(mm, cdouble, z)
 #undef SPARSE_FUNC
 #undef SPARSE_FUNC_DEF
 
-template<>
+template <>
 const sp_cfloat getScaleValue<const sp_cfloat, cfloat>(cfloat val) {
     sp_cfloat ret;
     ret.real = val.s[0];
@@ -151,7 +151,7 @@ const sp_cfloat getScaleValue<const sp_cfloat, cfloat>(cfloat val) {
     return ret;
 }
 
-template<>
+template <>
 const sp_cdouble getScaleValue<const sp_cdouble, cdouble>(cdouble val) {
     sp_cdouble ret;
     ret.real = val.s[0];
@@ -173,15 +173,15 @@ typedef enum {
 sparse_operation_t toSparseTranspose(af_mat_prop opt) {
     sparse_operation_t out = SPARSE_OPERATION_NON_TRANSPOSE;
     switch (opt) {
-        case AF_MAT_NONE: out = SPARSE_OPERATION_NON_TRANSPOSE; break;
-        case AF_MAT_TRANS: out = SPARSE_OPERATION_TRANSPOSE; break;
+        case AF_MAT_NONE: out   = SPARSE_OPERATION_NON_TRANSPOSE; break;
+        case AF_MAT_TRANS: out  = SPARSE_OPERATION_TRANSPOSE; break;
         case AF_MAT_CTRANS: out = SPARSE_OPERATION_CONJUGATE_TRANSPOSE; break;
         default: AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
     return out;
 }
 
-template<typename T, int value>
+template <typename T, int value>
 scale_type<T> getScale() {
     thread_local T val = scalar<T>(value);
     return getScaleValue<scale_type<T>, T>(val);
@@ -190,7 +190,7 @@ scale_type<T> getScale() {
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef USE_MKL  // Implementation using MKL
 ////////////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
     // MKL: CSRMM Does not support optRhs
@@ -268,13 +268,13 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
 #else  // Implementation without using MKL
 ////////////////////////////////////////////////////////////////////////////////
 
-template<typename T>
+template <typename T>
 T getConjugate(const T &in) {
     // For non-complex types return same
     return in;
 }
 
-template<>
+template <>
 cfloat getConjugate(const cfloat &in) {
     cfloat val;
     val.s[0] = in.s[0];
@@ -282,7 +282,7 @@ cfloat getConjugate(const cfloat &in) {
     return val;
 }
 
-template<>
+template <>
 cdouble getConjugate(const cdouble &in) {
     cdouble val;
     val.s[0] = in.s[0];
@@ -290,7 +290,7 @@ cdouble getConjugate(const cdouble &in) {
     return val;
 }
 
-template<typename T, bool conjugate>
+template <typename T, bool conjugate>
 void mv(Array<T> output, const Array<T> values, const Array<int> rowIdx,
         const Array<int> colIdx, const Array<T> right, int M) {
     UNUSED(M);
@@ -320,7 +320,7 @@ void mv(Array<T> output, const Array<T> values, const Array<int> rowIdx,
     }
 }
 
-template<typename T, bool conjugate>
+template <typename T, bool conjugate>
 void mtv(Array<T> output, const Array<T> values, const Array<int> rowIdx,
          const Array<int> colIdx, const Array<T> right, int M) {
     auto oPtr   = output.getMappedPtr();
@@ -350,7 +350,7 @@ void mtv(Array<T> output, const Array<T> values, const Array<int> rowIdx,
     }
 }
 
-template<typename T, bool conjugate>
+template <typename T, bool conjugate>
 void mm(Array<T> output, const Array<T> values, const Array<int> rowIdx,
         const Array<int> colIdx, const Array<T> right, int M, int N, int ldb,
         int ldc) {
@@ -385,7 +385,7 @@ void mm(Array<T> output, const Array<T> values, const Array<int> rowIdx,
     }
 }
 
-template<typename T, bool conjugate>
+template <typename T, bool conjugate>
 void mtm(Array<T> output, const Array<T> values, const Array<int> rowIdx,
          const Array<int> colIdx, const Array<T> right, int M, int N, int ldb,
          int ldc) {
@@ -420,7 +420,7 @@ void mtm(Array<T> output, const Array<T> values, const Array<int> rowIdx,
         outPtr += ldc;
     }
 }
-template<typename T>
+template <typename T>
 Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
     UNUSED(optRhs);

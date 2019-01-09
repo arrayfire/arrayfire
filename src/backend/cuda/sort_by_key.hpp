@@ -10,7 +10,7 @@
 #include <Array.hpp>
 
 namespace cuda {
-template<typename Tk, typename Tv>
+template <typename Tk, typename Tv>
 void sort_by_key(Array<Tk> &okey, Array<Tv> &oval, const Array<Tk> &ikey,
                  const Array<Tv> &ival, const unsigned dim, bool isAscending);
 }

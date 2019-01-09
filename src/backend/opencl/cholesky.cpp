@@ -20,7 +20,7 @@
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 int cholesky_inplace(Array<T> &in, const bool is_upper) {
     if (OpenCLCPUOffload()) { return cpu::cholesky_inplace(in, is_upper); }
 
@@ -36,7 +36,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper) {
     return info;
 }
 
-template<typename T>
+template <typename T>
 Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
     if (OpenCLCPUOffload()) { return cpu::cholesky(info, in, is_upper); }
 
@@ -67,12 +67,12 @@ INSTANTIATE_CH(cdouble)
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }
 
-template<typename T>
+template <typename T>
 int cholesky_inplace(Array<T> &in, const bool is_upper) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }

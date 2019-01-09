@@ -16,7 +16,7 @@ using af::dim4;
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 Array<T> transpose(const Array<T> &in, const bool conjugate) {
     const dim4 inDims = in.dims();
 

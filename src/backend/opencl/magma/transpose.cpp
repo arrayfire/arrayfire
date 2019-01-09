@@ -54,7 +54,7 @@
 #include "kernel/transpose.hpp"
 #include "magma_data.h"
 
-template<typename T>
+template <typename T>
 void magmablas_transpose(magma_int_t m, magma_int_t n, cl_mem dA,
                          size_t dA_offset, magma_int_t ldda, cl_mem dAT,
                          size_t dAT_offset, magma_int_t lddat,

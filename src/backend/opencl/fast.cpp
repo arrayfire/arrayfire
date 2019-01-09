@@ -18,7 +18,7 @@ using af::features;
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
               const Array<T> &in, const float thr, const unsigned arc_length,
               const bool non_max, const float feature_ratio,

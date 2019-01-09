@@ -16,7 +16,7 @@
 
 namespace cpu {
 
-template<typename To, typename Ti, af_op_t op>
+template <typename To, typename Ti, af_op_t op>
 struct BinOp {
     void eval(jit::array<To> &out, const jit::array<Ti> &lhs,
               const jit::array<Ti> &rhs, int lim) const {
@@ -28,7 +28,7 @@ struct BinOp {
 
 namespace jit {
 
-template<typename To, typename Ti, af_op_t op>
+template <typename To, typename Ti, af_op_t op>
 class BinaryNode : public TNode<To> {
    protected:
     BinOp<To, Ti, op> m_op;

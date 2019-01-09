@@ -21,7 +21,7 @@ using std::string;
 using std::vector;
 using namespace af;
 
-template<typename T>
+template <typename T>
 class IterativeDeconvolution : public ::testing::Test {};
 
 // create a list of types to be tested
@@ -30,7 +30,7 @@ typedef ::testing::Types<float, uchar, short, ushort> TestTypes;
 // register the type list
 TYPED_TEST_CASE(IterativeDeconvolution, TestTypes);
 
-template<typename T, bool isColor>
+template <typename T, bool isColor>
 void iterDeconvImageTest(string pTestFile, const unsigned iters, const float rf,
                          const af::iterativeDeconvAlgo algo) {
     typedef

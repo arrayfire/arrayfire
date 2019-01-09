@@ -46,7 +46,7 @@ namespace kernel {
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename T, bool full_conn, int n_per_thread>
+template <typename T, bool full_conn, int n_per_thread>
 std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*> getRegionsKernels() {
     static const int block_dim                  = 16;
     static const int num_warps                  = 8;
@@ -115,7 +115,7 @@ std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*> getRegionsKernels() {
     return std::make_tuple(entries[0].ker, entries[1].ker, entries[2].ker);
 }
 
-template<typename T, bool full_conn, int n_per_thread>
+template <typename T, bool full_conn, int n_per_thread>
 void regions(Param out, Param in) {
     auto kernels = getRegionsKernels<T, full_conn, n_per_thread>();
 

@@ -31,7 +31,7 @@ using af::matmul;
 using af::max;
 using std::abs;
 
-template<typename T>
+template <typename T>
 void inverseTester(const int m, const int n, double eps) {
     if (noDoubleTests<T>()) return;
     if (noLAPACKTests()) return;
@@ -54,28 +54,28 @@ void inverseTester(const int m, const int n, double eps) {
                 eps);
 }
 
-template<typename T>
+template <typename T>
 class Inverse : public ::testing::Test {};
 
-template<typename T>
+template <typename T>
 double eps();
 
-template<>
+template <>
 double eps<float>() {
     return 0.01f;
 }
 
-template<>
+template <>
 double eps<double>() {
     return 1e-5;
 }
 
-template<>
+template <>
 double eps<cfloat>() {
     return 0.01f;
 }
 
-template<>
+template <>
 double eps<cdouble>() {
     return 1e-5;
 }

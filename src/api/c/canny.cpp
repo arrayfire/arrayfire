@@ -176,7 +176,7 @@ std::pair<Array<char>, Array<char>> computeCandidates(
     }
 }
 
-template<typename T>
+template <typename T>
 af_array cannyHelper(const Array<T> in, const float t1,
                      const af_canny_threshold ct, const float t2,
                      const unsigned sw, const bool isf) {

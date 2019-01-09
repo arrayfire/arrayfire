@@ -18,7 +18,7 @@ using af::dim4;
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
     kernel::IndexKernelParam_t p;
     std::vector<af_seq> seqs(4, af_span);

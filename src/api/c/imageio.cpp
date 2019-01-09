@@ -40,7 +40,7 @@ using std::string;
 using std::swap;
 using std::unique_ptr;
 
-template<typename T, FI_CHANNELS fi_color, FI_CHANNELS fo_color>
+template <typename T, FI_CHANNELS fi_color, FI_CHANNELS fo_color>
 static af_err readImage(af_array* rImage, const uchar* pSrcLine,
                         const int nSrcPitch, const uint fi_w, const uint fi_h) {
     // create an array to receive the loaded image data.
@@ -162,7 +162,7 @@ bitmap_ptr make_bitmap_ptr(FIBITMAP* ptr) {
     return bitmap_ptr(ptr, getFreeImagePlugin().FreeImage_Unload);
 }
 
-template<typename T, FI_CHANNELS fo_color>
+template <typename T, FI_CHANNELS fo_color>
 static af_err readImage(af_array* rImage, const uchar* pSrcLine,
                         const int nSrcPitch, const uint fi_w, const uint fi_h) {
     // create an array to receive the loaded image data.
@@ -226,7 +226,7 @@ af_err af_load_image(af_array* out, const char* filename, const bool isColor) {
                      AF_ERR_NOT_SUPPORTED);
         }
 
-        int flags = 0;
+        int flags                  = 0;
         if (fif == FIF_JPEG) flags = flags | JPEG_ACCURATE;
 #ifdef JPEG_GREYSCALE
         if (fif == FIF_JPEG && !isColor) flags = flags | JPEG_GREYSCALE;
@@ -653,7 +653,7 @@ af_err af_save_image(const char* filename, const af_array in_) {
             pinnedFree(pSrc0);
         }
 
-        int flags = 0;
+        int flags                  = 0;
         if (fif == FIF_JPEG) flags = flags | JPEG_QUALITYSUPERB;
 
         // now save the result image
@@ -704,7 +704,7 @@ af_err af_load_image_memory(af_array* out, const void* ptr) {
                      AF_ERR_NOT_SUPPORTED);
         }
 
-        int flags = 0;
+        int flags                  = 0;
         if (fif == FIF_JPEG) flags = flags | JPEG_ACCURATE;
 
         // check that the plugin has reading capabilities ...
@@ -961,7 +961,7 @@ af_err af_save_image_memory(void** ptr, const af_array in_,
         uint32_t size_in_bytes = 0;
         FIMEMORY* stream       = _.FreeImage_OpenMemory(data, size_in_bytes);
 
-        int flags = 0;
+        int flags                  = 0;
         if (fif == FIF_JPEG) flags = flags | JPEG_QUALITYSUPERB;
 
         // now save the result image

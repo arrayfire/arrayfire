@@ -25,7 +25,7 @@ static const unsigned TI = 4;
 __constant__ float
     c_tmat[3072];  // Allows 512 Affine Transforms and 340 Persp. Transforms
 
-template<typename T>
+template <typename T>
 __host__ __device__ void calc_transf_inverse(T *txo, const T *txi,
                                              const bool perspective) {
     if (perspective) {
@@ -68,7 +68,7 @@ __host__ __device__ void calc_transf_inverse(T *txo, const T *txi,
 ///////////////////////////////////////////////////////////////////////////
 // Transform Kernel
 ///////////////////////////////////////////////////////////////////////////
-template<typename T, bool inverse, int order>
+template <typename T, bool inverse, int order>
 __global__ static void transform_kernel(
     Param<T> out, CParam<T> in, const int nImg2, const int nImg3,
     const int nTfs2, const int nTfs3, const int batchImg2,
@@ -185,7 +185,7 @@ __global__ static void transform_kernel(
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T, int order>
+template <typename T, int order>
 void transform(Param<T> out, CParam<T> in, CParam<float> tf, const bool inverse,
                const bool perspective, af_interp_type method) {
     const int nImg2 = in.dims[2];
@@ -209,7 +209,7 @@ void transform(Param<T> out, CParam<T> in, CParam<float> tf, const bool inverse,
     // Takes care of all types of batching
     // One-to-one batching is only done on blocks.x
     // TODO If dim2 is not one-to-one batched, then divide blocks.x by factor
-    int batchImg2 = 1;
+    int batchImg2                 = 1;
     if (nImg2 != nTfs2) batchImg2 = min(nImg2, TI);
 
     blocks.x *= (nImg2 / batchImg2);

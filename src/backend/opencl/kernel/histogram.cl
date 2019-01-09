@@ -28,7 +28,7 @@ __kernel void histogram(__global outType *d_dst, KParam oInfo,
     bool use_global = nbins > MAX_BINS;
 
     if (!use_global) {
-        for (int i = get_local_id(0); i < nbins; i += get_local_size(0))
+        for (int i      = get_local_id(0); i < nbins; i += get_local_size(0))
             localMem[i] = 0;
         barrier(CLK_LOCAL_MEM_FENCE);
     }

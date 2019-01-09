@@ -33,7 +33,7 @@ inline __device__ double max_val(const double x, const double y) {
     return fmax(x, y);
 }
 
-template<typename T>
+template <typename T>
 __global__ void susanKernel(T* out, const T* in, const unsigned idim0,
                             const unsigned idim1, const unsigned radius,
                             const float t, const float g, const unsigned edge) {
@@ -89,7 +89,7 @@ __global__ void susanKernel(T* out, const T* in, const unsigned idim0,
     }
 }
 
-template<typename T>
+template <typename T>
 void susan_responses(T* out, const T* in, const unsigned idim0,
                      const unsigned idim1, const int radius, const float t,
                      const float g, const unsigned edge) {
@@ -105,7 +105,7 @@ void susan_responses(T* out, const T* in, const unsigned idim0,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T>
+template <typename T>
 __global__ void nonMaxKernel(float* x_out, float* y_out, float* resp_out,
                              unsigned* count, const unsigned idim0,
                              const unsigned idim1, const T* resp_in,
@@ -143,7 +143,7 @@ __global__ void nonMaxKernel(float* x_out, float* y_out, float* resp_out,
     }
 }
 
-template<typename T>
+template <typename T>
 void nonMaximal(float* x_out, float* y_out, float* resp_out, unsigned* count,
                 const unsigned idim0, const unsigned idim1, const T* resp_in,
                 const unsigned edge, const unsigned max_corners) {

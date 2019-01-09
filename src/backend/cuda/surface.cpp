@@ -17,7 +17,7 @@ using af::dim4;
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 void copy_surface(const Array<T> &P, fg_surface surface) {
     auto stream = cuda::getActiveStream();
     if (DeviceManager::checkGraphicsInteropCapability()) {

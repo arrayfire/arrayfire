@@ -68,30 +68,30 @@ static const bool cplx_void_ptr = false;
 static const bool cplx_void_ptr = true;
 #endif
 
-template<typename T, class Enable = void>
+template <typename T, class Enable = void>
 struct blas_base {
     using type = typename dtype_traits<T>::base_type;
 };
 
-template<typename T>
+template <typename T>
 struct blas_base<
     T, typename enable_if<is_complex<T>::value && cplx_void_ptr>::type> {
     using type = void;
 };
 
-template<typename T>
+template <typename T>
 using cptr_type =
     typename conditional<is_complex<T>::value,
                          const typename blas_base<T>::type *, const T *>::type;
-template<typename T>
+template <typename T>
 using ptr_type = typename conditional<is_complex<T>::value,
                                       typename blas_base<T>::type *, T *>::type;
-template<typename T>
+template <typename T>
 using scale_type =
     typename conditional<is_complex<T>::value,
                          const typename blas_base<T>::type *, const T>::type;
 
-template<typename T>
+template <typename T>
 using gemm_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                const CBLAS_TRANSPOSE, const blasint,
                                const blasint, const blasint, scale_type<T>,
@@ -99,7 +99,7 @@ using gemm_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                const blasint, scale_type<T>, ptr_type<T>,
                                const blasint);
 
-template<typename T>
+template <typename T>
 using gemv_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                const blasint, const blasint, scale_type<T>,
                                cptr_type<T>, const blasint, cptr_type<T>,
@@ -107,11 +107,11 @@ using gemv_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                const blasint);
 
 #define BLAS_FUNC_DEF(FUNC) \
-    template<typename T>    \
+    template <typename T>   \
     FUNC##_func_def<T> FUNC##_func();
 
 #define BLAS_FUNC(FUNC, TYPE, PREFIX)           \
-    template<>                                  \
+    template <>                                 \
     FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
         return &cblas_##PREFIX##FUNC;           \
     }
@@ -128,13 +128,13 @@ BLAS_FUNC(gemv, double, d)
 BLAS_FUNC(gemv, cfloat, c)
 BLAS_FUNC(gemv, cdouble, z)
 
-template<typename T, int value>
+template <typename T, int value>
 typename enable_if<is_floating_point<T>::value, scale_type<T>>::type
 getScale() {
     return T(value);
 }
 
-template<typename T, int value>
+template <typename T, int value>
 typename enable_if<is_complex<T>::value, scale_type<T>>::type getScale() {
     thread_local T val = scalar<T>(value);
     return (const typename blas_base<T>::type *)&val;
@@ -144,15 +144,15 @@ CBLAS_TRANSPOSE
 toCblasTranspose(af_mat_prop opt) {
     CBLAS_TRANSPOSE out = CblasNoTrans;
     switch (opt) {
-        case AF_MAT_NONE: out = CblasNoTrans; break;
-        case AF_MAT_TRANS: out = CblasTrans; break;
+        case AF_MAT_NONE: out   = CblasNoTrans; break;
+        case AF_MAT_TRANS: out  = CblasTrans; break;
         case AF_MAT_CTRANS: out = CblasConjTrans; break;
         default: AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
                 af_mat_prop optRhs) {
     CBLAS_TRANSPOSE lOpts = toCblasTranspose(optLhs);

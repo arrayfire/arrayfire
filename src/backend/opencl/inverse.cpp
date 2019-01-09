@@ -17,7 +17,7 @@
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 Array<T> inverse(const Array<T> &in) {
     if (OpenCLCPUOffload()) {
         if (in.dims()[0] == in.dims()[1]) return cpu::inverse(in);
@@ -39,7 +39,7 @@ INSTANTIATE(cdouble)
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 Array<T> inverse(const Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }

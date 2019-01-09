@@ -28,7 +28,7 @@ using af::seq;
 using af::span;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Replace : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl,
@@ -37,7 +37,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl,
 
 TYPED_TEST_CASE(Replace, TestTypes);
 
-template<typename T>
+template <typename T>
 void replaceTest(const dim4 &dims) {
     if (noDoubleTests<T>()) return;
     dtype ty = (dtype)dtype_traits<T>::af_type;
@@ -73,7 +73,7 @@ void replaceTest(const dim4 &dims) {
     }
 }
 
-template<typename T>
+template <typename T>
 void replaceScalarTest(const dim4 &dims) {
     if (noDoubleTests<T>()) return;
     dtype ty = (dtype)dtype_traits<T>::af_type;
@@ -108,10 +108,10 @@ TEST(Replace, NaN) {
     dim4 dims(1000, 1250);
     dtype ty = f32;
 
-    array a                                 = randu(dims, ty);
+    array a = randu(dims, ty);
     a(seq(a.dims(0) / 2), span, span, span) = NaN;
-    array c                                 = a.copy();
-    float b                                 = 0;
+    array c = a.copy();
+    float b = 0;
     replace(c, !isNaN(c), b);
 
     int num = (int)a.elements();

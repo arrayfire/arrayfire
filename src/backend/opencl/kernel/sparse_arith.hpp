@@ -33,19 +33,20 @@ static const unsigned TX      = 32;
 static const unsigned TY      = 8;
 static const unsigned THREADS = TX * TY;
 
-template<af_op_t op>
+template <af_op_t op>
 std::string getOpString() {
     switch (op) {
         case af_add_t: return "ADD";
         case af_sub_t: return "SUB";
         case af_mul_t: return "MUL";
         case af_div_t: return "DIV";
-        default: return "";  // kernel will fail to compile
+        default:
+            return "";  // kernel will fail to compile
     }
     return "";
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void sparseArithOpCSR(Param out, const Param values, const Param rowIdx,
                       const Param colIdx, const Param rhs, const bool reverse) {
     std::string ref_name = std::string("sparseArithOpCSR_") +
@@ -98,7 +99,7 @@ void sparseArithOpCSR(Param out, const Param values, const Param rowIdx,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void sparseArithOpCOO(Param out, const Param values, const Param rowIdx,
                       const Param colIdx, const Param rhs, const bool reverse) {
     std::string ref_name = std::string("sparseArithOpCOO_") +
@@ -151,7 +152,7 @@ void sparseArithOpCOO(Param out, const Param values, const Param rowIdx,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void sparseArithOpCSR(Param values, Param rowIdx, Param colIdx, const Param rhs,
                       const bool reverse) {
     std::string ref_name = std::string("sparseArithOpSCSR_") +
@@ -203,7 +204,7 @@ void sparseArithOpCSR(Param values, Param rowIdx, Param colIdx, const Param rhs,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void sparseArithOpCOO(Param values, Param rowIdx, Param colIdx, const Param rhs,
                       const bool reverse) {
     std::string ref_name = std::string("sparseArithOpSCOO_") +
@@ -294,7 +295,7 @@ static void csrCalcOutNNZ(Param outRowIdx, unsigned &nnzC, const uint M,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 void ssArithCSR(Param oVals, Param oColIdx, const Param oRowIdx, const uint M,
                 const uint N, unsigned nnzA, const Param lVals,
                 const Param lRowIdx, const Param lColIdx, unsigned nnzB,

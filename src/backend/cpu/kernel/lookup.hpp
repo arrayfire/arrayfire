@@ -15,7 +15,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename InT, typename IndexT>
+template <typename InT, typename IndexT>
 void lookup(Param<InT> out, CParam<InT> input, CParam<IndexT> indices,
             unsigned const dim) {
     const af::dim4 iDims    = input.dims();

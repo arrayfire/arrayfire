@@ -29,9 +29,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-typedef struct {
-    float f[5];
-} feat_t;
+typedef struct { float f[5]; } feat_t;
 
 static bool feat_cmp(feat_t i, feat_t j) {
     for (int k = 0; k < 5; k++)
@@ -53,7 +51,7 @@ static void array_to_feat(vector<feat_t> &feat, float *x, float *y,
     }
 }
 
-template<typename T>
+template <typename T>
 class Susan : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -64,7 +62,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
 
 TYPED_TEST_CASE(Susan, TestTypes);
 
-template<typename T>
+template <typename T>
 void susanTest(string pTestFile, float t, float g) {
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;

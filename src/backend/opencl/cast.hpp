@@ -19,13 +19,13 @@
 
 namespace opencl {
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 struct CastOp {
     const char *name() { return ""; }
 };
 
 #define CAST_FN(TYPE)                                   \
-    template<typename Ti>                               \
+    template <typename Ti>                              \
     struct CastOp<TYPE, Ti> {                           \
         const char *name() { return "convert_" #TYPE; } \
     };
@@ -37,7 +37,7 @@ CAST_FN(float)
 CAST_FN(double)
 
 #define CAST_CFN(TYPE)                                    \
-    template<typename Ti>                                 \
+    template <typename Ti>                                \
     struct CastOp<TYPE, Ti> {                             \
         const char *name() { return "__convert_" #TYPE; } \
     };
@@ -46,22 +46,22 @@ CAST_CFN(cfloat)
 CAST_CFN(cdouble)
 CAST_CFN(char)
 
-template<>
+template <>
 struct CastOp<cfloat, cdouble> {
     const char *name() { return "__convert_z2c"; }
 };
 
-template<>
+template <>
 struct CastOp<cdouble, cfloat> {
     const char *name() { return "__convert_c2z"; }
 };
 
-template<>
+template <>
 struct CastOp<cfloat, cfloat> {
     const char *name() { return "__convert_c2c"; }
 };
 
-template<>
+template <>
 struct CastOp<cdouble, cdouble> {
     const char *name() { return "__convert_z2z"; }
 };
@@ -69,7 +69,7 @@ struct CastOp<cdouble, cdouble> {
 #undef CAST_FN
 #undef CAST_CFN
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 struct CastWrapper {
     Array<To> operator()(const Array<Ti> &in) {
         CastOp<To, Ti> cop;
@@ -81,12 +81,12 @@ struct CastWrapper {
     }
 };
 
-template<typename T>
+template <typename T>
 struct CastWrapper<T, T> {
     Array<T> operator()(const Array<T> &in) { return in; }
 };
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 Array<To> cast(const Array<Ti> &in) {
     CastWrapper<To, Ti> cast_op;
     return cast_op(in);

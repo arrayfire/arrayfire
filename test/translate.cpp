@@ -25,13 +25,13 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Translate : public ::testing::Test {
    public:
     virtual void SetUp() {}
 };
 
-template<typename T>
+template <typename T>
 class TranslateInt : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -45,7 +45,7 @@ typedef ::testing::Types<int, intl, char, short> TestTypesInt;
 TYPED_TEST_CASE(Translate, TestTypes);
 TYPED_TEST_CASE(TranslateInt, TestTypesInt);
 
-template<typename T>
+template <typename T>
 void translateTest(string pTestFile, const unsigned resultIdx, dim4 odims,
                    const float tx, const float ty, const af_interp_type method,
                    const float max_fail_count = 0.0001) {

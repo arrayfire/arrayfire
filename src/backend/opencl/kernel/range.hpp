@@ -33,7 +33,7 @@ static const int RANGE_TY    = 8;
 static const int RANGE_TILEX = 512;
 static const int RANGE_TILEY = 32;
 
-template<typename T>
+template <typename T>
 void range(Param out, const int dim) {
     std::string refName =
         std::string("range_kernel_") + std::string(dtype_traits<T>::getName());

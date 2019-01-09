@@ -10,7 +10,7 @@
 #include "kernel/swapdblk.hpp"
 #include "magma_data.h"
 
-template<typename T>
+template <typename T>
 void magmablas_swapdblk(magma_int_t n, magma_int_t nb, cl_mem dA,
                         magma_int_t dA_offset, magma_int_t ldda,
                         magma_int_t inca, cl_mem dB, magma_int_t dB_offset,

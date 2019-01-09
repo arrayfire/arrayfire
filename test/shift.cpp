@@ -29,7 +29,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Shift : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -47,7 +47,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
 // register the type list
 TYPED_TEST_CASE(Shift, TestTypes);
 
-template<typename T>
+template <typename T>
 void shiftTest(string pTestFile, const unsigned resultIdx, const int x,
                const int y, const int z, const int w, bool isSubRef = false,
                const vector<af_seq>* seqv = NULL) {

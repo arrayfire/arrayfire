@@ -33,7 +33,7 @@ using std::string;
 
 namespace opencl {
 namespace kernel {
-template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
+template <typename Ti, typename To, af_op_t op, bool inclusive_scan>
 static Kernel get_scan_dim_kernels(int kerIdx, int dim, bool isFinalPass,
                                    uint threads_y) {
     std::string ref_name =
@@ -82,7 +82,7 @@ static Kernel get_scan_dim_kernels(int kerIdx, int dim, bool isFinalPass,
     return entry.ker[kerIdx];
 }
 
-template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
+template <typename Ti, typename To, af_op_t op, bool inclusive_scan>
 static void scan_dim_launcher(Param out, Param tmp, const Param in, int dim,
                               bool isFinalPass, uint threads_y,
                               const uint groups_all[4]) {
@@ -105,7 +105,7 @@ static void scan_dim_launcher(Param out, Param tmp, const Param in, int dim,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename Ti, typename To, af_op_t op, bool inclusive_scan>
+template <typename Ti, typename To, af_op_t op, bool inclusive_scan>
 static void bcast_dim_launcher(Param out, Param tmp, int dim, bool isFinalPass,
                                uint threads_y, const uint groups_all[4]) {
     Kernel ker = get_scan_dim_kernels<Ti, To, op, inclusive_scan>(
@@ -128,7 +128,7 @@ static void bcast_dim_launcher(Param out, Param tmp, int dim, bool isFinalPass,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename Ti, typename To, af_op_t op, bool inclusive_scan = true>
+template <typename Ti, typename To, af_op_t op, bool inclusive_scan = true>
 static void scan_dim(Param out, const Param in, int dim) {
     uint threads_y = std::min(THREADS_Y, nextpow2(out.info.dims[dim]));
     uint threads_x = THREADS_X;

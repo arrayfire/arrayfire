@@ -15,7 +15,7 @@
 #include <stdexcept>
 
 namespace opencl {
-template<typename T>
+template <typename T>
 Array<T> iota(const dim4 &dims, const dim4 &tile_dims) {
     dim4 outdims = dims * tile_dims;
 

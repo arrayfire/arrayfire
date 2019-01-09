@@ -96,7 +96,7 @@ const int ref_pat[REF_PAT_LENGTH] = {
     -1,  -6,  0,   -11,
 };
 
-template<typename T>
+template <typename T>
 void keep_features(float* x_out, float* y_out, float* score_out,
                    float* size_out, const float* x_in, const float* y_in,
                    const float* score_in, const unsigned* score_idx,
@@ -111,7 +111,7 @@ void keep_features(float* x_out, float* y_out, float* score_out,
     }
 }
 
-template<typename T, bool use_scl>
+template <typename T, bool use_scl>
 void harris_response(float* x_out, float* y_out, float* score_out,
                      float* size_out, const float* x_in, const float* y_in,
                      const float* scl_in, const unsigned total_feat,
@@ -177,14 +177,14 @@ void harris_response(float* x_out, float* y_out, float* score_out,
         float rscale = 0.001f;
         rscale       = rscale * rscale * rscale * rscale;
 
-        x_out[idx]     = x;
-        y_out[idx]     = y;
-        score_out[idx] = resp * rscale;
+        x_out[idx]                 = x;
+        y_out[idx]                 = y;
+        score_out[idx]             = resp * rscale;
         if (use_scl) size_out[idx] = size;
     }
 }
 
-template<typename T>
+template <typename T>
 void centroid_angle(const float* x_in, const float* y_in,
                     float* orientation_out, const unsigned total_feat,
                     CParam<T> image, const unsigned patch_size) {
@@ -214,7 +214,7 @@ void centroid_angle(const float* x_in, const float* y_in,
     }
 }
 
-template<typename T>
+template <typename T>
 inline T get_pixel(unsigned x, unsigned y, const float ori, const unsigned size,
                    const int dist_x, const int dist_y, CParam<T> image,
                    const unsigned patch_size) {
@@ -231,7 +231,7 @@ inline T get_pixel(unsigned x, unsigned y, const float ori, const unsigned size,
     return image_ptr[x * idims[0] + y];
 }
 
-template<typename T>
+template <typename T>
 void extract_orb(unsigned* desc_out, const unsigned n_feat, float* x_in_out,
                  float* y_in_out, const float* ori_in, float* size_out,
                  CParam<T> image, const float scl, const unsigned patch_size) {

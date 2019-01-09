@@ -32,7 +32,7 @@ static const int TILE_DIM  = 32;
 static const int THREADS_X = TILE_DIM;
 static const int THREADS_Y = 256 / TILE_DIM;
 
-template<typename T, bool conjugate, bool IS32MULTIPLE>
+template <typename T, bool conjugate, bool IS32MULTIPLE>
 void transpose(Param out, const Param in, cl::CommandQueue queue) {
     std::string refName =
         std::string("transpose_") + std::string(dtype_traits<T>::getName()) +

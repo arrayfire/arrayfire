@@ -31,7 +31,7 @@ namespace kernel {
 static const unsigned TX = 16;  // Kernel Launch Config Values
 static const unsigned TY = 16;  // Kernel Launch Config Values
 
-template<typename T>
+template <typename T>
 __global__ void exampleFuncKernel(Param<T> c, CParam<T> a, CParam<T> b,
                                   const af_someenum_t p) {
     // get current thread global identifiers along required dimensions
@@ -53,7 +53,7 @@ __global__ void exampleFuncKernel(Param<T> c, CParam<T> a, CParam<T> b,
     }
 }
 
-template<typename T>  // CUDA kernel wrapper function
+template <typename T>  // CUDA kernel wrapper function
 void exampleFunc(Param<T> c, CParam<T> a, CParam<T> b, const af_someenum_t p) {
     dim3 threads(TX, TY, 1);  // set your cuda launch config for blocks
 

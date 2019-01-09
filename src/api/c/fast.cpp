@@ -20,7 +20,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static af_features fast(af_array const &in, const float thr,
                         const unsigned arc_length, const bool non_max,
                         const float feature_ratio, const unsigned edge) {

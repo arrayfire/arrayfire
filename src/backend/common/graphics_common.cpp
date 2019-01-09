@@ -100,7 +100,7 @@ ForgeModule::ForgeModule() : DependencyModule("forge", nullptr) {
     }
 }
 
-template<typename T>
+template <typename T>
 fg_dtype getGLType() {
     return FG_FLOAT32;
 }
@@ -108,21 +108,21 @@ fg_dtype getGLType() {
 fg_marker_type getFGMarker(const af_marker_type af_marker) {
     fg_marker_type fg_marker;
     switch (af_marker) {
-        case AF_MARKER_NONE: fg_marker = FG_MARKER_NONE; break;
-        case AF_MARKER_POINT: fg_marker = FG_MARKER_POINT; break;
-        case AF_MARKER_CIRCLE: fg_marker = FG_MARKER_CIRCLE; break;
-        case AF_MARKER_SQUARE: fg_marker = FG_MARKER_SQUARE; break;
+        case AF_MARKER_NONE: fg_marker     = FG_MARKER_NONE; break;
+        case AF_MARKER_POINT: fg_marker    = FG_MARKER_POINT; break;
+        case AF_MARKER_CIRCLE: fg_marker   = FG_MARKER_CIRCLE; break;
+        case AF_MARKER_SQUARE: fg_marker   = FG_MARKER_SQUARE; break;
         case AF_MARKER_TRIANGLE: fg_marker = FG_MARKER_TRIANGLE; break;
-        case AF_MARKER_CROSS: fg_marker = FG_MARKER_CROSS; break;
-        case AF_MARKER_PLUS: fg_marker = FG_MARKER_PLUS; break;
-        case AF_MARKER_STAR: fg_marker = FG_MARKER_STAR; break;
-        default: fg_marker = FG_MARKER_NONE; break;
+        case AF_MARKER_CROSS: fg_marker    = FG_MARKER_CROSS; break;
+        case AF_MARKER_PLUS: fg_marker     = FG_MARKER_PLUS; break;
+        case AF_MARKER_STAR: fg_marker     = FG_MARKER_STAR; break;
+        default: fg_marker                 = FG_MARKER_NONE; break;
     }
     return fg_marker;
 }
 
 #define INSTANTIATE_GET_FG_TYPE(T, ForgeEnum) \
-    template<>                                \
+    template <>                               \
     fg_dtype getGLType<T>() {                 \
         return ForgeEnum;                     \
     }

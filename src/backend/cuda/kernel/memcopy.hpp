@@ -17,14 +17,12 @@
 namespace cuda {
 namespace kernel {
 
-typedef struct {
-    int dim[4];
-} dims_t;
+typedef struct { int dim[4]; } dims_t;
 
 static const uint DIMX = 32;
 static const uint DIMY = 8;
 
-template<typename T>
+template <typename T>
 __global__ static void memcopy_kernel(T *out, const dims_t ostrides,
                                       const T *in, const dims_t idims,
                                       const dims_t istrides, uint blocks_x,
@@ -53,7 +51,7 @@ __global__ static void memcopy_kernel(T *out, const dims_t ostrides,
     }
 }
 
-template<typename T>
+template <typename T>
 void memcopy(T *out, const dim_t *ostrides, const T *in, const dim_t *idims,
              const dim_t *istrides, uint ndims) {
     dim3 threads(DIMX, DIMY);
@@ -73,7 +71,7 @@ void memcopy(T *out, const dim_t *ostrides, const T *in, const dim_t *idims,
                          (int)ostrides[3]}};
     dims_t _istrides = {{(int)istrides[0], (int)istrides[1], (int)istrides[2],
                          (int)istrides[3]}};
-    dims_t _idims    = {
+    dims_t _idims = {
         {(int)idims[0], (int)idims[1], (int)idims[2], (int)idims[3]}};
 
     const int maxBlocksY =
@@ -88,43 +86,43 @@ void memcopy(T *out, const dim_t *ostrides, const T *in, const dim_t *idims,
 
 ////////////////////////////// BEGIN - templated help functions for copy_kernel
 ///////////////////////////////////
-template<typename T>
+template <typename T>
 __inline__ __device__ static T scale(T value, double factor) {
     return (T)(value * factor);
 }
 
-template<>
+template <>
 __inline__ __device__ cfloat scale<cfloat>(cfloat value, double factor) {
     return make_cuFloatComplex(value.x * factor, value.y * factor);
 }
 
-template<>
+template <>
 __inline__ __device__ cdouble scale<cdouble>(cdouble value, double factor) {
     return make_cuDoubleComplex(value.x * factor, value.y * factor);
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 __inline__ __device__ outType convertType(inType value) {
     return (outType)value;
 }
 
-template<>
+template <>
 __inline__ __device__ cdouble convertType<cfloat, cdouble>(cfloat value) {
     return cuComplexFloatToDouble(value);
 }
 
-template<>
+template <>
 __inline__ __device__ cfloat convertType<cdouble, cfloat>(cdouble value) {
     return cuComplexDoubleToFloat(value);
 }
 
 #define OTHER_SPECIALIZATIONS(IN_T)                                        \
-    template<>                                                             \
+    template <>                                                            \
     __inline__ __device__ cfloat convertType<IN_T, cfloat>(IN_T value) {   \
         return make_cuFloatComplex(value, 0.0f);                           \
     }                                                                      \
                                                                            \
-    template<>                                                             \
+    template <>                                                            \
     __inline__ __device__ cdouble convertType<IN_T, cdouble>(IN_T value) { \
         return make_cuDoubleComplex(value, 0.0);                           \
     }
@@ -142,7 +140,7 @@ OTHER_SPECIALIZATIONS(char)
 ////////////////////////////// END - templated help functions for copy_kernel
 /////////////////////////////////////
 
-template<typename inType, typename outType, bool same_dims>
+template <typename inType, typename outType, bool same_dims>
 __global__ static void copy_kernel(Param<outType> dst, CParam<inType> src,
                                    outType default_value, double factor,
                                    const dims_t trgt, uint blk_x, uint blk_y) {
@@ -159,7 +157,7 @@ __global__ static void copy_kernel(Param<outType> dst, CParam<inType> src,
 
     const inType *in = src.ptr + (gw * src.strides[3] + gz * src.strides[2] +
                                   gy * src.strides[1]);
-    outType *out     = dst.ptr + (gw * dst.strides[3] + gz * dst.strides[2] +
+    outType *out = dst.ptr + (gw * dst.strides[3] + gz * dst.strides[2] +
                               gy * dst.strides[1]);
 
     int istride0 = src.strides[0];
@@ -179,7 +177,7 @@ __global__ static void copy_kernel(Param<outType> dst, CParam<inType> src,
     }
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 void copy(Param<outType> dst, CParam<inType> src, int ndims,
           outType default_value, double factor) {
     dim3 threads(DIMX, DIMY);

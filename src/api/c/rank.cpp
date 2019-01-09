@@ -22,7 +22,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline uint rank(const af_array in, double tol) {
     typedef typename af::dtype_traits<T>::base_type BT;
     Array<T> In = getArray<T>(in);

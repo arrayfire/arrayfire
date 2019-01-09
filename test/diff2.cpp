@@ -28,7 +28,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Diff2 : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -57,7 +57,7 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, intl,
 // register the type list
 TYPED_TEST_CASE(Diff2, TestTypes);
 
-template<typename T>
+template <typename T>
 void diff2Test(string pTestFile, unsigned dim, bool isSubRef = false,
                const vector<af_seq> *seqv = NULL) {
     if (noDoubleTests<T>()) return;
@@ -147,7 +147,7 @@ TYPED_TEST(Diff2, Subref2) {
                          &(this->subMat2));
 }
 
-template<typename T>
+template <typename T>
 void diff2ArgsTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
 

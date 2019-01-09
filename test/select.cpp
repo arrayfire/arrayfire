@@ -38,7 +38,7 @@ using std::string;
 using std::stringstream;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Select : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl,
@@ -46,7 +46,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl,
     TestTypes;
 TYPED_TEST_CASE(Select, TestTypes);
 
-template<typename T>
+template <typename T>
 void selectTest(const dim4& dims) {
     if (noDoubleTests<T>()) return;
     dtype ty = (dtype)dtype_traits<T>::af_type;
@@ -80,7 +80,7 @@ void selectTest(const dim4& dims) {
     }
 }
 
-template<typename T, bool is_right>
+template <typename T, bool is_right>
 void selectScalarTest(const dim4& dims) {
     if (noDoubleTests<T>()) return;
     dtype ty = (dtype)dtype_traits<T>::af_type;
@@ -128,10 +128,10 @@ TEST(Select, NaN) {
     dim4 dims(1000, 1250);
     dtype ty = f32;
 
-    array a                                 = randu(dims, ty);
+    array a = randu(dims, ty);
     a(seq(a.dims(0) / 2), span, span, span) = NaN;
-    float b                                 = 0;
-    array c                                 = select(isNaN(a), b, a);
+    float b = 0;
+    array c = select(isNaN(a), b, a);
 
     int num = (int)a.elements();
 
@@ -206,8 +206,8 @@ TEST(Select, Issue_1730) {
     for (int j = 0; j < m; j++) {
         for (int i = 0; i < n; i++) {
             if (i < n1 || i > n2) {
-                ASSERT_FLOAT_EQ(ha1[i], ha2[i])
-                    << "at (" << i << ", " << j << ")";
+                ASSERT_FLOAT_EQ(ha1[i], ha2[i]) << "at (" << i << ", " << j
+                                                << ")";
             } else {
                 ASSERT_FLOAT_EQ(ha2[i], (ha1[i] >= 0 ? ha1[i] : -ha1[i]))
                     << "at (" << i << ", " << j << ")";
@@ -238,8 +238,8 @@ TEST(Select, Issue_1730_scalar) {
     for (int j = 0; j < m; j++) {
         for (int i = 0; i < n; i++) {
             if (i < n1 || i > n2) {
-                ASSERT_FLOAT_EQ(ha1[i], ha2[i])
-                    << "at (" << i << ", " << j << ")";
+                ASSERT_FLOAT_EQ(ha1[i], ha2[i]) << "at (" << i << ", " << j
+                                                << ")";
             } else {
                 ASSERT_FLOAT_EQ(ha2[i], (ha1[i] >= 0 ? ha1[i] : val))
                     << "at (" << i << ", " << j << ")";

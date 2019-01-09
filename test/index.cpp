@@ -31,7 +31,7 @@ using std::ostream_iterator;
 using std::string;
 using std::vector;
 
-template<typename T, typename OP>
+template <typename T, typename OP>
 void checkValues(const af_seq &seq, const T *data, const T *indexed_data,
                  OP compair_op) {
     for (int i = 0, j = seq.begin; compair_op(j, (int)seq.end);
@@ -41,7 +41,7 @@ void checkValues(const af_seq &seq, const T *data, const T *indexed_data,
     }
 }
 
-template<typename T>
+template <typename T>
 void DimCheck(const vector<af_seq> &seqs) {
     if (noDoubleTests<T>()) return;
 
@@ -96,7 +96,7 @@ void DimCheck(const vector<af_seq> &seqs) {
     }
 }
 
-template<typename T>
+template <typename T>
 class Indexing1D : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -153,7 +153,7 @@ TYPED_TEST(Indexing1D, StridedReverse) {
 }
 TYPED_TEST(Indexing1D, Span) { DimCheck<TypeParam>(this->span_seqs); }
 
-template<typename T>
+template <typename T>
 class Indexing2D : public ::testing::Test {
    public:
     vector<af_seq> make_vec(af_seq first, af_seq second) {
@@ -322,7 +322,7 @@ class Indexing2D : public ::testing::Test {
     vector<vector<af_seq> > strided_strided_seq;
 };
 
-template<typename T>
+template <typename T>
 void DimCheck2D(const vector<vector<af_seq> > &seqs, string TestFile,
                 size_t NDims) {
     if (noDoubleTests<T>()) return;
@@ -470,7 +470,7 @@ vector<af_seq> make_vec(af_seq first, af_seq second) {
     return out;
 }
 
-template<typename T>
+template <typename T>
 class Indexing : public ::testing::Test {
     vector<af_seq> make_vec3(af_seq first, af_seq second, af_seq third) {
         vector<af_seq> out;
@@ -536,7 +536,7 @@ class Indexing : public ::testing::Test {
     vector<vector<af_seq> > continuous4d_to_1d;
 };
 
-template<typename T>
+template <typename T>
 void DimCheckND(const vector<vector<af_seq> > &seqs, string TestFile,
                 size_t NDims) {
     if (noDoubleTests<T>()) return;
@@ -701,7 +701,7 @@ TEST(Indexing2D, ColumnContiniousCPP) {
 /************************ Array Based indexing tests from here on
  * ******************/
 
-template<typename T>
+template <typename T>
 class lookup : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -712,7 +712,7 @@ typedef ::testing::Types<float, double, int, unsigned, unsigned char, short,
     ArrIdxTestTypes;
 TYPED_TEST_CASE(lookup, ArrIdxTestTypes);
 
-template<typename T>
+template <typename T>
 void arrayIndexTest(string pTestFile, int dim) {
     if (noDoubleTests<T>()) return;
 
@@ -1028,8 +1028,8 @@ TEST(SeqIndex, Cascade00) {
         int c_off = j * nxc;
 
         for (int i = st; i < en; i++) {
-            ASSERT_EQ(h_a[a_off + i], h_c[c_off + i - st])
-                << "at (" << i << "," << j << ")";
+            ASSERT_EQ(h_a[a_off + i], h_c[c_off + i - st]) << "at (" << i << ","
+                                                           << j << ")";
         }
     }
 
@@ -1067,8 +1067,8 @@ TEST(SeqIndex, Cascade01) {
         int c_off = (j - stc) * nxc;
 
         for (int i = stb; i < enb; i++) {
-            ASSERT_EQ(h_a[a_off + i], h_c[c_off + i - stb])
-                << "at (" << i << "," << j << ")";
+            ASSERT_EQ(h_a[a_off + i], h_c[c_off + i - stb]) << "at (" << i
+                                                            << "," << j << ")";
         }
     }
 
@@ -1106,8 +1106,8 @@ TEST(SeqIndex, Cascade10) {
         int c_off = (j - stb) * nxc;
 
         for (int i = stc; i < enc; i++) {
-            ASSERT_EQ(h_a[a_off + i], h_c[c_off + i - stc])
-                << "at (" << i << "," << j << ")";
+            ASSERT_EQ(h_a[a_off + i], h_c[c_off + i - stc]) << "at (" << i
+                                                            << "," << j << ")";
         }
     }
 
@@ -1146,8 +1146,8 @@ TEST(SeqIndex, Cascade11) {
         int c_off = (j - st) * nx;
 
         for (int i = 0; i < nx; i++) {
-            ASSERT_EQ(h_a[a_off + i], h_c[c_off + i])
-                << "at (" << i << "," << j << ")";
+            ASSERT_EQ(h_a[a_off + i], h_c[c_off + i]) << "at (" << i << "," << j
+                                                      << ")";
         }
     }
 
@@ -1243,7 +1243,7 @@ TEST(SeqIndex, CPP_INDEX_VECTOR_2D) {
     freeHost(h_C);
 }
 
-template<typename T>
+template <typename T>
 class IndexedMembers : public ::testing::Test {
    public:
     virtual void SetUp() {}

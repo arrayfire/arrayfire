@@ -14,7 +14,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void second_order_deriv(Param<T> ixx, Param<T> ixy, Param<T> iyy,
                         const unsigned in_len, CParam<T> ix, CParam<T> iy) {
     T* ixx_out     = ixx.get();
@@ -29,7 +29,7 @@ void second_order_deriv(Param<T> ixx, Param<T> ixy, Param<T> iyy,
     }
 }
 
-template<typename T>
+template <typename T>
 void harris_responses(Param<T> resp, const unsigned idim0, const unsigned idim1,
                       CParam<T> ixx, CParam<T> ixy, CParam<T> iyy,
                       const float k_thr, const unsigned border_len) {
@@ -53,7 +53,7 @@ void harris_responses(Param<T> resp, const unsigned idim0, const unsigned idim1,
     }
 }
 
-template<typename T>
+template <typename T>
 void non_maximal(Param<float> xOut, Param<float> yOut, Param<float> respOut,
                  unsigned* count, const unsigned idim0, const unsigned idim1,
                  CParam<T> respIn, const float min_resp,

@@ -22,7 +22,7 @@ using af::features;
 
 namespace opencl {
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
               Array<float>& ori_out, Array<float>& size_out,
               Array<float>& desc_out, const Array<T>& in,

@@ -22,7 +22,7 @@ using std::abs;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Meanshift : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -51,7 +51,7 @@ TYPED_TEST(Meanshift, InvalidArgs) {
     ASSERT_SUCCESS(af_release_array(inArray));
 }
 
-template<typename T, bool isColor>
+template <typename T, bool isColor>
 void meanshiftTest(string pTestFile, const float ss) {
     if (noDoubleTests<T>()) return;
     if (noImageIOTests()) return;

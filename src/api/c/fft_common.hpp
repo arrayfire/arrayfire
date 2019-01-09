@@ -15,7 +15,7 @@ using namespace detail;
 void computePaddedDims(dim4 &pdims, const dim4 &idims, const dim_t npad,
                        dim_t const *const pad);
 
-template<typename inType, typename outType, int rank, bool direction>
+template <typename inType, typename outType, int rank, bool direction>
 Array<outType> fft(const Array<inType> input, const double norm_factor,
                    const dim_t npad, const dim_t *const pad) {
     dim4 pdims(1);
@@ -28,7 +28,7 @@ Array<outType> fft(const Array<inType> input, const double norm_factor,
     return res;
 }
 
-template<typename inType, typename outType, int rank>
+template <typename inType, typename outType, int rank>
 Array<outType> fft_r2c(const Array<inType> input, const double norm_factor,
                        const dim_t npad, const dim_t *const pad) {
     dim4 idims = input.dims();
@@ -50,7 +50,7 @@ Array<outType> fft_r2c(const Array<inType> input, const double norm_factor,
     return res;
 }
 
-template<typename inType, typename outType, int rank>
+template <typename inType, typename outType, int rank>
 Array<outType> fft_c2r(const Array<inType> input, const double norm_factor,
                        const dim4 &odims) {
     Array<outType> output = fft_c2r<outType, inType, rank>(input, odims);

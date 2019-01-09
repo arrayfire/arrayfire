@@ -32,15 +32,15 @@ static const int TY = 16;
 // Used for batching images
 static const int TI = 4;
 
-template<typename T>
+template <typename T>
 using wtype_t = typename std::conditional<std::is_same<T, double>::value,
                                           double, float>::type;
 
-template<typename T>
+template <typename T>
 using vtype_t = typename std::conditional<common::is_complex<T>::value, T,
                                           wtype_t<T>>::type;
 
-template<typename T, int order>
+template <typename T, int order>
 void transform(Param out, const Param in, const Param tf, bool isInverse,
                bool isPerspective, af_interp_type method) {
     using BT = typename dtype_traits<T>::base_type;
@@ -102,7 +102,7 @@ void transform(Param out, const Param in, const Param tf, bool isInverse,
 
     cl::NDRange local(TX, TY, 1);
 
-    int batchImg2 = 1;
+    int batchImg2                 = 1;
     if (nImg2 != nTfs2) batchImg2 = min(nImg2, TI);
 
     const int blocksXPerImage = divup(out.info.dims[0], local[0]);

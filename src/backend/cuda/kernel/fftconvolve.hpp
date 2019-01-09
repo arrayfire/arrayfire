@@ -20,7 +20,7 @@ namespace kernel {
 
 static const int THREADS = 256;
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 __global__ void packData(Param<To> out, CParam<Ti> in, const int di0_half,
                          const bool odd_di0) {
     const int t = blockDim.x * blockIdx.x + threadIdx.x;
@@ -68,7 +68,7 @@ __global__ void packData(Param<To> out, CParam<Ti> in, const int di0_half,
     }
 }
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 __global__ void padArray(Param<To> out, CParam<Ti> in) {
     const int t = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -115,7 +115,7 @@ __global__ void padArray(Param<To> out, CParam<Ti> in) {
     }
 }
 
-template<typename convT, AF_BATCH_KIND kind>
+template <typename convT, AF_BATCH_KIND kind>
 __global__ void complexMultiply(Param<convT> out, Param<convT> in1,
                                 Param<convT> in2, const int nelem) {
     const int t = blockDim.x * blockIdx.x + threadIdx.x;
@@ -154,7 +154,7 @@ __global__ void complexMultiply(Param<convT> out, Param<convT> in1,
     }
 }
 
-template<typename To, typename Ti, bool expand, bool roundOut>
+template <typename To, typename Ti, bool expand, bool roundOut>
 __global__ void reorderOutput(Param<To> out, Param<Ti> in, CParam<To> filter,
                               const int half_di0, const int baseDim,
                               const int fftScale) {
@@ -223,7 +223,7 @@ __global__ void reorderOutput(Param<To> out, Param<Ti> in, CParam<To> filter,
     }
 }
 
-template<typename convT, typename T>
+template <typename convT, typename T>
 void packDataHelper(Param<convT> sig_packed, Param<convT> filter_packed,
                     CParam<T> sig, CParam<T> filter) {
     dim_t *sd = sig.dims;
@@ -257,7 +257,7 @@ void packDataHelper(Param<convT> sig_packed, Param<convT> filter_packed,
 }
 
 // TODO(umar): This needs a better name
-template<typename T, typename convT>
+template <typename T, typename convT>
 void complexMultiplyHelper(Param<convT> sig_packed, Param<convT> filter_packed,
                            AF_BATCH_KIND kind) {
     int sig_packed_elem    = 1;
@@ -301,7 +301,7 @@ void complexMultiplyHelper(Param<convT> sig_packed, Param<convT> filter_packed,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, typename convT, bool roundOut, int baseDim, bool expand>
+template <typename T, typename convT, bool roundOut, int baseDim, bool expand>
 void reorderOutputHelper(Param<T> out, Param<convT> packed, CParam<T> sig,
                          CParam<T> filter) {
     dim_t *sd    = sig.dims;

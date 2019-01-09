@@ -19,7 +19,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x) {
     b.eval();
     a.eval();

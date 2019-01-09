@@ -20,7 +20,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline void homography(af_array& H, int& inliers, const af_array x_src,
                               const af_array y_src, const af_array x_dst,
                               const af_array y_dst,

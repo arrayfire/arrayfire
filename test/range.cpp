@@ -29,7 +29,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Range : public ::testing::Test {
    public:
     virtual void SetUp() {
@@ -48,7 +48,7 @@ typedef ::testing::Types<float, double, int, unsigned int, intl, uintl,
 // register the type list
 TYPED_TEST_CASE(Range, TestTypes);
 
-template<typename T>
+template <typename T>
 void rangeTest(const uint x, const uint y, const uint z, const uint w,
                const uint dim) {
     if (noDoubleTests<T>()) return;

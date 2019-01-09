@@ -26,7 +26,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class Convolve : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -40,7 +40,7 @@ typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, uchar,
 // register the type list
 TYPED_TEST_CASE(Convolve, TestTypes);
 
-template<typename T>
+template <typename T>
 void convolveTest(string pTestFile, int baseDim, bool expand) {
     if (noDoubleTests<T>()) return;
 
@@ -86,8 +86,8 @@ void convolveTest(string pTestFile, int baseDim, bool expand) {
     ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 
     ASSERT_SUCCESS(af_release_array(outArray));
@@ -213,7 +213,7 @@ TYPED_TEST(Convolve, Same_Cuboid_One2Many) {
         string(TEST_DIR "/convolve/cuboid_same_one2many.test"), 3, false);
 }
 
-template<typename T>
+template <typename T>
 void sepConvolveTest(string pTestFile, bool expand) {
     if (noDoubleTests<T>()) return;
 
@@ -252,8 +252,8 @@ void sepConvolveTest(string pTestFile, bool expand) {
     ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 
     ASSERT_SUCCESS(af_release_array(outArray));
@@ -412,8 +412,8 @@ TEST(Convolve1, CPP) {
     output.host(&outData.front());
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 }
 
@@ -450,8 +450,8 @@ TEST(Convolve2, CPP) {
     output.host(&outData.front());
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 }
 
@@ -487,8 +487,8 @@ TEST(Convolve3, CPP) {
     output.host(&outData.front());
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 }
 
@@ -528,8 +528,8 @@ TEST(Convolve, separable_CPP) {
     output.host((void*)&outData.front());
 
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
-            << "at: " << elIter << endl;
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << endl;
     }
 }
 

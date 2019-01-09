@@ -69,7 +69,7 @@
                   _lda, cblas_ptr(_xptr), _incx, cblas_scalar(_beta),          \
                   cblas_ptr(_yptr), _incy)
 
-template<typename Ty>
+template <typename Ty>
 magma_int_t magma_labrd_gpu(magma_int_t m, magma_int_t n, magma_int_t nb, Ty *a,
                             magma_int_t lda, cl_mem da, size_t da_offset,
                             magma_int_t ldda, void *_d, void *_e, Ty *tauq,

@@ -13,7 +13,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void lu_split(Param<T> lower, Param<T> upper, CParam<T> in) {
     T *l       = lower.get();
     T *u       = upper.get();

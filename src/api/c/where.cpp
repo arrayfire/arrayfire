@@ -19,7 +19,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array where(const af_array in) {
     // Making it more explicit that the output is uint
     return getHandle<uint>(where<T>(getArray<T>(in)));
@@ -46,8 +46,8 @@ af_err af_where(af_array* idx, const af_array in) {
             case u64: res = where<uintl>(in); break;
             case s16: res = where<short>(in); break;
             case u16: res = where<ushort>(in); break;
-            case u8: res = where<uchar>(in); break;
-            case b8: res = where<char>(in); break;
+            case u8: res  = where<uchar>(in); break;
+            case b8: res  = where<char>(in); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*idx, res);

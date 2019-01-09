@@ -20,7 +20,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T>
+template <typename T>
 static inline af_array trs(const af_array in, const bool conjugate) {
     return getHandle<T>(detail::transpose<T>(getArray<T>(in), conjugate));
 }
@@ -55,10 +55,10 @@ af_err af_transpose(af_array* out, af_array in, const bool conjugate) {
             case c32: output = trs<cfloat>(in, conjugate); break;
             case f64: output = trs<double>(in, conjugate); break;
             case c64: output = trs<cdouble>(in, conjugate); break;
-            case b8: output = trs<char>(in, conjugate); break;
+            case b8: output  = trs<char>(in, conjugate); break;
             case s32: output = trs<int>(in, conjugate); break;
             case u32: output = trs<uint>(in, conjugate); break;
-            case u8: output = trs<uchar>(in, conjugate); break;
+            case u8: output  = trs<uchar>(in, conjugate); break;
             case s64: output = trs<intl>(in, conjugate); break;
             case u64: output = trs<uintl>(in, conjugate); break;
             case s16: output = trs<short>(in, conjugate); break;
@@ -72,7 +72,7 @@ af_err af_transpose(af_array* out, af_array in, const bool conjugate) {
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 static inline void transpose_inplace(af_array in, const bool conjugate) {
     return detail::transpose_inplace<T>(getArray<T>(in), conjugate);
 }

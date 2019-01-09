@@ -57,7 +57,7 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     uint out_idx = id_dim_in;
 
     if (is_valid && id_dim_in < iInfo.dims[dim]) {
-        out_val = *iData;
+        out_val                = *iData;
         if (!IS_FIRST) out_idx = *ilData;
     }
 

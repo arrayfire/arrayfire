@@ -19,7 +19,7 @@ namespace kernel {
 // considering complex types as well
 static const int MAX_SCONV_FILTER_LEN = 31;
 
-template<typename T, typename accT, int cDim, bool expand>
+template <typename T, typename accT, int cDim, bool expand>
 void convSep(Param out, const Param sig, const Param filt);
 
 }  // namespace kernel

@@ -38,7 +38,7 @@ __forceinline__ __device__ int lIdx(int x, int y, int stride1, int stride0) {
     return (y * stride1 + x * stride0);
 }
 
-template<typename T, bool isDilation>
+template <typename T, bool isDilation>
 inline __device__ void load2ShrdMem(T* shrd, const T* const in, int lx, int ly,
                                     int shrdStride, int dim0, int dim1, int gx,
                                     int gy, int inStride1, int inStride0) {
@@ -65,7 +65,7 @@ inline __device__ void load2ShrdMem(T* shrd, const T* const in, int lx, int ly,
 //  * SeLength (structuring element a.k.a window/kernel)
 //  * windLen
 // If SeLength is > 0, then that will override the kernel argument.
-template<typename T, bool isDilation, int SeLength = 0>
+template <typename T, bool isDilation, int SeLength = 0>
 static __global__ void morphKernel(Param<T> out, CParam<T> in, int nBBS0,
                                    int nBBS1, int windLen = 0) {
     windLen = (SeLength > 0 ? SeLength : windLen);
@@ -142,7 +142,7 @@ __forceinline__ __device__ int lIdx3D(int x, int y, int z, int stride2,
     return (z * stride2 + y * stride1 + x * stride0);
 }
 
-template<typename T, bool isDilation>
+template <typename T, bool isDilation>
 inline __device__ void load2ShrdVolume(T* shrd, const T* const in, int lx,
                                        int ly, int lz, int shrdStride1,
                                        int shrdStride2, int dim0, int dim1,
@@ -159,7 +159,7 @@ inline __device__ void load2ShrdVolume(T* shrd, const T* const in, int lx,
 
 // kernel assumes mask/filter is square and hence does the
 // necessary operations accordingly.
-template<typename T, bool isDilation, int windLen>
+template <typename T, bool isDilation, int windLen>
 static __global__ void morph3DKernel(Param<T> out, CParam<T> in, int nBBS) {
     // get shared memory pointer
     SharedMemory<T> shared;
@@ -240,7 +240,7 @@ static __global__ void morph3DKernel(Param<T> out, CParam<T> in, int nBBS) {
     }
 }
 
-template<typename T, bool isDilation>
+template <typename T, bool isDilation>
 void morph(Param<T> out, CParam<T> in, int windLen) {
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 
@@ -301,7 +301,7 @@ void morph(Param<T> out, CParam<T> in, int windLen) {
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, bool isDilation>
+template <typename T, bool isDilation>
 void morph3d(Param<T> out, CParam<T> in, int windLen) {
     dim3 threads(kernel::CUBE_X, kernel::CUBE_Y, kernel::CUBE_Z);
 

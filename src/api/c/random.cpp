@@ -73,7 +73,7 @@ RandomEngine *getRandomEngine(const af_random_engine engineHandle) {
     return (RandomEngine *)engineHandle;
 }
 
-template<typename T>
+template <typename T>
 static inline af_array uniformDistribution_(const af::dim4 &dims,
                                             RandomEngine *e) {
     if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
@@ -86,7 +86,7 @@ static inline af_array uniformDistribution_(const af::dim4 &dims,
     }
 }
 
-template<typename T>
+template <typename T>
 static inline af_array normalDistribution_(const af::dim4 &dims,
                                            RandomEngine *e) {
     if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
@@ -269,8 +269,8 @@ af_err af_random_uniform(af_array *out, const unsigned ndims,
             case u64: result = uniformDistribution_<uintl>(d, e); break;
             case s16: result = uniformDistribution_<short>(d, e); break;
             case u16: result = uniformDistribution_<ushort>(d, e); break;
-            case u8: result = uniformDistribution_<uchar>(d, e); break;
-            case b8: result = uniformDistribution_<char>(d, e); break;
+            case u8: result  = uniformDistribution_<uchar>(d, e); break;
+            case b8: result  = uniformDistribution_<char>(d, e); break;
             default: TYPE_ERROR(4, type);
         }
         std::swap(*out, result);
@@ -333,8 +333,8 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_t *const dims,
             case u64: result = uniformDistribution_<uintl>(d, e); break;
             case s16: result = uniformDistribution_<short>(d, e); break;
             case u16: result = uniformDistribution_<ushort>(d, e); break;
-            case u8: result = uniformDistribution_<uchar>(d, e); break;
-            case b8: result = uniformDistribution_<char>(d, e); break;
+            case u8: result  = uniformDistribution_<uchar>(d, e); break;
+            case b8: result  = uniformDistribution_<char>(d, e); break;
             default: TYPE_ERROR(3, type);
         }
         std::swap(*out, result);

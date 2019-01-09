@@ -19,7 +19,7 @@ namespace kernel {
 ///////////////////////////////////////////////////////////////////////////
 // Unwrap Kernel
 ///////////////////////////////////////////////////////////////////////////
-template<typename T, bool is_column>
+template <typename T, bool is_column>
 __global__ void unwrap_kernel(Param<T> out, CParam<T> in, const int wx,
                               const int wy, const int sx, const int sy,
                               const int px, const int py, const int nx,
@@ -87,7 +87,7 @@ __global__ void unwrap_kernel(Param<T> out, CParam<T> in, const int wx,
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper functions
 ///////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 void unwrap_col(Param<T> out, CParam<T> in, const int wx, const int wy,
                 const int sx, const int sy, const int px, const int py,
                 const int nx) {
@@ -110,7 +110,7 @@ void unwrap_col(Param<T> out, CParam<T> in, const int wx, const int wy,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T>
+template <typename T>
 void unwrap_row(Param<T> out, CParam<T> in, const int wx, const int wy,
                 const int sx, const int sy, const int px, const int py,
                 const int nx) {
@@ -130,7 +130,7 @@ void unwrap_row(Param<T> out, CParam<T> in, const int wx, const int wy,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T>
+template <typename T>
 void unwrap(Param<T> out, CParam<T> in, const int wx, const int wy,
             const int sx, const int sy, const int px, const int py,
             const int nx, const bool is_column) {

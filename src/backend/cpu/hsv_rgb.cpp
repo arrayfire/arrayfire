@@ -18,7 +18,7 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 Array<T> hsv2rgb(const Array<T>& in) {
     in.eval();
 
@@ -29,7 +29,7 @@ Array<T> hsv2rgb(const Array<T>& in) {
     return out;
 }
 
-template<typename T>
+template <typename T>
 Array<T> rgb2hsv(const Array<T>& in) {
     in.eval();
 

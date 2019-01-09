@@ -36,7 +36,7 @@ __forceinline__ __device__ int lIdx(int x, int y, int stride1, int stride0) {
     return (y * stride1 + x * stride0);
 }
 
-template<typename T, af_border_type pad>
+template <typename T, af_border_type pad>
 __device__ void load2ShrdMem(T* shrd, const T* in, int lx, int ly,
                              int shrdStride, int dim0, int dim1, int gx, int gy,
                              int inStride1, int inStride0) {
@@ -60,7 +60,7 @@ __device__ void load2ShrdMem(T* shrd, const T* in, int lx, int ly,
     }
 }
 
-template<typename T, af_border_type pad>
+template <typename T, af_border_type pad>
 __device__ void load2ShrdMem_1d(T* shrd, const T* in, int lx, int dim0, int gx,
                                 int inStride0) {
     switch (pad) {
@@ -79,7 +79,7 @@ __device__ void load2ShrdMem_1d(T* shrd, const T* in, int lx, int dim0, int gx,
     }
 }
 
-template<typename T, af_border_type pad, unsigned w_len, unsigned w_wid>
+template <typename T, af_border_type pad, unsigned w_len, unsigned w_wid>
 __global__ void medfilt2(Param<T> out, CParam<T> in, int nBBS0, int nBBS1) {
     __shared__ T shrdMem[(THREADS_X + w_len - 1) * (THREADS_Y + w_wid - 1)];
 
@@ -130,17 +130,17 @@ __global__ void medfilt2(Param<T> out, CParam<T> in, int nBBS0, int nBBS1) {
             }
         }
 
-        // with each pass, remove min and max values and add new value
-        // initial sort
-        // ensure min in first half, max in second half
+// with each pass, remove min and max values and add new value
+// initial sort
+// ensure min in first half, max in second half
 #pragma unroll
         for (int i = 0; i < ARR_SIZE / 2; i++) {
             swap(v[i], v[ARR_SIZE - 1 - i]);
         }
-        // move min in first half to first pos
+// move min in first half to first pos
 #pragma unroll
         for (int i = 1; i < (ARR_SIZE + 1) / 2; i++) { swap(v[0], v[i]); }
-        // move max in second half to last pos
+// move max in second half to last pos
 #pragma unroll
         for (int i = ARR_SIZE - 2; i >= ARR_SIZE / 2; i--) {
             swap(v[i], v[ARR_SIZE - 1]);
@@ -189,7 +189,7 @@ __global__ void medfilt2(Param<T> out, CParam<T> in, int nBBS0, int nBBS1) {
     }
 }
 
-template<typename T, af_border_type pad, unsigned ARR_SIZE>
+template <typename T, af_border_type pad, unsigned ARR_SIZE>
 __global__ void medfilt1(Param<T> out, CParam<T> in, unsigned w_wid,
                          int nBBS0) {
     SharedMemory<T> shared;
@@ -234,17 +234,17 @@ __global__ void medfilt1(Param<T> out, CParam<T> in, unsigned w_wid,
 
 #pragma unroll
         for (int k = 0; k <= w_wid / 2 + 1; k++) { v[k] = shrdMem[lx + k]; }
-        // with each pass, remove min and max values and add new value
-        // initial sort
-        // ensure min in first half, max in second half
+// with each pass, remove min and max values and add new value
+// initial sort
+// ensure min in first half, max in second half
 #pragma unroll
         for (int i = 0; i < ARR_BOUNDARY / 2; i++) {
             swap(v[i], v[ARR_BOUNDARY - 1 - i]);
         }
-        // move min in first half to first pos
+// move min in first half to first pos
 #pragma unroll
         for (int i = 1; i < (ARR_BOUNDARY + 1) / 2; i++) { swap(v[0], v[i]); }
-        // move max in second half to last pos
+// move max in second half to last pos
 #pragma unroll
         for (int i = ARR_BOUNDARY - 2; i >= ARR_BOUNDARY / 2; i--) {
             swap(v[i], v[ARR_BOUNDARY - 1]);
@@ -293,7 +293,7 @@ __global__ void medfilt1(Param<T> out, CParam<T> in, unsigned w_wid,
     }
 }
 
-template<typename T, af_border_type pad>
+template <typename T, af_border_type pad>
 void medfilt2(Param<T> out, CParam<T> in, int w_len, int w_wid) {
     UNUSED(w_wid);
     const dim3 threads(THREADS_X, THREADS_Y);
@@ -337,7 +337,7 @@ void medfilt2(Param<T> out, CParam<T> in, int w_len, int w_wid) {
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, af_border_type pad>
+template <typename T, af_border_type pad>
 void medfilt1(Param<T> out, CParam<T> in, int w_wid) {
     const dim3 threads(THREADS_X);
 

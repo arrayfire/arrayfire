@@ -13,5 +13,4 @@
 namespace common {
 
 size_t getHostMemorySize();
-
 }

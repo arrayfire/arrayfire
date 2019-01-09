@@ -34,7 +34,7 @@ static const int TY    = 8;
 static const int TILEX = 256;
 static const int TILEY = 32;
 
-template<typename To, typename Ti, int dim>
+template <typename To, typename Ti, int dim>
 void join(Param out, const Param in, const af::dim4 offset) {
     std::string refName =
         std::string("join_kernel_") + std::string(dtype_traits<To>::getName()) +

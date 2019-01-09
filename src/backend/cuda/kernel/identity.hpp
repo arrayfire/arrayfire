@@ -17,7 +17,7 @@
 namespace cuda {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 __global__ static void identity_kernel(Param<T> out, int blocks_x,
                                        int blocks_y) {
     const dim_t idz = blockIdx.x / blocks_x;
@@ -42,7 +42,7 @@ __global__ static void identity_kernel(Param<T> out, int blocks_x,
     ptr[idx + idy * out.strides[1]] = val;
 }
 
-template<typename T>
+template <typename T>
 static void identity(Param<T> out) {
     dim3 threads(32, 8);
     int blocks_x = divup(out.dims[0], threads.x);

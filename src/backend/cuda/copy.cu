@@ -20,7 +20,7 @@ using common::is_complex;
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 void copyData(T *dst, const Array<T> &src) {
     // FIXME: Merge this with copyArray
     src.eval();
@@ -30,7 +30,7 @@ void copyData(T *dst, const Array<T> &src) {
 
     if (src.isLinear() ||  // No offsets, No strides
         src.ndims() == 1   // Simple offset, no strides.
-    ) {
+        ) {
         // A.get() gets data with offsets
         ptr = src.get();
     } else {
@@ -46,7 +46,7 @@ void copyData(T *dst, const Array<T> &src) {
     return;
 }
 
-template<typename T>
+template <typename T>
 Array<T> copyArray(const Array<T> &src) {
     Array<T> out = createEmptyArray<T>(src.dims());
 
@@ -63,7 +63,7 @@ Array<T> copyArray(const Array<T> &src) {
     return out;
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
                         outType default_value, double factor) {
     ARG_ASSERT(1, (in.ndims() == (size_t)dims.ndims()));
@@ -72,12 +72,12 @@ Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
     return ret;
 }
 
-template<typename T>
+template <typename T>
 void multiply_inplace(Array<T> &in, double val) {
     kernel::copy<T, T>(in, in, in.ndims(), scalar<T>(0), val);
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 struct copyWrapper {
     void operator()(Array<outType> &out, Array<inType> const &in) {
         kernel::copy<inType, outType>(out, in, in.ndims(), scalar<outType>(0),
@@ -85,7 +85,7 @@ struct copyWrapper {
     }
 };
 
-template<typename T>
+template <typename T>
 struct copyWrapper<T, T> {
     void operator()(Array<T> &out, Array<T> const &in) {
         if (out.isLinear() && in.isLinear() &&
@@ -99,7 +99,7 @@ struct copyWrapper<T, T> {
     }
 };
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 void copyArray(Array<outType> &out, Array<inType> const &in) {
     static_assert(!(is_complex<inType>::value && !is_complex<outType>::value),
                   "Cannot copy from complex value to a non complex value");
@@ -214,7 +214,7 @@ INSTANTIATE_PAD_ARRAY(char)
 INSTANTIATE_PAD_ARRAY_COMPLEX(cfloat)
 INSTANTIATE_PAD_ARRAY_COMPLEX(cdouble)
 
-template<typename T>
+template <typename T>
 T getScalar(const Array<T> &in) {
     T retVal;
     CUDA_CHECK(cudaMemcpyAsync(&retVal, in.get(), sizeof(T),

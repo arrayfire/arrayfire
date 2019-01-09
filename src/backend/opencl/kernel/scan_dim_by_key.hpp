@@ -14,7 +14,8 @@
 #include <traits.hpp>
 namespace opencl {
 namespace kernel {
-template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
+template <typename Ti, typename Tk, typename To, af_op_t op,
+          bool inclusive_scan>
 void scan_dim(Param out, const Param in, const Param key, int dim);
 }
 }  // namespace opencl

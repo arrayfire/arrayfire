@@ -15,7 +15,7 @@
 
 namespace common {
 
-template<typename DataType, typename ParamType>
+template <typename DataType, typename ParamType>
 class BufferNodeBase : public common::Node {
    private:
     DataType m_data;

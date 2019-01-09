@@ -18,7 +18,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename Ti, typename To>
+template <typename Ti, typename To>
 static void nearest_neighbour(af_array* idx, af_array* dist,
                               const af_array query, const af_array train,
                               const dim_t dist_dim, const uint n_dist,

@@ -23,27 +23,27 @@ using af::span;
 using af::sum;
 using std::vector;
 
-template<typename Ti>
+template <typename Ti>
 array generateArray(int nx, int ny, int nz, int nw) {
     array a = randu(nx, ny, nz, nw, (dtype)dtype_traits<Ti>::af_type);
     return a;
 }
 
-template<>
+template <>
 array generateArray<int>(int nx, int ny, int nz, int nw) {
     array a = (randu(nx, ny, nz, nw, (dtype)dtype_traits<float>::af_type) * 1e6)
                   .as(s32);
     return a;
 }
 
-template<>
+template <>
 array generateArray<unsigned int>(int nx, int ny, int nz, int nw) {
     array a = (randu(nx, ny, nz, nw, (dtype)dtype_traits<float>::af_type) * 1e6)
                   .as(u32);
     return a;
 }
 
-template<typename To, typename Ti>
+template <typename To, typename Ti>
 void median_flat(int nx, int ny = 1, int nz = 1, int nw = 1) {
     if (noDoubleTests<Ti>()) return;
     array a = generateArray<Ti>(nx, ny, nz, nw);
@@ -69,7 +69,7 @@ void median_flat(int nx, int ny = 1, int nz = 1, int nw = 1) {
     af_free_host(h_sa);
 }
 
-template<typename To, typename Ti, int dim>
+template <typename To, typename Ti, int dim>
 void median_test(int nx, int ny = 1, int nz = 1, int nw = 1) {
     if (noDoubleTests<Ti>()) return;
 

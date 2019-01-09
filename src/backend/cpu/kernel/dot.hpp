@@ -14,21 +14,21 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 T conj(T x) {
     return x;
 }
 
-template<>
+template <>
 cfloat conj<cfloat>(cfloat c) {
     return std::conj(c);
 }
-template<>
+template <>
 cdouble conj<cdouble>(cdouble c) {
     return std::conj(c);
 }
 
-template<typename T, bool conjugate, bool both_conjugate>
+template <typename T, bool conjugate, bool both_conjugate>
 void dot(Param<T> output, CParam<T> lhs, CParam<T> rhs, af_mat_prop optLhs,
          af_mat_prop optRhs) {
     UNUSED(optLhs);

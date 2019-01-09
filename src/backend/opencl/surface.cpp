@@ -20,7 +20,7 @@ using af::dim4;
 
 namespace opencl {
 
-template<typename T>
+template <typename T>
 void copy_surface(const Array<T> &P, fg_surface surface) {
     ForgeModule &_ = graphics::forgePlugin();
     if (isGLSharingSupported()) {

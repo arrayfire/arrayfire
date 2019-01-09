@@ -60,7 +60,7 @@
 
 #include <algorithm>
 
-template<typename Ty>
+template <typename Ty>
 void panel_to_q(magma_uplo_t uplo, magma_int_t ib, Ty *A, magma_int_t lda,
                 Ty *work) {
     magma_int_t i, j, k = 0;
@@ -98,7 +98,7 @@ void panel_to_q(magma_uplo_t uplo, magma_int_t ib, Ty *A, magma_int_t lda,
 
 // -------------------------
 // Restores a panel, after call to panel_to_q.
-template<typename Ty>
+template <typename Ty>
 void q_to_panel(magma_uplo_t uplo, magma_int_t ib, Ty *A, magma_int_t lda,
                 Ty *work) {
     magma_int_t i, j, k = 0;
@@ -123,67 +123,67 @@ void q_to_panel(magma_uplo_t uplo, magma_int_t ib, Ty *A, magma_int_t lda,
     }
 }
 
-template<typename Ty>
+template <typename Ty>
 magma_int_t magma_geqrf2_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
                              size_t dA_offset, magma_int_t ldda, Ty *tau,
                              magma_queue_t *queue, magma_int_t *info) {
-    /*  -- clMAGMA (version 0.1) --
-           Univ. of Tennessee, Knoxville
-           Univ. of California, Berkeley
-           Univ. of Colorado, Denver
-           @date
+/*  -- clMAGMA (version 0.1) --
+       Univ. of Tennessee, Knoxville
+       Univ. of California, Berkeley
+       Univ. of Colorado, Denver
+       @date
 
-        Purpose
-        =======
-        ZGEQRF computes a QR factorization of a complex M-by-N matrix A:
-        A = Q * R.
+    Purpose
+    =======
+    ZGEQRF computes a QR factorization of a complex M-by-N matrix A:
+    A = Q * R.
 
-        Arguments
-        =========
-        M       (input) INTEGER
-                The number of rows of the matrix A.  M >= 0.
+    Arguments
+    =========
+    M       (input) INTEGER
+            The number of rows of the matrix A.  M >= 0.
 
-        N       (input) INTEGER
-                The number of columns of the matrix A.  N >= 0.
+    N       (input) INTEGER
+            The number of columns of the matrix A.  N >= 0.
 
-        dA      (input/output) COMPLEX_16 array on the GPU, dimension (LDDA,N)
-                On entry, the M-by-N matrix A.
-                On exit, the elements on and above the diagonal of the array
-                contain the min(M,N)-by-N upper trapezoidal matrix R (R is
-                upper triangular if m >= n); the elements below the diagonal,
-                with the array TAU, represent the orthogonal matrix Q as a
-                product of min(m,n) elementary reflectors (see Further
-                Details).
+    dA      (input/output) COMPLEX_16 array on the GPU, dimension (LDDA,N)
+            On entry, the M-by-N matrix A.
+            On exit, the elements on and above the diagonal of the array
+            contain the min(M,N)-by-N upper trapezoidal matrix R (R is
+            upper triangular if m >= n); the elements below the diagonal,
+            with the array TAU, represent the orthogonal matrix Q as a
+            product of min(m,n) elementary reflectors (see Further
+            Details).
 
-        LDDA    (input) INTEGER
-                The leading dimension of the array dA.  LDDA >= max(1,M).
-                To benefit from coalescent memory accesses LDDA must be
-                divisible by 16.
+    LDDA    (input) INTEGER
+            The leading dimension of the array dA.  LDDA >= max(1,M).
+            To benefit from coalescent memory accesses LDDA must be
+            divisible by 16.
 
-        TAU     (output) COMPLEX_16 array, dimension (min(M,N))
-                The scalar factors of the elementary reflectors (see Further
-                Details).
+    TAU     (output) COMPLEX_16 array, dimension (min(M,N))
+            The scalar factors of the elementary reflectors (see Further
+            Details).
 
-        INFO    (output) INTEGER
-                = 0:  successful exit
-                < 0:  if INFO = -i, the i-th argument had an illegal value
-                      or another error occured, such as memory allocation
-       failed.
+    INFO    (output) INTEGER
+            = 0:  successful exit
+            < 0:  if INFO = -i, the i-th argument had an illegal value
+                  or another error occured, such as memory allocation
+   failed.
 
-        Further Details
-        ===============
-        The matrix Q is represented as a product of elementary reflectors
+    Further Details
+    ===============
+    The matrix Q is represented as a product of elementary reflectors
 
-            Q = H(1) H(2) . . . H(k), where k = min(m,n).
+        Q = H(1) H(2) . . . H(k), where k = min(m,n).
 
-        Each H(i) has the form
+    Each H(i) has the form
 
-            H(i) = I - tau * v * v'
+        H(i) = I - tau * v * v'
 
-        where tau is a complex scalar, and v is a complex vector with
-        v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
-        and tau in TAU(i).
-        ===================================================================== */
+    where tau is a complex scalar, and v is a complex vector with
+    v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
+    and tau in TAU(i).
+    ===================================================================== */
 
 #define dA(a_1, a_2) dA, (dA_offset + (a_1) + (a_2) * (ldda))
 #define work(a_1) (work + (a_1))
@@ -233,7 +233,7 @@ magma_int_t magma_geqrf2_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
     cl_mem buffer = clCreateBuffer(opencl::getContext()(),
                                    CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
                                    sizeof(Ty) * lwork, NULL, NULL);
-    work          = (Ty *)clEnqueueMapBuffer(queue[0], buffer, CL_TRUE,
+    work = (Ty *)clEnqueueMapBuffer(queue[0], buffer, CL_TRUE,
                                     CL_MAP_READ | CL_MAP_WRITE, 0,
                                     lwork * sizeof(Ty), 0, NULL, NULL, NULL);
 

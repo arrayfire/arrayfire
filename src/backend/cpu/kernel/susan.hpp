@@ -13,7 +13,7 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 void susan_responses(Param<T> output, CParam<T> input, const dim_t idim0,
                      const dim_t idim1, const int radius, const float t,
                      const float g, const unsigned border_len) {
@@ -47,7 +47,7 @@ void susan_responses(Param<T> output, CParam<T> input, const dim_t idim0,
     }
 }
 
-template<typename T>
+template <typename T>
 void non_maximal(Param<float> xcoords, Param<float> ycoords,
                  Param<float> response, shared_ptr<unsigned> counter,
                  const dim_t idim0, const dim_t idim1, CParam<T> input,

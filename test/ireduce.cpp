@@ -149,7 +149,7 @@ TEST(IndexedReduce, BUG_FIX_1005) {
 
     array in = constant(0, m, n, b);
     for (int i = 0; i < b; i++) {
-        array tmp         = randu(m, n);
+        array tmp = randu(m, n);
         in(span, span, i) = tmp;
 
         float val0, val1;

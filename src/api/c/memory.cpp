@@ -87,7 +87,7 @@ af_err af_get_device_ptr(void **data, const af_array arr) {
         af_dtype type = getInfo(arr).getType();
 
         switch (type) {
-                // FIXME: Perform copy if memory not continuous
+            // FIXME: Perform copy if memory not continuous
             case f32: *data = getDevicePtr(getArray<float>(arr)); break;
             case f64: *data = getDevicePtr(getArray<double>(arr)); break;
             case c32: *data = getDevicePtr(getArray<cfloat>(arr)); break;
@@ -98,8 +98,8 @@ af_err af_get_device_ptr(void **data, const af_array arr) {
             case u64: *data = getDevicePtr(getArray<uintl>(arr)); break;
             case s16: *data = getDevicePtr(getArray<short>(arr)); break;
             case u16: *data = getDevicePtr(getArray<ushort>(arr)); break;
-            case u8: *data = getDevicePtr(getArray<uchar>(arr)); break;
-            case b8: *data = getDevicePtr(getArray<char>(arr)); break;
+            case u8: *data  = getDevicePtr(getArray<uchar>(arr)); break;
+            case b8: *data  = getDevicePtr(getArray<char>(arr)); break;
 
             default: TYPE_ERROR(4, type);
         }
@@ -109,7 +109,7 @@ af_err af_get_device_ptr(void **data, const af_array arr) {
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 inline void lockArray(const af_array arr) {
     // Ideally we need to use .get(false), i.e. get ptr without offset
     // This is however not supported in opencl
@@ -144,7 +144,7 @@ af_err af_lock_array(const af_array arr) {
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 inline bool checkUserLock(const af_array arr) {
     // Ideally we need to use .get(false), i.e. get ptr without offset
     // This is however not supported in opencl
@@ -167,8 +167,8 @@ af_err af_is_locked_array(bool *res, const af_array arr) {
             case u64: *res = checkUserLock<uintl>(arr); break;
             case s16: *res = checkUserLock<short>(arr); break;
             case u16: *res = checkUserLock<ushort>(arr); break;
-            case u8: *res = checkUserLock<uchar>(arr); break;
-            case b8: *res = checkUserLock<char>(arr); break;
+            case u8: *res  = checkUserLock<uchar>(arr); break;
+            case b8: *res  = checkUserLock<char>(arr); break;
             default: TYPE_ERROR(4, type);
         }
     }
@@ -177,7 +177,7 @@ af_err af_is_locked_array(bool *res, const af_array arr) {
     return AF_SUCCESS;
 }
 
-template<typename T>
+template <typename T>
 inline void unlockArray(const af_array arr) {
     // Ideally we need to use .get(false), i.e. get ptr without offset
     // This is however not supported in opencl

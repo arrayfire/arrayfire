@@ -31,26 +31,26 @@
 
 using namespace detail;
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 static inline af_array unaryOp(const af_array in) {
     af_array res = getHandle(unaryOp<T, op>(castArray<T>(in)));
     return res;
 }
 
-template<typename Tc, typename Tr, af_op_t op>
+template <typename Tc, typename Tr, af_op_t op>
 struct unaryOpCplxFun;
 
-template<typename Tc, typename Tr, af_op_t op>
+template <typename Tc, typename Tr, af_op_t op>
 static inline Array<Tc> unaryOpCplx(const Array<Tc> &in) {
     return unaryOpCplxFun<Tc, Tr, op>()(in);
 }
 
-template<typename Tc, typename Tr, af_op_t op>
+template <typename Tc, typename Tr, af_op_t op>
 static inline af_array unaryOpCplx(const af_array in) {
     return getHandle(unaryOpCplx<Tc, Tr, op>(castArray<Tc>(in)));
 }
 
-template<af_op_t op>
+template <af_op_t op>
 static af_err af_unary(af_array *out, const af_array in) {
     try {
         const ArrayInfo &in_info = getInfo(in);
@@ -74,7 +74,7 @@ static af_err af_unary(af_array *out, const af_array in) {
     return AF_SUCCESS;
 }
 
-template<af_op_t op>
+template <af_op_t op>
 static af_err af_unary_complex(af_array *out, const af_array in) {
     try {
         const ArrayInfo &in_info = getInfo(in);
@@ -147,7 +147,7 @@ UNARY_COMPLEX(sqrt)
 UNARY_COMPLEX(tan)
 UNARY_COMPLEX(tanh)
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_exp_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // exp(a + ib)
@@ -172,7 +172,7 @@ struct unaryOpCplxFun<Tc, Tr, af_exp_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_log_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // log(a + ib)
@@ -201,7 +201,7 @@ struct unaryOpCplxFun<Tc, Tr, af_log_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_sin_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // sin(a + ib)
@@ -227,7 +227,7 @@ struct unaryOpCplxFun<Tc, Tr, af_sin_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_cos_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // cos(a + ib)
@@ -258,7 +258,7 @@ struct unaryOpCplxFun<Tc, Tr, af_cos_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_tan_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // tan(a + ib) = sin(a + ib) / cos(a + ib)
@@ -268,7 +268,7 @@ struct unaryOpCplxFun<Tc, Tr, af_tan_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_sinh_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // sinh(a + ib)
@@ -294,7 +294,7 @@ struct unaryOpCplxFun<Tc, Tr, af_sinh_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_cosh_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // cosh(a + ib)
@@ -319,7 +319,7 @@ struct unaryOpCplxFun<Tc, Tr, af_cosh_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_tanh_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // tanh(a + ib) = sinh(a + ib) / cosh(a + ib)
@@ -329,7 +329,7 @@ struct unaryOpCplxFun<Tc, Tr, af_tanh_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_acosh_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // dont simplify this expression, as it might lead to branch cuts
@@ -356,7 +356,7 @@ struct unaryOpCplxFun<Tc, Tr, af_acosh_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_asinh_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // asinh(z) = log(z+sqrt(z^2+1))
@@ -376,7 +376,7 @@ struct unaryOpCplxFun<Tc, Tr, af_asinh_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_atanh_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // atanh(z) = 0.5*(log(1+z)-log(1-z))
@@ -401,7 +401,7 @@ struct unaryOpCplxFun<Tc, Tr, af_atanh_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_acos_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // acos(z) = pi/2 + i*log(i*z+sqrt(1-z.^2))
@@ -434,7 +434,7 @@ struct unaryOpCplxFun<Tc, Tr, af_acos_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_asin_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // asin(z) = -i*log(i*z+sqrt(1-z^2))
@@ -463,7 +463,7 @@ struct unaryOpCplxFun<Tc, Tr, af_asin_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_atan_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // atan(z) = 0.5 * i * (log(1-i*z)-log(1+i*z))
@@ -492,7 +492,7 @@ struct unaryOpCplxFun<Tc, Tr, af_atan_t> {
     }
 };
 
-template<typename Tc, typename Tr>
+template <typename Tc, typename Tr>
 struct unaryOpCplxFun<Tc, Tr, af_sqrt_t> {
     Array<Tc> operator()(const Array<Tc> &z) {
         // sqrt(a + ib)
@@ -616,27 +616,27 @@ af_err af_factorial(af_array *out, const af_array in) {
     return AF_SUCCESS;
 }
 
-template<typename T, af_op_t op>
+template <typename T, af_op_t op>
 static inline af_array checkOp(const af_array in) {
     af_array res = getHandle(checkOp<T, op>(castArray<T>(in)));
     return res;
 }
 
-template<af_op_t op>
+template <af_op_t op>
 struct cplxLogicOp {
     af_array operator()(Array<char> resR, Array<char> resI, dim4 dims) {
         return getHandle(logicOp<char, af_or_t>(resR, resI, dims));
     }
 };
 
-template<>
+template <>
 struct cplxLogicOp<af_iszero_t> {
     af_array operator()(Array<char> resR, Array<char> resI, dim4 dims) {
         return getHandle(logicOp<char, af_and_t>(resR, resI, dims));
     }
 };
 
-template<typename T, typename BT, af_op_t op>
+template <typename T, typename BT, af_op_t op>
 static inline af_array checkOpCplx(const af_array in) {
     Array<BT> R = real<BT, T>(getArray<T>(in));
     Array<BT> I = imag<BT, T>(getArray<T>(in));
@@ -652,7 +652,7 @@ static inline af_array checkOpCplx(const af_array in) {
     return res;
 }
 
-template<af_op_t op>
+template <af_op_t op>
 static af_err af_check(af_array *out, const af_array in) {
     try {
         const ArrayInfo &in_info = getInfo(in);

@@ -26,7 +26,7 @@ using common::is_complex;
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 void copyData(T *to, const Array<T> &from) {
     from.eval();
     // Ensure all operations on 'from' are complete before copying data to host.
@@ -41,7 +41,7 @@ void copyData(T *to, const Array<T> &from) {
     }
 }
 
-template<typename T>
+template <typename T>
 Array<T> copyArray(const Array<T> &A) {
     A.eval();
     Array<T> out = createEmptyArray<T>(A.dims());
@@ -49,7 +49,7 @@ Array<T> copyArray(const Array<T> &A) {
     return out;
 }
 
-template<typename inType, typename outType>
+template <typename inType, typename outType>
 void copyArray(Array<outType> &out, Array<inType> const &in) {
     static_assert(
         !(is_complex<inType>::value && !is_complex<outType>::value),
@@ -122,7 +122,7 @@ INSTANTIATE_COPY_ARRAY(short)
 INSTANTIATE_COPY_ARRAY_COMPLEX(cfloat)
 INSTANTIATE_COPY_ARRAY_COMPLEX(cdouble)
 
-template<typename T>
+template <typename T>
 T getScalar(const Array<T> &in) {
     in.eval();
     getQueue().sync();

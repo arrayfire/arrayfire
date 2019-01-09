@@ -20,7 +20,7 @@ static inline int bitCount(int v) {
     return (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
 }
 
-template<typename T>
+template <typename T>
 Array<float> moments(const Array<T> &in, const af_moment_type moment) {
     in.eval();
     dim4 odims, idims = in.dims();

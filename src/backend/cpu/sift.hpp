@@ -14,7 +14,7 @@ using af::features;
 
 namespace cpu {
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
               Array<float>& ori, Array<float>& size, Array<float>& desc,
               const Array<T>& in, const unsigned n_layers,
@@ -22,5 +22,4 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
               const float init_sigma, const bool double_input,
               const float img_scale, const float feature_ratio,
               const bool compute_GLOH);
-
 }

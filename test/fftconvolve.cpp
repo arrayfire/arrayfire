@@ -26,13 +26,13 @@ using std::endl;
 using std::string;
 using std::vector;
 
-template<typename T>
+template <typename T>
 class FFTConvolve : public ::testing::Test {
    public:
     virtual void SetUp() {}
 };
 
-template<typename T>
+template <typename T>
 class FFTConvolveLarge : public ::testing::Test {
    public:
     virtual void SetUp() {}
@@ -48,7 +48,7 @@ typedef ::testing::Types<float, double> TestTypesLarge;
 TYPED_TEST_CASE(FFTConvolve, TestTypes);
 TYPED_TEST_CASE(FFTConvolveLarge, TestTypesLarge);
 
-template<typename T, int baseDim>
+template <typename T, int baseDim>
 void fftconvolveTest(string pTestFile, bool expand) {
     if (noDoubleTests<T>()) return;
 
@@ -104,7 +104,7 @@ void fftconvolveTest(string pTestFile, bool expand) {
     ASSERT_SUCCESS(af_release_array(filter));
 }
 
-template<typename T, int baseDim>
+template <typename T, int baseDim>
 void fftconvolveTestLarge(int sDim, int fDim, int sBatch, int fBatch,
                           bool expand) {
     if (noDoubleTests<T>()) return;

@@ -17,7 +17,7 @@ using af::dim4;
 
 namespace opencl {
 
-template<typename T, typename accT, dim_t baseDim, bool expand>
+template <typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const& signal, Array<accT> const& filter,
                   AF_BATCH_KIND kind) {
     const dim4 sDims = signal.dims();

@@ -14,19 +14,19 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template <typename T>
 double cabs(const T in) {
     return (double)in;
 }
 static double cabs(const char in) { return (double)(in > 0); }
 static double cabs(const cfloat &in) { return (double)abs(in); }
 static double cabs(const cdouble &in) { return (double)abs(in); }
-template<typename T>
+template <typename T>
 static bool is_nan(T in) {
     return in != in;
 }
 
-template<af_op_t op, typename T>
+template <af_op_t op, typename T>
 struct MinMaxOp {
     T m_val;
     uint m_idx;
@@ -43,7 +43,7 @@ struct MinMaxOp {
     }
 };
 
-template<typename T>
+template <typename T>
 struct MinMaxOp<af_max_t, T> {
     T m_val;
     uint m_idx;
@@ -60,7 +60,7 @@ struct MinMaxOp<af_max_t, T> {
     }
 };
 
-template<af_op_t op, typename T, int D>
+template <af_op_t op, typename T, int D>
 struct ireduce_dim {
     void operator()(Param<T> output, Param<uint> locParam,
                     const dim_t outOffset, CParam<T> input,
@@ -77,7 +77,7 @@ struct ireduce_dim {
     }
 };
 
-template<af_op_t op, typename T>
+template <af_op_t op, typename T>
 struct ireduce_dim<op, T, 0> {
     void operator()(Param<T> output, Param<uint> locParam,
                     const dim_t outOffset, CParam<T> input,

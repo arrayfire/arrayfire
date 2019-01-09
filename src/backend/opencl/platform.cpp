@@ -384,7 +384,7 @@ bool isHostUnifiedMemory(const cl::Device& device) {
 bool OpenCLCPUOffload(bool forceOffloadOSX) {
     static const bool offloadEnv = getEnvVar("AF_OPENCL_CPU_OFFLOAD") != "0";
     bool offload                 = false;
-    if (offloadEnv) offload = isHostUnifiedMemory(getDevice());
+    if (offloadEnv) offload      = isHostUnifiedMemory(getDevice());
 #if OS_MAC
     // FORCED OFFLOAD FOR LAPACK FUNCTIONS ON OSX UNIFIED MEMORY DEVICES
     //
@@ -645,7 +645,7 @@ unsigned getMaxJitSize() {
 #if defined(OS_MAC)
     const int MAX_JIT_LEN = 50;
 #else
-    const int MAX_JIT_LEN       = 100;
+    const int MAX_JIT_LEN               = 100;
 #endif
 
     thread_local int length = 0;
@@ -751,7 +751,7 @@ DeviceManager::~DeviceManager() {
 
     deInitBlas();
 
-    // deCache Boost program_cache
+// deCache Boost program_cache
 #ifndef OS_WIN
     namespace compute = boost::compute;
     for (auto bCache : mBoostProgCacheVector) delete bCache;
@@ -760,13 +760,13 @@ DeviceManager::~DeviceManager() {
     delete memManager.release();
     delete pinnedMemManager.release();
 
-    // TODO: FIXME:
-    // OpenCL libs on Windows platforms
-    // are crashing the application at program exit
-    // most probably a reference counting issue based
-    // on the investigation done so far. This problem
-    // doesn't seem to happen on Linux or MacOSX.
-    // So, clean up OpenCL resources on non-Windows platforms
+// TODO: FIXME:
+// OpenCL libs on Windows platforms
+// are crashing the application at program exit
+// most probably a reference counting issue based
+// on the investigation done so far. This problem
+// doesn't seem to happen on Linux or MacOSX.
+// So, clean up OpenCL resources on non-Windows platforms
 #ifndef OS_WIN
     for (auto q : mQueues) delete q;
     for (auto c : mContexts) delete c;
@@ -781,11 +781,11 @@ DeviceManager::DeviceManager()
     std::vector<cl::Platform> platforms;
     Platform::get(&platforms);
 
-    // This is all we need because the sort takes care of the order of devices
+// This is all we need because the sort takes care of the order of devices
 #ifdef OS_MAC
     cl_device_type DEVICE_TYPES = CL_DEVICE_TYPE_GPU;
 #else
-    cl_device_type DEVICE_TYPES = CL_DEVICE_TYPE_ALL;
+    cl_device_type DEVICE_TYPES         = CL_DEVICE_TYPE_ALL;
 #endif
 
     std::string deviceENV = getEnvVar("AF_OPENCL_DEVICE_TYPE");
@@ -997,7 +997,7 @@ void DeviceManager::markDeviceForInterop(const int device,
             Context* ctx     = new Context(*mDevices[device], cps);
             CommandQueue* cq = new CommandQueue(*ctx, *mDevices[device]);
 
-            // May be fixes the AMD GL issues we see on windows?
+// May be fixes the AMD GL issues we see on windows?
 #if !defined(_WIN32) && !defined(_MSC_VER)
             delete mContexts[device];
             delete mQueues[device];

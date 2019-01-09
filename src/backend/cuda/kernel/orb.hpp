@@ -30,7 +30,7 @@ static const int THREADS_Y = 16;
 
 static const float PI_VAL = 3.14159265358979323846f;
 
-template<typename T>
+template <typename T>
 void gaussian1D(T* out, const int dim, double sigma = 0.0) {
     if (!(sigma > 0)) sigma = 0.25 * dim;
 
@@ -63,7 +63,7 @@ inline __device__ float block_reduce_sum(float val) {
     return data[threadIdx.x * blockDim.x];
 }
 
-template<typename T>
+template <typename T>
 __global__ void keep_features(float* x_out, float* y_out, float* score_out,
                               float* size_out, const float* x_in,
                               const float* y_in, const float* score_in,
@@ -81,7 +81,7 @@ __global__ void keep_features(float* x_out, float* y_out, float* score_out,
     }
 }
 
-template<typename T, bool use_scl>
+template <typename T, bool use_scl>
 __global__ void harris_response(float* score_out, float* size_out,
                                 const float* x_in, const float* y_in,
                                 const float* scl_in, const unsigned total_feat,
@@ -153,12 +153,12 @@ __global__ void harris_response(float* score_out, float* size_out,
         float rscale = 0.001f;
         rscale       = rscale * rscale * rscale * rscale;
 
-        score_out[f] = resp * rscale;
+        score_out[f]             = resp * rscale;
         if (use_scl) size_out[f] = size;
     }
 }
 
-template<typename T>
+template <typename T>
 __global__ void centroid_angle(const float* x_in, const float* y_in,
                                float* orientation_out,
                                const unsigned total_feat, CParam<T> image,
@@ -195,7 +195,7 @@ __global__ void centroid_angle(const float* x_in, const float* y_in,
     }
 }
 
-template<typename T>
+template <typename T>
 inline __device__ T get_pixel(unsigned x, unsigned y, const float ori,
                               const unsigned size, const int dist_x,
                               const int dist_y, CParam<T> image,
@@ -211,7 +211,7 @@ inline __device__ T get_pixel(unsigned x, unsigned y, const float ori,
     return image.ptr[x * image.dims[0] + y];
 }
 
-template<typename T>
+template <typename T>
 __global__ void extract_orb(unsigned* desc_out, const unsigned n_feat,
                             float* x_in_out, float* y_in_out,
                             const float* ori_in, float* size_out,
@@ -265,7 +265,7 @@ __global__ void extract_orb(unsigned* desc_out, const unsigned n_feat,
     }
 }
 
-template<typename T, typename convAccT>
+template <typename T, typename convAccT>
 void orb(unsigned* out_feat, float** d_x, float** d_y, float** d_score,
          float** d_ori, float** d_size, unsigned** d_desc,
          vector<unsigned>& feat_pyr, vector<float*>& d_x_pyr,

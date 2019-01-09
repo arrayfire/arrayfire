@@ -14,7 +14,7 @@
 #include <af/dim4.hpp>
 
 namespace opencl {
-template<typename T>
+template <typename T>
 Array<T> identity(const dim4& dims) {
     Array<T> out = createEmptyArray<T>(dims);
     kernel::identity<T>(out);

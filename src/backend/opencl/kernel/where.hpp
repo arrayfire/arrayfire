@@ -32,7 +32,7 @@ using std::string;
 
 namespace opencl {
 namespace kernel {
-template<typename T>
+template <typename T>
 static void get_out_idx(Buffer *out_data, Param &otmp, Param &rtmp, Param &in,
                         uint threads_x, uint groups_x, uint groups_y) {
     std::string refName = std::string("get_out_idx_kernel_") +
@@ -76,7 +76,7 @@ static void get_out_idx(Buffer *out_data, Param &otmp, Param &rtmp, Param &in,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
+template <typename T>
 static void where(Param &out, Param &in) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_GROUP);

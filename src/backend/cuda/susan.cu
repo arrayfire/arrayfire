@@ -17,7 +17,7 @@ using af::features;
 
 namespace cuda {
 
-template<typename T>
+template <typename T>
 unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
                const Array<T> &in, const unsigned radius, const float diff_thr,
                const float geom_thr, const float feature_ratio,
@@ -46,9 +46,9 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
         resp_out = createEmptyArray<float>(dim4());
         return 0;
     } else {
-        x_out    = createDeviceDataArray<float>(dim4(corners_out),
+        x_out = createDeviceDataArray<float>(dim4(corners_out),
                                              (void *)x_corners.get());
-        y_out    = createDeviceDataArray<float>(dim4(corners_out),
+        y_out = createDeviceDataArray<float>(dim4(corners_out),
                                              (void *)y_corners.get());
         resp_out = createDeviceDataArray<float>(dim4(corners_out),
                                                 (void *)resp_corners.get());

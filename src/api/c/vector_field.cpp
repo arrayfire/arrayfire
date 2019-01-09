@@ -27,7 +27,7 @@ using std::vector;
 using namespace detail;
 using namespace graphics;
 
-template<typename T>
+template <typename T>
 fg_chart setup_vector_field(fg_window window, const vector<af_array>& points,
                             const vector<af_array>& directions,
                             const af_cell* const props,
@@ -89,10 +89,10 @@ fg_chart setup_vector_field(fg_window window, const vector<af_array>& points,
         if (cmin[0] == 0 && cmax[0] == 0 && cmin[1] == 0 && cmax[1] == 0 &&
             cmin[2] == 0 && cmax[2] == 0) {
             // No previous limits. Set without checking
-            cmin[0] = step_round(dmin[0], false);
-            cmax[0] = step_round(dmax[0], true);
-            cmin[1] = step_round(dmin[1], false);
-            cmax[1] = step_round(dmax[1], true);
+            cmin[0]                         = step_round(dmin[0], false);
+            cmax[0]                         = step_round(dmax[0], true);
+            cmin[1]                         = step_round(dmin[1], false);
+            cmax[1]                         = step_round(dmax[1], true);
             if (pIn.dims()[0] == 3) cmin[2] = step_round(dmin[2], false);
             if (pIn.dims()[0] == 3) cmax[2] = step_round(dmax[2], true);
         } else {

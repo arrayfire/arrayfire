@@ -11,10 +11,10 @@
 
 namespace cpu {
 
-template<typename T>
+template <typename T>
 Array<T> hsv2rgb(const Array<T>& in);
 
-template<typename T>
+template <typename T>
 Array<T> rgb2hsv(const Array<T>& in);
 
 }  // namespace cpu

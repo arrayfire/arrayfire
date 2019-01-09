@@ -36,7 +36,7 @@ typedef struct {
     int ipiv[MAX_PIVOTS];
 } zlaswp_params_t;
 
-template<typename T>
+template <typename T>
 void laswp(int n, cl_mem in, size_t offset, int ldda, int k1, int k2,
            const int *ipiv, int inci, cl::CommandQueue &queue) {
     std::string refName =
@@ -80,7 +80,7 @@ void laswp(int n, cl_mem in, size_t offset, int ldda, int k1, int k2,
 
         params.npivots = pivots_left > MAX_PIVOTS ? MAX_PIVOTS : pivots_left;
 
-        for (int j = 0; j < params.npivots; ++j)
+        for (int j         = 0; j < params.npivots; ++j)
             params.ipiv[j] = ipiv[(k + j) * inci] - k - 1;
 
         unsigned long long k_offset = offset + k * ldda;
