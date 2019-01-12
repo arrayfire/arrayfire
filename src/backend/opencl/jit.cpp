@@ -176,7 +176,7 @@ static Kernel getKernel(const vector<Node *> &output_nodes,
     if (entry.prog == 0 && entry.ker == 0) {
         string jit_ker = getKernelString(funcName, full_nodes, full_ids,
                                          output_ids, is_linear);
-
+        saveKernel(funcName, jit_ker, ".cl");
         const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
         const int ker_lens[]   = {jit_cl_len, (int)jit_ker.size()};
 
