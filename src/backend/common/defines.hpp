@@ -52,10 +52,13 @@ typedef enum {
 #ifdef OS_WIN
 #include <Windows.h>
 using LibHandle = HMODULE;
+#define AF_PATH_SEPARATOR "\\"
 #elif defined(OS_MAC)
 using LibHandle = void*;
+#define AF_PATH_SEPARATOR "/"
 #elif defined(OS_LNX)
 using LibHandle = void*;
+#define AF_PATH_SEPARATOR "/"
 #else
 #error "Unsupported platform"
 #endif

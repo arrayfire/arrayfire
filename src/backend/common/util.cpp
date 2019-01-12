@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2016, ArrayFire
+ * Copyright (c) 2019, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -10,12 +10,15 @@
 /// This file contains platform independent utility functions
 #include <cstdlib>
 #include <string>
+#include <cstring>
 
 #if defined(OS_WIN)
 #include <Windows.h>
 #endif
 
 #include <af/defines.h>
+#include <common/util.hpp>
+#include <common/defines.hpp>
 
 using std::string;
 
@@ -54,4 +57,28 @@ const char *getName(af_dtype type) {
         case b8: return "bool";
         default: return "unknown type";
     }
+}
+
+void saveKernel(const std::string& funcName, const std::string& jit_ker, const std::string& ext) {
+  static const char* jitKernelsOutput = getenv(saveJitKernelsEnvVarName);
+  if (!jitKernelsOutput)
+    return;
+  if (std::strcmp(jitKernelsOutput, "stdout") == 0) {
+    fprintf(stdout, jit_ker.c_str());
+    return;
+  }
+  if (std::strcmp(jitKernelsOutput, "stderr") == 0) {
+    fprintf(stderr, jit_ker.c_str());
+    return;
+  }
+  // Path to a folder  
+  const std::string ffp = std::string(jitKernelsOutput) + AF_PATH_SEPARATOR + funcName + ext;
+  FILE* f = fopen(ffp.c_str(), "w");
+  if (!f) {
+    fprintf(stderr, "Cannot open file %s\n", ffp.c_str());
+    return;
+  }
+  if (fputs(jit_ker.c_str(), f) == EOF)
+    fprintf(stderr, "Failed to write kernel to file %s\n", ffp.c_str());
+  fclose(f);
 }
