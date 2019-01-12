@@ -348,6 +348,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
     if (idx == kernelCaches[device].end()) {
         string jit_ker = getKernelString(funcName, full_nodes, full_ids,
                                          output_ids, is_linear);
+        saveKernel(funcName, jit_ker, ".cu");
         entry          = compileKernel(funcName.c_str(), jit_ker);
         kernelCaches[device][funcName] = entry;
     } else {
