@@ -45,7 +45,7 @@ TYPED_TEST_CASE(MedianFilter1d, TestTypes);
 template<typename T>
 void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid,
                  af_border_type pad) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -105,7 +105,7 @@ TYPED_TEST(MedianFilter, BATCH_SYMMETRIC_PAD_3x3) {
 
 template<typename T>
 void medfilt1_Test(string pTestFile, dim_t w_wid, af_border_type pad) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -165,7 +165,7 @@ TYPED_TEST(MedianFilter1d, BATCH_SYMMETRIC_PAD_3) {
 
 template<typename T, bool isColor>
 void medfiltImageTest(string pTestFile, dim_t w_len, dim_t w_wid) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;
@@ -212,7 +212,7 @@ void medfiltImageTest(string pTestFile, dim_t w_len, dim_t w_wid) {
 
 template<typename T>
 void medfiltInputTest(void) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     af_array inArray  = 0;
     af_array outArray = 0;
@@ -241,7 +241,7 @@ TYPED_TEST(MedianFilter, InvalidArray) { medfiltInputTest<TypeParam>(); }
 
 template<typename T>
 void medfiltWindowTest(void) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     af_array inArray  = 0;
     af_array outArray = 0;
@@ -264,7 +264,7 @@ TYPED_TEST(MedianFilter, InvalidWindow) { medfiltWindowTest<TypeParam>(); }
 
 template<typename T>
 void medfilt1d_WindowTest(void) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     af_array inArray  = 0;
     af_array outArray = 0;
@@ -287,7 +287,7 @@ TYPED_TEST(MedianFilter1d, InvalidWindow) { medfilt1d_WindowTest<TypeParam>(); }
 
 template<typename T>
 void medfiltPadTest(void) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     af_array inArray  = 0;
     af_array outArray = 0;
@@ -314,7 +314,7 @@ TYPED_TEST(MedianFilter, InvalidPadType) { medfiltPadTest<TypeParam>(); }
 
 template<typename T>
 void medfilt1d_PadTest(void) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     af_array inArray  = 0;
     af_array outArray = 0;
@@ -345,8 +345,6 @@ TYPED_TEST(MedianFilter1d, InvalidPadType) { medfilt1d_PadTest<TypeParam>(); }
 using af::array;
 
 TEST(MedianFilter, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const dim_t w_len = 3;
     const dim_t w_wid = 3;
 
@@ -374,8 +372,6 @@ TEST(MedianFilter, CPP) {
 }
 
 TEST(MedianFilter1d, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const dim_t w_wid = 3;
 
     vector<dim4> numDims;

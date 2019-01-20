@@ -37,7 +37,6 @@ using std::string;
 using std::vector;
 
 TEST(LU, InPlaceSmall) {
-    if (noDoubleTests<float>()) return;
     if (noLAPACKTests()) return;
 
     int resultIdx = 0;
@@ -76,7 +75,6 @@ TEST(LU, InPlaceSmall) {
 }
 
 TEST(LU, SplitSmall) {
-    if (noDoubleTests<float>()) return;
     if (noLAPACKTests()) return;
 
     int resultIdx = 0;
@@ -129,7 +127,7 @@ TEST(LU, SplitSmall) {
 
 template<typename T>
 void luTester(const int m, const int n, double eps) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 
 #if 1

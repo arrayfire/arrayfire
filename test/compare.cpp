@@ -29,7 +29,7 @@ TYPED_TEST_CASE(Compare, TestTypes);
 #define COMPARE(OP, Name)                                   \
     TYPED_TEST(Compare, Test_##Name) {                      \
         typedef TypeParam T;                                \
-        if (noDoubleTests<T>()) return;                     \
+        SUPPORTED_TYPE_CHECK(T);                            \
         const int num = 1 << 20;                            \
         af_dtype ty   = (af_dtype)dtype_traits<T>::af_type; \
         array a       = randu(num, ty);                     \

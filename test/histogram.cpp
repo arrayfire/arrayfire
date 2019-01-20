@@ -41,8 +41,8 @@ TYPED_TEST_CASE(Histogram, TestTypes);
 
 template<typename inType, typename outType>
 void histTest(string pTestFile, unsigned nbins, double minval, double maxval) {
-    if (noDoubleTests<inType>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(inType);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
 
@@ -114,9 +114,6 @@ using af::seq;
 using af::span;
 
 TEST(Histogram, CPP) {
-    if (noDoubleTests<float>()) return;
-    if (noDoubleTests<int>()) return;
-
     const unsigned nbins = 100;
     const double minval  = 0.0;
     const double maxval  = 99.0;

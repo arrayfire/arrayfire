@@ -43,7 +43,7 @@ TYPED_TEST_CASE(MatrixMultiply, TestTypes);
 
 template<typename T, bool isBVector>
 void MatMulCheck(string TestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 
@@ -122,7 +122,7 @@ TYPED_TEST(MatrixMultiply, RectangleVector) {
 
 template<typename T, bool isBVector>
 void cppMatMulCheck(string TestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 

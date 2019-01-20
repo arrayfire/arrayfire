@@ -39,7 +39,7 @@ TYPED_TEST_CASE(Replace, TestTypes);
 
 template<typename T>
 void replaceTest(const dim4 &dims) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
     array a = randu(dims, ty);
@@ -75,7 +75,7 @@ void replaceTest(const dim4 &dims) {
 
 template<typename T>
 void replaceScalarTest(const dim4 &dims) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
     array a = randu(dims, ty);

@@ -34,7 +34,7 @@ TYPED_TEST_CASE(GaussianKernel, TestTypes);
 
 template<typename T>
 void gaussianKernelTest(string pFileName, double sigma) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<int> > in;

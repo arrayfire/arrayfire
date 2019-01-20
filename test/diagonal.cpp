@@ -33,7 +33,7 @@ typedef ::testing::Types<float, double, int, uint, char, unsigned char>
 TYPED_TEST_CASE(Diagonal, TestTypes);
 
 TYPED_TEST(Diagonal, Create) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
     try {
         static const int size = 1000;
         vector<TypeParam> input(size * size);
@@ -58,7 +58,7 @@ TYPED_TEST(Diagonal, Create) {
 }
 
 TYPED_TEST(Diagonal, DISABLED_CreateLargeDim) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
     try {
         deviceGC();
         {
@@ -72,7 +72,7 @@ TYPED_TEST(Diagonal, DISABLED_CreateLargeDim) {
 }
 
 TYPED_TEST(Diagonal, Extract) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     try {
         static const int size = 1000;
@@ -93,7 +93,7 @@ TYPED_TEST(Diagonal, Extract) {
 }
 
 TYPED_TEST(Diagonal, ExtractLargeDim) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     try {
         static const size_t n        = 10;
@@ -113,7 +113,7 @@ TYPED_TEST(Diagonal, ExtractLargeDim) {
 }
 
 TYPED_TEST(Diagonal, ExtractRect) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     try {
         static const int size0 = 1000, size1 = 900;

@@ -60,7 +60,7 @@ TYPED_TEST_CASE(Harris, TestTypes);
 
 template<typename T>
 void harrisTest(string pTestFile, float sigma, unsigned block_size) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;
@@ -167,7 +167,6 @@ using af::harris;
 using af::loadImage;
 
 TEST(FloatHarris, CPP) {
-    if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;

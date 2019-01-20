@@ -45,9 +45,9 @@ af::array randgen(const int num, dtype ty) {
 
 #define BINARY_TESTS(Ta, Tb, Tc, func)                                \
     TEST(BinaryTests, Test_##func##_##Ta##_##Tb) {                    \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-        if (noDoubleTests<Tc>()) return;                              \
+        SUPPORTED_TYPE_CHECK(Ta);                                     \
+        SUPPORTED_TYPE_CHECK(Tb);                                     \
+        SUPPORTED_TYPE_CHECK(Tc);                                     \
                                                                       \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
@@ -66,8 +66,8 @@ af::array randgen(const int num, dtype ty) {
     }                                                                 \
                                                                       \
     TEST(BinaryTests, Test_##func##_##Ta##_##Tb##_left) {             \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
+        SUPPORTED_TYPE_CHECK(Ta);                                     \
+        SUPPORTED_TYPE_CHECK(Tb);                                     \
                                                                       \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
         af::array a = randgen(num, ta);                               \
@@ -83,8 +83,8 @@ af::array randgen(const int num, dtype ty) {
     }                                                                 \
                                                                       \
     TEST(BinaryTests, Test_##func##_##Ta##_##Tb##_right) {            \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
+        SUPPORTED_TYPE_CHECK(Ta);                                     \
+        SUPPORTED_TYPE_CHECK(Tb);                                     \
                                                                       \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
         Ta h_a      = 5.0;                                            \
@@ -101,9 +101,9 @@ af::array randgen(const int num, dtype ty) {
 
 #define BINARY_TESTS_NEAR_GENERAL(Ta, Tb, Tc, Td, Te, func, err)      \
     TEST(BinaryTestsFloating, Test_##func##_##Ta##_##Tb) {            \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-        if (noDoubleTests<Tc>()) return;                              \
+        SUPPORTED_TYPE_CHECK(Ta);                                     \
+        SUPPORTED_TYPE_CHECK(Tb);                                     \
+        SUPPORTED_TYPE_CHECK(Tc);                                     \
                                                                       \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
@@ -122,8 +122,8 @@ af::array randgen(const int num, dtype ty) {
     }                                                                 \
                                                                       \
     TEST(BinaryTestsFloating, Test_##func##_##Ta##_##Tb##_left) {     \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
+        SUPPORTED_TYPE_CHECK(Ta);                                     \
+        SUPPORTED_TYPE_CHECK(Tb);                                     \
                                                                       \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
         af::array a = randgen(num, ta);                               \
@@ -139,9 +139,9 @@ af::array randgen(const int num, dtype ty) {
     }                                                                 \
                                                                       \
     TEST(BinaryTestsFloating, Test_##func##_##Ta##_##Tb##_right) {    \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-        if (noDoubleTests<Tc>()) return;                              \
+        SUPPORTED_TYPE_CHECK(Ta);                                     \
+        SUPPORTED_TYPE_CHECK(Tb);                                     \
+        SUPPORTED_TYPE_CHECK(Tc);                                     \
                                                                       \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
         Ta h_a      = 0.3;                                            \
@@ -308,7 +308,7 @@ TEST(BinaryTests, Test_pow_cfloat_float) {
 }
 
 TEST(BinaryTests, Test_pow_cdouble_cdouble) {
-    if (noDoubleTests<cdouble>()) return;
+    SUPPORTED_TYPE_CHECK(cdouble);
     af::array a         = randgen(num, c64);
     af::array b         = randgen(num, c64);
     af::array c         = af::pow(a, b);

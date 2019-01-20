@@ -39,7 +39,7 @@ TYPED_TEST_CASE(Triangle, TestTypes);
 
 template<typename T>
 void triangleTester(const dim4 dims, bool is_upper, bool is_unit_diag = false) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 #if 1
     array in = cpu_randu<T>(dims);
 #else

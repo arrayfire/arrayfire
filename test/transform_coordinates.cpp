@@ -35,7 +35,7 @@ TYPED_TEST_CASE(TransformCoordinates, TestTypes);
 
 template<typename T>
 void transformCoordinatesTest(string pTestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> inDims;
     vector<vector<T> > in;

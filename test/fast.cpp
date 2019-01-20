@@ -68,7 +68,7 @@ TYPED_TEST_CASE(FixedFAST, FixedTestTypes);
 
 template<typename T>
 void fastTest(string pTestFile, bool nonmax) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;
@@ -180,7 +180,6 @@ using af::features;
 using af::loadImage;
 
 TEST(FloatFAST, CPP) {
-    if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;

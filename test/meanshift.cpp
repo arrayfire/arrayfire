@@ -35,7 +35,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort,
 TYPED_TEST_CASE(Meanshift, TestTypes);
 
 TYPED_TEST(Meanshift, InvalidArgs) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     vector<TypeParam> in(100, 1);
 
@@ -53,7 +53,7 @@ TYPED_TEST(Meanshift, InvalidArgs) {
 
 template<typename T, bool isColor>
 void meanshiftTest(string pTestFile, const float ss) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;
@@ -138,7 +138,6 @@ using af::seq;
 using af::span;
 
 TEST(Meanshift, Color_CPP) {
-    if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;

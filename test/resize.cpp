@@ -64,7 +64,7 @@ TYPED_TEST_CASE(Resize, TestTypesF);
 TYPED_TEST_CASE(ResizeI, TestTypesI);
 
 TYPED_TEST(Resize, InvalidDims) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     vector<TypeParam> in(8 * 8);
 
@@ -116,7 +116,7 @@ template<typename T>
 void resizeTest(string pTestFile, const unsigned resultIdx, const dim_t odim0,
                 const dim_t odim1, const af_interp_type method,
                 bool isSubRef = false, const vector<af_seq>* seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -317,7 +317,7 @@ TYPED_TEST(ResizeI, Resize1CLargeDownLinear) {
 template<typename T>
 void resizeArgsTest(af_err err, string pTestFile, const dim4 odims,
                     const af_interp_type method) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -362,8 +362,6 @@ using af::seq;
 using af::span;
 
 TEST(Resize, CPP) {
-    if (noDoubleTests<float>()) return;
-
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
@@ -379,8 +377,6 @@ TEST(Resize, CPP) {
 }
 
 TEST(ResizeScale1, CPP) {
-    if (noDoubleTests<float>()) return;
-
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
@@ -396,8 +392,6 @@ TEST(ResizeScale1, CPP) {
 }
 
 TEST(ResizeScale2, CPP) {
-    if (noDoubleTests<float>()) return;
-
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;

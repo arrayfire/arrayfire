@@ -129,7 +129,7 @@ TYPED_TEST_CASE(ORB, TestTypes);
 
 template<typename T>
 void orbTest(string pTestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;
@@ -247,7 +247,6 @@ TYPED_TEST(ORB, Lena) { orbTest<TypeParam>(string(TEST_DIR "/orb/lena.test")); }
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(ORB, CPP) {
-    if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;

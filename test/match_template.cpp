@@ -42,7 +42,7 @@ void matchTemplateTest(string pTestFile, af_match_type pMatchType) {
     typedef
         typename cond_type<is_same_type<T, double>::value, double, float>::type
             outType;
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
