@@ -100,8 +100,8 @@ TYPED_TEST_CASE(ArrayAssign, TestTypes);
 
 template<typename inType, typename outType>
 void assignTest(string pTestFile, const vector<af_seq> *seqv) {
-    if (noDoubleTests<inType>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(inType);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<inType> > in;
@@ -145,7 +145,7 @@ void assignTest(string pTestFile, const vector<af_seq> *seqv) {
 
 template<typename T>
 void assignTestCPP(string pTestFile, const vector<af_seq> &seqv) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     try {
         vector<dim4> numDims;
         vector<vector<T> > in;
@@ -284,7 +284,7 @@ TYPED_TEST(ArrayAssign, Cube2HyperCubeCPP) {
 
 template<typename T>
 void assignScalarCPP(string pTestFile, const vector<af_seq> &seqv) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     try {
         vector<dim4> numDims;
         vector<vector<T> > in;
@@ -354,7 +354,7 @@ TYPED_TEST(ArrayAssign, Scalar4DCPP) {
 }
 
 TYPED_TEST(ArrayAssign, AssignRowCPP) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     const int dimsize = 10;
     vector<TypeParam> input(100, 1);
@@ -405,7 +405,7 @@ TYPED_TEST(ArrayAssign, AssignRowCPP) {
 }
 
 TYPED_TEST(ArrayAssign, AssignColumnCPP) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     const int dimsize = 10;
     vector<TypeParam> input(100, 1);
@@ -456,7 +456,7 @@ TYPED_TEST(ArrayAssign, AssignColumnCPP) {
 }
 
 TYPED_TEST(ArrayAssign, AssignSliceCPP) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
     const int dimsize = 10;
     vector<TypeParam> input(1000, 1);
     vector<TypeParam> sq(dimsize * dimsize);

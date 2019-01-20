@@ -76,8 +76,8 @@ struct sdOutType {
 template<typename T>
 void stdevDimTest(string pFileName, dim_t dim = -1) {
     typedef typename sdOutType<T>::type outType;
-    if (noDoubleTests<T>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(T);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<int> > in;
@@ -136,8 +136,8 @@ TEST(StandardDev, InvalidType) {
 template<typename T>
 void stdevDimIndexTest(string pFileName, dim_t dim = -1) {
     typedef typename sdOutType<T>::type outType;
-    if (noDoubleTests<T>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(T);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<int> > in;
@@ -182,8 +182,8 @@ TYPED_TEST(StandardDev, IndexedArrayDim1) {
 
 TYPED_TEST(StandardDev, All) {
     typedef typename sdOutType<TypeParam>::type outType;
-    if (noDoubleTests<TypeParam>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<int> > in;

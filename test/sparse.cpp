@@ -187,7 +187,7 @@ typedef ::testing::Types<float, cfloat, double, cdouble> SparseTypes;
 TYPED_TEST_CASE(Sparse, SparseTypes);
 
 TYPED_TEST(Sparse, DeepCopy) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     cleanSlate();
 
@@ -232,7 +232,7 @@ TYPED_TEST(Sparse, DeepCopy) {
 }
 
 TYPED_TEST(Sparse, Empty) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     af_array ret = 0;
     dim_t rows = 0, cols = 0, nnz = 0;
@@ -247,7 +247,7 @@ TYPED_TEST(Sparse, Empty) {
 }
 
 TYPED_TEST(Sparse, EmptyDeepCopy) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     array a = sparse(0, 0, array(0, (af_dtype)dtype_traits<TypeParam>::af_type),
                      array(1, s32), array(0, s32));

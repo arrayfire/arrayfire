@@ -54,7 +54,7 @@ template<typename T>
 void reorderTest(string pTestFile, const unsigned resultIdx, const uint x,
                  const uint y, const uint z, const uint w,
                  bool isSubRef = false, const vector<af_seq> *seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -179,8 +179,6 @@ TEST(Reorder, ISSUE_1777) {
 }
 
 TEST(Reorder, MaxDim) {
-    if (noDoubleTests<float>()) return;
-
     const size_t largeDim = 65535 * 32 + 1;
 
     array input  = range(dim4(2, largeDim, 2), 2);

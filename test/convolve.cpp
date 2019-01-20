@@ -42,7 +42,7 @@ TYPED_TEST_CASE(Convolve, TestTypes);
 
 template<typename T>
 void convolveTest(string pTestFile, int baseDim, bool expand) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -215,7 +215,7 @@ TYPED_TEST(Convolve, Same_Cuboid_One2Many) {
 
 template<typename T>
 void sepConvolveTest(string pTestFile, bool expand) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -307,9 +307,6 @@ TYPED_TEST(Convolve, Separable2D_Same_Rectangle_Batch) {
 }
 
 TEST(Convolve, Separable_TypeCheck) {
-    if (noDoubleTests<float>()) return;
-    if (noDoubleTests<int>()) return;
-
     dim4 sDims(10, 1, 1, 1);
     dim4 fDims(4, 1, 1, 1);
 
@@ -340,9 +337,6 @@ TEST(Convolve, Separable_TypeCheck) {
 }
 
 TEST(Convolve, Separable_DimCheck) {
-    if (noDoubleTests<float>()) return;
-    if (noDoubleTests<int>()) return;
-
     dim4 sDims(10, 1, 1, 1);
     dim4 fDims(4, 1, 1, 1);
 
@@ -383,8 +377,6 @@ using af::span;
 using af::sum;
 
 TEST(Convolve1, CPP) {
-    if (noDoubleTests<float>()) return;
-
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
@@ -418,8 +410,6 @@ TEST(Convolve1, CPP) {
 }
 
 TEST(Convolve2, CPP) {
-    if (noDoubleTests<float>()) return;
-
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
@@ -456,8 +446,6 @@ TEST(Convolve2, CPP) {
 }
 
 TEST(Convolve3, CPP) {
-    if (noDoubleTests<float>()) return;
-
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
@@ -493,8 +481,6 @@ TEST(Convolve3, CPP) {
 }
 
 TEST(Convolve, separable_CPP) {
-    if (noDoubleTests<float>()) return;
-
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
@@ -717,7 +703,7 @@ TEST(Convolve, 3D_C32) {
 }
 
 TEST(Convolve, 1D_C64) {
-    if (noDoubleTests<double>()) return;
+    SUPPORTED_TYPE_CHECK(double);
 
     array A = randu(10, c64);
     array B = randu(3, c64);
@@ -732,7 +718,7 @@ TEST(Convolve, 1D_C64) {
 }
 
 TEST(Convolve, 2D_C64) {
-    if (noDoubleTests<double>()) return;
+    SUPPORTED_TYPE_CHECK(double);
 
     array A = randu(10, 10, c64);
     array B = randu(3, 3, c64);
@@ -747,7 +733,7 @@ TEST(Convolve, 2D_C64) {
 }
 
 TEST(Convolve, 3D_C64) {
-    if (noDoubleTests<double>()) return;
+    SUPPORTED_TYPE_CHECK(double);
 
     array A = randu(10, 10, 3, c64);
     array B = randu(3, 3, 3, c64);
@@ -762,8 +748,6 @@ TEST(Convolve, 3D_C64) {
 }
 
 TEST(ConvolveLargeDim1D, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const size_t n        = 10;
     const size_t largeDim = 65535 + 1;
 
@@ -782,8 +766,6 @@ TEST(ConvolveLargeDim1D, CPP) {
 }
 
 TEST(ConvolveLargeDim2D, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const size_t n        = 10;
     const size_t largeDim = 65535 + 1;
 
@@ -801,8 +783,6 @@ TEST(ConvolveLargeDim2D, CPP) {
 }
 
 TEST(DISABLED_ConvolveLargeDim3D, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const size_t n        = 3;
     const size_t largeDim = 65535 * 16 + 1;
 

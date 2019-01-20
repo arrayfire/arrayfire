@@ -51,7 +51,7 @@ template<typename T>
 void shiftTest(string pTestFile, const unsigned resultIdx, const int x,
                const int y, const int z, const int w, bool isSubRef = false,
                const vector<af_seq>* seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -111,8 +111,6 @@ SHIFT_INIT(Shift14, shift4d, 14, -21, -21, -21, -21);
 ////////////////////////////////// CPP ///////////////////////////////////
 //
 TEST(Shift, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const unsigned resultIdx = 0;
     const unsigned x         = 2;
     const unsigned y         = 0;
@@ -133,8 +131,6 @@ TEST(Shift, CPP) {
 }
 
 TEST(Shift, MaxDim) {
-    if (noDoubleTests<float>()) return;
-
     const size_t largeDim  = 65535 * 32 + 1;
     const unsigned shift_x = 1;
 

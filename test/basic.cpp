@@ -20,8 +20,6 @@ using af::dim4;
 using std::vector;
 
 TEST(BasicTests, constant1000x1000) {
-    if (noDoubleTests<float>()) return;
-
     static const int ndims    = 2;
     static const int dim_size = 1000;
     dim_t d[ndims]            = {dim_size, dim_size};
@@ -40,8 +38,6 @@ TEST(BasicTests, constant1000x1000) {
 }
 
 TEST(BasicTests, constant10x10) {
-    if (noDoubleTests<float>()) return;
-
     static const int ndims    = 2;
     static const int dim_size = 10;
     dim_t d[2]                = {dim_size, dim_size};
@@ -60,8 +56,6 @@ TEST(BasicTests, constant10x10) {
 }
 
 TEST(BasicTests, constant100x100) {
-    if (noDoubleTests<float>()) return;
-
     static const int ndims    = 2;
     static const int dim_size = 100;
     dim_t d[2]                = {dim_size, dim_size};
@@ -81,8 +75,7 @@ TEST(BasicTests, constant100x100) {
 
 // TODO: Test All The Types \o/
 TEST(BasicTests, AdditionSameType) {
-    if (noDoubleTests<float>()) return;
-    if (noDoubleTests<double>()) return;
+    SUPPORTED_TYPE_CHECK(double);
 
     static const int ndims    = 2;
     static const int dim_size = 100;
@@ -129,7 +122,7 @@ TEST(BasicTests, AdditionSameType) {
 }
 
 TEST(BasicTests, Additionf64f64) {
-    if (noDoubleTests<double>()) return;
+    SUPPORTED_TYPE_CHECK(double);
 
     static const int ndims    = 2;
     static const int dim_size = 100;
@@ -164,8 +157,7 @@ TEST(BasicTests, Additionf64f64) {
 }
 
 TEST(BasicTests, Additionf32f64) {
-    if (noDoubleTests<float>()) return;
-    if (noDoubleTests<double>()) return;
+    SUPPORTED_TYPE_CHECK(double);
 
     static const int ndims    = 2;
     static const int dim_size = 100;
@@ -200,8 +192,6 @@ TEST(BasicTests, Additionf32f64) {
 }
 
 TEST(BasicArrayTests, constant10x10) {
-    if (noDoubleTests<float>()) return;
-
     dim_t dim_size = 10;
     double valA    = 3.14;
     array a        = constant(valA, dim_size, dim_size, f32);
@@ -218,8 +208,6 @@ TEST(BasicArrayTests, constant10x10) {
 using af::dim4;
 
 TEST(BasicTests, constant100x100_CPP) {
-    if (noDoubleTests<float>()) return;
-
     static const int dim_size = 100;
     dim_t d[2]                = {dim_size, dim_size};
 
@@ -236,8 +224,7 @@ TEST(BasicTests, constant100x100_CPP) {
 
 // TODO: Test All The Types \o/
 TEST(BasicTests, AdditionSameType_CPP) {
-    if (noDoubleTests<float>()) return;
-    if (noDoubleTests<double>()) return;
+    SUPPORTED_TYPE_CHECK(double);
 
     static const int dim_size = 100;
     dim_t d[2]                = {dim_size, dim_size};
@@ -274,8 +261,7 @@ TEST(BasicTests, AdditionSameType_CPP) {
 }
 
 TEST(BasicTests, Additionf32f64_CPP) {
-    if (noDoubleTests<float>()) return;
-    if (noDoubleTests<double>()) return;
+    SUPPORTED_TYPE_CHECK(double);
 
     static const int dim_size = 100;
     dim_t d[2]                = {dim_size, dim_size};

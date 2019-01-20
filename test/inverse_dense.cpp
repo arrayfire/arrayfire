@@ -33,7 +33,7 @@ using std::abs;
 
 template<typename T>
 void inverseTester(const int m, const int n, double eps) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 #if 1
     array A = cpu_randu<T>(dim4(m, n));

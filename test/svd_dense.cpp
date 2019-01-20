@@ -57,7 +57,7 @@ double get_val<cdouble>(cdouble val) {
 
 template<typename T>
 void svdTest(const int M, const int N) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 
     dtype ty = (dtype)dtype_traits<T>::af_type;
@@ -86,7 +86,7 @@ void svdTest(const int M, const int N) {
 
 template<typename T>
 void svdInPlaceTest(const int M, const int N) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 
     dtype ty = (dtype)dtype_traits<T>::af_type;
@@ -114,7 +114,7 @@ void svdInPlaceTest(const int M, const int N) {
 
 template<typename T>
 void checkInPlaceSameResults(const int M, const int N) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 
     dtype ty = (dtype)dtype_traits<T>::af_type;

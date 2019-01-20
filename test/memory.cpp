@@ -82,7 +82,7 @@ size_t roundUpToStep(size_t bytes) {
 
 template<typename T>
 void memAllocArrayScopeTest(int elements) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     size_t alloc_bytes, alloc_buffers;
     size_t lock_bytes, lock_buffers;
@@ -112,7 +112,7 @@ void memAllocArrayScopeTest(int elements) {
 
 template<typename T>
 void memAllocPtrScopeTest(int elements) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     size_t alloc_bytes, alloc_buffers;
     size_t lock_bytes, lock_buffers;

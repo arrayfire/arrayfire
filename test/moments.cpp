@@ -43,7 +43,7 @@ TYPED_TEST_CASE(Image, TestTypes);
 
 template<typename T>
 void momentsTest(string pTestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 

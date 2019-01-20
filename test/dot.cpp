@@ -51,7 +51,7 @@ template<typename T>
 void dotTest(string pTestFile, const int resultIdx,
              const af_mat_prop optLhs = AF_MAT_NONE,
              const af_mat_prop optRhs = AF_MAT_NONE) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -112,7 +112,7 @@ template<typename T>
 void dotAllTest(string pTestFile, const int resultIdx,
                 const af_mat_prop optLhs = AF_MAT_NONE,
                 const af_mat_prop optRhs = AF_MAT_NONE) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;

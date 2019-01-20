@@ -49,7 +49,7 @@ void imageTest(string pTestFile, const float dt, const float K,
         typename cond_type<is_same_type<T, double>::value, double, float>::type
             OutType;
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     using af::dim4;

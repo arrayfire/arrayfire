@@ -46,7 +46,7 @@ template<typename T>
 void rotateTest(string pTestFile, const unsigned resultIdx, const float angle,
                 const bool crop, bool isSubRef = false,
                 const vector<af_seq>* seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -160,8 +160,6 @@ ROTATE_INIT(Rectangle00CropRecenter, rotate2, 23, 0, true);
 ////////////////////////////////// CPP //////////////////////////////////////
 //
 TEST(Rotate, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const unsigned resultIdx = 0;
     const float angle        = 180;
     const bool crop          = false;

@@ -49,7 +49,7 @@ template<typename T>
 void translateTest(string pTestFile, const unsigned resultIdx, dim4 odims,
                    const float tx, const float ty, const af_interp_type method,
                    const float max_fail_count = 0.0001) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;

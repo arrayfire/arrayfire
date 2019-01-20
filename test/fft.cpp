@@ -59,8 +59,6 @@ TEST(fft, Invalid_Type) {
 }
 
 TEST(fft2, Invalid_Array) {
-    if (noDoubleTests<float>()) return;
-
     vector<float> in(100, 1);
 
     af_array inArray  = 0;
@@ -76,8 +74,6 @@ TEST(fft2, Invalid_Array) {
 }
 
 TEST(fft3, Invalid_Array) {
-    if (noDoubleTests<float>()) return;
-
     vector<float> in(100, 1);
 
     af_array inArray  = 0;
@@ -93,8 +89,6 @@ TEST(fft3, Invalid_Array) {
 }
 
 TEST(ifft2, Invalid_Array) {
-    if (noDoubleTests<float>()) return;
-
     vector<float> in(100, 1);
 
     af_array inArray  = 0;
@@ -110,8 +104,6 @@ TEST(ifft2, Invalid_Array) {
 }
 
 TEST(ifft3, Invalid_Array) {
-    if (noDoubleTests<float>()) return;
-
     vector<float> in(100, 1);
 
     af_array inArray  = 0;
@@ -128,8 +120,8 @@ TEST(ifft3, Invalid_Array) {
 
 template<typename inType, typename outType, bool isInverse>
 void fftTest(string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0, dim_t pad2 = 0) {
-    if (noDoubleTests<inType>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(inType);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<inType> > in;
@@ -294,8 +286,8 @@ INSTANTIATE_TEST(ifft3, C2C_Double, true, cdouble, cdouble,
 template<typename inType, typename outType, int rank, bool isInverse>
 void fftBatchTest(string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0,
                   dim_t pad2 = 0) {
-    if (noDoubleTests<inType>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(inType);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<inType> > in;
@@ -431,8 +423,8 @@ INSTANTIATE_BATCH_TEST(fft2, C2C_Double_Pad, 2, false, cdouble, cdouble,
 //
 template<typename inType, typename outType, bool isInverse>
 void cppFFTTest(string pTestFile) {
-    if (noDoubleTests<inType>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(inType);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<inType> > in;
@@ -477,8 +469,8 @@ void cppFFTTest(string pTestFile) {
 
 template<typename inType, typename outType, bool isInverse>
 void cppDFTTest(string pTestFile) {
-    if (noDoubleTests<inType>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(inType);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<inType> > in;

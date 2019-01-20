@@ -41,8 +41,8 @@ typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
 template<typename Ti, typename To, reduceFunc af_reduce>
 void reduceTest(string pTestFile, int off = 0, bool isSubRef = false,
                 const vector<af_seq> seqv = vector<af_seq>()) {
-    if (noDoubleTests<Ti>()) return;
-    if (noDoubleTests<To>()) return;
+    SUPPORTED_TYPE_CHECK(Ti);
+    SUPPORTED_TYPE_CHECK(To);
 
     vector<dim4> numDims;
 
@@ -173,16 +173,12 @@ REDUCE_TESTS(count, unsigned);
 #undef REDUCE_TESTS
 
 TEST(Reduce, Test_Reduce_Big0) {
-    if (noDoubleTests<int>()) return;
-
     reduceTest<int, int, af_sum>(string(TEST_DIR "/reduce/big0.test"), 0);
 }
 
 /*
 TEST(Reduce,Test_Reduce_Big1)
 {
-    if (noDoubleTests<int>()) return;
-
     reduceTest<int, int, af_sum>(
         string(TEST_DIR"/reduce/big1.test"),
         1
@@ -211,8 +207,8 @@ using af::sum;
 
 template<typename Ti, typename To, ReductionOp reduce>
 void cppReduceTest(string pTestFile) {
-    if (noDoubleTests<Ti>()) return;
-    if (noDoubleTests<To>()) return;
+    SUPPORTED_TYPE_CHECK(Ti);
+    SUPPORTED_TYPE_CHECK(To);
 
     vector<dim4> numDims;
 
@@ -360,7 +356,7 @@ TEST(Reduce, Test_Count_Global) {
 }
 
 TEST(Reduce, Test_min_Global) {
-    if (noDoubleTests<double>()) return;
+    SUPPORTED_TYPE_CHECK(double);
 
     const int num = 10000;
     array a       = randu(num, 1, f64);
@@ -368,7 +364,7 @@ TEST(Reduce, Test_min_Global) {
     double *h_a   = a.host<double>();
     double gold   = std::numeric_limits<double>::max();
 
-    if (noDoubleTests<double>()) return;
+    SUPPORTED_TYPE_CHECK(double);
 
     for (int i = 0; i < num; i++) { gold = std::min(gold, h_a[i]); }
 
@@ -420,7 +416,7 @@ void typed_assert_eq<cdouble>(cdouble lhs, cdouble rhs, bool both) {
 }
 
 TYPED_TEST(Reduce, Test_All_Global) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     // Input size test
     for (int i = 1; i < 1000; i += 100) {
@@ -453,7 +449,7 @@ TYPED_TEST(Reduce, Test_All_Global) {
 }
 
 TYPED_TEST(Reduce, Test_Any_Global) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     // Input size test
     for (int i = 1; i < 1000; i += 100) {

@@ -48,7 +48,7 @@ TYPED_TEST_CASE(Select, TestTypes);
 
 template<typename T>
 void selectTest(const dim4& dims) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
     array a = randu(dims, ty);
@@ -82,7 +82,7 @@ void selectTest(const dim4& dims) {
 
 template<typename T, bool is_right>
 void selectScalarTest(const dim4& dims) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
     array a    = randu(dims, ty);

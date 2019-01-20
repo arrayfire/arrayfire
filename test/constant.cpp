@@ -34,7 +34,7 @@ TYPED_TEST_CASE(Constant, TestTypes);
 
 template<typename T>
 void ConstantCPPCheck(T value) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     const int num = 1000;
     T val         = value;
@@ -49,7 +49,7 @@ void ConstantCPPCheck(T value) {
 
 template<typename T>
 void ConstantCCheck(T value) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     const int num = 1000;
     typedef typename dtype_traits<T>::base_type BT;
@@ -68,7 +68,7 @@ void ConstantCCheck(T value) {
 
 template<typename T>
 void IdentityCPPCheck() {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     int num   = 1000;
     dtype dty = (dtype)dtype_traits<T>::af_type;
@@ -106,7 +106,7 @@ void IdentityCPPCheck() {
 
 template<typename T>
 void IdentityLargeDimCheck() {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     const size_t largeDim = 65535 * 8 + 1;
 
@@ -126,7 +126,7 @@ void IdentityLargeDimCheck() {
 
 template<typename T>
 void IdentityCCheck() {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     static const int num = 1000;
     dtype dty            = (dtype)dtype_traits<T>::af_type;
@@ -150,7 +150,7 @@ void IdentityCCheck() {
 
 template<typename T>
 void IdentityCPPError() {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     static const int num = 1000;
     dtype dty            = (dtype)dtype_traits<T>::af_type;

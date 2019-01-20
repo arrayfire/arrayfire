@@ -42,7 +42,7 @@ TYPED_TEST_CASE(filter, TestTypes);
 template<typename T>
 void firTest(const int xrows, const int xcols, const int brows,
              const int bcols) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     try {
         dtype ty = (dtype)dtype_traits<T>::af_type;
         array x  = randu(xrows, xcols, ty);
@@ -81,7 +81,7 @@ TYPED_TEST(filter, firMatMat) { firTest<TypeParam>(5000, 10, 50, 10); }
 template<typename T>
 void iirA0Test(const int xrows, const int xcols, const int brows,
                const int bcols) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     try {
         dtype ty    = (dtype)dtype_traits<T>::af_type;
         array x     = randu(xrows, xcols, ty);
@@ -121,7 +121,7 @@ TYPED_TEST(filter, iirA0MatMat) { iirA0Test<TypeParam>(5000, 10, 50, 10); }
 
 template<typename T>
 void iirTest(const char *testFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     vector<dim4> inDims;
 
     vector<vector<T> > inputs;
