@@ -40,7 +40,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
 TYPED_TEST_CASE(DOG, TestTypes);
 
 TYPED_TEST(DOG, Basic) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dim4 iDims(512, 512, 1, 1);
     array in = constant(1, iDims, (af_dtype)dtype_traits<float>::af_type);
@@ -58,7 +58,7 @@ TYPED_TEST(DOG, Basic) {
 }
 
 TYPED_TEST(DOG, Batch) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dim4 iDims(512, 512, 3, 1);
     array in = constant(1, iDims, (af_dtype)dtype_traits<float>::af_type);

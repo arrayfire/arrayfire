@@ -55,7 +55,7 @@ TYPED_TEST_CASE(Diff1, TestTypes);
 template<typename T>
 void diff1Test(string pTestFile, unsigned dim, bool isSubRef = false,
                const vector<af_seq> *seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 
@@ -147,7 +147,7 @@ TYPED_TEST(Diff1, Subref2) {
 
 template<typename T>
 void diff1ArgsTest(string pTestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 
@@ -211,8 +211,6 @@ TEST(Diff1, DiffLargeDim) {
 }
 
 TEST(Diff1, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const unsigned dim = 0;
     vector<dim4> numDims;
 

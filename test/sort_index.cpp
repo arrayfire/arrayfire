@@ -51,7 +51,7 @@ template<typename T>
 void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0,
               const unsigned resultIdx1, bool isSubRef = false,
               const vector<af_seq>* seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -122,8 +122,6 @@ SORT_INIT(SortLargeFalse, sort_large, false, 2, 3);
 //////////////////////////////////// CPP /////////////////////////////////
 //
 TEST(SortIndex, CPPDim0) {
-    if (noDoubleTests<float>()) return;
-
     const bool dir            = true;
     const unsigned resultIdx0 = 0;
     const unsigned resultIdx1 = 1;
@@ -146,8 +144,6 @@ TEST(SortIndex, CPPDim0) {
 }
 
 TEST(SortIndex, CPPDim1) {
-    if (noDoubleTests<float>()) return;
-
     const bool dir            = true;
     const unsigned resultIdx0 = 0;
     const unsigned resultIdx1 = 1;
@@ -175,8 +171,6 @@ TEST(SortIndex, CPPDim1) {
 }
 
 TEST(SortIndex, CPPDim2) {
-    if (noDoubleTests<float>()) return;
-
     const bool dir            = false;
     const unsigned resultIdx0 = 2;
     const unsigned resultIdx1 = 3;

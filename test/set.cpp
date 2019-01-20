@@ -28,7 +28,7 @@ using std::vector;
 
 template<typename T>
 void uniqueTest(string pTestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 
@@ -88,7 +88,7 @@ typedef af_err (*setFunc)(af_array *, const af_array, const af_array,
 
 template<typename T, setFunc af_set_func>
 void setTest(string pTestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 

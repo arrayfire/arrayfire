@@ -132,7 +132,7 @@ template<typename T, af_op_t op>
 void sparseArithTester(const int m, const int n, int factor, const double eps) {
     deviceGC();
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
 #if 1
     array A = cpu_randu<T>(dim4(m, n));
@@ -175,7 +175,7 @@ void sparseArithTesterMul(const int m, const int n, int factor,
                           const double eps) {
     deviceGC();
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
 #if 1
     array A = cpu_randu<T>(dim4(m, n));
@@ -235,7 +235,7 @@ void sparseArithTesterDiv(const int m, const int n, int factor,
                           const double eps) {
     deviceGC();
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
 #if 1
     array A = cpu_randu<T>(dim4(m, n));
@@ -306,7 +306,7 @@ template<typename T, af_op_t op>
 void ssArithmetic(const int m, const int n, int factor, const double eps) {
     deviceGC();
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
 #if 1
     array A = cpu_randu<T>(dim4(m, n));
@@ -362,7 +362,7 @@ template<af_op_t op>
 void ssArithmeticMTX(const char* op1, const char* op2) {
     deviceGC();
 
-    // Re-enable when double is enabled if (noDoubleTests<T>()) return;
+    // Re-enable when double is enabled SUPPORTED_TYPE_CHECK(T);
 
     array cooA, cooB;
     ASSERT_TRUE(mtxReadSparseMatrix(cooA, op1));

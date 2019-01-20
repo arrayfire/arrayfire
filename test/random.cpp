@@ -87,7 +87,7 @@ TYPED_TEST_CASE(RandomSeed, TestTypesSeed);
 
 template<typename T>
 void randuTest(dim4 &dims) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     af_array outArray = 0;
     ASSERT_SUCCESS(af_randu(&outArray, dims.ndims(), dims.get(),
@@ -98,7 +98,7 @@ void randuTest(dim4 &dims) {
 
 template<typename T>
 void randnTest(dim4 &dims) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     af_array outArray = 0;
     ASSERT_SUCCESS(af_randn(&outArray, dims.ndims(), dims.get(),
@@ -150,7 +150,7 @@ RAND(45, 1, 1, 1);
 
 template<typename T>
 void randuArgsTest() {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     dim_t ndims       = 4;
     dim_t dims[]      = {1, 2, 3, 0};
@@ -165,7 +165,7 @@ TYPED_TEST(Random, InvalidArgs) { randuArgsTest<TypeParam>(); }
 
 template<typename T>
 void randuDimsTest() {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     dim4 dims(1, 65535 * 32, 1, 1);
     array large_rand = randu(dims, (af_dtype)dtype_traits<T>::af_type);
@@ -207,8 +207,6 @@ TEST(RandomEngine, Default) {
 }
 
 TEST(Random, CPP) {
-    if (noDoubleTests<float>()) return;
-
     // TEST will fail if exception is thrown, which are thrown
     // when only wrong inputs are thrown on bad access happens
     dim4 dims(1, 2, 3, 1);
@@ -228,7 +226,7 @@ TEST(Random, CPP) {
 
 template<typename T>
 void testSetSeed(const uintl seed0, const uintl seed1) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     uintl orig_seed = getSeed();
 
@@ -280,7 +278,7 @@ TYPED_TEST(RandomSeed, setSeed) { testSetSeed<TypeParam>(10101, 23232); }
 
 template<typename T>
 void testGetSeed(const uintl seed0, const uintl seed1) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     uintl orig_seed = getSeed();
 
@@ -306,7 +304,7 @@ TYPED_TEST(Random, getSeed) { testGetSeed<TypeParam>(1234, 9876); }
 
 template<typename T>
 void testRandomEngineUniform(randomEngineType type) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
     int elem = 16 * 1024 * 1024;
@@ -320,7 +318,7 @@ void testRandomEngineUniform(randomEngineType type) {
 
 template<typename T>
 void testRandomEngineNormal(randomEngineType type) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
     int elem = 16 * 1024 * 1024;
@@ -404,7 +402,7 @@ TYPED_TEST(RandomEngineSeed, mersenneSeedUniform) {
 
 template<typename T>
 void testRandomEnginePeriod(randomEngineType type) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
     int elem  = 1024 * 1024;
@@ -441,7 +439,7 @@ T chi2_statistic(array input, array expected) {
 
 template<typename T>
 void testRandomEngineUniformChi2(randomEngineType type) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
     int elem  = 256 * 1024 * 1024;

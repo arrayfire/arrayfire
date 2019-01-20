@@ -35,7 +35,7 @@ void solveTester(const int m, const int n, const int k, double eps,
 
     af::deviceGC();
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 
 #if 1
@@ -74,7 +74,7 @@ void solveLUTester(const int n, const int k, double eps,
 
     af::deviceGC();
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 
 #if 1
@@ -113,7 +113,7 @@ void solveTriangleTester(const int n, const int k, bool is_upper, double eps,
 
     af::deviceGC();
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 
 #if 1

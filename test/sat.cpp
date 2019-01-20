@@ -39,7 +39,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, uintl, intl,
 TYPED_TEST_CASE(SAT, TestTypes);
 
 TYPED_TEST(SAT, IntegralImage) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     array a = randu(530, 671, (af_dtype)dtype_traits<TypeParam>::af_type);
     array b = accum(a, 0);

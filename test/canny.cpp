@@ -36,7 +36,7 @@ TYPED_TEST_CASE(CannyEdgeDetector, TestTypes);
 
 template<typename T>
 void cannyTest(string pTestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -81,7 +81,7 @@ TYPED_TEST(CannyEdgeDetector, ArraySizeEqualBlockSize16x16) {
 
 template<typename T>
 void cannyImageOtsuTest(string pTestFile, bool isColor) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     using af::dim4;

@@ -48,7 +48,7 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     using af::dtype_traits;
     using af::Pi;
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;

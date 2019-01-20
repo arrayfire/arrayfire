@@ -47,7 +47,7 @@ TYPED_TEST_CASE(Iota, TestTypes);
 
 template<typename T>
 void iotaTest(const dim4 idims, const dim4 tdims) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     af_array outArray = 0;
 
@@ -102,8 +102,6 @@ using af::array;
 using af::iota;
 
 TEST(Iota, CPP) {
-    if (noDoubleTests<float>()) return;
-
     dim4 idims(23, 15, 1, 1);
     dim4 tdims(2, 2, 1, 1);
     dim4 fulldims;

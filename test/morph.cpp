@@ -38,7 +38,7 @@ TYPED_TEST_CASE(Morph, TestTypes);
 
 template<typename inType, bool isDilation, bool isVolume>
 void morphTest(string pTestFile) {
-    if (noDoubleTests<inType>()) return;
+    SUPPORTED_TYPE_CHECK(inType);
 
     vector<dim4> numDims;
     vector<vector<inType> > in;
@@ -135,7 +135,7 @@ TYPED_TEST(Morph, Erode4x4x4) {
 
 template<typename T, bool isDilation, bool isColor>
 void morphImageTest(string pTestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;
@@ -198,7 +198,7 @@ TEST(Morph, ColorImage) {
 
 template<typename T, bool isDilation>
 void morphInputTest(void) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     af_array inArray   = 0;
     af_array maskArray = 0;
@@ -235,7 +235,7 @@ TYPED_TEST(Morph, ErodeInvalidInput) { morphInputTest<TypeParam, false>(); }
 
 template<typename T, bool isDilation>
 void morphMaskTest(void) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     af_array inArray   = 0;
     af_array maskArray = 0;
@@ -286,7 +286,7 @@ TYPED_TEST(Morph, ErodeInvalidMask) { morphMaskTest<TypeParam, false>(); }
 
 template<typename T, bool isDilation>
 void morph3DMaskTest(void) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     af_array inArray   = 0;
     af_array maskArray = 0;
@@ -354,7 +354,7 @@ using af::span;
 
 template<typename T, bool isDilation, bool isColor>
 void cppMorphImageTest(string pTestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;

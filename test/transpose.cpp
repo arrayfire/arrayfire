@@ -52,7 +52,7 @@ TYPED_TEST_CASE(Transpose, TestTypes);
 template<typename T>
 void trsTest(string pTestFile, bool isSubRef = false,
              const vector<af_seq> *seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 
@@ -160,7 +160,7 @@ void trsCPPTest(string pFileName) {
     readTests<T, T, int>(pFileName, numDims, in, tests);
     dim4 dims = numDims[0];
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     array input(dims, &(in[0].front()));
     array output = transpose(input);
@@ -195,7 +195,7 @@ void trsCPPConjTest(dim_t d0, dim_t d1 = 1, dim_t d2 = 1, dim_t d3 = 1) {
 
     dim4 dims(d0, d1, d2, d3);
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     array input    = randu(dims, (af_dtype)dtype_traits<T>::af_type);
     array output_t = transpose(input, false);

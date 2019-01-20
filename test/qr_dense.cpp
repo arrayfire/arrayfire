@@ -34,7 +34,6 @@ using std::vector;
 
 ///////////////////////////////// CPP ////////////////////////////////////
 TEST(QRFactorized, CPP) {
-    if (noDoubleTests<float>()) return;
     if (noLAPACKTests()) return;
 
     int resultIdx = 0;
@@ -90,7 +89,7 @@ TEST(QRFactorized, CPP) {
 template<typename T>
 void qrTester(const int m, const int n, double eps) {
     try {
-        if (noDoubleTests<T>()) return;
+        SUPPORTED_TYPE_CHECK(T);
         if (noLAPACKTests()) return;
 
 #if 1

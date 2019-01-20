@@ -69,8 +69,8 @@ struct ccOutType {
 
 TYPED_TEST(CorrelationCoefficient, All) {
     typedef typename ccOutType<TypeParam>::type outType;
-    if (noDoubleTests<TypeParam>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<int> > in;

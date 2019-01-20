@@ -44,7 +44,7 @@ TYPED_TEST_CASE(Sobel_Integer, TestTypesInt);
 
 template<typename Ti, typename To>
 void testSobelDerivatives(string pTestFile) {
-    if (noDoubleTests<Ti>()) return;
+    SUPPORTED_TYPE_CHECK(Ti);
 
     vector<dim4> numDims;
     vector<vector<Ti> > in;

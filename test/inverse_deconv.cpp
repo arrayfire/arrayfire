@@ -37,7 +37,7 @@ void invDeconvImageTest(string pTestFile, const float gamma,
         typename cond_type<is_same_type<T, double>::value, double, float>::type
             OutType;
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     using af::dim4;

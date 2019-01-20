@@ -39,7 +39,7 @@ TYPED_TEST_CASE(Transpose, TestTypes);
 
 template<typename T>
 void transposeip_test(dim4 dims) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     af_array inArray  = 0;
     af_array outArray = 0;
@@ -72,8 +72,6 @@ INIT_TEST(25, 2, 2);
 ////////////////////////////////////// CPP //////////////////////////////////
 //
 void transposeInPlaceCPPTest() {
-    if (noDoubleTests<float>()) return;
-
     dim4 dims(64, 64, 1, 1);
 
     array input  = randu(dims);

@@ -33,7 +33,7 @@ using std::vector;
 
 template<typename T>
 void choleskyTester(const int n, double eps, bool is_upper) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 
     dtype ty = (dtype)dtype_traits<T>::af_type;

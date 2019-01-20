@@ -72,7 +72,7 @@ static void sparseTester(const int m, const int n, const int k, int factor,
 
     af::deviceGC();
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
 #if 1
     af::array A = cpu_randu<T>(af::dim4(m, n));
@@ -106,7 +106,7 @@ static void sparseTransposeTester(const int m, const int n, const int k,
 
     af::deviceGC();
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
 #if 1
     af::array A = cpu_randu<T>(af::dim4(m, n));
@@ -142,7 +142,7 @@ static void convertCSR(const int M, const int N, const float ratio,
                        int targetDevice = -1) {
     if (targetDevice >= 0) af::setDevice(targetDevice);
 
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 #if 1
     af::array a = cpu_randu<T>(af::dim4(M, N));
 #else
@@ -178,8 +178,8 @@ static void createFunction() {
 
 template<typename Ti, typename To>
 static void sparseCastTester(const int m, const int n, int factor) {
-    if (noDoubleTests<Ti>()) return;
-    if (noDoubleTests<To>()) return;
+    SUPPORTED_TYPE_CHECK(Ti);
+    SUPPORTED_TYPE_CHECK(To);
 
     af::array A = cpu_randu<Ti>(af::dim4(m, n));
 

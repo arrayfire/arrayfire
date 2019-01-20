@@ -45,7 +45,7 @@ array generateArray<unsigned int>(int nx, int ny, int nz, int nw) {
 
 template<typename To, typename Ti>
 void median_flat(int nx, int ny = 1, int nz = 1, int nw = 1) {
-    if (noDoubleTests<Ti>()) return;
+    SUPPORTED_TYPE_CHECK(Ti);
     array a = generateArray<Ti>(nx, ny, nz, nw);
 
     // Verification
@@ -71,7 +71,7 @@ void median_flat(int nx, int ny = 1, int nz = 1, int nw = 1) {
 
 template<typename To, typename Ti, int dim>
 void median_test(int nx, int ny = 1, int nz = 1, int nw = 1) {
-    if (noDoubleTests<Ti>()) return;
+    SUPPORTED_TYPE_CHECK(Ti);
 
     array a = generateArray<Ti>(nx, ny, nz, nw);
 

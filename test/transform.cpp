@@ -46,7 +46,7 @@ TYPED_TEST_CASE(TransformInt, TestTypesInt);
 template<typename T>
 void transformTest(string pTestFile, string pHomographyFile,
                    const af_interp_type method, const bool invert) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     vector<dim4> inNumDims;
