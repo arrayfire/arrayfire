@@ -41,7 +41,7 @@ TYPED_TEST_CASE(Where, TestTypes);
 template<typename T>
 void whereTest(string pTestFile, bool isSubRef = false,
                const vector<af_seq> seqv = vector<af_seq>()) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 
@@ -94,7 +94,7 @@ TYPED_TEST(Where, BasicC) {
 //////////////////////////////////// CPP /////////////////////////////////
 //
 TYPED_TEST(Where, CPP) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     vector<dim4> numDims;
 

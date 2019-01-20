@@ -75,8 +75,8 @@ struct meanOutType {
 template<typename T>
 void meanDimTest(string pFileName, dim_t dim, bool isWeighted = false) {
     typedef typename meanOutType<T>::type outType;
-    if (noDoubleTests<T>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(T);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<int> > in;
@@ -173,8 +173,8 @@ TYPED_TEST(Mean, Wtd_Dim1Matrix) {
 template<typename T>
 void meanAllTest(T const_value, dim4 dims) {
     typedef typename meanOutType<T>::type outType;
-    if (noDoubleTests<T>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(T);
+    SUPPORTED_TYPE_CHECK(outType);
 
     using af::array;
     using af::mean;
@@ -241,9 +241,9 @@ template<typename T, typename wtsType>
 void weightedMeanAllTest(dim4 dims) {
     typedef typename meanOutType<T>::type outType;
 
-    if (noDoubleTests<T>()) return;
-    if (noDoubleTests<outType>()) return;
-    if (noDoubleTests<wtsType>()) return;
+    SUPPORTED_TYPE_CHECK(T);
+    SUPPORTED_TYPE_CHECK(outType);
+    SUPPORTED_TYPE_CHECK(wtsType);
 
     using af::array;
     using af::mean;

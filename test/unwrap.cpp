@@ -47,7 +47,7 @@ template<typename T>
 void unwrapTest(string pTestFile, const unsigned resultIdx, const dim_t wx,
                 const dim_t wy, const dim_t sx, const dim_t sy, const dim_t px,
                 const dim_t py) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -152,8 +152,6 @@ UNWRAP_INIT(UnwrapSmall46, unwrap_small, 46, 16, 18, 16, 18, 0, 1);
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 TEST(Unwrap, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const unsigned resultIdx = 20;
     const unsigned wx        = 4;
     const unsigned wy        = 4;

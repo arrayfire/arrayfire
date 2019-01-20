@@ -22,8 +22,8 @@ const int num = 10;
 
 template<typename Ti, typename To>
 void cast_test() {
-    if (noDoubleTests<Ti>()) return;
-    if (noDoubleTests<To>()) return;
+    SUPPORTED_TYPE_CHECK(Ti);
+    SUPPORTED_TYPE_CHECK(To);
 
     af_dtype ta = (af_dtype)dtype_traits<Ti>::af_type;
     af_dtype tb = (af_dtype)dtype_traits<To>::af_type;
@@ -75,8 +75,8 @@ CPLX_TEST_INVOKE(cdouble)
 // conversion explicit.
 template<typename Ti, typename To>
 void cast_test_complex_real() {
-    if (noDoubleTests<Ti>()) return;
-    if (noDoubleTests<To>()) return;
+    SUPPORTED_TYPE_CHECK(Ti);
+    SUPPORTED_TYPE_CHECK(To);
 
     af_dtype ta = (af_dtype)dtype_traits<Ti>::af_type;
     af_dtype tb = (af_dtype)dtype_traits<To>::af_type;

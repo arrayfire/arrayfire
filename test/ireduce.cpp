@@ -29,7 +29,7 @@ using std::vector;
 
 #define MINMAXOP(fn, ty)                                        \
     TEST(IndexedReduce, fn##_##ty##_0) {                        \
-        if (noDoubleTests<ty>()) return;                        \
+        SUPPORTED_TYPE_CHECK(ty);                               \
         dtype dty    = (dtype)dtype_traits<ty>::af_type;        \
         const int nx = 10000;                                   \
         const int ny = 100;                                     \
@@ -52,7 +52,7 @@ using std::vector;
         af_free_host(h_idx);                                    \
     }                                                           \
     TEST(IndexedReduce, fn##_##ty##_1) {                        \
-        if (noDoubleTests<ty>()) return;                        \
+        SUPPORTED_TYPE_CHECK(ty);                               \
         dtype dty    = (dtype)dtype_traits<ty>::af_type;        \
         const int nx = 100;                                     \
         const int ny = 100;                                     \
@@ -76,7 +76,7 @@ using std::vector;
         af_free_host(h_idx);                                    \
     }                                                           \
     TEST(IndexedReduce, fn##_##ty##_all) {                      \
-        if (noDoubleTests<ty>()) return;                        \
+        SUPPORTED_TYPE_CHECK(ty);                               \
         dtype dty     = (dtype)dtype_traits<ty>::af_type;       \
         const int num = 100000;                                 \
         array in      = randu(num, dty);                        \

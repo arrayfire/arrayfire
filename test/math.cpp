@@ -36,7 +36,7 @@ T sigmoid(T in) {
 #define TEST_REAL(T, func, err, lo, hi)                          \
     TEST(MathTests, Test_##func##_##T) {                         \
         try {                                                    \
-            if (noDoubleTests<T>()) return;                      \
+            SUPPORTED_TYPE_CHECK(T);                             \
             af_dtype ty = (af_dtype)dtype_traits<T>::af_type;    \
             array a     = (hi - lo) * randu(num, ty) + lo + err; \
             eval(a);                                             \
@@ -56,7 +56,7 @@ T sigmoid(T in) {
 #define TEST_CPLX(T, func, err, lo, hi)                          \
     TEST(MathTests, Test_##func##_##T) {                         \
         try {                                                    \
-            if (noDoubleTests<T>()) return;                      \
+            SUPPORTED_TYPE_CHECK(T);                             \
             af_dtype ty = (af_dtype)dtype_traits<T>::af_type;    \
             array a     = (hi - lo) * randu(num, ty) + lo + err; \
             eval(a);                                             \

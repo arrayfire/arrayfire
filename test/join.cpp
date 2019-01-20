@@ -54,7 +54,7 @@ template<typename T>
 void joinTest(string pTestFile, const unsigned dim, const unsigned in0,
               const unsigned in1, const unsigned resultIdx,
               bool isSubRef = false, const vector<af_seq>* seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -153,8 +153,6 @@ TEST(Join, JoinLargeDim) {
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 TEST(Join, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const unsigned resultIdx = 2;
     const unsigned dim       = 2;
 
@@ -179,8 +177,6 @@ TEST(Join, CPP) {
 }
 
 TEST(JoinMany0, CPP) {
-    if (noDoubleTests<float>()) return;
-
     array a0 = randu(10, 5);
     array a1 = randu(20, 5);
     array a2 = randu(5, 5);
@@ -192,8 +188,6 @@ TEST(JoinMany0, CPP) {
 }
 
 TEST(JoinMany1, CPP) {
-    if (noDoubleTests<float>()) return;
-
     array a0 = randu(20, 200);
     array a1 = randu(20, 400);
     array a2 = randu(20, 10);

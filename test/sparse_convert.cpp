@@ -63,7 +63,7 @@ array makeSparse<cdouble>(array A, int factor) {
 
 template<typename T, af_storage src, af_storage dest>
 void sparseConvertTester(const int m, const int n, int factor) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     array A = cpu_randu<T>(dim4(m, n));
 

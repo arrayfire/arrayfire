@@ -47,7 +47,7 @@ TEST(Array, ConstructorDefault) {
 }
 
 TYPED_TEST(Array, ConstructorEmptyDim4) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dtype type = (dtype)dtype_traits<TypeParam>::af_type;
     dim4 dims(3, 3, 3, 3);
@@ -62,7 +62,7 @@ TYPED_TEST(Array, ConstructorEmptyDim4) {
 }
 
 TYPED_TEST(Array, ConstructorEmpty1D) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dtype type = (dtype)dtype_traits<TypeParam>::af_type;
     array a(2, type);
@@ -76,7 +76,7 @@ TYPED_TEST(Array, ConstructorEmpty1D) {
 }
 
 TYPED_TEST(Array, ConstructorEmpty2D) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dtype type = (dtype)dtype_traits<TypeParam>::af_type;
     array a(2, 2, type);
@@ -90,7 +90,7 @@ TYPED_TEST(Array, ConstructorEmpty2D) {
 }
 
 TYPED_TEST(Array, ConstructorEmpty3D) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dtype type = (dtype)dtype_traits<TypeParam>::af_type;
     array a(2, 2, 2, type);
@@ -104,7 +104,7 @@ TYPED_TEST(Array, ConstructorEmpty3D) {
 }
 
 TYPED_TEST(Array, ConstructorEmpty4D) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dtype type = (dtype)dtype_traits<TypeParam>::af_type;
     array a(2, 2, 2, 2, type);
@@ -118,7 +118,7 @@ TYPED_TEST(Array, ConstructorEmpty4D) {
 }
 
 TYPED_TEST(Array, ConstructorHostPointer1D) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dtype type    = (dtype)dtype_traits<TypeParam>::af_type;
     size_t nelems = 10;
@@ -138,7 +138,7 @@ TYPED_TEST(Array, ConstructorHostPointer1D) {
 }
 
 TYPED_TEST(Array, ConstructorHostPointer2D) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dtype type      = (dtype)dtype_traits<TypeParam>::af_type;
     size_t ndims    = 2;
@@ -160,7 +160,7 @@ TYPED_TEST(Array, ConstructorHostPointer2D) {
 }
 
 TYPED_TEST(Array, ConstructorHostPointer3D) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dtype type      = (dtype)dtype_traits<TypeParam>::af_type;
     size_t ndims    = 3;
@@ -182,7 +182,7 @@ TYPED_TEST(Array, ConstructorHostPointer3D) {
 }
 
 TYPED_TEST(Array, ConstructorHostPointer4D) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dtype type      = (dtype)dtype_traits<TypeParam>::af_type;
     size_t ndims    = 4;
@@ -204,7 +204,7 @@ TYPED_TEST(Array, ConstructorHostPointer4D) {
 }
 
 TYPED_TEST(Array, TypeAttributes) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dtype type = (dtype)dtype_traits<TypeParam>::af_type;
     array one(10, type);
@@ -484,7 +484,7 @@ TEST(Device, JIT) {
 }
 
 TYPED_TEST(Array, Scalar) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     dtype type = (dtype)dtype_traits<TypeParam>::af_type;
     array a    = randu(dim4(1), type);

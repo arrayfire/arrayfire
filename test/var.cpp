@@ -53,8 +53,8 @@ struct varOutType {
 template<typename T>
 void testCPPVar(T const_value, dim4 dims) {
     typedef typename varOutType<T>::type outType;
-    if (noDoubleTests<T>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(T);
+    SUPPORTED_TYPE_CHECK(outType);
 
     using af::array;
     using af::var;
@@ -103,8 +103,8 @@ TYPED_TEST(Var, AllCPPLarge) {
 TYPED_TEST(Var, DimCPPSmall) {
     typedef typename varOutType<TypeParam>::type outType;
 
-    if (noDoubleTests<TypeParam>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<TypeParam> > in;

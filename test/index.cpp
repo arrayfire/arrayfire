@@ -43,7 +43,7 @@ void checkValues(const af_seq &seq, const T *data, const T *indexed_data,
 
 template<typename T>
 void DimCheck(const vector<af_seq> &seqs) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     static const int ndims   = 1;
     static const size_t dims = 100;
@@ -325,7 +325,7 @@ class Indexing2D : public ::testing::Test {
 template<typename T>
 void DimCheck2D(const vector<vector<af_seq> > &seqs, string TestFile,
                 size_t NDims) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 
@@ -539,7 +539,7 @@ class Indexing : public ::testing::Test {
 template<typename T>
 void DimCheckND(const vector<vector<af_seq> > &seqs, string TestFile,
                 size_t NDims) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     // DimCheck2D function is generalized enough
     // to check 3d and 4d indexing
@@ -656,8 +656,6 @@ using af::span;
 using af::where;
 
 TEST(Indexing2D, ColumnContiniousCPP) {
-    if (noDoubleTests<float>()) return;
-
     vector<vector<af_seq> > seqs;
 
     seqs.push_back(make_vec(af_span, af_make_seq(0, 6, 1)));
@@ -714,7 +712,7 @@ TYPED_TEST_CASE(lookup, ArrIdxTestTypes);
 
 template<typename T>
 void arrayIndexTest(string pTestFile, int dim) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -1252,7 +1250,7 @@ class IndexedMembers : public ::testing::Test {
 TYPED_TEST_CASE(IndexedMembers, AllTypes);
 
 TYPED_TEST(IndexedMembers, MemFuncs) {
-    if (noDoubleTests<TypeParam>()) return;
+    SUPPORTED_TYPE_CHECK(TypeParam);
 
     const dim_t dimsize = 100;
     vector<TypeParam> in(dimsize * dimsize);

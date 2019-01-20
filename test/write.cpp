@@ -42,7 +42,7 @@ TYPED_TEST_CASE(Write, TestTypes);
 
 template<typename T>
 void writeTest(dim4 dims) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     array A = randu(dims, (af_dtype)dtype_traits<T>::af_type);
     array B = randu(dims, (af_dtype)dtype_traits<T>::af_type);

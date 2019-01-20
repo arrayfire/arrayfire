@@ -50,7 +50,7 @@ TYPED_TEST_CASE(FFTConvolveLarge, TestTypesLarge);
 
 template<typename T, int baseDim>
 void fftconvolveTest(string pTestFile, bool expand) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -107,7 +107,7 @@ void fftconvolveTest(string pTestFile, bool expand) {
 template<typename T, int baseDim>
 void fftconvolveTestLarge(int sDim, int fDim, int sBatch, int fBatch,
                           bool expand) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     using af::seq;
 
@@ -344,8 +344,6 @@ TYPED_TEST(FFTConvolve, Same_Cuboid_One2Many) {
 }
 
 TEST(FFTConvolve1, CPP) {
-    if (noDoubleTests<float>()) return;
-
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
@@ -379,8 +377,6 @@ TEST(FFTConvolve1, CPP) {
 }
 
 TEST(FFTConvolve2, CPP) {
-    if (noDoubleTests<float>()) return;
-
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
@@ -417,8 +413,6 @@ TEST(FFTConvolve2, CPP) {
 }
 
 TEST(FFTConvolve3, CPP) {
-    if (noDoubleTests<float>()) return;
-
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;

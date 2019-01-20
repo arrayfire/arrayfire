@@ -60,7 +60,7 @@ template<typename T>
 void approx1Test(string pTestFile, const unsigned resultIdx,
                  const af_interp_type method, bool isSubRef = false,
                  const vector<af_seq>* seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     typedef typename dtype_traits<T>::base_type BT;
     vector<dim4> numDims;
@@ -133,7 +133,7 @@ template<typename T>
 void approx1CubicTest(string pTestFile, const unsigned resultIdx,
                       const af_interp_type method, bool isSubRef = false,
                       const vector<af_seq>* seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     typedef typename dtype_traits<T>::base_type BT;
     vector<dim4> numDims;
@@ -221,7 +221,7 @@ TYPED_TEST(Approx1, Approx1Cubic) {
 template<typename T>
 void approx1ArgsTest(string pTestFile, const af_interp_type method,
                      const af_err err) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     typedef typename dtype_traits<T>::base_type BT;
     vector<dim4> numDims;
     vector<vector<BT> > in;
@@ -268,7 +268,7 @@ TYPED_TEST(Approx1, Approx1ArgsInterpBilinear) {
 template<typename T>
 void approx1ArgsTestPrecision(string pTestFile, const unsigned,
                               const af_interp_type method) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     vector<dim4> numDims;
     vector<vector<T> > in;
     vector<vector<T> > tests;
@@ -425,8 +425,6 @@ TEST(Approx1, CPPCubicBatch) {
 }
 
 TEST(Approx1, CPPNearestMaxDims) {
-    if (noDoubleTests<float>()) return;
-
     const size_t largeDim = 65535 * 32 + 1;
     array input           = randu(1, largeDim);
     array pos             = input.dims(0) * randu(1, largeDim);
@@ -444,8 +442,6 @@ TEST(Approx1, CPPNearestMaxDims) {
 }
 
 TEST(Approx1, CPPLinearMaxDims) {
-    if (noDoubleTests<float>()) return;
-
     const size_t largeDim = 65535 * 32 + 1;
     array input           = iota(dim4(1, largeDim), c32);
     array pos             = input.dims(0) * randu(1, largeDim);
@@ -463,8 +459,6 @@ TEST(Approx1, CPPLinearMaxDims) {
 }
 
 TEST(Approx1, CPPCubicMaxDims) {
-    if (noDoubleTests<float>()) return;
-
     const size_t largeDim = 65535 * 32 + 1;
     array input           = iota(dim4(1, largeDim), c32);
     array pos             = input.dims(0) * randu(1, largeDim);

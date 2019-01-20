@@ -44,7 +44,7 @@ typedef af_err (*scanFunc)(af_array *, const af_array, const int);
 template<typename Ti, typename To, scanFunc af_scan>
 void scanTest(string pTestFile, int off = 0, bool isSubRef = false,
               const vector<af_seq> seqv = vector<af_seq>()) {
-    if (noDoubleTests<Ti>()) return;
+    SUPPORTED_TYPE_CHECK(Ti);
 
     vector<dim4> numDims;
 
@@ -135,8 +135,6 @@ TEST(Accum, CPP) {
     dim4 dims = numDims[0];
 
     vector<float> in(data[0].begin(), data[0].end());
-
-    if (noDoubleTests<float>()) return;
 
     array input(dims, &(in.front()));
 

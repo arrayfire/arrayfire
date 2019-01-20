@@ -44,7 +44,7 @@ TYPED_TEST_CASE(Regions, TestTypes);
 template<typename T>
 void regionsTest(string pTestFile, af_connectivity connectivity,
                  bool isSubRef = false, const vector<af_seq>* seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<uchar> > in;
@@ -109,8 +109,6 @@ REGIONS_INIT(Regions3, regions_128x128, 8, AF_CONNECTIVITY_8);
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(Regions, CPP) {
-    if (noDoubleTests<float>()) return;
-
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;

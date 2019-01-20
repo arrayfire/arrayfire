@@ -51,7 +51,7 @@ TYPED_TEST_CASE(Range, TestTypes);
 template<typename T>
 void rangeTest(const uint x, const uint y, const uint z, const uint w,
                const uint dim) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     dim4 idims(x, y, z, w);
 
@@ -119,8 +119,6 @@ RANGE_INIT(Range1DMaxDim3, 1, 1, 1, 65535 * 32 + 1, 0);
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 TEST(Range, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const unsigned x   = 23;
     const unsigned y   = 15;
     const unsigned z   = 4;

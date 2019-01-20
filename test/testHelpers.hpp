@@ -439,6 +439,9 @@ bool noDoubleTests() {
     return ((isTypeDouble && !isDoubleSupported) ? true : false);
 }
 
+#define SUPPORTED_TYPE_CHECK(type) \
+    if (noDoubleTests<type>()) return;
+
 inline bool noImageIOTests() {
     bool ret = !af::isImageIOAvailable();
     if (ret) printf("Image IO Not Configured. Test will exit\n");

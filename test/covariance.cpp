@@ -74,8 +74,8 @@ struct covOutType {
 template<typename T>
 void covTest(string pFileName, bool isbiased = false) {
     typedef typename covOutType<T>::type outType;
-    if (noDoubleTests<T>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(T);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<int> > in;
@@ -126,7 +126,7 @@ TEST(Covariance, c32) {
 }
 
 TEST(Covariance, c64) {
-    if (noDoubleTests<double>()) return;
+    SUPPORTED_TYPE_CHECK(double);
     array a = constant(cdouble(1.0, -1.0), 10, c64);
     array b = constant(cdouble(2.0, -1.0), 10, c64);
     ASSERT_THROW(cov(a, b), exception);

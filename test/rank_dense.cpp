@@ -45,7 +45,7 @@ TYPED_TEST_CASE(Det, TestTypes);
 
 template<typename T>
 void rankSmall() {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 
     T ha[] = {1, 4, 7, 2, 5, 8, 3, 6, 20};
@@ -56,7 +56,7 @@ void rankSmall() {
 
 template<typename T>
 void rankBig(const int num) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 
     dtype dt = (dtype)dtype_traits<T>::af_type;
@@ -70,7 +70,7 @@ void rankBig(const int num) {
 
 template<typename T>
 void rankLow(const int num) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 
     dtype dt = (dtype)dtype_traits<T>::af_type;
@@ -92,7 +92,7 @@ TYPED_TEST(Rank, low) { rankBig<TypeParam>(512); }
 
 template<typename T>
 void detTest() {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noLAPACKTests()) return;
 
     dtype dt = (dtype)dtype_traits<T>::af_type;

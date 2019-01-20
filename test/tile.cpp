@@ -54,7 +54,7 @@ template<typename T>
 void tileTest(string pTestFile, const unsigned resultIdx, const uint x,
               const uint y, const uint z, const uint w, bool isSubRef = false,
               const vector<af_seq>* seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -117,8 +117,6 @@ TILE_INIT(Tile2D231, tile_large2D, 4, 2, 3, 1, 1);
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 TEST(Tile, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const unsigned resultIdx = 0;
     const unsigned x         = 2;
     const unsigned y         = 2;
@@ -140,8 +138,6 @@ TEST(Tile, CPP) {
 }
 
 TEST(Tile, MaxDim) {
-    if (noDoubleTests<float>()) return;
-
     const size_t largeDim = 65535 * 32 + 1;
     const unsigned x      = 1;
     const unsigned z      = 1;

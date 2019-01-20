@@ -47,7 +47,7 @@ template<typename T>
 void gradTest(string pTestFile, const unsigned resultIdx0,
               const unsigned resultIdx1, bool isSubRef = false,
               const vector<af_seq>* seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -124,8 +124,6 @@ GRAD_INIT(Grad2, grad3D, 0, 1);
 using af::array;
 
 TEST(Grad, CPP) {
-    if (noDoubleTests<float>()) return;
-
     const unsigned resultIdx0 = 0;
     const unsigned resultIdx1 = 1;
 
@@ -170,8 +168,6 @@ TEST(Grad, CPP) {
 TEST(Grad, MaxDim) {
     using af::constant;
     using af::sum;
-
-    if (noDoubleTests<float>()) return;
 
     const size_t largeDim = 65535 * 8 + 1;
 

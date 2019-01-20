@@ -22,9 +22,9 @@ const int num = 10;
 
 #define COMPLEX_TESTS(Ta, Tb, Tc)                                     \
     TEST(ComplexTests, Test_##Ta##_##Tb) {                            \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-        if (noDoubleTests<Tc>()) return;                              \
+        SUPPORTED_TYPE_CHECK(Ta);                                     \
+        SUPPORTED_TYPE_CHECK(Tb);                                     \
+        SUPPORTED_TYPE_CHECK(Tc);                                     \
                                                                       \
         af_dtype ta   = (af_dtype)dtype_traits<Ta>::af_type;          \
         af_dtype tb   = (af_dtype)dtype_traits<Tb>::af_type;          \
@@ -42,8 +42,8 @@ const int num = 10;
         freeHost(h_c);                                                \
     }                                                                 \
     TEST(ComplexTests, Test_cplx_##Ta##_##Tb##_left) {                \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
+        SUPPORTED_TYPE_CHECK(Ta);                                     \
+        SUPPORTED_TYPE_CHECK(Tb);                                     \
                                                                       \
         af_dtype ta   = (af_dtype)dtype_traits<Ta>::af_type;          \
         array a       = randu(num, ta);                               \
@@ -59,8 +59,8 @@ const int num = 10;
     }                                                                 \
                                                                       \
     TEST(ComplexTests, Test_cplx_##Ta##_##Tb##_right) {               \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
+        SUPPORTED_TYPE_CHECK(Ta);                                     \
+        SUPPORTED_TYPE_CHECK(Tb);                                     \
                                                                       \
         af_dtype tb   = (af_dtype)dtype_traits<Tb>::af_type;          \
         Ta h_a        = 0.3;                                          \
@@ -75,9 +75,9 @@ const int num = 10;
         freeHost(h_c);                                                \
     }                                                                 \
     TEST(ComplexTests, Test_##Ta##_##Tb##_Real) {                     \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-        if (noDoubleTests<Tc>()) return;                              \
+        SUPPORTED_TYPE_CHECK(Ta);                                     \
+        SUPPORTED_TYPE_CHECK(Tb);                                     \
+        SUPPORTED_TYPE_CHECK(Tc);                                     \
                                                                       \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
@@ -93,9 +93,9 @@ const int num = 10;
         freeHost(h_d);                                                \
     }                                                                 \
     TEST(ComplexTests, Test_##Ta##_##Tb##_Imag) {                     \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-        if (noDoubleTests<Tc>()) return;                              \
+        SUPPORTED_TYPE_CHECK(Ta);                                     \
+        SUPPORTED_TYPE_CHECK(Tb);                                     \
+        SUPPORTED_TYPE_CHECK(Tc);                                     \
                                                                       \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
@@ -111,9 +111,9 @@ const int num = 10;
         freeHost(h_d);                                                \
     }                                                                 \
     TEST(ComplexTests, Test_##Ta##_##Tb##_Conj) {                     \
-        if (noDoubleTests<Ta>()) return;                              \
-        if (noDoubleTests<Tb>()) return;                              \
-        if (noDoubleTests<Tc>()) return;                              \
+        SUPPORTED_TYPE_CHECK(Ta);                                     \
+        SUPPORTED_TYPE_CHECK(Tb);                                     \
+        SUPPORTED_TYPE_CHECK(Tc);                                     \
                                                                       \
         af_dtype ta   = (af_dtype)dtype_traits<Ta>::af_type;          \
         af_dtype tb   = (af_dtype)dtype_traits<Tb>::af_type;          \

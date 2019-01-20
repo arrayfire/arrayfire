@@ -46,7 +46,7 @@ TYPED_TEST_CASE(Moddims, TestTypes);
 template<typename T>
 void moddimsTest(string pTestFile, bool isSubRef = false,
                  const vector<af_seq> *seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 
@@ -127,7 +127,7 @@ TYPED_TEST(Moddims, Subref) {
 
 template<typename T>
 void moddimsArgsTest(string pTestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 
@@ -160,7 +160,7 @@ TYPED_TEST(Moddims, InvalidArgs) {
 
 template<typename T>
 void moddimsMismatchTest(string pTestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 
@@ -196,7 +196,7 @@ using af::array;
 template<typename T>
 void cppModdimsTest(string pTestFile, bool isSubRef = false,
                     const vector<af_seq> *seqv = NULL) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 

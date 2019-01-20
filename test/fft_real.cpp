@@ -54,7 +54,7 @@ array fft(const array &in, double norm) {
 template<typename Tc, int rank>
 void fft_real(dim4 dims) {
     typedef typename dtype_traits<Tc>::base_type Tr;
-    if (noDoubleTests<Tr>()) return;
+    SUPPORTED_TYPE_CHECK(Tr);
 
     dtype ty = (dtype)dtype_traits<Tr>::af_type;
     array a  = randu(dims, ty);

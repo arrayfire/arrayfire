@@ -66,7 +66,7 @@ TYPED_TEST_CASE(Susan, TestTypes);
 
 template<typename T>
 void susanTest(string pTestFile, float t, float g) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;

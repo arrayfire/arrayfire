@@ -36,7 +36,6 @@ typedef ::testing::Types<float> TestTypes;
 TYPED_TEST_CASE(ImageIO, TestTypes);
 
 void loadImageTest(string pTestFile, string pImageFile, const bool isColor) {
-    if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 
     vector<dim4> numDims;
@@ -123,7 +122,6 @@ using af::saveImageMem;
 using af::span;
 
 TEST(ImageIO, CPP) {
-    if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 
     vector<dim4> numDims;
@@ -186,7 +184,6 @@ TEST(ImageIO, SaveBMPCPP) {
 }
 
 TEST(ImageMem, SaveMemPNG) {
-    if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 
     array img =
@@ -202,7 +199,6 @@ TEST(ImageMem, SaveMemPNG) {
 }
 
 TEST(ImageMem, SaveMemJPG1) {
-    if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 
     array img =
@@ -220,7 +216,6 @@ TEST(ImageMem, SaveMemJPG1) {
 }
 
 TEST(ImageMem, SaveMemJPG3) {
-    if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 
     array img =
@@ -238,7 +233,6 @@ TEST(ImageMem, SaveMemJPG3) {
 }
 
 TEST(ImageMem, SaveMemBMP) {
-    if (noDoubleTests<float>()) return;
     if (noImageIOTests()) return;
 
     array img =
