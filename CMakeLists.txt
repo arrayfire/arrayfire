@@ -19,6 +19,7 @@ include(build_cl2hpp)
 include(platform)
 include(GetPrerequisites)
 include(CheckCXXCompilerFlag)
+include(FeatureSummary)
 
 arrayfire_set_cmake_default_variables()
 
@@ -334,3 +335,105 @@ conditional_directory(AF_BUILD_EXAMPLES examples)
 conditional_directory(AF_BUILD_DOCS docs)
 
 include(CPackConfig)
+
+set_property(GLOBAL APPEND PROPERTY FeatureSummary_PKG_TYPES CPU)
+set_property(GLOBAL APPEND PROPERTY FeatureSummary_PKG_TYPES CUDA)
+set_property(GLOBAL APPEND PROPERTY FeatureSummary_PKG_TYPES OPENCL)
+set_property(GLOBAL APPEND PROPERTY FeatureSummary_PKG_TYPES GRAPHICS)
+
+set_package_properties(CBLAS
+  PROPERTIES
+  TYPE CPU
+  )
+
+set_package_properties(LAPACKE
+  PROPERTIES
+  TYPE CPU
+  )
+
+set_package_properties(MKL
+  PROPERTIES
+  TYPE CPU
+  )
+
+set_package_properties(FFTW
+  PROPERTIES
+  TYPE CPU
+  )
+
+set_package_properties(CUDA
+  PROPERTIES
+  TYPE CUDA
+  )
+
+set_package_properties(OpenCL
+  PROPERTIES
+  TYPE OPENCL
+  )
+
+set_package_properties(Boost
+  PROPERTIES
+  TYPE OPENCL
+  )
+
+set_package_properties(Forge
+  PROPERTIES
+  URL https://github.com/arrayfire/forge
+  DESCRIPTION "Provides the high-performance graphics capabilities."
+  TYPE GRAPHICS
+  )
+
+set_package_properties(glfw3
+  PROPERTIES
+  TYPE GRAPHICS
+  )
+
+add_feature_info("CPU Backend"        AF_BUILD_CPU      "for building the ArrayFire library that targets the CPU backend.")
+add_feature_info("CUDA Backend"       AF_BUILD_CUDA     "for building the ArrayFire library that targets the CUDA backend.")
+add_feature_info("OpenCL Backend"     AF_BUILD_OPENCL   "for building the ArrayFire library that targets the OpenCL backend.")
+add_feature_info("Unified Backend"    AF_BUILD_UNIFIED  "for building a wrapper library which allows you to target all backends.")
+add_feature_info("Graphics"           AF_WITH_GRAPHICS  "which allows you to use the plotting capabilities of ArrayFire")
+add_feature_info("Non-Free Functions" AF_WITH_NONFREE  "which enables functions that require licenses to use.")
+add_feature_info("ImageIO"            AF_WITH_IMAGEIO  "which allows you to read and write images")
+add_feature_info("Logging"            AF_WITH_LOGGING  "which generates logs for debugging purposes")
+
+feature_summary(
+  VAR FEATS
+  DESCRIPTION "Enabled Features: "
+  WHAT
+  ENABLED_FEATURES
+  )
+
+feature_summary(
+  VAR CPU_PKGS
+  DESCRIPTION "Required packages for CPU backend found: "
+  WHAT CPU_PACKAGES_FOUND
+  QUIET_ON_EMPTY
+  )
+
+feature_summary(
+  VAR CUDA_PKGS
+  DESCRIPTION "Required packages for CUDA backend found: "
+  WHAT CUDA_PACKAGES_FOUND
+  QUIET_ON_EMPTY
+  )
+
+feature_summary(
+  VAR OPENCL_PKGS
+  DESCRIPTION "Required packages for OpenCL backend found: "
+  WHAT OPENCL_PACKAGES_FOUND
+  QUIET_ON_EMPTY
+  )
+
+feature_summary(
+  VAR GRAPHICS_PKGS
+  DESCRIPTION "Required packages for graphics found: "
+  WHAT GRAPHICS_PACKAGES_FOUND
+  QUIET_ON_EMPTY
+  )
+
+message(STATUS ${FEATS})
+message(STATUS ${CPU_PKGS})
+message(STATUS ${CUDA_PKGS})
+message(STATUS ${OPENCL_PKGS})
+message(STATUS ${GRAPHICS_PKGS})
