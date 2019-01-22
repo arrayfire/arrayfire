@@ -14,6 +14,8 @@
 #include <common/defines.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
+#include <common/Logger.hpp>
+#include <spdlog/spdlog.h>
 #include <driver.h>
 #include <err_cuda.hpp>
 #include <platform.hpp>
@@ -37,7 +39,18 @@
 
 using namespace std;
 
+
 namespace cuda {
+
+// check with reviewers : perhaps to be moved to a static of DeviceManager
+std::shared_ptr<spdlog::logger> logger = common::loggerFactory("cuda");
+
+#if defined(AF_WITH_LOGGING)
+spdlog::logger* getLogger() {
+  return logger.get();
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////
 // HELPERS
 ///////////////////////////////////////////////////////////////////////////
@@ -469,8 +482,59 @@ SparseHandle sparseHandle() {
     return cusparseHandles[id].get()->get();
 }
 
+/*
+ * Map giving the minimum device driver needed in order to run a given version of CUDA
+ * https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
+ * Map linking cuda version to the minimum driver versions for both Linux/Mac and Windows
+ */
+static const std::map<float, std::pair<double, double> > CudaToKernelVersionMap = {
+  { 10.0, { 410.48, 411.31 } },
+  { 9.2, { 396.37, 398.26 } },
+  { 9.1, { 390.46, 391.29 } },
+  { 9.0, { 384.81, 385.54 } },
+  { 8.0, { 375.26, 376.51 } },
+  { 7.5, { 352.31, 353.66 } }
+};
+
+// check with reviewers: perhaps mutate this as a static of DeviceManager:
+// Check if the device driver version is recent enough to run the cuda libs linked with afcuda:
+void checkCudaVsDriverVersion() {
+    const std::string driverVersionString = getDriverVersion();
+    AF_TRACE("Found DriverVersion {}", driverVersionString);
+    if (driverVersionString.empty())
+        throw runtime_error("Failed to retrieve nvidia driver version (empty string)");
+    // Nvidia driver versions are hopefully float based X.Y
+    const double driverVersion = std::atof(driverVersionString.c_str());
+    if (driverVersion == 0)
+        throw runtime_error("Failed to parse driver version: " + driverVersionString);
+    const std::string cudaRuntimeVersionString = getCUDARuntimeVersion();
+    if (cudaRuntimeVersionString.empty())
+	throw runtime_error("Failed to get CUDA version (empty)");
+    const double cudaVersion = std::atof(cudaRuntimeVersionString.c_str());
+    if (cudaVersion == 0)
+	throw runtime_error("Failed to parse CUDA version: " + cudaRuntimeVersionString);
+
+    AF_TRACE("AF built with cuda {} : {}", cudaRuntimeVersionString, cudaVersion);
+    if (CudaToKernelVersionMap.find(cudaVersion) == CudaToKernelVersionMap.end())
+	throw runtime_error("Failed to find driver versions from CUDA version: " + cudaRuntimeVersionString + " This verison of cuda is either too old or too recent for this version of ArrayFire");
+    double minimumDriverVersion = 0;
+    #if defined(OS_WIN)
+	minimumDriverVersion = CudaToKernelVersionMap[cudaVersion].second;
+    #else
+	minimumDriverVersion = CudaToKernelVersionMap[cudaVersion].first;
+    #endif
+    AF_TRACE("Minimum required driver version: {}", minimumDriverVersion);
+    if (driverVersion < minimumDriverVersion)
+	throw runtime_error("The driver " + driverVersionString + " are too old in order to run this verison of CUDA: " + cudaRuntimeVersionString 
+	+ ". Either upgrade the nvidia drivers on that machine (at least verison " + std::to_string(minimumDriverVersion) 
+	+ ") or use a build of ArrayFire linking with an older version of CUDA");
+}
+
 DeviceManager::DeviceManager()
     : cuDevices(0), nDevices(0), fgMngr(new graphics::ForgeManager()) {
+
+    checkCudaVsDriverVersion();
+
     CUDA_CHECK(cudaGetDeviceCount(&nDevices));
     if (nDevices == 0) throw runtime_error("No CUDA-Capable devices found");
     cuDevices.reserve(nDevices);
