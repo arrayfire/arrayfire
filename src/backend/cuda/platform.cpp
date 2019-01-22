@@ -11,12 +11,14 @@
 #include <windows.h>
 #endif
 
+#include <common/Logger.hpp>
 #include <common/defines.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
 #include <driver.h>
 #include <err_cuda.hpp>
 #include <platform.hpp>
+#include <spdlog/spdlog.h>
 #include <version.hpp>
 #include <af/cuda.h>
 #include <af/version.h>
@@ -36,8 +38,10 @@
 #include <vector>
 
 using namespace std;
+using std::to_string;
 
 namespace cuda {
+
 ///////////////////////////////////////////////////////////////////////////
 // HELPERS
 ///////////////////////////////////////////////////////////////////////////
@@ -129,13 +133,6 @@ static const std::string get_system(void) {
 #endif
 }
 
-template<typename T>
-static inline string toString(T val) {
-    stringstream s;
-    s << val;
-    return s.str();
-}
-
 static inline int getMinSupportedCompute(int cudaMajorVer) {
     // Vector of minimum supported compute versions
     // for CUDA toolkit (i+1).* where i is the index
@@ -160,14 +157,14 @@ string getDeviceInfo(int device) {
 
     bool show_braces = getActiveDeviceId() == device;
 
-    string id = (show_braces ? string("[") : "-") + toString(device) +
+    string id = (show_braces ? string("[") : "-") + to_string(device) +
                 (show_braces ? string("]") : "-");
     string name(dev.name);
-    string memory = toString((mem_gpu_total / (1024 * 1024)) +
-                             !!(mem_gpu_total % (1024 * 1024))) +
+    string memory = to_string((mem_gpu_total / (1024 * 1024)) +
+                              !!(mem_gpu_total % (1024 * 1024))) +
                     string(" MB");
-    string compute = string("CUDA Compute ") + toString(dev.major) +
-                     string(".") + toString(dev.minor);
+    string compute = string("CUDA Compute ") + to_string(dev.major) +
+                     string(".") + to_string(dev.minor);
 
     string info = id + string(" ") + name + string(", ") + memory +
                   string(", ") + compute + string("\n");
@@ -243,19 +240,21 @@ string getDriverVersion() {
 #endif
         int driver = 0;
         CUDA_CHECK(cudaDriverGetVersion(&driver));
-        return string("CUDA Driver Version: ") + toString(driver);
+        return string("CUDA Driver Version: ") + to_string(driver);
     } else {
         return string(driverVersion);
     }
 }
 
+string int_version_to_string(int version) {
+    return to_string(version / 1000) + "." +
+            to_string((int)((version % 1000) / 100.));
+}
+
 string getCUDARuntimeVersion() {
     int runtime = 0;
     CUDA_CHECK(cudaRuntimeGetVersion(&runtime));
-    if (runtime / 100.f > 0)
-        return toString((runtime / 1000) + (runtime % 1000) / 100.);
-    else
-        return toString(runtime / 1000) + string(".0");
+    return int_version_to_string(runtime);
 }
 
 unsigned getMaxJitSize() {
@@ -469,8 +468,94 @@ SparseHandle sparseHandle() {
     return cusparseHandles[id].get()->get();
 }
 
+/// Map giving the minimum device driver needed in order to run a given version
+/// of CUDA for both Linux/Mac and Windows from:
+/// https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
+// clang-format off
+static const std::map<std::string, std::pair<float, float>>
+    CudaToKernelVersionMap = {
+        {"10.0", {410.48f, 411.31f}},
+        {"9.2", {396.37f, 398.26f}},
+        {"9.1", {390.46f, 391.29f}},
+        {"9.0", {384.81f, 385.54f}},
+        {"8.0", {375.26f, 376.51f}},
+        {"7.5", {352.31f, 353.66f}},
+        {"7.0", {346.46f, 347.62f}}};
+// clang-format on
+
+// Check if the device driver version is recent enough to run the cuda libs
+// linked with afcuda:
+void DeviceManager::checkCudaVsDriverVersion() {
+    const std::string driverVersionString = getDriverVersion();
+    if (driverVersionString.empty()) {
+        // Do not perform a check if no driver version was found
+        AF_TRACE("Failed to retrieve nvidia driver version.");
+        return;
+    }
+    AF_TRACE("GPU driver version: {}", driverVersionString);
+
+    // Nvidia driver versions are hopefully float based X.Y
+    const float driverVersion = std::stof(driverVersionString);
+    if (driverVersion == 0) {
+        AF_TRACE("Failed to parse driver version: {}", driverVersionString);
+        return;
+    }
+
+    const std::string cudaRuntimeVersionString = getCUDARuntimeVersion();
+    if (cudaRuntimeVersionString.empty()) {
+        AF_TRACE("Failed to get CUDA runtime version");
+        return;
+    }
+
+    if (CudaToKernelVersionMap.find(cudaRuntimeVersionString) ==
+        CudaToKernelVersionMap.end()) {
+        AF_TRACE(
+            "CUDA runtime version({}) not recognized. Please create an issue "
+            "or a pull request on the ArrayFire repository to update the "
+            "CudaToKernelVersionMap variable with this version of the CUDA "
+            "Toolkit.",
+            cudaRuntimeVersionString);
+        return;
+    }
+
+    float minimumDriverVersion = 0;
+#if defined(OS_WIN)
+    minimumDriverVersion =
+        CudaToKernelVersionMap.at(cudaRuntimeVersionString).second;
+#else
+    minimumDriverVersion =
+        CudaToKernelVersionMap.at(cudaRuntimeVersionString).first;
+#endif
+
+    AF_TRACE("CUDA runtime version: {} (Minimum GPU driver required: {})",
+             cudaRuntimeVersionString, minimumDriverVersion);
+    if (driverVersion < minimumDriverVersion) {
+        string msg =
+            "ArrayFire was built with CUDA %s which requires GPU driver "
+            "version %.2f or later. Please download the latest drivers from "
+            "https://www.nvidia.com/drivers. Alternatively, you could rebuild "
+            "ArrayFire with CUDA Toolkit version %s to use the current "
+            "drivers.";
+
+        char buf[1024];
+        int supported_cuda_version = 0;
+        cudaDriverGetVersion(&supported_cuda_version);
+
+        snprintf(buf, 1024, msg.c_str(), cudaRuntimeVersionString.c_str(),
+                 minimumDriverVersion,
+                 int_version_to_string(supported_cuda_version).c_str());
+
+        AF_ERROR(buf, AF_ERR_DRIVER);
+    }
+}
+
 DeviceManager::DeviceManager()
-    : cuDevices(0), nDevices(0), fgMngr(new graphics::ForgeManager()) {
+    : cuDevices(0)
+    , nDevices(0)
+    , fgMngr(new graphics::ForgeManager())
+    , logger(common::loggerFactory("platform")) {
+    checkCudaVsDriverVersion();
+
     CUDA_CHECK(cudaGetDeviceCount(&nDevices));
     if (nDevices == 0) throw runtime_error("No CUDA-Capable devices found");
     cuDevices.reserve(nDevices);
@@ -516,6 +601,8 @@ DeviceManager::DeviceManager()
         }
     }
 }
+
+spdlog::logger *DeviceManager::getLogger() { return logger.get(); }
 
 void DeviceManager::sortDevices(sort_mode mode) {
     switch (mode) {
