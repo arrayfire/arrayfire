@@ -222,3 +222,18 @@ is useful for specialized build configurations that use the unified backend and
 build shared libraries separately.
 
 By default, no additional path will be searched for an empty value.
+
+
+AF_JIT_KERNEL_TRACE {#af_jit_kernel_trace}
+-------------------------------------------------------------------------------
+
+When set, this environment variable has to be set to one of the following
+three values:
+
+- stdout : generated kernels will be printed to standard output
+- stderr : generated kernels will be printed to standard error stream
+- absolute path to a folder on the disk where generated kernels will be stored
+
+CUDA backend kernels are stored in files with cu file extension.
+
+OpenCL backend kernels are stored in files with cl file extension.
