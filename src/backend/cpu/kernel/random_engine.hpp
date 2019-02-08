@@ -10,10 +10,18 @@
 #pragma once
 
 #include <Param.hpp>
+#include <common/dispatch.hpp>
 #include <err_cpu.hpp>
 #include <kernel/random_engine_mersenne.hpp>
 #include <kernel/random_engine_philox.hpp>
 #include <kernel/random_engine_threefry.hpp>
+
+#include <array>
+#include <cstring>
+#include <algorithm>
+
+using std::array;
+using std::memcpy;
 
 namespace cpu {
 namespace kernel {
@@ -94,6 +102,21 @@ double transform<double>(uint *val, int index) {
     return 1.0 - (v * DBL_FACTOR + HALF_DBL_FACTOR);
 }
 
+#define BUFFER_LEN 16
+#define NUM_BUFFERS 4
+#define ELEMS_PER_ITER 1024
+#define BUF_WRITE_STRIDE 256
+
+// This implementation aims to emulate the corresponding method in the CUDA
+// backend, in order to produce the exact same numbers as CUDA.
+// 4 buffers (of size BUFFER_LEN) are used here to temporarily store the
+// generated numbers, and the contents are memcopied to the output when they
+// are full. When each of the 4 buffers are memcopied, however, a stride of
+// BUF_WRITE_STRIDE (256) is applied between each memcpy (emulating the CUDA
+// thread writing to 4 locations with a stride of blockDim.x, which is 256).
+// ELEMS_PER_ITER correspond to elementsPerBlock in the CUDA backend, so each
+// "iter" (iteration) here correspond to a CUDA thread block doing its work.
+// This change was prompted by issue #2429
 template<typename T>
 void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     uint hi     = seed >> 32;
@@ -103,13 +126,55 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     uint key[2] = {lo, hi};
     uint ctr[4] = {loc, hic, 0, 0};
 
-    int reset = (4 * sizeof(uint)) / sizeof(T);
-    for (int i = 0; i < (int)elements; i += reset) {
-        philox(key, ctr);
-        int lim = (reset < (int)(elements - i)) ? reset : (int)(elements - i);
-        for (int j = 0; j < lim; ++j) { out[i + j] = transform<T>(ctr, j); }
+    array<array<T, BUFFER_LEN>, NUM_BUFFERS> buffers;
+    uint num_iters = divup(elements, ELEMS_PER_ITER);
+    uint bufs_per_stride = BUF_WRITE_STRIDE / BUFFER_LEN;
+    uint first_write_idx = 0;
+    size_t out_idx = 0;
+    size_t cpy_len = 0;
+    for (int iter = 0; iter < num_iters; ++iter) {
+        for (int i = 0; i < bufs_per_stride; ++i) {
+            for (int j = 0; j < BUFFER_LEN; ++j) {
+                // first_write_idx is the first of the 4 locations that will
+                // be written to
+                first_write_idx = iter * ELEMS_PER_ITER + i * BUFFER_LEN + j;
+                if (first_write_idx >= elements) { break; }
+
+                // Recalculate key and ctr to emulate how the CUDA backend
+                // calculates these per thread
+                key[0] = lo;
+                key[1] = hi;
+                ctr[0] = loc + first_write_idx;
+                ctr[1] = hic + (ctr[0] < loc);
+                ctr[2] = (ctr[1] < hic);
+                ctr[3] = 0;
+                philox(key, ctr);
+
+                // Use the same ctr array for each of the 4 locations,
+                // but each of the location gets a different ctr value
+                for (int buf_idx = 0; buf_idx < NUM_BUFFERS; ++buf_idx) {
+                    out_idx = first_write_idx + buf_idx * BUF_WRITE_STRIDE;
+                    if (out_idx >= elements) { break; }
+                    buffers[buf_idx][j] = transform<T>(ctr, buf_idx);
+                }
+            }
+            // Buffers are full at this point, so memcpy
+            for (int buf_idx = 0; buf_idx < NUM_BUFFERS; ++buf_idx) {
+                out_idx = iter * ELEMS_PER_ITER + buf_idx * BUF_WRITE_STRIDE +
+                          i * BUFFER_LEN;
+                if (out_idx >= elements) { break; }
+                cpy_len = std::min((size_t)BUFFER_LEN, elements - out_idx);
+                memcpy(&out[out_idx], &buffers[buf_idx][0],
+                       cpy_len * sizeof(T));
+            }
+        }
     }
 }
+
+#undef BUFFER_LEN
+#undef NUM_BUFFERS
+#undef ELEMS_PER_ITER
+#undef BUF_WRITE_STRIDE
 
 template<typename T>
 void threefryUniform(T *out, size_t elements, const uintl seed, uintl counter) {
