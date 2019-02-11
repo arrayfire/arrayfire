@@ -8,20 +8,33 @@
  ********************************************************/
 
 #pragma once
+
+#ifdef __CUDACC_RTC__
+
+#define CUDART_INF_F __int_as_float(0x7f800000)
+#define CUDART_INF __longlong_as_double(0x7ff0000000000000ULL)
+#define STATIC_ inline
+
+#else //__CUDACC_RTC__
+
 #include <common/defines.hpp>
 #include <af/defines.h>
-#include "backend.hpp"
-#include "types.hpp"
 
 #ifdef __CUDACC__
 #include <cuda_runtime_api.h>
 #include <math_constants.h>
-#endif
+#endif //__CUDACC__
 
 #include <algorithm>
 #include <limits>
 
+#endif //__CUDACC_RTC__
+
+#include "backend.hpp"
+#include "types.hpp"
+
 namespace cuda {
+
 template<typename T>
 static inline __DH__ T abs(T val) {
     return abs(val);
@@ -328,11 +341,24 @@ template<typename T>
 static inline T division(T lhs, double rhs) {
     return lhs / rhs;
 }
-cfloat division(cfloat lhs, double rhs);
-cdouble division(cdouble lhs, double rhs);
+
+static inline cfloat division(cfloat lhs, double rhs) {
+    cfloat retVal;
+    retVal.x = real(lhs) / rhs;
+    retVal.y = imag(lhs) / rhs;
+    return retVal;
+}
+
+static inline cdouble division(cdouble lhs, double rhs) {
+    cdouble retVal;
+    retVal.x = real(lhs) / rhs;
+    retVal.y = imag(lhs) / rhs;
+    return retVal;
+}
 
 template<typename T>
 static inline __DH__ T clamp(const T value, const T lo, const T hi) {
     return max(lo, min(value, hi));
 }
+
 }  // namespace cuda

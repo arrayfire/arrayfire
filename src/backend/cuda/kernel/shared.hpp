@@ -9,8 +9,21 @@
 
 #pragma once
 
-namespace cuda {
+#ifdef __CUDACC_RTC__
 
+namespace cuda {
+template<typename T>
+struct SharedMemory {
+    __DH__ T* getPointer() {
+        extern __shared__ T ptr[];
+        return ptr;
+    }
+};
+}
+
+#else
+
+namespace cuda {
 namespace kernel {
 
 template<typename T>
@@ -51,3 +64,5 @@ SPECIALIZE(uintl)
 
 }  // namespace kernel
 }  // namespace cuda
+
+#endif
